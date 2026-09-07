@@ -116,3 +116,148 @@ jobs:
           --from "${{ github.event.pull_request.base.sha }}"
           --to "${{ github.event.pull_request.head.sha }}"
           --verbose
+
+  # AC-29 / T-30 (TASK-007): every pull request gets a Vercel preview deployment. This job proves,
+  # on each PR, the three properties the spec asks for: Deployment Protection is enabled
+  # (unauthenticated request is refused), the functions run in `fra1` (spec 001 §5 Hosting, §8
+  # data residency) and every response carries `X-Robots-Tag: noindex` (§5, AC-15).
+  #
+  # The account-side half of TASK-007 is a founder action: until the Vercel project is linked and
+  # `VERCEL_AUTOMATION_BYPASS_SECRET` is set, this job fails by design — see
+  # `docs/runbooks/vercel-setup.md`. It never skips silently: an unprotected or unlinked preview
+  # must be visible on the PR.
+  preview:
+    name: preview
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      deployments: read
+    outputs:
+      preview_url: ${{ steps.wait.outputs.preview_url }}
+    steps:
+      - name: Require the protection-bypass secret
+        env:
+          BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: |
+          if [ -z "$BYPASS_SECRET" ]; then
+            echo "::error::VERCEL_AUTOMATION_BYPASS_SECRET is not set in this repository. Create a Protection Bypass for Automation in the Vercel project and run 'gh secret set VERCEL_AUTOMATION_BYPASS_SECRET' (docs/runbooks/vercel-setup.md)."
+            exit 1
+          fi
+
+      - name: Wait for the Vercel preview deployment
+        id: wait
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          # 45 attempts x 20 s = 15 minutes (spec 001 §5: preview must exist before e2e runs).
+          ATTEMPTS: "45"
+          INTERVAL: "20"
+        run: |
+          set -euo pipefail
+          preview_url=""
+          for attempt in $(seq 1 "$ATTEMPTS"); do
+            deployments=$(gh api "repos/$REPO/deployments?sha=$HEAD_SHA&per_page=100" --jq '.[].id' || true)
+            for id in $deployments; do
+              url=$(gh api "repos/$REPO/deployments/$id/statuses?per_page=100" \
+                --jq 'map(select(.state == "success" and (.environment_url // "") != "")) | .[0].environment_url // ""' || true)
+              if [ -n "$url" ]; then
+                preview_url="$url"
+                break
+              fi
+            done
+            if [ -n "$preview_url" ]; then break; fi
+            echo "no successful deployment with an environment_url yet for $HEAD_SHA (attempt $attempt/$ATTEMPTS)"
+            sleep "$INTERVAL"
+          done
+          if [ -z "$preview_url" ]; then
+            echo "::error::no successful Vercel deployment with an environment_url appeared for $HEAD_SHA within 15 minutes. Is the Vercel Git integration connected (docs/runbooks/vercel-setup.md)?"
+            exit 1
+          fi
+          preview_url="${preview_url%/}"
+          echo "preview_url=$preview_url" >> "$GITHUB_OUTPUT"
+          {
+            echo "### preview (AC-29)"
+            echo ""
+            echo "- preview URL: $preview_url"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Verify protection, region and noindex on the preview (T-30)
+        env:
+          PREVIEW_URL: ${{ steps.wait.outputs.preview_url }}
+          BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: |
+          set -euo pipefail
+          # 1. Without the bypass: Deployment Protection must refuse the request. Vercel
+          # Authentication does not answer 401/403 to a plain GET: it answers a 302 to
+          # `https://vercel.com/sso-api?url=...` (plus a `_vercel_sso_nonce` cookie). Both shapes
+          # count as protected; a 200, or a redirect anywhere else, does not.
+          unauth_headers=$(mktemp)
+          unprotected_status=$(curl -sSI -o "$unauth_headers" -w '%{http_code}' "$PREVIEW_URL/api/health")
+          unprotected_location=$(grep -i '^location:' "$unauth_headers" | head -n1 | cut -d' ' -f2- | tr -d '\r' || true)
+          rm -f "$unauth_headers"
+          case "$unprotected_status" in
+            401|403)
+              protection_evidence="$unprotected_status"
+              ;;
+            301|302|303|307|308)
+              case "$unprotected_location" in
+                https://vercel.com/sso-api|https://vercel.com/sso-api[?/]*)
+                  protection_evidence="$unprotected_status to vercel.com/sso-api"
+                  ;;
+                *)
+                  echo "::error::GET $PREVIEW_URL/api/health without the bypass header returned $unprotected_status redirecting to '$unprotected_location'; expected 401, 403, or a redirect to https://vercel.com/sso-api. Deployment Protection is not enabled on previews (AC-29)."
+                  exit 1
+                  ;;
+              esac
+              ;;
+            *)
+              echo "::error::GET $PREVIEW_URL/api/health without the bypass header returned $unprotected_status; expected 401, 403, or a 302 to https://vercel.com/sso-api. Deployment Protection is not enabled on previews (AC-29)."
+              exit 1
+              ;;
+          esac
+
+          # 2. With the bypass: 200, function region fra1, and noindex.
+          headers=$(mktemp)
+          bypass_status=$(curl -sSI -o "$headers" -w '%{http_code}' \
+            -H "x-vercel-protection-bypass: $BYPASS_SECRET" \
+            -H "x-vercel-set-bypass-cookie: false" \
+            "$PREVIEW_URL/api/health")
+          if [ "$bypass_status" != "200" ]; then
+            echo "::error::GET $PREVIEW_URL/api/health with the bypass header returned $bypass_status; expected 200 (AC-29)."
+            exit 1
+          fi
+          vercel_id=$(grep -i '^x-vercel-id:' "$headers" | head -n1 | cut -d' ' -f2- | tr -d '\r')
+          if [ -z "$vercel_id" ]; then
+            echo "::error::no x-vercel-id response header; cannot verify the function region (AC-29)."
+            exit 1
+          fi
+          # `x-vercel-id` is `<cdn-node>::<function-region>::<id>`: the first segment is the edge
+          # node that took the request (wherever the runner is), so `fra1` must be *a* segment,
+          # never the prefix.
+          case "::$vercel_id::" in
+            *"::fra1::"*) ;;
+            *)
+              echo "::error::x-vercel-id is '$vercel_id'; expected 'fra1' as one of its '::'-separated segments (spec 001 §5 Hosting, §8 EU data residency)."
+              exit 1
+              ;;
+          esac
+          robots=$(grep -i '^x-robots-tag:' "$headers" | head -n1 | cut -d' ' -f2- | tr -d '\r')
+          case "$robots" in
+            *noindex*) ;;
+            *)
+              echo "::error::X-Robots-Tag is '$robots'; every Phase 0 response must be noindex (spec 001 §5, AC-15)."
+              exit 1
+              ;;
+          esac
+          # `tee` so the T-30 evidence is in the job *log* as well: a step summary cannot be read
+          # back through the API, and the reviewer has to quote these four values in the PR.
+          {
+            echo "- unauthenticated \`/api/health\`: $protection_evidence (protected)"
+            echo "- with bypass: $bypass_status"
+            echo "- \`x-vercel-id\`: $vercel_id (fra1 present)"
+            echo "- \`X-Robots-Tag\`: $robots"
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+          rm -f "$headers"

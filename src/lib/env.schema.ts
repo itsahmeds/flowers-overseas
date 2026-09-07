@@ -32,6 +32,7 @@ export type DeploymentEnvironment = (typeof deploymentEnvironments)[number];
  * "per-environment requiredness" of §5.
  */
 export const PLACEHOLDER_VALUES = [
+  "http://localhost:3000",
   "https://placeholder.supabase.co",
   "placeholder-anon-key",
   "placeholder-service-role-key",
@@ -70,6 +71,12 @@ export const clientEnvSchema = z.object({
   ),
   /** Browser Sentry DSN. Unset ⇒ the browser SDK is a no-op (spec 001 §5, AC-13). */
   NEXT_PUBLIC_SENTRY_DSN: optionalUrl,
+  /**
+   * Commit SHA, readable from the browser bundle: the Sentry release for client events
+   * (TASK-007). `VERCEL_GIT_COMMIT_SHA` is server-side only, so without this mirror browser
+   * events would have no release. Optional: absent locally.
+   */
+  NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA: optionalText,
 });
 
 export const serverEnvSchema = z.object({
@@ -97,6 +104,20 @@ export const serverEnvSchema = z.object({
   ),
   /** Injected by Vercel; the Sentry release. Absent locally. */
   VERCEL_GIT_COMMIT_SHA: optionalText,
+  /**
+   * Documented escape hatch for spec 001 only (TASK-007).
+   *
+   * Spec 001 §5/§12 require a production deploy from `main` on `*.vercel.app`, but the real
+   * Supabase and cron values only arrive with spec 002, so production must run on the
+   * `.env.example` placeholders for now. Rather than weaken the placeholder rule, production
+   * opts in explicitly with `ALLOW_PLACEHOLDER_ENV=true` in the Vercel env store; `assertEnv()`
+   * logs one `warn` line when it is honoured. Spec 002 deletes this key together with the
+   * placeholders. Only the exact string `"true"` is accepted, so a typo cannot half-enable it.
+   */
+  ALLOW_PLACEHOLDER_ENV: z.preprocess(
+    emptyToUndefined,
+    z.literal("true").optional(),
+  ),
 });
 
 export type ClientEnv = z.infer<typeof clientEnvSchema>;
@@ -120,6 +141,28 @@ const REAL_VALUE_REQUIRED = [
 
 export type EnvSource = Readonly<Record<string, string | undefined>>;
 
+/** The one accepted value of the `ALLOW_PLACEHOLDER_ENV` escape hatch. */
+export const PLACEHOLDER_HATCH_VALUE = "true" as const;
+
+/**
+ * Whether the placeholder escape hatch is in force. Anything other than the exact string
+ * `"true"` is not the hatch (and is rejected by `serverEnvSchema` as well).
+ */
+export function placeholderHatchEnabled(source: EnvSource): boolean {
+  return source["ALLOW_PLACEHOLDER_ENV"] === PLACEHOLDER_HATCH_VALUE;
+}
+
+/**
+ * `preview`/`production` come from `VERCEL_ENV`, everything else is `development`/`test`.
+ *
+ * Note (TASK-007, review of PR #6): on the ADR-0012 fallback host (Railway + Cloudflare)
+ * `VERCEL_ENV` is unset, so this returns `development` and the global `X-Robots-Tag: noindex` of
+ * spec 001 §5 keeps firing. That is the safe direction — an unindexed production beats an
+ * indexed staging — and it is correct for all of Phase 0, where every deploy is `noindex`
+ * anyway (§12). The host-independent signal (an explicit `APP_ENV` set by whichever platform
+ * runs the app) belongs to the spec that first makes a page indexable, and must land before the
+ * first indexable deploy on the fallback host. No behaviour change here.
+ */
 export function deploymentEnvironment(
   source: EnvSource,
 ): DeploymentEnvironment {
@@ -179,17 +222,31 @@ export function validateEnv(source: EnvSource): EnvValidationResult {
     issues.push(...collect(serverResult.error, source));
 
   if (environment === "preview" || environment === "production") {
-    for (const key of REAL_VALUE_REQUIRED) {
-      const value = source[key];
-      if (value !== undefined && placeholders.has(value)) {
-        issues.push({
-          key,
-          message: `must be a real value in ${environment}, not the .env.example placeholder`,
-        });
+    // `ALLOW_PLACEHOLDER_ENV=true` suspends the placeholder rule (spec 001 only, TASK-007).
+    // Everything else about the deployed environments still applies, including https origins.
+    if (!placeholderHatchEnabled(source)) {
+      for (const key of REAL_VALUE_REQUIRED) {
+        const value = source[key];
+        if (value !== undefined && placeholders.has(value)) {
+          issues.push({
+            key,
+            message: `must be a real value in ${environment}, not the .env.example placeholder`,
+          });
+        }
       }
     }
+    // The hatch covers the committed `http://localhost:3000` origin too (it is one of the
+    // placeholders); a real non-https origin is still rejected in a deployed environment.
     const siteUrl = source["NEXT_PUBLIC_SITE_URL"];
-    if (siteUrl !== undefined && !siteUrl.startsWith("https://")) {
+    const siteUrlExempt =
+      placeholderHatchEnabled(source) &&
+      siteUrl !== undefined &&
+      placeholders.has(siteUrl);
+    if (
+      siteUrl !== undefined &&
+      !siteUrlExempt &&
+      !siteUrl.startsWith("https://")
+    ) {
       issues.push({
         key: "NEXT_PUBLIC_SITE_URL",
         message: `must use https in ${environment}`,
