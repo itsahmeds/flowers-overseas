@@ -12,6 +12,7 @@ export default defineConfig({
   },
   test: {
     environment: "node",
-    include: ["tests/unit/**/*.test.ts"],
+    // `.tsx` too: TASK-006 renders the placeholder shell with `react-dom/server` (AC-15).
+    include: ["tests/unit/**/*.test.ts", "tests/unit/**/*.test.tsx"],
   },
 });
