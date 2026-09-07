@@ -1,0 +1,22 @@
+# Shared toolchain setup (spec 001 §2, TASK-002): Node from `.node-version`, pnpm from
+# `packageManager`, store cache, frozen-lockfile install. Later ci.yml jobs reuse this.
+name: Setup Node and pnpm
+description: Install Node (.node-version), pnpm (packageManager) and dependencies with cache
+
+runs:
+  using: composite
+  steps:
+    - name: Install pnpm (version from package.json#packageManager)
+      uses: pnpm/action-setup@v4
+
+    - name: Install Node (version from .node-version)
+      uses: actions/setup-node@v4
+      with:
+        node-version-file: .node-version
+        cache: pnpm
+
+    - name: Install dependencies
+      shell: bash
+      env:
+        HUSKY: "0"
+      run: pnpm install --frozen-lockfile

@@ -1,0 +1,49 @@
+# PR policy (spec 001 §2 "CI", AC-19 / T-20, TASK-002).
+# Title must end in `(TASK-NNN)`, head branch must be `task/TASK-NNN-<slug>`.
+# Exempt: dependency-bot authors; `no-task` label by the repo owner when no guarded path
+# (src/ tests/ supabase/ seed/ emails/) changes (§13 Q5). Rules live in scripts/pr-policy.ts.
+name: pr-policy
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened, labeled, unlabeled]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  pr-policy:
+    name: pr-policy
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Node (version from .node-version)
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+
+      - name: List changed files
+        id: files
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          {
+            echo 'files<<EOF'
+            gh api "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" \
+              --paginate --jq '.[].filename'
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Check title and branch
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          PR_AUTHOR_LOGIN: ${{ github.event.pull_request.user.login }}
+          PR_AUTHOR_TYPE: ${{ github.event.pull_request.user.type }}
+          REPOSITORY_OWNER: ${{ github.repository_owner }}
+          PR_LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
+          PR_CHANGED_FILES: ${{ steps.files.outputs.files }}
+        run: node scripts/pr-policy.ts
