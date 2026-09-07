@@ -164,6 +164,19 @@ export function normaliseMoney(value: string): string | null {
   return `${whole}.${fraction}`;
 }
 
+/**
+ * `true` when `value` is a decimal written with a comma separator (`49,90`).
+ *
+ * `normaliseMoney` accepts both separators on purpose: a fixture's own `visiblePrice` mirrors what
+ * a locale renders, and `de-DE` renders `49,90`. schema.org is stricter than that — `Offer.price`
+ * must use `.`, because a consumer reading `49,90` is entitled to parse it as a grouping separator
+ * and bill four thousand nine hundred and ninety. So the separator is normalised for comparison
+ * everywhere and rejected in the one place the readers are machines.
+ */
+export function hasCommaDecimalSeparator(value: string): boolean {
+  return /^\d+,\d{1,2}$/.test(value.trim());
+}
+
 /** Exits with the code `runValidator` returned. Called only from a validator's CLI body. */
 export function exitWith(code: number): void {
   if (code !== 0) process.exit(code);

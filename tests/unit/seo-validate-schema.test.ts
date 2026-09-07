@@ -8,7 +8,10 @@
  */
 import { describe, expect, it } from "vitest";
 
-import { normaliseMoney } from "../../scripts/seo/lib";
+import {
+  hasCommaDecimalSeparator,
+  normaliseMoney,
+} from "../../scripts/seo/lib";
 import {
   ALLOWED_TYPES,
   collectTypedNodes,
@@ -61,6 +64,16 @@ describe("validate-schema CLI (T-23)", () => {
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain("bad-currency-mismatch.json");
     expect(result.stderr).toContain("does not equal visibleCurrency");
+  });
+
+  it("fails on an Offer.price written with a comma, naming the file", () => {
+    const result = withFixtureDir(
+      { "bad-price-comma.json": "bad-price-comma.json" },
+      (dir) => runSeoCli(CLI, dir),
+    );
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("bad-price-comma.json");
+    expect(result.stderr).toContain("comma decimal separator");
   });
 
   it("fails on a forbidden @type with the plan/02 §9 reason", () => {
@@ -213,6 +226,25 @@ describe("Offer.price == visiblePrice", () => {
     ]);
   });
 
+  it("rejects a comma decimal separator in Offer.price: schema.org requires '.'", () => {
+    const { fixture, nodes } = nodesOf(
+      { "@type": "Offer", price: "49,90" },
+      { visiblePrice: "49,90" },
+    );
+    const problems = offerProblems(fixture, nodes);
+    expect(problems).toHaveLength(1);
+    expect(problems[0]).toContain("comma decimal separator");
+    expect(problems[0]).toContain('write "49.90"');
+  });
+
+  it("still accepts a comma in the fixture's own visiblePrice", () => {
+    const { fixture, nodes } = nodesOf(
+      { "@type": "Offer", price: "49.90" },
+      { visiblePrice: "49,90" },
+    );
+    expect(offerProblems(fixture, nodes)).toEqual([]);
+  });
+
   it("requires priceCurrency once the fixture declares a visible currency", () => {
     const { fixture, nodes } = nodesOf(
       { "@type": "Offer", price: "49.00" },
@@ -237,11 +269,26 @@ describe("normaliseMoney (fo/no-float-money in spirit)", () => {
     expect(normaliseMoney("1.10")).toBe(normaliseMoney("1.1"));
   });
 
+  it("treats a comma and a dot separator as the same amount", () => {
+    expect(normaliseMoney("49,90")).toBe(normaliseMoney("49.90"));
+  });
+
   it("rejects grouped separators, three-decimal and non-numeric input", () => {
     expect(normaliseMoney("1,234")).toBeNull();
     expect(normaliseMoney("1234.567")).toBeNull();
     expect(normaliseMoney("EUR 49")).toBeNull();
     expect(normaliseMoney("-49.00")).toBeNull();
     expect(normaliseMoney("")).toBeNull();
+  });
+});
+
+describe("hasCommaDecimalSeparator (schema.org requires '.')", () => {
+  it("is true only for a comma-separated decimal", () => {
+    expect(hasCommaDecimalSeparator("49,90")).toBe(true);
+    expect(hasCommaDecimalSeparator(" 49,9 ")).toBe(true);
+    expect(hasCommaDecimalSeparator("49.90")).toBe(false);
+    expect(hasCommaDecimalSeparator("49")).toBe(false);
+    // Rejected by `normaliseMoney` already; not this predicate's business to relabel it.
+    expect(hasCommaDecimalSeparator("1,234")).toBe(false);
   });
 });

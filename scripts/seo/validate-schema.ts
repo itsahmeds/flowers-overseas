@@ -23,7 +23,8 @@
  *
  * Money is compared as strings normalised to two fraction digits — never parsed into a `number`
  * (`plan/12` §2, `fo/no-float-money`): `49.10` and `49.1` are the same price, `49.1` and `49.9`
- * are not, and no float ever gets the chance to make that call.
+ * are not, and no float ever gets the chance to make that call. `visiblePrice` may use the
+ * locale's comma (`49,90`); `Offer.price` may not, because schema.org requires `.`.
  *
  * Usage: `node scripts/seo/validate-schema.ts [--dir tests/fixtures/seo/schema]`
  */
@@ -34,6 +35,7 @@ import { z } from "zod";
 import {
   exitWith,
   formatZodError,
+  hasCommaDecimalSeparator,
   isMainModule,
   normaliseMoney,
   runValidator,
@@ -193,6 +195,12 @@ export function offerProblems(
         if (actual === null) {
           problems.push(
             `${offer.path}: Offer.price ${JSON.stringify(price)} is not a plain decimal string`,
+          );
+        } else if (hasCommaDecimalSeparator(price)) {
+          // Rejected even when it equals `visiblePrice`: schema.org consumers may read the comma
+          // as a thousands separator, so `49,90` is a mis-priced Offer, not a formatting nit.
+          problems.push(
+            `${offer.path}: Offer.price ${JSON.stringify(price)} uses a comma decimal separator; schema.org requires "." (write ${JSON.stringify(actual)} — visiblePrice may keep the locale's comma)`,
           );
         } else if (visiblePrice === undefined) {
           problems.push(
