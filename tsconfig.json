@@ -15,6 +15,9 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
+    // `scripts/*.ts` run directly on Node (type stripping), which needs explicit `.ts` specifiers
+    // on relative imports (TASK-005: `scripts/env-check.ts` imports the env schema).
+    "allowImportingTsExtensions": true,
     "jsx": "react-jsx",
     "incremental": true,
     "plugins": [{ "name": "next" }],
