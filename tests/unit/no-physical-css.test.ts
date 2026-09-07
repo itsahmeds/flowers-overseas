@@ -128,8 +128,12 @@ describe("fo/no-physical-css inline cases", () => {
 });
 
 describe("plugin surface", () => {
-  it("exports both TASK-003 rules under the fo namespace", () => {
+  it("exports the fo rules under the fo namespace", () => {
+    // TASK-003 added the first two, TASK-004 the last three.
     expect(Object.keys(plugin.rules ?? {}).sort()).toEqual([
+      "no-direct-order-status-write",
+      "no-float-money",
+      "no-geo-redirect",
       "no-literal-strings",
       "no-physical-css",
     ]);
