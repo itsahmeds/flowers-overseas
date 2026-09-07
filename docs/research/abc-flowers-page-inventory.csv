@@ -1,0 +1,63 @@
+Section,Page Name,URL Path,Full URL,Page Type,SEO / Purpose Notes
+Core,Homepage,/,https://abcflowers.com/,Homepage,"Brand landing page, featured bouquets, occasions, delivery promise"
+Core,Shop All Flowers,/flowers/,https://abcflowers.com/flowers/,Main Category,Master shop page listing all flowers/bouquets
+Core,Search Results,/search/,https://abcflowers.com/search/,System,Internal site search results page
+Occasions,Occasions Hub,/occasions/,https://abcflowers.com/occasions/,Category Hub,Landing page linking to all occasion categories
+Occasions,Birthday Flowers,/occasions/birthday/,https://abcflowers.com/occasions/birthday/,Category,Target keyword: birthday flowers delivery
+Occasions,Anniversary Flowers,/occasions/anniversary/,https://abcflowers.com/occasions/anniversary/,Category,Target keyword: anniversary flowers
+Occasions,Love & Romance,/occasions/love-romance/,https://abcflowers.com/occasions/love-romance/,Category,"Romantic bouquets, red roses"
+Occasions,Wedding Flowers,/occasions/wedding/,https://abcflowers.com/occasions/wedding/,Category,Bridal and event flowers
+Occasions,Sympathy & Funeral,/occasions/sympathy-funeral/,https://abcflowers.com/occasions/sympathy-funeral/,Category,"Funeral wreaths, condolence arrangements"
+Occasions,Get Well Soon,/occasions/get-well-soon/,https://abcflowers.com/occasions/get-well-soon/,Category,Get well flowers
+Occasions,Congratulations,/occasions/congratulations/,https://abcflowers.com/occasions/congratulations/,Category,Celebration flowers
+Occasions,New Baby,/occasions/new-baby/,https://abcflowers.com/occasions/new-baby/,Category,New baby / newborn flowers
+Occasions,Thank You,/occasions/thank-you/,https://abcflowers.com/occasions/thank-you/,Category,Thank you bouquets
+Occasions,Valentine's Day,/occasions/valentines-day/,https://abcflowers.com/occasions/valentines-day/,Seasonal Category,Seasonal peak - keep URL live year round
+Occasions,Mother's Day,/occasions/mothers-day/,https://abcflowers.com/occasions/mothers-day/,Seasonal Category,Seasonal peak - keep URL live year round
+Occasions,Christmas,/occasions/christmas/,https://abcflowers.com/occasions/christmas/,Seasonal Category,Seasonal peak - keep URL live year round
+Shop by Flower,Roses,/flowers/roses/,https://abcflowers.com/flowers/roses/,Category,High-volume keyword: roses delivery
+Shop by Flower,Tulips,/flowers/tulips/,https://abcflowers.com/flowers/tulips/,Category,Tulip bouquets
+Shop by Flower,Lilies,/flowers/lilies/,https://abcflowers.com/flowers/lilies/,Category,Lily bouquets
+Shop by Flower,Orchids,/flowers/orchids/,https://abcflowers.com/flowers/orchids/,Category,Orchid plants and stems
+Shop by Flower,Sunflowers,/flowers/sunflowers/,https://abcflowers.com/flowers/sunflowers/,Category,Sunflower bouquets
+Shop by Flower,Carnations,/flowers/carnations/,https://abcflowers.com/flowers/carnations/,Category,Carnation arrangements
+Shop by Flower,Mixed Bouquets,/flowers/mixed-bouquets/,https://abcflowers.com/flowers/mixed-bouquets/,Category,Mixed seasonal bouquets
+Shop by Flower,Seasonal Flowers,/flowers/seasonal/,https://abcflowers.com/flowers/seasonal/,Category,Whatever is in season
+Shop by Color,Red Flowers,/flowers/color/red/,https://abcflowers.com/flowers/color/red/,Filter Category,Color filter landing page
+Shop by Color,Pink Flowers,/flowers/color/pink/,https://abcflowers.com/flowers/color/pink/,Filter Category,Color filter landing page
+Shop by Color,White Flowers,/flowers/color/white/,https://abcflowers.com/flowers/color/white/,Filter Category,Color filter landing page
+Shop by Color,Yellow Flowers,/flowers/color/yellow/,https://abcflowers.com/flowers/color/yellow/,Filter Category,Color filter landing page
+Shop by Color,Purple Flowers,/flowers/color/purple/,https://abcflowers.com/flowers/color/purple/,Filter Category,Color filter landing page
+Product Types,Bouquets,/bouquets/,https://abcflowers.com/bouquets/,Category,Hand-tied bouquets
+Product Types,Flower Arrangements,/arrangements/,https://abcflowers.com/arrangements/,Category,Vase and box arrangements
+Product Types,Plants,/plants/,https://abcflowers.com/plants/,Category,Indoor and flowering plants
+Product Types,Gift Baskets & Hampers,/hampers/,https://abcflowers.com/hampers/,Category,Gift hampers
+Product Types,Add-Ons & Gifts,/add-ons/,https://abcflowers.com/add-ons/,Category,"Chocolates, teddy bears, balloons, vases"
+Product Types,Gift Cards,/gift-cards/,https://abcflowers.com/gift-cards/,Category,Digital gift cards
+Product Page,Example Product,/products/red-rose-bouquet/,https://abcflowers.com/products/red-rose-bouquet/,Product,Single product template: /products/{product-slug}/
+Delivery,Flower Delivery Info,/flower-delivery/,https://abcflowers.com/flower-delivery/,Landing/Info,"Delivery areas, cut-off times, charges"
+Delivery,Same Day Delivery,/same-day-flower-delivery/,https://abcflowers.com/same-day-flower-delivery/,Landing,High-intent keyword page
+Delivery,City Delivery Page,/flower-delivery/new-york/,https://abcflowers.com/flower-delivery/new-york/,Local Landing,Local SEO template: /flower-delivery/{city}/
+Cart & Checkout,Cart,/cart/,https://abcflowers.com/cart/,System,Shopping cart (noindex)
+Cart & Checkout,Checkout,/checkout/,https://abcflowers.com/checkout/,System,Checkout flow (noindex)
+Cart & Checkout,Order Confirmation,/checkout/thank-you/,https://abcflowers.com/checkout/thank-you/,System,Post-purchase page (noindex)
+Cart & Checkout,Wishlist,/wishlist/,https://abcflowers.com/wishlist/,System,Saved items (noindex)
+Account,Login,/login/,https://abcflowers.com/login/,System,Customer login (noindex)
+Account,Register,/register/,https://abcflowers.com/register/,System,Create account (noindex)
+Account,My Account,/account/,https://abcflowers.com/account/,System,Account dashboard (noindex)
+Account,My Orders,/account/orders/,https://abcflowers.com/account/orders/,System,Order history (noindex)
+Account,Track Order,/track-order/,https://abcflowers.com/track-order/,Tool,Order tracking
+Info,About Us,/about/,https://abcflowers.com/about/,Info,"Brand story, trust signals"
+Info,Contact Us,/contact/,https://abcflowers.com/contact/,Info,"Contact form, phone, address, NAP for local SEO"
+Info,FAQ,/faq/,https://abcflowers.com/faq/,Info,Common questions - FAQ schema
+Info,Flower Care Guide,/flower-care-guide/,https://abcflowers.com/flower-care-guide/,Info,How to care for fresh flowers
+Info,Substitution Policy,/substitution-policy/,https://abcflowers.com/substitution-policy/,Info,Product substitution terms
+Info,Reviews,/reviews/,https://abcflowers.com/reviews/,Info,Customer reviews / testimonials
+Blog,Blog Home,/blog/,https://abcflowers.com/blog/,Blog Hub,Content marketing hub
+Blog,Example Blog Post,/blog/best-flowers-for-birthdays/,https://abcflowers.com/blog/best-flowers-for-birthdays/,Blog Post,Post template: /blog/{post-slug}/
+Legal,Privacy Policy,/privacy-policy/,https://abcflowers.com/privacy-policy/,Legal,Privacy policy
+Legal,Terms & Conditions,/terms-conditions/,https://abcflowers.com/terms-conditions/,Legal,Terms of service
+Legal,Refund & Returns,/refund-policy/,https://abcflowers.com/refund-policy/,Legal,Refund policy
+Legal,Shipping Policy,/shipping-policy/,https://abcflowers.com/shipping-policy/,Legal,Shipping terms
+System,Sitemap,/sitemap.xml,https://abcflowers.com/sitemap.xml,System,XML sitemap for search engines
+System,Robots,/robots.txt,https://abcflowers.com/robots.txt,System,Crawler directives
