@@ -13,7 +13,7 @@
  */
 export { clientEnv } from "./env.client";
 export { env, environment, serverEnv } from "./env.server";
-export { assertEnv, envReport } from "./env.assert";
+export { assertEnv, envReport, warnOnPlaceholderHatch } from "./env.assert";
 export {
   ENV_KEYS,
   EnvValidationError,
@@ -25,6 +25,7 @@ export {
   clientEnvSchema,
   deploymentEnvironment,
   formatEnvIssues,
+  placeholderHatchEnabled,
   serverEnvSchema,
   validateEnv,
 } from "./env.schema";

@@ -133,3 +133,180 @@ describe("Sentry beforeSend (T-14)", () => {
     expect(Sentry.getClient()).toBeUndefined();
   });
 });
+
+/**
+ * Hardening carried from the review of PR #5 (TASK-007): the scrub must reach every place a
+ * Sentry event can carry free text or nested objects, not just `extra`/`tags`.
+ */
+describe("Sentry beforeSend deep scrub (TASK-007)", () => {
+  function nestedEvent(): ScrubbableEvent {
+    return {
+      message: "checkout failed for buyer@example.com",
+      extra: {
+        order: {
+          id: "ord_1",
+          buyer: { email: "buyer@example.com", name: "Anna" },
+          items: [{ card: { message: "Happy birthday" } }],
+        },
+      },
+      tags: { nested: "kept" },
+      user: { id: "u_1", segments: { email: "buyer@example.com" } },
+      contexts: {
+        recipient: { address_line1: "ul. Ptasia 4", country: "PL" },
+        browser: { version: "120" },
+      },
+      breadcrumbs: [
+        {
+          category: "fetch",
+          message: "POST /api/checkout buyer@example.com",
+          data: { phone: "+48123456789", status: 500 },
+        },
+      ],
+      exception: {
+        values: [
+          {
+            type: "Error",
+            value: "duplicate key for buyer@example.com",
+            stacktrace: { frames: [{ filename: "app/page.tsx" }] },
+          },
+        ],
+      },
+    };
+  }
+
+  it("redacts PII keys at any depth in extra, user and contexts", () => {
+    const scrubbed = beforeSend(nestedEvent());
+    const order = (scrubbed.extra?.["order"] ?? {}) as Record<string, unknown>;
+    const buyer = order["buyer"] as Record<string, unknown>;
+    expect(order["id"]).toBe("ord_1");
+    expect(buyer["email"]).toBe(REDACTED);
+    expect(buyer["name"]).toBe(REDACTED);
+    // `card*` is a prefix on the redaction list, so the whole sub-object goes.
+    const items = order["items"] as { card: unknown }[];
+    expect(items[0]?.card).toBe(REDACTED);
+    const segments = scrubbed.user?.["segments"] as Record<string, unknown>;
+    expect(segments["email"]).toBe(REDACTED);
+    const contexts = scrubbed["contexts"] as Record<
+      string,
+      Record<string, unknown>
+    >;
+    expect(contexts["recipient"]?.["address_line1"]).toBe(REDACTED);
+    expect(contexts["recipient"]?.["country"]).toBe("PL");
+    expect(contexts["browser"]?.["version"]).toBe("120");
+  });
+
+  it("scrubs breadcrumb data and messages", () => {
+    const scrubbed = beforeSend(nestedEvent());
+    const breadcrumbs = scrubbed["breadcrumbs"] as {
+      category?: string;
+      message?: unknown;
+      data?: Record<string, unknown>;
+    }[];
+    expect(breadcrumbs[0]?.category).toBe("fetch");
+    expect(breadcrumbs[0]?.message).toBe(REDACTED);
+    expect(breadcrumbs[0]?.data?.["phone"]).toBe(REDACTED);
+    expect(breadcrumbs[0]?.data?.["status"]).toBe(500);
+  });
+
+  it("scrubs the event message and every exception value, keeping type and stack", () => {
+    const scrubbed = beforeSend(nestedEvent());
+    expect(scrubbed["message"]).toBe(REDACTED);
+    const exception = scrubbed["exception"] as {
+      values: { type: string; value: unknown; stacktrace: unknown }[];
+    };
+    expect(exception.values[0]?.type).toBe("Error");
+    expect(exception.values[0]?.value).toBe(REDACTED);
+    expect(exception.values[0]?.stacktrace).toEqual({
+      frames: [{ filename: "app/page.tsx" }],
+    });
+  });
+
+  it("leaves no PII substring anywhere in the serialised nested event", () => {
+    const serialised = JSON.stringify(beforeSend(nestedEvent()));
+    for (const secret of [
+      "buyer@example.com",
+      "Anna",
+      "Happy birthday",
+      "+48123456789",
+      "ul. Ptasia 4",
+    ]) {
+      expect(serialised, `leaked: ${secret}`).not.toContain(secret);
+    }
+  });
+
+  it("does not mutate the nested event it was given", () => {
+    const event = nestedEvent();
+    beforeSend(event);
+    expect(event.extra?.["order"]).toMatchObject({ id: "ord_1" });
+    expect(event["message"]).toBe("checkout failed for buyer@example.com");
+  });
+
+  it("tolerates an event with none of the optional sections", () => {
+    expect(beforeSend({ event_id: "e1" })).toEqual({ event_id: "e1" });
+  });
+});
+
+describe("Sentry release on the client bundle (TASK-007)", () => {
+  const keys = [
+    "VERCEL_GIT_COMMIT_SHA",
+    "NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA",
+  ] as const;
+
+  function withEnv(
+    values: Partial<Record<(typeof keys)[number], string>>,
+    body: () => void,
+  ): void {
+    const previous = keys.map((key) => [key, process.env[key]] as const);
+    try {
+      for (const key of keys) {
+        const value = values[key];
+        if (value === undefined) delete process.env[key];
+        else process.env[key] = value;
+      }
+      body();
+    } finally {
+      for (const [key, value] of previous) {
+        if (value === undefined) delete process.env[key];
+        else process.env[key] = value;
+      }
+    }
+  }
+
+  it("falls back to NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA, which the browser bundle can read", () => {
+    withEnv({ NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA: "cafebabe" }, () => {
+      expect(sentryOptions("https://public@de.sentry.io/1")?.release).toBe(
+        "cafebabe",
+      );
+    });
+  });
+
+  it("prefers the server variable when both are present", () => {
+    withEnv(
+      {
+        VERCEL_GIT_COMMIT_SHA: "server-sha",
+        NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA: "client-sha",
+      },
+      () => {
+        expect(sentryOptions("https://public@de.sentry.io/1")?.release).toBe(
+          "server-sha",
+        );
+      },
+    );
+  });
+
+  it("leaves the release undefined when neither is set or both are blank", () => {
+    withEnv(
+      { VERCEL_GIT_COMMIT_SHA: "", NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA: "" },
+      () => {
+        expect(
+          sentryOptions("https://public@de.sentry.io/1")?.release,
+        ).toBeUndefined();
+      },
+    );
+    withEnv({}, () => {
+      expect(
+        sentryOptions("https://public@de.sentry.io/1")?.release,
+      ).toBeUndefined();
+    });
+  });
+});

@@ -14,9 +14,11 @@ import {
   deploymentEnvironment,
   formatEnvIssues,
   parseEnv,
+  placeholderHatchEnabled,
   serverEnvSchema,
   validateEnv,
 } from "../../src/lib/env.schema";
+import { warnOnPlaceholderHatch } from "../../src/lib/env.assert";
 
 const SENTINEL = "sentinel-do-not-print-3f9a2c";
 
@@ -41,6 +43,8 @@ const validEnv: Record<string, string> = {
   LOG_LEVEL: "info",
   VERCEL_ENV: "",
   VERCEL_GIT_COMMIT_SHA: "",
+  NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA: "",
+  ALLOW_PLACEHOLDER_ENV: "",
 };
 
 describe("env schema", () => {
@@ -154,5 +158,143 @@ describe("env schema", () => {
       INTERNAL_CRON_SECRET: "real-cron",
     });
     expect(result.issues).toEqual([]);
+  });
+});
+
+/**
+ * `ALLOW_PLACEHOLDER_ENV` (TASK-007): spec 001 §5/§12 require a production deploy from `main`
+ * while the real Supabase values only arrive with spec 002, so production must be able to run on
+ * the `.env.example` placeholders — but only when the escape hatch is set explicitly.
+ */
+describe("ALLOW_PLACEHOLDER_ENV escape hatch (TASK-007)", () => {
+  it("rejects placeholders in production without the hatch", () => {
+    const result = validateEnv({
+      ...validEnv,
+      VERCEL_ENV: "production",
+      NEXT_PUBLIC_SITE_URL: "https://flowers-overseas.vercel.app",
+    });
+    expect(result.issues.map((issue) => issue.key)).toContain(
+      "SUPABASE_SERVICE_ROLE_KEY",
+    );
+    expect(placeholderHatchEnabled(validEnv)).toBe(false);
+  });
+
+  it("accepts placeholders in production with ALLOW_PLACEHOLDER_ENV=true", () => {
+    const source = {
+      ...validEnv,
+      VERCEL_ENV: "production",
+      NEXT_PUBLIC_SITE_URL: "https://flowers-overseas.vercel.app",
+      ALLOW_PLACEHOLDER_ENV: "true",
+    };
+    expect(validateEnv(source).issues).toEqual([]);
+    expect(placeholderHatchEnabled(source)).toBe(true);
+  });
+
+  it("accepts placeholders in preview with the hatch too", () => {
+    const source = {
+      ...validEnv,
+      VERCEL_ENV: "preview",
+      NEXT_PUBLIC_SITE_URL: "https://flowers-overseas.vercel.app",
+      ALLOW_PLACEHOLDER_ENV: "true",
+    };
+    expect(validateEnv(source).issues).toEqual([]);
+  });
+
+  it("rejects any value other than the exact string true", () => {
+    for (const value of ["TRUE", "1", "yes", "false", "true "]) {
+      const result = validateEnv({ ...validEnv, ALLOW_PLACEHOLDER_ENV: value });
+      expect(
+        result.issues.map((issue) => issue.key),
+        `accepted ALLOW_PLACEHOLDER_ENV=${value}`,
+      ).toContain("ALLOW_PLACEHOLDER_ENV");
+    }
+  });
+
+  it("does not enable the hatch for a non-true value, so production still fails", () => {
+    const source = {
+      ...validEnv,
+      VERCEL_ENV: "production",
+      NEXT_PUBLIC_SITE_URL: "https://flowers-overseas.vercel.app",
+      ALLOW_PLACEHOLDER_ENV: "1",
+    };
+    const keys = validateEnv(source).issues.map((issue) => issue.key);
+    expect(keys).toContain("ALLOW_PLACEHOLDER_ENV");
+    expect(keys).toContain("DATABASE_URL");
+    expect(placeholderHatchEnabled(source)).toBe(false);
+  });
+
+  it("covers the committed http://localhost:3000 origin, so a 001 production build passes", () => {
+    const result = validateEnv({
+      ...validEnv,
+      VERCEL_ENV: "production",
+      ALLOW_PLACEHOLDER_ENV: "true",
+    });
+    expect(result.issues).toEqual([]);
+  });
+
+  it("still rejects a non-placeholder http origin in production, hatch or not", () => {
+    for (const hatch of ["", "true"]) {
+      const result = validateEnv({
+        ...validEnv,
+        VERCEL_ENV: "production",
+        ALLOW_PLACEHOLDER_ENV: hatch,
+        NEXT_PUBLIC_SITE_URL: "http://flowers-overseas.vercel.app",
+      });
+      expect(result.issues.map((issue) => issue.key)).toContain(
+        "NEXT_PUBLIC_SITE_URL",
+      );
+    }
+  });
+
+  it("is a no-op in development, where placeholders are accepted anyway", () => {
+    expect(
+      validateEnv({ ...validEnv, ALLOW_PLACEHOLDER_ENV: "true" }).issues,
+    ).toEqual([]);
+  });
+
+  it("warns exactly once, at assert time, when the hatch is used (TASK-007)", () => {
+    const lines: string[] = [];
+    const source = {
+      ...validEnv,
+      VERCEL_ENV: "production",
+      NEXT_PUBLIC_SITE_URL: "https://flowers-overseas.vercel.app",
+      ALLOW_PLACEHOLDER_ENV: "true",
+    };
+    warnOnPlaceholderHatch(source, (line) => lines.push(line));
+    warnOnPlaceholderHatch(source, (line) => lines.push(line));
+    expect(lines).toHaveLength(1);
+    const parsed = JSON.parse(lines[0] ?? "{}") as Record<string, unknown>;
+    expect(parsed["level"]).toBe("warn");
+    expect(parsed["msg"]).toContain("ALLOW_PLACEHOLDER_ENV");
+    expect(parsed["environment"]).toBe("production");
+  });
+
+  it("does not warn when the hatch is unset", () => {
+    const lines: string[] = [];
+    warnOnPlaceholderHatch(validEnv, (line) => lines.push(line));
+    expect(lines).toEqual([]);
+  });
+});
+
+describe("NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA (TASK-007)", () => {
+  it("is an optional client key so the browser Sentry release can be set", () => {
+    expect(Object.keys(clientEnvSchema.shape)).toContain(
+      "NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA",
+    );
+    expect(
+      validateEnv(without("NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA")).issues,
+    ).toEqual([]);
+  });
+
+  it("is parsed when present and blank-as-absent when empty", () => {
+    expect(
+      validateEnv({
+        ...validEnv,
+        NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA: "deadbeef",
+      }).client?.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA,
+    ).toBe("deadbeef");
+    expect(
+      validateEnv(validEnv).client?.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA,
+    ).toBeUndefined();
   });
 });

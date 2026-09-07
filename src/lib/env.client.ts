@@ -13,6 +13,8 @@ const raw: Readonly<Record<string, string | undefined>> = {
   NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   NEXT_PUBLIC_VERCEL_ENV: process.env.NEXT_PUBLIC_VERCEL_ENV,
   NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
+  NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA:
+    process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA,
 };
 
 /** Frozen at module load. Invalid values throw here, at import time, on server and client alike. */
