@@ -1,8 +1,7 @@
-# CI (spec 001 §2 "CI", TASK-002 + TASK-008 + TASK-009). Job order follows plan/12 §5:
-# lint → typecheck → test-unit → test-integration → build → seo-validate → preview →
-# e2e/visual/a11y → lighthouse, plus commitlint on PR commits (AC-20).
-# TASK-011 appends the remaining jobs (test:contract, db:check, audit, dev-os:check) and verifies
-# the final set.
+# CI (spec 001 §2 "CI", TASK-002 + TASK-008 + TASK-009 + TASK-010). Job order follows plan/12 §5:
+# lint → typecheck → test-unit → test-integration → build → seo-validate → dev-os-check →
+# preview → e2e/visual/a11y → lighthouse, plus commitlint on PR commits (AC-20).
+# TASK-011 appends the remaining jobs (test:contract, db:check, audit) and verifies the final set.
 name: ci
 
 on:
@@ -274,6 +273,38 @@ jobs:
             echo "Bad-fixture cases live in \`tests/fixtures/seo/_cases/\` and are exercised by the unit"
             echo "suite in a temp directory, so this job's directories stay in their committed state."
           } >> "$GITHUB_STEP_SUMMARY"
+
+  # AC-24, AC-25, AC-26 / T-25, T-26, T-27 (TASK-010): the dev-OS gate. Runs the shell checks in
+  # `tests/dev-os/` against the real `.claude/hooks/task-guard.sh`, `.claude/hooks/tasks-reminder.sh`
+  # and `.claude/bin/task.sh`, so a change to a hook that breaks the "no code without a task"
+  # rule turns a PR red instead of being noticed the next time an agent writes to `src/`.
+  # spec 001 §11: this job's output is the audit trail that the guard and `task.sh` behave as
+  # documented, so `scripts/dev-os-check.ts` writes the per-check assertion counts to the step
+  # summary itself.
+  #
+  # Runner requirements: `bash`, `git` and `python3` (the guard parses its PreToolUse payload with
+  # it) — all three are preinstalled on `ubuntu-latest`. The checks never touch the checkout's
+  # `.claude/state/` or `TASKS.md`: each one points `CLAUDE_PROJECT_DIR` at a temp project.
+  #
+  # `needs: typecheck` rather than `needs: test-unit`: `pnpm test` already runs the same checks
+  # through `tests/unit/dev-os.test.ts`, and this job exists to report them separately and
+  # readably, so it should not queue behind the whole unit suite.
+  dev-os-check:
+    name: dev-os-check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: typecheck
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - name: Assert the runner has what the hooks need
+        run: |
+          set -euo pipefail
+          bash --version | head -n1
+          git --version
+          python3 --version
+      - name: Run the dev-OS checks
+        run: pnpm dev-os:check
 
   # AC-29 / T-30 (TASK-007): every pull request gets a Vercel preview deployment. This job proves,
   # on each PR, the three properties the spec asks for: Deployment Protection is enabled

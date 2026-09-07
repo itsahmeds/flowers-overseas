@@ -34,6 +34,11 @@ const AREAS: ReadonlyArray<readonly [area: string, pattern: RegExp]> = [
   ["validate-sitemap", /^seo-validate-sitemap\.test\.ts$/],
   ["validate-hreflang", /^seo-validate-hreflang\.test\.ts$/],
   ["validate-schema", /^seo-validate-schema\.test\.ts$/],
+  // Not an AC-16 area: the dev-OS checks (AC-24…AC-26 / T-25…T-27, TASK-010) are shell scripts
+  // in `tests/dev-os/`, and `dev-os.test.ts` is the wrapper that runs them inside `pnpm test`.
+  // Listed here so removing the wrapper — which would drop the guard, `task.sh` and the Stop
+  // hook out of the unit suite and out of the `test-unit` CI job — fails this test.
+  ["dev-os checks (tests/dev-os)", /^dev-os\.test\.ts$/],
 ];
 
 const TEST_CASE = /\b(?:it|test)(?:\.\w+)*\s*\(/;

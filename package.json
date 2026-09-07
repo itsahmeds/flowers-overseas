@@ -28,6 +28,7 @@
     "check-layout": "node scripts/check-layout.ts",
     "env:check": "node scripts/env-check.ts",
     "pr-policy": "node scripts/pr-policy.ts",
+    "dev-os:check": "node scripts/dev-os-check.ts",
     "seo:validate": "node scripts/seo/validate-sitemap.ts && node scripts/seo/validate-hreflang.ts && node scripts/seo/validate-schema.ts",
     "lighthouse": "npx --yes @lhci/cli@0.15.1 autorun --config=lighthouserc.json $(node scripts/seo/lighthouse-urls.ts)",
     "check:no-literal-disable": "node scripts/check-no-literal-disable.ts",

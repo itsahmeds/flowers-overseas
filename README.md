@@ -86,3 +86,21 @@ transfer <= 200 KB) over the paths in `tests/fixtures/seo/lighthouse-urls.json`,
 PR against the preview and is **informational until spec 004** (spec 001 §13 Q4): the job carries
 `continue-on-error: true` while every assertion stays an `error`, so the job's own result is
 honest.
+
+## Dev-OS checks
+The rules in `CLAUDE.md` are enforced by three shell scripts inside a Claude Code session: the
+PreToolUse guard `.claude/hooks/task-guard.sh` (no `Edit`/`Write` under `src/ app/ supabase/
+emails/ seed/ tests/` without an active task), `.claude/bin/task.sh` (the `TASK-NNN` pointer, only
+for a task that has a row in `TASKS.md`) and the Stop hook `.claude/hooks/tasks-reminder.sh`. A
+broken hook is silent, so they have their own gate:
+
+| Command | Runs |
+|---|---|
+| `pnpm dev-os:check` | `tests/dev-os/*.test.sh` against the real hooks, aggregated with per-check assertion counts (`scripts/dev-os-check.ts`); the `dev-os-check` CI job |
+| `bash tests/dev-os/guard.test.sh` | one check on its own; exits non-zero on any failed assertion |
+| `pnpm test` | the same checks through `tests/unit/dev-os.test.ts`, so they also run in the `test-unit` job |
+
+Every check points the hook at a throwaway project via `CLAUDE_PROJECT_DIR` and never reads or
+writes this repository's `.claude/state/active-task` or `TASKS.md` — `tests/dev-os/README.md`
+explains why that matters and how it is enforced. `python3` is required (the guard parses its
+payload with it).
