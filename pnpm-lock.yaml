@@ -170,9 +170,6 @@ importers:
       stylelint:
         specifier: ^17.15.0
         version: 17.15.0(supports-color@7.2.0)(typescript@5.9.3)
-      stylelint-config-standard:
-        specifier: ^40.0.0
-        version: 40.0.0(stylelint@17.15.0(supports-color@7.2.0)(typescript@5.9.3))
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3
@@ -2791,18 +2788,6 @@ packages:
         optional: true
       babel-plugin-macros:
         optional: true
-
-  stylelint-config-recommended@18.0.0:
-    resolution: {integrity: sha512-mxgT2XY6YZ3HWWe3Di8umG6aBmWmHTblTgu/f10rqFXnyWxjKWwNdjSWkgkwCtxIKnqjSJzvFmPT5yabVIRxZg==}
-    engines: {node: '>=20.19.0'}
-    peerDependencies:
-      stylelint: ^17.0.0
-
-  stylelint-config-standard@40.0.0:
-    resolution: {integrity: sha512-EznGJxOUhtWck2r6dJpbgAdPATIzvpLdK9+i5qPd4Lx70es66TkBPljSg4wN3Qnc6c4h2n+WbUrUynQ3fanjHw==}
-    engines: {node: '>=20.19.0'}
-    peerDependencies:
-      stylelint: ^17.0.0
 
   stylelint@17.15.0:
     resolution: {integrity: sha512-mWIkesYQvQjf4Kvdeu9ns0IL8/K/wtjaGxPqsPd6DlLZvaQxGysJsocxUDrBcyHQ5VleAk4uSMat4yMrVED7PA==}
@@ -5717,15 +5702,6 @@ snapshots:
       react: 19.2.8
     optionalDependencies:
       '@babel/core': 7.29.7(supports-color@7.2.0)
-
-  stylelint-config-recommended@18.0.0(stylelint@17.15.0(supports-color@7.2.0)(typescript@5.9.3)):
-    dependencies:
-      stylelint: 17.15.0(supports-color@7.2.0)(typescript@5.9.3)
-
-  stylelint-config-standard@40.0.0(stylelint@17.15.0(supports-color@7.2.0)(typescript@5.9.3)):
-    dependencies:
-      stylelint: 17.15.0(supports-color@7.2.0)(typescript@5.9.3)
-      stylelint-config-recommended: 18.0.0(stylelint@17.15.0(supports-color@7.2.0)(typescript@5.9.3))
 
   stylelint@17.15.0(supports-color@7.2.0)(typescript@5.9.3):
     dependencies:
