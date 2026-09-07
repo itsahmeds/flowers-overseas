@@ -511,9 +511,13 @@ jobs:
   #
   # spec 001 §13 Q4: it runs on **every** PR from the first one, but is informational until spec
   # 004 ships the design system — hence `continue-on-error: true` on the job. The assertions
-  # themselves are configured as `error` in `lighthouserc.json`, so the step's own result (and the
-  # artifact) tell the truth about the budgets; only the PR's overall status is spared. Spec 004
-  # removes `continue-on-error` and spec 007 adds the nightly run.
+  # themselves are configured as `error` in `lighthouserc.json`; only the PR's overall status is
+  # spared. Spec 004 removes `continue-on-error` and spec 007 adds the nightly run.
+  #
+  # In spec 001 `/` paints nothing, so the run does not reach the assertions at all: Lighthouse
+  # aborts with `NO_FCP` and no budget is measured. That is neither a breach nor a pass, and the
+  # step summary is written *after* the run precisely so it can say which of the three happened
+  # instead of guessing in advance.
   #
   # `@lhci/cli` is fetched pinned by `npx` instead of being a devDependency: it pulls in Lighthouse
   # and Chrome plumbing that every other job would then install on every run, and it is needed in
@@ -530,18 +534,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
-      - name: Note that the budgets are informational in spec 001
-        run: |
-          {
-            echo "### lighthouse (AC-23 / T-24)"
-            echo ""
-            echo "**informational until spec 004** (spec 001 §13 Q4): the job carries"
-            echo "\`continue-on-error: true\`, while every assertion in \`lighthouserc.json\` is an"
-            echo "\`error\` — so the step result below is the honest verdict on the plan/01 §7 budgets."
-            echo ""
-            echo "- URL set: \`tests/fixtures/seo/lighthouse-urls.json\` against ${{ needs.preview.outputs.preview_url }}"
-          } >> "$GITHUB_STEP_SUMMARY"
       - name: Run Lighthouse CI against the preview
+        id: lhci
         run: |
           set -euo pipefail
           # The bypass secret travels as a request header, never in a URL or a log line; GitHub
@@ -555,7 +549,56 @@ jobs:
           npx --yes @lhci/cli@0.15.1 autorun \
             --config=lighthouserc.json \
             --collect.settings.extraHeaders="$headers" \
-            $urls
+            $urls 2>&1 | tee lhci-output.log
+
+      # Written after the run, with `if: always()`, because "did the budgets hold?" is not
+      # answerable before it. The `NO_FCP` branch is the expected one for the whole of spec 001 and
+      # it says so in as many words: no measurement happened, so no verdict is available.
+      - name: Summarise what Lighthouse actually measured
+        if: always()
+        env:
+          LHCI_OUTCOME: ${{ steps.lhci.outcome }}
+          PREVIEW_URL: ${{ needs.preview.outputs.preview_url }}
+        run: |
+          set -uo pipefail
+          log=lhci-output.log
+          {
+            echo "### lighthouse (AC-23 / T-24)"
+            echo ""
+            echo "URL set \`tests/fixtures/seo/lighthouse-urls.json\` against $PREVIEW_URL."
+            echo "**informational until spec 004** (spec 001 §13 Q4): the job carries"
+            echo "\`continue-on-error: true\`, so a red check here never blocks the PR."
+            echo ""
+            if [ "$LHCI_OUTCOME" = "success" ]; then
+              echo "**Budgets measured and met.** Every assertion in \`lighthouserc.json\` is an"
+              echo "\`error\` and none fired, so the \`plan/01\` §7 budgets hold on this preview."
+              echo ""
+              if [ -f .lighthouseci/manifest.json ]; then
+                echo "| URL | performance | accessibility | best-practices | seo |"
+                echo "|---|---|---|---|---|"
+                jq -r '.[] | select(.isRepresentativeRun) | "| \(.url) | \(.summary.performance) | \(.summary.accessibility) | \(.summary["best-practices"]) | \(.summary.seo) |"' \
+                  .lighthouseci/manifest.json
+              fi
+            elif [ -f "$log" ] && grep -qE 'NO_FCP|did not paint any content' "$log"; then
+              echo "**No budget was measured: this is neither a budget breach nor a pass.**"
+              echo ""
+              echo "\`/\` paints nothing in spec 001 — the repo is the CI and tooling skeleton, with"
+              echo "no page behind that route yet — so Lighthouse aborts the run with \`NO_FCP\` (\"the"
+              echo "page did not paint any content\") before a single metric exists. The \`plan/01\` §7"
+              echo "assertions in \`lighthouserc.json\` were therefore never evaluated: nothing was"
+              echo "compared against a budget, and no conclusion about the budgets can be drawn from"
+              echo "this run in either direction. The first real verdict arrives with spec 004, which"
+              echo "renders \`/\` and removes \`continue-on-error\`."
+            else
+              echo "**The run failed before reaching a verdict on the budgets.**"
+              echo ""
+              echo "Lighthouse exited non-zero for a reason other than \`NO_FCP\` — an unreachable"
+              echo "preview, a rejected bypass header, or an \`@lhci/cli\` error. Read the step log:"
+              echo "only a failure that lists a metric against its budget is a budget breach;"
+              echo "anything else measured nothing."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Upload the Lighthouse reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -563,4 +606,6 @@ jobs:
           name: lighthouseci
           path: .lighthouseci/
           retention-days: 7
-          if-no-files-found: warn
+          # Empty is the normal spec 001 outcome: `NO_FCP` aborts before a report is written, and
+          # the step summary above already explains why. Not a warning.
+          if-no-files-found: ignore

@@ -136,6 +136,35 @@ describe("ci.yml lighthouse and seo-validate jobs (AC-22, AC-23)", () => {
     expect(ci).toContain("informational until spec 004");
   });
 
+  it("writes the step summary after the run, not before it", () => {
+    // A summary printed before `lhci autorun` cannot know what the run found, so the old
+    // "the step result below is the honest verdict" wording must not come back.
+    expect(ci).not.toContain("honest verdict");
+    const job = ci.slice(ci.indexOf("  lighthouse:"));
+    const runIndex = job.indexOf("name: Run Lighthouse CI against the preview");
+    const summaryIndex = job.indexOf(
+      "name: Summarise what Lighthouse actually measured",
+    );
+    expect(runIndex).toBeGreaterThan(-1);
+    expect(summaryIndex).toBeGreaterThan(runIndex);
+    expect(job.slice(summaryIndex)).toMatch(/^[\s\S]{0,200}if: always\(\)/);
+  });
+
+  it("says that a NO_FCP run measured no budget at all, either way", () => {
+    expect(ci).toContain("NO_FCP");
+    expect(ci).toContain(
+      "**No budget was measured: this is neither a budget breach nor a pass.**",
+    );
+    // Backticks are backslash-escaped inside the workflow's shell block.
+    expect(ci).toContain("paints nothing in spec 001");
+  });
+
+  it("treats an empty .lighthouseci/ as expected, not as a warning", () => {
+    const job = ci.slice(ci.indexOf("  lighthouse:"));
+    expect(job).toContain("if-no-files-found: ignore");
+    expect(job).not.toContain("if-no-files-found: warn");
+  });
+
   it("passes the protection-bypass secret by env, never inline in a URL", () => {
     expect(ci).toContain("x-vercel-protection-bypass");
     expect(ci).toContain(
