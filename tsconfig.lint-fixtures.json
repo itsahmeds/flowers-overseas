@@ -1,0 +1,11 @@
+{
+  "//": "Resolver-only tsconfig for the module-boundary lint fixtures (spec 001 AC-9, T-10). import/no-restricted-paths silently skips imports it cannot resolve, so the fixtures' `@/...` specifiers must point at real files: this project maps `@/*` onto the mirrored tree `tests/fixtures/lint/src/*`. Never used by `pnpm typecheck` or the build.",
+  "compilerOptions": {
+    "moduleResolution": "bundler",
+    "module": "esnext",
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": { "@/*": ["./tests/fixtures/lint/src/*"] }
+  },
+  "include": ["tests/fixtures/lint/**/*.ts"]
+}

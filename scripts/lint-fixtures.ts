@@ -37,7 +37,10 @@ export async function lintFixtures(root: string): Promise<FixtureLintReport> {
     ignore: false,
     overrideConfigFile: resolve(root, "eslint.config.mjs"),
   });
-  const eslintResults = await eslint.lintFiles([`${FIXTURE_DIR}/**/*.tsx`]);
+  const eslintResults = await eslint.lintFiles([
+    `${FIXTURE_DIR}/**/*.ts`,
+    `${FIXTURE_DIR}/**/*.tsx`,
+  ]);
   const eslintViolations: FixtureViolation[] = [];
   for (const result of eslintResults) {
     for (const message of result.messages) {
