@@ -1,0 +1,12 @@
+# Code owners (spec 001 §2 "CI", §13 Q1; AC-28).
+#
+# One owner: the founder. Every path, so no PR can be opened against a corner of the repository
+# nobody is asked to look at. When the first contractor or agency arrives, add narrower rules
+# *below* this line — later rules win in CODEOWNERS.
+#
+# Note (spec 001 §2 "Branch protection"): review *requests* are automatic from this file, but a
+# GitHub PR author cannot approve their own PR. With a single owner, requiring an approving
+# review would block every merge, so `require_code_owner_reviews` stays off and the recorded
+# `/review` verdict in the PR body is the gate instead — see docs/runbooks/branch-protection.md.
+
+* @itsahmeds

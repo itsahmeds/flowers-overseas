@@ -28,6 +28,7 @@ set -u
 DEV_OS_PASSED=0
 DEV_OS_FAILED=0
 DEV_OS_COUNT=0
+DEV_OS_ERREXIT=0
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd -P)"
 GUARD_HOOK="$REPO_ROOT/.claude/hooks/task-guard.sh"
@@ -180,6 +181,32 @@ make_git_project() {
 
 # --- running the scripts under test -------------------------------------------------------------
 
+# The helpers below run a script that is *expected* to exit non-zero, so they have to turn
+# `errexit` off around it. They must also put it back exactly as they found it.
+#
+# The bug this replaces (found in the review of PR #10): they ended with a bare `set -e`. The
+# checks are sourced and run *without* `errexit`, so the first `run_*` call silently turned it on
+# for the rest of the file — and `not_ok` returns 1. A red assertion therefore aborted the check
+# before its `finish` line, and the aggregate footer read "0 failed" next to a visible FAIL row.
+#
+# `$-` holds the current option letters, which is the only portable way to read `errexit`
+# (`shopt -o` is bash-only and `set -o` output is not stable across shells).
+dev_os_errexit_off() {
+  DEV_OS_ERREXIT=0
+  case "$-" in
+    *e*) DEV_OS_ERREXIT=1 ;;
+  esac
+  set +e
+}
+
+dev_os_errexit_restore() {
+  if [ "$DEV_OS_ERREXIT" = "1" ]; then
+    set -e
+  else
+    set +e
+  fi
+}
+
 # run_guard <project> <tool_name> <path relative to project>
 # Sets GUARD_STATUS, GUARD_STDOUT, GUARD_DECISION, GUARD_REASON.
 run_guard() {
@@ -197,10 +224,10 @@ guard_payload() {
 run_guard_raw() {
   local project="$1" payload="$2"
   assert_not_repo_root "$project"
-  set +e
+  dev_os_errexit_off
   GUARD_STDOUT="$(printf '%s' "$payload" | CLAUDE_PROJECT_DIR="$project" bash "$GUARD_HOOK" 2>/dev/null)"
   GUARD_STATUS=$?
-  set -e
+  dev_os_errexit_restore
   GUARD_DECISION="$(guard_field "$GUARD_STDOUT" permissionDecision)"
   GUARD_REASON="$(guard_field "$GUARD_STDOUT" permissionDecisionReason)"
 }
@@ -241,10 +268,10 @@ run_task_sh() {
   assert_not_repo_root "$project"
   local err
   err="$(mktemp "${TMPDIR:-/tmp}/fo-dev-os-err.XXXXXX")"
-  set +e
+  dev_os_errexit_off
   TASK_STDOUT="$(CLAUDE_PROJECT_DIR="$project" bash "$TASK_SH" "$@" 2>"$err")"
   TASK_STATUS=$?
-  set -e
+  dev_os_errexit_restore
   TASK_STDERR="$(cat "$err")"
   rm -f "$err"
 }
@@ -253,8 +280,8 @@ run_task_sh() {
 run_stop_hook() {
   local project="$1"
   assert_not_repo_root "$project"
-  set +e
+  dev_os_errexit_off
   STOP_STDOUT="$(cd "$project" && CLAUDE_PROJECT_DIR="$project" bash "$STOP_HOOK" 2>/dev/null)"
   STOP_STATUS=$?
-  set -e
+  dev_os_errexit_restore
 }

@@ -19,6 +19,7 @@
     "typecheck:fixtures": "tsc --noEmit -p tsconfig.fixtures.json",
     "test": "vitest run --project unit",
     "test:integration": "vitest run --project integration",
+    "test:contract": "vitest run --project contract --passWithNoTests",
     "test:coverage": "vitest run --project unit --coverage",
     "test:e2e": "playwright test --project=e2e-desktop --project=e2e-mobile",
     "test:visual": "playwright test --project=visual --project=pseudo-rtl",
@@ -27,6 +28,10 @@
     "format:check": "prettier --check .",
     "check-layout": "node scripts/check-layout.ts",
     "env:check": "node scripts/env-check.ts",
+    "db:check": "node scripts/db-check.ts",
+    "audit": "pnpm audit --prod --audit-level=high && pnpm audit:secrets",
+    "audit:secrets": "node scripts/audit-secrets.ts",
+    "branch-protection": "node scripts/branch-protection.ts",
     "pr-policy": "node scripts/pr-policy.ts",
     "dev-os:check": "node scripts/dev-os-check.ts",
     "seo:validate": "node scripts/seo/validate-sitemap.ts && node scripts/seo/validate-hreflang.ts && node scripts/seo/validate-schema.ts",
@@ -67,6 +72,7 @@
     "stylelint": "^17.15.0",
     "tailwindcss": "^4.3.3",
     "typescript": "^5.9.3",
-    "vitest": "^4.1.11"
+    "vitest": "^4.1.11",
+    "yaml": "^2.9.0"
   }
 }

@@ -1,0 +1,41 @@
+# gitleaks configuration — the secret-scanning half of `pnpm audit` (spec 001 §8 "Logs / PII":
+# "gitleaks in CI prevents secrets in code"; AC-27 / T-28, TASK-011).
+#
+# The default rule set is the gate; this file only records the two things in this repository that
+# the default rules cannot tell apart from a real credential, and it does so as narrowly as the
+# tool allows so that a real leak in the same file still fails.
+title = "flowers-overseas"
+
+[extend]
+# Every gitleaks rule stays on. This file adds allowlists, never removes a rule: dropping
+# `generic-api-key` because it is noisy is how a leak ships.
+useDefault = true
+
+# 1. Placeholder values. `.env.example` and `tests/fixtures/env/*.env` must carry syntactically
+#    valid dummy values so a clean clone builds (spec 001 §13 Q10, AC-1) and so `env:check` has
+#    something to parse (T-12). `generic-api-key` reads `SUPABASE_SERVICE_ROLE_KEY=placeholder-…`
+#    as a credential. Matched on the *secret* — the value, not the file — so the exemption is the
+#    `placeholder-` prefix itself: any value in the repo that literally begins with `placeholder-`
+#    is by construction not a credential, and a real key pasted into the same line is still caught.
+[[allowlists]]
+description = "documented placeholder values (spec 001 §13 Q10)"
+regexTarget = "match"
+regexes = ['''placeholder-[a-z0-9-]+''']
+
+# 2. Build output and dependencies. Everything here is git-ignored (`.gitignore`), so nothing in
+#    it can reach a commit, but `gitleaks dir` walks the working tree and Next.js bakes public env
+#    values into `.next/` manifests. Scanning them reports findings that no PR can act on and adds
+#    250 MB of I/O to every run.
+[[allowlists]]
+description = "git-ignored build output, dependencies and test artefacts"
+paths = [
+  '''(^|/)\.git/''',
+  '''(^|/)\.next/''',
+  '''(^|/)node_modules/''',
+  '''(^|/)coverage/''',
+  '''(^|/)playwright-report/''',
+  '''(^|/)test-results/''',
+  '''(^|/)\.lighthouseci/''',
+  '''(^|/)\.vercel/''',
+  '''(^|/)out/''',
+]

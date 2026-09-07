@@ -29,6 +29,20 @@ export default defineConfig({
         },
       },
       {
+        // `contract` (spec 001 §2 "Testing harness", the `test:contract` script and CI job):
+        // adapter-against-recorded-fixture tests for boundaries we do not own. Empty in 001 —
+        // there is no adapter yet and a fabricated fixture would pin a shape nobody observed —
+        // so the script passes with no test files (`tests/contract/README.md` names the owners).
+        extends: true,
+        test: {
+          name: "contract",
+          environment: "node",
+          include: ["tests/contract/**/*.test.ts"],
+          // MSW as in `unit`: a contract test asserts against a fixture, never the network.
+          setupFiles: ["tests/msw/setup.ts"],
+        },
+      },
+      {
         extends: true,
         test: {
           name: "integration",
