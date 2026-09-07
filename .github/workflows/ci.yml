@@ -1,6 +1,8 @@
-# CI skeleton (spec 001 §2 "CI", TASK-002). Job order follows plan/12 §5:
-# lint → typecheck → build, plus commitlint on PR commits (AC-20).
-# Later tasks append their jobs (test:unit, test:integration, …); TASK-011 verifies the final set.
+# CI (spec 001 §2 "CI", TASK-002 + TASK-008). Job order follows plan/12 §5:
+# lint → typecheck → test-unit → test-integration → build → preview → e2e/visual/a11y,
+# plus commitlint on PR commits (AC-20).
+# Later tasks append their jobs (seo:validate, lighthouse, dev-os:check); TASK-011 verifies the
+# final set.
 name: ci
 
 on:
@@ -39,11 +41,127 @@ jobs:
       - uses: ./.github/actions/setup
       - run: pnpm typecheck
 
+  # AC-16 / T-17 (TASK-008): the unit suite is the gate the other jobs stand on, so it runs before
+  # `build`. Coverage is collected on every run (thresholds come from `vitest.coverage.json`,
+  # empty in 001 and raised per module by specs 005/007 — plan/12 §4).
+  test-unit:
+    name: test-unit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: typecheck
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - name: Run the unit suite with coverage
+        run: >
+          pnpm test:coverage
+          --reporter=default
+          --reporter=json
+          --outputFile=vitest-unit.json
+      - name: Summarise the run (T-17)
+        if: always()
+        run: |
+          set -euo pipefail
+          if [ ! -f vitest-unit.json ]; then
+            echo "::error::vitest produced no JSON report; cannot summarise the unit run"
+            exit 1
+          fi
+          files=$(jq '.numTotalTestSuites' vitest-unit.json)
+          total=$(jq '.numTotalTests' vitest-unit.json)
+          passed=$(jq '.numPassedTests' vitest-unit.json)
+          failed=$(jq '.numFailedTests' vitest-unit.json)
+          skipped=$(jq '.numPendingTests + .numTodoTests' vitest-unit.json)
+          {
+            echo "### test-unit (AC-16 / T-17)"
+            echo ""
+            echo "- test files: $files"
+            echo "- tests: $total (passed $passed, failed $failed, skipped $skipped)"
+          } >> "$GITHUB_STEP_SUMMARY"
+          # A skipped unit test is a test nobody runs: the unit layer has no allowance for one
+          # (the *integration* suite is the only skipped suite in 001).
+          if [ "$skipped" != "0" ]; then
+            echo "::error::$skipped unit test(s) are skipped; the unit suite must have none (definition of done: no skipped tests)"
+            exit 1
+          fi
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: |
+            coverage/
+            vitest-unit.json
+          retention-days: 7
+          if-no-files-found: error
+
+  # AC-16 / T-17 (TASK-008): the integration job — and its Postgres service container — exist from
+  # 001 so spec 002 only has to delete a `.skip`. The suite is reported as skipped; the job still
+  # proves the database the suite will use is up.
+  test-integration:
+    name: test-integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: typecheck
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: flowers_overseas_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      # Consumed by `tests/integration/setup.ts`; it falls back to the `.env.example` placeholder
+      # locally, so a clean clone needs no database.
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/flowers_overseas_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - name: Assert the Postgres service is healthy (T-17)
+        run: |
+          set -euo pipefail
+          pg_isready -h localhost -p 5432 -U postgres
+          server_version=$(PGPASSWORD=postgres psql -h localhost -U postgres -d flowers_overseas_test -tAc 'show server_version')
+          {
+            echo "### test-integration (AC-16 / T-17)"
+            echo ""
+            echo "- postgres service: healthy, server_version $server_version"
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Run the integration suite (skipped until spec 002)
+        run: >
+          pnpm test:integration
+          --reporter=default
+          --reporter=json
+          --outputFile=vitest-integration.json
+      - name: Assert the suite is reported as skipped, not absent
+        run: |
+          set -euo pipefail
+          files=$(jq '.numTotalTestSuites' vitest-integration.json)
+          skipped=$(jq '.numPendingTests + .numTodoTests' vitest-integration.json)
+          failed=$(jq '.numFailedTests' vitest-integration.json)
+          {
+            echo "- integration suite: $files file(s), $skipped skipped, $failed failed (spec 002 TODO)"
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$failed" != "0" ]; then
+            echo "::error::the integration suite reported failures"
+            exit 1
+          fi
+          if [ "$skipped" = "0" ]; then
+            echo "::error::the integration suite reported no skipped test; AC-16 requires the spec-002 placeholder to be reported as skipped"
+            exit 1
+          fi
+
   build:
     name: build
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    needs: typecheck
+    needs: test-unit
     env:
       NEXT_TELEMETRY_DISABLED: "1"
     steps:
@@ -159,10 +277,14 @@ jobs:
           set -euo pipefail
           preview_url=""
           for attempt in $(seq 1 "$ATTEMPTS"); do
-            deployments=$(gh api "repos/$REPO/deployments?sha=$HEAD_SHA&per_page=100" --jq '.[].id' || true)
+            # `select(... != "production")`: a push to `main` and a PR can share a head SHA, and
+            # the Production deployment must never be handed to the e2e/visual/a11y jobs — they
+            # run destructive-by-default browser traffic and assert preview-only headers.
+            deployments=$(gh api "repos/$REPO/deployments?sha=$HEAD_SHA&per_page=100" \
+              --jq '.[] | select(((.environment // "") | ascii_downcase) != "production") | .id' || true)
             for id in $deployments; do
               url=$(gh api "repos/$REPO/deployments/$id/statuses?per_page=100" \
-                --jq 'map(select(.state == "success" and (.environment_url // "") != "")) | .[0].environment_url // ""' || true)
+                --jq 'map(select(.state == "success" and (.environment_url // "") != "" and (((.environment // "") | ascii_downcase) != "production"))) | .[0].environment_url // ""' || true)
               if [ -n "$url" ]; then
                 preview_url="$url"
                 break
@@ -261,3 +383,85 @@ jobs:
             echo "- \`X-Robots-Tag\`: $robots"
           } | tee -a "$GITHUB_STEP_SUMMARY"
           rm -f "$headers"
+
+  # AC-17 / T-15, T-16, T-18 (TASK-008): the Playwright suites run against the *preview*
+  # deployment, not a local server — that is what the AC asks for and the only place the Vercel
+  # headers (`fra1`, `X-Robots-Tag`, Deployment Protection) are real. `PLAYWRIGHT_BASE_URL` is the
+  # URL the `preview` job resolved; `VERCEL_AUTOMATION_BYPASS_SECRET` gets the request past
+  # Deployment Protection (`playwright.config.ts` sends it, and never logs it).
+  #
+  # These jobs are skipped on `push` to `main`, because `preview` is a pull-request job.
+  e2e:
+    name: e2e
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: preview
+    env:
+      PLAYWRIGHT_BASE_URL: ${{ needs.preview.outputs.preview_url }}
+      VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+      - name: Upload the Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-e2e
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+          if-no-files-found: warn
+
+  visual:
+    name: visual
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: preview
+    env:
+      PLAYWRIGHT_BASE_URL: ${{ needs.preview.outputs.preview_url }}
+      VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - run: pnpm exec playwright install --with-deps chromium
+      # Baselines are committed (AC-17) and platform-agnostic while the shell has no text or
+      # fonts; `--update-snapshots` is never passed here, so a missing baseline fails the job.
+      - run: pnpm test:visual
+      - name: Upload the Playwright report (with the diff images)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-visual
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+          if-no-files-found: warn
+
+  a11y:
+    name: a11y
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: preview
+    env:
+      PLAYWRIGHT_BASE_URL: ${{ needs.preview.outputs.preview_url }}
+      VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - run: pnpm exec playwright install --with-deps chromium
+      # spec 001 §8: zero serious/critical axe violations on `/`.
+      - run: pnpm test:a11y
+      - name: Upload the Playwright report (with the axe attachment)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-a11y
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+          if-no-files-found: warn

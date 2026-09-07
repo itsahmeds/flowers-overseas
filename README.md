@@ -19,6 +19,30 @@ No application code exists yet. The first `/implement` happens against `specs/00
 3. `pnpm db:migrate && pnpm db:seed`
 4. `pnpm dev`
 
+## Tests
+Four layers, four commands. `tests/fixtures/README.md` says which fixtures live where.
+
+| Command | Layer | Runs |
+|---|---|---|
+| `pnpm test` | unit (Vitest, `unit` project) | `tests/unit/**` in the node environment, with MSW active and `onUnhandledRequest: "error"` — a unit test that reaches the network fails (spec 001 AC-18) |
+| `pnpm test:coverage` | unit | the same suite with `@vitest/coverage-v8`; thresholds come from `vitest.coverage.json` (empty in spec 001, raised per module by specs 005/007) |
+| `pnpm test:integration` | integration (Vitest, `integration` project) | `tests/integration/**` against `DATABASE_URL` (a `postgres:16` service container in CI, the `.env.example` placeholder locally). Reported as **skipped** until spec 002 |
+| `pnpm test:e2e` | e2e (Playwright: `e2e-desktop`, `e2e-mobile`) | `tests/e2e/**` |
+| `pnpm test:visual` | visual (Playwright: `visual`, `pseudo-rtl`) | `tests/visual/**` against the committed baselines in `tests/visual/__screenshots__/`; regenerate with `pnpm test:visual --update-snapshots` |
+| `pnpm test:a11y` | a11y (Playwright: `a11y`) | `tests/a11y/**` with `@axe-core/playwright`; zero serious/critical violations |
+
+The Playwright suites need a running target, given by `PLAYWRIGHT_BASE_URL` (default
+`http://localhost:3000`):
+
+```
+cp .env.example .env.local && pnpm build && pnpm start   # in one shell
+pnpm exec playwright install chromium                    # once
+pnpm test:e2e && pnpm test:a11y && pnpm test:visual      # in another
+```
+
+In CI the same three commands run against the pull request's Vercel preview URL, with
+`x-vercel-protection-bypass` supplied from `VERCEL_AUTOMATION_BYPASS_SECRET`.
+
 ## Lint rules that encode the non-negotiables
 The custom ESLint rules live in `eslint/fo/` — a local plugin, plain ESM JavaScript with JSDoc
 types, imported directly by `eslint.config.mjs` (no build step, nothing published). Stylelint
