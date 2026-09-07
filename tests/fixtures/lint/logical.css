@@ -1,0 +1,8 @@
+/* Valid fixture: logical counterpart of `physical.css` (spec 001 AC-4). */
+.logical {
+  margin-inline-start: 4px;
+  padding-inline-end: 8px;
+  border-inline-start-width: 1px;
+  text-align: start;
+  inset-inline-start: 0;
+}

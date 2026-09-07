@@ -28,5 +28,5 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules", "tests/fixtures/ts"]
+  "exclude": ["node_modules", "tests/fixtures/ts", "tests/fixtures/lint"]
 }

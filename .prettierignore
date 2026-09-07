@@ -14,3 +14,4 @@ docs/
 README.md
 TASKS.md
 CLAUDE.md
+/tests/fixtures/lint/
