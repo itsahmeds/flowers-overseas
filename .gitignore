@@ -1,1 +1,28 @@
+# dev OS
 .claude/state/
+
+# dependencies
+node_modules/
+
+# next.js
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+
+# tests
+coverage/
+playwright-report/
+test-results/
+
+# env (only .env.example is committed)
+.env*.local
+
+# vercel
+.vercel/
+
+# misc
+.DS_Store
+*.pem
+npm-debug.log*
+.pnpm-debug.log*

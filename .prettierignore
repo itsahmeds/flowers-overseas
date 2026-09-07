@@ -1,0 +1,16 @@
+node_modules/
+.next/
+out/
+coverage/
+playwright-report/
+test-results/
+pnpm-lock.yaml
+next-env.d.ts
+.claude/
+# planning prose maintained by the spec/plan agents, not by the code formatter
+plan/
+specs/
+docs/
+README.md
+TASKS.md
+CLAUDE.md
