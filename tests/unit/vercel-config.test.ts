@@ -5,10 +5,17 @@
  * two things that live in the repository and would otherwise silently regress: the `fra1` region
  * pin (spec 001 §5 "Hosting", §8 "Data residency") and the `preview` CI gate that asserts
  * Deployment Protection, the region and `X-Robots-Tag: noindex` on every preview.
+ *
+ * The workflow is **parsed as YAML** (TASK-011, carried from the review of PR #7): the earlier
+ * version of this file matched substrings against the whole file, so an assertion about the
+ * `preview` job would have been satisfied by the same text appearing in a comment or in any other
+ * job. Everything below is scoped to the `preview` job's own steps.
  */
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+
 import { describe, expect, it } from "vitest";
+import { parse } from "yaml";
 
 const repoRoot = resolve(__dirname, "../..");
 const read = (relative: string): string =>
@@ -41,61 +48,104 @@ describe("vercel.json (AC-29)", () => {
   });
 });
 
+interface WorkflowStep {
+  name?: string;
+  uses?: string;
+  run?: string;
+  id?: string;
+  env?: Record<string, string>;
+  with?: Record<string, string>;
+}
+
+interface WorkflowJob {
+  name?: string;
+  if?: string;
+  needs?: string | string[];
+  outputs?: Record<string, string>;
+  permissions?: Record<string, string>;
+  env?: Record<string, string>;
+  steps: WorkflowStep[];
+}
+
+interface Workflow {
+  jobs: Record<string, WorkflowJob>;
+}
+
 describe("ci.yml preview gate (AC-29 / T-30)", () => {
-  const ci = read(".github/workflows/ci.yml");
+  const workflow = parse(read(".github/workflows/ci.yml")) as Workflow;
+  const preview = workflow.jobs["preview"];
+  /** Only the shell of the `preview` job's steps: no comment and no other job can satisfy these. */
+  const script = (preview?.steps ?? [])
+    .map((step) => step.run ?? "")
+    .join("\n");
 
   it("declares a preview job that runs on pull requests only", () => {
-    expect(ci).toContain("  preview:");
-    expect(ci).toMatch(
-      /preview:\n[\s\S]*if: github\.event_name == 'pull_request'/,
-    );
+    expect(preview).toBeDefined();
+    expect(preview?.name).toBe("preview");
+    expect(preview?.if).toBe("github.event_name == 'pull_request'");
   });
 
   it("reads deployments to find the preview URL for the PR head SHA", () => {
-    expect(ci).toContain("deployments: read");
-    expect(ci).toContain("gh api");
-    expect(ci).toContain("environment_url");
-    expect(ci).toContain("pull_request.head.sha");
+    expect(preview?.permissions?.["deployments"]).toBe("read");
+    expect(script).toContain("gh api");
+    expect(script).toContain("environment_url");
+    const env = (preview?.steps ?? []).flatMap((step) =>
+      Object.values(step.env ?? {}),
+    );
+    expect(env.join("\n")).toContain("pull_request.head.sha");
   });
 
   it("exports the preview URL as a job output and to the step summary", () => {
-    expect(ci).toMatch(/outputs:\n\s+preview_url:/);
-    expect(ci).toContain("GITHUB_STEP_SUMMARY");
+    expect(preview?.outputs?.["preview_url"]).toBe(
+      "${{ steps.wait.outputs.preview_url }}",
+    );
+    expect(script).toContain("GITHUB_STEP_SUMMARY");
   });
 
   it("asserts Deployment Protection blocks an unauthenticated request", () => {
-    expect(ci).toContain("/api/health");
-    expect(ci).toContain("401|403");
+    expect(script).toContain("/api/health");
+    expect(script).toContain("401|403");
   });
 
   it("accepts the Vercel Authentication redirect to vercel.com/sso-api as protected", () => {
     // Vercel Authentication answers a plain GET with a 302 to the SSO endpoint, not 401/403.
-    expect(ci).toContain("301|302|303|307|308");
-    expect(ci).toContain(
+    expect(script).toContain("301|302|303|307|308");
+    expect(script).toContain(
       "https://vercel.com/sso-api|https://vercel.com/sso-api[?/]*",
     );
     // A redirect to any other location, and a 200, must still fail.
-    expect(ci).toMatch(
+    expect(script).toMatch(
       /::error::[^\n]*without the bypass header returned \$unprotected_status redirecting to/,
     );
   });
 
   it("asserts fra1 as a '::' segment of x-vercel-id, not as its prefix", () => {
-    expect(ci).toContain("x-vercel-id");
-    expect(ci).toContain('*"::fra1::"*');
-    expect(ci).not.toContain("fra1*)");
+    expect(script).toContain("x-vercel-id");
+    expect(script).toContain('*"::fra1::"*');
+    expect(script).not.toContain("fra1*)");
   });
 
   it("asserts noindex and 200 with the protection-bypass header", () => {
-    expect(ci).toContain("x-vercel-protection-bypass");
-    expect(ci).toContain("secrets.VERCEL_AUTOMATION_BYPASS_SECRET");
-    expect(ci).toContain("X-Robots-Tag");
-    expect(ci.toLowerCase()).toContain("noindex");
+    expect(script).toContain("x-vercel-protection-bypass");
+    const secrets = (preview?.steps ?? [])
+      .flatMap((step) => Object.values(step.env ?? {}))
+      .join("\n");
+    expect(secrets).toContain("secrets.VERCEL_AUTOMATION_BYPASS_SECRET");
+    expect(script).toContain("X-Robots-Tag");
+    expect(script.toLowerCase()).toContain("noindex");
   });
 
   it("fails loudly, naming the secret, instead of skipping when it is unset", () => {
-    expect(ci).toMatch(
-      /::error::[^\n]*VERCEL_AUTOMATION_BYPASS_SECRET[^\n]*\n/,
-    );
+    expect(script).toMatch(/::error::[^\n]*VERCEL_AUTOMATION_BYPASS_SECRET/);
+  });
+
+  it("hands the resolved URL to the browser jobs rather than letting them guess", () => {
+    for (const name of ["e2e", "visual", "a11y", "lighthouse"]) {
+      const job = workflow.jobs[name];
+      expect(job?.needs).toBe("preview");
+      expect(job?.env?.["PLAYWRIGHT_BASE_URL"]).toBe(
+        "${{ needs.preview.outputs.preview_url }}",
+      );
+    }
   });
 });

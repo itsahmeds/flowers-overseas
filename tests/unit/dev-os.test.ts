@@ -236,6 +236,57 @@ describe("tests/dev-os/lib.sh assertions (the checks' own gate)", () => {
     expect(result.status).toBe(0);
   });
 
+  it("does not leak errexit out of a run_* helper (PR #10 review)", () => {
+    // The regression: `run_guard_raw`, `run_task_sh` and `run_stop_hook` used to end with a bare
+    // `set -e`. The checks run *without* errexit, so the first helper call turned it on for the
+    // rest of the file, and `not_ok` returns 1 — a failing assertion then aborted the check
+    // before `finish`, and the aggregate footer said "0 failed" next to a visible FAIL row.
+    //
+    // This is the shape of that bug: a `run_guard` call, then a failing assertion, then two more
+    // assertions and the summary line. All of it must be reached.
+    const result = sourceLib(
+      'project="$(make_project)"\n' +
+        'run_guard "$project" Write src/x.ts\n' +
+        'assert_eq deliberate mismatch "fails after run_guard"\n' +
+        'assert_eq same same "still running after the failure"\n' +
+        'finish "errexit.test.sh"',
+    );
+
+    expect(result.stdout).toContain("not ok 1 - fails after run_guard");
+    // The assertion *after* the failure, and the summary, are the two things the leak destroyed.
+    expect(result.stdout).toContain("ok 2 - still running after the failure");
+    expect(result.stdout).toContain("# errexit.test.sh: 1 passed, 1 failed");
+    expect(result.status).toBe(1);
+  });
+
+  it("reports errexit off after each run_* helper", () => {
+    // The helpers restore what they found; the checks are sourced without errexit, so "off".
+    const result = sourceLib(
+      'project="$(make_git_project)"\n' +
+        'run_guard "$project" Write src/x.ts\n' +
+        'case "$-" in *e*) echo "after run_guard: on" ;; *) echo "after run_guard: off" ;; esac\n' +
+        'run_task_sh "$project" show\n' +
+        'case "$-" in *e*) echo "after run_task_sh: on" ;; *) echo "after run_task_sh: off" ;; esac\n' +
+        'run_stop_hook "$project"\n' +
+        'case "$-" in *e*) echo "after run_stop_hook: on" ;; *) echo "after run_stop_hook: off" ;; esac',
+    );
+
+    expect(result.stdout).toContain("after run_guard: off");
+    expect(result.stdout).toContain("after run_task_sh: off");
+    expect(result.stdout).toContain("after run_stop_hook: off");
+  });
+
+  it("puts errexit back when the caller did have it on", () => {
+    const result = sourceLib(
+      "set -e\n" +
+        'project="$(make_project)"\n' +
+        'run_guard "$project" Write src/x.ts\n' +
+        'case "$-" in *e*) echo "restored: on" ;; *) echo "restored: off" ;; esac',
+    );
+
+    expect(result.stdout).toContain("restored: on");
+  });
+
   it("refuses to point a hook at the real repository (exit 99)", () => {
     const result = sourceLib(`run_stop_hook "${repoRoot}"`);
     expect(result.stdout).toContain("Bail out!");

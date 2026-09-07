@@ -1,7 +1,41 @@
-# CI (spec 001 §2 "CI", TASK-002 + TASK-008 + TASK-009 + TASK-010). Job order follows plan/12 §5:
-# lint → typecheck → test-unit → test-integration → build → seo-validate → dev-os-check →
-# preview → e2e/visual/a11y → lighthouse, plus commitlint on PR commits (AC-20).
-# TASK-011 appends the remaining jobs (test:contract, db:check, audit) and verifies the final set.
+# CI (spec 001 §2 "CI"; TASK-002 + TASK-008 + TASK-009 + TASK-010 + TASK-011). AC-21: this file
+# is the source of truth for the required-status-check set — `scripts/branch-protection.ts` reads
+# the job names straight out of it, so a job added here is part of the branch-protection contract
+# without anybody editing a list (`pnpm branch-protection --verify`).
+#
+# Jobs (17): lint · typecheck · test-unit · test-integration · test-contract · build · db-check ·
+# env-build-failure · commitlint · seo-validate · dev-os-check · audit · preview · e2e · visual ·
+# a11y · lighthouse.
+#
+# Order, and where it departs from spec 001 §2 / plan/12 §5 (TASK-011 reconciliation; the
+# corrections are recorded on TASK-012 for the spec text):
+#
+#  - `lint` → `typecheck` is the spine. Everything that needs neither a browser nor a preview
+#    deployment hangs off `typecheck` and runs in parallel: `test-unit`, `test-integration`,
+#    `test-contract`, `env-build-failure`, `db-check`, `seo-validate`, `dev-os-check`, `audit`.
+#    The spec lists them as a chain; running them as one would triple the wall-clock time of every
+#    PR without catching anything a parallel fan-out misses, since none of them consumes another's
+#    output. `build` keeps `needs: test-unit` (do not spend build minutes on a red unit suite).
+#  - **`env:check` has no job of its own.** It is a step of `lint` (added by TASK-005): it is a
+#    key-set diff between `.env.example` and the zod schema that takes milliseconds and needs the
+#    same checkout and install as the other lint steps. A separate job would add a runner, an
+#    install and a required check for one `node` invocation. `pnpm env:check` therefore appears in
+#    the `lint` job's step summary, and AC-11 is enforced on every PR.
+#  - `db:check` runs as its own `db-check` job rather than a step of `build` (spec §2 puts it
+#    after `build`): from spec 002 it grows a Postgres connection and drift detection, and a
+#    separate job is where a service container can be attached without touching `build`.
+#  - `seo-validate` and `dev-os-check` sit early, on `needs: typecheck`, not after `lighthouse`
+#    where §2 lists them. Neither one touches a preview deployment (the SEO validators read
+#    committed fixtures; the dev-OS checks run the hooks against temp projects), so making them
+#    wait 15 minutes for a Vercel deployment would delay two of the fastest gates in the file for
+#    no reason. Spec correction recorded on TASK-012.
+#  - `audit` likewise sits early: `pnpm audit` and the secret scan are the cheapest way to find
+#    out that a PR should not be looked at further.
+#  - `preview` → `e2e`/`visual`/`a11y` → `lighthouse` is the one real chain and matches the spec:
+#    the three Playwright suites and Lighthouse all run against the preview URL `preview` resolves.
+#
+# spec 001 §11: **every job writes a GitHub step summary.** A green tick says a command exited 0;
+# the summary says what it measured, and it is what the reviewer quotes in the PR.
 name: ci
 
 on:
@@ -16,6 +50,14 @@ concurrency:
 permissions:
   contents: read
 
+defaults:
+  run:
+    # `shell: bash` is `bash --noprofile --norc -eo pipefail`, where the bare default is only
+    # `bash -e`. Several steps below pipe a command into `tee` so its output can be summarised;
+    # without `pipefail` those pipelines would report `tee`'s exit status and a failing gate would
+    # show green.
+    shell: bash
+
 jobs:
   lint:
     name: lint
@@ -24,11 +66,40 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
-      - run: pnpm lint
-      - run: pnpm check:no-literal-disable
-      - run: pnpm format:check
-      # `.env.example` and the zod schema must agree in both directions (AC-11, TASK-005).
-      - run: pnpm env:check
+      # ESLint (incl. the five `fo/*` rules and the module boundaries) + Stylelint. `--max-warnings
+      # 0` is not passed because every rule in `eslint.config.mjs` is configured as an error; the
+      # count below is therefore the error count.
+      - name: ESLint and Stylelint
+        id: eslint
+        run: pnpm lint 2>&1 | tee lint.log
+      - name: No `eslint-disable` for fo/no-literal-strings under src/ (AC-6)
+        run: pnpm check:no-literal-disable | tee no-literal-disable.log
+      - name: Prettier
+        run: pnpm format:check | tee format.log
+      # `.env.example` and the zod schema must agree in both directions (AC-11, TASK-005). It runs
+      # here rather than in a job of its own: see the reconciliation note at the top of this file.
+      - name: env:check — `.env.example` against the zod schema (AC-11)
+        run: pnpm env:check | tee env-check.log
+      - name: Summarise the lint gate
+        if: always()
+        run: |
+          set -uo pipefail
+          # `problems` counts ESLint/Stylelint problem lines; zero on a green run, which is the
+          # only run that reaches this step with the earlier ones green.
+          problems=0
+          if [ -f lint.log ]; then
+            problems=$(grep -cE '^\s+[0-9]+:[0-9]+\s+(error|warning)' lint.log || true)
+          fi
+          {
+            echo "### lint"
+            echo ""
+            echo "| check | command | result |"
+            echo "|---|---|---|"
+            echo "| ESLint + Stylelint | \`pnpm lint\` | ${{ steps.eslint.outcome }}, $problems problem(s) |"
+            echo "| eslint-disable audit (AC-6) | \`pnpm check:no-literal-disable\` | $( [ -f no-literal-disable.log ] && tr '\n' ' ' < no-literal-disable.log || echo 'did not run' ) |"
+            echo "| Prettier | \`pnpm format:check\` | $( [ -f format.log ] && echo 'all matched' || echo 'did not run' ) |"
+            echo "| env:check (AC-11) | \`pnpm env:check\` | $( [ -f env-check.log ] && tr '\n' ' ' < env-check.log || echo 'did not run' ) |"
+          } >> "$GITHUB_STEP_SUMMARY"
 
   typecheck:
     name: typecheck
@@ -38,7 +109,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
-      - run: pnpm typecheck
+      - name: tsc --noEmit
+        id: tsc
+        run: pnpm typecheck 2>&1 | tee tsc.log
+      - name: Summarise the typecheck gate
+        if: always()
+        run: |
+          set -uo pipefail
+          errors=0
+          if [ -f tsc.log ]; then
+            errors=$(grep -cE 'error TS[0-9]+' tsc.log || true)
+          fi
+          # The strict flags themselves (AC-2) are asserted by `pnpm typecheck:fixtures` in the
+          # unit suite (`tests/unit/*`, TASK-001), not here; this job's job is the project tree.
+          {
+            echo "### typecheck"
+            echo ""
+            echo "- \`pnpm typecheck\` (tsc --noEmit, strict): ${{ steps.tsc.outcome }}, $errors error(s)"
+          } >> "$GITHUB_STEP_SUMMARY"
 
   # AC-16 / T-17 (TASK-008): the unit suite is the gate the other jobs stand on, so it runs before
   # `build`. Coverage is collected on every run (thresholds come from `vitest.coverage.json`,
@@ -51,6 +139,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
+      # `tests/unit/audit-secrets.test.ts` (T-28) skips its scans when gitleaks is absent, and the
+      # summary step below fails the job on *any* skipped unit test. Installing the binary here is
+      # what makes "skipped locally, enforced in CI" true rather than a comment.
+      - uses: ./.github/actions/gitleaks
       - name: Run the unit suite with coverage
         run: >
           pnpm test:coverage
@@ -156,6 +248,134 @@ jobs:
             exit 1
           fi
 
+  # spec 001 §2 "CI" lists `test:contract` between `test-integration` and `build`. The layer is
+  # empty in 001 — there is no adapter to pin and a fabricated fixture would pin a shape nobody
+  # observed (`tests/contract/README.md` names the boundaries and their owning specs) — so the
+  # project runs with `--passWithNoTests`. The job exists from the first PR for the same reason
+  # `test-integration` does: spec 013/014/017 add a file, not a gate.
+  test-contract:
+    name: test-contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: typecheck
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - name: Run the contract suite
+        run: >
+          pnpm test:contract
+          --reporter=default
+          --reporter=json
+          --outputFile=vitest-contract.json
+      - name: Summarise the run
+        if: always()
+        run: |
+          set -euo pipefail
+          files=0
+          total=0
+          failed=0
+          if [ -f vitest-contract.json ]; then
+            files=$(jq '.numTotalTestSuites' vitest-contract.json)
+            total=$(jq '.numTotalTests' vitest-contract.json)
+            failed=$(jq '.numFailedTests' vitest-contract.json)
+          fi
+          {
+            echo "### test-contract"
+            echo ""
+            echo "- test files: $files, tests: $total, failed: $failed"
+            if [ "$total" = "0" ]; then
+              echo "- the contract layer is empty in spec 001 by design; the first fixtures arrive"
+              echo "  with specs 013 (Stripe), 014 (Mollie) and 017 (Resend) —"
+              echo "  see \`tests/contract/README.md\`."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$failed" != "0" ]; then
+            echo "::error::the contract suite reported failures"
+            exit 1
+          fi
+
+  # spec 001 §5.1: a stub until spec 002. It already enforces the rule that would otherwise be
+  # remembered too late — every migration has a checked-in rollback (`CLAUDE.md`) — and prints
+  # `no migrations` while `supabase/migrations/` holds only its `.gitkeep`.
+  db-check:
+    name: db-check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: typecheck
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - name: Check the migration set
+        id: db
+        run: pnpm db:check 2>&1 | tee db-check.log
+      - name: Summarise the migration set
+        if: always()
+        run: |
+          set -uo pipefail
+          migrations=$(find supabase/migrations -maxdepth 1 -type f -name '*.sql' ! -name '*.down.sql' | wc -l | tr -d ' ')
+          rollbacks=$(find supabase/migrations -maxdepth 1 -type f -name '*.down.sql' | wc -l | tr -d ' ')
+          {
+            echo "### db-check (spec 001 §5.1)"
+            echo ""
+            echo "- \`pnpm db:check\`: ${{ steps.db.outcome }} — $( [ -f db-check.log ] && tr '\n' ' ' < db-check.log || echo 'did not run' )"
+            echo "- forward migrations: $migrations; rollback files: $rollbacks"
+            if [ "$migrations" = "0" ]; then
+              echo "- stub until spec 002, which replaces the body of \`scripts/db-check.ts\` with"
+              echo "  schema-drift and RLS checks against a real database."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # AC-27 / T-28 (TASK-011): the two halves of "is anything in here dangerous" — a vulnerable
+  # production dependency and a committed credential. `pnpm run audit` runs both, so one command
+  # reproduces this job locally. (`pnpm run`, not a bare `pnpm audit`: pnpm has a built-in `audit`
+  # command that shadows the script of the same name. The two halves are separate steps here so
+  # each gets its own status in the log and the step summary.)
+  #
+  # `--prod`: a devDependency advisory cannot reach a user, and failing every PR on one would
+  # teach everybody to ignore this job. `--audit-level=high` is the gate spec 001 §8 asks for;
+  # Renovate's `vulnerabilityAlerts` (see `renovate.json`) opens the fixing PR out of band.
+  audit:
+    name: audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: typecheck
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The secret scan reads the working tree, so a shallow checkout is enough; `fetch-depth`
+          # is left at its default deliberately rather than pulling the whole history for a scan
+          # that would not act on it.
+          fetch-depth: 1
+      - uses: ./.github/actions/setup
+      - uses: ./.github/actions/gitleaks
+      - name: pnpm audit (production dependencies, high and above)
+        id: deps
+        run: |
+          set -uo pipefail
+          pnpm audit --prod --audit-level=high --json > audit.json 2>audit.err || true
+          pnpm audit --prod --audit-level=high 2>&1 | tee audit.log
+          exit "${PIPESTATUS[0]}"
+      - name: gitleaks (writes its own summary section)
+        id: secrets
+        run: pnpm audit:secrets
+      - name: Summarise the dependency audit
+        if: always()
+        run: |
+          set -uo pipefail
+          # `pnpm audit --json` reports `{"advisories":{…},"metadata":{"vulnerabilities":{…}}}`.
+          # `// empty` keeps the summary honest when the file is missing rather than printing 0.
+          counts="unavailable"
+          if [ -s audit.json ]; then
+            counts=$(jq -r '[.metadata.vulnerabilities | to_entries[] | "\(.key): \(.value)"] | join(", ")' audit.json 2>/dev/null || echo "unavailable")
+          fi
+          {
+            echo "### audit — dependencies (AC-27 / T-28)"
+            echo ""
+            echo "- \`pnpm audit --prod --audit-level=high\`: ${{ steps.deps.outcome }}"
+            echo "- advisories by severity: $counts"
+            echo "- gitleaks step: ${{ steps.secrets.outcome }} (its finding count is in the section below)"
+          } >> "$GITHUB_STEP_SUMMARY"
+
   build:
     name: build
     runs-on: ubuntu-latest
@@ -168,7 +388,34 @@ jobs:
       - uses: ./.github/actions/setup
       # A clean clone builds from the committed placeholders (spec 001 §13 Q10, AC-1).
       - run: cp .env.example .env.local
-      - run: pnpm build
+      - name: next build
+        id: next
+        run: pnpm build 2>&1 | tee build.log
+      # AC-32 / T-33: `install && build` must leave the tree clean. The check belongs to whichever
+      # job actually builds, and this is it.
+      - name: Assert the working tree is clean after the build (AC-32 / T-33)
+        run: |
+          set -uo pipefail
+          rm -f .env.local build.log
+          porcelain=$(git status --porcelain)
+          {
+            echo "### build (AC-1, AC-32 / T-01, T-33)"
+            echo ""
+            echo "- \`pnpm build\` from \`.env.example\` placeholders: ${{ steps.next.outcome }}"
+            if [ -z "$porcelain" ]; then
+              echo "- \`git status --porcelain\` after install + build: empty"
+            else
+              echo "- \`git status --porcelain\` after install + build: **not empty**"
+              echo ""
+              echo '```'
+              echo "$porcelain"
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ -n "$porcelain" ]; then
+            echo "::error::the working tree is dirty after install + build (AC-32); see the step summary"
+            exit 1
+          fi
 
   # T-11 / AC-10 (TASK-005): a missing variable must fail the build, name the offending key and
   # echo no other variable's value. A sentinel value is injected into a second key; the build
@@ -228,11 +475,32 @@ jobs:
           fetch-depth: 0
       - uses: ./.github/actions/setup
       - name: Lint every commit in the PR
-        run: >
-          pnpm exec commitlint
-          --from "${{ github.event.pull_request.base.sha }}"
-          --to "${{ github.event.pull_request.head.sha }}"
-          --verbose
+        id: commitlint
+        run: |
+          set -uo pipefail
+          pnpm exec commitlint \
+            --from "${{ github.event.pull_request.base.sha }}" \
+            --to "${{ github.event.pull_request.head.sha }}" \
+            --verbose 2>&1 | tee commitlint.log
+          exit "${PIPESTATUS[0]}"
+      - name: Summarise the commit range (AC-20)
+        if: always()
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -uo pipefail
+          commits=$(git rev-list --count "$BASE_SHA..$HEAD_SHA")
+          problems=0
+          if [ -f commitlint.log ]; then
+            problems=$(grep -cE '^\s*✖' commitlint.log || true)
+          fi
+          {
+            echo "### commitlint (AC-20 / T-21)"
+            echo ""
+            echo "- commits linted: $commits (\`$BASE_SHA..$HEAD_SHA\`)"
+            echo "- config: \`@commitlint/config-conventional\`; result: ${{ steps.commitlint.outcome }}, $problems problem(s)"
+          } >> "$GITHUB_STEP_SUMMARY"
 
   # AC-22 / T-23 (TASK-009): the three SEO validator CLIs over their committed fixture
   # directories. In spec 001 those directories hold only a `.gitkeep`, so the job prints
@@ -474,7 +742,10 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
       - run: pnpm exec playwright install --with-deps chromium
-      - run: pnpm test:e2e
+      - name: pnpm test:e2e
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: playwright-e2e.json
+        run: pnpm test:e2e --reporter=github,json,list
       - name: Upload the Playwright report
         if: failure()
         uses: actions/upload-artifact@v4
@@ -485,6 +756,26 @@ jobs:
             test-results/
           retention-days: 7
           if-no-files-found: warn
+      - name: Summarise the e2e run (AC-14, AC-15 / T-15, T-16)
+        if: always()
+        run: |
+          set -uo pipefail
+          if [ ! -f playwright-e2e.json ]; then
+            echo "::error::Playwright produced no JSON report; cannot summarise the e2e run"
+            exit 1
+          fi
+          # `suites` is a tree; `..|.tests?//empty` flattens it to every test, whatever the nesting.
+          expected=$(jq '[.suites | .. | .tests? // empty | .[]] | length' playwright-e2e.json)
+          statuses=$(jq -r '[.suites | .. | .specs? // empty | .[] | if .ok then "passed" else "failed" end] | group_by(.) | map("\(.[0]): \(length)") | join(", ")' playwright-e2e.json)
+          # The projects that actually ran, not every project in `playwright.config.ts`.
+          projects=$(jq -r '[.suites | .. | .specs? // empty | .[] | .tests[].projectName] | unique | join(", ")' playwright-e2e.json)
+          {
+            echo "### e2e (AC-14, AC-15 / T-15, T-16)"
+            echo ""
+            echo "- target: ${{ needs.preview.outputs.preview_url }}"
+            echo "- projects: $projects"
+            echo "- tests: $expected — $statuses"
+          } >> "$GITHUB_STEP_SUMMARY"
 
   visual:
     name: visual
@@ -500,7 +791,10 @@ jobs:
       - run: pnpm exec playwright install --with-deps chromium
       # Baselines are committed (AC-17) and platform-agnostic while the shell has no text or
       # fonts; `--update-snapshots` is never passed here, so a missing baseline fails the job.
-      - run: pnpm test:visual
+      - name: pnpm test:visual
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: playwright-visual.json
+        run: pnpm test:visual --reporter=github,json,list
       - name: Upload the Playwright report (with the diff images)
         if: failure()
         uses: actions/upload-artifact@v4
@@ -511,6 +805,28 @@ jobs:
             test-results/
           retention-days: 7
           if-no-files-found: warn
+      - name: Summarise the visual run (AC-17 / T-18)
+        if: always()
+        run: |
+          set -uo pipefail
+          if [ ! -f playwright-visual.json ]; then
+            echo "::error::Playwright produced no JSON report; cannot summarise the visual run"
+            exit 1
+          fi
+          # `suites` is a tree; `..|.tests?//empty` flattens it to every test, whatever the nesting.
+          expected=$(jq '[.suites | .. | .tests? // empty | .[]] | length' playwright-visual.json)
+          statuses=$(jq -r '[.suites | .. | .specs? // empty | .[] | if .ok then "passed" else "failed" end] | group_by(.) | map("\(.[0]): \(length)") | join(", ")' playwright-visual.json)
+          # The projects that actually ran, not every project in `playwright.config.ts`.
+          projects=$(jq -r '[.suites | .. | .specs? // empty | .[] | .tests[].projectName] | unique | join(", ")' playwright-visual.json)
+          {
+            echo "### visual (AC-17 / T-18)"
+            echo ""
+            echo "- target: ${{ needs.preview.outputs.preview_url }}"
+            echo "- projects: $projects"
+            echo "- tests: $expected — $statuses"
+            echo "- screenshots compared against the committed baselines at a 0.1 % threshold;"
+            echo "  a missing baseline fails the job (`--update-snapshots` is never passed in CI)."
+          } >> "$GITHUB_STEP_SUMMARY"
 
   a11y:
     name: a11y
@@ -525,7 +841,10 @@ jobs:
       - uses: ./.github/actions/setup
       - run: pnpm exec playwright install --with-deps chromium
       # spec 001 §8: zero serious/critical axe violations on `/`.
-      - run: pnpm test:a11y
+      - name: pnpm test:a11y
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: playwright-a11y.json
+        run: pnpm test:a11y --reporter=github,json,list
       - name: Upload the Playwright report (with the axe attachment)
         if: failure()
         uses: actions/upload-artifact@v4
@@ -536,6 +855,27 @@ jobs:
             test-results/
           retention-days: 7
           if-no-files-found: warn
+      - name: Summarise the a11y run (AC-17 / T-18)
+        if: always()
+        run: |
+          set -uo pipefail
+          if [ ! -f playwright-a11y.json ]; then
+            echo "::error::Playwright produced no JSON report; cannot summarise the a11y run"
+            exit 1
+          fi
+          # `suites` is a tree; `..|.tests?//empty` flattens it to every test, whatever the nesting.
+          expected=$(jq '[.suites | .. | .tests? // empty | .[]] | length' playwright-a11y.json)
+          statuses=$(jq -r '[.suites | .. | .specs? // empty | .[] | if .ok then "passed" else "failed" end] | group_by(.) | map("\(.[0]): \(length)") | join(", ")' playwright-a11y.json)
+          # The projects that actually ran, not every project in `playwright.config.ts`.
+          projects=$(jq -r '[.suites | .. | .specs? // empty | .[] | .tests[].projectName] | unique | join(", ")' playwright-a11y.json)
+          {
+            echo "### a11y (AC-17 / T-18)"
+            echo ""
+            echo "- target: ${{ needs.preview.outputs.preview_url }}"
+            echo "- projects: $projects"
+            echo "- tests: $expected — $statuses"
+            echo "- axe: zero serious/critical violations required (spec 001 §8)."
+          } >> "$GITHUB_STEP_SUMMARY"
 
   # AC-23 / T-24 (TASK-009): Lighthouse CI against the preview `/` with the `plan/01` §7 budgets
   # as assertions.
