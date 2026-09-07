@@ -28,4 +28,8 @@ Rules of the house:
 
 Related directories that are *not* fixtures: `tests/msw/` (request handlers and the node server),
 `tests/visual/__screenshots__/` (committed visual baselines, regenerated with
-`pnpm test:visual --update-snapshots`).
+`pnpm test:visual --update-snapshots`), and `tests/dev-os/` (shell checks for the PreToolUse
+guard, `task.sh` and the Stop hook — AC-24…AC-26, run by `pnpm dev-os:check`). The dev-OS checks
+build their own throwaway `TASKS.md` and `.claude/state/` in a temp directory rather than taking a
+fixture from here, because they must never read or write the real repository's active-task pointer:
+see `tests/dev-os/README.md`.
