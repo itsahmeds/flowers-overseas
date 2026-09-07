@@ -36,7 +36,17 @@ const eslintConfig = defineConfig([
       "fo/no-literal-strings": "error",
       "fo/no-direct-order-status-write": "error",
       "fo/no-geo-redirect": "error",
+      // spec 001 §2: `no-console` (error) outside `src/lib/logger.ts` and `scripts/`. The logger
+      // is the only writer of log lines, so PII redaction cannot be bypassed (§8, AC-12).
+      "no-console": "error",
     },
+  },
+  {
+    // `src/lib/logger.ts` is the single allowed console writer: on the edge runtime there is no
+    // `process.stdout`, so the logger falls back to `console.log` (spec 001 §5, TASK-005).
+    name: "fo/logger-console",
+    files: ["src/lib/logger.ts"],
+    rules: { "no-console": "off" },
   },
   {
     // plan/01 §5: `app/` imports from `modules/`, never the reverse; `modules/*` import each
@@ -66,6 +76,7 @@ const eslintConfig = defineConfig([
       "fo/no-literal-strings": "error",
       "fo/no-direct-order-status-write": "error",
       "fo/no-geo-redirect": "error",
+      "no-console": "error",
     },
   },
   {

@@ -49,6 +49,8 @@ describe("pnpm lint:fixtures over the real configs", () => {
     expect(rulesFor("src/modules/orders/module-imports-app.ts")).toEqual([
       "import/no-restricted-paths",
     ]);
+    // AC-12 (TASK-005): `no-console` outside `src/lib/logger.ts` and `scripts/`.
+    expect(rulesFor("console.ts")).toEqual(["no-console"]);
   });
 
   it("leaves the logical and valid counterparts clean", () => {
@@ -65,6 +67,7 @@ describe("pnpm lint:fixtures over the real configs", () => {
       "order-status-valid.ts",
       "geo-redirect-valid.ts",
       "float-money-valid.ts",
+      "console-valid.ts",
       "stubs.ts",
       "src/modules/orders/service/transition.ts",
       "src/modules/i18n/hints.ts",
@@ -104,6 +107,25 @@ describe("pnpm lint:fixtures over the real configs", () => {
     expect(config.rules?.["fo/no-float-money"]).toBeUndefined();
     expect(config.rules?.["fo/no-direct-order-status-write"]?.[0]).toBe(2);
     expect(config.rules?.["fo/no-geo-redirect"]?.[0]).toBe(2);
+  });
+
+  it("makes no-console an error in src/** but not in src/lib/logger.ts (AC-12)", async () => {
+    const eslint = new ESLint({
+      cwd: repoRoot,
+      overrideConfigFile: resolve(repoRoot, "eslint.config.mjs"),
+    });
+    const appConfig = await eslint.calculateConfigForFile(
+      resolve(repoRoot, "src/modules/orders/service/transition.ts"),
+    );
+    expect(appConfig.rules?.["no-console"]?.[0]).toBe(2);
+    const loggerConfig = await eslint.calculateConfigForFile(
+      resolve(repoRoot, "src/lib/logger.ts"),
+    );
+    expect(loggerConfig.rules?.["no-console"]?.[0]).toBe(0);
+    const scriptConfig = await eslint.calculateConfigForFile(
+      resolve(repoRoot, "scripts/env-check.ts"),
+    );
+    expect(scriptConfig.rules?.["no-console"]).toBeUndefined();
   });
 
   it("applies the fo rules to src/**/*.tsx", async () => {
