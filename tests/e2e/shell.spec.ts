@@ -48,8 +48,20 @@ test.describe("GET /", () => {
       );
     const origin = new URL(baseURL ?? "http://localhost:3000").origin;
     const thirdParty = sources.filter((src) => new URL(src).origin !== origin);
+    // Nothing in `src/` loads a script (spec 001 §5.3), so a local run must find exactly zero.
+    // A Vercel *preview* additionally gets `vercel.live/_next-live/feedback/feedback.js`
+    // injected by the platform (Vercel Toolbar / preview comments); it is not in our HTML, it
+    // never reaches production, and it can only be removed by turning Comments off in the Vercel
+    // project settings. Allowed here by exact origin so a real third-party script — an analytics
+    // or chat tag someone adds to the shell — still fails, and only on a non-local target.
+    const platformInjected = new Set(
+      origin.startsWith("http://localhost") ? [] : ["https://vercel.live"],
+    );
+    const unexpected = thirdParty.filter(
+      (src) => !platformInjected.has(new URL(src).origin),
+    );
 
-    expect(thirdParty).toEqual([]);
+    expect(unexpected).toEqual([]);
   });
 });
 
