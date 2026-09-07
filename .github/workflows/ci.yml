@@ -252,10 +252,12 @@ jobs:
               exit 1
               ;;
           esac
+          # `tee` so the T-30 evidence is in the job *log* as well: a step summary cannot be read
+          # back through the API, and the reviewer has to quote these four values in the PR.
           {
             echo "- unauthenticated \`/api/health\`: $protection_evidence (protected)"
             echo "- with bypass: $bypass_status"
             echo "- \`x-vercel-id\`: $vercel_id (fra1 present)"
             echo "- \`X-Robots-Tag\`: $robots"
-          } >> "$GITHUB_STEP_SUMMARY"
+          } | tee -a "$GITHUB_STEP_SUMMARY"
           rm -f "$headers"
