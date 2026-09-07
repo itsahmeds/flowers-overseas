@@ -1,0 +1,8 @@
+/* Invalid fixture: physical CSS properties (spec 001 AC-4). */
+.physical {
+  margin-left: 4px;
+  padding-right: 8px;
+  border-left-width: 1px;
+  text-align: left;
+  left: 0;
+}

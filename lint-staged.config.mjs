@@ -7,6 +7,9 @@ const config = {
     "eslint --fix --max-warnings=0 --no-warn-ignored",
     "prettier --write --ignore-unknown",
   ],
+  // Stylelint enforces the logical-CSS bans of spec 001 §7 (TASK-003); Prettier still runs on
+  // the same files through the catch-all below.
+  "src/**/*.css": "stylelint",
   "!*.{js,mjs,cjs,ts,mts,tsx}": "prettier --write --ignore-unknown",
 };
 

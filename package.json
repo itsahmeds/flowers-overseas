@@ -11,7 +11,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint .",
+    "lint": "pnpm lint:js && pnpm lint:css",
+    "lint:js": "eslint .",
+    "lint:css": "stylelint \"src/**/*.css\"",
+    "lint:fixtures": "node scripts/lint-fixtures.ts",
     "typecheck": "tsc --noEmit",
     "typecheck:fixtures": "tsc --noEmit -p tsconfig.fixtures.json",
     "test": "vitest run",
@@ -19,6 +22,7 @@
     "format:check": "prettier --check .",
     "check-layout": "node scripts/check-layout.ts",
     "pr-policy": "node scripts/pr-policy.ts",
+    "check:no-literal-disable": "node scripts/check-no-literal-disable.ts",
     "prepare": "husky"
   },
   "dependencies": {
@@ -43,6 +47,7 @@
     "lint-staged": "^17.5.0",
     "prettier": "^3.9.6",
     "prettier-plugin-tailwindcss": "^0.8.1",
+    "stylelint": "^17.15.0",
     "tailwindcss": "^4.3.3",
     "typescript": "^5.9.3",
     "vitest": "^4.1.11"
