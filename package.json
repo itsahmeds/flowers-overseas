@@ -21,14 +21,18 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check-layout": "node scripts/check-layout.ts",
+    "env:check": "node scripts/env-check.ts",
     "pr-policy": "node scripts/pr-policy.ts",
     "check:no-literal-disable": "node scripts/check-no-literal-disable.ts",
     "prepare": "husky"
   },
   "dependencies": {
+    "@next/env": "^16.3.4",
+    "@sentry/nextjs": "^10.73.0",
     "next": "16.3.4",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "zod": "^4.5.4"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.2",
