@@ -5,23 +5,48 @@ Maintained by the orchestrator (`/plan-tasks`, `/status`) and updated by impleme
 ## Phase progress
 | Phase | Specs approved | Tasks done / total | Gate status |
 |---|---|---|---|
-| 0 Demo | 0 / 12 | 0 / 0 | not started |
+| 0 Demo | 1 / 12 | 0 / 12 | in progress (spec 001 planned 2026-09-07) |
 | 1 MVP | 0 / 13 | 0 / 0 | — |
 | 2 Portal | 0 / 6 | 0 / 0 | — |
 | 3 CRM | 0 / 8 | 0 / 0 | — |
 | 4 Scale | — | — | — |
 
 ## Tasks
-| ID | Title | Spec | Phase | Status | Owner agent | PR | Depends on | Blockers / notes |
+Every task: one PR, branch `task/TASK-NNN-<slug>`, PR title `<type>(<scope>): … (TASK-NNN)`, definition of done = `CLAUDE.md` "Definition of done" (7 items). "Spec / AC owned" lists the acceptance criteria the reviewer verifies in that PR; each AC of a spec is owned by exactly one task. Test IDs refer to the spec's §10 table.
+
+| ID | Title | Spec / AC owned | Phase | Status | Owner agent | PR | Depends on | Blockers / notes |
 |---|---|---|---|---|---|---|---|---|
-| — | (no tasks yet; run `/spec` then `/plan-tasks`) | | | | | | | |
+| TASK-001 | Scaffold: Next.js App Router in TS strict, `plan/01` §5 tree, Tailwind logical vocabulary, Prettier + base ESLint, Vitest baseline, `.gitignore` | `specs/001-repo-dev-os-bootstrap.md` · AC-1, AC-2, AC-3, AC-32 | 0 | todo | backend-implementer | — | — | Branch `task/TASK-001-scaffold`. pnpm via `packageManager` + Corepack, Node 24 major (§13 Q2/Q3). Includes `scripts/check-layout.ts` (T-03), `tsconfig.fixtures.json` + `tests/fixtures/ts/unchecked-index.ts` (T-02), Vitest node env + `pnpm test` with one smoke test (enables RuleTester tests in 003/004; AC-16 itself owned by TASK-008), empty module barrels with owning-spec comment, `supabase/migrations/`, `seed/`, `messages/` with `.gitkeep`. Tests: T-01, T-02, T-03, T-33 (CI job for T-01/T-33 is added by TASK-002/011; local run here). PR must already be titled `… (TASK-001)` (§12 note c). |
+| TASK-002 | Git hooks and PR policy: husky + lint-staged + commitlint, minimal `ci.yml` (lint → typecheck → build), `pr-policy.yml` | `specs/001` · AC-19, AC-20 | 0 | todo | backend-implementer | — | TASK-001 | Branch `task/TASK-002-hooks-pr-policy`. Title regex, branch regex, bot + `no-task` exemption per §13 Q5; commitlint on PR commits. Later tasks append their own `ci.yml` jobs; final job set/order verified in TASK-011. Tests: T-20 (throwaway PR or `act`), T-21. |
+| TASK-003 | Lint rules `fo/no-physical-css` (+ Stylelint disallow list) and `fo/no-literal-strings`; local `fo/` plugin skeleton; `tests/fixtures/lint/` excluded from main lint | `specs/001` · AC-4, AC-5, AC-6 | 0 | todo | backend-implementer | — | TASK-001 | Branch `task/TASK-003-lint-css-i18n-rules`. Mechanises §7 (logical CSS, no literal strings). AC-6 check ships as a script/unit test (T-07). Tests: T-04, T-05, T-06, T-07. |
+| TASK-004 | Lint rules `fo/no-direct-order-status-write`, `fo/no-geo-redirect`, `fo/no-float-money`; `import/no-restricted-paths` module boundaries | `specs/001` · AC-7, AC-8, AC-9 · plus §2/§7/§8 `fo/no-float-money` fixtures (no AC id; explicit here) | 0 | todo | backend-implementer | — | TASK-003 | Branch `task/TASK-004-lint-domain-rules`. ADR-0006, ADR-0009. `fo/no-float-money` fixture-only in 001 (enforced from spec 005). Tests: T-08, T-09, T-10 + RuleTester for no-float-money (decimal literal / `parseFloat` / `toFixed` invalid; `*_minor` valid). |
+| TASK-005 | Env schema (`lib/env.ts`, `.env.example`, `env:check`), JSON logger with PII redaction, `x-request-id` middleware, `no-console`, Sentry no-op wiring with `beforeSend` scrub | `specs/001` · AC-10, AC-11, AC-12, AC-13 | 0 | todo | backend-implementer | — | TASK-004 | Branch `task/TASK-005-env-logger-sentry`. Placeholder policy §13 Q10; Sentry EU region §13 Q6; release = SHA, environment = `VERCEL_ENV`; request start/end `info` lines only (§11). Adds `tests/fixtures/env/{valid,missing-key,extra-key}`, `tests/fixtures/lint/console.ts`, and the AC-10 build-failure CI job. Tests: T-11 (CI), T-12, T-13, T-14. Compliance: reviewer records Sentry processor row in `docs/compliance/ropa.md` at PASS (§8 item 1). |
+| TASK-006 | Health route, placeholder shell (`layout`, `page`, `not-found`, `error`), `robots.ts` disallow-all, non-production `X-Robots-Tag: noindex` header, `lib/cache.ts` noop seam | `specs/001` · AC-14, AC-15 · plus §5.4 cache seam and §5.3 404/500 shells (no AC id; explicit here) | 0 | todo | frontend-implementer | — | TASK-005 | Branch `task/TASK-006-health-shell-noindex`. §6 indexability belt-and-braces (meta + header + robots), zero `Set-Cookie`, no third-party scripts, `<html lang="en" dir="ltr">` (lang literal documented as 003 removal in TASK-012). Reviewer verifies AC-14/15 locally via `pnpm build && pnpm start` + `curl -I`; preview re-check happens in TASK-008's e2e (T-15, T-16). |
+| TASK-007 | Vercel project: `vercel link`, Git integration, function region `fra1`, Deployment Protection on preview, preview/production env vars from `.env.example` keys, wait-for-preview step in `ci.yml` | `specs/001` · AC-29 | 0 | todo | backend-implementer | — | TASK-006 | Branch `task/TASK-007-vercel-project`. Founder actions inside the task: link, dashboard Git integration, protection mode + CI bypass secret (§13 Q9). Implementer commits config/CI step and documents verification. Blocked until founder completes linking. Tests: T-30 (manual, recorded in PR). Compliance: reviewer records Vercel processor row in RoPA at PASS (§8 item 2). Cloudflare/domain out of scope (§2 Hosting). |
+| TASK-008 | Test harness: `vitest.coverage.json` thresholds, integration suite (`describe.skip` + 002 TODO) with Postgres service job, Playwright `e2e`/`visual`/`a11y` projects + `pseudo-rtl` device stub, MSW skeleton (`onUnhandledRequest: "error"`), `tests/fixtures` barrel + README, smoke tests, preview-run CI jobs | `specs/001` · AC-16, AC-17, AC-18 · plus §7 pseudo-RTL device stub (no AC id; explicit here) | 0 | todo | frontend-implementer | — | TASK-007 | Branch `task/TASK-008-test-harness`. `PLAYWRIGHT_BASE_URL` = preview in CI, `localhost:3000` locally; visual baseline for `/` committed; axe zero serious/critical (§8 accessibility). Tests: T-15, T-16, T-17, T-18, T-19. |
+| TASK-009 | SEO validator CLIs (`validate-sitemap`, `validate-hreflang`, `validate-schema`) with failure-path unit tests, `tests/fixtures/seo/` (+ `lighthouse-urls.json`), `lighthouserc.json` budgets, `seo:validate` + `lighthouse` CI jobs | `specs/001` · AC-22, AC-23 | 0 | todo | backend-implementer | — | TASK-008 | Branch `task/TASK-009-seo-validators-lighthouse`. §6 harness contract with spec 007 (`@type` allow-list from `plan/02` §9, `Offer.price == visiblePrice`). Lighthouse informational until spec 004 (§13 Q4) but assertions must already pass on `/`. Tests: T-23, T-24. |
+| TASK-010 | Dev-OS checks: `tests/dev-os/` shell + Vitest tests for PreToolUse guard, `task.sh`, Stop hook; `dev-os:check` script + CI job | `specs/001` · AC-24, AC-25, AC-26 | 0 | todo | backend-implementer | — | TASK-008 | Branch `task/TASK-010-dev-os-check`. Must not edit `.claude/hooks/*` or `CLAUDE.md` (§3). Tests: T-25, T-26, T-27 (temp clone). |
+| TASK-011 | CI completion and repo policy: `test:contract`, `db:check` stub, `env:check`, `audit` (pnpm audit + gitleaks), step summaries, job order per `plan/12` §5; PR template, CODEOWNERS, `renovate.json`; branch-protection verification | `specs/001` · AC-21, AC-27, AC-28 | 0 | todo | backend-implementer | — | TASK-009, TASK-010 | Branch `task/TASK-011-ci-completion-repo-policy`. Founder configures branch protection after the first green run and before merging PR 2 (§12 note a); implementer verifies via `gh api` (T-22). Renovate per §13 Q7; owner per Q1. Tests: T-22, T-28, T-29. |
+| TASK-012 | Docs and ledger: README rewrite (≤8 commands, <15 min), `docs/runbooks/local-setup.md` + runbook index, `docs/architecture.md` (Mermaid + module table with owning spec), `.claude/settings.json` allow-list, TASKS.md open-decisions parser test, branch-protection runbook section | `specs/001` · AC-30, AC-31 | 0 | todo | backend-implementer | — | TASK-011 | Branch `task/TASK-012-docs-ledger`. Architecture doc records CSP deferral to 004 (§8) and the `<html lang="en">` 003 removal item (§7). Tests: T-31 (manual, timed by reviewer), T-32. Spec exit signal: this PR merged with recorded `/review` PASS (§12). |
 
 ## Open decisions blocking tasks
-| Decision | Needed by | Owner | Due |
-|---|---|---|---|
-| see `plan/13-open-questions.md` | | Ahmed | |
+Mirrored from `plan/13-open-questions.md` §A. Owner: Ahmed (founder) unless noted. Due: 2026-09-21. Resolved rows stay until the source table is updated.
+
+| # | Question | Blocks | Owner | Due | Default if unanswered | Status |
+|---|---|---|---|---|---|---|
+| A1 | Confirm the four launch URL prefixes `en`, `en-gb`, `de`, `pl`; any objection to `en-gb` as a separate locale? | spec 003, 007 | Ahmed | 2026-09-21 | Yes, four prefixes | open |
+| A2 | Homepage country pick lands on the corridor page vs the country shop root | spec 004, 007 | Ahmed | 2026-09-21 | Corridor; A/B test #1 | open |
+| A3 | Approve taxonomy and the 84-product seed list shape; veto any product names | spec 005, 006 | Ahmed | 2026-09-21 | As written | open |
+| A4 | Seed price bands and payout shares as starting values | spec 005 | Ahmed | 2026-09-21 | As written; validate with first PL florists | open |
+| A5 | Polish UI register: formal (Państwo) vs informal (Ty) for buyer-facing copy | `pl` translations (spec 003 onward) | Ahmed + native reviewer | 2026-09-21 | Informal in UI, formal in legal | open |
+| A6 | Name of the guarantee and its exact terms (refund %, redelivery) | spec 004; plan/07 §2 | Ahmed | 2026-09-21 | 7-day freshness, redeliver-or-refund | open |
+| A7 | Which six demo destinations besides PL get written guides in Phase 0 | spec 007 content | Ahmed | 2026-09-21 | DE, FR, ES, IT, RO, NL as proposed | open |
+| A8 | Authorise Ahrefs (and optionally Firecrawl) connectors for demand re-runs | plan/02 §13, plan/03 §3 orderings | Ahmed | 2026-09-21 | Orderings stay estimate-grade (flagged) | open |
+| A9 | Brand assets: logo, palette, type — existing or minimal system in spec 004? | spec 004 | Ahmed | 2026-09-21 | Spec 004 creates a minimal token system | open |
+| A10 | GitHub repo name/visibility and owning account | week-1 tasks; spec 001 TASK-007, TASK-011 | Ahmed | 2026-09-21 | Private repo under personal account | resolved 2026-09-07 — spec 001 §13 Q1: private repo `flowers-overseas` under the founder's personal account |
 
 ## Log
 | Date | Change |
 |---|---|
 | 2026-09-05 | File created by planning session; no tasks yet |
+| 2026-09-07 | `/plan-tasks specs/001-repo-dev-os-bootstrap.md`: TASK-001…TASK-012 created (all 32 ACs owned exactly once); open-decisions table populated with A1–A10 from plan/13 §A, A10 marked resolved; Phase 0 progress set to 1/12 specs, 0/12 tasks |

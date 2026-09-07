@@ -16,7 +16,7 @@ International flower **relay** service for Europe (`flowersoverseas.com`). Buyer
 Next.js App Router (TS strict) · Supabase Postgres EU (Drizzle for data, Supabase for Auth/Storage) · pg-boss jobs · Stripe primary / Mollie fallback · Resend · Vercel (Railway+Cloudflare fallback) · next-intl · Tailwind with logical properties · Vitest, Playwright, MSW · Sentry.
 
 ## Non-negotiable rules
-- **No application code without a spec in `specs/` and a task ID in `TASKS.md`.** The PreToolUse hook blocks edits under `src/`, `app/`, `supabase/`, `emails/`, `seed/` unless `.claude/state/active-task` names a task. Set it with `.claude/bin/task.sh set TASK-XXX` (the `/implement` skill does this).
+- **No application code without a spec in `specs/` and a task ID in `TASKS.md`.** The PreToolUse hook blocks edits under `src/`, `app/`, `supabase/`, `emails/`, `seed/`, `tests/` unless `.claude/state/active-task` names a task. Set it with `.claude/bin/task.sh set TASK-XXX` (the `/implement` skill does this).
 - Every indexable page is server-rendered HTML; no client-only indexable content. Locale in URL; destination country in shop URLs; currency in cookie (plan/02, plan/03).
 - No IP redirects. Ever. (ADR-0006)
 - Order status changes only via `orderService.transition` (ADR-0009). Never `UPDATE orders SET status`.
