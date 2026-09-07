@@ -190,12 +190,31 @@ jobs:
           BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
         run: |
           set -euo pipefail
-          # 1. Without the bypass: Deployment Protection must refuse the request.
-          unprotected_status=$(curl -sS -o /dev/null -w '%{http_code}' "$PREVIEW_URL/api/health")
+          # 1. Without the bypass: Deployment Protection must refuse the request. Vercel
+          # Authentication does not answer 401/403 to a plain GET: it answers a 302 to
+          # `https://vercel.com/sso-api?url=...` (plus a `_vercel_sso_nonce` cookie). Both shapes
+          # count as protected; a 200, or a redirect anywhere else, does not.
+          unauth_headers=$(mktemp)
+          unprotected_status=$(curl -sSI -o "$unauth_headers" -w '%{http_code}' "$PREVIEW_URL/api/health")
+          unprotected_location=$(grep -i '^location:' "$unauth_headers" | head -n1 | cut -d' ' -f2- | tr -d '\r' || true)
+          rm -f "$unauth_headers"
           case "$unprotected_status" in
-            401|403) ;;
+            401|403)
+              protection_evidence="$unprotected_status"
+              ;;
+            301|302|303|307|308)
+              case "$unprotected_location" in
+                https://vercel.com/sso-api|https://vercel.com/sso-api[?/]*)
+                  protection_evidence="$unprotected_status to vercel.com/sso-api"
+                  ;;
+                *)
+                  echo "::error::GET $PREVIEW_URL/api/health without the bypass header returned $unprotected_status redirecting to '$unprotected_location'; expected 401, 403, or a redirect to https://vercel.com/sso-api. Deployment Protection is not enabled on previews (AC-29)."
+                  exit 1
+                  ;;
+              esac
+              ;;
             *)
-              echo "::error::GET $PREVIEW_URL/api/health without the bypass header returned $unprotected_status; expected 401 or 403. Deployment Protection is not enabled on previews (AC-29)."
+              echo "::error::GET $PREVIEW_URL/api/health without the bypass header returned $unprotected_status; expected 401, 403, or a 302 to https://vercel.com/sso-api. Deployment Protection is not enabled on previews (AC-29)."
               exit 1
               ;;
           esac
@@ -215,10 +234,13 @@ jobs:
             echo "::error::no x-vercel-id response header; cannot verify the function region (AC-29)."
             exit 1
           fi
-          case "$vercel_id" in
-            fra1*) ;;
+          # `x-vercel-id` is `<cdn-node>::<function-region>::<id>`: the first segment is the edge
+          # node that took the request (wherever the runner is), so `fra1` must be *a* segment,
+          # never the prefix.
+          case "::$vercel_id::" in
+            *"::fra1::"*) ;;
             *)
-              echo "::error::x-vercel-id is '$vercel_id'; expected the fra1 prefix (spec 001 §5 Hosting, §8 EU data residency)."
+              echo "::error::x-vercel-id is '$vercel_id'; expected 'fra1' as one of its '::'-separated segments (spec 001 §5 Hosting, §8 EU data residency)."
               exit 1
               ;;
           esac
@@ -231,9 +253,9 @@ jobs:
               ;;
           esac
           {
-            echo "- unauthenticated \`/api/health\`: $unprotected_status (protected)"
+            echo "- unauthenticated \`/api/health\`: $protection_evidence (protected)"
             echo "- with bypass: $bypass_status"
-            echo "- \`x-vercel-id\`: $vercel_id (fra1)"
+            echo "- \`x-vercel-id\`: $vercel_id (fra1 present)"
             echo "- \`X-Robots-Tag\`: $robots"
           } >> "$GITHUB_STEP_SUMMARY"
           rm -f "$headers"

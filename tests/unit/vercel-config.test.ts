@@ -65,14 +65,30 @@ describe("ci.yml preview gate (AC-29 / T-30)", () => {
 
   it("asserts Deployment Protection blocks an unauthenticated request", () => {
     expect(ci).toContain("/api/health");
-    expect(ci).toMatch(/401|403/);
+    expect(ci).toContain("401|403");
   });
 
-  it("asserts fra1, noindex and 200 with the protection-bypass header", () => {
+  it("accepts the Vercel Authentication redirect to vercel.com/sso-api as protected", () => {
+    // Vercel Authentication answers a plain GET with a 302 to the SSO endpoint, not 401/403.
+    expect(ci).toContain("301|302|303|307|308");
+    expect(ci).toContain(
+      "https://vercel.com/sso-api|https://vercel.com/sso-api[?/]*",
+    );
+    // A redirect to any other location, and a 200, must still fail.
+    expect(ci).toMatch(
+      /::error::[^\n]*without the bypass header returned \$unprotected_status redirecting to/,
+    );
+  });
+
+  it("asserts fra1 as a '::' segment of x-vercel-id, not as its prefix", () => {
+    expect(ci).toContain("x-vercel-id");
+    expect(ci).toContain('*"::fra1::"*');
+    expect(ci).not.toContain("fra1*)");
+  });
+
+  it("asserts noindex and 200 with the protection-bypass header", () => {
     expect(ci).toContain("x-vercel-protection-bypass");
     expect(ci).toContain("secrets.VERCEL_AUTOMATION_BYPASS_SECRET");
-    expect(ci).toContain("x-vercel-id");
-    expect(ci).toContain("fra1");
     expect(ci).toContain("X-Robots-Tag");
     expect(ci.toLowerCase()).toContain("noindex");
   });

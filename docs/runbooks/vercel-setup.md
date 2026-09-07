@@ -19,7 +19,7 @@ Facts this runbook assumes (spec 001 §5 "Hosting", §13 Q1/Q9, ADR-0012):
 | Function region | `fra1` (committed in `vercel.json`; do not set it in the dashboard) |
 | Node version | 24 (matches `.node-version` / `engines.node`) |
 | Preview protection | Vercel Authentication (Q9) |
-| Plan | Pro (ADR-0012); see step 8 if the account is on Hobby |
+| Plan | Hobby (as set up 2026-09-07). Vercel Authentication on previews **is** available on Hobby; Password Protection is not — see step 8 |
 
 Prerequisites: `vercel` CLI (`pnpm dlx vercel@latest --version`), logged in (`vercel login`),
 `gh` authenticated with access to the repo, a clean checkout of `main`.
@@ -76,11 +76,16 @@ Project → Settings → Build & Deployment:
 Project → Settings → Deployment Protection:
 
 - **Vercel Authentication**: **Standard Protection** (all preview deployments; production stays
-  public). A browser without a Vercel session then gets `401`/`403` on any preview URL, which is
-  what AC-29 and the `preview` CI job assert.
-- **Password Protection**: not configured in 001. Q9's shared password is for a `staging`
-  environment that does not exist yet (no `staging` branch in 001); add it in the spec that
-  introduces florist-facing staging.
+  public). This is available on the Hobby plan and satisfies Q9's default for previews.
+- What a protected preview actually answers: **not** `401`/`403` to a plain request. Vercel
+  Authentication replies **`HTTP 302` with `location: https://vercel.com/sso-api?url=…`** and a
+  `_vercel_sso_nonce` cookie (a browser follows it to the Vercel login screen). AC-29 and the
+  `preview` CI job therefore accept 401, 403, **or** a redirect whose location is
+  `https://vercel.com/sso-api…`; a `200`, or a redirect to anywhere else, fails.
+- **Password Protection**: not available on Hobby, and not configured in 001 anyway. Q9's shared
+  password is for a `staging` environment that does not exist yet (no `staging` branch in 001); add
+  it in the spec that introduces florist-facing staging — that is the point at which the plan may
+  have to move to Pro.
 
 ## 5. Protection Bypass for Automation + GitHub secret
 
@@ -140,10 +145,18 @@ printf %s 'true' | vercel env add ALLOW_PLACEHOLDER_ENV production \
 
 Notes:
 
-- Previews may keep the placeholder `NEXT_PUBLIC_SITE_URL` (`http://localhost:3000`) only if you
-  also set `ALLOW_PLACEHOLDER_ENV=true` for `preview`; the schema requires an `https` origin in
-  both deployed environments, so the simpler route is to set the preview origin to the production
-  alias as well. Either way the build must succeed — check the first deployment's log.
+- `ALLOW_PLACEHOLDER_ENV=true` is required on **both** `preview` and `production` in 001. The
+  schema rejects the committed placeholders in every deployed environment, preview included, so the
+  loop above must be followed by:
+
+  ```bash
+  printf %s 'true' | vercel env add ALLOW_PLACEHOLDER_ENV preview \
+    --scope ahmedsheikh2654-6252s-projects --force
+  ```
+
+  With that set, previews may keep the placeholder `NEXT_PUBLIC_SITE_URL`
+  (`http://localhost:3000`); otherwise the schema's `https` origin rule fails the preview build.
+  Spec 002 deletes this variable from both environments.
 - Verify the result without printing values: `vercel env ls --scope ahmedsheikh2654-6252s-projects`.
   `NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA` will not appear there — it is injected at build time by
   step 3's toggle. Confirm it on a deployed preview instead: the Sentry release is set only when
@@ -158,14 +171,19 @@ gh pr checks           # the `preview` CI job prints the URL in its step summary
 PREVIEW_URL=https://<deployment>.vercel.app
 
 # 2. Without the bypass: Deployment Protection must refuse
-curl -sI "$PREVIEW_URL/api/health" | head -n1        # expect HTTP/2 401 or 403
+curl -sI "$PREVIEW_URL/api/health" | grep -iE '^(HTTP|location)'
+# expect either HTTP 401/403, or HTTP 302 + `location: https://vercel.com/sso-api?url=...`
+# (the redirect is what Vercel Authentication actually sends). A 200 means previews are public.
 
 # 3. With the bypass: 200, fra1, noindex
 curl -sI "$PREVIEW_URL/api/health" \
   -H "x-vercel-protection-bypass: $VERCEL_AUTOMATION_BYPASS_SECRET" \
   -H "x-vercel-set-bypass-cookie: false" \
   | grep -iE '^(HTTP|x-vercel-id|x-robots-tag)'
-# expect: 200 · x-vercel-id starting with `fra1` · X-Robots-Tag: noindex...
+# expect: 200 · X-Robots-Tag: noindex...
+# x-vercel-id is `<cdn-node>::<function-region>::<id>`: the first segment is the edge node that
+# took your request (e.g. `bom1`), so check that `fra1` is *one of* the `::` segments, not the
+# prefix.
 
 # 4. Open the preview URL in a fresh browser profile → Vercel Authentication prompt
 ```
@@ -174,19 +192,21 @@ Then re-run CI on the TASK-007 PR (`gh pr checks --watch`, or push an empty comm
 job performs the same three assertions automatically and writes them to the step summary. Paste the
 output of steps 2–4 into the PR as the T-30 record and move the task out of `blocked`.
 
-## 8. If the account is not on Pro
+## 8. Plan notes (Hobby vs Pro)
 
-Vercel Authentication **and** Password Protection on previews are paid features; on Hobby there is
-no way to protect a preview deployment. Two options, both recorded:
+Verified on the live project 2026-09-07: on **Hobby**, Deployment Protection → **Vercel
+Authentication** is available and Standard Protection can be enabled, so AC-29 and Q9's preview
+default are satisfied without upgrading. **Password Protection** is Pro-only; it is not used in 001
+(see step 4).
 
-1. **Upgrade to Pro** (what ADR-0012 assumes: it prices Vercel Pro as the hosting line item). Then
-   restart at step 4.
-2. **Accept unprotected previews as a recorded deviation**: previews stay public but every response
-   already carries `X-Robots-Tag: noindex` (AC-15) and Phase 0 contains no real data at all. In this
-   case AC-29 cannot be satisfied as written — record the deviation in the PR and in
-   `docs/decisions-log.md`, open a follow-up task to revisit before the first real customer data
-   exists (spec 002), and note that the `preview` CI job will keep failing until previews are
-   protected (do not delete the assertion; that is the tripwire).
+ADR-0012 still prices Vercel Pro as the hosting line item — the trigger to upgrade is the
+florist-facing staging environment (Q9's shared password) or Pro-only limits, not AC-29.
+
+If preview protection is ever unavailable, the only acceptable route is a recorded deviation:
+previews stay public but every response already carries `X-Robots-Tag: noindex` (AC-15) and Phase 0
+contains no real data. Record it in the PR and in `docs/decisions-log.md`, open a follow-up before
+spec 002 puts real data anywhere, and leave the `preview` CI assertion in place — it is the
+tripwire.
 
 Nothing in the repository changes in either case.
 
