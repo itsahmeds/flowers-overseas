@@ -597,7 +597,9 @@ jobs:
               echo "only a failure that lists a metric against its budget is a budget breach;"
               echo "anything else measured nothing."
             fi
-          } >> "$GITHUB_STEP_SUMMARY"
+            # `tee`, not `>>`: the same verdict belongs in the step log, so it can be read from
+            # `gh run view --log` without opening the run summary page.
+          } | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Upload the Lighthouse reports
         if: always()
