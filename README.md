@@ -63,3 +63,26 @@ types, imported directly by `eslint.config.mjs` (no build step, nothing publishe
 `tests/fixtures/lint/` is excluded from `pnpm lint`, Prettier and `tsc`; the rules are exercised
 against it by `tests/unit/no-physical-css.test.ts`, `no-literal-strings.test.ts`,
 `stylelint-physical-css.test.ts` and `lint-fixtures.test.ts`.
+
+## SEO gates
+Three fixture-driven validators guard the things a broken deploy would only reveal weeks later in
+Search Console. Spec 001 ships the harness; spec 007 supplies the real fixtures and the live
+crawl.
+
+| Command | Reads | Fails when |
+|---|---|---|
+| `pnpm seo:validate` | all three directories below | any check below fails; prints `no fixtures` and exits 0 per empty directory |
+| `node scripts/seo/validate-sitemap.ts [--dir …]` | `tests/fixtures/seo/sitemap/*.xml` (+ optional `noindex.json`) | the XML is not well-formed, a `<loc>` is not an absolute `https://` URL, or a `<loc>` is listed as `noindex` |
+| `node scripts/seo/validate-hreflang.ts [--dir …]` | `tests/fixtures/seo/hreflang/*.json` | an alternate is not reciprocal, a cluster has no `x-default`, or an `hreflang` value is not BCP-47-ish |
+| `node scripts/seo/validate-schema.ts [--dir …]` | `tests/fixtures/seo/schema/*.json` | the JSON-LD does not parse, a `@type` is outside the `plan/02` §9 allow-list (`LocalBusiness`, `FloristShop` and `JobPosting` are rejected by name), or `Offer.price`/`priceCurrency` differ from the fixture's `visiblePrice`/`visibleCurrency` |
+
+Money is compared as strings normalised to two fraction digits — never parsed into a `number`
+(`plan/12` §2, `fo/no-float-money`).
+
+`pnpm lighthouse` runs Lighthouse CI with the `plan/01` §7 budgets from `lighthouserc.json`
+(performance >= 0.95 mobile, LCP <= 2000 ms, CLS <= 0.05, script transfer <= 120 KB, image
+transfer <= 200 KB) over the paths in `tests/fixtures/seo/lighthouse-urls.json`, resolved against
+`LHCI_BASE_URL`, else `PLAYWRIGHT_BASE_URL`, else `http://localhost:3000`. In CI it runs on every
+PR against the preview and is **informational until spec 004** (spec 001 §13 Q4): the job carries
+`continue-on-error: true` while every assertion stays an `error`, so the job's own result is
+honest.

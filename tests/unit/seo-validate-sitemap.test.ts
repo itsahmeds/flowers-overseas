@@ -1,0 +1,134 @@
+/**
+ * T-23 / AC-22 (TASK-009): `validate-sitemap` over a temp copy of the deliberately-bad cases in
+ * `tests/fixtures/seo/_cases/`, plus the committed `no fixtures` state and the pure helpers.
+ */
+import { describe, expect, it } from "vitest";
+
+import {
+  collectLocs,
+  locProblem,
+  noindexFixtureSchema,
+  noindexUrls,
+} from "../../scripts/seo/validate-sitemap";
+import { runSeoCli, withEmptyDir, withFixtureDir } from "./support/seo-cli";
+
+const CLI = "validate-sitemap.ts";
+
+describe("validate-sitemap CLI (T-23)", () => {
+  it("exits 0 with 'no fixtures' on an empty directory", () => {
+    const result = withEmptyDir((dir) => runSeoCli(CLI, dir));
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain("no fixtures");
+  });
+
+  it("exits 0 with 'no fixtures' on the committed fixture directory", () => {
+    const result = runSeoCli(CLI, "tests/fixtures/seo/sitemap");
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain("no fixtures");
+  });
+
+  it("exits 0 on a valid sitemap", () => {
+    const result = withFixtureDir(
+      { "good-sitemap.xml": "sitemap.xml", "noindex.json": "noindex.json" },
+      (dir) => runSeoCli(CLI, dir),
+    );
+    expect(result.stderr).toBe("");
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain("1 fixture(s) ok");
+  });
+
+  it("fails when a <loc> is http:// rather than https://", () => {
+    const result = withFixtureDir(
+      { "bad-sitemap-http.xml": "bad-sitemap-http.xml" },
+      (dir) => runSeoCli(CLI, dir),
+    );
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("bad-sitemap-http.xml");
+    expect(result.stderr).toContain("must be https://");
+  });
+
+  it("fails when a <loc> is relative", () => {
+    const result = withFixtureDir(
+      { "bad-sitemap-relative.xml": "bad-sitemap-relative.xml" },
+      (dir) => runSeoCli(CLI, dir),
+    );
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("bad-sitemap-relative.xml");
+    expect(result.stderr).toContain("not an absolute URL");
+  });
+
+  it("fails when a <loc> is listed in noindex.json", () => {
+    const result = withFixtureDir(
+      {
+        "bad-sitemap-noindex.xml": "bad-sitemap-noindex.xml",
+        "noindex.json": "noindex.json",
+      },
+      (dir) => runSeoCli(CLI, dir),
+    );
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("bad-sitemap-noindex.xml");
+    expect(result.stderr).toContain("listed in noindex.json");
+    expect(result.stderr).toContain("/en/checkout/");
+  });
+
+  it("fails when the XML is not well-formed, naming line and column", () => {
+    const result = withFixtureDir(
+      { "bad-sitemap-malformed.xml": "bad-sitemap-malformed.xml" },
+      (dir) => runSeoCli(CLI, dir),
+    );
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("bad-sitemap-malformed.xml");
+    expect(result.stderr).toContain("not well-formed XML at line");
+  });
+
+  it("reports every offending fixture in one run", () => {
+    const result = withFixtureDir(
+      {
+        "bad-sitemap-http.xml": "a.xml",
+        "bad-sitemap-relative.xml": "b.xml",
+      },
+      (dir) => runSeoCli(CLI, dir),
+    );
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("2 problem(s)");
+    expect(result.stderr).toContain("a.xml");
+    expect(result.stderr).toContain("b.xml");
+  });
+});
+
+describe("validate-sitemap helpers", () => {
+  it("collects <loc> values from a urlset and from a sitemap index", () => {
+    expect(
+      collectLocs({
+        urlset: {
+          url: [{ loc: "https://a.test/" }, { loc: "https://b.test/" }],
+        },
+      }),
+    ).toEqual(["https://a.test/", "https://b.test/"]);
+    expect(
+      collectLocs({
+        sitemapindex: { sitemap: { loc: "https://a.test/sitemap-1.xml" } },
+      }),
+    ).toEqual(["https://a.test/sitemap-1.xml"]);
+  });
+
+  it("accepts an absolute https URL and rejects everything else", () => {
+    expect(locProblem("https://flowersoverseas.com/en/")).toBeNull();
+    expect(locProblem("")).toBe("empty <loc>");
+    expect(locProblem("http://flowersoverseas.com/")).toContain(
+      "must be https://",
+    );
+    expect(locProblem("/en/")).toContain("not an absolute URL");
+    expect(locProblem("https://a.test/ b")).toContain("whitespace");
+  });
+
+  it("reads the noindex list in both accepted shapes", () => {
+    expect(noindexUrls(["https://a.test/x"])).toEqual(["https://a.test/x"]);
+    expect(noindexUrls({ noindex: [" https://a.test/y "] })).toEqual([
+      "https://a.test/y",
+    ]);
+    expect(noindexFixtureSchema.safeParse({ noindex: "x" }).success).toBe(
+      false,
+    );
+  });
+});

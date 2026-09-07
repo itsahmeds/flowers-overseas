@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Invalid: the second <loc> is http://, not absolute https://. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://flowersoverseas.com/en/</loc>
+  </url>
+  <url>
+    <loc>http://flowersoverseas.com/de/</loc>
+  </url>
+</urlset>

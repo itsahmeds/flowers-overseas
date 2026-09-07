@@ -1,0 +1,145 @@
+/**
+ * T-24 / AC-23, repository half (TASK-009).
+ *
+ * The other half of T-24 is the `lighthouse` CI job running `lhci autorun` against the preview
+ * `/` — that cannot be asserted from a unit test. What can be asserted, and would otherwise rot
+ * silently, is that `lighthouserc.json` still encodes the `plan/01` §7 budgets as **errors** and
+ * nothing else, that the URL list is a non-empty set of root-relative paths, and that the CI job
+ * is wired the way §13 Q4 decided (runs on every PR, informational until spec 004).
+ */
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
+import { describe, expect, it } from "vitest";
+
+import {
+  collectUrlArgs,
+  DEFAULT_BASE_URL,
+  lighthouseUrlsSchema,
+  parseUrlList,
+  resolveBaseUrl,
+} from "../../scripts/seo/lighthouse-urls";
+
+const repoRoot = resolve(__dirname, "../..");
+const read = (relative: string): string =>
+  readFileSync(resolve(repoRoot, relative), "utf8");
+
+interface LighthouseRc {
+  ci: {
+    collect: {
+      numberOfRuns?: number;
+      settings?: { formFactor?: string; throttlingMethod?: string };
+    };
+    assert: { assertions: Record<string, unknown> };
+    upload: { target?: string; outputDir?: string };
+  };
+}
+
+const rc = JSON.parse(read("lighthouserc.json")) as LighthouseRc;
+
+describe("lighthouserc.json budgets (AC-23)", () => {
+  it("asserts exactly the plan/01 §7 budgets, all as errors", () => {
+    expect(rc.ci.assert.assertions).toEqual({
+      "categories:performance": ["error", { minScore: 0.95 }],
+      "largest-contentful-paint": ["error", { maxNumericValue: 2000 }],
+      "cumulative-layout-shift": ["error", { maxNumericValue: 0.05 }],
+      // 120 KB and 200 KB in bytes: transfer size, i.e. gzipped over the wire.
+      "resource-summary:script:size": ["error", { maxNumericValue: 122880 }],
+      "resource-summary:image:size": ["error", { maxNumericValue: 204800 }],
+    });
+  });
+
+  it("collects three mobile runs, so one noisy run cannot fail or pass the PR", () => {
+    expect(rc.ci.collect.numberOfRuns).toBe(3);
+    expect(rc.ci.collect.settings?.formFactor).toBe("mobile");
+    expect(rc.ci.collect.settings?.throttlingMethod).toBe("simulate");
+  });
+
+  it("keeps reports on the filesystem rather than temporary public storage", () => {
+    // The preview is behind Deployment Protection; uploading its report to
+    // `temporary-public-storage` would publish a copy of a protected deployment.
+    expect(rc.ci.upload.target).toBe("filesystem");
+    expect(rc.ci.upload.outputDir).toContain(".lighthouseci");
+  });
+
+  it("pins no URL in the config: the list is data (spec 007 extends it)", () => {
+    expect(JSON.stringify(rc.ci.collect)).not.toContain("url");
+  });
+});
+
+describe("tests/fixtures/seo/lighthouse-urls.json (AC-23)", () => {
+  const raw = read("tests/fixtures/seo/lighthouse-urls.json");
+
+  it("is a non-empty array of root-relative paths", () => {
+    const parsed = lighthouseUrlsSchema.safeParse(JSON.parse(raw));
+    expect(parsed.success).toBe(true);
+    expect(parsed.data?.length).toBeGreaterThan(0);
+    for (const path of parsed.data ?? []) {
+      expect(path.startsWith("/")).toBe(true);
+      expect(path.startsWith("//")).toBe(false);
+    }
+  });
+
+  it("is `/` only in spec 001, the one page that exists", () => {
+    expect(parseUrlList(raw)).toEqual(["/"]);
+  });
+
+  it("rejects an empty list and an absolute URL", () => {
+    expect(lighthouseUrlsSchema.safeParse([]).success).toBe(false);
+    expect(
+      lighthouseUrlsSchema.safeParse(["https://example.test/"]).success,
+    ).toBe(false);
+    expect(lighthouseUrlsSchema.safeParse(["//example.test/"]).success).toBe(
+      false,
+    );
+  });
+});
+
+describe("lighthouse-urls base URL resolution", () => {
+  it("prefers LHCI_BASE_URL, then PLAYWRIGHT_BASE_URL, then localhost", () => {
+    expect(
+      resolveBaseUrl({
+        LHCI_BASE_URL: "https://lhci.test",
+        PLAYWRIGHT_BASE_URL: "https://preview.test",
+      }),
+    ).toBe("https://lhci.test");
+    expect(
+      resolveBaseUrl({ PLAYWRIGHT_BASE_URL: "https://preview.test/" }),
+    ).toBe("https://preview.test");
+    expect(resolveBaseUrl({})).toBe(DEFAULT_BASE_URL);
+  });
+
+  it("emits one --collect.url argument per path", () => {
+    expect(collectUrlArgs("https://preview.test", ["/", "/de/"])).toEqual([
+      "--collect.url=https://preview.test/",
+      "--collect.url=https://preview.test/de/",
+    ]);
+  });
+});
+
+describe("ci.yml lighthouse and seo-validate jobs (AC-22, AC-23)", () => {
+  const ci = read(".github/workflows/ci.yml");
+
+  it("runs the three validators in a job gated on typecheck", () => {
+    expect(ci).toMatch(/ {2}seo-validate:\n[\s\S]*?needs: typecheck/);
+    expect(ci).toContain("pnpm seo:validate");
+  });
+
+  it("runs Lighthouse against the preview URL on every PR", () => {
+    expect(ci).toMatch(/ {2}lighthouse:\n[\s\S]*?needs: preview/);
+    expect(ci).toContain("needs.preview.outputs.preview_url");
+    expect(ci).toContain("lighthouserc.json");
+  });
+
+  it("keeps Lighthouse informational until spec 004 (§13 Q4) and says so out loud", () => {
+    expect(ci).toMatch(/ {2}lighthouse:\n[\s\S]*?continue-on-error: true/);
+    expect(ci).toContain("informational until spec 004");
+  });
+
+  it("passes the protection-bypass secret by env, never inline in a URL", () => {
+    expect(ci).toContain("x-vercel-protection-bypass");
+    expect(ci).toContain(
+      "VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}",
+    );
+  });
+});

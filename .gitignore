@@ -16,6 +16,9 @@ playwright-report/
 test-results/
 # Vitest JSON reports (written by the CI summary steps with --outputFile)
 /vitest-*.json
+# Lighthouse CI run artifacts (uploaded as a CI artifact, never committed)
+.lighthouseci/
+/seo-validate.log
 
 # env (only .env.example is committed)
 .env*.local

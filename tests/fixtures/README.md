@@ -10,7 +10,9 @@ occasion dates, currencies and addresses are shared).
 | `env/` | `valid.env`, `missing-key.env`, `extra-key.env` — `pnpm env:check` failure paths (AC-11 / T-12). | spec 001 | `tests/unit/env-check.test.ts` |
 | `lint/` | Files that violate the `fo/*` rules on purpose, plus their logical/valid twins, and a mirrored `lint/src/` tree for the module-boundary zones (AC-4…AC-9). Excluded from `pnpm lint` (`globalIgnores`); linted by `pnpm lint:fixtures`. | spec 001 | `tests/unit/no-*.test.ts`, `tests/unit/module-boundaries.test.ts` |
 | `ts/` | Type-level fixtures (e.g. `unchecked-index.ts`) checked with `tsconfig.fixtures.json` (AC-2 / T-02). Excluded from `pnpm typecheck`. | spec 001 | `pnpm typecheck:fixtures` |
-| `seo/` | Sitemap, hreflang and JSON-LD fixtures plus `lighthouse-urls.json`, including deliberately bad ones (AC-22 / T-23). **Arrives with TASK-009**; spec 007 supplies the real set. | spec 001 (TASK-009) | `pnpm seo:validate`, `lighthouse` |
+| `seo/{sitemap,hreflang,schema}/` | The directories `pnpm seo:validate` reads. **Empty (`.gitkeep`) in spec 001**, so the validators print `no fixtures` and exit 0; spec 007 supplies the real set and the same job then gates it. | spec 001 (TASK-009) | `pnpm seo:validate` |
+| `seo/_cases/` | Deliberately bad (and matching good) validator inputs: `bad-nonreciprocal.json`, `bad-price-mismatch.json`, `bad-forbidden-type.json`, `bad-sitemap-*.xml`, `good-*` (AC-22 / T-23). Kept **outside** the three directories above and copied into a temp directory by the tests, so a crashed test can never leave a broken fixture in the tree. Prettier-ignored (some are malformed on purpose). | spec 001 (TASK-009) | `tests/unit/seo-validate-*.test.ts` |
+| `seo/lighthouse-urls.json` | The paths the `lighthouse` CI job measures, root-relative (`["/"]` in spec 001). Joined to the preview URL by `scripts/seo/lighthouse-urls.ts`; budgets live in `lighthouserc.json` (AC-23 / T-24). | spec 001 (TASK-009), 007 (real URL set) | `pnpm lighthouse`, `tests/unit/lighthouse-budgets.test.ts` |
 
 Rules of the house:
 

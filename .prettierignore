@@ -15,3 +15,5 @@ README.md
 TASKS.md
 CLAUDE.md
 /tests/fixtures/lint/
+# intentionally malformed / rule-violating validator inputs (spec 001 AC-22, TASK-009)
+/tests/fixtures/seo/_cases/

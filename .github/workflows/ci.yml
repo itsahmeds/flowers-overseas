@@ -1,8 +1,8 @@
-# CI (spec 001 §2 "CI", TASK-002 + TASK-008). Job order follows plan/12 §5:
-# lint → typecheck → test-unit → test-integration → build → preview → e2e/visual/a11y,
-# plus commitlint on PR commits (AC-20).
-# Later tasks append their jobs (seo:validate, lighthouse, dev-os:check); TASK-011 verifies the
-# final set.
+# CI (spec 001 §2 "CI", TASK-002 + TASK-008 + TASK-009). Job order follows plan/12 §5:
+# lint → typecheck → test-unit → test-integration → build → seo-validate → preview →
+# e2e/visual/a11y → lighthouse, plus commitlint on PR commits (AC-20).
+# TASK-011 appends the remaining jobs (test:contract, db:check, audit, dev-os:check) and verifies
+# the final set.
 name: ci
 
 on:
@@ -235,6 +235,46 @@ jobs:
           --to "${{ github.event.pull_request.head.sha }}"
           --verbose
 
+  # AC-22 / T-23 (TASK-009): the three SEO validator CLIs over their committed fixture
+  # directories. In spec 001 those directories hold only a `.gitkeep`, so the job prints
+  # `no fixtures` three times and passes; spec 007 drops the real sitemap, hreflang and JSON-LD
+  # fixtures in and this job turns red on a malformed one without a workflow change.
+  #
+  # `needs: typecheck` rather than `needs: lint`: the validators are TypeScript run under Node
+  # type stripping, so a type error in them is a broken gate, and there is no reason to wait for
+  # the unit suite.
+  seo-validate:
+    name: seo-validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: typecheck
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - name: Validate the SEO fixtures
+        run: pnpm seo:validate | tee seo-validate.log
+      - name: Summarise the fixture counts (AC-22)
+        if: always()
+        run: |
+          set -euo pipefail
+          {
+            echo "### seo-validate (AC-22 / T-23)"
+            echo ""
+            echo "| validator | fixture dir | fixtures |"
+            echo "|---|---|---|"
+            for kind in sitemap hreflang schema; do
+              case "$kind" in
+                sitemap) ext="xml" ;;
+                *) ext="json" ;;
+              esac
+              count=$(find "tests/fixtures/seo/$kind" -maxdepth 1 -type f -name "*.$ext" | wc -l | tr -d ' ')
+              echo "| validate-$kind | \`tests/fixtures/seo/$kind\` | $count |"
+            done
+            echo ""
+            echo "Bad-fixture cases live in \`tests/fixtures/seo/_cases/\` and are exercised by the unit"
+            echo "suite in a temp directory, so this job's directories stay in their committed state."
+          } >> "$GITHUB_STEP_SUMMARY"
+
   # AC-29 / T-30 (TASK-007): every pull request gets a Vercel preview deployment. This job proves,
   # on each PR, the three properties the spec asks for: Deployment Protection is enabled
   # (unauthenticated request is refused), the functions run in `fra1` (spec 001 §5 Hosting, §8
@@ -463,5 +503,64 @@ jobs:
           path: |
             playwright-report/
             test-results/
+          retention-days: 7
+          if-no-files-found: warn
+
+  # AC-23 / T-24 (TASK-009): Lighthouse CI against the preview `/` with the `plan/01` §7 budgets
+  # as assertions.
+  #
+  # spec 001 §13 Q4: it runs on **every** PR from the first one, but is informational until spec
+  # 004 ships the design system — hence `continue-on-error: true` on the job. The assertions
+  # themselves are configured as `error` in `lighthouserc.json`, so the step's own result (and the
+  # artifact) tell the truth about the budgets; only the PR's overall status is spared. Spec 004
+  # removes `continue-on-error` and spec 007 adds the nightly run.
+  #
+  # `@lhci/cli` is fetched pinned by `npx` instead of being a devDependency: it pulls in Lighthouse
+  # and Chrome plumbing that every other job would then install on every run, and it is needed in
+  # exactly this one place.
+  lighthouse:
+    name: lighthouse
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: preview
+    continue-on-error: true
+    env:
+      PLAYWRIGHT_BASE_URL: ${{ needs.preview.outputs.preview_url }}
+      VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - name: Note that the budgets are informational in spec 001
+        run: |
+          {
+            echo "### lighthouse (AC-23 / T-24)"
+            echo ""
+            echo "**informational until spec 004** (spec 001 §13 Q4): the job carries"
+            echo "\`continue-on-error: true\`, while every assertion in \`lighthouserc.json\` is an"
+            echo "\`error\` — so the step result below is the honest verdict on the plan/01 §7 budgets."
+            echo ""
+            echo "- URL set: \`tests/fixtures/seo/lighthouse-urls.json\` against ${{ needs.preview.outputs.preview_url }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Run Lighthouse CI against the preview
+        run: |
+          set -euo pipefail
+          # The bypass secret travels as a request header, never in a URL or a log line; GitHub
+          # masks it in the output, and `extraHeaders` is built here rather than committed.
+          headers=$(BYPASS="$VERCEL_AUTOMATION_BYPASS_SECRET" node -e \
+            'process.stdout.write(JSON.stringify({ "x-vercel-protection-bypass": process.env.BYPASS, "x-vercel-set-bypass-cookie": "false" }))')
+          # Assigned first so `set -e` aborts when the URL list is unreadable, instead of running
+          # Lighthouse against nothing. Left unquoted below on purpose: one word per URL.
+          urls=$(node scripts/seo/lighthouse-urls.ts)
+          # shellcheck disable=SC2086
+          npx --yes @lhci/cli@0.15.1 autorun \
+            --config=lighthouserc.json \
+            --collect.settings.extraHeaders="$headers" \
+            $urls
+      - name: Upload the Lighthouse reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouseci
+          path: .lighthouseci/
           retention-days: 7
           if-no-files-found: warn
