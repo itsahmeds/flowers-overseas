@@ -1,0 +1,6 @@
+{
+  "jsonld": [
+    { "@context": "https://schema.org", "@type": "WebPage", "name": "For florists" },
+    { "@type": ["FAQPage", "SoftwareApplication"] }
+  ]
+}

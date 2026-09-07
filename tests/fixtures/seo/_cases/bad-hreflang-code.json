@@ -1,0 +1,11 @@
+{
+  "pages": [
+    {
+      "url": "https://flowersoverseas.com/en/",
+      "alternates": [
+        { "hreflang": "en_GB", "href": "https://flowersoverseas.com/en/" },
+        { "hreflang": "x-default", "href": "https://flowersoverseas.com/en/" }
+      ]
+    }
+  ]
+}

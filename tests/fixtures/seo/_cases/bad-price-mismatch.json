@@ -1,0 +1,14 @@
+{
+  "visiblePrice": "49.00",
+  "visibleCurrency": "EUR",
+  "jsonld": {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": "Sunlit Roses",
+    "offers": {
+      "@type": "Offer",
+      "price": "44.00",
+      "priceCurrency": "EUR"
+    }
+  }
+}

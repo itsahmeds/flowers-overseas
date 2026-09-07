@@ -1,0 +1,8 @@
+{
+  "jsonld": {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Florists in Berlin",
+    "about": { "@type": "LocalBusiness", "name": "Flowers Overseas Berlin" }
+  }
+}

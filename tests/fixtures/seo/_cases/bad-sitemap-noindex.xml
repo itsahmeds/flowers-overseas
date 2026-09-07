@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Invalid: /en/checkout/ is listed in noindex.json, so it cannot be a sitemap member. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://flowersoverseas.com/en/</loc>
+  </url>
+  <url>
+    <loc>https://flowersoverseas.com/en/checkout/</loc>
+  </url>
+</urlset>
