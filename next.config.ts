@@ -2,8 +2,9 @@ import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
 import createNextIntlPlugin from "next-intl/plugin";
 
+import { securityHeaderRules } from "./src/lib/csp";
 import { assertEnv } from "./src/lib/env.assert";
-import { deploymentEnvironment } from "./src/lib/env.schema";
+import { cspReportOnly, deploymentEnvironment } from "./src/lib/env.schema";
 import { noindexHeaderRules } from "./src/lib/robots-headers";
 
 // Fail the build before compiling anything when a variable is missing or malformed. The error
@@ -15,7 +16,26 @@ assertEnv();
 // — `src/app/robots.ts` and the root `noindex` meta cover the 001 production alias, and spec 007
 // lifts exactly those two. `/api/*` sets its own `X-Robots-Tag` in every environment
 // (`src/lib/health.ts`).
-const headerRules = noindexHeaderRules(deploymentEnvironment(process.env));
+const environment = deploymentEnvironment(process.env);
+
+// Security headers on every path, per environment (spec 004 §5.2, AC-23, **ADR-0016**;
+// TASK-046). `headers()` rather than `src/proxy.ts` because it is applied to cached responses
+// too — which is the response class an SSG/ISR site is made of — and because a static config
+// value can be asserted from a unit test without a running server (`src/lib/csp.ts` explains the
+// choice, `tests/unit/csp.test.ts` asserts both header strings).
+//
+// The CSP is `Content-Security-Policy-Report-Only` unless `CSP_REPORT_ONLY=false`; the policy
+// string is identical either way, so the evidence collected at `/api/csp-report` is evidence
+// about the policy that will be enforced. `inlineHashes` is empty because the app has no inline
+// script yet: TASK-050 adds the Consent-Mode bootstrap's `'sha256-'` hash here in the same PR as
+// the script it authorises.
+const headerRules = [
+  ...noindexHeaderRules(environment),
+  ...securityHeaderRules(environment, {
+    reportOnly: cspReportOnly(process.env),
+    inlineHashes: [],
+  }),
+];
 
 const nextConfig: NextConfig = {
   headers: () => Promise.resolve(headerRules),

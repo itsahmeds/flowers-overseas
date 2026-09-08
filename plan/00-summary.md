@@ -84,6 +84,7 @@ Every architectural or business decision below has an ADR in `docs/adr/`. ADRs a
 | [ADR-0013](../docs/adr/ADR-0013-resend-transactional-email.md) | Resend for transactional email (EU); marketing automation in the CRM | accepted | 2026-09-05 |
 | [ADR-0014](../docs/adr/ADR-0014-ai-generated-seed-imagery.md) | AI-generated seed imagery under a locked style guide | accepted | 2026-09-05 |
 | [ADR-0015](../docs/adr/ADR-0015-portable-postgres-neon-hetzner-r2-authjs.md) | Portable Postgres (Neon now, Hetzner later), Cloudflare R2 for images, Auth.js for identity; Supabase dropped | accepted | 2026-09-08 |
+| [ADR-0016](../docs/adr/ADR-0016-csp-allowlist-hash-on-cached-html.md) | CSP on cached HTML: per-environment allowlist + inline-script hash; nonce + `'strict-dynamic'` reserved for `no-store` routes; Report-Only first | accepted | 2026-09-08 |
 
 ## 7. Document map
 

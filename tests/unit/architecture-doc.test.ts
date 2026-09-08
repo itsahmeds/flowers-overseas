@@ -118,7 +118,6 @@ describe("docs/architecture.md (AC-30)", () => {
   it("records the deferred decisions with the spec that lifts each", () => {
     const deferred = doc.slice(doc.indexOf("## 4."));
     for (const [item, spec] of [
-      ["CSP", "spec 004"],
       ["ALLOW_PLACEHOLDER_ENV", "spec 002"],
       ["deploymentEnvironment()", "ADR-0012"],
     ] as const) {
@@ -128,6 +127,50 @@ describe("docs/architecture.md (AC-30)", () => {
       expect(line, item).toBeDefined();
       expect(line, item).toContain(spec);
     }
+  });
+
+  /**
+   * TASK-046 discharged the "CSP with nonces" row. The inverse assertion replaces it, the same way
+   * TASK-034's `lang` row was replaced by the assertion of its absence: what is pinned now is that
+   * the row is gone, that the decision it deferred is recorded as ADR-0016, and that the two facts
+   * spec 001 left with it — the `vercel.live` allowance and `plan/01` §9's superseded "nonces"
+   * sentence — are stated rather than dropped.
+   */
+  describe("§4 no longer defers the CSP (spec 004 AC-23)", () => {
+    const deferred = doc.slice(doc.indexOf("## 4."));
+
+    it("has no deferred row for the CSP", () => {
+      const rows = deferred
+        .split("\n")
+        .filter((line) => line.startsWith("| **"));
+      for (const row of rows) expect(row).not.toContain("CSP");
+      expect(deferred).not.toContain("CSP with nonces** — no");
+    });
+
+    it("points at ADR-0016 and names the header that ships instead", () => {
+      expect(deferred).toContain("ADR-0016");
+      expect(deferred).toContain("Content-Security-Policy-Report-Only");
+      expect(deferred).toContain("src/lib/csp.ts");
+      expect(deferred).toContain("CSP_REPORT_ONLY=false");
+    });
+
+    it("keeps the vercel.live position and the superseded plan/01 §9 sentence on the record", () => {
+      expect(deferred).toContain("vercel.live");
+      expect(deferred).toMatch(/preview/);
+      expect(deferred).toMatch(/superseded, not edited/);
+      expect(deferred).toContain("'strict-dynamic'");
+    });
+  });
+
+  /** TASK-046: §2 must record the zod removal it performed, with the measured numbers. */
+  it("records the global-error import narrowing and the zod removal (§2)", () => {
+    const section = doc.slice(
+      doc.indexOf("## 2. Repository layout"),
+      doc.indexOf("## 3. Modules"),
+    );
+    expect(section).toContain("@/modules/i18n/error-document");
+    expect(section).toContain("src/config/locales.data.ts");
+    expect(section).toContain("113.7");
   });
 
   /**

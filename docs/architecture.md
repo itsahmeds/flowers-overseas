@@ -86,9 +86,13 @@ src/modules/<module>/     one directory per module below, public barrel in index
 src/lib/                  env (zod), logger, health, sentry, cache adapter; db client from spec 002
 src/jobs/                 pg-boss job definitions and cron schedule
 src/emails/               React Email templates, localised
-src/config/               locales.ts, currencies.ts, address-formats.ts (spec 003; zod-validated
-                          at module load, no database — `pnpm check:no-db`); countries.ts,
-                          payment-methods-by-country.ts, feature-flags.ts follow in 002/004
+src/config/               locales.ts, locales.data.ts, currencies.ts, address-formats.ts
+                          (spec 003/004; zod-validated at module load, no database — `pnpm
+                          check:no-db`. `locales.data.ts` is the authored locale rows as plain
+                          constants and imports nothing, so the 500 document can read a locale
+                          without pulling zod into every page's client chunk — TASK-046);
+                          countries.ts, payment-methods-by-country.ts, feature-flags.ts follow
+                          in 002/004
 tests/unit/               Vitest, node env
 tests/integration/        Vitest against DATABASE_URL (live from spec 002)
 tests/contract/           adapter-against-recorded-fixture tests (from Phase 1)
@@ -182,19 +186,31 @@ would render on demand as a fabricated duplicate of the English URL (spec 003 §
 public `index.ts` — never a deep path. Both rules are ESLint errors
 (`import/no-restricted-paths`, spec 001 AC-9).
 
-**One measured exception, in one file: `src/app/global-error.tsx` imports two deep module paths**
-(`@/modules/i18n/messages` and `@/modules/i18n/registry`) rather than the barrel. It is a Client
-Component attached to the *root* error boundary, so everything it can reach is compiled into a
-client chunk that lands in **every** document's initial script set, `/` included. Through the
-barrel that was the whole i18n module — formatters, collator, address formats, alternates builder,
-review gate, switcher — none of which a 500 page renders; narrowing it took 3.5 KB gzipped out of
-every document (measured, TASK-043; `/review 23` raised it). The 85.3 KB of zod behind
-`messages.ts` and `src/config/locales.ts` is **not** removed by narrowing and is the open item of
-spec 003 §14 A12. The boundary rule that matters is preserved
-(`app/` → `modules/` is the permitted direction, and no module reaches into another module's
-internals), and the barrel stays the import path for every other file. A barrel export is a bundle
-liability in exactly this one position, which is worth knowing before spec 004 adds a `ui` module
-with the same shape.
+**One measured exception, in one file: `src/app/global-error.tsx` imports a deep module path**
+(`@/modules/i18n/error-document`) rather than the barrel. It is a Client Component attached to the
+*root* error boundary, so everything it can reach is compiled into a client chunk that lands in
+**every** document's initial script set, `/` included. The narrowing happened in two steps and both
+numbers are measured:
+
+1. TASK-043 replaced the `@/modules/i18n` barrel with `messages.ts` + `registry.ts`. Through the
+   barrel the chunk was the whole i18n module — formatters, collator, address formats, alternates
+   builder, review gate, switcher — none of which a 500 page renders; that took 3.5 KB gzipped out
+   of every document (`/review 23` raised it). It did **not** remove the 85.3 KB gz / 70.1 KB br of
+   zod behind `messages.ts` → `schemas.ts` and `registry.ts` → `src/config/locales.ts`, which was
+   the open item of spec 003 §14 A12.
+2. TASK-046 removed that zod. `src/modules/i18n/error-document.ts` imports the x-default locale row
+   from `src/config/locales.data.ts` (plain constants, no imports) and the four strings from
+   `messages/en.json`, and nothing else, so the failure document reaches no schema, no provider and
+   no message source — which is also the right shape for a document reached because something else
+   already threw. Measured: `/` went from 221.3 KB gz / 186.2 KB br to 132.9 / 113.7, and `/en` from
+   233.4 / 197.0 to 145.1 / 124.5. `tests/unit/error-document.test.ts` walks the import graph from
+   the entry file and fails if zod becomes reachable again; `scripts/client-js-budget.ts` asserts
+   the same thing from the build output.
+
+The boundary rule that matters is preserved (`app/` → `modules/` is the permitted direction, and no
+module reaches into another module's internals), and the barrel stays the import path for every
+other file. A barrel export is a bundle liability in exactly this one position, which is worth
+knowing before spec 004 adds a `ui` module with the same shape.
 
 ## 3. Modules
 
@@ -232,13 +248,27 @@ There is no `instrumentation-client.ts` and no `sentry.client.config.ts` — see
 
 Spec 001 ships the gates, not the product, and it deliberately left three things undone; spec 003
 removed two rows of its own from this table — the hard-coded English `lang` attribute (TASK-034) and
-`middleware.ts` → `proxy.ts` (TASK-032) — and added one. Each row is recorded here rather than in a
-comment nobody greps, with the spec that lifts it. A later spec that touches one of these rows
-removes it.
+`middleware.ts` → `proxy.ts` (TASK-032) — and added one. Spec 004 removed the **CSP** row
+(TASK-046). Each row is recorded here rather than in a comment nobody greps, with the spec that
+lifts it. A later spec that touches one of these rows removes it.
+
+**The CSP row is discharged, not deferred.** A `Content-Security-Policy-Report-Only` header is sent
+on every path from `next.config.ts` (`src/lib/csp.ts`), together with `X-Content-Type-Options`,
+`Referrer-Policy`, `X-Frame-Options`, `Permissions-Policy`, `Cross-Origin-Opener-Policy` and — in
+production only — HSTS. `plan/01` §9's "CSP with nonces" sentence is **superseded, not edited**:
+a nonce cannot exist in a cached SSG/ISR response without rendering every indexable page per
+request, so cached routes get a static per-environment allowlist plus a build-time `'sha256-'` hash
+for the one inline consent bootstrap, and the per-request nonce with `'strict-dynamic'` is reserved
+for the `no-store` routes (checkout, account, admin, vendor) and belongs to the spec that ships the
+first one. The decision, the alternatives and the accepted trade-off are
+[ADR-0016](adr/ADR-0016-csp-allowlist-hash-on-cached-html.md). Two consequences recorded with it:
+`https://vercel.live` — the platform's preview-feedback script — appears in the **preview** policy
+only and is absent from production (spec 001's second deferred row, `/review 8`), and the enforce
+flip is one env-store edit (`CSP_REPORT_ONLY=false`) once `/api/csp-report` has been quiet, not a
+deploy.
 
 | Decision | Deferred to | What lifts it |
 |---|---|---|
-| **CSP with nonces** — no `Content-Security-Policy` header is sent (spec 001 §8 "Security"). There is nothing to protect yet: the shell loads no script beyond the Next runtime and no third-party origin except Vercel's own preview-feedback script on protected previews. | spec 004 | The first design-system PR that adds a script or a font must add the header with nonces, and `plan/01` §9's report-only rollout. |
 | **`ALLOW_PLACEHOLDER_ENV`** — the escape hatch that lets `.env.example` placeholders pass validation in a deployed environment, set on Vercel preview and production so spec 001 can deploy without a database (`src/lib/env.schema.ts`, `docs/runbooks/vercel-setup.md`). | spec 002 | The first spec 002 task deletes the key from the schema, `.env.example`, the runbook and the Vercel env store once real Supabase values exist. Recorded as a carry-forward on `/review 7`. |
 | **No browser Sentry SDK on public routes** — `instrumentation-client.ts` and `sentry.client.config.ts` were deleted (TASK-043). Server and edge Sentry, `sentryOptions()` and the `beforeSend` PII scrubber are untouched, and `NEXT_PUBLIC_SENTRY_DSN` stays in the schema because `next.config.ts` reads it to decide whether to run the source-map plugin. The cost is real: a JavaScript error on a marketing page is invisible until someone reports it. The reason is measured: the browser SDK plus the zod it dragged in was ~230 KB gzipped against a 120 KB budget — ~72 KB gzipped of the 297 KB `/` used to ship (spec 004 §13 Q8, accepted 2026-09-08; the full
 measurement is spec 003 §14 A12). | spec 013 | The checkout spec re-adds a client SDK **scoped to the checkout routes**, where a client-side error costs money, and records the consent/PII position for browser events. `docs/compliance/ropa.md` row 1 is updated in the same PR. |
