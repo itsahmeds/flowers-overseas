@@ -62,7 +62,7 @@ describe("the committed TASKS.md (AC-31 / T-32)", () => {
       phase.phase.startsWith("0"),
     );
     expect(phase0?.specsApproved).toBe(PHASE_0_SPECS_APPROVED);
-    expect(PHASE_0_SPECS_APPROVED).toBe("1 / 12");
+    expect(PHASE_0_SPECS_APPROVED).toBe("2 / 12");
   });
 
   it("gives every TASK row exactly nine cells, in the documented column order", () => {
