@@ -8,10 +8,12 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  DEV_UI_KEY,
   ENV_KEYS,
   EnvValidationError,
   clientEnvSchema,
   deploymentEnvironment,
+  devUiEnabled,
   formatEnvIssues,
   parseEnv,
   PSEUDO_LOCALES_KEY,
@@ -371,5 +373,85 @@ describe("ENABLE_PSEUDO_LOCALES (TASK-042)", () => {
       ).toBe(false);
     }
     expect(pseudoLocalesEnabled({})).toBe(false);
+  });
+});
+
+/**
+ * `ENABLE_DEV_UI` (T-30 / AC-28, TASK-045): the same contract for the component gallery.
+ *
+ * `/dev/components` is a development surface (spec 004 §2 "Component gallery", §12
+ * "Environments"), so the schema refuses it in production for the same reason it refuses the
+ * pseudo-locales: `next.config.ts` calls `assertEnv()` before Next compiles anything, which turns
+ * "the gallery cannot be served from the production alias" into a build failure rather than a code
+ * review. The route's own 404 with the flag off is asserted end to end
+ * (`tests/e2e/dev-components.spec.ts`).
+ */
+describe("ENABLE_DEV_UI (TASK-045)", () => {
+  it("is part of the environment contract", () => {
+    expect(ENV_KEYS).toContain(DEV_UI_KEY);
+    expect(DEV_UI_KEY).toBe("ENABLE_DEV_UI");
+  });
+
+  it("refuses `true` in production, naming the key and printing no value", () => {
+    const result = validateEnv({
+      ...validEnv,
+      VERCEL_ENV: "production",
+      NEXT_PUBLIC_SITE_URL: "https://flowers-overseas.vercel.app",
+      ALLOW_PLACEHOLDER_ENV: "true",
+      ENABLE_DEV_UI: "true",
+    });
+    expect(result.issues.map((issue) => issue.key)).toEqual([DEV_UI_KEY]);
+    expect(result.issues[0]?.message).toContain("production");
+    expect(result.issues[0]?.message).toContain("/dev/components");
+    expect(result.issues[0]?.message).not.toContain("true`,");
+  });
+
+  it("accepts `true` on a preview and in development, and `false` anywhere", () => {
+    for (const source of [
+      { ...validEnv, ENABLE_DEV_UI: "true" },
+      {
+        ...validEnv,
+        VERCEL_ENV: "preview",
+        NEXT_PUBLIC_SITE_URL: "https://fo-preview.vercel.app",
+        ALLOW_PLACEHOLDER_ENV: "true",
+        ENABLE_DEV_UI: "true",
+      },
+      {
+        ...validEnv,
+        VERCEL_ENV: "production",
+        NEXT_PUBLIC_SITE_URL: "https://flowers-overseas.vercel.app",
+        ALLOW_PLACEHOLDER_ENV: "true",
+        ENABLE_DEV_UI: "false",
+      },
+    ]) {
+      expect(validateEnv(source).issues).toEqual([]);
+    }
+  });
+
+  it("rejects a value that is neither `true` nor `false`", () => {
+    const result = validateEnv({ ...validEnv, ENABLE_DEV_UI: "yes" });
+    expect(result.issues.map((issue) => issue.key)).toEqual([DEV_UI_KEY]);
+  });
+
+  it("treats anything but the exact string `true` as off", () => {
+    expect(devUiEnabled({ ENABLE_DEV_UI: "true" })).toBe(true);
+    for (const value of ["false", "TRUE", "1", " true", "", undefined]) {
+      expect(devUiEnabled({ ENABLE_DEV_UI: value }), String(value)).toBe(false);
+    }
+    expect(devUiEnabled({})).toBe(false);
+  });
+
+  it("refuses both development flags at once, naming both keys", () => {
+    const result = validateEnv({
+      ...validEnv,
+      VERCEL_ENV: "production",
+      NEXT_PUBLIC_SITE_URL: "https://flowers-overseas.vercel.app",
+      ALLOW_PLACEHOLDER_ENV: "true",
+      ENABLE_PSEUDO_LOCALES: "true",
+      ENABLE_DEV_UI: "true",
+    });
+    expect(result.issues.map((issue) => issue.key).sort()).toEqual(
+      [DEV_UI_KEY, PSEUDO_LOCALES_KEY].sort(),
+    );
   });
 });

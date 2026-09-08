@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 import { documentFallbackLocale } from "@/modules/i18n";
+import { fontVariables } from "@/modules/ui";
 
 import "../globals.css";
 
@@ -33,7 +34,10 @@ export const metadata: Metadata = { robots: "noindex,nofollow" };
 export default function ChooserLayout({ children }: { children: ReactNode }) {
   const locale = documentFallbackLocale();
   return (
-    <html lang={locale.bcp47} dir={locale.dir}>
+    // `fontVariables` puts the two self-hosted families in scope and is what makes Next emit the
+    // `<link rel="preload">` for their WOFF2 subsets into this document's head (spec 004 AC-4,
+    // TASK-045). No Google Fonts request from any page, ever.
+    <html lang={locale.bcp47} dir={locale.dir} className={fontVariables}>
       <body className="min-h-dvh">{children}</body>
     </html>
   );

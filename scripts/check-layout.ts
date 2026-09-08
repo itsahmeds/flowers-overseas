@@ -23,6 +23,11 @@ export const MODULES = [
   "i18n",
   "analytics",
   "admin",
+  // spec 004 §2 / §13 Q9 (TASK-045): the design system. A documented addition to `plan/01` §5's
+  // domain-shaped module list, because `app/` must stay routes-only while the header and footer
+  // are rendered by every route group. Registered here and in `docs/architecture.md` §3 in the
+  // same PR, as the rule above requires.
+  "ui",
 ] as const;
 
 export const REQUIRED_DIRS = [

@@ -80,7 +80,7 @@ describe("docs/architecture.md (AC-30)", () => {
     expect(moduleTable?.malformed).toEqual([]);
   });
 
-  it("lists exactly the eleven modules of the check-layout manifest", () => {
+  it("lists exactly the modules of the check-layout manifest", () => {
     expect(moduleRows).toHaveLength(MODULES.length);
     expect(moduleRows.map((cells) => cells[0])).toEqual(
       MODULES.map((module) => `\`${module}\``),

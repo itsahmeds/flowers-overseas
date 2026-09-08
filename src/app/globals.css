@@ -1,1 +1,345 @@
 @import "tailwindcss";
+
+/*
+ * Design tokens (spec 004 §2 "Tokens", §13 Q1/Q3, AC-1, AC-3; TASK-045).
+ *
+ * **This file is the only place in the repository where a colour is written as a literal.**
+ * `fo/no-raw-color` (ESLint) bans hex/`rgb()`/`hsl()`/`oklch()` in components and Stylelint's
+ * `color-no-hex` plus the colour-property `declaration-property-value-disallowed-list` ban them in
+ * every CSS declaration — the `@theme` block below is exempt by construction, because its
+ * properties are custom properties (`--color-*`) and not `color`/`background`/`border-*`. So a
+ * founder palette swap is one diff here, re-running `tests/unit/contrast.test.ts` and the visual
+ * baselines, and touching no component.
+ *
+ * The values are the founder-approved canvas verbatim (`docs/design/homepage-v1/tokens.css`,
+ * §13's 2026-09-08 resolution note): white paper, cool-grey inks, one forest-green accent, in
+ * OKLCH. The *semantic* aliases §2 asks for (`--color-surface*`, `--color-border*`,
+ * `--color-focus`, `--color-success|warning|danger` with their `--color-on-*` partners) are mapped
+ * on top of that primitive ramp rather than replacing it, so a component names an intent
+ * (`bg-surface-raised`, `text-ink-muted`) and the canvas names stay readable next to the design
+ * source.
+ *
+ * No dark mode in Phase 0 (§13 Q3): `color-scheme: light` is declared explicitly in `@layer base`
+ * and the token names are semantic, so a later `@media (prefers-color-scheme: dark)` block is one
+ * addition here and zero component edits.
+ */
+/*
+ * `static` (Tailwind v4): emit **every** declared custom property into the stylesheet, not only
+ * the ones a generated utility happens to reference. Two reasons, both load-bearing here: AC-1
+ * asks that "every documented token name resolves to a non-empty value in the built CSS", which
+ * tree-shaken variables would make false for the semantic aliases no utility uses yet
+ * (`--color-brand`, `--color-on-warning`); and `@utility photo`, `@layer base` and the one
+ * legitimate inline `var(--color-…)` read the variables directly, which is only sound if they are
+ * always present. The cost is about a kilobyte of CSS before compression.
+ */
+@theme static {
+  /* --- Colour: the canvas ramp, verbatim --------------------------------------------------- */
+
+  /* Paper: the white surface the whole design rests on. */
+  --color-paper: oklch(99.3% 0.002 90);
+  --color-paper-2: oklch(97.2% 0.004 90);
+  --color-paper-3: oklch(94.5% 0.005 90);
+
+  /* Ink: three cool greys. `ink-3` is the lightest text weight the design uses and it clears
+     4.5:1 on paper (5.39:1, `tests/unit/contrast.test.ts`), so no darkening was needed. */
+  --color-ink: oklch(19% 0.01 250);
+  --color-ink-2: oklch(36% 0.01 250);
+  --color-ink-3: oklch(52% 0.008 250);
+
+  /* The hairline that separates every section of the canvas. Decorative, never a component
+     boundary — see `src/modules/ui/tokens/contrast.ts` for why that distinction is in the
+     manifest rather than in a comment. */
+  --color-rule: oklch(90% 0.004 250);
+
+  /* The single accent: forest green, hue 155. `-strong` is the pointer state — a darker
+     instance of the same hue rather than an opacity, so its contrast with `--color-accent-ink`
+     is a manifest pair and not an accident of what happens to be behind it. */
+  --color-accent: oklch(42% 0.1 155);
+  --color-accent-strong: oklch(34% 0.09 155);
+  --color-accent-ink: oklch(99% 0.002 90);
+
+  /* The photography placeholder (`plan/10` §3 honesty rule: no `<img>` we do not have). A
+     gradient, so it is a token and not a colour utility; `@utility photo` below is the only
+     consumer. The three stops are declared separately as well, because the caption's ink is
+     contrast-tested against the lightest of them. */
+  --color-photo-stop-1: oklch(93% 0.02 120);
+  --color-photo-stop-2: oklch(88% 0.03 140);
+  --color-photo-stop-3: oklch(80% 0.04 150);
+  --color-photo-ink: oklch(40% 0.03 150);
+  --color-photo: linear-gradient(
+    160deg,
+    var(--color-photo-stop-1) 0%,
+    var(--color-photo-stop-2) 45%,
+    var(--color-photo-stop-3) 100%
+  );
+
+  /* --- Colour: status, added by this spec ------------------------------------------------- */
+
+  /* The canvas has no status colours; these three are the smallest honest addition, kept in the
+     same lightness band as the accent so white text clears 4.5:1 on each fill and each clears
+     4.5:1 as text on paper (both directions are pairs in the contrast manifest). */
+  --color-success: oklch(42% 0.1 150);
+  --color-warning: oklch(45% 0.12 75);
+  --color-danger: oklch(45% 0.17 25);
+  --color-danger-strong: oklch(38% 0.15 25);
+  --color-on-success: var(--color-accent-ink);
+  --color-on-warning: var(--color-accent-ink);
+  --color-on-danger: var(--color-accent-ink);
+
+  /* --- Colour: semantic aliases (§2) ------------------------------------------------------ */
+
+  --color-surface: var(--color-paper);
+  --color-surface-raised: var(--color-paper-2);
+  --color-surface-muted: var(--color-paper-3);
+  --color-surface-inverse: var(--color-ink);
+  --color-ink-muted: var(--color-ink-2);
+  --color-ink-subtle: var(--color-ink-3);
+  --color-on-inverse: var(--color-accent-ink);
+  --color-brand: var(--color-accent);
+  --color-on-brand: var(--color-accent-ink);
+  --color-on-accent: var(--color-accent-ink);
+  --color-border: var(--color-rule);
+  --color-border-strong: var(--color-ink-3);
+  --color-border-emphasis: var(--color-ink);
+  /* The focus ring. The accent clears 3:1 against paper (7.90:1) and against both raised
+     surfaces, which is AC-3's focus-indicator threshold; the ring also carries a 2 px offset in
+     `@layer base` so it stays visible on an inked button. */
+  --color-focus: var(--color-accent);
+
+  /* --- Type ------------------------------------------------------------------------------- */
+
+  /* Both families are self-hosted and declared in `src/modules/ui/fonts/index.ts`; the variables
+     below are what `next/font/local` publishes, so no component names a font (AC-4). */
+  --font-display:
+    var(--font-newsreader), "Iowan Old Style", Georgia, "Times New Roman", serif;
+  --font-body: var(--font-plex-sans), "Helvetica Neue", Arial, sans-serif;
+
+  /* The canvas steps, fluid between the two artboards (390 px mobile, 1440 px desktop) so a
+     headline does not need a breakpoint utility to stop overflowing a phone. The `clamp()` floor
+     is the mobile artboard's size and the ceiling the desktop artboard's; `lg`/`md`/`sm`/`xs` are
+     identical on both artboards and are therefore fixed. */
+  --text-display: clamp(2.125rem, 1.325rem + 3.2vw, 4.25rem);
+  --text-display--line-height: 1.04;
+  --text-display--letter-spacing: -0.015em;
+  --text-display-s: clamp(1.75rem, 1.4rem + 1.4vw, 2.625rem);
+  --text-display-s--line-height: 1.08;
+  --text-display-s--letter-spacing: -0.015em;
+  --text-2xl: clamp(1.375rem, 1.1rem + 1.1vw, 2.125rem);
+  --text-2xl--line-height: 1.15;
+  --text-2xl--letter-spacing: -0.01em;
+  --text-xl: clamp(1.1875rem, 1.1rem + 0.35vw, 1.5rem);
+  --text-xl--line-height: 1.25;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.5;
+  --text-md: 0.9375rem;
+  --text-md--line-height: 1.6;
+  --text-sm: 0.8125rem;
+  --text-sm--line-height: 1.55;
+  --text-xs: 0.6875rem;
+  --text-xs--line-height: 1.45;
+
+  /* Two weights of IBM Plex Sans are shipped (400, 600) because a third face would break AC-4's
+     45 KB budget. The canvas's medium (500) therefore resolves to 600 through this token instead
+     of being matched down to 400 by the CSS font-matching algorithm. */
+  --font-weight-medium: 600;
+
+  /* Max line length (§2's `--measure`), and the container name Tailwind generates `max-w-prose`
+     from, so the two cannot drift. */
+  --measure: 68ch;
+  --container-prose: 68ch;
+
+  /* --- Space ------------------------------------------------------------------------------- */
+
+  /* The canvas scale. Tailwind's numeric `--spacing` base is left untouched, so `p-4` still means
+     16 px; these named steps are what the primitives expose (`<Stack gap="lg">`). */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 40px;
+  --spacing-2xl: 72px;
+  --spacing-3xl: 128px;
+
+  /* --- Radii, rules, shadows -------------------------------------------------------------- */
+
+  --radius-none: 0px;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-full: 9999px;
+
+  /* The composite hairline the canvas writes as `var(--rule)`. */
+  --rule: 1px solid var(--color-rule);
+
+  /* Three steps, built from the ink token through `color-mix` so a palette swap moves them too. */
+  --shadow-xs: 0 1px 2px color-mix(in oklab, var(--color-ink) 6%, transparent);
+  --shadow-sm:
+    0 1px 2px color-mix(in oklab, var(--color-ink) 6%, transparent),
+    0 2px 8px color-mix(in oklab, var(--color-ink) 6%, transparent);
+  --shadow-md:
+    0 2px 4px color-mix(in oklab, var(--color-ink) 6%, transparent),
+    0 8px 24px color-mix(in oklab, var(--color-ink) 8%, transparent);
+
+  /* --- Motion ----------------------------------------------------------------------------- */
+
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0.13, 1);
+  --ease-emphasised: cubic-bezier(0.3, 0, 0, 1);
+
+  /* --- Layers ----------------------------------------------------------------------------- */
+
+  /* The three elements of this spec that overlap: a sticky header, the language-suggestion
+     banner and the consent sheet. Named, so they cannot fight (§2). */
+  --layer-header: 100;
+  --layer-banner: 200;
+  --layer-overlay: 300;
+}
+
+/*
+ * Base reset (spec 004 §2 "Logical CSS and RTL readiness", §5.3 accessibility rules, AC-5, AC-6).
+ *
+ * Tailwind's preflight already normalises margins, borders and headings; this layer adds only what
+ * the design system decides: the two families, the paper/ink pair, the focus ring, the
+ * reduced-motion contract and `color-scheme`.
+ */
+@layer base {
+  :root {
+    /* §2 / §13 Q3: declared explicitly so form controls and scrollbars are not rendered dark on a
+       light page while dark mode is token-ready but unshipped. */
+    color-scheme: light;
+    /* The sticky header must not obscure a focused element (§5.3, WCAG 2.4.11). One declaration
+       here beats a `scroll-mt-*` utility on every anchor target. */
+    scroll-padding-block-start: var(--spacing-2xl);
+  }
+
+  html {
+    font-family: var(--font-body);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-surface);
+    color: var(--color-ink);
+    font-size: var(--text-md);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* The canvas's link treatment: inherit the ink, no underline in chrome, accent on hover. A link
+     inside prose opts back into an underline through the `Text` primitive, so a link in a
+     paragraph is never distinguished by colour alone (§5.3 "no colour-only meaning"). */
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  a:hover {
+    color: var(--color-accent);
+  }
+
+  /* One focus ring for the whole application, from the token AC-3 contrast-tests (3:1 against
+     both adjacent surfaces). `:focus-visible` only, so a mouse click on a button does not ring;
+     `outline-offset` keeps it clear of an inked fill. */
+  :focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
+  /* AC-6: `prefers-reduced-motion: reduce` removes every transition and animation the design
+     system defines. Near-zero rather than `none` so `transitionend`/`animationend` listeners
+     still fire, and `!important` because it must win over a component's own utility. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/*
+ * The canvas's own utility classes, lifted verbatim (TASK-045 row: they are used by every later
+ * 004 task, so they must not be re-invented per component).
+ */
+
+/* Newsreader 500 with the canvas's tracking: every heading and the wordmark. */
+@utility display {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: -0.015em;
+}
+
+/* The printed-label voice: 11 px, 600, wide tracking, uppercase, subtle ink. */
+@utility label {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-ink-subtle);
+}
+
+/*
+ * The photography placeholder: the token gradient with a caption at the block end. Renders **no**
+ * `<img>` — Phase 0 has no imagery and inventing one is a `plan/10` §3 offence. `Photo` is the
+ * component that uses it; the caption's ink is a contrast-manifest pair against the gradient's
+ * lightest stop.
+ */
+@utility photo {
+  display: flex;
+  align-items: flex-end;
+  background: var(--color-photo);
+  padding: var(--spacing-md);
+  color: var(--color-photo-ink);
+  font-size: var(--text-xs);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/*
+ * `mirror-in-rtl` (§2, AC-5): flips direction-carrying icons under `dir="rtl"`. Applied by the
+ * icon set from each icon's declared `mirrorInRtl` intent — never decided at a call site, so an
+ * arrow cannot be shipped unmirrored and a clock, a check or the wordmark cannot be shipped
+ * mirrored.
+ */
+@utility mirror-in-rtl {
+  [dir="rtl"] & {
+    transform: scaleX(-1);
+  }
+}
+
+/* The named z-scale as utilities, so no component writes a raw `z-index`. */
+@utility layer-header {
+  z-index: var(--layer-header);
+}
+
+@utility layer-banner {
+  z-index: var(--layer-banner);
+}
+
+@utility layer-overlay {
+  z-index: var(--layer-overlay);
+}
+
+/*
+ * The motion scale as utilities. Tailwind v4 has an `--ease-*` theme namespace (so `ease-standard`
+ * is generated for free) but no duration namespace — its own `duration-*` utility takes a number
+ * of milliseconds and would swallow the name `duration-fast`. These three keep the **token** as
+ * the only place a duration is written, instead of scattering `duration-[120ms]` across
+ * components, and `@layer base` overrides all of them under `prefers-reduced-motion` (AC-6).
+ */
+@utility motion-fast {
+  transition-duration: var(--duration-fast);
+}
+
+@utility motion-base {
+  transition-duration: var(--duration-base);
+}
+
+@utility motion-slow {
+  transition-duration: var(--duration-slow);
+}

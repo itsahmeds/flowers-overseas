@@ -112,7 +112,8 @@ scripts/                  repo tooling: check-layout, env-check, seo validators,
 it renders no document — no `<html>`, no `<body>`, it returns its children — and carries the
 `noindex,nofollow` metadata default so that every document below it inherits it, the 404 included
 (spec 001 §6). The document itself is rendered by whichever leaf knows the language, which is why
-no file in the repository contains a locale literal any more. There are three such documents:
+no file in the repository contains a locale literal any more. There are four such documents (the
+fourth exists only where `ENABLE_DEV_UI` is on):
 
 - `src/app/(chooser)/layout.tsx` + `page.tsx` — the single non-localised URL, `/`, and since
   TASK-035 the crawlable locale chooser: one plain `<a>` per launch locale, labelled with its
@@ -129,6 +130,15 @@ no file in the repository contains a locale literal any more. There are three su
 - `src/app/not-found.tsx` — the 404 document, in the **x-default** locale from the registry
   (AC-8). Every 404 renders here: an unknown first segment and any unmatched path below a real
   locale alike, always status 404 and never a fabricated locale page.
+- `src/app/(dev)/layout.tsx` + `(dev)/dev/components/page.tsx` — the component gallery (spec 004
+  §2 "Component gallery", §13 Q10; TASK-045). A fourth document, in the x-default locale, present
+  only when `ENABLE_DEV_UI=true`: it renders every token ramp and every component state, so one
+  screenshot and one axe run cover states no Phase-0 page reaches (empty, error, disabled). It is
+  `noindex`, it answers **404** when the flag is off, and the zod env schema fails the build when
+  the flag is true while `VERCEL_ENV=production` — the pattern spec 003 established for
+  `ENABLE_PSEUDO_LOCALES`. It is deliberately not Storybook: a second build, a second styling
+  entry point and ~100 MB of devDependencies for a solo founder, in exchange for controls this
+  project does not need.
 - `src/app/global-error.tsx` — the last-resort 500 document (TASK-035, spec 003 §5.3), replacing
   Next's untranslated, `lang`-less built-in shell. It is an x-default document with `lang`, `dir`
   and a localised `<title>`, and it is what answers a failure at `/` now that the `(chooser)`
@@ -238,6 +248,12 @@ public barrel comment, and the test above compares them character by character: 
 changes the other. **When a spec adds a module it updates three places in the same PR: this table,
 the `MODULES` manifest in `scripts/check-layout.ts`, and the new barrel's owning-spec comment.**
 
+`plan/01` §5 names eleven modules and they are all domain-shaped; `ui` is the one addition, made by
+spec 004 §2 / §13 Q9 (TASK-045), because a design system has no home among them and `app/` must
+stay "routes only; thin" while the header and footer are rendered by every route group. It obeys
+every rule the others do: one public barrel, no deep imports, `app/` imports from it and never the
+reverse.
+
 | Module | Responsibility (`plan/01` §5) | Owned by spec | Status |
 |---|---|---|---|
 | `catalog` | products, categories, occasions, pricing, translations | spec 005 | empty barrel |
@@ -251,6 +267,7 @@ the `MODULES` manifest in `scripts/check-layout.ts`, and the new barrel's owning
 | `i18n` | locale config, message loading, formatters, address formatting, the locale switcher | spec 003 | **complete for spec 003**: `registry`/`routing`/`messages`/`request` (four launch locales, authored path segments, fallback-chain merge, per-route namespace subsets), `format`/`collate`/`address` (all `Intl`; `fo/no-adhoc-intl` allows nowhere else), `schemas`, `review`/`alternates` (the 5 %-unreviewed indexability gate and the hreflang set), `pseudo` (`en-XA`/`ar-XB`), `hints`, `ui/LocaleSwitcher` and `ui/LocaleSuggestionBanner*`. Gated by `pnpm i18n:check`; no database (`pnpm check:no-db`) — the provider seam is what spec 002/012 hydrate |
 | `analytics` | GA4 event schema, consent state, server-side events | spec 023 | empty barrel |
 | `admin` | admin queries and actions | spec 012 | empty barrel |
+| `ui` | design tokens, layout primitives, icons, chrome, the image wrapper | spec 004 | **tokens, fonts and primitives (TASK-045)**: the `@theme` token set and `@layer base` reset live in `src/app/globals.css`, the contrast manifest in `tokens/contrast.ts` (unit-tested against the tokens themselves), the two self-hosted families in `fonts/` (Newsreader 500 + IBM Plex Sans 400/600, 40 844 B total), the icon set and the brand `Mark` in `icons/`, and `Container`/`Stack`/`Row`/`Cluster`/`Grid`/`VisuallyHidden`/`SkipLink`/`Display`/`Text`/`Label`/`Button`/`Field`/`Chip`/`Photo`/`Placeholder`/`Price` in `primitives/`. Rendered in every state by `/dev/components`. Header, footer, trust strip, consent banner and `media/` arrive with TASK-048…TASK-053 |
 
 Implemented outside the modules today (spec 001, all in `src/lib/`): `env` (+ `env.schema`,
 `env.server`, `env.client`, `env.assert`), `logger`, `health`, `request-id` (the `x-request-id`

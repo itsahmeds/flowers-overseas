@@ -49,6 +49,7 @@ Target: under 15 minutes on a machine that already has Node and git (spec 001 AC
 4. `cp .env.example .env.local`
 5. `pnpm dev` — serves `http://localhost:3000`
 6. `curl -s http://localhost:3000/api/health` — expect `{"status":"ok",…}` with `cache-control: no-store` and an `x-request-id`
+   · `open http://localhost:3000/dev/components` — the design-system gallery (every token ramp and every component state). It exists because `.env.example` ships `ENABLE_DEV_UI=true`; unset it and the URL answers 404, and the env schema refuses it outright in production (spec 004 AC-28)
 7. `pnpm lint && pnpm typecheck && pnpm test` — the local gate before any commit
 
 Optional, and only when the Playwright layers are relevant:
@@ -85,7 +86,7 @@ Every script in `package.json`, once.
 | `pnpm typecheck:fixtures` | the same over `tests/fixtures/ts/`, which must fail to typecheck |
 | `pnpm format` | Prettier, write |
 | `pnpm format:check` | Prettier, check only (the CI form) |
-| `pnpm check-layout` | the `plan/01` §5 tree and the eleven module barrels exist and nothing extra does |
+| `pnpm check-layout` | the `plan/01` §5 tree and the twelve module barrels exist and nothing extra does |
 | `pnpm check:no-literal-disable` | no file under `src/` disables `fo/no-literal-strings` |
 | `pnpm check:no-db` | no file in the spec 003 file set (`src/config/`, `src/modules/i18n/`) imports a database client, an ORM or a Postgres driver, or reads `DATABASE_URL` |
 | `pnpm env:check` | `.env.example` keys and the zod schema in `src/lib/env.schema.ts` are the same set |
@@ -93,6 +94,7 @@ Every script in `package.json`, once.
 | `pnpm i18n:check` | the catalogue gate (spec 003 AC-13, AC-22): keys missing after fallback resolution, unused `en` keys (`retained: true` in `messages/en.meta.json` is the only escape), ICU syntax errors, argument-set mismatches between a key and its translations, redundant `en-gb` overrides, missing or orphan review records, stale `sourceHash` values, and the `pathSegments` shape plus per-locale uniqueness. `--summary` prints the per-locale table (keys, missing, unreviewed count and share, stale, indexable) and appends it to the GitHub step summary; `--messages-dir`, `--src` and `--registry` point the checks at a fixture tree |
 | `pnpm i18n:draft` | invoked as `pnpm i18n:draft --locale <code>`: fills `messages/<code>.json` and `messages/<code>.meta.json` from `messages/en.json` with the deterministic, offline echo provider (spec 003 §13 Q7): every written key gets `source: "machine"`, `reviewed: false` and a `sourceHash`, human and reviewed copy is kept and reported stale instead, and a re-run writes nothing. `--dry-run` reports without writing |
 | `pnpm i18n:pseudo` | regenerates the two git-ignored pseudo-locale catalogues, `messages/en-XA.json` (accented, expanded ≥ 40 %, bracketed) and `messages/ar-XB.json` (right-to-left mirror), deterministically from `messages/en.json` (spec 003 §2, AC-29). The routes derive the same values in memory, so the files are for reading diffs and for the catalogue gate's determinism clause (check 9); `--check` exits non-zero when they are stale or missing. The `/en-XA` and `/ar-XB` URLs exist only where `ENABLE_PSEUDO_LOCALES=true` (locally and on previews; the env schema refuses it in production) |
+| `pnpm fonts:build` | regenerates the committed WOFF2 subsets under `src/modules/ui/fonts/` from the upstream variable TTFs and rewrites `subset.json` with the byte table (spec 004 AC-4). **Needs the network and is run by hand, never by the build** — the output is committed, so a clean clone and every CI job stay offline. Re-run it only to change the character repertoire, an axis pin or an upstream version, and commit the diff; the unit suite fails if the recorded bytes and the files disagree or the ≤45 KB per-page budget is broken |
 | `pnpm audit` | `pnpm audit --prod --audit-level=high` plus `audit:secrets` (invoke it as `pnpm run audit`: pnpm's built-in `audit` shadows the script name) |
 | `pnpm audit:secrets` | gitleaks over the working tree and history; skips with a notice when gitleaks is absent |
 
@@ -106,7 +108,7 @@ Every script in `package.json`, once.
 | `pnpm test:contract` | adapter-versus-recorded-fixture tests; no tests yet (`--passWithNoTests`) |
 | `pnpm test:e2e` | Playwright `e2e-desktop` + `e2e-mobile` against `PLAYWRIGHT_BASE_URL` |
 | `pnpm test:visual` | Playwright `visual` + `pseudo-rtl` against the baselines in `tests/visual/__screenshots__/<project>/<platform>/` (`--update-snapshots` to regenerate). Baselines are **per platform** since spec 003 gave `/` real text: your macOS run compares against `darwin/`, CI against `linux/`. Regenerate the `linux/` baseline from the `visual` job — it uploads the screenshots it wrote when it fails — and commit both. |
-| `pnpm test:a11y` | Playwright `a11y` with `@axe-core/playwright`: zero serious/critical violations |
+| `pnpm test:a11y` | Playwright `a11y` with `@axe-core/playwright`: zero serious/critical violations. Includes `/dev/components`, so the target needs `ENABLE_DEV_UI=true` |
 | `pnpm dev-os:check` | the shell checks in `tests/dev-os/` against the real hooks and `.claude/bin/task.sh`, in throwaway project roots |
 
 **SEO and repository policy**

@@ -1,0 +1,6 @@
+/* Valid fixture: the same declarations from tokens (spec 004 AC-1, T-02; TASK-045). */
+.swatch {
+  color: var(--color-ink);
+  background-color: var(--color-paper);
+  border-block-end-color: var(--color-rule);
+}

@@ -154,7 +154,7 @@ describe("a fifth locale is data (AC-31)", () => {
       params: generateStaticParams().map((param) => param.locale),
     }));
 
-    expect(html).toContain('<html lang="fr" dir="ltr">');
+    expect(html).toContain('<html lang="fr" dir="ltr" class=');
     // No `messages/fr.json` ships: the `fr → en` fallback chain renders it (§2 "Messages").
     expect(html).toContain("<h1>Send flowers across Europe</h1>");
     expect(params).toEqual(["en", "en-gb", "de", "pl", "fr"]);

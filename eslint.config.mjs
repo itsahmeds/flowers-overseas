@@ -40,6 +40,12 @@ const eslintConfig = defineConfig([
       // address block. The rule allowlists `src/modules/i18n/format.ts` and `collate.ts` by path
       // suffix itself, so no `files` override is needed here.
       "fo/no-adhoc-intl": "error",
+      // spec 004 §2, AC-1 (TASK-045): colours come from the `@theme` tokens of
+      // `src/app/globals.css` and from nowhere else, so a palette swap is one diff. The rule
+      // needs no path exception: it looks at `className`/class-helper/`style` values only, and
+      // the token file is CSS (Stylelint's `color-no-hex` and the colour-property ban hold that
+      // side).
+      "fo/no-raw-color": "error",
       // spec 001 §2: `no-console` (error) outside `src/lib/logger.ts` and `scripts/`. The logger
       // is the only writer of log lines, so PII redaction cannot be bypassed (§8, AC-12).
       "no-console": "error",
@@ -80,6 +86,7 @@ const eslintConfig = defineConfig([
       "fo/no-literal-strings": "error",
       "fo/no-direct-order-status-write": "error",
       "fo/no-geo-redirect": "error",
+      "fo/no-raw-color": "error",
       "no-console": "error",
     },
   },

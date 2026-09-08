@@ -33,7 +33,10 @@ afterEach(() => {
 });
 
 describe("plan/01 §5 layout manifest (T-03)", () => {
-  it("names the eleven modules of plan/01 §5", () => {
+  it("names the eleven modules of plan/01 §5 plus the documented `ui` addition", () => {
+    // `ui` is spec 004 §2 / §13 Q9's documented addition to `plan/01` §5's domain-shaped list
+    // (TASK-045): the design system has no home among the domain modules, and `app/` must stay
+    // routes-only while the header and footer are rendered by every route group.
     expect([...MODULES].sort()).toEqual(
       [
         "admin",
@@ -47,6 +50,7 @@ describe("plan/01 §5 layout manifest (T-03)", () => {
         "partners",
         "payments",
         "seo",
+        "ui",
       ].sort(),
     );
   });

@@ -1,0 +1,46 @@
+{
+  "generatedBy": "pnpm fonts:build (scripts/fonts/build-fonts.ts)",
+  "licence": "SIL Open Font License 1.1 (both families)",
+  "repertoire": " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~–—‘’“”„…·•€£°×→ ‑ÄÖÜäöüßĄąĆćĘęŁłŃńÓóŚśŹźŻżĂăÂâÎîȘșȚțÇçĞğİıŞşÀÁÃÅÆÈÉÊËÌÍÏÑÒÔÕØÙÚÛÝàáãåæèéêëìíïñòôõøùúûýÿ",
+  "glyphCount": 198,
+  "budgetBytes": 46080,
+  "totalBytes": 40844,
+  "faces": [
+    {
+      "file": "newsreader-500-latin-ext.woff2",
+      "family": "Newsreader",
+      "weight": 500,
+      "role": "display (headings, wordmark)",
+      "axes": {
+        "opsz": 32,
+        "wght": 500
+      },
+      "bytes": 17468,
+      "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/newsreader/Newsreader%5Bopsz,wght%5D.ttf"
+    },
+    {
+      "file": "plex-sans-400-latin-ext.woff2",
+      "family": "IBM Plex Sans",
+      "weight": 400,
+      "role": "body",
+      "axes": {
+        "wdth": 100,
+        "wght": 400
+      },
+      "bytes": 11272,
+      "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/ibmplexsans/IBMPlexSans%5Bwdth,wght%5D.ttf"
+    },
+    {
+      "file": "plex-sans-600-latin-ext.woff2",
+      "family": "IBM Plex Sans",
+      "weight": 600,
+      "role": "labels, buttons, navigation (the canvas's 500 and 600 both resolve here)",
+      "axes": {
+        "wdth": 100,
+        "wght": 600
+      },
+      "bytes": 12104,
+      "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/ibmplexsans/IBMPlexSans%5Bwdth,wght%5D.ttf"
+    }
+  ]
+}
