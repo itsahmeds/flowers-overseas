@@ -29,7 +29,18 @@
  * `metadata` cannot be exported from a Client Component, so the `<title>` is rendered as an
  * element; React hoists it into `<head>`.
  */
-import { documentFallbackLocale, loadMessages } from "@/modules/i18n";
+// Two deep module paths, not the `@/modules/i18n` barrel (`/review 23`): this file is a Client
+// Component, so every module it can reach is compiled into a client chunk that Next attaches to
+// the root error boundary — which means to *every* document's initial script set, `/` included.
+// Through the barrel that was the whole module: the formatters, the collator, the address
+// formats, the alternates builder, the review gate and the switcher, none of which a 500 page
+// renders. Importing the two files that hold the four strings' resolution path keeps the growth
+// vector closed: a function added to `format.ts` tomorrow cannot land in `/`'s bundle by being
+// exported. `import/no-restricted-paths` allows it — the barrel rule binds module-to-module
+// imports, and `app/` → `modules/` is the direction the boundary permits (`plan/01` §5) — and the
+// measured cost of the barrel is recorded in `docs/architecture.md` §2.
+import { loadMessages } from "@/modules/i18n/messages";
+import { documentFallbackLocale } from "@/modules/i18n/registry";
 
 export default function GlobalError({ reset }: { reset: () => void }) {
   const locale = documentFallbackLocale();

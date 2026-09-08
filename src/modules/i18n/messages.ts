@@ -224,7 +224,11 @@ export type RouteKind = (typeof ROUTE_KINDS)[number];
  * The namespaces a route kind may use. `localeDocument` is the set handed to the client provider
  * under `[locale]` (the error boundary needs `errors`); `chooser` is the `/` document, whose
  * `meta`, `chooser` and `a11y` copy is read on the server and handed to **no** client provider at
- * all (AC-27's "`/` ships zero application JS", AC-7's "served without JavaScript").
+ * all, which is what AC-7's "served without JavaScript" asks for. It does **not** make `/` free of
+ * application JavaScript, as this comment claimed before TASK-043 measured it: Next attaches the
+ * root error boundary's client chunk to every document. The honest claim is the narrower one — no
+ * message is serialised into `/` at all, and AC-27's 4 KB budget applies to the `localeDocument`
+ * subset (0.6 KB gzipped per locale today, `pnpm budget:client-js`).
  */
 const ROUTE_NAMESPACES: Readonly<
   Record<RouteKind, readonly MessageNamespace[]>

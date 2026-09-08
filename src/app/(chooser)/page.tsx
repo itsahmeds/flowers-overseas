@@ -22,10 +22,21 @@ import {
  * (AC-7, AC-9, AC-12, ADR-0006). Adding a locale is a data change: the list comes from the
  * registry (AC-31).
  *
- * **Zero JavaScript.** No client component, no provider, no island: the copy is resolved on the
- * server and the links are links, so `/` works with scripting disabled (AC-7) and ships no
- * application JS (AC-27). The locale-suggestion banner that TASK-041 adds is a `[locale]` concern;
- * it never lands here, because a visitor on `/` has not chosen anything yet.
+ * **No JavaScript of its own.** No client component, no provider, no island: the copy is resolved
+ * on the server and the links are links, so `/` works with scripting disabled (AC-7). The
+ * locale-suggestion banner that TASK-041 adds is a `[locale]` concern; it never lands here,
+ * because a visitor on `/` has not chosen anything yet.
+ *
+ * What `/` does still download is measured rather than claimed (TASK-043, correcting the "zero
+ * application JS" this comment used to assert): **221.3 KB gzipped**, of which 130.1 KB is Next
+ * 16.3.4's own client runtime and 91.1 KB is the module graph of `src/app/global-error.tsx` — the
+ * root error boundary, which Next requires to be a Client Component and attaches to every
+ * document, `/` included, and which needs the message catalogue to render a localised 500 page.
+ * Most of that is zod, reached through the catalogue's own schema. This route group contributes
+ * no client component at all; that is the part AC-7 and AC-27 can hold, and it is asserted rather
+ * than described (`tests/unit/client-js-budget.test.ts`). `pnpm budget:client-js` prints the
+ * number per chunk; spec 003 §14 A12 records the rest, including what it would take to get `/` to
+ * 132.1 KB and why that decision is not this route's to take.
  *
  * Accessibility (§8): the document's language is the x-default locale (WCAG 3.1.1), the `<title>`
  * below is localised and non-empty (2.4.2 — this is the document that made the axe

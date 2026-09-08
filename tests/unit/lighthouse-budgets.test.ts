@@ -80,8 +80,11 @@ describe("tests/fixtures/seo/lighthouse-urls.json (AC-23)", () => {
     }
   });
 
-  it("is `/` only in spec 001, the one page that exists", () => {
-    expect(parseUrlList(raw)).toEqual(["/"]);
+  it("measures the chooser and two locale homes (spec 003 AC-27)", () => {
+    // AC-27 words the budget as "`/` and `/en`"; `/de` is measured too because it is the locale
+    // whose catalogue is an unreviewed echo — the one whose document could differ from `/en` by
+    // accident rather than by design. Spec 004 §2 extends the list to all four launch locales.
+    expect(parseUrlList(raw)).toEqual(["/", "/en", "/de"]);
   });
 
   it("rejects an empty list and an absolute URL", () => {
@@ -131,9 +134,14 @@ describe("ci.yml lighthouse and seo-validate jobs (AC-22, AC-23)", () => {
     expect(ci).toContain("lighthouserc.json");
   });
 
-  it("keeps Lighthouse informational until spec 004 (§13 Q4) and says so out loud", () => {
+  it("keeps Lighthouse informational, and states the measured reason (spec 003 §14 A12)", () => {
+    // Spec 001 §13 Q4 made the job informational "until spec 004". TASK-043 measured why it has
+    // to stay that way for now and the reason is no longer a schedule: the framework's own client
+    // runtime is over the script budget, so the job would be red on a page with no application
+    // JavaScript at all. The flip is a founder decision recorded in spec 003 §14 A12, and it is
+    // the deletion of the one line asserted here.
     expect(ci).toMatch(/ {2}lighthouse:\n[\s\S]*?continue-on-error: true/);
-    expect(ci).toContain("informational until spec 004");
+    expect(ci).toContain("spec 003 §14 A12");
   });
 
   it("writes the step summary after the run, not before it", () => {
@@ -150,13 +158,13 @@ describe("ci.yml lighthouse and seo-validate jobs (AC-22, AC-23)", () => {
     expect(job.slice(summaryIndex)).toMatch(/^[\s\S]{0,200}if: always\(\)/);
   });
 
-  it("says that a NO_FCP run measured no budget at all, either way", () => {
+  it("still distinguishes a NO_FCP run from a budget verdict", () => {
+    // `/` paints since TASK-035, so `NO_FCP` is no longer the expected outcome — but it is still
+    // the one outcome that must not be read as a verdict, so the branch and its wording stay.
     expect(ci).toContain("NO_FCP");
     expect(ci).toContain(
       "**No budget was measured: this is neither a budget breach nor a pass.**",
     );
-    // Backticks are backslash-escaped inside the workflow's shell block.
-    expect(ci).toContain("paints nothing in spec 001");
   });
 
   it("treats an empty .lighthouseci/ as expected, not as a warning", () => {
