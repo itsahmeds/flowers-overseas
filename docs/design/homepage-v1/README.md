@@ -8,3 +8,6 @@ Source of truth for spec 004's visual system. Live canvas: https://claude.ai/cod
 - `canvas.json` — artboard layout and the design notes (competitor synthesis, decisions).
 
 Decisions recorded from the founder review: white background for trust; forest-green single accent; Newsreader + IBM Plex Sans; commerce header (logo left, search with button, Sign in / My orders / Basket, category row); type-ahead country finder → town/postcode → date → neutral "Continue"; occasion row; "Most sent this week" gated on real orders; verified-reviews section hidden until real reviews exist; no fabricated numbers, reviews or photos (photo slots are marked placeholders).
+
+## Round 6 additions (competitor gap check, 2026-09-08)
+Help line (phone and WhatsApp +1 (213) 592-5150, hours) in the utility strip; "Coming up in Poland" occasion-date strip with order-by cutoffs; "Meet the florists" section (real partners only, hidden until signed); five-question FAQ; occasion-reminder email signup (double opt-in). Founder decision recorded: reviews are real-only — no seeded or fake reviews (EU UCPD/Omnibus blacklist; Trustpilot/Google policy); a founding-customer offer on the first orders is the route to real reviews. These sections extend TASK-049/053/054 scope.
