@@ -16,7 +16,11 @@ import { resolve } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { MODULES, REQUIRED_DIRS } from "../../scripts/check-layout.ts";
+import {
+  CONFIG_FILES,
+  MODULES,
+  REQUIRED_DIRS,
+} from "../../scripts/check-layout.ts";
 import { parseTables } from "../../scripts/tasks-open-decisions.ts";
 
 const repoRoot = resolve(__dirname, "../..");
@@ -103,6 +107,12 @@ describe("docs/architecture.md (AC-30)", () => {
 
   it("lists the same tree as the check-layout manifest (AC-3)", () => {
     for (const dir of REQUIRED_DIRS) expect(doc, dir).toContain(dir);
+  });
+
+  it("lists the config modules of the check-layout manifest (TASK-033)", () => {
+    for (const file of CONFIG_FILES) {
+      expect(doc, file).toContain(file.replace("src/config/", ""));
+    }
   });
 
   it("records the deferred decisions with the spec that lifts each", () => {

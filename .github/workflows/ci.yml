@@ -74,6 +74,11 @@ jobs:
         run: pnpm lint 2>&1 | tee lint.log
       - name: No `eslint-disable` for fo/no-literal-strings under src/ (AC-6)
         run: pnpm check:no-literal-disable | tee no-literal-disable.log
+      # The no-database seam of spec 003 (AC-2): the locale/currency/address config and the i18n
+      # module must stay free of a database client, an ORM, a Postgres driver and `DATABASE_URL`,
+      # which is what makes that spec implementable while spec 002's provisioning is parked.
+      - name: No database import in the spec 003 file set (spec 003 AC-2)
+        run: pnpm check:no-db | tee no-db.log
       - name: Prettier
         run: pnpm format:check | tee format.log
       # `.env.example` and the zod schema must agree in both directions (AC-11, TASK-005). It runs
@@ -97,6 +102,7 @@ jobs:
             echo "|---|---|---|"
             echo "| ESLint + Stylelint | \`pnpm lint\` | ${{ steps.eslint.outcome }}, $problems problem(s) |"
             echo "| eslint-disable audit (AC-6) | \`pnpm check:no-literal-disable\` | $( [ -f no-literal-disable.log ] && tr '\n' ' ' < no-literal-disable.log || echo 'did not run' ) |"
+            echo "| no-db seam (spec 003 AC-2) | \`pnpm check:no-db\` | $( [ -f no-db.log ] && tr '\n' ' ' < no-db.log || echo 'did not run' ) |"
             echo "| Prettier | \`pnpm format:check\` | $( [ -f format.log ] && echo 'all matched' || echo 'did not run' ) |"
             echo "| env:check (AC-11) | \`pnpm env:check\` | $( [ -f env-check.log ] && tr '\n' ' ' < env-check.log || echo 'did not run' ) |"
           } >> "$GITHUB_STEP_SUMMARY"
