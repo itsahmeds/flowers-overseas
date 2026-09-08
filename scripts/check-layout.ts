@@ -52,6 +52,9 @@ export const REQUIRED_DIRS = [
  */
 export const CONFIG_FILES = [
   "src/config/locales.ts",
+  // The authored locale rows as plain constants, imported by `locales.ts` (which validates them)
+  // and by the 500 document's copy path (which must reach no zod) — TASK-046.
+  "src/config/locales.data.ts",
   "src/config/currencies.ts",
   "src/config/address-formats.ts",
 ] as const;

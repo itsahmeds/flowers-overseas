@@ -23,32 +23,39 @@
  *
  * `toLocaleRow()` projects exactly spec 002 §5.1's `locale` column set so TASK-015's seed reads
  * the projection instead of restating the locale set (AC-4).
+ *
+ * **Where the rows themselves live (TASK-046).** The authored data moved to
+ * `src/config/locales.data.ts`, a file that imports nothing and therefore reaches no zod. This
+ * file is still the only door the application uses — it parses those constants under
+ * `LocaleRegistrySchema` at module load, exactly as before, and re-exports the data names so no
+ * caller changed. The one consumer that reads the constants directly is
+ * `src/modules/i18n/error-document.ts`, feeding `src/app/global-error.tsx`: Next attaches the
+ * root error boundary's client chunk to every document, so a zod reachable from that file is a
+ * ~70 KB Brotli copy of zod in the initial script set of `/` and of every locale home (spec 004
+ * §13 Q13, spec 003 §14 A12). `tests/unit/locales-data.test.ts` proves the two doors agree.
  */
 import { pseudoLocalesEnabled } from "../lib/env.schema.ts";
 
 import { isCurrencyCode } from "./currencies.ts";
+import {
+  LAUNCH_LOCALE_DATA,
+  PATH_SEGMENT_KEYS,
+  PSEUDO_LOCALE_DATA,
+  type PathSegmentKey,
+  type TextDirection,
+  X_DEFAULT,
+  textDirections,
+} from "./locales.data.ts";
 
 import { z } from "zod";
 
 /**
- * Localised URL path segments, one key per `plan/02` §4.1 page type whose segment that table
- * spells out in all three of its locale columns. The remaining §4.1 rows ("How it works, about,
- * guarantee, contact, FAQ, reviews" and the noindex funnel paths) say only "localised" and are
- * authored by the spec that ships those pages (004/007) — as a key added here for **every**
- * locale at once, which `LocaleRegistrySchema`'s completeness refinement enforces. Leaf slugs
- * (`terms`, `agb`, a product slug) are per-entity translations in the database, not segments
- * (`plan/02` §4).
+ * `PATH_SEGMENT_KEYS`, `PathSegmentKey`, `X_DEFAULT`, `textDirections` and `TextDirection` are
+ * re-exported from `src/config/locales.data.ts` so every existing import path still resolves
+ * here; the data and the schema that validates it stay one edit apart.
  */
-export const PATH_SEGMENT_KEYS = [
-  "destinations",
-  "shopCategory",
-  "occasions",
-  "product",
-  "blog",
-  "forFlorists",
-  "legal",
-] as const;
-export type PathSegmentKey = (typeof PATH_SEGMENT_KEYS)[number];
+export { PATH_SEGMENT_KEYS, X_DEFAULT, textDirections };
+export type { PathSegmentKey, TextDirection };
 
 /** Lowercase ASCII, hyphen-separated, no trailing slash, no path separator (`plan/02` §4). */
 const PATH_SEGMENT_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -67,9 +74,6 @@ const PathSegmentsSchema = z
     ) as Record<PathSegmentKey, typeof PathSegmentSchema>,
   )
   .strict();
-
-/** `x-default` is an hreflang value but not a language tag, so it is allowed by name only. */
-export const X_DEFAULT = "x-default";
 
 /**
  * The one language-tag validator in this file: `Intl.Locale` accepts the string *and* the string
@@ -92,9 +96,6 @@ const HreflangSchema = z
     (value) => value === X_DEFAULT || canonicalLanguageTag(value) !== undefined,
     { error: "must be `x-default` or a language tag `Intl.Locale` accepts" },
   );
-
-export const textDirections = ["ltr", "rtl"] as const;
-export type TextDirection = (typeof textDirections)[number];
 
 const LocaleConfigObjectSchema = z
   .object({
@@ -351,177 +352,36 @@ export const LocaleRegistrySchema = z
   });
 
 /**
- * The four launch locales. `pathSegments` values are `plan/02` §4.1 verbatim; `en` uses the
- * English column, identical to `en-gb`, because the table's English examples are the `en` forms.
- * `hreflangAliases` are `plan/02` §3's "hreflang values served on the same URL" column.
+ * A locale row as `src/config/locales.data.ts` writes it: `LocaleConfigInput` with the array
+ * fields allowed to be `readonly`, because the data module declares them `as const` and `z.input`
+ * types arrays as mutable. Only the mutability differs; every field and type is the schema's.
  */
-const locales = [
-  {
-    code: "en",
-    bcp47: "en",
-    // Pan-European English formatting; the document language stays `en` (see the schema field).
-    formattingTag: "en-150",
-    name: "English",
-    nativeName: "English",
-    dir: "ltr",
-    isLaunch: true,
-    fallbackCode: null,
-    currencyDefault: "EUR",
-    numberingSystem: "latn",
-    hreflangAliases: ["en", X_DEFAULT, "en-IE", "en-NL", "en-150"],
-    pathSegments: {
-      destinations: "send-flowers-to",
-      shopCategory: "flowers",
-      occasions: "occasions",
-      product: "product",
-      blog: "blog",
-      forFlorists: "for-florists",
-      legal: "legal",
-    },
-  },
-  {
-    code: "en-gb",
-    bcp47: "en-GB",
-    name: "English (United Kingdom)",
-    nativeName: "English (UK)",
-    dir: "ltr",
-    isLaunch: true,
-    fallbackCode: "en",
-    currencyDefault: "GBP",
-    numberingSystem: "latn",
-    hreflangAliases: ["en-GB"],
-    pathSegments: {
-      destinations: "send-flowers-to",
-      shopCategory: "flowers",
-      occasions: "occasions",
-      product: "product",
-      blog: "blog",
-      forFlorists: "for-florists",
-      legal: "legal",
-    },
-  },
-  {
-    code: "de",
-    bcp47: "de",
-    name: "German",
-    nativeName: "Deutsch",
-    dir: "ltr",
-    isLaunch: true,
-    fallbackCode: "en",
-    currencyDefault: "EUR",
-    numberingSystem: "latn",
-    hreflangAliases: ["de", "de-DE", "de-AT"],
-    pathSegments: {
-      destinations: "blumen-verschicken",
-      shopCategory: "blumen",
-      occasions: "anlaesse",
-      product: "produkt",
-      blog: "blog",
-      forFlorists: "fuer-floristen",
-      legal: "rechtliches",
-    },
-  },
-  {
-    code: "pl",
-    bcp47: "pl",
-    name: "Polish",
-    nativeName: "Polski",
-    dir: "ltr",
-    isLaunch: true,
-    fallbackCode: "en",
-    currencyDefault: "PLN",
-    numberingSystem: "latn",
-    hreflangAliases: ["pl", "pl-PL"],
-    pathSegments: {
-      destinations: "wyslij-kwiaty",
-      shopCategory: "kwiaty",
-      occasions: "okazje",
-      product: "produkt",
-      blog: "blog",
-      forFlorists: "dla-kwiaciarni",
-      legal: "regulamin",
-    },
-  },
-] as const satisfies readonly LocaleConfigInput[];
+type AuthoredLocale = Omit<LocaleConfigInput, "hreflangAliases"> & {
+  readonly hreflangAliases: readonly string[];
+};
 
 /**
- * The two generated pseudo-locales (spec 003 §2 "Pseudo-locales", §13 Q6; TASK-042). They are
- * locale *config*, like every other row here — the catalogues are derived from `messages/en.json`
- * by `src/modules/i18n/pseudo.ts` and never authored — and they enter the registry only when
- * `ENABLE_PSEUDO_LOCALES` is on (see `LOCALES` below).
- *
- * `XA`/`XB` are the private-use region subtags CLDR, Chrome and Android already use for exactly
- * these two pseudo-locales, so the URL prefix is `/en-XA` and `/ar-XB` — the only codes in this
- * file with an uppercase subtag, which is why `code`'s pattern names them.
- *
- * Three properties are enforced by `LocaleConfigSchema`'s refinements rather than by convention:
- * `isLaunch: false` (so they are absent from `launchLocales()`, the switcher, `alternatesFor()`
- * and `isLocaleIndexable()`), no `hreflangAliases` at all (so no hreflang value and no sitemap
- * entry can name them, §6), and a `fallbackCode` that terminates at the x-default locale.
- * `pathSegments` mirror `en` because nothing links to a localised pseudo path; they exist so
- * `localePath()` can build one when a spec-004 template is eyeballed under `/en-XA`.
+ * The four launch locales, authored in `src/config/locales.data.ts` and validated here. The
+ * `satisfies` keeps the compiler checking every field's type against the schema's input shape; a
+ * field the schema does *not* know is caught by `LocaleConfigObjectSchema.strict()` at the
+ * `LOCALES` parse below (and therefore by the build, by `pnpm i18n:check` and by
+ * `tests/unit/locales-data.test.ts`), not silently accepted.
  */
-export const PSEUDO_LOCALES = [
-  {
-    code: "en-XA",
-    bcp47: "en-XA",
-    // Formatting stays pan-European English: the pseudo-locale changes the *strings*, so a
-    // number or a date in a screenshot must be the one `/en` would have shown.
-    formattingTag: "en-150",
-    name: "Pseudo English (accented, expanded)",
-    nativeName: "[Ëñglïsh]",
-    dir: "ltr",
-    isLaunch: false,
-    isPseudo: true,
-    fallbackCode: "en",
-    currencyDefault: "EUR",
-    numberingSystem: "latn",
-    hreflangAliases: [],
-    pathSegments: {
-      destinations: "send-flowers-to",
-      shopCategory: "flowers",
-      occasions: "occasions",
-      product: "product",
-      blog: "blog",
-      forFlorists: "for-florists",
-      legal: "legal",
-    },
-  },
-  {
-    code: "ar-XB",
-    bcp47: "ar-XB",
-    // `Intl` conventions of the pseudo tag itself: `ar-XB` formats with RTL marks, which is the
-    // point — a bidi-naive number or date layout must show up in the `pseudo-rtl` screenshot.
-    name: "Pseudo Arabic (right-to-left mirror)",
-    nativeName: "[العربية]",
-    dir: "rtl",
-    isLaunch: false,
-    isPseudo: true,
-    fallbackCode: "en",
-    currencyDefault: "EUR",
-    numberingSystem: "latn",
-    hreflangAliases: [],
-    pathSegments: {
-      destinations: "send-flowers-to",
-      shopCategory: "flowers",
-      occasions: "occasions",
-      product: "product",
-      blog: "blog",
-      forFlorists: "for-florists",
-      legal: "legal",
-    },
-  },
-] as const satisfies readonly LocaleConfigInput[];
+const locales = LAUNCH_LOCALE_DATA satisfies readonly AuthoredLocale[];
 
-/** The pseudo-locale URL prefixes, whether or not they are enabled. */
-export const PSEUDO_LOCALE_CODES: readonly string[] = PSEUDO_LOCALES.map(
-  (locale) => locale.code,
-);
+/**
+ * The two generated pseudo-locales (spec 003 §2 "Pseudo-locales", §13 Q6; TASK-042), authored in
+ * `src/config/locales.data.ts` and validated here like the launch locales. They enter `LOCALES`
+ * only when `ENABLE_PSEUDO_LOCALES` is on.
+ */
+export const PSEUDO_LOCALES =
+  PSEUDO_LOCALE_DATA satisfies readonly AuthoredLocale[];
 
-/** True for `en-XA` / `ar-XB`, independent of whether they are enabled (`i18n:draft`, checks). */
-export function isPseudoLocaleCode(code: string): boolean {
-  return PSEUDO_LOCALE_CODES.includes(code);
-}
+/**
+ * The pseudo-locale URL prefixes and the predicate over them: data, so they are re-exported from
+ * `src/config/locales.data.ts` rather than recomputed here.
+ */
+export { PSEUDO_LOCALE_CODES, isPseudoLocaleCode } from "./locales.data.ts";
 
 /**
  * Parsed at module load: a malformed registry throws on first import, never at request time.

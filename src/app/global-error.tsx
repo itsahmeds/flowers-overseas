@@ -16,46 +16,52 @@
  * Next requires `global-error.tsx` to be a Client Component and to render `<html>`/`<body>`
  * itself. Two consequences shape the implementation:
  *
- *  - **No `next-intl` at runtime.** There is no server render to hand a provider its messages, and
- *    mounting `NextIntlClientProvider` here would add a second way for the failure document to
- *    fail. The copy is read from the resolved catalogue **as data** — `loadMessages()` is a pure,
- *    synchronous merge of statically imported JSON — and the four keys it reads take no ICU
- *    arguments, so no message formatter is needed. Still no literal string in the file
- *    (`fo/no-literal-strings`, AC-26), and still the same catalogue every other document uses.
+ *  - **No `next-intl` at runtime, and since TASK-046 no zod either.** There is no server render to
+ *    hand a provider its messages, and mounting `NextIntlClientProvider` here would add a second
+ *    way for the failure document to fail. The copy is read **as data** from
+ *    `src/modules/i18n/error-document.ts`, which imports the x-default locale row and
+ *    `messages/en.json` and nothing else; the four keys take no ICU arguments, so no message
+ *    formatter is needed. Still no literal string in the file (`fo/no-literal-strings`, AC-26),
+ *    and still the same catalogue every other document uses — proven equal to
+ *    `loadMessages()`'s answer by `tests/unit/error-document.test.ts` rather than asserted here.
  *  - **x-default, not the URL's locale.** A client component cannot read the path segment at
  *    render time on the server, and guessing would be worse than being honest: the document
- *    declares the x-default locale exactly as `src/app/not-found.tsx` does (§5.3, AC-8).
+ *    declares the x-default locale exactly as `src/app/not-found.tsx` does (§5.3, AC-8) — read
+ *    from the constants rather than through `LocaleRegistryProvider`, because this is the one
+ *    document that must not depend on the machinery that just failed.
  *
  * `metadata` cannot be exported from a Client Component, so the `<title>` is rendered as an
  * element; React hoists it into `<head>`.
  */
-// Two deep module paths, not the `@/modules/i18n` barrel (`/review 23`): this file is a Client
-// Component, so every module it can reach is compiled into a client chunk that Next attaches to
-// the root error boundary — which means to *every* document's initial script set, `/` included.
-// Through the barrel that was the whole module: the formatters, the collator, the address
-// formats, the alternates builder, the review gate and the switcher, none of which a 500 page
-// renders. Importing the two files that hold the four strings' resolution path keeps the growth
-// vector closed: a function added to `format.ts` tomorrow cannot land in `/`'s bundle by being
-// exported. `import/no-restricted-paths` allows it — the barrel rule binds module-to-module
-// imports, and `app/` → `modules/` is the direction the boundary permits (`plan/01` §5) — and the
-// measured cost of the barrel is recorded in `docs/architecture.md` §2.
-import { loadMessages } from "@/modules/i18n/messages";
-import { documentFallbackLocale } from "@/modules/i18n/registry";
+// One module path, and it imports nothing but two constants (`/review 23`, then TASK-046): this
+// file is a Client Component, so every module it can reach is compiled into a client chunk that
+// Next attaches to the root error boundary — which means to *every* document's initial script set,
+// `/` included. Through the `@/modules/i18n` barrel that was the whole module; through
+// `messages.ts` + `registry.ts` it was still `schemas.ts` and `src/config/locales.ts`, and
+// therefore zod — ~70 KB Brotli of validator on a page that validates nothing (spec 003 §14 A12,
+// spec 004 §13 Q13). `error-document.ts` reads the x-default row from `src/config/locales.data.ts`
+// and the four strings from `messages/en.json`, and imports nothing else, so the growth vector
+// stays closed: a function added to `format.ts` or a schema added to `schemas.ts` tomorrow cannot
+// land in `/`'s bundle by being exported. `import/no-restricted-paths` allows it — the barrel rule
+// binds module-to-module imports, and `app/` -> `modules/` is the direction the boundary permits
+// (`plan/01` §5) — and the measured cost of each step is recorded in `docs/architecture.md` §2.
+import { errorDocument } from "@/modules/i18n/error-document";
 
 export default function GlobalError({ reset }: { reset: () => void }) {
-  const locale = documentFallbackLocale();
-  const messages = loadMessages(locale.code, ["meta", "errors"]);
+  // Not named `document`: that identifier is the DOM global, and shadowing it in the one
+  // component that renders `<html>` would be gratuitously confusing.
+  const copy = errorDocument();
 
   return (
-    <html lang={locale.bcp47} dir={locale.dir}>
+    <html lang={copy.lang} dir={copy.dir}>
       <body className="min-h-dvh">
-        <title>{messages.meta.error.title}</title>
+        <title>{copy.title}</title>
         <meta name="robots" content="noindex,nofollow" />
         <main id="main">
-          <h1>{messages.errors.serverError.heading}</h1>
-          <p>{messages.errors.serverError.body}</p>
+          <h1>{copy.heading}</h1>
+          <p>{copy.body}</p>
           <button type="button" onClick={reset}>
-            {messages.errors.serverError.retry}
+            {copy.retry}
           </button>
         </main>
       </body>
