@@ -29,7 +29,15 @@
  * browser retries nothing, so the 500 buys no information either. An unparsable body increments a
  * counter and answers `204`. A flood is dropped by a per-instance, per-minute counter — trivially
  * evadable across instances, and that is fine: the purpose is to keep one misconfigured deploy
- * from writing a million log lines, not to stop an attacker who has nothing to gain.
+ * from writing a million log lines, not to stop an attacker who has nothing to gain. The
+ * consequence for whoever reads the reports is recorded in ADR-0016: because the window is
+ * per-instance and instances scale out, the log is a **floor** on violations, so "quiet enough to
+ * enforce" is a judgement over a period of real traffic and not the absence of 60 lines in a
+ * minute.
+ *
+ * A body that declares more than `CSP_REPORT_MAX_BYTES` is answered `204` without being read
+ * (`/review 26`): `request.json()` would otherwise parse a megabyte before the schema rejected
+ * it. A request that declares no length is still parsed, and is bounded by the counter above.
  */
 import { z } from "zod";
 
@@ -44,6 +52,17 @@ export const CSP_REPORT_CONTENT_TYPES = [
 ] as const;
 
 /** Reports dropped after this many in one window, per running instance. */
+/**
+ * The largest body this endpoint will read, in bytes (`/review 26`, non-blocking note 1).
+ *
+ * A real report is a few hundred bytes; the two schemas cap what is *kept* but `request.json()`
+ * would happily parse megabytes before the parse rejects them. So an oversized declared
+ * `Content-Length` is answered `204` — like every other unusable report — without reading the
+ * body. It is a bound on work, not a security boundary: a chunked request declares no length and
+ * is still parsed, which the rate limiter above bounds to 60 bodies a minute per instance.
+ */
+export const CSP_REPORT_MAX_BYTES = 16 * 1024;
+
 export const CSP_REPORT_RATE_LIMIT = 60;
 export const CSP_REPORT_WINDOW_MS = 60_000;
 
@@ -212,6 +231,18 @@ export function createRateLimiter(
   };
 }
 
+/**
+ * True when the request declares more than `CSP_REPORT_MAX_BYTES`. An absent, empty or
+ * unparsable header is `false`: it means "no declaration", not "too big", and the body is then
+ * bounded by the rate limit rather than by a number nobody sent.
+ */
+export function declaredTooLarge(contentLength: string | null): boolean {
+  if (contentLength === null) return false;
+  const declared = Number(contentLength.trim());
+  if (!Number.isFinite(declared) || declared < 0) return false;
+  return declared > CSP_REPORT_MAX_BYTES;
+}
+
 /** The process-wide limiter the route uses. */
 const limiter = createRateLimiter();
 
@@ -236,6 +267,10 @@ export async function cspReportResponse(
     return new Response(null, { status: 415, headers });
   }
   if (!gate.allow()) {
+    return new Response(null, { status: 204, headers });
+  }
+  if (declaredTooLarge(request.headers.get("content-length"))) {
+    log.warn({ csp_report_oversized: 1 }, "csp report too large");
     return new Response(null, { status: 204, headers });
   }
 

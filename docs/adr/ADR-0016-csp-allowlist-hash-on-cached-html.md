@@ -65,6 +65,14 @@ route.** The policy is emitted from `next.config.ts`'s `headers()` (`src/lib/csp
 enforce flip is therefore a configuration act, not a deploy, and it is deliberately not scheduled
 here: Phase 0 collects evidence, and the founder flips production when the reports are empty.
 
+One caveat on reading that evidence (`/review 26`): `/api/csp-report`'s flood guard is a
+**per-instance** fixed window of 60 reports a minute, and serverless functions scale out, so the
+log is a floor on violations and not a count of them. "Quiet" therefore means quiet over a period
+long enough to cover real traffic and with the `csp_report_invalid` / `csp_report_oversized`
+counters at zero as well — not "fewer than 60 lines in the last minute". A per-directive
+aggregation is what the spec that flips a production environment should build; nothing here claims
+to be it.
+
 ## Consequences and the trade-off accepted
 Easier: every indexable page stays SSG/ISR at the edge, so the LCP, CLS and script budgets of AC-24
 remain reachable; the policy is a constant that a unit test can assert **as a whole string**, which

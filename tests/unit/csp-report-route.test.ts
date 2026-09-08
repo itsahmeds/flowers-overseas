@@ -18,6 +18,7 @@ import {
   CSP_DIRECTIVES,
   CSP_REPORT_CONTENT_TYPES,
   CSP_REPORT_HEADERS,
+  CSP_REPORT_MAX_BYTES,
   CSP_REPORT_RATE_LIMIT,
   CSP_REPORT_WINDOW_MS,
   UNKNOWN_ORIGIN,
@@ -25,6 +26,7 @@ import {
   blockedOrigin,
   createRateLimiter,
   cspReportResponse,
+  declaredTooLarge,
 } from "../../src/lib/csp-report";
 import { createLogger, type Logger } from "../../src/lib/logger";
 
@@ -334,6 +336,64 @@ describe("it never fails, and it never floods (AC-23)", () => {
   it("states its allowance in minutes and reports, not in magic numbers", () => {
     expect(CSP_REPORT_WINDOW_MS).toBe(60_000);
     expect(CSP_REPORT_RATE_LIMIT).toBeGreaterThan(0);
+  });
+
+  /**
+   * `/review 26`, non-blocking note 1: the schemas cap what is *kept*, not what is *parsed*, so a
+   * declared body over `CSP_REPORT_MAX_BYTES` is answered without reading it. Asserted by proving
+   * the body was never consumed — a `Request` whose body is still unread is the observable fact,
+   * and it is what distinguishes the guard from a parse that happens to reject.
+   */
+  it("answers an oversized declared body without reading it", async () => {
+    const capture = capturingLogger();
+    const request = new Request("https://example.test/api/csp-report", {
+      method: "POST",
+      headers: {
+        "content-type": CSP_REPORT_CONTENT_TYPES[0],
+        "content-length": String(CSP_REPORT_MAX_BYTES + 1),
+      },
+      body: JSON.stringify(reportUriBody),
+    });
+
+    const response = await cspReportResponse(request, {
+      logger: capture.logger,
+    });
+
+    expect(response.status).toBe(204);
+    expect(request.bodyUsed).toBe(false);
+    expect(capture.text()).toContain("csp_report_oversized");
+    expect(capture.text()).not.toContain("csp violation");
+  });
+
+  it("reads a body at the limit, and one that declares no length at all", async () => {
+    const capture = capturingLogger();
+    const atLimit = new Request("https://example.test/api/csp-report", {
+      method: "POST",
+      headers: {
+        "content-type": CSP_REPORT_CONTENT_TYPES[0],
+        "content-length": String(CSP_REPORT_MAX_BYTES),
+      },
+      body: JSON.stringify(reportUriBody),
+    });
+
+    expect(
+      (await cspReportResponse(atLimit, { logger: capture.logger })).status,
+    ).toBe(204);
+    expect(capture.text()).toContain("csp violation");
+    // An absent, empty or unparsable declaration is "no declaration", not "too big".
+    for (const value of ["", "  ", "not-a-number", "-1"]) {
+      expect(declaredTooLarge(value), value).toBe(false);
+    }
+    expect(declaredTooLarge(null)).toBe(false);
+    expect(declaredTooLarge(String(CSP_REPORT_MAX_BYTES + 1))).toBe(true);
+  });
+
+  it("caps the parsed body far above a real report and far below a flood", () => {
+    // A real `report-uri` body is a few hundred bytes; the cap is generous and still bounded.
+    expect(JSON.stringify(reportUriBody).length).toBeLessThan(
+      CSP_REPORT_MAX_BYTES,
+    );
+    expect(CSP_REPORT_MAX_BYTES).toBe(16 * 1024);
   });
 });
 
