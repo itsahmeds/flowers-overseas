@@ -50,6 +50,16 @@ describe("pnpm lint:fixtures over the real configs", () => {
       "fo/no-geo-redirect",
       "fo/no-geo-redirect",
     ]);
+    // TASK-037 (spec 003 AC-21): one ad-hoc-`Intl` violation each, outside the formatter module.
+    for (const file of [
+      "adhoc-intl-numberformat.ts",
+      "adhoc-intl-tolocalestring.ts",
+      "adhoc-intl-tolocaledatestring.ts",
+      "adhoc-intl-tofixed.ts",
+      "adhoc-intl-template-currency.ts",
+    ]) {
+      expect(rulesFor(file), file).toEqual(["fo/no-adhoc-intl"]);
+    }
     expect(rulesFor("src/modules/orders/cross-module-import.ts")).toEqual([
       "import/no-restricted-paths",
     ]);
@@ -79,6 +89,9 @@ describe("pnpm lint:fixtures over the real configs", () => {
       "stubs.ts",
       "src/modules/orders/service/transition.ts",
       "src/modules/i18n/hints.ts",
+      // TASK-037 (spec 003 AC-21): the identical code, inside the formatter module.
+      "src/modules/i18n/format.ts",
+      "src/modules/i18n/collate.ts",
       "src/modules/orders/module-imports-valid.ts",
     ]) {
       expect(rulesFor(file)).toEqual([]);
@@ -115,6 +128,7 @@ describe("pnpm lint:fixtures over the real configs", () => {
     expect(config.rules?.["fo/no-float-money"]).toBeUndefined();
     expect(config.rules?.["fo/no-direct-order-status-write"]?.[0]).toBe(2);
     expect(config.rules?.["fo/no-geo-redirect"]?.[0]).toBe(2);
+    expect(config.rules?.["fo/no-adhoc-intl"]?.[0]).toBe(2);
   });
 
   it("makes no-console an error in src/** but not in src/lib/logger.ts (AC-12)", async () => {

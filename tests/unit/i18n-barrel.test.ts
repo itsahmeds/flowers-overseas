@@ -24,8 +24,12 @@ const repoRoot = resolve(__dirname, "../..");
 
 /** Every runtime export of `src/modules/i18n/index.ts`, in alphabetical order. */
 const PINNED_EXPORTS = [
+  "AddressInputSchema",
   "LocaleSwitcher",
   "MoneySchema",
+  "formatAddressBlock",
+  "normalisePostcode",
+  "postcodeRegex",
   "collator",
   "documentFallbackLocale",
   "fallbackChain",
@@ -56,7 +60,7 @@ const PINNED_EXPORTS = [
  * real zod schema — not an object literal, not a config bag — and carries no locale set, no
  * provider and no setter, which is what AC-3 actually forbids.
  */
-const PINNED_SCHEMA_EXPORTS = ["MoneySchema"];
+const PINNED_SCHEMA_EXPORTS = ["AddressInputSchema", "MoneySchema"];
 
 /** Names that must never appear in the barrel, with the reason each is a seam and not an API. */
 const FORBIDDEN_EXPORTS = [

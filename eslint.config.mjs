@@ -36,6 +36,10 @@ const eslintConfig = defineConfig([
       "fo/no-literal-strings": "error",
       "fo/no-direct-order-status-write": "error",
       "fo/no-geo-redirect": "error",
+      // spec 003 §2, AC-21 (TASK-037): exactly one way to render a price, a date, a list or an
+      // address block. The rule allowlists `src/modules/i18n/format.ts` and `collate.ts` by path
+      // suffix itself, so no `files` override is needed here.
+      "fo/no-adhoc-intl": "error",
       // spec 001 §2: `no-console` (error) outside `src/lib/logger.ts` and `scripts/`. The logger
       // is the only writer of log lines, so PII redaction cannot be bypassed (§8, AC-12).
       "no-console": "error",
@@ -78,6 +82,26 @@ const eslintConfig = defineConfig([
       "fo/no-geo-redirect": "error",
       "no-console": "error",
     },
+  },
+  {
+    // `fo/no-adhoc-intl` over its own fixtures only (spec 003 AC-21, TASK-037), rather than over
+    // the whole fixture directory: `float-money-valid.ts` is a TASK-004 fixture whose *point* is
+    // that money went through `new Intl.NumberFormat`, and it is pinned clean by
+    // `tests/unit/lint-fixtures.test.ts`. Widening the glob would retro-flag it and blur which
+    // rule each fixture is evidence for. The mirrored `src/modules/i18n/format.ts` and
+    // `collate.ts` are included so the "passes inside the formatter module" half of AC-21 runs
+    // through the real config, matched by the rule's own path-suffix allowlist.
+    name: "fo/adhoc-intl-fixtures",
+    files: [
+      "tests/fixtures/lint/adhoc-intl-*.ts",
+      "tests/fixtures/lint/src/modules/i18n/format.ts",
+      "tests/fixtures/lint/src/modules/i18n/collate.ts",
+    ],
+    plugins: { fo },
+    languageOptions: {
+      parserOptions: { project: false, projectService: false },
+    },
+    rules: { "fo/no-adhoc-intl": "error" },
   },
   {
     // AC-9 over the fixtures. The offending imports must resolve or the rule skips them, so the

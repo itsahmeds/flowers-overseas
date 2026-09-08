@@ -23,7 +23,13 @@
  * `tests/unit/i18n-barrel.test.ts` pins it by name as a schema rather than loosening its
  * "functions only" assertion.
  *
- * Later spec-003 tasks extend the list: `formatAddressBlock` (TASK-037),
+ * `AddressInputSchema` (TASK-037) is the second schema in the list, for the same reason as
+ * `MoneySchema`: an address crosses the checkout form, the order API and the florist brief, and
+ * `plan/12` §2 would otherwise be met by a hand-written address schema per caller. It carries no
+ * country list — the formats stay in `src/config/address-formats.ts` and reach callers only
+ * through `formatAddressBlock` — so AC-3's ban on exported configuration is untouched.
+ *
+ * Later spec-003 tasks extend the list:
  * `unreviewedShare`/`isLocaleIndexable` (TASK-039), `alternatesFor` (TASK-039),
  * `parseAcceptLanguage`/`preferredLocale` (TASK-041) and `pseudoCatalogue` (TASK-042).
  */
@@ -81,3 +87,13 @@ export {
 } from "./format.ts";
 
 export { collator, sortBy } from "./collate.ts";
+
+export {
+  type AddressInput,
+  AddressInputSchema,
+  type PostcodeRejection,
+  type PostcodeResult,
+  formatAddressBlock,
+  normalisePostcode,
+  postcodeRegex,
+} from "./address.ts";
