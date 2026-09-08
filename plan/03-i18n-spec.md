@@ -111,7 +111,7 @@ Volumes: ~1,400 UI strings, ~90 catalogue entities × 3 fields, ~8 corridor guid
 
 | Concern | en-gb | de | pl | Notes |
 |---|---|---|---|---|
-| Date (short) | 14/02/2027 | 14.02.2027 | 14.02.2027 | Delivery dates always shown with weekday and month name to avoid ambiguity: "Sat 14 Feb", "Sa., 14. Feb.", "sob., 14 lut" |
+| Date (short) | 14/02/2027 | 14.02.2027 | 14.02.2027 | Delivery dates always shown with weekday and month name to avoid ambiguity: "Sun 14 Feb", "So., 14. Feb.", "niedz., 14 lut" |
 | Time | 14:00 | 14:00 | 14:00 | Cutoffs shown in **recipient's local time** with explicit zone ("14:00 Warsaw time") on corridor and PDP |
 | Decimal / thousands | 1,234.50 | 1.234,50 | 1 234,50 | |
 | Currency | £45.00 | 45,00 € | 45,00 zł | Symbol position and spacing per locale via `Intl.NumberFormat(locale,{style:'currency'})`; ISO code shown on hover/aria for clarity across currencies |
