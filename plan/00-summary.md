@@ -76,13 +76,14 @@ Every architectural or business decision below has an ADR in `docs/adr/`. ADRs a
 | [ADR-0005](../docs/adr/ADR-0005-stripe-primary-mollie-fallback.md) | Stripe primary processor, Mollie fallback | accepted | 2026-09-05 |
 | [ADR-0006](../docs/adr/ADR-0006-no-ip-redirects.md) | No IP-based redirects; suggestion banner with persisted choice | accepted | 2026-09-05 |
 | [ADR-0007](../docs/adr/ADR-0007-index-only-true-pages-in-demo.md) | Phase 0 indexes only true pages; shop pages `noindex` until country is `live` | accepted | 2026-09-05 |
-| [ADR-0008](../docs/adr/ADR-0008-nextjs-supabase-stack.md) | Next.js App Router + Supabase Postgres (EU region) | accepted | 2026-09-05 |
+| [ADR-0008](../docs/adr/ADR-0008-nextjs-supabase-stack.md) | Next.js App Router + Supabase Postgres (EU region) | superseded-by ADR-0015 (data layer only) | 2026-09-05 |
 | [ADR-0009](../docs/adr/ADR-0009-event-sourced-order-lifecycle.md) | Order lifecycle as a state machine emitting events to a single `order_events` table | accepted | 2026-09-05 |
 | [ADR-0010](../docs/adr/ADR-0010-buy-crm-build-vendor-portal.md) | Buy the CRM, build the vendor portal | accepted | 2026-09-05 |
 | [ADR-0011](../docs/adr/ADR-0011-spec-driven-dev-os.md) | Spec-driven development OS with agents, task IDs and an edit guard | accepted | 2026-09-05 |
 | [ADR-0012](../docs/adr/ADR-0012-hosting-vercel-supabase-railway-fallback.md) | Vercel + Supabase EU; Railway-behind-Cloudflare fallback | accepted | 2026-09-05 |
 | [ADR-0013](../docs/adr/ADR-0013-resend-transactional-email.md) | Resend for transactional email (EU); marketing automation in the CRM | accepted | 2026-09-05 |
 | [ADR-0014](../docs/adr/ADR-0014-ai-generated-seed-imagery.md) | AI-generated seed imagery under a locked style guide | accepted | 2026-09-05 |
+| [ADR-0015](../docs/adr/ADR-0015-portable-postgres-neon-hetzner-r2-authjs.md) | Portable Postgres (Neon now, Hetzner later), Cloudflare R2 for images, Auth.js for identity; Supabase dropped | accepted | 2026-09-08 |
 
 ## 7. Document map
 

@@ -19,3 +19,4 @@ Running, append-only log of decisions. Each entry links its ADR. Summary table l
 | 2026-09-05 | ADR-0014 | AI-generated seed imagery, locked style guide | plan/10 |
 | 2026-09-05 | ADR-0013 | Resend transactional (EU); marketing automation in CRM (Brevo recommended) | plan/11 |
 | 2026-09-07 | SPEC-001 §13 | pnpm (Corepack-pinned), Node Active LTS major-only, Renovate, Sentry EU, Lighthouse informational until spec 004, private repo `flowers-overseas` under founder account | Spec 001 approval, defaults accepted |
+| 2026-09-08 | ADR-0015 | Portable Postgres: Neon Free now, Hetzner self-hosted later; Cloudflare R2 for images; Auth.js for identity; Supabase dropped (supersedes ADR-0008 data layer) | Founder priority "cheapest-at-scale" before spec 002 |

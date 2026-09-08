@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | accepted |
+| Status | superseded-by ADR-0015 (data layer, auth and storage only; Next.js App Router decision stands) |
 | Date | 2026-09-05 |
 | Deciders | Ahmed |
 | Supersedes | — |
