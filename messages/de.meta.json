@@ -1,0 +1,127 @@
+{
+  "a11y.localeChooser": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "318655cea4bd2096fbfad433d7c019bac40750d1a456fc34d366df41fcc77197"
+  },
+  "a11y.localeSwitcher": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "009ed110badf6e7bb1d9dc5e70d1dbf1d3dcb8283c23508477ee7cb2b730f07d"
+  },
+  "a11y.skipToContent": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "ac576a66d4563e600314a2ce6e731725e9826fd88baf2399e05f60bfb177dbc0"
+  },
+  "banner.dismiss": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "0b097dd9f62f9ae71d5114f4095355465aee2daeb743f2c52b62bff616fee131"
+  },
+  "banner.headline": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "d963ea1e6e705d0984d9cfbda94987a25eac7d5fea34263eaa533c4f97a75732"
+  },
+  "banner.stay": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "3fcb2a5c05d605b8b3870ce7a06c2e7816b39a8c84c709da00330a6ccd1a155a"
+  },
+  "banner.switch": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "e74b4e0cb2ca0462eb247fb87cda16bcc26433ff0788de99ad35bd16aae781be"
+  },
+  "chooser.heading": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "8e2d0664dbbb529de872582461068f7f7f752fc226a03a1b8439a4299dbf5e74"
+  },
+  "chooser.intro": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "f2b39d4474033dd1cb2ebcd517bd7a12bf10eb8adfafaa6f6e8891d48128a058"
+  },
+  "common.floristCount": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "daedf1b42bd0eb4d56978ec9c23fae2f70594b2c0973fe52af13626b905823ea"
+  },
+  "common.homeLink": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "3a78695388b38b5cceefaf6796b0137877514593543b91af2752d5a17e3d736c"
+  },
+  "errors.notFound.body": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "492ff8acd0c238c78de498df88c34b9e3f7dfd6c7ebf5440f7d2e6f2337dc4eb"
+  },
+  "errors.notFound.heading": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "a469ab4ca4e55bf547566e9ebfa1b809c933207e9d558156bc0c4252b17533fe"
+  },
+  "errors.serverError.body": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "7d9cf542c13fab28908106f3fef204209e4661a4cc244a0b6f5b6771c8dbf9fe"
+  },
+  "errors.serverError.heading": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "ab827e3fe17da220a9a652087a35d20adda002aa4df887c5d813b2b1e95228f9"
+  },
+  "errors.serverError.retry": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "d8b8392e2c542950ca64867168e4ef87d4ad606882d5898f826b51c6d553988f"
+  },
+  "meta.chooser.description": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "57f606440bf4aa82161f13566db6ff320a536e29340c81097a263411e437dbfb"
+  },
+  "meta.chooser.title": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "f6b4ef8d26547438bc8e22cf6892fbf0fe1b8bb5de46c00c8add4d9d17754675"
+  },
+  "meta.error.description": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "2ec1e5bc0992e0d5d7f610cb766c8af104b15f85fdde4a6d8528b0b6ba6f3aa1"
+  },
+  "meta.error.title": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "ebc0911a2c1d164dca3e1dd80c3fc31de2be2e39c399dd7972fc7d700327c21e"
+  },
+  "meta.home.description": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "ee5bdcb5e19241c19f36abf2a74bef5d6bfad77e880a327c037230c846d4ecf7"
+  },
+  "meta.home.heading": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "d508bea71757da8bfbbacc4c531092141c6748dd0e0317811a56413bd52d54ab"
+  },
+  "meta.home.title": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "3a14f48cb6bf7e6d9092b3dbfef0274dfccd22570b2a3ed2c3faedd36578e2b1"
+  },
+  "meta.notFound.description": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "f35bba7936faf72573d909760dc1a364aec9281f5704a10d3b0d4724073e775e"
+  },
+  "meta.notFound.title": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "818d2a6d9e512a5d58fa63040a92fe2c2c21c3cffe6376f11e1e41d6b076b39a"
+  }
+}

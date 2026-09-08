@@ -8,6 +8,11 @@
  * enforceable (AC-5) rather than aspirational. A later spec-003 task that legitimately adds a
  * function (the formatters, `alternatesFor`, …) extends `PINNED_EXPORTS` in the same PR.
  *
+ * `MessagesSchema`, `MessageMetaSchema` and `MessageMetaManifestSchema` (TASK-038) join
+ * `MoneySchema` in `PINNED_SCHEMA_EXPORTS`; `MESSAGE_META_COLUMNS` and `messageMeta` are in
+ * `FORBIDDEN_EXPORTS` instead, because the `message_catalog` column mapping is a fact spec 012's
+ * mirror needs *inside* the module and the manifest reader is a provider read, not a caller API.
+ *
  * `LocaleSwitcher` (TASK-035) is the one component in the list. It is still a function and still
  * carries no configuration — a Server Component reading the registry through the same accessor as
  * every other export — so the "functions only, no mutable config" assertion below holds unchanged.
@@ -26,6 +31,9 @@ const repoRoot = resolve(__dirname, "../..");
 const PINNED_EXPORTS = [
   "AddressInputSchema",
   "LocaleSwitcher",
+  "MessageMetaManifestSchema",
+  "MessageMetaSchema",
+  "MessagesSchema",
   "MoneySchema",
   "formatAddressBlock",
   "normalisePostcode",
@@ -60,10 +68,18 @@ const PINNED_EXPORTS = [
  * real zod schema — not an object literal, not a config bag — and carries no locale set, no
  * provider and no setter, which is what AC-3 actually forbids.
  */
-const PINNED_SCHEMA_EXPORTS = ["AddressInputSchema", "MoneySchema"];
+const PINNED_SCHEMA_EXPORTS = [
+  "AddressInputSchema",
+  "MessageMetaManifestSchema",
+  "MessageMetaSchema",
+  "MessagesSchema",
+  "MoneySchema",
+];
 
 /** Names that must never appear in the barrel, with the reason each is a seam and not an API. */
 const FORBIDDEN_EXPORTS = [
+  "MESSAGE_META_COLUMNS",
+  "messageMeta",
   "staticLocaleRegistry",
   "repoMessageSource",
   "withLocaleRegistry",

@@ -80,6 +80,7 @@ Every script in `package.json`, once.
 | `pnpm check:no-db` | no file in the spec 003 file set (`src/config/`, `src/modules/i18n/`) imports a database client, an ORM or a Postgres driver, or reads `DATABASE_URL` |
 | `pnpm env:check` | `.env.example` keys and the zod schema in `src/lib/env.schema.ts` are the same set |
 | `pnpm db:check` | migration/rollback pairing — a stub until spec 002 |
+| `pnpm i18n:draft` | invoked as `pnpm i18n:draft --locale <code>`: fills `messages/<code>.json` and `messages/<code>.meta.json` from `messages/en.json` with the deterministic, offline echo provider (spec 003 §13 Q7): every written key gets `source: "machine"`, `reviewed: false` and a `sourceHash`, human and reviewed copy is kept and reported stale instead, and a re-run writes nothing. `--dry-run` reports without writing |
 | `pnpm audit` | `pnpm audit --prod --audit-level=high` plus `audit:secrets` (invoke it as `pnpm run audit`: pnpm's built-in `audit` shadows the script name) |
 | `pnpm audit:secrets` | gitleaks over the working tree and history; skips with a notice when gitleaks is absent |
 

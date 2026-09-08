@@ -29,7 +29,7 @@
     },
     "serverError": {
       "heading": "Something went wrong",
-      "body": "The page could not be loaded. Nothing you were doing was lost.",
+      "body": "The page could not be loaded. Nothing you were doing was lost. We apologize for the interruption.",
       "retry": "Try again"
     }
   },
@@ -39,6 +39,13 @@
     "localeSwitcher": "Change language"
   },
   "common": {
-    "homeLink": "Home"
+    "homeLink": "Home",
+    "floristCount": "{count, plural, one {# florist} other {# florists}}"
+  },
+  "banner": {
+    "headline": "Would you rather read this page in {language}?",
+    "switch": "Switch to {language}",
+    "stay": "Stay on this page",
+    "dismiss": "Dismiss the language suggestion"
   }
 }

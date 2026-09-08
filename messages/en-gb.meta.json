@@ -1,0 +1,9 @@
+{
+  "errors.serverError.body": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-08T00:00:00Z",
+    "sourceHash": "7d9cf542c13fab28908106f3fef204209e4661a4cc244a0b6f5b6771c8dbf9fe"
+  }
+}
