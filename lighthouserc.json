@@ -1,4 +1,19 @@
 {
+  "//": [
+    "Lighthouse CI budgets (plan/01 §7, spec 004 AC-24). JSON has no comments, so this key is the",
+    "note; `@lhci/cli` reads `.ci` and ignores everything beside it.",
+    "`resource-summary:script:size` is **transfer** size, i.e. the bytes on the wire after content",
+    "encoding. Vercel serves Brotli, so 122 880 here means 120 KB Brotli — which is what spec 004",
+    "§13 Q13 restated the plan/01 §7 budget as (founder decision, 2026-09-08, option (a)), and what",
+    "`pnpm budget:client-js` now compares against. Before that restatement this number was read as",
+    "gzip in the repository and as Brotli by Lighthouse, and the same build was 'over' or 'under'",
+    "depending on the reader.",
+    "`categories:seo` is collected but deliberately **not** asserted: every page in Phase 0 is",
+    "`noindex` (ADR-0007, spec 001 §6), so the SEO category would score the robots directive rather",
+    "than the page, and nobody should be able to make a number green by indexing early. Spec 007",
+    "asserts it when there is an indexable set. AC-24 (TASK-056) owns the enforcement flip and the",
+    "five-URL set; TASK-046 owns these numbers being achievable."
+  ],
   "ci": {
     "collect": {
       "numberOfRuns": 3,
@@ -22,14 +37,36 @@
     },
     "assert": {
       "assertions": {
-        "categories:performance": ["error", { "minScore": 0.95 }],
-        "largest-contentful-paint": ["error", { "maxNumericValue": 2000 }],
-        "cumulative-layout-shift": ["error", { "maxNumericValue": 0.05 }],
+        "categories:performance": [
+          "error",
+          {
+            "minScore": 0.95
+          }
+        ],
+        "largest-contentful-paint": [
+          "error",
+          {
+            "maxNumericValue": 2000
+          }
+        ],
+        "cumulative-layout-shift": [
+          "error",
+          {
+            "maxNumericValue": 0.05
+          }
+        ],
         "resource-summary:script:size": [
           "error",
-          { "maxNumericValue": 122880 }
+          {
+            "maxNumericValue": 122880
+          }
         ],
-        "resource-summary:image:size": ["error", { "maxNumericValue": 204800 }]
+        "resource-summary:image:size": [
+          "error",
+          {
+            "maxNumericValue": 204800
+          }
+        ]
       }
     },
     "upload": {

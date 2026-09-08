@@ -25,6 +25,7 @@ const read = (relative: string): string =>
   readFileSync(resolve(repoRoot, relative), "utf8");
 
 interface LighthouseRc {
+  "//"?: string[];
   ci: {
     collect: {
       numberOfRuns?: number;
@@ -43,7 +44,8 @@ describe("lighthouserc.json budgets (AC-23)", () => {
       "categories:performance": ["error", { minScore: 0.95 }],
       "largest-contentful-paint": ["error", { maxNumericValue: 2000 }],
       "cumulative-layout-shift": ["error", { maxNumericValue: 0.05 }],
-      // 120 KB and 200 KB in bytes: transfer size, i.e. gzipped over the wire.
+      // 120 KB and 200 KB in bytes: **transfer** size, i.e. Brotli over the wire on Vercel
+      // (spec 004 §13 Q13's restatement; the `//` note in the file spells it out).
       "resource-summary:script:size": ["error", { maxNumericValue: 122880 }],
       "resource-summary:image:size": ["error", { maxNumericValue: 204800 }],
     });
@@ -64,6 +66,33 @@ describe("lighthouserc.json budgets (AC-23)", () => {
 
   it("pins no URL in the config: the list is data (spec 007 extends it)", () => {
     expect(JSON.stringify(rc.ci.collect)).not.toContain("url");
+  });
+
+  /**
+   * TASK-046. JSON has no comments and this file carries two decisions a reader will otherwise
+   * get wrong: which encoding `resource-summary:script:size` counts, and why `categories:seo` is
+   * collected but not asserted. Both are recorded in a `//` key, which `@lhci/cli` ignores
+   * because it reads `.ci`; the test is here so the note cannot be deleted with the reasoning.
+   */
+  describe("the `//` note (spec 004 §13 Q13, AC-24)", () => {
+    const note = (rc["//"] ?? []).join(" ");
+
+    it("says the script budget is transfer size, and Brotli on Vercel", () => {
+      expect(note).toMatch(/transfer/i);
+      expect(note).toContain("Brotli");
+      expect(note).toContain("122 880");
+      expect(note).toContain("§13 Q13");
+    });
+
+    it("records the `noindex` reason for not asserting categories:seo", () => {
+      expect(note).toContain("categories:seo");
+      expect(note).toContain("noindex");
+      expect(rc.ci.assert.assertions["categories:seo"]).toBeUndefined();
+    });
+
+    it("is read by nothing: the config the CLI consumes is `ci`", () => {
+      expect(Object.keys(rc).sort()).toEqual(["//", "ci"]);
+    });
   });
 });
 
