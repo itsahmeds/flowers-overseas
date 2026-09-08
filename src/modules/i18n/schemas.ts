@@ -21,7 +21,15 @@
  * CI"), a question about this repository's catalogue rather than about a stored translation.
  * `REPO_ONLY_META_FIELDS` names it explicitly so "1:1 onto the review columns" stays a testable
  * statement instead of an approximate one.
+ *
+ * TASK-041 adds the two boundaries of the suggestion banner, which are the only ones in this
+ * module that a *browser* crosses: `LocaleCookieSchema` (the `fo_locale` value read back from
+ * `document.cookie`) and `AcceptLanguageSchema` (the `{ tag, quality }[]` shape `hints.ts`
+ * returns). Both are at the bottom of the file, both are parsed at the boundary rather than at
+ * module load, and neither carries a provider — see their own headers.
  */
+import { type LocaleCode, launchLocales } from "../../config/locales.ts";
+
 import { z } from "zod";
 
 /**
@@ -117,3 +125,47 @@ export type MessageMetaColumn =
 
 /** Manifest fields that deliberately have no `message_catalog` column (see the header). */
 export const REPO_ONLY_META_FIELDS = ["retained"] as const;
+
+/**
+ * `fo_locale` — the one cookie this spec writes (§2 "Suggestion banner", §5.2, AC-12, §13 Q4).
+ *
+ * A closed enum of the launch locale codes, so the only thing the cookie can carry is a choice
+ * the application already offers: a hand-forged `fo_locale=zz`, a stale code from a locale that
+ * has been retired, or a value some other tool wrote fails the parse, is ignored, and is
+ * overwritten the next time the user makes an explicit choice (AC-12). Because the value set is
+ * closed and holds no identifier, the cookie stays strictly necessary/functional under ePrivacy
+ * and needs no consent gate (§8, §13 Q4).
+ *
+ * The codes come from `src/config/locales.ts` rather than from `LocaleRegistryProvider`, because a
+ * zod enum is a value fixed at module load and the schema is read in the browser, where no
+ * provider is composed. Spec 002's Postgres-backed registry may add a *fifth* locale to the
+ * config in the same commit that seeds it (AC-31), so the two cannot drift within a deployment;
+ * `tests/unit/locale-cookie.test.ts` pins the enum against the launch set.
+ */
+export const LocaleCookieSchema = z.enum(
+  launchLocales as unknown as [LocaleCode, ...LocaleCode[]],
+);
+
+/**
+ * The parsed `Accept-Language` shape `hints.ts` returns (§5.2): one entry per language range,
+ * `quality` being the RFC 7231 q-value. `parseAcceptLanguage()` validates its own output against
+ * this schema, which is what keeps "quality is a weight between 0 and 1" true for the caller
+ * rather than merely intended by the parser.
+ */
+export const AcceptLanguageSchema = z.array(
+  z
+    .object({
+      /** A language range as written by the client, minus the parameters (`de-AT`, `en`). */
+      tag: z
+        .string()
+        .regex(
+          /^[A-Za-z]{1,8}(?:-[A-Za-z0-9]{1,8})*$/,
+          "a language range is alphanumeric subtags separated by hyphens (RFC 7231 §5.3.5)",
+        ),
+      quality: z.number().min(0).max(1),
+    })
+    .strict(),
+);
+
+/** One entry of a parsed `Accept-Language` header or of `navigator.languages`. */
+export type LanguagePreference = z.infer<typeof AcceptLanguageSchema>[number];

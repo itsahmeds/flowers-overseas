@@ -25,7 +25,16 @@
  * export lets a caller move it, `PSEUDO_LOCALES`/`isPseudoLocaleCode` stay in `src/config`, and
  * `generatePseudoCatalogues`/`mapIcuText` stay module-internal in `pseudo.ts`.
  *
- * `LocaleSwitcher` (TASK-035) is the one component in the list. It is still a function and still
+ * TASK-041 adds `parseAcceptLanguage`, `preferredLocale`, the `LocaleSuggestionBanner` Server
+ * Component and `LocaleCookieSchema` — the fifth pinned schema, here for the `MoneySchema`
+ * reason: `fo_locale` is read back from `document.cookie` and spec 004's currency UI will ask
+ * "is this a locale code the application offers?" without restating the enum. The island's own
+ * seams are in `FORBIDDEN_EXPORTS`: `decideSuggestion`, `languagePreferences`, `readLocaleCookie`,
+ * `serialiseLocaleCookie` and `suggestionCandidates` are how the banner is assembled, and the two
+ * cookie constants are exported configuration of exactly the kind AC-3 forbids. `LocaleSwitcher`
+ * and `LocaleSuggestionBanner` are the two components in the list.
+ *
+ * `LocaleSwitcher` (TASK-035) is the first component in the list. It is still a function and still
  * carries no configuration — a Server Component reading the registry through the same accessor as
  * every other export — so the "functions only, no mutable config" assertion below holds unchanged.
  */
@@ -42,6 +51,8 @@ const repoRoot = resolve(__dirname, "../..");
 /** Every runtime export of `src/modules/i18n/index.ts`, in alphabetical order. */
 const PINNED_EXPORTS = [
   "AddressInputSchema",
+  "LocaleCookieSchema",
+  "LocaleSuggestionBanner",
   "LocaleSwitcher",
   "MessageMetaManifestSchema",
   "MessageMetaSchema",
@@ -78,6 +89,8 @@ const PINNED_EXPORTS = [
   "pseudoCatalogue",
   "routableLocale",
   "routableLocaleCodes",
+  "parseAcceptLanguage",
+  "preferredLocale",
 ].sort();
 
 /**
@@ -89,6 +102,7 @@ const PINNED_EXPORTS = [
  */
 const PINNED_SCHEMA_EXPORTS = [
   "AddressInputSchema",
+  "LocaleCookieSchema",
   "MessageMetaManifestSchema",
   "MessageMetaSchema",
   "MessagesSchema",
@@ -97,6 +111,14 @@ const PINNED_SCHEMA_EXPORTS = [
 
 /** Names that must never appear in the barrel, with the reason each is a seam and not an API. */
 const FORBIDDEN_EXPORTS = [
+  "AcceptLanguageSchema",
+  "FO_LOCALE_COOKIE",
+  "FO_LOCALE_MAX_AGE",
+  "decideSuggestion",
+  "languagePreferences",
+  "readLocaleCookie",
+  "serialiseLocaleCookie",
+  "suggestionCandidates",
   "UNREVIEWED_SHARE_THRESHOLD",
   "resetReviewCache",
   "emitInHreflang",

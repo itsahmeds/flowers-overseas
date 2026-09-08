@@ -156,9 +156,13 @@ describe("loadMessages (§6 'CWV budget impact')", () => {
 });
 
 describe("namespacesFor", () => {
-  it("gives the `[locale]` document the namespaces its 404 and 500 copy needs", () => {
+  it("gives the `[locale]` document the namespaces its 404, 500 and banner copy needs", () => {
+    // `banner` joined the set in TASK-041: the suggestion island renders in the browser, so its
+    // four keys are the one namespace that *has* to reach the client provider. Everything else
+    // here is read on the server or by the 500 boundary, which is itself a Client Component.
     expect([...namespacesFor("localeDocument")].sort()).toEqual([
       "a11y",
+      "banner",
       "common",
       "errors",
       "meta",
