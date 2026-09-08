@@ -24,6 +24,8 @@
  * `toLocaleRow()` projects exactly spec 002 §5.1's `locale` column set so TASK-015's seed reads
  * the projection instead of restating the locale set (AC-4).
  */
+import { pseudoLocalesEnabled } from "../lib/env.schema.ts";
+
 import { isCurrencyCode } from "./currencies.ts";
 
 import { z } from "zod";
@@ -100,8 +102,8 @@ const LocaleConfigObjectSchema = z
     code: z
       .string()
       .regex(
-        /^[a-z]{2,3}(?:-[a-z]{2})?$/,
-        "must be a lowercase ASCII URL prefix such as `de` or `en-gb`",
+        /^[a-z]{2,3}(?:-(?:[a-z]{2}|X[AB]))?$/,
+        "must be a lowercase ASCII URL prefix such as `de` or `en-gb` (or a pseudo-locale `en-XA` / `ar-XB`)",
       ),
     /**
      * The **document language**: the tag that reaches `<html lang>`, `hreflang` and the locale
@@ -132,6 +134,13 @@ const LocaleConfigObjectSchema = z
     nativeName: z.string().min(1),
     dir: z.enum(textDirections),
     isLaunch: z.boolean(),
+    /**
+     * A generated pseudo-locale (`en-XA`, `ar-XB`), present in the registry only when
+     * `ENABLE_PSEUDO_LOCALES` is on (spec 003 §2 "Pseudo-locales", AC-29). It is never
+     * `isLaunch`, so it is absent from `launchLocales()`, the switcher, `alternatesFor()` and
+     * `isLocaleIndexable()` by construction rather than by a filter list somebody maintains.
+     */
+    isPseudo: z.boolean().default(false),
     /** Message fallback chain (`en-gb → en`, `de → en`, `pl → en`); `null` on the default. */
     fallbackCode: z.string().nullable(),
     /** Default display currency; must be a code in `src/config/currencies.ts`. */
@@ -144,8 +153,13 @@ const LocaleConfigObjectSchema = z
         /^[a-z]{4,8}$/,
         "must be a CLDR numbering-system key such as `latn`",
       ),
-    /** Every hreflang value served on this locale's URLs (`plan/02` §3), including `x-default`. */
-    hreflangAliases: z.array(HreflangSchema).min(1),
+    /**
+     * Every hreflang value served on this locale's URLs (`plan/02` §3), including `x-default`.
+     * Non-empty for a real locale; **empty for a pseudo-locale**, enforced below — that is what
+     * makes "structurally incapable of appearing in hreflang or a sitemap" (§6) a property of the
+     * data rather than of a filter in the generator.
+     */
+    hreflangAliases: z.array(HreflangSchema),
     pathSegments: PathSegmentsSchema,
   })
   .strict();
@@ -162,6 +176,27 @@ export const LocaleConfigSchema = LocaleConfigObjectSchema.transform(
     formattingTag: config.formattingTag ?? config.bcp47,
   }),
 ).superRefine((config, ctx) => {
+  if (config.isPseudo && config.isLaunch) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["isLaunch"],
+      message: `pseudo-locale \`${config.code}\` must not be a launch locale (spec 003 §2)`,
+    });
+  }
+  if (config.isPseudo && config.hreflangAliases.length > 0) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["hreflangAliases"],
+      message: `pseudo-locale \`${config.code}\` must declare no hreflang alias, found ${String(config.hreflangAliases.length)} (spec 003 §6)`,
+    });
+  }
+  if (!config.isPseudo && config.hreflangAliases.length === 0) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["hreflangAliases"],
+      message: `locale \`${config.code}\` must serve at least one hreflang value (plan/02 §3)`,
+    });
+  }
   const formatting = canonicalLanguageTag(config.formattingTag);
   if (formatting === undefined) {
     ctx.addIssue({
@@ -409,12 +444,104 @@ const locales = [
   },
 ] as const satisfies readonly LocaleConfigInput[];
 
-/** Parsed at module load: a malformed registry throws on first import, never at request time. */
-export const LOCALES: readonly LocaleConfig[] =
-  LocaleRegistrySchema.parse(locales);
+/**
+ * The two generated pseudo-locales (spec 003 §2 "Pseudo-locales", §13 Q6; TASK-042). They are
+ * locale *config*, like every other row here — the catalogues are derived from `messages/en.json`
+ * by `src/modules/i18n/pseudo.ts` and never authored — and they enter the registry only when
+ * `ENABLE_PSEUDO_LOCALES` is on (see `LOCALES` below).
+ *
+ * `XA`/`XB` are the private-use region subtags CLDR, Chrome and Android already use for exactly
+ * these two pseudo-locales, so the URL prefix is `/en-XA` and `/ar-XB` — the only codes in this
+ * file with an uppercase subtag, which is why `code`'s pattern names them.
+ *
+ * Three properties are enforced by `LocaleConfigSchema`'s refinements rather than by convention:
+ * `isLaunch: false` (so they are absent from `launchLocales()`, the switcher, `alternatesFor()`
+ * and `isLocaleIndexable()`), no `hreflangAliases` at all (so no hreflang value and no sitemap
+ * entry can name them, §6), and a `fallbackCode` that terminates at the x-default locale.
+ * `pathSegments` mirror `en` because nothing links to a localised pseudo path; they exist so
+ * `localePath()` can build one when a spec-004 template is eyeballed under `/en-XA`.
+ */
+export const PSEUDO_LOCALES = [
+  {
+    code: "en-XA",
+    bcp47: "en-XA",
+    // Formatting stays pan-European English: the pseudo-locale changes the *strings*, so a
+    // number or a date in a screenshot must be the one `/en` would have shown.
+    formattingTag: "en-150",
+    name: "Pseudo English (accented, expanded)",
+    nativeName: "[Ëñglïsh]",
+    dir: "ltr",
+    isLaunch: false,
+    isPseudo: true,
+    fallbackCode: "en",
+    currencyDefault: "EUR",
+    numberingSystem: "latn",
+    hreflangAliases: [],
+    pathSegments: {
+      destinations: "send-flowers-to",
+      shopCategory: "flowers",
+      occasions: "occasions",
+      product: "product",
+      blog: "blog",
+      forFlorists: "for-florists",
+      legal: "legal",
+    },
+  },
+  {
+    code: "ar-XB",
+    bcp47: "ar-XB",
+    // `Intl` conventions of the pseudo tag itself: `ar-XB` formats with RTL marks, which is the
+    // point — a bidi-naive number or date layout must show up in the `pseudo-rtl` screenshot.
+    name: "Pseudo Arabic (right-to-left mirror)",
+    nativeName: "[العربية]",
+    dir: "rtl",
+    isLaunch: false,
+    isPseudo: true,
+    fallbackCode: "en",
+    currencyDefault: "EUR",
+    numberingSystem: "latn",
+    hreflangAliases: [],
+    pathSegments: {
+      destinations: "send-flowers-to",
+      shopCategory: "flowers",
+      occasions: "occasions",
+      product: "product",
+      blog: "blog",
+      forFlorists: "for-florists",
+      legal: "legal",
+    },
+  },
+] as const satisfies readonly LocaleConfigInput[];
+
+/** The pseudo-locale URL prefixes, whether or not they are enabled. */
+export const PSEUDO_LOCALE_CODES: readonly string[] = PSEUDO_LOCALES.map(
+  (locale) => locale.code,
+);
+
+/** True for `en-XA` / `ar-XB`, independent of whether they are enabled (`i18n:draft`, checks). */
+export function isPseudoLocaleCode(code: string): boolean {
+  return PSEUDO_LOCALE_CODES.includes(code);
+}
+
+/**
+ * Parsed at module load: a malformed registry throws on first import, never at request time.
+ *
+ * The pseudo-locales are appended **only** when `ENABLE_PSEUDO_LOCALES` is on (spec 003 §2, §8;
+ * the zod env schema refuses the flag in production, so this branch cannot be taken there). The
+ * flag is read from `process.env` directly rather than through `src/lib/env.server.ts`, because
+ * this file is imported by client components too and `env.server.ts` is `server-only`; in a
+ * browser bundle the variable is simply absent, which is the correct answer — nothing on the
+ * client enumerates locales for routing (the switcher and `generateStaticParams` are server-side).
+ */
+export const LOCALES: readonly LocaleConfig[] = LocaleRegistrySchema.parse(
+  pseudoLocalesEnabled(typeof process === "undefined" ? {} : process.env)
+    ? [...locales, ...PSEUDO_LOCALES]
+    : locales,
+);
 
 /** The closed set of configured prefixes, as a literal union. */
-export type LocaleCode = (typeof locales)[number]["code"];
+export type LocaleCode =
+  (typeof locales)[number]["code"] | (typeof PSEUDO_LOCALES)[number]["code"];
 
 const byCode = new Map<string, LocaleConfig>(
   LOCALES.map((locale) => [locale.code, locale]),

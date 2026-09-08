@@ -55,6 +55,14 @@
  *    which is how AC-13's four malformed registries are exercised without shipping a broken
  *    registry.
  *
+ * 9. **Pseudo-locale regeneration is deterministic** (§2, AC-29; TASK-042) — when
+ *    `messages/en-XA.json` or `messages/ar-XB.json` is present, its bytes must equal what
+ *    `pnpm i18n:pseudo` produces from the current `messages/en.json`. The files are git-ignored,
+ *    so a fresh clone has none and the clause is silent; a stale or hand-edited one is a fault,
+ *    because a human reading `/en-XA` in a diff would be reading copy the routes do not render.
+ *    The pseudo-locales themselves take no part in checks 1–7: they have no authored catalogue
+ *    and no review manifest to be complete, missing or stale against.
+ *
  * ## The usage heuristic (check 2) and its limits
  *
  * Deliberately a text scan of `--src` rather than a type-aware pass. next-intl's key access is
@@ -96,6 +104,10 @@ import {
   LocaleRegistrySchema,
   type LocaleConfig,
 } from "../src/config/locales.ts";
+import {
+  SOURCE_LOCALE as PSEUDO_SOURCE_LOCALE,
+  pseudoFileProblems,
+} from "./i18n-pseudo.ts";
 import {
   type MessageSource,
   fallbackChain,
@@ -788,10 +800,24 @@ export async function runCheck(options: CheckOptions): Promise<CheckResult> {
     options.messagesDir ?? DEFAULT_MESSAGES_DIR,
   );
   const srcDir = resolve(options.root, options.srcDir ?? DEFAULT_SRC_DIR);
-  const codes = registry.map((locale) => locale.code);
+  // Checks 1–7 are about authored catalogues; the pseudo-locales have none (check 9 covers them,
+  // and `src/modules/i18n/pseudo.ts` derives their values from `en`). Dropping them from the
+  // injected registry too keeps `fallbackChain()`, `unreviewedShare()` and the summary table
+  // describing translation debt only.
+  const authored = registry.filter((locale) => !locale.isPseudo);
+  const codes = authored.map((locale) => locale.code);
   const loaded = loadLocales(messagesDir, codes, options.root);
   problems.push(...loaded.problems);
   if (!loaded.usable) return { problems, rows: [] };
+
+  // Check 9: the generated pseudo catalogues, when present, are current (§2, AC-29).
+  if (existsSync(join(messagesDir, `${PSEUDO_SOURCE_LOCALE}.json`))) {
+    problems.push(
+      ...pseudoFileProblems(messagesDir, { root: options.root }).map(
+        (problem) => ({ file: problem.file, reason: problem.reason }),
+      ),
+    );
+  }
 
   const diskSource: MessageSource = {
     catalogue: (locale) =>
@@ -800,7 +826,7 @@ export async function runCheck(options: CheckOptions): Promise<CheckResult> {
       loaded.locales.find((entry) => entry.code === locale)?.meta,
   };
 
-  const result = await withLocaleRegistry(localeRegistryOf(registry), () =>
+  const result = await withLocaleRegistry(localeRegistryOf(authored), () =>
     withMessageSource(diskSource, () => {
       resetReviewCache();
       try {

@@ -3,7 +3,7 @@
  *
  * One config, five projects, three scripts:
  *   `pnpm test:e2e`    -> `e2e-desktop` + `e2e-mobile`  (tests/e2e/**)
- *   `pnpm test:visual` -> `visual` + `pseudo-rtl`       (tests/visual/**)
+ *   `pnpm test:visual` -> `visual` (`/`, `/en`, `/de`) + `pseudo-rtl` (`/ar-XB`)
  *   `pnpm test:a11y`   -> `a11y`                        (tests/a11y/**)
  *
  * `baseURL` comes from `PLAYWRIGHT_BASE_URL`: the Vercel preview URL in CI (from the `preview`
@@ -23,7 +23,12 @@ const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3000";
 const bypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
 const isCI = process.env.CI === "true" || process.env.CI === "1";
 
-/** Name of the RTL stub project; `tests/visual/pseudo-rtl.ts` documents what it is for. */
+/**
+ * The RTL project. It stopped being a stub at TASK-042: it navigates `/ar-XB`, a real
+ * `dir="rtl"` document served from the generated pseudo-locale, so the init script that used to
+ * force `dir="rtl"` in the browser (`tests/visual/pseudo-rtl.ts`) is deleted (spec 003 AC-30).
+ * Each project screenshots its own spec file, so no test has to ask which project it is in.
+ */
 export const PSEUDO_RTL_PROJECT = "pseudo-rtl";
 
 const protectionBypassHeaders: Record<string, string> =
@@ -91,17 +96,17 @@ export default defineConfig({
     },
     {
       name: "visual",
-      testMatch: "visual/**/*.spec.ts",
+      // `/`, `/en` and `/de` (AC-30). LTR only: `/ar-XB` belongs to the project below.
+      testMatch: "visual/shell.spec.ts",
       use: {
         ...devices["Desktop Chrome"],
         viewport: { width: 1280, height: 720 },
       },
     },
     {
-      // spec 001 §7: the `visual` project ships a locale-less pseudo-RTL device stub so spec 003
-      // only has to add URLs. See `tests/visual/pseudo-rtl.ts`.
+      // `/ar-XB` and nothing else: the real RTL gate of spec 003 AC-30.
       name: PSEUDO_RTL_PROJECT,
-      testMatch: "visual/**/*.spec.ts",
+      testMatch: "visual/pseudo-rtl.spec.ts",
       use: {
         ...devices["Desktop Chrome"],
         viewport: { width: 1280, height: 720 },

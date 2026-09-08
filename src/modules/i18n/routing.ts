@@ -71,6 +71,41 @@ export function launchLocale(
 }
 
 /**
+ * The locales that **have URLs**: the launch locales plus the pseudo-locales when
+ * `ENABLE_PSEUDO_LOCALES` puts them in the registry (spec 003 §2 "Pseudo-locales", AC-29;
+ * TASK-042). This is the set `generateStaticParams` prerenders and the `[locale]` layout resolves,
+ * and it is deliberately *not* `launchLocales()`: a pseudo-locale must render a real document for
+ * the visual and a11y suites while staying out of every place that speaks to a buyer or a crawler
+ * — the switcher (`launchLocales()`), hreflang (`alternatesFor()`), sitemaps and robots-meta
+ * lifting (`isLocaleIndexable()`), all of which start from `isLaunch`.
+ *
+ * A registry member that is neither a launch nor a pseudo locale still has no URL, so a locale
+ * staged for a later launch (`isLaunch: false`) keeps 404ing until the flag is flipped.
+ */
+export function routableLocales(): readonly LocaleConfig[] {
+  return getLocaleRegistry()
+    .list()
+    .filter((locale) => locale.isLaunch || locale.isPseudo);
+}
+
+export function routableLocaleCodes(): readonly string[] {
+  return routableLocales().map((locale) => locale.code);
+}
+
+/**
+ * The configured locale for a URL segment that has one, or `undefined` — the 404 condition of
+ * AC-8, unchanged for every code that is not a launch or pseudo locale (`/fr`, `/xx`, `/EN`).
+ */
+export function routableLocale(
+  code: string | undefined,
+): LocaleConfig | undefined {
+  if (code === undefined) return undefined;
+  const locale = getLocaleRegistry().get(code);
+  if (locale === undefined) return undefined;
+  return locale.isLaunch || locale.isPseudo ? locale : undefined;
+}
+
+/**
  * Build the one canonical path form for a page: leading slash, lowercase locale prefix, localised
  * page segment, no trailing slash, no query. Extra `segments` are leaf slugs (a country, a product
  * slug) and must already be URL-shaped; an empty, uppercase or slash-bearing segment is a

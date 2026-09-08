@@ -9,7 +9,7 @@
  * repository — it would redirect `/` to a detected locale and set its own cookie — and the lint
  * gate from TASK-032 (`fo/no-geo-redirect`) fails on any import of it (AC-10).
  *
- * An unknown or non-launch segment resolves to the x-default locale: it is the value the 404
+ * An unknown or unroutable segment resolves to the x-default locale: it is the value the 404
  * document renders with (AC-8), never a redirect to a guessed locale. `next-intl` calls this
  * function for every server render; the payload the *browser* receives is a per-route namespace
  * subset chosen in the layout, not this catalogue (§6, AC-27) — see the comment on `messages`.
@@ -20,11 +20,14 @@ import { getRequestConfig } from "next-intl/server";
 
 import { MESSAGE_NAMESPACES, loadMessages } from "./messages.ts";
 import { documentFallbackLocale } from "./registry.ts";
-import { launchLocale } from "./routing.ts";
+import { routableLocale } from "./routing.ts";
 
 export default getRequestConfig(async ({ requestLocale }) => {
   const requested = await requestLocale;
-  const locale = launchLocale(requested) ?? documentFallbackLocale();
+  // `routableLocale`, not `launchLocale`: the pseudo-locales have documents when
+  // `ENABLE_PSEUDO_LOCALES` is on, and they must resolve to their own generated catalogue rather
+  // than silently to English (spec 003 §2, AC-29; TASK-042).
+  const locale = routableLocale(requested) ?? documentFallbackLocale();
 
   return {
     locale: locale.code,

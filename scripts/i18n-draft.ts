@@ -42,6 +42,7 @@ import { fileURLToPath } from "node:url";
 
 import type { ZodError } from "zod";
 
+import { isPseudoLocaleCode } from "../src/config/locales.ts";
 import {
   MessageMetaManifestSchema,
   MessagesSchema,
@@ -203,6 +204,15 @@ export function draftLocale(options: DraftOptions): DraftReport {
   const provider = options.provider ?? echoDraftProvider;
   const dryRun = options.dryRun ?? false;
 
+  // A pseudo-locale is *generated*, not translated (TASK-042): its values are a deterministic
+  // transform of `en` and its files are git-ignored, so drafting one would write a catalogue
+  // `pnpm i18n:pseudo` immediately contradicts and `pnpm i18n:check` then reports (its check 9).
+  // The uppercase region subtag already fails the pattern below; this names the reason.
+  if (isPseudoLocaleCode(locale)) {
+    throw new Error(
+      `\`${locale}\` is a generated pseudo-locale: run \`pnpm i18n:pseudo\` instead (spec 003 §2)`,
+    );
+  }
   if (!LOCALE_CODE_PATTERN.test(locale)) {
     throw new Error(
       `--locale must be a lowercase locale code such as \`pl\` or \`en-gb\`, not \`${locale}\``,

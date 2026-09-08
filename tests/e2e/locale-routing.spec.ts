@@ -116,6 +116,66 @@ test.describe("localised documents (AC-6)", () => {
   });
 });
 
+/**
+ * T-29 / AC-29 (TASK-042), the served half: the pseudo-locales are real documents and are absent
+ * from everything a buyer or a crawler follows.
+ *
+ * `/ar-XB` and `/en-XA` exist only where `ENABLE_PSEUDO_LOCALES=true` — locally and on the
+ * protected preview (spec 003 §2, §8, §13 Q6) — and the env schema refuses the flag in production,
+ * so these tests describe the harness targets and nothing a buyer can reach. The two properties
+ * that matter are the ones a mistake would break silently: the RTL document really is `rtl` and
+ * really is `noindex`, and neither pseudo-locale is linked from a launch locale's switcher.
+ */
+test.describe("pseudo-locale documents (AC-29)", () => {
+  test('/ar-XB answers 200 with dir="rtl" and noindex', async ({ request }) => {
+    const response = await request.get("/ar-XB", { maxRedirects: 0 });
+    const html = await response.text();
+
+    expect(
+      response.status(),
+      "is ENABLE_PSEUDO_LOCALES=true on the target?",
+    ).toBe(200);
+    expect(attribute(html, "lang")).toBe("ar-XB");
+    // The direction comes from `src/config/locales.ts`, never from the strings (§7).
+    expect(attribute(html, "dir")).toBe("rtl");
+    expect(html).toContain('name="robots" content="noindex,nofollow"');
+    // The generated catalogue is what rendered, not English through the fallback: every `ar-XB`
+    // value starts with U+200F RIGHT-TO-LEFT MARK (`src/modules/i18n/pseudo.ts`).
+    expect(html).toContain("\u200f");
+    expect(headerNames(response)).not.toContain("set-cookie");
+  });
+
+  test("/en-XA answers 200 with expanded, bracketed strings", async ({
+    request,
+  }) => {
+    const response = await request.get("/en-XA", { maxRedirects: 0 });
+    const html = await response.text();
+
+    expect(
+      response.status(),
+      "is ENABLE_PSEUDO_LOCALES=true on the target?",
+    ).toBe(200);
+    expect(attribute(html, "lang")).toBe("en-XA");
+    expect(attribute(html, "dir")).toBe("ltr");
+    expect(html).toContain('name="robots" content="noindex,nofollow"');
+    // Accented, bracketed and padded — the three visible properties of AC-29's `en-XA`.
+    expect(html).toMatch(/\[[^\]]*·+\]/);
+    expect(html).toContain("Šéñð"); // `meta.home.heading`, accented
+  });
+
+  test("no launch locale links to a pseudo-locale", async ({ request }) => {
+    for (const { path } of LOCALE_DOCUMENTS) {
+      const html = await (await request.get(path)).text();
+      for (const pseudo of ["/ar-XB", "/en-XA"] as const) {
+        expect(html, `${path} → ${pseudo}`).not.toContain(`href="${pseudo}"`);
+      }
+      // Nor as an hreflang value: `alternatesFor()` cannot emit one (§6, AC-29).
+      expect(html, path).not.toContain("ar-XB");
+      expect(html, path).not.toContain("en-XA");
+    }
+  });
+});
+
 test.describe("unknown locales answer 404 (AC-8)", () => {
   for (const path of NOT_FOUND_PATHS) {
     test(`${path} answers 404 in the x-default locale`, async ({
