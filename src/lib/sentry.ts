@@ -8,8 +8,17 @@
  * - Sentry is a **no-op when the DSN is unset**: `sentryOptions()` returns `undefined` and the
  *   entrypoints skip `Sentry.init`, so `Sentry.getClient()` stays `undefined` and `pnpm build`
  *   needs neither network nor auth token.
- * - `sendDefaultPii: false`, release = `VERCEL_GIT_COMMIT_SHA` (or its `NEXT_PUBLIC_` mirror in
- *   the browser bundle), environment = `VERCEL_ENV` (spec 001 §11).
+ * - `sendDefaultPii: false`, release = `VERCEL_GIT_COMMIT_SHA` (or its `NEXT_PUBLIC_` mirror,
+ *   which only a browser bundle can read), environment = `VERCEL_ENV` (spec 001 §11).
+ * - **Server and edge only.** TASK-043 deleted `instrumentation-client.ts` and
+ *   `sentry.client.config.ts`: the browser SDK, plus the copy of zod it pulled in through this
+ *   module's `./logger` import, measured 72 KB gzipped of the 297 KB `/` shipped, against a
+ *   120 KB client-JS budget (spec 004 §13 Q8, accepted; recorded in `docs/architecture.md` §4 and
+ *   spec 003 §14 A12). Nothing in this file changed for it — `sentryOptions()`, the `NEXT_PUBLIC_` release
+ *   mirror and `beforeSend` are runtime-agnostic on purpose, so spec 013 re-adds a client
+ *   entrypoint scoped to the checkout routes without touching the scrubber. `setLocaleTag` is
+ *   called from a Server Component (`src/app/[locale]/layout.tsx`), so importing this module
+ *   there adds nothing to the client bundle.
  * - `beforeSend` drops request cookies, request bodies and IPs, and redacts every key on the
  *   logger's PII list — the same list, imported, never re-typed (spec 001 §8) — **at any depth**
  *   in `extra`, `tags`, `user`, `contexts`, `breadcrumbs[].data` and the request headers
@@ -170,8 +179,11 @@ export interface SentryOptions {
 }
 
 /**
- * Options for `Sentry.init`, or `undefined` when no DSN is configured (the Phase 0 default).
- * `dsnKey` differs per runtime: the browser bundle can only read `NEXT_PUBLIC_SENTRY_DSN`.
+ * Options for `Sentry.init`, or `undefined` when no DSN is configured (the Phase 0 default). The
+ * DSN is passed in rather than read here because it differs per runtime: `SENTRY_DSN` on the
+ * server and the edge, and `NEXT_PUBLIC_SENTRY_DSN` for a browser bundle — which is why the
+ * public key stays in the env schema even with no client entrypoint (`next.config.ts` also reads
+ * it to decide whether to run the source-map plugin).
  */
 /** Blank env values behave as unset, so a release is either a real SHA or `undefined`. */
 function nonEmpty(value: string | undefined): string | undefined {

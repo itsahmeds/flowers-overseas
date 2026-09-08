@@ -21,9 +21,12 @@ import "../globals.css";
  * (TASK-035, AC-7): page metadata wins over a layout's, so `/` is the one document in Phase 0 that
  * is `follow`, and the `noindex,nofollow` below stays as the group's default for anything added
  * here later. No client provider and, since TASK-035 deleted the group's `error.tsx`, no Client
- * Component at all: `/` is HTML, so it works with scripting disabled (AC-7) and ships no
- * application JS (AC-27). A failure in this document is answered by `src/app/global-error.tsx`,
- * which renders its own x-default document with its own localised `<title>`.
+ * Component at all: `/` is HTML, so it works with scripting disabled (AC-7). It is not, however,
+ * *zero* application JavaScript, which this comment used to claim — the root error boundary
+ * (`src/app/global-error.tsx`) must be a Client Component and Next attaches its chunk to every
+ * document. A failure in this document is answered by exactly that file, which renders its own
+ * x-default document with its own localised `<title>`. The measured bytes are in `page.tsx`'s
+ * header and in `pnpm budget:client-js`.
  */
 export const metadata: Metadata = { robots: "noindex,nofollow" };
 

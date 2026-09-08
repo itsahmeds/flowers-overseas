@@ -12,10 +12,15 @@ routing.
 - The decisions and why: `docs/adr/`, indexed in `docs/decisions-log.md`.
 - The system as wired today: `docs/architecture.md`.
 
-Phase 0 status: this is the repository and dev-OS bootstrap (`specs/001-repo-dev-os-bootstrap.md`).
-`/` is a deliberately empty `noindex` shell; the product starts in spec 003 (i18n) and 004 (design
-system). What already exists is the gate set: strict TypeScript, custom lint rules that encode the
-non-negotiables, four test layers, SEO validators, CI and the task guard.
+Phase 0 status: the repository and dev-OS bootstrap (`specs/001-repo-dev-os-bootstrap.md`) plus
+the i18n foundation (`specs/003-i18n-foundation.md`). Four locale URLs render — `/en`, `/en-gb`,
+`/de`, `/pl` — behind a crawlable locale chooser at `/`, with typed message catalogues,
+`Intl`-only formatters, address formats and a translation-review gate. Nothing is indexable yet
+(`noindex` everywhere until spec 007) and `de`/`pl` are unreviewed English echoes by design, which
+is exactly what `pnpm i18n:check` reports. Spec 002 (database) is approved but parked: there is no
+Postgres, and nothing in spec 003 needs one (`pnpm check:no-db`). Design system and real copy are
+spec 004. What exists besides the pages is the gate set: strict TypeScript, custom lint rules that
+encode the non-negotiables, four test layers, SEO validators, CI and the task guard.
 
 ## Prerequisites
 
@@ -104,7 +109,8 @@ Every script in `package.json`, once.
 | Command | Does |
 |---|---|
 | `pnpm seo:validate` | the three validators below over `tests/fixtures/seo/`; `no fixtures` and exit 0 per empty directory |
-| `pnpm lighthouse` | Lighthouse CI with the `plan/01` §7 budgets from `lighthouserc.json` over `tests/fixtures/seo/lighthouse-urls.json` |
+| `pnpm lighthouse` | Lighthouse CI with the `plan/01` §7 budgets from `lighthouserc.json` over `tests/fixtures/seo/lighthouse-urls.json` (`/`, `/en`, `/de`) |
+| `pnpm budget:client-js` | reads the prerendered documents of the last production build and prints, per URL, the gzipped (and Brotli) size of the scripts a browser actually fetches, chunk by chunk, plus the serialised client message payload per locale. Budgets: 120 KB gz of JS (`plan/01` §7) and 4 KB gz of messages (spec 003 §6, AC-27). Exits non-zero on a breach; build first. `<script noModule>` (Next's legacy polyfill bundle) is listed but not counted — no module-supporting browser fetches it |
 | `pnpm pr-policy` | the PR-title/branch-name/commit rules, runnable locally on a title string |
 | `pnpm branch-protection` | verifies `main`'s protection and merge settings against AC-21; `--print-commands` prints what applies them |
 
@@ -113,6 +119,27 @@ Every script in `package.json`, once.
 `validate-schema.ts` (JSON-LD parses, `@type` inside the `plan/02` §9 allow-list, `Offer.price`
 equal to the fixture's `visiblePrice`) also run standalone with `--dir`. Money is compared as
 strings normalised to two fraction digits, never parsed into a `number` (`fo/no-float-money`).
+
+## Locale and URLs
+
+One domain, locale in the path, and no request header ever decides what a URL returns
+(ADR-0001, ADR-0006, `plan/02` §3, `plan/03`).
+
+| Rule | In practice |
+|---|---|
+| **The locale is in the URL, always.** | `/{locale}/…` for every page: `/en`, `/en-gb`, `/de`, `/pl`. `en-gb` is a separate locale, not a variant — GBP and UK consumer law make it a genuinely different page. `src/config/locales.ts` is the registry; adding a locale is a data change (spec 003 AC-31). |
+| **`/` never redirects.** | It is a server-rendered, zero-JS, `noindex,follow` list of locale links — the crawl entry point that puts every locale root at depth 1. No IP redirect, no `Accept-Language` redirect, no language guess, ever. |
+| **No response varies by header.** | The locale comes from the path segment and from nothing else, so `/en` is byte-identical for every client and no response carries `Vary` or `Set-Cookie`. `pnpm lint` fails on a geo redirect (`fo/no-geo-redirect`) and on importing `next-intl/middleware`. |
+| **The visitor's language is a suggestion, never an action.** | A client island reads `navigator.languages` after hydration and offers a switch; the visitor's click is what writes `fo_locale` (365 days, `SameSite=Lax`, one of four values). `docs/compliance/cookie-register.md` is the register. |
+| **Every URL segment is authored, per locale.** | Never a translated slug at request time: `localePath()` builds every URL from the `pathSegments` in the registry (`/de/blumen-versenden-nach/…`, `/pl/kwiaty-do/…`), and `pnpm i18n:check` fails an uppercase, non-ASCII, trailing-slash or duplicated segment. |
+| **Unknown locales 404.** | `/fr`, `/xx`, `/EN`, `/nope` return 404 with an x-default document — never a 3xx and never a fabricated locale page. |
+| **A locale is indexable only when it is reviewed.** | `isLocaleIndexable()` reads the review manifests: above 5% unreviewed the locale is kept out of `hreflang` and tagged `beta`. `de` and `pl` are 0% reviewed today, so they are honestly excluded. Nothing is indexable at all until spec 007. |
+| **Currency is not in the URL.** | It rides in a cookie and never forks a URL (`plan/02` §4); destination country does appear in shop URLs, because the page is genuinely different per corridor. |
+
+Copy never appears as a literal in a component (`fo/no-literal-strings`); it comes from
+`messages/*.json` through the typed catalogue, and numbers, money, dates and lists are formatted
+only by `src/modules/i18n/format.ts` (`fo/no-adhoc-intl`). `docs/runbooks/i18n-translations.md`
+is the day-to-day procedure.
 
 ## How work happens here
 
@@ -150,10 +177,28 @@ hand-built `${x} zł` / `${x}%` strings live only in `src/modules/i18n/format.ts
 `import/no-restricted-paths` (`app/` imports `modules/`, never the reverse; modules meet only at
 their public `index.ts`).
 
-Two gates are informational for now, by decision rather than by neglect: `lighthouse` until spec
-004 gives `/` something to paint (spec 001 §13 Q4), and `test-integration` until spec 002 gives it
-a schema. Branch protection on `main` needs a GitHub Pro account and is pending a founder
-decision — `docs/runbooks/branch-protection.md`.
+Three gates are informational for now, by decision rather than by neglect.
+
+- `test-integration`, until spec 002 gives it a schema.
+- `lighthouse`, and the `build` job's `budget:client-js` step with it, until the founder rules on
+  the client-JS budget. The reason is measured, not scheduled: **Next 16.3.4's own client runtime
+  is 130.1 KB gzipped** — react-dom 71.4 KB, the App Router runtime 46.0 KB, ~12.7 KB of
+  bootstrap — against `plan/01` §7's 120 KB budget, on a document that ships no application
+  JavaScript at all. Spec 003 removed the browser Sentry SDK from public routes for this reason
+  and took `/` from 297 KB to 221 KB gz and `/en` from 309 KB to 233 KB. What is left above the
+  framework floor is zod (85 KB gz), which reaches the browser through the one import chain a
+  Client Component cannot avoid — Next's root error boundary, `src/app/global-error.tsx`, which
+  needs the message catalogue to render a localised 500 page. Breaking that chain would take `/`
+  to 132 KB gz / 113 KB br and needs a decision spec 003 did not take. The whole thing — move the
+  budget, measure Brotli transfer size instead (which is what Lighthouse reads), or break the zod
+  chain — is recorded as **spec 003 §14 A12** and owned by spec 004 task 2. Everything else
+  Lighthouse asserts already passes on the shipped tree: performance 0.96–0.99, accessibility
+  1.00, CLS 0. The one other red assertion, LCP 2.0–2.5 s against 2.0 s, is the same finding —
+  script transfer is what delays the paint on a text-only page. (The SEO category scores 0.63
+  because the site is deliberately `noindex` until spec 007; nobody may "fix" that by indexing
+  early.) Both gates measure and publish the numbers on every PR meanwhile; neither blocks.
+- Branch protection on `main` needs a GitHub Pro account and is pending a founder decision —
+  `docs/runbooks/branch-protection.md`.
 
 ## Troubleshooting
 
@@ -165,7 +210,9 @@ decision — `docs/runbooks/branch-protection.md`.
 | Claude Code denies an `Edit`/`Write` under `src/` with `no task is active` | the PreToolUse guard: run `.claude/bin/task.sh set TASK-NNN` (the row must exist in `TASKS.md`) and clear it when the PR is open |
 | `pnpm test` reports **5 skipped** | gitleaks is not installed — expected locally; `brew install gitleaks` to run them. The `audit` CI job always does |
 | `pnpm test:integration` reports everything skipped | no schema until spec 002 (AC-16) |
-| `pnpm lighthouse` fails with `NO_FCP` | `/` paints nothing yet, so Lighthouse aborts before any metric exists. Expected until spec 004; the CI job carries `continue-on-error: true` |
+| `pnpm lighthouse` fails on `resource-summary:script:size` | expected, and not yours to fix: the framework runtime alone is over the 120 KB budget (see Quality gates). The CI job carries `continue-on-error: true` until the founder rules (spec 003 §14 A12) |
+| `pnpm lighthouse` fails with `NO_FCP` | Lighthouse aborted before any metric existed because the page painted nothing. Expected in spec 001, **not** expected now that every measured URL renders text: the preview did not serve the document, so check the deployment and the bypass header |
+| `pnpm budget:client-js` says `no prerendered document for /en` | it reads `.next/`, so run `pnpm build` first; `pnpm dev` writes no prerendered HTML |
 | `pnpm lint:fixtures` "fails" | it is meant to: `tests/fixtures/lint/` violates the custom rules on purpose |
 | `pnpm branch-protection` exits 1 with `UNAVAILABLE ON THIS PLAN` | a private repository on GitHub Free (403): `docs/runbooks/branch-protection.md` §0 |
 | Playwright `Executable doesn't exist` | `pnpm exec playwright install chromium` |
@@ -179,6 +226,9 @@ decision — `docs/runbooks/branch-protection.md`.
 | What is in flight, blocked or next | `TASKS.md` (tasks, phase progress, open decisions) |
 | The system, the module map and what spec 001 deferred | `docs/architecture.md` |
 | Setting up a clean machine, step by step | `docs/runbooks/local-setup.md` |
+| Adding a message key, drafting a locale, handing it to a reviewer | `docs/runbooks/i18n-translations.md` |
+| Brand terms, tone, taboo words, per-locale register | `content/i18n/glossary.en.md` and the per-locale stubs beside it |
+| Which cookie the site sets, and on whose action | `docs/compliance/cookie-register.md` |
 | Operational procedures, one per incident | `docs/runbooks/README.md` |
 | Every decision and its history | `docs/adr/`, `docs/decisions-log.md` |
 | RoPA, DPAs, VAT sign-off | `docs/compliance/` |

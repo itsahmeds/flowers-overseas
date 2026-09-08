@@ -248,7 +248,14 @@ describe("Sentry beforeSend deep scrub (TASK-007)", () => {
   });
 });
 
-describe("Sentry release on the client bundle (TASK-007)", () => {
+/**
+ * The release resolution still reads the `NEXT_PUBLIC_` mirror even though TASK-043 removed the
+ * browser SDK from public routes: the mirror is what a *future* client SDK reads (spec 013 brings
+ * one back on the checkout routes), and `sentryOptions()` is one function for every runtime. The
+ * precedence is what is pinned here — server value first — so re-adding a client entrypoint
+ * cannot silently start reporting a different release than the server does.
+ */
+describe("Sentry release and the NEXT_PUBLIC mirror (TASK-007, TASK-043)", () => {
   const keys = [
     "VERCEL_GIT_COMMIT_SHA",
     "NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA",
@@ -274,7 +281,7 @@ describe("Sentry release on the client bundle (TASK-007)", () => {
     }
   }
 
-  it("falls back to NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA, which the browser bundle can read", () => {
+  it("falls back to NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA, the only SHA a browser bundle could read", () => {
     withEnv({ NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA: "cafebabe" }, () => {
       expect(sentryOptions("https://public@de.sentry.io/1")?.release).toBe(
         "cafebabe",

@@ -98,7 +98,9 @@ tests/fixtures/           shared fixtures: occasion dates, currencies, addresses
 tests/a11y/, tests/dev-os/, tests/msw/   axe run, hook checks, request mocks
 supabase/migrations/      versioned SQL, each with a documented rollback (from spec 002)
 seed/                     idempotent seed scripts, keyed by natural keys
-messages/                 next-intl catalogues (from spec 003)
+messages/                 next-intl catalogues + review manifests (spec 003)
+content/i18n/             glossary and style guide per locale, the authority a native reviewer
+                          reads (`plan/03` §6.6, spec 003); prose, never imported by code
 scripts/                  repo tooling: check-layout, env-check, seo validators, dev-os checks
 ```
 
@@ -134,6 +136,15 @@ Every document has a non-empty localised `<title>` (WCAG 2.4.2): pages and `not-
 Component cannot export metadata — and `global-error.tsx` renders the `<title>` element itself.
 That is why `tests/a11y/shell.spec.ts` has no exception list any more.
 
+**The `[locale]` layout's metadata default is the *error* title.** `generateMetadata` on the
+segment returns `noindex,nofollow` plus `meta.error.title`/`.description`, and every page
+overrides both halves with its own pair. That default is not a generic site title: the only
+document that ever reaches it is the 500 boundary, because `error.tsx` is a Client Component and a
+Client Component cannot export metadata — so the segment default is the *only* place a localised
+`<title>` can come from on the failure path (AC-25, WCAG 2.4.2). A future page that forgets its own
+`generateMetadata` will be titled as an error page, which is a visible bug rather than a silent
+one, and that is the intended trade.
+
 **`dynamicParams = false` is exported once, by `src/app/[locale]/layout.tsx`** — the central gate
 TASK-035 moved up from the page, closing the carry-forward that TASK-034's review recorded. A
 segment config option set on a layout governs the whole subtree, so every page below `[locale]`,
@@ -159,9 +170,31 @@ unmatched-path 404") and the pass-through root above is its accepted alternative
 form: one root, one document per leaf, no `headers()` read — which would opt every localised page
 out of static rendering and defeat §5.4 — and no locale literal anywhere.
 
+**Tripwire for spec 004: `dynamicParams` does not exist when Cache Components is enabled.** Next
+16's `cacheComponents` (formerly `dynamicIO`) removes the `dynamicParams` segment option, and the
+gate above is the routing layer's only refusal of an unknown locale segment. Whoever turns that
+flag on has to replace it in the same PR — the layout deliberately resolves an unknown segment to
+the x-default locale rather than throwing, so without a refusal at the routing layer `/fr/about`
+would render on demand as a fabricated duplicate of the English URL (spec 003 §6).
+`tests/e2e/locale-routing.spec.ts` is what fails if it is forgotten; do not "fix" that test.
+
 `app/` imports from `modules/`, never the reverse. A module imports another module only through its
 public `index.ts` — never a deep path. Both rules are ESLint errors
 (`import/no-restricted-paths`, spec 001 AC-9).
+
+**One measured exception, in one file: `src/app/global-error.tsx` imports two deep module paths**
+(`@/modules/i18n/messages` and `@/modules/i18n/registry`) rather than the barrel. It is a Client
+Component attached to the *root* error boundary, so everything it can reach is compiled into a
+client chunk that lands in **every** document's initial script set, `/` included. Through the
+barrel that was the whole i18n module — formatters, collator, address formats, alternates builder,
+review gate, switcher — none of which a 500 page renders; narrowing it took 3.5 KB gzipped out of
+every document (measured, TASK-043; `/review 23` raised it). The 85.3 KB of zod behind
+`messages.ts` and `src/config/locales.ts` is **not** removed by narrowing and is the open item of
+spec 003 §14 A12. The boundary rule that matters is preserved
+(`app/` → `modules/` is the permitted direction, and no module reaches into another module's
+internals), and the barrel stays the import path for every other file. A barrel export is a bundle
+liability in exactly this one position, which is worth knowing before spec 004 adds a `ui` module
+with the same shape.
 
 ## 3. Modules
 
@@ -180,7 +213,7 @@ the `MODULES` manifest in `scripts/check-layout.ts`, and the new barrel's owning
 | `customers` | customers, recipients, consent | spec 019 | empty barrel |
 | `notifications` | email + WhatsApp senders, templates, outbox consumer | spec 017 | empty barrel |
 | `seo` | hreflang, canonical, JSON-LD builders, sitemap generators, robots | spec 007 | empty barrel |
-| `i18n` | locale config, message loading, formatters, address formatting, the locale switcher | spec 003 | config + routing/messages + `ui/LocaleSwitcher` + `format.ts`/`collate.ts` + `address.ts` + catalogues/`review.ts`/`alternates.ts` landed, gated by `pnpm i18n:check`; banner/pseudo-locales TASK-041/TASK-042 |
+| `i18n` | locale config, message loading, formatters, address formatting, the locale switcher | spec 003 | **complete for spec 003**: `registry`/`routing`/`messages`/`request` (four launch locales, authored path segments, fallback-chain merge, per-route namespace subsets), `format`/`collate`/`address` (all `Intl`; `fo/no-adhoc-intl` allows nowhere else), `schemas`, `review`/`alternates` (the 5 %-unreviewed indexability gate and the hreflang set), `pseudo` (`en-XA`/`ar-XB`), `hints`, `ui/LocaleSwitcher` and `ui/LocaleSuggestionBanner*`. Gated by `pnpm i18n:check`; no database (`pnpm check:no-db`) — the provider seam is what spec 002/012 hydrate |
 | `analytics` | GA4 event schema, consent state, server-side events | spec 023 | empty barrel |
 | `admin` | admin queries and actions | spec 012 | empty barrel |
 
@@ -191,16 +224,24 @@ header name and its UUID v4 validation, shared by the proxy and `health`), `sent
 the Vercel adapter, plus the reserved `home:{locale}` tag name from TASK-034), and `src/proxy.ts` (request id only — the Next 16 `proxy` file convention,
 renamed from `middleware.ts` in TASK-032).
 
+Sentry is initialised from the repository root, and from **two** entrypoints rather than three:
+`instrumentation.ts` loads `sentry.server.config.ts` (node) and `sentry.edge.config.ts` (edge).
+There is no `instrumentation-client.ts` and no `sentry.client.config.ts` — see §4.
+
 ## 4. Deferred decisions recorded here
 
-Spec 001 ships the gates, not the product, and it deliberately leaves three things undone. Each is
-recorded here rather than in a comment nobody greps, with the spec that lifts it. A later spec that
-touches one of these rows removes it.
+Spec 001 ships the gates, not the product, and it deliberately left three things undone; spec 003
+removed two rows of its own from this table — the hard-coded English `lang` attribute (TASK-034) and
+`middleware.ts` → `proxy.ts` (TASK-032) — and added one. Each row is recorded here rather than in a
+comment nobody greps, with the spec that lifts it. A later spec that touches one of these rows
+removes it.
 
 | Decision | Deferred to | What lifts it |
 |---|---|---|
 | **CSP with nonces** — no `Content-Security-Policy` header is sent (spec 001 §8 "Security"). There is nothing to protect yet: the shell loads no script beyond the Next runtime and no third-party origin except Vercel's own preview-feedback script on protected previews. | spec 004 | The first design-system PR that adds a script or a font must add the header with nonces, and `plan/01` §9's report-only rollout. |
 | **`ALLOW_PLACEHOLDER_ENV`** — the escape hatch that lets `.env.example` placeholders pass validation in a deployed environment, set on Vercel preview and production so spec 001 can deploy without a database (`src/lib/env.schema.ts`, `docs/runbooks/vercel-setup.md`). | spec 002 | The first spec 002 task deletes the key from the schema, `.env.example`, the runbook and the Vercel env store once real Supabase values exist. Recorded as a carry-forward on `/review 7`. |
+| **No browser Sentry SDK on public routes** — `instrumentation-client.ts` and `sentry.client.config.ts` were deleted (TASK-043). Server and edge Sentry, `sentryOptions()` and the `beforeSend` PII scrubber are untouched, and `NEXT_PUBLIC_SENTRY_DSN` stays in the schema because `next.config.ts` reads it to decide whether to run the source-map plugin. The cost is real: a JavaScript error on a marketing page is invisible until someone reports it. The reason is measured: the browser SDK plus the zod it dragged in was ~230 KB gzipped against a 120 KB budget — ~72 KB gzipped of the 297 KB `/` used to ship (spec 004 §13 Q8, accepted 2026-09-08; the full
+measurement is spec 003 §14 A12). | spec 013 | The checkout spec re-adds a client SDK **scoped to the checkout routes**, where a client-side error costs money, and records the consent/PII position for browser events. `docs/compliance/ropa.md` row 1 is updated in the same PR. |
 | **`deploymentEnvironment()` Railway caveat** — it reads `VERCEL_ENV`, so on the ADR-0012 Railway + Cloudflare fallback host every response would look like `development` and take the blanket `X-Robots-Tag: noindex` (spec 001 §2 "Hosting", review of PR #6). Harmless on Vercel, wrong the day the fallback is used. | spec 007 / ADR-0012 follow-up | Key the environment on a host-independent signal (an explicit `APP_ENV`) before or during the first production launch, and note it in the host-failover runbook. |
 
 ## 5. Where the rest lives
@@ -209,7 +250,9 @@ touches one of these rows removes it.
 |---|---|
 | Rendering, caching and invalidation per page type | `plan/01` §3, §4 |
 | URL, canonical, hreflang and sitemap rules | `plan/02` |
-| Locale set, message catalogues, formatting | `plan/03` |
+| Locale set, message catalogues, formatting | `plan/03`, and `docs/runbooks/i18n-translations.md` for the procedure |
+| Brand terms, tone, per-locale register | `content/i18n/glossary.en.md` and the per-locale files beside it |
+| Cookies and client storage | `docs/compliance/cookie-register.md` |
 | Data model, RLS, migrations | `plan/04`, then `supabase/migrations/` from spec 002 |
 | Hosting, regions, protection, log drains | `plan/08`, `docs/runbooks/vercel-setup.md` |
 | Compliance, RoPA, data residency | `plan/07`, `docs/compliance/` |

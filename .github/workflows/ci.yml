@@ -401,6 +401,44 @@ jobs:
       - name: next build
         id: next
         run: pnpm build 2>&1 | tee build.log
+      # spec 003 AC-27 / T-27 (TASK-043): the client-JS and client-message-payload budgets of
+      # `plan/01` §7 and spec 003 §6, measured from the prerendered documents this build just
+      # wrote. `continue-on-error` is on the **step**, not the job, and for one recorded reason:
+      # Next 16.3.4's own client runtime is 130.1 KB gzipped, above the 120 KB budget, on a page
+      # with no application JavaScript at all (spec 003 §14 A12). Whether the budget or the
+      # framework moves is a founder decision; until it is taken, the number belongs in every
+      # step summary and in nobody's merge gate. Deleting the one line below is the whole flip.
+      - name: Measure the client-JS budgets (AC-27 / T-27)
+        id: budget
+        continue-on-error: true
+        run: pnpm budget:client-js 2>&1 | tee budget.log
+      - name: Summarise the client-JS budgets (AC-27 / T-27)
+        if: always()
+        env:
+          BUDGET_OUTCOME: ${{ steps.budget.outcome }}
+        run: |
+          set -uo pipefail
+          {
+            echo "### client-JS budgets (spec 003 AC-27 / T-27)"
+            echo ""
+            echo "\`pnpm budget:client-js\`: $BUDGET_OUTCOME (informational — spec 003 §14 A12)."
+            echo ""
+            if [ -f budget.log ]; then
+              sed -n '/^| URL /,/^$/p;/^| locale /,/^$/p' budget.log
+              echo ""
+              echo "<details><summary>chunks per URL</summary>"
+              echo ""
+              echo '```'
+              sed -n '/^\//,$p' budget.log
+              echo '```'
+              echo ""
+              echo "</details>"
+            else
+              echo "The step produced no output; read the step log."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          rm -f budget.log
+
       # AC-32 / T-33: `install && build` must leave the tree clean. The check belongs to whichever
       # job actually builds, and this is it.
       - name: Assert the working tree is clean after the build (AC-32 / T-33)
@@ -886,7 +924,7 @@ jobs:
             echo "- projects: $projects"
             echo "- tests: $expected — $statuses"
             echo "- screenshots compared against the committed baselines at a 0.1 % threshold;"
-            echo "  a missing baseline fails the job (`--update-snapshots` is never passed in CI)."
+            echo "  a missing baseline fails the job (\`--update-snapshots\` is never passed in CI)."
           } >> "$GITHUB_STEP_SUMMARY"
 
   a11y:
@@ -938,17 +976,28 @@ jobs:
             echo "- axe: zero serious/critical violations required (spec 001 §8)."
           } >> "$GITHUB_STEP_SUMMARY"
 
-  # AC-23 / T-24 (TASK-009): Lighthouse CI against the preview `/` with the `plan/01` §7 budgets
-  # as assertions.
+  # AC-23 / T-24 (TASK-009); spec 003 AC-27 / T-27 (TASK-043): Lighthouse CI against the preview
+  # with the `plan/01` §7 budgets as assertions, over the URL set in
+  # `tests/fixtures/seo/lighthouse-urls.json` — `/`, `/en` and `/de` since TASK-043.
   #
-  # spec 001 §13 Q4: it runs on **every** PR from the first one, but is informational until spec
-  # 004 ships the design system — hence `continue-on-error: true` on the job. The assertions
-  # themselves are configured as `error` in `lighthouserc.json`; only the PR's overall status is
-  # spared. Spec 004 removes `continue-on-error` and spec 007 adds the nightly run.
+  # spec 001 §13 Q4 made it informational "until spec 004". TASK-043 measured what that flip
+  # actually depends on, and it is not a schedule: on **Next 16.3.4 the framework's own client
+  # runtime is 130.1 KB gzipped** (react-dom 71.4 + the App Router runtime 46.0 + ~12.7 KB of
+  # bootstrap), against a 120 KB script budget, on a document with no application JavaScript at
+  # all. Removing the browser Sentry SDK took `/` from 297 KB to 221 KB gz and `/en` from 309 KB
+  # to 233 KB; what remains above the floor is the zod that Next's root error boundary drags in
+  # (85 KB gz — see spec 003 §14 A12). Whether the budget moves or the framework does is a founder
+  # decision, recorded as **spec 003 §14 A12** and carried on TASK-043's Blockers cell; a
+  # permanently red required check would decide it by attrition instead. So the job keeps
+  # `continue-on-error: true` and the assertions stay `error` in `lighthouserc.json`: the numbers
+  # are measured and published on every PR, they simply do not block. Spec 004 task 2 owns the
+  # flip together with `scripts/check-bundle-budget.ts` (spec 004 §2), and spec 007 adds the
+  # nightly run.
   #
-  # In spec 001 `/` paints nothing, so the run does not reach the assertions at all: Lighthouse
-  # aborts with `NO_FCP` and no budget is measured. That is neither a breach nor a pass, and the
-  # step summary is written *after* the run precisely so it can say which of the three happened
+  # `NO_FCP` — Lighthouse aborting because the page painted nothing — was the expected outcome for
+  # the whole of spec 001 and is no longer expected at all since TASK-035 gave `/` real text. The
+  # branch below stays because that outcome must never be read as a verdict in either direction,
+  # and the step summary is written *after* the run so it can say which of the three happened
   # instead of guessing in advance.
   #
   # `@lhci/cli` is fetched pinned by `npx` instead of being a devDependency: it pulls in Lighthouse
@@ -957,7 +1006,8 @@ jobs:
   lighthouse:
     name: lighthouse
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # Three URLs x three runs on a shared runner; 20 minutes was sized for one URL.
+    timeout-minutes: 30
     needs: preview
     continue-on-error: true
     env:
@@ -998,8 +1048,12 @@ jobs:
             echo "### lighthouse (AC-23 / T-24)"
             echo ""
             echo "URL set \`tests/fixtures/seo/lighthouse-urls.json\` against $PREVIEW_URL."
-            echo "**informational until spec 004** (spec 001 §13 Q4): the job carries"
-            echo "\`continue-on-error: true\`, so a red check here never blocks the PR."
+            echo "**Informational, and why:** Next 16.3.4's own client runtime measures 130.1 KB"
+            echo "gzipped against a 120 KB script budget on a document with no application"
+            echo "JavaScript, so this job carries \`continue-on-error: true\` until the founder"
+            echo "rules on the budget (spec 003 §14 A12). A red check here never blocks the PR."
+            echo "\`pnpm budget:client-js\` in the \`build\` job measures the same bytes from the"
+            echo "build output, per chunk, and is the number to read when this one moves."
             echo ""
             if [ "$LHCI_OUTCOME" = "success" ]; then
               echo "**Budgets measured and met.** Every assertion in \`lighthouserc.json\` is an"
@@ -1014,13 +1068,12 @@ jobs:
             elif [ -f "$log" ] && grep -qE 'NO_FCP|did not paint any content' "$log"; then
               echo "**No budget was measured: this is neither a budget breach nor a pass.**"
               echo ""
-              echo "\`/\` paints nothing in spec 001 — the repo is the CI and tooling skeleton, with"
-              echo "no page behind that route yet — so Lighthouse aborts the run with \`NO_FCP\` (\"the"
-              echo "page did not paint any content\") before a single metric exists. The \`plan/01\` §7"
-              echo "assertions in \`lighthouserc.json\` were therefore never evaluated: nothing was"
-              echo "compared against a budget, and no conclusion about the budgets can be drawn from"
-              echo "this run in either direction. The first real verdict arrives with spec 004, which"
-              echo "renders \`/\` and removes \`continue-on-error\`."
+              echo "Lighthouse aborted with \`NO_FCP\` (\"the page did not paint any content\") before"
+              echo "a single metric existed, so the \`plan/01\` §7 assertions in \`lighthouserc.json\`"
+              echo "were never evaluated and no conclusion about the budgets can be drawn from this"
+              echo "run in either direction. Unlike in spec 001, this is **not** the expected"
+              echo "outcome any more: every measured URL renders text since TASK-035, so a"
+              echo "\`NO_FCP\` here means the preview did not serve the document — read the step log."
             else
               echo "**The run failed before reaching a verdict on the budgets.**"
               echo ""
