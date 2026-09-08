@@ -282,12 +282,14 @@ describe("fo/no-adhoc-intl allowlist and repository state", () => {
   });
 
   /**
-   * Vitest's default 5 s timeout is not enough for this one: it is the only test in the suite that
-   * runs ESLint over **every** file under `src/`, so its cost grows with the tree, and a shared CI
-   * runner is several times slower than a laptop. TASK-046 added five files under `src/` and pushed
-   * it over the edge on the runner while it finished in 1.5 s locally — a timeout, never an
-   * assertion. The explicit budget is generous on purpose: this test failing must mean the rule
-   * found an offender, not that the repository grew.
+   * 60 s, not Vitest's default 5 s: this is the only test in the suite that runs the whole real
+   * ESLint config over **every** file under `src/`, so its cost grows with the tree, and a shared
+   * CI runner is several times slower than a laptop. TASK-046 added five files and pushed it over
+   * the edge on the runner while it finished in 1.5 s locally, and spec 004's `ui` module
+   * (TASK-045) roughly doubled the tree again — a timeout, never an assertion. The budget is
+   * generous on purpose: this test failing must mean the rule found an offender, not that the
+   * repository grew. The repository's other "run the real toolchain" tests (`audit-secrets`,
+   * `commitlint`, `i18n-format`) carry the same kind of explicit budget for the same reason.
    */
   it("passes over the real src/ tree", { timeout: 60_000 }, async () => {
     const { ESLint } = await import("eslint");
