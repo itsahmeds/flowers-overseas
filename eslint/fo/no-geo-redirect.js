@@ -36,8 +36,10 @@ export const HINTS_FILE = "src/modules/i18n/hints.ts";
 export const I18N_MODULE_PATH = "src/modules/i18n/";
 
 /**
- * Basenames of a request-interception file: `middleware.*` and `proxy.*` at the project root or
- * under `src/`, plus the `-`/`.`-suffixed fixture names (`geo-redirect-proxy.ts`).
+ * Basenames of a request-interception file. The test is on the basename only, so it is
+ * directory-agnostic: `middleware.*` and `proxy.*` match in any directory, as do names that
+ * end in one of them after a `.` or `-` (`x.proxy.ts`, `geo-redirect-proxy.ts`). Names that
+ * merely contain the word do not match (`proxy-utils.ts`, `middlewares.ts`).
  */
 const INTERCEPTOR_BASENAME = /(^|[.-])(middleware|proxy)\.[cm]?[jt]sx?$/;
 

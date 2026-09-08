@@ -6,9 +6,11 @@
  * the edge runtime: edge routes (and, before Next 16's `proxy` moved it to Node, `src/proxy.ts`)
  * have neither pino's Node transports nor `worker_threads`, so pino would mean two logger
  * implementations (node + browser shim) and therefore two copies of the redaction list — the one
- * thing spec 001 §8 says must be mechanical. pino's `redact` also only accepts explicit paths, while §8's `address*` / `card*`
- * require redacting keys we have not seen yet, at any depth. ~120 lines of dependency-free code
- * gives identical output on node and edge, one redaction list, and no bytes in the edge bundle.
+ * thing spec 001 §8 says must be mechanical. pino's `redact` also only accepts explicit paths,
+ * while §8's `address*` / `card*` require redacting keys we have not seen yet, at any depth.
+ * ~120 lines of dependency-free code gives identical output on node and edge, one redaction list,
+ * and no bytes in the edge bundle. Note: with `proxy` on Node the repo has no edge runtime code at
+ * all today, so this rationale is kept for future edge routes rather than for anything shipping.
  * Revisit if log volume ever needs pino's transports (Phase 1 log drain, plan/08 §7).
  *
  * ## Contract

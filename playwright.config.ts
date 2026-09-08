@@ -36,8 +36,8 @@ const protectionBypassHeaders: Record<string, string> =
 
 export default defineConfig({
   testDir: "tests",
-  // Playwright resolves specs itself; see the comment in the file for why `next/server` needs a
-  // mapping there and nowhere else.
+  // Playwright resolves specs itself; see the comment in that file for why the `@/*` alias is
+  // restated there.
   tsconfig: "./tests/tsconfig.playwright.json",
   // Only Playwright specs: `tests/unit/**` and `tests/integration/**` are Vitest's `*.test.ts`.
   testMatch: "**/*.spec.ts",
