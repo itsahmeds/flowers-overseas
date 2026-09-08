@@ -126,7 +126,7 @@ the PR is open. `pnpm dev-os:check` never touches this repository's real
 | Build fails with `invalid environment variables` and a key name | `.env.local` missing or missing that key | `cp .env.example .env.local`. The error prints the **variable name only, never a value** — by design (AC-10) |
 | `pnpm test` reports `5 skipped` | gitleaks is not installed | expected locally; `brew install gitleaks` to run them, and the `audit` CI job always does |
 | Claude Code refuses to edit a file under `src/` | the PreToolUse guard, no active task | `.claude/bin/task.sh set TASK-NNN` (§5) |
-| `⚠ The "middleware" file convention is deprecated. Please use "proxy" instead.` during build | Next 16 renamed the file | known and deliberate; the rename is queued for spec 003 (`docs/architecture.md` §4) |
+| `⚠ middleware.ts is deprecated, use proxy.ts` during build | Next 16 renamed the file | known and deliberate; the rename is queued for spec 003 (`docs/architecture.md` §4) |
 | `pnpm lighthouse` fails with `NO_FCP` | `/` paints nothing yet | expected until spec 004; the CI job is informational (`continue-on-error: true`, spec 001 §13 Q4) |
 | `pnpm lint:fixtures` "fails" | it is supposed to | `tests/fixtures/lint/` violates the custom rules on purpose; exit 1 with a list of files is the pass condition |
 | Playwright: `browserType.launch: Executable doesn't exist` | browsers not downloaded | `pnpm exec playwright install chromium` |
