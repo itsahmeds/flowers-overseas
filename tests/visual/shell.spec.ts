@@ -10,6 +10,18 @@
  * Baselines are per platform (`snapshotPathTemplate` in `playwright.config.ts`): `darwin/` is
  * generated locally with `pnpm test:visual --update-snapshots`, `linux/` comes from the `visual`
  * CI job's failure artifact, and both are committed.
+ *
+ * **`navigator.languages` is emptied first (TASK-041).** The suggestion banner is a client island
+ * that decides from the *browser's* language list, so a full-page baseline of `/de` taken by an
+ * English-configured runner contains an English "would you rather read this in English?" overlay,
+ * and the same baseline taken by a German-configured one does not. That makes the committed PNG a
+ * record of the runner's `navigator.languages` rather than of the template, which is the opposite
+ * of what AC-30 gates: a machine's language setting would show up as a layout regression, and a
+ * real layout regression could hide behind it. With an empty list `preferredLocale` answers
+ * `null`, `decideSuggestion` returns `noBetterLocale`, and every URL here renders the document
+ * the template produces. The banner has its own coverage where the visitor's language is the
+ * subject rather than the noise: `tests/e2e/banner.spec.ts` (the appearance matrix, CLS delta and
+ * cookie) and `tests/a11y/banner.spec.ts` (axe with it forced on screen).
  */
 import { expect, test } from "@playwright/test";
 
@@ -22,9 +34,19 @@ const SCREENSHOTS = [
 
 for (const { path, name } of SCREENSHOTS) {
   test(`${path} matches the committed baseline`, async ({ page }) => {
+    // Before any script of ours runs, and therefore before the island mounts. See the header.
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, "languages", {
+        configurable: true,
+        get: () => [],
+      });
+    });
+
     const response = await page.goto(path);
     expect(response?.status()).toBe(200);
     await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
+    // The template and nothing situational: no suggestion overlay is in the frame.
+    await expect(page.locator('[data-fo-banner="shown"]')).toHaveCount(0);
 
     await expect(page).toHaveScreenshot(name, { fullPage: true });
   });
