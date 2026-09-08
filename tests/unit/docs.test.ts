@@ -148,12 +148,11 @@ describe("docs/runbooks (AC-30)", () => {
     expect(localSetup.match(/```/g)?.length ?? 0).toBeGreaterThanOrEqual(8);
   });
 
-  it("records the branch-protection founder decision as pending", () => {
+  it("records the branch-protection founder decision as decided (GitHub Free, accepted deviation)", () => {
     const runbook = read("docs/runbooks/branch-protection.md");
-    expect(runbook).toContain(
-      "pending: GitHub Pro upgrade vs recorded deviation",
-    );
-    expect(runbook).toContain("2026-09-08");
+    expect(runbook).toContain("decided 2026-09-08");
+    expect(runbook).toContain("stay on GitHub Free");
+    expect(runbook).toContain("accepted deviation");
   });
 });
 
