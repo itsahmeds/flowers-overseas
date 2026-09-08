@@ -112,6 +112,8 @@ function testLocale(code: string, bcp47: string): LocaleConfig {
     nativeName: code,
     dir: "ltr",
     isLaunch: true,
+    // TASK-042: a pseudo-locale is a registry flag now; a fake launch locale states it.
+    isPseudo: false,
     fallbackCode: "en",
     currencyDefault: "EUR",
     numberingSystem: "latn",

@@ -14,7 +14,9 @@ import {
   deploymentEnvironment,
   formatEnvIssues,
   parseEnv,
+  PSEUDO_LOCALES_KEY,
   placeholderHatchEnabled,
+  pseudoLocalesEnabled,
   serverEnvSchema,
   validateEnv,
 } from "../../src/lib/env.schema";
@@ -296,5 +298,78 @@ describe("NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA (TASK-007)", () => {
     expect(
       validateEnv(validEnv).client?.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA,
     ).toBeUndefined();
+  });
+});
+
+/**
+ * `ENABLE_PSEUDO_LOCALES` (T-29 / AC-29, TASK-042): the pseudo-locales are a development
+ * affordance, and the env schema is what keeps them out of production.
+ *
+ * The build failure itself is this refusal — `next.config.ts` calls `assertEnv()` before Next
+ * compiles anything — so what is pinned here is the verdict per environment and the fact that the
+ * message names the key and prints no value (AC-10).
+ */
+describe("ENABLE_PSEUDO_LOCALES (TASK-042)", () => {
+  it("is part of the environment contract", () => {
+    expect(ENV_KEYS).toContain(PSEUDO_LOCALES_KEY);
+    expect(PSEUDO_LOCALES_KEY).toBe("ENABLE_PSEUDO_LOCALES");
+  });
+
+  it("refuses `true` in production, naming the key", () => {
+    const result = validateEnv({
+      ...validEnv,
+      VERCEL_ENV: "production",
+      NEXT_PUBLIC_SITE_URL: "https://flowers-overseas.vercel.app",
+      ALLOW_PLACEHOLDER_ENV: "true",
+      ENABLE_PSEUDO_LOCALES: "true",
+    });
+    expect(result.issues.map((issue) => issue.key)).toEqual([
+      PSEUDO_LOCALES_KEY,
+    ]);
+    expect(result.issues[0]?.message).toContain("production");
+    expect(result.issues[0]?.message).not.toContain("true`,");
+  });
+
+  it("accepts `true` on a preview and in development, and `false` anywhere", () => {
+    for (const source of [
+      { ...validEnv, ENABLE_PSEUDO_LOCALES: "true" },
+      {
+        ...validEnv,
+        VERCEL_ENV: "preview",
+        NEXT_PUBLIC_SITE_URL: "https://fo-preview.vercel.app",
+        ALLOW_PLACEHOLDER_ENV: "true",
+        ENABLE_PSEUDO_LOCALES: "true",
+      },
+      {
+        ...validEnv,
+        VERCEL_ENV: "production",
+        NEXT_PUBLIC_SITE_URL: "https://flowers-overseas.vercel.app",
+        ALLOW_PLACEHOLDER_ENV: "true",
+        ENABLE_PSEUDO_LOCALES: "false",
+      },
+    ]) {
+      expect(validateEnv(source).issues).toEqual([]);
+    }
+  });
+
+  it("rejects a value that is neither `true` nor `false`", () => {
+    const result = validateEnv({
+      ...validEnv,
+      ENABLE_PSEUDO_LOCALES: "yes",
+    });
+    expect(result.issues.map((issue) => issue.key)).toEqual([
+      PSEUDO_LOCALES_KEY,
+    ]);
+  });
+
+  it("treats anything but the exact string `true` as off", () => {
+    expect(pseudoLocalesEnabled({ ENABLE_PSEUDO_LOCALES: "true" })).toBe(true);
+    for (const value of ["false", "TRUE", "1", " true", "", undefined]) {
+      expect(
+        pseudoLocalesEnabled({ ENABLE_PSEUDO_LOCALES: value }),
+        String(value),
+      ).toBe(false);
+    }
+    expect(pseudoLocalesEnabled({})).toBe(false);
   });
 });

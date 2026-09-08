@@ -19,6 +19,12 @@
  * `FORBIDDEN_EXPORTS`: a caller able to reach the first two could move the indexability answer at
  * runtime, which is the same objection AC-3 raises to `withLocaleRegistry`.
  *
+ * TASK-042 adds `routableLocale`, `routableLocaleCodes` (the launch locales plus the pseudo-
+ * locales, when `ENABLE_PSEUDO_LOCALES` is on) and `pseudoCatalogue` (the pure `en → en-XA/ar-XB`
+ * derivation). Three functions, no data: the flag is read inside `src/config/locales.ts` and no
+ * export lets a caller move it, `PSEUDO_LOCALES`/`isPseudoLocaleCode` stay in `src/config`, and
+ * `generatePseudoCatalogues`/`mapIcuText` stay module-internal in `pseudo.ts`.
+ *
  * `LocaleSwitcher` (TASK-035) is the one component in the list. It is still a function and still
  * carries no configuration — a Server Component reading the registry through the same accessor as
  * every other export — so the "functions only, no mutable config" assertion below holds unchanged.
@@ -69,6 +75,9 @@ const PINNED_EXPORTS = [
   "isLocaleIndexable",
   "localeBetaTag",
   "unreviewedShare",
+  "pseudoCatalogue",
+  "routableLocale",
+  "routableLocaleCodes",
 ].sort();
 
 /**

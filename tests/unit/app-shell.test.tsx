@@ -90,6 +90,8 @@ const FAKE_FIFTH: LocaleConfig = {
   nativeName: "Pseudo Arabic",
   dir: "rtl",
   isLaunch: true,
+  // TASK-042: a pseudo-locale is a registry flag now; a fake launch locale states it.
+  isPseudo: false,
   fallbackCode: "en",
   currencyDefault: "EUR",
   numberingSystem: "latn",

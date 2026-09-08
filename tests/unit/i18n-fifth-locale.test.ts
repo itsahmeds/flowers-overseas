@@ -85,6 +85,8 @@ const FRENCH: LocaleConfig = {
   nativeName: "Français",
   dir: "ltr",
   isLaunch: true,
+  // TASK-042: a pseudo-locale is a registry flag now; a fake launch locale states it.
+  isPseudo: false,
   fallbackCode: "en",
   currencyDefault: "EUR",
   numberingSystem: "latn",
