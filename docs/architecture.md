@@ -84,7 +84,9 @@ src/modules/<module>/     one directory per module below, public barrel in index
 src/lib/                  env (zod), logger, health, sentry, cache adapter; db client from spec 002
 src/jobs/                 pg-boss job definitions and cron schedule
 src/emails/               React Email templates, localised
-src/config/               locales.ts, countries.ts, payment-methods-by-country.ts, feature-flags.ts
+src/config/               locales.ts, currencies.ts, address-formats.ts (spec 003; zod-validated
+                          at module load, no database — `pnpm check:no-db`); countries.ts,
+                          payment-methods-by-country.ts, feature-flags.ts follow in 002/004
 tests/unit/               Vitest, node env
 tests/integration/        Vitest against DATABASE_URL (live from spec 002)
 tests/contract/           adapter-against-recorded-fixture tests (from Phase 1)
@@ -119,7 +121,7 @@ the `MODULES` manifest in `scripts/check-layout.ts`, and the new barrel's owning
 | `customers` | customers, recipients, consent | spec 019 | empty barrel |
 | `notifications` | email + WhatsApp senders, templates, outbox consumer | spec 017 | empty barrel |
 | `seo` | hreflang, canonical, JSON-LD builders, sitemap generators, robots | spec 007 | empty barrel |
-| `i18n` | locale config, message loading, formatters | spec 003 | empty barrel |
+| `i18n` | locale config, message loading, formatters | spec 003 | config landed, routing TASK-034 |
 | `analytics` | GA4 event schema, consent state, server-side events | spec 023 | empty barrel |
 | `admin` | admin queries and actions | spec 012 | empty barrel |
 

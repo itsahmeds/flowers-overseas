@@ -77,6 +77,7 @@ Every script in `package.json`, once.
 | `pnpm format:check` | Prettier, check only (the CI form) |
 | `pnpm check-layout` | the `plan/01` §5 tree and the eleven module barrels exist and nothing extra does |
 | `pnpm check:no-literal-disable` | no file under `src/` disables `fo/no-literal-strings` |
+| `pnpm check:no-db` | no file in the spec 003 file set (`src/config/`, `src/modules/i18n/`) imports a database client, an ORM or a Postgres driver, or reads `DATABASE_URL` |
 | `pnpm env:check` | `.env.example` keys and the zod schema in `src/lib/env.schema.ts` are the same set |
 | `pnpm db:check` | migration/rollback pairing — a stub until spec 002 |
 | `pnpm audit` | `pnpm audit --prod --audit-level=high` plus `audit:secrets` (invoke it as `pnpm run audit`: pnpm's built-in `audit` shadows the script name) |

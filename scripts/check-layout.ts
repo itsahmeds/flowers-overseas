@@ -4,7 +4,8 @@
  * `checkLayout(root)` reports paths the manifest requires but the tree lacks, and top-level
  * directories under `src/modules/` that the manifest does not know. Run directly with
  * `pnpm check-layout` (Node ≥ 24 strips types natively) or import from the unit test.
- * A spec that adds a module must add it here and to `docs/architecture.md` (TASK-012).
+ * A spec that adds a module must add it here and to `docs/architecture.md` (TASK-012); the same
+ * applies to a file added under `src/config/` (`CONFIG_FILES`, TASK-033).
  */
 import { existsSync, readdirSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
@@ -43,7 +44,22 @@ export const REQUIRED_DIRS = [
   "scripts",
 ] as const;
 
-export const REQUIRED_FILES = MODULES.map((m) => `src/modules/${m}/index.ts`);
+/**
+ * Config modules that other specs read rather than restate (spec 003 §5.2, TASK-033). They are
+ * required files, not optional data: `toLocaleRow()`/`toCurrencyRow()` are how spec 002's seed
+ * gets the locale and currency sets, and the address formats are how a new destination country
+ * becomes data. `docs/architecture.md` §2 lists the same set (`tests/unit/architecture-doc.test.ts`).
+ */
+export const CONFIG_FILES = [
+  "src/config/locales.ts",
+  "src/config/currencies.ts",
+  "src/config/address-formats.ts",
+] as const;
+
+export const REQUIRED_FILES = [
+  ...MODULES.map((m) => `src/modules/${m}/index.ts`),
+  ...CONFIG_FILES,
+];
 
 export interface LayoutReport {
   missing: string[];
@@ -101,6 +117,6 @@ if (isMain) {
     process.exit(1);
   }
   process.stdout.write(
-    `layout ok: ${String(REQUIRED_DIRS.length)} dirs, ${String(MODULES.length)} module barrels\n`,
+    `layout ok: ${String(REQUIRED_DIRS.length)} dirs, ${String(MODULES.length)} module barrels, ${String(CONFIG_FILES.length)} config modules\n`,
   );
 }
