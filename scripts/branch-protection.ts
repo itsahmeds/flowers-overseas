@@ -143,6 +143,7 @@ const Protection = z
       .object({
         required_approving_review_count: z.number().optional(),
         require_code_owner_reviews: z.boolean().optional(),
+        dismiss_stale_reviews: z.boolean().optional(),
       })
       .loose()
       .optional(),
@@ -152,6 +153,10 @@ const Protection = z
       .optional(),
     allow_force_pushes: z.object({ enabled: z.boolean() }).loose().optional(),
     allow_deletions: z.object({ enabled: z.boolean() }).loose().optional(),
+    required_conversation_resolution: z
+      .object({ enabled: z.boolean() })
+      .loose()
+      .optional(),
   })
   .loose();
 
@@ -239,6 +244,32 @@ export function verifyProtection(
     });
   }
 
+  // The review signals that do exist must not be stale, and an unresolved reviewer comment must
+  // not be merged past: with `required_approving_review_count: 0` these two are what is left of
+  // the human half of the gate, so the verifier asserts them rather than trusting the apply step.
+  if (
+    protection.required_pull_request_reviews?.dismiss_stale_reviews !== true
+  ) {
+    failures.push({
+      what: "dismiss_stale_reviews (a review of an older head is not a review of this one)",
+      expected: "true",
+      actual: String(
+        protection.required_pull_request_reviews?.dismiss_stale_reviews ??
+          false,
+      ),
+    });
+  }
+
+  if (protection.required_conversation_resolution?.enabled !== true) {
+    failures.push({
+      what: "required_conversation_resolution",
+      expected: "true",
+      actual: String(
+        protection.required_conversation_resolution?.enabled ?? false,
+      ),
+    });
+  }
+
   if (protection.required_linear_history?.enabled !== true) {
     failures.push({
       what: "required_linear_history",
@@ -260,6 +291,10 @@ export function verifyProtection(
     ["allow_merge_commit", false],
     ["allow_rebase_merge", false],
     ["squash_merge_commit_title", "PR_TITLE"],
+    // The last clause of the §3 `gh repo edit` call: a merged task branch should not linger, and
+    // `pr-policy` derives the task id from the branch name, so stale `task/TASK-NNN-*` branches
+    // are a source of confusion rather than history.
+    ["delete_branch_on_merge", true],
   ];
   for (const [key, expected] of mergeExpectations) {
     const actual = repo[key];
