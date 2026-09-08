@@ -110,7 +110,6 @@ describe("docs/architecture.md (AC-30)", () => {
     for (const [item, spec] of [
       ["CSP", "spec 004"],
       ['`<html lang="en">`', "spec 003"],
-      ["`proxy.ts`", "spec 003"],
       ["ALLOW_PLACEHOLDER_ENV", "spec 002"],
       ["deploymentEnvironment()", "ADR-0012"],
     ] as const) {

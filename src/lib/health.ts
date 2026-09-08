@@ -10,7 +10,7 @@
  */
 import { z } from "zod";
 
-import { REQUEST_ID_HEADER, resolveRequestId } from "@/middleware";
+import { REQUEST_ID_HEADER, resolveRequestId } from "./request-id";
 
 import type { DeploymentEnvironment } from "./env.schema";
 
@@ -65,9 +65,9 @@ export function buildHealthResponse(input: HealthInput): HealthResponse {
 
 /**
  * The whole handler, minus the env read: 200 JSON with the headers above and the request's
- * `x-request-id` echoed back. `src/middleware.ts` owns that contract (it has already put a
- * validated UUID v4 on the request), so its helpers are imported rather than re-declared here;
- * `resolveRequestId` also covers a direct call that bypassed middleware.
+ * `x-request-id` echoed back. `src/lib/request-id.ts` owns that contract and `src/proxy.ts` has
+ * already put a validated UUID v4 on the request, so those helpers are imported rather than
+ * re-declared here; `resolveRequestId` also covers a direct call that bypassed the proxy.
  */
 export function healthResponse(request: Request, input: HealthInput): Response {
   const requestId = resolveRequestId(request.headers.get(REQUEST_ID_HEADER));

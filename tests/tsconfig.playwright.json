@@ -1,16 +1,11 @@
 {
-  // Module resolution for the Playwright loader only (TASK-008). Playwright runs the specs on
-  // Node, not through the Next.js bundler, and Node cannot resolve the extension-less
-  // `next/server` specifier (the `next` package ships no `exports` map). `tests/e2e/health.spec.ts`
-  // imports the zod `HealthResponse` schema from `@/lib/health`, which reaches `src/middleware.ts`
-  // -> `next/server`, so the specifier is mapped to the real file here. Nothing else in the repo
-  // uses this file: `pnpm typecheck` and ESLint use the root `tsconfig.json`, where the Next
-  // TypeScript plugin resolves `next/server` itself.
+  // Module resolution for the Playwright loader only (TASK-008). Playwright type-checks and runs
+  // the specs on Node rather than through the Next.js bundler, so the `@/*` alias has to be
+  // restated here; `pnpm typecheck` and ESLint use the root `tsconfig.json`.
   "extends": "../tsconfig.json",
   "compilerOptions": {
     "paths": {
-      "@/*": ["../src/*"],
-      "next/server": ["../node_modules/next/server.js"]
+      "@/*": ["../src/*"]
     }
   }
 }

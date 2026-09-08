@@ -99,7 +99,6 @@ describe("README.md (AC-30)", () => {
       ["env validation names the key", ".env.local"],
       ["guard denial", "task.sh set"],
       ["gitleaks-absent skips", "5 skipped"],
-      ["middleware deprecation", "proxy.ts"],
       ["lighthouse NO_FCP", "NO_FCP"],
     ] as const) {
       expect(troubleshooting, what).toContain(needle);

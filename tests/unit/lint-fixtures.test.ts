@@ -43,6 +43,13 @@ describe("pnpm lint:fixtures over the real configs", () => {
     expect(rulesFor("geo-redirect-middleware.ts")).toEqual([
       "fo/no-geo-redirect",
     ]);
+    // TASK-032 (spec 003 AC-11): the same redirect in a Next 16 `proxy.ts`-named file.
+    expect(rulesFor("geo-redirect-proxy.ts")).toEqual(["fo/no-geo-redirect"]);
+    // TASK-032 (spec 003 AC-10): the import and the `createMiddleware(` call, two violations.
+    expect(rulesFor("geo-redirect-nextintl-middleware.ts")).toEqual([
+      "fo/no-geo-redirect",
+      "fo/no-geo-redirect",
+    ]);
     expect(rulesFor("src/modules/orders/cross-module-import.ts")).toEqual([
       "import/no-restricted-paths",
     ]);
@@ -66,6 +73,7 @@ describe("pnpm lint:fixtures over the real configs", () => {
     for (const file of [
       "order-status-valid.ts",
       "geo-redirect-valid.ts",
+      "geo-redirect-valid-proxy.ts",
       "float-money-valid.ts",
       "console-valid.ts",
       "stubs.ts",

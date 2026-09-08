@@ -69,7 +69,7 @@ Coverage is measured per module, not as a vanity global percentage: the four mon
 ## 6. Observability from day one
 
 - Sentry with release tags, `request_id`, `order_id`, `locale`, `partner_id`; PII scrubbing.
-- JSON logs via a single logger; every request gets `request_id` (middleware) propagated to jobs.
+- JSON logs via a single logger; every request gets `request_id` (`src/proxy.ts`, the Next 16 proxy) propagated to jobs.
 - Order lifecycle is the `order_events` table; admin timeline view; alerts on `paid` without `routed` >5 min, SLA cascade exhaustion, webhook failure rate, photo missing >2 h.
 - CWV RUM per locale; weekly synthetic TTFB per PoP; Search Console coverage alerts.
 

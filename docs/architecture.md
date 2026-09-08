@@ -124,13 +124,15 @@ the `MODULES` manifest in `scripts/check-layout.ts`, and the new barrel's owning
 | `admin` | admin queries and actions | spec 012 | empty barrel |
 
 Implemented outside the modules today (spec 001, all in `src/lib/`): `env` (+ `env.schema`,
-`env.server`, `env.client`, `env.assert`), `logger`, `health`, `sentry`, `robots-headers`, `cache`
-(the `invalidate` seam of `plan/01` §3, a noop until spec 007/008 wires the Vercel adapter), and
-`src/middleware.ts` (request id only).
+`env.server`, `env.client`, `env.assert`), `logger`, `health`, `request-id` (the `x-request-id`
+header name and its UUID v4 validation, shared by the proxy and `health`), `sentry`,
+`robots-headers`, `cache` (the `invalidate` seam of `plan/01` §3, a noop until spec 007/008 wires
+the Vercel adapter), and `src/proxy.ts` (request id only — the Next 16 `proxy` file convention,
+renamed from `middleware.ts` in TASK-032).
 
 ## 4. Deferred decisions recorded here
 
-Spec 001 ships the gates, not the product, and it deliberately leaves five things undone. Each is
+Spec 001 ships the gates, not the product, and it deliberately leaves four things undone. Each is
 recorded here rather than in a comment nobody greps, with the spec that lifts it. A later spec that
 touches one of these rows removes it.
 
@@ -138,7 +140,6 @@ touches one of these rows removes it.
 |---|---|---|
 | **CSP with nonces** — no `Content-Security-Policy` header is sent (spec 001 §8 "Security"). There is nothing to protect yet: the shell loads no script beyond the Next runtime and no third-party origin except Vercel's own preview-feedback script on protected previews. | spec 004 | The first design-system PR that adds a script or a font must add the header with nonces, and `plan/01` §9's report-only rollout. |
 | **`<html lang="en">` literal** in `src/app/layout.tsx` — the one hard-coded locale in the repository (spec 001 §7, AC-30). The shell has no copy, so `fo/no-literal-strings` ships enabled with zero exceptions and this attribute is the only thing to remove. | spec 003 | next-intl lands and `lang` (and `dir`) come from the URL locale. The i18n implementer greps `lang="en"` and this row. |
-| **`middleware.ts` → `proxy.ts`** — Next 16 deprecates the `middleware` filename in favour of `proxy`; the build prints a deprecation notice. Renaming today would silently disarm a gate: `fo/no-geo-redirect` matches the *filename* `middleware.ts` when it bans `NextResponse.redirect`. | spec 003 | The spec 003 task that renames the file must, in the same PR, widen the rule's filename matcher to `middleware.ts` **and** `proxy.ts`, extend the AC-8 fixtures with a `proxy.ts` case, and update `plan/12` §6's naming. |
 | **`ALLOW_PLACEHOLDER_ENV`** — the escape hatch that lets `.env.example` placeholders pass validation in a deployed environment, set on Vercel preview and production so spec 001 can deploy without a database (`src/lib/env.schema.ts`, `docs/runbooks/vercel-setup.md`). | spec 002 | The first spec 002 task deletes the key from the schema, `.env.example`, the runbook and the Vercel env store once real Supabase values exist. Recorded as a carry-forward on `/review 7`. |
 | **`deploymentEnvironment()` Railway caveat** — it reads `VERCEL_ENV`, so on the ADR-0012 Railway + Cloudflare fallback host every response would look like `development` and take the blanket `X-Robots-Tag: noindex` (spec 001 §2 "Hosting", review of PR #6). Harmless on Vercel, wrong the day the fallback is used. | spec 007 / ADR-0012 follow-up | Key the environment on a host-independent signal (an explicit `APP_ENV`) before or during the first production launch, and note it in the host-failover runbook. |
 
