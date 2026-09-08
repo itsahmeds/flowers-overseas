@@ -7,7 +7,7 @@
  *
  *  1. the "Open decisions blocking tasks" table mirrors `plan/13` §A — ten rows `A1`…`A10`, each
  *     with a question, what it blocks, an owner and the due date of `plan/09`'s Phase 0 window;
- *  2. the phase-progress row for Phase 0 reads `1 / 12` specs approved (spec 001 is approved);
+ *  2. the phase-progress row for Phase 0 reads `2 / 12` specs approved (specs 001 and 002 are approved);
  *  3. every row of every table has exactly as many cells as its header. A markdown table row with
  *     one cell too many silently shifts every later column — the status of a task ends up in the
  *     owner column, `/status` reports nonsense and `.claude/bin/task.sh` stops finding the row.
