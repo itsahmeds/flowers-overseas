@@ -1,0 +1,105 @@
+[
+  {
+    "code": "en",
+    "bcp47": "en",
+    "formattingTag": "en-150",
+    "name": "English",
+    "nativeName": "English",
+    "dir": "ltr",
+    "isLaunch": true,
+    "fallbackCode": null,
+    "currencyDefault": "EUR",
+    "numberingSystem": "latn",
+    "hreflangAliases": [
+      "en",
+      "x-default",
+      "en-IE",
+      "en-NL",
+      "en-150"
+    ],
+    "pathSegments": {
+      "destinations": "send-flowers-to",
+      "shopCategory": "flowers",
+      "occasions": "occasions",
+      "product": "product",
+      "blog": "blog",
+      "forFlorists": "for-florists",
+      "legal": "legal/"
+    }
+  },
+  {
+    "code": "en-gb",
+    "bcp47": "en-GB",
+    "name": "English (United Kingdom)",
+    "nativeName": "English (UK)",
+    "dir": "ltr",
+    "isLaunch": true,
+    "fallbackCode": "en",
+    "currencyDefault": "GBP",
+    "numberingSystem": "latn",
+    "hreflangAliases": [
+      "en-GB"
+    ],
+    "pathSegments": {
+      "destinations": "send-flowers-to",
+      "shopCategory": "flowers",
+      "occasions": "occasions",
+      "product": "product",
+      "blog": "blog",
+      "forFlorists": "for-florists",
+      "legal": "legal"
+    },
+    "formattingTag": "en-GB"
+  },
+  {
+    "code": "de",
+    "bcp47": "de",
+    "name": "German",
+    "nativeName": "Deutsch",
+    "dir": "ltr",
+    "isLaunch": true,
+    "fallbackCode": "en",
+    "currencyDefault": "EUR",
+    "numberingSystem": "latn",
+    "hreflangAliases": [
+      "de",
+      "de-DE",
+      "de-AT"
+    ],
+    "pathSegments": {
+      "destinations": "blumen-verschicken",
+      "shopCategory": "blumen",
+      "occasions": "anlaesse",
+      "product": "produkt",
+      "blog": "blog",
+      "forFlorists": "fuer-floristen",
+      "legal": "rechtliches"
+    },
+    "formattingTag": "de"
+  },
+  {
+    "code": "pl",
+    "bcp47": "pl",
+    "name": "Polish",
+    "nativeName": "Polski",
+    "dir": "ltr",
+    "isLaunch": true,
+    "fallbackCode": "en",
+    "currencyDefault": "PLN",
+    "numberingSystem": "latn",
+    "hreflangAliases": [
+      "pl",
+      "pl-PL"
+    ],
+    "pathSegments": {
+      "destinations": "wyslij-kwiaty",
+      "shopCategory": "kwiaty",
+      "occasions": "okazje",
+      "product": "produkt",
+      "blog": "blog",
+      "forFlorists": "dla-kwiaciarni",
+      "legal": "regulamin"
+    },
+    "formattingTag": "pl"
+  }
+]

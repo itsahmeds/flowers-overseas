@@ -17,3 +17,6 @@ CLAUDE.md
 /tests/fixtures/lint/
 # intentionally malformed / rule-violating validator inputs (spec 001 AC-22, TASK-009)
 /tests/fixtures/seo/_cases/
+# deliberately faulty catalogues, manifests and registries (spec 003 AC-13/AC-22, TASK-040):
+# an unclosed ICU brace and a stale sourceHash are the point of the fixture
+/tests/fixtures/i18n/_cases/

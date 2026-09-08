@@ -25,28 +25,32 @@
     "reviewed": true,
     "reviewedBy": "founder",
     "reviewedAt": "2026-09-08T00:00:00Z",
-    "sourceHash": "0b097dd9f62f9ae71d5114f4095355465aee2daeb743f2c52b62bff616fee131"
+    "sourceHash": "0b097dd9f62f9ae71d5114f4095355465aee2daeb743f2c52b62bff616fee131",
+    "retained": true
   },
   "banner.headline": {
     "source": "human",
     "reviewed": true,
     "reviewedBy": "founder",
     "reviewedAt": "2026-09-08T00:00:00Z",
-    "sourceHash": "d963ea1e6e705d0984d9cfbda94987a25eac7d5fea34263eaa533c4f97a75732"
+    "sourceHash": "d963ea1e6e705d0984d9cfbda94987a25eac7d5fea34263eaa533c4f97a75732",
+    "retained": true
   },
   "banner.stay": {
     "source": "human",
     "reviewed": true,
     "reviewedBy": "founder",
     "reviewedAt": "2026-09-08T00:00:00Z",
-    "sourceHash": "3fcb2a5c05d605b8b3870ce7a06c2e7816b39a8c84c709da00330a6ccd1a155a"
+    "sourceHash": "3fcb2a5c05d605b8b3870ce7a06c2e7816b39a8c84c709da00330a6ccd1a155a",
+    "retained": true
   },
   "banner.switch": {
     "source": "human",
     "reviewed": true,
     "reviewedBy": "founder",
     "reviewedAt": "2026-09-08T00:00:00Z",
-    "sourceHash": "e74b4e0cb2ca0462eb247fb87cda16bcc26433ff0788de99ad35bd16aae781be"
+    "sourceHash": "e74b4e0cb2ca0462eb247fb87cda16bcc26433ff0788de99ad35bd16aae781be",
+    "retained": true
   },
   "chooser.heading": {
     "source": "human",
@@ -74,7 +78,8 @@
     "reviewed": true,
     "reviewedBy": "founder",
     "reviewedAt": "2026-09-08T00:00:00Z",
-    "sourceHash": "daedf1b42bd0eb4d56978ec9c23fae2f70594b2c0973fe52af13626b905823ea"
+    "sourceHash": "daedf1b42bd0eb4d56978ec9c23fae2f70594b2c0973fe52af13626b905823ea",
+    "retained": true
   },
   "common.homeLink": {
     "source": "human",

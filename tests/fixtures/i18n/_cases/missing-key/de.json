@@ -1,0 +1,13 @@
+{
+  "errors": {
+    "notFound": "Seite nicht gefunden"
+  },
+  "banner": {
+    "headline": "Would you rather read this page in {language}?"
+  },
+  "meta": {
+    "home": {
+      "title": "Send flowers across Europe"
+    }
+  }
+}
