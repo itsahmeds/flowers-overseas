@@ -53,11 +53,11 @@ Mirrored from `plan/13-open-questions.md` §A. Owner: Ahmed (founder) unless not
 
 | # | Question | Blocks | Owner | Due | Default if unanswered | Status |
 |---|---|---|---|---|---|---|
-| A1 | Confirm the four launch URL prefixes `en`, `en-gb`, `de`, `pl`; any objection to `en-gb` as a separate locale? | spec 003, 007 | Ahmed | 2026-09-21 | Yes, four prefixes | open |
+| A1 | Confirm the four launch URL prefixes `en`, `en-gb`, `de`, `pl`; any objection to `en-gb` as a separate locale? | spec 003, 007 | Ahmed | 2026-09-21 | Yes, four prefixes | resolved 2026-09-08 (default accepted, spec 003 §13) |
 | A2 | Homepage country pick lands on the corridor page vs the country shop root | spec 004, 007 | Ahmed | 2026-09-21 | Corridor; A/B test #1 | open |
 | A3 | Approve taxonomy and the 84-product seed list shape; veto any product names | spec 005, 006 | Ahmed | 2026-09-21 | As written | resolved 2026-09-08 (defaults accepted, spec 002 §13 Q8) |
 | A4 | Seed price bands and payout shares as starting values | spec 005 | Ahmed | 2026-09-21 | As written; validate with first PL florists | resolved 2026-09-08 (defaults accepted, spec 002 §13 Q8) |
-| A5 | Polish UI register: formal (Państwo) vs informal (Ty) for buyer-facing copy | `pl` translations (spec 003 onward) | Ahmed + native reviewer | 2026-09-21 | Informal in UI, formal in legal | open |
+| A5 | Polish UI register: formal (Państwo) vs informal (Ty) for buyer-facing copy | `pl` translations (spec 003 onward) | Ahmed + native reviewer | 2026-09-21 | Informal in UI, formal in legal | resolved 2026-09-08 (default accepted, spec 003 §13) |
 | A6 | Name of the guarantee and its exact terms (refund %, redelivery) | spec 004; plan/07 §2 | Ahmed | 2026-09-21 | 7-day freshness, redeliver-or-refund | open |
 | A7 | Which six demo destinations besides PL get written guides in Phase 0 | spec 007 content | Ahmed | 2026-09-21 | DE, FR, ES, IT, RO, NL as proposed | open |
 | A8 | Authorise Ahrefs (and optionally Firecrawl) connectors for demand re-runs | plan/02 §13, plan/03 §3 orderings | Ahmed | 2026-09-21 | Orderings stay estimate-grade (flagged) | open |

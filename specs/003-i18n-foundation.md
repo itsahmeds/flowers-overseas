@@ -1,0 +1,357 @@
+# SPEC-003 — i18n foundation (next-intl, locale config, formatters, pseudo-locale, lint bans)
+
+| Field | Value |
+|---|---|
+| Status | approved |
+| Phase | 0 |
+| Plan refs | plan/01 §3 §5 §7 §11 · plan/02 §3 §4 §7 §8 §14 · plan/03 §1–§12 · plan/04 §2 §11 · plan/05 §1 (#1, #2) · plan/07 §6 §8 · plan/09 Phase 0 (15–21 Sep) · plan/12 §2 §4 §5 §6 · plan/13 §A (A1, A5) |
+| ADRs | ADR-0001 (one domain, locale subfolders) · ADR-0003 (tiered locale rollout) · ADR-0006 (no IP redirects; suggestion banner) · ADR-0007 (index only true pages) · ADR-0008/0015 (stack: next-intl) |
+| Author / date | spec-writer via /spec · 2026-09-08 |
+| Approved by / date | Ahmed (founder), delegated to orchestrator · 2026-09-08 |
+
+## 1. Problem
+
+The repository can enforce the i18n rules but cannot yet honour them. Spec 001 shipped `fo/no-literal-strings`, `fo/no-physical-css`, `fo/no-geo-redirect`, an empty `messages/` directory, an empty `src/modules/i18n` barrel and a single-locale document shell whose `<html lang="en" dir="ltr">` is, in the words of spec 001 §7, "the one place a locale literal exists … called out so the 003 implementer removes it". There is no `[locale]` segment, no message catalogue, no formatter, no locale registry, no suggestion banner, no pseudo-locale, and therefore nothing that specs 004–011 can build a localised page on. `plan/09` reserves 15–21 Sep 2026 for "`003` i18n foundation (next-intl, locale config, formatters, pseudo-locale, lint bans)"; every Phase 0 spec after it renders copy, prices and dates, and each of those is a locale decision that must already have one obvious home.
+
+Two constraints shape the design more than anything in `plan/03` itself.
+
+**No database.** The founder has parked spec 002's provisioning (TASK-013 `blocked`; no Neon project, no Cloudflare bucket) to clear the `plan/09` §0 non-code critical path first. Spec 003 must therefore be implementable, testable and demoable **with no database at all**: the locale registry, the launch-locale flags, the message catalogues, the review metadata, the currency exponents and the address formats all live in code and repo JSON. Spec 002's `locale(code, bcp47, name, is_launch, rtl, fallback_code)` and `message_catalog(...)` tables stay the *later* persistence target, exactly as spec 002 §3 already says ("002 ships the `locale` / `message_catalog` tables and the fixtures 003 consumes"). This spec's job is to put the seam in the right place so that 002 (seed) and 012 (translation queue) can hydrate the same objects from Postgres **without changing a single caller**. §2 and §5 state the seam; §12 states what flips when the database arrives.
+
+**No redirects, ever.** ADR-0006 and the EU Geo-blocking Regulation forbid the routing that every i18n library does by default. `next-intl`'s middleware redirects `/` to a detected locale and sets its own locale cookie; using it would violate the ADR on the first request and quietly disarm `fo/no-geo-redirect`. This spec therefore adopts next-intl's *rendering and formatting* layer and none of its routing middleware, makes the bare `/` a real crawlable locale chooser (`plan/02` §7, `plan/05` #1), and confines every location hint to one client-side island reading `navigator.languages` (`plan/03` §2).
+
+## 2. Scope
+
+Each bullet is testable; §9 names the AC.
+
+**The no-database seam (read this first)**
+
+- `src/config/locales.ts` is the Phase 0 source of truth for the locale set: `code`, `bcp47`, `name` (English), `nativeName`, `dir`, `isLaunch`, `fallbackCode`, `currencyDefault`, `numberingSystem`, `hreflangAliases`, `pathSegments` (localised URL segments per `plan/02` §4.1). Validated by zod at module load (`LocaleRegistrySchema`).
+- `src/modules/i18n/registry.ts` defines `LocaleRegistryProvider` (`list()`, `get(code)`) and ships exactly one implementation, `staticLocaleRegistry`, backed by `src/config/locales.ts`. `src/modules/i18n/messages.ts` defines `MessageSource` (`catalogue(locale)`, `meta(locale)`) and ships exactly one implementation, `repoMessageSource`, backed by `messages/*.json` + `messages/*.meta.json`.
+- **Callers never touch a provider.** Everything outside the i18n module uses the module functions (`getLocaleRegistry()`, `loadMessages()`, `isLocaleIndexable()`, the formatters, `alternatesFor()`). Spec 002/012 add `dbLocaleRegistry` / `dbMessageOverlay` behind the same two interfaces and swap the composition root inside `src/modules/i18n`; no file under `src/app/`, `src/modules/seo/` or `src/emails/` changes. A unit test asserts the barrel exports no provider object and no `messages/` path (AC-3).
+- `src/config/locales.ts` exports `toLocaleRow(locale)` projecting exactly the columns of spec 002's `locale` table (`code, bcp47, name, is_launch, rtl, fallback_code`), with a unit test pinning that column set. When 002 unparks, its seed reads `toLocaleRow()` rather than restating the locale set, so the two cannot drift.
+
+**Locale set and routing (`plan/02` §3, `plan/03` §1, ADR-0001, ADR-0003)**
+
+- Four launch locales: `en` (EUR, x-default), `en-gb` (GBP), `de` (EUR), `pl` (PLN) — ADR-0003 and `plan/02` §3; `plan/13` A1 default accepted (§13 Q1).
+- Route shape `/{locale}/…` with locale as the first path segment, always present, lowercase. `[locale]` wraps every localised route, with the route groups of `plan/01` §5 (`(marketing)`, `(shop)`, `(checkout)`, `(account)`) created empty-but-real so 004–011 add pages without touching routing.
+- Bare `/` is a **locale chooser page**: server-rendered, static, `noindex,follow`, plain crawlable `<a>` links to each launch locale labelled with the locale's `nativeName` (language names, never country flags — `plan/03` §2), zero JavaScript, zero redirect (`plan/02` §7, `plan/05` #1).
+- **No next-intl middleware and no locale detection in the request path.** `localeDetection`, next-intl's `NEXT_LOCALE` cookie and its `/` → `/{locale}` redirect are all off/unused; a lint rule bans importing `next-intl/middleware` (below). `src/proxy.ts` keeps doing one thing: the request id.
+- Unknown, mis-cased or non-launch locale segments (`/xx`, `/EN`, `/fr`) answer **404**, never a redirect and never a fabricated page. Case and trailing-slash 301s remain an edge concern for spec 007 / `/launch` (`plan/02` §7).
+- `src/middleware.ts` → `src/proxy.ts` rename (Next 16 deprecation; spec 001 §14 A2 assigns it here) **in the same PR as** widening `fo/no-geo-redirect`'s filename matcher to `middleware.ts` *and* `proxy.ts`, adding the `proxy.ts` fixture to the AC-8 set, and clearing the row in `docs/architecture.md` §4.
+- `<html lang dir>` rendered from the resolved locale's `bcp47`/`dir` for every localised document, and from the x-default locale for the chooser and for the non-localised error documents. The `lang="en"` literal in `src/app/layout.tsx` is deleted and the `docs/architecture.md` §4 row removed.
+
+**Formatters (`plan/03` §7; `Intl` only)**
+
+- `src/modules/i18n/format.ts` is the **only** file in `src/` allowed to construct an `Intl.*` formatter or call a `toLocale*` method (enforced by a new lint rule). It exports:
+  - `formatMoney({ amountMinor, currency }, locale, opts?)` — integer minor units in, localised currency string out. The minor→major conversion is done by building a **decimal string** from the integer and the currency's `minorUnitExponent` and passing that string to `Intl.NumberFormat` (ES2023 string input), so no float ever holds money. `opts.withIsoCode` adds the ISO code for `aria-label`/title use (`plan/03` §7).
+  - `formatNumber`, `formatPercentFromBasisPoints` (integer basis points in, per `plan/02`/`plan/07` VAT wording), `formatDate` (`short` | `deliveryDate` = weekday + month name per `plan/03` §7), `formatTimeInZone` (IANA zone required; renders the zone label, e.g. "14:00 Warsaw time"), `formatRelativeTime`, `formatList`, `formatRange` for date ranges.
+  - `src/modules/i18n/collate.ts`: `collator(locale)` wrapping `Intl.Collator` (Polish `ł` ordering).
+- `src/config/currencies.ts`: `code`, `minorUnitExponent`, `roundingStyle` for the ten currencies spec 002 §5.1 seeds, projected by `toCurrencyRow()` the same way as locales. Phase 0 formatting exercises EUR, GBP, PLN.
+- `src/config/address-formats.ts` + `src/modules/i18n/address.ts` (`plan/03` §8, data-driven): per destination country the field order, required fields, label **keys**, postcode regex + normaliser and example placeholder; `formatAddressBlock(address, countryIso)` returns ordered lines. Phase 0 data: `PL`, `DE`, `AT`, `GB` and a generic fallback; further countries are data additions (spec 008/010).
+
+**Messages (`plan/03` §5, §6)**
+
+- `messages/{locale}.json`, ICU MessageFormat, namespaced (`checkout.address.postcode` shape); `en` is the source of truth; typed keys so `t()` is checked by `tsc` (next-intl `Messages` augmentation generated from `en.json`).
+- Namespaces shipped by 003 (shell only): `meta` (title/description per shell route), `chooser`, `banner`, `errors` (404/500), `a11y`. Real product copy is 004 onward.
+- `messages/{locale}.meta.json` sidecar per key: `source: "human" | "machine"`, `reviewed`, `reviewedBy`, `reviewedAt`, `sourceHash`, optional `retained` (`plan/03` §5). This is the repo-side twin of spec 002's `message_catalog` review columns.
+- `en-gb` ships as a **thin override**: only keys whose British wording differs. Resolution merges the fallback chain (`en-gb → en`, `de → en`, `pl → en`) at load time; a redundant override (identical to `en`) is an `i18n:check` error (§13 Q5).
+- `de` and `pl` ship as **machine drafts flagged unreviewed**, produced by `pnpm i18n:draft --locale <code>`. The script's contract is fixed here; its Phase 0 implementation is deliberately deterministic and network-free: a `DraftProvider` interface with an `echoDraftProvider` that copies the `en` value, stamps `source: "machine"`, `reviewed: false`, `sourceHash`, and prints a per-locale report. No LLM call, no secret, no non-determinism in CI (§13 Q7). Substantive `de`/`pl` copy is a founder/reviewer activity, not a code task.
+- `src/modules/i18n/review.ts`: `unreviewedShare(locale)`, `localeBetaTag(locale)` (`plan/03` §6 5% rule) and **`isLocaleIndexable(locale)`** = `isLaunch && unreviewedShare <= 0.05`. This is the `noindex` gating hook spec 007 consumes for robots meta, hreflang alternates and sitemap membership; with echoed drafts it returns `false` for `de`/`pl`, which is the correct answer (an English page served at `/de/` is duplicate thin content).
+- `src/modules/i18n/alternates.ts`: `alternatesFor(pathTemplate)` → the hreflang entry set for spec 007, including the regional aliases that share a URL (`plan/02` §3: `en`, `x-default`, `en-IE`, `en-NL`, `en-150` on `/en`; `en-GB`; `de`, `de-DE`, `de-AT`; `pl`, `pl-PL`), filtered by `isLocaleIndexable`, reciprocal and complete by construction (`plan/02` §8).
+
+**Suggestion banner (ADR-0006, `plan/03` §2, `plan/04` §2)**
+
+- `src/modules/i18n/hints.ts` stays the single file `fo/no-geo-redirect` allows to read a location hint, and reads **only language preferences** — `parseAcceptLanguage(header)` (pure) and `preferredLocale(preferences, registry)`. It reads no IP/geo header at all; the rule's allowance stays unused (a deliberate narrowing of `plan/03` §2, §13 Q9).
+- The banner is a client island, lazily imported after hydration, deciding entirely from `navigator.languages` and `document.cookie`. Consequences that are the point: **no response varies by header**, no `Vary: Accept-Language`, no bot-UA branch needed, cached HTML identical for everyone (`plan/02` §14, `plan/01` §3), and no `Set-Cookie` on any cached page.
+- Behaviour: hidden when `fo_locale` exists, when the hint equals the URL locale, or when there is no better launch locale. Otherwise a dismissible overlay ("Switch" → sets `fo_locale`, navigates to the same path in the other locale via a real link; "Stay" → sets `fo_locale` to the current locale and never returns). It slides over, reserves no layout space (zero CLS), traps no focus, blocks nothing, and never redirects.
+- `fo_locale`: first-party, `Path=/`, `Max-Age=31536000` (365 days, `plan/03` §1), `SameSite=Lax`, `Secure` outside development, **not** `HttpOnly` (the island owns it), value constrained to a known locale code. Strictly necessary / functional per `plan/07` §6, so no consent gate (§13 Q4). `fo_currency` is named in config as the locale default only; the currency UI that writes it is spec 004/008.
+- Header locale switcher: `localePath()`-built links to the same path in every launch locale, falling back to the locale home; no JS required.
+
+**Pseudo-locales (`plan/03` §4, §6.7)**
+
+- `en-XA` (accented, +40% length, bracketed) and `ar-XB` (RTL mirror, `dir="rtl"`), generated deterministically from `en.json` by `pnpm i18n:pseudo` into git-ignored `messages/en-XA.json` / `messages/ar-XB.json`.
+- Present in the routing table only when `ENABLE_PSEUDO_LOCALES` is true; the zod env schema **fails the build** if it is true while `VERCEL_ENV === "production"`. True on preview (where Playwright runs, per spec 001's harness) and locally; never launch locales, never in `generateStaticParams`, never in hreflang or sitemaps, always `noindex`.
+- The Playwright `pseudo-rtl` project becomes real: it navigates `/ar-XB` and the `forcePseudoRtl` init-script stub in `tests/visual/pseudo-rtl.ts` is deleted.
+
+**Lint, checks, CI**
+
+- `fo/no-geo-redirect` widened: filename matcher covers `proxy.ts` as well as `middleware.ts`; a new violation for importing `next-intl/middleware` or calling `createMiddleware(` anywhere in `src/`.
+- New `fo/no-adhoc-intl`: bans `new Intl.*` / `Intl.NumberFormat(...)` / `Intl.DateTimeFormat(...)` / `Intl.*Format(...)`, `toLocaleString`, `toLocaleDateString`, `toLocaleTimeString`, `Number.prototype.toFixed`, and template literals that concatenate an expression with a currency symbol or `%` (`€ ${x}`, `${x} zł`, `${x}%`), everywhere in `src/` except `src/modules/i18n/format.ts` and `src/modules/i18n/collate.ts`. Fixture pairs + RuleTester tests in the spec 001 style.
+- `pnpm i18n:check` (new script + new CI job `i18n-check` on `needs: typecheck`, mirroring spec 001 §14 A9's placement rule): missing keys after fallback resolution, unused keys (with `meta.retained` as the only escape), ICU parse errors, placeholder/argument-set mismatch between a key and its translations, redundant `en-gb` overrides, meta-manifest completeness, `pathSegments` uniqueness + ASCII-lowercase-hyphen shape, and a determinism check that regenerating the pseudo-locales produces no diff. Prints a per-locale reviewed-share table to the GitHub step summary.
+- `.env.example` + `src/lib/env.schema.ts` gain `ENABLE_PSEUDO_LOCALES`; `pnpm env:check` stays green.
+- `tests/fixtures/index.ts`: `currencies` (EUR/GBP/PLN with exponents and expected `Intl` output per launch locale), `addresses` and `phones` (valid/invalid PL/DE/GB per `plan/03` §8) are filled here rather than in 002, because 003 needs them and 002 is parked; `occasionDates` stays reserved for 002/009.
+- Test updates spec 001 owns today: `tests/e2e/shell.spec.ts` (`/` is now the chooser: `noindex,follow`, a `<title>`, N locale links, still zero `Set-Cookie`), `tests/a11y/shell.spec.ts` (`EXPECTED_PHASE_0_VIOLATIONS` deleted; `document-title` must no longer appear), visual baselines.
+
+**Docs**
+
+- `docs/architecture.md`: §4 rows for the `lang="en"` literal and `middleware.ts → proxy.ts` removed; module table `i18n` status updated; the config files listed.
+- `docs/runbooks/i18n-translations.md` (new): how to add a key, run `i18n:draft`, read the reviewed share, hand a locale to a native reviewer, and what makes a locale indexable.
+- `content/i18n/glossary.en.md` + a stub per launch locale (`plan/03` §6.6): brand terms never translated, tone, taboo words (§13 Q11).
+- README: the four new scripts (`i18n:check`, `i18n:draft`, `i18n:pseudo`, plus the changed `test:visual` target) and the locale-URL rule.
+
+## 3. Non-goals
+
+- **Database-backed catalogues and the `locale` / `message_catalog` tables** → spec 002 (schema + seed from `toLocaleRow()`), spec 012 (admin overrides). 003 ships the two provider interfaces they plug into and nothing that reads Postgres. No migration, no `DATABASE_URL` use, no integration test needing a database.
+- **Translation review UI** (`/admin/translations`, side-by-side, stale queue) → spec 012. 003 ships the manifest and the shares it will display.
+- **An LLM-backed `i18n:draft`** → §13 Q7; 003 ships the interface and the deterministic provider.
+- **Real copy** beyond the shell, chooser, banner, titles and error pages → spec 004 onward. Substantive `de`/`pl` translation is founder + native reviewer work (`plan/13` B12), not a task here.
+- **Country and currency selection UI**, `fo_currency` writes, the embedded price table and the client-side price repaint → spec 004 (header/menu) and 008 (shop pages). 003 only defines the per-locale default currency and the formatter they will call.
+- **Any indexable page, canonical tag, hreflang tag, sitemap or JSON-LD** → spec 007. 003 supplies `alternatesFor()`, `localePath()` and `isLocaleIndexable()`; `robots.txt` keeps disallowing everything and the blanket `noindex` stays (ADR-0007).
+- **Phone validation with `libphonenumber-js`, postcode lookups, address autocomplete, address *forms*** → spec 010 (checkout). 003 ships the format data, the block formatter and the postcode regex/normaliser as pure functions.
+- **Occasion date rules, cutoffs, time-zone arithmetic and DST fixtures** (`plan/03` §9, §10) → spec 009. 003 ships `formatTimeInZone` and nothing that computes a date.
+- **Email/React-Email localisation** → spec 017; it will consume the same catalogue.
+- **RTL launch.** `ar`/`ur` are architecture-ready and exercised only through `ar-XB`; no Arabic font is loaded (`plan/03` §4).
+- **Locales beyond the four** (`fr`, `es`, `it`, `nl`, `ro`, `tr`, `sv`) → Phase 4; adding one must be config + catalogue + review only, which AC-31 tests.
+- **Editing `CLAUDE.md`, `plan/*` or an ADR.** One rule tension is recorded rather than resolved (§12: locale go-live is a code flip in Phase 0 because there is no database or admin yet).
+
+## 4. User stories
+
+- As a **buyer in Berlin landing on `/en/` from a UK link**, I see a small dismissible banner offering Deutsch, I choose once, and the site never second-guesses me again — and if I ignore it nothing moves under my hands.
+- As **Googlebot**, I get the URL I asked for, byte-identical to what a human gets, with no redirect, no `Vary`, and no locale hidden behind a US IP (ADR-0006).
+- As the **founder**, I add a string in one place (`messages/en.json`), see exactly which locales now owe a translation and what share of each locale is unreviewed, and I can hand a native reviewer a file rather than a spreadsheet.
+- As an **implementer agent**, there is exactly one way to render a price, a date, a list or an address block, and `pnpm lint` fails the moment I invent a second one.
+- As the **reviewer agent**, "is this locale honest enough to index?" is a function call with a test, not a judgement call.
+- As a **Polish buyer**, "2 kwiaciarnie" and "5 kwiaciarni" are both right, because plurals go through ICU and are unit-tested on the language that breaks naive code.
+- As the **spec-002 implementer arriving later**, I seed the `locale` table from `toLocaleRow()` and swap one provider; no page, formatter or test changes.
+- As a **future RTL launch**, the mirrored pseudo-locale has been screenshotted on every visual template since Phase 0, so the first Arabic page is a translation job, not a re-layout.
+
+## 5. Design
+
+### 5.1 Data model changes (tables, columns, migrations + rollback)
+
+**None. No migration, no rollback file, no database access.** This is a deliberate consequence of the parked provisioning of spec 002 (TASK-013 `blocked`), and it is the reason the spec is implementable this week.
+
+The persistence target is already specified and is not restated here: spec 002 §5.1 `locale(code PK, bcp47, name, is_launch, rtl, fallback_code)` and `message_catalog(id, locale_code, namespace, key, value, source, reviewed, reviewed_by, reviewed_at, source_hash, UNIQUE (locale_code, namespace, key))`. Spec 003's config is shaped so that:
+
+| Phase 0 (this spec) | Later owner | Contract that prevents drift |
+|---|---|---|
+| `src/config/locales.ts` + `staticLocaleRegistry` | spec 002 seeds `locale`; a `dbLocaleRegistry` may overlay `is_launch` | `toLocaleRow()` projects exactly the 002 column set; unit test pins the key list (AC-4) |
+| `messages/*.json` (runtime catalogue) | stays in the repo forever (`plan/03` §5; spec 002 §5.1 design note) | none needed |
+| `messages/*.meta.json` (review metadata) | spec 012 mirrors it into `message_catalog` | `MessageMetaSchema` field names equal the 002 column names (AC-4) |
+| `src/config/currencies.ts` | spec 002 seeds `currency` | `toCurrencyRow()` projects `code, minor_unit_exponent, rounding_style` |
+| `isLaunch` in config = locale go-live switch | spec 002's `feature_flag` scope `locale` + spec 012 admin | documented deviation, §12 |
+
+Rollback of the whole spec is `git revert` of its task commits: there is no state to unwind.
+
+### 5.2 API / server actions / jobs / events (zod schemas named)
+
+No server actions, no jobs, no events, no API routes. The public surface is the `src/modules/i18n` barrel plus two config modules.
+
+```
+src/config/locales.ts          LOCALES, xDefaultLocale, defaultLocale, toLocaleRow
+src/config/currencies.ts       CURRENCIES, toCurrencyRow
+src/config/address-formats.ts  ADDRESS_FORMATS
+src/modules/i18n/
+  index.ts      the only import path for everything below
+  routing.ts    Locale type, hasLocale, launchLocales, localePath, parseLocaleFromPath, absoluteUrl
+  request.ts    next-intl getRequestConfig (fallback-chain merge, per-route namespace subset)
+  registry.ts   LocaleRegistryProvider, staticLocaleRegistry, getLocaleRegistry
+  messages.ts   MessageSource, repoMessageSource, loadMessages, namespacesFor
+  format.ts     formatMoney, formatNumber, formatPercentFromBasisPoints, formatDate,
+                formatTimeInZone, formatRelativeTime, formatList, formatRange
+  collate.ts    collator
+  address.ts    formatAddressBlock, postcodeRegex, normalisePostcode
+  review.ts     unreviewedShare, localeBetaTag, isLocaleIndexable
+  alternates.ts alternatesFor
+  hints.ts      parseAcceptLanguage, preferredLocale        (no IP/geo read, ever)
+  pseudo.ts     pseudoCatalogue                              (dev/test only)
+```
+
+Zod schemas, all parsed at module load or at the boundary (`plan/12` §2):
+
+- `LocaleConfigSchema` / `LocaleRegistrySchema` — per-locale fields as §2; registry-level refinements: unique codes, exactly one `xDefault`, every `fallbackCode` resolvable and acyclic terminating at the default, `bcp47` accepted by `Intl.Locale`, `currencyDefault` present in `CURRENCIES`, `dir ∈ {ltr, rtl}`, `pathSegments` complete and unique within a locale.
+- `CurrencyConfigSchema` — `code` (ISO-4217), `minorUnitExponent` (int 0–3), `roundingStyle` (`x99|x90|x9|none`).
+- `AddressFormatSchema` — `fieldOrder`, `required`, `labelKeys`, `postcodePattern`, `placeholderKey`, `apartmentField`.
+- `MessagesSchema` (namespaced record of ICU strings) and `MessageMetaSchema` (per key: `source`, `reviewed`, `reviewedBy?`, `reviewedAt?`, `sourceHash`, `retained?`).
+- `MoneySchema` — `{ amountMinor: z.number().int(), currency: CurrencyCode }`; a non-integer or a bare `number` is a type error and a parse error, so "money is integer minor units + currency" holds at the formatter boundary too.
+- `LocaleCookieSchema` — `z.enum(launchLocaleCodes)`; anything else in `fo_locale` is ignored and the cookie rewritten.
+- `AcceptLanguageSchema` — the parsed `{ tag, quality }[]` shape returned by `hints.ts`.
+
+Behavioural contracts worth pinning:
+
+- `formatMoney` performs the only minor→major conversion in the codebase, as integer + exponent → decimal **string** → `Intl.NumberFormat`. No division into a `number`.
+- `formatTimeInZone` requires an IANA zone argument; there is no "local time" overload, because "local" is ambiguous in a relay (`plan/03` §10).
+- `loadMessages(locale, namespaces)` returns the merged fallback-chain catalogue restricted to the requested namespaces; the client provider receives that subset only, never the whole catalogue (CWV, §6).
+- `isLocaleIndexable` is pure and synchronous over the manifest, so spec 007 can call it inside `generateMetadata` and inside the sitemap builder with the same answer.
+
+### 5.3 UI (pages, components, states)
+
+| Surface | States | Notes |
+|---|---|---|
+| `/` locale chooser | one state | Server-rendered list of launch locales with `nativeName`; `noindex,follow`; zero client JS; no cookie written; no redirect. Visual design is spec 004's; 003 ships semantic, accessible, unstyled-but-not-ugly markup (`<nav>` + list of links, `<h1>` from `chooser` messages). |
+| `/{locale}` locale home placeholder | one state | Replaces the empty shell for each locale: `<html lang dir>` from config, localised `<title>`/description from `meta`, an `<h1>` from `meta`, and the switcher. Real home is spec 004/007. |
+| Locale switcher | default / current-locale disabled | Plain links to the same path in each launch locale; a `beta` marker for locales whose unreviewed share >5% (`plan/03` §6). No JS required for the links. |
+| Suggestion banner (client island) | hidden (default) / shown / dismissed | Lazy-imported after hydration; overlay, no layout shift; keyboard-reachable, `Esc` dismisses, `aria-live="polite"`, focus not stolen; both actions write `fo_locale` and it never reappears. |
+| `[locale]/not-found` (404) and `[locale]/error` (500) | localised copy from `errors` | Correct status codes preserved (spec 001 AC/T-16). |
+| Non-locale 404 (`/xx`, `/nope`) | x-default copy | 404, no redirect, no fabricated locale document. |
+| Pseudo-locale routes | as the real ones | Only when `ENABLE_PSEUDO_LOCALES`; `noindex`; excluded from the switcher and from `alternatesFor()`. |
+
+Recommended file layout (implementer latitude where the framework constrains it): two root layouts — `src/app/(chooser)/{layout,page}.tsx` for `/` and `src/app/[locale]/layout.tsx` for localised routes, with the empty `plan/01` §5 route groups beneath the latter, `src/app/layout.tsx` deleted, and `src/app/global-error.tsx` rendering its own x-default document. If Next 16 rejects that arrangement for the unmatched-path 404, the accepted alternative is a single `src/app/layout.tsx` whose `<html lang dir>` comes from a shared `resolveDocumentLocale()`. **What is not negotiable is the observable contract**: §9 AC-6, AC-7, AC-8 and AC-11 hold either way, and whichever shape is chosen is recorded in `docs/architecture.md` §2.
+
+### 5.4 Rendering & caching (per plan/01 §3)
+
+- `/` chooser: **SSG**. Depends only on `src/config/locales.ts`.
+- `/{locale}` placeholder home: **ISR** with the `plan/01` §3 shape already reserved for it (`revalidate` 1 h, tag `home:{locale}`) so spec 004/007 inherit the wiring rather than introducing it; `generateStaticParams` returns the launch locales only (never pseudo-locales).
+- Error and 404 documents: static per locale.
+- **No response varies by request header.** Locale comes from the path; the banner and the cookie are client-side. There is no `Vary: Accept-Language`, no `Set-Cookie` on a cached page, and therefore one cache entry per (path) as `plan/01` §3 requires and `plan/02` §14 demands.
+- `lib/cache.ts` stays the noop seam; no tag is invalidated by this spec (no data changes at runtime).
+- Client JS added: the banner island only, dynamically imported, plus the next-intl provider with a per-route namespace subset. Budget impact is an AC (§9 AC-27).
+
+## 6. SEO considerations (mandatory)
+
+Ranking is priority #1 and this spec is where the URL architecture of ADR-0001 and `plan/02` becomes real, so the SEO surface is larger than the page count suggests.
+
+- **Indexability.** Nothing becomes indexable here. `src/app/robots.ts` keeps `Disallow: /`, the blanket `X-Robots-Tag: noindex` on non-production stays, and localised pages keep `noindex,nofollow` until spec 007 lifts them by rule (ADR-0007). The one deliberate change: `/` is `noindex,**follow**` per `plan/02` §7, because the chooser exists to be crawled through. The spec 001 e2e assertion is updated accordingly (AC-11).
+- **URL pattern (`plan/02` §4).** Locale is the first segment, always present, lowercase, ASCII, no trailing slash. Localised path segments (`send-flowers-to` / `blumen-verschicken` / `wyslij-kwiaty`, `occasions` / `anlaesse` / `okazje`, `product` / `produkt`, `legal` / `rechtliches` / `regulamin`, …) are authored once per locale in `src/config/locales.ts` exactly as `plan/02` §4.1 tabulates them, and `localePath()` is the only URL builder — so specs 007–011 cannot hand-concatenate a path or accidentally emit a German slug on a Polish URL. `i18n:check` asserts the ASCII-lowercase-hyphen shape and per-locale uniqueness (AC-13). No slug is machine-drafted: URL segments are human-authored data from the plan.
+- **Canonical.** No canonical tag is emitted yet (spec 007), but the two preconditions land here: exactly one URL form per (locale, path) is reachable — unknown case and unknown locale 404 rather than serving a duplicate — and `absoluteUrl()` builds the lowercase, parameter-free, trailing-slash-free form from `NEXT_PUBLIC_SITE_URL`. Never a cross-locale canonical (`plan/02` §7); the alternates builder cannot express one.
+- **hreflang set.** `alternatesFor()` is the single generator `plan/02` §8 mandates ("generated by one `modules/seo/hreflang.ts` from the same data as the sitemap, so they cannot disagree") — spec 007's `seo` module wraps it, it does not reimplement it. It emits `x-default → /en`, the regional aliases sharing a URL from `plan/02` §3, and an entry only where the locale is indexable, so an unreviewed `de` never claims to be a German alternate. Reciprocity and completeness are unit-tested (AC-14) against the same fixture shape spec 001's `validate-hreflang.ts` CLI already consumes, so the CI validator inherits real fixtures the moment 007 arrives.
+- **Sitemap membership.** None yet. `isLocaleIndexable()` is the gate that keeps a machine-drafted locale out of the sitemap (`plan/02` §10 "nothing `noindex` ever appears in a sitemap"); pseudo-locales are structurally incapable of appearing (not in `launchLocales`, not in `generateStaticParams`).
+- **Internal links in/out.** `/` links to four locale homes (crawl depth 1 to every locale root, `plan/02` §11); each locale home links to the other three via the switcher. That is the whole graph in Phase 0; specs 004/007 attach the corridor and occasion links to it.
+- **Thin/duplicate-content risk — the real one in this spec.** Four locale prefixes whose `de` and `pl` catalogues are echoed English is textbook duplicate content. Three independent guards: (a) nothing is indexable at all until 007 (ADR-0007, robots disallow); (b) `isLocaleIndexable()` returns `false` while the unreviewed share exceeds 5%, which excludes the locale from robots-meta lifting, hreflang and sitemaps; (c) `en-gb` as a thin override is a *catalogue* mechanism, not a page mechanism — `/en/` and `/en-gb/` differ in currency and legal regime, which is exactly the test `plan/02` §3 sets for deserving a prefix. The `seo-auditor` gains a checkable fact rather than a promise.
+- **CWV budget impact (`plan/01` §7).** The chooser is HTML-only. Locale pages add the next-intl provider with a per-route namespace subset (not the whole catalogue) and one lazily imported banner island; no font, no third-party script, no client data fetch. Budgets from spec 001's `lighthouserc.json` are unchanged and must still pass; the messages payload sent to the client for `/{locale}` is asserted ≤4 KB gzipped (AC-27). The banner overlays rather than reflows, so CLS stays at the empty-shell baseline.
+- **Crawl efficiency.** No redirect chain exists to crawl (there are no redirects); unknown locales 404 immediately rather than soft-404ing; pseudo-locales are absent from production by env validation, so no phantom URL space is discoverable.
+
+## 7. i18n considerations (mandatory)
+
+This spec *is* the i18n contract, so this section records the choices that later specs must not relitigate.
+
+- **New message keys / namespaces.** `meta.*` (per-route `title`, `description`), `chooser.*` (heading, intro, link `aria-label`), `banner.*` (headline with the `{language}` argument, `switch`, `stay`, `dismiss` label), `errors.notFound.*`, `errors.serverError.*`, `a11y.*` (skip link, switcher label). Namespaced dot keys, ICU, typed; a component reaching for a literal still fails `fo/no-literal-strings`, which now has real messages to point at.
+- **Locale formatting.** Every case in `plan/03` §7 has a named function and at least one test per launch locale: dates (`14/02/2027` vs `14.02.2027`), delivery dates with weekday and month name (`Sat 14 Feb` / `Sa., 14. Feb.` / `sob., 14 lut`), decimal and group separators (`1,234.50` / `1.234,50` / `1 234,50`), currency symbol position (`£45.00` / `45,00 €` / `45,00 zł`), percent spacing (`20%` / `19 %` / `23%`), lists (`and` / `und` / `i`), relative time, week start, and `Intl.Collator` for Polish `ł`. Plurals are ICU and Polish is the acid test: `1 kwiaciarnia / 2 kwiaciarnie / 5 kwiaciarni` is a required unit test (AC-20). No hand-built formatting is reachable: `fo/no-adhoc-intl` bans the alternatives outside `format.ts`.
+- **RTL impact.** `dir` comes from locale config, `<html dir>` is asserted per locale, and `ar-XB` makes RTL a screenshotted reality from Phase 0 rather than a promise (`plan/03` §4). Direction-carrying icons are spec 004's `[dir=rtl]` utility; 003 adds no icon. User-generated text wrapping in `<bdi>` is documented in the runbook for the first spec that renders it (004 onward). No Arabic font is loaded.
+- **Address/phone formats.** `src/config/address-formats.ts` carries PL/DE/AT/GB + generic per `plan/03` §8 (PL `ul. … 10/5`, postcode `00-001`; DE house number after street; GB postcode after town), with label **keys** so a new country is data plus four message keys. `formatAddressBlock` is pure and fixture-tested. Recipient phone is required in every format per `plan/03` §8; the E.164 validation itself is spec 010.
+- **Translation review plan and `noindex` gating.** English is authored; `i18n:draft` produces flagged machine drafts; `messages/*.meta.json` is the record; `unreviewedShare` and `localeBetaTag` implement the 5% "beta" rule; `isLocaleIndexable()` implements the hard gate of `plan/03` §6.4 and `plan/02` §12 ("an unreviewed page is `noindex`"). Drift control is `sourceHash`: changing an English string flips dependants to stale in the manifest and `i18n:check` reports it. Legal and corridor copy may never be machine-drafted — enforced later by content specs; recorded in the runbook now. The founder reviews `en`/`en-gb`; `de`/`pl` need the native reviewers of `plan/13` B12, which is why Phase 0 ships them honestly unreviewed rather than pretending.
+- **Deliberate narrowing of `plan/03` §2.** The plan's detection pseudocode consults "Accept-Language (weighted) then IP country (edge header)". This spec drops the IP-country hint entirely: language preferences only, read client-side. It is strictly more conservative than the plan and than ADR-0006, keeps every response header-invariant (a caching and `Vary` win), and leaves `fo/no-geo-redirect`'s allowance for `hints.ts` unused rather than exercised. Flagged for the founder as §13 Q9; if the answer is "keep the IP hint", it becomes a `hints.ts`-only server read with an explicit `Vary` decision and an ADR.
+
+## 8. Compliance considerations (mandatory)
+
+- **Data flows added → RoPA.** No new processor, no new personal-data category, no new transfer. `fo_locale` holds one of four locale codes and no identifier; `navigator.languages` is read in the browser and never transmitted or logged. `docs/compliance/ropa.md` needs no new processing row; the cookie register gains (or confirms) `fo_locale` as a first-party functional cookie with a 365-day lifetime, which `plan/07` §6 already lists among the essential cookies. The reviewer confirms at PASS.
+- **Lawful basis / consent gating.** `fo_locale` is strictly necessary/functional under ePrivacy: it is set **only** on an explicit user action (choosing a locale, or "Stay"), stores nothing but that choice, and is not used for analytics or profiling. No consent banner is required for it and none exists yet (spec 004 ships the CMP). The banner itself sets nothing until the user acts, and `plan/04` §11's "essential-only cookies … need no consent" covers it. Founder confirmation: §13 Q4.
+- **Geo-blocking Regulation (EU 2018/302) and ADR-0006.** Every locale stays a reachable, crawlable URL; nobody is redirected, blocked or price-differentiated by location; no IP data is read anywhere in this spec (a stricter position than `plan/03` §2). The lint rule that enforces it is widened, not weakened, by the `proxy.ts` rename — and the ban on `next-intl/middleware` closes the most likely accidental route to a locale redirect.
+- **Price display.** No price is rendered yet, but "price shown = price charged, VAT included" becomes mechanically supportable here: `formatMoney` takes integer minor units + currency and cannot be handed a float; `formatPercentFromBasisPoints` keeps VAT an integer; and `fo/no-adhoc-intl` removes the `toFixed`/string-concatenation paths through which a rounding error would otherwise enter. `plan/07` §2's per-country VAT wording is a message key per locale, authored in 004/007.
+- **Consumer information.** None displayed yet. The localised legal path segments (`/de/rechtliches/agb`, `/de/impressum`, `/pl/regulamin`) are fixed in config now so the legal pages of spec 004/007 land on the URLs the German and Polish regimes expect.
+- **Accessibility (EAA / WCAG 2.1 AA, `plan/07` §8).** This spec closes two conformance gaps spec 001 knowingly left open: **3.1.1 Language of Page** (`<html lang>` now matches the content's actual language per locale, and the chooser declares the x-default) and **2.4.2 Page Titled** (every document has a localised `<title>`, which is why the axe `document-title` exception is deleted, AC-25). Additionally: `3.1.2 Language of Parts` — the chooser's locale links carry `lang`/`hreflang` for their target language, so a screen reader pronounces "Deutsch" in German; the banner is dismissible, non-modal, keyboard-operable, `Esc`-closable, does not steal focus and does not obscure content permanently (2.2.2 / 1.4.13); `dir` is correct so RTL reading order is announced correctly. axe runs on `/`, `/en`, `/pl` and `/ar-XB` with zero serious/critical and **no** exception list.
+- **Logs / PII.** `locale` is already a first-class, non-PII logger field (spec 001); `proxy.ts` may attach it from the path prefix. Nothing new is logged, no header value is logged, no cookie value is logged, no PII can enter a URL because locale codes are the only new URL data. Sentry gains a `locale` tag (non-PII) and nothing else.
+- **Security.** No new dependency handles secrets; `ENABLE_PSEUDO_LOCALES` is not a secret and is refused in production by the env schema, so a pseudo-locale route cannot be exposed to buyers by configuration mistake. CSP remains deferred to spec 004 (first script/font), unchanged by the banner island (first-party, bundled, no inline handler).
+
+## 9. Acceptance criteria
+
+Config and the no-database seam
+- **AC-1** `src/config/locales.ts` parses under `LocaleRegistrySchema` at module load and contains exactly `en`, `en-gb`, `de`, `pl` with `isLaunch: true`; a fixture registry with a duplicate code, a cyclic `fallbackCode`, an unknown `currencyDefault`, an invalid `bcp47` or a duplicated `pathSegments` value fails to parse with a message naming the offending field.
+- **AC-2** `pnpm build` and `pnpm test` succeed with `DATABASE_URL` unset/placeholder and with no network access; no file added by this spec imports `src/lib/db*`, `drizzle*`, `pg` or `postgres` (asserted by a static check).
+- **AC-3** The `src/modules/i18n` barrel exports the functions of §5.2 and **no** provider instance, no `messages/` path and no config object with a setter; a unit test enumerating the barrel's exports fails if a provider is added to it.
+- **AC-4** `toLocaleRow(locale)` returns exactly the keys `code, bcp47, name, is_launch, rtl, fallback_code` and `toCurrencyRow` exactly `code, minor_unit_exponent, rounding_style` (spec 002 §5.1); `MessageMetaSchema`'s keys map 1:1 onto `message_catalog`'s review columns. A test pins both key lists and fails if either side is edited alone.
+- **AC-5** Swapping `staticLocaleRegistry` for a fake `LocaleRegistryProvider` (a test double returning a five-locale set) changes rendered output with **zero** changes outside `src/modules/i18n/` — proving 002/012 can hydrate from Postgres without touching callers.
+
+Routing, documents, no redirects
+- **AC-6** `GET /en`, `/en-gb`, `/de`, `/pl` each return 200 with `<html lang>` equal to the locale's `bcp47` and `dir` equal to its configured direction; `grep -rn 'lang="en"' src/` returns no match and the `docs/architecture.md` §4 row for the literal is gone.
+- **AC-7** `GET /` returns 200, is served without JavaScript, contains one crawlable `<a href>` per launch locale labelled with its `nativeName` and carrying `hreflang`/`lang` for that locale, and emits **no** `Location` header, **no** `Set-Cookie` and **no** `Vary: Accept-Language`.
+- **AC-8** `GET /fr`, `/xx`, `/EN`, `/nope` each return **404** (not 3xx, not 200) with a document whose `lang` is the x-default locale; `GET /en/does-not-exist` returns 404 with `lang="en"` and localised 404 copy.
+- **AC-9** `GET /en` with `Accept-Language: de-DE,de;q=0.9` returns a byte-identical body to the same request without the header (asserted by hash), status 200, no `Location`, no `Vary`; the same holds for a Googlebot user agent.
+- **AC-10** `grep -rn "next-intl/middleware\|createMiddleware(" src/` returns no match, and `pnpm lint` fails on a fixture that imports `next-intl/middleware`.
+- **AC-11** `src/middleware.ts` no longer exists; `src/proxy.ts` provides the request id with unchanged behaviour (spec 001 AC-14's `x-request-id` echo still passes); `pnpm build` prints no Next middleware-deprecation warning; `fo/no-geo-redirect` fails on `tests/fixtures/lint/geo-redirect-proxy.ts` (a `NextResponse.redirect` in a file named `proxy.ts`) **and** still on `geo-redirect-middleware.ts`; the `docs/architecture.md` §4 row is gone.
+- **AC-12** `GET /` and `GET /{locale}` return zero `Set-Cookie` headers (spec 001 AC-15 preserved); after clicking "Stay" or "Switch" in a browser, `document.cookie` contains `fo_locale` with `Path=/`, `SameSite=Lax`, `Max-Age` ≥ 31536000 and a value in the launch set; a hand-forged `fo_locale=zz` is ignored and rewritten.
+- **AC-13** `localePath()` builds every URL used by the app; `i18n:check` fails a fixture registry whose `pathSegments` contain an uppercase character, a non-ASCII character, a trailing slash or a duplicate within one locale.
+
+Formatters
+- **AC-14** `alternatesFor("/")` and `alternatesFor("/{locale}/send-flowers-to/{country}")` produce reciprocal, complete sets containing `x-default → /en` and the `plan/02` §3 regional aliases, and contain **no** entry for a locale where `isLocaleIndexable()` is false or for a pseudo-locale.
+- **AC-15** `formatMoney({ amountMinor: 4500, currency: "GBP" }, "en-gb")` → `£45.00`; `(4500, "EUR", "de")` → `45,00 €`; `(4500, "PLN", "pl")` → `45,00 zł`; `(0)`, `(50)`, `(123450)` and `(100000000)` all format correctly per locale; `formatMoney` accepts no non-integer `amountMinor` (type error and parse error) and no float appears in the implementation path (asserted by a test that formats `9007199254740993` minor units without precision loss via the decimal-string path).
+- **AC-16** Number/percent/date/list output matches `plan/03` §7 for `en-gb`, `de`, `pl`: `1,234.50 / 1.234,50 / 1 234,50`; `20% / 19 % / 23%` from `2000`, `1900`, `2300` basis points; `14/02/2027 / 14.02.2027 / 14.02.2027`; delivery-date form with weekday and month name; list joiners `and / und / i`.
+- **AC-17** `formatTimeInZone` requires an IANA zone and renders the zone label; the same instant renders as the correct wall-clock time for `Europe/Warsaw` and `Europe/London`.
+- **AC-18** `collator("pl").compare` orders `ł` after `l` and a Polish city list sorts differently from the `en` collator's order.
+- **AC-19** `formatAddressBlock` produces the `plan/03` §8 field order for PL, DE, AT and GB from the shared `addresses` fixture, and `normalisePostcode` accepts/rejects the fixture's valid/invalid postcodes per country.
+- **AC-20** ICU plurals resolve correctly for `pl` at counts 1, 2, 5, 22, 25 and 1.5 (`kwiaciarnia / kwiaciarnie / kwiaciarni`) and for `en`/`de` at 1 and 2, through the real catalogue.
+- **AC-21** `pnpm lint` fails on fixtures using `new Intl.NumberFormat`, `(1234.5).toLocaleString("de")`, `date.toLocaleDateString()`, `x.toFixed(2)` and `` `${amount} zł` `` outside the formatter module, and passes for the identical code in a fixture path simulating `src/modules/i18n/format.ts`.
+
+Messages, review gate, checks
+- **AC-22** `pnpm i18n:check` exits 0 on the merged tree and exits non-zero, naming file and key, for each seeded fault: a key missing from `en`'s dependants after fallback resolution, an unused key without `meta.retained`, an ICU syntax error, an argument-set mismatch between `en` and `de`, a redundant `en-gb` override, a key without a meta entry, and a stale `sourceHash`.
+- **AC-23** `pnpm i18n:draft --locale pl` is deterministic and network-free: two consecutive runs on a clean tree produce byte-identical files, every key it writes carries `source: "machine"`, `reviewed: false` and a `sourceHash`, and it never overwrites a key whose meta says `reviewed: true`.
+- **AC-24** `isLocaleIndexable("en")` is `true`; `isLocaleIndexable("de")` and `("pl")` are `false` while their unreviewed share exceeds 5%; marking every `de` key reviewed in a fixture manifest flips `de` to `true` with no code change; `localeBetaTag` is set for exactly the locales above the 5% threshold.
+- **AC-25** Every document has a non-empty localised `<title>`; `tests/a11y/shell.spec.ts` no longer contains `EXPECTED_PHASE_0_VIOLATIONS`, and axe reports zero serious/critical violations on `/`, `/en`, `/pl` and `/ar-XB`.
+- **AC-26** `pnpm lint` reports no `fo/no-literal-strings` violation and `grep -rn "eslint-disable.*fo/no-literal-strings" src/` returns 0 (spec 001 AC-6 preserved with real copy present).
+- **AC-27** Lighthouse budgets from `lighthouserc.json` still pass on `/` and `/en`; total client JS on `/{locale}` stays ≤120 KB gzipped and the serialised messages payload handed to the client is ≤4 KB gzipped (asserted from the build output); `/` ships zero application JS.
+
+Banner, pseudo-locale, CI, docs
+- **AC-28** e2e: on `/en` with `navigator.languages = ["de-DE","de"]` and no cookie, the banner appears after hydration, no navigation occurs, no layout shifts (CLS delta 0); "Switch" navigates to `/de` and sets `fo_locale=de`; reloading `/en` afterwards shows no banner and still does not redirect; with `fo_locale` already set the banner never renders; with `navigator.languages = ["en-US"]` on `/en` it never renders.
+- **AC-29** `pnpm i18n:pseudo` regenerates `messages/en-XA.json` and `messages/ar-XB.json` with no diff (determinism); `en-XA` values are visibly expanded ≥30% and bracketed; `/ar-XB` returns `dir="rtl"` and `noindex`; `pnpm build` **fails** when `ENABLE_PSEUDO_LOCALES=true` and `VERCEL_ENV=production`; the pseudo-locales appear in neither `alternatesFor()` output, nor the switcher, nor `generateStaticParams`.
+- **AC-30** The Playwright `pseudo-rtl` project screenshots `/ar-XB` (and `visual` screenshots `/`, `/en`, `/de`), `tests/visual/pseudo-rtl.ts`'s `forcePseudoRtl` stub is deleted, and baselines are committed; the `i18n-check` CI job exists, runs `pnpm i18n:check`, is a required check, and its step summary lists the unreviewed share per locale.
+- **AC-31** Adding a fifth locale to `src/config/locales.ts` with a fallback to `en` and no catalogue file yields a working (non-indexable, beta-tagged) locale with **no** change under `src/app/` or `src/modules/` — the `plan/09` "a new locale is data" promise, tested.
+- **AC-32** `.env.example` and the zod schema agree (`pnpm env:check` 0); README documents `i18n:check`, `i18n:draft`, `i18n:pseudo`; `docs/runbooks/i18n-translations.md` exists and is indexed; `docs/architecture.md` §2/§3/§4 reflect the new config files, the `i18n` module status and the two removed rows; `content/i18n/glossary.en.md` exists.
+
+## 10. Test cases
+
+| ID | Layer | Given / When / Then | Covers AC |
+|---|---|---|---|
+| T-01 | unit | Valid registry parses; each of six malformed fixture registries (duplicate code, cyclic fallback, unknown currency, bad bcp47, bad dir, duplicate path segment) fails with the field named | AC-1 |
+| T-02 | unit (static check script) | Grep the file set added by 003 for db/orm imports → none; `pnpm build && pnpm test` with `DATABASE_URL` unset → exit 0 | AC-2 |
+| T-03 | unit | Enumerate `src/modules/i18n` barrel exports and assert against a pinned list; adding a provider export fails | AC-3 |
+| T-04 | unit | `Object.keys(toLocaleRow(en))` and `toCurrencyRow(EUR)` equal the pinned spec-002 column lists; `MessageMetaSchema` keys map to the pinned `message_catalog` review columns | AC-4 |
+| T-05 | integration (render, no DB) | Render the locale home and the chooser with a fake five-locale `LocaleRegistryProvider` injected inside the module; assert output changes and `git diff --stat` in the test harness touches nothing outside `src/modules/i18n/` | AC-5 |
+| T-06 | e2e | `/en`, `/en-gb`, `/de`, `/pl` → 200 with expected `lang`/`dir`; repo grep for `lang="en"` → 0 | AC-6 |
+| T-07 | e2e | `/` → 200, four locale links with `hreflang`, no `Location`, no `Set-Cookie`, no `Vary`; JS disabled → links still work | AC-7 |
+| T-08 | e2e | `/fr`, `/xx`, `/EN`, `/nope` → 404 with x-default `lang`; `/en/does-not-exist` → 404 with `lang="en"` and localised copy | AC-8 |
+| T-09 | e2e | Same URL with and without `Accept-Language: de-DE`, and with a Googlebot UA → identical body hash, 200, no `Location`, no `Vary` | AC-9 |
+| T-10 | unit (ESLint RuleTester + repo grep) | `next-intl/middleware` import fixture invalid; repo grep clean | AC-10 |
+| T-11 | unit (RuleTester with filename) + integration (build) | `NextResponse.redirect` in `proxy.ts` fixture invalid and in `middleware.ts` fixture invalid; valid in `src/modules/orders/…`; `pnpm build` output contains no middleware-deprecation string; `/api/health` still echoes `x-request-id` | AC-11 |
+| T-12 | e2e | Zero `Set-Cookie` on `/` and `/en`; click "Stay" → `fo_locale` attributes asserted from `document.cookie` and the browser cookie jar; forged `fo_locale=zz` → ignored and rewritten | AC-12 |
+| T-13 | unit | `localePath` output per locale for the `plan/02` §4.1 page types; `i18n:check` fails each malformed `pathSegments` fixture | AC-13 |
+| T-14 | unit | `alternatesFor` reciprocity/completeness incl. `x-default` and regional aliases; unreviewed and pseudo-locales absent; output shape matches `tests/fixtures/seo/hreflang/*.json` so spec 001's validator can consume it | AC-14 |
+| T-15 | unit | `formatMoney` table across EUR/GBP/PLN × en/en-gb/de/pl × {0, 50, 4500, 123450, 100000000}; non-integer rejected; 2^53+1 minor units formats exactly | AC-15 |
+| T-16 | unit | Number, percent-from-basis-points, short date, delivery date and list output per locale against the `plan/03` §7 table | AC-16 |
+| T-17 | unit | `formatTimeInZone` without a zone → type error fixture; same instant in `Europe/Warsaw` vs `Europe/London` with zone label | AC-17 |
+| T-18 | unit | `collator("pl")` vs `collator("en")` on a city list containing `ł` | AC-18 |
+| T-19 | unit | `formatAddressBlock` line order for PL/DE/AT/GB from the `addresses` fixture; `normalisePostcode` valid/invalid per country | AC-19 |
+| T-20 | unit | ICU plural resolution for `pl` at 1/2/5/22/25/1.5 and `en`/`de` at 1/2 through the real catalogue | AC-20 |
+| T-21 | unit (RuleTester with filename) | Five ad-hoc-Intl fixtures invalid outside the formatter module, valid inside | AC-21 |
+| T-22 | unit | `i18n:check` on the clean tree → 0; on each of seven seeded fault fixtures → non-zero with file and key in the message | AC-22 |
+| T-23 | unit | Two `i18n:draft --locale pl` runs → identical bytes; written keys carry `machine`/`reviewed:false`/`sourceHash`; a `reviewed:true` key is untouched; no network handler is hit (MSW `onUnhandledRequest: "error"` proves it) | AC-23 |
+| T-24 | unit | `isLocaleIndexable` / `localeBetaTag` across manifest fixtures at 0%, 4%, 6%, 100% unreviewed; flipping a fixture manifest flips the answer | AC-24 |
+| T-25 | a11y (Playwright + axe) | `/`, `/en`, `/pl`, `/ar-XB` → zero serious/critical, no exception list; every document has a non-empty `<title>` | AC-25 |
+| T-26 | unit (lint + grep script) | `pnpm lint` clean on `src/`; `eslint-disable` grep for the literal-strings rule → 0 | AC-26 |
+| T-27 | performance (Lighthouse CI) + unit (build-output assertion) | Budgets pass on `/` and `/en`; client JS ≤120 KB gz; client messages payload ≤4 KB gz; `/` ships 0 KB app JS | AC-27 |
+| T-28 | e2e | Banner matrix: (de hint, no cookie, `/en`) → shown, no navigation, CLS delta 0; Switch → `/de` + cookie; reload → hidden, no redirect; cookie present → never shown; (en hint, `/en`) → never shown; `Esc` dismisses and focus is not stolen | AC-28 |
+| T-29 | unit + e2e | `i18n:pseudo` idempotence; `en-XA` expansion ≥30% and bracketing; `/ar-XB` `dir="rtl"` + `noindex`; env-schema build failure with `ENABLE_PSEUDO_LOCALES=true` + `VERCEL_ENV=production`; pseudo-locales absent from alternates/switcher/params | AC-29 |
+| T-30 | visual | `pseudo-rtl` project screenshots `/ar-XB`; `visual` screenshots `/`, `/en`, `/de` against committed baselines at 0.1%; `forcePseudoRtl` no longer referenced | AC-30 |
+| T-31 | integration | Add a fifth locale in a fixture registry with no catalogue → route renders, locale is non-indexable and beta-tagged, `git status` shows no change under `src/app/` or `src/modules/` | AC-31 |
+| T-32 | unit (docs/scripts) | `env:check` 0; README contains the three script names; runbook exists and is listed in `docs/runbooks/README.md`; `docs/architecture.md` no longer contains the two deferred rows and lists the new config files; glossary file exists | AC-32 |
+
+## 11. Observability
+
+- **CI is the observability surface for translation debt.** The `i18n-check` job writes a step summary: per locale, total keys, missing after fallback, unreviewed count and share, stale (`sourceHash` drift) count, indexable yes/no. That table is the number the founder and the reviewer act on, and it is the same number `isLocaleIndexable()` uses, so a locale cannot look ready in CI and be gated in code.
+- **Logs.** `locale` is already a first-class field in `src/lib/logger.ts`; `src/proxy.ts` attaches it from the path prefix (never from a header), so every request line carries `request_id` + `locale` with no PII. No new log line is added. No header, cookie value or language preference is ever logged.
+- **Sentry.** A non-PII `locale` tag is set from the resolved locale so error volumes can be read per locale; `beforeSend` redaction is unchanged.
+- **Events.** None. Banner impressions/switches are analytics, and analytics is spec 023 with consent (`plan/04` §11); the banner emits nothing in Phase 0. When 023 adds them the event names are `i18n.banner_shown` / `switch` / `stay`, recorded here so the names do not get invented twice.
+- **Alerts.** None (no runtime failure mode with business impact; `plan/09` Phase 1 spec 025 owns alerting). The nearest thing to an alert is CI: a missing key or an ICU error is a red build, not a runtime 500, which is the point of the typed catalogue.
+
+## 12. Rollout
+
+- **Feature flags.** None at runtime. Locale availability in Phase 0 is `isLaunch` in `src/config/locales.ts` — a code flip. **This is a stated, temporary deviation** from `CLAUDE.md`'s "go-live is a data flip in admin, never a code change" and `plan/12` §2's "no env-based feature flags": there is no database and no admin yet (spec 002 parked, spec 012 unwritten). The deviation is bounded by design, not by promise: the switch is read only through `LocaleRegistryProvider`, so spec 002's `feature_flag` scope `locale` plus spec 012's admin become the authority with no caller change (AC-5), and `src/config/locales.ts` degrades to the default the database overlays. No ADR is proposed because ADR-0003 already fixes the locale set and spec 002 §12 already reserves the `locale.{code}` flag keys.
+- **Environments.** local → PR preview (`ENABLE_PSEUDO_LOCALES=true`, protected, `noindex`) → production alias (`ENABLE_PSEUDO_LOCALES=false`, enforced by the env schema, still `noindex` and `Disallow: /` until spec 007). No custom domain yet.
+- **Migration order.** None (no database). The only ordering constraint against spec 002 is one-directional: when TASK-013 unparks, 002's `locale`/`currency` seed reads `toLocaleRow()`/`toCurrencyRow()` and 002 must not restate the locale set; and 002's AC-34 fixtures must extend `currencies`/`addresses`/`phones` rather than redefine what 003 filled.
+- **Suggested task order for `/plan-tasks`** (each ≤1 day, one PR, sequential unless noted; **zero founder actions required** — no account, no provisioning, no third party):
+  1. **`proxy.ts` rename + lint gate first.** `src/middleware.ts` → `src/proxy.ts`; widen `fo/no-geo-redirect` to `proxy.ts`; ban `next-intl/middleware`; add the `geo-redirect-proxy.ts` fixture; remove the `docs/architecture.md` §4 row; update `plan/12` §6's naming reference in the docs table. Covers AC-10, AC-11. *First, because it closes the gate before any routing code exists that could slip through it.*
+  2. **Locale + currency config.** `src/config/locales.ts`, `src/config/currencies.ts`, zod schemas, `toLocaleRow`/`toCurrencyRow`, `scripts/check-layout.ts` and `docs/architecture.md` updates. Covers AC-1, AC-2, AC-4, AC-13 (data half).
+  3. **next-intl wiring + routing + documents.** `[locale]` segment with the `plan/01` §5 route groups, the `/` chooser, `<html lang dir>`, `generateMetadata`/`<title>`, localised 404/500, unknown-locale 404, `registry.ts`/`messages.ts`/`request.ts`/`routing.ts`, and the spec 001 test updates (`tests/e2e/shell.spec.ts`, `tests/a11y/shell.spec.ts`, visual baseline). Covers AC-3, AC-5, AC-6, AC-7, AC-8, AC-9, AC-25 (title half), AC-26. Depends on 2.
+  4. **Formatters.** `format.ts`, `collate.ts`, the `currencies` fixture, `fo/no-adhoc-intl` + fixtures. Covers AC-15, AC-16, AC-17, AC-18, AC-21.
+  5. **Address formats.** `src/config/address-formats.ts`, `address.ts`, `addresses`/`phones` fixtures. Covers AC-19. *May be merged into 4 if both stay under a day.*
+  6. **Catalogues + checks.** `messages/en.json` (+ `en-gb` override, `de`/`pl` drafts), meta manifests, typed keys, `review.ts`, `alternates.ts`, `i18n:draft`, `i18n:check`, the `i18n-check` CI job. Covers AC-14, AC-20, AC-22, AC-23, AC-24, AC-30 (CI half), AC-31. Depends on 3.
+  7. **Suggestion banner + switcher.** `hints.ts`, the client island, the `fo_locale` cookie, the switcher with beta tags, the e2e matrix. Covers AC-12, AC-28. Depends on 3 and 6.
+  8. **Pseudo-locales + visual.** `pseudo.ts`, `i18n:pseudo`, `ENABLE_PSEUDO_LOCALES` env + `.env.example`, real `pseudo-rtl` Playwright project, baselines, deletion of the `forcePseudoRtl` stub. Covers AC-29, AC-30. Depends on 6.
+  9. **Docs + budgets.** README, `docs/runbooks/i18n-translations.md`, `content/i18n/glossary.*.md`, `docs/architecture.md` final state, Lighthouse/JS-budget assertions. Covers AC-27, AC-32. Can run in parallel with 8 after 7.
+- **Rollback plan.** Every task is one squash commit over a stateless change set: `git revert` restores the previous state exactly (no migration, no data, no external resource). Reverting task 3 returns `/` to spec 001's empty shell and re-introduces the two `docs/architecture.md` §4 rows, which must be restored in the same revert. Reverting task 1 alone is forbidden while later tasks are merged, because the routing code would then live behind a narrower lint gate; the revert order is the inverse of the task order.
+- **Exit signal.** `/status` shows `003 implemented`, Phase 0 progress `3/12` specs, four locale URLs live on the preview with correct `lang`/`dir`/`<title>`, `i18n-check` green with an honest reviewed-share table showing `de`/`pl` at 0% reviewed and non-indexable, and the axe exception list gone.
+
+## 13. Open questions
+
+**Resolved 2026-09-08 (founder delegated; every default below is accepted as the decision):** Q1 four prefixes `en`, `en-gb`, `de`, `pl` (A1 resolved). Q2 informal `Ty` in UI, formal in legal, recorded in the glossary (A5 resolved). Q3 `/` ships in 003 as a crawlable, `noindex,follow`, zero-JS locale chooser; 004 styles it. Q4 `fo_locale` is strictly necessary, no consent gate, set only on explicit user action, 365 days, `SameSite=Lax`, `Secure` outside dev. Q5 `en-gb` is a thin override with redundant overrides failing `i18n:check`. Q6 `en-XA`/`ar-XB` pseudo-locales generated from `en.json`, enabled on protected PR previews only, refused in production by the env schema. Q7 `i18n:draft` is a deterministic echo stub; no LLM in Phase 0. Q8 locale go-live as a code flip in `src/config/locales.ts` is an accepted, bounded deviation from the CLAUDE.md data-flip rule while spec 002 is parked; authority moves to the database via `LocaleRegistryProvider` with zero caller changes. Q9 IP-country hint dropped; language preference only, read client-side. Q10 echoed-English `de`/`pl` catalogues flagged unreviewed are acceptable on the protected preview; nothing indexable. Q11 003 creates `glossary.en.md` plus per-locale stubs. Original questions kept below for the record.
+
+- **Q1 (plan/13 A1) — confirm the four launch URL prefixes `en`, `en-gb`, `de`, `pl`, and `en-gb` as a separate locale.** Default (accepted here): yes, four prefixes, per ADR-0003 and `plan/02` §3 — GBP and UK consumer law make `/en-gb/` a genuinely different page while every other launch variant differs only by hreflang. A "no" answer changes `src/config/locales.ts`, the alternates set, the visual/e2e matrices and spec 007's hreflang fixtures, so it is cheapest to answer before task 2.
+- **Q2 (plan/13 A5) — Polish UI register: informal `Ty` in UI, formal `Państwo` in legal.** Default (accepted here): as `plan/13` recommends, recorded in `content/i18n/glossary.pl.md` so the native reviewer inherits the decision rather than re-deciding it per string. This spec ships no substantive Polish copy, so the answer blocks nothing in 003 — but it blocks the first `pl` review pass (`plan/13` B12) and every `pl` string from spec 004 onward.
+- **Q3 — root `/` behaviour: does the locale chooser ship in 003?** Default (specified here): yes — `/` is a server-rendered, zero-JS, `noindex,follow` list of locale links, per `plan/02` §7 ("the bare root `/` is a lightweight locale chooser that lists all locales as plain links (crawlable), never redirects, and is `noindex` itself") and `plan/05` #1. 003 ships it functional and semantically correct but visually unstyled; spec 004 applies tokens and layout. The alternative — keep spec 001's empty shell at `/` until 004 — would leave the site's only crawlable entry point contentless for two weeks and delay the ADR-0006 e2e proof. Confirm, or say "004 styles it and 003 must not touch `/`".
+- **Q4 — `fo_locale` cookie classification and attributes.** Default (specified here): strictly necessary / functional, therefore **no consent gate**; first-party; set **only** by an explicit user action (locale chooser, switcher, banner "Switch"/"Stay"), never by the server and never on a cached page; `Path=/`, `Max-Age` 365 days (`plan/03` §1), `SameSite=Lax`, `Secure` outside development, not `HttpOnly`; value limited to a launch locale code; listed in the cookie policy that spec 004 ships (`plan/07` §6 already names it essential). Confirm — and confirm that the lifetime stays 365 days rather than the 6–12 months the analytics cookies get.
+- **Q5 — `en-gb` as a thin override or a full catalogue?** Default (specified here): thin override — only keys whose British wording differs, resolved through the `en-gb → en` fallback chain, with a redundant override (value identical to `en`) failing `i18n:check`. Cheaper to maintain and makes the British/American delta visible in one small file. The alternative (a complete `en-gb` file) makes every string editable per locale without thinking about fallbacks but doubles the English review surface and invites silent drift. This choice also sets the pattern `de-at` / `de-ch` will inherit in Phase 4.
+- **Q6 — pseudo-locale mechanism and where it is reachable.** Default (specified here): two generated locales, `en-XA` (accented, +40%, bracketed) and `ar-XB` (RTL mirror), produced deterministically from `en.json` by `pnpm i18n:pseudo` into git-ignored files, present in routing only when `ENABLE_PSEUDO_LOCALES` is true, refused in production by the env schema, and **enabled on PR previews** because that is where Playwright's visual and a11y suites run (spec 001's harness targets the preview, not a dev server). Previews are password-protected and `noindex`, so exposure is bounded — but it is exposure, and the founder's florist demos use a protected deployment. Confirm, or require the visual suite to run against a local build instead (slower CI, no preview exposure).
+- **Q7 — may `i18n:draft` call an LLM in Phase 0, or does it stay a deterministic stub?** Default (specified here): deterministic stub. 003 ships the `DraftProvider` interface and an `echoDraftProvider` that copies the English value and stamps `source: "machine", reviewed: false`; no network call, no API key, no non-determinism in CI, and `de`/`pl` therefore ship as honest unreviewed echoes that `isLocaleIndexable()` keeps out of the index. The consequence to accept: the German and Polish demo pages read as English until a reviewer works the queue. An LLM-backed provider would give plausible German for the mid-October florist demo, at the cost of a key in the env store, a non-deterministic CI step and machine text on a preview shown to native speakers. If the answer is "yes, LLM", it is a separate task after task 6 and needs a provider/model decision plus a `plan/07` processor note.
+- **Q8 — accept that locale go-live is a code flip in Phase 0?** `CLAUDE.md` says "Country/partner go-live is a data flip in admin, never a code change" and `plan/12` §2 forbids env-based flags. With spec 002 parked there is no `feature_flag` table and no admin, so `isLaunch` in `src/config/locales.ts` is the switch. The spec bounds it: the flag is read only through `LocaleRegistryProvider`, so 002/012 take over the authority with zero caller changes (AC-5). Confirm the deviation as written (§12), or require 003 to wait for the database — which would idle the reserved 15–21 Sep window.
+- **Q9 — drop the IP-country hint entirely?** `plan/03` §2's pseudocode consults "Accept-Language (weighted) then IP country (edge header)". This spec uses language preferences only, read in the browser from `navigator.languages`, which makes every response header-invariant (no `Vary`, one cache entry, no bot-UA branch) and leaves `fo/no-geo-redirect`'s `hints.ts` allowance unused. Cost: an English-speaking visitor physically in Poland is not offered Polish. Confirm the narrowing (recommended), or ask for the IP hint back — in which case it becomes a server read confined to `hints.ts`, the banner decision moves server-side, and the caching consequence needs an ADR.
+- **Q10 — is shipping echoed-English `de` and `pl` acceptable on the protected preview used for florist demos?** The alternative is to render `de`/`pl` from the `en` fallback with a visible "beta" tag and no `de`/`pl` catalogue files at all until reviewed copy exists (same visible result, less pretend data in the repo). Either way nothing is indexable and `i18n:check` reports 0% reviewed. Founder's call on optics, because the mid-October pitch to German florists (`plan/09` Phase 0) may be better served by an honest "German coming" banner than by English text under a German URL.
+- **Q11 — do the glossary and style-guide files (`content/i18n/glossary.{locale}.md`, `plan/03` §6.6) belong to 003 or to the first content spec?** Default (specified here): 003 creates `glossary.en.md` with the brand-term and tone rules plus a stub per launch locale, because `i18n:draft` and every reviewer briefing point at them and an empty pointer is worse than a thin file. Confirm, or move them to spec 004/007 with the copy work.
