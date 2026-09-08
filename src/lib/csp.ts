@@ -82,7 +82,15 @@ export function allowsPreviewFeedback(
   return environment !== "production";
 }
 
-/** HSTS is production-only: a `http://localhost` deploy must not pin itself to https. */
+/**
+ * HSTS is production-only: an `http://localhost` build must not pin itself to https.
+ *
+ * On a Vercel **preview** a `Strict-Transport-Security` header arrives anyway — the platform adds
+ * it, because `*.vercel.app` is itself on the HSTS preload list (measured on this PR's first CI
+ * run). That is the platform's header, not ours, and it is why `tests/e2e/security-headers.spec.ts`
+ * cannot assert the absence of HSTS on a preview. Ours matters on the custom domain, where nobody
+ * else sends one.
+ */
 export function sendsHsts(environment: DeploymentEnvironment): boolean {
   return environment === "production";
 }

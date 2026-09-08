@@ -75,15 +75,35 @@ test.describe("security headers (AC-23)", () => {
     });
   }
 
-  test("the non-production target carries the vercel.live allowance and no HSTS", async ({
+  test("the non-production target carries the vercel.live allowance", async ({
     request,
   }) => {
-    // Both clauses are properties of *this* target being a preview or a local build, not of the
-    // policy in general: production drops the origin and gains HSTS, which `tests/unit/csp.test.ts`
-    // asserts on the string because there is no production deployment to fetch.
+    // A property of *this* target being a preview or a local build, not of the policy in general:
+    // production drops the origin, which `tests/unit/csp.test.ts` asserts on the string because
+    // there is no production deployment to fetch.
     const response = await request.get("/en");
     expect(response.headers()[REPORT_ONLY]).toContain("https://vercel.live");
-    expect(response.headers()["strict-transport-security"]).toBeUndefined();
+  });
+
+  test("HSTS, if present here, came from the platform and not from us", async ({
+    request,
+  }) => {
+    // Measured on the first CI run of this file: a Vercel preview answers with
+    // `strict-transport-security: max-age=63072000; includeSubDomains; preload` that **Vercel**
+    // adds, because `*.vercel.app` is itself on the HSTS preload list. Our own header is
+    // production-only (`sendsHsts()`), so "no HSTS on a preview" is not an assertion this suite can
+    // make: it would be asserting the platform's behaviour, and it would fail on a preview and pass
+    // on a local `next start` for reasons that have nothing to do with this repository.
+    //
+    // What *is* worth pinning is the direction: whatever HSTS reaches a client must be a real,
+    // long-lived policy, never a `max-age=0` that would switch protection off.
+    const value = (await request.get("/en")).headers()[
+      "strict-transport-security"
+    ];
+    if (value !== undefined) {
+      const maxAge = /max-age=(\d+)/.exec(value)?.[1];
+      expect(Number(maxAge)).toBeGreaterThanOrEqual(31_536_000);
+    }
   });
 });
 
