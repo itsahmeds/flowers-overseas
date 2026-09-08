@@ -27,15 +27,17 @@ const collators = new Map<string, Intl.Collator>();
 
 /**
  * The collator for a locale, memoised per BCP 47 tag (construction is the expensive part). The
- * tag is resolved through the registry, exactly as in `format.ts`, so a database-backed locale
- * set moves collation with it (AC-5).
+ * tag is resolved through the registry, exactly as in `format.ts` — and it is the locale's
+ * `formattingTag`, for the same reason: collation is a formatting convention, not a document
+ * language, so `en` collates as `en-150` while `<html lang>` stays `en` (TASK-044). A
+ * database-backed locale set moves collation with it (AC-5).
  */
 export function collator(locale: LocaleCode): Intl.Collator {
   const config = getLocaleRegistry().get(locale);
   if (config === undefined) {
     throw new Error(`unknown locale code: ${locale}`);
   }
-  const tag = config.bcp47;
+  const tag = config.formattingTag;
   const cached = collators.get(tag);
   if (cached !== undefined) return cached;
   const created = new Intl.Collator(tag, { usage: "sort", numeric: true });

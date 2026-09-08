@@ -97,15 +97,19 @@ export const occasionDates: readonly OccasionDateFixture[] = [];
  * different number. Spaces are as ICU emits them (`pl` groups with U+00A0, `de` separates the
  * `€` with U+00A0); tests normalise them, they are not typed by hand.
  *
- * `locale` is the canonical BCP 47 tag; `src/config/locales.ts` maps our locale codes (`en-gb`)
- * onto it. Spec 002's AC-34 extends this array (more currencies, payment amounts) — it must not
- * redefine the shape (spec 003 §12).
+ * `locale` is the canonical BCP 47 tag the formatter is *given* — a locale's `formattingTag` in
+ * `src/config/locales.ts`, which is why the `en` rows read `en-150`: `/en` is pan-European
+ * English and formats with European conventions, so ICU renders a foreign currency as
+ * `45.00 £` / `45.00 PLN` rather than US English's `£45.00` / `PLN 45.00` (TASK-044,
+ * `docs/decisions-log.md` 2026-09-08). The document language of `/en` is still `en`; no row here
+ * describes a `<html lang>`. Spec 002's AC-34 extends this array (more currencies, payment
+ * amounts) — it must not redefine the shape (spec 003 §12).
  */
 export const currencies: readonly CurrencyFixture[] = [
   {
     code: "EUR",
     amount_minor: 4500,
-    locale: "en",
+    locale: "en-150",
     formatted: "€45.00",
   },
   {
@@ -153,8 +157,8 @@ export const currencies: readonly CurrencyFixture[] = [
   {
     code: "GBP",
     amount_minor: 4500,
-    locale: "en",
-    formatted: "£45.00",
+    locale: "en-150",
+    formatted: "45.00 £",
   },
   {
     code: "GBP",
@@ -201,8 +205,8 @@ export const currencies: readonly CurrencyFixture[] = [
   {
     code: "PLN",
     amount_minor: 4500,
-    locale: "en",
-    formatted: "PLN 45.00",
+    locale: "en-150",
+    formatted: "45.00 PLN",
   },
   {
     code: "PLN",

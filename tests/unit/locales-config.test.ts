@@ -10,6 +10,12 @@
  *
  * `toLocaleRow()` is pinned to spec 002 §5.1's `locale` column set so TASK-015's seed reads the
  * projection instead of restating the locale set (AC-4).
+ *
+ * TASK-044 adds the `bcp47` / `formattingTag` split: `formattingTag` may be omitted and then
+ * defaults to `bcp47` (asserted for `en-gb`, `de` and `pl`, which omit it), and its two
+ * refinements — canonical tag, same primary language subtag as `bcp47` — are exercised with the
+ * two failures that matter: an unparseable tag and a `de-150` formatting tag on an English
+ * locale, which would silently relabel the language of every formatted value.
  */
 import { describe, expect, it } from "vitest";
 
@@ -76,6 +82,9 @@ describe("src/config/locales.ts (AC-1 / T-01)", () => {
     for (const locale of LOCALES) {
       expect(known.has(locale.currencyDefault), locale.code).toBe(true);
       expect(new Intl.Locale(locale.bcp47).baseName).toBe(locale.bcp47);
+      expect(new Intl.Locale(locale.formattingTag).baseName).toBe(
+        locale.formattingTag,
+      );
       expect(locale.numberingSystem, locale.code).toBe("latn");
       expect(locale.dir, locale.code).toBe("ltr");
       expect(locale.name.length, locale.code).toBeGreaterThan(0);
@@ -239,11 +248,70 @@ describe("src/config/locales.ts (AC-1 / T-01)", () => {
   });
 });
 
+describe("formattingTag (TASK-044)", () => {
+  it("defaults to `bcp47` for every locale that omits it", () => {
+    // `en` is the only locale that writes the field; the other three inherit their own `bcp47`.
+    for (const code of ["en-gb", "de", "pl"] as const) {
+      const locale = localeConfig(code);
+      expect(locale.formattingTag, code).toBe(locale.bcp47);
+    }
+    const en = localeConfig("en");
+    expect(en.bcp47).toBe("en");
+    expect(en.formattingTag).toBe("en-150");
+  });
+
+  it("applies the default and the refinements to an authored locale that omits the field", () => {
+    const authored = JSON.parse(JSON.stringify(localeConfig("de"))) as Record<
+      string,
+      unknown
+    >;
+    delete authored["formattingTag"];
+    expect(LocaleConfigSchema.parse(authored)).toEqual({
+      ...authored,
+      formattingTag: "de",
+    });
+  });
+
+  it("rejects a formattingTag Intl.Locale will not accept, naming the field", () => {
+    const registry = registryCopy();
+    registry[2] = { ...registry[2], formattingTag: "de_DE!" };
+    const summary = issueSummary(registry);
+    expect(summary).toMatch(/formattingTag/);
+    expect(summary).toMatch(/de_DE!/);
+  });
+
+  it("rejects a non-canonical formattingTag ICU would rewrite", () => {
+    const registry = registryCopy();
+    registry[1] = { ...registry[1], formattingTag: "en-gb" };
+    expect(issueSummary(registry)).toMatch(/formattingTag/);
+  });
+
+  it("rejects a formattingTag whose primary language differs from `bcp47`", () => {
+    // `de-150` on `en` would format English pages with German conventions and call it English.
+    const registry = registryCopy();
+    registry[0] = { ...registry[0], formattingTag: "de-150" };
+    const summary = issueSummary(registry);
+    expect(summary).toMatch(/formattingTag/);
+    expect(summary).toMatch(/primary language subtag/);
+    expect(summary).toMatch(/`en`/);
+    expect(summary).toMatch(/`de`/);
+  });
+
+  it("accepts a region-only refinement of the same language", () => {
+    const registry = registryCopy();
+    registry[0] = { ...registry[0], formattingTag: "en-IE" };
+    expect(LocaleRegistrySchema.safeParse(registry).success).toBe(true);
+  });
+});
+
 describe("toLocaleRow (AC-4 / T-04)", () => {
   it("returns exactly spec 002 §5.1's `locale` column set", () => {
+    // `formatting_tag` is the column spec 002 §5.1 gains for the TASK-044 split; the pin is
+    // updated deliberately here so the seed of TASK-015 and this projection stay one edit.
     expect([...LOCALE_ROW_COLUMNS]).toEqual([
       "code",
       "bcp47",
+      "formatting_tag",
       "name",
       "is_launch",
       "rtl",
@@ -259,11 +327,13 @@ describe("toLocaleRow (AC-4 / T-04)", () => {
     expect(toLocaleRow(localeConfig("en"))).toEqual({
       code: "en",
       bcp47: "en",
+      formatting_tag: "en-150",
       name: "English",
       is_launch: true,
       rtl: false,
       fallback_code: null,
     });
+    expect(toLocaleRow(localeConfig("pl")).formatting_tag).toBe("pl");
     expect(toLocaleRow(localeConfig("pl")).fallback_code).toBe("en");
     expect(toLocaleRow(localeConfig("pl")).rtl).toBe(false);
   });

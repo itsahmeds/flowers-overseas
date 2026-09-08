@@ -16,6 +16,12 @@
  *     — and, for a value arriving from data, a parse error), and the same instant renders as
  *     14:00 in `Europe/Warsaw` and 13:00 in `Europe/London` with the zone named.
  *
+ * **`en` is `en-150`.** The `en` locale's `formattingTag` is `en-150` while its `bcp47` (and so
+ * `<html lang>`) stays `en` (TASK-044, `docs/decisions-log.md` 2026-09-08). Every `en` expectation
+ * below is therefore a European convention, and each one is paired with the plain-`en` output ICU
+ * would have produced (`02/14/2027`, `02:00 PM`, `a, b, and c`, `£45.00`) so the split is visible
+ * in the assertions rather than only in the config.
+ *
  * **Space normalisation.** CLDR separates a `de` percent sign and groups `pl` thousands with
  * non-breaking spaces (U+00A0/U+202F), and which of the two ICU picks has changed between ICU
  * releases. Every expected value below is the real ICU string with *only* those space characters
@@ -27,7 +33,11 @@ import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-import { LOCALES, type LocaleCode } from "../../src/config/locales.ts";
+import {
+  LOCALES,
+  type LocaleCode,
+  localeConfig,
+} from "../../src/config/locales.ts";
 import { CURRENCIES, type CurrencyCode } from "../../src/config/currencies.ts";
 import {
   MoneySchema,
@@ -45,11 +55,33 @@ import { currencies } from "../fixtures/index.ts";
 /** Fold the non-breaking space variants CLDR uses to U+0020; change nothing else. */
 const spaces = (value: string): string => value.replace(/[   ]/g, " ");
 
-/** The fixture carries canonical BCP 47 tags; the formatters take our locale codes. */
+/**
+ * The fixture carries the canonical BCP 47 tag the formatter is *given*, which is a locale's
+ * `formattingTag` (`en-150` for `en`), not its document-language `bcp47`.
+ */
 const localeCodeOf = (tag: string): LocaleCode => {
-  const config = LOCALES.find((locale) => locale.bcp47 === tag);
+  const config = LOCALES.find((locale) => locale.formattingTag === tag);
   if (config === undefined) throw new Error(`no locale configured for ${tag}`);
   return config.code as LocaleCode;
+};
+
+/**
+ * `Intl.Locale.prototype.getWeekInfo` is ICU week data TypeScript's `lib` does not declare yet;
+ * the shape asserted here is the ECMA-402 one (`firstDay` 1 = Monday … 7 = Sunday).
+ */
+interface WeekInfo {
+  readonly firstDay: number;
+  readonly weekend: readonly number[];
+}
+
+const weekInfoOf = (tag: string): WeekInfo => {
+  const locale = new Intl.Locale(tag) as Intl.Locale & {
+    getWeekInfo?: () => WeekInfo;
+  };
+  if (locale.getWeekInfo === undefined) {
+    throw new Error(`Intl.Locale#getWeekInfo is unavailable for ${tag}`);
+  }
+  return locale.getWeekInfo();
 };
 
 const WARSAW = "Europe/Warsaw";
@@ -71,6 +103,19 @@ describe("formatMoney (AC-15 / T-15)", () => {
     expect(
       spaces(formatMoney({ amountMinor: 4500, currency: "PLN" }, "pl")),
     ).toBe("45,00 zł");
+  });
+
+  it("prices `en` with European conventions, `en-gb` with British ones", () => {
+    // Same language, different formatting locale: `en` is `en-150`, `en-gb` is `en-GB`.
+    expect(
+      spaces(formatMoney({ amountMinor: 4500, currency: "EUR" }, "en")),
+    ).toBe("€45.00");
+    expect(
+      spaces(formatMoney({ amountMinor: 4500, currency: "GBP" }, "en")),
+    ).toBe("45.00 £");
+    expect(formatMoney({ amountMinor: 4500, currency: "GBP" }, "en-gb")).toBe(
+      "£45.00",
+    );
   });
 
   it("matches every row of the shared `currencies` fixture", () => {
@@ -216,6 +261,7 @@ describe("formatMoney (AC-15 / T-15)", () => {
 describe("formatNumber and formatPercentFromBasisPoints (AC-16 / T-16)", () => {
   it("uses each locale's decimal and thousands separators (plan/03 §7)", () => {
     const table: readonly [LocaleCode, string][] = [
+      ["en", "1,234.50"],
       ["en-gb", "1,234.50"],
       ["de", "1.234,50"],
       ["pl", "1 234,50"],
@@ -245,6 +291,7 @@ describe("formatNumber and formatPercentFromBasisPoints (AC-16 / T-16)", () => {
   });
 
   it("renders VAT rates from integer basis points with locale percent spacing", () => {
+    expect(spaces(formatPercentFromBasisPoints(2000, "en"))).toBe("20%");
     expect(spaces(formatPercentFromBasisPoints(2000, "en-gb"))).toBe("20%");
     expect(spaces(formatPercentFromBasisPoints(1900, "de"))).toBe("19 %");
     expect(spaces(formatPercentFromBasisPoints(2300, "pl"))).toBe("23%");
@@ -260,12 +307,17 @@ describe("formatNumber and formatPercentFromBasisPoints (AC-16 / T-16)", () => {
 
 describe("formatDate, formatRange and formatList (AC-16 / T-16)", () => {
   it("renders the short date per locale in the recipient's zone", () => {
+    expect(formatDate(instant, "en", "short", WARSAW)).toBe("14/02/2027");
     expect(formatDate(instant, "en-gb", "short", WARSAW)).toBe("14/02/2027");
     expect(formatDate(instant, "de", "short", WARSAW)).toBe("14.02.2027");
     expect(formatDate(instant, "pl", "short", WARSAW)).toBe("14.02.2027");
   });
 
   it("renders the delivery date with weekday and month name", () => {
+    // `en-150` punctuates the weekday (`Sat, 13 Feb`); `en-GB` does not (`Sat 13 Feb`).
+    expect(formatDate(saturday, "en", "deliveryDate", WARSAW)).toBe(
+      "Sat, 13 Feb",
+    );
     expect(formatDate(saturday, "en-gb", "deliveryDate", WARSAW)).toBe(
       "Sat 13 Feb",
     );
@@ -310,6 +362,7 @@ describe("formatDate, formatRange and formatList (AC-16 / T-16)", () => {
 
   it("joins lists with each locale's conjunction (plan/03 §7)", () => {
     const items = ["a", "b", "c"];
+    expect(formatList(items, "en")).toBe("a, b and c");
     expect(formatList(items, "en-gb")).toBe("a, b and c");
     expect(formatList(items, "de")).toBe("a, b und c");
     expect(formatList(items, "pl")).toBe("a, b i c");
@@ -321,6 +374,7 @@ describe("formatDate, formatRange and formatList (AC-16 / T-16)", () => {
 
 describe("formatTimeInZone (AC-17 / T-17)", () => {
   it("renders the same instant as the wall-clock time of each zone", () => {
+    expect(spaces(formatTimeInZone(instant, "en", WARSAW))).toContain("14:00");
     expect(spaces(formatTimeInZone(instant, "en-gb", WARSAW))).toContain(
       "14:00",
     );
@@ -337,6 +391,9 @@ describe("formatTimeInZone (AC-17 / T-17)", () => {
     expect(warsaw).toBe("14:00 Central European Time");
     expect(london).toBe("13:00 United Kingdom Time");
     expect(warsaw).not.toBe(london);
+    expect(spaces(formatTimeInZone(instant, "en", WARSAW))).toBe(
+      "14:00 Central European Time",
+    );
     expect(spaces(formatTimeInZone(instant, "de", WARSAW))).toBe(
       "14:00 Mitteleuropäische Zeit",
     );
@@ -395,6 +452,64 @@ describe("formatRelativeTime (AC-16 / T-16)", () => {
     expect(() =>
       formatRelativeTime(new Date("not a date"), reference, "de"),
     ).toThrow();
+  });
+});
+
+describe("the formattingTag / bcp47 split for `en` (TASK-044)", () => {
+  it("formats `en` as `en-150`, not as plain `en`", () => {
+    // The negative pins: what ICU would have rendered had the formatters read `bcp47`. US
+    // English month-first dates and a 12-hour clock on a European relay's English pages are the
+    // regression this split exists to prevent, so the wrong answers are written out here.
+    const plainShortDate = new Intl.DateTimeFormat("en", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      timeZone: WARSAW,
+    }).format(instant);
+    expect(plainShortDate).toBe("02/14/2027");
+    expect(formatDate(instant, "en", "short", WARSAW)).toBe("14/02/2027");
+    expect(formatDate(instant, "en", "short", WARSAW)).not.toBe(plainShortDate);
+
+    const plainTime = spaces(
+      new Intl.DateTimeFormat("en", {
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZone: WARSAW,
+        timeZoneName: "longGeneric",
+      }).format(instant),
+    );
+    expect(plainTime).toBe("02:00 PM Central European Time");
+    expect(spaces(formatTimeInZone(instant, "en", WARSAW))).toBe(
+      "14:00 Central European Time",
+    );
+
+    const plainList = new Intl.ListFormat("en", {
+      style: "long",
+      type: "conjunction",
+    }).format(["a", "b", "c"]);
+    expect(plainList).toBe("a, b, and c");
+    expect(formatList(["a", "b", "c"], "en")).toBe("a, b and c");
+
+    const plainGbp = new Intl.NumberFormat("en", {
+      style: "currency",
+      currency: "GBP",
+    }).format("45.00");
+    expect(plainGbp).toBe("£45.00");
+    expect(
+      spaces(formatMoney({ amountMinor: 4500, currency: "GBP" }, "en")),
+    ).toBe("45.00 £");
+  });
+
+  it("starts the week on Monday in every launch locale's formatting tag", () => {
+    // `plan/03` §7: a delivery-date picker must not open on a Sunday-first calendar anywhere in
+    // Europe. `firstDay` 1 = Monday, 7 = Sunday (ECMA-402).
+    for (const locale of LOCALES) {
+      expect(weekInfoOf(locale.formattingTag).firstDay, locale.code).toBe(1);
+    }
+    // Plain `en` — the document language — is Sunday-first, which is why the split exists.
+    expect(weekInfoOf("en").firstDay).toBe(7);
+    expect(localeConfig("en").bcp47).toBe("en");
+    expect(localeConfig("en").formattingTag).toBe("en-150");
   });
 });
 

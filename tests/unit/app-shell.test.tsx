@@ -85,6 +85,7 @@ const { default: NotFoundDocument, generateMetadata: notFoundMetadata } =
 const FAKE_FIFTH: LocaleConfig = {
   code: "ar-xb",
   bcp47: "ar-XB",
+  formattingTag: "ar-XB",
   name: "Pseudo Arabic",
   nativeName: "Pseudo Arabic",
   dir: "rtl",

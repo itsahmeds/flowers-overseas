@@ -6,11 +6,21 @@
  * produces — where `Łódź` is filed among the `L`s by base letter. Both are asserted, because the
  * single-character comparison alone passes in `en` too (`l` < `ł` at the tertiary level there);
  * only the word list shows that `pl` puts *all* `l` words before *any* `ł` word.
+ *
+ * The last case covers TASK-044: collation is a formatting convention, so `collator()` reads a
+ * locale's `formattingTag` (`en-150` for `en`), never its document-language `bcp47`. ICU's root
+ * collation makes `en` and `en-150` order identically, so the *field* is observed through the
+ * per-tag memoisation rather than through an ordering difference that does not exist.
  */
 import { describe, expect, it } from "vitest";
 
-import { type LocaleCode } from "../../src/config/locales.ts";
+import { type LocaleCode, localeConfig } from "../../src/config/locales.ts";
 import { collator, sortBy } from "../../src/modules/i18n";
+import {
+  localeRegistryOf,
+  staticLocaleRegistry,
+  withLocaleRegistry,
+} from "../../src/modules/i18n/registry.ts";
 
 /** Real Polish cities, chosen so `ł` and `l` interleave by base letter. */
 const CITIES = [
@@ -84,5 +94,22 @@ describe("collator (AC-18 / T-18)", () => {
 
   it("throws on a locale the registry does not know", () => {
     expect(() => collator("fr" as LocaleCode)).toThrow(/unknown locale code/);
+  });
+
+  it("builds the collator from `formattingTag`, not `bcp47` (TASK-044)", async () => {
+    const en = localeConfig("en");
+    expect(en.bcp47).toBe("en");
+    expect(en.formattingTag).toBe("en-150");
+    const registry = localeRegistryOf([
+      ...staticLocaleRegistry.list(),
+      // Different document language, same formatting tag → the same memoised collator as `en`.
+      { ...en, code: "en-x-doc", bcp47: "en-GB" },
+      // Same document language, different formatting tag → a different collator.
+      { ...en, code: "en-x-fmt", formattingTag: "en" },
+    ]);
+    await withLocaleRegistry(registry, () => {
+      expect(collator("en-x-doc" as LocaleCode)).toBe(collator("en"));
+      expect(collator("en-x-fmt" as LocaleCode)).not.toBe(collator("en"));
+    });
   });
 });
