@@ -410,3 +410,8 @@ Raised by: `/review 11` (PR #11), 2026-09-08. Runbook: `docs/runbooks/branch-pro
 - **Original clause:** spec exit signal "tasks 6/6 done" (§12), based on the spec's own six-task sketch.
 - **Corrected clause:** "all tasks created by `/plan-tasks` for this spec are `done` with a recorded `/review` PASS" — twelve tasks in practice (TASK-001…TASK-012).
 - **Raised by:** `/review 12` (reviewer note 2), 2026-09-08. Applied by the orchestrator at spec close.
+
+### A10 resolution — branch protection deviation accepted
+- **Decision (founder, 2026-09-08):** stay on GitHub Free. Branch protection and rulesets are unavailable on a private Free repository, so AC-21's enforcement half is an accepted deviation, not a pending item.
+- **Compensating controls:** every `ci.yml` job runs on every PR and is visible before merge; repository merge settings are squash-only with the PR title as subject and branch auto-delete (applied 2026-09-08 via API); the recorded `/review` verdict in the PR body and `TASKS.md` is the merge gate; `pnpm branch-protection` stays in place and turns green automatically if the plan ever changes.
+- **Revisit trigger:** a second committer joins, or a merge lands with a red required check.

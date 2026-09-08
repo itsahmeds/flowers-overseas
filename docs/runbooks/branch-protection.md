@@ -10,7 +10,7 @@ it once" can be checked rather than remembered.
 
 ## 0. Current state — blocked on the account plan
 
-**Status: pending: GitHub Pro upgrade vs recorded deviation.** Founder decision, raised
+**Status: decided 2026-09-08: founder chose option 3 — stay on GitHub Free; unenforced protection is an accepted deviation with compensating controls (squash-only merges, recorded `/review` verdicts, all CI checks visible per PR). Revisit if a second committer joins.
 2026-09-08 on TASK-012; option 1 (upgrade) is the recommendation. Until it is taken, `main` has
 no enforced protection and the `/review` verdict recorded in the PR and in `TASKS.md` is the only
 merge gate. The merge-method half (§3) needs no plan change and should be applied now.
