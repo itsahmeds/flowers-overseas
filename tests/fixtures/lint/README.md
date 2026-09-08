@@ -11,19 +11,26 @@ Two ways to run the rules against them:
 | Command | What it does |
 |---|---|
 | `pnpm lint:fixtures` | runs ESLint + Stylelint on this directory with `--no-ignore`; **exits non-zero** by design (the executable form of AC-4, AC-5, AC-7, AC-8, AC-9) |
-| `pnpm test` | `tests/unit/no-physical-css.test.ts`, `no-literal-strings.test.ts`, `stylelint-physical-css.test.ts`, `no-direct-order-status-write.test.ts`, `no-geo-redirect.test.ts`, `no-float-money.test.ts`, `module-boundaries.test.ts`, `lint-fixtures.test.ts` (RuleTester / Stylelint API / ESLint Node API over the real config) |
+| `pnpm test` | `tests/unit/no-physical-css.test.ts`, `no-literal-strings.test.ts`, `stylelint-physical-css.test.ts`, `no-direct-order-status-write.test.ts`, `no-geo-redirect.test.ts`, `no-float-money.test.ts`, `no-adhoc-intl.test.ts`, `module-boundaries.test.ts`, `lint-fixtures.test.ts` (RuleTester / Stylelint API / ESLint Node API over the real config) |
 
 The TASK-003 `*.tsx` fixtures are free of TypeScript-only syntax, because their RuleTester runs
 parse them with espree (`ecmaFeatures.jsx`). The TASK-004 `*.ts` fixtures do use annotations —
 `fo/no-float-money` exists to flag `: number` on a money name — so their tests parse with the
-TypeScript parser taken from `eslint-config-next/typescript` (`tests/unit/support/ts-parser.ts`).
+TypeScript parser taken from `eslint-config-next/typescript` (`tests/unit/support/ts-parser.ts`),
+as do the TASK-037 `adhoc-intl-*.ts` fixtures.
+
+`fo/no-adhoc-intl` is switched on for the `adhoc-intl-*.ts` fixtures and the two mirrored
+formatter files only, not for the whole directory: `float-money-valid.ts` is a TASK-004 fixture
+whose point is that money went through `new Intl.NumberFormat`, and it stays clean.
 
 `src/` inside this directory is a **mirror of the repository layout**, not a second application.
 It exists for two reasons:
 
-- path-dependent rules: `fo/no-direct-order-status-write` and `fo/no-geo-redirect` allow what they
-  ban when the file is `src/modules/orders/service/**` or `src/modules/i18n/hints.ts`, so the
-  "passes inside" halves of AC-7 and AC-8 need fixtures at those paths;
+- path-dependent rules: `fo/no-direct-order-status-write`, `fo/no-geo-redirect` and
+  `fo/no-adhoc-intl` allow what they ban when the file is `src/modules/orders/service/**`,
+  `src/modules/i18n/hints.ts` or `src/modules/i18n/format.ts` / `collate.ts` (matched by path
+  suffix, which is why the mirror works), so the "passes inside" halves of spec 001 AC-7 / AC-8
+  and spec 003 AC-21 need fixtures at those paths;
 - `import/no-restricted-paths` **resolves every specifier and skips the ones it cannot resolve**,
   so an offending `@/modules/catalog/internal/pricing` import has to point at a real file. The
   mirror provides one, `tsconfig.lint-fixtures.json` maps `@/*` onto the mirror for the resolver,
@@ -59,6 +66,13 @@ It exists for two reasons:
 | `src/modules/orders/cross-module-import.ts` | `import/no-restricted-paths` (deep import into `catalog`) |
 | `src/modules/orders/module-imports-app.ts` | `import/no-restricted-paths` (`modules/` → `app/`) |
 | `src/modules/orders/module-imports-valid.ts` | clean (import through the `catalog` barrel) |
+| `adhoc-intl-numberformat.ts` | `fo/no-adhoc-intl` (`new Intl.NumberFormat` outside the formatter module, spec 003 AC-21) |
+| `adhoc-intl-tolocalestring.ts` | `fo/no-adhoc-intl` (`(1234.5).toLocaleString("de")`) |
+| `adhoc-intl-tolocaledatestring.ts` | `fo/no-adhoc-intl` (`date.toLocaleDateString()`) |
+| `adhoc-intl-tofixed.ts` | `fo/no-adhoc-intl` (`ratio.toFixed(2)`) |
+| `adhoc-intl-template-currency.ts` | `fo/no-adhoc-intl` (`` `${amount} zł` ``) |
+| `src/modules/i18n/format.ts` | clean — the same five constructs in the one file allowed to build them (AC-21 second half) |
+| `src/modules/i18n/collate.ts` | clean — the second allowed file (`Intl.Collator`) |
 | `float-money.ts` | `fo/no-float-money` — **unit tests only**; the rule is not enabled in `eslint.config.mjs` until spec 005 (spec 001 §2), so `pnpm lint:fixtures` does not report this file |
 | `float-money-valid.ts` | clean (integer minor units, `Intl.NumberFormat`) |
 | `stubs.ts`, `src/app/page.ts`, `src/modules/*/index.ts`, `src/modules/catalog/internal/pricing.ts` | clean — stand-ins and mirror targets |

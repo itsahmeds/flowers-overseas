@@ -140,7 +140,10 @@ Everything CI runs is runnable locally with the commands above, and the non-nego
 `CLAUDE.md` are lint errors rather than review comments: `fo/no-physical-css` (no `ml-`/`left-`;
 logical properties only), `fo/no-literal-strings` (copy comes from the message catalogue),
 `fo/no-direct-order-status-write` (status changes only through `orderService.transition`,
-ADR-0009), `fo/no-geo-redirect` (no IP redirect, ever — ADR-0006), `fo/no-float-money` and
+ADR-0009), `fo/no-geo-redirect` (no IP redirect, ever — ADR-0006), `fo/no-adhoc-intl` (no second
+way to render a price, a date or a list: `Intl.*` formatters, `toLocale*`, `toFixed` and
+hand-built `${x} zł` / `${x}%` strings live only in `src/modules/i18n/format.ts` and
+`collate.ts`), `fo/no-float-money` and
 `import/no-restricted-paths` (`app/` imports `modules/`, never the reverse; modules meet only at
 their public `index.ts`).
 

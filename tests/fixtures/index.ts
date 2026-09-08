@@ -38,14 +38,36 @@ export interface AddressFixture {
   readonly label: string;
   /** ISO 3166-1 alpha-2 country code. */
   readonly country: string;
+  /**
+   * The block `formatAddressBlock(fields, country)` must return, line by line (spec 003 AC-19).
+   * Empty for an `invalid` fixture: a rejected postcode never reaches rendering.
+   */
   readonly lines: readonly string[];
+  /** The postcode in its canonical form, or the offending value when `invalid`. */
   readonly postalCode: string;
   readonly city: string;
   /** True when the address is expected to fail validation. */
   readonly invalid?: boolean;
+  /**
+   * Field values keyed by `AddressField` (`src/config/address-formats.ts`), i.e. the input
+   * `formatAddressBlock` and spec 010's form receive. Added by spec 003 (TASK-037); spec 002/005
+   * extend the array, never the shape (spec 003 §12).
+   */
+  readonly fields?: Readonly<Record<string, string>>;
+  /** A user-typed postcode that `normalisePostcode` must turn into `postalCode`. */
+  readonly rawPostalCode?: string;
+  /** Why an `invalid` fixture is rejected: `normalisePostcode`'s `reason`. */
+  readonly reason?: string;
 }
 
-/** A phone number in E.164 plus its national display form (spec 003/005). */
+/**
+ * A phone number in E.164 plus its national display form (spec 003/005).
+ *
+ * **Data only.** Spec 003 ships no phone validation: E.164 parsing and the "this does not look
+ * like a Polish number" warning are spec 010 (§3 non-goals, `plan/03` §8), and no phone library
+ * is a dependency yet. The `invalid` rows are here so that spec 010 has its rejection cases the
+ * day it starts, and so the fixture cannot be quietly reshaped later.
+ */
 export interface PhoneFixture {
   readonly label: string;
   readonly country: string;
@@ -53,6 +75,8 @@ export interface PhoneFixture {
   readonly e164: string;
   readonly national: string;
   readonly invalid?: boolean;
+  /** Why an `invalid` row is invalid, for spec 010's message mapping. */
+  readonly reason?: string;
 }
 
 /** Filled by spec 002 (occasion calendar) and spec 003 (lead times per corridor). */
@@ -242,8 +266,317 @@ export const currencies: readonly CurrencyFixture[] = [
   },
 ];
 
-/** Filled by spec 003 (address forms) and spec 005 (order validation). */
-export const addresses: readonly AddressFixture[] = [];
+/**
+ * The address matrix (spec 003 AC-19 / T-19, TASK-037), one country per `plan/03` §8 row plus a
+ * generic-fallback destination and the postcode rejections.
+ *
+ * `fields` is the input; `lines` is what `formatAddressBlock` must return. The two together are
+ * the whole of AC-19: the field *order* per country (PL folds number and apartment into the
+ * street line and puts the postcode before the city; DE/AT put the house number after the street
+ * and allow a c/o line; GB puts the postcode after the town), the skipping of empty optional
+ * fields, and the presence of the recipient phone in every single block (`plan/03` §8: florists
+ * call ahead, so the phone is required in every format).
+ *
+ * `rawPostalCode` is what a buyer types and `postalCode` what `normalisePostcode` must return.
+ * The `invalid: true` rows are postcodes no normaliser can rescue; `reason` is the code
+ * `normalisePostcode` returns, which spec 010 maps to a message key.
+ *
+ * Synthetic data only (`tests/fixtures/README.md`): invented names, real street and postcode
+ * *shapes*, no personal data.
+ */
+export const addresses: readonly AddressFixture[] = [
+  {
+    label: "PL — street line carries number and apartment",
+    country: "PL",
+    fields: {
+      fullName: "Anna Kowalska",
+      street: "ul. Marszałkowska 10/5",
+      postcode: "00-001",
+      city: "Warszawa",
+      phone: "+48 22 123 45 67",
+    },
+    lines: [
+      "Anna Kowalska",
+      "ul. Marszałkowska 10/5",
+      "00-001 Warszawa",
+      "+48 22 123 45 67",
+    ],
+    postalCode: "00-001",
+    rawPostalCode: "00001",
+    city: "Warszawa",
+  },
+  {
+    label: "PL — al. prefix, postcode typed with the hyphen already",
+    country: "PL",
+    fields: {
+      fullName: "Piotr Nowak",
+      street: "al. Jerozolimskie 123/45",
+      postcode: "30-002",
+      city: "Kraków",
+      phone: "+48 512 345 678",
+    },
+    lines: [
+      "Piotr Nowak",
+      "al. Jerozolimskie 123/45",
+      "30-002 Kraków",
+      "+48 512 345 678",
+    ],
+    postalCode: "30-002",
+    rawPostalCode: "30-002",
+    city: "Kraków",
+  },
+  {
+    label: "PL — five digits are needed for a postcode",
+    country: "PL",
+    postalCode: "00-0011",
+    city: "Warszawa",
+    lines: [],
+    invalid: true,
+    reason: "format",
+  },
+  {
+    label: "DE — house number after the street, c/o line present",
+    country: "DE",
+    fields: {
+      fullName: "Lena Schmidt",
+      street: "Kastanienallee",
+      houseNumber: "12",
+      careOf: "c/o Müller",
+      postcode: "10115",
+      city: "Berlin",
+      phone: "+49 30 123456",
+    },
+    lines: [
+      "Lena Schmidt",
+      "Kastanienallee 12",
+      "c/o Müller",
+      "10115 Berlin",
+      "+49 30 123456",
+    ],
+    postalCode: "10115",
+    rawPostalCode: "10115",
+    city: "Berlin",
+  },
+  {
+    label: "DE — no c/o line: the optional field is skipped, not blank",
+    country: "DE",
+    fields: {
+      fullName: "Jonas Weber",
+      street: "Bahnhofstraße",
+      houseNumber: "7a",
+      postcode: "80331",
+      city: "München",
+      phone: "+49 89 987654",
+    },
+    lines: [
+      "Jonas Weber",
+      "Bahnhofstraße 7a",
+      "80331 München",
+      "+49 89 987654",
+    ],
+    postalCode: "80331",
+    rawPostalCode: "D-80331",
+    city: "München",
+  },
+  {
+    label: "DE — four digits is an Austrian postcode, not a German one",
+    country: "DE",
+    postalCode: "1011",
+    city: "Berlin",
+    lines: [],
+    invalid: true,
+    reason: "format",
+  },
+  {
+    label: "AT — same order as DE, four-digit postcode",
+    country: "AT",
+    fields: {
+      fullName: "Johanna Gruber",
+      street: "Mariahilfer Straße",
+      houseNumber: "45",
+      postcode: "1010",
+      city: "Wien",
+      phone: "+43 1 1234567",
+    },
+    lines: [
+      "Johanna Gruber",
+      "Mariahilfer Straße 45",
+      "1010 Wien",
+      "+43 1 1234567",
+    ],
+    postalCode: "1010",
+    rawPostalCode: "A-1010",
+    city: "Wien",
+  },
+  {
+    label: "AT — five digits is a German postcode, not an Austrian one",
+    country: "AT",
+    postalCode: "10115",
+    city: "Wien",
+    lines: [],
+    invalid: true,
+    reason: "format",
+  },
+  {
+    label: "GB — postcode after the town, line 2 and county present",
+    country: "GB",
+    fields: {
+      fullName: "Oliver Clarke",
+      addressLine1: "10 Downing Street",
+      addressLine2: "Flat 2",
+      city: "London",
+      region: "Greater London",
+      postcode: "SW1A 1AA",
+      phone: "+44 20 7925 0918",
+    },
+    lines: [
+      "Oliver Clarke",
+      "10 Downing Street",
+      "Flat 2",
+      "London",
+      "Greater London",
+      "SW1A 1AA",
+      "+44 20 7925 0918",
+    ],
+    postalCode: "SW1A 1AA",
+    rawPostalCode: "sw1a1aa",
+    city: "London",
+  },
+  {
+    label: "GB — no line 2 and no county: both skipped",
+    country: "GB",
+    fields: {
+      fullName: "Priya Raman",
+      addressLine1: "221B Baker Street",
+      city: "London",
+      postcode: "NW1 6XE",
+      phone: "+44 20 7224 3688",
+    },
+    lines: [
+      "Priya Raman",
+      "221B Baker Street",
+      "London",
+      "NW1 6XE",
+      "+44 20 7224 3688",
+    ],
+    postalCode: "NW1 6XE",
+    rawPostalCode: " nw1  6xe ",
+    city: "London",
+  },
+  {
+    label: "GB — an inward code is a digit and two letters",
+    country: "GB",
+    postalCode: "SW1A1A",
+    city: "London",
+    lines: [],
+    invalid: true,
+    reason: "format",
+  },
+  {
+    label:
+      "SI — a destination with no authored format uses the generic fallback",
+    country: "SI",
+    fields: {
+      fullName: "Maja Novak",
+      addressLine1: "Slovenska cesta 1",
+      postcode: "1000",
+      city: "Ljubljana",
+      phone: "+386 1 234 5678",
+    },
+    lines: [
+      "Maja Novak",
+      "Slovenska cesta 1",
+      "1000 Ljubljana",
+      "+386 1 234 5678",
+    ],
+    postalCode: "1000",
+    rawPostalCode: "1000",
+    city: "Ljubljana",
+  },
+  {
+    label: "SI — the generic postcode shape still rejects punctuation",
+    country: "SI",
+    postalCode: "!!",
+    city: "Ljubljana",
+    lines: [],
+    invalid: true,
+    reason: "format",
+  },
+];
 
-/** Filled by spec 003 (phone input) and spec 005 (order validation). */
-export const phones: readonly PhoneFixture[] = [];
+/**
+ * Recipient phone numbers (spec 003 §7, `plan/03` §8; TASK-037). **Data only** — see
+ * `PhoneFixture`: spec 003 validates nothing, spec 010 does.
+ *
+ * One landline and one mobile for PL, DE and GB (the launch corridors), one AT number, and three
+ * rejections spec 010 will need: too short for its numbering plan, no country code at all, and
+ * letters where digits belong.
+ */
+export const phones: readonly PhoneFixture[] = [
+  {
+    label: "PL landline (Warsaw)",
+    country: "PL",
+    e164: "+48221234567",
+    national: "22 123 45 67",
+  },
+  {
+    label: "PL mobile",
+    country: "PL",
+    e164: "+48512345678",
+    national: "512 345 678",
+  },
+  {
+    label: "DE landline (Berlin)",
+    country: "DE",
+    e164: "+493012345678",
+    national: "030 12345678",
+  },
+  {
+    label: "DE mobile",
+    country: "DE",
+    e164: "+4915112345678",
+    national: "0151 12345678",
+  },
+  {
+    label: "AT landline (Vienna)",
+    country: "AT",
+    e164: "+4311234567",
+    national: "01 1234567",
+  },
+  {
+    label: "GB landline (London)",
+    country: "GB",
+    e164: "+442079250918",
+    national: "020 7925 0918",
+  },
+  {
+    label: "GB mobile",
+    country: "GB",
+    e164: "+447911123456",
+    national: "07911 123456",
+  },
+  {
+    label: "PL — too short for the Polish numbering plan",
+    country: "PL",
+    e164: "+4812",
+    national: "12",
+    invalid: true,
+    reason: "too-short",
+  },
+  {
+    label: "PL — national form with no country code",
+    country: "PL",
+    e164: "221234567",
+    national: "22 123 45 67",
+    invalid: true,
+    reason: "no-country-code",
+  },
+  {
+    label: "GB — letters where digits belong",
+    country: "GB",
+    e164: "+44FLOWERS1",
+    national: "0FLOWERS1",
+    invalid: true,
+    reason: "not-a-number",
+  },
+];
