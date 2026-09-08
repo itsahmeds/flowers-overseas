@@ -158,7 +158,7 @@ decision — `docs/runbooks/branch-protection.md`.
 | Claude Code denies an `Edit`/`Write` under `src/` with `no task is active` | the PreToolUse guard: run `.claude/bin/task.sh set TASK-NNN` (the row must exist in `TASKS.md`) and clear it when the PR is open |
 | `pnpm test` reports **5 skipped** | gitleaks is not installed — expected locally; `brew install gitleaks` to run them. The `audit` CI job always does |
 | `pnpm test:integration` reports everything skipped | no schema until spec 002 (AC-16) |
-| `⚠ middleware.ts is deprecated, use proxy.ts` during `pnpm build` | Next 16 renamed the file. Known and deliberate: renaming it today would disarm `fo/no-geo-redirect`, whose filename matcher is `middleware.ts`. Queued for spec 003 (`docs/architecture.md` §4) |
+| `⚠ The "middleware" file convention is deprecated. Please use "proxy" instead.` during `pnpm build` | Next 16 renamed the file. Known and deliberate: renaming it today would disarm `fo/no-geo-redirect`, whose filename matcher is `middleware.ts`. Queued for spec 003 (`docs/architecture.md` §4) |
 | `pnpm lighthouse` fails with `NO_FCP` | `/` paints nothing yet, so Lighthouse aborts before any metric exists. Expected until spec 004; the CI job carries `continue-on-error: true` |
 | `pnpm lint:fixtures` "fails" | it is meant to: `tests/fixtures/lint/` violates the custom rules on purpose |
 | `pnpm branch-protection` exits 1 with `UNAVAILABLE ON THIS PLAN` | a private repository on GitHub Free (403): `docs/runbooks/branch-protection.md` §0 |
