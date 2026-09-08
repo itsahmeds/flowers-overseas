@@ -189,8 +189,10 @@ public `index.ts` — never a deep path. Both rules are ESLint errors
 **One measured exception, in one file: `src/app/global-error.tsx` imports a deep module path**
 (`@/modules/i18n/error-document`) rather than the barrel. It is a Client Component attached to the
 *root* error boundary, so everything it can reach is compiled into a client chunk that lands in
-**every** document's initial script set, `/` included. The narrowing happened in two steps and both
-numbers are measured:
+**every** document's initial script set, `/` included. The narrowing happened in three steps and
+every number below is measured with a browser against `pnpm build && pnpm start`, summing Brotli
+(quality 11) over every `.js` the page requests — lazily fetched chunks included, which is the
+part `/review 26` had to add:
 
 1. TASK-043 replaced the `@/modules/i18n` barrel with `messages.ts` + `registry.ts`. Through the
    barrel the chunk was the whole i18n module — formatters, collator, address formats, alternates
@@ -198,14 +200,31 @@ numbers are measured:
    of every document (`/review 23` raised it). It did **not** remove the 85.3 KB gz / 70.1 KB br of
    zod behind `messages.ts` → `schemas.ts` and `registry.ts` → `src/config/locales.ts`, which was
    the open item of spec 003 §14 A12.
-2. TASK-046 removed that zod. `src/modules/i18n/error-document.ts` imports the x-default locale row
-   from `src/config/locales.data.ts` (plain constants, no imports) and the four strings from
-   `messages/en.json`, and nothing else, so the failure document reaches no schema, no provider and
-   no message source — which is also the right shape for a document reached because something else
-   already threw. Measured: `/` went from 221.3 KB gz / 186.2 KB br to 132.9 / 113.7, and `/en` from
-   233.4 / 197.0 to 145.1 / 124.5. `tests/unit/error-document.test.ts` walks the import graph from
-   the entry file and fails if zod becomes reachable again; `scripts/client-js-budget.ts` asserts
-   the same thing from the build output.
+2. TASK-046 took that zod out of the *initial* script set. `src/modules/i18n/error-document.ts`
+   imports the x-default locale row from `src/config/locales.data.ts` (plain constants, no imports)
+   and the four strings from `messages/en.json`, and nothing else, so the failure document reaches
+   no schema, no provider and no message source — which is also the right shape for a document
+   reached because something else already threw. `/` went from 190 706 B Brotli (226 575 gz) to
+   **116 393 B (136 067 gz)**, and it is the whole 6 487 B under the 122 880 B budget it has.
+3. The same PR, after `/review 26`, took it off the locale documents too. Step 2 left zod one hop
+   away on a *lazy* chunk: `LocaleSuggestionBannerIsland.tsx` → `hints.ts` → `schemas.ts` → zod,
+   and `src/app/[locale]/layout.tsx` renders that island unconditionally through
+   `next/dynamic({ ssr: false })`, so every visitor of `/en`, `/de`, `/en-gb` and `/pl` fetched a
+   70.8 KB Brotli validator immediately after hydration to decide an optional courtesy link.
+   `hints.ts` now imports no validator at all — a regular expression and a launch-code list from
+   `src/config/locales.data.ts` carry the two rules, `schemas.ts` is built from the same constants
+   and stays the server-side boundary parser — and the island's chunk is 2 173 B. `/en` and `/de`
+   went from 203 197 B Brotli (240 633 gz) to **129 638 B (150 992 gz)**, which is 6 758 B (5.5%)
+   over the budget; that overage is `NextIntlClientProvider` and the framework floor, and it is
+   the founder decision spec 004 §13 Q13 option (b) records (escalated, not loosened).
+
+   Three tests keep the graph closed, because "nothing imports it" is a claim about a graph nobody
+   can hold in their head: `tests/unit/error-document.test.ts` walks the imports of the 500
+   document, `tests/unit/i18n-hints-zod-free.test.ts` walks them from the island and its loader
+   (and proves the zod-free predicates and the schemas accept and reject the same values), and
+   `scripts/client-js-budget.ts` asserts it from the build output over the document's scripts
+   **and** the route's `next/dynamic` chunks — the manifest it ignored in step 2, which is why
+   step 3 was needed at all.
 
 The boundary rule that matters is preserved (`app/` → `modules/` is the permitted direction, and no
 module reaches into another module's internals), and the barrel stays the import path for every

@@ -411,13 +411,17 @@ jobs:
       #    build "over" or "under" depending on the reader.
       #  - the serialised client message payload per locale, against 4 KB gzipped (unchanged).
       #  - **no zod and no browser Sentry SDK in any measured route's client bundle** (spec 004
-      #    AC-25), asserted from the chunks the documents actually reference.
+      #    AC-25), asserted from the chunks the documents reference *and* from the route's
+      #    `next/dynamic` chunks — the manifest `/review 26` found the script ignoring, which is
+      #    where zod actually was.
       #
       # `continue-on-error` is on the **step**, not the job, and one clause of it is still a
-      # founder decision: with zod off the client, `/` measures 113.7 KB Brotli (within) and `/en`
-      # 124.5 KB (3.7% over), because the Next 16.3.4 client runtime alone is ~112 KB Brotli and
-      # `NextIntlClientProvider` costs 10.5 KB of the ~8 KB that leaves. Spec 004 §13 Q13 option
-      # (b) is the recorded fallback and TASK-046 escalated it rather than loosening the number.
+      # founder decision: with zod off the initial *and* the lazy chunks, a browser fetches
+      # 116 393 B Brotli on `/` (within, 6 487 B spare) and 129 638 B on `/en` and `/de`
+      # (6 758 B, 5.5% over), because `/`'s total is already the framework floor and a locale
+      # document adds `NextIntlClientProvider` at 10 705 B plus the banner island at 2 173 B.
+      # Spec 004 §13 Q13 option (b) is the recorded fallback and TASK-046 escalated it rather
+      # than loosening the number.
       # TASK-056 owns the flip to blocking; deleting the one line below is the whole flip.
       - name: Measure the client-JS budgets (AC-27 / T-27, AC-25)
         id: budget

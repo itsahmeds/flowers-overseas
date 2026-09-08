@@ -162,7 +162,12 @@ describe("docs/architecture.md (AC-30)", () => {
     });
   });
 
-  /** TASK-046: §2 must record the zod removal it performed, with the measured numbers. */
+  /**
+   * TASK-046: §2 must record the zod removal it performed, with the measured numbers — both
+   * halves of it. `/review 26` found the first half reported as the whole, so the second (the
+   * lazily fetched island chunk) is pinned here by name: a §2 that documents only the
+   * `global-error` narrowing is the state the review rejected.
+   */
   it("records the global-error import narrowing and the zod removal (§2)", () => {
     const section = doc.slice(
       doc.indexOf("## 2. Repository layout"),
@@ -170,7 +175,11 @@ describe("docs/architecture.md (AC-30)", () => {
     );
     expect(section).toContain("@/modules/i18n/error-document");
     expect(section).toContain("src/config/locales.data.ts");
-    expect(section).toContain("113.7");
+    // The browser-measured Brotli totals of `/` and of a locale document, in bytes.
+    expect(section).toContain("116 393");
+    expect(section).toContain("129 638");
+    expect(section).toContain("next/dynamic");
+    expect(section).toContain("i18n-hints-zod-free.test.ts");
   });
 
   /**
