@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none" role="img" aria-label="Flowers Overseas mark">
+  <circle cx="8" cy="40" r="3" fill="#2f6b47"/>
+  <path d="M8 40 C 20 40, 26 34, 30 22" stroke="#26282f" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+  <g transform="translate(31 16)" stroke="#26282f" stroke-width="2.2" fill="none">
+    <circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/>
+    <circle cx="0" cy="0" r="2" fill="#2f6b47" stroke="none"/>
+  </g>
+</svg>

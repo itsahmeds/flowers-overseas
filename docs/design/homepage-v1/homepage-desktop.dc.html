@@ -1,0 +1,193 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+  <style>
+/* Hallmark · macrostructure: Photographic × Split Studio · tone: quiet luxury, trust-first · anchor hue: forest 155° · theme: custom (vibe: "white, cool grey, forest green, printed labels, generous air") · paper oklch(99.3% 0.002 90) · accent oklch(42% 0.10 155) · display Newsreader 500 + body IBM Plex Sans · axes: light / roman-serif / chromatic-green · nav: N6 Masthead (centred wordmark, tracked small labels) · footer: Ft4 Dense colophon (legal + payment + languages) · enrichment: photography (user assets pending, neutral placeholders) · pre-emit critique: P4 H5 E4 S4 R5 V4 */
+:root{
+  --color-paper: oklch(99.3% 0.002 90);
+  --color-paper-2: oklch(97.2% 0.004 90);
+  --color-paper-3: oklch(94.5% 0.005 90);
+  --color-ink: oklch(19% 0.01 250);
+  --color-ink-2: oklch(36% 0.01 250);
+  --color-ink-3: oklch(52% 0.008 250);
+  --color-rule: oklch(90% 0.004 250);
+  --color-accent: oklch(42% 0.10 155);
+  --color-accent-ink: oklch(99% 0.002 90);
+  --color-photo: linear-gradient(160deg, oklch(93% 0.02 120) 0%, oklch(88% 0.03 140) 45%, oklch(80% 0.04 150) 100%);
+  --font-display: "Newsreader", "Iowan Old Style", Georgia, "Times New Roman", serif;
+  --font-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --text-display: 68px; --text-display-s: 42px; --text-2xl: 34px; --text-xl: 24px; --text-lg: 18px; --text-md: 15px; --text-sm: 13px; --text-xs: 11px;
+  --space-xs: 4px; --space-sm: 8px; --space-md: 16px; --space-lg: 24px; --space-xl: 40px; --space-2xl: 72px; --space-3xl: 128px;
+  --radius-sm: 2px; --radius-md: 4px;
+  --rule: 1px solid var(--color-rule);
+}
+    body { margin: 0; font-family: var(--font-body); color: var(--color-ink); background: var(--color-paper); -webkit-font-smoothing: antialiased; }
+    a { color: var(--color-ink); text-decoration: none; } a:hover { color: var(--color-accent); }
+    .display { font-family: var(--font-display); font-weight: 500; letter-spacing: -0.015em; }
+    .label { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-ink-3); }
+    .photo { background: var(--color-photo); display: flex; align-items: flex-end; padding: var(--space-md); color: oklch(40% 0.03 150); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field span.v { min-height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-bottom: 1px solid var(--color-ink); font-size: var(--text-md); color: var(--color-ink); }
+    .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
+    .btn.accent { background: var(--color-accent); }
+    .price { font-variant-numeric: tabular-nums; }
+    .ph { display: inline-block; min-width: 56px; height: 14px; background: var(--color-paper-3); border-radius: 2px; vertical-align: middle; }
+  </style>
+</helmet>
+<div style="width: 1440px; min-height: 4520px; background: var(--color-paper); display: flex; flex-direction: column;">
+
+  <div style="display: flex; justify-content: center; gap: 28px; min-height: 34px; align-items: center; font-size: var(--text-xs); letter-spacing: 0.06em; color: var(--color-ink-2); border-bottom: var(--rule);">
+    <span>Order by 14:00 Warsaw time for same-day delivery</span><span style="color: var(--color-rule);">|</span><span>Prices include delivery and VAT</span><span style="color: var(--color-rule);">|</span><span>7-day freshness guarantee</span>
+  </div>
+
+  <header style="display: flex; flex-direction: column; border-bottom: var(--rule);">
+    <div style="display: grid; grid-template-columns: 300px minmax(0, 1fr) 300px; align-items: center; gap: 40px; padding: 18px 56px;">
+      <a href="#" style="display: flex; align-items: center; gap: 12px; color: var(--color-ink);"><svg width="40" height="40" viewBox="0 0 48 48" fill="none" aria-hidden="true"><circle cx="8" cy="40" r="3" fill="var(--color-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" stroke="var(--color-ink)" stroke-width="2.4" stroke-linecap="round" fill="none"/><g transform="translate(31 16)"><circle cx="0" cy="-6" r="4" stroke="var(--color-ink)" stroke-width="2.2" fill="none"/><circle cx="5.7" cy="-1.9" r="4" stroke="var(--color-ink)" stroke-width="2.2" fill="none"/><circle cx="3.5" cy="4.9" r="4" stroke="var(--color-ink)" stroke-width="2.2" fill="none"/><circle cx="-3.5" cy="4.9" r="4" stroke="var(--color-ink)" stroke-width="2.2" fill="none"/><circle cx="-5.7" cy="-1.9" r="4" stroke="var(--color-ink)" stroke-width="2.2" fill="none"/><circle cx="0" cy="0" r="2" fill="var(--color-accent)"/></g></svg><span class="display" style="font-size: 26px; letter-spacing: 0.04em;">Flowers Overseas</span></a>
+      <div style="display: flex; max-width: 720px; width: 100%; justify-self: center;">
+        <div style="flex: 1; display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 16px; border: 1px solid var(--color-ink-3); border-right: none; border-radius: var(--radius-sm) 0 0 var(--radius-sm); color: var(--color-ink-3); font-size: var(--text-md);">Search flowers, occasions or a city</div>
+        <span style="display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 26px; background: var(--color-ink); color: var(--color-paper); font-weight: 500; font-size: var(--text-md); border-radius: 0 var(--radius-sm) var(--radius-sm) 0;">Search</span>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 16px;"><a href="#" style="display: flex; flex-direction: column; align-items: center; gap: 6px; color: var(--color-ink); min-width: 72px;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg><span style="font-size: var(--text-sm);">Sign in</span></a><a href="#" style="display: flex; flex-direction: column; align-items: center; gap: 6px; color: var(--color-ink); min-width: 72px;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="13" height="10" rx="1"/><path d="M16 10h3l2 3v4h-5"/><circle cx="7" cy="18" r="1.6"/><circle cx="18" cy="18" r="1.6"/></svg><span style="font-size: var(--text-sm);">My orders</span></a><a href="#" style="display: flex; flex-direction: column; align-items: center; gap: 6px; color: var(--color-ink); min-width: 72px;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h12l-1 12H7L6 7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg><span style="font-size: var(--text-sm);">Basket (0)</span></a></div>
+    </div>
+    <nav aria-label="Categories" style="display: flex; justify-content: space-between; align-items: center; padding: 0 56px; border-top: var(--rule);">
+      <div style="display: flex; gap: 30px; font-size: var(--text-md); font-weight: 500;">
+        <a href="#" style="padding: 14px 0;">Best sellers</a><a href="#" style="padding: 14px 0;">Birthday</a><a href="#" style="padding: 14px 0;">Sympathy</a><a href="#" style="padding: 14px 0;">Occasions</a><a href="#" style="padding: 14px 0;">Bouquets</a><a href="#" style="padding: 14px 0;">Roses</a><a href="#" style="padding: 14px 0;">Plants</a><a href="#" style="padding: 14px 0;">Add-ons</a><a href="#" style="padding: 14px 0; color: var(--color-accent);">Same-day delivery</a><a href="#" style="padding: 14px 0;">Destinations</a>
+      </div>
+      <div style="display: flex; gap: 22px;" class="label"><a href="#" style="color: var(--color-ink);">For florists</a><a href="#" style="color: var(--color-ink);">EN · EUR</a></div>
+    </nav>
+  </header>
+
+  <section style="position: relative; height: 820px; display: flex;">
+    <figure class="photo" style="margin: 0; position: absolute; inset: 0;"><figcaption>Photography to supply · a Warsaw florist finishing a hand-tied bouquet, morning light, full bleed</figcaption></figure>
+    <div style="position: relative; align-self: center; margin-left: 56px; width: 560px; padding: 32px 36px 26px; background: var(--color-paper); box-shadow: 0 1px 0 var(--color-rule), 0 24px 60px -30px oklch(20% 0.02 250 / 0.35); display: flex; flex-direction: column; gap: 22px;">
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <span class="label" style="color: var(--color-accent);">International flower delivery</span>
+        <h1 class="display" style="margin: 0; font-size: 46px; line-height: 1.05; overflow-wrap: anywhere; min-width: 0;">Flowers for someone far away.</h1>
+        <p style="margin: 0; font-size: var(--text-md); line-height: 1.6; color: var(--color-ink-2);">Made and hand-delivered by a vetted florist in your recipient's town. We never ship a box.</p>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 14px;">
+        <label class="field" style="position: relative;"><span class="label">Country</span><span class="v" style="border-bottom-color: var(--color-accent);">Pol<span style="color: var(--color-ink-3);">and</span> <span style="display: flex; align-items: center; gap: 8px; color: var(--color-ink-3); font-size: var(--text-xs);">type to search <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9l6 6 6-6"/></svg></span></span>
+          <div style="position: absolute; top: 100%; left: 0; right: 0; z-index: 2; margin-top: 4px; background: var(--color-paper); border: var(--rule); box-shadow: 0 12px 30px -18px oklch(20% 0.02 250 / 0.4); display: flex; flex-direction: column; font-size: var(--text-sm);">
+            <span style="display: flex; justify-content: space-between; padding: 11px 12px; background: var(--color-paper-2);"><span><strong>Pol</strong>and</span><span style="color: var(--color-accent); font-weight: 500;">Delivering now</span></span>
+            <span style="display: flex; justify-content: space-between; padding: 11px 12px; color: var(--color-ink-2);"><span><strong>Pol</strong>ynesia, French</span><span style="color: var(--color-ink-3);">Not yet</span></span>
+            <span style="padding: 9px 12px; font-size: var(--text-xs); color: var(--color-ink-3); border-top: var(--rule);">Germany, France, Spain, Italy, Romania, Netherlands have guides and a waiting list</span>
+          </div>
+        </label>
+        <div style="height: 118px;"></div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 20px;">
+          <label class="field"><span class="label">Town, city or postcode</span><span class="v" style="color: var(--color-ink-3);">Warszawa or 00-001</span></label>
+          <label class="field"><span class="label">Delivery date</span><span class="v">Thu 10 Sep <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="1"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span></label>
+        </div>
+      </div>
+      <a class="btn" href="#">Continue</a>
+      <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px;"><p style="margin: 0; font-size: var(--text-sm); color: var(--color-ink-3); line-height: 1.5;">Shows everything we can deliver there on that day: bouquets, plants, add-ons. Order by 14:00 local time for same-day.</p></div>
+    </div>
+  </section>
+
+  <section style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-xl); padding: 28px 56px; border-bottom: var(--rule);">
+    <div style="display: flex; gap: 12px; align-items: flex-start;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 5-3.5 8-7 9-3.5-1-7-4-7-9V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg><div><div style="font-size: var(--text-sm); font-weight: 600;">7-day freshness guarantee</div><div style="font-size: var(--text-sm); color: var(--color-ink-3);">Redeliver or refund, your choice</div></div></div>
+    <div style="display: flex; gap: 12px; align-items: flex-start;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V8l7-5 7 5v13"/><path d="M10 21v-6h4v6"/></svg><div><div style="font-size: var(--text-sm); font-weight: 600;">Made by a florist in their town</div><div style="font-size: var(--text-sm); color: var(--color-ink-3);">Independent shops we have visited</div></div></div>
+    <div style="display: flex; gap: 12px; align-items: flex-start;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="1"/><path d="M3 10h18"/></svg><div><div style="font-size: var(--text-sm); font-weight: 600;">The price you see is final</div><div style="font-size: var(--text-sm); color: var(--color-ink-3);">Delivery and VAT included</div></div></div>
+    <div style="display: flex; gap: 12px; align-items: flex-start;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="1"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><div><div style="font-size: var(--text-sm); font-weight: 600;">Photo on delivery</div><div style="font-size: var(--text-sm); color: var(--color-ink-3);">You see it in their hands</div></div></div>
+  </section>
+
+  <section style="padding: var(--space-2xl) 56px 0; display: flex; flex-direction: column; gap: var(--space-lg);">
+    <div style="display: flex; flex-direction: column; gap: 8px;"><span class="label">Shop by occasion</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl);">What is the occasion?</h2></div>
+    <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 20px;">
+      <a href="#" style="display: flex; flex-direction: column; gap: 8px;"><figure class="photo" style="margin: 0; aspect-ratio: 1 / 1;"><figcaption>Photo</figcaption></figure><span style="font-size: var(--text-sm); font-weight: 500;">Birthday</span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">Any day of the year</span></a>
+      <a href="#" style="display: flex; flex-direction: column; gap: 8px;"><figure class="photo" style="margin: 0; aspect-ratio: 1 / 1;"><figcaption>Photo</figcaption></figure><span style="font-size: var(--text-sm); font-weight: 500;">Name day</span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">Imieniny, the Polish tradition</span></a>
+      <a href="#" style="display: flex; flex-direction: column; gap: 8px;"><figure class="photo" style="margin: 0; aspect-ratio: 1 / 1;"><figcaption>Photo</figcaption></figure><span style="font-size: var(--text-sm); font-weight: 500;">Anniversary</span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">Roses and peonies</span></a>
+      <a href="#" style="display: flex; flex-direction: column; gap: 8px;"><figure class="photo" style="margin: 0; aspect-ratio: 1 / 1;"><figcaption>Photo</figcaption></figure><span style="font-size: var(--text-sm); font-weight: 500;">Sympathy</span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">Delivered with care</span></a>
+      <a href="#" style="display: flex; flex-direction: column; gap: 8px;"><figure class="photo" style="margin: 0; aspect-ratio: 1 / 1;"><figcaption>Photo</figcaption></figure><span style="font-size: var(--text-sm); font-weight: 500;">Just because</span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">No reason needed</span></a>
+      <a href="#" style="display: flex; flex-direction: column; gap: 8px;"><figure class="photo" style="margin: 0; aspect-ratio: 1 / 1;"><figcaption>Photo</figcaption></figure><span style="font-size: var(--text-sm); font-weight: 500;">New baby</span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">Soft colours, no lilies</span></a>
+    </div>
+  </section>
+
+  <section style="padding: var(--space-2xl) 56px; display: flex; flex-direction: column; gap: var(--space-lg);">
+    <div style="display: flex; justify-content: space-between; align-items: baseline;">
+      <div style="display: flex; flex-direction: column; gap: 8px;"><span class="label">Delivering now</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl);">Bouquets for Poland</h2></div>
+      <a href="#" style="font-size: var(--text-sm); font-weight: 500; border-bottom: 1px solid var(--color-ink); padding-bottom: 2px;">View all 84</a>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px;">
+      <a href="#" style="display: flex; flex-direction: column; gap: 12px;"><figure class="photo" style="margin: 0; aspect-ratio: 4 / 5;"><figcaption>Photo</figcaption></figure><div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px;"><span style="font-size: var(--text-md); font-weight: 500;">Warsaw Morning</span><span class="price" style="font-size: var(--text-sm); color: var(--color-ink-2);">starting at <span class="ph" title="price to confirm"></span></span></div><span style="font-size: var(--text-sm); color: var(--color-ink-3);">Seasonal hand-tied · three sizes</span></a>
+      <a href="#" style="display: flex; flex-direction: column; gap: 12px;"><figure class="photo" style="margin: 0; aspect-ratio: 4 / 5;"><figcaption>Photo</figcaption></figure><div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px;"><span style="font-size: var(--text-md); font-weight: 500;">Twelve Roses</span><span class="price" style="font-size: var(--text-sm); color: var(--color-ink-2);">starting at <span class="ph"></span></span></div><span style="font-size: var(--text-sm); color: var(--color-ink-3);">Classic · red, white or blush</span></a>
+      <a href="#" style="display: flex; flex-direction: column; gap: 12px;"><figure class="photo" style="margin: 0; aspect-ratio: 4 / 5;"><figcaption>Photo</figcaption></figure><div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px;"><span style="font-size: var(--text-md); font-weight: 500;">Name Day Peonies</span><span class="price" style="font-size: var(--text-sm); color: var(--color-ink-2);">starting at <span class="ph"></span></span></div><span style="font-size: var(--text-sm); color: var(--color-ink-3);">In season May to July</span></a>
+      <a href="#" style="display: flex; flex-direction: column; gap: 12px;"><figure class="photo" style="margin: 0; aspect-ratio: 4 / 5;"><figcaption>Photo</figcaption></figure><div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px;"><span style="font-size: var(--text-md); font-weight: 500;">Florist's Choice</span><span class="price" style="font-size: var(--text-sm); color: var(--color-ink-2);">starting at <span class="ph"></span></span></div><span style="font-size: var(--text-sm); color: var(--color-ink-3);">Whatever is freshest that morning</span></a>
+    </div>
+  </section>
+
+  <section style="padding: var(--space-2xl) 56px 0; display: flex; flex-direction: column; gap: var(--space-lg); border-top: var(--rule);">
+    <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 24px;">
+      <div style="display: flex; flex-direction: column; gap: 8px;"><span class="label">Trending now</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl);">Most sent this week</h2></div>
+      <div style="display: flex; gap: 22px;" class="label"><a href="#" style="color: var(--color-ink); border-bottom: 1px solid var(--color-ink); padding-bottom: 4px;">Best sellers</a><a href="#" style="color: var(--color-ink-3);">New this season</a><a href="#" style="color: var(--color-ink-3);">Under <span class="ph" style="min-width: 28px;"></span></a><a href="#" style="color: var(--color-ink-3);">Same-day</a></div>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 20px;">
+      <a href="#" style="display: flex; flex-direction: column; gap: 10px;"><figure class="photo" style="margin: 0; aspect-ratio: 4 / 5;"><figcaption>Photo</figcaption></figure><div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px;"><span style="font-size: var(--text-md); font-weight: 500;">Warsaw Morning</span><span class="price" style="font-size: var(--text-sm); color: var(--color-ink-2);">starting at <span class="ph"></span></span></div><span style="font-size: var(--text-sm); color: var(--color-ink-3);">Seasonal hand-tied</span></a>
+      <a href="#" style="display: flex; flex-direction: column; gap: 10px;"><figure class="photo" style="margin: 0; aspect-ratio: 4 / 5;"><figcaption>Photo</figcaption></figure><div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px;"><span style="font-size: var(--text-md); font-weight: 500;">Two Dozen Roses</span><span class="price" style="font-size: var(--text-sm); color: var(--color-ink-2);">starting at <span class="ph"></span></span></div><span style="font-size: var(--text-sm); color: var(--color-ink-3);">Red, white or blush</span></a>
+      <a href="#" style="display: flex; flex-direction: column; gap: 10px;"><figure class="photo" style="margin: 0; aspect-ratio: 4 / 5;"><figcaption>Photo</figcaption></figure><div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px;"><span style="font-size: var(--text-md); font-weight: 500;">Sunflower Field</span><span class="price" style="font-size: var(--text-sm); color: var(--color-ink-2);">starting at <span class="ph"></span></span></div><span style="font-size: var(--text-sm); color: var(--color-ink-3);">Bright, long-lasting</span></a>
+      <a href="#" style="display: flex; flex-direction: column; gap: 10px;"><figure class="photo" style="margin: 0; aspect-ratio: 4 / 5;"><figcaption>Photo</figcaption></figure><div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px;"><span style="font-size: var(--text-md); font-weight: 500;">Peony &amp; Eucalyptus</span><span class="price" style="font-size: var(--text-sm); color: var(--color-ink-2);">starting at <span class="ph"></span></span></div><span style="font-size: var(--text-sm); color: var(--color-ink-3);">May to July</span></a>
+      <a href="#" style="display: flex; flex-direction: column; gap: 10px;"><figure class="photo" style="margin: 0; aspect-ratio: 4 / 5;"><figcaption>Photo</figcaption></figure><div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px;"><span style="font-size: var(--text-md); font-weight: 500;">Florist's Choice</span><span class="price" style="font-size: var(--text-sm); color: var(--color-ink-2);">starting at <span class="ph"></span></span></div><span style="font-size: var(--text-sm); color: var(--color-ink-3);">Freshest that morning</span></a>
+    </div>
+    <p style="margin: 0; font-size: var(--text-xs); color: var(--color-ink-3);">Ranking is by real orders in the last 7 days and switches on once we have them; until then this row shows the florists' picks and says so.</p>
+  </section>
+
+  <section style="padding: var(--space-3xl) 56px 0; display: grid; grid-template-columns: 360px minmax(0, 1fr); gap: var(--space-2xl); align-items: start;">
+    <div style="display: flex; flex-direction: column; gap: 12px;"><span class="label">Verified reviews</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">What buyers and recipients say</h2><p style="margin: 0; font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.6;">Every review here comes from a completed order and shows the destination and the date. This section is hidden until the first verified reviews exist; nothing here is invented.</p><div style="display: flex; align-items: center; gap: 10px; margin-top: 6px;"><span class="ph" style="min-width: 88px; height: 20px;"></span><span style="font-size: var(--text-sm); color: var(--color-ink-3);">Trustpilot rating, once the profile is claimed</span></div></div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px;">
+      <div style="display: flex; flex-direction: column; gap: 12px; padding: 22px; border: var(--rule);"><div style="display: flex; gap: 3px;"><span class="ph" style="min-width: 84px; height: 12px;"></span></div><p style="margin: 0; font-size: var(--text-md); line-height: 1.55; color: var(--color-ink-2);"><span class="ph" style="width: 100%; height: 14px; display: block;"></span><span class="ph" style="width: 92%; height: 14px; display: block; margin-top: 8px;"></span><span class="ph" style="width: 60%; height: 14px; display: block; margin-top: 8px;"></span></p><div style="font-size: var(--text-xs); color: var(--color-ink-3);">[Buyer first name] · sent to Warszawa · [date] · verified order</div></div>
+      <div style="display: flex; flex-direction: column; gap: 12px; padding: 22px; border: var(--rule);"><div style="display: flex; gap: 3px;"><span class="ph" style="min-width: 84px; height: 12px;"></span></div><p style="margin: 0; font-size: var(--text-md); line-height: 1.55; color: var(--color-ink-2);"><span class="ph" style="width: 100%; height: 14px; display: block;"></span><span class="ph" style="width: 80%; height: 14px; display: block; margin-top: 8px;"></span></p><div style="font-size: var(--text-xs); color: var(--color-ink-3);">[Buyer first name] · sent to Kraków · [date] · verified order</div></div>
+      <div style="display: flex; flex-direction: column; gap: 12px; padding: 22px; border: var(--rule);"><div style="display: flex; gap: 3px;"><span class="ph" style="min-width: 84px; height: 12px;"></span></div><p style="margin: 0; font-size: var(--text-md); line-height: 1.55; color: var(--color-ink-2);"><span class="ph" style="width: 100%; height: 14px; display: block;"></span><span class="ph" style="width: 95%; height: 14px; display: block; margin-top: 8px;"></span><span class="ph" style="width: 45%; height: 14px; display: block; margin-top: 8px;"></span></p><div style="font-size: var(--text-xs); color: var(--color-ink-3);">[Recipient first name] · Gdańsk · [date] · verified delivery</div></div>
+    </div>
+  </section>
+
+  <section style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2xl); padding: var(--space-3xl) 56px; align-items: center; border-top: var(--rule);">
+    <figure class="photo" style="margin: 0; height: 560px;"><figcaption>Photography to supply · the delivery photo a buyer receives</figcaption></figure>
+    <div style="display: flex; flex-direction: column; gap: var(--space-lg); max-width: 520px;">
+      <span class="label">How a relay works</span>
+      <h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">Three people touch your order. None of them is a courier.</h2>
+      <div style="display: flex; flex-direction: column; gap: 20px; border-top: var(--rule); padding-top: 20px;">
+        <div style="display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 16px;"><span class="display" style="font-size: var(--text-xl); color: var(--color-accent);">01</span><div><div style="font-weight: 500;">You choose the town, the day and a bouquet.</div><div style="font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.6;">Every price is final. The cutoff is shown in the recipient's time, not yours.</div></div></div>
+        <div style="display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 16px;"><span class="display" style="font-size: var(--text-xl); color: var(--color-accent);">02</span><div><div style="font-weight: 500;">A florist a few streets away accepts it.</div><div style="font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.6;">Made that morning with what is in season locally. Substitutions are like for like, and we tell you.</div></div></div>
+        <div style="display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 16px;"><span class="display" style="font-size: var(--text-xl); color: var(--color-accent);">03</span><div><div style="font-weight: 500;">Delivered by hand. You get the photo.</div><div style="font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.6;">A picture arrives when the flowers do, so you know it happened.</div></div></div>
+      </div>
+      <a href="#" style="align-self: flex-start; font-size: var(--text-sm); font-weight: 500; border-bottom: 1px solid var(--color-ink); padding-bottom: 2px;">Read the guarantee in full</a>
+    </div>
+  </section>
+
+  <section style="padding: var(--space-2xl) 56px var(--space-3xl); border-top: var(--rule); display: grid; grid-template-columns: 360px minmax(0, 1fr); gap: var(--space-2xl); align-items: start;">
+    <div style="display: flex; flex-direction: column; gap: 12px;"><span class="label">Destinations</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">Poland today. Six more countries as we vet florists.</h2><p style="margin: 0; font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.6;">We open a country only when we have visited enough florists to stand behind every order. Until then you can read the guide and join the waiting list.</p></div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; border-top: var(--rule); border-left: var(--rule);">
+      <a href="#" style="display: flex; flex-direction: column; gap: 6px; padding: 22px; border-right: var(--rule); border-bottom: var(--rule); background: var(--color-paper-2);"><span class="display" style="font-size: var(--text-xl);">Poland</span><span style="font-size: var(--text-sm); color: var(--color-accent); font-weight: 500;">Delivering now</span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">Warszawa · Kraków · Wrocław · Gdańsk · Poznań</span></a>
+      <a href="#" style="display: flex; flex-direction: column; gap: 6px; padding: 22px; border-right: var(--rule); border-bottom: var(--rule);"><span class="display" style="font-size: var(--text-xl);">Germany</span><span style="font-size: var(--text-sm); color: var(--color-ink-3);">Guide · waiting list</span></a>
+      <a href="#" style="display: flex; flex-direction: column; gap: 6px; padding: 22px; border-right: var(--rule); border-bottom: var(--rule);"><span class="display" style="font-size: var(--text-xl);">France</span><span style="font-size: var(--text-sm); color: var(--color-ink-3);">Guide · waiting list</span></a>
+      <a href="#" style="display: flex; flex-direction: column; gap: 6px; padding: 22px; border-right: var(--rule); border-bottom: var(--rule);"><span class="display" style="font-size: var(--text-xl);">Spain</span><span style="font-size: var(--text-sm); color: var(--color-ink-3);">Guide · waiting list</span></a>
+      <a href="#" style="display: flex; flex-direction: column; gap: 6px; padding: 22px; border-right: var(--rule); border-bottom: var(--rule);"><span class="display" style="font-size: var(--text-xl);">Italy</span><span style="font-size: var(--text-sm); color: var(--color-ink-3);">Guide · waiting list</span></a>
+      <a href="#" style="display: flex; flex-direction: column; gap: 6px; padding: 22px; border-right: var(--rule); border-bottom: var(--rule);"><span class="display" style="font-size: var(--text-xl);">Romania</span><span style="font-size: var(--text-sm); color: var(--color-ink-3);">Guide · waiting list</span></a>
+      <a href="#" style="display: flex; flex-direction: column; gap: 6px; padding: 22px; border-right: var(--rule); border-bottom: var(--rule);"><span class="display" style="font-size: var(--text-xl);">Netherlands</span><span style="font-size: var(--text-sm); color: var(--color-ink-3);">Guide · waiting list</span></a>
+      <a href="#" style="display: flex; flex-direction: column; justify-content: center; gap: 6px; padding: 22px; border-right: var(--rule); border-bottom: var(--rule); grid-column: span 2;"><span style="font-size: var(--text-sm); font-weight: 500;">Somewhere else?</span><span style="font-size: var(--text-sm); color: var(--color-ink-3);">Tell us where you need us next and we will let you know when we open there.</span></a>
+    </div>
+  </section>
+
+  <footer style="margin-top: auto; padding: var(--space-xl) 56px var(--space-lg); border-top: 1px solid var(--color-ink); display: flex; flex-direction: column; gap: var(--space-lg);">
+    <div style="display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: var(--space-xl); font-size: var(--text-sm); line-height: 1.7;">
+      <div style="display: flex; flex-direction: column; gap: 8px;"><span style="display: flex; align-items: center; gap: 10px;"><svg width="28" height="28" viewBox="0 0 48 48" fill="none" aria-hidden="true"><circle cx="8" cy="40" r="3" fill="var(--color-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" stroke="var(--color-ink)" stroke-width="2.4" stroke-linecap="round" fill="none"/><g transform="translate(31 16)"><circle cx="0" cy="-6" r="4" stroke="var(--color-ink)" stroke-width="2.2" fill="none"/><circle cx="5.7" cy="-1.9" r="4" stroke="var(--color-ink)" stroke-width="2.2" fill="none"/><circle cx="3.5" cy="4.9" r="4" stroke="var(--color-ink)" stroke-width="2.2" fill="none"/><circle cx="-3.5" cy="4.9" r="4" stroke="var(--color-ink)" stroke-width="2.2" fill="none"/><circle cx="-5.7" cy="-1.9" r="4" stroke="var(--color-ink)" stroke-width="2.2" fill="none"/><circle cx="0" cy="0" r="2" fill="var(--color-accent)"/></g></svg><span class="display" style="font-size: 26px; letter-spacing: 0.04em;">Flowers Overseas</span></span><span style="color: var(--color-ink-2); max-width: 36ch;">International flower relay. You order, a vetted local florist makes and delivers. Operated by [COMPANY LEGAL NAME], [REGISTERED ADDRESS], [REGISTRATION NO].</span></div>
+      <div style="display: flex; flex-direction: column;"><span class="label" style="margin-bottom: 6px;">Sending</span><a href="#">Destinations</a><a href="#">Occasions</a><a href="#">Delivery times and cutoffs</a><a href="#">The guarantee</a></div>
+      <div style="display: flex; flex-direction: column;"><span class="label" style="margin-bottom: 6px;">Company</span><a href="#">How it works</a><a href="#">For florists</a><a href="#">Help and contact</a><a href="#">Imprint</a></div>
+      <div style="display: flex; flex-direction: column;"><span class="label" style="margin-bottom: 6px;">Payment</span><span style="color: var(--color-ink-2);">BLIK · Klarna · PayPal · Visa · Mastercard · Apple Pay</span><span style="color: var(--color-ink-3);">Card payments processed by Stripe. We never store card numbers.</span></div>
+    </div>
+    <div style="display: flex; justify-content: space-between; align-items: center; gap: var(--space-lg); border-top: var(--rule); padding-top: 16px; font-size: var(--text-xs); color: var(--color-ink-3);">
+      <div style="display: flex; gap: 20px;"><a href="#" style="color: var(--color-ink-3);">Terms</a><a href="#" style="color: var(--color-ink-3);">Privacy</a><a href="#" style="color: var(--color-ink-3);">Cookies</a><a href="#" style="color: var(--color-ink-3);">Withdrawal and refunds</a></div>
+      <div style="display: flex; gap: 20px;"><a href="#" style="color: var(--color-ink-3);">English</a><a href="#" style="color: var(--color-ink-3);">English (UK)</a><a href="#" style="color: var(--color-ink-3);">Deutsch</a><a href="#" style="color: var(--color-ink-3);">Polski</a></div>
+    </div>
+  </footer>
+</div>
+</x-dc>
+</body>
+</html>

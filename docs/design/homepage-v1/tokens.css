@@ -1,0 +1,19 @@
+/* Hallmark · macrostructure: Photographic × Split Studio · tone: quiet luxury, trust-first · anchor hue: forest 155° · theme: custom (vibe: "white, cool grey, forest green, printed labels, generous air") · paper oklch(99.3% 0.002 90) · accent oklch(42% 0.10 155) · display Newsreader 500 + body IBM Plex Sans · axes: light / roman-serif / chromatic-green · nav: N6 Masthead (centred wordmark, tracked small labels) · footer: Ft4 Dense colophon (legal + payment + languages) · enrichment: photography (user assets pending, neutral placeholders) · pre-emit critique: P4 H5 E4 S4 R5 V4 */
+:root{
+  --color-paper: oklch(99.3% 0.002 90);
+  --color-paper-2: oklch(97.2% 0.004 90);
+  --color-paper-3: oklch(94.5% 0.005 90);
+  --color-ink: oklch(19% 0.01 250);
+  --color-ink-2: oklch(36% 0.01 250);
+  --color-ink-3: oklch(52% 0.008 250);
+  --color-rule: oklch(90% 0.004 250);
+  --color-accent: oklch(42% 0.10 155);
+  --color-accent-ink: oklch(99% 0.002 90);
+  --color-photo: linear-gradient(160deg, oklch(93% 0.02 120) 0%, oklch(88% 0.03 140) 45%, oklch(80% 0.04 150) 100%);
+  --font-display: "Newsreader", "Iowan Old Style", Georgia, "Times New Roman", serif;
+  --font-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --text-display: 68px; --text-display-s: 42px; --text-2xl: 34px; --text-xl: 24px; --text-lg: 18px; --text-md: 15px; --text-sm: 13px; --text-xs: 11px;
+  --space-xs: 4px; --space-sm: 8px; --space-md: 16px; --space-lg: 24px; --space-xl: 40px; --space-2xl: 72px; --space-3xl: 128px;
+  --radius-sm: 2px; --radius-md: 4px;
+  --rule: 1px solid var(--color-rule);
+}

@@ -1,0 +1,11 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "title": "Homepage · desktop 1440", "x": 0, "y": 0, "w": 1440, "h": 4620 },
+    { "file": "Mobile.dc.html", "title": "Homepage · mobile 390", "x": 1540, "y": 0, "w": 390, "h": 4740 },
+    { "file": "Logo.dc.html", "title": "Identity · chosen mark and system", "x": 0, "y": 4900, "w": 1440, "h": 1500 }
+  ],
+  "annotations": [
+    { "id": "round4", "x": 0, "y": -300, "w": 900, "text": "This round: header rebuilt to the 1-800-Flowers / InternetFlorist anatomy you showed — logo left, wide search with a dark Search button, labelled Sign in / My orders / Basket, and a full category row underneath (Best sellers · Birthday · Sympathy · Occasions · Bouquets · Roses · Plants · Add-ons · Same-day delivery · Destinations). Also (Best sellers · Bouquets · Roses · Plants · Occasions · Add-ons · Destinations · Same-day), a 'Most sent this week' trending row with tabs, a verified-reviews section, and a logo system below.\n\nFinder, per your notes: a country field you type into that opens a dropdown with status per country, then town/city/postcode, then date; the button is a neutral Continue with a line under it saying it shows everything deliverable there that day. Logo: your call — the first mark (origin dot, stem, five-petal bloom) is the brand mark; its full system is the third artboard. Earlier finder note: 'Where are they?' is now a visible choice (Poland selected and marked delivering now) instead of a dropdown; the date defaults to the soonest possible with the cutoff explained under the button; town/postcode is optional because price depends on the country; and 'Just browsing? See everything' gives non-committal visitors a way in.\n\nReviews: Phase 0 rules forbid showing reviews we do not have, so the section is a real component with placeholder rows and a Trustpilot slot; it goes live when the first verified reviews exist. Same for 'Most sent this week', which switches from florists' picks to real order data automatically." }
+  ],
+  "launch": { "view": "canvas" }
+}

@@ -5,7 +5,7 @@ Maintained by the orchestrator (`/plan-tasks`, `/status`) and updated by impleme
 ## Phase progress
 | Phase | Specs approved | Tasks done / total | Gate status |
 |---|---|---|---|
-| 0 Demo | 3 / 12 | 25 / 44 | specs 001 and 003 complete (2026-09-08); spec 002 approved and planned, provisioning parked (TASK-013 `blocked`); spec 004 drafted, awaiting founder design pick; next: approve + `/plan-tasks specs/004-design-system-layout.md` |
+| 0 Demo | 3 / 12 | 25 / 44 | specs 001 and 003 complete (2026-09-08); spec 002 approved and planned, provisioning parked (TASK-013 `blocked`); spec 004 approved with the founder's design direction (docs/design/homepage-v1); next: `/plan-tasks specs/004-design-system-layout.md` |
 | 1 MVP | 0 / 13 | 0 / 0 | — |
 | 2 Portal | 0 / 6 | 0 / 0 | — |
 | 3 CRM | 0 / 8 | 0 / 0 | — |
@@ -67,14 +67,14 @@ Mirrored from `plan/13-open-questions.md` §A. Owner: Ahmed (founder) unless not
 | # | Question | Blocks | Owner | Due | Default if unanswered | Status |
 |---|---|---|---|---|---|---|
 | A1 | Confirm the four launch URL prefixes `en`, `en-gb`, `de`, `pl`; any objection to `en-gb` as a separate locale? | spec 003, 007 | Ahmed | 2026-09-21 | Yes, four prefixes | resolved 2026-09-08 (default accepted, spec 003 §13) |
-| A2 | Homepage country pick lands on the corridor page vs the country shop root | spec 004, 007 | Ahmed | 2026-09-21 | Corridor; A/B test #1 | open |
+| A2 | Homepage country pick lands on the corridor page vs the country shop root | spec 004, 007 | Ahmed | 2026-09-21 | Corridor; A/B test #1 | resolved 2026-09-08 (spec 004 §13, design canvas) |
 | A3 | Approve taxonomy and the 84-product seed list shape; veto any product names | spec 005, 006 | Ahmed | 2026-09-21 | As written | resolved 2026-09-08 (defaults accepted, spec 002 §13 Q8) |
 | A4 | Seed price bands and payout shares as starting values | spec 005 | Ahmed | 2026-09-21 | As written; validate with first PL florists | resolved 2026-09-08 (defaults accepted, spec 002 §13 Q8) |
 | A5 | Polish UI register: formal (Państwo) vs informal (Ty) for buyer-facing copy | `pl` translations (spec 003 onward) | Ahmed + native reviewer | 2026-09-21 | Informal in UI, formal in legal | resolved 2026-09-08 (default accepted, spec 003 §13) |
-| A6 | Name of the guarantee and its exact terms (refund %, redelivery) | spec 004; plan/07 §2 | Ahmed | 2026-09-21 | 7-day freshness, redeliver-or-refund | open |
-| A7 | Which six demo destinations besides PL get written guides in Phase 0 | spec 007 content | Ahmed | 2026-09-21 | DE, FR, ES, IT, RO, NL as proposed | open |
+| A6 | Name of the guarantee and its exact terms (refund %, redelivery) | spec 004; plan/07 §2 | Ahmed | 2026-09-21 | 7-day freshness, redeliver-or-refund | resolved 2026-09-08 (spec 004 §13, design canvas) |
+| A7 | Which six demo destinations besides PL get written guides in Phase 0 | spec 007 content | Ahmed | 2026-09-21 | DE, FR, ES, IT, RO, NL as proposed | resolved 2026-09-08 (spec 004 §13, design canvas) |
 | A8 | Authorise Ahrefs (and optionally Firecrawl) connectors for demand re-runs | plan/02 §13, plan/03 §3 orderings | Ahmed | 2026-09-21 | Orderings stay estimate-grade (flagged) | open |
-| A9 | Brand assets: logo, palette, type — existing or minimal system in spec 004? | spec 004 | Ahmed | 2026-09-21 | Spec 004 creates a minimal token system | open |
+| A9 | Brand assets: logo, palette, type — existing or minimal system in spec 004? | spec 004 | Ahmed | 2026-09-21 | Spec 004 creates a minimal token system | resolved 2026-09-08 (spec 004 §13, design canvas) |
 | A10 | GitHub repo name/visibility and owning account | week-1 tasks; spec 001 TASK-007, TASK-011 | Ahmed | 2026-09-21 | Private repo under personal account | resolved 2026-09-07 — spec 001 §13 Q1: private repo `flowers-overseas` under the founder's personal account |
 
 ## Log
