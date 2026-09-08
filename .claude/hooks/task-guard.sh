@@ -1,6 +1,6 @@
 #!/bin/bash
 # PreToolUse guard: block Edit/Write/NotebookEdit to application code when no task is active.
-# Protected roots: src/ app/ supabase/ emails/ seed/ tests/ (tests are code too).
+# Protected roots: src/ app/ supabase/ db/ emails/ seed/ tests/ (tests are code too; db/ = migrations per ADR-0015).
 # Not protected: plan/ specs/ docs/ .claude/ TASKS.md CLAUDE.md README* content/ messages/ (docs, specs, copy, translations).
 # Fails open on any parse error (never brick the session). Kill-switch: remove from .claude/settings.json.
 TMP="$(mktemp)"; trap 'rm -f "$TMP"' EXIT; cat > "$TMP"
@@ -17,7 +17,7 @@ root=os.environ.get("CLAUDE_PROJECT_DIR") or d.get("cwd") or os.getcwd()
 try: rel=os.path.relpath(os.path.abspath(path), os.path.abspath(root))
 except Exception: allow()
 if rel.startswith(".."): allow()
-protected=("src/","app/","supabase/","emails/","seed/","tests/")
+protected=("src/","app/","supabase/","db/","emails/","seed/","tests/")
 if not rel.startswith(protected): allow()
 f=os.path.join(root,".claude","state","active-task")
 try: task=open(f).read().strip()
