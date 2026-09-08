@@ -58,8 +58,189 @@ export interface PhoneFixture {
 /** Filled by spec 002 (occasion calendar) and spec 003 (lead times per corridor). */
 export const occasionDates: readonly OccasionDateFixture[] = [];
 
-/** Filled by spec 003 (`Intl` formatting) and spec 005 (payments). */
-export const currencies: readonly CurrencyFixture[] = [];
+/**
+ * The money-formatting matrix (spec 003 AC-15 / T-15, TASK-036). Every `formatted` value is the
+ * output of `Intl.NumberFormat(locale, { style: "currency", currency })` on the decimal string
+ * `formatMoney` builds from `amount_minor` and the currency's `minorUnitExponent` — i.e. exactly
+ * what the module renders, with CLDR's own grouping (`pl` leaves `1234,50 zł` ungrouped; that is
+ * the Polish convention, not a bug).
+ *
+ * Coverage, deliberately shaped rather than exhaustive: the full EUR/GBP/PLN × en/en-gb/de/pl
+ * currency-locale cross product at 45.00 (symbol *and* symbol position per locale, including the
+ * foreign-currency cases where ICU falls back to the ISO code), the amount ladder
+ * {0, 50, 4500, 123450, 100000000} for each currency in its own locale (zero, sub-unit, plain,
+ * thousands, millions), and HUF as the zero-exponent currency, where the same integer means a
+ * different number. Spaces are as ICU emits them (`pl` groups with U+00A0, `de` separates the
+ * `€` with U+00A0); tests normalise them, they are not typed by hand.
+ *
+ * `locale` is the canonical BCP 47 tag; `src/config/locales.ts` maps our locale codes (`en-gb`)
+ * onto it. Spec 002's AC-34 extends this array (more currencies, payment amounts) — it must not
+ * redefine the shape (spec 003 §12).
+ */
+export const currencies: readonly CurrencyFixture[] = [
+  {
+    code: "EUR",
+    amount_minor: 4500,
+    locale: "en",
+    formatted: "€45.00",
+  },
+  {
+    code: "EUR",
+    amount_minor: 4500,
+    locale: "en-GB",
+    formatted: "€45.00",
+  },
+  {
+    code: "EUR",
+    amount_minor: 0,
+    locale: "de",
+    formatted: "0,00 €",
+  },
+  {
+    code: "EUR",
+    amount_minor: 50,
+    locale: "de",
+    formatted: "0,50 €",
+  },
+  {
+    code: "EUR",
+    amount_minor: 4500,
+    locale: "de",
+    formatted: "45,00 €",
+  },
+  {
+    code: "EUR",
+    amount_minor: 123450,
+    locale: "de",
+    formatted: "1.234,50 €",
+  },
+  {
+    code: "EUR",
+    amount_minor: 100000000,
+    locale: "de",
+    formatted: "1.000.000,00 €",
+  },
+  {
+    code: "EUR",
+    amount_minor: 4500,
+    locale: "pl",
+    formatted: "45,00 €",
+  },
+  {
+    code: "GBP",
+    amount_minor: 4500,
+    locale: "en",
+    formatted: "£45.00",
+  },
+  {
+    code: "GBP",
+    amount_minor: 0,
+    locale: "en-GB",
+    formatted: "£0.00",
+  },
+  {
+    code: "GBP",
+    amount_minor: 50,
+    locale: "en-GB",
+    formatted: "£0.50",
+  },
+  {
+    code: "GBP",
+    amount_minor: 4500,
+    locale: "en-GB",
+    formatted: "£45.00",
+  },
+  {
+    code: "GBP",
+    amount_minor: 123450,
+    locale: "en-GB",
+    formatted: "£1,234.50",
+  },
+  {
+    code: "GBP",
+    amount_minor: 100000000,
+    locale: "en-GB",
+    formatted: "£1,000,000.00",
+  },
+  {
+    code: "GBP",
+    amount_minor: 4500,
+    locale: "de",
+    formatted: "45,00 £",
+  },
+  {
+    code: "GBP",
+    amount_minor: 4500,
+    locale: "pl",
+    formatted: "45,00 GBP",
+  },
+  {
+    code: "PLN",
+    amount_minor: 4500,
+    locale: "en",
+    formatted: "PLN 45.00",
+  },
+  {
+    code: "PLN",
+    amount_minor: 4500,
+    locale: "en-GB",
+    formatted: "PLN 45.00",
+  },
+  {
+    code: "PLN",
+    amount_minor: 4500,
+    locale: "de",
+    formatted: "45,00 PLN",
+  },
+  {
+    code: "PLN",
+    amount_minor: 0,
+    locale: "pl",
+    formatted: "0,00 zł",
+  },
+  {
+    code: "PLN",
+    amount_minor: 50,
+    locale: "pl",
+    formatted: "0,50 zł",
+  },
+  {
+    code: "PLN",
+    amount_minor: 4500,
+    locale: "pl",
+    formatted: "45,00 zł",
+  },
+  {
+    code: "PLN",
+    amount_minor: 123450,
+    locale: "pl",
+    formatted: "1234,50 zł",
+  },
+  {
+    code: "PLN",
+    amount_minor: 100000000,
+    locale: "pl",
+    formatted: "1 000 000,00 zł",
+  },
+  {
+    code: "HUF",
+    amount_minor: 123450,
+    locale: "pl",
+    formatted: "123 450 HUF",
+  },
+  {
+    code: "HUF",
+    amount_minor: 123450,
+    locale: "de",
+    formatted: "123.450 HUF",
+  },
+  {
+    code: "HUF",
+    amount_minor: 123450,
+    locale: "en-GB",
+    formatted: "HUF 123,450",
+  },
+];
 
 /** Filled by spec 003 (address forms) and spec 005 (order validation). */
 export const addresses: readonly AddressFixture[] = [];
