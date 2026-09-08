@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
-import { LocaleSwitcher, launchLocale } from "@/modules/i18n";
+import { LocaleSwitcher, routableLocale } from "@/modules/i18n";
 
 /**
  * `/{locale}` placeholder home (spec 003 §5.3, §5.4; TASK-034, extended by TASK-035 with the
@@ -41,7 +41,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale: requested } = await params;
-  const locale = launchLocale(requested);
+  const locale = routableLocale(requested);
   if (locale === undefined) notFound();
   const t = await getTranslations({ locale: locale.code, namespace: "meta" });
 
@@ -54,7 +54,7 @@ export default async function LocaleHomePage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale: requested } = await params;
-  const locale = launchLocale(requested);
+  const locale = routableLocale(requested);
   if (locale === undefined) notFound();
   setRequestLocale(locale.code);
 

@@ -6,10 +6,10 @@ import type { ReactNode } from "react";
 import { setLocaleTag } from "@/lib/sentry";
 import {
   documentFallbackLocale,
-  launchLocale,
-  launchLocaleCodes,
   loadMessages,
   namespacesFor,
+  routableLocale,
+  routableLocaleCodes,
 } from "@/modules/i18n";
 
 import "../globals.css";
@@ -52,8 +52,13 @@ import "../globals.css";
 export const dynamicParams = false;
 
 export function generateStaticParams(): { locale: string }[] {
-  // Launch locales only — never a pseudo-locale (§5.4, AC-29 on TASK-042).
-  return launchLocaleCodes().map((locale) => ({ locale }));
+  // The launch locales, plus the pseudo-locales when `ENABLE_PSEUDO_LOCALES` is on (TASK-042).
+  // §5.4's "never a pseudo-locale" is about what this list contains in *production*, where the env
+  // schema refuses the flag (§8, AC-29): `routableLocaleCodes()` there is exactly
+  // `launchLocaleCodes()`, and on a preview it adds `/en-XA` and `/ar-XB` so the visual and a11y
+  // suites have real documents to screenshot. `dynamicParams = false` still refuses every code
+  // outside this list, so `/fr`, `/xx` and `/EN` 404 unchanged (AC-8).
+  return routableLocaleCodes().map((locale) => ({ locale }));
 }
 
 interface LocaleParams {
@@ -72,7 +77,7 @@ export async function generateMetadata({
   params,
 }: LocaleParams): Promise<Metadata> {
   const { locale: requested } = await params;
-  const locale = launchLocale(requested) ?? documentFallbackLocale();
+  const locale = routableLocale(requested) ?? documentFallbackLocale();
   const t = await getTranslations({ locale: locale.code, namespace: "meta" });
   return {
     robots: "noindex,nofollow",
@@ -90,7 +95,7 @@ export default async function LocaleLayout({
   params,
 }: LocaleParams & { children: ReactNode }) {
   const { locale: requested } = await params;
-  const locale = launchLocale(requested) ?? documentFallbackLocale();
+  const locale = routableLocale(requested) ?? documentFallbackLocale();
   setRequestLocale(locale.code);
   // Non-PII: a language code from the path, nothing else (spec 003 §11).
   setLocaleTag(locale.code);

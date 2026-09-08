@@ -24,6 +24,7 @@
  * invisible to Next's build tracing, so the file would be missing from a deployed bundle. Adding a
  * locale catalogue is one line in `CATALOGUES` plus one in `META`.
  */
+import { generatePseudoCatalogues } from "./pseudo.ts";
 import { getLocaleRegistry } from "./registry.ts";
 import {
   type MessageMetaManifest,
@@ -91,8 +92,38 @@ const META: Readonly<Record<string, unknown>> = {
   pl: plMeta,
 };
 
+/**
+ * The generated pseudo catalogues (spec 003 §2 "Pseudo-locales", AC-29; TASK-042), derived from
+ * `en` by `pseudo.ts` and memoised on first use.
+ *
+ * They are **derived at runtime, not read from `messages/en-XA.json`**. Those files exist (written
+ * by `pnpm i18n:pseudo`, git-ignored) so a human can read a diff and so `pnpm i18n:check` can pin
+ * them, but the routes render this function's output, which has three consequences worth the
+ * paragraph: a pseudo route cannot serve a stale catalogue, no generator has to run before
+ * `next build` on a fresh clone or a preview deployment, and the static-import rule at the top of
+ * this file is not bent for a file that is not in the repository.
+ */
+let pseudoCatalogues: Readonly<Record<string, MessageCatalogue>> | undefined;
+
+/**
+ * The generated catalogue for `en-XA` / `ar-XB`, or `undefined` for any other code. Exported from
+ * the barrel because spec 004's template review is the caller that wants a pseudo string without
+ * a running server; it carries no locale set and no provider (AC-3).
+ */
+export function pseudoCatalogue(locale: string): MessageCatalogue | undefined {
+  pseudoCatalogues ??= generatePseudoCatalogues(en);
+  return pseudoCatalogues[locale];
+}
+
 export const repoMessageSource: MessageSource = {
-  catalogue: (locale) => CATALOGUES[locale],
+  catalogue: (locale) =>
+    CATALOGUES[locale] ??
+    // Gated by the registry rather than by a second env read: a pseudo-locale is in the registry
+    // only when `ENABLE_PSEUDO_LOCALES` is on (`src/config/locales.ts`), so the flag is read in
+    // exactly one place and an injected test registry moves the catalogues with it.
+    (getLocaleRegistry().get(locale)?.isPseudo === true
+      ? pseudoCatalogue(locale)
+      : undefined),
   meta: (locale) => {
     const manifest = META[locale];
     return manifest === undefined

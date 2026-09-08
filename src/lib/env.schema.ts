@@ -118,6 +118,17 @@ export const serverEnvSchema = z.object({
     emptyToUndefined,
     z.literal("true").optional(),
   ),
+  /**
+   * Add the `en-XA` / `ar-XB` pseudo-locales to the routing table (spec 003 §2 "Pseudo-locales",
+   * §8 "Security", §13 Q6, AC-29; TASK-042). `"true"` on a preview — that is where Playwright's
+   * visual and a11y suites run — and locally; **refused in `production`** by `validateEnv()`
+   * below, so a pseudo-locale route cannot reach a buyer through a configuration mistake.
+   * Absent counts as `"false"`, so production needs no value at all.
+   */
+  ENABLE_PSEUDO_LOCALES: z.preprocess(
+    emptyToUndefined,
+    z.enum(["true", "false"]).optional(),
+  ),
 });
 
 export type ClientEnv = z.infer<typeof clientEnvSchema>;
@@ -171,6 +182,19 @@ export function deploymentEnvironment(
   return source["NODE_ENV"] === "test" ? "test" : "development";
 }
 
+/** The key that switches the pseudo-locales on, and its only enabling value. */
+export const PSEUDO_LOCALES_KEY = "ENABLE_PSEUDO_LOCALES" as const;
+
+/**
+ * Whether the `en-XA` / `ar-XB` pseudo-locales are part of the locale registry
+ * (`src/config/locales.ts`). Pure: the caller passes the environment, nothing is read here.
+ * Anything other than the exact string `"true"` is off, so a typo cannot half-enable them, and
+ * `validateEnv()` refuses `"true"` in production regardless.
+ */
+export function pseudoLocalesEnabled(source: EnvSource): boolean {
+  return source[PSEUDO_LOCALES_KEY] === "true";
+}
+
 /** A validation problem. `key` is safe to print; values are never captured. */
 export interface EnvIssue {
   readonly key: string;
@@ -220,6 +244,19 @@ export function validateEnv(source: EnvSource): EnvValidationResult {
   const serverResult = serverEnvSchema.safeParse(source);
   if (!serverResult.success)
     issues.push(...collect(serverResult.error, source));
+
+  // §8 "Security" / AC-29: pseudo-locales are a *development* affordance. Refusing them here —
+  // in the gate `next.config.ts` runs before compiling anything — is what makes "a pseudo-locale
+  // route cannot be exposed to buyers by configuration mistake" a build failure rather than a
+  // code review. Checked against `production` only: a preview is password-protected and
+  // `noindex`, and is where the visual and a11y suites run (§13 Q6).
+  if (environment === "production" && pseudoLocalesEnabled(source)) {
+    issues.push({
+      key: PSEUDO_LOCALES_KEY,
+      message:
+        "must not be `true` in production: the en-XA/ar-XB pseudo-locales are refused there (spec 003 §2, §8). Unset it or set it to `false`.",
+    });
+  }
 
   if (environment === "preview" || environment === "production") {
     // `ALLOW_PLACEHOLDER_ENV=true` suspends the placeholder rule (spec 001 only, TASK-007).

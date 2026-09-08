@@ -44,8 +44,13 @@
  * `withLocaleRegistry` is: a caller able to reach them could move the indexability answer at
  * runtime.
  *
- * Later spec-003 tasks extend the list:
- * `parseAcceptLanguage`/`preferredLocale` (TASK-041) and `pseudoCatalogue` (TASK-042).
+ * TASK-042 adds three functions and no data: `routableLocale`/`routableLocaleCodes` — the
+ * launch locales plus the pseudo-locales when `ENABLE_PSEUDO_LOCALES` is on, which is what the
+ * `[locale]` segment resolves and prerenders — and `pseudoCatalogue`, the pure `en → en-XA/ar-XB`
+ * derivation. The flag itself is read in one place (`src/config/locales.ts`) and no export lets a
+ * caller move it, so AC-3 holds unchanged.
+ *
+ * A later spec-003 task extends the list: `parseAcceptLanguage`/`preferredLocale` (TASK-041).
  */
 export {
   type LocaleConfig,
@@ -63,6 +68,8 @@ export {
   localePath,
   parseLocaleFromPath,
   type ParsedPath,
+  routableLocale,
+  routableLocaleCodes,
 } from "./routing.ts";
 
 export {
@@ -84,6 +91,7 @@ export {
   fallbackChain,
   loadMessages,
   namespacesFor,
+  pseudoCatalogue,
 } from "./messages.ts";
 
 export {
