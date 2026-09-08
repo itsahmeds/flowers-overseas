@@ -230,7 +230,9 @@ const ROUTE_NAMESPACES: Readonly<
   Record<RouteKind, readonly MessageNamespace[]>
 > = {
   localeHome: ["meta", "a11y"],
-  localeDocument: ["meta", "errors", "a11y", "common"],
+  // `banner` is here for the client island of TASK-041: it is the one namespace whose copy is
+  // rendered in the browser rather than on the server, so it has to reach the client provider.
+  localeDocument: ["meta", "errors", "a11y", "common", "banner"],
   chooser: ["meta", "chooser", "a11y"],
 };
 

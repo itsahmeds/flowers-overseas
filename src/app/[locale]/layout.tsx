@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 
 import { setLocaleTag } from "@/lib/sentry";
 import {
+  LocaleSuggestionBanner,
   documentFallbackLocale,
   loadMessages,
   namespacesFor,
@@ -108,9 +109,27 @@ export default async function LocaleLayout({
   return (
     <html lang={locale.bcp47} dir={locale.dir}>
       <body className="min-h-dvh">
-        <NextIntlClientProvider locale={locale.code} messages={messages}>
+        {/* `timeZone` mirrors `src/modules/i18n/request.ts`: a relay has no single local zone,
+            every rendered time carries its own IANA zone (`formatTimeInZone`), and UTC is the
+            neutral default. Passing it explicitly is what keeps the client provider from
+            consulting the *visitor's* zone as a fallback — an environment difference that would
+            make client markup disagree with server markup, and the one such difference next-intl
+            warns about. TASK-041 is where it starts to matter: the banner island is the first
+            component that reads copy in the browser. */}
+        <NextIntlClientProvider
+          locale={locale.code}
+          messages={messages}
+          timeZone="UTC"
+        >
           <a href="#main">{t("skipToContent")}</a>
           {children}
+          {/* Last in the document and out of flow: the language suggestion of ADR-0006 in its
+              positive form. `LocaleSuggestionBanner` is a Server Component that projects the
+              locale registry and hands it to a client loader, which imports the island itself
+              after hydration (`ssr: false`) — so this document's HTML is identical for every
+              visitor, carries no `Vary` and sets no cookie (spec 003 §5.4, AC-12, AC-28), and the
+              banner is reached by continuing to tab rather than by stealing focus (§8). */}
+          <LocaleSuggestionBanner locale={locale.code} />
         </NextIntlClientProvider>
       </body>
     </html>
