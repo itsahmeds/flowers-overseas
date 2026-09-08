@@ -23,9 +23,28 @@
  * - Org region: EU (`de.sentry.io`), spec 001 §13 Q6. The region lives in the DSN the founder
  *   pastes into the Vercel env store; no code depends on it.
  */
+import { getCurrentScope } from "@sentry/nextjs";
 import type { ErrorEvent, EventHint } from "@sentry/nextjs";
 
 import { REDACTED, isRedactedKey, redact } from "./logger";
+
+/**
+ * Tags that may be attached to an event, with the reason each is not PII (spec 003 §11).
+ * `locale` is one of a handful of language codes taken from the URL path — it identifies a
+ * language, not a person, and it is already a first-class logger field (spec 001 §5.2). It
+ * survives `beforeSend` because it is absent from the PII key list, which is asserted rather than
+ * assumed (`tests/unit/sentry-before-send.test.ts`).
+ */
+export const NON_PII_TAGS = ["locale"] as const;
+
+/**
+ * Tag the current Sentry scope with the resolved locale so error volumes can be read per locale
+ * (spec 003 §11). A no-op when no client is initialised, which is the Phase 0 default (no DSN).
+ * Nothing else about the request is tagged: no country, no user agent, no header value.
+ */
+export function setLocaleTag(locale: string): void {
+  getCurrentScope().setTag("locale", locale);
+}
 
 /** The subset of a Sentry event this module touches. Structural, so no SDK types are needed. */
 export interface ScrubbableEvent {

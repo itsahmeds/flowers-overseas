@@ -75,7 +75,9 @@ describe("module boundaries over the fixtures (T-10)", () => {
 describe("module boundaries over real src paths (T-10)", () => {
   it("fails when a module imports a route file", async () => {
     const messages = await boundaryMessagesForText(
-      'import Page from "@/app/page";\n\nexport const p = Page;\n',
+      // A real route file, so the import resolves and the rule sees it (TASK-034 moved `/`
+      // into the `(chooser)` root layout group).
+      'import Page from "@/app/(chooser)/page";\n\nexport const p = Page;\n',
       "src/modules/orders/probe.ts",
     );
     expect(messages).toHaveLength(1);

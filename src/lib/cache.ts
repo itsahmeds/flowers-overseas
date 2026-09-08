@@ -26,3 +26,16 @@ export const noopCache: CacheAdapter = {
 
 /** The adapter application code imports. Repointed by spec 007/008, not by callers. */
 export const cache: CacheAdapter = noopCache;
+
+/**
+ * Cache tag for a locale home page (`plan/01` §3's reserved `home:{locale}` tag, spec 003 §5.4,
+ * TASK-034).
+ *
+ * Tag *names* live next to the invalidation seam rather than in the page, so the page that is
+ * cached and the code that purges it cannot spell the tag differently. `src/app/[locale]/page.tsx`
+ * documents why Phase 0 attaches no tag to the cache entry yet (Next 16 needs `cacheComponents`
+ * for `cacheTag()`, which the first data-fetching spec owns) and revalidates on time instead.
+ */
+export function homeCacheTag(locale: string): string {
+  return `home:${locale}`;
+}

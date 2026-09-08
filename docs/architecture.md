@@ -79,7 +79,9 @@ in that script is the machine-readable copy of this list; `tests/unit/architectu
 fails if the two disagree.
 
 ```
-src/app/                  routes only, thin: [locale] segment, route groups, api/
+src/app/                  routes only, thin: a pass-through root layout plus one document per
+                          leaf — (chooser)/ owns `/`, [locale]/ owns every localised URL,
+                          not-found.tsx owns the 404 (see below) — plus api/
 src/modules/<module>/     one directory per module below, public barrel in index.ts
 src/lib/                  env (zod), logger, health, sentry, cache adapter; db client from spec 002
 src/jobs/                 pg-boss job definitions and cron schedule
@@ -99,6 +101,47 @@ seed/                     idempotent seed scripts, keyed by natural keys
 messages/                 next-intl catalogues (from spec 003)
 scripts/                  repo tooling: check-layout, env-check, seo validators, dev-os checks
 ```
+
+**Document shape (spec 003 §5.3, TASK-034).** `src/app/layout.tsx` is a **pass-through root**:
+it renders no document — no `<html>`, no `<body>`, it returns its children — and carries the
+`noindex,nofollow` metadata default so that every document below it inherits it, the 404 included
+(spec 001 §6). The document itself is rendered by whichever leaf knows the language, which is why
+no file in the repository contains a locale literal any more. There are three such documents:
+
+- `src/app/(chooser)/layout.tsx` + `page.tsx` — the single non-localised URL, `/`. Its
+  `<html lang dir>` come from the **x-default** locale in the registry (`plan/02` §3). TASK-035
+  turns the page into the crawlable locale chooser.
+- `src/app/[locale]/layout.tsx` — every localised URL, with the `plan/01` §5 route groups
+  (`(marketing)`, `(shop)`, `(checkout)`, `(account)`) created empty-but-real beneath it so specs
+  004–011 add pages without touching routing. `<html lang dir>` come from the segment's `bcp47`
+  and `dir` in the registry; `generateStaticParams` emits the launch locales only, and any other
+  first segment (`/fr`, `/xx`, `/EN`, `/nope`) renders the 404 rather than a redirect (ADR-0006).
+  The locale reaches next-intl through `setRequestLocale()`, never through a request header, so no
+  response varies by header and none carries `Vary`.
+- `src/app/not-found.tsx` — the 404 document, in the **x-default** locale from the registry
+  (AC-8). Every 404 renders here: an unknown first segment and any unmatched path below a real
+  locale alike, always status 404 and never a fabricated locale page.
+
+**Every page under `[locale]` must export `dynamicParams = false`** (or the gate must move to one
+central place). The `[locale]` layout deliberately resolves an unknown segment to the x-default
+locale instead of throwing, so that a mis-routed request can never produce a document with no
+language at all; the routing-layer refusal is what turns an unknown segment into a 404. Without
+that export on a page, a real page added at, say, `/fr/about` would render on demand in the
+x-default locale — a fabricated duplicate of the English URL, which spec 003 §6 forbids. Whoever
+adds the first page below `[locale]` either repeats the export or replaces the per-page gate with
+a single check and records the move here.
+
+**The rejected shape.** Spec 003 §5.3 recommends *two root layouts* — `(chooser)` and `[locale]`,
+with no `src/app/layout.tsx` at all — and that arrangement was implemented and then measured on
+Next 16.3.4: with two root layouts `src/app/not-found.tsx` is reached, but the framework wraps it
+in a bare `<html>` of its own, so the effective document has nested `html`/`body` elements and no
+`lang` attribute at all. AC-8's "a document whose `lang` is the x-default locale" and WCAG 3.1.1
+Language of Page therefore both fail. (A nested `[locale]/not-found.tsx` is rendered when a
+matching route calls `notFound()`, but inside the framework's `<html id="__next_error__">`, again
+with no `lang`.) §5.3 anticipates this ("if Next 16 rejects that arrangement for the
+unmatched-path 404") and the pass-through root above is its accepted alternative in the cheapest
+form: one root, one document per leaf, no `headers()` read — which would opt every localised page
+out of static rendering and defeat §5.4 — and no locale literal anywhere.
 
 `app/` imports from `modules/`, never the reverse. A module imports another module only through its
 public `index.ts` — never a deep path. Both rules are ESLint errors
@@ -121,7 +164,7 @@ the `MODULES` manifest in `scripts/check-layout.ts`, and the new barrel's owning
 | `customers` | customers, recipients, consent | spec 019 | empty barrel |
 | `notifications` | email + WhatsApp senders, templates, outbox consumer | spec 017 | empty barrel |
 | `seo` | hreflang, canonical, JSON-LD builders, sitemap generators, robots | spec 007 | empty barrel |
-| `i18n` | locale config, message loading, formatters | spec 003 | config landed, routing TASK-034 |
+| `i18n` | locale config, message loading, formatters | spec 003 | config + routing/messages landed, formatters TASK-036 |
 | `analytics` | GA4 event schema, consent state, server-side events | spec 023 | empty barrel |
 | `admin` | admin queries and actions | spec 012 | empty barrel |
 
@@ -129,19 +172,18 @@ Implemented outside the modules today (spec 001, all in `src/lib/`): `env` (+ `e
 `env.server`, `env.client`, `env.assert`), `logger`, `health`, `request-id` (the `x-request-id`
 header name and its UUID v4 validation, shared by the proxy and `health`), `sentry`,
 `robots-headers`, `cache` (the `invalidate` seam of `plan/01` §3, a noop until spec 007/008 wires
-the Vercel adapter), and `src/proxy.ts` (request id only — the Next 16 `proxy` file convention,
+the Vercel adapter, plus the reserved `home:{locale}` tag name from TASK-034), and `src/proxy.ts` (request id only — the Next 16 `proxy` file convention,
 renamed from `middleware.ts` in TASK-032).
 
 ## 4. Deferred decisions recorded here
 
-Spec 001 ships the gates, not the product, and it deliberately leaves four things undone. Each is
+Spec 001 ships the gates, not the product, and it deliberately leaves three things undone. Each is
 recorded here rather than in a comment nobody greps, with the spec that lifts it. A later spec that
 touches one of these rows removes it.
 
 | Decision | Deferred to | What lifts it |
 |---|---|---|
 | **CSP with nonces** — no `Content-Security-Policy` header is sent (spec 001 §8 "Security"). There is nothing to protect yet: the shell loads no script beyond the Next runtime and no third-party origin except Vercel's own preview-feedback script on protected previews. | spec 004 | The first design-system PR that adds a script or a font must add the header with nonces, and `plan/01` §9's report-only rollout. |
-| **`<html lang="en">` literal** in `src/app/layout.tsx` — the one hard-coded locale in the repository (spec 001 §7, AC-30). The shell has no copy, so `fo/no-literal-strings` ships enabled with zero exceptions and this attribute is the only thing to remove. | spec 003 | next-intl lands and `lang` (and `dir`) come from the URL locale. The i18n implementer greps `lang="en"` and this row. |
 | **`ALLOW_PLACEHOLDER_ENV`** — the escape hatch that lets `.env.example` placeholders pass validation in a deployed environment, set on Vercel preview and production so spec 001 can deploy without a database (`src/lib/env.schema.ts`, `docs/runbooks/vercel-setup.md`). | spec 002 | The first spec 002 task deletes the key from the schema, `.env.example`, the runbook and the Vercel env store once real Supabase values exist. Recorded as a carry-forward on `/review 7`. |
 | **`deploymentEnvironment()` Railway caveat** — it reads `VERCEL_ENV`, so on the ADR-0012 Railway + Cloudflare fallback host every response would look like `development` and take the blanket `X-Robots-Tag: noindex` (spec 001 §2 "Hosting", review of PR #6). Harmless on Vercel, wrong the day the fallback is used. | spec 007 / ADR-0012 follow-up | Key the environment on a host-independent signal (an explicit `APP_ENV`) before or during the first production launch, and note it in the host-failover runbook. |
 
