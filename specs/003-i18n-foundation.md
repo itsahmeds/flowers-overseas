@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | approved |
+| Status | approved · implemented 2026-09-08 (TASK-032…TASK-044 merged, `/review` PASS on each; AC-27 script-budget clause deferred to spec 004 per §14) |
 | Phase | 0 |
 | Plan refs | plan/01 §3 §5 §7 §11 · plan/02 §3 §4 §7 §8 §14 · plan/03 §1–§12 · plan/04 §2 §11 · plan/05 §1 (#1, #2) · plan/07 §6 §8 · plan/09 Phase 0 (15–21 Sep) · plan/12 §2 §4 §5 §6 · plan/13 §A (A1, A5) |
 | ADRs | ADR-0001 (one domain, locale subfolders) · ADR-0003 (tiered locale rollout) · ADR-0006 (no IP redirects; suggestion banner) · ADR-0007 (index only true pages) · ADR-0008/0015 (stack: next-intl) |
