@@ -415,3 +415,22 @@ Raised by: `/review 11` (PR #11), 2026-09-08. Runbook: `docs/runbooks/branch-pro
 - **Decision (founder, 2026-09-08):** stay on GitHub Free. Branch protection and rulesets are unavailable on a private Free repository, so AC-21's enforcement half is an accepted deviation, not a pending item.
 - **Compensating controls:** every `ci.yml` job runs on every PR and is visible before merge; repository merge settings are squash-only with the PR title as subject and branch auto-delete (applied 2026-09-08 via API); the recorded `/review` verdict in the PR body and `TASKS.md` is the merge gate; `pnpm branch-protection` stays in place and turns green automatically if the plan ever changes.
 - **Revisit trigger:** a second committer joins, or a merge lands with a red required check.
+
+**A14 — CI runs on demand, not on every event (§2 "CI"; AC-21 compensating controls in A10).**
+Original: `ci.yml` triggers on every `pull_request` event and on every push to `main`, so a full
+18-job run (~30 billable minutes) fires for every push to every PR and again after every
+squash-merge and docs commit.
+Corrected (founder, 2026-09-09): the account had used 90% of GitHub Free's 2,000 monthly Actions
+minutes with a month left. The workflow now triggers only on `pull_request` `ready_for_review` and
+`labeled`, and on `workflow_dispatch`. A PR marked ready runs the spine (`lint` → `typecheck` →
+`test-unit` → `build`, ~7 minutes) once; the fan-out jobs, `commitlint` and the
+`preview` → `e2e`/`visual`/`a11y` → `lighthouse` chain run only with the `ci:full` label or a
+manual dispatch. Nothing runs on push to `main` (the squash-merged tree is the PR head that already
+ran). `pr-policy` runs on `ready_for_review`, `labeled`, `unlabeled`. Compensating controls:
+implementers open PRs as drafts, run every gate locally (`lint`, `typecheck`, `test`, `build`,
+`test:e2e`, `test:visual`, `test:a11y`, `lighthouse` where the task touches a page) and mark the PR
+ready once; the reviewer runs the same suites locally against `pnpm start` and records the result
+in `TASKS.md`. The job set and `scripts/branch-protection.ts`'s contract are unchanged. Revisit
+trigger: the repository becomes public (unlimited minutes) or a paid Actions plan is chosen — then
+restore `types: [opened, synchronize, reopened, ready_for_review]` and `push: main`.
+Raised by: founder, 2026-09-09; implemented inline by the orchestrator as TASK-057.

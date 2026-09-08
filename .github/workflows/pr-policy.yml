@@ -6,7 +6,9 @@ name: pr-policy
 
 on:
   pull_request:
-    types: [opened, edited, synchronize, reopened, labeled, unlabeled]
+    # Actions-minutes budget (spec 001 §14 A14): one run when the PR is marked ready, plus label
+    # events so a `no-task` exemption can be applied and re-checked.
+    types: [ready_for_review, labeled, unlabeled]
 
 permissions:
   contents: read

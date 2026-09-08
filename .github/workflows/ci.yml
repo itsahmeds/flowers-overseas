@@ -42,10 +42,19 @@
 # the summary says what it measured, and it is what the reviewer quotes in the PR.
 name: ci
 
+# Actions-minutes budget (spec 001 §14 A14, 2026-09-09). GitHub Free gives this private repo 2,000
+# minutes a month and a full run costs ~30, so the workflow runs only when it is asked to:
+#  - a PR marked ready for review (`ready_for_review`) runs the spine — `lint` → `typecheck` →
+#    `test-unit` → `build` — once. Drafts and every later push cost nothing; implementers run the
+#    whole gate set locally and push once when it is green.
+#  - the fan-out jobs and the preview → Playwright → Lighthouse chain run only with the `ci:full`
+#    label (`labeled` is in the trigger types) or a manual `workflow_dispatch`; the reviewer runs the
+#    same suites locally against `pnpm start` and records the result in `TASKS.md`.
+#  - nothing runs on push to `main`: the squash-merged tree is the PR head that already passed.
 on:
   pull_request:
-  push:
-    branches: [main]
+    types: [ready_for_review, labeled]
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -203,6 +212,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     needs: typecheck
+    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci:full') }}
     services:
       postgres:
         image: postgres:16
@@ -268,6 +278,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: typecheck
+    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci:full') }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
@@ -312,6 +323,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: typecheck
+    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci:full') }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
@@ -349,6 +361,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: typecheck
+    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci:full') }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -473,6 +486,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     needs: typecheck
+    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci:full') }}
     env:
       NEXT_TELEMETRY_DISABLED: "1"
       SENTINEL: SENTINEL_DO_NOT_PRINT_9f3a
@@ -514,7 +528,7 @@ jobs:
 
   commitlint:
     name: commitlint
-    if: github.event_name == 'pull_request'
+    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci:full') }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -563,6 +577,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: typecheck
+    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci:full') }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
@@ -608,6 +623,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: typecheck
+    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci:full') }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
@@ -657,6 +673,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: typecheck
+    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci:full') }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
@@ -680,7 +697,7 @@ jobs:
   # must be visible on the PR.
   preview:
     name: preview
-    if: github.event_name == 'pull_request'
+    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci:full') }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     permissions:
