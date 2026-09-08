@@ -4,8 +4,10 @@
  * The Phase 0 source of truth for the locale set. Four launch locales — `en` (EUR, x-default),
  * `en-gb` (GBP), `de` (EUR), `pl` (PLN) — per ADR-0003, `plan/02` §3 and spec 003 §13 Q1. No
  * database is read here and none may be (`pnpm check:no-db`, AC-2): spec 002's
- * `locale(code, bcp47, name, is_launch, rtl, fallback_code)` stays the later persistence target
- * and hydrates through `LocaleRegistryProvider` (TASK-034) with no caller change.
+ * `locale(code, bcp47, formatting_tag, name, is_launch, rtl, fallback_code)` stays the later
+ * persistence target and hydrates through `LocaleRegistryProvider` (TASK-034) with no caller
+ * change. (`formatting_tag` is the column spec 002 §5.1 gains for the `bcp47`/`formattingTag`
+ * split introduced here, TASK-044.)
  *
  * Two things about this file are load-bearing for later specs:
  *
@@ -67,22 +69,32 @@ const PathSegmentsSchema = z
 /** `x-default` is an hreflang value but not a language tag, so it is allowed by name only. */
 export const X_DEFAULT = "x-default";
 
-const HreflangSchema = z.string().refine(
-  (value) => {
-    if (value === X_DEFAULT) return true;
-    try {
-      return new Intl.Locale(value).baseName === value;
-    } catch {
-      return false;
-    }
-  },
-  { error: "must be `x-default` or a language tag `Intl.Locale` accepts" },
-);
+/**
+ * The one language-tag validator in this file: `Intl.Locale` accepts the string *and* the string
+ * is already canonical (`baseName` round-trips), so no locale can ship a tag ICU silently
+ * rewrites. Returns the parsed `Intl.Locale` so a caller can read its subtags without parsing
+ * twice — `formattingTag`'s primary-language check does exactly that.
+ */
+function canonicalLanguageTag(value: string): Intl.Locale | undefined {
+  try {
+    const locale = new Intl.Locale(value);
+    return locale.baseName === value ? locale : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+const HreflangSchema = z
+  .string()
+  .refine(
+    (value) => value === X_DEFAULT || canonicalLanguageTag(value) !== undefined,
+    { error: "must be `x-default` or a language tag `Intl.Locale` accepts" },
+  );
 
 export const textDirections = ["ltr", "rtl"] as const;
 export type TextDirection = (typeof textDirections)[number];
 
-export const LocaleConfigSchema = z
+const LocaleConfigObjectSchema = z
   .object({
     /** URL prefix: lowercase, ASCII, `language` or `language-region` (`plan/02` §4). */
     code: z
@@ -91,17 +103,29 @@ export const LocaleConfigSchema = z
         /^[a-z]{2,3}(?:-[a-z]{2})?$/,
         "must be a lowercase ASCII URL prefix such as `de` or `en-gb`",
       ),
-    /** The tag that reaches `<html lang>`, `Intl` and hreflang; `Intl.Locale` must accept it. */
-    bcp47: z.string().refine(
-      (value) => {
-        try {
-          return new Intl.Locale(value).baseName === value;
-        } catch {
-          return false;
-        }
-      },
-      { error: "must be a canonical BCP-47 tag `Intl.Locale` accepts" },
-    ),
+    /**
+     * The **document language**: the tag that reaches `<html lang>`, `hreflang` and the locale
+     * switcher's `lang` attributes. It answers "what language is this text in", nothing else, so
+     * `en` stays plain `en` for assistive technology and for search engines (AC-6).
+     */
+    bcp47: z
+      .string()
+      .refine((value) => canonicalLanguageTag(value) !== undefined, {
+        error: "must be a canonical BCP-47 tag `Intl.Locale` accepts",
+      }),
+    /**
+     * The **formatting locale**: the tag `Intl` formatters and the collator are given
+     * (`src/modules/i18n/format.ts`, `collate.ts`). Optional here and defaulted to `bcp47`,
+     * because for most locales the two are the same tag; `en` is the exception that needs the
+     * split. `/en` is our pan-European English, read by a buyer in Dublin or Amsterdam, so its
+     * conventions must be European (`14/02/2027`, 24-hour clock, Monday-first weeks) while its
+     * document language stays `en` — hence `en → en-150` ("English, Europe"), decision recorded
+     * in `docs/decisions-log.md` (2026-09-08). The refinements below keep the two fields from
+     * drifting into a contradiction: the tag must be canonical, and it must share `bcp47`'s
+     * primary language subtag, so a formatting tag can regionalise a locale but never relabel
+     * its language.
+     */
+    formattingTag: z.string().optional(),
     /** English name, as spec 002 §5.1's `locale.name` stores it. */
     name: z.string().min(1),
     /** Endonym shown in the chooser and the switcher — language names, never flags (plan/03 §2). */
@@ -126,7 +150,45 @@ export const LocaleConfigSchema = z
   })
   .strict();
 
+/**
+ * A locale as authored, plus the two `formattingTag` refinements. The default is applied in a
+ * transform rather than by `z.default()` because the default value is another field (`bcp47`),
+ * which per-field defaults cannot see; the refinements then run on the resolved tag, so an
+ * omitted `formattingTag` is validated exactly like a written-out one.
+ */
+export const LocaleConfigSchema = LocaleConfigObjectSchema.transform(
+  (config) => ({
+    ...config,
+    formattingTag: config.formattingTag ?? config.bcp47,
+  }),
+).superRefine((config, ctx) => {
+  const formatting = canonicalLanguageTag(config.formattingTag);
+  if (formatting === undefined) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["formattingTag"],
+      message: `formattingTag \`${config.formattingTag}\` must be a canonical BCP-47 tag \`Intl.Locale\` accepts`,
+    });
+    return;
+  }
+  const documentLanguage = canonicalLanguageTag(config.bcp47);
+  if (
+    documentLanguage !== undefined &&
+    formatting.language !== documentLanguage.language
+  ) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["formattingTag"],
+      message: `formattingTag \`${config.formattingTag}\` must share the primary language subtag of bcp47 \`${config.bcp47}\` (\`${documentLanguage.language}\`, not \`${formatting.language}\`)`,
+    });
+  }
+});
+
+/** A locale as the application reads it: `formattingTag` resolved, never `undefined`. */
 export type LocaleConfig = z.infer<typeof LocaleConfigSchema>;
+
+/** A locale as authored in this file: `formattingTag` may be omitted (it defaults to `bcp47`). */
+export type LocaleConfigInput = z.input<typeof LocaleConfigSchema>;
 
 /**
  * Registry-level refinements of spec 003 §5.3, each reported on the offending field so the
@@ -262,6 +324,8 @@ const locales = [
   {
     code: "en",
     bcp47: "en",
+    // Pan-European English formatting; the document language stays `en` (see the schema field).
+    formattingTag: "en-150",
     name: "English",
     nativeName: "English",
     dir: "ltr",
@@ -343,7 +407,7 @@ const locales = [
       legal: "regulamin",
     },
   },
-] as const satisfies readonly LocaleConfig[];
+] as const satisfies readonly LocaleConfigInput[];
 
 /** Parsed at module load: a malformed registry throws on first import, never at request time. */
 export const LOCALES: readonly LocaleConfig[] =
@@ -395,10 +459,15 @@ export const launchLocales: readonly LocaleCode[] = LOCALES.filter(
   (locale) => locale.isLaunch,
 ).map((locale) => locale.code as LocaleCode);
 
-/** Spec 002 §5.1 `locale` columns, in declaration order. Pinned by a unit test (AC-4). */
+/**
+ * Spec 002 §5.1 `locale` columns, in declaration order — `formatting_tag` alongside `bcp47`
+ * because the persistence target stores both tags, not one (TASK-044). Pinned by a unit test
+ * (AC-4), so this list and the projection below cannot be edited apart.
+ */
 export const LOCALE_ROW_COLUMNS = [
   "code",
   "bcp47",
+  "formatting_tag",
   "name",
   "is_launch",
   "rtl",
@@ -408,6 +477,7 @@ export const LOCALE_ROW_COLUMNS = [
 export interface LocaleRow {
   code: string;
   bcp47: string;
+  formatting_tag: string;
   name: string;
   is_launch: boolean;
   rtl: boolean;
@@ -423,6 +493,7 @@ export function toLocaleRow(locale: LocaleConfig): LocaleRow {
   return {
     code: locale.code,
     bcp47: locale.bcp47,
+    formatting_tag: locale.formattingTag,
     name: locale.name,
     is_launch: locale.isLaunch,
     rtl: locale.dir === "rtl",

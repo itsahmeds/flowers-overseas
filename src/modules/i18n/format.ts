@@ -179,13 +179,19 @@ function relativeTimeFormat(
  * Our locale code → the BCP 47 tag ICU is given. Read through the registry (rule 2 above), so
  * `en-gb` becomes `en-GB` in exactly one place and a hydrated registry can change a tag without
  * touching a formatter.
+ *
+ * The tag is the locale's **`formattingTag`**, not its `bcp47`: for `en` those differ
+ * (`en-150` vs `en`) because `/en` is pan-European English — European date order, 24-hour clock,
+ * Monday-first weeks — while its document language stays plain `en` (`src/config/locales.ts`,
+ * AC-6, `docs/decisions-log.md` 2026-09-08). `bcp47` belongs to `<html lang>` and `hreflang`
+ * and is deliberately not read here; for every other configured locale the two are equal.
  */
 function tagFor(locale: LocaleCode): string {
   const config = getLocaleRegistry().get(locale);
   if (config === undefined) {
     throw new Error(`unknown locale code: ${locale}`);
   }
-  return config.bcp47;
+  return config.formattingTag;
 }
 
 /* -------------------------------------------------------------------------- */
