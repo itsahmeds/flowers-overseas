@@ -1,7 +1,13 @@
 allowBuilds:
+  # next-intl pulls both of these in for its *development* message-file watching and its
+  # TypeScript message-key extraction (TASK-034). Neither runs in `next build`, `next start` or
+  # any test, and both publish prebuilt platform binaries, so their install scripts are not
+  # needed and are refused like every other one here.
+  "@parcel/watcher": false
   # Source maps are never uploaded from a build (spec 001 §5: Sentry is inert without a DSN and
   # `pnpm build` needs no network), so the `sentry-cli` binary is not downloaded/built.
   "@sentry/cli": false
+  "@swc/core": false
   # `msw` only builds to copy the browser service worker into `public/`; the harness uses the
   # node `setupServer` (spec 001 §2 "Testing harness"), so the script is not needed.
   msw: false

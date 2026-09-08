@@ -119,7 +119,6 @@ describe("docs/architecture.md (AC-30)", () => {
     const deferred = doc.slice(doc.indexOf("## 4."));
     for (const [item, spec] of [
       ["CSP", "spec 004"],
-      ['`<html lang="en">`', "spec 003"],
       ["ALLOW_PLACEHOLDER_ENV", "spec 002"],
       ["deploymentEnvironment()", "ADR-0012"],
     ] as const) {
@@ -131,8 +130,18 @@ describe("docs/architecture.md (AC-30)", () => {
     }
   });
 
-  it('names the `<html lang="en">` literal as a spec 003 removal item (AC-30)', () => {
-    expect(doc).toContain('<html lang="en">');
-    expect(doc).toMatch(/lang="en"[\s\S]{0,400}spec 003/);
+  /**
+   * The inverse of the spec 001 assertion this replaces (TASK-034): spec 003 §2 required the
+   * `lang` literal and its deferred-decision row to disappear together, and AC-32 (TASK-043)
+   * re-checks that neither came back. The row is gone, so what is pinned now is its absence and
+   * the document shape that replaced it (spec 003 §5.3's "recorded in `docs/architecture.md` §2").
+   */
+  it("no longer defers the locale literal, and records the chosen document shape (AC-6)", () => {
+    expect(doc).not.toContain('lang="en"');
+    expect(doc).toContain("src/app/(chooser)/layout.tsx");
+    expect(doc).toContain("src/app/[locale]/layout.tsx");
+    for (const group of ["(marketing)", "(shop)", "(checkout)", "(account)"]) {
+      expect(doc, group).toContain(group);
+    }
   });
 });

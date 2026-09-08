@@ -9,7 +9,7 @@ import { NextRequest } from "next/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { REQUEST_ID_HEADER } from "../../src/lib/request-id";
-import { config, proxy } from "../../src/proxy";
+import { LOCALE_HEADER, config, proxy } from "../../src/proxy";
 
 const repoRoot = resolve(__dirname, "../..");
 
@@ -110,6 +110,83 @@ describe("request-id proxy", () => {
     expect(typeof lines[1]?.["duration_ms"]).toBe("number");
     // No query string, therefore no PII, in any log line (spec 001 §8).
     expect(capture.lines.join("")).not.toContain("a@b.c");
+  });
+});
+
+describe("the locale attached from the path (spec 003 §11, TASK-034)", () => {
+  /** The downstream request header Next encodes on the proxy response. */
+  function downstreamLocale(url: string): string | null {
+    const capture = captureLogs();
+    const response = proxy(request(url));
+    capture.restore();
+    return response.headers.get(`x-middleware-request-${LOCALE_HEADER}`);
+  }
+
+  it("attaches x-fo-locale for a launch-locale prefix", () => {
+    expect(downstreamLocale("https://example.com/en")).toBe("en");
+    expect(downstreamLocale("https://example.com/en-gb/checkout")).toBe(
+      "en-gb",
+    );
+    expect(downstreamLocale("https://example.com/pl/okazje")).toBe("pl");
+  });
+
+  it("attaches nothing for a path with no launch-locale prefix: no guess, no redirect", () => {
+    for (const url of [
+      "https://example.com/",
+      "https://example.com/robots.txt",
+      "https://example.com/api/health",
+      "https://example.com/nope",
+      "https://example.com/EN",
+      "https://example.com/fr/x",
+    ]) {
+      expect(downstreamLocale(url), url).toBeNull();
+    }
+  });
+
+  it("reads the path only: Accept-Language, a cookie and a geo header change nothing (AC-9)", () => {
+    const capture = captureLogs();
+    const response = proxy(
+      request("https://example.com/en/x", {
+        "accept-language": "de-DE,de;q=0.9",
+        cookie: "fo_locale=de",
+        "x-vercel-ip-country": "PL",
+      }),
+    );
+    capture.restore();
+
+    expect(response.headers.get(`x-middleware-request-${LOCALE_HEADER}`)).toBe(
+      "en",
+    );
+    expect(response.headers.get("location")).toBeNull();
+    expect(response.headers.get("vary")).toBeNull();
+  });
+
+  it("logs the locale as a §11 field and logs no header or cookie value", () => {
+    const capture = captureLogs();
+    proxy(
+      request("https://example.com/de/anlaesse", {
+        "accept-language": "de-DE",
+        cookie: "fo_locale=pl",
+      }),
+    );
+    capture.restore();
+
+    const lines = capture.lines.map(
+      (line) => JSON.parse(line) as Record<string, unknown>,
+    );
+    expect(lines).toHaveLength(2);
+    expect(Object.keys(lines[0] ?? {}).sort()).toEqual([
+      "level",
+      "locale",
+      "method",
+      "msg",
+      "path",
+      "request_id",
+      "time",
+    ]);
+    expect(lines[0]?.["locale"]).toBe("de");
+    expect(capture.lines.join("")).not.toContain("de-DE");
+    expect(capture.lines.join("")).not.toContain("fo_locale");
   });
 });
 

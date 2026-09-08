@@ -79,7 +79,8 @@ in that script is the machine-readable copy of this list; `tests/unit/architectu
 fails if the two disagree.
 
 ```
-src/app/                  routes only, thin: [locale] segment, route groups, api/
+src/app/                  routes only, thin: two root layouts — (chooser)/ owns `/` and
+                          [locale]/ owns every localised URL (see below) — plus api/
 src/modules/<module>/     one directory per module below, public barrel in index.ts
 src/lib/                  env (zod), logger, health, sentry, cache adapter; db client from spec 002
 src/jobs/                 pg-boss job definitions and cron schedule
@@ -99,6 +100,21 @@ seed/                     idempotent seed scripts, keyed by natural keys
 messages/                 next-intl catalogues (from spec 003)
 scripts/                  repo tooling: check-layout, env-check, seo validators, dev-os checks
 ```
+
+**Document shape (spec 003 §5.3, TASK-034).** There is no `src/app/layout.tsx`. Two root layouts
+render the two kinds of document this site has, which is why no file in the repository contains a
+locale literal any more:
+
+- `src/app/(chooser)/layout.tsx` + `page.tsx` — the single non-localised URL, `/`. Its
+  `<html lang dir>` come from the **x-default** locale in the registry (`plan/02` §3). TASK-035
+  turns the page into the crawlable locale chooser.
+- `src/app/[locale]/layout.tsx` — every localised URL, with the `plan/01` §5 route groups
+  (`(marketing)`, `(shop)`, `(checkout)`, `(account)`) created empty-but-real beneath it so specs
+  004–011 add pages without touching routing. `<html lang dir>` come from the segment's locale;
+  `generateStaticParams` emits the launch locales only, and any other first segment (`/fr`, `/xx`,
+  `/EN`, `/nope`) renders the localised 404 in the x-default locale rather than a redirect
+  (ADR-0006). The locale reaches next-intl through `setRequestLocale()`, never through a request
+  header, so no response varies by header and none carries `Vary`.
 
 `app/` imports from `modules/`, never the reverse. A module imports another module only through its
 public `index.ts` — never a deep path. Both rules are ESLint errors
@@ -121,7 +137,7 @@ the `MODULES` manifest in `scripts/check-layout.ts`, and the new barrel's owning
 | `customers` | customers, recipients, consent | spec 019 | empty barrel |
 | `notifications` | email + WhatsApp senders, templates, outbox consumer | spec 017 | empty barrel |
 | `seo` | hreflang, canonical, JSON-LD builders, sitemap generators, robots | spec 007 | empty barrel |
-| `i18n` | locale config, message loading, formatters | spec 003 | config landed, routing TASK-034 |
+| `i18n` | locale config, message loading, formatters | spec 003 | config + routing/messages landed, formatters TASK-036 |
 | `analytics` | GA4 event schema, consent state, server-side events | spec 023 | empty barrel |
 | `admin` | admin queries and actions | spec 012 | empty barrel |
 
@@ -129,19 +145,18 @@ Implemented outside the modules today (spec 001, all in `src/lib/`): `env` (+ `e
 `env.server`, `env.client`, `env.assert`), `logger`, `health`, `request-id` (the `x-request-id`
 header name and its UUID v4 validation, shared by the proxy and `health`), `sentry`,
 `robots-headers`, `cache` (the `invalidate` seam of `plan/01` §3, a noop until spec 007/008 wires
-the Vercel adapter), and `src/proxy.ts` (request id only — the Next 16 `proxy` file convention,
+the Vercel adapter, plus the reserved `home:{locale}` tag name from TASK-034), and `src/proxy.ts` (request id only — the Next 16 `proxy` file convention,
 renamed from `middleware.ts` in TASK-032).
 
 ## 4. Deferred decisions recorded here
 
-Spec 001 ships the gates, not the product, and it deliberately leaves four things undone. Each is
+Spec 001 ships the gates, not the product, and it deliberately leaves three things undone. Each is
 recorded here rather than in a comment nobody greps, with the spec that lifts it. A later spec that
 touches one of these rows removes it.
 
 | Decision | Deferred to | What lifts it |
 |---|---|---|
 | **CSP with nonces** — no `Content-Security-Policy` header is sent (spec 001 §8 "Security"). There is nothing to protect yet: the shell loads no script beyond the Next runtime and no third-party origin except Vercel's own preview-feedback script on protected previews. | spec 004 | The first design-system PR that adds a script or a font must add the header with nonces, and `plan/01` §9's report-only rollout. |
-| **`<html lang="en">` literal** in `src/app/layout.tsx` — the one hard-coded locale in the repository (spec 001 §7, AC-30). The shell has no copy, so `fo/no-literal-strings` ships enabled with zero exceptions and this attribute is the only thing to remove. | spec 003 | next-intl lands and `lang` (and `dir`) come from the URL locale. The i18n implementer greps `lang="en"` and this row. |
 | **`ALLOW_PLACEHOLDER_ENV`** — the escape hatch that lets `.env.example` placeholders pass validation in a deployed environment, set on Vercel preview and production so spec 001 can deploy without a database (`src/lib/env.schema.ts`, `docs/runbooks/vercel-setup.md`). | spec 002 | The first spec 002 task deletes the key from the schema, `.env.example`, the runbook and the Vercel env store once real Supabase values exist. Recorded as a carry-forward on `/review 7`. |
 | **`deploymentEnvironment()` Railway caveat** — it reads `VERCEL_ENV`, so on the ADR-0012 Railway + Cloudflare fallback host every response would look like `development` and take the blanket `X-Robots-Tag: noindex` (spec 001 §2 "Hosting", review of PR #6). Harmless on Vercel, wrong the day the fallback is used. | spec 007 / ADR-0012 follow-up | Key the environment on a host-independent signal (an explicit `APP_ENV`) before or during the first production launch, and note it in the host-failover runbook. |
 

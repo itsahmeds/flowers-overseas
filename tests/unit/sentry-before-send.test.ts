@@ -7,10 +7,12 @@ import { describe, expect, it } from "vitest";
 
 import { REDACTED } from "../../src/lib/logger";
 import {
+  NON_PII_TAGS,
   type ScrubbableEvent,
   beforeSend,
   scrubEvent,
   sentryOptions,
+  setLocaleTag,
 } from "../../src/lib/sentry";
 
 function eventWithPii(): ScrubbableEvent {
@@ -307,6 +309,43 @@ describe("Sentry release on the client bundle (TASK-007)", () => {
       expect(
         sentryOptions("https://public@de.sentry.io/1")?.release,
       ).toBeUndefined();
+    });
+  });
+});
+
+/**
+ * Spec 003 §11 (TASK-034): Sentry gains a `locale` tag and nothing else. It is a language code
+ * taken from the URL path, so it must survive the scrub — a redacted tag would make per-locale
+ * error volumes unreadable — and the redaction of everything else must be unaffected.
+ */
+describe("the non-PII locale tag (spec 003 §11)", () => {
+  it("declares `locale` as the only allowed non-PII tag", () => {
+    expect([...NON_PII_TAGS]).toEqual(["locale"]);
+  });
+
+  it("survives beforeSend verbatim for every launch locale", () => {
+    for (const locale of ["en", "en-gb", "de", "pl"]) {
+      const scrubbed = beforeSend({ tags: { locale } });
+      expect(scrubbed.tags?.["locale"], locale).toBe(locale);
+    }
+  });
+
+  it("does not make the rest of `tags` survivable", () => {
+    const scrubbed = beforeSend({
+      tags: { locale: "pl", email: "buyer@example.com", ip: "203.0.113.4" },
+    });
+
+    expect(scrubbed.tags).toEqual({
+      locale: "pl",
+      email: REDACTED,
+      ip: REDACTED,
+    });
+  });
+
+  it("sets the tag on the current scope and nothing else", () => {
+    Sentry.withScope((scope) => {
+      setLocaleTag("de");
+      expect(scope.getScopeData().tags).toEqual({ locale: "de" });
     });
   });
 });

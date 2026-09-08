@@ -1,0 +1,32 @@
+{
+  "meta": {
+    "home": {
+      "title": "Flowers Overseas — send flowers to Europe",
+      "description": "Order flowers for someone in another European country. A vetted local florist makes and delivers them.",
+      "heading": "Send flowers across Europe"
+    },
+    "notFound": {
+      "title": "Page not found — Flowers Overseas"
+    },
+    "error": {
+      "title": "Something went wrong — Flowers Overseas"
+    }
+  },
+  "errors": {
+    "notFound": {
+      "heading": "Page not found",
+      "body": "That page does not exist. Check the address, or start again from the home page."
+    },
+    "serverError": {
+      "heading": "Something went wrong",
+      "body": "The page could not be loaded. Nothing you were doing was lost.",
+      "retry": "Try again"
+    }
+  },
+  "a11y": {
+    "skipToContent": "Skip to content"
+  },
+  "common": {
+    "homeLink": "Home"
+  }
+}
