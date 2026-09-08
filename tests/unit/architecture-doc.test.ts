@@ -144,4 +144,51 @@ describe("docs/architecture.md (AC-30)", () => {
       expect(doc, group).toContain(group);
     }
   });
+
+  /**
+   * `/review 15`: §2 must record the shape that *shipped*, not the one spec 003 §5.3 recommended
+   * and the implementation rejected. The shipped shape is a pass-through `src/app/layout.tsx`
+   * plus one document per leaf, the 404 among them, so all three are named here; the phrase "two
+   * root layouts" is allowed only inside the paragraph that explains why that shape was rejected.
+   */
+  describe("§2 document shape", () => {
+    const section = doc.slice(
+      doc.indexOf("## 2. Repository layout"),
+      doc.indexOf("## 3. Modules"),
+    );
+
+    it("names src/app/layout.tsx as the pass-through root that renders no document", () => {
+      expect(section).toContain("src/app/layout.tsx");
+      expect(section).toMatch(/pass-through root/i);
+      expect(section).toMatch(/renders no document/i);
+      expect(section).toContain("noindex,nofollow");
+    });
+
+    it("names all three documents, the 404 included", () => {
+      for (const file of [
+        "src/app/(chooser)/layout.tsx",
+        "src/app/[locale]/layout.tsx",
+        "src/app/not-found.tsx",
+      ]) {
+        expect(section, file).toContain(file);
+      }
+    });
+
+    it("mentions the two-root-layout shape only as the rejected one", () => {
+      const paragraphs = section
+        .split(/\n\s*\n/)
+        .filter((paragraph) => paragraph.includes("two root layouts"));
+      expect(paragraphs.length).toBeGreaterThan(0);
+      for (const paragraph of paragraphs) {
+        expect(paragraph, paragraph.slice(0, 60)).toMatch(/rejected/i);
+        expect(paragraph, paragraph.slice(0, 60)).toContain("Next 16.3.4");
+      }
+    });
+
+    it("records the dynamicParams = false obligation for pages under [locale]", () => {
+      expect(section).toContain("dynamicParams = false");
+      expect(section).toMatch(/x-default/);
+      expect(section).toMatch(/duplicate/i);
+    });
+  });
 });

@@ -79,8 +79,9 @@ in that script is the machine-readable copy of this list; `tests/unit/architectu
 fails if the two disagree.
 
 ```
-src/app/                  routes only, thin: two root layouts — (chooser)/ owns `/` and
-                          [locale]/ owns every localised URL (see below) — plus api/
+src/app/                  routes only, thin: a pass-through root layout plus one document per
+                          leaf — (chooser)/ owns `/`, [locale]/ owns every localised URL,
+                          not-found.tsx owns the 404 (see below) — plus api/
 src/modules/<module>/     one directory per module below, public barrel in index.ts
 src/lib/                  env (zod), logger, health, sentry, cache adapter; db client from spec 002
 src/jobs/                 pg-boss job definitions and cron schedule
@@ -101,20 +102,46 @@ messages/                 next-intl catalogues (from spec 003)
 scripts/                  repo tooling: check-layout, env-check, seo validators, dev-os checks
 ```
 
-**Document shape (spec 003 §5.3, TASK-034).** There is no `src/app/layout.tsx`. Two root layouts
-render the two kinds of document this site has, which is why no file in the repository contains a
-locale literal any more:
+**Document shape (spec 003 §5.3, TASK-034).** `src/app/layout.tsx` is a **pass-through root**:
+it renders no document — no `<html>`, no `<body>`, it returns its children — and carries the
+`noindex,nofollow` metadata default so that every document below it inherits it, the 404 included
+(spec 001 §6). The document itself is rendered by whichever leaf knows the language, which is why
+no file in the repository contains a locale literal any more. There are three such documents:
 
 - `src/app/(chooser)/layout.tsx` + `page.tsx` — the single non-localised URL, `/`. Its
   `<html lang dir>` come from the **x-default** locale in the registry (`plan/02` §3). TASK-035
   turns the page into the crawlable locale chooser.
 - `src/app/[locale]/layout.tsx` — every localised URL, with the `plan/01` §5 route groups
   (`(marketing)`, `(shop)`, `(checkout)`, `(account)`) created empty-but-real beneath it so specs
-  004–011 add pages without touching routing. `<html lang dir>` come from the segment's locale;
-  `generateStaticParams` emits the launch locales only, and any other first segment (`/fr`, `/xx`,
-  `/EN`, `/nope`) renders the localised 404 in the x-default locale rather than a redirect
-  (ADR-0006). The locale reaches next-intl through `setRequestLocale()`, never through a request
-  header, so no response varies by header and none carries `Vary`.
+  004–011 add pages without touching routing. `<html lang dir>` come from the segment's `bcp47`
+  and `dir` in the registry; `generateStaticParams` emits the launch locales only, and any other
+  first segment (`/fr`, `/xx`, `/EN`, `/nope`) renders the 404 rather than a redirect (ADR-0006).
+  The locale reaches next-intl through `setRequestLocale()`, never through a request header, so no
+  response varies by header and none carries `Vary`.
+- `src/app/not-found.tsx` — the 404 document, in the **x-default** locale from the registry
+  (AC-8). Every 404 renders here: an unknown first segment and any unmatched path below a real
+  locale alike, always status 404 and never a fabricated locale page.
+
+**Every page under `[locale]` must export `dynamicParams = false`** (or the gate must move to one
+central place). The `[locale]` layout deliberately resolves an unknown segment to the x-default
+locale instead of throwing, so that a mis-routed request can never produce a document with no
+language at all; the routing-layer refusal is what turns an unknown segment into a 404. Without
+that export on a page, a real page added at, say, `/fr/about` would render on demand in the
+x-default locale — a fabricated duplicate of the English URL, which spec 003 §6 forbids. Whoever
+adds the first page below `[locale]` either repeats the export or replaces the per-page gate with
+a single check and records the move here.
+
+**The rejected shape.** Spec 003 §5.3 recommends *two root layouts* — `(chooser)` and `[locale]`,
+with no `src/app/layout.tsx` at all — and that arrangement was implemented and then measured on
+Next 16.3.4: with two root layouts `src/app/not-found.tsx` is reached, but the framework wraps it
+in a bare `<html>` of its own, so the effective document has nested `html`/`body` elements and no
+`lang` attribute at all. AC-8's "a document whose `lang` is the x-default locale" and WCAG 3.1.1
+Language of Page therefore both fail. (A nested `[locale]/not-found.tsx` is rendered when a
+matching route calls `notFound()`, but inside the framework's `<html id="__next_error__">`, again
+with no `lang`.) §5.3 anticipates this ("if Next 16 rejects that arrangement for the
+unmatched-path 404") and the pass-through root above is its accepted alternative in the cheapest
+form: one root, one document per leaf, no `headers()` read — which would opt every localised page
+out of static rendering and defeat §5.4 — and no locale literal anywhere.
 
 `app/` imports from `modules/`, never the reverse. A module imports another module only through its
 public `index.ts` — never a deep path. Both rules are ESLint errors
