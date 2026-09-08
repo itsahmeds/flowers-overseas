@@ -51,7 +51,10 @@ It exists for two reasons:
 | `geo-redirect-header.ts` | `fo/no-geo-redirect` (`headers.get("x-vercel-ip-country")`) |
 | `geo-redirect-geo.ts` | `fo/no-geo-redirect` (`request.geo?.country`) |
 | `geo-redirect-middleware.ts` | `fo/no-geo-redirect` (`NextResponse.redirect` in a `middleware.ts`-named file) |
-| `geo-redirect-valid.ts` | clean (`accept-language`, redirect outside middleware/i18n) |
+| `geo-redirect-proxy.ts` | `fo/no-geo-redirect` (the same redirect in a `proxy.ts`-named file, spec 003 AC-11) |
+| `geo-redirect-nextintl-middleware.ts` | `fo/no-geo-redirect` ×2 (`next-intl/middleware` import and `createMiddleware(`, spec 003 AC-10) |
+| `geo-redirect-valid.ts` | clean (`accept-language`, redirect outside proxy/middleware/i18n) |
+| `geo-redirect-valid-proxy.ts` | clean (a `proxy.ts`-named file that only reads and sets its own headers) |
 | `src/modules/i18n/hints.ts` | clean — the one file allowed to read a location hint (ADR-0006) |
 | `src/modules/orders/cross-module-import.ts` | `import/no-restricted-paths` (deep import into `catalog`) |
 | `src/modules/orders/module-imports-app.ts` | `import/no-restricted-paths` (`modules/` → `app/`) |

@@ -7,7 +7,7 @@ import { loadCoverageThresholds } from "./scripts/coverage-thresholds.ts";
 const root = fileURLToPath(new URL(".", import.meta.url));
 
 // Mirror the `@/*` -> `src/*` paths of tsconfig.json so tests can import application
-// modules that use it (TASK-005: `src/middleware.ts` imports `@/lib/logger`).
+// modules that use it (TASK-005: `src/proxy.ts` imports `@/lib/logger`).
 const alias = { "@/": `${fileURLToPath(new URL("./src", import.meta.url))}/` };
 
 export default defineConfig({

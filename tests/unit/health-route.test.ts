@@ -3,7 +3,7 @@
  *
  * Exercises `healthResponse` — everything the route file does apart from reading `@/lib/env`,
  * which is `server-only` and therefore not importable outside a Next build. `x-request-id` is the
- * header `src/middleware.ts` put on the request. T-15 (TASK-008) re-checks the same assertions
+ * header `src/proxy.ts` put on the request. T-15 (TASK-008) re-checks the same assertions
  * against a real deployment.
  */
 import { describe, expect, it } from "vitest";

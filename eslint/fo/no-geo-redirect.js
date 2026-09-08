@@ -11,8 +11,15 @@
  *      `x-country` — and `request.geo` / `req.geo` member access, and `geolocation(…)`,
  *      anywhere except `src/modules/i18n/hints.ts`.
  *   2. `NextResponse.redirect(…)` and `redirect(…)` imported from `next/navigation`, in any
- *      middleware file (`middleware.ts`, and the fixture `*-middleware.ts`) and anywhere under
- *      `src/modules/i18n/` — the two places where a locale redirect would be written.
+ *      request-interception file — Next's `middleware` and its Next 16 successor `proxy`
+ *      (`src/proxy.ts`, `middleware.ts`, and the fixtures `*-proxy.ts` / `*-middleware.ts`) — and
+ *      anywhere under `src/modules/i18n/`: the two places where a locale redirect would be written.
+ *      Both names are matched so that TASK-032's rename could not silently disarm the gate
+ *      (spec 001 §14 A2, spec 003 AC-11).
+ *   3. `import … from "next-intl/middleware"` and `createMiddleware(…)`, in any file the rule runs
+ *      on (spec 003 AC-10). next-intl's middleware resolves the locale by `Accept-Language` and
+ *      cookie and then *redirects*, which is precisely what ADR-0006 forbids; locale is resolved
+ *      from the URL (spec 003 §5) and suggested by a dismissible banner, never redirected.
  */
 
 /** Request headers that carry a caller's country. */
@@ -28,7 +35,14 @@ export const HINTS_FILE = "src/modules/i18n/hints.ts";
 /** Redirect helpers are additionally banned under this path (spec 001 §5). */
 export const I18N_MODULE_PATH = "src/modules/i18n/";
 
-const MIDDLEWARE_BASENAME = /(^|[.-])middleware\.[cm]?[jt]sx?$/;
+/**
+ * Basenames of a request-interception file: `middleware.*` and `proxy.*` at the project root or
+ * under `src/`, plus the `-`/`.`-suffixed fixture names (`geo-redirect-proxy.ts`).
+ */
+const INTERCEPTOR_BASENAME = /(^|[.-])(middleware|proxy)\.[cm]?[jt]sx?$/;
+
+/** The next-intl entry point whose whole purpose is locale detection plus redirect. */
+export const NEXT_INTL_MIDDLEWARE = "next-intl/middleware";
 
 /**
  * @param {string} filename
@@ -47,14 +61,15 @@ export function isHintsFile(filename) {
 }
 
 /**
- * A middleware file (where an edge redirect would live) or any file in the i18n module.
+ * A request-interception file — `middleware.*` or `proxy.*` (where an intercepting redirect would
+ * live) — or any file in the i18n module.
  * @param {string} filename
  * @returns {boolean}
  */
 export function isRedirectBannedFile(filename) {
   const path = posix(filename);
   const basename = path.slice(path.lastIndexOf("/") + 1);
-  return MIDDLEWARE_BASENAME.test(basename) || path.includes(I18N_MODULE_PATH);
+  return INTERCEPTOR_BASENAME.test(basename) || path.includes(I18N_MODULE_PATH);
 }
 
 /**
@@ -81,7 +96,11 @@ const rule = {
       geolocation:
         "`geolocation()` is an IP-derived location. No IP-based routing (ADR-0006): read location hints only in `src/modules/i18n/hints.ts`.",
       redirect:
-        "Redirect in a middleware or i18n file. No IP-based or locale redirects (ADR-0006): every locale stays a crawlable URL; suggest, never redirect.",
+        "Redirect in a proxy/middleware or i18n file. No IP-based or locale redirects (ADR-0006): every locale stays a crawlable URL; suggest, never redirect.",
+      nextIntlMiddleware:
+        "`next-intl/middleware` detects the locale from headers and cookies and then redirects. Banned (ADR-0006, spec 003 §5): the locale is resolved from the URL, never by redirect.",
+      createMiddleware:
+        "`createMiddleware()` builds a locale-detecting redirect. Banned (ADR-0006, spec 003 §5): the locale is resolved from the URL, never by redirect.",
     },
   },
   create(context) {
@@ -114,6 +133,10 @@ const rule = {
 
     return {
       ImportDeclaration(/** @type {any} */ node) {
+        if (node.source.value === NEXT_INTL_MIDDLEWARE) {
+          context.report({ node, messageId: "nextIntlMiddleware" });
+          return;
+        }
         if (node.source.value !== "next/navigation") return;
         for (const specifier of node.specifiers) {
           if (
@@ -176,6 +199,14 @@ const rule = {
             });
             return;
           }
+        }
+        // `createMiddleware(routing)` (next-intl), however it was imported
+        if (
+          callee.type === "Identifier" &&
+          callee.name === "createMiddleware"
+        ) {
+          context.report({ node, messageId: "createMiddleware" });
+          return;
         }
         // `geolocation(request)` (@vercel/functions)
         if (

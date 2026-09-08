@@ -1,4 +1,4 @@
-// Valid fixture: non-geo headers, and a redirect outside middleware/i18n (a POST handler
+// Valid fixture: non-geo headers, and a redirect outside proxy/middleware/i18n (a POST handler
 // redirecting after a form submit is not an IP redirect).
 import { NextResponse, type StubRequest } from "./stubs";
 

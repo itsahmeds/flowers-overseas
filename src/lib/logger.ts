@@ -3,10 +3,10 @@
  *
  * ## Why not pino
  * Spec 001 §5 asks for "pino or equivalent". This is the equivalent, and the reason is
- * `src/middleware.ts`: middleware runs on the edge runtime, where pino's Node transports and
- * `worker_threads` are unavailable, so pino would mean two logger implementations (node + browser
- * shim) and therefore two copies of the redaction list — the one thing spec 001 §8 says must be
- * mechanical. pino's `redact` also only accepts explicit paths, while §8's `address*` / `card*`
+ * the edge runtime: edge routes (and, before Next 16's `proxy` moved it to Node, `src/proxy.ts`)
+ * have neither pino's Node transports nor `worker_threads`, so pino would mean two logger
+ * implementations (node + browser shim) and therefore two copies of the redaction list — the one
+ * thing spec 001 §8 says must be mechanical. pino's `redact` also only accepts explicit paths, while §8's `address*` / `card*`
  * require redacting keys we have not seen yet, at any depth. ~120 lines of dependency-free code
  * gives identical output on node and edge, one redaction list, and no bytes in the edge bundle.
  * Revisit if log volume ever needs pino's transports (Phase 1 log drain, plan/08 §7).
@@ -182,5 +182,5 @@ export function createLogger(options: LoggerOptions = {}): Logger {
   return logger;
 }
 
-/** Process-wide logger. Per-request lines use `logger.child({ request_id })` (middleware). */
+/** Process-wide logger. Per-request lines use `logger.child({ request_id })` (`src/proxy.ts`). */
 export const logger: Logger = createLogger();
