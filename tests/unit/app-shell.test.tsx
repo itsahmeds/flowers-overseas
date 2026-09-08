@@ -16,6 +16,9 @@
  * stubbed is Next's per-request plumbing (`setRequestLocale`, the async-context locale), which has
  * no meaning outside a Next render, not the message resolution under test.
  */
+import { readdirSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { renderToStaticMarkup } from "react-dom/server";
 import type { ReactElement } from "react";
 import { describe, expect, it, vi } from "vitest";
@@ -60,15 +63,23 @@ vi.mock("next-intl/server", () => ({
 
 const { default: ChooserLayout, metadata: chooserMetadata } =
   await import("../../src/app/(chooser)/layout");
-const { default: ChooserPage } = await import("../../src/app/(chooser)/page");
-const { default: ChooserError } = await import("../../src/app/(chooser)/error");
-const { default: LocaleLayout, generateStaticParams } =
-  await import("../../src/app/[locale]/layout");
-const { default: LocaleHomePage } = await import("../../src/app/[locale]/page");
+const { default: ChooserPage, generateMetadata: chooserPageMetadata } =
+  await import("../../src/app/(chooser)/page");
+const {
+  default: LocaleLayout,
+  dynamicParams,
+  generateStaticParams,
+  generateMetadata: localeLayoutMetadata,
+} = await import("../../src/app/[locale]/layout");
+const { default: LocaleHomePage, generateMetadata: localeHomeMetadata } =
+  await import("../../src/app/[locale]/page");
 const { default: LocaleError } = await import("../../src/app/[locale]/error");
+const { default: GlobalErrorDocument } =
+  await import("../../src/app/global-error");
 const { default: RootLayout, metadata: rootMetadata } =
   await import("../../src/app/layout");
-const { default: NotFoundDocument } = await import("../../src/app/not-found");
+const { default: NotFoundDocument, generateMetadata: notFoundMetadata } =
+  await import("../../src/app/not-found");
 
 /** A five-locale set: the four launch locales plus an RTL locale that does not exist in config. */
 const FAKE_FIFTH: LocaleConfig = {
@@ -98,6 +109,9 @@ const fiveLocaleRegistry = localeRegistryOf([
   FAKE_FIFTH,
 ]);
 
+/** The chooser page is `async` (it awaits its catalogue), so it is resolved once, up front. */
+const chooserPage = (await ChooserPage()) as ReactElement;
+
 async function renderLocaleDocument(locale: string): Promise<string> {
   const page = (await LocaleHomePage({
     params: Promise.resolve({ locale }),
@@ -109,25 +123,62 @@ async function renderLocaleDocument(locale: string): Promise<string> {
   return renderToStaticMarkup(document);
 }
 
-describe("the `/` document (spec 003 §5.3, TASK-035 fills it)", () => {
+describe("the `/` locale chooser (AC-7, AC-25)", () => {
   const html = renderToStaticMarkup(
-    <ChooserLayout>
-      <ChooserPage />
-    </ChooserLayout>,
+    <ChooserLayout>{chooserPage}</ChooserLayout>,
   );
 
   it("takes `lang`/`dir` from the x-default locale, with no literal in the file", () => {
     expect(html).toContain('<html lang="en" dir="ltr">');
-    expect(html).not.toContain('lang="en-GB"');
+    expect(html).not.toContain('lang="en-GB" dir');
   });
 
-  it("still renders no copy, so the axe exception and the visual baseline hold", () => {
-    expect(html.replace(/<[^>]*>/g, "").trim()).toBe("");
-    expect(renderToStaticMarkup(<ChooserError />)).toBe("<main></main>");
+  it("renders one crawlable link per launch locale, in registry order", () => {
+    const hrefs = [...html.matchAll(/<a [^>]*href="([^"]+)"/g)].map(
+      (match) => match[1],
+    );
+
+    expect(hrefs).toEqual(["/en", "/en-gb", "/de", "/pl"]);
   });
 
-  it("keeps spec 001 AC-15's robots value exactly", () => {
+  it("labels every link with its `nativeName` and declares its language twice", () => {
+    // AC-7 asks for `hreflang` *and* `lang` on each link, and `plan/03` §2 for language names
+    // rather than flags. React 19 serialises the `hrefLang` prop with its JSX spelling; HTML
+    // attribute names are case-insensitive, so the browser and every crawler read `hreflang`
+    // (asserted through the DOM in `tests/e2e/shell.spec.ts`).
+    for (const { bcp47, nativeName } of staticLocaleRegistry.list()) {
+      expect(html).toContain(
+        `lang="${bcp47}" hrefLang="${bcp47}">${nativeName}</a>`,
+      );
+    }
+    expect(html).not.toMatch(/[\u{1F1E6}-\u{1F1FF}]/u);
+  });
+
+  it("names its navigation landmark and its heading from the catalogue", () => {
+    expect(html).toContain('<nav aria-label="Languages">');
+    expect(html).toContain("<h1>Choose your language</h1>");
+    expect(html).toContain("Choose a language to continue.");
+  });
+
+  it("is the only `follow` document in Phase 0, and still `noindex`", async () => {
+    // The layout keeps the group default; the page overrides it, and page metadata wins.
     expect(chooserMetadata.robots).toBe("noindex,nofollow");
+    expect((await chooserPageMetadata()).robots).toBe("noindex,follow");
+  });
+
+  it("has a non-empty localised `<title>` and description (AC-25)", async () => {
+    const metadata = await chooserPageMetadata();
+
+    expect(metadata.title).toBe("Flowers Overseas — choose your language");
+    expect(String(metadata.description).length).toBeGreaterThan(0);
+  });
+
+  it("contains no Client Component boundary, so `/` needs no JavaScript", () => {
+    // The `(chooser)` group ships `layout.tsx` and `page.tsx` and nothing else: its spec 001
+    // `error.tsx` was deleted in TASK-035 and `src/app/global-error.tsx` answers instead.
+    expect(
+      readdirSync(resolve(__dirname, "../../src/app/(chooser)")).sort(),
+    ).toEqual(["layout.tsx", "page.tsx"]);
   });
 });
 
@@ -147,6 +198,50 @@ describe("the `[locale]` document (AC-6)", () => {
     expect(html).toContain("Skip to content");
   });
 
+  it("renders the locale switcher: three links out and the current locale marked", async () => {
+    const html = await renderLocaleDocument("de");
+
+    // §6 "Internal links": every locale root links to the other three, so the Phase 0 crawl graph
+    // is complete. The current locale is a `<span aria-current="page">`, not a link.
+    expect(html).toContain('<nav aria-label="Change language">');
+    expect(html).toContain(
+      '<span aria-current="page" lang="de">Deutsch</span>',
+    );
+    for (const href of ['href="/en"', 'href="/en-gb"', 'href="/pl"']) {
+      expect(html).toContain(href);
+    }
+    expect(html).not.toContain('href="/de"');
+    expect(html).toContain('lang="pl" hrefLang="pl">Polski</a>');
+  });
+
+  it("gives every locale a non-empty localised title and description (AC-25)", async () => {
+    for (const locale of ["en", "en-gb", "de", "pl"]) {
+      const metadata = await localeHomeMetadata({
+        params: Promise.resolve({ locale }),
+      });
+
+      expect(String(metadata.title).length, locale).toBeGreaterThan(0);
+      expect(String(metadata.description).length, locale).toBeGreaterThan(0);
+    }
+  });
+
+  it("keeps the segment's `noindex,nofollow` default and a fallback title", async () => {
+    // The fallback title is what the 500 boundary document uses: `error.tsx` is a Client
+    // Component and cannot export metadata (AC-25).
+    const metadata = await localeLayoutMetadata({
+      params: Promise.resolve({ locale: "en" }),
+    });
+
+    expect(metadata.robots).toBe("noindex,nofollow");
+    expect(metadata.title).toBe("Something went wrong — Flowers Overseas");
+  });
+
+  it("refuses an unknown segment centrally, on the layout (AC-8)", () => {
+    // The `/review 15` carry-forward: one gate for the whole subtree, so a page added by spec 004
+    // cannot forget the export and fabricate `/fr/about` as a duplicate of the English URL.
+    expect(dynamicParams).toBe(false);
+  });
+
   it("prerenders the launch locales only", () => {
     expect(generateStaticParams()).toEqual([
       { locale: "en" },
@@ -159,9 +254,11 @@ describe("the `[locale]` document (AC-6)", () => {
 
 describe("the app-root layout (spec 003 §5.3's accepted alternative)", () => {
   it("renders no document of its own, so each leaf renders its own language", () => {
-    expect(
-      renderToStaticMarkup(<RootLayout>{<ChooserPage />}</RootLayout>),
-    ).toBe("<main></main>");
+    // Same children, no `<html>`/`<body>` added: the root is a pass-through, so the chooser's
+    // own markup is the entire response.
+    expect(renderToStaticMarkup(<RootLayout>{chooserPage}</RootLayout>)).toBe(
+      renderToStaticMarkup(chooserPage),
+    );
   });
 
   it("carries the `noindex,nofollow` default every document inherits", () => {
@@ -195,6 +292,37 @@ describe("the localised 500 boundary", () => {
 
     expect(html).toContain("<h1>Something went wrong</h1>");
     expect(html).toContain("Try again");
+  });
+});
+
+describe("the 404's metadata (AC-25)", () => {
+  it("titles the document from the catalogue", async () => {
+    const metadata = await notFoundMetadata();
+
+    expect(metadata.title).toBe("Page not found — Flowers Overseas");
+    expect(String(metadata.description).length).toBeGreaterThan(0);
+  });
+});
+
+describe("the global 500 document (spec 003 §5.3, AC-25)", () => {
+  const html = renderToStaticMarkup(
+    <GlobalErrorDocument reset={(): void => undefined} />,
+  );
+
+  it("is an x-default document with `lang`, `dir` and a localised title", () => {
+    expect(html).toContain('<html lang="en" dir="ltr">');
+    expect(html).toContain(
+      "<title>Something went wrong — Flowers Overseas</title>",
+    );
+  });
+
+  it("reads its copy from the catalogue, never from a literal", () => {
+    expect(html).toContain("<h1>Something went wrong</h1>");
+    expect(html).toContain("Try again");
+  });
+
+  it("stays unindexable even on the failure path", () => {
+    expect(html).toContain('name="robots" content="noindex,nofollow"');
   });
 });
 

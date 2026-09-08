@@ -90,6 +90,19 @@ test.describe("localised documents (AC-6)", () => {
       expect(/<title>[^<]+<\/title>/.test(html)).toBe(true);
       // Still nothing indexable until spec 007 lifts it by rule (§6, ADR-0007).
       expect(html).toContain('name="robots" content="noindex,nofollow"');
+      // §6 "Internal links in/out" (TASK-035): the switcher links this locale root to the other
+      // three and marks the current one, so the Phase 0 crawl graph is `/` → every locale root →
+      // every other locale root, with no redirect anywhere in it (`plan/02` §11).
+      expect(html).toContain('aria-current="page"');
+      for (const other of LOCALE_DOCUMENTS.filter(
+        (document) => document.path !== path,
+      )) {
+        expect(html, `${path} → ${other.path}`).toContain(
+          `href="${other.path}"`,
+        );
+      }
+      // The current locale is a `<span aria-current="page">`, so its own URL is not linked.
+      expect(html).not.toContain(`href="${path}"`);
     });
   }
 

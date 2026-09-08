@@ -1,10 +1,12 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
-import { launchLocale } from "@/modules/i18n";
+import { LocaleSwitcher, launchLocale } from "@/modules/i18n";
 
 /**
- * `/{locale}` placeholder home (spec 003 §5.3, §5.4; TASK-034).
+ * `/{locale}` placeholder home (spec 003 §5.3, §5.4; TASK-034, extended by TASK-035 with the
+ * per-route metadata and the locale switcher).
  *
  * **Rendering: ISR, `revalidate` 1 h, tag `home:{locale}`** — the `plan/01` §3 shape reserved for
  * the locale home, wired here so spec 004/007 inherit it rather than introducing it. The tag name
@@ -15,20 +17,36 @@ import { launchLocale } from "@/modules/i18n";
  * `src/lib/cache.ts` already records). Phase 0 has no runtime data and invalidates nothing (§5.4),
  * so the honest wiring today is time-based revalidation plus the reserved tag.
  *
- * **`dynamicParams = false` is the AC-8 gate.** The `[locale]` segment would otherwise match any
- * first path segment, so `/fr`, `/xx`, `/EN` and `/nope` would each render *something*; with the
- * launch locales fixed by `generateStaticParams` (in the layout, from the registry) every other
- * segment is refused by the router and answers 404 with the x-default document of
- * `src/app/not-found.tsx` — never a redirect, never a fabricated locale (ADR-0006). It also keeps
- * a pseudo-locale structurally unreachable in production (§5.4, AC-29). Adding a locale stays a
- * data change (AC-31): `generateStaticParams` reads the registry, so a new code is prerendered by
- * the next build with no code edit. The `notFound()` below is the defensive second line for the
- * dev server, where params are not pre-resolved.
+ * **The AC-8 gate is `dynamicParams = false` on the `[locale]` *layout*, not here** (TASK-035,
+ * closing the `/review 15` carry-forward). A segment config option on a layout governs the whole
+ * subtree, so `/fr`, `/xx`, `/EN` and `/nope` are refused by the router for every page below
+ * `[locale]` — present and future — and answer 404 with the x-default document of
+ * `src/app/not-found.tsx`, never a redirect and never a fabricated locale (ADR-0006). Spec 004's
+ * pages therefore inherit the gate instead of repeating an export they could forget. Adding a
+ * locale stays a data change (AC-31): `generateStaticParams` reads the registry, so a new code is
+ * prerendered by the next build with no code edit. The `notFound()` below is the defensive second
+ * line for the dev server, where params are not pre-resolved.
  *
- * The real home is spec 004/007; the locale switcher and the `<h1>` copy belong to TASK-035.
+ * The `<title>`/description pair is this page's own (§7's per-route `meta.*`); the layout carries
+ * only the segment default, so a page added later cannot inherit the home page's title. The real
+ * home — hero, corridors, occasions — is spec 004/007; what is here is the placeholder `<h1>` and
+ * the locale switcher, which is what makes every locale root link to the other three (§6
+ * "Internal links", `plan/02` §11).
  */
 export const revalidate = 3600;
-export const dynamicParams = false;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale: requested } = await params;
+  const locale = launchLocale(requested);
+  if (locale === undefined) notFound();
+  const t = await getTranslations({ locale: locale.code, namespace: "meta" });
+
+  return { title: t("home.title"), description: t("home.description") };
+}
 
 export default async function LocaleHomePage({
   params,
@@ -45,6 +63,8 @@ export default async function LocaleHomePage({
   return (
     <main id="main">
       <h1>{t("home.heading")}</h1>
+      {/* `betaLocales` arrives with TASK-039's `unreviewedShare()`; the links work without it. */}
+      <LocaleSwitcher locale={locale.code} />
     </main>
   );
 }

@@ -795,8 +795,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
       - run: pnpm exec playwright install --with-deps chromium
-      # Baselines are committed (AC-17) and platform-agnostic while the shell has no text or
-      # fonts; `--update-snapshots` is never passed here, so a missing baseline fails the job.
+      # Baselines are committed (AC-17) and, since spec 003 gave `/` real text, per platform:
+      # this job compares against `__screenshots__/<project>/linux/`. `--update-snapshots` is
+      # never passed here, so a missing or changed baseline fails the job — and the artifact
+      # below carries the screenshots Playwright wrote, which is how the `linux/` baseline is
+      # produced without a Linux machine (see `playwright.config.ts`).
       - name: pnpm test:visual
         env:
           PLAYWRIGHT_JSON_OUTPUT_NAME: playwright-visual.json
@@ -809,6 +812,7 @@ jobs:
           path: |
             playwright-report/
             test-results/
+            tests/visual/__screenshots__/
           retention-days: 7
           if-no-files-found: warn
       - name: Summarise the visual run (AC-17 / T-18)

@@ -36,11 +36,20 @@ export const PAGE_TYPES: readonly PageType[] = ["home", ...PATH_SEGMENT_KEYS];
 /** Same shape as a `pathSegments` value: lowercase ASCII, hyphen-separated, no slash (§6). */
 const TRAILING_SEGMENT_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
-export function launchLocaleCodes(): readonly string[] {
+/**
+ * The live locales, in registry order — the set the chooser lists, the switcher links to and
+ * `generateStaticParams` prerenders. Full `LocaleConfig` objects because every consumer needs the
+ * `nativeName`, `bcp47` and `dir` alongside the code (spec 003 §2, AC-7), and because reading them
+ * back one by one through `launchLocale()` would invite a caller to filter `isLaunch` itself.
+ */
+export function launchLocales(): readonly LocaleConfig[] {
   return getLocaleRegistry()
     .list()
-    .filter((locale) => locale.isLaunch)
-    .map((locale) => locale.code);
+    .filter((locale) => locale.isLaunch);
+}
+
+export function launchLocaleCodes(): readonly string[] {
+  return launchLocales().map((locale) => locale.code);
 }
 
 /** True for a configured **launch** locale code, matched exactly (no case folding). */

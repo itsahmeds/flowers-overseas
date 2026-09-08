@@ -29,6 +29,7 @@ describe("the shell catalogue", () => {
   it("ships the spec 003 §2 shell namespaces", () => {
     expect([...MESSAGE_NAMESPACES].sort()).toEqual([
       "a11y",
+      "chooser",
       "common",
       "errors",
       "meta",
@@ -123,8 +124,14 @@ describe("namespacesFor", () => {
     ]);
   });
 
-  it("gives `/` the `meta` namespace only, so it can stay zero-JS (AC-27)", () => {
-    expect(namespacesFor("chooser")).toEqual(["meta"]);
+  it("gives `/` its titles, its copy and its landmark name (TASK-035)", () => {
+    // Read on the server and handed to no client provider, so `/` still ships zero application
+    // JS (AC-27) while rendering real copy (AC-7).
+    expect([...namespacesFor("chooser")].sort()).toEqual([
+      "a11y",
+      "chooser",
+      "meta",
+    ]);
   });
 
   it("names only namespaces the catalogue actually ships", () => {

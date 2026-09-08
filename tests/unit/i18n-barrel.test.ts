@@ -7,6 +7,10 @@
  * which is what keeps spec 002/012's "hydrate from Postgres without touching a caller" promise
  * enforceable (AC-5) rather than aspirational. A later spec-003 task that legitimately adds a
  * function (the formatters, `alternatesFor`, …) extends `PINNED_EXPORTS` in the same PR.
+ *
+ * `LocaleSwitcher` (TASK-035) is the one component in the list. It is still a function and still
+ * carries no configuration — a Server Component reading the registry through the same accessor as
+ * every other export — so the "functions only, no mutable config" assertion below holds unchanged.
  */
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -19,12 +23,14 @@ const repoRoot = resolve(__dirname, "../..");
 
 /** Every runtime export of `src/modules/i18n/index.ts`, in alphabetical order. */
 const PINNED_EXPORTS = [
+  "LocaleSwitcher",
   "documentFallbackLocale",
   "fallbackChain",
   "getLocaleRegistry",
   "isLaunchLocale",
   "launchLocale",
   "launchLocaleCodes",
+  "launchLocales",
   "loadMessages",
   "localePath",
   "namespacesFor",

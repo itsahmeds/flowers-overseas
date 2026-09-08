@@ -185,10 +185,19 @@ describe("docs/architecture.md (AC-30)", () => {
       }
     });
 
-    it("records the dynamicParams = false obligation for pages under [locale]", () => {
+    it("records the central dynamicParams = false gate on the [locale] layout", () => {
+      // TASK-035 replaced TASK-034's per-page obligation with one export on the layout; the doc
+      // must say where the gate lives, not merely that one is needed.
       expect(section).toContain("dynamicParams = false");
       expect(section).toMatch(/x-default/);
       expect(section).toMatch(/duplicate/i);
+      expect(section).toMatch(/exported once/i);
+      expect(section).toContain("src/app/[locale]/layout.tsx");
+    });
+
+    it("names the global 500 document and the every-document title rule (AC-25)", () => {
+      expect(section).toContain("src/app/global-error.tsx");
+      expect(section).toMatch(/non-empty localised `<title>`/);
     });
   });
 });
