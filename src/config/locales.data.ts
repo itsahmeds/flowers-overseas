@@ -277,3 +277,24 @@ export function isPseudoLocaleCode(code: string): boolean {
  * declaring `x-default` and that it is the same object `locales.ts` resolves as `xDefaultLocale`.
  */
 export const X_DEFAULT_LOCALE: LocaleData = LAUNCH_LOCALE_DATA[0];
+
+/**
+ * The launch locale codes, in registry order — the zod-free half of `launchLocales` in
+ * `src/config/locales.ts` (`LOCALES.filter(isLaunch)`, and no pseudo-locale is ever a launch
+ * locale, TASK-042).
+ *
+ * It exists for the second client path that may reach no zod: the suggestion-banner island's
+ * decision, via `src/modules/i18n/hints.ts`, whose `fo_locale` reader used to validate against
+ * `LocaleCookieSchema` and therefore pulled ~70 KB Brotli of zod into the lazily fetched island
+ * chunk of every locale document (spec 004 §13 Q13, `/review 26`). `LocaleCookieSchema` still
+ * exists and is still the server-side boundary schema; `tests/unit/locales-data.test.ts` asserts
+ * that its option set and this list are the same set, so the two doors cannot drift.
+ */
+export const LAUNCH_LOCALE_CODES: readonly string[] = LAUNCH_LOCALE_DATA.filter(
+  (locale) => locale.isLaunch,
+).map((locale) => locale.code);
+
+/** True when the string is one of the launch locale codes, exactly and case-sensitively. */
+export function isLaunchLocaleCode(code: string): boolean {
+  return LAUNCH_LOCALE_CODES.includes(code);
+}

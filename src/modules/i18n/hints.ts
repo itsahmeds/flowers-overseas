@@ -23,16 +23,29 @@
  *    island therefore never imports the registry, and the locale set cannot be reconfigured from
  *    the browser.
  *
+ * **This module imports no validator (TASK-046, `/review 26`).** It is reachable from the
+ * suggestion-banner island, which `LocaleSuggestionBannerLoader.tsx` renders on every locale
+ * document through `next/dynamic({ ssr: false })` — so whatever it imports is a chunk the browser
+ * fetches right after hydration, whether or not a banner is ever shown. Until this change it
+ * imported `./schemas.ts` for two schemas, which reaches zod: ~70 KB Brotli of validator fetched
+ * by every visitor of `/en`, `/de`, `/en-gb` and `/pl` to decide a courtesy link (spec 004 §13
+ * Q13, AC-25's precondition). The two rules those schemas carried — "a language range is
+ * alphanumeric subtags separated by hyphens" and "the cookie value is a launch locale code" —
+ * are now a regular expression and a list membership, both derived from the same data the
+ * schemas are: `LANGUAGE_RANGE_PATTERN` below *is* what `AcceptLanguageSchema` is built from, and
+ * `isLaunchLocaleCode` reads `src/config/locales.data.ts`, the zod-free constants
+ * `LocaleCookieSchema`'s enum is also built from. Nothing server-side lost its zod parse:
+ * `AcceptLanguageSchema` and `LocaleCookieSchema` are unchanged, still exported, still the
+ * boundary schemas, and `tests/unit/i18n-hints-zod-free.test.ts` proves that they and the
+ * predicates here accept and reject the same values — plus that no import path from the island
+ * reaches zod, which is the assertion whose absence let the regression ship.
+ *
  * The `fo_locale` half is here for the same reason: the cookie *is* a stored language preference,
  * and §2 names `document.cookie` alongside `navigator.languages` as the two things the banner
  * decides from. Reading and serialising it are pure string functions; the two lines that touch
  * `document.cookie` live in the island.
  */
-import {
-  AcceptLanguageSchema,
-  type LanguagePreference,
-  LocaleCookieSchema,
-} from "./schemas.ts";
+import { isLaunchLocaleCode } from "../../config/locales.data.ts";
 
 /** The cookie name, first-party and fixed (§2, `plan/07` §6 lists it among the essential ones). */
 export const FO_LOCALE_COOKIE = "fo_locale";
@@ -51,7 +64,65 @@ export interface LocaleHint {
   readonly hreflangAliases: readonly string[];
 }
 
-export type { LanguagePreference };
+/**
+ * One entry of a parsed `Accept-Language` header or of `navigator.languages`: a language range as
+ * the client wrote it, and its RFC 7231 q-value.
+ *
+ * Declared here rather than inferred from `AcceptLanguageSchema`, and `schemas.ts` re-exports
+ * *this* name — the dependency points from the schema to the pure shape, never back (see the
+ * module header). `tests/unit/i18n-hints-zod-free.test.ts` proves the schema and the predicates
+ * below accept and reject the same values.
+ */
+export interface LanguagePreference {
+  /** A language range as written by the client, minus the parameters (`de-AT`, `en`). */
+  readonly tag: string;
+  /** The q-value: a weight between 0 and 1, `0` excluded by `parseAcceptLanguage`. */
+  readonly quality: number;
+}
+
+/**
+ * A language range: alphanumeric subtags separated by hyphens (RFC 7231 §5.3.5). The single
+ * source of that rule — `AcceptLanguageSchema` in `schemas.ts` is built from this constant, so
+ * the parser and the schema cannot disagree by an edit to one of them.
+ */
+export const LANGUAGE_RANGE_PATTERN = /^[A-Za-z]{1,8}(?:-[A-Za-z0-9]{1,8})*$/;
+
+/** The `AcceptLanguageSchema` predicate as a pure function: same rule, no validator. */
+export function isLanguagePreference(
+  value: unknown,
+): value is LanguagePreference {
+  if (typeof value !== "object" || value === null) return false;
+  const keys = Object.keys(value);
+  if (keys.length !== 2 || !keys.includes("tag") || !keys.includes("quality")) {
+    return false;
+  }
+  const { tag, quality } = value as { tag: unknown; quality: unknown };
+  return (
+    typeof tag === "string" &&
+    LANGUAGE_RANGE_PATTERN.test(tag) &&
+    typeof quality === "number" &&
+    Number.isFinite(quality) &&
+    quality >= 0 &&
+    quality <= 1
+  );
+}
+
+/**
+ * The output check `AcceptLanguageSchema.parse()` used to perform: throws when this module's own
+ * result is not the shape it promises, so "quality is a weight between 0 and 1" stays a fact for
+ * the caller rather than an intention of the loop that built the list.
+ */
+function assertLanguagePreferences(
+  preferences: readonly LanguagePreference[],
+): LanguagePreference[] {
+  for (const preference of preferences) {
+    if (isLanguagePreference(preference)) continue;
+    throw new TypeError(
+      "a language preference is `{ tag, quality }` with an RFC 7231 language range and a weight between 0 and 1",
+    );
+  }
+  return [...preferences];
+}
 
 /** `de-AT` -> `de`; the primary language subtag, lowercased. */
 function primaryLanguage(tag: string): string {
@@ -82,7 +153,7 @@ export function parseAcceptLanguage(header: string): LanguagePreference[] {
     const [range, ...parameters] = element.split(";");
     const tag = (range ?? "").trim();
     if (tag === "" || tag === "*") continue;
-    if (!/^[A-Za-z]{1,8}(?:-[A-Za-z0-9]{1,8})*$/.test(tag)) continue;
+    if (!LANGUAGE_RANGE_PATTERN.test(tag)) continue;
 
     let quality = 1;
     let malformed = false;
@@ -107,7 +178,7 @@ export function parseAcceptLanguage(header: string): LanguagePreference[] {
   const sorted = [...parsed].sort((a, b) => b.quality - a.quality);
   // `plan/12` §2 at the boundary: the parser's own output is validated, so "quality is a weight
   // between 0 and 1" is a fact for the caller rather than an intention of the loop above.
-  return AcceptLanguageSchema.parse(sorted);
+  return assertLanguagePreferences(sorted);
 }
 
 /**
@@ -128,11 +199,9 @@ export function languagePreferences(
       tag: tag.trim(),
       quality: Math.max(0.001, 1 - index / 100),
     }))
-    .filter(
-      (preference) => AcceptLanguageSchema.safeParse([preference]).success,
-    )
+    .filter((preference) => isLanguagePreference(preference))
     .slice(0, 20);
-  return AcceptLanguageSchema.parse(candidates);
+  return assertLanguagePreferences(candidates);
 }
 
 /**
@@ -189,7 +258,7 @@ export function preferredLocale<T extends LocaleHint>(
  * every page for the year the cookie lives. There is nothing to decode either: the value set is
  * the closed enum of launch codes (`a-z` and `-`), which percent-encoding never touches, and the
  * only writer is `serialiseLocaleCookie` below, which emits the code verbatim. So the trimmed
- * raw value goes straight to `LocaleCookieSchema.safeParse`, and anything else — an escape, a
+ * raw value goes straight to `isLaunchLocaleCode`, and anything else — an escape, a
  * malformed escape, a stale encoded value from some other tool — is simply "not a launch locale
  * code" and is ignored like `zz`. `tests/unit/i18n-hints.test.ts` pins that this cannot throw.
  */
@@ -199,10 +268,8 @@ export function readLocaleCookie(cookieHeader: string | null): string | null {
     const separator = pair.indexOf("=");
     if (separator === -1) continue;
     if (pair.slice(0, separator).trim() !== FO_LOCALE_COOKIE) continue;
-    const parsed = LocaleCookieSchema.safeParse(
-      pair.slice(separator + 1).trim(),
-    );
-    if (parsed.success) return parsed.data;
+    const value = pair.slice(separator + 1).trim();
+    if (isLaunchLocaleCode(value)) return value;
   }
   return null;
 }
@@ -226,9 +293,13 @@ export function serialiseLocaleCookie(
   locale: string,
   options: { readonly secure: boolean },
 ): string {
-  const code = LocaleCookieSchema.parse(locale);
+  if (!isLaunchLocaleCode(locale)) {
+    throw new Error(
+      `refusing to write a non-launch locale to the cookie: ${locale}`,
+    );
+  }
   const attributes = [
-    `${FO_LOCALE_COOKIE}=${code}`,
+    `${FO_LOCALE_COOKIE}=${locale}`,
     "Path=/",
     `Max-Age=${FO_LOCALE_MAX_AGE}`,
     "SameSite=Lax",
