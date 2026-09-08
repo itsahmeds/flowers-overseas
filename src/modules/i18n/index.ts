@@ -15,8 +15,16 @@
  * header, and `plan/01` §5 keeps `app/` to routes only; it is a Server Component with no state, so
  * exporting it adds no client JavaScript and no way to reconfigure the locale set.
  *
- * Later spec-003 tasks extend the list: formatters and `collator` (TASK-036), `formatAddressBlock`
- * (TASK-037), `unreviewedShare`/`isLocaleIndexable` (TASK-039), `alternatesFor` (TASK-039),
+ * `MoneySchema` (TASK-036) is the one non-function value in the list, and it is here on purpose:
+ * money crosses every API, form and job boundary outside this module, and `plan/12` §2's "zod at
+ * every boundary" would otherwise be satisfied by a second, hand-written money schema per caller.
+ * A zod schema is not the thing AC-3 forbids — it carries no locale set, no provider and no
+ * setter, and swapping the registry for a Postgres-backed one does not touch it — so
+ * `tests/unit/i18n-barrel.test.ts` pins it by name as a schema rather than loosening its
+ * "functions only" assertion.
+ *
+ * Later spec-003 tasks extend the list: `formatAddressBlock` (TASK-037),
+ * `unreviewedShare`/`isLocaleIndexable` (TASK-039), `alternatesFor` (TASK-039),
  * `parseAcceptLanguage`/`preferredLocale` (TASK-041) and `pseudoCatalogue` (TASK-042).
  */
 export {
@@ -52,3 +60,24 @@ export {
   LocaleSwitcher,
   type LocaleSwitcherProps,
 } from "./ui/LocaleSwitcher.tsx";
+
+export {
+  type DateStyle,
+  type FormatMoneyOptions,
+  type FormatNumberOptions,
+  type FormatTimeInZoneOptions,
+  type ListType,
+  type Money,
+  MoneySchema,
+  type ZoneNameStyle,
+  formatDate,
+  formatList,
+  formatMoney,
+  formatNumber,
+  formatPercentFromBasisPoints,
+  formatRange,
+  formatRelativeTime,
+  formatTimeInZone,
+} from "./format.ts";
+
+export { collator, sortBy } from "./collate.ts";

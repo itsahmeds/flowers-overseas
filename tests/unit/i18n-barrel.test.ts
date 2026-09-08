@@ -16,6 +16,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { describe, expect, it } from "vitest";
+import { z } from "zod";
 
 import * as barrel from "../../src/modules/i18n";
 
@@ -24,6 +25,8 @@ const repoRoot = resolve(__dirname, "../..");
 /** Every runtime export of `src/modules/i18n/index.ts`, in alphabetical order. */
 const PINNED_EXPORTS = [
   "LocaleSwitcher",
+  "MoneySchema",
+  "collator",
   "documentFallbackLocale",
   "fallbackChain",
   "getLocaleRegistry",
@@ -31,11 +34,29 @@ const PINNED_EXPORTS = [
   "launchLocale",
   "launchLocaleCodes",
   "launchLocales",
+  "formatDate",
+  "formatList",
+  "formatMoney",
+  "formatNumber",
+  "formatPercentFromBasisPoints",
+  "formatRange",
+  "formatRelativeTime",
+  "formatTimeInZone",
   "loadMessages",
   "localePath",
   "namespacesFor",
   "parseLocaleFromPath",
+  "sortBy",
 ].sort();
+
+/**
+ * The only exports allowed not to be functions: zod schemas callers need at their own boundaries
+ * (TASK-036 exports `MoneySchema` because money crosses every API, form and job boundary and
+ * `plan/12` §2 would otherwise be met by a hand-written money schema per caller). Each must be a
+ * real zod schema — not an object literal, not a config bag — and carries no locale set, no
+ * provider and no setter, which is what AC-3 actually forbids.
+ */
+const PINNED_SCHEMA_EXPORTS = ["MoneySchema"];
 
 /** Names that must never appear in the barrel, with the reason each is a seam and not an API. */
 const FORBIDDEN_EXPORTS = [
@@ -59,9 +80,18 @@ describe("the i18n barrel (AC-3)", () => {
     }
   });
 
-  it("exports functions only: no object, no array, no mutable config", () => {
+  it("exports functions only, apart from the pinned zod schemas", () => {
     for (const [name, value] of Object.entries(barrel)) {
+      if (PINNED_SCHEMA_EXPORTS.includes(name)) continue;
       expect(typeof value, name).toBe("function");
+    }
+  });
+
+  it("exports each pinned schema as a zod schema and nothing mutable", () => {
+    for (const name of PINNED_SCHEMA_EXPORTS) {
+      const value = (barrel as Record<string, unknown>)[name];
+      expect(value, name).toBeInstanceOf(z.ZodType);
+      expect(Object.keys(value as object), name).not.toContain("set");
     }
   });
 
