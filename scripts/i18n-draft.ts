@@ -26,11 +26,26 @@
  *
  * The script writes files and prints a report; it never exits non-zero for a stale key, because
  * "this locale owes translations" is `i18n:check`'s verdict to give, not this script's.
+ *
+ * **Both outputs are validated with their own schema before a byte is written** (`MessagesSchema`
+ * and `MessageMetaManifestSchema`, TASK-040's carry-forward from `/review 20`). A generator that
+ * writes a file another tool then parses with zod should not be the one place the boundary is
+ * skipped: an `en.json` leaf that is not a string, or a `retained` key kept from a hand-edited
+ * manifest with a field the schema does not know, would otherwise be copied into the target and
+ * only surface when `loadMessages()` or `i18n:check` refused to parse it. Failing here names the
+ * offending path and leaves the previous files untouched.
  */
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+
+import type { ZodError } from "zod";
+
+import {
+  MessageMetaManifestSchema,
+  MessagesSchema,
+} from "../src/modules/i18n/schemas.ts";
 
 /** The locale every other catalogue is drafted from; it is authored, never drafted. */
 export const SOURCE_LOCALE = "en";
@@ -171,6 +186,16 @@ function storedMeta(
     : undefined;
 }
 
+/** A zod issue list as one line, naming the failing path — the message a human has to act on. */
+function formatIssues(error: ZodError): string {
+  return error.issues
+    .map((issue) => {
+      const path = issue.path.map((part) => String(part)).join(".");
+      return path === "" ? issue.message : `${path}: ${issue.message}`;
+    })
+    .join("; ");
+}
+
 const LOCALE_CODE_PATTERN = /^[a-z]{2,3}(?:-[a-z]{2})?$/;
 
 export function draftLocale(options: DraftOptions): DraftReport {
@@ -238,14 +263,29 @@ export function draftLocale(options: DraftOptions): DraftReport {
     outcomes.push({ key, action: "removed" });
   }
 
-  const catalogue = serialiseJson(unflattenMessages(values));
-  const metaJson = serialiseJson(
-    Object.fromEntries(
-      Object.keys(meta)
-        .sort()
-        .map((key) => [key, meta[key]]),
-    ),
+  const catalogueTree = unflattenMessages(values);
+  const metaManifest = Object.fromEntries(
+    Object.keys(meta)
+      .sort()
+      .map((key) => [key, meta[key]]),
   );
+
+  // The write boundary (see the header): both files are parsed by their own schema first.
+  const parsedCatalogue = MessagesSchema.safeParse(catalogueTree);
+  if (!parsedCatalogue.success) {
+    throw new Error(
+      `refusing to write messages/${locale}.json: ${formatIssues(parsedCatalogue.error)}`,
+    );
+  }
+  const parsedMeta = MessageMetaManifestSchema.safeParse(metaManifest);
+  if (!parsedMeta.success) {
+    throw new Error(
+      `refusing to write messages/${locale}.meta.json: ${formatIssues(parsedMeta.error)}`,
+    );
+  }
+
+  const catalogue = serialiseJson(catalogueTree);
+  const metaJson = serialiseJson(metaManifest);
 
   const changed =
     !existsSync(cataloguePath) ||

@@ -61,8 +61,9 @@ interface LocaleParams {
 }
 
 /**
- * The segment's metadata **default**: the `noindex,nofollow` of §6, plus a title so that every
- * document under `[locale]` has a non-empty localised one even when no page metadata resolves —
+ * The segment's metadata **default**: the `noindex,nofollow` of §6, plus a title and description
+ * so that every document under `[locale]` has a non-empty localised title even when no page
+ * metadata resolves —
  * the 500 boundary is the case that matters, since `error.tsx` is a Client Component and cannot
  * export metadata (AC-25, WCAG 2.4.2). Each page overrides both halves with its own pair; the
  * locale home does so in `page.tsx` (§7's per-route `meta.*` title/description).
@@ -76,6 +77,11 @@ export async function generateMetadata({
   return {
     robots: "noindex,nofollow",
     title: t("error.title"),
+    // The pair, not just the title: a document that reaches this default is the 500 boundary, and
+    // a `<meta name="description">` is part of the document even when it is `noindex` (a shared
+    // link preview renders it). `meta.error.description` had no consumer before TASK-040, which
+    // `pnpm i18n:check`'s unused-key rule is what surfaced (`/review 16`).
+    description: t("error.description"),
   };
 }
 

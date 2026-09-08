@@ -107,6 +107,7 @@ describe("the required-check contract on the committed workflows (AC-21)", () =>
       "dev-os-check",
       "e2e",
       "env-build-failure",
+      "i18n-check",
       "lint",
       "pr-policy",
       "preview",

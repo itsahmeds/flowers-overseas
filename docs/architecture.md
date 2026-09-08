@@ -180,7 +180,7 @@ the `MODULES` manifest in `scripts/check-layout.ts`, and the new barrel's owning
 | `customers` | customers, recipients, consent | spec 019 | empty barrel |
 | `notifications` | email + WhatsApp senders, templates, outbox consumer | spec 017 | empty barrel |
 | `seo` | hreflang, canonical, JSON-LD builders, sitemap generators, robots | spec 007 | empty barrel |
-| `i18n` | locale config, message loading, formatters, address formatting, the locale switcher | spec 003 | config + routing/messages + `ui/LocaleSwitcher` + `format.ts`/`collate.ts` + `address.ts` landed; catalogues/review TASK-039 |
+| `i18n` | locale config, message loading, formatters, address formatting, the locale switcher | spec 003 | config + routing/messages + `ui/LocaleSwitcher` + `format.ts`/`collate.ts` + `address.ts` + catalogues/`review.ts`/`alternates.ts` landed, gated by `pnpm i18n:check`; banner/pseudo-locales TASK-041/TASK-042 |
 | `analytics` | GA4 event schema, consent state, server-side events | spec 023 | empty barrel |
 | `admin` | admin queries and actions | spec 012 | empty barrel |
 

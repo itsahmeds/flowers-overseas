@@ -3,9 +3,9 @@
 # the job names straight out of it, so a job added here is part of the branch-protection contract
 # without anybody editing a list (`pnpm branch-protection --verify`).
 #
-# Jobs (17): lint · typecheck · test-unit · test-integration · test-contract · build · db-check ·
-# env-build-failure · commitlint · seo-validate · dev-os-check · audit · preview · e2e · visual ·
-# a11y · lighthouse.
+# Jobs (18): lint · typecheck · test-unit · test-integration · test-contract · build · db-check ·
+# env-build-failure · commitlint · seo-validate · i18n-check · dev-os-check · audit · preview · e2e ·
+# visual · a11y · lighthouse.
 #
 # Order, and where it departs from spec 001 §2 / plan/12 §5 (TASK-011 reconciliation; the
 # corrections are recorded on TASK-012 for the spec text):
@@ -16,6 +16,10 @@
 #    The spec lists them as a chain; running them as one would triple the wall-clock time of every
 #    PR without catching anything a parallel fan-out misses, since none of them consumes another's
 #    output. `build` keeps `needs: test-unit` (do not spend build minutes on a red unit suite).
+#  - `i18n-check` joins that fan-out on `needs: typecheck` (spec 003 §2 "Lint, checks, CI", spec 001
+#    §14 A9's placement rule): it reads committed JSON and greps `src/`, touches no preview
+#    deployment, and its step summary is the translation-debt number the founder acts on (spec 003
+#    §11), so it must be visible on every PR rather than behind the Playwright chain.
 #  - **`env:check` has no job of its own.** It is a step of `lint` (added by TASK-005): it is a
 #    key-set diff between `.env.example` and the zod schema that takes milliseconds and needs the
 #    same checkout and install as the other lint steps. A separate job would add a runner, an
@@ -546,6 +550,53 @@ jobs:
             echo ""
             echo "Bad-fixture cases live in \`tests/fixtures/seo/_cases/\` and are exercised by the unit"
             echo "suite in a temp directory, so this job's directories stay in their committed state."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # spec 003 §2 "Lint, checks, CI", §11, AC-13, AC-22 / T-13, T-22 (TASK-040): the catalogue gate.
+  # `pnpm i18n:check` fails on a key missing after fallback resolution, an unused `en` key without
+  # `retained: true`, an ICU syntax error, an argument-set mismatch between a key and a
+  # translation, a redundant `en-gb` override, a missing or orphan review record, a stale
+  # `sourceHash`, or a `pathSegments` value that is not a unique lowercase-ASCII URL segment.
+  #
+  # `--summary` is what makes this job the observability surface of spec 003 §11: the script
+  # appends the per-locale table (keys, missing after fallback, unreviewed count and share, stale
+  # count, indexable) to `$GITHUB_STEP_SUMMARY` itself, computed from `unreviewedShare()` and
+  # `isLocaleIndexable()` — the same functions spec 007 gates hreflang and sitemap membership
+  # with, so a locale cannot look ready here and be excluded in code. While `de` and `pl` are
+  # machine-drafted echoes of English they read 100 % unreviewed and `no`, which is the correct
+  # answer, not a failure.
+  i18n-check:
+    name: i18n-check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: typecheck
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - name: i18n:check — catalogues, manifests and pathSegments (AC-13, AC-22)
+        id: i18n
+        run: pnpm i18n:check --summary 2>&1 | tee i18n-check.log
+      - name: Summarise the verdict
+        if: always()
+        run: |
+          set -uo pipefail
+          {
+            echo ""
+            echo "#### verdict"
+            echo ""
+            echo "| check | command | result |"
+            echo "|---|---|---|"
+            echo "| catalogue gate (AC-13, AC-22) | \`pnpm i18n:check --summary\` | ${{ steps.i18n.outcome }} |"
+            echo ""
+            if [ -f i18n-check.log ] && grep -q 'i18n:check failed' i18n-check.log; then
+              echo "<details><summary>problems</summary>"
+              echo ""
+              echo '```'
+              grep -A 200 'i18n:check failed' i18n-check.log
+              echo '```'
+              echo ""
+              echo "</details>"
+            fi
           } >> "$GITHUB_STEP_SUMMARY"
 
   # AC-24, AC-25, AC-26 / T-25, T-26, T-27 (TASK-010): the dev-OS gate. Runs the shell checks in

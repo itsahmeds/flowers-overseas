@@ -1,0 +1,22 @@
+{
+  "banner.headline": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "d963ea1e6e705d0984d9cfbda94987a25eac7d5fea34263eaa533c4f97a75732"
+  },
+  "errors.notFound.heading": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "a469ab4ca4e55bf547566e9ebfa1b809c933207e9d558156bc0c4252b17533fe"
+  },
+  "meta.home.subtitle": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "792d3fe8e3da16b71c8fd0d75e139b28f6576c46bdd1e62e3d23712775585bf2"
+  },
+  "meta.home.title": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "d508bea71757da8bfbbacc4c531092141c6748dd0e0317811a56413bd52d54ab"
+  }
+}

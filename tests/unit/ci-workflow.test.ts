@@ -61,6 +61,7 @@ const EXPECTED_JOBS = [
   "env-build-failure",
   "commitlint",
   "seo-validate",
+  "i18n-check",
   "dev-os-check",
   "preview",
   "e2e",
@@ -214,6 +215,37 @@ describe("the jobs TASK-011 adds", () => {
     expect(scripts).toContain("pnpm env:check");
     const header = read(".github/workflows/ci.yml").split("name: ci")[0] ?? "";
     expect(header).toContain("`env:check` has no job of its own");
+  });
+});
+
+describe("the i18n-check job (spec 003 AC-30's CI half, TASK-040)", () => {
+  const job = ci.jobs["i18n-check"];
+
+  it("runs `pnpm i18n:check --summary`", () => {
+    const scripts = (job?.steps ?? []).map((step) => step.run ?? "").join("\n");
+    expect(scripts).toContain("pnpm i18n:check --summary");
+  });
+
+  it("hangs off typecheck, not off the preview chain (spec 001 §14 A9)", () => {
+    // The check reads committed JSON and greps `src/`; making it wait for a Vercel deployment
+    // would hide the translation-debt table behind fifteen minutes of unrelated work.
+    expect(job?.needs).toBe("typecheck");
+  });
+
+  it("is a required check, so the gate cannot be merged past", () => {
+    // `scripts/branch-protection.ts` derives the contexts from this file, and only `lighthouse`
+    // is informational (asserted above).
+    expect(job?.["continue-on-error"]).toBeUndefined();
+  });
+
+  it("writes the per-locale share table to the step summary (§11, AC-30)", () => {
+    // Half of it is written by the script itself (`--summary` appends to `$GITHUB_STEP_SUMMARY`),
+    // the verdict half by the job, `if: always()` so a red run still reports what it saw.
+    const summaryStep = (job?.steps ?? []).find((step) =>
+      (step.run ?? "").includes("GITHUB_STEP_SUMMARY"),
+    );
+    expect(summaryStep?.if).toBe("always()");
+    expect(summaryStep?.run).toContain("i18n:check failed");
   });
 });
 
