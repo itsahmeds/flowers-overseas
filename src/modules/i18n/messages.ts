@@ -138,15 +138,16 @@ export type RouteKind = (typeof ROUTE_KINDS)[number];
 
 /**
  * The namespaces a route kind may use. `localeDocument` is the set handed to the client provider
- * under `[locale]` (the error boundary needs `errors`); `chooser` is the `/` document, which gets
- * `meta` only and no client provider at all (AC-27's "`/` ships zero application JS").
+ * under `[locale]` (the error boundary needs `errors`); `chooser` is the `/` document, whose
+ * `meta`, `chooser` and `a11y` copy is read on the server and handed to **no** client provider at
+ * all (AC-27's "`/` ships zero application JS", AC-7's "served without JavaScript").
  */
 const ROUTE_NAMESPACES: Readonly<
   Record<RouteKind, readonly MessageNamespace[]>
 > = {
   localeHome: ["meta", "a11y"],
   localeDocument: ["meta", "errors", "a11y", "common"],
-  chooser: ["meta"],
+  chooser: ["meta", "chooser", "a11y"],
 };
 
 export function namespacesFor(

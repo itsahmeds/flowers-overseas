@@ -1,16 +1,26 @@
 {
   "meta": {
+    "chooser": {
+      "title": "Flowers Overseas — choose your language",
+      "description": "Flowers Overseas delivers flowers across Europe through vetted local florists. Choose the language you would like to continue in."
+    },
     "home": {
       "title": "Flowers Overseas — send flowers to Europe",
       "description": "Order flowers for someone in another European country. A vetted local florist makes and delivers them.",
       "heading": "Send flowers across Europe"
     },
     "notFound": {
-      "title": "Page not found — Flowers Overseas"
+      "title": "Page not found — Flowers Overseas",
+      "description": "That page does not exist. Start again from the home page."
     },
     "error": {
-      "title": "Something went wrong — Flowers Overseas"
+      "title": "Something went wrong — Flowers Overseas",
+      "description": "The page could not be loaded. Nothing you were doing was lost."
     }
+  },
+  "chooser": {
+    "heading": "Choose your language",
+    "intro": "Flowers Overseas sends flowers to someone in another European country: you order, a vetted local florist makes and delivers them. Choose a language to continue."
   },
   "errors": {
     "notFound": {
@@ -24,7 +34,9 @@
     }
   },
   "a11y": {
-    "skipToContent": "Skip to content"
+    "skipToContent": "Skip to content",
+    "localeChooser": "Languages",
+    "localeSwitcher": "Change language"
   },
   "common": {
     "homeLink": "Home"

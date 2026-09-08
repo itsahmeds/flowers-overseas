@@ -11,14 +11,14 @@
  *
  * An unknown or non-launch segment resolves to the x-default locale: it is the value the 404
  * document renders with (AC-8), never a redirect to a guessed locale. `next-intl` calls this
- * function for every server render; `messages` is the `localeDocument` subset, not the whole
- * catalogue (§6, AC-27).
+ * function for every server render; the payload the *browser* receives is a per-route namespace
+ * subset chosen in the layout, not this catalogue (§6, AC-27) — see the comment on `messages`.
  *
  * Wired in by `createNextIntlPlugin("./src/modules/i18n/request.ts")` in `next.config.ts`.
  */
 import { getRequestConfig } from "next-intl/server";
 
-import { loadMessages, namespacesFor } from "./messages.ts";
+import { MESSAGE_NAMESPACES, loadMessages } from "./messages.ts";
 import { documentFallbackLocale } from "./registry.ts";
 import { launchLocale } from "./routing.ts";
 
@@ -28,7 +28,12 @@ export default getRequestConfig(async ({ requestLocale }) => {
 
   return {
     locale: locale.code,
-    messages: loadMessages(locale.code, namespacesFor("localeDocument")),
+    // Every namespace, because this is the **server** catalogue: `getTranslations()` in a layout,
+    // a page or `generateMetadata` resolves against it, so a document that renders the chooser
+    // copy (`/`) or an error title must find its keys here. It is never serialised to the browser
+    // — the client provider in `src/app/[locale]/layout.tsx` is handed the per-route subset from
+    // `namespacesFor()` explicitly, and that is what the §6 / AC-27 payload budget measures.
+    messages: loadMessages(locale.code, MESSAGE_NAMESPACES),
     // A relay has no single "local" time zone; every rendered time carries its own IANA zone
     // (spec 003 §5.2, TASK-036's `formatTimeInZone`). UTC is the neutral default for the
     // formatter that has not been told a zone, and it keeps output request-invariant.

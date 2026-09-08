@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
 import { documentFallbackLocale, localePath } from "@/modules/i18n";
@@ -5,7 +6,7 @@ import { documentFallbackLocale, localePath } from "@/modules/i18n";
 import "./globals.css";
 
 /**
- * The 404 document (spec 003 §5.3, AC-8; TASK-034).
+ * The 404 document (spec 003 §5.3, AC-8; TASK-034, its `<title>` TASK-035).
  *
  * Every 404 in the application renders here: an unknown first segment (`/fr`, `/xx`, `/EN`,
  * `/nope`), which the `[locale]` segment refuses at the routing layer via `dynamicParams = false`,
@@ -28,6 +29,19 @@ import "./globals.css";
  * the day the framework can route a nested 404 boundary as a document it is a file move, not a
  * rewrite.
  */
+/**
+ * The 404's own localised `<title>` (AC-25, WCAG 2.4.2; TASK-035). `not-found.tsx` is a Server
+ * Component, so it can export metadata like any page, and it must: it renders the document itself,
+ * has no page above it to inherit a title from, and `/nope` and `/en/does-not-exist` are two of
+ * the URLs axe now audits with no exception list.
+ */
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = documentFallbackLocale();
+  const t = await getTranslations({ locale: locale.code, namespace: "meta" });
+
+  return { title: t("notFound.title"), description: t("notFound.description") };
+}
+
 export default async function NotFound() {
   const locale = documentFallbackLocale();
   const t = await getTranslations({ locale: locale.code, namespace: "errors" });

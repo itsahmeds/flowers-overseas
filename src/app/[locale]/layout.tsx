@@ -16,7 +16,8 @@ import "../globals.css";
 
 /**
  * The document layout for every localised URL (spec 003 §2, §5.3, §5.4, AC-6, AC-8, AC-9;
- * TASK-034). It renders `<html>`/`<body>` itself, because the app-root layout renders no document
+ * TASK-034; the central `dynamicParams` gate and the metadata default are TASK-035). It renders
+ * `<html>`/`<body>` itself, because the app-root layout renders no document
  * — see `src/app/layout.tsx` for why.
  *
  * `<html lang dir>` come from the resolved locale's `bcp47` and `dir` in the registry — the
@@ -31,14 +32,25 @@ import "../globals.css";
  * rendering.
  *
  * An unknown, mis-cased or non-launch segment (`/fr`, `/xx`, `/EN`, `/nope`) is **not** resolved
- * to a guessed locale: `dynamicParams = false` on the page below refuses it at the routing layer
- * and the 404 document of `src/app/not-found.tsx` answers in the x-default locale (AC-8). This
- * layout still resolves such a segment to the x-default locale rather than throwing, so a
+ * to a guessed locale: `dynamicParams = false` **here, on the segment** refuses it at the routing
+ * layer and the 404 document of `src/app/not-found.tsx` answers in the x-default locale (AC-8).
+ * This layout still resolves such a segment to the x-default locale rather than throwing, so a
  * mis-routed request can never produce a document with no language at all.
+ *
+ * TASK-035 moved that export up from the page (the carry-forward from `/review 15`): a segment
+ * config option set on a layout governs the whole subtree, so the gate is now in **one** place and
+ * a page added at `/de/about` by spec 004 cannot forget it and fabricate `/fr/about` as a
+ * duplicate of the English URL (§6, recorded in `docs/architecture.md` §2). Making the layout call
+ * `notFound()` instead was rejected for the reason TASK-034 measured: a `notFound()` from a
+ * matching route renders inside the framework's `<html id="__next_error__">` with no `lang`, which
+ * breaks AC-8 and WCAG 3.1.1, whereas the routing-layer refusal reaches `not-found.tsx` as a real
+ * x-default document.
  *
  * `robots: noindex,nofollow` stays on every localised document until spec 007 lifts it by rule
  * (§6 "Indexability", ADR-0007).
  */
+export const dynamicParams = false;
+
 export function generateStaticParams(): { locale: string }[] {
   // Launch locales only — never a pseudo-locale (§5.4, AC-29 on TASK-042).
   return launchLocaleCodes().map((locale) => ({ locale }));
@@ -48,6 +60,13 @@ interface LocaleParams {
   params: Promise<{ locale: string }>;
 }
 
+/**
+ * The segment's metadata **default**: the `noindex,nofollow` of §6, plus a title so that every
+ * document under `[locale]` has a non-empty localised one even when no page metadata resolves —
+ * the 500 boundary is the case that matters, since `error.tsx` is a Client Component and cannot
+ * export metadata (AC-25, WCAG 2.4.2). Each page overrides both halves with its own pair; the
+ * locale home does so in `page.tsx` (§7's per-route `meta.*` title/description).
+ */
 export async function generateMetadata({
   params,
 }: LocaleParams): Promise<Metadata> {
@@ -56,8 +75,7 @@ export async function generateMetadata({
   const t = await getTranslations({ locale: locale.code, namespace: "meta" });
   return {
     robots: "noindex,nofollow",
-    title: t("home.title"),
-    description: t("home.description"),
+    title: t("error.title"),
   };
 }
 

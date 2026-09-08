@@ -92,7 +92,7 @@ Every script in `package.json`, once.
 | `pnpm test:integration` | integration against `DATABASE_URL`; reported as **skipped** until spec 002 |
 | `pnpm test:contract` | adapter-versus-recorded-fixture tests; no tests yet (`--passWithNoTests`) |
 | `pnpm test:e2e` | Playwright `e2e-desktop` + `e2e-mobile` against `PLAYWRIGHT_BASE_URL` |
-| `pnpm test:visual` | Playwright `visual` + `pseudo-rtl` against the baselines in `tests/visual/__screenshots__/` (`--update-snapshots` to regenerate) |
+| `pnpm test:visual` | Playwright `visual` + `pseudo-rtl` against the baselines in `tests/visual/__screenshots__/<project>/<platform>/` (`--update-snapshots` to regenerate). Baselines are **per platform** since spec 003 gave `/` real text: your macOS run compares against `darwin/`, CI against `linux/`. Regenerate the `linux/` baseline from the `visual` job — it uploads the screenshots it wrote when it fails — and commit both. |
 | `pnpm test:a11y` | Playwright `a11y` with `@axe-core/playwright`: zero serious/critical violations |
 | `pnpm dev-os:check` | the shell checks in `tests/dev-os/` against the real hooks and `.claude/bin/task.sh`, in throwaway project roots |
 

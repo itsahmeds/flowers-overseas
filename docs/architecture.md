@@ -108,9 +108,11 @@ it renders no document — no `<html>`, no `<body>`, it returns its children —
 (spec 001 §6). The document itself is rendered by whichever leaf knows the language, which is why
 no file in the repository contains a locale literal any more. There are three such documents:
 
-- `src/app/(chooser)/layout.tsx` + `page.tsx` — the single non-localised URL, `/`. Its
-  `<html lang dir>` come from the **x-default** locale in the registry (`plan/02` §3). TASK-035
-  turns the page into the crawlable locale chooser.
+- `src/app/(chooser)/layout.tsx` + `page.tsx` — the single non-localised URL, `/`, and since
+  TASK-035 the crawlable locale chooser: one plain `<a>` per launch locale, labelled with its
+  `nativeName` and carrying `lang`/`hreflang`, `noindex,follow` (the only `follow` document in
+  Phase 0, `plan/02` §7), and no Client Component of any kind, so it needs no JavaScript. Its
+  `<html lang dir>` come from the **x-default** locale in the registry (`plan/02` §3).
 - `src/app/[locale]/layout.tsx` — every localised URL, with the `plan/01` §5 route groups
   (`(marketing)`, `(shop)`, `(checkout)`, `(account)`) created empty-but-real beneath it so specs
   004–011 add pages without touching routing. `<html lang dir>` come from the segment's `bcp47`
@@ -121,15 +123,29 @@ no file in the repository contains a locale literal any more. There are three su
 - `src/app/not-found.tsx` — the 404 document, in the **x-default** locale from the registry
   (AC-8). Every 404 renders here: an unknown first segment and any unmatched path below a real
   locale alike, always status 404 and never a fabricated locale page.
+- `src/app/global-error.tsx` — the last-resort 500 document (TASK-035, spec 003 §5.3), replacing
+  Next's untranslated, `lang`-less built-in shell. It is an x-default document with `lang`, `dir`
+  and a localised `<title>`, and it is what answers a failure at `/` now that the `(chooser)`
+  group has no `error.tsx` of its own; every localised URL still has the nearer per-locale
+  boundary of `src/app/[locale]/error.tsx`.
 
-**Every page under `[locale]` must export `dynamicParams = false`** (or the gate must move to one
-central place). The `[locale]` layout deliberately resolves an unknown segment to the x-default
-locale instead of throwing, so that a mis-routed request can never produce a document with no
-language at all; the routing-layer refusal is what turns an unknown segment into a 404. Without
-that export on a page, a real page added at, say, `/fr/about` would render on demand in the
-x-default locale — a fabricated duplicate of the English URL, which spec 003 §6 forbids. Whoever
-adds the first page below `[locale]` either repeats the export or replaces the per-page gate with
-a single check and records the move here.
+Every document has a non-empty localised `<title>` (WCAG 2.4.2): pages and `not-found.tsx` export
+`generateMetadata`, the `[locale]` layout carries a segment default for the 500 boundary — a Client
+Component cannot export metadata — and `global-error.tsx` renders the `<title>` element itself.
+That is why `tests/a11y/shell.spec.ts` has no exception list any more.
+
+**`dynamicParams = false` is exported once, by `src/app/[locale]/layout.tsx`** — the central gate
+TASK-035 moved up from the page, closing the carry-forward that TASK-034's review recorded. A
+segment config option set on a layout governs the whole subtree, so every page below `[locale]`,
+present and future, inherits the refusal and no author can forget it: a page added at `/de/about`
+does not make `/fr/about` renderable. That matters because the layout deliberately resolves an
+unknown segment to the x-default locale instead of throwing, so that a mis-routed request can
+never produce a document with no language at all — without the routing-layer refusal, `/fr/about`
+would render on demand in the x-default locale, a fabricated duplicate of the English URL that
+spec 003 §6 forbids. Making the layout call `notFound()` instead was rejected for the reason
+measured on Next 16.3.4 and recorded below: a `notFound()` from a matching route renders inside
+the framework's own `<html id="__next_error__">` with no `lang`, whereas the routing-layer refusal
+reaches `src/app/not-found.tsx` as a real x-default document.
 
 **The rejected shape.** Spec 003 §5.3 recommends *two root layouts* — `(chooser)` and `[locale]`,
 with no `src/app/layout.tsx` at all — and that arrangement was implemented and then measured on
@@ -164,7 +180,7 @@ the `MODULES` manifest in `scripts/check-layout.ts`, and the new barrel's owning
 | `customers` | customers, recipients, consent | spec 019 | empty barrel |
 | `notifications` | email + WhatsApp senders, templates, outbox consumer | spec 017 | empty barrel |
 | `seo` | hreflang, canonical, JSON-LD builders, sitemap generators, robots | spec 007 | empty barrel |
-| `i18n` | locale config, message loading, formatters | spec 003 | config + routing/messages landed, formatters TASK-036 |
+| `i18n` | locale config, message loading, formatters, the locale switcher | spec 003 | config + routing/messages + `ui/LocaleSwitcher` landed, formatters TASK-036 |
 | `analytics` | GA4 event schema, consent state, server-side events | spec 023 | empty barrel |
 | `admin` | admin queries and actions | spec 012 | empty barrel |
 
