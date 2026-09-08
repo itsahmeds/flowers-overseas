@@ -303,6 +303,43 @@ test.describe("a German browser on /en (AC-28)", () => {
     await expect(page.locator(BANNER)).toHaveCount(0);
   });
 
+  /**
+   * `/review 23`'s blocker, in the browser it broke. `readLocaleCookie` used to decode the
+   * cookie value, so a `fo_locale` of `%` (or `en%`, or anything else `decodeURIComponent`
+   * rejects) threw `URIError` inside the island's `useState` initialiser — a throw during a
+   * Client Component's first render, which React unwinds past the banner to the root and
+   * replaces the document with the error page. Any script or extension can set that cookie, and
+   * it lives for a year, so every page of the site stayed broken until the visitor cleared it.
+   *
+   * This asserts the page, not the reader: the `<h1>` is the locale home heading and not the
+   * error one, the switcher is there, the response is a 200 — and the malformed value is treated
+   * as no choice at all, so the banner appears exactly as it does for a first-time visitor.
+   */
+  for (const value of ["%", "en%", "%zz"] as const) {
+    test(`a malformed \`fo_locale=${value}\` leaves the page intact and shows the banner`, async ({
+      page,
+      context,
+      baseURL,
+    }) => {
+      const url = new URL(baseURL ?? "http://localhost:3000");
+      await context.addCookies([
+        { name: "fo_locale", value, domain: url.hostname, path: "/" },
+      ]);
+
+      const response = await page.goto("/en");
+      expect(response?.status()).toBe(200);
+
+      // The page, not the error document: the real heading and the real switcher.
+      await expect(page.locator("h1")).toHaveText("Send flowers across Europe");
+      await expect(page.locator("nav ul li")).toHaveCount(4);
+      await expect(page.locator("h1")).not.toContainText("went wrong");
+
+      // And the malformed value is simply not a choice, so this is a first visit.
+      await expect(page.locator(BANNER)).toBeVisible();
+      await expect(page.locator(BANNER)).toContainText("Deutsch");
+    });
+  }
+
   test("a forged `fo_locale=zz` is ignored, and `Stay` rewrites it (AC-12)", async ({
     page,
     context,
@@ -367,6 +404,38 @@ test.describe("a French browser (no better launch locale)", () => {
   }) => {
     await page.goto("/en");
 
+    await expect(page.locator("h1")).toBeVisible();
+    await expect(page.locator(BANNER)).toHaveCount(0);
+  });
+});
+
+/**
+ * The `sameLocale` branch of §2 in a browser: the hint and the URL agree, so there is nothing to
+ * suggest. The unit matrix covers the decision (`decideSuggestion` → `reason: "sameLocale"`);
+ * what only a browser shows is that the island *mounts* — the page is `/de`, the German visitor
+ * is exactly who the banner is for — and still renders nothing, rather than offering a switch to
+ * the page they are already on.
+ */
+test.describe("a German browser already on /de (the sameLocale branch)", () => {
+  test.use({ locale: "de-DE" });
+
+  test.beforeEach(async ({ page }) => {
+    await forceLanguages(page, ["de-DE", "de"]);
+  });
+
+  test("is never offered the page it is already reading", async ({ page }) => {
+    const response = await page.goto("/de");
+    expect(response?.status()).toBe(200);
+
+    await expect(page.locator("h1")).toBeVisible();
+    await expect(page.locator("html")).toHaveAttribute("lang", "de");
+    // Give hydration and the lazy island chunk time to arrive before concluding "never".
+    await expect(page.locator("nav ul li")).toHaveCount(4);
+    await expect(page.locator(BANNER)).toHaveCount(0);
+
+    // A regional German browser resolves to the same locale, so it is the same answer.
+    await forceLanguages(page, ["de-AT", "de"]);
+    await page.reload();
     await expect(page.locator("h1")).toBeVisible();
     await expect(page.locator(BANNER)).toHaveCount(0);
   });

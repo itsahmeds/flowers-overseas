@@ -69,8 +69,40 @@ describe("readLocaleCookie", () => {
     expect(readLocaleCookie("a=1; fo_locale = en ; b=2")).toBe("en");
   });
 
-  it("decodes a percent-encoded value before validating it", () => {
-    expect(readLocaleCookie("fo_locale=en%2Dgb")).toBe("en-gb");
+  /**
+   * `/review 23`'s blocker. The reader used to `decodeURIComponent()` the value, which throws
+   * `URIError` on a lone or truncated escape — and it is called from the island's `useState`
+   * initialiser, so the throw became a first-render error with no boundary above it and React
+   * replaced the whole document with the error page. A one-character cookie any script or
+   * extension can set therefore broke every page for the 365 days the cookie lives.
+   *
+   * The value is now matched raw: the enum is `a-z` and `-`, nothing percent-encoding touches,
+   * and the only writer is `serialiseLocaleCookie`. A percent-escape is consequently just
+   * another value that is not a launch locale code — ignored exactly like `zz`, never decoded
+   * and never thrown on. These cases are assertions about *not throwing* first and about the
+   * `null` second, which is why each is wrapped rather than compared directly.
+   */
+  it("never throws on a malformed percent-escape (site-wide client DoS)", () => {
+    for (const cookie of [
+      "fo_locale=%",
+      "fo_locale=en%",
+      "fo_locale=%zz",
+      "fo_locale=%E0%A4%A",
+      "fo_locale=%%",
+      "fo_locale=de%",
+    ]) {
+      expect(() => readLocaleCookie(cookie), cookie).not.toThrow();
+      expect(readLocaleCookie(cookie), cookie).toBeNull();
+    }
+  });
+
+  it("ignores a malformed escape sitting among valid cookies", () => {
+    expect(readLocaleCookie("a=1; fo_locale=%; b=2")).toBeNull();
+    expect(readLocaleCookie("consent=1; fo_locale=en%; theme=dark")).toBeNull();
+  });
+
+  it("does not decode a percent-encoded value: it is not a launch code", () => {
+    expect(readLocaleCookie("fo_locale=en%2Dgb")).toBeNull();
   });
 
   it("ignores a forged value instead of repairing or clearing it (AC-12)", () => {

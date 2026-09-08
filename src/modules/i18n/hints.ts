@@ -180,6 +180,18 @@ export function preferredLocale<T extends LocaleHint>(
  * behaves exactly as it does for a first-time visitor and the next explicit choice overwrites the
  * cookie. Nothing is written on load — writing on read would set a cookie without a user action,
  * which is the one thing §8 and §13 Q4 forbid.
+ *
+ * **The raw value is matched, never decoded.** `decodeURIComponent` throws `URIError` on a lone
+ * `%` or a truncated escape (`fo_locale=%`, `fo_locale=en%`), and this function is called from
+ * the island's `useState` initialiser — so a throw here is a throw during the first render of a
+ * Client Component, which React turns into the error boundary and, with none in the tree, into
+ * the error document. A one-character cookie any script or extension can set would then replace
+ * every page for the year the cookie lives. There is nothing to decode either: the value set is
+ * the closed enum of launch codes (`a-z` and `-`), which percent-encoding never touches, and the
+ * only writer is `serialiseLocaleCookie` below, which emits the code verbatim. So the trimmed
+ * raw value goes straight to `LocaleCookieSchema.safeParse`, and anything else — an escape, a
+ * malformed escape, a stale encoded value from some other tool — is simply "not a launch locale
+ * code" and is ignored like `zz`. `tests/unit/i18n-hints.test.ts` pins that this cannot throw.
  */
 export function readLocaleCookie(cookieHeader: string | null): string | null {
   if (cookieHeader === null) return null;
@@ -188,7 +200,7 @@ export function readLocaleCookie(cookieHeader: string | null): string | null {
     if (separator === -1) continue;
     if (pair.slice(0, separator).trim() !== FO_LOCALE_COOKIE) continue;
     const parsed = LocaleCookieSchema.safeParse(
-      decodeURIComponent(pair.slice(separator + 1).trim()),
+      pair.slice(separator + 1).trim(),
     );
     if (parsed.success) return parsed.data;
   }
@@ -246,9 +258,20 @@ export interface SuggestionInput {
   readonly candidates: readonly SuggestionCandidate[];
 }
 
-/** Why the banner is not shown — one reason per hidden branch of §2, all of them observable. */
+/**
+ * Why the banner is not shown — one reason per hidden branch of §2, all of them observable, plus
+ * `"error"`, which no branch of `decideSuggestion` returns: it is the island's fail-closed value
+ * for "reading the three browser facts threw". A suggestion is an optional courtesy, so the only
+ * defensible behaviour when deciding it fails is to render nothing; see the island's
+ * `useState` initialiser.
+ */
 export type SuggestionHiddenReason =
-  "cookie" | "dismissed" | "unknownUrlLocale" | "noBetterLocale" | "sameLocale";
+  | "cookie"
+  | "dismissed"
+  | "unknownUrlLocale"
+  | "noBetterLocale"
+  | "sameLocale"
+  | "error";
 
 export type SuggestionDecision =
   | { readonly show: false; readonly reason: SuggestionHiddenReason }

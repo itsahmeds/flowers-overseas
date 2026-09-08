@@ -23,6 +23,7 @@ import {
   languagePreferences,
   parseAcceptLanguage,
   preferredLocale,
+  readLocaleCookie,
   serialiseLocaleCookie,
 } from "../../src/modules/i18n/hints.ts";
 import { launchLocales } from "../../src/modules/i18n/routing.ts";
@@ -281,6 +282,32 @@ describe("decideSuggestion (the AC-28 matrix)", () => {
       show: true,
       target: expect.objectContaining({ code: "de" }),
     });
+  });
+
+  /**
+   * `/review 23`'s blocker, at the decision level. `readLocaleCookie` used to decode the value,
+   * so `fo_locale=%` threw `URIError` inside the island's `useState` initialiser and React
+   * replaced the entire document with the error page — for every load, for the cookie's year.
+   * A malformed escape is now what it always should have been: a value that is not a launch
+   * locale code, indistinguishable from `zz`, so the visitor is treated as a first-time one and
+   * their next explicit choice overwrites it (AC-12).
+   */
+  it.each([
+    ["a lone percent", "fo_locale=%"],
+    ["a truncated escape after a code", "fo_locale=en%"],
+    ["a percent with non-hex digits", "fo_locale=%zz"],
+    ["a truncated multi-byte escape", "fo_locale=%E0%A4%A"],
+    ["a malformed value among valid cookies", "a=1; fo_locale=%; theme=dark"],
+  ])("treats %s as a first visit rather than throwing", (_name, cookie) => {
+    expect(() => readLocaleCookie(cookie)).not.toThrow();
+    expect(readLocaleCookie(cookie)).toBeNull();
+
+    expect(() =>
+      decideSuggestion({ ...base, languages: ["de-DE"], cookie }),
+    ).not.toThrow();
+    expect(decideSuggestion({ ...base, languages: ["de-DE"], cookie })).toEqual(
+      { show: true, target: expect.objectContaining({ code: "de" }) },
+    );
   });
 
   it("ignores a forged value among real cookies and does not write one on read", () => {

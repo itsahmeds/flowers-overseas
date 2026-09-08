@@ -114,15 +114,29 @@ export function LocaleSuggestionBannerIsland({
   // cached HTML identical for every visitor (§5.4). Doing it in an effect instead would set
   // state synchronously on mount and render twice for no benefit (`react-hooks/
   // set-state-in-effect`), and the state is still what changes when the visitor acts.
-  const [decision, setDecision] = useState<SuggestionDecision>(() =>
-    decideSuggestion({
-      urlLocale: locale,
-      languages: window.navigator.languages,
-      cookie: document.cookie,
-      dismissed: readDismissed(),
-      candidates,
-    }),
-  );
+  //
+  // **Fail closed.** A throw inside a `useState` initialiser is a throw during the first render
+  // of a Client Component: React unwinds to the nearest error boundary and, with none between
+  // here and the root, replaces the whole document with the error page. That is an absurd blast
+  // radius for an optional courtesy decided from three browser facts — and `/review 23` found a
+  // live instance of it (`readLocaleCookie` decoded the cookie value, so `fo_locale=%` threw
+  // `URIError` on every load for the cookie's year). The decode is gone (see
+  // `readLocaleCookie`), and this `catch` is the second line of defence: whatever a browser,
+  // an extension or a future edit does to `navigator.languages`, `document.cookie` or
+  // `sessionStorage`, the worst outcome is a page with no banner.
+  const [decision, setDecision] = useState<SuggestionDecision>(() => {
+    try {
+      return decideSuggestion({
+        urlLocale: locale,
+        languages: window.navigator.languages,
+        cookie: document.cookie,
+        dismissed: readDismissed(),
+        candidates,
+      });
+    } catch {
+      return { show: false, reason: "error" };
+    }
+  });
 
   const dismiss = useCallback(() => {
     rememberDismissed();
@@ -192,7 +206,14 @@ export function LocaleSuggestionBannerView({
       <section
         aria-labelledby={headlineId}
         aria-live="polite"
-        className="m-2 flex flex-wrap items-center gap-3 border p-3"
+        // An overlay floats over content nobody has written yet, so its background, border and
+        // text colour are explicit rather than inherited (`/review 23` note 2): a transparent
+        // panel with a `currentColor` border reads as text-on-text the moment spec 004 puts
+        // anything at the bottom of the viewport. `text-neutral-900` on `bg-white` is ~17:1
+        // (WCAG 1.4.3) and the `border-neutral-500` boundary is ~4.7:1 against that background,
+        // above 1.4.11's 3:1 for non-text. No design tokens exist yet — spec 004 owns them and
+        // replaces these three utilities without touching the markup or the ARIA.
+        className="m-2 flex flex-wrap items-center gap-3 border border-neutral-500 bg-white p-3 text-neutral-900"
         data-fo-banner="shown"
         role="region"
       >

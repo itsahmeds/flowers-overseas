@@ -16,6 +16,9 @@
  * browser stores — are `tests/e2e/banner.spec.ts`; the decision matrix is
  * `tests/unit/i18n-hints.test.ts`.
  */
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
@@ -148,11 +151,88 @@ describe("LocaleSuggestionBannerView (§5.3, §8)", () => {
     expect(html.match(/<button\b/g)).toHaveLength(2);
   });
 
+  /**
+   * `/review 23` note 2: a `fixed` overlay sits over content this spec has not written yet, so
+   * inheriting the page's background (i.e. none) and painting the border in `currentColor` would
+   * turn the panel into text over text as soon as spec 004 fills the bottom of the viewport.
+   * The three colours are therefore explicit and the assertion is here so a restyle in spec 004
+   * has to make a deliberate choice rather than silently drop them.
+   */
+  it("paints its own background, border and text colour so it stays legible", () => {
+    const panel = /<section[^>]*class="([^"]*)"/.exec(html)?.[1] ?? "";
+    expect(panel).toMatch(/\bbg-\w/);
+    expect(panel).toMatch(/\bborder-\w/);
+    expect(panel).toMatch(/\btext-\w/);
+    // A bare `border` with no colour is the bug: it resolves to `currentColor`.
+    expect(panel).toContain("border-neutral-500");
+    expect(panel).toContain("bg-white");
+  });
+
   it("renders the same markup for every launch locale it can target", () => {
     for (const candidate of suggestionCandidates()) {
       const markup = render(candidate);
       expect(markup, candidate.code).toContain(`href="${candidate.href}"`);
       expect(markup, candidate.code).toContain(candidate.nativeName);
     }
+  });
+});
+
+/**
+ * `/review 23`'s blocker, at the level the blocker actually lived at: the island's `useState`
+ * initialiser.
+ *
+ * A throw in a lazy `useState` initialiser is a throw during a Client Component's first render,
+ * which React unwinds to the nearest error boundary — and there is none between the banner and
+ * the root, so the browser gets the error document instead of the page. The three facts the
+ * initialiser reads (`navigator.languages`, `document.cookie`, `sessionStorage`) are all under
+ * the visitor's, an extension's or an attacker's influence, and none of them is worth a page for.
+ * `decideSuggestion` no longer throws on any of them (`tests/unit/i18n-hints.test.ts`), and this
+ * `try`/`catch` is the invariant that keeps it that way when someone edits either side.
+ *
+ * The behavioural half — `fo_locale=%` and the page still renders — is `tests/e2e/banner.spec.ts`.
+ * Asserted against the source because the island needs a DOM to render and this repository has no
+ * jsdom dependency; the shape asserted is narrow enough that only removing the guard breaks it.
+ */
+describe("the island fails closed rather than taking the document down", () => {
+  const source = readFileSync(
+    resolve(
+      __dirname,
+      "../../src/modules/i18n/ui/LocaleSuggestionBannerIsland.tsx",
+    ),
+    "utf8",
+  );
+
+  /** The body of `useState<SuggestionDecision>(() => { … })`, and nothing else in the file. */
+  const initialiser =
+    /useState<SuggestionDecision>\(\(\) => \{([\s\S]*?)\n  \}\);/.exec(
+      source,
+    )?.[1];
+
+  it("wraps the `decideSuggestion` call in the initialiser in try/catch", () => {
+    expect(initialiser).toBeDefined();
+    expect(initialiser!).toContain("try {");
+    expect(initialiser!).toContain("decideSuggestion({");
+    expect(initialiser!).toMatch(/\} catch \{/);
+  });
+
+  it("hides the banner on failure instead of rethrowing or guessing a target", () => {
+    const rescue = /\} catch \{\s*return ([^;]+);/.exec(initialiser ?? "")?.[1];
+
+    expect(rescue).toBeDefined();
+    expect(rescue!).toContain("show: false");
+    expect(rescue!).toContain('reason: "error"');
+    expect(rescue!).not.toContain("throw");
+  });
+
+  it("keeps `error` a reason no decision branch can return, only the island", () => {
+    const hints = readFileSync(
+      resolve(__dirname, "../../src/modules/i18n/hints.ts"),
+      "utf8",
+    );
+    const decide = hints.slice(
+      hints.indexOf("export function decideSuggestion"),
+    );
+
+    expect(decide).not.toContain('reason: "error"');
   });
 });
