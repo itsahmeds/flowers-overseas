@@ -1,0 +1,54 @@
+{
+  "pages": [
+    {
+      "url": "https://flowersoverseas.com/en/send-flowers-to/poland",
+      "alternates": [
+        {
+          "hreflang": "en",
+          "href": "https://flowersoverseas.com/en/send-flowers-to/poland"
+        },
+        {
+          "hreflang": "en-IE",
+          "href": "https://flowersoverseas.com/en/send-flowers-to/poland"
+        },
+        {
+          "hreflang": "en-NL",
+          "href": "https://flowersoverseas.com/en/send-flowers-to/poland"
+        },
+        {
+          "hreflang": "en-GB",
+          "href": "https://flowersoverseas.com/en-gb/send-flowers-to/poland"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://flowersoverseas.com/en/send-flowers-to/poland"
+        }
+      ]
+    },
+    {
+      "url": "https://flowersoverseas.com/en-gb/send-flowers-to/poland",
+      "alternates": [
+        {
+          "hreflang": "en",
+          "href": "https://flowersoverseas.com/en/send-flowers-to/poland"
+        },
+        {
+          "hreflang": "en-IE",
+          "href": "https://flowersoverseas.com/en/send-flowers-to/poland"
+        },
+        {
+          "hreflang": "en-NL",
+          "href": "https://flowersoverseas.com/en/send-flowers-to/poland"
+        },
+        {
+          "hreflang": "en-GB",
+          "href": "https://flowersoverseas.com/en-gb/send-flowers-to/poland"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://flowersoverseas.com/en/send-flowers-to/poland"
+        }
+      ]
+    }
+  ]
+}

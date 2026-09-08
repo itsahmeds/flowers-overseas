@@ -15,6 +15,7 @@
     "intro": "Flowers Overseas sends flowers to someone in another European country: you order, a vetted local florist makes and delivers them. Choose a language to continue."
   },
   "common": {
+    "beta": "Beta",
     "floristCount": "{count, plural, one {# Florist} other {# Floristen}}",
     "homeLink": "Home"
   },

@@ -1,0 +1,54 @@
+{
+  "pages": [
+    {
+      "url": "https://flowersoverseas.com/en",
+      "alternates": [
+        {
+          "hreflang": "en",
+          "href": "https://flowersoverseas.com/en"
+        },
+        {
+          "hreflang": "en-IE",
+          "href": "https://flowersoverseas.com/en"
+        },
+        {
+          "hreflang": "en-NL",
+          "href": "https://flowersoverseas.com/en"
+        },
+        {
+          "hreflang": "en-GB",
+          "href": "https://flowersoverseas.com/en-gb"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://flowersoverseas.com/en"
+        }
+      ]
+    },
+    {
+      "url": "https://flowersoverseas.com/en-gb",
+      "alternates": [
+        {
+          "hreflang": "en",
+          "href": "https://flowersoverseas.com/en"
+        },
+        {
+          "hreflang": "en-IE",
+          "href": "https://flowersoverseas.com/en"
+        },
+        {
+          "hreflang": "en-NL",
+          "href": "https://flowersoverseas.com/en"
+        },
+        {
+          "hreflang": "en-GB",
+          "href": "https://flowersoverseas.com/en-gb"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://flowersoverseas.com/en"
+        }
+      ]
+    }
+  ]
+}

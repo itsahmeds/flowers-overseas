@@ -39,6 +39,7 @@
     "localeSwitcher": "Change language"
   },
   "common": {
+    "beta": "Beta",
     "homeLink": "Home",
     "floristCount": "{count, plural, one {# florist} other {# florists}}"
   },

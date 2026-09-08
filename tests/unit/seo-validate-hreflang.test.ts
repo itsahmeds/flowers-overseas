@@ -22,10 +22,15 @@ describe("validate-hreflang CLI (T-23)", () => {
     expect(result.stdout).toContain("no fixtures");
   });
 
-  it("exits 0 with 'no fixtures' on the committed fixture directory", () => {
+  it("validates the committed fixtures, which TASK-039 generates from `alternatesFor()`", () => {
+    // Until TASK-039 the directory held only `.gitkeep` and this asserted "no fixtures". The
+    // fixtures are now the real output of `src/modules/i18n/alternates.ts`
+    // (`scripts/seo/generate-hreflang-fixtures.ts`), so `pnpm seo:validate` is a gate on live
+    // hreflang data rather than on an empty directory.
     const result = runSeoCli(CLI, "tests/fixtures/seo/hreflang");
+    expect(result.stderr).toBe("");
     expect(result.status).toBe(0);
-    expect(result.stdout).toContain("no fixtures");
+    expect(result.stdout).toMatch(/\d+ fixture\(s\) ok/);
   });
 
   it("exits 0 on a reciprocal cluster with x-default", () => {
