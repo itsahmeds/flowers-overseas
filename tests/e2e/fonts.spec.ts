@@ -43,7 +43,10 @@ for (const path of PAGES) {
     expect(googleRequests, "a page requested a Google font").toEqual([]);
     expect(fontRequests.length).toBeGreaterThan(0);
     for (const url of fontRequests) {
-      expect(url, url).toContain("/_next/static/media/");
+      // Vercel serves Next's fingerprinted assets from `/_next/static/immutable/media/` while a
+      // local `next start` uses `/_next/static/media/`; both are our own origin, which is the
+      // property under test.
+      expect(url, url).toMatch(/\/_next\/static\/(?:immutable\/)?media\//);
       expect(url, url).toMatch(/\.woff2(\?|$)/);
     }
   });
@@ -67,7 +70,7 @@ for (const path of PAGES) {
     for (const link of attributes) {
       expect(link.crossorigin, link.href ?? "").toBe(true);
       expect(link.type).toBe("font/woff2");
-      expect(link.href).toContain("/_next/static/media/");
+      expect(link.href).toMatch(/\/_next\/static\/(?:immutable\/)?media\//);
     }
 
     // The generated `@font-face` rules, read from the document's own stylesheets.
