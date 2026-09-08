@@ -62,6 +62,13 @@
     "reviewedAt": "2026-09-08T00:00:00Z",
     "sourceHash": "f2b39d4474033dd1cb2ebcd517bd7a12bf10eb8adfafaa6f6e8891d48128a058"
   },
+  "common.beta": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-08T00:00:00Z",
+    "sourceHash": "703390318bd55aef50b7823d2b90a846debff99e6e3d401a24a921b733912a6d"
+  },
   "common.floristCount": {
     "source": "human",
     "reviewed": true,

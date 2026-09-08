@@ -13,6 +13,12 @@
  * `FORBIDDEN_EXPORTS` instead, because the `message_catalog` column mapping is a fact spec 012's
  * mirror needs *inside* the module and the manifest reader is a provider read, not a caller API.
  *
+ * TASK-039 adds `unreviewedShare`, `localeBetaTag`, `isLocaleIndexable` and `alternatesFor` —
+ * four functions, no data. `UNREVIEWED_SHARE_THRESHOLD` (a constant), `resetReviewCache()` (the
+ * memoisation test hook) and `emitInHreflang()` (an internal predicate) go to
+ * `FORBIDDEN_EXPORTS`: a caller able to reach the first two could move the indexability answer at
+ * runtime, which is the same objection AC-3 raises to `withLocaleRegistry`.
+ *
  * `LocaleSwitcher` (TASK-035) is the one component in the list. It is still a function and still
  * carries no configuration — a Server Component reading the registry through the same accessor as
  * every other export — so the "functions only, no mutable config" assertion below holds unchanged.
@@ -59,6 +65,10 @@ const PINNED_EXPORTS = [
   "namespacesFor",
   "parseLocaleFromPath",
   "sortBy",
+  "alternatesFor",
+  "isLocaleIndexable",
+  "localeBetaTag",
+  "unreviewedShare",
 ].sort();
 
 /**
@@ -78,6 +88,9 @@ const PINNED_SCHEMA_EXPORTS = [
 
 /** Names that must never appear in the barrel, with the reason each is a seam and not an API. */
 const FORBIDDEN_EXPORTS = [
+  "UNREVIEWED_SHARE_THRESHOLD",
+  "resetReviewCache",
+  "emitInHreflang",
   "MESSAGE_META_COLUMNS",
   "messageMeta",
   "staticLocaleRegistry",

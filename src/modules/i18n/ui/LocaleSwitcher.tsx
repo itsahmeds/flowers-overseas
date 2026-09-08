@@ -35,13 +35,21 @@
  * neutral default. It is direction-agnostic, so `fo/no-physical-css` is satisfied and spec 004's
  * header styling has nothing to unpick (§13 Q3).
  *
- * `betaLocales` is the typed seam for the `plan/03` §6 5 % rule: `localeBetaTag()` and
- * `unreviewedShare()` arrive with TASK-039, and the marker is rendered then. It is accepted and
- * deliberately unread here so that the callers TASK-039 touches are the ones that *compute* the
- * share, not every page that renders a switcher.
+ * `betaLocales` implements the `plan/03` §6 5 % rule (TASK-039). It **defaults** to
+ * `localeBetaTag()` over the live locales, so no page has to compute the share and adding a
+ * locale stays a data change (AC-31): a fifth locale with no catalogue appears here marked beta
+ * with no edit under `src/app/`. The prop stays for the caller that legitimately knows better —
+ * spec 012's translation admin previewing a locale it has just reviewed — and because
+ * `unreviewedShare()` reads repo JSON that a Postgres overlay may later contradict.
+ *
+ * The marker sits **outside** the link and carries the page's own language on purpose: inside the
+ * `lang`-annotated link a screen reader would pronounce the English word "Beta" in German, which
+ * is the pronunciation bug the `lang`/`hrefLang` pair exists to avoid (WCAG 3.1.2). It is text,
+ * never a colour or a shape, so it survives spec 004's styling pass and needs no icon.
  */
 import { useTranslations } from "next-intl";
 
+import { localeBetaTag } from "../review.ts";
 import { type PageType, launchLocales, localePath } from "../routing.ts";
 
 export interface LocaleSwitcherProps {
@@ -54,8 +62,8 @@ export interface LocaleSwitcherProps {
    */
   pageType?: PageType;
   /**
-   * Locales to mark as machine-drafted ("beta", `plan/03` §6). Typed here, rendered by TASK-039
-   * once `unreviewedShare()` exists; passing it today changes nothing.
+   * Locales to mark as machine-drafted ("beta", `plan/03` §6). Defaults to the live locales whose
+   * unreviewed share is above the 5 % threshold, computed by `localeBetaTag()`.
    */
   betaLocales?: readonly string[];
 }
@@ -63,21 +71,28 @@ export interface LocaleSwitcherProps {
 export function LocaleSwitcher({
   locale,
   pageType = "home",
+  betaLocales,
 }: LocaleSwitcherProps) {
   const t = useTranslations("a11y");
+  const common = useTranslations("common");
+  const locales = launchLocales();
+  const beta = new Set(
+    betaLocales ??
+      locales
+        .filter((target) => localeBetaTag(target.code))
+        .map((target) => target.code),
+  );
 
   return (
     <nav aria-label={t("localeSwitcher")}>
       <ul>
-        {launchLocales().map((target) =>
-          target.code === locale ? (
-            <li key={target.code}>
+        {locales.map((target) => (
+          <li key={target.code}>
+            {target.code === locale ? (
               <span aria-current="page" lang={target.bcp47}>
                 {target.nativeName}
               </span>
-            </li>
-          ) : (
-            <li key={target.code}>
+            ) : (
               <a
                 className="underline"
                 href={localePath(target.code, pageType)}
@@ -86,9 +101,18 @@ export function LocaleSwitcher({
               >
                 {target.nativeName}
               </a>
-            </li>
-          ),
-        )}
+            )}
+            {beta.has(target.code) ? (
+              // `ms-1` (logical, `fo/no-physical-css`-clean) rather than a literal space: a JSX
+              // text node next to an expression makes React emit a `<!-- -->` separator into the
+              // streamed HTML, which a text assertion in an e2e or a11y suite then has to know
+              // about. Spacing is presentation; spec 004 restyles it without touching the markup.
+              <span className="ms-1" data-beta="true">
+                {common("beta")}
+              </span>
+            ) : null}
+          </li>
+        ))}
       </ul>
     </nav>
   );

@@ -37,8 +37,14 @@
  * country list — the formats stay in `src/config/address-formats.ts` and reach callers only
  * through `formatAddressBlock` — so AC-3's ban on exported configuration is untouched.
  *
+ * The review gate and the hreflang generator (TASK-039) add four functions and no data:
+ * `unreviewedShare`, `localeBetaTag`, `isLocaleIndexable` and `alternatesFor`. Their thresholds
+ * and their caches stay inside the module — `UNREVIEWED_SHARE_THRESHOLD` is a constant and
+ * `resetReviewCache()` is a test hook, so both are in `FORBIDDEN_EXPORTS` for the same reason
+ * `withLocaleRegistry` is: a caller able to reach them could move the indexability answer at
+ * runtime.
+ *
  * Later spec-003 tasks extend the list:
- * `unreviewedShare`/`isLocaleIndexable` (TASK-039), `alternatesFor` (TASK-039),
  * `parseAcceptLanguage`/`preferredLocale` (TASK-041) and `pseudoCatalogue` (TASK-042).
  */
 export {
@@ -105,6 +111,18 @@ export {
 } from "./format.ts";
 
 export { collator, sortBy } from "./collate.ts";
+
+export { isLocaleIndexable, localeBetaTag, unreviewedShare } from "./review.ts";
+
+export {
+  type AlternatesOptions,
+  type AlternatesPageTarget,
+  type AlternatesPathTarget,
+  type AlternatesTarget,
+  type HreflangAlternate,
+  type HreflangPage,
+  alternatesFor,
+} from "./alternates.ts";
 
 export {
   type AddressInput,
