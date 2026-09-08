@@ -18,7 +18,11 @@
       "Bash(./.claude/bin/task.sh *)",
       "Bash(pnpm lint*)",
       "Bash(pnpm typecheck*)",
-      "Bash(pnpm test*)"
+      "Bash(pnpm test*)",
+      "Bash(pnpm build*)",
+      "Bash(pnpm format*)",
+      "Bash(pnpm env:check*)",
+      "Bash(pnpm dev-os:check*)"
     ]
   }
 }

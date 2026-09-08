@@ -47,10 +47,12 @@ function goodProtection(contexts: readonly string[]): Protection {
     required_pull_request_reviews: {
       required_approving_review_count: REQUIRED_APPROVING_REVIEW_COUNT,
       require_code_owner_reviews: false,
+      dismiss_stale_reviews: true,
     },
     required_linear_history: { enabled: true },
     allow_force_pushes: { enabled: false },
     allow_deletions: { enabled: false },
+    required_conversation_resolution: { enabled: true },
   };
 }
 
@@ -59,6 +61,7 @@ const goodRepo: RepoSettings = {
   allow_merge_commit: false,
   allow_rebase_merge: false,
   squash_merge_commit_title: "PR_TITLE",
+  delete_branch_on_merge: true,
 };
 
 describe("job-name derivation from the workflows", () => {
@@ -260,6 +263,7 @@ describe("verifyProtection (AC-21 assertions)", () => {
       "squash_merge_commit_title",
       { squash_merge_commit_title: "COMMIT_OR_PR_TITLE" },
     ],
+    ["delete_branch_on_merge", { delete_branch_on_merge: false }],
   ])("fails when %s is wrong", (key, override) => {
     const failures = verifyProtection(
       contract,
@@ -280,7 +284,7 @@ describe("verifyProtection (AC-21 assertions)", () => {
       goodProtection(contract.required),
       {},
     );
-    expect(failures).toHaveLength(4);
+    expect(failures).toHaveLength(5);
     expect(failures.every((failure) => failure.actual === "(absent)")).toBe(
       true,
     );
@@ -317,6 +321,90 @@ describe("verifyProtection (AC-21 assertions)", () => {
     );
     expect(failures.map((failure) => failure.what).join()).toContain(
       "require_code_owner_reviews",
+    );
+  });
+
+  // The three settings the review of PR #11 asked the verifier to cover as well: the review
+  // signals that do exist must not be stale (`dismiss_stale_reviews`), an unresolved reviewer
+  // comment must not be merged past (`required_conversation_resolution`), and a merged branch
+  // must not linger (`delete_branch_on_merge`, the last clause of the §3 `gh repo edit` call).
+  // Each is in the payload `--print-commands` applies, so a verifier that ignored it would pass
+  // on a repository where someone had turned it off in the UI.
+  it("fails when stale reviews are not dismissed", () => {
+    const failures = verifyProtection(
+      contract,
+      {
+        ...goodProtection(contract.required),
+        required_pull_request_reviews: {
+          required_approving_review_count: REQUIRED_APPROVING_REVIEW_COUNT,
+          require_code_owner_reviews: false,
+          dismiss_stale_reviews: false,
+        },
+      },
+      goodRepo,
+    );
+    const failure = failures.find((candidate) =>
+      candidate.what.startsWith("dismiss_stale_reviews"),
+    );
+    expect(failure?.expected).toBe("true");
+    expect(failure?.actual).toBe("false");
+  });
+
+  it("fails when dismiss_stale_reviews is absent rather than assuming it", () => {
+    const failures = verifyProtection(
+      contract,
+      {
+        ...goodProtection(contract.required),
+        required_pull_request_reviews: {
+          required_approving_review_count: REQUIRED_APPROVING_REVIEW_COUNT,
+          require_code_owner_reviews: false,
+        },
+      },
+      goodRepo,
+    );
+    expect(failures.map((failure) => failure.what).join()).toContain(
+      "dismiss_stale_reviews",
+    );
+  });
+
+  it("fails when conversation resolution is not required", () => {
+    const failures = verifyProtection(
+      contract,
+      {
+        ...goodProtection(contract.required),
+        required_conversation_resolution: { enabled: false },
+      },
+      goodRepo,
+    );
+    expect(failures.map((failure) => failure.what)).toContain(
+      "required_conversation_resolution",
+    );
+  });
+
+  it("fails when the conversation-resolution block is absent", () => {
+    const compliant = goodProtection(contract.required);
+    const withoutBlock: Protection = {
+      required_status_checks: compliant.required_status_checks,
+      required_pull_request_reviews: compliant.required_pull_request_reviews,
+      required_linear_history: compliant.required_linear_history,
+      allow_force_pushes: compliant.allow_force_pushes,
+      allow_deletions: compliant.allow_deletions,
+    };
+    expect(
+      verifyProtection(contract, withoutBlock, goodRepo).map(
+        (failure) => failure.what,
+      ),
+    ).toContain("required_conversation_resolution");
+  });
+
+  it("fails when a merged branch is not deleted", () => {
+    const failures = verifyProtection(
+      contract,
+      goodProtection(contract.required),
+      { ...goodRepo, delete_branch_on_merge: false },
+    );
+    expect(failures.map((failure) => failure.what)).toContain(
+      "repository setting delete_branch_on_merge",
     );
   });
 
@@ -397,6 +485,13 @@ describe("--print-commands", () => {
     expect(commands).toContain("--enable-merge-commit=false");
     expect(commands).toContain("--enable-rebase-merge=false");
     expect(commands).toContain("--squash-merge-commit-title=PR_TITLE");
+    expect(commands).toContain("--delete-branch-on-merge");
+  });
+
+  it("applies the three settings the verifier also asserts", () => {
+    expect(commands).toContain('"dismiss_stale_reviews": true');
+    expect(commands).toContain('"required_conversation_resolution": true');
+    expect(commands).toContain("--delete-branch-on-merge");
   });
 
   it("produces a protection body that its own verifier accepts", () => {
@@ -408,9 +503,11 @@ describe("--print-commands", () => {
       required_status_checks: { contexts: string[] };
       required_pull_request_reviews: {
         required_approving_review_count: number;
+        dismiss_stale_reviews: boolean;
       };
       required_linear_history: boolean;
       allow_force_pushes: boolean;
+      required_conversation_resolution: boolean;
     };
     const asApiWouldReport: Protection = {
       required_status_checks: {
@@ -419,6 +516,9 @@ describe("--print-commands", () => {
       required_pull_request_reviews: body.required_pull_request_reviews,
       required_linear_history: { enabled: body.required_linear_history },
       allow_force_pushes: { enabled: body.allow_force_pushes },
+      required_conversation_resolution: {
+        enabled: body.required_conversation_resolution,
+      },
     };
     expect(verifyProtection(contract, asApiWouldReport, goodRepo)).toEqual([]);
   });

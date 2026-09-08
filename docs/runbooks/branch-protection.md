@@ -10,6 +10,11 @@ it once" can be checked rather than remembered.
 
 ## 0. Current state — blocked on the account plan
 
+**Status: pending: GitHub Pro upgrade vs recorded deviation.** Founder decision, raised
+2026-09-08 on TASK-012; option 1 (upgrade) is the recommendation. Until it is taken, `main` has
+no enforced protection and the `/review` verdict recorded in the PR and in `TASKS.md` is the only
+merge gate. The merge-method half (§3) needs no plan change and should be applied now.
+
 Probed 2026-09-07 against `itsahmeds/flowers-overseas` (private):
 
 ```
@@ -71,7 +76,9 @@ What the body asserts, and why:
 | `required_approving_review_count` | `0` | **Deviation — see §4.** |
 | `require_code_owner_reviews` | `false` | Same deviation. |
 | `enforce_admins` | `false` | The founder must be able to unblock a repository that a bad required-check name has deadlocked. The verifier does not assert this either way; it is an escape hatch, not a gate. |
-| `required_conversation_resolution` | `true` | A reviewer's unresolved comment should not be merged past. |
+| `required_conversation_resolution` | `true` | A reviewer's unresolved comment should not be merged past. Asserted by `--verify`. |
+| `dismiss_stale_reviews` | `true` | A review of an older head is not a review of this one. With the review count at 0 (§5) this and the row above are what is left of the human half of the gate, so `--verify` asserts both. |
+| `delete_branch_on_merge` (repository setting, §3) | `true` | A merged `task/TASK-NNN-*` branch should not linger: `pr-policy` reads the task id out of the branch name, so stale branches read as work in flight. Asserted by `--verify`. |
 
 ## 3. Merge method (no Pro needed)
 
@@ -152,5 +159,7 @@ the output doubles as the answer to "what should be required?". Failure modes, a
 | `required status checks: not produced by any workflow` | a required context nothing reports — every PR waits forever | re-run §2; this is what removing a job without re-applying protection looks like |
 | `repository setting allow_merge_commit` etc. | merge method wrong | §3 |
 | `required_approving_review_count` | someone changed the review count | §5 |
+| `dismiss_stale_reviews` / `required_conversation_resolution` | a review signal was weakened in the UI | re-apply §2 |
+| `repository setting delete_branch_on_merge` | merged branches are being kept | §3 |
 
 Run it after any change to `ci.yml`'s job set, and at every `/launch` (`plan/12` §5).

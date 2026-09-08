@@ -276,3 +276,132 @@ Hosting and docs
 - **Q8 — Correct `CLAUDE.md` guarded-root list?** `task-guard.sh` and `plan/12` §7.3 guard `tests/` too; `CLAUDE.md` omits it. Proposed one-line fix in the `Non-negotiable rules` bullet, done by the founder (this spec does not edit `CLAUDE.md`). Yes/no.
 - **Q9 — Deployment Protection mode for previews.** Default: Vercel Authentication (team members only) for previews and a shared password for `staging` (florists need to open it, `plan/08` §9). Confirm both, and whether the Playwright/Lighthouse bypass uses the protection-bypass secret (needed for AC-17/23 to run in CI).
 - **Q10 — `.env.example` placeholder policy.** Default: syntactically valid dummy values (`https://placeholder.supabase.co`, `postgres://user:pass@localhost:5432/fo`) so `pnpm build` passes on a clean clone (AC-1), with the schema tightening to real-value formats where safe. Alternative: require `vercel env pull` before first build (fails AC-1 as written; the AC would change).
+
+## 14. Amendments (post-approval corrections)
+
+The spec was approved on 2026-09-07 and §1–§13 are kept as approved. Implementation found ten
+clauses that were wrong, unsatisfiable or silent; each was ruled on in a `/review` at the time,
+recorded on the task row that carried it, and is written out here so the spec and the repository
+agree. Nothing below changes the intent of a clause — where the intent could not be met as
+written, the amendment says so and names the replacement gate.
+
+**A1 — Stylelint rule name (§2 "Lint rules", second bullet; §10 T-05).**
+Original: "companion Stylelint `declaration-property-disallowed-list` for
+`margin-left|margin-right|…|text-align: left|right` in `*.css`", and T-05 "Then
+`declaration-property-disallowed-list` violation".
+Corrected: Stylelint 17 has no rule of that name. The ban is implemented as
+`property-disallowed-list` (the physical properties) plus
+`declaration-property-value-disallowed-list` (`text-align: left|right`), which is what
+`stylelint.config.mjs` configures and what T-05 asserts.
+Raised by: `/review 3` (PR #3), 2026-09-07.
+
+**A2 — `src/middleware.ts` under Next 16 (§5.2, fourth bullet; §5.4 by reference).**
+Original: "`src/middleware.ts` → sets `x-request-id` (UUID v4) on request and response when
+absent."
+Corrected: unchanged as an instruction — the file stays `src/middleware.ts` in spec 001 — with the
+note that Next 16 deprecates the `middleware` filename in favour of `proxy` and prints a
+deprecation warning on every build. The rename is deliberately **not** done here: `fo/no-geo-redirect`
+matches the *filename* `middleware.ts` when it bans `NextResponse.redirect` (AC-8), so renaming
+without touching the rule would silently disarm the ADR-0006 gate. The spec 003 task that renames
+the file must, in the same PR, widen the rule's filename matcher to `middleware.ts` **and**
+`proxy.ts`, add a `proxy.ts` fixture to the AC-8 set, and update `plan/12` §6's naming. Recorded in
+`docs/architecture.md` §4.
+Raised by: TASK-012, 2026-09-08 (the build warning has been present since TASK-006, `/review 6`).
+
+**A3 — AC-23's pass clause (§9 "CI and repository policy").**
+Original: "`lighthouse` job runs against the preview `/` and asserts the `plan/01` §7 budgets; **the
+run passes on the empty shell** and the `lighthouserc.json` assertions include
+`largest-contentful-paint ≤ 2000`, `cumulative-layout-shift ≤ 0.05`,
+`resource-summary:script:size ≤ 122880`, `categories:performance ≥ 0.95`."
+Corrected: the emphasised clause is unsatisfiable in 001 and was replaced. `/` has no painted
+content by design (§5.3), so Lighthouse aborts with `NO_FCP` before any metric exists — there is
+nothing to pass. The AC is: the assertions listed above are present in `lighthouserc.json` and
+configured as **errors**; the job runs on every PR against the preview and is informational
+(`continue-on-error: true`, §13 Q4) with an honest step summary naming `NO_FCP`; no budget
+regression is permitted once the metrics are measurable (spec 004 removes the flag, and the
+`lighthouse` check then becomes required with no code change).
+Raised by: `/review 9` (PR #9) as a FAIL requirement, 2026-09-07; re-checked PASS the same day.
+
+**A4 — "temp clone" in AC-26 and T-27 (§9, §10).**
+Original: AC-26 "…(tested in a temp clone)"; T-27 "integration (shell, temp clone)".
+Corrected: "isolated temp project with `CLAUDE_PROJECT_DIR` redirection". A clone of this
+repository is the wrong harness: it is slow, it carries the real `TASKS.md` and it invites a check
+that reads or writes the repository's own `.claude/state/active-task`. The checks build a minimal
+project (`mktemp -d`, `.claude/state/`, a fixture `TASKS.md`, `git init` for the Stop hook), point
+the real hook scripts at it via `CLAUDE_PROJECT_DIR`, and abort with exit 99 if a path ever
+resolves to the repository root.
+Raised by: `/review 10` (PR #10), 2026-09-07.
+
+**A5 — "one approving review" (§2 "Branch protection"; AC-21 by reference).**
+Original: "required checks = every `ci.yml` job + `pr-policy`; **one approving review**; linear
+history; squash merge with PR title as the commit subject; force-push disabled."
+Corrected: `required_approving_review_count: 0` and `require_code_owner_reviews: false`. GitHub
+does not let the author of a pull request approve it, so with one human and
+`CODEOWNERS = * @itsahmeds` a count of 1 makes every pull request unmergeable — including the one
+that would add a second contributor. The review gate is the recorded `/review` verdict, which
+`CLAUDE.md`'s definition of done already requires in the PR body and the `TASKS.md` row.
+`dismiss_stale_reviews: true` and `required_conversation_resolution: true` stay on. Raise the count
+to 1 the day a second person can approve; `scripts/branch-protection.ts` asserts the recorded value
+and names the deviation, so a change in the UI turns the verifier red rather than passing silently.
+Raised by: `/review 11` (PR #11), 2026-09-08. Runbook: `docs/runbooks/branch-protection.md` §5.
+
+**A6 — the required-check set excludes informational jobs (§2 "Branch protection"; AC-21).**
+Original: "required checks = every `ci.yml` job + `pr-policy`".
+Corrected: every `ci.yml` job + `pr-policy`, **minus any job carrying `continue-on-error: true`**
+(today: `lighthouse`, per §13 Q4 and A3 above). `continue-on-error` spares the workflow's
+conclusion, not the job's own status check, so requiring such a job would block every merge for
+exactly the reason the spec says not to block on it. The exclusion is derived from the workflow at
+verify time rather than hard-coded, so spec 004 removing the flag makes `lighthouse` required with
+no code change. The set also deliberately includes the pull-request-only checks (`preview`, `e2e`,
+`visual`, `a11y`, `commitlint`, `pr-policy`): a required check that a push to `main` can never
+satisfy is what makes the pull request the only way in.
+Raised by: `/review 9`, 2026-09-07 (noted on TASK-011) and `/review 11`, 2026-09-08.
+
+**A7 — `required_status_checks.strict` (§2 "Branch protection", silent).**
+Original: no clause.
+Corrected: `strict: false`. "Require branches to be up to date before merging" serialises the merge
+queue; with linear history, squash-only merges and one person merging it buys nothing. Turn it on
+when two people merge. Asserted by the verifier and documented in the runbook §2 table.
+Raised by: `/review 11` (PR #11), 2026-09-08.
+
+**A8 — the `audit` script is invoked as `pnpm run audit` (§2 "Scripts").**
+Original: "…`dev-os:check`, `audit`."
+Corrected: the composite gate (`pnpm audit --prod --audit-level=high` **plus** gitleaks via
+`audit:secrets`) is the `audit` *script*, and pnpm's own built-in `audit` command shadows the
+script name, so the gate is invoked as `pnpm run audit` — in CI, in the runbooks and in `README.md`.
+`pnpm audit` alone runs only the registry half.
+Raised by: `/review 11` (PR #11), 2026-09-08.
+
+**A9 — CI job set and order (§2 "CI", first bullet).**
+Original: "…`lint` → `typecheck` → `test:unit` → `test:integration` → `test:contract` → `build` →
+`db:check` → **`env:check`** → wait for Vercel preview → `test:e2e` + `test:visual` + `test:a11y` →
+`lighthouse` → **`seo:validate`** → `audit` → **`dev-os:check`**."
+Corrected, in three parts:
+1. `env:check` is a **step of `lint`**, not a job. It is a millisecond key-set diff between
+   `.env.example` and the zod schema; a separate job would cost more in runner startup than it
+   spends working.
+2. `seo-validate` and `dev-os-check` run on `needs: typecheck` rather than after `lighthouse`.
+   Neither touches a preview deployment, and the spec's order would make the two fastest gates wait
+   roughly fifteen minutes for Vercel. `audit` keeps its position.
+3. The job *names* — which are the required-check names — are the GitHub-Actions form:
+   `test-unit`, `test-integration`, `test-contract`, `db-check`, `seo-validate`, `dev-os-check`,
+   plus `preview` (the Vercel wait), `env-build-failure` (the AC-10 negative build) and
+   `commitlint`.
+Raised by: `/review 10`, 2026-09-07 (reconciliation asked for) and `/review 11`, 2026-09-08.
+
+**A10 — AC-21's account half is not satisfiable on the current GitHub plan (§9, §12 note (a)).**
+Original: "each is a required status check on `main` (verified by
+`gh api repos/:owner/:repo/branches/main/protection`); squash merge is the only allowed merge
+method; force-push disabled."
+Corrected: the code half is done — `ci.yml` exposes exactly the job set, and
+`pnpm branch-protection` (`--verify` / `--print-commands`) derives the required set from
+`ci.yml` + `pr-policy.yml` and asserts every clause, including `dismiss_stale_reviews`,
+`required_conversation_resolution` and `delete_branch_on_merge`. The account half is **blocked**:
+the endpoint answers 403 "Upgrade to GitHub Pro or make this repository public to enable this
+feature" for a private repository on GitHub Free (probed 2026-09-07), and the verifier exits
+non-zero with that distinction rather than reading as a pass. **Open founder decision, raised
+2026-09-08:** upgrade to GitHub Pro (recommended — the only option that keeps the repository
+private per §13 Q1 *and* enforces the gate) or record unenforced protection as an accepted
+deviation with the `/review` verdict as the gate. The merge-method half needs no plan change and
+is applied (squash-only, `PR_TITLE` subject, delete branch on merge).
+Raised by: `/review 11` (PR #11), 2026-09-08. Runbook: `docs/runbooks/branch-protection.md` §0.
