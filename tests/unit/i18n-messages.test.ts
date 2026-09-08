@@ -1,6 +1,7 @@
 /**
- * `loadMessages`, `namespacesFor` and the fallback-chain merge (TASK-034; the catalogue completion,
- * the `en-gb` override and the `de`/`pl` drafts are TASK-038, and `i18n:check` is TASK-040).
+ * `loadMessages`, `namespacesFor` and the fallback-chain merge (TASK-034; the catalogues
+ * themselves are covered by `i18n-messages-schema.test.ts` and `i18n-plurals.test.ts`, TASK-038,
+ * and `i18n:check` is TASK-040).
  *
  * Two properties are asserted here because later tasks depend on them:
  *
@@ -12,6 +13,8 @@
  */
 import { describe, expect, it } from "vitest";
 
+import de from "../../messages/de.json";
+import enGb from "../../messages/en-gb.json";
 import en from "../../messages/en.json";
 import {
   fallbackChain,
@@ -29,6 +32,7 @@ describe("the shell catalogue", () => {
   it("ships the spec 003 §2 shell namespaces", () => {
     expect([...MESSAGE_NAMESPACES].sort()).toEqual([
       "a11y",
+      "banner",
       "chooser",
       "common",
       "errors",
@@ -36,11 +40,43 @@ describe("the shell catalogue", () => {
     ]);
   });
 
-  it("is the only catalogue in the repo today, so every locale falls back to it", () => {
-    expect(resolveCatalogue("en")).toEqual(en);
-    expect(resolveCatalogue("de")).toEqual(en);
-    expect(resolveCatalogue("pl")).toEqual(en);
-    expect(resolveCatalogue("en-gb")).toEqual(en);
+  it("resolves every launch locale to a complete key set (TASK-038's catalogues)", () => {
+    // `en` is the source of truth; `en-gb` overrides one key; `de` and `pl` are full echoed
+    // drafts whose only non-English values are the plural forms. Whatever the values, the *key*
+    // set after the merge is `en`'s, which is what makes a missing key impossible at render time.
+    const keys = (tree: Record<string, unknown>): string[] =>
+      Object.entries(tree)
+        .flatMap(([key, value]) =>
+          typeof value === "object" && value !== null
+            ? keys(value as Record<string, unknown>).map(
+                (child) => `${key}.${child}`,
+              )
+            : [key],
+        )
+        .sort();
+
+    for (const locale of ["en", "en-gb", "de", "pl"]) {
+      expect(keys(resolveCatalogue(locale)), locale).toEqual(
+        keys(en as unknown as Record<string, unknown>),
+      );
+    }
+  });
+
+  it("overlays the thin `en-gb` override on `en` and nothing else (§13 Q5)", () => {
+    const merged = resolveCatalogue("en-gb") as typeof en;
+
+    expect(merged.errors.serverError.body).toBe(enGb.errors.serverError.body);
+    expect(merged.errors.serverError.heading).toBe(
+      en.errors.serverError.heading,
+    );
+    expect(merged.meta).toEqual(en.meta);
+  });
+
+  it("keeps the `de` draft's real plural forms rather than the English echo", () => {
+    const merged = resolveCatalogue("de") as typeof en;
+
+    expect(merged.common.floristCount).toBe(de.common.floristCount);
+    expect(merged.common.floristCount).not.toBe(en.common.floristCount);
   });
 });
 
@@ -59,6 +95,7 @@ describe("fallbackChain", () => {
 describe("the fallback-chain merge (spec 003 §2 'Messages')", () => {
   /** A thin `en-gb` override of one key, in the shape TASK-038 will author. */
   const overrideSource: MessageSource = {
+    meta: () => undefined,
     catalogue: (locale) =>
       locale === "en"
         ? en
@@ -101,11 +138,15 @@ describe("loadMessages (§6 'CWV budget impact')", () => {
   });
 
   it("returns the merged values, not a reference to another locale's catalogue", () => {
-    expect(loadMessages("de", ["a11y"])).toEqual({ a11y: en.a11y });
+    expect(loadMessages("de", ["a11y"])).toEqual({ a11y: de.a11y });
+    expect(loadMessages("de", ["a11y"])).not.toBe(de.a11y);
   });
 
   it("omits a namespace that no catalogue in the chain ships", async () => {
-    const empty: MessageSource = { catalogue: () => undefined };
+    const empty: MessageSource = {
+      catalogue: () => undefined,
+      meta: () => undefined,
+    };
     const subset = await withMessageSource(empty, () =>
       loadMessages("en", ["meta"]),
     );

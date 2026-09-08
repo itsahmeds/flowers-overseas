@@ -1,0 +1,51 @@
+{
+  "a11y": {
+    "localeChooser": "Languages",
+    "localeSwitcher": "Change language",
+    "skipToContent": "Skip to content"
+  },
+  "banner": {
+    "dismiss": "Dismiss the language suggestion",
+    "headline": "Would you rather read this page in {language}?",
+    "stay": "Stay on this page",
+    "switch": "Switch to {language}"
+  },
+  "chooser": {
+    "heading": "Choose your language",
+    "intro": "Flowers Overseas sends flowers to someone in another European country: you order, a vetted local florist makes and delivers them. Choose a language to continue."
+  },
+  "common": {
+    "floristCount": "{count, plural, one {# kwiaciarnia} few {# kwiaciarnie} many {# kwiaciarni} other {# kwiaciarni}}",
+    "homeLink": "Home"
+  },
+  "errors": {
+    "notFound": {
+      "body": "That page does not exist. Check the address, or start again from the home page.",
+      "heading": "Page not found"
+    },
+    "serverError": {
+      "body": "The page could not be loaded. Nothing you were doing was lost. We apologize for the interruption.",
+      "heading": "Something went wrong",
+      "retry": "Try again"
+    }
+  },
+  "meta": {
+    "chooser": {
+      "description": "Flowers Overseas delivers flowers across Europe through vetted local florists. Choose the language you would like to continue in.",
+      "title": "Flowers Overseas — choose your language"
+    },
+    "error": {
+      "description": "The page could not be loaded. Nothing you were doing was lost.",
+      "title": "Something went wrong — Flowers Overseas"
+    },
+    "home": {
+      "description": "Order flowers for someone in another European country. A vetted local florist makes and delivers them.",
+      "heading": "Send flowers across Europe",
+      "title": "Flowers Overseas — send flowers to Europe"
+    },
+    "notFound": {
+      "description": "That page does not exist. Start again from the home page.",
+      "title": "Page not found — Flowers Overseas"
+    }
+  }
+}

@@ -23,6 +23,14 @@
  * `tests/unit/i18n-barrel.test.ts` pins it by name as a schema rather than loosening its
  * "functions only" assertion.
  *
+ * `MessagesSchema`, `MessageMetaSchema` and `MessageMetaManifestSchema` (TASK-038) are in the
+ * list for the same reason and with the same limits: spec 012's translation admin accepts an
+ * edited message and an edited review record over HTTP, and spec 017's email renderer loads a
+ * catalogue, so both cross a boundary outside this module and `plan/12` §2 would otherwise be met
+ * by a hand-written copy of each. `MESSAGE_META_COLUMNS` — the `message_catalog` column mapping
+ * AC-4 pins — deliberately stays *inside* the module: it is a schema-to-table fact for spec 012's
+ * mirror, not a caller API, and exporting a constant object is what AC-3 forbids.
+ *
  * `AddressInputSchema` (TASK-037) is the second schema in the list, for the same reason as
  * `MoneySchema`: an address crosses the checkout form, the order API and the florist brief, and
  * `plan/12` §2 would otherwise be met by a hand-written address schema per caller. It carries no
@@ -50,6 +58,16 @@ export {
   parseLocaleFromPath,
   type ParsedPath,
 } from "./routing.ts";
+
+export {
+  type MessageMeta,
+  type MessageMetaManifest,
+  MessageMetaManifestSchema,
+  MessageMetaSchema,
+  type MessageSourceKind,
+  type MessageTree,
+  MessagesSchema,
+} from "./schemas.ts";
 
 export {
   type MessageCatalogue,

@@ -3,34 +3,47 @@
  * budget impact"; TASK-034).
  *
  * `MessageSource` is the second half of the no-database seam: today `repoMessageSource` answers
- * from `messages/*.json`, and spec 012's translation queue overlays a database catalogue behind
- * the same interface without touching a caller (AC-5). Its `meta()` half — the
- * `messages/*.meta.json` review manifests and `MessageMetaSchema` — is owned by TASK-038, which
- * adds it here next to `catalogue()`.
+ * from `messages/*.json` and `messages/*.meta.json`, and spec 012's translation queue overlays a
+ * database catalogue behind the same interface without touching a caller (AC-5). `meta()` is the
+ * review half — `MessageMetaSchema` in `schemas.ts` names the same fields as spec 002 §5.1's
+ * `message_catalog` review columns (AC-4), so 012 mirrors the manifest rather than translating
+ * it.
  *
  * Two contracts worth stating:
  *
  *  - **Fallback-chain merge at load time.** `de` resolves as `en` overlaid with `de`, per the
  *    `fallbackCode` chain in `src/config/locales.ts`. A locale with no catalogue file at all is
  *    therefore a working (English, unreviewed) locale rather than a crash — which is what makes
- *    "a new locale is data" true (AC-31) and what keeps `de`/`pl` renderable before TASK-038
- *    writes their drafts.
+ *    "a new locale is data" true (AC-31); `de` and `pl` ship echoed, unreviewed drafts from
+ *    `pnpm i18n:draft` (§13 Q7, Q10), so the fallback is what a fifth locale relies on.
  *  - **Only the requested namespaces are returned.** `loadMessages()` never hands back the whole
  *    catalogue: the subset it returns is what reaches the client provider, so the serialised
  *    payload stays inside the §6 / AC-27 budget as the catalogue grows.
  *
  * Catalogues are **statically imported**, not read with `fs`: a computed `readFileSync` path is
  * invisible to Next's build tracing, so the file would be missing from a deployed bundle. Adding a
- * locale catalogue is one line in `CATALOGUES` (TASK-038 adds `en-gb`, `de`, `pl`).
+ * locale catalogue is one line in `CATALOGUES` plus one in `META`.
  */
 import { getLocaleRegistry } from "./registry.ts";
+import {
+  type MessageMetaManifest,
+  MessageMetaManifestSchema,
+  MessagesSchema,
+} from "./schemas.ts";
 
+import de from "../../../messages/de.json" with { type: "json" };
+import deMeta from "../../../messages/de.meta.json" with { type: "json" };
+import enGb from "../../../messages/en-gb.json" with { type: "json" };
+import enGbMeta from "../../../messages/en-gb.meta.json" with { type: "json" };
 import en from "../../../messages/en.json" with { type: "json" };
+import enMeta from "../../../messages/en.meta.json" with { type: "json" };
+import pl from "../../../messages/pl.json" with { type: "json" };
+import plMeta from "../../../messages/pl.meta.json" with { type: "json" };
 
 /** The shape of the English source of truth; `global.d.ts` makes it next-intl's `Messages`. */
 export type Messages = typeof en;
 
-/** Top-level namespace of a catalogue (`meta`, `errors`, `a11y`, `common` in Phase 0). */
+/** Top-level namespace of a catalogue (`meta`, `chooser`, `banner`, `errors`, `a11y`, `common`). */
 export type MessageNamespace = keyof Messages;
 
 export const MESSAGE_NAMESPACES = Object.keys(
@@ -47,14 +60,54 @@ export type MessageCatalogue = Readonly<Record<string, unknown>>;
 export interface MessageSource {
   /** The authored catalogue for exactly this locale, or `undefined` when it ships none. */
   catalogue(locale: string): MessageCatalogue | undefined;
+  /**
+   * The review manifest for exactly this locale, or `undefined` when it ships none — keyed by
+   * the flattened message path, per `MessageMetaSchema` (spec 003 §2 "Messages", AC-4). This is
+   * what `unreviewedShare`/`isLocaleIndexable` (TASK-039) read, and what spec 012 mirrors into
+   * `message_catalog`; it is **not** merged along the fallback chain, because "how much of this
+   * locale is reviewed" is a question about the locale's own file, not about English.
+   */
+  meta(locale: string): MessageMetaManifest | undefined;
 }
 
-/** Catalogue files shipped in `messages/`. TASK-038 adds `en-gb`, `de` and `pl`. */
-const CATALOGUES: Readonly<Record<string, MessageCatalogue>> = { en };
+/** Catalogue files shipped in `messages/`. A new locale catalogue is one line here (AC-31). */
+const CATALOGUES: Readonly<Record<string, MessageCatalogue>> = {
+  en,
+  "en-gb": enGb,
+  de,
+  pl,
+};
+
+/**
+ * Review manifests, one per catalogue file (`i18n:check` asserts the pairing, TASK-040). Held as
+ * `unknown` and parsed on read: a JSON import is typed structurally (`source: string`), so the
+ * schema is what turns it into a `MessageMetaManifest` — which is exactly the boundary
+ * `plan/12` §2 asks for on a file a human may hand-edit.
+ */
+const META: Readonly<Record<string, unknown>> = {
+  en: enMeta,
+  "en-gb": enGbMeta,
+  de: deMeta,
+  pl: plMeta,
+};
 
 export const repoMessageSource: MessageSource = {
   catalogue: (locale) => CATALOGUES[locale],
+  meta: (locale) => {
+    const manifest = META[locale];
+    return manifest === undefined
+      ? undefined
+      : MessageMetaManifestSchema.parse(manifest);
+  },
 };
+
+/**
+ * The review manifest for a locale, or `undefined` when it ships none. Module-internal like the
+ * providers themselves: callers ask `unreviewedShare()`/`isLocaleIndexable()` (TASK-039).
+ */
+export function messageMeta(locale: string): MessageMetaManifest | undefined {
+  return getMessageSource().meta(locale);
+}
 
 let source: MessageSource = repoMessageSource;
 
@@ -171,5 +224,11 @@ export function loadMessages<N extends MessageNamespace>(
     const value = catalogue[namespace];
     if (value !== undefined) subset[namespace] = value;
   }
-  return subset as Pick<Messages, N>;
+  // `plan/12` §2 at the last possible moment: the subset returned here is what a document
+  // renders and what the client provider serialises, and it was assembled from repo JSON (and,
+  // from spec 012, from database overrides through the same `MessageSource`). Validating the
+  // merged result rather than each file catches a malformed override too, and `MessagesSchema`
+  // rejects the two shapes that would fail silently at render time: a non-string leaf and an
+  // empty string. ICU validity and key completeness stay `pnpm i18n:check`'s job (TASK-040).
+  return MessagesSchema.parse(subset) as Pick<Messages, N>;
 }
