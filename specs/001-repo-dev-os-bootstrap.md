@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | approved |
+| Status | approved · implemented 2026-09-08 (TASK-001…TASK-012 merged, `/review` PASS on each) |
 | Phase | 0 |
 | Plan refs | plan/01 §5 §7 §9 §10 · plan/02 §7 §9 §10 §14 · plan/03 §4 §5 §7 §11 · plan/07 §1.4 §10 · plan/08 §6 §7 · plan/09 Phase 0 (15–21 Sep) + week-1 checklist · plan/12 §2 §4 §5 §7 §9 · plan/13 §A |
 | ADRs | ADR-0006 (no IP redirects) · ADR-0008 (stack) · ADR-0009 (order transitions) · ADR-0011 (dev OS) · ADR-0012 (hosting) |
@@ -405,3 +405,8 @@ private per §13 Q1 *and* enforces the gate) or record unenforced protection as 
 deviation with the `/review` verdict as the gate. The merge-method half needs no plan change and
 is applied (squash-only, `PR_TITLE` subject, delete branch on merge).
 Raised by: `/review 11` (PR #11), 2026-09-08. Runbook: `docs/runbooks/branch-protection.md` §0.
+
+### A11 — §12 exit signal arithmetic
+- **Original clause:** spec exit signal "tasks 6/6 done" (§12), based on the spec's own six-task sketch.
+- **Corrected clause:** "all tasks created by `/plan-tasks` for this spec are `done` with a recorded `/review` PASS" — twelve tasks in practice (TASK-001…TASK-012).
+- **Raised by:** `/review 12` (reviewer note 2), 2026-09-08. Applied by the orchestrator at spec close.
