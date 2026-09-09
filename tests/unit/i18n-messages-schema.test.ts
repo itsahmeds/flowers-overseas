@@ -294,6 +294,9 @@ describe("the shipped catalogues and manifests", () => {
       "errors",
       "a11y",
       "common",
+      // The consent sheet's copy (spec 004 §7, TASK-051): resolved on the server and handed to
+      // the islands as props, so this namespace never reaches the client provider.
+      "consent",
       // Spec 004 §7's chrome namespaces, added with the config registries that name their keys
       // (TASK-047); the header and footer that render them are TASK-048/TASK-049.
       "nav",

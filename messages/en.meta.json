@@ -831,6 +831,223 @@
     "reviewedAt": "2026-09-09T00:00:00Z",
     "sourceHash": "6a40edf1fc87a29f243a7eefdbed57d19bfe16ab2e039d7ae1a44c097297e2f3"
   },
+  "consent.accept": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "f55ee862340875799744c9ca641ae6ad89272112cf6d8d6c135f5b816e994245"
+  },
+  "consent.body": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "434689f542b0793ba85aaa0c95666277eb1693cf15b26e8b0b607e862b1a93bc"
+  },
+  "consent.category.analytics.name": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "94c116ee118a72998db6cd10b586a9ef112a1891ff8ced8c7b2944ff62453b5f"
+  },
+  "consent.category.analytics.purpose": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "37561931b02edb8a7aa91ce9aba70546ef7664bd5879aaaf56d04d8694b3cc33"
+  },
+  "consent.category.essential.name": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "9c7d888055fb1eb0699f5b52fbd7fcddb8138b1bed42420cb5afb12733a58b51"
+  },
+  "consent.category.essential.purpose": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "0290f318f08776356b2a5aa9b4dad8e9929a57597b941335ccc238451293f8fe"
+  },
+  "consent.category.marketing.name": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "f5904cf7a1231a7a13a8cffbd2f0482984a1c69e96fc48dd96be8858a1707e60"
+  },
+  "consent.category.marketing.purpose": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "0b3a8e1323bc98b2d5cd983ab45c64dc5b39624ffb904d823b258a2298bbed1f"
+  },
+  "consent.categoryEmpty": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "480b0c3f232725c7844376116741510595aba1a9e79031a692cec5b92cd334aa"
+  },
+  "consent.close": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "7d9eb7acb13e24625c404401d8e88b2350e32162455885f18276cf802f7701ed"
+  },
+  "consent.cookies.basket.purpose": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "c0e2d4066ca2af2510909025a6dd0e7a1f091f8f075b3f593db43e901bffa214"
+  },
+  "consent.cookies.consent.purpose": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "f5d9f6831a8543a65f0a116a2bca0d1eaa0508f09ff6921831568c9b739e797e"
+  },
+  "consent.cookies.csrf.purpose": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "157577b97358de8bc5e689edae741a707595f266c0b6fa376b51ea45bdec41d9"
+  },
+  "consent.cookies.currency.purpose": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "6a8ee1244226dac078a99a28672c20209741a86b1f2b2eae42cc307795bff5e6"
+  },
+  "consent.cookies.ga.purpose": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "3d652635c00f033e4dd342349a4478e252ffd65ab1f8e516e97e423ca9e04087"
+  },
+  "consent.cookies.gaContainer.purpose": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "ab4be7d2bc10ff2f09aeac2b55dfc0a3045ec5306137111cc3d802ea7cc97079"
+  },
+  "consent.cookies.locale.purpose": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "e0c4adc9122408f28367675e232b5cd521c49ae49d616728ab39b6fc2e5c0203"
+  },
+  "consent.cookies.localeSuggestionDismissed.purpose": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "d77fc15de241931c4da5691d5d5e1a026bb9b1f6e68e402f6fd43d61ebf55f35"
+  },
+  "consent.cookies.session.purpose": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "b8c164f977a646d59339f1d3a3477489ed5c2c70c5c4e918f40ab3734557a990"
+  },
+  "consent.cookies.stripeMid.purpose": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "8afea7b378ca7c6a8a8f2ce05b956adc5892bac49d9ab76fedcd31ab3c7dcf0c"
+  },
+  "consent.cookies.stripeSid.purpose": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "0d35810ab5e7058d288eb13db254e91bf56fbb1efd7e1d226d579fcbee51860f"
+  },
+  "consent.essentialLocked": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "46d4f17247ef94ac84cdfddf3f9b5db654a29b73405beeda52f517f7d3fec711"
+  },
+  "consent.headline": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "2b65207b49bf54e8dac5ceef1e62a496bf8cc3c68bc83669ad8fe6f60c28e318"
+  },
+  "consent.lifetime.days": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "52e7b5cd5c20db8817da1a56e6c94d7dad7aa44778765b70189d9c6b537cb6da"
+  },
+  "consent.lifetime.minutes": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "48f209430d9231077ec7c4f7652d2511f1e5782a50b221e168ceb2e0d2083af8"
+  },
+  "consent.lifetime.session": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "4ec42c4b6a5a581dfce6b1d3eb532f5f2838270617f96d41e77b24d652d6e02c"
+  },
+  "consent.reject": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "adba252304031dda2de56b5b50dd5d12fd42715264be9360ab79f2662edc4e5c"
+  },
+  "consent.save": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "035882f1a56b9d49db7b655f6afdab79b0a1b6909f901db9be109eeede87eaed"
+  },
+  "consent.saved": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "5e88b57bebde69bee56a72c3609ec5b0460966014d6476b0284ff9b24bbb8625"
+  },
+  "consent.settings": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "c7f937836f5d82d53bc507752075f87e25009ec11bc9fd4e282f0b645e47af7c"
+  },
+  "consent.settingsHeadline": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "1bcc61276cc79808732e1e3c8f9245e8a201fe8fff41506f4a9f4e956fc9b371"
+  },
   "destinations.de.name": {
     "source": "human",
     "reviewed": true,

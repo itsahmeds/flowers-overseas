@@ -17,7 +17,37 @@
  * `navigator.languages` is emptied for the reason `./shell.spec.ts` documents: the suggestion
  * island would otherwise put the runner's language configuration into a committed PNG.
  */
-import { expect, test } from "@playwright/test";
+import { type BrowserContext, expect, test } from "@playwright/test";
+
+/**
+ * A recorded consent decision, seeded before the first navigation (TASK-051).
+ *
+ * The consent sheet is a bottom sheet on the mobile artboard, so it paints **over the colophon**
+ * — and an element screenshot captures whatever is painted in the element's box, overlay
+ * included. Without this the footer baseline records whether the island's chunk had arrived yet,
+ * which made this file flake rather than fail. With a refusal already in the jar the island
+ * renders nothing; the sheet has its own baselines in `./consent.spec.ts`.
+ */
+async function recordConsentRefusal(
+  context: BrowserContext,
+  baseURL: string | undefined,
+): Promise<void> {
+  await context.addCookies([
+    {
+      name: "fo_consent",
+      value: encodeURIComponent(
+        JSON.stringify({
+          v: 1,
+          a: false,
+          m: false,
+          ts: "2026-09-09T00:00:00.000Z",
+          cid: "6f1e6e6a-1d3a-4b5e-9c2f-8f0a1b2c3d4e",
+        }),
+      ),
+      url: baseURL ?? "http://localhost:3000",
+    },
+  ]);
+}
 
 /** The two artboards of `docs/design/homepage-v1/`. */
 const VIEWPORTS = [
@@ -31,7 +61,10 @@ for (const locale of LOCALES) {
   for (const viewport of VIEWPORTS) {
     test(`/${locale} footer matches the ${viewport.name} baseline`, async ({
       page,
+      context,
+      baseURL,
     }) => {
+      await recordConsentRefusal(context, baseURL);
       await page.addInitScript(() => {
         Object.defineProperty(navigator, "languages", {
           configurable: true,
@@ -46,6 +79,7 @@ for (const locale of LOCALES) {
       const response = await page.goto(`/${locale}`);
       expect(response?.status()).toBe(200);
       await expect(page.locator('[data-fo-banner="shown"]')).toHaveCount(0);
+      await expect(page.locator("[data-fo-consent]")).toHaveCount(0);
 
       const footer = page.getByRole("contentinfo");
       await expect(footer).toBeVisible();

@@ -153,6 +153,73 @@
       "whatsapp": "WhatsApp"
     }
   },
+  "consent": {
+    "accept": "Accept all",
+    "body": "We need a few cookies to run the site: the language you chose, your basket, the security of your order. Everything else is your call, and we set nothing in those groups until you say yes.",
+    "category": {
+      "analytics": {
+        "name": "Analytics",
+        "purpose": "How many people visit, and which pages help them send flowers. We use it to make the site better, and for nothing else."
+      },
+      "essential": {
+        "name": "Essential",
+        "purpose": "What the site cannot work without."
+      },
+      "marketing": {
+        "name": "Marketing",
+        "purpose": "Measuring which advertising brought you here, and showing you our flowers elsewhere on the web."
+      }
+    },
+    "categoryEmpty": "We set nothing in this group yet. Your choice is recorded for the day we do.",
+    "close": "Close",
+    "cookies": {
+      "basket": {
+        "purpose": "Remembers what you put in your basket. Not set yet."
+      },
+      "consent": {
+        "purpose": "Remembers these cookie choices and when you made them: 12 months if you accept anything, 6 months if you refuse everything."
+      },
+      "csrf": {
+        "purpose": "Stops a form you send us being forged by someone else. Not set yet — there is no form."
+      },
+      "currency": {
+        "purpose": "Remembers the currency you chose to pay in. Not set yet."
+      },
+      "ga": {
+        "purpose": "Google Analytics: tells one visit from another so a visit is not counted twice. Not set unless you accept analytics."
+      },
+      "gaContainer": {
+        "purpose": "Google Analytics: the same, for our own measurement id. Not set unless you accept analytics."
+      },
+      "locale": {
+        "purpose": "Remembers the language you chose, so we do not ask again."
+      },
+      "localeSuggestionDismissed": {
+        "purpose": "Remembers that you closed the language suggestion, for this visit only."
+      },
+      "session": {
+        "purpose": "Keeps you signed in while you order. Not set yet — there is no sign-in."
+      },
+      "stripeMid": {
+        "purpose": "Stripe, who handles our card payments, uses it to spot fraudulent payments. Not set yet — checkout is not open."
+      },
+      "stripeSid": {
+        "purpose": "Stripe's short-lived companion to the one above, for the same fraud checks. Not set yet."
+      }
+    },
+    "essentialLocked": "These keep the site working — your language, your basket and the security of your order — so they cannot be switched off. We use them whether or not you accept anything else.",
+    "headline": "Cookies, and what we set them for",
+    "lifetime": {
+      "days": "{count, plural, one {# day} other {# days}}",
+      "minutes": "{count, plural, one {# minute} other {# minutes}}",
+      "session": "This visit only"
+    },
+    "reject": "Reject all",
+    "save": "Save choices",
+    "saved": "Your choices are saved. You can change them whenever you like, from “Cookie settings” at the foot of every page.",
+    "settings": "Choose",
+    "settingsHeadline": "Choose which cookies we may set"
+  },
   "destinations": {
     "de": {
       "name": "Deutschland"

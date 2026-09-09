@@ -14,7 +14,13 @@ import {
   routableLocale,
   routableLocaleCodes,
 } from "@/modules/i18n";
-import { fontVariables, SiteFooter, SiteHeader, SkipLink } from "@/modules/ui";
+import {
+  ConsentBanner,
+  fontVariables,
+  SiteFooter,
+  SiteHeader,
+  SkipLink,
+} from "@/modules/ui";
 
 import "../globals.css";
 
@@ -150,6 +156,16 @@ export default async function LocaleLayout({
               Component with zero client JavaScript, whose links, company identity and payment
               line all come from the Phase-0 registries (TASK-049). */}
           <SiteFooter locale={locale.code} />
+          {/* Out of flow and above everything: the consent sheet (AC-17, AC-19, AC-20). A
+              Server Component resolves the copy and projects the cookie register, and a client
+              loader imports the island after hydration (`ssr: false`), so this document's HTML is
+              identical for every visitor, carries no `Vary` and sets no cookie — the decision is
+              read from and written to `document.cookie` in the browser, only on a press. It is
+              rendered **before** the language suggestion so a keyboard visitor reaches the
+              consent question first, and it paints **above** it because `--layer-overlay` is the
+              step over `--layer-banner` (AC-13). `/` has no locale layout and therefore no sheet:
+              the chooser stays at zero application JavaScript (spec 003 AC-7). */}
+          <ConsentBanner />
           {/* Last in the document and out of flow: the language suggestion of ADR-0006 in its
               positive form. `LocaleSuggestionBanner` is a Server Component that projects the
               locale registry and hands it to a client loader, which imports the island itself

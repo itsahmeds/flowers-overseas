@@ -118,6 +118,47 @@ function isSecureOrigin(baseURL: string | undefined): boolean {
   return new URL(baseURL ?? "http://localhost:3000").protocol === "https:";
 }
 
+/**
+ * Answer the consent question before the suggestion banner is exercised (TASK-051).
+ *
+ * Both overlays are anchored to the bottom of the viewport and the consent sheet paints above the
+ * language suggestion, by design: `--layer-overlay` over `--layer-banner` (AC-13), and the
+ * sequence `docs/design/flows/consent-and-locale.dc.html` draws is "consent sheet first, then the
+ * locale suggestion — because switching language must not throw away a consent choice". A visitor
+ * therefore answers consent and *then* meets the suggestion, which is the state these tests are
+ * about; with the sheet still open, a click on `Switch` lands on the sheet instead.
+ *
+ * So a recorded decision is seeded into the jar, exactly as the island would write it (a refusal —
+ * the cheaper answer for a test to make, and the one that grants nothing). Nothing else about
+ * these tests changes, and spec 003 AC-28's matrix is asserted unchanged. The final layout
+ * coordination of the two overlays — offsetting the suggestion banner clear of the sheet — is
+ * TASK-055's, which owns AC-13 and the banner's restyle.
+ */
+async function recordConsentRefusal(
+  context: BrowserContext,
+  baseURL: string | undefined,
+): Promise<void> {
+  await context.addCookies([
+    {
+      name: "fo_consent",
+      value: encodeURIComponent(
+        JSON.stringify({
+          v: 1,
+          a: false,
+          m: false,
+          ts: new Date().toISOString(),
+          cid: "6f1e6e6a-1d3a-4b5e-9c2f-8f0a1b2c3d4e",
+        }),
+      ),
+      url: baseURL ?? "http://localhost:3000",
+    },
+  ]);
+}
+
+test.beforeEach(async ({ context, baseURL }) => {
+  await recordConsentRefusal(context, baseURL);
+});
+
 test.describe("a German browser on /en (AC-28)", () => {
   // The context locale sets `Accept-Language: de-DE` as well, which nothing on the server reads;
   // the init script is what the island actually sees.

@@ -82,6 +82,20 @@ describe("src/modules/ui barrel", () => {
         "TrustMarks",
         "companyIdentity",
         "footerView",
+        // consent: the sheet's Server Component, its register/catalogue projection, the zod-free
+        // `fo_consent` reader and writer, and the gallery's inert states (TASK-051). The islands
+        // themselves are **not** here: they are reached through `ConsentBanner` and two
+        // `next/dynamic` boundaries, so no route can import a `"use client"` module directly and
+        // put it in the initial bundle.
+        "CONSENT_ENDPOINT",
+        "ConsentBanner",
+        "choicesOf",
+        "clearConsentCookie",
+        "consentView",
+        "lifetimeLabel",
+        "parseConsentCookie",
+        "rawCookieValue",
+        "serialiseConsentCookie",
       ].sort(),
     );
   });
@@ -120,6 +134,8 @@ describe("src/modules/ui barrel", () => {
     // binds to, a form action, and the id prefix and ids the reminder stub redirects to. None of
     // them is a token value, which is what this assertion is about.
     const EXPECTED_STRINGS = [
+      // TASK-051's is a URL path, the route the consent island posts a decision to.
+      "CONSENT_ENDPOINT",
       "CONSENT_REOPEN_ATTRIBUTE",
       "FOOTER_ID_PREFIX",
       "REMINDERS_ANCHOR",
