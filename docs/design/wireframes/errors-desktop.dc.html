@@ -1,0 +1,154 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+  <style>
+:root{
+  --color-paper: oklch(99.3% 0.002 90);
+  --color-paper-2: oklch(97.2% 0.004 90);
+  --color-paper-3: oklch(94.5% 0.005 90);
+  --color-ink: oklch(19% 0.01 250);
+  --color-ink-2: oklch(36% 0.01 250);
+  --color-ink-3: oklch(52% 0.008 250);
+  --color-rule: oklch(90% 0.004 250);
+  --color-accent: oklch(42% 0.10 155);
+  --color-accent-strong: oklch(34% 0.09 155);
+  --color-accent-ink: oklch(99% 0.002 90);
+  --color-success: oklch(42% 0.10 150);
+  --color-warning: oklch(45% 0.12 75);
+  --color-danger: oklch(45% 0.17 25);
+  --color-danger-strong: oklch(38% 0.15 25);
+  --color-photo-stop-1: oklch(93% 0.02 120);
+  --color-photo-stop-2: oklch(88% 0.03 140);
+  --color-photo-stop-3: oklch(80% 0.04 150);
+  --color-photo-ink: oklch(40% 0.03 150);
+  --color-photo: linear-gradient(160deg, var(--color-photo-stop-1) 0%, var(--color-photo-stop-2) 45%, var(--color-photo-stop-3) 100%);
+  --font-display: "Newsreader", "Iowan Old Style", Georgia, "Times New Roman", serif;
+  --font-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --text-display: 68px; --text-display-s: 42px; --text-2xl: 34px; --text-xl: 24px; --text-lg: 18px; --text-md: 15px; --text-sm: 13px; --text-xs: 11px;
+  --space-xs: 4px; --space-sm: 8px; --space-md: 16px; --space-lg: 24px; --space-xl: 40px; --space-2xl: 72px; --space-3xl: 128px;
+  --radius-sm: 2px; --radius-md: 4px; --radius-full: 9999px;
+  --measure: 68ch;
+  --rule: 1px solid var(--color-rule);
+}
+    body { margin: 0; font-family: var(--font-body); color: var(--color-ink); background: var(--color-paper); -webkit-font-smoothing: antialiased; }
+    a { color: var(--color-ink); text-decoration: none; } a:hover { color: var(--color-accent); }
+    .display { font-family: var(--font-display); font-weight: 500; letter-spacing: -0.015em; }
+    .label { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-ink-3); }
+    .photo { background: var(--color-photo); display: flex; align-items: flex-end; padding: var(--space-md); color: var(--color-photo-ink); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field span.v { min-height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-bottom: 1px solid var(--color-ink); font-size: var(--text-md); color: var(--color-ink); }
+    .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
+    .btn.accent { background: var(--color-accent); }
+    .btn.secondary { background: var(--color-paper); color: var(--color-ink); border: 1px solid var(--color-ink-3); }
+    .btn.sm { min-height: 44px; padding: 0 16px; font-size: var(--text-sm); }
+    .price { font-variant-numeric: tabular-nums; }
+    .ph { display: inline-block; min-width: 56px; height: 14px; background: var(--color-paper-3); border-radius: 2px; vertical-align: middle; }
+    .chip { display: inline-flex; align-items: center; gap: var(--space-xs); border: 1px solid var(--color-ink-3); border-radius: var(--radius-sm); padding: var(--space-sm) var(--space-sm); font-size: var(--text-sm); }
+    .chip.accent { border-color: var(--color-accent); color: var(--color-accent); }
+    .chip.muted { border-color: transparent; background: var(--color-paper-3); color: var(--color-ink-2); }
+    .note { border: 1px solid var(--color-ink-3); border-radius: var(--radius-sm); background: var(--color-paper-2); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; font-size: var(--text-sm); line-height: 1.55; }
+    .note dl { margin: 0; display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 4px var(--space-md); font-size: var(--text-sm); }
+    .note dt { color: var(--color-ink-3); font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding-block-start: 2px; }
+    .note dd { margin: 0; color: var(--color-ink-2); }
+    .slot { color: var(--color-ink-3); font-style: italic; }
+    .stub { border: 1px dashed var(--color-ink-3); border-radius: var(--radius-sm); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; color: var(--color-ink-2); font-size: var(--text-sm); }
+    .stub b { font-weight: 600; color: var(--color-ink); font-size: var(--text-sm); }
+    .sec { display: flex; flex-direction: column; gap: var(--space-md); }
+    table.spec { border-collapse: collapse; width: 100%; font-size: var(--text-sm); }
+    table.spec th, table.spec td { text-align: start; border-block-end: var(--rule); padding: 8px 12px; vertical-align: top; }
+    table.spec th { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-3); }
+    .grid { display: grid; gap: var(--space-lg); }
+    .card { display: flex; flex-direction: column; gap: var(--space-sm); }
+    .card .nm { font-family: var(--font-display); font-weight: 500; font-size: var(--text-lg); }
+    .tile { border: var(--rule); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; }
+    .kv { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px var(--space-md); font-size: var(--text-sm); }
+    .kv > span:nth-child(even) { text-align: end; font-variant-numeric: tabular-nums; }
+    .faq { border-block-start: var(--rule); padding-block: var(--space-md); display: flex; flex-direction: column; gap: 6px; }
+    .faq b { font-weight: 600; font-size: var(--text-md); }
+    .faq span { font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.6; }
+    .steprow { display: flex; gap: var(--space-md); font-size: var(--text-sm); }
+    .steprow > span { flex: 1; border-block-start: 2px solid var(--color-rule); padding-block-start: var(--space-sm); color: var(--color-ink-3); }
+    .steprow > span.on { border-block-start-color: var(--color-ink); color: var(--color-ink); font-weight: 600; }
+    code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: var(--text-xs); color: var(--color-ink-2); }
+    .prose { max-width: var(--measure); font-size: var(--text-md); line-height: 1.6; color: var(--color-ink-2); }
+  </style>
+</helmet>
+<div style="width: 1440px; min-height: 1620px; background: var(--color-paper); display: flex; flex-direction: column;">
+  <div style="display: flex; flex-direction: column; border-bottom: 1px solid var(--color-ink);">
+    <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm) var(--space-lg); align-items: center; justify-content: space-between; padding: 12px 56px; font-size: var(--text-xs); color: var(--color-ink-2); border-bottom: var(--rule);">
+      <span>Order by 14:00 Warsaw time for same-day delivery</span><span>Prices include delivery and VAT</span><span>Help &amp; WhatsApp: +1 (213) 592-5150 · Mon–Sat 8–20 CET</span>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm) var(--space-lg); align-items: center; justify-content: space-between; padding: var(--space-md) 56px;">
+      <span class="display" style="font-size: 26px; letter-spacing: 0.04em;">Flowers Overseas</span>
+      <span style="font-size: var(--text-sm); color: var(--color-ink-3);">Search flowers, occasions, a city or a country · Sign in · My orders · Basket (0)</span>
+    </div>
+    <div style="padding: 10px 56px; border-top: var(--rule); font-size: var(--text-sm); color: var(--color-ink-2);">
+      <span class="label" style="margin-inline-end: var(--space-sm);">Categories</span>Best sellers · Birthday · Sympathy · Occasions · Bouquets · Roses · Plants · Add-ons · Same-day delivery · Destinations
+    </div>
+    <div style="padding: 6px 56px 10px; font-size: var(--text-xs); color: var(--color-ink-3);">Chrome as approved in <b>homepage-v1</b>. Every category row entry and every utility link is <b>unpublished in Phase 0</b> and renders as text, not a link (site-links.ts, categories.ts; spec 004 AC-14).</div>
+  </div>
+
+  <section class="note" style="margin: var(--space-lg) 56px 0;">
+    <span class="label">404 and 500</span>
+    <dl>
+      <dt>Purpose</dt><dd>The two pages nobody designs and everybody sees. Localised, useful, and with a way back that is a destination picker rather than a “go home” link.</dd>
+      <dt>URL</dt><dd>any unmatched path (404) · any unhandled error (500) · a deliberately removed URL (410)</dd>
+      <dt>Index</dt><dd>404 and 410 return their status codes and are noindex by construction. A soft 404 — a “not found” page returning 200 — is the failure mode this design exists to prevent.</dd>
+      <dt>Reads</dt><dd>the locale from the URL where there is one, and the country registry for the destination picker. Nothing else: a 500 page that needs a database cannot render when the database is why it is a 500.</dd>
+      <dt>Copy</dt><dd><code>errors.notFound.*</code>, <code>errors.serverError.*</code> and <code>meta.notFound.*</code> / <code>meta.error.*</code> all exist in <code>messages/en.json</code> and are quoted verbatim below.</dd>
+      <dt>Owning spec</dt><dd>003 (shipped) · 004 chrome</dd>
+    </dl>
+  </section>
+
+  <main style="display: flex; flex-direction: column; gap: var(--space-xl); padding: var(--space-xl) 56px;">
+<div class="sec"><span class="label" style="color: var(--color-accent);">404 · page not found</span>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-xl); align-items: start;">
+        <div class="sec">
+          <h1 class="display" style="margin: 0; font-size: var(--text-display-s); line-height: 1.08;">Page not found</h1>
+          <p class="prose" style="margin: 0;">That page does not exist. Check the address, or start again from the home page.</p>
+          <div style="display: flex; gap: var(--space-md); flex-wrap: wrap;"><span class="btn">Home</span><span class="btn secondary">All destinations</span></div>
+          <span style="font-size: var(--text-xs); color: var(--color-ink-3);">Status <b>404</b>, not 200. The full header and footer render, so a visitor who mistyped a corridor slug is one click from the right one.</span>
+        </div>
+        <div class="sec">
+          <div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">Where were you going?</span><h2 class="display" style="margin: 0; font-size: var(--text-xl); line-height: 1.15;">The picker, not a search box</h2></div>
+          <div class="grid" style="grid-template-columns: repeat(2, minmax(0, 1fr));">
+            <a href="#" class="tile" style="background: var(--color-paper-2);"><span class="display" style="font-size: var(--text-lg);">Poland</span><span class="chip accent" style="align-self: flex-start;">Delivering now</span></a>
+            <div class="tile"><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Germany · France · Spain · Italy · Romania · Netherlands — guides and waiting lists</span></div>
+          </div>
+          <span style="font-size: var(--text-xs); color: var(--color-ink-3);">A destination picker recovers a lost visitor; an empty search box asks them to guess again. Search does not exist in Phase 0 anyway.</span>
+        </div>
+      </div>
+      <div class="stub" style=""><b>Variants</b><span><b>410 Gone</b> — a URL we deliberately removed says so and names what replaced it, which tells a crawler to stop asking. A 404 says “this never existed”; they are different facts.</span><span><b>An unknown locale prefix</b> — 404, and the destination picker is replaced by the locale chooser. It never guesses a locale from the browser or the IP (ADR-0006).</span><span><b>A corridor that is not live and has no guide</b> — 404, not a stub page. That is the same rule the destinations hub keeps by not linking it.</span></div></div>
+
+<div class="sec" style="border-block-start: 2px solid var(--color-ink); padding-block-start: var(--space-lg);"><span class="label" style="color: var(--color-accent);">500 · something went wrong</span>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-xl); align-items: start;">
+        <div class="sec">
+          <h1 class="display" style="margin: 0; font-size: var(--text-display-s); line-height: 1.08;">Something went wrong</h1>
+          <p class="prose" style="margin: 0;">The page could not be loaded. Nothing you were doing was lost. We apologize for the interruption.</p>
+          <div style="display: flex; gap: var(--space-md); flex-wrap: wrap;"><span class="btn">Try again</span><span class="btn secondary">Home</span></div>
+          <div class="tile"><span class="label">If you were ordering</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Your order is either placed or it is not — there is no half-placed order. If you paid you have a confirmation email. If you are not sure, WhatsApp +1 (213) 592-5150, Mon–Sat 8–20 CET.</span></div>
+        </div>
+        <div class="sec">
+          <div class="stub" style=""><b>Constraints</b><span>Renders from static assets and message data only. No database, no catalogue read, no third-party script — a 500 page that depends on the thing that broke is not a 500 page.</span><span>Minimal chrome: the wordmark, the copy, two actions and the help line. Not the full header, whose category row would need registry data.</span><span>The error is reported to Sentry with a request id. <b>The id is not shown to the visitor</b> and no stack trace, no query, no email and no order token appears on the page or in the URL.</span></div>
+          <div class="stub" style=""><b>Also this shape</b><span><b>Maintenance</b> — a deliberate 503 with an honest sentence and the help line, used only for a planned migration.</span><span><b>Payment provider down</b> — handled inside the checkout step rather than as a 500: the draft is preserved and another method is offered.</span></div>
+        </div>
+      </div></div>
+  </main>
+
+  <div style="margin-block-start: auto; border-top: 1px solid var(--color-ink); padding: var(--space-lg) 56px; display: flex; flex-direction: column; gap: var(--space-sm); font-size: var(--text-sm); color: var(--color-ink-2);">
+    <span class="label">Footer</span>
+    <span>Sending: Destinations · Occasions · Delivery times and cutoffs · The guarantee — Company: How it works · For florists · Help and contact · Imprint — Legal: Terms · Privacy · Cookies · Withdrawal and refunds · Cookie settings</span>
+    <span>International flower relay. You order, a vetted local florist makes and delivers. Operated by <span class="slot">[legal name]</span>, <span class="slot">[registered address]</span>, <span class="slot">[registration no]</span> — printed only once <code>company.registered</code> is true (company.ts; spec 004 AC-9).</span>
+    <span>BLIK · Klarna · PayPal · Visa · Mastercard · Apple Pay — card payments processed by Stripe. We never store card numbers.</span>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

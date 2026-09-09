@@ -1,0 +1,202 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+  <style>
+:root{
+  --color-paper: oklch(99.3% 0.002 90);
+  --color-paper-2: oklch(97.2% 0.004 90);
+  --color-paper-3: oklch(94.5% 0.005 90);
+  --color-ink: oklch(19% 0.01 250);
+  --color-ink-2: oklch(36% 0.01 250);
+  --color-ink-3: oklch(52% 0.008 250);
+  --color-rule: oklch(90% 0.004 250);
+  --color-accent: oklch(42% 0.10 155);
+  --color-accent-strong: oklch(34% 0.09 155);
+  --color-accent-ink: oklch(99% 0.002 90);
+  --color-success: oklch(42% 0.10 150);
+  --color-warning: oklch(45% 0.12 75);
+  --color-danger: oklch(45% 0.17 25);
+  --color-danger-strong: oklch(38% 0.15 25);
+  --color-photo-stop-1: oklch(93% 0.02 120);
+  --color-photo-stop-2: oklch(88% 0.03 140);
+  --color-photo-stop-3: oklch(80% 0.04 150);
+  --color-photo-ink: oklch(40% 0.03 150);
+  --color-photo: linear-gradient(160deg, var(--color-photo-stop-1) 0%, var(--color-photo-stop-2) 45%, var(--color-photo-stop-3) 100%);
+  --font-display: "Newsreader", "Iowan Old Style", Georgia, "Times New Roman", serif;
+  --font-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --text-display: 68px; --text-display-s: 42px; --text-2xl: 34px; --text-xl: 24px; --text-lg: 18px; --text-md: 15px; --text-sm: 13px; --text-xs: 11px;
+  --space-xs: 4px; --space-sm: 8px; --space-md: 16px; --space-lg: 24px; --space-xl: 40px; --space-2xl: 72px; --space-3xl: 128px;
+  --radius-sm: 2px; --radius-md: 4px; --radius-full: 9999px;
+  --measure: 68ch;
+  --rule: 1px solid var(--color-rule);
+}
+    body { margin: 0; font-family: var(--font-body); color: var(--color-ink); background: var(--color-paper); -webkit-font-smoothing: antialiased; }
+    a { color: var(--color-ink); text-decoration: none; } a:hover { color: var(--color-accent); }
+    .display { font-family: var(--font-display); font-weight: 500; letter-spacing: -0.015em; }
+    .label { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-ink-3); }
+    .photo { background: var(--color-photo); display: flex; align-items: flex-end; padding: var(--space-md); color: var(--color-photo-ink); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field span.v { min-height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-bottom: 1px solid var(--color-ink); font-size: var(--text-md); color: var(--color-ink); }
+    .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
+    .btn.accent { background: var(--color-accent); }
+    .btn.secondary { background: var(--color-paper); color: var(--color-ink); border: 1px solid var(--color-ink-3); }
+    .btn.sm { min-height: 44px; padding: 0 16px; font-size: var(--text-sm); }
+    .price { font-variant-numeric: tabular-nums; }
+    .ph { display: inline-block; min-width: 56px; height: 14px; background: var(--color-paper-3); border-radius: 2px; vertical-align: middle; }
+    .chip { display: inline-flex; align-items: center; gap: var(--space-xs); border: 1px solid var(--color-ink-3); border-radius: var(--radius-sm); padding: var(--space-sm) var(--space-sm); font-size: var(--text-sm); }
+    .chip.accent { border-color: var(--color-accent); color: var(--color-accent); }
+    .chip.muted { border-color: transparent; background: var(--color-paper-3); color: var(--color-ink-2); }
+    .note { border: 1px solid var(--color-ink-3); border-radius: var(--radius-sm); background: var(--color-paper-2); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; font-size: var(--text-sm); line-height: 1.55; }
+    .note dl { margin: 0; display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 4px var(--space-md); font-size: var(--text-sm); }
+    .note dt { color: var(--color-ink-3); font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding-block-start: 2px; }
+    .note dd { margin: 0; color: var(--color-ink-2); }
+    .slot { color: var(--color-ink-3); font-style: italic; }
+    .stub { border: 1px dashed var(--color-ink-3); border-radius: var(--radius-sm); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; color: var(--color-ink-2); font-size: var(--text-sm); }
+    .stub b { font-weight: 600; color: var(--color-ink); font-size: var(--text-sm); }
+    .sec { display: flex; flex-direction: column; gap: var(--space-md); }
+    table.spec { border-collapse: collapse; width: 100%; font-size: var(--text-sm); }
+    table.spec th, table.spec td { text-align: start; border-block-end: var(--rule); padding: 8px 12px; vertical-align: top; }
+    table.spec th { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-3); }
+    .sheet { padding: var(--space-2xl) 56px; display: flex; flex-direction: column; gap: var(--space-2xl); }
+    .grp { display: flex; flex-direction: column; gap: var(--space-lg); }
+    .cellrow { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: var(--space-lg); align-items: start; border-block-start: var(--rule); padding-block-start: var(--space-md); }
+    .cellrow > span.n { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-3); }
+    .cells { display: flex; flex-wrap: wrap; gap: var(--space-md) var(--space-lg); align-items: center; }
+    .cell { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+    .cell > em { font-style: normal; font-size: var(--text-xs); color: var(--color-ink-3); letter-spacing: 0.04em; }
+    .swatch { width: 132px; height: 78px; border: var(--rule); border-radius: var(--radius-sm); display: flex; align-items: flex-end; padding: 8px; font-size: var(--text-xs); }
+    code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: var(--text-xs); color: var(--color-ink-2); }
+  </style>
+</helmet>
+<div style="width: 1440px; min-height: 3900px; background: var(--color-paper); display: flex; flex-direction: column;">
+  <section class="note" style="margin: var(--space-lg) 56px 0;">
+    <span class="label">Colour and contrast</span>
+    <dl>
+      <dt>Purpose</dt><dd>The palette and, below it, the <b>declared contrast manifest</b>: every foreground/background pair a component is allowed to use, with the WCAG 2.1 threshold that applies to it.</dd>
+      <dt>The single source of the numbers</dt><dd>The manifest lives in <code>src/modules/ui/tokens/contrast.ts</code> and <code>tests/unit/contrast.test.ts</code> computes each ratio <b>from the tokens in <code>src/app/globals.css</code></b>, in OKLCH, clamped to the display gamut. No ratio is written down here, because a written ratio goes stale and a computed one fails the build. Adding a component that needs a new pair means adding it to the manifest, which means passing the test.</dd>
+      <dt>Decorative, with a reason</dt><dd>Two pairs are declared <code>decorative</code> and assert no threshold; each carries a written reason in the manifest. That keeps the manifest complete — every colour token appears in it, which is itself asserted — without shipping a silent exception.</dd>
+      <dt>No dark mode in Phase 0</dt><dd><code>color-scheme: light</code> is declared explicitly so form controls and scrollbars are not rendered dark on a light page. The names are semantic, so a later <code>prefers-color-scheme: dark</code> block is one addition to <code>globals.css</code> and zero component edits.</dd>
+      <dt>Owning spec</dt><dd>004 §2, AC-3 · TASK-045, TASK-059</dd>
+    </dl>
+  </section>
+  <div class="sheet">
+    <div class="grp">
+      <div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">Paper / surface</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">White paper is the ground of the whole design</h2></div>
+      <div class="cells">
+        <div class="cell"><span class="swatch" style="background: var(--color-paper); color: var(--color-ink);">Aa</span><em><code>--color-paper</code> · surface</em></div>
+        <div class="cell"><span class="swatch" style="background: var(--color-paper-2); color: var(--color-ink);">Aa</span><em><code>--color-paper-2</code> · surface-raised</em></div>
+        <div class="cell"><span class="swatch" style="background: var(--color-paper-3); color: var(--color-ink);">Aa</span><em><code>--color-paper-3</code> · surface-muted</em></div>
+        <div class="cell"><span class="swatch" style="background: var(--color-ink); color: var(--color-accent-ink);">Aa</span><em><code>--color-ink</code> · surface-inverse</em></div>
+      </div>
+    </div>
+
+    <div class="grp">
+      <div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">Ink</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">Three cool greys and one hairline</h2></div>
+      <div class="cells">
+        <div class="cell"><span class="swatch" style="background: var(--color-ink); color: var(--color-accent-ink);">Aa</span><em><code>--color-ink</code></em></div>
+        <div class="cell"><span class="swatch" style="background: var(--color-ink-2); color: var(--color-accent-ink);">Aa</span><em><code>--color-ink-2</code> · ink-muted</em></div>
+        <div class="cell"><span class="swatch" style="background: var(--color-ink-3); color: var(--color-accent-ink);">Aa</span><em><code>--color-ink-3</code> · ink-subtle · border-strong</em></div>
+        <div class="cell"><span class="swatch" style="background: var(--color-rule); color: var(--color-ink);">Aa</span><em><code>--color-rule</code> · border</em></div>
+      </div>
+    </div>
+
+    <div class="grp">
+      <div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">Accent and status</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">One accent hue, three status colours</h2></div>
+      <div class="cells">
+        <div class="cell"><span class="swatch" style="background: var(--color-accent); color: var(--color-accent-ink);">Aa</span><em><code>--color-accent</code> · brand · focus</em></div>
+        <div class="cell"><span class="swatch" style="background: var(--color-accent-strong); color: var(--color-accent-ink);">Aa</span><em><code>--color-accent-strong</code> · hover / active</em></div>
+        <div class="cell"><span class="swatch" style="background: var(--color-success); color: var(--color-accent-ink);">Aa</span><em><code>--color-success</code> · on-success</em></div>
+        <div class="cell"><span class="swatch" style="background: var(--color-warning); color: var(--color-accent-ink);">Aa</span><em><code>--color-warning</code> · on-warning</em></div>
+        <div class="cell"><span class="swatch" style="background: var(--color-danger); color: var(--color-accent-ink);">Aa</span><em><code>--color-danger</code> · on-danger</em></div>
+        <div class="cell"><span class="swatch" style="background: var(--color-danger-strong); color: var(--color-accent-ink);">Aa</span><em><code>--color-danger-strong</code> · hover / active</em></div>
+      </div>
+    </div>
+
+    <div class="grp">
+      <div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">Photography placeholder</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">A gradient, because we have no photograph yet</h2></div>
+      <div class="cells">
+        <div class="cell"><span class="swatch" style="background: var(--color-photo-stop-1); color: var(--color-photo-ink);">Aa</span><em><code>--color-photo-stop-1</code> · gradient 0%</em></div>
+        <div class="cell"><span class="swatch" style="background: var(--color-photo-stop-2); color: var(--color-photo-ink);">Aa</span><em><code>--color-photo-stop-2</code> · gradient 45%</em></div>
+        <div class="cell"><span class="swatch" style="background: var(--color-photo-stop-3); color: var(--color-photo-ink);">Aa</span><em><code>--color-photo-stop-3</code> · gradient 100%</em></div>
+        <div class="cell"><span class="swatch" style="background: var(--color-photo); color: var(--color-photo-ink);">Aa</span><em><code>--color-photo</code> · the composed gradient</em></div>
+      </div>
+    </div>
+
+    <div class="grp">
+      <div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">Semantic aliases</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">A component names an intent, not a swatch</h2></div>
+      <table class="spec">
+        <tr><th>Alias</th><th>Resolves to</th><th>Alias</th><th>Resolves to</th></tr>
+        <tr><td><code>--color-surface</code></td><td><code>--color-paper</code></td><td><code>--color-surface-raised</code></td><td><code>--color-paper-2</code></td></tr>
+        <tr><td><code>--color-surface-muted</code></td><td><code>--color-paper-3</code></td><td><code>--color-surface-inverse</code></td><td><code>--color-ink</code></td></tr>
+        <tr><td><code>--color-ink-muted</code></td><td><code>--color-ink-2</code></td><td><code>--color-ink-subtle</code></td><td><code>--color-ink-3</code></td></tr>
+        <tr><td><code>--color-on-inverse</code></td><td><code>--color-accent-ink</code></td><td><code>--color-brand</code></td><td><code>--color-accent</code></td></tr>
+        <tr><td><code>--color-on-brand</code></td><td><code>--color-accent-ink</code></td><td><code>--color-on-accent</code></td><td><code>--color-accent-ink</code></td></tr>
+        <tr><td><code>--color-border</code></td><td><code>--color-rule</code></td><td><code>--color-border-strong</code></td><td><code>--color-ink-3</code></td></tr>
+        <tr><td><code>--color-border-emphasis</code></td><td><code>--color-ink</code></td><td><code>--color-focus</code></td><td><code>--color-accent</code></td></tr>
+        <tr><td><code>--color-on-success</code></td><td><code>--color-accent-ink</code></td><td><code>--color-on-warning</code></td><td><code>--color-accent-ink</code></td></tr>
+        <tr><td><code>--color-on-danger</code></td><td><code>--color-accent-ink</code></td><td></td><td></td></tr>
+      </table>
+    </div>
+
+    <div class="grp">
+      <div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">Contrast manifest</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">Every pair a component may use</h2></div>
+      <table class="spec">
+        <tr><th>Foreground</th><th>Background</th><th>Kind</th><th>Threshold</th><th>Where it is used</th></tr>
+        <tr><td><code>--color-ink</code></td><td><code>--color-paper</code></td><td>body-text</td><td>4.5:1</td><td>body copy, headings and links on paper</td></tr>
+        <tr><td><code>--color-ink</code></td><td><code>--color-paper-2</code></td><td>body-text</td><td>4.5:1</td><td>body copy on a raised surface (cards, the utility strip)</td></tr>
+        <tr><td><code>--color-ink</code></td><td><code>--color-paper-3</code></td><td>body-text</td><td>4.5:1</td><td>body copy on a muted surface (placeholder chips, table zebra)</td></tr>
+        <tr><td><code>--color-ink-2</code></td><td><code>--color-paper</code></td><td>body-text</td><td>4.5:1</td><td>secondary copy and the utility strip on paper</td></tr>
+        <tr><td><code>--color-ink-2</code></td><td><code>--color-paper-2</code></td><td>body-text</td><td>4.5:1</td><td>secondary copy on a raised surface</td></tr>
+        <tr><td><code>--color-ink-2</code></td><td><code>--color-paper-3</code></td><td>body-text</td><td>4.5:1</td><td>secondary copy on a muted surface</td></tr>
+        <tr><td><code>--color-ink-3</code></td><td><code>--color-paper</code></td><td>body-text</td><td>4.5:1</td><td>the label voice, captions and field placeholders on paper</td></tr>
+        <tr><td><code>--color-ink-3</code></td><td><code>--color-paper-2</code></td><td>body-text</td><td>4.5:1</td><td>the label voice on a raised surface</td></tr>
+        <tr><td><code>--color-ink-3</code></td><td><code>--color-paper-3</code></td><td>body-text</td><td>4.5:1</td><td>the label voice on a muted surface</td></tr>
+        <tr><td><code>--color-accent</code></td><td><code>--color-paper</code></td><td>body-text</td><td>4.5:1</td><td>link hover, accent icons and the accent link voice on paper</td></tr>
+        <tr><td><code>--color-accent</code></td><td><code>--color-paper-2</code></td><td>body-text</td><td>4.5:1</td><td>accent text on a raised surface</td></tr>
+        <tr><td><code>--color-accent-ink</code></td><td><code>--color-accent</code></td><td>body-text</td><td>4.5:1</td><td>the label of an accent (primary) button</td></tr>
+        <tr><td><code>--color-accent-ink</code></td><td><code>--color-ink</code></td><td>body-text</td><td>4.5:1</td><td>the label of an inked (default) button and the inverse surface</td></tr>
+        <tr><td><code>--color-on-accent</code></td><td><code>--color-accent-strong</code></td><td>body-text</td><td>4.5:1</td><td>the label of an accent button in its hover and active state</td></tr>
+        <tr><td><code>--color-on-inverse</code></td><td><code>--color-ink-muted</code></td><td>body-text</td><td>4.5:1</td><td>the label of an inked button in its hover state</td></tr>
+        <tr><td><code>--color-on-danger</code></td><td><code>--color-danger-strong</code></td><td>body-text</td><td>4.5:1</td><td>the label of a danger button in its hover and active state</td></tr>
+        <tr><td><code>--color-photo-ink</code></td><td><code>--color-photo-stop-1</code></td><td>body-text</td><td>4.5:1</td><td>the photo placeholder caption over the gradient's lightest stop</td></tr>
+        <tr><td><code>--color-photo-ink</code></td><td><code>--color-photo-stop-3</code></td><td>body-text</td><td>4.5:1</td><td>the photo placeholder caption over the gradient's darkest stop</td></tr>
+        <tr><td><code>--color-border-strong</code></td><td><code>--color-paper</code></td><td>boundary</td><td>3:1</td><td>the boundary of a field, a chip and a secondary button (WCAG 1.4.11)</td></tr>
+        <tr><td><code>--color-border-emphasis</code></td><td><code>--color-paper</code></td><td>boundary</td><td>3:1</td><td>the underline of an active field (the canvas's field treatment)</td></tr>
+        <tr><td><code>--color-focus</code></td><td><code>--color-paper</code></td><td>focus</td><td>3:1</td><td>the :focus-visible ring on paper</td></tr>
+        <tr><td><code>--color-focus</code></td><td><code>--color-paper-2</code></td><td>focus</td><td>3:1</td><td>the :focus-visible ring on a raised surface</td></tr>
+        <tr><td><code>--color-focus</code></td><td><code>--color-paper-3</code></td><td>focus</td><td>3:1</td><td>the :focus-visible ring on a muted surface</td></tr>
+        <tr><td><code>--color-success</code></td><td><code>--color-paper</code></td><td>body-text</td><td>4.5:1</td><td>success text</td></tr>
+        <tr><td><code>--color-warning</code></td><td><code>--color-paper</code></td><td>body-text</td><td>4.5:1</td><td>warning text</td></tr>
+        <tr><td><code>--color-danger</code></td><td><code>--color-paper</code></td><td>body-text</td><td>4.5:1</td><td>error text, including a field's error message</td></tr>
+        <tr><td><code>--color-on-success</code></td><td><code>--color-success</code></td><td>body-text</td><td>4.5:1</td><td>text on a success fill</td></tr>
+        <tr><td><code>--color-on-warning</code></td><td><code>--color-warning</code></td><td>body-text</td><td>4.5:1</td><td>text on a warning fill</td></tr>
+        <tr><td><code>--color-on-danger</code></td><td><code>--color-danger</code></td><td>body-text</td><td>4.5:1</td><td>text on a danger fill</td></tr>
+        <tr><td><code>--color-surface-inverse</code></td><td><code>--color-paper</code></td><td>boundary</td><td>3:1</td><td>the edge of an inked button or the inverse footer against paper</td></tr>
+        <tr><td><code>--color-rule</code></td><td><code>--color-paper</code></td><td>decorative</td><td>n/a</td><td>the 1 px hairline between sections and a table's row separator — a separator, not a component boundary: nothing has to be identified by it</td></tr>
+        <tr><td><code>--color-photo-stop-2</code></td><td><code>--color-paper</code></td><td>decorative</td><td>n/a</td><td>the middle stop of the placeholder gradient — no text or boundary uses it directly</td></tr>
+      </table>
+      <p style="margin: 0; max-width: var(--measure); font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.6;">Thresholds: 4.5:1 for body text (WCAG 1.4.3), 3:1 for text ≥24 px or ≥19 px bold, 3:1 for component boundaries and focus indicators (1.4.11). The focus ring is <code>--color-focus</code> at 2 px with a 2 px offset, so it stays visible on an inked fill.</p>
+    </div>
+
+    <div class="grp">
+      <div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">Rules that the palette exists to enforce</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;"></h2></div>
+      <table class="spec">
+        <tr><th>Rule</th><th>How it is enforced</th></tr>
+        <tr><td>One colour literal in the whole repository</td><td><code>src/app/globals.css</code>'s <code>@theme</code> block. <code>fo/no-raw-color</code> bans hex, <code>rgb</code>, <code>hsl</code> and <code>oklch</code> colour literals in components; Stylelint bans them in every colour declaration. A founder palette swap is one diff, re-running the contrast test and the visual baselines, and touching no component.</td></tr>
+        <tr><td>Nothing is conveyed by colour alone</td><td>A chip's <em>word</em> carries its status; a field error carries a message linked by <code>aria-describedby</code>; an accent link in prose keeps its underline.</td></tr>
+        <tr><td>One accent</td><td>Forest green, hue 155. <code>--color-accent-strong</code> is the pointer state — a darker instance of the same hue rather than an opacity, so its contrast with the button label is a manifest pair and not an accident of what happens to be behind it.</td></tr>
+        <tr><td>No photograph we do not have</td><td>Every image slot renders the <code>--color-photo</code> gradient with a caption. There is no placeholder <code>&lt;img&gt;</code> and no stock photo.</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

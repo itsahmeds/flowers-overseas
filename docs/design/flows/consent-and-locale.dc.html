@@ -1,0 +1,179 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+  <style>
+:root{
+  --color-paper: oklch(99.3% 0.002 90);
+  --color-paper-2: oklch(97.2% 0.004 90);
+  --color-paper-3: oklch(94.5% 0.005 90);
+  --color-ink: oklch(19% 0.01 250);
+  --color-ink-2: oklch(36% 0.01 250);
+  --color-ink-3: oklch(52% 0.008 250);
+  --color-rule: oklch(90% 0.004 250);
+  --color-accent: oklch(42% 0.10 155);
+  --color-accent-strong: oklch(34% 0.09 155);
+  --color-accent-ink: oklch(99% 0.002 90);
+  --color-success: oklch(42% 0.10 150);
+  --color-warning: oklch(45% 0.12 75);
+  --color-danger: oklch(45% 0.17 25);
+  --color-danger-strong: oklch(38% 0.15 25);
+  --color-photo-stop-1: oklch(93% 0.02 120);
+  --color-photo-stop-2: oklch(88% 0.03 140);
+  --color-photo-stop-3: oklch(80% 0.04 150);
+  --color-photo-ink: oklch(40% 0.03 150);
+  --color-photo: linear-gradient(160deg, var(--color-photo-stop-1) 0%, var(--color-photo-stop-2) 45%, var(--color-photo-stop-3) 100%);
+  --font-display: "Newsreader", "Iowan Old Style", Georgia, "Times New Roman", serif;
+  --font-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --text-display: 68px; --text-display-s: 42px; --text-2xl: 34px; --text-xl: 24px; --text-lg: 18px; --text-md: 15px; --text-sm: 13px; --text-xs: 11px;
+  --space-xs: 4px; --space-sm: 8px; --space-md: 16px; --space-lg: 24px; --space-xl: 40px; --space-2xl: 72px; --space-3xl: 128px;
+  --radius-sm: 2px; --radius-md: 4px; --radius-full: 9999px;
+  --measure: 68ch;
+  --rule: 1px solid var(--color-rule);
+}
+    body { margin: 0; font-family: var(--font-body); color: var(--color-ink); background: var(--color-paper); -webkit-font-smoothing: antialiased; }
+    a { color: var(--color-ink); text-decoration: none; } a:hover { color: var(--color-accent); }
+    .display { font-family: var(--font-display); font-weight: 500; letter-spacing: -0.015em; }
+    .label { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-ink-3); }
+    .photo { background: var(--color-photo); display: flex; align-items: flex-end; padding: var(--space-md); color: var(--color-photo-ink); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field span.v { min-height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-bottom: 1px solid var(--color-ink); font-size: var(--text-md); color: var(--color-ink); }
+    .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
+    .btn.accent { background: var(--color-accent); }
+    .btn.secondary { background: var(--color-paper); color: var(--color-ink); border: 1px solid var(--color-ink-3); }
+    .btn.sm { min-height: 44px; padding: 0 16px; font-size: var(--text-sm); }
+    .price { font-variant-numeric: tabular-nums; }
+    .ph { display: inline-block; min-width: 56px; height: 14px; background: var(--color-paper-3); border-radius: 2px; vertical-align: middle; }
+    .chip { display: inline-flex; align-items: center; gap: var(--space-xs); border: 1px solid var(--color-ink-3); border-radius: var(--radius-sm); padding: var(--space-sm) var(--space-sm); font-size: var(--text-sm); }
+    .chip.accent { border-color: var(--color-accent); color: var(--color-accent); }
+    .chip.muted { border-color: transparent; background: var(--color-paper-3); color: var(--color-ink-2); }
+    .note { border: 1px solid var(--color-ink-3); border-radius: var(--radius-sm); background: var(--color-paper-2); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; font-size: var(--text-sm); line-height: 1.55; }
+    .note dl { margin: 0; display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 4px var(--space-md); font-size: var(--text-sm); }
+    .note dt { color: var(--color-ink-3); font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding-block-start: 2px; }
+    .note dd { margin: 0; color: var(--color-ink-2); }
+    .slot { color: var(--color-ink-3); font-style: italic; }
+    .stub { border: 1px dashed var(--color-ink-3); border-radius: var(--radius-sm); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; color: var(--color-ink-2); font-size: var(--text-sm); }
+    .stub b { font-weight: 600; color: var(--color-ink); font-size: var(--text-sm); }
+    .sec { display: flex; flex-direction: column; gap: var(--space-md); }
+    table.spec { border-collapse: collapse; width: 100%; font-size: var(--text-sm); }
+    table.spec th, table.spec td { text-align: start; border-block-end: var(--rule); padding: 8px 12px; vertical-align: top; }
+    table.spec th { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-3); }
+    .sheet { padding: var(--space-2xl) 56px; display: flex; flex-direction: column; gap: var(--space-2xl); }
+    .steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-xl); }
+    .step { display: flex; flex-direction: column; gap: var(--space-md); border-block-start: 2px solid var(--color-ink); padding-block-start: var(--space-md); }
+    .step > header { display: flex; align-items: baseline; gap: var(--space-sm); }
+    .step > header b { font-family: var(--font-display); font-weight: 500; font-size: var(--text-xl); }
+    .step > header span.i { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.14em; color: var(--color-accent); }
+    .thumb { border: var(--rule); background: var(--color-paper-2); padding: 10px; display: flex; flex-direction: column; gap: 6px; min-height: 210px; font-size: 10px; color: var(--color-ink-2); }
+    .thumb .bar { height: 12px; background: var(--color-paper-3); }
+    .thumb .ink { height: 12px; background: var(--color-ink); }
+    .thumb .acc { height: 20px; background: var(--color-accent); }
+    .thumb .ph2 { flex: 1; background: var(--color-photo); min-height: 54px; }
+    .thumb .box { border: var(--rule); background: var(--color-paper); padding: 5px 7px; }
+    .thumb .row2 { display: flex; gap: 6px; }
+    .meta { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 4px var(--space-sm); font-size: var(--text-sm); }
+    .meta dt { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-3); padding-block-start: 2px; }
+    .meta dd { margin: 0; color: var(--color-ink-2); line-height: 1.5; }
+    .meta dd.trust { color: var(--color-accent); }
+    .arrowrow { display: flex; align-items: center; gap: var(--space-md); font-size: var(--text-sm); color: var(--color-ink-3); }
+    code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: var(--text-xs); color: var(--color-ink-2); }
+  </style>
+</helmet>
+<div style="width: 1440px; min-height: 1900px; background: var(--color-paper); display: flex; flex-direction: column;">
+  <section class="note" style="margin: var(--space-lg) 56px 0;">
+    <span class="label">Consent and locale</span>
+    <dl>
+      <dt>Purpose</dt><dd>The three overlapping surfaces of the first visit — the locale chooser, the language-suggestion banner and the consent sheet — with their states and their z-order. They are drawn together because they are the only elements in the design that can be on screen at the same time.</dd>
+      <dt>The rule they exist to keep</dt><dd><b>No IP redirect. Ever.</b> (ADR-0006) A visitor's language is never decided for them: <code>/</code> lists the locales, an <code>Accept-Language</code> mismatch is a dismissible <em>suggestion</em>, and the chosen locale is in the URL. Currency is a cookie; the destination country is in the shop URL.</dd>
+      <dt>Z-order</dt><dd><code>--layer-header</code> 100 (sticky header) &lt; <code>--layer-banner</code> 200 (locale suggestion) &lt; <code>--layer-overlay</code> 300 (consent sheet, and the skip link when focused). Named tokens, so the three cannot fight.</dd>
+      <dt>Copy status</dt><dd><code>chooser.*</code>, <code>banner.*</code> and <code>a11y.*</code> exist in <code>messages/en.json</code> and are quoted verbatim below. There are <b>no <code>consent.*</code> keys yet</b> — every string on the consent sheet is marked <code>[slot]</code> and is owned by the spec that ships it.</dd>
+      <dt>Owning spec</dt><dd>003 (locales, chooser, banner) · 004 (layers, chrome) · consent sheet and settings: not yet specified — see <code>docs/design/README.md</code></dd>
+    </dl>
+  </section>
+  <div class="sheet">
+    <div class="steps">
+      <div class="step">
+        <header><span class="i">01</span><b>Locale chooser</b></header>
+        <code>/ — noindex, follow · never redirects</code>
+        <div class="thumb" style="min-height: 260px;">
+          <div style="display: flex; align-items: center; gap: 6px;"><span style="font-family: var(--font-display); font-size: 13px;">Flowers Overseas</span></div>
+          <span style="font-family: var(--font-display); font-size: 15px; color: var(--color-ink);">Choose your language</span>
+          <span>Flowers Overseas sends flowers to someone in another European country: you order, a vetted local florist makes and delivers them. Choose a language to continue.</span>
+          <div class="box">English</div>
+          <div class="box">English (UK)</div>
+          <div class="box">Deutsch</div>
+          <div class="box">Polski</div>
+        </div>
+        <dl class="meta"><dt>Copy</dt><dd><code>chooser.heading</code>, <code>chooser.intro</code>, <code>a11y.localeChooser</code> — verbatim above.</dd><dt>Index</dt><dd>noindex, follow. It is a signpost, not a page with a query.</dd><dt>Note</dt><dd>The one page in the product with no locale prefix and no header chrome beyond the wordmark.</dd></dl>
+      </div>
+      <div class="step">
+        <header><span class="i">02</span><b>Locale suggestion banner</b></header>
+        <code>any locale page · --layer-banner 200</code>
+        <div class="thumb" style="min-height: 260px;">
+          <div class="ink"></div>
+          <div class="box" style="border-color: var(--color-ink);">Would you rather read this page in Polski?<div style="display: flex; gap: 6px; margin-block-start: 5px;"><span style="background: var(--color-ink); color: var(--color-accent-ink); padding: 3px 7px;">Switch to Polski</span><span style="border: var(--rule); padding: 3px 7px;">Stay on this page</span><span style="border: var(--rule); padding: 3px 7px;">×</span></div></div>
+          <div class="bar"></div>
+          <div class="ph2">the page underneath is fully usable</div>
+          <span>Server-rendered from Accept-Language. Dismissal is remembered.</span>
+        </div>
+        <dl class="meta"><dt>Copy</dt><dd><code>banner.headline</code> / <code>.switch</code> / <code>.stay</code> / <code>.dismiss</code> — all four exist and are quoted above.</dd><dt>States</dt><dd>absent (language matches, or already dismissed) · shown · dismissed. Never blocks the page and never auto-switches.</dd><dt>Note</dt><dd>Below the consent sheet and above the header, which is the only order that lets a visitor consent first and choose language second.</dd></dl>
+      </div>
+      <div class="step">
+        <header><span class="i">03</span><b>Consent sheet</b></header>
+        <code>first visit · --layer-overlay 300</code>
+        <div class="thumb" style="min-height: 260px;">
+          <div class="ink"></div>
+          <div class="bar"></div>
+          <div class="ph2" style="opacity: 0.35;">page dimmed, not hidden</div>
+          <div class="box" style="border-color: var(--color-ink);">
+            <span class="slot" style="color: var(--color-ink-3); font-style: italic;">[slot] What cookies we would like to set, and why</span>
+            <div style="display: flex; gap: 6px; margin-block-start: 5px;"><span style="border: var(--rule); padding: 3px 7px;">[slot] Reject</span><span style="border: var(--rule); padding: 3px 7px;">[slot] Choose</span><span style="background: var(--color-ink); color: var(--color-accent-ink); padding: 3px 7px;">[slot] Accept</span></div>
+          </div>
+        </div>
+        <dl class="meta"><dt>Copy</dt><dd><b>None exists.</b> Every string is <code>[slot]</code> until the owning spec writes <code>consent.*</code> keys.</dd><dt>Rules it must keep</dt><dd>Reject is as easy to reach and as prominent as Accept; nothing non-essential is set before a choice; the choice is logged with its version; re-openable from the footer's “Cookie settings” link, which already exists as <code>footer.cookieSettings</code>.</dd><dt>Focus</dt><dd>Focus moves into the sheet, is trapped while it is open, and returns to the trigger on close. The skip link shares this layer so a keyboard visitor is never behind it.</dd></dl>
+      </div>
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <header><span class="i">04</span><b>Consent settings</b></header>
+        <code>/en-gb/legal/cookies</code>
+        <div class="thumb" style="min-height: 200px;">
+          <div class="ink"></div>
+          <span style="font-family: var(--font-display); font-size: 14px; color: var(--color-ink);">Cookies</span>
+          <div class="box">Essential — always on, cannot be switched off</div>
+          <div class="box"><span class="slot" style="color: var(--color-ink-3); font-style: italic;">[slot] Analytics — off</span></div>
+          <div class="box"><span class="slot" style="color: var(--color-ink-3); font-style: italic;">[slot] Marketing — off</span></div>
+          <div class="box">Your current choice, recorded <span class="slot" style="color: var(--color-ink-3); font-style: italic;">[slot date]</span></div>
+          <div class="acc" style="height: 16px;"></div>
+        </div>
+        <dl class="meta"><dt>Purpose</dt><dd>The same categories as the sheet, always reachable, plus the cookie table the policy needs. Withdrawing consent is one control, in the same place as giving it.</dd><dt>Index</dt><dd>yes — it is a legal page.</dd><dt>Wireframe</dt><dd><code>wireframes/legal-template-{desktop,mobile}.dc.html</code> is the page shell; this is its one interactive block.</dd></dl>
+      </div>
+      <div class="step" style="grid-column: span 2;">
+        <header><span class="i">—</span><b>Z-order and first-visit sequence</b></header>
+        <div style="display: flex; flex-direction: column; gap: var(--space-sm); font-size: var(--text-sm); color: var(--color-ink-2);">
+          <div style="display: flex; align-items: center; gap: var(--space-sm);"><span style="min-width: 210px; background: var(--color-ink); color: var(--color-accent-ink); padding: 6px 10px; font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase;">layer-overlay · 300</span><span>Consent sheet · the focused skip link. Dismissible, focus-trapped, above everything.</span></div>
+          <div style="display: flex; align-items: center; gap: var(--space-sm);"><span style="min-width: 210px; background: var(--color-ink-2); color: var(--color-accent-ink); padding: 6px 10px; font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase;">layer-banner · 200</span><span>Locale suggestion. Pushes nothing, blocks nothing, remembers its dismissal.</span></div>
+          <div style="display: flex; align-items: center; gap: var(--space-sm);"><span style="min-width: 210px; background: var(--color-ink-3); color: var(--color-accent-ink); padding: 6px 10px; font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase;">layer-header · 100</span><span>Sticky header. <code>scroll-padding-block-start</code> keeps a focused anchor target clear of it (WCAG 2.4.11).</span></div>
+          <div style="display: flex; align-items: center; gap: var(--space-sm);"><span style="min-width: 210px; border: var(--rule); padding: 6px 10px; font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-3);">page</span><span>Everything else. No component writes a raw <code>z-index</code>.</span></div>
+        </div>
+        <div class="arrowrow" style="margin-block-start: var(--space-md); flex-wrap: wrap;">
+          <span style="border: var(--rule); padding: 8px 12px;">Land on <code>/</code> or a locale page</span><span>→</span>
+          <span style="border: var(--rule); padding: 8px 12px;">Consent sheet (first visit only)</span><span>→</span>
+          <span style="border: var(--rule); padding: 8px 12px;">Locale suggestion, if the language does not match</span><span>→</span>
+          <span style="border: var(--rule); padding: 8px 12px;">The page, in the locale that is in the URL</span>
+        </div>
+        <p style="margin: 0; max-width: var(--measure); font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.6;">The order is deliberate: consent is asked before anything optional loads, and the language question comes after, because switching language must not throw away a consent choice. Neither surface may be the reason a crawler sees different content — both are additive to a fully server-rendered page.</p>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

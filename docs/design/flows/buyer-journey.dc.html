@@ -1,0 +1,177 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+  <style>
+:root{
+  --color-paper: oklch(99.3% 0.002 90);
+  --color-paper-2: oklch(97.2% 0.004 90);
+  --color-paper-3: oklch(94.5% 0.005 90);
+  --color-ink: oklch(19% 0.01 250);
+  --color-ink-2: oklch(36% 0.01 250);
+  --color-ink-3: oklch(52% 0.008 250);
+  --color-rule: oklch(90% 0.004 250);
+  --color-accent: oklch(42% 0.10 155);
+  --color-accent-strong: oklch(34% 0.09 155);
+  --color-accent-ink: oklch(99% 0.002 90);
+  --color-success: oklch(42% 0.10 150);
+  --color-warning: oklch(45% 0.12 75);
+  --color-danger: oklch(45% 0.17 25);
+  --color-danger-strong: oklch(38% 0.15 25);
+  --color-photo-stop-1: oklch(93% 0.02 120);
+  --color-photo-stop-2: oklch(88% 0.03 140);
+  --color-photo-stop-3: oklch(80% 0.04 150);
+  --color-photo-ink: oklch(40% 0.03 150);
+  --color-photo: linear-gradient(160deg, var(--color-photo-stop-1) 0%, var(--color-photo-stop-2) 45%, var(--color-photo-stop-3) 100%);
+  --font-display: "Newsreader", "Iowan Old Style", Georgia, "Times New Roman", serif;
+  --font-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --text-display: 68px; --text-display-s: 42px; --text-2xl: 34px; --text-xl: 24px; --text-lg: 18px; --text-md: 15px; --text-sm: 13px; --text-xs: 11px;
+  --space-xs: 4px; --space-sm: 8px; --space-md: 16px; --space-lg: 24px; --space-xl: 40px; --space-2xl: 72px; --space-3xl: 128px;
+  --radius-sm: 2px; --radius-md: 4px; --radius-full: 9999px;
+  --measure: 68ch;
+  --rule: 1px solid var(--color-rule);
+}
+    body { margin: 0; font-family: var(--font-body); color: var(--color-ink); background: var(--color-paper); -webkit-font-smoothing: antialiased; }
+    a { color: var(--color-ink); text-decoration: none; } a:hover { color: var(--color-accent); }
+    .display { font-family: var(--font-display); font-weight: 500; letter-spacing: -0.015em; }
+    .label { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-ink-3); }
+    .photo { background: var(--color-photo); display: flex; align-items: flex-end; padding: var(--space-md); color: var(--color-photo-ink); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field span.v { min-height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-bottom: 1px solid var(--color-ink); font-size: var(--text-md); color: var(--color-ink); }
+    .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
+    .btn.accent { background: var(--color-accent); }
+    .btn.secondary { background: var(--color-paper); color: var(--color-ink); border: 1px solid var(--color-ink-3); }
+    .btn.sm { min-height: 44px; padding: 0 16px; font-size: var(--text-sm); }
+    .price { font-variant-numeric: tabular-nums; }
+    .ph { display: inline-block; min-width: 56px; height: 14px; background: var(--color-paper-3); border-radius: 2px; vertical-align: middle; }
+    .chip { display: inline-flex; align-items: center; gap: var(--space-xs); border: 1px solid var(--color-ink-3); border-radius: var(--radius-sm); padding: var(--space-sm) var(--space-sm); font-size: var(--text-sm); }
+    .chip.accent { border-color: var(--color-accent); color: var(--color-accent); }
+    .chip.muted { border-color: transparent; background: var(--color-paper-3); color: var(--color-ink-2); }
+    .note { border: 1px solid var(--color-ink-3); border-radius: var(--radius-sm); background: var(--color-paper-2); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; font-size: var(--text-sm); line-height: 1.55; }
+    .note dl { margin: 0; display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 4px var(--space-md); font-size: var(--text-sm); }
+    .note dt { color: var(--color-ink-3); font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding-block-start: 2px; }
+    .note dd { margin: 0; color: var(--color-ink-2); }
+    .slot { color: var(--color-ink-3); font-style: italic; }
+    .stub { border: 1px dashed var(--color-ink-3); border-radius: var(--radius-sm); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; color: var(--color-ink-2); font-size: var(--text-sm); }
+    .stub b { font-weight: 600; color: var(--color-ink); font-size: var(--text-sm); }
+    .sec { display: flex; flex-direction: column; gap: var(--space-md); }
+    table.spec { border-collapse: collapse; width: 100%; font-size: var(--text-sm); }
+    table.spec th, table.spec td { text-align: start; border-block-end: var(--rule); padding: 8px 12px; vertical-align: top; }
+    table.spec th { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-3); }
+    .sheet { padding: var(--space-2xl) 56px; display: flex; flex-direction: column; gap: var(--space-2xl); }
+    .steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-xl); }
+    .step { display: flex; flex-direction: column; gap: var(--space-md); border-block-start: 2px solid var(--color-ink); padding-block-start: var(--space-md); }
+    .step > header { display: flex; align-items: baseline; gap: var(--space-sm); }
+    .step > header b { font-family: var(--font-display); font-weight: 500; font-size: var(--text-xl); }
+    .step > header span.i { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.14em; color: var(--color-accent); }
+    .thumb { border: var(--rule); background: var(--color-paper-2); padding: 10px; display: flex; flex-direction: column; gap: 6px; min-height: 210px; font-size: 10px; color: var(--color-ink-2); }
+    .thumb .bar { height: 12px; background: var(--color-paper-3); }
+    .thumb .ink { height: 12px; background: var(--color-ink); }
+    .thumb .acc { height: 20px; background: var(--color-accent); }
+    .thumb .ph2 { flex: 1; background: var(--color-photo); min-height: 54px; }
+    .thumb .box { border: var(--rule); background: var(--color-paper); padding: 5px 7px; }
+    .thumb .row2 { display: flex; gap: 6px; }
+    .meta { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 4px var(--space-sm); font-size: var(--text-sm); }
+    .meta dt { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-3); padding-block-start: 2px; }
+    .meta dd { margin: 0; color: var(--color-ink-2); line-height: 1.5; }
+    .meta dd.trust { color: var(--color-accent); }
+    .arrowrow { display: flex; align-items: center; gap: var(--space-md); font-size: var(--text-sm); color: var(--color-ink-3); }
+    code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: var(--text-xs); color: var(--color-ink-2); }
+  </style>
+</helmet>
+<div style="width: 1440px; min-height: 3140px; background: var(--color-paper); display: flex; flex-direction: column;">
+  <section class="note" style="margin: var(--space-lg) 56px 0;">
+    <span class="label">Buyer journey · home → track</span>
+    <dl>
+      <dt>Purpose</dt><dd>The Phase 0 buyer journey end to end, one thumbnail per screen, with the decision the visitor makes, the trust moment that carries them past it, and the data the screen reads. Read left to right, row by row.</dd>
+      <dt>The shape of it</dt><dd>Destination and date are asked <b>once</b>, on the home finder, and the answer travels in the URL (locale prefix, destination country segment) and one cookie (display currency). There is no IP redirect anywhere in this flow, ever (ADR-0006), and no step re-asks a question an earlier step answered.</dd>
+      <dt>Price identity</dt><dd>The all-in price shown on the product page — VAT and delivery included, with the date's surcharge already applied — is the same integer the checkout total and the payment charge use. There is no configuration of the flow in which a cost appears later than the tier chip that first showed a price (<code>plan/07</code> §4, drip-pricing ban).</dd>
+      <dt>What is real in Phase 0</dt><dd>Steps 1–4 render. Step 5–7 are behind the <code>checkout.demo_guard</code> flag (on by default): the form renders, no order is placed and no card is charged. Steps 8–9 exist as designs for spec 010/015 and as the confirmation the demo shows a florist.</dd>
+      <dt>Owning specs</dt><dd>004 chrome and system · 007 corridor and hub · 008 shop, category, occasion · 009 product page · 010 checkout · 015 order state and tracking</dd>
+    </dl>
+  </section>
+  <div class="sheet">
+    <div class="steps">
+      <div class="step">
+        <header><span class="i">01</span><b>Locale home</b></header>
+        <code>/en-gb</code>
+        <div class="thumb"><div class="ink"></div><div class="bar"></div><div class="ph2">hero photo slot</div><div class="box">Where are they? <b>Poland</b></div><div class="box">Town, city or postcode</div><div class="box">Delivery date · soonest</div><div class="acc"></div><span>“Shows everything deliverable there that day”</span></div>
+        <dl class="meta"><dt>Decision</dt><dd>Country, optional town, date — asked once, in one panel, before any price.</dd><dt>Trust</dt><dd><span class="trust">Order-by cutoff in the utility strip; “prices include delivery and VAT”; 7-day freshness guarantee; help line with hours.</span></dd><dt>Reads</dt><dd><code>countries.ts</code> (status, cities), the occasion calendar for the locale market, <code>company.ts</code> support line. No prices.</dd><dt>Index</dt><dd>yes</dd><dt>Spec</dt><dd>004 (approved artboards in <code>homepage-v1/</code>)</dd></dl>
+      </div>
+      <div class="step">
+        <header><span class="i">02</span><b>All destinations</b></header>
+        <code>/en-gb/send-flowers-to</code>
+        <div class="thumb"><div class="ink"></div><div class="bar"></div><span>Where can we send flowers?</span><div class="row2"><div class="box" style="flex:1">Poland<br><span style="color: var(--color-accent)">Delivering now</span></div><div class="box" style="flex:1">Germany<br>Guide · list</div></div><div class="row2"><div class="box" style="flex:1">France</div><div class="box" style="flex:1">Spain</div></div><div class="row2"><div class="box" style="flex:1">Italy</div><div class="box" style="flex:1">Romania</div></div><div class="box">Netherlands</div></div>
+        <dl class="meta"><dt>Decision</dt><dd>Which country. Also the exit for “somewhere else” — a waiting-list request rather than a dead end.</dd><dt>Trust</dt><dd><span class="trust">Live and guide states are named in words, not colour: “Delivering now” vs “Guide · waiting list”.</span></dd><dt>Reads</dt><dd><code>countries.ts</code> <code>status</code> + <code>guidePublished</code>; <code>destinations.*</code> messages.</dd><dt>Index</dt><dd>yes</dd><dt>Spec</dt><dd>007</dd></dl>
+      </div>
+      <div class="step">
+        <header><span class="i">03</span><b>Corridor: country</b></header>
+        <code>/en-gb/send-flowers-to/poland</code>
+        <div class="thumb"><div class="ink"></div><div class="bar"></div><div class="ph2">country photo slot</div><span>Send flowers to Poland</span><div class="box">Cutoff 14:00 · next date Thu</div><div class="box">Who makes it · vetting</div><div class="box">Occasions in Poland</div><div class="acc"></div><span>See what can arrive in Poland</span></div>
+        <dl class="meta"><dt>Decision</dt><dd>Commit to the corridor, or read first. The SEO backbone: most organic sessions enter here, not on the home page.</dd><dt>Trust</dt><dd><span class="trust">The relay explained in its own block; cutoffs and holidays as real data; the guarantee; substitution policy in the FAQ.</span></dd><dt>Reads</dt><dd>country content, cutoff, holidays, occasion dates, FAQ, top products. Florist counts render as a <code>Placeholder</code> bar until real partners exist.</dd><dt>Index</dt><dd>yes when the country is live <b>or</b> its guide is published</dd><dt>Spec</dt><dd>007</dd></dl>
+      </div>
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <header><span class="i">04</span><b>Country shop</b></header>
+        <code>/en-gb/poland/flowers</code>
+        <div class="thumb"><div class="ink"></div><div class="bar"></div><span>Flowers we can deliver in Poland</span><div class="row2"><div class="box" style="flex:1"><div class="ph2" style="min-height:34px"></div>from 189 zł</div><div class="box" style="flex:1"><div class="ph2" style="min-height:34px"></div>from 219 zł</div></div><div class="row2"><div class="box" style="flex:1"><div class="ph2" style="min-height:34px"></div>from 149 zł</div><div class="box" style="flex:1"><div class="ph2" style="min-height:34px"></div>from 259 zł</div></div><span>All prices include delivery and VAT</span></div>
+        <dl class="meta"><dt>Decision</dt><dd>Which bouquet. Category and occasion pages are the same grid with a narrower set.</dd><dt>Trust</dt><dd><span class="trust">The all-in price rule stated on the grid, not only on the product page; “made by a florist in their town” strip.</span></dd><dt>Reads</dt><dd>catalogue × <code>country_price</code> for PL, availability, badges. A from-price is visible text and emits no <code>Offer</code>.</dd><dt>Index</dt><dd>yes when the country is live (Phase 0 demo: noindex)</dd><dt>Spec</dt><dd>008 (prices from 005)</dd></dl>
+      </div>
+      <div class="step">
+        <header><span class="i">05</span><b>Product page</b></header>
+        <code>/en-gb/poland/product/{slug}</code>
+        <div class="thumb"><div class="ink"></div><div class="row2"><div class="ph2" style="flex:1.2; min-height:96px">hero</div><div style="flex:1; display:flex; flex-direction:column; gap:5px"><span>Amber Hour</span><div class="row2"><div class="box">12</div><div class="box" style="border-color: var(--color-ink)">18 ✓</div><div class="box">24</div></div><div class="box">Thu 10 · Fri 11 · Sat 12</div><div class="box">+ chocolates 29 zł</div><div class="box"><b>219 zł</b> all in</div><div class="acc"></div></div></div><span>Example arrangement · your florist hand-makes each one</span></div>
+        <dl class="meta"><dt>Decision</dt><dd>Stem tier, delivery date, add-ons. The middle tier is preselected by data (<code>product_tier.is_default</code>), never by a template branch.</dd><dt>Trust</dt><dd><span class="trust">The AI honesty label under the gallery, server-rendered and not suppressible; the perishable-goods withdrawal disclosure; the substitution sentence; photo-proof promise.</span></dd><dt>Reads</dt><dd>product + translations, tiers with stem counts, <code>country_price</code>, add-ons with their own VAT rate, cutoff, holidays. <code>resolvePrice()</code> can only return an all-in amount.</dd><dt>Index</dt><dd>yes when the country is live; self-canonical per (locale, country, product)</dd><dt>Spec</dt><dd>009 (catalogue 005, imagery 006)</dd></dl>
+      </div>
+      <div class="step">
+        <header><span class="i">06</span><b>Checkout 1 · Recipient</b></header>
+        <code>/en-gb/checkout</code>
+        <div class="thumb"><div class="ink"></div><div class="box" style="border-color: var(--color-warning)">Demo: no order is placed</div><div class="box">1 Recipient · 2 You · 3 Pay</div><div class="box">Name · phone · address (PL format)</div><div class="box">Card message · 0/200</div><div class="box">+ chocolates 29 zł</div><div class="box"><b>219 zł</b> · incl. VAT and delivery</div><div class="acc"></div><span>“Your florist needs this to deliver”</span></div>
+        <dl class="meta"><dt>Decision</dt><dd>Who receives it and where. Guest by default — no account is required or offered as a gate.</dd><dt>Trust</dt><dd><span class="trust">A reason line under the section heading; the address form in the destination country's own format; the card-message preview.</span></dd><dt>Reads</dt><dd>order draft (server-side per step, so refresh and back lose nothing), address format for the destination, add-on prices for the destination.</dd><dt>Index</dt><dd>noindex + robots disallow</dd><dt>Spec</dt><dd>010</dd></dl>
+      </div>
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <header><span class="i">07</span><b>Checkout 2 · You</b></header>
+        <code>/en-gb/checkout</code>
+        <div class="thumb"><div class="ink"></div><div class="box">1 ✓ · 2 You · 3 Pay</div><div class="box">Email</div><div class="box">Phone (optional)</div><div class="box">Marketing: unticked</div><div class="box"><b>219 zł</b></div><div class="acc"></div><span>“So we can confirm your order and send you the delivery photo”</span></div>
+        <dl class="meta"><dt>Decision</dt><dd>How we reach the buyer. Marketing consent is a separate, unticked box and is never a condition of ordering.</dd><dt>Trust</dt><dd><span class="trust">The photo-proof promise is the reason the email is asked for, said in that sentence.</span></dd><dt>Reads</dt><dd>order draft. Buyer country decides step 3's payment methods.</dd><dt>Index</dt><dd>noindex + robots disallow</dd><dt>Spec</dt><dd>010</dd></dl>
+      </div>
+      <div class="step">
+        <header><span class="i">08</span><b>Checkout 3 · Pay</b></header>
+        <code>/en-gb/checkout</code>
+        <div class="thumb"><div class="ink"></div><div class="box">1 ✓ · 2 ✓ · 3 Pay</div><div class="row2"><div class="box" style="flex:1">BLIK</div><div class="box" style="flex:1">Card</div><div class="box" style="flex:1">PayPal</div></div><div class="box">Pre-contract summary · what you pay, what arrives, when</div><div class="box">Perishable: no 14-day withdrawal</div><div class="box"><b>219 zł</b> total · = the price on the product page</div><div class="acc"></div></div>
+        <dl class="meta"><dt>Decision</dt><dd>Pay, and only here. Payment methods are rendered by <b>buyer</b> country; prices are keyed on <b>destination</b> country only (geo-blocking, ADR-0006).</dd><dt>Trust</dt><dd><span class="trust">Company identity block, secure-payment note, guarantee line, the confirm button labelled with what it does. No countdown that is not real cutoff data.</span></dd><dt>Reads</dt><dd>payment methods by buyer country, the signed price quote, VAT breakdown by rate (PL 8% flowers / 23% add-ons).</dd><dt>Index</dt><dd>noindex + robots disallow</dd><dt>Spec</dt><dd>010 · payments 013</dd></dl>
+      </div>
+      <div class="step">
+        <header><span class="i">09</span><b>Confirmation → Track</b></header>
+        <code>/en-gb/checkout/confirmation/{token} → /en-gb/track/{token}</code>
+        <div class="thumb"><div class="ink"></div><span>Thank you — what happens next</span><div class="box">1 We send it to a florist in Warszawa</div><div class="box">2 They accept and make it</div><div class="box">3 Delivered Thu 10 Sep</div><div class="box">4 You get the photo</div><div class="box">Track this order</div><div class="ph2">delivery photo · arrives after delivery</div></div>
+        <dl class="meta"><dt>Decision</dt><dd>Nothing to decide. The page's whole job is to replace anxiety with a timeline, and to hand over a tracking link that needs no account.</dd><dt>Trust</dt><dd><span class="trust">The relay named as a timeline; the florist's first name and city once they accept; the delivery photo when it exists — and an honest placeholder until then.</span></dd><dt>Reads</dt><dd>order, order events, <code>delivery_proof</code>. The token is the credential; no email or address appears in the URL.</dd><dt>Index</dt><dd>noindex</dd><dt>Spec</dt><dd>010 · 015 (state machine and events)</dd></dl>
+      </div>
+    </div>
+
+    <div class="grp" style="display: flex; flex-direction: column; gap: var(--space-md);">
+      <div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">Where the journey can end early</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">and what each exit is for</h2></div>
+      <table class="spec" style="border-collapse: collapse; width: 100%; font-size: var(--text-sm);">
+        <tr><th style="text-align: start; border-block-end: var(--rule); padding: 8px 12px; font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-3);">Exit</th><th style="text-align: start; border-block-end: var(--rule); padding: 8px 12px; font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-3);">Where</th><th style="text-align: start; border-block-end: var(--rule); padding: 8px 12px; font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-3);">What we offer instead</th></tr>
+        <tr><td style="border-block-end: var(--rule); padding: 8px 12px;">Country not live</td><td style="border-block-end: var(--rule); padding: 8px 12px;">Finder, destinations hub, corridor</td><td style="border-block-end: var(--rule); padding: 8px 12px; color: var(--color-ink-2);">The corridor guide plus a waiting-list signup. We never take an order we cannot fulfil, and we never say “delivering” where we are not.</td></tr>
+        <tr><td style="border-block-end: var(--rule); padding: 8px 12px;">Date past the cutoff</td><td style="border-block-end: var(--rule); padding: 8px 12px;">Finder, product page date row</td><td style="border-block-end: var(--rule); padding: 8px 12px; color: var(--color-ink-2);">The next date that <em>is</em> possible, with the reason (cutoff, Sunday, public holiday) named in words on the chip before it is chosen.</td></tr>
+        <tr><td style="border-block-end: var(--rule); padding: 8px 12px;">Just browsing</td><td style="border-block-end: var(--rule); padding: 8px 12px;">Home finder</td><td style="border-block-end: var(--rule); padding: 8px 12px; color: var(--color-ink-2);">“See everything” — the destinations hub, no commitment.</td></tr>
+        <tr><td style="border-block-end: var(--rule); padding: 8px 12px;">Phase 0 demo</td><td style="border-block-end: var(--rule); padding: 8px 12px;">Checkout, every step</td><td style="border-block-end: var(--rule); padding: 8px 12px; color: var(--color-ink-2);"><code>checkout.demo_guard</code> is on: the form renders and the total is real arithmetic, but no order is created and no card is charged. The guard state is drawn on the checkout wireframe.</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

@@ -1,0 +1,471 @@
+{
+  "artboards": [
+    {
+      "file": "homepage-v1/homepage-desktop.dc.html",
+      "title": "Homepage · desktop 1440",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 5360
+    },
+    {
+      "file": "homepage-v1/homepage-mobile.dc.html",
+      "title": "Homepage · mobile 390",
+      "x": 1560,
+      "y": 0,
+      "w": 390,
+      "h": 5560
+    },
+    {
+      "file": "homepage-v1/identity.dc.html",
+      "title": "Identity · the mark and its system",
+      "x": 2070,
+      "y": 0,
+      "w": 1440,
+      "h": 1500
+    },
+    {
+      "file": "system/components.dc.html",
+      "title": "Components · every primitive and state",
+      "x": 0,
+      "y": 5760,
+      "w": 1440,
+      "h": 4380
+    },
+    {
+      "file": "system/typography.dc.html",
+      "title": "Typography · ramp, measure, coverage",
+      "x": 1560,
+      "y": 5760,
+      "w": 1440,
+      "h": 3260
+    },
+    {
+      "file": "system/colour.dc.html",
+      "title": "Colour · palette and contrast manifest",
+      "x": 3120,
+      "y": 5760,
+      "w": 1440,
+      "h": 3900
+    },
+    {
+      "file": "flows/buyer-journey.dc.html",
+      "title": "Buyer journey · home → track",
+      "x": 0,
+      "y": 10340,
+      "w": 1440,
+      "h": 3140
+    },
+    {
+      "file": "flows/florist-journey.dc.html",
+      "title": "Florist journey · landing → first order",
+      "x": 1560,
+      "y": 10340,
+      "w": 1440,
+      "h": 1980
+    },
+    {
+      "file": "flows/consent-and-locale.dc.html",
+      "title": "Consent and locale · states and z-order",
+      "x": 3120,
+      "y": 10340,
+      "w": 1440,
+      "h": 1900
+    },
+    {
+      "file": "wireframes/locale-chooser-desktop.dc.html",
+      "title": "Locale chooser · desktop",
+      "x": 0,
+      "y": 13680,
+      "w": 1440,
+      "h": 1160
+    },
+    {
+      "file": "wireframes/locale-chooser-mobile.dc.html",
+      "title": "Locale chooser · mobile",
+      "x": 1560,
+      "y": 13680,
+      "w": 390,
+      "h": 1180
+    },
+    {
+      "file": "wireframes/all-destinations-desktop.dc.html",
+      "title": "All destinations hub · desktop",
+      "x": 2070,
+      "y": 13680,
+      "w": 1440,
+      "h": 2280
+    },
+    {
+      "file": "wireframes/all-destinations-mobile.dc.html",
+      "title": "All destinations hub · mobile",
+      "x": 3630,
+      "y": 13680,
+      "w": 390,
+      "h": 2680
+    },
+    {
+      "file": "wireframes/corridor-country-desktop.dc.html",
+      "title": "Corridor country · guide and live · desktop",
+      "x": 4140,
+      "y": 13680,
+      "w": 1440,
+      "h": 3560
+    },
+    {
+      "file": "wireframes/corridor-country-mobile.dc.html",
+      "title": "Corridor country · guide and live · mobile",
+      "x": 5700,
+      "y": 13680,
+      "w": 390,
+      "h": 4300
+    },
+    {
+      "file": "wireframes/country-shop-desktop.dc.html",
+      "title": "Country shop root · desktop",
+      "x": 0,
+      "y": 18180,
+      "w": 1440,
+      "h": 2760
+    },
+    {
+      "file": "wireframes/country-shop-mobile.dc.html",
+      "title": "Country shop root · mobile",
+      "x": 1560,
+      "y": 18180,
+      "w": 390,
+      "h": 3400
+    },
+    {
+      "file": "wireframes/country-category-desktop.dc.html",
+      "title": "Country category · desktop",
+      "x": 2070,
+      "y": 18180,
+      "w": 1440,
+      "h": 2460
+    },
+    {
+      "file": "wireframes/country-category-mobile.dc.html",
+      "title": "Country category · mobile",
+      "x": 3630,
+      "y": 18180,
+      "w": 390,
+      "h": 3000
+    },
+    {
+      "file": "wireframes/country-occasion-desktop.dc.html",
+      "title": "Country occasion · desktop",
+      "x": 4140,
+      "y": 18180,
+      "w": 1440,
+      "h": 2480
+    },
+    {
+      "file": "wireframes/country-occasion-mobile.dc.html",
+      "title": "Country occasion · mobile",
+      "x": 5700,
+      "y": 18180,
+      "w": 390,
+      "h": 3020
+    },
+    {
+      "file": "wireframes/product-desktop.dc.html",
+      "title": "Product page · desktop",
+      "x": 0,
+      "y": 21780,
+      "w": 1440,
+      "h": 3480
+    },
+    {
+      "file": "wireframes/product-mobile.dc.html",
+      "title": "Product page · mobile",
+      "x": 1560,
+      "y": 21780,
+      "w": 390,
+      "h": 4260
+    },
+    {
+      "file": "wireframes/category-hub-desktop.dc.html",
+      "title": "Category hub · no destination, no money · desktop",
+      "x": 2070,
+      "y": 21780,
+      "w": 1440,
+      "h": 2260
+    },
+    {
+      "file": "wireframes/category-hub-mobile.dc.html",
+      "title": "Category hub · no destination, no money · mobile",
+      "x": 3630,
+      "y": 21780,
+      "w": 390,
+      "h": 2740
+    },
+    {
+      "file": "wireframes/occasion-hub-desktop.dc.html",
+      "title": "Occasion hub · dates by country · desktop",
+      "x": 4140,
+      "y": 21780,
+      "w": 1440,
+      "h": 2180
+    },
+    {
+      "file": "wireframes/occasion-hub-mobile.dc.html",
+      "title": "Occasion hub · dates by country · mobile",
+      "x": 5700,
+      "y": 21780,
+      "w": 390,
+      "h": 2620
+    },
+    {
+      "file": "wireframes/occasions-index-desktop.dc.html",
+      "title": "Occasions index · desktop",
+      "x": 0,
+      "y": 26240,
+      "w": 1440,
+      "h": 2020
+    },
+    {
+      "file": "wireframes/occasions-index-mobile.dc.html",
+      "title": "Occasions index · mobile",
+      "x": 1560,
+      "y": 26240,
+      "w": 390,
+      "h": 2500
+    },
+    {
+      "file": "wireframes/checkout-desktop.dc.html",
+      "title": "Checkout · 3 steps and the demo guard · desktop",
+      "x": 2070,
+      "y": 26240,
+      "w": 1440,
+      "h": 3320
+    },
+    {
+      "file": "wireframes/checkout-mobile.dc.html",
+      "title": "Checkout · 3 steps and the demo guard · mobile",
+      "x": 3630,
+      "y": 26240,
+      "w": 390,
+      "h": 4180
+    },
+    {
+      "file": "wireframes/confirmation-desktop.dc.html",
+      "title": "Order confirmation · desktop",
+      "x": 4140,
+      "y": 26240,
+      "w": 1440,
+      "h": 1940
+    },
+    {
+      "file": "wireframes/confirmation-mobile.dc.html",
+      "title": "Order confirmation · mobile",
+      "x": 5700,
+      "y": 26240,
+      "w": 390,
+      "h": 2380
+    },
+    {
+      "file": "wireframes/track-order-desktop.dc.html",
+      "title": "Track order · timeline and lookup · desktop",
+      "x": 0,
+      "y": 30620,
+      "w": 1440,
+      "h": 2220
+    },
+    {
+      "file": "wireframes/track-order-mobile.dc.html",
+      "title": "Track order · timeline and lookup · mobile",
+      "x": 1560,
+      "y": 30620,
+      "w": 390,
+      "h": 2760
+    },
+    {
+      "file": "wireframes/how-it-works-desktop.dc.html",
+      "title": "How it works · desktop",
+      "x": 2070,
+      "y": 30620,
+      "w": 1440,
+      "h": 2100
+    },
+    {
+      "file": "wireframes/how-it-works-mobile.dc.html",
+      "title": "How it works · mobile",
+      "x": 3630,
+      "y": 30620,
+      "w": 390,
+      "h": 2560
+    },
+    {
+      "file": "wireframes/guarantee-and-delivery-desktop.dc.html",
+      "title": "Guarantee · delivery information · desktop",
+      "x": 4140,
+      "y": 30620,
+      "w": 1440,
+      "h": 2200
+    },
+    {
+      "file": "wireframes/guarantee-and-delivery-mobile.dc.html",
+      "title": "Guarantee · delivery information · mobile",
+      "x": 5700,
+      "y": 30620,
+      "w": 390,
+      "h": 2680
+    },
+    {
+      "file": "wireframes/about-contact-help-desktop.dc.html",
+      "title": "About · contact · help · desktop",
+      "x": 0,
+      "y": 33580,
+      "w": 1440,
+      "h": 2380
+    },
+    {
+      "file": "wireframes/about-contact-help-mobile.dc.html",
+      "title": "About · contact · help · mobile",
+      "x": 1560,
+      "y": 33580,
+      "w": 390,
+      "h": 2900
+    },
+    {
+      "file": "wireframes/blog-desktop.dc.html",
+      "title": "Blog index and post · desktop",
+      "x": 2070,
+      "y": 33580,
+      "w": 1440,
+      "h": 2160
+    },
+    {
+      "file": "wireframes/blog-mobile.dc.html",
+      "title": "Blog index and post · mobile",
+      "x": 3630,
+      "y": 33580,
+      "w": 390,
+      "h": 2620
+    },
+    {
+      "file": "wireframes/for-florists-desktop.dc.html",
+      "title": "For florists · landing, apply, walkthrough · desktop",
+      "x": 4140,
+      "y": 33580,
+      "w": 1440,
+      "h": 2700
+    },
+    {
+      "file": "wireframes/for-florists-mobile.dc.html",
+      "title": "For florists · landing, apply, walkthrough · mobile",
+      "x": 5700,
+      "y": 33580,
+      "w": 390,
+      "h": 3300
+    },
+    {
+      "file": "wireframes/legal-template-desktop.dc.html",
+      "title": "Legal page template · desktop",
+      "x": 0,
+      "y": 37080,
+      "w": 1440,
+      "h": 1960
+    },
+    {
+      "file": "wireframes/legal-template-mobile.dc.html",
+      "title": "Legal page template · mobile",
+      "x": 1560,
+      "y": 37080,
+      "w": 390,
+      "h": 2380
+    },
+    {
+      "file": "wireframes/errors-desktop.dc.html",
+      "title": "404 and 500 · desktop",
+      "x": 2070,
+      "y": 37080,
+      "w": 1440,
+      "h": 1620
+    },
+    {
+      "file": "wireframes/errors-mobile.dc.html",
+      "title": "404 and 500 · mobile",
+      "x": 3630,
+      "y": 37080,
+      "w": 390,
+      "h": 1900
+    }
+  ],
+  "annotations": [
+    {
+      "id": "homepage-v1",
+      "x": 0,
+      "y": -110,
+      "w": 1200,
+      "text": "homepage-v1 — The founder-approved homepage and identity, 2026-09-08. Not a wireframe: this is the finished direction every other artboard is drawn in. Never edited except to extend."
+    },
+    {
+      "id": "system",
+      "x": 0,
+      "y": 5650,
+      "w": 1200,
+      "text": "system — Tokens, every shipped primitive with its states, the type ramp and the contrast manifest. Kept in step with src/modules/ui in both directions."
+    },
+    {
+      "id": "flows",
+      "x": 0,
+      "y": 10230,
+      "w": 1200,
+      "text": "flows — The buyer journey home → track, the florist journey landing → first order, and the three overlapping first-visit surfaces with their z-order."
+    },
+    {
+      "id": "wireframes-1",
+      "x": 0,
+      "y": 13570,
+      "w": 1200,
+      "text": "wireframes 1 — One desktop (1440) and one mobile (390) artboard per Phase 0 page type in plan/05 §1–§2, in the approved system. Structural, not finished art: real registry copy where it exists, [slot] markers where it does not, and every state and empty state shown."
+    },
+    {
+      "id": "wireframes-2",
+      "x": 0,
+      "y": 18070,
+      "w": 1200,
+      "text": "wireframes 2 — Phase 0 page types, continued. Each artboard opens with its own annotation block: purpose, URL, index status, the data it reads, and the owning spec."
+    },
+    {
+      "id": "wireframes-3",
+      "x": 0,
+      "y": 21670,
+      "w": 1200,
+      "text": "wireframes 3 — Phase 0 page types, continued. Each artboard opens with its own annotation block: purpose, URL, index status, the data it reads, and the owning spec."
+    },
+    {
+      "id": "wireframes-4",
+      "x": 0,
+      "y": 26130,
+      "w": 1200,
+      "text": "wireframes 4 — Phase 0 page types, continued. Each artboard opens with its own annotation block: purpose, URL, index status, the data it reads, and the owning spec."
+    },
+    {
+      "id": "wireframes-5",
+      "x": 0,
+      "y": 30510,
+      "w": 1200,
+      "text": "wireframes 5 — Phase 0 page types, continued. Each artboard opens with its own annotation block: purpose, URL, index status, the data it reads, and the owning spec."
+    },
+    {
+      "id": "wireframes-6",
+      "x": 0,
+      "y": 33470,
+      "w": 1200,
+      "text": "wireframes 6 — Phase 0 page types, continued. Each artboard opens with its own annotation block: purpose, URL, index status, the data it reads, and the owning spec."
+    },
+    {
+      "id": "wireframes-7",
+      "x": 0,
+      "y": 36970,
+      "w": 1200,
+      "text": "wireframes 7 — Phase 0 page types, continued. Each artboard opens with its own annotation block: purpose, URL, index status, the data it reads, and the owning spec."
+    }
+  ],
+  "launch": {
+    "view": "canvas"
+  }
+}

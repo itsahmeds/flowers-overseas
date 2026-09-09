@@ -1,0 +1,122 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+  <style>
+:root{
+  --color-paper: oklch(99.3% 0.002 90);
+  --color-paper-2: oklch(97.2% 0.004 90);
+  --color-paper-3: oklch(94.5% 0.005 90);
+  --color-ink: oklch(19% 0.01 250);
+  --color-ink-2: oklch(36% 0.01 250);
+  --color-ink-3: oklch(52% 0.008 250);
+  --color-rule: oklch(90% 0.004 250);
+  --color-accent: oklch(42% 0.10 155);
+  --color-accent-strong: oklch(34% 0.09 155);
+  --color-accent-ink: oklch(99% 0.002 90);
+  --color-success: oklch(42% 0.10 150);
+  --color-warning: oklch(45% 0.12 75);
+  --color-danger: oklch(45% 0.17 25);
+  --color-danger-strong: oklch(38% 0.15 25);
+  --color-photo-stop-1: oklch(93% 0.02 120);
+  --color-photo-stop-2: oklch(88% 0.03 140);
+  --color-photo-stop-3: oklch(80% 0.04 150);
+  --color-photo-ink: oklch(40% 0.03 150);
+  --color-photo: linear-gradient(160deg, var(--color-photo-stop-1) 0%, var(--color-photo-stop-2) 45%, var(--color-photo-stop-3) 100%);
+  --font-display: "Newsreader", "Iowan Old Style", Georgia, "Times New Roman", serif;
+  --font-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --text-display: 68px; --text-display-s: 42px; --text-2xl: 34px; --text-xl: 24px; --text-lg: 18px; --text-md: 15px; --text-sm: 13px; --text-xs: 11px;
+  --space-xs: 4px; --space-sm: 8px; --space-md: 16px; --space-lg: 24px; --space-xl: 40px; --space-2xl: 72px; --space-3xl: 128px;
+  --radius-sm: 2px; --radius-md: 4px; --radius-full: 9999px;
+  --measure: 68ch;
+  --rule: 1px solid var(--color-rule);
+}
+    body { margin: 0; font-family: var(--font-body); color: var(--color-ink); background: var(--color-paper); -webkit-font-smoothing: antialiased; }
+    a { color: var(--color-ink); text-decoration: none; } a:hover { color: var(--color-accent); }
+    .display { font-family: var(--font-display); font-weight: 500; letter-spacing: -0.015em; }
+    .label { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-ink-3); }
+    .photo { background: var(--color-photo); display: flex; align-items: flex-end; padding: var(--space-md); color: var(--color-photo-ink); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field span.v { min-height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-bottom: 1px solid var(--color-ink); font-size: var(--text-md); color: var(--color-ink); }
+    .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
+    .btn.accent { background: var(--color-accent); }
+    .btn.secondary { background: var(--color-paper); color: var(--color-ink); border: 1px solid var(--color-ink-3); }
+    .btn.sm { min-height: 44px; padding: 0 16px; font-size: var(--text-sm); }
+    .price { font-variant-numeric: tabular-nums; }
+    .ph { display: inline-block; min-width: 56px; height: 14px; background: var(--color-paper-3); border-radius: 2px; vertical-align: middle; }
+    .chip { display: inline-flex; align-items: center; gap: var(--space-xs); border: 1px solid var(--color-ink-3); border-radius: var(--radius-sm); padding: var(--space-sm) var(--space-sm); font-size: var(--text-sm); }
+    .chip.accent { border-color: var(--color-accent); color: var(--color-accent); }
+    .chip.muted { border-color: transparent; background: var(--color-paper-3); color: var(--color-ink-2); }
+    .note { border: 1px solid var(--color-ink-3); border-radius: var(--radius-sm); background: var(--color-paper-2); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; font-size: var(--text-sm); line-height: 1.55; }
+    .note dl { margin: 0; display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 4px var(--space-md); font-size: var(--text-sm); }
+    .note dt { color: var(--color-ink-3); font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding-block-start: 2px; }
+    .note dd { margin: 0; color: var(--color-ink-2); }
+    .slot { color: var(--color-ink-3); font-style: italic; }
+    .stub { border: 1px dashed var(--color-ink-3); border-radius: var(--radius-sm); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; color: var(--color-ink-2); font-size: var(--text-sm); }
+    .stub b { font-weight: 600; color: var(--color-ink); font-size: var(--text-sm); }
+    .sec { display: flex; flex-direction: column; gap: var(--space-md); }
+    table.spec { border-collapse: collapse; width: 100%; font-size: var(--text-sm); }
+    table.spec th, table.spec td { text-align: start; border-block-end: var(--rule); padding: 8px 12px; vertical-align: top; }
+    table.spec th { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-3); }
+    .grid { display: grid; gap: var(--space-lg); }
+    .card { display: flex; flex-direction: column; gap: var(--space-sm); }
+    .card .nm { font-family: var(--font-display); font-weight: 500; font-size: var(--text-lg); }
+    .tile { border: var(--rule); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; }
+    .kv { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px var(--space-md); font-size: var(--text-sm); }
+    .kv > span:nth-child(even) { text-align: end; font-variant-numeric: tabular-nums; }
+    .faq { border-block-start: var(--rule); padding-block: var(--space-md); display: flex; flex-direction: column; gap: 6px; }
+    .faq b { font-weight: 600; font-size: var(--text-md); }
+    .faq span { font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.6; }
+    .steprow { display: flex; gap: var(--space-md); font-size: var(--text-sm); }
+    .steprow > span { flex: 1; border-block-start: 2px solid var(--color-rule); padding-block-start: var(--space-sm); color: var(--color-ink-3); }
+    .steprow > span.on { border-block-start-color: var(--color-ink); color: var(--color-ink); font-weight: 600; }
+    code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: var(--text-xs); color: var(--color-ink-2); }
+    .prose { max-width: var(--measure); font-size: var(--text-md); line-height: 1.6; color: var(--color-ink-2); }
+  </style>
+</helmet>
+<div style="width: 1440px; min-height: 1160px; background: var(--color-paper); display: flex; flex-direction: column;">
+  <div style="display: flex; align-items: center; gap: 12px; padding: var(--space-lg) 56px; border-bottom: var(--rule);"><span class="display" style="font-size: 26px; letter-spacing: 0.04em;">Flowers Overseas</span></div>
+
+  <section class="note" style="margin: var(--space-lg) 56px 0;">
+    <span class="label">Locale chooser</span>
+    <dl>
+      <dt>Purpose</dt><dd>List the locales and let the visitor choose. It is the root document and it <b>never redirects</b> — not on IP, not on <code>Accept-Language</code>, not ever (ADR-0006).</dd>
+      <dt>URL</dt><dd><code>/</code> — the only page in the product with no locale prefix.</dd>
+      <dt>Index</dt><dd><b>noindex, follow</b>. A signpost has no query of its own, and the four locale homes are the pages that should rank. <code>follow</code> so the link equity reaches them.</dd>
+      <dt>Reads</dt><dd>the locale registry only — code, endonym, whether the locale is indexable. No country data, no prices, no cookies read or written before a choice.</dd>
+      <dt>Copy</dt><dd><code>chooser.heading</code>, <code>chooser.intro</code>, <code>a11y.localeChooser</code>, <code>meta.chooser.*</code> — all present in <code>messages/en.json</code> and quoted verbatim.</dd>
+      <dt>Owning spec</dt><dd>003 (shipped)</dd>
+    </dl>
+  </section>
+
+  <main style="display: flex; flex-direction: column; gap: var(--space-xl); padding: var(--space-3xl) 56px; max-width: 760px;">
+    <div style="display: flex; flex-direction: column; gap: var(--space-md);">
+      <h1 class="display" style="margin: 0; font-size: var(--text-display-s); line-height: 1.08;">Choose your language</h1>
+      <p class="prose" style="margin: 0;">Flowers Overseas sends flowers to someone in another European country: you order, a vetted local florist makes and delivers them. Choose a language to continue.</p>
+    </div>
+    <nav aria-label="Languages" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0; border-block-start: var(--rule); border-inline-start: var(--rule);">
+      <a href="/en" style="display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-md); padding: var(--space-lg); border-inline-end: var(--rule); border-block-end: var(--rule); background: var(--color-paper-2);"><span class="display" style="font-size: var(--text-xl);">English</span><code>/en</code><span style="font-size: var(--text-xs); color: var(--color-ink-3); letter-spacing: 0.1em; text-transform: uppercase;">lang=en</span></a>
+      <a href="/en-gb" style="display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-md); padding: var(--space-lg); border-inline-end: var(--rule); border-block-end: var(--rule); background: var(--color-paper-2);"><span class="display" style="font-size: var(--text-xl);">English (UK)</span><code>/en-gb</code><span style="font-size: var(--text-xs); color: var(--color-ink-3); letter-spacing: 0.1em; text-transform: uppercase;">lang=en-gb</span></a>
+      <a href="/de" style="display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-md); padding: var(--space-lg); border-inline-end: var(--rule); border-block-end: var(--rule); background: var(--color-paper-2);"><span class="display" style="font-size: var(--text-xl);">Deutsch</span><code>/de</code><span style="font-size: var(--text-xs); color: var(--color-ink-3); letter-spacing: 0.1em; text-transform: uppercase;">lang=de</span></a>
+      <a href="/pl" style="display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-md); padding: var(--space-lg); border-inline-end: var(--rule); border-block-end: var(--rule); background: var(--color-paper-2);"><span class="display" style="font-size: var(--text-xl);">Polski</span><code>/pl</code><span style="font-size: var(--text-xs); color: var(--color-ink-3); letter-spacing: 0.1em; text-transform: uppercase;">lang=pl</span></a>
+    </nav>
+    <div class="stub" style=""><b>States</b><span><b>Default</b> — every configured locale is listed, in the registry's order, each labelled in its own language (endonym), each an <code>&lt;a&gt;</code> with a <code>lang</code> attribute so a screen reader pronounces it correctly.</span><span><b>A locale that is not indexable</b> (its catalogue's unreviewed share is above the threshold) still appears here and is still reachable — indexability is a robots decision, not a visitor decision.</span><span><b>No “detected” locale is preselected or highlighted.</b> Highlighting one is a soft redirect and reintroduces the failure ADR-0006 exists to prevent.</span></div>
+    <div class="stub" style=""><b>What is deliberately absent</b><span>No country picker — the destination is chosen on a locale home, where the finder can explain the cutoff.</span><span>No currency picker — currency is a cookie set from the locale's default and changed in the header, not before the visitor has seen a price.</span><span>No consent sheet interaction shown here; see <code>flows/consent-and-locale.dc.html</code> for its state and z-order on this page.</span></div>
+  </main>
+
+  <div style="margin-block-start: auto; border-top: 1px solid var(--color-ink); padding: var(--space-lg) 56px; display: flex; flex-direction: column; gap: var(--space-sm); font-size: var(--text-sm); color: var(--color-ink-2);">
+    <span class="label">Footer</span>
+    <span>Sending: Destinations · Occasions · Delivery times and cutoffs · The guarantee — Company: How it works · For florists · Help and contact · Imprint — Legal: Terms · Privacy · Cookies · Withdrawal and refunds · Cookie settings</span>
+    <span>International flower relay. You order, a vetted local florist makes and delivers. Operated by <span class="slot">[legal name]</span>, <span class="slot">[registered address]</span>, <span class="slot">[registration no]</span> — printed only once <code>company.registered</code> is true (company.ts; spec 004 AC-9).</span>
+    <span>BLIK · Klarna · PayPal · Visa · Mastercard · Apple Pay — card payments processed by Stripe. We never store card numbers.</span>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
