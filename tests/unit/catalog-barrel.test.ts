@@ -289,21 +289,39 @@ describe("the provider seam and its Phase 0 stubs", () => {
     expect(Object.keys(catalogProviders())).toEqual(Object.keys(providers));
   });
 
-  const members: readonly [string, () => Promise<unknown>][] = [
-    ["catalogue.products", () => providers.catalogue.products()],
-    ["catalogue.tiers", () => providers.catalogue.tiers()],
-    ["catalogue.categories", () => providers.catalogue.categories()],
-    ["catalogue.occasions", () => providers.catalogue.occasions()],
-    ["catalogue.addons", () => providers.catalogue.addons()],
+  /**
+   * TASK-061 authored the catalogue half of the dataset, so these five now resolve; the counts are
+   * `plan/10` §2.1's and are asserted in full by `tests/unit/catalogue-dataset.test.ts`.
+   */
+  const authored: readonly [
+    string,
+    () => Promise<readonly unknown[]>,
+    number,
+  ][] = [
+    ["catalogue.products", () => providers.catalogue.products(), 84],
+    ["catalogue.tiers", () => providers.catalogue.tiers(), 236],
+    ["catalogue.categories", () => providers.catalogue.categories(), 23],
+    ["catalogue.occasions", () => providers.catalogue.occasions(), 32],
+    ["catalogue.addons", () => providers.catalogue.addons(), 6],
+  ];
+
+  for (const [member, call, count] of authored) {
+    it(`hands over the authored dataset: ${member}()`, async () => {
+      await expect(call()).resolves.toHaveLength(count);
+    });
+  }
+
+  /** The price and FX rows are TASK-062's; until then a read fails where the hole is. */
+  const pending: readonly [string, () => Promise<unknown>][] = [
     ["price.countryPrices", () => providers.price.countryPrices()],
     ["price.addonCountryPrices", () => providers.price.addonCountryPrices()],
     ["fx.fxRates", () => providers.fx.fxRates()],
   ];
 
-  for (const [member, call] of members) {
+  for (const [member, call] of pending) {
     it(`fails loudly rather than reading an empty dataset: ${member}()`, async () => {
       await expect(call()).rejects.toBeInstanceOf(CatalogueDatasetPendingError);
-      await expect(call()).rejects.toThrow(/TASK-06[12]/);
+      await expect(call()).rejects.toThrow(/TASK-062/);
     });
   }
 });

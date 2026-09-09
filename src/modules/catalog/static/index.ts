@@ -1,16 +1,28 @@
 /**
- * The Phase 0 provider stubs (spec 005 §2 "The no-database seam", §12 task 1; TASK-060).
+ * The Phase 0 static providers (spec 005 §2 "The no-database seam", §12 tasks 1–2; TASK-060,
+ * TASK-061).
  *
- * The dataset lands in `src/config/catalogue/*.data.ts` with TASK-061 (products, tiers,
- * categories, occasions, add-ons) and TASK-062 (prices, the committed ECB snapshot). Until it
- * does, every method here **throws** rather than returning an empty set: an empty catalogue reads
- * as "no products for this country" and an empty price set reads as "no price", and either could
- * be rendered as a fact by a later task instead of failing where the hole is. The error names the
- * task that fills it.
+ * `staticCatalogueProvider` now reads the authored dataset in `src/config/catalogue/*.data.ts`
+ * (TASK-061): products, tiers, categories, occasions and add-ons, each already parsed under its
+ * zod schema at that module's load, so this file validates nothing again and decides nothing —
+ * a provider is a *data source* and every resolution (one active price per product/country/tier,
+ * FX, VAT, availability) stays the module's own, which is what lets the database implementation
+ * of TASK-070 be swapped in without a caller changing.
  *
- * This module imports no dataset path and no database client (`pnpm check:no-db`), and it is not
- * reachable from the barrel (AC-2).
+ * `staticPriceProvider` and `staticFxRateProvider` still **throw**, because `prices.data.ts` and
+ * `fx.data.ts` are authored by TASK-062. Throwing rather than returning an empty set is
+ * deliberate: an empty price set reads as "no price for this country", which a later task could
+ * render as a fact instead of failing where the hole is. The error names the task that fills it.
+ *
+ * This module imports no database client (`pnpm check:no-db`), carries no `"use client"`, and is
+ * not reachable from the barrel (AC-2, AC-3).
  */
+import { ADDONS } from "@/config/catalogue/addons.data";
+import { CATEGORIES } from "@/config/catalogue/categories.data";
+import { OCCASIONS } from "@/config/catalogue/occasions.data";
+import { PRODUCTS } from "@/config/catalogue/products.data";
+import { PRODUCT_TIERS } from "@/config/catalogue/tiers.data";
+
 import type {
   AddonCountryPriceRecord,
   AddonRecord,
@@ -25,17 +37,16 @@ import type {
   ProductTierRecord,
 } from "../providers";
 
-/** The task that authors each missing part of the dataset (spec 005 §12 tasks 2 and 3). */
+/** The task that authors each missing part of the dataset (spec 005 §12 task 3). */
 const DATASET_TASKS = {
-  catalogue: "TASK-061",
   price: "TASK-062",
   fx: "TASK-062",
 } as const;
 
 /**
- * Thrown by every static provider method until the dataset is authored. A distinct error class so
- * a caller written before the dataset exists fails loudly and identifiably in a test rather than
- * silently reading an empty catalogue.
+ * Thrown by the price and FX providers until TASK-062 authors their rows. A distinct error class
+ * so a caller written before the price dataset exists fails loudly and identifiably in a test
+ * rather than silently reading an empty price set.
  */
 export class CatalogueDatasetPendingError extends Error {
   constructor(part: keyof typeof DATASET_TASKS, member: string) {
@@ -53,13 +64,20 @@ function pending<T>(
   return Promise.reject(new CatalogueDatasetPendingError(part, member));
 }
 
+/**
+ * The authored catalogue, handed over as-is. Every method is `async` because the interface is
+ * shaped for the database implementation; the static one performs no I/O at all, which is what
+ * keeps a cached page's read cost zero (spec 005 §5.4).
+ */
 export const staticCatalogueProvider: CatalogueProvider = {
-  products: () => pending<readonly ProductRecord[]>("catalogue", "products"),
-  tiers: () => pending<readonly ProductTierRecord[]>("catalogue", "tiers"),
-  categories: () =>
-    pending<readonly CategoryRecord[]>("catalogue", "categories"),
-  occasions: () => pending<readonly OccasionRecord[]>("catalogue", "occasions"),
-  addons: () => pending<readonly AddonRecord[]>("catalogue", "addons"),
+  products: (): Promise<readonly ProductRecord[]> => Promise.resolve(PRODUCTS),
+  tiers: (): Promise<readonly ProductTierRecord[]> =>
+    Promise.resolve(PRODUCT_TIERS),
+  categories: (): Promise<readonly CategoryRecord[]> =>
+    Promise.resolve(CATEGORIES),
+  occasions: (): Promise<readonly OccasionRecord[]> =>
+    Promise.resolve(OCCASIONS),
+  addons: (): Promise<readonly AddonRecord[]> => Promise.resolve(ADDONS),
 };
 
 export const staticPriceProvider: PriceProvider = {

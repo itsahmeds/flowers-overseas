@@ -106,6 +106,19 @@ src/config/               locales.ts, locales.data.ts, currencies.ts, address-fo
                           TASK-049);
                           occasions.ts follows in 004, and payment-methods-by-country.ts,
                           feature-flags.ts in 002/004
+src/config/catalogue/     the authored catalogue dataset (spec 005 §2, §13 Q9, ADR-0017 —
+                          TASK-061): catalogue/schemas.ts (the closed facet enums of
+                          `plan/10` §1.1), catalogue/projections.ts (`toProductRow()` and the
+                          eight other projections onto spec 002 §5.1's row shapes, each pinned
+                          by a unit test), catalogue/products.data.ts (the 84 SKUs of
+                          `plan/10` §2.1), catalogue/tiers.data.ts, catalogue/categories.data.ts,
+                          catalogue/occasions.data.ts, catalogue/addons.data.ts. Zod-parsed at
+                          module load, no database (`pnpm check:no-db`), server-only — nothing
+                          under it is reachable from a client entry point. It is the *single*
+                          authored source of catalogue rows: spec 002's seed and spec 006's
+                          `seed/data/*.json` are generated projections of it, never a second
+                          hand-authored copy. catalogue/prices.data.ts and catalogue/fx.data.ts
+                          follow in TASK-062
 tests/unit/               Vitest, node env
 tests/integration/        Vitest against DATABASE_URL (live from spec 002)
 tests/contract/           adapter-against-recorded-fixture tests (from Phase 1)
