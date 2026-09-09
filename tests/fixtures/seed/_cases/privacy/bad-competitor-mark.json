@@ -1,0 +1,16 @@
+{
+  "family": "privacy",
+  "rule": "competitor-mark",
+  "replaces": "copy/en/products.json",
+  "expect": "a competitor mark from",
+  "why": "AC-9's third-party-mark half, from the list in `docs/research/competitors-*.md`. Our copy is our own (`plan/10` §2.2); a competitor's mark in a product description is both borrowed wording and a mark we have no right to put on a page.",
+  "ops": [
+    {
+      "op": "setRow",
+      "match": { "key": "FO-BQ-001" },
+      "set": {
+        "seoTitle": "Amber Hour — better value than Interflora"
+      }
+    }
+  ]
+}

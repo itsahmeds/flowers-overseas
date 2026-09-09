@@ -1,0 +1,15 @@
+{
+  "family": "prices",
+  "rule": "ambiguous-price",
+  "replaces": "prices/PL.json",
+  "expect": "FO-BQ-001",
+  "alsoFamilies": ["schema"],
+  "why": "AC-6 and spec 002 §5.1's partial unique index: two open-ended rows for one (product, country, tier, surcharge) is the ambiguity `resolvePrice()` throws on rather than picking, and it is what would destroy the Omnibus Art. 6a 30-day-lowest history.",
+  "ops": [
+    {
+      "op": "replaceRowsFromFile",
+      "file": "bad-second-open-ended.json",
+      "match": { "sku": "FO-BQ-001" }
+    }
+  ]
+}

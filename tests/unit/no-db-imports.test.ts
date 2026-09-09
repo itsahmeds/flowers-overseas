@@ -61,6 +61,11 @@ describe("AC-2: no database import in the spec 003 file set (T-02)", () => {
       // spec 006 AC-1/AC-14 (TASK-078): the variant CLI, whose `--check` mode is a CI gate and
       // reads only `seed/data/` and `public/media/`.
       "seed/media-variants.ts",
+      // spec 006 AC-1 (TASK-075): the dataset gate, its byte budgets and its fixture-overlay
+      // tooling. `pnpm seed:check` runs on every pull request with `DATABASE_URL` unset.
+      "seed/check.ts",
+      "seed/check-cases.ts",
+      "seed/budgets.ts",
     ]);
   });
 

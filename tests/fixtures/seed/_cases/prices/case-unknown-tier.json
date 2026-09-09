@@ -1,0 +1,15 @@
+{
+  "family": "prices",
+  "rule": "missing-price",
+  "replaces": "prices/PL.json",
+  "expect": "FO-BQ-001 stems_24 PL",
+  "alsoFamilies": ["references"],
+  "why": "AC-6: a row priced for a tier the product does not have. Family 5 reports the tier it leaves unpriced and family 3 reports the dangling reference — the two halves of the same mistake, and both are worth a line.",
+  "ops": [
+    {
+      "op": "replaceRowsFromFile",
+      "file": "bad-unknown-tier.json",
+      "match": { "sku": "FO-BQ-001" }
+    }
+  ]
+}

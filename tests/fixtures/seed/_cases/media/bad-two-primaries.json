@@ -1,0 +1,15 @@
+{
+  "family": "media",
+  "rule": "one-primary",
+  "replaces": "media.json",
+  "expect": "has 2 primary images",
+  "alsoFamilies": ["schema"],
+  "why": "Rule family 7 and spec 002 §5.1's one-per-product partial unique index. Two primaries render two `priority` images on one page, which is the LCP failure AC-19 forbids. Caught at the file schema too, because `media.json` is the only place the whole set is visible.",
+  "ops": [
+    {
+      "op": "setRow",
+      "match": { "id": "fo-bq-001-detail" },
+      "set": { "isPrimary": true }
+    }
+  ]
+}

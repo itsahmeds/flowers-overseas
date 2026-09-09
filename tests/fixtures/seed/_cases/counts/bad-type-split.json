@@ -1,0 +1,14 @@
+{
+  "family": "counts",
+  "rule": "split",
+  "replaces": "products.json",
+  "expect": "40/14/8/10/12 split",
+  "why": "Rule family 2: one bouquet retyped as an arrangement keeps the total at 84 and breaks `plan/10` §2.1's split, which is exactly the drift a total-only count would miss.",
+  "ops": [
+    {
+      "op": "setRow",
+      "match": { "sku": "FO-BQ-001" },
+      "set": { "productType": "arrangement" }
+    }
+  ]
+}

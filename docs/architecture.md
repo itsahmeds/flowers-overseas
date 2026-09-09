@@ -159,12 +159,22 @@ seed/data/                the versioned, zod-validated dataset spec 002's import
                           destination (TASK-074), media.json (the asset manifest, TASK-077) and
                           media-variants.json (the derived ladder with a checksum per file,
                           written only by `pnpm media:variants` from the pinned encoder in
-                          seed/schema/variants.ts — TASK-078). copy/ and alt/ follow in TASK-073
+                          seed/schema/variants.ts — TASK-078) and copy/{locale}/ (TASK-073).
+                          alt/ follows in TASK-077
 seed/media-variants.ts    the deterministic sharp ladder (spec 006 §2.4): EXIF/GPS stripped, the
                           slot's aspect ratio, AVIF+WebP at seven widths plus one OG/email JPEG,
                           one thread pinned so libaom's output cannot vary by machine; `--check`
                           is the CI mode and needs no originals. sharp is a devDependency of this
                           one file and reaches no bundle and no request path
+seed/check.ts             `pnpm seed:check` — the dataset gate: the nine rule families of spec
+                          006 §2.3 and the §11 catalogue-health report (`--report`). Pure over a
+                          `SeedTree` value read once; composes `staleProjections()`,
+                          `checkCatalogue()` and `seed/copy.ts`'s rules rather than restating
+                          them. seed/budgets.ts holds the committed-imagery byte caps (the seed
+                          slot vocabulary; `src/modules/ui/media/slots.ts` owns `sizes` and the
+                          aspect ratio and carries no byte number) and seed/check-cases.ts the
+                          fixture-overlay format the one-per-family cases use. No database, no
+                          clock, no network (`pnpm check:no-db`)
 messages/                 next-intl catalogues + review manifests (spec 003)
 content/i18n/             glossary and style guide per locale, the authority a native reviewer
                           reads (`plan/03` §6.6, spec 003); prose, never imported by code

@@ -3,9 +3,9 @@
 # the job names straight out of it, so a job added here is part of the branch-protection contract
 # without anybody editing a list (`pnpm branch-protection --verify`).
 #
-# Jobs (19): lint · typecheck · test-unit · test-integration · test-contract · build · db-check ·
-# env-build-failure · commitlint · seo-validate · i18n-check · catalogue-check · dev-os-check ·
-# audit · preview · e2e · visual · a11y · lighthouse.
+# Jobs (20): lint · typecheck · test-unit · test-integration · test-contract · build · db-check ·
+# env-build-failure · commitlint · seo-validate · i18n-check · catalogue-check · seed-check ·
+# dev-os-check · audit · preview · e2e · visual · a11y · lighthouse.
 #
 # Order, and where it departs from spec 001 §2 / plan/12 §5 (TASK-011 reconciliation; the
 # corrections are recorded on TASK-012 for the spec text):
@@ -23,6 +23,9 @@
 #  - `catalogue-check` joins it for the same reasons (spec 005 §2 "Docs, fixtures, gates", AC-5;
 #    TASK-062): it reads committed dataset files and `messages/en.json`, and its step summary is
 #    the per-destination price-coverage table.
+#  - `seed-check` joins it for the same reasons again (spec 006 §2.3, AC-10, AC-30; TASK-075): it
+#    reads `seed/data/**` and nothing else, and its step summary is the standing catalogue-health
+#    report of spec 006 §11 — the coverage table `plan/02` §6's six-product rule is judged on.
 #  - **`env:check` has no job of its own.** It is a step of `lint` (added by TASK-005): it is a
 #    key-set diff between `.env.example` and the zod schema that takes milliseconds and needs the
 #    same checkout and install as the other lint steps. A separate job would add a runner, an
@@ -711,6 +714,57 @@ jobs:
             echo "| check | command | result |"
             echo "|---|---|---|"
             echo "| catalogue + price gate (AC-5) | \`pnpm catalogue:check --summary\` | ${{ steps.catalogue.outcome }} |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # spec 006 §2.3, §11, AC-10, AC-30 / T-10, T-30 (TASK-075): the seed-dataset gate. Nine rule
+  # families over `seed/data/**` — schema and `version` headers, counts and the 40/14/8/10/12
+  # split, referential integrity, slugs, prices, copy, media, "no PII and no third-party marks",
+  # and the committed-imagery byte budgets — each reported as one line naming the file, the entity
+  # key and the rule.
+  #
+  # `needs: typecheck` beside `i18n-check` and `catalogue-check` (spec 001 §14 A9's placement
+  # rule): it reads committed JSON, touches no browser, no database and no preview deployment, and
+  # its step summary is the thing the founder reads. `--report` is what writes that summary — the
+  # standing catalogue-health report of spec 006 §11: product counts by type, the per-(country,
+  # category) and per-(country, occasion) coverage table against `plan/02` §6's six-product rule
+  # with both sides of the threshold visible, price-band extremes, the description word-count
+  # distribution, copy review shares per locale, committed image bytes, per-slot maxima, the count
+  # of products still on a placeholder and the `seoTitle` near-duplicate pairs spec 008 must
+  # nominate a primary for. Every readiness column in it is computed from the predicate the
+  # application gates on, so a locale or a country cannot look ready here and be gated in code.
+  seed-check:
+    name: seed-check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: typecheck
+    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci:full') }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - name: seed:check — the nine rule families and the health report (AC-10, AC-30)
+        id: seed
+        run: pnpm seed:check --report 2>&1 | tee seed-check.log
+      - name: Summarise the verdict
+        if: always()
+        run: |
+          set -uo pipefail
+          {
+            echo ""
+            echo "#### verdict"
+            echo ""
+            echo "| check | command | result |"
+            echo "|---|---|---|"
+            echo "| seed dataset gate (AC-10, AC-30) | \`pnpm seed:check --report\` | ${{ steps.seed.outcome }} |"
+            echo ""
+            if [ -f seed-check.log ] && grep -q 'seed:check failed' seed-check.log; then
+              echo "<details><summary>problems</summary>"
+              echo ""
+              echo '```'
+              grep -A 200 'seed:check failed' seed-check.log
+              echo '```'
+              echo ""
+              echo "</details>"
+            fi
           } >> "$GITHUB_STEP_SUMMARY"
 
   # AC-24, AC-25, AC-26 / T-25, T-26, T-27 (TASK-010): the dev-OS gate. Runs the shell checks in

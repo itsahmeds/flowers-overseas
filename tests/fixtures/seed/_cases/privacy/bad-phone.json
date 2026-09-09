@@ -1,0 +1,16 @@
+{
+  "family": "privacy",
+  "rule": "phone",
+  "replaces": "copy/en/categories.json",
+  "expect": "an E.164-shaped telephone number",
+  "why": "AC-9's E.164 shape. A telephone number in the catalogue is either a person's or a florist's — both are personal data in a public repository, and neither belongs in copy.",
+  "ops": [
+    {
+      "op": "setRow",
+      "match": { "key": "birthday" },
+      "set": {
+        "seoDescription": "Birthday flowers hand-made by our florist. Call +48 22 123 45 67 to ask."
+      }
+    }
+  ]
+}

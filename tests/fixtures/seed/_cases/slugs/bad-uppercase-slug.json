@@ -1,0 +1,15 @@
+{
+  "family": "slugs",
+  "rule": "lowercase",
+  "replaces": "copy/en/products.json",
+  "expect": "is not lowercase",
+  "alsoFamilies": ["schema"],
+  "why": "AC-7's ASCII/lowercase half, which the gate must be able to name. It also trips family 1 because `SlugSchema` rejects the value — and that is the point: the slug family reads the raw JSON so the message is `slug \\`Amber-Hour\\` is not lowercase` rather than a zod regex failure.",
+  "ops": [
+    {
+      "op": "setRow",
+      "match": { "key": "FO-BQ-001" },
+      "set": { "slug": "Amber-Hour" }
+    }
+  ]
+}

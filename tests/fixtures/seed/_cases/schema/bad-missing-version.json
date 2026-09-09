@@ -1,0 +1,8 @@
+{
+  "family": "schema",
+  "rule": "schema",
+  "replaces": "media.json",
+  "expect": "version",
+  "why": "Rule family 1 of spec 006 §2.3: a file whose `version` header is missing cannot be read safely by an importer written for a later shape, so it is a parse error rather than a defaulted field (`seed/schema/header.ts`).",
+  "ops": [{ "op": "unsetHeader", "field": "version" }]
+}

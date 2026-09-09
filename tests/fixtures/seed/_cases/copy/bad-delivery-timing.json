@@ -1,0 +1,16 @@
+{
+  "family": "copy",
+  "rule": "delivery-timing",
+  "replaces": "copy/en/categories.json",
+  "expect": "states delivery timing",
+  "why": "spec 006 §14 A4: no description, intro, `seoTitle` or `seoDescription` may state a lead time or a next-day claim. We hold no such data (`src/config/countries.ts` deliberately carries no `delivery_days`) and the cutoff sentence is spec 009's per-country block, so the claim would be unbacked on a page that cannot even compute it.",
+  "ops": [
+    {
+      "op": "setRow",
+      "match": { "key": "birthday" },
+      "set": {
+        "seoDescription": "Birthday flowers hand-made by our florist in the recipient's city, with next day delivery across Europe."
+      }
+    }
+  ]
+}

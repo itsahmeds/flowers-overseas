@@ -1,0 +1,16 @@
+{
+  "family": "prices",
+  "rule": "rounding-ending",
+  "replaces": "prices/PL.json",
+  "expect": "not on `PLN`'s `x9` ending",
+  "why": "AC-6: a price off the currency's psychological ending (PLN ends in 9, spec 005 §13 Q1). A price nobody authored on purpose is a price nobody can defend.",
+  "ops": [
+    {
+      "op": "replaceRowsFromFile",
+      "file": "bad-wrong-ending.json",
+      "match": {
+        "sku": "FO-BQ-001"
+      }
+    }
+  ]
+}

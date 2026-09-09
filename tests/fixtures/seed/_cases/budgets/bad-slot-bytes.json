@@ -1,0 +1,18 @@
+{
+  "family": "budgets",
+  "rule": "slot-bytes",
+  "replaces": "-",
+  "expect": "above the 18000 B cap for the `occasionTile` slot",
+  "why": "The per-slot half: a 900 KB tile must fail a gate rather than a Lighthouse run (spec 006 §6). The slot comes from the asset's row in `media.json`, so the cap that applies is the one for the place the image is actually rendered.",
+  "ops": [
+    {
+      "op": "setMediaFiles",
+      "files": [
+        {
+          "path": "public/media/home-occasion-birthday/828.webp",
+          "bytes": 900000
+        }
+      ]
+    }
+  ]
+}
