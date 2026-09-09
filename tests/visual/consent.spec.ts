@@ -30,6 +30,21 @@ const SHEET = "[data-fo-consent]";
 const SHOWN = '[data-fo-consent="shown"]';
 const SETTINGS_OPEN = '[data-fo-consent="settings"]';
 const CHOOSE = '[data-fo-consent-action="settings"]';
+/**
+ * The gate that the panel is actually **there**. `[data-fo-consent="settings"]` is on the sheet
+ * and flips the moment "Choose" is pressed, but the panel itself is a `next/dynamic` chunk, so
+ * for one paint the sheet says `settings` and still renders only the collapsed banner — which is
+ * how `/review 40` found the two mobile baselines re-captured at 390×320 (the banner) instead of
+ * 390×718 (the panel), silently disabling TASK-051's settings-open gate. Wait for something
+ * inside the loaded panel: the analytics toggle and its cookie-register rows are the panel's
+ * whole point, and the "Save" control is its last element, so all three present means the chunk
+ * has arrived and laid out.
+ */
+const PANEL = "[data-fo-consent-panel]";
+const ANALYTICS_TOGGLE = '[data-fo-consent-category="analytics"]';
+const SAVE = '[data-fo-consent-action="save"]';
+/** A cookie-register row: the `<code>` name in the panel's per-category `<dl>`. */
+const COOKIE_ROW = "[data-fo-consent-panel] dl dt code";
 
 for (const locale of ["en", "de"] as const) {
   for (const viewport of VIEWPORTS) {
@@ -59,6 +74,10 @@ for (const locale of ["en", "de"] as const) {
 
       await page.locator(CHOOSE).click();
       await expect(page.locator(SETTINGS_OPEN)).toBeVisible();
+      await expect(page.locator(PANEL)).toBeVisible();
+      await expect(page.locator(ANALYTICS_TOGGLE)).toBeVisible();
+      await expect(page.locator(COOKIE_ROW).first()).toBeVisible();
+      await expect(page.locator(SAVE)).toBeVisible();
       await expect(page.locator(SHEET)).toHaveScreenshot(
         `consent-settings-${locale}-${viewport.name}.png`,
       );

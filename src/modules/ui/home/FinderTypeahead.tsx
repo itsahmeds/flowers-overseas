@@ -27,12 +27,24 @@
  * formatter to say "3 countries match". No `next-intl`, no `zod`, no `Intl` (which is also what
  * keeps `fo/no-adhoc-intl` clean without an exception).
  *
- * **3. It costs 499 B of Brotli, measured** (§14 A1's 131 072 B budget on a locale document;
- * 1 217 B minified, and 499 B is the chunk's marginal Brotli cost with this module removed and
- * re-compressed). That number is why the component is this small: no combobox roles, no `aria-activedescendant`, no focus management, no debounce and
- * no library. The combobox proper is spec 007/008's, where a real destination set and a search
+ * **3. It is measured in hundreds of bytes of Brotli** (§14 A1's 131 072 B budget on a locale
+ * document; the PR body carries the measurement for this head). That number is why the component
+ * is this small: no combobox roles, no `aria-activedescendant`, no debounce and no library — the
+ * only focus management is returning focus to the field after a pick, which the dismissal rule
+ * below needs. The combobox proper is spec 007/008's, where a real destination set and a search
  * backend make it worth its weight; until then a labelled text field, a list of buttons and a
  * live region are keyboard-operable, screen-reader-honest and cheap.
+ *
+ * ## Dismissal (`/review 40`, blocking item 1)
+ *
+ * The first cut left the list rendered after a pick — `choose()` set the query to the full
+ * country name, the filter recomputed to that one option, and the box stayed over the town label
+ * and the top 12 px of its input at 390 px. The list is now open only while the visitor is
+ * working in it: a pick closes it and puts focus back on the field, `Escape` closes it, and
+ * moving focus out of the field-plus-list closes it. Mouse selection survives the blur rule
+ * because an option cancels `pointerdown` — focus never leaves the input, so no `focusout` races
+ * the `click` that chooses. None of this touches the no-JavaScript path: the `<datalist>` and its
+ * `list` attribute are the platform's own pop-up and dismiss themselves.
  */
 import { useEffect, useRef, useState } from "react";
 import type { ReactElement } from "react";
@@ -62,6 +74,10 @@ export function FinderTypeahead({
   matchLabels,
 }: FinderTypeaheadProps): ReactElement {
   const [query, setQuery] = useState("");
+  // `open` is "the visitor is choosing right now", not "there is something to show": typing opens
+  // it, and a pick, `Escape` or focus leaving the widget closes it even though the query still
+  // matches. Without this the list sat over the town field forever after a pick (`/review 40`).
+  const [open, setOpen] = useState(false);
   const field = useRef<HTMLInputElement>(null);
 
   // The handover, and the only side effect in this component: `list` is in the server-rendered
@@ -86,15 +102,45 @@ export function FinderTypeahead({
       : options.filter((option) =>
           option.toLocaleLowerCase().startsWith(needle),
         );
-  const announcement = needle === "" ? "" : (matchLabels[matches.length] ?? "");
+  const showMatches = open && matches.length > 0;
+  const announcement =
+    !open || needle === "" ? "" : (matchLabels[matches.length] ?? "");
 
   const choose = (option: string): void => {
     setQuery(option);
-    if (field.current !== null) field.current.value = option;
+    setOpen(false);
+    if (field.current !== null) {
+      field.current.value = option;
+      // The chosen option's `<button>` is about to be unmounted, so focus has to be put somewhere
+      // deliberate; the field the visitor was filling in is the only honest answer, and it leaves
+      // the tab order pointing at the town field next.
+      field.current.focus();
+    }
+  };
+
+  const dismiss = (): void => {
+    setOpen(false);
   };
 
   return (
-    <div className="relative">
+    // `onBlur` on the wrapper, not the input: React's `onBlur` is `focusout`, so it fires for the
+    // option buttons too and `relatedTarget` tells us whether focus went to a sibling inside the
+    // widget (keep it open) or out of it (close). `onKeyDown` likewise catches `Escape` from the
+    // field and from an option.
+    <div
+      className="relative"
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) dismiss();
+      }}
+      onKeyDown={(event) => {
+        if (event.key !== "Escape" || !open) return;
+        // `preventDefault` so `Escape` in the field does not also clear what was typed: the first
+        // press dismisses the suggestions, and the text stays for the visitor to correct.
+        event.preventDefault();
+        dismiss();
+        field.current?.focus();
+      }}
+    >
       <input
         ref={field}
         id={inputId}
@@ -104,7 +150,10 @@ export function FinderTypeahead({
         aria-describedby={describedBy}
         className={className}
         list={listId}
-        onChange={(event) => setQuery(event.target.value)}
+        onChange={(event) => {
+          setQuery(event.target.value);
+          setOpen(true);
+        }}
       />
       {/*
         The count, politely. `role="status"` and `aria-live="polite"` both, because Safari has
@@ -123,7 +172,7 @@ export function FinderTypeahead({
       {/* No `z-index` on the list below: an absolutely positioned box already paints above its
           non-positioned in-flow siblings, so the two fields under it do not need the named layer
           scale — which is reserved for elements that overlap *chrome* (`globals.css`). */}
-      {matches.length === 0 ? null : (
+      {!showMatches ? null : (
         <ul
           className="bg-surface border-rule mt-xs absolute start-0 end-0 top-full border border-solid shadow-md"
           data-fo-finder-matches
@@ -133,6 +182,12 @@ export function FinderTypeahead({
               {/* The matched prefix in bold, as the artboards draw it (`**Pol**and`). */}
               <button
                 className="text-md hover:bg-surface-raised min-h-[44px] w-full cursor-pointer px-[12px] text-start"
+                // Cancelling `pointerdown` keeps focus in the input, so the wrapper's `focusout`
+                // rule cannot close the list — and unmount this button — between the press and
+                // the `click` that chooses. This is why a mouse pick still works.
+                onPointerDown={(event) => {
+                  event.preventDefault();
+                }}
                 onClick={() => choose(option)}
                 type="button"
               >

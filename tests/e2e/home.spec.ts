@@ -204,16 +204,91 @@ test.describe("the type-ahead enhancement (design round 7)", () => {
     );
   });
 
-  test("picks a match by keyboard and fills the field", async ({ page }) => {
+  test("picks a match by keyboard, fills the field and closes the list", async ({
+    page,
+  }) => {
     await page.goto("/en");
     await page.locator("#finder-country").fill("net");
 
     const option = page.locator(`${MATCHES} button`).first();
     await option.focus();
     await expect(option).toBeFocused();
+    // Focus inside the widget must not dismiss it — that is the difference between the blur rule
+    // and a list that cannot be reached by keyboard at all.
+    await expect(page.locator(MATCHES)).toHaveCount(1);
     await option.press("Enter");
 
     await expect(page.locator("#finder-country")).toHaveValue("Netherlands");
+    // The picked option's button has just been unmounted, so focus is put back on the field the
+    // visitor was filling in; the town field is next in the tab order from there.
+    await expect(page.locator(MATCHES)).toHaveCount(0);
+    await expect(page.locator("#finder-country")).toBeFocused();
+  });
+
+  test("picks a match by mouse, closes the list and uncovers the town field", async ({
+    page,
+  }) => {
+    // 390 px is where `/review 40` measured the un-dismissed list over the town label and the top
+    // 12 px of its input.
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/en");
+    await page.locator("#finder-country").fill("pol");
+
+    await page.locator(`${MATCHES} button`).first().click();
+
+    await expect(page.locator("#finder-country")).toHaveValue("Poland");
+    // The query now matches the picked country exactly, which is precisely the state the first
+    // cut left the list open in.
+    await expect(page.locator(MATCHES)).toHaveCount(0);
+    await expect(page.locator(ANNOUNCE)).toHaveText("");
+
+    // Nothing paints over the town label or the top of its input any more: hit-test both.
+    for (const selector of ['label[for="finder-town"]', "#finder-town"]) {
+      const box = await page.locator(selector).boundingBox();
+      expect(box, selector).not.toBeNull();
+      const topmost = await page.evaluate(
+        ([x, y]) => {
+          const element = document.elementFromPoint(x as number, y as number);
+          return element === null
+            ? null
+            : (element.closest("label, input")?.outerHTML.slice(0, 80) ??
+                element.outerHTML.slice(0, 80));
+        },
+        [(box?.x ?? 0) + 4, (box?.y ?? 0) + 2] as const,
+      );
+      expect(topmost, selector).toContain("finder-town");
+    }
+  });
+
+  test("Escape dismisses the list, keeps what was typed and re-opens on the next keystroke", async ({
+    page,
+  }) => {
+    await page.goto("/en");
+    const field = page.locator("#finder-country");
+    await field.fill("pol");
+    await expect(page.locator(MATCHES)).toHaveCount(1);
+
+    await field.press("Escape");
+
+    await expect(page.locator(MATCHES)).toHaveCount(0);
+    // The first Escape dismisses the suggestions only — a browser that also cleared the field
+    // would throw away the visitor's typing.
+    await expect(field).toHaveValue("pol");
+    await expect(field).toBeFocused();
+    await expect(page.locator(ANNOUNCE)).toHaveText("");
+
+    await field.pressSequentially("a");
+    await expect(page.locator(MATCHES)).toHaveCount(1);
+  });
+
+  test("moving focus out of the field closes the list", async ({ page }) => {
+    await page.goto("/en");
+    await page.locator("#finder-country").fill("pol");
+    await expect(page.locator(MATCHES)).toHaveCount(1);
+
+    await page.locator("#finder-town").focus();
+
+    await expect(page.locator(MATCHES)).toHaveCount(0);
   });
 
   test("hands the native list over on hydration, so there are never two pop-ups", async ({

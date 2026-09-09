@@ -19,7 +19,38 @@
  * `tests/e2e/home.spec.ts` and by axe in `tests/a11y/home.spec.ts` instead. `navigator.languages`
  * is emptied first, for the reason `./shell.spec.ts` documents.
  */
-import { expect, test } from "@playwright/test";
+import { type BrowserContext, expect, test } from "@playwright/test";
+
+/**
+ * A recorded consent decision, seeded before the first navigation — the same helper
+ * `./footer.spec.ts` and `./shell.spec.ts` carry, for the same reason. On the mobile artboard the
+ * consent sheet is a bottom sheet that paints **over the finder card**, and an element screenshot
+ * captures whatever is painted in the element's box, overlay included; without this the baseline
+ * records whether the island's chunk had arrived yet rather than what the card looks like. It
+ * made this file flake on the first run after the finder island grew (`/review 40` fix round).
+ * With a refusal already in the jar the island renders nothing; the sheet has its own baselines
+ * in `./consent.spec.ts`.
+ */
+async function recordConsentRefusal(
+  context: BrowserContext,
+  baseURL: string | undefined,
+): Promise<void> {
+  await context.addCookies([
+    {
+      name: "fo_consent",
+      value: encodeURIComponent(
+        JSON.stringify({
+          v: 1,
+          a: false,
+          m: false,
+          ts: "2026-09-09T00:00:00.000Z",
+          cid: "6f1e6e6a-1d3a-4b5e-9c2f-8f0a1b2c3d4e",
+        }),
+      ),
+      url: baseURL ?? "http://localhost:3000",
+    },
+  ]);
+}
 
 const PARTS = [
   { suffix: "hero", selector: "[data-fo-hero]" },
@@ -36,7 +67,10 @@ const CASES = [
 for (const { name, path, viewport } of CASES) {
   test(`${path} at ${String(viewport.width)}px matches ${name}-*`, async ({
     page,
+    context,
+    baseURL,
   }) => {
+    await recordConsentRefusal(context, baseURL);
     await page.setViewportSize(viewport);
     await page.addInitScript(() => {
       Object.defineProperty(navigator, "languages", {
@@ -48,6 +82,7 @@ for (const { name, path, viewport } of CASES) {
     const response = await page.goto(path);
     expect(response?.status()).toBe(200);
     await expect(page.locator('[data-fo-banner="shown"]')).toHaveCount(0);
+    await expect(page.locator("[data-fo-consent]")).toHaveCount(0);
 
     for (const { suffix, selector } of PARTS) {
       await expect(page.locator(selector)).toHaveScreenshot(

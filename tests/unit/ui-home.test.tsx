@@ -340,6 +340,10 @@ describe("the copy obeys the brand voice (§14 A5)", () => {
     "vendor",
     "anywhere in the world",
     "super fresh",
+    // A5's list names five model words; "network" is the sixth shape of the same claim ("our
+    // network of florists" is a marketplace sentence) and the founder's brand-voice note bans it
+    // alongside them. It is the ninth entry, which is what this test's name has always claimed.
+    "network",
   ];
 
   it("uses none of the nine banned words in any locale's home or finder copy", () => {
