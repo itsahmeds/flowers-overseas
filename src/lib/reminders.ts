@@ -43,10 +43,25 @@
  */
 import { z } from "zod";
 
+import { readBoundedBody } from "./consent";
+import { createRateLimiter, type RateLimiter } from "./csp-report";
 import { logger as defaultLogger, type Logger } from "./logger";
 
 /** A signup is ~100 bytes. Anything that declares more than this is refused unread. */
 export const REMINDERS_MAX_BYTES = 4 * 1024;
+
+/**
+ * Signups accepted per window, per running instance — the same allowance and window as
+ * `CSP_REPORT_RATE_LIMIT` (`src/lib/csp-report.ts`, ADR-0016), and the same modest claim: this is
+ * an **unauthenticated public POST**, so without a gate one script can make the handler validate
+ * bodies and write counter lines as fast as the runtime will serve them. A fixed window per
+ * instance is trivially evadable across instances, and that is fine here for the same reason it
+ * is fine there: nothing durable is written, so the only thing worth bounding is wasted work and
+ * log volume. When spec 017 gives this endpoint a real sink that sends mail, the sink — not this
+ * counter — owns per-address abuse control, because that is where the cost lands.
+ */
+export const REMINDERS_RATE_LIMIT = 60;
+export const REMINDERS_WINDOW_MS = 60_000;
 
 /** The only content type a plain HTML form posts. */
 export const REMINDERS_CONTENT_TYPE = "application/x-www-form-urlencoded";
@@ -105,6 +120,9 @@ export function acceptsFormPost(contentType: string | null): boolean {
   return type === REMINDERS_CONTENT_TYPE;
 }
 
+/** The process-wide limiter the route uses. */
+const limiter = createRateLimiter(REMINDERS_RATE_LIMIT, REMINDERS_WINDOW_MS);
+
 export interface ReminderResponseOptions {
   /**
    * Maps a **validated** locale code to the path the visitor is sent back to, or `undefined` when
@@ -114,6 +132,8 @@ export interface ReminderResponseOptions {
   readonly homePath: (locale: string) => string | undefined;
   readonly sink?: ReminderSink;
   readonly logger?: Logger;
+  /** Injected by the tests; the route uses the process-wide window above. */
+  readonly limiter?: RateLimiter;
 }
 
 function empty(status: number, extra: Record<string, string> = {}): Response {
@@ -128,10 +148,15 @@ function empty(status: number, extra: Record<string, string> = {}): Response {
  * user agent, no `Referer` (§8's rule for `/api/consent`, applied to the second form in the app).
  *
  * `405` for a method other than `POST`, `415` for a body that is not a form post, `413` for one
- * that declares more than `REMINDERS_MAX_BYTES`, `400` for anything that fails
+ * that declares more than `REMINDERS_MAX_BYTES`, `429` for one past the
+ * per-instance allowance, `400` for anything that fails
  * `ReminderSignupSchema` or names a locale we do not serve — counted, never quoted, because the
  * body contains an email address — `500` when the sink refuses, and `303` to the locale footer on
  * success.
+ *
+ * The body is read through `readBoundedBody`, not `request.text()`: a chunked request declares no
+ * `Content-Length`, so the declaration guard cannot see it and `text()` would buffer the whole
+ * thing before any check ran (`/review 30` item 1).
  */
 export async function reminderResponse(
   request: Request,
@@ -140,18 +165,26 @@ export async function reminderResponse(
   const log = options.logger ?? defaultLogger;
   const sink = options.sink ?? discardReminderSink(log);
 
+  const gate = options.limiter ?? limiter;
+
   if (request.method !== "POST") return empty(405, { allow: "POST" });
   if (!acceptsFormPost(request.headers.get("content-type"))) return empty(415);
+
+  if (!gate.allow()) {
+    // A counter, not the request: a flood is still a stream of email addresses.
+    log.warn({ reminder_rate_limited: 1 }, "reminder signup rate limited");
+    return empty(429, {
+      "retry-after": String(Math.ceil(REMINDERS_WINDOW_MS / 1000)),
+    });
+  }
 
   const declared = Number((request.headers.get("content-length") ?? "").trim());
   if (Number.isFinite(declared) && declared > REMINDERS_MAX_BYTES) {
     return empty(413);
   }
 
-  const raw = await request.text();
-  if (new TextEncoder().encode(raw).byteLength > REMINDERS_MAX_BYTES) {
-    return empty(413);
-  }
+  const raw = await readBoundedBody(request, REMINDERS_MAX_BYTES);
+  if (raw === null) return empty(413);
 
   let signup: ReminderSignup;
   try {
