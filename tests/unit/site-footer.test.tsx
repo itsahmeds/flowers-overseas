@@ -269,7 +269,11 @@ describe("§8: the payment colophon claims nothing", () => {
         },
       ],
     });
-    expect(render(<SiteFooter locale="en" view={view} />)).toContain("Visa");
+    const flipped = render(<SiteFooter locale="en" view={view} />);
+    expect(flipped).toContain("Visa");
+    // The names *or* the placeholder, never both: with a method flipped, "shown at checkout"
+    // would hedge a list that is right there (`/review 30` nit 1, the canvas's payment column).
+    expect(flipped).not.toContain("shown at checkout");
   });
 });
 

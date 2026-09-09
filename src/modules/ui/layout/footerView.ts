@@ -144,6 +144,10 @@ export function companyIdentity(
   }
   return {
     legalName,
+    // `", "` is a literal on purpose, and stays one: a registered address is printed in its own
+    // country's postal order, which is spec 007's `formatAddress` (and `Intl.ListFormat`) to own
+    // — not a footer's comma. Nothing renders this branch while `registered` is false
+    // (`/review 30` nit 2).
     address: [...address.lines, address.postalCode, address.city].join(", "),
     registrationNumber,
     registryName,

@@ -194,3 +194,57 @@ test.describe("the footer adds no client JavaScript (§14 A1)", () => {
     await context.close();
   });
 });
+
+test.describe("the colophon's canvas metrics (`/review 30` item 4)", () => {
+  /**
+   * The four numbers `/review 30` measured as drift, asserted from the browser's own computed
+   * values so they cannot drift back. Both e2e projects run this file, and the two artboards
+   * disagree on every one of them, so each expectation is read from the viewport: `e2e-desktop`
+   * (1280 px) is past the `md` breakpoint and gets the desktop artboard's numbers, `e2e-mobile`
+   * (Pixel 7, 412 px) the mobile one's.
+   *
+   * Why computed styles rather than a screenshot: the visual baselines catch *any* change but
+   * name none, and the wordmark in particular is an arbitrary-value utility (`text-[26px]`)
+   * overriding a token class (`text-xl`) on the same element — a cascade order that a Tailwind
+   * upgrade could reverse silently. This test names the canvas value that has to win.
+   */
+  test("sets the canvas's footer padding, wordmark, legal row and grid gaps", async ({
+    page,
+  }) => {
+    await page.goto("/en");
+    const wide = (page.viewportSize()?.width ?? 0) >= 768;
+
+    const metrics = await page.evaluate(() => {
+      const footer = document.querySelector("footer");
+      if (!footer) throw new Error("no footer");
+      const block = footer.firstElementChild as HTMLElement;
+      const stack = block.firstElementChild as HTMLElement;
+      const grid = stack.firstElementChild as HTMLElement;
+      const legal = stack.lastElementChild as HTMLElement;
+      const wordmark = footer.querySelector(".display") as HTMLElement;
+      const style = window.getComputedStyle;
+      return {
+        padBlockStart: style(block).paddingBlockStart,
+        padInline: style(block).paddingInlineStart,
+        padBlockEnd: style(block).paddingBlockEnd,
+        wordmark: style(wordmark).fontSize,
+        legal: style(legal).fontSize,
+        gridColumnGap: style(grid).columnGap,
+        gridRowGap: style(grid).rowGap,
+      };
+    });
+
+    // `40px 56px 24px` (desktop artboard) / `32px 20px 20px` (mobile artboard), verbatim.
+    expect(metrics.padBlockStart).toBe(wide ? "40px" : "32px");
+    expect(metrics.padInline).toBe(wide ? "56px" : "20px");
+    expect(metrics.padBlockEnd).toBe(wide ? "24px" : "20px");
+    // The colophon wordmark is the one place the canvas fixes both ends of the type scale.
+    expect(metrics.wordmark).toBe(wide ? "26px" : "22px");
+    // `--text-xs`: one size for the whole legal row, links and language list alike.
+    expect(metrics.legal).toBe("11px");
+    // 40 px between the desktop columns; 16 px between the two mobile link columns, with the
+    // stacked blocks a scale step (24 px) apart — the artboard's 22 px rounded to the token.
+    expect(metrics.gridColumnGap).toBe(wide ? "40px" : "16px");
+    expect(metrics.gridRowGap).toBe(wide ? "40px" : "24px");
+  });
+});
