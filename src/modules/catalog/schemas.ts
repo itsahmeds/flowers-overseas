@@ -9,15 +9,18 @@
  * Everything below is parsed at the boundary (`plan/12` §2). The dataset schemas — closed facet
  * enums, `ProductSchema`, `ProductTierSchema`, `AddonSchema` and their `to*Row()` projections —
  * belong to `src/config/catalogue/` and land with the dataset (TASK-061); `FacetSelectionSchema`
- * and the read API's other boundary schemas landed with the taxonomy read API (TASK-063), and
+ * and the read API's other boundary schemas landed with the taxonomy read API (TASK-063),
+ * `ProductTierSchema` and `AddonSchema` with the tier and add-on read API (TASK-064), and
  * `PriceProjectionSchema`, `PriceTableSchema`, `AvailabilitySchema` and `QuoteSchema` land with
- * the functions that produce them (TASK-064 … TASK-068). Nothing here computes a price.
+ * the functions that produce them (TASK-065 … TASK-068). Nothing here computes a price.
  */
 import { z } from "zod";
 
 import {
   type FacetName,
   SkuSchema,
+  addonKeys,
+  addonKinds,
   facetNames,
   facetValues,
   productStatuses,
@@ -221,3 +224,76 @@ export const ListProductsQuerySchema = z
 
 /** The prebuild ordering's count (`plan/01` §3's "top 50 products per live locale"). */
 export const PrebuildCountSchema = z.number().int().positive();
+
+/* -------------------------------------------------------------------------- */
+/* Tier and add-on boundary schemas (spec 005 §5.2, AC-19; TASK-064).          */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * One tier as the read API hands it over (`ProductTierSchema` of spec 005 §5.2).
+ *
+ * The dataset's own `ProductTierDataSchema` already refuses a tier key that disagrees with its
+ * stem count and a label key that is not the one spec 005 §7 fixes; this is the *read* boundary,
+ * so it re-states only what a caller can rely on and adds nothing a row could not satisfy. There
+ * is no price field, because a tier is not priced — `resolvePrice()` is (TASK-065).
+ */
+/**
+ * A dotted feature-flag key (`addon.wine.PL`, `currency.PLN`) — the shape spec 002's
+ * `feature_flag` / `feature_flag_scope` pair keys on, parsed at the seam's boundary
+ * (`plan/12` §2). Built by `scopedFlagKey()`, never string-concatenated at a call site.
+ */
+export const FlagKeySchema = z
+  .string()
+  .regex(
+    /^[a-z][a-z0-9]*(?:\.[A-Za-z0-9_]+)+$/,
+    "must be a dotted feature-flag key, e.g. `addon.wine.PL` (spec 005 §12)",
+  );
+
+export const ProductTierSchema = z
+  .object({
+    tierKey: z.string().min(1),
+    labelKey: MessageKeySchema,
+    stems: z.number().int().positive().nullable(),
+    sort: z.number().int().min(0),
+    isDefault: z.boolean(),
+  })
+  .strict();
+
+/**
+ * The keys no add-on shape may carry, in any casing (spec 005 §8, AC-19).
+ *
+ * CRD Art. 22's prohibition on pre-ticked extras is discharged **by absence**: this list is the
+ * one place the forbidden names are written down, `AddonSchema` refuses them at the read boundary,
+ * and `pnpm catalogue:check`'s `addon-preselection` mode refuses them in the authored dataset and
+ * in the declared types. So there is no field to set rather than a rule to remember.
+ */
+export const FORBIDDEN_ADDON_FIELDS = [
+  "defaultSelected",
+  "preselected",
+  "defaultOn",
+  "selected",
+  "checked",
+] as const;
+
+/**
+ * One add-on as offerable in one destination, with **its own** VAT rate (`AddonSchema` of spec 005
+ * §5.2, AC-19).
+ *
+ * `.strict()` is load-bearing twice over: it rejects an unknown field, so a `defaultSelected`
+ * smuggled into a caller's object is a parse error (CRD Art. 22), and it rejects a stray amount,
+ * so an add-on price can only ever arrive as a whole `PricePoint` (AC-8). `vatRateBp` is
+ * **required** — every add-on carries its own rate (spec 005 §13 Q3, spec 002 §14 A1 (a)).
+ */
+export const AddonSchema = z
+  .object({
+    key: z.enum(addonKeys),
+    kind: z.enum(addonKinds),
+    nameKey: MessageKeySchema,
+    descriptionKey: MessageKeySchema,
+    allergenNoteRequired: z.boolean(),
+    partnerOnly: z.boolean(),
+    flagKey: z.string().min(1).nullable(),
+    vatRateBp: BasisPointsSchema,
+    sort: z.number().int().min(0),
+  })
+  .strict();

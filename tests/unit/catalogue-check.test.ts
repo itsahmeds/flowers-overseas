@@ -21,9 +21,12 @@ import { join, resolve } from "node:path";
 
 import { afterAll, describe, expect, it } from "vitest";
 
+import { FORBIDDEN_ADDON_FIELDS } from "../../src/modules/catalog/schemas.ts";
 import {
+  ADDON_FIELD_SOURCE_FILES,
   CHECK_MODES,
   type CatalogueCheckInput,
+  FORBIDDEN_ADDON_FIELD_NAMES,
   type CheckMode,
   SPEC_002_ROW_COLUMNS,
   catalogueCheckInput,
@@ -587,6 +590,82 @@ describe("every failure mode has a fixture (AC-5 / T-03)", () => {
     );
   });
 
+  it("addon-preselection: a dataset add-on that carries a preselection field", () => {
+    // CRD Art. 22 (`plan/07` §2.1, spec 005 §8, AC-19) is discharged **by absence**: the add-on
+    // shape has no `defaultSelected`, so the fixture has to smuggle one onto a row — which is
+    // exactly the commit this mode exists to fail. `AddonDataSchema` is `.strict()`, so the
+    // authored file could not carry it; a mutation of the input is how the mode is exercised.
+    const [first, ...rest] = clean.addons;
+    expect(first).toBeDefined();
+    if (first === undefined) return;
+    const problems = problemsFor(
+      {
+        addons: [
+          { ...first, defaultSelected: true } as unknown as typeof first,
+          ...rest,
+        ],
+      },
+      "addon-preselection",
+    );
+
+    expect(problems).toHaveLength(1);
+    expect(problems[0]).toContain(`${first.key}.defaultSelected`);
+    expect(problems[0]).toContain("CRD Art. 22");
+  });
+
+  it("addon-preselection: a declared field in any source that shapes an add-on", () => {
+    for (const field of FORBIDDEN_ADDON_FIELD_NAMES) {
+      for (const file of ADDON_FIELD_SOURCE_FILES) {
+        const problems = problemsFor(
+          {
+            addonFieldSources: {
+              ...clean.addonFieldSources,
+              [file]: `interface Addon {\n  readonly ${field}: boolean;\n}\n`,
+            },
+          },
+          "addon-preselection",
+        );
+
+        expect(problems, `${file} ${field}`).toHaveLength(1);
+        expect(problems[0]).toContain(field);
+        expect(problems[0]).toContain("discharged by absence");
+      }
+    }
+  });
+
+  it("addon-preselection: an add-on price row with no `vatRateBp` of its own", () => {
+    const first = clean.addonCountryPrices[0];
+    expect(first).toBeDefined();
+    if (first === undefined) return;
+    const stripped: Record<string, unknown> = { ...first };
+    delete stripped.vatRateBp;
+    const problems = problemsFor(
+      {
+        addonCountryPrices: [
+          stripped as unknown as typeof first,
+          ...clean.addonCountryPrices.slice(1),
+        ],
+      },
+      "addon-preselection",
+    );
+
+    expect(problems).toHaveLength(1);
+    expect(problems[0]).toContain(`${first.addonKey}|${first.countryIso2}`);
+    expect(problems[0]).toContain(
+      "every add-on is priced with its own VAT rate",
+    );
+  });
+
+  it("names the same forbidden fields the catalogue module refuses at its boundary", () => {
+    // Transcribed on both sides on purpose (the `SPEC_002_ROW_COLUMNS` rule): the gate may not
+    // import the list it checks, and neither list may be edited alone.
+    expect([...FORBIDDEN_ADDON_FIELD_NAMES].sort()).toEqual(
+      [...FORBIDDEN_ADDON_FIELDS].sort(),
+    );
+    expect(FORBIDDEN_ADDON_FIELD_NAMES).toContain("defaultSelected");
+    expect(FORBIDDEN_ADDON_FIELD_NAMES).toContain("preselected");
+  });
+
   it("covers every declared mode, so no mode is unreachable", () => {
     // The guard on the guard: a mode that no fixture above can trigger would be a check that is
     // declared and not running. Each mode is asserted by the test named after it.
@@ -605,6 +684,7 @@ describe("every failure mode has a fixture (AC-5 / T-03)", () => {
       "fx-snapshot",
       "projection-columns",
       "destination-drift",
+      "addon-preselection",
     ];
 
     expect([...CHECK_MODES].sort()).toEqual([...asserted].sort());

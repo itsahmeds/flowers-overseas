@@ -1,6 +1,6 @@
 /**
- * The three provider interfaces and the composition root (spec 005 §2 "The no-database seam",
- * §5.2 `providers.ts`, AC-2; TASK-060).
+ * The provider interfaces and the composition root (spec 005 §2 "The no-database seam",
+ * §5.2 `providers.ts`, §12, AC-2; TASK-060, TASK-064).
  *
  * Spec 002's provisioning is parked, so the catalogue has to be readable without a database and
  * become database-backed later **without a caller changing**. That is what these interfaces buy:
@@ -35,6 +35,7 @@ import type {
 
 import {
   staticCatalogueProvider,
+  staticFlagProvider,
   staticFxRateProvider,
   staticPriceProvider,
 } from "./static";
@@ -59,6 +60,20 @@ export type CountryPriceRecord = CountryPriceData;
 export type AddonCountryPriceRecord = AddonCountryPriceData;
 /** An `fx_rate` row: euro-base, integer `ratePpm`, dated `asOf`, ECB-sourced (§13 Q2). */
 export type FxRateRecord = FxRateData;
+
+/**
+ * One resolved feature-flag scope row, in the shape spec 002's `feature_flag` /
+ * `feature_flag_scope` pair hands over: a dotted key and whether it is on (spec 005 §12).
+ *
+ * The module consumes two flag scopes and defines none: `addon.wine.{country}` (alcohol
+ * licensing — `plan/10` §1.1 "disabled where unlicensed", `plan/07` §6) and, from TASK-068,
+ * `currency.{code}` for the display currencies beyond the Phase 0 three (§13 Q11).
+ */
+export type FeatureFlagRecord = {
+  /** `addon.wine.PL`, `currency.PLN` — dotted, built by one builder, never string-concatenated. */
+  readonly key: string;
+  readonly enabled: boolean;
+};
 
 /**
  * Products, tiers, categories, occasions and add-ons as authored (spec 005 §2). Media links and
@@ -91,11 +106,30 @@ export interface FxRateProvider {
   fxRates(): Promise<readonly FxRateRecord[]>;
 }
 
+/**
+ * Feature-flag scope rows (spec 005 §12 "Feature flags").
+ *
+ * The seam exists so that *reading* a flag is settled now and the *authority* over it moves
+ * later: Phase 0 answers from `./static/flags`, and spec 002's `feature_flag_scope` plus spec
+ * 012's admin take over inside this module's composition root with **no caller change** — the
+ * same bounded deviation from `CLAUDE.md`'s "go-live is a data flip in admin, never a code
+ * change" that `src/config/locales.ts` (`isLaunch`) and `src/config/site-links.ts`
+ * (`isPublished`) already record while spec 002 is parked.
+ *
+ * A provider hands over rows and decides nothing: an *absent* key is not "off" here, it is
+ * absent, and what an absent key means is `flags.ts`'s single documented rule (closed by
+ * default).
+ */
+export interface FlagProvider {
+  flags(): Promise<readonly FeatureFlagRecord[]>;
+}
+
 /** The provider set the module resolves everything from. */
 export interface CatalogProviders {
   readonly catalogue: CatalogueProvider;
   readonly price: PriceProvider;
   readonly fx: FxRateProvider;
+  readonly flags: FlagProvider;
 }
 
 /**
@@ -109,5 +143,6 @@ export function catalogProviders(): CatalogProviders {
     catalogue: staticCatalogueProvider,
     price: staticPriceProvider,
     fx: staticFxRateProvider,
+    flags: staticFlagProvider,
   };
 }

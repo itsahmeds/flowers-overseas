@@ -4,9 +4,10 @@
  * This file carries the types spec 005 fixes for money — a `PricePoint` (the all-in gross price of
  * one tier in one destination country, with its own decomposition) and the `Surcharge` rows that
  * are part of it — and, since TASK-063, the **taxonomy read models** the read API hands over:
- * `Product`, `Category`, `Occasion`, `FacetSelection`, `FacetResolution` and `ProductIndexability`.
- * The rest of spec §5.2's list — `Tier`, `Addon`, `PriceProjection`, `PriceTable`, `Availability`,
- * `Quote` — arrives with the tasks that own its data and its arithmetic (TASK-064 … TASK-068);
+ * `Product`, `Category`, `Occasion`, `FacetSelection`, `FacetResolution` and `ProductIndexability`,
+ * plus — since TASK-064 — the **tier and add-on read models** `Tier` and `Addon`.
+ * The rest of spec §5.2's list — `PriceProjection`, `PriceTable`, `Availability`,
+ * `Quote` — arrives with the tasks that own its data and its arithmetic (TASK-065 … TASK-068);
  * guessing their fields here would put a second, unauthored definition of the dataset in the
  * repository.
  *
@@ -22,6 +23,8 @@
  *     spec 003's `formatMoney`; this module adds none.
  */
 import type {
+  AddonKey,
+  AddonKind,
   CategoryKind,
   Colour,
   FacetName,
@@ -207,4 +210,84 @@ export interface ProductIndexability {
   readonly localeIndexable: boolean;
   /** The conjunction of the five terms above, and nothing else (spec 005 §6). */
   readonly indexable: boolean;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Tiers and add-ons (spec 005 §2 "Tiers and add-ons", §5.2 `types.ts`;        */
+/* TASK-064).                                                                  */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * One size step of a product as the read API hands it over — `plan/10` §2.2's ladder, with the
+ * preselection as **data**.
+ *
+ * `isDefault` is the field this type exists for. `plan/04` §16's A/B test #2 is "12 vs 18 stems",
+ * so which tier a PDP preselects has to be an authored row (`product_tier.is_default`, spec 002
+ * §14 A1 (b), spec 005 §13 Q6): a tier preselected in code could not be varied per product and
+ * could not be tested at all.
+ *
+ * Two absences carry as much weight as the fields:
+ *
+ *  - **no name.** `labelKey` is a message key — `catalog.tier.stems` (an ICU plural, so Polish
+ *    gets *łodyga / łodygi / łodyg*), `catalog.tier.size.{s,m,l}` or `catalog.tier.single`. Tier
+ *    *names* do not exist in this codebase (spec 005 §7, §13 Q4: plain stem counts, no marketing
+ *    adjective), so there is nothing here to translate and nothing to concatenate.
+ *  - **no money.** The stepped amounts are authored `country_price` rows read by `resolvePrice()`
+ *    (TASK-065). A percentage applied at render would be a float and a rounding bug (spec 005
+ *    §5.2), and an amount on this type would be a price without VAT, delivery or its
+ *    decomposition — which `PricePoint` exists to make unrepresentable (AC-8).
+ */
+export interface Tier {
+  /** `stems_{n}`, `size_{s|m|l}` or `single` (spec 005 §13 Q4). */
+  readonly tierKey: string;
+  /** A `catalog.tier.*` message key, never a label (spec 005 §7). */
+  readonly labelKey: string;
+  /** The nominal stem count, or `null` for an S/M/L arrangement or a single plant. */
+  readonly stems: number | null;
+  /** Listing order inside the product, contiguous from 0. */
+  readonly sort: number;
+  /** The tier the PDP preselects. Exactly one tier of a product carries `true`. */
+  readonly isDefault: boolean;
+}
+
+/**
+ * One add-on as offerable in one destination country (spec 005 §2 "Tiers and add-ons", AC-19).
+ *
+ * **There is no `defaultSelected` and no `preselected` field, and there may not be one.** CRD
+ * Art. 22 forbids a pre-ticked extra (`plan/07` §2.1), and the prohibition is discharged *by
+ * absence*: there is no field to set, `AddonSchema` is `.strict()`, and `pnpm catalogue:check`'s
+ * `addon-preselection` mode fails if one is ever declared or authored. That is a stronger
+ * guarantee than a review comment, and AC-19 pins both halves of it.
+ *
+ * **`vatRateBp` is per (add-on, destination) and is its own rate**, read from the one active
+ * `addon_country_price` row (spec 002 §14 A1 (a), spec 005 §13 Q3): in Poland chocolates are 23%
+ * while flowers are 8% (`plan/06` §4 item 4), so an add-on that inherited the country's flower
+ * rate would invoice the first mixed basket wrong. The rate travels with the add-on; the *amount*
+ * does not, for the same reason `Tier` carries none — a price is a `PricePoint` and comes from
+ * `pricing/*` (TASK-065), whole or not at all.
+ */
+export interface Addon {
+  readonly key: AddonKey;
+  readonly kind: AddonKind;
+  /** `catalog.addon.{key}.name`; the copy is the message catalogue's (spec 005 §7). */
+  readonly nameKey: string;
+  readonly descriptionKey: string;
+  /** A food add-on needs the allergen line (`plan/10` §1.1). */
+  readonly allergenNoteRequired: boolean;
+  /**
+   * The add-on is sourced by the florist rather than by us — `cake`'s property (`plan/10` §1.1
+   * "partner-sourced only", spec 005 §2). A caller shows it only where a partner can supply it;
+   * spec 016's routing owns which partner that is.
+   */
+  readonly partnerOnly: boolean;
+  /**
+   * The feature-flag key that licences this add-on in this destination
+   * (`addon.wine.{country}` — `plan/10` §1.1, `plan/07` §6's alcohol row), or `null` for an
+   * unflagged add-on. Present so a caller can say *why* an add-on is offered; whether it is
+   * offered has already been decided, because a disabled add-on is not in the list at all.
+   */
+  readonly flagKey: string | null;
+  /** This add-on's own VAT rate in the destination, in basis points (PL: 2 300 vs flowers 800). */
+  readonly vatRateBp: number;
+  readonly sort: number;
 }
