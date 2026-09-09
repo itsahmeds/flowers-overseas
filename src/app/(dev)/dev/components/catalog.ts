@@ -33,6 +33,9 @@ export const SECTIONS = [
   "Chips",
   "Photography placeholders",
   "Contrast manifest",
+  // TASK-049: the five `SiteFooter` states of spec 004 §5.3, so the visual and axe suites reach
+  // `links-populated` and `company-registered` years before 007 publishes a page or the OÜ exists.
+  "Site footer",
 ] as const;
 
 /** The colour ramps, in the order `globals.css` declares them. */
@@ -242,3 +245,51 @@ export const PRIMITIVE_CAPTIONS = {
 
 export const MIRROR_NOTE =
   'Under dir="rtl" the arrow and chevron-end flip (mirror-in-rtl); the shield, the calendar, the florist mark and the brand mark never do.';
+
+/**
+ * The five `SiteFooter` states of spec 004 §5.3 (TASK-049). `idPrefix` keeps each instance's ids
+ * unique on this one document — five footers with one `footer-group-sending` id would be a
+ * critical `duplicate-id-aria` finding (AC-26) — and the caption names the state so a reviewer
+ * reads the screenshot without the source.
+ */
+export const FOOTER_STATES = [
+  {
+    id: "links-empty",
+    caption:
+      "links-empty (Phase 0) · every site-links.ts target unpublished, so every label is text",
+  },
+  {
+    id: "links-populated",
+    caption:
+      "links-populated · one target published, rendered as a link with no template edit",
+  },
+  {
+    id: "company-unregistered",
+    caption:
+      "company-unregistered (Phase 0) · trading name and contact channel, no registry code, VAT id or address",
+  },
+  {
+    id: "company-registered",
+    caption:
+      "company-registered · the Operated by clause, once all five registry fields exist",
+  },
+  {
+    id: "trust-marks-empty",
+    caption:
+      "trust-marks-empty (Phase 0) · TrustMarks renders nothing and reserves no box",
+  },
+] as const;
+
+/** The registered-company fixture the `company-registered` state is rendered from. */
+export const FOOTER_REGISTERED_COMPANY = {
+  legalName: "Flowers Overseas OU (example)",
+  registryName: "Estonian Business Register (example)",
+  registrationNumber: "00000000",
+  vatId: "EE000000000",
+  address: {
+    lines: ["Example street 1"],
+    postalCode: "00000",
+    city: "Tallinn",
+    countryIso2: "EE",
+  },
+} as const;

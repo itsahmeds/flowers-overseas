@@ -44,7 +44,7 @@
     .photo { background: var(--color-photo); display: flex; align-items: flex-end; padding: var(--space-md); color: var(--color-photo-ink); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; }
     .field { display: flex; flex-direction: column; gap: 6px; }
     .field span.v { min-height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-bottom: 1px solid var(--color-ink); font-size: var(--text-md); color: var(--color-ink); }
-    .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
+    .btn { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
     .btn.accent { background: var(--color-accent); }
     .btn.secondary { background: var(--color-paper); color: var(--color-ink); border: 1px solid var(--color-ink-3); }
     .btn.sm { min-height: 44px; padding: 0 16px; font-size: var(--text-sm); }
@@ -83,20 +83,20 @@
 <div style="width: 1440px; min-height: 2180px; background: var(--color-paper); display: flex; flex-direction: column;">
   <div style="display: flex; flex-direction: column; border-bottom: 1px solid var(--color-ink);">
     <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm) var(--space-lg); align-items: center; justify-content: space-between; padding: 12px 56px; font-size: var(--text-xs); color: var(--color-ink-2); border-bottom: var(--rule);">
-      <span>Order by 14:00 Warsaw time for same-day delivery</span><span>Prices include delivery and VAT</span><span>Help &amp; WhatsApp: +1 (213) 592-5150 · Mon–Sat 8–20 CET</span>
+      <span>Order by 14:00 in Warsaw — the recipient's own time — and we deliver today</span><span>One price: VAT and delivery in</span><span>Talk to us: +1 (213) 592-5150 · WhatsApp · Mon–Sat 8–20 CET</span>
     </div>
     <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm) var(--space-lg); align-items: center; justify-content: space-between; padding: var(--space-md) 56px;">
       <span class="display" style="font-size: 26px; letter-spacing: 0.04em;">Flowers Overseas</span>
       <span style="font-size: var(--text-sm); color: var(--color-ink-3);">Search flowers, occasions, a city or a country · Sign in · My orders · Basket (0)</span>
     </div>
     <div style="padding: 10px 56px; border-top: var(--rule); font-size: var(--text-sm); color: var(--color-ink-2);">
-      <span class="label" style="margin-inline-end: var(--space-sm);">Categories</span>Best sellers · Birthday · Sympathy · Occasions · Bouquets · Roses · Plants · Add-ons · Same-day delivery · Destinations
+      <span class="label" style="margin-inline-end: var(--space-sm);">Categories</span>Best sellers · Birthday · Sympathy · All Saints 1 Nov · Andrzejki 29 Nov · Wigilia 24 Dec · Women's Day 8 Mar · Bouquets · Roses · Plants · Same-day · Poland
     </div>
-    <div style="padding: 6px 56px 10px; font-size: var(--text-xs); color: var(--color-ink-3);">Chrome as approved in <b>homepage-v1</b>. Every category row entry and every utility link is <b>unpublished in Phase 0</b> and renders as text, not a link (site-links.ts, categories.ts; spec 004 AC-14).</div>
+    <div style="padding: 6px 56px 10px; font-size: var(--text-xs); color: var(--color-ink-3);">Chrome as approved in <b>homepage-v1</b>. Every category row entry and every utility link is <b>unpublished in Phase 0</b> and renders as text, not a link (site-links.ts, categories.ts; spec 004 AC-14). <b>Round 2:</b> the row prints the next real occasion dates for the destination, the way 1-800-Flowers prints "Labor Day (9/7)" — the dates come from the occasion calendar, so a row entry can never name a date we have not verified.</div>
   </div>
 
   <section class="note" style="margin: var(--space-lg) 56px 0;">
-    <span class="label">Occasion hub (destination-less)</span>
+    <span class="label">Occasion hub (destination-less) · [internal]</span>
     <dl>
       <dt>Purpose</dt><dd>Explain when an occasion falls <b>in each country</b> and route to the country occasion page. It answers a real informational query (“when is mother's day in germany”) and converts it.</dd>
       <dt>URL</dt><dd><code>/en-gb/occasions/mothers-day</code> · <code>/de/anlaesse/muttertag</code> · <code>/pl/okazje/dzien-matki</code></dd>
@@ -129,8 +129,25 @@
 <div class="sec"><div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">Send Mother's Day flowers</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">Where we can</h2></div>
       <div class="grid" style="grid-template-columns: repeat(3, minmax(0, 1fr));">
         <a href="#" class="tile" style="background: var(--color-paper-2); border-color: var(--color-ink);"><span class="display" style="font-size: var(--text-xl);">Poland · 26 May</span><span class="chip accent" style="align-self: flex-start;">Delivering now</span><span style="font-size: var(--text-sm); color: var(--color-accent);">Mother's Day flowers in Poland →</span></a>
-        <div class="tile"><span style="font-size: var(--text-sm); color: var(--color-ink-2);">For the six guide countries the link goes to the corridor guide and the waiting list, because no occasion page exists for a country we cannot deliver to.</span></div>
+        <div class="tile"><span style="font-size: var(--text-sm); color: var(--color-ink-2);">For the six guide countries the link goes to the country guide and the waiting list, because no occasion page exists for a country we cannot deliver to.</span></div>
         <a href="#" class="tile"><span class="display" style="font-size: var(--text-xl);">All occasions</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">The full calendar, per country.</span></a>
+      </div></div>
+
+<div class="sec"><div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">Dated, and everyday</span><h2 class="display" style="margin: 0; font-size: var(--text-xl); line-height: 1.15;">Two groups, because one of them has a deadline</h2></div>
+      <div style="display: flex; flex-wrap: wrap; gap: var(--space-lg);">
+        <div class="sec" style="flex: 1 1 300px; gap: var(--space-sm);"><span class="label">With a date</span>
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <span style="font-size: var(--text-md);">All Saints · <b>1 November</b> in Poland · order by 30 Oct</span>
+            <span style="font-size: var(--text-md);">Women's Day · <b>8 March</b> in Poland · Poland's biggest flower day</span>
+            <span style="font-size: var(--text-md);">Mother's Day · <b>26 May</b> in Poland, <b>22 March</b> in the UK, <b>10 May</b> in Germany</span>
+            <span style="font-size: var(--text-md);">Name day · <b>every day of the year</b> · the Polish calendar, by name</span>
+          </div>
+          <span style="font-size: var(--text-xs); color: var(--color-ink-3);">The date is printed next to the occasion, per <b>destination</b> country, which is the entire cross-border problem: Mother's Day is three different days for the same buyer. 1-800-Flowers prints “Labor Day (9/7)” in its navigation and is the only site in the field that prints a date at all; nobody reconciles the sender's calendar with the recipient's.</span>
+        </div>
+        <div class="sec" style="flex: 1 1 300px; gap: var(--space-sm);"><span class="label">Any day</span>
+          <div style="display: flex; flex-direction: column; gap: 4px;"><span style="font-size: var(--text-md);">Birthday</span><span style="font-size: var(--text-md);">Anniversary</span><span style="font-size: var(--text-md);">New baby</span><span style="font-size: var(--text-md);">Sympathy and funerals</span><span style="font-size: var(--text-md);">Get well</span><span style="font-size: var(--text-md);">Just because</span></div>
+          <span style="font-size: var(--text-xs); color: var(--color-ink-3);">Everyday occasions carry no date and therefore no cutoff urgency. What is absent from both columns: “Urodziny są już dzisiaj? Bez obaw, jeszcze zdążysz”, “Need flowers to arrive like, right now?!” and every sale banner — manufactured urgency is the field's default hook and we have a real cutoff instead.</span>
+        </div>
       </div></div>
 
 <div class="sec"><div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">States</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;"></h2></div>
@@ -142,8 +159,9 @@
   <div style="margin-block-start: auto; border-top: 1px solid var(--color-ink); padding: var(--space-lg) 56px; display: flex; flex-direction: column; gap: var(--space-sm); font-size: var(--text-sm); color: var(--color-ink-2);">
     <span class="label">Footer</span>
     <span>Sending: Destinations · Occasions · Delivery times and cutoffs · The guarantee — Company: How it works · For florists · Help and contact · Imprint — Legal: Terms · Privacy · Cookies · Withdrawal and refunds · Cookie settings</span>
-    <span>International flower relay. You order, a vetted local florist makes and delivers. Operated by <span class="slot">[legal name]</span>, <span class="slot">[registered address]</span>, <span class="slot">[registration no]</span> — printed only once <code>company.registered</code> is true (company.ts; spec 004 AC-9).</span>
+    <span>We send flowers across Europe. You order from us; our florist in the recipient's town makes the bouquet and hands it over in person. Operated by <span class="slot">[legal name]</span>, <span class="slot">[registered address]</span>, <span class="slot">[registration no]</span> — printed only once <code>company.registered</code> is true (company.ts; spec 004 AC-9).</span>
     <span>BLIK · Klarna · PayPal · Visa · Mastercard · Apple Pay — card payments processed by Stripe. We never store card numbers.</span>
+    <span>Talk to a person: +1 (213) 592-5150 · WhatsApp · Mon–Sat 8–20 CET. Weekend hours are a founder decision, not a design one (benchmarks/README.md, open question 1).</span>
   </div>
 </div>
 </x-dc>

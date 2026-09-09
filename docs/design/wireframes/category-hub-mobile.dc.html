@@ -44,7 +44,7 @@
     .photo { background: var(--color-photo); display: flex; align-items: flex-end; padding: var(--space-md); color: var(--color-photo-ink); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; }
     .field { display: flex; flex-direction: column; gap: 6px; }
     .field span.v { min-height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-bottom: 1px solid var(--color-ink); font-size: var(--text-md); color: var(--color-ink); }
-    .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
+    .btn { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
     .btn.accent { background: var(--color-accent); }
     .btn.secondary { background: var(--color-paper); color: var(--color-ink); border: 1px solid var(--color-ink-3); }
     .btn.sm { min-height: 44px; padding: 0 16px; font-size: var(--text-sm); }
@@ -80,23 +80,23 @@
     .prose { max-width: var(--measure); font-size: var(--text-md); line-height: 1.6; color: var(--color-ink-2); }
   </style>
 </helmet>
-<div style="width: 390px; min-height: 2740px; background: var(--color-paper); display: flex; flex-direction: column;">
+<div style="width: 390px; min-height: 4320px; background: var(--color-paper); display: flex; flex-direction: column;">
   <div style="display: flex; flex-direction: column; border-bottom: 1px solid var(--color-ink);">
     <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm) var(--space-lg); align-items: center; justify-content: space-between; padding: 12px var(--space-md); font-size: var(--text-xs); color: var(--color-ink-2); border-bottom: var(--rule);">
-      <span>Order by 14:00 Warsaw time for same-day delivery</span><span>Prices include delivery and VAT</span><span>Help &amp; WhatsApp: +1 (213) 592-5150 · Mon–Sat 8–20 CET</span>
+      <span>Order by 14:00 in Warsaw — the recipient's own time — and we deliver today</span><span>One price: VAT and delivery in</span><span>Talk to us: +1 (213) 592-5150 · WhatsApp · Mon–Sat 8–20 CET</span>
     </div>
     <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm) var(--space-lg); align-items: center; justify-content: space-between; padding: var(--space-md) var(--space-md);">
       <span class="display" style="font-size: 20px; letter-spacing: 0.04em;">Flowers Overseas</span>
       <span style="font-size: var(--text-sm); color: var(--color-ink-3);">Search · Menu · Basket (0)</span>
     </div>
     <div style="padding: 10px var(--space-md); border-top: var(--rule); font-size: var(--text-sm); color: var(--color-ink-2);">
-      <span class="label" style="margin-inline-end: var(--space-sm);">Categories</span>Best sellers · Occasions · Bouquets · Roses · Plants · Same-day
+      <span class="label" style="margin-inline-end: var(--space-sm);">Categories</span>Best sellers · All Saints 1 Nov · Wigilia 24 Dec · Bouquets · Roses · Plants · Same-day
     </div>
-    <div style="padding: 6px var(--space-md) 10px; font-size: var(--text-xs); color: var(--color-ink-3);">Chrome as approved in <b>homepage-v1</b>. Every category row entry and every utility link is <b>unpublished in Phase 0</b> and renders as text, not a link (site-links.ts, categories.ts; spec 004 AC-14).</div>
+    <div style="padding: 6px var(--space-md) 10px; font-size: var(--text-xs); color: var(--color-ink-3);">Chrome as approved in <b>homepage-v1</b>. Every category row entry and every utility link is <b>unpublished in Phase 0</b> and renders as text, not a link (site-links.ts, categories.ts; spec 004 AC-14). <b>Round 2:</b> the row prints the next real occasion dates for the destination, the way 1-800-Flowers prints "Labor Day (9/7)" — the dates come from the occasion calendar, so a row entry can never name a date we have not verified.</div>
   </div>
 
   <section class="note" style="margin: var(--space-lg) var(--space-md) 0;">
-    <span class="label">Category hub (destination-less)</span>
+    <span class="label">Category hub (destination-less) · [internal]</span>
     <dl>
       <dt>Purpose</dt><dd>Generic category intent (“send roses”, “roses delivery”) with no destination yet. Its whole job is to route: explain what the category is, then hand the visitor to a country.</dd>
       <dt>URL</dt><dd><code>/en-gb/flowers/roses</code> · <code>/de/blumen/rosen</code> · <code>/pl/kwiaty/roze</code> — no country segment.</dd>
@@ -121,7 +121,7 @@
 <div class="sec"><div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">Choose a destination</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">The one action on the page</h2></div>
       <div class="grid" style="grid-template-columns: repeat(1, minmax(0, 1fr));">
         <a href="#" class="tile" style="background: var(--color-paper-2); border-color: var(--color-ink);"><span class="display" style="font-size: var(--text-xl);">Poland</span><span class="chip accent" style="align-self: flex-start;">Delivering now</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Warszawa · Kraków · Wrocław · Gdańsk · Poznań</span><span style="font-size: var(--text-sm); color: var(--color-accent);">See roses for Poland →</span></a>
-        <div class="tile"><span class="display" style="font-size: var(--text-xl); color: var(--color-ink-3);">Germany · France · Spain · Italy · Romania · Netherlands</span><span class="chip muted" style="align-self: flex-start;">Guide · waiting list</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">No roses page exists for a country we do not deliver to, so none is linked. The corridor guide is.</span></div>
+        <div class="tile"><span class="display" style="font-size: var(--text-xl); color: var(--color-ink-3);">Germany · France · Spain · Italy · Romania · Netherlands</span><span class="chip muted" style="align-self: flex-start;">Guide · waiting list</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">No roses page exists for a country we do not deliver to, so none is linked. The country guide is.</span></div>
         <a href="#" class="tile"><span class="display" style="font-size: var(--text-xl);">All destinations</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Somewhere else? Tell us where you need us next.</span></a>
       </div>
       <span style="font-size: var(--text-xs); color: var(--color-ink-3);">Notice what is <b>not</b> in these cards: no “from €35”. A from-price on a page with no destination is exactly the drip-pricing pattern <code>plan/07</code> §4 bans.</span></div>
@@ -130,8 +130,12 @@
       <div class="grid" style="grid-template-columns: repeat(2, minmax(0, 1fr));"><a href="#" class="card"><div class="photo" style="aspect-ratio: 1 / 1;">Photo slot · bouquet</div><span class="nm"><span class="slot">[slot] product name</span></span><span style="font-size: var(--text-sm); color: var(--color-ink-3);">Choose a destination to see the price</span></a><a href="#" class="card"><div class="photo" style="aspect-ratio: 1 / 1;">Photo slot · bouquet</div><span class="nm"><span class="slot">[slot] product name</span></span><span style="font-size: var(--text-sm); color: var(--color-ink-3);">Choose a destination to see the price</span></a><a href="#" class="card"><div class="photo" style="aspect-ratio: 1 / 1;">Photo slot · bouquet</div><span class="nm"><span class="slot">[slot] product name</span></span><span style="font-size: var(--text-sm); color: var(--color-ink-3);">Choose a destination to see the price</span></a><a href="#" class="card"><div class="photo" style="aspect-ratio: 1 / 1;">Photo slot · bouquet</div><span class="nm"><span class="slot">[slot] product name</span></span><span style="font-size: var(--text-sm); color: var(--color-ink-3);">Choose a destination to see the price</span></a></div>
       <span style="font-size: var(--text-xs); color: var(--color-ink-3);">Cards link to the product on the <em>selected</em> destination once one is chosen; with no destination they link to the destination chooser above. The card component is the same one the country grid uses, with money absent rather than zeroed.</span></div>
 
+<div class="sec"><div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">Why there is no price here</span><h2 class="display" style="margin: 0; font-size: var(--text-xl); line-height: 1.15;">One sentence, said out loud</h2></div>
+      <p class="prose" style="margin: 0;">A rose costs what it costs in the town it is made in, so we cannot show you a price until you tell us where it is going. Pick a destination and every price on the next page is the whole price — delivery and VAT in, nothing added at checkout.</p>
+      <span style="font-size: var(--text-xs); color: var(--color-ink-3);">The field's answer to this page is a price with an asterisk. Ours is no price and a reason, which is the only version compatible with “price shown = price charged”. It is also the only page type in the set that is allowed to show a product without a price.</span></div>
+
 <div class="sec"><div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">States and rules</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;"></h2></div>
-      <div class="stub" style=""><b>No live destination</b><span>The destination cards become corridor-guide links and the page says so in a sentence. It never shows a price to compensate.</span></div>
+      <div class="stub" style=""><b>No live destination</b><span>The destination cards become country-guide links and the page says so in a sentence. It never shows a price to compensate.</span></div>
       <div class="stub" style=""><b>Sibling categories</b><span>Chips to the other category hubs and up to <code>/flowers</code>, so the crawler reaches the whole hub set from any one page.</span></div>
       <div class="stub" style=""><b>Flower-type hubs</b><span><code>/en-gb/flowers/type/tulips</code> is the same template for a flower type that is not a category. Phase 4, and only above six products (<code>plan/05</code> row 11) — no wireframe of its own.</span></div>
       <div class="stub" style=""><b>Schema</b><span><code>CollectionPage</code> plus an <code>ItemList</code> of the destinations. <b>No <code>Offer</code>, no <code>AggregateOffer</code>, no <code>lowPrice</code></b> — the page has no price to declare.</span></div></div>
@@ -140,8 +144,9 @@
   <div style="margin-block-start: auto; border-top: 1px solid var(--color-ink); padding: var(--space-lg) var(--space-md); display: flex; flex-direction: column; gap: var(--space-sm); font-size: var(--text-sm); color: var(--color-ink-2);">
     <span class="label">Footer</span>
     <span>Sending: Destinations · Occasions · Delivery times and cutoffs · The guarantee — Company: How it works · For florists · Help and contact · Imprint — Legal: Terms · Privacy · Cookies · Withdrawal and refunds · Cookie settings</span>
-    <span>International flower relay. You order, a vetted local florist makes and delivers. Operated by <span class="slot">[legal name]</span>, <span class="slot">[registered address]</span>, <span class="slot">[registration no]</span> — printed only once <code>company.registered</code> is true (company.ts; spec 004 AC-9).</span>
+    <span>We send flowers across Europe. You order from us; our florist in the recipient's town makes the bouquet and hands it over in person. Operated by <span class="slot">[legal name]</span>, <span class="slot">[registered address]</span>, <span class="slot">[registration no]</span> — printed only once <code>company.registered</code> is true (company.ts; spec 004 AC-9).</span>
     <span>BLIK · Klarna · PayPal · Visa · Mastercard · Apple Pay — card payments processed by Stripe. We never store card numbers.</span>
+    <span>Talk to a person: +1 (213) 592-5150 · WhatsApp · Mon–Sat 8–20 CET. Weekend hours are a founder decision, not a design one (benchmarks/README.md, open question 1).</span>
   </div>
 </div>
 </x-dc>

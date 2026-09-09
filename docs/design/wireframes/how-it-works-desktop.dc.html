@@ -44,7 +44,7 @@
     .photo { background: var(--color-photo); display: flex; align-items: flex-end; padding: var(--space-md); color: var(--color-photo-ink); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; }
     .field { display: flex; flex-direction: column; gap: 6px; }
     .field span.v { min-height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-bottom: 1px solid var(--color-ink); font-size: var(--text-md); color: var(--color-ink); }
-    .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
+    .btn { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
     .btn.accent { background: var(--color-accent); }
     .btn.secondary { background: var(--color-paper); color: var(--color-ink); border: 1px solid var(--color-ink-3); }
     .btn.sm { min-height: 44px; padding: 0 16px; font-size: var(--text-sm); }
@@ -80,28 +80,28 @@
     .prose { max-width: var(--measure); font-size: var(--text-md); line-height: 1.6; color: var(--color-ink-2); }
   </style>
 </helmet>
-<div style="width: 1440px; min-height: 2100px; background: var(--color-paper); display: flex; flex-direction: column;">
+<div style="width: 1440px; min-height: 2500px; background: var(--color-paper); display: flex; flex-direction: column;">
   <div style="display: flex; flex-direction: column; border-bottom: 1px solid var(--color-ink);">
     <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm) var(--space-lg); align-items: center; justify-content: space-between; padding: 12px 56px; font-size: var(--text-xs); color: var(--color-ink-2); border-bottom: var(--rule);">
-      <span>Order by 14:00 Warsaw time for same-day delivery</span><span>Prices include delivery and VAT</span><span>Help &amp; WhatsApp: +1 (213) 592-5150 · Mon–Sat 8–20 CET</span>
+      <span>Order by 14:00 in Warsaw — the recipient's own time — and we deliver today</span><span>One price: VAT and delivery in</span><span>Talk to us: +1 (213) 592-5150 · WhatsApp · Mon–Sat 8–20 CET</span>
     </div>
     <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm) var(--space-lg); align-items: center; justify-content: space-between; padding: var(--space-md) 56px;">
       <span class="display" style="font-size: 26px; letter-spacing: 0.04em;">Flowers Overseas</span>
       <span style="font-size: var(--text-sm); color: var(--color-ink-3);">Search flowers, occasions, a city or a country · Sign in · My orders · Basket (0)</span>
     </div>
     <div style="padding: 10px 56px; border-top: var(--rule); font-size: var(--text-sm); color: var(--color-ink-2);">
-      <span class="label" style="margin-inline-end: var(--space-sm);">Categories</span>Best sellers · Birthday · Sympathy · Occasions · Bouquets · Roses · Plants · Add-ons · Same-day delivery · Destinations
+      <span class="label" style="margin-inline-end: var(--space-sm);">Categories</span>Best sellers · Birthday · Sympathy · All Saints 1 Nov · Andrzejki 29 Nov · Wigilia 24 Dec · Women's Day 8 Mar · Bouquets · Roses · Plants · Same-day · Poland
     </div>
-    <div style="padding: 6px 56px 10px; font-size: var(--text-xs); color: var(--color-ink-3);">Chrome as approved in <b>homepage-v1</b>. Every category row entry and every utility link is <b>unpublished in Phase 0</b> and renders as text, not a link (site-links.ts, categories.ts; spec 004 AC-14).</div>
+    <div style="padding: 6px 56px 10px; font-size: var(--text-xs); color: var(--color-ink-3);">Chrome as approved in <b>homepage-v1</b>. Every category row entry and every utility link is <b>unpublished in Phase 0</b> and renders as text, not a link (site-links.ts, categories.ts; spec 004 AC-14). <b>Round 2:</b> the row prints the next real occasion dates for the destination, the way 1-800-Flowers prints "Labor Day (9/7)" — the dates come from the occasion calendar, so a row entry can never name a date we have not verified.</div>
   </div>
 
   <section class="note" style="margin: var(--space-lg) 56px 0;">
-    <span class="label">How it works</span>
+    <span class="label">How it works · [internal]</span>
     <dl>
-      <dt>Purpose</dt><dd>Explain the relay to somebody who has never sent flowers abroad: what we do, what the florist does, what we ship (nothing), and what happens if it goes wrong.</dd>
+      <dt>Purpose</dt><dd>Explain how we work to somebody who has never sent flowers abroad: what we do, what the florist does, what we ship (nothing), and what happens if it goes wrong.</dd>
       <dt>URL</dt><dd><code>/en-gb/how-it-works</code></dd>
       <dt>Index</dt><dd>yes — "how international flower delivery works".</dd>
-      <dt>Reads</dt><dd>static copy plus live stats (countries, florists, deliveries). <b>Every live stat renders as a <code>Placeholder</code> bar in Phase 0</b>: there are no deliveries and no partners, and a page about honesty cannot open with an invented number.</dd>
+      <dt>Reads</dt><dd>static copy plus live stats (countries, florists, deliveries). <b>Every live stat renders as a <code>Placeholder</code> bar in Phase 0</b>: there are no deliveries and no florists yet, and a page about honesty cannot open with an invented number.</dd>
       <dt>Owning spec</dt><dd>007</dd>
     </dl>
   </section>
@@ -115,7 +115,7 @@
           <div class="kv" style="max-width: 420px; border-block-start: var(--rule); padding-block-start: var(--space-md);">
             <span>Countries we deliver to</span><span>1</span>
             <span>Countries with a guide</span><span>6</span>
-            <span>Vetted florists</span><span><span class="ph"></span></span>
+            <span>Our florists in Poland</span><span><span class="ph"></span></span>
             <span>Deliveries made</span><span><span class="ph"></span></span>
           </div>
           <span style="font-size: var(--text-xs); color: var(--color-ink-3);">The first two are facts from the country registry. The last two are placeholder bars, and will stay bars until they are real. “1” is not an embarrassing number to print; a made-up “200+” is.</span>
@@ -123,7 +123,7 @@
         <div class="photo" style="aspect-ratio: 3 / 2;">Photo slot · a florist at work · founder to supply</div>
       </div></div>
 
-<div class="sec"><div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">The relay</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">Four steps, and who does each</h2></div>
+<div class="sec"><div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">How we work</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">Four steps, and who does each</h2></div>
       <div class="grid" style="grid-template-columns: repeat(4, minmax(0, 1fr));"><div class="tile"><span class="label">01 · you</span><span style="font-family: var(--font-display); font-size: var(--text-xl);">You order</span><span style="font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.6;">In your language and your currency, with the all-in price and the delivery date fixed before you pay.</span></div><div class="tile"><span class="label">02 · us</span><span style="font-family: var(--font-display); font-size: var(--text-xl);">We route it</span><span style="font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.6;">To a florist we have visited, in the recipient's town, with the capacity for that day. We handle the language, the money and the promise.</span></div><div class="tile"><span class="label">03 · the florist</span><span style="font-family: var(--font-display); font-size: var(--text-xl);">They make it</span><span style="font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.6;">That morning, from what is fresh in their shop. If something is unavailable they substitute to the same value, style and colour, and tell us.</span></div><div class="tile"><span class="label">04 · the florist and us</span><span style="font-family: var(--font-display); font-size: var(--text-xl);">You get the photo</span><span style="font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.6;">They photograph the delivered bouquet and we email it to you, so you know it arrived and what it looked like.</span></div></div></div>
 
 <div class="sec"><div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">What we promise, and what we do not</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;"></h2></div>
@@ -142,6 +142,15 @@
         </div>
       </div></div>
 
+<div class="sec"><div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">The short answer</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">Three sentences, and then the questions</h2></div>
+      <p class="prose" style="margin: 0; font-size: var(--text-lg); line-height: 1.5;">You order from us in your own language and currency. Our florist in the recipient's town makes the bouquet the morning it is delivered and hands it over in person. Nothing crosses a border, so there is no customs form, no paperwork and nothing for the recipient to pay on arrival.</p>
+      <div style="display: flex; flex-wrap: wrap; gap: var(--space-lg);">
+        <div class="faq" style="flex: 1 1 280px;"><b>So the flowers are not posted to me or to them?</b><span>No. Nothing is boxed, nothing is couriered and nothing is flown. The flowers are bought in the recipient's country, made there that morning, and carried to the door by the person who made them.</span></div>
+        <div class="faq" style="flex: 1 1 280px;"><b>Will they be asked for customs or duty?</b><span>No. There is no import, so there is no customs form, no duty and nothing to pay at the door. This is the fear that stops most first orders and the field answers it in fine print or not at all.</span></div>
+        <div class="faq" style="flex: 1 1 280px;"><b>Who am I buying from?</b><span>From us. We take the order, we set the price, we hold the guarantee and we are who you talk to when something goes wrong. Our florist makes and delivers; you never have to deal with them.</span></div>
+      </div>
+      <span style="font-size: var(--text-xs); color: var(--color-ink-3);">Interflora PL and Euroflorist PL are the only two sites in the field that say this plainly; 1-800-Flowers says “international affiliates” and FloraQueen says “bouquet creation centres”, which tell a buyer nothing. Three sentences, at the top, in the locale's own language.</span></div>
+
 <div class="sec"><div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">States</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;"></h2></div>
       <div class="stub" style=""><b>Live stats</b><span>Each stat is either a registry fact (countries) or a <code>Placeholder</code> bar (florists, deliveries). There is no third rendering, and no template branch that substitutes a rounded-up estimate.</span></div>
       <div class="stub" style=""><b>Schema</b><span><code>HowTo</code> is <b>not</b> used: this is not a set of instructions for the reader. <code>FAQPage</code> is used for the promise/not-promise pairs, which are visible on the page.</span></div></div>
@@ -150,8 +159,9 @@
   <div style="margin-block-start: auto; border-top: 1px solid var(--color-ink); padding: var(--space-lg) 56px; display: flex; flex-direction: column; gap: var(--space-sm); font-size: var(--text-sm); color: var(--color-ink-2);">
     <span class="label">Footer</span>
     <span>Sending: Destinations · Occasions · Delivery times and cutoffs · The guarantee — Company: How it works · For florists · Help and contact · Imprint — Legal: Terms · Privacy · Cookies · Withdrawal and refunds · Cookie settings</span>
-    <span>International flower relay. You order, a vetted local florist makes and delivers. Operated by <span class="slot">[legal name]</span>, <span class="slot">[registered address]</span>, <span class="slot">[registration no]</span> — printed only once <code>company.registered</code> is true (company.ts; spec 004 AC-9).</span>
+    <span>We send flowers across Europe. You order from us; our florist in the recipient's town makes the bouquet and hands it over in person. Operated by <span class="slot">[legal name]</span>, <span class="slot">[registered address]</span>, <span class="slot">[registration no]</span> — printed only once <code>company.registered</code> is true (company.ts; spec 004 AC-9).</span>
     <span>BLIK · Klarna · PayPal · Visa · Mastercard · Apple Pay — card payments processed by Stripe. We never store card numbers.</span>
+    <span>Talk to a person: +1 (213) 592-5150 · WhatsApp · Mon–Sat 8–20 CET. Weekend hours are a founder decision, not a design one (benchmarks/README.md, open question 1).</span>
   </div>
 </div>
 </x-dc>

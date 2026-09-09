@@ -3,7 +3,7 @@
  *
  * A design directory that agents are instructed to read before building a page is only worth
  * reading if it is complete and internally consistent, and neither property survives being a
- * convention. Three things are therefore asserted mechanically:
+ * convention. Five things are therefore asserted mechanically:
  *
  *  1. **Coverage.** Every Phase 0 row of `plan/05-page-inventory.md` §1–§2 is mapped by
  *     `docs/design/README.md` to artboard files that exist. A new Phase 0 page type in `plan/05`
@@ -16,6 +16,13 @@
  *  3. **Canvases.** Every `canvas.json` entry points at a file that exists, so publishing a canvas
  *     cannot silently drop an artboard — the failure mode that had `homepage-v1/canvas.json`
  *     naming three files that had been renamed.
+ *  4. **Voice.** No artboard uses one of the words spec 004 §14 A5 bans from customer copy. The
+ *     words on an artboard are the words that ship, because an implementer copies them into a
+ *     message key; a convention that "we speak in the first person" survives exactly as long as
+ *     nobody is in a hurry, so it is asserted instead.
+ *  5. **Benchmarks.** `docs/design/benchmarks/README.md` maps every file of the 2026-09-09
+ *     competitor study to the wireframes it informed, and every artboard it names exists. A study
+ *     nobody can trace back to a page is a document; a study mapped page by page is a design record.
  *
  * Deliberately *not* asserted: that an artboard looks right. That is a founder review on the
  * canvas, and no test replaces it.
@@ -331,5 +338,146 @@ describe("docs/design/README.md states the rules an agent needs", () => {
     for (const folder of ["homepage-v1/", "system/", "flows/", "wireframes/"]) {
       expect(readme).toContain(folder);
     }
+  });
+});
+
+/* ------------------------------------------------------------------ 5. voice */
+
+/**
+ * The words spec 004 §14 A5 bans from customer copy (2026-09-09).
+ *
+ * `corridor` is the one word with an exemption: `plan/05` and the specs use it as internal
+ * vocabulary, so it may survive inside an artboard's annotation block — the `<section class="note">`
+ * whose label ends `· [internal]` — and nowhere else, not in a state stub and not in a designer's
+ * note. Identifiers inside `<code>` are exempt for every word, because a route or a table name is
+ * not copy: `/demo/vendor-inbox`, `partner_application` and `corridorPagePublished` are the names
+ * the code actually uses and renaming them in a drawing would make the drawing wrong.
+ */
+const BANNED = [
+  "relay",
+  "corridor",
+  "partner",
+  "third party",
+  "third-party",
+  "vendor",
+  "anywhere in the world",
+  "super fresh",
+] as const;
+
+/** The word that may appear inside an `[internal]` annotation block. */
+const INTERNAL_ONLY = "corridor";
+
+/**
+ * The prose of an artboard: identifiers dropped, and `corridor` dropped from the annotation blocks
+ * that declare themselves internal.
+ */
+function customerCopy(source: string): string {
+  return source
+    .replaceAll(/<code>[\s\S]*?<\/code>/g, " ")
+    .replaceAll(/<section class="note"[\s\S]*?<\/section>/g, (block) =>
+      block.includes("[internal]")
+        ? block.replaceAll(new RegExp(INTERNAL_ONLY, "gi"), " ")
+        : block,
+    );
+}
+
+describe("every artboard speaks in the first person (spec 004 §14 A5)", () => {
+  it.each(artboards)("%s uses no banned word", (file) => {
+    const copy = customerCopy(readFileSync(join(designRoot, file), "utf8"));
+    const found = BANNED.flatMap((word) => {
+      const hits =
+        copy.match(new RegExp(word.replaceAll("-", "[- ]"), "gi")) ?? [];
+      return hits.length === 0 ? [] : [`${word} (${String(hits.length)}×)`];
+    });
+    expect(
+      found,
+      `${file} uses ${String(found.length)} banned word(s): ${found.join(", ")}. Spec 004 §14 A5: customer copy speaks as Flowers Overseas in the first person — "our florist in Warsaw", "our team", never "relay"/"corridor"/"partner"/"third party"/"vendor". "corridor" is allowed only inside an annotation block marked [internal]; an identifier belongs in <code>.`,
+    ).toStrictEqual([]);
+  });
+
+  it("keeps the internal exemption honest", () => {
+    // The exemption is worthless if no artboard declares an annotation block, and dangerous if the
+    // marker can be spelled any other way.
+    const annotated = artboards.filter((file) =>
+      readFileSync(join(designRoot, file), "utf8").includes("[internal]"),
+    );
+    expect(annotated.length).toBeGreaterThanOrEqual(20);
+  });
+
+  it("states the rule in the README", () => {
+    expect(readme).toContain("## Voice");
+    expect(readme).toContain("## Density");
+    for (const word of BANNED) expect(readme.toLowerCase()).toContain(word);
+  });
+});
+
+/* ------------------------------------------------------------------ 6. benchmarks */
+
+describe("docs/design/benchmarks/ maps the study to the wireframes", () => {
+  const benchmarkDir = "benchmarks";
+  const studyFiles = allFiles
+    .filter(
+      (file) => file.startsWith(`${benchmarkDir}/`) && file.endsWith(".md"),
+    )
+    .map((file) => file.slice(benchmarkDir.length + 1))
+    .filter((name) => name !== "README.md")
+    .sort();
+  const mapping = readFileSync(
+    join(designRoot, benchmarkDir, "README.md"),
+    "utf8",
+  );
+
+  it("has the nine study files", () => {
+    // 00-summary plus one per page type.
+    expect(studyFiles).toStrictEqual([
+      "00-summary.md",
+      "01-product-page.md",
+      "02-category-and-shop-grid.md",
+      "03-destination-and-corridor-pages.md",
+      "04-checkout.md",
+      "05-occasion-pages.md",
+      "06-for-florists-recruitment.md",
+      "07-track-and-confirmation.md",
+      "08-help-contact-and-legal.md",
+    ]);
+  });
+
+  it.each(studyFiles)("%s is named by benchmarks/README.md", (name) => {
+    expect(
+      mapping,
+      `docs/design/benchmarks/${name} exists but benchmarks/README.md does not reference it, so no wireframe is traceable to it`,
+    ).toContain(name);
+  });
+
+  it("names artboards that exist, for the page types the study covers", () => {
+    const named = [
+      ...mapping.matchAll(/`(wireframes\/[\w*-]+\.dc\.html)`/g),
+    ].map(([, path]) => path ?? "");
+    expect(named.length).toBeGreaterThanOrEqual(8);
+    for (const path of named) {
+      // The mapping writes one row per page type using the `-*` desktop/mobile pair.
+      const pair = path.includes("-*")
+        ? [path.replace("-*", "-desktop"), path.replace("-*", "-mobile")]
+        : [path];
+      for (const one of pair) {
+        expect(
+          existsSync(join(designRoot, one)),
+          `benchmarks/README.md maps a benchmark to \`${one}\`, which does not exist`,
+        ).toBe(true);
+      }
+    }
+  });
+
+  it("records the ten patterns and the founder's open questions", () => {
+    expect(mapping).toContain("The ten patterns, and where each one landed");
+    expect(mapping).toContain("Still open");
+    // Every pattern number from the summary is placed somewhere.
+    for (const n of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) {
+      expect(mapping).toMatch(new RegExp(`\\|\\s*${String(n)}\\s*\\|`));
+    }
+  });
+
+  it("is linked from the design README", () => {
+    expect(readme).toContain("benchmarks/");
   });
 });

@@ -16,6 +16,7 @@ way: `src/modules/ui` is the implementation of `system/`, and `system/` is edite
 | `system/` | `tokens.css` (canonical), `components.dc.html` (every shipped primitive at every state), `typography.dc.html` (ramp, measure, script coverage), `colour.dc.html` (palette, semantic aliases, contrast manifest). | whoever changes `src/modules/ui` |
 | `flows/` | `buyer-journey.dc.html`, `florist-journey.dc.html`, `consent-and-locale.dc.html` — screen-thumbnail flows annotated with the decision points, the trust moments and the data each step reads. | the spec that changes a journey |
 | `wireframes/` | One desktop (1440) and one mobile (390) artboard per Phase 0 page type. Structural, in the approved system: grey photo slots, real registry copy where it exists, `[slot]` markers where it does not, every state and empty state shown. | the spec that owns the page |
+| `benchmarks/` | The 2026-09-09 competitor study — nine files across eight page types and nine brands — plus a `README.md` mapping every page type's wireframe to its benchmark file with "what we took / what we dropped / why", the ten patterns and where each landed, and the fourteen questions only the founder can answer. Evidence, not instructions: where the study and `CLAUDE.md` disagree, `CLAUDE.md` wins. | the study that replaces it |
 | `canvas.json` (root) | Every artboard in the directory, laid out in labelled rows by folder, for the founder's design canvas. `flows/` and `wireframes/` carry their own so a subset can be published alone. | whoever adds an artboard |
 
 ## How an artboard is authored
@@ -42,7 +43,9 @@ The format is Claude Design's **Design Component** (`.dc.html`), and the convent
 6. **Every flow and wireframe artboard opens with an annotation block** — purpose, URL, index status,
    the data it reads, the states, and the owning spec. It is the first thing in the file and the
    first thing on the canvas, because an artboard without it is a picture rather than a
-   specification.
+   specification. Its label ends `· [internal]`: the marker says the block is the specification an
+   implementer reads and not copy a buyer sees, and it is the one place the banned-word scan lets
+   the internal word "corridor" through (see **Voice** below).
 
 ### The honesty rules an artboard must keep
 
@@ -60,6 +63,61 @@ reason a reviewer can trust a wireframe:
   annotation says which spec owns it.
 - **White paper, one accent.** `--color-paper` ground, forest green accent, Newsreader display +
   IBM Plex Sans body. A wireframe is drawn in the approved system, not in grey boxes.
+
+## Voice
+
+Spec 004 **§14 A5** is binding on every word on every artboard, and the words on an artboard are the
+words that ship — an implementer copies them into a message key:
+
+> all customer-facing copy speaks as Flowers Overseas in the first person — *we* make it, *our
+> florist in Warsaw* delivers it, *our team* checks it […] The words "relay", "corridor", "partner",
+> "third party" and "vendor" never appear in customer copy (they stay in plan/, specs/ and admin).
+> Two honesty guardrails hold: geographic claims match live coverage (Phase 0: "across Europe",
+> never "anywhere in the world", until destinations exist […]); and specific beats superlative
+> ("made fresh the morning it's delivered", "photographed at the door") over "super fresh" or
+> "best". We never claim to own the shops; "our florists", "our team in Poland" and "hand-picked by
+> us" are true and sufficient.
+
+In practice, on an artboard:
+
+- **First person, always.** "Our florist in the recipient's town makes your bouquet the morning it is
+  delivered. We chose every one of them ourselves." Not "a vetted local florist makes and delivers".
+  We are the seller, the guarantee and the person the buyer complains to.
+- **Nine banned words**, scanned case-insensitively by `tests/unit/design-docs.test.ts` over every
+  `.dc.html`: *relay, corridor, partner, third party, third-party, vendor, anywhere in the world,
+  super fresh*. `corridor` survives only inside an annotation block marked `[internal]`, because
+  `plan/05` and the specs use it as internal vocabulary; everything else is banned everywhere,
+  including designer notes and state stubs. Identifiers inside `<code>` are exempt — a route or a
+  table name is not copy (`/demo/vendor-inbox`, `partner_application`, `corridorPagePublished`).
+- **Say the specific thing.** "Order by 14:00 in Warsaw — the recipient's own time" beats "order
+  early". "+29 zł" on the chip beats "surcharge may apply". A number we do not have is the
+  `Placeholder` bar, never an adjective standing in for it.
+- **Cap the geography at live coverage.** "Across Europe", "Poland today, six more countries as we
+  choose florists" — never a count of countries we do not serve.
+
+## Density
+
+Round 2, founder direction 2026-09-09: *"less boutique, more shop — without losing trust."* The
+white paper, the type pairing and the honesty rules are unchanged; the commercial density is not.
+
+- **Products before prose.** Every shop page opens with a priced product row — six cards, an all-in
+  price on each — before any editorial section. On the locale home the two priced rows now sit
+  directly under the hero and the four-fact proof strip, ahead of the occasion tiles and the
+  date strip.
+- **Every price is all-in and visible.** No card without a price, no "from" where the price shown
+  must equal the price charged, no price that grows at the next step. The only page type allowed to
+  show a product without a price is the destination-less category hub, and it must say in a sentence
+  *why* there is none.
+- **The delivery promise repeats wherever a product is shown**: the date, the cutoff in the
+  **recipient's** time zone, and the fee on the date chip. It is one tile, and it appears on the
+  product page, above every grid, and in checkout step 1.
+- **Tighter vertical rhythm.** Section gap on a commercial page is `--space-xl` (40 px) or less;
+  `--space-2xl` (72 px) and `--space-3xl` (128 px) belong to editorial and trust pages, and no new
+  artboard introduces one between two rows of products.
+- **Larger photography slots, fewer words per section.** Cards use 4∶5 rather than 1∶1 where the
+  page is a grid; a section is a heading, one sentence and the goods.
+- **Real dates in navigation.** The category row prints the destination's next occasions with their
+  dates ("All Saints 1 Nov"), from the occasion calendar rather than from a copy deck.
 
 ## How implementers use this directory
 
@@ -174,7 +232,11 @@ template and its variants together rather than inferring one from the other.
   and a unit test pins the two against each other geometry by geometry.
 - `src/app/(dev)/dev/components/` — the running component gallery.
 - `tests/unit/design-docs.test.ts` — the pin: the table above covers every Phase 0 §1–§2 row and
-  every file it names exists, no `.dc.html` writes a colour literal, and every `canvas.json` entry
-  points at a real file.
+  every file it names exists, no `.dc.html` writes a colour literal, every `canvas.json` entry
+  points at a real file, **no artboard uses a banned word outside an `[internal]` annotation block
+  or a `<code>` identifier**, and `benchmarks/README.md` maps every benchmark file and every
+  wireframe row it claims.
+- `docs/design/benchmarks/` — the study every round-2 wireframe was reworked against, and the
+  founder questions it left open.
 - `specs/004-design-system-layout.md` §2, §5, §13, §14 A3 — the spec this directory serves.
 - `plan/05-page-inventory.md` §1–§2 — the page inventory the wireframe table maps.

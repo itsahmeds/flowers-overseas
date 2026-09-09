@@ -44,7 +44,7 @@
     .photo { background: var(--color-photo); display: flex; align-items: flex-end; padding: var(--space-md); color: var(--color-photo-ink); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; }
     .field { display: flex; flex-direction: column; gap: 6px; }
     .field span.v { min-height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-bottom: 1px solid var(--color-ink); font-size: var(--text-md); color: var(--color-ink); }
-    .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
+    .btn { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
     .btn.accent { background: var(--color-accent); }
     .btn.secondary { background: var(--color-paper); color: var(--color-ink); border: 1px solid var(--color-ink-3); }
     .btn.sm { min-height: 44px; padding: 0 16px; font-size: var(--text-sm); }
@@ -80,23 +80,23 @@
     .prose { max-width: var(--measure); font-size: var(--text-md); line-height: 1.6; color: var(--color-ink-2); }
   </style>
 </helmet>
-<div style="width: 390px; min-height: 1900px; background: var(--color-paper); display: flex; flex-direction: column;">
+<div style="width: 390px; min-height: 3280px; background: var(--color-paper); display: flex; flex-direction: column;">
   <div style="display: flex; flex-direction: column; border-bottom: 1px solid var(--color-ink);">
     <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm) var(--space-lg); align-items: center; justify-content: space-between; padding: 12px var(--space-md); font-size: var(--text-xs); color: var(--color-ink-2); border-bottom: var(--rule);">
-      <span>Order by 14:00 Warsaw time for same-day delivery</span><span>Prices include delivery and VAT</span><span>Help &amp; WhatsApp: +1 (213) 592-5150 · Mon–Sat 8–20 CET</span>
+      <span>Order by 14:00 in Warsaw — the recipient's own time — and we deliver today</span><span>One price: VAT and delivery in</span><span>Talk to us: +1 (213) 592-5150 · WhatsApp · Mon–Sat 8–20 CET</span>
     </div>
     <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm) var(--space-lg); align-items: center; justify-content: space-between; padding: var(--space-md) var(--space-md);">
       <span class="display" style="font-size: 20px; letter-spacing: 0.04em;">Flowers Overseas</span>
       <span style="font-size: var(--text-sm); color: var(--color-ink-3);">Search · Menu · Basket (0)</span>
     </div>
     <div style="padding: 10px var(--space-md); border-top: var(--rule); font-size: var(--text-sm); color: var(--color-ink-2);">
-      <span class="label" style="margin-inline-end: var(--space-sm);">Categories</span>Best sellers · Occasions · Bouquets · Roses · Plants · Same-day
+      <span class="label" style="margin-inline-end: var(--space-sm);">Categories</span>Best sellers · All Saints 1 Nov · Wigilia 24 Dec · Bouquets · Roses · Plants · Same-day
     </div>
-    <div style="padding: 6px var(--space-md) 10px; font-size: var(--text-xs); color: var(--color-ink-3);">Chrome as approved in <b>homepage-v1</b>. Every category row entry and every utility link is <b>unpublished in Phase 0</b> and renders as text, not a link (site-links.ts, categories.ts; spec 004 AC-14).</div>
+    <div style="padding: 6px var(--space-md) 10px; font-size: var(--text-xs); color: var(--color-ink-3);">Chrome as approved in <b>homepage-v1</b>. Every category row entry and every utility link is <b>unpublished in Phase 0</b> and renders as text, not a link (site-links.ts, categories.ts; spec 004 AC-14). <b>Round 2:</b> the row prints the next real occasion dates for the destination, the way 1-800-Flowers prints "Labor Day (9/7)" — the dates come from the occasion calendar, so a row entry can never name a date we have not verified.</div>
   </div>
 
   <section class="note" style="margin: var(--space-lg) var(--space-md) 0;">
-    <span class="label">404 and 500</span>
+    <span class="label">404 and 500 · [internal]</span>
     <dl>
       <dt>Purpose</dt><dd>The two pages nobody designs and everybody sees. Localised, useful, and with a way back that is a destination picker rather than a “go home” link.</dd>
       <dt>URL</dt><dd>any unmatched path (404) · any unhandled error (500) · a deliberately removed URL (410)</dd>
@@ -114,7 +114,7 @@
           <h1 class="display" style="margin: 0; font-size: var(--text-display-s); line-height: 1.08;">Page not found</h1>
           <p class="prose" style="margin: 0;">That page does not exist. Check the address, or start again from the home page.</p>
           <div style="display: flex; gap: var(--space-md); flex-wrap: wrap;"><span class="btn">Home</span><span class="btn secondary">All destinations</span></div>
-          <span style="font-size: var(--text-xs); color: var(--color-ink-3);">Status <b>404</b>, not 200. The full header and footer render, so a visitor who mistyped a corridor slug is one click from the right one.</span>
+          <span style="font-size: var(--text-xs); color: var(--color-ink-3);">Status <b>404</b>, not 200. The full header and footer render, so a visitor who mistyped a country slug is one click from the right one.</span>
         </div>
         <div class="sec">
           <div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">Where were you going?</span><h2 class="display" style="margin: 0; font-size: var(--text-xl); line-height: 1.15;">The picker, not a search box</h2></div>
@@ -125,7 +125,7 @@
           <span style="font-size: var(--text-xs); color: var(--color-ink-3);">A destination picker recovers a lost visitor; an empty search box asks them to guess again. Search does not exist in Phase 0 anyway.</span>
         </div>
       </div>
-      <div class="stub" style=""><b>Variants</b><span><b>410 Gone</b> — a URL we deliberately removed says so and names what replaced it, which tells a crawler to stop asking. A 404 says “this never existed”; they are different facts.</span><span><b>An unknown locale prefix</b> — 404, and the destination picker is replaced by the locale chooser. It never guesses a locale from the browser or the IP (ADR-0006).</span><span><b>A corridor that is not live and has no guide</b> — 404, not a stub page. That is the same rule the destinations hub keeps by not linking it.</span></div></div>
+      <div class="stub" style=""><b>Variants</b><span><b>410 Gone</b> — a URL we deliberately removed says so and names what replaced it, which tells a crawler to stop asking. A 404 says “this never existed”; they are different facts.</span><span><b>An unknown locale prefix</b> — 404, and the destination picker is replaced by the locale chooser. It never guesses a locale from the browser or the IP (ADR-0006).</span><span><b>A country that is not live and has no guide</b> — 404, not a stub page. That is the same rule the destinations hub keeps by not linking it.</span></div></div>
 
 <div class="sec" style="border-block-start: 2px solid var(--color-ink); padding-block-start: var(--space-lg);"><span class="label" style="color: var(--color-accent);">500 · something went wrong</span>
       <div style="display: grid; grid-template-columns: repeat(1, minmax(0, 1fr)); gap: var(--space-xl); align-items: start;">
@@ -136,7 +136,7 @@
           <div class="tile"><span class="label">If you were ordering</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Your order is either placed or it is not — there is no half-placed order. If you paid you have a confirmation email. If you are not sure, WhatsApp +1 (213) 592-5150, Mon–Sat 8–20 CET.</span></div>
         </div>
         <div class="sec">
-          <div class="stub" style=""><b>Constraints</b><span>Renders from static assets and message data only. No database, no catalogue read, no third-party script — a 500 page that depends on the thing that broke is not a 500 page.</span><span>Minimal chrome: the wordmark, the copy, two actions and the help line. Not the full header, whose category row would need registry data.</span><span>The error is reported to Sentry with a request id. <b>The id is not shown to the visitor</b> and no stack trace, no query, no email and no order token appears on the page or in the URL.</span></div>
+          <div class="stub" style=""><b>Constraints</b><span>Renders from static assets and message data only. No database, no catalogue read, no external script — a 500 page that depends on the thing that broke is not a 500 page.</span><span>Minimal chrome: the wordmark, the copy, two actions and the help line. Not the full header, whose category row would need registry data.</span><span>The error is reported to Sentry with a request id. <b>The id is not shown to the visitor</b> and no stack trace, no query, no email and no order token appears on the page or in the URL.</span></div>
           <div class="stub" style=""><b>Also this shape</b><span><b>Maintenance</b> — a deliberate 503 with an honest sentence and the help line, used only for a planned migration.</span><span><b>Payment provider down</b> — handled inside the checkout step rather than as a 500: the draft is preserved and another method is offered.</span></div>
         </div>
       </div></div>
@@ -145,8 +145,9 @@
   <div style="margin-block-start: auto; border-top: 1px solid var(--color-ink); padding: var(--space-lg) var(--space-md); display: flex; flex-direction: column; gap: var(--space-sm); font-size: var(--text-sm); color: var(--color-ink-2);">
     <span class="label">Footer</span>
     <span>Sending: Destinations · Occasions · Delivery times and cutoffs · The guarantee — Company: How it works · For florists · Help and contact · Imprint — Legal: Terms · Privacy · Cookies · Withdrawal and refunds · Cookie settings</span>
-    <span>International flower relay. You order, a vetted local florist makes and delivers. Operated by <span class="slot">[legal name]</span>, <span class="slot">[registered address]</span>, <span class="slot">[registration no]</span> — printed only once <code>company.registered</code> is true (company.ts; spec 004 AC-9).</span>
+    <span>We send flowers across Europe. You order from us; our florist in the recipient's town makes the bouquet and hands it over in person. Operated by <span class="slot">[legal name]</span>, <span class="slot">[registered address]</span>, <span class="slot">[registration no]</span> — printed only once <code>company.registered</code> is true (company.ts; spec 004 AC-9).</span>
     <span>BLIK · Klarna · PayPal · Visa · Mastercard · Apple Pay — card payments processed by Stripe. We never store card numbers.</span>
+    <span>Talk to a person: +1 (213) 592-5150 · WhatsApp · Mon–Sat 8–20 CET. Weekend hours are a founder decision, not a design one (benchmarks/README.md, open question 1).</span>
   </div>
 </div>
 </x-dc>

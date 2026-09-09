@@ -44,7 +44,7 @@
     .photo { background: var(--color-photo); display: flex; align-items: flex-end; padding: var(--space-md); color: var(--color-photo-ink); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; }
     .field { display: flex; flex-direction: column; gap: 6px; }
     .field span.v { min-height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-bottom: 1px solid var(--color-ink); font-size: var(--text-md); color: var(--color-ink); }
-    .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
+    .btn { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
     .btn.accent { background: var(--color-accent); }
     .btn.secondary { background: var(--color-paper); color: var(--color-ink); border: 1px solid var(--color-ink-3); }
     .btn.sm { min-height: 44px; padding: 0 16px; font-size: var(--text-sm); }
@@ -75,9 +75,9 @@
     code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: var(--text-xs); color: var(--color-ink-2); }
   </style>
 </helmet>
-<div style="width: 1440px; min-height: 3900px; background: var(--color-paper); display: flex; flex-direction: column;">
+<div style="width: 1440px; min-height: 3740px; background: var(--color-paper); display: flex; flex-direction: column;">
   <section class="note" style="margin: var(--space-lg) 56px 0;">
-    <span class="label">Colour and contrast</span>
+    <span class="label">Colour and contrast · [internal]</span>
     <dl>
       <dt>Purpose</dt><dd>The palette and, below it, the <b>declared contrast manifest</b>: every foreground/background pair a component is allowed to use, with the WCAG 2.1 threshold that applies to it.</dd>
       <dt>The single source of the numbers</dt><dd>The manifest lives in <code>src/modules/ui/tokens/contrast.ts</code> and <code>tests/unit/contrast.test.ts</code> computes each ratio <b>from the tokens in <code>src/app/globals.css</code></b>, in OKLCH, clamped to the display gamut. No ratio is written down here, because a written ratio goes stale and a computed one fails the build. Adding a component that needs a new pair means adding it to the manifest, which means passing the test.</dd>

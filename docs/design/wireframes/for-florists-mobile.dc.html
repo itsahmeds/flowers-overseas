@@ -44,7 +44,7 @@
     .photo { background: var(--color-photo); display: flex; align-items: flex-end; padding: var(--space-md); color: var(--color-photo-ink); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; }
     .field { display: flex; flex-direction: column; gap: 6px; }
     .field span.v { min-height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-bottom: 1px solid var(--color-ink); font-size: var(--text-md); color: var(--color-ink); }
-    .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
+    .btn { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
     .btn.accent { background: var(--color-accent); }
     .btn.secondary { background: var(--color-paper); color: var(--color-ink); border: 1px solid var(--color-ink-3); }
     .btn.sm { min-height: 44px; padding: 0 16px; font-size: var(--text-sm); }
@@ -80,29 +80,29 @@
     .prose { max-width: var(--measure); font-size: var(--text-md); line-height: 1.6; color: var(--color-ink-2); }
   </style>
 </helmet>
-<div style="width: 390px; min-height: 3300px; background: var(--color-paper); display: flex; flex-direction: column;">
+<div style="width: 390px; min-height: 7760px; background: var(--color-paper); display: flex; flex-direction: column;">
   <div style="display: flex; flex-direction: column; border-bottom: 1px solid var(--color-ink);">
     <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm) var(--space-lg); align-items: center; justify-content: space-between; padding: 12px var(--space-md); font-size: var(--text-xs); color: var(--color-ink-2); border-bottom: var(--rule);">
-      <span>Order by 14:00 Warsaw time for same-day delivery</span><span>Prices include delivery and VAT</span><span>Help &amp; WhatsApp: +1 (213) 592-5150 · Mon–Sat 8–20 CET</span>
+      <span>Order by 14:00 in Warsaw — the recipient's own time — and we deliver today</span><span>One price: VAT and delivery in</span><span>Talk to us: +1 (213) 592-5150 · WhatsApp · Mon–Sat 8–20 CET</span>
     </div>
     <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm) var(--space-lg); align-items: center; justify-content: space-between; padding: var(--space-md) var(--space-md);">
       <span class="display" style="font-size: 20px; letter-spacing: 0.04em;">Flowers Overseas</span>
       <span style="font-size: var(--text-sm); color: var(--color-ink-3);">Search · Menu · Basket (0)</span>
     </div>
     <div style="padding: 10px var(--space-md); border-top: var(--rule); font-size: var(--text-sm); color: var(--color-ink-2);">
-      <span class="label" style="margin-inline-end: var(--space-sm);">Categories</span>Best sellers · Occasions · Bouquets · Roses · Plants · Same-day
+      <span class="label" style="margin-inline-end: var(--space-sm);">Categories</span>Best sellers · All Saints 1 Nov · Wigilia 24 Dec · Bouquets · Roses · Plants · Same-day
     </div>
-    <div style="padding: 6px var(--space-md) 10px; font-size: var(--text-xs); color: var(--color-ink-3);">Chrome as approved in <b>homepage-v1</b>. Every category row entry and every utility link is <b>unpublished in Phase 0</b> and renders as text, not a link (site-links.ts, categories.ts; spec 004 AC-14).</div>
+    <div style="padding: 6px var(--space-md) 10px; font-size: var(--text-xs); color: var(--color-ink-3);">Chrome as approved in <b>homepage-v1</b>. Every category row entry and every utility link is <b>unpublished in Phase 0</b> and renders as text, not a link (site-links.ts, categories.ts; spec 004 AC-14). <b>Round 2:</b> the row prints the next real occasion dates for the destination, the way 1-800-Flowers prints "Labor Day (9/7)" — the dates come from the occasion calendar, so a row entry can never name a date we have not verified.</div>
   </div>
 
   <section class="note" style="margin: var(--space-lg) var(--space-md) 0;">
-    <span class="label">For florists · landing, application, walkthrough</span>
+    <span class="label">For florists · landing, application, walkthrough · [internal]</span>
     <dl>
-      <dt>Purpose</dt><dd>Recruit partner florists, and let one apply. <b>Landing</b> (<code>plan/05</code> row 41), <b>application</b> (row 42) and the <b>walkthrough</b> (row 43) are all on this artboard.</dd>
+      <dt>Purpose</dt><dd>Recruit the florists we will work with, and let one apply. <b>Landing</b> (<code>plan/05</code> row 41), <b>application</b> (row 42) and the <b>walkthrough</b> (row 43) are all on this artboard.</dd>
       <dt>URL</dt><dd><code>/en-gb/for-florists</code> · <code>/pl/dla-kwiaciarni</code> · <code>/de/fuer-floristen</code>; the form at <code>…/apply</code>; the walkthrough at <code>…/how-orders-work</code>.</dd>
-      <dt>Index</dt><dd>landing and walkthrough yes ("florist partnership", "zlecenia dla kwiaciarni"); the application form noindex.</dd>
-      <dt>Reads</dt><dd>static copy plus live partner stats (placeholders in Phase 0). The form writes <code>partner_application</code> and reads nothing.</dd>
-      <dt>Why it is Phase 0</dt><dd>Phase 0's exit signal is three Warsaw florists committing after seeing the demo. This page and the mock vendor inbox are what they are shown.</dd>
+      <dt>Index</dt><dd>landing and walkthrough yes ("florists wanted", "zlecenia dla kwiaciarni"); the application form noindex.</dd>
+      <dt>Reads</dt><dd>static copy plus live florist stats (placeholders in Phase 0). The form writes <code>partner_application</code> and reads nothing.</dd>
+      <dt>Why it is Phase 0</dt><dd>Phase 0's exit signal is three Warsaw florists committing after seeing the demo. This page and the mock florist inbox are what they are shown.</dd>
       <dt>Owning spec</dt><dd>011</dd>
     </dl>
   </section>
@@ -116,11 +116,11 @@
           <p class="prose" style="margin: 0;">Somebody in London wants flowers delivered to their mother in Warszawa. We find the buyer, take the order in their language, handle the payment and the promise. You make the bouquet and deliver it, and you are paid a fixed amount per order that you agree in advance.</p>
           <div style="display: flex; gap: var(--space-md); flex-wrap: wrap;"><span class="btn accent">Apply to join</span><span class="btn secondary">See how an order arrives</span></div>
           <div class="kv" style="max-width: 420px; border-block-start: var(--rule); padding-block-start: var(--space-md);">
-            <span>Partner florists</span><span><span class="ph"></span></span>
-            <span>Orders relayed</span><span><span class="ph"></span></span>
+            <span>Florists working with us</span><span><span class="ph"></span></span>
+            <span>Orders sent</span><span><span class="ph"></span></span>
             <span>Countries open</span><span>1 (Poland)</span>
           </div>
-          <span style="font-size: var(--text-xs); color: var(--color-ink-3);">Two placeholder bars, because we are recruiting our first florists. Telling a florist we have hundreds of partners, to a florist who would be the first, is the fastest way to lose them.</span>
+          <span style="font-size: var(--text-xs); color: var(--color-ink-3);">Two placeholder bars, because we are recruiting our first florists. Telling a florist we have hundreds of florists, to a florist who would be the first, is the fastest way to lose them.</span>
         </div>
         <div class="photo" style="aspect-ratio: 3 / 2;">Photo slot · a florist's workshop · founder to supply</div>
       </div></div>
@@ -167,7 +167,7 @@
         </div>
         <div class="sec">
           <div class="stub" style=""><b>What happens next</b><span>We read it, and we reply within <span class="slot">[slot] n</span> working days whether the answer is yes or no.</span><span>If it is yes, we visit or call, agree your payouts per product, and send you a test order before a real one.</span><span>You are never live because we published a page. You are live because we spoke and you agreed.</span></div>
-          <div class="stub" style=""><b>What we do with this</b><span>We store your business details to assess and, if it goes ahead, to run the partnership. We do not sell them and we do not share them with buyers.</span><span>Payout and bank details are not asked here — they come after we have spoken.</span><span><span class="slot">[slot] </span> retention period and the address to write to for deletion.</span></div>
+          <div class="stub" style=""><b>What we do with this</b><span>We store your business details to assess and, if it goes ahead, to work together. We do not sell them and we do not share them with buyers.</span><span>Payout and bank details are not asked here — they come after we have spoken.</span><span><span class="slot">[slot] </span> retention period and the address to write to for deletion.</span></div>
           <div class="stub" style=""><b>Form states</b><span><b>Validation</b> — inline, with the message under the field and focus moved to the first error.</span><span><b>Submitted</b> — a confirmation page (not a toast) saying what happens next and by when, plus a copy to the applicant's email.</span><span><b>Failed to send</b> — the answers are preserved and the phone number is offered as the fallback.</span></div>
         </div>
       </div></div>
@@ -181,13 +181,22 @@
         <div class="tile"><span class="label">04</span><span style="font-family: var(--font-display); font-size: var(--text-lg);">You upload one photo</span><span style="font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.6;">From the same link. We email it to the buyer, and we ask you separately whether it may be shown publicly.</span><div class="photo" style="aspect-ratio: 4 / 3; margin-block-start: var(--space-sm);">Screen · from the mock inbox</div></div>
       </div>
       <span style="font-size: var(--text-xs); color: var(--color-ink-3);">The screens are the <code>/demo/vendor-inbox</code> mock, drawn in full on <code>flows/florist-journey.dc.html</code>. That inbox is password-protected and seeded; this page is the public version of the same four steps.</span></div>
+<div class="sec"><div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">Talk to a person first</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">Before you fill anything in</h2></div>
+      <div style="display: flex; flex-wrap: wrap; gap: var(--space-md);">
+        <div class="tile" style="flex: 1 1 240px;"><span class="label">Phone and WhatsApp</span><span style="font-size: var(--text-md);">+1 (213) 592-5150</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Mon–Sat 07:30–17:00 — a florist's hours, not an office's. Fleurop publishes 07:30 and it is the one detail on their page that reads as though a florist wrote it.</span></div>
+        <div class="tile" style="flex: 1 1 240px;"><span class="label">Email</span><span style="font-size: var(--text-md);"><span class="slot">[slot] florists@</span></span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">One address, answered by the person who signs the agreement.</span></div>
+        <div class="tile" style="flex: 1 1 240px;"><span class="label">See it before you sign</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">The inbox demo shows a real incoming order — the address, the message, the accept button, the photo upload — with seeded data and a password. Nobody else in this market lets a florist look first.</span></div>
+        <div class="tile" style="flex: 1 1 240px;"><span class="label">The agreement</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Terms for florists, published as a page and linked here before the form, not sent after you apply. <span class="slot">[slot] Phase for this page is a founder decision</span></span></div>
+      </div>
+      <span style="font-size: var(--text-xs); color: var(--color-ink-3);">What this page does that none of the four incumbents does: it publishes the split, the payout timing and the fee above; it keeps the application on our own domain in the local language instead of an external form; and it names the model in one line — we bring the order, you make and deliver it, we keep the customer and the complaint. What it does not do: sell you software, marketing, a POS or stock.</span></div>
   </main>
 
   <div style="margin-block-start: auto; border-top: 1px solid var(--color-ink); padding: var(--space-lg) var(--space-md); display: flex; flex-direction: column; gap: var(--space-sm); font-size: var(--text-sm); color: var(--color-ink-2);">
     <span class="label">Footer</span>
     <span>Sending: Destinations · Occasions · Delivery times and cutoffs · The guarantee — Company: How it works · For florists · Help and contact · Imprint — Legal: Terms · Privacy · Cookies · Withdrawal and refunds · Cookie settings</span>
-    <span>International flower relay. You order, a vetted local florist makes and delivers. Operated by <span class="slot">[legal name]</span>, <span class="slot">[registered address]</span>, <span class="slot">[registration no]</span> — printed only once <code>company.registered</code> is true (company.ts; spec 004 AC-9).</span>
+    <span>We send flowers across Europe. You order from us; our florist in the recipient's town makes the bouquet and hands it over in person. Operated by <span class="slot">[legal name]</span>, <span class="slot">[registered address]</span>, <span class="slot">[registration no]</span> — printed only once <code>company.registered</code> is true (company.ts; spec 004 AC-9).</span>
     <span>BLIK · Klarna · PayPal · Visa · Mastercard · Apple Pay — card payments processed by Stripe. We never store card numbers.</span>
+    <span>Talk to a person: +1 (213) 592-5150 · WhatsApp · Mon–Sat 8–20 CET. Weekend hours are a founder decision, not a design one (benchmarks/README.md, open question 1).</span>
   </div>
 </div>
 </x-dc>

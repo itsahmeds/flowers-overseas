@@ -44,7 +44,7 @@
     .photo { background: var(--color-photo); display: flex; align-items: flex-end; padding: var(--space-md); color: var(--color-photo-ink); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; }
     .field { display: flex; flex-direction: column; gap: 6px; }
     .field span.v { min-height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-bottom: 1px solid var(--color-ink); font-size: var(--text-md); color: var(--color-ink); }
-    .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
+    .btn { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
     .btn.accent { background: var(--color-accent); }
     .btn.secondary { background: var(--color-paper); color: var(--color-ink); border: 1px solid var(--color-ink-3); }
     .btn.sm { min-height: 44px; padding: 0 16px; font-size: var(--text-sm); }
@@ -80,23 +80,23 @@
     .prose { max-width: var(--measure); font-size: var(--text-md); line-height: 1.6; color: var(--color-ink-2); }
   </style>
 </helmet>
-<div style="width: 1440px; min-height: 2380px; background: var(--color-paper); display: flex; flex-direction: column;">
+<div style="width: 1440px; min-height: 2760px; background: var(--color-paper); display: flex; flex-direction: column;">
   <div style="display: flex; flex-direction: column; border-bottom: 1px solid var(--color-ink);">
     <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm) var(--space-lg); align-items: center; justify-content: space-between; padding: 12px 56px; font-size: var(--text-xs); color: var(--color-ink-2); border-bottom: var(--rule);">
-      <span>Order by 14:00 Warsaw time for same-day delivery</span><span>Prices include delivery and VAT</span><span>Help &amp; WhatsApp: +1 (213) 592-5150 · Mon–Sat 8–20 CET</span>
+      <span>Order by 14:00 in Warsaw — the recipient's own time — and we deliver today</span><span>One price: VAT and delivery in</span><span>Talk to us: +1 (213) 592-5150 · WhatsApp · Mon–Sat 8–20 CET</span>
     </div>
     <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm) var(--space-lg); align-items: center; justify-content: space-between; padding: var(--space-md) 56px;">
       <span class="display" style="font-size: 26px; letter-spacing: 0.04em;">Flowers Overseas</span>
       <span style="font-size: var(--text-sm); color: var(--color-ink-3);">Search flowers, occasions, a city or a country · Sign in · My orders · Basket (0)</span>
     </div>
     <div style="padding: 10px 56px; border-top: var(--rule); font-size: var(--text-sm); color: var(--color-ink-2);">
-      <span class="label" style="margin-inline-end: var(--space-sm);">Categories</span>Best sellers · Birthday · Sympathy · Occasions · Bouquets · Roses · Plants · Add-ons · Same-day delivery · Destinations
+      <span class="label" style="margin-inline-end: var(--space-sm);">Categories</span>Best sellers · Birthday · Sympathy · All Saints 1 Nov · Andrzejki 29 Nov · Wigilia 24 Dec · Women's Day 8 Mar · Bouquets · Roses · Plants · Same-day · Poland
     </div>
-    <div style="padding: 6px 56px 10px; font-size: var(--text-xs); color: var(--color-ink-3);">Chrome as approved in <b>homepage-v1</b>. Every category row entry and every utility link is <b>unpublished in Phase 0</b> and renders as text, not a link (site-links.ts, categories.ts; spec 004 AC-14).</div>
+    <div style="padding: 6px 56px 10px; font-size: var(--text-xs); color: var(--color-ink-3);">Chrome as approved in <b>homepage-v1</b>. Every category row entry and every utility link is <b>unpublished in Phase 0</b> and renders as text, not a link (site-links.ts, categories.ts; spec 004 AC-14). <b>Round 2:</b> the row prints the next real occasion dates for the destination, the way 1-800-Flowers prints "Labor Day (9/7)" — the dates come from the occasion calendar, so a row entry can never name a date we have not verified.</div>
   </div>
 
   <section class="note" style="margin: var(--space-lg) 56px 0;">
-    <span class="label">About · contact · help</span>
+    <span class="label">About · contact · help · [internal]</span>
     <dl>
       <dt>Purpose</dt><dd>Three Phase 0 content pages on one artboard because they share a template and differ only in content: <b>about</b> (row 33), <b>contact</b> (row 34) and <b>help / FAQ</b> (row 32).</dd>
       <dt>URL</dt><dd><code>/en-gb/about</code> · <code>/en-gb/contact</code> · <code>/en-gb/help</code></dd>
@@ -138,7 +138,7 @@
         <div class="tile"><span class="label">Phone and WhatsApp</span><span style="font-size: var(--text-lg);">+1 (213) 592-5150</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Mon–Sat 8–20 CET</span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">From <code>company.ts</code>: E.164 for the <code>tel:</code> link, a formatted string for display, and a flag saying the number takes WhatsApp.</span></div>
         <div class="tile"><span class="label">Email</span><span style="font-size: var(--text-md);"><span class="slot">[slot] support address</span></span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">We answer within one working day. Include your order number if you have one.</span></div>
         <div class="tile"><span class="label">Registered office</span><span style="font-size: var(--text-sm);"><span class="slot">[slot] legal name, address, registry code</span></span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">Also the Impressum for DE/AT buyers, at <code>/de/impressum</code>.</span></div>
-        <div class="tile"><span class="label">For florists</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Partnership enquiries go through the application form, not this page.</span></div>
+        <div class="tile"><span class="label">For florists</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Florists who want to work with us use the application form, not this page.</span></div>
         <div class="tile"><span class="label">Data protection</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Requests about your data — access, deletion, export — and who to write to.</span></div>
       </div>
       <div class="stub" style=""><b>No contact form in Phase 0</b><span>A form needs a mailbox, a response promise and a RoPA row. Phone, WhatsApp and an email address need none of the three and are faster for the buyer. The form arrives with the spec that can staff it.</span></div></div>
@@ -147,7 +147,7 @@
       <h1 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">Questions we are asked</h1>
       <div class="grid" style="grid-template-columns: repeat(2, minmax(0, 1fr));">
         <div class="sec">
-          <div class="faq"><b>How does sending flowers abroad work?</b><span>You order here; a vetted florist in the recipient's town makes the bouquet and delivers it by hand the same day or on the date you chose. Nothing is shipped.</span></div>
+          <div class="faq"><b>How does sending flowers abroad work?</b><span>You order from us; our florist in the recipient's town makes the bouquet and hands it over in person, the same day or on the date you chose. Nothing crosses a border, so there is no customs form and nothing to pay on arrival. Nothing is shipped.</span></div>
           <div class="faq"><b>Is the price really final?</b><span>Yes. VAT and delivery are included in the price on the product page, and the total at payment is the same number. Add-ons are separate lines you choose.</span></div>
           <div class="faq"><b>What if nobody is home?</b><span>The florist calls the recipient's phone number — which is why we ask for it — and agrees a place or a second attempt. We tell you what happened.</span></div>
           <div class="faq"><b>Can I send flowers today?</b><span>In the cities we cover, yes, if you order before the country's cutoff. Every product page shows the soonest date it can actually arrive.</span></div>
@@ -156,21 +156,29 @@
           <div class="faq"><b>What if the flowers are not what I chose?</b><span>The florist substitutes to the same value, style and colour and tells us; we tell you. If it is not a substitution you would have accepted, the guarantee applies.</span></div>
           <div class="faq"><b>Can I cancel?</b><span>Free of charge until we send the order to the florist. Made-to-order flowers are perishable, so the 14-day withdrawal right does not apply — we say so before you pay.</span></div>
           <div class="faq"><b>How do I track my order?</b><span>The link in your confirmation email needs no account. Lost it? Enter your order number and email at /track and we will send it again.</span></div>
-          <div class="faq"><b>Which countries can you deliver to?</b><span>Poland today. Six more have a corridor guide and a waiting list. We open a country when we have florists there.</span></div>
+          <div class="faq"><b>Which countries can you deliver to?</b><span>Poland today. Six more have a country guide and a waiting list. We open a country when we have florists there.</span></div>
         </div>
       </div>
       <div class="grid" style="grid-template-columns: repeat(3, minmax(0, 1fr));">
-        <div class="tile"><span class="label">Per-country FAQs</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Each corridor page carries its own five questions; this page links to them rather than repeating them, so neither is a duplicate of the other.</span></div>
+        <div class="tile"><span class="label">Per-country FAQs</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Each country page carries its own five questions; this page links to them rather than repeating them, so neither is a duplicate of the other.</span></div>
         <div class="tile"><span class="label">Schema</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);"><code>FAQPage</code>, with every answer visible on the page — no collapsed answer that exists only in the JSON-LD.</span></div>
         <div class="tile"><span class="label">Still stuck</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">The help line and hours, at the end of the page as well as in the utility strip.</span></div>
       </div></div>
+<div class="sec"><div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">If we cannot agree</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">Complaints, and who to go to above us</h2></div>
+      <div style="display: flex; flex-wrap: wrap; gap: var(--space-md);">
+        <div class="tile" style="flex: 1 1 260px;"><span class="label">Tell us first</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">WhatsApp, phone or email. We answer within one working day and we tell you what we are going to do about it, in writing.</span></div>
+        <div class="tile" style="flex: 1 1 260px;"><span class="label">If you are still unhappy</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);"><span class="slot">[slot] The named dispute-resolution body per market, plus the EU ODR route. Which bodies, and whether an Estonian company selling into the UK, Germany and Poland needs more than one, is a founder-and-lawyer question — benchmarks/README.md, open question 4.</span></span></div>
+        <div class="tile" style="flex: 1 1 260px;"><span class="label">Where to find the detail</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Delivery times and cutoffs · the guarantee, substitution and refunds · terms · privacy. Four pages, one version each per locale, and none of them contradicts this one.</span></div>
+      </div>
+      <span style="font-size: var(--text-xs); color: var(--color-ink-3);">Not one site in the study publishes dispute-resolution or ODR information anywhere. EU traders owe it; the field's silence is a compliance gap rather than a precedent, which makes it free ground for the page a worried buyer actually reads.</span></div>
   </main>
 
   <div style="margin-block-start: auto; border-top: 1px solid var(--color-ink); padding: var(--space-lg) 56px; display: flex; flex-direction: column; gap: var(--space-sm); font-size: var(--text-sm); color: var(--color-ink-2);">
     <span class="label">Footer</span>
     <span>Sending: Destinations · Occasions · Delivery times and cutoffs · The guarantee — Company: How it works · For florists · Help and contact · Imprint — Legal: Terms · Privacy · Cookies · Withdrawal and refunds · Cookie settings</span>
-    <span>International flower relay. You order, a vetted local florist makes and delivers. Operated by <span class="slot">[legal name]</span>, <span class="slot">[registered address]</span>, <span class="slot">[registration no]</span> — printed only once <code>company.registered</code> is true (company.ts; spec 004 AC-9).</span>
+    <span>We send flowers across Europe. You order from us; our florist in the recipient's town makes the bouquet and hands it over in person. Operated by <span class="slot">[legal name]</span>, <span class="slot">[registered address]</span>, <span class="slot">[registration no]</span> — printed only once <code>company.registered</code> is true (company.ts; spec 004 AC-9).</span>
     <span>BLIK · Klarna · PayPal · Visa · Mastercard · Apple Pay — card payments processed by Stripe. We never store card numbers.</span>
+    <span>Talk to a person: +1 (213) 592-5150 · WhatsApp · Mon–Sat 8–20 CET. Weekend hours are a founder decision, not a design one (benchmarks/README.md, open question 1).</span>
   </div>
 </div>
 </x-dc>

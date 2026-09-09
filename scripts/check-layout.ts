@@ -74,6 +74,10 @@ export const CONFIG_FILES = [
   "src/config/site-links.ts",
   "src/config/categories.ts",
   "src/config/company.ts",
+  // The payment methods the colophon may name, each with `available: false` until spec 013/014
+  // configures a processor — spec 004 §8's third-party-trademark and live-method rule as data
+  // (TASK-049).
+  "src/config/payment-methods.ts",
   // The authored catalogue dataset of spec 005 §2 / §13 Q9 (TASK-061): the single source of the
   // Phase 0 products, tiers, categories, occasions and add-ons, with `projections.ts` projecting
   // each onto spec 002 §5.1's row shapes so the seed (spec 002) and the importer (spec 006) read

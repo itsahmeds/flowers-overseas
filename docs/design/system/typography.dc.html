@@ -44,7 +44,7 @@
     .photo { background: var(--color-photo); display: flex; align-items: flex-end; padding: var(--space-md); color: var(--color-photo-ink); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; }
     .field { display: flex; flex-direction: column; gap: 6px; }
     .field span.v { min-height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-bottom: 1px solid var(--color-ink); font-size: var(--text-md); color: var(--color-ink); }
-    .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
+    .btn { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
     .btn.accent { background: var(--color-accent); }
     .btn.secondary { background: var(--color-paper); color: var(--color-ink); border: 1px solid var(--color-ink-3); }
     .btn.sm { min-height: 44px; padding: 0 16px; font-size: var(--text-sm); }
@@ -75,9 +75,9 @@
     code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: var(--text-xs); color: var(--color-ink-2); }
   </style>
 </helmet>
-<div style="width: 1440px; min-height: 3260px; background: var(--color-paper); display: flex; flex-direction: column;">
+<div style="width: 1440px; min-height: 2700px; background: var(--color-paper); display: flex; flex-direction: column;">
   <section class="note" style="margin: var(--space-lg) 56px 0;">
-    <span class="label">Typography</span>
+    <span class="label">Typography · [internal]</span>
     <dl>
       <dt>Purpose</dt><dd>The type ramp as drawn: every step at both artboard sizes, its line height and tracking, the measure, and the four scripts the two shipped families must cover.</dd>
       <dt>Pairing</dt><dd><b>Newsreader 500</b> for the display voice (headings and the wordmark) and <b>IBM Plex Sans</b> 400/600 for everything else — the founder-approved pairing. Both are self-hosted, subset to latin-ext, and named only by <code>--font-display</code> / <code>--font-body</code>; no component names a family.</dd>
@@ -98,7 +98,7 @@
         <tr><td><code>--text-lg</code></td><td>18px</td><td>18px</td><td>1.5</td><td>normal</td></tr>
       </table>
       <div class="cellrow"><span class="n">display · 68px</span><div style="min-width: 0;"><span class="display" style="font-size: 68px; line-height: 1.04; letter-spacing: -0.015em; display: block;">Send flowers to Kraków</span></div></div>
-      <div class="cellrow"><span class="n">display-s · 42px</span><div style="min-width: 0;"><span class="display" style="font-size: 42px; line-height: 1.08; letter-spacing: -0.015em; display: block;">A vetted local florist makes it</span></div></div>
+      <div class="cellrow"><span class="n">display-s · 42px</span><div style="min-width: 0;"><span class="display" style="font-size: 42px; line-height: 1.08; letter-spacing: -0.015em; display: block;">Our florist makes it by hand</span></div></div>
       <div class="cellrow"><span class="n">2xl · 34px</span><div style="min-width: 0;"><span class="display" style="font-size: 34px; line-height: 1.15; letter-spacing: -0.01em; display: block;">Price includes delivery and VAT</span></div></div>
       <div class="cellrow"><span class="n">xl · 24px</span><div style="min-width: 0;"><span class="display" style="font-size: 24px; line-height: 1.25; letter-spacing: normal; display: block;">Ordered from Berlin, delivered in Gdańsk</span></div></div>
       <div class="cellrow"><span class="n">lg · 18px</span><div style="min-width: 0;"><span class="display" style="font-size: 18px; line-height: 1.5; letter-spacing: normal; display: block;">Poland today. Six more to come.</span></div></div>

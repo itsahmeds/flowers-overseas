@@ -44,7 +44,7 @@
     .photo { background: var(--color-photo); display: flex; align-items: flex-end; padding: var(--space-md); color: var(--color-photo-ink); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; }
     .field { display: flex; flex-direction: column; gap: 6px; }
     .field span.v { min-height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-bottom: 1px solid var(--color-ink); font-size: var(--text-md); color: var(--color-ink); }
-    .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
+    .btn { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
     .btn.accent { background: var(--color-accent); }
     .btn.secondary { background: var(--color-paper); color: var(--color-ink); border: 1px solid var(--color-ink-3); }
     .btn.sm { min-height: 44px; padding: 0 16px; font-size: var(--text-sm); }
@@ -85,14 +85,14 @@
     code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: var(--text-xs); color: var(--color-ink-2); }
   </style>
 </helmet>
-<div style="width: 1440px; min-height: 1980px; background: var(--color-paper); display: flex; flex-direction: column;">
+<div style="width: 1440px; min-height: 1600px; background: var(--color-paper); display: flex; flex-direction: column;">
   <section class="note" style="margin: var(--space-lg) 56px 0;">
-    <span class="label">Florist journey · landing → first order</span>
+    <span class="label">Florist journey · landing → first order · [internal]</span>
     <dl>
-      <dt>Purpose</dt><dd>The other side of the relay: how a Warsaw florist meets us, applies, and sees their first order. This is the flow the 16 October demo walks a florist through, so the vendor inbox is a real screen even though it is seeded data behind a password.</dd>
+      <dt>Purpose</dt><dd>The other side of the shop: how a Warsaw florist meets us, applies, and sees their first order. This is the flow the 16 October demo walks a florist through, so the florist inbox is a real screen even though it is seeded data behind a password.</dd>
       <dt>Why it matters more than it looks</dt><dd>Phase 0's exit signal is “≥3 Warsaw florists verbally committed after seeing the demo”. The florist's journey is therefore a Phase 0 <em>product</em>, not a Phase 2 portal — but only these four screens, and the inbox is a mock.</dd>
-      <dt>What is honest here</dt><dd>No florist testimonials, no partner logos, no “200 florists in 7 countries”, no payout figures presented as averages. Live stats render as a <code>Placeholder</code> bar until real partners exist; the payout example is labelled as an example with its own arithmetic shown.</dd>
-      <dt>Owning spec</dt><dd>011 (for-florists landing, application, walkthrough, demo vendor inbox) · <code>plan/05</code> rows 41, 42, 43, 45</dd>
+      <dt>What is honest here</dt><dd>No florist testimonials, no shop logos, no “200 florists in 7 countries”, no payout figures presented as averages. Live stats render as a <code>Placeholder</code> bar until real florists exist; the payout example is labelled as an example with its own arithmetic shown.</dd>
+      <dt>Owning spec</dt><dd>011 (for-florists landing, application, walkthrough, demo florist inbox) · <code>plan/05</code> rows 41, 42, 43, 45</dd>
     </dl>
   </section>
   <div class="sheet">
@@ -101,7 +101,7 @@
         <header><span class="i">01</span><b>For florists</b></header>
         <code>/en-gb/for-florists · /pl/dla-kwiaciarni · /de/fuer-floristen</code>
         <div class="thumb"><div class="ink"></div><div class="bar"></div><span>Orders from abroad, made by you</span><div class="ph2">workshop photo slot</div><div class="row2"><div class="box" style="flex:1">We handle the buyer, the language, the payment</div><div class="box" style="flex:1">You make it and deliver it locally</div></div><div class="box">Example order: retail 219 zł → your payout 149 zł</div><div class="acc"></div><span>Apply to join</span></div>
-        <dl class="meta"><dt>Decision</dt><dd>Is this worth a form? The page has to answer “who are you, what do I get, what do you take” above the fold.</dd><dt>Trust</dt><dd><span class="trust">The payout arithmetic shown as an example with every line visible, not as an average. No testimonial we do not have.</span></dd><dt>Reads</dt><dd>static copy + live partner stats (placeholder in Phase 0). Localised slug per market.</dd><dt>Index</dt><dd>yes — a recruiting page in three languages</dd><dt>Spec</dt><dd>011</dd></dl>
+        <dl class="meta"><dt>Decision</dt><dd>Is this worth a form? The page has to answer “who are you, what do I get, what do you take” above the fold.</dd><dt>Trust</dt><dd><span class="trust">The payout arithmetic shown as an example with every line visible, not as an average. No testimonial we do not have.</span></dd><dt>Reads</dt><dd>static copy + live florist stats (placeholder in Phase 0). Localised slug per market.</dd><dt>Index</dt><dd>yes — a recruiting page in three languages</dd><dt>Spec</dt><dd>011</dd></dl>
       </div>
       <div class="step">
         <header><span class="i">02</span><b>Application</b></header>
@@ -110,10 +110,10 @@
         <dl class="meta"><dt>Decision</dt><dd>Apply. Payout details are deliberately <em>not</em> asked here — bank details before a conversation is a reason not to finish the form.</dd><dt>Trust</dt><dd><span class="trust">A plain sentence about what happens next and in how long; the data-protection line saying what is stored and for how long.</span></dd><dt>Reads</dt><dd>writes <code>partner_application</code>. Nothing is read.</dd><dt>Index</dt><dd>noindex</dd><dt>Spec</dt><dd>011</dd></dl>
       </div>
       <div class="step">
-        <header><span class="i">03</span><b>Vendor inbox (mock)</b></header>
+        <header><span class="i">03</span><b>Florist inbox (mock)</b></header>
         <code>/demo/vendor-inbox — password-protected</code>
         <div class="thumb"><div class="ink"></div><span>New order · Warszawa · Thu 10 Sep</span><div class="box">Amber Hour · 18 stems · + chocolates</div><div class="box">Recipient: first name, phone, street — <b>no buyer details</b></div><div class="box">Card message (print)</div><div class="box">Your payout: 149 zł</div><div class="row2"><div class="acc" style="flex:1"></div><div class="box" style="flex:1">Decline</div></div><span>Accept by 14:00 · then upload the photo</span></div>
-        <dl class="meta"><dt>Decision</dt><dd>Accept or decline, with the payout and the deadline both visible before the choice.</dd><dt>Trust</dt><dd><span class="trust">Recipient data is minimised to what delivery needs: first name, phone, address, message. The buyer's identity is not in the florist's view at all.</span></dd><dt>Reads</dt><dd>seeded demo order. In production this is the magic-link view at <code>/v/{token}</code> — no login to accept.</dd><dt>Index</dt><dd>noindex, protected</dd><dt>Spec</dt><dd>011 (demo) · 016 routing · 027 vendor portal</dd></dl>
+        <dl class="meta"><dt>Decision</dt><dd>Accept or decline, with the payout and the deadline both visible before the choice.</dd><dt>Trust</dt><dd><span class="trust">Recipient data is minimised to what delivery needs: first name, phone, address, message. The buyer's identity is not in the florist's view at all.</span></dd><dt>Reads</dt><dd>seeded demo order. In production this is the magic-link view at <code>/v/{token}</code> — no login to accept.</dd><dt>Index</dt><dd>noindex, protected</dd><dt>Spec</dt><dd>011 (demo) · 016 routing · 027 florist portal</dd></dl>
       </div>
     </div>
 
@@ -127,11 +127,11 @@
       <div class="step">
         <header><span class="i">—</span><b>Not in Phase 0</b></header>
         <div class="stub" style="border: 1px dashed var(--color-ink-3); border-radius: var(--radius-sm); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; color: var(--color-ink-2); font-size: var(--text-sm);">
-          <span>A real vendor portal with a login (<code>/vendor/*</code>) — Phase 2.</span>
+          <span>A real florist portal with a login (<code>/vendor/*</code>) — Phase 2.</span>
           <span>Capacity and blackout calendars, ratings, staff accounts — Phase 2.</span>
           <span>Payouts in the portal — Phase 2; Phase 0 pays by weekly batch outside the product.</span>
-          <span>Partner terms as a legal page — Phase 1.</span>
-          <span>A public “our florists” page and florist profiles — Phase 1/2, and only for partners who opt in and have delivered at least one order.</span>
+          <span>Terms for florists as a legal page — Phase 1.</span>
+          <span>A public “our florists” page and florist profiles — Phase 1/2, and only for florists who opt in and have delivered at least one order.</span>
         </div>
       </div>
       <div class="step">
