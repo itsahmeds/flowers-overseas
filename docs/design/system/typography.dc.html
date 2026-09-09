@@ -1,0 +1,158 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+  <style>
+:root{
+  --color-paper: oklch(99.3% 0.002 90);
+  --color-paper-2: oklch(97.2% 0.004 90);
+  --color-paper-3: oklch(94.5% 0.005 90);
+  --color-ink: oklch(19% 0.01 250);
+  --color-ink-2: oklch(36% 0.01 250);
+  --color-ink-3: oklch(52% 0.008 250);
+  --color-rule: oklch(90% 0.004 250);
+  --color-accent: oklch(42% 0.10 155);
+  --color-accent-strong: oklch(34% 0.09 155);
+  --color-accent-ink: oklch(99% 0.002 90);
+  --color-success: oklch(42% 0.10 150);
+  --color-warning: oklch(45% 0.12 75);
+  --color-danger: oklch(45% 0.17 25);
+  --color-danger-strong: oklch(38% 0.15 25);
+  --color-photo-stop-1: oklch(93% 0.02 120);
+  --color-photo-stop-2: oklch(88% 0.03 140);
+  --color-photo-stop-3: oklch(80% 0.04 150);
+  --color-photo-ink: oklch(40% 0.03 150);
+  --color-photo: linear-gradient(160deg, var(--color-photo-stop-1) 0%, var(--color-photo-stop-2) 45%, var(--color-photo-stop-3) 100%);
+  --font-display: "Newsreader", "Iowan Old Style", Georgia, "Times New Roman", serif;
+  --font-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --text-display: 68px; --text-display-s: 42px; --text-2xl: 34px; --text-xl: 24px; --text-lg: 18px; --text-md: 15px; --text-sm: 13px; --text-xs: 11px;
+  --space-xs: 4px; --space-sm: 8px; --space-md: 16px; --space-lg: 24px; --space-xl: 40px; --space-2xl: 72px; --space-3xl: 128px;
+  --radius-sm: 2px; --radius-md: 4px; --radius-full: 9999px;
+  --measure: 68ch;
+  --rule: 1px solid var(--color-rule);
+}
+    body { margin: 0; font-family: var(--font-body); color: var(--color-ink); background: var(--color-paper); -webkit-font-smoothing: antialiased; }
+    a { color: var(--color-ink); text-decoration: none; } a:hover { color: var(--color-accent); }
+    .display { font-family: var(--font-display); font-weight: 500; letter-spacing: -0.015em; }
+    .label { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-ink-3); }
+    .photo { background: var(--color-photo); display: flex; align-items: flex-end; padding: var(--space-md); color: var(--color-photo-ink); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field span.v { min-height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-bottom: 1px solid var(--color-ink); font-size: var(--text-md); color: var(--color-ink); }
+    .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
+    .btn.accent { background: var(--color-accent); }
+    .btn.secondary { background: var(--color-paper); color: var(--color-ink); border: 1px solid var(--color-ink-3); }
+    .btn.sm { min-height: 44px; padding: 0 16px; font-size: var(--text-sm); }
+    .price { font-variant-numeric: tabular-nums; }
+    .ph { display: inline-block; min-width: 56px; height: 14px; background: var(--color-paper-3); border-radius: 2px; vertical-align: middle; }
+    .chip { display: inline-flex; align-items: center; gap: var(--space-xs); border: 1px solid var(--color-ink-3); border-radius: var(--radius-sm); padding: var(--space-sm) var(--space-sm); font-size: var(--text-sm); }
+    .chip.accent { border-color: var(--color-accent); color: var(--color-accent); }
+    .chip.muted { border-color: transparent; background: var(--color-paper-3); color: var(--color-ink-2); }
+    .note { border: 1px solid var(--color-ink-3); border-radius: var(--radius-sm); background: var(--color-paper-2); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; font-size: var(--text-sm); line-height: 1.55; }
+    .note dl { margin: 0; display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 4px var(--space-md); font-size: var(--text-sm); }
+    .note dt { color: var(--color-ink-3); font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding-block-start: 2px; }
+    .note dd { margin: 0; color: var(--color-ink-2); }
+    .slot { color: var(--color-ink-3); font-style: italic; }
+    .stub { border: 1px dashed var(--color-ink-3); border-radius: var(--radius-sm); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; color: var(--color-ink-2); font-size: var(--text-sm); }
+    .stub b { font-weight: 600; color: var(--color-ink); font-size: var(--text-sm); }
+    .sec { display: flex; flex-direction: column; gap: var(--space-md); }
+    table.spec { border-collapse: collapse; width: 100%; font-size: var(--text-sm); }
+    table.spec th, table.spec td { text-align: start; border-block-end: var(--rule); padding: 8px 12px; vertical-align: top; }
+    table.spec th { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-3); }
+    .sheet { padding: var(--space-2xl) 56px; display: flex; flex-direction: column; gap: var(--space-2xl); }
+    .grp { display: flex; flex-direction: column; gap: var(--space-lg); }
+    .cellrow { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: var(--space-lg); align-items: start; border-block-start: var(--rule); padding-block-start: var(--space-md); }
+    .cellrow > span.n { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-3); }
+    .cells { display: flex; flex-wrap: wrap; gap: var(--space-md) var(--space-lg); align-items: center; }
+    .cell { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+    .cell > em { font-style: normal; font-size: var(--text-xs); color: var(--color-ink-3); letter-spacing: 0.04em; }
+    .swatch { width: 132px; height: 78px; border: var(--rule); border-radius: var(--radius-sm); display: flex; align-items: flex-end; padding: 8px; font-size: var(--text-xs); }
+    code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: var(--text-xs); color: var(--color-ink-2); }
+  </style>
+</helmet>
+<div style="width: 1440px; min-height: 3260px; background: var(--color-paper); display: flex; flex-direction: column;">
+  <section class="note" style="margin: var(--space-lg) 56px 0;">
+    <span class="label">Typography</span>
+    <dl>
+      <dt>Purpose</dt><dd>The type ramp as drawn: every step at both artboard sizes, its line height and tracking, the measure, and the four scripts the two shipped families must cover.</dd>
+      <dt>Pairing</dt><dd><b>Newsreader 500</b> for the display voice (headings and the wordmark) and <b>IBM Plex Sans</b> 400/600 for everything else — the founder-approved pairing. Both are self-hosted, subset to latin-ext, and named only by <code>--font-display</code> / <code>--font-body</code>; no component names a family.</dd>
+      <dt>Fluid vs fixed</dt><dd>In code each display step is a <code>clamp()</code> whose floor is the 390 artboard size and whose ceiling is the 1440 one, so a headline needs no breakpoint utility to stop overflowing a phone. An artboard is drawn at one end of that clamp, which is why artboards are 1440 and 390 and nothing between.</dd>
+      <dt>Weight</dt><dd>Two faces ship (400, 600) because a third breaks the 45 KB font budget, so the canvas's “medium” resolves to 600 through <code>--font-weight-medium</code> rather than being matched down to 400.</dd>
+      <dt>Owning spec</dt><dd>004 §2 · TASK-045, TASK-059</dd>
+    </dl>
+  </section>
+  <div class="sheet">
+    <div class="grp">
+      <div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">Display voice</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">Newsreader 500, tracked −0.015em</h2></div>
+      <table class="spec">
+        <tr><th>Token</th><th>1440</th><th>390</th><th>Line height</th><th>Tracking</th></tr>
+        <tr><td><code>--text-display</code></td><td>68px</td><td>42px</td><td>1.04</td><td>-0.015em</td></tr>
+        <tr><td><code>--text-display-s</code></td><td>42px</td><td>28px</td><td>1.08</td><td>-0.015em</td></tr>
+        <tr><td><code>--text-2xl</code></td><td>34px</td><td>22px</td><td>1.15</td><td>-0.01em</td></tr>
+        <tr><td><code>--text-xl</code></td><td>24px</td><td>19px</td><td>1.25</td><td>normal</td></tr>
+        <tr><td><code>--text-lg</code></td><td>18px</td><td>18px</td><td>1.5</td><td>normal</td></tr>
+      </table>
+      <div class="cellrow"><span class="n">display · 68px</span><div style="min-width: 0;"><span class="display" style="font-size: 68px; line-height: 1.04; letter-spacing: -0.015em; display: block;">Send flowers to Kraków</span></div></div>
+      <div class="cellrow"><span class="n">display-s · 42px</span><div style="min-width: 0;"><span class="display" style="font-size: 42px; line-height: 1.08; letter-spacing: -0.015em; display: block;">A vetted local florist makes it</span></div></div>
+      <div class="cellrow"><span class="n">2xl · 34px</span><div style="min-width: 0;"><span class="display" style="font-size: 34px; line-height: 1.15; letter-spacing: -0.01em; display: block;">Price includes delivery and VAT</span></div></div>
+      <div class="cellrow"><span class="n">xl · 24px</span><div style="min-width: 0;"><span class="display" style="font-size: 24px; line-height: 1.25; letter-spacing: normal; display: block;">Ordered from Berlin, delivered in Gdańsk</span></div></div>
+      <div class="cellrow"><span class="n">lg · 18px</span><div style="min-width: 0;"><span class="display" style="font-size: 18px; line-height: 1.5; letter-spacing: normal; display: block;">Poland today. Six more to come.</span></div></div>
+    </div>
+
+    <div class="grp">
+      <div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">Body voice</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">IBM Plex Sans 400, with 600 for emphasis</h2></div>
+      <table class="spec">
+        <tr><th>Token</th><th>Size</th><th>Line height</th><th>Where</th></tr>
+        <tr><td><code>--text-lg</code></td><td>18px</td><td>1.5</td><td>Lead paragraphs and the one-sentence promise.</td></tr>
+        <tr><td><code>--text-md</code></td><td>15px</td><td>1.6</td><td>Body copy. The document default.</td></tr>
+        <tr><td><code>--text-sm</code></td><td>13px</td><td>1.55</td><td>Secondary copy, captions, field help, the footer.</td></tr>
+        <tr><td><code>--text-xs</code></td><td>11px</td><td>1.45</td><td>The printed-label voice and the utility strip.</td></tr>
+      </table>
+      <div class="cellrow"><span class="n">lg · 18px</span><div style="min-width: 0;"><span style="font-size: 18px; line-height: 1.5; display: block; max-width: var(--measure);">Zamów kwiaty z Wrocławia — łąka, róże, żonkile. Grüße aus Österreich. Bucureşti, İstanbul.</span></div></div>
+      <div class="cellrow"><span class="n">md · 15px</span><div style="min-width: 0;"><span style="font-size: 15px; line-height: 1.6; display: block; max-width: var(--measure);">Zamów kwiaty z Wrocławia — łąka, róże, żonkile. Grüße aus Österreich. Bucureşti, İstanbul.</span></div></div>
+      <div class="cellrow"><span class="n">sm · 13px</span><div style="min-width: 0;"><span style="font-size: 13px; line-height: 1.55; display: block; max-width: var(--measure);">Zamów kwiaty z Wrocławia — łąka, róże, żonkile. Grüße aus Österreich. Bucureşti, İstanbul.</span></div></div>
+      <div class="cellrow"><span class="n">xs · 11px</span><div style="min-width: 0;"><span style="font-size: 11px; line-height: 1.45; display: block; max-width: var(--measure);">Zamów kwiaty z Wrocławia — łąka, róże, żonkile. Grüße aus Österreich. Bucureşti, İstanbul.</span></div></div>
+      <div class="cellrow"><span class="n">tones</span><div class="cells" style="font-size: var(--text-md);">
+        <div class="cell"><span style="color: var(--color-ink);">default · --color-ink</span><em>default</em></div>
+        <div class="cell"><span style="color: var(--color-ink-2);">muted · --color-ink-2</span><em>muted</em></div>
+        <div class="cell"><span style="color: var(--color-ink-3);">subtle · --color-ink-3</span><em>subtle</em></div>
+        <div class="cell"><span style="color: var(--color-accent);">accent · --color-accent</span><em>accent</em></div>
+        <div class="cell"><span style="color: var(--color-danger);">danger · --color-danger</span><em>danger</em></div>
+        <div class="cell"><span style="background: var(--color-ink); color: var(--color-accent-ink); padding: 2px 8px;">inverse · --color-on-inverse</span><em>inverse</em></div>
+      </div></div>
+    </div>
+
+    <div class="grp">
+      <div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">Label voice</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">The visual signature of the whole design</h2></div>
+      <p style="margin: 0; max-width: var(--measure); font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.6;">11 px, weight 600, tracked 0.14em, uppercase, <code>--color-ink-3</code>. It sits above a heading, over a photo slot and on a printed-label strip. It is a <em>voice</em>, not a heading level: <code>&lt;Label as="h2"&gt;</code> exists because the semantics and the size are separate decisions.</p>
+      <div class="cells">
+        <div class="cell"><span class="label">Made by a local florist</span><em>--text-xs / 600 / 0.14em</em></div><div class="cell"><span class="label">Destinations</span><em>--text-xs / 600 / 0.14em</em></div><div class="cell"><span class="label">Delivery date</span><em>--text-xs / 600 / 0.14em</em></div><div class="cell"><span class="label">Photo slot · hero</span><em>--text-xs / 600 / 0.14em</em></div>
+      </div>
+    </div>
+
+    <div class="grp">
+      <div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">Measure</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">--measure: 68ch</h2></div>
+      <p style="margin: 0; max-width: var(--measure); font-size: var(--text-md); line-height: 1.6;">Every run of prose is capped at 68 characters. This paragraph is exactly that wide, and the same value generates <code>max-w-prose</code>, so the token and the utility cannot drift. Legal pages, blog posts and help answers use the <code>prose</code> container; a grid cell's copy inherits the cell instead.</p>
+      <div style="max-width: var(--measure); border: var(--rule); border-inline-start: 2px solid var(--color-accent); padding: var(--space-md); font-size: var(--text-sm); color: var(--color-ink-2);">68ch measured in IBM Plex Sans at 15 px is about 620 px, which is why the <code>narrow</code> container (560 px) is the one used for a single-column form and <code>prose</code> for text.</div>
+    </div>
+
+    <div class="grp">
+      <div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">Coverage</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">The four scripts the subset must carry</h2></div>
+      <table class="spec">
+        <tr><th>Locale</th><th>Sample</th><th>Needs</th></tr>
+        <tr><td>en / en-gb</td><td style="font-size: var(--text-md);">Send flowers to someone in another country</td><td>latin</td></tr>
+        <tr><td>de</td><td style="font-size: var(--text-md);">Grüße aus Österreich — Blumen verschicken</td><td>latin + umlauts, ß</td></tr>
+        <tr><td>pl</td><td style="font-size: var(--text-md);">Zamów kwiaty z Wrocławia — łąka, róże, żonkile</td><td>latin-ext: ą ć ę ł ń ó ś ź ż</td></tr>
+        <tr><td>ro (Phase 4)</td><td style="font-size: var(--text-md);">Bucureşti — trimite flori</td><td>latin-ext: ă â î ș ț</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

@@ -1,0 +1,159 @@
+/*
+ * THE CANONICAL DESIGN TOKENS.
+ *
+ * `docs/design/system/tokens.css` is the design-side source of truth for the token *set*;
+ * `src/app/globals.css`'s `@theme static` block is the code-side source of truth for the token
+ * *values*, and the two must agree. `docs/design/homepage-v1/tokens.css` is the founder-approved
+ * 2026-09-08 canvas file and is kept byte-for-byte as the historical record — it is a subset of
+ * this file and is never edited again.
+ *
+ * Block 1 is that approved canvas ramp verbatim. Block 2 is what shipped on top of it in spec 004
+ * (TASK-045): the semantic aliases, the status colours, the pointer-state accent, the separate
+ * photo-gradient stops, the fluid type steps, radius/shadow/motion/layer scales, and `--measure`.
+ * Every name below exists in `src/app/globals.css`; nothing in `src/app/globals.css` is missing
+ * here. `tests/unit/design-docs.test.ts` allows a colour literal in this file and in
+ * `homepage-v1/tokens.css` and nowhere else under `docs/design/`.
+ *
+ * Hallmark · macrostructure: Photographic × Split Studio · tone: quiet luxury, trust-first ·
+ * anchor hue: forest 155° · paper oklch(99.3% 0.002 90) · accent oklch(42% 0.10 155) ·
+ * display Newsreader 500 + body IBM Plex Sans · white paper background, one accent, no dark mode
+ * in Phase 0 (spec 004 §13 Q3).
+ */
+:root {
+  /* --- 1. The approved canvas ramp (homepage-v1/tokens.css, verbatim) ---------------------- */
+
+  --color-paper: oklch(99.3% 0.002 90);
+  --color-paper-2: oklch(97.2% 0.004 90);
+  --color-paper-3: oklch(94.5% 0.005 90);
+  --color-ink: oklch(19% 0.01 250);
+  --color-ink-2: oklch(36% 0.01 250);
+  --color-ink-3: oklch(52% 0.008 250);
+  --color-rule: oklch(90% 0.004 250);
+  --color-accent: oklch(42% 0.1 155);
+  --color-accent-ink: oklch(99% 0.002 90);
+  --color-photo: linear-gradient(
+    160deg,
+    var(--color-photo-stop-1) 0%,
+    var(--color-photo-stop-2) 45%,
+    var(--color-photo-stop-3) 100%
+  );
+  --font-display: "Newsreader", "Iowan Old Style", Georgia, "Times New Roman",
+    serif;
+  --font-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 40px;
+  --space-2xl: 72px;
+  --space-3xl: 128px;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --rule: 1px solid var(--color-rule);
+
+  /* Fixed artboard type steps. The shipped `--text-*` tokens are `clamp()`ed between the two
+     artboard widths (see block 2); these are the values an artboard is drawn at, which is why an
+     artboard is 1440 or 390 wide and nothing in between. */
+  --text-display: 68px;
+  --text-display-s: 42px;
+  --text-2xl: 34px;
+  --text-xl: 24px;
+  --text-lg: 18px;
+  --text-md: 15px;
+  --text-sm: 13px;
+  --text-xs: 11px;
+
+  /* --- 2. What spec 004 shipped on top (src/app/globals.css) ------------------------------- */
+
+  /* Pointer state of the one accent: a darker instance of the same hue, never an opacity. */
+  --color-accent-strong: oklch(34% 0.09 155);
+
+  /* The photo gradient's stops and its caption ink, declared separately because the caption's
+     contrast is tested against the lightest and the darkest stop. */
+  --color-photo-stop-1: oklch(93% 0.02 120);
+  --color-photo-stop-2: oklch(88% 0.03 140);
+  --color-photo-stop-3: oklch(80% 0.04 150);
+  --color-photo-ink: oklch(40% 0.03 150);
+
+  /* Status. The canvas has none; these are the smallest honest addition, in the accent's
+     lightness band so white text clears 4.5:1 on each fill. */
+  --color-success: oklch(42% 0.1 150);
+  --color-warning: oklch(45% 0.12 75);
+  --color-danger: oklch(45% 0.17 25);
+  --color-danger-strong: oklch(38% 0.15 25);
+  --color-on-success: var(--color-accent-ink);
+  --color-on-warning: var(--color-accent-ink);
+  --color-on-danger: var(--color-accent-ink);
+
+  /* Semantic aliases: a component names an intent, not a swatch. */
+  --color-surface: var(--color-paper);
+  --color-surface-raised: var(--color-paper-2);
+  --color-surface-muted: var(--color-paper-3);
+  --color-surface-inverse: var(--color-ink);
+  --color-ink-muted: var(--color-ink-2);
+  --color-ink-subtle: var(--color-ink-3);
+  --color-on-inverse: var(--color-accent-ink);
+  --color-brand: var(--color-accent);
+  --color-on-brand: var(--color-accent-ink);
+  --color-on-accent: var(--color-accent-ink);
+  --color-border: var(--color-rule);
+  --color-border-strong: var(--color-ink-3);
+  --color-border-emphasis: var(--color-ink);
+  --color-focus: var(--color-accent);
+
+  /* The shipped fluid steps, for reference. An artboard uses the fixed steps in block 1; a
+     template uses these, whose floor is the 390 artboard and whose ceiling is the 1440 one. */
+  --text-display-fluid: clamp(2.125rem, 1.325rem + 3.2vw, 4.25rem);
+  --text-display-s-fluid: clamp(1.75rem, 1.4rem + 1.4vw, 2.625rem);
+  --text-2xl-fluid: clamp(1.375rem, 1.1rem + 1.1vw, 2.125rem);
+  --text-xl-fluid: clamp(1.1875rem, 1.1rem + 0.35vw, 1.5rem);
+
+  /* Line heights and tracking of the display voice, as shipped. */
+  --line-height-display: 1.04;
+  --line-height-display-s: 1.08;
+  --line-height-2xl: 1.15;
+  --line-height-xl: 1.25;
+  --line-height-lg: 1.5;
+  --line-height-md: 1.6;
+  --line-height-sm: 1.55;
+  --line-height-xs: 1.45;
+  --tracking-display: -0.015em;
+  --tracking-label: 0.14em;
+
+  /* Two faces of IBM Plex Sans ship (400, 600); the canvas's "medium" resolves to 600 through
+     this token rather than being matched down to 400. */
+  --font-weight-medium: 600;
+
+  /* Maximum comfortable line length. */
+  --measure: 68ch;
+
+  /* Spacing is `--spacing-*` in code and `--space-*` on the canvas; both names are listed so a
+     reader of either file recognises the other. Same seven values. */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 40px;
+  --spacing-2xl: 72px;
+  --spacing-3xl: 128px;
+
+  --radius-none: 0px;
+  --radius-full: 9999px;
+
+  --shadow-xs: 0 1px 2px color-mix(in oklab, var(--color-ink) 6%, transparent);
+  --shadow-sm: 0 1px 2px color-mix(in oklab, var(--color-ink) 6%, transparent),
+    0 2px 8px color-mix(in oklab, var(--color-ink) 6%, transparent);
+  --shadow-md: 0 2px 4px color-mix(in oklab, var(--color-ink) 6%, transparent),
+    0 8px 24px color-mix(in oklab, var(--color-ink) 8%, transparent);
+
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0.13, 1);
+  --ease-emphasised: cubic-bezier(0.3, 0, 0, 1);
+
+  /* The three elements that overlap, named so they cannot fight. */
+  --layer-header: 100;
+  --layer-banner: 200;
+  --layer-overlay: 300;
+}
