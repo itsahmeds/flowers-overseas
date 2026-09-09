@@ -571,6 +571,37 @@ test.describe("equal prominence, from computed styles (AC-20)", () => {
       expect(control.height).toBeGreaterThanOrEqual(44);
     }
   });
+
+  test("each category toggle row is a full-width, 44 px tap target", async ({
+    page,
+  }) => {
+    // At the artboard's phone width, where the floor bites: `/review 36` measured the bare
+    // checkbox at 13 x 18 px against §5.3/§8's 44 px, so the target is the label-wrapped row.
+    await emptyLanguages(page);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/en");
+    await page.locator(CHOOSE).click();
+    const panel = page.locator(PANEL);
+    await expect(panel).toBeVisible();
+
+    const panelWidth = (await panel.boundingBox())!.width;
+    for (const category of ["analytics", "marketing"] as const) {
+      const row = page.locator(`[data-fo-consent-row="${category}"]`);
+      const box = (await row.boundingBox())!;
+      expect(box.height, `${category} row height`).toBeGreaterThanOrEqual(44);
+      // Full-width: the whole line is the target, not the box at its start edge.
+      expect(box.width, `${category} row width`).toBeGreaterThanOrEqual(
+        panelWidth - 2,
+      );
+    }
+
+    // And the row really is the control: a press on the category name at the row's far end
+    // toggles the checkbox, which is the behaviour the enlarged area is for.
+    const label = page.locator('[data-fo-consent-row="analytics"] span');
+    await expect(page.locator(ANALYTICS)).not.toBeChecked();
+    await label.click();
+    await expect(page.locator(ANALYTICS)).toBeChecked();
+  });
 });
 
 test.describe("withdrawal from the footer (AC-9's re-open clause)", () => {

@@ -113,12 +113,16 @@ Operational notes:
   decision is pending it therefore covers the suggestion banner. Any test that drives the
   suggestion banner or screenshots the colophon seeds a recorded decision first — see
   `tests/e2e/banner.spec.ts` — and TASK-055 owns the final coordination of the two (AC-13).
-- **Budget.** The sheet costs **2 307 B Brotli** on a locale document, in one `next/dynamic` chunk
-  fetched after hydration (the settings panel is a second, nested chunk of ~907 B fetched only when
-  it is opened). That puts `/en` and `/de` at **131 991 B against the 131 072 B of spec 004 §14
-  A1** — 919 B over, with the whole overage predating the sheet in the framework floor. §14 A1's
-  named remedy is Q13 option (b): drop `NextIntlClientProvider` from the locale document (−10 705 B)
-  by passing the suggestion banner's strings as props too. That decision is TASK-056's.
+- **Budget.** The sheet costs **2 363 B Brotli** on a locale document, in one `next/dynamic` chunk
+  fetched after hydration (the settings panel is a second, nested chunk of **967 B** fetched only
+  when it is opened). That puts `/en` and `/de` at **132 044 B against the 131 072 B of spec 004
+  §14 A1** — 972 B over, with the whole overage predating the sheet in the framework floor. The
+  remedy is named in §14 A1's addendum and owned by **TASK-085**: Q13 option (b), dropping
+  `NextIntlClientProvider` and the client message payload from the locale document (−10 705 B) by
+  passing the suggestion banner's strings as props too. The breach is informational until then.
+  Re-measure with `pnpm build && pnpm budget:client-js`; `pnpm lighthouse` cannot substitute for
+  it locally, because `next start` serves chunks unencoded and Lighthouse then reads identity
+  bytes (169 223 B on `/en`) that no Brotli budget can be compared to.
 
 ## 5. What is *not* here
 

@@ -26,6 +26,7 @@ import {
 } from "../../src/modules/ui/consent/ConsentBannerIsland";
 import { ConsentSettingsPanel } from "../../src/modules/ui/consent/ConsentSettingsPanel";
 import type { ConsentChoices } from "../../src/modules/ui/consent/consentCookie";
+import type { ConsentCategoryView } from "../../src/modules/ui/consent/consentTypes";
 import {
   type ConsentTranslate,
   consentView,
@@ -284,6 +285,50 @@ describe("the settings panel (§5.3, AC-20)", () => {
 
   it("says what an empty category means instead of showing an empty table", () => {
     expect(markup).toContain(escapeHtml(translate("consent.categoryEmpty")));
+  });
+
+  it("renders nothing at all for a category with neither rows nor a note", () => {
+    // `/review 36` nit 7: `emptyNote ?? ""` printed an empty paragraph. No note, no element.
+    // The property is *absent*, not `undefined`: `exactOptionalPropertyTypes` is on, and absent
+    // is the shape `consentView()` produces for a category that has rows.
+    const source = view.categories[1]!;
+    const withoutNote: ConsentCategoryView = {
+      key: source.key,
+      name: source.name,
+      purpose: source.purpose,
+      locked: source.locked,
+      cookies: [],
+    };
+    const bare = renderToStaticMarkup(
+      <ConsentSettingsPanel
+        categories={[withoutNote]}
+        choices={NO_CHOICES}
+        idPrefix="bare"
+        onSave={noop}
+        onToggle={noop}
+        strings={view.strings}
+      />,
+    );
+    expect(bare).not.toContain("text-ink-subtle text-xs");
+  });
+
+  it("makes each toggle a full-width 44 px row, label-wrapped (§5.3, §8)", () => {
+    // `/review 36` required change 3: the tap target is the row, not the 13 x 18 px box. The
+    // browser measurement is in `tests/e2e/consent-banner.spec.ts`; this pins the markup that
+    // produces it — a `<label>` that wraps its own checkbox, is `w-full` and is `min-h-[44px]`.
+    for (const category of ["analytics", "marketing"]) {
+      const row = new RegExp(
+        `<label[^>]*data-fo-consent-row="${category}"[^>]*>`,
+      ).exec(markup);
+      expect(row, category).not.toBeNull();
+      for (const utility of ["min-h-[44px]", "w-full", "items-center"]) {
+        expect(row![0], `${category} ${utility}`).toContain(utility);
+      }
+    }
+    // Wrapped, not merely adjacent: the checkbox is inside the label element.
+    expect(markup).toMatch(
+      /<label[^>]*data-fo-consent-row="analytics"[^>]*>\s*<input/,
+    );
   });
 
   it("reaches the `dirty` state by props alone: analytics on, marketing off", () => {

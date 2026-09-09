@@ -19,20 +19,21 @@
  * contract, and §5.3/AC-17/§8 say "non-modal", "does not steal focus", "blocks no content" and "no
  * cookie wall" three times over. Recorded in the PR body rather than silently resolved.
  *
- * **Equal weight, measured rather than asserted.** The three controls are one `Button` component
- * at one variant and one size inside a three-column grid of equal tracks with `fullWidth`, so
- * their rendered width, font size, weight and colour pair are *identical by construction* and
- * AC-20's computed-style assertion has nothing to catch. The accent green is deliberately unused
- * here: it is the finder's `Continue` colour, and an accented "Accept" beside two ink-on-paper
- * alternatives is the exact dark pattern §8 forbids. Order follows the artboard — refuse, choose,
- * accept — so the cheapest click is never the one that consents.
+ * **Equal weight, measured rather than asserted.** The three controls are one component —
+ * `Control` below — rendered from the single `CONTROL` class list inside a three-column grid of
+ * equal tracks, so their rendered width, font size, weight and colour pair are *identical by
+ * construction* and AC-20's computed-style assertion has nothing to catch. The accent green is
+ * deliberately unused here: it is the finder's `Continue` colour, and an accented "Accept" beside
+ * two ink-on-paper alternatives is the exact dark pattern §8 forbids. Order follows the
+ * artboard — refuse, choose, accept — so the cheapest click is never the one that consents.
  *
- * **One control component, written here rather than borrowed.** `Button` is a Server-Component
- * primitive with no `onClick`, five variants and a class-computation pass, and pulling it into a
- * client island cost 900 B Brotli of §14 A1's 1 434 B for four fills nothing here uses. `Control`
- * below is the canvas's `.btn.secondary` as one constant string, so the three sheet controls still
- * come from **one** component with **one** class list — which is the property AC-20 needs — at the
- * price of a duplicated skin that `tests/unit/consent-islands.test.tsx` pins against `Button`'s.
+ * **That one component is written here rather than borrowed from `Button`.** `Button` is a
+ * Server-Component primitive with no `onClick`, five variants and a class-computation pass, and
+ * pulling it into a client island cost 900 B Brotli of §14 A1's headroom for four variants
+ * nothing here uses. `Control` below is the canvas's `.btn.secondary` as one constant string, so
+ * the three sheet controls still come from **one** component with **one** class list — which is
+ * the property AC-20 needs — at the price of a duplicated skin that
+ * `tests/unit/consent-islands.test.tsx` pins against `Button`'s.
  *
  * **Overlay, never reflow.** The wrapper is `fixed`, so the sheet cannot move a painted pixel: the
  * CLS delta is 0 (AC-17). `layer-overlay` is the named z-scale step above `--layer-banner`, which

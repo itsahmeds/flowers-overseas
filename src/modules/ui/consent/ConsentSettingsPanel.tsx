@@ -66,10 +66,13 @@ function CookieRows({
 }: {
   readonly category: ConsentCategoryView;
   readonly idPrefix: string;
-}): ReactElement {
+}): ReactElement | null {
   if (category.cookies.length === 0) {
-    return (
-      <p className="text-ink-subtle text-xs">{category.emptyNote ?? ""}</p>
+    // No rows and no note: render nothing rather than an empty paragraph (`/review 36` nit 7).
+    // Every register category that reaches Phase 0 has a note; a future category with neither
+    // reserves no box.
+    return category.emptyNote === undefined ? null : (
+      <p className="text-ink-subtle text-xs">{category.emptyNote}</p>
     );
   }
   return (
@@ -133,11 +136,21 @@ export function ConsentSettingsPanel({
           const decidable = isDecidable(key);
           return (
             <li key={key}>
-              <div className="gap-sm flex items-start">
-                {decidable ? (
+              {decidable ? (
+                // The tap target is the **row**, not the 18 px box (§5.3, §8: ≥44 px). A
+                // `<label>` wrapping its own checkbox is full-width and ≥44 px tall, so the whole
+                // line is tappable and the accessible name stays exactly the category name — the
+                // purpose, the lifetimes and the cookie table sit outside it, where they neither
+                // lengthen that name nor swallow a press meant for the text. `/review 36`
+                // measured the bare box at 13 × 18 px.
+                <label
+                  className="gap-sm py-xs flex min-h-[44px] w-full cursor-pointer items-center"
+                  data-fo-consent-row={key}
+                  htmlFor={inputId}
+                >
                   <input
                     checked={choices[key]}
-                    className="accent-accent mt-xs size-[18px]"
+                    className="accent-accent size-[18px] shrink-0"
                     data-fo-consent-category={key}
                     id={inputId}
                     onChange={(event) => {
@@ -145,31 +158,27 @@ export function ConsentSettingsPanel({
                     }}
                     type="checkbox"
                   />
-                ) : null}
-                <div className="grow">
-                  {decidable ? (
-                    <label
-                      className="text-ink text-sm font-medium"
-                      htmlFor={inputId}
-                    >
-                      {category.name}
-                    </label>
-                  ) : (
-                    <p className="text-ink text-sm font-medium">
-                      {category.name}
-                    </p>
-                  )}
-                  <p className="text-ink-muted text-xs">{category.purpose}</p>
-                  {category.lockedReason === undefined ? null : (
-                    <p
-                      className="text-ink-subtle text-xs"
-                      data-fo-consent-locked=""
-                    >
-                      {category.lockedReason}
-                    </p>
-                  )}
-                  <CookieRows category={category} idPrefix={inputId} />
-                </div>
+                  <span className="text-ink text-sm font-medium">
+                    {category.name}
+                  </span>
+                </label>
+              ) : (
+                <p className="text-ink py-xs text-sm font-medium">
+                  {category.name}
+                </p>
+              )}
+              {/* Indented to the label's text column so the row reads as one group. */}
+              <div className={decidable ? "ps-[26px]" : undefined}>
+                <p className="text-ink-muted text-xs">{category.purpose}</p>
+                {category.lockedReason === undefined ? null : (
+                  <p
+                    className="text-ink-subtle text-xs"
+                    data-fo-consent-locked=""
+                  >
+                    {category.lockedReason}
+                  </p>
+                )}
+                <CookieRows category={category} idPrefix={inputId} />
               </div>
             </li>
           );
