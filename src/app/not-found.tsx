@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
 import { documentFallbackLocale, localePath } from "@/modules/i18n";
+import { fontVariables } from "@/modules/ui";
 
 import "./globals.css";
 
@@ -51,7 +52,7 @@ export default async function NotFound() {
   });
 
   return (
-    <html lang={locale.bcp47} dir={locale.dir}>
+    <html lang={locale.bcp47} dir={locale.dir} className={fontVariables}>
       <body className="min-h-dvh">
         <main id="main">
           <h1>{t("notFound.heading")}</h1>

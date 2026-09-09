@@ -142,6 +142,19 @@ export const serverEnvSchema = z.object({
     emptyToUndefined,
     z.enum(["true", "false"]).optional(),
   ),
+  /**
+   * Serve the component gallery at `/dev/components` (spec 004 §2 "Component gallery", §12
+   * "Environments", AC-28; TASK-045). `"true"` locally and on previews — the gallery is the
+   * cheapest visual-regression and axe surface, and it is where the founder's florist demos see
+   * the components in every state — and **refused in `production`** by `validateEnv()` below, so
+   * a development affordance cannot reach a buyer through a configuration mistake. Absent counts
+   * as `"false"`, so production needs no value at all; the route itself answers 404 when it is
+   * off (`src/app/(dev)/dev/components/page.tsx`).
+   */
+  ENABLE_DEV_UI: z.preprocess(
+    emptyToUndefined,
+    z.enum(["true", "false"]).optional(),
+  ),
 });
 
 export type ClientEnv = z.infer<typeof clientEnvSchema>;
@@ -213,6 +226,9 @@ export function cspReportOnly(source: EnvSource): boolean {
   return source[CSP_REPORT_ONLY_KEY] !== "false";
 }
 
+/** The key that switches the component gallery on. */
+export const DEV_UI_KEY = "ENABLE_DEV_UI" as const;
+
 /**
  * Whether the `en-XA` / `ar-XB` pseudo-locales are part of the locale registry
  * (`src/config/locales.ts`). Pure: the caller passes the environment, nothing is read here.
@@ -221,6 +237,15 @@ export function cspReportOnly(source: EnvSource): boolean {
  */
 export function pseudoLocalesEnabled(source: EnvSource): boolean {
   return source[PSEUDO_LOCALES_KEY] === "true";
+}
+
+/**
+ * Whether `/dev/components` exists (spec 004 AC-28). Pure: the caller passes the environment.
+ * Anything other than the exact string `"true"` is off, so a typo cannot half-enable the gallery,
+ * and `validateEnv()` refuses `"true"` in production regardless.
+ */
+export function devUiEnabled(source: EnvSource): boolean {
+  return source[DEV_UI_KEY] === "true";
 }
 
 /** A validation problem. `key` is safe to print; values are never captured. */
@@ -283,6 +308,18 @@ export function validateEnv(source: EnvSource): EnvValidationResult {
       key: PSEUDO_LOCALES_KEY,
       message:
         "must not be `true` in production: the en-XA/ar-XB pseudo-locales are refused there (spec 003 §2, §8). Unset it or set it to `false`.",
+    });
+  }
+
+  // AC-28, the same reasoning as the pseudo-locales above and the same enforcement point: the
+  // gallery is a development surface, and refusing the flag in the gate `next.config.ts` runs
+  // before compiling anything makes "the gallery cannot be served in production" a build failure
+  // rather than a code review. Previews are password-protected and `noindex` (§12).
+  if (environment === "production" && devUiEnabled(source)) {
+    issues.push({
+      key: DEV_UI_KEY,
+      message:
+        "must not be `true` in production: the /dev/components gallery is refused there (spec 004 §2, AC-28). Unset it or set it to `false`.",
     });
   }
 

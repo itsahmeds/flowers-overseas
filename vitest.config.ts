@@ -8,7 +8,18 @@ const root = fileURLToPath(new URL(".", import.meta.url));
 
 // Mirror the `@/*` -> `src/*` paths of tsconfig.json so tests can import application
 // modules that use it (TASK-005: `src/proxy.ts` imports `@/lib/logger`).
-const alias = { "@/": `${fileURLToPath(new URL("./src", import.meta.url))}/` };
+// `next/font/local` is a compile-time call, not a runtime function: Next's plugin rewrites it
+// during the build and importing it in plain Node throws. Every unit test that renders a document
+// layout imports `src/modules/ui` (for `fontVariables`) and would fail on that, so the loader is
+// aliased to a shape-compatible stub (spec 004 AC-4, TASK-045). What the stub cannot assert —
+// subsetting, `swap`, the preload links — is asserted in `tests/unit/fonts.test.ts` and
+// `tests/e2e/fonts.spec.ts`, where it is observable.
+const alias = {
+  "@/": `${fileURLToPath(new URL("./src", import.meta.url))}/`,
+  "next/font/local": fileURLToPath(
+    new URL("./tests/unit/support/next-font-local.ts", import.meta.url),
+  ),
+};
 
 export default defineConfig({
   resolve: { alias },

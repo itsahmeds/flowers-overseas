@@ -114,7 +114,9 @@ describe("zone generation from the module manifest", () => {
   const zones = moduleBoundaryZones();
 
   it("covers the app rule plus one zone per module", () => {
-    expect(MODULES).toHaveLength(11);
+    // Eleven `plan/01` §5 modules plus `ui`, spec 004 §2 / §13 Q9's documented addition
+    // (TASK-045).
+    expect(MODULES).toHaveLength(12);
     expect(zones).toHaveLength(MODULES.length + 1);
     expect(zones[0]).toMatchObject({
       target: "src/modules/**",

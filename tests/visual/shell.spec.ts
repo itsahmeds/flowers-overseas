@@ -11,6 +11,12 @@
  * generated locally with `pnpm test:visual --update-snapshots`, `linux/` comes from the `visual`
  * CI job's failure artifact, and both are committed.
  *
+ * **All four baselines changed with TASK-045** and were regenerated on purpose: spec 004's
+ * `@layer base` reset gives every document the two self-hosted families, the paper/ink pair and
+ * the type scale, so every pixel of text moved. `darwin/` was regenerated locally and verified by
+ * a second, non-updating run; `linux/` was taken from the `visual` CI job's artifact, which is the
+ * procedure TASK-042 established and `README.md` documents.
+ *
  * **`navigator.languages` is emptied first (TASK-041).** The suggestion banner is a client island
  * that decides from the *browser's* language list, so a full-page baseline of `/de` taken by an
  * English-configured runner contains an English "would you rather read this in English?" overlay,

@@ -132,7 +132,7 @@ describe("the `/` locale chooser (AC-7, AC-25)", () => {
   );
 
   it("takes `lang`/`dir` from the x-default locale, with no literal in the file", () => {
-    expect(html).toContain('<html lang="en" dir="ltr">');
+    expect(html).toContain('<html lang="en" dir="ltr" class=');
     expect(html).not.toContain('lang="en-GB" dir');
   });
 
@@ -275,7 +275,7 @@ describe("the 404 document (AC-8)", () => {
       (await NotFoundDocument()) as ReactElement,
     );
 
-    expect(html).toContain('<html lang="en" dir="ltr">');
+    expect(html).toContain('<html lang="en" dir="ltr" class=');
     expect(html).toContain("<h1>Page not found</h1>");
     // The way back is built by `localePath()`, the single URL builder (AC-13).
     expect(html).toContain('href="/en"');
@@ -313,6 +313,9 @@ describe("the global 500 document (spec 003 §5.3, AC-25)", () => {
   );
 
   it("is an x-default document with `lang`, `dir` and a localised title", () => {
+    // No font class here, unlike the other three documents: `src/app/global-error.tsx` is the
+    // client-data chain TASK-046 owns (spec 004 §2's zod-free locale data), so TASK-045 left the
+    // file untouched and the 500 page renders in the fallback stack. Noted in both PRs.
     expect(html).toContain('<html lang="en" dir="ltr">');
     expect(html).toContain(
       "<title>Something went wrong — Flowers Overseas</title>",
@@ -339,7 +342,7 @@ describe("the AC-5 registry seam", () => {
       renderLocaleDocument("ar-xb"),
     );
 
-    expect(html).toContain('<html lang="ar-XB" dir="rtl">');
+    expect(html).toContain('<html lang="ar-XB" dir="rtl" class=');
     // No catalogue ships for the fake locale: the `en` fallback chain renders it (AC-31).
     expect(html).toContain("<h1>Send flowers across Europe</h1>");
   });

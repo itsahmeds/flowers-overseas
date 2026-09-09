@@ -129,8 +129,8 @@ describe("fo/no-physical-css inline cases", () => {
 
 describe("plugin surface", () => {
   it("exports the fo rules under the fo namespace", () => {
-    // TASK-003 added the physical-css/literal-strings pair, TASK-004 three more and TASK-037
-    // `no-adhoc-intl` (spec 003 AC-21).
+    // TASK-003 added the physical-css/literal-strings pair, TASK-004 three more, TASK-037
+    // `no-adhoc-intl` (spec 003 AC-21) and TASK-045 `no-raw-color` (spec 004 AC-1).
     expect(Object.keys(plugin.rules ?? {}).sort()).toEqual([
       "no-adhoc-intl",
       "no-direct-order-status-write",
@@ -138,6 +138,7 @@ describe("plugin surface", () => {
       "no-geo-redirect",
       "no-literal-strings",
       "no-physical-css",
+      "no-raw-color",
     ]);
   });
 });

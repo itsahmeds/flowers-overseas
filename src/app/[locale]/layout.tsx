@@ -12,6 +12,7 @@ import {
   routableLocale,
   routableLocaleCodes,
 } from "@/modules/i18n";
+import { fontVariables, SkipLink } from "@/modules/ui";
 
 import "../globals.css";
 
@@ -107,7 +108,8 @@ export default async function LocaleLayout({
   const messages = loadMessages(locale.code, namespacesFor("localeDocument"));
 
   return (
-    <html lang={locale.bcp47} dir={locale.dir}>
+    // `fontVariables`: the two self-hosted families and their preload links (spec 004 AC-4).
+    <html lang={locale.bcp47} dir={locale.dir} className={fontVariables}>
       <body className="min-h-dvh">
         {/* `timeZone` mirrors `src/modules/i18n/request.ts`: a relay has no single local zone,
             every rendered time carries its own IANA zone (`formatTimeInZone`), and UTC is the
@@ -121,7 +123,11 @@ export default async function LocaleLayout({
           messages={messages}
           timeZone="UTC"
         >
-          <a href="#main">{t("skipToContent")}</a>
+          {/* The skip link is the first focusable element of every document (WCAG 2.4.1). Spec
+              003 shipped it as a bare `<a>`; spec 004 gives it the **visible focused state** §2
+              asks for through the `SkipLink` primitive — off-screen until focused, then a paper
+              card with the focus ring above every other layer. Same target, same message key. */}
+          <SkipLink>{t("skipToContent")}</SkipLink>
           {children}
           {/* Last in the document and out of flow: the language suggestion of ADR-0006 in its
               positive form. `LocaleSuggestionBanner` is a Server Component that projects the

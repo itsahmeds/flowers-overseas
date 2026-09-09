@@ -28,6 +28,17 @@ describe("pnpm lint:fixtures over the real configs", () => {
     expect(rulesFor("literal-string.tsx")).toContain("fo/no-literal-strings");
     expect(rulesFor("literal-aria.tsx")).toContain("fo/no-literal-strings");
     expect(rulesFor("literal-alt.tsx")).toContain("fo/no-literal-strings");
+    // TASK-045 (spec 004 AC-1, T-02): the raw-colour pair, ESLint and Stylelint halves.
+    expect(rulesFor("raw-color.tsx")).toEqual([
+      "fo/no-raw-color",
+      "fo/no-raw-color",
+      "fo/no-raw-color",
+      "fo/no-raw-color",
+    ]);
+    expect(rulesFor("raw-color.css")).toContain("color-no-hex");
+    expect(rulesFor("raw-color.css")).toContain(
+      "declaration-property-value-disallowed-list",
+    );
     expect(rulesFor("physical.css")).toContain("property-disallowed-list");
     expect(rulesFor("physical.css")).toContain(
       "declaration-property-value-disallowed-list",
@@ -80,6 +91,8 @@ describe("pnpm lint:fixtures over the real configs", () => {
       expect(rulesFor(file)).toEqual([]);
     }
     expect(rulesFor("literal-strings-valid.tsx")).toEqual([]);
+    expect(rulesFor("raw-color-valid.tsx")).toEqual([]);
+    expect(rulesFor("raw-color-valid.css")).toEqual([]);
     for (const file of [
       "order-status-valid.ts",
       "geo-redirect-valid.ts",
@@ -129,6 +142,7 @@ describe("pnpm lint:fixtures over the real configs", () => {
     expect(config.rules?.["fo/no-direct-order-status-write"]?.[0]).toBe(2);
     expect(config.rules?.["fo/no-geo-redirect"]?.[0]).toBe(2);
     expect(config.rules?.["fo/no-adhoc-intl"]?.[0]).toBe(2);
+    expect(config.rules?.["fo/no-raw-color"]?.[0]).toBe(2);
   });
 
   it("makes no-console an error in src/** but not in src/lib/logger.ts (AC-12)", async () => {

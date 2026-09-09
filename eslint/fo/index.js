@@ -9,6 +9,7 @@
  * | `no-direct-order-status-write` | TASK-004 | yes |
  * | `no-geo-redirect` | TASK-004 | yes |
  * | `no-adhoc-intl` | TASK-037 | yes — except `src/modules/i18n/format.ts` and `collate.ts` |
+ * | `no-raw-color` | TASK-045 | yes — colours live only in the `@theme` block of `src/app/globals.css` |
  * | `no-float-money` | TASK-004 | no — fixture and unit tested only in spec 001, enabled by spec 005 |
  */
 import noAdhocIntl from "./no-adhoc-intl.js";
@@ -17,10 +18,11 @@ import noFloatMoney from "./no-float-money.js";
 import noGeoRedirect from "./no-geo-redirect.js";
 import noLiteralStrings from "./no-literal-strings.js";
 import noPhysicalCss from "./no-physical-css.js";
+import noRawColor from "./no-raw-color.js";
 
 /** @type {import("eslint").ESLint.Plugin} */
 const plugin = {
-  meta: { name: "eslint-plugin-fo", version: "0.3.0" },
+  meta: { name: "eslint-plugin-fo", version: "0.4.0" },
   rules: {
     "no-physical-css": noPhysicalCss,
     "no-literal-strings": noLiteralStrings,
@@ -28,6 +30,7 @@ const plugin = {
     "no-geo-redirect": noGeoRedirect,
     "no-float-money": noFloatMoney,
     "no-adhoc-intl": noAdhocIntl,
+    "no-raw-color": noRawColor,
   },
 };
 
