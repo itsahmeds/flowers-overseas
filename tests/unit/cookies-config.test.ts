@@ -250,8 +250,18 @@ describe("docs/compliance/cookie-register.md derives from this file (the PR's re
   });
 
   it("mentions every registered name in its prose, so the two tables cannot disagree", () => {
+    // The **prose**, which is everything outside the generated block. Searching the whole file
+    // would pass on the generated table alone, so the guard could never fail: a row added to the
+    // register with no narrative would have been accepted (`/review 28` item 1).
+    const start = doc.indexOf(GENERATED_BLOCK_START);
+    const end = doc.indexOf(GENERATED_BLOCK_END);
+    const prose =
+      doc.slice(0, start) + doc.slice(end + GENERATED_BLOCK_END.length);
+    expect(prose, "prose outside the generated block").not.toContain(
+      GENERATED_BLOCK_START,
+    );
     for (const name of registeredCookieNames()) {
-      expect(doc, name).toContain(name);
+      expect(prose, name).toContain(name);
     }
   });
 });

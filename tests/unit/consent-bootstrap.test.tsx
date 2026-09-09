@@ -17,8 +17,8 @@
  *     so nothing can request `googletagmanager.com` (the served half is `tests/e2e/consent.spec.ts`).
  */
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { readdirSync, readFileSync } from "node:fs";
+import { join, relative, resolve } from "node:path";
 
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
@@ -44,6 +44,19 @@ import { AnalyticsScripts, ga4TagUrl } from "../../src/modules/analytics";
 const repoRoot = resolve(__dirname, "../..");
 
 const MEASUREMENT_ID = "G-TESTID1234";
+
+const SOURCE_EXTENSIONS = [".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs"];
+
+/** Every source file under `dir`, recursively. */
+function sourceFilesUnder(dir: string): string[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const path = join(dir, entry.name);
+    if (entry.isDirectory()) return sourceFilesUnder(path);
+    return SOURCE_EXTENSIONS.some((ext) => entry.name.endsWith(ext))
+      ? [path]
+      : [];
+  });
+}
 
 describe("the bootstrap script (AC-18)", () => {
   it("denies every ad and analytics signal and grants only security storage", () => {
@@ -239,10 +252,15 @@ describe("where it is mounted", () => {
   });
 
   it("is the only place in `src/` that emits an inline script", () => {
-    const inlineUsers = readFileSync(
-      resolve(repoRoot, "src/modules/analytics/ui/AnalyticsScripts.tsx"),
-      "utf8",
+    // Asserted by walking `src/`, not by reading the one file we hope is the only one: the claim
+    // in §5.2, in the CSP comment and in the register is that the application has exactly one
+    // inline script, and a second `dangerouslySetInnerHTML` anywhere would silently invalidate
+    // the hash-based `script-src` (`/review 28` item 2).
+    const inlineUsers = sourceFilesUnder(resolve(repoRoot, "src")).filter(
+      (file) => readFileSync(file, "utf8").includes("dangerouslySetInnerHTML"),
     );
-    expect(inlineUsers).toContain("dangerouslySetInnerHTML");
+    expect(
+      inlineUsers.map((file) => relative(repoRoot, file)).sort(),
+    ).toStrictEqual(["src/modules/analytics/ui/AnalyticsScripts.tsx"]);
   });
 });

@@ -3,13 +3,13 @@
  * TASK-043).
  *
  * `plan/01` §7 capped an indexable page at 120 KB of *gzipped* JavaScript; spec 004 §13 Q13
- * restates it, on the founder's decision of 2026-09-08 (option (a)), as **≤ 128 KB of Brotli
- * transfer** — 122 880 bytes, the same number against the encoding Vercel actually serves and
- * Lighthouse actually measures (`resource-summary:script:size` is transfer size). The gzip number
- * is still printed beside it, because it is what every older note in this repository quotes and
- * dropping it would make two measurements incomparable; only the Brotli number is compared
- * against the budget. Spec 003 §6 caps the **serialised message payload handed to the client** at
- * 4 KB gzipped, unchanged.
+ * restates it, on the founder's decision of 2026-09-08 (option (a)), and §14 A1 corrects the
+ * number to **≤ 128 KB of Brotli transfer** — 131 072 bytes, against the encoding Vercel
+ * actually serves and Lighthouse actually measures (`resource-summary:script:size` is transfer
+ * size). The gzip number is still printed beside it, because it is what every older note in
+ * this repository quotes and dropping it would make two measurements incomparable; only the
+ * Brotli number is compared against the budget. Spec 003 §6 caps the **serialised message
+ * payload handed to the client** at 4 KB gzipped, unchanged.
  *
  * Lighthouse measures the script number too, but only against a deployed preview and only as a
  * pass/fail; this script measures it from the build output, per URL, chunk by chunk, so a

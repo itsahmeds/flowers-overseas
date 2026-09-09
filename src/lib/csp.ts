@@ -83,9 +83,12 @@ export interface CspOptions {
   /**
    * `'sha256-…'` values for inline `<script>` blocks, base64 as the CSP grammar wants them and
    * **without** the surrounding quotes, which are added here. Empty in this spec: the app has no
-   * inline script yet. TASK-050 adds exactly one — the Consent-Mode default block — in the same
-   * PR as the script itself, because a bootstrap the policy would report is a false negative in
-   * the Report-Only evidence.
+   * inline script yet. TASK-050 adds one — the Consent-Mode default block — in the same PR as
+   * the script itself, because a bootstrap the policy would report is a false negative in the
+   * Report-Only evidence. The application then contains **exactly one APPLICATION inline script;
+   * Next's flight blocks are unauthorised under this policy and are why the header stays
+   * Report-Only (spec 004 §14 A2)** — the enforce flip waits for a task that adds nonce
+   * propagation or accepts a hash per response, and is no longer TASK-056's.
    */
   readonly inlineHashes?: readonly string[];
   /** `false` enforces. Defaults to `true` (report only), like the env variable it comes from. */
@@ -146,10 +149,11 @@ export function cspValue(
 
   const directives: readonly (readonly [string, readonly string[]])[] = [
     ["default-src", ["'self'"]],
-    // `'self'` plus one hash per inline block — in Phase 0 exactly one, the ≤1 KB Consent-Mode
-    // bootstrap of `src/lib/consent-bootstrap.ts` (TASK-050) — plus the GA4 tag origin when a
-    // measurement id is configured. No `'unsafe-inline'`, no `'unsafe-eval'`, and no Google Fonts
-    // origin: the fonts are self-hosted (spec 004 §5.1).
+    // `'self'` plus one hash per inline block — in Phase 0 exactly one application inline
+    // script, the ≤1 KB Consent-Mode bootstrap of `src/lib/consent-bootstrap.ts` (TASK-050);
+    // Next's own flight blocks are unauthorised here, see `inlineHashes` above — plus the GA4
+    // tag origin when a measurement id is configured. No `'unsafe-inline'`, no `'unsafe-eval'`,
+    // and no Google Fonts origin: the fonts are self-hosted (spec 004 §5.1).
     [
       "script-src",
       [

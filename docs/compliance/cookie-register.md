@@ -69,7 +69,7 @@ list nobody showed. None of them is set by any response or any script the site l
 | `fo_currency` | `plan/02` §4 keeps currency in a cookie rather than in the URL; the currency *menu* and the write are spec 008's. Spec 004 renders the locale's default currency as server-rendered text and writes nothing. |
 | `fo_basket` | No basket until spec 010. |
 | `fo_session`, `fo_csrf` | No accounts (spec 019) and no form POST from a browser session (spec 010) yet; both would be server-set, which is why the register's schema refuses to mark a server-written row as `set` while every response is cacheable. |
-| `__stripe_mid`, `__stripe_sid` | No payment element is loaded before spec 013. Stripe's fraud-prevention cookies are strictly necessary for the payment the visitor asked for, so they are declared as essential rather than consent-gated — and they still cannot appear before a checkout page exists. |
+| `__stripe_mid`, `__stripe_sid` | No payment element is loaded before spec 013. Stripe's fraud-prevention cookies are strictly necessary for the payment the visitor asked for, so they are declared as essential rather than consent-gated (**confirm in spec 013**, which is where the payment element and its actual cookie set are specified) — and they still cannot appear before a checkout page exists. |
 | A/B test bucket | No experiments until spec 024. |
 | A locale cookie set by `next-intl/middleware` | The library's middleware would set its own cookie **and redirect** `/` to a detected locale. It is not used, and importing it is a lint error (`fo/no-geo-redirect`, spec 003 AC-10). |
 

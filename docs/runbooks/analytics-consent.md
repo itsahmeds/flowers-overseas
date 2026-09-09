@@ -54,7 +54,11 @@ Two consequences the build handles by itself:
   `https://*.google-analytics.com` in `connect-src` (`src/lib/csp.ts`, gated on the same variable),
   so the tag is not reported as a violation the day it appears;
 - the script budget grows by ~30–35 KB, which is measured by `pnpm budget:client-js` **on a build
-  that has the id set** — the Phase 0 numbers in `README.md` are for a dark tag.
+  that has the id set** — the Phase 0 numbers in `README.md` are for a dark tag. **Setting the id
+  breaches the script budget until TASK-056 decides where the third-party tag sits**: spec 004 §14
+  A1 leaves 1 434 B of headroom on a locale document and the tag is ~30–35 KB, so a build with the
+  id set fails `budget:client-js` (and Lighthouse's `resource-summary:script:size`) unless the
+  third-party tag is excluded from the first-party budget — that decision is on TASK-056's row.
 
 ## 3. Verifying, in this order
 

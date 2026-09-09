@@ -30,12 +30,13 @@
  * ## Status codes, and why an invalid body is not an error
  *
  * `405` for a method other than `POST` (with `Allow`), `415` for a content type that is not JSON,
- * `413` for a body that declares more than `CONSENT_MAX_BYTES`, `400` for anything that does not
- * parse under `ConsentDecisionSchema` — logged as a **count**, never as content, because the body
- * is attacker-influenced and a zod message can quote it — and `204` on success. `500` is reserved
- * for a sink that could not record: with the log sink that cannot happen, but spec 002's table
- * can be down, and silently answering `204` would tell a browser that a decision was stored when
- * it was not.
+ * `413` for a body that declares **or streams** more than `CONSENT_MAX_BYTES` — a declared length
+ * is refused unread and a chunked body is cut off at the first byte over the limit — `400` for
+ * anything that does not parse under `ConsentDecisionSchema` — logged as a **count**, never as
+ * content, because the body is attacker-influenced and a zod message can quote it — and `204` on
+ * success. `500` is reserved for a sink that could not record: with the log sink that cannot
+ * happen, but spec 002's table can be down, and silently answering `204` would tell a browser that
+ * a decision was stored when it was not.
  */
 import { z } from "zod";
 
@@ -128,6 +129,47 @@ export function declaredTooLarge(contentLength: string | null): boolean {
   return declared > CONSENT_MAX_BYTES;
 }
 
+/**
+ * Read at most `limit` bytes of the request body, or refuse. A chunked request declares no
+ * `Content-Length`, so `declaredTooLarge` alone would let a 200 KB body be buffered in full
+ * before zod refused it (`/review 28` item 5): this reads the stream chunk by chunk, stops at
+ * the first byte over the limit, cancels the rest and returns `null`, which the caller answers
+ * `413`. A body with no stream (`request.body === null`, and the mocked requests of some
+ * runtimes) falls back to `text()` and is checked after the fact — still bounded, because such a
+ * request either declared its length or carries no body at all.
+ */
+export async function readBoundedBody(
+  request: Request,
+  limit: number = CONSENT_MAX_BYTES,
+): Promise<string | null> {
+  const body = request.body;
+  if (!body) {
+    const text = await request.text();
+    return new TextEncoder().encode(text).byteLength > limit ? null : text;
+  }
+
+  const reader = body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > limit) {
+      await reader.cancel();
+      return null;
+    }
+    chunks.push(value);
+  }
+  const buffer = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    buffer.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return new TextDecoder().decode(buffer);
+}
+
 export interface ConsentResponseOptions {
   readonly sink?: ConsentSink;
   readonly logger?: Logger;
@@ -158,9 +200,13 @@ export async function consentResponse(
     return empty(413);
   }
 
+  // Bounded read: `content-length` is a declaration, and a chunked request makes none.
+  const raw = await readBoundedBody(request);
+  if (raw === null) return empty(413);
+
   let decision: ConsentDecision;
   try {
-    decision = ConsentDecisionSchema.parse(await request.json());
+    decision = ConsentDecisionSchema.parse(JSON.parse(raw));
   } catch {
     // A count, not the body, and not the zod message: both can quote the input (§8).
     log.warn({ consent_invalid: 1 }, "consent decision unparsable");

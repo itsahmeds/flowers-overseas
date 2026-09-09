@@ -251,6 +251,40 @@ describe("consentResponse (AC-19)", () => {
     expect(calls).toEqual([]);
   });
 
+  it("answers 413 to a chunked body over the cap, without buffering it (`/review 28`)", async () => {
+    // A chunked request declares no `Content-Length`, so the declaration guard above cannot see
+    // it: the read itself has to stop. The stream below would emit 256 KB if it were drained;
+    // the assertion is that it is cancelled after the first chunk past the cap.
+    const chunk = new TextEncoder().encode("x".repeat(1024));
+    let emitted = 0;
+    const body = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        if (emitted >= 256) {
+          controller.close();
+          return;
+        }
+        emitted += 1;
+        controller.enqueue(chunk);
+      },
+    });
+    const { sink, calls } = recordingSink();
+
+    const response = await consentResponse(
+      new Request("https://flowersoverseas.com/api/consent", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body,
+        duplex: "half",
+      } as RequestInit),
+      { sink },
+    );
+
+    expect(response.status).toBe(413);
+    expect(calls).toEqual([]);
+    // 4 KB cap, 1 KB chunks: five reads at most, so the 256 KB was never buffered.
+    expect(emitted).toBeLessThanOrEqual(CONSENT_MAX_BYTES / 1024 + 1);
+  });
+
   it("answers 500 and logs a failure when the sink cannot record (spec 002's table can)", async () => {
     const lines: string[] = [];
     const logger = createLogger({

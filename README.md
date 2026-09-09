@@ -190,8 +190,9 @@ Three gates are informational for now, by decision rather than by neglect.
 - `test-integration`, until spec 002 gives it a schema.
 - `lighthouse`, and the `build` job's `budget:client-js` step with it, until TASK-056 flips them.
   Spec 003 §14 A12 asked three questions and spec 004 §13 Q13 answered two of them on 2026-09-08:
-  the budget is restated as **≤ 120 KB Brotli transfer** (122 880 B — transfer size is what
-  Lighthouse reads and Brotli is what Vercel serves), and zod was taken off the client. It reached
+  the budget is restated as **≤ 128 KB Brotli transfer** (131 072 B, spec 004 §14 A1's
+  correction of §13 Q13's 120 KB — transfer size is what Lighthouse reads and Brotli is what
+  Vercel serves), and zod was taken off the client. It reached
   the browser through the one import chain a Client Component cannot avoid — Next's root error
   boundary, `src/app/global-error.tsx`, whose chunk Next attaches to every document — and
   TASK-046 broke that chain — twice, because the first attempt only moved zod behind a lazy

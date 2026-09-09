@@ -261,6 +261,10 @@ const REGISTER: readonly unknown[] = [
     spec: "010",
     scope: "Path=/; SameSite=Lax; Secure outside development",
   },
+  // The two Stripe rows are classified `essential` / `consentRequired: false` on the Art. 5(3)
+  // fraud-prevention exemption, which is the right reading for a payment the visitor asked for —
+  // to be **confirmed in spec 013**, where the payment element and the cookies it actually sets
+  // are specified (`/review 28` item 7).
   {
     name: "__stripe_mid",
     kind: "cookie",
