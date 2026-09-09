@@ -42,7 +42,35 @@ function tempTree(contents: string, file = "src/config/locales.ts"): string {
 
 describe("AC-2: no database import in the spec 003 file set (T-02)", () => {
   it("scans the spec 003 file set, and the list is explicit and extendable", () => {
-    expect([...SCANNED_PATHS]).toEqual(["src/config", "src/modules/i18n"]);
+    expect([...SCANNED_PATHS]).toEqual([
+      "src/config",
+      "src/modules/i18n",
+      // spec 005 AC-2 (TASK-060): the catalogue and pricing module, whose whole design is a
+      // no-database provider seam. `src/config/catalogue/**` (TASK-061's dataset) needs no entry
+      // of its own — the `src/config` walk is recursive.
+      "src/modules/catalog",
+    ]);
+  });
+
+  /**
+   * spec 005 AC-2's clause "`pnpm check:no-db` passes for `src/modules/catalog/**` and
+   * `src/config/catalogue/**`", as a coverage assertion rather than a path-list equality: the
+   * dataset directory is reached through `src/config`, so what has to hold is that both paths are
+   * *inside* the scanned set, however the set is spelled.
+   */
+  it("covers both spec 005 paths, the dataset directory included (AC-2)", () => {
+    for (const covered of [
+      "src/modules/catalog",
+      "src/modules/catalog/static",
+      "src/config/catalogue",
+    ]) {
+      expect(
+        SCANNED_PATHS.some(
+          (path) => covered === path || covered.startsWith(`${path}/`),
+        ),
+        covered,
+      ).toBe(true);
+    }
   });
 
   it("finds no database import in this repository", () => {
