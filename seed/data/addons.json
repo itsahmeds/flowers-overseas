@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "source": "seed",
+  "entity": "addon",
+  "origin": "projected",
+  "projectedFrom": "src/config/catalogue/addons.data.ts",
+  "rows": [
+    {
+      "key": "chocolates",
+      "kind": "confectionery",
+      "allergenNoteRequired": true,
+      "partnerOnly": false,
+      "flagPrefix": null,
+      "nameKey": "catalog.addon.chocolates.name",
+      "descriptionKey": "catalog.addon.chocolates.description",
+      "sort": 0
+    },
+    {
+      "key": "vase",
+      "kind": "vessel",
+      "allergenNoteRequired": false,
+      "partnerOnly": false,
+      "flagPrefix": null,
+      "nameKey": "catalog.addon.vase.name",
+      "descriptionKey": "catalog.addon.vase.description",
+      "sort": 1
+    },
+    {
+      "key": "balloon",
+      "kind": "balloon",
+      "allergenNoteRequired": false,
+      "partnerOnly": false,
+      "flagPrefix": null,
+      "nameKey": "catalog.addon.balloon.name",
+      "descriptionKey": "catalog.addon.balloon.description",
+      "sort": 2
+    },
+    {
+      "key": "plush",
+      "kind": "plush",
+      "allergenNoteRequired": false,
+      "partnerOnly": false,
+      "flagPrefix": null,
+      "nameKey": "catalog.addon.plush.name",
+      "descriptionKey": "catalog.addon.plush.description",
+      "sort": 3
+    },
+    {
+      "key": "wine",
+      "kind": "alcohol",
+      "allergenNoteRequired": false,
+      "partnerOnly": false,
+      "flagPrefix": "addon.wine",
+      "nameKey": "catalog.addon.wine.name",
+      "descriptionKey": "catalog.addon.wine.description",
+      "sort": 4
+    },
+    {
+      "key": "card",
+      "kind": "stationery",
+      "allergenNoteRequired": false,
+      "partnerOnly": false,
+      "flagPrefix": null,
+      "nameKey": "catalog.addon.card.name",
+      "descriptionKey": "catalog.addon.card.description",
+      "sort": 5
+    }
+  ]
+}

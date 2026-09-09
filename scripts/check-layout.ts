@@ -45,6 +45,12 @@ export const REQUIRED_DIRS = [
   "tests/fixtures",
   "supabase/migrations",
   "seed",
+  // spec 006 §2.2 (TASK-072): the seed dataset and the schemas it parses under. `seed/schema/`
+  // holds every `Seed*Schema` and every `to*Row()` projection onto spec 002 §5.1's columns;
+  // `seed/data/` is the versioned, zod-validated dataset spec 002's importer reads (spec 002
+  // §14 A1 (d)). Both are required, not optional: without them there is no catalogue to seed.
+  "seed/schema",
+  "seed/data",
   "messages",
   "scripts",
 ] as const;

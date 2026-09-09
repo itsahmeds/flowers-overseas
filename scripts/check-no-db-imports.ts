@@ -14,7 +14,10 @@
  * spec adds never read it, so their behaviour cannot depend on it.
  *
  * `SCANNED_PATHS` is the explicit, extendable file set: a later spec-003 task that adds a
- * directory (or a spec that wants the same guarantee) adds it to this list and nothing else.
+ * directory (or a spec that wants the same guarantee) adds it to this list and nothing else. An
+ * entry may be a directory (walked recursively) or a single file, because spec 006's generator is
+ * one file in a directory whose other halves — `seed/index.ts`, `seed/upload.ts` — will import the
+ * database client on purpose once spec 002 unparks (spec 006 §2.6).
  */
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
@@ -34,6 +37,15 @@ export const SCANNED_PATHS = [
   "src/config",
   "src/modules/i18n",
   "src/modules/catalog",
+  // spec 006 AC-1 (TASK-072): the seed dataset's schemas and its deterministic projector. The
+  // Phase-0 half of spec 006 (§2.2–§2.5) is buildable and testable with no database at all, and
+  // this is the assertion behind that claim. The paths are named individually rather than as
+  // `seed` because §2.6's `seed/index.ts` and `seed/upload.ts` are the importer and the uploader:
+  // they *will* import the client the day Neon exists, and a blanket `seed` entry would either
+  // fail then or be quietly widened. The whole-seam assertion over the files spec 006 adds is
+  // AC-1 on TASK-081.
+  "seed/schema",
+  "seed/project.ts",
 ] as const;
 
 const SCANNED_EXTENSIONS = [".ts", ".tsx", ".mts", ".cts", ".js", ".jsx"];
@@ -82,7 +94,12 @@ export interface EnvHit {
 
 function walk(dir: string): string[] {
   const files: string[] = [];
-  if (!statSync(dir, { throwIfNoEntry: false })?.isDirectory()) return files;
+  const stat = statSync(dir, { throwIfNoEntry: false });
+  // A `SCANNED_PATHS` entry may name one file (see the header): scan it and stop.
+  if (stat?.isFile() === true) {
+    return SCANNED_EXTENSIONS.some((ext) => dir.endsWith(ext)) ? [dir] : files;
+  }
+  if (stat?.isDirectory() !== true) return files;
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const full = join(dir, entry.name);
     if (entry.isDirectory()) {

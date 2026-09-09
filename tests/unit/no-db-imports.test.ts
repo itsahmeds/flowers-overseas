@@ -49,7 +49,48 @@ describe("AC-2: no database import in the spec 003 file set (T-02)", () => {
       // no-database provider seam. `src/config/catalogue/**` (TASK-061's dataset) needs no entry
       // of its own — the `src/config` walk is recursive.
       "src/modules/catalog",
+      // spec 006 AC-1 (TASK-072): the seed dataset's schemas and its deterministic projector.
+      // Named file by file rather than as `seed`, because §2.6's `seed/index.ts` and
+      // `seed/upload.ts` import the client on purpose once spec 002 unparks; TASK-081 owns the
+      // whole-seam assertion over the files spec 006 adds.
+      "seed/schema",
+      "seed/project.ts",
     ]);
+  });
+
+  /**
+   * spec 006 AC-1's clause "`pnpm check:no-db` covers every file added by §2.2–§2.5", as a
+   * coverage assertion: what has to hold is that the dataset's schemas and its generator are
+   * inside the scanned set, however the set is spelled.
+   */
+  it("covers the spec 006 seed schema paths (AC-1)", () => {
+    for (const covered of [
+      "seed/schema",
+      "seed/schema/media.ts",
+      "seed/project.ts",
+    ]) {
+      expect(
+        SCANNED_PATHS.some(
+          (path) => covered === path || covered.startsWith(`${path}/`),
+        ),
+        covered,
+      ).toBe(true);
+    }
+  });
+
+  it("scans a `SCANNED_PATHS` entry that names one file, not a directory", () => {
+    const root = tempTree(
+      'import { db } from "@/lib/db";\n',
+      "seed/project.ts",
+    );
+    expect(
+      findDatabaseImports(root, ["seed/project.ts"]).map((hit) => hit.banned),
+    ).toEqual(["src/lib/db"]);
+    // A non-code file named directly is skipped rather than read as TypeScript.
+    const jsonRoot = tempTree("{}\n", "seed/data/products.json");
+    expect(findDatabaseImports(jsonRoot, ["seed/data/products.json"])).toEqual(
+      [],
+    );
   });
 
   /**

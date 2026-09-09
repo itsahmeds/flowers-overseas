@@ -29,6 +29,7 @@
     "check-layout": "node scripts/check-layout.ts",
     "env:check": "node scripts/env-check.ts",
     "db:check": "node scripts/db-check.ts",
+    "seed:project": "node seed/project.ts",
     "i18n:check": "node scripts/i18n-check.ts",
     "i18n:draft": "node scripts/i18n-draft.ts",
     "i18n:pseudo": "node scripts/i18n-pseudo.ts",
