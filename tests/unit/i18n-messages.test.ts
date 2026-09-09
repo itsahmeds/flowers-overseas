@@ -33,6 +33,11 @@ describe("the shell catalogue", () => {
     expect([...MESSAGE_NAMESPACES].sort()).toEqual([
       "a11y",
       "banner",
+      // `catalog` is spec 005 §7's namespace: the tier, add-on, surcharge and facet **label
+      // keys** the authored dataset refers to, seeded `retained: true` by TASK-062 and rendered
+      // from TASK-067. It is deliberately in no `ROUTE_NAMESPACES` entry, so it reaches no
+      // client provider and costs no client bytes (spec 005 AC-3).
+      "catalog",
       "chooser",
       "common",
       // `company`, `destinations`, `footer` and `nav` are spec 004 §7's chrome namespaces, added

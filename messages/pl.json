@@ -10,6 +10,131 @@
     "stay": "Stay on this page",
     "switch": "Switch to {language}"
   },
+  "catalog": {
+    "addon": {
+      "balloon": {
+        "description": "One helium balloon, tied to the bouquet on delivery.",
+        "name": "Balloon"
+      },
+      "card": {
+        "description": "Your message, written out by hand and delivered with the flowers.",
+        "name": "Handwritten card"
+      },
+      "chocolates": {
+        "description": "A box of chocolates, sourced by the florist who makes the bouquet.",
+        "name": "Box of chocolates"
+      },
+      "plush": {
+        "description": "A small soft toy, chosen by the florist from what they have in stock.",
+        "name": "Soft toy"
+      },
+      "vase": {
+        "description": "A plain glass vase, so the flowers can go straight into water.",
+        "name": "Glass vase"
+      },
+      "wine": {
+        "description": "A bottle of local wine, where the florist is licensed to sell it.",
+        "name": "Bottle of wine"
+      }
+    },
+    "facet": {
+      "colour": {
+        "blue": "Blue",
+        "mixed": "Mixed colours",
+        "orange": "Orange",
+        "pastel": "Pastel",
+        "pink": "Pink",
+        "purple": "Purple",
+        "red": "Red",
+        "vibrant": "Vibrant",
+        "white": "White",
+        "yellow": "Yellow"
+      },
+      "flowerType": {
+        "alstroemeria": "Alstroemeria",
+        "carnations": "Carnations",
+        "chrysanthemums": "Chrysanthemums",
+        "freesias": "Freesias",
+        "gerberas": "Gerberas",
+        "hydrangeas": "Hydrangeas",
+        "lilies": "Lilies",
+        "mixed": "Mixed flowers",
+        "orchids": "Orchids",
+        "peonies": "Peonies",
+        "roses": "Roses",
+        "seasonal": "Seasonal flowers",
+        "sunflowers": "Sunflowers",
+        "tulips": "Tulips"
+      },
+      "occasion": {
+        "allSaints": "All Saints' Day",
+        "anniversary": "Anniversary",
+        "apology": "I am sorry",
+        "birthday": "Birthday",
+        "christmas": "Christmas",
+        "congratulations": "Congratulations",
+        "easter": "Easter",
+        "fathersDay": "Father's Day",
+        "feteDesGrandsMeres": "Grandmothers' Day (France)",
+        "getWell": "Get well",
+        "graduation": "Graduation",
+        "grandparentsDay": "Grandparents' Day",
+        "housewarming": "Housewarming",
+        "justBecause": "Just because",
+        "konfirmation": "Confirmation",
+        "mai17": "Norwegian Constitution Day",
+        "mothersDay": "Mother's Day",
+        "muguet": "May Day lily of the valley",
+        "nameDay": "Name day",
+        "newBaby": "New baby",
+        "newYear": "New Year",
+        "omatag": "Grandmother's Day (Estonia)",
+        "retirement": "Retirement",
+        "romance": "Love and romance",
+        "santJordi": "Sant Jordi",
+        "student": "School leaving day",
+        "sympathy": "Sympathy",
+        "teachersDay": "Teachers' Day",
+        "thankYou": "Thank you",
+        "valentines": "Valentine's Day",
+        "wedding": "Wedding",
+        "womensDay": "Women's Day"
+      },
+      "priceTier": {
+        "classic": "Classic",
+        "essential": "Essential",
+        "luxury": "Luxury",
+        "premium": "Premium"
+      },
+      "productType": {
+        "arrangement": "Arrangement",
+        "bouquet": "Hand-tied bouquet",
+        "funeral": "Funeral and sympathy",
+        "giftSet": "Flowers and gift set",
+        "plant": "Plant"
+      },
+      "style": {
+        "classic": "Classic",
+        "luxury": "Luxury",
+        "minimal": "Minimal",
+        "modern": "Modern",
+        "rustic": "Rustic"
+      }
+    },
+    "surcharge": {
+      "peakDay": "Peak day delivery",
+      "sunday": "Sunday delivery"
+    },
+    "tier": {
+      "single": "One plant",
+      "size": {
+        "l": "Large",
+        "m": "Medium",
+        "s": "Small"
+      },
+      "stems": "{count, plural, one {# stem} other {# stems}}"
+    }
+  },
   "chooser": {
     "heading": "Choose your language",
     "intro": "Flowers Overseas sends flowers to someone in another European country: you order, a vetted local florist makes and delivers them. Choose a language to continue."

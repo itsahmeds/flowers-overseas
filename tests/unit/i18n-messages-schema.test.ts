@@ -300,7 +300,12 @@ describe("the shipped catalogues and manifests", () => {
       "footer",
       "company",
       "destinations",
+      // Spec 005 §7's namespace: the dataset's label keys, seeded by TASK-062 and rendered from
+      // TASK-067. Typed like the rest, so a tier label is `t()`-checkable rather than a string.
+      "catalog",
     ];
+    const tierLabel: Messages["catalog"]["tier"]["stems"] =
+      enSource.catalog.tier.stems;
     const headline: Messages["banner"]["headline"] = enSource.banner.headline;
     const floristCount: Messages["common"]["floristCount"] =
       enSource.common.floristCount;
@@ -320,6 +325,7 @@ describe("the shipped catalogues and manifests", () => {
     expect(categoryLabel).toBe("Best sellers");
     expect(headline).toContain("{language}");
     expect(floristCount).toContain("plural");
+    expect(tierLabel).toContain("plural");
     for (const action of bannerActions)
       expect(action.length).toBeGreaterThan(0);
   });

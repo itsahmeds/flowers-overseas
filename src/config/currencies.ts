@@ -13,9 +13,21 @@
  * zero-exponent currency in the set.
  *
  * `roundingStyle` is the psychological price ending `plan/06` §"FX policy" requires ("rounded to
- * psychological endings", `plan/03` §1's worked example rounds to `€x.90`): two-decimal
- * currencies round to `x90`, and HUF, having no minor part, rounds to `x9`. The pricing engine
- * that applies it is spec 005; this module only carries the data spec 002's seed projects.
+ * psychological endings", `plan/03` §1's worked example rounds to `€x.90`), and its values are
+ * fixed by **spec 005 §13 Q1's binding answer** (founder, 2026-09-09; ADR-0017's row in
+ * `docs/decisions-log.md`): EUR and GBP `x90` (`€45,90` reads as a price without the `.99`
+ * discount-retailer feel), **PLN `x9`** (`149 zł` — whole złoty ending in nine, which is
+ * `plan/10` §2.3's own band table and Polish florist practice), **HUF `x90`** (`990 Ft`
+ * endings, the Hungarian convention carried forward from `/review 14`), everything else `x90`.
+ * TASK-062 corrected PLN from `x90` and HUF from `x9` here, as the first task that reads the
+ * field: `plan/10` §2.3's 149 / 199 / 269 / 359 zł bands are unsatisfiable under `x90`.
+ *
+ * What an ending *means* per currency is `roundToStyle()`'s (spec 005 `pricing/round.ts`,
+ * TASK-066) and `pnpm catalogue:check`'s, which already asserts it over the authored price rows:
+ * for a currency with a minor part, `x99`/`x90` fix the minor units (`.99`/`.90`) and `x9` means
+ * a whole major amount whose last digit is nine; for a zero-exponent currency the digits are read
+ * off the amount itself (HUF `x90` → `…90 Ft`). This module only carries the data spec 002's seed
+ * projects.
  *
  * `toCurrencyRow()` projects exactly spec 002 §5.1's column set so TASK-026's seed reads the
  * projection instead of restating the currency list; `CURRENCY_ROW_COLUMNS` is pinned by a unit
@@ -68,10 +80,14 @@ export const CurrencyRegistrySchema = z
 const currencies = [
   { code: "EUR", minorUnitExponent: 2, roundingStyle: "x90" },
   { code: "GBP", minorUnitExponent: 2, roundingStyle: "x90" },
-  { code: "PLN", minorUnitExponent: 2, roundingStyle: "x90" },
+  // `x9`, not `x90`: `plan/10` §2.3 prices Poland in whole złoty ending in nine (149 / 199 /
+  // 269 / 359 zł) and spec 005 §13 Q1 made that the binding answer (TASK-062).
+  { code: "PLN", minorUnitExponent: 2, roundingStyle: "x9" },
   { code: "RON", minorUnitExponent: 2, roundingStyle: "x90" },
   { code: "CZK", minorUnitExponent: 2, roundingStyle: "x90" },
-  { code: "HUF", minorUnitExponent: 0, roundingStyle: "x9" },
+  // `x90` on a zero-exponent currency is a `990 Ft` ending — the Hungarian convention
+  // (spec 005 §13 Q1, carried forward from `/review 14`; corrected from `x9` by TASK-062).
+  { code: "HUF", minorUnitExponent: 0, roundingStyle: "x90" },
   { code: "SEK", minorUnitExponent: 2, roundingStyle: "x90" },
   { code: "NOK", minorUnitExponent: 2, roundingStyle: "x90" },
   { code: "DKK", minorUnitExponent: 2, roundingStyle: "x90" },

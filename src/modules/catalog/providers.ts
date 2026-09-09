@@ -16,15 +16,18 @@
  *    provider object, no dataset path and no database symbol (AC-2). This file is not exported
  *    from `index.ts` and must not be.
  *
- * The catalogue row payloads are the dataset's own types as of TASK-061: `src/config/catalogue/`
- * is the single authored source (spec 005 §13 Q9, ADR-0017), so narrowing them here to anything
- * else would be a second, unauthored definition of the dataset. The **price** and **FX** payloads
- * are still `unknown` — those rows are authored by TASK-062, which narrows them in this one place
- * the same way.
+ * Every row payload is the dataset's own type: `src/config/catalogue/` is the single authored
+ * source (spec 005 §13 Q9, ADR-0017), so narrowing them here to anything else would be a second,
+ * unauthored definition of the dataset. TASK-062 filled in the last three — `country_price`,
+ * `addon_country_price` and `fx_rate` — in this one place, so the database implementation of
+ * TASK-070 has one shape to satisfy rather than three interpretations of one.
  */
 import type {
+  AddonCountryPriceData,
   AddonData,
   CategoryData,
+  CountryPriceData,
+  FxRateData,
   OccasionData,
   ProductData,
   ProductTierRecord as ProductTierDataRecord,
@@ -46,12 +49,16 @@ export type CategoryRecord = CategoryData;
 export type OccasionRecord = OccasionData;
 /** An authored add-on record. No default-selected field exists to narrow (CRD Art. 22, AC-19). */
 export type AddonRecord = AddonData;
-/** A `country_price` row, active or superseded. Narrowed by TASK-062. */
-export type CountryPriceRecord = unknown;
-/** An `addon_country_price` row, carrying its own `vatRateBp` (§13 Q3). Narrowed by TASK-062. */
-export type AddonCountryPriceRecord = unknown;
-/** An `fx_rate` row with an integer `ratePpm` and an `asOf` date. Narrowed by TASK-062. */
-export type FxRateRecord = unknown;
+/**
+ * A `country_price` row, active or superseded: the all-in retail price of one (product, tier,
+ * destination) or a dated surcharge row (TASK-062). Integer minor units, VAT and delivery
+ * included, no buyer dimension (EU 2018/302).
+ */
+export type CountryPriceRecord = CountryPriceData;
+/** An `addon_country_price` row, carrying **its own** `vatRateBp` (§13 Q3, spec 002 §14 A1 (a)). */
+export type AddonCountryPriceRecord = AddonCountryPriceData;
+/** An `fx_rate` row: euro-base, integer `ratePpm`, dated `asOf`, ECB-sourced (§13 Q2). */
+export type FxRateRecord = FxRateData;
 
 /**
  * Products, tiers, categories, occasions and add-ons as authored (spec 005 §2). Media links and

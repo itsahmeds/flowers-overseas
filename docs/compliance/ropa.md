@@ -7,6 +7,12 @@ that creates it — and since spec 004 its table is generated from `src/config/c
 (`pnpm cookies:check`). It is the source of truth for the cookie policy page, as this file is for
 the privacy policy's processing tables.
 
+**VAT rates:** `vat-rates.md` in this directory records the two VAT rates authored per
+destination in `src/config/catalogue/prices.data.ts` (flowers and standard), where each figure
+came from, and which of them are still "provisional — accountant to confirm" per `plan/06` §4
+item 4. It is the gate on a country flip from `demo` to `live`, as this file is for the privacy
+policy's processing tables.
+
 **One env variable is a RoPA-affecting act.** Setting `NEXT_PUBLIC_GA4_MEASUREMENT_ID` activates
 row 4 below: Google becomes an active processor, the privacy policy must already name it, and the
 data-processing terms must already be accepted and filed. The procedure, the order of the steps and

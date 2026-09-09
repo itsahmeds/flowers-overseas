@@ -209,7 +209,7 @@ const occasions = [
   {
     key: "17_mai",
     kind: "seasonal",
-    labelKey: "catalog.facet.occasion.17Mai",
+    labelKey: "catalog.facet.occasion.mai17",
     sort: 31,
   },
 ] as const;

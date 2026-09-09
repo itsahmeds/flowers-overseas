@@ -102,6 +102,7 @@ describe("the required-check contract on the committed workflows (AC-21)", () =>
       "a11y",
       "audit",
       "build",
+      "catalogue-check",
       "commitlint",
       "db-check",
       "dev-os-check",

@@ -48,6 +48,718 @@
     "reviewedAt": "2026-09-08T00:00:00Z",
     "sourceHash": "e74b4e0cb2ca0462eb247fb87cda16bcc26433ff0788de99ad35bd16aae781be"
   },
+  "catalog.addon.balloon.description": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "13d35ad1b743ff0070397ce973173b3de7d182c4cf9abfe6d9889140836f05c1",
+    "retained": true
+  },
+  "catalog.addon.balloon.name": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "85bddc940b3f42fa3ebdf517fd1e27fb99694fdbe384fbedeece2ad09d93fb7d",
+    "retained": true
+  },
+  "catalog.addon.card.description": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "7a357bcb584be19563d840fe9216160ae347e66b2c1cf0c6cb3c054176043283",
+    "retained": true
+  },
+  "catalog.addon.card.name": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "3312b7bc79134ed34c1813132f9b622a36cb0d94f1acd5b23c5ce567d6e85234",
+    "retained": true
+  },
+  "catalog.addon.chocolates.description": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "686cd0718cd83ca2574305f3d31a8b2d9d9cd595118c48b9329e17348dea65a7",
+    "retained": true
+  },
+  "catalog.addon.chocolates.name": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "1444e1f5bf09e79c562fed4d810547efa6345fe410ac999490c9b2723ea8339a",
+    "retained": true
+  },
+  "catalog.addon.plush.description": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "2cf94ecd5b4d6c1d2bb534274305fb420b3bfbdf61173af81d8d8243713df578",
+    "retained": true
+  },
+  "catalog.addon.plush.name": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "7a9b2414deed01d991ba8ad03774d9c0107ba73c41f18898b8bcd364d3df026b",
+    "retained": true
+  },
+  "catalog.addon.vase.description": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "8e142591cf3d0b30251eaf55704a0ac7273f0a4733c01b82cd679e7bfd90fe71",
+    "retained": true
+  },
+  "catalog.addon.vase.name": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "fc6c0c538c75dce2e3c4c2dfe46e9c0bd29e113caae05f2d9a0174f733daea09",
+    "retained": true
+  },
+  "catalog.addon.wine.description": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "2d0fb6986f1b79819a349cd5d21cd5a66d73c22e89cb7dad32a501ad849a615d",
+    "retained": true
+  },
+  "catalog.addon.wine.name": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "e3887fd61f07cdc665104d69ccd05ee7c782bd0e9ac2c2d510bfcc4c2b889235",
+    "retained": true
+  },
+  "catalog.facet.colour.blue": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "ec7d56a01607001e6401366417c5e2eb00ffa0df17ca1a9a831e0b32c8f11bf7",
+    "retained": true
+  },
+  "catalog.facet.colour.mixed": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "864a237131e32e2ed6dcfa780355dd8b881740819e242393ba0fabe69f32c731",
+    "retained": true
+  },
+  "catalog.facet.colour.orange": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "78e7771b8b46e11ddb34ba48887e1330525215f96d94778980d1186e6f09f6b4",
+    "retained": true
+  },
+  "catalog.facet.colour.pastel": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "ef8793f19af40e7c8492182d64b35fc2fec2b93eb14255f8e191c43a60fcef79",
+    "retained": true
+  },
+  "catalog.facet.colour.pink": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "bd38ed7732402b1a93261916c5906016cdccd1a9600b3864208246f6a3299bd0",
+    "retained": true
+  },
+  "catalog.facet.colour.purple": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "7d465fb9b9314846b72698017691e756af05e0a548e347a3b7c54ca5b85270de",
+    "retained": true
+  },
+  "catalog.facet.colour.red": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "ba19e9c3d5f49882ddaafed4f286a8a81491150426d321179270e27e74a89097",
+    "retained": true
+  },
+  "catalog.facet.colour.vibrant": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "63cdaece1a8b498282dd7027910a9cdd582fda155d3bdfa0e881f8a51f46d81f",
+    "retained": true
+  },
+  "catalog.facet.colour.white": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "3495e757855a5c678addcf32516274e2962d0572f065378dba689e22168f28dd",
+    "retained": true
+  },
+  "catalog.facet.colour.yellow": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "19dd83f117525b931fccdafe808aaa6939af792ee549f359eff13fac0d622f5d",
+    "retained": true
+  },
+  "catalog.facet.flowerType.alstroemeria": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "05464b498e70e5c39a8e583323e275d0916c5faa422a3d5720c5ef94af75633a",
+    "retained": true
+  },
+  "catalog.facet.flowerType.carnations": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "4fcd0f68cd4cff44512d44f1bbd35c699eead54c42b386328db96d96f0d0e135",
+    "retained": true
+  },
+  "catalog.facet.flowerType.chrysanthemums": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "b96bfd6d179ab8c416e6db77a8d23de99cc44580aa76ef091048d679a01e0729",
+    "retained": true
+  },
+  "catalog.facet.flowerType.freesias": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "3a6af7e4738cb018acff837bcb17ee54680ec82814055e3c47959d813650d396",
+    "retained": true
+  },
+  "catalog.facet.flowerType.gerberas": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "0d1aacf78203126b7331c456094bfde45c43d37fd3c78b0bab4e85e161f8fc8f",
+    "retained": true
+  },
+  "catalog.facet.flowerType.hydrangeas": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "02df7dbdc57bff8e6a8cd4026af772ba15bca0128ee9668996245f2a0e2b41e3",
+    "retained": true
+  },
+  "catalog.facet.flowerType.lilies": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "b964fdbf9848b8133235f0db81fd2ee36525babbc47c336ca7f1f99b2ede5a70",
+    "retained": true
+  },
+  "catalog.facet.flowerType.mixed": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "b6eab5dc2f4ccd67c2311ed97deb00ca40bf02d7b1dea548180bd85f156d4ce4",
+    "retained": true
+  },
+  "catalog.facet.flowerType.orchids": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "a1c9a2662e0cb939614ea6f99c7216b636c43375e40f9ac26bc80521f6bd95cc",
+    "retained": true
+  },
+  "catalog.facet.flowerType.peonies": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "dcb00f06e0d612c5947171cf37221b1394c4074032c2eb62439ca377ac50982d",
+    "retained": true
+  },
+  "catalog.facet.flowerType.roses": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "5c6f53e266a7bf766d588d64267e2f94678a2aa9554b776b2762accbeabe01cf",
+    "retained": true
+  },
+  "catalog.facet.flowerType.seasonal": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "e61f15d491fd5a6906f283873b7aa3dd5cbd02ac175824be3818f82afd6f3b5f",
+    "retained": true
+  },
+  "catalog.facet.flowerType.sunflowers": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "5d4ac50198658cc0aef412063d052feb1001485b2d5a8c8487a29ac21aaa00e8",
+    "retained": true
+  },
+  "catalog.facet.flowerType.tulips": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "76e7e282a7d44e52bb52130fb798137ab75f1cc500ec6fc45a7027d5eee75822",
+    "retained": true
+  },
+  "catalog.facet.occasion.allSaints": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "d0266561f054cf5cac1bdd8a5fd842b3697bdae3ef4065c351eb041ff28a6af8",
+    "retained": true
+  },
+  "catalog.facet.occasion.anniversary": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "61123c4d8b19cc64abdbe9cfed9ab848c082ac01b9948e5501f75780749b8cec",
+    "retained": true
+  },
+  "catalog.facet.occasion.apology": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "62182578414d35d0885592608b0c75fe7d50005c947e4e91904f68d879ea20ca",
+    "retained": true
+  },
+  "catalog.facet.occasion.birthday": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "c6138abfa6a734269ef280d53f37d351d08408258322aa818f4cf9fe9fa4bb0d",
+    "retained": true
+  },
+  "catalog.facet.occasion.christmas": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "a09948e8f60826341f088092969bdc3cef5820892945890434f80d3a92f8da4b",
+    "retained": true
+  },
+  "catalog.facet.occasion.congratulations": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "ed7a9987f26481220dd5aedbeeae81ef21982089db067477ba57ae77a462a630",
+    "retained": true
+  },
+  "catalog.facet.occasion.easter": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "56277ffc3af7627981a55d28e7d10afa90a0abbb23a3b66d503fba5e8bc86126",
+    "retained": true
+  },
+  "catalog.facet.occasion.fathersDay": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "4a40c6d3da960c307726daf90f7b8a26faa9a7eaab74f2b2cb40a938e11405f3",
+    "retained": true
+  },
+  "catalog.facet.occasion.feteDesGrandsMeres": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "8fb72ca1aa9626f129439f12a876166c9efd6de2627133c3649ef73d9853155f",
+    "retained": true
+  },
+  "catalog.facet.occasion.getWell": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "d38a9867425a4c4ed878cee044b45f8be245bcb28159519215508dadcff14911",
+    "retained": true
+  },
+  "catalog.facet.occasion.graduation": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "9efe2b4d3d004cb3c7a2f8c3b80a21a60248ccfd60d756bf14a7dd1742b64dce",
+    "retained": true
+  },
+  "catalog.facet.occasion.grandparentsDay": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "1521e718d2b28feb1a81928f02fa5e94abcac50dded5dc395b3d149e9adca963",
+    "retained": true
+  },
+  "catalog.facet.occasion.housewarming": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "cb26d767c8271e33098ae56656736825ddeb51ebd868b07215844a8a6ce2ff48",
+    "retained": true
+  },
+  "catalog.facet.occasion.justBecause": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "6290cbc35f2b237d9730d4c1dbc52944ed46ec41a046ae7da1e568d7aa8a1075",
+    "retained": true
+  },
+  "catalog.facet.occasion.konfirmation": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "d743070540a1268e32cc405c1d735593fdcd5349939773c0d64f197f4b762756",
+    "retained": true
+  },
+  "catalog.facet.occasion.mai17": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "8b8a040ac9d64ee61d5b52e8ae9ea3f9a73586f207ea58f95b170ab9d51d0eb8",
+    "retained": true
+  },
+  "catalog.facet.occasion.mothersDay": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "32946fcdd165f79c6fdb5acb82db7a3b9a4060655bcc1419c4ab4bc1cc8c1e26",
+    "retained": true
+  },
+  "catalog.facet.occasion.muguet": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "b7a57dc4c2f2a5abe9f854b4a201c219ee3849379c23e8ce84aa9cebc063f611",
+    "retained": true
+  },
+  "catalog.facet.occasion.nameDay": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "6e094f99894071ac71c100643a6ccad484058ae2401acf80bc03216736fba53f",
+    "retained": true
+  },
+  "catalog.facet.occasion.newBaby": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "760dae0d44a336e2a173a3a6e0e4544de3f065440ec4e7de65d798790bb5569a",
+    "retained": true
+  },
+  "catalog.facet.occasion.newYear": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "1353c72b85cf5694303eb3a147c0eaeea353650e0c7041208d2807c2fba1f854",
+    "retained": true
+  },
+  "catalog.facet.occasion.omatag": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "4817ff615b6df4fdec3de253a6eca9e7864cdc4c77d594bd4144c7a90498ffcc",
+    "retained": true
+  },
+  "catalog.facet.occasion.retirement": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "f31f332adba1d6a200135e4d6e85de5a4b1404457c97079713de95ff720cf074",
+    "retained": true
+  },
+  "catalog.facet.occasion.romance": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "ae86d86fc988b3b2b385035cd0452b323748d4411e976e3f6568b1e6e55efb98",
+    "retained": true
+  },
+  "catalog.facet.occasion.santJordi": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "3c8c84c1fc0086442e24c53f84c55a89b0c8fc0c512fa4e1313daadcb43193a2",
+    "retained": true
+  },
+  "catalog.facet.occasion.student": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "4eb358a4a69670022a8432bfce8628dba9fd1e36d7368372b78601c508d8fabd",
+    "retained": true
+  },
+  "catalog.facet.occasion.sympathy": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "28388a6a648be075e2cb7916ee7c7e3277638b6096ade9a90c2191094edabea9",
+    "retained": true
+  },
+  "catalog.facet.occasion.teachersDay": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "1dc7872e6f3803a2569d2dd7cc251cf3acb6cc272e6cf42e1484f29aa47e6ee5",
+    "retained": true
+  },
+  "catalog.facet.occasion.thankYou": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "268bc1833e83306f48ae6203eefb86e7a39dedb1d3d6df99c18ef70aa61ef84d",
+    "retained": true
+  },
+  "catalog.facet.occasion.valentines": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "860bd0e3b2c6d94658122ae774e7a91b0ddfcabf24b1635fd6ae32b63dd580fb",
+    "retained": true
+  },
+  "catalog.facet.occasion.wedding": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "43303b0e09c331312c1a22cecda4c8bc9eef54d8087e28c0550d4d0418a54436",
+    "retained": true
+  },
+  "catalog.facet.occasion.womensDay": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "a020a5eef3ca3ef8dca2c5e3f8c43e720c3b457a52cc23c4ac5288803a7fa85d",
+    "retained": true
+  },
+  "catalog.facet.priceTier.classic": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "ae25d6481fc1741ffee4a95cd05de7b6375f7e1b0c63c006640b366094f2c4a9",
+    "retained": true
+  },
+  "catalog.facet.priceTier.essential": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "9c7d888055fb1eb0699f5b52fbd7fcddb8138b1bed42420cb5afb12733a58b51",
+    "retained": true
+  },
+  "catalog.facet.priceTier.luxury": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "e07064d92349e4aaaba050a4c891a1c54e54e9e50fbe3dfd0610df0fbc8ad091",
+    "retained": true
+  },
+  "catalog.facet.priceTier.premium": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "de88c121a82a06352bf1aaceba20578356408a334ba046a1084d4e50da923c5e",
+    "retained": true
+  },
+  "catalog.facet.productType.arrangement": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "5f33ce3fb567244a02e0472d07e2bdcbc56dc457aa2977b02d9d095c45e9c38b",
+    "retained": true
+  },
+  "catalog.facet.productType.bouquet": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "b154b937b798d52c3d364a1d9fd7c502b8baaec3412afbf1108926070a8488ca",
+    "retained": true
+  },
+  "catalog.facet.productType.funeral": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "56f63eb10f90c2f2e97a30e866ef4c0d1516af08533a88473b4b820693fd63ef",
+    "retained": true
+  },
+  "catalog.facet.productType.giftSet": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "fe7c493a8e6b8e446de457a69c50c2505787d06ccced21708984c089251c2646",
+    "retained": true
+  },
+  "catalog.facet.productType.plant": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "0bd287f6ce17c0df72d097db9e24f828fbe5e24987012f8153a21ef6189a3747",
+    "retained": true
+  },
+  "catalog.facet.style.classic": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "ae25d6481fc1741ffee4a95cd05de7b6375f7e1b0c63c006640b366094f2c4a9",
+    "retained": true
+  },
+  "catalog.facet.style.luxury": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "e07064d92349e4aaaba050a4c891a1c54e54e9e50fbe3dfd0610df0fbc8ad091",
+    "retained": true
+  },
+  "catalog.facet.style.minimal": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "057b5de48d7b90f123ec28d7e15f65d99b508d6b7cc2958c39472070f0f0f6bb",
+    "retained": true
+  },
+  "catalog.facet.style.modern": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "eef6c7f6ddd4067eb8afcea1a2104116ed5c09287b11433ed96a2b3c47cbb55c",
+    "retained": true
+  },
+  "catalog.facet.style.rustic": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "db444de1592587156de904ae5d7012916581b1015dfd001b922764a2bd43a73c",
+    "retained": true
+  },
+  "catalog.surcharge.peakDay": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "b6a1a4108b20db5e1527faa0a1e270dcaec0ace2cad8d24d81e896c00690cefd",
+    "retained": true
+  },
+  "catalog.surcharge.sunday": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "329a1cd0b4d6e31c8581c2b9a9f2809dd81e6a7409fa1c6f33c45991ce4fc1d0",
+    "retained": true
+  },
+  "catalog.tier.single": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "1787ef2d4536c1445e94ae09cf86df01e053a0c3a1eccc7064d31cdeab174af4",
+    "retained": true
+  },
+  "catalog.tier.size.l": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "ab80540d98d274565e355f59f0683df6fb23ff86f735a6f8da60020d3ce05d7b",
+    "retained": true
+  },
+  "catalog.tier.size.m": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "8e588cd187741f1cd76f5fab77b7208782a8c21d764ce7d7a4cf3ac4e0968873",
+    "retained": true
+  },
+  "catalog.tier.size.s": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "5263293fc202649bdc8135573ac9cd3b0bcea4355e0d8f0a59f1ddeea8eefc15",
+    "retained": true
+  },
+  "catalog.tier.stems": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "f647ed8788feac99d2b45ea110df02f10a6f52f54de9195ba370c0b2b70df9d4",
+    "retained": true
+  },
   "chooser.heading": {
     "source": "human",
     "reviewed": true,
