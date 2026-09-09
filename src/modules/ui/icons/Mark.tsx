@@ -5,7 +5,7 @@
  * of the cached HTML with no extra request and so its two colours come from the tokens rather than
  * from baked-in hex — `content/brand/mark.svg` is the production asset and carries hex equivalents
  * for anything outside the app (a favicon, an email, a partner pack), while this component is what
- * the site renders. `tests/unit/mark.test.tsx` pins the two against each other geometry by
+ * the site renders. `tests/unit/ui-icons.test.tsx` pins the two against each other geometry by
  * geometry, so the file and the component cannot drift.
  *
  * Never mirrored in RTL (§2's explicit list, AC-5): a wordmark and a logo keep their direction.

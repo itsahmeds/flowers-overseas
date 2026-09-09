@@ -55,13 +55,9 @@ describe("src/modules/ui barrel", () => {
         "Button",
         "CHIP_TONES",
         "Chip",
-        "FIELD_STATES",
-        "Field",
         "PHOTO_RATIOS",
-        "PRICE_SIZES",
         "Photo",
         "Placeholder",
-        "Price",
         // contrast manifest
         "CONTRAST_PAIRS",
         "CONTRAST_THRESHOLDS",
@@ -75,6 +71,34 @@ describe("src/modules/ui barrel", () => {
         "resolveColorToken",
       ].sort(),
     );
+  });
+
+  /**
+   * Spec §3's non-goals, as an assertion (`/review 27` required change 2).
+   *
+   * "No input, select, textarea or form component ships here beyond the consent controls; the
+   * design system's form layer is written against the checkout's real fields rather than guessed"
+   * (§3, §13 Q10) and "no price is rendered in this spec" (§8). A `Field` and a `Price` were
+   * written and removed; this is what stops them, or a differently-named equivalent, coming back
+   * before the task that owns the real fields (010/013) and the real money (005/008/009).
+   */
+  it("exports no form control and no price block (spec §3, §8)", () => {
+    const exported = Object.keys(ui);
+    for (const banned of [
+      "Field",
+      "FIELD_STATES",
+      "Form",
+      "Input",
+      "Select",
+      "Textarea",
+      "Checkbox",
+      "Radio",
+      "Price",
+      "PRICE_SIZES",
+      "Money",
+    ]) {
+      expect(exported, banned).not.toContain(banned);
+    }
   });
 
   it("exports no colour, size or duration value (the tokens stay in globals.css)", () => {
@@ -94,14 +118,12 @@ describe("src/modules/ui barrel", () => {
       "Cluster",
       "Container",
       "Display",
-      "Field",
       "Grid",
       "Icon",
       "Label",
       "Mark",
       "Photo",
       "Placeholder",
-      "Price",
       "Row",
       "SkipLink",
       "Stack",

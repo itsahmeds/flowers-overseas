@@ -3,8 +3,17 @@
  *
  * Every icon on the approved canvas, redrawn once here on a **24 unit grid with a 1.6 stroke** and
  * `currentColor`, so a call site sets colour with a text utility and never with a fill. Inline
- * SVG rather than a sprite or an icon package: fourteen icons are ~2 KB of markup inside cached
+ * SVG rather than a sprite or an icon package: thirteen icons are ~2 KB of markup inside cached
  * HTML, while an icon dependency is a bundle, a licence and a second design language.
+ *
+ * **The set is exactly the canvas's, plus the two mirrored ones** (`/review 27` required change 2;
+ * spec §3 rules out "an illustration or icon system beyond the five icons the chrome needs"). Each
+ * name below cites the element of `docs/design/homepage-v1/*.dc.html` that draws it;
+ * `tests/unit/ui-icons.test.tsx` matches every geometry against that file, so an icon nobody
+ * approved cannot enter the set. `arrow-end` and `chevron-end` are the exception and the reason
+ * for it is AC-5: the mirroring contract needs a mirrored pair to be observable at all. A
+ * component that needs a chevron-down, a close, a clock or a globe adds it in the task that ships
+ * that component, against a canvas that shows it.
  *
  * **Mirroring is a property of the icon, not of the call site** (§2): `MIRRORED_IN_RTL` names the
  * two direction-carrying icons, `Icon` applies `mirror-in-rtl` from that set, and no consumer can
@@ -19,34 +28,45 @@
  */
 import type { ReactElement } from "react";
 
-/** Every icon the canvas uses, in the order the gallery renders them. */
+/**
+ * Every icon the canvas uses, in the order the gallery renders them, each with the canvas element
+ * that draws it.
+ */
 export const ICON_NAMES = [
+  // Direction-carrying pair: no canvas element yet, kept because AC-5's `mirror-in-rtl` contract
+  // is only observable with a mirrored icon, and the header/footer links of TASK-048 need them.
   "arrow-end",
   "chevron-end",
-  "chevron-down",
-  "check",
+  // Hero trust row and trust strip: "7-day freshness guarantee".
   "shield-check",
+  // Mobile header search field: "Search flowers, occasions, a city or a country".
   "search",
+  // Mobile header: the menu button.
   "menu",
-  "close",
+  // Header utility link: "Sign in".
   "user",
+  // Header utility link: "My orders".
   "truck",
+  // Header utility link: "Basket (0)".
   "basket",
+  // Hero booking panel: the "Delivery date" field.
   "calendar",
-  "clock",
+  // Top utility bar: "Help & WhatsApp".
   "phone",
+  // Trust strip: "Made by a florist in their town".
   "florist",
+  // Trust strip: "The price you see is final".
   "card",
+  // Trust strip: "Photo on delivery".
   "document",
-  "globe",
 ] as const;
 
 export type IconName = (typeof ICON_NAMES)[number];
 
 /**
  * The direction-carrying icons. An arrow and a chevron point the way the text runs, so they flip
- * under `dir="rtl"`; a clock, a check, a shield, a house and the wordmark do not (§2's explicit
- * list, AC-5).
+ * under `dir="rtl"`; a shield, a calendar, a house and the wordmark do not (§2's explicit list,
+ * AC-5).
  */
 export const MIRRORED_IN_RTL: ReadonlySet<IconName> = new Set<IconName>([
   "arrow-end",
@@ -62,8 +82,6 @@ const GEOMETRY: Readonly<Record<IconName, ReactElement>> = {
     </>
   ),
   "chevron-end": <path d="M9 6l6 6-6 6" />,
-  "chevron-down": <path d="M6 9l6 6 6-6" />,
-  check: <path d="M5 13l4 4 10-10" />,
   "shield-check": (
     <>
       <path d="M12 3l7 3v6c0 5-3.5 8-7 9-3.5-1-7-4-7-9V6l7-3z" />
@@ -77,7 +95,6 @@ const GEOMETRY: Readonly<Record<IconName, ReactElement>> = {
     </>
   ),
   menu: <path d="M4 7h16M4 12h16M4 17h16" />,
-  close: <path d="M6 6l12 12M18 6L6 18" />,
   user: (
     <>
       <circle cx="12" cy="8" r="4" />
@@ -104,12 +121,6 @@ const GEOMETRY: Readonly<Record<IconName, ReactElement>> = {
       <path d="M3 10h18M8 3v4M16 3v4" />
     </>
   ),
-  clock: (
-    <>
-      <circle cx="12" cy="12" r="8" />
-      <path d="M12 8v4l3 2" />
-    </>
-  ),
   phone: (
     <path d="M5 4h4l2 5-3 2a10 10 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z" />
   ),
@@ -129,12 +140,6 @@ const GEOMETRY: Readonly<Record<IconName, ReactElement>> = {
     <>
       <rect x="4" y="3" width="16" height="18" rx="1" />
       <path d="M8 8h8M8 12h8M8 16h5" />
-    </>
-  ),
-  globe: (
-    <>
-      <circle cx="12" cy="12" r="8" />
-      <path d="M4 12h16M12 4c2.5 2.5 2.5 13 0 16-2.5-3-2.5-13.5 0-16z" />
     </>
   ),
 };

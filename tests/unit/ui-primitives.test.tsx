@@ -8,8 +8,11 @@
  *    combination. `fo/no-physical-css` reads the source; this reads the *output*, which is where a
  *    computed class name would slip through.
  *  - **no raw colour** (AC-1): the same, for colours.
- *  - the accessibility wiring `Field`, `Button`, `Photo` and `Price` are supposed to do for their
- *    callers, so a call site cannot forget it.
+ *  - the accessibility wiring `Button` and `Photo` are supposed to do for their callers, so a call
+ *    site cannot forget it.
+ *
+ * No `Field` and no `Price`: both were written here and removed as spec §3/§8 non-goals
+ * (`/review 27` required change 2), and `tests/unit/ui-barrel.test.ts` asserts their absence.
  */
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
@@ -21,11 +24,9 @@ import {
   Chip,
   Cluster,
   Container,
-  Field,
   Grid,
   Photo,
   Placeholder,
-  Price,
   Row,
   SkipLink,
   Stack,
@@ -111,10 +112,6 @@ const RENDERED: readonly [string, string][] = [
   ],
   ["Photo", renderToStaticMarkup(<Photo ratio="hero" caption="x" />)],
   ["Placeholder", renderToStaticMarkup(<Placeholder width="lg" />)],
-  [
-    "Price",
-    renderToStaticMarkup(<Price value="49,00 €" size="display" live />),
-  ],
   ...BUTTON_VARIANTS.flatMap((variant): [string, string][] => [
     [
       `Button/${variant}`,
@@ -137,18 +134,6 @@ const RENDERED: readonly [string, string][] = [
       ),
     ],
   ]),
-  [
-    "Field",
-    renderToStaticMarkup(
-      <Field
-        id="f"
-        label="Country"
-        help="help"
-        error="error"
-        render={(props) => <input {...props} type="text" />}
-      />,
-    ),
-  ],
 ];
 
 describe("every primitive, in every prop combination", () => {
@@ -215,44 +200,6 @@ describe("Button", () => {
   });
 });
 
-describe("Field", () => {
-  const html = renderToStaticMarkup(
-    <Field
-      id="country"
-      label="Country"
-      help="Search opens with the shop."
-      error="Choose a destination."
-      render={(props) => <input {...props} type="text" />}
-    />,
-  );
-
-  it("labels the control with a real `<label for>`", () => {
-    expect(html).toContain('for="country"');
-    expect(html).toContain('id="country"');
-  });
-
-  it("links help and error text through aria-describedby, and marks invalidity", () => {
-    expect(html).toContain('aria-describedby="country-help country-error"');
-    expect(html).toContain('aria-invalid="true"');
-    expect(html).toContain('id="country-help"');
-    expect(html).toContain('id="country-error"');
-  });
-
-  it("announces the error politely and colours it as well as writing it", () => {
-    expect(html).toContain('aria-live="polite"');
-    expect(html).toContain("text-danger");
-    expect(html).toContain("Choose a destination.");
-  });
-
-  it("keeps the live region in the document before the first error", () => {
-    const clean = renderToStaticMarkup(
-      <Field id="c" label="Country" render={(props) => <input {...props} />} />,
-    );
-    expect(clean).toContain('aria-live="polite"');
-    expect(clean).not.toContain("aria-invalid");
-  });
-});
-
 describe("Photo and Placeholder (plan/10 §3 honesty rule)", () => {
   it("renders the gradient placeholder and never an `<img>`", () => {
     const html = renderToStaticMarkup(
@@ -269,23 +216,6 @@ describe("Photo and Placeholder (plan/10 §3 honesty rule)", () => {
     expect(html).toContain('aria-hidden="true"');
     // No text content at all: the stub stands in for a number nobody may invent (Phase 0 AC 6).
     expect(html).toMatch(/><\/span>$/);
-  });
-});
-
-describe("Price", () => {
-  it("renders the formatted string it is given, in tabular figures", () => {
-    const html = renderToStaticMarkup(<Price value="219,00 zł" />);
-    expect(html).toContain("219,00 zł");
-    expect(html).toContain("tabular-nums");
-  });
-
-  it("announces changes only when asked (§5.3)", () => {
-    expect(renderToStaticMarkup(<Price value="1" live />)).toContain(
-      'aria-live="polite"',
-    );
-    expect(renderToStaticMarkup(<Price value="1" />)).not.toContain(
-      "aria-live",
-    );
   });
 });
 

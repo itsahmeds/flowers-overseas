@@ -1,4 +1,25 @@
-@import "tailwindcss";
+/*
+ * Tailwind's automatic source detection is **off** (`source(none)`) and the one scanned tree is
+ * named explicitly (`/review 27` required change 1).
+ *
+ * Auto-detection walks up from this file and scans every non-ignored file it finds, `.md` and
+ * `.html` included. That compiled prose into the production stylesheet: the deliberately-invalid
+ * fixtures the `fo/no-raw-color` and `fo/no-physical-css` rule tests lint
+ * (`tests/fixtures/lint/**`), plus the examples written inside specs, docs and the rules' own
+ * documentation, arrived as about a kilobyte of arbitrary-value colour utilities and physical
+ * margin/alignment utilities — three of them invalid CSS — and every gate that says "no colour
+ * literal and no physical utility ships" was quietly false.
+ *
+ * Only `src/**` renders in a browser (Playwright drives the real app; the design canvases under
+ * `docs/design/` are static hand-written HTML with their own inline styles), and only `.ts`/`.tsx`
+ * there carry class names, so that is the whole source set. A new class name in a new file type
+ * would produce no CSS, which the `/dev/components` gallery and the visual baselines catch
+ * immediately; a leaked fixture would not have been caught at all. `tests/unit/tokens.test.ts`
+ * asserts the outcome on the **built** CSS, scanning exactly as the build scans, so the hole
+ * cannot reopen.
+ */
+@import "tailwindcss" source(none);
+@source "../../src/**/*.{ts,tsx}";
 
 /*
  * Design tokens (spec 004 §2 "Tokens", §13 Q1/Q3, AC-1, AC-3; TASK-045).

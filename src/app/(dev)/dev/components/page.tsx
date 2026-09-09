@@ -11,7 +11,6 @@ import {
   Cluster,
   CONTRAST_PAIRS,
   Display,
-  Field,
   Grid,
   Icon,
   ICON_NAMES,
@@ -21,7 +20,6 @@ import {
   Photo,
   PHOTO_RATIOS,
   Placeholder,
-  Price,
   Row,
   SkipLink,
   Stack,
@@ -37,7 +35,6 @@ import {
   CHIP_LINK_LABEL,
   CHIP_SAMPLES,
   COLOUR_RAMPS,
-  FIELD_SAMPLES,
   GALLERY_INTRO,
   GALLERY_TITLE,
   LABEL_SAMPLE,
@@ -46,7 +43,6 @@ import {
   MIRROR_TAG,
   MOTION_TOKENS,
   PHOTO_CAPTIONS,
-  PRICE_SAMPLES,
   PRIMITIVE_CAPTIONS,
   RADIUS_STEPS,
   SECTIONS,
@@ -395,53 +391,6 @@ export default function DevComponentsPage(): ReactElement {
         </Section>
 
         <Section title={SECTIONS[8]}>
-          <Grid columns="1-2" gap="lg">
-            <Field
-              id="gallery-country"
-              label={FIELD_SAMPLES.countryLabel}
-              render={(props) => (
-                <input {...props} type="text" defaultValue="" />
-              )}
-            />
-            <Field
-              id="gallery-country-filled"
-              label={FIELD_SAMPLES.countryLabel}
-              render={(props) => (
-                <input
-                  {...props}
-                  type="text"
-                  defaultValue={FIELD_SAMPLES.countryPlaceholderNote}
-                />
-              )}
-            />
-            <Field
-              id="gallery-country-focus"
-              label={FIELD_SAMPLES.countryLabel}
-              forceState="focus"
-              render={(props) => <input {...props} type="text" />}
-            />
-            <Field
-              id="gallery-country-error"
-              label={FIELD_SAMPLES.countryLabel}
-              error={FIELD_SAMPLES.errorText}
-              render={(props) => <input {...props} type="text" />}
-            />
-            <Field
-              id="gallery-town-disabled"
-              label={FIELD_SAMPLES.disabledLabel}
-              disabled
-              render={(props) => <input {...props} type="text" />}
-            />
-            <Field
-              id="gallery-date-help"
-              label={FIELD_SAMPLES.dateLabel}
-              help={FIELD_SAMPLES.helpText}
-              render={(props) => <input {...props} type="date" />}
-            />
-          </Grid>
-        </Section>
-
-        <Section title={SECTIONS[9]}>
           <Cluster gap="md">
             {CHIP_SAMPLES.map((chip) => (
               <Chip key={chip.text} tone={chip.tone} aria-label={chip.label}>
@@ -452,7 +401,7 @@ export default function DevComponentsPage(): ReactElement {
           </Cluster>
         </Section>
 
-        <Section title={SECTIONS[10]}>
+        <Section title={SECTIONS[9]}>
           <Grid columns="2-4" gap="md">
             {PHOTO_RATIOS.map((ratio) => (
               <Photo
@@ -465,22 +414,7 @@ export default function DevComponentsPage(): ReactElement {
           <Photo ratio="landscape" />
         </Section>
 
-        <Section title={SECTIONS[11]}>
-          <Cluster gap="lg" align="baseline">
-            {PRICE_SAMPLES.map((price) => (
-              <Stack key={price.locale} gap="xs">
-                <Text size="xs" tone="subtle">
-                  {price.locale}
-                </Text>
-                <Price value={price.value} size="display" />
-                <Price value={price.value} size="lg" />
-                <Price value={price.value} size="md" live />
-              </Stack>
-            ))}
-          </Cluster>
-        </Section>
-
-        <Section title={SECTIONS[12]}>
+        <Section title={SECTIONS[10]}>
           <Stack gap="xs">
             {CONTRAST_PAIRS.map((pair) => (
               <Row

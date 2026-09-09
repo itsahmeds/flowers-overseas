@@ -12,8 +12,15 @@ import { resolve } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
+import { findArbitraryColourUtility } from "../../eslint/fo/no-raw-color.js";
+import { findPhysicalUtility } from "../../eslint/fo/no-physical-css.js";
 import { parseThemeTokens } from "../../src/modules/ui/tokens/contrast.ts";
-import { compileGlobalsCss, GLOBALS_CSS } from "./support/tailwind.ts";
+import {
+  compileGlobalsCss,
+  compileScannedCss,
+  GLOBALS_CSS,
+  globalsSources,
+} from "./support/tailwind.ts";
 
 const repoRoot = resolve(__dirname, "../..");
 const source = readFileSync(resolve(repoRoot, GLOBALS_CSS), "utf8");
@@ -254,5 +261,245 @@ describe("the utilities the design system promises (AC-1, AC-5, AC-6)", () => {
     expect(outsideTheme).not.toMatch(
       /\b(?:rgba?|hsla?|oklch|oklab|lab|lch)\s*\(/,
     );
+  });
+});
+
+/**
+ * What actually ships (`/review 27` required change 1).
+ *
+ * `built` above answers "does this utility compile?": Tailwind's `build()` emits CSS for whatever
+ * candidate list it is given, so it cannot notice a file that should never have been scanned.
+ * `shipped` is the other artefact — the stylesheet Tailwind's own scanner produces from the
+ * `@source` configuration, i.e. what `next build` puts in `.next/static/chunks/*.css` before the
+ * minifier rewrites colours. The lint fixtures under `tests/fixtures/lint/` are deliberately
+ * invalid (`bg-[#ff0000]`, `text-[rgb(0,0,0)]`, `border-[hsl(210_10%_50%)]`, `ml-4`, `text-left`,
+ * `left-0`) and Tailwind's automatic source detection compiled all of them, plus the examples in
+ * specs, docs and the ESLint rules' own documentation, into the production stylesheet. These
+ * assertions are what stop that returning.
+ */
+const shipped = await compileScannedCss(repoRoot);
+
+describe("the stylesheet that ships (AC-1, AC-5)", () => {
+  /** Every class selector in the shipped CSS, unescaped back to its Tailwind spelling. */
+  const shippedClasses = [
+    ...new Set(
+      [...shipped.matchAll(/\.((?:\\.|[\w-])+)/g)].map((match) =>
+        (match[1] ?? "").replaceAll("\\", ""),
+      ),
+    ),
+  ];
+
+  it("scans one explicit source glob and nothing else", async () => {
+    // `source(none)` plus a single `@source`: no walking up into `tests/`, `docs/` or `specs/`.
+    expect(source).toContain('@import "tailwindcss" source(none);');
+    const sources = await globalsSources(repoRoot);
+    expect(
+      sources.map((entry) => ({
+        pattern: entry.pattern,
+        negated: entry.negated,
+      })),
+    ).toEqual([{ pattern: "../../src/**/*.{ts,tsx}", negated: false }]);
+  });
+
+  it("does not ship the lint fixtures' utilities", async () => {
+    const LEAKS = [
+      "#ff0000",
+      "hsl(",
+      "rgb(0,0,0)",
+      ".ml-4",
+      ".text-left",
+      ".left-0",
+    ];
+    // The fixtures still say what the rule tests need them to say…
+    const fixture = (name: string) =>
+      readFileSync(resolve(repoRoot, "tests/fixtures/lint", name), "utf8");
+    expect(fixture("raw-color.tsx")).toContain("bg-[#ff0000]");
+    expect(fixture("physical-css.tsx")).toContain("ml-4");
+    // …and an unscoped scan of the same repository still compiles them, so this test measures the
+    // `@source` configuration and not the absence of the fixtures.
+    const unscoped = await compileScannedCss(repoRoot, [
+      { base: repoRoot, pattern: "**/*", negated: false },
+    ]);
+    for (const leak of LEAKS) expect(unscoped, leak).toContain(leak);
+    // …while nothing of it reaches the stylesheet the build emits.
+    for (const leak of LEAKS) expect(shipped, leak).not.toContain(leak);
+  });
+
+  it("ships no physical-direction utility, by the rule's own tables (AC-5)", () => {
+    // The tables live in `fo/no-physical-css`; reusing them means one place lists `ml-`/`text-left`
+    // and the stylesheet is held to exactly what the linter bans.
+    const offenders = shippedClasses.filter(
+      (candidate) => findPhysicalUtility(candidate) !== null,
+    );
+    expect(offenders).toEqual([]);
+  });
+
+  it("ships no arbitrary-value colour utility, by the rule's own tables (AC-1)", () => {
+    const offenders = shippedClasses.filter(
+      (candidate) => findArbitraryColourUtility(candidate) !== null,
+    );
+    expect(offenders).toEqual([]);
+  });
+
+  it("writes every colour literal into a custom property and nowhere else (AC-1)", () => {
+    // In the built CSS the `@theme` block has become `:root` custom-property declarations, so
+    // "inside @theme" reads as "the value of a `--*` declaration". Two upstream exceptions, both
+    // from `tailwindcss`'s own preflight rather than from this repository: `@property`'s
+    // `initial-value` descriptors for the `--tw-*` registers, and the `@supports` feature test
+    // `color: rgb(from red r g b)` that detects relative colour syntax.
+    const paint = shipped
+      // Every custom-property declaration, however many lines its value wraps over, and
+      // `@property`'s `initial-value` descriptor.
+      .replaceAll(/(?:--[\w-]+|initial-value)\s*:[^;}]*[;}]?/g, "")
+      // `@supports` conditions name colour syntax to feature-detect it, they do not paint.
+      .replaceAll(/@supports[^{]*\{/g, "");
+    expect(paint).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
+    expect(paint).not.toMatch(
+      /(?<![a-z-])(?:rgba?|hsla?|hwb|oklch|oklab|lab|lch)\s*\(/,
+    );
+  });
+});
+
+/**
+ * The founder-approved canvas is the source of truth for token *values* (`/review 27` nit 8).
+ *
+ * `docs/design/homepage-v1/tokens.css` is what the founder signed off; the `@theme` block is its
+ * implementation. Until now only the token *names* were pinned, so a hue nudge or a type-step
+ * change here would have shipped silently — the same drift `ui-icons.test.tsx` prevents between
+ * `Mark` and `content/brand/mark.svg`. Each transform below is an intended, documented difference
+ * (self-hosted font variables, fluid type, Tailwind's `--spacing-*` namespace); everything else
+ * must match value for value. A founder-approved palette change therefore edits the canvas and the
+ * `@theme` block in one diff, and this test names the token that fell behind.
+ */
+describe("token values against the approved canvas (AC-1)", () => {
+  const canvas = parseCanvasTokens(
+    readFileSync(
+      resolve(repoRoot, "docs/design/homepage-v1/tokens.css"),
+      "utf8",
+    ),
+  );
+  const theme = parseThemeTokens(source);
+
+  /** `:root { … }` declarations, several to a line in the canvas file. */
+  function parseCanvasTokens(css: string): Map<string, string> {
+    const block = css.slice(css.indexOf("{") + 1, css.lastIndexOf("}"));
+    const tokens = new Map<string, string>();
+    for (const declaration of block.split(";")) {
+      const colon = declaration.indexOf(":");
+      if (colon === -1) continue;
+      const name = declaration.slice(0, colon).trim();
+      if (!name.startsWith("--")) continue;
+      tokens.set(
+        name,
+        declaration
+          .slice(colon + 1)
+          .replaceAll(/\s+/g, " ")
+          .trim(),
+      );
+    }
+    return tokens;
+  }
+
+  /** `oklch(42% 0.10 155)` and `oklch(42% 0.1 155)` are the same colour. */
+  const normalise = (value: string) =>
+    value.replaceAll(/(\d+\.\d*?)0+\b/g, "$1").replaceAll(/\.(?=\D)/g, "");
+
+  const COLOURS = [
+    "--color-paper",
+    "--color-paper-2",
+    "--color-paper-3",
+    "--color-ink",
+    "--color-ink-2",
+    "--color-ink-3",
+    "--color-rule",
+    "--color-accent",
+    "--color-accent-ink",
+  ] as const;
+
+  it.each(COLOURS)("keeps %s at the canvas value", (token) => {
+    expect(theme.get(token), token).toBeDefined();
+    expect(normalise(theme.get(token) ?? ""), token).toBe(
+      normalise(canvas.get(token) ?? "canvas token missing"),
+    );
+  });
+
+  it("keeps the photo placeholder's gradient stops and geometry", () => {
+    const gradient = canvas.get("--color-photo") ?? "";
+    // The canvas inlines the three stops; the theme names them, so `--color-photo` can stay a
+    // gradient token while the contrast manifest reasons about the darkest stop.
+    const stops = [...gradient.matchAll(/oklch\([^)]*\)/g)].map((m) => m[0]);
+    expect(stops).toHaveLength(3);
+    for (const [index, stop] of stops.entries()) {
+      expect(
+        normalise(theme.get(`--color-photo-stop-${String(index + 1)}`) ?? ""),
+        `stop ${String(index + 1)}`,
+      ).toBe(normalise(stop));
+    }
+    const themeGradient = theme.get("--color-photo") ?? "";
+    expect(themeGradient).toContain("160deg");
+    for (const position of ["0%", "45%", "100%"]) {
+      expect(themeGradient, position).toContain(position);
+    }
+  });
+
+  it("keeps the two font stacks' fallbacks (the first family is self-hosted)", () => {
+    // `next/font/local` hands the family name over as a CSS variable, so the head of the stack is
+    // `var(--font-newsreader)` where the canvas writes `"Newsreader"`. The fallbacks — which are
+    // what a reader with the font blocked actually sees — must match exactly.
+    for (const [token, family] of [
+      ["--font-display", "Newsreader"],
+      ["--font-body", "IBM Plex Sans"],
+    ] as const) {
+      const canvasStack = (canvas.get(token) ?? "")
+        .split(",")
+        .map((f) => f.trim());
+      const themeStack = (theme.get(token) ?? "")
+        .split(",")
+        .map((f) => f.trim());
+      expect(canvasStack[0], token).toBe(`"${family}"`);
+      expect(themeStack[0], token).toMatch(/^var\(--font-[a-z-]+\)$/);
+      expect(themeStack.slice(1), token).toEqual(canvasStack.slice(1));
+    }
+  });
+
+  /** The canvas's fixed px, and the rem the theme must reach at the largest artboard. */
+  const TYPE_STEPS = [
+    ["--text-display", 68],
+    ["--text-display-s", 42],
+    ["--text-2xl", 34],
+    ["--text-xl", 24],
+    ["--text-lg", 18],
+    ["--text-md", 15],
+    ["--text-sm", 13],
+    ["--text-xs", 11],
+  ] as const;
+
+  it.each(TYPE_STEPS)(
+    "reaches the canvas's %s at the desktop artboard",
+    (token, px) => {
+      expect(canvas.get(token), token).toBe(`${String(px)}px`);
+      const value = theme.get(token) ?? "";
+      // Fluid steps (`clamp(min, preferred, max)`) must top out at the canvas value; fixed steps
+      // are the canvas value. Both are expressed in rem so a reader's font size still scales them.
+      const rem = value.startsWith("clamp(")
+        ? (/,\s*([\d.]+)rem\s*\)$/.exec(value)?.[1] ?? "")
+        : (/^([\d.]+)rem$/.exec(value)?.[1] ?? "");
+      expect(Number(rem) * 16, `${token} = ${value}`).toBeCloseTo(px, 5);
+    },
+  );
+
+  it("keeps the space scale, the radii and the hairline", () => {
+    for (const step of ["xs", "sm", "md", "lg", "xl", "2xl", "3xl"]) {
+      // Tailwind's namespace is `--spacing-*`; the canvas calls it `--space-*`.
+      expect(theme.get(`--spacing-${step}`), step).toBe(
+        canvas.get(`--space-${step}`),
+      );
+    }
+    for (const radius of ["sm", "md"]) {
+      expect(theme.get(`--radius-${radius}`), radius).toBe(
+        canvas.get(`--radius-${radius}`),
+      );
+    }
+    expect(theme.get("--rule")).toBe(canvas.get("--rule"));
   });
 });

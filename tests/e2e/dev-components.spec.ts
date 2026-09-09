@@ -23,10 +23,8 @@ const SECTIONS = [
   "Brand mark",
   "Layout primitives",
   "Buttons",
-  "Fields",
   "Chips",
   "Photography placeholders",
-  "Prices",
   "Contrast manifest",
 ];
 
@@ -73,20 +71,22 @@ test.describe("/dev/components", () => {
     ).toHaveCount(5);
   });
 
-  test("renders every field state with its label and aria wiring", async ({
+  /**
+   * Spec §3/§8, observable on the page (`/review 27` required change 2): the gallery had a
+   * "Fields" and a "Prices" section, and both are non-goals of this spec — the form layer is
+   * written against the checkout's real fields (010/013) and no price is rendered before 005/008.
+   * So the assertion is the absence: no form control anywhere in the gallery.
+   */
+  test("renders no form control and no price (spec §3, §8)", async ({
     page,
   }) => {
     await page.goto(GALLERY);
-    // Six states, each with a real `<label for>`.
-    await expect(page.locator("label")).toHaveCount(6);
-    await expect(page.locator('input[aria-invalid="true"]')).toHaveCount(1);
-    await expect(page.locator("input:disabled")).toHaveCount(1);
-    await expect(
-      page.locator('input[aria-describedby="gallery-date-help-help"]'),
-    ).toHaveCount(1);
-    await expect(
-      page.getByText("Choose a destination country to continue."),
-    ).toBeVisible();
+    await expect(page.locator("input, select, textarea, label")).toHaveCount(0);
+    for (const section of ["Fields", "Prices"]) {
+      await expect(
+        page.getByRole("heading", { level: 2, name: section, exact: true }),
+      ).toHaveCount(0);
+    }
   });
 
   test("shows the photography placeholders and no image (plan/10 §3)", async ({

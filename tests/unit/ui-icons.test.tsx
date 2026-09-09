@@ -2,7 +2,7 @@
  * AC-5's mirroring intent, and the brand mark pinned to its production SVG (TASK-045).
  *
  * Two things a screenshot cannot tell you, and one it can. The screenshot half — arrow and chevron
- * flipped under `dir="rtl"`, check and wordmark not — is the `/ar-XB` visual baseline (T-07,
+ * flipped under `dir="rtl"`, shield and wordmark not — is the `/ar-XB` visual baseline (T-07,
  * owned with the RTL layout by TASK-054). What is asserted here is the *system*: that the
  * mirroring decision lives on the icon and is applied by `Icon`, so no call site can get it wrong,
  * and that `Mark` and `content/brand/mark.svg` cannot drift apart.
@@ -41,9 +41,45 @@ describe("the icon set (AC-5)", () => {
         MIRRORED_IN_RTL.has(name),
       );
     }
-    // The two AC-5 names on the "never mirrored" side of the list.
-    expect(MIRRORED_IN_RTL.has("check")).toBe(false);
-    expect(MIRRORED_IN_RTL.has("clock")).toBe(false);
+    // Two AC-5 names on the "never mirrored" side of the list.
+    expect(MIRRORED_IN_RTL.has("shield-check")).toBe(false);
+    expect(MIRRORED_IN_RTL.has("calendar")).toBe(false);
+  });
+
+  /**
+   * The set is the canvas's, and nothing more (`/review 27` required change 2).
+   *
+   * Spec §3 rules out "an icon system beyond the … icons the chrome needs", so every icon must be
+   * traceable to an element of the founder-approved canvas — geometry included, since a redrawn
+   * icon that no longer matches the design is the same problem one step later. The two
+   * direction-carrying icons are the documented exception: AC-5's `mirror-in-rtl` contract is only
+   * observable if a mirrored pair exists.
+   */
+  it("draws only icons the approved canvas uses (spec §3)", () => {
+    const canvas = ["homepage-desktop", "homepage-mobile", "identity"]
+      .map((name) =>
+        readFileSync(
+          resolve(repoRoot, `docs/design/homepage-v1/${name}.dc.html`),
+          "utf8",
+        ),
+      )
+      .join("\n");
+    const unapproved: string[] = [];
+    for (const name of ICON_NAMES) {
+      if (MIRRORED_IN_RTL.has(name)) continue;
+      const html = renderToStaticMarkup(<Icon name={name} />);
+      // Every geometry attribute of the icon, as the canvas would have written it.
+      const geometry = [
+        ...html.matchAll(/\s(d|cx|cy|r|x|y|width|height|rx)="([^"]+)"/g),
+      ]
+        .filter((match) => !["width", "height"].includes(match[1] ?? ""))
+        .map((match) => `${match[1] ?? ""}="${match[2] ?? ""}"`);
+      expect(geometry.length, name).toBeGreaterThan(0);
+      if (geometry.some((attribute) => !canvas.includes(attribute))) {
+        unapproved.push(name);
+      }
+    }
+    expect(unapproved).toEqual([]);
   });
 
   it("is decorative by default and named only when asked", () => {

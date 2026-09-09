@@ -19,6 +19,14 @@
  *    exported, because the gate that keeps the palette accessible is a manifest plus a test.
  *  - the font objects' internals. `fontVariables` is the one string a document layout needs.
  *
+ * Also deliberately absent, by spec §3 "Non-goals" (`/review 27` required change 2): **no form
+ * layer** — "no input, select, textarea or form component ships here beyond the consent controls;
+ * the design system's form layer is written against the checkout's real fields rather than
+ * guessed" (§13 Q10) → 010/013; and **no price block** — "no price is rendered in this spec" (§8)
+ * → 005/008/009. The icon set is likewise only what the approved canvas uses plus the two
+ * direction-carrying icons `MIRRORED_IN_RTL` names, since AC-5's mirroring contract needs both of
+ * them; a component that needs another icon adds it with its consumer.
+ *
  * Later 004 tasks extend this list: `SiteHeader`/`SiteFooter`/`TrustStrip` (TASK-048, TASK-049),
  * the consent banner (TASK-051) and `Media` + the R2 loader seam (TASK-053).
  */
@@ -88,12 +96,6 @@ export type {
   ButtonState,
   ButtonVariant,
 } from "./primitives/Button";
-export { Field, FIELD_STATES } from "./primitives/Field";
-export type {
-  FieldControlProps,
-  FieldProps,
-  FieldState,
-} from "./primitives/Field";
 export { Chip, CHIP_TONES } from "./primitives/Chip";
 export type { ChipProps, ChipTone } from "./primitives/Chip";
 export { Photo, PHOTO_RATIOS, Placeholder } from "./primitives/Photo";
@@ -102,8 +104,6 @@ export type {
   PhotoRatio,
   PlaceholderProps,
 } from "./primitives/Photo";
-export { Price, PRICE_SIZES } from "./primitives/Price";
-export type { PriceProps, PriceSize } from "./primitives/Price";
 
 // The contrast manifest and its arithmetic (AC-3).
 export {

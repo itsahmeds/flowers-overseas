@@ -30,10 +30,8 @@ export const SECTIONS = [
   "Brand mark",
   "Layout primitives",
   "Buttons",
-  "Fields",
   "Chips",
   "Photography placeholders",
-  "Prices",
   "Contrast manifest",
 ] as const;
 
@@ -165,7 +163,7 @@ export const BODY_SAMPLES = [
 ] as const;
 
 /** The label voice, which is the visual signature of the whole design. */
-export const LABEL_SAMPLE = "Ships from a local florist";
+export const LABEL_SAMPLE = "Made by a local florist";
 
 export const SPACE_STEPS = [
   { token: "--spacing-xs", className: "w-xs" },
@@ -212,15 +210,6 @@ export const BUTTON_LINK_LABEL = "See destinations";
 /** The one interactive chip: a chip that is navigation rather than a marker. */
 export const CHIP_LINK_LABEL = "All destinations";
 
-export const FIELD_SAMPLES = {
-  countryLabel: "Country",
-  countryPlaceholderNote: "Poland",
-  helpText: "Search opens with the shop (spec 008).",
-  errorText: "Choose a destination country to continue.",
-  dateLabel: "Delivery date",
-  disabledLabel: "Town or postcode",
-} as const;
-
 export const CHIP_SAMPLES = [
   { tone: "neutral", text: "EUR", label: "Prices shown in euro" },
   { tone: "accent", text: "Delivering now", label: undefined },
@@ -233,17 +222,6 @@ export const PHOTO_CAPTIONS = {
   portrait: "Photo slot · florist portrait",
   square: "Photo slot · bouquet",
 } as const;
-
-/**
- * Pre-formatted prices. `Price` never formats — `formatMoney()` in `src/modules/i18n/format.ts` is
- * the only caller of `Intl.NumberFormat` (spec 003 AC-21) — so the gallery passes strings a
- * formatter would have produced, per locale.
- */
-export const PRICE_SAMPLES = [
-  { locale: "de-DE", value: "49,00 €" },
-  { locale: "pl-PL", value: "219,00 zł" },
-  { locale: "en-GB", value: "£42.00" },
-] as const;
 
 /** The in-page anchor of a section heading; used by the nav chips and the headings alike. */
 export function sectionId(section: string): string {
@@ -263,4 +241,4 @@ export const PRIMITIVE_CAPTIONS = {
 } as const;
 
 export const MIRROR_NOTE =
-  'Under dir="rtl" the arrow and chevron-end flip (mirror-in-rtl); the check, the clock, the shield and the brand mark never do.';
+  'Under dir="rtl" the arrow and chevron-end flip (mirror-in-rtl); the shield, the calendar, the florist mark and the brand mark never do.';
