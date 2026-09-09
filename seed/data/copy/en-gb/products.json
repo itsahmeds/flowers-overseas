@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "source": "seed",
+  "entity": "copy_product",
+  "origin": "authored",
+  "locale": "en-gb",
+  "rows": [
+    {
+      "entity": "product",
+      "key": "FO-AR-007",
+      "locale": "en-gb",
+      "name": "Kitchen Table",
+      "slug": "kitchen-table",
+      "descriptionMd": "A seasonal arrangement in a small crate or tin, made low and dense so it works as a kitchen centrepiece. Small, medium as standard, and large. Sent for housewarmings and thank yous, and it holds up in a warm room better than a tied bouquet. Our florist chooses the seasonal mix and the container on the day. Every order is made by hand and delivered in person by our florist in the recipient's city.",
+      "seoTitle": "Kitchen Table — seasonal flowers in a crate",
+      "seoDescription": "A seasonal arrangement in a small crate or tin, low and dense for a kitchen table. For housewarmings and thank yous. Three sizes.",
+      "translationStatus": "human",
+      "reviewed": true,
+      "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
+      "reviewedAt": "2026-09-09T00:00:00Z",
+      "sourceHash": "bea9b6ff0e6dfce488efe9ed1a158ec0857a1f77870d0050bdca72918510a44d"
+    },
+    {
+      "entity": "product",
+      "key": "FO-GS-006",
+      "locale": "en-gb",
+      "name": "Quiet Blush + Vase",
+      "slug": "quiet-blush-vase",
+      "descriptionMd": "Our pastel rose bouquet with a plain glass vase, sent when you are apologising or when someone is unwell and cannot go looking for one. Eighteen stems as standard, twelve or twenty-four available. The pastel scheme is held and the vase is always included; the flowers inside the scheme and the vase's shape are our florist's choice. Every order is made by hand and delivered in person by our florist in the recipient's city.",
+      "seoTitle": "Quiet Blush + Vase — pastel roses and a glass vase",
+      "seoDescription": "Our pastel rose bouquet with a plain glass vase included. Eighteen stems as standard. For an apology or someone who is unwell.",
+      "translationStatus": "human",
+      "reviewed": true,
+      "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
+      "reviewedAt": "2026-09-09T00:00:00Z",
+      "sourceHash": "ffbd03c06547d7ce86cde69591c8b462b378664c26625766ab0dcc334a85f495"
+    }
+  ]
+}

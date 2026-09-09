@@ -30,6 +30,7 @@ import {
   refineSeedTaxonomy,
   seedTaxonomyShape,
 } from "./catalogue.ts";
+import { SeedCopyRegistrySchema } from "./copy.ts";
 import { seedFileSchema } from "./header.ts";
 import {
   AltEntrySchema,
@@ -271,6 +272,75 @@ export const AltFileSchema = seedFileSchema("product_media_alt", {
   locale: z.string().min(2),
   rows: z.array(AltEntrySchema),
 });
+
+/**
+ * `seed/data/copy/{locale}/{entity}.json` — one locale's copy for one entity family (spec 006
+ * §2.2's `copy/{locale}/{entity}.json`; TASK-073).
+ *
+ * A factory rather than three schemas, because the only difference between the product, category
+ * and occasion files is which `entity` their rows carry — and that has to be *checked* rather
+ * than assumed: a category row pasted into `products.json` would otherwise seed a
+ * `product_translation` for a product that does not exist. The header's `entity` is
+ * `copy_product` / `copy_category` / `copy_occasion` so the file names its own contents, and the
+ * `locale` field is in the payload because the directory name is not data a parser can see.
+ *
+ * `origin` is `authored` on every one of them, including `de` and `pl`: `pnpm i18n:draft` writes
+ * those two, but a draft is *copy* — a reviewer edits it in place and flips it to `human`, which
+ * a `projected` file may never do (ADR-0017's "never hand-edit" rule would be exactly wrong
+ * here).
+ */
+export function copyFileSchema(entity: "product" | "category" | "occasion") {
+  return seedFileSchema(`copy_${entity}`, {
+    locale: z.string().min(2),
+    rows: SeedCopyRegistrySchema,
+  }).superRefine((file, ctx) => {
+    file.rows.forEach((row, index) => {
+      if (row.entity !== entity) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["rows", index, "entity"],
+          message: `\`${row.entity}:${row.key}\` is in the \`${entity}\` copy file: a row's entity is the file it lives in (spec 006 §2.2)`,
+        });
+      }
+      if (row.locale !== file.locale) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["rows", index, "locale"],
+          message: `\`${row.entity}:${row.key}\` is \`${row.locale}\` in a \`${file.locale}\` file: the directory, the header and the row must agree (\`plan/03\` §6)`,
+        });
+      }
+    });
+  });
+}
+
+/** `copy/{locale}/products.json` and its two siblings, in the order a reader wants them. */
+export const CopyProductsFileSchema = copyFileSchema("product");
+export const CopyCategoriesFileSchema = copyFileSchema("category");
+export const CopyOccasionsFileSchema = copyFileSchema("occasion");
+
+/**
+ * The copy files by entity. The *locales* are deliberately not listed here: `en` is required,
+ * `en-gb` is a thin override set that exists only where British wording differs, and `de`/`pl`
+ * exist when `pnpm i18n:draft` has been run — so which files are on disk is a fact the gate
+ * discovers, not a constant it asserts (spec 006 AC-5).
+ */
+export const SEED_COPY_FILES = [
+  {
+    entity: "product",
+    filename: "products.json",
+    schema: CopyProductsFileSchema,
+  },
+  {
+    entity: "category",
+    filename: "categories.json",
+    schema: CopyCategoriesFileSchema,
+  },
+  {
+    entity: "occasion",
+    filename: "occasions.json",
+    schema: CopyOccasionsFileSchema,
+  },
+] as const;
 
 /**
  * The dataset's files, in dependency order, with the schema each parses under and whether a human

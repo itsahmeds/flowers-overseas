@@ -55,6 +55,9 @@ describe("AC-2: no database import in the spec 003 file set (T-02)", () => {
       // whole-seam assertion over the files spec 006 adds.
       "seed/schema",
       "seed/project.ts",
+      // spec 006 AC-1 (TASK-073): the copy rules and the catalogue half of `pnpm i18n:draft`.
+      "seed/copy.ts",
+      "seed/copy-draft.ts",
     ]);
   });
 

@@ -27,6 +27,17 @@
  * The script writes files and prints a report; it never exits non-zero for a stale key, because
  * "this locale owes translations" is `i18n:check`'s verdict to give, not this script's.
  *
+ * **The catalogue dataset is drafted by the same command** (spec 006 §7, AC-5; TASK-073). After
+ * the message catalogue is written, `--locale de` and `--locale pl` also fill
+ * `seed/data/copy/{locale}/{entity}.json` from `seed/data/copy/en/`, through
+ * `seed/copy-draft.ts`, with `translationStatus: "machine"`, `reviewed: false` and the `en` row's
+ * `sourceHash` — the state that keeps German and Polish product pages non-indexable until a
+ * native reviewer approves them (`plan/03` §6 gate 4). `en` is authored and `en-gb` is a *thin
+ * override* set, so neither is ever drafted: drafting `en-gb` would manufacture 139 rows that
+ * differ from their source in nothing at all. The closing local-florist sentence of every drafted
+ * description is taken from the target locale's `catalog.floristSentence` key, which is why a rewording is one
+ * catalogue edit rather than 84.
+ *
  * **Both outputs are validated with their own schema before a byte is written** (`MessagesSchema`
  * and `MessageMetaManifestSchema`, TASK-040's carry-forward from `/review 20`). A generator that
  * writes a file another tool then parses with zod should not be the one place the boundary is
@@ -42,7 +53,16 @@ import { fileURLToPath } from "node:url";
 
 import type { ZodError } from "zod";
 
-import { isPseudoLocaleCode } from "../src/config/locales.ts";
+import {
+  COPY_DRAFT_LOCALES,
+  type CopyDraftReport,
+  draftCopyLocale,
+  formatCopyDraftReport,
+  syncCopyLocale,
+} from "../seed/copy-draft.ts";
+import { FLORIST_SENTENCE_KEY } from "../seed/copy.ts";
+import { LOCALES, isPseudoLocaleCode } from "../src/config/locales.ts";
+import { fallbackChain } from "../src/modules/i18n/messages.ts";
 import {
   MessageMetaManifestSchema,
   MessagesSchema,
@@ -318,6 +338,84 @@ export function draftLocale(options: DraftOptions): DraftReport {
   };
 }
 
+/**
+ * The locale's `catalog.floristSentence`, resolved through the same fallback chain the
+ * application uses (`fallbackChain()`), because `en-gb` carries only the keys whose British
+ * wording differs and this is not one of them.
+ */
+export function floristSentenceFor(
+  root: string,
+  locale: string,
+  catalogue?: string,
+): string {
+  for (const code of fallbackChain(locale)) {
+    const path = join(root, "messages", `${code}.json`);
+    const source =
+      code === locale && catalogue !== undefined
+        ? catalogue
+        : existsSync(path)
+          ? readFileSync(path, "utf8")
+          : undefined;
+    if (source === undefined) continue;
+    const value = flattenMessages(
+      JSON.parse(source) as Record<string, unknown>,
+    )[FLORIST_SENTENCE_KEY];
+    if (value !== undefined) return value;
+  }
+  throw new Error(
+    `no \`${FLORIST_SENTENCE_KEY}\` for \`${locale}\`: the catalogue copy's closing sentence has nowhere to come from (spec 006 §7)`,
+  );
+}
+
+/**
+ * The catalogue half of a run (spec 006 §7). Reads the locale's closing sentence out of the
+ * catalogue this run just produced — not off disk — so a locale whose message draft and whose
+ * copy draft disagree about that sentence is not a reachable state.
+ *
+ * Returns `undefined` for a locale that is not machine-drafted (`en`, `en-gb`): those are
+ * authored, and `--sync-copy` is the only thing that touches them.
+ */
+export function draftCatalogueCopy(options: {
+  readonly root: string;
+  readonly locale: string;
+  readonly catalogue: string;
+  readonly dryRun?: boolean;
+}): CopyDraftReport | undefined {
+  const { root, locale, catalogue } = options;
+  if (
+    !COPY_DRAFT_LOCALES.includes(locale as (typeof COPY_DRAFT_LOCALES)[number])
+  ) {
+    return undefined;
+  }
+  return draftCopyLocale({
+    root,
+    locale,
+    floristSentence: floristSentenceFor(root, locale, catalogue),
+    sourceFloristSentence: floristSentenceFor(root, SOURCE_LOCALE),
+    dryRun: options.dryRun ?? false,
+  });
+}
+
+/**
+ * `pnpm i18n:draft --sync-copy` — rewrite the closing local-florist sentence of every catalogue
+ * description in **every** locale from that locale's `catalog.floristSentence`, and change
+ * nothing else. One edit to the message key, one command, four locales (spec 006 §7).
+ */
+export function syncCatalogueCopy(options: {
+  readonly root: string;
+  readonly locales: readonly string[];
+  readonly dryRun?: boolean;
+}): readonly CopyDraftReport[] {
+  return options.locales.map((locale) =>
+    syncCopyLocale({
+      root: options.root,
+      locale,
+      floristSentence: floristSentenceFor(options.root, locale),
+      dryRun: options.dryRun ?? false,
+    }),
+  );
+}
+
 /** The per-locale report of §2, one line per action plus the stale keys by name. */
 export function formatDraftReport(report: DraftReport): string {
   const count = (action: DraftAction): number =>
@@ -360,12 +458,36 @@ const isMain =
 if (isMain) {
   const argv = process.argv.slice(2);
   try {
+    if (argv.includes("--sync-copy")) {
+      // The rewording path: no locale is drafted, every locale's catalogue copy is re-flowed from
+      // its own `catalog.floristSentence` (spec 006 §7).
+      const reports = syncCatalogueCopy({
+        root: process.cwd(),
+        locales: LOCALES.filter(
+          (locale) => !isPseudoLocaleCode(locale.code),
+        ).map((locale) => locale.code),
+        dryRun: argv.includes("--dry-run"),
+      });
+      for (const report of reports) {
+        process.stdout.write(`${formatCopyDraftReport(report)}\n`);
+      }
+      process.exit(0);
+    }
     const report = draftLocale({
       root: process.cwd(),
       locale: localeArg(argv),
       dryRun: argv.includes("--dry-run"),
     });
     process.stdout.write(`${formatDraftReport(report)}\n`);
+    const copy = draftCatalogueCopy({
+      root: process.cwd(),
+      locale: report.locale,
+      catalogue: report.catalogue,
+      dryRun: argv.includes("--dry-run"),
+    });
+    if (copy !== undefined) {
+      process.stdout.write(`${formatCopyDraftReport(copy)}\n`);
+    }
   } catch (error) {
     process.stderr.write(
       `${error instanceof Error ? error.message : String(error)}\n`,

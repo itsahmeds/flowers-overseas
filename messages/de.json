@@ -2,6 +2,10 @@
   "a11y": {
     "localeChooser": "Languages",
     "localeSwitcher": "Change language",
+    "media": {
+      "gallery": "Product images",
+      "imageOfCount": "Image {index} of {total}"
+    },
     "skipToContent": "Skip to content"
   },
   "banner": {
@@ -36,6 +40,32 @@
         "description": "A bottle of local wine, where the florist is licensed to sell it.",
         "name": "Bottle of wine"
       }
+    },
+    "descriptor": {
+      "flower": {
+        "alstroemeria": "alstroemeria",
+        "carnations": "carnation",
+        "chrysanthemums": "chrysanthemum",
+        "freesias": "freesia",
+        "gerberas": "gerbera",
+        "hydrangeas": "hydrangea",
+        "lilies": "lily",
+        "mixed": "mixed-flower",
+        "orchids": "orchid",
+        "peonies": "peony",
+        "roses": "rose",
+        "seasonal": "seasonal",
+        "sunflowers": "sunflower",
+        "tulips": "tulip"
+      },
+      "form": {
+        "arrangement": "{flower} arrangement",
+        "bouquet": "hand-tied {flower} bouquet",
+        "funeral": "{flower} funeral tribute",
+        "giftSet": "{flower} bouquet and gift",
+        "plant": "{flower} plant"
+      },
+      "name": "{name} — {descriptor}"
     },
     "facet": {
       "colour": {
@@ -121,6 +151,7 @@
         "rustic": "Rustic"
       }
     },
+    "floristSentence": "Every order is made by hand and delivered in person by our florist in the recipient's city.",
     "surcharge": {
       "peakDay": "Peak day delivery",
       "sunday": "Sunday delivery"
@@ -290,6 +321,20 @@
       "emailLabel": "Email address",
       "heading": "Occasion reminders",
       "submit": "Remind me"
+    }
+  },
+  "media": {
+    "placeholder": {
+      "delivery": "Photography to supply · the delivery photo we send you",
+      "hero": "Photography to supply · our florist finishing a hand-tied bouquet in morning light",
+      "occasion": "Photography to supply · flowers sent for this occasion",
+      "product": "Photography to supply · this bouquet as our florist makes it"
+    },
+    "provenance": {
+      "aiExample": "Example arrangement · our florist hand-makes each one"
+    },
+    "watermark": {
+      "demoSample": "Sample"
     }
   },
   "meta": {

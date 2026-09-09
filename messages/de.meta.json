@@ -9,6 +9,16 @@
     "reviewed": false,
     "sourceHash": "009ed110badf6e7bb1d9dc5e70d1dbf1d3dcb8283c23508477ee7cb2b730f07d"
   },
+  "a11y.media.gallery": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "b65675ba6b50707a1609438f7940d6e625f277080fadab590bfb02d219437096"
+  },
+  "a11y.media.imageOfCount": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "225caa7c6e468024d854930f31fc184da77f20cd790520349edc62e34860eb29"
+  },
   "a11y.skipToContent": {
     "source": "machine",
     "reviewed": false,
@@ -93,6 +103,106 @@
     "source": "machine",
     "reviewed": false,
     "sourceHash": "e3887fd61f07cdc665104d69ccd05ee7c782bd0e9ac2c2d510bfcc4c2b889235"
+  },
+  "catalog.descriptor.flower.alstroemeria": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "5a2c6f998474929bcf70b2aa88f94faa572b322727664c065fb35e5fc9d9b7e9"
+  },
+  "catalog.descriptor.flower.carnations": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "b1e1798527df281f68ba3d83a11c28b2b7933bd4a49bed72894e4e7874f79309"
+  },
+  "catalog.descriptor.flower.chrysanthemums": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "7ac1b336b681b3ac6109e1fd5be69393a8395cc95218fc5e84a0475ba7b68e4f"
+  },
+  "catalog.descriptor.flower.freesias": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "7edb41f85be4ccad182ba5c77116a7573bb5f9d7e2c62a5291265af13a607632"
+  },
+  "catalog.descriptor.flower.gerberas": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "434a20217d02deb3c4ee797d9bbbf4e325ff3ce33d52d1bccf59020e55e77108"
+  },
+  "catalog.descriptor.flower.hydrangeas": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "be18e245095f42499016b59e6aba50f338758c8f0273ec33acf2a1067d5a213e"
+  },
+  "catalog.descriptor.flower.lilies": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "40903c59d19feef1d67c455499304c194ebdec82df78790c3ceaac92bd1d84be"
+  },
+  "catalog.descriptor.flower.mixed": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "00d023a794c6154a0497b6f390875b2d8035be882078712d9a8fd36d021669ad"
+  },
+  "catalog.descriptor.flower.orchids": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "608738e4ac086c407df30170a91d0df99790ad277058b64cd8ee0b24cb29dfa3"
+  },
+  "catalog.descriptor.flower.peonies": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "41d0499c1e4e5c57f8ff4dfa5365e857f6862c88faee12137e7818c6458e5e53"
+  },
+  "catalog.descriptor.flower.roses": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "618d663af0f1ec88a5a19defa65a2f80d06582a832510b12f475d80870bdb3ab"
+  },
+  "catalog.descriptor.flower.seasonal": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "8cf4415e871c0568a16794705e0695f681657a07bfceae07697c9ce44674d848"
+  },
+  "catalog.descriptor.flower.sunflowers": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "8f398886c326b5f8f07b20ac250c87de6723e062474465273fe1524f2b9092fa"
+  },
+  "catalog.descriptor.flower.tulips": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "6a6b46521e000c1084dc8f9c1f32876a965302fd0008a1cf54cd75ec15b7cb93"
+  },
+  "catalog.descriptor.form.arrangement": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "9c48b8a44e8abfcfeb5a3cb1fdab8526fc838f8eaa81bbac3b5d50cbf086d6b5"
+  },
+  "catalog.descriptor.form.bouquet": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "2e180f4e95b87ebf60b9b339c63373c23ffc9222ad98eb60f4e8c0615fe7561c"
+  },
+  "catalog.descriptor.form.funeral": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "93fc08afb8c88d3846fa8c3cbff3cef03baec69bc5e811c5415a9234453b7f52"
+  },
+  "catalog.descriptor.form.giftSet": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "451c13e7cadef0cd3e11902e925717ebf6508e629a8ff77475bee9593ead9e9c"
+  },
+  "catalog.descriptor.form.plant": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "9582b8cead747c224798696b6fa0470bafe245fb7327ba37135e43e0b9b1335d"
+  },
+  "catalog.descriptor.name": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "86b32415f72369695301ed8a98dc7bfa293b6446fd19f347ef1f03d1ed86429d"
   },
   "catalog.facet.colour.blue": {
     "source": "machine",
@@ -443,6 +553,11 @@
     "source": "machine",
     "reviewed": false,
     "sourceHash": "db444de1592587156de904ae5d7012916581b1015dfd001b922764a2bd43a73c"
+  },
+  "catalog.floristSentence": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "2178186602ab9e7a09a03808bf787f1f7def44b1a7bcb4e2a63be00c2093fa28"
   },
   "catalog.surcharge.peakDay": {
     "source": "machine",
@@ -873,6 +988,36 @@
     "source": "machine",
     "reviewed": false,
     "sourceHash": "4e679adbfcc8b3fc5d92f8b8b1fa3c43fb840a626f2d64b599df8d096163a631"
+  },
+  "media.placeholder.delivery": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "abd742ccaf1d24dd3a2cf701fd28c9ce7f93d4c7663c529e0b0a8c2916f8db85"
+  },
+  "media.placeholder.hero": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "2bf529ee867b9fba13dd739e826e91bfdec0a9ee714c2c29129c9ab6d0ccc7a9"
+  },
+  "media.placeholder.occasion": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "85e41a0e0c440a54f218e23f2e382ea66608eb6ec8a7eaecc868ef3653f17d46"
+  },
+  "media.placeholder.product": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "116724b0f37ac066fa19fc317aa1df9d3af1e8d470f199f31e90815cd32e666f"
+  },
+  "media.provenance.aiExample": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "0eb5c2453ed429ac693e151f79ce30f03ae5abf40bf826ace4fedab2c27a54ae"
+  },
+  "media.watermark.demoSample": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "95a2f1edb08a76120b82cec7c93ca477618639f04beac7d2aeba2dc039d43715"
   },
   "meta.chooser.description": {
     "source": "machine",
