@@ -11,7 +11,9 @@
  *    here so the template carries no `published` branch of its own and a go-live is a data flip
  *    in `src/config/*` with no edit under `src/app/` or `src/modules/ui/layout/`;
  *  - the header's reserved heights (AC-7), taken from the two approved artboards and exported as
- *    data so the CSS, the gallery and the e2e assertion all read the same numbers.
+ *    data so the CSS, the gallery and the e2e assertion all read the same numbers — as **two**
+ *    numbers since §14 A4's addendum: the chrome the document reserves, and the part of it that is
+ *    sticky.
  *
  * No database, no `Intl` call, no clock (`pnpm check:no-db`, `fo/no-adhoc-intl`).
  */
@@ -90,6 +92,23 @@ export const HEADER_BAND_HEIGHTS = {
  * neither the design source nor the rendered outcome can drift unnoticed.
  */
 export const HEADER_HEIGHTS = { mobile: 245, desktop: 183 } as const;
+
+/**
+ * The height of the **sticky** part of the chrome — the `<header role="banner" data-fo-header>` the
+ * component renders as a sibling of the utility strip (§14 A4's addendum, 2026-09-09, mechanism
+ * iii): masthead + category row + their two hairlines.
+ *
+ *  - **mobile 132** = 50 masthead + 52 search band + 28 category row + 2 rules
+ *  - **desktop 138** = 84 masthead + 52 category row + 2 rules
+ *
+ * `HEADER_HEIGHTS` above stays the number AC-7 reserves, and it is now the **sum of two boxes**:
+ * 113 + 132 = 245 at 390 px, 45 + 138 = 183 at 1440 px (the strip's own box carries its border, so
+ * the arithmetic is the measured 245 / 183 and not a rounding of it). `tests/e2e/header.spec.ts`
+ * measures `[data-fo-utility]` and `[data-fo-header]` and asserts both the parts and the sum, plus
+ * the property the split exists for: after a 600 px scroll the masthead is at the top of the
+ * viewport and the strip is above it.
+ */
+export const HEADER_STICKY_HEIGHTS = { mobile: 132, desktop: 138 } as const;
 
 /**
  * The currency code the chip prints for a locale (AC-8): `en`→EUR, `en-gb`→GBP, `de`→EUR,

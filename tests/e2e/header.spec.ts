@@ -6,7 +6,11 @@
  *
  *  - **the reserved height** per breakpoint, measured from the laid-out box rather than asserted
  *    from a class name (`e2e-desktop` is 1280 px wide, `e2e-mobile` is a Pixel 7 at 412 px, so the
- *    two projects cover the two artboards without a second config);
+ *    two projects cover the two artboards without a second config). Since §14 A4's addendum the
+ *    chrome is **two elements** — the utility strip scrolls with the page, the banner is sticky —
+ *    so the reserved height is asserted as both parts *and* their unchanged sum;
+ *  - **the banner stays at the top while the strip scrolls away** (§14 A4's addendum, mechanism
+ *    iii), which is the whole point of the split and only observable in a browser;
  *  - **the header's box is identical with and without JavaScript**, which is the observable form
  *    of "identical before and after hydration": there is no island in the header, so the document
  *    a crawler sees and the document a browser ends up with have the same chrome — and the CLS
@@ -26,7 +30,19 @@ import { createHash } from "node:crypto";
 
 import { expect, test } from "@playwright/test";
 
+/** The sticky part: masthead + category row, and the `banner` landmark. */
 const HEADER = "[data-fo-header]";
+
+/** The utility strip: a plain, non-landmark sibling that scrolls away (§14 A4's addendum). */
+const UTILITY = "[data-fo-utility]";
+
+/**
+ * A selector scoped to **both** boxes. A CSS comma cannot be nested (`"a, b" + " a"` parses as
+ * `"a, b a"`), so the descendant is distributed over the two roots rather than appended to a
+ * comma-joined constant.
+ */
+const inChrome = (selector: string): string =>
+  `${UTILITY} ${selector}, ${HEADER} ${selector}`;
 
 /**
  * The reserved header height per breakpoint, **restated** rather than imported from
@@ -45,6 +61,19 @@ const HEADER = "[data-fo-header]";
  * each differs from the artboards' band sum (167 / 173).
  */
 const HEADER_HEIGHTS = { mobile: 245, desktop: 183 } as const;
+
+/**
+ * The two boxes that sum to it: the strip that scrolls, and the banner that sticks (§14 A4's
+ * addendum, mechanism iii — `header-model.ts` records why an inner sticky wrapper and a negative
+ * sticky offset were both measured and rejected).
+ *
+ * utility mobile  = 113 (three lines at 390 px) + 1 rule
+ * utility desktop = 44 (the strip carries links, and a link owes 44 px) + 1 rule
+ * sticky  mobile  = 50 masthead + 52 search band + 28 category row + 2 rules
+ * sticky  desktop = 84 masthead + 52 category row + 2 rules
+ */
+const UTILITY_HEIGHTS = { mobile: 113, desktop: 45 } as const;
+const STICKY_HEIGHTS = { mobile: 132, desktop: 138 } as const;
 
 /** The two artboard widths, for the assertions that must hold at both (§14 A4). */
 const ARTBOARDS = [
@@ -105,19 +134,31 @@ test.describe("the site header (AC-7)", () => {
       expect(response?.status()).toBe(200);
 
       const header = page.locator(HEADER);
+      const utility = page.locator(UTILITY);
       await expect(header).toBeVisible();
+      await expect(utility).toBeVisible();
 
       const viewport = page.viewportSize();
-      const expected =
-        (viewport?.width ?? 0) >= MD_BREAKPOINT
-          ? HEADER_HEIGHTS.desktop
-          : HEADER_HEIGHTS.mobile;
-      const box = await header.boundingBox();
-      // Reserved, not measured after paint: the same box in every locale, to the pixel.
-      expect(Math.round(box?.height ?? 0)).toBe(expected);
+      const wide = (viewport?.width ?? 0) >= MD_BREAKPOINT;
+      const height = async (locator: import("@playwright/test").Locator) =>
+        Math.round((await locator.boundingBox())?.height ?? 0);
 
-      // Sticky, at the header layer, so neither banner can end up under it.
+      // Reserved, not measured after paint: the same two boxes in every locale, to the pixel …
+      expect(await height(utility)).toBe(
+        wide ? UTILITY_HEIGHTS.desktop : UTILITY_HEIGHTS.mobile,
+      );
+      expect(await height(header)).toBe(
+        wide ? STICKY_HEIGHTS.desktop : STICKY_HEIGHTS.mobile,
+      );
+      // … and the chrome the document reserves is their sum, which the addendum left unchanged.
+      expect((await height(utility)) + (await height(header))).toBe(
+        wide ? HEADER_HEIGHTS.desktop : HEADER_HEIGHTS.mobile,
+      );
+
+      // The banner sticks at the header layer, so neither banner island can end up under it;
+      // the strip above it is an ordinary, in-flow `<div>` that scrolls with the page.
       await expect(header).toHaveCSS("position", "sticky");
+      await expect(utility).toHaveCSS("position", "static");
 
       // Nothing the header does shifts the page.
       expect(await cumulativeLayoutShift(page)).toBe(0);
@@ -129,18 +170,96 @@ test.describe("the site header (AC-7)", () => {
     page,
   }) => {
     await page.goto("/en");
-    const hydrated = await page.locator(HEADER).boundingBox();
+    const hydratedStrip = await page.locator(UTILITY).boundingBox();
+    const hydratedBanner = await page.locator(HEADER).boundingBox();
 
     const context = await browser.newContext({ javaScriptEnabled: false });
     const plain = await context.newPage();
     try {
       await plain.goto("/en");
-      const served = await plain.locator(HEADER).boundingBox();
-      expect(served).toEqual(hydrated);
+      // Both boxes, so the split cannot hide a shift in either one.
+      expect(await plain.locator(UTILITY).boundingBox()).toEqual(hydratedStrip);
+      expect(await plain.locator(HEADER).boundingBox()).toEqual(hydratedBanner);
     } finally {
       await context.close();
     }
   });
+
+  test("the banner is the sticky part and the utility strip is outside it (§14 A4 addendum)", async ({
+    page,
+  }) => {
+    await page.goto("/en");
+
+    // One `banner`, and it is the sticky element — not a wrapper over all three bands.
+    const banner = page.getByRole("banner");
+    await expect(banner).toHaveCount(1);
+    await expect(banner).toHaveAttribute("data-fo-header", "true");
+
+    // The strip is a sibling before it, not a descendant: it is neither a landmark nor sticky, so
+    // its claims and help channel cost a first screen rather than 113 px of every screen.
+    expect(
+      await page.evaluate(() => {
+        const utility = document.querySelector("[data-fo-utility]");
+        const header = document.querySelector("[data-fo-header]");
+        return {
+          nested: header?.contains(utility) ?? true,
+          precedes:
+            utility !== null &&
+            header !== null &&
+            (utility.compareDocumentPosition(header) &
+              Node.DOCUMENT_POSITION_FOLLOWING) !==
+              0,
+          role: utility?.getAttribute("role"),
+        };
+      }),
+    ).toEqual({ nested: false, precedes: true, role: null });
+  });
+
+  /**
+   * The property the split exists for. `/en` is short in Phase 0 (194 px of scroll at 390 × 844,
+   * none at 1440 × 900), so the viewport is shortened to give the page room — and the gallery is
+   * **not** usable for this: `/dev/components` renders a *demo copy* of the header inside `<main>`
+   * in a bordered wrapper whose containing block is the header's own box, so that instance
+   * scrolls with the page by construction (measured: top 7 277 px after a 600 px scroll).
+   */
+  for (const { width, height, scroll } of [
+    { width: 390, height: 300, scroll: 600 },
+    { width: 1440, height: 300, scroll: 235 },
+  ] as const) {
+    test(`at ${String(width)} px the banner pins to the top and the strip scrolls away`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height });
+      await page.goto("/en");
+
+      // Enough room to scroll past the strip, which is what makes the assertion meaningful.
+      const room = await page.evaluate(
+        () => document.documentElement.scrollHeight - window.innerHeight,
+      );
+      expect(room).toBeGreaterThanOrEqual(scroll);
+
+      await page.evaluate((to) => {
+        window.scrollTo(0, to);
+      }, scroll);
+      const after = await page.evaluate(() => ({
+        y: Math.round(window.scrollY),
+        banner: Math.round(
+          document.querySelector("[data-fo-header]")?.getBoundingClientRect()
+            .top ?? Number.NaN,
+        ),
+        strip: Math.round(
+          document.querySelector("[data-fo-utility]")?.getBoundingClientRect()
+            .bottom ?? Number.NaN,
+        ),
+      }));
+
+      expect(after.y).toBe(scroll);
+      // The masthead is at the top of the viewport …
+      expect(after.banner).toBe(0);
+      // … and the whole strip is above it, off screen.
+      expect(after.strip).toBeLessThanOrEqual(0);
+    });
+  }
 
   test("the wordmark lockup navigates to the locale home", async ({ page }) => {
     await page.goto("/de");
@@ -173,7 +292,7 @@ test.describe("the site header (AC-7)", () => {
     }
 
     const internal = await page
-      .locator(`${HEADER} a[href^="/"]`)
+      .locator(inChrome('a[href^="/"]'))
       .evaluateAll((nodes) =>
         nodes.map((node) => node.getAttribute("href") ?? ""),
       );
@@ -191,9 +310,11 @@ test.describe("the site header (AC-7)", () => {
 
     // Nothing to submit, nothing to focus: the band is the two boxes the artboards draw, as text.
     await expect(
-      page.locator(`${HEADER} form, ${HEADER} input, ${HEADER} select`),
+      page.locator(
+        [inChrome("form"), inChrome("input"), inChrome("select")].join(", "),
+      ),
     ).toHaveCount(0);
-    await expect(page.locator(`${HEADER} button[type="submit"]`)).toHaveCount(
+    await expect(page.locator(inChrome('button[type="submit"]'))).toHaveCount(
       0,
     );
     const band = page.locator("[data-fo-header-search]");
@@ -211,7 +332,8 @@ test.describe("the site header (AC-7)", () => {
       await page.setViewportSize(viewport);
       await page.goto("/en");
 
-      const measured = await page.locator(`${HEADER} a`).evaluateAll((nodes) =>
+      // Both elements: the strip holds four of the six links (§14 A4's addendum re-scoped this).
+      const measured = await page.locator(inChrome("a")).evaluateAll((nodes) =>
         nodes.map((node) => {
           const box = node.getBoundingClientRect();
           return {
@@ -244,7 +366,9 @@ test.describe("the site header (AC-7)", () => {
     await page.goto("/en");
 
     const boxes = await page.evaluate(() => {
-      const header = document.querySelector("[data-fo-header]");
+      // Measured inside the **utility strip's** box: §14 A4's addendum moved the strip out of the
+      // banner, and both controls live in the strip.
+      const header = document.querySelector("[data-fo-utility]");
       const chip = document.querySelector("[data-fo-header-currency]");
       const switcher = document.querySelector("[data-fo-header-switcher]");
       const round = (box: DOMRect) => ({
@@ -261,7 +385,7 @@ test.describe("the site header (AC-7)", () => {
       };
     });
 
-    // Inside the header's own box — the failure of round 1 was a chip 120–570 px outside it,
+    // Inside the strip's own box — the failure of round 1 was a chip 120–570 px outside it,
     // inside the category row's horizontal scroll.
     for (const box of [boxes.chip, boxes.switcher]) {
       expect(box.x).toBeGreaterThanOrEqual(boxes.header.x);
@@ -271,13 +395,15 @@ test.describe("the site header (AC-7)", () => {
       // And inside the viewport, with no horizontal scroll to reach it.
       expect(box.right).toBeLessThanOrEqual(boxes.viewport);
     }
+    // Neither box scrolls horizontally, so there is nothing to scroll *to* in order to see them.
     expect(
-      await page.evaluate(
-        () =>
-          document.querySelector("[data-fo-header]")?.scrollWidth ===
-          document.querySelector("[data-fo-header]")?.clientWidth,
+      await page.evaluate(() =>
+        ["[data-fo-utility]", "[data-fo-header]"].map((selector) => {
+          const node = document.querySelector(selector);
+          return node?.scrollWidth === node?.clientWidth;
+        }),
       ),
-    ).toBe(true);
+    ).toEqual([true, true]);
   });
 
   test("the menu control is disabled while there is nothing to disclose", async ({

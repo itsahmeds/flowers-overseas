@@ -31,6 +31,7 @@ import { loadMessages, localePath } from "../../src/modules/i18n";
 import {
   HEADER_BAND_HEIGHTS,
   HEADER_HEIGHTS,
+  HEADER_STICKY_HEIGHTS,
   headerAccountItems,
   headerCategoryItems,
   headerCurrencyCode,
@@ -60,6 +61,16 @@ function render(locale: string, basketCount?: number): string {
       />
     </NextIntlClientProvider>,
   );
+}
+
+/**
+ * The whole opening tag that surrounds `index` — the element an attribute belongs to, so an
+ * assertion about "the strip" or "the banner" reads that element's own class list rather than the
+ * document's.
+ */
+function tagAt(html: string, index: number): string {
+  const start = html.lastIndexOf("<", index);
+  return html.slice(start, html.indexOf(">", index) + 1);
 }
 
 /** Every `href` in the rendered header, in document order. */
@@ -363,6 +374,8 @@ describe("the rendered header (AC-7, AC-14)", () => {
       `md:min-h-[${String(HEADER_BAND_HEIGHTS.categoryDesktop)}px]`,
     );
     expect(HEADER_HEIGHTS).toEqual({ mobile: 245, desktop: 183 });
+    // The sum above is now two boxes (§14 A4's addendum): 113 + 132 and 45 + 138.
+    expect(HEADER_STICKY_HEIGHTS).toEqual({ mobile: 132, desktop: 138 });
   });
 
   it("gives every rendered link the 44 px target from the header's own wrapper (§14 A4)", () => {
@@ -384,10 +397,46 @@ describe("the rendered header (AC-7, AC-14)", () => {
     ).toHaveLength(1);
   });
 
-  it("is sticky at the header layer, so it cannot fight the two banners", () => {
+  it("sticks the banner and lets the utility strip scroll away (§14 A4's addendum)", () => {
     const html = render("en");
-    expect(html).toContain("sticky");
-    expect(html).toContain("layer-header");
+
+    // Two siblings, not one wrapper: the strip comes first and is **not** inside the banner. An
+    // inner sticky wrapper is bounded by its parent's padding box and would have zero px of room
+    // (measured: masthead at -25 px), which is why the component returns a fragment.
+    const strip = html.indexOf("data-fo-utility");
+    const banner = html.indexOf("data-fo-header=");
+    expect(strip).toBeGreaterThan(-1);
+    expect(banner).toBeGreaterThan(strip);
+    expect(html.slice(strip, banner)).toContain("</div>");
+
+    // The sticky declaration and the header layer are on the banner …
+    const bannerTag = tagAt(html, banner);
+    expect(bannerTag).toContain("sticky");
+    expect(bannerTag).toContain("top-0");
+    expect(bannerTag).toContain("layer-header");
+    // … and the strip is an ordinary in-flow box with no landmark role of its own (the addendum
+    // rules the strip out of the landmark tree: same copy, no new label key).
+    const stripTag = tagAt(html, strip);
+    expect(stripTag).not.toContain("sticky");
+    expect(stripTag).not.toContain("layer-header");
+    expect(stripTag).not.toContain("role=");
+  });
+
+  it("declares the `banner` landmark on the sticky element only", () => {
+    const html = render("en");
+    // Declared rather than implicit: `/dev/components` renders the header inside `<main>`, where
+    // a bare `<header>` maps to no landmark at all.
+    expect([...html.matchAll(/role="banner"/g)]).toHaveLength(1);
+    expect(tagAt(html, html.indexOf("data-fo-header="))).toContain(
+      'role="banner"',
+    );
+    // The strip's claims and help channel sit outside every landmark, which the addendum accepts.
+    const strip = html.slice(
+      html.indexOf("data-fo-utility"),
+      html.indexOf("data-fo-header="),
+    );
+    expect(strip).not.toContain('role="region"');
+    expect(strip).not.toContain('role="banner"');
   });
 });
 

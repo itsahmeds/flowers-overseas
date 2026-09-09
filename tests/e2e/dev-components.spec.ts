@@ -105,10 +105,19 @@ test.describe("/dev/components", () => {
           nodes.filter((node) => node.closest("footer") === null).length,
       );
     expect(controlsOutsideTheFooter).toBe(0);
+    // Two elements since §14 A4's addendum: the utility strip that scrolls with the page, and
+    // the sticky banner holding the masthead and the category row.
+    await expect(page.locator("[data-fo-utility]")).toHaveCount(1);
     await expect(page.locator("[data-fo-header]")).toHaveCount(1);
     await expect(
       page.locator(
-        "[data-fo-header] input, [data-fo-header] form, [data-fo-header] select, [data-fo-header] textarea, [data-fo-header] label",
+        ["[data-fo-utility]", "[data-fo-header]"]
+          .flatMap((root) =>
+            ["input", "form", "select", "textarea", "label"].map(
+              (control) => `${root} ${control}`,
+            ),
+          )
+          .join(", "),
       ),
     ).toHaveCount(0);
     for (const section of ["Fields", "Prices"]) {

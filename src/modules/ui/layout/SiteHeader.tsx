@@ -54,6 +54,24 @@
  * none — the `fo_currency` menu is spec 008's — which is what keeps the document one cache entry
  * with no `Vary` and no `Set-Cookie`.
  *
+ * **Two elements, not one** (§14 A4's addendum, 2026-09-09, mechanism iii). The component returns
+ * a fragment: the utility strip is a plain `<div data-fo-utility>` that **scrolls away with the
+ * page**, and `<header role="banner" data-fo-header>` — masthead + category row — is what is
+ * `position: sticky; top: 0`. The strip's claims and help channel are worth a first screen, not
+ * 113 px of every screen on a phone, and the alternatives do not work: an inner sticky wrapper is
+ * bounded by its parent's padding box, so a wrapper holding the *bottom* two bands of the header
+ * has zero px of room and unsticks at once (measured: masthead at -25 px instead of 0); a negative
+ * `top` on the whole header would need the strip's height as a per-breakpoint literal, and that
+ * height is content-driven (113 / 93 / 85 / 65 / 45 px at boundaries that are not Tailwind
+ * breakpoints), so it is exact at the two widths it is tested at and wrong between them.
+ *
+ * Two consequences the tests carry: `[data-fo-header]` is now **the sticky part only** — 132 px at
+ * 390 px, 138 px at 1440 px — while the chrome the document reserves is still the sum of the two
+ * boxes, 245 px and 183 px, so AC-7's reserved height is asserted over `[data-fo-utility]` +
+ * `[data-fo-header]`. And the strip is deliberately **not** a landmark: it carries the same copy it
+ * carried inside the banner, and giving it a `region` role would need a label key the addendum's
+ * "same copy" ruling does not grant.
+ *
  * **No CLS** (AC-7): every band carries the fixed height its artboard specifies as a literal
  * utility, and `./header-model.ts`'s `HEADER_BAND_HEIGHTS` carries the same numbers as data for
  * the e2e assertion and the drift guard in `tests/unit/ui-site-header.test.tsx`. So the box the
@@ -64,7 +82,9 @@
  * centred `Container`: the artboards run the utility strip, the masthead rules and the category
  * row edge to edge, and `Container`'s `max-w`/padding pair would inset them.
  *
- * Accessibility: `<header>` is the `banner` landmark and the category row a named `navigation`;
+ * Accessibility: `<header>` is the `banner` landmark (declared, because the gallery renders the
+ * header inside `<main>`, where the implicit mapping would not apply) and the category row a
+ * named `navigation`; the utility strip is a plain `<div>` outside both;
  * every rendered link clears 44 px; the account labels are the accessible names at every width
  * and become visible from `md` up; no affordance depends on hover. Direction-carrying icons mirror
  * in RTL from the icon set's own intent, and the file is logical-CSS only, so `/ar-XB` needs no
@@ -365,10 +385,7 @@ export function SiteHeader({
   const { contact, tradingName } = COMPANY;
 
   return (
-    <header
-      className="border-rule bg-surface layer-header sticky top-0 border-b"
-      data-fo-header
-    >
+    <>
       {/* 1. Utility strip. The mobile artboard prints the short cutoff line and the help channel;
              the desktop artboard prints all four claims, centred and rule-separated. §14 A4 adds
              spec 003's language switcher and the currency chip at the inline end, where they are
@@ -378,8 +395,9 @@ export function SiteHeader({
              centred in the space the controls leave rather than across the full width, printed as
              far as that space reaches (`CLAIM_FROM`). */}
       <div
-        className={`border-rule text-ink-muted gap-x-md gap-y-xs flex min-h-[44px] flex-wrap items-center justify-between border-b text-xs tracking-[0.06em] ${BLEED}`}
+        className={`border-rule bg-surface text-ink-muted gap-x-md gap-y-xs flex min-h-[44px] flex-wrap items-center justify-between border-b text-xs tracking-[0.06em] ${BLEED}`}
         data-fo-header-band="utility"
+        data-fo-utility
       >
         <div className="gap-x-md gap-y-xs flex flex-wrap items-center md:flex-1 md:justify-center">
           <span className="xl:hidden">{t("nav.utility.cutoffShort")}</span>
@@ -450,101 +468,112 @@ export function SiteHeader({
         </div>
       </div>
 
-      {/* 2 + 3. Masthead and the mobile search band: one grid, so the search band is a single set
+      {/* The sticky part: masthead + category row, and the `banner` landmark. The strip above is
+             a sibling rather than a child, because a sticky box is bounded by its parent's padding
+             box — an inner sticky wrapper at the bottom of a 245 px header has zero px of room and
+             unsticks immediately (measured: masthead at -25 px instead of 0). §14 A4's addendum
+             mechanism (iii). */}
+      <header
+        className="border-rule bg-surface layer-header sticky top-0 border-b"
+        data-fo-header
+        role="banner"
+      >
+        {/* 2 + 3. Masthead and the mobile search band: one grid, so the search band is a single set
              of DOM nodes that the two artboards place differently (row 2, full width, on mobile;
              the middle column of the 300 / 1fr / 300 masthead on desktop) instead of being
              rendered twice. */}
-      <div
-        // `gap-x-*` only: a row gap would be added to the two declared rows and the band would be
-        // 16 px taller than the artboard.
-        className={`gap-x-md md:gap-x-xl grid grid-cols-[auto_minmax(0,1fr)_auto] grid-rows-[50px_52px] items-center md:grid-cols-[300px_minmax(0,1fr)_300px] md:grid-rows-[84px] ${BLEED}`}
-        data-fo-header-band="masthead"
-      >
-        <div className="gap-sm md:gap-md flex items-center">
-          {/* Nothing to disclose while every nav target is unpublished, so the canvas's menu
+        <div
+          // `gap-x-*` only: a row gap would be added to the two declared rows and the band would be
+          // 16 px taller than the artboard.
+          className={`gap-x-md md:gap-x-xl grid grid-cols-[auto_minmax(0,1fr)_auto] grid-rows-[50px_52px] items-center md:grid-cols-[300px_minmax(0,1fr)_300px] md:grid-rows-[84px] ${BLEED}`}
+          data-fo-header-band="masthead"
+        >
+          <div className="gap-sm md:gap-md flex items-center">
+            {/* Nothing to disclose while every nav target is unpublished, so the canvas's menu
               button ships disabled rather than wired to an empty panel (AC-14). */}
-          <button
-            aria-label={t("nav.menu.label")}
-            className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center md:hidden"
-            disabled
-            type="button"
-          >
-            <Icon name="menu" size={22} />
-          </button>
-          <a className={`gap-sm md:gap-md ${TARGET}`} href={home}>
-            <Mark className="h-[26px] w-[26px] md:h-[40px] md:w-[40px]" />
-            <span className="display text-[19px] tracking-[0.04em] md:text-[26px]">
-              {tradingName}
-            </span>
-          </a>
-        </div>
+            <button
+              aria-label={t("nav.menu.label")}
+              className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center md:hidden"
+              disabled
+              type="button"
+            >
+              <Icon name="menu" size={22} />
+            </button>
+            <a className={`gap-sm md:gap-md ${TARGET}`} href={home}>
+              <Mark className="h-[26px] w-[26px] md:h-[40px] md:w-[40px]" />
+              <span className="display text-[19px] tracking-[0.04em] md:text-[26px]">
+                {tradingName}
+              </span>
+            </a>
+          </div>
 
-        {/* The search band, exactly as the artboards draw it (§14 A4): a field-shaped box holding
+          {/* The search band, exactly as the artboards draw it (§14 A4): a field-shaped box holding
             the placeholder sentence and, from `md` up, a button-shaped box holding the word
             `Search`. Text — not an `<input>`, not a `<button>`, not a `<form>` — because there is
             no search route until spec 008 and this header does not render affordances that do
             nothing. `nav.search.help` is the screen-reader sentence that says so; it is inside
             the box rather than attached to a control, because there is no control. */}
-        <div
-          className="col-span-3 row-start-2 flex md:col-span-1 md:col-start-2 md:row-start-1"
-          data-fo-header-search
-        >
-          <span className="border-rule ps-md pe-md text-ink-subtle md:border-border-strong md:text-md flex min-h-[42px] flex-1 items-center rounded-full border text-sm md:min-h-[48px] md:rounded-s-sm md:rounded-e-none md:border-e-0">
-            {/* The mobile artboard puts a search glyph inside the pill; the desktop artboard has
+          <div
+            className="col-span-3 row-start-2 flex md:col-span-1 md:col-start-2 md:row-start-1"
+            data-fo-header-search
+          >
+            <span className="border-rule ps-md pe-md text-ink-subtle md:border-border-strong md:text-md flex min-h-[42px] flex-1 items-center rounded-full border text-sm md:min-h-[48px] md:rounded-s-sm md:rounded-e-none md:border-e-0">
+              {/* The mobile artboard puts a search glyph inside the pill; the desktop artboard has
                 the dark `Search` box instead and no glyph. */}
-            <Icon className="me-sm md:hidden" name="search" size={16} />
-            <span className="truncate">
-              {registryLabel(t, search.labelKey)}
+              <Icon className="me-sm md:hidden" name="search" size={16} />
+              <span className="truncate">
+                {registryLabel(t, search.labelKey)}
+              </span>
+              <span className="sr-only">
+                {registryLabel(t, search.descriptionKey ?? "nav.search.help")}
+              </span>
             </span>
-            <span className="sr-only">
-              {registryLabel(t, search.descriptionKey ?? "nav.search.help")}
+            <span className="bg-surface-inverse text-on-inverse md:text-md hidden min-h-[48px] items-center justify-center rounded-e-sm px-[26px] font-medium tracking-[0.02em] md:inline-flex">
+              {t("nav.search.submit")}
             </span>
-          </span>
-          <span className="bg-surface-inverse text-on-inverse md:text-md hidden min-h-[48px] items-center justify-center rounded-e-sm px-[26px] font-medium tracking-[0.02em] md:inline-flex">
-            {t("nav.search.submit")}
-          </span>
+          </div>
+
+          <div className="gap-md flex items-center justify-end">
+            {account.map((item) => (
+              <AccountEntry
+                item={item}
+                key={item.id}
+                label={accountLabel(item)}
+              />
+            ))}
+          </div>
         </div>
 
-        <div className="gap-md flex items-center justify-end">
-          {account.map((item) => (
-            <AccountEntry
-              item={item}
-              key={item.id}
-              label={accountLabel(item)}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* 4. Category row. It scrolls on the mobile artboard and wraps on the desktop one, because
+        {/* 4. Category row. It scrolls on the mobile artboard and wraps on the desktop one, because
              a German compound or the +40 % `en-XA` pseudo-locale must never be truncated. With the
              switcher and the chip in the utility strip (§14 A4) it is the single ~52 px line the
              canvas draws. */}
-      <nav
-        aria-label={registryLabel(t, CATEGORY_NAV_LABEL_KEY)}
-        className="border-rule border-t"
-      >
-        <div
-          className={`gap-md flex min-h-[28px] items-center justify-between overflow-x-auto md:min-h-[52px] md:flex-wrap md:overflow-x-visible ${BLEED}`}
-          data-fo-header-band="categories"
+        <nav
+          aria-label={registryLabel(t, CATEGORY_NAV_LABEL_KEY)}
+          className="border-rule border-t"
         >
-          {/* The mobile artboard prints the row in the canvas's label voice (11 px, 600, tracked,
-              uppercase); the desktop artboard prints it at 15 px/500 in sentence case. */}
-          <div className="gap-md text-ink md:text-md flex items-center text-xs font-semibold tracking-[0.14em] uppercase md:flex-wrap md:gap-[30px] md:font-medium md:tracking-normal md:normal-case">
-            {categories.map((item) => (
-              <CategoryEntry item={item} key={item.id} t={t} />
-            ))}
-          </div>
           <div
-            className="gap-md label flex shrink-0 items-center md:ms-auto"
-            data-fo-header-end
+            className={`gap-md flex min-h-[28px] items-center justify-between overflow-x-auto md:min-h-[52px] md:flex-wrap md:overflow-x-visible ${BLEED}`}
+            data-fo-header-band="categories"
           >
-            {endCluster.map((item) => (
-              <CategoryEntry item={item} key={item.id} t={t} />
-            ))}
+            {/* The mobile artboard prints the row in the canvas's label voice (11 px, 600, tracked,
+              uppercase); the desktop artboard prints it at 15 px/500 in sentence case. */}
+            <div className="gap-md text-ink md:text-md flex items-center text-xs font-semibold tracking-[0.14em] uppercase md:flex-wrap md:gap-[30px] md:font-medium md:tracking-normal md:normal-case">
+              {categories.map((item) => (
+                <CategoryEntry item={item} key={item.id} t={t} />
+              ))}
+            </div>
+            <div
+              className="gap-md label flex shrink-0 items-center md:ms-auto"
+              data-fo-header-end
+            >
+              {endCluster.map((item) => (
+                <CategoryEntry item={item} key={item.id} t={t} />
+              ))}
+            </div>
           </div>
-        </div>
-      </nav>
-    </header>
+        </nav>
+      </header>
+    </>
   );
 }

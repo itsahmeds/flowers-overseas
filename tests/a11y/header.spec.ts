@@ -4,7 +4,10 @@
  * `tests/a11y/shell.spec.ts` already audits whole documents and therefore already covers the
  * header — this file adds the two things that file cannot say:
  *
- *  - the audit is **scoped to the header** in all four launch locales plus `/ar-XB`, so a
+ *  - the audit is **scoped to the chrome** — since §14 A4's addendum that is two elements, the
+ *    utility strip (`[data-fo-utility]`, a plain non-landmark `<div>` that scrolls with the page)
+ *    and the sticky `banner` (`[data-fo-header]`, masthead + category row) — in all four launch
+ *    locales plus `/ar-XB`, so a
  *    violation is attributed to this component rather than to "the page", and the RTL document is
  *    checked with the first real chrome it has ever had;
  *  - the **keyboard order** of the header is asserted directly: the skip link, the utility strip's
@@ -17,6 +20,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
 const HEADER = "[data-fo-header]";
+const UTILITY = "[data-fo-utility]";
 const BLOCKING_IMPACTS = new Set(["serious", "critical"]);
 
 const AUDITED = ["/en", "/en-gb", "/de", "/pl", "/ar-XB"] as const;
@@ -32,6 +36,7 @@ for (const path of AUDITED) {
     ).toBe(200);
 
     const results = await new AxeBuilder({ page })
+      .include(UTILITY)
       .include(HEADER)
       .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
       .analyze();
