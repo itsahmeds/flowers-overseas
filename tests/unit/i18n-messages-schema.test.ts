@@ -294,6 +294,12 @@ describe("the shipped catalogues and manifests", () => {
       "errors",
       "a11y",
       "common",
+      // Spec 004 §7's chrome namespaces, added with the config registries that name their keys
+      // (TASK-047); the header and footer that render them are TASK-048/TASK-049.
+      "nav",
+      "footer",
+      "company",
+      "destinations",
     ];
     const headline: Messages["banner"]["headline"] = enSource.banner.headline;
     const floristCount: Messages["common"]["floristCount"] =
@@ -304,7 +310,14 @@ describe("the shipped catalogues and manifests", () => {
       enSource.banner.dismiss,
     ];
 
+    const destinationName: Messages["destinations"]["pl"]["name"] =
+      enSource.destinations.pl.name;
+    const categoryLabel: Messages["nav"]["category"]["bestSellers"] =
+      enSource.nav.category.bestSellers;
+
     expect([...namespaces].sort()).toEqual(Object.keys(enSource).sort());
+    expect(destinationName).toBe("Poland");
+    expect(categoryLabel).toBe("Best sellers");
     expect(headline).toContain("{language}");
     expect(floristCount).toContain("plural");
     for (const action of bannerActions)

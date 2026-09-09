@@ -29,14 +29,21 @@ import {
 } from "../../src/modules/i18n/messages.ts";
 
 describe("the shell catalogue", () => {
-  it("ships the spec 003 §2 shell namespaces", () => {
+  it("ships the spec 003 §2 shell namespaces plus spec 004's chrome namespaces", () => {
     expect([...MESSAGE_NAMESPACES].sort()).toEqual([
       "a11y",
       "banner",
       "chooser",
       "common",
+      // `company`, `destinations`, `footer` and `nav` are spec 004 §7's chrome namespaces, added
+      // with the config registries that name their keys (TASK-047); the components that render
+      // them are TASK-048/TASK-049.
+      "company",
+      "destinations",
       "errors",
+      "footer",
       "meta",
+      "nav",
     ]);
   });
 

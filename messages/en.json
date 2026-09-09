@@ -48,5 +48,90 @@
     "switch": "Switch to {language}",
     "stay": "Stay on this page",
     "dismiss": "Dismiss the language suggestion"
+  },
+  "nav": {
+    "categories": {
+      "label": "Categories"
+    },
+    "category": {
+      "bestSellers": "Best sellers",
+      "birthday": "Birthday",
+      "sympathy": "Sympathy",
+      "occasions": "Occasions",
+      "bouquets": "Bouquets",
+      "roses": "Roses",
+      "plants": "Plants",
+      "addOns": "Add-ons",
+      "sameDayDelivery": "Same-day delivery",
+      "sameDayShort": "Same-day",
+      "destinations": "Destinations"
+    },
+    "search": {
+      "label": "Search flowers, occasions, a city or a country",
+      "help": "Search opens when the shop does."
+    },
+    "account": {
+      "signIn": "Sign in",
+      "orders": "My orders"
+    },
+    "basket": "Basket ({count, number})",
+    "forFlorists": "For florists"
+  },
+  "footer": {
+    "group": {
+      "sending": "Sending",
+      "company": "Company",
+      "legal": "Legal"
+    },
+    "link": {
+      "destinations": "Destinations",
+      "occasions": "Occasions",
+      "deliveryTimes": "Delivery times and cutoffs",
+      "guarantee": "The guarantee",
+      "howItWorks": "How it works",
+      "helpAndContact": "Help and contact",
+      "imprint": "Imprint",
+      "terms": "Terms",
+      "privacy": "Privacy",
+      "cookies": "Cookies",
+      "withdrawal": "Withdrawal and refunds"
+    },
+    "cookieSettings": "Cookie settings"
+  },
+  "company": {
+    "description": "International flower relay. You order, a vetted local florist makes and delivers.",
+    "operatedBy": "Operated by {legalName}, {address}, {registrationNumber}.",
+    "support": {
+      "label": "Help & WhatsApp",
+      "hours": "Mon–Sat 8–20 CET"
+    }
+  },
+  "destinations": {
+    "pl": {
+      "name": "Poland",
+      "cities": "Warszawa · Kraków · Wrocław · Gdańsk · Poznań"
+    },
+    "de": {
+      "name": "Germany"
+    },
+    "fr": {
+      "name": "France"
+    },
+    "es": {
+      "name": "Spain"
+    },
+    "it": {
+      "name": "Italy"
+    },
+    "ro": {
+      "name": "Romania"
+    },
+    "nl": {
+      "name": "Netherlands"
+    },
+    "state": {
+      "deliveringNow": "Delivering now",
+      "guideWaitingList": "Guide · waiting list"
+    }
   }
 }

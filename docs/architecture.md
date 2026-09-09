@@ -97,6 +97,13 @@ src/config/               locales.ts, locales.data.ts, currencies.ts, address-fo
                           `pnpm cookies:check` — TASK-050);
                           countries.ts, payment-methods-by-country.ts, feature-flags.ts follow
                           in 002/004
+                          without pulling zod into every page's client chunk — TASK-046);
+                          countries.ts, site-links.ts, categories.ts, company.ts (spec 004 §2
+                          §5.1, TASK-047: the seven Phase-0 destinations with `toCountryRow()`,
+                          the header/footer link registry behind `isPublished()`, the category
+                          row, and the company identity behind `registered: false`);
+                          cookies.ts, occasions.ts follow in 004, and
+                          payment-methods-by-country.ts, feature-flags.ts in 002/004
 tests/unit/               Vitest, node env
 tests/integration/        Vitest against DATABASE_URL (live from spec 002)
 tests/contract/           adapter-against-recorded-fixture tests (from Phase 1)

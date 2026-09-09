@@ -19,6 +19,42 @@
     "floristCount": "{count, plural, one {# kwiaciarnia} few {# kwiaciarnie} many {# kwiaciarni} other {# kwiaciarni}}",
     "homeLink": "Home"
   },
+  "company": {
+    "description": "International flower relay. You order, a vetted local florist makes and delivers.",
+    "operatedBy": "Operated by {legalName}, {address}, {registrationNumber}.",
+    "support": {
+      "hours": "Mon–Sat 8–20 CET",
+      "label": "Help & WhatsApp"
+    }
+  },
+  "destinations": {
+    "de": {
+      "name": "Niemcy"
+    },
+    "es": {
+      "name": "Hiszpania"
+    },
+    "fr": {
+      "name": "Francja"
+    },
+    "it": {
+      "name": "Włochy"
+    },
+    "nl": {
+      "name": "Holandia"
+    },
+    "pl": {
+      "cities": "Warszawa · Kraków · Wrocław · Gdańsk · Poznań",
+      "name": "Polska"
+    },
+    "ro": {
+      "name": "Rumunia"
+    },
+    "state": {
+      "deliveringNow": "Delivering now",
+      "guideWaitingList": "Guide · waiting list"
+    }
+  },
   "errors": {
     "notFound": {
       "body": "That page does not exist. Check the address, or start again from the home page.",
@@ -28,6 +64,27 @@
       "body": "The page could not be loaded. Nothing you were doing was lost. We apologize for the interruption.",
       "heading": "Something went wrong",
       "retry": "Try again"
+    }
+  },
+  "footer": {
+    "cookieSettings": "Cookie settings",
+    "group": {
+      "company": "Company",
+      "legal": "Legal",
+      "sending": "Sending"
+    },
+    "link": {
+      "cookies": "Cookies",
+      "deliveryTimes": "Delivery times and cutoffs",
+      "destinations": "Destinations",
+      "guarantee": "The guarantee",
+      "helpAndContact": "Help and contact",
+      "howItWorks": "How it works",
+      "imprint": "Imprint",
+      "occasions": "Occasions",
+      "privacy": "Privacy",
+      "terms": "Terms",
+      "withdrawal": "Withdrawal and refunds"
     }
   },
   "meta": {
@@ -47,6 +104,34 @@
     "notFound": {
       "description": "That page does not exist. Start again from the home page.",
       "title": "Page not found — Flowers Overseas"
+    }
+  },
+  "nav": {
+    "account": {
+      "orders": "My orders",
+      "signIn": "Sign in"
+    },
+    "basket": "Basket ({count, number})",
+    "categories": {
+      "label": "Categories"
+    },
+    "category": {
+      "addOns": "Add-ons",
+      "bestSellers": "Best sellers",
+      "birthday": "Birthday",
+      "bouquets": "Bouquets",
+      "destinations": "Destinations",
+      "occasions": "Occasions",
+      "plants": "Plants",
+      "roses": "Roses",
+      "sameDayDelivery": "Same-day delivery",
+      "sameDayShort": "Same-day",
+      "sympathy": "Sympathy"
+    },
+    "forFlorists": "For florists",
+    "search": {
+      "help": "Search opens when the shop does.",
+      "label": "Search flowers, occasions, a city or a country"
     }
   }
 }
