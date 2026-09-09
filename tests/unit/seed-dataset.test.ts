@@ -65,9 +65,14 @@ describe("spec 006 §2.2: every dataset file parses and carries its header", () 
     const authored = SEED_DATA_FILES.filter(
       (file) => file.origin === "authored",
     ).map((file) => file.path);
-    // The calendar (spec 006 owns no catalogue rows) and the imagery manifest (TASK-077): neither
-    // is a projection of `src/config/catalogue/`, which is what ADR-0017 forbids duplicating.
-    expect(authored).toEqual(["occasion-country.json", "media.json"]);
+    // The calendar (spec 006 owns no catalogue rows), the imagery manifest (TASK-077) and the
+    // variant manifest `pnpm media:variants` writes (TASK-078): none is a projection of
+    // `src/config/catalogue/`, which is what ADR-0017 forbids duplicating.
+    expect(authored).toEqual([
+      "occasion-country.json",
+      "media.json",
+      "media-variants.json",
+    ]);
   });
 });
 

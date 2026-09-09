@@ -29,6 +29,7 @@ import {
   MediaAssetManifestSchema,
   MediaVariantManifestSchema,
 } from "../../seed/schema/media.ts";
+import { variantPipeline } from "../../seed/schema/variants.ts";
 
 /** The smallest asset that satisfies every provenance refinement, as the reference to vary from. */
 const aiAsset = {
@@ -187,6 +188,9 @@ describe("MediaVariantManifestSchema and AltManifestSchema", () => {
       source: "seed",
       entity: "media_variant",
       origin: "authored",
+      // The pinned encoder header `pnpm media:variants` writes (TASK-078): required, so a manifest
+      // whose bytes came from unknown settings does not parse.
+      pipeline: variantPipeline(),
       rows: [variant, { ...variant, bytes: 41_235 }],
     });
     expect(result.success).toBe(false);
