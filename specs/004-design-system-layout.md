@@ -378,3 +378,21 @@ T2 client-JS budget + CSP + security headers ─────┘                T
 - **Q12 (plan/13 A7) — the six guide destinations besides PL.** Default (accepted here): DE, FR, ES, IT, RO, NL, per `plan/02` §5.3. 004 needs them only as seven rows in `src/config/countries.ts` and seven country-name message keys per locale, so a change is a data edit — but the *content* cost is spec 007's (≥600 words of country-specific copy each, human-written per `plan/02` §12), so the founder should answer before 007 starts rather than before 004 does.
 
 - **Q13 (added by the orchestrator at spec 003 close, 2026-09-08) — the client-JS budget.** `plan/01` §7 sets ≤ 120 KB gzipped script for indexable pages, but Next 16.3.4's client runtime alone measures ~130 KB gz / ~111 KB br on a document with zero application JS (spec 003 §14 A12). Options: (a) restate the budget as **≤ 120 KB Brotli transfer** (what Lighthouse actually measures; `/` passes today at 113 KB br, `/en` is ~3% over until zod leaves the browser); (b) raise the gzip budget to 160 KB; (c) reduce the framework surface (no App Router client runtime reductions are available without leaving Next). Default: (a) plus this spec's task 2 removing zod from the client via a zod-free locale data module for the 500 document. Answer needed before task 2; `lighthouse` stays informational until the budget is achievable.
+
+## 14. Amendments (post-approval corrections)
+
+**A1 — Client-JS budget after zod left the browser (§13 Q13; AC-24; AC-25).**
+Original: Q13 option (a) restated the budget as ≤ 120 KB Brotli (122 880 B) on the expectation that
+removing zod from the client would bring locale documents under it.
+Measured (PR #26, TASK-046, head `2e216d4`, browser-fetched Brotli bytes incl. `next/dynamic`
+chunks): `/` 116 393 B (within); `/en` and `/de` 129 638 B — 6 758 B (5.5%) over, all of it Next
+16.3.4 runtime plus `NextIntlClientProvider` and the message payload. No application code is left to
+remove on those documents.
+Corrected (orchestrator under the founder's delegation, 2026-09-09): AC-24's script-transfer
+assertion becomes **≤ 131 072 B (128 KB) Brotli** for every URL in the set, and `lighthouserc.json`
+takes that value when TASK-056 flips the job to blocking. Guardrail: the homepage islands still to
+land (finder, consent) must fit inside the 1 434 B that remain on locale documents or be paid for by
+Q13 option (b) — passing translated strings into islands as props and dropping the client message
+provider (~10 705 B) — which TASK-056 decides from the finished measurement, not from an estimate.
+The budget is not raised a second time. `plan/01` §7's "120 KB gzipped" reads as this clause.
+Raised by: `/review 26` round 1 (numbers corrected in round 2), 2026-09-09.
