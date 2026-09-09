@@ -1,0 +1,40 @@
+{
+  "artboards": [
+    {
+      "file": "buyer-journey.dc.html",
+      "title": "Buyer journey · home → track",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 46
+    },
+    {
+      "file": "florist-journey.dc.html",
+      "title": "Florist journey · landing → first order",
+      "x": 1560,
+      "y": 0,
+      "w": 1440,
+      "h": 46
+    },
+    {
+      "file": "consent-and-locale.dc.html",
+      "title": "Consent and locale · states and z-order",
+      "x": 3120,
+      "y": 0,
+      "w": 1440,
+      "h": 46
+    }
+  ],
+  "annotations": [
+    {
+      "id": "flows",
+      "x": 0,
+      "y": -110,
+      "w": 1200,
+      "text": "flows — The buyer journey home → track, the florist journey landing → first order, and the three overlapping first-visit surfaces with their z-order."
+    }
+  ],
+  "launch": {
+    "view": "canvas"
+  }
+}
