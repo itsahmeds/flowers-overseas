@@ -23,7 +23,11 @@
  * `cake` later is one row rather than a schema change, which is what spec 005 §2's "`cake` is
  * `partner_only`" needs from this dataset (TASK-064 reads the flag).
  */
-import { type AddonData, AddonRegistrySchema } from "./schemas.ts";
+import {
+  type AddonData,
+  AddonRegistrySchema,
+  scopedFlagKey,
+} from "./schemas.ts";
 
 const addons = [
   {
@@ -108,5 +112,5 @@ export function addonByKey(key: string): AddonData {
  */
 export function addonFlagKey(key: string, countryIso2: string): string | null {
   const { flagPrefix } = addonByKey(key);
-  return flagPrefix === null ? null : `${flagPrefix}.${countryIso2}`;
+  return flagPrefix === null ? null : scopedFlagKey(flagPrefix, countryIso2);
 }

@@ -26,6 +26,7 @@ import { dirname, join, relative, resolve } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
+import { COUNTRIES } from "../../src/config/countries.ts";
 import { MODULES } from "../../scripts/check-layout.ts";
 import { findDatabaseImports } from "../../scripts/check-no-db-imports.ts";
 import * as catalog from "../../src/modules/catalog/index.ts";
@@ -158,6 +159,13 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         // the read API's boundary schemas (TASK-063)
         "FacetSelectionSchema",
         "ListProductsQuerySchema",
+        // the tier and add-on read API (TASK-064)
+        "AddonSchema",
+        "FORBIDDEN_ADDON_FIELDS",
+        "ProductTierSchema",
+        "defaultTier",
+        "listAddons",
+        "listTiers",
         // the taxonomy read API (TASK-063)
         "countProductsFor",
         "countProductsIn",
@@ -175,6 +183,7 @@ describe("src/modules/catalog barrel (AC-1)", () => {
 
   it("has the module's Phase 0 files and no `db/` implementation yet", () => {
     expect(moduleFiles.sort()).toEqual([
+      `${moduleDir}/flags.ts`,
       `${moduleDir}/index.ts`,
       `${moduleDir}/providers.ts`,
       `${moduleDir}/read.ts`,
@@ -198,6 +207,12 @@ describe("the barrel exposes no provider, dataset or database symbol (AC-2, T-01
       "dbFxRateProvider",
       "catalogProviders",
       "CatalogueDatasetPendingError",
+      // The flag seam is internal too (spec 005 §12): callers ask for the add-ons they may
+      // offer, never for the state of a flag, so spec 002's `feature_flag` table can take the
+      // authority over with no caller change (TASK-064).
+      "staticFlagProvider",
+      "isFlagEnabled",
+      "PHASE_0_FLAGS",
     ]) {
       expect(exported, banned).not.toContain(banned);
     }
@@ -232,6 +247,7 @@ describe("the barrel exposes no provider, dataset or database symbol (AC-2, T-01
         "countryPrices",
         "addonCountryPrices",
         "fxRates",
+        "flags",
       ]) {
         expect(Object.keys(value), `${name}.${method}`).not.toContain(method);
       }
@@ -329,8 +345,13 @@ describe("the module ships zero client JavaScript (AC-3, T-01)", () => {
 describe("the provider seam and its Phase 0 stubs", () => {
   const providers: CatalogProviders = catalogProviders();
 
-  it("composes the three static providers", () => {
-    expect(Object.keys(providers).sort()).toEqual(["catalogue", "fx", "price"]);
+  it("composes the four static providers", () => {
+    expect(Object.keys(providers).sort()).toEqual([
+      "catalogue",
+      "flags",
+      "fx",
+      "price",
+    ]);
   });
 
   it("returns the same shape on every call, so nothing caches a connection", () => {
@@ -364,6 +385,8 @@ describe("the provider seam and its Phase 0 stubs", () => {
     ],
     // One committed euro-base ECB snapshot, one row per configured quote currency.
     ["fx.fxRates", () => providers.fx.fxRates(), 9],
+    // One `addon.wine.{country}` row per configured country, every one off (TASK-064).
+    ["flags.flags", () => providers.flags.flags(), COUNTRIES.length],
   ];
 
   for (const [member, call, count] of authored) {

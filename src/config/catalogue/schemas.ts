@@ -252,6 +252,19 @@ export function facetLabelKey(facet: FacetName, value: string): string {
 }
 
 /**
+ * The per-country feature-flag key of a flag prefix — `addon.wine` + `PL` → `addon.wine.PL`
+ * (`plan/10` §1.1, spec 005 §12; TASK-064).
+ *
+ * The **only** builder of a scoped flag key in the repository, so no caller string-concatenates
+ * one and the key spec 002's `feature_flag_scope` seeds cannot drift from the key the module
+ * reads. `addonFlagKey()` in `addons.data.ts` and the catalogue module's read API both go through
+ * here.
+ */
+export function scopedFlagKey(prefix: string, scope: string): string {
+  return `${prefix}.${scope}`;
+}
+
+/**
  * A dotted `catalog.*` message key: the shape every `labelKey` in the dataset must have.
  *
  * The segment alphabet is spec 003's, not this spec's: `MessagesSchema` and

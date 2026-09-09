@@ -1,5 +1,6 @@
 /**
- * The taxonomy read API (spec 005 §2 "Taxonomy", §5.2 `read.ts`, §5.4, §6; TASK-063).
+ * The taxonomy, tier and add-on read API (spec 005 §2 "Taxonomy" and "Tiers and add-ons",
+ * §5.2 `read.ts`, §5.4, §6, §12; TASK-063, TASK-064).
  *
  * Everything spec 008's category, occasion and shop loaders, spec 009's PDP and the sitemap
  * builder need in order to answer *what is in the catalogue* — and nothing about what it costs
@@ -22,6 +23,10 @@
  *    spec 008's (spec 005 §3), and the Omnibus/DMCC ranking-transparency position of §8 depends on
  *    this module exposing a *default* order rather than a scored one. `listProducts()` is ascending
  *    SKU; `topProductsForPrebuild()` is the locale's collation of the product name.
+ *  - **Nothing can be preselected or offered by accident.** Which tier a PDP preselects is the
+ *    authored `product_tier.is_default` row (`plan/04` §16's A/B test #2 is "12 vs 18 stems"), and
+ *    an add-on has no field that could pre-tick it at all (CRD Art. 22, AC-19). A flagged add-on
+ *    is absent unless its flag is on, read through the seam of `flags.ts` and closed by default.
  *  - **The destination is the only geography.** Every signature here takes a destination ISO or
  *    nothing at all — no buyer country, no IP, no header, no visitor (EU 2018/302, ADR-0006,
  *    AC-18, whose whole-module gate is TASK-069's).
@@ -37,13 +42,20 @@ import {
   type OccasionData,
   facetNames,
   facetValues,
+  scopedFlagKey,
 } from "@/config/catalogue/schemas";
 import { type CountryIso2, countryConfig } from "@/config/countries";
 import type { LocaleCode } from "@/config/locales";
 import { isLocaleIndexable, sortBy } from "@/modules/i18n";
 
-import { catalogProviders, type ProductRecord } from "./providers";
+import { isFlagEnabled } from "./flags";
 import {
+  catalogProviders,
+  type ProductRecord,
+  type ProductTierRecord,
+} from "./providers";
+import {
+  AddonSchema,
   DestinationIsoSchema,
   FacetSearchParamsSchema,
   FacetSelectionSchema,
@@ -51,14 +63,17 @@ import {
   LocaleCodeSchema,
   PrebuildCountSchema,
   ProductSkuSchema,
+  ProductTierSchema,
 } from "./schemas";
 import type {
+  Addon,
   Category,
   FacetResolution,
   FacetSelection,
   Occasion,
   Product,
   ProductIndexability,
+  Tier,
 } from "./types";
 
 /* -------------------------------------------------------------------------- */
@@ -555,4 +570,164 @@ export async function topProductsForPrebuild(
     (product) => product.name,
   );
   return ordered.slice(0, count);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Tiers (spec 005 §2 "Tiers and add-ons", §13 Q4/Q6; TASK-064).               */
+/* -------------------------------------------------------------------------- */
+
+function toTier(record: ProductTierRecord): Tier {
+  return ProductTierSchema.parse({
+    tierKey: record.tierKey,
+    labelKey: record.labelKey,
+    stems: record.stems,
+    sort: record.sort,
+    isDefault: record.isDefault,
+  });
+}
+
+/**
+ * The size steps of one product, in `sort` order (`plan/10` §2.2).
+ *
+ * The product's SKU is the argument, so the read model carries none: a caller holding a tier
+ * already knows which product it asked about, and repeating the key would let a list of tiers be
+ * assembled across products, which is not a thing the PDP or the price table has.
+ *
+ * **An unknown SKU throws, and so does a product with no tiers.** A SKU is resolved with
+ * `getProduct()` first (which returns `null` for a 404), so one that reaches here and does not
+ * exist is a bug; and a priced product with no tier is the `no-tier` fault `pnpm catalogue:check`
+ * refuses in the dataset (AC-5), so answering `[]` would turn a data hole into an empty PDP
+ * rather than a loud failure. There is no money here: the stepped amounts are authored
+ * `country_price` rows read by `resolvePrice()` (TASK-065), never a percentage at render.
+ */
+export async function listTiers(sku: string): Promise<readonly Tier[]> {
+  const key = ProductSkuSchema.parse(sku);
+  const product = await getProduct(key);
+  if (product === null) {
+    throw new Error(`\`${key}\` is not a product in the catalogue`);
+  }
+  const tiers = (await catalogProviders().catalogue.tiers()).filter(
+    (tier) => tier.sku === key,
+  );
+  if (tiers.length === 0) {
+    throw new Error(
+      `\`${key}\` has no \`product_tier\` row: a product with no tier has no price (spec 005 AC-5, \`pnpm catalogue:check\` mode \`no-tier\`)`,
+    );
+  }
+  return [...tiers]
+    .sort((left, right) => left.sort - right.sort)
+    .map((tier) => toTier(tier));
+}
+
+/**
+ * The tier a product page preselects — `product_tier.is_default` (spec 002 §14 A1 (b), spec 005
+ * §13 Q6).
+ *
+ * **Data, not code.** `plan/04` §16's A/B test #2 is "12 vs 18 stems", so the preselection has to
+ * be an authored row: a middle tier chosen in this function could not be varied per product and
+ * could not be tested at all. What the dataset authors today *is* the middle tier
+ * (`ProductTierGroupSchema` refuses anything else), and changing that for one product is one
+ * `isDefault` flip.
+ *
+ * **Zero or two defaults throw, never a silent pick.** That mirrors `resolvePrice()`'s rule for
+ * two active price rows (spec 005 §5.2): spec 002 §14 A1 (b)'s one-per-product partial unique
+ * index makes it impossible in Postgres and `ProductTierGroupSchema` makes it impossible in the
+ * dataset, so an occurrence here is a migration or a seed defect and must be visible as one.
+ */
+export async function defaultTier(sku: string): Promise<Tier> {
+  const tiers = await listTiers(sku);
+  const defaults = tiers.filter((tier) => tier.isDefault);
+  if (defaults.length !== 1 || defaults[0] === undefined) {
+    throw new Error(
+      `\`${sku}\` has ${String(defaults.length)} default tiers; exactly one is required (spec 002 §14 A1 (b), spec 005 §13 Q6) — a preselected tier is data, never a pick made here`,
+    );
+  }
+  return defaults[0];
+}
+
+/* -------------------------------------------------------------------------- */
+/* Add-ons (spec 005 §2 "Tiers and add-ons", §8, AC-19; TASK-064).             */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The add-ons that may be offered with an order to one destination, in listing order.
+ *
+ * Four properties of this function are the compliance content of spec 005 §8, and each of them is
+ * structural rather than reviewed for:
+ *
+ *  1. **Nothing can arrive pre-ticked.** The `Addon` read model has no `defaultSelected` and no
+ *     `preselected` field, `AddonSchema` is `.strict()`, and `pnpm catalogue:check`'s
+ *     `addon-preselection` mode fails if one is ever declared or authored. CRD Art. 22 is
+ *     discharged by absence (`plan/07` §2.1, AC-19).
+ *  2. **Every add-on carries its own VAT rate**, read from the one active `addon_country_price`
+ *     row for this destination (spec 002 §14 A1 (a), spec 005 §13 Q3): in Poland chocolates are
+ *     23% while flowers are 8% (`plan/06` §4 item 4). The *amount* is not here — an add-on price
+ *     is a `PricePoint` from `pricing/*` (TASK-065) or it is nothing, so a partial price cannot be
+ *     rendered (AC-8).
+ *  3. **A flagged add-on is absent unless its flag is on.** `wine` is gated on
+ *     `addon.wine.{country}` (`plan/10` §1.1, `plan/07` §6: disabled where the florist is not
+ *     licensed), read through the flag seam and therefore closed by default. Licensing a country
+ *     is a flag flip, not a code change.
+ *  4. **A zero-priced add-on is still an add-on.** `card` is priced 0 and is returned like any
+ *     other, so the summary, the invoice and the confirmation email show the same set of lines
+ *     (spec 005 §2).
+ *
+ * Two active rows for one (add-on, destination) **throws**: the same "never a silent pick" rule
+ * `resolvePrice()` applies, guaranteed impossible by spec 002 §14 A1 (a)'s partial unique index
+ * and by `catalogue:check`. No active row means the add-on is simply not offered there, which is
+ * a data-driven absence rather than a fault — the mirror of `listProducts()` omitting a product
+ * that a destination has no price for.
+ *
+ * The destination is the only geography: no buyer country, no IP, no locale (EU 2018/302,
+ * ADR-0006, AC-18).
+ */
+export async function listAddons(
+  countryIso: CountryIso2,
+): Promise<readonly Addon[]> {
+  const destination = DestinationIsoSchema.parse(countryIso);
+  const providers = catalogProviders();
+  const [addons, prices] = await Promise.all([
+    providers.catalogue.addons(),
+    providers.price.addonCountryPrices(),
+  ]);
+
+  const offerable: Addon[] = [];
+  for (const addon of [...addons].sort(
+    (left, right) => left.sort - right.sort,
+  )) {
+    const rows = prices.filter(
+      (row) =>
+        row.addonKey === addon.key &&
+        row.countryIso2 === destination &&
+        row.activeTo === null,
+    );
+    if (rows.length > 1) {
+      throw new Error(
+        `\`${addon.key}\` has ${String(rows.length)} active \`addon_country_price\` rows for \`${destination}\`; exactly one is required (spec 002 §14 A1 (a)) — an ambiguous price is never picked silently`,
+      );
+    }
+    const row = rows[0];
+    if (row === undefined) continue;
+
+    const flagKey =
+      addon.flagPrefix === null
+        ? null
+        : scopedFlagKey(addon.flagPrefix, destination);
+    if (flagKey !== null && !(await isFlagEnabled(flagKey))) continue;
+
+    offerable.push(
+      AddonSchema.parse({
+        key: addon.key,
+        kind: addon.kind,
+        nameKey: addon.nameKey,
+        descriptionKey: addon.descriptionKey,
+        allergenNoteRequired: addon.allergenNoteRequired,
+        partnerOnly: addon.partnerOnly,
+        flagKey,
+        vatRateBp: row.vatRateBp,
+        sort: addon.sort,
+      }),
+    );
+  }
+  return offerable;
 }

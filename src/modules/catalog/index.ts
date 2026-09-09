@@ -13,15 +13,24 @@
  * What this barrel exports today is the money vocabulary plus the **taxonomy read API**
  * (TASK-063): `getProduct`, `listProducts`, `getCategory`, `getOccasion`, `resolveFacets`,
  * `isAuthoredFacetPath`, `countProductsIn`, `countProductsFor`, `hasIndexableProducts` and
- * `topProductsForPrebuild`. The rest of spec 005 §5.2's surface — `resolvePrice`,
- * `priceProjection`, `priceTable`, `fromPrice`, `availability`, `isProductIndexable`, `quote`,
- * `cacheTagsFor` — arrives with the tasks that own each, TASK-064 … TASK-069.
+ * `topProductsForPrebuild`.
+ *
+ * TASK-064 adds the **tier and add-on read API**: `listTiers`, `defaultTier` and `listAddons`,
+ * with `Tier`, `Addon`, `ProductTierSchema` and `AddonSchema`. The rest of spec 005 §5.2's
+ * surface — `resolvePrice`, `priceProjection`, `priceTable`, `fromPrice`, `availability`,
+ * `isProductIndexable`, `quote`, `cacheTagsFor` — arrives with the tasks that own each,
+ * TASK-065 … TASK-069.
+ *
+ * What TASK-064 deliberately does **not** export: `isFlagEnabled`. The flag seam of spec 005 §12
+ * is internal (`./flags`, `./static`), because callers ask this module for the add-ons they may
+ * offer and never for the state of a flag — which is what lets spec 002's `feature_flag` table
+ * take the authority over with no caller change.
  *
  * What may never be exported from here, and is asserted by `tests/unit/catalog-barrel.test.ts`
  * (AC-2):
  *
- *  - **a provider.** `CatalogueProvider` / `PriceProvider` / `FxRateProvider` and the composition
- *    root are internal (`./providers`, `./static`, later `./db`): callers ask the module for a
+ *  - **a provider.** `CatalogueProvider` / `PriceProvider` / `FxRateProvider` / `FlagProvider`
+ *    and the composition root are internal (`./providers`, `./static`, later `./db`): callers ask the module for a
  *    price, never for a data source, so swapping the static seam for Postgres (TASK-070) touches
  *    no file outside this directory. From TASK-063 the barrel's *import graph* necessarily reaches
  *    the composition root — a read function has to read something — so what the test pins is the
@@ -74,3 +83,15 @@ export {
   resolveFacets,
   topProductsForPrebuild,
 } from "./read";
+
+// The tier and add-on read API (spec 005 §2 "Tiers and add-ons", §12, AC-19; TASK-064). `Addon`
+// has no `defaultSelected`/`preselected` field and `AddonSchema` is `.strict()`, so a pre-ticked
+// extra is unrepresentable rather than forbidden by review (CRD Art. 22, `plan/07` §2.1); every
+// add-on carries its **own** `vatRateBp` for the destination (PL chocolates 2 300 vs flowers 800).
+export type { Addon, Tier } from "./types";
+export {
+  AddonSchema,
+  FORBIDDEN_ADDON_FIELDS,
+  ProductTierSchema,
+} from "./schemas";
+export { defaultTier, listAddons, listTiers } from "./read";

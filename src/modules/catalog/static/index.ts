@@ -20,7 +20,7 @@
  * This module imports no database client (`pnpm check:no-db`), carries no `"use client"`, and is
  * not reachable from the barrel (AC-2, AC-3).
  */
-import { ADDONS } from "@/config/catalogue/addons.data";
+import { ADDONS, addonFlagKey } from "@/config/catalogue/addons.data";
 import { CATEGORIES } from "@/config/catalogue/categories.data";
 import { FX_SNAPSHOT } from "@/config/catalogue/fx.data";
 import { OCCASIONS } from "@/config/catalogue/occasions.data";
@@ -31,12 +31,16 @@ import {
 import { PRODUCTS } from "@/config/catalogue/products.data";
 import { PRODUCT_TIERS } from "@/config/catalogue/tiers.data";
 
+import { COUNTRIES } from "@/config/countries";
+
 import type {
   AddonCountryPriceRecord,
   AddonRecord,
   CatalogueProvider,
   CategoryRecord,
   CountryPriceRecord,
+  FeatureFlagRecord,
+  FlagProvider,
   FxRateProvider,
   FxRateRecord,
   OccasionRecord,
@@ -77,4 +81,46 @@ export const staticPriceProvider: PriceProvider = {
 /** The one committed ECB snapshot. Whether it is too old to convert with is TASK-067's call. */
 export const staticFxRateProvider: FxRateProvider = {
   fxRates: (): Promise<readonly FxRateRecord[]> => Promise.resolve(FX_SNAPSHOT),
+};
+
+/* -------------------------------------------------------------------------- */
+/* Feature flags (spec 005 §12; TASK-064).                                    */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The Phase 0 flag rows.
+ *
+ * Spec 005 defines no flag of its own; it *consumes* two scopes spec 002 seeds, and this is their
+ * Phase 0 answer:
+ *
+ *  - **`addon.wine.{country}`** — alcohol licensing (`plan/10` §1.1 "disabled where unlicensed").
+ *    `plan/07` §6's alcohol row is explicit: "Wine add-on **disabled** in PL and any country where
+ *    the florist is not licensed". No florist licence is confirmed in any destination in Phase 0,
+ *    so every row below is `false` — PL by name, because it is the one live destination and the
+ *    one that row calls out. Turning wine on in a country is a `true` in this table today and a
+ *    `feature_flag_scope` row from spec 002; it is never a code change at a call site, which is
+ *    the point of the seam (`CLAUDE.md`, spec 005 §12).
+ *  - **`currency.{code}`** — the display currencies of §13 Q11. Those rows belong to the
+ *    projection task that first reads them (TASK-068) and are deliberately not invented here: a
+ *    flag nothing reads is a flag nobody maintains.
+ *
+ * Every country is enumerated rather than left absent, so "wine is off in Poland" is a row a
+ * reader can point at instead of an absence that has to be interpreted. The keys come from
+ * `addonFlagKey()`, so nothing here string-concatenates `addon.wine.PL`.
+ *
+ * These rows are code while spec 002 is parked — the same bounded, stated deviation
+ * `src/config/locales.ts` (`isLaunch`) and `src/config/site-links.ts` (`isPublished`) record —
+ * and they are read only through the module's `isFlagEnabled()`.
+ */
+export const PHASE_0_FLAGS: readonly FeatureFlagRecord[] = COUNTRIES.flatMap(
+  (country) => {
+    const key = addonFlagKey("wine", country.iso2);
+    return key === null ? [] : [{ key, enabled: false }];
+  },
+).sort((left, right) => (left.key < right.key ? -1 : 1));
+
+/** The authored flag rows, handed over as-is. A provider decides nothing (`flags.ts` does). */
+export const staticFlagProvider: FlagProvider = {
+  flags: (): Promise<readonly FeatureFlagRecord[]> =>
+    Promise.resolve(PHASE_0_FLAGS),
 };

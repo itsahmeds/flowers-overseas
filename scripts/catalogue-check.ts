@@ -120,6 +120,7 @@ export const CHECK_MODES = [
   "fx-snapshot",
   "projection-columns",
   "destination-drift",
+  "addon-preselection",
 ] as const;
 
 export type CheckMode = (typeof CHECK_MODES)[number];
@@ -152,6 +153,16 @@ export interface CatalogueCheckInput {
   /** `PROJECTION_ROW_COLUMNS`, injectable so the ninth mode can be exercised. */
   readonly projectionColumns: Readonly<Record<string, readonly string[]>>;
   readonly projectionIndexColumns: Readonly<Record<string, readonly string[]>>;
+  /**
+   * The sources that *declare* an add-on's fields — the dataset's schema and data file and the
+   * catalogue module's read model and read schema — as `repo-relative path -> source text`.
+   *
+   * They are read as text rather than imported because what the `addon-preselection` mode checks
+   * is whether a forbidden field has been **declared** at all (CRD Art. 22, AC-19), and a
+   * declaration that TypeScript accepted is invisible to a value-level check. Injected, so the
+   * mode has a one-field mutation fixture like every other (T-03).
+   */
+  readonly addonFieldSources: Readonly<Record<string, string>>;
 }
 
 const DATA_FILE = "src/config/catalogue/prices.data.ts";
@@ -160,6 +171,18 @@ const TIERS_FILE = "src/config/catalogue/tiers.data.ts";
 const PRODUCTS_FILE = "src/config/catalogue/products.data.ts";
 const PROJECTIONS_FILE = "src/config/catalogue/projections.ts";
 const MESSAGES_FILE = "messages/en.json";
+const ADDONS_FILE = "src/config/catalogue/addons.data.ts";
+const DATASET_SCHEMAS_FILE = "src/config/catalogue/schemas.ts";
+const READ_MODEL_FILE = "src/modules/catalog/types.ts";
+const READ_SCHEMAS_FILE = "src/modules/catalog/schemas.ts";
+
+/** Every file that declares what an add-on carries; the `addon-preselection` mode scans each. */
+export const ADDON_FIELD_SOURCE_FILES: readonly string[] = [
+  ADDONS_FILE,
+  DATASET_SCHEMAS_FILE,
+  READ_MODEL_FILE,
+  READ_SCHEMAS_FILE,
+];
 
 /* -------------------------------------------------------------------------- */
 /* Spec 002 §5.1, transcribed.                                                */
@@ -298,6 +321,12 @@ export function catalogueCheckInput(
     messageKeys: flattenMessages(messages),
     projectionColumns: PROJECTION_ROW_COLUMNS,
     projectionIndexColumns: PROJECTION_UNIQUE_INDEX_COLUMNS,
+    addonFieldSources: Object.fromEntries(
+      ADDON_FIELD_SOURCE_FILES.map((file) => [
+        file,
+        readFileSync(resolve(root, file), "utf8"),
+      ]),
+    ),
     ...overrides,
   };
 }
@@ -990,6 +1019,97 @@ function checkDestinations(input: CatalogueCheckInput): Problem[] {
   return problems;
 }
 
+/* -------------------------------------------------------------------------- */
+/* CRD Art. 22: an add-on cannot default to selected (spec 005 §8, AC-19).     */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The field names an add-on may never carry, transcribed **here** rather than imported from
+ * `src/modules/catalog/schemas.ts` — the same reason spec 002 §5.1's column sets are transcribed
+ * above: a gate that imported the list it is checking would agree with anything. `tests/unit/
+ * catalogue-check.test.ts` pins the module's list against this one, so neither can be edited
+ * alone.
+ *
+ * CRD Art. 22 forbids a pre-ticked extra (`plan/07` §2.1), and spec 005 discharges it **by
+ * absence**: there is no field to set. This mode is the half of AC-19 that makes the absence
+ * enforced rather than observed — declaring one of these on an add-on, or authoring one on a row,
+ * fails `pnpm catalogue:check`.
+ */
+export const FORBIDDEN_ADDON_FIELD_NAMES: readonly string[] = [
+  "defaultSelected",
+  "preselected",
+  "defaultOn",
+  "selected",
+  "checked",
+];
+
+/** `readonly foo:`, `foo?:`, `foo:` — a field *declaration*, not a mention in prose or a string. */
+function declaresField(source: string, field: string): boolean {
+  return new RegExp(
+    `^[\\t ]*(?:readonly[\\t ]+)?${field}[\\t ]*\\??[:]`,
+    "m",
+  ).test(source);
+}
+
+/**
+ * No add-on can default to selected, and every add-on price carries its own VAT rate (AC-19).
+ *
+ * Three things are checked, and they are the three halves AC-19 names:
+ *
+ *  1. **No authored add-on row carries a preselection field.** The dataset's `AddonDataSchema` is
+ *     `.strict()`, so this is already a parse error at module load — which is the stronger
+ *     guarantee and the reason it is there. This check exists because a `.strict()` schema can be
+ *     loosened in the same commit that adds the field, and then nothing else would notice.
+ *  2. **No source that declares an add-on's fields declares one either** — the dataset schema and
+ *     data file, and the catalogue module's `Addon` read model and `AddonSchema`. A field that
+ *     TypeScript accepts is invisible to a value-level check, so the declaration is read as text.
+ *  3. **Every add-on price row carries a `vatRateBp`** (spec 002 §14 A1 (a), spec 005 §13 Q3): an
+ *     add-on with no rate of its own would inherit the country's flower rate and invoice the
+ *     first mixed PL basket at 8% instead of 23% (`plan/06` §4 item 4).
+ */
+function checkAddonPreselection(input: CatalogueCheckInput): Problem[] {
+  const problems: Problem[] = [];
+
+  for (const addon of input.addons) {
+    for (const field of Object.keys(addon)) {
+      if (!FORBIDDEN_ADDON_FIELD_NAMES.includes(field)) continue;
+      problems.push({
+        mode: "addon-preselection",
+        file: ADDONS_FILE,
+        subject: `${addon.key}.${field}`,
+        reason:
+          "carries a preselection field: an add-on has no such field to set, because CRD Art. 22 forbids a pre-ticked extra (`plan/07` §2.1, spec 005 §8, AC-19)",
+      });
+    }
+  }
+
+  for (const [file, source] of Object.entries(input.addonFieldSources)) {
+    for (const field of FORBIDDEN_ADDON_FIELD_NAMES) {
+      if (!declaresField(source, field)) continue;
+      problems.push({
+        mode: "addon-preselection",
+        file,
+        subject: field,
+        reason:
+          "is declared on an add-on shape: CRD Art. 22 is discharged by absence, so the field may not exist at all (spec 005 §8, AC-19)",
+      });
+    }
+  }
+
+  for (const row of input.addonCountryPrices) {
+    if (typeof row.vatRateBp === "number") continue;
+    problems.push({
+      mode: "addon-preselection",
+      file: DATA_FILE,
+      subject: key([row.addonKey, row.countryIso2]),
+      reason:
+        "carries no `vatRateBp`: every add-on is priced with its own VAT rate (spec 002 §14 A1 (a), spec 005 §13 Q3, AC-19)",
+    });
+  }
+
+  return problems;
+}
+
 /** Every check, in reporting order. */
 export function checkCatalogue(input: CatalogueCheckInput): Problem[] {
   return [
@@ -1003,6 +1123,7 @@ export function checkCatalogue(input: CatalogueCheckInput): Problem[] {
     ...checkLabelKeys(input),
     ...checkFxSnapshot(input),
     ...checkProjections(input),
+    ...checkAddonPreselection(input),
   ];
 }
 
