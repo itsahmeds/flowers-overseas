@@ -1,4 +1,32 @@
 {
+  "//": [
+    "Lighthouse CI budgets (plan/01 §7, spec 004 AC-24). JSON has no comments, so this key is the",
+    "note; `@lhci/cli` reads `.ci` and ignores everything beside it.",
+    "`resource-summary:script:size` is **transfer** size, i.e. the bytes on the wire after content",
+    "encoding. Vercel serves Brotli, so 122 880 here means 120 KB Brotli — which is what spec 004",
+    "§13 Q13 restated the plan/01 §7 budget as (founder decision, 2026-09-08, option (a)), and what",
+    "`pnpm budget:client-js` now compares against. Before that restatement this number was read as",
+    "gzip in the repository and as Brotli by Lighthouse, and the same build was 'over' or 'under'",
+    "depending on the reader.",
+    "Reconciled against this PR's own preview run (`/review 26` item 5), because 'transfer size'",
+    "and 'our JavaScript' are not the same set. Lighthouse measured `/` at 141 769 B; a browser",
+    "fetching the same preview downloads 116 393 B of our chunks (Brotli, every `.js` the page",
+    "requests). The 25 376 B difference is the platform's `vercel.live` feedback script, which is",
+    "injected into protected previews, is absent from production and is not in our build output.",
+    "So the encoding matches — Lighthouse's number and a Brotli sum of our chunks agree to within",
+    "the third-party script — and the assertion is comparable to 122 880 only on a URL with no",
+    "platform script, i.e. production. On a locale document `vercel.live` costs far more (the",
+    "same run read 249 766 B for `/en` against 200 900 B of our chunks at the time, ~48 KB of it",
+    "platform script), which is why `lighthouse` stays `continue-on-error` here: TASK-056 owns",
+    "both the enforcement flip and the decision of where to measure it (production URLs, or a",
+    "first-party-only budget) so that the number it blocks on is the number this repository can",
+    "change.",
+    "`categories:seo` is collected but deliberately **not** asserted: every page in Phase 0 is",
+    "`noindex` (ADR-0007, spec 001 §6), so the SEO category would score the robots directive rather",
+    "than the page, and nobody should be able to make a number green by indexing early. Spec 007",
+    "asserts it when there is an indexable set. AC-24 (TASK-056) owns the enforcement flip and the",
+    "five-URL set; TASK-046 owns these numbers being achievable."
+  ],
   "ci": {
     "collect": {
       "numberOfRuns": 3,
@@ -22,14 +50,36 @@
     },
     "assert": {
       "assertions": {
-        "categories:performance": ["error", { "minScore": 0.95 }],
-        "largest-contentful-paint": ["error", { "maxNumericValue": 2000 }],
-        "cumulative-layout-shift": ["error", { "maxNumericValue": 0.05 }],
+        "categories:performance": [
+          "error",
+          {
+            "minScore": 0.95
+          }
+        ],
+        "largest-contentful-paint": [
+          "error",
+          {
+            "maxNumericValue": 2000
+          }
+        ],
+        "cumulative-layout-shift": [
+          "error",
+          {
+            "maxNumericValue": 0.05
+          }
+        ],
         "resource-summary:script:size": [
           "error",
-          { "maxNumericValue": 122880 }
+          {
+            "maxNumericValue": 122880
+          }
         ],
-        "resource-summary:image:size": ["error", { "maxNumericValue": 204800 }]
+        "resource-summary:image:size": [
+          "error",
+          {
+            "maxNumericValue": 204800
+          }
+        ]
       }
     },
     "upload": {

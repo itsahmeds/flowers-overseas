@@ -30,6 +30,8 @@
  */
 import { type LocaleCode, launchLocales } from "../../config/locales.ts";
 
+import { LANGUAGE_RANGE_PATTERN, type LanguagePreference } from "./hints.ts";
+
 import { z } from "zod";
 
 /**
@@ -159,7 +161,7 @@ export const AcceptLanguageSchema = z.array(
       tag: z
         .string()
         .regex(
-          /^[A-Za-z]{1,8}(?:-[A-Za-z0-9]{1,8})*$/,
+          LANGUAGE_RANGE_PATTERN,
           "a language range is alphanumeric subtags separated by hyphens (RFC 7231 §5.3.5)",
         ),
       quality: z.number().min(0).max(1),
@@ -167,5 +169,13 @@ export const AcceptLanguageSchema = z.array(
     .strict(),
 );
 
-/** One entry of a parsed `Accept-Language` header or of `navigator.languages`. */
-export type LanguagePreference = z.infer<typeof AcceptLanguageSchema>[number];
+/**
+ * One entry of a parsed `Accept-Language` header or of `navigator.languages`.
+ *
+ * Declared in `./hints.ts` and re-exported here, which is the opposite of the usual direction and
+ * deliberate: `hints.ts` is reachable from a Client Component and may import no validator, so the
+ * shape and the two rules over it live there and this file builds the schema *from* them
+ * (TASK-046, spec 004 §13 Q13). `tests/unit/i18n-hints-zod-free.test.ts` asserts the schema and
+ * the pure predicates agree, and that no import path from the island reaches zod.
+ */
+export type { LanguagePreference };

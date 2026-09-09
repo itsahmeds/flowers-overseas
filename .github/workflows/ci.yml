@@ -414,27 +414,47 @@ jobs:
       - name: next build
         id: next
         run: pnpm build 2>&1 | tee build.log
-      # spec 003 AC-27 / T-27 (TASK-043): the client-JS and client-message-payload budgets of
-      # `plan/01` §7 and spec 003 §6, measured from the prerendered documents this build just
-      # wrote. `continue-on-error` is on the **step**, not the job, and for one recorded reason:
-      # Next 16.3.4's own client runtime is 130.1 KB gzipped, above the 120 KB budget, on a page
-      # with no application JavaScript at all (spec 003 §14 A12). Whether the budget or the
-      # framework moves is a founder decision; until it is taken, the number belongs in every
-      # step summary and in nobody's merge gate. Deleting the one line below is the whole flip.
-      - name: Measure the client-JS budgets (AC-27 / T-27)
+      # spec 003 AC-27 / T-27, restated by spec 004 §13 Q13 (TASK-046): the client-JS and
+      # client-message-payload budgets, measured from the prerendered documents this build just
+      # wrote. Three things the step now reports, in `budget.log`:
+      #
+      #  - per-URL script transfer as **Brotli**, against 122 880 bytes. That is the founder's
+      #    2026-09-08 restatement of `plan/01` §7 (option (a)): the same number against the
+      #    encoding Vercel serves and Lighthouse measures, instead of gzip, which made the same
+      #    build "over" or "under" depending on the reader.
+      #  - the serialised client message payload per locale, against 4 KB gzipped (unchanged).
+      #  - **no zod and no browser Sentry SDK in any measured route's client bundle** (spec 004
+      #    AC-25), asserted from the chunks the documents reference *and* from the route's
+      #    `next/dynamic` chunks — the manifest `/review 26` found the script ignoring, which is
+      #    where zod actually was.
+      #
+      # `continue-on-error` is on the **step**, not the job, and one clause of it is still a
+      # founder decision: with zod off the initial *and* the lazy chunks, a browser fetches
+      # 116 393 B Brotli on `/` (within, 6 487 B spare) and 129 638 B on `/en` and `/de`
+      # (6 758 B, 5.5% over), because `/`'s total is already the framework floor and a locale
+      # document adds `NextIntlClientProvider` at 10 705 B plus the banner island at 2 173 B.
+      # Spec 004 §13 Q13 option (b) is the recorded fallback and TASK-046 escalated it rather
+      # than loosening the number.
+      # TASK-056 owns the flip to blocking; deleting the one line below is the whole flip.
+      - name: Measure the client-JS budgets (AC-27 / T-27, AC-25)
         id: budget
         continue-on-error: true
         run: pnpm budget:client-js 2>&1 | tee budget.log
-      - name: Summarise the client-JS budgets (AC-27 / T-27)
+      - name: Summarise the client-JS budgets (AC-27 / T-27, AC-25)
         if: always()
         env:
           BUDGET_OUTCOME: ${{ steps.budget.outcome }}
         run: |
           set -uo pipefail
           {
-            echo "### client-JS budgets (spec 003 AC-27 / T-27)"
+            echo "### client-JS budgets (spec 003 AC-27 / T-27, spec 004 AC-25)"
             echo ""
-            echo "\`pnpm budget:client-js\`: $BUDGET_OUTCOME (informational — spec 003 §14 A12)."
+            echo "\`pnpm budget:client-js\`: $BUDGET_OUTCOME (informational until TASK-056)."
+            echo ""
+            echo "Script transfer is measured as **Brotli** against 122 880 B — \`plan/01\` §7 as"
+            echo "spec 004 §13 Q13 restated it (founder decision, option (a)). The gzip number is"
+            echo "printed beside it because every older note in this repository quotes that one."
+            echo "The run also asserts that no measured route ships \`zod\` or \`@sentry/\`."
             echo ""
             if [ -f budget.log ]; then
               sed -n '/^| URL /,/^$/p;/^| locale /,/^$/p' budget.log

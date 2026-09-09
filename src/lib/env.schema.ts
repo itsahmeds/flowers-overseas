@@ -129,6 +129,19 @@ export const serverEnvSchema = z.object({
     emptyToUndefined,
     z.enum(["true", "false"]).optional(),
   ),
+  /**
+   * Send the Content-Security-Policy as `Content-Security-Policy-Report-Only` instead of
+   * enforcing it (spec 004 §5.2, AC-23, ADR-0016; TASK-046).
+   *
+   * **Absent means `true`**, so report-only is what a forgotten variable gets: the policy is
+   * collected as evidence at `/api/csp-report` first and enforced once the reports are empty. Only
+   * the exact string `"false"` enforces, so a typo cannot half-enable enforcement, and the flip is
+   * one env-store edit per environment rather than a deploy.
+   */
+  CSP_REPORT_ONLY: z.preprocess(
+    emptyToUndefined,
+    z.enum(["true", "false"]).optional(),
+  ),
 });
 
 export type ClientEnv = z.infer<typeof clientEnvSchema>;
@@ -184,6 +197,21 @@ export function deploymentEnvironment(
 
 /** The key that switches the pseudo-locales on, and its only enabling value. */
 export const PSEUDO_LOCALES_KEY = "ENABLE_PSEUDO_LOCALES" as const;
+
+/** The key that decides whether the CSP is enforced or only reported (ADR-0016, TASK-046). */
+export const CSP_REPORT_ONLY_KEY = "CSP_REPORT_ONLY" as const;
+
+/**
+ * Whether the CSP is sent as `Content-Security-Policy-Report-Only` (spec 004 AC-23, ADR-0016).
+ *
+ * Pure: the caller passes the environment. **Only the exact string `"false"` enforces**; anything
+ * else — absent, blank, `"true"`, a typo — reports. That asymmetry is deliberate: a
+ * misconfiguration must not silently start blocking scripts on a live shop, and a Report-Only
+ * header that should have been enforcing is visible in the `/api/csp-report` evidence.
+ */
+export function cspReportOnly(source: EnvSource): boolean {
+  return source[CSP_REPORT_ONLY_KEY] !== "false";
+}
 
 /**
  * Whether the `en-XA` / `ar-XB` pseudo-locales are part of the locale registry

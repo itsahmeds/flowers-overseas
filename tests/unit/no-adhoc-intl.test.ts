@@ -281,7 +281,15 @@ describe("fo/no-adhoc-intl allowlist and repository state", () => {
     expect(isFormatterModule("/repo/src/lib/format.ts")).toBe(false);
   });
 
-  it("passes over the real src/ tree", async () => {
+  /**
+   * Vitest's default 5 s timeout is not enough for this one: it is the only test in the suite that
+   * runs ESLint over **every** file under `src/`, so its cost grows with the tree, and a shared CI
+   * runner is several times slower than a laptop. TASK-046 added five files under `src/` and pushed
+   * it over the edge on the runner while it finished in 1.5 s locally — a timeout, never an
+   * assertion. The explicit budget is generous on purpose: this test failing must mean the rule
+   * found an offender, not that the repository grew.
+   */
+  it("passes over the real src/ tree", { timeout: 60_000 }, async () => {
     const { ESLint } = await import("eslint");
     const eslint = new ESLint({
       cwd: repoRoot,
