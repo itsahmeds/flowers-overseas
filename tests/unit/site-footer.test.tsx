@@ -166,9 +166,9 @@ describe("AC-14: an unpublished target is text, never a link", () => {
 });
 
 describe("AC-9: the company block tells the truth about a company that does not exist", () => {
-  it("prints the trading name, the relay sentence and the contact channel", () => {
+  it("prints the trading name, the first-person description and the contact channel", () => {
     expect(phase0).toContain("Flowers Overseas");
-    expect(phase0).toContain("International flower relay");
+    expect(phase0).toContain("We send flowers across Europe");
     expect(phase0).toContain("Help &amp; WhatsApp");
     expect(phase0).toContain('href="tel:+12135925150"');
     expect(phase0).toContain("+1 (213) 592-5150");

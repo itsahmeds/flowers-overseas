@@ -111,7 +111,7 @@
     "cookieSettings": "Cookie settings"
   },
   "company": {
-    "description": "International flower relay. You order, a vetted local florist makes and delivers.",
+    "description": "We send flowers across Europe. You order from us; our florist in the recipient's town makes the bouquet and hands it over in person.",
     "operatedBy": "Operated by {legalName}, {address}, {registrationNumber}.",
     "support": {
       "label": "Help & WhatsApp",

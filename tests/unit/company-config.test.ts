@@ -77,7 +77,7 @@ describe("src/config/company.ts", () => {
     expect(COMPANY.contact.labelKey).toBe("company.support.label");
     expect(COMPANY.contact.hoursKey).toBe("company.support.hours");
     expect(messages.company.description).toBe(
-      "International flower relay. You order, a vetted local florist makes and delivers.",
+      "We send flowers across Europe. You order from us; our florist in the recipient's town makes the bouquet and hands it over in person.",
     );
     expect(canvas).toContain(messages.company.description);
     expect(canvas).toContain(messages.company.support.hours);
