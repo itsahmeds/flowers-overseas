@@ -26,6 +26,11 @@ test-results/
 # vercel
 .vercel/
 
+# imagery intake: originals live in the founder's store of record and (for the generation and
+# review loop) here, and are never committed — a 2000 px original is permanent git history
+# (spec 006 §2.4, §13 Q6; content/imagery/README.md)
+.local/
+
 # misc
 .DS_Store
 *.pem

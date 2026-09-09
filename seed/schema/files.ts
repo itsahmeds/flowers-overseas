@@ -320,6 +320,12 @@ export const SEED_DATA_FILES = [
     origin: "authored",
     schema: OccasionCountryFileSchema,
   },
+  {
+    path: "media.json",
+    entity: "media_asset",
+    origin: "authored",
+    schema: MediaFileSchema,
+  },
   ...SEED_PRICE_DATA_FILES,
 ] as const;
 
