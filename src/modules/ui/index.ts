@@ -19,6 +19,14 @@
  *    exported, because the gate that keeps the palette accessible is a manifest plus a test.
  *  - the font objects' internals. `fontVariables` is the one string a document layout needs.
  *
+ * **`ConsentGallery` is deliberately not exported**, and the reason is a measurement rather than a
+ * taste: it is a `"use client"` component that imports both consent views statically, and a
+ * client module reachable from this barrel is bundled into the document JavaScript of **every
+ * route that imports the barrel at all** — including `/`, which renders no consent sheet. Measured
+ * on this build: +1 990 B Brotli on `/` and on each locale document, against the 1 434 B §14 A1
+ * leaves. `/dev/components` therefore imports it by path, as the only file allowed to
+ * (`src/app/(dev)/dev/components/page.tsx`), and the public barrel stays the public surface.
+ *
  * Also deliberately absent, by spec §3 "Non-goals" (`/review 27` required change 2): **no form
  * layer** — "no input, select, textarea or form component ships here beyond the consent controls;
  * the design system's form layer is written against the checkout's real fields rather than
@@ -27,8 +35,8 @@
  * direction-carrying icons `MIRRORED_IN_RTL` names, since AC-5's mirroring contract needs both of
  * them; a component that needs another icon adds it with its consumer.
  *
- * Later 004 tasks extend this list: `SiteHeader`/`TrustStrip` (TASK-048, TASK-053), the consent
- * banner (TASK-051) and `Media` + the R2 loader seam (TASK-053). `SiteFooter` (TASK-049) is here:
+ * Later 004 tasks extend this list: `SiteHeader`/`TrustStrip` (TASK-048, TASK-053) and `Media` +
+ * the R2 loader seam (TASK-053). The consent sheet (TASK-051) is here. `SiteFooter` (TASK-049) is here:
  * it exports the component, the `FooterView` projection its five §5.3 states are reached through,
  * and the two constants the consent island and the reminder stub share with it.
  */
@@ -134,6 +142,36 @@ export type {
   FooterView,
   FooterViewOptions,
 } from "./layout/footerView";
+
+// The consent sheet (AC-17, AC-19, AC-20; TASK-051). `ConsentBanner` is a synchronous Server
+// Component; the island and the settings panel are two `next/dynamic({ ssr: false })` chunks
+// behind it, and every string they render is resolved here and passed as props, so no message
+// catalogue, no cookie register and no zod reaches the browser (§13 Q13 option (b), §14 A1).
+// `consentView` and the cookie helpers are exported because the projection and the `fo_consent`
+// value are what the tests and spec 007's cookie policy read.
+export { ConsentBanner } from "./consent/ConsentBanner";
+export {
+  CONSENT_ENDPOINT,
+  consentView,
+  lifetimeLabel,
+} from "./consent/consentView";
+export type { ConsentTranslate } from "./consent/consentView";
+export {
+  choicesOf,
+  clearConsentCookie,
+  parseConsentCookie,
+  rawCookieValue,
+  serialiseConsentCookie,
+} from "./consent/consentCookie";
+export type { ConsentChoices, StoredConsent } from "./consent/consentCookie";
+export type {
+  ConsentCategoryKey,
+  ConsentCategoryView,
+  ConsentConfig,
+  ConsentCookieView,
+  ConsentStrings,
+  ConsentView,
+} from "./consent/consentTypes";
 
 // The trust slot with its Phase-0 empty state (§5.3, §8): renders nothing and reserves no box.
 export { TrustMarks } from "./trust/TrustMarks";

@@ -29,7 +29,38 @@
  * subject rather than the noise: `tests/e2e/banner.spec.ts` (the appearance matrix, CLS delta and
  * cookie) and `tests/a11y/banner.spec.ts` (axe with it forced on screen).
  */
-import { expect, test } from "@playwright/test";
+import { type BrowserContext, expect, test } from "@playwright/test";
+
+/**
+ * A recorded consent decision, seeded before the first navigation (TASK-051).
+ *
+ * The consent sheet is a client island that appears **after hydration** when no decision is
+ * stored, so a full-page baseline taken by a fast machine has no sheet in it and one taken by a
+ * slow machine does. That is the same class of non-determinism the empty `navigator.languages`
+ * above removes for the suggestion banner: the committed PNG would record how quickly a chunk
+ * arrived rather than what the template looks like. With a refusal already in the jar the island
+ * renders nothing at all, and the sheet has its own baselines in `./consent.spec.ts`.
+ */
+async function recordConsentRefusal(
+  context: BrowserContext,
+  baseURL: string | undefined,
+): Promise<void> {
+  await context.addCookies([
+    {
+      name: "fo_consent",
+      value: encodeURIComponent(
+        JSON.stringify({
+          v: 1,
+          a: false,
+          m: false,
+          ts: "2026-09-09T00:00:00.000Z",
+          cid: "6f1e6e6a-1d3a-4b5e-9c2f-8f0a1b2c3d4e",
+        }),
+      ),
+      url: baseURL ?? "http://localhost:3000",
+    },
+  ]);
+}
 
 /** `{ path, baseline file }` — the baseline name is stable so a URL rename is a visible diff. */
 const SCREENSHOTS = [
@@ -39,7 +70,12 @@ const SCREENSHOTS = [
 ] as const;
 
 for (const { path, name } of SCREENSHOTS) {
-  test(`${path} matches the committed baseline`, async ({ page }) => {
+  test(`${path} matches the committed baseline`, async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await recordConsentRefusal(context, baseURL);
     // Before any script of ours runs, and therefore before the island mounts. See the header.
     await page.addInitScript(() => {
       Object.defineProperty(navigator, "languages", {
@@ -51,8 +87,9 @@ for (const { path, name } of SCREENSHOTS) {
     const response = await page.goto(path);
     expect(response?.status()).toBe(200);
     await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
-    // The template and nothing situational: no suggestion overlay is in the frame.
+    // The template and nothing situational: neither overlay is in the frame.
     await expect(page.locator('[data-fo-banner="shown"]')).toHaveCount(0);
+    await expect(page.locator("[data-fo-consent]")).toHaveCount(0);
 
     await expect(page).toHaveScreenshot(name, { fullPage: true });
   });

@@ -82,9 +82,46 @@ cookie, so a visitor who accepted keeps `_ga` until it lapses. Move `ropa.md` ro
 *declared but inactive* with the date, and say so in the privacy policy: a processor listed but
 inactive is honest, a processor active but unlisted is not.
 
+## 4a. The sheet a visitor actually sees (TASK-051)
+
+`src/modules/ui/consent/`, mounted once per **localised** document by `src/app/[locale]/layout.tsx`
+and deliberately absent from `/` (the chooser has no locale and stays at zero application
+JavaScript). Everything it renders is resolved on the server and passed as props, so the islands
+carry no message catalogue and no zod.
+
+| What | Where |
+|---|---|
+| Copy | `consent.*` in `messages/*.json`; every cookie's purpose is the register's `purposeKey` |
+| Categories and lifetimes | projected from `src/config/cookies.ts` by `consentView()` — a row added there appears in the panel with no component edit |
+| Decision cookie | `fo_consent`, first-party, `Path=/`, `SameSite=Lax`, `Secure` off `localhost`, JSON `{v,a,m,ts,cid}`, **12 months** if anything was accepted, **6 months** for a refusal |
+| Record | `POST /api/consent`, sent with `credentials: "omit"` and `referrerPolicy: "no-referrer"` — no cookie, no page URL |
+| Consent Mode | one `gtag('consent','update',…)` per decision: `analytics_storage` from the analytics answer, the three ad signals from the marketing one |
+| Withdrawal | the footer's `data-fo-consent-reopen` control, on every page; a delegated listener in the island re-opens the sheet with the recorded answer pre-filled |
+
+Operational notes:
+
+- **`Esc` records nothing.** It closes the settings panel if one is open and the sheet otherwise,
+  and the sheet returns on the next page view. Dismissal is not consent.
+- **A forged, corrupt or stale `fo_consent` is deleted and the sheet asks again.** Bumping
+  `CONSENT_POLICY_VERSION` in `src/lib/consent.ts` has the same effect for every visitor at once:
+  that is the lever to pull when the categories or the disclosure text change.
+- **Nothing is pre-ticked and no control is disabled.** The essential group is stated in prose with
+  its reason and has no checkbox at all, because a locked control that looks like a control is a
+  dark pattern (§8, AC-20).
+- **Two overlays share the bottom of the viewport.** The consent sheet paints above the language
+  suggestion (`--layer-overlay` over `--layer-banner`), which is the specified order; while a
+  decision is pending it therefore covers the suggestion banner. Any test that drives the
+  suggestion banner or screenshots the colophon seeds a recorded decision first — see
+  `tests/e2e/banner.spec.ts` — and TASK-055 owns the final coordination of the two (AC-13).
+- **Budget.** The sheet costs **2 307 B Brotli** on a locale document, in one `next/dynamic` chunk
+  fetched after hydration (the settings panel is a second, nested chunk of ~907 B fetched only when
+  it is opened). That puts `/en` and `/de` at **131 991 B against the 131 072 B of spec 004 §14
+  A1** — 919 B over, with the whole overage predating the sheet in the framework floor. §14 A1's
+  named remedy is Q13 option (b): drop `NextIntlClientProvider` from the locale document (−10 705 B)
+  by passing the suggestion banner's strings as props too. That decision is TASK-056's.
+
 ## 5. What is *not* here
 
 - The event plan, the `consent_state` dimension and the server-side `purchase` event — spec 023.
-- The banner and settings UI, and the `gtag('consent','update')` call itself — TASK-051.
 - The durable consent record: Phase 0 writes one log line per decision (`logConsentSink`), spec 002
   adds the `consent_log` table behind the same interface (`ropa.md` row 3).

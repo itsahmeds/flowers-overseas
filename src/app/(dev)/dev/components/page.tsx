@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import type { ReactElement, ReactNode } from "react";
 
+import { useTranslations } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 
 import { devUiEnabled } from "@/lib/env.schema";
@@ -9,6 +10,8 @@ import { documentFallbackLocale, localePath } from "@/modules/i18n";
 import {
   Button,
   BUTTON_VARIANTS,
+  consentView,
+  type ConsentTranslate,
   Chip,
   Container,
   Cluster,
@@ -34,6 +37,13 @@ import {
   VisuallyHidden,
 } from "@/modules/ui";
 
+// By path, and only here: `ConsentGallery` is a Client Component that imports both consent views
+// statically, so exporting it from `@/modules/ui` would put those views and `Button` into the
+// document JavaScript of every route that touches the barrel — `/` included, which renders no
+// consent sheet (+1 990 B Brotli, measured, against §14 A1's 1 434 B of headroom). The gallery is
+// the one route that is neither public nor budgeted, so it is the one place this import belongs.
+import { ConsentGallery } from "@/modules/ui/consent/ConsentGallery";
+
 import {
   BODY_SAMPLES,
   BUTTON_BUSY_LABEL,
@@ -42,6 +52,7 @@ import {
   CHIP_LINK_LABEL,
   CHIP_SAMPLES,
   COLOUR_RAMPS,
+  CONSENT_STATES,
   FOOTER_REGISTERED_COMPANY,
   FOOTER_STATES,
   GALLERY_INTRO,
@@ -186,6 +197,12 @@ export default function DevComponentsPage(): ReactElement {
   // than the header growing a "no locale" branch it would never take in production.
   const galleryLocale = documentFallbackLocale().code;
   setRequestLocale(galleryLocale);
+  const translate = useTranslations();
+  // The same narrowing `SiteFooter` and `ConsentBanner` make: register-supplied keys are strings,
+  // the translator's parameter is the catalogue's key union, and `pnpm i18n:check` proves each
+  // one resolves.
+  const narrowedTranslate: ConsentTranslate = (key, values) =>
+    translate(key as Parameters<typeof translate>[0], values);
 
   return (
     <>
@@ -495,6 +512,15 @@ export default function DevComponentsPage(): ReactElement {
         </Section>
 
         <Section title={SECTIONS[11]}>
+          {/* Inert by construction: `ConsentGallery` passes no-op handlers, so walking this page
+              writes no cookie, sends no request and calls no `gtag` (TASK-051). */}
+          <ConsentGallery
+            states={CONSENT_STATES}
+            view={consentView(narrowedTranslate)}
+          />
+        </Section>
+
+        <Section title={SECTIONS[12]}>
           {FOOTER_STATES.map((state) => (
             <Stack key={state.id} gap="sm">
               <Text size="xs" tone="subtle">
@@ -510,7 +536,7 @@ export default function DevComponentsPage(): ReactElement {
           ))}
         </Section>
 
-        <Section title={SECTIONS[12]}>
+        <Section title={SECTIONS[13]}>
           <Stack gap="xs">
             {CONTRAST_PAIRS.map((pair) => (
               <Row

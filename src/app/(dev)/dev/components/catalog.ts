@@ -33,6 +33,9 @@ export const SECTIONS = [
   "Chips",
   "Photography placeholders",
   "Site header",
+  // TASK-051: the consent sheet's four banner states and its three settings states (§5.3), so
+  // the visual and axe suites reach `settings-open` and `saved` without driving the island.
+  "Consent sheet",
   // TASK-049: the five `SiteFooter` states of spec 004 §5.3, so the visual and axe suites reach
   // `links-populated` and `company-registered` years before 007 publishes a page or the OÜ exists.
   "Site footer",
@@ -291,6 +294,39 @@ export const FOOTER_STATES = [
     id: "trust-marks-empty",
     caption:
       "trust-marks-empty (Phase 0) · TrustMarks renders nothing and reserves no box",
+  },
+] as const;
+
+/**
+ * The consent sheet's states (§5.3, TASK-051). Five rendered blocks cover all seven named states:
+ * the banner's `hidden`/`shown`/`settings-open`/`saved` and the panel's `default`/`dirty`/`saved`,
+ * two of which are the same block seen from either component's side.
+ */
+export const CONSENT_STATES = [
+  {
+    id: "hidden" as const,
+    caption:
+      "banner hidden · a decision is recorded, so the island renders nothing at all (no box, no reserved space)",
+  },
+  {
+    id: "shown" as const,
+    caption:
+      "banner shown · reject / choose / accept at identical width, size, weight and contrast (AC-20)",
+  },
+  {
+    id: "settings-default" as const,
+    caption:
+      "banner settings-open · settings default · every non-essential category off, essential locked with its reason",
+  },
+  {
+    id: "settings-dirty" as const,
+    caption:
+      "settings dirty · analytics on, marketing off — the choice Save choices would record",
+  },
+  {
+    id: "saved" as const,
+    caption:
+      "banner saved · settings saved · the confirmation, announced politely and dismissible",
   },
 ] as const;
 

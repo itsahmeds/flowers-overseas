@@ -39,6 +39,9 @@ describe("the shell catalogue", () => {
       // with the config registries that name their keys (TASK-047); the components that render
       // them are TASK-048/TASK-049.
       "company",
+      // `consent` is the sheet's copy (TASK-051): server-resolved and handed to the islands as
+      // props, so it is deliberately absent from `namespacesFor("localeDocument")` below.
+      "consent",
       "destinations",
       "errors",
       "footer",

@@ -93,18 +93,38 @@ test.describe("/dev/components", () => {
    * The **site header** is on this page too and contributes no control at all, since spec §14 A4
    * renders its search band as the text the artboards draw rather than as an input and a submit
    * button (TASK-048) — asserted here rather than assumed.
+   * The **consent sheet** is the other exception §3 writes down in the same sentence — "no input,
+   * select, textarea or form component ships here **beyond the consent controls**" — so its two
+   * category checkboxes are counted separately below rather than waved through (TASK-051).
    */
   test("renders no form control and no price (spec §3, §8)", async ({
     page,
   }) => {
     await page.goto(GALLERY);
-    const controlsOutsideTheFooter = await page
+    const controlsElsewhere = await page
       .locator("input, select, textarea, label")
       .evaluateAll(
         (nodes) =>
-          nodes.filter((node) => node.closest("footer") === null).length,
+          nodes.filter(
+            (node) =>
+              node.closest("footer") === null &&
+              node.closest("[data-fo-consent-panel]") === null,
+          ).length,
       );
-    expect(controlsOutsideTheFooter).toBe(0);
+    expect(controlsElsewhere).toBe(0);
+
+    // Exactly the consent controls: two labelled checkboxes per rendered settings panel, and
+    // nothing else — no select, no textarea, no free-text field.
+    const panels = await page.locator("[data-fo-consent-panel]").count();
+    expect(panels).toBeGreaterThan(0);
+    await expect(
+      page.locator('[data-fo-consent-panel] input[type="checkbox"]'),
+    ).toHaveCount(panels * 2);
+    await expect(
+      page.locator(
+        "[data-fo-consent-panel] input:not([type=checkbox]), [data-fo-consent-panel] select, [data-fo-consent-panel] textarea",
+      ),
+    ).toHaveCount(0);
     // Two elements since §14 A4's addendum: the utility strip that scrolls with the page, and
     // the sticky banner holding the masthead and the category row.
     await expect(page.locator("[data-fo-utility]")).toHaveCount(1);
