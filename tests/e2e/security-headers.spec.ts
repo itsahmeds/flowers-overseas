@@ -50,8 +50,10 @@ test.describe("security headers (AC-23)", () => {
       ]) {
         expect(policy, directive).toContain(directive);
       }
-      // No hash yet: TASK-050 adds the consent bootstrap and its hash in one PR.
-      expect(policy).not.toContain("sha256-");
+      // Exactly one inline-script hash: the ≤1 KB Consent-Mode bootstrap TASK-050 ships. Its
+      // equality with the bytes the browser received is asserted in `tests/e2e/consent.spec.ts`,
+      // which recomputes the digest from the served document.
+      expect(policy?.split("sha256-")).toHaveLength(2);
       expect(policy).not.toContain("'unsafe-eval'");
       expect(headers["reporting-endpoints"]).toContain(
         'csp-endpoint="/api/csp-report"',

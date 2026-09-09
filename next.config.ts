@@ -2,9 +2,14 @@ import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
 import createNextIntlPlugin from "next-intl/plugin";
 
+import { consentBootstrapHash } from "./src/lib/consent-bootstrap";
 import { securityHeaderRules } from "./src/lib/csp";
 import { assertEnv } from "./src/lib/env.assert";
-import { cspReportOnly, deploymentEnvironment } from "./src/lib/env.schema";
+import {
+  cspReportOnly,
+  deploymentEnvironment,
+  ga4MeasurementId,
+} from "./src/lib/env.schema";
 import { noindexHeaderRules } from "./src/lib/robots-headers";
 
 // Fail the build before compiling anything when a variable is missing or malformed. The error
@@ -26,14 +31,21 @@ const environment = deploymentEnvironment(process.env);
 //
 // The CSP is `Content-Security-Policy-Report-Only` unless `CSP_REPORT_ONLY=false`; the policy
 // string is identical either way, so the evidence collected at `/api/csp-report` is evidence
-// about the policy that will be enforced. `inlineHashes` is empty because the app has no inline
-// script yet: TASK-050 adds the Consent-Mode bootstrap's `'sha256-'` hash here in the same PR as
-// the script it authorises.
+// about the policy that will be enforced.
+//
+// `inlineHashes` carries exactly one value (TASK-050): the sha256 of the ≤1 KB Consent-Mode
+// default-denied bootstrap in `src/lib/consent-bootstrap.ts`, computed here at build time from
+// the same constant `<AnalyticsScripts />` emits into the document. It lands in the same PR as
+// the script it authorises, because a bootstrap the policy would report is a false negative in
+// the whole Report-Only evidence period. `ga4` adds the tag origins only when a measurement id is
+// configured — unset in CI, locally and on previews, so no analytics origin widens the policy of
+// an environment that loads no tag.
 const headerRules = [
   ...noindexHeaderRules(environment),
   ...securityHeaderRules(environment, {
     reportOnly: cspReportOnly(process.env),
-    inlineHashes: [],
+    inlineHashes: [consentBootstrapHash()],
+    ga4: ga4MeasurementId(process.env) !== undefined,
   }),
 ];
 

@@ -53,6 +53,28 @@ export const CSP_REPORT_GROUP = "csp-endpoint";
  */
 export const VERCEL_LIVE_ORIGIN = "https://vercel.live";
 
+/**
+ * Where `gtag.js` comes from when `NEXT_PUBLIC_GA4_MEASUREMENT_ID` is set (spec 004 §5.2,
+ * AC-21; TASK-050). Named in `script-src` and `connect-src`, and **only** when an id is
+ * configured: with no id there is no tag, so an allowance for it would widen the policy of every
+ * environment that does not use it — including production today.
+ *
+ * The trade-off this origin carries is ADR-0016's accepted one, and it is the sharpest edge of
+ * the allowlist approach: `googletagmanager.com` serves arbitrary container code, so an XSS that
+ * can inject a `<script src>` to it is not blocked on a cached page. That is why the origin is
+ * gated on configuration rather than allowed pre-emptively.
+ */
+export const GOOGLE_TAG_MANAGER_ORIGIN = "https://www.googletagmanager.com";
+
+/**
+ * Where GA4 sends its measurement pings (`connect-src` only). Wildcarded because the endpoint is
+ * regionalised (`region1.google-analytics.com` in the EU) and the region is chosen by the tag,
+ * not by us. It is deliberately **not** in `img-src`: gtag prefers `fetch`/`sendBeacon`, and if
+ * the Report-Only evidence ever shows an image ping being reported, adding `img-src` is a
+ * reviewed diff rather than a pre-emptive allowance.
+ */
+export const GOOGLE_ANALYTICS_ORIGIN = "https://*.google-analytics.com";
+
 export const CSP_HEADER = "Content-Security-Policy";
 export const CSP_REPORT_ONLY_HEADER = "Content-Security-Policy-Report-Only";
 export const REPORTING_ENDPOINTS_HEADER = "Reporting-Endpoints";
@@ -61,13 +83,24 @@ export interface CspOptions {
   /**
    * `'sha256-…'` values for inline `<script>` blocks, base64 as the CSP grammar wants them and
    * **without** the surrounding quotes, which are added here. Empty in this spec: the app has no
-   * inline script yet. TASK-050 adds exactly one — the Consent-Mode default block — in the same
-   * PR as the script itself, because a bootstrap the policy would report is a false negative in
-   * the Report-Only evidence.
+   * inline script yet. TASK-050 adds one — the Consent-Mode default block — in the same PR as
+   * the script itself, because a bootstrap the policy would report is a false negative in the
+   * Report-Only evidence. The application then contains **exactly one APPLICATION inline script;
+   * Next's flight blocks are unauthorised under this policy and are why the header stays
+   * Report-Only (spec 004 §14 A2)** — the enforce flip waits for a task that adds nonce
+   * propagation or accepts a hash per response, and is no longer TASK-056's.
    */
   readonly inlineHashes?: readonly string[];
   /** `false` enforces. Defaults to `true` (report only), like the env variable it comes from. */
   readonly reportOnly?: boolean;
+  /**
+   * Whether a GA4 measurement id is configured (TASK-050). `true` adds the tag origin to
+   * `script-src` and the tag plus measurement origins to `connect-src`; `false` — the Phase 0
+   * default in CI, locally, on previews and in production — leaves the policy free of any
+   * analytics origin, which is what makes AC-21's "zero `googletagmanager.com` requests"
+   * enforceable rather than merely observed.
+   */
+  readonly ga4?: boolean;
 }
 
 /**
@@ -107,15 +140,28 @@ export function cspValue(
 ): string {
   const previewFeedback = allowsPreviewFeedback(environment);
   const live = previewFeedback ? [VERCEL_LIVE_ORIGIN] : [];
+  // Present only when an id is configured (TASK-050); the build reads that from the env.
+  const tagManager = (options.ga4 ?? false) ? [GOOGLE_TAG_MANAGER_ORIGIN] : [];
+  const analytics =
+    (options.ga4 ?? false)
+      ? [GOOGLE_TAG_MANAGER_ORIGIN, GOOGLE_ANALYTICS_ORIGIN]
+      : [];
 
   const directives: readonly (readonly [string, readonly string[]])[] = [
     ["default-src", ["'self'"]],
-    // `'self'` plus one hash per inline block. No `'unsafe-inline'`, no `'unsafe-eval'`, and no
-    // Google Fonts or GA4 origin: fonts are self-hosted (spec 004 §5.1) and the GA4 origin is
-    // added by TASK-050 together with the loader that needs it.
+    // `'self'` plus one hash per inline block — in Phase 0 exactly one application inline
+    // script, the ≤1 KB Consent-Mode bootstrap of `src/lib/consent-bootstrap.ts` (TASK-050);
+    // Next's own flight blocks are unauthorised here, see `inlineHashes` above — plus the GA4
+    // tag origin when a measurement id is configured. No `'unsafe-inline'`, no `'unsafe-eval'`,
+    // and no Google Fonts origin: the fonts are self-hosted (spec 004 §5.1).
     [
       "script-src",
-      ["'self'", ...(options.inlineHashes ?? []).map(quoted), ...live],
+      [
+        "'self'",
+        ...(options.inlineHashes ?? []).map(quoted),
+        ...tagManager,
+        ...live,
+      ],
     ],
     // A documented relaxation, with the reason: React writes `style` attributes and Next inlines
     // critical CSS, so a policy without `'unsafe-inline'` would report on every page. Revisited
@@ -126,7 +172,7 @@ export function cspValue(
     ["font-src", ["'self'"]],
     // No Sentry ingest: the browser SDK is off public routes in Phase 0 and returns scoped to
     // checkout in spec 013 (`docs/architecture.md` §4).
-    ["connect-src", ["'self'", ...live]],
+    ["connect-src", ["'self'", ...analytics, ...live]],
     ["frame-src", live.length > 0 ? live : ["'none'"]],
     ["frame-ancestors", ["'none'"]],
     ["base-uri", ["'self'"]],

@@ -3,8 +3,12 @@
     "Lighthouse CI budgets (plan/01 §7, spec 004 AC-24). JSON has no comments, so this key is the",
     "note; `@lhci/cli` reads `.ci` and ignores everything beside it.",
     "`resource-summary:script:size` is **transfer** size, i.e. the bytes on the wire after content",
-    "encoding. Vercel serves Brotli, so 122 880 here means 120 KB Brotli — which is what spec 004",
-    "§13 Q13 restated the plan/01 §7 budget as (founder decision, 2026-09-08, option (a)), and what",
+    "encoding. Vercel serves Brotli, so 131 072 here means 128 KB Brotli — spec 004 §13 Q13",
+    "restated the plan/01 §7 budget as 120 KB Brotli (founder decision, 2026-09-08, option (a))",
+    "and §14 A1 corrected it to 128 KB once TASK-046 measured the locale documents at 129 638 B",
+    "with no application code left to remove; TASK-050 carried the number into this file and into",
+    "`scripts/client-js-budget.ts` so the two gates cannot drift. It is not raised a second time",
+    "(§14 A1), and what",
     "`pnpm budget:client-js` now compares against. Before that restatement this number was read as",
     "gzip in the repository and as Brotli by Lighthouse, and the same build was 'over' or 'under'",
     "depending on the reader.",
@@ -14,7 +18,7 @@
     "requests). The 25 376 B difference is the platform's `vercel.live` feedback script, which is",
     "injected into protected previews, is absent from production and is not in our build output.",
     "So the encoding matches — Lighthouse's number and a Brotli sum of our chunks agree to within",
-    "the third-party script — and the assertion is comparable to 122 880 only on a URL with no",
+    "the third-party script — and the assertion is comparable to 131 072 only on a URL with no",
     "platform script, i.e. production. On a locale document `vercel.live` costs far more (the",
     "same run read 249 766 B for `/en` against 200 900 B of our chunks at the time, ~48 KB of it",
     "platform script), which is why `lighthouse` stays `continue-on-error` here: TASK-056 owns",
@@ -71,7 +75,7 @@
         "resource-summary:script:size": [
           "error",
           {
-            "maxNumericValue": 122880
+            "maxNumericValue": 131072
           }
         ],
         "resource-summary:image:size": [

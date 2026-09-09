@@ -62,6 +62,11 @@ export const CONFIG_FILES = [
   "src/config/locales.data.ts",
   "src/config/currencies.ts",
   "src/config/address-formats.ts",
+  // The cookie register: every cookie and storage key the app sets or intends to set, with its
+  // category, lifetime and purpose message key. The settings panel, spec 007's cookie policy,
+  // `docs/compliance/cookie-register.md`'s generated table and AC-22's session check all read it
+  // — TASK-050.
+  "src/config/cookies.ts",
 ] as const;
 
 export const REQUIRED_FILES = [

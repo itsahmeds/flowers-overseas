@@ -11,6 +11,7 @@ area. `tests/unit/docs.test.ts` fails if a runbook exists but is not listed here
 | [branch-protection](branch-protection.md) | Required checks, merge method and review policy on `main`, and the verifier |
 | [payment-webhook-down](payment-webhook-down.md) | Stripe/Mollie webhooks failing or delayed |
 | [florist-declines-peak](florist-declines-peak.md) | A partner declines during a peak day |
+| [analytics-consent](analytics-consent.md) | Turning GA4 on: the consent plumbing, the RoPA-affecting env variable, the verification order, turning it off again |
 | [i18n-translations](i18n-translations.md) | Adding a message key, drafting a locale, reading the reviewed share, handing a locale to a native reviewer, what makes a locale indexable |
 | [hreflang-regression](hreflang-regression.md) | Hreflang or canonical regression found in Search Console or the auditor |
 | [sitemap-or-robots-broken](sitemap-or-robots-broken.md) | Sitemap or `robots.txt` serving the wrong thing |

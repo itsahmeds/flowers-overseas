@@ -3,13 +3,13 @@
  * TASK-043).
  *
  * `plan/01` §7 capped an indexable page at 120 KB of *gzipped* JavaScript; spec 004 §13 Q13
- * restates it, on the founder's decision of 2026-09-08 (option (a)), as **≤ 120 KB of Brotli
- * transfer** — 122 880 bytes, the same number against the encoding Vercel actually serves and
- * Lighthouse actually measures (`resource-summary:script:size` is transfer size). The gzip number
- * is still printed beside it, because it is what every older note in this repository quotes and
- * dropping it would make two measurements incomparable; only the Brotli number is compared
- * against the budget. Spec 003 §6 caps the **serialised message payload handed to the client** at
- * 4 KB gzipped, unchanged.
+ * restates it, on the founder's decision of 2026-09-08 (option (a)), and §14 A1 corrects the
+ * number to **≤ 128 KB of Brotli transfer** — 131 072 bytes, against the encoding Vercel
+ * actually serves and Lighthouse actually measures (`resource-summary:script:size` is transfer
+ * size). The gzip number is still printed beside it, because it is what every older note in
+ * this repository quotes and dropping it would make two measurements incomparable; only the
+ * Brotli number is compared against the budget. Spec 003 §6 caps the **serialised message
+ * payload handed to the client** at 4 KB gzipped, unchanged.
  *
  * Lighthouse measures the script number too, but only against a deployed preview and only as a
  * pass/fail; this script measures it from the build output, per URL, chunk by chunk, so a
@@ -83,11 +83,12 @@ import { launchLocales } from "../src/config/locales.ts";
 import { loadMessages, namespacesFor } from "../src/modules/i18n/messages.ts";
 
 /**
- * `plan/01` §7 as restated by spec 004 §13 Q13: 120 KB — 122 880 bytes — of **Brotli** script
+ * `plan/01` §7 as restated by spec 004 §13 Q13 and **corrected by spec 004 §14 A1**: 128 KB —
+ * 131 072 bytes — of **Brotli** script
  * transfer on an indexable page. The same number `lighthouserc.json` asserts as
  * `resource-summary:script:size`, now against the same encoding.
  */
-export const CLIENT_JS_BUDGET_BYTES = 120 * 1024;
+export const CLIENT_JS_BUDGET_BYTES = 128 * 1024;
 
 /** Spec 003 §6 / AC-27: the serialised client message payload, gzipped. */
 export const MESSAGES_PAYLOAD_BUDGET_BYTES = 4 * 1024;
@@ -405,7 +406,7 @@ const kb = (bytes: number): string => `${(bytes / 1024).toFixed(1)} KB`;
 
 export function formatMarkdownTable(pages: readonly PageMeasurement[]): string {
   const lines = [
-    "| URL | document JS (br) | + `next/dynamic` (br) | total (br) | total (gz) | budget 120 KB br | scripts (document + lazy) |",
+    "| URL | document JS (br) | + `next/dynamic` (br) | total (br) | total (gz) | budget 128 KB br | scripts (document + lazy) |",
     "|---|---|---|---|---|---|---|",
   ];
   for (const page of pages) {
@@ -495,7 +496,7 @@ export function main(
         .filter((page) => !page.withinBudget)
         .map(
           (page) =>
-            `${page.url} ships ${kb(page.fetchedBrotliBytes)} of Brotli-encoded JavaScript, over the 120 KB budget of plan/01 §7 as restated by spec 004 §13 Q13`,
+            `${page.url} ships ${kb(page.fetchedBrotliBytes)} of Brotli-encoded JavaScript, over the 128 KB budget of plan/01 §7 as restated by spec 004 §13 Q13 and corrected by §14 A1`,
         ),
       ...messages
         .filter((size) => !size.withinBudget)
