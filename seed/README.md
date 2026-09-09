@@ -9,7 +9,7 @@ upsert plumbing are spec 002's. Two directories and one rule.
 
 | `origin` | Files | Who edits them |
 |---|---|---|
-| `projected` | `taxonomy.json`, `categories.json`, `occasions.json`, `products.json`, `product-tiers.json`, `addons.json` (and, from TASK-074, `prices/{ISO2}.json`, `addon-prices/{ISO2}.json`) | **Nobody.** Edit `src/config/catalogue/*.data.ts` and run `pnpm seed:project` |
+| `projected` | `taxonomy.json`, `categories.json`, `occasions.json`, `products.json`, `product-tiers.json`, `addons.json`, `prices/{ISO2}.json`, `addon-prices/{ISO2}.json` | **Nobody.** Edit `src/config/catalogue/*.data.ts` and run `pnpm seed:project` |
 | `authored` | `occasion-country.json` (and, from TASK-073/077/078, `copy/`, `media.json`, `media-variants.json`, `alt/`) | A human, in the file — except `media-variants.json`, which `pnpm media:variants` writes |
 
 ADR-0017 is why: `src/config/catalogue/` is the **single authored source** of catalogue entities,
@@ -28,6 +28,15 @@ seed/schema/     the zod schemas and the to*Row() projections onto spec 002 §5.
 seed/data/       the dataset (JSON, one file per entity family, header on every file)
 seed/project.ts  pnpm seed:project — regenerates the projected files, offline and deterministic
 ```
+
+`seed/data/prices/{ISO2}.json` and `seed/data/addon-prices/{ISO2}.json` exist once per **priced
+destination** — the `live` and `demo` countries of `src/config/countries.ts`, seven of them. The
+eighth seeded country of `plan/10` §2.1 is the UK, which is the first *buyer* market (ADR-0002)
+and not a place we deliver to, so it has no price file: a row there would price nothing.
+
+The deliberately faulty price files `pnpm seed:check` is tested against —
+out-of-band, float amount, wrong psychological ending, a second open-ended row, an unknown tier,
+plus the matching good block — live in `tests/fixtures/seed/_cases/prices/` (spec 006 AC-6).
 
 `seed/check.ts` (`pnpm seed:check`, TASK-075), `seed/diff.ts` (`pnpm seed:diff`, TASK-076),
 `seed/media-variants.ts` (TASK-078), `seed/index.ts` (`pnpm db:seed`, TASK-083) and

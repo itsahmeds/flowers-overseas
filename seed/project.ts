@@ -38,6 +38,11 @@ import { format, resolveConfig } from "prettier";
 import { ADDONS } from "../src/config/catalogue/addons.data.ts";
 import { CATEGORIES } from "../src/config/catalogue/categories.data.ts";
 import { OCCASIONS } from "../src/config/catalogue/occasions.data.ts";
+import {
+  ADDON_COUNTRY_PRICES,
+  COUNTRY_PRICES,
+  PRICED_DESTINATIONS,
+} from "../src/config/catalogue/prices.data.ts";
 import { PRODUCTS } from "../src/config/catalogue/products.data.ts";
 import {
   facetNames,
@@ -46,7 +51,11 @@ import {
 } from "../src/config/catalogue/schemas.ts";
 import { PRODUCT_TIER_GROUPS } from "../src/config/catalogue/tiers.data.ts";
 import { SEED_DATASET_VERSION, SEED_SOURCE } from "./schema/header.ts";
-import { SEED_DATA_DIR } from "./schema/files.ts";
+import {
+  SEED_DATA_DIR,
+  seedAddonPriceFilePath,
+  seedPriceFilePath,
+} from "./schema/files.ts";
 
 /** The module a projected file names in its header, so a reader knows what to edit instead. */
 const CATALOGUE_SCHEMAS = "src/config/catalogue/schemas.ts";
@@ -121,6 +130,26 @@ export function projectedFiles(): readonly ProjectedFile[] {
         rows: ADDONS,
       },
     },
+    // The per-destination price files, in `PRICED_DESTINATIONS` order (which is
+    // `src/config/countries.ts`'s order), retail rows before surcharge rows inside each file
+    // because that is the authored order of `COUNTRY_PRICES` — nothing here sorts or groups, so a
+    // re-projection diffs empty and the file is legible as the ladder it came from (TASK-074).
+    ...PRICED_DESTINATIONS.map((iso2) => ({
+      path: seedPriceFilePath(iso2),
+      value: {
+        ...header("country_price", CATALOGUE_DATA("prices")),
+        countryIso2: iso2,
+        rows: COUNTRY_PRICES.filter((row) => row.countryIso2 === iso2),
+      },
+    })),
+    ...PRICED_DESTINATIONS.map((iso2) => ({
+      path: seedAddonPriceFilePath(iso2),
+      value: {
+        ...header("addon_country_price", CATALOGUE_DATA("prices")),
+        countryIso2: iso2,
+        rows: ADDON_COUNTRY_PRICES.filter((row) => row.countryIso2 === iso2),
+      },
+    })),
   ];
 }
 
