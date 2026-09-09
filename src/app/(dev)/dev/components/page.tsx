@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import type { ReactElement, ReactNode } from "react";
 
 import { devUiEnabled } from "@/lib/env.schema";
+import { documentFallbackLocale, localePath } from "@/modules/i18n";
 import {
   Button,
   BUTTON_VARIANTS,
@@ -20,7 +21,10 @@ import {
   Photo,
   PHOTO_RATIOS,
   Placeholder,
+  footerView,
+  type FooterView,
   Row,
+  SiteFooter,
   SkipLink,
   Stack,
   Text,
@@ -35,6 +39,8 @@ import {
   CHIP_LINK_LABEL,
   CHIP_SAMPLES,
   COLOUR_RAMPS,
+  FOOTER_REGISTERED_COMPANY,
+  FOOTER_STATES,
   GALLERY_INTRO,
   GALLERY_TITLE,
   LABEL_SAMPLE,
@@ -121,8 +127,58 @@ function StateRow({
   );
 }
 
+/**
+ * The `FooterView` each of the five §5.3 states is rendered from (TASK-049). `links-populated`
+ * and `company-registered` are the two states no Phase-0 page can reach: the first publishes one
+ * target, the second fills the five registry fields of an **example** company — the numbers are
+ * zeros and the names carry "(example)", because this document is dev-only and `noindex` and an
+ * invented registry number must not be readable as a fact anywhere (§8).
+ */
+function footerStateView(
+  state: (typeof FOOTER_STATES)[number]["id"],
+  locale: string,
+): FooterView {
+  const base = footerView(locale);
+  if (state === "links-populated") {
+    return {
+      ...base,
+      columns: base.columns.map((group) => ({
+        ...group,
+        links: group.links.map((link) =>
+          link.id === "destinations"
+            ? { ...link, href: localePath(locale, "destinations") }
+            : link,
+        ),
+      })),
+    };
+  }
+  if (state === "company-registered") {
+    return {
+      ...base,
+      company: {
+        ...base.company,
+        identity: {
+          legalName: FOOTER_REGISTERED_COMPANY.legalName,
+          registryName: FOOTER_REGISTERED_COMPANY.registryName,
+          registrationNumber: FOOTER_REGISTERED_COMPANY.registrationNumber,
+          vatId: FOOTER_REGISTERED_COMPANY.vatId,
+          address: [
+            ...FOOTER_REGISTERED_COMPANY.address.lines,
+            FOOTER_REGISTERED_COMPANY.address.postalCode,
+            FOOTER_REGISTERED_COMPANY.address.city,
+          ].join(", "),
+        },
+      },
+    };
+  }
+  return base;
+}
+
 export default function DevComponentsPage(): ReactElement {
   if (!devUiEnabled(process.env)) notFound();
+  // The gallery has no locale of its own (see `(dev)/layout.tsx`): the chrome renders in the
+  // x-default locale, exactly as `/` and the 404 do.
+  const galleryLocale = documentFallbackLocale().code;
 
   return (
     <>
@@ -414,6 +470,21 @@ export default function DevComponentsPage(): ReactElement {
           <Photo ratio="landscape" />
         </Section>
 
+        <Section title={SECTIONS[11]}>
+          {FOOTER_STATES.map((state) => (
+            <Stack key={state.id} gap="sm">
+              <Text size="xs" tone="subtle">
+                {state.caption}
+              </Text>
+              <SiteFooter
+                locale={galleryLocale}
+                idPrefix={`gallery-${state.id}`}
+                view={footerStateView(state.id, galleryLocale)}
+                marks={[]}
+              />
+            </Stack>
+          ))}
+        </Section>
         <Section title={SECTIONS[10]}>
           <Stack gap="xs">
             {CONTRAST_PAIRS.map((pair) => (

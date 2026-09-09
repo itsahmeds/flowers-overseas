@@ -96,8 +96,12 @@ export default defineConfig({
     },
     {
       name: "visual",
-      // `/`, `/en` and `/de` (AC-30). LTR only: `/ar-XB` belongs to the project below.
-      testMatch: "visual/shell.spec.ts",
+      // Every LTR visual spec (`/`, `/en`, `/de` in `shell.spec.ts`; the colophon's four element
+      // baselines in `footer.spec.ts`, TASK-049). `/ar-XB` belongs to the project below, so the
+      // RTL spec is the one file ignored here — a glob per file would make every 004 task that
+      // adds a template edit this config.
+      testMatch: "visual/*.spec.ts",
+      testIgnore: "visual/pseudo-rtl.spec.ts",
       use: {
         ...devices["Desktop Chrome"],
         viewport: { width: 1280, height: 720 },

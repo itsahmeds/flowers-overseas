@@ -69,6 +69,17 @@ describe("src/modules/ui barrel", () => {
         "parseThemeTokens",
         "relativeLuminance",
         "resolveColorToken",
+        // chrome: the footer, its view projection and the three ids the rest of the system
+        // names (TASK-049)
+        "CONSENT_REOPEN_ATTRIBUTE",
+        "FOOTER_ID_PREFIX",
+        "REMINDERS_ANCHOR",
+        "REMINDERS_ENDPOINT",
+        "REMINDERS_FIELD_ID",
+        "SiteFooter",
+        "TrustMarks",
+        "companyIdentity",
+        "footerView",
       ].sort(),
     );
   });
@@ -102,12 +113,23 @@ describe("src/modules/ui barrel", () => {
   });
 
   it("exports no colour, size or duration value (the tokens stay in globals.css)", () => {
+    // The exported strings, and why each is a string: `fontVariables` names CSS variables rather
+    // than font files, and TASK-049's five are DOM contracts — an attribute the consent island
+    // binds to, a form action, and the id prefix and ids the reminder stub redirects to. None of
+    // them is a token value, which is what this assertion is about.
+    const EXPECTED_STRINGS = [
+      "CONSENT_REOPEN_ATTRIBUTE",
+      "FOOTER_ID_PREFIX",
+      "REMINDERS_ANCHOR",
+      "REMINDERS_ENDPOINT",
+      "REMINDERS_FIELD_ID",
+      "fontVariables",
+    ];
     for (const [name, value] of Object.entries(ui)) {
       if (typeof value !== "string") continue;
       expect(value, name).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
       expect(value, name).not.toMatch(/(?<![a-z])(?:rgba?|hsla?|oklch)\s*\(/);
-      // `fontVariables` is the one exported string, and it names variables rather than values.
-      expect(name).toBe("fontVariables");
+      expect(EXPECTED_STRINGS, name).toContain(name);
     }
   });
 
