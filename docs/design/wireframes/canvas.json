@@ -6,7 +6,7 @@
       "x": 0,
       "y": 0,
       "w": 1440,
-      "h": 46
+      "h": 1160
     },
     {
       "file": "locale-chooser-mobile.dc.html",
@@ -14,7 +14,7 @@
       "x": 1560,
       "y": 0,
       "w": 390,
-      "h": 46
+      "h": 1180
     },
     {
       "file": "all-destinations-desktop.dc.html",
@@ -22,7 +22,7 @@
       "x": 2070,
       "y": 0,
       "w": 1440,
-      "h": 46
+      "h": 2280
     },
     {
       "file": "all-destinations-mobile.dc.html",
@@ -30,7 +30,7 @@
       "x": 3630,
       "y": 0,
       "w": 390,
-      "h": 46
+      "h": 2680
     },
     {
       "file": "corridor-country-desktop.dc.html",
@@ -38,7 +38,7 @@
       "x": 4140,
       "y": 0,
       "w": 1440,
-      "h": 46
+      "h": 3560
     },
     {
       "file": "corridor-country-mobile.dc.html",
@@ -46,279 +46,279 @@
       "x": 5700,
       "y": 0,
       "w": 390,
-      "h": 46
+      "h": 4300
     },
     {
       "file": "country-shop-desktop.dc.html",
       "title": "Country shop root · desktop",
       "x": 0,
-      "y": 246,
+      "y": 4500,
       "w": 1440,
-      "h": 46
+      "h": 2760
     },
     {
       "file": "country-shop-mobile.dc.html",
       "title": "Country shop root · mobile",
       "x": 1560,
-      "y": 246,
+      "y": 4500,
       "w": 390,
-      "h": 46
+      "h": 3400
     },
     {
       "file": "country-category-desktop.dc.html",
       "title": "Country category · desktop",
       "x": 2070,
-      "y": 246,
+      "y": 4500,
       "w": 1440,
-      "h": 46
+      "h": 2460
     },
     {
       "file": "country-category-mobile.dc.html",
       "title": "Country category · mobile",
       "x": 3630,
-      "y": 246,
+      "y": 4500,
       "w": 390,
-      "h": 46
+      "h": 3000
     },
     {
       "file": "country-occasion-desktop.dc.html",
       "title": "Country occasion · desktop",
       "x": 4140,
-      "y": 246,
+      "y": 4500,
       "w": 1440,
-      "h": 46
+      "h": 2480
     },
     {
       "file": "country-occasion-mobile.dc.html",
       "title": "Country occasion · mobile",
       "x": 5700,
-      "y": 246,
+      "y": 4500,
       "w": 390,
-      "h": 46
+      "h": 3020
     },
     {
       "file": "product-desktop.dc.html",
       "title": "Product page · desktop",
       "x": 0,
-      "y": 492,
+      "y": 8100,
       "w": 1440,
-      "h": 46
+      "h": 3480
     },
     {
       "file": "product-mobile.dc.html",
       "title": "Product page · mobile",
       "x": 1560,
-      "y": 492,
+      "y": 8100,
       "w": 390,
-      "h": 46
+      "h": 4260
     },
     {
       "file": "category-hub-desktop.dc.html",
       "title": "Category hub · no destination, no money · desktop",
       "x": 2070,
-      "y": 492,
+      "y": 8100,
       "w": 1440,
-      "h": 46
+      "h": 2260
     },
     {
       "file": "category-hub-mobile.dc.html",
       "title": "Category hub · no destination, no money · mobile",
       "x": 3630,
-      "y": 492,
+      "y": 8100,
       "w": 390,
-      "h": 46
+      "h": 2740
     },
     {
       "file": "occasion-hub-desktop.dc.html",
       "title": "Occasion hub · dates by country · desktop",
       "x": 4140,
-      "y": 492,
+      "y": 8100,
       "w": 1440,
-      "h": 46
+      "h": 2180
     },
     {
       "file": "occasion-hub-mobile.dc.html",
       "title": "Occasion hub · dates by country · mobile",
       "x": 5700,
-      "y": 492,
+      "y": 8100,
       "w": 390,
-      "h": 46
+      "h": 2620
     },
     {
       "file": "occasions-index-desktop.dc.html",
       "title": "Occasions index · desktop",
       "x": 0,
-      "y": 738,
+      "y": 12560,
       "w": 1440,
-      "h": 46
+      "h": 2020
     },
     {
       "file": "occasions-index-mobile.dc.html",
       "title": "Occasions index · mobile",
       "x": 1560,
-      "y": 738,
+      "y": 12560,
       "w": 390,
-      "h": 46
+      "h": 2500
     },
     {
       "file": "checkout-desktop.dc.html",
       "title": "Checkout · 3 steps and the demo guard · desktop",
       "x": 2070,
-      "y": 738,
+      "y": 12560,
       "w": 1440,
-      "h": 46
+      "h": 3320
     },
     {
       "file": "checkout-mobile.dc.html",
       "title": "Checkout · 3 steps and the demo guard · mobile",
       "x": 3630,
-      "y": 738,
+      "y": 12560,
       "w": 390,
-      "h": 46
+      "h": 4180
     },
     {
       "file": "confirmation-desktop.dc.html",
       "title": "Order confirmation · desktop",
       "x": 4140,
-      "y": 738,
+      "y": 12560,
       "w": 1440,
-      "h": 46
+      "h": 1940
     },
     {
       "file": "confirmation-mobile.dc.html",
       "title": "Order confirmation · mobile",
       "x": 5700,
-      "y": 738,
+      "y": 12560,
       "w": 390,
-      "h": 46
+      "h": 2380
     },
     {
       "file": "track-order-desktop.dc.html",
       "title": "Track order · timeline and lookup · desktop",
       "x": 0,
-      "y": 984,
+      "y": 16940,
       "w": 1440,
-      "h": 46
+      "h": 2220
     },
     {
       "file": "track-order-mobile.dc.html",
       "title": "Track order · timeline and lookup · mobile",
       "x": 1560,
-      "y": 984,
+      "y": 16940,
       "w": 390,
-      "h": 46
+      "h": 2760
     },
     {
       "file": "how-it-works-desktop.dc.html",
       "title": "How it works · desktop",
       "x": 2070,
-      "y": 984,
+      "y": 16940,
       "w": 1440,
-      "h": 46
+      "h": 2100
     },
     {
       "file": "how-it-works-mobile.dc.html",
       "title": "How it works · mobile",
       "x": 3630,
-      "y": 984,
+      "y": 16940,
       "w": 390,
-      "h": 46
+      "h": 2560
     },
     {
       "file": "guarantee-and-delivery-desktop.dc.html",
       "title": "Guarantee · delivery information · desktop",
       "x": 4140,
-      "y": 984,
+      "y": 16940,
       "w": 1440,
-      "h": 46
+      "h": 2200
     },
     {
       "file": "guarantee-and-delivery-mobile.dc.html",
       "title": "Guarantee · delivery information · mobile",
       "x": 5700,
-      "y": 984,
+      "y": 16940,
       "w": 390,
-      "h": 46
+      "h": 2680
     },
     {
       "file": "about-contact-help-desktop.dc.html",
       "title": "About · contact · help · desktop",
       "x": 0,
-      "y": 1230,
+      "y": 19900,
       "w": 1440,
-      "h": 46
+      "h": 2380
     },
     {
       "file": "about-contact-help-mobile.dc.html",
       "title": "About · contact · help · mobile",
       "x": 1560,
-      "y": 1230,
+      "y": 19900,
       "w": 390,
-      "h": 46
+      "h": 2900
     },
     {
       "file": "blog-desktop.dc.html",
       "title": "Blog index and post · desktop",
       "x": 2070,
-      "y": 1230,
+      "y": 19900,
       "w": 1440,
-      "h": 46
+      "h": 2160
     },
     {
       "file": "blog-mobile.dc.html",
       "title": "Blog index and post · mobile",
       "x": 3630,
-      "y": 1230,
+      "y": 19900,
       "w": 390,
-      "h": 46
+      "h": 2620
     },
     {
       "file": "for-florists-desktop.dc.html",
       "title": "For florists · landing, apply, walkthrough · desktop",
       "x": 4140,
-      "y": 1230,
+      "y": 19900,
       "w": 1440,
-      "h": 46
+      "h": 2700
     },
     {
       "file": "for-florists-mobile.dc.html",
       "title": "For florists · landing, apply, walkthrough · mobile",
       "x": 5700,
-      "y": 1230,
+      "y": 19900,
       "w": 390,
-      "h": 46
+      "h": 3300
     },
     {
       "file": "legal-template-desktop.dc.html",
       "title": "Legal page template · desktop",
       "x": 0,
-      "y": 1476,
+      "y": 23400,
       "w": 1440,
-      "h": 46
+      "h": 1960
     },
     {
       "file": "legal-template-mobile.dc.html",
       "title": "Legal page template · mobile",
       "x": 1560,
-      "y": 1476,
+      "y": 23400,
       "w": 390,
-      "h": 46
+      "h": 2380
     },
     {
       "file": "errors-desktop.dc.html",
       "title": "404 and 500 · desktop",
       "x": 2070,
-      "y": 1476,
+      "y": 23400,
       "w": 1440,
-      "h": 46
+      "h": 1620
     },
     {
       "file": "errors-mobile.dc.html",
       "title": "404 and 500 · mobile",
       "x": 3630,
-      "y": 1476,
+      "y": 23400,
       "w": 390,
-      "h": 46
+      "h": 1900
     }
   ],
   "annotations": [
@@ -332,42 +332,42 @@
     {
       "id": "wireframes-2",
       "x": 0,
-      "y": 136,
+      "y": 4390,
       "w": 1200,
       "text": "wireframes 2 — Phase 0 page types, continued. Each artboard opens with its own annotation block: purpose, URL, index status, the data it reads, and the owning spec."
     },
     {
       "id": "wireframes-3",
       "x": 0,
-      "y": 382,
+      "y": 7990,
       "w": 1200,
       "text": "wireframes 3 — Phase 0 page types, continued. Each artboard opens with its own annotation block: purpose, URL, index status, the data it reads, and the owning spec."
     },
     {
       "id": "wireframes-4",
       "x": 0,
-      "y": 628,
+      "y": 12450,
       "w": 1200,
       "text": "wireframes 4 — Phase 0 page types, continued. Each artboard opens with its own annotation block: purpose, URL, index status, the data it reads, and the owning spec."
     },
     {
       "id": "wireframes-5",
       "x": 0,
-      "y": 874,
+      "y": 16830,
       "w": 1200,
       "text": "wireframes 5 — Phase 0 page types, continued. Each artboard opens with its own annotation block: purpose, URL, index status, the data it reads, and the owning spec."
     },
     {
       "id": "wireframes-6",
       "x": 0,
-      "y": 1120,
+      "y": 19790,
       "w": 1200,
       "text": "wireframes 6 — Phase 0 page types, continued. Each artboard opens with its own annotation block: purpose, URL, index status, the data it reads, and the owning spec."
     },
     {
       "id": "wireframes-7",
       "x": 0,
-      "y": 1366,
+      "y": 23290,
       "w": 1200,
       "text": "wireframes 7 — Phase 0 page types, continued. Each artboard opens with its own annotation block: purpose, URL, index status, the data it reads, and the owning spec."
     }

@@ -6,7 +6,7 @@
       "x": 0,
       "y": 0,
       "w": 1440,
-      "h": 46
+      "h": 3140
     },
     {
       "file": "florist-journey.dc.html",
@@ -14,7 +14,7 @@
       "x": 1560,
       "y": 0,
       "w": 1440,
-      "h": 46
+      "h": 1980
     },
     {
       "file": "consent-and-locale.dc.html",
@@ -22,7 +22,7 @@
       "x": 3120,
       "y": 0,
       "w": 1440,
-      "h": 46
+      "h": 1900
     }
   ],
   "annotations": [
