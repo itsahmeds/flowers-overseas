@@ -3,7 +3,9 @@ import { NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { ReactNode } from "react";
 
+import { ga4MeasurementId } from "@/lib/env.schema";
 import { setLocaleTag } from "@/lib/sentry";
+import { AnalyticsScripts } from "@/modules/analytics";
 import {
   LocaleSuggestionBanner,
   documentFallbackLocale,
@@ -110,6 +112,17 @@ export default async function LocaleLayout({
   return (
     // `fontVariables`: the two self-hosted families and their preload links (spec 004 AC-4).
     <html lang={locale.bcp47} dir={locale.dir} className={fontVariables}>
+      <head>
+        {/* The only inline script in the application and the first thing in the document: the
+            Consent Mode v2 **default-denied** block, plus the GA4 tag when — and only when —
+            `NEXT_PUBLIC_GA4_MEASUREMENT_ID` is set (spec 004 §2, AC-18, AC-21; TASK-050). Its
+            `'sha256-'` hash is in the CSP `script-src` of every environment, computed in
+            `next.config.ts` from the same constant, which is why editing the script without the
+            policy is not a reachable state (ADR-0016). Nothing here varies by visitor, so the
+            document stays one cache entry with no `Vary` and no `Set-Cookie`: the banner that
+            *reads* the decision is a client island (TASK-051). */}
+        <AnalyticsScripts measurementId={ga4MeasurementId(process.env)} />
+      </head>
       <body className="min-h-dvh">
         {/* `timeZone` mirrors `src/modules/i18n/request.ts`: a relay has no single local zone,
             every rendered time carries its own IANA zone (`formatTimeInZone`), and UTC is the

@@ -46,7 +46,10 @@ describe("lighthouserc.json budgets (AC-23)", () => {
       "cumulative-layout-shift": ["error", { maxNumericValue: 0.05 }],
       // 120 KB and 200 KB in bytes: **transfer** size, i.e. Brotli over the wire on Vercel
       // (spec 004 §13 Q13's restatement; the `//` note in the file spells it out).
-      "resource-summary:script:size": ["error", { maxNumericValue: 122880 }],
+      // 128 KB Brotli: spec 004 §13 Q13's restatement as corrected by §14 A1 (TASK-050 carried
+      // the number here and into `scripts/client-js-budget.ts`; the job stays informational until
+      // TASK-056 flips it).
+      "resource-summary:script:size": ["error", { maxNumericValue: 131072 }],
       "resource-summary:image:size": ["error", { maxNumericValue: 204800 }],
     });
   });
@@ -80,8 +83,10 @@ describe("lighthouserc.json budgets (AC-23)", () => {
     it("says the script budget is transfer size, and Brotli on Vercel", () => {
       expect(note).toMatch(/transfer/i);
       expect(note).toContain("Brotli");
-      expect(note).toContain("122 880");
+      expect(note).toContain("131 072");
       expect(note).toContain("§13 Q13");
+      // The correction, not just the original restatement (spec 004 §14 A1, TASK-050).
+      expect(note).toContain("§14 A1");
     });
 
     it("records the `noindex` reason for not asserting categories:seo", () => {

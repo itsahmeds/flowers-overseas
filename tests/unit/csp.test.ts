@@ -31,6 +31,7 @@ import {
   securityHeaderRules,
   sendsHsts,
 } from "../../src/lib/csp";
+import { consentBootstrapHash } from "../../src/lib/consent-bootstrap";
 import { cspReportOnly } from "../../src/lib/env.schema";
 import { ALL_PATHS } from "../../src/lib/robots-headers";
 
@@ -164,11 +165,32 @@ describe("the inline-script hash slot (the seam TASK-050 uses)", () => {
     expect(policy).toContain("script-src 'self' 'sha256-one' 'sha256-two';");
   });
 
-  it("ships zero hashes today: the app has no inline script yet", () => {
+  it("carries no hash when the caller passes none, so the two policy strings above stay readable", () => {
     expect(cspValue("production")).not.toContain("sha256-");
     expect(cspValue("production", { inlineHashes: [] })).toBe(
       PRODUCTION_POLICY,
     );
+  });
+
+  /**
+   * TASK-050 filled the slot. The *shipped* policy therefore has exactly one hash — the ≤1 KB
+   * Consent-Mode bootstrap — and the two verbatim strings above are the policy plus that one
+   * token, which is what keeps a second inline script from being added without a reviewer seeing
+   * it in the diff. The hash's equality with the emitted bytes is
+   * `tests/unit/consent-bootstrap.test.tsx`.
+   */
+  it("is the consent bootstrap's hash that ships, in both environments, exactly once", () => {
+    const hash = consentBootstrapHash();
+    for (const [environment, base] of [
+      ["production", PRODUCTION_POLICY],
+      ["preview", PREVIEW_POLICY],
+    ] as const) {
+      const policy = cspValue(environment, { inlineHashes: [hash] });
+      expect(policy, environment).toBe(
+        base.replace("script-src 'self'", `script-src 'self' '${hash}'`),
+      );
+      expect(policy.split("sha256-"), environment).toHaveLength(2);
+    }
   });
 
   it("puts the hash before the preview origin, so the diff of adding one is one token", () => {
@@ -296,9 +318,12 @@ describe("next.config.ts wiring", () => {
     expect(source).toContain("reportOnly: cspReportOnly(process.env)");
   });
 
-  it("ships no inline-script hash yet, and says which task adds one", () => {
-    expect(source).toContain("inlineHashes: []");
-    expect(source).toContain("TASK-050");
+  it("passes the consent bootstrap's hash and the GA4 gate (TASK-050)", () => {
+    expect(source).toContain("inlineHashes: [consentBootstrapHash()]");
+    expect(source).not.toContain("inlineHashes: []");
+    expect(source).toContain(
+      "ga4: ga4MeasurementId(process.env) !== undefined",
+    );
   });
 
   it("keeps the policy out of src/proxy.ts", () => {

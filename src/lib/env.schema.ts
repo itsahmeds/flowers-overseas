@@ -72,6 +72,28 @@ export const clientEnvSchema = z.object({
   /** Browser Sentry DSN. Unset ⇒ the browser SDK is a no-op (spec 001 §5, AC-13). */
   NEXT_PUBLIC_SENTRY_DSN: optionalUrl,
   /**
+   * GA4 measurement id (spec 004 §2, §5.2, AC-21; TASK-050). **Optional, and unset everywhere in
+   * Phase 0** — CI, local and preview — which is what makes "no third-party script loads at all"
+   * a testable fact rather than a claim: with no id there is no tag element, so no request to
+   * `googletagmanager.com` can be made.
+   *
+   * Setting it is a **RoPA-affecting act**: Google becomes an active processor
+   * (`docs/compliance/ropa.md` row 4) and the privacy policy must already name it. The shape is
+   * pinned so a container id (`GTM-…`) or a Universal Analytics property (`UA-…`) cannot be
+   * pasted in by mistake — either would load a tag that ignores Consent Mode v2's defaults in a
+   * way we have not tested.
+   */
+  NEXT_PUBLIC_GA4_MEASUREMENT_ID: z.preprocess(
+    emptyToUndefined,
+    z
+      .string()
+      .regex(
+        /^G-[A-Z0-9]{6,16}$/,
+        "must be a GA4 measurement id, `G-XXXXXXXXXX`",
+      )
+      .optional(),
+  ),
+  /**
    * Commit SHA, readable from the browser bundle: the Sentry release for client events
    * (TASK-007). `VERCEL_GIT_COMMIT_SHA` is server-side only, so without this mirror browser
    * events would have no release. Optional: absent locally.
@@ -213,6 +235,26 @@ export const PSEUDO_LOCALES_KEY = "ENABLE_PSEUDO_LOCALES" as const;
 
 /** The key that decides whether the CSP is enforced or only reported (ADR-0016, TASK-046). */
 export const CSP_REPORT_ONLY_KEY = "CSP_REPORT_ONLY" as const;
+
+/** The key that turns the GA4 tag on by carrying a measurement id (spec 004 AC-21, TASK-050). */
+export const GA4_MEASUREMENT_ID_KEY = "NEXT_PUBLIC_GA4_MEASUREMENT_ID" as const;
+
+/**
+ * The configured GA4 measurement id, or `undefined` (spec 004 AC-21, TASK-050).
+ *
+ * Pure: the caller passes the environment. A value that is not a well-formed GA4 id is treated as
+ * **absent** rather than passed through, so a typo, a `GTM-…` container id or a stray quote leaves
+ * the site in its Phase 0 state — no tag, no third-party origin in the CSP — instead of loading
+ * something that answers 404 and putting `googletagmanager.com` in the policy for nothing.
+ * `clientEnvSchema` rejects the same values at build time; this function is what `next.config.ts`
+ * and the loader read, and it must not throw on a malformed value in a deployed environment where
+ * the build has already succeeded.
+ */
+export function ga4MeasurementId(source: EnvSource): string | undefined {
+  const raw = source[GA4_MEASUREMENT_ID_KEY]?.trim();
+  if (raw === undefined || raw === "") return undefined;
+  return /^G-[A-Z0-9]{6,16}$/.test(raw) ? raw : undefined;
+}
 
 /**
  * Whether the CSP is sent as `Content-Security-Policy-Report-Only` (spec 004 AC-23, ADR-0016).

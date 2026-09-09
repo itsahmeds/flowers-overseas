@@ -86,11 +86,15 @@ src/modules/<module>/     one directory per module below, public barrel in index
 src/lib/                  env (zod), logger, health, sentry, cache adapter; db client from spec 002
 src/jobs/                 pg-boss job definitions and cron schedule
 src/emails/               React Email templates, localised
-src/config/               locales.ts, locales.data.ts, currencies.ts, address-formats.ts
+src/config/               locales.ts, locales.data.ts, currencies.ts, address-formats.ts,
+                          cookies.ts
                           (spec 003/004; zod-validated at module load, no database — `pnpm
                           check:no-db`. `locales.data.ts` is the authored locale rows as plain
                           constants and imports nothing, so the 500 document can read a locale
-                          without pulling zod into every page's client chunk — TASK-046);
+                          without pulling zod into every page's client chunk — TASK-046;
+                          `cookies.ts` is the cookie register, and
+                          `docs/compliance/cookie-register.md` derives its table from it via
+                          `pnpm cookies:check` — TASK-050);
                           countries.ts, payment-methods-by-country.ts, feature-flags.ts follow
                           in 002/004
 tests/unit/               Vitest, node env
@@ -265,7 +269,7 @@ reverse.
 | `notifications` | email + WhatsApp senders, templates, outbox consumer | spec 017 | empty barrel |
 | `seo` | hreflang, canonical, JSON-LD builders, sitemap generators, robots | spec 007 | empty barrel |
 | `i18n` | locale config, message loading, formatters, address formatting, the locale switcher | spec 003 | **complete for spec 003**: `registry`/`routing`/`messages`/`request` (four launch locales, authored path segments, fallback-chain merge, per-route namespace subsets), `format`/`collate`/`address` (all `Intl`; `fo/no-adhoc-intl` allows nowhere else), `schemas`, `review`/`alternates` (the 5 %-unreviewed indexability gate and the hreflang set), `pseudo` (`en-XA`/`ar-XB`), `hints`, `ui/LocaleSwitcher` and `ui/LocaleSuggestionBanner*`. Gated by `pnpm i18n:check`; no database (`pnpm check:no-db`) — the provider seam is what spec 002/012 hydrate |
-| `analytics` | GA4 event schema, consent state, server-side events | spec 023 | empty barrel |
+| `analytics` | Consent Mode v2 + the gated GA4 tag; GA4 event schema, consent state, server-side events | spec 004 (loader), spec 023 (events) | `AnalyticsScripts` (the inline default-denied bootstrap and the env-gated tag) |
 | `admin` | admin queries and actions | spec 012 | empty barrel |
 | `ui` | design tokens, layout primitives, icons, chrome, the image wrapper | spec 004 | **tokens, fonts and primitives (TASK-045)**: the `@theme` token set and `@layer base` reset live in `src/app/globals.css`, the contrast manifest in `tokens/contrast.ts` (unit-tested against the tokens themselves), the two self-hosted families in `fonts/` (Newsreader 500 + IBM Plex Sans 400/600, 40 844 B total), the icon set and the brand `Mark` in `icons/`, and `Container`/`Stack`/`Row`/`Cluster`/`Grid`/`VisuallyHidden`/`SkipLink`/`Display`/`Text`/`Label`/`Button`/`Chip`/`Photo`/`Placeholder` in `primitives/` (no form control and no price block — spec 004 §3/§8 defer those to 010/013 and 005/008/009). Rendered in every state by `/dev/components`. Header, footer, trust strip, consent banner and `media/` arrive with TASK-048…TASK-053 |
 

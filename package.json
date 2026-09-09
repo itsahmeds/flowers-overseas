@@ -43,6 +43,7 @@
     "budget:client-js": "node scripts/client-js-budget.ts",
     "check:no-literal-disable": "node scripts/check-no-literal-disable.ts",
     "check:no-db": "node scripts/check-no-db-imports.ts",
+    "cookies:check": "node scripts/cookie-register.ts",
     "prepare": "husky"
   },
   "dependencies": {

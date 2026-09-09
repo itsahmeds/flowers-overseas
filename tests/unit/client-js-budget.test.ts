@@ -74,8 +74,12 @@ import { namespacesFor } from "../../src/modules/i18n";
 import { loadMessages } from "../../src/modules/i18n/messages.ts";
 
 describe("the budget constants are plan/01 §7's as spec 004 §13 Q13 restated them", () => {
-  it("caps client JS at 120 KB (122 880 B) and the client message payload at 4 KB", () => {
-    expect(CLIENT_JS_BUDGET_BYTES).toBe(122880);
+  it("caps client JS at 128 KB (131 072 B) and the client message payload at 4 KB", () => {
+    // 120 KB was spec 004 §13 Q13's restatement; §14 A1 corrected it to 128 KB after TASK-046
+    // measured the locale documents at 129 638 B with no application code left to remove. The
+    // amendment says the budget is not raised a second time, and `lighthouserc.json` takes the
+    // same number when TASK-056 flips the Lighthouse job to blocking.
+    expect(CLIENT_JS_BUDGET_BYTES).toBe(131072);
     expect(MESSAGES_PAYLOAD_BUDGET_BYTES).toBe(4096);
   });
 
@@ -207,11 +211,12 @@ describe("measurePages against a fake build output", () => {
   });
 
   it("passes a page that is under budget in Brotli and over it in gzip", () => {
-    // A 62 KB incompressible block, written twice. gzip's 32 KB window cannot see the repeat, so
-    // it reports ~124 KB — over; Brotli's window can, so it reports ~62 KB — under. That is the
-    // whole point of the restatement (spec 004 §13 Q13) and it is why this asserts *which*
-    // encoding the budget reads rather than trusting a field name.
-    const block = kb(62);
+    // A 68 KB incompressible block, written twice. gzip's 32 KB window cannot see the repeat, so
+    // it reports ~136 KB — over the 128 KB budget; Brotli's window can, so it reports ~68 KB —
+    // under. That is the whole point of the restatement (spec 004 §13 Q13, corrected by §14 A1)
+    // and it is why this asserts *which* encoding the budget reads rather than trusting a field
+    // name.
+    const block = kb(68);
     writeFileSync(
       join(dist, "static/chunks/band.js"),
       Buffer.concat([block, block]),
@@ -277,7 +282,7 @@ describe("measurePages against a fake build output", () => {
     const table = formatMarkdownTable(measurePages(dist, ["/", "/en"]));
     expect(table).toContain("| URL | document JS (br) |");
     expect(table).toContain("+ `next/dynamic` (br)");
-    expect(table).toContain("budget 120 KB br");
+    expect(table).toContain("budget 128 KB br");
     expect(table).toContain("| `/` |");
     expect(table).toContain("| `/en` |");
   });
@@ -287,7 +292,7 @@ describe("measurePages against a fake build output", () => {
     const write = (chunk: string): number => out.push(chunk);
     expect(main(["--dist", dist, "--url", "/"], { write }, { write })).toBe(1);
     expect(out.join("")).toContain("Brotli-encoded JavaScript");
-    expect(out.join("")).toContain("over the 120 KB");
+    expect(out.join("")).toContain("over the 128 KB");
     out.length = 0;
     expect(
       main(["--dist", dist, "--url", "/small"], { write }, { write }),
