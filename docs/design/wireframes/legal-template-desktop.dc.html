@@ -1,0 +1,173 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+  <style>
+:root{
+  --color-paper: oklch(99.3% 0.002 90);
+  --color-paper-2: oklch(97.2% 0.004 90);
+  --color-paper-3: oklch(94.5% 0.005 90);
+  --color-ink: oklch(19% 0.01 250);
+  --color-ink-2: oklch(36% 0.01 250);
+  --color-ink-3: oklch(52% 0.008 250);
+  --color-rule: oklch(90% 0.004 250);
+  --color-accent: oklch(42% 0.10 155);
+  --color-accent-strong: oklch(34% 0.09 155);
+  --color-accent-ink: oklch(99% 0.002 90);
+  --color-success: oklch(42% 0.10 150);
+  --color-warning: oklch(45% 0.12 75);
+  --color-danger: oklch(45% 0.17 25);
+  --color-danger-strong: oklch(38% 0.15 25);
+  --color-photo-stop-1: oklch(93% 0.02 120);
+  --color-photo-stop-2: oklch(88% 0.03 140);
+  --color-photo-stop-3: oklch(80% 0.04 150);
+  --color-photo-ink: oklch(40% 0.03 150);
+  --color-photo: linear-gradient(160deg, var(--color-photo-stop-1) 0%, var(--color-photo-stop-2) 45%, var(--color-photo-stop-3) 100%);
+  --font-display: "Newsreader", "Iowan Old Style", Georgia, "Times New Roman", serif;
+  --font-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --text-display: 68px; --text-display-s: 42px; --text-2xl: 34px; --text-xl: 24px; --text-lg: 18px; --text-md: 15px; --text-sm: 13px; --text-xs: 11px;
+  --space-xs: 4px; --space-sm: 8px; --space-md: 16px; --space-lg: 24px; --space-xl: 40px; --space-2xl: 72px; --space-3xl: 128px;
+  --radius-sm: 2px; --radius-md: 4px; --radius-full: 9999px;
+  --measure: 68ch;
+  --rule: 1px solid var(--color-rule);
+}
+    body { margin: 0; font-family: var(--font-body); color: var(--color-ink); background: var(--color-paper); -webkit-font-smoothing: antialiased; }
+    a { color: var(--color-ink); text-decoration: none; } a:hover { color: var(--color-accent); }
+    .display { font-family: var(--font-display); font-weight: 500; letter-spacing: -0.015em; }
+    .label { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-ink-3); }
+    .photo { background: var(--color-photo); display: flex; align-items: flex-end; padding: var(--space-md); color: var(--color-photo-ink); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field span.v { min-height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-bottom: 1px solid var(--color-ink); font-size: var(--text-md); color: var(--color-ink); }
+    .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
+    .btn.accent { background: var(--color-accent); }
+    .btn.secondary { background: var(--color-paper); color: var(--color-ink); border: 1px solid var(--color-ink-3); }
+    .btn.sm { min-height: 44px; padding: 0 16px; font-size: var(--text-sm); }
+    .price { font-variant-numeric: tabular-nums; }
+    .ph { display: inline-block; min-width: 56px; height: 14px; background: var(--color-paper-3); border-radius: 2px; vertical-align: middle; }
+    .chip { display: inline-flex; align-items: center; gap: var(--space-xs); border: 1px solid var(--color-ink-3); border-radius: var(--radius-sm); padding: var(--space-sm) var(--space-sm); font-size: var(--text-sm); }
+    .chip.accent { border-color: var(--color-accent); color: var(--color-accent); }
+    .chip.muted { border-color: transparent; background: var(--color-paper-3); color: var(--color-ink-2); }
+    .note { border: 1px solid var(--color-ink-3); border-radius: var(--radius-sm); background: var(--color-paper-2); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; font-size: var(--text-sm); line-height: 1.55; }
+    .note dl { margin: 0; display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 4px var(--space-md); font-size: var(--text-sm); }
+    .note dt { color: var(--color-ink-3); font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding-block-start: 2px; }
+    .note dd { margin: 0; color: var(--color-ink-2); }
+    .slot { color: var(--color-ink-3); font-style: italic; }
+    .stub { border: 1px dashed var(--color-ink-3); border-radius: var(--radius-sm); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; color: var(--color-ink-2); font-size: var(--text-sm); }
+    .stub b { font-weight: 600; color: var(--color-ink); font-size: var(--text-sm); }
+    .sec { display: flex; flex-direction: column; gap: var(--space-md); }
+    table.spec { border-collapse: collapse; width: 100%; font-size: var(--text-sm); }
+    table.spec th, table.spec td { text-align: start; border-block-end: var(--rule); padding: 8px 12px; vertical-align: top; }
+    table.spec th { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-3); }
+    .grid { display: grid; gap: var(--space-lg); }
+    .card { display: flex; flex-direction: column; gap: var(--space-sm); }
+    .card .nm { font-family: var(--font-display); font-weight: 500; font-size: var(--text-lg); }
+    .tile { border: var(--rule); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; }
+    .kv { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px var(--space-md); font-size: var(--text-sm); }
+    .kv > span:nth-child(even) { text-align: end; font-variant-numeric: tabular-nums; }
+    .faq { border-block-start: var(--rule); padding-block: var(--space-md); display: flex; flex-direction: column; gap: 6px; }
+    .faq b { font-weight: 600; font-size: var(--text-md); }
+    .faq span { font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.6; }
+    .steprow { display: flex; gap: var(--space-md); font-size: var(--text-sm); }
+    .steprow > span { flex: 1; border-block-start: 2px solid var(--color-rule); padding-block-start: var(--space-sm); color: var(--color-ink-3); }
+    .steprow > span.on { border-block-start-color: var(--color-ink); color: var(--color-ink); font-weight: 600; }
+    code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: var(--text-xs); color: var(--color-ink-2); }
+    .prose { max-width: var(--measure); font-size: var(--text-md); line-height: 1.6; color: var(--color-ink-2); }
+  </style>
+</helmet>
+<div style="width: 1440px; min-height: 1960px; background: var(--color-paper); display: flex; flex-direction: column;">
+  <div style="display: flex; flex-direction: column; border-bottom: 1px solid var(--color-ink);">
+    <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm) var(--space-lg); align-items: center; justify-content: space-between; padding: 12px 56px; font-size: var(--text-xs); color: var(--color-ink-2); border-bottom: var(--rule);">
+      <span>Order by 14:00 Warsaw time for same-day delivery</span><span>Prices include delivery and VAT</span><span>Help &amp; WhatsApp: +1 (213) 592-5150 · Mon–Sat 8–20 CET</span>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm) var(--space-lg); align-items: center; justify-content: space-between; padding: var(--space-md) 56px;">
+      <span class="display" style="font-size: 26px; letter-spacing: 0.04em;">Flowers Overseas</span>
+      <span style="font-size: var(--text-sm); color: var(--color-ink-3);">Search flowers, occasions, a city or a country · Sign in · My orders · Basket (0)</span>
+    </div>
+    <div style="padding: 10px 56px; border-top: var(--rule); font-size: var(--text-sm); color: var(--color-ink-2);">
+      <span class="label" style="margin-inline-end: var(--space-sm);">Categories</span>Best sellers · Birthday · Sympathy · Occasions · Bouquets · Roses · Plants · Add-ons · Same-day delivery · Destinations
+    </div>
+    <div style="padding: 6px 56px 10px; font-size: var(--text-xs); color: var(--color-ink-3);">Chrome as approved in <b>homepage-v1</b>. Every category row entry and every utility link is <b>unpublished in Phase 0</b> and renders as text, not a link (site-links.ts, categories.ts; spec 004 AC-14).</div>
+  </div>
+
+  <section class="note" style="margin: var(--space-lg) 56px 0;">
+    <span class="label">Legal page template</span>
+    <dl>
+      <dt>Purpose</dt><dd>One template for every legal page: terms, privacy, cookies (with the settings block), withdrawal and cancellation, Impressum, company information. Per locale, versioned, and dated.</dd>
+      <dt>URL</dt><dd><code>/en-gb/legal/terms</code> · <code>/en-gb/legal/privacy</code> · <code>/en-gb/legal/cookies</code> · <code>/en-gb/legal/cancellation</code> · <code>/de/impressum</code> · <code>/en-gb/legal/company</code></dd>
+      <dt>Index</dt><dd>yes. They are real pages a regulator, a payment provider and a cautious buyer all look for.</dd>
+      <dt>Reads</dt><dd>the versioned document for (page, locale), its effective date, and <code>company.ts</code> for the identity block. The cookies page additionally reads and writes the visitor's consent record.</dd>
+      <dt>Why one template</dt><dd>six pages × four locales × versions is 24+ documents. A single shell with a prose column, a version header and a “what changed” line is the only way that stays maintainable and the only way a superseded version stays readable.</dd>
+      <dt>Owning spec</dt><dd>007 (the shell) · the documents themselves are founder/lawyer content, tracked in <code>docs/compliance/</code></dd>
+    </dl>
+  </section>
+
+  <main style="display: flex; flex-direction: column; gap: var(--space-xl); padding: var(--space-xl) 56px;">
+<div class="sec"><nav style="font-size: var(--text-sm); color: var(--color-ink-3);">Home <span style="color: var(--color-rule);">/</span> Legal <span style="color: var(--color-rule);">/</span> <b>Terms and conditions</b></nav>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-xl); align-items: start;">
+        <div class="sec" style="max-width: var(--measure);">
+          <h1 class="display" style="margin: 0; font-size: var(--text-display-s); line-height: 1.08;">Terms and conditions</h1>
+          <div class="kv" style="max-width: 420px;">
+            <span>Version</span><span><span class="slot">[slot] v</span></span>
+            <span>In force since</span><span><span class="slot">[slot] date</span></span>
+            <span>Applies to</span><span><span class="slot">[slot] EU (OÜ) or UK regime</span></span>
+          </div>
+          <span style="font-size: var(--text-xs); color: var(--color-ink-3);">A legal page that does not say which version it is and when it took effect cannot be relied on by either side. Superseded versions stay reachable at their own URLs.</span>
+          <div class="tile" style="border-color: var(--color-ink-3);"><span class="label">What changed</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);"><span class="slot">[slot] One line per version: what changed and why. Not a diff — a sentence.</span></span></div>
+          <div class="sec" style="gap: var(--space-md);">
+            <div class="sec" style="gap: 6px;"><h2 class="display" style="margin: 0; font-size: var(--text-xl);">1 · Who we are</h2><p class="prose" style="margin: 0; font-size: var(--text-md);"><span class="slot">[slot] Authored legal text. Prose column capped at --measure (68ch); headings are real h2s in document order so the page has a usable outline and a table of contents can be generated rather than hand-maintained.</span></p></div>
+            <div class="sec" style="gap: 6px;"><h2 class="display" style="margin: 0; font-size: var(--text-xl);">2 · What we do and what we do not do</h2><p class="prose" style="margin: 0; font-size: var(--text-md);"><span class="slot">[slot] Authored legal text. Prose column capped at --measure (68ch); headings are real h2s in document order so the page has a usable outline and a table of contents can be generated rather than hand-maintained.</span></p></div>
+            <div class="sec" style="gap: 6px;"><h2 class="display" style="margin: 0; font-size: var(--text-xl);">3 · Ordering, prices and payment</h2><p class="prose" style="margin: 0; font-size: var(--text-md);"><span class="slot">[slot] Authored legal text. Prose column capped at --measure (68ch); headings are real h2s in document order so the page has a usable outline and a table of contents can be generated rather than hand-maintained.</span></p></div>
+            <div class="sec" style="gap: 6px;"><h2 class="display" style="margin: 0; font-size: var(--text-xl);">4 · Delivery and dates</h2><p class="prose" style="margin: 0; font-size: var(--text-md);"><span class="slot">[slot] Authored legal text. Prose column capped at --measure (68ch); headings are real h2s in document order so the page has a usable outline and a table of contents can be generated rather than hand-maintained.</span></p></div>
+            <div class="sec" style="gap: 6px;"><h2 class="display" style="margin: 0; font-size: var(--text-xl);">5 · Substitution</h2><p class="prose" style="margin: 0; font-size: var(--text-md);"><span class="slot">[slot] Authored legal text. Prose column capped at --measure (68ch); headings are real h2s in document order so the page has a usable outline and a table of contents can be generated rather than hand-maintained.</span></p></div>
+            <div class="sec" style="gap: 6px;"><h2 class="display" style="margin: 0; font-size: var(--text-xl);">6 · Cancellation, withdrawal and refunds</h2><p class="prose" style="margin: 0; font-size: var(--text-md);"><span class="slot">[slot] Authored legal text. Prose column capped at --measure (68ch); headings are real h2s in document order so the page has a usable outline and a table of contents can be generated rather than hand-maintained.</span></p></div>
+            <div class="sec" style="gap: 6px;"><h2 class="display" style="margin: 0; font-size: var(--text-xl);">7 · The guarantee</h2><p class="prose" style="margin: 0; font-size: var(--text-md);"><span class="slot">[slot] Authored legal text. Prose column capped at --measure (68ch); headings are real h2s in document order so the page has a usable outline and a table of contents can be generated rather than hand-maintained.</span></p></div>
+            <div class="sec" style="gap: 6px;"><h2 class="display" style="margin: 0; font-size: var(--text-xl);">8 · Your data</h2><p class="prose" style="margin: 0; font-size: var(--text-md);"><span class="slot">[slot] Authored legal text. Prose column capped at --measure (68ch); headings are real h2s in document order so the page has a usable outline and a table of contents can be generated rather than hand-maintained.</span></p></div>
+            <div class="sec" style="gap: 6px;"><h2 class="display" style="margin: 0; font-size: var(--text-xl);">9 · Complaints and dispute resolution</h2><p class="prose" style="margin: 0; font-size: var(--text-md);"><span class="slot">[slot] Authored legal text. Prose column capped at --measure (68ch); headings are real h2s in document order so the page has a usable outline and a table of contents can be generated rather than hand-maintained.</span></p></div>
+            <div class="sec" style="gap: 6px;"><h2 class="display" style="margin: 0; font-size: var(--text-xl);">10 · Governing law</h2><p class="prose" style="margin: 0; font-size: var(--text-md);"><span class="slot">[slot] Authored legal text. Prose column capped at --measure (68ch); headings are real h2s in document order so the page has a usable outline and a table of contents can be generated rather than hand-maintained.</span></p></div>
+          </div>
+        </div>
+        <div class="sec">
+          <div class="tile"><span class="label">On this page</span><span style="font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.8;">Generated from the h2s. Sticky on desktop, collapsed above the text on the 390 artboard.</span></div>
+          <div class="tile"><span class="label">Other legal pages</span><span style="font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.8;">Privacy · Cookies and settings · Withdrawal and refunds · Impressum · Company information · Partner terms (Phase 1) · Accessibility statement (Phase 1) · Review policy (Phase 1)</span></div>
+          <div class="tile"><span class="label">Company</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);"><span class="slot">[slot] legal name</span>, <span class="slot">[slot] address</span>, <span class="slot">[slot] registry code</span>, VAT <span class="slot">[slot] VAT id</span> — rendered only when <code>company.registered</code> is true.</span></div>
+        </div>
+      </div></div>
+
+<div class="sec" style="border-block-start: 2px solid var(--color-ink); padding-block-start: var(--space-lg);">
+      <div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">The one variant</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">/legal/cookies carries the settings block</h2></div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-xl); align-items: start;">
+        <div class="sec">
+          <p class="prose" style="margin: 0;">Every other legal page is prose. The cookies page is prose plus one interactive block, because withdrawing consent has to be as easy as giving it and has to live where the policy is.</p>
+          <div class="tile" style="border-color: var(--color-ink);">
+            <span class="label">Your cookie choices</span>
+            <div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-md); border-block-start: var(--rule); padding-block: var(--space-md); align-items: start;"><span style="display: flex; flex-direction: column; gap: 2px;"><b style="font-size: var(--text-md);">Essential</b><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Always on. The site does not work without them, and they set no identifier we could track you with.</span></span><span style="font-size: var(--text-sm); color: var(--color-ink-3); white-space: nowrap;">on, locked</span></div>
+            <div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-md); border-block-start: var(--rule); padding-block: var(--space-md); align-items: start;"><span style="display: flex; flex-direction: column; gap: 2px;"><b style="font-size: var(--text-md);">Analytics</b><span style="font-size: var(--text-sm); color: var(--color-ink-2);"><span class="slot">[slot] what it is, who processes it, how long</span></span></span><span style="font-size: var(--text-sm); color: var(--color-ink-3); white-space: nowrap;"><span class="slot">[slot] off</span></span></div>
+            <div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-md); border-block-start: var(--rule); padding-block: var(--space-md); align-items: start;"><span style="display: flex; flex-direction: column; gap: 2px;"><b style="font-size: var(--text-md);">Marketing</b><span style="font-size: var(--text-sm); color: var(--color-ink-2);"><span class="slot">[slot] what it is, who processes it, how long</span></span></span><span style="font-size: var(--text-sm); color: var(--color-ink-3); white-space: nowrap;"><span class="slot">[slot] off</span></span></div>
+            <div style="display: flex; gap: var(--space-sm); flex-wrap: wrap; margin-block-start: var(--space-md);"><span class="btn sm secondary"><span class="slot">[slot] Reject all</span></span><span class="btn sm secondary"><span class="slot">[slot] Save my choice</span></span><span class="btn sm"><span class="slot">[slot] Accept all</span></span></div>
+            <span style="font-size: var(--text-xs); color: var(--color-ink-3);">Reject is as reachable and as prominent as Accept. Your current choice and the date it was recorded are shown above the buttons.</span>
+          </div>
+          <span style="font-size: var(--text-xs); color: var(--color-ink-3);"><b>Every string in this block is a <code>[slot]</code>:</b> there are no <code>consent.*</code> keys in <code>messages/en.json</code> yet. The block's <em>shape</em> is designed; its words belong to the spec that ships consent.</span>
+        </div>
+        <div class="sec">
+          <div class="tile"><span class="label">Cookie table</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Name, purpose, processor, lifetime — one row per cookie, per category. Generated from the same source the consent script reads, so the table cannot describe a cookie the site does not set or omit one it does.</span></div>
+          <div class="stub" style=""><b>States</b><span><b>No choice made yet</b> — every optional category is off and the page says the consent sheet has not been answered.</span><span><b>Choice made</b> — the recorded choice and its date, with a control to change it.</span><span><b>Consent withdrawn</b> — a confirmation that it took effect immediately, and what that means for the current page.</span></div>
+        </div>
+      </div></div>
+  </main>
+
+  <div style="margin-block-start: auto; border-top: 1px solid var(--color-ink); padding: var(--space-lg) 56px; display: flex; flex-direction: column; gap: var(--space-sm); font-size: var(--text-sm); color: var(--color-ink-2);">
+    <span class="label">Footer</span>
+    <span>Sending: Destinations · Occasions · Delivery times and cutoffs · The guarantee — Company: How it works · For florists · Help and contact · Imprint — Legal: Terms · Privacy · Cookies · Withdrawal and refunds · Cookie settings</span>
+    <span>International flower relay. You order, a vetted local florist makes and delivers. Operated by <span class="slot">[legal name]</span>, <span class="slot">[registered address]</span>, <span class="slot">[registration no]</span> — printed only once <code>company.registered</code> is true (company.ts; spec 004 AC-9).</span>
+    <span>BLIK · Klarna · PayPal · Visa · Mastercard · Apple Pay — card payments processed by Stripe. We never store card numbers.</span>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

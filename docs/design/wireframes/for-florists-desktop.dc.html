@@ -1,0 +1,195 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+  <style>
+:root{
+  --color-paper: oklch(99.3% 0.002 90);
+  --color-paper-2: oklch(97.2% 0.004 90);
+  --color-paper-3: oklch(94.5% 0.005 90);
+  --color-ink: oklch(19% 0.01 250);
+  --color-ink-2: oklch(36% 0.01 250);
+  --color-ink-3: oklch(52% 0.008 250);
+  --color-rule: oklch(90% 0.004 250);
+  --color-accent: oklch(42% 0.10 155);
+  --color-accent-strong: oklch(34% 0.09 155);
+  --color-accent-ink: oklch(99% 0.002 90);
+  --color-success: oklch(42% 0.10 150);
+  --color-warning: oklch(45% 0.12 75);
+  --color-danger: oklch(45% 0.17 25);
+  --color-danger-strong: oklch(38% 0.15 25);
+  --color-photo-stop-1: oklch(93% 0.02 120);
+  --color-photo-stop-2: oklch(88% 0.03 140);
+  --color-photo-stop-3: oklch(80% 0.04 150);
+  --color-photo-ink: oklch(40% 0.03 150);
+  --color-photo: linear-gradient(160deg, var(--color-photo-stop-1) 0%, var(--color-photo-stop-2) 45%, var(--color-photo-stop-3) 100%);
+  --font-display: "Newsreader", "Iowan Old Style", Georgia, "Times New Roman", serif;
+  --font-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --text-display: 68px; --text-display-s: 42px; --text-2xl: 34px; --text-xl: 24px; --text-lg: 18px; --text-md: 15px; --text-sm: 13px; --text-xs: 11px;
+  --space-xs: 4px; --space-sm: 8px; --space-md: 16px; --space-lg: 24px; --space-xl: 40px; --space-2xl: 72px; --space-3xl: 128px;
+  --radius-sm: 2px; --radius-md: 4px; --radius-full: 9999px;
+  --measure: 68ch;
+  --rule: 1px solid var(--color-rule);
+}
+    body { margin: 0; font-family: var(--font-body); color: var(--color-ink); background: var(--color-paper); -webkit-font-smoothing: antialiased; }
+    a { color: var(--color-ink); text-decoration: none; } a:hover { color: var(--color-accent); }
+    .display { font-family: var(--font-display); font-weight: 500; letter-spacing: -0.015em; }
+    .label { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-ink-3); }
+    .photo { background: var(--color-photo); display: flex; align-items: flex-end; padding: var(--space-md); color: var(--color-photo-ink); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field span.v { min-height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-bottom: 1px solid var(--color-ink); font-size: var(--text-md); color: var(--color-ink); }
+    .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
+    .btn.accent { background: var(--color-accent); }
+    .btn.secondary { background: var(--color-paper); color: var(--color-ink); border: 1px solid var(--color-ink-3); }
+    .btn.sm { min-height: 44px; padding: 0 16px; font-size: var(--text-sm); }
+    .price { font-variant-numeric: tabular-nums; }
+    .ph { display: inline-block; min-width: 56px; height: 14px; background: var(--color-paper-3); border-radius: 2px; vertical-align: middle; }
+    .chip { display: inline-flex; align-items: center; gap: var(--space-xs); border: 1px solid var(--color-ink-3); border-radius: var(--radius-sm); padding: var(--space-sm) var(--space-sm); font-size: var(--text-sm); }
+    .chip.accent { border-color: var(--color-accent); color: var(--color-accent); }
+    .chip.muted { border-color: transparent; background: var(--color-paper-3); color: var(--color-ink-2); }
+    .note { border: 1px solid var(--color-ink-3); border-radius: var(--radius-sm); background: var(--color-paper-2); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; font-size: var(--text-sm); line-height: 1.55; }
+    .note dl { margin: 0; display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 4px var(--space-md); font-size: var(--text-sm); }
+    .note dt { color: var(--color-ink-3); font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding-block-start: 2px; }
+    .note dd { margin: 0; color: var(--color-ink-2); }
+    .slot { color: var(--color-ink-3); font-style: italic; }
+    .stub { border: 1px dashed var(--color-ink-3); border-radius: var(--radius-sm); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; color: var(--color-ink-2); font-size: var(--text-sm); }
+    .stub b { font-weight: 600; color: var(--color-ink); font-size: var(--text-sm); }
+    .sec { display: flex; flex-direction: column; gap: var(--space-md); }
+    table.spec { border-collapse: collapse; width: 100%; font-size: var(--text-sm); }
+    table.spec th, table.spec td { text-align: start; border-block-end: var(--rule); padding: 8px 12px; vertical-align: top; }
+    table.spec th { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-3); }
+    .grid { display: grid; gap: var(--space-lg); }
+    .card { display: flex; flex-direction: column; gap: var(--space-sm); }
+    .card .nm { font-family: var(--font-display); font-weight: 500; font-size: var(--text-lg); }
+    .tile { border: var(--rule); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; }
+    .kv { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px var(--space-md); font-size: var(--text-sm); }
+    .kv > span:nth-child(even) { text-align: end; font-variant-numeric: tabular-nums; }
+    .faq { border-block-start: var(--rule); padding-block: var(--space-md); display: flex; flex-direction: column; gap: 6px; }
+    .faq b { font-weight: 600; font-size: var(--text-md); }
+    .faq span { font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.6; }
+    .steprow { display: flex; gap: var(--space-md); font-size: var(--text-sm); }
+    .steprow > span { flex: 1; border-block-start: 2px solid var(--color-rule); padding-block-start: var(--space-sm); color: var(--color-ink-3); }
+    .steprow > span.on { border-block-start-color: var(--color-ink); color: var(--color-ink); font-weight: 600; }
+    code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: var(--text-xs); color: var(--color-ink-2); }
+    .prose { max-width: var(--measure); font-size: var(--text-md); line-height: 1.6; color: var(--color-ink-2); }
+  </style>
+</helmet>
+<div style="width: 1440px; min-height: 2700px; background: var(--color-paper); display: flex; flex-direction: column;">
+  <div style="display: flex; flex-direction: column; border-bottom: 1px solid var(--color-ink);">
+    <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm) var(--space-lg); align-items: center; justify-content: space-between; padding: 12px 56px; font-size: var(--text-xs); color: var(--color-ink-2); border-bottom: var(--rule);">
+      <span>Order by 14:00 Warsaw time for same-day delivery</span><span>Prices include delivery and VAT</span><span>Help &amp; WhatsApp: +1 (213) 592-5150 · Mon–Sat 8–20 CET</span>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm) var(--space-lg); align-items: center; justify-content: space-between; padding: var(--space-md) 56px;">
+      <span class="display" style="font-size: 26px; letter-spacing: 0.04em;">Flowers Overseas</span>
+      <span style="font-size: var(--text-sm); color: var(--color-ink-3);">Search flowers, occasions, a city or a country · Sign in · My orders · Basket (0)</span>
+    </div>
+    <div style="padding: 10px 56px; border-top: var(--rule); font-size: var(--text-sm); color: var(--color-ink-2);">
+      <span class="label" style="margin-inline-end: var(--space-sm);">Categories</span>Best sellers · Birthday · Sympathy · Occasions · Bouquets · Roses · Plants · Add-ons · Same-day delivery · Destinations
+    </div>
+    <div style="padding: 6px 56px 10px; font-size: var(--text-xs); color: var(--color-ink-3);">Chrome as approved in <b>homepage-v1</b>. Every category row entry and every utility link is <b>unpublished in Phase 0</b> and renders as text, not a link (site-links.ts, categories.ts; spec 004 AC-14).</div>
+  </div>
+
+  <section class="note" style="margin: var(--space-lg) 56px 0;">
+    <span class="label">For florists · landing, application, walkthrough</span>
+    <dl>
+      <dt>Purpose</dt><dd>Recruit partner florists, and let one apply. <b>Landing</b> (<code>plan/05</code> row 41), <b>application</b> (row 42) and the <b>walkthrough</b> (row 43) are all on this artboard.</dd>
+      <dt>URL</dt><dd><code>/en-gb/for-florists</code> · <code>/pl/dla-kwiaciarni</code> · <code>/de/fuer-floristen</code>; the form at <code>…/apply</code>; the walkthrough at <code>…/how-orders-work</code>.</dd>
+      <dt>Index</dt><dd>landing and walkthrough yes ("florist partnership", "zlecenia dla kwiaciarni"); the application form noindex.</dd>
+      <dt>Reads</dt><dd>static copy plus live partner stats (placeholders in Phase 0). The form writes <code>partner_application</code> and reads nothing.</dd>
+      <dt>Why it is Phase 0</dt><dd>Phase 0's exit signal is three Warsaw florists committing after seeing the demo. This page and the mock vendor inbox are what they are shown.</dd>
+      <dt>Owning spec</dt><dd>011</dd>
+    </dl>
+  </section>
+
+  <main style="display: flex; flex-direction: column; gap: var(--space-xl); padding: var(--space-xl) 56px;">
+<div class="sec">
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-xl); align-items: start;">
+        <div class="sec">
+          <span class="label">For florists</span>
+          <h1 class="display" style="margin: 0; font-size: var(--text-display-s); line-height: 1.08;">Orders from abroad, made by you</h1>
+          <p class="prose" style="margin: 0;">Somebody in London wants flowers delivered to their mother in Warszawa. We find the buyer, take the order in their language, handle the payment and the promise. You make the bouquet and deliver it, and you are paid a fixed amount per order that you agree in advance.</p>
+          <div style="display: flex; gap: var(--space-md); flex-wrap: wrap;"><span class="btn accent">Apply to join</span><span class="btn secondary">See how an order arrives</span></div>
+          <div class="kv" style="max-width: 420px; border-block-start: var(--rule); padding-block-start: var(--space-md);">
+            <span>Partner florists</span><span><span class="ph"></span></span>
+            <span>Orders relayed</span><span><span class="ph"></span></span>
+            <span>Countries open</span><span>1 (Poland)</span>
+          </div>
+          <span style="font-size: var(--text-xs); color: var(--color-ink-3);">Two placeholder bars, because we are recruiting our first florists. Telling a florist we have hundreds of partners, to a florist who would be the first, is the fastest way to lose them.</span>
+        </div>
+        <div class="photo" style="aspect-ratio: 3 / 2;">Photo slot · a florist's workshop · founder to supply</div>
+      </div></div>
+
+<div class="sec"><div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">What each of us does</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;"></h2></div>
+      <div class="grid" style="grid-template-columns: repeat(2, minmax(0, 1fr));">
+        <div class="tile"><span class="label">We handle</span><span style="font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.7;">The buyer and their language · the website and the photography · the payment, the refunds and the chargebacks · VAT and the invoice · the delivery promise and the guarantee · the buyer's questions before and after · finding the order in the first place.</span></div>
+        <div class="tile"><span class="label">You handle</span><span style="font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.7;">Accepting or declining each order · making the bouquet from what is fresh · delivering it locally on the date · one photo of the delivered bouquet · telling us if you substituted something · saying no when you are full, with no penalty.</span></div>
+      </div></div>
+
+<div class="sec"><div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">What you are paid</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">An example, with every line shown</h2></div>
+      <div class="grid" style="grid-template-columns: repeat(2, minmax(0, 1fr));">
+        <div class="tile" style="border-color: var(--color-ink);">
+          <span class="label">One order, worked through</span>
+          <div class="kv">
+            <span>Buyer pays (incl. VAT and delivery)</span><span class="price">219 zł</span>
+            <span>VAT</span><span class="price"><span class="slot">[slot] amount</span></span>
+            <span>Card processing</span><span class="price"><span class="slot">[slot] amount</span></span>
+            <span style="font-weight: 600;">Your payout, agreed in advance</span><span class="price" style="font-weight: 600;">149 zł</span>
+            <span style="color: var(--color-ink-3);">What we keep, before marketing</span><span style="color: var(--color-ink-3);"><span class="slot">[slot] amount</span></span>
+          </div>
+          <span style="font-size: var(--text-xs); color: var(--color-ink-3);"><b>This is one example, not an average.</b> Your payout per product is a fixed amount you agree before you accept anything, and it does not move with the exchange rate or with what the buyer paid.</span>
+        </div>
+        <div class="sec">
+          <div class="tile"><span class="label">When you are paid</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Weekly, in złoty, by bank transfer, for every order you delivered that week. No fee to join, no monthly fee, no minimum.</span></div>
+          <div class="tile"><span class="label">What you are not asked for</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Exclusivity · a minimum number of orders · your own customer list · a discount on your shop prices · bank details before we have spoken.</span></div>
+        </div>
+      </div></div>
+
+<div class="sec" style="border-block-start: 2px solid var(--color-ink); padding-block-start: var(--space-lg);"><span class="label" style="color: var(--color-accent);">/en-gb/for-florists/apply · noindex</span>
+      <div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">Application</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">Nine fields, and none of them is a bank account</h2></div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-xl); align-items: start;">
+        <div class="sec">
+          <div class="field"><span class="label">Business name</span><span class="v"><span class="slot">[slot] As it appears on your shopfront</span></span></div>
+          <div class="field"><span class="label">Registration number</span><span class="v"><span class="slot">[slot] Whatever your country issues</span></span></div>
+          <div class="field"><span class="label">City</span><span class="v"><span class="slot">[slot] Warszawa</span></span></div>
+          <div class="field"><span class="label">Districts or postcodes you deliver to</span><span class="v"><span class="slot">[slot] So we only send you orders you can take</span></span></div>
+          <div class="field"><span class="label">Orders a day you could take</span><span class="v"><span class="slot">[slot] An honest number; we would rather route fewer and have them all delivered</span></span></div>
+          <div class="field"><span class="label">Your name</span><span class="v"><span class="slot">[slot] Who we would be talking to</span></span></div>
+          <div class="field"><span class="label">Email</span><span class="v">&nbsp;</span></div>
+          <div class="field"><span class="label">Phone / WhatsApp</span><span class="v"><span class="slot">[slot] How an order would reach you</span></span></div>
+          <div class="field"><span class="label">Photos of your work (optional)</span><span class="v" style="min-height: 70px;"><span class="slot">[slot] upload — helps, never required</span></span></div>
+          <span class="btn accent" style="width: 100%;">Send the application</span>
+        </div>
+        <div class="sec">
+          <div class="stub" style=""><b>What happens next</b><span>We read it, and we reply within <span class="slot">[slot] n</span> working days whether the answer is yes or no.</span><span>If it is yes, we visit or call, agree your payouts per product, and send you a test order before a real one.</span><span>You are never live because we published a page. You are live because we spoke and you agreed.</span></div>
+          <div class="stub" style=""><b>What we do with this</b><span>We store your business details to assess and, if it goes ahead, to run the partnership. We do not sell them and we do not share them with buyers.</span><span>Payout and bank details are not asked here — they come after we have spoken.</span><span><span class="slot">[slot] </span> retention period and the address to write to for deletion.</span></div>
+          <div class="stub" style=""><b>Form states</b><span><b>Validation</b> — inline, with the message under the field and focus moved to the first error.</span><span><b>Submitted</b> — a confirmation page (not a toast) saying what happens next and by when, plus a copy to the applicant's email.</span><span><b>Failed to send</b> — the answers are preserved and the phone number is offered as the fallback.</span></div>
+        </div>
+      </div></div>
+
+<div class="sec" style="border-block-start: 2px solid var(--color-ink); padding-block-start: var(--space-lg);"><span class="label" style="color: var(--color-accent);">/en-gb/for-florists/how-orders-work</span>
+      <div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">How an order arrives</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">The walkthrough, as page content</h2></div>
+      <div class="grid" style="grid-template-columns: repeat(4, minmax(0, 1fr));">
+        <div class="tile"><span class="label">01</span><span style="font-family: var(--font-display); font-size: var(--text-lg);">It arrives</span><span style="font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.6;">By email and WhatsApp, with a link. No app to install and no login to remember.</span><div class="photo" style="aspect-ratio: 4 / 3; margin-block-start: var(--space-sm);">Screen · from the mock inbox</div></div>
+        <div class="tile"><span class="label">02</span><span style="font-family: var(--font-display); font-size: var(--text-lg);">You accept or decline</span><span style="font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.6;">The payout and the deadline are both on the screen before you choose. Declining costs you nothing.</span><div class="photo" style="aspect-ratio: 4 / 3; margin-block-start: var(--space-sm);">Screen · from the mock inbox</div></div>
+        <div class="tile"><span class="label">03</span><span style="font-family: var(--font-display); font-size: var(--text-lg);">You make and deliver it</span><span style="font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.6;">With the recipient's name, phone, address and the buyer's card message to print. You never see the buyer's details.</span><div class="photo" style="aspect-ratio: 4 / 3; margin-block-start: var(--space-sm);">Screen · from the mock inbox</div></div>
+        <div class="tile"><span class="label">04</span><span style="font-family: var(--font-display); font-size: var(--text-lg);">You upload one photo</span><span style="font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.6;">From the same link. We email it to the buyer, and we ask you separately whether it may be shown publicly.</span><div class="photo" style="aspect-ratio: 4 / 3; margin-block-start: var(--space-sm);">Screen · from the mock inbox</div></div>
+      </div>
+      <span style="font-size: var(--text-xs); color: var(--color-ink-3);">The screens are the <code>/demo/vendor-inbox</code> mock, drawn in full on <code>flows/florist-journey.dc.html</code>. That inbox is password-protected and seeded; this page is the public version of the same four steps.</span></div>
+  </main>
+
+  <div style="margin-block-start: auto; border-top: 1px solid var(--color-ink); padding: var(--space-lg) 56px; display: flex; flex-direction: column; gap: var(--space-sm); font-size: var(--text-sm); color: var(--color-ink-2);">
+    <span class="label">Footer</span>
+    <span>Sending: Destinations · Occasions · Delivery times and cutoffs · The guarantee — Company: How it works · For florists · Help and contact · Imprint — Legal: Terms · Privacy · Cookies · Withdrawal and refunds · Cookie settings</span>
+    <span>International flower relay. You order, a vetted local florist makes and delivers. Operated by <span class="slot">[legal name]</span>, <span class="slot">[registered address]</span>, <span class="slot">[registration no]</span> — printed only once <code>company.registered</code> is true (company.ts; spec 004 AC-9).</span>
+    <span>BLIK · Klarna · PayPal · Visa · Mastercard · Apple Pay — card payments processed by Stripe. We never store card numbers.</span>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

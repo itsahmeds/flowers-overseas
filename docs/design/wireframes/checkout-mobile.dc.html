@@ -1,0 +1,234 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+  <style>
+:root{
+  --color-paper: oklch(99.3% 0.002 90);
+  --color-paper-2: oklch(97.2% 0.004 90);
+  --color-paper-3: oklch(94.5% 0.005 90);
+  --color-ink: oklch(19% 0.01 250);
+  --color-ink-2: oklch(36% 0.01 250);
+  --color-ink-3: oklch(52% 0.008 250);
+  --color-rule: oklch(90% 0.004 250);
+  --color-accent: oklch(42% 0.10 155);
+  --color-accent-strong: oklch(34% 0.09 155);
+  --color-accent-ink: oklch(99% 0.002 90);
+  --color-success: oklch(42% 0.10 150);
+  --color-warning: oklch(45% 0.12 75);
+  --color-danger: oklch(45% 0.17 25);
+  --color-danger-strong: oklch(38% 0.15 25);
+  --color-photo-stop-1: oklch(93% 0.02 120);
+  --color-photo-stop-2: oklch(88% 0.03 140);
+  --color-photo-stop-3: oklch(80% 0.04 150);
+  --color-photo-ink: oklch(40% 0.03 150);
+  --color-photo: linear-gradient(160deg, var(--color-photo-stop-1) 0%, var(--color-photo-stop-2) 45%, var(--color-photo-stop-3) 100%);
+  --font-display: "Newsreader", "Iowan Old Style", Georgia, "Times New Roman", serif;
+  --font-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --text-display: 68px; --text-display-s: 42px; --text-2xl: 34px; --text-xl: 24px; --text-lg: 18px; --text-md: 15px; --text-sm: 13px; --text-xs: 11px;
+  --space-xs: 4px; --space-sm: 8px; --space-md: 16px; --space-lg: 24px; --space-xl: 40px; --space-2xl: 72px; --space-3xl: 128px;
+  --radius-sm: 2px; --radius-md: 4px; --radius-full: 9999px;
+  --measure: 68ch;
+  --rule: 1px solid var(--color-rule);
+}
+    body { margin: 0; font-family: var(--font-body); color: var(--color-ink); background: var(--color-paper); -webkit-font-smoothing: antialiased; }
+    a { color: var(--color-ink); text-decoration: none; } a:hover { color: var(--color-accent); }
+    .display { font-family: var(--font-display); font-weight: 500; letter-spacing: -0.015em; }
+    .label { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-ink-3); }
+    .photo { background: var(--color-photo); display: flex; align-items: flex-end; padding: var(--space-md); color: var(--color-photo-ink); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field span.v { min-height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-bottom: 1px solid var(--color-ink); font-size: var(--text-md); color: var(--color-ink); }
+    .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
+    .btn.accent { background: var(--color-accent); }
+    .btn.secondary { background: var(--color-paper); color: var(--color-ink); border: 1px solid var(--color-ink-3); }
+    .btn.sm { min-height: 44px; padding: 0 16px; font-size: var(--text-sm); }
+    .price { font-variant-numeric: tabular-nums; }
+    .ph { display: inline-block; min-width: 56px; height: 14px; background: var(--color-paper-3); border-radius: 2px; vertical-align: middle; }
+    .chip { display: inline-flex; align-items: center; gap: var(--space-xs); border: 1px solid var(--color-ink-3); border-radius: var(--radius-sm); padding: var(--space-sm) var(--space-sm); font-size: var(--text-sm); }
+    .chip.accent { border-color: var(--color-accent); color: var(--color-accent); }
+    .chip.muted { border-color: transparent; background: var(--color-paper-3); color: var(--color-ink-2); }
+    .note { border: 1px solid var(--color-ink-3); border-radius: var(--radius-sm); background: var(--color-paper-2); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; font-size: var(--text-sm); line-height: 1.55; }
+    .note dl { margin: 0; display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 4px var(--space-md); font-size: var(--text-sm); }
+    .note dt { color: var(--color-ink-3); font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding-block-start: 2px; }
+    .note dd { margin: 0; color: var(--color-ink-2); }
+    .slot { color: var(--color-ink-3); font-style: italic; }
+    .stub { border: 1px dashed var(--color-ink-3); border-radius: var(--radius-sm); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; color: var(--color-ink-2); font-size: var(--text-sm); }
+    .stub b { font-weight: 600; color: var(--color-ink); font-size: var(--text-sm); }
+    .sec { display: flex; flex-direction: column; gap: var(--space-md); }
+    table.spec { border-collapse: collapse; width: 100%; font-size: var(--text-sm); }
+    table.spec th, table.spec td { text-align: start; border-block-end: var(--rule); padding: 8px 12px; vertical-align: top; }
+    table.spec th { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-3); }
+    .grid { display: grid; gap: var(--space-lg); }
+    .card { display: flex; flex-direction: column; gap: var(--space-sm); }
+    .card .nm { font-family: var(--font-display); font-weight: 500; font-size: var(--text-lg); }
+    .tile { border: var(--rule); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; }
+    .kv { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px var(--space-md); font-size: var(--text-sm); }
+    .kv > span:nth-child(even) { text-align: end; font-variant-numeric: tabular-nums; }
+    .faq { border-block-start: var(--rule); padding-block: var(--space-md); display: flex; flex-direction: column; gap: 6px; }
+    .faq b { font-weight: 600; font-size: var(--text-md); }
+    .faq span { font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.6; }
+    .steprow { display: flex; gap: var(--space-md); font-size: var(--text-sm); }
+    .steprow > span { flex: 1; border-block-start: 2px solid var(--color-rule); padding-block-start: var(--space-sm); color: var(--color-ink-3); }
+    .steprow > span.on { border-block-start-color: var(--color-ink); color: var(--color-ink); font-weight: 600; }
+    code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: var(--text-xs); color: var(--color-ink-2); }
+    .prose { max-width: var(--measure); font-size: var(--text-md); line-height: 1.6; color: var(--color-ink-2); }
+  </style>
+</helmet>
+<div style="width: 390px; min-height: 4180px; background: var(--color-paper); display: flex; flex-direction: column;">
+  <div style="display: flex; flex-direction: column; border-bottom: 1px solid var(--color-ink);">
+    <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm) var(--space-lg); align-items: center; justify-content: space-between; padding: 12px var(--space-md); font-size: var(--text-xs); color: var(--color-ink-2); border-bottom: var(--rule);">
+      <span>Order by 14:00 Warsaw time for same-day delivery</span><span>Prices include delivery and VAT</span><span>Help &amp; WhatsApp: +1 (213) 592-5150 · Mon–Sat 8–20 CET</span>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm) var(--space-lg); align-items: center; justify-content: space-between; padding: var(--space-md) var(--space-md);">
+      <span class="display" style="font-size: 20px; letter-spacing: 0.04em;">Flowers Overseas</span>
+      <span style="font-size: var(--text-sm); color: var(--color-ink-3);">Search · Menu · Basket (0)</span>
+    </div>
+    <div style="padding: 10px var(--space-md); border-top: var(--rule); font-size: var(--text-sm); color: var(--color-ink-2);">
+      <span class="label" style="margin-inline-end: var(--space-sm);">Categories</span>Best sellers · Occasions · Bouquets · Roses · Plants · Same-day
+    </div>
+    <div style="padding: 6px var(--space-md) 10px; font-size: var(--text-xs); color: var(--color-ink-3);">Chrome as approved in <b>homepage-v1</b>. Every category row entry and every utility link is <b>unpublished in Phase 0</b> and renders as text, not a link (site-links.ts, categories.ts; spec 004 AC-14).</div>
+  </div>
+
+  <section class="note" style="margin: var(--space-lg) var(--space-md) 0;">
+    <span class="label">Checkout · three steps and the demo guard</span>
+    <dl>
+      <dt>Purpose</dt><dd>Recipient → you → pay. Three steps on one URL, guest by default, state saved server-side per step so refresh and back never lose data, and every step ≤8 fields on mobile.</dd>
+      <dt>URL</dt><dd><code>/en-gb/checkout</code> — one URL for all three steps.</dd>
+      <dt>Index</dt><dd><b>noindex + robots disallow.</b></dd>
+      <dt>Phase 0 demo guard</dt><dd><code>checkout.demo_guard</code> is <b>on</b> by default. The form renders and the total is real arithmetic, but no order row is created, no payment intent is opened and no card is charged. The guard state is drawn as the first thing on this artboard because it is the state the 16 October demo runs in.</dd>
+      <dt>Reads</dt><dd>order draft, the destination's address format, add-on prices for the destination, payment methods for the <b>buyer's</b> country, the signed 30-minute price quote, VAT breakdown by rate.</dd>
+      <dt>Price identity</dt><dd>the total equals the product page's all-in price plus only the lines the buyer chose. Nothing is added at this step that was not visible earlier.</dd>
+      <dt>Owning spec</dt><dd>010 (payments 013)</dd>
+    </dl>
+  </section>
+
+  <main style="display: flex; flex-direction: column; gap: var(--space-xl); padding: var(--space-xl) var(--space-md);">
+<div class="tile" style="border-color: var(--color-warning); border-width: 2px; background: var(--color-paper-2);">
+        <span class="label" style="color: var(--color-warning);">Phase 0 · demo guard on</span>
+        <span style="font-size: var(--text-lg); font-weight: 600;">This is a demonstration. No order is placed and no card is charged.</span>
+        <span style="font-size: var(--text-sm); color: var(--color-ink-2);"><span class="slot">[slot] Copy owned by spec 010. It must be unmissable, it must appear on all three steps, and it must not be dismissible — a florist watching the demo has to be able to tell the difference between the real thing and the rehearsal, and so does anyone who finds the URL.</span></span>
+        <span style="font-size: var(--text-xs); color: var(--color-ink-3);">Rendered from the <code>checkout.demo_guard</code> flag. When the flag is off this block is absent and nothing else on the page changes shape.</span>
+      </div>
+
+<div class="sec">
+      <div class="steprow"><span class="on">1 · Recipient</span><span>2 · You</span><span>3 · Pay</span></div>
+      <div style="display: grid; grid-template-columns: repeat(1, minmax(0, 1fr)); gap: var(--space-xl); align-items: start;">
+        <div class="sec">
+          <div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">Step 1 · Recipient</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">Who is it for?</h2></div>
+          <span style="font-size: var(--text-sm); color: var(--color-ink-2);">Your florist needs this to deliver.</span>
+          <div class="field"><span class="label">Recipient's name</span><span class="v"><span class="slot">[slot] First and last name</span></span></div>
+          <div class="field"><span class="label">Phone number in Poland</span><span class="v"><span class="slot">[slot] The florist calls if nobody answers the door</span></span></div>
+          <div class="field"><span class="label">Street and number</span><span class="v"><span class="slot">[slot] ul. Marszałkowska 1/2</span></span></div>
+          <div class="field"><span class="label">Postcode and city</span><span class="v"><span class="slot">[slot] 00-001 Warszawa</span></span></div>
+          <span style="font-size: var(--text-xs); color: var(--color-ink-3);">The address form is in the <b>destination country's</b> format and order, not the buyer's. Postcode uses <code>inputmode="numeric"</code> where the country's postcodes are numeric; phone uses <code>inputmode="tel"</code>; every input is ≥16 px so iOS does not zoom.</span>
+          <div class="field"><span class="label">Card message</span><span class="v" style="min-height: 90px; align-items: flex-start; padding-block: 12px;"><span class="slot">[slot] Leave blank for no card</span></span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">0 / 200 characters — counted in graphemes, so Polish, Cyrillic, Turkish and emoji all count as one each.</span></div>
+          <div class="tile"><span class="label">Card preview</span><span style="font-family: var(--font-display); font-size: var(--text-lg);"><span class="slot">[slot] your message</span></span><span style="font-size: var(--text-sm); color: var(--color-ink-3);">— <span class="slot">[slot] sign as</span></span></div>
+          <div class="tile"><span style="font-weight: 600; font-size: var(--text-sm);">Add chocolates · 29 zł</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">One tap. Unticked, like every add-on.</span></div>
+          <span class="btn accent" style="width: 100%;">Continue to your details</span>
+        </div>
+                <div class="tile" style="background: var(--color-paper-2); position: relative;">
+          <span class="label">Your order</span>
+          <div style="display: flex; gap: var(--space-md); align-items: flex-start;">
+            <div class="photo" style="width: 84px; aspect-ratio: 1 / 1; padding: var(--space-sm); font-size: 9px;">slot</div>
+            <div style="display: flex; flex-direction: column; gap: 2px; font-size: var(--text-sm);"><span style="font-family: var(--font-display); font-size: var(--text-lg);">Amber Hour</span><span>18 stems</span><span style="color: var(--color-ink-3);">Thu 10 Sep · Warszawa</span></div>
+          </div>
+          <div class="kv" style="border-block-start: var(--rule); padding-block-start: var(--space-sm);"><span>Flowers</span><span class="price">219 zł</span><span>Delivery</span><span>included</span><span>VAT</span><span>included</span></div>
+          <div class="kv" style="border-block-start: 1px solid var(--color-ink); padding-block-start: var(--space-sm); font-size: var(--text-lg);"><span style="font-weight: 600;">Total</span><span class="price" style="font-weight: 600;">219 zł</span></div>
+          <span style="font-size: var(--text-xs); color: var(--color-ink-3);">Edit the bouquet, the size or the date without leaving this page — the summary is editable inline, and a <code>/basket</code> page exists for multi-item orders but is never a required step.</span>
+          <span style="font-size: var(--text-xs); color: var(--color-ink-3);">7-day freshness guarantee · photo on delivery · the guarantee and refund terms.</span>
+        </div>
+      </div></div>
+
+<div class="sec" style="border-block-start: 2px solid var(--color-ink); padding-block-start: var(--space-lg);">
+      <div class="steprow"><span>1 · Recipient ✓</span><span class="on">2 · You</span><span>3 · Pay</span></div>
+      <div style="display: grid; grid-template-columns: repeat(1, minmax(0, 1fr)); gap: var(--space-xl); align-items: start;">
+        <div class="sec">
+          <div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">Step 2 · You</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">How do we reach you?</h2></div>
+          <span style="font-size: var(--text-sm); color: var(--color-ink-2);">So we can confirm your order and send you the delivery photo.</span>
+          <div class="field"><span class="label">Your email</span><span class="v"><span class="slot">[slot] email address</span></span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">Confirmation, the delivery photo and the invoice go here. Nothing else.</span></div>
+          <div class="field"><span class="label">Your phone (optional)</span><span class="v"><span class="slot">[slot] only if you want us to call about a problem</span></span></div>
+          <label style="display: flex; gap: var(--space-md); align-items: flex-start; border-block-start: var(--rule); padding-block-start: var(--space-md);"><span style="width: 18px; height: 18px; border: 1px solid var(--color-ink-3); border-radius: var(--radius-sm); flex: none; margin-block-start: 2px;"></span><span style="font-size: var(--text-sm); color: var(--color-ink-2);"><span class="slot">[slot] Occasion reminders and offers — unticked, separate from the order, never a condition of ordering, one-click unsubscribe.</span></span></label>
+          <span style="font-size: var(--text-xs); color: var(--color-ink-3);">No account is created and none is offered as a gate. Guest is the default and the only required path; a magic-link login exists for people who want their orders remembered (Phase 1).</span>
+          <span class="btn accent" style="width: 100%;">Continue to payment</span>
+        </div>
+                <div class="tile" style="background: var(--color-paper-2); position: relative;">
+          <span class="label">Your order</span>
+          <div style="display: flex; gap: var(--space-md); align-items: flex-start;">
+            <div class="photo" style="width: 84px; aspect-ratio: 1 / 1; padding: var(--space-sm); font-size: 9px;">slot</div>
+            <div style="display: flex; flex-direction: column; gap: 2px; font-size: var(--text-sm);"><span style="font-family: var(--font-display); font-size: var(--text-lg);">Amber Hour</span><span>18 stems</span><span style="color: var(--color-ink-3);">Thu 10 Sep · Warszawa</span></div>
+          </div>
+          <div class="kv" style="border-block-start: var(--rule); padding-block-start: var(--space-sm);"><span>Flowers</span><span class="price">219 zł</span><span>Delivery</span><span>included</span><span>VAT</span><span>included</span></div>
+          <div class="kv" style="border-block-start: 1px solid var(--color-ink); padding-block-start: var(--space-sm); font-size: var(--text-lg);"><span style="font-weight: 600;">Total</span><span class="price" style="font-weight: 600;">219 zł</span></div>
+          <span style="font-size: var(--text-xs); color: var(--color-ink-3);">Edit the bouquet, the size or the date without leaving this page — the summary is editable inline, and a <code>/basket</code> page exists for multi-item orders but is never a required step.</span>
+          <span style="font-size: var(--text-xs); color: var(--color-ink-3);">7-day freshness guarantee · photo on delivery · the guarantee and refund terms.</span>
+        </div>
+      </div></div>
+
+<div class="sec" style="border-block-start: 2px solid var(--color-ink); padding-block-start: var(--space-lg);">
+      <div class="steprow"><span>1 · Recipient ✓</span><span>2 · You ✓</span><span class="on">3 · Pay</span></div>
+      <div style="display: grid; grid-template-columns: repeat(1, minmax(0, 1fr)); gap: var(--space-xl); align-items: start;">
+        <div class="sec">
+          <div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">Step 3 · Pay</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">How would you like to pay?</h2></div>
+          <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm);"><span class="tile" style="flex: 1; min-width: 96px; text-align: center; border-color: var(--color-ink); border-width: 2px;">BLIK</span><span class="tile" style="flex: 1; min-width: 96px; text-align: center; ">Card</span><span class="tile" style="flex: 1; min-width: 96px; text-align: center; ">Apple Pay</span><span class="tile" style="flex: 1; min-width: 96px; text-align: center; ">PayPal</span><span class="tile" style="flex: 1; min-width: 96px; text-align: center; ">Klarna</span></div>
+          <span style="font-size: var(--text-xs); color: var(--color-ink-3);">Methods are rendered for the <b>buyer's</b> country and wallets come first on mobile. Prices are keyed on the <b>destination</b> only — no buyer-country dimension exists anywhere in the pricing code, which is how “a French and a German buyer sending to Warsaw see the same price” is a property of the type system rather than a policy (ADR-0006).</span>
+          <div class="tile" style="border-color: var(--color-ink);">
+            <span class="label">Before you pay</span>
+            <div class="kv">
+              <span>Amber Hour · 18 stems</span><span class="price">219 zł</span>
+              <span>Chocolates</span><span class="price">29 zł</span>
+              <span>Handwritten card</span><span class="price">0 zł</span>
+              <span>Delivery Thu 10 Sep to Warszawa</span><span>included</span>
+              <span style="color: var(--color-ink-3);">VAT 8% on flowers</span><span style="color: var(--color-ink-3);"><span class="slot">[slot] amount</span></span>
+              <span style="color: var(--color-ink-3);">VAT 23% on add-ons</span><span style="color: var(--color-ink-3);"><span class="slot">[slot] amount</span></span>
+            </div>
+            <div class="kv" style="border-block-start: 1px solid var(--color-ink); padding-block-start: var(--space-sm); font-size: var(--text-lg);"><span style="font-weight: 600;">Total</span><span class="price" style="font-weight: 600;">248 zł</span></div>
+            <span style="font-size: var(--text-xs); color: var(--color-ink-3);">You pay in <span class="slot">[slot] buyer currency</span>; the florist is paid in złoty. The rate was fixed when you continued and holds for 30 minutes.</span>
+          </div>
+          <div class="sec" style="gap: 6px;">
+            <span class="label">What you are agreeing to</span>
+            <span style="font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.6;">Flowers are made to order and perishable, so there is no 14-day right of withdrawal (CRD Art. 16(d)). You can cancel free of charge until we send the order to the florist. If the exact flowers are unavailable the florist substitutes to the same value, style and colour and we tell you. Our guarantee and refund terms apply.</span>
+            <span style="font-size: var(--text-sm); color: var(--color-ink-2);">Operated by <span class="slot">[slot] legal name</span>, <span class="slot">[slot] registered address</span>, <span class="slot">[slot] registration no</span>, VAT <span class="slot">[slot] VAT id</span>.</span>
+          </div>
+          <span class="btn accent" style="width: 100%;">Pay 248 zł</span>
+          <span style="font-size: var(--text-xs); color: var(--color-ink-3);">The button says the amount, because a button that says “Confirm” hides what confirming costs. Card payments are processed by Stripe with 3-D Secure; we never see or store a card number.</span>
+        </div>
+                <div class="tile" style="background: var(--color-paper-2); position: relative;">
+          <span class="label">Your order</span>
+          <div style="display: flex; gap: var(--space-md); align-items: flex-start;">
+            <div class="photo" style="width: 84px; aspect-ratio: 1 / 1; padding: var(--space-sm); font-size: 9px;">slot</div>
+            <div style="display: flex; flex-direction: column; gap: 2px; font-size: var(--text-sm);"><span style="font-family: var(--font-display); font-size: var(--text-lg);">Amber Hour</span><span>18 stems</span><span style="color: var(--color-ink-3);">Thu 10 Sep · Warszawa</span></div>
+          </div>
+          <div class="kv" style="border-block-start: var(--rule); padding-block-start: var(--space-sm);"><span>Flowers</span><span class="price">219 zł</span><span>Delivery</span><span>included</span><span>VAT</span><span>included</span></div>
+          <div class="kv" style="border-block-start: 1px solid var(--color-ink); padding-block-start: var(--space-sm); font-size: var(--text-lg);"><span style="font-weight: 600;">Total</span><span class="price" style="font-weight: 600;">248 zł</span></div>
+          <span style="font-size: var(--text-xs); color: var(--color-ink-3);">Edit the bouquet, the size or the date without leaving this page — the summary is editable inline, and a <code>/basket</code> page exists for multi-item orders but is never a required step.</span>
+          <span style="font-size: var(--text-xs); color: var(--color-ink-3);">7-day freshness guarantee · photo on delivery · the guarantee and refund terms.</span>
+        </div>
+      </div></div>
+
+<div class="sec"><div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">States</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;"></h2></div>
+      <div class="grid" style="grid-template-columns: repeat(1, minmax(0, 1fr));">
+      <div class="stub" style=""><b>Validation error</b><span>The field's border-block-end turns danger, the message sits under the field linked by <code>aria-describedby</code>, focus moves to the first error, and the step's heading gains a count. Colour is never the only signal.</span></div>
+      <div class="stub" style=""><b>Quote expired</b><span>The 30-minute signed quote lapses: the total is recomputed, the difference is stated in words before payment, and the buyer confirms the new amount. A silent re-price is drip pricing.</span></div>
+      <div class="stub" style=""><b>Payment declined</b><span>The step stays on the page with the draft intact, the reason is shown in plain language, and an alternative method is offered. Nothing the buyer typed is lost.</span></div>
+      <div class="stub" style=""><b>Date became impossible while typing</b><span>The cutoff passes mid-checkout: the summary shows the new soonest date and asks for a confirmation before payment rather than quietly delivering a day late.</span></div>
+      <div class="stub" style=""><b>Sticky total on mobile</b><span>A sticky bar carries the running total and the primary action on the 390 artboard, so the number is never scrolled away from the button.</span></div>
+      <div class="stub" style=""><b>Accessibility</b><span>No time limit except the payment session, which is extendable. Usable at 200% zoom. Each step is a <code>&lt;form&gt;</code> with a fieldset per group and a real submit button; the progress indicator is an ordered list with the current step marked <code>aria-current</code>.</span></div>
+      </div></div>
+  </main>
+
+  <div style="margin-block-start: auto; border-top: 1px solid var(--color-ink); padding: var(--space-lg) var(--space-md); display: flex; flex-direction: column; gap: var(--space-sm); font-size: var(--text-sm); color: var(--color-ink-2);">
+    <span class="label">Footer</span>
+    <span>Sending: Destinations · Occasions · Delivery times and cutoffs · The guarantee — Company: How it works · For florists · Help and contact · Imprint — Legal: Terms · Privacy · Cookies · Withdrawal and refunds · Cookie settings</span>
+    <span>International flower relay. You order, a vetted local florist makes and delivers. Operated by <span class="slot">[legal name]</span>, <span class="slot">[registered address]</span>, <span class="slot">[registration no]</span> — printed only once <code>company.registered</code> is true (company.ts; spec 004 AC-9).</span>
+    <span>BLIK · Klarna · PayPal · Visa · Mastercard · Apple Pay — card payments processed by Stripe. We never store card numbers.</span>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
