@@ -39,6 +39,7 @@ Legend: 🧑 founder · 🧾 accountant · ⚖️ lawyer · 🔍 verify at decis
 | B12 | Native reviewers for `pl` and `de`: source (freelance marketplace vs known contacts) and budget approval (~€100–250/mo) | translation gate | 🧑 | Freelance, hourly |
 | B13 | Seed → live validation: do the first three florists accept the seed payout levels? | pricing | 🧑 | Adjust `partner_catalog_mapping` per partner |
 | B14 | First-order plan: who is the first real buyer and recipient (founder-sourced) and on what date | Phase 1 exit | 🧑 | Book by 1 Dec |
+| B15 | Occasion rules: `plan/03` §9's six rule types cannot express Romanian Orthodox Easter (offset from Gregorian Easter varies by year) or Polish name days (per name, no single date). Add a seventh rule type (Orthodox Easter offset) as a spec 009 amendment; name day stays a category, not a dated occasion. Until then `seed/data/occasion-country.json` carries them as `rule_type: "none"`, `observed: true` (TASK-072, 2026-09-09) | spec 009 `occasionDate(rule, year)`; RO occasion pages | 🧑 orchestrator → `/spec 009` | Seventh rule type in spec 009; no change to committed seed rows |
 
 ## C. Phase 2–3 (due by 31 Jan 2027)
 
