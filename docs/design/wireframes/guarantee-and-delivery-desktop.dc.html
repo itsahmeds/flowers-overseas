@@ -44,7 +44,7 @@
     .photo { background: var(--color-photo); display: flex; align-items: flex-end; padding: var(--space-md); color: var(--color-photo-ink); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; }
     .field { display: flex; flex-direction: column; gap: 6px; }
     .field span.v { min-height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-bottom: 1px solid var(--color-ink); font-size: var(--text-md); color: var(--color-ink); }
-    .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
+    .btn { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
     .btn.accent { background: var(--color-accent); }
     .btn.secondary { background: var(--color-paper); color: var(--color-ink); border: 1px solid var(--color-ink-3); }
     .btn.sm { min-height: 44px; padding: 0 16px; font-size: var(--text-sm); }
@@ -80,23 +80,23 @@
     .prose { max-width: var(--measure); font-size: var(--text-md); line-height: 1.6; color: var(--color-ink-2); }
   </style>
 </helmet>
-<div style="width: 1440px; min-height: 2200px; background: var(--color-paper); display: flex; flex-direction: column;">
+<div style="width: 1440px; min-height: 2620px; background: var(--color-paper); display: flex; flex-direction: column;">
   <div style="display: flex; flex-direction: column; border-bottom: 1px solid var(--color-ink);">
     <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm) var(--space-lg); align-items: center; justify-content: space-between; padding: 12px 56px; font-size: var(--text-xs); color: var(--color-ink-2); border-bottom: var(--rule);">
-      <span>Order by 14:00 Warsaw time for same-day delivery</span><span>Prices include delivery and VAT</span><span>Help &amp; WhatsApp: +1 (213) 592-5150 · Mon–Sat 8–20 CET</span>
+      <span>Order by 14:00 in Warsaw — the recipient's own time — and we deliver today</span><span>One price: VAT and delivery in</span><span>Talk to us: +1 (213) 592-5150 · WhatsApp · Mon–Sat 8–20 CET</span>
     </div>
     <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm) var(--space-lg); align-items: center; justify-content: space-between; padding: var(--space-md) 56px;">
       <span class="display" style="font-size: 26px; letter-spacing: 0.04em;">Flowers Overseas</span>
       <span style="font-size: var(--text-sm); color: var(--color-ink-3);">Search flowers, occasions, a city or a country · Sign in · My orders · Basket (0)</span>
     </div>
     <div style="padding: 10px 56px; border-top: var(--rule); font-size: var(--text-sm); color: var(--color-ink-2);">
-      <span class="label" style="margin-inline-end: var(--space-sm);">Categories</span>Best sellers · Birthday · Sympathy · Occasions · Bouquets · Roses · Plants · Add-ons · Same-day delivery · Destinations
+      <span class="label" style="margin-inline-end: var(--space-sm);">Categories</span>Best sellers · Birthday · Sympathy · All Saints 1 Nov · Andrzejki 29 Nov · Wigilia 24 Dec · Women's Day 8 Mar · Bouquets · Roses · Plants · Same-day · Poland
     </div>
-    <div style="padding: 6px 56px 10px; font-size: var(--text-xs); color: var(--color-ink-3);">Chrome as approved in <b>homepage-v1</b>. Every category row entry and every utility link is <b>unpublished in Phase 0</b> and renders as text, not a link (site-links.ts, categories.ts; spec 004 AC-14).</div>
+    <div style="padding: 6px 56px 10px; font-size: var(--text-xs); color: var(--color-ink-3);">Chrome as approved in <b>homepage-v1</b>. Every category row entry and every utility link is <b>unpublished in Phase 0</b> and renders as text, not a link (site-links.ts, categories.ts; spec 004 AC-14). <b>Round 2:</b> the row prints the next real occasion dates for the destination, the way 1-800-Flowers prints "Labor Day (9/7)" — the dates come from the occasion calendar, so a row entry can never name a date we have not verified.</div>
   </div>
 
   <section class="note" style="margin: var(--space-lg) 56px 0;">
-    <span class="label">Guarantee and delivery information</span>
+    <span class="label">Guarantee and delivery information · [internal]</span>
     <dl>
       <dt>Purpose</dt><dd>Two Phase 0 trust pages that share one template because they are the same shape: an authored promise, a table of facts, and the exceptions stated rather than buried. <b>Guarantee and substitution</b> (<code>plan/05</code> row 28) is drawn first; <b>delivery information</b> (row 29) second.</dd>
       <dt>URL</dt><dd><code>/en-gb/guarantee</code> and <code>/en-gb/delivery</code>. <code>/en-gb/legal/substitution</code> 301s to the guarantee page rather than existing as a thin duplicate.</dd>
@@ -130,29 +130,50 @@
       <nav style="font-size: var(--text-sm); color: var(--color-ink-3);">Home <span style="color: var(--color-rule);">/</span> <b>Delivery times and cutoffs</b></nav>
       <h1 class="display" style="margin: 0; font-size: var(--text-display-s); line-height: 1.08;">When flowers can arrive</h1>
       <p class="prose" style="margin: 0;">Cutoffs are in the <b>recipient's</b> time zone, because that is where the florist is. Everything in this table is country registry data — change the cutoff in admin and this page changes.</p>
-      <table class="spec">
-        <tr><th>Country</th><th>Same-day cutoff</th><th>Time zone</th><th>Delivery days</th><th>Sunday</th><th>Status</th></tr>
-        <tr><td><b>Poland</b></td><td>14:00</td><td>Europe/Warsaw</td><td>Mon–Sat</td><td>On request, surcharge</td><td style="color: var(--color-accent);">Delivering now</td></tr>
-        <tr><td>Germany</td><td colspan="4" style="color: var(--color-ink-3);">No cutoff until we have a florist there — a cutoff without a florist is a promise we cannot keep</td><td>Guide · waiting list</td></tr>
-        <tr><td>France</td><td colspan="4" style="color: var(--color-ink-3);">No cutoff until we have a florist there — a cutoff without a florist is a promise we cannot keep</td><td>Guide · waiting list</td></tr>
-        <tr><td>Spain</td><td colspan="4" style="color: var(--color-ink-3);">No cutoff until we have a florist there — a cutoff without a florist is a promise we cannot keep</td><td>Guide · waiting list</td></tr>
-        <tr><td>Italy</td><td colspan="4" style="color: var(--color-ink-3);">No cutoff until we have a florist there — a cutoff without a florist is a promise we cannot keep</td><td>Guide · waiting list</td></tr>
-        <tr><td>Romania</td><td colspan="4" style="color: var(--color-ink-3);">No cutoff until we have a florist there — a cutoff without a florist is a promise we cannot keep</td><td>Guide · waiting list</td></tr>
-        <tr><td>Netherlands</td><td colspan="4" style="color: var(--color-ink-3);">No cutoff until we have a florist there — a cutoff without a florist is a promise we cannot keep</td><td>Guide · waiting list</td></tr>
-      </table>
+      <div style="overflow-x: auto;">
+        <table class="spec" style="min-width: 560px;">
+          <tr><th>Country</th><th>Same-day cutoff</th><th>Time zone</th><th>Delivery days</th><th>Sunday</th><th>Status</th></tr>
+          <tr><td><b>Poland</b></td><td>14:00</td><td>Europe/Warsaw</td><td>Mon–Sat</td><td>On request, surcharge</td><td style="color: var(--color-accent);">Delivering now</td></tr>
+          <tr><td>Germany</td><td colspan="4" style="color: var(--color-ink-3);">No cutoff until we have a florist there — a cutoff without a florist is a promise we cannot keep</td><td>Guide · waiting list</td></tr>
+          <tr><td>France</td><td colspan="4" style="color: var(--color-ink-3);">No cutoff until we have a florist there — a cutoff without a florist is a promise we cannot keep</td><td>Guide · waiting list</td></tr>
+          <tr><td>Spain</td><td colspan="4" style="color: var(--color-ink-3);">No cutoff until we have a florist there — a cutoff without a florist is a promise we cannot keep</td><td>Guide · waiting list</td></tr>
+          <tr><td>Italy</td><td colspan="4" style="color: var(--color-ink-3);">No cutoff until we have a florist there — a cutoff without a florist is a promise we cannot keep</td><td>Guide · waiting list</td></tr>
+          <tr><td>Romania</td><td colspan="4" style="color: var(--color-ink-3);">No cutoff until we have a florist there — a cutoff without a florist is a promise we cannot keep</td><td>Guide · waiting list</td></tr>
+          <tr><td>Netherlands</td><td colspan="4" style="color: var(--color-ink-3);">No cutoff until we have a florist there — a cutoff without a florist is a promise we cannot keep</td><td>Guide · waiting list</td></tr>
+        </table>
+      </div>
       <div class="grid" style="grid-template-columns: repeat(3, minmax(0, 1fr));">
         <div class="tile"><span class="label">Public holidays</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Per country, from the same registry. A holiday closes the florists, so the date picker offers the next open day with the reason named on the chip.</span></div>
         <div class="tile"><span class="label">Hospitals and care homes</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);"><span class="slot">[slot] Per-country guidance: ward name needed, reception delivery, restrictions on lilies and strong scents.</span></span></div>
         <div class="tile"><span class="label">Funerals</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);"><span class="slot">[slot] Per-country guidance: timing relative to the service, delivery to the home or the venue, local conventions.</span></span></div>
       </div>
       <div class="stub" style=""><b>States</b><span><b>No live country</b> — the table renders with every row in the guide state and the page says plainly that we are not delivering anywhere yet. It is still a real answer to a real question.</span><span><b>A cutoff changed today</b> — the page is revalidated on the country-data tag, so the table and the date picker can never disagree.</span></div></div>
+<div class="sec"><div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">One table</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">Cutoffs, days and holidays by destination</h2></div>
+      <div style="overflow-x: auto;">
+        <table class="spec" style="min-width: 560px;">
+          <tr><th>Destination</th><th>Order by</th><th>Delivery days</th><th>Sunday</th><th>Next closed day</th><th>Hospital · funeral</th></tr>
+          <tr><td>Poland</td><td>14:00 Warsaw time (the recipient's own time)</td><td>Mon–Sat</td><td>On request · +29 zł</td><td>1 Nov, All Saints — orders close 30 Oct</td><td>Reception only, ward and room needed · 60 min before the service</td></tr>
+          <tr><td>Germany · France · Spain · Italy · Romania · the Netherlands</td><td colspan="5" style="color: var(--color-ink-3);">Guides only. No cutoff, no delivery day and no price is printed for a country where we have no florist — a waiting list instead.</td></tr>
+        </table>
+      </div>
+      <span style="font-size: var(--text-xs); color: var(--color-ink-3);">Interflora UK's delivery-information page is the single best artefact in the whole study, and this is its cross-border version: every cutoff in the <b>recipient's</b> time zone, every closed day named with its reason, and the two high-anxiety address types answered in the same table. One row per live destination, generated from <code>same_day_cutoff_local</code> + <code>iana_zone</code> + the holiday calendar, so the page cannot drift from the date chips on a product page.</span></div>
+
+<div class="sec"><div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">Money, with a clock on it</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">What we refund, and by when</h2></div>
+      <div style="display: flex; flex-wrap: wrap; gap: var(--space-md);">
+        <div class="tile" style="flex: 1 1 260px;"><span class="label">If we do not deliver</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Full refund within <span class="slot">[slot] N days</span> of the date you chose, without you having to ask twice. Interflora UK publishes seven days and it is the rare concrete commitment in this market; ours is a founder decision (benchmarks/README.md, open question 3).</span></div>
+        <div class="tile" style="flex: 1 1 260px;"><span class="label">If it is not what you ordered</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Remake or refund, your choice, on the strength of <b>our</b> delivery photograph. We never require yours.</span></div>
+        <div class="tile" style="flex: 1 1 260px;"><span class="label">The bouquet</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Made to order and perishable, so the 14-day right of withdrawal does not apply (CRD Art. 16(d)). You can cancel free of charge until we send the order to our florist.</span></div>
+        <div class="tile" style="flex: 1 1 260px;"><span class="label">Add-ons that are not flowers</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">A vase, chocolates or a plush toy are ordinary goods: the 14-day right of withdrawal <b>does</b> apply to them, separately from the bouquet, and we say so in its own sentence rather than sweeping it into the perishables line.</span></div>
+      </div>
+      <span style="font-size: var(--text-xs); color: var(--color-ink-3);">Two sentences where the field writes one, because they are two different legal positions. What is deliberately absent: “without notice” substitution, “we do not process refunds”, a 24-hour photographic-evidence deadline, and a charge for redelivering our own mistake.</span></div>
   </main>
 
   <div style="margin-block-start: auto; border-top: 1px solid var(--color-ink); padding: var(--space-lg) 56px; display: flex; flex-direction: column; gap: var(--space-sm); font-size: var(--text-sm); color: var(--color-ink-2);">
     <span class="label">Footer</span>
     <span>Sending: Destinations · Occasions · Delivery times and cutoffs · The guarantee — Company: How it works · For florists · Help and contact · Imprint — Legal: Terms · Privacy · Cookies · Withdrawal and refunds · Cookie settings</span>
-    <span>International flower relay. You order, a vetted local florist makes and delivers. Operated by <span class="slot">[legal name]</span>, <span class="slot">[registered address]</span>, <span class="slot">[registration no]</span> — printed only once <code>company.registered</code> is true (company.ts; spec 004 AC-9).</span>
+    <span>We send flowers across Europe. You order from us; our florist in the recipient's town makes the bouquet and hands it over in person. Operated by <span class="slot">[legal name]</span>, <span class="slot">[registered address]</span>, <span class="slot">[registration no]</span> — printed only once <code>company.registered</code> is true (company.ts; spec 004 AC-9).</span>
     <span>BLIK · Klarna · PayPal · Visa · Mastercard · Apple Pay — card payments processed by Stripe. We never store card numbers.</span>
+    <span>Talk to a person: +1 (213) 592-5150 · WhatsApp · Mon–Sat 8–20 CET. Weekend hours are a founder decision, not a design one (benchmarks/README.md, open question 1).</span>
   </div>
 </div>
 </x-dc>

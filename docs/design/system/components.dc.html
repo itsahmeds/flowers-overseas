@@ -44,7 +44,7 @@
     .photo { background: var(--color-photo); display: flex; align-items: flex-end; padding: var(--space-md); color: var(--color-photo-ink); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; }
     .field { display: flex; flex-direction: column; gap: 6px; }
     .field span.v { min-height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-bottom: 1px solid var(--color-ink); font-size: var(--text-md); color: var(--color-ink); }
-    .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
+    .btn { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
     .btn.accent { background: var(--color-accent); }
     .btn.secondary { background: var(--color-paper); color: var(--color-ink); border: 1px solid var(--color-ink-3); }
     .btn.sm { min-height: 44px; padding: 0 16px; font-size: var(--text-sm); }
@@ -75,9 +75,9 @@
     code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: var(--text-xs); color: var(--color-ink-2); }
   </style>
 </helmet>
-<div style="width: 1440px; min-height: 4380px; background: var(--color-paper); display: flex; flex-direction: column;">
+<div style="width: 1440px; min-height: 4820px; background: var(--color-paper); display: flex; flex-direction: column;">
   <section class="note" style="margin: var(--space-lg) 56px 0;">
-    <span class="label">Components · reference sheet</span>
+    <span class="label">Components · reference sheet · [internal]</span>
     <dl>
       <dt>Purpose</dt><dd>The reference sheet for every primitive <code>src/modules/ui</code> ships, at every state the code can reach. It is the same surface as <code>/dev/components</code> (spec 004 §2's gallery, <code>ENABLE_DEV_UI=true</code>, noindex, refused in production) drawn as an artboard so it can be reviewed on the canvas without running the app.</dd>
       <dt>In step with code</dt><dd>Every variant, tone, ratio, size and state below is an exported member of <code>src/modules/ui</code> — <code>BUTTON_VARIANTS</code>, <code>BUTTON_SIZES</code>, <code>BUTTON_STATES</code>, <code>CHIP_TONES</code>, <code>PHOTO_RATIOS</code>, <code>DISPLAY_SIZES</code>, <code>TEXT_SIZES</code>, <code>TEXT_TONES</code>, <code>GAPS</code>, <code>CONTAINER_WIDTHS</code>, <code>ICON_NAMES</code>, <code>MIRRORED_IN_RTL</code>. Nothing on this sheet is missing from code and nothing in code is missing from this sheet; see <code>docs/design/README.md</code> § “Keeping the sheet and the code in step”.</dd>
@@ -115,7 +115,7 @@
         <div class="cell" style="width: 180px;"><div class="photo" style="aspect-ratio: 1 / 1; width: 100%;">Photo slot · bouquet</div><em>square · 1/1</em></div>
         <div class="cell" style="width: 180px;"><div class="photo" style="aspect-ratio: 1 / 1; width: 100%;"></div><em>no caption (surrounding copy says it)</em></div>
       </div>
-      <div class="cellrow"><span class="n">Placeholder</span><div class="cells"><div class="cell"><span class="ph" style="min-width: 44px; height: 12px;"></span><em>sm · 44×12</em></div><div class="cell"><span class="ph"></span><em>md · 56×14</em></div><div class="cell"><span class="ph" style="min-width: 96px;"></span><em>lg · 96×14</em></div><div class="cell"><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Vetted florists in Warszawa: <span class="ph"></span> <span style="color: var(--color-ink-3);">(aria-hidden; the copy carries the explanation)</span></span><em>in a sentence — no number is invented</em></div></div></div>
+      <div class="cellrow"><span class="n">Placeholder</span><div class="cells"><div class="cell"><span class="ph" style="min-width: 44px; height: 12px;"></span><em>sm · 44×12</em></div><div class="cell"><span class="ph"></span><em>md · 56×14</em></div><div class="cell"><span class="ph" style="min-width: 96px;"></span><em>lg · 96×14</em></div><div class="cell"><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Our florists in Warszawa: <span class="ph"></span> <span style="color: var(--color-ink-3);">(aria-hidden; the copy carries the explanation)</span></span><em>in a sentence — no number is invented</em></div></div></div>
     </div>
 
     <div class="grp">

@@ -44,7 +44,7 @@
     .photo { background: var(--color-photo); display: flex; align-items: flex-end; padding: var(--space-md); color: var(--color-photo-ink); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; }
     .field { display: flex; flex-direction: column; gap: 6px; }
     .field span.v { min-height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-bottom: 1px solid var(--color-ink); font-size: var(--text-md); color: var(--color-ink); }
-    .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
+    .btn { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
     .btn.accent { background: var(--color-accent); }
     .btn.secondary { background: var(--color-paper); color: var(--color-ink); border: 1px solid var(--color-ink-3); }
     .btn.sm { min-height: 44px; padding: 0 16px; font-size: var(--text-sm); }
@@ -80,28 +80,28 @@
     .prose { max-width: var(--measure); font-size: var(--text-md); line-height: 1.6; color: var(--color-ink-2); }
   </style>
 </helmet>
-<div style="width: 1440px; min-height: 3560px; background: var(--color-paper); display: flex; flex-direction: column;">
+<div style="width: 1440px; min-height: 4520px; background: var(--color-paper); display: flex; flex-direction: column;">
   <div style="display: flex; flex-direction: column; border-bottom: 1px solid var(--color-ink);">
     <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm) var(--space-lg); align-items: center; justify-content: space-between; padding: 12px 56px; font-size: var(--text-xs); color: var(--color-ink-2); border-bottom: var(--rule);">
-      <span>Order by 14:00 Warsaw time for same-day delivery</span><span>Prices include delivery and VAT</span><span>Help &amp; WhatsApp: +1 (213) 592-5150 · Mon–Sat 8–20 CET</span>
+      <span>Order by 14:00 in Warsaw — the recipient's own time — and we deliver today</span><span>One price: VAT and delivery in</span><span>Talk to us: +1 (213) 592-5150 · WhatsApp · Mon–Sat 8–20 CET</span>
     </div>
     <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm) var(--space-lg); align-items: center; justify-content: space-between; padding: var(--space-md) 56px;">
       <span class="display" style="font-size: 26px; letter-spacing: 0.04em;">Flowers Overseas</span>
       <span style="font-size: var(--text-sm); color: var(--color-ink-3);">Search flowers, occasions, a city or a country · Sign in · My orders · Basket (0)</span>
     </div>
     <div style="padding: 10px 56px; border-top: var(--rule); font-size: var(--text-sm); color: var(--color-ink-2);">
-      <span class="label" style="margin-inline-end: var(--space-sm);">Categories</span>Best sellers · Birthday · Sympathy · Occasions · Bouquets · Roses · Plants · Add-ons · Same-day delivery · Destinations
+      <span class="label" style="margin-inline-end: var(--space-sm);">Categories</span>Best sellers · Birthday · Sympathy · All Saints 1 Nov · Andrzejki 29 Nov · Wigilia 24 Dec · Women's Day 8 Mar · Bouquets · Roses · Plants · Same-day · Poland
     </div>
-    <div style="padding: 6px 56px 10px; font-size: var(--text-xs); color: var(--color-ink-3);">Chrome as approved in <b>homepage-v1</b>. Every category row entry and every utility link is <b>unpublished in Phase 0</b> and renders as text, not a link (site-links.ts, categories.ts; spec 004 AC-14).</div>
+    <div style="padding: 6px 56px 10px; font-size: var(--text-xs); color: var(--color-ink-3);">Chrome as approved in <b>homepage-v1</b>. Every category row entry and every utility link is <b>unpublished in Phase 0</b> and renders as text, not a link (site-links.ts, categories.ts; spec 004 AC-14). <b>Round 2:</b> the row prints the next real occasion dates for the destination, the way 1-800-Flowers prints "Labor Day (9/7)" — the dates come from the occasion calendar, so a row entry can never name a date we have not verified.</div>
   </div>
 
   <section class="note" style="margin: var(--space-lg) 56px 0;">
-    <span class="label">Corridor · country — two states on one artboard</span>
+    <span class="label">Country page — two states on one artboard · [internal]</span>
     <dl>
-      <dt>Purpose</dt><dd>The SEO backbone. It sets delivery expectations for one corridor, explains the relay, and hands off to the country shop. Most organic sessions enter the product here.</dd>
+      <dt>Purpose</dt><dd>The SEO backbone. It sets delivery expectations for one destination, explains in three sentences how we work, and hands off to the country shop. Most organic sessions enter the product here.</dd>
       <dt>URL</dt><dd><code>/en-gb/send-flowers-to/poland</code> · <code>/de/blumen-verschicken/polen</code> · <code>/pl/wyslij-kwiaty/polska</code></dd>
       <dt>Index</dt><dd>yes when the country is <code>live</code> <b>or</b> its guide is published — never because it appears in a list. A page with no guide and no delivery is thin content.</dd>
-      <dt>Reads</dt><dd>country content, <code>same_day_cutoff_local</code> + <code>iana_zone</code>, public holidays, occasion dates for the country, corridor FAQ, top products × <code>country_price</code>, cities with coverage, reviews.</dd>
+      <dt>Reads</dt><dd>country content, <code>same_day_cutoff_local</code> + <code>iana_zone</code>, public holidays, occasion dates for the country, country FAQ, top products × <code>country_price</code>, cities with coverage, reviews.</dd>
       <dt>States</dt><dd><b>live</b> (drawn first, below) and <b>guide</b> (drawn second) are the same template with different data — not two templates.</dd>
       <dt>Owning spec</dt><dd>007 (prices from 005, products from 008)</dd>
     </dl>
@@ -114,25 +114,27 @@
         <div class="sec">
           <h1 class="display" style="margin: 0; font-size: var(--text-display-s); line-height: 1.08;">Send flowers to Poland</h1>
           <span class="chip accent" style="align-self: flex-start;">Delivering now</span>
-          <p class="prose" style="margin: 0;"><span class="slot">[slot] 60–90 words: what a bouquet means in Poland, which cities we cover, what to expect on the day. Authored per corridor, never machine-translated into an indexable page.</span></p>
+          <p class="prose" style="margin: 0;"><span class="slot">[slot] 60–90 words: what a bouquet means in Poland, which cities we cover, what to expect on the day. Authored per country, never machine-translated into an indexable page.</span></p>
           <div class="kv" style="border-block-start: var(--rule); padding-block-start: var(--space-md);">
             <span>Order by</span><span>14:00 Warsaw time for same-day</span>
             <span>Soonest delivery</span><span><span class="slot">[slot] computed from the cutoff</span></span>
             <span>Delivery days</span><span>Mon–Sat · Sunday on request</span>
             <span>Cities covered</span><span>Warszawa · Kraków · Wrocław · Gdańsk · Poznań</span>
-            <span>Vetted florists</span><span><span class="ph"></span></span>
+            <span>Our florists in Poland</span><span><span class="ph"></span></span>
             <span>Prices from</span><span class="price"><span class="slot">[slot] from-price in the display currency</span></span>
           </div>
           <span style="font-size: var(--text-xs); color: var(--color-ink-3);">The florist count is a placeholder bar, not a number: we do not print a count we cannot stand behind.</span>
-          <div style="display: flex; gap: var(--space-md); flex-wrap: wrap;"><span class="btn accent">See what can arrive in Poland</span><span class="btn secondary">Delivery times and cutoffs</span></div>
+          <p class="prose" style="margin: 0; font-size: var(--text-md);">You order from us in your own language and currency. Our florist in the recipient's town makes the bouquet the morning it is delivered and hands it over in person. Nothing crosses a border, so there is no customs form, no paperwork and nothing for the recipient to pay on arrival.</p>
+          <div class="tile" style="border-color: var(--color-accent); background: var(--color-paper-2); gap: 4px;"><span style="font-size: var(--text-sm); font-weight: 600;">You pay in your currency. We pay our florist in złoty.</span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">One total, in the currency shown, fixed for 30 minutes when you continue. We charge no hidden fee and no service percentage — we can say that because delivery and VAT are already inside the price, which is the one thing nobody else in this market can claim.</span></div>
+          <div style="display: flex; gap: var(--space-md); flex-wrap: wrap;"><span class="btn accent">See what can arrive in Poland — from 149 zł</span><span class="btn secondary">Delivery times and cutoffs</span></div>
         </div>
         <div class="photo" style="aspect-ratio: 3 / 2;">Photo slot · Poland · founder to supply</div>
       </div></div>
 
-<div class="sec"><div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">How it works here</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">The relay, in this corridor</h2></div>
+<div class="sec"><div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">How it works here</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">How we send flowers to Poland</h2></div>
       <div class="grid" style="grid-template-columns: repeat(3, minmax(0, 1fr));">
         <div class="tile"><span class="label">01</span><span style="font-weight: 600;">You order from anywhere</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">In your language, in your currency, with the all-in price shown before you pay.</span></div>
-        <div class="tile"><span class="label">02</span><span style="font-weight: 600;">A vetted Warsaw florist makes it</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">We visited them. They see the recipient's details and your card message, and nothing about you.</span></div>
+        <div class="tile"><span class="label">02</span><span style="font-weight: 600;">Our florist in Warsaw makes it</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">We chose them ourselves. They see the recipient's details and your card message, and nothing about you.</span></div>
         <div class="tile"><span class="label">03</span><span style="font-weight: 600;">You get the photo</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">The florist photographs the delivered bouquet and we email it to you.</span></div>
       </div></div>
 
@@ -145,17 +147,38 @@
       </div>
       <span style="font-size: var(--text-xs); color: var(--color-ink-3);">Dates come from the occasion calendar for the destination country, not the buyer's. A cutoff is shown only where it is real data.</span></div>
 
-<div class="sec"><div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">Most sent to Poland</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">The grid, four wide</h2></div>
+<div class="sec"><div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">Most sent to Poland</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">Priced for Poland, arriving today</h2></div>
+      <div class="tile" style="border-color: var(--color-accent); background: var(--color-paper-2); gap: 4px;">
+        <span style="font-size: var(--text-sm); font-weight: 600;">Delivered Thu 10 Sep · order within 3 h 20 m · delivery included</span>
+        <span style="font-size: var(--text-xs); color: var(--color-ink-3);">The cutoff is <b>14:00 in Warsaw</b> — the recipient's own time, not yours. Delivery and VAT are inside every price on this page. One date costs more (Sunday, +29 zł) and one is closed (All Saints, 1 Nov), and both say so on the chip before you choose it.</span>
+      </div>
       <div class="grid" style="grid-template-columns: repeat(4, minmax(0, 1fr));"><a href="#" class="card"><div class="photo" style="aspect-ratio: 1 / 1;">Photo slot · bouquet</div><span class="nm"><span class="slot">[slot] product name</span></span><span class="price" style="font-size: var(--text-md);">from 189 zł</span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">Includes delivery and VAT</span></a><a href="#" class="card"><div class="photo" style="aspect-ratio: 1 / 1;">Photo slot · bouquet</div><span class="nm"><span class="slot">[slot] product name</span></span><span class="price" style="font-size: var(--text-md);">from 219 zł</span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">Includes delivery and VAT</span></a><a href="#" class="card"><div class="photo" style="aspect-ratio: 1 / 1;">Photo slot · bouquet</div><span class="nm"><span class="slot">[slot] product name</span></span><span class="price" style="font-size: var(--text-md);">from 149 zł</span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">Includes delivery and VAT</span></a><a href="#" class="card"><div class="photo" style="aspect-ratio: 1 / 1;">Photo slot · bouquet</div><span class="nm"><span class="slot">[slot] product name</span></span><span class="price" style="font-size: var(--text-md);">from 259 zł</span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">Includes delivery and VAT</span></a></div>
       <span style="font-size: var(--text-xs); color: var(--color-ink-3);">All prices include delivery and VAT. The price you see is the price you pay. A from-price is visible text and emits no <code>Offer</code>: it is not the price of any purchasable configuration.</span></div>
 
-<div class="sec"><div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">Questions about Poland</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">Five, and they are the corridor's own</h2></div>
+<div class="sec"><div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">Practical, for Poland</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">The four things that go wrong</h2></div>
+      <div style="display: flex; flex-wrap: wrap; gap: var(--space-lg);">
+        <div class="tile" style="flex: 1 1 260px;"><span class="label">A complete Polish address</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Street and building, then flat number after a slash (<i>Marszałkowska 12/34</i>). Five-digit postcode with a dash: <i>00-590</i>. City last. Polish characters are kept exactly as you type them — ą, ć, ę, ł, ń, ó, ś, ź, ż all survive to the florist's screen and onto the card.</span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">The single most useful piece of country content anywhere in the field (InternetFlorist). It is also our checkout's field order for this destination.</span></div>
+        <div class="tile" style="flex: 1 1 260px;"><span class="label">Hospitals and care homes</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Give the ward and the room, and the patient's full name as the hospital has it. Polish hospitals usually accept flowers at reception, not on the ward; our florist leaves them there and the photo shows who signed. Intensive care does not accept flowers at all.</span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">Per destination, authored, and reviewed before the page publishes.</span></div>
+        <div class="tile" style="flex: 1 1 260px;"><span class="label">Funerals and cemeteries</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Tell us the chapel or cemetery and the hour of the service; we deliver at least 60 minutes before it. All Saints (1 Nov) is the single busiest day in Poland and orders close two days ahead. A wreath needs the family name for the ribbon.</span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">Highest intent, highest operational risk. Phase 1 scope is an open question for the founder.</span></div>
+        <div class="tile" style="flex: 1 1 260px;"><span class="label">Offices and no-one home</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Add the company and the floor; reception is the safest weekday address. If nobody answers, our florist calls the recipient on the number you gave, then tries a neighbour, then keeps the bouquet cool and delivers it the next morning at our cost.</span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">We never write “we are not responsible”, and we never charge for a second attempt at our own failure.</span></div>
+      </div>
+      <span style="font-size: var(--text-xs); color: var(--color-ink-3);">This block is why the page is not thin: it is four answers that are true only of Poland, written once, and it is the content the field replaces with a swapped place name.</span></div>
+
+<div class="sec"><div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">Questions about Poland</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">Five, and they are Poland's own</h2></div>
       <div class="faq"><b>Can flowers arrive today?</b><span>Yes in the cities we cover, if you order before 14:00 Warsaw time. After that the soonest date is shown on every product.</span></div>
       <div class="faq"><b>What if the exact flowers are not available?</b><span>The florist substitutes to the same value, style and colour and tells us; we tell you, and the substitution note appears on your order. If you are not happy, the guarantee applies.</span></div>
-      <div class="faq"><b>Who delivers it?</b><span>A florist with their own shop in the recipient's town. We visited them before opening the corridor.</span></div>
+      <div class="faq"><b>Who makes it and who brings it?</b><span>Our florist in the recipient's town makes your bouquet the morning it is delivered. We chose every one of them ourselves, and they hand it over in person.</span></div>
+      <div class="faq"><b>Does it have to clear customs? Will the recipient be asked to pay anything?</b><span>No, to both. Nothing is posted and nothing crosses a border: our florist in Poland buys the flowers in Poland and delivers them in Poland. There is no customs form, no import duty and nothing to pay at the door.</span></div>
       <div class="faq"><b>Does the price include everything?</b><span>Yes: VAT and delivery are in the price you see. Add-ons are separate lines and never pre-ticked.</span></div>
-      <div class="faq"><b>Can I send to a hospital or a funeral?</b><span><span class="slot">[slot] corridor-specific answer with the local customs — authored, not templated</span></span></div>
+      <div class="faq"><b>Can I send to a hospital or a funeral?</b><span><span class="slot">[slot] country-specific answer with the local customs — authored, not templated</span></span></div>
       <span style="font-size: var(--text-xs); color: var(--color-ink-3);"><code>FAQPage</code> schema, and every answer is visible on the page — the structured data and the rendered page always agree.</span></div>
+
+<div class="sec"><div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">Where in Poland</span><h2 class="display" style="margin: 0; font-size: var(--text-xl); line-height: 1.15;">Cities, and where else we go</h2></div>
+      <div style="display: flex; flex-wrap: wrap; gap: var(--space-lg);">
+        <div class="sec" style="flex: 1 1 260px; gap: 6px;"><span class="label">Cities with our florists</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Warszawa · Kraków · Wrocław · Gdańsk · Poznań · Łódź</span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">A city becomes a link when it has a florist and a page; until then it is text. We publish no city page for a city we cannot serve — the field's biggest doorway risk.</span></div>
+        <div class="sec" style="flex: 1 1 260px; gap: 6px;"><span class="label">Also sending from here</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Germany · France · Spain · Italy · Romania · the Netherlands — guides and waiting lists</span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">Six guides, no promises. Every one of them links back here, which is the internal-link flow to the one destination we can actually serve.</span></div>
+        <div class="sec" style="flex: 1 1 260px; gap: 6px;"><span class="label">Photos from Poland</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Nothing yet.</span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">The delivery-photo band appears at six approved photos with consent, and not before. Empty is honest; a stock gallery is not.</span></div>
+      </div></div>
 
 <div class="sec" style="border-block-start: 2px solid var(--color-ink); padding-block-start: var(--space-lg);"><span class="label" style="color: var(--color-accent);">State B · guide (Germany)</span>
       <nav style="font-size: var(--text-sm); color: var(--color-ink-3);">Home <span style="color: var(--color-rule);">/</span> Send flowers to <span style="color: var(--color-rule);">/</span> <b>Germany</b></nav>
@@ -163,7 +186,7 @@
         <div class="sec">
           <h1 class="display" style="margin: 0; font-size: var(--text-display-s); line-height: 1.08;">Sending flowers to Germany</h1>
           <span class="chip muted" style="align-self: flex-start;">Guide · waiting list</span>
-          <p class="prose" style="margin: 0;"><span class="slot">[slot] The guide: customs, occasions, what to expect — the same authored corridor content, minus every claim that depends on having a florist.</span></p>
+          <p class="prose" style="margin: 0;"><span class="slot">[slot] The guide: customs, occasions, what to expect — the same authored country content, minus every claim that depends on having a florist.</span></p>
           <div class="kv" style="border-block-start: var(--rule); padding-block-start: var(--space-md);">
             <span>Delivering</span><span>Not yet</span>
             <span>Cities covered</span><span style="color: var(--color-ink-3);">— none named</span>
@@ -181,8 +204,9 @@
   <div style="margin-block-start: auto; border-top: 1px solid var(--color-ink); padding: var(--space-lg) 56px; display: flex; flex-direction: column; gap: var(--space-sm); font-size: var(--text-sm); color: var(--color-ink-2);">
     <span class="label">Footer</span>
     <span>Sending: Destinations · Occasions · Delivery times and cutoffs · The guarantee — Company: How it works · For florists · Help and contact · Imprint — Legal: Terms · Privacy · Cookies · Withdrawal and refunds · Cookie settings</span>
-    <span>International flower relay. You order, a vetted local florist makes and delivers. Operated by <span class="slot">[legal name]</span>, <span class="slot">[registered address]</span>, <span class="slot">[registration no]</span> — printed only once <code>company.registered</code> is true (company.ts; spec 004 AC-9).</span>
+    <span>We send flowers across Europe. You order from us; our florist in the recipient's town makes the bouquet and hands it over in person. Operated by <span class="slot">[legal name]</span>, <span class="slot">[registered address]</span>, <span class="slot">[registration no]</span> — printed only once <code>company.registered</code> is true (company.ts; spec 004 AC-9).</span>
     <span>BLIK · Klarna · PayPal · Visa · Mastercard · Apple Pay — card payments processed by Stripe. We never store card numbers.</span>
+    <span>Talk to a person: +1 (213) 592-5150 · WhatsApp · Mon–Sat 8–20 CET. Weekend hours are a founder decision, not a design one (benchmarks/README.md, open question 1).</span>
   </div>
 </div>
 </x-dc>

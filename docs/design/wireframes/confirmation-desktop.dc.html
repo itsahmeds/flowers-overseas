@@ -44,7 +44,7 @@
     .photo { background: var(--color-photo); display: flex; align-items: flex-end; padding: var(--space-md); color: var(--color-photo-ink); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; }
     .field { display: flex; flex-direction: column; gap: 6px; }
     .field span.v { min-height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-bottom: 1px solid var(--color-ink); font-size: var(--text-md); color: var(--color-ink); }
-    .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
+    .btn { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
     .btn.accent { background: var(--color-accent); }
     .btn.secondary { background: var(--color-paper); color: var(--color-ink); border: 1px solid var(--color-ink-3); }
     .btn.sm { min-height: 44px; padding: 0 16px; font-size: var(--text-sm); }
@@ -80,23 +80,23 @@
     .prose { max-width: var(--measure); font-size: var(--text-md); line-height: 1.6; color: var(--color-ink-2); }
   </style>
 </helmet>
-<div style="width: 1440px; min-height: 1940px; background: var(--color-paper); display: flex; flex-direction: column;">
+<div style="width: 1440px; min-height: 2500px; background: var(--color-paper); display: flex; flex-direction: column;">
   <div style="display: flex; flex-direction: column; border-bottom: 1px solid var(--color-ink);">
     <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm) var(--space-lg); align-items: center; justify-content: space-between; padding: 12px 56px; font-size: var(--text-xs); color: var(--color-ink-2); border-bottom: var(--rule);">
-      <span>Order by 14:00 Warsaw time for same-day delivery</span><span>Prices include delivery and VAT</span><span>Help &amp; WhatsApp: +1 (213) 592-5150 · Mon–Sat 8–20 CET</span>
+      <span>Order by 14:00 in Warsaw — the recipient's own time — and we deliver today</span><span>One price: VAT and delivery in</span><span>Talk to us: +1 (213) 592-5150 · WhatsApp · Mon–Sat 8–20 CET</span>
     </div>
     <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm) var(--space-lg); align-items: center; justify-content: space-between; padding: var(--space-md) 56px;">
       <span class="display" style="font-size: 26px; letter-spacing: 0.04em;">Flowers Overseas</span>
       <span style="font-size: var(--text-sm); color: var(--color-ink-3);">Search flowers, occasions, a city or a country · Sign in · My orders · Basket (0)</span>
     </div>
     <div style="padding: 10px 56px; border-top: var(--rule); font-size: var(--text-sm); color: var(--color-ink-2);">
-      <span class="label" style="margin-inline-end: var(--space-sm);">Categories</span>Best sellers · Birthday · Sympathy · Occasions · Bouquets · Roses · Plants · Add-ons · Same-day delivery · Destinations
+      <span class="label" style="margin-inline-end: var(--space-sm);">Categories</span>Best sellers · Birthday · Sympathy · All Saints 1 Nov · Andrzejki 29 Nov · Wigilia 24 Dec · Women's Day 8 Mar · Bouquets · Roses · Plants · Same-day · Poland
     </div>
-    <div style="padding: 6px 56px 10px; font-size: var(--text-xs); color: var(--color-ink-3);">Chrome as approved in <b>homepage-v1</b>. Every category row entry and every utility link is <b>unpublished in Phase 0</b> and renders as text, not a link (site-links.ts, categories.ts; spec 004 AC-14).</div>
+    <div style="padding: 6px 56px 10px; font-size: var(--text-xs); color: var(--color-ink-3);">Chrome as approved in <b>homepage-v1</b>. Every category row entry and every utility link is <b>unpublished in Phase 0</b> and renders as text, not a link (site-links.ts, categories.ts; spec 004 AC-14). <b>Round 2:</b> the row prints the next real occasion dates for the destination, the way 1-800-Flowers prints "Labor Day (9/7)" — the dates come from the occasion calendar, so a row entry can never name a date we have not verified.</div>
   </div>
 
   <section class="note" style="margin: var(--space-lg) 56px 0;">
-    <span class="label">Order confirmation</span>
+    <span class="label">Order confirmation · [internal]</span>
     <dl>
       <dt>Purpose</dt><dd>Replace the anxiety of having paid a stranger to deliver flowers in another country with a timeline and a tracking link. It is the highest-trust moment in the product and the cheapest to get right.</dd>
       <dt>URL</dt><dd><code>/en-gb/checkout/confirmation/{token}</code> — the token is the credential; no email, name or address appears in the URL.</dd>
@@ -115,7 +115,7 @@
           <h1 class="display" style="margin: 0; font-size: var(--text-display-s); line-height: 1.08;">Thank you — here is what happens next</h1>
           <p class="prose" style="margin: 0;">We have your order and your payment. A confirmation is on its way to <span class="slot">[slot] buyer email</span>.</p>
           <div class="sec" style="gap: 0;">
-            <div style="display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: var(--space-md); border-block-start: var(--rule); padding-block: var(--space-md);"><span style="font-size: var(--text-sm); color: var(--color-accent);">Now ✓</span><span style="font-size: var(--text-md);">We send your order to a vetted florist in Warszawa</span></div>
+            <div style="display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: var(--space-md); border-block-start: var(--rule); padding-block: var(--space-md);"><span style="font-size: var(--text-sm); color: var(--color-accent);">Now ✓</span><span style="font-size: var(--text-md);">We send your order to our florist in Warszawa</span></div>
             <div style="display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: var(--space-md); border-block-start: var(--rule); padding-block: var(--space-md);"><span style="font-size: var(--text-sm); color: var(--color-ink-3);">Within a few hours</span><span style="font-size: var(--text-md);">They accept it. We email you their first name and their town.</span></div>
             <div style="display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: var(--space-md); border-block-start: var(--rule); padding-block: var(--space-md);"><span style="font-size: var(--text-sm); color: var(--color-ink-3);">Thu 10 September</span><span style="font-size: var(--text-md);">They make it that morning and deliver it.</span></div>
             <div style="display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: var(--space-md); border-block-start: var(--rule); padding-block: var(--space-md);"><span style="font-size: var(--text-sm); color: var(--color-ink-3);">The same day</span><span style="font-size: var(--text-md);">They photograph it and we email you the photo.</span></div>
@@ -143,6 +143,21 @@
       <div class="grid" style="grid-template-columns: repeat(3, minmax(0, 1fr));"><div class="photo" style="aspect-ratio: 4 / 3;">Photo slot · real delivery · none exists yet</div><div class="photo" style="aspect-ratio: 4 / 3;">Photo slot · real delivery · none exists yet</div><div class="photo" style="aspect-ratio: 4 / 3;">Photo slot · real delivery · none exists yet</div></div>
       <span style="font-size: var(--text-xs); color: var(--color-ink-3);">These stay placeholders until real, <b>consented</b> delivery photos exist. A stock photo here would be a fabricated delivery — the single worst thing this page could do, and the reason <code>depicts: "delivery"</code> assets are rejected outright in the Phase 0 dataset.</span></div>
 
+<div class="sec"><div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">Take this with you</span><h2 class="display" style="margin: 0; font-size: var(--text-xl); line-height: 1.15;">Four things, and none of them is an upsell</h2></div>
+      <div style="display: flex; flex-wrap: wrap; gap: var(--space-md);">
+        <div class="tile" style="flex: 1 1 220px;"><span class="label">Track it</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">One link, no login, no password. It works for anyone you send it to.</span><span class="btn sm secondary" style="align-self: flex-start; margin-block-start: var(--space-sm);">Open the tracking page</span></div>
+        <div class="tile" style="flex: 1 1 220px;"><span class="label">Put it in your calendar</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">A one-line <code>.ics</code> for Thu 10 September, so you remember the day it lands.</span><span class="btn sm secondary" style="align-self: flex-start; margin-block-start: var(--space-sm);">Add to calendar</span></div>
+        <div class="tile" style="flex: 1 1 220px;"><span class="label">Your invoice</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">VAT shown by rate — 8% on flowers, 23% on add-ons — on one PDF, emailed and downloadable here.</span><span class="btn sm secondary" style="align-self: flex-start; margin-block-start: var(--space-sm);">Download the invoice</span></div>
+        <div class="tile" style="flex: 1 1 220px;"><span class="label">Share the tracking</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">WhatsApp the link to whoever else is waiting. It shows the timeline and the photo, never your card or your address.</span><span class="btn sm secondary" style="align-self: flex-start; margin-block-start: var(--space-sm);">Share on WhatsApp</span></div>
+      </div>
+      <span style="font-size: var(--text-xs); color: var(--color-ink-3);">Nobody in the field publishes a what-happens-next page at all, so there is no pattern to copy here and nothing to strip out of one. The rule is that every tile is a thing the buyer wants: no cross-sell, no “complete your gift”, no discount for the next order.</span></div>
+
+<div class="sec"><div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">If it goes wrong</span><h2 class="display" style="margin: 0; font-size: var(--text-xl); line-height: 1.15;">Our clock, not yours</h2></div>
+      <div class="tile" style="border-color: var(--color-ink);">
+        <span style="font-size: var(--text-sm); color: var(--color-ink-2);">The photo of the delivered bouquet reaches you <b>on the day it is delivered</b>. If it is not what you ordered, tell us within <span class="slot">[slot] N hours</span> of that photo and we remake it or refund you — <b>we never ask you for photographs</b>, because we already hold ours, and we never charge for a second delivery when the fault is ours.</span>
+        <span style="font-size: var(--text-xs); color: var(--color-ink-3);">The window's length is the founder's to set (benchmarks/README.md, open question 5): the field runs 24 hours with buyer-supplied evidence (FloraQueen) to 48 hours against a dispatch photo (Aquarelle) to one working day (Interflora UK). Whatever it is, it is measured from <b>our</b> photo and printed on this page rather than kept in the terms.</span>
+      </div></div>
+
 <div class="sec"><div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">States</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;"></h2></div>
       <div class="grid" style="grid-template-columns: repeat(2, minmax(0, 1fr));">
       <div class="stub" style=""><b>Demo guard on (Phase 0)</b><span>Reached only from the guarded checkout, and it says so at the top in the same unmissable block: <b>“This is a demonstration. No order exists and nothing was charged.”</b> Every link that would open a real order is inert.</span></div>
@@ -155,8 +170,9 @@
   <div style="margin-block-start: auto; border-top: 1px solid var(--color-ink); padding: var(--space-lg) 56px; display: flex; flex-direction: column; gap: var(--space-sm); font-size: var(--text-sm); color: var(--color-ink-2);">
     <span class="label">Footer</span>
     <span>Sending: Destinations · Occasions · Delivery times and cutoffs · The guarantee — Company: How it works · For florists · Help and contact · Imprint — Legal: Terms · Privacy · Cookies · Withdrawal and refunds · Cookie settings</span>
-    <span>International flower relay. You order, a vetted local florist makes and delivers. Operated by <span class="slot">[legal name]</span>, <span class="slot">[registered address]</span>, <span class="slot">[registration no]</span> — printed only once <code>company.registered</code> is true (company.ts; spec 004 AC-9).</span>
+    <span>We send flowers across Europe. You order from us; our florist in the recipient's town makes the bouquet and hands it over in person. Operated by <span class="slot">[legal name]</span>, <span class="slot">[registered address]</span>, <span class="slot">[registration no]</span> — printed only once <code>company.registered</code> is true (company.ts; spec 004 AC-9).</span>
     <span>BLIK · Klarna · PayPal · Visa · Mastercard · Apple Pay — card payments processed by Stripe. We never store card numbers.</span>
+    <span>Talk to a person: +1 (213) 592-5150 · WhatsApp · Mon–Sat 8–20 CET. Weekend hours are a founder decision, not a design one (benchmarks/README.md, open question 1).</span>
   </div>
 </div>
 </x-dc>
