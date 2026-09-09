@@ -10,7 +10,7 @@ upsert plumbing are spec 002's. Two directories and one rule.
 | `origin` | Files | Who edits them |
 |---|---|---|
 | `projected` | `taxonomy.json`, `categories.json`, `occasions.json`, `products.json`, `product-tiers.json`, `addons.json`, `prices/{ISO2}.json`, `addon-prices/{ISO2}.json` | **Nobody.** Edit `src/config/catalogue/*.data.ts` and run `pnpm seed:project` |
-| `authored` | `occasion-country.json`, `media.json` (and, from TASK-073/078, `copy/`, `media-variants.json`, `alt/`) | A human, in the file — except `media-variants.json`, which `pnpm media:variants` writes |
+| `authored` | `occasion-country.json`, `media.json`, `copy/en/**`, `copy/en-gb/**` (and, from TASK-078, `media-variants.json`, `alt/`) | A human, in the file — except `media-variants.json`, which `pnpm media:variants` writes, and `copy/de/**` + `copy/pl/**`, which `pnpm i18n:draft --locale <code>` writes |
 
 ADR-0017 is why: `src/config/catalogue/` is the **single authored source** of catalogue entities,
 so that one edit changes the demo, the seed and later the database, and "price shown = price
@@ -59,6 +59,39 @@ plus the matching good block — live in `tests/fixtures/seed/_cases/prices/` (s
 - **Money is integer minor units plus a currency**, VAT and delivery included, one open-ended row
   per (product, country, tier, surcharge) — the file-level mirror of spec 002's partial unique
   index, and what preserves the Omnibus 30-day-lowest history by superseding rather than updating.
+## Catalogue copy (`seed/data/copy/{locale}/{entity}.json`)
+
+`en` is the source of truth and is authored by hand: 84 product descriptions, 23 category intros
+and 32 occasion intros, each 60–90 words stating contents, size, who it suits and what our florist
+may substitute, and each ending with the **one** shared local-florist sentence. `en-gb` holds
+**only** the rows whose British wording differs (four, today — the `-ise` spellings and
+"centrepiece"); a full `en-gb` copy of the dataset is a bug, and
+`tests/unit/seed-copy.test.ts` fails it.
+
+`de` and `pl` are **machine drafts**: `pnpm i18n:draft --locale de` fills them from `copy/en/`
+with `translationStatus: "machine"`, `reviewed: false` and the `en` row's `sourceHash`. That is
+the intended Phase-0 state, and its consequence is deliberate — German and Polish product pages
+are **non-indexable** until a native reviewer replaces the draft and flips the row to `human`
+(`plan/03` §6 gate 4, `plan/02` §12). A reviewer's row is never overwritten by a re-run; if the
+English source moved, the run reports it `stale`.
+
+Three rules worth knowing before editing copy:
+
+- **The closing sentence is not authored in the rows.** It lives once per locale in
+  `messages/*.json` under `catalog.floristSentence`. Reword it there and run
+  `pnpm i18n:draft --sync-copy`: every description in every locale is re-flowed, and nothing
+  before its last sentence is touched.
+- **Names stay English, descriptors localise** (spec 006 §13 Q2). A row's `name` is the evocative
+  name (`Amber Hour`) in all four locales, its `slug` is the ASCII fold of that name, and the
+  localised descriptor ("hand-tied rose bouquet" / "Rosenstrauß, handgebunden") is composed at
+  render from `catalog.descriptor.*`. That keeps one brandable product per hreflang cluster and
+  one stable URL per locale.
+- **No two rows may share a description** (the thin-content guard of spec 006 §6), no description
+  may use a superlative from `BANNED_SUPERLATIVES`, and no copy may name a competitor, contain an
+  address-shaped or phone-shaped string, or use the words `relay`, `corridor`, `partner`,
+  `third party` or `network` (spec 004 §14 A5's brand voice). `seed/copy.ts` holds all of these as
+  functions so `pnpm seed:check` and the unit suite share one definition.
+
 - **Copy carries the review triple** (`translationStatus`, `reviewed`, `sourceHash`). A machine
   draft is flagged and its locale stays non-indexable until a native reviewer approves it
   (`plan/03` §6 gate 4). That is the intended state of `de`/`pl` in Phase 0, not a gap.

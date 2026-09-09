@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "source": "seed",
+  "entity": "copy_category",
+  "origin": "authored",
+  "locale": "en-gb",
+  "rows": [
+    {
+      "entity": "category",
+      "key": "apology",
+      "locale": "en-gb",
+      "name": "Sorry flowers",
+      "slug": "sorry-flowers",
+      "descriptionMd": "Pale roses, white tulips, freesias and a small box of pastel flowers — quiet rather than grand, which is usually the right register when you are apologising. A handwritten card is free and worth using here. Order by the destination's cutoff and it can arrive the next working day in most cities we cover. Every order is made by hand and delivered in person by our florist in the recipient's city.",
+      "seoTitle": "Sorry flowers — apology flowers delivered across Europe",
+      "seoDescription": "Pale roses, white tulips, freesias and small pastel boxes: quiet rather than grand. A free handwritten card, next-day in most cities.",
+      "translationStatus": "human",
+      "reviewed": true,
+      "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
+      "reviewedAt": "2026-09-09T00:00:00Z",
+      "sourceHash": "f15eb8b094857feeb5e32b43ccfb38214a8f3ca15245521ca4c29d1e44aedb1d"
+    }
+  ]
+}

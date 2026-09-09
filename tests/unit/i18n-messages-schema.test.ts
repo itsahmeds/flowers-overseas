@@ -306,7 +306,13 @@ describe("the shipped catalogues and manifests", () => {
       // Spec 005 §7's namespace: the dataset's label keys, seeded by TASK-062 and rendered from
       // TASK-067. Typed like the rest, so a tier label is `t()`-checkable rather than a string.
       "catalog",
+      // Spec 006 §7's namespace: the AI-provenance label, the per-slot placeholder captions and
+      // the demo watermark label, added by TASK-073 and rendered by TASK-077/079. In no
+      // `ROUTE_NAMESPACES` entry, so it reaches no client provider (AC-22).
+      "media",
     ];
+    const provenanceLabel: Messages["media"]["provenance"]["aiExample"] =
+      enSource.media.provenance.aiExample;
     const tierLabel: Messages["catalog"]["tier"]["stems"] =
       enSource.catalog.tier.stems;
     const headline: Messages["banner"]["headline"] = enSource.banner.headline;
@@ -329,6 +335,7 @@ describe("the shipped catalogues and manifests", () => {
     expect(headline).toContain("{language}");
     expect(floristCount).toContain("plural");
     expect(tierLabel).toContain("plural");
+    expect(provenanceLabel).toContain("our florist");
     for (const action of bannerActions)
       expect(action.length).toBeGreaterThan(0);
   });

@@ -50,6 +50,10 @@ describe("the shell catalogue", () => {
       "destinations",
       "errors",
       "footer",
+      // `media` is spec 006 §7's namespace: the AI-provenance label, the placeholder captions and
+      // the demo watermark label (TASK-073). Like `catalog`, it is in no `ROUTE_NAMESPACES` entry
+      // — the gallery and the provenance note are Server Components (spec 006 AC-22).
+      "media",
       "meta",
       "nav",
     ]);

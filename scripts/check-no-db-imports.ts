@@ -46,6 +46,10 @@ export const SCANNED_PATHS = [
   // AC-1 on TASK-081.
   "seed/schema",
   "seed/project.ts",
+  // spec 006 AC-1 (TASK-073): the copy rules and the catalogue half of `pnpm i18n:draft`. Both
+  // are pure functions of the dataset and the message catalogues.
+  "seed/copy.ts",
+  "seed/copy-draft.ts",
 ] as const;
 
 const SCANNED_EXTENSIONS = [".ts", ".tsx", ".mts", ".cts", ".js", ".jsx"];

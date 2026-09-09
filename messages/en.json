@@ -36,7 +36,11 @@
   "a11y": {
     "skipToContent": "Skip to content",
     "localeChooser": "Languages",
-    "localeSwitcher": "Change language"
+    "localeSwitcher": "Change language",
+    "media": {
+      "gallery": "Product images",
+      "imageOfCount": "Image {index} of {total}"
+    }
   },
   "common": {
     "beta": "Beta",
@@ -350,6 +354,47 @@
         "omatag": "Grandmother's Day (Estonia)",
         "mai17": "Norwegian Constitution Day"
       }
+    },
+    "floristSentence": "Every order is made by hand and delivered in person by our florist in the recipient's city.",
+    "descriptor": {
+      "name": "{name} — {descriptor}",
+      "form": {
+        "bouquet": "hand-tied {flower} bouquet",
+        "arrangement": "{flower} arrangement",
+        "plant": "{flower} plant",
+        "funeral": "{flower} funeral tribute",
+        "giftSet": "{flower} bouquet and gift"
+      },
+      "flower": {
+        "roses": "rose",
+        "tulips": "tulip",
+        "lilies": "lily",
+        "orchids": "orchid",
+        "sunflowers": "sunflower",
+        "peonies": "peony",
+        "gerberas": "gerbera",
+        "carnations": "carnation",
+        "chrysanthemums": "chrysanthemum",
+        "hydrangeas": "hydrangea",
+        "freesias": "freesia",
+        "alstroemeria": "alstroemeria",
+        "mixed": "mixed-flower",
+        "seasonal": "seasonal"
+      }
+    }
+  },
+  "media": {
+    "provenance": {
+      "aiExample": "Example arrangement · our florist hand-makes each one"
+    },
+    "placeholder": {
+      "hero": "Photography to supply · our florist finishing a hand-tied bouquet in morning light",
+      "occasion": "Photography to supply · flowers sent for this occasion",
+      "product": "Photography to supply · this bouquet as our florist makes it",
+      "delivery": "Photography to supply · the delivery photo we send you"
+    },
+    "watermark": {
+      "demoSample": "Sample"
     }
   }
 }
