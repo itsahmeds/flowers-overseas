@@ -6,370 +6,468 @@
       "x": 0,
       "y": 0,
       "w": 1440,
-      "h": 1160
+      "h": 1460
     },
     {
       "file": "locale-chooser-mobile.dc.html",
       "title": "Locale chooser · mobile",
-      "x": 1560,
+      "x": 1520,
       "y": 0,
       "w": 390,
-      "h": 1180
+      "h": 2460
     },
     {
       "file": "all-destinations-desktop.dc.html",
       "title": "All destinations hub · desktop",
-      "x": 2070,
-      "y": 0,
+      "x": 0,
+      "y": 2580,
       "w": 1440,
-      "h": 2280
+      "h": 2400
     },
     {
       "file": "all-destinations-mobile.dc.html",
       "title": "All destinations hub · mobile",
-      "x": 3630,
-      "y": 0,
+      "x": 1520,
+      "y": 2580,
       "w": 390,
-      "h": 2680
+      "h": 4240
     },
     {
       "file": "corridor-country-desktop.dc.html",
-      "title": "Corridor country · guide and live · desktop",
-      "x": 4140,
-      "y": 0,
+      "title": "Country page · live and guide · desktop",
+      "x": 0,
+      "y": 6940,
       "w": 1440,
-      "h": 3560
+      "h": 4520
     },
     {
       "file": "corridor-country-mobile.dc.html",
-      "title": "Corridor country · guide and live · mobile",
-      "x": 5700,
-      "y": 0,
+      "title": "Country page · live and guide · mobile",
+      "x": 1520,
+      "y": 6940,
       "w": 390,
-      "h": 4300
+      "h": 8440
     },
     {
       "file": "country-shop-desktop.dc.html",
       "title": "Country shop root · desktop",
       "x": 0,
-      "y": 4500,
+      "y": 15500,
       "w": 1440,
-      "h": 2760
+      "h": 4020
     },
     {
       "file": "country-shop-mobile.dc.html",
       "title": "Country shop root · mobile",
-      "x": 1560,
-      "y": 4500,
+      "x": 1520,
+      "y": 15500,
       "w": 390,
-      "h": 3400
+      "h": 8280
     },
     {
       "file": "country-category-desktop.dc.html",
       "title": "Country category · desktop",
-      "x": 2070,
-      "y": 4500,
+      "x": 0,
+      "y": 23900,
       "w": 1440,
-      "h": 2460
+      "h": 2620
     },
     {
       "file": "country-category-mobile.dc.html",
       "title": "Country category · mobile",
-      "x": 3630,
-      "y": 4500,
+      "x": 1520,
+      "y": 23900,
       "w": 390,
-      "h": 3000
+      "h": 4520
     },
     {
       "file": "country-occasion-desktop.dc.html",
       "title": "Country occasion · desktop",
-      "x": 4140,
-      "y": 4500,
+      "x": 0,
+      "y": 28540,
       "w": 1440,
-      "h": 2480
+      "h": 4360
     },
     {
       "file": "country-occasion-mobile.dc.html",
       "title": "Country occasion · mobile",
-      "x": 5700,
-      "y": 4500,
+      "x": 1520,
+      "y": 28540,
       "w": 390,
-      "h": 3020
+      "h": 5800
     },
     {
       "file": "product-desktop.dc.html",
       "title": "Product page · desktop",
       "x": 0,
-      "y": 8100,
+      "y": 34460,
       "w": 1440,
-      "h": 3480
+      "h": 3560
     },
     {
       "file": "product-mobile.dc.html",
       "title": "Product page · mobile",
-      "x": 1560,
-      "y": 8100,
+      "x": 1520,
+      "y": 34460,
       "w": 390,
-      "h": 4260
+      "h": 8280
+    },
+    {
+      "file": "checkout-desktop.dc.html",
+      "title": "Checkout · three steps · desktop",
+      "x": 0,
+      "y": 42860,
+      "w": 1440,
+      "h": 4220
+    },
+    {
+      "file": "checkout-mobile.dc.html",
+      "title": "Checkout · three steps · mobile",
+      "x": 1520,
+      "y": 42860,
+      "w": 390,
+      "h": 7580
+    },
+    {
+      "file": "confirmation-desktop.dc.html",
+      "title": "Order confirmation · desktop",
+      "x": 0,
+      "y": 50560,
+      "w": 1440,
+      "h": 2500
+    },
+    {
+      "file": "confirmation-mobile.dc.html",
+      "title": "Order confirmation · mobile",
+      "x": 1520,
+      "y": 50560,
+      "w": 390,
+      "h": 5560
+    },
+    {
+      "file": "track-order-desktop.dc.html",
+      "title": "Track order · desktop",
+      "x": 0,
+      "y": 56240,
+      "w": 1440,
+      "h": 2440
+    },
+    {
+      "file": "track-order-mobile.dc.html",
+      "title": "Track order · mobile",
+      "x": 1520,
+      "y": 56240,
+      "w": 390,
+      "h": 4360
     },
     {
       "file": "category-hub-desktop.dc.html",
-      "title": "Category hub · no destination, no money · desktop",
-      "x": 2070,
-      "y": 8100,
+      "title": "Category hub · no destination · desktop",
+      "x": 0,
+      "y": 60720,
       "w": 1440,
-      "h": 2260
+      "h": 2660
     },
     {
       "file": "category-hub-mobile.dc.html",
-      "title": "Category hub · no destination, no money · mobile",
-      "x": 3630,
-      "y": 8100,
+      "title": "Category hub · no destination · mobile",
+      "x": 1520,
+      "y": 60720,
       "w": 390,
-      "h": 2740
+      "h": 4320
     },
     {
       "file": "occasion-hub-desktop.dc.html",
-      "title": "Occasion hub · dates by country · desktop",
-      "x": 4140,
-      "y": 8100,
+      "title": "Occasion hub · desktop",
+      "x": 0,
+      "y": 65160,
       "w": 1440,
       "h": 2180
     },
     {
       "file": "occasion-hub-mobile.dc.html",
-      "title": "Occasion hub · dates by country · mobile",
-      "x": 5700,
-      "y": 8100,
+      "title": "Occasion hub · mobile",
+      "x": 1520,
+      "y": 65160,
       "w": 390,
-      "h": 2620
+      "h": 4100
     },
     {
       "file": "occasions-index-desktop.dc.html",
       "title": "Occasions index · desktop",
       "x": 0,
-      "y": 12560,
+      "y": 69380,
       "w": 1440,
-      "h": 2020
+      "h": 2620
     },
     {
       "file": "occasions-index-mobile.dc.html",
       "title": "Occasions index · mobile",
-      "x": 1560,
-      "y": 12560,
+      "x": 1520,
+      "y": 69380,
       "w": 390,
-      "h": 2500
-    },
-    {
-      "file": "checkout-desktop.dc.html",
-      "title": "Checkout · 3 steps and the demo guard · desktop",
-      "x": 2070,
-      "y": 12560,
-      "w": 1440,
-      "h": 3320
-    },
-    {
-      "file": "checkout-mobile.dc.html",
-      "title": "Checkout · 3 steps and the demo guard · mobile",
-      "x": 3630,
-      "y": 12560,
-      "w": 390,
-      "h": 4180
-    },
-    {
-      "file": "confirmation-desktop.dc.html",
-      "title": "Order confirmation · desktop",
-      "x": 4140,
-      "y": 12560,
-      "w": 1440,
-      "h": 1940
-    },
-    {
-      "file": "confirmation-mobile.dc.html",
-      "title": "Order confirmation · mobile",
-      "x": 5700,
-      "y": 12560,
-      "w": 390,
-      "h": 2380
-    },
-    {
-      "file": "track-order-desktop.dc.html",
-      "title": "Track order · timeline and lookup · desktop",
-      "x": 0,
-      "y": 16940,
-      "w": 1440,
-      "h": 2220
-    },
-    {
-      "file": "track-order-mobile.dc.html",
-      "title": "Track order · timeline and lookup · mobile",
-      "x": 1560,
-      "y": 16940,
-      "w": 390,
-      "h": 2760
+      "h": 3380
     },
     {
       "file": "how-it-works-desktop.dc.html",
       "title": "How it works · desktop",
-      "x": 2070,
-      "y": 16940,
+      "x": 0,
+      "y": 72880,
       "w": 1440,
-      "h": 2100
+      "h": 2500
     },
     {
       "file": "how-it-works-mobile.dc.html",
       "title": "How it works · mobile",
-      "x": 3630,
-      "y": 16940,
+      "x": 1520,
+      "y": 72880,
       "w": 390,
-      "h": 2560
+      "h": 5060
     },
     {
       "file": "guarantee-and-delivery-desktop.dc.html",
-      "title": "Guarantee · delivery information · desktop",
-      "x": 4140,
-      "y": 16940,
+      "title": "Guarantee and delivery · desktop",
+      "x": 0,
+      "y": 78060,
       "w": 1440,
-      "h": 2200
+      "h": 2620
     },
     {
       "file": "guarantee-and-delivery-mobile.dc.html",
-      "title": "Guarantee · delivery information · mobile",
-      "x": 5700,
-      "y": 16940,
+      "title": "Guarantee and delivery · mobile",
+      "x": 1520,
+      "y": 78060,
       "w": 390,
-      "h": 2680
+      "h": 5400
     },
     {
       "file": "about-contact-help-desktop.dc.html",
       "title": "About · contact · help · desktop",
       "x": 0,
-      "y": 19900,
+      "y": 83580,
       "w": 1440,
-      "h": 2380
+      "h": 2760
     },
     {
       "file": "about-contact-help-mobile.dc.html",
       "title": "About · contact · help · mobile",
-      "x": 1560,
-      "y": 19900,
+      "x": 1520,
+      "y": 83580,
       "w": 390,
-      "h": 2900
+      "h": 5620
+    },
+    {
+      "file": "for-florists-desktop.dc.html",
+      "title": "For florists · desktop",
+      "x": 0,
+      "y": 89320,
+      "w": 1440,
+      "h": 3500
+    },
+    {
+      "file": "for-florists-mobile.dc.html",
+      "title": "For florists · mobile",
+      "x": 1520,
+      "y": 89320,
+      "w": 390,
+      "h": 7760
     },
     {
       "file": "blog-desktop.dc.html",
       "title": "Blog index and post · desktop",
-      "x": 2070,
-      "y": 19900,
+      "x": 0,
+      "y": 97200,
       "w": 1440,
-      "h": 2160
+      "h": 2740
     },
     {
       "file": "blog-mobile.dc.html",
       "title": "Blog index and post · mobile",
-      "x": 3630,
-      "y": 19900,
+      "x": 1520,
+      "y": 97200,
       "w": 390,
-      "h": 2620
-    },
-    {
-      "file": "for-florists-desktop.dc.html",
-      "title": "For florists · landing, apply, walkthrough · desktop",
-      "x": 4140,
-      "y": 19900,
-      "w": 1440,
-      "h": 2700
-    },
-    {
-      "file": "for-florists-mobile.dc.html",
-      "title": "For florists · landing, apply, walkthrough · mobile",
-      "x": 5700,
-      "y": 19900,
-      "w": 390,
-      "h": 3300
+      "h": 5560
     },
     {
       "file": "legal-template-desktop.dc.html",
       "title": "Legal page template · desktop",
       "x": 0,
-      "y": 23400,
+      "y": 102880,
       "w": 1440,
-      "h": 1960
+      "h": 2840
     },
     {
       "file": "legal-template-mobile.dc.html",
       "title": "Legal page template · mobile",
-      "x": 1560,
-      "y": 23400,
+      "x": 1520,
+      "y": 102880,
       "w": 390,
-      "h": 2380
+      "h": 5380
     },
     {
       "file": "errors-desktop.dc.html",
-      "title": "404 and 500 · desktop",
-      "x": 2070,
-      "y": 23400,
+      "title": "404 · 410 · 500 · desktop",
+      "x": 0,
+      "y": 108380,
       "w": 1440,
-      "h": 1620
+      "h": 1460
     },
     {
       "file": "errors-mobile.dc.html",
-      "title": "404 and 500 · mobile",
-      "x": 3630,
-      "y": 23400,
+      "title": "404 · 410 · 500 · mobile",
+      "x": 1520,
+      "y": 108380,
       "w": 390,
-      "h": 1900
+      "h": 3280
     }
   ],
   "annotations": [
     {
-      "id": "wireframes-1",
+      "id": "wireframes",
       "x": 0,
-      "y": -110,
-      "w": 1200,
-      "text": "wireframes 1 — One desktop (1440) and one mobile (390) artboard per Phase 0 page type in plan/05 §1–§2, in the approved system. Structural, not finished art: real registry copy where it exists, [slot] markers where it does not, and every state and empty state shown."
+      "y": -140,
+      "w": 1400,
+      "text": "wireframes — one desktop (1440) and one mobile (390) artboard per Phase 0 page type in plan/05 §1–§2, in the approved system, laid out in buyer-journey order. Round 2 (TASK-059, 2026-09-09): every page reworked against the competitor study in docs/design/benchmarks/ — products and all-in prices before prose, the fee printed on every date chip, cutoffs in the recipient's time zone, and first-person copy throughout (spec 004 §14 A5). Heights are measured from a real render, not estimated."
     },
     {
-      "id": "wireframes-2",
+      "id": "wf-locale-chooser",
       "x": 0,
-      "y": 4390,
+      "y": -46,
       "w": 1200,
-      "text": "wireframes 2 — Phase 0 page types, continued. Each artboard opens with its own annotation block: purpose, URL, index status, the data it reads, and the owning spec."
+      "text": "Locale chooser — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
     },
     {
-      "id": "wireframes-3",
+      "id": "wf-all-destinations",
       "x": 0,
-      "y": 7990,
+      "y": 2534,
       "w": 1200,
-      "text": "wireframes 3 — Phase 0 page types, continued. Each artboard opens with its own annotation block: purpose, URL, index status, the data it reads, and the owning spec."
+      "text": "All destinations hub — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
     },
     {
-      "id": "wireframes-4",
+      "id": "wf-corridor-country",
       "x": 0,
-      "y": 12450,
+      "y": 6894,
       "w": 1200,
-      "text": "wireframes 4 — Phase 0 page types, continued. Each artboard opens with its own annotation block: purpose, URL, index status, the data it reads, and the owning spec."
+      "text": "Country page · live and guide — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
     },
     {
-      "id": "wireframes-5",
+      "id": "wf-country-shop",
       "x": 0,
-      "y": 16830,
+      "y": 15454,
       "w": 1200,
-      "text": "wireframes 5 — Phase 0 page types, continued. Each artboard opens with its own annotation block: purpose, URL, index status, the data it reads, and the owning spec."
+      "text": "Country shop root — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
     },
     {
-      "id": "wireframes-6",
+      "id": "wf-country-category",
       "x": 0,
-      "y": 19790,
+      "y": 23854,
       "w": 1200,
-      "text": "wireframes 6 — Phase 0 page types, continued. Each artboard opens with its own annotation block: purpose, URL, index status, the data it reads, and the owning spec."
+      "text": "Country category — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
     },
     {
-      "id": "wireframes-7",
+      "id": "wf-country-occasion",
       "x": 0,
-      "y": 23290,
+      "y": 28494,
       "w": 1200,
-      "text": "wireframes 7 — Phase 0 page types, continued. Each artboard opens with its own annotation block: purpose, URL, index status, the data it reads, and the owning spec."
+      "text": "Country occasion — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
+    },
+    {
+      "id": "wf-product",
+      "x": 0,
+      "y": 34414,
+      "w": 1200,
+      "text": "Product page — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
+    },
+    {
+      "id": "wf-checkout",
+      "x": 0,
+      "y": 42814,
+      "w": 1200,
+      "text": "Checkout · three steps — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
+    },
+    {
+      "id": "wf-confirmation",
+      "x": 0,
+      "y": 50514,
+      "w": 1200,
+      "text": "Order confirmation — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
+    },
+    {
+      "id": "wf-track-order",
+      "x": 0,
+      "y": 56194,
+      "w": 1200,
+      "text": "Track order — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
+    },
+    {
+      "id": "wf-category-hub",
+      "x": 0,
+      "y": 60674,
+      "w": 1200,
+      "text": "Category hub · no destination — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
+    },
+    {
+      "id": "wf-occasion-hub",
+      "x": 0,
+      "y": 65114,
+      "w": 1200,
+      "text": "Occasion hub — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
+    },
+    {
+      "id": "wf-occasions-index",
+      "x": 0,
+      "y": 69334,
+      "w": 1200,
+      "text": "Occasions index — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
+    },
+    {
+      "id": "wf-how-it-works",
+      "x": 0,
+      "y": 72834,
+      "w": 1200,
+      "text": "How it works — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
+    },
+    {
+      "id": "wf-guarantee-and-delivery",
+      "x": 0,
+      "y": 78014,
+      "w": 1200,
+      "text": "Guarantee and delivery — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
+    },
+    {
+      "id": "wf-about-contact-help",
+      "x": 0,
+      "y": 83534,
+      "w": 1200,
+      "text": "About · contact · help — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
+    },
+    {
+      "id": "wf-for-florists",
+      "x": 0,
+      "y": 89274,
+      "w": 1200,
+      "text": "For florists — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
+    },
+    {
+      "id": "wf-blog",
+      "x": 0,
+      "y": 97154,
+      "w": 1200,
+      "text": "Blog index and post — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
+    },
+    {
+      "id": "wf-legal-template",
+      "x": 0,
+      "y": 102834,
+      "w": 1200,
+      "text": "Legal page template — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
+    },
+    {
+      "id": "wf-errors",
+      "x": 0,
+      "y": 108334,
+      "w": 1200,
+      "text": "404 · 410 · 500 — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
     }
   ],
   "launch": {

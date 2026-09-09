@@ -44,7 +44,7 @@
     .photo { background: var(--color-photo); display: flex; align-items: flex-end; padding: var(--space-md); color: var(--color-photo-ink); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; }
     .field { display: flex; flex-direction: column; gap: 6px; }
     .field span.v { min-height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-bottom: 1px solid var(--color-ink); font-size: var(--text-md); color: var(--color-ink); }
-    .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
+    .btn { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
     .btn.accent { background: var(--color-accent); }
     .btn.secondary { background: var(--color-paper); color: var(--color-ink); border: 1px solid var(--color-ink-3); }
     .btn.sm { min-height: 44px; padding: 0 16px; font-size: var(--text-sm); }
@@ -85,9 +85,9 @@
     code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: var(--text-xs); color: var(--color-ink-2); }
   </style>
 </helmet>
-<div style="width: 1440px; min-height: 1900px; background: var(--color-paper); display: flex; flex-direction: column;">
+<div style="width: 1440px; min-height: 1620px; background: var(--color-paper); display: flex; flex-direction: column;">
   <section class="note" style="margin: var(--space-lg) 56px 0;">
-    <span class="label">Consent and locale</span>
+    <span class="label">Consent and locale · [internal]</span>
     <dl>
       <dt>Purpose</dt><dd>The three overlapping surfaces of the first visit — the locale chooser, the language-suggestion banner and the consent sheet — with their states and their z-order. They are drawn together because they are the only elements in the design that can be on screen at the same time.</dd>
       <dt>The rule they exist to keep</dt><dd><b>No IP redirect. Ever.</b> (ADR-0006) A visitor's language is never decided for them: <code>/</code> lists the locales, an <code>Accept-Language</code> mismatch is a dismissible <em>suggestion</em>, and the chosen locale is in the URL. Currency is a cookie; the destination country is in the shop URL.</dd>
@@ -104,7 +104,7 @@
         <div class="thumb" style="min-height: 260px;">
           <div style="display: flex; align-items: center; gap: 6px;"><span style="font-family: var(--font-display); font-size: 13px;">Flowers Overseas</span></div>
           <span style="font-family: var(--font-display); font-size: 15px; color: var(--color-ink);">Choose your language</span>
-          <span>Flowers Overseas sends flowers to someone in another European country: you order, a vetted local florist makes and delivers them. Choose a language to continue.</span>
+          <span>We send flowers to someone in another European country: you order from us, and our florist in their town makes the bouquet and hands it over in person. Choose a language to continue.</span>
           <div class="box">English</div>
           <div class="box">English (UK)</div>
           <div class="box">Deutsch</div>

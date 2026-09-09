@@ -1,12 +1,47 @@
 {
   "artboards": [
-    { "file": "homepage-desktop.dc.html", "title": "Homepage · desktop 1440", "x": 0, "y": 0, "w": 1440, "h": 5360 },
-    { "file": "homepage-mobile.dc.html", "title": "Homepage · mobile 390", "x": 1540, "y": 0, "w": 390, "h": 5560 },
-    { "file": "identity.dc.html", "title": "Identity · chosen mark and system", "x": 0, "y": 5760, "w": 1440, "h": 1500 }
+    {
+      "file": "homepage-desktop.dc.html",
+      "title": "Homepage · desktop 1440",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 5380
+    },
+    {
+      "file": "homepage-mobile.dc.html",
+      "title": "Homepage · mobile 390",
+      "x": 1520,
+      "y": 0,
+      "w": 390,
+      "h": 5940
+    },
+    {
+      "file": "identity.dc.html",
+      "title": "Identity · the mark and its system",
+      "x": 1990,
+      "y": 0,
+      "w": 1440,
+      "h": 1180
+    }
   ],
   "annotations": [
-    { "id": "gap-check", "x": 1000, "y": -300, "w": 640, "text": "Competitor gap check (round 6): added a help line with phone/WhatsApp and hours in the utility strip; a Coming up in Poland strip with real dates (All Saints 1 Nov, Andrzejki 29 Nov, Wigilia 24 Dec, Women's Day 8 Mar) and order-by cutoffs; a five-question FAQ answering first-order doubts; and an occasion-reminder signup in the footer with double opt-in consent. Skipped on purpose for Phase 0: loyalty membership, app badges, corporate gifts. Reviews stay real-only." },
-    { "id": "round4", "x": 0, "y": -300, "w": 900, "text": "This round: header rebuilt to the 1-800-Flowers / InternetFlorist anatomy you showed — logo left, wide search with a dark Search button, labelled Sign in / My orders / Basket, and a full category row underneath (Best sellers · Birthday · Sympathy · Occasions · Bouquets · Roses · Plants · Add-ons · Same-day delivery · Destinations). Also (Best sellers · Bouquets · Roses · Plants · Occasions · Add-ons · Destinations · Same-day), a 'Most sent this week' trending row with tabs, a verified-reviews section, and a logo system below.\n\nFinder, per your notes: a plain country field — you type, the matching country appears underneath, nothing else — then town/city/postcode, then date; the button is a neutral Continue with a line under it saying it shows everything deliverable there that day. Logo: your call — the first mark (origin dot, stem, five-petal bloom) is the brand mark; its full system is the third artboard. Earlier finder note: 'Where are they?' is now a visible choice (Poland selected and marked delivering now) instead of a dropdown; the date defaults to the soonest possible with the cutoff explained under the button; town/postcode is optional because price depends on the country; and 'Just browsing? See everything' gives non-committal visitors a way in.\n\nReviews: Phase 0 rules forbid showing reviews we do not have, so the section is a real component with placeholder rows and a Trustpilot slot; it goes live when the first verified reviews exist. Same for 'Most sent this week', which switches from florists' picks to real order data automatically." }
+    {
+      "id": "homepage-v1",
+      "x": 0,
+      "y": -140,
+      "w": 1400,
+      "text": "homepage-v1 — the founder-approved homepage and identity, 2026-09-08. Round 2 (2026-09-09) changed copy and section order only: the two priced product rows moved above every editorial section, and every sentence now speaks in the first person (spec 004 §14 A5). The visual system — paper, ramp, type pairing, spacing, finder card, colophon — is untouched. See homepage-v1/README.md, 'Round 2, founder direction'."
+    },
+    {
+      "id": "round-2-density",
+      "x": 1500,
+      "y": -140,
+      "w": 640,
+      "text": "Density (founder, 2026-09-09): products with prices before prose; larger photography slots; plain warm copy over abstract labels; real occasion dates in the category row; the delivery promise — date, cutoff in the recipient's time, fee on the chip — wherever a product is shown. The price slot stays a Placeholder bar because country_price has no rows yet; it renders the all-in amount the day it does."
+    }
   ],
-  "launch": { "view": "canvas" }
+  "launch": {
+    "view": "canvas"
+  }
 }

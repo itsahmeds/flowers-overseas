@@ -44,7 +44,7 @@
     .photo { background: var(--color-photo); display: flex; align-items: flex-end; padding: var(--space-md); color: var(--color-photo-ink); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; }
     .field { display: flex; flex-direction: column; gap: 6px; }
     .field span.v { min-height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-bottom: 1px solid var(--color-ink); font-size: var(--text-md); color: var(--color-ink); }
-    .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
+    .btn { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
     .btn.accent { background: var(--color-accent); }
     .btn.secondary { background: var(--color-paper); color: var(--color-ink); border: 1px solid var(--color-ink-3); }
     .btn.sm { min-height: 44px; padding: 0 16px; font-size: var(--text-sm); }
@@ -80,23 +80,23 @@
     .prose { max-width: var(--measure); font-size: var(--text-md); line-height: 1.6; color: var(--color-ink-2); }
   </style>
 </helmet>
-<div style="width: 390px; min-height: 4180px; background: var(--color-paper); display: flex; flex-direction: column;">
+<div style="width: 390px; min-height: 7580px; background: var(--color-paper); display: flex; flex-direction: column;">
   <div style="display: flex; flex-direction: column; border-bottom: 1px solid var(--color-ink);">
     <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm) var(--space-lg); align-items: center; justify-content: space-between; padding: 12px var(--space-md); font-size: var(--text-xs); color: var(--color-ink-2); border-bottom: var(--rule);">
-      <span>Order by 14:00 Warsaw time for same-day delivery</span><span>Prices include delivery and VAT</span><span>Help &amp; WhatsApp: +1 (213) 592-5150 · Mon–Sat 8–20 CET</span>
+      <span>Order by 14:00 in Warsaw — the recipient's own time — and we deliver today</span><span>One price: VAT and delivery in</span><span>Talk to us: +1 (213) 592-5150 · WhatsApp · Mon–Sat 8–20 CET</span>
     </div>
     <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm) var(--space-lg); align-items: center; justify-content: space-between; padding: var(--space-md) var(--space-md);">
       <span class="display" style="font-size: 20px; letter-spacing: 0.04em;">Flowers Overseas</span>
       <span style="font-size: var(--text-sm); color: var(--color-ink-3);">Search · Menu · Basket (0)</span>
     </div>
     <div style="padding: 10px var(--space-md); border-top: var(--rule); font-size: var(--text-sm); color: var(--color-ink-2);">
-      <span class="label" style="margin-inline-end: var(--space-sm);">Categories</span>Best sellers · Occasions · Bouquets · Roses · Plants · Same-day
+      <span class="label" style="margin-inline-end: var(--space-sm);">Categories</span>Best sellers · All Saints 1 Nov · Wigilia 24 Dec · Bouquets · Roses · Plants · Same-day
     </div>
-    <div style="padding: 6px var(--space-md) 10px; font-size: var(--text-xs); color: var(--color-ink-3);">Chrome as approved in <b>homepage-v1</b>. Every category row entry and every utility link is <b>unpublished in Phase 0</b> and renders as text, not a link (site-links.ts, categories.ts; spec 004 AC-14).</div>
+    <div style="padding: 6px var(--space-md) 10px; font-size: var(--text-xs); color: var(--color-ink-3);">Chrome as approved in <b>homepage-v1</b>. Every category row entry and every utility link is <b>unpublished in Phase 0</b> and renders as text, not a link (site-links.ts, categories.ts; spec 004 AC-14). <b>Round 2:</b> the row prints the next real occasion dates for the destination, the way 1-800-Flowers prints "Labor Day (9/7)" — the dates come from the occasion calendar, so a row entry can never name a date we have not verified.</div>
   </div>
 
   <section class="note" style="margin: var(--space-lg) var(--space-md) 0;">
-    <span class="label">Checkout · three steps and the demo guard</span>
+    <span class="label">Checkout · three steps and the demo guard · [internal]</span>
     <dl>
       <dt>Purpose</dt><dd>Recipient → you → pay. Three steps on one URL, guest by default, state saved server-side per step so refresh and back never lose data, and every step ≤8 fields on mobile.</dd>
       <dt>URL</dt><dd><code>/en-gb/checkout</code> — one URL for all three steps.</dd>
@@ -117,17 +117,33 @@
       </div>
 
 <div class="sec">
+      <div class="tile" style="border-color: var(--color-ink); gap: var(--space-sm);">
+        <span class="label">Pay in one tap, before you type anything</span>
+        <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm);"><span class="btn sm" style="flex: 1 1 150px;">Apple Pay · 248 zł</span><span class="btn sm secondary" style="flex: 1 1 150px;">Google Pay · 248 zł</span><span class="btn sm secondary" style="flex: 1 1 150px;">PayPal · 248 zł</span></div>
+        <span style="font-size: var(--text-xs); color: var(--color-ink-3);">Express wallets sit <b>above the first field</b> and name the amount. <b>You are checking out as a guest</b> — there is no account to create, no login wall and no social button; we offer to remember the order after you have paid, never before. FloraQueen opens with a Google/Meta/Amazon modal; that is the pattern this row exists to replace.</span>
+      </div>
+
       <div class="steprow"><span class="on">1 · Recipient</span><span>2 · You</span><span>3 · Pay</span></div>
       <div style="display: grid; grid-template-columns: repeat(1, minmax(0, 1fr)); gap: var(--space-xl); align-items: start;">
         <div class="sec">
           <div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">Step 1 · Recipient</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">Who is it for?</h2></div>
-          <span style="font-size: var(--text-sm); color: var(--color-ink-2);">Your florist needs this to deliver.</span>
+          <span style="font-size: var(--text-sm); color: var(--color-ink-2);">Our florist in Warszawa needs this to find the door. Every step says why we are asking before it asks.</span>
           <div class="field"><span class="label">Recipient's name</span><span class="v"><span class="slot">[slot] First and last name</span></span></div>
-          <div class="field"><span class="label">Phone number in Poland</span><span class="v"><span class="slot">[slot] The florist calls if nobody answers the door</span></span></div>
+          <div class="field"><span class="label">Recipient's phone in Poland</span><span class="v"><span class="slot">[slot] +48 …</span></span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">This is the one field that saves a failed delivery: if nobody answers the door our florist calls the recipient before taking the bouquet away. We never share it, never market to it, and it is deleted with the order. If you do not have it, say so — we will still deliver, but we cannot rescue a missed door.</span></div>
           <div class="field"><span class="label">Street and number</span><span class="v"><span class="slot">[slot] ul. Marszałkowska 1/2</span></span></div>
           <div class="field"><span class="label">Postcode and city</span><span class="v"><span class="slot">[slot] 00-001 Warszawa</span></span></div>
+          <div class="sec" style="gap: var(--space-sm);">
+            <span class="label">Is it going somewhere with rules?</span>
+            <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm);"><span class="chip accent">A home</span><span class="chip">An office</span><span class="chip">A hospital</span><span class="chip">A hotel</span><span class="chip">A funeral</span></div>
+            <span style="font-size: var(--text-xs); color: var(--color-ink-3);">Choosing one reveals the fields that address actually needs — ward and room, company and floor, chapel and the hour of the service — plus the rules for <b>this destination</b> (Polish hospitals take flowers at reception, not on the ward; intensive care takes none). Hidden until chosen, so a home delivery is four fields and not nine.</span>
+          </div>
+          <div class="sec" style="gap: var(--space-sm);">
+            <span class="label">Arriving</span>
+            <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm);"><span class="chip accent">Thu 10 Sep · included</span><span class="chip">Fri 11 · included</span><span class="chip" style="color: var(--color-warning); border-color: var(--color-warning);">Sun 13 · +29 zł</span><span class="chip muted">Change date</span></div>
+            <span style="font-size: var(--text-xs); color: var(--color-ink-3);">The date arrives from the product page and stays editable here, with <b>exactly the same fee on the chip</b>. Nothing about the money changes shape between the two pages, so the total below cannot move.</span>
+          </div>
           <span style="font-size: var(--text-xs); color: var(--color-ink-3);">The address form is in the <b>destination country's</b> format and order, not the buyer's. Postcode uses <code>inputmode="numeric"</code> where the country's postcodes are numeric; phone uses <code>inputmode="tel"</code>; every input is ≥16 px so iOS does not zoom.</span>
-          <div class="field"><span class="label">Card message</span><span class="v" style="min-height: 90px; align-items: flex-start; padding-block: 12px;"><span class="slot">[slot] Leave blank for no card</span></span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">0 / 200 characters — counted in graphemes, so Polish, Cyrillic, Turkish and emoji all count as one each.</span></div>
+          <div class="field"><span class="label">Card message</span><span class="v" style="min-height: 90px; align-items: flex-start; padding-block: 12px;"><span class="slot">[slot] Leave blank for no card</span></span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">0 / 200 characters — counted in graphemes, so Polish, Cyrillic, Turkish and emoji all count as one each. <b>The card is free</b> and our florist writes or prints it by hand in Warszawa; we never add anything of our own to it.</span></div>
           <div class="tile"><span class="label">Card preview</span><span style="font-family: var(--font-display); font-size: var(--text-lg);"><span class="slot">[slot] your message</span></span><span style="font-size: var(--text-sm); color: var(--color-ink-3);">— <span class="slot">[slot] sign as</span></span></div>
           <div class="tile"><span style="font-weight: 600; font-size: var(--text-sm);">Add chocolates · 29 zł</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">One tap. Unticked, like every add-on.</span></div>
           <span class="btn accent" style="width: 100%;">Continue to your details</span>
@@ -192,7 +208,7 @@
           </div>
           <div class="sec" style="gap: 6px;">
             <span class="label">What you are agreeing to</span>
-            <span style="font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.6;">Flowers are made to order and perishable, so there is no 14-day right of withdrawal (CRD Art. 16(d)). You can cancel free of charge until we send the order to the florist. If the exact flowers are unavailable the florist substitutes to the same value, style and colour and we tell you. Our guarantee and refund terms apply.</span>
+            <span style="font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.6;"><b>You can change the recipient, the address, the message or the date free of charge until 14:00 Warsaw time on the day before delivery</b> — the destination's cutoff, published rather than implied. After that our florist has bought the flowers, so a change may not be possible; we will tell you what is, and we never say “no changes under any circumstances”. Flowers are made to order and perishable, so there is no 14-day right of withdrawal (CRD Art. 16(d)). You can cancel free of charge until we send the order to the florist. If the exact flowers are unavailable the florist substitutes to the same value, style and colour and we tell you. Our guarantee and refund terms apply.</span>
             <span style="font-size: var(--text-sm); color: var(--color-ink-2);">Operated by <span class="slot">[slot] legal name</span>, <span class="slot">[slot] registered address</span>, <span class="slot">[slot] registration no</span>, VAT <span class="slot">[slot] VAT id</span>.</span>
           </div>
           <span class="btn accent" style="width: 100%;">Pay 248 zł</span>
@@ -225,8 +241,9 @@
   <div style="margin-block-start: auto; border-top: 1px solid var(--color-ink); padding: var(--space-lg) var(--space-md); display: flex; flex-direction: column; gap: var(--space-sm); font-size: var(--text-sm); color: var(--color-ink-2);">
     <span class="label">Footer</span>
     <span>Sending: Destinations · Occasions · Delivery times and cutoffs · The guarantee — Company: How it works · For florists · Help and contact · Imprint — Legal: Terms · Privacy · Cookies · Withdrawal and refunds · Cookie settings</span>
-    <span>International flower relay. You order, a vetted local florist makes and delivers. Operated by <span class="slot">[legal name]</span>, <span class="slot">[registered address]</span>, <span class="slot">[registration no]</span> — printed only once <code>company.registered</code> is true (company.ts; spec 004 AC-9).</span>
+    <span>We send flowers across Europe. You order from us; our florist in the recipient's town makes the bouquet and hands it over in person. Operated by <span class="slot">[legal name]</span>, <span class="slot">[registered address]</span>, <span class="slot">[registration no]</span> — printed only once <code>company.registered</code> is true (company.ts; spec 004 AC-9).</span>
     <span>BLIK · Klarna · PayPal · Visa · Mastercard · Apple Pay — card payments processed by Stripe. We never store card numbers.</span>
+    <span>Talk to a person: +1 (213) 592-5150 · WhatsApp · Mon–Sat 8–20 CET. Weekend hours are a founder decision, not a design one (benchmarks/README.md, open question 1).</span>
   </div>
 </div>
 </x-dc>

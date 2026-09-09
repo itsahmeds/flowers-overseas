@@ -44,7 +44,7 @@
     .photo { background: var(--color-photo); display: flex; align-items: flex-end; padding: var(--space-md); color: var(--color-photo-ink); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; }
     .field { display: flex; flex-direction: column; gap: 6px; }
     .field span.v { min-height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-bottom: 1px solid var(--color-ink); font-size: var(--text-md); color: var(--color-ink); }
-    .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
+    .btn { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
     .btn.accent { background: var(--color-accent); }
     .btn.secondary { background: var(--color-paper); color: var(--color-ink); border: 1px solid var(--color-ink-3); }
     .btn.sm { min-height: 44px; padding: 0 16px; font-size: var(--text-sm); }
@@ -80,11 +80,11 @@
     .prose { max-width: var(--measure); font-size: var(--text-md); line-height: 1.6; color: var(--color-ink-2); }
   </style>
 </helmet>
-<div style="width: 1440px; min-height: 1160px; background: var(--color-paper); display: flex; flex-direction: column;">
+<div style="width: 1440px; min-height: 1460px; background: var(--color-paper); display: flex; flex-direction: column;">
   <div style="display: flex; align-items: center; gap: 12px; padding: var(--space-lg) 56px; border-bottom: var(--rule);"><span class="display" style="font-size: 26px; letter-spacing: 0.04em;">Flowers Overseas</span></div>
 
   <section class="note" style="margin: var(--space-lg) 56px 0;">
-    <span class="label">Locale chooser</span>
+    <span class="label">Locale chooser · [internal]</span>
     <dl>
       <dt>Purpose</dt><dd>List the locales and let the visitor choose. It is the root document and it <b>never redirects</b> — not on IP, not on <code>Accept-Language</code>, not ever (ADR-0006).</dd>
       <dt>URL</dt><dd><code>/</code> — the only page in the product with no locale prefix.</dd>
@@ -98,7 +98,7 @@
   <main style="display: flex; flex-direction: column; gap: var(--space-xl); padding: var(--space-3xl) 56px; max-width: 760px;">
     <div style="display: flex; flex-direction: column; gap: var(--space-md);">
       <h1 class="display" style="margin: 0; font-size: var(--text-display-s); line-height: 1.08;">Choose your language</h1>
-      <p class="prose" style="margin: 0;">Flowers Overseas sends flowers to someone in another European country: you order, a vetted local florist makes and delivers them. Choose a language to continue.</p>
+      <p class="prose" style="margin: 0;">We send flowers to someone in another European country: you order from us, and our florist in their town makes the bouquet and hands it over in person. Choose a language to continue.</p>
     </div>
     <nav aria-label="Languages" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0; border-block-start: var(--rule); border-inline-start: var(--rule);">
       <a href="/en" style="display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-md); padding: var(--space-lg); border-inline-end: var(--rule); border-block-end: var(--rule); background: var(--color-paper-2);"><span class="display" style="font-size: var(--text-xl);">English</span><code>/en</code><span style="font-size: var(--text-xs); color: var(--color-ink-3); letter-spacing: 0.1em; text-transform: uppercase;">lang=en</span></a>
@@ -113,8 +113,9 @@
   <div style="margin-block-start: auto; border-top: 1px solid var(--color-ink); padding: var(--space-lg) 56px; display: flex; flex-direction: column; gap: var(--space-sm); font-size: var(--text-sm); color: var(--color-ink-2);">
     <span class="label">Footer</span>
     <span>Sending: Destinations · Occasions · Delivery times and cutoffs · The guarantee — Company: How it works · For florists · Help and contact · Imprint — Legal: Terms · Privacy · Cookies · Withdrawal and refunds · Cookie settings</span>
-    <span>International flower relay. You order, a vetted local florist makes and delivers. Operated by <span class="slot">[legal name]</span>, <span class="slot">[registered address]</span>, <span class="slot">[registration no]</span> — printed only once <code>company.registered</code> is true (company.ts; spec 004 AC-9).</span>
+    <span>We send flowers across Europe. You order from us; our florist in the recipient's town makes the bouquet and hands it over in person. Operated by <span class="slot">[legal name]</span>, <span class="slot">[registered address]</span>, <span class="slot">[registration no]</span> — printed only once <code>company.registered</code> is true (company.ts; spec 004 AC-9).</span>
     <span>BLIK · Klarna · PayPal · Visa · Mastercard · Apple Pay — card payments processed by Stripe. We never store card numbers.</span>
+    <span>Talk to a person: +1 (213) 592-5150 · WhatsApp · Mon–Sat 8–20 CET. Weekend hours are a founder decision, not a design one (benchmarks/README.md, open question 1).</span>
   </div>
 </div>
 </x-dc>
