@@ -61,11 +61,13 @@ describe("spec 006 §2.2: every dataset file parses and carries its header", () 
     }
   });
 
-  it("keeps the per-destination calendar the only authored catalogue file (ADR-0017)", () => {
+  it("keeps every authored file outside the catalogue entities ADR-0017 owns", () => {
     const authored = SEED_DATA_FILES.filter(
       (file) => file.origin === "authored",
     ).map((file) => file.path);
-    expect(authored).toEqual(["occasion-country.json"]);
+    // The calendar (spec 006 owns no catalogue rows) and the imagery manifest (TASK-077): neither
+    // is a projection of `src/config/catalogue/`, which is what ADR-0017 forbids duplicating.
+    expect(authored).toEqual(["occasion-country.json", "media.json"]);
   });
 });
 

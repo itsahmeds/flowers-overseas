@@ -15,4 +15,5 @@ export * from "./header.ts";
 export * from "./catalogue.ts";
 export * from "./copy.ts";
 export * from "./media.ts";
+export * from "./prompts.ts";
 export * from "./files.ts";

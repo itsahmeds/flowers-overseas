@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "key": "FO-AR-001",
+  "records": [
+    {
+      "assetId": "fo-ar-001-hero",
+      "sku": "FO-AR-001",
+      "slot": "productHero",
+      "role": "hero",
+      "aspectRatio": "4:5",
+      "generator": "to-be-confirmed",
+      "generatorModel": "to-be-confirmed",
+      "generatorSeed": 165712354,
+      "prompt": "A small minimal flower arrangement in soft pastel colours, arranged low in a plain kraft gift box of medium size, centred at 4:5 with an 8% margin on every side, on a neutral warm-grey seamless background, soft north light from the left, colour-accurate pastel pink, cream and white heads, no hands, no faces, no text.",
+      "negativePrompt": "hands, fingers, arms, faces, people, shop interior, shopfront, premises, signage, text, lettering, numbers, watermark, logo, price tag, greetings card message, fused or impossible stems, extra petals, melted or waxy petals, plastic or silk flowers, wilted flowers, wrong flower species, implausible stem count, harsh flash, heavy vignette, cluttered background, props, tiled or repeated pattern",
+      "parameters": {
+        "aspectRatio": "4:5",
+        "colourProfile": "sRGB",
+        "minLongEdgePx": 2000,
+        "styleReference": "content/imagery/style-guide.md"
+      }
+    },
+    {
+      "assetId": "fo-ar-001-detail",
+      "sku": "FO-AR-001",
+      "slot": "productDetail",
+      "role": "detail",
+      "aspectRatio": "4:5",
+      "generator": "to-be-confirmed",
+      "generatorModel": "to-be-confirmed",
+      "generatorSeed": 72741979,
+      "prompt": "A close detail of the same pastel arrangement in its plain kraft box: three heads and the box edge filling the frame at 4:5, on a neutral warm-grey seamless background, soft north light from the left, petal texture and the box's plain kraft board sharp, colour-accurate pastels, no hands, no faces, no text.",
+      "negativePrompt": "hands, fingers, arms, faces, people, shop interior, shopfront, premises, signage, text, lettering, numbers, watermark, logo, price tag, greetings card message, fused or impossible stems, extra petals, melted or waxy petals, plastic or silk flowers, wilted flowers, wrong flower species, implausible stem count, harsh flash, heavy vignette, cluttered background, props, tiled or repeated pattern",
+      "parameters": {
+        "aspectRatio": "4:5",
+        "colourProfile": "sRGB",
+        "minLongEdgePx": 2000,
+        "styleReference": "content/imagery/style-guide.md"
+      }
+    }
+  ]
+}

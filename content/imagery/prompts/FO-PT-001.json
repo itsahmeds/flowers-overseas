@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "key": "FO-PT-001",
+  "records": [
+    {
+      "assetId": "fo-pt-001-hero",
+      "sku": "FO-PT-001",
+      "slot": "productHero",
+      "role": "hero",
+      "aspectRatio": "4:5",
+      "generator": "to-be-confirmed",
+      "generatorModel": "to-be-confirmed",
+      "generatorSeed": 229276161,
+      "prompt": "A single white moth orchid with two arching flowering stems in a plain white ceramic pot, centred at 4:5 with an 8% margin on every side, on a neutral warm-grey seamless background, soft north light from the left, colour-accurate pure white flowers with a pale yellow lip, broad dark green leaves, no hands, no faces, no text.",
+      "negativePrompt": "hands, fingers, arms, faces, people, shop interior, shopfront, premises, signage, text, lettering, numbers, watermark, logo, price tag, greetings card message, fused or impossible stems, extra petals, melted or waxy petals, plastic or silk flowers, wilted flowers, wrong flower species, implausible stem count, harsh flash, heavy vignette, cluttered background, props, tiled or repeated pattern",
+      "parameters": {
+        "aspectRatio": "4:5",
+        "colourProfile": "sRGB",
+        "minLongEdgePx": 2000,
+        "styleReference": "content/imagery/style-guide.md"
+      }
+    },
+    {
+      "assetId": "fo-pt-001-detail",
+      "sku": "FO-PT-001",
+      "slot": "productDetail",
+      "role": "detail",
+      "aspectRatio": "4:5",
+      "generator": "to-be-confirmed",
+      "generatorModel": "to-be-confirmed",
+      "generatorSeed": 129590203,
+      "prompt": "A close detail of the same white moth orchid: two open flowers on their arching stem filling the frame at 4:5, the plain white pot rim visible below, on a neutral warm-grey seamless background, soft north light from the left, lip and column sharp, colour-accurate pure white, no hands, no faces, no text.",
+      "negativePrompt": "hands, fingers, arms, faces, people, shop interior, shopfront, premises, signage, text, lettering, numbers, watermark, logo, price tag, greetings card message, fused or impossible stems, extra petals, melted or waxy petals, plastic or silk flowers, wilted flowers, wrong flower species, implausible stem count, harsh flash, heavy vignette, cluttered background, props, tiled or repeated pattern",
+      "parameters": {
+        "aspectRatio": "4:5",
+        "colourProfile": "sRGB",
+        "minLongEdgePx": 2000,
+        "styleReference": "content/imagery/style-guide.md"
+      }
+    }
+  ]
+}
