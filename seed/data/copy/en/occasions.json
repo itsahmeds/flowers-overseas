@@ -131,14 +131,14 @@
       "locale": "en",
       "name": "I am sorry",
       "slug": "i-am-sorry",
-      "descriptionMd": "When you are apologizing, quiet beats grand and early beats late. Pale roses, white tulips and freesias are the right register, and the card matters more than the flowers — write it yourself and we will have it written out by hand. Next working day in most cities we cover. Every order is made by hand and delivered in person by our florist in the recipient's city.",
+      "descriptionMd": "When you are apologizing, quiet beats grand and early beats late. Pale roses, white tulips and freesias are the right register, and the card matters more than the flowers — write it yourself and we will have it written out by hand. Order by the cutoff shown for the destination and it arrives on the date you pick. Every order is made by hand and delivered in person by our florist in the recipient's city.",
       "seoTitle": "Apology flower delivery across Europe",
-      "seoDescription": "Pale roses, white tulips and freesias with a card written out by hand. Quiet rather than grand, next working day in most cities.",
+      "seoDescription": "Pale roses, white tulips and freesias with a card written out by hand. Quiet rather than grand, and it arrives on the date you pick.",
       "translationStatus": "human",
       "reviewed": true,
       "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
       "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "eb4e060fc790322b77c4b3f5eb2ae6c16956f49d7006b9bc889f28c05f744729"
+      "sourceHash": "47b5fe553aa2bea3e537f8f4efa41c9ac91433f490d840bfefd7d0fc54aa7c92"
     },
     {
       "entity": "occasion",
@@ -221,14 +221,14 @@
       "locale": "en",
       "name": "Valentine's Day",
       "slug": "valentines-day",
-      "descriptionMd": "Valentine's Day is one date across the whole of Europe and the busiest day of our year. Red roses cost more that week because they cost our florists more, and a surcharge applies on the day itself — both are shown before you pay. Order early: cutoffs move forward and slots fill from the eleventh. Every order is made by hand and delivered in person by our florist in the recipient's city.",
+      "descriptionMd": "Valentine's Day is one date across the whole of Europe and the busiest day of our year. Red roses cost more that week because they cost our florists more, and a surcharge applies on the day itself — both are shown before you pay. Order early: cutoffs move forward that week. Every order is made by hand and delivered in person by our florist in the recipient's city.",
       "seoTitle": "Valentine's Day flower delivery across Europe",
       "seoDescription": "Red roses delivered on 14 February across Europe. Higher seasonal prices and the day's surcharge are shown before you pay. Order early.",
       "translationStatus": "human",
       "reviewed": true,
       "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
       "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "cd1787f628efa800bd61f2e047cd10f6781017ec1df48f92bf31c27df2d6a384"
+      "sourceHash": "bac5c6f9e2a56c39759b0582ecf3d31871952b549327d01a940ecdcb0dd4d983"
     },
     {
       "entity": "occasion",
@@ -296,14 +296,14 @@
       "locale": "en",
       "name": "Easter",
       "slug": "easter",
-      "descriptionMd": "Easter moves every year and takes the whole week with it: cutoffs shift, markets close on Good Friday and Easter Monday, and Saturday fills first. Spring flowers are the point — mixed and yellow tulips, narcissi, a garden crate. The destination page shows this year's date and the working days around it. Every order is made by hand and delivered in person by our florist in the recipient's city.",
+      "descriptionMd": "Easter moves every year and takes the whole week with it: cutoffs shift, markets close on Good Friday and Easter Monday, and Saturday fills first. Spring flowers are the point — mixed and yellow tulips, narcissi, a garden crate. The destination page shows this year's date and the cutoff to order by. Every order is made by hand and delivered in person by our florist in the recipient's city.",
       "seoTitle": "Easter flower delivery across Europe",
-      "seoDescription": "Mixed and yellow tulips, narcissi and garden crates for Easter. Dates move each year; the destination page shows the working days.",
+      "seoDescription": "Mixed and yellow tulips, narcissi and garden crates for Easter. Dates move each year; the destination page shows the date and its cutoff.",
       "translationStatus": "human",
       "reviewed": true,
       "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
       "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "4cf1083c94684fcfe2f19538311065edf94c21c55cf3f20e4136864719214da4"
+      "sourceHash": "362884002463d20ae2ac61481fed9f662c0b13bed13b4e6aadc71e483dfc6d14"
     },
     {
       "entity": "occasion",
@@ -326,14 +326,14 @@
       "locale": "en",
       "name": "Christmas",
       "slug": "christmas",
-      "descriptionMd": "Christmas deliveries run into a week of closed markets and half-open cities, so cutoffs are earlier than at any other time except All Saints'. White and red bouquets with pine and eucalyptus, a winter table arrangement, an orchid for an office. The destination page shows which December days are working days there. Every order is made by hand and delivered in person by our florist in the recipient's city.",
+      "descriptionMd": "Christmas deliveries run into a week of closed markets and half-open cities, so cutoffs are earlier than at any other time except All Saints'. White and red bouquets with pine and eucalyptus, a winter table arrangement, an orchid for an office. The destination page shows which December dates are open there and their cutoffs. Every order is made by hand and delivered in person by our florist in the recipient's city.",
       "seoTitle": "Christmas flower delivery across Europe",
-      "seoDescription": "White and red bouquets with pine and eucalyptus, winter arrangements and orchids. Earlier cutoffs; the destination page shows working days.",
+      "seoDescription": "White and red bouquets with pine and eucalyptus, winter arrangements and orchids. Earlier cutoffs; the destination page shows the dates you can pick.",
       "translationStatus": "human",
       "reviewed": true,
       "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
       "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "91bfe2f8038d05c4c0dd294d1519092b6cfded1a65848fe156614f796e86684b"
+      "sourceHash": "c6906ba381f95f3ccf2e0a525c48669719f6c957ea067de4b38946bed35851c5"
     },
     {
       "entity": "occasion",
@@ -341,14 +341,14 @@
       "locale": "en",
       "name": "New Year",
       "slug": "new-year",
-      "descriptionMd": "New Year deliveries are mostly to offices reopening and to homes hosting, in a week when many florists are closed. White bouquets, winter arrangements and plants work better than anything that needs immediate care. Check the destination page for the first working day after the holiday. Every order is made by hand and delivered in person by our florist in the recipient's city.",
+      "descriptionMd": "New Year deliveries are mostly to offices reopening and to homes hosting, in a week when many florists are closed. White bouquets, winter arrangements and plants work better than anything that needs immediate care. Check the destination page for the first date available after the holiday. Every order is made by hand and delivered in person by our florist in the recipient's city.",
       "seoTitle": "New Year flower delivery across Europe",
-      "seoDescription": "White bouquets, winter arrangements and plants for a reopening office or a home hosting. Check the destination's first working day.",
+      "seoDescription": "White bouquets, winter arrangements and plants for a reopening office or a home hosting. Check the destination page for the first date after the holiday.",
       "translationStatus": "human",
       "reviewed": true,
       "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
       "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "8cc2630a4b4b7989d076e22ff07fef84d1d428e1f9854d16ebfe5d14d4d64a6f"
+      "sourceHash": "94c1d50da5420eca78c773ae01935bef67fb0a7308f7ace08e7afdee8b34dd0f"
     },
     {
       "entity": "occasion",
@@ -461,14 +461,14 @@
       "locale": "en",
       "name": "Grandmother's Day in Estonia",
       "slug": "grandmothers-day-in-estonia",
-      "descriptionMd": "Estonia keeps its own grandmother's day, and it is not the French or the Polish one. Plants and long-lasting flowers work well here, because the visit and the flowers rarely arrive on the same day: an azalea, an orchid, carnations or a pastel basket. The destination page carries the date. Every order is made by hand and delivered in person by our florist in the recipient's city.",
+      "descriptionMd": "Estonia keeps its own grandmother's day, and it is not the French or the Polish one. Plants and long-lasting flowers work well here, because the visit and the flowers rarely coincide: an azalea, an orchid, carnations or a pastel basket. The destination page carries the date. Every order is made by hand and delivered in person by our florist in the recipient's city.",
       "seoTitle": "Grandmother's Day in Estonia — flower delivery",
       "seoDescription": "Azaleas, orchids, carnations and pastel baskets for the Estonian grandmother's day. Long-lasting choices; the date is shown on the page.",
       "translationStatus": "human",
       "reviewed": true,
       "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
       "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "fa380f7b11281a84dc6b351c226cdd0758780d4adb69b0deb390cfc1a6fbef6b"
+      "sourceHash": "32da19def9789e32e64af02b8b5cc55a077a8eb79661726b3e3ad39c5f4b9d4e"
     },
     {
       "entity": "occasion",

@@ -59,6 +59,15 @@ plus the matching good block — live in `tests/fixtures/seed/_cases/prices/` (s
 - **Money is integer minor units plus a currency**, VAT and delivery included, one open-ended row
   per (product, country, tier, surcharge) — the file-level mirror of spec 002's partial unique
   index, and what preserves the Omnibus 30-day-lowest history by superseding rather than updating.
+- **Copy carries the review triple** (`translationStatus`, `reviewed`, `sourceHash`). A machine
+  draft is flagged and its locale stays non-indexable until a native reviewer approves it
+  (`plan/03` §6 gate 4). That is the intended state of `de`/`pl` in Phase 0, not a gap.
+- **Imagery provenance is required data**, and `depicts: "delivery"` is rejected outright in
+  Phase 0: a real delivery photograph carries consent and is spec 018/027's (`plan/07` §1.2).
+- **The occasion calendar's dates need verification** against official calendars before a country
+  goes live (`plan/13` D6). The note is in `occasion-country.json` itself, and the evaluator
+  `occasionDate(rule, year)` is spec 009's — nothing here computes a date.
+
 ## Catalogue copy (`seed/data/copy/{locale}/{entity}.json`)
 
 `en` is the source of truth and is authored by hand: 84 product descriptions, 23 category intros
@@ -75,7 +84,7 @@ are **non-indexable** until a native reviewer replaces the draft and flips the r
 (`plan/03` §6 gate 4, `plan/02` §12). A reviewer's row is never overwritten by a re-run; if the
 English source moved, the run reports it `stale`.
 
-Three rules worth knowing before editing copy:
+Four rules worth knowing before editing copy:
 
 - **The closing sentence is not authored in the rows.** It lives once per locale in
   `messages/*.json` under `catalog.floristSentence`. Reword it there and run
@@ -91,15 +100,12 @@ Three rules worth knowing before editing copy:
   address-shaped or phone-shaped string, or use the words `relay`, `corridor`, `partner`,
   `third party` or `network` (spec 004 §14 A5's brand voice). `seed/copy.ts` holds all of these as
   functions so `pnpm seed:check` and the unit suite share one definition.
-
-- **Copy carries the review triple** (`translationStatus`, `reviewed`, `sourceHash`). A machine
-  draft is flagged and its locale stays non-indexable until a native reviewer approves it
-  (`plan/03` §6 gate 4). That is the intended state of `de`/`pl` in Phase 0, not a gap.
-- **Imagery provenance is required data**, and `depicts: "delivery"` is rejected outright in
-  Phase 0: a real delivery photograph carries consent and is spec 018/027's (`plan/07` §1.2).
-- **The occasion calendar's dates need verification** against official calendars before a country
-  goes live (`plan/13` D6). The note is in `occasion-country.json` itself, and the evaluator
-  `occasionDate(rule, year)` is spec 009's — nothing here computes a date.
+- **No copy states delivery timing** (spec 006 §14 A4). No lead time, no "next day" or "same day",
+  no working-day count, no punctuality promise: no such data exists (`src/config/countries.ts`
+  deliberately carries no `delivery_days`) and the cutoff and next-available-date sentence is spec
+  009's server-rendered per-country block. Copy may only point at it — "order by the cutoff shown
+  for the destination". `DELIVERY_TIMING_PATTERN` in `seed/copy.ts` is the check, asserted over
+  every locale in `tests/unit/seed-copy.test.ts`.
 
 The operational runbook (edit a product, add a country's prices, read a diff, re-seed safely) is
 `docs/runbooks/seed-catalogue.md`, written in TASK-081.

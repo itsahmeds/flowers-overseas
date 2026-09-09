@@ -37,6 +37,7 @@ import {
   type SeedCopyFileEntity,
   asciiFoldSlug,
   bannedSuperlativesIn,
+  deliveryTimingPhrasesIn,
   replaceTrailingSentence,
   trailingSentence,
   copyProblems,
@@ -576,6 +577,71 @@ describe("AC-5: the drafter is deterministic, protective and refuses the source 
     expect(output).toContain(seedCopyPath("pl", "product"));
     expect(output).toContain(FLORIST_SENTENCE_KEY);
     expect(output).toContain("non-indexable");
+  });
+});
+
+describe("spec 006 §14 A4: copy states no delivery timing, in any locale", () => {
+  /**
+   * The class of error `/review 41` caught: an apology page that claimed "next working day in
+   * most cities we cover" when no lead-time data exists anywhere in the repository
+   * (`src/config/countries.ts` deliberately carries no `delivery_days`). The cutoff and
+   * next-available-date sentence is spec 009's server-rendered per-country block; copy may only
+   * point at it. This test is the reason the claim cannot come back — including through a machine
+   * draft, which is why it runs over every locale and not just the source.
+   */
+  const locales = [COPY_SOURCE_LOCALE, "en-gb", ...COPY_DRAFT_LOCALES];
+
+  it.each(locales.map((locale) => [locale]))(
+    "%s carries no lead time, next-day, same-day or punctuality claim in any copy field",
+    (locale) => {
+      const offences: string[] = [];
+      for (const entity of SEED_COPY_ENTITIES) {
+        for (const row of readCopyFile(repoRoot, locale, entity) ?? []) {
+          for (const field of [
+            "name",
+            "descriptionMd",
+            "seoTitle",
+            "seoDescription",
+          ] as const) {
+            const value = row[field];
+            if (value === undefined) continue;
+            for (const phrase of deliveryTimingPhrasesIn(value)) {
+              offences.push(
+                `${seedCopyPath(locale, entity)} ${row.key}.${field}: \`${phrase}\``,
+              );
+            }
+          }
+        }
+      }
+      expect(offences).toEqual([]);
+    },
+  );
+
+  it("fires on each phrase the amendment names", () => {
+    for (const claim of [
+      "Next working day in most cities we cover.",
+      "A free handwritten card, next-day in most cities.",
+      "Ordered before noon, delivered the same day.",
+      "Same-day delivery in seven countries.",
+      "We will not deliver early or late.",
+      "Delivered within 24 hours.",
+      "A lead time of two days applies.",
+    ]) {
+      expect(deliveryTimingPhrasesIn(claim)).not.toEqual([]);
+    }
+  });
+
+  it("leaves the permitted pointer form and innocent prose alone", () => {
+    for (const allowed of [
+      // The replacement pattern the dataset now uses, 138 rows over.
+      "Order by the cutoff shown for the destination and it arrives on the date you pick.",
+      "Christmas cutoffs are earlier than at any other time except All Saints'.",
+      // `or late` must not fire inside "f-or late" (FO-BQ-025 ships this sentence).
+      "Sunflowers with orange spray roses, tied for late summer and autumn.",
+      "Twelve or twenty-four stems on the same page.",
+    ]) {
+      expect(deliveryTimingPhrasesIn(allowed)).toEqual([]);
+    }
   });
 });
 

@@ -154,12 +154,12 @@
       "locale": "de",
       "name": "Sympathy flowers",
       "slug": "sympathy-flowers",
-      "descriptionMd": "White lilies, white roses, a peace lily and low white arrangements — flowers sent to a home or an office after a death, rather than to a service. Formal funeral tributes are on the funeral page. If the timing matters, tell us the date and we will not deliver early or late. Every order is made by hand and delivered in person by our florist in the recipient's city.",
+      "descriptionMd": "White lilies, white roses, a peace lily and low white arrangements — flowers sent to a home or an office after a death, rather than to a service. Formal funeral tributes are on the funeral page. If the timing matters, tell us the date and we will not deliver early. Every order is made by hand and delivered in person by our florist in the recipient's city.",
       "seoTitle": "Sympathy flowers delivered across Europe",
       "seoDescription": "White lilies, white roses, peace lilies and low white arrangements sent to a home or office after a death. Funeral tributes shown separately.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "3375c24003f393ed727e4cbc82257d5fcecd59168b56087a60ef6ba538a137dc"
+      "sourceHash": "1df8d21cfecfaf3189cf2bc14dc813e42abc9bec15c31766985e611f969ed56d"
     },
     {
       "entity": "category",
@@ -180,12 +180,12 @@
       "locale": "de",
       "name": "Sorry flowers",
       "slug": "sorry-flowers",
-      "descriptionMd": "Pale roses, white tulips, freesias and a small box of pastel flowers — quiet rather than grand, which is usually the right register when you are apologizing. A handwritten card is free and worth using here. Order by the destination's cutoff and it can arrive the next working day in most cities we cover. Every order is made by hand and delivered in person by our florist in the recipient's city.",
+      "descriptionMd": "Pale roses, white tulips, freesias and a small box of pastel flowers — quiet rather than grand, which is usually the right register when you are apologizing. A handwritten card is free and worth using here. Order by the cutoff shown for the destination and it arrives on the date you pick. Every order is made by hand and delivered in person by our florist in the recipient's city.",
       "seoTitle": "Sorry flowers — apology flowers delivered across Europe",
-      "seoDescription": "Pale roses, white tulips, freesias and small pastel boxes: quiet rather than grand. A free handwritten card, next-day in most cities.",
+      "seoDescription": "Pale roses, white tulips, freesias and small pastel boxes: quiet rather than grand. A free handwritten card, and it arrives on the date you pick.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "f15eb8b094857feeb5e32b43ccfb38214a8f3ca15245521ca4c29d1e44aedb1d"
+      "sourceHash": "626008d5c9adde47d9670c3b7550e8ef7440b661c001191940bc0c070a29ab25"
     },
     {
       "entity": "category",

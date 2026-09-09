@@ -122,6 +122,34 @@ export const BANNED_SUPERLATIVES = [
 ] as const;
 
 /**
+ * The delivery-timing phrases copy may not contain (spec 006 §14 A4). No description, intro,
+ * `seoTitle` or `seoDescription` may state a lead time, a "next day" or "same day" claim, or a
+ * punctuality promise: no such data exists — `src/config/countries.ts` deliberately carries no
+ * `delivery_days` — and the cutoff and next-available-date sentence is spec 009's server-rendered
+ * per-country block. The only permitted form in copy is a *pointer* to that block ("order by the
+ * cutoff shown for the destination"), which is why the pattern names phrases rather than the word
+ * "cutoff".
+ *
+ * Word-bounded on purpose: `or late` must not fire on "tied f**or late** summer", and the plural
+ * forms are included because "working days" is the same claim as "working day".
+ *
+ * `pnpm seed:check` (TASK-075) composes this into the copy rule family; the assertion that the
+ * committed dataset is clean in every locale lives in `tests/unit/seed-copy.test.ts`.
+ */
+export const DELIVERY_TIMING_PATTERN =
+  /\b(?:next[- ]days?|same[- ]days?|working days?|lead[- ]times?|or late|within \d+ (?:hours?|days?))\b/iu;
+
+/**
+ * The delivery-timing phrases a piece of copy contains, lowercased (spec 006 §14 A4). Compiles a
+ * fresh global regex per call rather than exporting a `/g` constant, so a caller that reaches for
+ * `DELIVERY_TIMING_PATTERN.test()` cannot be bitten by `lastIndex`.
+ */
+export function deliveryTimingPhrasesIn(text: string): readonly string[] {
+  const pattern = new RegExp(DELIVERY_TIMING_PATTERN.source, "giu");
+  return [...text.matchAll(pattern)].map((match) => match[0].toLowerCase());
+}
+
+/**
  * Words in a description. Whitespace-separated tokens that contain at least one letter or digit,
  * so a stray em dash or bullet is not a word and the count a human gets from a word processor is
  * the count the gate gets.

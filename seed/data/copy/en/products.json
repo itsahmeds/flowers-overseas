@@ -26,14 +26,14 @@
       "locale": "en",
       "name": "Vistula Red",
       "slug": "vistula-red",
-      "descriptionMd": "Deep red roses with eucalyptus and a dark green collar of foliage, tied by hand and wrapped in plain paper. Eighteen stems as standard; twelve or twenty-four if you want it smaller or fuller. Written for an anniversary, a Valentine's delivery or a quiet romantic gesture. Red roses are always the flower; the foliage around them changes with the season. Every order is made by hand and delivered in person by our florist in the recipient's city.",
+      "descriptionMd": "Deep red roses with eucalyptus and a dark green collar of foliage, tied by hand and wrapped in plain paper. Eighteen stems as standard; twelve or twenty-four if you want it smaller or fuller. Made for an anniversary, a Valentine's delivery or a quiet romantic gesture. Red roses are always the flower; the foliage around them changes with the season. Every order is made by hand and delivered in person by our florist in the recipient's city.",
       "seoTitle": "Vistula Red — hand-tied red rose bouquet",
       "seoDescription": "Eighteen deep red roses with dark foliage, hand-tied for an anniversary or Valentine's delivery. Twelve and twenty-four stem sizes available.",
       "translationStatus": "human",
       "reviewed": true,
       "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
       "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "959a8b7958011115affc63faa0df58a7397ed7d7bc394cc6cdd8e2828ea135ed"
+      "sourceHash": "0c5005e372c4223fe473a6db68b0134746bb23f4a854969f1888ba0263e0c9d6"
     },
     {
       "entity": "product",
@@ -56,14 +56,14 @@
       "locale": "en",
       "name": "Quiet Blush",
       "slug": "quiet-blush",
-      "descriptionMd": "Pale pink, cream and white roses with grey-green foliage, tied loosely and left low and wide. Eighteen stems as standard, with twelve and twenty-four available. A gentle bouquet for an apology, a get-well message or a Tuesday that needed something. We hold the pastel colour scheme rather than the exact stems, so our florist can swap in the freshest flowers. Every order is made by hand and delivered in person by our florist in the recipient's city.",
+      "descriptionMd": "Pale pink, cream and white roses with grey-green foliage, tied loosely and left low and wide. Eighteen stems as standard, with twelve and twenty-four available. A gentle bouquet for an apology, a get-well message or a Tuesday that needed something. We hold the pastel colour scheme rather than the exact stems, so our florist can swap in the stems that came in that morning. Every order is made by hand and delivered in person by our florist in the recipient's city.",
       "seoTitle": "Quiet Blush — hand-tied pastel rose bouquet",
       "seoDescription": "Pale pink, cream and white roses with grey-green foliage in a low, wide bouquet. Pastel colour scheme held; stems vary by market.",
       "translationStatus": "human",
       "reviewed": true,
       "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
       "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "f0cdec8299e362cc54e2ea1feead15771c28ef3785e7316bc82a995055c0d999"
+      "sourceHash": "186a02e359489c3b801ac35e6628d287dd04af52a0f2bf94fcd5581fbb186bd2"
     },
     {
       "entity": "product",
