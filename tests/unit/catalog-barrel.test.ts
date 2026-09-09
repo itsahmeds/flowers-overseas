@@ -155,6 +155,20 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         "SurchargeSchema",
         // the surcharge-kind value set (the types themselves are erased)
         "surchargeKinds",
+        // the read API's boundary schemas (TASK-063)
+        "FacetSelectionSchema",
+        "ListProductsQuerySchema",
+        // the taxonomy read API (TASK-063)
+        "countProductsFor",
+        "countProductsIn",
+        "getCategory",
+        "getOccasion",
+        "getProduct",
+        "hasIndexableProducts",
+        "isAuthoredFacetPath",
+        "listProducts",
+        "resolveFacets",
+        "topProductsForPrebuild",
       ].sort(),
     );
   });
@@ -163,6 +177,7 @@ describe("src/modules/catalog barrel (AC-1)", () => {
     expect(moduleFiles.sort()).toEqual([
       `${moduleDir}/index.ts`,
       `${moduleDir}/providers.ts`,
+      `${moduleDir}/read.ts`,
       `${moduleDir}/schemas.ts`,
       `${moduleDir}/static/index.ts`,
       `${moduleDir}/types.ts`,
@@ -188,7 +203,7 @@ describe("the barrel exposes no provider, dataset or database symbol (AC-2, T-01
     }
   });
 
-  it("exports only schemas and value sets — nothing holding data or a connection", () => {
+  it("exports only schemas, value sets and read functions — never data, never a connection", () => {
     for (const [name, value] of Object.entries(catalog)) {
       const kind =
         typeof value === "object" && value !== null && "safeParse" in value
@@ -196,23 +211,57 @@ describe("the barrel exposes no provider, dataset or database symbol (AC-2, T-01
           : Array.isArray(value)
             ? "value-set"
             : typeof value;
-      expect(kind, name).toMatch(/^(?:schema|value-set)$/);
+      expect(kind, name).toMatch(/^(?:schema|value-set|function)$/);
     }
   });
 
-  it("reaches no provider, no static implementation and no dataset path from the barrel", () => {
+  /**
+   * The read API's exports are functions over a provider, so the shape AC-2 forbids — an exported
+   * *object* holding the dataset or a data source — is what is checked here: no export answers a
+   * provider method, and no export is the dataset itself.
+   */
+  it("exports no object that is a provider or the dataset", () => {
+    for (const [name, value] of Object.entries(catalog)) {
+      if (typeof value !== "object" || value === null) continue;
+      for (const method of [
+        "products",
+        "tiers",
+        "categories",
+        "occasions",
+        "addons",
+        "countryPrices",
+        "addonCountryPrices",
+        "fxRates",
+      ]) {
+        expect(Object.keys(value), `${name}.${method}`).not.toContain(method);
+      }
+      expect(Array.isArray(value) && value.length > 20, name).toBe(false);
+    }
+  });
+
+  /**
+   * Until TASK-063 the barrel exported schemas only, so its import graph reached neither the
+   * providers nor the dataset. A read function has to read something, so from TASK-063 the graph
+   * necessarily reaches the composition root — and AC-2's claim is about the **export list**
+   * ("the barrel exports no provider object, no dataset path and no database symbol"), which the
+   * two tests above pin. What stays a graph invariant is narrower and still meaningful: the
+   * authored `*.data.ts` files are reachable **only** through `static/index.ts`, so nothing but
+   * the static provider can read the dataset directly and TASK-070's swap has one file to replace.
+   */
+  it("reads the authored dataset only through the static provider", () => {
     const reached = reachableFrom(`${moduleDir}/index.ts`);
 
-    for (const forbidden of [
-      `${moduleDir}/providers.ts`,
-      `${moduleDir}/static/index.ts`,
-    ]) {
-      expect(reached.files, forbidden).not.toContain(forbidden);
-    }
-    // Prose may name the dataset path (the barrel's own comment does); an *import* may not.
+    expect(reached.files).toContain(`${moduleDir}/providers.ts`);
     for (const file of reached.files) {
       for (const specifier of specifiersOf(sourceOf(file))) {
-        expect(specifier, file).not.toContain("config/catalogue");
+        if (!specifier.includes("config/catalogue")) continue;
+        // The taxonomy (`schemas.ts`) is not the dataset: it is the closed facet value sets and
+        // the record types, which the read API and the providers are typed against.
+        if (specifier.endsWith("config/catalogue/schemas")) continue;
+        expect(
+          file,
+          `${file} imports the dataset directly (${specifier})`,
+        ).toBe(`${moduleDir}/static/index.ts`);
       }
     }
   });
