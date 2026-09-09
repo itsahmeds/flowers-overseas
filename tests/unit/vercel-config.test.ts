@@ -79,10 +79,14 @@ describe("ci.yml preview gate (AC-29 / T-30)", () => {
     .map((step) => step.run ?? "")
     .join("\n");
 
-  it("declares a preview job that runs on pull requests only", () => {
+  it("declares a preview job that runs on labelled pull requests only (spec 001 §14 A14)", () => {
     expect(preview).toBeDefined();
     expect(preview?.name).toBe("preview");
-    expect(preview?.if).toBe("github.event_name == 'pull_request'");
+    // A manual `workflow_dispatch` has no pull request to deploy, so the preview chain is gated on
+    // both the event and the `ci:full` label the orchestrator adds when the run is worth its minutes.
+    expect(preview?.if).toBe(
+      "github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'ci:full')",
+    );
   });
 
   it("reads deployments to find the preview URL for the PR head SHA", () => {

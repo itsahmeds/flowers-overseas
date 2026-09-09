@@ -717,7 +717,8 @@ jobs:
   # must be visible on the PR.
   preview:
     name: preview
-    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci:full') }}
+    # Pull requests only (a manual dispatch has no PR to deploy), and only with the `ci:full` label.
+    if: github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'ci:full')
     runs-on: ubuntu-latest
     timeout-minutes: 25
     permissions:
