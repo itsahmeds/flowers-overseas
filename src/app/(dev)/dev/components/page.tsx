@@ -14,17 +14,24 @@ import {
   type ConsentTranslate,
   Chip,
   Container,
+  DestinationList,
   Cluster,
   CONTRAST_PAIRS,
   Display,
   Grid,
   Icon,
   ICON_NAMES,
+  FinderCard,
+  HomeHero,
   Label,
   Mark,
+  Media,
+  MEDIA_SLOTS,
+  mediaSlot,
   MIRRORED_IN_RTL,
   Photo,
   PHOTO_RATIOS,
+  ProofRow,
   Placeholder,
   footerView,
   type FooterView,
@@ -58,7 +65,9 @@ import {
   GALLERY_INTRO,
   GALLERY_TITLE,
   HEADER_STATES,
+  HOME_STATES,
   LABEL_SAMPLE,
+  MEDIA_SLOT_CAPTION,
   LAYER_TOKENS,
   MIRROR_NOTE,
   MIRROR_TAG,
@@ -494,10 +503,60 @@ export default function DevComponentsPage(): ReactElement {
           <Photo ratio="landscape" />
         </Section>
 
+        <Section title={SECTIONS[10]}>
+          <Text size="xs" tone="subtle">
+            {MEDIA_SLOT_CAPTION}
+          </Text>
+          <Grid columns="2-4" gap="md">
+            {MEDIA_SLOTS.map((slot) => (
+              <Stack gap="xs" key={slot}>
+                <Media
+                  alt=""
+                  caption={`${slot} \u00b7 ${mediaSlot(slot).sizes}`}
+                  slot={slot}
+                />
+                <Text size="xs" tone="subtle">
+                  {`${slot} \u00b7 ${mediaSlot(slot).sizes} \u00b7 ${mediaSlot(slot).ratio}`}
+                </Text>
+              </Stack>
+            ))}
+          </Grid>
+        </Section>
+
+        <Section title={SECTIONS[11]}>
+          <Stack gap="lg">
+            {(
+              [
+                [
+                  "hero",
+                  <HomeHero
+                    headingLevel="h2"
+                    key="hero"
+                    locale={galleryLocale}
+                  />,
+                ],
+                ["finder", <FinderCard key="finder" locale={galleryLocale} />],
+                [
+                  "destinations",
+                  <DestinationList key="destinations" locale={galleryLocale} />,
+                ],
+                ["proof", <ProofRow key="proof" />],
+              ] as const
+            ).map(([state, element]) => (
+              <Stack gap="sm" key={state}>
+                <Text measure size="sm" tone="muted">
+                  {HOME_STATES[state]}
+                </Text>
+                <div className="border-rule border">{element}</div>
+              </Stack>
+            ))}
+          </Stack>
+        </Section>
+
         {/* The header is full-bleed by design, so it is rendered outside the section's padding
             through a negative-free wrapper: the box below is the header at this viewport's
             breakpoint, not a scaled copy of it. */}
-        <Section title={SECTIONS[10]}>
+        <Section title={SECTIONS[12]}>
           <Stack gap="sm">
             <Text size="xs" tone="subtle">
               {HEADER_STATES.heading}
@@ -511,7 +570,7 @@ export default function DevComponentsPage(): ReactElement {
           </Stack>
         </Section>
 
-        <Section title={SECTIONS[11]}>
+        <Section title={SECTIONS[13]}>
           {/* Inert by construction: `ConsentGallery` passes no-op handlers, so walking this page
               writes no cookie, sends no request and calls no `gtag` (TASK-051). */}
           <ConsentGallery
@@ -520,7 +579,7 @@ export default function DevComponentsPage(): ReactElement {
           />
         </Section>
 
-        <Section title={SECTIONS[12]}>
+        <Section title={SECTIONS[14]}>
           {FOOTER_STATES.map((state) => (
             <Stack key={state.id} gap="sm">
               <Text size="xs" tone="subtle">
@@ -536,7 +595,7 @@ export default function DevComponentsPage(): ReactElement {
           ))}
         </Section>
 
-        <Section title={SECTIONS[13]}>
+        <Section title={SECTIONS[15]}>
           <Stack gap="xs">
             {CONTRAST_PAIRS.map((pair) => (
               <Row

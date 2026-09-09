@@ -35,8 +35,11 @@
  * direction-carrying icons `MIRRORED_IN_RTL` names, since AC-5's mirroring contract needs both of
  * them; a component that needs another icon adds it with its consumer.
  *
- * Later 004 tasks extend this list: `SiteHeader`/`TrustStrip` (TASK-048, TASK-053) and `Media` +
- * the R2 loader seam (TASK-053). The consent sheet (TASK-051) is here. `SiteFooter` (TASK-049) is here:
+ * Later 004 tasks extend this list: `TrustStrip`, the occasion tiles and the explainer
+ * (TASK-053) and the gated rows and the destinations grid (TASK-054). The consent sheet
+ * (TASK-051) is here. `Media` + the R2 loader seam and the home's hero, finder and proof row are
+ * here (TASK-052; the barrel note that assigned `Media` to TASK-053 is corrected by the TASK-052
+ * row, which names it explicitly). `SiteFooter` (TASK-049) is here:
  * it exports the component, the `FooterView` projection its five §5.3 states are reached through,
  * and the two constants the consent island and the reminder stub share with it.
  */
@@ -196,3 +199,40 @@ export type {
   ContrastResult,
   Oklch,
 } from "./tokens/contrast";
+
+// The image conventions and the loader seam (§2 "Image conventions", ADR-0015; TASK-052). `Media`
+// renders the token-gradient placeholder and no `<img>` in Phase 0; the slot table carries the
+// `sizes` string and the reserved ratio per named slot, and the loader is swapped inside the
+// module when spec 002/006 create the bucket.
+export { Media } from "./media/Media.tsx";
+export type { MediaProps, MediaSource } from "./media/Media.tsx";
+export { MEDIA_SLOTS, MEDIA_SLOT_SPECS, mediaSlot } from "./media/slots.ts";
+export type { MediaSlot, MediaSlotSpec } from "./media/slots.ts";
+export {
+  getMediaLoader,
+  placeholderLoader,
+  setMediaLoader,
+} from "./media/loader.ts";
+export type { MediaLoader } from "./media/loader.ts";
+
+// The locale home's above-the-fold band and the four-fact proof strip (§13's resolution note,
+// AC-10, AC-11; TASK-052). All four are Server Components; the only client JavaScript on the page
+// is `FinderTypeahead`, 499 B Brotli measured, and it is an enhancement — the country field is the
+// platform's `<input list>` + `<datalist>`, so the finder works with JavaScript disabled.
+// `DESTINATIONS_ANCHOR` is exported because TASK-054's destinations grid inherits the id the
+// finder's `Continue` points at, and `finderTarget`/`finderDestinations` because AC-11's two
+// branches are unit-tested against them.
+export { HERO_HEIGHTS, HOME_BLEED, HomeHero } from "./home/HomeHero.tsx";
+export type { HomeHeroProps } from "./home/HomeHero.tsx";
+export { FinderCard } from "./home/FinderCard.tsx";
+export type { FinderCardProps } from "./home/FinderCard.tsx";
+export { DestinationList } from "./home/DestinationList.tsx";
+export type { DestinationListProps } from "./home/DestinationList.tsx";
+export {
+  DESTINATIONS_ANCHOR,
+  FINDER_IDS,
+  finderDestinations,
+  finderTarget,
+} from "./home/finder-model.ts";
+export type { FinderDestination } from "./home/finder-model.ts";
+export { PROOF_FACTS, ProofRow } from "./home/ProofRow.tsx";

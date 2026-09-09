@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { routableLocale } from "@/modules/i18n";
+import { DestinationList, HomeHero, ProofRow } from "@/modules/ui";
 
 /**
  * `/{locale}` placeholder home (spec 003 §5.3, §5.4; TASK-034, extended by TASK-035 with the
@@ -28,8 +29,16 @@ import { routableLocale } from "@/modules/i18n";
  * line for the dev server, where params are not pre-resolved.
  *
  * The `<title>`/description pair is this page's own (§7's per-route `meta.*`); the layout carries
- * only the segment default, so a page added later cannot inherit the home page's title. The real
- * home — hero, corridors, occasions — is spec 004/007; what is here is the placeholder `<h1>`.
+ * only the segment default, so a page added later cannot inherit the home page's title.
+ *
+ * **TASK-052 replaced the placeholder `<h1>` with the real above-the-fold band**, and the page
+ * stayed thin: it resolves the locale, publishes it to next-intl and mounts two Server Components
+ * from `src/modules/ui`. Everything that could be a decision — the reserved photo slot's ratio and
+ * `sizes`, the collation of the seven destinations, whether a destination is a link, and where
+ * `Continue` goes — is made inside the module (`home/finder-model.ts`), which is what makes spec
+ * 004 AC-11's "a country is data" proof a change under `src/config/` with **no change under
+ * `src/app/`**. `meta.home.heading` is gone with the placeholder: the `<h1>` is
+ * `home.hero.heading`, the artboards' headline.
  *
  * The locale switcher moved off this page with TASK-048: spec 004's header hosts it on **every**
  * localised document, so rendering it here as well would put two identical switchers (and two
@@ -61,11 +70,21 @@ export default async function LocaleHomePage({
   if (locale === undefined) notFound();
   setRequestLocale(locale.code);
 
-  const t = await getTranslations({ locale: locale.code, namespace: "meta" });
-
   return (
     <main id="main">
-      <h1>{t("home.heading")}</h1>
+      {/* The above-the-fold band of the founder-approved artboards: the reserved full-bleed photo
+          slot, the paper card with the eyebrow, the one `<h1>` (the text LCP element) and the
+          proposition, and the finder — type-ahead country, town/postcode, delivery date, neutral
+          `Continue` (TASK-052). */}
+      <HomeHero locale={locale.code} />
+      {/* The four-fact proof strip. Occasion tiles, the priced rows, the explainer, the trust
+          strip, the destinations grid and the FAQ are TASK-053/054's sections and mount below
+          this one, in the artboards' order. */}
+      <ProofRow />
+      {/* AC-11's destination states, and where the finder's `Continue` lands while no corridor
+          page is published. TASK-054 replaces it with the artboards' destinations grid and
+          inherits its `id`. */}
+      <DestinationList locale={locale.code} />
     </main>
   );
 }

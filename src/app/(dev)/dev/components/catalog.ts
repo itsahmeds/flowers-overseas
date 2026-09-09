@@ -32,6 +32,11 @@ export const SECTIONS = [
   "Buttons",
   "Chips",
   "Photography placeholders",
+  // TASK-052: the named media slots, and the home's three above-the-fold surfaces. The gallery
+  // is where the hero, the finder and the proof row are reviewable side by side and where axe
+  // and the visual suite reach the finder's open type-ahead state.
+  "Media slots",
+  "Home hero and finder",
   "Site header",
   // TASK-051: the consent sheet's four banner states and its three settings states (§5.3), so
   // the visual and axe suites reach `settings-open` and `saved` without driving the island.
@@ -342,4 +347,30 @@ export const FOOTER_REGISTERED_COMPANY = {
     city: "Tallinn",
     countryIso2: "EE",
   },
+} as const;
+
+/**
+ * The four named media slots (TASK-052). The caption prints the slot's own `sizes` string and
+ * reserved ratio, because those two decisions are the whole of what `Media` fixes — and a
+ * reviewer reading the sheet should not have to open `slots.ts` to see them.
+ */
+export const MEDIA_SLOT_CAPTION = "slot · sizes · reserved ratio";
+
+/**
+ * The home's above-the-fold states (TASK-052). Three of §5.3's are renderable here: the hero band
+ * with its reserved slot, the finder card in its untouched state, and the destination list in its
+ * `unpublished-destination` state. The two that are not: `published-destination`, which needs a
+ * `corridorPagePublished: true` row Phase 0 does not have (covered by the mocked-registry
+ * assertions in `tests/unit/ui-home.test.tsx`), and the type-ahead's open list, which is a
+ * hydrated state a screenshot of this page cannot hold still (covered in `tests/e2e/home.spec.ts`
+ * and `tests/a11y/home.spec.ts`).
+ */
+export const HOME_STATES = {
+  hero: "HomeHero \u00b7 default \u2014 the reserved full-bleed photo slot with its caption and no `<img>` (plan/10 \u00a73), the paper card at the inline start on the desktop artboard and overlapping the slot by 56 px on the mobile one, the eyebrow, the one `<h1>` (the text LCP element) and the proposition.",
+  finder:
+    "FinderCard \u00b7 default \u2014 a `get` form: the country field is a native `<input list>` over a `<datalist>` of the seven destinations until the island hydrates, then a filtered list with a polite live region; town/postcode is optional; the date field carries no default, because this document is ISR-cached and a prefilled date goes stale. `Continue` is neutral and targets the destination list while no corridor page is published.",
+  destinations:
+    "DestinationList \u00b7 unpublished-destination \u2014 all seven named with their state as a word, none of them a link, and the onboarding line. TASK-054's destinations grid inherits this section's id.",
+  proof:
+    "ProofRow \u00b7 default \u2014 the four claims of the round-2 artboard, in the first person, 2-up on the mobile artboard and 4-up on the desktop one. The delivery-photo fact renders no photo.",
 } as const;

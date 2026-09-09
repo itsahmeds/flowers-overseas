@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 import { documentFallbackLocale } from "@/modules/i18n";
-import { fontVariables } from "@/modules/ui";
+import { fontVariables } from "@/modules/ui/fonts";
 
 import "../globals.css";
 
@@ -28,6 +28,19 @@ import "../globals.css";
  * document. A failure in this document is answered by exactly that file, which renders its own
  * x-default document with its own localised `<title>`. The measured bytes are in `page.tsx`'s
  * header and in `pnpm budget:client-js`.
+ *
+ * **Why `@/modules/ui/fonts` and not the `@/modules/ui` barrel** (`/review 40`, TASK-052): the
+ * barrel re-exports every client island in the module (the ones whose files open with the client
+ * directive — spelled out rather than quoted, because `tests/unit/client-js-budget.test.ts`
+ * greps this group for that string), and a route whose module graph
+ * reaches those references gets them in its *initial* chunk set — so `/`, which renders none of
+ * them, was downloading the finder type-ahead island because this layout wanted one font
+ * variable. Deep-importing the one server module the layout needs keeps `/` off that graph:
+ * measured 132.6 → 131.9 KB br on `/`, with the finder chunk gone from its script set and
+ * `/en`/`/de` unchanged. Same shape as `(dev)/dev/components`' deep import of `ConsentGallery`,
+ * and lint-clean (`plan/01` §5's barrel rule binds module-to-module imports). §5.4's "`/` still
+ * zero application JS" is still not literally true — `global-error.tsx` above says why — and the
+ * remaining chunks are TASK-056 AC-25's measurement.
  */
 export const metadata: Metadata = { robots: "noindex,nofollow" };
 

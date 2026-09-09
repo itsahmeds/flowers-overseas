@@ -9,8 +9,10 @@
  * what the slot will hold, which is what makes the placeholder honest rather than empty.
  *
  * The box reserves its aspect ratio now, so when 006 lands imagery the LCP element changes from
- * text to image with **no layout shift and no template edit** (§2). `Media`, the `next/image`
- * wrapper with the per-slot `sizes` and the R2 loader seam, is TASK-053's and slots in here.
+ * text to image with **no layout shift and no template edit** (§2). `Media` — the wrapper with
+ * the per-slot `sizes` and the R2 loader seam, TASK-052's — slots in here, and `dataset` is the
+ * one prop it added: the slot name, its `sizes` and its per-locale alt text, recorded on the box
+ * that is standing in for the image.
  *
  * States in `/dev/components`: the four named ratios, and caption / no-caption.
  */
@@ -45,6 +47,12 @@ export interface PhotoProps {
    * not an `<img>` with a placeholder `src`.
    */
   readonly children?: ReactNode;
+  /**
+   * `data-*` attributes for the box, added by TASK-052 so `Media` can record on the placeholder
+   * itself which slot it is rendering, that slot's `sizes` string and its per-locale alt text.
+   * Typed to the `data-` prefix, so this cannot become a general attribute escape hatch.
+   */
+  readonly dataset?: Readonly<Record<`data-${string}`, string>>;
 }
 
 export function Photo({
@@ -52,12 +60,14 @@ export function Photo({
   ratio = "landscape",
   className,
   children,
+  dataset,
 }: PhotoProps): ReactElement {
   return (
     <div
       className={["photo", RATIO_CLASS[ratio], "w-full", className]
         .filter(Boolean)
         .join(" ")}
+      {...dataset}
     >
       {children}
       {caption === undefined ? null : <span>{caption}</span>}

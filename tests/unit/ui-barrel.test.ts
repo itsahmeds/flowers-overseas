@@ -96,6 +96,26 @@ describe("src/modules/ui barrel", () => {
         "parseConsentCookie",
         "rawCookieValue",
         "serialiseConsentCookie",
+        // media: the wrapper, the slot table and the R2 loader seam (TASK-052)
+        "MEDIA_SLOTS",
+        "MEDIA_SLOT_SPECS",
+        "Media",
+        "getMediaLoader",
+        "mediaSlot",
+        "placeholderLoader",
+        "setMediaLoader",
+        // the locale home's above-the-fold surfaces and the finder's projection (TASK-052)
+        "DESTINATIONS_ANCHOR",
+        "DestinationList",
+        "FINDER_IDS",
+        "FinderCard",
+        "HERO_HEIGHTS",
+        "HOME_BLEED",
+        "HomeHero",
+        "PROOF_FACTS",
+        "ProofRow",
+        "finderDestinations",
+        "finderTarget",
       ].sort(),
     );
   });
@@ -141,6 +161,12 @@ describe("src/modules/ui barrel", () => {
       "REMINDERS_ANCHOR",
       "REMINDERS_ENDPOINT",
       "REMINDERS_FIELD_ID",
+      // TASK-052: `DESTINATIONS_ANCHOR` is a DOM contract (the id the finder's `Continue` points
+      // at and TASK-054's destinations grid inherits), and `HOME_BLEED` is a *utility list*
+      // (`px-md md:px-[56px]`) rather than a token value — it is exported so the home's sections
+      // and the header can be pinned to the same inline gutter by a test.
+      "DESTINATIONS_ANCHOR",
+      "HOME_BLEED",
       "fontVariables",
     ];
     for (const [name, value] of Object.entries(ui)) {

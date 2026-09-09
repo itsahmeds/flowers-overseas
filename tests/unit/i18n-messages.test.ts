@@ -49,7 +49,11 @@ describe("the shell catalogue", () => {
       "consent",
       "destinations",
       "errors",
+      // `finder` and `home` are the locale home's own copy (TASK-052): the hero, the finder card,
+      // the destination states and the four-fact proof row.
+      "finder",
       "footer",
+      "home",
       // `media` is spec 006 §7's namespace: the AI-provenance label, the placeholder captions and
       // the demo watermark label (TASK-073). Like `catalog`, it is in no `ROUTE_NAMESPACES` entry
       // — the gallery and the provenance note are Server Components (spec 006 AC-22).

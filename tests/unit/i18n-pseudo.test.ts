@@ -485,9 +485,12 @@ describe("pseudo-locales route but are invisible to buyers and crawlers (AC-29)"
 
   it("resolve to their own generated catalogue, not to English", async () => {
     await inRegistry(() => {
+      // `meta.home.title`, not the placeholder `meta.home.heading` TASK-052 deleted with the
+      // placeholder `<h1>` it was written for: the locale home's heading is `home.hero.heading`
+      // now, the artboards' headline.
       const accented = loadMessages(PSEUDO_ACCENT_LOCALE, ["meta"]);
-      expect(accented.meta.home.heading).toBe(
-        pseudoAccent("Send flowers across Europe"),
+      expect(accented.meta.home.title).toBe(
+        pseudoAccent("Flowers Overseas — send flowers to Europe"),
       );
       const rtl = loadMessages(PSEUDO_RTL_LOCALE, ["a11y"]);
       expect(rtl.a11y.skipToContent.startsWith(RTL_MARK)).toBe(true);

@@ -25,6 +25,8 @@ const SECTIONS = [
   "Buttons",
   "Chips",
   "Photography placeholders",
+  "Media slots",
+  "Home hero and finder",
   "Contrast manifest",
 ];
 
@@ -60,10 +62,21 @@ test.describe("/dev/components", () => {
 
   test("renders every button variant in its eight states", async ({ page }) => {
     await page.goto(GALLERY);
-    const buttons = page.getByRole("button", { name: "Continue" });
+    // Scoped away from the home sections: the finder's own submit control is also labelled
+    // `Continue` (the artboards' word), and it is not one of the primitive's states (TASK-052).
     // Five variants × (default, hover, active, focus-visible, disabled, small, full-width,
     // with-icon) = 40 `Continue` buttons; the busy one and the link one carry their own labels.
-    expect(await buttons.count()).toBe(40);
+    const primitiveContinueButtons = await page
+      .locator("button")
+      .evaluateAll(
+        (nodes) =>
+          nodes.filter(
+            (node) =>
+              node.textContent?.trim() === "Continue" &&
+              node.closest("[data-fo-finder]") === null,
+          ).length,
+      );
+    expect(primitiveContinueButtons).toBe(40);
     // 5 primitive `disabled` buttons, plus the header's one inert control (TASK-048, spec §14
     // A4): the mobile menu button, which is `md:hidden` and so is in the accessibility tree
     // below the `md` breakpoint and out of it above — hence the count is read from the DOM
@@ -101,17 +114,24 @@ test.describe("/dev/components", () => {
     page,
   }) => {
     await page.goto(GALLERY);
-    const controlsElsewhere = await page
+    // TASK-052 narrows it by one more component, for the reason TASK-049's footer narrowed it:
+    // the finder is a *component's own* form — three fields and a submit on a `get` form whose
+    // target is a document that exists — and not a reusable form layer. The non-goal it must not
+    // violate is asserted directly on the barrel (`tests/unit/ui-barrel.test.ts`): no exported
+    // `Field`, `Input`, `Select`, `Textarea` or `Price`.
+    const controlsOutsideKnownForms = await page
       .locator("input, select, textarea, label")
       .evaluateAll(
         (nodes) =>
           nodes.filter(
             (node) =>
               node.closest("footer") === null &&
-              node.closest("[data-fo-consent-panel]") === null,
+              node.closest("[data-fo-consent-panel]") === null &&
+              node.closest("[data-fo-finder]") === null &&
+              node.closest("[data-fo-hero]") === null,
           ).length,
       );
-    expect(controlsElsewhere).toBe(0);
+    expect(controlsOutsideKnownForms).toBe(0);
 
     // Exactly the consent controls: two labelled checkboxes per rendered settings panel, and
     // nothing else — no select, no textarea, no free-text field.
@@ -152,6 +172,13 @@ test.describe("/dev/components", () => {
   }) => {
     await page.goto(GALLERY);
     await expect(page.locator("img")).toHaveCount(0);
+    // Every named media slot is drawn, with its `sizes` string on the box (TASK-052).
+    await expect(page.locator("[data-fo-media-slot]")).not.toHaveCount(0);
+    for (const slot of ["hero", "grid", "tile", "thumb"]) {
+      await expect(
+        page.locator(`[data-fo-media-slot="${slot}"]`).first(),
+      ).toBeVisible();
+    }
     await expect(
       page.getByText("Photo slot · hero · founder to supply"),
     ).toBeVisible();
