@@ -85,6 +85,18 @@
       "privacy": "Privacy",
       "terms": "Terms",
       "withdrawal": "Withdrawal and refunds"
+    },
+    "payment": {
+      "heading": "Payment",
+      "methods": "The payment methods you can use are shown at checkout.",
+      "processor": "Card payments are processed by Stripe. We never store card numbers."
+    },
+    "reminders": {
+      "body": "Name days, All Saints, Women's Day: one email a few days before each, in your language. Unsubscribe in one click.",
+      "consent": "Consent is asked in the email we send first; nothing is stored until you confirm.",
+      "emailLabel": "Email address",
+      "heading": "Occasion reminders",
+      "submit": "Remind me"
     }
   },
   "meta": {

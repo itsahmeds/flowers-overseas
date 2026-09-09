@@ -175,8 +175,13 @@ describe("a fifth locale is data (AC-31)", () => {
 
     expect(html).toContain('lang="fr" hrefLang="fr">Français</a>');
     expect(html).toContain('<span class="ms-1" data-beta="true">Beta</span>');
-    // `en` and `en-gb` are reviewed, so exactly the three unreviewed locales are marked.
-    expect(html.match(/data-beta="true"/g)).toHaveLength(3);
+    // `en` and `en-gb` are reviewed, so exactly the three unreviewed locales are marked — **per
+    // switcher**. TASK-049 mounts `LocaleSwitcher` a second time, in the footer colophon's
+    // language list, so a locale document renders it twice until TASK-053 drops the placeholder
+    // one from the home page; the ratio is what this asserts, not the raw count.
+    const switchers = html.match(/aria-label="Change language"/g)?.length ?? 0;
+    expect(switchers).toBeGreaterThan(0);
+    expect(html.match(/data-beta="true"/g)).toHaveLength(3 * switchers);
   });
 
   it("claims to be nobody's alternate while it is unreviewed", async () => {

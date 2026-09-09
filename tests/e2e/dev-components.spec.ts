@@ -75,13 +75,24 @@ test.describe("/dev/components", () => {
    * Spec §3/§8, observable on the page (`/review 27` required change 2): the gallery had a
    * "Fields" and a "Prices" section, and both are non-goals of this spec — the form layer is
    * written against the checkout's real fields (010/013) and no price is rendered before 005/008.
-   * So the assertion is the absence: no form control anywhere in the gallery.
+   * So the assertion is the absence: no form control anywhere in the gallery **outside the
+   * footer**. TASK-049 narrowed it by exactly one component: the colophon's occasion-reminder
+   * signup, which design round 6 added to `SiteFooter` and which the gallery renders five times
+   * with the footer's five states. That is a *component's own* field, not a reusable form layer,
+   * and the non-goal it must not violate — no exported `Field`, `Input`, `Select`, `Textarea` or
+   * `Price` on the `ui` barrel — is asserted directly in `tests/unit/ui-barrel.test.ts`.
    */
   test("renders no form control and no price (spec §3, §8)", async ({
     page,
   }) => {
     await page.goto(GALLERY);
-    await expect(page.locator("input, select, textarea, label")).toHaveCount(0);
+    const controlsOutsideTheFooter = await page
+      .locator("input, select, textarea, label")
+      .evaluateAll(
+        (nodes) =>
+          nodes.filter((node) => node.closest("footer") === null).length,
+      );
+    expect(controlsOutsideTheFooter).toBe(0);
     for (const section of ["Fields", "Prices"]) {
       await expect(
         page.getByRole("heading", { level: 2, name: section, exact: true }),

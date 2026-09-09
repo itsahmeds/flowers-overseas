@@ -222,8 +222,7 @@
     "reviewed": true,
     "reviewedBy": "founder",
     "reviewedAt": "2026-09-09T00:00:00Z",
-    "sourceHash": "df9b9219f0e5a623971726c9fb6edd720eebf5a55fe3698cefc7c01f5cc2efe4",
-    "retained": true
+    "sourceHash": "df9b9219f0e5a623971726c9fb6edd720eebf5a55fe3698cefc7c01f5cc2efe4"
   },
   "footer.group.company": {
     "source": "human",
@@ -322,6 +321,62 @@
     "reviewedBy": "founder",
     "reviewedAt": "2026-09-09T00:00:00Z",
     "sourceHash": "4a64674ddfe0cabd288716392cdb8436a85cf9c4a3a105a68b38edd169af1fe7"
+  },
+  "footer.payment.heading": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "7048f38b33f135df36b3d9d382f167d45cfdda857b616899c9d8c9acd2751f64"
+  },
+  "footer.payment.methods": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "56cf7ecde930ae931f20e6cbc5559ba435d08bfeef9471476cbac1e9fab8d6c8"
+  },
+  "footer.payment.processor": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "08b776f3a884bbb200a7a182b4b714e88a2fe6b4a5fb3fd5bf3d962c89da39b2"
+  },
+  "footer.reminders.body": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "a684235e967c10532b074300402777fc5c9bce84a4ceb0e08fe9ccd81fc52334"
+  },
+  "footer.reminders.consent": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "33c1900513edcb62db2b211154695906b8bdbfbe504d77d74df8007ee44a174d"
+  },
+  "footer.reminders.emailLabel": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "f2488fd4ef4adbc6ac61300083f2c33980e48bb4bbf3c540ad760d61fc36f420"
+  },
+  "footer.reminders.heading": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "5201ef0514325883e8c515631a78371e6bbaf35e80b4d8735e895eeac92e2a56"
+  },
+  "footer.reminders.submit": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "4e679adbfcc8b3fc5d92f8b8b1fa3c43fb840a626f2d64b599df8d096163a631"
   },
   "meta.chooser.description": {
     "source": "human",

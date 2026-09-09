@@ -74,6 +74,10 @@ export const CONFIG_FILES = [
   "src/config/site-links.ts",
   "src/config/categories.ts",
   "src/config/company.ts",
+  // The payment methods the colophon may name, each with `available: false` until spec 013/014
+  // configures a processor — spec 004 §8's third-party-trademark and live-method rule as data
+  // (TASK-049).
+  "src/config/payment-methods.ts",
 ] as const;
 
 export const REQUIRED_FILES = [

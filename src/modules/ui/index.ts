@@ -27,8 +27,10 @@
  * direction-carrying icons `MIRRORED_IN_RTL` names, since AC-5's mirroring contract needs both of
  * them; a component that needs another icon adds it with its consumer.
  *
- * Later 004 tasks extend this list: `SiteHeader`/`SiteFooter`/`TrustStrip` (TASK-048, TASK-049),
- * the consent banner (TASK-051) and `Media` + the R2 loader seam (TASK-053).
+ * Later 004 tasks extend this list: `SiteHeader`/`TrustStrip` (TASK-048, TASK-053), the consent
+ * banner (TASK-051) and `Media` + the R2 loader seam (TASK-053). `SiteFooter` (TASK-049) is here:
+ * it exports the component, the `FooterView` projection its five §5.3 states are reached through,
+ * and the two constants the consent island and the reminder stub share with it.
  */
 
 // Fonts (AC-4). `fontVariables` goes on `<html>`; the two font objects are exported for the
@@ -104,6 +106,32 @@ export type {
   PhotoRatio,
   PlaceholderProps,
 } from "./primitives/Photo";
+
+// Chrome (AC-9, AC-14; TASK-049). `SiteFooter` is a synchronous Server Component and adds no
+// client JavaScript; `CONSENT_REOPEN_ATTRIBUTE` is the attribute TASK-051's island binds its
+// re-open handler to, exported so the two tasks share one constant.
+export {
+  CONSENT_REOPEN_ATTRIBUTE,
+  FOOTER_ID_PREFIX,
+  REMINDERS_ANCHOR,
+  REMINDERS_ENDPOINT,
+  REMINDERS_FIELD_ID,
+  SiteFooter,
+} from "./layout/SiteFooter";
+export type { SiteFooterProps } from "./layout/SiteFooter";
+export { companyIdentity, footerView } from "./layout/footerView";
+export type {
+  CompanyIdentityView,
+  FooterCompanyView,
+  FooterGroupView,
+  FooterLinkView,
+  FooterView,
+  FooterViewOptions,
+} from "./layout/footerView";
+
+// The trust slot with its Phase-0 empty state (§5.3, §8): renders nothing and reserves no box.
+export { TrustMarks } from "./trust/TrustMarks";
+export type { TrustMark, TrustMarksProps } from "./trust/TrustMarks";
 
 // The contrast manifest and its arithmetic (AC-3).
 export {

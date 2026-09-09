@@ -14,7 +14,7 @@ import {
   routableLocale,
   routableLocaleCodes,
 } from "@/modules/i18n";
-import { fontVariables, SkipLink } from "@/modules/ui";
+import { fontVariables, SiteFooter, SkipLink } from "@/modules/ui";
 
 import "../globals.css";
 
@@ -142,6 +142,10 @@ export default async function LocaleLayout({
               card with the focus ring above every other layer. Same target, same message key. */}
           <SkipLink>{t("skipToContent")}</SkipLink>
           {children}
+          {/* The colophon of spec 004 §5.3, on every localised document (AC-9): a Server
+              Component with zero client JavaScript, whose links, company identity and payment
+              line all come from the Phase-0 registries (TASK-049). */}
+          <SiteFooter locale={locale.code} />
           {/* Last in the document and out of flow: the language suggestion of ADR-0006 in its
               positive form. `LocaleSuggestionBanner` is a Server Component that projects the
               locale registry and hands it to a client loader, which imports the island itself
