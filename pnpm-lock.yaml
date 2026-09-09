@@ -200,6 +200,9 @@ importers:
       prettier-plugin-tailwindcss:
         specifier: ^0.8.1
         version: 0.8.1(prettier@3.9.6)
+      sharp:
+        specifier: 0.35.4
+        version: 0.35.4(@types/node@24.13.3)
       stylelint:
         specifier: ^17.15.0
         version: 17.15.0(supports-color@7.2.0)(typescript@5.9.3)

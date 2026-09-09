@@ -58,6 +58,9 @@ describe("AC-2: no database import in the spec 003 file set (T-02)", () => {
       // spec 006 AC-1 (TASK-073): the copy rules and the catalogue half of `pnpm i18n:draft`.
       "seed/copy.ts",
       "seed/copy-draft.ts",
+      // spec 006 AC-1/AC-14 (TASK-078): the variant CLI, whose `--check` mode is a CI gate and
+      // reads only `seed/data/` and `public/media/`.
+      "seed/media-variants.ts",
     ]);
   });
 

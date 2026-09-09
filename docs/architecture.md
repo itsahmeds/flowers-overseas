@@ -155,8 +155,16 @@ seed/data/                the versioned, zod-validated dataset spec 002's import
                           `pnpm seed:project` and asserted byte-equal by
                           `tests/unit/seed-dataset.test.ts`, never hand-edited (ADR-0017) — plus
                           the authored occasion-country.json (the per-destination calendar spec
-                          005 does not own). copy/, prices/, addon-prices/, media.json,
-                          media-variants.json and alt/ follow in TASK-073…TASK-078
+                          005 does not own), the projected prices/ and addon-prices/ per priced
+                          destination (TASK-074), media.json (the asset manifest, TASK-077) and
+                          media-variants.json (the derived ladder with a checksum per file,
+                          written only by `pnpm media:variants` from the pinned encoder in
+                          seed/schema/variants.ts — TASK-078). copy/ and alt/ follow in TASK-073
+seed/media-variants.ts    the deterministic sharp ladder (spec 006 §2.4): EXIF/GPS stripped, the
+                          slot's aspect ratio, AVIF+WebP at seven widths plus one OG/email JPEG,
+                          one thread pinned so libaom's output cannot vary by machine; `--check`
+                          is the CI mode and needs no originals. sharp is a devDependency of this
+                          one file and reaches no bundle and no request path
 messages/                 next-intl catalogues + review manifests (spec 003)
 content/i18n/             glossary and style guide per locale, the authority a native reviewer
                           reads (`plan/03` §6.6, spec 003); prose, never imported by code

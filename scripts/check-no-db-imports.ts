@@ -50,6 +50,10 @@ export const SCANNED_PATHS = [
   // are pure functions of the dataset and the message catalogues.
   "seed/copy.ts",
   "seed/copy-draft.ts",
+  // TASK-078: the variant CLI. It reads `seed/data/media.json`, the git-ignored originals and its
+  // own manifest and nothing else — no database, no network, no clock — which is why
+  // `pnpm media:variants --check` is a CI gate that needs no service (spec 006 AC-1, AC-14).
+  "seed/media-variants.ts",
 ] as const;
 
 const SCANNED_EXTENSIONS = [".ts", ".tsx", ".mts", ".cts", ".js", ".jsx"];

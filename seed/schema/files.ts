@@ -37,6 +37,7 @@ import {
   MediaAssetManifestSchema,
   MediaVariantManifestSchema,
 } from "./media.ts";
+import { MediaVariantPipelineSchema } from "./variants.ts";
 
 /** `seed/data/taxonomy.json` — the six facets of `plan/10` §1.1 and the substitution classes. */
 export const TaxonomyFileSchema = seedFileSchema(
@@ -251,6 +252,13 @@ export const MediaFileSchema = seedFileSchema("media_asset", {
  * mirror of spec 002 §5.1's `UNIQUE (media_asset_id, variant, format)`.
  */
 export const MediaVariantsFileSchema = seedFileSchema("media_variant", {
+  // The pinned pipeline that produced the rows (spec 006 AC-13; TASK-078): the `sharp` and libvips
+  // versions, the width ladder, the aspect-ratio table, the metadata policy and every encoder
+  // option. It is a header field rather than a comment because `pnpm media:variants --check`
+  // compares it against `variantPipeline()` and fails a manifest whose bytes were produced by
+  // different settings — which is what makes changing one option a whole-manifest re-derivation
+  // instead of a silent re-encode.
+  pipeline: MediaVariantPipelineSchema,
   rows: z.array(MediaVariantManifestSchema),
 }).superRefine((file, ctx) => {
   const seen = new Set<string>();
@@ -395,6 +403,16 @@ export const SEED_DATA_FILES = [
     entity: "media_asset",
     origin: "authored",
     schema: MediaFileSchema,
+  },
+  {
+    // Written by `pnpm media:variants`, never by hand (TASK-078). `authored` in the two-value
+    // vocabulary of `header.ts` because it is not a projection of `src/config/catalogue/`, which
+    // is the only thing `projected` may mean (ADR-0017); what wrote it is recorded far more
+    // precisely by its own `pipeline` header.
+    path: "media-variants.json",
+    entity: "media_variant",
+    origin: "authored",
+    schema: MediaVariantsFileSchema,
   },
   ...SEED_PRICE_DATA_FILES,
 ] as const;

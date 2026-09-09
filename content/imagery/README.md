@@ -35,13 +35,22 @@ git history is permanent.
 5. review against style-guide.md §7 — one failed item rejects the asset
 6. rejected? regenerate from the same prompt with a new seed; never retouch
 7. accepted? set reviewState/reviewedBy/reviewedAt in seed/data/media.json (founder only)
-8. pnpm media:variants        (TASK-078: the deterministic ladder, EXIF/GPS stripped)
+8. pnpm media:variants --only <assetId>   (the deterministic ladder, EXIF/GPS stripped)
 9. pnpm seed:check            (provenance, budgets, no delivery asset, no unapproved approval)
 ```
 
-Steps 8 and 9 are TASK-078's and TASK-075's scripts. Until they land, the loop stops at step 7 and
-nothing renders: every asset in `seed/data/media.json` is `pending`, and an unapproved asset shows
-the placeholder rather than an image (spec 006 AC-18).
+Step 8 derives `public/media/{assetId}/{width}.{fmt}` — AVIF + WebP at the seven widths of the
+slot's declared aspect ratio plus one 1200 px JPEG for OG and email — and rewrites
+`seed/data/media-variants.json` with a width, height, byte count and SHA-256 per file. Without
+`--only` it runs over every asset whose original is present and reports the ones it has none for;
+an asset with no original keeps whatever rows and files it already had, so running it on a clone
+that holds the committed bytes but no originals changes nothing. `pnpm media:variants --check` is
+the CI form and verifies manifest ↔ files ↔ checksums; generation never runs in CI, because the
+originals are not there.
+
+Step 9 is TASK-075's script. Until it lands, the loop stops at step 8 and nothing renders: every
+asset in `seed/data/media.json` is `pending`, and an unapproved asset shows the placeholder rather
+than an image (spec 006 AC-18).
 
 The operational version of this loop — with the reject counts, the budget check, and what to do
 after R2 exists — is `docs/runbooks/imagery.md` (TASK-081).
@@ -60,7 +69,7 @@ plus **7 homepage slots** (the full-bleed hero and the six occasion tiles).
 
 ## What is not decided here
 
-The variant ladder, the aspect-ratio crops and the determinism contract are `seed/media-variants.ts`
-(TASK-078); the loader, `Photo`, the preload and the honesty-label component are
+The variant ladder, the aspect-ratio crops and the determinism contract are
+`seed/media-variants.ts` and `seed/schema/variants.ts` (TASK-078, landed); the loader, `Photo`, the preload and the honesty-label component are
 `src/modules/ui/media/` (TASK-079); the committed bytes and the budgets are TASK-080; R2 is
 TASK-082.

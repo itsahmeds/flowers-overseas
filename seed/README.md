@@ -10,7 +10,7 @@ upsert plumbing are spec 002's. Two directories and one rule.
 | `origin` | Files | Who edits them |
 |---|---|---|
 | `projected` | `taxonomy.json`, `categories.json`, `occasions.json`, `products.json`, `product-tiers.json`, `addons.json`, `prices/{ISO2}.json`, `addon-prices/{ISO2}.json` | **Nobody.** Edit `src/config/catalogue/*.data.ts` and run `pnpm seed:project` |
-| `authored` | `occasion-country.json`, `media.json`, `copy/en/**`, `copy/en-gb/**` (and, from TASK-078, `media-variants.json`, `alt/`) | A human, in the file — except `media-variants.json`, which `pnpm media:variants` writes, and `copy/de/**` + `copy/pl/**`, which `pnpm i18n:draft --locale <code>` writes |
+| `authored` | `occasion-country.json`, `media.json`, `media-variants.json`, `copy/en/**`, `copy/en-gb/**` (and `alt/`, from TASK-079) | A human, in the file — except `media-variants.json`, which `pnpm media:variants` writes and nobody edits, and `copy/de/**` + `copy/pl/**`, which `pnpm i18n:draft --locale <code>` writes |
 
 ADR-0017 is why: `src/config/catalogue/` is the **single authored source** of catalogue entities,
 so that one edit changes the demo, the seed and later the database, and "price shown = price
@@ -27,7 +27,21 @@ generator — fails CI with the file named.
 seed/schema/     the zod schemas and the to*Row() projections onto spec 002 §5.1's columns
 seed/data/       the dataset (JSON, one file per entity family, header on every file)
 seed/project.ts  pnpm seed:project — regenerates the projected files, offline and deterministic
+seed/media-variants.ts
+                 pnpm media:variants — the deterministic sharp ladder: EXIF/GPS stripped, the
+                 slot's aspect ratio, AVIF+WebP at seven widths plus one OG/email JPEG, and
+                 seed/data/media-variants.json rewritten with a checksum per file. `--check` is
+                 the CI mode (manifest ↔ files ↔ checksums); generation never runs in CI
 ```
+
+The pinned encoder — the `sharp` and libvips versions, the widths, the aspect-ratio table, the
+metadata policy and every encoder option — is `seed/schema/variants.ts`, and
+`pnpm media:variants` writes it into the manifest's own `pipeline` header. That is what makes
+changing one quality setting a whole-manifest re-derivation with a visible diff rather than a
+silent re-encode (spec 006 AC-13), and it is the record TASK-082's `media.derive_variants` worker
+has to match checksum-for-checksum (AC-25). The encoder is held to **one thread** because
+libaom's AVIF output depends on its thread count: without that pin, "byte-identical across two
+runs" would only be true on the machine that ran them.
 
 `seed/schema/prompts.ts` is the one piece of this directory whose *content* lives elsewhere: the
 imagery prompt records are `content/imagery/prompts/{SKU}.json` (prose a non-programmer edits) and
@@ -45,8 +59,8 @@ out-of-band, float amount, wrong psychological ending, a second open-ended row, 
 plus the matching good block — live in `tests/fixtures/seed/_cases/prices/` (spec 006 AC-6).
 
 `seed/check.ts` (`pnpm seed:check`, TASK-075), `seed/diff.ts` (`pnpm seed:diff`, TASK-076),
-`seed/media-variants.ts` (TASK-078), `seed/index.ts` (`pnpm db:seed`, TASK-083) and
-`seed/upload.ts` (TASK-082) join them in the tasks named.
+`seed/index.ts` (`pnpm db:seed`, TASK-083) and `seed/upload.ts` (TASK-082) join them in the tasks
+named.
 
 ## Facts worth knowing before you edit anything
 
