@@ -368,3 +368,17 @@ Each has a recommended default. The spec is `draft` until they are answered and 
 - **Q10 — Amend spec 002 so its seed reads `seed/data/`?** Spec 002 §2 promises seed literals for the 84-product skeleton, countries, prices and partners. If both specs restate `plan/10`, they will disagree within a week. **Recommendation: yes — amend spec 002's task 10 to read `seed/data/**` through this spec's schemas, and keep spec 002 as the owner of the tables, the upsert plumbing, the partners and the geo rows.** The alternative (006 defines a second dataset) guarantees drift.
 - **Q11 — Three additive columns on spec 002's media tables?** `media_asset.generator_model`, `.credit`, `.licence`, `.depicts`, `.reviewed_by`, `.reviewed_at` and `media_variant.checksum_sha256` (§5.1). All are load-bearing for §8's provenance rule and §2.4's determinism check. **Recommendation: yes, inside spec 002's unwritten migration `0003`, so no extra migration exists.**
 - **Q12 — Does the demo environment's watermark stay?** `plan/10` §3 requires sample photos in the password-protected demo to be watermarked "sample". With Q3's recommendation there are no sample *delivery* photos at all in Phase 0, so the watermark applies only to `context` assets if any are used. **Recommendation: keep the mechanism and the gate, ship no watermarked asset in Phase 0, and revisit when the first real delivery photo arrives.**
+
+## 14. Amendments (post-approval corrections)
+
+**A1 — Message namespace is `catalog.*`, not `catalogue.*` (§7; TASK-073, `/review 41`).**
+Original: §7 named the dataset's message keys `catalogue.*`. Corrected (orchestrator, 2026-09-09): spec 005's `catalog.*` namespace already exists and the committed tier rows carry `labelKey: "catalog.tier.stems"`; two namespaces one letter apart would duplicate the tier labels. Every key this spec adds lives under `catalog.*` and `media.*`.
+
+**A2 — Honesty label speaks in the first person (§2.5, §8, §13 Q1/Q8; spec 004 §14 A5; TASK-073, `/review 41`).**
+Original: "Example arrangement · **your** florist hand-makes each one". Corrected: "Example arrangement · **our** florist hand-makes each one" — the illustration disclosure is unchanged; only the pronoun follows spec 004 §14 A5. The October lawyer list (§13 Q8 (i)) reviews the string that ships. `docs/design/wireframes/country-shop-*.dc.html` already carry "our"; `product-{desktop,mobile}.dc.html` and `flows/buyer-journey.dc.html` are brought into step by TASK-079.
+
+**A3 — `SeedPriceSchema` names the SKU field `sku` (§5.2; TASK-072, `/review 38`).**
+Original: §5.2 wrote `productSku`. Corrected: ADR-0017 makes spec 005 the author of every price row and it calls the field `sku`, as `products.json` does. No other field differs.
+
+**A4 — Copy states no delivery timing (§2.3 rule 6, §6; TASK-073, `/review 41`).**
+Clarified: no description, intro, `seoTitle` or `seoDescription` may state a lead time, cutoff, "next day" or "same day" claim, or a punctuality guarantee. The cutoff and next-available-date sentence is spec 009's server-rendered per-country block; the only permitted form in copy is a pointer to it ("order by the cutoff shown for the destination"). `src/config/countries.ts` deliberately carries no `delivery_days` for the same reason. TASK-075's copy rule family gains a check for this class of phrase.
