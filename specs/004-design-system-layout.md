@@ -396,3 +396,19 @@ Q13 option (b) — passing translated strings into islands as props and dropping
 provider (~10 705 B) — which TASK-056 decides from the finished measurement, not from an estimate.
 The budget is not raised a second time. `plan/01` §7's "120 KB gzipped" reads as this clause.
 Raised by: `/review 26` round 1 (numbers corrected in round 2), 2026-09-09.
+
+**A2 — "Exactly one inline script" versus Next.js's flight payload (§5.2; ADR-0016; AC-23).**
+Original: §5.2 and ADR-0016 authorise one inline script (the Consent Mode bootstrap) by build-time
+`'sha256-'` hash and describe it as the only inline script in the document.
+Measured (`/review 28`, 2026-09-09): the served locale document carries eleven inline scripts —
+the 527 B bootstrap and ten `self.__next_f.push(...)` React flight blocks Next 16 emits for
+hydration. Under `script-src 'self' 'sha256-…'` with no nonce and no `'unsafe-inline'`, enforcing
+the policy would block hydration on every page.
+Corrected (orchestrator, 2026-09-09): the bootstrap is the only *application* inline script and
+its hash rule stands. The header stays `Content-Security-Policy-Report-Only` until a dedicated task
+(TASK-058) adds nonce propagation for the flight blocks on `no-store` routes or accepts
+hash-per-response on cached ones, with the Report-Only evidence at `/api/csp-report` read after
+filtering the flight-block reports. The enforce flip (`CSP_REPORT_ONLY=false`) leaves TASK-056's
+scope and belongs to TASK-058. ADR-0016 is not edited; its "exactly one inline script" reads as
+"exactly one application inline script".
+Raised by: `/review 28` nit 1, 2026-09-09.
