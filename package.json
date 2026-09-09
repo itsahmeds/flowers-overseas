@@ -30,6 +30,7 @@
     "env:check": "node scripts/env-check.ts",
     "db:check": "node scripts/db-check.ts",
     "i18n:check": "node scripts/i18n-check.ts",
+    "catalogue:check": "node scripts/catalogue-check.ts",
     "i18n:draft": "node scripts/i18n-draft.ts",
     "i18n:pseudo": "node scripts/i18n-pseudo.ts",
     "fonts:build": "node scripts/fonts/build-fonts.ts",

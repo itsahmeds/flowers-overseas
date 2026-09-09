@@ -30,7 +30,11 @@
  */
 import { z } from "zod";
 
-import { type CurrencyCode, isCurrencyCode } from "../currencies.ts";
+import {
+  type CurrencyCode,
+  currencyConfig,
+  isCurrencyCode,
+} from "../currencies.ts";
 
 /* -------------------------------------------------------------------------- */
 /* The six facets of `plan/10` §1.1, verbatim, as closed value sets.          */
@@ -207,16 +211,31 @@ export const facetValues: Readonly<Record<FacetName, readonly string[]>> = {
 /* -------------------------------------------------------------------------- */
 
 /**
- * A taxonomy key (`new_baby`, `17_mai`) as a message-catalogue leaf (`newBaby`, `17Mai`).
+ * A taxonomy key (`new_baby`, `17_mai`) as a message-catalogue leaf (`newBaby`, `mai17`).
  *
  * The catalogues are camelCase throughout (`messages/en.json`: `nav.category.bestSellers`), while
  * `plan/10` §1.1's canonical facet keys are snake_case and are also the database's CHECK values,
  * so exactly one of the two has to be transformed. Doing it here, once, is why nothing else in
  * the repository builds a facet message key by concatenation (spec 005 §7).
+ *
+ * **A leading number moves to the end** (`17_mai` → `mai17`), because spec 003 closed the message
+ * key alphabet before this dataset existed: both `MessagesSchema` and `MessageMetaManifestSchema`
+ * require every segment to match `^[A-Za-z][A-Za-z0-9]*$`, so `catalog.facet.occasion.17Mai` —
+ * what this function returned when TASK-061 authored Norway's `17_mai` — is a key that
+ * `messages/en.json` **cannot hold** and no reader could ever resolve. Moving the numeric run
+ * rather than prefixing a marker keeps the leaf readable and the transform total; TASK-062
+ * corrected it here and `pnpm catalogue:check` now fails on any label key that spec 003's
+ * alphabet would reject, so the class of fault cannot return.
  */
 export function messageKeyLeaf(value: string): string {
-  return value
-    .split("_")
+  const parts = value.split("_");
+  // A leading numeric part becomes a trailing one, before camelising, so the leaf starts with a
+  // letter: `17_mai` -> ["mai", "17"] -> `mai17`.
+  const ordered =
+    parts.length > 1 && /^\d+$/.test(parts[0] ?? "")
+      ? [...parts.slice(1), parts[0] ?? ""]
+      : parts;
+  return ordered
     .map((part, index) =>
       index === 0 ? part : `${part.slice(0, 1).toUpperCase()}${part.slice(1)}`,
     )
@@ -232,12 +251,21 @@ export function facetLabelKey(facet: FacetName, value: string): string {
   return `catalog.facet.${facet}.${messageKeyLeaf(value)}`;
 }
 
-/** A dotted `catalog.*` message key: the shape every `labelKey` in the dataset must have. */
+/**
+ * A dotted `catalog.*` message key: the shape every `labelKey` in the dataset must have.
+ *
+ * The segment alphabet is spec 003's, not this spec's: `MessagesSchema` and
+ * `MessageMetaManifestSchema` both require `^[A-Za-z][A-Za-z0-9]*$` per segment, so a key that
+ * fails here could never be authored in `messages/en.json` nor carry a review record — which is
+ * how `catalog.facet.occasion.17Mai` slipped in before TASK-062 (see `messageKeyLeaf`). Keeping
+ * the two alphabets identical makes an unresolvable label key a **parse error at module load**
+ * rather than a `catalogue:check` finding.
+ */
 const CatalogMessageKeySchema = z
   .string()
   .regex(
-    /^catalog\.[a-z0-9]+(?:\.[a-zA-Z0-9_]+)+$/,
-    "must be a dotted `catalog.*` message key (spec 005 §7)",
+    /^catalog(?:\.[a-z][A-Za-z0-9]*)+$/,
+    "must be a dotted `catalog.*` message key whose segments are camelCase identifiers (spec 005 §7, spec 003's message-key alphabet)",
   );
 
 /* -------------------------------------------------------------------------- */
@@ -877,3 +905,224 @@ export const FxRateDataSchema = z
   });
 
 export type FxRateData = z.infer<typeof FxRateDataSchema>;
+
+/* -------------------------------------------------------------------------- */
+/* Price bands, ladders and the per-destination authored pricing (TASK-062).  */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Which `plan/10` §2.3 band row a product is priced from: its `price_tier` facet, and for a
+ * funeral piece the funeral row of the same table split into the same four steps.
+ *
+ * `plan/10` §2.3 prices "funeral pieces" as **one** band (60–180 EUR, 259–799 zł) rather than
+ * per price tier, but the ten seeded funeral pieces carry a `price_tier` facet like every other
+ * product (`plan/10` §1.1 — the facet is on one product record). Splitting the funeral row into
+ * four contiguous sub-bands inside its own bounds is the only reading under which both hold: a
+ * funeral piece is never priced below the funeral floor, never above its ceiling, and its tier
+ * facet still means what it means everywhere else. The sub-band bounds are authored in
+ * `prices.data.ts` and `pnpm catalogue:check` reads them from there, so the split is data.
+ */
+export const priceBandKeys = [
+  "essential",
+  "classic",
+  "premium",
+  "luxury",
+  "funeral_essential",
+  "funeral_classic",
+  "funeral_premium",
+  "funeral_luxury",
+] as const;
+export type PriceBandKey = (typeof priceBandKeys)[number];
+
+/**
+ * The band a product's smallest tier must be priced in: `funeral_{tier}` for a funeral piece,
+ * `{tier}` for everything else. One builder, so nothing string-builds a band key.
+ */
+export function priceBandKeyFor(product: {
+  readonly productType: ProductType;
+  readonly priceTier: PriceTier;
+}): PriceBandKey {
+  return product.productType === "funeral"
+    ? (`funeral_${product.priceTier}` as PriceBandKey)
+    : product.priceTier;
+}
+
+/**
+ * Does an amount land on the currency's configured psychological ending (spec 005 §13 Q1,
+ * `src/config/currencies.ts` `roundingStyle`)?
+ *
+ * The ending is read off the amount **as it is displayed**, which is why the exponent matters:
+ *
+ *  - a currency with a minor part (`EUR`, `GBP`, `PLN`, exponent 2): `x99` and `x90` fix the
+ *    minor units (`€45,99`, `€45,90`), and `x9` means a *whole* major amount whose last digit is
+ *    nine (`149 zł` — `plan/10` §2.3's PLN bands, which is why PLN is `x9` and not `x90`);
+ *  - a currency with no minor part (`HUF`, exponent 0): the digits are read off the amount
+ *    itself, so `x90` is a `990 Ft` ending and `x9` a `999 Ft` one;
+ *  - `none` accepts any amount.
+ *
+ * This is a **predicate over authored data**, not the rounding function: `roundToStyle()` — which
+ * moves a converted amount *upward* onto the same ending — is spec 005 `pricing/round.ts` and
+ * TASK-066's, and it must agree with this function rather than restate it. Zero is accepted for
+ * every style: a free line (`card`) has no psychological ending to hit.
+ */
+export function endsInRoundingStyle(
+  amountMinor: number,
+  currency: CurrencyCode,
+): boolean {
+  const { minorUnitExponent, roundingStyle } = currencyConfig(currency);
+  if (roundingStyle === "none" || amountMinor === 0) return true;
+  if (minorUnitExponent === 0) {
+    return roundingStyle === "x9"
+      ? amountMinor % 10 === 9
+      : amountMinor % 100 === (roundingStyle === "x99" ? 99 : 90);
+  }
+  const scale = 10 ** minorUnitExponent;
+  const minorPart = amountMinor % scale;
+  if (roundingStyle === "x9") {
+    return minorPart === 0 && Math.trunc(amountMinor / scale) % 10 === 9;
+  }
+  const ending = roundingStyle === "x99" ? scale - 1 : (scale * 9) / 10;
+  return minorPart === ending;
+}
+
+/**
+ * One `plan/10` §2.3 band, transcribed: the inclusive minor-unit bounds a product's **smallest**
+ * tier is priced in.
+ *
+ * The band constrains the smallest tier only, because the same section also fixes the tier steps
+ * at "~+30% and +60% from the smallest": a three-tier product whose every tier sat inside one
+ * band could not step at all, and `plan/10` §1.1 calls the price tier "derived per country" from
+ * the band the product *starts* at (which is also what a "from €35" filter means). The stepped
+ * amounts are authored, never computed (spec 005 §5.2).
+ */
+export const PriceBandSchema = z
+  .object({
+    fromMinor: MinorUnitsSchema.positive(),
+    toMinor: MinorUnitsSchema.positive(),
+  })
+  .strict()
+  .superRefine((band, ctx) => {
+    if (band.toMinor <= band.fromMinor) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["toMinor"],
+        message: `a band's ceiling must be above its floor, found ${String(band.fromMinor)}…${String(band.toMinor)}`,
+      });
+    }
+  });
+
+export type PriceBand = z.infer<typeof PriceBandSchema>;
+
+/**
+ * The three authored tier amounts of one band, smallest first — `plan/10` §2.3's "~+30% and +60%
+ * from the smallest" as **rows**, in the destination's own currency and integer minor units.
+ *
+ * A product with fewer tiers than three uses the first amounts (a single-tier plant is priced at
+ * the band floor); a product may never have more than three tiers, which
+ * `DestinationPricingSchema`'s consumers assert against the tier dataset.
+ */
+export const PriceLadderSchema = z
+  .array(MinorUnitsSchema.positive())
+  .length(3)
+  .superRefine((ladder, ctx) => {
+    ladder.forEach((step, index) => {
+      if (index > 0 && step <= (ladder[index - 1] ?? 0)) {
+        ctx.addIssue({
+          code: "custom",
+          path: [index],
+          message: `tier amounts must increase: step ${String(index)} is ${String(step)} after ${String(ladder[index - 1] ?? 0)}`,
+        });
+      }
+    });
+  });
+
+export type PriceLadder = z.infer<typeof PriceLadderSchema>;
+
+/**
+ * Everything authored about money in one destination country (spec 005 §2 "Pricing", §13 Q1/Q3/Q7;
+ * `plan/10` §2.3).
+ *
+ * One record per destination, because every field of it is a per-country fact: the currency of
+ * supply, the VAT rate on flowers and the standard rate its add-ons carry (PL 8% vs 23% is
+ * `plan/06` §4 item 4 and the reason `addon_country_price` has its own `vat_rate_bp`), the eight
+ * bands and their authored ladders, the two surcharge amounts and the add-on prices. There is no
+ * buyer dimension anywhere in it — prices are keyed on **destination** only (EU 2018/302,
+ * `plan/07` §3), which is a property of this shape and not of a review.
+ */
+export const DestinationPricingSchema = z
+  .object({
+    countryIso2: Iso2Schema,
+    currency: CurrencyCodeSchema,
+    /** `country.vat_rate_bp`: the rate on cut flowers and made-up floral goods. */
+    flowersVatRateBp: BasisPointsSchema,
+    /** The standard rate every add-on carries (`addon_country_price.vat_rate_bp`). */
+    standardVatRateBp: BasisPointsSchema,
+    bands: z.record(z.enum(priceBandKeys), PriceBandSchema),
+    ladders: z.record(z.enum(priceBandKeys), PriceLadderSchema),
+    /** `plan/10` §2.3's Sunday surcharge, +EUR 4 equivalent, as a dated row's amount. */
+    sundaySurchargeMinor: MinorUnitsSchema.positive(),
+    /** `plan/10` §2.3's Valentine's / Women's Day surcharge, +EUR 6 equivalent. */
+    peakDaySurchargeMinor: MinorUnitsSchema.positive(),
+    /** One price per add-on key; `card` is 0 and is still a priced line (spec 005 §2). */
+    addonsMinor: z.record(z.enum(addonKeys), MinorUnitsSchema.nonnegative()),
+  })
+  .strict()
+  .superRefine((destination, ctx) => {
+    for (const bandKey of priceBandKeys) {
+      const band = destination.bands[bandKey];
+      const ladder = destination.ladders[bandKey];
+      if (band === undefined || ladder === undefined) {
+        ctx.addIssue({
+          code: "custom",
+          path: [band === undefined ? "bands" : "ladders", bandKey],
+          message: `\`${destination.countryIso2}\` is missing the \`${bandKey}\` ${band === undefined ? "band" : "ladder"} of plan/10 §2.3`,
+        });
+        continue;
+      }
+      const smallest = ladder[0] ?? 0;
+      if (smallest < band.fromMinor || smallest > band.toMinor) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["ladders", bandKey, 0],
+          message: `\`${destination.countryIso2}\` prices its smallest \`${bandKey}\` tier at ${String(smallest)}, outside the plan/10 §2.3 band ${String(band.fromMinor)}…${String(band.toMinor)}`,
+        });
+      }
+      for (const [index, step] of ladder.entries()) {
+        if (!endsInRoundingStyle(step, destination.currency)) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["ladders", bandKey, index],
+            message: `${String(step)} does not end on \`${destination.currency}\`'s \`${currencyConfig(destination.currency).roundingStyle}\` ending (spec 005 §13 Q1)`,
+          });
+        }
+      }
+    }
+    for (const addonKey of addonKeys) {
+      if (destination.addonsMinor[addonKey] === undefined) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["addonsMinor", addonKey],
+          message: `\`${destination.countryIso2}\` does not price the \`${addonKey}\` add-on (plan/10 §2.3)`,
+        });
+      }
+    }
+  });
+
+export type DestinationPricing = z.infer<typeof DestinationPricingSchema>;
+
+export const DestinationPricingRegistrySchema = z
+  .array(DestinationPricingSchema)
+  .min(1)
+  .superRefine((destinations, ctx) => {
+    const seen = new Set<string>();
+    destinations.forEach((destination, index) => {
+      if (seen.has(destination.countryIso2)) {
+        ctx.addIssue({
+          code: "custom",
+          path: [index, "countryIso2"],
+          message: `duplicate pricing for destination \`${destination.countryIso2}\``,
+        });
+      }
+      seen.add(destination.countryIso2);
+    });
+  });

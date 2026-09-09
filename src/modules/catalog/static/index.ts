@@ -9,17 +9,25 @@
  * FX, VAT, availability) stays the module's own, which is what lets the database implementation
  * of TASK-070 be swapped in without a caller changing.
  *
- * `staticPriceProvider` and `staticFxRateProvider` still **throw**, because `prices.data.ts` and
- * `fx.data.ts` are authored by TASK-062. Throwing rather than returning an empty set is
- * deliberate: an empty price set reads as "no price for this country", which a later task could
- * render as a fact instead of failing where the hole is. The error names the task that fills it.
+ * `staticPriceProvider` and `staticFxRateProvider` read the authored price rows and the committed
+ * ECB snapshot (TASK-062): `country_price` retail rows for every (product, tier, destination) plus
+ * the dated Sunday and peak-day surcharge rows, `addon_country_price` rows carrying their own VAT
+ * rate, and one dated set of euro reference rates. Each was parsed under its zod schema at that
+ * module's load, so this file validates nothing again and — as with the catalogue provider —
+ * decides nothing: which row is active on a date, what the VAT split is, whether a rate is too old
+ * to convert with, and the 2.5% buffer are all `pricing/*`'s (TASK-065…TASK-067).
  *
  * This module imports no database client (`pnpm check:no-db`), carries no `"use client"`, and is
  * not reachable from the barrel (AC-2, AC-3).
  */
 import { ADDONS } from "@/config/catalogue/addons.data";
 import { CATEGORIES } from "@/config/catalogue/categories.data";
+import { FX_SNAPSHOT } from "@/config/catalogue/fx.data";
 import { OCCASIONS } from "@/config/catalogue/occasions.data";
+import {
+  ADDON_COUNTRY_PRICES,
+  COUNTRY_PRICES,
+} from "@/config/catalogue/prices.data";
 import { PRODUCTS } from "@/config/catalogue/products.data";
 import { PRODUCT_TIERS } from "@/config/catalogue/tiers.data";
 
@@ -37,33 +45,6 @@ import type {
   ProductTierRecord,
 } from "../providers";
 
-/** The task that authors each missing part of the dataset (spec 005 §12 task 3). */
-const DATASET_TASKS = {
-  price: "TASK-062",
-  fx: "TASK-062",
-} as const;
-
-/**
- * Thrown by the price and FX providers until TASK-062 authors their rows. A distinct error class
- * so a caller written before the price dataset exists fails loudly and identifiably in a test
- * rather than silently reading an empty price set.
- */
-export class CatalogueDatasetPendingError extends Error {
-  constructor(part: keyof typeof DATASET_TASKS, member: string) {
-    super(
-      `catalog: the ${part} dataset is not authored yet; \`${member}\` lands with ${DATASET_TASKS[part]} (spec 005 §12)`,
-    );
-    this.name = "CatalogueDatasetPendingError";
-  }
-}
-
-function pending<T>(
-  part: keyof typeof DATASET_TASKS,
-  member: string,
-): Promise<T> {
-  return Promise.reject(new CatalogueDatasetPendingError(part, member));
-}
-
 /**
  * The authored catalogue, handed over as-is. Every method is `async` because the interface is
  * shaped for the database implementation; the static one performs no I/O at all, which is what
@@ -80,13 +61,20 @@ export const staticCatalogueProvider: CatalogueProvider = {
   addons: (): Promise<readonly AddonRecord[]> => Promise.resolve(ADDONS),
 };
 
+/**
+ * The authored price rows, active and superseded, handed over as-is. A provider does not filter
+ * for the active row: `resolvePrice()` (TASK-065) does, and it throws on ambiguity rather than
+ * picking silently — which is only checkable if the provider hands over the whole history
+ * (`plan/07` §2.1's 30-day-lowest figure reads the same rows).
+ */
 export const staticPriceProvider: PriceProvider = {
-  countryPrices: () =>
-    pending<readonly CountryPriceRecord[]>("price", "countryPrices"),
-  addonCountryPrices: () =>
-    pending<readonly AddonCountryPriceRecord[]>("price", "addonCountryPrices"),
+  countryPrices: (): Promise<readonly CountryPriceRecord[]> =>
+    Promise.resolve(COUNTRY_PRICES),
+  addonCountryPrices: (): Promise<readonly AddonCountryPriceRecord[]> =>
+    Promise.resolve(ADDON_COUNTRY_PRICES),
 };
 
+/** The one committed ECB snapshot. Whether it is too old to convert with is TASK-067's call. */
 export const staticFxRateProvider: FxRateProvider = {
-  fxRates: () => pending<readonly FxRateRecord[]>("fx", "fxRates"),
+  fxRates: (): Promise<readonly FxRateRecord[]> => Promise.resolve(FX_SNAPSHOT),
 };

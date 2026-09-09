@@ -81,8 +81,10 @@ export const CONFIG_FILES = [
   // The authored catalogue dataset of spec 005 §2 / §13 Q9 (TASK-061): the single source of the
   // Phase 0 products, tiers, categories, occasions and add-ons, with `projections.ts` projecting
   // each onto spec 002 §5.1's row shapes so the seed (spec 002) and the importer (spec 006) read
-  // it rather than restating 84 products (ADR-0017). `prices.data.ts` and `fx.data.ts` join the
-  // list with TASK-062.
+  // it rather than restating 84 products (ADR-0017), plus the price half TASK-062 authored:
+  // `prices.data.ts` (the per-destination bands, ladders, VAT rates, surcharges and add-on
+  // prices, expanded into `country_price`/`addon_country_price` rows) and `fx.data.ts` (one dated
+  // ECB euro-reference snapshot). `pnpm catalogue:check` is the gate over all of them.
   "src/config/catalogue/schemas.ts",
   "src/config/catalogue/projections.ts",
   "src/config/catalogue/products.data.ts",
@@ -90,6 +92,8 @@ export const CONFIG_FILES = [
   "src/config/catalogue/categories.data.ts",
   "src/config/catalogue/occasions.data.ts",
   "src/config/catalogue/addons.data.ts",
+  "src/config/catalogue/prices.data.ts",
+  "src/config/catalogue/fx.data.ts",
 ] as const;
 
 export const REQUIRED_FILES = [

@@ -33,7 +33,6 @@ import {
   catalogProviders,
   type CatalogProviders,
 } from "../../src/modules/catalog/providers.ts";
-import { CatalogueDatasetPendingError } from "../../src/modules/catalog/static/index.ts";
 
 const repoRoot = resolve(__dirname, "../..");
 const moduleDir = "src/modules/catalog";
@@ -290,8 +289,11 @@ describe("the provider seam and its Phase 0 stubs", () => {
   });
 
   /**
-   * TASK-061 authored the catalogue half of the dataset, so these five now resolve; the counts are
-   * `plan/10` §2.1's and are asserted in full by `tests/unit/catalogue-dataset.test.ts`.
+   * TASK-061 authored the catalogue half of the dataset and TASK-062 the price half, so all eight
+   * provider reads now resolve. The counts are `plan/10` §2.1's and §2.3's and are asserted in
+   * full by `tests/unit/catalogue-dataset.test.ts` and `tests/unit/catalogue-prices.test.ts`;
+   * here they are the seam's own check that a provider hands over the authored rows and nothing
+   * else.
    */
   const authored: readonly [
     string,
@@ -303,6 +305,16 @@ describe("the provider seam and its Phase 0 stubs", () => {
     ["catalogue.categories", () => providers.catalogue.categories(), 23],
     ["catalogue.occasions", () => providers.catalogue.occasions(), 32],
     ["catalogue.addons", () => providers.catalogue.addons(), 6],
+    // 1 652 retail rows (236 tiers x 7 destinations) + 1 764 dated surcharge rows
+    // (84 products x 7 destinations x {sunday, 2 peak days}) — TASK-062.
+    ["price.countryPrices", () => providers.price.countryPrices(), 3416],
+    [
+      "price.addonCountryPrices",
+      () => providers.price.addonCountryPrices(),
+      42,
+    ],
+    // One committed euro-base ECB snapshot, one row per configured quote currency.
+    ["fx.fxRates", () => providers.fx.fxRates(), 9],
   ];
 
   for (const [member, call, count] of authored) {
@@ -311,19 +323,15 @@ describe("the provider seam and its Phase 0 stubs", () => {
     });
   }
 
-  /** The price and FX rows are TASK-062's; until then a read fails where the hole is. */
-  const pending: readonly [string, () => Promise<unknown>][] = [
-    ["price.countryPrices", () => providers.price.countryPrices()],
-    ["price.addonCountryPrices", () => providers.price.addonCountryPrices()],
-    ["fx.fxRates", () => providers.fx.fxRates()],
-  ];
+  it("hands over the price history, not only the active rows (plan/07 §2.1)", async () => {
+    // A provider is a data source: the superseded rows are what makes the Omnibus Art. 6a
+    // 30-day-lowest figure derivable, so filtering for `activeTo === null` here would remove the
+    // only reason the history is stored. The dated peak-day rows are that history's first case.
+    const rows = await providers.price.countryPrices();
 
-  for (const [member, call] of pending) {
-    it(`fails loudly rather than reading an empty dataset: ${member}()`, async () => {
-      await expect(call()).rejects.toBeInstanceOf(CatalogueDatasetPendingError);
-      await expect(call()).rejects.toThrow(/TASK-062/);
-    });
-  }
+    expect(rows.some((row) => row.activeTo !== null)).toBe(true);
+    expect(rows.some((row) => row.surchargeKind === "peak_day")).toBe(true);
+  });
 });
 
 describe("PricePointSchema refuses a price without VAT or delivery", () => {

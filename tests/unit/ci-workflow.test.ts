@@ -62,6 +62,9 @@ const EXPECTED_JOBS = [
   "commitlint",
   "seo-validate",
   "i18n-check",
+  // spec 005 AC-5 (TASK-062): the catalogue and price gate, on the same `needs: typecheck`
+  // fan-out as `i18n-check` for the same reason (spec 001 §14 A9).
+  "catalogue-check",
   "dev-os-check",
   "preview",
   "e2e",
@@ -246,6 +249,33 @@ describe("the i18n-check job (spec 003 AC-30's CI half, TASK-040)", () => {
     );
     expect(summaryStep?.if).toBe("always()");
     expect(summaryStep?.run).toContain("i18n:check failed");
+  });
+});
+
+describe("the catalogue-check job (spec 005 AC-5's CI half, TASK-062)", () => {
+  const job = ci.jobs["catalogue-check"];
+
+  it("runs `pnpm catalogue:check --summary`", () => {
+    const scripts = (job?.steps ?? []).map((step) => step.run ?? "").join("\n");
+    expect(scripts).toContain("pnpm catalogue:check --summary");
+  });
+
+  it("hangs off typecheck, not off the preview chain (spec 001 §14 A9)", () => {
+    // It reads committed dataset files and `messages/en.json`: no browser, no database, no
+    // preview deployment, so it belongs in the fast fan-out beside `i18n-check`.
+    expect(job?.needs).toBe("typecheck");
+  });
+
+  it("is a required check, so a wrong price cannot be merged past it", () => {
+    expect(job?.["continue-on-error"]).toBeUndefined();
+  });
+
+  it("writes the per-destination coverage table to the step summary (§11, AC-5)", () => {
+    const summaryStep = (job?.steps ?? []).find((step) =>
+      (step.run ?? "").includes("GITHUB_STEP_SUMMARY"),
+    );
+    expect(summaryStep?.if).toBe("always()");
+    expect(summaryStep?.run).toContain("catalogue:check --summary");
   });
 });
 

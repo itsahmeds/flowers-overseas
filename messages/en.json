@@ -159,5 +159,130 @@
       "deliveringNow": "Delivering now",
       "guideWaitingList": "Guide · waiting list"
     }
+  },
+  "catalog": {
+    "tier": {
+      "stems": "{count, plural, one {# stem} other {# stems}}",
+      "single": "One plant",
+      "size": {
+        "s": "Small",
+        "m": "Medium",
+        "l": "Large"
+      }
+    },
+    "surcharge": {
+      "sunday": "Sunday delivery",
+      "peakDay": "Peak day delivery"
+    },
+    "addon": {
+      "chocolates": {
+        "name": "Box of chocolates",
+        "description": "A box of chocolates, sourced by the florist who makes the bouquet."
+      },
+      "vase": {
+        "name": "Glass vase",
+        "description": "A plain glass vase, so the flowers can go straight into water."
+      },
+      "balloon": {
+        "name": "Balloon",
+        "description": "One helium balloon, tied to the bouquet on delivery."
+      },
+      "plush": {
+        "name": "Soft toy",
+        "description": "A small soft toy, chosen by the florist from what they have in stock."
+      },
+      "wine": {
+        "name": "Bottle of wine",
+        "description": "A bottle of local wine, where the florist is licensed to sell it."
+      },
+      "card": {
+        "name": "Handwritten card",
+        "description": "Your message, written out by hand and delivered with the flowers."
+      }
+    },
+    "facet": {
+      "productType": {
+        "bouquet": "Hand-tied bouquet",
+        "arrangement": "Arrangement",
+        "plant": "Plant",
+        "funeral": "Funeral and sympathy",
+        "giftSet": "Flowers and gift set"
+      },
+      "priceTier": {
+        "essential": "Essential",
+        "classic": "Classic",
+        "premium": "Premium",
+        "luxury": "Luxury"
+      },
+      "style": {
+        "classic": "Classic",
+        "modern": "Modern",
+        "rustic": "Rustic",
+        "luxury": "Luxury",
+        "minimal": "Minimal"
+      },
+      "flowerType": {
+        "roses": "Roses",
+        "tulips": "Tulips",
+        "lilies": "Lilies",
+        "orchids": "Orchids",
+        "sunflowers": "Sunflowers",
+        "peonies": "Peonies",
+        "gerberas": "Gerberas",
+        "carnations": "Carnations",
+        "chrysanthemums": "Chrysanthemums",
+        "hydrangeas": "Hydrangeas",
+        "freesias": "Freesias",
+        "alstroemeria": "Alstroemeria",
+        "mixed": "Mixed flowers",
+        "seasonal": "Seasonal flowers"
+      },
+      "colour": {
+        "red": "Red",
+        "pink": "Pink",
+        "white": "White",
+        "yellow": "Yellow",
+        "orange": "Orange",
+        "purple": "Purple",
+        "blue": "Blue",
+        "pastel": "Pastel",
+        "vibrant": "Vibrant",
+        "mixed": "Mixed colours"
+      },
+      "occasion": {
+        "birthday": "Birthday",
+        "anniversary": "Anniversary",
+        "romance": "Love and romance",
+        "congratulations": "Congratulations",
+        "newBaby": "New baby",
+        "getWell": "Get well",
+        "sympathy": "Sympathy",
+        "thankYou": "Thank you",
+        "apology": "I am sorry",
+        "justBecause": "Just because",
+        "wedding": "Wedding",
+        "graduation": "Graduation",
+        "housewarming": "Housewarming",
+        "retirement": "Retirement",
+        "valentines": "Valentine's Day",
+        "womensDay": "Women's Day",
+        "mothersDay": "Mother's Day",
+        "fathersDay": "Father's Day",
+        "grandparentsDay": "Grandparents' Day",
+        "easter": "Easter",
+        "allSaints": "All Saints' Day",
+        "christmas": "Christmas",
+        "newYear": "New Year",
+        "nameDay": "Name day",
+        "teachersDay": "Teachers' Day",
+        "santJordi": "Sant Jordi",
+        "feteDesGrandsMeres": "Grandmothers' Day (France)",
+        "muguet": "May Day lily of the valley",
+        "konfirmation": "Confirmation",
+        "student": "School leaving day",
+        "omatag": "Grandmother's Day (Estonia)",
+        "mai17": "Norwegian Constitution Day"
+      }
+    }
   }
 }

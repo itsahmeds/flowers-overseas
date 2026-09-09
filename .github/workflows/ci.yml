@@ -3,9 +3,9 @@
 # the job names straight out of it, so a job added here is part of the branch-protection contract
 # without anybody editing a list (`pnpm branch-protection --verify`).
 #
-# Jobs (18): lint · typecheck · test-unit · test-integration · test-contract · build · db-check ·
-# env-build-failure · commitlint · seo-validate · i18n-check · dev-os-check · audit · preview · e2e ·
-# visual · a11y · lighthouse.
+# Jobs (19): lint · typecheck · test-unit · test-integration · test-contract · build · db-check ·
+# env-build-failure · commitlint · seo-validate · i18n-check · catalogue-check · dev-os-check ·
+# audit · preview · e2e · visual · a11y · lighthouse.
 #
 # Order, and where it departs from spec 001 §2 / plan/12 §5 (TASK-011 reconciliation; the
 # corrections are recorded on TASK-012 for the spec text):
@@ -20,6 +20,9 @@
 #    §14 A9's placement rule): it reads committed JSON and greps `src/`, touches no preview
 #    deployment, and its step summary is the translation-debt number the founder acts on (spec 003
 #    §11), so it must be visible on every PR rather than behind the Playwright chain.
+#  - `catalogue-check` joins it for the same reasons (spec 005 §2 "Docs, fixtures, gates", AC-5;
+#    TASK-062): it reads committed dataset files and `messages/en.json`, and its step summary is
+#    the per-destination price-coverage table.
 #  - **`env:check` has no job of its own.** It is a step of `lint` (added by TASK-005): it is a
 #    key-set diff between `.env.example` and the zod schema that takes milliseconds and needs the
 #    same checkout and install as the other lint steps. A separate job would add a runner, an
@@ -671,6 +674,43 @@ jobs:
               echo ""
               echo "</details>"
             fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # spec 005 §2 "Docs, fixtures, gates", AC-5 (TASK-062): the catalogue and price gate. It reads
+  # committed TypeScript data and `messages/en.json` — no browser, no database, no preview
+  # deployment — so it joins the `needs: typecheck` fan-out beside `i18n-check` and `seo-validate`
+  # (spec 001 §14 A9's placement rule) rather than queueing behind the Playwright chain.
+  #
+  # What turning it red means: a product with no price in a destination, two open-ended rows for
+  # one (product, country, tier, surcharge), a price outside its `plan/10` §2.3 band or off the
+  # currency's psychological ending, a label key `messages/en.json` cannot resolve, or a projection
+  # key set that no longer matches spec 002 §5.1 — each of which is a wrong price or a raw key on a
+  # page, and each of which is cheapest to see here. Its step summary is the per-destination price
+  # coverage table (spec 005 §11), which is the early warning that a country flip would produce
+  # pages with no amount.
+  catalogue-check:
+    name: catalogue-check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: typecheck
+    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci:full') }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - name: catalogue:check — dataset, prices, FX and projections (AC-5)
+        id: catalogue
+        run: pnpm catalogue:check --summary 2>&1 | tee catalogue-check.log
+      - name: Summarise the verdict
+        if: always()
+        run: |
+          set -uo pipefail
+          {
+            echo ""
+            echo "#### verdict"
+            echo ""
+            echo "| check | command | result |"
+            echo "|---|---|---|"
+            echo "| catalogue + price gate (AC-5) | \`pnpm catalogue:check --summary\` | ${{ steps.catalogue.outcome }} |"
           } >> "$GITHUB_STEP_SUMMARY"
 
   # AC-24, AC-25, AC-26 / T-25, T-26, T-27 (TASK-010): the dev-OS gate. Runs the shell checks in

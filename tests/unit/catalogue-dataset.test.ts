@@ -173,8 +173,20 @@ describe("the six facets of plan/10 §1.1, as keys and not labels (AC-6)", () =>
       }
     }
     expect(messageKeyLeaf("new_baby")).toBe("newBaby");
-    expect(messageKeyLeaf("17_mai")).toBe("17Mai");
     expect(messageKeyLeaf("roses")).toBe("roses");
+    // A leading number moves to the end, because spec 003's message-key alphabet requires a
+    // letter first in every segment: `catalog.facet.occasion.17Mai` is a key `messages/en.json`
+    // cannot hold and no review record could describe (TASK-062 corrected it).
+    expect(messageKeyLeaf("17_mai")).toBe("mai17");
+    for (const facet of facetNames) {
+      for (const value of facetValues[facet]) {
+        for (const segment of facetLabelKey(facet, value).split(".")) {
+          expect(segment, `${facet}.${value}`).toMatch(
+            /^[A-Za-z][A-Za-z0-9]*$/,
+          );
+        }
+      }
+    }
   });
 
   it("uses every flower-type hub and every occasion category on a real product", () => {
@@ -438,11 +450,15 @@ describe("what the dataset deliberately does not contain (AC-6)", () => {
 });
 
 describe("the dataset directory is server-only, database-free config (AC-2, AC-3)", () => {
-  it("has exactly the seven files spec 005 §5.2 names for Phase 0", () => {
+  it("has exactly the nine files spec 005 §5.2 names for Phase 0", () => {
     expect(datasetFiles.sort()).toEqual([
       `${datasetDir}/addons.data.ts`,
       `${datasetDir}/categories.data.ts`,
+      // The price half, TASK-062: the per-destination bands, ladders, VAT rates, surcharges and
+      // add-on prices, and one dated ECB euro-reference snapshot.
+      `${datasetDir}/fx.data.ts`,
       `${datasetDir}/occasions.data.ts`,
+      `${datasetDir}/prices.data.ts`,
       `${datasetDir}/products.data.ts`,
       `${datasetDir}/projections.ts`,
       `${datasetDir}/schemas.ts`,
@@ -459,8 +475,13 @@ describe("the dataset directory is server-only, database-free config (AC-2, AC-3
         (match) => match[1],
       );
       for (const specifier of imports) {
+        // `prices.data.ts` also reads its sibling dataset files and the destination registry:
+        // its rows are one per (product, tier, destination), so the product, tier and add-on
+        // sets and `src/config/countries.ts`'s `live`/`demo` list are its inputs — and reading
+        // them is what makes "every destination is priced" a parse error rather than a comment
+        // (TASK-062). Nothing outside `src/config/` is reachable from the dataset either way.
         expect(specifier, `${file} -> ${String(specifier)}`).toMatch(
-          /^(?:zod|\.\/schemas\.ts|\.\.\/currencies\.ts)$/,
+          /^(?:zod|\.\/schemas\.ts|\.\.\/currencies\.ts|\.\.\/countries\.ts|\.\/(?:products|tiers|addons)\.data\.ts)$/,
         );
       }
     }

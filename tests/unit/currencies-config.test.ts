@@ -79,6 +79,33 @@ describe("src/config/currencies.ts (AC-1, AC-4 / T-04)", () => {
     }
   });
 
+  /**
+   * Spec 005 §13 Q1's binding answer (founder, 2026-09-09; ADR-0017's row in
+   * `docs/decisions-log.md`), corrected here by TASK-062 as the first task that reads the field:
+   * EUR/GBP `x90`, **PLN `x9`** (`plan/10` §2.3's 149 / 199 / 269 / 359 zł bands are whole złoty
+   * ending in nine and are unsatisfiable under `x90`), **HUF `x90`** (`990 Ft`), the rest `x90`.
+   * Pinned per code rather than as a rule, because each one is a founder decision and a price
+   * dataset (`src/config/catalogue/prices.data.ts`) is authored against it.
+   */
+  it("carries spec 005 §13 Q1's psychological endings per currency (TASK-062)", () => {
+    const styles = Object.fromEntries(
+      CURRENCIES.map((currency) => [currency.code, currency.roundingStyle]),
+    );
+
+    expect(styles).toEqual({
+      EUR: "x90",
+      GBP: "x90",
+      PLN: "x9",
+      RON: "x90",
+      CZK: "x90",
+      HUF: "x90",
+      SEK: "x90",
+      NOK: "x90",
+      DKK: "x90",
+      CHF: "x90",
+    });
+  });
+
   it("looks a currency up by code and rejects an unknown one", () => {
     expect(currencyConfig("PLN").minorUnitExponent).toBe(2);
     expect(currencyConfig("HUF").minorUnitExponent).toBe(0);
