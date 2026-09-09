@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
-import { LocaleSwitcher, routableLocale } from "@/modules/i18n";
+import { routableLocale } from "@/modules/i18n";
 
 /**
  * `/{locale}` placeholder home (spec 003 §5.3, §5.4; TASK-034, extended by TASK-035 with the
@@ -29,9 +29,12 @@ import { LocaleSwitcher, routableLocale } from "@/modules/i18n";
  *
  * The `<title>`/description pair is this page's own (§7's per-route `meta.*`); the layout carries
  * only the segment default, so a page added later cannot inherit the home page's title. The real
- * home — hero, corridors, occasions — is spec 004/007; what is here is the placeholder `<h1>` and
- * the locale switcher, which is what makes every locale root link to the other three (§6
- * "Internal links", `plan/02` §11).
+ * home — hero, corridors, occasions — is spec 004/007; what is here is the placeholder `<h1>`.
+ *
+ * The locale switcher moved off this page with TASK-048: spec 004's header hosts it on **every**
+ * localised document, so rendering it here as well would put two identical switchers (and two
+ * `navigation` landmarks with the same name) in the document. Every locale root still links to
+ * the other three, from the header instead of from the page (§6 "Internal links", `plan/02` §11).
  */
 export const revalidate = 3600;
 
@@ -63,8 +66,6 @@ export default async function LocaleHomePage({
   return (
     <main id="main">
       <h1>{t("home.heading")}</h1>
-      {/* `betaLocales` arrives with TASK-039's `unreviewedShare()`; the links work without it. */}
-      <LocaleSwitcher locale={locale.code} />
     </main>
   );
 }

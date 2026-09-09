@@ -4,8 +4,10 @@
  * The ten entries of the founder-approved commerce header's category row, verbatim from
  * `docs/design/homepage-v1/homepage-desktop.dc.html`: Best sellers · Birthday · Sympathy ·
  * Occasions · Bouquets · Roses · Plants · Add-ons · Same-day delivery · Destinations. The mobile
- * artboard draws a scrollable subset of six, which is `showOnMobile` here rather than a second
- * list somebody keeps in sync.
+ * artboard draws a scrollable subset of six **in an order of its own** (Best sellers · Bouquets ·
+ * Roses · Plants · Occasions · Same-day), which is `showOnMobile` + `mobileOrder` here rather than
+ * a second list somebody keeps in sync: the header renders one DOM list in the desktop order and
+ * turns `mobileOrder` into one `order-*` utility per entry (TASK-048, spec §14 A4).
  *
  * **Every row is `published: false` in Phase 0**, because no category, occasion or destinations
  * page exists: 004 knows nothing about products (§3). So `SiteHeader` (TASK-048) renders the row
@@ -53,6 +55,15 @@ export const CategoryConfigSchema = z
     /** Present in the mobile artboard's scrollable row. */
     showOnMobile: z.boolean(),
     /**
+     * The entry's position in the **mobile** artboard's row, 1-based
+     * (`docs/design/homepage-v1/homepage-mobile.dc.html` draws Best sellers · Bouquets · Roses ·
+     * Plants · Occasions · Same-day, which is not the desktop order). Required on a `showOnMobile`
+     * row and forbidden on the others, and the positions must be `1..n` with no gap — checked by
+     * `CategoryRegistrySchema` below, so the header can turn the number into one `order-*` utility
+     * per entry and keep the row a single DOM list rather than two lists somebody keeps in sync.
+     */
+    mobileOrder: z.number().int().min(1).max(12).optional(),
+    /**
      * The canvas prints exactly one entry in `--color-accent` (Same-day delivery). Emphasis is
      * data so the header template carries no per-label branch.
      */
@@ -86,6 +97,38 @@ export const CategoryRegistrySchema = z
       }
       seen.add(category.id);
     });
+    const onMobile = categories.filter((category) => category.showOnMobile);
+    categories.forEach((category, index) => {
+      if (!category.showOnMobile && category.mobileOrder !== undefined) {
+        ctx.addIssue({
+          code: "custom",
+          path: [index, "mobileOrder"],
+          message: `\`${category.id}\` is not in the mobile row, so it may not carry a \`mobileOrder\``,
+        });
+      }
+      if (category.showOnMobile && category.mobileOrder === undefined) {
+        ctx.addIssue({
+          code: "custom",
+          path: [index, "mobileOrder"],
+          message: `\`${category.id}\` is in the mobile row and must carry its \`mobileOrder\``,
+        });
+      }
+    });
+    const positions = onMobile
+      .map((category) => category.mobileOrder)
+      .filter((position): position is number => position !== undefined)
+      .toSorted((a, b) => a - b);
+    const expected = onMobile.map((_, index) => index + 1);
+    if (
+      positions.length === onMobile.length &&
+      positions.join(",") !== expected.join(",")
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["mobileOrder"],
+        message: `the mobile row's positions must be 1..${String(onMobile.length)} with no gap and no duplicate, found ${positions.join(", ")}`,
+      });
+    }
     const accented = categories.filter((category) => category.accent);
     if (accented.length > 1) {
       ctx.addIssue({
@@ -107,6 +150,7 @@ const categories = [
     published: false,
     owningSpec: "008",
     showOnMobile: true,
+    mobileOrder: 1,
     accent: false,
   },
   {
@@ -131,6 +175,7 @@ const categories = [
     published: false,
     owningSpec: "008",
     showOnMobile: true,
+    mobileOrder: 5,
     accent: false,
   },
   {
@@ -139,6 +184,7 @@ const categories = [
     published: false,
     owningSpec: "008",
     showOnMobile: true,
+    mobileOrder: 2,
     accent: false,
   },
   {
@@ -147,6 +193,7 @@ const categories = [
     published: false,
     owningSpec: "008",
     showOnMobile: true,
+    mobileOrder: 3,
     accent: false,
   },
   {
@@ -155,6 +202,7 @@ const categories = [
     published: false,
     owningSpec: "008",
     showOnMobile: true,
+    mobileOrder: 4,
     accent: false,
   },
   {
@@ -172,6 +220,7 @@ const categories = [
     published: false,
     owningSpec: "009",
     showOnMobile: true,
+    mobileOrder: 6,
     accent: true,
   },
   {
@@ -215,7 +264,10 @@ export function isCategoryPublished(id: CategoryId): boolean {
   return categoryConfig(id).published;
 }
 
-/** The mobile artboard's scrollable subset, in the same order. */
+/**
+ * The mobile artboard's scrollable subset, **in the mobile artboard's own order** (`mobileOrder`)
+ * rather than in the desktop row's, which is what the smaller artboard actually draws.
+ */
 export const mobileCategories: readonly CategoryConfig[] = CATEGORIES.filter(
   (category) => category.showOnMobile,
-);
+).toSorted((a, b) => (a.mobileOrder ?? 0) - (b.mobileOrder ?? 0));

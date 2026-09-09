@@ -79,6 +79,11 @@
     "reviewed": false,
     "sourceHash": "3d66ec5910add3e0f6a88caad084a6322becfd21e626a1d5b43faebcad55b9a0"
   },
+  "company.support.whatsapp": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "6a40edf1fc87a29f243a7eefdbed57d19bfe16ab2e039d7ae1a44c097297e2f3"
+  },
   "destinations.de.name": {
     "source": "human",
     "reviewed": false,
@@ -389,10 +394,20 @@
     "reviewed": false,
     "sourceHash": "28388a6a648be075e2cb7916ee7c7e3277638b6096ade9a90c2191094edabea9"
   },
+  "nav.currency.label": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "89fa38f3a9d3df9ae8601798f79b2cdb57917d77266f792478c45151ac66081b"
+  },
   "nav.forFlorists": {
     "source": "machine",
     "reviewed": false,
     "sourceHash": "63498ce3c657370f343b45577d1c521c3256ce9eb23f2ae1e1e5d22b91eefffb"
+  },
+  "nav.menu.label": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "99af6606ff9d6cd5154d4d4e9c21e325086d3e904677cdb41d363c8a3480f862"
   },
   "nav.search.help": {
     "source": "machine",
@@ -403,5 +418,30 @@
     "source": "machine",
     "reviewed": false,
     "sourceHash": "1ca48d287283f07846eee61f327b69e7878e0f16362d6f8f4ca3db44a6963f43"
+  },
+  "nav.search.submit": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "49c266baaaa70981ea188fa714d5c40cf13830d786a861c9943ae0d26a7f3fe9"
+  },
+  "nav.utility.cutoff": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "0627fd9c1f7638e1aeb6d330668d3286d7bec6a21551bc5bffdc9aaed09e4cb6"
+  },
+  "nav.utility.cutoffShort": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "a3fcd0ba903ff38d3cc05f7b7d53192d6836380cd9f478408116394389991f28"
+  },
+  "nav.utility.guarantee": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "3ea34d78889432f220b6f0fdd3df749ff3e0add9b46a8b0faffc509362e77f27"
+  },
+  "nav.utility.pricesInclude": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "14c03fcaa8c30420882c8b0fded3edfde4244a977d4ef566ffb0862ba1c30267"
   }
 }

@@ -32,6 +32,14 @@ const BANNER = '[data-fo-banner="shown"]';
 const SWITCH = '[data-fo-banner-action="switch"]';
 const STAY = '[data-fo-banner-action="stay"]';
 const DISMISS = '[data-fo-banner-action="dismiss"]';
+/**
+ * Spec 003's `LocaleSwitcher`, which TASK-048 moved out of `<main>`: spec 004's header hosts it on
+ * every localised document (`data-fo-header-switcher`), so rendering it on the page as well would
+ * put two identical switchers and two identically named `navigation` landmarks in the document.
+ * The assertions below are re-scoped, not weakened — same markup, same four `<li>`, same beta
+ * markers, one landmark.
+ */
+const SWITCHER = "[data-fo-header-switcher] nav";
 
 /** 365 days, `plan/03` §1 / §13 Q4. */
 const YEAR_IN_SECONDS = 31_536_000;
@@ -336,7 +344,7 @@ test.describe("a German browser on /en (AC-28)", () => {
 
       // The page, not the error document: the real heading and the real switcher.
       await expect(page.locator("h1")).toHaveText("Send flowers across Europe");
-      await expect(page.locator("main nav ul li")).toHaveCount(4);
+      await expect(page.locator(`${SWITCHER} ul li`)).toHaveCount(4);
       await expect(page.locator("h1")).not.toContainText("went wrong");
 
       // And the malformed value is simply not a choice, so this is a first visit.
@@ -435,7 +443,7 @@ test.describe("a German browser already on /de (the sameLocale branch)", () => {
     await expect(page.locator("h1")).toBeVisible();
     await expect(page.locator("html")).toHaveAttribute("lang", "de");
     // Give hydration and the lazy island chunk time to arrive before concluding "never".
-    await expect(page.locator("main nav ul li")).toHaveCount(4);
+    await expect(page.locator(`${SWITCHER} ul li`)).toHaveCount(4);
     await expect(page.locator(BANNER)).toHaveCount(0);
 
     // A regional German browser resolves to the same locale, so it is the same answer.
@@ -498,10 +506,10 @@ test.describe("the switcher's beta markers (TASK-039, verified here)", () => {
     // `de` and `pl` are echoed English drafts, so their unreviewed share is 100 % — far above the
     // `plan/03` §6 5 % threshold — and `en`/`en-gb` are fully reviewed. The marker is text, and
     // it sits outside the `lang`-annotated link so it is not pronounced in the target language.
-    const marked = page.locator("main nav [data-beta='true']");
+    const marked = page.locator(`${SWITCHER} [data-beta='true']`);
     await expect(marked).toHaveCount(2);
 
-    const items = page.locator("main nav li");
+    const items = page.locator(`${SWITCHER} li`);
     await expect(items.nth(2)).toContainText("Deutsch");
     await expect(items.nth(2).locator("[data-beta='true']")).toHaveCount(1);
     await expect(items.nth(3).locator("[data-beta='true']")).toHaveCount(1);
@@ -519,7 +527,7 @@ test.describe("the switcher's beta markers (TASK-039, verified here)", () => {
 
       // No island, so no banner — and the switcher is still four plain links.
       await expect(page.locator(BANNER)).toHaveCount(0);
-      await page.locator('main nav a[href="/pl"]').click();
+      await page.locator(`${SWITCHER} a[href="/pl"]`).click();
 
       await expect(page).toHaveURL(/\/pl$/);
       await expect(page.locator("html")).toHaveAttribute("lang", "pl");

@@ -101,8 +101,12 @@ test.describe("localised documents (AC-6)", () => {
           `href="${other.path}"`,
         );
       }
-      // The current locale is a `<span aria-current="page">`, so its own URL is not linked.
-      expect(html).not.toContain(`href="${path}"`);
+      // The current locale is a `<span aria-current="page">`, so the *switcher* does not link
+      // this URL. Spec 004's masthead lockup does (AC-7), and it is the only one that may: the
+      // document carries exactly one `href` to its own path.
+      expect(html.match(new RegExp(`href="${path}"`, "g")), path).toHaveLength(
+        1,
+      );
     });
   }
 
