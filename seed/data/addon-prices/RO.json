@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "source": "seed",
+  "entity": "addon_country_price",
+  "origin": "projected",
+  "projectedFrom": "src/config/catalogue/prices.data.ts",
+  "countryIso2": "RO",
+  "rows": [
+    {
+      "addonKey": "chocolates",
+      "countryIso2": "RO",
+      "retailMinor": 3000,
+      "currency": "RON",
+      "vatRateBp": 1900,
+      "activeFrom": "2026-09-01",
+      "activeTo": null
+    },
+    {
+      "addonKey": "vase",
+      "countryIso2": "RO",
+      "retailMinor": 4000,
+      "currency": "RON",
+      "vatRateBp": 1900,
+      "activeFrom": "2026-09-01",
+      "activeTo": null
+    },
+    {
+      "addonKey": "balloon",
+      "countryIso2": "RO",
+      "retailMinor": 2000,
+      "currency": "RON",
+      "vatRateBp": 1900,
+      "activeFrom": "2026-09-01",
+      "activeTo": null
+    },
+    {
+      "addonKey": "plush",
+      "countryIso2": "RO",
+      "retailMinor": 4500,
+      "currency": "RON",
+      "vatRateBp": 1900,
+      "activeFrom": "2026-09-01",
+      "activeTo": null
+    },
+    {
+      "addonKey": "wine",
+      "countryIso2": "RO",
+      "retailMinor": 7000,
+      "currency": "RON",
+      "vatRateBp": 1900,
+      "activeFrom": "2026-09-01",
+      "activeTo": null
+    },
+    {
+      "addonKey": "card",
+      "countryIso2": "RO",
+      "retailMinor": 0,
+      "currency": "RON",
+      "vatRateBp": 1900,
+      "activeFrom": "2026-09-01",
+      "activeTo": null
+    }
+  ]
+}

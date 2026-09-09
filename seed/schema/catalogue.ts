@@ -31,7 +31,9 @@ import {
   type CategoryData,
   CategoryDataSchema,
   CategoryRegistrySchema,
+  type CountryPriceData,
   CountryPriceDataSchema,
+  type AddonCountryPriceData,
   AddonCountryPriceDataSchema,
   Iso2Schema,
   type OccasionData,
@@ -118,8 +120,110 @@ export const SeedAddonRegistrySchema = AddonRegistrySchema;
  */
 export const SeedPriceSchema = CountryPriceDataSchema;
 
+export type SeedPrice = CountryPriceData;
+
 /** One row of `seed/data/addon-prices/{ISO2}.json`, each with its own VAT rate (spec 005 §13 Q3). */
 export const SeedAddonPriceSchema = AddonCountryPriceDataSchema;
+
+export type SeedAddonPrice = AddonCountryPriceData;
+
+/**
+ * The key a price row is unique on: (product, tier, surcharge) inside a per-country file, which
+ * is spec 002 §5.1's `(product_id, country_id, tier_key, surcharge_kind)` with the country
+ * factored out into the file name. Built in one place so the duplicate rule and the
+ * one-open-ended-row rule below cannot disagree about what "one key" means.
+ */
+function priceKey(row: SeedPrice): string {
+  return `${row.sku}/${row.tierKey ?? "-"}/${row.surchargeKind ?? "retail"}`;
+}
+
+/**
+ * The `rows` array of one `seed/data/prices/{ISO2}.json`, with the two invariants that make the
+ * file the mirror of spec 002 §5.1's partial unique index (spec 006 §2.2, §2.3 rule 5, AC-6):
+ *
+ *  - **exactly one open-ended row per (product, tier, surcharge)** — the country is the file. A
+ *    second open-ended row is the ambiguity `resolvePrice()` throws on (spec 005 §5.2) and the
+ *    reason the Omnibus Art. 6a 30-day-lowest figure is derivable at all: a price is corrected by
+ *    **superseding** the row (`activeTo` on the old one, a new `activeFrom`), never by updating
+ *    it (`plan/07` §2.1, spec 002 AC-9);
+ *  - **no two rows for one key share an `activeFrom`** — two rows starting the same day are two
+ *    prices for one day, and neither the resolver nor the 30-day history could pick.
+ *
+ * The band, the psychological ending and the tier step are **not** re-checked here: they are
+ * properties of the authored ladder in `src/config/catalogue/prices.data.ts`, which
+ * `pnpm catalogue:check`'s `band`, `rounding-ending` and `float-money` modes already assert over
+ * the same rows this file projects (TASK-062). Restating a band in the seed layer is exactly the
+ * second copy ADR-0017 forbids; `pnpm seed:check` (TASK-075) reports those rules over the files
+ * by reading the authored bands, not by transcribing them again.
+ */
+export const SeedPriceRegistrySchema = z
+  .array(SeedPriceSchema)
+  .min(1)
+  .superRefine((rows, ctx) => {
+    const firstAt = new Map<string, number>();
+    const openEnded = new Map<string, number>();
+    rows.forEach((row, index) => {
+      const key = `${priceKey(row)}@${row.activeFrom}`;
+      const previous = firstAt.get(key);
+      if (previous !== undefined) {
+        ctx.addIssue({
+          code: "custom",
+          path: [index, "activeFrom"],
+          message: `\`${row.sku}\` has two price rows for one key starting ${row.activeFrom} (rows ${String(previous)} and ${String(index)}): a price is superseded, never duplicated (spec 002 §5.1)`,
+        });
+      } else {
+        firstAt.set(key, index);
+      }
+      if (row.activeTo !== null) return;
+      const owner = openEnded.get(priceKey(row));
+      if (owner !== undefined) {
+        ctx.addIssue({
+          code: "custom",
+          path: [index, "activeTo"],
+          message: `\`${row.sku}\` has a second open-ended row for \`${row.tierKey ?? "-"}\`/\`${row.surchargeKind ?? "retail"}\` (row ${String(owner)} is the first): spec 002 §5.1's partial unique index allows exactly one, which is what preserves the Omnibus 30-day-lowest history (AC-6, AC-9)`,
+        });
+      } else {
+        openEnded.set(priceKey(row), index);
+      }
+    });
+  });
+
+/**
+ * The `rows` array of one `seed/data/addon-prices/{ISO2}.json`: the same two invariants keyed on
+ * the add-on instead of the (product, tier, surcharge) triple, because spec 002 §5.1's
+ * `addon_country_price` has neither a tier nor a surcharge column.
+ */
+export const SeedAddonPriceRegistrySchema = z
+  .array(SeedAddonPriceSchema)
+  .min(1)
+  .superRefine((rows, ctx) => {
+    const firstAt = new Map<string, number>();
+    const openEnded = new Map<string, number>();
+    rows.forEach((row, index) => {
+      const key = `${row.addonKey}@${row.activeFrom}`;
+      const previous = firstAt.get(key);
+      if (previous !== undefined) {
+        ctx.addIssue({
+          code: "custom",
+          path: [index, "activeFrom"],
+          message: `add-on \`${row.addonKey}\` has two price rows starting ${row.activeFrom} (rows ${String(previous)} and ${String(index)}): a price is superseded, never duplicated (spec 002 §5.1)`,
+        });
+      } else {
+        firstAt.set(key, index);
+      }
+      if (row.activeTo !== null) return;
+      const owner = openEnded.get(row.addonKey);
+      if (owner !== undefined) {
+        ctx.addIssue({
+          code: "custom",
+          path: [index, "activeTo"],
+          message: `add-on \`${row.addonKey}\` has a second open-ended row (row ${String(owner)} is the first): exactly one is active per (add-on, country) (AC-6)`,
+        });
+      } else {
+        openEnded.set(row.addonKey, index);
+      }
+    });
+  });
 
 /**
  * Flatten the tier groups of `product-tiers.json` into the per-tier records

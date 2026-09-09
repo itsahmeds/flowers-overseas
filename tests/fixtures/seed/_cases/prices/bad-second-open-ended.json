@@ -1,0 +1,87 @@
+{
+  "version": 1,
+  "source": "seed",
+  "entity": "country_price",
+  "origin": "projected",
+  "projectedFrom": "src/config/catalogue/prices.data.ts",
+  "countryIso2": "PL",
+  "rows": [
+    {
+      "sku": "FO-BQ-001",
+      "countryIso2": "PL",
+      "tierKey": "stems_12",
+      "retailMinor": 19900,
+      "currency": "PLN",
+      "vatRateBp": 800,
+      "surchargeKind": null,
+      "activeFrom": "2026-09-01",
+      "activeTo": null
+    },
+    {
+      "sku": "FO-BQ-001",
+      "countryIso2": "PL",
+      "tierKey": "stems_18",
+      "retailMinor": 22900,
+      "currency": "PLN",
+      "vatRateBp": 800,
+      "surchargeKind": null,
+      "activeFrom": "2026-09-01",
+      "activeTo": null
+    },
+    {
+      "sku": "FO-BQ-001",
+      "countryIso2": "PL",
+      "tierKey": "stems_18",
+      "retailMinor": 24900,
+      "currency": "PLN",
+      "vatRateBp": 800,
+      "surchargeKind": null,
+      "activeFrom": "2027-01-01",
+      "activeTo": null
+    },
+    {
+      "sku": "FO-BQ-001",
+      "countryIso2": "PL",
+      "tierKey": "stems_24",
+      "retailMinor": 25900,
+      "currency": "PLN",
+      "vatRateBp": 800,
+      "surchargeKind": null,
+      "activeFrom": "2026-09-01",
+      "activeTo": null
+    },
+    {
+      "sku": "FO-BQ-001",
+      "countryIso2": "PL",
+      "tierKey": null,
+      "retailMinor": 1800,
+      "currency": "PLN",
+      "vatRateBp": 800,
+      "surchargeKind": "sunday",
+      "activeFrom": "2026-09-01",
+      "activeTo": null
+    },
+    {
+      "sku": "FO-BQ-001",
+      "countryIso2": "PL",
+      "tierKey": null,
+      "retailMinor": 2500,
+      "currency": "PLN",
+      "vatRateBp": 800,
+      "surchargeKind": "peak_day",
+      "activeFrom": "2027-02-14",
+      "activeTo": "2027-02-15"
+    },
+    {
+      "sku": "FO-BQ-001",
+      "countryIso2": "PL",
+      "tierKey": null,
+      "retailMinor": 2500,
+      "currency": "PLN",
+      "vatRateBp": 800,
+      "surchargeKind": "peak_day",
+      "activeFrom": "2027-03-08",
+      "activeTo": "2027-03-09"
+    }
+  ]
+}
