@@ -88,7 +88,8 @@ Every script in `package.json`, once.
 | `pnpm format:check` | Prettier, check only (the CI form) |
 | `pnpm check-layout` | the `plan/01` §5 tree and the twelve module barrels exist and nothing extra does |
 | `pnpm check:no-literal-disable` | no file under `src/` disables `fo/no-literal-strings` |
-| `pnpm check:no-db` | no file in the spec 003 file set (`src/config/`, `src/modules/i18n/`) imports a database client, an ORM or a Postgres driver, or reads `DATABASE_URL` |
+| `pnpm check:no-db` | no file in the scanned set (`src/config/`, `src/modules/i18n/`, `src/modules/catalog/`, `seed/schema/`, `seed/project.ts`) imports a database client, an ORM or a Postgres driver, or reads `DATABASE_URL` |
+| `pnpm seed:project` | regenerates the projected half of `seed/data/**` — `taxonomy.json`, `categories.json`, `occasions.json`, `products.json`, `product-tiers.json`, `addons.json` — from the authored catalogue dataset in `src/config/catalogue/` (ADR-0017). Offline, byte-deterministic and Prettier-formatted with the repository configuration, so the committed files are exactly what a fresh projection and the Prettier gate produce. `--check` prints the stale files and exits non-zero without writing. **Never hand-edit a projected file**: edit `src/config/catalogue/*.data.ts` and re-run this |
 | `pnpm cookies:check` | the cookie register (`src/config/cookies.ts`) against the generated table in `docs/compliance/cookie-register.md`; `--write` rewrites the block. The machine register is the source of truth and the prose file derives from it, so a lifetime cannot be disclosed as one number and set as another (spec 004 AC-22) |
 | `pnpm env:check` | `.env.example` keys and the zod schema in `src/lib/env.schema.ts` are the same set |
 | `pnpm db:check` | migration/rollback pairing — a stub until spec 002 |

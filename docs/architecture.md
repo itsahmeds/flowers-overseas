@@ -128,6 +128,26 @@ tests/fixtures/           shared fixtures: occasion dates, currencies, addresses
 tests/a11y/, tests/dev-os/, tests/msw/   axe run, hook checks, request mocks
 supabase/migrations/      versioned SQL, each with a documented rollback (from spec 002)
 seed/                     idempotent seed scripts, keyed by natural keys
+seed/schema/              the seed dataset's zod schemas and its projections onto spec 002 §5.1's
+                          row shapes (spec 006 §2.2, §5.1 — TASK-072): header.ts (the
+                          `version`/`source`/`origin` header every data file carries),
+                          catalogue.ts (the `Seed*Schema` names over spec 005's authored schemas,
+                          the `plan/03` §9 occasion-calendar union, and spec 005's `to*Row()`
+                          projections re-exported for one import site), copy.ts (`SeedCopySchema`
+                          and the `product_translation` projection), media.ts
+                          (`MediaAssetManifestSchema`, `MediaVariantManifestSchema`,
+                          `AltManifestSchema` and the four media projections), files.ts (one
+                          schema per file in `seed/data/`). No database (`pnpm check:no-db`),
+                          server-only, unreachable from any client entry point
+seed/data/                the versioned, zod-validated dataset spec 002's importer reads (spec
+                          002 §14 A1 (d), spec 006 §13 Q10): taxonomy.json, categories.json (23),
+                          occasions.json, products.json (84), product-tiers.json, addons.json —
+                          all **generated projections** of `src/config/catalogue/` written by
+                          `pnpm seed:project` and asserted byte-equal by
+                          `tests/unit/seed-dataset.test.ts`, never hand-edited (ADR-0017) — plus
+                          the authored occasion-country.json (the per-destination calendar spec
+                          005 does not own). copy/, prices/, addon-prices/, media.json,
+                          media-variants.json and alt/ follow in TASK-073…TASK-078
 messages/                 next-intl catalogues + review manifests (spec 003)
 content/i18n/             glossary and style guide per locale, the authority a native reviewer
                           reads (`plan/03` §6.6, spec 003); prose, never imported by code
