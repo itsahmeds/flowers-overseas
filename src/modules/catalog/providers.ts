@@ -16,27 +16,36 @@
  *    provider object, no dataset path and no database symbol (AC-2). This file is not exported
  *    from `index.ts` and must not be.
  *
- * The row payloads are typed `unknown` until the dataset exists. TASK-061 authors
- * `src/config/catalogue/*.data.ts` with its zod schemas and narrows these aliases in one place;
- * a shape guessed here would be a second, unauthored definition of the dataset (spec 005 §2 "the
- * dataset is authored once").
+ * The catalogue row payloads are the dataset's own types as of TASK-061: `src/config/catalogue/`
+ * is the single authored source (spec 005 §13 Q9, ADR-0017), so narrowing them here to anything
+ * else would be a second, unauthored definition of the dataset. The **price** and **FX** payloads
+ * are still `unknown` — those rows are authored by TASK-062, which narrows them in this one place
+ * the same way.
  */
+import type {
+  AddonData,
+  CategoryData,
+  OccasionData,
+  ProductData,
+  ProductTierRecord as ProductTierDataRecord,
+} from "@/config/catalogue/schemas";
+
 import {
   staticCatalogueProvider,
   staticFxRateProvider,
   staticPriceProvider,
 } from "./static";
 
-/** An authored product record. Narrowed by TASK-061's `ProductSchema`. */
-export type ProductRecord = unknown;
-/** An authored `product_tier` record, incl. `isDefault`. Narrowed by TASK-061 / TASK-065. */
-export type ProductTierRecord = unknown;
-/** An authored category record. Narrowed by TASK-061. */
-export type CategoryRecord = unknown;
-/** An authored occasion record. Narrowed by TASK-061. */
-export type OccasionRecord = unknown;
-/** An authored add-on record. Narrowed by TASK-061 / TASK-065. */
-export type AddonRecord = unknown;
+/** An authored product record, with the six facets of `plan/10` §1.1 as keys (TASK-061). */
+export type ProductRecord = ProductData;
+/** An authored `product_tier` record — tier key, label key, stems, sort, `isDefault`. */
+export type ProductTierRecord = ProductTierDataRecord;
+/** An authored category record: which categories exist and which facet each one is. */
+export type CategoryRecord = CategoryData;
+/** An authored occasion record (`occasion(key, kind)`); the calendar is spec 006/009's. */
+export type OccasionRecord = OccasionData;
+/** An authored add-on record. No default-selected field exists to narrow (CRD Art. 22, AC-19). */
+export type AddonRecord = AddonData;
 /** A `country_price` row, active or superseded. Narrowed by TASK-062. */
 export type CountryPriceRecord = unknown;
 /** An `addon_country_price` row, carrying its own `vatRateBp` (§13 Q3). Narrowed by TASK-062. */

@@ -74,6 +74,18 @@ export const CONFIG_FILES = [
   "src/config/site-links.ts",
   "src/config/categories.ts",
   "src/config/company.ts",
+  // The authored catalogue dataset of spec 005 §2 / §13 Q9 (TASK-061): the single source of the
+  // Phase 0 products, tiers, categories, occasions and add-ons, with `projections.ts` projecting
+  // each onto spec 002 §5.1's row shapes so the seed (spec 002) and the importer (spec 006) read
+  // it rather than restating 84 products (ADR-0017). `prices.data.ts` and `fx.data.ts` join the
+  // list with TASK-062.
+  "src/config/catalogue/schemas.ts",
+  "src/config/catalogue/projections.ts",
+  "src/config/catalogue/products.data.ts",
+  "src/config/catalogue/tiers.data.ts",
+  "src/config/catalogue/categories.data.ts",
+  "src/config/catalogue/occasions.data.ts",
+  "src/config/catalogue/addons.data.ts",
 ] as const;
 
 export const REQUIRED_FILES = [
