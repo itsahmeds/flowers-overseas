@@ -77,14 +77,20 @@ const FIELD =
 
 /** See `SiteHeader`'s identical pair: the registries hold dotted keys, not typed literals. */
 type Translator = ReturnType<typeof useTranslations>;
-type MessageKey = Parameters<Translator>[0];
+/**
+ * The cast target is a loose call signature, not `Parameters<Translator>[0]`: see `SiteHeader`'s
+ * twin for the measurement — next-intl's key union tips `tsc` into `TS2589` once this branch's
+ * namespaces land on top of TASK-073's, and the union checked nothing here that
+ * `tests/unit/ui-home.test.tsx`'s "every registry key resolves" assertions do not.
+ */
+type LabelTranslator = (key: string) => string;
 
 /**
  * Resolve a registry key (`destinations.pl.name`, `destinations.state.deliveringNow`). The one
  * cast in this file, so a call site cannot smuggle a literal through it.
  */
 function registryLabel(t: Translator, key: string): string {
-  return t(key as MessageKey);
+  return (t as unknown as LabelTranslator)(key);
 }
 
 export interface FinderCardProps {

@@ -118,7 +118,20 @@ import {
  * catalogue.
  */
 type Translator = ReturnType<typeof useTranslations>;
-type MessageKey = Parameters<Translator>[0];
+/**
+ * The cast target is a **loose** call signature rather than `Parameters<Translator>[0]`.
+ *
+ * next-intl computes that parameter as the union of every dotted key in the catalogue, and after
+ * TASK-052's `home`/`finder` namespaces landed on top of TASK-073's `catalog`/`media` ones the
+ * union tips `tsc` into `TS2589: Type instantiation is excessively deep` — measured: `main` alone
+ * is clean, `main` plus this branch's 22 keys is not, and one dummy key on `main` is not. The
+ * union bought nothing here in any case: `registryLabel` takes a `string` from a zod-validated
+ * registry and casts it, so the type never checked anything a test does not. What does check it
+ * is `tests/unit/ui-site-header.test.tsx` / `tests/unit/ui-home.test.tsx`, which resolve **every**
+ * key the registries carry against the real catalogue. Recorded for spec 004 §14 and TASK-056:
+ * the permanent answer is a generated key type or a namespaced translator, not a bigger cast.
+ */
+type LabelTranslator = (key: string) => string;
 
 /**
  * Resolve a registry `labelKey`.
@@ -129,7 +142,7 @@ type MessageKey = Parameters<Translator>[0];
  * would otherwise hide.
  */
 function registryLabel(t: Translator, key: string): string {
-  return t(key as MessageKey);
+  return (t as unknown as LabelTranslator)(key);
 }
 
 /** The canvas's icon per account entry; the label carries the meaning, so the icon is decorative. */
