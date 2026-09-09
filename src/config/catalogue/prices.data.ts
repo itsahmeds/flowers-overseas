@@ -45,17 +45,24 @@
  *
  * ## Two authoring decisions this task had to make, and their basis
  *
- *  1. **The band constrains a product's smallest tier.** `plan/10` §2.3 gives bands *and* fixes
- *     the tier steps at "~+30% and +60% from the smallest"; the two only hold together if the
- *     band is the floor a product starts at (which is also what `plan/10` §1.1's "price tier
- *     derived per country" and a "from €35" filter mean). `pnpm catalogue:check` therefore checks
- *     the smallest tier against the band and the ladder for monotonicity and endings.
+ *  1. **The bands are exact; the tier steps are approximate** (spec 005 §14 A1). `plan/10` §2.3
+ *     gives bands *and* describes the tier steps as "~+30% and +60% from the smallest", and a
+ *     three-step ladder at those percentages cannot fit inside a band ~29% wide, so the two
+ *     cannot both bind. Under the orchestrator's ruling the band is the founder's stated range
+ *     and holds exactly — **every** tier of every product sits inside its band in every currency
+ *     (a funeral piece never above 799 zł on PL or €180 elsewhere) — while the tilde on the
+ *     steps bends: each ladder starts at the lowest amount in the band on the currency's ending,
+ *     ends at the highest, and puts its middle step where the 1 : 1.3 : 1.6 shape lands once it
+ *     is compressed to fit (so +12% / +23% in the narrowest band and +25% / +47% in the widest).
+ *     `pnpm catalogue:check`'s `band` mode asserts the exact reading against every tier row, and
+ *     raising a ceiling is a founder decision recorded in `plan/13`, never a data edit here.
  *  2. **VAT rates for the six `demo` destinations are provisional.** `plan/10` documents no VAT
  *     table and `plan/06` §4 item 4 puts "PL 8% flowers vs 23% add-ons" on the accountant's
  *     must-confirm list; PL — the only `live` destination — uses exactly those two documented
- *     rates. The other six carry the rate marked on each record and are on that same confirm
- *     list: no order can be placed into a `demo` country (spec 005 §2 "Availability"), so no
- *     invoice depends on them before they are signed off.
+ *     rates. The other six carry the rate marked on each record, are listed in
+ *     `docs/compliance/vat-rates.md` as "provisional — accountant to confirm" and are on that
+ *     same confirm list: no order can be placed into a `demo` country (spec 005 §2
+ *     "Availability"), so no invoice depends on them before they are signed off.
  *
  * ## Destinations
  *
@@ -116,8 +123,11 @@ export const SURCHARGE_LABEL_KEYS = {
 
 /**
  * `plan/10` §2.3's "EUR base" column, transcribed: essential 35–45, classic 46–60, premium 61–80,
- * luxury 81–120, funeral pieces 60–180 split into four contiguous sub-bands inside its own bounds
- * (see `priceBandKeyFor`). Used by the four euro destinations that have no country override.
+ * luxury 81–120, funeral pieces 60–180 split into four adjacent, non-overlapping sub-bands that
+ * span its own bounds — the funeral floor is the first sub-band's floor and the funeral ceiling
+ * the last one's ceiling, and each sub-band starts one price point above the previous ceiling
+ * rather than sharing it (see `priceBandKeyFor`). Used by the four euro destinations that have no
+ * country override.
  */
 const EUR_BASE_BANDS = {
   essential: { fromMinor: 3500, toMinor: 4500 },
@@ -130,16 +140,19 @@ const EUR_BASE_BANDS = {
   funeral_luxury: { fromMinor: 14_600, toMinor: 18_000 },
 } as const;
 
-/** The authored `x90` ladders inside `EUR_BASE_BANDS`, smallest tier first. */
+/**
+ * The authored `x90` ladders, smallest tier first — every step inside `EUR_BASE_BANDS` (spec 005
+ * §14 A1: the band is exact, the "~+30% / +60%" steps bend to fit it).
+ */
 const EUR_BASE_LADDERS = {
-  essential: [3590, 4690, 5790],
-  classic: [4990, 6490, 7990],
-  premium: [6990, 8990, 10_990],
-  luxury: [8990, 11_690, 14_390],
-  funeral_essential: [6990, 8990, 10_990],
-  funeral_classic: [8990, 11_690, 14_390],
-  funeral_premium: [12_990, 16_990, 20_990],
-  funeral_luxury: [16_990, 21_990, 26_990],
+  essential: [3590, 4090, 4490],
+  classic: [4690, 5390, 5990],
+  premium: [6190, 7090, 7990],
+  luxury: [8190, 10_090, 11_990],
+  funeral_essential: [6090, 7090, 7990],
+  funeral_classic: [8190, 9690, 10_990],
+  funeral_premium: [11_190, 12_890, 14_490],
+  funeral_luxury: [14_690, 16_490, 17_990],
 } as const;
 
 /** `plan/10` §2.3's add-on row, EUR column: chocolates 6 · vase 8 · balloon 4 · plush 9 · wine 14 · card 0. */
@@ -181,17 +194,18 @@ const destinationPricing = [
       funeral_luxury: { fromMinor: 64_900, toMinor: 79_900 },
     },
     ladders: {
-      essential: [14_900, 19_900, 23_900],
-      classic: [19_900, 25_900, 31_900],
-      premium: [26_900, 34_900, 42_900],
-      luxury: [35_900, 46_900, 57_900],
-      funeral_essential: [25_900, 33_900, 41_900],
-      funeral_classic: [35_900, 46_900, 57_900],
-      funeral_premium: [48_900, 63_900, 78_900],
-      funeral_luxury: [64_900, 84_900, 103_900],
+      essential: [14_900, 16_900, 18_900],
+      classic: [19_900, 22_900, 25_900],
+      premium: [26_900, 30_900, 34_900],
+      luxury: [35_900, 44_900, 52_900],
+      funeral_essential: [25_900, 30_900, 34_900],
+      funeral_classic: [35_900, 41_900, 47_900],
+      funeral_premium: [48_900, 56_900, 63_900],
+      funeral_luxury: [64_900, 72_900, 79_900],
     },
     // +EUR 4 / +EUR 6 at `plan/10` §2.3's own EUR→PLN add-on parity (balloon 4 EUR = 18 zł,
     // chocolates 6 EUR = 25 zł), so the surcharge and the add-on column cannot disagree.
+    // `catalogue:check`'s `surcharge-amount` mode transcribes both figures independently.
     sundaySurchargeMinor: 1800,
     peakDaySurchargeMinor: 2500,
     addonsMinor: {
@@ -222,10 +236,10 @@ const destinationPricing = [
       funeral_luxury: EUR_BASE_BANDS.funeral_luxury,
     },
     ladders: {
-      essential: [4290, 5590, 6890],
-      classic: [5490, 7190, 8790],
-      premium: [7490, 9790, 11_990],
-      luxury: [9990, 12_990, 15_990],
+      essential: [3990, 4490, 4890],
+      classic: [5090, 5790, 6490],
+      premium: [6690, 7890, 8890],
+      luxury: [9090, 11_090, 12_990],
       funeral_essential: EUR_BASE_LADDERS.funeral_essential,
       funeral_classic: EUR_BASE_LADDERS.funeral_classic,
       funeral_premium: EUR_BASE_LADDERS.funeral_premium,
@@ -290,14 +304,14 @@ const destinationPricing = [
       funeral_luxury: { fromMinor: 73_000, toMinor: 90_000 },
     },
     ladders: {
-      essential: [17_990, 23_490, 28_790],
-      classic: [23_990, 31_190, 38_390],
-      premium: [30_990, 40_290, 49_590],
-      luxury: [40_990, 53_290, 65_590],
-      funeral_essential: [30_990, 40_290, 49_590],
-      funeral_classic: [40_990, 53_290, 65_590],
-      funeral_premium: [55_990, 72_790, 89_590],
-      funeral_luxury: [73_990, 96_190, 118_390],
+      essential: [17_590, 20_190, 22_490],
+      classic: [23_090, 26_690, 29_990],
+      premium: [30_590, 35_490, 39_990],
+      luxury: [40_590, 50_490, 59_990],
+      funeral_essential: [30_090, 35_290, 39_990],
+      funeral_classic: [40_590, 48_090, 54_990],
+      funeral_premium: [55_590, 64_190, 71_990],
+      funeral_luxury: [73_090, 82_090, 89_990],
     },
     sundaySurchargeMinor: 2000,
     peakDaySurchargeMinor: 3000,

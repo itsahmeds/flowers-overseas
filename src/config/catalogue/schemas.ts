@@ -460,9 +460,10 @@ export const ProductRegistrySchema = z
  * `plan/04`'s A/B test #2 is "12 vs 18 stems": a preselected tier chosen in code could not be
  * tested or varied per product (spec 002 §14 A1 (b)).
  *
- * Prices are not here. Tier steps are authored `country_price` rows at ~+30%/+60% of the smallest
- * (`plan/10` §2.3, TASK-062), never a percentage applied at render — a percentage is a float and a
- * rounding bug (spec 005 §5.2).
+ * Prices are not here. Tier steps are authored `country_price` rows inside the product's
+ * `plan/10` §2.3 band, stepping upward towards its "~+30% / +60%" as far as the band allows
+ * (spec 005 §14 A1, TASK-062), never a percentage applied at render — a percentage is a float and
+ * a rounding bug (spec 005 §5.2).
  */
 export const ProductTierDataSchema = z
   .object({
@@ -917,7 +918,8 @@ export type FxRateData = z.infer<typeof FxRateDataSchema>;
  * `plan/10` §2.3 prices "funeral pieces" as **one** band (60–180 EUR, 259–799 zł) rather than
  * per price tier, but the ten seeded funeral pieces carry a `price_tier` facet like every other
  * product (`plan/10` §1.1 — the facet is on one product record). Splitting the funeral row into
- * four contiguous sub-bands inside its own bounds is the only reading under which both hold: a
+ * four adjacent, non-overlapping sub-bands that span its own bounds — each starting one price
+ * point above the previous ceiling — is the only reading under which both hold: a
  * funeral piece is never priced below the funeral floor, never above its ceiling, and its tier
  * facet still means what it means everywhere else. The sub-band bounds are authored in
  * `prices.data.ts` and `pnpm catalogue:check` reads them from there, so the split is data.
@@ -935,7 +937,7 @@ export const priceBandKeys = [
 export type PriceBandKey = (typeof priceBandKeys)[number];
 
 /**
- * The band a product's smallest tier must be priced in: `funeral_{tier}` for a funeral piece,
+ * The band every tier of a product must be priced in: `funeral_{tier}` for a funeral piece,
  * `{tier}` for everything else. One builder, so nothing string-builds a band key.
  */
 export function priceBandKeyFor(product: {
@@ -986,14 +988,14 @@ export function endsInRoundingStyle(
 }
 
 /**
- * One `plan/10` §2.3 band, transcribed: the inclusive minor-unit bounds a product's **smallest**
- * tier is priced in.
+ * One `plan/10` §2.3 band, transcribed: the inclusive minor-unit bounds **every** tier of a
+ * product in that band is priced in.
  *
- * The band constrains the smallest tier only, because the same section also fixes the tier steps
- * at "~+30% and +60% from the smallest": a three-tier product whose every tier sat inside one
- * band could not step at all, and `plan/10` §1.1 calls the price tier "derived per country" from
- * the band the product *starts* at (which is also what a "from €35" filter means). The stepped
- * amounts are authored, never computed (spec 005 §5.2).
+ * The band is exact and the tier steps are approximate, not the other way round (spec 005 §14
+ * A1): the band is the founder's stated range for the class, so no tier of a funeral piece may
+ * be quoted above 799 zł on PL or €180 elsewhere, while "~+30% and +60% from the smallest" is a
+ * tilde that compresses to fit a band narrower than 1.6×. The stepped amounts are authored,
+ * never computed (spec 005 §5.2), and `PriceLadderSchema` is checked against these bounds.
  */
 export const PriceBandSchema = z
   .object({
@@ -1015,7 +1017,8 @@ export type PriceBand = z.infer<typeof PriceBandSchema>;
 
 /**
  * The three authored tier amounts of one band, smallest first — `plan/10` §2.3's "~+30% and +60%
- * from the smallest" as **rows**, in the destination's own currency and integer minor units.
+ * from the smallest" as **rows**, in the destination's own currency and integer minor units, all
+ * three inside the band (spec 005 §14 A1).
  *
  * A product with fewer tiers than three uses the first amounts (a single-tier plant is priced at
  * the band floor); a product may never have more than three tiers, which
@@ -1079,15 +1082,15 @@ export const DestinationPricingSchema = z
         });
         continue;
       }
-      const smallest = ladder[0] ?? 0;
-      if (smallest < band.fromMinor || smallest > band.toMinor) {
-        ctx.addIssue({
-          code: "custom",
-          path: ["ladders", bandKey, 0],
-          message: `\`${destination.countryIso2}\` prices its smallest \`${bandKey}\` tier at ${String(smallest)}, outside the plan/10 §2.3 band ${String(band.fromMinor)}…${String(band.toMinor)}`,
-        });
-      }
       for (const [index, step] of ladder.entries()) {
+        // Spec 005 §14 A1: the band holds for *every* tier, not only the smallest.
+        if (step < band.fromMinor || step > band.toMinor) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["ladders", bandKey, index],
+            message: `\`${destination.countryIso2}\` prices tier ${String(index)} of \`${bandKey}\` at ${String(step)}, outside the plan/10 §2.3 band ${String(band.fromMinor)}…${String(band.toMinor)} (spec 005 §14 A1)`,
+          });
+        }
         if (!endsInRoundingStyle(step, destination.currency)) {
           ctx.addIssue({
             code: "custom",

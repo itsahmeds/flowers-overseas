@@ -47,8 +47,23 @@ describe("the committed ECB snapshot", () => {
       expect(Number.isInteger(rate.ratePpm), rate.quote).toBe(true);
       expect(rate.ratePpm).toBeGreaterThan(0);
     }
-    // The two rates the first corridor depends on (ADR-0002, UK -> PL), spelled out so a typo in
-    // a magnitude — 4.268 vs 42.68 PLN per EUR — is a failing test rather than a wrong price.
+    // All nine magnitudes, spelled out so a typo in any one of them — 4.268 vs 42.68 PLN per
+    // EUR, 393.2 vs 39.32 HUF — is a failing test rather than a wrong price on a page. The two
+    // the first corridor depends on (ADR-0002, UK -> PL) are the first reason for the pin; the
+    // other seven are configured-but-flagged-off and a flip must not be the first read of them.
+    expect(
+      Object.fromEntries(FX_SNAPSHOT.map((rate) => [rate.quote, rate.ratePpm])),
+    ).toEqual({
+      GBP: 846_500,
+      PLN: 4_268_000,
+      RON: 5_085_000,
+      CZK: 24_375_000,
+      HUF: 393_200_000,
+      SEK: 11_072_000,
+      NOK: 11_625_000,
+      DKK: 7_459_500,
+      CHF: 938_500,
+    });
     expect(fxSnapshotRate("PLN")?.ratePpm).toBe(4_268_000);
     expect(fxSnapshotRate("GBP")?.ratePpm).toBe(846_500);
     expect(fxSnapshotRate("EUR")).toBeUndefined();

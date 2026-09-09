@@ -116,6 +116,7 @@ export const CHECK_MODES = [
   "facet",
   "label-key",
   "addon-price",
+  "surcharge-amount",
   "fx-snapshot",
   "projection-columns",
   "destination-drift",
@@ -340,10 +341,11 @@ function checkTiers(input: CatalogueCheckInput): Problem[] {
 }
 
 /**
- * Exactly one active retail row per (product, tier, destination), and at most one active row per
+ * Exactly one active retail row per (product, tier, destination), at most one active row per
  * (product, country, tier, surcharge) — the dataset mirror of spec 002 §5.1's partial unique
- * index. Both directions matter: a missing row is a page with no price, a second one is the
- * ambiguity `resolvePrice()` throws on.
+ * index — and no two closed windows for one key that overlap. All three directions matter: a
+ * missing row is a page with no price, a second open-ended one is the ambiguity `resolvePrice()`
+ * throws on, and two overlapping windows are two surcharges on one delivery date.
  */
 function checkPriceCoverage(input: CatalogueCheckInput): Problem[] {
   const problems: Problem[] = [];
@@ -370,6 +372,40 @@ function checkPriceCoverage(input: CatalogueCheckInput): Problem[] {
     }
   }
 
+  // Two closed windows for one key are not caught by the open-ended rule above, and two
+  // surcharge rows live on the same delivery date would both apply — a doubled surcharge is the
+  // drip price `plan/07` §4 forbids. Windows are half-open [activeFrom, activeTo).
+  const windows = new Map<
+    string,
+    { readonly from: string; readonly to: string }[]
+  >();
+  for (const row of input.countryPrices) {
+    if (row.activeTo === null) continue;
+    const rowKey = key([
+      row.sku,
+      row.countryIso2,
+      row.tierKey,
+      row.surchargeKind,
+    ]);
+    const list = windows.get(rowKey) ?? [];
+    list.push({ from: row.activeFrom, to: row.activeTo });
+    windows.set(rowKey, list);
+  }
+  for (const [rowKey, list] of windows) {
+    const ordered = [...list].sort((a, b) => a.from.localeCompare(b.from));
+    for (const [index, window] of ordered.entries()) {
+      const previous = ordered[index - 1];
+      if (previous !== undefined && window.from < previous.to) {
+        problems.push({
+          mode: "ambiguous-price",
+          file: DATA_FILE,
+          subject: rowKey,
+          reason: `has overlapping closed windows ${previous.from}…${previous.to} and ${window.from}…${window.to}; two surcharge rows live on one delivery date would both apply (spec 005 §13 Q7, plan/07 §4)`,
+        });
+      }
+    }
+  }
+
   const retail = new Set(
     active
       .filter((row) => row.surchargeKind === null)
@@ -392,8 +428,9 @@ function checkPriceCoverage(input: CatalogueCheckInput): Problem[] {
 
 /**
  * Every active retail amount is an integer in a configured currency, on that currency's
- * psychological ending, with the smallest tier inside its `plan/10` §2.3 band and the tiers
- * increasing with `sort`.
+ * psychological ending, inside its `plan/10` §2.3 band — **every** tier, not only the smallest
+ * (spec 005 §14 A1: the band is exact and the "~+30% / +60%" steps bend) — and increasing with
+ * `sort`.
  */
 function checkAmounts(input: CatalogueCheckInput): Problem[] {
   const problems: Problem[] = [];
@@ -447,7 +484,8 @@ function checkAmounts(input: CatalogueCheckInput): Problem[] {
     const destination = destinations.get(row.countryIso2);
     const bandKey = bandKeys.get(row.sku);
     if (destination === undefined || bandKey === undefined) continue;
-    if (sortOf.get(key([row.sku, row.tierKey])) !== 0) continue;
+    const sort = sortOf.get(key([row.sku, row.tierKey]));
+    if (sort === undefined) continue;
     const band = destination.bands[bandKey];
     if (band === undefined) continue;
     if (row.retailMinor < band.fromMinor || row.retailMinor > band.toMinor) {
@@ -455,7 +493,7 @@ function checkAmounts(input: CatalogueCheckInput): Problem[] {
         mode: "band",
         file: DATA_FILE,
         subject: `${row.sku} ${row.tierKey ?? "-"} ${row.countryIso2}`,
-        reason: `prices its smallest tier at ${String(row.retailMinor)}, outside the plan/10 §2.3 \`${bandKey}\` band ${String(band.fromMinor)}…${String(band.toMinor)} for ${row.countryIso2}`,
+        reason: `prices tier ${String(sort)} at ${String(row.retailMinor)}, outside the plan/10 §2.3 \`${bandKey}\` band ${String(band.fromMinor)}…${String(band.toMinor)} for ${row.countryIso2}: the band is exact and holds for every tier, the "~+30% / +60%" steps bend to fit it (spec 005 §14 A1)`,
       });
     }
   }
@@ -486,9 +524,23 @@ function checkAmounts(input: CatalogueCheckInput): Problem[] {
   return problems;
 }
 
-/** Every add-on is priced exactly once, actively, in every destination, with its own VAT rate. */
+/**
+ * Every add-on is priced exactly once, actively, in every destination, and carries the
+ * destination's **standard** VAT rate rather than its flower rate.
+ *
+ * The rate is the point of the row (spec 002 §14 A1 (a), spec 005 §13 Q3): in Poland chocolates
+ * are 23% while flowers are 8% (`plan/06` §4 item 4), so an add-on row that copied
+ * `flowersVatRateBp` would invoice a mixed basket wrong on the first order and nothing else in
+ * the tree would notice.
+ */
 function checkAddonPrices(input: CatalogueCheckInput): Problem[] {
   const problems: Problem[] = [];
+  const destinations = new Map(
+    input.destinations.map((destination) => [
+      destination.countryIso2,
+      destination,
+    ]),
+  );
   const counts = new Map<string, number>();
   for (const row of input.addonCountryPrices.filter(isActive)) {
     const rowKey = key([row.addonKey, row.countryIso2]);
@@ -499,6 +551,20 @@ function checkAddonPrices(input: CatalogueCheckInput): Problem[] {
         file: DATA_FILE,
         subject: rowKey,
         reason: `is priced ${String(row.retailMinor)}: money is integer minor units, never a float`,
+      });
+    }
+    const destination = destinations.get(row.countryIso2);
+    if (destination === undefined) continue;
+    if (row.vatRateBp !== destination.standardVatRateBp) {
+      problems.push({
+        mode: "addon-price",
+        file: DATA_FILE,
+        subject: rowKey,
+        reason: `carries \`vatRateBp\` ${String(row.vatRateBp)}, not ${row.countryIso2}'s standard rate ${String(destination.standardVatRateBp)}${
+          destination.flowersVatRateBp === row.vatRateBp
+            ? ` — that is the flower rate, and an add-on is not a flower (spec 002 §14 A1 (a), spec 005 §13 Q3, plan/06 §4 item 4)`
+            : ` (spec 002 §14 A1 (a), spec 005 §13 Q3)`
+        }`,
       });
     }
   }
@@ -513,6 +579,92 @@ function checkAddonPrices(input: CatalogueCheckInput): Problem[] {
           reason: `has ${String(count)} active \`addon_country_price\` rows; exactly one is required (spec 002 §14 A1 (a)'s partial unique index, spec 005 §13 Q3 — every add-on is priced per destination with its own \`vatRateBp\`)`,
         });
       }
+    }
+  }
+  return problems;
+}
+
+/**
+ * `plan/10` §2.3's two surcharge amounts, transcribed **here** rather than read from the dataset:
+ * "Sunday surcharge +€4 equivalent; Valentine's/Women's Day surcharge +€6 equivalent".
+ *
+ * The euro destinations carry the euro figures unchanged. PL takes them at that section's own
+ * EUR→PLN add-on parity (balloon €4 = 18 zł, chocolates €6 = 25 zł) and RO at the ×5 factor its
+ * own RON band column exhibits (175/35, 230/46, 305/61, 405/81). A gate that read the amounts it
+ * is checking would agree with anything, which is why they are typed out again.
+ */
+export const PLAN_10_SURCHARGES: Readonly<
+  Record<string, { readonly sunday: number; readonly peakDay: number }>
+> = {
+  PL: { sunday: 1800, peakDay: 2500 },
+  DE: { sunday: 400, peakDay: 600 },
+  FR: { sunday: 400, peakDay: 600 },
+  ES: { sunday: 400, peakDay: 600 },
+  IT: { sunday: 400, peakDay: 600 },
+  RO: { sunday: 2000, peakDay: 3000 },
+  NL: { sunday: 400, peakDay: 600 },
+};
+
+/**
+ * Every destination's authored surcharge amounts are `plan/10` §2.3's +€4 / +€6 equivalents, and
+ * every surcharge row carries its destination's authored amount.
+ *
+ * An exact amount on the date chip *before* the date is chosen is what `plan/07` §4 requires, so
+ * the amount is the compliance content of the row: a Sunday row at €40 instead of €4 would be a
+ * drip-priced surprise at checkout and every other check here would pass it.
+ */
+function checkSurchargeAmounts(input: CatalogueCheckInput): Problem[] {
+  const problems: Problem[] = [];
+  for (const destination of input.destinations) {
+    const authored = PLAN_10_SURCHARGES[destination.countryIso2];
+    if (authored === undefined) {
+      problems.push({
+        mode: "surcharge-amount",
+        file: DATA_FILE,
+        subject: destination.countryIso2,
+        reason: `has no transcribed plan/10 §2.3 surcharge equivalent in \`PLAN_10_SURCHARGES\`: a new destination states its +EUR 4 / +EUR 6 equivalents here and in the dataset, and the two must agree`,
+      });
+      continue;
+    }
+    if (destination.sundaySurchargeMinor !== authored.sunday) {
+      problems.push({
+        mode: "surcharge-amount",
+        file: DATA_FILE,
+        subject: `${destination.countryIso2} sunday`,
+        reason: `charges ${String(destination.sundaySurchargeMinor)} ${destination.currency} on a Sunday, not plan/10 §2.3's +EUR 4 equivalent ${String(authored.sunday)}`,
+      });
+    }
+    if (destination.peakDaySurchargeMinor !== authored.peakDay) {
+      problems.push({
+        mode: "surcharge-amount",
+        file: DATA_FILE,
+        subject: `${destination.countryIso2} peak_day`,
+        reason: `charges ${String(destination.peakDaySurchargeMinor)} ${destination.currency} on a peak day, not plan/10 §2.3's +EUR 6 equivalent ${String(authored.peakDay)}`,
+      });
+    }
+  }
+
+  const destinations = new Map(
+    input.destinations.map((destination) => [
+      destination.countryIso2,
+      destination,
+    ]),
+  );
+  for (const row of input.countryPrices) {
+    if (row.surchargeKind === null) continue;
+    const destination = destinations.get(row.countryIso2);
+    if (destination === undefined) continue;
+    const expected =
+      row.surchargeKind === "sunday"
+        ? destination.sundaySurchargeMinor
+        : destination.peakDaySurchargeMinor;
+    if (row.retailMinor !== expected) {
+      problems.push({
+        mode: "surcharge-amount",
+        file: DATA_FILE,
+        subject: `${row.sku} ${row.countryIso2} ${row.surchargeKind}`,
+        reason: `is priced ${String(row.retailMinor)}, not ${row.countryIso2}'s authored \`${row.surchargeKind}\` amount ${String(expected)}: the surcharge is one amount per destination, shown on the date chip (spec 005 §13 Q7, plan/07 §4)`,
+      });
     }
   }
   return problems;
@@ -846,6 +998,7 @@ export function checkCatalogue(input: CatalogueCheckInput): Problem[] {
     ...checkPriceCoverage(input),
     ...checkAmounts(input),
     ...checkAddonPrices(input),
+    ...checkSurchargeAmounts(input),
     ...checkFacets(input),
     ...checkLabelKeys(input),
     ...checkFxSnapshot(input),

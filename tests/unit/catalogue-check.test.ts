@@ -36,6 +36,36 @@ import {
 const repoRoot = resolve(__dirname, "../..");
 const clean = catalogueCheckInput();
 
+/** The highest active retail amount authored for one (product, destination). */
+function topOf(sku: string, iso2: string): number {
+  return Math.max(
+    ...clean.countryPrices
+      .filter(
+        (row) =>
+          row.sku === sku &&
+          row.countryIso2 === iso2 &&
+          row.surchargeKind === null &&
+          row.activeTo === null,
+      )
+      .map((row) => row.retailMinor),
+  );
+}
+
+/** The lowest active retail amount authored for one (product, destination). */
+function bottomOf(sku: string, iso2: string): number {
+  return Math.min(
+    ...clean.countryPrices
+      .filter(
+        (row) =>
+          row.sku === sku &&
+          row.countryIso2 === iso2 &&
+          row.surchargeKind === null &&
+          row.activeTo === null,
+      )
+      .map((row) => row.retailMinor),
+  );
+}
+
 /** Problems of one mode, for a one-field mutation of the clean input. */
 function problemsFor(
   overrides: Partial<CatalogueCheckInput>,
@@ -153,6 +183,31 @@ describe("every failure mode has a fixture (AC-5 / T-03)", () => {
     expect(problems[0]).toContain(duplicate.sku);
   });
 
+  it("ambiguous-price: two closed peak windows that overlap on one delivery date", () => {
+    const peak = clean.countryPrices.find(
+      (row) => row.surchargeKind === "peak_day" && row.activeTo !== null,
+    );
+    expect(peak).toBeDefined();
+    if (peak === undefined) return;
+    const problems = problemsFor(
+      {
+        countryPrices: clean.countryPrices.map((row) =>
+          row.sku === peak.sku &&
+          row.countryIso2 === peak.countryIso2 &&
+          row.surchargeKind === "peak_day" &&
+          row.activeFrom === "2027-03-08"
+            ? { ...row, activeFrom: "2027-02-14", activeTo: "2027-03-09" }
+            : row,
+        ),
+      },
+      "ambiguous-price",
+    );
+
+    expect(problems).toHaveLength(1);
+    expect(problems[0]).toContain("overlapping closed windows");
+    expect(problems[0]).toContain(peak.sku);
+  });
+
   it("band: a smallest-tier price outside its plan/10 §2.3 band", () => {
     const problems = problemsFor(
       {
@@ -172,14 +227,39 @@ describe("every failure mode has a fixture (AC-5 / T-03)", () => {
     expect(problems.join("\n")).toContain("FO-BQ-001");
   });
 
+  it("band: a *top*-tier price outside its band (spec 005 §14 A1)", () => {
+    // The §14 A1 ruling: the band is exact and holds for every tier, not only the smallest. A
+    // 900 zł funeral top tier is the fault this fixture exists for — `plan/10` §2.3 caps a
+    // funeral piece at 799 zł on the one `live` destination.
+    const problems = problemsFor(
+      {
+        countryPrices: clean.countryPrices.map((row) =>
+          row.sku === "FO-FN-001" &&
+          row.countryIso2 === "PL" &&
+          row.surchargeKind === null &&
+          row.retailMinor === topOf("FO-FN-001", "PL")
+            ? { ...row, retailMinor: 90_900 }
+            : row,
+        ),
+      },
+      "band",
+    );
+
+    expect(problems).toHaveLength(1);
+    expect(problems[0]).toContain("outside the plan/10 §2.3");
+    expect(problems[0]).toContain("FO-FN-001");
+    expect(problems[0]).toContain("the band is exact");
+  });
+
   it("band: a tier priced at or below the tier below it", () => {
+    // Inside the band and not above the tier below it: the monotonicity fault on its own.
     const problems = problemsFor(
       {
         countryPrices: clean.countryPrices.map((row) =>
           row.sku === "FO-BQ-001" &&
           row.countryIso2 === "PL" &&
           row.tierKey === "stems_18"
-            ? { ...row, retailMinor: 14_900 }
+            ? { ...row, retailMinor: bottomOf("FO-BQ-001", "PL") }
             : row,
         ),
       },
@@ -321,6 +401,88 @@ describe("every failure mode has a fixture (AC-5 / T-03)", () => {
     expect(twice[0]).toContain("has 2 active");
   });
 
+  it("addon-price: PL chocolates at the 8% flower rate instead of the 23% standard rate", () => {
+    // The rate is the point of the row (spec 002 §14 A1 (a), spec 005 §13 Q3): in Poland
+    // chocolates are 23% while flowers are 8% (`plan/06` §4 item 4), so an add-on row that
+    // copied `flowersVatRateBp` would invoice a mixed basket wrong on the first order.
+    const flowerRate = problemsFor(
+      {
+        addonCountryPrices: clean.addonCountryPrices.map((row) =>
+          row.addonKey === "chocolates" && row.countryIso2 === "PL"
+            ? { ...row, vatRateBp: 800 }
+            : row,
+        ),
+      },
+      "addon-price",
+    );
+    const otherRate = problemsFor(
+      {
+        addonCountryPrices: clean.addonCountryPrices.map((row) =>
+          row.addonKey === "vase" && row.countryIso2 === "DE"
+            ? { ...row, vatRateBp: 2100 }
+            : row,
+        ),
+      },
+      "addon-price",
+    );
+
+    expect(flowerRate).toHaveLength(1);
+    expect(flowerRate[0]).toContain("chocolates|PL");
+    expect(flowerRate[0]).toContain("not PL's standard rate 2300");
+    expect(flowerRate[0]).toContain("an add-on is not a flower");
+    expect(otherRate).toHaveLength(1);
+    expect(otherRate[0]).toContain("not DE's standard rate 1900");
+  });
+
+  it("surcharge-amount: a DE Sunday surcharge at 4000 instead of +EUR 4", () => {
+    const authored = problemsFor(
+      {
+        destinations: clean.destinations.map((destination) =>
+          destination.countryIso2 === "DE"
+            ? { ...destination, sundaySurchargeMinor: 4000 }
+            : destination,
+        ),
+      },
+      "surcharge-amount",
+    );
+    const peak = problemsFor(
+      {
+        destinations: clean.destinations.map((destination) =>
+          destination.countryIso2 === "PL"
+            ? { ...destination, peakDaySurchargeMinor: 1800 }
+            : destination,
+        ),
+      },
+      "surcharge-amount",
+    );
+    const row = problemsFor(
+      {
+        countryPrices: clean.countryPrices.map((candidate) =>
+          candidate.sku === "FO-BQ-001" &&
+          candidate.countryIso2 === "PL" &&
+          candidate.surchargeKind === "sunday"
+            ? { ...candidate, retailMinor: 9900 }
+            : candidate,
+        ),
+      },
+      "surcharge-amount",
+    );
+
+    // The authored figure and every row expanded from it are gated separately: a wrong figure is
+    // 84 wrong date chips, a wrong row is one.
+    expect(
+      authored.filter((problem) => problem.startsWith("DE sunday")),
+    ).toHaveLength(1);
+    expect(authored[0]).toContain("+EUR 4 equivalent 400");
+    expect(
+      peak.filter((problem) => problem.startsWith("PL peak_day")),
+    ).toHaveLength(1);
+    expect(peak[0]).toContain("+EUR 6 equivalent 2500");
+    expect(row).toHaveLength(1);
+    expect(row[0]).toContain("FO-BQ-001 PL sunday");
+    expect(row[0]).toContain("authored `sunday` amount 1800");
+  });
+
   it("fx-snapshot: a cross rate, a float rate, a mixed date and a missing currency", () => {
     const first = clean.fxRates[0];
     expect(first).toBeDefined();
@@ -439,6 +601,7 @@ describe("every failure mode has a fixture (AC-5 / T-03)", () => {
       "facet",
       "label-key",
       "addon-price",
+      "surcharge-amount",
       "fx-snapshot",
       "projection-columns",
       "destination-drift",

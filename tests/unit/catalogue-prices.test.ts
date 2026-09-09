@@ -73,8 +73,48 @@ const PLAN_10_BANDS = {
     classic: [230, 300],
     premium: [305, 400],
     luxury: [405, 600],
+    // `plan/10` §2.3 gives no RON funeral figure; the RON column's own ×5 factor against the EUR
+    // base (175/35, 230/46, 305/61, 405/81) applied to 60–180 EUR is 300–900 lei.
+    funeral: [300, 900],
   },
 } as const;
+
+/** Which `PLAN_10_BANDS` column a destination is priced from. */
+const PLAN_10_COLUMN: Readonly<Record<string, keyof typeof PLAN_10_BANDS>> = {
+  PL: "PL",
+  DE: "DE",
+  RO: "RO",
+  FR: "EUR_BASE",
+  ES: "EUR_BASE",
+  IT: "EUR_BASE",
+  NL: "EUR_BASE",
+};
+
+/**
+ * The band `plan/10` §2.3 puts one product's price in, read off the transcription above rather
+ * than off `prices.data.ts` — an independent predicate, so a band widened in the dataset to make
+ * a ladder fit is a failing test and not a green one (spec 005 §14 A1).
+ *
+ * A funeral piece is bounded by the funeral row of the same column (the four authored sub-bands
+ * live inside it); everything else by its `price_tier` row. `DE` and `RO` have no funeral column
+ * of their own, so they take the EUR base row and the ×5 reading of it respectively.
+ */
+function plan10BandFor(
+  product: { readonly productType: string; readonly priceTier: string },
+  iso2: string,
+): readonly [number, number] {
+  const column = PLAN_10_COLUMN[iso2];
+  if (column === undefined) throw new Error(`no plan/10 column for ${iso2}`);
+  const table: Record<string, readonly number[]> = PLAN_10_BANDS[column];
+  const row =
+    product.productType === "funeral"
+      ? (table.funeral ?? PLAN_10_BANDS.EUR_BASE.funeral)
+      : table[product.priceTier];
+  if (row === undefined) {
+    throw new Error(`no plan/10 band for ${iso2} ${product.priceTier}`);
+  }
+  return [row[0] ?? 0, row[1] ?? 0];
+}
 
 const active = COUNTRY_PRICES.filter((row) => row.activeTo === null);
 const retail = active.filter((row) => row.surchargeKind === null);
@@ -183,6 +223,7 @@ describe("the authored price dataset (AC-6 / T-04's price half)", () => {
       ["FR", PLAN_10_BANDS.EUR_BASE.funeral],
       ["DE", PLAN_10_BANDS.EUR_BASE.funeral],
       ["PL", PLAN_10_BANDS.PL.funeral],
+      ["RO", PLAN_10_BANDS.RO.funeral],
     ] as const) {
       const subBands = priceBandKeys
         .filter((key) => key.startsWith("funeral_"))
@@ -201,29 +242,123 @@ describe("the authored price dataset (AC-6 / T-04's price half)", () => {
     }
   });
 
-  it("prices a product's smallest tier inside its band and steps the rest upward", () => {
-    const sortOf = new Map(
-      PRODUCT_TIERS.map((tier) => [`${tier.sku}|${tier.tierKey}`, tier.sort]),
-    );
+  it("prices *every* tier inside its band, in every currency (spec 005 §14 A1)", () => {
     const bandKeyOf = new Map(
       PRODUCTS.map((product) => [product.sku, priceBandKeyFor(product)]),
     );
 
-    for (const row of retail) {
+    const outside = retail.filter((row) => {
       const bandKey = bandKeyOf.get(row.sku);
-      const sort = sortOf.get(`${row.sku}|${row.tierKey ?? "-"}`);
-      expect(bandKey, row.sku).toBeDefined();
-      if (bandKey === undefined || sort !== 0) continue;
+      if (bandKey === undefined) return true;
       const band = priceBandFor(row.countryIso2, bandKey);
-      expect(
-        row.retailMinor,
-        `${row.sku} ${row.countryIso2}`,
-      ).toBeGreaterThanOrEqual(band.fromMinor);
-      expect(
-        row.retailMinor,
-        `${row.sku} ${row.countryIso2}`,
-      ).toBeLessThanOrEqual(band.toMinor);
+      return row.retailMinor < band.fromMinor || row.retailMinor > band.toMinor;
+    });
+
+    // The band is the founder's stated range and holds exactly; the "~+30% / +60%" steps are a
+    // tilde and bend to fit it. Not one row of 1 652 may sit outside.
+    expect(
+      outside.map(
+        (row) =>
+          `${row.sku} ${row.tierKey ?? "-"} ${row.countryIso2} ${String(row.retailMinor)}`,
+      ),
+    ).toEqual([]);
+  });
+
+  it("keeps every retail row inside plan/10 §2.3's own printed band, transcribed here", () => {
+    // Independent of `prices.data.ts`: the bounds come from `PLAN_10_BANDS` above, so widening a
+    // band in the dataset to make a ladder fit fails here rather than passing there.
+    const productBySku = new Map(
+      PRODUCTS.map((product) => [product.sku, product]),
+    );
+
+    const outside = retail.filter((row) => {
+      const product = productBySku.get(row.sku);
+      if (product === undefined) return true;
+      const [fromMajor, toMajor] = plan10BandFor(product, row.countryIso2);
+      return (
+        row.retailMinor < fromMajor * 100 || row.retailMinor > toMajor * 100
+      );
+    });
+
+    expect(
+      outside.map(
+        (row) =>
+          `${row.sku} ${row.tierKey ?? "-"} ${row.countryIso2} ${String(row.retailMinor)}`,
+      ),
+    ).toEqual([]);
+    // The two ceilings the ruling names, spelled out: a funeral piece is never quoted above
+    // 799 zł on the one `live` destination, nor above EUR 180 anywhere else.
+    const funeralPl = retail.filter(
+      (row) =>
+        row.countryIso2 === "PL" &&
+        productBySku.get(row.sku)?.productType === "funeral",
+    );
+    expect(funeralPl.length).toBeGreaterThan(0);
+    expect(
+      Math.max(...funeralPl.map((row) => row.retailMinor)),
+    ).toBeLessThanOrEqual(79_900);
+    const funeralEur = retail.filter(
+      (row) =>
+        row.currency === "EUR" &&
+        productBySku.get(row.sku)?.productType === "funeral",
+    );
+    expect(
+      Math.max(...funeralEur.map((row) => row.retailMinor)),
+    ).toBeLessThanOrEqual(18_000);
+  });
+
+  it("steps each authored ladder upward inside its band, as near +30/+60 as it allows", () => {
+    for (const iso2 of PRICED_DESTINATIONS) {
+      for (const bandKey of priceBandKeys) {
+        const band = priceBandFor(iso2, bandKey);
+        const ladder = destinationPricingFor(iso2).ladders[bandKey];
+        expect(ladder, `${iso2} ${bandKey}`).toBeDefined();
+        if (ladder === undefined) continue;
+
+        expect(ladder).toHaveLength(3);
+        for (const [index, step] of ladder.entries()) {
+          expect(
+            step,
+            `${iso2} ${bandKey} ${String(index)}`,
+          ).toBeGreaterThanOrEqual(band.fromMinor);
+          expect(
+            step,
+            `${iso2} ${bandKey} ${String(index)}`,
+          ).toBeLessThanOrEqual(band.toMinor);
+          expect(
+            endsInRoundingStyle(step, destinationPricingFor(iso2).currency),
+          ).toBe(true);
+          const previous = ladder[index - 1];
+          if (previous !== undefined) {
+            expect(step, `${iso2} ${bandKey} ${String(index)}`).toBeGreaterThan(
+              previous,
+            );
+          }
+        }
+        // The steps are a tilde: they never *exceed* +30% / +60% of the smallest, and they are
+        // as close to it as a band this wide allows — the top step reaches the band's own
+        // ceiling, so nothing was left on the table (spec 005 §14 A1).
+        const [smallest, middle, largest] = ladder as [number, number, number];
+        expect(middle / smallest, `${iso2} ${bandKey}`).toBeLessThanOrEqual(
+          1.3,
+        );
+        expect(largest / smallest, `${iso2} ${bandKey}`).toBeLessThanOrEqual(
+          1.6,
+        );
+        expect(band.toMinor - largest, `${iso2} ${bandKey}`).toBeLessThan(
+          destinationPricingFor(iso2).currency === "PLN" ? 1000 : 100,
+        );
+        expect(smallest - band.fromMinor, `${iso2} ${bandKey}`).toBeLessThan(
+          destinationPricingFor(iso2).currency === "PLN" ? 1000 : 100,
+        );
+      }
     }
+  });
+
+  it("steps every product's tiers upward with `sort` in every destination", () => {
+    const sortOf = new Map(
+      PRODUCT_TIERS.map((tier) => [`${tier.sku}|${tier.tierKey}`, tier.sort]),
+    );
 
     for (const iso2 of PRICED_DESTINATIONS) {
       for (const product of PRODUCTS) {
@@ -270,8 +405,18 @@ describe("surcharges are dated rows, never a multiplier (§13 Q7, AC-16's data h
         destinationPricingFor(row.countryIso2).sundaySurchargeMinor,
       );
     }
+    // `plan/10` §2.3's +EUR 4, per destination: the euro figure unchanged in the euro countries,
+    // and that section's own EUR->currency parities elsewhere (balloon EUR 4 = 18 zl; the RON
+    // column's x5 factor). `catalogue:check`'s `surcharge-amount` mode transcribes the same
+    // table independently, so a wrong figure fails both a gate and a test.
+    expect(
+      PRICED_DESTINATIONS.map(
+        (iso2) => destinationPricingFor(iso2).sundaySurchargeMinor,
+      ),
+    ).toEqual([1800, 400, 400, 400, 400, 2000, 400]);
     expect(destinationPricingFor("DE").sundaySurchargeMinor).toBe(400);
     expect(destinationPricingFor("PL").sundaySurchargeMinor).toBe(1800);
+    expect(destinationPricingFor("RO").sundaySurchargeMinor).toBe(2000);
   });
 
   it("has one closed-window peak-day row per named day at +EUR 6 equivalent", () => {
@@ -290,7 +435,31 @@ describe("surcharges are dated rows, never a multiplier (§13 Q7, AC-16's data h
         destinationPricingFor(row.countryIso2).peakDaySurchargeMinor,
       );
     }
+    // `plan/10` §2.3's +EUR 6, per destination, on the same parities (chocolates EUR 6 = 25 zl).
+    expect(
+      PRICED_DESTINATIONS.map(
+        (iso2) => destinationPricingFor(iso2).peakDaySurchargeMinor,
+      ),
+    ).toEqual([2500, 600, 600, 600, 600, 3000, 600]);
     expect(destinationPricingFor("DE").peakDaySurchargeMinor).toBe(600);
+    expect(destinationPricingFor("PL").peakDaySurchargeMinor).toBe(2500);
+    expect(destinationPricingFor("RO").peakDaySurchargeMinor).toBe(3000);
+  });
+
+  it("keeps the two peak windows closed, one delivery day each and non-overlapping", () => {
+    // Two windows live on one delivery date would both apply, and a doubled surcharge is the
+    // drip price `plan/07` §4 forbids; `catalogue:check`'s `ambiguous-price` mode gates it.
+    expect(PEAK_DAYS.map((day) => [day.date, day.endsBefore])).toEqual([
+      ["2027-02-14", "2027-02-15"],
+      ["2027-03-08", "2027-03-09"],
+    ]);
+    for (const [index, day] of PEAK_DAYS.entries()) {
+      const previous = PEAK_DAYS[index - 1];
+      expect(day.date < day.endsBefore, day.occasionKey).toBe(true);
+      if (previous !== undefined) {
+        expect(day.date >= previous.endsBefore, day.occasionKey).toBe(true);
+      }
+    }
   });
 
   it("never has two open-ended rows for one (product, country, tier, surcharge)", () => {
