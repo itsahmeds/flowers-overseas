@@ -384,7 +384,11 @@ test.describe("a German browser on /en (AC-28)", () => {
       expect(response?.status()).toBe(200);
 
       // The page, not the error document: the real heading and the real switcher.
-      await expect(page.locator("h1")).toHaveText("Send flowers across Europe");
+      // TASK-052 replaced the placeholder heading with the artboards' headline (the `<h1>` is
+      // `home.hero.heading`; `meta.home.heading` is gone with the placeholder).
+      await expect(page.locator("h1")).toHaveText(
+        "Flowers for someone far away.",
+      );
       await expect(page.locator(`${SWITCHER} ul li`)).toHaveCount(4);
       await expect(page.locator("h1")).not.toContainText("went wrong");
 

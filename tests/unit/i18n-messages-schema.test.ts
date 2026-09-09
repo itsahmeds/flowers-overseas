@@ -310,6 +310,9 @@ describe("the shipped catalogues and manifests", () => {
       // the demo watermark label, added by TASK-073 and rendered by TASK-077/079. In no
       // `ROUTE_NAMESPACES` entry, so it reaches no client provider (AC-22).
       "media",
+      // The locale home's own copy (TASK-052).
+      "home",
+      "finder",
     ];
     const provenanceLabel: Messages["media"]["provenance"]["aiExample"] =
       enSource.media.provenance.aiExample;
@@ -328,10 +331,15 @@ describe("the shipped catalogues and manifests", () => {
       enSource.destinations.pl.name;
     const categoryLabel: Messages["nav"]["category"]["bestSellers"] =
       enSource.nav.category.bestSellers;
+    const heroHeading: Messages["home"]["hero"]["heading"] =
+      enSource.home.hero.heading;
+    const finderSubmit: Messages["finder"]["submit"] = enSource.finder.submit;
 
     expect([...namespaces].sort()).toEqual(Object.keys(enSource).sort());
     expect(destinationName).toBe("Poland");
     expect(categoryLabel).toBe("Best sellers");
+    expect(heroHeading).toBe("Flowers for someone far away.");
+    expect(finderSubmit).toBe("Continue");
     expect(headline).toContain("{language}");
     expect(floristCount).toContain("plural");
     expect(tierLabel).toContain("plural");

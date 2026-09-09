@@ -197,7 +197,16 @@ describe("the `[locale]` document (AC-6)", () => {
 
   it("renders the shipped `meta` and `a11y` copy, never a literal", async () => {
     const html = await renderLocaleDocument("en");
-    expect(html).toContain("<h1>Send flowers across Europe</h1>");
+    // TASK-052: the placeholder `<h1>` is gone — the locale home's heading is `home.hero.heading`,
+    // rendered by `HomeHero`. Its *copy* is not assertable here and deliberately so: this helper
+    // renders the layout, so the only catalogue in scope is the client provider's
+    // `namespacesFor("localeDocument")` subset, and `home`/`finder` are **not** in it (they are
+    // read on the server through `src/modules/i18n/request.ts`, which is what keeps the
+    // serialised client payload inside AC-27's 4 KB). What this file pins is the document's
+    // structure — one `<h1>`, inside `main`, plus the `a11y` copy the provider does carry; the
+    // heading's text is asserted in `tests/unit/ui-home.test.tsx` and `tests/e2e/home.spec.ts`.
+    expect([...html.matchAll(/<h1/g)]).toHaveLength(1);
+    expect(html).toContain('<main id="main">');
     expect(html).toContain("Skip to content");
   });
 
@@ -347,7 +356,9 @@ describe("the AC-5 registry seam", () => {
 
     expect(html).toContain('<html lang="ar-XB" dir="rtl" class=');
     // No catalogue ships for the fake locale: the `en` fallback chain renders it (AC-31).
-    expect(html).toContain("<h1>Send flowers across Europe</h1>");
+    // One `<h1>` (its copy is `home.hero.heading`, out of this helper's catalogue scope — see
+    // the note above).
+    expect([...html.matchAll(/<h1/g)]).toHaveLength(1);
   });
 
   it("adds the fifth locale to `generateStaticParams` with no change under `src/app/`", async () => {

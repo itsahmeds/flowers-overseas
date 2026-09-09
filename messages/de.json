@@ -290,6 +290,26 @@
       "retry": "Try again"
     }
   },
+  "finder": {
+    "country": {
+      "label": "Country"
+    },
+    "cutoff": "Order by 14:00 in Warsaw — the recipient's own time, not yours — and it arrives today.",
+    "date": {
+      "label": "Delivery date"
+    },
+    "destinations": {
+      "heading": "Where we deliver",
+      "matches": "{count, plural, =0 {No country matches what you typed} one {# country matches} other {# countries match}}",
+      "onboarding": "Poland today. In the other six countries we are still choosing florists, so there is nothing to order there yet."
+    },
+    "help": "Continue shows you where we deliver today and where we are still choosing florists.",
+    "submit": "Continue",
+    "town": {
+      "label": "Town, city or postcode",
+      "placeholder": "Warszawa or 00-001"
+    }
+  },
   "footer": {
     "cookieSettings": "Cookie settings",
     "group": {
@@ -323,6 +343,32 @@
       "submit": "Remind me"
     }
   },
+  "home": {
+    "hero": {
+      "eyebrow": "International flower delivery",
+      "heading": "Flowers for someone far away.",
+      "photoCaption": "Photography to supply · a Warsaw florist finishing a hand-tied bouquet, morning light, full bleed",
+      "proposition": "Our florist in your recipient's town makes it and hands it over in person. We never ship a box."
+    },
+    "proof": {
+      "guarantee": {
+        "body": "We redeliver or refund, your choice",
+        "title": "7-day freshness guarantee"
+      },
+      "local": {
+        "body": "Independent shops we chose ourselves",
+        "title": "We make it in their own town"
+      },
+      "photo": {
+        "body": "The picture reaches you the same day",
+        "title": "We photograph it at the door"
+      },
+      "price": {
+        "body": "Delivery and VAT already in it",
+        "title": "The price you see is what we charge"
+      }
+    }
+  },
   "media": {
     "placeholder": {
       "delivery": "Photography to supply · the delivery photo we send you",
@@ -348,7 +394,6 @@
     },
     "home": {
       "description": "Order flowers for someone in another European country. A vetted local florist makes and delivers them.",
-      "heading": "Send flowers across Europe",
       "title": "Flowers Overseas — send flowers to Europe"
     },
     "notFound": {

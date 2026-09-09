@@ -156,7 +156,12 @@ describe("a fifth locale is data (AC-31)", () => {
 
     expect(html).toContain('<html lang="fr" dir="ltr" class=');
     // No `messages/fr.json` ships: the `fr → en` fallback chain renders it (§2 "Messages").
-    expect(html).toContain("<h1>Send flowers across Europe</h1>");
+    // The fallback chain is what is under test, not the copy: `fr` has no catalogue, so the
+    // document renders from `en` — visible here as the `a11y` copy the client provider carries.
+    // (`home`/`finder` are read on the server and are outside this helper's catalogue scope —
+    // see the note in `tests/unit/app-shell.test.tsx`.)
+    expect([...html.matchAll(/<h1/g)]).toHaveLength(1);
+    expect(html).toContain("Skip to content");
     expect(params).toEqual(["en", "en-gb", "de", "pl", "fr"]);
   });
 
