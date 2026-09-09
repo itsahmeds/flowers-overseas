@@ -44,8 +44,11 @@
  * Layout: the canvas's five-column colophon grid (`1.3fr 0.8fr 0.8fr 1.2fr 1fr`) at the desktop
  * artboard, stacking to a single column on mobile with the two link columns side by side. Those
  * ratios are written here rather than added to the `Grid` primitive because they are this
- * component's proportions and nothing else's; every gap, inline padding and colour is a token and
- * every utility is logical (`fo/no-physical-css`, AC-5).
+ * component's proportions and nothing else's. The block is **full-bleed**, like every section of
+ * the artboards, with the canvas's own gutters (`40px 56px 24px` desktop, `32px 20px 20px`
+ * mobile) rather than a centred `Container`; colours, gaps and every spacing step the scale has
+ * are tokens, the five it does not have (20, 22, 26, 32, 56 px) are written out and
+ * commented at the point of use, and every utility is logical (`fo/no-physical-css`, AC-5).
  *
  * Copy is read with an **unnamespaced** `useTranslations()` because half the keys arrive as fully
  * qualified paths from the registries (`footer.group.sending`, `company.description`): one
@@ -59,7 +62,7 @@ import { LocaleSwitcher } from "@/modules/i18n";
 
 import { Mark } from "../icons/Mark";
 import { Button } from "../primitives/Button";
-import { Cluster, Container, Row, Stack } from "../primitives/layout";
+import { Cluster, Row, Stack } from "../primitives/layout";
 import { Display, Label, Text } from "../primitives/typography";
 import { TrustMarks, type TrustMark } from "../trust/TrustMarks";
 import {
@@ -129,15 +132,21 @@ function LinkColumn({
 }): ReactElement {
   const headingId = `${idPrefix}-group-${group.id}`;
   const heading = label(group.headingKey);
+  // The canvas sets the whole legal row at `--text-xs` (11 px) and the link columns at
+  // `--text-sm` (13 px); the row's size travels with the layout so no caller can get it wrong.
+  const size = layout === "inline" ? "xs" : "sm";
+  // Both class names are written out: Tailwind scans source text, so `text-${size}` would
+  // generate no rule at all.
+  const linkClass = layout === "inline" ? "text-xs" : "text-sm";
   const entries = group.links.map((link) =>
     link.href === undefined ? (
       // Unpublished: the label, as text. A reader sees what is coming; a crawler sees no URL, so
       // there is no internal link to a non-200 page (AC-14).
-      <Text key={link.id} as="span" size="sm" tone="subtle">
+      <Text key={link.id} as="span" size={size} tone="subtle">
         {label(link.labelKey)}
       </Text>
     ) : (
-      <a key={link.id} href={link.href} className="text-sm">
+      <a key={link.id} href={link.href} className={linkClass}>
         {label(link.labelKey)}
       </a>
     ),
@@ -145,7 +154,7 @@ function LinkColumn({
 
   if (layout === "inline") {
     return (
-      <Cluster as="nav" gap="lg" align="center" aria-label={heading}>
+      <Cluster as="nav" gap="md" align="center" aria-label={heading}>
         {entries}
       </Cluster>
     );
@@ -184,16 +193,33 @@ export function SiteFooter({
     // and not to the centred container inside it. `mt-auto` keeps the footer at the foot of a
     // short document, exactly as the canvas does.
     <footer className="border-border-emphasis mt-auto border-t">
-      <Container>
-        <Stack gap="lg" padBlock="xl">
+      {/* The canvas's colophon is **full-bleed** with a 56 px gutter, exactly like every other
+          section of the desktop artboard (`padding: … 56px`), and 20 px on the mobile one — so
+          the block is the canvas's `40px 56px 24px` / `32px 20px 20px` verbatim rather than a
+          centred `Container` (whose `md:px-2xl` gutter is 72 px). 20, 32 and 56 are written as
+          values because the spacing scale has no step there; the two that are on the scale
+          (40 = `--spacing-xl`, 24 = `--spacing-lg`) are tokens. */}
+      <div className="md:pt-xl md:pb-lg px-[20px] pt-[32px] pb-[20px] md:px-[56px]">
+        <Stack gap="lg">
           {/* The canvas's mobile artboard puts the two link columns side by side and gives every
               other block the full width; the desktop artboard is the five-column colophon. */}
-          <div className="gap-xl grid grid-cols-2 md:grid-cols-[1.3fr_0.8fr_0.8fr_1.2fr_1fr]">
+          {/* Gaps are the canvas's: 40 px between the desktop columns (`--space-xl`), and on
+              mobile 16 px between the two side-by-side link columns (`--space-md`) with 24 px
+              between the stacked blocks — the nearest scale steps to the mobile artboard's 16
+              and 22. */}
+          <div className="gap-x-md gap-y-lg md:gap-xl grid grid-cols-2 md:grid-cols-[1.3fr_0.8fr_0.8fr_1.2fr_1fr]">
             {/* Identity: mark, wordmark, the relay sentence, the help channel, the trust slot. */}
             <Stack gap="sm" className="col-span-2 md:col-span-1">
               <Row gap="sm" align="center">
                 <Mark size={28} />
-                <Display as="p" size="xl" className="tracking-[0.04em]">
+                {/* 22 px on the mobile artboard, 26 px on the desktop one. Written as values:
+                    the type scale's nearest step (`--text-xl`) is a clamp that lands on 19/24,
+                    and the colophon wordmark is the one place the canvas fixes both ends. */}
+                <Display
+                  as="p"
+                  size="xl"
+                  className="text-[22px] tracking-[0.04em] md:text-[26px]"
+                >
                   {company.tradingName}
                 </Display>
               </Row>
@@ -293,16 +319,23 @@ export function SiteFooter({
               <Label className="mb-xs">
                 {translate("footer.payment.heading")}
               </Label>
-              {paymentMethods.length === 0 ? null : (
+              {/* Either the method names or the "shown at checkout" sentence, never both: with
+                  a method flipped `available` the canvas's row is the names, and the placeholder
+                  sentence beneath it would read as a hedge on a list that is right there
+                  (`/review 30` nit 1). The separator is a literal `" · "`, as the canvas draws
+                  it; locale-aware list formatting (`Intl.ListFormat`) arrives with spec 007,
+                  which owns the first page that lists anything a reader has to parse. */}
+              {paymentMethods.length === 0 ? (
+                <Text size="sm" tone="muted">
+                  {translate("footer.payment.methods")}
+                </Text>
+              ) : (
                 <Text size="sm" tone="muted">
                   {paymentMethods
                     .map((method) => method.displayName)
                     .join(" · ")}
                 </Text>
               )}
-              <Text size="sm" tone="muted">
-                {translate("footer.payment.methods")}
-              </Text>
               <Text size="sm" tone="subtle">
                 {translate("footer.payment.processor")}
               </Text>
@@ -310,11 +343,13 @@ export function SiteFooter({
           </div>
 
           {/* The legal row: legal links, the language list, the consent re-open control. */}
+          {/* The canvas's legal row is one size (`--text-xs`) and one colour for everything in
+              it, links and language list alike, so the size is set on the row. */}
           <Cluster
             gap="lg"
             justify="between"
             align="center"
-            className="border-rule pt-md border-t"
+            className="border-rule pt-md border-t text-xs"
           >
             <LinkColumn
               group={legal}
@@ -328,7 +363,7 @@ export function SiteFooter({
               {/* The canvas lays the language names out horizontally. `LocaleSwitcher`'s markup
                   is spec 003's and stays untouched (AC-3), so the list is laid out from here —
                   the "restyled in place" of §5.3, as a wrapper rather than as an edit. */}
-              <div className="[&_ul]:gap-lg [&_ul]:flex [&_ul]:flex-wrap [&_ul]:items-center">
+              <div className="[&_ul]:gap-md [&_ul]:flex [&_ul]:flex-wrap [&_ul]:items-center">
                 <LocaleSwitcher locale={locale} />
               </div>
               {/* Withdrawal of consent, on every page (`plan/04` §11, §8). TASK-051 binds the
@@ -336,14 +371,14 @@ export function SiteFooter({
               <button
                 type="button"
                 data-fo-consent-reopen=""
-                className="min-h-[44px] text-sm underline underline-offset-4"
+                className="min-h-[44px] underline underline-offset-4"
               >
                 {translate("footer.cookieSettings")}
               </button>
             </Cluster>
           </Cluster>
         </Stack>
-      </Container>
+      </div>
     </footer>
   );
 }
