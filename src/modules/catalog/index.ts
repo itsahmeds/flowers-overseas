@@ -10,10 +10,12 @@
  * AC-9's lint fixtures all use it); British spelling stays in prose and in the *dataset* path
  * `src/config/catalogue/`, which is config and not a module (spec 005 §5.2's ruling).
  *
- * What this barrel exports today is the money vocabulary and nothing else: the read API
- * (`getProduct`, `listProducts`, `resolvePrice`, `priceProjection`, `priceTable`, `fromPrice`,
- * `availability`, `quote`, `cacheTagsFor` — spec 005 §5.2) arrives with the tasks that own each,
- * TASK-061 … TASK-069.
+ * What this barrel exports today is the money vocabulary plus the **taxonomy read API**
+ * (TASK-063): `getProduct`, `listProducts`, `getCategory`, `getOccasion`, `resolveFacets`,
+ * `isAuthoredFacetPath`, `countProductsIn`, `countProductsFor`, `hasIndexableProducts` and
+ * `topProductsForPrebuild`. The rest of spec 005 §5.2's surface — `resolvePrice`,
+ * `priceProjection`, `priceTable`, `fromPrice`, `availability`, `isProductIndexable`, `quote`,
+ * `cacheTagsFor` — arrives with the tasks that own each, TASK-064 … TASK-069.
  *
  * What may never be exported from here, and is asserted by `tests/unit/catalog-barrel.test.ts`
  * (AC-2):
@@ -21,7 +23,10 @@
  *  - **a provider.** `CatalogueProvider` / `PriceProvider` / `FxRateProvider` and the composition
  *    root are internal (`./providers`, `./static`, later `./db`): callers ask the module for a
  *    price, never for a data source, so swapping the static seam for Postgres (TASK-070) touches
- *    no file outside this directory.
+ *    no file outside this directory. From TASK-063 the barrel's *import graph* necessarily reaches
+ *    the composition root — a read function has to read something — so what the test pins is the
+ *    **export list** AC-2 actually names (no provider object, no dataset array, no database
+ *    symbol) plus the rule that only `./static/index.ts` may import a `*.data.ts` file.
  *  - **a dataset path.** `src/config/catalogue/*.data.ts` is read by the static provider only.
  *  - **a database symbol.** No `drizzle`, `postgres`, `pg` or `@/lib/db` import exists anywhere in
  *    the module, and `pnpm check:no-db` covers `src/modules/catalog/**` (and `src/config/**`,
@@ -45,3 +50,27 @@ export {
   PricePointSchema,
   SurchargeSchema,
 } from "./schemas";
+
+// The taxonomy read API (spec 005 §2 "Taxonomy", §5.4, §6; TASK-063). Counts, never verdicts:
+// the six-product threshold of `plan/02` §6 is spec 008's loader's and appears nowhere here.
+export type {
+  Category,
+  FacetResolution,
+  FacetSelection,
+  Occasion,
+  Product,
+  ProductIndexability,
+} from "./types";
+export { FacetSelectionSchema, ListProductsQuerySchema } from "./schemas";
+export {
+  countProductsFor,
+  countProductsIn,
+  getCategory,
+  getOccasion,
+  getProduct,
+  hasIndexableProducts,
+  isAuthoredFacetPath,
+  listProducts,
+  resolveFacets,
+  topProductsForPrebuild,
+} from "./read";

@@ -8,12 +8,22 @@
  *
  * Everything below is parsed at the boundary (`plan/12` §2). The dataset schemas — closed facet
  * enums, `ProductSchema`, `ProductTierSchema`, `AddonSchema` and their `to*Row()` projections —
- * belong to `src/config/catalogue/` and land with the dataset (TASK-061); `PriceProjectionSchema`,
- * `PriceTableSchema`, `AvailabilitySchema`, `FacetSelectionSchema` and `QuoteSchema` land with the
- * functions that produce them (TASK-064 … TASK-068). Nothing here computes a price.
+ * belong to `src/config/catalogue/` and land with the dataset (TASK-061); `FacetSelectionSchema`
+ * and the read API's other boundary schemas landed with the taxonomy read API (TASK-063), and
+ * `PriceProjectionSchema`, `PriceTableSchema`, `AvailabilitySchema` and `QuoteSchema` land with
+ * the functions that produce them (TASK-064 … TASK-068). Nothing here computes a price.
  */
 import { z } from "zod";
 
+import {
+  type FacetName,
+  SkuSchema,
+  facetNames,
+  facetValues,
+  productStatuses,
+} from "@/config/catalogue/schemas";
+import { type CountryIso2, isCountryIso2 } from "@/config/countries";
+import { type LocaleCode, isLocaleCode } from "@/config/locales";
 import { MoneySchema } from "@/modules/i18n";
 
 import { surchargeKinds } from "./types";
@@ -95,3 +105,119 @@ export const PricePointSchema = IntegerMoneySchema.extend({
       path: ["amountMinor"],
     },
   );
+
+/* -------------------------------------------------------------------------- */
+/* Read-API boundary schemas (spec 005 §5.2, `plan/12` §2; TASK-063).          */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * A destination country code, built from `src/config/countries.ts` rather than re-listing the
+ * seven codes: taking a country live is a data flip, so the read API's domain has to move with
+ * the registry (`CLAUDE.md`, `plan/10` §4).
+ *
+ * It is a **destination**, and it is the only geography any function in this module accepts:
+ * there is no buyer country, no IP and no visitor location anywhere in the signature set
+ * (EU 2018/302, ADR-0006, AC-18).
+ */
+export const DestinationIsoSchema = z.custom<CountryIso2>(
+  (value) => typeof value === "string" && isCountryIso2(value),
+  { error: "must be a destination configured in src/config/countries.ts" },
+);
+
+/** A configured locale code, from `src/config/locales.ts` — same reason as the destination. */
+export const LocaleCodeSchema = z.custom<LocaleCode>(
+  (value) => typeof value === "string" && isLocaleCode(value),
+  { error: "must be a locale configured in src/config/locales.ts" },
+);
+
+/** A `product.sku`, reused from the dataset's own schema so the key rule lives in one place. */
+export const ProductSkuSchema = SkuSchema;
+
+/**
+ * A canonical facet selection (spec 005 §5.2 `FacetSelectionSchema`).
+ *
+ * The refinements are what "canonical" means, and they are checked rather than assumed because
+ * `listProducts()` accepts a selection from a caller as well as from `resolveFacets()`: every
+ * value belongs to its facet's closed set (`plan/10` §1.1), no facet repeats a value, values are
+ * in taxonomy order, and an empty value list is not a facet — it is the absence of one, so
+ * `{ colour: [] }` cannot masquerade as "filter on no colour".
+ */
+export const FacetSelectionSchema = z
+  .partialRecord(z.enum(facetNames), z.array(z.string()).readonly())
+  .superRefine((selection, ctx) => {
+    for (const [facet, values] of Object.entries(selection) as [
+      FacetName,
+      readonly string[],
+    ][]) {
+      if (values.length === 0) {
+        ctx.addIssue({
+          code: "custom",
+          path: [facet],
+          message: `\`${facet}\` selects no value; omit the facet instead (spec 005 §5.2)`,
+        });
+        continue;
+      }
+      const allowed = facetValues[facet];
+      const canonical = allowed.filter((value) => values.includes(value));
+      for (const value of values) {
+        if (!allowed.includes(value)) {
+          ctx.addIssue({
+            code: "custom",
+            path: [facet],
+            message: `\`${value}\` is not a \`${facet}\` facet value of plan/10 §1.1`,
+          });
+        }
+      }
+      if (
+        canonical.length === values.length &&
+        canonical.some((value, index) => value !== values[index])
+      ) {
+        ctx.addIssue({
+          code: "custom",
+          path: [facet],
+          message: `\`${facet}\` values must be in taxonomy order (${canonical.join(", ")}); a selection is canonical or it is not comparable`,
+        });
+      }
+      if (new Set(values).size !== values.length) {
+        ctx.addIssue({
+          code: "custom",
+          path: [facet],
+          message: `\`${facet}\` repeats a value`,
+        });
+      }
+    }
+  });
+
+/**
+ * The `searchParams` shape a Next.js page hands to `resolveFacets()`: the awaited object, or a
+ * `URLSearchParams`, which the function normalises before parsing. Unknown parameters are not a
+ * parse error — a buyer can put anything in a query string and a page must still render — they
+ * are reported in `ignored` (`plan/02` §7: facets are `noindex`, not rejected).
+ */
+export const FacetSearchParamsSchema = z.record(
+  z.string(),
+  z.union([z.string(), z.array(z.string()), z.undefined()]),
+);
+
+/**
+ * `listProducts()`'s query. Every field is optional and every default is stated in `read.ts`;
+ * `.strict()` so a misspelt filter is a parse error rather than a silently wider list.
+ *
+ * There is no `sort`, no `q` and no relevance parameter: search and ranking are spec 008's (§3),
+ * and this module exposes one deterministic default order so 008's "sorted by bestsellers"
+ * disclosure has something true to describe (`plan/07`, Omnibus ranking transparency).
+ */
+export const ListProductsQuerySchema = z
+  .object({
+    facets: FacetSelectionSchema.optional(),
+    /** Keep only products with an active retail price for this **destination**. */
+    countryIso: DestinationIsoSchema.optional(),
+    /** Defaults to `["active"]`: a draft or retired product is not listed unless asked for. */
+    statuses: z.array(z.enum(productStatuses)).min(1).readonly().optional(),
+    limit: z.number().int().positive().optional(),
+    offset: z.number().int().nonnegative().optional(),
+  })
+  .strict();
+
+/** The prebuild ordering's count (`plan/01` §3's "top 50 products per live locale"). */
+export const PrebuildCountSchema = z.number().int().positive();
