@@ -80,15 +80,51 @@ describe("src/config/categories.ts", () => {
     expect(desktop).toContain('aria-label="Categories"');
   });
 
-  it("draws the mobile artboard's six-entry subset, with its shorter same-day label", () => {
+  it("draws the mobile artboard's six-entry subset, in its order, with its shorter same-day label", () => {
+    // `mobileOrder` (TASK-048, spec §14 A4): the smaller artboard prints these six in an order of
+    // its own, which is why the registry carries a position and not just a flag.
     expect(mobileCategories.map((category) => category.id)).toEqual([
       "best-sellers",
-      "occasions",
       "bouquets",
       "roses",
       "plants",
+      "occasions",
       "same-day-delivery",
     ]);
+    expect(mobileCategories.map((category) => category.mobileOrder)).toEqual([
+      1, 2, 3, 4, 5, 6,
+    ]);
+    // And that order is the artboard's own, read out of the artboard rather than restated: the
+    // labels in `homepage-mobile.dc.html`'s category nav, in document order.
+    const row = mobile.slice(
+      mobile.indexOf('<nav aria-label="Categories"'),
+      mobile.indexOf("</nav>"),
+    );
+    const drawn = [...row.matchAll(/>([^<>]+)<\/a>/g)].map(
+      (match) => match[1] ?? "",
+    );
+    expect(drawn).toEqual(
+      mobileCategories.map(
+        (category) =>
+          messages.nav.category[
+            (category.shortLabelKey ?? category.labelKey).split(".").pop() ?? ""
+          ] ?? "",
+      ),
+    );
+    // A row outside the mobile subset may not carry a position, and the positions have no gap.
+    expect(
+      CATEGORIES.filter(
+        (category) =>
+          !category.showOnMobile && category.mobileOrder !== undefined,
+      ),
+    ).toEqual([]);
+    expect(
+      CategoryRegistrySchema.safeParse(
+        CATEGORIES.map((category) =>
+          category.id === "roses" ? { ...category, mobileOrder: 9 } : category,
+        ),
+      ).success,
+    ).toBe(false);
     const short = messages.nav.category.sameDayShort;
     expect(short).toBe("Same-day");
     expect(mobile).toContain(`>${short}<`);

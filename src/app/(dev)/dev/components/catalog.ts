@@ -32,10 +32,11 @@ export const SECTIONS = [
   "Buttons",
   "Chips",
   "Photography placeholders",
-  "Contrast manifest",
+  "Site header",
   // TASK-049: the five `SiteFooter` states of spec 004 §5.3, so the visual and axe suites reach
   // `links-populated` and `company-registered` years before 007 publishes a page or the OÜ exists.
   "Site footer",
+  "Contrast manifest",
 ] as const;
 
 /** The colour ramps, in the order `globals.css` declares them. */
@@ -241,6 +242,19 @@ export const PRIMITIVE_CAPTIONS = {
   visuallyHiddenLead: "VisuallyHidden: ",
   visuallyHiddenTrail:
     "(the element before this parenthesis is present for a screen reader only)",
+} as const;
+
+/**
+ * The header's states (TASK-048, spec §14 A4). Only two of the four §5.3 states are renderable on
+ * this page: `sticky-scrolled` is a scroll position rather than markup, and `nav-populated` needs
+ * a `published: true` row that Phase 0 does not have — it is covered by the mocked-registry
+ * assertions in `tests/unit/ui-site-header.test.tsx` instead. The breakpoint states are shown by
+ * the two viewports of `tests/visual/header.spec.ts`.
+ */
+export const HEADER_STATES = {
+  heading:
+    "SiteHeader \u00b7 default (Phase 0: every category and account target unpublished)",
+  note: "Full-bleed, zero client JavaScript, and not one form control. Two sibling elements since spec \u00a714 A4's addendum: the utility strip scrolls with the page, and `<header role=\"banner\">` \u2014 masthead + category row, 132 px at 390 px and 138 px at 1440 px \u2014 is what is sticky (an inner sticky wrapper is bounded by its parent's padding box and has zero px of room; the strip's height is content-driven, so a negative sticky offset would be exact only at the widths it is tested at). The chrome the document reserves is still their sum: 245 px on the mobile artboard and 183 px on the desktop one, band by band: utility strip 44 (113 at 390 px, where it runs to three lines), masthead 50 / 84, mobile search band 52, category row 28 / 52, plus the hairlines. Every category, `For florists`, `Sign in`, `My orders` and `Basket (0)` renders as text because its registry row is unpublished, and so does the search band \u2014 spec \u00a714 A4: the artboards draw a placeholder sentence and the word `Search`, there is no search route until spec 008, and this header renders no affordance that does nothing. The language switcher and the currency chip sit in the utility strip, where they are visible at 390 px without scrolling; every rendered link clears 44 px; the one control left is the mobile menu button, disabled because there is nothing to disclose yet.",
 } as const;
 
 export const MIRROR_NOTE =

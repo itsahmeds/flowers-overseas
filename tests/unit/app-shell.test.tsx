@@ -213,7 +213,10 @@ describe("the `[locale]` document (AC-6)", () => {
     for (const href of ['href="/en"', 'href="/en-gb"', 'href="/pl"']) {
       expect(html).toContain(href);
     }
-    expect(html).not.toContain('href="/de"');
+    // The masthead lockup of spec 004's header links to the locale home (AC-7), so `/de` appears
+    // exactly once on the `/de` document — and **not** from the switcher, whose current entry is
+    // the `<span aria-current="page">` asserted above (spec 003 §5.3).
+    expect(html.match(/href="\/de"/g)).toHaveLength(1);
     expect(html).toContain('lang="pl" hrefLang="pl">Polski</a>');
   });
 

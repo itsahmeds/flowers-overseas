@@ -30,6 +30,8 @@ describe("src/modules/ui barrel", () => {
         "Icon",
         "MIRRORED_IN_RTL",
         "Mark",
+        // chrome (TASK-048)
+        "SiteHeader",
         // layout primitives
         "CONTAINER_WIDTHS",
         "Cluster",

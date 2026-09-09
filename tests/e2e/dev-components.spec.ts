@@ -64,7 +64,16 @@ test.describe("/dev/components", () => {
     // Five variants × (default, hover, active, focus-visible, disabled, small, full-width,
     // with-icon) = 40 `Continue` buttons; the busy one and the link one carry their own labels.
     expect(await buttons.count()).toBe(40);
-    await expect(page.getByRole("button", { disabled: true })).toHaveCount(5);
+    // 5 primitive `disabled` buttons, plus the header's one inert control (TASK-048, spec §14
+    // A4): the mobile menu button, which is `md:hidden` and so is in the accessibility tree
+    // below the `md` breakpoint and out of it above — hence the count is read from the DOM
+    // rather than hard-coded per project.
+    const headerDisabled = await page
+      .locator("[data-fo-header] button[disabled]:visible")
+      .count();
+    await expect(page.getByRole("button", { disabled: true })).toHaveCount(
+      5 + headerDisabled,
+    );
     await expect(page.locator('button[aria-busy="true"]')).toHaveCount(5);
     await expect(
       page.getByRole("link", { name: "See destinations" }),
@@ -81,6 +90,9 @@ test.describe("/dev/components", () => {
    * with the footer's five states. That is a *component's own* field, not a reusable form layer,
    * and the non-goal it must not violate — no exported `Field`, `Input`, `Select`, `Textarea` or
    * `Price` on the `ui` barrel — is asserted directly in `tests/unit/ui-barrel.test.ts`.
+   * The **site header** is on this page too and contributes no control at all, since spec §14 A4
+   * renders its search band as the text the artboards draw rather than as an input and a submit
+   * button (TASK-048) — asserted here rather than assumed.
    */
   test("renders no form control and no price (spec §3, §8)", async ({
     page,
@@ -93,6 +105,21 @@ test.describe("/dev/components", () => {
           nodes.filter((node) => node.closest("footer") === null).length,
       );
     expect(controlsOutsideTheFooter).toBe(0);
+    // Two elements since §14 A4's addendum: the utility strip that scrolls with the page, and
+    // the sticky banner holding the masthead and the category row.
+    await expect(page.locator("[data-fo-utility]")).toHaveCount(1);
+    await expect(page.locator("[data-fo-header]")).toHaveCount(1);
+    await expect(
+      page.locator(
+        ["[data-fo-utility]", "[data-fo-header]"]
+          .flatMap((root) =>
+            ["input", "form", "select", "textarea", "label"].map(
+              (control) => `${root} ${control}`,
+            ),
+          )
+          .join(", "),
+      ),
+    ).toHaveCount(0);
     for (const section of ["Fields", "Prices"]) {
       await expect(
         page.getByRole("heading", { level: 2, name: section, exact: true }),

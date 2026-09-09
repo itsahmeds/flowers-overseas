@@ -24,7 +24,8 @@
     "operatedBy": "Operated by {legalName}, {address}, {registrationNumber}.",
     "support": {
       "hours": "Mon–Sat 8–20 CET",
-      "label": "Help & WhatsApp"
+      "label": "Help & WhatsApp",
+      "whatsapp": "WhatsApp"
     }
   },
   "destinations": {
@@ -140,10 +141,23 @@
       "sameDayShort": "Same-day",
       "sympathy": "Sympathy"
     },
+    "currency": {
+      "label": "Prices shown in {currency}"
+    },
     "forFlorists": "For florists",
+    "menu": {
+      "label": "Menu"
+    },
     "search": {
       "help": "Search opens when the shop does.",
-      "label": "Search flowers, occasions, a city or a country"
+      "label": "Search flowers, occasions, a city or a country",
+      "submit": "Search"
+    },
+    "utility": {
+      "cutoff": "Order by 14:00 Warsaw time for same-day delivery",
+      "cutoffShort": "Order by 14:00 Warsaw time · same-day",
+      "guarantee": "7-day freshness guarantee",
+      "pricesInclude": "Prices include delivery and VAT"
     }
   }
 }

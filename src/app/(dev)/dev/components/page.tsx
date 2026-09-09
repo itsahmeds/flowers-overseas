@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import type { ReactElement, ReactNode } from "react";
 
+import { setRequestLocale } from "next-intl/server";
+
 import { devUiEnabled } from "@/lib/env.schema";
 import { documentFallbackLocale, localePath } from "@/modules/i18n";
 import {
@@ -25,6 +27,7 @@ import {
   type FooterView,
   Row,
   SiteFooter,
+  SiteHeader,
   SkipLink,
   Stack,
   Text,
@@ -43,6 +46,7 @@ import {
   FOOTER_STATES,
   GALLERY_INTRO,
   GALLERY_TITLE,
+  HEADER_STATES,
   LABEL_SAMPLE,
   LAYER_TOKENS,
   MIRROR_NOTE,
@@ -177,8 +181,11 @@ function footerStateView(
 export default function DevComponentsPage(): ReactElement {
   if (!devUiEnabled(process.env)) notFound();
   // The gallery has no locale of its own (see `(dev)/layout.tsx`): the chrome renders in the
-  // x-default locale, exactly as `/` and the 404 do.
+  // x-default locale, exactly as `/` and the 404 do. `SiteHeader` reads its copy through
+  // next-intl like every other component, so that locale is published to the request here rather
+  // than the header growing a "no locale" branch it would never take in production.
   const galleryLocale = documentFallbackLocale().code;
+  setRequestLocale(galleryLocale);
 
   return (
     <>
@@ -470,6 +477,23 @@ export default function DevComponentsPage(): ReactElement {
           <Photo ratio="landscape" />
         </Section>
 
+        {/* The header is full-bleed by design, so it is rendered outside the section's padding
+            through a negative-free wrapper: the box below is the header at this viewport's
+            breakpoint, not a scaled copy of it. */}
+        <Section title={SECTIONS[10]}>
+          <Stack gap="sm">
+            <Text size="xs" tone="subtle">
+              {HEADER_STATES.heading}
+            </Text>
+            <div className="border-rule border">
+              <SiteHeader locale={galleryLocale} />
+            </div>
+            <Text measure size="sm" tone="muted">
+              {HEADER_STATES.note}
+            </Text>
+          </Stack>
+        </Section>
+
         <Section title={SECTIONS[11]}>
           {FOOTER_STATES.map((state) => (
             <Stack key={state.id} gap="sm">
@@ -485,7 +509,8 @@ export default function DevComponentsPage(): ReactElement {
             </Stack>
           ))}
         </Section>
-        <Section title={SECTIONS[10]}>
+
+        <Section title={SECTIONS[12]}>
           <Stack gap="xs">
             {CONTRAST_PAIRS.map((pair) => (
               <Row

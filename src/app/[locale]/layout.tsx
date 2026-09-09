@@ -14,7 +14,7 @@ import {
   routableLocale,
   routableLocaleCodes,
 } from "@/modules/i18n";
-import { fontVariables, SiteFooter, SkipLink } from "@/modules/ui";
+import { fontVariables, SiteFooter, SiteHeader, SkipLink } from "@/modules/ui";
 
 import "../globals.css";
 
@@ -141,6 +141,10 @@ export default async function LocaleLayout({
               asks for through the `SkipLink` primitive — off-screen until focused, then a paper
               card with the focus ring above every other layer. Same target, same message key. */}
           <SkipLink>{t("skipToContent")}</SkipLink>
+          {/* The commerce header of spec 004 §13's resolution note (TASK-048): one Server
+              Component, no client JavaScript, a reserved height per breakpoint, and every
+              unpublished registry target rendered as text (AC-7, AC-8, AC-14). */}
+          <SiteHeader locale={locale.code} />
           {children}
           {/* The colophon of spec 004 §5.3, on every localised document (AC-9): a Server
               Component with zero client JavaScript, whose links, company identity and payment

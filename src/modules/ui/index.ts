@@ -44,6 +44,12 @@ export type { IconName, IconProps } from "./icons/Icon";
 export { Mark } from "./icons/Mark";
 export type { MarkProps } from "./icons/Mark";
 
+// Chrome (spec 004 §5.3; TASK-048). `SiteHeader` is a synchronous Server Component: it takes the
+// locale as a prop and reads its copy through `useTranslations`, so it renders wherever a request
+// locale is set and adds no client JavaScript (§14 A1).
+export { SiteHeader } from "./layout/SiteHeader.tsx";
+export type { SiteHeaderProps } from "./layout/SiteHeader.tsx";
+
 // Layout primitives.
 export {
   Cluster,
