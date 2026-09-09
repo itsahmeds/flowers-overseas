@@ -140,7 +140,13 @@ export interface FontManifest {
   readonly repertoire: string;
   readonly glyphCount: number;
   readonly budgetBytes: number;
-  readonly totalBytes: number;
+  /**
+   * Bytes of the subset faces, together. Named `subsetBytes` rather than `totalBytes` because
+   * `fo/no-float-money` (enabled for `scripts/` by TASK-060, spec 005 AC-4) reads a `total…`
+   * annotated `number` as money, and AC-4 permits no `eslint-disable` for that rule: a byte
+   * count is not money, so the field is renamed rather than the rule suppressed.
+   */
+  readonly subsetBytes: number;
   readonly faces: readonly FontManifestEntry[];
 }
 
@@ -203,14 +209,14 @@ async function main(root: string): Promise<void> {
     writeFileSync(resolve(root, FONT_DIR, name), await download(url));
   }
 
-  const totalBytes = faces.reduce((sum, face) => sum + face.bytes, 0);
+  const subsetBytes = faces.reduce((sum, face) => sum + face.bytes, 0);
   const manifest: FontManifest = {
     generatedBy: "pnpm fonts:build (scripts/fonts/build-fonts.ts)",
     licence: "SIL Open Font License 1.1 (both families)",
     repertoire: REPERTOIRE,
     glyphCount: REPERTOIRE.length,
     budgetBytes: FONT_BUDGET_BYTES,
-    totalBytes,
+    subsetBytes,
     faces,
   };
   writeFileSync(
@@ -224,9 +230,9 @@ async function main(root: string): Promise<void> {
     );
   }
   process.stdout.write(
-    `total ${String(totalBytes)} B of ${String(FONT_BUDGET_BYTES)} B budget; ${String(REPERTOIRE.length)} characters\n`,
+    `total ${String(subsetBytes)} B of ${String(FONT_BUDGET_BYTES)} B budget; ${String(REPERTOIRE.length)} characters\n`,
   );
-  if (totalBytes > FONT_BUDGET_BYTES) {
+  if (subsetBytes > FONT_BUDGET_BYTES) {
     process.stderr.write("font subsets exceed the AC-4 budget\n");
     process.exit(1);
   }

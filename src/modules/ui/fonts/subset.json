@@ -4,7 +4,7 @@
   "repertoire": " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~–—‘’“”„…·•€£°×→ ‑ÄÖÜäöüßĄąĆćĘęŁłŃńÓóŚśŹźŻżĂăÂâÎîȘșȚțÇçĞğİıŞşÀÁÃÅÆÈÉÊËÌÍÏÑÒÔÕØÙÚÛÝàáãåæèéêëìíïñòôõøùúûýÿ",
   "glyphCount": 198,
   "budgetBytes": 46080,
-  "totalBytes": 40844,
+  "subsetBytes": 40844,
   "faces": [
     {
       "file": "newsreader-500-latin-ext.woff2",

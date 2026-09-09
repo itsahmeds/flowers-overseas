@@ -20,8 +20,21 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-/** The spec 003 file set (§5.2's file list). Extend this, not the caller. */
-export const SCANNED_PATHS = ["src/config", "src/modules/i18n"] as const;
+/**
+ * The scanned file set. Extend this, not the caller.
+ *
+ * `src/config` and `src/modules/i18n` are spec 003's (§5.2's file list). `src/modules/catalog` is
+ * spec 005's (AC-2, TASK-060): the catalogue and pricing module is written against three provider
+ * interfaces precisely so that it is readable, testable and demoable while spec 002's
+ * provisioning is parked, and this is the assertion behind that claim. The dataset directory
+ * `src/config/catalogue/**` (TASK-061) is covered by the `src/config` entry, which is recursive —
+ * listing it again would report every hit in it twice.
+ */
+export const SCANNED_PATHS = [
+  "src/config",
+  "src/modules/i18n",
+  "src/modules/catalog",
+] as const;
 
 const SCANNED_EXTENSIONS = [".ts", ".tsx", ".mts", ".cts", ".js", ".jsx"];
 

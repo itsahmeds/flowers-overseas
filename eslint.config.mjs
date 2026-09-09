@@ -24,10 +24,9 @@ const eslintConfig = defineConfig([
   {
     // spec 001 §7: logical CSS and no literal user-facing strings; §5 + ADR-0009 + ADR-0006:
     // no direct order-status writes and no geo redirects. Enforced on application code.
-    // `fo/no-float-money` is deliberately absent: spec 001 §2 ships it "lint fixture only in
-    // 001; enforced on real code from 005", because the money vocabulary (`*_minor` field and
-    // column names) is fixed by spec 005. Enable it there:
-    //   "fo/no-float-money": "error", // enabled by spec 005
+    // `fo/no-float-money` is switched on for four roots by the `fo/float-money` block below,
+    // which is where spec 001 §2's "lint fixture only in 001; enforced on real code from 005"
+    // promise is discharged (spec 005 AC-4, TASK-060).
     name: "fo/rules",
     files: ["src/**/*.ts", "src/**/*.tsx"],
     plugins: { fo },
@@ -57,6 +56,30 @@ const eslintConfig = defineConfig([
     name: "fo/logger-console",
     files: ["src/lib/logger.ts"],
     rules: { "no-console": "off" },
+  },
+  {
+    // spec 005 §2 "Pricing", AC-4 (TASK-060): `fo/no-float-money` **enabled**, on the four roots
+    // spec 005 names — application code, the authored config (which is where the catalogue
+    // dataset and its prices live), the seed scripts spec 002's importer runs and the repository
+    // scripts. This is spec 001 TASK-004's "fixture-only in 001, enforced from spec 005" promise
+    // discharged; spec 002 AC-6 becomes a regression check when it unparks.
+    //
+    // The roots are listed separately rather than folded into `fo/rules`' `src/**` glob because
+    // AC-4 is a claim about all four, and `tests/unit/lint-fixtures.test.ts` asserts the rule is
+    // live for one file in each — a rule that quietly stopped covering `seed/` or `scripts/`
+    // would otherwise still look enabled. **No `eslint-disable` for this rule may exist anywhere
+    // in the repository** (AC-4, asserted by the same test): money that cannot be expressed in
+    // integer minor units is a spec question, not a suppression.
+    name: "fo/float-money",
+    files: [
+      "src/**/*.ts",
+      "src/**/*.tsx",
+      "src/config/**/*.ts",
+      "seed/**/*.ts",
+      "scripts/**/*.ts",
+    ],
+    plugins: { fo },
+    rules: { "fo/no-float-money": "error" },
   },
   {
     // plan/01 §5: `app/` imports from `modules/`, never the reverse; `modules/*` import each
@@ -89,6 +112,21 @@ const eslintConfig = defineConfig([
       "fo/no-raw-color": "error",
       "no-console": "error",
     },
+  },
+  {
+    // `fo/no-float-money` over its own fixture pair (spec 005 AC-4, T-02; TASK-060), scoped by
+    // name for the reason the `fo/no-adhoc-intl` block below is: several other fixtures name a
+    // `price` or a `total` in passing to make a *different* rule's point, and flagging them here
+    // would blur which rule each fixture is evidence for. `float-money.ts` carries one violation
+    // per shape the rule detects (decimal literal, `number` annotation, `parseFloat`, `toFixed`)
+    // and `float-money-valid.ts` — integer minor units through `Intl` — must stay clean.
+    name: "fo/float-money-fixtures",
+    files: ["tests/fixtures/lint/float-money*.ts"],
+    plugins: { fo },
+    languageOptions: {
+      parserOptions: { project: false, projectService: false },
+    },
+    rules: { "fo/no-float-money": "error" },
   },
   {
     // `fo/no-adhoc-intl` over its own fixtures only (spec 003 AC-21, TASK-037), rather than over

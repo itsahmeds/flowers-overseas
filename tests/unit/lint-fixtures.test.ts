@@ -5,6 +5,8 @@
  * lint run (`eslint .`) still ignores the fixture directory.
  */
 import { ESLint } from "eslint";
+import { execFileSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -111,9 +113,19 @@ describe("pnpm lint:fixtures over the real configs", () => {
     }
   });
 
-  it("leaves float-money.ts unreported: the rule ships disabled until spec 005", () => {
-    // spec 001 §2: "Lint fixture only in 001; enforced on real code from 005".
-    expect(rulesFor("float-money.ts")).toEqual([]);
+  /**
+   * spec 005 AC-4 / T-02 (TASK-060): spec 001 shipped the rule "fixture only in 001; enforced on
+   * real code from 005", and this is the assertion of the flip. One violation per shape the rule
+   * detects, in fixture order: the decimal literal (`listPrice = 12.5`), the `number` annotation
+   * (`deliveryFee: number`), `parseFloat(rawPrice)` and `amount.toFixed(2)`.
+   */
+  it("reports every shape of float money in float-money.ts (spec 005 AC-4)", () => {
+    expect(rulesFor("float-money.ts")).toEqual([
+      "fo/no-float-money",
+      "fo/no-float-money",
+      "fo/no-float-money",
+      "fo/no-float-money",
+    ]);
   });
 
   it("keeps the fixture directory out of the main lint run", async () => {
@@ -130,19 +142,97 @@ describe("pnpm lint:fixtures over the real configs", () => {
     expect(await eslint.isPathIgnored("src/app/page.tsx")).toBe(false);
   });
 
-  it("does not enable fo/no-float-money on src/** yet (spec 005 flips it on)", async () => {
+  /**
+   * spec 005 AC-4's wiring clause, all four roots (TASK-060). The rule is enabled for `src/`,
+   * `src/config/`, `seed/` and `scripts/`; a rule that quietly stopped covering one of them —
+   * `seed/`, say, where spec 002's importer will restate prices — would still read as "enabled"
+   * from the config file alone, so each root is calculated separately. `calculateConfigForFile`
+   * answers for a path that does not exist yet, which is how the dataset and the seed importer
+   * are covered before they are written.
+   */
+  it("enables fo/no-float-money on all four roots of spec 005 AC-4", async () => {
+    const eslint = new ESLint({
+      cwd: repoRoot,
+      overrideConfigFile: resolve(repoRoot, "eslint.config.mjs"),
+    });
+    for (const file of [
+      "src/modules/catalog/pricing/resolve.ts",
+      "src/config/catalogue/prices.data.ts",
+      "seed/catalogue/import-prices.ts",
+      "scripts/catalogue-check.ts",
+    ]) {
+      const config = await eslint.calculateConfigForFile(
+        resolve(repoRoot, file),
+      );
+      expect(config.rules?.["fo/no-float-money"]?.[0], file).toBe(2);
+    }
+  });
+
+  it("keeps the other fo rules on src/** where spec 001 put them", async () => {
     const eslint = new ESLint({
       cwd: repoRoot,
       overrideConfigFile: resolve(repoRoot, "eslint.config.mjs"),
     });
     const config = await eslint.calculateConfigForFile(
-      resolve(repoRoot, "src/modules/catalog/pricing.ts"),
+      resolve(repoRoot, "src/modules/catalog/pricing/resolve.ts"),
     );
-    expect(config.rules?.["fo/no-float-money"]).toBeUndefined();
     expect(config.rules?.["fo/no-direct-order-status-write"]?.[0]).toBe(2);
     expect(config.rules?.["fo/no-geo-redirect"]?.[0]).toBe(2);
     expect(config.rules?.["fo/no-adhoc-intl"]?.[0]).toBe(2);
     expect(config.rules?.["fo/no-raw-color"]?.[0]).toBe(2);
+  });
+
+  /**
+   * The rule fires on real application code, not only on a fixture (spec 005 AC-4's "`pnpm lint`
+   * fails on … and passes on `amountMinor: 4590`"), and — the clause that makes the flip
+   * irreversible in practice — **no `eslint-disable` for it exists anywhere in the repository**.
+   * Money that cannot be expressed in integer minor units is a spec question, not a suppression.
+   */
+  it("fires on float money in src/** and passes on integer minor units", async () => {
+    const eslint = new ESLint({
+      cwd: repoRoot,
+      overrideConfigFile: resolve(repoRoot, "eslint.config.mjs"),
+    });
+    const [invalid] = await eslint.lintText(
+      [
+        "export const total = 45.9;",
+        "export function quote(price: string): number { return parseFloat(price); }",
+        "export const shown = total.toFixed(2);",
+      ].join("\n"),
+      { filePath: resolve(repoRoot, "src/modules/catalog/probe.ts") },
+    );
+    expect(
+      (invalid?.messages ?? []).filter(
+        (message) => message.ruleId === "fo/no-float-money",
+      ),
+    ).toHaveLength(3);
+
+    const [valid] = await eslint.lintText(
+      'export const price = { amountMinor: 4590, currency: "EUR" } as const;',
+      { filePath: resolve(repoRoot, "src/modules/catalog/probe.ts") },
+    );
+    expect(
+      (valid?.messages ?? []).map((message) => message.ruleId),
+    ).not.toContain("fo/no-float-money");
+  });
+
+  it("carries no lint suppression for the money rule anywhere (spec 005 AC-4)", () => {
+    const tracked = execFileSync("git", ["ls-files"], {
+      cwd: repoRoot,
+      encoding: "utf8",
+    })
+      .split("\n")
+      .filter((file) => /\.(?:ts|tsx|mts|cts|js|jsx|mjs|cjs)$/.test(file));
+    expect(tracked.length).toBeGreaterThan(0);
+
+    // Assembled from parts so that this assertion is not its own only offender.
+    const disablePattern = new RegExp(
+      ["eslint", "-", "disable[^\\n]*no-float-money"].join(""),
+    );
+    const offenders = tracked.filter((file) =>
+      disablePattern.test(readFileSync(resolve(repoRoot, file), "utf8")),
+    );
+    expect(offenders).toEqual([]);
   });
 
   it("makes no-console an error in src/** but not in src/lib/logger.ts (AC-12)", async () => {

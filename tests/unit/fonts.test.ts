@@ -57,7 +57,7 @@ describe("the committed font subsets (AC-4)", () => {
 
   it("fits the ≤45 KB per-page budget across both families", () => {
     const total = manifest.faces.reduce((sum, face) => sum + face.bytes, 0);
-    expect(manifest.totalBytes).toBe(total);
+    expect(manifest.subsetBytes).toBe(total);
     expect(manifest.budgetBytes).toBe(FONT_BUDGET_BYTES);
     expect(
       total,
