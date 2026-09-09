@@ -27,6 +27,7 @@ Next.js App Router (TS strict) · Supabase Postgres EU (Drizzle for data, Supaba
 - No PII in logs, URLs, analytics. Recipient data minimised (plan/07).
 - Secrets only in env; `.env.example` kept current and validated by `lib/env.ts`.
 - Conventional commits; one task = one PR; feature flags for corridor/locale/payment-method rollout.
+- **`docs/design/` is the design source of truth** (TASK-059). Every UI spec adds its flows and wireframes there as `.dc.html` artboards before `/plan-tasks`; implementers match them pixel-for-pixel; the system files stay in step with `src/modules/ui`. No page is built from a description alone.
 
 ## Where state lives
 | What | Where |

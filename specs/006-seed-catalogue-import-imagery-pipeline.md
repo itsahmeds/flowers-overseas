@@ -2,12 +2,12 @@
 
 | Field | Value |
 |---|---|
-| Status | draft |
+| Status | approved |
 | Phase | 0 |
 | Plan refs | plan/01 §3 §4.1 §5 §6 §7 §11 · plan/02 §4 §5.2 §6 §9 §10 §11 §12 §14 §15 · plan/03 §4 §5 §6 §7 · plan/04 §3 §4 §12 · plan/05 rows 2 4 8–12 · plan/07 §1.2 §1.4 §2.1 §2.2 §4 §7 §8 §9 · plan/08 §2 (image optimisation cost) §5 · plan/09 Phase 0 week 22–28 Sep · plan/10 §1 §2 §3 §4 §5 §7 · plan/12 §4 §5 · plan/13 §A (A3, A4, A9), §D (D1) |
 | ADRs | ADR-0014 (AI-generated seed imagery) · ADR-0015 (R2 for images; variants generated once by a job; portable Postgres) · ADR-0007 (index only true pages) · ADR-0003 (locales en/en-gb/de/pl) · ADR-0012 (hosting; image optimiser per host) · ADR-0016 (CSP shape — `img-src` consequence, §8) |
 | Author / date | spec-writer via /spec · 2026-09-09 |
-| Approved by / date | — (draft; §13 must be empty at approval) |
+| Approved by / date | Ahmed (founder) · 2026-09-09 — defaults accepted; Q1 answered: AI-generated or free-licence stock |
 
 ---
 
@@ -351,6 +351,8 @@ Note the dependency on **spec 005**: T8 and T9 render images through spec 004's 
 - **Exit signal.** `/status` shows `006 implemented` for the Phase-0 half with T10/T11 `blocked` on provisioning; `seed-check` green and required; the preview shows a photographed homepage hero and a dozen product images with the provenance note in four locales, every other slot honestly captioned; Lighthouse green with image transfer under budget; specs 008 and 009 have a dataset and an image pipeline to build on.
 
 ## 13. Open questions
+
+**Resolved 2026-09-09 (founder: "accept defaults"; Q1 answered explicitly):** Q1 imagery is **AI-generated under the locked style guide or free-licence stock** (CC0 / public-domain / Unsplash-licence class — no paid stock; every asset records `generator_model` or `licence` + `credit` in provenance and the AI honesty label applies to generated assets; the hero and delivery band may use free stock where AI output reads as synthetic, and a real photograph replaces them when the founder has one); Q2 names stay English, descriptors localise; Q3 12 products × 2 assets plus the homepage slots; Q4 ≤6 MB derived bytes committed until R2, deleted in the R2-flip task; Q5 AVIF + WebP at the seven widths, one JPEG per asset for OG/email; Q6 originals in the founder's store + git-ignored local folder; Q7 `fo-media` / `fo-media-preview` / `fo-backups`, `media.flowersoverseas.com`; Q8 both questions go on the October legal-drafts list, label shipped now; Q9 founder signs off against the §2.4 checklist; Q10 spec 002 task 10 reads `seed/data/` (spec 002 §14 A1); Q11 the seven media columns fold into migration `0003` (spec 002 §14 A1); Q12 watermark mechanism kept, no watermarked asset in Phase 0. Original questions kept below for the record.
 
 Each has a recommended default. The spec is `draft` until they are answered and the founder marks it `approved`.
 

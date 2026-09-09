@@ -2,12 +2,12 @@
 
 | Field | Value |
 |---|---|
-| Status | draft |
+| Status | approved |
 | Phase | 0 |
 | Plan refs | plan/01 §3 §4.1 §4.3 §4.4 §5 §7 §8 · plan/02 §3 §4 §6 §7 §9 §10 §11 §14 §15 · plan/03 §1 §5 §7 §9 §10 §11 · plan/04 §2 §7 §8 §10 §12 · plan/05 (shop page data) · plan/06 §2.2 §3 §4 §7 · plan/07 §2.1 §2.2 §3 §4 §8 · plan/09 Phase 0 week 22–28 Sep · plan/10 §1 §2 §4 · plan/12 §2 §4 §5 · plan/13 §A A3 A4, §B B1 B7 B13 |
 | ADRs | ADR-0015 (portable Postgres on Neon, R2, Auth.js) · ADR-0009 (event-sourced orders — bounds what 005 may not do) · ADR-0007 (index only true pages) · ADR-0002 (first corridor UK→PL) · ADR-0003 (locales en/en-gb/de/pl) · ADR-0006 (no IP redirects) · ADR-0014 (AI seed imagery) |
 | Author / date | spec-writer via /spec · 2026-09-09 |
-| Approved by / date | Ahmed · YYYY-MM-DD |
+| Approved by / date | Ahmed (founder) · 2026-09-09 — "accept defaults for both specs"; every §13 recommendation is binding |
 
 ## 1. Problem
 
@@ -345,6 +345,8 @@ Behavioural contracts worth pinning:
 - **Exit signal.** `/status` shows `005 implemented (tasks 1–10)`, `catalogue-check` green in CI, spec 006 able to import imagery against a real dataset and spec 008/009 able to render a price without inventing one, with tasks 11–12 recorded as `blocked` behind TASK-013 rather than dropped.
 
 ## 13. Open questions
+
+**Resolved 2026-09-09 (founder: "accept defaults"; each recommendation below is the binding answer):** Q1 EUR/GBP `x90`, PLN `x9`, HUF `x90`; Q2 ECB daily rates, 2.5% buffer, 48 h max age then destination currency; Q3 add-ons priced per country with their own VAT rate; Q4 stem-count / S-M-L / single tier names, plain (no marketing word); Q5 30-minute signed quote, secret lands in spec 010; Q6 middle tier preselected via `product_tier.is_default`; Q7 surcharges as dated rows; Q8 all three spec 002 amendments folded into migration `0003` (spec 002 §14 A1); Q9 this spec owns the dataset in `src/config/catalogue/*.data.ts`; Q10 no money on destination-less hubs in Phase 0; Q11 EUR, GBP, PLN only behind `currency.{code}` flags. Original questions kept below for the record.
 
 Each has a recommended default; the spec is `draft` until they are answered and the founder marks it `approved`.
 

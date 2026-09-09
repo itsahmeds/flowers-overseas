@@ -40,7 +40,7 @@ export const OPEN_DECISION_IDS = [
   "A10",
 ] as const;
 /** Phase 0 has twelve specs; spec 001 is the only one approved so far (§12 exit signal). */
-export const PHASE_0_SPECS_APPROVED = "4 / 12";
+export const PHASE_0_SPECS_APPROVED = "6 / 12";
 /** The nine columns of the task table, in order. */
 export const TASK_COLUMNS = [
   "ID",

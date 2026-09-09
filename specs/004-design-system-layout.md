@@ -412,3 +412,9 @@ filtering the flight-block reports. The enforce flip (`CSP_REPORT_ONLY=false`) l
 scope and belongs to TASK-058. ADR-0016 is not edited; its "exactly one inline script" reads as
 "exactly one application inline script".
 Raised by: `/review 28` nit 1, 2026-09-09.
+
+**A3 — The design canvas becomes a living design system in the repository (§2, §5; founder instruction 2026-09-09).**
+Original: `docs/design/homepage-v1/` holds the approved homepage artboards, tokens and identity as the source of truth for this spec's tasks.
+Corrected (founder, 2026-09-09): `docs/design/` is the design source of truth for the whole product — system (tokens and every shipped primitive with states), flows (the Phase 0 buyer and florist journeys) and wireframes (one per Phase 0 page type in `plan/05`), maintained as `.dc.html` artboards with a `canvas.json` and published to the founder's design canvas. Every later UI spec adds its artboards there before `/plan-tasks`; implementers match them pixel-for-pixel. Owned by TASK-059; recorded as a CLAUDE.md rule.
+Raised by: founder, 2026-09-09.
+
