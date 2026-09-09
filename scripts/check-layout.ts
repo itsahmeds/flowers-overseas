@@ -67,6 +67,13 @@ export const CONFIG_FILES = [
   // `docs/compliance/cookie-register.md`'s generated table and AC-22's session check all read it
   // — TASK-050.
   "src/config/cookies.ts",
+  // The Phase 0 data registries of spec 004 §2/§5.1 (TASK-047): the destination list with its
+  // `toCountryRow()` projection, the header/footer link registry behind `isPublished()`, the
+  // category row, and the company identity behind `registered`.
+  "src/config/countries.ts",
+  "src/config/site-links.ts",
+  "src/config/categories.ts",
+  "src/config/company.ts",
 ] as const;
 
 export const REQUIRED_FILES = [

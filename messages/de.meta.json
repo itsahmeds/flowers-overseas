@@ -59,6 +59,76 @@
     "reviewed": false,
     "sourceHash": "3a78695388b38b5cceefaf6796b0137877514593543b91af2752d5a17e3d736c"
   },
+  "company.description": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "d274a9ceec7746493e803e1c08f23b3abafc61208e9301442f10b6f7228ce391"
+  },
+  "company.operatedBy": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "68f7f2ac014d6c23801cbb1fcd6c25950b940fc57b543b20b4609c61dbb5bfd7"
+  },
+  "company.support.hours": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "e6e784d29f6af42787197eb5ad81fe938d6d64673d9e832f0138f08d2bbacd52"
+  },
+  "company.support.label": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "3d66ec5910add3e0f6a88caad084a6322becfd21e626a1d5b43faebcad55b9a0"
+  },
+  "destinations.de.name": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "80db4ccdca106d37b920206331fcfe3e9e50a9e763d89b54ce3ad5ac8cf30f03"
+  },
+  "destinations.es.name": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8ef41e6f4b07432a0cb4eb7a8774e7a3878fd3e385f49aa09b406768467db228"
+  },
+  "destinations.fr.name": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7a1ca4ef7515f7276bae7230545829c27810c9d9e98ab2c06066bee6270d5153"
+  },
+  "destinations.it.name": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5a9cf672c8be6b5ab9546a2fb49b06dd81a4e364c86ed023898c49d9bb0605dc"
+  },
+  "destinations.nl.name": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3a386c13d283dc2ebbe2aeffc1ab3930d086b28956930d913d8dc58f34c013b7"
+  },
+  "destinations.pl.cities": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "e67345b62a144e03db9db7c94c201718b369ca703bdeb2bc285a04ab6b7fcfdd"
+  },
+  "destinations.pl.name": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7f69649ad70496d441a62f0f196b1c3283572f2c64f7b1b9cbc3939dac388958"
+  },
+  "destinations.ro.name": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ea23726dd0fd4e4dd85eb695843fcdd3b6928ab5561fa959f1523bd36bb613fe"
+  },
+  "destinations.state.deliveringNow": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "a87cf2e4374e16ad11ea33ce2cae0965b2b29935452dcf7bac4060d2190f7ceb"
+  },
+  "destinations.state.guideWaitingList": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "9f77a401542337c339bcf6a839a1a5ac51682b9fac9c5689e0c2333dbcefaee2"
+  },
   "errors.notFound.body": {
     "source": "machine",
     "reviewed": false,
@@ -83,6 +153,81 @@
     "source": "machine",
     "reviewed": false,
     "sourceHash": "d8b8392e2c542950ca64867168e4ef87d4ad606882d5898f826b51c6d553988f"
+  },
+  "footer.cookieSettings": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "df9b9219f0e5a623971726c9fb6edd720eebf5a55fe3698cefc7c01f5cc2efe4"
+  },
+  "footer.group.company": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "de4743c879734dc38cb3e270ecefcae077c3c2e626f9298115d5a03c8613f89b"
+  },
+  "footer.group.legal": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "4787eaf7c938045fd5285fe6a2cd72558caf7bd5faeb93fd1ad490a502e0e37b"
+  },
+  "footer.group.sending": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "e595f17fac1d8384c7287aa20ab48ec05476a9a557a524091c03727732582e76"
+  },
+  "footer.link.cookies": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "141395eb35564fe50baa1839eb43315ec1880ae19f53b926611a483029a5a603"
+  },
+  "footer.link.deliveryTimes": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "dd7d9806fe3ab4786a271bcbf2bf3071066a8a7b111c0cec12c57c61d14caff5"
+  },
+  "footer.link.destinations": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "72eb63f032e47e349e8901353e08ba91cfb9d1f78d08d070c60bae0e9b4e038d"
+  },
+  "footer.link.guarantee": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "5a8612717ecbe7ecda2651f11361536f0eec923b571ae69206b2d1f2e8acffd9"
+  },
+  "footer.link.helpAndContact": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "34b92f180169cf2f4745f53fb1eb533e492178501362a1196832b3b7bcf4fa3c"
+  },
+  "footer.link.howItWorks": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "9c870aa6e5e93270170d5a81277ad3e623afe8d4efd186d3e28f3d2b646d52e6"
+  },
+  "footer.link.imprint": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "d198ed30d09ba8c6b43f736a65dd4e3b7649cd120e0fe1d83f52c60ea6d02ad5"
+  },
+  "footer.link.occasions": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "e5b8470758e19d1615b82228a3ab96d0fce4c772d8a45bb3fbd4c968ab88eb39"
+  },
+  "footer.link.privacy": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "54a57c3147c49f33de5898b87084ad2b14c4ab308f762454bf92aca907478ad5"
+  },
+  "footer.link.terms": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "ede5489964834a514b61c7a4a8370be2452dd4a7d807180f14991ccc11ad2430"
+  },
+  "footer.link.withdrawal": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "4a64674ddfe0cabd288716392cdb8436a85cf9c4a3a105a68b38edd169af1fe7"
   },
   "meta.chooser.description": {
     "source": "machine",
@@ -128,5 +273,95 @@
     "source": "machine",
     "reviewed": false,
     "sourceHash": "818d2a6d9e512a5d58fa63040a92fe2c2c21c3cffe6376f11e1e41d6b076b39a"
+  },
+  "nav.account.orders": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "22febb5cb39a695f23100737e9dfb97cc59b402f2837493561f108911a37ed7f"
+  },
+  "nav.account.signIn": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "bfd402b2f6f3812529b55596136d3a11c51616317e3b1cd999928e2d4eae7d3f"
+  },
+  "nav.basket": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "e891362064e535b883a161a2e885d5e94ebc3afefd7b02677fab442f9dd3a6b1"
+  },
+  "nav.categories.label": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "b8b1d894c683725260dcd78f8ed64f979331a1ab61fc8311e9ccfc300fd5de20"
+  },
+  "nav.category.addOns": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "ccfc53fcbd494330a3afbd856579cb719eea870425321dcd1d04e24576d24ed7"
+  },
+  "nav.category.bestSellers": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "f96dd77abe46a719e137e65f1af8155cd1943ace99cdcf915492a2edf957bd70"
+  },
+  "nav.category.birthday": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "c6138abfa6a734269ef280d53f37d351d08408258322aa818f4cf9fe9fa4bb0d"
+  },
+  "nav.category.bouquets": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "c03f1370d259142adc1545af7da216e51468270dfacf8e60179f90b27e9ab275"
+  },
+  "nav.category.destinations": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "72eb63f032e47e349e8901353e08ba91cfb9d1f78d08d070c60bae0e9b4e038d"
+  },
+  "nav.category.occasions": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "e5b8470758e19d1615b82228a3ab96d0fce4c772d8a45bb3fbd4c968ab88eb39"
+  },
+  "nav.category.plants": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "b81ce6bddc184917f5ba6e4acb98baa1dab41ba28675975261f0c21874f82582"
+  },
+  "nav.category.roses": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "5c6f53e266a7bf766d588d64267e2f94678a2aa9554b776b2762accbeabe01cf"
+  },
+  "nav.category.sameDayDelivery": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "45438665bb118ca5bb238dde385071bfe1b1984a9b08ca45b0b992702c430b02"
+  },
+  "nav.category.sameDayShort": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "571619013c22499b8e69d174fbf5700599265489aa124f15255b4805e9055103"
+  },
+  "nav.category.sympathy": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "28388a6a648be075e2cb7916ee7c7e3277638b6096ade9a90c2191094edabea9"
+  },
+  "nav.forFlorists": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "63498ce3c657370f343b45577d1c521c3256ce9eb23f2ae1e1e5d22b91eefffb"
+  },
+  "nav.search.help": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "a2e8387f57c99709c0ed45040673f95d949b1ae0779a7f960d6e9592de740eaf"
+  },
+  "nav.search.label": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "1ca48d287283f07846eee61f327b69e7878e0f16362d6f8f4ca3db44a6963f43"
   }
 }

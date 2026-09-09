@@ -87,16 +87,20 @@ src/lib/                  env (zod), logger, health, sentry, cache adapter; db c
 src/jobs/                 pg-boss job definitions and cron schedule
 src/emails/               React Email templates, localised
 src/config/               locales.ts, locales.data.ts, currencies.ts, address-formats.ts,
-                          cookies.ts
+                          cookies.ts, countries.ts, site-links.ts, categories.ts, company.ts
                           (spec 003/004; zod-validated at module load, no database — `pnpm
                           check:no-db`. `locales.data.ts` is the authored locale rows as plain
                           constants and imports nothing, so the 500 document can read a locale
                           without pulling zod into every page's client chunk — TASK-046;
                           `cookies.ts` is the cookie register, and
                           `docs/compliance/cookie-register.md` derives its table from it via
-                          `pnpm cookies:check` — TASK-050);
-                          countries.ts, payment-methods-by-country.ts, feature-flags.ts follow
-                          in 002/004
+                          `pnpm cookies:check` — TASK-050; countries.ts, site-links.ts,
+                          categories.ts, company.ts are the Phase 0 data registries of spec 004
+                          §2/§5.1 — TASK-047: the seven destinations with `toCountryRow()`, the
+                          header/footer link registry behind `isPublished()`, the category row,
+                          and the company identity behind `registered: false`);
+                          occasions.ts follows in 004, and payment-methods-by-country.ts,
+                          feature-flags.ts in 002/004
 tests/unit/               Vitest, node env
 tests/integration/        Vitest against DATABASE_URL (live from spec 002)
 tests/contract/           adapter-against-recorded-fixture tests (from Phase 1)
