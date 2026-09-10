@@ -57,7 +57,7 @@ export const MessageKeySchema = z.string().min(1);
  * extending the spec 003 schema so the currency set stays defined in exactly one place: adding a
  * currency is a row in `src/config/currencies.ts` and nothing else.
  */
-const IntegerMoneySchema = MoneySchema.extend({
+export const IntegerMoneySchema = MoneySchema.extend({
   amountMinor: MinorUnitsSchema,
 });
 
@@ -297,3 +297,149 @@ export const AddonSchema = z
     sort: z.number().int().min(0),
   })
   .strict();
+
+/* -------------------------------------------------------------------------- */
+/* Pricing-core boundary schemas (spec 005 §5.2, `plan/12` §2; TASK-065).      */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * `resolvePrice()`'s query — and, with `dateSurcharges()`'s range below, the whole geography this
+ * module's pricing surface has (spec 005 §2 "Pricing", §8 "Geo-blocking", AC-18).
+ *
+ * **Four fields, and the absences are the specification.** There is no buyer country, no IP, no
+ * `Accept-Language`, no header, no session, no customer, no order history and no locale: a price
+ * is keyed on the **destination** and on the delivery date, so "a French buyer and a German buyer
+ * sending to Warsaw see the same price" is a property of this shape rather than of a review
+ * (EU 2018/302, ADR-0006, `plan/07` §3). Behavioural price discrimination is likewise not
+ * expressible, which is a DMCC position as well as a GDPR one (spec 005 §8).
+ *
+ * `.strict()`, so a caller that adds one of those dimensions gets a parse error rather than a
+ * silently ignored field.
+ */
+export const ResolvePriceQuerySchema = z
+  .object({
+    /** A `product.sku`; the spec's parameter name for it is `productId` (§5.2). */
+    productId: ProductSkuSchema,
+    tierKey: z.string().min(1),
+    countryIso: DestinationIsoSchema,
+    /**
+     * The delivery date, which decides the **surcharge rows** that apply (spec 005 §13 Q7).
+     * Omitted means "no dated surcharge": the base price of the tier in that destination.
+     */
+    deliveryDate: IsoDateSchema.optional(),
+  })
+  .strict();
+
+/** `tierPrices()`'s query: the same fields without the tier, since it prices every tier. */
+export const TierPricesQuerySchema = ResolvePriceQuerySchema.omit({
+  tierKey: true,
+});
+
+/**
+ * `fromPrice()`'s query. No date, because a "from" figure names the cheapest tier of a product in
+ * a destination and a date-dependent surcharge would make it a price no configuration matches
+ * (spec 005 §6 "AggregateOffer and from prices", §13 Q10).
+ */
+export const FromPriceQuerySchema = ResolvePriceQuerySchema.omit({
+  tierKey: true,
+  deliveryDate: true,
+});
+
+/**
+ * The **maximum** span `dateSurcharges()` will enumerate, in days.
+ *
+ * A date picker asks about a few weeks (`plan/04` §16); a year and a day is far past any real
+ * question and bounds the work a caller can ask for on an ISR miss. It is a guard, not a
+ * calendar: 005 owns no date arithmetic beyond a calendar-day step (spec 005 §3 — cutoff,
+ * holidays, occasion dates and time zones are spec 009's).
+ */
+export const MAX_SURCHARGE_RANGE_DAYS = 366;
+
+/**
+ * A closed, inclusive range of delivery dates (spec 005 §5.2 `dateSurcharges(countryIso,
+ * dateRange)`).
+ *
+ * Both ends are calendar days, never timestamps and never locale strings, so the range carries no
+ * time zone to disagree about; `from <= to` and the span cap are refinements rather than caller
+ * conventions.
+ */
+export const SurchargeDateRangeSchema = z
+  .object({
+    from: IsoDateSchema,
+    to: IsoDateSchema,
+  })
+  .strict()
+  .superRefine((range, ctx) => {
+    if (range.to < range.from) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["to"],
+        message: "`to` must not be before `from`",
+      });
+      return;
+    }
+    if (daysBetween(range.from, range.to) + 1 > MAX_SURCHARGE_RANGE_DAYS) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["to"],
+        message: `a surcharge range spans at most ${String(MAX_SURCHARGE_RANGE_DAYS)} days (spec 005 §5.2)`,
+      });
+    }
+  });
+
+/**
+ * Whole calendar days between two `YYYY-MM-DD` days, `to - from`.
+ *
+ * `Date.UTC` on the parsed parts, so no local time zone and no DST enter the count: a calendar day
+ * has no zone, which is the only date fact this module knows (spec 005 §3).
+ */
+export function daysBetween(from: string, to: string): number {
+  const asUtc = (day: string): number => {
+    const [year, month, date] = day.split("-").map(Number);
+    return Date.UTC(year ?? 0, (month ?? 1) - 1, date ?? 1);
+  };
+  return Math.round((asUtc(to) - asUtc(from)) / 86_400_000);
+}
+
+/**
+ * A gross amount and the rate it carries, with no currency: `netFromGross()`'s boundary.
+ *
+ * A rate applies to an amount, not to a currency — a VAT split is the same arithmetic in every
+ * currency — so asking for one here would be a field the function does not use and a caller could
+ * get wrong. The currency *is* checked where it means something: `vatBreakdown()` asserts one
+ * currency across the basket (spec 005 §5.2).
+ */
+export const GrossAtRateSchema = z
+  .object({
+    rateBp: BasisPointsSchema,
+    grossMinor: MinorUnitsSchema.nonnegative(),
+  })
+  .strict();
+
+/**
+ * One line of a basket for `vatBreakdown()`: a gross amount and its own rate (AC-13).
+ *
+ * `.strict()` and gross-only — there is no net field to hand in, so a caller cannot present a
+ * VAT-exclusive amount to the function that produces the invoice's rate lines (`plan/07` §4).
+ */
+export const VatLineSchema = z
+  .object({
+    rateBp: BasisPointsSchema,
+    grossMinor: MinorUnitsSchema.nonnegative(),
+    currency: MoneySchema.shape.currency,
+  })
+  .strict();
+
+/** One rate's integer split. `netMinor + vatMinor === grossMinor` is refined, not documented. */
+export const VatSplitSchema = z
+  .object({
+    rateBp: BasisPointsSchema,
+    netMinor: MinorUnitsSchema.nonnegative(),
+    vatMinor: MinorUnitsSchema.nonnegative(),
+    grossMinor: MinorUnitsSchema.nonnegative(),
+  })
+  .strict()
+  .refine((split) => split.netMinor + split.vatMinor === split.grossMinor, {
+    error: "netMinor + vatMinor must equal grossMinor (spec 005 AC-13)",
+    path: ["grossMinor"],
+  });

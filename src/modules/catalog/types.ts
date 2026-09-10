@@ -291,3 +291,83 @@ export interface Addon {
   readonly vatRateBp: number;
   readonly sort: number;
 }
+
+/* -------------------------------------------------------------------------- */
+/* Pricing core (spec 005 §2 "Pricing", §5.2 `pricing/*`, AC-8/13/16;          */
+/* TASK-065).                                                                  */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Money in integer minor units: spec 003's `Money` with the amount narrowed to a `number`
+ * (`MinorUnitsSchema`), which is what makes exact integer addition — and therefore
+ * `netAmountMinor + vatAmountMinor === amountMinor` — expressible at all (spec 005 §5.2).
+ *
+ * It stays **assignable to** spec 003's `Money`, so `formatMoney` remains the only formatter and
+ * this module defines no second money type and no second renderer (a type-level assertion in
+ * `tests/unit/catalog-pricing-money.test.ts` pins that).
+ *
+ * An `IntegerMoney` is an *amount* — a VAT figure, a surcharge, a subtotal — and never the
+ * **price of something a buyer can buy**: a price is a whole `PricePoint` or it is not in this
+ * module's vocabulary (AC-8). That distinction is why `money.ts` is arithmetic only and why no
+ * function returns an amount where a page would render a price.
+ */
+export interface IntegerMoney {
+  readonly amountMinor: number;
+  readonly currency: CurrencyCode;
+}
+
+/**
+ * One surcharge as it applies to **one delivery date** (spec 005 §2 "Pricing", AC-16).
+ *
+ * `dateSurcharges()` returns these over a date range so spec 009 can put the exact amount on the
+ * date chip **before** the date is selected, which `plan/07` §4 requires: the row carries the
+ * amount and its label key, so nothing has to be computed, guessed or multiplied at render.
+ */
+export interface DatedSurcharge extends Surcharge {
+  /** The delivery date this surcharge applies to, inside the row's own window. */
+  readonly date: IsoDate;
+}
+
+/**
+ * One tier of a product with its whole price in the destination's own currency (spec 005 §5.2
+ * `tierPrices`).
+ *
+ * The price is a `PricePoint`, so a tier ladder cannot be rendered as a set of amounts that omit
+ * VAT, delivery or the date's surcharges (AC-8), and `isDefault` travels with it so the PDP's
+ * preselected tier and its price come from one call (`product_tier.is_default`, §13 Q6).
+ */
+export interface TierPrice {
+  readonly tierKey: string;
+  readonly isDefault: boolean;
+  readonly price: PricePoint;
+}
+
+/**
+ * One line of a basket as `vatBreakdown()` reads it: a **gross** amount and the rate it carries
+ * (spec 005 §2 "Pricing", §8 "VAT", AC-13).
+ *
+ * Gross, because every amount in this codebase is gross (`plan/07` §4: the price shown is the
+ * price charged, VAT and delivery included), and per line, because a mixed basket carries more
+ * than one rate — PL flowers at 800 bp with chocolates at 2 300 bp (`plan/06` §4 item 4).
+ */
+export interface VatLine {
+  readonly rateBp: number;
+  readonly grossMinor: number;
+  readonly currency: CurrencyCode;
+}
+
+/**
+ * The integer VAT split of every line at one rate (spec 005 §5.2 `vatBreakdown`).
+ *
+ * `netMinor + vatMinor === grossMinor` per entry and the entries' `grossMinor` sum to the basket
+ * total **exactly** (AC-13, 1 000 randomised property-test baskets), because the split is derived
+ * from the gross rather than the gross from the split: this is the input to `order.vat_breakdown`
+ * (spec 015) and to the invoice's per-rate lines (spec 018, `plan/07` §4), and spec 005 stores
+ * none of it.
+ */
+export interface VatSplit {
+  readonly rateBp: number;
+  readonly netMinor: number;
+  readonly vatMinor: number;
+  readonly grossMinor: number;
+}

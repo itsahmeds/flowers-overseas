@@ -95,3 +95,45 @@ export {
   ProductTierSchema,
 } from "./schemas";
 export { defaultTier, listAddons, listTiers } from "./read";
+
+// The pricing core (spec 005 §2 "Pricing", §5.2 `pricing/*`, §8, AC-8/AC-13/AC-16; TASK-065).
+//
+// `resolvePrice`, `tierPrices` and `fromPrice` each return a whole `PricePoint` — gross, VAT- and
+// delivery-inclusive, with its own decomposition and the date's surcharge rows inside the amount —
+// so there is no exported way to obtain a price that omits VAT, delivery or a surcharge (AC-8),
+// which is `plan/07` §4's drip-pricing prohibition made unexpressible. None of them accepts a
+// buyer country, an IP, a header or a locale: the destination is the only geography (EU 2018/302,
+// ADR-0006). `dateSurcharges` hands spec 009 the exact amount and label key per delivery date so
+// the figure is on the date chip **before** selection (AC-16), and `vatBreakdown` / `netFromGross`
+// produce the per-rate integer split spec 015's `order.vat_breakdown` and spec 018's invoice read
+// (AC-13). `addMoney`, `sumMoney` and `assertSameCurrency` are the integer money arithmetic those
+// four are built from; conversion, rounding, history, projections and quotes are TASK-066…069's.
+// `MAX_SURCHARGE_RANGE_DAYS` stays internal: the cap it names is enforced by
+// `SurchargeDateRangeSchema`, which is exported, so a caller parses a range rather than
+// remembering a number — and the barrel keeps exporting only schemas, value sets and functions
+// (AC-2, `tests/unit/catalog-barrel.test.ts`).
+export type {
+  DatedSurcharge,
+  IntegerMoney,
+  TierPrice,
+  VatLine,
+  VatSplit,
+} from "./types";
+export {
+  FromPriceQuerySchema,
+  GrossAtRateSchema,
+  IntegerMoneySchema,
+  ResolvePriceQuerySchema,
+  SurchargeDateRangeSchema,
+  TierPricesQuerySchema,
+  VatLineSchema,
+  VatSplitSchema,
+} from "./schemas";
+export { addMoney, assertSameCurrency, sumMoney } from "./pricing/money";
+export {
+  dateSurcharges,
+  fromPrice,
+  resolvePrice,
+  tierPrices,
+} from "./pricing/resolve";
+export { netFromGross, vatBreakdown } from "./pricing/vat";
