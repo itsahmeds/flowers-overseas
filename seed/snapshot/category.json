@@ -1,0 +1,214 @@
+{
+  "version": 1,
+  "source": "seed",
+  "table": "category",
+  "rows": [
+    {
+      "key": {
+        "key": "bouquet"
+      },
+      "values": {
+        "key": "bouquet",
+        "kind": "productType"
+      }
+    },
+    {
+      "key": {
+        "key": "arrangement"
+      },
+      "values": {
+        "key": "arrangement",
+        "kind": "productType"
+      }
+    },
+    {
+      "key": {
+        "key": "plant"
+      },
+      "values": {
+        "key": "plant",
+        "kind": "productType"
+      }
+    },
+    {
+      "key": {
+        "key": "funeral"
+      },
+      "values": {
+        "key": "funeral",
+        "kind": "productType"
+      }
+    },
+    {
+      "key": {
+        "key": "gift_set"
+      },
+      "values": {
+        "key": "gift_set",
+        "kind": "productType"
+      }
+    },
+    {
+      "key": {
+        "key": "birthday"
+      },
+      "values": {
+        "key": "birthday",
+        "kind": "occasion"
+      }
+    },
+    {
+      "key": {
+        "key": "anniversary"
+      },
+      "values": {
+        "key": "anniversary",
+        "kind": "occasion"
+      }
+    },
+    {
+      "key": {
+        "key": "romance"
+      },
+      "values": {
+        "key": "romance",
+        "kind": "occasion"
+      }
+    },
+    {
+      "key": {
+        "key": "congratulations"
+      },
+      "values": {
+        "key": "congratulations",
+        "kind": "occasion"
+      }
+    },
+    {
+      "key": {
+        "key": "new_baby"
+      },
+      "values": {
+        "key": "new_baby",
+        "kind": "occasion"
+      }
+    },
+    {
+      "key": {
+        "key": "get_well"
+      },
+      "values": {
+        "key": "get_well",
+        "kind": "occasion"
+      }
+    },
+    {
+      "key": {
+        "key": "sympathy"
+      },
+      "values": {
+        "key": "sympathy",
+        "kind": "occasion"
+      }
+    },
+    {
+      "key": {
+        "key": "thank_you"
+      },
+      "values": {
+        "key": "thank_you",
+        "kind": "occasion"
+      }
+    },
+    {
+      "key": {
+        "key": "apology"
+      },
+      "values": {
+        "key": "apology",
+        "kind": "occasion"
+      }
+    },
+    {
+      "key": {
+        "key": "just_because"
+      },
+      "values": {
+        "key": "just_because",
+        "kind": "occasion"
+      }
+    },
+    {
+      "key": {
+        "key": "roses"
+      },
+      "values": {
+        "key": "roses",
+        "kind": "flowerType"
+      }
+    },
+    {
+      "key": {
+        "key": "tulips"
+      },
+      "values": {
+        "key": "tulips",
+        "kind": "flowerType"
+      }
+    },
+    {
+      "key": {
+        "key": "lilies"
+      },
+      "values": {
+        "key": "lilies",
+        "kind": "flowerType"
+      }
+    },
+    {
+      "key": {
+        "key": "orchids"
+      },
+      "values": {
+        "key": "orchids",
+        "kind": "flowerType"
+      }
+    },
+    {
+      "key": {
+        "key": "sunflowers"
+      },
+      "values": {
+        "key": "sunflowers",
+        "kind": "flowerType"
+      }
+    },
+    {
+      "key": {
+        "key": "peonies"
+      },
+      "values": {
+        "key": "peonies",
+        "kind": "flowerType"
+      }
+    },
+    {
+      "key": {
+        "key": "gerberas"
+      },
+      "values": {
+        "key": "gerberas",
+        "kind": "flowerType"
+      }
+    },
+    {
+      "key": {
+        "key": "mixed"
+      },
+      "values": {
+        "key": "mixed",
+        "kind": "flowerType"
+      }
+    }
+  ]
+}

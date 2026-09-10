@@ -1,0 +1,247 @@
+{
+  "version": 1,
+  "source": "seed",
+  "table": "product_media",
+  "rows": [
+    {
+      "key": {
+        "sku": "FO-BQ-001",
+        "asset": "fo-bq-001-hero"
+      },
+      "values": {
+        "sort": 0,
+        "is_primary": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-001",
+        "asset": "fo-bq-001-detail"
+      },
+      "values": {
+        "sort": 1,
+        "is_primary": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-002",
+        "asset": "fo-bq-002-hero"
+      },
+      "values": {
+        "sort": 0,
+        "is_primary": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-002",
+        "asset": "fo-bq-002-detail"
+      },
+      "values": {
+        "sort": 1,
+        "is_primary": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-009",
+        "asset": "fo-bq-009-hero"
+      },
+      "values": {
+        "sort": 0,
+        "is_primary": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-009",
+        "asset": "fo-bq-009-detail"
+      },
+      "values": {
+        "sort": 1,
+        "is_primary": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-015",
+        "asset": "fo-bq-015-hero"
+      },
+      "values": {
+        "sort": 0,
+        "is_primary": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-015",
+        "asset": "fo-bq-015-detail"
+      },
+      "values": {
+        "sort": 1,
+        "is_primary": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-019",
+        "asset": "fo-bq-019-hero"
+      },
+      "values": {
+        "sort": 0,
+        "is_primary": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-019",
+        "asset": "fo-bq-019-detail"
+      },
+      "values": {
+        "sort": 1,
+        "is_primary": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-023",
+        "asset": "fo-bq-023-hero"
+      },
+      "values": {
+        "sort": 0,
+        "is_primary": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-023",
+        "asset": "fo-bq-023-detail"
+      },
+      "values": {
+        "sort": 1,
+        "is_primary": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-028",
+        "asset": "fo-bq-028-hero"
+      },
+      "values": {
+        "sort": 0,
+        "is_primary": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-028",
+        "asset": "fo-bq-028-detail"
+      },
+      "values": {
+        "sort": 1,
+        "is_primary": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-001",
+        "asset": "fo-ar-001-hero"
+      },
+      "values": {
+        "sort": 0,
+        "is_primary": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-001",
+        "asset": "fo-ar-001-detail"
+      },
+      "values": {
+        "sort": 1,
+        "is_primary": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-003",
+        "asset": "fo-ar-003-hero"
+      },
+      "values": {
+        "sort": 0,
+        "is_primary": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-003",
+        "asset": "fo-ar-003-detail"
+      },
+      "values": {
+        "sort": 1,
+        "is_primary": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-PT-001",
+        "asset": "fo-pt-001-hero"
+      },
+      "values": {
+        "sort": 0,
+        "is_primary": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-PT-001",
+        "asset": "fo-pt-001-detail"
+      },
+      "values": {
+        "sort": 1,
+        "is_primary": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-001",
+        "asset": "fo-fn-001-hero"
+      },
+      "values": {
+        "sort": 0,
+        "is_primary": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-001",
+        "asset": "fo-fn-001-detail"
+      },
+      "values": {
+        "sort": 1,
+        "is_primary": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-001",
+        "asset": "fo-gs-001-hero"
+      },
+      "values": {
+        "sort": 0,
+        "is_primary": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-001",
+        "asset": "fo-gs-001-detail"
+      },
+      "values": {
+        "sort": 1,
+        "is_primary": false
+      }
+    }
+  ]
+}

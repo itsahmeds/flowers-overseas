@@ -1,0 +1,295 @@
+{
+  "version": 1,
+  "source": "seed",
+  "table": "occasion",
+  "rows": [
+    {
+      "key": {
+        "key": "birthday"
+      },
+      "values": {
+        "key": "birthday",
+        "kind": "evergreen"
+      }
+    },
+    {
+      "key": {
+        "key": "anniversary"
+      },
+      "values": {
+        "key": "anniversary",
+        "kind": "evergreen"
+      }
+    },
+    {
+      "key": {
+        "key": "romance"
+      },
+      "values": {
+        "key": "romance",
+        "kind": "evergreen"
+      }
+    },
+    {
+      "key": {
+        "key": "congratulations"
+      },
+      "values": {
+        "key": "congratulations",
+        "kind": "evergreen"
+      }
+    },
+    {
+      "key": {
+        "key": "new_baby"
+      },
+      "values": {
+        "key": "new_baby",
+        "kind": "evergreen"
+      }
+    },
+    {
+      "key": {
+        "key": "get_well"
+      },
+      "values": {
+        "key": "get_well",
+        "kind": "evergreen"
+      }
+    },
+    {
+      "key": {
+        "key": "sympathy"
+      },
+      "values": {
+        "key": "sympathy",
+        "kind": "evergreen"
+      }
+    },
+    {
+      "key": {
+        "key": "thank_you"
+      },
+      "values": {
+        "key": "thank_you",
+        "kind": "evergreen"
+      }
+    },
+    {
+      "key": {
+        "key": "apology"
+      },
+      "values": {
+        "key": "apology",
+        "kind": "evergreen"
+      }
+    },
+    {
+      "key": {
+        "key": "just_because"
+      },
+      "values": {
+        "key": "just_because",
+        "kind": "evergreen"
+      }
+    },
+    {
+      "key": {
+        "key": "wedding"
+      },
+      "values": {
+        "key": "wedding",
+        "kind": "evergreen"
+      }
+    },
+    {
+      "key": {
+        "key": "graduation"
+      },
+      "values": {
+        "key": "graduation",
+        "kind": "evergreen"
+      }
+    },
+    {
+      "key": {
+        "key": "housewarming"
+      },
+      "values": {
+        "key": "housewarming",
+        "kind": "evergreen"
+      }
+    },
+    {
+      "key": {
+        "key": "retirement"
+      },
+      "values": {
+        "key": "retirement",
+        "kind": "evergreen"
+      }
+    },
+    {
+      "key": {
+        "key": "valentines"
+      },
+      "values": {
+        "key": "valentines",
+        "kind": "seasonal"
+      }
+    },
+    {
+      "key": {
+        "key": "womens_day"
+      },
+      "values": {
+        "key": "womens_day",
+        "kind": "seasonal"
+      }
+    },
+    {
+      "key": {
+        "key": "mothers_day"
+      },
+      "values": {
+        "key": "mothers_day",
+        "kind": "seasonal"
+      }
+    },
+    {
+      "key": {
+        "key": "fathers_day"
+      },
+      "values": {
+        "key": "fathers_day",
+        "kind": "seasonal"
+      }
+    },
+    {
+      "key": {
+        "key": "grandparents_day"
+      },
+      "values": {
+        "key": "grandparents_day",
+        "kind": "seasonal"
+      }
+    },
+    {
+      "key": {
+        "key": "easter"
+      },
+      "values": {
+        "key": "easter",
+        "kind": "seasonal"
+      }
+    },
+    {
+      "key": {
+        "key": "all_saints"
+      },
+      "values": {
+        "key": "all_saints",
+        "kind": "seasonal"
+      }
+    },
+    {
+      "key": {
+        "key": "christmas"
+      },
+      "values": {
+        "key": "christmas",
+        "kind": "seasonal"
+      }
+    },
+    {
+      "key": {
+        "key": "new_year"
+      },
+      "values": {
+        "key": "new_year",
+        "kind": "seasonal"
+      }
+    },
+    {
+      "key": {
+        "key": "name_day"
+      },
+      "values": {
+        "key": "name_day",
+        "kind": "seasonal"
+      }
+    },
+    {
+      "key": {
+        "key": "teachers_day"
+      },
+      "values": {
+        "key": "teachers_day",
+        "kind": "seasonal"
+      }
+    },
+    {
+      "key": {
+        "key": "sant_jordi"
+      },
+      "values": {
+        "key": "sant_jordi",
+        "kind": "seasonal"
+      }
+    },
+    {
+      "key": {
+        "key": "fete_des_grands_meres"
+      },
+      "values": {
+        "key": "fete_des_grands_meres",
+        "kind": "seasonal"
+      }
+    },
+    {
+      "key": {
+        "key": "muguet"
+      },
+      "values": {
+        "key": "muguet",
+        "kind": "seasonal"
+      }
+    },
+    {
+      "key": {
+        "key": "konfirmation"
+      },
+      "values": {
+        "key": "konfirmation",
+        "kind": "seasonal"
+      }
+    },
+    {
+      "key": {
+        "key": "student"
+      },
+      "values": {
+        "key": "student",
+        "kind": "seasonal"
+      }
+    },
+    {
+      "key": {
+        "key": "omatag"
+      },
+      "values": {
+        "key": "omatag",
+        "kind": "seasonal"
+      }
+    },
+    {
+      "key": {
+        "key": "17_mai"
+      },
+      "values": {
+        "key": "17_mai",
+        "kind": "seasonal"
+      }
+    }
+  ]
+}

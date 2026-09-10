@@ -35,7 +35,19 @@ seed/media-variants.ts
 seed/check.ts    pnpm seed:check  — the gate: nine rule families + the health report (--report)
 seed/copy.ts     the copy rules (word band, closing sentence, superlatives, delivery timing)
 seed/budgets.ts  the committed-imagery byte caps rule family 9 enforces
+seed/diff.ts     pnpm seed:diff   — the per-table diff of the dataset against a SeedTarget
+seed/target.ts   the SeedTarget interface + snapshotTarget (dbTarget arrives with TASK-083)
+seed/snapshot/   the committed target: one JSON file per diffed table, written by
+                 `pnpm seed:diff --write` and asserted equal by tests/unit/seed-diff.test.ts
 ```
+
+`seed/snapshot/` is **not** part of the dataset, and that is why it is not under `seed/data/`: it
+is the Phase-0 stand-in for the database — the thing the dataset is compared *against* — and
+`dbTarget` replaces it whole. `seed/data/` is enumerated file by file by `SEED_DATA_FILES`, and
+`seed:check`'s rule 1 fails any file there that has no schema in the layout, so a snapshot inside
+the dataset would need an exemption by name; a gate with an exemption is a gate with a hole. One
+file per table (rather than one 1.9 MB object) also keeps a price change readable in a pull
+request.
 
 The pinned encoder — the `sharp` and libvips versions, the widths, the aspect-ratio table, the
 metadata policy and every encoder option — is `seed/schema/variants.ts`, and
@@ -106,14 +118,69 @@ readiness column in it is computed from the predicate the application gates on
 while it is gated in code**. `de` and `pl` reading 100 % machine-drafted and *not ready* is the
 correct answer, not a gap.
 
-`seed/diff.ts` (`pnpm seed:diff`, TASK-076), `seed/media-variants.ts` (TASK-078),
 `seed/index.ts` (`pnpm db:seed`, TASK-083) and `seed/upload.ts` (TASK-082) join the directory in
 the tasks named.
+
+## The diff: `pnpm seed:diff`
+
+```
+pnpm seed:diff             # dataset vs the committed snapshot; exit 1 on any drift or conflict
+pnpm seed:diff --write     # regenerate seed/snapshot/** after a dataset edit
+pnpm seed:diff --dry-run   # writes nothing, whatever the other flags say
+pnpm seed:diff --all       # list every changed row, not the first 25 per table and kind
+pnpm seed:diff --report    # also append the report to the GitHub step summary
+```
+
+**One differ, two targets.** The command compares *projected* rows — spec 002 §5.1's columns,
+produced by the very same `to*Row()` functions the importer uses (ADR-0017) — against a
+`SeedTarget`. Today the only target is `snapshotTarget` (`seed/snapshot/**`); TASK-083 adds
+`dbTarget` and `pnpm db:seed` prints this same report against the database. So the command the
+founder learns now is the command that runs against Postgres later, and the report is the audit
+trail of spec 006 §11: post-002 the header's `request_id` and dirtied-cache-tag fields carry
+values instead of `n/a`, with no change to the format.
+
+**How to read a diff.**
+
+```
+seed:diff — dataset `seed/data` vs target `snapshot` (seed/snapshot)
+actor: system:seed · request_id: n/a · dirtied cache tags: n/a
+
+table                inserts  updates  unchanged  skipped-real  orphans  conflicts
+country_price              0        1       3415             0        0          0
+...
+changes
+  country_price  update  sku=FO-BQ-001;country=PL;tier=stems_12;surcharge=retail;active_from=2026-09-01
+      retail_minor: 15900 PLN -> 16900 PLN
+```
+
+| Column | Means | What to do |
+|---|---|---|
+| `inserts` | the target has no row for that natural key | expected after adding a product, a price or an asset |
+| `updates` | the same key, different columns — each printed as `column: old -> new`, and a minor amount always with its currency | check the numbers are the ones you meant, then `--write` |
+| `unchanged` | identical rows | nothing |
+| `skipped-real` | the target row is `source = "real"` — a human's production row. **The importer never touches it** (`plan/10` §4) | fix the row in production, or accept the divergence |
+| `orphans` | the target has a row the dataset no longer has | the importer never deletes: retire the product properly, or re-`--write` if the removal was intended |
+| `conflicts` | the run cannot be applied as written: a `source = "real"` row that would otherwise change, or two rows claiming one natural key | always a failure, never capped in the listing |
+
+A row's identity is its **natural** key (`sku=…`, `sku=…;country=…;tier=…;surcharge=…;active_from=…`),
+never a database id: that is the only identity a snapshot and a database share, and it is what
+the importer upserts on. The surrogate foreign-key columns (`product_id`, `country_id`, …) are
+therefore not compared at all — they hold a generated `uuid` in Postgres and would otherwise
+report every row as changed.
+
+**After any dataset edit, run `pnpm seed:diff --write`** and commit the snapshot with the change.
+`tests/unit/seed-diff.test.ts` re-projects it and compares the bytes, so a forgotten `--write`
+fails with the table named — the same rule ADR-0017 applies to `seed/data/` itself. Three tables
+are listed as *not compared in this phase* with the reason printed in the report footer:
+`media_asset` (its row needs the original's byte facts, and no original is committed), `fx_rate`
+(committed config refreshed by a job, never seeded) and the category / occasion / add-on
+translations (spec 002 §5.1 names their columns only as "same translation shape" and no projection
+has landed).
 
 ## Facts worth knowing before you edit anything
 
 - **No database, no network, no clock.** `seed/schema/**`, `seed/project.ts`, `seed/copy*.ts`,
-  `seed/check*.ts` and `seed/budgets.ts` are covered by
+  `seed/check*.ts`, `seed/budgets.ts`, `seed/diff.ts` and `seed/target.ts` are covered by
   `pnpm check:no-db`; the projector reads only the authored modules, which is what makes its
   output byte-identical on every machine. `seed/index.ts` and `seed/upload.ts` are the exceptions
   by design and arrive with spec 002's provisioning (spec 006 §2.6).

@@ -1,0 +1,3075 @@
+{
+  "version": 1,
+  "source": "seed",
+  "table": "product_tier",
+  "rows": [
+    {
+      "key": {
+        "sku": "FO-BQ-001",
+        "tier": "stems_12"
+      },
+      "values": {
+        "tier_key": "stems_12",
+        "label_key": "catalog.tier.stems",
+        "stems": 12,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-001",
+        "tier": "stems_18"
+      },
+      "values": {
+        "tier_key": "stems_18",
+        "label_key": "catalog.tier.stems",
+        "stems": 18,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-001",
+        "tier": "stems_24"
+      },
+      "values": {
+        "tier_key": "stems_24",
+        "label_key": "catalog.tier.stems",
+        "stems": 24,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-002",
+        "tier": "stems_12"
+      },
+      "values": {
+        "tier_key": "stems_12",
+        "label_key": "catalog.tier.stems",
+        "stems": 12,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-002",
+        "tier": "stems_18"
+      },
+      "values": {
+        "tier_key": "stems_18",
+        "label_key": "catalog.tier.stems",
+        "stems": 18,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-002",
+        "tier": "stems_24"
+      },
+      "values": {
+        "tier_key": "stems_24",
+        "label_key": "catalog.tier.stems",
+        "stems": 24,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-003",
+        "tier": "stems_12"
+      },
+      "values": {
+        "tier_key": "stems_12",
+        "label_key": "catalog.tier.stems",
+        "stems": 12,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-003",
+        "tier": "stems_18"
+      },
+      "values": {
+        "tier_key": "stems_18",
+        "label_key": "catalog.tier.stems",
+        "stems": 18,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-003",
+        "tier": "stems_24"
+      },
+      "values": {
+        "tier_key": "stems_24",
+        "label_key": "catalog.tier.stems",
+        "stems": 24,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-004",
+        "tier": "stems_12"
+      },
+      "values": {
+        "tier_key": "stems_12",
+        "label_key": "catalog.tier.stems",
+        "stems": 12,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-004",
+        "tier": "stems_18"
+      },
+      "values": {
+        "tier_key": "stems_18",
+        "label_key": "catalog.tier.stems",
+        "stems": 18,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-004",
+        "tier": "stems_24"
+      },
+      "values": {
+        "tier_key": "stems_24",
+        "label_key": "catalog.tier.stems",
+        "stems": 24,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-005",
+        "tier": "stems_12"
+      },
+      "values": {
+        "tier_key": "stems_12",
+        "label_key": "catalog.tier.stems",
+        "stems": 12,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-005",
+        "tier": "stems_18"
+      },
+      "values": {
+        "tier_key": "stems_18",
+        "label_key": "catalog.tier.stems",
+        "stems": 18,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-005",
+        "tier": "stems_24"
+      },
+      "values": {
+        "tier_key": "stems_24",
+        "label_key": "catalog.tier.stems",
+        "stems": 24,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-006",
+        "tier": "stems_12"
+      },
+      "values": {
+        "tier_key": "stems_12",
+        "label_key": "catalog.tier.stems",
+        "stems": 12,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-006",
+        "tier": "stems_18"
+      },
+      "values": {
+        "tier_key": "stems_18",
+        "label_key": "catalog.tier.stems",
+        "stems": 18,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-006",
+        "tier": "stems_24"
+      },
+      "values": {
+        "tier_key": "stems_24",
+        "label_key": "catalog.tier.stems",
+        "stems": 24,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-007",
+        "tier": "stems_12"
+      },
+      "values": {
+        "tier_key": "stems_12",
+        "label_key": "catalog.tier.stems",
+        "stems": 12,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-007",
+        "tier": "stems_18"
+      },
+      "values": {
+        "tier_key": "stems_18",
+        "label_key": "catalog.tier.stems",
+        "stems": 18,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-007",
+        "tier": "stems_24"
+      },
+      "values": {
+        "tier_key": "stems_24",
+        "label_key": "catalog.tier.stems",
+        "stems": 24,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-008",
+        "tier": "stems_12"
+      },
+      "values": {
+        "tier_key": "stems_12",
+        "label_key": "catalog.tier.stems",
+        "stems": 12,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-008",
+        "tier": "stems_18"
+      },
+      "values": {
+        "tier_key": "stems_18",
+        "label_key": "catalog.tier.stems",
+        "stems": 18,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-008",
+        "tier": "stems_24"
+      },
+      "values": {
+        "tier_key": "stems_24",
+        "label_key": "catalog.tier.stems",
+        "stems": 24,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-009",
+        "tier": "stems_15"
+      },
+      "values": {
+        "tier_key": "stems_15",
+        "label_key": "catalog.tier.stems",
+        "stems": 15,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-009",
+        "tier": "stems_25"
+      },
+      "values": {
+        "tier_key": "stems_25",
+        "label_key": "catalog.tier.stems",
+        "stems": 25,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-009",
+        "tier": "stems_35"
+      },
+      "values": {
+        "tier_key": "stems_35",
+        "label_key": "catalog.tier.stems",
+        "stems": 35,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-010",
+        "tier": "stems_15"
+      },
+      "values": {
+        "tier_key": "stems_15",
+        "label_key": "catalog.tier.stems",
+        "stems": 15,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-010",
+        "tier": "stems_25"
+      },
+      "values": {
+        "tier_key": "stems_25",
+        "label_key": "catalog.tier.stems",
+        "stems": 25,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-010",
+        "tier": "stems_35"
+      },
+      "values": {
+        "tier_key": "stems_35",
+        "label_key": "catalog.tier.stems",
+        "stems": 35,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-011",
+        "tier": "stems_15"
+      },
+      "values": {
+        "tier_key": "stems_15",
+        "label_key": "catalog.tier.stems",
+        "stems": 15,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-011",
+        "tier": "stems_25"
+      },
+      "values": {
+        "tier_key": "stems_25",
+        "label_key": "catalog.tier.stems",
+        "stems": 25,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-011",
+        "tier": "stems_35"
+      },
+      "values": {
+        "tier_key": "stems_35",
+        "label_key": "catalog.tier.stems",
+        "stems": 35,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-012",
+        "tier": "stems_15"
+      },
+      "values": {
+        "tier_key": "stems_15",
+        "label_key": "catalog.tier.stems",
+        "stems": 15,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-012",
+        "tier": "stems_25"
+      },
+      "values": {
+        "tier_key": "stems_25",
+        "label_key": "catalog.tier.stems",
+        "stems": 25,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-012",
+        "tier": "stems_35"
+      },
+      "values": {
+        "tier_key": "stems_35",
+        "label_key": "catalog.tier.stems",
+        "stems": 35,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-013",
+        "tier": "stems_15"
+      },
+      "values": {
+        "tier_key": "stems_15",
+        "label_key": "catalog.tier.stems",
+        "stems": 15,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-013",
+        "tier": "stems_25"
+      },
+      "values": {
+        "tier_key": "stems_25",
+        "label_key": "catalog.tier.stems",
+        "stems": 25,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-013",
+        "tier": "stems_35"
+      },
+      "values": {
+        "tier_key": "stems_35",
+        "label_key": "catalog.tier.stems",
+        "stems": 35,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-014",
+        "tier": "stems_15"
+      },
+      "values": {
+        "tier_key": "stems_15",
+        "label_key": "catalog.tier.stems",
+        "stems": 15,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-014",
+        "tier": "stems_25"
+      },
+      "values": {
+        "tier_key": "stems_25",
+        "label_key": "catalog.tier.stems",
+        "stems": 25,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-014",
+        "tier": "stems_35"
+      },
+      "values": {
+        "tier_key": "stems_35",
+        "label_key": "catalog.tier.stems",
+        "stems": 35,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-015",
+        "tier": "stems_5"
+      },
+      "values": {
+        "tier_key": "stems_5",
+        "label_key": "catalog.tier.stems",
+        "stems": 5,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-015",
+        "tier": "stems_8"
+      },
+      "values": {
+        "tier_key": "stems_8",
+        "label_key": "catalog.tier.stems",
+        "stems": 8,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-015",
+        "tier": "stems_12"
+      },
+      "values": {
+        "tier_key": "stems_12",
+        "label_key": "catalog.tier.stems",
+        "stems": 12,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-016",
+        "tier": "stems_5"
+      },
+      "values": {
+        "tier_key": "stems_5",
+        "label_key": "catalog.tier.stems",
+        "stems": 5,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-016",
+        "tier": "stems_8"
+      },
+      "values": {
+        "tier_key": "stems_8",
+        "label_key": "catalog.tier.stems",
+        "stems": 8,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-016",
+        "tier": "stems_12"
+      },
+      "values": {
+        "tier_key": "stems_12",
+        "label_key": "catalog.tier.stems",
+        "stems": 12,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-017",
+        "tier": "stems_5"
+      },
+      "values": {
+        "tier_key": "stems_5",
+        "label_key": "catalog.tier.stems",
+        "stems": 5,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-017",
+        "tier": "stems_8"
+      },
+      "values": {
+        "tier_key": "stems_8",
+        "label_key": "catalog.tier.stems",
+        "stems": 8,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-017",
+        "tier": "stems_12"
+      },
+      "values": {
+        "tier_key": "stems_12",
+        "label_key": "catalog.tier.stems",
+        "stems": 12,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-018",
+        "tier": "stems_5"
+      },
+      "values": {
+        "tier_key": "stems_5",
+        "label_key": "catalog.tier.stems",
+        "stems": 5,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-018",
+        "tier": "stems_8"
+      },
+      "values": {
+        "tier_key": "stems_8",
+        "label_key": "catalog.tier.stems",
+        "stems": 8,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-018",
+        "tier": "stems_12"
+      },
+      "values": {
+        "tier_key": "stems_12",
+        "label_key": "catalog.tier.stems",
+        "stems": 12,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-019",
+        "tier": "stems_9"
+      },
+      "values": {
+        "tier_key": "stems_9",
+        "label_key": "catalog.tier.stems",
+        "stems": 9,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-019",
+        "tier": "stems_15"
+      },
+      "values": {
+        "tier_key": "stems_15",
+        "label_key": "catalog.tier.stems",
+        "stems": 15,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-019",
+        "tier": "stems_21"
+      },
+      "values": {
+        "tier_key": "stems_21",
+        "label_key": "catalog.tier.stems",
+        "stems": 21,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-020",
+        "tier": "stems_9"
+      },
+      "values": {
+        "tier_key": "stems_9",
+        "label_key": "catalog.tier.stems",
+        "stems": 9,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-020",
+        "tier": "stems_15"
+      },
+      "values": {
+        "tier_key": "stems_15",
+        "label_key": "catalog.tier.stems",
+        "stems": 15,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-020",
+        "tier": "stems_21"
+      },
+      "values": {
+        "tier_key": "stems_21",
+        "label_key": "catalog.tier.stems",
+        "stems": 21,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-021",
+        "tier": "stems_9"
+      },
+      "values": {
+        "tier_key": "stems_9",
+        "label_key": "catalog.tier.stems",
+        "stems": 9,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-021",
+        "tier": "stems_15"
+      },
+      "values": {
+        "tier_key": "stems_15",
+        "label_key": "catalog.tier.stems",
+        "stems": 15,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-021",
+        "tier": "stems_21"
+      },
+      "values": {
+        "tier_key": "stems_21",
+        "label_key": "catalog.tier.stems",
+        "stems": 21,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-022",
+        "tier": "stems_9"
+      },
+      "values": {
+        "tier_key": "stems_9",
+        "label_key": "catalog.tier.stems",
+        "stems": 9,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-022",
+        "tier": "stems_15"
+      },
+      "values": {
+        "tier_key": "stems_15",
+        "label_key": "catalog.tier.stems",
+        "stems": 15,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-022",
+        "tier": "stems_21"
+      },
+      "values": {
+        "tier_key": "stems_21",
+        "label_key": "catalog.tier.stems",
+        "stems": 21,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-023",
+        "tier": "stems_5"
+      },
+      "values": {
+        "tier_key": "stems_5",
+        "label_key": "catalog.tier.stems",
+        "stems": 5,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-023",
+        "tier": "stems_9"
+      },
+      "values": {
+        "tier_key": "stems_9",
+        "label_key": "catalog.tier.stems",
+        "stems": 9,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-023",
+        "tier": "stems_13"
+      },
+      "values": {
+        "tier_key": "stems_13",
+        "label_key": "catalog.tier.stems",
+        "stems": 13,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-024",
+        "tier": "stems_5"
+      },
+      "values": {
+        "tier_key": "stems_5",
+        "label_key": "catalog.tier.stems",
+        "stems": 5,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-024",
+        "tier": "stems_9"
+      },
+      "values": {
+        "tier_key": "stems_9",
+        "label_key": "catalog.tier.stems",
+        "stems": 9,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-024",
+        "tier": "stems_13"
+      },
+      "values": {
+        "tier_key": "stems_13",
+        "label_key": "catalog.tier.stems",
+        "stems": 13,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-025",
+        "tier": "stems_5"
+      },
+      "values": {
+        "tier_key": "stems_5",
+        "label_key": "catalog.tier.stems",
+        "stems": 5,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-025",
+        "tier": "stems_9"
+      },
+      "values": {
+        "tier_key": "stems_9",
+        "label_key": "catalog.tier.stems",
+        "stems": 9,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-025",
+        "tier": "stems_13"
+      },
+      "values": {
+        "tier_key": "stems_13",
+        "label_key": "catalog.tier.stems",
+        "stems": 13,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-026",
+        "tier": "stems_10"
+      },
+      "values": {
+        "tier_key": "stems_10",
+        "label_key": "catalog.tier.stems",
+        "stems": 10,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-026",
+        "tier": "stems_15"
+      },
+      "values": {
+        "tier_key": "stems_15",
+        "label_key": "catalog.tier.stems",
+        "stems": 15,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-026",
+        "tier": "stems_21"
+      },
+      "values": {
+        "tier_key": "stems_21",
+        "label_key": "catalog.tier.stems",
+        "stems": 21,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-027",
+        "tier": "stems_10"
+      },
+      "values": {
+        "tier_key": "stems_10",
+        "label_key": "catalog.tier.stems",
+        "stems": 10,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-027",
+        "tier": "stems_15"
+      },
+      "values": {
+        "tier_key": "stems_15",
+        "label_key": "catalog.tier.stems",
+        "stems": 15,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-027",
+        "tier": "stems_21"
+      },
+      "values": {
+        "tier_key": "stems_21",
+        "label_key": "catalog.tier.stems",
+        "stems": 21,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-028",
+        "tier": "stems_12"
+      },
+      "values": {
+        "tier_key": "stems_12",
+        "label_key": "catalog.tier.stems",
+        "stems": 12,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-028",
+        "tier": "stems_18"
+      },
+      "values": {
+        "tier_key": "stems_18",
+        "label_key": "catalog.tier.stems",
+        "stems": 18,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-028",
+        "tier": "stems_24"
+      },
+      "values": {
+        "tier_key": "stems_24",
+        "label_key": "catalog.tier.stems",
+        "stems": 24,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-029",
+        "tier": "stems_12"
+      },
+      "values": {
+        "tier_key": "stems_12",
+        "label_key": "catalog.tier.stems",
+        "stems": 12,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-029",
+        "tier": "stems_18"
+      },
+      "values": {
+        "tier_key": "stems_18",
+        "label_key": "catalog.tier.stems",
+        "stems": 18,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-029",
+        "tier": "stems_24"
+      },
+      "values": {
+        "tier_key": "stems_24",
+        "label_key": "catalog.tier.stems",
+        "stems": 24,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-030",
+        "tier": "stems_12"
+      },
+      "values": {
+        "tier_key": "stems_12",
+        "label_key": "catalog.tier.stems",
+        "stems": 12,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-030",
+        "tier": "stems_18"
+      },
+      "values": {
+        "tier_key": "stems_18",
+        "label_key": "catalog.tier.stems",
+        "stems": 18,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-030",
+        "tier": "stems_24"
+      },
+      "values": {
+        "tier_key": "stems_24",
+        "label_key": "catalog.tier.stems",
+        "stems": 24,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-031",
+        "tier": "stems_12"
+      },
+      "values": {
+        "tier_key": "stems_12",
+        "label_key": "catalog.tier.stems",
+        "stems": 12,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-031",
+        "tier": "stems_18"
+      },
+      "values": {
+        "tier_key": "stems_18",
+        "label_key": "catalog.tier.stems",
+        "stems": 18,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-031",
+        "tier": "stems_24"
+      },
+      "values": {
+        "tier_key": "stems_24",
+        "label_key": "catalog.tier.stems",
+        "stems": 24,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-032",
+        "tier": "stems_12"
+      },
+      "values": {
+        "tier_key": "stems_12",
+        "label_key": "catalog.tier.stems",
+        "stems": 12,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-032",
+        "tier": "stems_18"
+      },
+      "values": {
+        "tier_key": "stems_18",
+        "label_key": "catalog.tier.stems",
+        "stems": 18,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-032",
+        "tier": "stems_24"
+      },
+      "values": {
+        "tier_key": "stems_24",
+        "label_key": "catalog.tier.stems",
+        "stems": 24,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-033",
+        "tier": "stems_12"
+      },
+      "values": {
+        "tier_key": "stems_12",
+        "label_key": "catalog.tier.stems",
+        "stems": 12,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-033",
+        "tier": "stems_18"
+      },
+      "values": {
+        "tier_key": "stems_18",
+        "label_key": "catalog.tier.stems",
+        "stems": 18,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-033",
+        "tier": "stems_24"
+      },
+      "values": {
+        "tier_key": "stems_24",
+        "label_key": "catalog.tier.stems",
+        "stems": 24,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-034",
+        "tier": "stems_12"
+      },
+      "values": {
+        "tier_key": "stems_12",
+        "label_key": "catalog.tier.stems",
+        "stems": 12,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-034",
+        "tier": "stems_18"
+      },
+      "values": {
+        "tier_key": "stems_18",
+        "label_key": "catalog.tier.stems",
+        "stems": 18,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-034",
+        "tier": "stems_24"
+      },
+      "values": {
+        "tier_key": "stems_24",
+        "label_key": "catalog.tier.stems",
+        "stems": 24,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-035",
+        "tier": "stems_12"
+      },
+      "values": {
+        "tier_key": "stems_12",
+        "label_key": "catalog.tier.stems",
+        "stems": 12,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-035",
+        "tier": "stems_18"
+      },
+      "values": {
+        "tier_key": "stems_18",
+        "label_key": "catalog.tier.stems",
+        "stems": 18,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-035",
+        "tier": "stems_24"
+      },
+      "values": {
+        "tier_key": "stems_24",
+        "label_key": "catalog.tier.stems",
+        "stems": 24,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-036",
+        "tier": "stems_12"
+      },
+      "values": {
+        "tier_key": "stems_12",
+        "label_key": "catalog.tier.stems",
+        "stems": 12,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-036",
+        "tier": "stems_18"
+      },
+      "values": {
+        "tier_key": "stems_18",
+        "label_key": "catalog.tier.stems",
+        "stems": 18,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-036",
+        "tier": "stems_24"
+      },
+      "values": {
+        "tier_key": "stems_24",
+        "label_key": "catalog.tier.stems",
+        "stems": 24,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-037",
+        "tier": "stems_12"
+      },
+      "values": {
+        "tier_key": "stems_12",
+        "label_key": "catalog.tier.stems",
+        "stems": 12,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-037",
+        "tier": "stems_18"
+      },
+      "values": {
+        "tier_key": "stems_18",
+        "label_key": "catalog.tier.stems",
+        "stems": 18,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-037",
+        "tier": "stems_24"
+      },
+      "values": {
+        "tier_key": "stems_24",
+        "label_key": "catalog.tier.stems",
+        "stems": 24,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-038",
+        "tier": "stems_12"
+      },
+      "values": {
+        "tier_key": "stems_12",
+        "label_key": "catalog.tier.stems",
+        "stems": 12,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-038",
+        "tier": "stems_18"
+      },
+      "values": {
+        "tier_key": "stems_18",
+        "label_key": "catalog.tier.stems",
+        "stems": 18,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-038",
+        "tier": "stems_24"
+      },
+      "values": {
+        "tier_key": "stems_24",
+        "label_key": "catalog.tier.stems",
+        "stems": 24,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-039",
+        "tier": "stems_3"
+      },
+      "values": {
+        "tier_key": "stems_3",
+        "label_key": "catalog.tier.stems",
+        "stems": 3,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-039",
+        "tier": "stems_5"
+      },
+      "values": {
+        "tier_key": "stems_5",
+        "label_key": "catalog.tier.stems",
+        "stems": 5,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-039",
+        "tier": "stems_7"
+      },
+      "values": {
+        "tier_key": "stems_7",
+        "label_key": "catalog.tier.stems",
+        "stems": 7,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-040",
+        "tier": "stems_15"
+      },
+      "values": {
+        "tier_key": "stems_15",
+        "label_key": "catalog.tier.stems",
+        "stems": 15,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-040",
+        "tier": "stems_25"
+      },
+      "values": {
+        "tier_key": "stems_25",
+        "label_key": "catalog.tier.stems",
+        "stems": 25,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-040",
+        "tier": "stems_35"
+      },
+      "values": {
+        "tier_key": "stems_35",
+        "label_key": "catalog.tier.stems",
+        "stems": 35,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-001",
+        "tier": "size_s"
+      },
+      "values": {
+        "tier_key": "size_s",
+        "label_key": "catalog.tier.size.s",
+        "stems": null,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-001",
+        "tier": "size_m"
+      },
+      "values": {
+        "tier_key": "size_m",
+        "label_key": "catalog.tier.size.m",
+        "stems": null,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-001",
+        "tier": "size_l"
+      },
+      "values": {
+        "tier_key": "size_l",
+        "label_key": "catalog.tier.size.l",
+        "stems": null,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-002",
+        "tier": "size_s"
+      },
+      "values": {
+        "tier_key": "size_s",
+        "label_key": "catalog.tier.size.s",
+        "stems": null,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-002",
+        "tier": "size_m"
+      },
+      "values": {
+        "tier_key": "size_m",
+        "label_key": "catalog.tier.size.m",
+        "stems": null,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-002",
+        "tier": "size_l"
+      },
+      "values": {
+        "tier_key": "size_l",
+        "label_key": "catalog.tier.size.l",
+        "stems": null,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-003",
+        "tier": "size_s"
+      },
+      "values": {
+        "tier_key": "size_s",
+        "label_key": "catalog.tier.size.s",
+        "stems": null,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-003",
+        "tier": "size_m"
+      },
+      "values": {
+        "tier_key": "size_m",
+        "label_key": "catalog.tier.size.m",
+        "stems": null,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-003",
+        "tier": "size_l"
+      },
+      "values": {
+        "tier_key": "size_l",
+        "label_key": "catalog.tier.size.l",
+        "stems": null,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-004",
+        "tier": "size_s"
+      },
+      "values": {
+        "tier_key": "size_s",
+        "label_key": "catalog.tier.size.s",
+        "stems": null,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-004",
+        "tier": "size_m"
+      },
+      "values": {
+        "tier_key": "size_m",
+        "label_key": "catalog.tier.size.m",
+        "stems": null,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-004",
+        "tier": "size_l"
+      },
+      "values": {
+        "tier_key": "size_l",
+        "label_key": "catalog.tier.size.l",
+        "stems": null,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-005",
+        "tier": "size_s"
+      },
+      "values": {
+        "tier_key": "size_s",
+        "label_key": "catalog.tier.size.s",
+        "stems": null,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-005",
+        "tier": "size_m"
+      },
+      "values": {
+        "tier_key": "size_m",
+        "label_key": "catalog.tier.size.m",
+        "stems": null,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-005",
+        "tier": "size_l"
+      },
+      "values": {
+        "tier_key": "size_l",
+        "label_key": "catalog.tier.size.l",
+        "stems": null,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-006",
+        "tier": "size_s"
+      },
+      "values": {
+        "tier_key": "size_s",
+        "label_key": "catalog.tier.size.s",
+        "stems": null,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-006",
+        "tier": "size_m"
+      },
+      "values": {
+        "tier_key": "size_m",
+        "label_key": "catalog.tier.size.m",
+        "stems": null,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-006",
+        "tier": "size_l"
+      },
+      "values": {
+        "tier_key": "size_l",
+        "label_key": "catalog.tier.size.l",
+        "stems": null,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-007",
+        "tier": "size_s"
+      },
+      "values": {
+        "tier_key": "size_s",
+        "label_key": "catalog.tier.size.s",
+        "stems": null,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-007",
+        "tier": "size_m"
+      },
+      "values": {
+        "tier_key": "size_m",
+        "label_key": "catalog.tier.size.m",
+        "stems": null,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-007",
+        "tier": "size_l"
+      },
+      "values": {
+        "tier_key": "size_l",
+        "label_key": "catalog.tier.size.l",
+        "stems": null,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-008",
+        "tier": "size_s"
+      },
+      "values": {
+        "tier_key": "size_s",
+        "label_key": "catalog.tier.size.s",
+        "stems": null,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-008",
+        "tier": "size_m"
+      },
+      "values": {
+        "tier_key": "size_m",
+        "label_key": "catalog.tier.size.m",
+        "stems": null,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-008",
+        "tier": "size_l"
+      },
+      "values": {
+        "tier_key": "size_l",
+        "label_key": "catalog.tier.size.l",
+        "stems": null,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-009",
+        "tier": "size_s"
+      },
+      "values": {
+        "tier_key": "size_s",
+        "label_key": "catalog.tier.size.s",
+        "stems": null,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-009",
+        "tier": "size_m"
+      },
+      "values": {
+        "tier_key": "size_m",
+        "label_key": "catalog.tier.size.m",
+        "stems": null,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-009",
+        "tier": "size_l"
+      },
+      "values": {
+        "tier_key": "size_l",
+        "label_key": "catalog.tier.size.l",
+        "stems": null,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-010",
+        "tier": "size_s"
+      },
+      "values": {
+        "tier_key": "size_s",
+        "label_key": "catalog.tier.size.s",
+        "stems": null,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-010",
+        "tier": "size_m"
+      },
+      "values": {
+        "tier_key": "size_m",
+        "label_key": "catalog.tier.size.m",
+        "stems": null,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-010",
+        "tier": "size_l"
+      },
+      "values": {
+        "tier_key": "size_l",
+        "label_key": "catalog.tier.size.l",
+        "stems": null,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-011",
+        "tier": "size_s"
+      },
+      "values": {
+        "tier_key": "size_s",
+        "label_key": "catalog.tier.size.s",
+        "stems": null,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-011",
+        "tier": "size_m"
+      },
+      "values": {
+        "tier_key": "size_m",
+        "label_key": "catalog.tier.size.m",
+        "stems": null,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-011",
+        "tier": "size_l"
+      },
+      "values": {
+        "tier_key": "size_l",
+        "label_key": "catalog.tier.size.l",
+        "stems": null,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-012",
+        "tier": "size_s"
+      },
+      "values": {
+        "tier_key": "size_s",
+        "label_key": "catalog.tier.size.s",
+        "stems": null,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-012",
+        "tier": "size_m"
+      },
+      "values": {
+        "tier_key": "size_m",
+        "label_key": "catalog.tier.size.m",
+        "stems": null,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-012",
+        "tier": "size_l"
+      },
+      "values": {
+        "tier_key": "size_l",
+        "label_key": "catalog.tier.size.l",
+        "stems": null,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-013",
+        "tier": "size_s"
+      },
+      "values": {
+        "tier_key": "size_s",
+        "label_key": "catalog.tier.size.s",
+        "stems": null,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-013",
+        "tier": "size_m"
+      },
+      "values": {
+        "tier_key": "size_m",
+        "label_key": "catalog.tier.size.m",
+        "stems": null,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-013",
+        "tier": "size_l"
+      },
+      "values": {
+        "tier_key": "size_l",
+        "label_key": "catalog.tier.size.l",
+        "stems": null,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-014",
+        "tier": "size_s"
+      },
+      "values": {
+        "tier_key": "size_s",
+        "label_key": "catalog.tier.size.s",
+        "stems": null,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-014",
+        "tier": "size_m"
+      },
+      "values": {
+        "tier_key": "size_m",
+        "label_key": "catalog.tier.size.m",
+        "stems": null,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-014",
+        "tier": "size_l"
+      },
+      "values": {
+        "tier_key": "size_l",
+        "label_key": "catalog.tier.size.l",
+        "stems": null,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-PT-001",
+        "tier": "single"
+      },
+      "values": {
+        "tier_key": "single",
+        "label_key": "catalog.tier.single",
+        "stems": null,
+        "sort": 0,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-PT-002",
+        "tier": "single"
+      },
+      "values": {
+        "tier_key": "single",
+        "label_key": "catalog.tier.single",
+        "stems": null,
+        "sort": 0,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-PT-003",
+        "tier": "single"
+      },
+      "values": {
+        "tier_key": "single",
+        "label_key": "catalog.tier.single",
+        "stems": null,
+        "sort": 0,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-PT-004",
+        "tier": "single"
+      },
+      "values": {
+        "tier_key": "single",
+        "label_key": "catalog.tier.single",
+        "stems": null,
+        "sort": 0,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-PT-005",
+        "tier": "single"
+      },
+      "values": {
+        "tier_key": "single",
+        "label_key": "catalog.tier.single",
+        "stems": null,
+        "sort": 0,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-PT-006",
+        "tier": "single"
+      },
+      "values": {
+        "tier_key": "single",
+        "label_key": "catalog.tier.single",
+        "stems": null,
+        "sort": 0,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-PT-007",
+        "tier": "single"
+      },
+      "values": {
+        "tier_key": "single",
+        "label_key": "catalog.tier.single",
+        "stems": null,
+        "sort": 0,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-PT-008",
+        "tier": "single"
+      },
+      "values": {
+        "tier_key": "single",
+        "label_key": "catalog.tier.single",
+        "stems": null,
+        "sort": 0,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-001",
+        "tier": "size_s"
+      },
+      "values": {
+        "tier_key": "size_s",
+        "label_key": "catalog.tier.size.s",
+        "stems": null,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-001",
+        "tier": "size_m"
+      },
+      "values": {
+        "tier_key": "size_m",
+        "label_key": "catalog.tier.size.m",
+        "stems": null,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-001",
+        "tier": "size_l"
+      },
+      "values": {
+        "tier_key": "size_l",
+        "label_key": "catalog.tier.size.l",
+        "stems": null,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-002",
+        "tier": "size_s"
+      },
+      "values": {
+        "tier_key": "size_s",
+        "label_key": "catalog.tier.size.s",
+        "stems": null,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-002",
+        "tier": "size_m"
+      },
+      "values": {
+        "tier_key": "size_m",
+        "label_key": "catalog.tier.size.m",
+        "stems": null,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-002",
+        "tier": "size_l"
+      },
+      "values": {
+        "tier_key": "size_l",
+        "label_key": "catalog.tier.size.l",
+        "stems": null,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-003",
+        "tier": "size_s"
+      },
+      "values": {
+        "tier_key": "size_s",
+        "label_key": "catalog.tier.size.s",
+        "stems": null,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-003",
+        "tier": "size_m"
+      },
+      "values": {
+        "tier_key": "size_m",
+        "label_key": "catalog.tier.size.m",
+        "stems": null,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-003",
+        "tier": "size_l"
+      },
+      "values": {
+        "tier_key": "size_l",
+        "label_key": "catalog.tier.size.l",
+        "stems": null,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-004",
+        "tier": "size_s"
+      },
+      "values": {
+        "tier_key": "size_s",
+        "label_key": "catalog.tier.size.s",
+        "stems": null,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-004",
+        "tier": "size_m"
+      },
+      "values": {
+        "tier_key": "size_m",
+        "label_key": "catalog.tier.size.m",
+        "stems": null,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-004",
+        "tier": "size_l"
+      },
+      "values": {
+        "tier_key": "size_l",
+        "label_key": "catalog.tier.size.l",
+        "stems": null,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-005",
+        "tier": "size_s"
+      },
+      "values": {
+        "tier_key": "size_s",
+        "label_key": "catalog.tier.size.s",
+        "stems": null,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-005",
+        "tier": "size_m"
+      },
+      "values": {
+        "tier_key": "size_m",
+        "label_key": "catalog.tier.size.m",
+        "stems": null,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-005",
+        "tier": "size_l"
+      },
+      "values": {
+        "tier_key": "size_l",
+        "label_key": "catalog.tier.size.l",
+        "stems": null,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-006",
+        "tier": "size_s"
+      },
+      "values": {
+        "tier_key": "size_s",
+        "label_key": "catalog.tier.size.s",
+        "stems": null,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-006",
+        "tier": "size_m"
+      },
+      "values": {
+        "tier_key": "size_m",
+        "label_key": "catalog.tier.size.m",
+        "stems": null,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-006",
+        "tier": "size_l"
+      },
+      "values": {
+        "tier_key": "size_l",
+        "label_key": "catalog.tier.size.l",
+        "stems": null,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-007",
+        "tier": "size_s"
+      },
+      "values": {
+        "tier_key": "size_s",
+        "label_key": "catalog.tier.size.s",
+        "stems": null,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-007",
+        "tier": "size_m"
+      },
+      "values": {
+        "tier_key": "size_m",
+        "label_key": "catalog.tier.size.m",
+        "stems": null,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-007",
+        "tier": "size_l"
+      },
+      "values": {
+        "tier_key": "size_l",
+        "label_key": "catalog.tier.size.l",
+        "stems": null,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-008",
+        "tier": "size_s"
+      },
+      "values": {
+        "tier_key": "size_s",
+        "label_key": "catalog.tier.size.s",
+        "stems": null,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-008",
+        "tier": "size_m"
+      },
+      "values": {
+        "tier_key": "size_m",
+        "label_key": "catalog.tier.size.m",
+        "stems": null,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-008",
+        "tier": "size_l"
+      },
+      "values": {
+        "tier_key": "size_l",
+        "label_key": "catalog.tier.size.l",
+        "stems": null,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-009",
+        "tier": "size_s"
+      },
+      "values": {
+        "tier_key": "size_s",
+        "label_key": "catalog.tier.size.s",
+        "stems": null,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-009",
+        "tier": "size_m"
+      },
+      "values": {
+        "tier_key": "size_m",
+        "label_key": "catalog.tier.size.m",
+        "stems": null,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-009",
+        "tier": "size_l"
+      },
+      "values": {
+        "tier_key": "size_l",
+        "label_key": "catalog.tier.size.l",
+        "stems": null,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-010",
+        "tier": "size_s"
+      },
+      "values": {
+        "tier_key": "size_s",
+        "label_key": "catalog.tier.size.s",
+        "stems": null,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-010",
+        "tier": "size_m"
+      },
+      "values": {
+        "tier_key": "size_m",
+        "label_key": "catalog.tier.size.m",
+        "stems": null,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-010",
+        "tier": "size_l"
+      },
+      "values": {
+        "tier_key": "size_l",
+        "label_key": "catalog.tier.size.l",
+        "stems": null,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-001",
+        "tier": "stems_12"
+      },
+      "values": {
+        "tier_key": "stems_12",
+        "label_key": "catalog.tier.stems",
+        "stems": 12,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-001",
+        "tier": "stems_18"
+      },
+      "values": {
+        "tier_key": "stems_18",
+        "label_key": "catalog.tier.stems",
+        "stems": 18,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-001",
+        "tier": "stems_24"
+      },
+      "values": {
+        "tier_key": "stems_24",
+        "label_key": "catalog.tier.stems",
+        "stems": 24,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-002",
+        "tier": "stems_12"
+      },
+      "values": {
+        "tier_key": "stems_12",
+        "label_key": "catalog.tier.stems",
+        "stems": 12,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-002",
+        "tier": "stems_18"
+      },
+      "values": {
+        "tier_key": "stems_18",
+        "label_key": "catalog.tier.stems",
+        "stems": 18,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-002",
+        "tier": "stems_24"
+      },
+      "values": {
+        "tier_key": "stems_24",
+        "label_key": "catalog.tier.stems",
+        "stems": 24,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-003",
+        "tier": "stems_12"
+      },
+      "values": {
+        "tier_key": "stems_12",
+        "label_key": "catalog.tier.stems",
+        "stems": 12,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-003",
+        "tier": "stems_18"
+      },
+      "values": {
+        "tier_key": "stems_18",
+        "label_key": "catalog.tier.stems",
+        "stems": 18,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-003",
+        "tier": "stems_24"
+      },
+      "values": {
+        "tier_key": "stems_24",
+        "label_key": "catalog.tier.stems",
+        "stems": 24,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-004",
+        "tier": "stems_12"
+      },
+      "values": {
+        "tier_key": "stems_12",
+        "label_key": "catalog.tier.stems",
+        "stems": 12,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-004",
+        "tier": "stems_18"
+      },
+      "values": {
+        "tier_key": "stems_18",
+        "label_key": "catalog.tier.stems",
+        "stems": 18,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-004",
+        "tier": "stems_24"
+      },
+      "values": {
+        "tier_key": "stems_24",
+        "label_key": "catalog.tier.stems",
+        "stems": 24,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-005",
+        "tier": "stems_15"
+      },
+      "values": {
+        "tier_key": "stems_15",
+        "label_key": "catalog.tier.stems",
+        "stems": 15,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-005",
+        "tier": "stems_25"
+      },
+      "values": {
+        "tier_key": "stems_25",
+        "label_key": "catalog.tier.stems",
+        "stems": 25,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-005",
+        "tier": "stems_35"
+      },
+      "values": {
+        "tier_key": "stems_35",
+        "label_key": "catalog.tier.stems",
+        "stems": 35,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-006",
+        "tier": "stems_12"
+      },
+      "values": {
+        "tier_key": "stems_12",
+        "label_key": "catalog.tier.stems",
+        "stems": 12,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-006",
+        "tier": "stems_18"
+      },
+      "values": {
+        "tier_key": "stems_18",
+        "label_key": "catalog.tier.stems",
+        "stems": 18,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-006",
+        "tier": "stems_24"
+      },
+      "values": {
+        "tier_key": "stems_24",
+        "label_key": "catalog.tier.stems",
+        "stems": 24,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-007",
+        "tier": "stems_5"
+      },
+      "values": {
+        "tier_key": "stems_5",
+        "label_key": "catalog.tier.stems",
+        "stems": 5,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-007",
+        "tier": "stems_9"
+      },
+      "values": {
+        "tier_key": "stems_9",
+        "label_key": "catalog.tier.stems",
+        "stems": 9,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-007",
+        "tier": "stems_13"
+      },
+      "values": {
+        "tier_key": "stems_13",
+        "label_key": "catalog.tier.stems",
+        "stems": 13,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-008",
+        "tier": "stems_9"
+      },
+      "values": {
+        "tier_key": "stems_9",
+        "label_key": "catalog.tier.stems",
+        "stems": 9,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-008",
+        "tier": "stems_15"
+      },
+      "values": {
+        "tier_key": "stems_15",
+        "label_key": "catalog.tier.stems",
+        "stems": 15,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-008",
+        "tier": "stems_21"
+      },
+      "values": {
+        "tier_key": "stems_21",
+        "label_key": "catalog.tier.stems",
+        "stems": 21,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-009",
+        "tier": "stems_12"
+      },
+      "values": {
+        "tier_key": "stems_12",
+        "label_key": "catalog.tier.stems",
+        "stems": 12,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-009",
+        "tier": "stems_18"
+      },
+      "values": {
+        "tier_key": "stems_18",
+        "label_key": "catalog.tier.stems",
+        "stems": 18,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-009",
+        "tier": "stems_24"
+      },
+      "values": {
+        "tier_key": "stems_24",
+        "label_key": "catalog.tier.stems",
+        "stems": 24,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-010",
+        "tier": "stems_10"
+      },
+      "values": {
+        "tier_key": "stems_10",
+        "label_key": "catalog.tier.stems",
+        "stems": 10,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-010",
+        "tier": "stems_15"
+      },
+      "values": {
+        "tier_key": "stems_15",
+        "label_key": "catalog.tier.stems",
+        "stems": 15,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-010",
+        "tier": "stems_21"
+      },
+      "values": {
+        "tier_key": "stems_21",
+        "label_key": "catalog.tier.stems",
+        "stems": 21,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-011",
+        "tier": "stems_5"
+      },
+      "values": {
+        "tier_key": "stems_5",
+        "label_key": "catalog.tier.stems",
+        "stems": 5,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-011",
+        "tier": "stems_8"
+      },
+      "values": {
+        "tier_key": "stems_8",
+        "label_key": "catalog.tier.stems",
+        "stems": 8,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-011",
+        "tier": "stems_12"
+      },
+      "values": {
+        "tier_key": "stems_12",
+        "label_key": "catalog.tier.stems",
+        "stems": 12,
+        "sort": 2,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-012",
+        "tier": "stems_12"
+      },
+      "values": {
+        "tier_key": "stems_12",
+        "label_key": "catalog.tier.stems",
+        "stems": 12,
+        "sort": 0,
+        "is_default": false
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-012",
+        "tier": "stems_18"
+      },
+      "values": {
+        "tier_key": "stems_18",
+        "label_key": "catalog.tier.stems",
+        "stems": 18,
+        "sort": 1,
+        "is_default": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-012",
+        "tier": "stems_24"
+      },
+      "values": {
+        "tier_key": "stems_24",
+        "label_key": "catalog.tier.stems",
+        "stems": 24,
+        "sort": 2,
+        "is_default": false
+      }
+    }
+  ]
+}

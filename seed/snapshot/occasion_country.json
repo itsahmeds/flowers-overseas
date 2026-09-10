@@ -1,0 +1,1875 @@
+{
+  "version": 1,
+  "source": "seed",
+  "table": "occasion_country",
+  "rows": [
+    {
+      "key": {
+        "occasion": "valentines",
+        "country": "PL"
+      },
+      "values": {
+        "rule_type": "fixed",
+        "rule": {
+          "kind": "fixed",
+          "month": 2,
+          "day": 14
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 14
+      }
+    },
+    {
+      "key": {
+        "occasion": "womens_day",
+        "country": "PL"
+      },
+      "values": {
+        "rule_type": "fixed",
+        "rule": {
+          "kind": "fixed",
+          "month": 3,
+          "day": 8
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 7
+      }
+    },
+    {
+      "key": {
+        "occasion": "mothers_day",
+        "country": "PL"
+      },
+      "values": {
+        "rule_type": "fixed",
+        "rule": {
+          "kind": "fixed",
+          "month": 5,
+          "day": 26
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 14
+      }
+    },
+    {
+      "key": {
+        "occasion": "fathers_day",
+        "country": "PL"
+      },
+      "values": {
+        "rule_type": "fixed",
+        "rule": {
+          "kind": "fixed",
+          "month": 6,
+          "day": 23
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 7
+      }
+    },
+    {
+      "key": {
+        "occasion": "grandparents_day",
+        "country": "PL"
+      },
+      "values": {
+        "rule_type": "fixed",
+        "rule": {
+          "kind": "fixed",
+          "month": 1,
+          "day": 21
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 7
+      }
+    },
+    {
+      "key": {
+        "occasion": "easter",
+        "country": "PL"
+      },
+      "values": {
+        "rule_type": "easter_offset",
+        "rule": {
+          "kind": "easter_offset",
+          "days": 0
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 14
+      }
+    },
+    {
+      "key": {
+        "occasion": "all_saints",
+        "country": "PL"
+      },
+      "values": {
+        "rule_type": "fixed",
+        "rule": {
+          "kind": "fixed",
+          "month": 11,
+          "day": 1
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 14
+      }
+    },
+    {
+      "key": {
+        "occasion": "christmas",
+        "country": "PL"
+      },
+      "values": {
+        "rule_type": "fixed",
+        "rule": {
+          "kind": "fixed",
+          "month": 12,
+          "day": 25
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 21
+      }
+    },
+    {
+      "key": {
+        "occasion": "new_year",
+        "country": "PL"
+      },
+      "values": {
+        "rule_type": "fixed",
+        "rule": {
+          "kind": "fixed",
+          "month": 1,
+          "day": 1
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 7
+      }
+    },
+    {
+      "key": {
+        "occasion": "name_day",
+        "country": "PL"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "teachers_day",
+        "country": "PL"
+      },
+      "values": {
+        "rule_type": "fixed",
+        "rule": {
+          "kind": "fixed",
+          "month": 10,
+          "day": 14
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 7
+      }
+    },
+    {
+      "key": {
+        "occasion": "sant_jordi",
+        "country": "PL"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "fete_des_grands_meres",
+        "country": "PL"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "muguet",
+        "country": "PL"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "konfirmation",
+        "country": "PL"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "student",
+        "country": "PL"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "omatag",
+        "country": "PL"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "17_mai",
+        "country": "PL"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "valentines",
+        "country": "DE"
+      },
+      "values": {
+        "rule_type": "fixed",
+        "rule": {
+          "kind": "fixed",
+          "month": 2,
+          "day": 14
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 14
+      }
+    },
+    {
+      "key": {
+        "occasion": "womens_day",
+        "country": "DE"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "mothers_day",
+        "country": "DE"
+      },
+      "values": {
+        "rule_type": "nth_weekday",
+        "rule": {
+          "kind": "nth_weekday",
+          "month": 5,
+          "weekday": 7,
+          "n": 2
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 14
+      }
+    },
+    {
+      "key": {
+        "occasion": "fathers_day",
+        "country": "DE"
+      },
+      "values": {
+        "rule_type": "easter_offset",
+        "rule": {
+          "kind": "easter_offset",
+          "days": 39
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 7
+      }
+    },
+    {
+      "key": {
+        "occasion": "grandparents_day",
+        "country": "DE"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "easter",
+        "country": "DE"
+      },
+      "values": {
+        "rule_type": "easter_offset",
+        "rule": {
+          "kind": "easter_offset",
+          "days": 0
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 14
+      }
+    },
+    {
+      "key": {
+        "occasion": "all_saints",
+        "country": "DE"
+      },
+      "values": {
+        "rule_type": "fixed",
+        "rule": {
+          "kind": "fixed",
+          "month": 11,
+          "day": 1
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 14
+      }
+    },
+    {
+      "key": {
+        "occasion": "christmas",
+        "country": "DE"
+      },
+      "values": {
+        "rule_type": "fixed",
+        "rule": {
+          "kind": "fixed",
+          "month": 12,
+          "day": 25
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 21
+      }
+    },
+    {
+      "key": {
+        "occasion": "new_year",
+        "country": "DE"
+      },
+      "values": {
+        "rule_type": "fixed",
+        "rule": {
+          "kind": "fixed",
+          "month": 1,
+          "day": 1
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 7
+      }
+    },
+    {
+      "key": {
+        "occasion": "name_day",
+        "country": "DE"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "teachers_day",
+        "country": "DE"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "sant_jordi",
+        "country": "DE"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "fete_des_grands_meres",
+        "country": "DE"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "muguet",
+        "country": "DE"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "konfirmation",
+        "country": "DE"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "student",
+        "country": "DE"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "omatag",
+        "country": "DE"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "17_mai",
+        "country": "DE"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "valentines",
+        "country": "FR"
+      },
+      "values": {
+        "rule_type": "fixed",
+        "rule": {
+          "kind": "fixed",
+          "month": 2,
+          "day": 14
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 14
+      }
+    },
+    {
+      "key": {
+        "occasion": "womens_day",
+        "country": "FR"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "mothers_day",
+        "country": "FR"
+      },
+      "values": {
+        "rule_type": "last_weekday",
+        "rule": {
+          "kind": "last_weekday",
+          "month": 5,
+          "weekday": 7
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 14
+      }
+    },
+    {
+      "key": {
+        "occasion": "fathers_day",
+        "country": "FR"
+      },
+      "values": {
+        "rule_type": "nth_weekday",
+        "rule": {
+          "kind": "nth_weekday",
+          "month": 6,
+          "weekday": 7,
+          "n": 3
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 7
+      }
+    },
+    {
+      "key": {
+        "occasion": "grandparents_day",
+        "country": "FR"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "easter",
+        "country": "FR"
+      },
+      "values": {
+        "rule_type": "easter_offset",
+        "rule": {
+          "kind": "easter_offset",
+          "days": 0
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 14
+      }
+    },
+    {
+      "key": {
+        "occasion": "all_saints",
+        "country": "FR"
+      },
+      "values": {
+        "rule_type": "fixed",
+        "rule": {
+          "kind": "fixed",
+          "month": 11,
+          "day": 1
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 14
+      }
+    },
+    {
+      "key": {
+        "occasion": "christmas",
+        "country": "FR"
+      },
+      "values": {
+        "rule_type": "fixed",
+        "rule": {
+          "kind": "fixed",
+          "month": 12,
+          "day": 25
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 21
+      }
+    },
+    {
+      "key": {
+        "occasion": "new_year",
+        "country": "FR"
+      },
+      "values": {
+        "rule_type": "fixed",
+        "rule": {
+          "kind": "fixed",
+          "month": 1,
+          "day": 1
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 7
+      }
+    },
+    {
+      "key": {
+        "occasion": "name_day",
+        "country": "FR"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "teachers_day",
+        "country": "FR"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "sant_jordi",
+        "country": "FR"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "fete_des_grands_meres",
+        "country": "FR"
+      },
+      "values": {
+        "rule_type": "nth_weekday",
+        "rule": {
+          "kind": "nth_weekday",
+          "month": 3,
+          "weekday": 7,
+          "n": 1
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 7
+      }
+    },
+    {
+      "key": {
+        "occasion": "muguet",
+        "country": "FR"
+      },
+      "values": {
+        "rule_type": "fixed",
+        "rule": {
+          "kind": "fixed",
+          "month": 5,
+          "day": 1
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 7
+      }
+    },
+    {
+      "key": {
+        "occasion": "konfirmation",
+        "country": "FR"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "student",
+        "country": "FR"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "omatag",
+        "country": "FR"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "17_mai",
+        "country": "FR"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "valentines",
+        "country": "ES"
+      },
+      "values": {
+        "rule_type": "fixed",
+        "rule": {
+          "kind": "fixed",
+          "month": 2,
+          "day": 14
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 14
+      }
+    },
+    {
+      "key": {
+        "occasion": "womens_day",
+        "country": "ES"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "mothers_day",
+        "country": "ES"
+      },
+      "values": {
+        "rule_type": "nth_weekday",
+        "rule": {
+          "kind": "nth_weekday",
+          "month": 5,
+          "weekday": 7,
+          "n": 1
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 14
+      }
+    },
+    {
+      "key": {
+        "occasion": "fathers_day",
+        "country": "ES"
+      },
+      "values": {
+        "rule_type": "fixed",
+        "rule": {
+          "kind": "fixed",
+          "month": 3,
+          "day": 19
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 7
+      }
+    },
+    {
+      "key": {
+        "occasion": "grandparents_day",
+        "country": "ES"
+      },
+      "values": {
+        "rule_type": "fixed",
+        "rule": {
+          "kind": "fixed",
+          "month": 7,
+          "day": 26
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 7
+      }
+    },
+    {
+      "key": {
+        "occasion": "easter",
+        "country": "ES"
+      },
+      "values": {
+        "rule_type": "easter_offset",
+        "rule": {
+          "kind": "easter_offset",
+          "days": 0
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 14
+      }
+    },
+    {
+      "key": {
+        "occasion": "all_saints",
+        "country": "ES"
+      },
+      "values": {
+        "rule_type": "fixed",
+        "rule": {
+          "kind": "fixed",
+          "month": 11,
+          "day": 1
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 14
+      }
+    },
+    {
+      "key": {
+        "occasion": "christmas",
+        "country": "ES"
+      },
+      "values": {
+        "rule_type": "fixed",
+        "rule": {
+          "kind": "fixed",
+          "month": 12,
+          "day": 25
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 21
+      }
+    },
+    {
+      "key": {
+        "occasion": "new_year",
+        "country": "ES"
+      },
+      "values": {
+        "rule_type": "fixed",
+        "rule": {
+          "kind": "fixed",
+          "month": 1,
+          "day": 1
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 7
+      }
+    },
+    {
+      "key": {
+        "occasion": "name_day",
+        "country": "ES"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "teachers_day",
+        "country": "ES"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "sant_jordi",
+        "country": "ES"
+      },
+      "values": {
+        "rule_type": "fixed",
+        "rule": {
+          "kind": "fixed",
+          "month": 4,
+          "day": 23
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 7
+      }
+    },
+    {
+      "key": {
+        "occasion": "fete_des_grands_meres",
+        "country": "ES"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "muguet",
+        "country": "ES"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "konfirmation",
+        "country": "ES"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "student",
+        "country": "ES"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "omatag",
+        "country": "ES"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "17_mai",
+        "country": "ES"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "valentines",
+        "country": "IT"
+      },
+      "values": {
+        "rule_type": "fixed",
+        "rule": {
+          "kind": "fixed",
+          "month": 2,
+          "day": 14
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 14
+      }
+    },
+    {
+      "key": {
+        "occasion": "womens_day",
+        "country": "IT"
+      },
+      "values": {
+        "rule_type": "fixed",
+        "rule": {
+          "kind": "fixed",
+          "month": 3,
+          "day": 8
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 7
+      }
+    },
+    {
+      "key": {
+        "occasion": "mothers_day",
+        "country": "IT"
+      },
+      "values": {
+        "rule_type": "nth_weekday",
+        "rule": {
+          "kind": "nth_weekday",
+          "month": 5,
+          "weekday": 7,
+          "n": 2
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 14
+      }
+    },
+    {
+      "key": {
+        "occasion": "fathers_day",
+        "country": "IT"
+      },
+      "values": {
+        "rule_type": "fixed",
+        "rule": {
+          "kind": "fixed",
+          "month": 3,
+          "day": 19
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 7
+      }
+    },
+    {
+      "key": {
+        "occasion": "grandparents_day",
+        "country": "IT"
+      },
+      "values": {
+        "rule_type": "fixed",
+        "rule": {
+          "kind": "fixed",
+          "month": 10,
+          "day": 2
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 7
+      }
+    },
+    {
+      "key": {
+        "occasion": "easter",
+        "country": "IT"
+      },
+      "values": {
+        "rule_type": "easter_offset",
+        "rule": {
+          "kind": "easter_offset",
+          "days": 0
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 14
+      }
+    },
+    {
+      "key": {
+        "occasion": "all_saints",
+        "country": "IT"
+      },
+      "values": {
+        "rule_type": "fixed",
+        "rule": {
+          "kind": "fixed",
+          "month": 11,
+          "day": 1
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 14
+      }
+    },
+    {
+      "key": {
+        "occasion": "christmas",
+        "country": "IT"
+      },
+      "values": {
+        "rule_type": "fixed",
+        "rule": {
+          "kind": "fixed",
+          "month": 12,
+          "day": 25
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 21
+      }
+    },
+    {
+      "key": {
+        "occasion": "new_year",
+        "country": "IT"
+      },
+      "values": {
+        "rule_type": "fixed",
+        "rule": {
+          "kind": "fixed",
+          "month": 1,
+          "day": 1
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 7
+      }
+    },
+    {
+      "key": {
+        "occasion": "name_day",
+        "country": "IT"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "teachers_day",
+        "country": "IT"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "sant_jordi",
+        "country": "IT"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "fete_des_grands_meres",
+        "country": "IT"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "muguet",
+        "country": "IT"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "konfirmation",
+        "country": "IT"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "student",
+        "country": "IT"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "omatag",
+        "country": "IT"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "17_mai",
+        "country": "IT"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "valentines",
+        "country": "RO"
+      },
+      "values": {
+        "rule_type": "fixed",
+        "rule": {
+          "kind": "fixed",
+          "month": 2,
+          "day": 14
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 14
+      }
+    },
+    {
+      "key": {
+        "occasion": "womens_day",
+        "country": "RO"
+      },
+      "values": {
+        "rule_type": "fixed",
+        "rule": {
+          "kind": "fixed",
+          "month": 3,
+          "day": 8
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 7
+      }
+    },
+    {
+      "key": {
+        "occasion": "mothers_day",
+        "country": "RO"
+      },
+      "values": {
+        "rule_type": "nth_weekday",
+        "rule": {
+          "kind": "nth_weekday",
+          "month": 5,
+          "weekday": 7,
+          "n": 1
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 14
+      }
+    },
+    {
+      "key": {
+        "occasion": "fathers_day",
+        "country": "RO"
+      },
+      "values": {
+        "rule_type": "nth_weekday",
+        "rule": {
+          "kind": "nth_weekday",
+          "month": 5,
+          "weekday": 7,
+          "n": 2
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 7
+      }
+    },
+    {
+      "key": {
+        "occasion": "grandparents_day",
+        "country": "RO"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "easter",
+        "country": "RO"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "all_saints",
+        "country": "RO"
+      },
+      "values": {
+        "rule_type": "fixed",
+        "rule": {
+          "kind": "fixed",
+          "month": 11,
+          "day": 1
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 14
+      }
+    },
+    {
+      "key": {
+        "occasion": "christmas",
+        "country": "RO"
+      },
+      "values": {
+        "rule_type": "fixed",
+        "rule": {
+          "kind": "fixed",
+          "month": 12,
+          "day": 25
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 21
+      }
+    },
+    {
+      "key": {
+        "occasion": "new_year",
+        "country": "RO"
+      },
+      "values": {
+        "rule_type": "fixed",
+        "rule": {
+          "kind": "fixed",
+          "month": 1,
+          "day": 1
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 7
+      }
+    },
+    {
+      "key": {
+        "occasion": "name_day",
+        "country": "RO"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "teachers_day",
+        "country": "RO"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "sant_jordi",
+        "country": "RO"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "fete_des_grands_meres",
+        "country": "RO"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "muguet",
+        "country": "RO"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "konfirmation",
+        "country": "RO"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "student",
+        "country": "RO"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "omatag",
+        "country": "RO"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "17_mai",
+        "country": "RO"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "valentines",
+        "country": "NL"
+      },
+      "values": {
+        "rule_type": "fixed",
+        "rule": {
+          "kind": "fixed",
+          "month": 2,
+          "day": 14
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 14
+      }
+    },
+    {
+      "key": {
+        "occasion": "womens_day",
+        "country": "NL"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "mothers_day",
+        "country": "NL"
+      },
+      "values": {
+        "rule_type": "nth_weekday",
+        "rule": {
+          "kind": "nth_weekday",
+          "month": 5,
+          "weekday": 7,
+          "n": 2
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 14
+      }
+    },
+    {
+      "key": {
+        "occasion": "fathers_day",
+        "country": "NL"
+      },
+      "values": {
+        "rule_type": "nth_weekday",
+        "rule": {
+          "kind": "nth_weekday",
+          "month": 6,
+          "weekday": 7,
+          "n": 3
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 7
+      }
+    },
+    {
+      "key": {
+        "occasion": "grandparents_day",
+        "country": "NL"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "easter",
+        "country": "NL"
+      },
+      "values": {
+        "rule_type": "easter_offset",
+        "rule": {
+          "kind": "easter_offset",
+          "days": 0
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 14
+      }
+    },
+    {
+      "key": {
+        "occasion": "all_saints",
+        "country": "NL"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "christmas",
+        "country": "NL"
+      },
+      "values": {
+        "rule_type": "fixed",
+        "rule": {
+          "kind": "fixed",
+          "month": 12,
+          "day": 25
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 21
+      }
+    },
+    {
+      "key": {
+        "occasion": "new_year",
+        "country": "NL"
+      },
+      "values": {
+        "rule_type": "fixed",
+        "rule": {
+          "kind": "fixed",
+          "month": 1,
+          "day": 1
+        },
+        "observed": true,
+        "indexable_override": null,
+        "promo_start_offset_days": 7
+      }
+    },
+    {
+      "key": {
+        "occasion": "name_day",
+        "country": "NL"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "teachers_day",
+        "country": "NL"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "sant_jordi",
+        "country": "NL"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "fete_des_grands_meres",
+        "country": "NL"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "muguet",
+        "country": "NL"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "konfirmation",
+        "country": "NL"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "student",
+        "country": "NL"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "omatag",
+        "country": "NL"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    },
+    {
+      "key": {
+        "occasion": "17_mai",
+        "country": "NL"
+      },
+      "values": {
+        "rule_type": "none",
+        "rule": null,
+        "observed": false,
+        "indexable_override": null,
+        "promo_start_offset_days": 0
+      }
+    }
+  ]
+}

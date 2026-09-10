@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "source": "seed",
+  "table": "addon",
+  "rows": [
+    {
+      "key": {
+        "key": "chocolates"
+      },
+      "values": {
+        "key": "chocolates",
+        "kind": "confectionery",
+        "allergen_note_required": true
+      }
+    },
+    {
+      "key": {
+        "key": "vase"
+      },
+      "values": {
+        "key": "vase",
+        "kind": "vessel",
+        "allergen_note_required": false
+      }
+    },
+    {
+      "key": {
+        "key": "balloon"
+      },
+      "values": {
+        "key": "balloon",
+        "kind": "balloon",
+        "allergen_note_required": false
+      }
+    },
+    {
+      "key": {
+        "key": "plush"
+      },
+      "values": {
+        "key": "plush",
+        "kind": "plush",
+        "allergen_note_required": false
+      }
+    },
+    {
+      "key": {
+        "key": "wine"
+      },
+      "values": {
+        "key": "wine",
+        "kind": "alcohol",
+        "allergen_note_required": false
+      }
+    },
+    {
+      "key": {
+        "key": "card"
+      },
+      "values": {
+        "key": "card",
+        "kind": "stationery",
+        "allergen_note_required": false
+      }
+    }
+  ]
+}
