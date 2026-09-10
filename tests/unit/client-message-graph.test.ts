@@ -10,7 +10,7 @@
  *  - `src/modules/i18n/error-document.ts` imported all of `messages/en.json` for four strings.
  *    `src/app/global-error.tsx` imports it, and Next attaches the root error boundary's chunk to
  *    **every** document, so the whole 12.5 KB catalogue — `home.*`, `catalog.*`, `media.*`, every
- *    namespace — sat in the initial script set of `/` and of every locale document at 4 606 B
+ *    namespace — sat in the initial script set of `/` and of every locale document at 4 751 B
  *    Brotli. Worse than the bytes: each copy task paid 0 B or ~3.4 KB depending on which side of
  *    the threshold `en.json` happened to land that day (recorded on TASK-052 and TASK-073).
  *  - `src/modules/i18n/messages.ts` statically imports **four** catalogues and their review

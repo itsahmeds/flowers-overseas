@@ -326,7 +326,7 @@ part `/review 26` had to add:
    strings: Turbopack tree-shakes a JSON import only below a size threshold, and once the
    catalogue crossed it the **whole** 12.5 KB file shipped in the chunk Next attaches to the root
    error boundary — i.e. to every document, `/` included — so `home.*`, `catalog.*` and `media.*`
-   were in the initial script set of pages that never render them, at 4 606 B Brotli, and every
+   were in the initial script set of pages that never render them, at 4 751 B Brotli, and every
    copy task paid 0 B or ~3.4 KB depending on which side of the threshold the file landed that day
    (TASK-052, TASK-073). Second, `NextIntlClientProvider` plus its `localeDocument` payload was
    10 705 B Brotli on every locale document to translate two Client Components. Both are gone:
@@ -340,8 +340,9 @@ part `/review 26` had to add:
    (136 128 gz)** and `/en`, `/en-gb`, `/de` and `/pl` from 136 363 B (158 834 gz) to
    **122 360 B (142 573 gz)** — 14 294 B and 8 712 B inside the 131 072 B budget of §14 A1. Every
    URL of AC-24's set is within budget for the first time. Of `/`'s 18 579 B, 15 241 B was the
-   mis-attribution below and 3 338 B the catalogue leaving the error-boundary chunk; the locale
-   documents lost 14 003 B of provider, payload and catalogue with nothing added.
+   mis-attribution below and 3 338 B the catalogue leaving the root error boundary's chunk (that
+   chunk itself: 15 304 B raw / 4 751 B Brotli → 4 207 B / **1 091 B**); the locale documents lost
+   14 003 B of provider, payload and catalogue with nothing added.
 
    The same task fixed the measurement. `pnpm budget:client-js` charged every route the whole
    app's `next/dynamic` chunk groups, because Turbopack writes the same ids into every route's

@@ -11,7 +11,7 @@
  *
  * Until this file existed, `error-document.ts` imported all of `messages/en.json` for four
  * strings. Turbopack tree-shakes a JSON import only below a size threshold, so the catalogue
- * crossed it and shipped **whole**: 15 304 B raw / 4 606 B Brotli of `home.*`, `catalog.*`,
+ * crossed it and shipped **whole**: 15 304 B raw / 4 751 B Brotli of `home.*`, `catalog.*`,
  * `footer.*` and every other namespace, in the initial script set of `/` and of every locale
  * document, measured on this branch's parent (`0bjoc_w_ukgs0.js`). Worse than the bytes was the
  * cliff: each copy task paid 0 B or ~3.4 KB depending on which side of the threshold `en.json`

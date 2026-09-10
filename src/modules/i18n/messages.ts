@@ -32,7 +32,7 @@
  * import only below a size threshold: one `"use client"` module reaching this file — directly or
  * through the `@/modules/i18n` barrel, which re-exports `loadMessages` — puts whole catalogues in
  * the initial script set of every page that mounts it. That is exactly what
- * `src/modules/i18n/error-document.ts` did with `messages/en.json` until TASK-085, at 4 606 B
+ * `src/modules/i18n/error-document.ts` did with `messages/en.json` until TASK-085, at 4 751 B
  * Brotli on **every** document (spec 004 §14 A1 addendum). `import "server-only"` is not the guard
  * here: the package exists only inside Next's bundler, while this module is imported in plain Node
  * by `scripts/i18n-check.ts`, `scripts/i18n-draft.ts`, `scripts/client-js-budget.ts` and fourteen

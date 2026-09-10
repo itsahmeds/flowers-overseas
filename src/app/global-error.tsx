@@ -45,7 +45,7 @@
 // stays closed: a function added to `format.ts` or a schema added to `schemas.ts` tomorrow cannot
 // land in `/`'s bundle by being exported. The strings were `messages/en.json` until TASK-085
 // measured what a static JSON import costs once it crosses Turbopack's tree-shaking threshold:
-// the whole 12.5 KB catalogue — `home.*`, `catalog.*`, `media.*` and all — at 4 606 B Brotli in
+// the whole 12.5 KB catalogue — `home.*`, `catalog.*`, `media.*` and all — at 4 751 B Brotli in
 // every document's initial script set (spec 004 §14 A1 addendum).
 // `import/no-restricted-paths` allows it — the barrel rule
 // binds module-to-module imports, and `app/` -> `modules/` is the direction the boundary permits

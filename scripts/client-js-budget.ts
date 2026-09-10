@@ -529,7 +529,7 @@ export function forbiddenModuleHits(
  * `messages/en.json` for four strings, and Turbopack tree-shakes a JSON import only below a size
  * threshold: once the catalogue crossed it, the **whole** file shipped in the chunk Next attaches
  * to the root error boundary — i.e. to every document, `/` included — so `home.*`, `catalog.*` and
- * `media.*` were in the initial script set of pages that never render them (4 606 B Brotli), and
+ * `media.*` were in the initial script set of pages that never render them (4 751 B Brotli), and
  * every copy task paid 0 B or ~3.4 KB depending on which side of the threshold the file happened
  * to land that day (TASK-052, TASK-073). `src/modules/i18n/messages.ts` is the same trap with four
  * catalogues behind it.

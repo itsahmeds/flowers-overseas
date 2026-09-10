@@ -57,7 +57,7 @@
  * `finder.*`, `catalog.*` or `media.*` catalogue value. That is the byte-level half of the
  * §14 A1 addendum — the source-level half is `tests/unit/client-message-graph.test.ts` — and it
  * exists because the leak it catches (a static `messages/en.json` import in the 500 boundary)
- * cost 4 606 B Brotli on every document while being far too small to notice as a byte total.
+ * cost 4 751 B Brotli on every document while being far too small to notice as a byte total.
  */
 import {
   mkdtempSync,

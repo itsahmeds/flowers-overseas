@@ -437,7 +437,7 @@ jobs:
       #  - **no `home.*`/`finder.*`/`catalog.*`/`media.*` catalogue value in any fetched chunk**
       #    (spec 004 §14 A1 addendum, TASK-085): a static `messages/*.json` import ships the whole
       #    catalogue once it crosses Turbopack's tree-shaking threshold, which is too small a byte
-      #    total to notice and was 4 606 B Brotli on every document.
+      #    total to notice and was 4 751 B Brotli on every document.
       #
       # `continue-on-error` is on the **step**, not the job. Since TASK-085 every URL of the set is
       # inside the budget — `/` 116 778 B Brotli (14 294 B spare) and each locale document

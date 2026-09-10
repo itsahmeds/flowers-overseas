@@ -21,7 +21,7 @@
  * strings, and that import was the second reason this file matters: Turbopack tree-shakes a JSON
  * import only below a size threshold, `en.json` crossed it at 12.5 KB, and the **whole catalogue**
  * — `home.*`, `catalog.*`, `media.*`, every namespace — shipped in the chunk Next attaches to
- * every document (4 606 B Brotli of `0bjoc_w_ukgs0.js`, measured on TASK-085's parent). Each copy
+ * every document (4 751 B Brotli of `0bjoc_w_ukgs0.js`, measured on TASK-085's parent). Each copy
  * task paid 0 B or ~3.4 KB depending on which side of the threshold the file happened to land, so
  * the cliff was a standing tax on writing copy. `error-copy.data.ts` has no threshold, and
  * `tests/unit/error-document.test.ts` is what keeps its strings the catalogue's strings: it

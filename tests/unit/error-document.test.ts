@@ -15,7 +15,7 @@
  *     message catalogue**. It is asserted by walking the *actual* import graph from the file, not
  *     by reading it: the failure mode is a transitive import three files deep (`messages.ts` →
  *     `schemas.ts` → `zod`) that nobody notices, and Next attaches this file's client chunk to
- *     every document, so one such import put ~70 KB Brotli of validator, and later 4 606 B of
+ *     every document, so one such import put ~70 KB Brotli of validator, and later 4 751 B of
  *     `messages/en.json`, on `/`. `tests/unit/client-message-graph.test.ts` applies the same walk
  *     to every client entry point; this file keeps the boundary-specific half.
  *
@@ -179,7 +179,7 @@ describe("nothing reachable from global-error.tsx imports zod or a catalogue", (
 
   it("imports no `messages/*.json` — TASK-085's cliff, in one assertion", () => {
     // `errorDocument()` used to read `messages/en.json`, and Turbopack shipped the whole 12.5 KB
-    // catalogue with it because the file had crossed the tree-shaking threshold: 4 606 B Brotli
+    // catalogue with it because the file had crossed the tree-shaking threshold: 4 751 B Brotli
     // of `home.*`, `catalog.*` and `media.*` in every document, `/` included.
     expect([...json]).toEqual([]);
   });

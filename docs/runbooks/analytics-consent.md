@@ -120,7 +120,7 @@ Operational notes:
   **TASK-085 resolved it** (§14 A1's addendum, Q13 option (b)): `NextIntlClientProvider` and the
   client message payload are gone from every document (−10 705 B), the suggestion banner takes its
   strings as props like this sheet always did, and the 500 boundaries no longer import a
-  catalogue (−4 606 B on every document). A locale document now measures **122 360 B Brotli**,
+  catalogue (−4 751 B on every document). A locale document now measures **122 360 B Brotli**,
   8 712 B inside the budget, and the sheet's own cost is unchanged.
   Re-measure with `pnpm build && pnpm budget:client-js`; `pnpm lighthouse` cannot substitute for
   it locally, because `next start` serves chunks unencoded and Lighthouse then reads identity

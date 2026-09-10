@@ -136,7 +136,7 @@ component it adds.
 **No message catalogue, translator or provider may reach the browser** (spec 004 §13 Q13 option
 (b), §14 A1 addendum; TASK-085). `NextIntlClientProvider` and its `localeDocument` payload cost
 10 705 B Brotli on every locale document, and a static `messages/en.json` import in the 500
-boundary cost another 4 606 B on *every* document — the whole catalogue, because Turbopack
+boundary cost another 4 751 B on *every* document — the whole catalogue, because Turbopack
 tree-shakes a JSON import only below a size threshold, so each copy edit moved the bill by
 kilobytes. Both are gone and the rule that replaced them is simple:
 
