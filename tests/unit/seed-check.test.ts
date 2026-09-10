@@ -149,14 +149,22 @@ describe("spec 006 AC-10: the merged tree passes every rule family", () => {
     expect(tree.stale).toEqual([]);
     expect(tree.raw.size).toBeGreaterThan(30);
     // TASK-078 shipped `media-variants.json` with a pinned pipeline header and **no rows** (no
-    // originals are committed), and `alt/` arrives with TASK-077. Both are legal Phase-0 states,
-    // and the conditional halves of family 7 are written for exactly them: the variant rules bite
-    // the moment the manifest has an entry, and the alt rules the moment `alt/` exists.
+    // originals are committed), and TASK-079 shipped `alt/{locale}.json` for all four launch
+    // locales the same way — the renderer imports them at build time, the strings arrive with the
+    // imagery (TASK-080). Both are legal Phase-0 states, and the conditional halves of family 7
+    // are written for exactly them: the variant rules bite the moment the manifest has an entry,
+    // and the alt rules the moment a locale has an alt row.
     expect(tree.raw.has("media-variants.json")).toBe(true);
     expect(
       (tree.raw.get("media-variants.json") as { rows: unknown[] }).rows,
     ).toEqual([]);
-    expect(tree.altLocales).toEqual([]);
+    expect([...tree.altLocales].sort()).toEqual(["de", "en", "en-gb", "pl"]);
+    for (const locale of tree.altLocales) {
+      expect(
+        (tree.raw.get(`alt/${locale}.json`) as { rows: unknown[] }).rows,
+        locale,
+      ).toEqual([]);
+    }
   });
 
   it("covers all nine families with at least one fixture (AC-10's 'a fixture per family')", () => {
