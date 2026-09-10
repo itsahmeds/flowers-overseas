@@ -32,6 +32,9 @@ seed/media-variants.ts
                  slot's aspect ratio, AVIF+WebP at seven widths plus one OG/email JPEG, and
                  seed/data/media-variants.json rewritten with a checksum per file. `--check` is
                  the CI mode (manifest ↔ files ↔ checksums); generation never runs in CI
+seed/check.ts    pnpm seed:check  — the gate: nine rule families + the health report (--report)
+seed/copy.ts     the copy rules (word band, closing sentence, superlatives, delivery timing)
+seed/budgets.ts  the committed-imagery byte caps rule family 9 enforces
 ```
 
 The pinned encoder — the `sharp` and libvips versions, the widths, the aspect-ratio table, the
@@ -54,17 +57,63 @@ destination** — the `live` and `demo` countries of `src/config/countries.ts`, 
 eighth seeded country of `plan/10` §2.1 is the UK, which is the first *buyer* market (ADR-0002)
 and not a place we deliver to, so it has no price file: a row there would price nothing.
 
-The deliberately faulty price files `pnpm seed:check` is tested against —
-out-of-band, float amount, wrong psychological ending, a second open-ended row, an unknown tier,
-plus the matching good block — live in `tests/fixtures/seed/_cases/prices/` (spec 006 AC-6).
+## The gate: `pnpm seed:check`
 
-`seed/check.ts` (`pnpm seed:check`, TASK-075), `seed/diff.ts` (`pnpm seed:diff`, TASK-076),
-`seed/index.ts` (`pnpm db:seed`, TASK-083) and `seed/upload.ts` (TASK-082) join them in the tasks
-named.
+```
+pnpm seed:check            # exit 0 on a clean tree, one line per problem otherwise
+pnpm seed:check --report   # also print the §11 catalogue-health report (the CI step summary)
+```
+
+**Nine rule families** (spec 006 §2.3), and a failure line always names the file, the entity key
+and the rule:
+
+| # | Family | Turning it red means |
+|---|---|---|
+| 1 | `schema` | a file does not parse, its `version`/`source`/`origin` header is wrong, or a **projected** file was hand-edited (`pnpm seed:project` re-writes it) |
+| 2 | `counts` | not 84 products in the 40/14/8/10/12 split, not 23 categories, not 6 add-ons, the occasion facet not seeded whole, or the launch destination's category coverage has fallen under the six-product rule |
+| 3 | `references` | a facet value, a category or occasion edge, a price row, a media asset, a variant, an alt entry, a copy row or a prompt hash points at something that does not exist |
+| 4 | `slugs` | a slug is not ASCII / lowercase / hyphenated, has a trailing slash, is not the ASCII fold of its name, or is used by two entities in one locale (**products, categories and occasions share one namespace per locale**) |
+| 5 | `prices` | a band, a psychological ending, a tier step, a float amount, a missing price or a second open-ended row — the same checks `catalogue:check` runs, over the rows in these files |
+| 6 | `copy` | a description outside 60–90 words, one that does not end with the local-florist sentence, a banned superlative, a duplicate description, a missing name, or any delivery-timing claim (spec 006 §14 A4) |
+| 7 | `media` | provenance, two primaries for one product, a `delivery` asset, or — once `media-variants.json` / `alt/` exist — a variant with no file, a byte mismatch, or missing alt text in a launch locale |
+| 8 | `privacy` | an `@`-shaped, phone-shaped or postcode-shaped string, a person outside the allowlist in a person field, or a competitor mark — reported with the **JSON path** so the value can be found |
+| 9 | `budgets` | committed derived imagery over 6 MB in total, or one file over its slot's cap |
+
+**How to read a failure.** Each line is `file: [family/rule] \`key\` message`. Fix the file the line
+names — except in family 5, where the file named is `src/config/catalogue/*.data.ts`, because a
+price is authored there and the dataset file is a projection (ADR-0017): edit the module and run
+`pnpm seed:project`. A `schema/stale-projection` line means exactly that too. Families are
+independent: a fault is reported by every family that can see it, and one fixture per family
+proves each one is live.
+
+**The fixtures.** `tests/fixtures/seed/_cases/<family>/` holds one case per family. A case is a
+small declarative overlay — the file it replaces, the family and rule it must trip, the message
+substring, and one or two mutations (`seed/check-cases.ts`) — rather than a copy of a dataset
+file, so a fixture cannot rot into a stale duplicate of 84 authored descriptions. The five
+deliberately faulty **price blocks** (out-of-band, float amount, wrong psychological ending, a
+second open-ended row, an unknown tier, plus the matching good control) live in
+`tests/fixtures/seed/_cases/prices/` as whole blocks (spec 006 AC-6) and are spliced in by the
+`case-*.json` beside them.
+
+**The report** (`--report`, spec 006 §11) is the standing catalogue-health record: product counts
+by type, the per-(country, category) and per-(country, occasion) coverage table against `plan/02`
+§6's six-product rule with **both sides** of the threshold visible, price extremes, the
+description word-count distribution, copy review shares per locale, committed image bytes,
+per-slot maxima, the count of products still rendering a placeholder, and the ten
+category/occasion `seoTitle` near-duplicate pairs spec 008 must nominate a primary for. Every
+readiness column in it is computed from the predicate the application gates on
+(`isLocaleIndexable()`, `country.status`), so **a locale or a country cannot look ready in CI
+while it is gated in code**. `de` and `pl` reading 100 % machine-drafted and *not ready* is the
+correct answer, not a gap.
+
+`seed/diff.ts` (`pnpm seed:diff`, TASK-076), `seed/media-variants.ts` (TASK-078),
+`seed/index.ts` (`pnpm db:seed`, TASK-083) and `seed/upload.ts` (TASK-082) join the directory in
+the tasks named.
 
 ## Facts worth knowing before you edit anything
 
-- **No database, no network, no clock.** `seed/schema/**` and `seed/project.ts` are covered by
+- **No database, no network, no clock.** `seed/schema/**`, `seed/project.ts`, `seed/copy*.ts`,
+  `seed/check*.ts` and `seed/budgets.ts` are covered by
   `pnpm check:no-db`; the projector reads only the authored modules, which is what makes its
   output byte-identical on every machine. `seed/index.ts` and `seed/upload.ts` are the exceptions
   by design and arrive with spec 002's provisioning (spec 006 §2.6).

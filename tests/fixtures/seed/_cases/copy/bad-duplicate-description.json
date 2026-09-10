@@ -1,0 +1,16 @@
+{
+  "family": "copy",
+  "rule": "duplicate-description",
+  "replaces": "copy/en/products.json",
+  "expect": "share one description",
+  "why": "The thin-content guard of spec 006 §6 and the real ranking risk `plan/02` §4.2 names: 84 products with near-identical copy is the failure mode of a programmatic catalogue. `FO-BQ-002` given `FO-BQ-001`'s description reads as a legal file to every per-row schema.",
+  "ops": [
+    {
+      "op": "setRow",
+      "match": { "key": "FO-BQ-002" },
+      "set": {
+        "descriptionMd": "Orange roses hand-tied with eucalyptus and a few sprigs of seasonal foliage, wrapped in kraft paper. Eighteen stems as standard, with twelve and twenty-four stem sizes on the same page. Warm rather than loud, so it reads as well for a birthday as for a thank you. The roses are always in it; the greenery and filler stems follow the morning market. Every order is made by hand and delivered in person by our florist in the recipient's city."
+      }
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "family": "prices",
+  "rule": "band",
+  "replaces": "prices/PL.json",
+  "expect": "outside the plan/10 §2.3",
+  "why": "AC-6, wired from the fixture TASK-074 shipped: `bad-out-of-band.json` is `FO-BQ-001`'s real PL block with one amount outside its tier's band. Spliced in place of that product's rows so the other 83 stay priced and the single fault is the single problem.",
+  "ops": [
+    {
+      "op": "replaceRowsFromFile",
+      "file": "bad-out-of-band.json",
+      "match": { "sku": "FO-BQ-001" }
+    }
+  ]
+}

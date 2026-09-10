@@ -1,0 +1,15 @@
+{
+  "family": "prices",
+  "rule": "float-money",
+  "replaces": "prices/PL.json",
+  "expect": "integer minor units",
+  "alsoFamilies": ["schema"],
+  "why": "AC-6: a float amount. It is caught twice on purpose — `MinorUnitsSchema` refuses it at the file schema (family 1) and `checkAmounts` names the SKU and the rule (family 5) — because money as a float must not survive either gate.",
+  "ops": [
+    {
+      "op": "replaceRowsFromFile",
+      "file": "bad-float-amount.json",
+      "match": { "sku": "FO-BQ-001" }
+    }
+  ]
+}

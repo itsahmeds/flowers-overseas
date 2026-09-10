@@ -1,0 +1,16 @@
+{
+  "family": "privacy",
+  "rule": "postcode",
+  "replaces": "copy/en/occasions.json",
+  "expect": "a postcode-shaped string",
+  "why": "AC-9's postcode shape, in the Polish `00-001` form the launch destination uses. A postcode is the recipient-data shape `plan/07` §1.2 minimises; none may be authored into a committed file.",
+  "ops": [
+    {
+      "op": "setRow",
+      "match": { "key": "birthday" },
+      "set": {
+        "seoDescription": "Birthday flowers delivered by our florist in Warsaw 00-001 and across Europe."
+      }
+    }
+  ]
+}

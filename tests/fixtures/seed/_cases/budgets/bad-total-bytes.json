@@ -1,0 +1,16 @@
+{
+  "family": "budgets",
+  "rule": "total-bytes",
+  "replaces": "-",
+  "expect": "above the 6291456 B cap",
+  "why": "Rule family 9 and spec 006 §13 Q4: derived image bytes are committed to the repository only until R2 exists, and only under a 6 MB cap. `public/media/` is empty today (TASK-080 fills it), so the fixture is the committed-file listing itself — the tree-level fact the gate measures.",
+  "ops": [
+    {
+      "op": "setMediaFiles",
+      "files": [
+        { "path": "public/media/home-hero/1920.avif", "bytes": 4000000 },
+        { "path": "public/media/fo-bq-001-hero/1080.avif", "bytes": 3000000 }
+      ]
+    }
+  ]
+}

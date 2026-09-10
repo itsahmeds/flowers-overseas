@@ -119,6 +119,19 @@ export const BANNED_SUPERLATIVES = [
   "exquisite",
   "flawless",
   "guaranteed fresh",
+  // The freshness class (`/review 41`; folded into rule family 6 by TASK-075). These are the
+  // superlatives a flower catalogue reaches for first and the ones we can least back: we do not
+  // hold the florist's stock age, `product.freshnessDays` is a nominal vase-life figure, and a
+  // freshness claim is a "main characteristics" statement under the CRD (`plan/07` §2.1). Plain
+  // "fresh" stays legal — it is the comparative, the superlative and the guarantee that are
+  // unsubstantiated.
+  "freshest",
+  "fresher than",
+  "always fresh",
+  "farm fresh",
+  "freshly picked",
+  "longest lasting",
+  "longest-lasting",
 ] as const;
 
 /**

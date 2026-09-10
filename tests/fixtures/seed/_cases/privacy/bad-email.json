@@ -1,0 +1,16 @@
+{
+  "family": "privacy",
+  "rule": "email",
+  "replaces": "copy/en/categories.json",
+  "expect": "an email address",
+  "why": "AC-9: an `@`-shaped string anywhere in `seed/data/**` fails with the file and the JSON path named. `docs/compliance/ropa.md` records \"spec 006 adds no personal data\" as a fact, and this is the check that keeps it one.",
+  "ops": [
+    {
+      "op": "setRow",
+      "match": { "key": "birthday" },
+      "set": {
+        "seoDescription": "Birthday flowers hand-made by our florist. Questions to hello@flowersoverseas.com."
+      }
+    }
+  ]
+}

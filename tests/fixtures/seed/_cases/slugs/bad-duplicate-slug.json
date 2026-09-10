@@ -1,0 +1,14 @@
+{
+  "family": "slugs",
+  "rule": "unique",
+  "replaces": "copy/en/occasions.json",
+  "expect": "unique per locale across products, categories and occasions",
+  "why": "AC-7: the `birthday` occasion renamed so its slug is the ASCII fold of its new name and collides with the `birthday` category's slug in the same locale. Products, categories and occasions share one URL namespace per locale (`plan/02` §4), so one of the two canonicals would be wrong.",
+  "ops": [
+    {
+      "op": "setRow",
+      "match": { "key": "birthday" },
+      "set": { "name": "Birthday flowers", "slug": "birthday-flowers" }
+    }
+  ]
+}

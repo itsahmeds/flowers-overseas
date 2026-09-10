@@ -1,0 +1,14 @@
+{
+  "family": "references",
+  "rule": "media-owner",
+  "replaces": "media.json",
+  "expect": "which `products.json` does not have",
+  "why": "Rule family 3: a media asset for a product that does not exist. `SkuSchema` is a pattern, not a set, so no per-file schema can see this — it is the join spec 006 §2.3 rule 3 names.",
+  "ops": [
+    {
+      "op": "setRow",
+      "match": { "id": "fo-bq-001-hero" },
+      "set": { "productSku": "FO-BQ-999" }
+    }
+  ]
+}

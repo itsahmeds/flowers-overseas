@@ -112,6 +112,7 @@ describe("the required-check contract on the committed workflows (AC-21)", () =>
       "lint",
       "pr-policy",
       "preview",
+      "seed-check",
       "seo-validate",
       "test-contract",
       "test-integration",

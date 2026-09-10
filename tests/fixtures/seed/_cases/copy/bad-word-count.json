@@ -1,0 +1,18 @@
+{
+  "family": "copy",
+  "rule": "wordCount",
+  "replaces": "copy/en/products.json",
+  "expect": "is 59 words, outside 60–90",
+  "why": "T-05's boundary at the gate rather than at the function (spec 006 §2.3 rule 6): 59 words fails and 60 passes. The closing florist sentence is kept, so the only rule this fixture breaks is `plan/10` §2.2's word band.",
+  "ops": [
+    {
+      "op": "setRow",
+      "match": {
+        "key": "FO-BQ-001"
+      },
+      "set": {
+        "descriptionMd": "Orange roses hand-tied with eucalyptus and a few sprigs of seasonal foliage, wrapped in kraft paper. Eighteen stems as standard. Warm rather than loud, so it reads as well for a birthday as for a thank you note on a kitchen table. Every order is made by hand and delivered in person by our florist in the recipient's city."
+      }
+    }
+  ]
+}
