@@ -26,6 +26,8 @@ import {
   Label,
   Mark,
   Media,
+  MediaAsset,
+  MediaProvenanceNote,
   MEDIA_SLOTS,
   mediaSlot,
   MIRRORED_IN_RTL,
@@ -62,11 +64,18 @@ import {
   CONSENT_STATES,
   FOOTER_REGISTERED_COMPANY,
   FOOTER_STATES,
+  GALLERY_AI_ASSET,
+  GALLERY_ALTLESS_LOCALE,
   GALLERY_INTRO,
+  GALLERY_MEDIA_MANIFEST,
+  GALLERY_NO_BYTES_ASSET,
+  GALLERY_PENDING_ASSET,
+  GALLERY_PHOTO_ASSET,
   GALLERY_TITLE,
   HEADER_STATES,
   HOME_STATES,
   LABEL_SAMPLE,
+  MEDIA_ASSET_STATES,
   MEDIA_SLOT_CAPTION,
   LAYER_TOKENS,
   MIRROR_NOTE,
@@ -523,7 +532,116 @@ export default function DevComponentsPage(): ReactElement {
           </Grid>
         </Section>
 
+        {/*
+          The asset path's states (spec 006 §5.3; TASK-079). This section is the only surface in
+          the repository that can show them: the committed dataset has 31 asset rows and **no**
+          derived bytes and no alt text, so every real call site renders the placeholder. The
+          fixture manifest in `catalog.ts` is that dataset with the ladder and the alt text
+          TASK-080's imagery adds, passed per call rather than installed globally, so no request
+          mutates module state.
+        */}
         <Section title={SECTIONS[11]}>
+          <Stack gap="lg">
+            <Stack gap="sm">
+              <Text measure size="sm" tone="muted">
+                {MEDIA_ASSET_STATES.image}
+              </Text>
+              <Grid columns="2-4" gap="md">
+                <MediaAsset
+                  assetId={GALLERY_AI_ASSET}
+                  locale={galleryLocale}
+                  manifest={GALLERY_MEDIA_MANIFEST}
+                />
+              </Grid>
+            </Stack>
+
+            <Stack gap="sm">
+              <Text measure size="sm" tone="muted">
+                {MEDIA_ASSET_STATES.priority}
+              </Text>
+              <MediaAsset
+                assetId={GALLERY_PHOTO_ASSET}
+                locale={galleryLocale}
+                manifest={GALLERY_MEDIA_MANIFEST}
+                priority
+              />
+            </Stack>
+
+            <Stack gap="sm">
+              <Text measure size="sm" tone="muted">
+                {MEDIA_ASSET_STATES.placeholderUnapproved}
+              </Text>
+              <Grid columns="2-4" gap="md">
+                <MediaAsset
+                  assetId={GALLERY_PENDING_ASSET}
+                  locale={galleryLocale}
+                  manifest={GALLERY_MEDIA_MANIFEST}
+                />
+              </Grid>
+            </Stack>
+
+            <Stack gap="sm">
+              <Text measure size="sm" tone="muted">
+                {MEDIA_ASSET_STATES.placeholderNoAlt}
+              </Text>
+              <Grid columns="2-4" gap="md">
+                {/* A locale the fixture has no alt row for: the box, not an English alt. */}
+                <MediaAsset
+                  assetId={GALLERY_AI_ASSET}
+                  locale={GALLERY_ALTLESS_LOCALE}
+                  manifest={GALLERY_MEDIA_MANIFEST}
+                />
+              </Grid>
+            </Stack>
+
+            <Stack gap="sm">
+              <Text measure size="sm" tone="muted">
+                {MEDIA_ASSET_STATES.placeholderNoBytes}
+              </Text>
+              <Grid columns="2-4" gap="md">
+                <MediaAsset
+                  assetId={GALLERY_NO_BYTES_ASSET}
+                  locale={galleryLocale}
+                  manifest={GALLERY_MEDIA_MANIFEST}
+                />
+              </Grid>
+            </Stack>
+
+            <Stack gap="sm">
+              <Text measure size="sm" tone="muted">
+                {MEDIA_ASSET_STATES.placeholderCommitted}
+              </Text>
+              <Grid columns="2-4" gap="md">
+                {/* The committed manifest, with no `manifest` prop: the Phase-0 state. */}
+                <MediaAsset assetId={GALLERY_AI_ASSET} locale={galleryLocale} />
+              </Grid>
+            </Stack>
+
+            <Stack gap="sm">
+              <Text measure size="sm" tone="muted">
+                {MEDIA_ASSET_STATES.provenance}
+              </Text>
+              <MediaProvenanceNote
+                assetIds={[GALLERY_AI_ASSET]}
+                locale={galleryLocale}
+                manifest={GALLERY_MEDIA_MANIFEST}
+              />
+            </Stack>
+
+            <Stack gap="sm">
+              <Text measure size="sm" tone="muted">
+                {MEDIA_ASSET_STATES.provenanceHidden}
+              </Text>
+              <MediaProvenanceNote
+                assetIds={[GALLERY_PHOTO_ASSET]}
+                locale={galleryLocale}
+                manifest={GALLERY_MEDIA_MANIFEST}
+              />
+            </Stack>
+          </Stack>
+        </Section>
+
+        <Section title={SECTIONS[12]}>
           <Stack gap="lg">
             {(
               [
@@ -556,7 +674,7 @@ export default function DevComponentsPage(): ReactElement {
         {/* The header is full-bleed by design, so it is rendered outside the section's padding
             through a negative-free wrapper: the box below is the header at this viewport's
             breakpoint, not a scaled copy of it. */}
-        <Section title={SECTIONS[12]}>
+        <Section title={SECTIONS[13]}>
           <Stack gap="sm">
             <Text size="xs" tone="subtle">
               {HEADER_STATES.heading}
@@ -570,7 +688,7 @@ export default function DevComponentsPage(): ReactElement {
           </Stack>
         </Section>
 
-        <Section title={SECTIONS[13]}>
+        <Section title={SECTIONS[14]}>
           {/* Inert by construction: `ConsentGallery` passes no-op handlers, so walking this page
               writes no cookie, sends no request and calls no `gtag` (TASK-051). */}
           <ConsentGallery
@@ -579,7 +697,7 @@ export default function DevComponentsPage(): ReactElement {
           />
         </Section>
 
-        <Section title={SECTIONS[14]}>
+        <Section title={SECTIONS[15]}>
           {FOOTER_STATES.map((state) => (
             <Stack key={state.id} gap="sm">
               <Text size="xs" tone="subtle">
@@ -595,7 +713,7 @@ export default function DevComponentsPage(): ReactElement {
           ))}
         </Section>
 
-        <Section title={SECTIONS[15]}>
+        <Section title={SECTIONS[16]}>
           <Stack gap="xs">
             {CONTRAST_PAIRS.map((pair) => (
               <Row

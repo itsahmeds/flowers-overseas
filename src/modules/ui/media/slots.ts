@@ -61,3 +61,56 @@ export const MEDIA_SLOT_SPECS: Readonly<Record<MediaSlot, MediaSlotSpec>> = {
 export function mediaSlot(slot: MediaSlot): MediaSlotSpec {
   return MEDIA_SLOT_SPECS[slot];
 }
+
+/* -------------------------------------------------------------------------- */
+/* The seed ↔ UI slot mapping (spec 006 §2.5; `/review 42`).                  */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * **Two slot vocabularies exist, and this is the one place they meet** (`/review 42`).
+ *
+ * `seed/schema/media.ts`'s `mediaSlots` (`hero`, `occasionTile`, `productHero`, `productDetail`,
+ * `productThumb`, `context`, `og`) names *what an asset was cropped for* — it is what
+ * `pnpm media:variants` reads to pick an aspect ratio (`seed/data/media-variants.json`'s
+ * `pipeline.aspects`) and what `seed:check` reads to apply a per-slot byte cap. `MEDIA_SLOTS`
+ * above names *the box the design puts a photograph in* — it is what fixes the `sizes` string and
+ * the reserved ratio. They are different questions with overlapping words, so neither side is
+ * renamed: the manifest keeps the crop vocabulary, the UI keeps the layout vocabulary, and the
+ * translation is this table, pinned by `tests/unit/ui-media-manifest.test.ts`.
+ *
+ * Two consequences worth reading before adding a slot:
+ *
+ *  - **`og` maps to nothing.** The 1200 px JPEG of spec 006 §13 Q5 is for Open Graph, email and
+ *    social; it is never a box on a page, so mapping it to one would put a social crop into a
+ *    layout. `null` is the honest answer and callers must handle it — spec 009's metadata builder
+ *    is its consumer.
+ *  - **The reserved box and the asset's crop are allowed to differ, and the box wins.** A
+ *    `productHero` asset is cropped 4:5 (§13 Q5) and lands in the `grid` box, whose reserved
+ *    ratio is 3:4; the difference is cropped by `object-fit: cover` inside a box whose height was
+ *    reserved before paint, so the CLS delta of landing imagery stays 0 (spec 004 §2's promise).
+ *    The PDP's own main-image box — square on
+ *    `docs/design/wireframes/product-{desktop,mobile}.dc.html` — is **not** in `MEDIA_SLOTS` yet;
+ *    spec 009 owns that page and adds it with the template that needs it.
+ */
+export const SEED_SLOT_TO_UI_SLOT = {
+  hero: "hero",
+  occasionTile: "tile",
+  productHero: "grid",
+  productDetail: "grid",
+  productThumb: "thumb",
+  // The in-home context shot is cropped 3:2, which is the `hero` box's reserved ratio exactly.
+  context: "hero",
+  og: null,
+} as const satisfies Readonly<Record<string, MediaSlot | null>>;
+
+/** A slot name as `seed/data/media.json` writes it (`seed/schema/media.ts`'s `mediaSlots`). */
+export type SeedMediaSlot = keyof typeof SEED_SLOT_TO_UI_SLOT;
+
+/**
+ * The box a seed slot renders in, or `undefined` when the slot is not a page box at all (`og`).
+ * Total over the seed vocabulary, so a new crop slot is a type error here rather than a silently
+ * unrendered asset.
+ */
+export function uiSlotForSeedSlot(slot: SeedMediaSlot): MediaSlot | undefined {
+  return SEED_SLOT_TO_UI_SLOT[slot] ?? undefined;
+}

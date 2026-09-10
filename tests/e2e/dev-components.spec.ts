@@ -26,6 +26,7 @@ const SECTIONS = [
   "Chips",
   "Photography placeholders",
   "Media slots",
+  "Media asset states",
   "Home hero and finder",
   "Contrast manifest",
 ];
@@ -167,11 +168,8 @@ test.describe("/dev/components", () => {
     }
   });
 
-  test("shows the photography placeholders and no image (plan/10 §3)", async ({
-    page,
-  }) => {
+  test("shows the photography placeholders (plan/10 §3)", async ({ page }) => {
     await page.goto(GALLERY);
-    await expect(page.locator("img")).toHaveCount(0);
     // Every named media slot is drawn, with its `sizes` string on the box (TASK-052).
     await expect(page.locator("[data-fo-media-slot]")).not.toHaveCount(0);
     for (const slot of ["hero", "grid", "tile", "thumb"]) {
@@ -181,6 +179,82 @@ test.describe("/dev/components", () => {
     }
     await expect(
       page.getByText("Photo slot · hero · founder to supply"),
+    ).toBeVisible();
+    // Every reserved box that is not an asset render carries no image at all: the honesty rule
+    // is that the gallery shows a photograph only where the manifest has one (TASK-079).
+    await expect(page.locator("[data-fo-media-placeholder] img")).toHaveCount(
+      0,
+    );
+  });
+
+  /**
+   * The asset path's states (spec 006 §5.3, AC-17/AC-18/AC-19; TASK-079). The committed dataset
+   * has no derived bytes, so this section renders against the fixture manifest in `catalog.ts`
+   * and is the only place in the running application where an `<img>` exists at all — which is
+   * what makes the counts below meaningful rather than incidental.
+   */
+  test("renders the media asset states: image, placeholder and the honesty label", async ({
+    page,
+  }) => {
+    await page.goto(GALLERY);
+
+    // Exactly two displayable fixture assets, so exactly two images on the whole document.
+    const images = page.locator("img");
+    await expect(images).toHaveCount(2);
+    for (const alt of await images.evaluateAll((nodes) =>
+      nodes.map((node) => node.getAttribute("alt")),
+    )) {
+      expect(alt ?? "").not.toBe("");
+    }
+
+    // AVIF first, WebP as the `<img>`'s own ladder (spec 006 §2.5).
+    await expect(page.locator('picture source[type="image/avif"]')).toHaveCount(
+      2,
+    );
+    const imgSrcSets = await images.evaluateAll((nodes) =>
+      nodes.map((node) => node.getAttribute("srcset") ?? ""),
+    );
+    expect(imgSrcSets.every((value) => value.includes(".webp"))).toBe(true);
+
+    // The placeholder reasons this section demonstrates, each with no image in its box.
+    // `unapproved` twice: the fixture's pending asset, and the committed dataset's own state —
+    // 31 rows, none reviewed and none derived, so the gate reports the first failure.
+    await expect(
+      page.locator('[data-fo-media-placeholder="unapproved"]'),
+    ).toHaveCount(2);
+    for (const reason of ["noAlt", "noVariants"]) {
+      await expect(
+        page.locator(`[data-fo-media-placeholder="${reason}"]`),
+      ).toHaveCount(1);
+    }
+
+    // AC-19: one `priority` candidate, one preload, and the preload agrees with the `srcset` it
+    // was built from.
+    const preload = page.locator('link[rel="preload"][as="image"]');
+    await expect(preload).toHaveCount(1);
+    await expect(page.locator('img[fetchpriority="high"]')).toHaveCount(1);
+    const preloadSrcSet = await preload.getAttribute("imagesrcset");
+    const preloadSizes = await preload.getAttribute("imagesizes");
+    expect(preloadSrcSet ?? "").toContain(".avif");
+    expect(preloadSizes).toBe("100vw");
+    const priorityBox = page.locator(
+      '[data-fo-media-slot="hero"][data-fo-media-source="photo"]',
+    );
+    expect(await priorityBox.locator("source").getAttribute("srcset")).toBe(
+      preloadSrcSet,
+    );
+
+    // Everything that is not the LCP candidate is lazy, and nothing above it is eager.
+    await expect(page.locator('img[loading="lazy"]')).toHaveCount(1);
+    await expect(page.locator('img[decoding="async"]')).toHaveCount(1);
+
+    // AC-17: the label is in the HTML, in the page's locale, exactly once — and it is absent
+    // from the state whose only displayed asset is a photograph.
+    await expect(page.locator('[data-fo-media-provenance="ai"]')).toHaveCount(
+      1,
+    );
+    await expect(
+      page.getByText("Example arrangement · our florist hand-makes each one"),
     ).toBeVisible();
   });
 

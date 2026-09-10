@@ -215,6 +215,70 @@ export {
 } from "./media/loader.ts";
 export type { MediaLoader } from "./media/loader.ts";
 
+// The asset path, the loader seam's second implementation, the LCP preload and the honesty label
+// (spec 006 §2.5, AC-2/AC-17/AC-18/AC-19; TASK-079). `MediaAsset` renders a `<picture>` **only**
+// when the asset is approved, has variants and has alt text for the resolved locale, and the
+// captioned placeholder otherwise; `MediaProvenanceNote` renders the AI label whenever a page
+// displays a generated asset and admits **no** prop that could suppress it. Both are Server
+// Components and neither adds a client byte. The manifest and the loader are exported for the
+// data-flip and R2-flip proofs (TASK-080/TASK-083); no page template needs them, and `resolve`
+// is what a template asks instead.
+export { MediaAsset } from "./media/MediaAsset.tsx";
+export type { MediaAssetProps } from "./media/MediaAsset.tsx";
+export {
+  MediaProvenanceNote,
+  needsAiProvenanceNote,
+} from "./media/MediaProvenanceNote.tsx";
+export type { MediaProvenanceNoteProps } from "./media/MediaProvenanceNote.tsx";
+export {
+  PLACEHOLDER_REASONS,
+  isDisplayable,
+  resolveMedia,
+  srcSetFor,
+} from "./media/resolve.ts";
+export type {
+  MediaSourceSet,
+  PlaceholderReason,
+  ResolvedImage,
+  ResolvedMedia,
+  ResolvedPlaceholder,
+  ResolveMediaOptions,
+} from "./media/resolve.ts";
+export {
+  MEDIA_PRELOAD_MARKER,
+  assertSinglePriority,
+  preloadFor,
+} from "./media/preload.ts";
+export type { MediaPreloadDescriptor } from "./media/preload.ts";
+export {
+  PAGE_FORMATS,
+  altFor,
+  assetById,
+  assetsForProduct,
+  boxForAsset,
+  committedMediaManifest,
+  getMediaManifest,
+  setMediaManifest,
+  variantsFor,
+} from "./media/manifest.ts";
+export type {
+  AltIndex,
+  MediaAssetEntry,
+  MediaManifest,
+  MediaVariantEntry,
+  MediaVariantSet,
+  PageFormat,
+  VariantFormat,
+} from "./media/manifest.ts";
+export { SEED_SLOT_TO_UI_SLOT, uiSlotForSeedSlot } from "./media/slots.ts";
+export type { SeedMediaSlot } from "./media/slots.ts";
+export {
+  resolveLoader,
+  setVariantLoader,
+  staticVariantLoader,
+} from "./media/loader.ts";
+export type { VariantLoader, VariantRef } from "./media/loader.ts";
+
 // The locale home's above-the-fold band and the four-fact proof strip (§13's resolution note,
 // AC-10, AC-11; TASK-052). All four are Server Components; the only client JavaScript on the page
 // is `FinderTypeahead`, 499 B Brotli measured, and it is an enhancement — the country field is the

@@ -104,6 +104,34 @@ describe("src/modules/ui barrel", () => {
         "mediaSlot",
         "placeholderLoader",
         "setMediaLoader",
+        // media: the asset path, the variant loader, the LCP preload and the honesty label
+        // (TASK-079). `MediaAsset` has no `alt` prop — alt text is data (spec 006 AC-18) — and
+        // `MediaProvenanceNote` has no suppression prop (AC-17). The manifest and loader seams
+        // are exported for the data-flip (TASK-080) and R2-flip (TASK-083) proofs.
+        "MEDIA_PRELOAD_MARKER",
+        "MediaAsset",
+        "MediaProvenanceNote",
+        "PAGE_FORMATS",
+        "PLACEHOLDER_REASONS",
+        "SEED_SLOT_TO_UI_SLOT",
+        "altFor",
+        "assertSinglePriority",
+        "assetById",
+        "assetsForProduct",
+        "boxForAsset",
+        "committedMediaManifest",
+        "getMediaManifest",
+        "isDisplayable",
+        "needsAiProvenanceNote",
+        "preloadFor",
+        "resolveLoader",
+        "resolveMedia",
+        "setMediaManifest",
+        "setVariantLoader",
+        "srcSetFor",
+        "staticVariantLoader",
+        "uiSlotForSeedSlot",
+        "variantsFor",
         // the locale home's above-the-fold surfaces and the finder's projection (TASK-052)
         "DESTINATIONS_ANCHOR",
         "DestinationList",
@@ -167,6 +195,9 @@ describe("src/modules/ui barrel", () => {
       // and the header can be pinned to the same inline gutter by a test.
       "DESTINATIONS_ANCHOR",
       "HOME_BLEED",
+      // TASK-079: a `data-` attribute name, the DOM contract AC-19's single-preload assertion
+      // reads (`link[rel=preload][as=image]` counted by marker, not by translated copy).
+      "MEDIA_PRELOAD_MARKER",
       "fontVariables",
     ];
     for (const [name, value] of Object.entries(ui)) {

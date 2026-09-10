@@ -71,6 +71,7 @@ describe("AC-2: no database import in the spec 003 file set (T-02)", () => {
       // `seed/index.ts`, which is deliberately outside this set.
       "seed/diff.ts",
       "seed/target.ts",
+      "src/modules/ui/media",
     ]);
   });
 

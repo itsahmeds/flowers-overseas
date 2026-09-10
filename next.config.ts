@@ -5,6 +5,7 @@ import createNextIntlPlugin from "next-intl/plugin";
 import { consentBootstrapHash } from "./src/lib/consent-bootstrap";
 import { securityHeaderRules } from "./src/lib/csp";
 import { assertEnv } from "./src/lib/env.assert";
+import { mediaCacheHeaderRules } from "./src/lib/media-headers";
 import {
   cspReportOnly,
   deploymentEnvironment,
@@ -42,6 +43,11 @@ const environment = deploymentEnvironment(process.env);
 // an environment that loads no tag.
 const headerRules = [
   ...noindexHeaderRules(environment),
+  // `/media/*` for a year, `immutable` (spec 006 §2.5, §5.4; TASK-079): a variant URL is
+  // content-addressed by asset version and width, so a changed image is a new URL and a stale
+  // cache entry is impossible. `src/lib/media-headers.ts` carries the reasoning and the
+  // crawlability requirement this path puts on spec 007.
+  ...mediaCacheHeaderRules(),
   ...securityHeaderRules(environment, {
     reportOnly: cspReportOnly(process.env),
     inlineHashes: [consentBootstrapHash()],

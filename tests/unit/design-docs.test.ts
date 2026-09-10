@@ -404,6 +404,28 @@ describe("every artboard speaks in the first person (spec 004 §14 A5)", () => {
     expect(annotated.length).toBeGreaterThanOrEqual(20);
   });
 
+  /**
+   * The honesty label's pronoun, pinned (spec 006 §14 A2; TASK-079). The label an implementer
+   * copies into `media.provenance.aiExample` is the label on the artboard, so "your florist" on a
+   * drawing becomes "your florist" on a page — the one string in this design that a lawyer will
+   * read (spec 006 §13 Q8 (i)). Four artboards carry it and all four say *our*.
+   */
+  it("writes the AI honesty label in the first person on every artboard", () => {
+    const labelled = artboards.filter((file) =>
+      readFileSync(join(designRoot, file), "utf8").includes(
+        "Example arrangement",
+      ),
+    );
+    expect(labelled.length).toBeGreaterThanOrEqual(4);
+    for (const file of labelled) {
+      const source = readFileSync(join(designRoot, file), "utf8");
+      expect(source, file).toContain(
+        "Example arrangement · our florist hand-makes each one",
+      );
+      expect(source, file).not.toContain("your florist");
+    }
+  });
+
   it("states the rule in the README", () => {
     expect(readme).toContain("## Voice");
     expect(readme).toContain("## Density");
