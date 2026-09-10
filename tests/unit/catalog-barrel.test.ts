@@ -166,6 +166,24 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         "defaultTier",
         "listAddons",
         "listTiers",
+        // the pricing core (TASK-065): whole prices, dated surcharges, integer money, VAT
+        "FromPriceQuerySchema",
+        "GrossAtRateSchema",
+        "IntegerMoneySchema",
+        "ResolvePriceQuerySchema",
+        "SurchargeDateRangeSchema",
+        "TierPricesQuerySchema",
+        "VatLineSchema",
+        "VatSplitSchema",
+        "addMoney",
+        "assertSameCurrency",
+        "dateSurcharges",
+        "fromPrice",
+        "netFromGross",
+        "resolvePrice",
+        "sumMoney",
+        "tierPrices",
+        "vatBreakdown",
         // the taxonomy read API (TASK-063)
         "countProductsFor",
         "countProductsIn",
@@ -185,6 +203,9 @@ describe("src/modules/catalog barrel (AC-1)", () => {
     expect(moduleFiles.sort()).toEqual([
       `${moduleDir}/flags.ts`,
       `${moduleDir}/index.ts`,
+      `${moduleDir}/pricing/money.ts`,
+      `${moduleDir}/pricing/resolve.ts`,
+      `${moduleDir}/pricing/vat.ts`,
       `${moduleDir}/providers.ts`,
       `${moduleDir}/read.ts`,
       `${moduleDir}/schemas.ts`,
@@ -213,6 +234,10 @@ describe("the barrel exposes no provider, dataset or database symbol (AC-2, T-01
       "staticFlagProvider",
       "isFlagEnabled",
       "PHASE_0_FLAGS",
+      // `divideMinorHalfUp()` is the pricing core's internal integer division (TASK-065): a
+      // caller needs whole prices and VAT splits, never a division primitive, and exporting one
+      // would invite money arithmetic outside `pricing/*`.
+      "divideMinorHalfUp",
     ]) {
       expect(exported, banned).not.toContain(banned);
     }
