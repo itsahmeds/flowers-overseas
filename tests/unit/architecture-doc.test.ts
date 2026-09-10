@@ -183,6 +183,25 @@ describe("docs/architecture.md (AC-30)", () => {
   });
 
   /**
+   * TASK-085, the same rule as TASK-046's assertion above: §2 records what the client graph costs
+   * with the **measured** numbers, so a later change that reintroduces a provider or a catalogue
+   * import has to edit a documented figure rather than quietly grow a chunk.
+   */
+  it("records the provider and catalogue removal with its measured numbers (§2)", () => {
+    const section = doc.slice(
+      doc.indexOf("## 2. Repository layout"),
+      doc.indexOf("## 3. Modules"),
+    );
+    expect(section).toContain("error-copy.data.ts");
+    expect(section).toContain("NextIntlClientProvider");
+    // The Brotli totals after the removal, in bytes: `/` and a locale document.
+    expect(section).toContain("116 778");
+    expect(section).toContain("122 360");
+    expect(section).toContain("client-message-graph.test.ts");
+    expect(section).toContain("client-js-budget.spec.ts");
+  });
+
+  /**
    * The inverse of the spec 001 assertion this replaces (TASK-034): spec 003 §2 required the
    * `lang` literal and its deferred-decision row to disappear together, and AC-32 (TASK-043)
    * re-checks that neither came back. The row is gone, so what is pinned now is its absence and

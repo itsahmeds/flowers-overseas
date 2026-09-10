@@ -297,7 +297,8 @@ part `/review 26` had to add:
    the open item of spec 003 §14 A12.
 2. TASK-046 took that zod out of the *initial* script set. `src/modules/i18n/error-document.ts`
    imports the x-default locale row from `src/config/locales.data.ts` (plain constants, no imports)
-   and the four strings from `messages/en.json`, and nothing else, so the failure document reaches
+   and the four strings from `messages/en.json` (superseded by step 4, which measured what that
+   JSON import really cost), and nothing else, so the failure document reaches
    no schema, no provider and no message source — which is also the right shape for a document
    reached because something else already threw. `/` went from 190 706 B Brotli (226 575 gz) to
    **116 393 B (136 067 gz)**, and it is the whole 6 487 B under the 122 880 B budget it has.
@@ -320,6 +321,39 @@ part `/review 26` had to add:
    `scripts/client-js-budget.ts` asserts it from the build output over the document's scripts
    **and** the route's `next/dynamic` chunks — the manifest it ignored in step 2, which is why
    step 3 was needed at all.
+4. TASK-085 took the **message catalogue and the client provider** out (spec 004 §14 A1 addendum,
+   Q13 option (b)). Two findings drove it. First, step 2's `messages/en.json` import was not four
+   strings: Turbopack tree-shakes a JSON import only below a size threshold, and once the
+   catalogue crossed it the **whole** 12.5 KB file shipped in the chunk Next attaches to the root
+   error boundary — i.e. to every document, `/` included — so `home.*`, `catalog.*` and `media.*`
+   were in the initial script set of pages that never render them, at 4 606 B Brotli, and every
+   copy task paid 0 B or ~3.4 KB depending on which side of the threshold the file landed that day
+   (TASK-052, TASK-073). Second, `NextIntlClientProvider` plus its `localeDocument` payload was
+   10 705 B Brotli on every locale document to translate two Client Components. Both are gone:
+   `src/modules/i18n/error-copy.data.ts` holds the four error strings as plain constants per launch
+   locale (an import-free data module, like `src/config/locales.data.ts`, with a per-locale parity
+   test against `loadMessages()`), the suggestion banner is handed ICU-resolved strings by
+   `suggestionCopy()` on the server, `src/app/[locale]/error.tsx` reads the data module keyed by
+   `useParams()`, and no `NextIntlClientProvider` is mounted anywhere in the application.
+   Measured on the branch's base (`3e44783`) and on its head, cold `pnpm build`, Brotli q11 over
+   every `.js` a browser fetches: `/` went from 135 357 B (157 646 gz) to **116 778 B
+   (136 128 gz)** and `/en`, `/en-gb`, `/de` and `/pl` from 136 363 B (158 834 gz) to
+   **122 360 B (142 573 gz)** — 14 294 B and 8 712 B inside the 131 072 B budget of §14 A1. Every
+   URL of AC-24's set is within budget for the first time. Of `/`'s 18 579 B, 15 241 B was the
+   mis-attribution below and 3 338 B the catalogue leaving the error-boundary chunk; the locale
+   documents lost 14 003 B of provider, payload and catalogue with nothing added.
+
+   The same task fixed the measurement. `pnpm budget:client-js` charged every route the whole
+   app's `next/dynamic` chunk groups, because Turbopack writes the same ids into every route's
+   `react-loadable-manifest.json`: `/` was billed 14.9 KB Brotli for islands the chooser never
+   mounts (`/review 36`: 131 672 B charged against 116 429 B fetched; on this branch's base the
+   same bug charged `/` 135 357 B where a browser fetched 120 116 B). It now reads the client
+   references out of the document's own flight payload, follows only the dynamic chunks reachable
+   from the components the document actually mounts, and prints those component names per URL.
+   `tests/e2e/client-js-budget.spec.ts` records every script Chromium fetches for the five URLs
+   and asserts the sets are equal, so the model is checked rather than trusted, and
+   `tests/unit/client-message-graph.test.ts` walks the imports of every `"use client"` module and
+   fails on `next-intl`, on `messages.ts`, on the i18n barrel or on a `messages/*.json` import.
 
 The boundary rule that matters is preserved (`app/` → `modules/` is the permitted direction, and no
 module reaches into another module's internals), and the barrel stays the import path for every

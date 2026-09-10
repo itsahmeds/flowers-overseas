@@ -42,6 +42,22 @@
  * also follows `.next/server/app/<entry>/react-loadable-manifest.json`, and the fixtures below
  * include a route whose document is clean and whose lazy chunk is not, so a future edit that
  * stops following the manifest fails here rather than in a browser six weeks later.
+ *
+ * **What TASK-085 added** (`/review 36`'s finding): that manifest is an *app-level* list —
+ * Turbopack writes the same `next/dynamic` ids into every route's copy of it — so following it
+ * per route charged `/` 14.9 KB Brotli for islands the chooser never mounts (131 672 B charged
+ * against 116 429 B fetched). The manifest is now filtered by reachability from the client
+ * references the document actually mounts (`parseClientReferences`, `reachableAssets`), and the
+ * fixtures below hold both directions: a document that mounts a loader and therefore pays for its
+ * island, and one that lists the same chunks without mounting anything and therefore pays for
+ * neither. The end-to-end check on the same claim is `tests/e2e/client-js-budget.spec.ts`, which
+ * records what Chromium really fetches and asserts the two sets are equal.
+ *
+ * TASK-085 also added `catalogueLeaks()`: no chunk a page fetches may contain a `home.*`,
+ * `finder.*`, `catalog.*` or `media.*` catalogue value. That is the byte-level half of the
+ * §14 A1 addendum — the source-level half is `tests/unit/client-message-graph.test.ts` — and it
+ * exists because the leak it catches (a static `messages/en.json` import in the 500 boundary)
+ * cost 4 606 B Brotli on every document while being far too small to notice as a byte total.
  */
 import {
   mkdtempSync,
@@ -57,16 +73,22 @@ import { gzipSync } from "node:zlib";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import {
+  CLIENT_FORBIDDEN_NAMESPACES,
   CLIENT_JS_BUDGET_BYTES,
   type PageMeasurement,
   FORBIDDEN_CLIENT_MODULES,
   MESSAGES_PAYLOAD_BUDGET_BYTES,
+  catalogueLeaks,
+  catalogueProbes,
   forbiddenModuleHits,
   loadableAssetsFor,
   measurePages,
   messagesPayloadSizes,
+  parseClientReferences,
   parseScriptTags,
+  formatChunkList,
   formatMarkdownTable,
+  reachableAssets,
   routeEntryFor,
   main,
 } from "../../scripts/client-js-budget.ts";
@@ -162,6 +184,12 @@ describe("measurePages against a fake build output", () => {
     writeFileSync(join(dist, "static/chunks/page.js"), kb(20));
     writeFileSync(join(dist, "static/chunks/polyfill.js"), kb(400));
     writeFileSync(join(dist, "static/chunks/island.js"), kb(30));
+    // The loader chunk, as Turbopack writes one: it names the chunk its dynamic import will
+    // request, verbatim. That string is the edge `reachableAssets()` follows.
+    writeFileSync(
+      join(dist, "static/chunks/loader.js"),
+      'e.v(()=>Promise.all(["static/chunks/island.js"].map(t=>e.l(t))));',
+    );
     // The two manifests a real `next build` writes: the URL -> entry map, and the entry's
     // `next/dynamic` chunk list. `/small` and `/band` are served by the `[locale]` entry, which
     // has no loadable manifest of its own here — a route with no dynamic import.
@@ -171,19 +199,36 @@ describe("measurePages against a fake build output", () => {
         "/(chooser)/page": "/",
         "/[locale]/page": "/[locale]",
         "/en/deep/page": "/en/deep",
+        "/quiet/page": "/quiet",
       }),
     );
-    mkdirSync(join(dist, "server/app/(chooser)/page"), { recursive: true });
-    writeFileSync(
-      join(dist, "server/app/(chooser)/page/react-loadable-manifest.json"),
-      JSON.stringify({
-        "1": { id: 1, files: ["static/chunks/island.js"] },
-      }),
-    );
+    // The same app-level list under two entries, which is what Turbopack really writes and the
+    // reason per-route attribution needed fixing (TASK-085, `/review 36`).
+    for (const entry of ["(chooser)/page", "quiet/page"]) {
+      mkdirSync(join(dist, "server/app", entry), { recursive: true });
+      writeFileSync(
+        join(dist, "server/app", entry, "react-loadable-manifest.json"),
+        JSON.stringify({
+          "1": { id: 1, files: ["static/chunks/island.js"] },
+        }),
+      );
+    }
+    // `/` **mounts** the loader: its flight payload names it, so the browser fetches the island
+    // chunk after hydration and the page is charged for it.
     writeFileSync(
       join(dist, "server/app/index.html"),
       '<script src="/_next/static/chunks/runtime.js"></script>' +
-        '<script src="/_next/static/chunks/polyfill.js" noModule=""></script>',
+        '<script src="/_next/static/chunks/loader.js"></script>' +
+        '<script src="/_next/static/chunks/polyfill.js" noModule=""></script>' +
+        '<script>self.__next_f.push([1,"3:I[7,[\\"/_next/static/chunks/loader.js\\"],\\"Loader\\"]\\n"])</script>',
+    );
+    // `/quiet` lists the very same loader chunk — Turbopack puts an entry's client modules in the
+    // entry's script set — but mounts nothing, so no dynamic import ever runs. It is charged the
+    // loader's own bytes and **not** the island's.
+    writeFileSync(
+      join(dist, "server/app/quiet.html"),
+      '<script src="/_next/static/chunks/runtime.js"></script>' +
+        '<script src="/_next/static/chunks/loader.js"></script>',
     );
     writeFileSync(
       join(dist, "server/app/en.html"),
@@ -241,6 +286,7 @@ describe("measurePages against a fake build output", () => {
       "static/chunks/polyfill.js",
       "static/chunks/runtime.js",
       "static/chunks/island.js",
+      "static/chunks/loader.js",
     ]);
     // The 400 KB polyfill bundle is `noModule`, so it is reported and not counted; the 30 KB
     // `next/dynamic` chunk is not in the document at all and *is* counted.
@@ -287,6 +333,43 @@ describe("measurePages against a fake build output", () => {
     expect(table).toContain("| `/en` |");
   });
 
+  /**
+   * `/review 36`'s finding, as a fixture. `/quiet` lists the loader chunk and mounts nothing; the
+   * island chunk is in its route's loadable manifest all the same, because that list is
+   * app-level. Charging it was worth 14.9 KB Brotli on the real `/`.
+   */
+  it("charges a lazy chunk only to a URL that mounts the component fetching it", () => {
+    const [mounted, quiet] = measurePages(dist, ["/", "/quiet"]);
+
+    expect(mounted?.references.map((reference) => reference.name)).toEqual([
+      "Loader",
+    ]);
+    expect(
+      mounted?.assets
+        .filter((asset) => asset.kind === "lazy")
+        .map((asset) => asset.asset),
+    ).toEqual(["static/chunks/island.js"]);
+
+    expect(quiet?.references).toEqual([]);
+    expect(quiet?.assets.map((asset) => asset.asset)).toEqual([
+      "static/chunks/runtime.js",
+      "static/chunks/loader.js",
+    ]);
+    expect(quiet?.lazyBrotliBytes).toBe(0);
+    // The loader's own bytes are still charged: the document lists them, so a browser fetches
+    // them. Only the deferred import it never triggers is not.
+    expect(quiet?.fetchedBrotliBytes).toBeLessThan(
+      mounted?.fetchedBrotliBytes ?? 0,
+    );
+  });
+
+  it("names the client references of a document in the printed breakdown", () => {
+    const printed = formatChunkList(measurePages(dist, ["/", "/quiet"]));
+
+    expect(printed).toContain("client references: Loader");
+    expect(printed).toContain("client references: none");
+  });
+
   it("exits non-zero on a breach and 0 when everything fits", () => {
     const out: string[] = [];
     const write = (chunk: string): number => out.push(chunk);
@@ -309,9 +392,12 @@ describe("forbiddenModuleHits — no zod, no browser Sentry on a public route (A
     mkdirSync(join(dist, "server/app"), { recursive: true });
     // Minified-looking chunks: the markers are what survives a minifier, which is why the check
     // greps for them rather than for an import path.
+    // Clean of both markers, and — like a real Turbopack client chunk — it names the chunk its
+    // deferred import will request. Whether that chunk is charged depends on whether the document
+    // *mounts* this one (TASK-085); `/` and `/en` list it without mounting it, `/banner` mounts it.
     writeFileSync(
       join(dist, "static/chunks/clean.js"),
-      "export const a=1;const b=_zodiac;",
+      'export const a=1;const b=_zodiac;e.v(()=>e.l("static/chunks/lazy-zod.js"));',
     );
     writeFileSync(
       join(dist, "static/chunks/zod.js"),
@@ -345,7 +431,8 @@ describe("forbiddenModuleHits — no zod, no browser Sentry on a public route (A
     );
     writeFileSync(
       join(dist, "server/app/banner.html"),
-      '<script src="/_next/static/chunks/clean.js"></script>',
+      '<script src="/_next/static/chunks/clean.js"></script>' +
+        '<script>self.__next_f.push([1,"4:I[9,[\\"/_next/static/chunks/clean.js\\"],\\"BannerLoader\\"]\\n"])</script>',
     );
     writeFileSync(
       join(dist, "app-path-routes-manifest.json"),
@@ -396,9 +483,13 @@ describe("forbiddenModuleHits — no zod, no browser Sentry on a public route (A
   it("sees a forbidden module in a `next/dynamic` chunk no document lists", () => {
     const [page] = measurePages(dist, ["/banner"]);
 
-    expect(page?.assets.map((asset) => [asset.asset, asset.kind])).toEqual([
-      ["static/chunks/lazy-zod.js", "lazy"],
+    expect(
+      [...(page?.assets ?? [])]
+        .map((asset) => [asset.asset, asset.kind])
+        .sort(),
+    ).toEqual([
       ["static/chunks/clean.js", "document"],
+      ["static/chunks/lazy-zod.js", "lazy"],
     ]);
     expect(forbiddenModuleHits(dist, [page as PageMeasurement])).toEqual([
       { url: "/banner", asset: "static/chunks/lazy-zod.js", label: "zod" },
@@ -494,7 +585,6 @@ describe("the serialised client message payload (AC-27)", () => {
       expect(gzipSync(Buffer.from(payload, "utf8")).length).toBe(bytes);
       expect(Object.keys(JSON.parse(payload) as object).sort()).toEqual([
         "a11y",
-        "banner",
         "common",
         "errors",
         "meta",
@@ -506,6 +596,176 @@ describe("the serialised client message payload (AC-27)", () => {
     for (const { locale, bytes } of sizes) {
       expect(bytes, locale).toBeLessThanOrEqual(MESSAGES_PAYLOAD_BUDGET_BYTES);
     }
+  });
+});
+
+describe("parseClientReferences (which Client Components a document mounts)", () => {
+  it('reads the `I[id,[chunks],"Name"]` rows out of the escaped flight payload', () => {
+    const html =
+      '<script>self.__next_f.push([1,"3:I[63491,[\\"/_next/static/chunks/a.js\\",' +
+      '\\"/_next/static/chunks/b.js\\"],\\"default\\"]\\n"])</script>' +
+      '<script>self.__next_f.push([1,"4:I[64460,[\\"/_next/static/chunks/a.js\\"],' +
+      '\\"LocaleSuggestionBannerLoader\\"]\\n"])</script>';
+
+    expect(parseClientReferences(html)).toEqual([
+      {
+        id: "63491",
+        name: "default",
+        chunks: ["static/chunks/a.js", "static/chunks/b.js"],
+      },
+      {
+        id: "64460",
+        name: "LocaleSuggestionBannerLoader",
+        chunks: ["static/chunks/a.js"],
+      },
+    ]);
+  });
+
+  it("counts a reference once and answers `[]` for a document with no payload", () => {
+    const row = '3:I[7,[\\"/_next/static/chunks/a.js\\"],\\"Loader\\"]\\n';
+
+    expect(parseClientReferences(`<script>${row}${row}</script>`)).toHaveLength(
+      1,
+    );
+    expect(
+      parseClientReferences("<html><body>no scripts</body></html>"),
+    ).toEqual([]);
+  });
+});
+
+describe("reachableAssets (the edge the Turbopack runtime follows)", () => {
+  let dist = "";
+
+  beforeAll(() => {
+    dist = mkdtempSync(join(tmpdir(), "fo-reach-"));
+    mkdirSync(join(dist, "static/chunks"), { recursive: true });
+    writeFileSync(
+      join(dist, "static/chunks/root.js"),
+      'e.l("static/chunks/first.js")',
+    );
+    writeFileSync(
+      join(dist, "static/chunks/first.js"),
+      'e.l("static/chunks/second.js")',
+    );
+    writeFileSync(join(dist, "static/chunks/second.js"), "export const x=1;");
+    writeFileSync(join(dist, "static/chunks/orphan.js"), "export const y=1;");
+  });
+
+  afterAll(() => {
+    rmSync(dist, { recursive: true, force: true });
+  });
+
+  const candidate = (asset: string) =>
+    ({ asset, noModule: false, kind: "lazy" }) as const;
+
+  it("follows a chain of dynamic imports and stops at what nothing names", () => {
+    const found = reachableAssets(
+      dist,
+      ["static/chunks/root.js"],
+      [
+        candidate("static/chunks/first.js"),
+        candidate("static/chunks/second.js"),
+        candidate("static/chunks/orphan.js"),
+      ],
+    );
+
+    expect(found.map((tag) => tag.asset).sort()).toEqual([
+      "static/chunks/first.js",
+      "static/chunks/second.js",
+    ]);
+  });
+
+  it("charges nothing when the seed is empty — a document that mounts no island", () => {
+    expect(
+      reachableAssets(dist, [], [candidate("static/chunks/first.js")]),
+    ).toEqual([]);
+  });
+
+  it("treats a chunk missing from the output as unfetchable rather than throwing", () => {
+    expect(
+      reachableAssets(
+        dist,
+        ["static/chunks/gone.js"],
+        [candidate("static/chunks/first.js")],
+      ),
+    ).toEqual([]);
+  });
+});
+
+describe("catalogueLeaks — no client chunk carries server-only copy (§14 A1 addendum)", () => {
+  let dist = "";
+  const probes = catalogueProbes();
+
+  beforeAll(() => {
+    dist = mkdtempSync(join(tmpdir(), "fo-catalogue-"));
+    mkdirSync(join(dist, "static/chunks"), { recursive: true });
+    mkdirSync(join(dist, "server/app"), { recursive: true });
+    writeFileSync(
+      join(dist, "app-path-routes-manifest.json"),
+      JSON.stringify({ "/(chooser)/page": "/", "/[locale]/page": "/[locale]" }),
+    );
+    // A chunk with a bundled catalogue in it, exactly as a static `messages/en.json` import
+    // shipped before TASK-085 — the probe values are taken from the shipped catalogue, so this
+    // fixture cannot drift away from what it is meant to catch.
+    writeFileSync(
+      join(dist, "static/chunks/leaky.js"),
+      `const m=${JSON.stringify(
+        Object.fromEntries(probes.map((probe) => [probe.key, probe.value])),
+      )};`,
+    );
+    writeFileSync(join(dist, "static/chunks/clean.js"), "export const a=1;");
+    writeFileSync(
+      join(dist, "server/app/index.html"),
+      '<script src="/_next/static/chunks/clean.js"></script>',
+    );
+    writeFileSync(
+      join(dist, "server/app/en.html"),
+      '<script src="/_next/static/chunks/leaky.js"></script>',
+    );
+  });
+
+  afterAll(() => {
+    rmSync(dist, { recursive: true, force: true });
+  });
+
+  it("has a probe for every namespace it forbids, so the check cannot go quiet", () => {
+    expect(probes.map((probe) => probe.namespace)).toEqual([
+      ...CLIENT_FORBIDDEN_NAMESPACES,
+    ]);
+    for (const probe of probes) {
+      expect(probe.value.length, probe.key).toBeGreaterThanOrEqual(24);
+      expect(probe.key.startsWith(`${probe.namespace}.`), probe.key).toBe(true);
+    }
+  });
+
+  it("names the URL, the chunk and the namespace of every leak", () => {
+    const leaks = catalogueLeaks(dist, measurePages(dist, ["/", "/en"]));
+
+    expect(leaks.map((leak) => [leak.url, leak.namespace])).toEqual(
+      CLIENT_FORBIDDEN_NAMESPACES.map((namespace) => ["/en", namespace]),
+    );
+    expect(new Set(leaks.map((leak) => leak.asset))).toEqual(
+      new Set(["static/chunks/leaky.js"]),
+    );
+  });
+
+  it("finds nothing on a page whose chunks carry no copy", () => {
+    expect(catalogueLeaks(dist, measurePages(dist, ["/"]))).toEqual([]);
+  });
+
+  it("makes `pnpm budget:client-js` exit non-zero and say which namespace leaked", () => {
+    const out: string[] = [];
+    const write = (chunk: string): number => out.push(chunk);
+
+    expect(main(["--dist", dist, "--url", "/en"], { write }, { write })).toBe(
+      1,
+    );
+    expect(out.join("")).toContain("catalogue in a fetched chunk");
+    out.length = 0;
+    expect(main(["--dist", dist, "--url", "/"], { write }, { write })).toBe(0);
+    expect(out.join("")).toContain(
+      "no fetched chunk contains home.*, finder.*, catalog.*, media.* catalogue copy",
+    );
   });
 });
 

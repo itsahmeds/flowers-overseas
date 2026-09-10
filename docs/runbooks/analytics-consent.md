@@ -115,11 +115,13 @@ Operational notes:
   `tests/e2e/banner.spec.ts` — and TASK-055 owns the final coordination of the two (AC-13).
 - **Budget.** The sheet costs **2 363 B Brotli** on a locale document, in one `next/dynamic` chunk
   fetched after hydration (the settings panel is a second, nested chunk of **967 B** fetched only
-  when it is opened). That puts `/en` and `/de` at **132 044 B against the 131 072 B of spec 004
-  §14 A1** — 972 B over, with the whole overage predating the sheet in the framework floor. The
-  remedy is named in §14 A1's addendum and owned by **TASK-085**: Q13 option (b), dropping
-  `NextIntlClientProvider` and the client message payload from the locale document (−10 705 B) by
-  passing the suggestion banner's strings as props too. The breach is informational until then.
+  when it is opened). That put `/en` and `/de` at 132 044 B against the 131 072 B of spec 004
+  §14 A1 — 972 B over, with the whole overage predating the sheet in the framework floor.
+  **TASK-085 resolved it** (§14 A1's addendum, Q13 option (b)): `NextIntlClientProvider` and the
+  client message payload are gone from every document (−10 705 B), the suggestion banner takes its
+  strings as props like this sheet always did, and the 500 boundaries no longer import a
+  catalogue (−4 606 B on every document). A locale document now measures **122 360 B Brotli**,
+  8 712 B inside the budget, and the sheet's own cost is unchanged.
   Re-measure with `pnpm build && pnpm budget:client-js`; `pnpm lighthouse` cannot substitute for
   it locally, because `next start` serves chunks unencoded and Lighthouse then reads identity
   bytes (169 223 B on `/en`) that no Brotli budget can be compared to.

@@ -8,8 +8,9 @@
  *  - **A locale with no catalogue file still renders** — it resolves through `fallbackCode` to
  *    `en`. That is what makes "a new locale is data" true (AC-31) and what lets `de`/`pl` exist as
  *    URLs before their drafts are written.
- *  - **`loadMessages` returns only the requested namespaces.** The subset is what reaches the
- *    client provider, so the serialised payload cannot grow with the catalogue (§6, AC-27).
+ *  - **`loadMessages` returns only the requested namespaces.** The subset is what a route's own
+ *    document resolves; since TASK-085 nothing is serialised to a client at all (spec 004 §14 A1
+ *    addendum), and AC-27's 4 KB is the upper bound on a payload that is not sent.
  */
 import { describe, expect, it } from "vitest";
 
@@ -32,6 +33,9 @@ describe("the shell catalogue", () => {
   it("ships the spec 003 §2 shell namespaces plus spec 004's chrome namespaces", () => {
     expect([...MESSAGE_NAMESPACES].sort()).toEqual([
       "a11y",
+      // `banner` is the suggestion overlay's four strings (TASK-041), resolved on the server by
+      // `suggestionCopy()` and handed to the island as props since TASK-085 — so, like `consent`,
+      // it is deliberately absent from `namespacesFor("localeDocument")` below.
       "banner",
       // `catalog` is spec 005 §7's namespace: the tier, add-on, surcharge and facet **label
       // keys** the authored dataset refers to, seeded `retained: true` by TASK-062 and rendered
@@ -179,13 +183,15 @@ describe("loadMessages (§6 'CWV budget impact')", () => {
 });
 
 describe("namespacesFor", () => {
-  it("gives the `[locale]` document the namespaces its 404, 500 and banner copy needs", () => {
-    // `banner` joined the set in TASK-041: the suggestion island renders in the browser, so its
-    // four keys are the one namespace that *has* to reach the client provider. Everything else
-    // here is read on the server or by the 500 boundary, which is itself a Client Component.
+  it("gives the `[locale]` document the namespaces its own copy needs, and no client split", () => {
+    // `banner` joined the set in TASK-041, when the suggestion island rendered its copy in the
+    // browser and had to be handed a payload; TASK-085 took it back out (spec 004 §14 A1
+    // addendum). The island is given resolved strings as props by `suggestionCopy()`, no
+    // `NextIntlClientProvider` is mounted anywhere, and no namespace subset is serialised into a
+    // document for a client to read — which `tests/unit/client-message-graph.test.ts` asserts
+    // from the import graph and `pnpm budget:client-js` from the built chunks.
     expect([...namespacesFor("localeDocument")].sort()).toEqual([
       "a11y",
-      "banner",
       "common",
       "errors",
       "meta",

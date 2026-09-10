@@ -54,7 +54,7 @@ import { localePath, sortBy } from "../../i18n";
  * lets `withLocaleRegistry()` inject a fifth locale the static union cannot contain, which is
  * exactly why spec 003 refused to augment next-intl's `Locale` with that union (`global.d.ts`).
  * Validating against the static union here would make a *fifth locale a code change* — the
- * opposite of AC-31 — and `tests/unit/i18n-fifth-locale.test.ts` fails the moment anyone tries.
+ * opposite of AC-31 — and `tests/unit/i18n-fifth-locale.test.tsx` fails the moment anyone tries.
  *
  * So the runtime check stays where it belongs: `collator()` resolves the code through
  * `getLocaleRegistry()` and throws `unknown locale code` for a code no registry knows, while the

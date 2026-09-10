@@ -13,10 +13,12 @@
  * hydration.
  *
  * This file itself is the only banner code in the page's initial client bundle: a props
- * pass-through with no state, no effect and no import of the locale registry. Everything the
- * island needs — the launch locales, their native names and their `localePath()`-built hrefs —
- * arrives as props from `LocaleSuggestionBanner.tsx`, so the registry never crosses into the
- * browser and the locale set cannot be reconfigured from a client chunk (AC-3's objection).
+ * pass-through with no state, no effect, no import of the locale registry and — since TASK-085 —
+ * no message catalogue anywhere in its graph. Everything the island needs arrives as props from
+ * `LocaleSuggestionBanner.tsx`: the launch locales, their native names, their `localePath()`-built
+ * hrefs, and every string already ICU-resolved by `suggestionCopy()`. So the registry never
+ * crosses into the browser, the locale set cannot be reconfigured from a client chunk (AC-3's
+ * objection), and no provider is needed to translate the banner (spec 004 §14 A1 addendum).
  */
 import dynamic from "next/dynamic";
 

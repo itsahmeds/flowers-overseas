@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { ReactNode } from "react";
 
@@ -9,8 +8,6 @@ import { AnalyticsScripts } from "@/modules/analytics";
 import {
   LocaleSuggestionBanner,
   documentFallbackLocale,
-  loadMessages,
-  namespacesFor,
   routableLocale,
   routableLocaleCodes,
 } from "@/modules/i18n";
@@ -111,9 +108,6 @@ export default async function LocaleLayout({
   setLocaleTag(locale.code);
 
   const t = await getTranslations({ locale: locale.code, namespace: "a11y" });
-  // The client provider gets the per-route namespace subset, never the whole catalogue (§6,
-  // AC-27); the 500 boundary below is a Client Component and reads its copy from it.
-  const messages = loadMessages(locale.code, namespacesFor("localeDocument"));
 
   return (
     // `fontVariables`: the two self-hosted families and their preload links (spec 004 AC-4).
@@ -130,50 +124,52 @@ export default async function LocaleLayout({
         <AnalyticsScripts measurementId={ga4MeasurementId(process.env)} />
       </head>
       <body className="min-h-dvh">
-        {/* `timeZone` mirrors `src/modules/i18n/request.ts`: a relay has no single local zone,
-            every rendered time carries its own IANA zone (`formatTimeInZone`), and UTC is the
-            neutral default. Passing it explicitly is what keeps the client provider from
-            consulting the *visitor's* zone as a fallback — an environment difference that would
-            make client markup disagree with server markup, and the one such difference next-intl
-            warns about. TASK-041 is where it starts to matter: the banner island is the first
-            component that reads copy in the browser. */}
-        <NextIntlClientProvider
-          locale={locale.code}
-          messages={messages}
-          timeZone="UTC"
-        >
-          {/* The skip link is the first focusable element of every document (WCAG 2.4.1). Spec
-              003 shipped it as a bare `<a>`; spec 004 gives it the **visible focused state** §2
-              asks for through the `SkipLink` primitive — off-screen until focused, then a paper
-              card with the focus ring above every other layer. Same target, same message key. */}
-          <SkipLink>{t("skipToContent")}</SkipLink>
-          {/* The commerce header of spec 004 §13's resolution note (TASK-048): one Server
-              Component, no client JavaScript, a reserved height per breakpoint, and every
-              unpublished registry target rendered as text (AC-7, AC-8, AC-14). */}
-          <SiteHeader locale={locale.code} />
-          {children}
-          {/* The colophon of spec 004 §5.3, on every localised document (AC-9): a Server
-              Component with zero client JavaScript, whose links, company identity and payment
-              line all come from the Phase-0 registries (TASK-049). */}
-          <SiteFooter locale={locale.code} />
-          {/* Out of flow and above everything: the consent sheet (AC-17, AC-19, AC-20). A
-              Server Component resolves the copy and projects the cookie register, and a client
-              loader imports the island after hydration (`ssr: false`), so this document's HTML is
-              identical for every visitor, carries no `Vary` and sets no cookie — the decision is
-              read from and written to `document.cookie` in the browser, only on a press. It is
-              rendered **before** the language suggestion so a keyboard visitor reaches the
-              consent question first, and it paints **above** it because `--layer-overlay` is the
-              step over `--layer-banner` (AC-13). `/` has no locale layout and therefore no sheet:
-              the chooser stays at zero application JavaScript (spec 003 AC-7). */}
-          <ConsentBanner />
-          {/* Last in the document and out of flow: the language suggestion of ADR-0006 in its
-              positive form. `LocaleSuggestionBanner` is a Server Component that projects the
-              locale registry and hands it to a client loader, which imports the island itself
-              after hydration (`ssr: false`) — so this document's HTML is identical for every
-              visitor, carries no `Vary` and sets no cookie (spec 003 §5.4, AC-12, AC-28), and the
-              banner is reached by continuing to tab rather than by stealing focus (§8). */}
-          <LocaleSuggestionBanner locale={locale.code} />
-        </NextIntlClientProvider>
+        {/* No `NextIntlClientProvider`, and that is the point of TASK-085 (spec 004 §13 Q13
+            option (b), §14 A1 addendum). The provider plus its `localeDocument` message payload
+            measured 10 705 B Brotli in the initial script set of every locale document — 8% of
+            the 131 072 B budget — to translate two Client Components: the suggestion banner and
+            the 500 boundary. Both now take their strings as data (`suggestionCopy()` and
+            `error-copy.data.ts`), so every string in this document is resolved on the server and
+            no message catalogue, formatter or provider crosses into the browser. `useTranslations`
+            is server-only from here on; `tests/unit/client-message-graph.test.ts` fails the build
+            if a `"use client"` module reaches one again.
+
+            The time zone the provider used to carry is unchanged and unneeded: it is set once, in
+            `src/modules/i18n/request.ts`, and every rendered time carries its own IANA zone
+            (`formatTimeInZone`) — a relay has no single local zone. With no client formatter there
+            is no second environment to disagree with the server's. */}
+        {/* The skip link is the first focusable element of every document (WCAG 2.4.1). Spec
+            003 shipped it as a bare `<a>`; spec 004 gives it the **visible focused state** §2
+            asks for through the `SkipLink` primitive — off-screen until focused, then a paper
+            card with the focus ring above every other layer. Same target, same message key. */}
+        <SkipLink>{t("skipToContent")}</SkipLink>
+        {/* The commerce header of spec 004 §13's resolution note (TASK-048): one Server
+            Component, no client JavaScript, a reserved height per breakpoint, and every
+            unpublished registry target rendered as text (AC-7, AC-8, AC-14). */}
+        <SiteHeader locale={locale.code} />
+        {children}
+        {/* The colophon of spec 004 §5.3, on every localised document (AC-9): a Server
+            Component with zero client JavaScript, whose links, company identity and payment
+            line all come from the Phase-0 registries (TASK-049). */}
+        <SiteFooter locale={locale.code} />
+        {/* Out of flow and above everything: the consent sheet (AC-17, AC-19, AC-20). A
+            Server Component resolves the copy and projects the cookie register, and a client
+            loader imports the island after hydration (`ssr: false`), so this document's HTML is
+            identical for every visitor, carries no `Vary` and sets no cookie — the decision is
+            read from and written to `document.cookie` in the browser, only on a press. It is
+            rendered **before** the language suggestion so a keyboard visitor reaches the
+            consent question first, and it paints **above** it because `--layer-overlay` is the
+            step over `--layer-banner` (AC-13). `/` has no locale layout and therefore no sheet:
+            the chooser stays at zero application JavaScript (spec 003 AC-7). */}
+        <ConsentBanner />
+        {/* Last in the document and out of flow: the language suggestion of ADR-0006 in its
+            positive form. `LocaleSuggestionBanner` is a Server Component that projects the
+            locale registry *and the resolved copy*, and hands both to a client loader, which
+            imports the island itself after hydration (`ssr: false`) — so this document's HTML is
+            identical for every visitor, carries no `Vary` and sets no cookie (spec 003 §5.4,
+            AC-12, AC-28), and the banner is reached by continuing to tab rather than by stealing
+            focus (§8). */}
+        <LocaleSuggestionBanner locale={locale.code} />
       </body>
     </html>
   );

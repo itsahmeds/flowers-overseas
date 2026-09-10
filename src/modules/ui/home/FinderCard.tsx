@@ -149,8 +149,8 @@ export function FinderCard({ locale }: FinderCardProps): ReactElement {
               The platform's type-ahead: seven options, in the reader's collation order, filtered
               by the browser as the visitor types, and present in the HTML — so this works with
               JavaScript disabled and adds not one byte to the client bundle (§14 A1's 131 072 B,
-              which the A1 addendum records as already breached by the consent island until
-              TASK-085 drops the client message payload).
+              which every locale document is inside since TASK-085 dropped the client message
+              payload and the provider: 122 360 B).
             */}
             <datalist id={FINDER_IDS.countryList}>
               {destinations.map((destination) => (

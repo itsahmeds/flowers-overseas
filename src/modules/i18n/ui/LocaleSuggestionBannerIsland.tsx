@@ -39,7 +39,6 @@
  * "Stay" writes the current locale, and the banner never returns for either. Dismiss (and `Esc`)
  * deliberately writes **no** cookie — see the header of `dismiss()`.
  */
-import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useId, useState } from "react";
 
 import {
@@ -49,11 +48,18 @@ import {
   serialiseLocaleCookie,
 } from "../hints.ts";
 
+import type {
+  SuggestionCopy,
+  SuggestionTargetCopy,
+} from "./suggestionTypes.ts";
+
 export interface LocaleSuggestionBannerIslandProps {
   /** The locale of the URL being viewed, from the path segment and nothing else. */
   locale: string;
   /** The launch locales in registry order, projected and linked by the Server Component parent. */
   candidates: readonly SuggestionCandidate[];
+  /** Every string this island renders, resolved and ICU-formatted by that same parent. */
+  copy: SuggestionCopy;
 }
 
 /**
@@ -106,6 +112,7 @@ function writeLocaleCookie(locale: string): void {
 export function LocaleSuggestionBannerIsland({
   locale,
   candidates,
+  copy,
 }: LocaleSuggestionBannerIslandProps) {
   // The decision is the island's **initial** state, computed lazily on mount. Reading
   // `navigator` and `document` during the first render is safe here and only here: the dynamic
@@ -158,10 +165,18 @@ export function LocaleSuggestionBannerIsland({
 
   if (!decision.show) return null;
   const candidate = decision.target;
+  const targetCopy = copy.targets[candidate.code];
+  // Fail closed, for the reason the `useState` initialiser above catches a throw: the copy and the
+  // candidates are projected from the same registry list by the same Server Component, so a
+  // missing entry is unreachable — and if it ever becomes reachable, no banner is a better answer
+  // than a banner with a blank headline.
+  if (targetCopy === undefined) return null;
 
   return (
     <LocaleSuggestionBannerView
+      copy={copy}
       target={candidate}
+      targetCopy={targetCopy}
       onStay={() => {
         writeLocaleCookie(locale);
         setDecision({ show: false, reason: "cookie" });
@@ -178,6 +193,10 @@ export function LocaleSuggestionBannerIsland({
 
 export interface LocaleSuggestionBannerViewProps {
   target: SuggestionCandidate;
+  /** The two strings that name `target`, ICU-resolved on the server. */
+  targetCopy: SuggestionTargetCopy;
+  /** The locale-invariant strings: "Stay on this page" and the dismiss button's label. */
+  copy: SuggestionCopy;
   onSwitch: () => void;
   onStay: () => void;
   onDismiss: () => void;
@@ -185,7 +204,10 @@ export interface LocaleSuggestionBannerViewProps {
 
 /**
  * The markup, split out so it can be rendered and asserted without a browser
- * (`tests/unit/i18n-suggestion-banner.test.tsx`): no effects, no storage, no `document`.
+ * (`tests/unit/i18n-suggestion-banner.test.tsx`): no effects, no storage, no `document` — and
+ * since TASK-085 no translator either. Every string arrives as a prop, already ICU-resolved by
+ * `suggestionCopy()` on the server, which is what took `NextIntlClientProvider` and the message
+ * payload out of every locale document (spec 004 §13 Q13 option (b), §14 A1 addendum).
  *
  * Styling is the minimum that makes an overlay legible and is direction-agnostic
  * (`start-0`/`end-0`, never `left`/`right` — `fo/no-physical-css`); spec 004 restyles it without
@@ -193,13 +215,13 @@ export interface LocaleSuggestionBannerViewProps {
  */
 export function LocaleSuggestionBannerView({
   target: candidate,
+  targetCopy,
+  copy,
   onSwitch,
   onStay,
   onDismiss,
 }: LocaleSuggestionBannerViewProps) {
-  const t = useTranslations("banner");
   const headlineId = useId();
-  const language = candidate.nativeName;
 
   return (
     <div className="fixed start-0 end-0 bottom-0 z-50">
@@ -217,7 +239,7 @@ export function LocaleSuggestionBannerView({
         data-fo-banner="shown"
         role="region"
       >
-        <p id={headlineId}>{t("headline", { language })}</p>
+        <p id={headlineId}>{targetCopy.headline}</p>
         <a
           className="underline"
           data-fo-banner-action="switch"
@@ -226,7 +248,7 @@ export function LocaleSuggestionBannerView({
           lang={candidate.bcp47}
           onClick={onSwitch}
         >
-          {t("switch", { language })}
+          {targetCopy.switchLabel}
         </a>
         <button
           className="underline"
@@ -234,10 +256,10 @@ export function LocaleSuggestionBannerView({
           onClick={onStay}
           type="button"
         >
-          {t("stay")}
+          {copy.stay}
         </button>
         <button
-          aria-label={t("dismiss")}
+          aria-label={copy.dismiss}
           className="ms-auto"
           data-fo-banner-action="dismiss"
           onClick={onDismiss}

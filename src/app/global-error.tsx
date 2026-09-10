@@ -16,14 +16,15 @@
  * Next requires `global-error.tsx` to be a Client Component and to render `<html>`/`<body>`
  * itself. Two consequences shape the implementation:
  *
- *  - **No `next-intl` at runtime, and since TASK-046 no zod either.** There is no server render to
- *    hand a provider its messages, and mounting `NextIntlClientProvider` here would add a second
- *    way for the failure document to fail. The copy is read **as data** from
- *    `src/modules/i18n/error-document.ts`, which imports the x-default locale row and
- *    `messages/en.json` and nothing else; the four keys take no ICU arguments, so no message
- *    formatter is needed. Still no literal string in the file (`fo/no-literal-strings`, AC-26),
- *    and still the same catalogue every other document uses — proven equal to
- *    `loadMessages()`'s answer by `tests/unit/error-document.test.ts` rather than asserted here.
+ *  - **No `next-intl` at runtime, no zod (TASK-046) and no catalogue JSON (TASK-085).** There is
+ *    no server render to hand a provider its messages, and mounting `NextIntlClientProvider` here
+ *    would add a second way for the failure document to fail — the application mounts no such
+ *    provider anywhere since TASK-085 (spec 004 §14 A1 addendum). The copy is read **as data**
+ *    from `src/modules/i18n/error-document.ts`, which imports the x-default locale row and the
+ *    four error strings and nothing else; the keys take no ICU arguments, so no message formatter
+ *    is needed. Still no literal string in the file (`fo/no-literal-strings`, AC-26), and still
+ *    the same copy every other document renders — proven equal to `loadMessages()`'s answer by
+ *    `tests/unit/error-document.test.ts` rather than asserted here.
  *  - **x-default, not the URL's locale.** A client component cannot read the path segment at
  *    render time on the server, and guessing would be worse than being honest: the document
  *    declares the x-default locale exactly as `src/app/not-found.tsx` does (§5.3, AC-8) — read
@@ -40,9 +41,13 @@
 // `messages.ts` + `registry.ts` it was still `schemas.ts` and `src/config/locales.ts`, and
 // therefore zod — ~70 KB Brotli of validator on a page that validates nothing (spec 003 §14 A12,
 // spec 004 §13 Q13). `error-document.ts` reads the x-default row from `src/config/locales.data.ts`
-// and the four strings from `messages/en.json`, and imports nothing else, so the growth vector
+// and the four strings from `error-copy.data.ts`, and imports nothing else, so the growth vector
 // stays closed: a function added to `format.ts` or a schema added to `schemas.ts` tomorrow cannot
-// land in `/`'s bundle by being exported. `import/no-restricted-paths` allows it — the barrel rule
+// land in `/`'s bundle by being exported. The strings were `messages/en.json` until TASK-085
+// measured what a static JSON import costs once it crosses Turbopack's tree-shaking threshold:
+// the whole 12.5 KB catalogue — `home.*`, `catalog.*`, `media.*` and all — at 4 606 B Brotli in
+// every document's initial script set (spec 004 §14 A1 addendum).
+// `import/no-restricted-paths` allows it — the barrel rule
 // binds module-to-module imports, and `app/` -> `modules/` is the direction the boundary permits
 // (`plan/01` §5) — and the measured cost of each step is recorded in `docs/architecture.md` §2.
 import { errorDocument } from "@/modules/i18n/error-document";

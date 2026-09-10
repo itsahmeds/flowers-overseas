@@ -123,7 +123,7 @@ Every script in `package.json`, once.
 |---|---|
 | `pnpm seo:validate` | the three validators below over `tests/fixtures/seo/`; `no fixtures` and exit 0 per empty directory |
 | `pnpm lighthouse` | Lighthouse CI with the `plan/01` §7 budgets from `lighthouserc.json` over `tests/fixtures/seo/lighthouse-urls.json` (`/`, `/en`, `/de`) |
-| `pnpm budget:client-js` | reads the prerendered documents of the last production build and prints, per URL, the Brotli (and gzipped) size of the scripts a browser actually fetches, chunk by chunk, plus the serialised client message payload per locale, plus whether any route ships `zod` or `@sentry/`. Budgets: **128 KB Brotli** of JS (`plan/01` §7 as restated by spec 004 §13 Q13 and corrected by §14 A1 — transfer size, which is what Vercel serves and Lighthouse measures; `lighthouserc.json` takes the same number when TASK-056 flips that job to blocking) and 4 KB gz of messages (spec 003 §6, AC-27). Exits non-zero on a breach; build first. `<script noModule>` (Next's legacy polyfill bundle) is listed but not counted — no module-supporting browser fetches it |
+| `pnpm budget:client-js` | reads the prerendered documents of the last production build and prints, per URL, the Brotli (and gzipped) size of the scripts a browser actually fetches, chunk by chunk, plus the `localeDocument` namespace subset per locale (an upper bound since TASK-085: no message payload is sent to any client), plus the Client Components each document mounts by name, plus whether any route ships `zod`, `@sentry/` or a `home.*`/`finder.*`/`catalog.*`/`media.*` catalogue value. Budgets: **128 KB Brotli** of JS (`plan/01` §7 as restated by spec 004 §13 Q13 and corrected by §14 A1 — transfer size, which is what Vercel serves and Lighthouse measures; `lighthouserc.json` takes the same number when TASK-056 flips that job to blocking) and 4 KB gz of messages (spec 003 §6, AC-27). Exits non-zero on a breach; build first. `<script noModule>` (Next's legacy polyfill bundle) is listed but not counted — no module-supporting browser fetches it |
 | `pnpm pr-policy` | the PR-title/branch-name/commit rules, runnable locally on a title string |
 | `pnpm branch-protection` | verifies `main`'s protection and merge settings against AC-21; `--print-commands` prints what applies them |
 
@@ -208,17 +208,25 @@ Three gates are informational for now, by decision rather than by neglect.
   Measured with a browser against `pnpm build && pnpm start`, summing Brotli (quality 11) over
   every `.js` the page requests, lazily fetched chunks included:
 
-  | URL | before (spec 003 tree) | after |
-  |---|---|---|
-  | `/` | 226 575 B gz / 190 706 B br (186.2 KB) | 136 067 B gz / **116 393 B br (113.7 KB)** — within, 6 487 B spare |
-  | `/en`, `/de` | 240 633 B gz / 203 197 B br (198.4 KB) | 150 992 B gz / **129 638 B br (126.6 KB)** — 6 758 B (5.5%) over |
+  | URL | spec 003 tree | after TASK-046 | after TASK-085 |
+  |---|---|---|---|
+  | `/` | 226 575 B gz / 190 706 B br | 136 067 B gz / 116 393 B br | 136 128 B gz / **116 778 B br** — within, 14 294 B spare |
+  | `/en`, `/en-gb`, `/de`, `/pl` | 240 633 B gz / 203 197 B br | 150 992 B gz / 129 638 B br | 142 573 B gz / **122 360 B br** — within, 8 712 B spare |
 
-  What is left is the framework: `/` fetches nothing but the runtime and already measures
-  113.7 KB Brotli (react-dom 61.1, the App Router runtime 38.8, ~13.5 KB of bootstrap and
-  route shells), leaving 6.3 KB of the budget, while a locale document adds
-  `NextIntlClientProvider` + `@formatjs` at 10 705 B and the banner island's own chunk at
-  2 173 B. Whether the budget moves again or the provider does is **spec 004 §13 Q13 option
-  (b)** and a founder decision; TASK-046 escalated it rather than loosening the number.
+  (The middle column is TASK-046's browser measurement; the framework floor has moved with two
+  Next releases since. Immediately before TASK-085, the same script measured `/` at 135 357 B br
+  and every locale document at 136 363 B.)
+
+  What is left is the framework, and only the framework: `/` fetches nothing but the runtime
+  (react-dom 61.1 KB br, the App Router runtime 36.5, ~16 KB of bootstrap and route shells), and a
+  locale document adds ~1.1 KB of route shell plus 4.4 KB of islands — the consent sheet, the
+  suggestion banner and the finder type-ahead — in `next/dynamic` chunks fetched after hydration.
+  TASK-085 closed the gap that TASK-046 escalated instead of loosening (**spec 004 §13 Q13 option
+  (b)**, §14 A1's addendum): `NextIntlClientProvider` and its message payload (10 705 B) are gone
+  from every document, every client island is handed translated strings as props, and the 500
+  boundaries read four constants instead of importing `messages/en.json` — which Turbopack shipped
+  **whole**, all 12.5 KB of catalogue, because a JSON import is tree-shaken only below a size
+  threshold. Every URL of the Lighthouse set is inside the budget for the first time.
   Everything else Lighthouse asserts already passes: performance 0.96–0.99, accessibility 1.00,
   CLS 0. The one other red assertion, LCP 2.0–2.5 s against 2.0 s, is the same finding — script
   transfer is what delays the paint on a text-only page. Lighthouse's own script number reads
@@ -241,7 +249,7 @@ Three gates are informational for now, by decision rather than by neglect.
 | Claude Code denies an `Edit`/`Write` under `src/` with `no task is active` | the PreToolUse guard: run `.claude/bin/task.sh set TASK-NNN` (the row must exist in `TASKS.md`) and clear it when the PR is open |
 | `pnpm test` reports **5 skipped** | gitleaks is not installed — expected locally; `brew install gitleaks` to run them. The `audit` CI job always does |
 | `pnpm test:integration` reports everything skipped | no schema until spec 002 (AC-16) |
-| `pnpm lighthouse` fails on `resource-summary:script:size` | expected and not yours to fix. Our own chunks measure 116 393 B Brotli on `/` (within) and 129 638 B on `/en` (6 758 B over, framework runtime plus `NextIntlClientProvider`; see Quality gates), but Lighthouse also counts the `vercel.live` script a protected preview injects — 25 376 B on `/` and ~48 KB on a locale document — so its number is tens of KB higher on a preview and lower on production, where that script is absent. `pnpm budget:client-js` is the attributable measurement. The CI job carries `continue-on-error: true` until TASK-056 |
+| `pnpm lighthouse` fails on `resource-summary:script:size` | not yours to fix. Our own chunks measure 116 778 B Brotli on `/` and 122 360 B on `/en` — both inside the 131 072 B budget since TASK-085 (see Quality gates) — but Lighthouse also counts the `vercel.live` script a protected preview injects — 25 376 B on `/` and ~48 KB on a locale document — so its number is tens of KB higher on a preview and lower on production, where that script is absent. `pnpm budget:client-js` is the attributable measurement. The CI job carries `continue-on-error: true` until TASK-056 |
 | `pnpm lighthouse` fails with `NO_FCP` | Lighthouse aborted before any metric existed because the page painted nothing. Expected in spec 001, **not** expected now that every measured URL renders text: the preview did not serve the document, so check the deployment and the bypass header |
 | `pnpm budget:client-js` says `no prerendered document for /en` | it reads `.next/`, so run `pnpm build` first; `pnpm dev` writes no prerendered HTML |
 | `pnpm lint:fixtures` "fails" | it is meant to: `tests/fixtures/lint/` violates the custom rules on purpose |

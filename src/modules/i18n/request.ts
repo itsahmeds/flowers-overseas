@@ -11,8 +11,9 @@
  *
  * An unknown or unroutable segment resolves to the x-default locale: it is the value the 404
  * document renders with (AC-8), never a redirect to a guessed locale. `next-intl` calls this
- * function for every server render; the payload the *browser* receives is a per-route namespace
- * subset chosen in the layout, not this catalogue (§6, AC-27) — see the comment on `messages`.
+ * function for every server render, and since TASK-085 that is the only place a catalogue is ever
+ * loaded: no namespace subset is serialised to a browser at all (spec 004 §14 A1 addendum) — see
+ * the comment on `messages`.
  *
  * Wired in by `createNextIntlPlugin("./src/modules/i18n/request.ts")` in `next.config.ts`.
  */
@@ -31,11 +32,12 @@ export default getRequestConfig(async ({ requestLocale }) => {
 
   return {
     locale: locale.code,
-    // Every namespace, because this is the **server** catalogue: `getTranslations()` in a layout,
-    // a page or `generateMetadata` resolves against it, so a document that renders the chooser
-    // copy (`/`) or an error title must find its keys here. It is never serialised to the browser
-    // — the client provider in `src/app/[locale]/layout.tsx` is handed the per-route subset from
-    // `namespacesFor()` explicitly, and that is what the §6 / AC-27 payload budget measures.
+    // Every namespace, because this is the **server** catalogue: `getTranslations()` and
+    // `useTranslations()` in a layout, a page, a Server Component or `generateMetadata` resolve
+    // against it, so a document that renders the chooser copy (`/`) or an error title must find
+    // its keys here. It is never serialised to the browser: there is no `NextIntlClientProvider`
+    // in the application since TASK-085, every client island receives resolved strings as props,
+    // and `pnpm budget:client-js` measures the zero from the built chunks (§6, AC-27).
     messages: loadMessages(locale.code, MESSAGE_NAMESPACES),
     // A relay has no single "local" time zone; every rendered time carries its own IANA zone
     // (spec 003 §5.2, TASK-036's `formatTimeInZone`). UTC is the neutral default for the
