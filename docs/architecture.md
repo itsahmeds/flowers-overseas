@@ -166,6 +166,18 @@ seed/media-variants.ts    the deterministic sharp ladder (spec 006 §2.4): EXIF/
                           one thread pinned so libaom's output cannot vary by machine; `--check`
                           is the CI mode and needs no originals. sharp is a devDependency of this
                           one file and reaches no bundle and no request path
+seed/diff.ts              `pnpm seed:diff` — the per-table diff of the dataset against a
+                          `SeedTarget` (spec 006 §2.1, AC-11): inserts / updates / unchanged /
+                          skipped-real / orphans / conflicts per spec 002 §5.1 table, over rows
+                          projected through the same `to*Row()` functions the importer uses
+                          (ADR-0017) and keyed on the natural key. seed/target.ts holds the
+                          `SeedTarget` interface and `snapshotTarget`; `dbTarget` arrives with
+                          the importer (TASK-083) and `pnpm db:seed` prints this same report.
+                          Pure, offline, no clock — the report is byte-stable across runs
+seed/snapshot/            the committed Phase-0 target: one JSON file per diffed table, written
+                          by `pnpm seed:diff --write` and asserted byte-equal by
+                          `tests/unit/seed-diff.test.ts`. Deliberately **not** under `seed/data/`:
+                          it is what the dataset is compared against, not dataset
 seed/check.ts             `pnpm seed:check` — the dataset gate: the nine rule families of spec
                           006 §2.3 and the §11 catalogue-health report (`--report`). Pure over a
                           `SeedTree` value read once; composes `staleProjections()`,

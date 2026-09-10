@@ -66,6 +66,11 @@ describe("AC-2: no database import in the spec 003 file set (T-02)", () => {
       "seed/check.ts",
       "seed/check-cases.ts",
       "seed/budgets.ts",
+      // spec 006 AC-1 (TASK-076): `pnpm seed:diff` and its `SeedTarget` implementations. The
+      // snapshot target is the offline half of "one differ, two targets"; `dbTarget` arrives with
+      // `seed/index.ts`, which is deliberately outside this set.
+      "seed/diff.ts",
+      "seed/target.ts",
     ]);
   });
 

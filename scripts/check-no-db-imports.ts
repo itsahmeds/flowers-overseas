@@ -61,6 +61,12 @@ export const SCANNED_PATHS = [
   "seed/check.ts",
   "seed/check-cases.ts",
   "seed/budgets.ts",
+  // spec 006 AC-1 (TASK-076): the differ and its targets. `pnpm seed:diff` must keep running with
+  // no database for as long as spec 002's provisioning is parked — and afterwards, because the
+  // snapshot target is the offline half of "one differ, two targets": `seed/target.ts`'s `dbTarget`
+  // (TASK-083) will live beside `seed/index.ts`, which is deliberately outside this set.
+  "seed/diff.ts",
+  "seed/target.ts",
 ] as const;
 
 const SCANNED_EXTENSIONS = [".ts", ".tsx", ".mts", ".cts", ".js", ".jsx"];

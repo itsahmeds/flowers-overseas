@@ -1,0 +1,1771 @@
+{
+  "version": 1,
+  "source": "seed",
+  "table": "product",
+  "rows": [
+    {
+      "key": {
+        "sku": "FO-BQ-001"
+      },
+      "values": {
+        "sku": "FO-BQ-001",
+        "product_type": "bouquet",
+        "primary_flower": "roses",
+        "colour_primary": "orange",
+        "style": "classic",
+        "price_tier": "classic",
+        "substitution_class": "main_flower",
+        "vase_included": false,
+        "stem_count": 18,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-002"
+      },
+      "values": {
+        "sku": "FO-BQ-002",
+        "product_type": "bouquet",
+        "primary_flower": "roses",
+        "colour_primary": "red",
+        "style": "classic",
+        "price_tier": "premium",
+        "substitution_class": "main_flower",
+        "vase_included": false,
+        "stem_count": 18,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-003"
+      },
+      "values": {
+        "sku": "FO-BQ-003",
+        "product_type": "bouquet",
+        "primary_flower": "roses",
+        "colour_primary": "pink",
+        "style": "modern",
+        "price_tier": "classic",
+        "substitution_class": "main_flower",
+        "vase_included": false,
+        "stem_count": 18,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-004"
+      },
+      "values": {
+        "sku": "FO-BQ-004",
+        "product_type": "bouquet",
+        "primary_flower": "roses",
+        "colour_primary": "pastel",
+        "style": "minimal",
+        "price_tier": "essential",
+        "substitution_class": "colour_scheme",
+        "vase_included": false,
+        "stem_count": 18,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-005"
+      },
+      "values": {
+        "sku": "FO-BQ-005",
+        "product_type": "bouquet",
+        "primary_flower": "roses",
+        "colour_primary": "white",
+        "style": "minimal",
+        "price_tier": "premium",
+        "substitution_class": "main_flower",
+        "vase_included": false,
+        "stem_count": 18,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-006"
+      },
+      "values": {
+        "sku": "FO-BQ-006",
+        "product_type": "bouquet",
+        "primary_flower": "roses",
+        "colour_primary": "red",
+        "style": "luxury",
+        "price_tier": "luxury",
+        "substitution_class": "main_flower",
+        "vase_included": false,
+        "stem_count": 18,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-007"
+      },
+      "values": {
+        "sku": "FO-BQ-007",
+        "product_type": "bouquet",
+        "primary_flower": "roses",
+        "colour_primary": "pink",
+        "style": "classic",
+        "price_tier": "classic",
+        "substitution_class": "main_flower",
+        "vase_included": false,
+        "stem_count": 18,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-008"
+      },
+      "values": {
+        "sku": "FO-BQ-008",
+        "product_type": "bouquet",
+        "primary_flower": "roses",
+        "colour_primary": "white",
+        "style": "classic",
+        "price_tier": "premium",
+        "substitution_class": "main_flower",
+        "vase_included": false,
+        "stem_count": 18,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-009"
+      },
+      "values": {
+        "sku": "FO-BQ-009",
+        "product_type": "bouquet",
+        "primary_flower": "tulips",
+        "colour_primary": "mixed",
+        "style": "rustic",
+        "price_tier": "essential",
+        "substitution_class": "colour_scheme",
+        "vase_included": false,
+        "stem_count": 25,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-010"
+      },
+      "values": {
+        "sku": "FO-BQ-010",
+        "product_type": "bouquet",
+        "primary_flower": "tulips",
+        "colour_primary": "yellow",
+        "style": "rustic",
+        "price_tier": "essential",
+        "substitution_class": "colour_scheme",
+        "vase_included": false,
+        "stem_count": 25,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-011"
+      },
+      "values": {
+        "sku": "FO-BQ-011",
+        "product_type": "bouquet",
+        "primary_flower": "tulips",
+        "colour_primary": "white",
+        "style": "minimal",
+        "price_tier": "classic",
+        "substitution_class": "main_flower",
+        "vase_included": false,
+        "stem_count": 25,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-012"
+      },
+      "values": {
+        "sku": "FO-BQ-012",
+        "product_type": "bouquet",
+        "primary_flower": "tulips",
+        "colour_primary": "pink",
+        "style": "rustic",
+        "price_tier": "essential",
+        "substitution_class": "colour_scheme",
+        "vase_included": false,
+        "stem_count": 25,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-013"
+      },
+      "values": {
+        "sku": "FO-BQ-013",
+        "product_type": "bouquet",
+        "primary_flower": "tulips",
+        "colour_primary": "purple",
+        "style": "modern",
+        "price_tier": "classic",
+        "substitution_class": "main_flower",
+        "vase_included": false,
+        "stem_count": 25,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-014"
+      },
+      "values": {
+        "sku": "FO-BQ-014",
+        "product_type": "bouquet",
+        "primary_flower": "tulips",
+        "colour_primary": "vibrant",
+        "style": "modern",
+        "price_tier": "classic",
+        "substitution_class": "colour_scheme",
+        "vase_included": false,
+        "stem_count": 25,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-015"
+      },
+      "values": {
+        "sku": "FO-BQ-015",
+        "product_type": "bouquet",
+        "primary_flower": "lilies",
+        "colour_primary": "white",
+        "style": "classic",
+        "price_tier": "premium",
+        "substitution_class": "main_flower",
+        "vase_included": false,
+        "stem_count": 8,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-016"
+      },
+      "values": {
+        "sku": "FO-BQ-016",
+        "product_type": "bouquet",
+        "primary_flower": "lilies",
+        "colour_primary": "white",
+        "style": "classic",
+        "price_tier": "premium",
+        "substitution_class": "main_flower",
+        "vase_included": false,
+        "stem_count": 8,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-017"
+      },
+      "values": {
+        "sku": "FO-BQ-017",
+        "product_type": "bouquet",
+        "primary_flower": "lilies",
+        "colour_primary": "white",
+        "style": "minimal",
+        "price_tier": "classic",
+        "substitution_class": "main_flower",
+        "vase_included": false,
+        "stem_count": 8,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-018"
+      },
+      "values": {
+        "sku": "FO-BQ-018",
+        "product_type": "bouquet",
+        "primary_flower": "lilies",
+        "colour_primary": "pink",
+        "style": "modern",
+        "price_tier": "premium",
+        "substitution_class": "main_flower",
+        "vase_included": false,
+        "stem_count": 8,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-019"
+      },
+      "values": {
+        "sku": "FO-BQ-019",
+        "product_type": "bouquet",
+        "primary_flower": "peonies",
+        "colour_primary": "pink",
+        "style": "luxury",
+        "price_tier": "luxury",
+        "substitution_class": "main_flower",
+        "vase_included": false,
+        "stem_count": 15,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-020"
+      },
+      "values": {
+        "sku": "FO-BQ-020",
+        "product_type": "bouquet",
+        "primary_flower": "peonies",
+        "colour_primary": "pastel",
+        "style": "classic",
+        "price_tier": "premium",
+        "substitution_class": "colour_scheme",
+        "vase_included": false,
+        "stem_count": 15,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-021"
+      },
+      "values": {
+        "sku": "FO-BQ-021",
+        "product_type": "bouquet",
+        "primary_flower": "peonies",
+        "colour_primary": "pink",
+        "style": "luxury",
+        "price_tier": "luxury",
+        "substitution_class": "main_flower",
+        "vase_included": false,
+        "stem_count": 15,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-022"
+      },
+      "values": {
+        "sku": "FO-BQ-022",
+        "product_type": "bouquet",
+        "primary_flower": "peonies",
+        "colour_primary": "white",
+        "style": "minimal",
+        "price_tier": "premium",
+        "substitution_class": "main_flower",
+        "vase_included": false,
+        "stem_count": 15,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-023"
+      },
+      "values": {
+        "sku": "FO-BQ-023",
+        "product_type": "bouquet",
+        "primary_flower": "sunflowers",
+        "colour_primary": "yellow",
+        "style": "rustic",
+        "price_tier": "classic",
+        "substitution_class": "main_flower",
+        "vase_included": false,
+        "stem_count": 9,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-024"
+      },
+      "values": {
+        "sku": "FO-BQ-024",
+        "product_type": "bouquet",
+        "primary_flower": "sunflowers",
+        "colour_primary": "yellow",
+        "style": "rustic",
+        "price_tier": "essential",
+        "substitution_class": "colour_scheme",
+        "vase_included": false,
+        "stem_count": 9,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-025"
+      },
+      "values": {
+        "sku": "FO-BQ-025",
+        "product_type": "bouquet",
+        "primary_flower": "sunflowers",
+        "colour_primary": "orange",
+        "style": "rustic",
+        "price_tier": "classic",
+        "substitution_class": "colour_scheme",
+        "vase_included": false,
+        "stem_count": 9,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-026"
+      },
+      "values": {
+        "sku": "FO-BQ-026",
+        "product_type": "bouquet",
+        "primary_flower": "gerberas",
+        "colour_primary": "vibrant",
+        "style": "modern",
+        "price_tier": "essential",
+        "substitution_class": "colour_scheme",
+        "vase_included": false,
+        "stem_count": 15,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-027"
+      },
+      "values": {
+        "sku": "FO-BQ-027",
+        "product_type": "bouquet",
+        "primary_flower": "gerberas",
+        "colour_primary": "mixed",
+        "style": "modern",
+        "price_tier": "essential",
+        "substitution_class": "colour_scheme",
+        "vase_included": false,
+        "stem_count": 15,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-028"
+      },
+      "values": {
+        "sku": "FO-BQ-028",
+        "product_type": "bouquet",
+        "primary_flower": "mixed",
+        "colour_primary": "mixed",
+        "style": "classic",
+        "price_tier": "classic",
+        "substitution_class": "florists_choice",
+        "vase_included": false,
+        "stem_count": 18,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-029"
+      },
+      "values": {
+        "sku": "FO-BQ-029",
+        "product_type": "bouquet",
+        "primary_flower": "mixed",
+        "colour_primary": "pastel",
+        "style": "rustic",
+        "price_tier": "classic",
+        "substitution_class": "florists_choice",
+        "vase_included": false,
+        "stem_count": 18,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-030"
+      },
+      "values": {
+        "sku": "FO-BQ-030",
+        "product_type": "bouquet",
+        "primary_flower": "mixed",
+        "colour_primary": "orange",
+        "style": "rustic",
+        "price_tier": "classic",
+        "substitution_class": "florists_choice",
+        "vase_included": false,
+        "stem_count": 18,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-031"
+      },
+      "values": {
+        "sku": "FO-BQ-031",
+        "product_type": "bouquet",
+        "primary_flower": "mixed",
+        "colour_primary": "pastel",
+        "style": "minimal",
+        "price_tier": "essential",
+        "substitution_class": "colour_scheme",
+        "vase_included": false,
+        "stem_count": 18,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-032"
+      },
+      "values": {
+        "sku": "FO-BQ-032",
+        "product_type": "bouquet",
+        "primary_flower": "mixed",
+        "colour_primary": "vibrant",
+        "style": "modern",
+        "price_tier": "premium",
+        "substitution_class": "florists_choice",
+        "vase_included": false,
+        "stem_count": 18,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-033"
+      },
+      "values": {
+        "sku": "FO-BQ-033",
+        "product_type": "bouquet",
+        "primary_flower": "mixed",
+        "colour_primary": "mixed",
+        "style": "rustic",
+        "price_tier": "essential",
+        "substitution_class": "florists_choice",
+        "vase_included": false,
+        "stem_count": 18,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-034"
+      },
+      "values": {
+        "sku": "FO-BQ-034",
+        "product_type": "bouquet",
+        "primary_flower": "seasonal",
+        "colour_primary": "mixed",
+        "style": "rustic",
+        "price_tier": "classic",
+        "substitution_class": "florists_choice",
+        "vase_included": false,
+        "stem_count": 18,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-035"
+      },
+      "values": {
+        "sku": "FO-BQ-035",
+        "product_type": "bouquet",
+        "primary_flower": "seasonal",
+        "colour_primary": "orange",
+        "style": "rustic",
+        "price_tier": "classic",
+        "substitution_class": "florists_choice",
+        "vase_included": false,
+        "stem_count": 18,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-036"
+      },
+      "values": {
+        "sku": "FO-BQ-036",
+        "product_type": "bouquet",
+        "primary_flower": "seasonal",
+        "colour_primary": "white",
+        "style": "classic",
+        "price_tier": "premium",
+        "substitution_class": "florists_choice",
+        "vase_included": false,
+        "stem_count": 18,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-037"
+      },
+      "values": {
+        "sku": "FO-BQ-037",
+        "product_type": "bouquet",
+        "primary_flower": "seasonal",
+        "colour_primary": "yellow",
+        "style": "rustic",
+        "price_tier": "essential",
+        "substitution_class": "florists_choice",
+        "vase_included": false,
+        "stem_count": 18,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-038"
+      },
+      "values": {
+        "sku": "FO-BQ-038",
+        "product_type": "bouquet",
+        "primary_flower": "carnations",
+        "colour_primary": "red",
+        "style": "classic",
+        "price_tier": "essential",
+        "substitution_class": "main_flower",
+        "vase_included": false,
+        "stem_count": 18,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-039"
+      },
+      "values": {
+        "sku": "FO-BQ-039",
+        "product_type": "bouquet",
+        "primary_flower": "hydrangeas",
+        "colour_primary": "blue",
+        "style": "modern",
+        "price_tier": "premium",
+        "substitution_class": "main_flower",
+        "vase_included": false,
+        "stem_count": 5,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-040"
+      },
+      "values": {
+        "sku": "FO-BQ-040",
+        "product_type": "bouquet",
+        "primary_flower": "freesias",
+        "colour_primary": "white",
+        "style": "minimal",
+        "price_tier": "classic",
+        "substitution_class": "main_flower",
+        "vase_included": false,
+        "stem_count": 25,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-001"
+      },
+      "values": {
+        "sku": "FO-AR-001",
+        "product_type": "arrangement",
+        "primary_flower": "mixed",
+        "colour_primary": "pastel",
+        "style": "minimal",
+        "price_tier": "essential",
+        "substitution_class": "colour_scheme",
+        "vase_included": false,
+        "stem_count": null,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-002"
+      },
+      "values": {
+        "sku": "FO-AR-002",
+        "product_type": "arrangement",
+        "primary_flower": "roses",
+        "colour_primary": "red",
+        "style": "classic",
+        "price_tier": "premium",
+        "substitution_class": "main_flower",
+        "vase_included": true,
+        "stem_count": null,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-003"
+      },
+      "values": {
+        "sku": "FO-AR-003",
+        "product_type": "arrangement",
+        "primary_flower": "mixed",
+        "colour_primary": "mixed",
+        "style": "rustic",
+        "price_tier": "classic",
+        "substitution_class": "florists_choice",
+        "vase_included": false,
+        "stem_count": null,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-004"
+      },
+      "values": {
+        "sku": "FO-AR-004",
+        "product_type": "arrangement",
+        "primary_flower": "gerberas",
+        "colour_primary": "vibrant",
+        "style": "modern",
+        "price_tier": "essential",
+        "substitution_class": "colour_scheme",
+        "vase_included": false,
+        "stem_count": null,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-005"
+      },
+      "values": {
+        "sku": "FO-AR-005",
+        "product_type": "arrangement",
+        "primary_flower": "tulips",
+        "colour_primary": "pink",
+        "style": "minimal",
+        "price_tier": "essential",
+        "substitution_class": "colour_scheme",
+        "vase_included": false,
+        "stem_count": null,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-006"
+      },
+      "values": {
+        "sku": "FO-AR-006",
+        "product_type": "arrangement",
+        "primary_flower": "lilies",
+        "colour_primary": "white",
+        "style": "classic",
+        "price_tier": "premium",
+        "substitution_class": "main_flower",
+        "vase_included": true,
+        "stem_count": null,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-007"
+      },
+      "values": {
+        "sku": "FO-AR-007",
+        "product_type": "arrangement",
+        "primary_flower": "seasonal",
+        "colour_primary": "mixed",
+        "style": "rustic",
+        "price_tier": "classic",
+        "substitution_class": "florists_choice",
+        "vase_included": false,
+        "stem_count": null,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-008"
+      },
+      "values": {
+        "sku": "FO-AR-008",
+        "product_type": "arrangement",
+        "primary_flower": "mixed",
+        "colour_primary": "white",
+        "style": "modern",
+        "price_tier": "classic",
+        "substitution_class": "florists_choice",
+        "vase_included": true,
+        "stem_count": null,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-009"
+      },
+      "values": {
+        "sku": "FO-AR-009",
+        "product_type": "arrangement",
+        "primary_flower": "freesias",
+        "colour_primary": "purple",
+        "style": "minimal",
+        "price_tier": "classic",
+        "substitution_class": "main_flower",
+        "vase_included": false,
+        "stem_count": null,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-010"
+      },
+      "values": {
+        "sku": "FO-AR-010",
+        "product_type": "arrangement",
+        "primary_flower": "peonies",
+        "colour_primary": "pink",
+        "style": "luxury",
+        "price_tier": "luxury",
+        "substitution_class": "main_flower",
+        "vase_included": true,
+        "stem_count": null,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-011"
+      },
+      "values": {
+        "sku": "FO-AR-011",
+        "product_type": "arrangement",
+        "primary_flower": "seasonal",
+        "colour_primary": "mixed",
+        "style": "rustic",
+        "price_tier": "classic",
+        "substitution_class": "florists_choice",
+        "vase_included": false,
+        "stem_count": null,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-012"
+      },
+      "values": {
+        "sku": "FO-AR-012",
+        "product_type": "arrangement",
+        "primary_flower": "roses",
+        "colour_primary": "white",
+        "style": "minimal",
+        "price_tier": "premium",
+        "substitution_class": "main_flower",
+        "vase_included": false,
+        "stem_count": null,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-013"
+      },
+      "values": {
+        "sku": "FO-AR-013",
+        "product_type": "arrangement",
+        "primary_flower": "chrysanthemums",
+        "colour_primary": "orange",
+        "style": "rustic",
+        "price_tier": "classic",
+        "substitution_class": "colour_scheme",
+        "vase_included": true,
+        "stem_count": null,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-014"
+      },
+      "values": {
+        "sku": "FO-AR-014",
+        "product_type": "arrangement",
+        "primary_flower": "alstroemeria",
+        "colour_primary": "pastel",
+        "style": "rustic",
+        "price_tier": "essential",
+        "substitution_class": "colour_scheme",
+        "vase_included": false,
+        "stem_count": null,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-PT-001"
+      },
+      "values": {
+        "sku": "FO-PT-001",
+        "product_type": "plant",
+        "primary_flower": "orchids",
+        "colour_primary": "white",
+        "style": "minimal",
+        "price_tier": "premium",
+        "substitution_class": "main_flower",
+        "vase_included": false,
+        "stem_count": null,
+        "freshness_days": 30,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-PT-002"
+      },
+      "values": {
+        "sku": "FO-PT-002",
+        "product_type": "plant",
+        "primary_flower": "orchids",
+        "colour_primary": "pink",
+        "style": "minimal",
+        "price_tier": "premium",
+        "substitution_class": "main_flower",
+        "vase_included": false,
+        "stem_count": null,
+        "freshness_days": 30,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-PT-003"
+      },
+      "values": {
+        "sku": "FO-PT-003",
+        "product_type": "plant",
+        "primary_flower": "orchids",
+        "colour_primary": "white",
+        "style": "luxury",
+        "price_tier": "luxury",
+        "substitution_class": "main_flower",
+        "vase_included": false,
+        "stem_count": null,
+        "freshness_days": 30,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-PT-004"
+      },
+      "values": {
+        "sku": "FO-PT-004",
+        "product_type": "plant",
+        "primary_flower": "lilies",
+        "colour_primary": "white",
+        "style": "classic",
+        "price_tier": "classic",
+        "substitution_class": "main_flower",
+        "vase_included": false,
+        "stem_count": null,
+        "freshness_days": 30,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-PT-005"
+      },
+      "values": {
+        "sku": "FO-PT-005",
+        "product_type": "plant",
+        "primary_flower": "mixed",
+        "colour_primary": "red",
+        "style": "modern",
+        "price_tier": "classic",
+        "substitution_class": "main_flower",
+        "vase_included": false,
+        "stem_count": null,
+        "freshness_days": 30,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-PT-006"
+      },
+      "values": {
+        "sku": "FO-PT-006",
+        "product_type": "plant",
+        "primary_flower": "mixed",
+        "colour_primary": "mixed",
+        "style": "rustic",
+        "price_tier": "premium",
+        "substitution_class": "main_flower",
+        "vase_included": false,
+        "stem_count": null,
+        "freshness_days": 30,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-PT-007"
+      },
+      "values": {
+        "sku": "FO-PT-007",
+        "product_type": "plant",
+        "primary_flower": "mixed",
+        "colour_primary": "white",
+        "style": "rustic",
+        "price_tier": "essential",
+        "substitution_class": "main_flower",
+        "vase_included": false,
+        "stem_count": null,
+        "freshness_days": 30,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-PT-008"
+      },
+      "values": {
+        "sku": "FO-PT-008",
+        "product_type": "plant",
+        "primary_flower": "mixed",
+        "colour_primary": "pink",
+        "style": "classic",
+        "price_tier": "essential",
+        "substitution_class": "main_flower",
+        "vase_included": false,
+        "stem_count": null,
+        "freshness_days": 30,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-001"
+      },
+      "values": {
+        "sku": "FO-FN-001",
+        "product_type": "funeral",
+        "primary_flower": "chrysanthemums",
+        "colour_primary": "white",
+        "style": "classic",
+        "price_tier": "premium",
+        "substitution_class": "colour_scheme",
+        "vase_included": false,
+        "stem_count": null,
+        "freshness_days": 5,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-002"
+      },
+      "values": {
+        "sku": "FO-FN-002",
+        "product_type": "funeral",
+        "primary_flower": "lilies",
+        "colour_primary": "white",
+        "style": "classic",
+        "price_tier": "premium",
+        "substitution_class": "colour_scheme",
+        "vase_included": false,
+        "stem_count": null,
+        "freshness_days": 5,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-003"
+      },
+      "values": {
+        "sku": "FO-FN-003",
+        "product_type": "funeral",
+        "primary_flower": "lilies",
+        "colour_primary": "white",
+        "style": "classic",
+        "price_tier": "luxury",
+        "substitution_class": "colour_scheme",
+        "vase_included": false,
+        "stem_count": null,
+        "freshness_days": 5,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-004"
+      },
+      "values": {
+        "sku": "FO-FN-004",
+        "product_type": "funeral",
+        "primary_flower": "roses",
+        "colour_primary": "white",
+        "style": "classic",
+        "price_tier": "luxury",
+        "substitution_class": "colour_scheme",
+        "vase_included": false,
+        "stem_count": null,
+        "freshness_days": 5,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-005"
+      },
+      "values": {
+        "sku": "FO-FN-005",
+        "product_type": "funeral",
+        "primary_flower": "mixed",
+        "colour_primary": "white",
+        "style": "classic",
+        "price_tier": "classic",
+        "substitution_class": "colour_scheme",
+        "vase_included": false,
+        "stem_count": null,
+        "freshness_days": 5,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-006"
+      },
+      "values": {
+        "sku": "FO-FN-006",
+        "product_type": "funeral",
+        "primary_flower": "chrysanthemums",
+        "colour_primary": "mixed",
+        "style": "rustic",
+        "price_tier": "essential",
+        "substitution_class": "colour_scheme",
+        "vase_included": false,
+        "stem_count": null,
+        "freshness_days": 5,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-007"
+      },
+      "values": {
+        "sku": "FO-FN-007",
+        "product_type": "funeral",
+        "primary_flower": "chrysanthemums",
+        "colour_primary": "white",
+        "style": "classic",
+        "price_tier": "premium",
+        "substitution_class": "colour_scheme",
+        "vase_included": false,
+        "stem_count": null,
+        "freshness_days": 5,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-008"
+      },
+      "values": {
+        "sku": "FO-FN-008",
+        "product_type": "funeral",
+        "primary_flower": "mixed",
+        "colour_primary": "pastel",
+        "style": "minimal",
+        "price_tier": "classic",
+        "substitution_class": "colour_scheme",
+        "vase_included": false,
+        "stem_count": null,
+        "freshness_days": 5,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-009"
+      },
+      "values": {
+        "sku": "FO-FN-009",
+        "product_type": "funeral",
+        "primary_flower": "roses",
+        "colour_primary": "white",
+        "style": "classic",
+        "price_tier": "classic",
+        "substitution_class": "colour_scheme",
+        "vase_included": false,
+        "stem_count": null,
+        "freshness_days": 5,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-010"
+      },
+      "values": {
+        "sku": "FO-FN-010",
+        "product_type": "funeral",
+        "primary_flower": "mixed",
+        "colour_primary": "white",
+        "style": "minimal",
+        "price_tier": "premium",
+        "substitution_class": "colour_scheme",
+        "vase_included": false,
+        "stem_count": null,
+        "freshness_days": 5,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-001"
+      },
+      "values": {
+        "sku": "FO-GS-001",
+        "product_type": "gift_set",
+        "primary_flower": "roses",
+        "colour_primary": "orange",
+        "style": "classic",
+        "price_tier": "premium",
+        "substitution_class": "colour_scheme",
+        "vase_included": false,
+        "stem_count": 18,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-002"
+      },
+      "values": {
+        "sku": "FO-GS-002",
+        "product_type": "gift_set",
+        "primary_flower": "roses",
+        "colour_primary": "pink",
+        "style": "classic",
+        "price_tier": "premium",
+        "substitution_class": "colour_scheme",
+        "vase_included": true,
+        "stem_count": 18,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-003"
+      },
+      "values": {
+        "sku": "FO-GS-003",
+        "product_type": "gift_set",
+        "primary_flower": "mixed",
+        "colour_primary": "blue",
+        "style": "classic",
+        "price_tier": "classic",
+        "substitution_class": "colour_scheme",
+        "vase_included": false,
+        "stem_count": 18,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-004"
+      },
+      "values": {
+        "sku": "FO-GS-004",
+        "product_type": "gift_set",
+        "primary_flower": "mixed",
+        "colour_primary": "pink",
+        "style": "classic",
+        "price_tier": "classic",
+        "substitution_class": "colour_scheme",
+        "vase_included": false,
+        "stem_count": 18,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-005"
+      },
+      "values": {
+        "sku": "FO-GS-005",
+        "product_type": "gift_set",
+        "primary_flower": "tulips",
+        "colour_primary": "mixed",
+        "style": "rustic",
+        "price_tier": "classic",
+        "substitution_class": "colour_scheme",
+        "vase_included": false,
+        "stem_count": 25,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-006"
+      },
+      "values": {
+        "sku": "FO-GS-006",
+        "product_type": "gift_set",
+        "primary_flower": "roses",
+        "colour_primary": "pastel",
+        "style": "minimal",
+        "price_tier": "classic",
+        "substitution_class": "colour_scheme",
+        "vase_included": true,
+        "stem_count": 18,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-007"
+      },
+      "values": {
+        "sku": "FO-GS-007",
+        "product_type": "gift_set",
+        "primary_flower": "sunflowers",
+        "colour_primary": "yellow",
+        "style": "rustic",
+        "price_tier": "classic",
+        "substitution_class": "colour_scheme",
+        "vase_included": false,
+        "stem_count": 9,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-008"
+      },
+      "values": {
+        "sku": "FO-GS-008",
+        "product_type": "gift_set",
+        "primary_flower": "peonies",
+        "colour_primary": "pink",
+        "style": "luxury",
+        "price_tier": "luxury",
+        "substitution_class": "colour_scheme",
+        "vase_included": true,
+        "stem_count": 15,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-009"
+      },
+      "values": {
+        "sku": "FO-GS-009",
+        "product_type": "gift_set",
+        "primary_flower": "mixed",
+        "colour_primary": "mixed",
+        "style": "classic",
+        "price_tier": "classic",
+        "substitution_class": "colour_scheme",
+        "vase_included": false,
+        "stem_count": 18,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-010"
+      },
+      "values": {
+        "sku": "FO-GS-010",
+        "product_type": "gift_set",
+        "primary_flower": "gerberas",
+        "colour_primary": "vibrant",
+        "style": "modern",
+        "price_tier": "classic",
+        "substitution_class": "colour_scheme",
+        "vase_included": false,
+        "stem_count": 15,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-011"
+      },
+      "values": {
+        "sku": "FO-GS-011",
+        "product_type": "gift_set",
+        "primary_flower": "lilies",
+        "colour_primary": "white",
+        "style": "classic",
+        "price_tier": "luxury",
+        "substitution_class": "colour_scheme",
+        "vase_included": false,
+        "stem_count": 8,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-012"
+      },
+      "values": {
+        "sku": "FO-GS-012",
+        "product_type": "gift_set",
+        "primary_flower": "mixed",
+        "colour_primary": "pastel",
+        "style": "rustic",
+        "price_tier": "classic",
+        "substitution_class": "colour_scheme",
+        "vase_included": false,
+        "stem_count": 18,
+        "freshness_days": 7,
+        "partner_only": false,
+        "status": "active",
+        "retired_at": null,
+        "source": "seed"
+      }
+    }
+  ]
+}

@@ -31,6 +31,7 @@
     "db:check": "node scripts/db-check.ts",
     "seed:project": "node seed/project.ts",
     "seed:check": "node seed/check.ts",
+    "seed:diff": "node seed/diff.ts",
     "media:variants": "node seed/media-variants.ts",
     "i18n:check": "node scripts/i18n-check.ts",
     "catalogue:check": "node scripts/catalogue-check.ts",
