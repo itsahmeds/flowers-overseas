@@ -38,7 +38,11 @@ import {
   type LocaleCode,
   localeConfig,
 } from "../../src/config/locales.ts";
-import { CURRENCIES, type CurrencyCode } from "../../src/config/currencies.ts";
+import {
+  CURRENCIES,
+  type CurrencyCode,
+  currencyConfig,
+} from "../../src/config/currencies.ts";
 import {
   MoneySchema,
   formatDate,
@@ -49,6 +53,7 @@ import {
   formatRange,
   formatRelativeTime,
   formatTimeInZone,
+  moneyDecimalString,
 } from "../../src/modules/i18n";
 import { currencies } from "../fixtures/index.ts";
 
@@ -255,6 +260,102 @@ describe("formatMoney (AC-15 / T-15)", () => {
       expect(body.replace(/\/\/.*$/gm, ""), name).not.toMatch(/\*\*/);
     }
     expect(bodyOf("decimalString")).toContain("padStart");
+  });
+});
+
+/**
+ * `moneyDecimalString()` on its own (`/review 52`; spec 005 §6 "the price identity", AC-11).
+ *
+ * It had no direct test: every assertion on it went through `offerProjection()`, which compares it
+ * with `formatMoney` — the two share `decimalString()`, so they would agree while both being
+ * wrong. The oracle here is `Intl` itself, configured for a machine value (`en-US` grouping off,
+ * exactly the currency's fraction digits), which is an independent implementation of the same
+ * digit shift; the difference is that `Intl` reaches it through a float and this function does
+ * not, which is why the function exists and why the oracle is only ever an oracle.
+ *
+ * HUF is the case that matters: a 0-decimal currency where `9_990` is `"9990"` and not `"99.90"`
+ * — schema.org would otherwise state a price a hundred times too small.
+ */
+describe("moneyDecimalString (spec 005 AC-11, `/review 52`)", () => {
+  /** The same value `Intl` produces for a machine-readable price: dot, no grouping. */
+  function oracle(amountMinor: number, currency: CurrencyCode): string {
+    const { minorUnitExponent } = currencyConfig(currency);
+    return new Intl.NumberFormat("en-US", {
+      minimumFractionDigits: minorUnitExponent,
+      maximumFractionDigits: minorUnitExponent,
+      useGrouping: false,
+    }).format(amountMinor / 10 ** minorUnitExponent);
+  }
+
+  it("agrees with `Intl` over every configured currency, at every magnitude", () => {
+    for (const currency of CURRENCIES) {
+      const code = currency.code as CurrencyCode;
+      for (const amountMinor of [0, 1, 9, 90, 99, 990, 4590, 14_900, 999_999]) {
+        expect(
+          moneyDecimalString({ amountMinor, currency: code }),
+          `${code} ${String(amountMinor)}`,
+        ).toBe(oracle(amountMinor, code));
+      }
+    }
+  });
+
+  it("gives a 0-decimal currency no fraction part at all (HUF)", () => {
+    expect(moneyDecimalString({ amountMinor: 9990, currency: "HUF" })).toBe(
+      "9990",
+    );
+    expect(moneyDecimalString({ amountMinor: 0, currency: "HUF" })).toBe("0");
+    // The same integer in a 2-decimal currency is a hundredth of the number of units.
+    expect(moneyDecimalString({ amountMinor: 9990, currency: "EUR" })).toBe(
+      "99.90",
+    );
+  });
+
+  it("pads a sub-unit amount rather than dropping the leading zero", () => {
+    expect(moneyDecimalString({ amountMinor: 5, currency: "EUR" })).toBe(
+      "0.05",
+    );
+    expect(moneyDecimalString({ amountMinor: 50, currency: "PLN" })).toBe(
+      "0.50",
+    );
+  });
+
+  it("is locale-independent: no separator, no symbol, no grouping", () => {
+    const value = moneyDecimalString({
+      amountMinor: 1_234_567,
+      currency: "EUR",
+    });
+
+    expect(value).toBe("12345.67");
+    expect(value).not.toMatch(/[^\d.]/);
+  });
+
+  it("stays exact past the float boundary, where the oracle cannot", () => {
+    // 2^53 + 1 minor units: `Intl`'s route through a `number` loses the last digit; the shift
+    // does not, because it never leaves the string domain.
+    expect(
+      moneyDecimalString({
+        amountMinor: 9_007_199_254_740_993n,
+        currency: "EUR",
+      }),
+    ).toBe("90071992547409.93");
+  });
+
+  it("refuses a float, a string and an unknown currency at the boundary", () => {
+    expect(() =>
+      moneyDecimalString({ amountMinor: 45.9, currency: "EUR" }),
+    ).toThrow();
+    expect(() =>
+      moneyDecimalString({
+        amountMinor: "4590" as unknown as number,
+        currency: "EUR",
+      }),
+    ).toThrow();
+    expect(() =>
+      moneyDecimalString({
+        amountMinor: 4590,
+        currency: "XXX" as CurrencyCode,
+      }),
+    ).toThrow();
   });
 });
 

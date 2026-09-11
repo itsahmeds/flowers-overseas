@@ -42,6 +42,11 @@
  */
 import type { CountryIso2 } from "@/config/countries";
 
+import {
+  CATALOG_SIGNALS,
+  catalogSignal,
+  startCatalogRead,
+} from "../observability";
 import { catalogProviders, type CountryPriceRecord } from "../providers";
 import { listTiers } from "../read";
 import {
@@ -112,11 +117,26 @@ function activeRetailRow(
       isActive(row),
   );
   if (matches.length === 0) {
+    // Spec 005 §11's second signal: a price hole on a destination a page is asking about. It is
+    // reported *and* thrown — the throw stops a buy path rendering, the signal is what tells
+    // somebody the hole exists.
+    catalogSignal(CATALOG_SIGNALS.priceMissing, {
+      sku: productId,
+      tier_key: tierKey,
+      country_iso: countryIso,
+    });
     throw new Error(
       `no active \`country_price\` row for \`${productId}\` tier \`${tierKey}\` in \`${countryIso}\`: a price hole on a destination is a data error, and a page with no resolvable price must not render a buy path (spec 005 §5.2, §5.3; \`pnpm catalogue:check\` mode \`missing-price\`)`,
     );
   }
   if (matches.length > 1) {
+    // Spec 005 §11's third signal: impossible under spec 002's partial unique index, so it means
+    // a migration or a seed defect rather than a bad price.
+    catalogSignal(CATALOG_SIGNALS.priceAmbiguous, {
+      sku: productId,
+      tier_key: tierKey,
+      country_iso: countryIso,
+    });
     throw new Error(
       `${String(matches.length)} active \`country_price\` rows for \`${productId}\` tier \`${tierKey}\` in \`${countryIso}\`; spec 002 §5.1's partial unique index allows exactly one — an ambiguous price is never picked silently (spec 005 §5.2, \`pnpm catalogue:check\` mode \`ambiguous-price\`)`,
     );
@@ -199,26 +219,42 @@ function previousDay(date: IsoDate): IsoDate {
 }
 
 /**
- * The surcharge rows of one (product, destination) that apply on one delivery date.
+ * The surcharge rows of one product's retail row that apply on one delivery date.
  *
  * Every match is returned: two live surcharges on one date would both be charged, which is why
  * `catalogue:check`'s `ambiguous-price` mode refuses overlapping windows in the dataset rather
  * than this function picking one.
+ *
+ * **The VAT-rate guard.** A surcharge row whose `vatRateBp` differs from the retail row's throws
+ * here, before any amount is added. A `PricePoint` states **one** `vatRateBp` over one gross
+ * amount (spec 005 §5.2), so a Sunday surcharge taxed at the standard rate added to a bouquet
+ * taxed at 8% could only be represented by silently taxing one of them wrong — a wrong invoice on
+ * a real order and, under `plan/06` §4, an accountant's problem rather than a rendering one.
+ * `vatBreakdown()` is where more than one rate legitimately lives (AC-13). The dataset cannot hold
+ * such a pair (`catalogue:check` mode `surcharge-vat-rate` refuses it, TASK-069), which is exactly
+ * why the guard has to be here too: the check gates the *authored* rows, this gates the rows a
+ * database provider hands over (TASK-070).
  */
 function surchargesOn(
   rows: readonly CountryPriceRecord[],
-  productId: string,
-  countryIso: string,
+  retail: CountryPriceRecord,
   date: IsoDate,
 ): readonly Surcharge[] {
   return rows
     .filter(
       (row) =>
-        row.sku === productId &&
-        row.countryIso2 === countryIso &&
+        row.sku === retail.sku &&
+        row.countryIso2 === retail.countryIso2 &&
         surchargeAppliesOn(row, date),
     )
-    .map((row) => toSurcharge(row, date))
+    .map((row) => {
+      if (row.vatRateBp !== retail.vatRateBp) {
+        throw new Error(
+          `surcharge \`${row.surchargeKind ?? "-"}\` for \`${retail.sku}\` in \`${retail.countryIso2}\` carries VAT rate ${String(row.vatRateBp)} bp while the retail row carries ${String(retail.vatRateBp)} bp; a \`PricePoint\` states one rate over one gross amount, so the pair cannot be priced together (spec 005 §5.2, plan/06 §4; \`pnpm catalogue:check\` mode \`surcharge-vat-rate\`)`,
+        );
+      }
+      return toSurcharge(row, date);
+    })
     .sort((left, right) => left.kind.localeCompare(right.kind));
 }
 
@@ -317,13 +353,19 @@ export async function resolvePrice(query: {
 }): Promise<PricePoint> {
   const { productId, tierKey, countryIso, deliveryDate } =
     ResolvePriceQuerySchema.parse(query);
+  const done = startCatalogRead();
   const rows = await catalogProviders().price.countryPrices();
   const retail = activeRetailRow(rows, productId, tierKey, countryIso);
   const surcharges =
-    deliveryDate === undefined
-      ? []
-      : surchargesOn(rows, productId, countryIso, deliveryDate);
-  return pricePointFrom(retail, surcharges);
+    deliveryDate === undefined ? [] : surchargesOn(rows, retail, deliveryDate);
+  const price = pricePointFrom(retail, surcharges);
+  done({
+    sku: productId,
+    tier_key: tierKey,
+    country_iso: countryIso,
+    currency: price.currency,
+  });
+  return price;
 }
 
 /**
@@ -343,19 +385,20 @@ export async function tierPrices(query: {
     TierPricesQuerySchema.parse(query);
   const tiers = await listTiers(productId);
   const rows = await catalogProviders().price.countryPrices();
-  const surcharges =
-    deliveryDate === undefined
-      ? []
-      : surchargesOn(rows, productId, countryIso, deliveryDate);
 
-  return tiers.map((tier) => ({
-    tierKey: tier.tierKey,
-    isDefault: tier.isDefault,
-    price: pricePointFrom(
-      activeRetailRow(rows, productId, tier.tierKey, countryIso),
-      surcharges,
-    ),
-  }));
+  return tiers.map((tier) => {
+    const retail = activeRetailRow(rows, productId, tier.tierKey, countryIso);
+    return {
+      tierKey: tier.tierKey,
+      isDefault: tier.isDefault,
+      price: pricePointFrom(
+        retail,
+        deliveryDate === undefined
+          ? []
+          : surchargesOn(rows, retail, deliveryDate),
+      ),
+    };
+  });
 }
 
 /**

@@ -17,7 +17,7 @@
  *  - **The 2.5% buffer is applied at conversion time and is not stored.** `FX_BUFFER_BP` is named
  *    config here and the arithmetic
  *    `amountMinor × ratePpm × (10 000 + FX_BUFFER_BP) / (1 000 000 × 10 000)` lives in
- *    `pricing/fx.ts` (TASK-067). Storing a buffered rate would make the snapshot disagree with
+ *    `pricing/fx.ts` (TASK-066). Storing a buffered rate would make the snapshot disagree with
  *    the ECB and would hide, from the one place that must see it, how much of an intraday move
  *    the buffer is absorbing (`plan/06` §2.2).
  *  - **Staleness fails closed, and 48 hours is the bound.** Past `MAX_FX_AGE_HOURS` the caller
@@ -25,7 +25,7 @@
  *    number (spec 005 §13 Q2, AC-15). The ECB publishes on working days only, so a
  *    Monday-morning rate is Friday's — which is what the buffer is for, and why the bound is two
  *    days rather than one. `fxSnapshotAgeHours()` / `isFxSnapshotStale()` below are the
- *    predicate over *this* snapshot; `fxRateFor()`'s fail-closed path is TASK-067's.
+ *    predicate over *this* snapshot; `fxRateFor()`'s fail-closed path is TASK-066's.
  *
  * Only the euro-base rows are committed, which is what the ECB publishes. A cross rate
  * (PLN→GBP for the London buyer of a Warsaw bouquet, ADR-0002's first corridor) is derived from
@@ -52,7 +52,7 @@ export const FX_BASE_CURRENCY = "EUR";
  * It exists to absorb the intraday and weekend movement between the rate a cached page converted
  * at and the rate the payment settles at. It is **applied at conversion time and never stored**,
  * and `pricing/round.ts` rounds *upward* onto the currency's psychological ending so rounding
- * cannot erode it (spec 005 §2 "FX and rounding"). `pricing/fx.ts` (TASK-067) re-exports this
+ * cannot erode it (spec 005 §2 "FX and rounding"). `pricing/fx.ts` (TASK-066) re-exports this
  * constant rather than restating it.
  */
 export const FX_BUFFER_BP = 250;

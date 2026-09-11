@@ -6,7 +6,7 @@
  * mixed-VAT basket — the shared corpus 008/009/010/013/018 assert against". **TASK-069 owns the
  * file**; TASK-066 creates it with the one table it needs, additively, so that AC-12's
  * expectations live in the shared corpus from the first day rather than being copied into a test
- * and moved later. The band table and the mixed-VAT basket land with TASK-069.
+ * and moved later. The band table and the mixed-VAT basket landed with TASK-069.
  *
  * Every expectation below was computed **by hand in integers**, not recorded from the
  * implementation, which is the only way a test of arithmetic can fail usefully. The arithmetic is
@@ -41,6 +41,14 @@
  * and it is the safe direction. It is also mostly hypothetical in Phase 0: PLN is the currency PL
  * prices are *authored* in, so it is normally the source of a conversion rather than its target.
  */
+import {
+  PLAN_10_BANDS,
+  PLAN_10_COLUMN,
+} from "../../scripts/catalogue-check.ts";
+import {
+  PRICED_DESTINATIONS,
+  destinationPricingFor,
+} from "../../src/config/catalogue/prices.data.ts";
 
 /** One hand-computed conversion: source amount, rate, buffered result, displayed result. */
 export interface FxConversionFixture {
@@ -178,5 +186,119 @@ export const fxConversions: readonly FxConversionFixture[] = [
     ratePpm: FX_RATE_PPM_EUR_PLN,
     bufferedMinor: 78_745,
     displayMinor: 78_900,
+  },
+];
+
+/* -------------------------------------------------------------------------- */
+/* The price-band table (spec 005 §2 "Tests and fixtures"; TASK-069).          */
+/* -------------------------------------------------------------------------- */
+
+/** One band of `plan/10` §2.3, in the destination's own currency and in minor units. */
+export interface PriceBandFixture {
+  /** ISO 3166-1 alpha-2 of the destination the band prices. */
+  readonly country: string;
+  /** ISO 4217 code the two bounds are stated in. */
+  readonly currency: string;
+  /** `essential` / `classic` / `premium` / `luxury` / `funeral` — `plan/10` §2.3's own rows. */
+  readonly band: string;
+  /** Inclusive floor, in minor units. */
+  readonly fromMinor: number;
+  /** Inclusive ceiling, in minor units. */
+  readonly toMinor: number;
+}
+
+/**
+ * `plan/10` §2.3's bands per (band, destination), as expected values for 008/009/010/013/018.
+ *
+ * It is a **view of one transcription, not a second one**. `scripts/catalogue-check.ts` holds the
+ * table in major units and gates the dataset against it (`/review 37` re-check, TASK-069); a
+ * fixture that typed the numbers out again would be a third copy, and the interesting failure —
+ * a band widened to make a ladder fit — would then have to be caught in three places to stay
+ * caught in one. What this adds is the shape a consumer needs: minor units, the destination's own
+ * currency, and one flat row per (band, destination) rather than a nested table.
+ *
+ * The funeral row is `plan/10` §2.3's single band; the dataset's four `funeral_*` sub-bands
+ * partition it, and `catalogue:check` is what holds them to it.
+ */
+export const priceBands: readonly PriceBandFixture[] =
+  PRICED_DESTINATIONS.flatMap((country) => {
+    const column = PLAN_10_COLUMN[country];
+    if (column === undefined) return [];
+    const currency = destinationPricingFor(country).currency;
+    return Object.entries(PLAN_10_BANDS[column]).map(([band, bounds]) => ({
+      country,
+      currency,
+      band,
+      fromMinor: bounds[0] * 100,
+      toMinor: bounds[1] * 100,
+    }));
+  });
+
+/* -------------------------------------------------------------------------- */
+/* The mixed-VAT basket (spec 005 §2, §8 "VAT", AC-13; TASK-069).              */
+/* -------------------------------------------------------------------------- */
+
+/** One line of a basket: what it is, what it costs gross, and at which rate it is taxed. */
+export interface BasketLineFixture {
+  /** `product` or the add-on's key — what 010/013 will call it. */
+  readonly item: string;
+  /** Gross, VAT- and delivery-inclusive, in minor units (the only amount a buyer ever sees). */
+  readonly grossMinor: number;
+  /** VAT rate in basis points: the destination's flower rate or its standard rate. */
+  readonly rateBp: number;
+}
+
+/** The per-rate split a mixed basket must produce (`vatBreakdown()`'s output, hand-computed). */
+export interface VatSplitFixture {
+  readonly rateBp: number;
+  readonly grossMinor: number;
+  readonly netMinor: number;
+  readonly vatMinor: number;
+}
+
+/** A basket, its lines and the split it must produce. */
+export interface MixedVatBasketFixture {
+  readonly label: string;
+  readonly country: string;
+  readonly currency: string;
+  readonly lines: readonly BasketLineFixture[];
+  /** Ascending by `rateBp`, as `vatBreakdown()` returns it. */
+  readonly splits: readonly VatSplitFixture[];
+  readonly totalGrossMinor: number;
+  readonly totalNetMinor: number;
+  readonly totalVatMinor: number;
+}
+
+/**
+ * The mixed-VAT basket spec 005 §2 reserves: Poland, where flowers are 8% and everything else is
+ * 23% (`plan/06` §4 item 4 — the accountant's must-confirm list).
+ *
+ * A basket with two rates in it is the case that a single `vatRateBp` cannot represent and the
+ * reason `vatBreakdown()` exists (AC-13). The arithmetic is spec 005 §5.2's, per rate over the
+ * **summed** gross of that rate, half-up on the cent:
+ *
+ *   - 8%: `14 900 x 800 / 10 800 = 1 103.70…` → VAT `1 104`, net `13 796`
+ *   - 23%: `(2 500 + 3 500) x 2 300 / 12 300 = 1 121.95…` → VAT `1 122`, net `4 878`
+ *
+ * Summing after grouping rather than per line is what makes `sum(net) + sum(vat) = gross` hold by
+ * construction: two lines at one rate rounded separately can each go a cent the other way.
+ */
+export const mixedVatBaskets: readonly MixedVatBasketFixture[] = [
+  {
+    label: "PL — 149 zł bouquet at 8% with chocolates and a vase at 23%",
+    country: "PL",
+    currency: "PLN",
+    lines: [
+      { item: "product", grossMinor: 14_900, rateBp: 800 },
+      { item: "chocolates", grossMinor: 2_500, rateBp: 2_300 },
+      { item: "vase", grossMinor: 3_500, rateBp: 2_300 },
+    ],
+    splits: [
+      { rateBp: 800, grossMinor: 14_900, netMinor: 13_796, vatMinor: 1_104 },
+      { rateBp: 2_300, grossMinor: 6_000, netMinor: 4_878, vatMinor: 1_122 },
+    ],
+    totalGrossMinor: 20_900,
+    totalNetMinor: 18_674,
+    totalVatMinor: 2_226,
   },
 ];

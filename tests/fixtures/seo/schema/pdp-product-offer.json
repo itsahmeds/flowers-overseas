@@ -1,0 +1,29 @@
+{
+  "jsonld": {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": "FO-BQ-001",
+    "offers": {
+      "@type": "Offer",
+      "price": "55.90",
+      "priceCurrency": "EUR",
+      "availability": "https://schema.org/InStock",
+      "eligibleRegion": "PL",
+      "shippingDetails": {
+        "@type": "OfferShippingDetails",
+        "shippingRate": {
+          "@type": "MonetaryAmount",
+          "value": "0.00",
+          "currency": "EUR"
+        }
+      },
+      "hasMerchantReturnPolicy": {
+        "@type": "MerchantReturnPolicy",
+        "returnPolicyCategory": "https://schema.org/MerchantReturnNotPermitted"
+      },
+      "priceValidUntil": "2026-09-09"
+    }
+  },
+  "visiblePrice": "55.90",
+  "visibleCurrency": "EUR"
+}

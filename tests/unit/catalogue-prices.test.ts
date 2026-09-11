@@ -14,6 +14,10 @@
  */
 import { describe, expect, it } from "vitest";
 
+import {
+  PLAN_10_BANDS,
+  PLAN_10_COLUMN,
+} from "../../scripts/catalogue-check.ts";
 import { COUNTRIES } from "../../src/config/countries.ts";
 import { currencyConfig } from "../../src/config/currencies.ts";
 import { ADDONS } from "../../src/config/catalogue/addons.data.ts";
@@ -39,61 +43,22 @@ import {
 import {
   AddonCountryPriceDataSchema,
   CountryPriceDataSchema,
-  type PriceBandKey,
   endsInRoundingStyle,
   priceBandKeyFor,
   priceBandKeys,
 } from "../../src/config/catalogue/schemas.ts";
 import { PRODUCT_TIERS } from "../../src/config/catalogue/tiers.data.ts";
 
-/** `plan/10` §2.3's own table, transcribed in major units: [floor, ceiling] per band per column. */
-const PLAN_10_BANDS = {
-  EUR_BASE: {
-    essential: [35, 45],
-    classic: [46, 60],
-    premium: [61, 80],
-    luxury: [81, 120],
-    funeral: [60, 180],
-  },
-  DE: {
-    essential: [39, 49],
-    classic: [50, 65],
-    premium: [66, 89],
-    luxury: [90, 130],
-  },
-  PL: {
-    essential: [149, 189],
-    classic: [199, 259],
-    premium: [269, 349],
-    luxury: [359, 529],
-    funeral: [259, 799],
-  },
-  RO: {
-    essential: [175, 225],
-    classic: [230, 300],
-    premium: [305, 400],
-    luxury: [405, 600],
-    // `plan/10` §2.3 gives no RON funeral figure; the RON column's own ×5 factor against the EUR
-    // base (175/35, 230/46, 305/61, 405/81) applied to 60–180 EUR is 300–900 lei.
-    funeral: [300, 900],
-  },
-} as const;
-
-/** Which `PLAN_10_BANDS` column a destination is priced from. */
-const PLAN_10_COLUMN: Readonly<Record<string, keyof typeof PLAN_10_BANDS>> = {
-  PL: "PL",
-  DE: "DE",
-  RO: "RO",
-  FR: "EUR_BASE",
-  ES: "EUR_BASE",
-  IT: "EUR_BASE",
-  NL: "EUR_BASE",
-};
-
 /**
- * The band `plan/10` §2.3 puts one product's price in, read off the transcription above rather
- * than off `prices.data.ts` — an independent predicate, so a band widened in the dataset to make
- * a ladder fit is a failing test and not a green one (spec 005 §14 A1).
+ * The band `plan/10` §2.3 puts one product's price in, read off the transcription in
+ * `scripts/catalogue-check.ts` rather than off `prices.data.ts` — an independent predicate, so a
+ * band widened in the dataset to make a ladder fit is a failing test and not a green one (spec 005
+ * §14 A1).
+ *
+ * The transcription itself moved into the gate (`/review 37` re-check, TASK-069): `catalogue:check`
+ * is what runs in CI and on a founder's price edit, and a table that only a unit test held was one
+ * `--exclude` away from being the only guard nobody ran. `catalogue-check.test.ts` owns the
+ * transcription's own fixtures now; this file keeps the per-row reading of it.
  *
  * A funeral piece is bounded by the funeral row of the same column (the four authored sub-bands
  * live inside it); everything else by its `price_tier` row. `DE` and `RO` have no funeral column
@@ -184,63 +149,9 @@ describe("the authored price dataset (AC-6 / T-04's price half)", () => {
     expect(endsInRoundingStyle(999, "HUF")).toBe(false);
   });
 
-  it("transcribes plan/10 §2.3's bands, including the funeral row's four sub-bands", () => {
-    const major = (minor: number): number => minor / 100;
-    const check = (
-      iso2: string,
-      bandKey: PriceBandKey,
-      expected: readonly [number, number],
-    ): void => {
-      const band = priceBandFor(iso2, bandKey);
-      expect(
-        [major(band.fromMinor), major(band.toMinor)],
-        `${iso2} ${bandKey}`,
-      ).toEqual([expected[0], expected[1]]);
-    };
-
-    for (const iso2 of ["FR", "ES", "IT", "NL"]) {
-      check(iso2, "essential", PLAN_10_BANDS.EUR_BASE.essential);
-      check(iso2, "classic", PLAN_10_BANDS.EUR_BASE.classic);
-      check(iso2, "premium", PLAN_10_BANDS.EUR_BASE.premium);
-      check(iso2, "luxury", PLAN_10_BANDS.EUR_BASE.luxury);
-    }
-    check("DE", "essential", PLAN_10_BANDS.DE.essential);
-    check("DE", "classic", PLAN_10_BANDS.DE.classic);
-    check("DE", "premium", PLAN_10_BANDS.DE.premium);
-    check("DE", "luxury", PLAN_10_BANDS.DE.luxury);
-    check("PL", "essential", PLAN_10_BANDS.PL.essential);
-    check("PL", "classic", PLAN_10_BANDS.PL.classic);
-    check("PL", "premium", PLAN_10_BANDS.PL.premium);
-    check("PL", "luxury", PLAN_10_BANDS.PL.luxury);
-    check("RO", "essential", PLAN_10_BANDS.RO.essential);
-    check("RO", "classic", PLAN_10_BANDS.RO.classic);
-    check("RO", "premium", PLAN_10_BANDS.RO.premium);
-    check("RO", "luxury", PLAN_10_BANDS.RO.luxury);
-
-    // The funeral row is one band in `plan/10` §2.3 and four contiguous sub-bands here: no
-    // sub-band may leave the row's own bounds, and together they must cover it without a gap.
-    for (const [iso2, row] of [
-      ["FR", PLAN_10_BANDS.EUR_BASE.funeral],
-      ["DE", PLAN_10_BANDS.EUR_BASE.funeral],
-      ["PL", PLAN_10_BANDS.PL.funeral],
-      ["RO", PLAN_10_BANDS.RO.funeral],
-    ] as const) {
-      const subBands = priceBandKeys
-        .filter((key) => key.startsWith("funeral_"))
-        .map((key) => priceBandFor(iso2, key));
-      expect(major(subBands[0]?.fromMinor ?? 0), iso2).toBe(row[0]);
-      expect(major(subBands[3]?.toMinor ?? 0), iso2).toBe(row[1]);
-      for (const [index, band] of subBands.entries()) {
-        const previous = subBands[index - 1];
-        if (previous !== undefined) {
-          expect(
-            band.fromMinor,
-            `${iso2} sub-band ${String(index)}`,
-          ).toBeGreaterThan(previous.toMinor);
-        }
-      }
-    }
-  });
+  // The transcription check itself — every destination's authored `bands` against `plan/10`
+  // §2.3's table, funeral sub-bands included — is `catalogue:check`'s `band` mode as of TASK-069
+  // (`/review 37` re-check), with its own mutation fixtures in `catalogue-check.test.ts`.
 
   it("prices *every* tier inside its band, in every currency (spec 005 §14 A1)", () => {
     const bandKeyOf = new Map(

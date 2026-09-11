@@ -219,6 +219,9 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         "lowestPriceInLast30Days",
         "quote",
         "verifyQuote",
+        // cache tags (TASK-069): the one builder of `plan/01` §3's names
+        "CacheEntitySchema",
+        "cacheTagsFor",
       ].sort(),
     );
   });
@@ -226,8 +229,10 @@ describe("src/modules/catalog barrel (AC-1)", () => {
   it("has the module's Phase 0 files and no `db/` implementation yet", () => {
     expect(moduleFiles.sort()).toEqual([
       `${moduleDir}/availability.ts`,
+      `${moduleDir}/cache.ts`,
       `${moduleDir}/flags.ts`,
       `${moduleDir}/index.ts`,
+      `${moduleDir}/observability.ts`,
       `${moduleDir}/pricing/fx.ts`,
       `${moduleDir}/pricing/history.ts`,
       `${moduleDir}/pricing/money.ts`,

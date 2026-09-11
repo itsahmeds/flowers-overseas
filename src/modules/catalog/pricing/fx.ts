@@ -44,6 +44,7 @@
  */
 import type { CurrencyCode } from "@/config/currencies";
 
+import { CATALOG_SIGNALS, catalogSignal } from "../observability";
 import { catalogProviders, type FxRateRecord } from "../providers";
 import { FxRateSchema, IntegerMoneySchema } from "../schemas";
 import { FX_BUFFER_BP, MAX_FX_AGE_HOURS } from "../static";
@@ -254,10 +255,22 @@ export async function fxRateFor(
   );
 }
 
-/** A derived rate, parsed, and withheld entirely once it is past the age bound (AC-15). */
+/**
+ * A derived rate, parsed, and withheld entirely once it is past the age bound (AC-15).
+ *
+ * Withholding it is also the moment spec 005 §11's first business signal fires: past
+ * `MAX_FX_AGE_HOURS` **every** non-native display currency has stopped converting, every page has
+ * quietly fallen back to the destination's own currency, and nothing else in the system says so.
+ * `warn` + Sentry, with the two fields that identify it and no others (§8).
+ */
 function usableOrNull(rate: FxRate, asOf: Date): FxRate | null {
   const parsed = FxRateSchema.parse(rate);
-  return isRateStale(parsed.asOf, asOf) ? null : parsed;
+  if (!isRateStale(parsed.asOf, asOf)) return parsed;
+  catalogSignal(CATALOG_SIGNALS.fxStale, {
+    currency: parsed.quote,
+    fx_as_of: parsed.asOf,
+  });
+  return null;
 }
 
 /* -------------------------------------------------------------------------- */

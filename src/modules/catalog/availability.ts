@@ -9,7 +9,8 @@
  *
  *  1. **It is derived from data, term by term, with no branch per country.** `country.status`,
  *     `product.status`, an active `country_price` row and florist coverage in the destination —
- *     that is the whole predicate. A `demo` destination is `saleable: false` with the
+ *     that is the whole predicate. A destination that is not `live` — `demo` today, `disabled`
+ *     once spec 012 can flip one — is `saleable: false` with the
  *     `catalog.availability.countryDemo` reason and no `Offer` at all (ADR-0007); flipping that
  *     country's `status` to `live` in the dataset, with an active price and a covering florist,
  *     gives `InStock` / `saleable: true` **with no code change** (`CLAUDE.md`: "country go-live
@@ -25,8 +26,12 @@
  *  3. **Every state has a string.** The `reasonKey` is always one of the five
  *     `catalog.availability.*` keys spec 005 §7 enumerates and `messages/en.json` carries, so no
  *     availability state can render untranslated (AC-22, WCAG 3.1.1). Spec §2's shorthand
- *     "`reasonKey = "country.demo"`" is the *countryDemo* state, and its key is the one §7 names:
- *     a reason key that no message file carries would render as a raw dotted string on the page.
+ *     "`reasonKey = "country.demo"`" names the *state*; the key is `catalog.availability.countryDemo`,
+ *     the one §7 enumerates and `messages/en.json` carries (spec 005 §14 A4). A reason key that no
+ *     message file carries would render as a raw dotted string on the page.
+ *     `noPartner`'s copy is destination-level for the same reason the predicate is: coverage is
+ *     answered per (product, destination) here and per city only when spec 016's routing replaces
+ *     the seam, so a string about an "address" would promise a precision the answer does not have.
  *  4. **No geography but the destination.** The signature takes a product and a destination ISO
  *     code and nothing else — no buyer country, no IP, no header, no locale (EU 2018/302,
  *     ADR-0006, AC-18).
@@ -219,7 +224,15 @@ export async function availability(query: {
   const { productId, countryIso } = AvailabilityQuerySchema.parse(rest);
   const coverage = injected ?? destinationRegistryCoverage;
 
-  if (countryConfig(countryIso).status !== "live") {
+  // `demo` **and** `disabled` land here (`/review 54`, spec 005 §14 A4). One state, deliberately:
+  // what a buyer needs to know is identical — we cannot send flowers there — and the difference
+  // between "not yet" and "not any more" is an operational fact about us, not about their order.
+  // Phase 0 authors no `disabled` destination, and the day one is disabled the copy behind
+  // `countryDemo` ("We do not deliver to this country yet.") stops being exactly true; spec 012,
+  // which owns the admin flip that can produce a `disabled` country, adds the sixth key and the
+  // §7 amendment that goes with it. Splitting it here would add a message key no data can reach.
+  const status = countryConfig(countryIso).status;
+  if (status !== "live") {
     return verdict(
       "OutOfStock",
       catalogAvailabilityKeys.countryDemo,

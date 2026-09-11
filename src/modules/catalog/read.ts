@@ -49,6 +49,7 @@ import type { LocaleCode } from "@/config/locales";
 import { isLocaleIndexable, sortBy } from "@/modules/i18n";
 
 import { isFlagEnabled } from "./flags";
+import { startCatalogRead } from "./observability";
 import {
   catalogProviders,
   type ProductRecord,
@@ -216,8 +217,10 @@ async function pricedPairs(): Promise<ReadonlySet<string>> {
  */
 export async function getProduct(sku: string): Promise<Product | null> {
   const key = ProductSkuSchema.parse(sku);
+  const done = startCatalogRead();
   const products = await catalogProviders().catalogue.products();
   const found = products.find((product) => product.sku === key);
+  done({ sku: key });
   return found === undefined ? null : toProduct(found);
 }
 
@@ -236,6 +239,7 @@ export async function listProducts(
   query?: unknown,
 ): Promise<readonly Product[]> {
   const parsed = ListProductsQuerySchema.parse(query ?? {});
+  const done = startCatalogRead();
   const statuses = parsed.statuses ?? (["active"] as const);
   const products = (await catalogProviders().catalogue.products()).map(
     toProduct,
@@ -258,9 +262,19 @@ export async function listProducts(
     .sort((left, right) => (left.sku < right.sku ? -1 : 1));
 
   const offset = parsed.offset ?? 0;
-  return parsed.limit === undefined
-    ? matched.slice(offset)
-    : matched.slice(offset, offset + parsed.limit);
+  const page =
+    parsed.limit === undefined
+      ? matched.slice(offset)
+      : matched.slice(offset, offset + parsed.limit);
+  // Spec 005 §11's read line. The first SKU of the page identifies the read; there is no
+  // `sku_count` field, because §8's list is the one AC-24 governs (spec 005 §14 A5).
+  done({
+    ...(page[0] === undefined ? {} : { sku: page[0].sku }),
+    ...(parsed.countryIso === undefined
+      ? {}
+      : { country_iso: parsed.countryIso }),
+  });
+  return page;
 }
 
 /**

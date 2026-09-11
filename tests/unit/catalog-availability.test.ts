@@ -90,6 +90,38 @@ describe("availability() is derived from data (AC-20, T-18)", () => {
     }
   });
 
+  it("puts a `disabled` destination in the same state as a `demo` one (`/review 54`)", async () => {
+    // `country.status` has three values and `availability()` has two branches, deliberately:
+    // "we cannot send flowers there" is the whole of what a buyer needs, and `disabled` is an
+    // operational fact about us (spec 005 §14 A4). No destination is authored `disabled`, so the
+    // branch is only reachable through the registry — which is exactly what is mocked here, so
+    // the day spec 012 can flip one this test says what happens.
+    vi.resetModules();
+    vi.doMock("../../src/config/countries.ts", async () => {
+      const actual = await vi.importActual<
+        typeof import("../../src/config/countries.ts")
+      >("../../src/config/countries.ts");
+      return {
+        ...actual,
+        countryConfig: (iso2: string) =>
+          iso2 === LIVE
+            ? { ...actual.countryConfig(LIVE), status: "disabled" }
+            : actual.countryConfig(iso2 as typeof LIVE),
+      };
+    });
+    const { availability: withDisabled } =
+      await import("../../src/modules/catalog/availability.ts");
+
+    await expect(
+      withDisabled({ productId: SKU, countryIso: LIVE }),
+    ).resolves.toEqual({
+      schemaAvailability: "OutOfStock",
+      reasonKey: catalogAvailabilityKeys.countryDemo,
+      saleable: false,
+    });
+    vi.doUnmock("../../src/config/countries.ts");
+  });
+
   it("is `OutOfStock`/`noPartner` when no florist covers the destination", async () => {
     await expect(
       availability({

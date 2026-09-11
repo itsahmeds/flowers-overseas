@@ -3,8 +3,8 @@
  * TASK-067).
  *
  * TASK-009 shipped `scripts/seo/validate-schema.ts` with an `Offer.price == visiblePrice` check
- * and nothing to run it against: `tests/fixtures/seo/schema/` is deliberately empty, so the check
- * has been green-by-vacuity since it landed. This file is what AC-11 means by "makes it
+ * and nothing to run it against: `tests/fixtures/seo/schema/` was empty, so the check was
+ * green-by-vacuity from the day it landed until TASK-069 seeded the directory (`/review 52`). This file is what AC-11 means by "makes it
  * satisfiable" — it builds the JSON-LD a PDP will publish **from the real projection**, writes it
  * out in the fixture shape with the **rendered** price as `visiblePrice`, and runs the CLI over
  * it exactly as `pnpm seo:validate` does.
@@ -18,9 +18,9 @@
  * numbers are the page's numbers. When 007's builder lands, this test's hand-built node is what
  * it must reproduce.
  */
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
@@ -189,5 +189,53 @@ describe("offerProjection through spec 001's validate-schema (AC-11, T-09)", () 
       now: FRESH,
     });
     expect(offerProjection(projection)).toBeNull();
+  });
+});
+
+/**
+ * The **committed** fixture, which is the one `pnpm seo:validate` actually runs (`/review 52`).
+ *
+ * The suite above proves the identity holds; it proves it in a temp directory that no CI job
+ * reads. `tests/fixtures/seo/schema/pdp-product-offer.json` is the same graph on disk, so the
+ * schema gate of `pnpm seo:validate` has something to fail on — and this test regenerates it and
+ * compares, so the file cannot rot into a fixture that passes a validator while disagreeing with
+ * the code it was taken from.
+ *
+ * Its `priceValidUntil` is in the past by construction: it is the committed FX snapshot's validity
+ * (`FX_SNAPSHOT_AS_OF` + `MAX_FX_AGE_HOURS`), and the snapshot is authored data. Regenerating the
+ * fixture is part of TASK-071's `fx.refresh`, not a separate chore.
+ */
+describe("the committed schema fixture `seo:validate` runs (`/review 52`)", () => {
+  const FIXTURE = "tests/fixtures/seo/schema/pdp-product-offer.json";
+
+  it("is exactly what `offerProjection()` produces today", async () => {
+    const projection = await priceProjection("en", {
+      productId: SKU,
+      tierKey: TIER,
+      countryIso: LIVE,
+      now: FRESH,
+    });
+    const offer = offerProjection(projection);
+    if (offer === null) throw new Error(`${LIVE} is the live destination`);
+
+    const expected = {
+      jsonld: productGraph(offer, SKU),
+      visiblePrice: visibleAmountOf(formatMoney(projection.displayPrice, "en")),
+      visibleCurrency: localeConfig("en").currencyDefault,
+    };
+    const committed: unknown = JSON.parse(
+      readFileSync(resolve(process.cwd(), FIXTURE), "utf8"),
+    );
+
+    expect(committed).toEqual(expected);
+  });
+
+  it("passes the CLI in place, so the gate is no longer vacuous", () => {
+    const result = runSeoCli(CLI, "tests/fixtures/seo/schema");
+
+    expect(result.stderr).toBe("");
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain("fixture(s) ok");
+    expect(result.stdout).not.toContain("no fixtures");
   });
 });
