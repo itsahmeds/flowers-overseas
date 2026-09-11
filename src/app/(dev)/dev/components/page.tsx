@@ -677,7 +677,7 @@ export default function DevComponentsPage(): ReactElement {
           </Stack>
         </Section>
 
-        <Section title={SECTIONS[12]}>
+        <Section title={SECTIONS[13]}>
           <Stack gap="lg">
             {(
               [
@@ -718,7 +718,7 @@ export default function DevComponentsPage(): ReactElement {
         {/* The header is full-bleed by design, so it is rendered outside the section's padding
             through a negative-free wrapper: the box below is the header at this viewport's
             breakpoint, not a scaled copy of it. */}
-        <Section title={SECTIONS[13]}>
+        <Section title={SECTIONS[14]}>
           <Stack gap="sm">
             <Text size="xs" tone="subtle">
               {HEADER_STATES.heading}
@@ -732,7 +732,7 @@ export default function DevComponentsPage(): ReactElement {
           </Stack>
         </Section>
 
-        <Section title={SECTIONS[14]}>
+        <Section title={SECTIONS[15]}>
           {/* Inert by construction: `ConsentGallery` passes no-op handlers, so walking this page
               writes no cookie, sends no request and calls no `gtag` (TASK-051). */}
           <ConsentGallery
@@ -741,7 +741,7 @@ export default function DevComponentsPage(): ReactElement {
           />
         </Section>
 
-        <Section title={SECTIONS[15]}>
+        <Section title={SECTIONS[16]}>
           {FOOTER_STATES.map((state) => (
             <Stack key={state.id} gap="sm">
               <Text size="xs" tone="subtle">
@@ -757,7 +757,7 @@ export default function DevComponentsPage(): ReactElement {
           ))}
         </Section>
 
-        <Section title={SECTIONS[16]}>
+        <Section title={SECTIONS[17]}>
           <Stack gap="xs">
             {CONTRAST_PAIRS.map((pair) => (
               <Row
