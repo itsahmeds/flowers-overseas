@@ -31,10 +31,15 @@ describe("validate-schema CLI (T-23)", () => {
     expect(result.stdout).toContain("no fixtures");
   });
 
-  it("exits 0 with 'no fixtures' on the committed fixture directory", () => {
+  it("exits 0 over the committed fixture directory, which is no longer empty", () => {
+    // Empty until spec 005 (TASK-069) seeded it with one real `offerProjection()` graph
+    // (`/review 52`): the gate used to pass by having nothing to check, and now passes by
+    // checking something. `catalog-offer-schema-identity.test.ts` keeps that fixture honest.
     const result = runSeoCli(CLI, "tests/fixtures/seo/schema");
+    expect(result.stderr).toBe("");
     expect(result.status).toBe(0);
-    expect(result.stdout).toContain("no fixtures");
+    expect(result.stdout).toContain("fixture(s) ok");
+    expect(result.stdout).not.toContain("no fixtures");
   });
 
   it("exits 0 on a Product/Offer graph whose price matches the visible price", () => {
