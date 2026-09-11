@@ -16,6 +16,8 @@ import { describe, expect, it } from "vitest";
 import {
   checkLedger,
   OPEN_DECISION_IDS,
+  STATUSES_NEEDING_A_BRIEF,
+  TASK_NOTES_LIMIT,
   OPEN_DECISIONS_DUE,
   PHASE_0_SPECS_APPROVED,
   parseOpenDecisions,
@@ -212,6 +214,64 @@ describe("checkLedger failure paths", () => {
   it("reports a renamed task column", () => {
     const broken = fixture.replace("| Owner agent |", "| Agent |");
     expect(checkLedger(broken).join("\n")).toContain("tasks table header is");
+  });
+});
+
+// --- the AC-34 checks: the notes cap and the brief file ---------------------------------------
+
+describe("checkLedger, notes cap and briefs (AC-34 / T-35)", () => {
+  const withNotes = (notes: string, status = "done"): string =>
+    fixture.replace(
+      "| TASK-001 | t | `specs/001` · AC-1 | 0 | done | backend-implementer | [#1](u) | — | n |",
+      `| TASK-001 | t | \`specs/001\` · AC-1 | 0 | ${status} | backend-implementer | [#1](u) | — | ${notes} |`,
+    );
+
+  it("caps a notes cell at 400 characters and names the brief to move it into", () => {
+    expect(TASK_NOTES_LIMIT).toBe(400);
+    const problems = checkLedger(withNotes("x".repeat(401))).join("\n");
+    expect(problems).toContain(
+      "task TASK-001: notes cell is 401 characters, over the 400-character cap",
+    );
+    expect(problems).toContain("docs/tasks/TASK-001.md");
+  });
+
+  it("accepts a cell of exactly 400 characters", () => {
+    expect(checkLedger(withNotes("x".repeat(400)))).toEqual([]);
+  });
+
+  it("requires a brief for a todo, in_progress or in_review row", () => {
+    expect(STATUSES_NEEDING_A_BRIEF).toEqual([
+      "todo",
+      "in_progress",
+      "in_review",
+    ]);
+    for (const status of STATUSES_NEEDING_A_BRIEF) {
+      const problems = checkLedger(withNotes("n", status), {
+        briefExists: () => false,
+      }).join("\n");
+      expect(problems, status).toContain(
+        `task TASK-001: status "${status}" but docs/tasks/TASK-001.md is missing`,
+      );
+    }
+  });
+
+  it("does not require a brief for a done or dropped row", () => {
+    for (const status of ["done", "dropped"]) {
+      expect(
+        checkLedger(withNotes("n", status), { briefExists: () => false }),
+        status,
+      ).toEqual([]);
+    }
+  });
+
+  it("is silent about briefs when no existence probe is supplied", () => {
+    expect(checkLedger(withNotes("n", "todo"))).toEqual([]);
+  });
+
+  it("accepts the row once its brief exists", () => {
+    expect(
+      checkLedger(withNotes("n", "todo"), { briefExists: () => true }),
+    ).toEqual([]);
   });
 });
 
