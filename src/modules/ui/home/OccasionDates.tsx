@@ -88,7 +88,7 @@ export function OccasionDates({
           {home("dates.heading")}
         </Display>
       </Stack>
-      <Grid as="ul" columns="2-4" gap="lg">
+      <Grid as="ul" columns="2-4" gap="md">
         {dates.map((date) => (
           <Stack
             as="li"

@@ -3,7 +3,7 @@
  *
  * A design directory that agents are instructed to read before building a page is only worth
  * reading if it is complete and internally consistent, and neither property survives being a
- * convention. Five things are therefore asserted mechanically:
+ * convention. Six things are therefore asserted mechanically:
  *
  *  1. **Coverage.** Every Phase 0 row of `plan/05-page-inventory.md` §1–§2 is mapped by
  *     `docs/design/README.md` to artboard files that exist. A new Phase 0 page type in `plan/05`
@@ -23,6 +23,9 @@
  *  5. **Benchmarks.** `docs/design/benchmarks/README.md` maps every file of the 2026-09-09
  *     competitor study to the wireframes it informed, and every artboard it names exists. A study
  *     nobody can trace back to a page is a document; a study mapped page by page is a design record.
+ *  6. **Primitives.** `system/components.dc.html` names every `Grid` column set the primitive
+ *     exports. The system files are required to stay in step with `src/modules/ui` (TASK-059);
+ *     a fifth set shipped in code while the artboard still said four, and nothing caught it.
  *
  * Deliberately *not* asserted: that an artboard looks right. That is a founder review on the
  * canvas, and no test replaces it.
@@ -501,5 +504,51 @@ describe("docs/design/benchmarks/ maps the study to the wireframes", () => {
 
   it("is linked from the design README", () => {
     expect(readme).toContain("benchmarks/");
+  });
+});
+
+/* ------------------------------------------------------------------ 7. primitives in step */
+
+describe("system/components.dc.html enumerates every Grid column set", () => {
+  // TASK-059's rule is that the system files stay in step with `src/modules/ui`; the `1-aside`
+  // set shipped in code while the artboard still said "the four column sets", and nothing caught
+  // it. The union in the primitive is the source, the artboard has to name each member.
+  const source = readFileSync(
+    resolve(repoRoot, "src/modules/ui/primitives/layout.tsx"),
+    "utf8",
+  );
+  const artboard = readFileSync(
+    join(designRoot, "system/components.dc.html"),
+    "utf8",
+  );
+  const union = /readonly columns\?:\s*([^;]+);/.exec(source)?.[1] ?? "";
+  const sets = [...union.matchAll(/"([\w-]+)"/g)].map(([, name]) => name ?? "");
+
+  it("has read the union", () => {
+    expect(sets.length).toBeGreaterThanOrEqual(5);
+  });
+
+  it.each(sets)("names `%s`", (name) => {
+    expect(
+      artboard,
+      `Grid ships columns="${name}" but docs/design/system/components.dc.html does not name it`,
+    ).toContain(`<code>${name}</code>`);
+  });
+
+  it("counts them in the caption", () => {
+    const words = [
+      "",
+      "one",
+      "two",
+      "three",
+      "four",
+      "five",
+      "six",
+      "seven",
+      "eight",
+    ];
+    expect(artboard).toContain(
+      `Grid · the ${words[sets.length] ?? String(sets.length)} column sets`,
+    );
   });
 });

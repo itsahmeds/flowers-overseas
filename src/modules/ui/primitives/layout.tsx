@@ -242,7 +242,7 @@ const COLUMN_CLASS: Readonly<
   "1-aside": "grid-cols-1 md:grid-cols-[300px_minmax(0,1fr)]",
 };
 
-/** The card grid (§2: 2-up mobile, 4-up desktop) and its three siblings. */
+/** The card grid (§2: 2-up mobile, 4-up desktop) and its four siblings. */
 export function Grid({
   gap = "md",
   columns = "2-4",
