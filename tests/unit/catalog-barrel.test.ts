@@ -208,17 +208,31 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         "offerProjection",
         "priceProjection",
         "priceTable",
+        // availability, indexability, the Omnibus figure and signed quotes (TASK-068)
+        "AvailabilityQuerySchema",
+        "AvailabilitySchema",
+        "QuoteLineSchema",
+        "QuoteSchema",
+        "TierKeySchema",
+        "availability",
+        "isProductIndexable",
+        "lowestPriceInLast30Days",
+        "quote",
+        "verifyQuote",
       ].sort(),
     );
   });
 
   it("has the module's Phase 0 files and no `db/` implementation yet", () => {
     expect(moduleFiles.sort()).toEqual([
+      `${moduleDir}/availability.ts`,
       `${moduleDir}/flags.ts`,
       `${moduleDir}/index.ts`,
       `${moduleDir}/pricing/fx.ts`,
+      `${moduleDir}/pricing/history.ts`,
       `${moduleDir}/pricing/money.ts`,
       `${moduleDir}/pricing/project.ts`,
+      `${moduleDir}/pricing/quote.ts`,
       `${moduleDir}/pricing/resolve.ts`,
       `${moduleDir}/pricing/round.ts`,
       `${moduleDir}/pricing/vat.ts`,

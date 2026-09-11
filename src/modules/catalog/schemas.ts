@@ -31,7 +31,11 @@ import { type CountryIso2, isCountryIso2 } from "@/config/countries";
 import { type LocaleCode, isLocaleCode } from "@/config/locales";
 import { MoneySchema } from "@/modules/i18n";
 
-import { catalogAvailabilityKeys, surchargeKinds } from "./types";
+import {
+  catalogAvailabilityKeys,
+  schemaAvailabilityValues,
+  surchargeKinds,
+} from "./types";
 
 /**
  * Integer minor units, as a `number`.
@@ -53,6 +57,15 @@ export const BasisPointsSchema = z.number().int().min(0).max(10_000);
 
 /** A message key, resolved through the catalogue at render time — never a label (spec 005 §7). */
 export const MessageKeySchema = z.string().min(1);
+
+/**
+ * A `product_tier.tier_key`: `stems_12`, `size_m`, `single` (spec 005 §13 Q4).
+ *
+ * Non-empty and nothing more: the closed set is the *product's* authored ladder, so a key that
+ * does not belong to a product is a missing-row error at resolution rather than a parse error
+ * here — which is what keeps "this tier has no price in this destination" a legible failure.
+ */
+export const TierKeySchema = z.string().min(1);
 
 /**
  * `MoneySchema` with the amount narrowed to an integer `number` (see `MinorUnitsSchema`). Built by
@@ -471,6 +484,72 @@ export const VatSplitSchema = z
 export const FxRateSchema = FxRateDataSchema;
 
 /* -------------------------------------------------------------------------- */
+/* Availability boundary schemas (spec 005 §5.2, §5.3, AC-20; TASK-068).       */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * `availability()`'s query (spec 005 §2 "Availability").
+ *
+ * A product, a **destination** and, optionally, a delivery date — and `.strict()`, so a buyer
+ * country, an IP, a header or a locale is a parse error rather than a review comment (EU
+ * 2018/302, ADR-0006, AC-18). The date is parsed and interpreted by nobody here: the calendar is
+ * spec 009's (`plan/03` §9/§10).
+ */
+export const AvailabilityQuerySchema = z
+  .object({
+    productId: ProductSkuSchema,
+    countryIso: DestinationIsoSchema,
+    date: IsoDateSchema.optional(),
+  })
+  .strict();
+
+/**
+ * One availability verdict (spec 005 §5.2 `AvailabilitySchema`, AC-20, AC-22).
+ *
+ * Two refinements keep the three fields from drifting apart, because each pair of them is read by
+ * a different consumer — the visible line by spec 009, the schema.org value by spec 007, the buy
+ * path by both:
+ *
+ *  - an `InStock` verdict is saleable and carries the `inStock` key; an `OutOfStock` one is not
+ *    saleable. A page that showed "Available to order" beside a disabled button, or an `Offer`
+ *    with `InStock` for a destination we do not serve, is `plan/02` §9's misleading structured
+ *    data — and now unrepresentable;
+ *  - the reason key is one of the five `catalog.availability.*` keys spec 005 §7 enumerates and
+ *    `messages/en.json` carries, so no availability state can render untranslated (AC-22).
+ */
+export const AvailabilitySchema = z
+  .object({
+    schemaAvailability: z.enum(schemaAvailabilityValues),
+    reasonKey: z.enum([
+      catalogAvailabilityKeys.inStock,
+      catalogAvailabilityKeys.outOfStock,
+      catalogAvailabilityKeys.countryDemo,
+      catalogAvailabilityKeys.noPartner,
+      catalogAvailabilityKeys.fxUnavailable,
+    ]),
+    saleable: z.boolean(),
+  })
+  .strict()
+  .refine(
+    (state) =>
+      state.schemaAvailability !== "InStock" ||
+      (state.saleable && state.reasonKey === catalogAvailabilityKeys.inStock),
+    {
+      error:
+        "an `InStock` verdict is saleable and carries the `inStock` key (spec 005 §5.3, plan/02 §9)",
+      path: ["schemaAvailability"],
+    },
+  )
+  .refine(
+    (state) => state.schemaAvailability !== "OutOfStock" || !state.saleable,
+    {
+      error:
+        "an `OutOfStock` verdict is never saleable: a buy path over it is a price nobody can pay (spec 005 §5.3)",
+      path: ["saleable"],
+    },
+  );
+
+/* -------------------------------------------------------------------------- */
 /* Projection boundary schemas (spec 005 §5.2, §6, AC-9/AC-11; TASK-067).      */
 /* -------------------------------------------------------------------------- */
 
@@ -538,6 +617,7 @@ export const PriceProjectionSchema = z
     fxReasonKey: z.literal("catalog.availability.fxUnavailable").optional(),
     priceVersion: z.string().min(1),
     priceValidUntil: IsoDateSchema.nullable(),
+    availability: AvailabilitySchema,
   })
   .strict()
   .refine(
@@ -668,3 +748,85 @@ export const OfferProjectionSchema = z
     priceVersion: z.string().min(1),
   })
   .strict();
+
+/* -------------------------------------------------------------------------- */
+/* Quote boundary schemas (spec 005 §5.2 `QuoteSchema`, §8, §13 Q5, AC-17;     */
+/* TASK-068).                                                                  */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The lifetime of a signed quote, in minutes (spec 005 §13 Q5).
+ *
+ * Thirty: long enough for a buyer to finish a checkout they started, short enough that the FX
+ * buffer still covers the movement the rate can make inside the window (`plan/06` §2.2). It is a
+ * named constant rather than a literal because spec 010's checkout and spec 013's charge both
+ * reason about the same window and neither may restate it.
+ */
+export const QUOTE_TTL_MINUTES = 30;
+
+/** A hex SHA-256 digest: 64 lowercase hex characters, and nothing that is not one. */
+export const QuoteDigestSchema = z
+  .string()
+  .regex(/^[0-9a-f]{64}$/, "must be a lowercase hex SHA-256 digest");
+
+/**
+ * One quoted line: **product id, tier key, integer amount** (spec 005 §8, AC-17).
+ *
+ * `.strict()` is the data-minimisation guarantee, not a style choice: a quote is carried in a
+ * form field and in a payment intent's metadata, so a `recipientName` or a `deliveryNote` added
+ * "just for convenience" would put personal data somewhere we do not control (`plan/07` §2.2,
+ * `CLAUDE.md`). AC-17's key-set equality test asserts the same rule from the outside.
+ */
+export const QuoteLineSchema = z
+  .object({
+    productId: ProductSkuSchema,
+    tierKey: z.string().min(1),
+    amountMinor: MinorUnitsSchema.positive(),
+  })
+  .strict();
+
+/**
+ * A signed quote (spec 005 §5.2, §13 Q5).
+ *
+ * `.strict()` plus the refinement below: the field set is exactly §5.2's list, and the total is
+ * the sum of the lines — computed at construction and re-checked at parse, so a quote whose total
+ * disagrees with its own lines cannot be verified into existence even if the digest matches.
+ */
+export const QuoteSchema = z
+  .object({
+    quoteId: z
+      .string()
+      .regex(/^[0-9a-f]{32}$/, "must be a 32-character hex id"),
+    lines: z.array(QuoteLineSchema).min(1).readonly(),
+    totalMinor: MinorUnitsSchema.positive(),
+    currency: MoneySchema.shape.currency,
+    fxAsOf: IsoDateSchema.nullable(),
+    ratePpm: z.number().int().positive().nullable(),
+    priceVersion: z.string().min(1),
+    expiresAt: z.iso.datetime(),
+    digest: QuoteDigestSchema,
+  })
+  .strict()
+  .refine(
+    (quote) =>
+      quote.lines.reduce((sum, line) => sum + line.amountMinor, 0) ===
+      quote.totalMinor,
+    {
+      error:
+        "a quote's total is the sum of its lines (spec 005 §5.2): the amount charged is the amount quoted",
+      path: ["totalMinor"],
+    },
+  )
+  .refine((quote) => (quote.fxAsOf === null) === (quote.ratePpm === null), {
+    error:
+      "a converted quote carries both `fxAsOf` and `ratePpm`, or neither (spec 005 §5.4)",
+    path: ["fxAsOf"],
+  })
+  .refine(
+    (quote) => quote.priceVersion.split("|").length === quote.lines.length,
+    {
+      error:
+        "a quote names the priced row behind every line, in line order (spec 005 §5.2): a line with no version could not be re-resolved and so could never be refused",
+      path: ["priceVersion"],
+    },
+  );

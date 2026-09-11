@@ -37,6 +37,7 @@ import { countryConfig } from "../../src/config/countries.ts";
 import { currencyConfig } from "../../src/config/currencies.ts";
 import type { LocaleCode } from "../../src/config/locales.ts";
 import { localeConfig } from "../../src/config/locales.ts";
+import { rateValidUntil } from "../../src/modules/catalog/pricing/fx.ts";
 import {
   fromPriceProjection,
   offerProjection,
@@ -57,6 +58,12 @@ import { formatMoney } from "../../src/modules/i18n/format.ts";
 
 /** A day inside the committed snapshot's 48-hour window: every conversion is available. */
 const FRESH = new Date(`${FX_SNAPSHOT_AS_OF}T10:00:00Z`);
+/**
+ * The last calendar day the committed snapshot is usable — `as_of + 1` (`rateValidUntil()`,
+ * spec 005 §6, §14 A3). A converted offer's `priceValidUntil` is this rather than the price row's
+ * open-ended `null` (TASK-068).
+ */
+const FX_RATE_VALID_UNTIL = rateValidUntil(FX_SNAPSHOT_AS_OF);
 
 /** Well past `MAX_FX_AGE_HOURS`: no rate is usable and the projection must fail closed. */
 const STALE = new Date("2026-10-01T10:00:00Z");
@@ -231,7 +238,14 @@ describe("the price identity across the fixture matrix (AC-10, AC-11, T-08)", ()
             localeConfig(locale).currencyDefault,
           );
           expect(offer.eligibleRegion).toBe(countryIso);
-          expect(offer.priceValidUntil).toBe(resolved.activeTo);
+          // §14 A3 (TASK-068): the offer's validity is the **earlier** of the price row's
+          // `active_to` and the FX snapshot's own last usable day where a conversion is
+          // involved — a converted price stops being the price when its rate does.
+          expect(offer.priceValidUntil).toBe(
+            projection.ratePpm === undefined
+              ? resolved.activeTo
+              : FX_RATE_VALID_UNTIL,
+          );
           expect(offer.priceVersion).toBe(resolved.priceVersion);
         }
       }
@@ -313,6 +327,30 @@ describe("the projection fails closed on a stale rate (§13 Q2)", () => {
     expect(projection.fxReasonKey).toBe("catalog.availability.fxUnavailable");
     expect(projection.fxAsOf).toBeUndefined();
     expect(projection.ratePpm).toBeUndefined();
+  });
+
+  it("the fallback offer carries the destination currency and the same figure (§14 A3)", async () => {
+    // `/review 52`'s carry-forward: AC-11's literal wording says `Offer.priceCurrency` is the
+    // locale's default, and §13 Q2 says a rate older than 48 h fails closed to the destination
+    // currency. §14 A3 settles which wins — the **price identity** does: the offer states the
+    // figure the page prints, in the currency the page prints it in.
+    const projection = await priceProjection("en-gb", {
+      ...TIERS[0],
+      countryIso: "PL",
+      now: STALE,
+    });
+    const offer = offerProjection(projection);
+    if (offer === null) throw new Error("a live destination has an offer");
+
+    expect(projection.displayPrice.currency).toBe("PLN");
+    expect(offer.priceCurrency).toBe("PLN");
+    expect(offer.priceCurrency).not.toBe(localeConfig("en-gb").currencyDefault);
+    expect(digitsOf(offer.price)).toBe(
+      digitsOf(formatMoney(projection.displayPrice, "en-gb")),
+    );
+    expect(offer.shippingRate.currency).toBe("PLN");
+    // Nothing was converted, so no FX validity bounds the offer: the row's own `active_to` does.
+    expect(offer.priceValidUntil).toBe(projection.priceValidUntil);
   });
 
   it("stamps the rate and its date whenever it does convert", async () => {

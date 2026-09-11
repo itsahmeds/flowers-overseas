@@ -454,3 +454,81 @@ function dayAfter(date: IsoDate, offset: number): IsoDate {
   );
   return stepped.toISOString().slice(0, 10);
 }
+
+/* -------------------------------------------------------------------------- */
+/* Re-resolution by version: what makes a signed quote refusable (TASK-068).  */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The `PricePoint` a `priceVersion` names, or `null` when it no longer resolves (spec 005 §5.2,
+ * AC-17).
+ *
+ * `verifyQuote()`'s third check. A quote carries the version of every priced row behind it, and
+ * this is how the module asks its own token *"is this still the price?"* without the caller ever
+ * parsing it — the version stays opaque outside `src/modules/catalog`, and the one place that
+ * mints it is the one place that reads it back.
+ *
+ * `null` — never a throw and never a guess — for a version that is malformed, names a row that
+ * has been superseded or deleted, names a surcharge that no longer applies, or reconstructs to a
+ * different version than the one asked for. The caller turns every one of those into "re-derive
+ * and re-confirm", which is the only safe reading: a charge must never be taken against a row
+ * nobody can point at.
+ *
+ * The reconstruction is deliberately whole rather than a lookup: it rebuilds the `PricePoint` from
+ * today's rows and hands it back, so the caller can compare **the amount** and not only the
+ * version. An in-place amount edit leaves the version unchanged (`/review 47`), so the version
+ * alone is not evidence that the price has not moved — the signed amount is.
+ */
+export async function resolveByPriceVersion(
+  version: string,
+): Promise<PricePoint | null> {
+  const [base, ...applied] = version.split("+");
+  if (base === undefined) return null;
+  const parts = base.split(":");
+  if (parts.length !== 5) return null;
+  const [prefix, sku, countryIso, tierKey, activeFrom] = parts;
+  if (
+    prefix !== "cp" ||
+    sku === undefined ||
+    countryIso === undefined ||
+    tierKey === undefined ||
+    activeFrom === undefined
+  ) {
+    return null;
+  }
+
+  const rows = await catalogProviders().price.countryPrices();
+  const retail = rows.find(
+    (row) =>
+      row.sku === sku &&
+      row.countryIso2 === countryIso &&
+      row.tierKey === tierKey &&
+      row.surchargeKind === null &&
+      row.activeFrom === activeFrom &&
+      isActive(row),
+  );
+  if (retail === undefined) return null;
+
+  const surcharges: Surcharge[] = [];
+  for (const token of applied) {
+    const [kind, date] = token.split("@");
+    if (kind === undefined || date === undefined) return null;
+    const row = rows.find(
+      (candidate) =>
+        candidate.sku === sku &&
+        candidate.countryIso2 === countryIso &&
+        candidate.surchargeKind === kind &&
+        (candidate.activeTo === null
+          ? surchargeAppliesOn(candidate, date)
+          : candidate.activeFrom === date),
+    );
+    if (row === undefined) return null;
+    surcharges.push(toSurcharge(row, date));
+  }
+
+  const price = pricePointFrom(
+    retail,
+    [...surcharges].sort((left, right) => left.kind.localeCompare(right.kind)),
+  );
+  return price.priceVersion === version ? price : null;
+}

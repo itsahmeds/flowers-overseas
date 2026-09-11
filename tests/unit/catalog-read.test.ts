@@ -413,7 +413,8 @@ describe("hasIndexableProducts (spec 005 §6; plan/02 §10)", () => {
       countryLive: true,
       productActive: true,
       activePrice: true,
-      reviewedCopy: false,
+      descriptionPresent: false,
+      translationReviewed: false,
       localeIndexable: true,
       indexable: false,
     });

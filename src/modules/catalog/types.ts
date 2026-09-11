@@ -198,7 +198,8 @@ export interface FacetResolution {
  * Why a product is, or is not, indexable in one (locale, destination) — spec 005 §6's predicate
  * term by term, so the answer is legible rather than a bare `false`.
  *
- * `reviewedCopy` is the term Phase 0 cannot satisfy: the dataset ships **no** description and no
+ * `descriptionPresent` and `translationReviewed` are the two terms Phase 0 cannot satisfy: the
+ * dataset ships **no** description and no
  * `product_translation` row at all (spec 005 §2 "Deliberately absent", AC-6), and spec 005 §6 is
  * explicit that a non-null, reviewed description in the locale is required. So every product is
  * non-indexable today, which is the intended outcome — "a product with no description is
@@ -209,9 +210,12 @@ export interface ProductIndexability {
   readonly countryLive: boolean;
   readonly productActive: boolean;
   readonly activePrice: boolean;
-  readonly reviewedCopy: boolean;
+  /** A non-null description exists in this locale (spec 006's importer lands it). */
+  readonly descriptionPresent: boolean;
+  /** That translation is `reviewed`, not a machine draft (spec 003 §6, `plan/13` B12). */
+  readonly translationReviewed: boolean;
   readonly localeIndexable: boolean;
-  /** The conjunction of the five terms above, and nothing else (spec 005 §6). */
+  /** The conjunction of the six terms above, and nothing else (spec 005 §6, AC-21). */
   readonly indexable: boolean;
 }
 
@@ -492,8 +496,19 @@ export interface PriceProjection {
   /** Present exactly when no usable rate existed and the destination currency is being shown. */
   readonly fxReasonKey?: "catalog.availability.fxUnavailable" | undefined;
   readonly priceVersion: string;
-  /** The active row's `active_to` — `Offer.priceValidUntil`; `null` while the row is current. */
+  /**
+   * The **earlier** of the active row's `active_to` and the FX snapshot's own validity where a
+   * conversion is involved — `Offer.priceValidUntil` (spec 005 §6; §14 A3). `null` only when the
+   * row is current *and* nothing was converted: a converted amount stops being the price the day
+   * its rate stops being usable, whatever the price row says.
+   */
   readonly priceValidUntil: IsoDate | null;
+  /**
+   * Whether this product can be sent to this destination at all, from `availability()` — the
+   * seam TASK-067 left open and TASK-068 filled (spec 005 §5.2, AC-20). `offerProjection()` reads
+   * it, so the visible availability line and the `Offer`'s schema.org value are one verdict.
+   */
+  readonly availability: Availability;
 }
 
 /**
@@ -562,3 +577,102 @@ export interface OfferProjection {
   readonly hasMerchantReturnPolicy: "https://schema.org/MerchantReturnNotPermitted";
   readonly priceVersion: string;
 }
+
+/* -------------------------------------------------------------------------- */
+/* Availability, price history and quotes (spec 005 §2, §5.2, §8, AC-14/17/20; */
+/* TASK-068).                                                                  */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Schema.org's three availability states, as the bare tokens `availability()` reports.
+ *
+ * `PreOrder` is expressible and is **not** produced in Phase 0: it is the value the calendar seam
+ * will use for a product that can be ordered now for a later window, and that window is spec
+ * 009's (`CutoffEvaluator`, `plan/03` §9/§10). `OfferProjection.availability` still carries only
+ * the two URLs a relay can honestly publish, so a `PreOrder` verdict reaches structured data as
+ * `OutOfStock` rather than as a promise about a date nobody has evaluated.
+ */
+export const schemaAvailabilityValues = [
+  "InStock",
+  "OutOfStock",
+  "PreOrder",
+] as const;
+export type SchemaAvailability = (typeof schemaAvailabilityValues)[number];
+
+/**
+ * What `availability()` answers: the schema.org state, the message key for the visible line, and
+ * whether a buy path may be rendered at all (spec 005 §2, §5.3, AC-20).
+ *
+ * `saleable` is separate from `schemaAvailability` because they answer different questions:
+ * schema.org describes the offer to a crawler, `saleable` decides whether spec 009 renders an add
+ * button and whether spec 007 emits an `Offer` node at all. A `demo` destination is
+ * `saleable: false` with `catalog.availability.countryDemo` and no `Offer` (ADR-0007,
+ * `plan/02` §9).
+ */
+export interface Availability {
+  readonly schemaAvailability: SchemaAvailability;
+  /** One of the five `catalog.availability.*` keys of spec 005 §7 — never a label. */
+  readonly reasonKey: CatalogAvailabilityKey;
+  readonly saleable: boolean;
+}
+
+/**
+ * One line of a signed quote: **product id, tier key and the integer amount the buyer saw**, and
+ * nothing else (spec 005 §5.2, §8, AC-17).
+ *
+ * There is no recipient, no address, no buyer, no email, no basket note and no free text here,
+ * and there may not be: a quote travels through a form field and a payment intent's metadata, so
+ * every field on it is a field we have chosen to expose (`plan/07` §2.2 data minimisation,
+ * `CLAUDE.md` "no PII in logs, URLs, analytics"). The key-set equality test of AC-17 pins the
+ * shape rather than trusting a review.
+ */
+export interface QuoteLine {
+  readonly productId: string;
+  readonly tierKey: string;
+  /** The display amount of that line, integer minor units of the quote's own currency. */
+  readonly amountMinor: number;
+}
+
+/**
+ * A stateless, signed price quote (spec 005 §5.2 `QuoteSchema`, §8, §13 Q5, AC-17).
+ *
+ * Stateless is the design: the digest is an HMAC over the quote's own fields, so spec 013 can
+ * verify a quote it did not issue without a table, a session or a lookup — and spec 005 stores
+ * nothing and touches no order table (ADR-0009). It carries **no personal data at all**, which is
+ * what makes it safe to put in a hidden field and in a payment intent.
+ *
+ * `expiresAt` is 30 minutes after issue (§13 Q5). On `expired`, the caller re-derives the price
+ * and shows the new one for explicit re-confirmation: a silently higher charge is not reachable
+ * through this API.
+ */
+export interface Quote {
+  /** A deterministic, non-secret id of the quoted content: no counter, no random, no PII. */
+  readonly quoteId: string;
+  readonly lines: readonly QuoteLine[];
+  /** The sum of the line amounts, in `currency` — refined, not assumed (`QuoteSchema`). */
+  readonly totalMinor: number;
+  readonly currency: CurrencyCode;
+  /** The rate's publication date when the amounts were converted, `null` when they were not. */
+  readonly fxAsOf: IsoDate | null;
+  /** The unbuffered rate used, `null` when no conversion was involved. */
+  readonly ratePpm: number | null;
+  /** The priced rows behind the lines, in line order — this module's own opaque token. */
+  readonly priceVersion: string;
+  /** ISO-8601 instant, 30 minutes after issue (§13 Q5). */
+  readonly expiresAt: string;
+  /** Hex SHA-256 HMAC over every field above, in a canonical order. */
+  readonly digest: string;
+}
+
+/**
+ * `verifyQuote()`'s three answers (spec 005 §5.2, AC-17).
+ *
+ *  - `ok` — the signature holds, the clock is inside the window, and every priced row behind it
+ *    still resolves to the same amount;
+ *  - `expired` — nothing is wrong with the quote, it is simply no longer the price: the clock is
+ *    past `expiresAt`, or a row moved under it. The caller re-derives and asks the buyer to
+ *    confirm the new figure explicitly;
+ *  - `tampered` — the digest does not match the content, so the quote was altered after issue.
+ *    There is no fourth answer and no `ok`-with-a-warning.
+ */
+export type QuoteVerdict = "ok" | "expired" | "tampered";

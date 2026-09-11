@@ -56,6 +56,7 @@ import {
   moneyDecimalString,
 } from "@/modules/i18n";
 
+import { availability } from "../availability";
 import { isFlagEnabled } from "../flags";
 import {
   FromPriceProjectionQuerySchema,
@@ -78,7 +79,7 @@ import {
   catalogAvailabilityKeys,
 } from "../types";
 
-import { convertForDisplay } from "./fx";
+import { convertForDisplay, rateValidUntil } from "./fx";
 import { fromPrice, resolvePrice, tierPrices } from "./resolve";
 
 /**
@@ -158,6 +159,22 @@ function displayCurrencyFor(locale: LocaleCode): CurrencyCode {
   return currencyDefault;
 }
 
+/**
+ * The earlier of two validity dates, treating `null` as "no end at all" (spec 005 §6, §14 A3).
+ *
+ * A current price row has `activeTo === null` and never expires on its own; an FX snapshot always
+ * does. So `null` loses to any date, and two dates resolve to the smaller — `YYYY-MM-DD` strings
+ * sort chronologically, so this is a comparison and not date arithmetic.
+ */
+function earlierDay(
+  left: IsoDate | null,
+  right: IsoDate | null,
+): IsoDate | null {
+  if (left === null) return right;
+  if (right === null) return left;
+  return left < right ? left : right;
+}
+
 /* -------------------------------------------------------------------------- */
 /* The view model.                                                            */
 /* -------------------------------------------------------------------------- */
@@ -171,6 +188,7 @@ function displayCurrencyFor(locale: LocaleCode): CurrencyCode {
  */
 async function projectionOf(
   price: PricePoint,
+  productId: string,
   locale: LocaleCode,
   countryIso: CountryIso2,
   now: Date,
@@ -195,7 +213,7 @@ async function projectionOf(
     deliveryIncluded: true,
     surcharges: price.surcharges,
     priceVersion: price.priceVersion,
-    priceValidUntil: price.activeTo,
+    availability: await availability({ productId, countryIso }),
   } as const;
 
   // The three FX outcomes, each producing exactly the fields §5.4 allows it to: a native amount
@@ -203,18 +221,32 @@ async function projectionOf(
   // states the destination currency and the reason it is doing so (§13 Q2, AC-15).
   const projection =
     conversion.status === "native"
-      ? { ...base, displayPrice: conversion.price }
+      ? {
+          ...base,
+          displayPrice: conversion.price,
+          priceValidUntil: price.activeTo,
+        }
       : conversion.status === "converted"
         ? {
             ...base,
             displayPrice: conversion.price,
             fxAsOf: conversion.rate.asOf,
             ratePpm: conversion.rate.ratePpm,
+            // §6, §14 A3: a converted price is only the price for as long as its rate is usable,
+            // so the offer's validity is the **earlier** of the row's `active_to` and the
+            // snapshot's own last usable day. `null` (a current row) never wins over a date.
+            priceValidUntil: earlierDay(
+              price.activeTo,
+              rateValidUntil(conversion.rate.asOf),
+            ),
           }
         : {
             ...base,
             displayPrice: destinationCurrencyPrice,
             fxReasonKey: conversion.reasonKey,
+            // Nothing was converted: the fallback shows the destination's own authored price, so
+            // no FX validity bounds it (§14 A3 — the destination currency and the same figure).
+            priceValidUntil: price.activeTo,
           };
 
   return PriceProjectionSchema.parse(projection);
@@ -251,7 +283,7 @@ export async function priceProjection(
     countryIso,
     ...(deliveryDate === undefined ? {} : { deliveryDate }),
   });
-  return projectionOf(price, locale, countryIso, now ?? new Date());
+  return projectionOf(price, productId, locale, countryIso, now ?? new Date());
 }
 
 /**
@@ -277,7 +309,7 @@ export async function fromPriceProjection(
   const { productId, countryIso, now } =
     FromPriceProjectionQuerySchema.parse(query);
   const price = await fromPrice({ productId, countryIso });
-  return projectionOf(price, locale, countryIso, now ?? new Date());
+  return projectionOf(price, productId, locale, countryIso, now ?? new Date());
 }
 
 /* -------------------------------------------------------------------------- */
@@ -389,15 +421,19 @@ export function offerProjection(
   const parsed = PriceProjectionSchema.parse(projection);
   if (countryConfig(parsed.destinationCountry).status !== "live") return null;
 
-  const availability =
-    options.inStock === false ? AVAILABILITY.outOfStock : AVAILABILITY.inStock;
+  // The projection's own verdict decides, so the visible availability line and the schema.org
+  // value are one fact (AC-20); `inStock: false` remains an explicit override for a caller that
+  // knows something the data does not (a date beyond the cut-off, spec 009's seam).
+  const inStock =
+    options.inStock ?? parsed.availability.schemaAvailability === "InStock";
+  const state = inStock ? AVAILABILITY.inStock : AVAILABILITY.outOfStock;
 
   return OfferProjectionSchema.parse({
     price: moneyDecimalString(parsed.displayPrice),
     priceCurrency: parsed.displayPrice.currency,
     priceValidUntil: parsed.priceValidUntil,
-    availability: availability.url,
-    availabilityKey: availability.key,
+    availability: state.url,
+    availabilityKey: state.key,
     eligibleRegion: parsed.destinationCountry,
     shippingRate: { amountMinor: 0, currency: parsed.displayPrice.currency },
     hasMerchantReturnPolicy: RETURN_POLICY,
