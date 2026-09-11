@@ -23,4 +23,4 @@ _None recorded._
 
 ## Result
 
-_Pending._
+- **2026-09-11 — in review, [PR #57](https://github.com/itsahmeds/flowers-overseas/pull/57).** AC-33…AC-36 delivered: `docs/codebase-map.md` (11 945 bytes) with `pnpm codebase:map --check`, 86 briefs migrated losslessly with the 400-character cap and brief-present rule in `pnpm tasks:check`, `## 0. Index` in six specs and the template with `pnpm specs:index --check`, and map-first agent, skill and `CLAUDE.md` definitions. Tests T-34…T-37. Local gates green; CI is billing-blocked.
