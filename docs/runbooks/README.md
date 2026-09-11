@@ -16,6 +16,7 @@ area. `tests/unit/docs.test.ts` fails if a runbook exists but is not listed here
 | [hreflang-regression](hreflang-regression.md) | Hreflang or canonical regression found in Search Console or the auditor |
 | [sitemap-or-robots-broken](sitemap-or-robots-broken.md) | Sitemap or `robots.txt` serving the wrong thing |
 | [sla-breach-vendor](sla-breach-vendor.md) | Delivery SLA breached by a fulfilment partner |
+| [pricing](pricing.md) | Setting and superseding a price, reading a `PricePoint`, stale FX, the 30-day-lowest figure, the mutation → cache-tag map, the checklist for changing a band |
 | [peak-day](peak-day.md) | Peak-day readiness and on-the-day procedure |
 | [rollback](rollback.md) | Reverting a deploy, a migration or a task |
 | [host-failover](host-failover.md) | Moving off Vercel to the Railway + Cloudflare fallback (ADR-0012) |

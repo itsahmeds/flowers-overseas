@@ -241,3 +241,20 @@ export { availability } from "./availability";
 export { isProductIndexable } from "./read";
 export { lowestPriceInLast30Days } from "./pricing/history";
 export { quote, verifyQuote } from "./pricing/quote";
+
+// Cache tags (spec 005 §5.2 `cache.ts`, §5.4, AC-25; `plan/01` §3; TASK-069).
+//
+// `cacheTagsFor()` is the **only** builder of `catalog:{country}`, `product:{id}` and
+// `country:{iso}`, and `tests/unit/catalog-cache-tags.test.ts` scans `src/` to keep it that way:
+// a tag is a name the page that attaches it and the job that purges it must spell identically, so
+// a second speller is a page that silently never refreshes. It maps a *mutation* to every tag that
+// mutation invalidates rather than an entity to its own name, because the union is exactly what a
+// caller gets wrong; `docs/runbooks/pricing.md` writes the same map out for 007/008/012.
+//
+// Spec 005 calls `invalidate()` nowhere (§5.4): this module produces names, `src/lib/cache.ts`
+// stays the seam, and the first purges are spec 012's admin price edit and TASK-071's
+// `fx.refresh`. `CATALOG_CACHE_TAG_PREFIXES` stays internal for the reason every other constant
+// here does — the barrel exports schemas, value sets and functions, and a caller that read a
+// prefix would be one line from building a tag with it (AC-2).
+export type { CacheEntity } from "./cache";
+export { CacheEntitySchema, cacheTagsFor } from "./cache";

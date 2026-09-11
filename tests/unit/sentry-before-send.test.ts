@@ -325,9 +325,9 @@ describe("Sentry release and the NEXT_PUBLIC mirror (TASK-007, TASK-043)", () =>
  * taken from the URL path, so it must survive the scrub — a redacted tag would make per-locale
  * error volumes unreadable — and the redaction of everything else must be unaffected.
  */
-describe("the non-PII locale tag (spec 003 §11)", () => {
-  it("declares `locale` as the only allowed non-PII tag", () => {
-    expect([...NON_PII_TAGS]).toEqual(["locale"]);
+describe("the non-PII tags (spec 003 §11, spec 005 §11)", () => {
+  it("declares `locale` and `signal` as the allowed non-PII tags", () => {
+    expect([...NON_PII_TAGS]).toEqual(["locale", "signal"]);
   });
 
   it("survives beforeSend verbatim for every launch locale", () => {

@@ -32,7 +32,7 @@
  * - Org region: EU (`de.sentry.io`), spec 001 §13 Q6. The region lives in the DSN the founder
  *   pastes into the Vercel env store; no code depends on it.
  */
-import { getCurrentScope } from "@sentry/nextjs";
+import { captureMessage, getCurrentScope } from "@sentry/nextjs";
 import type { ErrorEvent, EventHint } from "@sentry/nextjs";
 
 import { REDACTED, isRedactedKey, redact } from "./logger";
@@ -43,8 +43,14 @@ import { REDACTED, isRedactedKey, redact } from "./logger";
  * language, not a person, and it is already a first-class logger field (spec 001 §5.2). It
  * survives `beforeSend` because it is absent from the PII key list, which is asserted rather than
  * assumed (`tests/unit/sentry-before-send.test.ts`).
+ *
+ * `signal` is the second, added by spec 005 §11 (TASK-069): the name of a business condition
+ * (`catalog.fx_stale`, …) taken from a **closed set of constants in the source**, never from
+ * input. It has to be a tag rather than the event message because `beforeSend` replaces free text
+ * wholesale with `"[REDACTED]"` — a deliberate rule (the gift message is free text too), so the
+ * only way a signal stays groupable in Sentry is a key nobody can put a person's data into.
  */
-export const NON_PII_TAGS = ["locale"] as const;
+export const NON_PII_TAGS = ["locale", "signal"] as const;
 
 /**
  * Tag the current Sentry scope with the resolved locale so error volumes can be read per locale
@@ -53,6 +59,33 @@ export const NON_PII_TAGS = ["locale"] as const;
  */
 export function setLocaleTag(locale: string): void {
   getCurrentScope().setTag("locale", locale);
+}
+
+/**
+ * Report a condition that is not an error but silently produces a wrong result if nobody looks
+ * (spec 005 §11's three pricing signals are the first three: a stale FX snapshot, a missing price
+ * row, an ambiguous one).
+ *
+ * A no-op when no client is initialised, which is the Phase 0 default (no DSN) — the SDK's
+ * `captureMessage` returns an event id and sends nothing. The caller logs the same fields through
+ * `src/lib/logger.ts` regardless, so the signal is never *only* in Sentry.
+ *
+ * `signal` is a **constant** at every call site and is carried as the `signal` tag as well as the
+ * message: `beforeSend` replaces free text wholesale with `"[REDACTED]"` (the gift message is free
+ * text too, so the rule is right), and the tag is what survives it and keeps the three conditions
+ * apart in Sentry. `fields` are attached as `extra` and pass the same key-based scrubber as any
+ * other event data; callers pass a bounded field set of their own (spec 005's is
+ * `CATALOG_LOG_FIELDS`).
+ */
+export function captureWarning(
+  signal: string,
+  fields: Readonly<Record<string, unknown>> = {},
+): void {
+  captureMessage(signal, {
+    level: "warning",
+    tags: { signal },
+    extra: { ...fields },
+  });
 }
 
 /** The subset of a Sentry event this module touches. Structural, so no SDK types are needed. */
