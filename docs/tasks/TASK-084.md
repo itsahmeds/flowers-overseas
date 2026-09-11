@@ -34,3 +34,21 @@ Seven `en` keys reworded, all seven reset to `reviewed: false` with `reviewedBy`
 
 The mechanical half is in `tests/unit/design-docs.test.ts` §5b: the nine banned words (`network` added, so the list finally matches the README's "nine") scanned over every `messages/*.json` **value** and every prose string literal under `src/`, with key names and identifiers exempt by the no-whitespace rule, `src/modules/admin/` exempt by path per A5, and two controls — one proving the word list bites on a plausible sentence, one proving the extractor flags JSX text while sparing `noPartner`, `third-party-script` and a Tailwind class list.
 
+
+**Rebase onto `main` after PR #58 (TASK-054), 2026-09-11.** The orchestrator ruled on E1: the 15
+carry-forward attestations stay as they are for this PR and remain the founder's copy review queue
+in the PR body. TASK-054 un-attested `home.destinations.elsewhere.body`, so the recomputed English
+review queue is that key plus this pass's seven — 8 of 337 keys, 2.37 %, well inside the 5 % gate;
+`unreviewedShare("en") === unreviewedShare("en-gb")`, both locales indexable and un-tagged, `de`/`pl`
+unchanged at 100 %. The four unit pins were merged onto TASK-054's shape: the queue is pinned
+key-exact in `i18n-messages-schema.test.ts` (`AWAITING_FOUNDER_REVIEW`, now eight entries) with the
+stronger `reviewedBy === undefined ⇔ !reviewed` invariant over *every* key, and `home-honesty`,
+`i18n-check` and `i18n-review` keep TASK-054's assertions with the queue's new size described.
+
+Thirteen `darwin` visual baselines were regenerated against a cold build (footer ×4, header ×4,
+home ×2, shell ×2, pseudo-rtl ×1); `linux/` untouched. Every diff was checked pixel-box by
+pixel-box and is text: the utility strip's shorter cutoff line, the finder card losing one wrapped
+line (298 → 278 px), and — on the mobile home shots — the 1 px sticky-header offset that the
+shorter finder produces, with section content identical side by side. At 1280 px the strip prints
+"Order by 14:00 in Warsaw for delivery today" on one line with room to spare; `tests/e2e/header.spec.ts`'s
+45 px pin is green.
