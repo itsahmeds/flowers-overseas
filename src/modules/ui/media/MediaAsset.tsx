@@ -49,10 +49,16 @@ import { type MediaSlot, mediaSlot } from "./slots.ts";
 const PLACEHOLDER_KEY: Readonly<
   Record<
     MediaSlot,
-    "placeholder.hero" | "placeholder.occasion" | "placeholder.product"
+    | "placeholder.hero"
+    | "placeholder.occasion"
+    | "placeholder.product"
+    | "placeholder.delivery"
   >
 > = {
   hero: "placeholder.hero",
+  // The editorial band of the home's explainer (TASK-053): the photograph it will hold is the
+  // one taken at the recipient's door, which is what `media.placeholder.delivery` describes.
+  band: "placeholder.delivery",
   tile: "placeholder.occasion",
   grid: "placeholder.product",
   thumb: "placeholder.product",

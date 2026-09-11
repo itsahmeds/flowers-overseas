@@ -1394,6 +1394,104 @@
     "reviewedAt": "2026-09-08T00:00:00Z",
     "sourceHash": "d8b8392e2c542950ca64867168e4ef87d4ad606882d5898f826b51c6d553988f"
   },
+  "faq.allTopics": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "d2d3ab361b22ef98bf3c8b30026bc9b0639edcf58c5bab8aecb7b2a9c30cd00d"
+  },
+  "faq.allTopicsPending": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "frontend-implementer (spec 004 §2 trust strip, §14 A4 unpublished-target copy, /review 41 caption; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "ed5d800e6749391f7f6bf4884a74d0fe60a460f0ed7febc1e4bb3939b802f881"
+  },
+  "faq.eyebrow": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "fb70a8a0eb771f214b62ca893ba56325290feffbf7d19a838987fdf9499619a7"
+  },
+  "faq.heading": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "fe04113c65cbba9e7d625f3cde3e7e92c2011bcfd3c56b4a5a8a4e9f0aa86724"
+  },
+  "faq.lasting.answer": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "87f7986af28499a84aaefecf2006eeb051a0b5588bb217557f0e3be828edc0db"
+  },
+  "faq.lasting.question": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "20d65f248a1ab26dd3ac1013530d6bee288ce0c89eebbe961bd88de11c743f94"
+  },
+  "faq.nobodyHome.answer": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "frontend-implementer (spec 004 §2 trust strip, §14 A4 unpublished-target copy, /review 41 caption; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "79ef0d592d4c47ef495b45f2d1886ccbb359945d4fe32109d9ad898487378b84"
+  },
+  "faq.nobodyHome.question": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "d2fb2c1e3952cfae0de89d53e1e9eac82244545040b695b9d895143163ef4c96"
+  },
+  "faq.photo.answer": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "bf43940d1a0e145b4f17e921b12638db8e54982ff016da4be53efb534916a212"
+  },
+  "faq.photo.question": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "44ad9cb7673a02f02607de65351573a9aa0af5521983cb88eba9af662c9a5da6"
+  },
+  "faq.price.answer": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "cbd3d661af454cc0f4bc1253eb6cd7bf7f04d9f777a402e150adb2c90986c65b"
+  },
+  "faq.price.question": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "234a4d774aa3370a02efa6d2d8af38b4b56084683fe93f8b2250ce65346b965b"
+  },
+  "faq.whoDelivers.answer": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "5fe111d33535456403a419e4b9df57b8f277167327dc08b91a907e1bfc6a836b"
+  },
+  "faq.whoDelivers.question": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "c201400b592a908bed76f65dc3f307b26454bf6674fdc92f1c603b6e64629d2b"
+  },
   "finder.country.label": {
     "reviewed": true,
     "reviewedAt": "2026-09-09T00:00:00Z",
@@ -1435,6 +1533,13 @@
     "reviewedBy": "founder",
     "source": "human",
     "sourceHash": "cf5f29a754799c142ba31482346c0e5791cb82b551c74177759bcbeb0b6aaac7"
+  },
+  "finder.destinations.summary": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "frontend-implementer (spec 004 §2 trust strip, §14 A4 unpublished-target copy, /review 41 caption; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "f86e629b8cf4c32fc69ba0b49358a8485fd93b95d076735ae33d7976e179c89a"
   },
   "finder.help": {
     "reviewed": true,
@@ -1625,6 +1730,27 @@
     "reviewedAt": "2026-09-09T00:00:00Z",
     "sourceHash": "4e679adbfcc8b3fc5d92f8b8b1fa3c43fb840a626f2d64b599df8d096163a631"
   },
+  "home.dates.eyebrow": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "f42ccfe6b642e8e784b357e60f2adb8638d39c63fdfc1d55b7d1fe6692f55d6a"
+  },
+  "home.dates.heading": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "6cffc48f47ab68250a64cb5ddce49e92bff3c88f246990b9ed77a390b7697eb6"
+  },
+  "home.dates.orderBy": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "b2267e2ffbeb7059d00ce633013b231706fc113b932f1127ec59f5ec15fc29d2"
+  },
   "home.hero.eyebrow": {
     "reviewed": true,
     "reviewedAt": "2026-09-09T00:00:00Z",
@@ -1652,6 +1778,97 @@
     "reviewedBy": "founder",
     "source": "human",
     "sourceHash": "0b5e39078b129e8273e80bf5a87eaafa42c6f0671fa5e28b278496b73fcc8881"
+  },
+  "home.howItWorks.choose.body": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "39bd4ff93c9aa49e4c6887502e5789e310283418bcd736582d3110fff9c5959c"
+  },
+  "home.howItWorks.choose.title": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "0b01053e1a5df911c9b0af391ffeddef23d80a86a9e0bca2a6e207e59922d59c"
+  },
+  "home.howItWorks.deliver.body": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "f92a4240c488d62e72516806f5ff56c1e14f0ee365188d32b9ee8e6162e4f6fd"
+  },
+  "home.howItWorks.deliver.title": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "51adff8e9fa8b5eaada4fe8ef654e82299114032e344ae630c39ffe9820d1ff3"
+  },
+  "home.howItWorks.eyebrow": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "355c83a326f0d8f94b961acf40f99347dc75ede34e2040bd4fbdd38cc1f2ea55"
+  },
+  "home.howItWorks.guarantee": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "55c69a3f7a06b7a5fe27b48062d7e5ad9aa49c8d1b4ec0e2b20fdbc08dadca09"
+  },
+  "home.howItWorks.guaranteePending": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "frontend-implementer (spec 004 §2 trust strip, §14 A4 unpublished-target copy, /review 41 caption; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "fc0d3d2e7e47213d5f8cf2542c854bc16ad09747ecfeee6314b7b33c347ef18a"
+  },
+  "home.howItWorks.heading": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "ee5331dd6c26b1704618f9387322160472b43a3136e443c17e2697c910a32879"
+  },
+  "home.howItWorks.intro": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "861483cf69c634736895a1e4cf08cbc4374bb3572143f147c759caaaca67e1b2"
+  },
+  "home.howItWorks.make.body": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "acb905508165728cb9aa14d3d46f8651e32471460084ca2c334a23ffad8ad79f"
+  },
+  "home.howItWorks.make.title": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "e1e72d90b776000bc68ec11e12f78a8f07b1b4ea5196ec0b5d45bb16756dcd7c"
+  },
+  "home.occasions.eyebrow": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "c85dd9d957897e567874675e68dc8dd440e6f47636b3b6a1d47acde85b7da08f"
+  },
+  "home.occasions.heading": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "d2d90f63ab3544d2bb372d496a6646e38595bf374ce5284d7a9ec26ea3145f37"
   },
   "home.proof.guarantee.body": {
     "reviewed": true,
@@ -1712,9 +1929,9 @@
   "media.placeholder.delivery": {
     "source": "human",
     "reviewed": true,
-    "reviewedBy": "backend-implementer (spec 006 §7 media/catalogue namespaces; TASK-073)",
-    "reviewedAt": "2026-09-09T00:00:00Z",
-    "sourceHash": "abd742ccaf1d24dd3a2cf701fd28c9ce7f93d4c7663c529e0b0a8c2916f8db85",
+    "reviewedBy": "frontend-implementer (spec 004 §2 trust strip, §14 A4 unpublished-target copy, /review 41 caption; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "e66590d3bf3a2144c2a669457446ad307f329ed4cf6195de5417f8885081f709",
     "retained": true
   },
   "media.placeholder.hero": {
@@ -1987,5 +2204,173 @@
     "reviewedBy": "founder",
     "reviewedAt": "2026-09-09T00:00:00Z",
     "sourceHash": "14c03fcaa8c30420882c8b0fded3edfde4244a977d4ef566ffb0862ba1c30267"
+  },
+  "occasions.anniversary.name": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "61123c4d8b19cc64abdbe9cfed9ab848c082ac01b9948e5501f75780749b8cec"
+  },
+  "occasions.anniversary.subtitle": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "45c0260d151e784bd17d396fdcd631fd8caa51b94ecd13a6fc4812b5997245a3"
+  },
+  "occasions.birthday.name": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "c6138abfa6a734269ef280d53f37d351d08408258322aa818f4cf9fe9fa4bb0d"
+  },
+  "occasions.birthday.subtitle": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "406834ea6e28888bea6174d7e548f4e18029dd3b4e6f13bfda94ece1f4806969"
+  },
+  "occasions.date.allSaints.name": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "a63a6f1ade575e124b5c5234f41e0dddff10cc2fface2900b51a1e85105a18a8"
+  },
+  "occasions.date.andrzejki.name": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "6e2f25a42a6ca26d772bda13183dd37dd56ebcc5f9f7acb592bd96901df9978c"
+  },
+  "occasions.date.wigilia.name": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "086d113d2b9580df1aa3a48d06a5311595de11e3e6898444850c469f211f5425"
+  },
+  "occasions.date.womensDay.name": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "4e8a4b2c158bdf184ed352963c91d7079572cadd4129a7aa71c5d80e3f5ed8c3"
+  },
+  "occasions.date.womensDay.note": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "d1aed996880601fc493ce6d9807e7f9144d4c823b35ddd9859d989fc0bf6a55e"
+  },
+  "occasions.justBecause.name": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "6290cbc35f2b237d9730d4c1dbc52944ed46ec41a046ae7da1e568d7aa8a1075"
+  },
+  "occasions.justBecause.subtitle": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "e4f89197553128504b8e21df6bf286ad98e410a16685426679361fe25900252d"
+  },
+  "occasions.nameDay.name": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "6e094f99894071ac71c100643a6ccad484058ae2401acf80bc03216736fba53f"
+  },
+  "occasions.nameDay.subtitle": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "2ceb0d2fd6759be8c7bf2caf83a8c18f2f75772c73ac66d5d4ebf354f6d27ca0"
+  },
+  "occasions.newBaby.name": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "760dae0d44a336e2a173a3a6e0e4544de3f065440ec4e7de65d798790bb5569a"
+  },
+  "occasions.newBaby.subtitle": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "0b17915ee6096cdb596399037706ad2e7116286cf5fae63d1c5abe43200e791e"
+  },
+  "occasions.sympathy.name": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "28388a6a648be075e2cb7916ee7c7e3277638b6096ade9a90c2191094edabea9"
+  },
+  "occasions.sympathy.subtitle": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "4814fc4bfbee31d3178b6eff12045e53fba62eee1c01f82b5c2094a07e9c23d0"
+  },
+  "trust.guarantee.claim": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "frontend-implementer (spec 004 §2 trust strip, §14 A4 unpublished-target copy, /review 41 caption; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "454c7930fd562e567d7efe0c177f9b0dcb4268ac76b0875e1174923e65acbd76"
+  },
+  "trust.guarantee.name": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "frontend-implementer (spec 004 §2 trust strip, §14 A4 unpublished-target copy, /review 41 caption; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "3ea34d78889432f220b6f0fdd3df749ff3e0add9b46a8b0faffc509362e77f27"
+  },
+  "trust.heading": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "frontend-implementer (spec 004 §2 trust strip, §14 A4 unpublished-target copy, /review 41 caption; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "b8be849c2fa4971a27f9c76daef930063856d6df1e99575aae6d648e043ee4fc"
+  },
+  "trust.local.claim": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "frontend-implementer (spec 004 §2 trust strip, §14 A4 unpublished-target copy, /review 41 caption; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "09ff076a99ad6b5b915e79aabbedd4f234b07121ebb6fe256dbeb0b222957111"
+  },
+  "trust.local.name": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "frontend-implementer (spec 004 §2 trust strip, §14 A4 unpublished-target copy, /review 41 caption; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "a80e934aae32778743af9d4dc04161501443ff6b002699e888df0326eec86c7c"
+  },
+  "trust.price.claim": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "frontend-implementer (spec 004 §2 trust strip, §14 A4 unpublished-target copy, /review 41 caption; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "e67b27f1cfdf500ebb0d8c7d12920b5e5c41d37c954ef1669bfe369c00d257ea"
+  },
+  "trust.price.name": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "frontend-implementer (spec 004 §2 trust strip, §14 A4 unpublished-target copy, /review 41 caption; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "bcfc18f77c106b8fcb98a5a8fc51c977976d278e2dacd6a3ee2d5c73070c9aff"
   }
 }

@@ -21,6 +21,8 @@ import { COUNTRIES } from "../../src/config/countries.ts";
 import { loadMessages, localePath } from "../../src/modules/i18n";
 import {
   FINDER_IDS,
+  finderDestinationGroups,
+  finderDestinations,
   finderTarget,
 } from "../../src/modules/ui/home/finder-model.ts";
 import { DestinationList } from "../../src/modules/ui/home/DestinationList.tsx";
@@ -219,6 +221,31 @@ describe("the finder card (AC-11)", () => {
     );
   });
 
+  it("describes the country field with one sentence, not the whole section (`/review 40`)", () => {
+    const html = hero("en");
+
+    // The description used to be `destinations` — the section — so focusing the field read seven
+    // names, seven state words and the onboarding line on every focus.
+    expect(html).toContain(
+      `aria-describedby="${FINDER_IDS.destinationsSummary}"`,
+    );
+    expect(html).not.toContain(`aria-describedby="${FINDER_IDS.destinations}"`);
+    expect(html).toContain(`id="${FINDER_IDS.destinationsSummary}"`);
+    // The sentence is built from the same registry the section renders, so it cannot drift.
+    expect(text(html)).toContain(
+      "We deliver in Poland today. In France, Germany, Italy, Netherlands, Romania and Spain we are still choosing florists.",
+    );
+  });
+
+  it("keeps both destination groups non-empty, which the summary sentence assumes", () => {
+    const groups = finderDestinationGroups(
+      finderDestinations("en", (key) => key),
+      (key) => key,
+    );
+    expect(groups.delivering.length).toBeGreaterThan(0);
+    expect(groups.onboarding.length).toBeGreaterThan(0);
+  });
+
   it("ships the type-ahead as an enhancement whose input is server-rendered", () => {
     const html = hero("en");
     // The island's own input, rendered on the server with `list` set: the field is a native
@@ -346,9 +373,18 @@ describe("the copy obeys the brand voice (§14 A5)", () => {
     "network",
   ];
 
-  it("uses none of the nine banned words in any locale's home or finder copy", () => {
+  it("uses none of the nine banned words in any locale's home-page copy", () => {
     for (const locale of LOCALES) {
-      const messages = loadMessages(locale, ["home", "finder"]);
+      // TASK-053 extended the page with four namespaces, and the explainer is exactly where a
+      // model word ("relay", "our partner network") would land: it is the section that explains
+      // the model.
+      const messages = loadMessages(locale, [
+        "home",
+        "finder",
+        "trust",
+        "faq",
+        "occasions",
+      ]);
       const serialised = JSON.stringify(messages).toLowerCase();
       for (const word of BANNED) {
         expect(serialised, `${locale}: ${word}`).not.toContain(word);

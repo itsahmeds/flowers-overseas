@@ -56,16 +56,25 @@
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
+import type { LocaleCode } from "../../../config/locales.ts";
+import { formatList } from "../../i18n";
 import { FinderTypeahead } from "./FinderTypeahead.tsx";
 import { Button } from "../primitives/Button.tsx";
+import { VisuallyHidden } from "../primitives/a11y.tsx";
 import { Grid, Stack } from "../primitives/layout.tsx";
 import { Label, Text } from "../primitives/typography.tsx";
 
 import {
   FINDER_IDS,
+  finderDestinationGroups,
   finderDestinations,
   finderTarget,
 } from "./finder-model.ts";
+
+/** See `finder-model.ts`'s twin: the locale set is provider-backed data (spec 003 AC-31). */
+function localeCode(locale: string): LocaleCode {
+  return locale as LocaleCode;
+}
 
 /**
  * The canvas's `.field span.v`: a 46 px underlined box with 12 px inline padding. 46 clears the
@@ -109,6 +118,9 @@ export function FinderCard({ locale }: FinderCardProps): ReactElement {
   const countryNames = destinations.map((destination) =>
     registryLabel(t, destination.nameKey),
   );
+  const groups = finderDestinationGroups(destinations, (nameKey) =>
+    registryLabel(t, nameKey),
+  );
   // 0…7 matches, formatted here so the island runs no ICU (§13 Q13 option (b)).
   const matchLabels = Array.from(
     { length: countryNames.length + 1 },
@@ -137,7 +149,7 @@ export function FinderCard({ locale }: FinderCardProps): ReactElement {
             */}
             <FinderTypeahead
               className={FIELD}
-              describedBy={FINDER_IDS.destinations}
+              describedBy={FINDER_IDS.destinationsSummary}
               inputId={FINDER_IDS.country}
               listId={FINDER_IDS.countryList}
               options={countryNames}
@@ -152,6 +164,18 @@ export function FinderCard({ locale }: FinderCardProps): ReactElement {
               which every locale document is inside since TASK-085 dropped the client message
               payload and the provider: 122 360 B).
             */}
+            {/*
+              The field's description (`/review 40`): one sentence naming where we deliver and
+              where we are still choosing florists, built from the same registry the destination
+              section renders. It replaced `aria-describedby="destinations"`, which read the whole
+              section — seven names, seven state words and the onboarding line — on every focus.
+            */}
+            <VisuallyHidden id={FINDER_IDS.destinationsSummary}>
+              {finder("destinations.summary", {
+                delivering: formatList(groups.delivering, localeCode(locale)),
+                onboarding: formatList(groups.onboarding, localeCode(locale)),
+              })}
+            </VisuallyHidden>
             <datalist id={FINDER_IDS.countryList}>
               {destinations.map((destination) => (
                 <option

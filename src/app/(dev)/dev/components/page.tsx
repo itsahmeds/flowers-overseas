@@ -22,7 +22,11 @@ import {
   Icon,
   ICON_NAMES,
   FinderCard,
+  HomeFaq,
   HomeHero,
+  HowItWorks,
+  OccasionDates,
+  OccasionTiles,
   Label,
   Mark,
   Media,
@@ -35,6 +39,7 @@ import {
   PHOTO_RATIOS,
   ProofRow,
   Placeholder,
+  TrustStrip,
   footerView,
   type FooterView,
   Row,
@@ -73,6 +78,7 @@ import {
   GALLERY_PHOTO_ASSET,
   GALLERY_TITLE,
   HEADER_STATES,
+  HOME_SECTION_STATES,
   HOME_STATES,
   LABEL_SAMPLE,
   MEDIA_ASSET_STATES,
@@ -671,10 +677,48 @@ export default function DevComponentsPage(): ReactElement {
           </Stack>
         </Section>
 
+        <Section title={SECTIONS[13]}>
+          <Stack gap="lg">
+            {(
+              [
+                [
+                  "dates",
+                  <OccasionDates
+                    headingLevel="h3"
+                    key="dates"
+                    locale={galleryLocale}
+                  />,
+                ],
+                [
+                  "occasions",
+                  <OccasionTiles
+                    headingLevel="h3"
+                    key="occasions"
+                    locale={galleryLocale}
+                  />,
+                ],
+                [
+                  "howItWorks",
+                  <HowItWorks headingLevel="h3" key="howItWorks" />,
+                ],
+                ["faq", <HomeFaq headingLevel="h3" key="faq" />],
+                ["trust", <TrustStrip headingLevel="h3" key="trust" />],
+              ] as const
+            ).map(([state, element]) => (
+              <Stack gap="sm" key={state}>
+                <Text measure size="sm" tone="muted">
+                  {HOME_SECTION_STATES[state]}
+                </Text>
+                <div className="border-rule border">{element}</div>
+              </Stack>
+            ))}
+          </Stack>
+        </Section>
+
         {/* The header is full-bleed by design, so it is rendered outside the section's padding
             through a negative-free wrapper: the box below is the header at this viewport's
             breakpoint, not a scaled copy of it. */}
-        <Section title={SECTIONS[13]}>
+        <Section title={SECTIONS[14]}>
           <Stack gap="sm">
             <Text size="xs" tone="subtle">
               {HEADER_STATES.heading}
@@ -688,7 +732,7 @@ export default function DevComponentsPage(): ReactElement {
           </Stack>
         </Section>
 
-        <Section title={SECTIONS[14]}>
+        <Section title={SECTIONS[15]}>
           {/* Inert by construction: `ConsentGallery` passes no-op handlers, so walking this page
               writes no cookie, sends no request and calls no `gtag` (TASK-051). */}
           <ConsentGallery
@@ -697,7 +741,7 @@ export default function DevComponentsPage(): ReactElement {
           />
         </Section>
 
-        <Section title={SECTIONS[15]}>
+        <Section title={SECTIONS[16]}>
           {FOOTER_STATES.map((state) => (
             <Stack key={state.id} gap="sm">
               <Text size="xs" tone="subtle">
@@ -713,7 +757,7 @@ export default function DevComponentsPage(): ReactElement {
           ))}
         </Section>
 
-        <Section title={SECTIONS[16]}>
+        <Section title={SECTIONS[17]}>
           <Stack gap="xs">
             {CONTRAST_PAIRS.map((pair) => (
               <Row

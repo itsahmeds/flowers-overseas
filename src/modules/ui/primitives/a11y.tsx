@@ -18,15 +18,26 @@ import type { ReactElement, ReactNode } from "react";
 export interface VisuallyHiddenProps {
   readonly children: ReactNode;
   /** `span` by default; `div` when the hidden content is block-level (a table caption, a legend). */
-  readonly as?: "span" | "div" | "legend" | "h2";
+  readonly as?: "span" | "div" | "legend" | "h2" | "h3";
+  /**
+   * Only for a heading that names a landmark: the `aria-labelledby` target. A `<section>` whose
+   * only heading is visually hidden — the trust strip of TASK-053, which the artboards draw with
+   * no visible heading — still has to be able to point at it.
+   */
+  readonly id?: string;
 }
 
 export function VisuallyHidden({
   children,
   as = "span",
+  id,
 }: VisuallyHiddenProps): ReactElement {
   const Element = as;
-  return <Element className="sr-only">{children}</Element>;
+  return (
+    <Element className="sr-only" {...(id === undefined ? {} : { id })}>
+      {children}
+    </Element>
+  );
 }
 
 export interface SkipLinkProps {

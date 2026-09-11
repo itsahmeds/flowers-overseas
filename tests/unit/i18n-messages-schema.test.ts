@@ -313,6 +313,12 @@ describe("the shipped catalogues and manifests", () => {
       // The locale home's own copy (TASK-052).
       "home",
       "finder",
+      // The locale home's lower sections (TASK-053): the occasion tiles and the destination's
+      // dated occasions, the trust strip's three claims with the guarantee name in its own key
+      // (§13 Q4), and the five FAQ disclosures.
+      "occasions",
+      "trust",
+      "faq",
     ];
     const provenanceLabel: Messages["media"]["provenance"]["aiExample"] =
       enSource.media.provenance.aiExample;
@@ -334,12 +340,21 @@ describe("the shipped catalogues and manifests", () => {
     const heroHeading: Messages["home"]["hero"]["heading"] =
       enSource.home.hero.heading;
     const finderSubmit: Messages["finder"]["submit"] = enSource.finder.submit;
+    const guaranteeName: Messages["trust"]["guarantee"]["name"] =
+      enSource.trust.guarantee.name;
+    const occasionSubtitle: Messages["occasions"]["nameDay"]["subtitle"] =
+      enSource.occasions.nameDay.subtitle;
+    const faqQuestion: Messages["faq"]["price"]["question"] =
+      enSource.faq.price.question;
 
     expect([...namespaces].sort()).toEqual(Object.keys(enSource).sort());
     expect(destinationName).toBe("Poland");
     expect(categoryLabel).toBe("Best sellers");
     expect(heroHeading).toBe("Flowers for someone far away.");
     expect(finderSubmit).toBe("Continue");
+    expect(guaranteeName).toBe("7-day freshness guarantee");
+    expect(occasionSubtitle).toContain("Imieniny");
+    expect(faqQuestion).toBe("Is the price really final?");
     expect(headline).toContain("{language}");
     expect(floristCount).toContain("plural");
     expect(tierLabel).toContain("plural");

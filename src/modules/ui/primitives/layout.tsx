@@ -221,8 +221,15 @@ export function Cluster({ gap = "sm", ...rest }: RowProps): ReactElement {
 
 export interface GridProps extends BaseProps {
   readonly gap?: Gap;
-  /** Columns at the mobile and desktop artboards. 2-up mobile / 4-up desktop is the card grid. */
-  readonly columns?: "1-2" | "2-4" | "1-3" | "2-3";
+  /**
+   * Columns at the mobile and desktop artboards. 2-up mobile / 4-up desktop is the card grid.
+   *
+   * `1-aside` is the artboards' band shape: stacked on mobile, and on desktop a fixed 300 px
+   * heading column beside a fluid one (`homepage-desktop.dc.html`'s "Coming up in Poland" band).
+   * It lives here rather than at the call site because §2's rule is that no component ships a
+   * bespoke grid — the width is the drawing's, written once.
+   */
+  readonly columns?: "1-2" | "2-4" | "1-3" | "2-3" | "1-aside";
 }
 
 const COLUMN_CLASS: Readonly<
@@ -232,9 +239,10 @@ const COLUMN_CLASS: Readonly<
   "2-4": "grid-cols-2 md:grid-cols-4",
   "1-3": "grid-cols-1 md:grid-cols-3",
   "2-3": "grid-cols-2 md:grid-cols-3",
+  "1-aside": "grid-cols-1 md:grid-cols-[300px_minmax(0,1fr)]",
 };
 
-/** The card grid (§2: 2-up mobile, 4-up desktop) and its three siblings. */
+/** The card grid (§2: 2-up mobile, 4-up desktop) and its four siblings. */
 export function Grid({
   gap = "md",
   columns = "2-4",

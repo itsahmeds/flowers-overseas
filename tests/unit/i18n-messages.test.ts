@@ -53,6 +53,10 @@ describe("the shell catalogue", () => {
       "consent",
       "destinations",
       "errors",
+      // `faq`, `occasions` and `trust` are the locale home's lower sections (TASK-053): the five
+      // `<details>` questions, the occasion tiles and dated occasions, and the three trust
+      // claims with the guarantee name in its own key.
+      "faq",
       // `finder` and `home` are the locale home's own copy (TASK-052): the hero, the finder card,
       // the destination states and the four-fact proof row.
       "finder",
@@ -64,6 +68,8 @@ describe("the shell catalogue", () => {
       "media",
       "meta",
       "nav",
+      "occasions",
+      "trust",
     ]);
   });
 

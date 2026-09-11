@@ -87,8 +87,8 @@ src/lib/                  env (zod), logger, health, sentry, cache adapter; db c
 src/jobs/                 pg-boss job definitions and cron schedule
 src/emails/               React Email templates, localised
 src/config/               locales.ts, locales.data.ts, currencies.ts, address-formats.ts,
-                          cookies.ts, countries.ts, site-links.ts, categories.ts, company.ts,
-                          payment-methods.ts
+                          cookies.ts, countries.ts, site-links.ts, occasions.ts, categories.ts,
+                          company.ts, payment-methods.ts
                           (spec 003/004; zod-validated at module load, no database — `pnpm
                           check:no-db`. `locales.data.ts` is the authored locale rows as plain
                           constants and imports nothing, so the 500 document can read a locale
@@ -104,8 +104,13 @@ src/config/               locales.ts, locales.data.ts, currencies.ts, address-fo
                           `available: false` until 013/014 configures a processor, which is how
                           spec 004 §8's third-party-trademark rule is enforced as data —
                           TASK-049);
-                          occasions.ts follows in 004, and payment-methods-by-country.ts,
-                          feature-flags.ts in 002/004
+                          occasions.ts is the homepage occasion registry of spec 004 §13's
+                          resolution note — TASK-053: the six tiles with their per-locale slugs
+                          behind `published: false` (spec 008 publishes the occasion pages) and
+                          the destination's dated occasions with the order-by cutoffs the
+                          "Coming up in Poland" strip prints, each cutoff an authored instant and
+                          none of them computed; payment-methods-by-country.ts and
+                          feature-flags.ts follow in 002/004
 src/config/catalogue/     the authored catalogue dataset (spec 005 §2, §13 Q9, ADR-0017 —
                           TASK-061): catalogue/schemas.ts (the closed facet enums of
                           `plan/10` §1.1), catalogue/projections.ts (`toProductRow()` and the

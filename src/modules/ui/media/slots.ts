@@ -21,7 +21,7 @@
  */
 
 /** The four places this design puts a photograph. Named, so a call site cannot invent a fifth. */
-export const MEDIA_SLOTS = ["hero", "grid", "tile", "thumb"] as const;
+export const MEDIA_SLOTS = ["hero", "band", "grid", "tile", "thumb"] as const;
 export type MediaSlot = (typeof MEDIA_SLOTS)[number];
 
 export interface MediaSlotSpec {
@@ -38,12 +38,20 @@ export interface MediaSlotSpec {
 }
 
 /**
- * The slot table. `grid` is the card grid of §2 (2-up mobile → 4-up desktop, so 50vw → 25vw);
- * `tile` is the occasion grid (2-up mobile → 3-up desktop); `thumb` is the fixed 96 px square a
- * basket line or an order row uses.
+ * The slot table. `band` is a half-page editorial band (the how-it-works section's photograph,
+ * TASK-053: full width on the mobile artboard, half of it on the desktop one); `grid` is the card
+ * grid of §2 (2-up mobile → 4-up desktop, so 50vw → 25vw); `tile` is the occasion grid (2-up
+ * mobile → 3-up desktop); `thumb` is the fixed 96 px square a basket line or an order row uses.
  */
 export const MEDIA_SLOT_SPECS: Readonly<Record<MediaSlot, MediaSlotSpec>> = {
   hero: { sizes: "100vw", ratio: "hero", aboveFold: true },
+  // Never above the fold: the how-it-works band sits below the occasion grid on both artboards,
+  // so it can never be the page's `priority` candidate and `Media` refuses the combination.
+  band: {
+    sizes: "(min-width: 768px) 50vw, 100vw",
+    ratio: "landscape",
+    aboveFold: false,
+  },
   grid: {
     sizes: "(min-width: 768px) 25vw, 50vw",
     ratio: "portrait",

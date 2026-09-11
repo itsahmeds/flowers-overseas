@@ -296,3 +296,36 @@ export {
 } from "./home/finder-model.ts";
 export type { FinderDestination } from "./home/finder-model.ts";
 export { PROOF_FACTS, ProofRow } from "./home/ProofRow.tsx";
+export {
+  type FinderDestinationGroups,
+  finderDestinationGroups,
+} from "./home/finder-model.ts";
+
+// The rest of the locale home, in the round-2 artboards' order (§13's resolution note, design
+// round 6, AC-10, AC-14, AC-15; TASK-053). All five are synchronous Server Components and add no
+// client JavaScript: the FAQ's disclosure is the platform's `<details>`, and the occasion tiles,
+// the dates strip and the explainer render text and photo placeholders. `OCCASIONS_ANCHOR` and
+// the two projections are exported because spec 008 flips `published` in
+// `src/config/occasions.ts` and the tests assert both branches from here.
+export { OccasionTiles } from "./home/OccasionTiles.tsx";
+export type { OccasionTilesProps } from "./home/OccasionTiles.tsx";
+export { OccasionDates } from "./home/OccasionDates.tsx";
+export type { OccasionDatesProps } from "./home/OccasionDates.tsx";
+export { HOW_IT_WORKS_STEPS, HowItWorks } from "./home/HowItWorks.tsx";
+export type { HowItWorksProps } from "./home/HowItWorks.tsx";
+export { FAQ_ENTRIES, HomeFaq } from "./home/HomeFaq.tsx";
+export type { HomeFaqProps } from "./home/HomeFaq.tsx";
+export {
+  OCCASIONS_ANCHOR,
+  occasionDateViews,
+  occasionTiles,
+} from "./home/occasion-model.ts";
+export type {
+  OccasionDateView,
+  OccasionTileView,
+} from "./home/occasion-model.ts";
+
+// The trust strip: three claims, each true today (§2, §5.3, AC-10, AC-15; TASK-053). 008 and 009
+// mount the same component on shop pages, which is why the page bleed is a prop.
+export { TRUST_CLAIMS, TrustStrip } from "./trust/TrustStrip.tsx";
+export type { TrustStripProps } from "./trust/TrustStrip.tsx";

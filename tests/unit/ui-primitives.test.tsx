@@ -91,6 +91,7 @@ const RENDERED: readonly [string, string][] = [
   ["Grid/2-4", renderToStaticMarkup(<Grid columns="2-4">x</Grid>)],
   ["Grid/1-3", renderToStaticMarkup(<Grid columns="1-3">x</Grid>)],
   ["Grid/2-3", renderToStaticMarkup(<Grid columns="2-3">x</Grid>)],
+  ["Grid/1-aside", renderToStaticMarkup(<Grid columns="1-aside">x</Grid>)],
   ["VisuallyHidden", renderToStaticMarkup(<VisuallyHidden>x</VisuallyHidden>)],
   ["SkipLink", renderToStaticMarkup(<SkipLink>x</SkipLink>)],
   [

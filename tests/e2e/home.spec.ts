@@ -34,6 +34,12 @@ const FINDER = "[data-fo-finder]";
 const FORM = "[data-fo-finder-form]";
 const PROOF = "[data-fo-proof-row]";
 const DESTINATION_LIST = "[data-fo-finder-destinations]";
+/** TASK-053's five sections, in the order they appear down the page. */
+const OCCASION_DATES = "[data-fo-occasion-dates]";
+const OCCASIONS = "[data-fo-occasions]";
+const HOW_IT_WORKS = "[data-fo-how-it-works]";
+const FAQ = "[data-fo-faq]";
+const TRUST = "[data-fo-trust-strip]";
 const MATCHES = "[data-fo-finder-matches]";
 const ANNOUNCE = "[data-fo-finder-announce]";
 
@@ -100,6 +106,75 @@ test.describe("the locale home, above the fold", () => {
       await expect(page.locator(`${PROOF} [data-fo-media-slot]`)).toHaveCount(
         0,
       );
+    });
+
+    test(`${path} closes AC-10: the landmarks, the sections and one h1`, async ({
+      page,
+    }) => {
+      await page.goto(path);
+
+      // The three named landmarks of §5.3, on a document that now carries nine sections.
+      await expect(page.locator("body > header[role='banner']")).toHaveCount(1);
+      await expect(page.locator("main#main")).toHaveCount(1);
+      await expect(page.locator("footer")).toHaveCount(1);
+      await expect(page.locator("h1")).toHaveCount(1);
+
+      // The five sections this task adds, in the artboards' order down the page.
+      for (const selector of [
+        OCCASION_DATES,
+        OCCASIONS,
+        HOW_IT_WORKS,
+        FAQ,
+        TRUST,
+      ]) {
+        await expect(page.locator(selector), selector).toHaveCount(1);
+      }
+    });
+
+    test(`${path} renders six occasion tiles, none of them a link`, async ({
+      page,
+    }) => {
+      await page.goto(path);
+
+      await expect(page.locator(`${OCCASIONS} li`)).toHaveCount(6);
+      await expect(page.locator(`${OCCASIONS} a[href]`)).toHaveCount(0);
+      await expect(page.locator(`${OCCASIONS} img`)).toHaveCount(0);
+      await expect(
+        page.locator(`${OCCASIONS} [data-fo-media-slot="tile"]`),
+      ).toHaveCount(6);
+    });
+
+    test(`${path} renders the dated occasions, the explainer and the trust strip`, async ({
+      page,
+    }) => {
+      await page.goto(path);
+
+      await expect(page.locator(`${OCCASION_DATES} li`)).toHaveCount(4);
+      await expect(page.locator("[data-fo-how-it-works-step]")).toHaveCount(3);
+      await expect(page.locator("[data-fo-trust-claim]")).toHaveCount(3);
+      // Nothing in any of the three is a link: every target belongs to an unpublished spec.
+      for (const selector of [OCCASION_DATES, HOW_IT_WORKS, TRUST]) {
+        await expect(page.locator(`${selector} a[href]`), selector).toHaveCount(
+          0,
+        );
+      }
+    });
+
+    test(`${path} opens and closes an FAQ answer with no JavaScript of ours`, async ({
+      page,
+    }) => {
+      await page.goto(path);
+
+      const entries = page.locator(`${FAQ} details`);
+      await expect(entries).toHaveCount(5);
+      // All closed on arrival: an answer visible in the served HTML would be five paragraphs of
+      // copy above the fold of the section.
+      await expect(page.locator(`${FAQ} details[open]`)).toHaveCount(0);
+
+      await entries.first().locator("summary").click();
+      await expect(page.locator(`${FAQ} details[open]`)).toHaveCount(1);
+      await entries.first().locator("summary").click();
+      await expect(page.locator(`${FAQ} details[open]`)).toHaveCount(0);
     });
   }
 
@@ -330,6 +405,11 @@ test.describe("the finder with JavaScript disabled (AC-11)", () => {
         await expect(page.locator(`label[for="${id}"]`)).toHaveCount(1);
       }
       await expect(page.locator("h1")).toHaveCount(1);
+      // The five lower sections are server-rendered too: with JavaScript off the page is still
+      // the whole page, and the FAQ still opens, because the disclosure is the platform's.
+      await expect(page.locator(`${OCCASIONS} li`)).toHaveCount(6);
+      await expect(page.locator(`${FAQ} details`)).toHaveCount(5);
+      await expect(page.locator("[data-fo-trust-claim]")).toHaveCount(3);
     });
   }
 

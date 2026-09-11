@@ -77,8 +77,19 @@ export const FINDER_IDS = {
   countryList: "finder-country-options",
   town: "finder-town",
   date: "finder-date",
-  /** The destination list, which is also the country field's `aria-describedby` target. */
+  /** The destination list — where `Continue` lands, and the section the strip is drawn as. */
   destinations: DESTINATIONS_ANCHOR,
+  /**
+   * The country field's `aria-describedby` target (`/review 40`, inherited by TASK-053).
+   *
+   * It used to be `destinations` — the whole section — so focusing the field read the seven
+   * destinations, their state words and the onboarding sentence, about 200 words, on **every**
+   * focus. A description is a sentence, not a section: this id belongs to a purpose-written
+   * `sr-only` summary beside the field ("we deliver in Poland today; in Germany, France, … we
+   * are still choosing florists"), which is the same information in one breath. The section
+   * itself is still on the page, still the `Continue` target, and still readable by navigation.
+   */
+  destinationsSummary: "finder-destinations-summary",
 } as const;
 
 /** One destination as the finder renders it. */
@@ -122,6 +133,35 @@ export function finderDestinations(
         : undefined,
     }),
   );
+}
+
+/**
+ * The two groups the `aria-describedby` summary names: where we deliver, and where we are still
+ * choosing florists. Both are derived from the same registry the list renders, so the sentence a
+ * screen reader hears cannot drift from the section it summarises, and spec 007 flipping a
+ * country to `live` moves it between the two groups with no copy edit.
+ *
+ * Both groups are non-empty in Phase 0 and the summary message assumes it (one live destination,
+ * six guides); `tests/unit/ui-home.test.tsx` pins that, so a registry that emptied one of them
+ * would fail there rather than render "In  we are still choosing florists."
+ */
+export interface FinderDestinationGroups {
+  readonly delivering: readonly string[];
+  readonly onboarding: readonly string[];
+}
+
+export function finderDestinationGroups(
+  destinations: readonly FinderDestination[],
+  nameOf: (nameKey: string) => string,
+): FinderDestinationGroups {
+  return {
+    delivering: destinations
+      .filter((destination) => destination.delivering)
+      .map((destination) => nameOf(destination.nameKey)),
+    onboarding: destinations
+      .filter((destination) => !destination.delivering)
+      .map((destination) => nameOf(destination.nameKey)),
+  };
 }
 
 /**

@@ -1,7 +1,7 @@
 /**
  * The locale home's visual baselines (spec 004 AC-27's matrix, extended by TASK-052).
  *
- * Six PNGs — three elements × the two artboard widths — because the full-page `en.png`/`de.png`
+ * Sixteen PNGs — eight elements × the two artboard widths — because the full-page `en.png`/`de.png`
  * baselines of `./shell.spec.ts` cannot show any of them at their drawn geometry: they are taken
  * at the `visual` project's 1280 px, while the artboards are drawn at 1440 px and 390 px, and a
  * full-page shot of a growing page hides a 4 px change in an 820 px band.
@@ -12,7 +12,14 @@
  *  - `home-finder-*` — the finder card: three labelled fields, the neutral `Continue`, the help
  *    and cutoff lines and the destination list with its seven states;
  *  - `home-proof-*` — the four-fact strip, 4-up on the desktop artboard and 2-up on the mobile
- *    one.
+ *    one;
+ *  - `home-dates-*` — the "Coming up in Poland" band, with the cutoff line the mobile artboard
+ *    omits;
+ *  - `home-occasions-*` — the six occasion tiles with their square photo placeholders, 2-up
+ *    mobile and 3-up desktop;
+ *  - `home-how-it-works-*` — the explainer band, its photo placeholder and the three steps;
+ *  - `home-faq-*` — the five disclosures, all closed;
+ *  - `home-trust-*` — the three claims, 1-up mobile and 3-up desktop.
  *
  * The type-ahead's open state is deliberately **not** a baseline: it is a hydrated, transient
  * state whose contents depend on what was typed, and it is pinned by DOM assertions in
@@ -56,6 +63,13 @@ const PARTS = [
   { suffix: "hero", selector: "[data-fo-hero]" },
   { suffix: "finder", selector: "[data-fo-finder]" },
   { suffix: "proof", selector: "[data-fo-proof-row]" },
+  // TASK-053's five sections, each clipped to its own box for the reason the header gives: a
+  // full-page shot at 1280 px shows none of them at the geometry the artboards were drawn at.
+  { suffix: "dates", selector: "[data-fo-occasion-dates]" },
+  { suffix: "occasions", selector: "[data-fo-occasions]" },
+  { suffix: "how-it-works", selector: "[data-fo-how-it-works]" },
+  { suffix: "faq", selector: "[data-fo-faq]" },
+  { suffix: "trust", selector: "[data-fo-trust-strip]" },
 ] as const;
 
 /** The two artboard widths, so a baseline is comparable with the design source. */
