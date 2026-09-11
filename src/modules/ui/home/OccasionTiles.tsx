@@ -23,11 +23,14 @@
  * photo-slot list, which is where a shooting list belongs rather than in six message keys nobody
  * reads.
  *
- * The grid is `Grid columns="2-3"` — 2-up mobile, 3-up desktop, which is also what
- * `MEDIA_SLOT_SPECS.tile` states its `sizes` for. The artboards draw 3-up mobile and 6-up
- * desktop; at 390 px a 3-up row leaves a 106 px tile whose subtitle wraps to four lines, and the
- * TASK-053 row settles it in the primitive's favour ("2-up mobile, 3-up desktop"). Recorded in
- * the PR body as the one geometry deviation from the artboards.
+ * The grid is `Grid columns="2-6"` — **2-up mobile, 6-up desktop** (TASK-054, closing the
+ * `/review 53` carry-forward: the 3-up desktop rendering left six ~430 px empty placeholder
+ * squares, which is not what the artboard draws). The artboards draw 3-up mobile and 6-up
+ * desktop; the mobile half stays 2-up, because at 390 px a 3-up row leaves a 106 px tile whose
+ * subtitle wraps to four lines, and the TASK-053 row settled that half in the primitive's
+ * favour. `MEDIA_SLOT_SPECS.tile` states its `sizes` for this geometry (50vw mobile, ~17vw
+ * desktop) and the two cannot be changed apart without failing
+ * `tests/unit/ui-media.test.ts`.
  */
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
@@ -80,7 +83,7 @@ export function OccasionTiles({
           {home("occasions.heading")}
         </Display>
       </Stack>
-      <Grid as="ul" columns="2-3" gap="lg">
+      <Grid as="ul" columns="2-6" gap="lg">
         {tiles.map((tile) => (
           <Stack as="li" gap="sm" key={tile.id} data-fo-occasion={tile.id}>
             <Media

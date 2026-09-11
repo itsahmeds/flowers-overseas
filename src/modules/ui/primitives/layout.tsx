@@ -229,7 +229,7 @@ export interface GridProps extends BaseProps {
    * It lives here rather than at the call site because §2's rule is that no component ships a
    * bespoke grid — the width is the drawing's, written once.
    */
-  readonly columns?: "1-2" | "2-4" | "1-3" | "2-3" | "1-aside";
+  readonly columns?: "1-2" | "2-4" | "1-3" | "2-3" | "2-5" | "2-6" | "1-aside";
 }
 
 const COLUMN_CLASS: Readonly<
@@ -239,6 +239,10 @@ const COLUMN_CLASS: Readonly<
   "2-4": "grid-cols-2 md:grid-cols-4",
   "1-3": "grid-cols-1 md:grid-cols-3",
   "2-3": "grid-cols-2 md:grid-cols-3",
+  // The trending row (five cards on the desktop artboard) and the occasion grid (six), both
+  // 2-up on the mobile artboard.
+  "2-5": "grid-cols-2 md:grid-cols-5",
+  "2-6": "grid-cols-2 md:grid-cols-6",
   "1-aside": "grid-cols-1 md:grid-cols-[300px_minmax(0,1fr)]",
 };
 

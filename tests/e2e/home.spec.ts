@@ -33,7 +33,10 @@ const HERO = "[data-fo-hero]";
 const FINDER = "[data-fo-finder]";
 const FORM = "[data-fo-finder-form]";
 const PROOF = "[data-fo-proof-row]";
-const DESTINATION_LIST = "[data-fo-finder-destinations]";
+/** TASK-054 replaced TASK-052's stand-in list with the artboards' grid, at the same id. */
+const DESTINATIONS = "[data-fo-destinations]";
+const TRENDING = "[data-fo-trending]";
+const REVIEWS = "[data-fo-reviews]";
 /** TASK-053's five sections, in the order they appear down the page. */
 const OCCASION_DATES = "[data-fo-occasion-dates]";
 const OCCASIONS = "[data-fo-occasions]";
@@ -44,7 +47,8 @@ const MATCHES = "[data-fo-finder-matches]";
 const ANNOUNCE = "[data-fo-finder-announce]";
 
 /** The seven Phase-0 destinations of `src/config/countries.ts`, restated (AC-11). */
-const DESTINATIONS = ["PL", "DE", "FR", "ES", "IT", "RO", "NL"] as const;
+const DESTINATION_CODES = ["PL", "DE", "FR", "ES", "IT", "RO", "NL"] as const;
+const DESTINATIONS_COUNT = DESTINATION_CODES.length;
 
 /** The field ids of `finder-model.ts`, restated so a rename is a visible diff. */
 const FIELDS = ["finder-country", "finder-town", "finder-date"] as const;
@@ -85,15 +89,15 @@ test.describe("the locale home, above the fold", () => {
     }) => {
       await page.goto(path);
 
-      for (const iso2 of DESTINATIONS) {
+      for (const iso2 of DESTINATION_CODES) {
         await expect(
-          page.locator(`${DESTINATION_LIST} [data-fo-destination="${iso2}"]`),
+          page.locator(`${DESTINATIONS} [data-fo-destination="${iso2}"]`),
         ).toHaveCount(1);
       }
       // AC-14: nothing in the finder or the destination list is a link while every corridor
       // page is unpublished.
       await expect(page.locator(`${FINDER} a[href]`)).toHaveCount(0);
-      await expect(page.locator(`${DESTINATION_LIST} a[href]`)).toHaveCount(0);
+      await expect(page.locator(`${DESTINATIONS} a[href]`)).toHaveCount(0);
     });
 
     test(`${path} renders the four-fact proof row and no photo in it`, async ({
@@ -119,13 +123,15 @@ test.describe("the locale home, above the fold", () => {
       await expect(page.locator("footer")).toHaveCount(1);
       await expect(page.locator("h1")).toHaveCount(1);
 
-      // The five sections this task adds, in the artboards' order down the page.
+      // The sections of TASK-053 and TASK-054, in the artboards' order down the page.
       for (const selector of [
+        TRENDING,
         OCCASION_DATES,
         OCCASIONS,
         HOW_IT_WORKS,
         FAQ,
         TRUST,
+        DESTINATIONS,
       ]) {
         await expect(page.locator(selector), selector).toHaveCount(1);
       }
@@ -158,6 +164,66 @@ test.describe("the locale home, above the fold", () => {
           0,
         );
       }
+    });
+
+    test(`${path} renders the trending row with the founder's label and no price`, async ({
+      page,
+    }) => {
+      await page.goto(path);
+
+      // Five named picks, each with a reserved photo box and **no price element of any kind**:
+      // spec 004 §3 ships nothing that knows what a product is (TASK-054).
+      await expect(page.locator(`${TRENDING} li`)).toHaveCount(5);
+      await expect(
+        page.locator(`${TRENDING} [data-fo-media-slot="grid"]`),
+      ).toHaveCount(5);
+      await expect(page.locator(`${TRENDING} img`)).toHaveCount(0);
+      await expect(page.locator(`${TRENDING} a[href]`)).toHaveCount(0);
+      await expect(page.locator(TRENDING)).toHaveAttribute(
+        "data-fo-trending-basis",
+        "picks",
+      );
+      const row = (await page.locator(TRENDING).innerText()).replaceAll(
+        /\s+/g,
+        " ",
+      );
+      // The row's copy is authored in `en` only; the German and Polish catalogues are machine
+      // echoes of it today, so the sentence is asserted wherever it is served.
+      expect(row).toContain(
+        "Ranking is by real orders in the last 7 days and switches on once we have them",
+      );
+      expect(row).not.toMatch(/starting at|€|z\u0142|£/iu);
+    });
+
+    test(`${path} renders no verified-reviews section at all (AC-15)`, async ({
+      page,
+    }) => {
+      await page.goto(path);
+
+      await expect(page.locator(REVIEWS)).toHaveCount(0);
+      await expect(page.locator("[data-fo-reviews-trustpilot]")).toHaveCount(0);
+      await expect(page.locator("[data-fo-review]")).toHaveCount(0);
+    });
+
+    test(`${path} renders the destinations grid, links none and asks for nothing`, async ({
+      page,
+    }) => {
+      await page.goto(path);
+
+      await expect(page.locator(`${DESTINATIONS} li`)).toHaveCount(
+        DESTINATIONS_COUNT + 1,
+      );
+      await expect(page.locator(`${DESTINATIONS} a[href]`)).toHaveCount(0);
+      await expect(
+        page.locator("[data-fo-destinations-elsewhere]"),
+      ).toHaveCount(1);
+      // Copy only: a waiting-list capture is a personal-data flow spec 010/016 owns, and an
+      // inert field would be a dark pattern.
+      await expect(
+        page.locator(`${DESTINATIONS} input, ${DESTINATIONS} form`),
+      ).toHaveCount(0);
+      // Only the delivering destination names cities (`plan/10` §3).
+      await expect(page.locator(DESTINATIONS)).toContainText("Warszawa");
     });
 
     test(`${path} opens and closes an FAQ answer with no JavaScript of ours`, async ({
@@ -400,7 +466,7 @@ test.describe("the finder with JavaScript disabled (AC-11)", () => {
       );
       await expect(
         page.locator("datalist#finder-country-options option"),
-      ).toHaveCount(DESTINATIONS.length);
+      ).toHaveCount(DESTINATIONS_COUNT);
       for (const id of FIELDS) {
         await expect(page.locator(`label[for="${id}"]`)).toHaveCount(1);
       }
@@ -410,6 +476,13 @@ test.describe("the finder with JavaScript disabled (AC-11)", () => {
       await expect(page.locator(`${OCCASIONS} li`)).toHaveCount(6);
       await expect(page.locator(`${FAQ} details`)).toHaveCount(5);
       await expect(page.locator("[data-fo-trust-claim]")).toHaveCount(3);
+      // The gated sections are server-rendered too, and the gate is a server decision: the
+      // trending row is there and the reviews section is not, with no script involved.
+      await expect(page.locator(`${TRENDING} li`)).toHaveCount(5);
+      await expect(page.locator(REVIEWS)).toHaveCount(0);
+      await expect(page.locator(`${DESTINATIONS} li`)).toHaveCount(
+        DESTINATIONS_COUNT + 1,
+      );
     });
   }
 

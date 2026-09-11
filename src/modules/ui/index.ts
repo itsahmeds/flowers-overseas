@@ -292,8 +292,6 @@ export { HERO_HEIGHTS, HOME_BLEED, HomeHero } from "./home/HomeHero.tsx";
 export type { HomeHeroProps } from "./home/HomeHero.tsx";
 export { FinderCard } from "./home/FinderCard.tsx";
 export type { FinderCardProps } from "./home/FinderCard.tsx";
-export { DestinationList } from "./home/DestinationList.tsx";
-export type { DestinationListProps } from "./home/DestinationList.tsx";
 export {
   DESTINATIONS_ANCHOR,
   FINDER_IDS,
@@ -302,6 +300,54 @@ export {
 } from "./home/finder-model.ts";
 export type { FinderDestination } from "./home/finder-model.ts";
 export { PROOF_FACTS, ProofRow } from "./home/ProofRow.tsx";
+
+// The three data-gated sections and their provider seams (§13's resolution note, AC-11, AC-14,
+// AC-15; TASK-054). Each section reads a provider inside this module and decides for itself
+// whether it renders: `TrendingRow` shows the florists' picks with the founder's verbatim label
+// until a provider ranked by real orders replaces it, `ReviewsSection` renders **nothing** until
+// a completed order produces a real review, and `DestinationsGrid` renders each destination's
+// status and links none of them while its corridor page is unpublished. The `with*Provider`
+// injection hooks are deliberately **not** exported (spec 003's rule: a caller that could swap a
+// provider at runtime would turn the seam into global mutable configuration); the populated
+// branch reaches the gallery through each section's optional `provider` prop.
+export { TRENDING_ANCHOR, TrendingRow } from "./home/TrendingRow.tsx";
+export type { TrendingRowProps } from "./home/TrendingRow.tsx";
+export {
+  TRENDING_BASES,
+  emptyTrendingProvider,
+  getTrendingProvider,
+  staticTrendingProvider,
+  trendingProviderOf,
+} from "./home/trending-provider.ts";
+export type {
+  TrendingBasis,
+  TrendingPick,
+  TrendingProvider,
+} from "./home/trending-provider.ts";
+export { REVIEWS_ANCHOR, ReviewsSection } from "./home/ReviewsSection.tsx";
+export type { ReviewsSectionProps } from "./home/ReviewsSection.tsx";
+export {
+  REVIEW_KINDS,
+  getReviewsProvider,
+  reviewsProviderOf,
+  staticReviewsProvider,
+} from "./home/reviews-provider.ts";
+export type {
+  ReviewKind,
+  ReviewsProvider,
+  VerifiedReview,
+} from "./home/reviews-provider.ts";
+export { DestinationsGrid } from "./home/DestinationsGrid.tsx";
+export type { DestinationsGridProps } from "./home/DestinationsGrid.tsx";
+export {
+  destinationStatusProviderOf,
+  getDestinationStatusProvider,
+  staticDestinationStatusProvider,
+} from "./home/destination-status-provider.ts";
+export type {
+  DestinationStatus,
+  DestinationStatusProvider,
+} from "./home/destination-status-provider.ts";
 export {
   type FinderDestinationGroups,
   finderDestinationGroups,

@@ -413,7 +413,8 @@
       "eyebrow": "International flower delivery",
       "heading": "Flowers for someone far away.",
       "proposition": "Our florist in your recipient's town makes it and hands it over in person. We never ship a box.",
-      "photoCaption": "Photography to supply · a Warsaw florist finishing a hand-tied bouquet, morning light, full bleed"
+      "photoCaption": "Photography to supply · a Warsaw florist finishing a hand-tied bouquet, morning light, full bleed",
+      "photoCaptionMobile": "Photography to supply · Warsaw florist, morning light"
     },
     "proof": {
       "guarantee": {
@@ -433,6 +434,11 @@
         "body": "The picture reaches you the same day"
       }
     },
+    "trending": {
+      "eyebrow": "Trending now",
+      "heading": "Most sent this week",
+      "basis": "Ranking is by real orders in the last 7 days and switches on once we have them; until then this row shows the florists' picks and says so."
+    },
     "dates": {
       "eyebrow": "Coming up in Poland",
       "heading": "Dates worth sending for",
@@ -441,6 +447,18 @@
     "occasions": {
       "eyebrow": "Shop by occasion",
       "heading": "What is the occasion?"
+    },
+    "reviews": {
+      "eyebrow": "Verified reviews",
+      "heading": "What buyers and recipients say",
+      "body": "Every review here comes from a completed order and shows the destination and the date. This section is hidden until the first verified reviews exist; nothing here is invented.",
+      "trustpilotRegion": "Trustpilot",
+      "trustpilotPending": "Trustpilot rating, once the profile is claimed",
+      "attribution": "{name} · sent to {place} · {date} · {verification}",
+      "verified": {
+        "order": "verified order",
+        "delivery": "verified delivery"
+      }
     },
     "howItWorks": {
       "eyebrow": "How we send your flowers",
@@ -460,6 +478,15 @@
       },
       "guarantee": "Read the guarantee in full",
       "guaranteePending": "The full terms go up with our help pages. Until they do, the promise above is the whole of it."
+    },
+    "destinations": {
+      "eyebrow": "Destinations",
+      "heading": "Poland today. Six more countries as we choose florists.",
+      "body": "We open a country only when we have met enough florists there to stand behind every order — across Europe, and only where we really are.",
+      "elsewhere": {
+        "title": "Somewhere else?",
+        "body": "We are choosing florists in six more countries. When we open one, it appears here first."
+      }
     }
   },
   "finder": {
@@ -477,8 +504,6 @@
     "help": "Continue shows you where we deliver today and where we are still choosing florists.",
     "cutoff": "Order by 14:00 in Warsaw — the recipient's own time, not yours — and it arrives today.",
     "destinations": {
-      "heading": "Where we deliver",
-      "onboarding": "Poland today. In the other six countries we are still choosing florists, so there is nothing to order there yet.",
       "matches": "{count, plural, =0 {No country matches what you typed} one {# country matches} other {# countries match}}",
       "summary": "We deliver in {delivering} today. In {onboarding} we are still choosing florists."
     }

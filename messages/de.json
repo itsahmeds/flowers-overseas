@@ -337,9 +337,7 @@
       "label": "Delivery date"
     },
     "destinations": {
-      "heading": "Where we deliver",
       "matches": "{count, plural, =0 {No country matches what you typed} one {# country matches} other {# countries match}}",
-      "onboarding": "Poland today. In the other six countries we are still choosing florists, so there is nothing to order there yet.",
       "summary": "We deliver in {delivering} today. In {onboarding} we are still choosing florists."
     },
     "help": "Continue shows you where we deliver today and where we are still choosing florists.",
@@ -388,10 +386,20 @@
       "heading": "Dates worth sending for",
       "orderBy": "Order by {date}, {time}"
     },
+    "destinations": {
+      "body": "We open a country only when we have met enough florists there to stand behind every order — across Europe, and only where we really are.",
+      "elsewhere": {
+        "body": "We are choosing florists in six more countries. When we open one, it appears here first.",
+        "title": "Somewhere else?"
+      },
+      "eyebrow": "Destinations",
+      "heading": "Poland today. Six more countries as we choose florists."
+    },
     "hero": {
       "eyebrow": "International flower delivery",
       "heading": "Flowers for someone far away.",
       "photoCaption": "Photography to supply · a Warsaw florist finishing a hand-tied bouquet, morning light, full bleed",
+      "photoCaptionMobile": "Photography to supply · Warsaw florist, morning light",
       "proposition": "Our florist in your recipient's town makes it and hands it over in person. We never ship a box."
     },
     "howItWorks": {
@@ -434,6 +442,23 @@
         "body": "Delivery and VAT already in it",
         "title": "The price you see is what we charge"
       }
+    },
+    "reviews": {
+      "attribution": "{name} · sent to {place} · {date} · {verification}",
+      "body": "Every review here comes from a completed order and shows the destination and the date. This section is hidden until the first verified reviews exist; nothing here is invented.",
+      "eyebrow": "Verified reviews",
+      "heading": "What buyers and recipients say",
+      "trustpilotPending": "Trustpilot rating, once the profile is claimed",
+      "trustpilotRegion": "Trustpilot",
+      "verified": {
+        "delivery": "verified delivery",
+        "order": "verified order"
+      }
+    },
+    "trending": {
+      "basis": "Ranking is by real orders in the last 7 days and switches on once we have them; until then this row shows the florists' picks and says so.",
+      "eyebrow": "Trending now",
+      "heading": "Most sent this week"
     }
   },
   "media": {

@@ -41,7 +41,7 @@ export interface MediaSlotSpec {
  * The slot table. `band` is a half-page editorial band (the how-it-works section's photograph,
  * TASK-053: full width on the mobile artboard, half of it on the desktop one); `grid` is the card
  * grid of §2 (2-up mobile → 4-up desktop, so 50vw → 25vw); `tile` is the occasion grid (2-up
- * mobile → 3-up desktop); `thumb` is the fixed 96 px square a basket line or an order row uses.
+ * mobile → 6-up desktop); `thumb` is the fixed 96 px square a basket line or an order row uses.
  */
 export const MEDIA_SLOT_SPECS: Readonly<Record<MediaSlot, MediaSlotSpec>> = {
   hero: { sizes: "100vw", ratio: "hero", aboveFold: true },
@@ -57,8 +57,10 @@ export const MEDIA_SLOT_SPECS: Readonly<Record<MediaSlot, MediaSlotSpec>> = {
     ratio: "portrait",
     aboveFold: true,
   },
+  // The occasion grid: 2-up mobile → **6-up desktop** (TASK-054 restored the artboard's 6-up row
+  // and this string moved with it; `tests/unit/ui-media.test.ts` pins the pair).
   tile: {
-    sizes: "(min-width: 768px) 33vw, 50vw",
+    sizes: "(min-width: 768px) 17vw, 50vw",
     ratio: "square",
     aboveFold: false,
   },
