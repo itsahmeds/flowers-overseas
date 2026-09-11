@@ -369,3 +369,13 @@ Original: plan/10 §2.3 gives each product class a price band per currency (`60�
 Measured (`/review 37`, 2026-09-09): honouring the steps put 966 of 1 652 retail rows (58%) outside their band, up to 150% of the funeral ceiling (26 990 vs €180; 1 039 zł vs 799 zł on the one live destination).
 Corrected (orchestrator under the founder's delegation): the **bands are the founder's stated ranges and are exact** — every tier of every product sits inside its band in every currency; the step percentages are a tilde and bend to fit (e.g. +17% / +33% in a narrow band), staying strictly increasing and keeping the §13 Q1 endings. `catalogue:check`'s `band` mode asserts the exact reading. Raising a ceiling is a founder decision recorded in plan/13 and here, never a data edit.
 Raised by: `/review 37`, 2026-09-09.
+
+**A2 — `priceTable` size bound measured as serialised UTF-8 bytes (§5.2; AC-22; TASK-067).**
+Original: §5.2 bounds a product's price table at ≤6 currencies and ≤512 B without naming the unit of measurement.
+Corrected (orchestrator under the founder's delegation, 2026-09-11): the byte bound is the UTF-8 length of `JSON.stringify(table)` as produced by `priceTable()`, asserted by `PriceTableSchema` (`MAX_PRICE_TABLE_BYTES`). Measured: the Phase 0 PL table is 114 B over 3 currencies.
+Raised by: `/review 52`, 2026-09-11.
+
+**A3 — Offer currency when the FX snapshot is stale (§13 Q2; AC-11; TASK-067/068).**
+Original: AC-11 says `Offer.priceCurrency` equals the locale's default currency; §13 Q2 says a rate older than 48 h fails closed to the destination currency.
+Corrected (orchestrator, 2026-09-11): when `fxRateFor()` returns unavailable, the projection and the single `Offer` both carry the **destination** currency and the same figure — the price identity (`Offer.price` = visible price) is the invariant, the locale-default currency is the preference. TASK-068 adds the stale-snapshot fixture test and makes `priceValidUntil` the earlier of the price row's `active_to` and the FX snapshot's validity when a conversion is involved (§6).
+Raised by: `/review 52`, 2026-09-11.
