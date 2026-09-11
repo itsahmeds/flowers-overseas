@@ -98,7 +98,8 @@ the production-only response headers.
 ## 5. Verify the gates and the task guard
 
 ```bash
-pnpm lint && pnpm typecheck && pnpm test && pnpm format:check && pnpm check-layout
+pnpm lint && pnpm typecheck && pnpm test && pnpm format:check && pnpm check-layout \
+  && pnpm codebase:map --check && pnpm specs:index --check && pnpm tasks:check
 ```
 
 The dev OS itself is testable, and worth exercising once so its failure mode is familiar:
@@ -107,6 +108,8 @@ The dev OS itself is testable, and worth exercising once so its failure mode is 
 .claude/bin/task.sh show      # prints the active task or "no active task"
 .claude/bin/task.sh set TASK-999   # exits 1: "not found in TASKS.md"
 pnpm dev-os:check             # runs the guard/task.sh/Stop-hook checks against temp projects
+pnpm codebase:map             # rewrites docs/codebase-map.md after adding a module, route or script
+pnpm tasks:brief TASK-086     # scaffolds docs/tasks/TASK-086.md from the template
 ```
 
 Inside a Claude Code session, an `Edit` or `Write` under `src/ app/ supabase/ emails/ seed/ tests/`

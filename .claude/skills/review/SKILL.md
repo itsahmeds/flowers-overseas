@@ -13,6 +13,6 @@ disable-model-invocation: true
 **Outputs:** `VERDICT: PASS|FAIL`, checklist table, required changes; posted as a PR review via `gh`. On PASS the orchestrator (or the founder) merges and marks the task `done`; on FAIL the task returns to `in_progress` with the list in Blockers.
 
 ## Steps
-1. Resolve the PR and its task + spec.
-2. Launch `reviewer` with PR number, spec path, AC ids, preview URL.
-3. Relay the verdict verbatim. If PASS: merge (squash, conventional title), set task `done`, log in `TASKS.md`. If FAIL: set `in_progress`, paste required changes into Blockers, suggest `/implement TASK-NNN` again.
+1. Resolve the PR and its task + spec, and read `docs/tasks/TASK-NNN.md` — the brief, not the row.
+2. Launch `reviewer` with PR number, the brief path `docs/tasks/TASK-NNN.md`, the spec path with the `## 0. Index` anchors for the claimed AC ids, `docs/codebase-map.md`, and the preview URL. Round 2+: add "scoped to the diff since round 1".
+3. Relay the verdict verbatim. If PASS: merge (squash, conventional title), set task `done`, log in `TASKS.md`. If FAIL: set `in_progress`, append the required changes as a dated bullet under `## Carry-forwards` in `docs/tasks/TASK-NNN.md`, suggest `/implement TASK-NNN` again.

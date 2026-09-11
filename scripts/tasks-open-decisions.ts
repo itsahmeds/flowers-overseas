@@ -2,7 +2,7 @@
  * `TASKS.md` ledger parser — AC-31 / T-32 (spec 001 §2 "Documentation and ledger", TASK-012).
  *
  * `TASKS.md` is the single source of truth `CLAUDE.md` points every agent at, and `/status`
- * reads it rather than `plan/13`. Three things must therefore be true of the file mechanically,
+ * reads it rather than `plan/13`. Five things must therefore be true of the file mechanically,
  * not by inspection:
  *
  *  1. the "Open decisions blocking tasks" table mirrors `plan/13` §A — ten rows `A1`…`A10`, each
@@ -11,7 +11,10 @@
  *  3. every row of every table has exactly as many cells as its header. A markdown table row with
  *     one cell too many silently shifts every later column — the status of a task ends up in the
  *     owner column, `/status` reports nonsense and `.claude/bin/task.sh` stops finding the row.
- *     This has been broken and repaired once already (row 26, `/review 8`), so it is a test now.
+ *     This has been broken and repaired once already (row 26, `/review 8`), so it is a test now;
+ *  4. no "Blockers / notes" cell is longer than `TASK_NOTES_LIMIT` characters, and
+ *  5. every `todo`/`in_progress`/`in_review` row has its brief at `docs/tasks/TASK-NNN.md`
+ *     (spec 001 §14 A15, AC-34 — `scripts/tasks-brief.ts` writes and migrates them).
  *
  * Pipes inside a cell must be escaped (`\|`) per GFM, including inside a code span; the parser
  * splits on unescaped pipes only, so an unescaped one shows up as a cell-count failure rather
@@ -20,7 +23,7 @@
  * Run directly (`node scripts/tasks-open-decisions.ts [path]`) for the human-readable report;
  * `tests/unit/tasks-open-decisions.test.ts` drives the pure functions.
  */
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -53,6 +56,18 @@ export const TASK_COLUMNS = [
   "Depends on",
   "Blockers / notes",
 ] as const;
+/**
+ * The maximum length of a "Blockers / notes" cell (spec 001 §14 A15, AC-34). Everything longer
+ * belongs in the task's brief, `docs/tasks/TASK-NNN.md`; the cell keeps the link and one sentence.
+ */
+export const TASK_NOTES_LIMIT = 400;
+/** Statuses whose rows an agent is about to pick up, so their brief must exist. */
+export const STATUSES_NEEDING_A_BRIEF = [
+  "todo",
+  "in_progress",
+  "in_review",
+] as const;
+
 /** The statuses `TASKS.md`'s own preamble defines. */
 export const TASK_STATUSES = [
   "todo",
@@ -199,11 +214,22 @@ export function parseTaskRows(markdown: string): TaskRow[] {
     }));
 }
 
+export interface LedgerCheckOptions {
+  /**
+   * Whether `docs/tasks/TASK-NNN.md` exists. Injected so the check stays pure and the unit test can
+   * drive both answers from fixture markdown; the CLI passes an `existsSync` over the repository.
+   */
+  readonly briefExists?: (id: string) => boolean;
+}
+
 /**
  * Everything the ledger must satisfy, as a list of problems (empty = healthy). Total rather than
  * throwing on the first failure: one run should tell the orchestrator everything to fix.
  */
-export function checkLedger(markdown: string): string[] {
+export function checkLedger(
+  markdown: string,
+  options: LedgerCheckOptions = {},
+): string[] {
   const problems: string[] = [];
 
   for (const table of parseTables(markdown)) {
@@ -265,6 +291,7 @@ export function checkLedger(markdown: string): string[] {
   }
   const seen = new Set<string>();
   const statuses: ReadonlySet<string> = new Set(TASK_STATUSES);
+  const needsBrief: ReadonlySet<string> = new Set(STATUSES_NEEDING_A_BRIEF);
   for (const task of parseTaskRows(markdown)) {
     if (seen.has(task.id)) problems.push(`task ${task.id}: duplicate row`);
     seen.add(task.id);
@@ -276,6 +303,23 @@ export function checkLedger(markdown: string): string[] {
     if (!statuses.has(task.status)) {
       problems.push(
         `task ${task.id}: status "${task.status}" is not one of ${TASK_STATUSES.join(", ")}`,
+      );
+    }
+    if (task.notes.length > TASK_NOTES_LIMIT) {
+      problems.push(
+        `task ${task.id}: notes cell is ${String(task.notes.length)} characters, over the ` +
+          `${String(TASK_NOTES_LIMIT)}-character cap — move the prose into docs/tasks/${task.id}.md ` +
+          `(\`pnpm tasks:migrate\`)`,
+      );
+    }
+    if (
+      needsBrief.has(task.status) &&
+      options.briefExists !== undefined &&
+      !options.briefExists(task.id)
+    ) {
+      problems.push(
+        `task ${task.id}: status "${task.status}" but docs/tasks/${task.id}.md is missing ` +
+          `(\`pnpm tasks:brief ${task.id}\`)`,
       );
     }
   }
@@ -294,7 +338,9 @@ const isMain =
 if (isMain) {
   const root = resolve(process.argv[2] ?? process.cwd());
   const markdown = readLedger(root);
-  const problems = checkLedger(markdown);
+  const problems = checkLedger(markdown, {
+    briefExists: (id) => existsSync(resolve(root, `docs/tasks/${id}.md`)),
+  });
   const decisions = parseOpenDecisions(markdown);
   const tasks = parseTaskRows(markdown);
   if (problems.length > 0) {

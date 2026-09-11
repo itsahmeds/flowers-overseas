@@ -5,7 +5,8 @@
 #
 # Jobs (20): lint · typecheck · test-unit · test-integration · test-contract · build · db-check ·
 # env-build-failure · commitlint · seo-validate · i18n-check · catalogue-check · seed-check ·
-# dev-os-check · audit · preview · e2e · visual · a11y · lighthouse.
+# dev-os-check · audit · preview · e2e · visual · a11y · lighthouse. The lint job also runs the
+# three orientation gates of §14 A15: `codebase:map --check`, `specs:index --check`, `tasks:check`.
 #
 # Order, and where it departs from spec 001 §2 / plan/12 §5 (TASK-011 reconciliation; the
 # corrections are recorded on TASK-012 for the spec text):
@@ -104,6 +105,16 @@ jobs:
       # here rather than in a job of its own: see the reconciliation note at the top of this file.
       - name: env:check — `.env.example` against the zod schema (AC-11)
         run: pnpm env:check | tee env-check.log
+      # The three orientation artefacts of spec 001 §14 A15 (AC-33, AC-34, AC-35). They are
+      # documentation gates, so they sit beside Prettier rather than in a job of their own: a stale
+      # `docs/codebase-map.md` or a spec index with wrong line numbers sends the next agent to the
+      # wrong file, and an un-migrated notes cell puts 11 KB of prose back into `TASKS.md`.
+      - name: codebase:map --check — docs/codebase-map.md is current (AC-33)
+        run: pnpm codebase:map --check | tee codebase-map.log
+      - name: specs:index --check — every spec's `## 0. Index` is current (AC-35)
+        run: pnpm specs:index --check | tee specs-index.log
+      - name: tasks:check — the TASKS.md ledger, notes cap and briefs (AC-31, AC-34)
+        run: pnpm tasks:check | tee tasks-check.log
       - name: Summarise the lint gate
         if: always()
         run: |
@@ -124,6 +135,9 @@ jobs:
             echo "| no-db seam (spec 003 AC-2) | \`pnpm check:no-db\` | $( [ -f no-db.log ] && tr '\n' ' ' < no-db.log || echo 'did not run' ) |"
             echo "| Prettier | \`pnpm format:check\` | $( [ -f format.log ] && echo 'all matched' || echo 'did not run' ) |"
             echo "| env:check (AC-11) | \`pnpm env:check\` | $( [ -f env-check.log ] && tr '\n' ' ' < env-check.log || echo 'did not run' ) |"
+            echo "| codebase map (AC-33) | \`pnpm codebase:map --check\` | $( [ -f codebase-map.log ] && tr '\n' ' ' < codebase-map.log || echo 'did not run' ) |"
+            echo "| spec indexes (AC-35) | \`pnpm specs:index --check\` | $( [ -f specs-index.log ] && tr '\n' ' ' < specs-index.log || echo 'did not run' ) |"
+            echo "| ledger + briefs (AC-31, AC-34) | \`pnpm tasks:check\` | $( [ -f tasks-check.log ] && tr '\n' ' ' < tasks-check.log || echo 'did not run' ) |"
           } >> "$GITHUB_STEP_SUMMARY"
 
   typecheck:

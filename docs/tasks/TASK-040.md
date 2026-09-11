@@ -1,0 +1,30 @@
+# TASK-040 — `pnpm i18n:check` and the `i18n-check` CI job: missing keys after fallback resolution, unused keys with `meta.retained` as the only escape, ICU parse errors, argument-set mismatches between a key and its translations, redundant `en-gb` overrides, meta-manifest completeness, stale `sourceHash`, and `pathSegments` shape plus per-locale uniqueness; GitHub step summary with the per-locale reviewed share
+
+Row: `TASKS.md` → TASK-040. Brief written by `pnpm tasks:migrate` (spec 001 §14 A15, AC-34);
+keep it current by editing this file, not the row.
+
+## Binding
+
+Branch `task/TASK-040-i18n-check-ci`. §11 makes CI the observability surface for translation debt: the step summary's per-locale table (total keys, missing after fallback, unreviewed count and share, stale count, indexable yes or no) is computed from the same functions `isLocaleIndexable()` uses, so a locale cannot look ready in CI and be gated in code. Job placement follows spec 001 §14 A9's rule — `needs: typecheck`, not behind `lighthouse` — and it is a required check in the derived set (`scripts/branch-protection.ts` reads `ci.yml`, so no separate config edit). Each of AC-22's seven seeded faults gets a fixture proving a non-zero exit that names the file and the key, in the spec 001 validator style; the clean tree exits 0. AC-13 also pins that `localePath()` is the only URL builder in the app (data authored in TASK-033, builder in TASK-034) and that uppercase, non-ASCII, trailing-slash or duplicated `pathSegments` fail the check (§6 URL pattern). The pseudo-locale regeneration-determinism clause of §2 is appended to this script by TASK-042, once the generator exists. Tests: T-13, T-22. From `/review 16`: `meta.error.description` in `messages/en.json` is currently unused — consume it (layout default description) or the unused-key rule will fail; every other key is used. From `/review 20`: `banner.*`, `common.floristCount`, `common.homeLink`, `a11y.localeChooser` have no consumer until TASK-041 — scope the unused-key rule to shipped routes or mark them `retained` in the interim, never delete; have `i18n:draft` validate the manifest it writes before writing. **Implemented on `task/TASK-040-i18n-check-ci`, PR #22, `in_review` 2026-09-08.** Eight checks, each naming the file and the key; the catalogue half runs inside `withLocaleRegistry` + `withMessageSource` with a disk-backed `MessageSource`, so `resolveCatalogue()`, `fallbackChain()`, `unreviewedShare()` and `isLocaleIndexable()` themselves answer about the tree under test and §11's promise ("the same number `isLocaleIndexable()` uses") holds by construction rather than by convention. Five spec-silent points decided and argued in the PR body: (1) **stale is an error in both directions** — a `reviewed: true` record whose `en` source moved shows the reader copy that no longer exists *and* makes `unreviewedShare()` count it as reviewed, so the gate would be lied to; an unreviewed stale record means `i18n:draft` was not re-run; only the remedy in the message differs. (2) **A redundant override is only redundant in the same language** (`en-gb` ← `en`), the same primary-subtag rule `review.ts` uses, or every echoed `de`/`pl` key would be reported as redundant instead of as unreviewed debt. (3) **Plural/select categories are not part of a message's argument signature** (`name:kind` only) because CLDR gives `pl` four categories where `en` has two; `requiresOtherClause: true` catches a missing `other` as a syntax error instead. (4) The missing-key pass also reports a **translation of a key `en` does not have** (the reverse direction of the same property; `i18n:draft` removes it). (5) The **usage scan is a documented, deliberately inclusive text heuristic** over `--src` (namespace binding + key literal, or the fully-qualified dotted path, which is what covers `global-error.tsx` reading the catalogue as data): it can under-report a dead key, never accuse a live one, and `tests/` is not scanned so a key cannot keep itself alive through its own test. New devDependency `@formatjs/icu-messageformat-parser@3.5.17`, dev-only and pinned to the version already in the tree through `next-intl` → `use-intl` (`downloaded 0`, three lockfile lines): validating against the parser next-intl actually formats with is the point. Carry-forwards discharged: `meta.error.description` is consumed as the `[locale]` metadata default's `description`; `banner.headline`/`switch`/`stay`/`dismiss` and `common.floristCount` are marked `retained: true` in `messages/en.meta.json` rather than deleted or exempted by a route allowlist — **TASK-041 removes the four `banner.*` flags** and the first spec 004 page rendering a florist count removes `common.floristCount`'s (`MessageMetaSchema` has no `retainedReason` field, so the reason lives in the PR body and here); `draftLocale()` parses both files with `MessagesSchema`/`MessageMetaManifestSchema` before writing, and `i18n:draft --locale de|pl` still produces byte-identical output. Fixtures: `tests/fixtures/i18n/_cases/` holds one directory per AC-22 fault plus `clean` (miniature catalogues with their own `src/usage.ts`) and five registries for AC-13; Prettier-ignored, `--messages-dir`/`--src`/`--registry` keep the committed catalogues untouched. Unit 890 green (+37, 0 skipped); `pnpm i18n:check --summary` exits 0 with `en`/`en-gb` at 0.0 % indexable and `de`/`pl` at 100.0 % non-indexable. `pnpm branch-protection --print-commands` picks up `i18n-check` from `ci.yml` with no config edit; CI 21/22 green including the new job, `lighthouse` red and informational (the pre-existing 304 KB script budget carried by TASK-043).
+
+## Read
+
+- `specs/003-*.md` — read `## 0. Index` first, then only the sections the ACs below name
+- `docs/codebase-map.md` — where everything lives
+- `scripts/branch-protection.ts`
+- `messages/en.json`
+- `messages/en.meta.json`
+- `tests/fixtures/i18n/_cases/`
+- `src/usage.ts`
+
+## Carry-forwards
+
+_None recorded._
+
+## Escalations
+
+_None recorded._
+
+## Result
+
+Done. PR [#22](https://github.com/itsahmeds/flowers-overseas/pull/22); `/review` pass recorded in `TASKS.md`.
