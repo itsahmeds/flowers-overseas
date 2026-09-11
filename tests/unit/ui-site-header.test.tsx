@@ -291,11 +291,26 @@ describe("the rendered header (AC-7, AC-14)", () => {
     expect(siteLink(SEARCH_LINK_ID).descriptionKey).toBe("nav.search.help");
   });
 
-  it("ships the menu control disabled while there is nothing to disclose", () => {
+  it("renders the menu glyph as decoration, not as a control (`/review 31`, TASK-055)", () => {
     const html = render("en");
-    const menu = html.slice(html.indexOf("<button"));
-    expect(menu.slice(0, menu.indexOf(">"))).toContain('aria-label="Menu"');
-    expect(menu.slice(0, menu.indexOf(">"))).toContain("disabled");
+    // It shipped as `<button disabled>`: pixel-identical to an enabled button and doing nothing
+    // when pressed. There is nothing to disclose until spec 008 publishes a nav target, so there
+    // is no button at all — the same answer §14 A4 gave the search band.
+    const menu = html.slice(html.indexOf("data-fo-header-menu"));
+    const openTag = html.slice(
+      html.lastIndexOf("<", html.indexOf("data-fo-header-menu")),
+      html.indexOf(">", html.indexOf("data-fo-header-menu")) + 1,
+    );
+    expect(openTag).toContain("<span");
+    expect(openTag).toContain('aria-hidden="true"');
+    expect(openTag).toContain('data-fo-header-menu="unpublished"');
+    // The 44 px box the artboard reserves stays, so publishing the menu moves no pixel.
+    expect(openTag).toContain("min-h-[44px]");
+    expect(menu).toContain("<svg");
+    // And no button anywhere in the header: the whole component is zero client JavaScript and
+    // has no control left that does nothing.
+    expect(html).not.toContain("<button");
+    expect(html).not.toContain('aria-label="Menu"');
   });
 
   it("prints the basket count through the catalogue's `{count, number}` argument", () => {

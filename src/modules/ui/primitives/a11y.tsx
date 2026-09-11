@@ -60,3 +60,67 @@ export function SkipLink({
     </a>
   );
 }
+
+/**
+ * The live-region pattern (spec 003 `/review 23`'s deferred note, closed by TASK-055; spec 004 §2,
+ * §8, AC-13; `docs/architecture.md` §2).
+ *
+ * Spec 003 left one accessibility decision to the design system: *"a permanently mounted
+ * `role="status"` region is the reliable live-announcement pattern"*. It is not a preference. A
+ * live region that is inserted into the DOM together with its content is announced by some
+ * assistive technologies and silently ignored by others, because the accessibility tree has no
+ * "before" to compare the change against; a region that is already mounted, and empty, when its
+ * content arrives is announced by all of them. Every element of this product whose content appears
+ * or changes after the document was painted — the language suggestion, the consent sheet's saved
+ * confirmation, and later the price, the date and the delivery cutoff §8 names — mounts the
+ * container first and fills it second.
+ *
+ * The rules, which this component is:
+ *
+ *  - `role="status"`, not `aria-live` on an ad-hoc `<div>`: the implicit politeness is `polite`
+ *    and the implicit `aria-atomic` is `true`, so the whole message is read rather than the words
+ *    that happened to change. Both are written out anyway, because an explicit contract survives a
+ *    refactor that a default does not.
+ *  - **Permanently mounted**, which is the caller's part of the bargain: render `<LiveRegion>`
+ *    unconditionally and put the *content* behind the condition, never the region.
+ *  - **Reserves no space**: the element is empty until it is not, and a positioned caller (an
+ *    overlay) styles it with the layer utilities rather than a raw `z-index`.
+ *  - It **never takes focus** and it is not a `dialog`: an announcement interrupts nothing (WCAG
+ *    4.1.3, 2.2.2).
+ *
+ * The language-suggestion banner is the pattern's reference implementation and cannot import this
+ * component — it lives in `src/modules/i18n` and is a Client Component, so the cross-module import
+ * would have to go through this module's public barrel, which re-exports the design system's
+ * islands and would put all of them in the banner's chunk (spec 004 §14 A1; the same measurement
+ * that made `(chooser)/layout.tsx` deep-import `@/modules/ui/fonts`). It renders the same three
+ * attributes instead, and `tests/unit/i18n-suggestion-banner.test.tsx` asserts them against what
+ * this component renders, so "the same pattern" is a test rather than a claim.
+ */
+export interface LiveRegionProps {
+  /** The announcement, or nothing at all. The region itself is always rendered. */
+  readonly children?: ReactNode;
+  readonly className?: string;
+  /**
+   * The `data-*` hook a test or a sibling selects the region by, so nothing selects on copy.
+   * Values are kebab-case names of what the region is for (`locale-suggestion`).
+   */
+  readonly name: string;
+}
+
+export function LiveRegion({
+  children,
+  className,
+  name,
+}: LiveRegionProps): ReactElement {
+  return (
+    <div
+      aria-atomic="true"
+      aria-live="polite"
+      className={className}
+      data-fo-live-region={name}
+      role="status"
+    >
+      {children}
+    </div>
+  );
+}

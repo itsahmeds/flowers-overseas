@@ -1,11 +1,24 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
+import { COMPANY } from "@/config/company";
 import {
   documentFallbackLocale,
   launchLocales,
   localePath,
 } from "@/modules/i18n";
+// Deep import, not the `@/modules/ui` barrel, for the reason `./layout.tsx` deep-imports
+// `@/modules/ui/fonts`: the barrel re-exports the module's client islands, and a route whose
+// module graph reaches them downloads them. `/` reaches no client module at all, and this is how
+// it stays that way (`tests/unit/client-js-budget.test.ts`, AC-7, AC-27).
+import { NoticeDocument } from "@/modules/ui/layout/NoticeDocument";
+import {
+  NOTICE_LOCALE_ITEM,
+  NOTICE_LOCALE_LINK,
+  NOTICE_LOCALE_LIST,
+  NOTICE_LOCALE_NAME,
+  NOTICE_LOCALE_PATH,
+} from "@/modules/ui/layout/noticeShell";
 
 /**
  * `/` — the locale chooser (spec 003 §2, §5.3, §5.4, §6, §13 Q3; AC-7, AC-25; TASK-035).
@@ -51,11 +64,16 @@ import {
  * and defeat the 3.1.2 requirement AC-7 asks for, and an unused key fails `i18n:check` (TASK-040).
  * The `<nav>` takes its name from `a11y` instead, as §2 specifies.
  *
- * Visual design is spec 004's (§13 Q3): the markup here is semantic and all but unstyled, so
- * there is nothing for 004 to undo and no physical CSS to get wrong. The single exception is
- * `underline` on the links, because Tailwind's preflight resets `text-decoration` on `<a>` and a
- * link that is visually indistinguishable from body text is not "unstyled", it is unusable — and
- * `underline` is direction-agnostic, so `fo/no-physical-css` has nothing to object to.
+ * **Visual design (spec 004 AC-12; TASK-055).** The document is `NoticeDocument` — the centred
+ * `--measure` column, the masthead's lockup at the masthead's own metrics and the `.display`
+ * heading that the 404 and the two 500 documents also render, so the four pages a visitor can
+ * reach without a locale read as one site. The locale list is the bordered two-column grid of
+ * `docs/design/wireframes/locale-chooser-desktop.dc.html`, with each locale's own name in the
+ * `.display` voice and the path it leads to in the `.label` voice. The wireframe's masthead,
+ * category row and colophon are deliberately **not** here: the footer's cookie-settings control is
+ * a client island, the category row needs a locale, and `/` may reach neither (AC-7, AC-27).
+ * Nothing else moved — the markup is still four `<a href>`s in a named `<nav>`, each declaring its
+ * target language, and the `underline` class is gone only because the rows are now visibly rows.
  */
 export async function generateMetadata(): Promise<Metadata> {
   const locale = documentFallbackLocale();
@@ -81,25 +99,37 @@ export default async function ChooserPage() {
   });
 
   return (
-    <main id="main">
-      <h1>{t("heading")}</h1>
-      <p>{t("intro")}</p>
+    <NoticeDocument
+      body={t("intro")}
+      heading={t("heading")}
+      wordmark={COMPANY.tradingName}
+    >
       <nav aria-label={a11y("localeChooser")}>
-        <ul>
-          {launchLocales().map((target) => (
-            <li key={target.code}>
-              <a
-                className="underline"
-                href={localePath(target.code, "home")}
-                lang={target.bcp47}
-                hrefLang={target.bcp47}
-              >
-                {target.nativeName}
-              </a>
-            </li>
-          ))}
+        <ul className={NOTICE_LOCALE_LIST}>
+          {launchLocales().map((target) => {
+            const href = localePath(target.code, "home");
+            return (
+              <li className={NOTICE_LOCALE_ITEM} key={target.code}>
+                <a
+                  className={NOTICE_LOCALE_LINK}
+                  href={href}
+                  lang={target.bcp47}
+                  hrefLang={target.bcp47}
+                >
+                  <span className={NOTICE_LOCALE_NAME}>
+                    {target.nativeName}
+                  </span>
+                  {/* The URL the link goes to, in the `.label` voice — the wireframe's `<code>/en</code>`
+                      column. A path is not copy, so it needs no message key and no translation; it is
+                      isolated with `<bdi>` so an RTL document cannot reorder it
+                      (`docs/runbooks/i18n-translations.md`). */}
+                  <bdi className={NOTICE_LOCALE_PATH}>{href}</bdi>
+                </a>
+              </li>
+            );
+          })}
         </ul>
       </nav>
-    </main>
+    </NoticeDocument>
   );
 }

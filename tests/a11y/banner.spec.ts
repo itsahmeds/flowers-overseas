@@ -67,7 +67,13 @@ test("the banner is announced politely and named by its own headline", async ({
   const banner = page.locator(BANNER);
   await expect(banner).toBeVisible();
 
-  await expect(banner).toHaveAttribute("aria-live", "polite");
+  // TASK-055 moved the announcement to the permanently mounted `role="status"` region around the
+  // banner — the design system's `LiveRegion` pattern, and spec 003's deferred `role="status"`
+  // note closed. The panel itself stays the named, non-modal region it always was.
+  const region = page.locator('[data-fo-live-region="locale-suggestion"]');
+  await expect(region).toHaveAttribute("role", "status");
+  await expect(region).toHaveAttribute("aria-live", "polite");
+  await expect(region).toHaveAttribute("aria-atomic", "true");
   await expect(banner).toHaveAttribute("role", "region");
   // Non-modal: it obscures nothing permanently and traps nothing (WCAG 2.2.2 / 1.4.13).
   await expect(banner).not.toHaveAttribute("aria-modal", "true");

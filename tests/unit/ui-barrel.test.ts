@@ -47,6 +47,7 @@ describe("src/modules/ui barrel", () => {
         "DISPLAY_SIZES",
         "Display",
         "Label",
+        "LiveRegion",
         "TEXT_SIZES",
         "TEXT_TONES",
         "Text",

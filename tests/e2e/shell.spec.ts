@@ -73,7 +73,11 @@ test.describe("GET / (the locale chooser)", () => {
       // Both attributes: `hreflang` for the crawler, `lang` for the screen reader (§8).
       await expect(link).toHaveAttribute("hreflang", expected.hreflang);
       await expect(link).toHaveAttribute("lang", expected.hreflang);
-      await expect(link).toHaveText(expected.label);
+      // TASK-055 gave each row two parts: the endonym in the `.display` voice and the path it
+      // leads to in the `.label` voice. The name is asserted exactly; the row also prints its
+      // own href, which is metadata rather than copy.
+      await expect(link.locator("span").first()).toHaveText(expected.label);
+      await expect(link).toContainText(expected.href);
     }
   });
 

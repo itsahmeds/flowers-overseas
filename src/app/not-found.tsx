@@ -1,10 +1,28 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
+import { COMPANY } from "@/config/company";
+import { isPublished } from "@/config/site-links";
 import { documentFallbackLocale, localePath } from "@/modules/i18n";
-import { fontVariables } from "@/modules/ui";
+// Deep imports rather than the `@/modules/ui` barrel, for the reason `(chooser)/layout.tsx`
+// records: the barrel re-exports the module's client islands and a route that reaches them
+// downloads them. The 404 renders no island either.
+import { fontVariables } from "@/modules/ui/fonts";
+import { NoticeDocument } from "@/modules/ui/layout/NoticeDocument";
+import {
+  NOTICE_ACTIONS,
+  NOTICE_ACTION_PRIMARY,
+  NOTICE_ACTION_SECONDARY,
+} from "@/modules/ui/layout/noticeShell";
 
 import "./globals.css";
+
+/**
+ * The `.label` metadata line: the status code this document is served with, and the one piece of
+ * text on it that is not translated because it is a number (`fo/no-literal-strings` scans for
+ * letters). `docs/design/wireframes/errors-desktop.dc.html` draws the same eyebrow.
+ */
+const NOT_FOUND_STATUS = "404";
 
 /**
  * The 404 document (spec 003 §5.3, AC-8; TASK-034, its `<title>` TASK-035).
@@ -50,15 +68,42 @@ export default async function NotFound() {
     locale: locale.code,
     namespace: "common",
   });
+  const footer = await getTranslations({
+    locale: locale.code,
+    namespace: "footer",
+  });
+  const home = localePath(locale.code, "home");
+  // AC-14, asked the one way the registry allows (`isPublished`, spec 004 §5.1). Spec 007
+  // publishes the destinations hub and this document offers it with no edit here; until then a
+  // lost visitor is offered the home page and nothing that would 404 a second time. It is
+  // deliberately not rendered as inert text the way the header's unpublished entries are: an
+  // action row is a row of things to press, and a button-shaped word that does nothing is the
+  // dead affordance §14 A4 removed from the search band.
+  const destinations = isPublished("destinations")
+    ? localePath(locale.code, "destinations")
+    : undefined;
 
   return (
     <html lang={locale.bcp47} dir={locale.dir} className={fontVariables}>
       <body className="min-h-dvh">
-        <main id="main">
-          <h1>{t("notFound.heading")}</h1>
-          <p>{t("notFound.body")}</p>
-          <a href={localePath(locale.code, "home")}>{common("homeLink")}</a>
-        </main>
+        <NoticeDocument
+          body={t("notFound.body")}
+          heading={t("notFound.heading")}
+          lockupHref={home}
+          meta={NOT_FOUND_STATUS}
+          wordmark={COMPANY.tradingName}
+        >
+          <div className={NOTICE_ACTIONS}>
+            <a className={NOTICE_ACTION_PRIMARY} href={home}>
+              {common("homeLink")}
+            </a>
+            {destinations === undefined ? null : (
+              <a className={NOTICE_ACTION_SECONDARY} href={destinations}>
+                {footer("link.destinations")}
+              </a>
+            )}
+          </div>
+        </NoticeDocument>
       </body>
     </html>
   );

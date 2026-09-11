@@ -12,7 +12,7 @@
  *    checked with the first real chrome it has ever had;
  *  - the **keyboard order** of the header is asserted directly: the skip link, the utility strip's
  *    help channel, the three sibling-locale links of spec 003's switcher, then the masthead
- *    lockup. The search band, the disabled menu button and every unpublished registry entry are
+ *    lockup. The search band, the decorative menu glyph and every unpublished registry entry are
  *    deliberately *not* in the tab order, because they are text and a disabled control (spec §14
  *    A4) — a focus stop that does nothing is the failure this replaces.
  */
@@ -75,8 +75,9 @@ test("the header's keyboard order follows the document order and stops at nothin
   }
 
   // Skip link, the help channel's WhatsApp and `tel:` links, the switcher's three sibling
-  // locales, the masthead lockup. The search band is text, the menu button is disabled and every
-  // unpublished registry entry is a `<span>`, so none of them is a stop (§14 A4).
+  // locales, the masthead lockup. The search band is text, the menu glyph is decoration
+  // (TASK-055) and every unpublished registry entry is a `<span>`, so none of them is a stop
+  // (§14 A4).
   expect(stops).toEqual([
     "A[#main]",
     "A[https://wa.me/12135925150]",
