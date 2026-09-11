@@ -402,7 +402,7 @@
       "hero": "Photography to supply · our florist finishing a hand-tied bouquet in morning light",
       "occasion": "Photography to supply · flowers sent for this occasion",
       "product": "Photography to supply · this bouquet as our florist makes it",
-      "delivery": "Photography to supply · the delivery photo we send you"
+      "delivery": "Photography to supply · a bouquet handed over at the recipient's door"
     },
     "watermark": {
       "demoSample": "Sample"
@@ -432,6 +432,34 @@
         "title": "We photograph it at the door",
         "body": "The picture reaches you the same day"
       }
+    },
+    "dates": {
+      "eyebrow": "Coming up in Poland",
+      "heading": "Dates worth sending for",
+      "orderBy": "Order by {date}, {time}"
+    },
+    "occasions": {
+      "eyebrow": "Shop by occasion",
+      "heading": "What is the occasion?"
+    },
+    "howItWorks": {
+      "eyebrow": "How we send your flowers",
+      "heading": "Three people touch your order. None of them is a courier.",
+      "intro": "You order from us in your own language and currency. Our florist in the recipient's town makes the bouquet the morning it is delivered and hands it over in person. Nothing crosses a border, so there is no customs form and nothing to pay on arrival.",
+      "choose": {
+        "title": "You choose the town, the day and a bouquet.",
+        "body": "Every price is final. The cutoff is shown in the recipient's time, not yours."
+      },
+      "make": {
+        "title": "A florist a few streets away accepts it.",
+        "body": "Made that morning with what is in season locally. Substitutions are like for like, and we tell you."
+      },
+      "deliver": {
+        "title": "Delivered by hand. You get the photo.",
+        "body": "A picture arrives when the flowers do, so you know it happened."
+      },
+      "guarantee": "Read the guarantee in full",
+      "guaranteePending": "The full terms go up with our help pages. Until they do, the promise above is the whole of it."
     }
   },
   "finder": {
@@ -451,7 +479,90 @@
     "destinations": {
       "heading": "Where we deliver",
       "onboarding": "Poland today. In the other six countries we are still choosing florists, so there is nothing to order there yet.",
-      "matches": "{count, plural, =0 {No country matches what you typed} one {# country matches} other {# countries match}}"
+      "matches": "{count, plural, =0 {No country matches what you typed} one {# country matches} other {# countries match}}",
+      "summary": "We deliver in {delivering} today. In {onboarding} we are still choosing florists."
+    }
+  },
+  "occasions": {
+    "birthday": {
+      "name": "Birthday",
+      "subtitle": "Any day of the year"
+    },
+    "nameDay": {
+      "name": "Name day",
+      "subtitle": "Imieniny, the Polish tradition"
+    },
+    "anniversary": {
+      "name": "Anniversary",
+      "subtitle": "Roses and peonies"
+    },
+    "sympathy": {
+      "name": "Sympathy",
+      "subtitle": "Delivered with care"
+    },
+    "justBecause": {
+      "name": "Just because",
+      "subtitle": "No reason needed"
+    },
+    "newBaby": {
+      "name": "New baby",
+      "subtitle": "Soft colours, no lilies"
+    },
+    "date": {
+      "allSaints": {
+        "name": "All Saints' Day · Wszystkich Świętych"
+      },
+      "andrzejki": {
+        "name": "Andrzejki · St Andrew's Eve"
+      },
+      "wigilia": {
+        "name": "Wigilia · Christmas Eve"
+      },
+      "womensDay": {
+        "name": "Women's Day · Dzień Kobiet",
+        "note": "Poland's biggest flower day"
+      }
+    }
+  },
+  "trust": {
+    "heading": "Our promise",
+    "guarantee": {
+      "name": "7-day freshness guarantee",
+      "claim": "We redeliver or refund, your choice."
+    },
+    "local": {
+      "name": "Hand-made in the recipient's own town",
+      "claim": "Our florist there makes it by hand and hands it over in person."
+    },
+    "price": {
+      "name": "The price includes delivery and VAT",
+      "claim": "What you see is what we charge, in your own currency."
+    }
+  },
+  "faq": {
+    "eyebrow": "Before you order",
+    "heading": "Questions people ask first",
+    "allTopics": "All help topics",
+    "allTopicsPending": "Our help pages are being written. Until they are up, the answers below are the whole of what we promise.",
+    "photo": {
+      "question": "Will the bouquet look like the photo?",
+      "answer": "Close, not identical. Our florists work with what is fresh that morning and substitute like for like in colour and value. Every change is noted on your delivery photo."
+    },
+    "nobodyHome": {
+      "question": "What if nobody is home?",
+      "answer": "Our florist calls the recipient first. If they cannot be reached, we agree a redelivery with you, at no charge."
+    },
+    "price": {
+      "question": "Is the price really final?",
+      "answer": "Yes. Delivery and VAT are inside the price you see. Your card is charged in your currency for exactly that amount."
+    },
+    "whoDelivers": {
+      "question": "Who delivers, and when?",
+      "answer": "Our own florist in the recipient's town, by hand, on the day you choose. Order by 14:00 in Warsaw — the recipient's own time — and it arrives today."
+    },
+    "lasting": {
+      "question": "What if the flowers do not last?",
+      "answer": "Seven days from delivery. Tell us and we redeliver or refund, your choice, no photo required."
     }
   }
 }

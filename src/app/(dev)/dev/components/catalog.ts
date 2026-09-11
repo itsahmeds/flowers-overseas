@@ -42,6 +42,11 @@ export const SECTIONS = [
   // label — which no Phase-0 page can reach, because no imagery is committed yet.
   "Media asset states",
   "Home hero and finder",
+  // TASK-053: the rest of the locale home — the occasion-date strip, the occasion tiles, the
+  // explainer, the FAQ and the trust strip — so a reviewer sees the five sections and their photo
+  // placeholders in one screenshot and one axe run, at a heading level that does not fight the
+  // gallery's own `<h2>`s.
+  "Home sections",
   "Site header",
   // TASK-051: the consent sheet's four banner states and its three settings states (§5.3), so
   // the visual and axe suites reach `settings-open` and `saved` without driving the island.
@@ -370,6 +375,18 @@ export const MEDIA_SLOT_CAPTION = "slot · sizes · reserved ratio";
  * hydrated state a screenshot of this page cannot hold still (covered in `tests/e2e/home.spec.ts`
  * and `tests/a11y/home.spec.ts`).
  */
+export const HOME_SECTION_STATES = {
+  dates:
+    "OccasionDates \u00b7 default \u2014 the four Polish dates from `src/config/occasions.ts`, each with the order-by cutoff formatted in the recipient's zone (`14:00 CET`). Nothing is a link, nothing is computed, and the cutoff line is hidden below the `md` breakpoint exactly as the mobile artboard omits it.",
+  occasions:
+    "OccasionTiles \u00b7 unpublished-occasion \u2014 the six tiles as text and photo placeholders, 2-up mobile and 3-up desktop. Spec 008 flips `published` and the same loop renders links; the published branch is covered by the mocked-registry assertions in `tests/unit/ui-home.test.tsx`.",
+  howItWorks:
+    "HowItWorks \u00b7 default \u2014 the round-2 explainer: the cross-border paragraph, the `01/02/03` steps and the guarantee label as text, because `/{locale}/guarantee` is an unpublished `site-links.ts` target. The band's photograph is a placeholder with no `<img>`.",
+  faq: "HomeFaq \u00b7 default \u2014 five native `<details>` disclosures, all closed, and the help-centre label as text. Zero client JavaScript: the disclosure is the platform's.",
+  trust:
+    "TrustStrip \u00b7 default \u2014 the three claims of \u00a72, each true today, with the guarantee name in its own key (`trust.guarantee.name`) so \u00a713 Q4's rename is a catalogue edit. No icon, no badge, no number.",
+} as const;
+
 export const HOME_STATES = {
   hero: "HomeHero \u00b7 default \u2014 the reserved full-bleed photo slot with its caption and no `<img>` (plan/10 \u00a73), the paper card at the inline start on the desktop artboard and overlapping the slot by 56 px on the mobile one, the eyebrow, the one `<h1>` (the text LCP element) and the proposition.",
   finder:

@@ -22,7 +22,11 @@ import {
   Icon,
   ICON_NAMES,
   FinderCard,
+  HomeFaq,
   HomeHero,
+  HowItWorks,
+  OccasionDates,
+  OccasionTiles,
   Label,
   Mark,
   Media,
@@ -35,6 +39,7 @@ import {
   PHOTO_RATIOS,
   ProofRow,
   Placeholder,
+  TrustStrip,
   footerView,
   type FooterView,
   Row,
@@ -73,6 +78,7 @@ import {
   GALLERY_PHOTO_ASSET,
   GALLERY_TITLE,
   HEADER_STATES,
+  HOME_SECTION_STATES,
   HOME_STATES,
   LABEL_SAMPLE,
   MEDIA_ASSET_STATES,
@@ -664,6 +670,44 @@ export default function DevComponentsPage(): ReactElement {
               <Stack gap="sm" key={state}>
                 <Text measure size="sm" tone="muted">
                   {HOME_STATES[state]}
+                </Text>
+                <div className="border-rule border">{element}</div>
+              </Stack>
+            ))}
+          </Stack>
+        </Section>
+
+        <Section title={SECTIONS[12]}>
+          <Stack gap="lg">
+            {(
+              [
+                [
+                  "dates",
+                  <OccasionDates
+                    headingLevel="h3"
+                    key="dates"
+                    locale={galleryLocale}
+                  />,
+                ],
+                [
+                  "occasions",
+                  <OccasionTiles
+                    headingLevel="h3"
+                    key="occasions"
+                    locale={galleryLocale}
+                  />,
+                ],
+                [
+                  "howItWorks",
+                  <HowItWorks headingLevel="h3" key="howItWorks" />,
+                ],
+                ["faq", <HomeFaq headingLevel="h3" key="faq" />],
+                ["trust", <TrustStrip headingLevel="h3" key="trust" />],
+              ] as const
+            ).map(([state, element]) => (
+              <Stack gap="sm" key={state}>
+                <Text measure size="sm" tone="muted">
+                  {HOME_SECTION_STATES[state]}
                 </Text>
                 <div className="border-rule border">{element}</div>
               </Stack>

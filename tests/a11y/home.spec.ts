@@ -86,14 +86,69 @@ test("every finder control clears the 44 px tap-target floor (§5.3)", async ({
   expect(option?.height ?? 0).toBeGreaterThanOrEqual(44);
 });
 
-test("the country field is described by the destination list it points at", async ({
+test("the country field is described by one sentence, not by the whole section", async ({
   page,
 }) => {
   await page.goto("/en");
 
+  // `/review 40`, inherited by TASK-053: the description used to be the destination section, so
+  // every focus of the field read seven names, seven state words and the onboarding line — about
+  // 200 words. It is now a purpose-written `sr-only` summary built from the same registry.
   const describedBy = await page
     .locator("#finder-country")
     .getAttribute("aria-describedby");
-  expect(describedBy).toBe("destinations");
+  expect(describedBy).toBe("finder-destinations-summary");
+
+  const summary = page.locator("#finder-destinations-summary");
+  await expect(summary).toHaveCount(1);
+  const sentence = await summary.textContent();
+  expect((sentence ?? "").split(" ").length).toBeLessThan(40);
+  expect(sentence).toContain("Poland");
+  // The section itself is still on the page and still the `Continue` target.
   await expect(page.locator("#destinations")).toBeVisible();
+});
+
+test("every section of the home is a named region with one heading", async ({
+  page,
+}) => {
+  await page.goto("/en");
+
+  for (const selector of [
+    "[data-fo-occasion-dates]",
+    "[data-fo-occasions]",
+    "[data-fo-how-it-works]",
+    "[data-fo-faq]",
+    "[data-fo-trust-strip]",
+  ]) {
+    const section = page.locator(selector);
+    await expect(section, selector).toHaveCount(1);
+    const labelledBy = await section.getAttribute("aria-labelledby");
+    expect(labelledBy, selector).not.toBeNull();
+    await expect(page.locator(`#${labelledBy ?? ""}`), selector).toHaveCount(1);
+  }
+});
+
+test("every FAQ disclosure clears the 44 px tap-target floor and toggles", async ({
+  page,
+}) => {
+  await page.goto("/en");
+
+  const summaries = page.locator("[data-fo-faq] summary");
+  await expect(summaries).toHaveCount(5);
+  for (let index = 0; index < 5; index += 1) {
+    const summary = summaries.nth(index);
+    const box = await summary.boundingBox();
+    expect(box?.height ?? 0, `summary ${String(index)}`).toBeGreaterThanOrEqual(
+      44,
+    );
+  }
+
+  // The platform's own disclosure: keyboard-operable with no script at all.
+  const first = summaries.first();
+  await first.focus();
+  await first.press("Enter");
+  await expect(page.locator("[data-fo-faq] details").first()).toHaveAttribute(
+    "open",
+    "",
+  );
 });

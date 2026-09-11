@@ -78,6 +78,11 @@ export const CONFIG_FILES = [
   // category row, and the company identity behind `registered`.
   "src/config/countries.ts",
   "src/config/site-links.ts",
+  // The occasion registry of spec 004 §13's resolution note (TASK-053): the six homepage tiles
+  // with their per-locale slugs behind `published: false` (spec 008 publishes the pages), and the
+  // destination's dated occasions with the order-by cutoffs the "Coming up in Poland" strip
+  // prints.
+  "src/config/occasions.ts",
   "src/config/categories.ts",
   "src/config/company.ts",
   // The payment methods the colophon may name, each with `available: false` until spec 013/014

@@ -142,7 +142,20 @@ describe("src/modules/ui barrel", () => {
         "PROOF_FACTS",
         "ProofRow",
         "finderDestinations",
+        "finderDestinationGroups",
         "finderTarget",
+        // the locale home's lower sections and the trust strip (TASK-053)
+        "FAQ_ENTRIES",
+        "HOW_IT_WORKS_STEPS",
+        "HomeFaq",
+        "HowItWorks",
+        "OCCASIONS_ANCHOR",
+        "OccasionDates",
+        "OccasionTiles",
+        "TRUST_CLAIMS",
+        "TrustStrip",
+        "occasionDateViews",
+        "occasionTiles",
       ].sort(),
     );
   });
@@ -194,6 +207,9 @@ describe("src/modules/ui barrel", () => {
       // and the header can be pinned to the same inline gutter by a test.
       "DESTINATIONS_ANCHOR",
       "HOME_BLEED",
+      // TASK-053: the id of the occasion grid — a DOM contract for the same reasons, and the
+      // anchor spec 008's occasion hub will be linked from.
+      "OCCASIONS_ANCHOR",
       "fontVariables",
     ];
     for (const [name, value] of Object.entries(ui)) {

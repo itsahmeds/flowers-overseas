@@ -28,6 +28,7 @@ const SECTIONS = [
   "Media slots",
   "Media asset states",
   "Home hero and finder",
+  "Home sections",
   "Contrast manifest",
 ];
 

@@ -3,7 +3,17 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { routableLocale } from "@/modules/i18n";
-import { DestinationList, HomeHero, ProofRow } from "@/modules/ui";
+import {
+  DestinationList,
+  HOME_BLEED,
+  HomeFaq,
+  HomeHero,
+  HowItWorks,
+  OccasionDates,
+  OccasionTiles,
+  ProofRow,
+  TrustStrip,
+} from "@/modules/ui";
 
 /**
  * `/{locale}` placeholder home (spec 003 §5.3, §5.4; TASK-034, extended by TASK-035 with the
@@ -77,10 +87,19 @@ export default async function LocaleHomePage({
           proposition, and the finder — type-ahead country, town/postcode, delivery date, neutral
           `Continue` (TASK-052). */}
       <HomeHero locale={locale.code} />
-      {/* The four-fact proof strip. Occasion tiles, the priced rows, the explainer, the trust
-          strip, the destinations grid and the FAQ are TASK-053/054's sections and mount below
-          this one, in the artboards' order. */}
+      {/* The four-fact proof strip. */}
       <ProofRow />
+      {/*
+        The rest of the page, in the round-2 artboards' order (TASK-053). The two priced rows the
+        artboards put at positions 3 and 4 — "Bouquets we can deliver in Poland today" and "Most
+        sent this week" — are TASK-054's and spec 005/008's, and mount between the proof strip and
+        the dates strip when they land; nothing here approximates a product or a price.
+      */}
+      <OccasionDates locale={locale.code} />
+      <OccasionTiles locale={locale.code} />
+      <HowItWorks />
+      <HomeFaq />
+      <TrustStrip className={HOME_BLEED} />
       {/* AC-11's destination states, and where the finder's `Continue` lands while no corridor
           page is published. TASK-054 replaces it with the artboards' destinations grid and
           inherits its `id`. */}
