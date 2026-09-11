@@ -39,6 +39,7 @@
  * which is the growth vector TASK-035 closed and this module keeps closed.
  */
 import {
+  LAUNCH_LOCALE_CODES,
   X_DEFAULT_LOCALE,
   type TextDirection,
 } from "../../config/locales.data.ts";
@@ -63,4 +64,36 @@ export function errorDocument(): ErrorDocument {
     dir: X_DEFAULT_LOCALE.dir,
     ...errorCopyFor(X_DEFAULT_LOCALE.code),
   };
+}
+
+/**
+ * The wordmark both 500 documents print (`docs/design/wireframes/errors-*.dc.html`: "minimal
+ * chrome — the wordmark, the copy, two actions"). Re-exported from the import-free data module
+ * rather than read from `src/config/company.ts`, which reaches zod, for the reason the whole file
+ * exists. It is a brand term and is never translated (`content/i18n/glossary.en.md`).
+ */
+export { TRADING_NAME } from "../../config/company.data.ts";
+
+/**
+ * The locale home, for the "Home" action on a failure page (TASK-055).
+ *
+ * `localePath()` is the application's only URL builder (spec 003 §6, AC-13) and stays so: this is
+ * not a second builder but the same rule applied to the one page type whose path is the locale
+ * segment itself, over the same registry data, for a caller that may not reach the registry —
+ * `src/app/[locale]/error.tsx` and `src/app/global-error.tsx` are Client Components and
+ * `routing.ts` pulls `src/config/locales.ts`, and therefore zod, behind it.
+ * `tests/unit/error-document.test.ts` asserts the two agree for every launch locale, exactly as it
+ * does for the copy, so a change to the home path fails a test instead of stranding the failure
+ * page.
+ *
+ * An unknown, mis-cased or pseudo-locale segment answers the x-default home rather than building a
+ * URL from whatever was in the path: this is the failure path, and it must not be the second place
+ * an attacker-supplied segment is echoed.
+ */
+export function errorHomePath(locale?: string): string {
+  const code =
+    locale !== undefined && LAUNCH_LOCALE_CODES.includes(locale)
+      ? locale
+      : X_DEFAULT_LOCALE.code;
+  return `/${code}`;
 }

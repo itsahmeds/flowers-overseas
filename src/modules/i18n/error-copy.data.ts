@@ -43,6 +43,12 @@ export interface ErrorCopy {
   readonly heading: string;
   readonly body: string;
   readonly retry: string;
+  /**
+   * `common.homeLink` — the label of the way out. TASK-055 added it: a failure page that only
+   * offers "Try again" strands a visitor whose retry fails again (`docs/design/wireframes/
+   * errors-desktop.dc.html` draws two actions, "Try again" and "Home").
+   */
+  readonly home: string;
 }
 
 /**
@@ -55,6 +61,7 @@ export const ERROR_COPY_MESSAGE_KEYS = {
   heading: "errors.serverError.heading",
   body: "errors.serverError.body",
   retry: "errors.serverError.retry",
+  home: "common.homeLink",
 } as const satisfies Readonly<Record<keyof ErrorCopy, string>>;
 
 /**
@@ -67,6 +74,7 @@ export const X_DEFAULT_ERROR_COPY: ErrorCopy = {
   heading: "Something went wrong",
   body: "The page could not be loaded. Nothing you were doing was lost. We apologize for the interruption.",
   retry: "Try again",
+  home: "Home",
 };
 
 /**
@@ -83,18 +91,21 @@ export const ERROR_COPY: Readonly<Record<string, ErrorCopy>> = {
     heading: "Something went wrong",
     body: "The page could not be loaded. Nothing you were doing was lost. We apologise for the interruption.",
     retry: "Try again",
+    home: "Home",
   },
   de: {
     title: "Something went wrong — Flowers Overseas",
     heading: "Something went wrong",
     body: "The page could not be loaded. Nothing you were doing was lost. We apologize for the interruption.",
     retry: "Try again",
+    home: "Home",
   },
   pl: {
     title: "Something went wrong — Flowers Overseas",
     heading: "Something went wrong",
     body: "The page could not be loaded. Nothing you were doing was lost. We apologize for the interruption.",
     retry: "Try again",
+    home: "Home",
   },
 };
 

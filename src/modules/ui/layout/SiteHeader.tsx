@@ -40,10 +40,10 @@
  *
  * **Zero client JavaScript.** Not a preference: §14 A1 leaves 1 434 B of Brotli headroom on a
  * locale document and reserves it for the finder and consent islands, so the header may not spend
- * a byte of it. Everything here is one Server Component. The one control that survives is the
- * mobile menu `<button>`, `disabled` because every category and account target is unpublished and
- * there is nothing for it to disclose; it becomes a disclosure in the task that publishes the
- * first one.
+ * a byte of it. Everything here is one Server Component, and since TASK-055 there is no `<button>`
+ * in it at all: the mobile menu glyph is decoration (`aria-hidden`, no focus stop) until spec 008
+ * publishes the first nav target and it becomes a real disclosure — the same rule as the search
+ * band above, and for the same reason.
  *
  * **Every registry entry is text until its `published` flag flips** (AC-14) — resolved in
  * `./header-model.ts` and never here, so this file holds no `published` branch, and a category,
@@ -502,16 +502,22 @@ export function SiteHeader({
           data-fo-header-band="masthead"
         >
           <div className="gap-sm md:gap-md flex items-center">
-            {/* Nothing to disclose while every nav target is unpublished, so the canvas's menu
-              button ships disabled rather than wired to an empty panel (AC-14). */}
-            <button
-              aria-label={t("nav.menu.label")}
-              className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center md:hidden"
-              disabled
-              type="button"
+            {/* The canvas's menu glyph, rendered as **decoration, not a control** (`/review 31`
+              round 2, closed by TASK-055). It shipped as `<button disabled>`: pixel-identical to
+              an enabled button, in the tab order's blind spot, and doing nothing when pressed —
+              the same dead affordance §14 A4 removed from the search band, and answered the same
+              way. There is nothing to disclose while every category and account target is
+              unpublished (AC-14), so there is no button: no accessible name, no focus stop, no
+              `disabled` state to explain. Spec 008 publishes the first target and turns this
+              `<span>` back into a disclosure button with a panel behind it; the box keeps the
+              44 px the artboard reserves so that swap moves no pixel. */}
+            <span
+              aria-hidden="true"
+              className="text-ink-subtle inline-flex min-h-[44px] min-w-[44px] items-center justify-center md:hidden"
+              data-fo-header-menu="unpublished"
             >
               <Icon name="menu" size={22} />
-            </button>
+            </span>
             <a className={`gap-sm md:gap-md ${TARGET}`} href={home}>
               <Mark className="h-[26px] w-[26px] md:h-[40px] md:w-[40px]" />
               <span className="display text-[19px] tracking-[0.04em] md:text-[26px]">

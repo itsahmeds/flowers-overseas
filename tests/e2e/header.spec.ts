@@ -406,14 +406,21 @@ test.describe("the site header (AC-7)", () => {
     ).toEqual([true, true]);
   });
 
-  test("the menu control is disabled while there is nothing to disclose", async ({
+  test("the menu glyph is decoration, not a control (`/review 31`, TASK-055)", async ({
     page,
   }) => {
     await page.goto("/en");
-    // Not `getByRole`: the control is `md:hidden`, so on a desktop viewport it is out of the
-    // accessibility tree entirely — which is the correct answer for an inert affordance and is
-    // exactly why the assertion reads the DOM.
-    await expect(page.locator('button[aria-label="Menu"]')).toBeDisabled();
+    // Not `getByRole`: the glyph is `md:hidden` *and* `aria-hidden`, so it is out of the
+    // accessibility tree entirely — which is the correct answer for an affordance that does
+    // nothing, and is exactly why the assertion reads the DOM.
+    await expect(
+      page.locator('[data-fo-header-menu="unpublished"]'),
+    ).toHaveCount(1);
+    await expect(
+      page.locator('[data-fo-header-menu="unpublished"]'),
+    ).toHaveAttribute("aria-hidden", "true");
+    // No button in the header at all: nothing that looks pressable and is not.
+    await expect(page.locator("[data-fo-header] button")).toHaveCount(0);
   });
 });
 

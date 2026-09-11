@@ -81,8 +81,14 @@ export type {
 } from "./primitives/layout";
 
 // Accessibility primitives.
-export { SkipLink, VisuallyHidden } from "./primitives/a11y";
-export type { SkipLinkProps, VisuallyHiddenProps } from "./primitives/a11y";
+// `LiveRegion` is the design system's documented live-announcement pattern (spec 003's deferred
+// `role="status"` note, closed by TASK-055): permanently mounted, filled later.
+export { LiveRegion, SkipLink, VisuallyHidden } from "./primitives/a11y";
+export type {
+  LiveRegionProps,
+  SkipLinkProps,
+  VisuallyHiddenProps,
+} from "./primitives/a11y";
 
 // Type primitives.
 export {

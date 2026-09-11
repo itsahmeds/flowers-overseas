@@ -1011,9 +1011,9 @@
   "chooser.intro": {
     "source": "human",
     "reviewed": true,
-    "reviewedBy": "founder",
-    "reviewedAt": "2026-09-08T00:00:00Z",
-    "sourceHash": "f2b39d4474033dd1cb2ebcd517bd7a12bf10eb8adfafaa6f6e8891d48128a058"
+    "reviewedBy": "founder (docs/design/wireframes/locale-chooser-desktop.dc.html; spec 004 §14 A5 first person)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "d7bacac6153390f7b0cdcedb6ba924ccab9f54ea463b95aef295e100037df54b"
   },
   "common.beta": {
     "source": "human",
@@ -2154,7 +2154,8 @@
     "reviewed": true,
     "reviewedBy": "founder",
     "reviewedAt": "2026-09-09T00:00:00Z",
-    "sourceHash": "99af6606ff9d6cd5154d4d4e9c21e325086d3e904677cdb41d363c8a3480f862"
+    "sourceHash": "99af6606ff9d6cd5154d4d4e9c21e325086d3e904677cdb41d363c8a3480f862",
+    "retained": true
   },
   "nav.search.help": {
     "source": "human",

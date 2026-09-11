@@ -26,6 +26,27 @@
 import { useParams } from "next/navigation";
 
 import { errorCopyFor } from "@/modules/i18n/error-copy.data";
+// Two constants and one path builder, from the same import-free seam the copy comes through: this
+// document may reach neither the registry nor zod (`error-document.ts`'s header).
+import { TRADING_NAME, errorHomePath } from "@/modules/i18n/error-document";
+// Class strings and nothing else — no component, no runtime — so the failure page looks like the
+// 404 and the chooser without importing the design system into the root error boundary's chunk
+// (`noticeShell.ts`'s header; spec 004 §14 A1).
+import {
+  NOTICE_ACTIONS,
+  NOTICE_ACTION_PRIMARY,
+  NOTICE_ACTION_SECONDARY,
+  NOTICE_BLOCK,
+  NOTICE_BODY,
+  NOTICE_HEADING,
+  NOTICE_LOCKUP,
+  NOTICE_MAIN,
+  NOTICE_META,
+  NOTICE_WORDMARK,
+} from "@/modules/ui/layout/noticeShell";
+
+/** The status this boundary is served with, as the `.label` eyebrow. Digits, so not copy. */
+const SERVER_ERROR_STATUS = "500";
 
 export default function LocaleError({ reset }: { reset: () => void }) {
   // A router param is `string | string[]` at the type level and the whole bag is nullable outside
@@ -33,15 +54,33 @@ export default function LocaleError({ reset }: { reset: () => void }) {
   // code — `errorCopyFor` answers with the x-default copy for every such case rather than throwing,
   // because this component *is* the throw handler.
   const locale = useParams()?.["locale"];
-  const copy = errorCopyFor(typeof locale === "string" ? locale : undefined);
+  const code = typeof locale === "string" ? locale : undefined;
+  const copy = errorCopyFor(code);
+  const home = errorHomePath(code);
 
   return (
-    <main id="main">
-      <h1>{copy.heading}</h1>
-      <p>{copy.body}</p>
-      <button type="button" onClick={reset}>
-        {copy.retry}
-      </button>
+    <main className={NOTICE_MAIN} id="main">
+      {/* No `Mark`: the mark is a component in `src/modules/ui`, and this file may import no
+          component from there (see the header). The wordmark alone is what the errors wireframe
+          draws on the 500 anyway. */}
+      <a className={NOTICE_LOCKUP} href={home}>
+        <span className={NOTICE_WORDMARK}>{TRADING_NAME}</span>
+      </a>
+      <div className={NOTICE_BLOCK}>
+        <p className={NOTICE_META}>{SERVER_ERROR_STATUS}</p>
+        <h1 className={NOTICE_HEADING}>{copy.heading}</h1>
+        <p className={NOTICE_BODY}>{copy.body}</p>
+      </div>
+      <div className={NOTICE_ACTIONS}>
+        <button className={NOTICE_ACTION_PRIMARY} onClick={reset} type="button">
+          {copy.retry}
+        </button>
+        {/* The second action the wireframe draws: a retry that fails again must not be the only
+            way out of the page. */}
+        <a className={NOTICE_ACTION_SECONDARY} href={home}>
+          {copy.home}
+        </a>
+      </div>
     </main>
   );
 }

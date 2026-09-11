@@ -592,3 +592,141 @@ test.describe("the switcher's beta markers (TASK-039, verified here)", () => {
     }
   });
 });
+
+/**
+ * T-15 / AC-13 (TASK-055): the two overlays share the bottom of the viewport, and the consent
+ * sheet is the one on top.
+ *
+ * The ordering is not a preference. `docs/design/flows/consent-and-locale.dc.html` draws consent
+ * first and the locale suggestion second, because switching language must not throw away a
+ * consent choice, and because a visitor who has not answered the consent question should not have
+ * a language offer painted over it. It is expressed once, in the named z-scale of
+ * `src/app/globals.css` — `--layer-overlay: 300` for the sheet, `--layer-banner: 200` for the
+ * suggestion — and asserted here as **what the browser actually paints**, with
+ * `elementFromPoint`, rather than as a class name or a computed `z-index`, either of which can be
+ * right while a stacking context makes the paint order wrong.
+ *
+ * This is the one describe block in the file with no recorded consent decision: everywhere else
+ * the sheet is answered first, because the suggestion banner's own matrix is what is under test.
+ */
+test.describe("the two overlays (AC-13)", () => {
+  test.use({ locale: "de-DE" });
+
+  test.beforeEach(async ({ page }) => {
+    await forceLanguages(page, ["de-DE", "de"]);
+  });
+
+  test("the consent sheet paints above the language suggestion", async ({
+    page,
+    context,
+  }) => {
+    // No `fo_consent` in the jar: both overlays are on screen at once.
+    await context.clearCookies();
+    await page.goto("/en");
+
+    await expect(page.locator("[data-fo-consent]")).toBeVisible();
+    await expect(page.locator(BANNER)).toBeVisible();
+
+    const sheet = await page.locator("[data-fo-consent]").boundingBox();
+    const banner = await page.locator(BANNER).boundingBox();
+    expect(sheet).not.toBeNull();
+    expect(banner).not.toBeNull();
+
+    // Where the two boxes overlap, the topmost painted element must belong to the sheet.
+    const overlapTop = Math.max(sheet!.y, banner!.y);
+    const overlapBottom = Math.min(
+      sheet!.y + sheet!.height,
+      banner!.y + banner!.height,
+    );
+    const overlapStart = Math.max(sheet!.x, banner!.x);
+    const overlapEnd = Math.min(
+      sheet!.x + sheet!.width,
+      banner!.x + banner!.width,
+    );
+    expect(
+      overlapBottom - overlapTop,
+      "the two overlays overlap, which is what makes the order matter",
+    ).toBeGreaterThan(0);
+
+    const owner = await page.evaluate(
+      ([x, y]) => {
+        const node = document.elementFromPoint(x, y);
+        return {
+          consent: node?.closest("[data-fo-consent]") !== null,
+          banner: node?.closest('[data-fo-banner="shown"]') !== null,
+        };
+      },
+      [
+        (overlapStart + overlapEnd) / 2,
+        (overlapTop + overlapBottom) / 2,
+      ] as const,
+    );
+
+    expect(owner.consent).toBe(true);
+    expect(owner.banner).toBe(false);
+  });
+
+  test("the suggestion sits in the named z-scale, not on a raw z-index", async ({
+    page,
+    context,
+  }) => {
+    await context.clearCookies();
+    await page.goto("/en");
+    await expect(page.locator(BANNER)).toBeVisible();
+
+    const layers = await page.evaluate(() => {
+      const read = (selector: string): string => {
+        const node = document.querySelector(selector);
+        // The positioned wrapper carries the layer, not the panel inside it.
+        const positioned =
+          node?.closest<HTMLElement>('[class*="layer-"]') ??
+          (node as HTMLElement | null);
+        return positioned === null
+          ? ""
+          : window.getComputedStyle(positioned).zIndex;
+      };
+      return {
+        consent: read("[data-fo-consent]"),
+        banner: read('[data-fo-banner="shown"]'),
+        tokens: {
+          overlay: getComputedStyle(document.documentElement)
+            .getPropertyValue("--layer-overlay")
+            .trim(),
+          banner: getComputedStyle(document.documentElement)
+            .getPropertyValue("--layer-banner")
+            .trim(),
+        },
+      };
+    });
+
+    expect(layers.banner).toBe(layers.tokens.banner);
+    expect(layers.consent).toBe(layers.tokens.overlay);
+    expect(Number(layers.consent)).toBeGreaterThan(Number(layers.banner));
+  });
+
+  /**
+   * Spec 003's deferred `role="status"` note, closed by TASK-055: the region is in the document
+   * before it has anything to say, which is the only shape assistive technologies announce
+   * reliably. It is `fixed` and empty until then, so it still shifts nothing (AC-28's CLS delta).
+   */
+  test("the live region is mounted before there is anything to announce", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    const url = new URL(baseURL ?? "http://localhost:3000");
+    await context.addCookies([
+      { name: "fo_locale", value: "en", domain: url.hostname, path: "/" },
+    ]);
+    await page.goto("/en");
+
+    // A recorded choice, so there is no suggestion to make — and the region is there anyway.
+    await expect(page.locator("h1")).toBeVisible();
+    await expect(page.locator(BANNER)).toHaveCount(0);
+    const region = page.locator('[data-fo-live-region="locale-suggestion"]');
+    await expect(region).toHaveCount(1);
+    await expect(region).toHaveAttribute("role", "status");
+    await expect(region).toHaveAttribute("aria-live", "polite");
+    await expect(region).toBeEmpty();
+  });
+});

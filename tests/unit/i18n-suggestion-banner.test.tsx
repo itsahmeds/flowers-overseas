@@ -32,7 +32,11 @@ import { createTranslator } from "next-intl";
 import { loadMessages } from "../../src/modules/i18n";
 import type { SuggestionCandidate } from "../../src/modules/i18n/hints.ts";
 import { suggestionCandidates } from "../../src/modules/i18n/ui/LocaleSuggestionBanner.tsx";
-import { LocaleSuggestionBannerView } from "../../src/modules/i18n/ui/LocaleSuggestionBannerIsland.tsx";
+import {
+  LocaleSuggestionBannerIsland,
+  LocaleSuggestionBannerView,
+} from "../../src/modules/i18n/ui/LocaleSuggestionBannerIsland.tsx";
+import { LiveRegion } from "../../src/modules/ui/primitives/a11y.tsx";
 import {
   type BannerTranslate,
   suggestionCopy,
@@ -180,9 +184,8 @@ describe("LocaleSuggestionBannerView (§5.3, §8)", () => {
     expect(html).toContain('data-fo-banner="shown"');
   });
 
-  it("is a non-modal live region labelled by its own headline", () => {
+  it("is a non-modal named region, and not a dialog", () => {
     expect(html).toContain('role="region"');
-    expect(html).toContain('aria-live="polite"');
     expect(html).not.toContain('role="dialog"');
     expect(html).not.toContain("aria-modal");
 
@@ -191,13 +194,70 @@ describe("LocaleSuggestionBannerView (§5.3, §8)", () => {
     expect(html).toContain(`id="${labelledBy!}"`);
   });
 
+  /**
+   * TASK-055 closed spec 003's deferred `role="status"` note (`/review 23`): the announcement is
+   * made by a **permanently mounted** live region around the banner, because a region inserted
+   * together with its content is announced by some assistive technologies and ignored by others.
+   * The pattern is `LiveRegion` in the design system, which this island may not import — it is a
+   * Client Component in another module, and the cross-module route is `src/modules/ui`'s public
+   * barrel, which would put the design system's islands in this chunk (spec 004 §14 A1). So the
+   * attributes are restated in the island and pinned here against what `LiveRegion` renders.
+   */
+  it("wraps the banner in the design system's live-region pattern, mounted whatever the decision", () => {
+    const wrapper = renderToStaticMarkup(
+      <LiveRegion name="locale-suggestion" />,
+    );
+    const attributes = [
+      'role="status"',
+      'aria-live="polite"',
+      'aria-atomic="true"',
+      'data-fo-live-region="locale-suggestion"',
+    ];
+    for (const attribute of attributes) {
+      expect(wrapper, attribute).toContain(attribute);
+    }
+
+    // Shown: the region is there, with the banner inside it.
+    const shown = renderToStaticMarkup(
+      <LocaleSuggestionBannerIsland
+        candidates={suggestionCandidates()}
+        copy={englishCopy}
+        locale="en"
+      />,
+    );
+    // Hidden: the same region, empty. `renderToStaticMarkup` runs the island's `useState`
+    // initialiser with no `window`, so `decideSuggestion` throws and the island fails closed —
+    // which is exactly the "no suggestion" state this assertion is about.
+    for (const attribute of attributes) {
+      expect(shown, attribute).toContain(attribute);
+    }
+    expect(shown).not.toContain('data-fo-banner="shown"');
+    // Empty, so it paints nothing and measures nothing: CLS delta 0 (AC-28).
+    expect(shown).toMatch(
+      /data-fo-live-region="locale-suggestion"[^>]*><\/div>/,
+    );
+  });
+
   it("reserves no layout space, so inserting it shifts nothing (CLS 0)", () => {
-    expect(html).toContain("fixed");
+    // The positioning is on the live region, which is the element that is always in the document.
+    const region = renderToStaticMarkup(
+      <LocaleSuggestionBannerIsland
+        candidates={suggestionCandidates()}
+        copy={englishCopy}
+        locale="en"
+      />,
+    );
+    expect(region).toContain("fixed");
     // Logical inset utilities only: `fo/no-physical-css` bans `left-`/`right-`/`inset-x-`.
-    expect(html).toContain("start-0");
-    expect(html).toContain("end-0");
-    expect(html).not.toMatch(/class="[^"]*\bleft-/);
-    expect(html).not.toMatch(/class="[^"]*\bright-/);
+    expect(region).toContain("start-0");
+    expect(region).toContain("end-0");
+    expect(region).not.toMatch(/class="[^"]*\bleft-/);
+    expect(region).not.toMatch(/class="[^"]*\bright-/);
+    // AC-13's ordering, in the named scale rather than in a raw `z-index`: `layer-banner` (200)
+    // is the step *below* the consent sheet's `layer-overlay` (300), so the sheet paints above.
+    expect(region).toContain("layer-banner");
+    expect(region).not.toMatch(/class="[^"]*\bz-\d/);
+    expect(html).not.toMatch(/class="[^"]*\bz-\d/);
   });
 
   it("offers `Switch` as a real link to the target locale, with its language declared", () => {
@@ -237,8 +297,17 @@ describe("LocaleSuggestionBannerView (§5.3, §8)", () => {
     expect(panel).toMatch(/\bborder-\w/);
     expect(panel).toMatch(/\btext-\w/);
     // A bare `border` with no colour is the bug: it resolves to `currentColor`.
-    expect(panel).toContain("border-neutral-500");
-    expect(panel).toContain("bg-white");
+    // TASK-055 resolved spec 003's deferred "the banner overlay needs a background token" to the
+    // real semantic tokens — the same three the consent sheet's panel uses — so no Tailwind
+    // palette name (`bg-white`, `border-neutral-500`, `text-neutral-900`) is left anywhere in the
+    // overlay, which is also what `fo/no-raw-color`'s sibling gate, `tests/unit/tokens.test.ts`,
+    // checks on the built CSS.
+    expect(panel).toContain("bg-surface");
+    expect(panel).toContain("border-border-strong");
+    expect(panel).toContain("text-ink");
+    expect(html).not.toMatch(
+      /\b(?:bg|text|border)-(?:white|black|neutral|gray|slate)\b/,
+    );
   });
 
   it("renders the same markup for every launch locale it can target", () => {

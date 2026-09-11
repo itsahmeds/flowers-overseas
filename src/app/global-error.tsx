@@ -50,24 +50,75 @@
 // `import/no-restricted-paths` allows it — the barrel rule
 // binds module-to-module imports, and `app/` -> `modules/` is the direction the boundary permits
 // (`plan/01` §5) — and the measured cost of each step is recorded in `docs/architecture.md` §2.
-import { errorDocument } from "@/modules/i18n/error-document";
+import {
+  TRADING_NAME,
+  errorDocument,
+  errorHomePath,
+} from "@/modules/i18n/error-document";
+// Class strings and nothing else — no component, no runtime — so this document looks like the
+// other three without importing the design system into the chunk Next attaches to *every*
+// document (`noticeShell.ts`'s header; spec 004 §14 A1).
+import {
+  NOTICE_ACTIONS,
+  NOTICE_ACTION_PRIMARY,
+  NOTICE_ACTION_SECONDARY,
+  NOTICE_BLOCK,
+  NOTICE_BODY,
+  NOTICE_HEADING,
+  NOTICE_LOCKUP,
+  NOTICE_MAIN,
+  NOTICE_META,
+  NOTICE_WORDMARK,
+} from "@/modules/ui/layout/noticeShell";
+
+// The design tokens themselves. `global-error.tsx` replaces the root layout rather than rendering
+// inside it, so nothing else puts a stylesheet on this document and every class above would be
+// inert without this line (TASK-055). It is a CSS import: it adds a `<link>`, not a script byte.
+// The two self-hosted families are deliberately *not* pulled in — `@/modules/ui/fonts` is one more
+// module in the chunk Next attaches to every document, and `@layer base`'s fallback stack
+// ("Iowan Old Style"/Georgia for the display voice, Helvetica/Arial for the body) is a perfectly
+// legible last-resort page. Every other document, the 404 included, carries the real faces.
+import "./globals.css";
+
+/** The status this document is served with, as the `.label` eyebrow. Digits, so not copy. */
+const SERVER_ERROR_STATUS = "500";
 
 export default function GlobalError({ reset }: { reset: () => void }) {
   // Not named `document`: that identifier is the DOM global, and shadowing it in the one
   // component that renders `<html>` would be gratuitously confusing.
   const copy = errorDocument();
+  // The x-default home, for the same reason the document's language is the x-default one: a
+  // client component cannot read the path segment at render time on the server, and guessing is
+  // worse than being honest.
+  const home = errorHomePath();
 
   return (
     <html lang={copy.lang} dir={copy.dir}>
       <body className="min-h-dvh">
         <title>{copy.title}</title>
         <meta name="robots" content="noindex,nofollow" />
-        <main id="main">
-          <h1>{copy.heading}</h1>
-          <p>{copy.body}</p>
-          <button type="button" onClick={reset}>
-            {copy.retry}
-          </button>
+        <main className={NOTICE_MAIN} id="main">
+          {/* The wordmark, not the `Mark` component: see the import block. */}
+          <a className={NOTICE_LOCKUP} href={home}>
+            <span className={NOTICE_WORDMARK}>{TRADING_NAME}</span>
+          </a>
+          <div className={NOTICE_BLOCK}>
+            <p className={NOTICE_META}>{SERVER_ERROR_STATUS}</p>
+            <h1 className={NOTICE_HEADING}>{copy.heading}</h1>
+            <p className={NOTICE_BODY}>{copy.body}</p>
+          </div>
+          <div className={NOTICE_ACTIONS}>
+            <button
+              className={NOTICE_ACTION_PRIMARY}
+              onClick={reset}
+              type="button"
+            >
+              {copy.retry}
+            </button>
+            <a className={NOTICE_ACTION_SECONDARY} href={home}>
+              {copy.home}
+            </a>
+          </div>
         </main>
       </body>
     </html>

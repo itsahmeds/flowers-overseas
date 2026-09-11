@@ -29,6 +29,8 @@
  */
 import { z } from "zod";
 
+import { TRADING_NAME } from "./company.data.ts";
+
 /** A dotted `company.*` message key. */
 const MessageKeySchema = z
   .string()
@@ -144,7 +146,9 @@ export type Company = z.infer<typeof CompanySchema>;
  * is what keeps that state internally consistent until the founder fills all five at once.
  */
 const company = {
-  tradingName: "Flowers Overseas",
+  // From the import-free data module, because the two 500 boundaries print the wordmark and may
+  // not reach zod to get it (`./company.data.ts`; spec 004 §14 A1, TASK-055).
+  tradingName: TRADING_NAME,
   registered: false,
   contact: {
     phoneE164: "+12135925150",

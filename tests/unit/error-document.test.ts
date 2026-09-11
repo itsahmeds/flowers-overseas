@@ -36,9 +36,15 @@ import {
   type ErrorCopy,
   errorCopyFor,
 } from "../../src/modules/i18n/error-copy.data.ts";
-import { errorDocument } from "../../src/modules/i18n/error-document.ts";
+import {
+  TRADING_NAME,
+  errorDocument,
+  errorHomePath,
+} from "../../src/modules/i18n/error-document.ts";
 import { loadMessages } from "../../src/modules/i18n/messages.ts";
+import { localePath } from "../../src/modules/i18n/routing.ts";
 import { documentFallbackLocale } from "../../src/modules/i18n/registry.ts";
+import { COMPANY } from "../../src/config/company.ts";
 
 import { importClosure } from "./support/import-closure.ts";
 
@@ -132,6 +138,41 @@ describe("error-copy.data.ts (parity with the validated path, per launch locale)
     ]);
     expect([...closure.packages]).toEqual([]);
     expect([...closure.json]).toEqual([]);
+  });
+});
+
+/**
+ * TASK-055 gave the two 500 documents a wordmark and a way home, and both had to come through the
+ * same zod-free seam as the copy. Neither is a second source of truth, and these two assertions
+ * are what say so: the wordmark is `COMPANY.tradingName` (one string, in `src/config/
+ * company.data.ts`, which `company.ts` builds its identity from), and the path is what
+ * `localePath(locale, "home")` — the application's only URL builder — answers for every launch
+ * locale.
+ */
+describe("the failure pages' chrome (TASK-055)", () => {
+  it("prints the same trading name the company config does", () => {
+    expect(TRADING_NAME).toBe(COMPANY.tradingName);
+    expect(TRADING_NAME.length).toBeGreaterThan(0);
+  });
+
+  it('answers exactly `localePath(locale, "home")` for every launch locale', () => {
+    for (const locale of launchLocales) {
+      expect(errorHomePath(locale), locale).toBe(localePath(locale, "home"));
+    }
+  });
+
+  it("falls back to the x-default home for an unknown, mis-cased or pseudo segment", () => {
+    const xDefault = localePath(X_DEFAULT_LOCALE.code, "home");
+    for (const locale of [
+      "nope",
+      "EN",
+      "en-XA",
+      "ar-XB",
+      "../../etc",
+      undefined,
+    ]) {
+      expect(errorHomePath(locale), String(locale)).toBe(xDefault);
+    }
   });
 });
 

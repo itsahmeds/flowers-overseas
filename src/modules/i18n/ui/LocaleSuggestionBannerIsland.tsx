@@ -26,8 +26,12 @@
  *    never moved on appearance — nothing calls `focus()` — so a keyboard visitor mid-page is not
  *    interrupted; the banner is reachable by continuing to tab, because it is the last thing in
  *    the document.
- *  - **`aria-live="polite"`** announces it once, at the next graceful pause, without stealing the
- *    reading position (§5.3).
+ *  - **A permanently mounted `role="status"` region** wraps it and announces it once, at the next
+ *    graceful pause, without stealing the reading position (§5.3). The region is in the document
+ *    from the island's first render and empty until there is something to say — the design
+ *    system's `LiveRegion` pattern (`src/modules/ui/primitives/a11y.tsx`), which is spec 003's
+ *    deferred `role="status"` note closed by TASK-055. A live region inserted *together with* its
+ *    content is announced by some assistive technologies and ignored by others.
  *  - **`Esc` dismisses it**, and so does the dismiss button, satisfying 2.2.2's "dismissible"
  *    without a timeout: the visitor can always get the corner of the viewport back.
  *  - Both other controls are real, activatable elements: "Switch" is an `<a href>` built by
@@ -39,7 +43,14 @@
  * "Stay" writes the current locale, and the banner never returns for either. Dismiss (and `Esc`)
  * deliberately writes **no** cookie — see the header of `dismiss()`.
  */
-import { useCallback, useEffect, useId, useState } from "react";
+import {
+  type ReactElement,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useId,
+  useState,
+} from "react";
 
 import {
   type SuggestionCandidate,
@@ -79,6 +90,17 @@ export interface LocaleSuggestionBannerIslandProps {
  * Recorded as a deviation-free reading of a silent spec in the PR body.
  */
 const DISMISSED_KEY = "fo_locale_suggestion_dismissed";
+
+/**
+ * The canvas's `.btn.secondary` at the small size, verbatim and once, for all three controls — the
+ * same skin and the same reasoning as `ConsentBannerView`'s `CONTROL`: one class list, so no
+ * control of this overlay can end up looking more inviting than another, and 44 px of tap target
+ * (§5.3, §8). Written here rather than imported from `src/modules/ui` because a Client Component
+ * in `src/modules/i18n` may only cross the module boundary through that module's public barrel,
+ * which would put the design system's islands in this chunk (spec 004 §14 A1).
+ */
+const BANNER_CONTROL =
+  "border-border-strong bg-surface text-ink hover:border-border-emphasis active:bg-surface-muted px-md text-sm inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-sm border font-medium tracking-[0.02em] transition-colors motion-fast ease-standard select-none";
 
 /** `sessionStorage` throws in a partitioned or storage-blocked context; a `null` is not an error. */
 function readDismissed(): boolean {
@@ -163,31 +185,75 @@ export function LocaleSuggestionBannerIsland({
     };
   }, [shown, dismiss]);
 
-  if (!decision.show) return null;
-  const candidate = decision.target;
-  const targetCopy = copy.targets[candidate.code];
-  // Fail closed, for the reason the `useState` initialiser above catches a throw: the copy and the
-  // candidates are projected from the same registry list by the same Server Component, so a
-  // missing entry is unreachable — and if it ever becomes reachable, no banner is a better answer
-  // than a banner with a blank headline.
-  if (targetCopy === undefined) return null;
+  // **The region is mounted whatever the decision is** (spec 004 AC-13; the design system's
+  // `LiveRegion` pattern, `src/modules/ui/primitives/a11y.tsx`). Until TASK-055 this returned
+  // `null` and the live region arrived with its own content, which some assistive technologies
+  // announce and others silently ignore, because the accessibility tree has no earlier state to
+  // compare against. Now the empty region is in the document from the island's first render and
+  // the *content* is what appears — which is spec 003's deferred `role="status"` note, closed.
+  // Nothing else changed: the region is `fixed` and empty, so it paints nothing, measures nothing
+  // and shifts nothing (CLS delta 0, AC-28), and `data-fo-banner="shown"` still appears only when
+  // a suggestion is actually on screen.
+  const target = decision.show ? decision.target : undefined;
+  const targetCopy =
+    target === undefined ? undefined : copy.targets[target.code];
 
   return (
-    <LocaleSuggestionBannerView
-      copy={copy}
-      target={candidate}
-      targetCopy={targetCopy}
-      onStay={() => {
-        writeLocaleCookie(locale);
-        setDecision({ show: false, reason: "cookie" });
-      }}
-      // No `preventDefault()`: the cookie is written synchronously and the browser then follows
-      // the link itself. A JS-driven `location.assign()` would be a redirect in all but name.
-      onSwitch={() => {
-        writeLocaleCookie(candidate.code);
-      }}
-      onDismiss={dismiss}
-    />
+    <LocaleSuggestionBannerRegion>
+      {/* Fail closed, for the reason the `useState` initialiser above catches a throw: the copy
+          and the candidates are projected from the same registry list by the same Server
+          Component, so a missing entry is unreachable — and if it ever becomes reachable, no
+          banner is a better answer than a banner with a blank headline. */}
+      {target === undefined || targetCopy === undefined ? null : (
+        <LocaleSuggestionBannerView
+          copy={copy}
+          target={target}
+          targetCopy={targetCopy}
+          onStay={() => {
+            writeLocaleCookie(locale);
+            setDecision({ show: false, reason: "cookie" });
+          }}
+          // No `preventDefault()`: the cookie is written synchronously and the browser then
+          // follows the link itself. A JS-driven `location.assign()` would be a redirect in all
+          // but name.
+          onSwitch={() => {
+            writeLocaleCookie(target.code);
+          }}
+          onDismiss={dismiss}
+        />
+      )}
+    </LocaleSuggestionBannerRegion>
+  );
+}
+
+/**
+ * The permanently mounted live region, and the banner's place in the z-scale.
+ *
+ * `layer-banner` is the named step **below** `layer-overlay`, which is the consent sheet's
+ * (`--layer-banner: 200` / `--layer-overlay: 300` in `src/app/globals.css`). That is AC-13's
+ * ordering, expressed once, in the scale, rather than as a raw `z-50` racing whatever the sheet
+ * happens to use: a visitor who has not answered the consent question sees the sheet on top, and
+ * `tests/e2e/banner.spec.ts` proves the painted order rather than the class name.
+ *
+ * The three attributes are `LiveRegion`'s, restated rather than imported — see that component's
+ * header for why a Client Component in `src/modules/i18n` may not reach `src/modules/ui`, and
+ * `tests/unit/i18n-suggestion-banner.test.tsx` for the assertion that keeps them equal.
+ */
+function LocaleSuggestionBannerRegion({
+  children,
+}: {
+  children: ReactNode;
+}): ReactElement {
+  return (
+    <div
+      aria-atomic="true"
+      aria-live="polite"
+      className="layer-banner fixed start-0 end-0 bottom-0"
+      data-fo-live-region="locale-suggestion"
+      role="status"
+    >
+      {children}
+    </div>
   );
 }
 
@@ -209,9 +275,18 @@ export interface LocaleSuggestionBannerViewProps {
  * `suggestionCopy()` on the server, which is what took `NextIntlClientProvider` and the message
  * payload out of every locale document (spec 004 §13 Q13 option (b), §14 A1 addendum).
  *
- * Styling is the minimum that makes an overlay legible and is direction-agnostic
- * (`start-0`/`end-0`, never `left`/`right` — `fo/no-physical-css`); spec 004 restyles it without
- * touching the markup or the ARIA.
+ * **Restyled by TASK-055 (AC-13), and restyled only.** Every colour is now a semantic token —
+ * `bg-surface`, `border-border-strong`, `text-ink`, the same three the consent sheet's panel uses,
+ * which is spec 003's deferred "the banner overlay needs a background token" resolved to real
+ * tokens instead of the `bg-white` / `border-neutral-500` / `text-neutral-900` placeholders it
+ * shipped with. Spacing is the named scale (`m-md`, `p-md`, `gap-md`), the surface takes the
+ * canvas's hairline, radius and shadow, and the two text controls are the `.btn.secondary` skin at
+ * the small size so they meet the 44 px tap target (§5.3, §8). Positioning, ARIA, the DOM order,
+ * the three `data-fo-banner-action` hooks and every behaviour are untouched: spec 003 AC-28's
+ * matrix (T-28) re-runs green unchanged.
+ *
+ * Direction-agnostic throughout (`start`/`end`, `ms-auto`, never `left`/`right` —
+ * `fo/no-physical-css`).
  */
 export function LocaleSuggestionBannerView({
   target: candidate,
@@ -224,53 +299,45 @@ export function LocaleSuggestionBannerView({
   const headlineId = useId();
 
   return (
-    <div className="fixed start-0 end-0 bottom-0 z-50">
-      <section
-        aria-labelledby={headlineId}
-        aria-live="polite"
-        // An overlay floats over content nobody has written yet, so its background, border and
-        // text colour are explicit rather than inherited (`/review 23` note 2): a transparent
-        // panel with a `currentColor` border reads as text-on-text the moment spec 004 puts
-        // anything at the bottom of the viewport. `text-neutral-900` on `bg-white` is ~17:1
-        // (WCAG 1.4.3) and the `border-neutral-500` boundary is ~4.7:1 against that background,
-        // above 1.4.11's 3:1 for non-text. No design tokens exist yet — spec 004 owns them and
-        // replaces these three utilities without touching the markup or the ARIA.
-        className="m-2 flex flex-wrap items-center gap-3 border border-neutral-500 bg-white p-3 text-neutral-900"
-        data-fo-banner="shown"
-        role="region"
+    <section
+      aria-labelledby={headlineId}
+      className="border-border-strong bg-surface text-ink m-md gap-md p-md flex flex-wrap items-center rounded-sm border shadow-md"
+      data-fo-banner="shown"
+      role="region"
+    >
+      <p className="text-md" id={headlineId}>
+        {targetCopy.headline}
+      </p>
+      <a
+        className={BANNER_CONTROL}
+        data-fo-banner-action="switch"
+        href={candidate.href}
+        hrefLang={candidate.bcp47}
+        lang={candidate.bcp47}
+        onClick={onSwitch}
       >
-        <p id={headlineId}>{targetCopy.headline}</p>
-        <a
-          className="underline"
-          data-fo-banner-action="switch"
-          href={candidate.href}
-          hrefLang={candidate.bcp47}
-          lang={candidate.bcp47}
-          onClick={onSwitch}
-        >
-          {targetCopy.switchLabel}
-        </a>
-        <button
-          className="underline"
-          data-fo-banner-action="stay"
-          onClick={onStay}
-          type="button"
-        >
-          {copy.stay}
-        </button>
-        <button
-          aria-label={copy.dismiss}
-          className="ms-auto"
-          data-fo-banner-action="dismiss"
-          onClick={onDismiss}
-          type="button"
-        >
-          {/* No letters, so `fo/no-literal-strings` is satisfied and no locale needs a key for
-              it; the accessible name comes from `banner.dismiss` on the button above. */}
-          <span aria-hidden="true">✕</span>
-        </button>
-      </section>
-    </div>
+        {targetCopy.switchLabel}
+      </a>
+      <button
+        className={BANNER_CONTROL}
+        data-fo-banner-action="stay"
+        onClick={onStay}
+        type="button"
+      >
+        {copy.stay}
+      </button>
+      <button
+        aria-label={copy.dismiss}
+        className={`${BANNER_CONTROL} ms-auto aspect-square px-0`}
+        data-fo-banner-action="dismiss"
+        onClick={onDismiss}
+        type="button"
+      >
+        {/* No letters, so `fo/no-literal-strings` is satisfied and no locale needs a key for
+            it; the accessible name comes from `banner.dismiss` on the button above. */}
+        <span aria-hidden="true">✕</span>
+      </button>
+    </section>
   );
 }
 
