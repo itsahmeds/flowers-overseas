@@ -138,7 +138,9 @@ export function readList(row: TaskRow): string[] {
 
 /** The brief for a row, with the notes split across the fixed headings. */
 export function renderBrief(row: TaskRow, notes: Notes): string {
-  const escalated = /\*\*ESCALATION/.test(notes.binding);
+  const escalated = [notes.binding, ...notes.carryForwards].some((part) =>
+    /\*\*ESCALATION/.test(part),
+  );
   const sections = [
     `# ${row.id} — ${row.title}`,
     "",
@@ -162,7 +164,7 @@ export function renderBrief(row: TaskRow, notes: Notes): string {
     "## Escalations",
     "",
     escalated
-      ? "An escalation is recorded in the migrated prose under **Binding** (search `ESCALATION`). New escalations go here, one dated bullet each."
+      ? "An escalation is recorded in the migrated prose above (search `ESCALATION`). New escalations go here, one dated bullet each."
       : EMPTY_SECTION,
     "",
     "## Result",
