@@ -584,3 +584,33 @@ export const phones: readonly PhoneFixture[] = [
     reason: "not-a-number",
   },
 ];
+
+/* -------------------------------------------------------------------------- */
+/* Catalogue and pricing (spec 005 §2 "Tests and fixtures", AC-26; TASK-069).  */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The catalogue corpus, re-exported so the barrel is the one import a suite needs (AC-26).
+ *
+ * It lives in `catalogue.ts` rather than inline because it is large and because its arithmetic is
+ * documented longhand in that file's header; the names are re-exported here for the same reason
+ * `currencies` and `addresses` are here — spec 001 §2's rule that no spec invents a second copy
+ * of a shared input. Consumers: `catalog-pricing-fx.test.ts` today, 008/009/010/013/018 from
+ * Phase 1.
+ */
+export type {
+  BasketLineFixture,
+  FxConversionFixture,
+  MixedVatBasketFixture,
+  PriceBandFixture,
+  VatSplitFixture,
+} from "./catalogue.ts";
+export {
+  FX_RATE_PPM_EUR_GBP,
+  FX_RATE_PPM_EUR_PLN,
+  FX_RATE_PPM_PLN_EUR,
+  FX_RATE_PPM_PLN_GBP,
+  fxConversions,
+  mixedVatBaskets,
+  priceBands,
+} from "./catalogue.ts";
