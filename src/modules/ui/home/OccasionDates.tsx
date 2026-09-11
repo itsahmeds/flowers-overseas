@@ -24,6 +24,11 @@
  *    string in the accessibility tree twice; one name is rendered, and the endonym stays in it,
  *    because the endonym is the half a Polish recipient's family would use.
  *
+ * The band is the desktop artboard's two-column shape — a 300 px "Coming up in Poland" heading
+ * column beside the 4-up date grid, vertically centred (`Grid columns="1-aside"`, the width
+ * written once in the primitive) — and the mobile artboard's stack of the same two parts, 2-up
+ * (`/review 53` required change 2).
+ *
  * The cutoff line itself is hidden below the `md` breakpoint, exactly as the mobile artboard
  * omits it — the one responsive difference in this section, and it removes no information the
  * page does not carry elsewhere (the finder prints the standing cutoff above it).
@@ -69,10 +74,11 @@ export function OccasionDates({
   const dates = occasionDateViews(locale, DATED_DESTINATION);
 
   return (
-    <Stack
+    <Grid
       as="section"
+      columns="1-aside"
       gap="md"
-      className={`bg-surface-raised border-rule py-lg border-y ${HOME_BLEED}`}
+      className={`bg-surface-raised border-rule py-lg md:gap-xl border-y md:items-center ${HOME_BLEED}`}
       aria-labelledby={HEADING_ID}
       data-fo-occasion-dates
     >
@@ -124,6 +130,6 @@ export function OccasionDates({
           </Stack>
         ))}
       </Grid>
-    </Stack>
+    </Grid>
   );
 }

@@ -100,12 +100,25 @@ export function HomeFaq({
       <Stack gap="none" className="border-rule border-b md:col-span-2">
         {FAQ_ENTRIES.map((entry) => (
           <details
-            className="border-rule py-md border-t"
+            className="border-rule py-md group border-t"
             key={entry.id}
             data-fo-faq-entry={entry.id}
           >
-            <summary className="text-md flex min-h-[44px] cursor-pointer items-center font-medium">
+            <summary className="text-md gap-md flex min-h-[44px] cursor-pointer list-none items-center justify-between font-medium [&::-webkit-details-marker]:hidden">
               {t(entry.questionKey)}
+              {/* The artboards' `+` at the inline end of every summary — the whole of the expand
+                  affordance, because `display: flex` suppresses the native disclosure marker and
+                  a bold line with no marker reads as a heading (`/review 53` required change 1).
+                  Open state rotates the same glyph 45° into a `×`: CSS only (`group-open`), one
+                  character in the DOM rather than two swapped ones, and symmetric under RTL. It
+                  is `aria-hidden` because `<details>` already exposes the expanded state, and the
+                  focus ring is `globals.css`'s token-coloured `:focus-visible` on the summary. */}
+              <span
+                aria-hidden="true"
+                className="text-ink-subtle motion-fast ease-standard shrink-0 leading-none transition-transform group-open:rotate-45"
+              >
+                +
+              </span>
             </summary>
             <Text className="mt-sm" measure size="sm" tone="muted">
               {t(entry.answerKey)}

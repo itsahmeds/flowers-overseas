@@ -196,6 +196,18 @@ describe("the 'Coming up in Poland' strip", () => {
     expect(text(dates("pl"))).toContain("30 paź");
   });
 
+  it("is the desktop artboard's 300 px heading column beside the date grid (`/review 53`)", () => {
+    const html = dates("en");
+
+    // Stacked on mobile, two columns from `md` up — the artboard's
+    // `grid-template-columns: 300px minmax(0, 1fr)`, owned by the primitive, not the call site.
+    expect(html).toContain("grid-cols-1");
+    expect(html).toContain("md:grid-cols-[300px_minmax(0,1fr)]");
+    expect(html).toContain("md:items-center");
+    // The dates themselves stay 2-up mobile / 4-up desktop inside the fluid column.
+    expect(html).toContain("grid-cols-2 md:grid-cols-4");
+  });
+
   it("links nothing and computes nothing", () => {
     const html = dates("en");
 
@@ -294,6 +306,31 @@ describe("the FAQ", () => {
     ]) {
       expect(rendered, fragment).toContain(fragment);
     }
+  });
+
+  it("draws the artboards' `+` affordance on every summary, decorative and CSS-only", () => {
+    const html = faq("en");
+
+    // One `+` per disclosure, hidden from AT because `<details>` carries the state itself.
+    expect([...html.matchAll(/aria-hidden="true"/g)]).toHaveLength(
+      FAQ_ENTRIES.length,
+    );
+    expect([...html.matchAll(/>\+</g)]).toHaveLength(FAQ_ENTRIES.length);
+    // The native marker is suppressed in both engines, so the `+` is the only marker drawn …
+    expect([...html.matchAll(/list-none/g)]).toHaveLength(FAQ_ENTRIES.length);
+    expect(
+      // `&` is entity-escaped in the attribute value.
+      [...html.matchAll(/\[&amp;::-webkit-details-marker\]:hidden/g)],
+    ).toHaveLength(FAQ_ENTRIES.length);
+    // … and the open state rotates that same glyph into a `×` with no script of ours.
+    expect([...html.matchAll(/group-open:rotate-45/g)]).toHaveLength(
+      FAQ_ENTRIES.length,
+    );
+    // The rotation hangs off the `<details>`, which is the element that holds `open`.
+    expect([...html.matchAll(/<details class="[^"]*\bgroup\b/g)]).toHaveLength(
+      FAQ_ENTRIES.length,
+    );
+    expect(html).not.toContain("onClick");
   });
 
   it("renders the help-centre control as text, because 007 has not published it", () => {

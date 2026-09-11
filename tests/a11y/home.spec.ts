@@ -152,3 +152,42 @@ test("every FAQ disclosure clears the 44 px tap-target floor and toggles", async
     "",
   );
 });
+
+/**
+ * `/review 53` required change 1: five bold lines with no marker read as headings. The affordance
+ * has to be *painted* — the native marker is suppressed by `display: flex`, so this asserts the
+ * artboards' `+`, its visible box, and the CSS-only rotation into a `×` when the answer opens.
+ */
+test("every FAQ summary paints the artboards' `+`, which rotates when the answer opens", async ({
+  page,
+}) => {
+  await page.goto("/en");
+
+  const markers = page.locator("[data-fo-faq] summary span[aria-hidden]");
+  await expect(markers).toHaveCount(5);
+
+  const first = markers.first();
+  await expect(first).toBeVisible();
+  await expect(first).toHaveText("+");
+  const box = await first.boundingBox();
+  expect(box?.width ?? 0).toBeGreaterThan(0);
+  expect(box?.height ?? 0).toBeGreaterThan(0);
+  // Drawn at the inline end of the summary, not next to the question text.
+  const summaryBox = await page
+    .locator("[data-fo-faq] summary")
+    .first()
+    .boundingBox();
+  expect((box?.x ?? 0) + (box?.width ?? 0)).toBeGreaterThan(
+    (summaryBox?.x ?? 0) + (summaryBox?.width ?? 0) - 4,
+  );
+
+  // Tailwind v4 rotates with the `rotate` property, not a `transform` matrix.
+  expect(await first.evaluate((node) => getComputedStyle(node).rotate)).toBe(
+    "none",
+  );
+  await page.locator("[data-fo-faq] summary").first().click();
+  await expect(page.locator("[data-fo-faq] details[open]")).toHaveCount(1);
+  await expect
+    .poll(async () => first.evaluate((node) => getComputedStyle(node).rotate))
+    .toBe("45deg");
+});
