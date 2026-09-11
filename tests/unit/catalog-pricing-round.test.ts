@@ -129,6 +129,33 @@ describe("the worked endings of §13 Q1", () => {
   });
 });
 
+describe("the exponent-1 lattice collapse (`/review 51`)", () => {
+  it("gives `x99` and `x90` the same lattice at one fraction digit", () => {
+    // One minor digit means there is nothing to tell `,99` and `,90` apart: both are `…9`.
+    // `scale - 1` and `9 × 10^0` are both 9, so this is arithmetic, not a special case — and it
+    // is pinned rather than left implicit, because a one-digit currency configured later would
+    // silently make two configured styles indistinguishable.
+    expect(latticeFor("x99", 1)).toEqual({ modulus: 10, residue: 9 });
+    expect(latticeFor("x90", 1)).toEqual({ modulus: 10, residue: 9 });
+    expect(roundMinorToStyle(123, "x99", 1)).toBe(
+      roundMinorToStyle(123, "x90", 1),
+    );
+    expect(roundMinorToStyle(123, "x90", 1)).toBe(129);
+  });
+
+  it("keeps them apart at every other configured exponent", () => {
+    expect(latticeFor("x99", 0)).not.toEqual(latticeFor("x90", 0));
+    expect(latticeFor("x99", 2)).not.toEqual(latticeFor("x90", 2));
+  });
+
+  it("keeps `x9` a whole-major ending at exponent 1", () => {
+    // `x9` is a *major* last digit of nine at any exponent >= 1: 12.9 in a one-digit currency is
+    // 129 minor units, and the next `x9` amount above it is 199.
+    expect(latticeFor("x9", 1)).toEqual({ modulus: 100, residue: 90 });
+    expect(roundMinorToStyle(123, "x9", 1)).toBe(190);
+  });
+});
+
 describe("the four properties AC-12 names, over a generated range per style", () => {
   const styles: readonly RoundingStyle[] = ["x99", "x90", "x9", "none"];
   const exponents = [0, 1, 2, 3] as const;

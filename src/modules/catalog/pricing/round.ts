@@ -48,6 +48,15 @@ import type { IntegerMoney } from "../types";
  *  - exponent >= 1 (`EUR`, `GBP`, `PLN`): `x99`/`x90` fix the **minor** part (`,99` / `,90`),
  *    while `x9` means a *whole* major amount whose last digit is nine — `149 zł`, i.e.
  *    `14 900 ≡ 900 (mod 1 000)`, which is why PLN is `x9` and not `x90` (`plan/10` §2.3).
+ *
+ * **The exponent-1 collapse** (`/review 51`). At one fraction digit there is only one minor digit
+ * to fix, so `x99` and `x90` return the *same* lattice — `modulus: 10, residue: 9` — and an amount
+ * ending `,9` satisfies both. That is arithmetic rather than a special case: `scale - 1` and
+ * `9 × 10^0` are both 9 when `scale` is 10. No configured currency has exponent 1 today (spec 005
+ * §13 Q1 covers exponents 0 and 2), so the branch is reachable only from
+ * `tests/unit/catalog-pricing-round.test.ts`, which pins the collapse deliberately: if a
+ * one-digit currency is ever configured, the two styles are indistinguishable for it and the
+ * config must not pretend otherwise.
  */
 export function latticeFor(
   style: Exclude<RoundingStyle, "none">,

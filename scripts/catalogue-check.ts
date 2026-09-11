@@ -95,6 +95,7 @@ import {
   facetNames,
   facetValues,
   priceBandKeyFor,
+  priceBandKeys,
 } from "../src/config/catalogue/schemas.ts";
 import { PRODUCT_TIERS } from "../src/config/catalogue/tiers.data.ts";
 
@@ -117,6 +118,7 @@ export const CHECK_MODES = [
   "label-key",
   "addon-price",
   "surcharge-amount",
+  "surcharge-vat-rate",
   "fx-snapshot",
   "projection-columns",
   "destination-drift",
@@ -613,6 +615,164 @@ function checkAddonPrices(input: CatalogueCheckInput): Problem[] {
   return problems;
 }
 
+/* -------------------------------------------------------------------------- */
+/* plan/10 §2.3's bands, transcribed.                                         */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * `plan/10` §2.3's band table, transcribed in **major** units: `[floor, ceiling]` per band per
+ * currency column.
+ *
+ * It lives in the gate rather than in a unit test (`/review 37` re-check, TASK-069). The `band`
+ * mode below reads each destination's authored `bands` out of `prices.data.ts` and compares a tier
+ * amount against it; without this second, independent copy the gate would be checking the dataset
+ * against itself, and the way spec 005 §14 A1 actually gets broken is a *band widened to make a
+ * ladder fit*. That edit passes every amount check and fails only here.
+ *
+ * `DE` and `RO` have their own columns in `plan/10` §2.3; `FR`/`ES`/`IT`/`NL` take the EUR base.
+ * The RON funeral figure is not in the section: the RON column's own ×5 factor against the EUR
+ * base (175/35, 230/46, 305/61, 405/81) applied to 60–180 EUR gives 300–900 lei.
+ */
+export const PLAN_10_BANDS = {
+  EUR_BASE: {
+    essential: [35, 45],
+    classic: [46, 60],
+    premium: [61, 80],
+    luxury: [81, 120],
+    funeral: [60, 180],
+  },
+  DE: {
+    essential: [39, 49],
+    classic: [50, 65],
+    premium: [66, 89],
+    luxury: [90, 130],
+    funeral: [60, 180],
+  },
+  PL: {
+    essential: [149, 189],
+    classic: [199, 259],
+    premium: [269, 349],
+    luxury: [359, 529],
+    funeral: [259, 799],
+  },
+  RO: {
+    essential: [175, 225],
+    classic: [230, 300],
+    premium: [305, 400],
+    luxury: [405, 600],
+    funeral: [300, 900],
+  },
+} as const satisfies Readonly<
+  Record<string, Readonly<Record<string, readonly [number, number]>>>
+>;
+
+/** Which `PLAN_10_BANDS` column a destination is priced from. */
+export const PLAN_10_COLUMN: Readonly<
+  Record<string, keyof typeof PLAN_10_BANDS>
+> = {
+  PL: "PL",
+  DE: "DE",
+  RO: "RO",
+  FR: "EUR_BASE",
+  ES: "EUR_BASE",
+  IT: "EUR_BASE",
+  NL: "EUR_BASE",
+};
+
+/** The four sub-bands the funeral row is split into, in ascending order. */
+const FUNERAL_SUB_BANDS = priceBandKeys.filter((bandKey) =>
+  bandKey.startsWith("funeral_"),
+);
+
+/**
+ * Every destination's authored `bands` are `plan/10` §2.3's, to the cent.
+ *
+ * The four non-funeral bands are compared outright. The funeral row is one band in `plan/10` and
+ * four contiguous sub-bands in the dataset (spec 005 §14 A1's reading), so what is checked is that
+ * the sub-bands start at the row's floor, end at its ceiling and step upward without a gap — the
+ * property that makes "a funeral piece is never priced below the funeral floor" true.
+ */
+function checkBandTranscription(input: CatalogueCheckInput): Problem[] {
+  const problems: Problem[] = [];
+  const major = (minor: number): number => minor / 100;
+
+  for (const destination of input.destinations) {
+    const column = PLAN_10_COLUMN[destination.countryIso2];
+    if (column === undefined) {
+      problems.push({
+        mode: "band",
+        file: DATA_FILE,
+        subject: destination.countryIso2,
+        reason: `has no transcribed plan/10 §2.3 band column in \`PLAN_10_COLUMN\`: a new destination states its bands here as well as in the dataset, and the two must agree (spec 005 §14 A1)`,
+      });
+      continue;
+    }
+    const table: Readonly<Record<string, readonly [number, number]>> =
+      PLAN_10_BANDS[column];
+
+    const plainBands: readonly PriceBandKey[] = [
+      "essential",
+      "classic",
+      "premium",
+      "luxury",
+    ];
+    for (const bandKey of plainBands) {
+      const expected = table[bandKey];
+      const authored = destination.bands[bandKey];
+      if (expected === undefined || authored === undefined) continue;
+      if (
+        major(authored.fromMinor) !== expected[0] ||
+        major(authored.toMinor) !== expected[1]
+      ) {
+        problems.push({
+          mode: "band",
+          file: DATA_FILE,
+          subject: `${destination.countryIso2} ${bandKey}`,
+          reason: `authors the band ${String(major(authored.fromMinor))}…${String(major(authored.toMinor))} while plan/10 §2.3's \`${column}\` column says ${String(expected[0])}…${String(expected[1])}: the band is the founder's stated range and is exact — a ladder that does not fit bends, the band does not (spec 005 §14 A1)`,
+        });
+      }
+    }
+
+    const funeral = table.funeral;
+    if (funeral === undefined) continue;
+    const subBands = FUNERAL_SUB_BANDS.map(
+      (bandKey) => destination.bands[bandKey],
+    );
+    const first = subBands[0];
+    const last = subBands[subBands.length - 1];
+    if (first === undefined || last === undefined) continue;
+    if (major(first.fromMinor) !== funeral[0]) {
+      problems.push({
+        mode: "band",
+        file: DATA_FILE,
+        subject: `${destination.countryIso2} funeral_essential`,
+        reason: `starts the funeral ladder at ${String(major(first.fromMinor))} while plan/10 §2.3's funeral row starts at ${String(funeral[0])}`,
+      });
+    }
+    if (major(last.toMinor) !== funeral[1]) {
+      problems.push({
+        mode: "band",
+        file: DATA_FILE,
+        subject: `${destination.countryIso2} funeral_luxury`,
+        reason: `ends the funeral ladder at ${String(major(last.toMinor))} while plan/10 §2.3's funeral row ends at ${String(funeral[1])}`,
+      });
+    }
+    for (const [index, band] of subBands.entries()) {
+      const previous = subBands[index - 1];
+      if (band === undefined || previous === undefined) continue;
+      if (band.fromMinor <= previous.toMinor) {
+        problems.push({
+          mode: "band",
+          file: DATA_FILE,
+          subject: `${destination.countryIso2} ${FUNERAL_SUB_BANDS[index] ?? "-"}`,
+          reason: `starts at ${String(band.fromMinor)}, not above the previous sub-band's ceiling ${String(previous.toMinor)}: the four sub-bands partition plan/10 §2.3's single funeral row without a gap or an overlap`,
+        });
+      }
+    }
+  }
+  return problems;
+}
+
 /**
  * `plan/10` §2.3's two surcharge amounts, transcribed **here** rather than read from the dataset:
  * "Sunday surcharge +€4 equivalent; Valentine's/Women's Day surcharge +€6 equivalent".
@@ -633,6 +793,41 @@ export const PLAN_10_SURCHARGES: Readonly<
   RO: { sunday: 2000, peakDay: 3000 },
   NL: { sunday: 400, peakDay: 600 },
 };
+
+/**
+ * A surcharge row carries the **same** VAT rate as the retail rows it is added to.
+ *
+ * `/review 47` found the rule documented in `pricing/resolve.ts` and implemented nowhere. It is
+ * implemented in both places now, and the split is deliberate: `surchargesOn()` guards the rows a
+ * *provider* hands over (a database, from TASK-070), this guards the rows a human **authors**, and
+ * only the second one can name the file to fix. A `PricePoint` states one `vatRateBp` over one
+ * gross amount (spec 005 §5.2), so a Sunday surcharge at the standard rate added to a bouquet at
+ * 8% could only be represented by taxing one of the two wrong — a wrong invoice on a real order
+ * (`plan/06` §4), not a rendering bug.
+ */
+function checkSurchargeVatRates(input: CatalogueCheckInput): Problem[] {
+  const problems: Problem[] = [];
+  const retailRates = new Map<string, number>();
+  for (const row of input.countryPrices) {
+    if (row.surchargeKind !== null) continue;
+    retailRates.set(key([row.sku, row.countryIso2]), row.vatRateBp);
+  }
+
+  for (const row of input.countryPrices) {
+    if (row.surchargeKind === null) continue;
+    const retail = retailRates.get(key([row.sku, row.countryIso2]));
+    if (retail === undefined) continue;
+    if (row.vatRateBp !== retail) {
+      problems.push({
+        mode: "surcharge-vat-rate",
+        file: DATA_FILE,
+        subject: `${row.sku} ${row.countryIso2} ${row.surchargeKind}`,
+        reason: `carries VAT rate ${String(row.vatRateBp)} bp while the retail rows of the same product in ${row.countryIso2} carry ${String(retail)} bp: a surcharge is added to the price it surcharges and is taxed at the same rate, and a \`PricePoint\` can state only one (spec 005 §5.2, plan/06 §4; \`resolvePrice()\` throws on the same pair)`,
+      });
+    }
+  }
+  return problems;
+}
 
 /**
  * Every destination's authored surcharge amounts are `plan/10` §2.3's +€4 / +€6 equivalents, and
@@ -1118,7 +1313,9 @@ export function checkCatalogue(input: CatalogueCheckInput): Problem[] {
     ...checkPriceCoverage(input),
     ...checkAmounts(input),
     ...checkAddonPrices(input),
+    ...checkBandTranscription(input),
     ...checkSurchargeAmounts(input),
+    ...checkSurchargeVatRates(input),
     ...checkFacets(input),
     ...checkLabelKeys(input),
     ...checkFxSnapshot(input),

@@ -27,7 +27,7 @@
  * `reasonKey` on the projection itself) is TASK-067's and is asserted there; what AC-15 needs from
  * TASK-066 is the seam it fails closed through, which is `convertForDisplay()` below.
  */
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -446,6 +446,9 @@ function floatMoneyOffences(code: string): readonly string[] {
     ["parseFloat", /parseFloat/],
     ["toFixed", /toFixed/],
     ["decimal literal", /\b\d+\.\d/],
+    // `25e-3` is the same 0.025 with no dot in it (`/review 51`): a buffer written in exponent
+    // form would slip past a decimal-point pattern and be exactly the float the rule forbids.
+    ["exponent float", /\b\d[\d_]*(?:\.\d+)?e[+-]?\d/i],
     ["Date.now", /Date\s*\.\s*now/],
   ];
   return forbidden
@@ -453,10 +456,24 @@ function floatMoneyOffences(code: string): readonly string[] {
     .map(([name]) => name);
 }
 
+/**
+ * Every file of `pricing/`, listed by `readdir` rather than by hand (`/review 51`).
+ *
+ * A hand-written list is a scan that stops covering the module the moment somebody adds a file to
+ * it — and the file most likely to be added is the next piece of arithmetic. The list is asserted
+ * to contain the three files this suite knows by name, so a `readdir` that returned nothing (a
+ * moved directory) cannot pass for a clean module.
+ */
+const PRICING_DIR = "src/modules/catalog/pricing";
+const PRICING_FILES = readdirSync(resolve(__dirname, "../..", PRICING_DIR))
+  .filter((entry) => entry.endsWith(".ts"))
+  .map((entry) => `${PRICING_DIR}/${entry}`)
+  .sort();
+
 describe("no float money in the conversion path (AC-12, T-10)", () => {
-  const FX = "src/modules/catalog/pricing/fx.ts";
-  const ROUND = "src/modules/catalog/pricing/round.ts";
-  const MONEY = "src/modules/catalog/pricing/money.ts";
+  const FX = `${PRICING_DIR}/fx.ts`;
+  const ROUND = `${PRICING_DIR}/round.ts`;
+  const MONEY = `${PRICING_DIR}/money.ts`;
 
   it("has a scanner that fires, so a green result means something", () => {
     expect(
@@ -465,17 +482,33 @@ describe("no float money in the conversion path (AC-12, T-10)", () => {
       ),
     ).toEqual(["division", "Math rounding", "decimal literal"]);
     expect(floatMoneyOffences("const at = Date.now();")).toEqual(["Date.now"]);
+    // The exponent form of the same float, which has no decimal point to catch.
+    expect(floatMoneyOffences("const buffer = 25e-3;")).toEqual([
+      "exponent float",
+    ]);
+    expect(floatMoneyOffences("const cents = 1e2;")).toEqual([
+      "exponent float",
+    ]);
     // And it does not fire on the idioms that are exact: `%`, `**` on a small integer, `BigInt`
-    // division and a safe-integer guard.
+    // division, a safe-integer guard and a digit-separated integer.
     expect(
       floatMoneyOffences(
         "const m = 10 ** exponent; const r = amountMinor % m; Number.isSafeInteger(r);",
       ),
     ).toEqual([]);
+    expect(floatMoneyOffences("const ppm = 4_268_000;")).toEqual([]);
   });
 
-  it("contains no division, no `Math.round` and no clock in `fx.ts` or `round.ts`", () => {
-    for (const file of [FX, ROUND]) {
+  it("lists every file of `pricing/` from disk, so a new one is scanned too", () => {
+    expect(PRICING_FILES).toContain(FX);
+    expect(PRICING_FILES).toContain(ROUND);
+    expect(PRICING_FILES).toContain(MONEY);
+    expect(PRICING_FILES.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it("contains no division, no `Math.round` and no clock anywhere but `money.ts`", () => {
+    for (const file of PRICING_FILES) {
+      if (file === MONEY) continue;
       expect(floatMoneyOffences(codeOf(file)), file).toEqual([]);
     }
   });

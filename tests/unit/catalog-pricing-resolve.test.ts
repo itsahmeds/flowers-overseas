@@ -40,6 +40,7 @@ import {
   DESTINATION_PRICING,
   PRICE_ACTIVE_FROM,
 } from "../../src/config/catalogue/prices.data.ts";
+import type { CurrencyCode } from "../../src/config/currencies.ts";
 import type { CountryPriceRecord } from "../../src/modules/catalog/providers.ts";
 import {
   dateSurcharges,
@@ -84,14 +85,24 @@ const plLadder = pl.ladders.classic ?? [];
 /* AC-8, the type-level half of T-06.                                         */
 /* -------------------------------------------------------------------------- */
 
-/** Every field a whole price carries (spec 005 §5.2 `PricePoint`). */
+/**
+ * Every field a whole price carries (spec 005 §5.2 `PricePoint`).
+ *
+ * `currency` and `priceVersion` are in the list on `/review 47`'s instruction: an amount without
+ * its currency is not a price a buyer can be shown (and `Omit<PricePoint, "currency">` would
+ * otherwise satisfy this constraint and pass), and a price without its version cannot be traced
+ * from a charge back to the row the buyer saw — the two ways a `PricePoint` can be *narrowed* on
+ * its way out of the module rather than widened.
+ */
 interface WholePrice {
   readonly amountMinor: number;
+  readonly currency: CurrencyCode;
   readonly vatRateBp: number;
   readonly vatAmountMinor: number;
   readonly netAmountMinor: number;
   readonly deliveryIncluded: true;
   readonly surcharges: readonly Surcharge[];
+  readonly priceVersion: string;
 }
 
 /**
@@ -151,6 +162,17 @@ const detectorSeesABareAmount: PartialPrices<{
   : true = true;
 /** …and an amount that is *not* a price — an `IntegerMoney` — is deliberately caught too. */
 const detectorSeesAnAmount: PartialPrices<IntegerMoney> extends never
+  ? never
+  : true = true;
+/** An amount that lost its currency, and one that lost its version: both are partial. */
+const detectorSeesAMissingCurrency: PartialPrices<
+  Omit<PricePoint, "currency">
+> extends never
+  ? never
+  : true = true;
+const detectorSeesAMissingPriceVersion: PartialPrices<
+  Omit<PricePoint, "priceVersion">
+> extends never
   ? never
   : true = true;
 /** A VAT split carries no `amountMinor`, so it is not a price and is not flagged. */
@@ -257,6 +279,8 @@ describe("resolvePrice: the whole price of a tier in a destination (AC-8, T-06)"
       detectorSeesAWidenedDeliveryFlag,
       detectorSeesABareAmount,
       detectorSeesAnAmount,
+      detectorSeesAMissingCurrency,
+      detectorSeesAMissingPriceVersion,
     ]) {
       expect(detected).toBe(true);
     }
@@ -455,7 +479,7 @@ describe("dateSurcharges: the amount on the date chip before selection (AC-16, T
     });
     const dates = found.map((entry) => entry.date);
 
-    // Five Sundays in October 2026: 4, 11, 18, 25 — and no other day carries a surcharge.
+    // The four Sundays of October 2026 — 4, 11, 18, 25 — and no other day carries a surcharge.
     expect(dates).toEqual([
       "2026-10-04",
       "2026-10-11",

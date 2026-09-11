@@ -254,6 +254,101 @@ describe("every failure mode has a fixture (AC-5 / T-03)", () => {
     expect(problems[0]).toContain("the band is exact");
   });
 
+  it("band: a band widened in the dataset to make a ladder fit (/review 37)", () => {
+    // The fault the transcription in the gate exists for. Every amount stays where it is and the
+    // *band* moves, so every other band assertion passes: only a comparison against plan/10 §2.3's
+    // own table — held in `PLAN_10_BANDS`, not read from `prices.data.ts` — can see it.
+    const problems = problemsFor(
+      {
+        destinations: clean.destinations.map((destination) =>
+          destination.countryIso2 === "PL"
+            ? {
+                ...destination,
+                bands: {
+                  ...destination.bands,
+                  luxury: { fromMinor: 35_900, toMinor: 99_900 },
+                },
+              }
+            : destination,
+        ),
+      },
+      "band",
+    );
+
+    expect(problems).toHaveLength(1);
+    expect(problems[0]).toContain("PL luxury");
+    expect(problems[0]).toContain("plan/10 §2.3's `PL` column says 359…529");
+  });
+
+  it("band: a funeral sub-band that leaves plan/10 §2.3's funeral row", () => {
+    const problems = problemsFor(
+      {
+        destinations: clean.destinations.map((destination) =>
+          destination.countryIso2 === "PL"
+            ? {
+                ...destination,
+                bands: {
+                  ...destination.bands,
+                  funeral_luxury: {
+                    ...(destination.bands.funeral_luxury ?? {
+                      fromMinor: 0,
+                      toMinor: 0,
+                    }),
+                    toMinor: 120_000,
+                  },
+                },
+              }
+            : destination,
+        ),
+      },
+      "band",
+    );
+
+    expect(problems).toHaveLength(1);
+    expect(problems[0]).toContain("funeral_luxury");
+    expect(problems[0]).toContain("ladder at 1200");
+  });
+
+  it("band: a destination with no transcribed plan/10 column", () => {
+    const problems = problemsFor(
+      {
+        destinations: clean.destinations.map((destination) =>
+          destination.countryIso2 === "NL"
+            ? { ...destination, countryIso2: "SE" }
+            : destination,
+        ),
+      },
+      "band",
+    );
+
+    expect(problems).toHaveLength(1);
+    expect(problems[0]).toContain("`PLAN_10_COLUMN`");
+  });
+
+  it("surcharge-vat-rate: a surcharge row taxed differently from its retail rows", () => {
+    // `/review 47`: PL flowers are 8% and the standard rate is 23%. A Sunday surcharge that copied
+    // the standard rate would be added to an 8% bouquet and taxed at neither.
+    const standard =
+      clean.destinations.find((destination) => destination.countryIso2 === "PL")
+        ?.standardVatRateBp ?? 2300;
+    const problems = problemsFor(
+      {
+        countryPrices: clean.countryPrices.map((row) =>
+          row.sku === "FO-BQ-001" &&
+          row.countryIso2 === "PL" &&
+          row.surchargeKind === "sunday"
+            ? { ...row, vatRateBp: standard }
+            : row,
+        ),
+      },
+      "surcharge-vat-rate",
+    );
+
+    expect(problems.length).toBeGreaterThanOrEqual(1);
+    expect(problems[0]).toContain("FO-BQ-001 PL sunday");
+    expect(problems[0]).toContain("while the retail rows");
+  });
+
   it("band: a tier priced at or below the tier below it", () => {
     // Inside the band and not above the tier below it: the monotonicity fault on its own.
     const problems = problemsFor(
@@ -681,6 +776,7 @@ describe("every failure mode has a fixture (AC-5 / T-03)", () => {
       "label-key",
       "addon-price",
       "surcharge-amount",
+      "surcharge-vat-rate",
       "fx-snapshot",
       "projection-columns",
       "destination-drift",
