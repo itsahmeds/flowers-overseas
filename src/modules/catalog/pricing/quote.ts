@@ -84,6 +84,18 @@ const QUOTE_PAYLOAD_VERSION = "fo.quote.v1";
 const PRICE_VERSION_SEPARATOR = "|";
 
 /**
+ * The separator between the canonical payload and the quote id inside the HMAC input.
+ *
+ * A **different** character from `PRICE_VERSION_SEPARATOR` on purpose (`/review 54`). One
+ * character doing both jobs is the classic length-extension-adjacent ambiguity: `a|b` + id and `a`
+ * + `b|id` hash the same bytes, and `priceVersion` — a field a caller supplies rows for — is
+ * exactly where the extra `|` would come from. U+001F (ASCII unit separator) cannot occur in a
+ * `priceVersion`, a currency code, an ISO date or a base-16 id, and it never reaches a page: the
+ * HMAC input is bytes, not a string anybody reads.
+ */
+const HMAC_FIELD_SEPARATOR = "\u001f";
+
+/**
  * One line to quote: which product and tier, and **the projection the buyer was shown**
  * (spec 005 §5.2).
  *
@@ -120,7 +132,7 @@ function quoteIdFor(payload: string): string {
 /** The HMAC over the canonical payload **and** the id, so neither can be swapped for another's. */
 function digestFor(payload: string, quoteId: string): string {
   return createHmac("sha256", signingSecret())
-    .update(`${payload}${PRICE_VERSION_SEPARATOR}${quoteId}`)
+    .update(`${payload}${HMAC_FIELD_SEPARATOR}${quoteId}`)
     .digest("hex");
 }
 

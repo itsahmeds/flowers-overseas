@@ -46,7 +46,7 @@
       "countryDemo": "We do not deliver to this country yet.",
       "fxUnavailable": "We are showing this price in the currency of the delivery country.",
       "inStock": "Available to order",
-      "noPartner": "We do not have a florist covering this address yet.",
+      "noPartner": "We do not have a florist covering this destination yet.",
       "outOfStock": "Not available to order"
     },
     "descriptor": {

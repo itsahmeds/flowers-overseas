@@ -382,6 +382,33 @@ describe("the digest comparison is constant-time (AC-17)", () => {
   });
 });
 
+describe("the two separators do different jobs (`/review 54`)", () => {
+  it("joins the HMAC's fields with a character no field can contain", () => {
+    const source = readSource();
+
+    // `|` joins the priced rows inside `priceVersion`; the HMAC input joins the payload and the
+    // id with U+001F. One character doing both would make `a|b` + id and `a` + `b|id` the same
+    // bytes, and `priceVersion` is the field a caller supplies the extra `|` in.
+    expect(source).toContain('const PRICE_VERSION_SEPARATOR = "|"');
+    expect(source).toContain('const HMAC_FIELD_SEPARATOR = "\\u001f"');
+    expect(source).toMatch(
+      /update\(`\$\{payload\}\$\{HMAC_FIELD_SEPARATOR\}\$\{quoteId\}`\)/u,
+    );
+    expect(source).not.toMatch(
+      /update\(`\$\{payload\}\$\{PRICE_VERSION_SEPARATOR\}/u,
+    );
+  });
+
+  it("signs a multi-line quote, whose `priceVersion` carries the `|`", async () => {
+    // The case the separation is for: two lines mean one `|` inside the signed payload.
+    const signed = await nativeQuote([TIER, SECOND_TIER]);
+
+    expect(signed.priceVersion).toContain("|");
+    expect(signed.digest).not.toContain("|");
+    await expect(verifyQuote(signed, INSIDE)).resolves.toBe("ok");
+  });
+});
+
 /** `pricing/quote.ts`'s code, comments stripped: the rule is about what it does. */
 function readSource(): string {
   return readFileSync(
