@@ -32,8 +32,10 @@ Next.js App Router (TS strict) · Supabase Postgres EU (Drizzle for data, Supaba
 ## Where state lives
 | What | Where |
 |---|---|
-| Tasks (single source of truth) | `TASKS.md` |
-| Specs | `specs/NNN-<slug>.md` (template `specs/_template.md`) |
+| Tasks (single source of truth) | `TASKS.md` — nine columns; the "Blockers / notes" cell is a brief link plus one sentence, ≤ 400 characters |
+| Task briefs (binding clauses, files to read, carry-forwards, escalations, result) | `docs/tasks/TASK-NNN.md` (template `docs/tasks/_template.md`; `pnpm tasks:brief TASK-NNN`) |
+| Codebase map (what lives where, with purpose, owning spec and tests) | `docs/codebase-map.md` (generated: `pnpm codebase:map`, checked by `pnpm codebase:map --check`) |
+| Specs | `specs/NNN-<slug>.md` (template `specs/_template.md`); each opens with `## 0. Index` — `§section Lline` per `AC-n`/`T-n`, from `pnpm specs:index` |
 | Decisions | `docs/adr/ADR-NNNN-*.md` (immutable; supersede, never edit) + `docs/decisions-log.md` |
 | Plan | `plan/*.md` |
 | Runbooks | `docs/runbooks/*.md` |
@@ -72,4 +74,4 @@ Agents never write code except the implementers. The orchestrator refuses to dis
 - Commit messages end with `Co-Authored-By: Claude <noreply@anthropic.com>` when Claude authored.
 
 ## How to start a session
-Run `/status`. If `docs/topics/index.md` exists, `/session-search <topic>` before touching an unfamiliar area. End with `/session-summary`.
+Run `/status`, then read `docs/codebase-map.md` — it is the index to everything under `src/`, `scripts/` and `tests/`, and it replaces grepping the tree. For a task, read its brief `docs/tasks/TASK-NNN.md` and the spec's `## 0. Index`, then only the spec sections your AC ids name. If `docs/topics/index.md` exists, `/session-search <topic>` before touching an unfamiliar area. End with `/session-summary`.
