@@ -29,6 +29,7 @@ import type {
   Colour,
   FacetName,
   FlowerType,
+  FxRateData,
   OccasionKey,
   OccasionKind,
   PriceTier,
@@ -371,3 +372,50 @@ export interface VatSplit {
   readonly vatMinor: number;
   readonly grossMinor: number;
 }
+
+/**
+ * One exchange rate as this module uses it: euro-base and published, or **derived** here from one
+ * or two published rows (spec 005 §5.2 `FxRateSchema`, §2 "FX and rounding"; TASK-066).
+ *
+ * The shape is the authored row's, `FxRateData` — parts-per-million integer, calendar `asOf`,
+ * a named `source` — because a derived cross rate has to be describable in exactly the terms a
+ * stored one is: the projection stamps `ratePpm` and `fxAsOf` into the HTML so spec 008's repaint
+ * cannot invent a rate (§5.4), and it must not matter to that caller whether the pair was
+ * published or crossed through the euro. `source` says which it was
+ * (`ecb-reference`, `ecb-reference:inverse`, `ecb-reference:cross:EUR`), so a conversion is always
+ * traceable to the rows it came from.
+ *
+ * `ratePpm` is the **unbuffered** rate, as the ECB published it. The 2.5% buffer is applied at
+ * conversion time and never stored (`plan/06` §2.2): a buffered rate would disagree with the
+ * published one and would hide how much movement the buffer is absorbing.
+ */
+export type FxRate = FxRateData;
+
+/**
+ * The result of asking for a price in a display currency (spec 005 §2 "FX and rounding", §7,
+ * AC-15; TASK-066).
+ *
+ * Three variants, because each is a different thing to render, and a **discriminated union**
+ * rather than an amount plus a nullable rate, because that is what makes AC-15 structural:
+ *
+ *  - `native` — the display currency *is* the destination currency, so nothing was converted and
+ *    there is no rate to state. The display currency is a presentation choice made from the
+ *    locale's default, never a second price row (§7);
+ *  - `converted` — the display amount, buffered, rounded up onto the currency's ending, with the
+ *    rate and its publication date attached;
+ *  - `unavailable` — a `reasonKey` and **nothing else**. There is no amount field on this variant,
+ *    so "no converted amount is produced anywhere in the output" when a rate is stale is a
+ *    property of the type rather than a review of the caller (AC-15). The caller falls back to the
+ *    destination currency's own price and says so.
+ */
+export type DisplayConversion =
+  | { readonly status: "native"; readonly price: IntegerMoney }
+  | {
+      readonly status: "converted";
+      readonly price: IntegerMoney;
+      readonly rate: FxRate;
+    }
+  | {
+      readonly status: "unavailable";
+      readonly reasonKey: "catalog.availability.fxUnavailable";
+    };

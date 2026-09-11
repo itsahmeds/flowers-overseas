@@ -22,7 +22,11 @@
  */
 import { ADDONS, addonFlagKey } from "@/config/catalogue/addons.data";
 import { CATEGORIES } from "@/config/catalogue/categories.data";
-import { FX_SNAPSHOT } from "@/config/catalogue/fx.data";
+import {
+  FX_BUFFER_BP,
+  FX_SNAPSHOT,
+  MAX_FX_AGE_HOURS,
+} from "@/config/catalogue/fx.data";
 import { OCCASIONS } from "@/config/catalogue/occasions.data";
 import {
   ADDON_COUNTRY_PRICES,
@@ -78,10 +82,22 @@ export const staticPriceProvider: PriceProvider = {
     Promise.resolve(ADDON_COUNTRY_PRICES),
 };
 
-/** The one committed ECB snapshot. Whether it is too old to convert with is TASK-067's call. */
+/** The one committed ECB snapshot. Whether it is too old to convert with is `pricing/fx.ts`'s. */
 export const staticFxRateProvider: FxRateProvider = {
   fxRates: (): Promise<readonly FxRateRecord[]> => Promise.resolve(FX_SNAPSHOT),
 };
+
+/**
+ * The two FX policy constants, forwarded from their single authored home (TASK-066).
+ *
+ * `FX_BUFFER_BP` (250) and `MAX_FX_AGE_HOURS` (48) are authored in
+ * `src/config/catalogue/fx.data.ts` beside the snapshot they qualify (TASK-062, spec 005 §13 Q2),
+ * and `pricing/fx.ts` re-exports them from here rather than restating either number. The relay
+ * exists because of AC-2's graph rule — **only this file may read `src/config/catalogue/*.data.ts`**
+ * — so the constants travel through the same seam the rates do, and TASK-070's swap moves the
+ * policy and its data together in one file.
+ */
+export { FX_BUFFER_BP, MAX_FX_AGE_HOURS };
 
 /* -------------------------------------------------------------------------- */
 /* Feature flags (spec 005 §12; TASK-064).                                    */

@@ -14,11 +14,12 @@
  *    only conversion in this module is `pricing/fx.ts`'s dated, buffered, integer one (TASK-066):
  *    an implicit mix would be a converted amount with no rate and no `fxAsOf` stamped on it, which
  *    spec 005 §5.4 exists to prevent.
- *  - **No float ever touches an amount.** The one division here — `divideMinorHalfUp`, which
- *    `pricing/vat.ts` uses to split a gross amount at a rate — is `BigInt` division with an
- *    explicit half-up remainder rule, so there is no `Number` division of an amount, no
- *    `Math.round` on money and nothing platform-dependent about the cent (spec 005 AC-12's
- *    standard, applied here as well as in `fx.ts`).
+ *  - **No float ever touches an amount.** The **only two divisions in the pricing directory** are
+ *    here, and both are `BigInt` divisions with an explicit remainder rule: `divideMinorHalfUp`,
+ *    which `pricing/vat.ts` uses to split a gross amount at a rate, and `divideMinorCeil`
+ *    (TASK-066), which `pricing/fx.ts` converts a currency with. So there is no `Number` division
+ *    of an amount, no `Math.round` on money and nothing platform-dependent about the cent
+ *    anywhere in `pricing/*` (spec 005 AC-12's standard, and its source scan's subject).
  *
  * An **amount is not a price.** Everything here returns `IntegerMoney` — a VAT figure, a
  * surcharge, a subtotal — and nothing here returns something a page would render as *the price of
@@ -123,6 +124,58 @@ export function divideMinorHalfUp(
     magnitude * 2n >= denominator
       ? quotient + (numerator < 0n ? -1n : 1n)
       : quotient;
+  return asSafeNumber(rounded);
+}
+
+/**
+ * The product of some integers, divided by a positive integer and rounded **up**, exactly.
+ *
+ * The companion to `divideMinorHalfUp` and deliberately a *different* primitive, because the two
+ * roundings answer different questions. A VAT split is a decomposition of an amount already
+ * charged, so it rounds to the nearest cent and the parts still add up to the gross. A **currency
+ * conversion** is a cost we have to cover: dropping the fraction of a cent downward would put the
+ * amount charged below the amount converted, and the 2.5% FX buffer exists to absorb intraday
+ * movement rather than to be eroded a cent at a time (spec 005 §2 "FX and rounding", AC-12). So
+ * this one rounds away from zero on any remainder — ceiling for the non-negative amounts a price
+ * is made of.
+ *
+ * The **factors come in as a list** rather than pre-multiplied for a reason that is not stylistic:
+ * `amountMinor x ratePpm x (10 000 + FX_BUFFER_BP)` leaves the safe-integer range for a large
+ * amount in a high-magnitude currency (a EUR 10 000 order in HUF is ~4 x 10^18), so the
+ * multiplication itself has to happen in `BigInt`. Handing the factors over unmultiplied is what
+ * makes that possible — and it is why `pricing/fx.ts` contains no arithmetic operator on an
+ * amount at all (AC-12's source scan).
+ */
+export function divideMinorCeil(
+  factorsMinor: readonly number[],
+  divisor: number,
+): number {
+  factorsMinor.forEach((factor, index) =>
+    assertSafeInteger(factor, `factorsMinor[${String(index)}]`),
+  );
+  assertSafeInteger(divisor, "divisor");
+  if (factorsMinor.length === 0) {
+    throw new Error(
+      "divideMinorCeil() needs at least one factor: the product of no factors is not an amount (spec 005 §5.2)",
+    );
+  }
+  if (divisor <= 0) {
+    throw new Error(
+      `divideMinorCeil() needs a positive divisor, got ${String(divisor)}`,
+    );
+  }
+  const numerator = factorsMinor.reduce(
+    (product, factor) => product * BigInt(factor),
+    1n,
+  );
+  const denominator = BigInt(divisor);
+  const quotient = numerator / denominator;
+  const exact = quotient * denominator === numerator;
+  const rounded = exact
+    ? quotient
+    : numerator > 0n
+      ? quotient + 1n
+      : quotient - 1n;
   return asSafeNumber(rounded);
 }
 
