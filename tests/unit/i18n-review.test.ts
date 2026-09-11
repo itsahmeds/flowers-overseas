@@ -153,9 +153,16 @@ function synthetic(
 }
 
 describe("the shipped answers (AC-24)", () => {
-  // One authored English key waits for the founder's tick (`home.destinations.elsewhere.body`,
-  // `/review 58`); its exact identity is pinned in `i18n-messages-schema.test.ts`. Well under the
-  // 5% rule, so English stays indexable and un-tagged — which is the answer AC-24 fixes.
+  /**
+   * A founder review queue waits for his tick: `home.destinations.elsewhere.body` from
+   * `/review 58`, plus the seven keys TASK-084's copy pass reworded and would not re-attest
+   * itself. Its exact identity is pinned in `i18n-messages-schema.test.ts`. The module documents
+   * this case: "if a hand-edit ever set `reviewed: false` on an `en` key, the source locale would
+   * honestly stop being indexable rather than exempting itself" — so the assertions pin the gate,
+   * not the zero. A queue this size is well under the 5 % rule, English stays indexable and
+   * un-tagged (the answer AC-24 fixes), and a pass that queued so much copy that English went
+   * `noindex` or grew a "beta" tag in the switcher would fail here: the founder's warning light.
+   */
   it("indexes `en`: all but the founder's review queue is attested", () => {
     expect(unreviewedShare("en")).toBeGreaterThan(0);
     expect(unreviewedShare("en")).toBeLessThan(UNREVIEWED_SHARE_THRESHOLD);
@@ -165,7 +172,9 @@ describe("the shipped answers (AC-24)", () => {
 
   it("indexes `en-gb`, whose 24 inherited English keys are reviewed English", () => {
     // §13 Q5's thin override: one own key plus the `en` chain. Inheriting *within* a language is
-    // reviewed copy; inheriting across one is not (the next describe block).
+    // reviewed copy; inheriting across one is not (the next describe block) — so `en-gb` reads
+    // the same share as `en`, including its founder-review queue.
+    expect(unreviewedShare("en-gb")).toBe(unreviewedShare("en"));
     expect(unreviewedShare("en-gb")).toBeLessThan(UNREVIEWED_SHARE_THRESHOLD);
     expect(isLocaleIndexable("en-gb")).toBe(true);
     expect(localeBetaTag("en-gb")).toBe(false);

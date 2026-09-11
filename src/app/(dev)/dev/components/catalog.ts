@@ -161,7 +161,7 @@ export const COLOUR_RAMPS: readonly {
 /** The type ramp: the display voice and the body voice at every step. */
 export const TYPE_SAMPLES = [
   { token: "--text-display", sample: "Send flowers to Kraków" },
-  { token: "--text-display-s", sample: "A vetted local florist makes it" },
+  { token: "--text-display-s", sample: "Our florist in Kraków makes it" },
   { token: "--text-2xl", sample: "Price includes delivery and VAT" },
   { token: "--text-xl", sample: "Ordered from Berlin, delivered in Gdańsk" },
 ] as const;

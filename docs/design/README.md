@@ -84,8 +84,10 @@ In practice, on an artboard:
   delivered. We chose every one of them ourselves." Not "a vetted local florist makes and delivers".
   We are the seller, the guarantee and the person the buyer complains to.
 - **Nine banned words**, scanned case-insensitively by `tests/unit/design-docs.test.ts` over every
-  `.dc.html`: *relay, corridor, partner, third party, third-party, vendor, anywhere in the world,
-  super fresh*. `corridor` survives only inside an annotation block marked `[internal]`, because
+  `.dc.html` — and, since TASK-084, over every `messages/*.json` value and every prose string
+  literal under `src/`: *relay, corridor, partner, third party, third-party, vendor, network,
+  anywhere in the world, super fresh*. A key *name* may keep the word (`noPartner`,
+  `corridorPagePublished`); the sentence a buyer reads may not. `corridor` survives only inside an annotation block marked `[internal]`, because
   `plan/05` and the specs use it as internal vocabulary; everything else is banned everywhere,
   including designer notes and state stubs. Identifiers inside `<code>` are exempt — a route or a
   table name is not copy (`/demo/vendor-inbox`, `partner_application`, `corridorPagePublished`).

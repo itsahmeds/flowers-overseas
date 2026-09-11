@@ -324,7 +324,7 @@
       "question": "Is the price really final?"
     },
     "whoDelivers": {
-      "answer": "Our own florist in the recipient's town, by hand, on the day you choose. Order by 14:00 in Warsaw — the recipient's own time — and it arrives today.",
+      "answer": "Our own florist in the recipient's town, by hand, on the day you choose. Order by 14:00 in Warsaw, the recipient's own time, for delivery today.",
       "question": "Who delivers, and when?"
     }
   },
@@ -332,7 +332,7 @@
     "country": {
       "label": "Country"
     },
-    "cutoff": "Order by 14:00 in Warsaw — the recipient's own time, not yours — and it arrives today.",
+    "cutoff": "Order by 14:00 in Warsaw for delivery today",
     "date": {
       "label": "Delivery date"
     },
@@ -369,7 +369,7 @@
     },
     "payment": {
       "heading": "Payment",
-      "methods": "The payment methods you can use are shown at checkout.",
+      "methods": "We show the payment methods you can use at checkout.",
       "processor": "Card payments are processed by Stripe. We never store card numbers."
     },
     "reminders": {
@@ -477,7 +477,7 @@
   },
   "meta": {
     "chooser": {
-      "description": "Flowers Overseas delivers flowers across Europe through vetted local florists. Choose the language you would like to continue in.",
+      "description": "We send flowers across Europe: our florist in the recipient's town makes the bouquet and hands it over in person. Choose your language.",
       "title": "Flowers Overseas — choose your language"
     },
     "error": {
@@ -485,7 +485,7 @@
       "title": "Something went wrong — Flowers Overseas"
     },
     "home": {
-      "description": "Order flowers for someone in another European country. A vetted local florist makes and delivers them.",
+      "description": "Order flowers for someone in another European country. Our florist in their town makes the bouquet by hand and hands it over in person.",
       "title": "Flowers Overseas — send flowers to Europe"
     },
     "notFound": {
@@ -528,8 +528,8 @@
       "submit": "Search"
     },
     "utility": {
-      "cutoff": "Order by 14:00 Warsaw time for same-day delivery",
-      "cutoffShort": "Order by 14:00 Warsaw time · same-day",
+      "cutoff": "Order by 14:00 in Warsaw for delivery today",
+      "cutoffShort": "Order by 14:00 in Warsaw · today",
       "guarantee": "7-day freshness guarantee",
       "pricesInclude": "Prices include delivery and VAT"
     }

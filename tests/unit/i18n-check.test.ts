@@ -89,8 +89,9 @@ describe("the committed tree (AC-22, first clause)", () => {
     expect(result.status).toBe(0);
     // The table is the founder-facing number: `de` and `pl` are echoed English, so they must read
     // 100 % unreviewed and `no`. `en`/`en-gb` carry the founder's review queue — one authored key
-    // at the time of writing (`/review 58`) — and must stay far below 5 % and read `yes`; the
-    // queue's exact contents are pinned in `i18n-messages-schema.test.ts`.
+    // from `/review 58` plus the seven TASK-084's copy pass reworded — and must stay far below
+    // 5 % and read `yes`; the table is where the founder sees that queue, and its exact contents
+    // are pinned in `i18n-messages-schema.test.ts`.
     for (const locale of ["en", "en-gb"]) {
       expect(result.stdout, locale).toMatch(
         new RegExp(
