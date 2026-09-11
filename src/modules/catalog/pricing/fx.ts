@@ -78,6 +78,9 @@ const BASIS_POINTS_SCALE = 10_000;
 /** Milliseconds in an hour, for the one age comparison this file makes. */
 const MS_PER_HOUR = 3_600_000;
 
+/** Hours in a day: the step `rateValidUntil()` takes back from the staleness instant. */
+const HOURS_PER_DAY = 24;
+
 /**
  * The currency every published rate is quoted against: the ECB publishes euro reference rates, so
  * the euro is the pivot every cross is derived through (`plan/01` §8).
@@ -120,6 +123,33 @@ export function isRateStale(asOf: IsoDate, now: Date): boolean {
     );
   }
   return now.getTime() - publishedAt > MAX_FX_AGE_HOURS * MS_PER_HOUR;
+}
+
+/**
+ * The last calendar day on which a rate published on `asOf` is usable (spec 005 §6, §14 A3;
+ * TASK-068).
+ *
+ * `isRateStale()` measures age from the **start** of the publication day in UTC, so a rate stops
+ * being usable `MAX_FX_AGE_HOURS` after that instant — 48 h after `asOf T00:00Z`, i.e. at the
+ * start of `asOf + 2` days. The last day it is usable for its whole length is therefore
+ * `asOf + 1`, and that is what this returns: the conservative day, the one that cannot claim a
+ * price is still valid on a day the rate is already refused.
+ *
+ * It exists because `Offer.priceValidUntil` is "the active row's `active_to` **or the FX
+ * snapshot's validity where a conversion is involved**" (spec 005 §6), and a converted price
+ * stops being the price when its rate does, whatever the price row says. The whole-hours bound
+ * lives here, in the file that owns FX policy, so the projection does not restate 48.
+ */
+export function rateValidUntil(asOf: IsoDate): IsoDate {
+  const publishedAt = Date.parse(`${asOf}T00:00:00Z`);
+  if (Number.isNaN(publishedAt)) {
+    throw new Error(
+      `\`${asOf}\` is not a calendar day: an \`fx_rate.as_of\` is a \`YYYY-MM-DD\` date, never a timestamp (spec 002 §5.1)`,
+    );
+  }
+  const lastWholeDay =
+    publishedAt + (MAX_FX_AGE_HOURS - HOURS_PER_DAY) * MS_PER_HOUR;
+  return new Date(lastWholeDay).toISOString().slice(0, 10);
 }
 
 /* -------------------------------------------------------------------------- */

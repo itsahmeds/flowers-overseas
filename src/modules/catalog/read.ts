@@ -169,6 +169,24 @@ function matchesFacets(product: Product, selection: FacetSelection): boolean {
  * row (`activeTo !== null`) is history kept for the Omnibus 30-day figure (`plan/07` §2.1), so
  * neither makes a product purchasable.
  */
+/**
+ * Does this (product, destination) have an active retail price row? — spec 005 §6's third
+ * indexability term and `availability()`'s third term, read from one place.
+ *
+ * Exported for the module and **not** from the barrel: a caller asks for a price
+ * (`resolvePrice()`) or for a verdict (`availability()`, `isProductIndexable()`), never for the
+ * presence of a row. Sharing it is what keeps "priced" one definition — active, retail, not a
+ * surcharge row — rather than two that can drift (`availability.ts` and this file).
+ */
+export async function hasActivePrice(
+  sku: string,
+  countryIso: CountryIso2,
+): Promise<boolean> {
+  const key = ProductSkuSchema.parse(sku);
+  const destination = DestinationIsoSchema.parse(countryIso);
+  return (await pricedPairs()).has(`${key}|${destination}`);
+}
+
 async function pricedPairs(): Promise<ReadonlySet<string>> {
   const rows = await catalogProviders().price.countryPrices();
   const pairs = new Set<string>();
@@ -467,6 +485,21 @@ export function isAuthoredFacetPath(path: string): boolean {
 const PHASE_0_REVIEWED_COPY = false;
 
 /**
+ * The conjunction of spec 005 §6's six terms, as a pure function of the six booleans.
+ *
+ * Separated from the reading of the terms so that "indexable only when **all six** hold" is
+ * checkable over the whole 2^6 truth table rather than over the handful of combinations the
+ * Phase 0 dataset can produce (AC-21, T-19). It is `every`, deliberately: a weighted or
+ * short-circuiting reading of these terms is how a product with no description would end up in a
+ * sitemap.
+ */
+export function indexabilityVerdict(
+  terms: Omit<ProductIndexability, "indexable">,
+): boolean {
+  return Object.values(terms).every((term) => term);
+}
+
+/**
  * Spec 005 §6's indexability predicate, term by term, for one product in one (locale,
  * destination).
  *
@@ -493,14 +526,37 @@ export async function productIndexability(
     countryLive: countryConfig(destination).status === "live",
     productActive: product.status === "active",
     activePrice: priced.has(`${product.sku}|${destination}`),
-    reviewedCopy: PHASE_0_REVIEWED_COPY,
+    descriptionPresent: PHASE_0_REVIEWED_COPY,
+    translationReviewed: PHASE_0_REVIEWED_COPY,
     localeIndexable: isLocaleIndexable(localeCode),
   } as const;
 
-  return {
-    ...terms,
-    indexable: Object.values(terms).every((term) => term),
-  };
+  return { ...terms, indexable: indexabilityVerdict(terms) };
+}
+
+/**
+ * **The** indexability predicate: is this product indexable in this locale for this destination?
+ * (spec 005 §6, AC-21; `plan/02` §10, ADR-0007)
+ *
+ * One function, called by both the robots decision and the sitemap-membership query, is what
+ * makes "a `noindex` product can never appear in a sitemap" a structural property instead of a
+ * convention two consumers are asked to honour: there is no second reading of the six terms
+ * anywhere in `src/`, `productIndexability()` has exactly one call site (this one), and
+ * `hasIndexableProducts()` — the membership question a sitemap builder asks per (destination,
+ * locale) — is written in terms of this predicate. A single-call-site test pins all three
+ * (T-19).
+ *
+ * Every term is data, so a country go-live, a product retirement, a landed description, a
+ * completed translation review and a locale launch each flip the answer with **no code change**
+ * (`CLAUDE.md`). Spec 007's sitemap and robots builders call this and compute nothing of their
+ * own.
+ */
+export async function isProductIndexable(
+  sku: string,
+  locale: LocaleCode,
+  countryIso: CountryIso2,
+): Promise<boolean> {
+  return (await productIndexability(sku, locale, countryIso)).indexable;
 }
 
 /**
@@ -524,12 +580,9 @@ export async function hasIndexableProducts(
 
   const candidates = await listProducts({ countryIso: destination });
   for (const product of candidates) {
-    const terms = await productIndexability(
-      product.sku,
-      localeCode,
-      destination,
-    );
-    if (terms.indexable) return true;
+    if (await isProductIndexable(product.sku, localeCode, destination)) {
+      return true;
+    }
   }
   return false;
 }

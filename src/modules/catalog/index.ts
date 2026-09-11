@@ -194,3 +194,50 @@ export {
   priceProjection,
   priceTable,
 } from "./pricing/project";
+
+// Availability, indexability, the Omnibus figure and signed quotes (spec 005 §2 "Availability",
+// §5.2 `availability.ts` / `pricing/history.ts` / `pricing/quote.ts`, §6, §8,
+// AC-14/AC-17/AC-20/AC-21; TASK-068).
+//
+// `availability()` answers the third question every money page asks — *can it be sent at all* —
+// from data alone, so a country go-live is a data flip and never a code change (AC-20); its
+// verdict rides on every `PriceProjection` and decides the `Offer`, so the visible line and the
+// structured data are one fact. `isProductIndexable()` is the **single** predicate the robots
+// decision and the sitemap-membership query both call, which is what makes "a `noindex` product
+// can never appear in a sitemap" structural rather than a convention (AC-21, `plan/02` §10).
+// `lowestPriceInLast30Days()` is the Omnibus Art. 6a figure over the superseded rows — no
+// "was/now" UI ships in Phase 0 and none may be added without it (AC-14). `quote()` /
+// `verifyQuote()` sign the amount a buyer saw and refuse it once it is no longer the price; on
+// `expired` the caller re-derives and shows the new figure for explicit re-confirmation (AC-17).
+//
+// What stays internal here, for the reasons the rest of this barrel states: `staticCutoffEvaluator`
+// (a test-grade seam filler, not a caller surface — spec 009 ships the real evaluator),
+// `resolveByPriceVersion` and `rateValidUntil` (this module reading its own opaque tokens and its
+// own FX policy), `indexabilityVerdict` and `productIndexability` (the term-by-term diagnostic
+// behind the one predicate), `hasActivePrice`, and the constants `QUOTE_TTL_MINUTES` and
+// `OMNIBUS_WINDOW_DAYS` — the barrel exports schemas, value sets and functions only (AC-2).
+export type {
+  Availability,
+  Quote,
+  QuoteLine,
+  QuoteVerdict,
+  SchemaAvailability,
+} from "./types";
+export type {
+  CapacityProvider,
+  CutoffEvaluator,
+  DeliveryCutoff,
+  FulfilmentCoverage,
+} from "./availability";
+export type { QuoteLineInput } from "./pricing/quote";
+export {
+  AvailabilityQuerySchema,
+  AvailabilitySchema,
+  QuoteLineSchema,
+  QuoteSchema,
+  TierKeySchema,
+} from "./schemas";
+export { availability } from "./availability";
+export { isProductIndexable } from "./read";
+export { lowestPriceInLast30Days } from "./pricing/history";
+export { quote, verifyQuote } from "./pricing/quote";
