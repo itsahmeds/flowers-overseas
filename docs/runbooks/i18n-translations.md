@@ -28,8 +28,8 @@ authority; `pnpm i18n:check` is the gate. Nothing here needs a database.
 
 1. Pick the namespace by **where the string is rendered**, not by topic: `meta` (titles and
    descriptions), `chooser`, `banner`, `errors`, `a11y` (accessible names, never visible), `common`.
-   The `localeDocument` namespace subset is what reaches the browser (`namespacesFor()`), so a
-   string that only the server renders must not land in `banner` — see §7.
+   No namespace reaches the browser any more (TASK-085, spec 004 §14 A1 addendum): every string is
+   resolved on the server, and a client island is handed the text it renders — see §7.
 2. Edit `messages/en.json`. ICU only: `{count, plural, …}`, `{name}`, no string concatenation, no
    pre-formatted number, date or price in the value (`fo/no-adhoc-intl` and `formatMoney` own
    those).
@@ -131,14 +131,33 @@ two tools. Direction-carrying icons are spec 004's `[dir=rtl]` utility. `/ar-XB`
 screenshotted proof (Playwright `pseudo-rtl` project); spec 004 inherits this rule for every
 component it adds.
 
-## 7. Keep the client payload small
+## 7. Keep the client payload at zero
 
-`namespacesFor(routeKind)` decides which namespaces reach `NextIntlClientProvider`, and the
-serialised subset is budgeted at 4 KB gzipped (spec 003 §6, AC-27). `pnpm budget:client-js` prints
-the measured number per locale (0.6 KB today). Adding a namespace to `localeDocument` puts every
-key in it into every localised document, so the question to ask about a new string is not "which
-namespace fits" but "is this string rendered in the browser at all?" — if a server component
-renders it, it never needs to be in the client subset.
+**No message catalogue, translator or provider may reach the browser** (spec 004 §13 Q13 option
+(b), §14 A1 addendum; TASK-085). `NextIntlClientProvider` and its `localeDocument` payload cost
+10 705 B Brotli on every locale document, and a static `messages/en.json` import in the 500
+boundary cost another 4 751 B on *every* document — the whole catalogue, because Turbopack
+tree-shakes a JSON import only below a size threshold, so each copy edit moved the bill by
+kilobytes. Both are gone and the rule that replaced them is simple:
+
+- `useTranslations`/`getTranslations` are **server-only**. A Server Component resolves the copy and
+  hands a client island plain strings as props — `suggestionCopy()` for the suggestion banner,
+  `consentView()` for the consent sheet, a pre-formatted array for the finder's live region.
+- An ICU message with an argument is formatted **on the server**, once per possible value if the
+  value is decided in the browser (the banner resolves `banner.headline` for each launch locale;
+  the finder resolves `finder.destinations.matches` per match count).
+- The two 500 boundaries are Client Components that no server can hand props to, so their four
+  strings live in `src/modules/i18n/error-copy.data.ts` as constants, per launch locale.
+  `tests/unit/error-document.test.ts` compares every one of them with `loadMessages()`, so editing
+  `messages/*.json` without editing that file fails the build with both paths named. **Adding a
+  locale adds four strings there.**
+
+Three gates hold it: `tests/unit/client-message-graph.test.ts` walks the imports of every
+`"use client"` module (no `next-intl`, no `messages.ts`, no barrel, no `messages/*.json`),
+`pnpm budget:client-js` scans the built chunks for `home.*`/`finder.*`/`catalog.*`/`media.*` copy,
+and `tests/e2e/client-js-budget.spec.ts` measures the script set in Chromium. `namespacesFor()`
+still exists as the per-route subset seam spec 012 serves from Postgres, and AC-27's 4 KB budget
+is now an upper bound on a payload that is not sent.
 
 ## 8. Two known maintenance points
 
@@ -160,10 +179,12 @@ renders it, it never needs to be in the client subset.
 A relay has no single local zone. A cut-off is the **florist's** zone, a delivery slot is the
 **recipient's**, a receipt is the **buyer's**, and no page may render a time without saying which.
 `formatDate`/`formatTimeInZone` therefore *require* an IANA zone — omitting it is a type error,
-and a zone arriving from data is parsed. The `NextIntlClientProvider` in
-`src/app/[locale]/layout.tsx` is pinned to `UTC` for exactly this reason: it is a neutral value
-that keeps client and server markup identical, not a claim that anything happens in UTC. If a
-future spec ever wants a "site time zone", it is wrong.
+and a zone arriving from data is parsed. `src/modules/i18n/request.ts` pins next-intl's own zone to
+`UTC` for exactly this reason: it is a neutral value for a formatter nobody told a zone, not a
+claim that anything happens in UTC. (The same value used to be repeated on the client provider in
+`src/app/[locale]/layout.tsx`, to keep client and server markup identical; TASK-085 removed the
+provider, so there is no second environment to disagree with the server's.) If a future spec ever
+wants a "site time zone", it is wrong.
 
 ## 10. Common failures
 

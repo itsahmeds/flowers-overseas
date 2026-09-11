@@ -28,8 +28,11 @@ import type { ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
+import { NextIntlClientProvider } from "next-intl";
+
 import type { LocaleConfig } from "../../src/config/locales.ts";
 import { alternatesFor } from "../../src/modules/i18n/alternates.ts";
+import { MESSAGE_NAMESPACES } from "../../src/modules/i18n/messages.ts";
 import {
   type MessageNamespace,
   loadMessages,
@@ -132,6 +135,20 @@ async function withFrench<T>(body: () => T | Promise<T>): Promise<T> {
   }
 }
 
+/**
+ * Wrap a rendered document in a message provider **for this test environment only**.
+ *
+ * `src/app/[locale]/layout.tsx` mounts no `NextIntlClientProvider` since TASK-085 (spec 004 §14
+ * A1 addendum): the provider and its message payload cost 10 705 B Brotli in every locale
+ * document's initial script set, and every client island now takes resolved strings as props. In
+ * Next, the Server Components below still resolve `useTranslations` through next-intl's
+ * server implementation, which the `react-server` export condition selects. Vitest resolves the
+ * package under the default condition, so it gets the *client* hook, which needs context — a
+ * property of the test runner's module resolution, not of the application. The provider is
+ * therefore part of the harness, exactly as `next/font/local` is stubbed in `vitest.config.ts`;
+ * that no client module reads a message in production is asserted by
+ * `tests/unit/client-message-graph.test.ts`.
+ */
 async function renderLocaleDocument(locale: string): Promise<string> {
   const page = (await LocaleHomePage({
     params: Promise.resolve({ locale }),
@@ -140,7 +157,15 @@ async function renderLocaleDocument(locale: string): Promise<string> {
     children: page,
     params: Promise.resolve({ locale }),
   })) as ReactElement;
-  return renderToStaticMarkup(document);
+  return renderToStaticMarkup(
+    <NextIntlClientProvider
+      locale={locale}
+      messages={loadMessages(locale, MESSAGE_NAMESPACES)}
+      timeZone="UTC"
+    >
+      {document}
+    </NextIntlClientProvider>,
+  );
 }
 
 describe("a fifth locale is data (AC-31)", () => {
@@ -157,9 +182,7 @@ describe("a fifth locale is data (AC-31)", () => {
     expect(html).toContain('<html lang="fr" dir="ltr" class=');
     // No `messages/fr.json` ships: the `fr → en` fallback chain renders it (§2 "Messages").
     // The fallback chain is what is under test, not the copy: `fr` has no catalogue, so the
-    // document renders from `en` — visible here as the `a11y` copy the client provider carries.
-    // (`home`/`finder` are read on the server and are outside this helper's catalogue scope —
-    // see the note in `tests/unit/app-shell.test.tsx`.)
+    // document renders from `en` — visible here as the layout's `a11y` copy.
     expect([...html.matchAll(/<h1/g)]).toHaveLength(1);
     expect(html).toContain("Skip to content");
     expect(params).toEqual(["en", "en-gb", "de", "pl", "fr"]);

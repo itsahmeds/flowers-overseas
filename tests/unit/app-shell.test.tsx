@@ -29,13 +29,28 @@ import {
   type LocaleConfig,
   loadMessages,
   type MessageNamespace,
-  namespacesFor,
 } from "../../src/modules/i18n";
+import { MESSAGE_NAMESPACES } from "../../src/modules/i18n/messages.ts";
 import {
   localeRegistryOf,
   staticLocaleRegistry,
   withLocaleRegistry,
 } from "../../src/modules/i18n/registry.ts";
+
+/**
+ * The router params the 500 boundary reads (`src/app/[locale]/error.tsx`). Mutable so the tests
+ * below can assert the locale branch, the unknown-segment branch and the no-router branch; `null`
+ * is what `useParams()` answers outside a router context, which is a state the failure path must
+ * survive.
+ */
+let routerParams: Record<string, string | string[]> | null = null;
+
+vi.mock("next/navigation", async (importOriginal) => ({
+  // Partial: `notFound()` is the real one — `[locale]/page.tsx` calls it for an unroutable
+  // segment and this file asserts the `NEXT_HTTP_ERROR_FALLBACK` it throws.
+  ...(await importOriginal<typeof import("next/navigation")>()),
+  useParams: (): Record<string, string | string[]> | null => routerParams,
+}));
 
 vi.mock("next-intl/server", () => ({
   setRequestLocale: (): void => undefined,
@@ -115,6 +130,20 @@ const fiveLocaleRegistry = localeRegistryOf([
 /** The chooser page is `async` (it awaits its catalogue), so it is resolved once, up front. */
 const chooserPage = (await ChooserPage()) as ReactElement;
 
+/**
+ * Wrap a rendered document in a message provider **for this test environment only**.
+ *
+ * `src/app/[locale]/layout.tsx` mounts no `NextIntlClientProvider` since TASK-085 (spec 004 §14
+ * A1 addendum): the provider and its message payload cost 10 705 B Brotli in every locale
+ * document's initial script set, and every client island now takes resolved strings as props. In
+ * Next, the Server Components below still resolve `useTranslations` through next-intl's
+ * server implementation, which the `react-server` export condition selects. Vitest resolves the
+ * package under the default condition, so it gets the *client* hook, which needs context — a
+ * property of the test runner's module resolution, not of the application. The provider is
+ * therefore part of the harness, exactly as `next/font/local` is stubbed in `vitest.config.ts`;
+ * that no client module reads a message in production is asserted by
+ * `tests/unit/client-message-graph.test.ts`.
+ */
 async function renderLocaleDocument(locale: string): Promise<string> {
   const page = (await LocaleHomePage({
     params: Promise.resolve({ locale }),
@@ -123,7 +152,15 @@ async function renderLocaleDocument(locale: string): Promise<string> {
     children: page,
     params: Promise.resolve({ locale }),
   })) as ReactElement;
-  return renderToStaticMarkup(document);
+  return renderToStaticMarkup(
+    <NextIntlClientProvider
+      locale={locale}
+      messages={loadMessages(locale, MESSAGE_NAMESPACES)}
+      timeZone="UTC"
+    >
+      {document}
+    </NextIntlClientProvider>,
+  );
 }
 
 describe("the `/` locale chooser (AC-7, AC-25)", () => {
@@ -199,11 +236,10 @@ describe("the `[locale]` document (AC-6)", () => {
     const html = await renderLocaleDocument("en");
     // TASK-052: the placeholder `<h1>` is gone — the locale home's heading is `home.hero.heading`,
     // rendered by `HomeHero`. Its *copy* is not assertable here and deliberately so: this helper
-    // renders the layout, so the only catalogue in scope is the client provider's
-    // `namespacesFor("localeDocument")` subset, and `home`/`finder` are **not** in it (they are
-    // read on the server through `src/modules/i18n/request.ts`, which is what keeps the
-    // serialised client payload inside AC-27's 4 KB). What this file pins is the document's
-    // structure — one `<h1>`, inside `main`, plus the `a11y` copy the provider does carry; the
+    // renders the layout, so the only catalogue in scope is the harness provider's
+    // `MESSAGE_NAMESPACES` (see `renderLocaleDocument`), and the heading is the page's, resolved
+    // through `src/modules/i18n/request.ts` in a real render. What this file pins is the
+    // document's structure — one `<h1>`, inside `main`, plus the `a11y` copy of the layout; the
     // heading's text is asserted in `tests/unit/ui-home.test.tsx` and `tests/e2e/home.spec.ts`.
     expect([...html.matchAll(/<h1/g)]).toHaveLength(1);
     expect(html).toContain('<main id="main">');
@@ -294,19 +330,46 @@ describe("the 404 document (AC-8)", () => {
   });
 });
 
-describe("the localised 500 boundary", () => {
-  it("reads its copy from the client provider's namespace subset", () => {
-    const html = renderToStaticMarkup(
-      <NextIntlClientProvider
-        locale="en"
-        messages={loadMessages("en", namespacesFor("localeDocument"))}
-      >
-        <LocaleError reset={(): void => undefined} />
-      </NextIntlClientProvider>,
-    );
+/**
+ * TASK-085: the boundary is a Client Component that no provider wraps any more (spec 004 §14 A1
+ * addendum), so its copy comes from `error-copy.data.ts` keyed by the URL's locale, which
+ * `useParams()` reads. The mock at the top of this file is what lets both branches be asserted:
+ * a locale segment, and no router context at all.
+ */
+describe("the localised 500 boundary (TASK-085: strings as data, no provider)", () => {
+  const renderBoundary = (): string =>
+    renderToStaticMarkup(<LocaleError reset={(): void => undefined} />);
+
+  it("renders the URL locale's own copy, with no message provider in sight", () => {
+    routerParams = { locale: "en-gb" };
+
+    const html = renderBoundary();
 
     expect(html).toContain("<h1>Something went wrong</h1>");
     expect(html).toContain("Try again");
+    // `en-gb`'s thin override, so this is the *locale's* copy and not the x-default's: the one
+    // observable difference between the two catalogues on this page.
+    expect(html).toContain("apologise");
+  });
+
+  it("renders the x-default copy when the segment is unknown or there is no router", () => {
+    routerParams = { locale: "xx" };
+    expect(renderBoundary()).toContain("apologize");
+
+    routerParams = null;
+    expect(renderBoundary()).toContain("apologize");
+    expect(renderBoundary()).toContain("<h1>Something went wrong</h1>");
+  });
+
+  it("renders the same four strings `loadMessages` resolves for that locale", () => {
+    routerParams = { locale: "de" };
+    const messages = loadMessages("de", ["errors"]).errors.serverError;
+
+    const html = renderBoundary();
+
+    expect(html).toContain(`<h1>${messages.heading}</h1>`);
+    expect(html).toContain(messages.body);
+    expect(html).toContain(messages.retry);
   });
 });
 

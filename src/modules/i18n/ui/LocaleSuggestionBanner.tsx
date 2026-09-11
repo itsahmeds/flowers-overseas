@@ -17,11 +17,24 @@
  * The `hreflangAliases` come along because they are what makes `en-GB` resolve to `en-gb` and
  * `de-AT` to `de` in `preferredLocale()` — `plan/02` §3's alias column, reused rather than
  * restated as a lookup table in the island.
+ *
+ * TASK-085 added the second projection: the **copy**. `useTranslations("banner")` runs here, on
+ * the server, and `suggestionCopy()` resolves every string the island can render — including the
+ * two ICU messages that take the target language's name, one pair per launch locale, because which
+ * locale is offered is decided in the browser. The island therefore imports no translator, which
+ * is what let `NextIntlClientProvider` and the `localeDocument` message payload leave every locale
+ * document (spec 004 §13 Q13 option (b), §14 A1 addendum). Same register as `ConsentBanner`: the
+ * locale for the copy is the request's, published by `setRequestLocale()` in the layout, while the
+ * `locale` prop is the URL's — the island compares it against `navigator.languages` and builds no
+ * URL of its own.
  */
+import { useTranslations } from "next-intl";
+
 import { type SuggestionCandidate } from "../hints.ts";
 import { type PageType, launchLocales, localePath } from "../routing.ts";
 
 import { LocaleSuggestionBannerLoader } from "./LocaleSuggestionBannerLoader.tsx";
+import { suggestionCopy } from "./suggestionCopy.ts";
 
 export interface LocaleSuggestionBannerProps {
   /** The locale of the page the banner is rendered on, from the URL segment and nothing else. */
@@ -47,9 +60,12 @@ export function LocaleSuggestionBanner({
   locale,
   pageType = "home",
 }: LocaleSuggestionBannerProps) {
+  const t = useTranslations("banner");
+  const candidates = suggestionCandidates(pageType);
   return (
     <LocaleSuggestionBannerLoader
-      candidates={suggestionCandidates(pageType)}
+      candidates={candidates}
+      copy={suggestionCopy(t, candidates)}
       locale={locale}
     />
   );

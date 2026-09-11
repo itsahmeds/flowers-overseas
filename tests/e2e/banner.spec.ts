@@ -173,10 +173,21 @@ test.describe("a German browser on /en (AC-28)", () => {
     page,
     request,
   }) => {
-    // The document itself: identical for everyone, so it cannot contain a suggestion.
+    // The document itself: identical for everyone, so it renders no suggestion.
     const html = await (await request.get("/en")).text();
     expect(html).not.toContain('data-fo-banner="shown"');
-    expect(html).not.toContain("Deutsch?");
+    // AC-28's real invariant, asserted directly since TASK-085: the same URL requested with a
+    // German `Accept-Language` and with no header at all is the **same document**. It used to be
+    // asserted as `not.toContain("Deutsch?")`, which stopped being the same claim when the island
+    // took its strings as props (spec 004 §14 A1 addendum): `banner.headline` is now resolved on
+    // the server for **every** launch locale and travels in the RSC payload as data — for every
+    // visitor alike, exactly as the consent sheet's copy always has. What must never appear is a
+    // *rendered* banner, which the assertion above pins, and a response that varies by request,
+    // which this one does.
+    const neutral = await request.get("/en", {
+      headers: { "accept-language": "" },
+    });
+    expect(await neutral.text()).toBe(html);
 
     const response = await page.goto("/en");
     expect(response?.status()).toBe(200);

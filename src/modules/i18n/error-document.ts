@@ -1,6 +1,7 @@
 /**
  * The copy and the document attributes of the last-resort 500 page — the one i18n path that must
- * reach no zod (spec 004 §13 Q13, AC-25's precondition; TASK-046).
+ * reach neither zod nor a message catalogue (spec 004 §13 Q13, §14 A1 addendum, AC-25's
+ * precondition; TASK-046, then TASK-085).
  *
  * `src/app/global-error.tsx` is a Client Component, because Next requires it to be one, and Next
  * attaches the root error boundary's client chunk to **every** document. Whatever that file can
@@ -10,14 +11,21 @@
  * to every visitor of a page that never validates anything (measured on TASK-043, spec 003
  * §14 A12; the founder's answer is spec 004 §13 Q13 option (a)).
  *
- * So this module reads two constants and nothing else:
+ * So this module reads two data modules and nothing else:
  *
  *  - the **x-default locale row** from `src/config/locales.data.ts` (plain typed constants, no
  *    imports at all), for `lang` and `dir`;
- *  - the **English catalogue** `messages/en.json` statically, for the four strings. `en` *is* the
- *    x-default locale and the source catalogue, so its own file is the whole fallback chain: what
- *    `loadMessages("en", ["meta", "errors"])` returns for these keys is byte-identical, and
- *    `tests/unit/error-document.test.ts` asserts that equality rather than trusting the sentence.
+ *  - the four strings from `error-copy.data.ts` (the same: plain constants, no imports).
+ *
+ * TASK-085 replaced the second half. It used to be a static `messages/en.json` import for four
+ * strings, and that import was the second reason this file matters: Turbopack tree-shakes a JSON
+ * import only below a size threshold, `en.json` crossed it at 12.5 KB, and the **whole catalogue**
+ * — `home.*`, `catalog.*`, `media.*`, every namespace — shipped in the chunk Next attaches to
+ * every document (4 751 B Brotli of `0bjoc_w_ukgs0.js`, measured on TASK-085's parent). Each copy
+ * task paid 0 B or ~3.4 KB depending on which side of the threshold the file happened to land, so
+ * the cliff was a standing tax on writing copy. `error-copy.data.ts` has no threshold, and
+ * `tests/unit/error-document.test.ts` is what keeps its strings the catalogue's strings: it
+ * resolves the same keys through `loadMessages()` for every launch locale and compares them.
  *
  * The second reason for the shape, independent of bytes: the 500 document is reached because
  * something else already threw, so it must not depend on the machinery that just failed — no
@@ -35,18 +43,14 @@ import {
   type TextDirection,
 } from "../../config/locales.data.ts";
 
-import en from "../../../messages/en.json" with { type: "json" };
+import { type ErrorCopy, errorCopyFor } from "./error-copy.data.ts";
 
 /** Everything `src/app/global-error.tsx` renders: two attributes and four strings. */
-export interface ErrorDocument {
+export interface ErrorDocument extends ErrorCopy {
   /** `<html lang>`: the x-default locale's document language. */
   readonly lang: string;
   /** `<html dir>`: from the locale registry, never inferred from the strings. */
   readonly dir: TextDirection;
-  readonly title: string;
-  readonly heading: string;
-  readonly body: string;
-  readonly retry: string;
 }
 
 /**
@@ -57,9 +61,6 @@ export function errorDocument(): ErrorDocument {
   return {
     lang: X_DEFAULT_LOCALE.bcp47,
     dir: X_DEFAULT_LOCALE.dir,
-    title: en.meta.error.title,
-    heading: en.errors.serverError.heading,
-    body: en.errors.serverError.body,
-    retry: en.errors.serverError.retry,
+    ...errorCopyFor(X_DEFAULT_LOCALE.code),
   };
 }

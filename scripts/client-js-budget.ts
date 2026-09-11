@@ -24,27 +24,44 @@
  *
  * ## What it counts, and why that is the honest number
  *
- * The script set of a URL is **the document's own `<script src>` list plus the lazy chunks of its
- * route entry**, and it took a review to get that right (`/review 26`). Reading only the
- * prerendered document in `.next/server/app/*.html` misses everything `next/dynamic` defers: the
- * suggestion-banner island is rendered by `src/app/[locale]/layout.tsx` on every locale document
- * through `next/dynamic({ ssr: false })`, so the browser fetches its chunk immediately after
- * hydration — 72.5 KB Brotli of it, at the time, because that chunk still contained zod — while
- * this script reported the page 72.5 KB lighter than a browser saw it. The lazy chunks are
- * therefore read from `.next/server/app/<entry>/react-loadable-manifest.json`, the per-route
- * manifest Next writes for exactly this graph, and counted in the total and scanned for forbidden
- * modules like any other asset. Three consequences:
+ * The script set of a URL is **what a browser fetches for that URL**: the prerendered document's
+ * own `<script src>` list, the chunks of the client references the document actually mounts, and
+ * the `next/dynamic` chunks those chunks then request. It took two reviews to get there.
  *
- *  - **A lazy chunk is counted even when the rendered page would not fetch it.** Next lists a
- *    route's `next/dynamic` boundaries per *entry*, not per rendered outcome, so this is an upper
- *    bound: `/` is charged 12.6 KB Brotli for the banner island's chunk group even though
- *    `(chooser)` renders no island and a browser fetches none of it. The direction is deliberate
- *    — a static measurement may report the page as tighter than reality, never looser — and the
- *    delta is printed rather than hidden: the table's `document JS` column is what the HTML
- *    lists, the `+ next/dynamic` column is what the route may defer. Browser-measured, this
- *    build is `/` 116 393 B and `/en`/`/de` 129 638 B Brotli; this script says 129 271 B and
- *    129 638 B, i.e. exact on a locale document and 12.6 KB pessimistic on the chooser.
- *    Which of the two numbers the blocking gate reads is TASK-056's to settle (spec 004 AC-24).
+ * `/review 26` fixed the first half. Reading only the document in `.next/server/app/*.html` misses
+ * everything `next/dynamic` defers: the suggestion-banner island is rendered on every locale
+ * document with `next/dynamic({ ssr: false })`, so the browser fetches its chunk immediately after
+ * hydration — 72.5 KB Brotli of it at the time, because that chunk still contained zod — while
+ * this script reported the page 72.5 KB lighter than a browser saw it. Those chunks come from
+ * `.next/server/app/<entry>/react-loadable-manifest.json`.
+ *
+ * `/review 36` found what that fix over-counted, and TASK-085 fixed it. Turbopack writes the
+ * **same** `next/dynamic` module ids into every route's loadable manifest — it is an app-level
+ * list, not a per-route one — so `/` was charged the banner, consent and settings-panel chunk
+ * groups although `(chooser)` mounts no island and a browser fetches none of them (`/review 36`:
+ * 131 672 B charged against 116 429 B fetched; on TASK-085's base commit, 135 357 B charged
+ * against 120 116 B fetched — 15 241 B of fiction). The route's manifest is now a *candidate*
+ * list, filtered by reachability from what the document really loads:
+ *
+ *  1. the document's `<script src>` list, verbatim;
+ *  2. the chunks of every client reference in the document's own flight payload — the
+ *     `I[id,[chunks],"Name"]` rows Next emits for each Client Component it mounted. `/`'s payload
+ *     names one application component (the root error boundary); a locale document's names the
+ *     island loaders. A chunk named there and absent from the `<script src>` list is fetched
+ *     during hydration, so it counts;
+ *  3. every candidate lazy chunk whose asset path appears **as a string** inside a chunk already
+ *     loaded, transitively. Turbopack writes the path verbatim
+ *     (`Promise.all(["static/chunks/2-kq9….js"].map(…))`), so this follows the same edge the
+ *     runtime does rather than inferring one.
+ *
+ * The closure starts from the **mounted** references rather than from every script the document
+ * lists, and that is the whole of the fix: `/`'s HTML does list the banner loader's chunk, because
+ * Turbopack puts an entry's client modules in the entry's script set, and that chunk does name the
+ * island chunks — but `(chooser)` never mounts the loader, so the import never runs.
+ *
+ * The result is checked against a real browser rather than trusted:
+ * `tests/e2e/client-js-budget.spec.ts` records every script response Chromium makes for the five
+ * URLs of AC-24's set and asserts the two sets are equal, in both directions.
  *
  *  - **`noModule` bundles are reported but not counted.** Next emits its legacy polyfill bundle
  *    (~38 KB gz) as `<script noModule>`, which no module-supporting browser — and therefore no
@@ -62,15 +79,15 @@
  * ## Exit code
  *
  * Non-zero when any measured URL exceeds the JS budget, any launch locale's message payload
- * exceeds 4 KB, or a forbidden module is found in a route's client bundle. The CI `build` job runs
- * it with `continue-on-error: true` on the step; TASK-056 owns the flip to blocking, together with
- * `lighthouse`. The step stays informational for now because one clause of it is still a founder
- * decision: with zod off both the initial and the lazy chunks, a browser fetches 116 393 B Brotli
- * on `/` — within, 6 487 B spare — and 129 638 B on `/en` and `/de`, which is 6 758 B (5.5%)
- * over. `/`'s total is nothing but the framework floor (react-dom 62 564 B, the App Router
- * runtime 39 763 B, ~13.5 KB of bootstrap and route shells), and the locale document's extra is
- * `NextIntlClientProvider` + `@formatjs` at 10 705 B plus the banner island at 2 173 B. Spec 004
- * §13 Q13 option (b) is the fallback and it is not this script's to take.
+ * exceeds 4 KB, a forbidden module is found in a route's client bundle, or a catalogue value from
+ * a namespace no client may read is found in a fetched chunk. The CI `build` job runs it with
+ * `continue-on-error: true` on the step; TASK-056 owns the flip to blocking, together with
+ * `lighthouse`. It stays informational until then because the framework floor is almost the whole
+ * budget: after TASK-085 took the client provider and the catalogue import out, `/` measures
+ * 116 778 B Brotli (14 294 B spare) and every locale document 122 360 B (8 712 B spare) against
+ * 131 072 B — and 114 KB of the chooser's total is react-dom plus the App Router runtime, with no
+ * application byte left to remove. TASK-056 owns the flip and the Lighthouse reconciliation (a
+ * protected preview also runs `vercel.live`, which is not in this build output).
  *
  * Usage: `node scripts/client-js-budget.ts [--dist .next] [--url /en]…`
  */
@@ -105,10 +122,31 @@ export interface ScriptTag {
   readonly noModule: boolean;
   /**
    * How the browser gets it: `document` for a `<script src>` of the prerendered HTML, `lazy` for
-   * a `next/dynamic` chunk listed in the route's `react-loadable-manifest.json` and fetched after
-   * hydration. Both count; the distinction is printed so a growth is attributable.
+   * a chunk fetched during or after hydration — a client reference the document mounts whose
+   * chunk the HTML does not list, or a `next/dynamic` chunk one of those chunks then requests.
+   * Both count; the distinction is printed so a growth is attributable.
    */
   readonly kind: "document" | "lazy";
+}
+
+/**
+ * A Client Component the prerendered document actually mounts, as its own flight payload names it
+ * (TASK-085).
+ *
+ * Next emits one `I[id,[chunks],"Name"]` row per client reference into the `self.__next_f.push(…)`
+ * blocks of the HTML. That list is the honest answer to "which islands does *this* URL hydrate",
+ * which the per-route `react-loadable-manifest.json` is not: Turbopack writes the same
+ * `next/dynamic` ids into every route's copy of it. `/`'s payload names `global-error` and nothing
+ * else; a locale document's names the banner loader, the consent loader, the finder and both error
+ * boundaries. It is also what proves a removal: after TASK-085 no document names
+ * `NextIntlClientProvider`.
+ */
+export interface ClientReference {
+  readonly id: string;
+  /** The exported name Next recorded — `default`, `*` or the component's own name. */
+  readonly name: string;
+  /** Asset paths inside the dist directory, e.g. `static/chunks/abc.js`. */
+  readonly chunks: readonly string[];
 }
 
 export interface MeasuredAsset extends ScriptTag {
@@ -121,6 +159,8 @@ export interface PageMeasurement {
   readonly url: string;
   /** Every script of the page — document `<script src>` and lazy chunk — biggest first. */
   readonly assets: readonly MeasuredAsset[];
+  /** The Client Components this document mounts, from its flight payload (printed, not counted). */
+  readonly references: readonly ClientReference[];
   /** Gzipped total of the assets a modern browser fetches (`noModule` excluded). Reported only. */
   readonly fetchedGzipBytes: number;
   /** Brotli total of the same assets. **This** is what the budget is compared against. */
@@ -153,6 +193,38 @@ export function parseScriptTags(html: string): ScriptTag[] {
     });
   }
   return tags;
+}
+
+/**
+ * Every client reference in a prerendered document's flight payload, de-duplicated by id.
+ *
+ * The payload is embedded in JS string literals, so the quotes arrive escaped
+ * (`I[63491,[\"/_next/static/chunks/….js\"],\"default\"]`); the escapes are undone first so one
+ * expression reads both the HTML form and the raw `.rsc` form. A row with no chunks (Next's own
+ * boundary components share the framework chunk) is kept: the point of the list is *which
+ * components this URL mounts*, and that is what the assertions in
+ * `tests/unit/client-js-budget.test.ts` read.
+ */
+const CLIENT_REFERENCE = /I\[(\d+),\[([^\]]*)\],"([^"]*)"\]/g;
+const REFERENCE_CHUNK = /"\/_next\/(static\/[^"]+?\.js)"/g;
+
+export function parseClientReferences(html: string): ClientReference[] {
+  const flight = html.replaceAll('\\"', '"');
+  const seen = new Set<string>();
+  const references: ClientReference[] = [];
+  for (const match of flight.matchAll(CLIENT_REFERENCE)) {
+    const [, id, chunkList, name] = match;
+    if (id === undefined || name === undefined || seen.has(id)) continue;
+    seen.add(id);
+    references.push({
+      id,
+      name,
+      chunks: [...(chunkList ?? "").matchAll(REFERENCE_CHUNK)].flatMap(
+        (chunk) => (chunk[1] === undefined ? [] : [chunk[1]]),
+      ),
+    });
+  }
+  return references;
 }
 
 /**
@@ -220,8 +292,9 @@ function matchSegment(segment: string, actual: string | undefined): boolean {
 }
 
 /**
- * The `next/dynamic` chunks of a URL: every file of every entry in the route's
- * `react-loadable-manifest.json`, de-duplicated.
+ * The `next/dynamic` chunks a URL's route **may** fetch: every file of every entry in the route's
+ * `react-loadable-manifest.json`, de-duplicated. A candidate list, not a bill — see
+ * `reachableAssets()` for what turns it into one.
  *
  * A route with no dynamic import has an empty manifest or none at all, which is `[]` — but a URL
  * with no entry in the routes manifest throws, because "this URL has no lazy chunks" and "this
@@ -257,6 +330,56 @@ export function loadableAssetsFor(dist: string, url: string): ScriptTag[] {
   return tags;
 }
 
+/**
+ * The candidates a browser actually reaches, starting from the chunks it has already loaded
+ * (TASK-085; `/review 36`'s finding).
+ *
+ * Turbopack writes a lazily requested chunk's path verbatim into the chunk that requests it
+ * (`Promise.all(["static/chunks/2-kq9….js"].map(t => e.l(t)))`), so "will this be fetched" is a
+ * string search along the same edge the runtime follows — repeated until nothing new appears,
+ * because a lazy chunk may request another. Restricted to the route's loadable candidates rather
+ * than to every emitted chunk name: the candidate list is what Next wrote for this graph, and an
+ * unrestricted search would count a chunk merely *named* in a manifest blob.
+ *
+ * This is the whole fix for `/`: `(chooser)` shares the app's loadable manifest with `[locale]`,
+ * but nothing `/` loads mentions the island chunks, so `/` is charged none of them.
+ */
+export function reachableAssets(
+  dist: string,
+  loaded: readonly string[],
+  candidates: readonly ScriptTag[],
+): ScriptTag[] {
+  const sources = new Map<string, string>();
+  const read = (asset: string): string => {
+    let source = sources.get(asset);
+    if (source === undefined) {
+      try {
+        source = readFileSync(join(dist, asset), "utf8");
+      } catch {
+        // A chunk named in a manifest but absent from the output cannot be fetched either.
+        source = "";
+      }
+      sources.set(asset, source);
+    }
+    return source;
+  };
+  const reached = new Set(loaded);
+  const found: ScriptTag[] = [];
+  let growing = true;
+  while (growing) {
+    growing = false;
+    for (const candidate of candidates) {
+      if (reached.has(candidate.asset)) continue;
+      if ([...reached].some((asset) => read(asset).includes(candidate.asset))) {
+        reached.add(candidate.asset);
+        found.push(candidate);
+        growing = true;
+      }
+    }
+  }
+  return found;
+}
+
 function measureAsset(dist: string, tag: ScriptTag): MeasuredAsset {
   const buffer = readFileSync(join(dist, tag.asset));
   return {
@@ -290,14 +413,38 @@ export function measurePages(
     }
     const documentTags = parseScriptTags(html);
     const documented = new Set(documentTags.map((tag) => tag.asset));
-    const assets = [
-      ...documentTags,
-      // A chunk the document already lists is fetched once, so it is counted once — as a
-      // document script, which is the honest label for it.
-      ...loadableAssetsFor(dist, url).filter(
-        (tag) => !documented.has(tag.asset),
+    const references = parseClientReferences(html);
+    // A chunk the document already lists is fetched once, so it is counted once — as a document
+    // script, which is the honest label for it. What is left is fetched during hydration: the
+    // chunks of the Client Components this document mounts, then the `next/dynamic` chunks those
+    // go on to request.
+    const referenced = new Set<string>();
+    for (const reference of references) {
+      for (const chunk of reference.chunks) {
+        if (!documented.has(chunk)) referenced.add(chunk);
+      }
+    }
+    const hydrationTags: ScriptTag[] = [...referenced].map((asset) => ({
+      asset,
+      noModule: false,
+      kind: "lazy",
+    }));
+    // The closure starts from the chunks of the **mounted** client references, not from every
+    // script the document lists. That distinction is the `/review 36` over-count: `/`'s HTML does
+    // list the banner loader's 1 434 B chunk (Turbopack puts an entry's client modules in the
+    // entry's script set), and that chunk names the island chunks — but `(chooser)` never mounts
+    // the loader, so the dynamic import never runs and the browser fetches none of them. A
+    // `next/dynamic` chunk is requested by the component that mounts, so the mounted set is the
+    // honest seed.
+    const loaded = references.flatMap((reference) => [...reference.chunks]);
+    const lazyTags = reachableAssets(
+      dist,
+      loaded,
+      loadableAssetsFor(dist, url).filter(
+        (tag) => !documented.has(tag.asset) && !referenced.has(tag.asset),
       ),
-    ]
+    );
+    const assets = [...documentTags, ...hydrationTags, ...lazyTags]
       .map((tag) => measureAsset(dist, tag))
       .sort((a, b) => b.gzipBytes - a.gzipBytes);
     const fetched = assets.filter((asset) => !asset.noModule);
@@ -308,6 +455,7 @@ export function measurePages(
     return {
       url,
       assets,
+      references,
       fetchedGzipBytes: fetched.reduce(
         (total, asset) => total + asset.gzipBytes,
         0,
@@ -374,6 +522,107 @@ export function forbiddenModuleHits(
   return hits;
 }
 
+/**
+ * Namespaces whose copy no client chunk may contain (spec 004 §14 A1 addendum; TASK-085).
+ *
+ * The cliff this closes was measured twice. `src/modules/i18n/error-document.ts` imported all of
+ * `messages/en.json` for four strings, and Turbopack tree-shakes a JSON import only below a size
+ * threshold: once the catalogue crossed it, the **whole** file shipped in the chunk Next attaches
+ * to the root error boundary — i.e. to every document, `/` included — so `home.*`, `catalog.*` and
+ * `media.*` were in the initial script set of pages that never render them (4 751 B Brotli), and
+ * every copy task paid 0 B or ~3.4 KB depending on which side of the threshold the file happened
+ * to land that day (TASK-052, TASK-073). `src/modules/i18n/messages.ts` is the same trap with four
+ * catalogues behind it.
+ *
+ * Bytes alone would not have caught it: 4.6 KB is inside the noise of a framework upgrade. So the
+ * assertion is about *content*, and it is taken from the catalogue at run time rather than
+ * hard-coded, so a copy edit cannot make it quietly vacuous.
+ */
+export const CLIENT_FORBIDDEN_NAMESPACES = [
+  "home",
+  "finder",
+  "catalog",
+  "media",
+] as const;
+
+/** The shortest usable probe length: long enough that a coincidental match is not credible. */
+const PROBE_MIN_LENGTH = 24;
+
+export interface CatalogueProbe {
+  readonly namespace: string;
+  readonly key: string;
+  readonly value: string;
+}
+
+/**
+ * One probe per forbidden namespace: its longest leaf value, with the flattened key it came from.
+ * Read from the shipped `en` catalogue through `loadMessages()`, so the probe is a string that
+ * really is in the bundle when the namespace leaks — and `tests/unit/client-js-budget.test.ts`
+ * asserts a probe exists for every namespace, so a renamed namespace fails the test rather than
+ * silencing the check.
+ */
+export function catalogueProbes(): CatalogueProbe[] {
+  const catalogue = loadMessages("en", CLIENT_FORBIDDEN_NAMESPACES);
+  const probes: CatalogueProbe[] = [];
+  for (const namespace of CLIENT_FORBIDDEN_NAMESPACES) {
+    let best: CatalogueProbe | undefined;
+    const walk = (node: unknown, path: readonly string[]): void => {
+      if (typeof node === "string") {
+        if (
+          node.length >= PROBE_MIN_LENGTH &&
+          node.length > (best?.value.length ?? 0)
+        ) {
+          best = { namespace, key: path.join("."), value: node };
+        }
+        return;
+      }
+      if (typeof node !== "object" || node === null) return;
+      for (const [key, value] of Object.entries(node)) {
+        walk(value, [...path, key]);
+      }
+    };
+    walk(catalogue[namespace], [namespace]);
+    if (best !== undefined) probes.push(best);
+  }
+  return probes;
+}
+
+export interface CatalogueLeak {
+  readonly url: string;
+  readonly asset: string;
+  readonly namespace: string;
+  readonly key: string;
+}
+
+/**
+ * Every server-only catalogue value found in a script one of these URLs fetches. `noModule`
+ * assets are skipped for the same reason they are not counted: nobody downloads them.
+ */
+export function catalogueLeaks(
+  dist: string,
+  pages: readonly PageMeasurement[],
+): CatalogueLeak[] {
+  const probes = catalogueProbes();
+  const leaks: CatalogueLeak[] = [];
+  for (const page of pages) {
+    for (const asset of page.assets) {
+      if (asset.noModule) continue;
+      const source = readFileSync(join(dist, asset.asset), "utf8");
+      for (const probe of probes) {
+        if (source.includes(probe.value)) {
+          leaks.push({
+            url: page.url,
+            asset: asset.asset,
+            namespace: probe.namespace,
+            key: probe.key,
+          });
+        }
+      }
+    }
+  }
+  return leaks;
+}
+
 export interface MessagesPayloadSize {
   readonly locale: string;
   readonly rawBytes: number;
@@ -382,10 +631,16 @@ export interface MessagesPayloadSize {
 }
 
 /**
- * The gzipped size of what `NextIntlClientProvider` serialises into a localised document: the
- * `localeDocument` namespace subset, per launch locale. No build output is needed — the subset is
- * a pure function of the catalogues (`src/modules/i18n/messages.ts`), which is the point of
- * `namespacesFor()`.
+ * The gzipped size of the `localeDocument` namespace subset, per launch locale — spec 003 §6 /
+ * AC-27's 4 KB budget.
+ *
+ * Until TASK-085 this was literally what `NextIntlClientProvider` serialised into every localised
+ * document. There is no provider now (spec 004 §14 A1 addendum) and no client payload at all, so
+ * what this measures is the **upper bound**: the copy a locale document's own boundaries resolve,
+ * i.e. what a payload would cost if one were ever reintroduced. The claim that today's payload is
+ * zero is not made here, where it would be a comment; it is `catalogueLeaks()` above and
+ * `tests/unit/client-message-graph.test.ts`, which read the built chunks and the import graph.
+ * No build output is needed for this one — the subset is a pure function of the catalogues.
  */
 export function messagesPayloadSizes(): MessagesPayloadSize[] {
   return launchLocales.map((locale) => {
@@ -432,6 +687,18 @@ export function formatChunkList(pages: readonly PageMeasurement[]): string {
   const lines: string[] = [];
   for (const page of pages) {
     lines.push(`${page.url}`);
+    // The Client Components the document mounts, named. This is the line that shows a provider or
+    // an island appearing on a URL that should not have one (TASK-085).
+    lines.push(
+      `  client references: ${
+        page.references.length === 0
+          ? "none"
+          : page.references
+              .map((reference) => reference.name)
+              .sort()
+              .join(", ")
+      }`,
+    );
     for (const asset of page.assets) {
       lines.push(
         `  ${kb(asset.gzipBytes).padStart(9)} gz  ${kb(asset.brotliBytes).padStart(9)} br  ${
@@ -490,6 +757,7 @@ export function main(
     const pages = measurePages(dist, urls.length > 0 ? urls : DEFAULT_URLS);
     const messages = messagesPayloadSizes();
     const forbidden = forbiddenModuleHits(dist, pages);
+    const leaks = catalogueLeaks(dist, pages);
 
     const breaches = [
       ...pages
@@ -508,6 +776,10 @@ export function main(
         (hit) =>
           `${hit.url} ships \`${hit.label}\` in its client bundle (${hit.asset}), which spec 004 AC-25 forbids on a public route`,
       ),
+      ...leaks.map(
+        (leak) =>
+          `${leak.url} ships the \`${leak.namespace}.*\` catalogue in a fetched chunk (${leak.asset}, e.g. \`${leak.key}\`) — no client may read a message catalogue since spec 004 §14 A1's addendum`,
+      ),
     ];
 
     out.write(
@@ -520,6 +792,9 @@ export function main(
         "",
         forbidden.length === 0
           ? `client-js-budget: no measured URL ships ${FORBIDDEN_CLIENT_MODULES.map((module) => module.label).join(" or ")}`
+          : "",
+        leaks.length === 0
+          ? `client-js-budget: no fetched chunk contains ${CLIENT_FORBIDDEN_NAMESPACES.map((namespace) => `${namespace}.*`).join(", ")} catalogue copy`
           : "",
         "",
         breaches.length === 0

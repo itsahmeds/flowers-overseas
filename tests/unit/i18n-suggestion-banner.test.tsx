@@ -7,10 +7,15 @@
  *    boundary. It is what keeps the locale registry out of the browser, and its `href`s come from
  *    `localePath()`, so this is also where "the island never concatenates a URL" (§6, AC-13) is
  *    asserted.
- *  - **`LocaleSuggestionBannerView`** — the markup, rendered with `react-dom/server` against the
- *    **real** `messages/en.json` through the same `NextIntlClientProvider` the layout uses. The
- *    asserted copy is therefore the shipped copy, and the `{language}` argument of `banner.*` is
- *    exercised rather than assumed.
+ *  - **`suggestionCopy()`** — the copy projection TASK-085 added, resolved with a **real**
+ *    next-intl translator over the shipped `messages/en.json`, so the `{language}` argument of
+ *    `banner.headline`/`banner.switch` is exercised rather than assumed. `createTranslator` is
+ *    the same formatter `useTranslations` uses, without a provider: after spec 004 §14 A1's
+ *    addendum there is no `NextIntlClientProvider` in the application, and a test that mounted
+ *    one would be asserting a path production no longer has.
+ *  - **`LocaleSuggestionBannerView`** — the markup, rendered with `react-dom/server` from those
+ *    strings as props. The asserted copy is therefore the shipped copy, and the view is proven to
+ *    need no message context at all: it renders outside any provider.
  *
  * The parts that need a browser — appearing after hydration, the CLS delta, `Esc`, the cookie the
  * browser stores — are `tests/e2e/banner.spec.ts`; the decision matrix is
@@ -22,29 +27,43 @@ import { resolve } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
-import { NextIntlClientProvider } from "next-intl";
+import { createTranslator } from "next-intl";
 
-import { loadMessages, namespacesFor } from "../../src/modules/i18n";
+import { loadMessages } from "../../src/modules/i18n";
 import type { SuggestionCandidate } from "../../src/modules/i18n/hints.ts";
 import { suggestionCandidates } from "../../src/modules/i18n/ui/LocaleSuggestionBanner.tsx";
 import { LocaleSuggestionBannerView } from "../../src/modules/i18n/ui/LocaleSuggestionBannerIsland.tsx";
+import {
+  type BannerTranslate,
+  suggestionCopy,
+} from "../../src/modules/i18n/ui/suggestionCopy.ts";
 
 const noop = (): void => undefined;
 
+/** The shipped catalogue, through the real ICU formatter — what the Server Component does. */
+function copyFor(locale: string) {
+  const translate = createTranslator({
+    locale,
+    messages: loadMessages(locale, ["banner"]),
+    namespace: "banner",
+  }) as BannerTranslate;
+  return suggestionCopy(translate, suggestionCandidates());
+}
+
+const englishCopy = copyFor("en");
+
 function render(target: SuggestionCandidate): string {
+  const targetCopy = englishCopy.targets[target.code];
+  if (targetCopy === undefined) throw new Error(`no copy for ${target.code}`);
   return renderToStaticMarkup(
-    <NextIntlClientProvider
-      locale="en"
-      messages={loadMessages("en", namespacesFor("localeDocument"))}
-      timeZone="UTC"
-    >
-      <LocaleSuggestionBannerView
-        onDismiss={noop}
-        onStay={noop}
-        onSwitch={noop}
-        target={target}
-      />
-    </NextIntlClientProvider>,
+    <LocaleSuggestionBannerView
+      copy={englishCopy}
+      onDismiss={noop}
+      onStay={noop}
+      onSwitch={noop}
+      target={target}
+      targetCopy={targetCopy}
+    />,
   );
 }
 
@@ -98,6 +117,53 @@ describe("suggestionCandidates (the props the island decides from)", () => {
   });
 });
 
+describe("suggestionCopy (the strings the island is handed — TASK-085)", () => {
+  it("resolves both ICU messages for every launch locale it may offer", () => {
+    expect(Object.keys(englishCopy.targets)).toEqual([
+      "en",
+      "en-gb",
+      "de",
+      "pl",
+    ]);
+    expect(englishCopy.targets["de"]).toEqual({
+      headline: "Would you rather read this page in Deutsch?",
+      switchLabel: "Switch to Deutsch",
+    });
+  });
+
+  it("resolves the two locale-invariant strings", () => {
+    expect(englishCopy.stay).toBe("Stay on this page");
+    expect(englishCopy.dismiss).toBe("Dismiss the language suggestion");
+  });
+
+  it("leaves no `{language}` placeholder unresolved, in any launch locale", () => {
+    for (const locale of ["en", "en-gb", "de", "pl"]) {
+      const copy = copyFor(locale);
+      const strings = [
+        copy.stay,
+        copy.dismiss,
+        ...Object.values(copy.targets).flatMap((target) => [
+          target.headline,
+          target.switchLabel,
+        ]),
+      ];
+      for (const value of strings) {
+        expect(value, `${locale}: ${value}`).not.toContain("{");
+        expect(value.length, locale).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it("renders the target's own `nativeName`, so a locale added to the registry is covered", () => {
+    for (const candidate of suggestionCandidates()) {
+      expect(
+        englishCopy.targets[candidate.code]?.headline,
+        candidate.code,
+      ).toContain(candidate.nativeName);
+    }
+  });
+});
+
 describe("LocaleSuggestionBannerView (§5.3, §8)", () => {
   const html = render(german);
 
@@ -105,6 +171,13 @@ describe("LocaleSuggestionBannerView (§5.3, §8)", () => {
     expect(html).toContain("Would you rather read this page in Deutsch?");
     expect(html).toContain("Switch to Deutsch");
     expect(html).toContain("Stay on this page");
+  });
+
+  it("renders outside any message provider, because the browser has none (§14 A1 addendum)", () => {
+    // The `render()` helper above mounts no provider and this is the assertion that says so on
+    // purpose: if the view ever reads a message through a hook again, this render throws
+    // (`useTranslations` without context) instead of quietly reintroducing the 10 705 B provider.
+    expect(html).toContain('data-fo-banner="shown"');
   });
 
   it("is a non-modal live region labelled by its own headline", () => {

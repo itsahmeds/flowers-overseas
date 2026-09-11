@@ -428,19 +428,21 @@ jobs:
       #    2026-09-08 restatement of `plan/01` §7 (option (a)): the same number against the
       #    encoding Vercel serves and Lighthouse measures, instead of gzip, which made the same
       #    build "over" or "under" depending on the reader.
-      #  - the serialised client message payload per locale, against 4 KB gzipped (unchanged).
+      #  - the `localeDocument` namespace subset per locale, against 4 KB gzipped (unchanged) —
+      #    an upper bound since TASK-085, which removed the client provider: no payload is sent.
       #  - **no zod and no browser Sentry SDK in any measured route's client bundle** (spec 004
       #    AC-25), asserted from the chunks the documents reference *and* from the route's
       #    `next/dynamic` chunks — the manifest `/review 26` found the script ignoring, which is
       #    where zod actually was.
+      #  - **no `home.*`/`finder.*`/`catalog.*`/`media.*` catalogue value in any fetched chunk**
+      #    (spec 004 §14 A1 addendum, TASK-085): a static `messages/*.json` import ships the whole
+      #    catalogue once it crosses Turbopack's tree-shaking threshold, which is too small a byte
+      #    total to notice and was 4 751 B Brotli on every document.
       #
-      # `continue-on-error` is on the **step**, not the job, and one clause of it is still a
-      # founder decision: with zod off the initial *and* the lazy chunks, a browser fetches
-      # 116 393 B Brotli on `/` (within, 6 487 B spare) and 129 638 B on `/en` and `/de`
-      # (6 758 B, 5.5% over), because `/`'s total is already the framework floor and a locale
-      # document adds `NextIntlClientProvider` at 10 705 B plus the banner island at 2 173 B.
-      # Spec 004 §13 Q13 option (b) is the recorded fallback and TASK-046 escalated it rather
-      # than loosening the number.
+      # `continue-on-error` is on the **step**, not the job. Since TASK-085 every URL of the set is
+      # inside the budget — `/` 116 778 B Brotli (14 294 B spare) and each locale document
+      # 122 360 B (8 712 B spare) — and what is left is the framework floor with no application
+      # byte to remove. Spec 004 §13 Q13 option (b) was taken rather than raising the number.
       # TASK-056 owns the flip to blocking; deleting the one line below is the whole flip.
       - name: Measure the client-JS budgets (AC-27 / T-27, AC-25)
         id: budget

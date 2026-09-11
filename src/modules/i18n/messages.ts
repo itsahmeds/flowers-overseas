@@ -17,12 +17,29 @@
  *    "a new locale is data" true (AC-31); `de` and `pl` ship echoed, unreviewed drafts from
  *    `pnpm i18n:draft` (§13 Q7, Q10), so the fallback is what a fifth locale relies on.
  *  - **Only the requested namespaces are returned.** `loadMessages()` never hands back the whole
- *    catalogue: the subset it returns is what reaches the client provider, so the serialised
- *    payload stays inside the §6 / AC-27 budget as the catalogue grows.
+ *    catalogue: a caller asks for the namespaces its route renders, which is what keeps a
+ *    document's copy attributable and what spec 012 will serve per namespace from Postgres.
+ *    Before TASK-085 the subset was also what reached the client provider and what the §6 / AC-27
+ *    payload budget measured; there is no client provider any more (spec 004 §14 A1 addendum), so
+ *    the payload is zero and `pnpm budget:client-js` measures that from the built chunks.
  *
  * Catalogues are **statically imported**, not read with `fs`: a computed `readFileSync` path is
  * invisible to Next's build tracing, so the file would be missing from a deployed bundle. Adding a
  * locale catalogue is one line in `CATALOGUES` plus one in `META`.
+ *
+ * **This module is server-side only, and that is a measured constraint rather than a preference**
+ * (TASK-085). Those four static imports are 50 KB of JSON, and Turbopack tree-shakes a JSON
+ * import only below a size threshold: one `"use client"` module reaching this file — directly or
+ * through the `@/modules/i18n` barrel, which re-exports `loadMessages` — puts whole catalogues in
+ * the initial script set of every page that mounts it. That is exactly what
+ * `src/modules/i18n/error-document.ts` did with `messages/en.json` until TASK-085, at 4 751 B
+ * Brotli on **every** document (spec 004 §14 A1 addendum). `import "server-only"` is not the guard
+ * here: the package exists only inside Next's bundler, while this module is imported in plain Node
+ * by `scripts/i18n-check.ts`, `scripts/i18n-draft.ts`, `scripts/client-js-budget.ts` and fourteen
+ * unit tests, all of which it would break. `tests/unit/client-message-graph.test.ts` is the guard
+ * instead, and it is the stronger one: it walks the import graph of every client entry point and
+ * fails on this file, on the barrel, on `next-intl`'s client hooks **and** on a direct
+ * `messages/*.json` import, which a `server-only` poison in this file could not see.
  */
 import { generatePseudoCatalogues } from "./pseudo.ts";
 import { getLocaleRegistry } from "./registry.ts";
@@ -221,22 +238,27 @@ export const ROUTE_KINDS = ["localeHome", "localeDocument", "chooser"] as const;
 export type RouteKind = (typeof ROUTE_KINDS)[number];
 
 /**
- * The namespaces a route kind may use. `localeDocument` is the set handed to the client provider
- * under `[locale]` (the error boundary needs `errors`); `chooser` is the `/` document, whose
- * `meta`, `chooser` and `a11y` copy is read on the server and handed to **no** client provider at
- * all, which is what AC-7's "served without JavaScript" asks for. It does **not** make `/` free of
- * application JavaScript, as this comment claimed before TASK-043 measured it: Next attaches the
- * root error boundary's client chunk to every document. The honest claim is the narrower one — no
- * message is serialised into `/` at all, and AC-27's 4 KB budget applies to the `localeDocument`
- * subset (0.6 KB gzipped per locale today, `pnpm budget:client-js`).
+ * The namespaces a route kind's own document may resolve, and the **upper bound** on what a
+ * catalogue payload for it could ever cost (`pnpm budget:client-js`, AC-27).
+ *
+ * It used to be more than that: `localeDocument` was the subset handed to
+ * `NextIntlClientProvider` under `[locale]`, and `banner` was in it because the suggestion
+ * island rendered its copy in the browser. TASK-085 removed the provider (spec 004 §13 Q13
+ * option (b), §14 A1 addendum): the island and the 500 boundary take their strings as data, so
+ * **no subset is serialised into any document for a client provider any more** — every locale
+ * document is now what `/` always was. `banner` is therefore gone from this list, and the
+ * measured payload is zero on every URL, which `scripts/client-js-budget.ts` asserts against the
+ * built chunks rather than inferring from this table.
+ *
+ * The table stays because the seam is still real: `loadMessages()` takes the namespaces a route
+ * needs, spec 012 serves them from Postgres behind `MessageSource`, and a route kind that one day
+ * does need a client payload has a declared, budgeted subset instead of the whole catalogue.
  */
 const ROUTE_NAMESPACES: Readonly<
   Record<RouteKind, readonly MessageNamespace[]>
 > = {
   localeHome: ["meta", "a11y"],
-  // `banner` is here for the client island of TASK-041: it is the one namespace whose copy is
-  // rendered in the browser rather than on the server, so it has to reach the client provider.
-  localeDocument: ["meta", "errors", "a11y", "common", "banner"],
+  localeDocument: ["meta", "errors", "a11y", "common"],
   chooser: ["meta", "chooser", "a11y"],
 };
 
@@ -262,7 +284,7 @@ export function loadMessages<N extends MessageNamespace>(
     if (value !== undefined) subset[namespace] = value;
   }
   // `plan/12` §2 at the last possible moment: the subset returned here is what a document
-  // renders and what the client provider serialises, and it was assembled from repo JSON (and,
+  // renders, and it was assembled from repo JSON (and,
   // from spec 012, from database overrides through the same `MessageSource`). Validating the
   // merged result rather than each file catches a malformed override too, and `MessagesSchema`
   // rejects the two shapes that would fail silently at render time: a non-string leaf and an
