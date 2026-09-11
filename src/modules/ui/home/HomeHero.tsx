@@ -81,7 +81,17 @@ export function HomeHero({
         // below says what the slot will hold, in the catalogue's words. Written out rather than
         // defaulted, because `Media` has no default `alt` by design.
         alt=""
-        caption={t("hero.photoCaption")}
+        // Two captions, one box: the mobile artboard writes a short caption under a 300 px slot
+        // ("Photography to supply · Warsaw florist, morning light") and the desktop one the long
+        // brief under a full-bleed band. Both are in the served HTML and CSS chooses — no media
+        // query in JavaScript, no second request, and the shooting brief a photographer reads
+        // stays the long one (TASK-054, closing the `/review 53` carry-forward).
+        caption={
+          <>
+            <span className="md:hidden">{t("hero.photoCaptionMobile")}</span>
+            <span className="hidden md:inline">{t("hero.photoCaption")}</span>
+          </>
+        }
         className="h-[300px] md:absolute md:inset-0 md:h-full"
       />
       {/*

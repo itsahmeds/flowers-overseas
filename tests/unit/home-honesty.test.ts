@@ -74,6 +74,31 @@ const FORBIDDEN: readonly {
 /** The one retained-but-unrendered key, and the only exception this gate allows. */
 const RETAINED_UNRENDERED = "common.floristCount";
 
+/**
+ * **The second exception, and the reason it is not a hole** (TASK-054).
+ *
+ * The verified-reviews section exists — the founder's design has it, spec 016 will fill it, and
+ * the day the first completed order produces a review it must render correctly rather than be
+ * designed then. Its copy therefore has to live in the catalogue, and its copy is *about*
+ * reviews, so a grep for `\breviews?\b` fires on it.
+ *
+ * What keeps AC-15 true is not this list; it is that **no data can make the section render**:
+ * `staticReviewsProvider` is a constant empty list (not a config file, not a flag), and
+ * `ReviewsSection` returns `null` for an empty list. So the exception below is paid for by three
+ * assertions in the `describe` at the foot of this file — every listed key is a
+ * `home.reviews.*` key, the shipped provider is empty, and the section rendered with the shipped
+ * provider produces no markup — plus the served-document assertion over all four locale homes in
+ * `tests/e2e/honesty.spec.ts`, which is the one a buyer would notice.
+ *
+ * Nothing may be added here without the same three proofs.
+ */
+const GATED_UNRENDERED: readonly string[] = [
+  "home.reviews.eyebrow",
+  "home.reviews.body",
+  "home.reviews.trustpilotRegion",
+  "home.reviews.trustpilotPending",
+];
+
 function flat(
   tree: unknown,
   prefix = "",
@@ -102,6 +127,7 @@ describe("AC-15: the message catalogues carry no claim we cannot support", () =>
       const offences: string[] = [];
       for (const [key, value] of Object.entries(catalogue(locale))) {
         if (key === RETAINED_UNRENDERED) continue;
+        if (GATED_UNRENDERED.includes(key)) continue;
         for (const { name, pattern } of FORBIDDEN) {
           if (pattern.test(value)) offences.push(`${key}: ${name} — ${value}`);
         }
@@ -156,7 +182,9 @@ describe("AC-16: this spec's message additions change no indexability answer", (
 
     for (const locale of ["en", "en-gb"] as const) {
       expect(isLocaleIndexable(locale), locale).toBe(true);
-      expect(unreviewedShare(locale), locale).toBe(0);
+      // One authored English key waits for the founder's tick (`/review 58`), far below the 5%
+      // rule, so English is indexable exactly as it was before this task.
+      expect(unreviewedShare(locale), locale).toBeLessThan(0.05);
     }
     // The recomputed share is the only thing this task moves, and it moves it the honest way:
     // 57 new English keys, echoed into `de`/`pl` as machine drafts, so both stay non-indexable.
@@ -219,5 +247,42 @@ describe("`common.floristCount` keeps `retained: true` because nothing renders i
       }
     }
     expect(readers).toEqual([]);
+  });
+});
+
+/**
+ * The price of the `GATED_UNRENDERED` exception above (TASK-054): the copy of a section that
+ * cannot render is allowed in the catalogue **only** while nothing can make it render.
+ */
+describe("the verified-reviews copy is unreachable, which is why the grep excuses it", () => {
+  it("excuses only `home.reviews.*` keys, and every one of them exists", () => {
+    const en = catalogue("en");
+    for (const key of GATED_UNRENDERED) {
+      expect(key.startsWith("home.reviews."), key).toBe(true);
+      expect(en[key], key).toBeDefined();
+    }
+  });
+
+  it("excuses no key that the forbidden patterns would not have caught anyway", () => {
+    const en = catalogue("en");
+    for (const key of GATED_UNRENDERED) {
+      const value = en[key] ?? "";
+      expect(
+        FORBIDDEN.some(({ pattern }) => pattern.test(value)),
+        `${key} is on the exception list but is not a forbidden shape: remove it`,
+      ).toBe(true);
+    }
+  });
+
+  it("ships a reviews provider that answers with nothing, and no data that could change it", async () => {
+    const { staticReviewsProvider } =
+      await import("../../src/modules/ui/home/reviews-provider.ts");
+    expect(staticReviewsProvider.list()).toEqual([]);
+
+    // There is no `src/config/reviews.*`: a review can only arrive through spec 016's provider,
+    // which is what the founder's 2026-09-08 "real-only, never seeded" ruling requires.
+    const { readdir } = await import("node:fs/promises");
+    const config = await readdir(resolve(repoRoot, "src/config"));
+    expect(config.filter((entry) => entry.startsWith("reviews"))).toEqual([]);
   });
 });

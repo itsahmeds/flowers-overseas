@@ -120,7 +120,7 @@ describe("the occasion tiles", () => {
       OCCASION_TILES.length,
     );
     expect(html).toContain(
-      'data-fo-media-sizes="(min-width: 768px) 33vw, 50vw"',
+      'data-fo-media-sizes="(min-width: 768px) 17vw, 50vw"',
     );
     expect(html).toContain("Photography to supply");
     expect(html).not.toContain("<img");

@@ -25,7 +25,7 @@
  * image renders, because a photograph does not need a sentence describing the photograph that
  * should be there.
  */
-import type { ReactElement } from "react";
+import type { ReactElement, ReactNode } from "react";
 
 import { Photo } from "../primitives/Photo.tsx";
 
@@ -50,8 +50,15 @@ export interface MediaProps {
    * call site rather than inherited from a default nobody chose.
    */
   readonly alt: string;
-  /** What the slot will hold, while it holds nothing. Phase 0's honest caption. */
-  readonly caption?: string;
+  /**
+   * What the slot will hold, while it holds nothing. Phase 0's honest caption.
+   *
+   * A `ReactNode` rather than a `string` because a slot may carry **two** captions and let CSS
+   * choose between them: the hero writes a short line under the mobile artboard's 300 px box and
+   * the full shooting brief under the desktop band (TASK-054). It is still catalogue copy in
+   * every case — the node holds message values, never a literal.
+   */
+  readonly caption?: ReactNode;
   /**
    * The page's single `priority` candidate. Only a slot whose spec says `aboveFold` may be one;
    * anything else is a caller error, because a below-the-fold `priority` image competes with the

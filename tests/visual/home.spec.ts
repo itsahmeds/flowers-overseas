@@ -1,7 +1,7 @@
 /**
  * The locale home's visual baselines (spec 004 AC-27's matrix, extended by TASK-052).
  *
- * Sixteen PNGs — eight elements × the two artboard widths — because the full-page `en.png`/`de.png`
+ * Twenty PNGs — ten elements × the two artboard widths — because the full-page `en.png`/`de.png`
  * baselines of `./shell.spec.ts` cannot show any of them at their drawn geometry: they are taken
  * at the `visual` project's 1280 px, while the artboards are drawn at 1440 px and 390 px, and a
  * full-page shot of a growing page hides a 4 px change in an 820 px band.
@@ -19,7 +19,11 @@
  *    mobile and 3-up desktop;
  *  - `home-how-it-works-*` — the explainer band, its photo placeholder and the three steps;
  *  - `home-faq-*` — the five disclosures, all closed;
- *  - `home-trust-*` — the three claims, 1-up mobile and 3-up desktop.
+ *  - `home-trust-*` — the three claims, 1-up mobile and 3-up desktop;
+ *  - `home-trending-*` — the florists' picks with the honesty label, 2-up mobile and 5-up
+ *    desktop, and no price element anywhere in the row (TASK-054);
+ *  - `home-destinations-*` — the destinations grid: Poland with its five cities, the six guides
+ *    and the copy-only "Somewhere else?" cell (TASK-054).
  *
  * The type-ahead's open state is deliberately **not** a baseline: it is a hydrated, transient
  * state whose contents depend on what was typed, and it is pinned by DOM assertions in
@@ -70,6 +74,11 @@ const PARTS = [
   { suffix: "how-it-works", selector: "[data-fo-how-it-works]" },
   { suffix: "faq", selector: "[data-fo-faq]" },
   { suffix: "trust", selector: "[data-fo-trust-strip]" },
+  // TASK-054's two rendered gated sections. The verified-reviews band has **no** baseline,
+  // because in Phase 0 it renders nothing and a screenshot of nothing is not a baseline; its
+  // populated branch is covered by `/dev/components` and by the unit tests.
+  { suffix: "trending", selector: "[data-fo-trending]" },
+  { suffix: "destinations", selector: "[data-fo-destinations]" },
 ] as const;
 
 /** The two artboard widths, so a baseline is comparable with the design source. */

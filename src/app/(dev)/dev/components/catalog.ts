@@ -55,6 +55,11 @@ export const SECTIONS = [
   // `links-populated` and `company-registered` years before 007 publishes a page or the OÜ exists.
   "Site footer",
   "Contrast manifest",
+  // TASK-054: the three sections the founder's design gates on data that does not exist. Two of
+  // them render **nothing** on every Phase-0 page, so the gallery is the only place their
+  // populated branch can be seen — reached through each section's `provider` prop with a fake
+  // provider, which mutates no module state inside a request.
+  "Home data-gated sections",
 ] as const;
 
 /** The colour ramps, in the order `globals.css` declares them. */
@@ -387,12 +392,31 @@ export const HOME_SECTION_STATES = {
     "TrustStrip \u00b7 default \u2014 the three claims of \u00a72, each true today, with the guarantee name in its own key (`trust.guarantee.name`) so \u00a713 Q4's rename is a catalogue edit. No icon, no badge, no number.",
 } as const;
 
+/**
+ * The gated sections' states (TASK-054). The fake providers themselves live in `./gated.ts`,
+ * because a page file may hold no data and the strings here are developer-facing.
+ */
+export const GATED_STATES = {
+  trendingPicks:
+    "TrendingRow \u00b7 basis=picks (Phase 0) \u2014 the florists' picks with the founder's verbatim label. A card is a reserved photo box and a name: spec 004 \u00a73 ships nothing that knows what a product is, so there is no price element at all \u2014 not a figure, not a \u201cstarting at\u201d, not the canvas's grey price bar.",
+  trendingOrders:
+    "TrendingRow \u00b7 basis=orders \u2014 the branch spec 008/016 reaches by replacing the provider with one ranked by real orders in the last seven days. The honesty label is gone, because it is no longer true, and no call site changed.",
+  trendingEmpty:
+    "TrendingRow \u00b7 empty \u2014 a provider with no picks renders no section at all: no heading, no empty grid, no reserved hole in the page.",
+  reviewsEmpty:
+    "ReviewsSection \u00b7 empty (Phase 0) \u2014 renders nothing, and no configuration can change that: the shipped provider is a constant empty list, so the canvas's placeholder review rows cannot reach a page (AC-15).",
+  reviewsPopulated:
+    "ReviewsSection \u00b7 populated \u2014 the branch spec 016 reaches with reviews from completed orders: a first name, the destination town, the date in the reader's locale and the verification word. No star row, and the Trustpilot slot is a named region with no score in it.",
+  destinationsPhase0:
+    "DestinationsGrid \u00b7 unpublished-destination (Phase 0) \u2014 Poland delivering with its five cities, six guide destinations, none of them a link, and the copy-only \u201cSomewhere else?\u201d cell.",
+  destinationsPublished:
+    "DestinationsGrid \u00b7 published-destination \u2014 one corridor page published: the same loop renders a link, with no template edit (AC-11).",
+} as const;
+
 export const HOME_STATES = {
   hero: "HomeHero \u00b7 default \u2014 the reserved full-bleed photo slot with its caption and no `<img>` (plan/10 \u00a73), the paper card at the inline start on the desktop artboard and overlapping the slot by 56 px on the mobile one, the eyebrow, the one `<h1>` (the text LCP element) and the proposition.",
   finder:
     "FinderCard \u00b7 default \u2014 a `get` form: the country field is a native `<input list>` over a `<datalist>` of the seven destinations until the island hydrates, then a filtered list with a polite live region; town/postcode is optional; the date field carries no default, because this document is ISR-cached and a prefilled date goes stale. `Continue` is neutral and targets the destination list while no corridor page is published.",
-  destinations:
-    "DestinationList \u00b7 unpublished-destination \u2014 all seven named with their state as a word, none of them a link, and the onboarding line. TASK-054's destinations grid inherits this section's id.",
   proof:
     "ProofRow \u00b7 default \u2014 the four claims of the round-2 artboard, in the first person, 2-up on the mobile artboard and 4-up on the desktop one. The delivery-photo fact renders no photo.",
 } as const;

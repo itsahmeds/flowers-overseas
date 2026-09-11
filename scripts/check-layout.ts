@@ -84,6 +84,11 @@ export const CONFIG_FILES = [
   // prints.
   "src/config/occasions.ts",
   "src/config/categories.ts",
+  // The five SKUs the "Most sent this week" row shows until real orders rank it (TASK-054). It
+  // holds references and no product knowledge: spec 004 §3 ships nothing that knows what a
+  // product is, so the names are read from the committed catalogue and emptying the array hides
+  // the row with no code change.
+  "src/config/trending.ts",
   "src/config/company.ts",
   // The trading name as an import-free constant, imported by `company.ts` (which validates the
   // identity around it) and by the two 500 boundaries, which print the wordmark and may reach

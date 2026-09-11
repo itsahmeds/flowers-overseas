@@ -88,13 +88,16 @@ describe("the committed tree (AC-22, first clause)", () => {
     const result = runCli("--summary");
     expect(result.status).toBe(0);
     // The table is the founder-facing number: `de` and `pl` are echoed English, so they must read
-    // 100 % unreviewed and `no`, and `en`/`en-gb` must read 0 % and `yes` (the thin-override rule).
-    expect(result.stdout).toMatch(
-      /\| `en` \| \d+ \| 0 \| 0 \| 0\.0% \| 0 \| yes \|/,
-    );
-    expect(result.stdout).toMatch(
-      /\| `en-gb` \| \d+ \| 0 \| 0 \| 0\.0% \| 0 \| yes \|/,
-    );
+    // 100 % unreviewed and `no`. `en`/`en-gb` carry the founder's review queue — one authored key
+    // at the time of writing (`/review 58`) — and must stay far below 5 % and read `yes`; the
+    // queue's exact contents are pinned in `i18n-messages-schema.test.ts`.
+    for (const locale of ["en", "en-gb"]) {
+      expect(result.stdout, locale).toMatch(
+        new RegExp(
+          `\\| \`${locale}\` \\| \\d+ \\| 0 \\| \\d+ \\| [0-4]\\.\\d% \\| 0 \\| yes \\|`,
+        ),
+      );
+    }
     for (const locale of ["de", "pl"]) {
       expect(result.stdout).toMatch(
         new RegExp(

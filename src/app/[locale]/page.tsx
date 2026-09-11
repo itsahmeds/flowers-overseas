@@ -4,7 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { routableLocale } from "@/modules/i18n";
 import {
-  DestinationList,
+  DestinationsGrid,
   HOME_BLEED,
   HomeFaq,
   HomeHero,
@@ -12,6 +12,8 @@ import {
   OccasionDates,
   OccasionTiles,
   ProofRow,
+  ReviewsSection,
+  TrendingRow,
   TrustStrip,
 } from "@/modules/ui";
 
@@ -90,20 +92,31 @@ export default async function LocaleHomePage({
       {/* The four-fact proof strip. */}
       <ProofRow />
       {/*
-        The rest of the page, in the round-2 artboards' order (TASK-053). The two priced rows the
-        artboards put at positions 3 and 4 — "Bouquets we can deliver in Poland today" and "Most
-        sent this week" — are TASK-054's and spec 005/008's, and mount between the proof strip and
-        the dates strip when they land; nothing here approximates a product or a price.
+        The rest of the page, in the round-2 artboards' order (TASK-053, TASK-054).
+
+        Three of these sections are **gated on data that does not exist**, and each decides for
+        itself whether it renders at all: `TrendingRow` and `ReviewsSection` ask a provider in
+        `src/modules/ui/home` and render nothing when it answers with nothing, and
+        `DestinationsGrid` asks one for each destination's status. That is why this file has no
+        conditional in it — the page mounts the sections and the module owns the gate, so spec
+        008/016 swapping a provider for one backed by real orders or real reviews changes nothing
+        here (TASK-054).
+
+        The artboards' priced row — "Bouquets we can deliver in Poland today" — is **not** here:
+        it is spec 005/008/009's, and nothing on this page approximates a product or a price.
       */}
+      <TrendingRow />
       <OccasionDates locale={locale.code} />
       <OccasionTiles locale={locale.code} />
+      {/* Renders nothing until a completed order produces a real review (AC-15). */}
+      <ReviewsSection locale={locale.code} />
       <HowItWorks />
       <HomeFaq />
       <TrustStrip className={HOME_BLEED} />
-      {/* AC-11's destination states, and where the finder's `Continue` lands while no corridor
-          page is published. TASK-054 replaces it with the artboards' destinations grid and
-          inherits its `id`. */}
-      <DestinationList locale={locale.code} />
+      {/* AC-11's destination states and where the finder's `Continue` lands while no corridor
+          page is published: the artboards' grid, carrying the `destinations` id TASK-052's
+          stand-in list used to own. */}
+      <DestinationsGrid locale={locale.code} />
     </main>
   );
 }

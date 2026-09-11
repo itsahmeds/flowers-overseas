@@ -25,7 +25,7 @@ import {
   finderDestinations,
   finderTarget,
 } from "../../src/modules/ui/home/finder-model.ts";
-import { DestinationList } from "../../src/modules/ui/home/DestinationList.tsx";
+import { DestinationsGrid } from "../../src/modules/ui/home/DestinationsGrid.tsx";
 import { HOME_BLEED, HomeHero } from "../../src/modules/ui/home/HomeHero.tsx";
 import { PROOF_FACTS, ProofRow } from "../../src/modules/ui/home/ProofRow.tsx";
 
@@ -55,8 +55,14 @@ function render(node: React.ReactElement, locale: string): string {
 const hero = (locale: string): string =>
   render(<HomeHero locale={locale} />, locale);
 
+/**
+ * TASK-054 replaced TASK-052's `DestinationList` stand-in with the artboards' grid, which carries
+ * the same `destinations` id and the same AC-11/AC-14 obligations; these assertions moved onto it
+ * unchanged, minus the stand-in's onboarding line (the grid says the same thing in the section's
+ * own copy, asserted in `tests/unit/ui-home-gated.test.tsx`).
+ */
 const destinationList = (locale: string): string =>
-  render(<DestinationList locale={locale} />, locale);
+  render(<DestinationsGrid locale={locale} />, locale);
 
 /** The visible text of the rendered markup: tags stripped, entities decoded. */
 function text(html: string): string {
@@ -191,12 +197,6 @@ describe("the finder card (AC-11)", () => {
     expect(hrefs(html)).toEqual([]);
   });
 
-  it("carries the onboarding line for the six destinations we cannot deliver to", () => {
-    expect(text(destinationList("en"))).toContain(
-      "we are still choosing florists, so there is nothing to order there yet",
-    );
-  });
-
   it("submits to a document that exists, with no `action` to a non-200 URL", () => {
     const html = hero("en");
 
@@ -210,7 +210,7 @@ describe("the finder card (AC-11)", () => {
     const html = hero("en");
 
     // No status column, no footnote and no pills next to the field: the states are rendered by
-    // `DestinationList`, after the finder, where round 7 puts them.
+    // `DestinationsGrid`, after the finder, where round 7 puts them.
     expect(html).not.toContain("data-fo-destination=");
     expect(text(html)).not.toContain("Delivering now");
   });
@@ -300,8 +300,8 @@ describe("`finderTarget()` — where `Continue` goes", () => {
       };
     });
 
-    const { DestinationList: List } =
-      await import("../../src/modules/ui/home/DestinationList.tsx");
+    const { DestinationsGrid: List } =
+      await import("../../src/modules/ui/home/DestinationsGrid.tsx");
     const html = render(<List locale="en" />, "en");
 
     // The one published destination is a link; the six unpublished ones are still text.
@@ -393,7 +393,10 @@ describe("the copy obeys the brand voice (§14 A5)", () => {
   });
 
   it("caps the geography at live coverage: Poland today, no country count", () => {
-    const messages = JSON.stringify(loadMessages("en", ["finder"]));
+    // TASK-054 moved the sentence out of the finder's onboarding line and into the destinations
+    // grid's heading, where the artboard puts it; both namespaces are read so the claim is
+    // pinned wherever it lives.
+    const messages = JSON.stringify(loadMessages("en", ["finder", "home"]));
     expect(messages).toContain("Poland today");
     expect(messages).not.toMatch(/\b(seven|7) countries\b/i);
   });

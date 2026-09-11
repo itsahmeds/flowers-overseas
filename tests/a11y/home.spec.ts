@@ -119,6 +119,10 @@ test("every section of the home is a named region with one heading", async ({
     "[data-fo-how-it-works]",
     "[data-fo-faq]",
     "[data-fo-trust-strip]",
+    // TASK-054's two rendered gated sections. (`ReviewsSection` renders nothing in Phase 0, so
+    // there is no region to name — `tests/e2e/home.spec.ts` asserts its absence.)
+    "[data-fo-trending]",
+    "[data-fo-destinations]",
   ]) {
     const section = page.locator(selector);
     await expect(section, selector).toHaveCount(1);

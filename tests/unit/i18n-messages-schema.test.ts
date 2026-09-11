@@ -251,7 +251,18 @@ describe("the shipped catalogues and manifests", () => {
     const en = MessageMetaManifestSchema.parse(readJson("en.meta.json"));
     for (const meta of Object.values(en)) {
       expect(meta.source).toBe("human");
-      expect(meta.reviewed).toBe(true);
+    }
+    // Authored English is the founder's copy, so `reviewed: true` is his attestation and nobody
+    // else's: a string an implementer wrote waits in this queue until he ticks it (`/review 58`
+    // required change 2). The queue is pinned key-exact so growing it is a deliberate act.
+    expect(
+      Object.entries(en)
+        .filter(([, meta]) => !meta.reviewed)
+        .map(([key]) => key)
+        .sort(),
+    ).toEqual(["home.destinations.elsewhere.body"]);
+    for (const [key, meta] of Object.entries(en)) {
+      expect(meta.reviewedBy === undefined, key).toBe(!meta.reviewed);
     }
 
     for (const locale of ["de", "pl"] as const) {

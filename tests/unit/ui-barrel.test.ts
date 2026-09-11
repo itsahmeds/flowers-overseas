@@ -134,7 +134,6 @@ describe("src/modules/ui barrel", () => {
         "variantsFor",
         // the locale home's above-the-fold surfaces and the finder's projection (TASK-052)
         "DESTINATIONS_ANCHOR",
-        "DestinationList",
         "FINDER_IDS",
         "FinderCard",
         "HERO_HEIGHTS",
@@ -157,6 +156,27 @@ describe("src/modules/ui barrel", () => {
         "TrustStrip",
         "occasionDateViews",
         "occasionTiles",
+        // the three data-gated sections and their provider seams (TASK-054). The `with*Provider`
+        // injection hooks are deliberately absent: spec 003's rule is that a caller able to swap
+        // a provider at runtime turns the seam into global mutable configuration, so the tests
+        // reach them by module path and the gallery uses each section's `provider` prop.
+        "DestinationsGrid",
+        "REVIEWS_ANCHOR",
+        "REVIEW_KINDS",
+        "ReviewsSection",
+        "TRENDING_ANCHOR",
+        "TRENDING_BASES",
+        "TrendingRow",
+        "destinationStatusProviderOf",
+        "emptyTrendingProvider",
+        "getDestinationStatusProvider",
+        "getReviewsProvider",
+        "getTrendingProvider",
+        "reviewsProviderOf",
+        "staticDestinationStatusProvider",
+        "staticReviewsProvider",
+        "staticTrendingProvider",
+        "trendingProviderOf",
       ].sort(),
     );
   });
@@ -211,6 +231,9 @@ describe("src/modules/ui barrel", () => {
       // TASK-053: the id of the occasion grid — a DOM contract for the same reasons, and the
       // anchor spec 008's occasion hub will be linked from.
       "OCCASIONS_ANCHOR",
+      // TASK-054: the ids of the two gated sections — DOM contracts, like the three above.
+      "REVIEWS_ANCHOR",
+      "TRENDING_ANCHOR",
       "fontVariables",
     ];
     for (const [name, value] of Object.entries(ui)) {

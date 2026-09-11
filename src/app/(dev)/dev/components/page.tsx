@@ -14,7 +14,7 @@ import {
   type ConsentTranslate,
   Chip,
   Container,
-  DestinationList,
+  DestinationsGrid,
   Cluster,
   CONTRAST_PAIRS,
   Display,
@@ -39,6 +39,8 @@ import {
   PHOTO_RATIOS,
   ProofRow,
   Placeholder,
+  ReviewsSection,
+  TrendingRow,
   TrustStrip,
   footerView,
   type FooterView,
@@ -59,6 +61,12 @@ import {
 import { ConsentGallery } from "@/modules/ui/consent/ConsentGallery";
 
 import {
+  GALLERY_DESTINATIONS_PUBLISHED,
+  GALLERY_REVIEWS,
+  GALLERY_TRENDING_EMPTY,
+  GALLERY_TRENDING_RANKED,
+} from "./gated";
+import {
   BODY_SAMPLES,
   BUTTON_BUSY_LABEL,
   BUTTON_LABEL,
@@ -69,6 +77,7 @@ import {
   CONSENT_STATES,
   FOOTER_REGISTERED_COMPANY,
   FOOTER_STATES,
+  GATED_STATES,
   GALLERY_AI_ASSET,
   GALLERY_ALTLESS_LOCALE,
   GALLERY_INTRO,
@@ -660,10 +669,6 @@ export default function DevComponentsPage(): ReactElement {
                   />,
                 ],
                 ["finder", <FinderCard key="finder" locale={galleryLocale} />],
-                [
-                  "destinations",
-                  <DestinationList key="destinations" locale={galleryLocale} />,
-                ],
                 ["proof", <ProofRow key="proof" />],
               ] as const
             ).map(([state, element]) => (
@@ -769,6 +774,82 @@ export default function DevComponentsPage(): ReactElement {
                   {`${pair.foreground} on ${pair.background} · ${pair.kind} · ${pair.usage}`}
                 </Text>
               </Row>
+            ))}
+          </Stack>
+        </Section>
+        {/*
+          TASK-054's three data-gated sections. Two of them render nothing on every Phase-0 page,
+          so this is the only surface their populated branch can be reviewed, screenshotted and
+          axe-run on. Each state is reached through the section's `provider` prop with a fake from
+          `./gated.ts`: no module state is mutated inside a request, and nothing here can appear
+          on `/{locale}`.
+        */}
+        <Section title={SECTIONS[18]}>
+          <Stack gap="lg">
+            {(
+              [
+                [
+                  "trendingPicks",
+                  <TrendingRow headingLevel="h3" key="trending-picks" />,
+                ],
+                [
+                  "trendingOrders",
+                  <TrendingRow
+                    headingLevel="h3"
+                    key="trending-orders"
+                    provider={GALLERY_TRENDING_RANKED}
+                  />,
+                ],
+                [
+                  "trendingEmpty",
+                  <TrendingRow
+                    headingLevel="h3"
+                    key="trending-empty"
+                    provider={GALLERY_TRENDING_EMPTY}
+                  />,
+                ],
+                [
+                  "reviewsEmpty",
+                  <ReviewsSection
+                    headingLevel="h3"
+                    key="reviews-empty"
+                    locale={galleryLocale}
+                  />,
+                ],
+                [
+                  "reviewsPopulated",
+                  <ReviewsSection
+                    headingLevel="h3"
+                    key="reviews-populated"
+                    locale={galleryLocale}
+                    provider={GALLERY_REVIEWS}
+                  />,
+                ],
+                [
+                  "destinationsPhase0",
+                  <DestinationsGrid
+                    headingLevel="h3"
+                    key="destinations-phase0"
+                    locale={galleryLocale}
+                  />,
+                ],
+                [
+                  "destinationsPublished",
+                  <DestinationsGrid
+                    headingLevel="h3"
+                    key="destinations-published"
+                    locale={galleryLocale}
+                    provider={GALLERY_DESTINATIONS_PUBLISHED}
+                  />,
+                ],
+              ] as const
+            ).map(([state, element]) => (
+              <Stack gap="sm" key={state}>
+                <Text measure size="sm" tone="muted">
+                  {GATED_STATES[state]}
+                </Text>
+                <div className="border-rule border">{element}</div>
+              </Stack>
             ))}
           </Stack>
         </Section>
