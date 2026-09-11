@@ -5,7 +5,7 @@ keep it current by editing this file, not the row.
 
 ## Binding
 
-Branch `task/TASK-086-agent-orientation-map-briefs`. Brief: `docs/tasks/TASK-086.md` (this task creates the convention; write its own brief first). Internal tooling → light orchestrator review. Spec 001 §14 A15 is the whole specification; tests T-34…T-37.
+Branch `task/TASK-086-agent-orientation-map-briefs`. This task creates the brief convention, so this file is its own first example. Internal tooling → light orchestrator review. Spec 001 §14 A15 is the whole specification; tests T-34…T-37.
 
 ## Read
 

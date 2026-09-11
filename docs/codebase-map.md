@@ -14,7 +14,7 @@ task actually touches.
 |---|---|---|---|
 | `admin` | Public barrel for `admin` (admin queries and actions) | spec 012 | — |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2 + the gated GA4 tag; GA4 event schema, consent… | spec 004, 023 | `unit/consent-bootstrap.test.tsx` |
-| `catalog` | The only import path into the catalogue and pricing module (spec 005 §2, §5.2; TASK-060) | spec 005 | `unit/catalog-availability.test.ts`, `unit/catalog-barrel.test.ts`, `unit/catalog-indexability.test.ts` +12 |
+| `catalog` | The only import path into the catalogue and pricing module (spec 005 §2, §5.2; TASK-060) | spec 005 | `contract/catalog-static-providers.test.ts`, `contract/support/catalog-provider-contract.ts`, `unit/catalog-availability.test.ts` +17 |
 | `customers` | Public barrel for `customers` (customers, recipients, consent) | spec 019 | — |
 | `geo` | Public barrel for `geo` (countries, cities, postcodes, holidays, cutoffs, occasion calendar) | spec 002, 009 | — |
 | `i18n` | The only import path for the i18n module (spec 003 §5.2, AC-3; TASK-034) | spec 003 | `fixtures/ts/format-time-in-zone-no-zone.ts`, `unit/app-shell.test.tsx`, `unit/catalog-messages.test.ts` +36 |
@@ -23,7 +23,7 @@ task actually touches.
 | `partners` | Public barrel for `partners` (fulfilment partners, coverage, payouts) | spec 011, 026 | — |
 | `payments` | Public barrel for `payments` (PaymentProvider interface; stripe/, mollie/ adapters; webhooks) | spec 013, 014 | — |
 | `seo` | Public barrel for `seo` (hreflang, canonical, JSON-LD builders, sitemap generators, robots) | spec 007 | — |
-| `ui` | The only import path for the design system (spec 004 §2 "Where the design system lives", §13 Q9; | spec 004 | `unit/consent-cookie.test.ts`, `unit/consent-islands.test.tsx`, `unit/consent-view.test.ts` +15 |
+| `ui` | The only import path for the design system (spec 004 §2 "Where the design system lives", §13 Q9; | spec 004 | `unit/consent-cookie.test.ts`, `unit/consent-islands.test.tsx`, `unit/consent-view.test.ts` +17 |
 
 ## Config (`src/config/`)
 
@@ -40,6 +40,7 @@ task actually touches.
 | `catalogue/schemas.ts` | The catalogue dataset's closed taxonomy and its zod schemas (spec 005 §2 "The dataset is | spec 005 |
 | `catalogue/tiers.data.ts` | The tier structure of the 84 seeded products (spec 005 §2 "Tiers and add-ons", §13 Q4/Q6; | spec 005 |
 | `categories.ts` | Category-row registry (spec 004 §2 "Everything data-gated is config", §5.1; TASK-047) | spec 004 |
+| `company.data.ts` | The trading name as a plain constant, with **no imports at all** (spec 004 §14 A1, AC-12; | spec 004 |
 | `company.ts` | Company identity (spec 004 §2 "Everything data-gated is config", §5.1, §5.3 "Footer"; `plan/07` | spec 004 |
 | `cookies.ts` | The cookie register (spec 004 §2 "Consent", §5.1, §8, AC-22; TASK-050) | spec 004 |
 | `countries.ts` | Destination-country registry (spec 004 §2 "Everything data-gated is config", §5.1, §13 Q12; | spec 004 |
@@ -68,7 +69,7 @@ task actually touches.
 | `api/reminders/route.ts` | `POST /api/reminders` — the occasion-reminder signup stub (spec 004 design round 6, | spec 004 |
 | `global-error.tsx` | The last-resort 500 document (spec 003 §5.3 "and `src/app/global-error.tsx` rendering its own | spec 003 |
 | `layout.tsx` | App-root layout (spec 003 §5.3 "Recommended file layout"; TASK-034) | spec 003 |
-| `not-found.tsx` | The 404 document (spec 003 §5.3, AC-8; TASK-034, its `<title>` TASK-035) | spec 003 |
+| `not-found.tsx` | The `.label` metadata line: the status code this document is served with, and the one piece of | spec 003 |
 | `robots.ts` | `robots.txt` (spec 001 §2, §6, AC-15, TASK-006) | spec 001 |
 
 ## Scripts (`scripts/`)
@@ -108,14 +109,14 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 143 |
+| `tests/unit/` | 149 |
 | `tests/integration/` | 2 |
-| `tests/contract/` | 1 |
-| `tests/e2e/` | 15 |
+| `tests/contract/` | 3 |
+| `tests/e2e/` | 16 |
 | `tests/a11y/` | 7 |
-| `tests/visual/` | 6 |
+| `tests/visual/` | 7 |
 | `tests/dev-os/` | 1 |
-| `tests/fixtures/` | 144 |
+| `tests/fixtures/` | 146 |
 | `tests/msw/` | 3 |
 
 ## Where does X live?
