@@ -319,6 +319,18 @@
   font-size: var(--text-xs);
   letter-spacing: 0.1em;
   text-transform: uppercase;
+
+  /*
+   * The image state (spec 006 §2.5, AC-18; TASK-079): when the box holds a photograph rather
+   * than a caption it holds nothing else, so the padding that insets the caption goes and the
+   * `<picture>` fills the box the placeholder was reserving — which is what keeps the CLS delta
+   * of landing imagery at 0. Expressed here rather than as a class at the call site so the two
+   * states of one box cannot be styled inconsistently, and so no utility-order accident can
+   * leave a 16 px gradient frame around a photograph.
+   */
+  &:has(> picture) {
+    padding: 0;
+  }
 }
 
 /*

@@ -57,3 +57,67 @@ export function setMediaLoader(next: MediaLoader): MediaLoader {
   loader = next;
   return previous;
 }
+
+/* -------------------------------------------------------------------------- */
+/* `VariantLoader` — the URL half of the R2 flip (spec 006 §2.1, §2.5, AC-2).  */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * A derived variant, as the manifest identifies it. Not `next/image`'s `{ src, width, quality }`:
+ * a variant is already derived, so there is nothing to ask an optimiser for — the loader's whole
+ * job is to turn *(asset, width, format)* into the URL of a file that already exists (§2.5
+ * "`next/image` optimisation is bypassed for already-derived variants").
+ */
+export interface VariantRef {
+  readonly assetId: string;
+  readonly width: number;
+  readonly format: "avif" | "webp" | "jpeg";
+  /**
+   * The manifest's own object key for this variant. Passed in rather than derived, so a loader
+   * that addresses objects by key (R2, §2.6) needs no second key convention and cannot invent
+   * one — the "a foreign key is passed in, never invented" rule applied to storage.
+   */
+  readonly objectKey: string;
+}
+
+/** What every image URL in the application comes from. Two implementations, one seam (AC-2). */
+export type VariantLoader = (ref: VariantRef) => string;
+
+/**
+ * Phase 0: the derived bytes are committed under `public/media/` and served by the host
+ * (spec 006 §13 Q4), so the URL is the path of the file itself —
+ * `/media/{assetId}/{width}.{fmt}`, exactly §2.1's contract.
+ *
+ * The path is **content-addressed by width and asset version, never mutated**: a changed image is
+ * a new asset id (`…-v2`), which is what makes `Cache-Control: public, max-age=31536000,
+ * immutable` on `/media/*` safe (§2.5, `src/lib/media-headers.ts`).
+ *
+ * `/media/*` must also stay **crawlable** when spec 007 lifts `Disallow: /`, or Google cannot
+ * fetch the images it evaluates for Core Web Vitals — recorded as a requirement on 007 here, in
+ * spec 006 §6 and in `docs/runbooks/imagery.md` (TASK-081).
+ */
+export const staticVariantLoader: VariantLoader = ({
+  assetId,
+  width,
+  format,
+}) => `/media/${assetId}/${String(width)}.${format}`;
+
+let variantLoader: VariantLoader = staticVariantLoader;
+
+/**
+ * The composition root of §2.1: **one** function the whole module reads its URLs through, read at
+ * call time so the R2 flip of §2.6 (`r2VariantLoader`, `${R2_PUBLIC_BASE_URL}/{objectKey}`) is a
+ * change to this file and nothing else. No call site anywhere names a loader — that is AC-2's
+ * "zero changes outside `src/modules/ui/media/`", and `tests/unit/ui-media-asset.test.tsx`
+ * proves it by swapping in a fake and watching every rendered URL change.
+ */
+export function resolveLoader(): VariantLoader {
+  return variantLoader;
+}
+
+/** Install a variant loader (the R2 implementation, or a fake). Returns the previous one. */
+export function setVariantLoader(next: VariantLoader): VariantLoader {
+  const previous = variantLoader;
+  variantLoader = next;
+  return previous;
+}

@@ -67,6 +67,12 @@ export const SCANNED_PATHS = [
   // (TASK-083) will live beside `seed/index.ts`, which is deliberately outside this set.
   "seed/diff.ts",
   "seed/target.ts",
+  // TASK-079: spec 006 §2.5's render half. The manifest is a build-time JSON import and every
+  // lookup is pure, so resolving an image performs no query and no fetch even after Neon exists
+  // (§5.4 — which is ADR-0015's compute-hour constraint restated). Named as the directory rather
+  // than as `src/modules/ui` because the rest of the module is spec 004's and has never been in
+  // this scope.
+  "src/modules/ui/media",
 ] as const;
 
 const SCANNED_EXTENSIONS = [".ts", ".tsx", ".mts", ".cts", ".js", ".jsx"];

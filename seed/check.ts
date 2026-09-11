@@ -1462,8 +1462,18 @@ function checkMedia(tree: SeedTree, parsed: Parsed): SeedProblem[] {
   }
 
   // Alt text is per-locale data, required for a rendered product image, and never generated at
-  // render (`plan/01` §6). Conditional on `alt/` existing for the same reason as the variants.
-  if (parsed.alt.size > 0) {
+  // render (`plan/01` §6). Conditional on alt text **existing**, exactly as the variant rules
+  // above are conditional on the manifest having an entry rather than on the manifest file being
+  // present: TASK-079 commits `alt/{locale}.json` for all four launch locales with `rows: []`,
+  // because `src/modules/ui/media/manifest.ts` imports them at build time and the renderer needs
+  // the files from the moment the loader ships, while the strings arrive with the founder's
+  // imagery (TASK-080). Until then every asset resolves to the captioned placeholder — which is
+  // `plan/10` §3's honesty rule, not a gap — and the rules below bite on the first row written.
+  const altRowCount = [...parsed.alt.values()].reduce(
+    (total, entries) => total + entries.length,
+    0,
+  );
+  if (altRowCount > 0) {
     for (const locale of launchLocales) {
       const entries = parsed.alt.get(locale);
       if (entries === undefined) {

@@ -15,6 +15,8 @@
  * the reviewer).
  */
 
+import type { MediaManifest, MediaVariantEntry } from "@/modules/ui";
+
 export const GALLERY_TITLE = "Design system · /dev/components";
 
 export const GALLERY_INTRO =
@@ -36,6 +38,9 @@ export const SECTIONS = [
   // is where the hero, the finder and the proof row are reviewable side by side and where axe
   // and the visual suite reach the finder's open type-ahead state.
   "Media slots",
+  // TASK-079: the asset path's three states (spec 006 §5.3) — image, placeholder and the honesty
+  // label — which no Phase-0 page can reach, because no imagery is committed yet.
+  "Media asset states",
   "Home hero and finder",
   "Site header",
   // TASK-051: the consent sheet's four banner states and its three settings states (§5.3), so
@@ -373,4 +378,138 @@ export const HOME_STATES = {
     "DestinationList \u00b7 unpublished-destination \u2014 all seven named with their state as a word, none of them a link, and the onboarding line. TASK-054's destinations grid inherits this section's id.",
   proof:
     "ProofRow \u00b7 default \u2014 the four claims of the round-2 artboard, in the first person, 2-up on the mobile artboard and 4-up on the desktop one. The delivery-photo fact renders no photo.",
+} as const;
+
+/* -------------------------------------------------------------------------- */
+/* The media asset states (spec 006 §5.3, AC-17/AC-18/AC-19; TASK-079).       */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The manifest this section renders against.
+ *
+ * `seed/data/media-variants.json` and `seed/data/alt/*.json` are committed **empty** — the founder
+ * has supplied no imagery and `plan/10` §3 forbids showing a photograph we do not have — so the
+ * real dataset can only produce the placeholder state. This is the same dataset with the ladder and
+ * the alt text the founder's assets will add (TASK-080), passed as `MediaAsset`'s `manifest` prop
+ * so nothing mutates module state inside a request.
+ *
+ * **The variant files do not exist yet**, so the browser draws the `<img>`'s alt text rather than a
+ * photograph here. That is the honest state of this section until TASK-080 commits the bytes, and
+ * it is exactly what the section demonstrates: the markup, the ladder, the `sizes`, the preload and
+ * the label are all in place and only the pixels are missing.
+ */
+const GALLERY_WIDTHS = [384, 640, 1080] as const;
+
+function galleryLadder(
+  assetId: string,
+  aspect: number,
+): readonly MediaVariantEntry[] {
+  return GALLERY_WIDTHS.flatMap((width) =>
+    (["avif", "webp"] as const).map((format) => ({
+      assetId,
+      variant: String(width),
+      width,
+      height: Math.round(width / aspect),
+      format,
+      bytes: width * 20,
+      objectKey: `derived/${assetId}/${String(width)}.${format}`,
+    })),
+  );
+}
+
+/**
+ * A locale the fixture manifest deliberately has **no** alt row for, so the `noAlt` state is
+ * reachable in the gallery. `ar-XB` is the pseudo-RTL locale of spec 003, which no alt text will
+ * ever be authored for.
+ */
+export const GALLERY_ALTLESS_LOCALE = "ar-XB";
+
+export const GALLERY_AI_ASSET = "fo-bq-001-hero";
+export const GALLERY_PHOTO_ASSET = "fo-gallery-band";
+export const GALLERY_PENDING_ASSET = "fo-bq-001-detail";
+/** Approved, with alt text, and with no derived file: the `noVariants` state. */
+export const GALLERY_NO_BYTES_ASSET = "fo-gallery-no-bytes";
+
+export const GALLERY_MEDIA_MANIFEST: MediaManifest = {
+  assets: [
+    {
+      id: GALLERY_AI_ASSET,
+      depicts: "product",
+      slot: "productHero",
+      source: "ai",
+      reviewState: "approved",
+      productSku: "FO-BQ-001",
+      sortOrder: 0,
+      isPrimary: true,
+    },
+    {
+      id: GALLERY_PHOTO_ASSET,
+      depicts: "brand",
+      slot: "hero",
+      source: "photo",
+      reviewState: "approved",
+      sortOrder: 0,
+      isPrimary: false,
+    },
+    {
+      id: GALLERY_NO_BYTES_ASSET,
+      depicts: "product",
+      slot: "productHero",
+      source: "ai",
+      reviewState: "approved",
+      productSku: "FO-BQ-002",
+      sortOrder: 0,
+      isPrimary: true,
+    },
+    {
+      id: GALLERY_PENDING_ASSET,
+      depicts: "product",
+      slot: "productDetail",
+      source: "ai",
+      reviewState: "pending",
+      productSku: "FO-BQ-001",
+      sortOrder: 1,
+      isPrimary: false,
+    },
+  ],
+  variants: [
+    ...galleryLadder(GALLERY_AI_ASSET, 0.8),
+    ...galleryLadder(GALLERY_PHOTO_ASSET, 16 / 9),
+    ...galleryLadder(GALLERY_PENDING_ASSET, 0.8),
+  ],
+  alt: Object.fromEntries(
+    ["en", "en-gb", "de", "pl"].map((locale) => [
+      locale,
+      {
+        [GALLERY_AI_ASSET]:
+          "Amber and cream roses hand-tied with kraft paper on a warm grey background",
+        [GALLERY_PHOTO_ASSET]:
+          "A florist's bench in morning light, stems and shears laid out",
+        [GALLERY_PENDING_ASSET]:
+          "Close-up of the rose heads and the eucalyptus in the same bouquet",
+        [GALLERY_NO_BYTES_ASSET]:
+          "A dozen white tulips wrapped in white paper on a warm grey background",
+      },
+    ]),
+  ),
+};
+
+/** One state per row, in the order §5.3 lists them. */
+export const MEDIA_ASSET_STATES = {
+  image:
+    "MediaAsset \u00b7 image \u2014 approved, with a derived ladder and alt text for this locale: an AVIF-first <picture> with a WebP fallback ladder on the <img>, the slot's sizes string, a reserved aspect box and no client JavaScript. The variant files are not committed until TASK-080, so the browser draws the alt text here.",
+  priority:
+    "MediaAsset \u00b7 priority \u2014 the page's single LCP candidate: loading=eager, fetchpriority=high and a <link rel=preload as=image imagesrcset imagesizes> built from the same manifest lookup as the srcset, so the two cannot disagree (spec 006 AC-19).",
+  placeholderUnapproved:
+    "MediaAsset \u00b7 placeholder/unapproved \u2014 the asset exists and has bytes, but no founder sign-off against the \u00a72.4 checklist: the captioned box and no <img> (spec 006 AC-18).",
+  placeholderNoAlt:
+    "MediaAsset \u00b7 placeholder/noAlt \u2014 approved, with bytes, and no alt text for this locale: the captioned box, never an English alt on a non-English page (WCAG 1.1.1 + 3.1.2).",
+  placeholderCommitted:
+    "MediaAsset \u00b7 the committed Phase-0 state \u2014 the same asset id read from the real dataset: 31 rows, none reviewed and none derived, so the gate reports the first failure (unapproved) and no <img> exists (plan/10 \u00a73).",
+  placeholderNoBytes:
+    "MediaAsset \u00b7 placeholder/noVariants \u2014 the committed Phase-0 state of every one of the 31 asset rows: no derived file, so no <img> at all (plan/10 \u00a73).",
+  provenance:
+    "MediaProvenanceNote \u00b7 ai \u2014 rendered whenever a page displays a generated asset; server-rendered, crawlable, in the page's locale, and with no prop that can switch it off (ADR-0014, spec 006 AC-17).",
+  provenanceHidden:
+    "MediaProvenanceNote \u00b7 hidden \u2014 the same component on a page whose only displayed image is a photograph: no label, because none is owed.",
 } as const;
