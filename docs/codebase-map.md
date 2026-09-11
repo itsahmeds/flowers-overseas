@@ -17,13 +17,13 @@ task actually touches.
 | `catalog` | The only import path into the catalogue and pricing module (spec 005 §2, §5.2; TASK-060) | spec 005 | `contract/catalog-static-providers.test.ts`, `contract/support/catalog-provider-contract.ts`, `unit/catalog-availability.test.ts` +17 |
 | `customers` | Public barrel for `customers` (customers, recipients, consent) | spec 019 | — |
 | `geo` | Public barrel for `geo` (countries, cities, postcodes, holidays, cutoffs, occasion calendar) | spec 002, 009 | — |
-| `i18n` | The only import path for the i18n module (spec 003 §5.2, AC-3; TASK-034) | spec 003 | `fixtures/ts/format-time-in-zone-no-zone.ts`, `unit/app-shell.test.tsx`, `unit/catalog-messages.test.ts` +36 |
+| `i18n` | The only import path for the i18n module (spec 003 §5.2, AC-3; TASK-034) | spec 003 | `fixtures/ts/format-time-in-zone-no-zone.ts`, `unit/app-shell.test.tsx`, `unit/catalog-messages.test.ts` +37 |
 | `notifications` | Public barrel for `notifications` (email + WhatsApp senders, templates, outbox consumer) | spec 017 | — |
 | `orders` | Public barrel for `orders` (state machine, order service, assignment/routing rules) | spec 015, 016 | — |
 | `partners` | Public barrel for `partners` (fulfilment partners, coverage, payouts) | spec 011, 026 | — |
 | `payments` | Public barrel for `payments` (PaymentProvider interface; stripe/, mollie/ adapters; webhooks) | spec 013, 014 | — |
 | `seo` | Public barrel for `seo` (hreflang, canonical, JSON-LD builders, sitemap generators, robots) | spec 007 | — |
-| `ui` | The only import path for the design system (spec 004 §2 "Where the design system lives", §13 Q9; | spec 004 | `unit/consent-cookie.test.ts`, `unit/consent-islands.test.tsx`, `unit/consent-view.test.ts` +17 |
+| `ui` | The only import path for the design system (spec 004 §2 "Where the design system lives", §13 Q9; | spec 004 | `unit/consent-cookie.test.ts`, `unit/consent-islands.test.tsx`, `unit/consent-view.test.ts` +19 |
 
 ## Config (`src/config/`)
 
@@ -50,6 +50,7 @@ task actually touches.
 | `occasions.ts` | Occasion registry for the locale home (spec 004 §2 "Everything data-gated is config", §5.1, | spec 004 |
 | `payment-methods.ts` | Payment-method registry (spec 004 §2 "Everything data-gated is config", §8 "Reviews and trust", | spec 004 |
 | `site-links.ts` | Site-link registry (spec 004 §2 "Everything data-gated is config", §5.1, §12; TASK-047) | spec 004 |
+| `trending.ts` | The florists' picks the "Most sent this week" row shows until real orders rank it (spec 004 | spec 004 |
 
 ## Routes (`src/app/`)
 
@@ -58,6 +59,7 @@ task actually touches.
 | `(chooser)/layout.tsx` | Root layout for the bare `/` (spec 003 §5.3 "Recommended file layout", AC-8; TASK-034, the | spec 003 |
 | `(chooser)/page.tsx` | `/` — the locale chooser (spec 003 §2, §5.3, §5.4, §6, §13 Q3; AC-7, AC-25; TASK-035) | spec 003 |
 | `(dev)/dev/components/catalog.ts` | The gallery's own copy (spec 004 §2 "Component gallery"; TASK-045) | spec 004 |
+| `(dev)/dev/components/gated.ts` | The fake providers `/dev/components` renders the three data-gated sections' populated branches | spec 004 |
 | `(dev)/dev/components/page.tsx` | `/dev/components` — the component gallery (spec 004 §2 "Component gallery — decided, not asked", | spec 004 |
 | `(dev)/layout.tsx` | Document layout for the `(dev)` route group — today only `/dev/components` (spec 004 §2 | spec 004 |
 | `[locale]/error.tsx` | Localised 500 boundary (spec 003 §5.3; TASK-034, rewired by TASK-085) | spec 003 |
@@ -109,10 +111,10 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 149 |
+| `tests/unit/` | 150 |
 | `tests/integration/` | 2 |
 | `tests/contract/` | 3 |
-| `tests/e2e/` | 16 |
+| `tests/e2e/` | 17 |
 | `tests/a11y/` | 7 |
 | `tests/visual/` | 7 |
 | `tests/dev-os/` | 1 |

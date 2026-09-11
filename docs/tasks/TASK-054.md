@@ -27,8 +27,42 @@ Branch `task/TASK-054-home-gated-rows-destinations`. Spec §13's 2026-09-08 reso
 
 ## Escalations
 
-_None recorded._
+None blocking. Two judgements are flagged for the reviewer's ruling rather than assumed (both in the
+PR body): the trending card shape, and a four-key exception in the AC-15 catalogue grep for the
+verified-reviews copy (`home.reviews.eyebrow/body/trustpilotRegion/trustpilotPending`), which is paid
+for by three new assertions — every excused key is a `home.reviews.*` key, every one is genuinely a
+forbidden shape, and the shipped provider is a constant empty list with no `src/config/reviews.*`
+that could feed it.
 
 ## Result
 
-_Pending._
+In review. PR [PR 58](https://github.com/itsahmeds/flowers-overseas/pull/58).
+
+Three provider seams in `src/modules/ui/home` — `trending-provider.ts`, `reviews-provider.ts`,
+`destination-status-provider.ts` — each with a `staticProvider`, a module-internal `with*Provider()`
+injection hook (not exported from the barrel, spec 003's rule) and an optional `provider` prop the
+gallery reaches the populated branch through.
+
+- **Trending**: photo slot + name and **no price element at all** — a "starting at" with no figure is
+  a price block with a hole in it, and spec 004 §3/§8 permits neither form. The founder's label ships
+  verbatim (plus its closing full stop) and disappears when `basis()` answers `orders`. The five names
+  are read from spec 005's committed catalogue through `src/config/trending.ts`, so 004 gains no
+  product knowledge and nothing is invented; emptying `TRENDING_PICKS` hides the row with no code
+  change if the reviewer rules the claim unsupportable.
+- **Reviews**: renders nothing, and no data can change that (the provider is a constant empty list,
+  not a config file). Populated branch covered by a fake provider and `/dev/components`.
+- **Destinations**: `DestinationsGrid` replaced `DestinationList` at the `destinations` id; PL with
+  its five cities, six guides as `Guide · waiting list`, none a link, "Somewhere else?" copy only.
+
+AC-14 closed by `tests/e2e/links.spec.ts` (T-16). Carry-forwards closed: 6-up desktop occasion grid
+with `MEDIA_SLOT_SPECS.tile` moved to `(min-width: 768px) 17vw, 50vw`, and the mobile hero caption.
+`FinderTypeahead` left as it is; the open display-name-vs-`iso2` contract for spec 007 is recorded in
+the PR body. Copy deviations (the "Somewhere else?" body, the destinations body) are in the PR body
+and in `messages/en.meta.json`'s `reviewedBy`.
+
+Gates: `test` 3 017/139, `test:e2e` 578, `test:a11y` 49, `test:visual` 24 (4 new darwin baselines,
+`linux/` untouched), `i18n:check`/`check-layout`/`check:no-db`/`seo:validate`/cold `build` clean,
+client JS 121.4 KB br on locale documents (**0 bytes added by this branch**; the +1.9 KB against the
+last recorded figure arrived with TASK-055). `pnpm lighthouse` still fails informationally on the two
+pre-existing §14 A1 items (uncompressed script size against a Brotli assertion, LCP on a loaded
+machine); TASK-056 owns the flip.
