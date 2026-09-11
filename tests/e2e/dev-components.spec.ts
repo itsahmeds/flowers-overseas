@@ -228,10 +228,13 @@ test.describe("/dev/components", () => {
       ).toHaveCount(1);
     }
 
-    // AC-19: one `priority` candidate, one preload, and the preload agrees with the `srcset` it
-    // was built from.
-    const preload = page.locator('link[rel="preload"][as="image"]');
+    // AC-19: one `priority` candidate, one preload **in `<head>`**, and the preload agrees with
+    // the `srcset` it was built from. Placement is the half a unit test cannot see: a `<link>`
+    // rendered in the body is discovered no earlier than the `<img>` it precedes, so the preload
+    // is emitted through React's `preload()`, which hoists it into the head.
+    const preload = page.locator('head link[rel="preload"][as="image"]');
     await expect(preload).toHaveCount(1);
+    await expect(page.locator('body link[rel="preload"]')).toHaveCount(0);
     await expect(page.locator('img[fetchpriority="high"]')).toHaveCount(1);
     const preloadSrcSet = await preload.getAttribute("imagesrcset");
     const preloadSizes = await preload.getAttribute("imagesizes");

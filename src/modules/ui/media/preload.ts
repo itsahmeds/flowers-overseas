@@ -6,7 +6,7 @@
  * > imagesrcset imagesizes>` for it is emitted from the *same* manifest lookup that produced the
  * > `srcset`, so the two cannot disagree.
  *
- * "The same lookup" is taken literally: `preloadFor()` takes the **`ResolvedImage` the `<picture>`
+ * "The same lookup" is taken literally: `preloadArgsFor()` takes the **`ResolvedImage` the `<picture>`
  * rendered from**, not an asset id, so there is no second lookup that could resolve differently
  * after a manifest or loader swap. A preload that disagrees with the `srcset` is worse than no
  * preload — the browser fetches a resource the layout then never uses, spending the LCP budget
@@ -17,45 +17,70 @@
  * preloaded. So the descriptor is the AVIF ladder (or WebP where an asset has no AVIF), which is
  * the ladder that browser will use.
  *
+ * **It reaches `<head>` because `MediaAsset` calls React's `preload()`, not because a `<link>` is
+ * rendered.** An element rendered in the body stays in the body: React hoists a `<link>` only as a
+ * *hoistable resource*, which is keyed on `href`, and an image preload built from `imagesrcset`
+ * has none. A preload discovered at the same point in the byte stream as the `<img>` buys nothing,
+ * so the descriptor below is fed to `preload()` from `react-dom`, which hoists and dedupes it into
+ * the document head. `tests/e2e/dev-components.spec.ts` asserts the placement on the built page,
+ * because `renderToStaticMarkup` has no document and cannot see it.
+ *
  * Nothing eager above the LCP candidate (§2.5): `Media` marks every non-`priority` image
  * `loading="lazy"` + `decoding="async"`, and only the `priority` image is `fetchpriority="high"`.
  */
 import type { ResolvedImage } from "./resolve.ts";
 
 /**
- * A `data-` marker on the emitted `<link>`, so a unit test, an e2e test and a reviewer can count
- * the page's image preloads without parsing `rel` lists — and so AC-19's "a fixture page with two
- * `priority` images fails the test" is one selector.
+ * The two arguments of React's `preload()` for `<link rel="preload" as="image">`, built as a pure
+ * value so the agreement AC-19 demands can be asserted without a DOM.
+ *
+ * **Why an `href` at all.** React's `preload(href, options)` ignores the call when `href` is empty
+ * (`react-dom` 19.2, `ReactDOMFloat`'s `L` dispatcher: `if (as && href)`), and when `imageSrcSet`
+ * is present it dedupes on `imageSrcSet + "\n" + imageSizes` and emits the link **without** the
+ * `href` — `href: imageSrcSet ? void 0 : href`. So `href` here is the largest AVIF candidate: it
+ * keeps the call from being dropped, it never reaches the markup, and it can therefore never
+ * cause a second fetch. The attribute the browser acts on is `imagesrcset`, exactly as the
+ * `<picture>` renders it.
  */
-export const MEDIA_PRELOAD_MARKER = "data-fo-media-preload";
+export interface MediaPreloadArgs {
+  /** React's positional `href`. Not emitted — see above. */
+  readonly href: string;
+  readonly options: {
+    readonly as: "image";
+    readonly imageSrcSet: string;
+    readonly imageSizes: string;
+    readonly type: string;
+    readonly fetchPriority: "high";
+  };
+}
 
-/** Exactly the attribute set of `<link rel="preload" as="image">`, ready to spread. */
-export interface MediaPreloadDescriptor {
-  readonly rel: "preload";
-  readonly as: "image";
-  readonly imageSrcSet: string;
-  readonly imageSizes: string;
-  readonly type: string;
-  readonly fetchPriority: "high";
+/** The last (largest) candidate URL of an ascending `srcset`, or `""` for an empty ladder. */
+function largestCandidate(srcSet: string): string {
+  const last = srcSet.split(",").at(-1)?.trim() ?? "";
+  return last.split(/\s+/)[0] ?? "";
 }
 
 /**
- * The preload for the page's one LCP image, or `undefined` when the resolved asset offers no
- * ladder at all (which `resolveMedia` already refuses to render, so it is unreachable through
- * `Media`).
+ * The preload arguments for the page's one LCP image, or `undefined` when the resolved asset
+ * offers no ladder at all (which `resolveMedia` already refuses to render, so it is unreachable
+ * through `MediaAsset`).
  */
-export function preloadFor(
+export function preloadArgsFor(
   image: ResolvedImage,
-): MediaPreloadDescriptor | undefined {
+): MediaPreloadArgs | undefined {
   const first = image.sources[0];
   if (first === undefined) return undefined;
+  const href = largestCandidate(first.srcSet);
+  if (href === "") return undefined;
   return {
-    rel: "preload",
-    as: "image",
-    imageSrcSet: first.srcSet,
-    imageSizes: image.sizes,
-    type: first.type,
-    fetchPriority: "high",
+    href,
+    options: {
+      as: "image",
+      imageSrcSet: first.srcSet,
+      imageSizes: image.sizes,
+      type: first.type,
+      fetchPriority: "high",
+    },
   };
 }
 

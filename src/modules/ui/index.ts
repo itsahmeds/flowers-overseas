@@ -244,12 +244,8 @@ export type {
   ResolvedPlaceholder,
   ResolveMediaOptions,
 } from "./media/resolve.ts";
-export {
-  MEDIA_PRELOAD_MARKER,
-  assertSinglePriority,
-  preloadFor,
-} from "./media/preload.ts";
-export type { MediaPreloadDescriptor } from "./media/preload.ts";
+export { assertSinglePriority, preloadArgsFor } from "./media/preload.ts";
+export type { MediaPreloadArgs } from "./media/preload.ts";
 export {
   PAGE_FORMATS,
   altFor,

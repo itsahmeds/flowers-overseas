@@ -11,8 +11,9 @@
  * module's own `setMediaManifest()`. Every assertion below is therefore about the shipped code
  * path, and the three columns of AC-18 are exercised in the state that will actually occur.
  */
+import { preload } from "react-dom";
 import { renderToStaticMarkup } from "react-dom/server";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { NextIntlClientProvider } from "next-intl";
 
@@ -27,10 +28,7 @@ import {
   committedMediaManifest,
   setMediaManifest,
 } from "../../src/modules/ui/media/manifest.ts";
-import {
-  MEDIA_PRELOAD_MARKER,
-  assertSinglePriority,
-} from "../../src/modules/ui/media/preload.ts";
+import { assertSinglePriority } from "../../src/modules/ui/media/preload.ts";
 import {
   BAND_ASSET,
   FIXTURE_ALT,
@@ -40,16 +38,41 @@ import {
 } from "./support/media-fixture.ts";
 import type { MediaFixtureOptions } from "./support/media-fixture.ts";
 
+vi.mock("react-dom", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("react-dom")>()),
+  preload: vi.fn(),
+}));
+
 const LOCALES = ["en", "en-gb", "de", "pl"] as const;
+
+/**
+ * The LCP preload is emitted through React's `preload()` so the browser finds it in `<head>`, not
+ * as a `<link>` in the body — so `renderToStaticMarkup`, which has no document, cannot see it.
+ * These tests therefore assert the **arguments** `MediaAsset` passes; that the resulting `<link>`
+ * lands in `<head>` on the built page, exactly once, is pinned in
+ * `tests/e2e/dev-components.spec.ts`.
+ */
+const preloadMock = vi.mocked(preload);
+
+/** The `preload()` options of the one call a `priority` render is expected to make. */
+function onlyPreloadCall(): {
+  href: string;
+  options: Record<string, unknown>;
+} {
+  expect(preloadMock).toHaveBeenCalledTimes(1);
+  const call = preloadMock.mock.calls[0];
+  return {
+    href: call?.[0] ?? "",
+    options: (call?.[1] ?? {}) as unknown as Record<string, unknown>,
+  };
+}
 
 /**
  * AC-19's page-level assertion, written once and used in both directions: it passes on a page
  * with one `priority` image and throws on a page with two.
  */
-function expectOneImagePreload(html: string): void {
-  expect(html.match(new RegExp(MEDIA_PRELOAD_MARKER, "g")) ?? []).toHaveLength(
-    1,
-  );
+function expectOneImagePreload(): void {
+  expect(preloadMock.mock.calls).toHaveLength(1);
 }
 
 function render(node: React.ReactElement, locale = "en"): string {
@@ -74,13 +97,17 @@ function withManifest(
   return render(node, locale);
 }
 
-/** Every `srcset`/`imagesrcset` URL in the markup, in document order. */
+/** Every `srcset` URL in the markup, in document order. */
 function urls(html: string): string[] {
-  return [...html.matchAll(/(?:srcSet|srcset|imagesrcset)="([^"]+)"/gi)]
+  return [...html.matchAll(/(?:srcSet|srcset)="([^"]+)"/gi)]
     .flatMap((match) => (match[1] ?? "").split(","))
     .map((candidate) => candidate.trim().split(/\s+/)[0] ?? "")
     .filter((url) => url !== "");
 }
+
+beforeEach(() => {
+  preloadMock.mockClear();
+});
 
 afterEach(() => {
   setMediaManifest(committedMediaManifest);
@@ -265,10 +292,14 @@ describe("AC-2: the loader is the only thing that knows a URL (T-02)", () => {
       <MediaAsset assetId={BAND_ASSET} locale="en" priority />,
     );
 
-    const imageSrcSet = /imagesrcset="([^"]+)"/i.exec(html)?.[1] ?? "";
+    const { href, options } = onlyPreloadCall();
     const sourceSrcSet = /<source[^>]+srcSet="([^"]+)"/i.exec(html)?.[1] ?? "";
-    expect(imageSrcSet).not.toBe("");
-    expect(imageSrcSet).toBe(sourceSrcSet);
+    expect(options["imageSrcSet"]).not.toBe("");
+    expect(options["imageSrcSet"]).toBe(sourceSrcSet);
+    // React's `preload()` drops the positional `href` when `imageSrcSet` is present, but it
+    // refuses the call outright when `href` is empty — so it too must come from the same lookup.
+    expect(href.startsWith("https://r2.example.test/")).toBe(true);
+    expect(sourceSrcSet).toContain(href);
   });
 
   it("returns the loader it replaced, so a caller can restore it", () => {
@@ -278,22 +309,34 @@ describe("AC-2: the loader is the only thing that knows a URL (T-02)", () => {
 });
 
 describe("AC-19: one `priority` image and its matching preload (T-19)", () => {
-  it("emits the preload from the same lookup as the `srcset`, byte for byte", () => {
+  it("preloads from the same lookup as the `srcset`, byte for byte", () => {
     const html = withManifest(
       <MediaAsset assetId={BAND_ASSET} locale="en" priority />,
     );
 
-    const imageSrcSet = /imagesrcset="([^"]+)"/i.exec(html)?.[1];
-    const imageSizes = /imagesizes="([^"]+)"/i.exec(html)?.[1];
+    const { href, options } = onlyPreloadCall();
     const sourceSrcSet = /<source[^>]+srcSet="([^"]+)"/i.exec(html)?.[1];
     const imgSizes = /<img[^>]+sizes="([^"]+)"/i.exec(html)?.[1];
 
-    expect(imageSrcSet).toBe(sourceSrcSet);
-    expect(imageSizes).toBe(imgSizes);
-    expect(imageSizes).toBe("100vw");
-    expect(html).toContain('rel="preload"');
-    expect(html).toContain('as="image"');
-    expect(html).toContain('type="image/avif"');
+    expect(options["imageSrcSet"]).toBe(sourceSrcSet);
+    expect(options["imageSizes"]).toBe(imgSizes);
+    expect(options["imageSizes"]).toBe("100vw");
+    expect(options["as"]).toBe("image");
+    expect(options["type"]).toBe("image/avif");
+    expect(options["fetchPriority"]).toBe("high");
+    expect(href).toContain(".avif");
+  });
+
+  it("renders no `<link>` in the body: the preload belongs in `<head>`", () => {
+    const html = withManifest(
+      <MediaAsset assetId={BAND_ASSET} locale="en" priority />,
+    );
+
+    // A `<link>` returned from a component is *not* hoisted when it carries `imagesrcset` and no
+    // `href`, so it would be discovered no earlier than the `<img>` it precedes. Placement is
+    // asserted on the built page in `tests/e2e/dev-components.spec.ts`.
+    expect(html).not.toContain("<link");
+    expect(html).not.toContain('rel="preload"');
   });
 
   it("loads the LCP candidate eagerly at high priority, and nothing else does", () => {
@@ -305,8 +348,8 @@ describe("AC-19: one `priority` image and its matching preload (T-19)", () => {
     expect(priority).toContain('loading="eager"');
     expect(priority).toMatch(/fetchpriority="high"/i);
     expect(lazy).toContain('loading="lazy"');
-    expect(lazy).not.toContain('rel="preload"');
-    expect(lazy).not.toContain("data-fo-media-preload");
+    // Two renders, one `priority`: exactly one preload call, made by the `priority` one.
+    expect(preloadMock).toHaveBeenCalledTimes(1);
   });
 
   it("counts exactly one image preload on a page with one `priority` candidate", () => {
@@ -319,8 +362,9 @@ describe("AC-19: one `priority` image and its matching preload (T-19)", () => {
       </main>,
     );
 
+    expect(page).toContain("<img");
     expect(() => {
-      expectOneImagePreload(page);
+      expectOneImagePreload();
     }).not.toThrow();
   });
 
@@ -335,8 +379,9 @@ describe("AC-19: one `priority` image and its matching preload (T-19)", () => {
 
     // AC-19 in the negative, with the **same** assertion the page above passes: two `priority`
     // images on one page is a failing test, not a Lighthouse finding two weeks later.
+    expect(twoPriority).toContain("<img");
     expect(() => {
-      expectOneImagePreload(twoPriority);
+      expectOneImagePreload();
     }).toThrow();
   });
 

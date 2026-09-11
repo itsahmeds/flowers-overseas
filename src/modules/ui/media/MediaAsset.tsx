@@ -31,12 +31,13 @@
  */
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
+import { preload } from "react-dom";
 
 import { Photo } from "../primitives/Photo.tsx";
 
 import type { MediaManifest } from "./manifest.ts";
 
-import { MEDIA_PRELOAD_MARKER, preloadFor } from "./preload.ts";
+import { preloadArgsFor } from "./preload.ts";
 import { type ResolvedImage, resolveMedia } from "./resolve.ts";
 import { type MediaSlot, mediaSlot } from "./slots.ts";
 
@@ -69,7 +70,8 @@ export interface MediaAssetProps {
   readonly slot?: MediaSlot;
   /**
    * The page's single LCP candidate (`plan/01` §6, AC-19). It renders eagerly, at
-   * `fetchpriority="high"`, and emits the matching `<link rel="preload">` from the same lookup.
+   * `fetchpriority="high"`, and emits the matching `<link rel="preload">` into `<head>` from the
+   * same lookup.
    * Only a slot whose spec says `aboveFold` may be one.
    */
   readonly priority?: boolean;
@@ -135,6 +137,9 @@ export function MediaAsset({
   const negotiated = resolved.sources.slice(0, -1);
   const fallback = resolved.sources.at(-1);
 
+  // AC-19: the LCP candidate's preload, hoisted into `<head>` by React (see `preloadLcpCandidate`).
+  if (priority) preloadLcpCandidate(resolved);
+
   return (
     <Photo
       // No caption in the image state: a photograph does not need a sentence describing the
@@ -148,7 +153,6 @@ export function MediaAsset({
         "data-fo-media-source": resolved.asset.source,
       }}
     >
-      {priority ? <MediaAssetPreload image={resolved} /> : null}
       <picture className="block h-full w-full">
         {negotiated.map((source) => (
           <source
@@ -183,27 +187,18 @@ export function MediaAsset({
 }
 
 /**
- * The `<link rel="preload">` for the LCP candidate. Rendered inside the box from the **same**
- * `ResolvedImage` the `<picture>` above used, which is AC-19's "the two cannot disagree" as a
- * data-flow fact; Next hoists `<link>` elements out of the body into the document head.
+ * The `<link rel="preload">` for the LCP candidate, emitted through React's `preload()` so that it
+ * is **hoisted into `<head>`** and deduped there. It is built from the **same** `ResolvedImage` the
+ * `<picture>` above rendered from, which is AC-19's "the two cannot disagree" as a data-flow fact.
+ *
+ * A `<link>` returned from this component would *not* be hoisted — React hoists a `<link>` only as
+ * a resource keyed on `href`, and this preload carries `imagesrcset` instead — so it would sit in
+ * the body immediately in front of the `<picture>` and the preload scanner would reach both in the
+ * same breath. `./preload.ts` explains the `href` React's API requires and why it never reaches the
+ * markup.
  */
-function MediaAssetPreload({
-  image,
-}: {
-  readonly image: ResolvedImage;
-}): ReactElement | null {
-  const descriptor = preloadFor(image);
-  if (descriptor === undefined) return null;
-  const marker = { [MEDIA_PRELOAD_MARKER]: image.asset.id };
-  return (
-    <link
-      as={descriptor.as}
-      fetchPriority={descriptor.fetchPriority}
-      imageSizes={descriptor.imageSizes}
-      imageSrcSet={descriptor.imageSrcSet}
-      rel={descriptor.rel}
-      type={descriptor.type}
-      {...marker}
-    />
-  );
+function preloadLcpCandidate(image: ResolvedImage): void {
+  const args = preloadArgsFor(image);
+  if (args === undefined) return;
+  preload(args.href, args.options);
 }
