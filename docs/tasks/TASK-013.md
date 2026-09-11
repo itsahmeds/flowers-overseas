@@ -27,6 +27,6 @@ _None recorded._
 
 ## Result
 
-- 2026-09-11 — Neon linked: org `org-fragrant-violet-15013149`, project `old-moon-05172629` (Frankfurt, `aws-eu-central-1`), branch `production`. `DATABASE_URL`, `DATABASE_URL_UNPOOLED`, `NEON_BRANCH` in `fo-wt-013/.env.local` (never committed). US project `soft-darkness-33998532` unused, deletion recommended. R2 buckets still pending.
+- 2026-09-11 — Neon linked: org `org-fragrant-violet-15013149`, project `old-moon-05172629` (Frankfurt, `aws-eu-central-1`), branch `production`. `DATABASE_URL`, `DATABASE_URL_UNPOOLED`, `NEON_BRANCH` in `fo-wt-013/.env.local` (never committed). US project `soft-darkness-33998532` unused, deletion recommended. R2: EU-jurisdiction buckets `flowersoverseas-media` (public dev URL `https://pub-92d8bd7f38564349a725f321388b8c9c.r2.dev`) and `flowersoverseas-backups` (30-day expiry rule); endpoint `https://15460f39387572e5939ed70691a49040.eu.r2.cloudflarestorage.com`; token `flowersoverseas-app` object rw on both buckets. DPAs: Neon (neon.com/dpa) and Cloudflare (customer DPA) still to be filed under `docs/compliance/`.
 
 _Pending._
