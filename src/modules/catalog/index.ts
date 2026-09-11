@@ -21,6 +21,15 @@
  * `isProductIndexable`, `quote`, `cacheTagsFor` — arrives with the tasks that own each,
  * TASK-065 … TASK-069.
  *
+ * TASK-066 adds `pricing/fx.ts` and `pricing/round.ts` and exports **nothing** from here, which is
+ * the deliberate half of it: `convert`, `fxRateFor`, `roundToStyle` and `convertForDisplay` are
+ * internal. Spec 005 §5.2's caller surface is whole prices and projections — `resolvePrice`,
+ * `priceProjection`, `priceTable`, `fromPrice`, `quote` — and a barrel-exported converter would let
+ * a caller produce a converted amount with no rate and no `fxAsOf` stamped on it, which §5.4 exists
+ * to prevent, or round a price a second time outside the one place that decides the display
+ * currency. TASK-067's `priceProjection()` is the exported way a converted price is obtained, and
+ * it is the only one.
+ *
  * What TASK-064 deliberately does **not** export: `isFlagEnabled`. The flag seam of spec 005 §12
  * is internal (`./flags`, `./static`), because callers ask this module for the add-ons they may
  * offer and never for the state of a flag — which is what lets spec 002's `feature_flag` table

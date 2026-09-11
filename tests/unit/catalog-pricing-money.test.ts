@@ -26,6 +26,7 @@ import { describe, expect, it } from "vitest";
 import {
   addMoney,
   assertSameCurrency,
+  divideMinorCeil,
   divideMinorHalfUp,
   sumMoney,
 } from "../../src/modules/catalog/pricing/money.ts";
@@ -162,6 +163,55 @@ describe("divideMinorHalfUp: the one division in the pricing path", () => {
   });
 });
 
+describe("divideMinorCeil: the conversion division (TASK-066, AC-12)", () => {
+  it("multiplies its factors and divides exactly when it divides", () => {
+    expect(divideMinorCeil([10_000], 100)).toBe(100);
+    expect(divideMinorCeil([100, 100], 100)).toBe(100);
+    expect(divideMinorCeil([0, 4_268_000, 10_250], 10_000_000_000)).toBe(0);
+  });
+
+  it("rounds **up** on any remainder, which `divideMinorHalfUp` does not", () => {
+    // The difference between the two primitives is the whole reason there are two: a VAT split
+    // decomposes an amount already charged (nearest), a conversion has to cover a cost (up).
+    expect(divideMinorCeil([1], 3)).toBe(1);
+    expect(divideMinorHalfUp(1, 3)).toBe(0);
+    expect(divideMinorCeil([4], 2)).toBe(2);
+    expect(divideMinorCeil([5], 2)).toBe(3);
+    // Away from zero on a negative remainder, so "never below the input" holds in both signs.
+    expect(divideMinorCeil([-1], 3)).toBe(-1);
+  });
+
+  it("is exact where the product leaves the safe-integer range", () => {
+    // EUR 10 000 into HUF: 1 000 000 x 393 200 000 x 10 250 ~ 4 x 10^18, six times past
+    // `Number.MAX_SAFE_INTEGER`. Pre-multiplying in `Number` would answer approximately; this
+    // answers exactly, which is why the factors arrive unmultiplied.
+    expect(
+      divideMinorCeil([1_000_000, 393_200_000, 10_250], 10_000_000_000),
+    ).toBe(403_030_000);
+    // An independent `BigInt` oracle over the whole PLN band ladder in both euro directions.
+    for (const amountMinor of [14_900, 19_900, 26_900, 35_900, 1, 7]) {
+      for (const ratePpm of [4_268_000, 234_302, 198_337, 393_200_000]) {
+        const numerator = BigInt(amountMinor) * BigInt(ratePpm) * 10_250n;
+        const quotient = numerator / 10_000_000_000n;
+        const expected =
+          quotient * 10_000_000_000n === numerator ? quotient : quotient + 1n;
+
+        expect(
+          divideMinorCeil([amountMinor, ratePpm, 10_250], 10_000_000_000),
+          `${String(amountMinor)}@${String(ratePpm)}`,
+        ).toBe(Number(expected));
+      }
+    }
+  });
+
+  it("refuses a float factor, a float divisor, a non-positive divisor and no factors", () => {
+    expect(() => divideMinorCeil([45.9], 100)).toThrow(/safe integer/);
+    expect(() => divideMinorCeil([4590], 1.5)).toThrow(/safe integer/);
+    expect(() => divideMinorCeil([4590], 0)).toThrow(/positive divisor/);
+    expect(() => divideMinorCeil([], 100)).toThrow(/at least one factor/);
+  });
+});
+
 describe("the money layer contains no float idiom (plan/12 §2, `fo/no-float-money`)", () => {
   it("uses no `Math.round`, no `toFixed`, no `parseFloat` and no `Number` division", () => {
     const source = moneySource();
@@ -171,6 +221,9 @@ describe("the money layer contains no float idiom (plan/12 §2, `fo/no-float-mon
     // The only `/` in the file is inside `BigInt` arithmetic; a `Number` division of an amount
     // would read as `amountMinor / …` or `numeratorMinor / …`.
     expect(source).not.toMatch(/(?:amountMinor|numeratorMinor|Minor)\s*\/\s*/);
+    // Both divisions — `divideMinorHalfUp`'s and `divideMinorCeil`'s (TASK-066) — are `BigInt`
+    // quotients of two `BigInt` locals, and there are exactly two of them.
+    expect(source.match(/numerator \/ denominator/g)).toHaveLength(2);
   });
 });
 

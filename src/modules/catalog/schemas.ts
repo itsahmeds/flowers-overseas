@@ -18,6 +18,7 @@ import { z } from "zod";
 
 import {
   type FacetName,
+  FxRateDataSchema,
   SkuSchema,
   addonKeys,
   addonKinds,
@@ -443,3 +444,15 @@ export const VatSplitSchema = z
     error: "netMinor + vatMinor must equal grossMinor (spec 005 AC-13)",
     path: ["grossMinor"],
   });
+
+/**
+ * One exchange rate at the module's boundary (spec 005 §5.2 `FxRateSchema`; TASK-066).
+ *
+ * Deliberately **the dataset's schema itself**, not a copy of it: `FxRateDataSchema` already
+ * states every rule a rate has to satisfy — a positive parts-per-million integer, a calendar
+ * `asOf`, a non-empty `source`, `.strict()`, and no rate from a currency to itself — and a second
+ * definition here could drift from the one `pnpm catalogue:check` gates the snapshot with. The
+ * rates `pricing/fx.ts` *derives* (an inverse, a euro cross) are parsed through it too, so a
+ * derived rate cannot be looser than a published one.
+ */
+export const FxRateSchema = FxRateDataSchema;

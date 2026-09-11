@@ -203,8 +203,10 @@ describe("src/modules/catalog barrel (AC-1)", () => {
     expect(moduleFiles.sort()).toEqual([
       `${moduleDir}/flags.ts`,
       `${moduleDir}/index.ts`,
+      `${moduleDir}/pricing/fx.ts`,
       `${moduleDir}/pricing/money.ts`,
       `${moduleDir}/pricing/resolve.ts`,
+      `${moduleDir}/pricing/round.ts`,
       `${moduleDir}/pricing/vat.ts`,
       `${moduleDir}/providers.ts`,
       `${moduleDir}/read.ts`,
@@ -234,10 +236,26 @@ describe("the barrel exposes no provider, dataset or database symbol (AC-2, T-01
       "staticFlagProvider",
       "isFlagEnabled",
       "PHASE_0_FLAGS",
-      // `divideMinorHalfUp()` is the pricing core's internal integer division (TASK-065): a
-      // caller needs whole prices and VAT splits, never a division primitive, and exporting one
-      // would invite money arithmetic outside `pricing/*`.
+      // `divideMinorHalfUp()` and `divideMinorCeil()` are the pricing core's internal integer
+      // divisions (TASK-065, TASK-066): a caller needs whole prices and VAT splits, never a
+      // division primitive, and exporting one would invite money arithmetic outside `pricing/*`.
       "divideMinorHalfUp",
+      "divideMinorCeil",
+      // The FX seam is internal too (TASK-066). Spec 005 §5.2's caller surface is whole prices
+      // and projections: a barrel-exported converter would let a caller produce a converted
+      // amount with no rate and no `fxAsOf` stamped on it (§5.4), or round a price a second time
+      // outside the one place that decides the display currency. TASK-067's `priceProjection()`
+      // is the exported way a converted price is obtained.
+      "convert",
+      "convertForDisplay",
+      "fxRateFor",
+      "isRateStale",
+      "roundToStyle",
+      "roundMinorToStyle",
+      "latticeFor",
+      "FX_BUFFER_BP",
+      "MAX_FX_AGE_HOURS",
+      "FX_UNAVAILABLE_REASON_KEY",
     ]) {
       expect(exported, banned).not.toContain(banned);
     }
