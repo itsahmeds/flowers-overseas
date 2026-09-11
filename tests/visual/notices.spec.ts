@@ -24,7 +24,7 @@
  * failure artifact, which is blocked while the Actions budget is (project memory, 2026-09-09), so
  * these four land as `darwin/` only and the Linux half is taken with the next CI run.
  */
-import { type BrowserContext, expect, test } from "@playwright/test";
+import { type BrowserContext, type Page, expect, test } from "@playwright/test";
 
 const VIEWPORTS = [
   { name: "mobile", width: 390, height: 844 },
@@ -35,6 +35,29 @@ const DOCUMENTS = [
   { name: "chooser", path: "/", status: 200 },
   { name: "not-found", path: "/nope", status: 404 },
 ] as const;
+
+/**
+ * Everything a notice document still has in flight after `goto` resolves, waited out before the
+ * shutter: the last request (`networkidle`), the webfaces (`document.fonts.ready` — the lockup,
+ * the `.display` heading and the locale endonyms are all drawn in them, so a frame taken before
+ * they swap records the fallback's metrics), and two animation frames, which is the first frame
+ * whose layout is the one the font metrics produced. Without this the committed PNG can be a
+ * mid-load frame: the first `chooser-*` pair was, and passed only because the diff sat under
+ * `maxDiffPixelRatio` (`/review 55`).
+ */
+async function settle(page: Page): Promise<void> {
+  await page.waitForLoadState("networkidle");
+  await page.evaluate(async () => {
+    await document.fonts.ready;
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          resolve();
+        });
+      });
+    });
+  });
+}
 
 async function recordConsentRefusal(
   context: BrowserContext,
@@ -77,6 +100,7 @@ for (const { name, path, status } of DOCUMENTS) {
       expect(response?.status()).toBe(status);
       await expect(page.locator('[data-fo-banner="shown"]')).toHaveCount(0);
       await expect(page.locator("[data-fo-consent]")).toHaveCount(0);
+      await settle(page);
 
       await expect(page).toHaveScreenshot(`${name}-${viewport.name}.png`, {
         fullPage: true,
@@ -113,6 +137,7 @@ test.describe("the language-suggestion banner", () => {
       await page.goto("/en");
       const banner = page.locator('[data-fo-banner="shown"]');
       await expect(banner).toBeVisible();
+      await settle(page);
 
       await expect(banner).toHaveScreenshot(
         `suggestion-banner-${viewport.name}.png`,
