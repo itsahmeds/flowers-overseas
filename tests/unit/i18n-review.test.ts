@@ -153,8 +153,12 @@ function synthetic(
 }
 
 describe("the shipped answers (AC-24)", () => {
-  it("indexes `en`: the authored source language is fully reviewed", () => {
-    expect(unreviewedShare("en")).toBe(0);
+  // One authored English key waits for the founder's tick (`home.destinations.elsewhere.body`,
+  // `/review 58`); its exact identity is pinned in `i18n-messages-schema.test.ts`. Well under the
+  // 5% rule, so English stays indexable and un-tagged — which is the answer AC-24 fixes.
+  it("indexes `en`: all but the founder's review queue is attested", () => {
+    expect(unreviewedShare("en")).toBeGreaterThan(0);
+    expect(unreviewedShare("en")).toBeLessThan(UNREVIEWED_SHARE_THRESHOLD);
     expect(isLocaleIndexable("en")).toBe(true);
     expect(localeBetaTag("en")).toBe(false);
   });
@@ -162,7 +166,7 @@ describe("the shipped answers (AC-24)", () => {
   it("indexes `en-gb`, whose 24 inherited English keys are reviewed English", () => {
     // §13 Q5's thin override: one own key plus the `en` chain. Inheriting *within* a language is
     // reviewed copy; inheriting across one is not (the next describe block).
-    expect(unreviewedShare("en-gb")).toBe(0);
+    expect(unreviewedShare("en-gb")).toBeLessThan(UNREVIEWED_SHARE_THRESHOLD);
     expect(isLocaleIndexable("en-gb")).toBe(true);
     expect(localeBetaTag("en-gb")).toBe(false);
   });

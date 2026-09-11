@@ -80,11 +80,13 @@ function hrefs(html: string): string[] {
 }
 
 /**
- * The founder's sentence, verbatim from the TASK-054 row and the desktop artboard. The shipped
- * key adds the closing full stop the row's quotation marks cut, so the assertion is `toContain`.
+ * The founder's sentence, verbatim from `docs/design/homepage-v1/homepage-desktop.dc.html` — the
+ * design source of truth, and first person as spec 004 §14 A5 requires ("our florists' own
+ * picks"). The shipped key adds the closing full stop the artboard's sentence carries into the
+ * paragraph, so the assertion is `toContain` (`/review 58` required change 1).
  */
 const VERBATIM_BASIS =
-  "Ranking is by real orders in the last 7 days and switches on once we have them; until then this row shows the florists' picks and says so";
+  "Ranking is by real orders in the last 7 days and switches on once we have them; until then this row shows our florists' own picks and says so";
 
 describe("the trending row is gated on real orders", () => {
   it("renders the five florists' picks by name, with no price element of any kind", () => {

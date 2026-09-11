@@ -456,7 +456,7 @@
       }
     },
     "trending": {
-      "basis": "Ranking is by real orders in the last 7 days and switches on once we have them; until then this row shows the florists' picks and says so.",
+      "basis": "Ranking is by real orders in the last 7 days and switches on once we have them; until then this row shows our florists' own picks and says so.",
       "eyebrow": "Trending now",
       "heading": "Most sent this week"
     }

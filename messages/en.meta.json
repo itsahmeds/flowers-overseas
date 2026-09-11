@@ -1746,9 +1746,7 @@
   },
   "home.destinations.elsewhere.body": {
     "source": "human",
-    "reviewed": true,
-    "reviewedBy": "frontend-implementer (TASK-054: the artboard’s \"Tell us where you need us next\" invites an action with no channel behind it — a waiting-list capture is a new personal-data flow owned by 010/016 — so the cell states what is true instead of asking)",
-    "reviewedAt": "2026-09-11T00:00:00Z",
+    "reviewed": false,
     "sourceHash": "88978b80a5f74521f1e5491c28d2e5a6700fec285b4fbb13a846e6b8c61f80bf"
   },
   "home.destinations.elsewhere.title": {
@@ -2015,7 +2013,7 @@
     "reviewed": true,
     "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2; TASK-054)",
     "reviewedAt": "2026-09-11T00:00:00Z",
-    "sourceHash": "801aabe8e339203f72ef7764af0672982a5cd5c7cabd7ace3d287e5e3e2e3609"
+    "sourceHash": "04534b3ee1f81b100cd6017fdb8f80a428270c4a965a954e15a45d960a59d1ac"
   },
   "home.trending.eyebrow": {
     "source": "human",

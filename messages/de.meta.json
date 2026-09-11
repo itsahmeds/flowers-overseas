@@ -1357,7 +1357,7 @@
   "home.trending.basis": {
     "source": "machine",
     "reviewed": false,
-    "sourceHash": "801aabe8e339203f72ef7764af0672982a5cd5c7cabd7ace3d287e5e3e2e3609"
+    "sourceHash": "04534b3ee1f81b100cd6017fdb8f80a428270c4a965a954e15a45d960a59d1ac"
   },
   "home.trending.eyebrow": {
     "source": "machine",
