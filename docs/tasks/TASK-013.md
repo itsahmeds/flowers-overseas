@@ -21,6 +21,8 @@ _None recorded._
 
 ## Escalations
 
+- 2026-09-11 — Founder supplied Neon project `soft-darkness-33998532` and ran `neon login`/`neon mcp -y`; region to be verified as EU (Frankfurt) after `neon link` before any data lands.
+
 _None recorded._
 
 ## Result
