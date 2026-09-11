@@ -64,6 +64,14 @@
     "reviewedAt": "2026-09-08T00:00:00Z",
     "sourceHash": "e74b4e0cb2ca0462eb247fb87cda16bcc26433ff0788de99ad35bd16aae781be"
   },
+  "catalog.addon.allergen": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (spec 005 §7 catalog namespace; TASK-067)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "0a1ef0ad73a242655b000e6c2dcdfaee86f6ed6c6bcf8337e9f84d3a7717f264",
+    "retained": true
+  },
   "catalog.addon.balloon.description": {
     "source": "human",
     "reviewed": true,
@@ -159,6 +167,41 @@
     "reviewedAt": "2026-09-09T00:00:00Z",
     "sourceHash": "e3887fd61f07cdc665104d69ccd05ee7c782bd0e9ac2c2d510bfcc4c2b889235",
     "retained": true
+  },
+  "catalog.availability.countryDemo": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (spec 005 §7 catalog namespace; TASK-067)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "20802d3a615be4f139a02e1ac3ee273859240e7b52cd700806be5aab57f2163f"
+  },
+  "catalog.availability.fxUnavailable": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (spec 005 §7 catalog namespace; TASK-067)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "133c7e57986f250b18dbf5d650a38f37c3b6b06f09969abec4a2b91ac478994a"
+  },
+  "catalog.availability.inStock": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (spec 005 §7 catalog namespace; TASK-067)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "7269dfd4af13cb8a3fdb00368962c5e81dfb9b09cf12efc035a2691e9d782834"
+  },
+  "catalog.availability.noPartner": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (spec 005 §7 catalog namespace; TASK-067)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "600002256e100472d90f50b7ae5af2bb0beb93637c14087e29dffc66573fae9e"
+  },
+  "catalog.availability.outOfStock": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (spec 005 §7 catalog namespace; TASK-067)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "0d935812882807936b8ffa3dda976a5e98515c7d8ce427f3abe6bbd3439d49b1"
   },
   "catalog.descriptor.flower.alstroemeria": {
     "source": "human",
@@ -887,6 +930,20 @@
     "reviewedAt": "2026-09-09T00:00:00Z",
     "sourceHash": "2178186602ab9e7a09a03808bf787f1f7def44b1a7bcb4e2a63be00c2093fa28",
     "retained": true
+  },
+  "catalog.price.from": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (spec 005 §7 catalog namespace; TASK-067)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "7936f4b76d27166045d51057b40f10a8a7040521ac2f01ff26f81996b64d6acb"
+  },
+  "catalog.price.inclusive": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "backend-implementer (spec 005 §7 catalog namespace; TASK-067)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
+    "sourceHash": "9bb74bbf506bfced78648471aea66452ddcd6ba6f1214edf1eed52b1f6b91a98"
   },
   "catalog.surcharge.peakDay": {
     "source": "human",

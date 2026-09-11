@@ -36,6 +36,9 @@ import { PRODUCTS } from "@/config/catalogue/products.data";
 import { PRODUCT_TIERS } from "@/config/catalogue/tiers.data";
 
 import { COUNTRIES } from "@/config/countries";
+import { CURRENCIES } from "@/config/currencies";
+
+import { currencyFlagKey } from "../schemas";
 
 import type {
   AddonCountryPriceRecord,
@@ -116,9 +119,15 @@ export { FX_BUFFER_BP, MAX_FX_AGE_HOURS };
  *    one that row calls out. Turning wine on in a country is a `true` in this table today and a
  *    `feature_flag_scope` row from spec 002; it is never a code change at a call site, which is
  *    the point of the seam (`CLAUDE.md`, spec 005 §12).
- *  - **`currency.{code}`** — the display currencies of §13 Q11. Those rows belong to the
- *    projection task that first reads them (TASK-068) and are deliberately not invented here: a
- *    flag nothing reads is a flag nobody maintains.
+ *  - **`currency.{code}`** — the display currencies of §13 Q11, added by TASK-067, the task whose
+ *    `priceTable()` first reads them. **EUR, GBP and PLN are on; the other seven are off**, which
+ *    is §13 Q11's binding answer: a currency we display and cannot charge breaks the one
+ *    invariant spec 005 exists to protect, and Stripe presentment plus our settlement position
+ *    (`plan/13` B7) make only these three chargeable in Phase 0. Every configured currency is
+ *    enumerated rather than left absent, for the same reason the wine rows are: "we do not show
+ *    prices in Czech koruna yet" should be a row a reader can point at. Turning one on is a
+ *    `true` here today and a `feature_flag` row from spec 002 — never a code change at a call
+ *    site.
  *
  * Every country is enumerated rather than left absent, so "wine is off in Poland" is a row a
  * reader can point at instead of an absence that has to be interpreted. The keys come from
@@ -128,12 +137,23 @@ export { FX_BUFFER_BP, MAX_FX_AGE_HOURS };
  * `src/config/locales.ts` (`isLaunch`) and `src/config/site-links.ts` (`isPublished`) record —
  * and they are read only through the module's `isFlagEnabled()`.
  */
-export const PHASE_0_FLAGS: readonly FeatureFlagRecord[] = COUNTRIES.flatMap(
-  (country) => {
+/** The three currencies §13 Q11 turns on in Phase 0; every other configured code is off. */
+export const PHASE_0_DISPLAY_CURRENCIES: readonly string[] = [
+  "EUR",
+  "GBP",
+  "PLN",
+];
+
+export const PHASE_0_FLAGS: readonly FeatureFlagRecord[] = [
+  ...COUNTRIES.flatMap((country) => {
     const key = addonFlagKey("wine", country.iso2);
     return key === null ? [] : [{ key, enabled: false }];
-  },
-).sort((left, right) => (left.key < right.key ? -1 : 1));
+  }),
+  ...CURRENCIES.map((currency) => ({
+    key: currencyFlagKey(currency.code),
+    enabled: PHASE_0_DISPLAY_CURRENCIES.includes(currency.code),
+  })),
+].sort((left, right) => (left.key < right.key ? -1 : 1));
 
 /** The authored flag rows, handed over as-is. A provider decides nothing (`flags.ts` does). */
 export const staticFlagProvider: FlagProvider = {

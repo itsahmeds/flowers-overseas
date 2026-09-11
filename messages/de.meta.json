@@ -44,6 +44,11 @@
     "reviewed": false,
     "sourceHash": "e74b4e0cb2ca0462eb247fb87cda16bcc26433ff0788de99ad35bd16aae781be"
   },
+  "catalog.addon.allergen": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "0a1ef0ad73a242655b000e6c2dcdfaee86f6ed6c6bcf8337e9f84d3a7717f264"
+  },
   "catalog.addon.balloon.description": {
     "source": "machine",
     "reviewed": false,
@@ -103,6 +108,31 @@
     "source": "machine",
     "reviewed": false,
     "sourceHash": "e3887fd61f07cdc665104d69ccd05ee7c782bd0e9ac2c2d510bfcc4c2b889235"
+  },
+  "catalog.availability.countryDemo": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "20802d3a615be4f139a02e1ac3ee273859240e7b52cd700806be5aab57f2163f"
+  },
+  "catalog.availability.fxUnavailable": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "133c7e57986f250b18dbf5d650a38f37c3b6b06f09969abec4a2b91ac478994a"
+  },
+  "catalog.availability.inStock": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "7269dfd4af13cb8a3fdb00368962c5e81dfb9b09cf12efc035a2691e9d782834"
+  },
+  "catalog.availability.noPartner": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "600002256e100472d90f50b7ae5af2bb0beb93637c14087e29dffc66573fae9e"
+  },
+  "catalog.availability.outOfStock": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "0d935812882807936b8ffa3dda976a5e98515c7d8ce427f3abe6bbd3439d49b1"
   },
   "catalog.descriptor.flower.alstroemeria": {
     "source": "machine",
@@ -559,6 +589,16 @@
     "reviewed": false,
     "sourceHash": "2178186602ab9e7a09a03808bf787f1f7def44b1a7bcb4e2a63be00c2093fa28"
   },
+  "catalog.price.from": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "7936f4b76d27166045d51057b40f10a8a7040521ac2f01ff26f81996b64d6acb"
+  },
+  "catalog.price.inclusive": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9bb74bbf506bfced78648471aea66452ddcd6ba6f1214edf1eed52b1f6b91a98"
+  },
   "catalog.surcharge.peakDay": {
     "source": "machine",
     "reviewed": false,
@@ -590,7 +630,7 @@
     "sourceHash": "5263293fc202649bdc8135573ac9cd3b0bcea4355e0d8f0a59f1ddeea8eefc15"
   },
   "catalog.tier.stems": {
-    "source": "machine",
+    "source": "human",
     "reviewed": false,
     "sourceHash": "f647ed8788feac99d2b45ea110df02f10a6f52f54de9195ba370c0b2b70df9d4"
   },

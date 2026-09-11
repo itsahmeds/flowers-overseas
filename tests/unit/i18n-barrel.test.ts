@@ -79,6 +79,9 @@ const PINNED_EXPORTS = [
   "formatTimeInZone",
   "loadMessages",
   "localePath",
+  // Added by TASK-067 (spec 005 AC-11): integer minor units as a locale-independent decimal
+  // string, so `Offer.price` and the rendered price are digit-shifted by the same code.
+  "moneyDecimalString",
   "namespacesFor",
   "parseLocaleFromPath",
   "sortBy",

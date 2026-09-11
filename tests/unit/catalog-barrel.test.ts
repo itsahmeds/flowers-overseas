@@ -27,6 +27,7 @@ import { dirname, join, relative, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { COUNTRIES } from "../../src/config/countries.ts";
+import { CURRENCIES } from "../../src/config/currencies.ts";
 import { MODULES } from "../../scripts/check-layout.ts";
 import { findDatabaseImports } from "../../scripts/check-no-db-imports.ts";
 import * as catalog from "../../src/modules/catalog/index.ts";
@@ -195,6 +196,18 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         "listProducts",
         "resolveFacets",
         "topProductsForPrebuild",
+        // projections and the price identity (TASK-067): one view model, one offer, one table
+        "FromPriceProjectionQuerySchema",
+        "OfferProjectionSchema",
+        "PriceProjectionQuerySchema",
+        "PriceProjectionSchema",
+        "PriceTableQuerySchema",
+        "PriceTableSchema",
+        "currencyFlagKey",
+        "fromPriceProjection",
+        "offerProjection",
+        "priceProjection",
+        "priceTable",
       ].sort(),
     );
   });
@@ -205,6 +218,7 @@ describe("src/modules/catalog barrel (AC-1)", () => {
       `${moduleDir}/index.ts`,
       `${moduleDir}/pricing/fx.ts`,
       `${moduleDir}/pricing/money.ts`,
+      `${moduleDir}/pricing/project.ts`,
       `${moduleDir}/pricing/resolve.ts`,
       `${moduleDir}/pricing/round.ts`,
       `${moduleDir}/pricing/vat.ts`,
@@ -428,8 +442,13 @@ describe("the provider seam and its Phase 0 stubs", () => {
     ],
     // One committed euro-base ECB snapshot, one row per configured quote currency.
     ["fx.fxRates", () => providers.fx.fxRates(), 9],
-    // One `addon.wine.{country}` row per configured country, every one off (TASK-064).
-    ["flags.flags", () => providers.flags.flags(), COUNTRIES.length],
+    // One `addon.wine.{country}` row per configured country, every one off (TASK-064), plus one
+    // `currency.{code}` row per configured currency — EUR, GBP and PLN on (TASK-067, §13 Q11).
+    [
+      "flags.flags",
+      () => providers.flags.flags(),
+      COUNTRIES.length + CURRENCIES.length,
+    ],
   ];
 
   for (const [member, call, count] of authored) {
