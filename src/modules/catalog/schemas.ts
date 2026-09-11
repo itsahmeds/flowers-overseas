@@ -25,12 +25,13 @@ import {
   facetNames,
   facetValues,
   productStatuses,
+  scopedFlagKey,
 } from "@/config/catalogue/schemas";
 import { type CountryIso2, isCountryIso2 } from "@/config/countries";
 import { type LocaleCode, isLocaleCode } from "@/config/locales";
 import { MoneySchema } from "@/modules/i18n";
 
-import { surchargeKinds } from "./types";
+import { catalogAvailabilityKeys, surchargeKinds } from "./types";
 
 /**
  * Integer minor units, as a `number`.
@@ -250,6 +251,18 @@ export const FlagKeySchema = z
     "must be a dotted feature-flag key, e.g. `addon.wine.PL` (spec 005 §12)",
   );
 
+/**
+ * The display-currency flag key of a currency code — `EUR` → `currency.EUR` (spec 005 §12,
+ * §13 Q11; TASK-067).
+ *
+ * The **only** builder of a `currency.*` key, for `scopedFlagKey()`'s own reason: the key spec
+ * 002's `feature_flag` seeds and the key `priceTable()` reads must be the same string, and a
+ * concatenation at a call site is how they stop being.
+ */
+export function currencyFlagKey(code: string): string {
+  return FlagKeySchema.parse(scopedFlagKey("currency", code));
+}
+
 export const ProductTierSchema = z
   .object({
     tierKey: z.string().min(1),
@@ -456,3 +469,202 @@ export const VatSplitSchema = z
  * derived rate cannot be looser than a published one.
  */
 export const FxRateSchema = FxRateDataSchema;
+
+/* -------------------------------------------------------------------------- */
+/* Projection boundary schemas (spec 005 §5.2, §6, AC-9/AC-11; TASK-067).      */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * `priceProjection()`'s query (spec 005 §7, AC-9).
+ *
+ * **There is no currency field, and there may not be one.** The display currency is the locale's
+ * `currencyDefault` and nothing else: a `currency` parameter here is how a well-meaning caller
+ * would read the `fo_currency` cookie server-side, and cached HTML would then differ per visitor
+ * with no `Vary` (`plan/02` §3, `plan/03` §1). `.strict()` turns that into a parse error rather
+ * than a review comment, and `priceTable()` — which enumerates *every* display currency instead
+ * of choosing one — is the single sanctioned way to serve a currency switch.
+ *
+ * `now` is the instant the projection is evaluated at, and it is here for `pricing/fx.ts`'s
+ * reason: the rate's age decides whether the amount is converted at all, so a test must be able
+ * to move the clock without waiting two days.
+ */
+export const PriceProjectionQuerySchema = z
+  .object({
+    productId: ProductSkuSchema,
+    tierKey: z.string().min(1),
+    countryIso: DestinationIsoSchema,
+    deliveryDate: IsoDateSchema.optional(),
+    now: z.date().optional(),
+  })
+  .strict();
+
+/** `fromPriceProjection()`'s query: no tier (it names the cheapest) and no date (§13 Q10). */
+export const FromPriceProjectionQuerySchema = PriceProjectionQuerySchema.omit({
+  tierKey: true,
+  deliveryDate: true,
+});
+
+/** `priceTable()`'s query: a product and a destination; every display currency is enumerated. */
+export const PriceTableQuerySchema = PriceProjectionQuerySchema.omit({
+  tierKey: true,
+  deliveryDate: true,
+});
+
+/**
+ * The single price view model (spec 005 §5.2 `PriceProjectionSchema`).
+ *
+ * The refinements pin the two invariants that make the model safe to render *and* to publish as
+ * structured data:
+ *
+ *  - a **converted** amount always carries its provenance — `fxAsOf` and `ratePpm` are present
+ *    together or not at all, and never alongside `fxReasonKey` (§5.4, AC-15);
+ *  - when the display currency is not the destination's, the amount was either converted (rate
+ *    present) or the projection fell back to the destination currency (reason key present). There
+ *    is no third state, so an unstamped conversion cannot be represented.
+ */
+export const PriceProjectionSchema = z
+  .object({
+    displayPrice: IntegerMoneySchema,
+    displayLocale: LocaleCodeSchema,
+    destinationCountry: DestinationIsoSchema,
+    destinationCurrencyPrice: IntegerMoneySchema,
+    vatRateBp: BasisPointsSchema,
+    vatRateText: z.string().min(1),
+    vatLabelKey: z.literal("catalog.price.inclusive"),
+    deliveryIncluded: z.literal(true),
+    surcharges: z.array(SurchargeSchema).readonly(),
+    fxAsOf: IsoDateSchema.optional(),
+    ratePpm: z.number().int().positive().optional(),
+    fxReasonKey: z.literal("catalog.availability.fxUnavailable").optional(),
+    priceVersion: z.string().min(1),
+    priceValidUntil: IsoDateSchema.nullable(),
+  })
+  .strict()
+  .refine(
+    (projection) =>
+      (projection.fxAsOf === undefined) === (projection.ratePpm === undefined),
+    {
+      error:
+        "a converted amount carries both `fxAsOf` and `ratePpm`, or neither (spec 005 §5.4)",
+      path: ["fxAsOf"],
+    },
+  )
+  .refine(
+    (projection) =>
+      projection.fxReasonKey === undefined || projection.ratePpm === undefined,
+    {
+      error:
+        "`fxReasonKey` means no rate was usable, so no rate may be stamped (spec 005 AC-15)",
+      path: ["fxReasonKey"],
+    },
+  )
+  .refine(
+    (projection) =>
+      projection.displayPrice.currency ===
+        projection.destinationCurrencyPrice.currency ||
+      projection.ratePpm !== undefined ||
+      projection.fxReasonKey !== undefined,
+    {
+      error:
+        "a display currency other than the destination's is either converted (rate stamped) or a fallback (reason key) — never an unstamped amount (spec 005 §5.4)",
+      path: ["displayPrice"],
+    },
+  );
+
+/**
+ * The maximum number of currencies one embedded price table may carry (spec 005 §5.2, §6).
+ *
+ * Six is the ceiling the spec sets, and Phase 0 uses four at most: the destination's own currency
+ * plus the three `currency.{code}` display currencies of §13 Q11. It is a *budget*, not a
+ * taxonomy — the cost of a currency switch with no client fetch is HTML bytes, and the bytes are
+ * paid on every price-bearing document.
+ */
+export const MAX_PRICE_TABLE_CURRENCIES = 6;
+
+/**
+ * The maximum serialised size of one tier's price table, in bytes (spec 005 §5.2, §6).
+ *
+ * "Serialised" is `JSON.stringify()` of the table, measured in **UTF-8 bytes** — the form and the
+ * unit in which it is actually embedded in the document — so the refinement measures the thing
+ * the budget is about rather than a proxy for it. ~1.5 KB for a three-tier PDP before
+ * compression, against spec 004 §14 A1's 131 072 B document budget.
+ */
+export const MAX_PRICE_TABLE_BYTES = 512;
+
+/** UTF-8 byte length of a value's JSON form — the unit `MAX_PRICE_TABLE_BYTES` is stated in. */
+export function serialisedByteLength(value: unknown): number {
+  return new TextEncoder().encode(JSON.stringify(value)).length;
+}
+
+/**
+ * The embedded per-tier price table, with the size refinement spec 005 §5.2 requires.
+ *
+ * Both bounds are *refusals*, not truncations: a table that would exceed either is a defect in
+ * how many currencies we chose to embed, and silently dropping one would give spec 008's repaint
+ * island a currency with no amount — a price switch that shows nothing is worse than no switch.
+ */
+export const PriceTableSchema = z
+  .object({
+    productId: ProductSkuSchema,
+    tierKey: z.string().min(1),
+    fxAsOf: IsoDateSchema.nullable(),
+    entries: z.partialRecord(
+      MoneySchema.shape.currency,
+      MinorUnitsSchema.positive(),
+    ),
+  })
+  .strict()
+  .refine(
+    (table) => Object.keys(table.entries).length <= MAX_PRICE_TABLE_CURRENCIES,
+    {
+      error: `a price table carries at most ${String(MAX_PRICE_TABLE_CURRENCIES)} currencies (spec 005 §5.2)`,
+      path: ["entries"],
+    },
+  )
+  .refine((table) => Object.keys(table.entries).length > 0, {
+    error:
+      "a price table with no currency is not a table: the destination's own currency is always in it (spec 005 §5.2)",
+    path: ["entries"],
+  })
+  .refine((table) => serialisedByteLength(table) <= MAX_PRICE_TABLE_BYTES, {
+    error: `a price table serialises to at most ${String(MAX_PRICE_TABLE_BYTES)} bytes per tier (spec 005 §6 "CWV budget")`,
+    path: ["entries"],
+  });
+
+/**
+ * The typed input spec 007's `Offer` builder consumes (spec 005 §6, AC-11).
+ *
+ * Every constant AC-11 names is a **literal type** here rather than a value a caller supplies:
+ * the shipping rate is zero, the return policy is `MerchantReturnNotPermitted`, and the price is
+ * a plain decimal string with a dot — `45,90` is a mis-priced offer to a schema.org consumer that
+ * may read the comma as a thousands separator, which is why spec 001's `validate-schema` rejects
+ * it even when the digits are right.
+ */
+export const OfferProjectionSchema = z
+  .object({
+    price: z
+      .string()
+      .regex(
+        /^(?:0|[1-9][0-9]*)(?:\.[0-9]+)?$/,
+        "must be a plain decimal string with a `.` separator (schema.org; spec 001 `validate-schema`)",
+      ),
+    priceCurrency: MoneySchema.shape.currency,
+    priceValidUntil: IsoDateSchema.nullable(),
+    availability: z.enum([
+      "https://schema.org/InStock",
+      "https://schema.org/OutOfStock",
+    ]),
+    availabilityKey: z.enum([
+      catalogAvailabilityKeys.inStock,
+      catalogAvailabilityKeys.outOfStock,
+    ]),
+    eligibleRegion: DestinationIsoSchema,
+    shippingRate: IntegerMoneySchema.extend({
+      amountMinor: z.literal(0),
+    }).strict(),
+    hasMerchantReturnPolicy: z.literal(
+      "https://schema.org/MerchantReturnNotPermitted",
+    ),
+    priceVersion: z.string().min(1),
+  })
+  .strict();

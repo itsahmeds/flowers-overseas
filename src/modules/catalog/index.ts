@@ -146,3 +146,51 @@ export {
   tierPrices,
 } from "./pricing/resolve";
 export { netFromGross, vatBreakdown } from "./pricing/vat";
+
+// Projections and the price identity (spec 005 §5.2 `pricing/project.ts`, §6, §7, AC-9/10/11;
+// TASK-067).
+//
+// `priceProjection(locale, …)` is the one view model a price-bearing page renders **and** spec
+// 007's `Offer` builder reads, and `offerProjection()` derives the offer from that same
+// projection — so the JSON-LD and the HTML cannot carry different numbers, which is `plan/02`
+// §15's manual-action risk closed by construction rather than by a validator (AC-11). The display
+// currency is the **locale's** `currencyDefault`: no function exported here accepts a
+// display-currency override except `priceTable()`, which chooses no currency at all but
+// enumerates every one we may display for spec 008's repaint island (AC-9). `fromPriceProjection`
+// is the display-currency half of `fromPrice()` — visible "from" text, never an `Offer` (§6).
+//
+// `displayCurrencyFor()` stays internal, and that is the point: a caller that could ask this
+// module for "the currency of locale X" would be one step from asking it for "the currency in
+// cookie Y", and cached HTML would then differ per visitor with no `Vary` (`plan/03` §1).
+export type {
+  CatalogAvailabilityKey,
+  OfferAvailability,
+  OfferProjection,
+  PriceProjection,
+  PriceTable,
+} from "./types";
+// `catalogAvailabilityKeys` itself stays internal: it is a *record*, and the barrel exports only
+// schemas, value sets and functions (AC-2). A caller never picks a reason key — it arrives on the
+// projection or the offer already chosen — so exporting the map would only invite one to.
+// `MAX_PRICE_TABLE_CURRENCIES` and `MAX_PRICE_TABLE_BYTES` stay internal for
+// `MAX_SURCHARGE_RANGE_DAYS`'s reason: the bounds they name are enforced by `PriceTableSchema`,
+// which is exported, so a caller parses a table rather than remembering two numbers — and the
+// barrel keeps exporting only schemas, value sets and functions (AC-2).
+export {
+  FromPriceProjectionQuerySchema,
+  OfferProjectionSchema,
+  PriceProjectionQuerySchema,
+  PriceProjectionSchema,
+  PriceTableQuerySchema,
+  PriceTableSchema,
+  currencyFlagKey,
+} from "./schemas";
+// `FROM_PRICE_LABEL_KEY` stays internal for the same reason: a message key is a string constant,
+// and the barrel exports schemas, value sets and functions only (AC-2). Spec 008's card asks its
+// translator for `catalog.price.from` the way every other component asks for its own copy.
+export {
+  fromPriceProjection,
+  offerProjection,
+  priceProjection,
+  priceTable,
+} from "./pricing/project";

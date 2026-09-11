@@ -258,6 +258,26 @@ export function formatMoney(
   }).format(decimalString(amountMinor, minorUnitExponent));
 }
 
+/**
+ * Integer minor units as a **locale-independent** decimal string at the currency's exponent —
+ * `{ amountMinor: 4590, currency: "EUR" }` → `"45.90"` (spec 005 §6 "the price identity", AC-11;
+ * TASK-067).
+ *
+ * This is not a *formatter*: there is no locale, no symbol, no grouping and no `Intl` involved.
+ * It exists because schema.org's `Offer.price` is a machine value that must use a dot separator
+ * and the currency's own number of fraction digits, and because the alternative — a second
+ * digit-shifting implementation inside `modules/catalog` — would be a second money-rendering path
+ * in a codebase whose whole money story is that there is exactly one (`plan/12` §2, §4). It
+ * shares `decimalString()` with `formatMoney`, so the digits a page prints and the digits the
+ * JSON-LD carries are produced by the same code and cannot drift by a cent (`plan/02` §15's
+ * manual-action risk).
+ */
+export function moneyDecimalString(money: Money): string {
+  const { amountMinor, currency } = MoneySchema.parse(money);
+  const { minorUnitExponent } = currencyConfig(currency);
+  return decimalString(amountMinor, minorUnitExponent);
+}
+
 export interface FormatNumberOptions {
   /** Exact number of fraction digits (minimum and maximum both). Default: CLDR's choice. */
   readonly fractionDigits?: number;

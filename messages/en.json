@@ -268,7 +268,8 @@
       "card": {
         "name": "Handwritten card",
         "description": "Your message, written out by hand and delivered with the flowers."
-      }
+      },
+      "allergen": "Contains food. Please check for allergies before you order."
     },
     "facet": {
       "productType": {
@@ -380,6 +381,17 @@
         "mixed": "mixed-flower",
         "seasonal": "seasonal"
       }
+    },
+    "price": {
+      "inclusive": "Includes VAT and delivery",
+      "from": "from {price}"
+    },
+    "availability": {
+      "inStock": "Available to order",
+      "outOfStock": "Not available to order",
+      "countryDemo": "We do not deliver to this country yet.",
+      "noPartner": "We do not have a florist covering this address yet.",
+      "fxUnavailable": "We are showing this price in the currency of the delivery country."
     }
   },
   "media": {

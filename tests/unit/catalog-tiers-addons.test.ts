@@ -43,6 +43,7 @@ import {
 } from "../../src/config/catalogue/schemas.ts";
 import { PRODUCT_TIERS } from "../../src/config/catalogue/tiers.data.ts";
 import { COUNTRIES } from "../../src/config/countries.ts";
+import { CURRENCIES } from "../../src/config/currencies.ts";
 import { isFlagEnabled } from "../../src/modules/catalog/flags.ts";
 import {
   defaultTier,
@@ -509,21 +510,38 @@ describe("the `addon.wine.{country}` flag seam", () => {
   });
 
   it("authors one row per configured country, all off in Phase 0 (plan/07 §6)", () => {
-    expect(PHASE_0_FLAGS.map((flag) => flag.key)).toEqual(
+    const wine = PHASE_0_FLAGS.filter((flag) =>
+      flag.key.startsWith("addon.wine."),
+    );
+    expect(wine.map((flag) => flag.key)).toEqual(
       COUNTRIES.map((country) =>
         scopedFlagKey("addon.wine", country.iso2),
       ).sort((left, right) => (left < right ? -1 : 1)),
     );
-    expect(PHASE_0_FLAGS.every((flag) => !flag.enabled)).toBe(true);
-    expect(PHASE_0_FLAGS.map((flag) => flag.key)).toContain(
-      addonFlagKey("wine", LIVE),
+    expect(wine.every((flag) => !flag.enabled)).toBe(true);
+    expect(wine.map((flag) => flag.key)).toContain(addonFlagKey("wine", LIVE));
+  });
+
+  // The other scope in the table is TASK-067's `currency.{code}` (spec 005 §13 Q11): every
+  // configured currency has a row, and only the three we can actually charge are on.
+  it("authors one `currency.{code}` row per configured currency, three on", () => {
+    const currency = PHASE_0_FLAGS.filter((flag) =>
+      flag.key.startsWith("currency."),
     );
+    expect(currency).toHaveLength(CURRENCIES.length);
+    expect(
+      currency.filter((flag) => flag.enabled).map((flag) => flag.key),
+    ).toEqual(["currency.EUR", "currency.GBP", "currency.PLN"]);
   });
 
   it("is closed by default: an absent or unknown key is off, never on", async () => {
     await expect(isFlagEnabled("addon.wine.PL")).resolves.toBe(false);
     await expect(isFlagEnabled("addon.wine.GB")).resolves.toBe(false);
-    await expect(isFlagEnabled("currency.PLN")).resolves.toBe(false);
+    // `currency.PLN` is on (§13 Q11); a currency nobody enabled — and a key nobody authored —
+    // is off, which is what "closed by default" means for this scope.
+    await expect(isFlagEnabled("currency.PLN")).resolves.toBe(true);
+    await expect(isFlagEnabled("currency.CZK")).resolves.toBe(false);
+    await expect(isFlagEnabled("currency.USD")).resolves.toBe(false);
     await expect(isFlagEnabled("not a flag key")).rejects.toThrow();
   });
 

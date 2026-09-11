@@ -141,6 +141,7 @@ export {
   formatRange,
   formatRelativeTime,
   formatTimeInZone,
+  moneyDecimalString,
 } from "./format.ts";
 
 export { collator, sortBy } from "./collate.ts";

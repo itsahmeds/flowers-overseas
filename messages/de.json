@@ -16,6 +16,7 @@
   },
   "catalog": {
     "addon": {
+      "allergen": "Contains food. Please check for allergies before you order.",
       "balloon": {
         "description": "One helium balloon, tied to the bouquet on delivery.",
         "name": "Balloon"
@@ -40,6 +41,13 @@
         "description": "A bottle of local wine, where the florist is licensed to sell it.",
         "name": "Bottle of wine"
       }
+    },
+    "availability": {
+      "countryDemo": "We do not deliver to this country yet.",
+      "fxUnavailable": "We are showing this price in the currency of the delivery country.",
+      "inStock": "Available to order",
+      "noPartner": "We do not have a florist covering this address yet.",
+      "outOfStock": "Not available to order"
     },
     "descriptor": {
       "flower": {
@@ -152,6 +160,10 @@
       }
     },
     "floristSentence": "Every order is made by hand and delivered in person by our florist in the recipient's city.",
+    "price": {
+      "from": "from {price}",
+      "inclusive": "inkl. MwSt. und Versand"
+    },
     "surcharge": {
       "peakDay": "Peak day delivery",
       "sunday": "Sunday delivery"
@@ -163,7 +175,7 @@
         "m": "Medium",
         "s": "Small"
       },
-      "stems": "{count, plural, one {# stem} other {# stems}}"
+      "stems": "{count, plural, one {# Stiel} other {# Stiele}}"
     }
   },
   "chooser": {

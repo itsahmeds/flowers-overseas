@@ -38,7 +38,9 @@ import type {
   Style,
   SubstitutionClass,
 } from "@/config/catalogue/schemas";
+import type { CountryIso2 } from "@/config/countries";
 import type { CurrencyCode } from "@/config/currencies";
+import type { LocaleCode } from "@/config/locales";
 
 /**
  * The `country_price.surcharge_kind` CHECK values of spec 002 §5.1, verbatim. Surcharges are
@@ -419,3 +421,144 @@ export type DisplayConversion =
       readonly status: "unavailable";
       readonly reasonKey: "catalog.availability.fxUnavailable";
     };
+
+/* -------------------------------------------------------------------------- */
+/* Projections (spec 005 §5.2 `pricing/project.ts`, §6 "the price identity",   */
+/* §7, AC-9/AC-10/AC-11; TASK-067).                                            */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The message keys every price- and availability-adjacent state of this module resolves through
+ * (spec 005 §7, AC-22; WCAG 3.1.1).
+ *
+ * They are written out here, once, as literals, because three separate rules meet on them: every
+ * `reasonKey` the module can emit must have a string in `messages/en.json` (AC-22), no state may
+ * render untranslated or colour-only (§8), and `pnpm i18n:check` must be able to see the key as a
+ * fully-qualified literal in `src/` or call it dead. `pricing/fx.ts` already emits
+ * `fxUnavailable` on its own union; the other four are named here so that TASK-068's
+ * `availability()` resolves *which* one applies rather than inventing a key at its call site.
+ */
+export const catalogAvailabilityKeys = {
+  inStock: "catalog.availability.inStock",
+  outOfStock: "catalog.availability.outOfStock",
+  countryDemo: "catalog.availability.countryDemo",
+  noPartner: "catalog.availability.noPartner",
+  fxUnavailable: "catalog.availability.fxUnavailable",
+} as const;
+
+/** One of the five `catalog.availability.*` keys, as a literal union. */
+export type CatalogAvailabilityKey =
+  (typeof catalogAvailabilityKeys)[keyof typeof catalogAvailabilityKeys];
+
+/**
+ * The one view model a price-bearing page renders **and** spec 007's `Offer` builder reads
+ * (spec 005 §5.2 `PriceProjectionSchema`, §6, §8).
+ *
+ * Three properties are the reason it is one type rather than two:
+ *
+ *  1. **The display currency comes from the locale, never from a cookie** (§7, AC-9). The
+ *     projection is derived from `displayLocale`'s `currencyDefault`; the `fo_currency` cookie is
+ *     read by spec 008's repaint island over identical cached HTML, which is what lets a
+ *     price-bearing page be cached once per (locale, country) with no `Vary`.
+ *  2. **The price is exposed as parts, never as a pre-built string** (§8): amount, currency, VAT
+ *     rate, VAT label key and surcharge rows. `formatMoney` is the only renderer, spec 009
+ *     composes the `aria-live` announcement `plan/04` §16 needs from these parts, and
+ *     `offerProjection()` reads the same `displayPrice` the page prints — which is the whole of
+ *     the price identity AC-11 pins.
+ *  3. **A conversion carries its provenance or does not happen.** `fxAsOf`/`ratePpm` are present
+ *     exactly when the amount was converted; when the newest rate is too old, `displayPrice` is
+ *     the destination country's own price and `fxReasonKey` says so (§13 Q2, AC-15). There is no
+ *     state in which a converted amount appears without the rate that produced it.
+ */
+export interface PriceProjection {
+  /** What the page prints, through `formatMoney(displayPrice, displayLocale)` and nothing else. */
+  readonly displayPrice: IntegerMoney;
+  readonly displayLocale: LocaleCode;
+  /** The destination the price is keyed on — the only geography this module has (ADR-0006). */
+  readonly destinationCountry: CountryIso2;
+  /** The authored price in the destination country's own currency (`plan/10` §2.3). */
+  readonly destinationCurrencyPrice: IntegerMoney;
+  readonly vatRateBp: number;
+  /** `formatPercentFromBasisPoints(vatRateBp, displayLocale)` — the module builds no `Intl`. */
+  readonly vatRateText: string;
+  /** `catalog.price.inclusive`: a legal formula per locale, not a translation (`plan/07` §4). */
+  readonly vatLabelKey: "catalog.price.inclusive";
+  readonly deliveryIncluded: true;
+  readonly surcharges: readonly Surcharge[];
+  /** Publication date of the rate used, present exactly when the amount was converted. */
+  readonly fxAsOf?: IsoDate | undefined;
+  /** The unbuffered rate used, present exactly when the amount was converted. */
+  readonly ratePpm?: number | undefined;
+  /** Present exactly when no usable rate existed and the destination currency is being shown. */
+  readonly fxReasonKey?: "catalog.availability.fxUnavailable" | undefined;
+  readonly priceVersion: string;
+  /** The active row's `active_to` — `Offer.priceValidUntil`; `null` while the row is current. */
+  readonly priceValidUntil: IsoDate | null;
+}
+
+/**
+ * The embedded per-tier price table spec 008's currency-repaint island reads (spec 005 §5.2
+ * `PriceTableSchema`, §6 "CWV budget").
+ *
+ * It is the **one** function of this module that enumerates currencies, and therefore the one
+ * exception to AC-9's "no display-currency override": it does not choose a currency, it lists
+ * every one we may display (`currency.{code}`, §13 Q11), so a repaint needs no fetch and the HTML
+ * still does not vary by visitor. The size refinement (≤6 currencies, ≤512 B serialised per tier)
+ * is what keeps that trade honest against spec 004 §14 A1's document budget.
+ */
+export interface PriceTable {
+  readonly productId: string;
+  readonly tierKey: string;
+  /**
+   * The oldest publication date among the rates used, or `null` when no conversion was involved
+   * (the destination currency alone) — so a repaint can never show an unstamped amount (§5.4).
+   */
+  readonly fxAsOf: IsoDate | null;
+  /** Display amount per currency, integer minor units of that currency. */
+  readonly entries: Readonly<Partial<Record<CurrencyCode, number>>>;
+}
+
+/**
+ * Schema.org's two availability values, as the URLs Google reads. No other value is expressible:
+ * `PreOrder`, `BackOrder` and `LimitedAvailability` describe stock states a relay does not have.
+ */
+export type OfferAvailability =
+  "https://schema.org/InStock" | "https://schema.org/OutOfStock";
+
+/**
+ * The typed input spec 007's `Offer` builder consumes — and the manual-action guard of
+ * `plan/02` §15 (spec 005 §6, AC-11).
+ *
+ * Every field is derived from the **same `PriceProjection` the page renders**, so "structured
+ * data ≠ visible content" is discharged by construction rather than by a validator run after the
+ * fact:
+ *
+ *  - `price` is `displayPrice.amountMinor` as a plain decimal string at the currency's exponent
+ *    (`45.90`, never `45,90` — schema.org requires the dot, and spec 001's `validate-schema`
+ *    rejects the comma even when the number is right);
+ *  - `priceCurrency` is the **locale's** default currency, the same one in the HTML, because the
+ *    cookie override is a client repaint over identical cached HTML (`plan/02` §3);
+ *  - `shippingRate` is zero **by definition**: delivery is inside the price (`plan/07` §4);
+ *  - `hasMerchantReturnPolicy` is `MerchantReturnNotPermitted`, the perishable-goods position the
+ *    PDP and the pay page disclose in words (CRD Art. 16(d), `plan/07` §2.1), so the structured
+ *    data and the disclosure agree;
+ *  - `availabilityKey` is the message key for the *visible* availability line, so the words and
+ *    the schema value cannot drift either.
+ *
+ * There is exactly one of these per PDP, and none at all for a country that is not `live`
+ * (ADR-0007, AC-11): `offerProjection()` returns `null` there rather than an `Offer` describing a
+ * purchase nobody can make.
+ */
+export interface OfferProjection {
+  readonly price: string;
+  readonly priceCurrency: CurrencyCode;
+  readonly priceValidUntil: IsoDate | null;
+  readonly availability: OfferAvailability;
+  readonly availabilityKey: CatalogAvailabilityKey;
+  /** ISO-3166-1 alpha-2 of the destination — `Offer.eligibleRegion` (spec 005 §6). */
+  readonly eligibleRegion: CountryIso2;
+  /** Always zero, in the offer's own currency: delivery is included in `price`. */
+  readonly shippingRate: IntegerMoney;
+  readonly hasMerchantReturnPolicy: "https://schema.org/MerchantReturnNotPermitted";
+  readonly priceVersion: string;
+}
