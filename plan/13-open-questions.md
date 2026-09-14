@@ -90,3 +90,11 @@ Legend: 🧑 founder · 🧾 accountant · ⚖️ lawyer · 🔍 verify at decis
 
 **Recommendation:** answer section A this week (most have safe defaults), book the accountant and lawyer for section B now, and let `/status` carry the rest.
 **Rationale:** nothing in section A changes architecture; everything in section B gates the first lawful sale.
+
+## C. Strategy questions raised after planning (2026-09-14)
+
+| # | Question | Blocks | Owner | Due | Default if unanswered | Status |
+|---|---|---|---|---|---|---|
+| C1 | Do priorities 1 and 2 in `CLAUDE.md` swap — trust and conversion (real reviews, delivery photo, phone/WhatsApp line, guarantee) before organic ranking — given the internetflorist.biz evidence that repeat customers, affiliates and phones, not search, carry the incumbent's ~70 orders/day? | plan/02 emphasis, spec 007–009 scope, Phase 1 ordering (013 payments vs 022 reviews/Trustpilot) | Ahmed | 2026-09-21 | Priorities unchanged; specs 007–009 built as planned | open |
+| C2 | Narrow Phase 0/1 to one or two corridors owned end-to-end (vetted florists, photo, guarantee) instead of seven guide countries? | spec 007 content scope (A7), florist outreach | Ahmed | 2026-09-21 | Seven guides as planned; PL only live | open |
+| C3 | Add a Pakistan-inbound diaspora corridor (UK/US/UAE → PK) to the roadmap, given founder location and vendor access? | plan/09 Phase 4 destinations, entity/VAT questions | Ahmed | 2026-09-21 | Not in scope before Phase 1 exit | open |
