@@ -91,13 +91,15 @@
  *
  * Usage: `node scripts/client-js-budget.ts [--dist .next] [--url /en]…`
  */
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { brotliCompressSync, constants, gzipSync } from "node:zlib";
 
 import { launchLocales } from "../src/config/locales.ts";
 import { loadMessages, namespacesFor } from "../src/modules/i18n/messages.ts";
+
+import { FONT_BUDGET_BYTES, readManifest } from "./fonts/build-fonts.ts";
 
 /**
  * `plan/01` §7 as restated by spec 004 §13 Q13 and **corrected by spec 004 §14 A1**: 128 KB —
@@ -110,10 +112,30 @@ export const CLIENT_JS_BUDGET_BYTES = 128 * 1024;
 /** Spec 003 §6 / AC-27: the serialised client message payload, gzipped. */
 export const MESSAGES_PAYLOAD_BUDGET_BYTES = 4 * 1024;
 
-/** The URLs measured by default: the chooser and the two locales AC-27 names, plus `/de`. */
-export const DEFAULT_URLS = ["/", "/en", "/de"] as const;
+/**
+ * The URLs measured by default: AC-24's five — the chooser and all four launch locale homes
+ * (TASK-056 widened the list from spec 003's `/`, `/en`, `/de`; `lighthouse` measures the same
+ * five, from `tests/fixtures/seo/lighthouse-urls.json`).
+ */
+export const DEFAULT_URLS = ["/", "/en", "/en-gb", "/de", "/pl"] as const;
 
 export const DEFAULT_DIST = ".next";
+
+/**
+ * How far a public route's script transfer may grow against the committed baseline before this
+ * script fails (spec 004 AC-25; TASK-056).
+ *
+ * The AC words it as "5 KB gz"; the budget itself became Brotli at §14 A1, and a guard measured in
+ * one encoding against a budget measured in another is exactly the confusion that correction
+ * removed — so the allowance is 5 KB of the **same** Brotli total the budget uses (spec 004 §14
+ * A13). It exists because the absolute budget has ~9 KB of headroom on a locale document and no
+ * application byte left to remove: without it, a 4 KB import lands green, and the next one has
+ * nowhere to go.
+ */
+export const REGRESSION_ALLOWANCE_BYTES = 5 * 1024;
+
+/** The committed table this script compares against, and rewrites with `--update-baseline`. */
+export const BASELINE_FILE = "tests/fixtures/seo/bundle-baseline.json";
 
 export interface ScriptTag {
   /** Path of the asset inside the dist directory, e.g. `static/chunks/abc.js`. */
@@ -623,6 +645,180 @@ export function catalogueLeaks(
   return leaks;
 }
 
+/**
+ * The application-code markers no chunk of `/` may contain (spec 004 AC-12, AC-25; TASK-056).
+ *
+ * "`/` ships zero application JavaScript" is a claim spec 003 AC-7 made and every later spec
+ * repeated, and until now nothing measured it: the chooser's byte total is the framework floor,
+ * and a framework floor plus a small island looks like a framework floor. What separates the two
+ * is *content*. Every component of the design system renders a `data-fo-*` attribute — it is how
+ * the e2e, a11y and visual suites select anything at all — so a chunk that carries one carries
+ * rendered application UI.
+ *
+ * The attribute, not a component name: Turbopack writes a `next/dynamic` module's *name* into the
+ * loader stub of the entry that declares it, so `/`'s 1 434 B loader chunk mentions
+ * `LocaleSuggestionBannerIsland` although the chooser never mounts it and the browser never
+ * fetches the island (`/review 36`, §14 A1 addendum). A name proves nothing; markup does.
+ */
+export const APPLICATION_MARKUP_MARKER = /data-fo-[a-z-]+=/;
+
+/** The route that must stay free of it, and the reason, so a failure explains itself. */
+export const ZERO_APP_JS_URL = "/";
+
+export interface ApplicationCodeHit {
+  readonly url: string;
+  readonly asset: string;
+}
+
+/**
+ * Application markup found in a script `/` fetches, and the `next/dynamic` chunks it fetches at
+ * all — either one contradicts AC-12's "zero application JS" for the chooser.
+ */
+export function applicationCodeHits(
+  dist: string,
+  pages: readonly PageMeasurement[],
+): ApplicationCodeHit[] {
+  const page = pages.find((candidate) => candidate.url === ZERO_APP_JS_URL);
+  if (page === undefined) return [];
+  const hits: ApplicationCodeHit[] = [];
+  for (const asset of page.assets) {
+    if (asset.noModule) continue;
+    if (asset.kind === "lazy") {
+      hits.push({ url: page.url, asset: asset.asset });
+      continue;
+    }
+    const source = readFileSync(join(dist, asset.asset), "utf8");
+    if (APPLICATION_MARKUP_MARKER.test(source)) {
+      hits.push({ url: page.url, asset: asset.asset });
+    }
+  }
+  return hits;
+}
+
+export interface FontTransfer {
+  /** Named `transferBytes` and not `total…` because `fo/no-float-money` reads the latter as money. */
+  readonly transferBytes: number;
+  readonly budgetBytes: number;
+  readonly withinBudget: boolean;
+  readonly faces: readonly { readonly file: string; readonly bytes: number }[];
+}
+
+/**
+ * Font transfer per page (spec 004 AC-4's ≤45 KB, restated as an AC-25 clause; TASK-056).
+ *
+ * Read from `src/modules/ui/fonts/subset.json`, the manifest `pnpm fonts:build` writes and
+ * `tests/unit/fonts.test.ts` pins byte-for-byte against the committed `.woff2` files. Every
+ * document preloads all three faces (`src/modules/ui/fonts/index.ts`), so the per-page transfer
+ * *is* the manifest total; this reports it in the same table as the script budget because §11's
+ * bundle table has a Fonts column and a budget printed nowhere is a budget nobody reads.
+ */
+export function fontTransfer(root: string): FontTransfer {
+  const manifest = readManifest(root);
+  const faces = manifest.faces.map((face) => ({
+    file: face.file,
+    bytes: face.bytes,
+  }));
+  const transferBytes = faces.reduce((sum, face) => sum + face.bytes, 0);
+  return {
+    transferBytes,
+    budgetBytes: FONT_BUDGET_BYTES,
+    withinBudget: transferBytes <= FONT_BUDGET_BYTES,
+    faces,
+  };
+}
+
+export interface BundleBaseline {
+  readonly budgetBytes: number;
+  readonly regressionAllowanceBytes: number;
+  /** Route -> Brotli script transfer, the number the budget is compared against. */
+  readonly routes: Readonly<Record<string, number>>;
+}
+
+export interface Regression {
+  readonly url: string;
+  readonly baselineBytes: number;
+  readonly measuredBytes: number;
+  readonly deltaBytes: number;
+}
+
+/**
+ * The committed baseline, or `null` when there is none yet (the first run writes one with
+ * `--update-baseline`). Parsed defensively rather than trusted: a baseline with a route missing
+ * is a route with no guard, and that must be visible rather than silently permissive.
+ */
+export function readBaseline(root: string): BundleBaseline | null {
+  try {
+    const parsed = JSON.parse(
+      readFileSync(join(root, BASELINE_FILE), "utf8"),
+    ) as Partial<BundleBaseline>;
+    if (typeof parsed.routes !== "object" || parsed.routes === null)
+      return null;
+    return {
+      budgetBytes: parsed.budgetBytes ?? CLIENT_JS_BUDGET_BYTES,
+      regressionAllowanceBytes:
+        parsed.regressionAllowanceBytes ?? REGRESSION_ALLOWANCE_BYTES,
+      routes: parsed.routes,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/** Routes that grew more than the allowance, and routes the baseline does not cover. */
+export function regressions(
+  baseline: BundleBaseline | null,
+  pages: readonly PageMeasurement[],
+): { readonly grown: Regression[]; readonly unknown: string[] } {
+  if (baseline === null) {
+    return { grown: [], unknown: pages.map((page) => page.url) };
+  }
+  const grown: Regression[] = [];
+  const unknown: string[] = [];
+  for (const page of pages) {
+    const baselineBytes = baseline.routes[page.url];
+    if (baselineBytes === undefined) {
+      unknown.push(page.url);
+      continue;
+    }
+    const deltaBytes = page.fetchedBrotliBytes - baselineBytes;
+    if (deltaBytes > baseline.regressionAllowanceBytes) {
+      grown.push({
+        url: page.url,
+        baselineBytes,
+        measuredBytes: page.fetchedBrotliBytes,
+        deltaBytes,
+      });
+    }
+  }
+  return { grown, unknown };
+}
+
+/** `--update-baseline`: rewrite the committed table from this build, in Prettier's shape. */
+export function writeBaseline(
+  root: string,
+  pages: readonly PageMeasurement[],
+): string {
+  const routes: Record<string, number> = {};
+  for (const page of pages) routes[page.url] = page.fetchedBrotliBytes;
+  const file = {
+    "//": [
+      "Committed bundle baseline (spec 004 §11, AC-25; TASK-056).",
+      "Brotli script transfer per public route, as `pnpm budget:client-js` measures it from the",
+      "build output. The absolute budget is `budgetBytes`; a route that grows more than",
+      "`regressionAllowanceBytes` against the number here fails the gate even while it is inside",
+      "the budget, because the budget's remaining headroom is the framework's, not ours.",
+      "Regenerate deliberately with `pnpm budget:client-js --update-baseline` and say in the PR",
+      "which import moved the number.",
+    ],
+    budgetBytes: CLIENT_JS_BUDGET_BYTES,
+    regressionAllowanceBytes: REGRESSION_ALLOWANCE_BYTES,
+    routes,
+  };
+  const path = join(root, BASELINE_FILE);
+  writeFileSync(path, `${JSON.stringify(file, null, 2)}\n`);
+  return path;
+}
+
 export interface MessagesPayloadSize {
   readonly locale: string;
   readonly rawBytes: number;
@@ -659,26 +855,39 @@ export function messagesPayloadSizes(): MessagesPayloadSize[] {
 
 const kb = (bytes: number): string => `${(bytes / 1024).toFixed(1)} KB`;
 
-export function formatMarkdownTable(pages: readonly PageMeasurement[]): string {
+export function formatMarkdownTable(
+  pages: readonly PageMeasurement[],
+  fonts: FontTransfer,
+  baseline: BundleBaseline | null,
+): string {
   const lines = [
-    "| URL | document JS (br) | + `next/dynamic` (br) | total (br) | total (gz) | budget 128 KB br | scripts (document + lazy) |",
-    "|---|---|---|---|---|---|---|",
+    "| Route | first-load JS (br) | + `next/dynamic` (br) | total (br) | total (gz) | vs baseline | fonts | budget |",
+    "|---|---|---|---|---|---|---|---|",
   ];
   for (const page of pages) {
+    const baselineBytes = baseline?.routes[page.url];
+    const delta =
+      baselineBytes === undefined
+        ? "no baseline"
+        : `${page.fetchedBrotliBytes - baselineBytes >= 0 ? "+" : "−"}${kb(
+            Math.abs(page.fetchedBrotliBytes - baselineBytes),
+          )}`;
     lines.push(
       `| \`${page.url}\` | ${kb(page.documentBrotliBytes)} | ${kb(page.lazyBrotliBytes)} | ${kb(
         page.fetchedBrotliBytes,
-      )} | ${kb(page.fetchedGzipBytes)} | ${
-        page.withinBudget ? "within" : "**over**"
-      } | ${String(
-        page.assets.filter(
-          (asset) => !asset.noModule && asset.kind === "document",
-        ).length,
-      )} + ${String(
-        page.assets.filter((asset) => asset.kind === "lazy").length,
-      )} |`,
+      )} | ${kb(page.fetchedGzipBytes)} | ${delta} | ${kb(fonts.transferBytes)} | ${
+        page.withinBudget ? "within 128 KB br" : "**over 128 KB br**"
+      } |`,
     );
   }
+  lines.push("");
+  lines.push(
+    `Fonts: ${kb(fonts.transferBytes)} for ${String(fonts.faces.length)} faces, budget ${kb(
+      fonts.budgetBytes,
+    )} — ${fonts.withinBudget ? "within" : "**over**"}. Regression allowance ${kb(
+      baseline?.regressionAllowanceBytes ?? REGRESSION_ALLOWANCE_BYTES,
+    )} br against \`${BASELINE_FILE}\`.`,
+  );
   return lines.join("\n");
 }
 
@@ -754,10 +963,23 @@ export function main(
       argValues(argv, "--dist")[0] ?? DEFAULT_DIST,
     );
     const urls = argValues(argv, "--url");
+    const root = process.cwd();
     const pages = measurePages(dist, urls.length > 0 ? urls : DEFAULT_URLS);
     const messages = messagesPayloadSizes();
     const forbidden = forbiddenModuleHits(dist, pages);
     const leaks = catalogueLeaks(dist, pages);
+    const fonts = fontTransfer(root);
+    const applicationCode = applicationCodeHits(dist, pages);
+
+    if (argv.includes("--update-baseline")) {
+      const path = writeBaseline(root, pages);
+      out.write(
+        `${formatMarkdownTable(pages, fonts, readBaseline(root))}\n\nclient-js-budget: wrote ${path}\n`,
+      );
+      return 0;
+    }
+    const baseline = readBaseline(root);
+    const { grown, unknown } = regressions(baseline, pages);
 
     const breaches = [
       ...pages
@@ -780,11 +1002,30 @@ export function main(
         (leak) =>
           `${leak.url} ships the \`${leak.namespace}.*\` catalogue in a fetched chunk (${leak.asset}, e.g. \`${leak.key}\`) — no client may read a message catalogue since spec 004 §14 A1's addendum`,
       ),
+      ...(fonts.withinBudget
+        ? []
+        : [
+            `font transfer is ${kb(fonts.transferBytes)} across ${String(fonts.faces.length)} faces, over the ${kb(fonts.budgetBytes)} budget of spec 004 AC-4`,
+          ]),
+      ...applicationCode.map(
+        (hit) =>
+          `${hit.url} fetches ${hit.asset}, which is application JavaScript — the chooser ships none (spec 003 AC-7, spec 004 AC-12, AC-25)`,
+      ),
+      ...grown.map(
+        (regression) =>
+          `${regression.url} grew ${kb(regression.deltaBytes)} against \`${BASELINE_FILE}\` (${kb(
+            regression.baselineBytes,
+          )} -> ${kb(regression.measuredBytes)}), over the ${kb(REGRESSION_ALLOWANCE_BYTES)} allowance of spec 004 AC-25 — name the import in the PR and re-run with \`--update-baseline\``,
+      ),
+      ...unknown.map(
+        (url) =>
+          `${url} has no row in \`${BASELINE_FILE}\`, so nothing guards it against a regression — re-run with \`--update-baseline\``,
+      ),
     ];
 
     out.write(
       [
-        formatMarkdownTable(pages),
+        formatMarkdownTable(pages, fonts, baseline),
         "",
         formatMessagesTable(messages),
         "",
@@ -795,6 +1036,9 @@ export function main(
           : "",
         leaks.length === 0
           ? `client-js-budget: no fetched chunk contains ${CLIENT_FORBIDDEN_NAMESPACES.map((namespace) => `${namespace}.*`).join(", ")} catalogue copy`
+          : "",
+        applicationCode.length === 0
+          ? `client-js-budget: ${ZERO_APP_JS_URL} fetches no application JavaScript and no next/dynamic chunk`
           : "",
         "",
         breaches.length === 0

@@ -145,3 +145,84 @@ test.describe("the language-suggestion banner", () => {
     });
   }
 });
+
+/**
+ * The two 500 documents and the component gallery — AC-27's last three rows (TASK-056).
+ *
+ * The 500 documents had no baseline until this task for the reason the header of this file
+ * records: reaching an error boundary in a browser needs a route that throws on purpose, and
+ * `src/app/(dev)/dev/boom/page.tsx` (the global document) and `src/app/[locale]/boom/page.tsx`
+ * (the localised one) are those routes. The gallery is the only surface where a component's
+ * empty, disabled, invalid and populated states are all painted at once, so a baseline of it is
+ * the one that catches a token change nobody applied to a state no page reaches.
+ *
+ * `pageerror` is swallowed on the boundary pages: the throw is the fixture.
+ */
+test.describe("the 500 documents and the gallery", () => {
+  for (const viewport of VIEWPORTS) {
+    test(`the global 500 document matches the ${viewport.name} baseline`, async ({
+      page,
+      context,
+      baseURL,
+    }) => {
+      await recordConsentRefusal(context, baseURL);
+      await page.setViewportSize({
+        width: viewport.width,
+        height: viewport.height,
+      });
+      const response = await page.goto("/dev/boom");
+      expect(
+        response?.status(),
+        "/dev/boom must throw; is ENABLE_DEV_UI=true on the target?",
+      ).toBe(500);
+      await settle(page);
+
+      await expect(page).toHaveScreenshot(`error-global-${viewport.name}.png`, {
+        fullPage: true,
+      });
+    });
+
+    test(`the localised 500 document matches the ${viewport.name} baseline`, async ({
+      page,
+      context,
+      baseURL,
+    }) => {
+      page.on("pageerror", () => {
+        /* the throw is the fixture */
+      });
+      await recordConsentRefusal(context, baseURL);
+      await page.setViewportSize({
+        width: viewport.width,
+        height: viewport.height,
+      });
+      const response = await page.goto("/en/boom");
+      expect(response?.status()).toBe(200);
+      // The boundary has replaced the page when its heading is on screen.
+      await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+      await settle(page);
+
+      await expect(page).toHaveScreenshot(`error-locale-${viewport.name}.png`, {
+        fullPage: true,
+      });
+    });
+  }
+
+  test("the component gallery matches the desktop baseline", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await recordConsentRefusal(context, baseURL);
+    await page.setViewportSize({ width: 1440, height: 900 });
+    const response = await page.goto("/dev/components");
+    expect(
+      response?.status(),
+      "/dev/components must be served; is ENABLE_DEV_UI=true on the target?",
+    ).toBe(200);
+    await settle(page);
+
+    await expect(page).toHaveScreenshot("dev-components-desktop.png", {
+      fullPage: true,
+    });
+  });
+});

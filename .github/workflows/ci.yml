@@ -453,14 +453,15 @@ jobs:
       #    catalogue once it crosses Turbopack's tree-shaking threshold, which is too small a byte
       #    total to notice and was 4 751 B Brotli on every document.
       #
-      # `continue-on-error` is on the **step**, not the job. Since TASK-085 every URL of the set is
-      # inside the budget — `/` 116 778 B Brotli (14 294 B spare) and each locale document
-      # 122 360 B (8 712 B spare) — and what is left is the framework floor with no application
-      # byte to remove. Spec 004 §13 Q13 option (b) was taken rather than raising the number.
-      # TASK-056 owns the flip to blocking; deleting the one line below is the whole flip.
+      # **Blocking since TASK-056** (spec 004 AC-25): the `continue-on-error: true` that used to sit
+      # on this step is gone. Every URL of the set is inside the budget — `/` 116 778 B Brotli and
+      # each locale document 122 360 B against 131 072 B — what is left is the framework floor with
+      # no application byte to remove, and spec 004 §13 Q13 option (b) was taken rather than raising
+      # the number. The step also fails on a >5 KB regression against
+      # `tests/fixtures/seo/bundle-baseline.json`, which is the table spec 004 §11 asks to be
+      # reviewable in a diff.
       - name: Measure the client-JS budgets (AC-27 / T-27, AC-25)
         id: budget
-        continue-on-error: true
         run: pnpm budget:client-js 2>&1 | tee budget.log
       - name: Summarise the client-JS budgets (AC-27 / T-27, AC-25)
         if: always()
@@ -471,10 +472,10 @@ jobs:
           {
             echo "### client-JS budgets (spec 003 AC-27 / T-27, spec 004 AC-25)"
             echo ""
-            echo "\`pnpm budget:client-js\`: $BUDGET_OUTCOME (informational until TASK-056)."
+            echo "\`pnpm budget:client-js\`: $BUDGET_OUTCOME (required since TASK-056)."
             echo ""
-            echo "Script transfer is measured as **Brotli** against 122 880 B — \`plan/01\` §7 as"
-            echo "spec 004 §13 Q13 restated it (founder decision, option (a)). The gzip number is"
+            echo "Script transfer is measured as **Brotli** against 131 072 B — \`plan/01\` §7 as"
+            echo "spec 004 §13 Q13 restated it and §14 A1 corrected it. The gzip number is"
             echo "printed beside it because every older note in this repository quotes that one."
             echo "The run also asserts that no measured route ships \`zod\` or \`@sentry/\`."
             echo ""
@@ -1124,29 +1125,34 @@ jobs:
             echo "- axe: zero serious/critical violations required (spec 001 §8)."
           } >> "$GITHUB_STEP_SUMMARY"
 
-  # AC-23 / T-24 (TASK-009); spec 003 AC-27 / T-27 (TASK-043): Lighthouse CI against the preview
-  # with the `plan/01` §7 budgets as assertions, over the URL set in
-  # `tests/fixtures/seo/lighthouse-urls.json` — `/`, `/en` and `/de` since TASK-043.
+  # AC-23 / T-24 (TASK-009); spec 003 AC-27 / T-27 (TASK-043); **spec 004 AC-24 (TASK-056), which
+  # is where this job stopped being informational**: Lighthouse CI with the `plan/01` §7 budgets as
+  # assertions, over the five URLs of `tests/fixtures/seo/lighthouse-urls.json` — `/`, `/en`,
+  # `/en-gb`, `/de`, `/pl`.
   #
-  # spec 001 §13 Q4 made it informational "until spec 004". TASK-043 measured what that flip
-  # actually depends on, and it is not a schedule: on **Next 16.3.4 the framework's own client
-  # runtime is 130.1 KB gzipped** (react-dom 71.4 + the App Router runtime 46.0 + ~12.7 KB of
-  # bootstrap), against a 120 KB script budget, on a document with no application JavaScript at
-  # all. Removing the browser Sentry SDK took `/` from 297 KB to 221 KB gz and `/en` from 309 KB
-  # to 233 KB; what remains above the floor is the zod that Next's root error boundary drags in
-  # (85 KB gz — see spec 003 §14 A12). Whether the budget moves or the framework does is a founder
-  # decision, recorded as **spec 003 §14 A12** and carried on TASK-043's Blockers cell; a
-  # permanently red required check would decide it by attrition instead. So the job keeps
-  # `continue-on-error: true` and the assertions stay `error` in `lighthouserc.json`: the numbers
-  # are measured and published on every PR, they simply do not block. Spec 004 task 2 owns the
-  # flip together with `scripts/check-bundle-budget.ts` (spec 004 §2), and spec 007 adds the
-  # nightly run.
+  # **No `continue-on-error`.** spec 001 §13 Q4 made the job informational "until spec 004"; spec
+  # 003 §14 A12 recorded why a date was not enough (the framework's own client runtime was over the
+  # script budget on a page with no application JavaScript); spec 004 §13 Q13 and §14 A1 restated
+  # the budget as 128 KB **Brotli**, TASK-046 and TASK-085 took zod and the client message provider
+  # out of the browser, and TASK-056 measured the finished pages and fixed the last red assertion
+  # (see `lighthouserc.json`'s note and `tests/e2e/lcp.spec.ts`). A red check here is now a
+  # regression, which is the whole point of a budget.
   #
-  # `NO_FCP` — Lighthouse aborting because the page painted nothing — was the expected outcome for
-  # the whole of spec 001 and is no longer expected at all since TASK-035 gave `/` real text. The
-  # branch below stays because that outcome must never be read as a verdict in either direction,
-  # and the step summary is written *after* the run so it can say which of the three happened
-  # instead of guessing in advance.
+  # **It measures this repository's bytes, not a preview.** The job builds, starts `next start` and
+  # puts `scripts/seo/brotli-origin.ts` in front of it, because `resource-summary:script:size` is
+  # transfer size and neither previously available origin sent the encoding the budget is written
+  # in: `next start` negotiates gzip, and a protected Vercel preview injects `vercel.live` — tens of
+  # KB of platform script that is absent from production and in no build output of ours. That is
+  # the decision `lighthouserc.json` left to TASK-056 ("production URLs, or a first-party-only
+  # budget"), and it makes this number equal to the one `pnpm budget:client-js` prints in `build`.
+  # The consequence to keep in mind: this job no longer proves anything about the *deployment*
+  # (TTFB, edge cache, real headers) — the `e2e` suite against the preview does that.
+  #
+  # `NO_FCP` — Lighthouse aborting because the page painted nothing — has not been the expected
+  # outcome since TASK-035 gave `/` real text. The branch below stays because that outcome must
+  # never be read as a verdict in either direction, and the step summary is written *after* the run
+  # so it can say which of the three happened instead of guessing in advance. Spec 001 AC-23's
+  # queued correction to that wording is discharged here (spec 004 §14 A16).
   #
   # `@lhci/cli` is fetched pinned by `npx` instead of being a devDependency: it pulls in Lighthouse
   # and Chrome plumbing that every other job would then install on every run, and it is needed in
@@ -1154,81 +1160,97 @@ jobs:
   lighthouse:
     name: lighthouse
     runs-on: ubuntu-latest
-    # Three URLs x three runs on a shared runner; 20 minutes was sized for one URL.
+    # Five URLs x three runs on a shared runner, plus a build.
     timeout-minutes: 30
-    needs: preview
-    continue-on-error: true
+    needs: build
     env:
-      PLAYWRIGHT_BASE_URL: ${{ needs.preview.outputs.preview_url }}
-      VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+      NEXT_TELEMETRY_DISABLED: "1"
+      LHCI_BASE_URL: http://127.0.0.1:3001
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
-      - name: Run Lighthouse CI against the preview
+      # The same clean-clone build the `build` job makes, from the committed placeholders; the
+      # measured document must be one this repository produced, not one a platform rewrote.
+      - run: cp .env.example .env.local
+      - name: Build and serve the production output behind the Brotli origin
+        run: |
+          set -euo pipefail
+          pnpm build
+          pnpm start &
+          npx --yes wait-on http://127.0.0.1:3000/en --timeout 120000
+          pnpm lighthouse:origin &
+          npx --yes wait-on http://127.0.0.1:3001/en --timeout 60000
+          # Warm every measured URL once before the run. Measured locally: the first request to a
+          # cold `next start` reported LCP 2 679 ms on `/` against 1 459-1 492 ms on the two runs
+          # after it — a server start-up cost, not a page cost, and one that would decide a
+          # required check by whichever run happened to be first.
+          for path in $(node -e 'process.stdout.write(require("./tests/fixtures/seo/lighthouse-urls.json").join(" "))'); do
+            curl -sS -o /dev/null "http://127.0.0.1:3001$path"
+          done
+      - name: Run Lighthouse CI against the Brotli origin
         id: lhci
         run: |
           set -euo pipefail
-          # The bypass secret travels as a request header, never in a URL or a log line; GitHub
-          # masks it in the output, and `extraHeaders` is built here rather than committed.
-          headers=$(BYPASS="$VERCEL_AUTOMATION_BYPASS_SECRET" node -e \
-            'process.stdout.write(JSON.stringify({ "x-vercel-protection-bypass": process.env.BYPASS, "x-vercel-set-bypass-cookie": "false" }))')
           # Assigned first so `set -e` aborts when the URL list is unreadable, instead of running
           # Lighthouse against nothing. Left unquoted below on purpose: one word per URL.
           urls=$(node scripts/seo/lighthouse-urls.ts)
           # shellcheck disable=SC2086
           npx --yes @lhci/cli@0.15.1 autorun \
             --config=lighthouserc.json \
-            --collect.settings.extraHeaders="$headers" \
             $urls 2>&1 | tee lhci-output.log
 
       # Written after the run, with `if: always()`, because "did the budgets hold?" is not
-      # answerable before it. The `NO_FCP` branch is the expected one for the whole of spec 001 and
-      # it says so in as many words: no measurement happened, so no verdict is available.
+      # answerable before it. The per-URL table is spec 004 §11's requirement: a regression must
+      # name the locale it happened in.
       - name: Summarise what Lighthouse actually measured
         if: always()
         env:
           LHCI_OUTCOME: ${{ steps.lhci.outcome }}
-          PREVIEW_URL: ${{ needs.preview.outputs.preview_url }}
         run: |
           set -uo pipefail
           log=lhci-output.log
           {
-            echo "### lighthouse (AC-23 / T-24)"
+            echo "### lighthouse (spec 004 AC-24 — required)"
             echo ""
-            echo "URL set \`tests/fixtures/seo/lighthouse-urls.json\` against $PREVIEW_URL."
-            echo "**Informational, and why:** Next 16.3.4's own client runtime measures 130.1 KB"
-            echo "gzipped against a 120 KB script budget on a document with no application"
-            echo "JavaScript, so this job carries \`continue-on-error: true\` until the founder"
-            echo "rules on the budget (spec 003 §14 A12). A red check here never blocks the PR."
-            echo "\`pnpm budget:client-js\` in the \`build\` job measures the same bytes from the"
-            echo "build output, per chunk, and is the number to read when this one moves."
+            echo "URL set \`tests/fixtures/seo/lighthouse-urls.json\`, measured against"
+            echo "\`next start\` behind \`scripts/seo/brotli-origin.ts\` (Brotli, quality 11) —"
+            echo "this repository's own bytes, with no platform script in the total."
+            echo "Budgets: performance / accessibility / best-practices >= 0.95, LCP < 2000 ms,"
+            echo "CLS < 0.05, script transfer <= 131 072 B, image transfer <= 204 800 B."
             echo ""
+            if [ -f .lighthouseci/manifest.json ]; then
+              echo "| URL | perf | a11y | best-practices | LCP (ms) | CLS | script (B, br) |"
+              echo "|---|---|---|---|---|---|---|"
+              jq -r '.[] | select(.isRepresentativeRun) | "| \(.url) | \(.summary.performance) | \(.summary.accessibility) | \(.summary["best-practices"]) | \(.jsonPath) |"' \
+                .lighthouseci/manifest.json > /tmp/lh-rows.txt || true
+              # The manifest carries the category scores; the metric values come from each run's
+              # own report, so the table names the number that failed rather than a score.
+              while IFS= read -r row; do
+                json=$(echo "$row" | awk -F'|' '{print $6}' | xargs)
+                metrics=$(jq -r '"\(.audits["largest-contentful-paint"].numericValue | floor) | \(.audits["cumulative-layout-shift"].numericValue) | \([.audits["resource-summary"].details.items[] | select(.resourceType == "script")][0].transferSize)"' "$json")
+                echo "$row" | awk -F'|' -v m="$metrics" '{printf "|%s|%s|%s|%s| %s |\n", $2, $3, $4, $5, m}'
+              done < /tmp/lh-rows.txt
+              echo ""
+            fi
             if [ "$LHCI_OUTCOME" = "success" ]; then
               echo "**Budgets measured and met.** Every assertion in \`lighthouserc.json\` is an"
-              echo "\`error\` and none fired, so the \`plan/01\` §7 budgets hold on this preview."
-              echo ""
-              if [ -f .lighthouseci/manifest.json ]; then
-                echo "| URL | performance | accessibility | best-practices | seo |"
-                echo "|---|---|---|---|---|"
-                jq -r '.[] | select(.isRepresentativeRun) | "| \(.url) | \(.summary.performance) | \(.summary.accessibility) | \(.summary["best-practices"]) | \(.summary.seo) |"' \
-                  .lighthouseci/manifest.json
-              fi
+              echo "\`error\` and none fired."
             elif [ -f "$log" ] && grep -qE 'NO_FCP|did not paint any content' "$log"; then
               echo "**No budget was measured: this is neither a budget breach nor a pass.**"
               echo ""
-              echo "Lighthouse aborted with \`NO_FCP\` (\"the page did not paint any content\") before"
-              echo "a single metric existed, so the \`plan/01\` §7 assertions in \`lighthouserc.json\`"
-              echo "were never evaluated and no conclusion about the budgets can be drawn from this"
-              echo "run in either direction. Unlike in spec 001, this is **not** the expected"
-              echo "outcome any more: every measured URL renders text since TASK-035, so a"
-              echo "\`NO_FCP\` here means the preview did not serve the document — read the step log."
+              echo "Lighthouse aborted with \`NO_FCP\` (\"the page did not paint any content\")"
+              echo "before a single metric existed, so the assertions were never evaluated and no"
+              echo "conclusion about the budgets can be drawn from this run in either direction."
+              echo "Every measured URL renders text since TASK-035, so a \`NO_FCP\` here means the"
+              echo "origin did not serve the document — read the step log."
             else
-              echo "**The run failed before reaching a verdict on the budgets.**"
+              echo "**The run ended with at least one assertion over budget, or failed before a"
+              echo "verdict.** Only a failure that lists a metric against its budget is a budget"
+              echo "breach; anything else measured nothing. The failing lines of the run:"
               echo ""
-              echo "Lighthouse exited non-zero for a reason other than \`NO_FCP\` — an unreachable"
-              echo "preview, a rejected bypass header, or an \`@lhci/cli\` error. Read the step log:"
-              echo "only a failure that lists a metric against its budget is a budget breach;"
-              echo "anything else measured nothing."
+              echo '```'
+              grep -E 'expected|failure|Assertion' "$log" | head -40 || true
+              echo '```'
             fi
             # `tee`, not `>>`: the same verdict belongs in the step log, so it can be read from
             # `gh run view --log` without opening the run summary page.
@@ -1241,6 +1263,4 @@ jobs:
           name: lighthouseci
           path: .lighthouseci/
           retention-days: 7
-          # Empty is the normal spec 001 outcome: `NO_FCP` aborts before a report is written, and
-          # the step summary above already explains why. Not a warning.
           if-no-files-found: ignore

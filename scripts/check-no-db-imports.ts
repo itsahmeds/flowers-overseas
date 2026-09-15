@@ -67,12 +67,39 @@ export const SCANNED_PATHS = [
   // (TASK-083) will live beside `seed/index.ts`, which is deliberately outside this set.
   "seed/diff.ts",
   "seed/target.ts",
-  // TASK-079: spec 006 §2.5's render half. The manifest is a build-time JSON import and every
-  // lookup is pure, so resolving an image performs no query and no fetch even after Neon exists
-  // (§5.4 — which is ADR-0015's compute-hour constraint restated). Named as the directory rather
-  // than as `src/modules/ui` because the rest of the module is spec 004's and has never been in
-  // this scope.
-  "src/modules/ui/media",
+  // spec 004 AC-2 (TASK-056): **the whole of `src/modules/ui`**, which is the rest of what spec
+  // 004 added — tokens, primitives, icons, fonts, chrome, the home sections, the consent sheet and
+  // the notice shell. TASK-079 could only name `media/` because the module was still being
+  // written; AC-2 asks for "every file this spec adds", and the last task of the spec is where
+  // that becomes checkable. `src/modules/ui/media` is no longer listed separately: this entry is
+  // recursive and listing it twice would report every hit in it twice.
+  "src/modules/ui",
+  // spec 004 AC-2 (TASK-056): the route tree the spec added or rewrote. Named file by file rather
+  // than as `src/app`, for the reason the seed entries give: `src/app/api/` grows handlers that
+  // *will* read the database the day spec 002 unparks (spec 013's checkout, spec 012's admin), and
+  // a blanket entry would either fail then or be quietly widened. What is listed is what must
+  // never need one — the documents, the two route groups, and the two Phase-0 endpoints whose
+  // whole design is that they write to a log line and nothing else (`docs/compliance/ropa.md`
+  // rows 3 and 5).
+  "src/app/(chooser)",
+  "src/app/(dev)",
+  "src/app/[locale]",
+  "src/app/layout.tsx",
+  "src/app/not-found.tsx",
+  "src/app/global-error.tsx",
+  "src/app/robots.ts",
+  "src/app/api/consent",
+  "src/app/api/csp-report",
+  // spec 004 §5.2's server-side halves: the CSP and security-header builder, the Consent Mode
+  // bootstrap the hash is computed from, the consent policy version and the cookie-writing rules.
+  "src/lib/csp.ts",
+  "src/lib/consent.ts",
+  "src/lib/consent-bootstrap.ts",
+  "src/lib/robots-headers.ts",
+  "src/lib/media-headers.ts",
+  // spec 004 §2 "Analytics": the gated GA4 loader. It reads one env variable and renders two
+  // script elements; a database import here would be a surprise of the worst kind.
+  "src/modules/analytics",
 ] as const;
 
 const SCANNED_EXTENSIONS = [".ts", ".tsx", ".mts", ".cts", ".js", ".jsx"];

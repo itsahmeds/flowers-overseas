@@ -50,6 +50,7 @@
     "dev-os:check": "node scripts/dev-os-check.ts",
     "seo:validate": "node scripts/seo/validate-sitemap.ts && node scripts/seo/validate-hreflang.ts && node scripts/seo/validate-schema.ts",
     "lighthouse": "npx --yes @lhci/cli@0.15.1 autorun --config=lighthouserc.json $(node scripts/seo/lighthouse-urls.ts)",
+    "lighthouse:origin": "node scripts/seo/brotli-origin.ts",
     "budget:client-js": "node scripts/client-js-budget.ts",
     "check:no-literal-disable": "node scripts/check-no-literal-disable.ts",
     "check:no-db": "node scripts/check-no-db-imports.ts",

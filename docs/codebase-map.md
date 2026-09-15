@@ -13,65 +13,68 @@ task actually touches.
 | Module | Purpose | Spec | Tests |
 |---|---|---|---|
 | `admin` | Public barrel for `admin` (admin queries and actions) | spec 012 | — |
-| `analytics` | Public barrel for `analytics` (Consent Mode v2 + the gated GA4 tag; GA4 event schema, consent… | spec 004, 023 | `unit/consent-bootstrap.test.tsx` |
-| `catalog` | The only import path into the catalogue and pricing module (spec 005 §2, §5.2; TASK-060) | spec 005 | `contract/catalog-static-providers.test.ts`, `contract/support/catalog-provider-contract.ts`, `unit/catalog-availability.test.ts` +17 |
+| `analytics` | Public barrel for `analytics` (Consent Mode v2 + the gated GA4 tag; GA4 event… | spec 004, 023 | `unit/consent-bootstrap.test.tsx` |
+| `catalog` | The only import path into the catalogue and pricing module (spec 005 §2, §5.2;… | spec 005 | `contract/catalog-static-providers.test.ts`, `contract/support/catalog-provider-contract.ts`, `unit/catalog-availability.test.ts` +17 |
 | `customers` | Public barrel for `customers` (customers, recipients, consent) | spec 019 | — |
-| `geo` | Public barrel for `geo` (countries, cities, postcodes, holidays, cutoffs, occasion calendar) | spec 002, 009 | — |
+| `geo` | Public barrel for `geo` (countries, cities, postcodes, holidays, cutoffs,… | spec 002, 009 | — |
 | `i18n` | The only import path for the i18n module (spec 003 §5.2, AC-3; TASK-034) | spec 003 | `fixtures/ts/format-time-in-zone-no-zone.ts`, `unit/app-shell.test.tsx`, `unit/catalog-messages.test.ts` +37 |
-| `notifications` | Public barrel for `notifications` (email + WhatsApp senders, templates, outbox consumer) | spec 017 | — |
-| `orders` | Public barrel for `orders` (state machine, order service, assignment/routing rules) | spec 015, 016 | — |
+| `notifications` | Public barrel for `notifications` (email + WhatsApp senders, templates, outbox… | spec 017 | — |
+| `orders` | Public barrel for `orders` (state machine, order service, assignment/routing… | spec 015, 016 | — |
 | `partners` | Public barrel for `partners` (fulfilment partners, coverage, payouts) | spec 011, 026 | — |
-| `payments` | Public barrel for `payments` (PaymentProvider interface; stripe/, mollie/ adapters; webhooks) | spec 013, 014 | — |
-| `seo` | Public barrel for `seo` (hreflang, canonical, JSON-LD builders, sitemap generators, robots) | spec 007 | — |
-| `ui` | The only import path for the design system (spec 004 §2 "Where the design system lives", §13 Q9; | spec 004 | `unit/consent-cookie.test.ts`, `unit/consent-islands.test.tsx`, `unit/consent-view.test.ts` +19 |
+| `payments` | Public barrel for `payments` (PaymentProvider interface; stripe/, mollie/… | spec 013, 014 | — |
+| `seo` | Public barrel for `seo` (hreflang, canonical, JSON-LD builders, sitemap… | spec 007 | — |
+| `ui` | The only import path for the design system (spec 004 §2 "Where the design… | spec 004 | `unit/consent-cookie.test.ts`, `unit/consent-islands.test.tsx`, `unit/consent-view.test.ts` +19 |
 
 ## Config (`src/config/`)
 
 | File | Purpose | Spec |
 |---|---|---|
-| `address-formats.ts` | Address formats per destination country (spec 003 §2, §5.2, §7; `plan/03` §8; TASK-033) | spec 003 |
-| `catalogue/addons.data.ts` | The six Phase 0 add-ons (`plan/10` §2.1 "6 (chocolates, vase, balloon, plush, wine [flag], | spec 005 |
-| `catalogue/categories.data.ts` | The 23 seeded categories (`plan/10` §2.1 "5 product types + 10 occasion categories + 8 | spec 005 |
-| `catalogue/fx.data.ts` | The committed FX snapshot: one dated set of ECB euro reference rates (spec 005 §2 "FX and | spec 005 |
-| `catalogue/occasions.data.ts` | The occasion facet as rows (`plan/10` §1.1; spec 002 §5.1 `occasion(id, key, kind)`; TASK-061) | spec 002 |
-| `catalogue/prices.data.ts` | The authored price dataset: `country_price` and `addon_country_price` rows for every destination | spec 005 |
-| `catalogue/products.data.ts` | The 84 seeded products (spec 005 §2 "Dataset content", AC-6; `plan/10` §2.1; TASK-061) | spec 005 |
-| `catalogue/projections.ts` | The dataset's projections onto spec 002 §5.1's row shapes (spec 005 §2 "The dataset is authored | spec 002 |
-| `catalogue/schemas.ts` | The catalogue dataset's closed taxonomy and its zod schemas (spec 005 §2 "The dataset is | spec 005 |
-| `catalogue/tiers.data.ts` | The tier structure of the 84 seeded products (spec 005 §2 "Tiers and add-ons", §13 Q4/Q6; | spec 005 |
-| `categories.ts` | Category-row registry (spec 004 §2 "Everything data-gated is config", §5.1; TASK-047) | spec 004 |
-| `company.data.ts` | The trading name as a plain constant, with **no imports at all** (spec 004 §14 A1, AC-12; | spec 004 |
-| `company.ts` | Company identity (spec 004 §2 "Everything data-gated is config", §5.1, §5.3 "Footer"; `plan/07` | spec 004 |
+| `address-formats.ts` | Address formats per destination country (spec 003 §2, §5.2, §7; `plan/03` §8;… | spec 003 |
+| `catalogue/addons.data.ts` | The six Phase 0 add-ons (`plan/10` §2.1 "6 (chocolates, vase, balloon, plush,… | spec 005 |
+| `catalogue/categories.data.ts` | The 23 seeded categories (`plan/10` §2.1 "5 product types + 10 occasion… | spec 005 |
+| `catalogue/fx.data.ts` | The committed FX snapshot: one dated set of ECB euro reference rates (spec 005… | spec 005 |
+| `catalogue/occasions.data.ts` | The occasion facet as rows (`plan/10` §1.1; spec 002 §5.1 `occasion(id, key,… | spec 002 |
+| `catalogue/prices.data.ts` | The authored price dataset: `country_price` and `addon_country_price` rows for… | spec 005 |
+| `catalogue/products.data.ts` | The 84 seeded products (spec 005 §2 "Dataset content", AC-6; `plan/10` §2.1;… | spec 005 |
+| `catalogue/projections.ts` | The dataset's projections onto spec 002 §5.1's row shapes (spec 005 §2 "The… | spec 002 |
+| `catalogue/schemas.ts` | The catalogue dataset's closed taxonomy and its zod schemas (spec 005 §2 "The… | spec 005 |
+| `catalogue/tiers.data.ts` | The tier structure of the 84 seeded products (spec 005 §2 "Tiers and add-ons",… | spec 005 |
+| `categories.ts` | Category-row registry (spec 004 §2 "Everything data-gated is config", §5.1;… | spec 004 |
+| `company.data.ts` | The trading name as a plain constant, with **no imports at all** (spec 004 §14… | spec 004 |
+| `company.ts` | Company identity (spec 004 §2 "Everything data-gated is config", §5.1, §5.3… | spec 004 |
 | `cookies.ts` | The cookie register (spec 004 §2 "Consent", §5.1, §8, AC-22; TASK-050) | spec 004 |
-| `countries.ts` | Destination-country registry (spec 004 §2 "Everything data-gated is config", §5.1, §13 Q12; | spec 004 |
+| `countries.ts` | Destination-country registry (spec 004 §2 "Everything data-gated is config",… | spec 004 |
 | `currencies.ts` | Currency configuration (spec 003 §2, §5.1/§5.2; TASK-033) | spec 003 |
-| `locales.data.ts` | Locale data as plain typed constants — the zod-free half of the locale registry (spec 004 §13 | spec 004 |
+| `locales.data.ts` | Locale data as plain typed constants — the zod-free half of the locale registry… | spec 004 |
 | `locales.ts` | Locale registry (spec 003 §2 "the no-database seam", §5.2, §5.3, §6; TASK-033) | spec 003 |
-| `occasions.ts` | Occasion registry for the locale home (spec 004 §2 "Everything data-gated is config", §5.1, | spec 004 |
-| `payment-methods.ts` | Payment-method registry (spec 004 §2 "Everything data-gated is config", §8 "Reviews and trust", | spec 004 |
-| `site-links.ts` | Site-link registry (spec 004 §2 "Everything data-gated is config", §5.1, §12; TASK-047) | spec 004 |
-| `trending.ts` | The florists' picks the "Most sent this week" row shows until real orders rank it (spec 004 | spec 004 |
+| `occasions.ts` | Occasion registry for the locale home (spec 004 §2 "Everything data-gated is… | spec 004 |
+| `payment-methods.ts` | Payment-method registry (spec 004 §2 "Everything data-gated is config", §8… | spec 004 |
+| `site-links.ts` | Site-link registry (spec 004 §2 "Everything data-gated is config", §5.1, §12;… | spec 004 |
+| `trending.ts` | The florists' picks the "Most sent this week" row shows until real orders rank… | spec 004 |
 
 ## Routes (`src/app/`)
 
 | File | Purpose | Spec |
 |---|---|---|
-| `(chooser)/layout.tsx` | Root layout for the bare `/` (spec 003 §5.3 "Recommended file layout", AC-8; TASK-034, the | spec 003 |
-| `(chooser)/page.tsx` | `/` — the locale chooser (spec 003 §2, §5.3, §5.4, §6, §13 Q3; AC-7, AC-25; TASK-035) | spec 003 |
+| `(chooser)/layout.tsx` | Root layout for the bare `/` (spec 003 §5.3 "Recommended file layout", AC-8;… | spec 003 |
+| `(chooser)/page.tsx` | `/` — the locale chooser (spec 003 §2, §5.3, §5.4, §6, §13 Q3; AC-7, AC-25;… | spec 003 |
+| `(dev)/dev/boom/page.tsx` | A route that throws on purpose: the global 500 boundary, as a surface a suite… | spec 004 |
 | `(dev)/dev/components/catalog.ts` | The gallery's own copy (spec 004 §2 "Component gallery"; TASK-045) | spec 004 |
-| `(dev)/dev/components/gated.ts` | The fake providers `/dev/components` renders the three data-gated sections' populated branches | spec 004 |
-| `(dev)/dev/components/page.tsx` | `/dev/components` — the component gallery (spec 004 §2 "Component gallery — decided, not asked", | spec 004 |
-| `(dev)/layout.tsx` | Document layout for the `(dev)` route group — today only `/dev/components` (spec 004 §2 | spec 004 |
+| `(dev)/dev/components/gated.ts` | The fake providers `/dev/components` renders the three data-gated sections'… | spec 004 |
+| `(dev)/dev/components/page.tsx` | `/dev/components` — the component gallery (spec 004 §2 "Component gallery —… | spec 004 |
+| `(dev)/layout.tsx` | Document layout for the `(dev)` route group — today only `/dev/components`… | spec 004 |
+| `[locale]/boom/BoomIsland.tsx` | The throw that reaches `src/app/[locale]/error.tsx` (spec 004 AC-26, AC-27;… | spec 004 |
+| `[locale]/boom/page.tsx` | A route that throws on purpose: the localised 500 boundary, as an auditable… | spec 004 |
 | `[locale]/error.tsx` | Localised 500 boundary (spec 003 §5.3; TASK-034, rewired by TASK-085) | spec 003 |
-| `[locale]/layout.tsx` | The document layout for every localised URL (spec 003 §2, §5.3, §5.4, AC-6, AC-8, AC-9; | spec 003 |
-| `[locale]/page.tsx` | `/{locale}` placeholder home (spec 003 §5.3, §5.4; TASK-034, extended by TASK-035 with the | spec 003 |
+| `[locale]/layout.tsx` | The document layout for every localised URL (spec 003 §2, §5.3, §5.4, AC-6,… | spec 003 |
+| `[locale]/page.tsx` | `/{locale}` placeholder home (spec 003 §5.3, §5.4; TASK-034, extended by… | spec 003 |
 | `api/consent/route.ts` | `POST /api/consent` (spec 004 §5.2, AC-19; TASK-050) | spec 004 |
 | `api/csp-report/route.ts` | `POST /api/csp-report` (spec 004 §5.2, AC-23, ADR-0016; TASK-046) | spec 004 |
 | `api/health/route.ts` | `GET /api/health` (spec 001 §5.2, §5.4, AC-14, TASK-006) | spec 001 |
-| `api/reminders/route.ts` | `POST /api/reminders` — the occasion-reminder signup stub (spec 004 design round 6, | spec 004 |
-| `global-error.tsx` | The last-resort 500 document (spec 003 §5.3 "and `src/app/global-error.tsx` rendering its own | spec 003 |
+| `api/reminders/route.ts` | `POST /api/reminders` — the occasion-reminder signup stub (spec 004 design… | spec 004 |
+| `global-error.tsx` | The last-resort 500 document (spec 003 §5.3 "and `src/app/global-error.tsx`… | spec 003 |
 | `layout.tsx` | App-root layout (spec 003 §5.3 "Recommended file layout"; TASK-034) | spec 003 |
-| `not-found.tsx` | The `.label` metadata line: the status code this document is served with, and the one piece of | spec 003 |
+| `not-found.tsx` | The `.label` metadata line: the status code this document is served with, and… | spec 003 |
 | `robots.ts` | `robots.txt` (spec 001 §2, §6, AC-15, TASK-006) | spec 001 |
 
 ## Scripts (`scripts/`)
@@ -79,46 +82,47 @@ task actually touches.
 | Script | `pnpm` | Purpose |
 |---|---|---|
 | `audit-secrets.ts` | `audit:secrets` | `pnpm audit:secrets` — the gitleaks half of the dependency/secret audit gate |
-| `branch-protection.ts` | `branch-protection` | `pnpm branch-protection` — AC-21 / T-22 (spec 001 §2 "Branch protection", §12 note (a); |
-| `catalogue-check.ts` | `catalogue:check` | `pnpm catalogue:check` (spec 005 §2 "Docs, fixtures, gates", §6 "Crawl efficiency and quality |
+| `branch-protection.ts` | `branch-protection` | `pnpm branch-protection` — AC-21 / T-22 (spec 001 §2 "Branch protection", §12… |
+| `catalogue-check.ts` | `catalogue:check` | `pnpm catalogue:check` (spec 005 §2 "Docs, fixtures, gates", §6 "Crawl… |
 | `check-layout.ts` | `check-layout` | Layout manifest for `plan/01-architecture.md` §5 (spec 001 AC-3 / T-03) |
 | `check-no-db-imports.ts` | `check:no-db` | `pnpm check:no-db` (spec 003 AC-2 / T-02, TASK-033) |
 | `check-no-literal-disable.ts` | `check:no-literal-disable` | `pnpm check:no-literal-disable` (spec 001 AC-6 / T-07, TASK-003) |
-| `client-js-budget.ts` | `budget:client-js` | `pnpm budget:client-js` — the AC-27 measurement (spec 003 §6 "CWV budget impact", T-27; |
+| `client-js-budget.ts` | `budget:client-js` | `pnpm budget:client-js` — the AC-27 measurement (spec 003 §6 "CWV budget… |
 | `codebase-map.ts` | `codebase:map` | The codebase map — AC-33 / T-34 (spec 001 §14 A15, TASK-086) |
-| `cookie-register.ts` | `cookies:check` | `pnpm cookies:check [--write]` — renders `docs/compliance/cookie-register.md`'s normative table |
-| `coverage-thresholds.ts` | — | Coverage-threshold loader for `vitest.coverage.json` (spec 001 §2 "Testing harness", AC-16, |
+| `cookie-register.ts` | `cookies:check` | `pnpm cookies:check [--write]` — renders `docs/compliance/cookie-register.md`'s… |
+| `coverage-thresholds.ts` | — | Coverage-threshold loader for `vitest.coverage.json` (spec 001 §2 "Testing… |
 | `db-check.ts` | `db:check` | `pnpm db:check` — the migration gate (spec 001 §2 "Scripts", §5.1; TASK-011) |
-| `dev-os-check.ts` | `dev-os:check` | `pnpm dev-os:check` (spec 001 §2 "Scripts", §11 "Dev OS", AC-24/AC-25/AC-26 · T-25/T-26/T-27, |
+| `dev-os-check.ts` | `dev-os:check` | `pnpm dev-os:check` (spec 001 §2 "Scripts", §11 "Dev OS", AC-24/AC-25/AC-26 ·… |
 | `env-check.ts` | `env:check` | `pnpm env:check` (spec 001 AC-11 / T-12, TASK-005) |
-| `fonts/build-fonts.ts` | `fonts:build` | `pnpm fonts:build` — regenerates the committed WOFF2 subsets under `src/modules/ui/fonts/` |
-| `i18n-check.ts` | `i18n:check` | `pnpm i18n:check` (spec 003 §2 "Lint, checks, CI", §6 "URL pattern", §11, AC-13, AC-22; |
-| `i18n-draft.ts` | `i18n:draft` | `pnpm i18n:draft --locale <code> [--dry-run]` (spec 003 §2 "Messages", §13 Q7, AC-23; TASK-038) |
-| `i18n-pseudo.ts` | `i18n:pseudo` | `pnpm i18n:pseudo [--check] [--messages-dir messages]` (spec 003 §2 "Pseudo-locales", AC-29; |
+| `fonts/build-fonts.ts` | `fonts:build` | `pnpm fonts:build` — regenerates the committed WOFF2 subsets under… |
+| `i18n-check.ts` | `i18n:check` | `pnpm i18n:check` (spec 003 §2 "Lint, checks, CI", §6 "URL pattern", §11,… |
+| `i18n-draft.ts` | `i18n:draft` | `pnpm i18n:draft --locale <code> [--dry-run]` (spec 003 §2 "Messages", §13 Q7,… |
+| `i18n-pseudo.ts` | `i18n:pseudo` | `pnpm i18n:pseudo [--check] [--messages-dir messages]` (spec 003 §2… |
 | `lint-fixtures.ts` | `lint:fixtures` | `pnpm lint:fixtures` (spec 001 AC-4 / AC-5, TASK-003) |
 | `pr-policy.ts` | `pr-policy` | PR policy (spec 001 §2 "CI", AC-19 / T-20, TASK-002) |
-| `seo/generate-hreflang-fixtures.ts` | — | `node scripts/seo/generate-hreflang-fixtures.ts [--write]` (spec 003 §6 "hreflang set", AC-14 / |
-| `seo/lib.ts` | — | Shared plumbing for the three SEO validator CLIs (spec 001 §2 "CI", §6, AC-22 / T-23, |
+| `seo/brotli-origin.ts` | `lighthouse:origin` | `pnpm lighthouse:origin` — a Brotli reverse proxy in front of `next start`… |
+| `seo/generate-hreflang-fixtures.ts` | — | `node scripts/seo/generate-hreflang-fixtures.ts [--write]` (spec 003 §6… |
+| `seo/lib.ts` | — | Shared plumbing for the three SEO validator CLIs (spec 001 §2 "CI", §6, AC-22 /… |
 | `seo/lighthouse-urls.ts` | `lighthouse` | `lighthouse-urls` (spec 001 §2 "CI", AC-23 / T-24, TASK-009) |
 | `seo/validate-hreflang.ts` | `seo:validate` | `validate-hreflang` (spec 001 §2 "CI", §6, AC-22 / T-23, TASK-009) |
 | `seo/validate-schema.ts` | `seo:validate` | `validate-schema` (spec 001 §2 "CI", §6, §8, AC-22 / T-23, TASK-009) |
 | `seo/validate-sitemap.ts` | `seo:validate` | `validate-sitemap` (spec 001 §2 "CI", §6, AC-22 / T-23, TASK-009) |
 | `specs-index.ts` | `specs:index` | Section-anchored spec indexes — AC-35 / T-36 (spec 001 §14 A15, TASK-086) |
 | `tasks-brief.ts` | `tasks:brief` | Per-task brief files — AC-34 / T-35 (spec 001 §14 A15, TASK-086) |
-| `tasks-open-decisions.ts` | `tasks:check` | `TASKS.md` ledger parser — AC-31 / T-32 (spec 001 §2 "Documentation and ledger", TASK-012) |
+| `tasks-open-decisions.ts` | `tasks:check` | `TASKS.md` ledger parser — AC-31 / T-32 (spec 001 §2 "Documentation and… |
 
 ## Test layers (`tests/`)
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 150 |
+| `tests/unit/` | 151 |
 | `tests/integration/` | 2 |
 | `tests/contract/` | 3 |
-| `tests/e2e/` | 17 |
+| `tests/e2e/` | 18 |
 | `tests/a11y/` | 7 |
 | `tests/visual/` | 7 |
 | `tests/dev-os/` | 1 |
-| `tests/fixtures/` | 146 |
+| `tests/fixtures/` | 147 |
 | `tests/msw/` | 3 |
 
 ## Where does X live?

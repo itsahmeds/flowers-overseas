@@ -117,11 +117,15 @@ describe("ci.yml job set (AC-21)", () => {
     expect(ci.defaults?.run?.shell).toBe("bash");
   });
 
-  it("marks only `lighthouse` continue-on-error (spec 001 §13 Q4)", () => {
+  it("marks no job continue-on-error: every gate blocks (spec 004 AC-24)", () => {
+    // Spec 001 §13 Q4 made `lighthouse` informational "until spec 004", and it was the only such
+    // job. TASK-056 measured the finished pages, fixed the last red assertion and deleted the
+    // line, so the set is now empty — and an empty set is the assertion, so a later "just for
+    // now" cannot be added without changing this test and saying why in the PR.
     const informational = jobs
       .filter(([, job]) => job["continue-on-error"] === true)
       .map(([key]) => key);
-    expect(informational).toEqual(["lighthouse"]);
+    expect(informational).toEqual([]);
   });
 });
 

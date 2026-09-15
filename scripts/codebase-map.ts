@@ -27,8 +27,17 @@ export const HAND_MAINTAINED_HEADING = "## Where does X live?";
 export const MAP_PATH = "docs/codebase-map.md";
 /** Rendered when a file has no first doc-comment line and no `@purpose` tag. */
 export const MISSING_PURPOSE = "TODO purpose";
-/** Purposes longer than this are cut; the map is an index, not the documentation. */
-export const PURPOSE_LIMIT = 100;
+/**
+ * Purposes longer than this are cut; the map is an index, not the documentation.
+ *
+ * 100 until TASK-056, when the four files spec 004's last task adds took the generated file to
+ * 12 748 B against AC-33's ≤ 12 KB target (it had 76 B of slack). The target exists because every
+ * subagent reads this file before its first useful action (spec 001 §14, the orientation
+ * measurement), so the honest lever is a tighter index rather than a wider budget: at 80 the map
+ * is 12 086 B, every row still names what the file is for, and the sentence that was cut was
+ * never the documentation — the file's own doc comment is.
+ */
+export const PURPOSE_LIMIT = 80;
 /** At most this many test files are named per entry, then `+N more`. */
 export const TESTS_LISTED = 3;
 /** The test layers enumerated at the end of the generated half. */

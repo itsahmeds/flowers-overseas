@@ -2,34 +2,48 @@
   "//": [
     "Lighthouse CI budgets (plan/01 §7, spec 004 AC-24). JSON has no comments, so this key is the",
     "note; `@lhci/cli` reads `.ci` and ignores everything beside it.",
-    "`resource-summary:script:size` is **transfer** size, i.e. the bytes on the wire after content",
-    "encoding. Vercel serves Brotli, so 131 072 here means 128 KB Brotli — spec 004 §13 Q13",
-    "restated the plan/01 §7 budget as 120 KB Brotli (founder decision, 2026-09-08, option (a))",
-    "and §14 A1 corrected it to 128 KB once TASK-046 measured the locale documents at 129 638 B",
-    "with no application code left to remove; TASK-050 carried the number into this file and into",
-    "`scripts/client-js-budget.ts` so the two gates cannot drift. It is not raised a second time",
-    "(§14 A1), and what",
-    "`pnpm budget:client-js` now compares against. Before that restatement this number was read as",
-    "gzip in the repository and as Brotli by Lighthouse, and the same build was 'over' or 'under'",
-    "depending on the reader.",
-    "Reconciled against this PR's own preview run (`/review 26` item 5), because 'transfer size'",
-    "and 'our JavaScript' are not the same set. Lighthouse measured `/` at 141 769 B; a browser",
-    "fetching the same preview downloads 116 393 B of our chunks (Brotli, every `.js` the page",
-    "requests). The 25 376 B difference is the platform's `vercel.live` feedback script, which is",
-    "injected into protected previews, is absent from production and is not in our build output.",
-    "So the encoding matches — Lighthouse's number and a Brotli sum of our chunks agree to within",
-    "the third-party script — and the assertion is comparable to 131 072 only on a URL with no",
-    "platform script, i.e. production. On a locale document `vercel.live` costs far more (the",
-    "same run read 249 766 B for `/en` against 200 900 B of our chunks at the time, ~48 KB of it",
-    "platform script), which is why `lighthouse` stays `continue-on-error` here: TASK-056 owns",
-    "both the enforcement flip and the decision of where to measure it (production URLs, or a",
-    "first-party-only budget) so that the number it blocks on is the number this repository can",
-    "change.",
+    "",
+    "**This job blocks since TASK-056.** `continue-on-error` is gone from `.github/workflows/ci.yml`,",
+    "the URL set is the five of AC-24 (`tests/fixtures/seo/lighthouse-urls.json`), and every",
+    "assertion below is an `error`. What made the flip possible was not a schedule but two",
+    "decisions TASK-056 was asked to take, both recorded here because the numbers are meaningless",
+    "without them.",
+    "",
+    "**1. Where it measures: this repository's own bytes, Brotli-encoded.** The job builds, runs",
+    "`next start`, puts `scripts/seo/brotli-origin.ts` in front of it and points Lighthouse at the",
+    "proxy — it no longer measures a Vercel preview. `resource-summary:script:size` is **transfer**",
+    "size, i.e. the bytes on the wire after content encoding, and neither available origin sent the",
+    "bytes this budget is written in: `next start` negotiates gzip (the same build reads 148 298 B",
+    "gzip and 124 314 B Brotli, so a compliant page fails a Brotli budget measured over gzip —",
+    "`/review 53`'s finding), and a protected preview sends Brotli but injects `vercel.live`, the",
+    "platform's preview-feedback script, which is 25 376 B on `/` and ~48 KB on a locale document,",
+    "is absent from production and is in no build output of ours. A budget a platform script can",
+    "blow is not a budget this repository can hold. Measured against the Brotli origin, the number",
+    "here and the number `pnpm budget:client-js` prints from `.next/` are the same number, and both",
+    "are what an edge CDN serves.",
+    "",
+    "**2. What the number is: 131 072 B (128 KB) of Brotli script transfer.** spec 004 §13 Q13",
+    "restated `plan/01` §7's 120 KB gzip as 120 KB Brotli (founder, 2026-09-08, option (a)) and",
+    "§14 A1 corrected it to 128 KB once TASK-046 measured the locale documents at 129 638 B with no",
+    "application code left to remove. It is not raised a second time (§14 A1). The measured numbers",
+    "at the flip: `/` 126 586 B, each locale document 128 045-129 298 B — 1 774 to 4 486 B of",
+    "headroom, all of it Next 16.3.4's runtime. **The GA4 tag does not fit in that headroom**: with",
+    "`NEXT_PUBLIC_GA4_MEASUREMENT_ID` set, `gtag.js` adds ~30-35 KB and this assertion fails. The",
+    "id is unset in CI, locally, on previews and in production (`docs/compliance/ropa.md` row 4),",
+    "so nothing measured here loads it; setting it is a RoPA-affecting act that also needs a budget",
+    "decision, and TASK-056 records that rather than pre-emptively widening the budget for a tag",
+    "nobody has switched on (spec 004 §14 A15).",
+    "",
+    "`largest-contentful-paint` is asserted at 2 000 ms per `plan/01` §7. It was red on every locale",
+    "document until TASK-056: the LCP element was the consent sheet's body paragraph — an",
+    "`ssr: false` island, so it paints after hydration — which as one 187-character block was larger",
+    "than the hero heading. The body is two paragraphs now, the LCP element is the `H1` the page is",
+    "about, and `tests/e2e/lcp.spec.ts` fails if any overlay text block grows past it again.",
+    "",
     "`categories:seo` is collected but deliberately **not** asserted: every page in Phase 0 is",
     "`noindex` (ADR-0007, spec 001 §6), so the SEO category would score the robots directive rather",
     "than the page, and nobody should be able to make a number green by indexing early. Spec 007",
-    "asserts it when there is an indexable set. AC-24 (TASK-056) owns the enforcement flip and the",
-    "five-URL set; TASK-046 owns these numbers being achievable."
+    "asserts it when there is an indexable set."
   ],
   "ci": {
     "collect": {
@@ -55,6 +69,18 @@
     "assert": {
       "assertions": {
         "categories:performance": [
+          "error",
+          {
+            "minScore": 0.95
+          }
+        ],
+        "categories:accessibility": [
+          "error",
+          {
+            "minScore": 0.95
+          }
+        ],
+        "categories:best-practices": [
           "error",
           {
             "minScore": 0.95
