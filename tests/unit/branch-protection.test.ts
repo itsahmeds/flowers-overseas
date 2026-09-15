@@ -109,6 +109,10 @@ describe("the required-check contract on the committed workflows (AC-21)", () =>
       "e2e",
       "env-build-failure",
       "i18n-check",
+      // Required since TASK-056 removed `continue-on-error` from the job (spec 004 AC-24). This
+      // list is derived from `ci.yml`, so the entry appeared here by itself — which is exactly
+      // the property the script's header claims.
+      "lighthouse",
       "lint",
       "pr-policy",
       "preview",
@@ -137,25 +141,31 @@ describe("the required-check contract on the committed workflows (AC-21)", () =>
     }
   });
 
-  it("excludes `lighthouse`, and says why", () => {
-    expect(contract.required).not.toContain("lighthouse");
-    expect(contract.excluded.map((exclusion) => exclusion.name)).toEqual([
-      "lighthouse",
-    ]);
-    expect(contract.excluded[0]?.reason).toContain("continue-on-error");
-    expect(contract.excluded[0]?.reason).toContain("spec 004");
+  it("excludes nothing: spec 004 removed the last continue-on-error", () => {
+    // Spec 001 §13 Q4 made `lighthouse` informational "until spec 004", and this script's whole
+    // design was that the exclusion would disappear by itself when the flag went (TASK-056,
+    // AC-24). It did.
+    expect(contract.excluded).toEqual([]);
+    expect(contract.required).toContain("lighthouse");
   });
 
-  it("would require `lighthouse` the moment spec 004 removes continue-on-error", () => {
+  it("would exclude a job again the moment one carried continue-on-error", () => {
+    // The derivation still works in the other direction, so a future "just for now" flag cannot
+    // quietly drop a job out of the required set without this test naming it.
     const ci = readFileSync(
       resolve(repoRoot, ".github/workflows/ci.yml"),
       "utf8",
     );
-    const lifted = checkContract([
-      ci.replace(/\n    continue-on-error: true\n/, "\n"),
+    const relaxed = checkContract([
+      ci.replace(
+        "  lighthouse:\n    name: lighthouse\n",
+        "  lighthouse:\n    name: lighthouse\n    continue-on-error: true\n",
+      ),
     ]);
-    expect(lifted.required).toContain("lighthouse");
-    expect(lifted.excluded).toEqual([]);
+    expect(relaxed.required).not.toContain("lighthouse");
+    expect(relaxed.excluded.map((exclusion) => exclusion.name)).toEqual([
+      "lighthouse",
+    ]);
   });
 
   it("names every job of ci.yml exactly once", () => {
@@ -478,7 +488,9 @@ describe("--print-commands", () => {
   it("lists the derived contexts, so the command cannot drift from ci.yml", () => {
     for (const name of contract.required)
       expect(commands).toContain(`"${name}"`);
-    expect(commands).not.toContain('"lighthouse"');
+    // Required since TASK-056, so it is in the command now — the assertion is that the command is
+    // derived, not that a particular job is missing from it.
+    expect(commands).toContain('"lighthouse"');
   });
 
   it("sets linear history, no force pushes and the squash-only merge method", () => {

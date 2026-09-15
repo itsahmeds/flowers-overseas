@@ -26,8 +26,21 @@ import type { ReactNode } from "react";
  *
  * The `noindex,nofollow` default sits here so **every** document inherits it, including the 404
  * (spec 001 §6's belt number one; spec 007 lifts it by rule, ADR-0007).
+ *
+ * **The icon is declared here and served from `public/`** (TASK-056). Without a `<link rel="icon">`
+ * every browser — and therefore every Lighthouse run — requests `/favicon.ico`, which this
+ * application does not have: the 404 is logged as a console error and cost the `best-practices`
+ * category 1 of its 28 weighted points (0.93), under AC-24's ≥0.95. It is the brand mark
+ * (`content/brand/mark.svg`, the same drawing `Mark` renders) as a static file rather than the
+ * app-directory `icon.svg` convention, because that convention generates a route, and a generated
+ * route under this root — a pass-through layout whose documents are rendered by the leaves — is
+ * answered by `next start` with `Internal: NoFallbackError` and a 404. A file in `public/` needs
+ * no route at all.
  */
-export const metadata: Metadata = { robots: "noindex,nofollow" };
+export const metadata: Metadata = {
+  robots: "noindex,nofollow",
+  icons: { icon: [{ url: "/icon.svg", type: "image/svg+xml" }] },
+};
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return children;

@@ -148,6 +148,35 @@ export function ConsentSheet({
   );
 }
 
+/**
+ * The body copy, split into its authored paragraphs on the blank line in the catalogue value
+ * (TASK-056; AC-24's LCP assertion).
+ *
+ * Measured, not styled by taste. The sheet is an `ssr: false` island, so everything it paints
+ * appears **after** hydration — 2.36 s of render delay on Lighthouse's throttled mobile profile.
+ * As one 187-character block the body measured 20 748 px² against the hero `H1`'s 16 461 px², so
+ * it was the page's *largest* contentful paint and `/de` reported LCP 2.66–2.82 s against a
+ * 2 000 ms budget, while the page's own main content — the `H1` — had been on screen since FCP
+ * (1.06 s). Two paragraphs are two text blocks (≈11.5 KB px² and ≈9.2 KB px²), so the LCP element
+ * is the heading again and the number describes when the main content appeared instead of when a
+ * compliance overlay did.
+ *
+ * What this does **not** do is make the sheet itself paint sooner; only server-rendering it would,
+ * and AC-17/§5.4 require the opposite (no consent markup in the cached document). That is recorded
+ * as an open decision on TASK-056 rather than taken here. `tests/e2e/lcp.spec.ts` is the guard: it
+ * fails if any text block in the sheet grows past the heading again — which a real German or
+ * Polish translation of this copy could do.
+ *
+ * The separator is a blank line in the message value, so a translator controls the break in their
+ * own language and no code guesses at sentence boundaries.
+ */
+export function bodyParagraphs(body: string): string[] {
+  return body
+    .split(/\n{2,}/)
+    .map((paragraph) => paragraph.trim())
+    .filter((paragraph) => paragraph !== "");
+}
+
 export interface ConsentBannerViewProps {
   readonly strings: ConsentStrings;
   /** The `id` of the headline, so the region is named by what a reader sees. */
@@ -187,7 +216,11 @@ export function ConsentBannerView({
       >
         {strings.headline}
       </h2>
-      <p className="text-ink-muted mt-sm max-w-prose text-sm">{strings.body}</p>
+      {bodyParagraphs(strings.body).map((paragraph) => (
+        <p className="text-ink-muted mt-sm max-w-prose text-sm" key={paragraph}>
+          {paragraph}
+        </p>
+      ))}
       {children}
       {/* Three equal tracks, three full-width buttons of one variant: equal rendered width, font
           size, weight and contrast, by construction (AC-20). `minmax(0,1fr)` rather than `1fr`

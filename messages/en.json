@@ -54,7 +54,7 @@
   },
   "consent": {
     "headline": "Cookies, and what we set them for",
-    "body": "We need a few cookies to run the site: the language you chose, your basket, the security of your order. Everything else is your call, and we set nothing in those groups until you say yes.",
+    "body": "We need a few cookies to run the site: the language you chose, your basket, the security of your order.\n\nEverything else is your call, and we set nothing in those groups until you say yes.",
     "reject": "Reject all",
     "settings": "Choose",
     "accept": "Accept all",

@@ -369,7 +369,7 @@ T2 client-JS budget + CSP + security headers ─────┘                T
   5. **Home skeleton, trust strip, styling pass, media conventions.** Hero (text LCP + reserved slot), how-it-works, `DestinationPicker`, `TrustStrip`, styled `/` chooser / 404 / 500, restyled suggestion banner, `Media` + `slots.ts` + `placeholderLoader`, `home`/`trust` messages. Covers AC-10, AC-11, AC-12, AC-13, AC-15, AC-16. **Depends on 3** (and on 1); the suggestion-banner restyle additionally needs spec 003's **TASK-041** merged — if it has not, that half is dropped from this task and picked up by task 6 rather than blocking the home page.
   6. **Gates, budgets, docs, close.** Lighthouse URL set + assertions + `continue-on-error` removed, `scripts/check-bundle-budget.ts` + baseline + step summary, axe URL set extended, visual baselines committed for both platforms, `i18n:check` green with the `retained` flags cleaned, `docs/architecture.md` §2/§3/§4, `docs/runbooks/design-system.md`, README, `.env.example`, spec §14. Covers AC-24, AC-25, AC-26, AC-27, AC-29, AC-30. **Depends on 2, 4 and 5** — it is the task that measures the finished thing, which is why the enforcement flip is last.
 - **Rollback plan.** Every task is one squash commit over a stateless change set; `git revert` restores the previous state exactly (no migration, no data, no external resource). Revert order is the inverse of the task order. Two specific hazards: reverting task 2 alone re-introduces the browser Sentry SDK and would immediately fail task 6's budgets, so the pair must be reverted together; and reverting task 6 alone restores `continue-on-error: true` on the Lighthouse job, which must be recorded in `docs/architecture.md` §4 again if it happens, or the deferred row is silently lost.
-- **Exit signal.** `/status` shows `004 implemented`, Phase 0 progress `4/12` specs; the four locale homes on the preview are branded, headed and footed with a functional consent banner; the `lighthouse` job is green and **required** on five URLs; the bundle table shows every public route under 120 KB gz; axe is 8/8 with no exception list; `docs/architecture.md` §4 has one row left (the `deploymentEnvironment()` Railway caveat, spec 007's).
+- **Exit signal.** `/status` shows `004 implemented`, Phase 0 progress `4/12` specs; the four locale homes on the preview are branded, headed and footed with a functional consent banner; the `lighthouse` job is green and **required** on five URLs; the bundle table shows every public route under 120 KB gz; axe is 8/8 with no exception list; `docs/architecture.md` §4 has **three** rows left — `ALLOW_PLACEHOLDER_ENV` (spec 002), "no browser Sentry SDK on public routes" (spec 013) and the `deploymentEnvironment()` Railway caveat (spec 007). *Corrected at TASK-056 (§14 A17): this sentence said "one row left", which was never true of spec 004's scope — spec 004 removes the **CSP** row and the `vercel.live` note, which is what AC-30 asserts, and the other two rows belong to specs this one cannot discharge.*
 
 ## 13. Open questions
 
@@ -450,3 +450,238 @@ Raised by: TASK-048 round-2 addendum escalation, 2026-09-09.
 Measured (PR #36, 2026-09-09): a compliant consent sheet costs 2 365 B br in one lazy chunk; locale documents measure 132 047 B br against 131 072 B — 975 B (0.74%) over — with 97.3% of the budget consumed by the Next 16 runtime, `NextIntlClientProvider` and the message payload before the first application byte. The finder island (TASK-052) and the GA4 tag will add more.
 Corrected (orchestrator under the founder's delegation): the budget is **not** raised (A1 stands). The breach is accepted as informational while `lighthouse` carries `continue-on-error`. Option (b) — passing translated strings into islands as props and dropping `NextIntlClientProvider` and the client message payload (~10 705 B) from locale documents — is brought forward from TASK-056 into its own task, TASK-085, which runs after TASK-051 and TASK-052 and before TASK-053, and re-measures. New islands (consent, finder) are written strings-as-props from the start so they need no provider.
 Raised by: TASK-051 escalation, 2026-09-09.
+
+**A6 — Two font families, not one (§2 "Font"; §13 Q2; AC-4; TASK-045).**
+Original: §2 specifies "exactly one variable font family", and §13 Q2's default names Inter
+Variable with "no display face"; `plan/01` §7 permits exactly one.
+Corrected (founder, 2026-09-08, on the design canvas): the approved identity pairs **Newsreader**
+(display, weight 500, roman) with **IBM Plex Sans** (body 400/600), both self-hosted, Latin +
+Latin-Ext. §13's resolution note is binding and supersedes §2's sentence and Q2's default.
+AC-4's "exactly one variable font family" therefore reads as **the two named families together**,
+and its ≤45 KB per-page transfer budget covers both: three committed subsets, 40 844 B measured
+(`src/modules/ui/fonts/subset.json`, asserted byte-for-byte by `tests/unit/fonts.test.ts` and
+printed in the §11 bundle table since TASK-056). A third face would break the budget, which is why
+the canvas's medium weight renders from the 600 face rather than from a face of its own.
+Raised by: TASK-045; recorded at TASK-056.
+
+**A7 — The commerce header supersedes §5.3's minimal header (§5.3; §13's resolution note; AC-7,
+AC-8; TASK-048).**
+Original: §5.3 draws a minimal header — wordmark, locale switcher, currency chip — at a reserved
+56 px mobile height.
+Corrected (founder, 2026-09-08, on the design canvas, and binding per §13's resolution note): the
+header is the **commerce** header — utility strip, masthead with the search band and the
+labelled account cluster, and a full category row — in the two-sibling shape §14 A4 and its
+addendum specify. The reserved height is ~245 px mobile / ~183 px desktop in total, of which
+~132 / ~138 px is sticky; AC-7's "56 px" reads as "a reserved height that is identical before and
+after hydration", which is the property the AC actually gates (CLS 0, asserted in
+`tests/e2e/header.spec.ts`). The locale switcher's markup and the `src/modules/i18n` barrel are
+unchanged, so spec 003 AC-3 still passes.
+Raised by: TASK-048; recorded at TASK-056.
+
+**A8 — §12's task 5 is four tasks (§12 "Rollout"; TASK-052…TASK-055).**
+Original: §12 lists five tasks, the fifth being "the locale home: hero, finder, proof row, the
+gated sections, the notice documents".
+Corrected (orchestrator, 2026-09-09, at `/plan-tasks` time): the fifth is split four ways because
+each half has its own artboards, its own baselines and its own review — TASK-052 (hero, finder
+card and its one island, proof row), TASK-053 (occasion dates, occasion tiles, explainer, FAQ,
+trust strip), TASK-054 (the three data-gated sections: trending, reviews, destinations grid) and
+TASK-055 (the notice documents: chooser, 404 and the two 500 skins). The acceptance criteria are
+unchanged; only the task boundary moved.
+Raised by: orchestrator; recorded at TASK-056.
+
+**A9 — The canvas sections §2's home skeleton does not mention (§2 "Home"; §5.3; AC-10; TASK-053,
+TASK-054).**
+Original: §2's home skeleton is "H1 + proposition + destination picker + how-it-works + trust
+strip", and AC-10 asserts exactly that set.
+Corrected (founder, 2026-09-08, on the design canvas; binding per §13's resolution note): the home
+also renders the **occasion dates band**, the **occasion tiles**, the **FAQ**, the **"most sent
+this week" trending row** (florists' picks, labelled, until real orders rank it), the
+**verified-reviews section** (which renders *nothing* until a real review exists — the founder's
+real-only ruling, AC-15) and the **destinations grid** with live/guide status. AC-10's list is a
+**minimum**, not the whole page: each added section is a Server Component in `src/modules/ui/home`
+reading a provider in the same directory, so spec 002/008/016 replaces a provider with no call-site
+change, and a section with nothing to show renders nothing at all.
+Raised by: TASK-053/TASK-054; recorded at TASK-056.
+
+**A10 — The colophon names the payment methods it can honestly name (§5.3 "Footer"; AC-15;
+TASK-049).**
+Original: the canvas's colophon draws a payment strip with card, Apple Pay, Google Pay, BLIK and
+PayPal marks.
+Corrected (founder ruling carried by TASK-049, 2026-09-09): Phase 0 processes no payment at all, so
+a payment strip is a claim about a capability that does not exist, in the same class as a review
+count or a florist count (AC-15). The colophon renders the **processor sentence** ("payments are
+processed by Stripe") only once a payment integration ships, and until then names no scheme, shows
+no mark and implies no method. `src/config/payment-methods.ts` holds the per-market list for spec
+013 to render; nothing reads it on a page.
+Raised by: TASK-049; recorded at TASK-056.
+
+**A11 — `Continue` has a target helper, and it is inside the module (§5.3 "Finder"; AC-11;
+TASK-052).**
+Original: §5.3 describes the finder's neutral `Continue` without saying where it goes while no
+corridor page exists.
+Corrected (TASK-052): `finderTarget()` in `src/modules/ui/home/finder-model.ts` is the one place
+that answers it — the corridor path through `localePath(locale, "corridorCountry", slug)` when
+`corridorPagePublished` is true for the chosen destination, and **no navigation at all** while it
+is false, so the button is never a link to a 404 (AC-14) and `src/app/` holds no such decision.
+Flipping a country live stays a data change (AC-11's "a country is data" proof).
+Raised by: TASK-052; recorded at TASK-056.
+
+**A12 — Where the script budget is measured, now that it blocks (§13 Q13; §14 A1; AC-24;
+TASK-056).**
+Original: AC-24 asserts `resource-summary:script:size` against a Brotli budget on a Lighthouse run
+pointed at the Vercel preview.
+Measured (TASK-056): the two available origins send neither the encoding nor the bytes the budget
+is written in. `next start` negotiates **gzip** — the same build reads 148 298 B gzip and
+124 314 B Brotli, so a compliant page fails a Brotli budget measured over gzip (`/review 53`) — and
+a protected preview sends Brotli **plus `vercel.live`**, the platform's preview-feedback script,
+25 376 B on `/` and ~48 KB on a locale document, absent from production and in no build output of
+ours.
+Corrected (TASK-056, taking the decision `lighthouserc.json` reserved for it — "production URLs, or
+a first-party-only budget"): the `lighthouse` job **builds, serves and measures this repository's
+own bytes**, `next start` behind `scripts/seo/brotli-origin.ts` (Brotli, quality 11), and is no
+longer wired to the `preview` job. The number it blocks on is then the number
+`pnpm budget:client-js` prints from `.next/`, and both are what an edge CDN serves. The cost,
+stated plainly: this job no longer proves anything about the *deployment* — TTFB, edge cache, real
+headers — which the Playwright suites against the preview still do.
+Raised by: `/review 53`; taken at TASK-056.
+
+**A13 — The bundle-budget script's name, and the encoding of its regression allowance (§2
+"Budgets"; §11; AC-25; TASK-056).**
+Original: §2 and AC-25 name `scripts/check-bundle-budget.ts`, with "first-load JS ≤120 KB gz" and
+"no public route regressed more than 5 KB gz against the committed baseline".
+Corrected (TASK-056): the script is `scripts/client-js-budget.ts` — spec 003's, extended rather
+than duplicated, because it already reads the build output, models what a browser fetches (twice
+corrected, `/review 26` and `/review 36`) and is checked against Chromium in
+`tests/e2e/client-js-budget.spec.ts`; a second script measuring the same bytes is a second number
+to disagree with. It gained AC-25's remaining clauses at this task: the ≤45 KB font transfer, the
+committed baseline `tests/fixtures/seo/bundle-baseline.json` with its allowance, the `/`
+zero-application-JavaScript assertion and the §11 table. Both budget and allowance are measured in
+**Brotli**, not gzip, for the reason §14 A1 gives: a guard in one encoding against a budget in
+another is the confusion that correction removed.
+Raised by: TASK-056.
+
+**A14 — The consent sheet's body is two paragraphs, and why the LCP assertion could be flipped
+(§5.3 "Consent"; §7 copy; AC-17, AC-24; TASK-056).**
+Measured (TASK-056, Lighthouse mobile, five URLs): every locale document reported LCP 2.66–2.82 s
+against AC-24's 2 000 ms, and the LCP element was the consent sheet's body paragraph
+(`ConsentBannerView.tsx`) — an `ssr: false` island, so everything it paints lands after hydration
+(2.36 s of render delay), and as one 187-character block it measured 20 748 px² against the hero
+`H1`'s 16 461 px². The page's own main content had been painted since FCP (1.06 s).
+Corrected (TASK-056): the English body carries a blank line between its two sentences and the view
+renders one `<p>` per authored paragraph (`bodyParagraphs`). Two text blocks are two LCP
+candidates, neither larger than the heading, so the LCP element is the `H1` and the metric
+describes when the main content appeared. No word of the founder-reviewed copy changed; `de`/`pl`
+were re-drafted deterministically (AC-29). Measured after: LCP 1 674–1 721 ms on `/de`,
+1 479–1 487 ms on `/`. `tests/e2e/lcp.spec.ts` fails if any overlay text block grows past the
+heading again — which a real German or Polish translation of this copy could do.
+**Open, and deliberately not decided here:** what this does *not* change is when the sheet itself
+paints (~2.4 s). Only server-rendering it would, and AC-17 ("appears after hydration") with §5.4
+("no consent markup in the cached document", asserted in `tests/e2e/consent-banner.spec.ts`) require
+the opposite. Reversing that is a founder/orchestrator decision — it puts consent copy in cached
+HTML for every visitor and needs the bootstrap to hide the sheet for those who already decided —
+and it is recorded on TASK-056 as an escalation rather than taken by an implementer.
+Raised by: `/review 27` nit 3 and `/review 53`; fixed and escalated at TASK-056.
+
+**A15 — The GA4 tag does not fit the script budget (§13 Q7; AC-21, AC-24, AC-25; TASK-056).**
+Original: §13 Q7 accepts that the tag "costs ~30–35 KB gz of the budget, which is measured in
+preview only when the id is set", and AC-21 requires that with the id set "the page still meets the
+script budget of AC-25".
+Measured (TASK-056): at the flip, `/` ships 126 586 B and a locale document 128 045–129 298 B
+against 131 072 B — **1.8 to 4.5 KB of headroom**, all of it Next's runtime. `gtag.js` is ~30–35 KB.
+Recorded (TASK-056; the decision the carry-forward asked this task to take): the id stays unset in
+CI, locally, on previews and in production, so nothing the gate measures loads the tag, and the
+budget is **not** widened for a tag nobody has switched on. Setting
+`NEXT_PUBLIC_GA4_MEASUREMENT_ID` is therefore two decisions at once — a RoPA-affecting act
+(`docs/compliance/ropa.md` row 4, `docs/runbooks/analytics-consent.md`) **and** a budget decision
+that must be taken with the founder, because on today's numbers the tag makes `lighthouse` red.
+AC-21's second clause is met by the first: with no id there is no tag and no request. Spec 023,
+which owns the event schema, owns the budget question with it.
+Raised by: `/review 28`; taken at TASK-056.
+
+**A16 — Spec 001 AC-23's queued `NO_FCP` correction is discharged (spec 001 §9 AC-23; §11;
+TASK-056).**
+Original: spec 001's `lighthouse` job described `NO_FCP` — Lighthouse aborting because the page
+painted nothing — as the *expected* outcome, which it was while the shell had no copy.
+Corrected (TASK-056): every measured URL has rendered text since TASK-035, so `NO_FCP` is no longer
+expected at all. The branch and its wording stay, because that outcome must never be read as a
+verdict in either direction, but the job now says so in as many words and prints a per-URL table of
+scores and metrics beside it (§11). The queued correction on spec 001 AC-23 is satisfied and needs
+no further task.
+Raised by: spec 001 AC-23's queue; discharged at TASK-056.
+
+**A17 — What AC-30's "`docs/architecture.md` §4 contains neither the CSP row nor the `vercel.live`
+note" means, and §12's row count (§9 AC-30; §12 "Exit signal"; TASK-056).**
+Original: AC-30 requires that §4 "contains **neither** the CSP row nor the `vercel.live` note", and
+§12's exit signal says §4 "has one row left (the `deploymentEnvironment()` Railway caveat)".
+The conflict (`/review 61`): read as *"those words must not appear in §4"*, AC-30 contradicts
+TASK-046's shipped `tests/unit/architecture-doc.test.ts`, which asserts the opposite — that §4
+keeps a **discharged-CSP paragraph** naming ADR-0016, the `vercel.live` preview-only position and
+the superseded `plan/01` §9 sentence. A deferred decision that is taken is not deleted from the
+record; it is written down as taken, or the reason it was taken is lost with it.
+Corrected (TASK-056): AC-30 means **no deferred *row* for either** — no line in §4's table whose
+"Deferred to" cell is a later spec for CSP or for `vercel.live`. That is the state today, both the
+AC and the test hold, and no third reading is open. `tests/unit/architecture-doc.test.ts` is the
+binding statement of it; this amendment is the prose.
+§12's "one row left" is corrected in place to **three**: `ALLOW_PLACEHOLDER_ENV` (spec 002), "no
+browser Sentry SDK on public routes" (spec 013) and the `deploymentEnvironment()` Railway caveat
+(spec 007). The sentence was written before spec 003 and spec 004 each added a row of their own and
+was never a claim spec 004 could discharge — the two survivors are other specs' to lift, and each
+names the spec that lifts it in the table. Neither AC-30 nor §12 carries a deferred row for either
+CSP or `vercel.live`, so nothing is queued onto a later task by this correction.
+Raised by: `/review 61`; taken at TASK-056.
+
+**A18 — `/`'s LCP has no design-safe margin to win, and why the number is the measurement origin
+rather than the page (§9 AC-24; §14 A12, A14; TASK-056).**
+Original: §14 A14 fixed the locale documents' LCP by making the `H1` the largest contentful element
+instead of an `ssr: false` island, and left `/` unexamined.
+Measured (`/review 61` and TASK-056 round 2, `lighthouserc.json`'s mobile profile against the
+Brotli origin, warmed) across two passes of three runs each: `/` reports **2 425 / 2 106 / 1 952**
+and **2 660 / 2 181 / 1 930 ms** against the 2 000 ms assertion, where the four locale documents
+report 1 430–1 649 ms in the first pass and 1 436–1 636 ms in the second. Three things were
+established before any change was proposed:
+
+1. **The LCP element on `/` is the chooser's intro `<p>`, and no design-safe change makes it the
+   `H1`.** Measured in Chromium at Lighthouse's own 412 × 823 profile: the intro is 380 × 96 px
+   (33 943 px² as an LCP candidate, four lines at `text-md`), the `H1` "Choose your language" is a
+   **single line**, 380 × 30 px, 11 560 px². A14's fix on the locale homes worked because the two
+   blocks there were within ~25 % of each other; here the intro is roughly three times the
+   heading. Splitting it at its sentence boundary leaves a three-line block of ~27 000 px², still
+   more than twice the `H1`; nothing short of deleting the founder-reviewed copy or halving the
+   body step would reverse the order, and both are changes to the design, not to a metric.
+2. **It would not matter if it did.** In a real browser `/` emits exactly **one** LCP candidate, at
+   **112 ms** — heading and paragraph are painted in the same frame, because `/` is SSG, reaches no
+   client module and has no island to wait for (AC-7, AC-27). There is no element-specific render
+   delay on `/` to remove.
+3. **The number is the render-blocking stylesheet's queue position on an HTTP/1.1 origin.** `/`'s
+   LCP tracks when the **later** of its two render-blocking stylesheets finished. Pass 1: CSS at
+   613 ms → LCP 2 425; 307 → 2 106; 258 → 1 952. Pass 2: 622 → 2 660; 275 → 1 930; 258 → 2 181 —
+   the ordering is not exact at the bottom of the range, but the slowest run of each pass is the
+   run whose stylesheet arrived ~600 ms late, and the stylesheet's own spread (258–622 ms) is the
+   same order of magnitude as the LCP spread it produces. On the locale documents both stylesheets
+   land at 130–185 ms every time and LCP is 1 430–1 649. The cause is
+   that `/` is the **fastest** document in the set, not the slowest: it is 4 200 B of SSG and
+   arrives at ~20 ms, so its document, three preloaded font faces, two stylesheets and eight
+   script chunks are all requested in one burst against `scripts/seo/brotli-origin.ts` — a plain
+   HTTP/1.1 proxy, six connections, no multiplexing — and an 804 B stylesheet lands behind a
+   17 KB font. The locale documents are 15 KB of SSR and arrive at ~113 ms, which spreads the same
+   burst out. Lantern then amplifies the observed queueing under the throttled mobile model.
+
+Decided (TASK-056, taking the option `/review 61` left open): **the assertion is not weakened and
+the page is not changed.** 2 000 ms stays an `error`, the URL set stays five, and this amendment is
+the record that the remaining margin on `/` is thin — 48 ms in pass 1, 70 ms in pass 2, on the best
+of three runs each — and that the lever is the origin, not the document. Two consequences are written down rather than acted on here,
+because both are decisions above an implementer:
+
+- **The aggregation is `optimistic`, not median.** `@lhci/cli` defaults `aggregationMethod` to
+  `optimistic`, which for a `maxNumericValue` assertion takes the **fastest** of the three runs —
+  so `/` passes on 1 952 / 1 930 ms while its median is 2 106 / 2 181 ms. `lighthouserc.json` does
+  not set the key,
+  and TASK-056 deliberately does not set it either: `"median"` is the honest setting and it would
+  make this required check red on `/` today. Flipping it is a gate-strength decision for the
+  founder/orchestrator, taken together with the origin question below.
+- **The origin is HTTP/1.1.** Serving the measured build over HTTP/2 (multiplexed, no
+  six-connection cap) is what a CDN does in production and is what removes this queue. It is a
+  change to A12's measurement basis — the decision that made the budget measurable at all — so it
+  belongs to whoever revisits A12, not to a round-2 fix.
+
+Raised by: `/review 61`; measured, decided and escalated at TASK-056.

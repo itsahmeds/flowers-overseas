@@ -29,7 +29,28 @@
  * subject rather than the noise: `tests/e2e/banner.spec.ts` (the appearance matrix, CLS delta and
  * cookie) and `tests/a11y/banner.spec.ts` (axe with it forced on screen).
  */
-import { type BrowserContext, expect, test } from "@playwright/test";
+import { type BrowserContext, type Page, expect, test } from "@playwright/test";
+
+/**
+ * Everything still in flight after `goto` resolves, waited out before the shutter: the last
+ * request, the webfaces (`document.fonts.ready`) and two animation frames — the first frame whose
+ * layout is the one the font metrics produced. Without it a committed PNG can be a mid-load frame
+ * that passes only because the diff sits under `maxDiffPixelRatio` (`/review 55`, which asked for
+ * this wait on the notice documents; TASK-056 gives it to every full-page baseline).
+ */
+async function settle(page: Page): Promise<void> {
+  await page.waitForLoadState("networkidle");
+  await page.evaluate(async () => {
+    await document.fonts.ready;
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          resolve();
+        });
+      });
+    });
+  });
+}
 
 /**
  * A recorded consent decision, seeded before the first navigation (TASK-051).
@@ -69,6 +90,61 @@ const SCREENSHOTS = [
   { path: "/de", name: "de.png" },
 ] as const;
 
+/**
+ * AC-27's own words: "each locale home at **mobile and desktop**", with every section this spec
+ * added in frame (TASK-056).
+ *
+ * The three baselines above are taken at the `visual` project's 1280 px, which is neither artboard
+ * and which no section of `docs/design/homepage-v1/` was drawn at; and they cover two locales of
+ * four, so a length regression in `en-gb`'s overrides or in `pl`'s diacritics had no baseline at
+ * all. These eight are the matrix the AC asks for: four locales × the two drawn widths, full page,
+ * so the utility strip, masthead, category row, hero, finder, proof row, occasion dates, occasion
+ * tiles, explainer, FAQ, trust strip, trending row, destinations grid and colophon are all in one
+ * frame per locale. The element-level baselines of `./home.spec.ts` stay: a full-page shot of a
+ * 6 000 px document cannot show a 4 px change inside an 820 px band, and a band-level shot cannot
+ * show a section that disappeared between two others. The two answer different questions.
+ */
+const LOCALE_HOMES = ["en", "en-gb", "de", "pl"] as const;
+const ARTBOARDS = [
+  { name: "mobile", width: 390, height: 844 },
+  { name: "desktop", width: 1440, height: 900 },
+] as const;
+
+for (const locale of LOCALE_HOMES) {
+  for (const artboard of ARTBOARDS) {
+    test(`/${locale} matches the ${artboard.name} artboard baseline`, async ({
+      page,
+      context,
+      baseURL,
+    }) => {
+      await recordConsentRefusal(context, baseURL);
+      await page.addInitScript(() => {
+        Object.defineProperty(navigator, "languages", {
+          configurable: true,
+          get: () => [],
+        });
+      });
+      await page.setViewportSize({
+        width: artboard.width,
+        height: artboard.height,
+      });
+
+      const response = await page.goto(`/${locale}`);
+      expect(response?.status()).toBe(200);
+      await expect(page.locator('[data-fo-banner="shown"]')).toHaveCount(0);
+      await expect(page.locator("[data-fo-consent]")).toHaveCount(0);
+      // The webfaces before the shutter: the lockup, every heading and every label are drawn in
+      // them, so a frame taken before they swap records the fallback's metrics (`/review 55`).
+      await settle(page);
+
+      await expect(page).toHaveScreenshot(
+        `home-${locale}-${artboard.name}.png`,
+        { fullPage: true },
+      );
+    });
+  }
+}
+
 for (const { path, name } of SCREENSHOTS) {
   test(`${path} matches the committed baseline`, async ({
     page,
@@ -90,6 +166,7 @@ for (const { path, name } of SCREENSHOTS) {
     // The template and nothing situational: neither overlay is in the frame.
     await expect(page.locator('[data-fo-banner="shown"]')).toHaveCount(0);
     await expect(page.locator("[data-fo-consent]")).toHaveCount(0);
+    await settle(page);
 
     await expect(page).toHaveScreenshot(name, { fullPage: true });
   });

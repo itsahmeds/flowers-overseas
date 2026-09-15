@@ -42,6 +42,11 @@ describe("lighthouserc.json budgets (AC-23)", () => {
   it("asserts exactly the plan/01 §7 budgets, all as errors", () => {
     expect(rc.ci.assert.assertions).toEqual({
       "categories:performance": ["error", { minScore: 0.95 }],
+      // TASK-056: AC-24 names three categories, not one. `accessibility` and `best-practices`
+      // were collected and never asserted, so a 404 favicon and an axe regression were both
+      // invisible to the gate that publishes their scores.
+      "categories:accessibility": ["error", { minScore: 0.95 }],
+      "categories:best-practices": ["error", { minScore: 0.95 }],
       "largest-contentful-paint": ["error", { maxNumericValue: 2000 }],
       "cumulative-layout-shift": ["error", { maxNumericValue: 0.05 }],
       // 120 KB and 200 KB in bytes: **transfer** size, i.e. Brotli over the wire on Vercel
@@ -114,11 +119,11 @@ describe("tests/fixtures/seo/lighthouse-urls.json (AC-23)", () => {
     }
   });
 
-  it("measures the chooser and two locale homes (spec 003 AC-27)", () => {
+  it("measures the chooser and all four locale homes (spec 004 AC-24)", () => {
     // AC-27 words the budget as "`/` and `/en`"; `/de` is measured too because it is the locale
     // whose catalogue is an unreviewed echo — the one whose document could differ from `/en` by
     // accident rather than by design. Spec 004 §2 extends the list to all four launch locales.
-    expect(parseUrlList(raw)).toEqual(["/", "/en", "/de"]);
+    expect(parseUrlList(raw)).toEqual(["/", "/en", "/en-gb", "/de", "/pl"]);
   });
 
   it("rejects an empty list and an absolute URL", () => {
@@ -162,20 +167,37 @@ describe("ci.yml lighthouse and seo-validate jobs (AC-22, AC-23)", () => {
     expect(ci).toContain("pnpm seo:validate");
   });
 
-  it("runs Lighthouse against the preview URL on every PR", () => {
-    expect(ci).toMatch(/ {2}lighthouse:\n[\s\S]*?needs: preview/);
-    expect(ci).toContain("needs.preview.outputs.preview_url");
-    expect(ci).toContain("lighthouserc.json");
+  it("measures this repository's own bytes, Brotli-encoded, not a preview (AC-24)", () => {
+    // TASK-056's answer to the question `lighthouserc.json` left open: `resource-summary:script:
+    // size` is transfer size, `next start` sends gzip and a protected preview sends Brotli plus
+    // tens of KB of `vercel.live` that is in no build output of ours. So the job builds, serves
+    // and measures itself.
+    const job = ci.slice(ci.indexOf("  lighthouse:"));
+    expect(job).toMatch(/needs: build/);
+    expect(job).toContain("pnpm lighthouse:origin");
+    expect(job).toContain("LHCI_BASE_URL: http://127.0.0.1:3001");
+    expect(job).toContain("lighthouserc.json");
+    expect(job).not.toContain("needs.preview.outputs.preview_url");
   });
 
-  it("keeps Lighthouse informational, and states the measured reason (spec 003 §14 A12)", () => {
-    // Spec 001 §13 Q4 made the job informational "until spec 004". TASK-043 measured why it has
-    // to stay that way for now and the reason is no longer a schedule: the framework's own client
-    // runtime is over the script budget, so the job would be red on a page with no application
-    // JavaScript at all. The flip is a founder decision recorded in spec 003 §14 A12, and it is
-    // the deletion of the one line asserted here.
-    expect(ci).toMatch(/ {2}lighthouse:\n[\s\S]*?continue-on-error: true/);
-    expect(ci).toContain("spec 003 §14 A12");
+  it("blocks: the `lighthouse` job carries no continue-on-error (AC-24)", () => {
+    // Spec 001 §13 Q4 made the job informational "until spec 004"; spec 003 §14 A12 recorded the
+    // measured reason a date was not enough. TASK-056 is the flip, and this is the assertion that
+    // it cannot come back by accident.
+    const job = ci.slice(ci.indexOf("  lighthouse:"));
+    const nextJob = job.indexOf("\n  ", job.indexOf("steps:"));
+    expect(job.slice(0, nextJob === -1 ? undefined : nextJob)).not.toContain(
+      "continue-on-error",
+    );
+  });
+
+  it("writes the per-URL table spec 004 §11 asks for, so a regression names its locale", () => {
+    const job = ci.slice(ci.indexOf("  lighthouse:"));
+    expect(job).toContain(
+      "| URL | perf | a11y | best-practices | LCP (ms) | CLS | script (B, br) |",
+    );
+    expect(job).toContain("largest-contentful-paint");
+    expect(job).toContain("resource-summary");
   });
 
   it("writes the step summary after the run, not before it", () => {
@@ -183,7 +205,9 @@ describe("ci.yml lighthouse and seo-validate jobs (AC-22, AC-23)", () => {
     // "the step result below is the honest verdict" wording must not come back.
     expect(ci).not.toContain("honest verdict");
     const job = ci.slice(ci.indexOf("  lighthouse:"));
-    const runIndex = job.indexOf("name: Run Lighthouse CI against the preview");
+    const runIndex = job.indexOf(
+      "name: Run Lighthouse CI against the Brotli origin",
+    );
     const summaryIndex = job.indexOf(
       "name: Summarise what Lighthouse actually measured",
     );
@@ -207,10 +231,13 @@ describe("ci.yml lighthouse and seo-validate jobs (AC-22, AC-23)", () => {
     expect(job).not.toContain("if-no-files-found: warn");
   });
 
-  it("passes the protection-bypass secret by env, never inline in a URL", () => {
+  it("needs no deployment secret at all now that it serves what it measures", () => {
+    // The bypass header was how the job reached a protected preview. It measures a local origin
+    // since TASK-056, so the secret is neither needed nor present in this job — one fewer place a
+    // secret can leak into a log line. The Playwright jobs still carry it.
+    const job = ci.slice(ci.indexOf("  lighthouse:"));
+    expect(job).not.toContain("VERCEL_AUTOMATION_BYPASS_SECRET");
+    expect(job).not.toContain("x-vercel-protection-bypass");
     expect(ci).toContain("x-vercel-protection-bypass");
-    expect(ci).toContain(
-      "VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}",
-    );
   });
 });

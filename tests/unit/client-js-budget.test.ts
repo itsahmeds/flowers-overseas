@@ -91,9 +91,20 @@ import {
   reachableAssets,
   routeEntryFor,
   main,
+  APPLICATION_MARKUP_MARKER,
+  BASELINE_FILE,
+  REGRESSION_ALLOWANCE_BYTES,
+  ZERO_APP_JS_URL,
+  applicationCodeHits,
+  fontTransfer,
+  readBaseline,
+  regressions,
 } from "../../scripts/client-js-budget.ts";
 import { namespacesFor } from "../../src/modules/i18n";
 import { loadMessages } from "../../src/modules/i18n/messages.ts";
+
+/** The checkout root, for the two inputs that are committed files rather than build output. */
+const repoRoot = resolve(__dirname, "../..");
 
 describe("the budget constants are plan/01 §7's as spec 004 §13 Q13 restated them", () => {
   it("caps client JS at 128 KB (131 072 B) and the client message payload at 4 KB", () => {
@@ -324,13 +335,22 @@ describe("measurePages against a fake build output", () => {
     );
   });
 
-  it("renders a markdown table a step summary can carry", () => {
-    const table = formatMarkdownTable(measurePages(dist, ["/", "/en"]));
-    expect(table).toContain("| URL | document JS (br) |");
+  it("renders the §11 bundle table a step summary can carry", () => {
+    const table = formatMarkdownTable(
+      measurePages(dist, ["/", "/en"]),
+      fontTransfer(repoRoot),
+      readBaseline(repoRoot),
+    );
+    expect(table).toContain("| Route | first-load JS (br) |");
     expect(table).toContain("+ `next/dynamic` (br)");
-    expect(table).toContain("budget 128 KB br");
+    expect(table).toContain("128 KB br");
     expect(table).toContain("| `/` |");
     expect(table).toContain("| `/en` |");
+    // spec 004 §11's table has a Fonts column and a budget line; a budget printed nowhere is a
+    // budget nobody reads (TASK-056).
+    expect(table).toContain("fonts");
+    expect(table).toMatch(/Fonts: .* budget 45\.0 KB/);
+    expect(table).toContain("Regression allowance");
   });
 
   /**
@@ -377,9 +397,12 @@ describe("measurePages against a fake build output", () => {
     expect(out.join("")).toContain("Brotli-encoded JavaScript");
     expect(out.join("")).toContain("over the 128 KB");
     out.length = 0;
+    // `--url /small` is a fixture route, so it has no baseline row; the "nothing guards this
+    // route" breach TASK-056 added is expected here and is asserted separately below.
     expect(
       main(["--dist", dist, "--url", "/small"], { write }, { write }),
-    ).toBe(0);
+    ).toBe(1);
+    expect(out.join("")).toContain("has no row in");
   });
 });
 
@@ -779,5 +802,137 @@ describe("`/` carries no Client Component of its own (AC-7, AC-27)", () => {
       if (!/\.tsx?$/.test(file)) continue;
       expect(readFileSync(path, "utf8"), file).not.toContain('"use client"');
     }
+  });
+});
+
+/**
+ * TASK-056's three additions to the gate (spec 004 AC-25): the font budget, the committed
+ * baseline with its 5 KB regression allowance, and the assertion behind "`/` ships zero
+ * application JavaScript" — a claim spec 003 AC-7 made and nothing measured until now.
+ */
+describe("the AC-25 clauses TASK-056 added", () => {
+  describe("font transfer (AC-4's ≤45 KB, printed in the §11 table)", () => {
+    it("reads the committed manifest and is inside the budget", () => {
+      const fonts = fontTransfer(repoRoot);
+      expect(fonts.faces.length).toBeGreaterThan(0);
+      expect(fonts.transferBytes).toBe(
+        fonts.faces.reduce((sum, face) => sum + face.bytes, 0),
+      );
+      expect(fonts.budgetBytes).toBe(45 * 1024);
+      expect(fonts.withinBudget).toBe(true);
+    });
+  });
+
+  describe("the committed baseline and its regression allowance", () => {
+    const baseline = readBaseline(repoRoot);
+
+    it("exists, covers every measured route and states the budget it belongs to", () => {
+      expect(baseline).not.toBeNull();
+      expect(baseline?.budgetBytes).toBe(CLIENT_JS_BUDGET_BYTES);
+      expect(baseline?.regressionAllowanceBytes).toBe(
+        REGRESSION_ALLOWANCE_BYTES,
+      );
+      for (const url of ["/", "/en", "/en-gb", "/de", "/pl"]) {
+        expect(
+          baseline?.routes[url],
+          `${url} has no row in ${BASELINE_FILE}`,
+        ).toBeGreaterThan(0);
+      }
+    });
+
+    it("reports a route that grew past the allowance, and not one inside it", () => {
+      const page = (url: string, bytes: number): PageMeasurement =>
+        ({
+          url,
+          assets: [],
+          references: [],
+          fetchedGzipBytes: bytes,
+          fetchedBrotliBytes: bytes,
+          documentBrotliBytes: bytes,
+          lazyBrotliBytes: 0,
+          withinBudget: true,
+        }) satisfies PageMeasurement;
+      const committed = {
+        budgetBytes: CLIENT_JS_BUDGET_BYTES,
+        regressionAllowanceBytes: REGRESSION_ALLOWANCE_BYTES,
+        routes: { "/a": 100_000, "/b": 100_000 },
+      };
+
+      const { grown, unknown } = regressions(committed, [
+        page("/a", 100_000 + REGRESSION_ALLOWANCE_BYTES + 1),
+        page("/b", 100_000 + REGRESSION_ALLOWANCE_BYTES),
+        page("/c", 1),
+      ]);
+      expect(grown.map((regression) => regression.url)).toEqual(["/a"]);
+      expect(grown[0]?.deltaBytes).toBe(REGRESSION_ALLOWANCE_BYTES + 1);
+      // A route with no row is reported too: "no guard" and "guarded and fine" must not look
+      // alike, which is the same rule `loadableAssetsFor` follows for a missing manifest.
+      expect(unknown).toEqual(["/c"]);
+    });
+
+    it("treats a missing or malformed baseline as `no guard`, not as a pass", () => {
+      expect(
+        readBaseline(mkdtempSync(join(tmpdir(), "fo-baseline-"))),
+      ).toBeNull();
+      expect(regressions(null, []).unknown).toEqual([]);
+    });
+  });
+
+  describe("`/` ships zero application JavaScript (AC-12, AC-25)", () => {
+    let dist = "";
+
+    beforeAll(() => {
+      dist = mkdtempSync(join(tmpdir(), "fo-appjs-"));
+      mkdirSync(join(dist, "server/app"), { recursive: true });
+      mkdirSync(join(dist, "static/chunks"), { recursive: true });
+      writeFileSync(
+        join(dist, "app-path-routes-manifest.json"),
+        JSON.stringify({ "/(chooser)/page": "/" }),
+      );
+      writeFileSync(
+        join(dist, "static/chunks/framework.js"),
+        "self.__next_f=[];// no markup here",
+      );
+      writeFileSync(
+        join(dist, "static/chunks/island.js"),
+        '<div data-fo-consent="shown">',
+      );
+    });
+
+    afterAll(() => {
+      rmSync(dist, { recursive: true, force: true });
+    });
+
+    const document = (scripts: readonly string[]): void => {
+      writeFileSync(
+        join(dist, "server/app/index.html"),
+        scripts
+          .map((asset) => `<script src="/_next/${asset}"></script>`)
+          .join(""),
+      );
+    };
+
+    it("passes when every chunk the chooser fetches is framework code", () => {
+      document(["static/chunks/framework.js"]);
+      expect(applicationCodeHits(dist, measurePages(dist, ["/"]))).toEqual([]);
+    });
+
+    it("fails when a chunk carries rendered application markup", () => {
+      document(["static/chunks/framework.js", "static/chunks/island.js"]);
+      expect(
+        applicationCodeHits(dist, measurePages(dist, ["/"])).map(
+          (hit) => hit.asset,
+        ),
+      ).toEqual(["static/chunks/island.js"]);
+    });
+
+    it("looks for markup, not for a module name a loader stub mentions", () => {
+      // Turbopack writes a `next/dynamic` module's name into the loader stub of the entry that
+      // declares it, so `/`'s 1 434 B stub names an island the chooser never mounts
+      // (`/review 36`). A name is not evidence; `data-fo-*` markup is.
+      expect(APPLICATION_MARKUP_MARKER.test("ConsentBannerIsland")).toBe(false);
+      expect(APPLICATION_MARKUP_MARKER.test('data-fo-header="x"')).toBe(true);
+      expect(ZERO_APP_JS_URL).toBe("/");
+    });
   });
 });

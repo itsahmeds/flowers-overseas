@@ -144,7 +144,10 @@ describe("ci.yml preview gate (AC-29 / T-30)", () => {
   });
 
   it("hands the resolved URL to the browser jobs rather than letting them guess", () => {
-    for (const name of ["e2e", "visual", "a11y", "lighthouse"]) {
+    // `lighthouse` is deliberately not in this list since TASK-056: it builds and serves what it
+    // measures behind `scripts/seo/brotli-origin.ts`, because the budget is Brotli transfer and a
+    // protected preview adds tens of KB of `vercel.live` to the script total (spec 004 AC-24).
+    for (const name of ["e2e", "visual", "a11y"]) {
       const job = workflow.jobs[name];
       expect(job?.needs).toBe("preview");
       expect(job?.env?.["PLAYWRIGHT_BASE_URL"]).toBe(

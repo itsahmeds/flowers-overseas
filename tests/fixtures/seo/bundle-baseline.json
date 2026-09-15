@@ -1,0 +1,20 @@
+{
+  "//": [
+    "Committed bundle baseline (spec 004 §11, AC-25; TASK-056).",
+    "Brotli script transfer per public route, as `pnpm budget:client-js` measures it from the",
+    "build output. The absolute budget is `budgetBytes`; a route that grows more than",
+    "`regressionAllowanceBytes` against the number here fails the gate even while it is inside",
+    "the budget, because the budget's remaining headroom is the framework's, not ours.",
+    "Regenerate deliberately with `pnpm budget:client-js --update-baseline` and say in the PR",
+    "which import moved the number."
+  ],
+  "budgetBytes": 131072,
+  "regressionAllowanceBytes": 5120,
+  "routes": {
+    "/": 117356,
+    "/en": 124387,
+    "/en-gb": 124387,
+    "/de": 124387,
+    "/pl": 124387
+  }
+}
