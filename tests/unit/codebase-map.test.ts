@@ -77,9 +77,8 @@ describe("the committed docs/codebase-map.md (AC-33)", () => {
    * corridor-gate scripts) put the generated file at ~12.7 KB with every purpose line already
    * shortened to the generator's truncation width. Raising the hard assertion to 16 KB keeps the
    * gate meaningful — a runaway map still fails — while leaving the 12 KB *target* in spec 001
-   * where it belongs. Recorded as an escalation in `docs/tasks/TASK-087.md` and in the PR, for a
-   * spec 001 §14 amendment or a generator that compresses the tests column (TASK-095's docs
-   * close is the natural owner).
+   * where it belongs. Recorded as **spec 001 §14 A16** (`/review 63`); compressing the
+   * generator's tests column, which could lower this again, is TASK-095's docs close.
    */
   it("stays inside the size budget the spec sets", () => {
     expect(Buffer.byteLength(committed, "utf8")).toBeLessThanOrEqual(16 * 1024);

@@ -160,6 +160,54 @@ describe("the rules that need the whole corpus", () => {
   });
 });
 
+/**
+ * Rule 15 in detail, because `/review 63` found it blind to the one destination that has a corpus
+ * file. JS `\b` is ASCII-only, so a currency branch ending in `ł` had no trailing boundary and
+ * every `129 zł` form walked through the gate; the rule now closes on `(?![\p{L}\p{N}])`. These
+ * run through the gate, not against the pattern, so the assertion is the behaviour, not the source.
+ */
+describe("price-literal is Unicode-aware (rule 15)", () => {
+  /** The `price-literal` problems the corpus raises once `sentence` is appended to the guide. */
+  function priceProblemsFor(sentence: string): readonly { message: string }[] {
+    return checkCorridorCorpus({
+      files: applyCorridorCheckCase(corpus.files, {
+        rule: "price-literal",
+        expect: "price literal",
+        why: "a single appended sentence, so the only thing under test is the currency pattern.",
+        file: "en/pl-guide.md",
+        ops: [{ op: "appendBody", text: sentence }],
+      }),
+      names: corpus.names,
+    }).filter((problem) => problem.rule === "price-literal");
+  }
+
+  it.each([
+    "Bouquets start at 129 zł.",
+    "Bukiety od 129 zł",
+    "od 129zł",
+    "129 złotych",
+    "129 PLN",
+    "€29",
+    "35 EUR",
+    "99 lei",
+  ])("catches %j", (sentence) => {
+    expect(priceProblemsFor(sentence).length).toBeGreaterThan(0);
+  });
+
+  it.each(["8 March", "1 November", "2027", "We wrote this in 2027."])(
+    "leaves %j alone — a date is not a price",
+    (sentence) => {
+      expect(priceProblemsFor(sentence)).toStrictEqual([]);
+    },
+  );
+
+  it("names the literal it found, so the failure is actionable", () => {
+    expect(priceProblemsFor("Bouquets start at 129 zł.")[0]?.message).toContain(
+      "`129 zł`",
+    );
+  });
+});
+
 describe("the published-set summary (spec 007 §11)", () => {
   it("counts files, reviewed files and countries per launch locale", () => {
     const rows = corridorSummaryRows(corpus);

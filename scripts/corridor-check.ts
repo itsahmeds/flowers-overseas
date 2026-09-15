@@ -471,9 +471,17 @@ const GUIDE_CLAIM_PATTERNS: readonly { label: string; pattern: RegExp }[] = [
 const SCALE_CLAIM_PATTERN =
   /\b\d[\d,.]*\s*\+?\s*(?:florists?|shops?|partners?|cities|towns|countries|deliveries|customers|orders|bouquets)\b|\b\d[\d,.]*\+/iu;
 
-/** A price literal in copy. Prices are data (`formatMoney`), never a sentence. */
+/**
+ * A price literal in copy. Prices are data (`formatMoney`), never a sentence.
+ *
+ * The currency alternation closes on the Unicode-aware `(?![\p{L}\p{N}])` lookahead this file
+ * uses in `containsTerm()` / `containsSlugAsUrl()`, **not** on `\b`: JS `\b` is ASCII-only, so
+ * after a branch ending in `ł` there is no word boundary and every `129 zł` form escaped the rule
+ * (`/review 63`). `złotych` survived only because it ends in an ASCII `h`. Any currency word added
+ * here that ends in a non-ASCII letter falls into the same trap, which the lookahead closes.
+ */
 const PRICE_LITERAL_PATTERN =
-  /(?:[£€$]\s?\d|\b\d[\d,.]*\s?(?:zł|złotych|pln|eur|gbp|euros?|pounds?|lei|ron)\b)/iu;
+  /(?:[£€$]\s?\d|\b\d[\d,.]*\s?(?:zł|złotych|pln|eur|gbp|euros?|pounds?|lei|ron)(?![\p{L}\p{N}]))/iu;
 
 /* -------------------------------------------------------------------------- */
 /* The rules.                                                                 */

@@ -42,7 +42,14 @@ export const BANNED_VOICE_WORDS = [
 
 export type BannedVoiceWord = (typeof BANNED_VOICE_WORDS)[number];
 
-/** The banned words that appear in one piece of prose, each named once, in list order. */
+/**
+ * The banned words that appear in one piece of prose, each named once, in list order.
+ *
+ * **No word boundaries, on purpose** (`/review 63`): "networked" trips `network` and "vendors"
+ * trips `vendor`. The rule is over-inclusive, which is the safe direction for a copy ban — a
+ * false positive costs one rewording, a false negative ships the word. Do not "fix" this with
+ * `\b` without changing spec 004 §14 A5 first; the reading is recorded in spec 007 §14 A1.
+ */
 export function bannedVoiceWordsIn(prose: string): readonly BannedVoiceWord[] {
   return BANNED_VOICE_WORDS.filter((word) =>
     new RegExp(word.replaceAll("-", "[- ]"), "i").test(prose),

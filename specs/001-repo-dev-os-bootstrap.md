@@ -456,3 +456,17 @@ Corrected (founder approval 2026-09-11, orchestrator spec): the Dev OS gains thr
 - **AC-36 — agents read the map first.** `.claude/agents/{backend,frontend}-implementer.md` and `reviewer.md` instruct: read `CLAUDE.md`, the task's `docs/tasks/TASK-NNN.md`, the spec's index and only the sections it names, and `docs/codebase-map.md`; explore only when a deliverable requires it; round-2+ reviews are scoped to the diff and rerun only the suites the diff touches. `.claude/skills/implement` and `review` pass the brief path instead of the row text. `CLAUDE.md` "Where state lives" gains the map and the briefs.
 Tests: T-34 (map `--check` bites on a stale file and on a missing purpose), T-35 (brief migration lossless; 400-char and brief-present checks bite), T-36 (spec index `--check` bites), T-37 (agent definitions name the map and the brief path). Non-goals: no change to task ids, statuses, the nine columns, the open-decisions table or `plan/13`; no summarisation of specs.
 Raised by: founder, 2026-09-11 ("design it so the agent can go directly where it is supposed to go").
+
+**A16 — AC-33's "≤ 12 KB" is a target; the hard assertion is 16 KB (§2 "Dev OS", A15's AC-33; TASK-087, 2026-09-16).**
+Original: AC-33 closes "Target size ≤ 12 KB", and `tests/unit/codebase-map.test.ts` turned that
+target into a hard `toBeLessThanOrEqual(12 * 1024)` assertion.
+Corrected: the **target stays ≤ 12 KB** — the map is an orientation artefact and a map nobody reads
+in one screen has failed — but the test's hard cap is **16 KB**, carried inline in the test with the
+reason. Turning a stated target into a build-breaking cap was the over-reading; the generated map
+reached 12 661 B on TASK-087 by gaining one row per new module, which is the growth the artefact is
+designed for, not a runaway. The alternative — compressing the map's output inside a content PR —
+would change the generator's contract (`PURPOSE_LIMIT`, the tests column) and is owned by TASK-095's
+docs close, which may lower the cap again once the tests column is compressed. 16 KB keeps the gate
+meaningful: it is ~30 % of headroom, not an open cheque, and `pnpm codebase:map --check` (the
+staleness gate, which is the assertion that actually protects the artefact) is unchanged.
+Raised by: `/review 63` (PR #63), 2026-09-16, as the accepted condition of TASK-087's escalation 2.

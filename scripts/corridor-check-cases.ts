@@ -322,7 +322,15 @@ export const CORRIDOR_CHECK_CASES: readonly CorridorCheckCase[] = [
     expect: "price literal",
     why: "a price in prose is a price nobody can charge; the shown price comes from the price data.",
     file: "en/pl-guide.md",
-    ops: [{ op: "appendBody", text: "Bouquets start at €29 there." }],
+    ops: [
+      {
+        op: "appendBody",
+        // Both forms in one fixture: the `zł` form is the destination's own price literal and the
+        // one `/review 63` found escaping the rule behind an ASCII `\b`; `€29` is the original
+        // fixture, kept so the symbol branch cannot regress either.
+        text: "Bouquets start at 129 zł there, and €29 from here.",
+      },
+    ],
   },
   {
     rule: "live-operations",
