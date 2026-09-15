@@ -2,12 +2,12 @@
 
 | Field | Value |
 |---|---|
-| Status | draft |
+| Status | approved |
 | Phase | 0 |
 | Plan refs | plan/01 §3 §5 §7 §11 · plan/02 §2 §3 §4 §5 §6 §7 §8 §9 §10 §11 §12 §14 §15 §16 · plan/03 §3 §5 §6 §7 §9 §10 §11 · plan/04 §4 §5 §12 §13 §16 · plan/05 §1 (#3, #4), §7 · plan/07 §1.2 §2.1 §3 §4 §6 §7 §8 · plan/09 Phase 0 (29 Sep–5 Oct; AC 1, 2, 3, 6) · plan/10 §3 §5 · plan/12 §4 §5 · plan/13 §A (A1, A2, A7), §B (B4, B12, B15), §D (D4, D6) |
 | ADRs | ADR-0001 (one domain, locale subfolders) · ADR-0003 (tiered locale rollout) · ADR-0006 (no IP redirects) · ADR-0007 (index only true pages in Phase 0) · ADR-0016 (CSP allowlist on cached HTML) · ADR-0017 (catalogue dataset ownership) · requests one amendment to spec 002 §5.1 (§5.1 below), proposes no new ADR |
 | Author / date | spec-writer via /spec · 2026-09-14 |
-| Approved by / date | — (draft; §13 must be answered first) |
+| Approved by / date | Ahmed (founder) · 2026-09-15 — every §13 default (Q1–Q10) accepted as written; plan/13 C2 default (seven guide destinations, PL only live) accepted |
 
 ## 0. Index
 
@@ -355,3 +355,5 @@ Each carries the default this spec is written against; the spec stays `draft` un
 ## 14. Amendments (post-approval corrections)
 
 _None yet._
+
+**Resolution (2026-09-15, founder):** all ten defaults accepted without amendment. Q1 seven `en` + seven `en-gb` pages, no `de`/`pl` corridor page until a human writes it (PL-in-Polish is the first native-reviewer commission); Q2 no price on guide pages; Q3 live state gated on an `ActivePartnersProvider`, false everywhere in Phase 0; Q4 no waiting-list form; Q5 indexing flips only on the production domain after a `/seo-audit` pass; Q6 corridor + hub only, info/legal set gets its own spec; Q7 007 owns the occasion-date evaluator; Q8 `rumaenien`/`holandia` kept; Q9 `/en/` and `/en-gb/` as alternates with mandatory en-gb overrides; Q10 spec 002 `country_locale_content` gains `seo_title`, `seo_description` (amendment to record in spec 002 §14). Next: §12 artboards in `docs/design/`, then `/plan-tasks`.
