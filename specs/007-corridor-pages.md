@@ -354,7 +354,32 @@ Each carries the default this spec is written against; the spec stays `draft` un
 
 ## 14. Amendments (post-approval corrections)
 
-_None yet._
+**A1 — What the honesty rules grep for: URL-shaped own-slug, seven known destinations, unbounded banned words (§8; AC-2's clause list; `plan/02` §5.3; TASK-087, 2026-09-16).**
+Original: AC-2 requires `pnpm corridor:check` to fail a file that contains "its own slug in body
+copy" and "another country's name in body copy", and `plan/02` §5.3 backs both.
+Corrected (an interpretation of a hard requirement, not a relaxation of it):
+
+- **`own-slug-in-body` flags the slug only in URL shape** — adjacent to a `/` or a `-`, matched with
+  the Unicode-aware `(?<![\p{L}\p{N}])` / `(?![\p{L}\p{N}])` guards — so `/en/send-flowers-to/poland`
+  and `poland-guide` fail while "We write about Poland here." passes. `plan/02` §5.3's first bullet
+  bans a place-name **variable** in body copy, and the failure it names is the fleurop.de template
+  leak, where a rendered `{{city}}` left a URL fragment in the prose. A hand-authored markdown file
+  cannot contain a variable, so a literal word grep would only ever catch the word "Poland" in
+  Poland's own guide — an unsatisfiable rule that would force a slug rename to escape it, which is a
+  worse outcome than the leak. The rule is over-strict in one harmless direction: it also flags
+  "Poland-based".
+- **`other-country-in-body` knows only the seven guide destinations, by design.** AC-2 words the
+  clause as "another country's name", but the rule's list is the seven destinations of `plan/13` C2
+  plus their localised names. "Britain" and "the United States" therefore pass, and the corpus uses
+  both legitimately (the wandering Mother's Day date). The rule exists to stop one corridor page
+  selling another corridor, not to ban geography from prose.
+- **`bannedVoiceWordsIn()` has no word boundaries, on purpose.** "networked" trips `network`. The
+  ban is over-inclusive, which is the safe direction for a copy rule: a false positive costs one
+  rewording, a false negative ships a banned word. Changing this means changing spec 004 §14 A5
+  first.
+
+Raised by: TASK-087 escalation 1, accepted by `/review 63` (PR #63) on 2026-09-16 with the record in
+this section as its condition.
 
 **Resolution (2026-09-15, founder):** all ten defaults accepted without amendment. Q1 seven `en` + seven `en-gb` pages, no `de`/`pl` corridor page until a human writes it (PL-in-Polish is the first native-reviewer commission); Q2 no price on guide pages; Q3 live state gated on an `ActivePartnersProvider`, false everywhere in Phase 0; Q4 no waiting-list form; Q5 indexing flips only on the production domain after a `/seo-audit` pass; Q6 corridor + hub only, info/legal set gets its own spec; Q7 007 owns the occasion-date evaluator; Q8 `rumaenien`/`holandia` kept; Q9 `/en/` and `/en-gb/` as alternates with mandatory en-gb overrides; Q10 spec 002 `country_locale_content` gains `seo_title`, `seo_description` (amendment to record in spec 002 §14). Next: §12 artboards in `docs/design/`, then `/plan-tasks`.
 

@@ -3,8 +3,8 @@
 # the job names straight out of it, so a job added here is part of the branch-protection contract
 # without anybody editing a list (`pnpm branch-protection --verify`).
 #
-# Jobs (20): lint · typecheck · test-unit · test-integration · test-contract · build · db-check ·
-# env-build-failure · commitlint · seo-validate · i18n-check · catalogue-check · seed-check ·
+# Jobs (21): lint · typecheck · test-unit · test-integration · test-contract · build · db-check ·
+# env-build-failure · commitlint · seo-validate · i18n-check · catalogue-check · corridor-check · seed-check ·
 # dev-os-check · audit · preview · e2e · visual · a11y · lighthouse. The lint job also runs the
 # three orientation gates of §14 A15: `codebase:map --check`, `specs:index --check`, `tasks:check`.
 #
@@ -35,6 +35,8 @@
 #  - `db:check` runs as its own `db-check` job rather than a step of `build` (spec §2 puts it
 #    after `build`): from spec 002 it grows a Postgres connection and drift detection, and a
 #    separate job is where a service container can be attached without touching `build`.
+#  - `corridor-check` (spec 007 AC-2, TASK-087) joins the same `needs: typecheck` fan-out as
+#    `i18n-check`, `catalogue-check` and `seed-check`: it reads committed markdown only.
 #  - `seo-validate` and `dev-os-check` sit early, on `needs: typecheck`, not after `lighthouse`
 #    where §2 lists them. Neither one touches a preview deployment (the SEO validators read
 #    committed fixtures; the dev-OS checks run the hooks against temp projects), so making them
@@ -731,6 +733,56 @@ jobs:
             echo "| check | command | result |"
             echo "|---|---|---|"
             echo "| catalogue + price gate (AC-5) | \`pnpm catalogue:check --summary\` | ${{ steps.catalogue.outcome }} |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # spec 007 §2, §11, AC-2 / T-03 (TASK-087): the corridor content gate. Eighteen rules over
+  # `content/corridors/**` — does it parse, is it human-written, is the body long enough, is the
+  # intro inside its band, is it distinct from its siblings, is the FAQ the right size and actually
+  # about the country, do the SEO fields fit, does a slug or another country leak into the prose,
+  # does it use one of the nine banned words, does a guide-state page claim a delivery time, a
+  # cutoff, a florist count, a rating, a review or a delivery photo, does it invent a number or a
+  # price, may a live file exist at all, does an `en-gb` override override, and are the related
+  # destinations reciprocal — each reported as one line naming the file, the field and the rule.
+  #
+  # `needs: typecheck` beside `i18n-check`, `catalogue-check` and `seed-check` (spec 001 §14 A9's
+  # placement rule): it reads committed markdown, touches no browser, no database and no preview
+  # deployment. `--summary` writes the published-set summary of spec 007 §11 — per locale, the
+  # number of corridor files, how many are reviewed and which countries they cover — which is the
+  # number the `seo-auditor` compares against the existence rule and the number the founder
+  # watches as native reviews land.
+  corridor-check:
+    name: corridor-check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: typecheck
+    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci:full') }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - name: corridor:check — the eighteen content rules and the published-set summary (AC-2)
+        id: corridor
+        run: pnpm corridor:check --summary 2>&1 | tee corridor-check.log
+      - name: Summarise the verdict
+        if: always()
+        run: |
+          set -uo pipefail
+          {
+            echo ""
+            echo "#### verdict"
+            echo ""
+            echo "| check | command | result |"
+            echo "|---|---|---|"
+            echo "| corridor content gate (AC-2) | \`pnpm corridor:check --summary\` | ${{ steps.corridor.outcome }} |"
+            echo ""
+            if [ -f corridor-check.log ] && grep -q 'corridor:check failed' corridor-check.log; then
+              echo "<details><summary>problems</summary>"
+              echo ""
+              echo '```'
+              grep -A 200 'corridor:check failed' corridor-check.log
+              echo '```'
+              echo ""
+              echo "</details>"
+            fi
           } >> "$GITHUB_STEP_SUMMARY"
 
   # spec 006 §2.3, §11, AC-10, AC-30 / T-10, T-30 (TASK-075): the seed-dataset gate. Nine rule

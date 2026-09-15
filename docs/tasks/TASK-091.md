@@ -21,6 +21,15 @@ be green. One paragraph or a short list — no restatement of the spec.
 One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From `/review 63` (2026-09-16, TASK-087):** two things arrive with the route. (a) **AC-1's
+  build-failure half.** `parseCorridorContentOrThrow()` throws naming file and field, but nothing
+  under `src/app/` imports `src/modules/geo` yet, so TASK-087 could not prove `pnpm build` fails on
+  a malformed corpus file; assert it here, once the route imports the barrel. (b) **`node:fs` in
+  the bundle.** `src/modules/geo/content/corpus.ts` reads the corpus with `readFileSync` /
+  `readdirSync` at module load, whereas spec 007 §2 specifies a *generated typed index* with no
+  `fs` in the bundle. The moment this task imports the barrel that ships `node:fs` in the server
+  bundle and forecloses the edge runtime — resolve it by generating the typed index at build time
+  or by marking the module server-only.
 
 ## Escalations
 

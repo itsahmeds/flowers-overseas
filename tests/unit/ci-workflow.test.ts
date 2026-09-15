@@ -65,6 +65,9 @@ const EXPECTED_JOBS = [
   // spec 005 AC-5 (TASK-062): the catalogue and price gate, on the same `needs: typecheck`
   // fan-out as `i18n-check` for the same reason (spec 001 §14 A9).
   "catalogue-check",
+  // spec 007 AC-2 (TASK-087): the corridor content gate, on the same fan-out — it reads
+  // `content/corridors/**` and writes the §11 published-set summary.
+  "corridor-check",
   // spec 006 AC-10, AC-30 (TASK-075): the seed-dataset gate, on the same fan-out for the same
   // reason — it reads `seed/data/**` and writes the §11 catalogue-health report.
   "seed-check",

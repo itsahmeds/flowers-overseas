@@ -100,6 +100,14 @@ export const SCANNED_PATHS = [
   // spec 004 §2 "Analytics": the gated GA4 loader. It reads one env variable and renders two
   // script elements; a database import here would be a surprise of the worst kind.
   "src/modules/analytics",
+  // spec 007 AC-1 (TASK-087): the corridor content model, its provider seam and its gate. The
+  // whole of spec 007's Phase 0 is buildable and testable with no database — the corpus is
+  // committed markdown read at build time — and `dbCountryContentProvider` arrives as a *second*
+  // implementation behind `CountryContentProvider`, inside `src/modules/geo/content/provider.ts`,
+  // which is why the module is named as a whole rather than file by file.
+  "src/modules/geo",
+  "scripts/corridor-check.ts",
+  "scripts/corridor-check-cases.ts",
 ] as const;
 
 const SCANNED_EXTENSIONS = [".ts", ".tsx", ".mts", ".cts", ".js", ".jsx"];

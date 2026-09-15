@@ -37,6 +37,10 @@ import { join, resolve } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
+import {
+  BANNED_VOICE_WORDS,
+  bannedVoiceWordsIn,
+} from "../../src/config/voice.ts";
 import { parseTables } from "../../scripts/tasks-open-decisions.ts";
 
 const repoRoot = resolve(__dirname, "../..");
@@ -357,18 +361,12 @@ describe("docs/design/README.md states the rules an agent needs", () => {
  * note. Identifiers inside `<code>` are exempt for every word, because a route or a table name is
  * not copy: `/demo/vendor-inbox`, `partner_application` and `corridorPagePublished` are the names
  * the code actually uses and renaming them in a drawing would make the drawing wrong.
+ *
+ * The list itself lives in `src/config/voice.ts` since TASK-087, because `pnpm corridor:check`
+ * has to fail a corridor guide that uses one of these words and two copies of the nine words
+ * would drift (spec 007 AC-2).
  */
-const BANNED = [
-  "relay",
-  "corridor",
-  "partner",
-  "third party",
-  "third-party",
-  "vendor",
-  "network",
-  "anywhere in the world",
-  "super fresh",
-] as const;
+const BANNED: readonly string[] = BANNED_VOICE_WORDS;
 
 /** The word that may appear inside an `[internal]` annotation block. */
 const INTERNAL_ONLY = "corridor";
@@ -459,13 +457,17 @@ describe("every artboard speaks in the first person (spec 004 §14 A5)", () => {
  *    `src/modules/admin/` and an admin route group are excluded by path. Nothing else is: the
  *    `/dev/components` gallery ships as a page and is scanned like any other.
  */
-const CUSTOMER_COPY_EXEMPT_PATHS = ["src/modules/admin/", "src/app/(admin)/"];
+const CUSTOMER_COPY_EXEMPT_PATHS = [
+  "src/modules/admin/",
+  "src/app/(admin)/",
+  // The register itself (TASK-087). `src/config/voice.ts` *is* the nine words; scanning it for
+  // them would be the one place the rule can only fail.
+  "src/config/voice.ts",
+];
 
 /** The banned words that appear in one piece of prose, each named once. */
 export function bannedWordsIn(prose: string): string[] {
-  return BANNED.filter((word) =>
-    new RegExp(word.replaceAll("-", "[- ]"), "i").test(prose),
-  );
+  return [...bannedVoiceWordsIn(prose)];
 }
 
 /** Leaf values of a message catalogue, flattened to `dot.path` -> value. */
