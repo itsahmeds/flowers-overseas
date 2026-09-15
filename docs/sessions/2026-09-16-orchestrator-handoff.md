@@ -6,11 +6,12 @@ Read this first, then `TASKS.md` (Log, last ~25 lines), then `docs/sessions/2026
 
 | | |
 |---|---|
-| Phase 0 | **60 / 96** tasks · 7 / 12 specs approved · drafts 008, 009, 040 awaiting founder rulings |
+| Phase 0 | **61 / 96** tasks · 7 / 12 specs approved · drafts 008, 009, 040 awaiting founder rulings |
 | Merged this session | PR 59 (TASK-084), PR 60 (spec 007 artboards), PR 61 (TASK-056, spec 004 gates), PR 63 (TASK-087, corridor content system) |
-| Ready to merge | **PR 64** (TASK-089 occasion dates, `/review` PASS, rebased, mergeable) — founder merges |
+| Merged at close | PR 64 (TASK-089 occasion dates) |
+| **Needs `/review`** | **PR 65** (TASK-090 SEO rule engine) — dispatch the full reviewer first thing; then founder merges |
 | Reviewed, merge gated | PR 62 (TASK-013 env contract, PASS) — gated on **Railway** variables now (ADR-0018), not Vercel |
-| **In flight when the session closed (agents gone, worktrees remain)** | `~/dev/fo-wt-090` TASK-090 SEO rule engine · `~/dev/fo-wt-088` TASK-088 six `en` guides + seven `en-gb` overrides (branched from PR 63's head; rebase onto `main`). **First action next session:** `git -C` each worktree `status`/`log origin/main..HEAD`; if a PR exists, dispatch `/review`; if work is uncommitted/partial, re-dispatch `/implement TASK-0xx` telling the agent to continue from the worktree state. |
+| **In flight when the session closed (agent gone, worktree remains)** | `~/dev/fo-wt-088` TASK-088 six `en` guides + seven `en-gb` overrides (branched from PR 63's head; rebase onto `main`). **First action next session:** `git -C` each worktree `status`/`log origin/main..HEAD`; if a PR exists, dispatch `/review`; if work is uncommitted/partial, re-dispatch `/implement TASK-0xx` telling the agent to continue from the worktree state. |
 | Specs drafted | 008 shop/category/occasion pages (28 AC, ~14 tasks), 009 PDP + date picker (13 tasks), 040 hosting Railway+Cloudflare (33 AC, 8 tasks) |
 | Infra | Railway project `flowers-overseas` (Grovant's workspace; envs production/staging; **no service, no deploy** until `APP_ENV` lands) · Cloudflare zone `flowersoverseas.com` on the founder's account, GoDaddy NS switched to `cruz`/`lex.ns.cloudflare.com` (check `dig NS`) · Neon + R2 secrets live-verified in `.env.local` · `grovant` GitHub admin (invite pending) · Railway + Vercel CLIs installed; Vercel not linked |
 
@@ -22,7 +23,7 @@ Read this first, then `TASKS.md` (Log, last ~25 lines), then `docs/sessions/2026
 5. GitHub Actions billing (still blocked since 09-09; every review costs 20–40 min of laptop time). Delete the lost R2 token `flowersoverseas-app`. File Neon/Cloudflare/Railway DPAs.
 
 ## Dispatch order (two local slots + unlimited cloud writers)
-Site lane: review/merge 090 and 088 → **TASK-091 corridor route** (frontend; pixel-for-pixel to `docs/design/wireframes/corridor-country-*.dc.html`) → 092 hub + links → 093 ∥ 094 → 095 → 096 (founder-gated, domain). After rulings: 008 design round + plan, 009 design round + plan, 040 plan → **040 task 1 `APP_ENV`** can run in the cloud immediately (host-agnostic).
+Site lane: `/review 65` → merge → finish/review 088 → **TASK-091 corridor route** (frontend; pixel-for-pixel to `docs/design/wireframes/corridor-country-*.dc.html`) → 092 hub + links → 093 ∥ 094 → 095 → 096 (founder-gated, domain). After rulings: 008 design round + plan, 009 design round + plan, 040 plan → **040 task 1 `APP_ENV`** can run in the cloud immediately (host-agnostic).
 
 ## Lessons this session
 - **Cloud agents work** (`isolation: "remote"`) for spec-writers but the sandbox had **no shell**: they write files in `.claude/worktrees/agent-*`; the orchestrator copies the file, runs `pnpm specs:index`, commits, and removes the worktree. Do not use remote isolation for implementers that must run gates.
