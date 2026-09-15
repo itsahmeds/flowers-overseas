@@ -66,7 +66,7 @@ to every line. Content only: no code beyond the rendered-list helper T-19 names.
 
 ## Result
 
-Branch `task/TASK-088-corridor-corpus-en-en-gb`, PR #64 (draft, blocked on the two escalations
+Branch `task/TASK-088-corridor-corpus-en-en-gb`, PR #66 (draft, blocked on the two escalations
 above). Shipped the thirteen new corridor files — `content/corridors/en/{de,fr,es,it,ro,nl}-guide.md`
 and `content/corridors/en-gb/{pl,de,fr,es,it,ro,nl}-guide.md` — each `source: human`,
 `reviewed: false`, 667–795-word bodies, 132–169-word intros, 11 FAQ items (10 in the untouched
