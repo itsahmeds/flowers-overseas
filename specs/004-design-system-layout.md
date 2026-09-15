@@ -369,7 +369,7 @@ T2 client-JS budget + CSP + security headers ─────┘                T
   5. **Home skeleton, trust strip, styling pass, media conventions.** Hero (text LCP + reserved slot), how-it-works, `DestinationPicker`, `TrustStrip`, styled `/` chooser / 404 / 500, restyled suggestion banner, `Media` + `slots.ts` + `placeholderLoader`, `home`/`trust` messages. Covers AC-10, AC-11, AC-12, AC-13, AC-15, AC-16. **Depends on 3** (and on 1); the suggestion-banner restyle additionally needs spec 003's **TASK-041** merged — if it has not, that half is dropped from this task and picked up by task 6 rather than blocking the home page.
   6. **Gates, budgets, docs, close.** Lighthouse URL set + assertions + `continue-on-error` removed, `scripts/check-bundle-budget.ts` + baseline + step summary, axe URL set extended, visual baselines committed for both platforms, `i18n:check` green with the `retained` flags cleaned, `docs/architecture.md` §2/§3/§4, `docs/runbooks/design-system.md`, README, `.env.example`, spec §14. Covers AC-24, AC-25, AC-26, AC-27, AC-29, AC-30. **Depends on 2, 4 and 5** — it is the task that measures the finished thing, which is why the enforcement flip is last.
 - **Rollback plan.** Every task is one squash commit over a stateless change set; `git revert` restores the previous state exactly (no migration, no data, no external resource). Revert order is the inverse of the task order. Two specific hazards: reverting task 2 alone re-introduces the browser Sentry SDK and would immediately fail task 6's budgets, so the pair must be reverted together; and reverting task 6 alone restores `continue-on-error: true` on the Lighthouse job, which must be recorded in `docs/architecture.md` §4 again if it happens, or the deferred row is silently lost.
-- **Exit signal.** `/status` shows `004 implemented`, Phase 0 progress `4/12` specs; the four locale homes on the preview are branded, headed and footed with a functional consent banner; the `lighthouse` job is green and **required** on five URLs; the bundle table shows every public route under 120 KB gz; axe is 8/8 with no exception list; `docs/architecture.md` §4 has one row left (the `deploymentEnvironment()` Railway caveat, spec 007's).
+- **Exit signal.** `/status` shows `004 implemented`, Phase 0 progress `4/12` specs; the four locale homes on the preview are branded, headed and footed with a functional consent banner; the `lighthouse` job is green and **required** on five URLs; the bundle table shows every public route under 120 KB gz; axe is 8/8 with no exception list; `docs/architecture.md` §4 has **three** rows left — `ALLOW_PLACEHOLDER_ENV` (spec 002), "no browser Sentry SDK on public routes" (spec 013) and the `deploymentEnvironment()` Railway caveat (spec 007). *Corrected at TASK-056 (§14 A17): this sentence said "one row left", which was never true of spec 004's scope — spec 004 removes the **CSP** row and the `vercel.live` note, which is what AC-30 asserts, and the other two rows belong to specs this one cannot discharge.*
 
 ## 13. Open questions
 
@@ -608,3 +608,80 @@ verdict in either direction, but the job now says so in as many words and prints
 scores and metrics beside it (§11). The queued correction on spec 001 AC-23 is satisfied and needs
 no further task.
 Raised by: spec 001 AC-23's queue; discharged at TASK-056.
+
+**A17 — What AC-30's "`docs/architecture.md` §4 contains neither the CSP row nor the `vercel.live`
+note" means, and §12's row count (§9 AC-30; §12 "Exit signal"; TASK-056).**
+Original: AC-30 requires that §4 "contains **neither** the CSP row nor the `vercel.live` note", and
+§12's exit signal says §4 "has one row left (the `deploymentEnvironment()` Railway caveat)".
+The conflict (`/review 61`): read as *"those words must not appear in §4"*, AC-30 contradicts
+TASK-046's shipped `tests/unit/architecture-doc.test.ts`, which asserts the opposite — that §4
+keeps a **discharged-CSP paragraph** naming ADR-0016, the `vercel.live` preview-only position and
+the superseded `plan/01` §9 sentence. A deferred decision that is taken is not deleted from the
+record; it is written down as taken, or the reason it was taken is lost with it.
+Corrected (TASK-056): AC-30 means **no deferred *row* for either** — no line in §4's table whose
+"Deferred to" cell is a later spec for CSP or for `vercel.live`. That is the state today, both the
+AC and the test hold, and no third reading is open. `tests/unit/architecture-doc.test.ts` is the
+binding statement of it; this amendment is the prose.
+§12's "one row left" is corrected in place to **three**: `ALLOW_PLACEHOLDER_ENV` (spec 002), "no
+browser Sentry SDK on public routes" (spec 013) and the `deploymentEnvironment()` Railway caveat
+(spec 007). The sentence was written before spec 003 and spec 004 each added a row of their own and
+was never a claim spec 004 could discharge — the two survivors are other specs' to lift, and each
+names the spec that lifts it in the table. Neither AC-30 nor §12 carries a deferred row for either
+CSP or `vercel.live`, so nothing is queued onto a later task by this correction.
+Raised by: `/review 61`; taken at TASK-056.
+
+**A18 — `/`'s LCP has no design-safe margin to win, and why the number is the measurement origin
+rather than the page (§9 AC-24; §14 A12, A14; TASK-056).**
+Original: §14 A14 fixed the locale documents' LCP by making the `H1` the largest contentful element
+instead of an `ssr: false` island, and left `/` unexamined.
+Measured (`/review 61` and TASK-056 round 2, `lighthouserc.json`'s mobile profile against the
+Brotli origin, warmed) across two passes of three runs each: `/` reports **2 425 / 2 106 / 1 952**
+and **2 660 / 2 181 / 1 930 ms** against the 2 000 ms assertion, where the four locale documents
+report 1 430–1 649 ms in the first pass and 1 436–1 636 ms in the second. Three things were
+established before any change was proposed:
+
+1. **The LCP element on `/` is the chooser's intro `<p>`, and no design-safe change makes it the
+   `H1`.** Measured in Chromium at Lighthouse's own 412 × 823 profile: the intro is 380 × 96 px
+   (33 943 px² as an LCP candidate, four lines at `text-md`), the `H1` "Choose your language" is a
+   **single line**, 380 × 30 px, 11 560 px². A14's fix on the locale homes worked because the two
+   blocks there were within ~25 % of each other; here the intro is roughly three times the
+   heading. Splitting it at its sentence boundary leaves a three-line block of ~27 000 px², still
+   more than twice the `H1`; nothing short of deleting the founder-reviewed copy or halving the
+   body step would reverse the order, and both are changes to the design, not to a metric.
+2. **It would not matter if it did.** In a real browser `/` emits exactly **one** LCP candidate, at
+   **112 ms** — heading and paragraph are painted in the same frame, because `/` is SSG, reaches no
+   client module and has no island to wait for (AC-7, AC-27). There is no element-specific render
+   delay on `/` to remove.
+3. **The number is the render-blocking stylesheet's queue position on an HTTP/1.1 origin.** `/`'s
+   LCP tracks when the **later** of its two render-blocking stylesheets finished. Pass 1: CSS at
+   613 ms → LCP 2 425; 307 → 2 106; 258 → 1 952. Pass 2: 622 → 2 660; 275 → 1 930; 258 → 2 181 —
+   the ordering is not exact at the bottom of the range, but the slowest run of each pass is the
+   run whose stylesheet arrived ~600 ms late, and the stylesheet's own spread (258–622 ms) is the
+   same order of magnitude as the LCP spread it produces. On the locale documents both stylesheets
+   land at 130–185 ms every time and LCP is 1 430–1 649. The cause is
+   that `/` is the **fastest** document in the set, not the slowest: it is 4 200 B of SSG and
+   arrives at ~20 ms, so its document, three preloaded font faces, two stylesheets and eight
+   script chunks are all requested in one burst against `scripts/seo/brotli-origin.ts` — a plain
+   HTTP/1.1 proxy, six connections, no multiplexing — and an 804 B stylesheet lands behind a
+   17 KB font. The locale documents are 15 KB of SSR and arrive at ~113 ms, which spreads the same
+   burst out. Lantern then amplifies the observed queueing under the throttled mobile model.
+
+Decided (TASK-056, taking the option `/review 61` left open): **the assertion is not weakened and
+the page is not changed.** 2 000 ms stays an `error`, the URL set stays five, and this amendment is
+the record that the remaining margin on `/` is thin — 48 ms in pass 1, 70 ms in pass 2, on the best
+of three runs each — and that the lever is the origin, not the document. Two consequences are written down rather than acted on here,
+because both are decisions above an implementer:
+
+- **The aggregation is `optimistic`, not median.** `@lhci/cli` defaults `aggregationMethod` to
+  `optimistic`, which for a `maxNumericValue` assertion takes the **fastest** of the three runs —
+  so `/` passes on 1 952 / 1 930 ms while its median is 2 106 / 2 181 ms. `lighthouserc.json` does
+  not set the key,
+  and TASK-056 deliberately does not set it either: `"median"` is the honest setting and it would
+  make this required check red on `/` today. Flipping it is a gate-strength decision for the
+  founder/orchestrator, taken together with the origin question below.
+- **The origin is HTTP/1.1.** Serving the measured build over HTTP/2 (multiplexed, no
+  six-connection cap) is what a CDN does in production and is what removes this queue. It is a
+  change to A12's measurement basis — the decision that made the budget measurable at all — so it
+  belongs to whoever revisits A12, not to a round-2 fix.
+
+Raised by: `/review 61`; measured, decided and escalated at TASK-056.

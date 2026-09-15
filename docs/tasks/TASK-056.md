@@ -42,6 +42,23 @@ Branch `task/TASK-056-gates-budgets-docs-close`. Last task by design: it measure
 - **From `/review 61` (2026-09-15, nit):** `tests/e2e/home.spec.ts:369` (type-ahead, `e2e-mobile`)
   is flaky under a full parallel run; passes alone. Pre-existing, will read as a red `e2e`.
 
+- **From round 2 (2026-09-16, TASK-056):** `lighthouserc.json` does **not** set
+  `aggregationMethod`; `@lhci/cli` defaults it to `optimistic`, which for a `maxNumericValue`
+  assertion evaluates the **fastest** of the three runs. `/`'s LCP therefore passes on 1 930-1 952
+  ms while its median is 2 106-2 181 ms. Setting `"median"` is the honest value and would make the
+  required check red on `/` today — a gate-strength decision for the founder/orchestrator, recorded
+  in spec 004 §14 A18 and not taken here.
+- **From round 2 (2026-09-16, TASK-056):** the lever on `/`'s LCP is the measurement origin, not
+  the page: `scripts/seo/brotli-origin.ts` is plain HTTP/1.1 (six connections, no multiplexing) and
+  `/` is the fastest document in the set, so its whole subresource burst queues at once and an
+  804 B render-blocking stylesheet lands behind a 17 KB font preload. Serving the measured build
+  over HTTP/2 removes the queue; it changes spec 004 §14 A12's measurement basis, so it belongs to
+  whoever revisits A12.
+- **From round 2 (2026-09-16, TASK-056):** `tests/e2e/home.spec.ts:369` (type-ahead by mouse) was
+  read for the `/review 61` nit. Every call in it is awaited and `FinderTypeahead` has no debounce,
+  so there is no missing `await` to add; the flake is not fixed and stays a carry-forward for
+  whoever can reproduce it under a parallel run.
+
 ## Escalations
 
 1. **The consent sheet still paints at ~2.4 s; only server-rendering it would change that, and
@@ -149,3 +166,45 @@ carries the same numbers.
   later task may want to split it into element baselines.
 - One Lighthouse run on `/` reported LCP 2 679 ms against ~1 480 ms on the two after it: a cold
   `next start`. The CI job warms every URL before measuring, and the runbook says to do the same.
+
+### Round 2 (2026-09-16) — the three required changes of `/review 61`
+
+1. **The step-summary manifest path is fixed and pinned.** `ci.yml`'s `lighthouse` summary guarded
+   on `.lighthouseci/manifest.json`; `upload.target: filesystem` writes the manifest **inside**
+   `upload.outputDir`, i.e. `.lighthouseci/reports/manifest.json`, and the root of `.lighthouseci/`
+   holds only the collect step's raw `lhr-*.json`. The guard was simply false on every run, green
+   and red alike, so §11's per-URL table never printed. The step now reads a `manifest=` variable
+   at the real path, prints an explicit "_No per-URL table_" line when the file is absent instead
+   of silently skipping, and `tests/unit/ci-workflow.test.ts` reads `lighthouserc.json`'s
+   `upload.outputDir` and asserts the workflow references `<outputDir>/manifest.json` and never the
+   old path (verified red against the old path, then green). The jq/awk pipeline was run verbatim
+   against this round's manifest and the table is in the PR body.
+2. **`/`'s LCP margin: measured, and recorded rather than faked.** No design-safe change exists.
+   Measured in Chromium at Lighthouse's own 412 x 823 profile, the chooser's intro `<p>` is
+   380 x 96 px / 33 943 px² and the `H1` "Choose your language" is a **single line**, 380 x 30 px /
+   11 560 px² — roughly a third. Splitting the intro at its sentence boundary (the §14 A14 move)
+   leaves a three-line block of ~27 000 px², still more than twice the heading, so the LCP element
+   cannot be moved to the `H1` without deleting founder-reviewed copy or halving the body step. It
+   would also change nothing: in a browser `/` emits **one** LCP candidate, at **112 ms**, because
+   `/` is SSG with no island to wait for. What the Lighthouse number tracks is when the later of
+   the two render-blocking stylesheets arrived (613 -> 2 425; 307 -> 2 106; 258 -> 1 952; 622 ->
+   2 660), which is head-of-line blocking on the HTTP/1.1 Brotli origin. Recorded in spec 004 §14
+   **A18** and as a paragraph in `lighthouserc.json`'s `//` note. The 2 000 ms assertion is
+   unchanged and still an `error`.
+3. **Spec 004 §14 A17.** The AC-30 §4 reading is now a spec amendment, not only a reviewer note:
+   AC-30's "neither the CSP row nor the `vercel.live` note" means **no deferred row** for either,
+   which is what TASK-046's shipped `tests/unit/architecture-doc.test.ts` asserts, and the
+   discharged-CSP paragraph stays. §12's exit signal is corrected in place from "§4 has one row
+   left" to **three** rows (`ALLOW_PLACEHOLDER_ENV` -> spec 002, no browser Sentry SDK -> spec 013,
+   `deploymentEnvironment()` Railway caveat -> spec 007). Nothing is queued onto a later task.
+
+`TASKS.md` row 74 was fixed on `main` and is not touched on this branch. The `.gitleaks.toml`, the
+screenshot size and the `consent.body` attestation are out of round-2 scope and stay recorded as
+carry-forwards.
+
+**Round-2 gates.** `tests/unit/ci-workflow.test.ts` 47/47 green; `pnpm lint`, `pnpm typecheck`,
+`pnpm format:check`, `pnpm test` green; one Lighthouse pass (`pnpm lighthouse:origin` on :3001,
+every URL warmed, `LHCI_BASE_URL=http://127.0.0.1:3001 pnpm lighthouse`) with **zero assertion
+failures** — `/` 2 660 / 2 181 / 1 930, `/en` 1 487 / 1 443 / 1 580, `/en-gb` 1 442 / 1 636 / 1 629,
+`/de` 1 590 / 1 436 / 1 586, `/pl` 1 630 / 1 589 / 1 627 ms. No `src/` file changed, so no rebuild,
+no e2e and no visual re-run was needed.
