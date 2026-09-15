@@ -1209,6 +1209,13 @@ jobs:
         run: |
           set -uo pipefail
           log=lhci-output.log
+          # `upload.target: filesystem` writes the manifest **inside `upload.outputDir`**, not at
+          # the root of `.lighthouseci/` — that is where the raw `lhr-*.json` of the collect step
+          # land. Guarding on the wrong one is silent: the `if` is simply false and the per-URL
+          # table §11 asks for never prints, on a green run as on a red one (`/review 61`). The
+          # path is pinned against `lighthouserc.json` by `tests/unit/ci-workflow.test.ts`, so
+          # moving `outputDir` fails a unit test instead of emptying this summary.
+          manifest=.lighthouseci/reports/manifest.json
           {
             echo "### lighthouse (spec 004 AC-24 — required)"
             echo ""
@@ -1218,11 +1225,11 @@ jobs:
             echo "Budgets: performance / accessibility / best-practices >= 0.95, LCP < 2000 ms,"
             echo "CLS < 0.05, script transfer <= 131 072 B, image transfer <= 204 800 B."
             echo ""
-            if [ -f .lighthouseci/manifest.json ]; then
+            if [ -f "$manifest" ]; then
               echo "| URL | perf | a11y | best-practices | LCP (ms) | CLS | script (B, br) |"
               echo "|---|---|---|---|---|---|---|"
               jq -r '.[] | select(.isRepresentativeRun) | "| \(.url) | \(.summary.performance) | \(.summary.accessibility) | \(.summary["best-practices"]) | \(.jsonPath) |"' \
-                .lighthouseci/manifest.json > /tmp/lh-rows.txt || true
+                "$manifest" > /tmp/lh-rows.txt || true
               # The manifest carries the category scores; the metric values come from each run's
               # own report, so the table names the number that failed rather than a score.
               while IFS= read -r row; do
@@ -1230,6 +1237,12 @@ jobs:
                 metrics=$(jq -r '"\(.audits["largest-contentful-paint"].numericValue | floor) | \(.audits["cumulative-layout-shift"].numericValue) | \([.audits["resource-summary"].details.items[] | select(.resourceType == "script")][0].transferSize)"' "$json")
                 echo "$row" | awk -F'|' -v m="$metrics" '{printf "|%s|%s|%s|%s| %s |\n", $2, $3, $4, $5, m}'
               done < /tmp/lh-rows.txt
+              echo ""
+            else
+              # Said out loud rather than skipped, so the table going missing is a visible defect
+              # in this summary and not an absence nobody notices.
+              echo "_No per-URL table: \`$manifest\` was not written. Lighthouse did not reach the"
+              echo "upload step, or \`upload.outputDir\` in \`lighthouserc.json\` moved._"
               echo ""
             fi
             if [ "$LHCI_OUTCOME" = "success" ]; then

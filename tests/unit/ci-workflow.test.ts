@@ -259,6 +259,45 @@ describe("the i18n-check job (spec 003 AC-30's CI half, TASK-040)", () => {
   });
 });
 
+describe("the lighthouse job's step summary (spec 004 §11, AC-24; TASK-056)", () => {
+  const job = ci.jobs["lighthouse"];
+  const summaryStep = (job?.steps ?? []).find((step) =>
+    (step.run ?? "").includes("GITHUB_STEP_SUMMARY"),
+  );
+
+  /**
+   * `@lhci/cli`'s `filesystem` upload target writes `manifest.json` **inside**
+   * `upload.outputDir`; the root of `.lighthouseci/` holds the collect step's raw `lhr-*.json`
+   * and no manifest at all. The summary guards on that file, so a wrong path does not fail the
+   * job — it silently drops §11's per-URL table from every run, green and red alike
+   * (`/review 61`). These two values live in different files, so this is where they are held
+   * together.
+   */
+  it("reads the manifest from `lighthouserc.json`'s own `upload.outputDir`", () => {
+    const lighthouserc = JSON.parse(read("lighthouserc.json")) as {
+      ci: { upload: { target: string; outputDir: string } };
+    };
+    expect(lighthouserc.ci.upload.target).toBe("filesystem");
+    const outputDir = lighthouserc.ci.upload.outputDir;
+    expect(outputDir).toBeTruthy();
+    const run = summaryStep?.run ?? "";
+    expect(run).toContain(`${outputDir}/manifest.json`);
+    // And never the path LHCI does not write, which is what made the table disappear.
+    expect(run).not.toMatch(/(^|[^/])\.lighthouseci\/manifest\.json/);
+  });
+
+  it("prints the per-URL table from the representative run of each URL (§11)", () => {
+    const run = summaryStep?.run ?? "";
+    expect(summaryStep?.if).toBe("always()");
+    expect(run).toContain("| URL | perf | a11y | best-practices |");
+    expect(run).toContain("isRepresentativeRun");
+  });
+
+  it("says so in the summary when the manifest is missing, instead of printing nothing", () => {
+    expect(summaryStep?.run ?? "").toContain("No per-URL table");
+  });
+});
+
 describe("the catalogue-check job (spec 005 AC-5's CI half, TASK-062)", () => {
   const job = ci.jobs["catalogue-check"];
 
