@@ -81,7 +81,11 @@ describe("the corridor content provider is a seam (AC-4)", () => {
     expect(corridorContentView("PL", "en", "guide")?.h1).toBe(
       "Sending flowers to Poland",
     );
-    expect(corridorContentView("NL", "en", "guide")).toBeUndefined();
+    // `de` and `pl` have no corridor copy at all until a native writer delivers it (spec 007
+    // §13 Q1), which is the Phase 0 "no page rather than a machine-drafted one" answer. TASK-088
+    // filled the `en` and `en-gb` locales, so the absent record asserted here is a locale, not a
+    // country.
+    expect(corridorContentView("NL", "de", "guide")).toBeUndefined();
   });
 
   it("renders a different view model behind a fake provider", async () => {

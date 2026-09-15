@@ -48,6 +48,7 @@ export {
 export {
   corridorContentView,
   listCorridorContent,
+  relatedCorridorViews,
   type CorridorContentView,
 } from "./content/view.ts";
 export type { CountryContentProvider } from "./content/provider.ts";

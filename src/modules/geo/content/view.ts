@@ -85,3 +85,30 @@ export function corridorContentView(
 export function listCorridorContent(): readonly CorridorContentView[] {
   return getCountryContentProvider().list().map(viewOf);
 }
+
+/**
+ * The related destinations a corridor page may actually render (spec 007 §2 "Internal links",
+ * AC-18, T-19; TASK-088).
+ *
+ * `relatedIso2` is authored intent; this is what survives contact with the corpus. A target whose
+ * page does not exist **in this locale and state** is dropped rather than rendered, because
+ * spec 004 AC-14's "zero links to a non-200 URL" is inherited by every route this spec adds: an
+ * `en` page may link to the `en` guide for a country and find that the `de` corpus has nothing for
+ * it, and the honest answer is a shorter list, never a dead link and never a disabled one.
+ *
+ * Authored order is preserved (the author ranked them), the file's own country can never appear
+ * (the schema refuses it at parse time), and the result is the same view object the page renders,
+ * so a caller cannot link to something it has not seen.
+ */
+export function relatedCorridorViews(
+  iso2: string,
+  locale: string,
+  state: CorridorState,
+): readonly CorridorContentView[] {
+  const own = corridorContentView(iso2, locale, state);
+  if (own === undefined) return [];
+  return own.relatedIso2.flatMap((target) => {
+    const view = corridorContentView(target, locale, state);
+    return view === undefined ? [] : [view];
+  });
+}
