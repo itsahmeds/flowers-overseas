@@ -1,4 +1,4 @@
-# TASK-089 — `src/modules/geo/occasions`: `occasionDate(rule, year)` for the six `plan/03` §9 rule types, 2026–2030 fixture for every launch country (Mothering Sunday 2027-03-14, DE Muttertag 2027-05-09, PL Dzień Matki 05-26), `rule_type: none` never dated, 100 % branch coverage gate
+# TASK-089 — `src/modules/geo/occasions`: `occasionDate(rule, year)` for the six `plan/03` §9 rule types, 2026–2030 fixture for every launch country (Mothering Sunday 2027-03-07, DE Muttertag 2027-05-09, PL Dzień Matki 05-26), `rule_type: none` never dated, 100 % branch coverage gate
 
 Row: `TASKS.md` → TASK-089. This brief is the task's long form: the row keeps a link and one
 sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it with

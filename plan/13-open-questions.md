@@ -64,6 +64,7 @@ Legend: 🧑 founder · 🧾 accountant · ⚖️ lawyer · 🔍 verify at decis
 | D5 | EAA micro-enterprise exemption thresholds in EE and target markets | 07 §8 | National transpositions |
 | D6 | Occasion dates 2027 (Mothering Sunday 14 Mar, DE Muttertag 9 May, PL Dzień Matki 26 May, NO Morsdag 14 Feb, SE 30 May) | 03 §9 fixtures | Verify against official calendars in fixtures |
 | D6 note (2026-09-16) | Verified in TASK-089: Mothering Sunday 2027 = **7 March** (not 14 Mar) and 2030 = **31 March**; Easter − 21 rule; other D6 dates confirmed. | — | — | — | — | recorded |
+| D7 | FR Fête des Mères is the last Sunday of May **unless that is Pentecost, then the first Sunday of June**; plan/03 §9's `last_weekday` rule cannot express the exception. Correct 2026–2033; wrong in 2034, 2039, 2042, 2045, 2050, 2053. Add an eighth rule type (or a per-year override table) alongside B15's seventh in spec 009. | spec 009 occasions amendment | orchestrator | before FR goes live | `last_weekday` stays; override table when FR is live | open (2026-09-16, `/review 64`) |
 | D7 | Diaspora population estimates used for locale ordering | 03 §3 | Replace with Ahrefs volumes when A8 is done |
 
 ## E. Assumptions carried from the planning session (confirm or correct)
