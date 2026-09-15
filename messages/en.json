@@ -2,11 +2,11 @@
   "meta": {
     "chooser": {
       "title": "Flowers Overseas — choose your language",
-      "description": "Flowers Overseas delivers flowers across Europe through vetted local florists. Choose the language you would like to continue in."
+      "description": "We send flowers across Europe: our florist in the recipient's town makes the bouquet and hands it over in person. Choose your language."
     },
     "home": {
       "title": "Flowers Overseas — send flowers to Europe",
-      "description": "Order flowers for someone in another European country. A vetted local florist makes and delivers them."
+      "description": "Order flowers for someone in another European country. Our florist in their town makes the bouquet by hand and hands it over in person."
     },
     "notFound": {
       "title": "Page not found — Flowers Overseas",
@@ -148,8 +148,8 @@
     "basket": "Basket ({count, number})",
     "forFlorists": "For florists",
     "utility": {
-      "cutoff": "Order by 14:00 Warsaw time for same-day delivery",
-      "cutoffShort": "Order by 14:00 Warsaw time · same-day",
+      "cutoff": "Order by 14:00 in Warsaw for delivery today",
+      "cutoffShort": "Order by 14:00 in Warsaw · today",
       "pricesInclude": "Prices include delivery and VAT",
       "guarantee": "7-day freshness guarantee"
     },
@@ -182,7 +182,7 @@
     "payment": {
       "heading": "Payment",
       "processor": "Card payments are processed by Stripe. We never store card numbers.",
-      "methods": "The payment methods you can use are shown at checkout."
+      "methods": "We show the payment methods you can use at checkout."
     },
     "reminders": {
       "heading": "Occasion reminders",
@@ -502,7 +502,7 @@
     },
     "submit": "Continue",
     "help": "Continue shows you where we deliver today and where we are still choosing florists.",
-    "cutoff": "Order by 14:00 in Warsaw — the recipient's own time, not yours — and it arrives today.",
+    "cutoff": "Order by 14:00 in Warsaw for delivery today",
     "destinations": {
       "matches": "{count, plural, =0 {No country matches what you typed} one {# country matches} other {# countries match}}",
       "summary": "We deliver in {delivering} today. In {onboarding} we are still choosing florists."
@@ -583,7 +583,7 @@
     },
     "whoDelivers": {
       "question": "Who delivers, and when?",
-      "answer": "Our own florist in the recipient's town, by hand, on the day you choose. Order by 14:00 in Warsaw — the recipient's own time — and it arrives today."
+      "answer": "Our own florist in the recipient's town, by hand, on the day you choose. Order by 14:00 in Warsaw, the recipient's own time, for delivery today."
     },
     "lasting": {
       "question": "What if the flowers do not last?",

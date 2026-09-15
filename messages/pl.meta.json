@@ -977,7 +977,7 @@
   "faq.whoDelivers.answer": {
     "source": "machine",
     "reviewed": false,
-    "sourceHash": "5fe111d33535456403a419e4b9df57b8f277167327dc08b91a907e1bfc6a836b"
+    "sourceHash": "4b3071dea77d24a9b34e35e9c16599766636363ac50aa850ebf8a0fb4ad68b04"
   },
   "faq.whoDelivers.question": {
     "source": "machine",
@@ -990,9 +990,9 @@
     "sourceHash": "701d021d08c54579f23343581e45b65ffb1150b2c99f94352fdac4b7036dbbd5"
   },
   "finder.cutoff": {
-    "reviewed": false,
     "source": "machine",
-    "sourceHash": "c250b95746d758f1a277b8c60f7c2d2560dc4b3c6fbd46a94b411a4ac13d4b61"
+    "reviewed": false,
+    "sourceHash": "cd97c8c6aa325c5dbdfc6459243c12152315031633a9acc18ce413ccf30a80cf"
   },
   "finder.date.label": {
     "reviewed": false,
@@ -1112,7 +1112,7 @@
   "footer.payment.methods": {
     "source": "machine",
     "reviewed": false,
-    "sourceHash": "56cf7ecde930ae931f20e6cbc5559ba435d08bfeef9471476cbac1e9fab8d6c8"
+    "sourceHash": "3f97e4c1d4f328bc4d4697b63f2b14234c5d6f15915a60f17fb812af7a9ae2e3"
   },
   "footer.payment.processor": {
     "source": "machine",
@@ -1402,7 +1402,7 @@
   "meta.chooser.description": {
     "source": "machine",
     "reviewed": false,
-    "sourceHash": "57f606440bf4aa82161f13566db6ff320a536e29340c81097a263411e437dbfb"
+    "sourceHash": "15131a0be85fc262f8b8da68bd72a63f74c49d5ec64c435a1a65b03eb5b12372"
   },
   "meta.chooser.title": {
     "source": "machine",
@@ -1422,7 +1422,7 @@
   "meta.home.description": {
     "source": "machine",
     "reviewed": false,
-    "sourceHash": "ee5bdcb5e19241c19f36abf2a74bef5d6bfad77e880a327c037230c846d4ecf7"
+    "sourceHash": "4a60f8a09a0845e03839aa55029bf648ea6602da0049dc5d0311d7979bdb7d28"
   },
   "meta.home.title": {
     "source": "machine",
@@ -1547,12 +1547,12 @@
   "nav.utility.cutoff": {
     "source": "machine",
     "reviewed": false,
-    "sourceHash": "0627fd9c1f7638e1aeb6d330668d3286d7bec6a21551bc5bffdc9aaed09e4cb6"
+    "sourceHash": "cd97c8c6aa325c5dbdfc6459243c12152315031633a9acc18ce413ccf30a80cf"
   },
   "nav.utility.cutoffShort": {
     "source": "machine",
     "reviewed": false,
-    "sourceHash": "a3fcd0ba903ff38d3cc05f7b7d53192d6836380cd9f478408116394389991f28"
+    "sourceHash": "bad21fbae17ec6d6a7769ec0e51a852218691bf82a71af6c9a19c297ead08b6e"
   },
   "nav.utility.guarantee": {
     "source": "machine",

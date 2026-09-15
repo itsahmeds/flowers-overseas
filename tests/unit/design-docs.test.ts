@@ -16,10 +16,12 @@
  *  3. **Canvases.** Every `canvas.json` entry points at a file that exists, so publishing a canvas
  *     cannot silently drop an artboard — the failure mode that had `homepage-v1/canvas.json`
  *     naming three files that had been renamed.
- *  4. **Voice.** No artboard uses one of the words spec 004 §14 A5 bans from customer copy. The
- *     words on an artboard are the words that ship, because an implementer copies them into a
- *     message key; a convention that "we speak in the first person" survives exactly as long as
- *     nobody is in a hurry, so it is asserted instead.
+ *  4. **Voice.** No artboard, **no shipped message value and no prose string literal under
+ *     `src/`** uses one of the words spec 004 §14 A5 bans from customer copy. The words on an
+ *     artboard are the words that ship, because an implementer copies them into a message key; a
+ *     convention that "we speak in the first person" survives exactly as long as nobody is in a
+ *     hurry, so it is asserted instead — and asserted on the catalogue too (TASK-084), because
+ *     the artboard scan alone never sees a string an implementer wrote straight into `en.json`.
  *  5. **Benchmarks.** `docs/design/benchmarks/README.md` maps every file of the 2026-09-09
  *     competitor study to the wireframes it informed, and every artboard it names exists. A study
  *     nobody can trace back to a page is a document; a study mapped page by page is a design record.
@@ -363,6 +365,7 @@ const BANNED = [
   "third party",
   "third-party",
   "vendor",
+  "network",
   "anywhere in the world",
   "super fresh",
 ] as const;
@@ -433,6 +436,144 @@ describe("every artboard speaks in the first person (spec 004 §14 A5)", () => {
     expect(readme).toContain("## Voice");
     expect(readme).toContain("## Density");
     for (const word of BANNED) expect(readme.toLowerCase()).toContain(word);
+  });
+});
+
+/* ------------------------------------- 5b. the same ban, on the copy that actually ships */
+
+/**
+ * The artboard scan above is necessary and not sufficient: an implementer writes strings straight
+ * into `messages/en.json` (`finder.help`, `catalog.availability.*`) that no drawing ever carried,
+ * and spec 004 §14 A5 binds *customer copy*, not drawings. TASK-084 therefore runs the same nine
+ * words over the two places copy really lives.
+ *
+ * Two exemptions, both mechanical rather than a list a reviewer must keep:
+ *
+ *  - **Key names, not values.** Only the *values* of a message catalogue are scanned, so
+ *    `catalog.availability.noPartner` and `corridorPagePublished` stay the names the code uses.
+ *    The same rule generalises inside `src/`: a string with no whitespace in it is an identifier,
+ *    a class list, a route or a dot path — never a sentence — and is skipped. That is what lets
+ *    `"third-party-script"` (a CSP source name) and `"partner_only"` (a column value) survive
+ *    while `"our partner florist"` cannot.
+ *  - **Admin is not customer copy.** §14 A5 says the words "stay in plan/, specs/ and admin", so
+ *    `src/modules/admin/` and an admin route group are excluded by path. Nothing else is: the
+ *    `/dev/components` gallery ships as a page and is scanned like any other.
+ */
+const CUSTOMER_COPY_EXEMPT_PATHS = ["src/modules/admin/", "src/app/(admin)/"];
+
+/** The banned words that appear in one piece of prose, each named once. */
+export function bannedWordsIn(prose: string): string[] {
+  return BANNED.filter((word) =>
+    new RegExp(word.replaceAll("-", "[- ]"), "i").test(prose),
+  );
+}
+
+/** Leaf values of a message catalogue, flattened to `dot.path` -> value. */
+function flattenMessages(
+  tree: Record<string, unknown>,
+  prefix = "",
+): [string, string][] {
+  return Object.entries(tree).flatMap(([key, value]) => {
+    const path = prefix === "" ? key : `${prefix}.${key}`;
+    return typeof value === "string"
+      ? [[path, value] as [string, string]]
+      : flattenMessages(value as Record<string, unknown>, path);
+  });
+}
+
+/**
+ * The prose of a TypeScript or TSX source: comments dropped (they are for us, not the buyer), then
+ * every JSX text node and every quoted literal that contains whitespace — see the exemptions above
+ * for why whitespace is the identifier test.
+ */
+export function proseStrings(source: string): string[] {
+  const code = source
+    .replaceAll(/\/\*[\s\S]*?\*\//g, " ")
+    .replaceAll(/^[^\n"'`]*\/\/.*$/gm, " ");
+  const jsxText = [...code.matchAll(/>([^<>{}][^<>{}]*)</g)].map(
+    (match) => match[1] ?? "",
+  );
+  const literals = [...code.matchAll(/"([^"\\\n]*)"|'([^'\\\n]*)'/g)].map(
+    (match) => match[1] ?? match[2] ?? "",
+  );
+  return [...jsxText, ...literals].filter((value) => /\s/.test(value.trim()));
+}
+
+const catalogues = readdirSync(resolve(repoRoot, "messages"))
+  .filter((file) => file.endsWith(".json") && !file.endsWith(".meta.json"))
+  .sort();
+
+const sourceFiles = (function walkSrc(dir: string): string[] {
+  return readdirSync(resolve(repoRoot, dir), { withFileTypes: true }).flatMap(
+    (entry) => {
+      const rel = `${dir}/${entry.name}`;
+      if (entry.isDirectory()) return walkSrc(rel);
+      return /\.tsx?$/.test(entry.name) ? [rel] : [];
+    },
+  );
+})("src").filter(
+  (file) => !CUSTOMER_COPY_EXEMPT_PATHS.some((path) => file.startsWith(path)),
+);
+
+describe("the shipped copy speaks in the first person too (spec 004 §14 A5; TASK-084)", () => {
+  it.each(catalogues)("messages/%s uses no banned word", (file) => {
+    const tree = JSON.parse(
+      readFileSync(resolve(repoRoot, "messages", file), "utf8"),
+    ) as Record<string, unknown>;
+    const found = flattenMessages(tree).flatMap(([key, value]) => {
+      const words = bannedWordsIn(value);
+      return words.length === 0 ? [] : [`${key}: ${words.join(", ")}`];
+    });
+    expect(
+      found,
+      `messages/${file} uses ${String(found.length)} banned word(s) in a value a buyer reads: ${found.join("; ")}. Spec 004 §14 A5: we make it, our florist delivers it — never "relay"/"corridor"/"partner"/"third party"/"vendor"/"network". A key *name* may keep the word; the sentence may not.`,
+    ).toStrictEqual([]);
+  });
+
+  it("finds no banned word in a prose string literal under src/", () => {
+    const found = sourceFiles.flatMap((file) => {
+      const strings = proseStrings(
+        readFileSync(resolve(repoRoot, file), "utf8"),
+      );
+      return strings.flatMap((value) => {
+        const words = bannedWordsIn(value);
+        return words.length === 0
+          ? []
+          : [`${file}: "${value.trim()}" (${words.join(", ")})`];
+      });
+    });
+    expect(
+      found,
+      `${String(found.length)} prose string(s) under src/ use a word spec 004 §14 A5 bans from customer copy: ${found.join("; ")}`,
+    ).toStrictEqual([]);
+  });
+
+  it("scans something: the catalogues and the source tree are both non-empty", () => {
+    expect(catalogues).toContain("en.json");
+    expect(sourceFiles.length).toBeGreaterThan(100);
+  });
+
+  /* The control: a scan that cannot fail is a scan nobody should trust. */
+  it("bites on every banned word, in a sentence of the kind that gets written", () => {
+    expect(
+      bannedWordsIn(
+        "Our partner florist relays your order to a third party — a third-party vendor in our network, anywhere in the world, super fresh, through the corridor.",
+      ),
+    ).toStrictEqual([...BANNED]);
+  });
+
+  it("bites on a banned word written into JSX text, and spares the identifiers around it", () => {
+    const fixture = [
+      "// our partner network, in a comment nobody reads",
+      'const key = "catalog.availability.noPartner";',
+      'const csp = "third-party-script";',
+      'const cls = "flex items-center gap-md";',
+      "export const Bad = () => <p>Handed to our partner florist.</p>;",
+    ].join("\n");
+    const flagged = proseStrings(fixture).filter(
+      (value) => bannedWordsIn(value).length > 0,
+    );
+    expect(flagged).toStrictEqual(["Handed to our partner florist."]);
   });
 });
 

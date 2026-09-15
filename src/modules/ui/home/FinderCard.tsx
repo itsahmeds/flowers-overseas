@@ -231,10 +231,15 @@ export function FinderCard({ locale }: FinderCardProps): ReactElement {
         <Text size="sm" tone="subtle" measure>
           {finder("help")}
         </Text>
-        {/* The cutoff, in the **recipient's** zone and named as such — the one thing
-            1-800-Flowers does that nobody else in the field does (`docs/design/benchmarks`
-            pattern 5). Static copy, not a computed cutoff: the occasion/cutoff calculation is
-            spec 009's and this page has no destination data to compute from. */}
+        {/* The cutoff, in the **recipient's** town — the one thing 1-800-Flowers does that
+            nobody else in the field does (`docs/design/benchmarks` pattern 5). Static copy, not a
+            computed cutoff: the occasion/cutoff calculation is spec 009's and this page has no
+            destination data to compute from. Since TASK-084 the sentence is the *same* sentence
+            the header's utility strip prints (`nav.utility.cutoff`, pinned equal in
+            `tests/unit/ui-home.test.tsx`) — `/review 40` found the two phrased differently one
+            screen apart. That it is Warsaw's clock and not the buyer's is said in full by
+            `home.howItWorks.choose.body` and `faq.whoDelivers.answer`, further down the same
+            page, where a sentence has room to explain itself; the strip has room for one line. */}
         <Text size="sm" tone="subtle" measure data-fo-finder-cutoff>
           {finder("cutoff")}
         </Text>

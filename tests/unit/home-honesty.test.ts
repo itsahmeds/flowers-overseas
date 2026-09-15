@@ -177,14 +177,23 @@ describe("AC-15: the message catalogues carry no claim we cannot support", () =>
 
 describe("AC-16: this spec's message additions change no indexability answer", () => {
   it("keeps `en`/`en-gb` indexable and `de`/`pl` out of the index", async () => {
+    const { UNREVIEWED_SHARE_THRESHOLD } =
+      await import("../../src/modules/i18n/review.ts");
     const { isLocaleIndexable, unreviewedShare } =
       await import("../../src/modules/i18n");
 
+    // TASK-084 reset the seven keys it reworded to `reviewed: false` until the founder skims
+    // them (spec 004 §14 A5), so the English share is no longer exactly 0. What the AC measures
+    // is the *answer*, and the answer is unchanged: a copy pass may queue work for the founder,
+    // it may not quietly take the source locale out of the index.
     for (const locale of ["en", "en-gb"] as const) {
       expect(isLocaleIndexable(locale), locale).toBe(true);
-      // One authored English key waits for the founder's tick (`/review 58`), far below the 5%
-      // rule, so English is indexable exactly as it was before this task.
-      expect(unreviewedShare(locale), locale).toBeLessThan(0.05);
+      // A short founder review queue — one key from `/review 58`, seven more reworded by
+      // TASK-084's copy pass — sits far below the 5% rule, so English is indexable exactly as
+      // it was before either task. `i18n-messages-schema.test.ts` pins the queue key-exact.
+      expect(unreviewedShare(locale), locale).toBeLessThan(
+        UNREVIEWED_SHARE_THRESHOLD,
+      );
     }
     // The recomputed share is the only thing this task moves, and it moves it the honest way:
     // 57 new English keys, echoed into `de`/`pl` as machine drafts, so both stay non-indexable.

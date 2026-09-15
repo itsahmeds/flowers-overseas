@@ -247,7 +247,10 @@ describe("§8: the payment colophon claims nothing", () => {
 
   it("prints the two sentences that are true today", () => {
     expect(phase0).toContain("Card payments are processed by Stripe");
-    expect(phase0).toContain("shown at checkout");
+    // First person, as §14 A5 asks of every sentence a buyer reads (TASK-084): *we* show them.
+    expect(phase0).toContain(
+      "We show the payment methods you can use at checkout.",
+    );
   });
 
   it("ships no image at all — no logo, no badge, no mark but our own inline wordmark", () => {

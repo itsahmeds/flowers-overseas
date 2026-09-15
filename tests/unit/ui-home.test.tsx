@@ -215,10 +215,25 @@ describe("the finder card (AC-11)", () => {
     expect(text(html)).not.toContain("Delivering now");
   });
 
-  it("prints the cutoff in the recipient's zone, as static copy", () => {
+  it("prints the cutoff in the recipient's town, as static copy", () => {
     expect(text(hero("en"))).toContain(
-      "Order by 14:00 in Warsaw — the recipient's own time, not yours",
+      "Order by 14:00 in Warsaw for delivery today",
     );
+  });
+
+  /**
+   * `/review 40` found the same cutoff phrased two ways one screen apart — the utility strip's
+   * and this one. TASK-084 made them one sentence (the FAQ artboard's wording, which is the
+   * founder's), and this is the pin that keeps them one: a reworded strip that forgets the finder
+   * fails here rather than shipping a second version of the only hard promise on the page.
+   */
+  it("states the cutoff in the same words as the header's utility strip (`/review 40`)", () => {
+    const messages = loadMessages("en", ["finder", "nav"]) as {
+      finder: { cutoff: string };
+      nav: { utility: { cutoff: string } };
+    };
+
+    expect(messages.finder.cutoff).toBe(messages.nav.utility.cutoff);
   });
 
   it("describes the country field with one sentence, not the whole section (`/review 40`)", () => {

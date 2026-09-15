@@ -247,6 +247,28 @@ describe("the shipped catalogues and manifests", () => {
     });
   }
 
+  /**
+   * The English the founder has skimmed, and the exact list of what he has not (TASK-084).
+   *
+   * A copy pass reworded seven shipped keys, and spec 004 §14 A5 binds it to hand the reworded
+   * strings back to the founder rather than re-attest them itself — so `reviewed: false` with no
+   * `reviewedBy` is the honest record, and this array is the queue. It is pinned rather than
+   * counted because "some keys are unreviewed" is a state that grows quietly: adding a key here
+   * is a deliberate line in a diff, and removing one is what the founder's review looks like.
+   * `unreviewedShare("en")` must stay at or under the 5 % gate either way — `home-honesty` owns
+   * that half.
+   */
+  const AWAITING_FOUNDER_REVIEW = [
+    "faq.whoDelivers.answer",
+    "finder.cutoff",
+    "footer.payment.methods",
+    "home.destinations.elsewhere.body",
+    "meta.chooser.description",
+    "meta.home.description",
+    "nav.utility.cutoff",
+    "nav.utility.cutoffShort",
+  ];
+
   it("reviews the authored English and leaves the machine drafts unreviewed (§13 Q7, Q10)", () => {
     const en = MessageMetaManifestSchema.parse(readJson("en.meta.json"));
     for (const meta of Object.values(en)) {
@@ -260,8 +282,9 @@ describe("the shipped catalogues and manifests", () => {
         .filter(([, meta]) => !meta.reviewed)
         .map(([key]) => key)
         .sort(),
-    ).toEqual(["home.destinations.elsewhere.body"]);
+    ).toStrictEqual(AWAITING_FOUNDER_REVIEW);
     for (const [key, meta] of Object.entries(en)) {
+      // Unreviewed and *unattributed*: an implementer never signs the founder's name.
       expect(meta.reviewedBy === undefined, key).toBe(!meta.reviewed);
     }
 
