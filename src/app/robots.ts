@@ -1,5 +1,5 @@
 /**
- * `robots.txt` (spec 001 AC-15; spec 007 AC-12, TASK-090).
+ * `robots.txt` (spec 001 §2, §6, AC-15, TASK-006; spec 007 §2, §6, §12, AC-12, TASK-090).
  *
  * Spec 001 disallowed everything in **every** environment, because nothing was indexable and a
  * `*.vercel.app` production alias without a custom domain is still crawlable. Spec 007 lifts that

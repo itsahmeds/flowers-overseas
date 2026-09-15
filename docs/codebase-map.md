@@ -22,7 +22,7 @@ task actually touches.
 | `orders` | Public barrel for `orders` (state machine, order service, assignment/routing… | spec 015, 016 | — |
 | `partners` | Public barrel for `partners` (fulfilment partners, coverage, payouts) | spec 011, 026 | — |
 | `payments` | Public barrel for `payments` (PaymentProvider interface; stripe/, mollie/… | spec 013, 014 | — |
-| `seo` | Indexability, canonical, robots, metadata (spec 007) | spec 007 | `unit/seo-canonical.test.ts`, `unit/seo-environment.test.ts`, `unit/seo-indexability.test.ts` +2 |
+| `seo` | Indexability rule engine, canonical builder, robots policy, page metadata (spec… | spec 007 | `unit/seo-canonical.test.ts`, `unit/seo-environment.test.ts`, `unit/seo-indexability.test.ts` +2 |
 | `ui` | The only import path for the design system (spec 004 §2 "Where the design… | spec 004 | `unit/consent-cookie.test.ts`, `unit/consent-islands.test.tsx`, `unit/consent-view.test.ts` +19 |
 
 ## Config (`src/config/`)
@@ -76,7 +76,7 @@ task actually touches.
 | `global-error.tsx` | The last-resort 500 document (spec 003 §5.3 "and `src/app/global-error.tsx`… | spec 003 |
 | `layout.tsx` | App-root layout (spec 003 §5.3 "Recommended file layout"; TASK-034) | spec 003 |
 | `not-found.tsx` | The `.label` metadata line: the status code this document is served with, and… | spec 003 |
-| `robots.ts` | `robots.txt` (spec 001 AC-15; spec 007 AC-12, TASK-090) | spec 001 |
+| `robots.ts` | `robots.txt` (spec 001 §2, §6, AC-15, TASK-006; spec 007 §2, §6, §12, AC-12,… | spec 001 |
 
 ## Scripts (`scripts/`)
 

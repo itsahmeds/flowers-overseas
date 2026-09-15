@@ -1,7 +1,7 @@
 /** Public barrel for `seo` (hreflang, canonical, JSON-LD builders, sitemap generators, robots). Owned by: spec 007. */
 
 /**
- * @purpose Indexability, canonical, robots, metadata (spec 007)
+ * @purpose Indexability rule engine, canonical builder, robots policy, page metadata (spec 007)
  *
  * The only import path for the `seo` module (spec 007 §2, `plan/01` §5; TASK-090).
  *
