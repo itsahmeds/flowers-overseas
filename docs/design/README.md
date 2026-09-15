@@ -174,6 +174,7 @@ Before `/plan-tasks` will break a spec into tasks:
 | Spacing is `--space-*` on the canvas and `--spacing-*` in code. | both | Same seven values. `system/tokens.css` declares both names so a reader of either file recognises the other; Tailwind's theme namespace requires `--spacing-*`. |
 | The canvas's "medium" weight is 500; the shipped `--font-weight-medium` is **600**. | the code | Only two IBM Plex Sans faces ship (400, 600) to stay inside the 45 KB font budget, so 500 would be matched down to 400. The artboards are drawn at 600 where a canvas file says 500. |
 | The canvas's `.photo` caption ink is written inline as an `oklch()` value. | the code | It is `--color-photo-ink` in `globals.css` and a contrast-manifest pair. New artboards use the token. |
+| `system/components.dc.html` carries a **Country-page blocks (spec 007)** group — breadcrumb trail, fact list, FAQ list, occasion calendar, related-destinations row, status chip — that `src/modules/ui` does not export. | the sheet, for now | The one deliberate exception to "the sheet is a mirror, not a wish list": `CLAUDE.md` requires a UI spec's artboards **before** `/plan-tasks`, so the blocks spec 007 fixes are drawn before the tasks that build them exist. The group says so on itself. The implementer who ships them updates this row out of existence in the same PR. None of the six introduces a token: all are composed from `Chip`, `Stack`, `Grid`, `Text` and the existing scales. |
 
 ## Phase 0 page types → wireframes
 
