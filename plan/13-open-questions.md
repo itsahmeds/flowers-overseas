@@ -63,6 +63,7 @@ Legend: 🧑 founder · 🧾 accountant · ⚖️ lawyer · 🔍 verify at decis
 | D4 | Google FAQ rich-result eligibility; Search Console features; Consent Mode v2 requirements | 02 §9, 04 §11 | Google policy |
 | D5 | EAA micro-enterprise exemption thresholds in EE and target markets | 07 §8 | National transpositions |
 | D6 | Occasion dates 2027 (Mothering Sunday 14 Mar, DE Muttertag 9 May, PL Dzień Matki 26 May, NO Morsdag 14 Feb, SE 30 May) | 03 §9 fixtures | Verify against official calendars in fixtures |
+| D6 note (2026-09-16) | Verified in TASK-089: Mothering Sunday 2027 = **7 March** (not 14 Mar) and 2030 = **31 March**; Easter − 21 rule; other D6 dates confirmed. | — | — | — | — | recorded |
 | D7 | Diaspora population estimates used for locale ordering | 03 §3 | Replace with Ahrefs volumes when A8 is done |
 
 ## E. Assumptions carried from the planning session (confirm or correct)
