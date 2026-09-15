@@ -59,12 +59,12 @@ describe("the committed TASKS.md (AC-31 / T-32)", () => {
     }
   });
 
-  it("reports Phase 0 as 6 / 12 specs approved", () => {
+  it("reports Phase 0 as 7 / 12 specs approved", () => {
     const phase0 = parsePhaseProgress(ledger).find((phase) =>
       phase.phase.startsWith("0"),
     );
     expect(phase0?.specsApproved).toBe(PHASE_0_SPECS_APPROVED);
-    expect(PHASE_0_SPECS_APPROVED).toBe("6 / 12");
+    expect(PHASE_0_SPECS_APPROVED).toBe("7 / 12");
   });
 
   it("gives every TASK row exactly nine cells, in the documented column order", () => {
@@ -102,7 +102,7 @@ const fixture = [
   "## Phase progress",
   "| Phase | Specs approved | Tasks done / total | Gate status |",
   "|---|---|---|---|",
-  "| 0 Demo | 6 / 12 | 12 / 43 | in progress |",
+  "| 0 Demo | 7 / 12 | 12 / 43 | in progress |",
   "",
   "## Tasks",
   `| ${TASK_COLUMNS.join(" | ")} |`,
@@ -189,9 +189,9 @@ describe("checkLedger failure paths", () => {
     );
   });
 
-  it("reports a Phase 0 progress row that no longer says 6 / 12", () => {
+  it("reports a Phase 0 progress row that no longer says 7 / 12", () => {
     const broken = fixture.replace(
-      "| 0 Demo | 6 / 12 |",
+      "| 0 Demo | 7 / 12 |",
       "| 0 Demo | 5 / 12 |",
     );
     expect(checkLedger(broken).join("\n")).toContain(
