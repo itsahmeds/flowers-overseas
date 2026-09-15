@@ -40,6 +40,29 @@ import { z } from "zod";
 
 import { launchLocales } from "./locales.ts";
 
+/**
+ * The operational facts a **live** corridor page renders (spec 007 §5.1's second contract; spec
+ * 002 §5.1's `iana_zone`, `same_day_cutoff_local`, `delivery_days`, `sunday_delivery`).
+ *
+ * It lives here, in the registry that owns the country row, and `src/modules/geo` re-exports it:
+ * the cutoff is country data, and a module that defined it would be a second place a cutoff could
+ * be authored.
+ */
+export const CountryOperationsSchema = z
+  .object({
+    /** IANA zone of the **recipient**, named on the page (`plan/03` §7, §10). */
+    ianaZone: z.string().min(3),
+    /** `HH:MM` in the recipient's local time. */
+    sameDayCutoffLocal: z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/u),
+    /** ISO-8601 weekday numbers, 1 = Monday. */
+    deliveryDays: z.array(z.number().int().min(1).max(7)).min(1),
+    /** Spec 002 §5.1 `country.sunday_delivery`, verbatim. */
+    sundayDelivery: z.enum(["none", "peak", "always"]),
+  })
+  .strict();
+
+export type CountryOperations = z.infer<typeof CountryOperationsSchema>;
+
 /** `country.status` CHECK constraint of spec 002 §5.1, verbatim. */
 export const countryStatuses = ["demo", "live", "disabled"] as const;
 export type CountryStatus = (typeof countryStatuses)[number];
@@ -104,6 +127,20 @@ export const CountryConfigSchema = z
     corridorPagePublished: z.boolean(),
     /** Spec 002 §5.1 `country.guide_published`: the corridor guide's copy exists. */
     guidePublished: z.boolean(),
+    /**
+     * The operational facts a **live** corridor page renders (spec 007 §5.1's second contract,
+     * AC-2; TASK-087): the recipient's zone, the same-day cutoff in it, the delivery weekdays and
+     * the Sunday rule — spec 002 §5.1's `iana_zone`, `same_day_cutoff_local`, `delivery_days` and
+     * `sunday_delivery`.
+     *
+     * **Absent for every destination**, and that absence is the point: no florist has been signed,
+     * so no cutoff has been agreed, and a country whose `operations` block is missing cannot have
+     * a `live` corridor file (`pnpm corridor:check`'s `live-operations` rule refuses one). A
+     * cutoff we cannot honour is therefore unrenderable rather than merely unwritten. The block is
+     * authored the day the founder has real values; `COUNTRY_ROW_COLUMNS` and `toCountryRow()`
+     * grow with it, pinned together by `tests/unit/countries-config.test.ts` as they are today.
+     */
+    operations: CountryOperationsSchema.optional(),
   })
   .strict()
   .superRefine((country, ctx) => {
@@ -335,6 +372,16 @@ export function isCorridorPagePublished(iso2: CountryIso2): boolean {
 /** The one predicate over `guidePublished` (spec 002 §5.1's `country.guide_published`). */
 export function isGuidePublished(iso2: CountryIso2): boolean {
   return countryConfig(iso2).guidePublished;
+}
+
+/**
+ * The one predicate over `operations`: true when every operational fact a live corridor page
+ * needs has been authored (spec 007 §5.1, AC-2). False for every destination in Phase 0 — the
+ * schema above makes the block optional and no country has one, so `corridor:check` refuses a
+ * `live` content file and no page can print a cutoff that nobody agreed to.
+ */
+export function hasCompleteOperations(iso2: CountryIso2): boolean {
+  return countryConfig(iso2).operations !== undefined;
 }
 
 /**

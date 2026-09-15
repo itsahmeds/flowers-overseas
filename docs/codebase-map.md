@@ -16,7 +16,7 @@ task actually touches.
 | `analytics` | Public barrel for `analytics` (Consent Mode v2 + the gated GA4 tag; GA4 event… | spec 004, 023 | `unit/consent-bootstrap.test.tsx` |
 | `catalog` | The only import path into the catalogue and pricing module (spec 005 §2, §5.2;… | spec 005 | `contract/catalog-static-providers.test.ts`, `contract/support/catalog-provider-contract.ts`, `unit/catalog-availability.test.ts` +17 |
 | `customers` | Public barrel for `customers` (customers, recipients, consent) | spec 019 | — |
-| `geo` | Public barrel for `geo` (countries, cities, postcodes, holidays, cutoffs,… | spec 002, 009 | — |
+| `geo` | The only import path into the geo module (spec 007 §5.2; TASK-087) | spec 007, 002, 009 | `unit/corridor-content-provider.test.ts`, `unit/corridor-content.test.ts`, `unit/corridor-projections.test.ts` |
 | `i18n` | The only import path for the i18n module (spec 003 §5.2, AC-3; TASK-034) | spec 003 | `fixtures/ts/format-time-in-zone-no-zone.ts`, `unit/app-shell.test.tsx`, `unit/catalog-messages.test.ts` +37 |
 | `notifications` | Public barrel for `notifications` (email + WhatsApp senders, templates, outbox… | spec 017 | — |
 | `orders` | Public barrel for `orders` (state machine, order service, assignment/routing… | spec 015, 016 | — |
@@ -51,6 +51,7 @@ task actually touches.
 | `payment-methods.ts` | Payment-method registry (spec 004 §2 "Everything data-gated is config", §8… | spec 004 |
 | `site-links.ts` | Site-link registry (spec 004 §2 "Everything data-gated is config", §5.1, §12;… | spec 004 |
 | `trending.ts` | The florists' picks the "Most sent this week" row shows until real orders rank… | spec 004 |
+| `voice.ts` | The voice register (spec 004 §14 A5; spec 007 AC-2; TASK-087) | spec 004 |
 
 ## Routes (`src/app/`)
 
@@ -90,6 +91,8 @@ task actually touches.
 | `client-js-budget.ts` | `budget:client-js` | `pnpm budget:client-js` — the AC-27 measurement (spec 003 §6 "CWV budget… |
 | `codebase-map.ts` | `codebase:map` | The codebase map — AC-33 / T-34 (spec 001 §14 A15, TASK-086) |
 | `cookie-register.ts` | `cookies:check` | `pnpm cookies:check [--write]` — renders `docs/compliance/cookie-register.md`'s… |
+| `corridor-check-cases.ts` | — | One deliberately failing fixture per `corridor:check` rule (spec 007 AC-2 /… |
+| `corridor-check.ts` | `corridor:check` | `pnpm corridor:check` — the corridor content gate (spec 007 §2, §11, AC-2 /… |
 | `coverage-thresholds.ts` | — | Coverage-threshold loader for `vitest.coverage.json` (spec 001 §2 "Testing… |
 | `db-check.ts` | `db:check` | `pnpm db:check` — the migration gate (spec 001 §2 "Scripts", §5.1; TASK-011) |
 | `dev-os-check.ts` | `dev-os:check` | `pnpm dev-os:check` (spec 001 §2 "Scripts", §11 "Dev OS", AC-24/AC-25/AC-26 ·… |
@@ -115,7 +118,7 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 151 |
+| `tests/unit/` | 155 |
 | `tests/integration/` | 2 |
 | `tests/contract/` | 3 |
 | `tests/e2e/` | 18 |

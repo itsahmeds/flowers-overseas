@@ -40,6 +40,7 @@
     "media:variants": "node seed/media-variants.ts",
     "i18n:check": "node scripts/i18n-check.ts",
     "catalogue:check": "node scripts/catalogue-check.ts",
+    "corridor:check": "node scripts/corridor-check.ts",
     "i18n:draft": "node scripts/i18n-draft.ts",
     "i18n:pseudo": "node scripts/i18n-pseudo.ts",
     "fonts:build": "node scripts/fonts/build-fonts.ts",
@@ -64,6 +65,7 @@
     "next-intl": "4.14.2",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "yaml": "^2.9.0",
     "zod": "^4.5.4"
   },
   "devDependencies": {
@@ -95,7 +97,6 @@
     "subset-font": "2.7.0",
     "tailwindcss": "^4.3.3",
     "typescript": "^5.9.3",
-    "vitest": "^4.1.11",
-    "yaml": "^2.9.0"
+    "vitest": "^4.1.11"
   }
 }

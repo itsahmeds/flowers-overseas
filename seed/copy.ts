@@ -146,11 +146,18 @@ export const BANNED_SUPERLATIVES = [
  * Word-bounded on purpose: `or late` must not fire on "tied f**or late** summer", and the plural
  * forms are included because "working days" is the same claim as "working day".
  *
+ * Extended by TASK-087 (spec 007 AC-2) with the *clock-bearing* forms the reviewer of PR 59
+ * found missing — "order by 14:00", "by 2pm for delivery today". The permitted pointer form is
+ * unchanged, because it names no time: "order by the cutoff shown for the destination" still
+ * passes, and only a copy that states a time fails. `pnpm corridor:check` composes the same
+ * pattern into its `guide-claims` rule, so a corridor guide and a product description cannot
+ * disagree about what a delivery-timing claim is.
+ *
  * `pnpm seed:check` (TASK-075) composes this into the copy rule family; the assertion that the
  * committed dataset is clean in every locale lives in `tests/unit/seed-copy.test.ts`.
  */
 export const DELIVERY_TIMING_PATTERN =
-  /\b(?:next[- ]days?|same[- ]days?|working days?|lead[- ]times?|or late|within \d+ (?:hours?|days?))\b/iu;
+  /\b(?:next[- ]days?|same[- ]days?|working days?|lead[- ]times?|or late|within \d+ (?:hours?|days?)|order by \d{1,2}(?:[:.]\d{2})?\s*(?:am|pm)?|\d{1,2}(?:[:.]\d{2})?\s*(?:am|pm)? for delivery (?:today|tomorrow))/iu;
 
 /**
  * The delivery-timing phrases a piece of copy contains, lowercased (spec 006 §14 A4). Compiles a

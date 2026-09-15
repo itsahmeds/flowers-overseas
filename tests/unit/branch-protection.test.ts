@@ -104,6 +104,7 @@ describe("the required-check contract on the committed workflows (AC-21)", () =>
       "build",
       "catalogue-check",
       "commitlint",
+      "corridor-check",
       "db-check",
       "dev-os-check",
       "e2e",
@@ -135,6 +136,7 @@ describe("the required-check contract on the committed workflows (AC-21)", () =>
       "visual",
       "a11y",
       "commitlint",
+      "corridor-check",
       "pr-policy",
     ]) {
       expect(contract.required).toContain(name);
