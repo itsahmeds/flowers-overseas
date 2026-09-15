@@ -1,0 +1,84 @@
+{
+  "source": "plan/02-seo-spec.md §7 (Canonicalisation, pagination, facets, noindex) + spec 007 §2 (the `(dev)` group)",
+  "note": "`mayDisallow` is the closed universe of paths robots.txt is allowed to block: every row of plan/02 §7 that says 'robots disallow' or is unreachable-by-design, plus the (dev) route group of spec 004 AC-28. `mustStayCrawlable` is the other half of the same section — URLs whose `noindex` can only be seen if the crawler may fetch them (plan/02 §7: facets are 'not blocked in robots so the noindex is seen'), plus the parameter shapes that carry real landing traffic.",
+  "mayDisallow": [
+    {
+      "path": "/api/",
+      "because": "plan/02 §7 'Account, checkout, track, admin, vendor, api → noindex header + robots disallow'"
+    },
+    {
+      "path": "/admin/",
+      "because": "plan/02 §7, same row; plan/02 §4.1 'no locale prefix'"
+    },
+    {
+      "path": "/vendor/",
+      "because": "plan/02 §7, same row; plan/02 §4.1 'no locale prefix'"
+    },
+    {
+      "path": "/account/",
+      "because": "plan/02 §7, same row; plan/02 §4.1 'no locale prefix'"
+    },
+    {
+      "path": "/checkout/",
+      "because": "plan/02 §7, same row (locale-prefixed forms follow when spec 010 creates the segment)"
+    },
+    {
+      "path": "/track/",
+      "because": "plan/02 §7, same row (locale-prefixed forms follow when spec 013 creates the segment)"
+    },
+    {
+      "path": "/search",
+      "because": "plan/02 §7 'Search: noindex'; it generates unbounded URLs and ranks for nothing"
+    },
+    {
+      "path": "/dev/",
+      "because": "spec 004 AC-28: the component gallery, refused in production by the env schema"
+    },
+    {
+      "path": "/*?*sort=",
+      "because": "plan/02 §7 'Sort: never in indexable URLs' — there is nothing for a crawler to learn by fetching one"
+    }
+  ],
+  "mustStayCrawlable": [
+    {
+      "url": "/en-gb/poland/flowers?colour=red",
+      "because": "plan/02 §7 facets: noindex,follow and canonical to the base page — blocking it would hide the noindex"
+    },
+    {
+      "url": "/en-gb/poland/flowers?price=under-40&flower=roses",
+      "because": "plan/02 §7 facets, combined shape"
+    },
+    {
+      "url": "/en-gb/poland/flowers?page=2",
+      "because": "plan/02 §7 pagination: ?page=N is indexable and self-canonical"
+    },
+    {
+      "url": "/en-gb/send-flowers-to/poland?utm_source=newsletter",
+      "because": "plan/02 §7 UTM is stripped from the canonical, not blocked — the landing page must stay crawlable"
+    },
+    {
+      "url": "/en-gb/send-flowers-to/poland?gclid=abc123",
+      "because": "plan/02 §7, same reason as UTM"
+    },
+    {
+      "url": "/en-gb/flowers/roses",
+      "because": "plan/02 §7 'Facets worth ranking get a real authored path' — an authored facet path is a money page"
+    },
+    {
+      "url": "/en-gb/send-flowers-to/poland",
+      "because": "the corridor page itself (spec 007 §6)"
+    },
+    {
+      "url": "/en-gb/send-flowers-to",
+      "because": "the all-destinations hub (spec 007 §2)"
+    },
+    {
+      "url": "/en-gb",
+      "because": "the locale home (plan/09 Phase 0 AC 1)"
+    },
+    {
+      "url": "/sitemap.xml",
+      "because": "plan/02 §10: robots.txt names it, so it must be fetchable"
+    }
+  ]
+}
