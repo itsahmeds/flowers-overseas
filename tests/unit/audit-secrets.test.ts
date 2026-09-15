@@ -86,7 +86,7 @@ describe.skipIf(bin === undefined)(
       const dir = temp();
       writeFileSync(
         join(dir, "sample.env"),
-        "SUPABASE_SERVICE_ROLE_KEY=placeholder-service-role-key\n",
+        "R2_SECRET_ACCESS_KEY=placeholder-r2-secret-access-key\n",
       );
 
       const result = scanDirectory(bin ?? "", dir, configPath);
@@ -100,7 +100,7 @@ describe.skipIf(bin === undefined)(
       const dir = temp();
       writeFileSync(
         join(dir, "mixed.env"),
-        `SUPABASE_ANON_KEY=placeholder-anon-key\nSTRIPE_SECRET_KEY=${FAKE_STRIPE_KEY}\n`,
+        `R2_ACCESS_KEY_ID=placeholder-r2-access-key-id\nSTRIPE_SECRET_KEY=${FAKE_STRIPE_KEY}\n`,
       );
 
       const result = scanDirectory(bin ?? "", dir, configPath);

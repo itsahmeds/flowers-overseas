@@ -33,11 +33,16 @@ export type DeploymentEnvironment = (typeof deploymentEnvironments)[number];
  */
 export const PLACEHOLDER_VALUES = [
   "http://localhost:3000",
-  "https://placeholder.supabase.co",
-  "placeholder-anon-key",
-  "placeholder-service-role-key",
   "postgres://user:pass@localhost:5432/fo",
+  "postgres://user:pass@localhost:5432/fo_direct",
   "placeholder-cron-secret",
+  "00000000000000000000000000000000",
+  "placeholder-bucket",
+  "placeholder-backups-bucket",
+  "https://00000000000000000000000000000000.eu.r2.cloudflarestorage.com",
+  "https://placeholder.r2.dev",
+  "placeholder-r2-access-key-id",
+  "placeholder-r2-secret-access-key",
 ] as const;
 
 const placeholders: ReadonlySet<string> = new Set(PLACEHOLDER_VALUES);
@@ -54,16 +59,33 @@ const optionalUrl = z.preprocess(emptyToUndefined, z.url().optional());
 const requiredUrl = z.url();
 const requiredSecret = z.string().min(1);
 
+/** A Postgres connection string. Shape only: no host, user or database name is prescribed. */
+const postgresUrl = z
+  .string()
+  .min(1)
+  .refine((value) => /^postgres(ql)?:\/\//.test(value), {
+    message: "must be a postgres:// connection string",
+  });
+
+/** An `https://` URL. `http` is refused everywhere, not only in deployed environments. */
+const httpsUrl = z.url().refine((value) => value.startsWith("https://"), {
+  message: "must use https",
+});
+
+/** An S3/R2 bucket name: lowercase letters, digits and dashes, 3–63 characters. */
+const bucketName = z
+  .string()
+  .regex(
+    /^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/,
+    "must be a bucket name: 3-63 lowercase letters, digits or dashes",
+  );
+
 const logLevels = ["fatal", "error", "warn", "info", "debug", "trace"] as const;
 export type LogLevel = (typeof logLevels)[number];
 
 export const clientEnvSchema = z.object({
   /** Absolute origin of the site. Used for canonicals and absolute URLs from spec 007. */
   NEXT_PUBLIC_SITE_URL: requiredUrl,
-  /** Supabase project URL (public). Real value in the Vercel env store. */
-  NEXT_PUBLIC_SUPABASE_URL: requiredUrl,
-  /** Supabase anon key (public, RLS-protected). */
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: requiredSecret,
   /** Mirror of `VERCEL_ENV` for client code. Optional: unset locally. */
   NEXT_PUBLIC_VERCEL_ENV: z.preprocess(
     emptyToUndefined,
@@ -102,15 +124,54 @@ export const clientEnvSchema = z.object({
 });
 
 export const serverEnvSchema = z.object({
-  /** Postgres connection string. Placeholder until spec 002 provisions Supabase. */
-  DATABASE_URL: z
+  /**
+   * Pooled Postgres connection string — Neon, Frankfurt `aws-eu-central-1`, PgBouncer transaction
+   * mode (spec 002 §2, AC-1, ADR-0015). Every web request uses this one; `src/lib/db.ts` (spec 002,
+   * TASK-014) is the only module allowed to construct a client from it.
+   */
+  DATABASE_URL: postgresUrl,
+  /**
+   * Direct (unpooled) Postgres connection string for the same database — migrations, `db:check`,
+   * pg-boss and the nightly backup workflow, none of which may run through a transaction-mode
+   * pooler (spec 002 §2, AC-1). Separate key rather than a derived string: Neon's pooled and
+   * direct hostnames differ, and deriving one from the other silently breaks on a provider change.
+   */
+  DATABASE_URL_UNPOOLED: postgresUrl,
+  /**
+   * Cloudflare account id that owns the R2 buckets — the 32-hex prefix of the S3 endpoint
+   * (spec 002 §2 "Jobs, storage seam, probes", ADR-0015). Shape-checked so a token, a bucket name
+   * or a full URL pasted here fails the build instead of producing 401s at runtime.
+   */
+  R2_ACCOUNT_ID: z
     .string()
-    .min(1)
-    .refine((value) => /^postgres(ql)?:\/\//.test(value), {
-      message: "must be a postgres:// connection string",
-    }),
-  /** Supabase service-role key. Server only: bypasses RLS. */
-  SUPABASE_SERVICE_ROLE_KEY: requiredSecret,
+    .regex(
+      /^[0-9a-f]{32}$/,
+      "must be the 32-character hex Cloudflare account id",
+    ),
+  /** Public media bucket (EU jurisdiction). Images and their variants; no database bytes. */
+  R2_BUCKET: bucketName,
+  /**
+   * Private bucket for the nightly `pg_dump` artefacts, 30-day lifecycle rule (spec 002 AC-25).
+   * Never public: the dump contains personal data once real orders exist.
+   */
+  R2_BACKUPS_BUCKET: bucketName,
+  /** S3-compatible endpoint of the account, `https://<account>.eu.r2.cloudflarestorage.com`. */
+  R2_S3_ENDPOINT: httpsUrl,
+  /** R2 access key id of the scoped `flowersoverseas-app` token (object read/write). SECRET. */
+  R2_ACCESS_KEY_ID: requiredSecret,
+  /** R2 secret access key of the same token. SECRET — never logged, never in an error message. */
+  R2_SECRET_ACCESS_KEY: requiredSecret,
+  /** Public base URL media is served from (the r2.dev dev URL until a CDN hostname exists). */
+  R2_PUBLIC_BASE_URL: httpsUrl,
+  /**
+   * Neon API key for the daily compute/storage usage probe (spec 002 AC-24). **Optional**: with it
+   * unset the job logs one `info` line and succeeds, so no environment is blocked on it.
+   */
+  NEON_API_KEY: optionalText,
+  /** Neon project id, read by the same probe and by the runbooks. Optional. */
+  NEON_PROJECT_ID: optionalText,
+  /** Neon branch the URLs above point at (`production`). Documentation for operators. Optional. */
+  NEON_BRANCH: optionalText,
   /** Server/edge Sentry DSN. Unset ⇒ no-op (spec 001 §5, AC-13). */
   SENTRY_DSN: optionalUrl,
   /** Source-map upload token. CI only, never needed for a local or preview build. */
@@ -126,20 +187,6 @@ export const serverEnvSchema = z.object({
   ),
   /** Injected by Vercel; the Sentry release. Absent locally. */
   VERCEL_GIT_COMMIT_SHA: optionalText,
-  /**
-   * Documented escape hatch for spec 001 only (TASK-007).
-   *
-   * Spec 001 §5/§12 require a production deploy from `main` on `*.vercel.app`, but the real
-   * Supabase and cron values only arrive with spec 002, so production must run on the
-   * `.env.example` placeholders for now. Rather than weaken the placeholder rule, production
-   * opts in explicitly with `ALLOW_PLACEHOLDER_ENV=true` in the Vercel env store; `assertEnv()`
-   * logs one `warn` line when it is honoured. Spec 002 deletes this key together with the
-   * placeholders. Only the exact string `"true"` is accepted, so a typo cannot half-enable it.
-   */
-  ALLOW_PLACEHOLDER_ENV: z.preprocess(
-    emptyToUndefined,
-    z.literal("true").optional(),
-  ),
   /**
    * Add the `en-XA` / `ar-XB` pseudo-locales to the routing table (spec 003 §2 "Pseudo-locales",
    * §8 "Security", §13 Q6, AC-29; TASK-042). `"true"` on a preview — that is where Playwright's
@@ -191,25 +238,19 @@ export const ENV_KEYS: readonly string[] = [
 /** Keys that must carry a real value once deployed (not a `.env.example` placeholder). */
 const REAL_VALUE_REQUIRED = [
   "NEXT_PUBLIC_SITE_URL",
-  "NEXT_PUBLIC_SUPABASE_URL",
-  "NEXT_PUBLIC_SUPABASE_ANON_KEY",
   "DATABASE_URL",
-  "SUPABASE_SERVICE_ROLE_KEY",
+  "DATABASE_URL_UNPOOLED",
   "INTERNAL_CRON_SECRET",
+  "R2_ACCOUNT_ID",
+  "R2_BUCKET",
+  "R2_BACKUPS_BUCKET",
+  "R2_S3_ENDPOINT",
+  "R2_ACCESS_KEY_ID",
+  "R2_SECRET_ACCESS_KEY",
+  "R2_PUBLIC_BASE_URL",
 ] as const;
 
 export type EnvSource = Readonly<Record<string, string | undefined>>;
-
-/** The one accepted value of the `ALLOW_PLACEHOLDER_ENV` escape hatch. */
-export const PLACEHOLDER_HATCH_VALUE = "true" as const;
-
-/**
- * Whether the placeholder escape hatch is in force. Anything other than the exact string
- * `"true"` is not the hatch (and is rejected by `serverEnvSchema` as well).
- */
-export function placeholderHatchEnabled(source: EnvSource): boolean {
-  return source["ALLOW_PLACEHOLDER_ENV"] === PLACEHOLDER_HATCH_VALUE;
-}
 
 /**
  * `preview`/`production` come from `VERCEL_ENV`, everything else is `development`/`test`.
@@ -366,31 +407,21 @@ export function validateEnv(source: EnvSource): EnvValidationResult {
   }
 
   if (environment === "preview" || environment === "production") {
-    // `ALLOW_PLACEHOLDER_ENV=true` suspends the placeholder rule (spec 001 only, TASK-007).
-    // Everything else about the deployed environments still applies, including https origins.
-    if (!placeholderHatchEnabled(source)) {
-      for (const key of REAL_VALUE_REQUIRED) {
-        const value = source[key];
-        if (value !== undefined && placeholders.has(value)) {
-          issues.push({
-            key,
-            message: `must be a real value in ${environment}, not the .env.example placeholder`,
-          });
-        }
+    // Spec 002 AC-2: there is no escape hatch any more. The opt-out spec 001 carried existed only
+    // because no database existed to point at; with Neon and R2 provisioned, a deployed
+    // environment carrying a `.env.example` placeholder is a misconfiguration and fails the build,
+    // naming the offending keys and no value.
+    for (const key of REAL_VALUE_REQUIRED) {
+      const value = source[key];
+      if (value !== undefined && placeholders.has(value)) {
+        issues.push({
+          key,
+          message: `must be a real value in ${environment}, not the .env.example placeholder`,
+        });
       }
     }
-    // The hatch covers the committed `http://localhost:3000` origin too (it is one of the
-    // placeholders); a real non-https origin is still rejected in a deployed environment.
     const siteUrl = source["NEXT_PUBLIC_SITE_URL"];
-    const siteUrlExempt =
-      placeholderHatchEnabled(source) &&
-      siteUrl !== undefined &&
-      placeholders.has(siteUrl);
-    if (
-      siteUrl !== undefined &&
-      !siteUrlExempt &&
-      !siteUrl.startsWith("https://")
-    ) {
+    if (siteUrl !== undefined && !siteUrl.startsWith("https://")) {
       issues.push({
         key: "NEXT_PUBLIC_SITE_URL",
         message: `must use https in ${environment}`,

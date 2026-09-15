@@ -105,58 +105,55 @@ TASK-008 onwards.
 ## 6. Environment variables for `preview` and `production`
 
 The key set is exactly the keys of `.env.example`; `pnpm env:check` guarantees the file and the zod
-schema agree (AC-11). In 001 the values are the committed placeholders — the real Supabase, Sentry
-and cron values arrive with spec 002.
+schema agree (spec 001 AC-11, spec 002 AC-1). **Since spec 002 (TASK-013) the committed placeholders
+are refused in every deployed environment and there is no escape hatch** — the key that used to
+suspend the rule is deleted from the schema, so every key below must carry a real value in both
+`preview` and `production`:
 
-Create them with a loop over `.env.example`, feeding each value on stdin so no value is echoed or
-stored in shell history:
+| Key | Where the real value comes from |
+|---|---|
+| `NEXT_PUBLIC_SITE_URL` | the environment's own origin, `https://…` |
+| `DATABASE_URL` | Neon → project `old-moon-05172629` (Frankfurt) → connection string, **pooled** |
+| `DATABASE_URL_UNPOOLED` | the same dialog, **direct** connection string |
+| `INTERNAL_CRON_SECRET` | generate: `openssl rand -hex 32` |
+| `R2_ACCOUNT_ID`, `R2_S3_ENDPOINT` | Cloudflare → R2 → account details (the endpoint carries the id) |
+| `R2_BUCKET`, `R2_BACKUPS_BUCKET` | `flowersoverseas-media`, `flowersoverseas-backups` |
+| `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` | the scoped `flowersoverseas-app` R2 API token (shown once) |
+| `R2_PUBLIC_BASE_URL` | R2 → the media bucket → Public access (the `pub-….r2.dev` URL until a CDN hostname exists) |
+| `NEON_API_KEY`, `NEON_PROJECT_ID`, `NEON_BRANCH` | optional; the usage probe degrades to one `info` line without them |
+| `SENTRY_DSN`, `SENTRY_AUTH_TOKEN`, `NEXT_PUBLIC_SENTRY_DSN` | optional; blank ⇒ Sentry is a no-op |
+| `LOG_LEVEL`, `CSP_REPORT_ONLY` | as in `.env.example` |
+| `ENABLE_PSEUDO_LOCALES`, `ENABLE_DEV_UI` | `true` on `preview` only; the schema refuses `true` in production |
 
-```bash
-# from the repository root, on a clean checkout of main
-set -euo pipefail
-for target in preview production; do
-  while IFS= read -r line; do
-    case "$line" in ''|'#'*) continue ;; esac
-    key=${line%%=*}
-    value=${line#*=}
-    # Platform-injected keys must stay unset: Vercel provides them itself (step 3).
-    case "$key" in VERCEL_ENV|VERCEL_GIT_COMMIT_SHA|NEXT_PUBLIC_VERCEL_ENV|NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA) continue ;; esac
-    # Blank in .env.example means "unset unless you have a real value" (Sentry DSNs, tokens).
-    [ -n "$value" ] || continue
-    printf %s "$value" | vercel env add "$key" "$target" \
-      --scope ahmedsheikh2654-6252s-projects --force
-  done < .env.example
-done
-```
-
-Then set the two values that are not literal copies of `.env.example`:
+Add each value on stdin so nothing is echoed or stored in shell history:
 
 ```bash
-# Public site origin: the production alias (https, per the schema's production rule)
-printf %s 'https://flowers-overseas.vercel.app' | vercel env add NEXT_PUBLIC_SITE_URL production \
-  --scope ahmedsheikh2654-6252s-projects --force
-
-# 001-only escape hatch: production runs on the .env.example placeholders until spec 002 provides
-# the real Supabase values. Only the exact string "true" is accepted; assertEnv() logs one warn
-# line when it is honoured. Spec 002 deletes this variable.
-printf %s 'true' | vercel env add ALLOW_PLACEHOLDER_ENV production \
+# one key at a time; repeat per target (preview, production)
+printf %s '<value>' | vercel env add DATABASE_URL production \
   --scope ahmedsheikh2654-6252s-projects --force
 ```
+
+Platform-injected keys (`VERCEL_ENV`, `VERCEL_GIT_COMMIT_SHA`, `NEXT_PUBLIC_VERCEL_ENV`,
+`NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA`) must stay unset: Vercel provides them itself (step 3).
 
 Notes:
 
-- `ALLOW_PLACEHOLDER_ENV=true` is required on **both** `preview` and `production` in 001. The
-  schema rejects the committed placeholders in every deployed environment, preview included, so the
-  loop above must be followed by:
+- **Delete every variable that is not in the table above** from both environments, in the same
+  pass: the spec 001 placeholder escape hatch (the one that used to let `.env.example` values
+  through in a deployed environment) and the three Supabase variables ADR-0015 removed from the
+  stack. The exact names are in the TASK-013 pull-request body and `docs/tasks/TASK-013.md`; the
+  mechanical procedure is a diff against the contract:
 
   ```bash
-  printf %s 'true' | vercel env add ALLOW_PLACEHOLDER_ENV preview \
-    --scope ahmedsheikh2654-6252s-projects --force
+  # keys Vercel holds that the contract no longer knows
+  for target in preview production; do
+    vercel env ls "$target" --scope ahmedsheikh2654-6252s-projects
+  done            # compare with the key list of .env.example, then:
+  vercel env rm <KEY> <target> --scope ahmedsheikh2654-6252s-projects --yes
   ```
 
-  With that set, previews may keep the placeholder `NEXT_PUBLIC_SITE_URL`
-  (`http://localhost:3000`); otherwise the schema's `https` origin rule fails the preview build.
-  Spec 002 deletes this variable from both environments.
+  The schema no longer knows those keys; leaving them set is misleading, and the build now fails on
+  any placeholder value, naming the offending keys and printing none of their values.
 - Verify the result without printing values: `vercel env ls --scope ahmedsheikh2654-6252s-projects`.
   `NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA` will not appear there — it is injected at build time by
   step 3's toggle. Confirm it on a deployed preview instead: the Sentry release is set only when

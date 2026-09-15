@@ -17,6 +17,8 @@
  * - one JSON object per line on stdout: `{ level, time, msg, ...fields }`
  * - `request_id`, `order_id`, `locale`, `partner_id` are first-class context fields (§5.2)
  * - every key on the redaction list becomes `"[REDACTED]"`, at any depth, in objects and arrays
+ *   (spec 001 §8 plus the spec 002 §8 widening: `*name`, `card_message`, `phone_e164`,
+ *   `postal_code`, `session_token`, `public_token`, `object_key`)
  * - pretty (indented) output only when the environment is `development`
  * - `no-console` (ESLint) makes this module the only writer of log lines in `src/`
  */
@@ -38,16 +40,18 @@ export type LogFields = Readonly<Record<string, unknown>>;
 export const REDACTED = "[REDACTED]" as const;
 
 /**
- * PII key list of spec 001 §5.2 / §8. Exact keys plus the `address*` / `card*` prefixes, which
- * cover `address_line1`, `addressCountry`, `card_number`, `cardLast4`, … Comparison is on the
- * key with `_`, `-` and spaces removed and lower-cased, so snake, camel and kebab all match.
+ * PII key list of spec 001 §5.2 / §8, widened by spec 002 §8 (AC-2, TASK-013; the `/review 5`
+ * carry-forward). Exact keys, plus the `address*` / `card*` prefixes — `address_line1`,
+ * `addressCountry`, `card_number`, `card_message`, `cardLast4` — plus the `*name` **suffix**.
+ * Comparison is on the key with `_`, `-` and spaces removed and lower-cased, so snake, camel and
+ * kebab all match, at any depth.
  */
 export const REDACTED_KEYS: readonly string[] = [
   "email",
   "phone",
-  // §8 spells `name` without a wildcard, so it is matched exactly: `partner_name` would be a
-  // deliberate addition, not an accident.
-  "name",
+  // Spec 002 §8: the recipient's phone is stored in E.164, and `phone_e164` is not caught by the
+  // exact `phone` above.
+  "phonee164",
   "message",
   "ip",
   // The Sentry field name for the same datum (`user.ip_address`), so a captured event and a log
@@ -55,9 +59,34 @@ export const REDACTED_KEYS: readonly string[] = [
   "ipaddress",
   "authorization",
   "cookie",
+  // Spec 002 §8: a postcode is personal data in combination with a delivery date; the two tokens
+  // are bearer credentials (`order.public_token`, the Auth.js session token) and an R2 object key
+  // identifies a delivery photo of a named recipient.
+  "postalcode",
+  "sessiontoken",
+  "publictoken",
+  "objectkey",
 ];
 
 export const REDACTED_KEY_PREFIXES: readonly string[] = ["address", "card"];
+
+/**
+ * Spec 002 §8 widens `name` to `*name`: `full_name`, `legal_name`, `recipient_name` and
+ * `recipientName` are redacted as well as the bare `name`, because the schema of spec 002
+ * introduces more name columns than anyone will remember to add to the list above.
+ *
+ * `*name` is read as a **word** boundary — the key is `name`, or `name` is its last token after a
+ * `_`, `-`, space or camel-case break — not as a blind suffix. A blind suffix would also redact
+ * `filename`, `hostname` and `pathname`, and the first of those is the Sentry stack-frame field
+ * that spec 001 AC-13 deliberately keeps (`tests/unit/sentry-before-send.test.ts`): a stack trace
+ * whose frames are `[REDACTED]` diagnoses nothing while protecting no one. Nothing personal is
+ * spelled as one lowercase word ending in `name`; every name field in `plan/01` §4 and spec 002
+ * §5.1 is `<something>_name`.
+ */
+export function isNameKey(key: string): boolean {
+  if (normaliseKey(key) === "name") return true;
+  return /[_\-\s]name$/i.test(key) || /[a-z0-9]Name$/.test(key);
+}
 
 function normaliseKey(key: string): string {
   return key.replace(/[_\-\s]/g, "").toLowerCase();
@@ -66,7 +95,9 @@ function normaliseKey(key: string): string {
 export function isRedactedKey(key: string): boolean {
   const normalised = normaliseKey(key);
   if (REDACTED_KEYS.includes(normalised)) return true;
-  return REDACTED_KEY_PREFIXES.some((prefix) => normalised.startsWith(prefix));
+  if (REDACTED_KEY_PREFIXES.some((prefix) => normalised.startsWith(prefix)))
+    return true;
+  return isNameKey(key);
 }
 
 /** Deep copy of `value` with every PII key replaced by `"[REDACTED]"`. Cycles are cut. */

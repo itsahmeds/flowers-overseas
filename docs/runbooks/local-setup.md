@@ -6,9 +6,10 @@ ledger", AC-30 / T-31 (`plan/12` §9: under 15 minutes). The short version lives
 when it prints something else.
 
 Target: **under 15 minutes** on a machine that already has git and a Node version manager, most of
-it `pnpm install`. Nothing here needs a database, a Supabase project, a Vercel account or any real
-credential: spec 001's `.env.example` placeholders are syntactically valid on purpose (§13 Q10), so
-a clean clone builds and runs offline apart from the package registry.
+it `pnpm install`. Nothing here needs a database, a Cloudflare account, a Vercel account or any
+real credential: the `.env.example` placeholders are syntactically valid on purpose (spec 001 §13
+Q10), so a clean clone builds and runs offline apart from the package registry. Real Neon and R2
+credentials are needed only once you run migrations, the seed or the storage seam — §3.1 below.
 
 ## 1. Prerequisites
 
@@ -51,7 +52,39 @@ cp .env.example .env.local
 ```
 
 That is enough to build and run. Every key is documented in `.env.example` itself (purpose · where
-the real value lives · secret or not), and `src/lib/env.ts` validates the set at build time.
+the real value lives · secret or not), and `src/lib/env.ts` validates the set at build time. Check
+the file and the schema still agree in both directions at any time:
+
+```bash
+pnpm env:check
+# env:check: .env.example and the zod schema agree on 26 keys
+pnpm env:check --file .env.local
+```
+
+The placeholders are accepted in `development` and `test` **only**. In `preview` and `production`
+the schema refuses them, names the offending keys and prints no value — since spec 002 (TASK-013)
+there is no opt-out, because Neon and R2 now exist to point at (spec 002 AC-2).
+
+### 3.1 Real credentials: Neon (Frankfurt) and Cloudflare R2 (EU)
+
+Needed for `db:migrate`, `db:seed`, `db:check` and anything that touches object storage; **not**
+needed for `pnpm dev`, `pnpm test` or `pnpm build`.
+
+| Key | Where it comes from |
+|---|---|
+| `DATABASE_URL` | Neon → project `old-moon-05172629`, branch `production` (Frankfurt, `aws-eu-central-1`) → Connection string → **Pooled** |
+| `DATABASE_URL_UNPOOLED` | the same dialog → **Direct** connection. Migrations, `db:check`, pg-boss and the backup job use this one; a transaction-mode pooler cannot run them |
+| `R2_ACCOUNT_ID` / `R2_S3_ENDPOINT` | Cloudflare → R2 → account details. The endpoint is `https://<account-id>.eu.r2.cloudflarestorage.com`, so the id is its 32-hex prefix |
+| `R2_BUCKET` / `R2_BACKUPS_BUCKET` | `flowersoverseas-media` (public media) and `flowersoverseas-backups` (private, 30-day lifecycle). Both are **EU-jurisdiction** buckets — that is chosen at creation and cannot be changed afterwards |
+| `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY` | Cloudflare → R2 → API tokens → the scoped `flowersoverseas-app` token (object read/write on both buckets). The secret is shown **once**; if it is lost, roll the token rather than guessing |
+| `R2_PUBLIC_BASE_URL` | R2 → media bucket → Public access; the `https://pub-….r2.dev` development URL until a CDN hostname exists |
+| `NEON_API_KEY` / `NEON_PROJECT_ID` / `NEON_BRANCH` | optional: the daily usage probe degrades to one `info` line without them |
+| `INTERNAL_CRON_SECRET` | generate your own: `openssl rand -hex 32` |
+
+Rules that are not negotiable: the database is **Frankfurt** and the buckets are **EU
+jurisdiction** (both are recorded processors in `docs/compliance/ropa.md`); the backups bucket is
+never public; and no value from `.env.local` is ever pasted into a chat, a log, an issue or a
+commit — `.env*.local` is git-ignored and gitleaks scans every push.
 
 For a contributor whose Vercel project is linked (`vercel link` — founder only, see
 `docs/runbooks/vercel-setup.md`), the real values come from the env store instead:
@@ -61,9 +94,9 @@ vercel env pull .env.local          # development environment by default
 vercel env pull .env.local --environment=preview
 ```
 
-`vercel env pull` is **optional in spec 001**: no code path reaches Supabase, Stripe, Resend or
-Sentry yet, so the placeholders behave identically. From spec 002 (real database) it is the normal
-path, and `.env*.local` is git-ignored either way.
+`vercel env pull` is **optional** while no code path reaches the database, Stripe, Resend or
+Sentry, because the placeholders behave identically. Once you need the real Neon and R2 values it
+is the normal path, and `.env*.local` is git-ignored either way.
 
 ## 4. Run it
 

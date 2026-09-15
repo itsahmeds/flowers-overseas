@@ -118,7 +118,6 @@ describe("docs/architecture.md (AC-30)", () => {
   it("records the deferred decisions with the spec that lifts each", () => {
     const deferred = doc.slice(doc.indexOf("## 4."));
     for (const [item, spec] of [
-      ["ALLOW_PLACEHOLDER_ENV", "spec 002"],
       ["deploymentEnvironment()", "ADR-0012"],
     ] as const) {
       const line = deferred
@@ -127,6 +126,19 @@ describe("docs/architecture.md (AC-30)", () => {
       expect(line, item).toBeDefined();
       expect(line, item).toContain(spec);
     }
+  });
+
+  /**
+   * Spec 002 AC-2 (TASK-013) discharged the placeholder-env row: the escape hatch that let
+   * `.env.example` values pass validation in a deployed environment is deleted from the schema,
+   * `.env.example`, the Vercel runbook and both Vercel environments, now that Neon and R2 provide
+   * real values. What is pinned is the *absence* of the row and of the key, the same inverse
+   * assertion TASK-046's CSP row uses below.
+   */
+  it("§4 no longer defers the placeholder env hatch (spec 002 AC-2)", () => {
+    expect(doc).not.toContain("ALLOW_PLACEHOLDER_ENV");
+    const deferred = doc.slice(doc.indexOf("## 4."));
+    expect(deferred).not.toContain("placeholder");
   });
 
   /**
