@@ -64,3 +64,25 @@ T-05 5); the whole unit suite is 3 161 tests green. Left for TASK-088: the remai
 the seven `en-gb` override files (rule 17 and rule 18 bite once they exist) and the reciprocity of
 `relatedIso2` across the corpus. Left for TASK-091: the route, `corridorState()` and the
 `ActivePartnersProvider`.
+
+- **2026-09-16 — `/review 63` round 1: FAIL.** Three required changes, then re-review.
+  1. `price-literal` (rule 15) misses every `NNN zł` form — `129 zł`, `od 129zł`, `Bukiety od
+     129 zł` all pass the gate, while `129 złotych`, `129 PLN`, `€29` and `35 EUR` are caught.
+     Cause: the trailing `\b` of `PRICE_LITERAL_PATTERN` after an alternation whose first branch
+     ends in `ł`, which JS `\b` does not treat as a word character. `zł` is the native price
+     literal of the one destination with a corpus file and the form TASK-088's `pl` copy will use.
+     Fix with the Unicode-aware lookahead this file already uses in `containsTerm()` /
+     `containsSlugAsUrl()` — `(?![\p{L}\p{N}])` — and add a `price-literal` fixture in the `zł`
+     form so it cannot regress (the current fixture is `€29`, which is why the gap is invisible).
+  2. Record the rule-10 reading as **spec 007 §14 A1** (§14 is still "_None yet._"). The URL-shaped
+     grep is accepted (see the ruling in the PR review), but the interpretation must live in the
+     spec, not only in the script header and this brief.
+  3. Record the codebase-map cap as a **spec 001 §14 amendment** in this PR: AC-33's "Target size
+     ≤ 12 KB" stays as the target, the hard assertion is ≤16 KB. The raise is accepted; a feature
+     PR must not leave a spec figure and a test disagreeing.
+  4. Declare two deviations in `## Escalations` or `## Result`: (a) AC-1's "fails the *build*" is
+     not demonstrable here — nothing under `src/app/` imports `src/modules/geo`, so `pnpm build`
+     never loads the corpus; the throw-at-module-load mechanism is in place and `corridor:check`
+     is the gate today, and the build assertion carries to TASK-091. (b) Spec 007 §2 specifies the
+     static provider reads "through a generated typed index" with "no `fs` in the bundle";
+     `corpus.ts` uses `readFileSync`/`readdirSync` at module load instead.
