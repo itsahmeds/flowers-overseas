@@ -181,10 +181,18 @@ describe("the sitemap query and the robots decision call one function (AC-21, T-
     expect(body).toContain("productIndexability(sku, locale, countryIso)");
   });
 
+  /**
+   * The property, not the prefix. TASK-089 added `occasion_country.indexable_override` to
+   * `src/modules/geo/occasions` — spec 002 §5.1's column, carried through untouched — and a
+   * substring test for `.indexable` reads `.indexableOverride` as a second indexability decision,
+   * which it is not: nothing in `geo` decides anything from it, it is a stored per-occasion
+   * override that spec 008's occasion pages will hand to the one rule engine. The assertion is
+   * therefore anchored on a word boundary, which is what it always meant.
+   */
   it("nothing outside that one function reads `.indexable` to make a decision", () => {
     for (const { path, code } of files) {
       if (path.endsWith(join("modules", "catalog", "read.ts"))) continue;
-      expect(code, path).not.toContain(".indexable");
+      expect(code, path).not.toMatch(/\.indexable\b/);
     }
   });
 

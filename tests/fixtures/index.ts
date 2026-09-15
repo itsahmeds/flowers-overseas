@@ -79,8 +79,22 @@ export interface PhoneFixture {
   readonly reason?: string;
 }
 
-/** Filled by spec 002 (occasion calendar) and spec 003 (lead times per corridor). */
-export const occasionDates: readonly OccasionDateFixture[] = [];
+/**
+ * The occasion-date corpus (spec 007 AC-21 / T-22, TASK-089), re-exported from `occasions.ts` for
+ * the same reason `catalogue.ts` is re-exported here: the barrel is the one import a suite needs,
+ * and no spec may invent a second copy of a shared input. `occasions.ts` carries the full table —
+ * rule, label, provenance and the `null` years of the two undated rows — while this flat view is
+ * the `{occasion, country, date}` shape spec 001 reserved. Spec 003's lead-time rows extend the
+ * array; they must not redefine the shape.
+ */
+export {
+  EASTER_SUNDAYS,
+  OCCASION_FIXTURE_YEARS,
+  type OccasionFixtureYear,
+  type OccasionRuleFixture,
+  occasionDates,
+  occasionRuleFixtures,
+} from "./occasions.ts";
 
 /**
  * The money-formatting matrix (spec 003 AC-15 / T-15, TASK-036). Every `formatted` value is the
