@@ -23,6 +23,25 @@ Branch `task/TASK-056-gates-budgets-docs-close`. Last task by design: it measure
 - **From `/review 53` round 3:** the dates band renders 106 vs the artboard's 97 px because the artboard uses an off-scale 22 px padding and unstyled `normal` line-height — founder canvas question: snap the drawing to `--space-lg`/the body line-height token, or add a token; at 1280 the date labels wrap (artboard is a 1440 drawing).
 - **From `/review 55`:** own a deliberately reachable 500 route for AC-26's axe set and a visual baseline; add a `document.fonts.ready` wait before the notice screenshots.
 
+- **From `/review 61` (2026-09-15, FAIL):** the `lighthouse` step summary's per-URL table can never
+  print — `ci.yml` guards on `.lighthouseci/manifest.json` but LHCI writes it to
+  `.lighthouseci/reports/manifest.json` (`upload.outputDir`); fix the path and pin it in
+  `tests/unit/ci-workflow.test.ts`.
+- **From `/review 61` (2026-09-15):** `/` measured 2 425 / 2 106 / 1 952 ms LCP across the three
+  warmed runs against a 2 000 ms required assertion — it passes only on the median, and a GitHub
+  runner is slower than this laptop. Reduce it or record the spread and the decision.
+- **From `/review 61` (2026-09-15):** record the AC-30 §4 reading as a spec §14 amendment (A17),
+  not only in this brief's reviewer notes; note there that §12's exit signal ("one row left") is
+  stale — §4 has three rows.
+- **From `/review 61` (2026-09-15):** `TASKS.md` row 74 still reads `in_progress` with no PR link.
+- **From `/review 61` (2026-09-15, nit):** `tests/visual/__screenshots__` is 18 MB with a 4.3 MB
+  `dev-components-desktop.png` that every UI task re-baselines — split into element baselines or
+  move to Git LFS before the next design task.
+- **From `/review 61` (2026-09-15, nit):** `en.meta.json` `consent.body` keeps `reviewed: true` /
+  `reviewedBy: founder` under a refreshed `sourceHash`; re-attest at the next copy review.
+- **From `/review 61` (2026-09-15, nit):** `tests/e2e/home.spec.ts:369` (type-ahead, `e2e-mobile`)
+  is flaky under a full parallel run; passes alone. Pre-existing, will read as a red `e2e`.
+
 ## Escalations
 
 1. **The consent sheet still paints at ~2.4 s; only server-rendering it would change that, and
