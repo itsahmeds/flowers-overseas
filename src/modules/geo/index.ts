@@ -9,6 +9,9 @@
  * `country_locale_content` inherits. The provider objects themselves are **not** exported — a
  * caller that could name `staticCountryContentProvider` could swap the corpus at runtime, which
  * is what the seam of `content/provider.ts` exists to prevent (spec 007 AC-4).
+ *
+ * TASK-089 added `occasions/` (spec 007 §13 Q7): `occasionDate` for the six `plan/03` §9 rule
+ * types and the per-destination calendar; spec 009 consumes them and adds `plan/13` B15's seventh.
  */
 export {
   CountryLocaleContentSchema,
@@ -48,3 +51,19 @@ export {
   type CorridorContentView,
 } from "./content/view.ts";
 export type { CountryContentProvider } from "./content/provider.ts";
+// Occasion calendar (TASK-089).
+export {
+  type DatedOccasion,
+  type IsoDate,
+  MAX_YEAR,
+  MIN_YEAR,
+  NEXT_OCCASIONS_HORIZON_MONTHS,
+  type OccasionCalendarRow,
+  type OccasionRuleKind,
+  committedOccasionCalendar,
+  easterSunday,
+  nextOccasions,
+  observedUndatedOccasions,
+  occasionDate,
+  upcomingOccasions,
+} from "./occasions/index.ts";
