@@ -3,15 +3,10 @@
  * membership agree with the rule engine (spec 007 §6, AC-9; TASK-090 writes it, TASK-091 turns it
  * on).
  *
- * **Parked, by route existence, not by a bare `.skip`.** AC-9's e2e half needs a corridor URL to
- * observe and TASK-091 owns the route; until it answers, each test skips with the reason below,
- * exactly as spec 001 parked its integration suite (`tests/integration/db.test.ts`) against spec
- * 002. Nothing here is disabled by hand: the moment `/en-gb/send-flowers-to/poland` stops
- * answering 404 the assertions run, so TASK-091 cannot ship the route without also satisfying
- * them.
+ * **Un-parked by TASK-091**: the route exists, so the skip is gone and the list below is the
+ * committed (locale, country) set — seven destinations × the two locales with an authored guide.
+ * A page that stopped answering would now fail here rather than quietly skipping.
  *
- * TODO(TASK-091 — corridor route): delete `skipUntilCorridorExists()` once the route is
- * prerendered, and extend `CORRIDOR_URLS` to the committed (locale, country) set.
  * TODO(TASK-094 — sitemaps): add the third agreement — a `noindex` URL appears in no sitemap —
  * here rather than in a second place, so AC-9's "meta, sitemap membership and header agree" is one
  * assertion (AC-14 owns the full-set fetch).
@@ -23,25 +18,22 @@
  * the §12 flip and stays where it is provable: the sixteen-case unit table in
  * `tests/unit/seo-indexability.test.ts`.
  */
-import { type APIRequestContext, expect, test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
-/** One corridor URL per English locale; TASK-091's committed set replaces this list. */
-const CORRIDOR_URLS = [
-  "/en/send-flowers-to/poland",
-  "/en-gb/send-flowers-to/poland",
+/** The committed corridor set: seven destinations in the two locales a human has written. */
+const SLUGS = [
+  "poland",
+  "germany",
+  "france",
+  "spain",
+  "italy",
+  "romania",
+  "netherlands",
 ] as const;
 
-const PARKED =
-  "TASK-091's corridor route does not exist yet: nothing to observe (spec 007 §12 task order 5)";
-
-/** Does the route exist on the deployment under test? The one reason this suite may skip. */
-async function corridorMissing(
-  request: APIRequestContext,
-  url: string,
-): Promise<boolean> {
-  const response = await request.get(url, { maxRedirects: 0 });
-  return response.status() === 404;
-}
+const CORRIDOR_URLS = ["en", "en-gb"].flatMap((locale) =>
+  SLUGS.map((slug) => `/${locale}/send-flowers-to/${slug}`),
+);
 
 const metaRobots = (html: string): string[] =>
   [
@@ -55,8 +47,6 @@ test.describe("indexability, observed (AC-9, T-10)", () => {
     test(`${url} says noindex,follow in a non-indexing environment`, async ({
       request,
     }) => {
-      test.skip(await corridorMissing(request, url), PARKED);
-
       const response = await request.get(url, { maxRedirects: 0 });
       expect(response.status()).toBe(200);
       const html = await response.text();

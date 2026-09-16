@@ -1,5 +1,6 @@
 {
   "a11y": {
+    "breadcrumb": "Breadcrumb",
     "localeChooser": "Languages",
     "localeSwitcher": "Change language",
     "media": {
@@ -13,6 +14,9 @@
     "headline": "Would you rather read this page in {language}?",
     "stay": "Stay on this page",
     "switch": "Switch to {language}"
+  },
+  "breadcrumb": {
+    "destinations": "Send flowers to"
   },
   "catalog": {
     "addon": {
@@ -262,6 +266,115 @@
     "saved": "Your choices are saved. You can change them whenever you like, from “Cookie settings” at the foot of every page.",
     "settings": "Choose",
     "settingsHeadline": "Choose which cookies we may set"
+  },
+  "corridor": {
+    "calendar": {
+      "caption": "Occasions in {country} over the next twelve months, with the rule each date is computed from",
+      "date": "Date",
+      "eyebrow": "The year in {country}",
+      "heading": "When flowers are given in {country}",
+      "intro": "These are {country}'s dates, and they are facts whether or not we deliver there — which is why the calendar is on this page in both states.",
+      "occasion": "Occasion",
+      "rule": "Rule",
+      "undated": "Also kept here, with no date of its own: {occasions}."
+    },
+    "coverage": {
+      "bodyNone": "We have not opened {country}. No town is listed on this page because we cannot reach one yet, and a list of cities on a page like this one would be a coverage claim rather than information. We deliver across Europe only where we have chosen a florist, and today that is nowhere.",
+      "eyebrow": "Where we deliver",
+      "headingCities": "The cities we reach in {country}",
+      "headingNone": "Nowhere in {country}, today"
+    },
+    "facts": {
+      "cities": {
+        "label": "Cities we reach",
+        "none": "— none named. A country we do not deliver to may not list its cities."
+      },
+      "delivering": {
+        "label": "Delivering",
+        "none": "Not yet. We are choosing florists in {country} now, and we will say so here the day one of them starts taking our orders."
+      },
+      "deliveryDays": {
+        "label": "Delivery days",
+        "none": "— none to state"
+      },
+      "eyebrow": "Delivery facts",
+      "headingGuide": "What we can say about delivering here today",
+      "headingLive": "What happens on the day",
+      "orderBy": {
+        "label": "Order by",
+        "none": "— no cutoff, because no florist has agreed to one",
+        "value": "{time} in {zone} — the recipient's own time, not yours — for delivery the same day"
+      },
+      "prices": {
+        "fromLabel": "Prices from",
+        "fromValue": "{price}, delivery and VAT already in",
+        "label": "Prices",
+        "none": "— no price on this page. Prices appear when we start delivering here."
+      },
+      "soonest": {
+        "label": "Soonest date",
+        "none": "— no date"
+      },
+      "sunday": {
+        "always": "Every Sunday, and the fee is printed on the date before you choose it",
+        "label": "Sundays",
+        "no": "No delivery on Sundays",
+        "peak": "On request on the days that matter, and the fee is printed on the date before you choose it"
+      }
+    },
+    "faq": {
+      "eyebrow": "Questions about {country}",
+      "heading": "{count, number} questions, and they are {country}'s own"
+    },
+    "flowers": {
+      "eyebrow": "Flowers in {country}",
+      "heading": "What is sent, and what is not",
+      "sentMost": "Sent most",
+      "sentRarely": "Sent rarely, or never"
+    },
+    "photo": {
+      "caption": "Photo slot · {country}"
+    },
+    "related": {
+      "eyebrow": "Related destinations",
+      "heading": "{count, plural, one {One more guide} other {# more guides}}"
+    },
+    "shop": {
+      "body": "Bouquets our florists in {country} can make, priced for {country}, with delivery and VAT already in the price.",
+      "cta": "See flowers for {country}",
+      "heading": "See what can arrive in {country}"
+    },
+    "steps": {
+      "eyebrowGuide": "How we will work here",
+      "eyebrowLive": "How we work here",
+      "guide": {
+        "oneBody": "In your own language and your own currency, with the whole price — delivery and VAT in it — shown before you pay.",
+        "oneTitle": "You order from us",
+        "threeBody": "The florist photographs what was handed over and we email it to you. If it is not what we promised, we make it right.",
+        "threeTitle": "You get the photo",
+        "twoBody": "We choose every one of them ourselves and we visit before we open a country. They see the recipient's address and your card message, and nothing else about you.",
+        "twoTitle": "Our florist makes it where it is going"
+      },
+      "headingGuide": "The same three steps, everywhere we open",
+      "headingLive": "How we send flowers to {country}",
+      "live": {
+        "oneBody": "In your language, in your currency, with the all-in price shown before you pay.",
+        "oneTitle": "You order from anywhere",
+        "threeBody": "The florist photographs the delivered bouquet and we email it to you the same day.",
+        "threeTitle": "You get the photo",
+        "twoBody": "We chose them ourselves and we have stood in their shop. They see the recipient's details and your card message, and nothing about you.",
+        "twoTitle": "Our florist in {country} makes it"
+      }
+    },
+    "weekday": {
+      "friday": "Friday",
+      "monday": "Monday",
+      "saturday": "Saturday",
+      "sunday": "Sunday",
+      "thursday": "Thursday",
+      "tuesday": "Tuesday",
+      "wednesday": "Wednesday"
+    }
   },
   "destinations": {
     "de": {

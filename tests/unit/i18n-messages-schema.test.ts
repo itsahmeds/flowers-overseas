@@ -353,6 +353,12 @@ describe("the shipped catalogues and manifests", () => {
       "occasions",
       "trust",
       "faq",
+      // Spec 007 §7's namespaces (TASK-091): the corridor page's section headings, fact labels,
+      // calendar caption and the honest "we are choosing florists here" line, plus the
+      // breadcrumb's hub label. The corridor *content* is not here and never will be — it lives
+      // in `content/corridors/` where a machine draft is forbidden (`plan/02` §12).
+      "breadcrumb",
+      "corridor",
     ];
     const provenanceLabel: Messages["media"]["provenance"]["aiExample"] =
       enSource.media.provenance.aiExample;

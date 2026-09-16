@@ -16,13 +16,13 @@ task actually touches.
 | `analytics` | Public barrel for `analytics` (Consent Mode v2 + the gated GA4 tag; GA4 event… | spec 004, 023 | `unit/consent-bootstrap.test.tsx` |
 | `catalog` | The only import path into the catalogue and pricing module (spec 005 §2, §5.2;… | spec 005 | `contract/catalog-static-providers.test.ts`, `contract/support/catalog-provider-contract.ts`, `unit/catalog-availability.test.ts` +17 |
 | `customers` | Public barrel for `customers` (customers, recipients, consent) | spec 019 | — |
-| `geo` | The only import path into the geo module (spec 007 §5.2; TASK-087) | spec 007, 002, 009 | `unit/corridor-check.test.ts`, `unit/corridor-content-provider.test.ts`, `unit/corridor-content.test.ts` +3 |
-| `i18n` | The only import path for the i18n module (spec 003 §5.2, AC-3; TASK-034) | spec 003 | `fixtures/ts/format-time-in-zone-no-zone.ts`, `unit/app-shell.test.tsx`, `unit/catalog-messages.test.ts` +37 |
+| `geo` | The only import path into the geo module (spec 007 §5.2; TASK-087) | spec 007, 002, 009 | `unit/corridor-check.test.ts`, `unit/corridor-content-provider.test.ts`, `unit/corridor-content.test.ts` +6 |
+| `i18n` | The only import path for the i18n module (spec 003 §5.2, AC-3; TASK-034) | spec 003 | `fixtures/ts/format-time-in-zone-no-zone.ts`, `unit/app-shell.test.tsx`, `unit/catalog-messages.test.ts` +38 |
 | `notifications` | Public barrel for `notifications` (email + WhatsApp senders, templates, outbox… | spec 017 | — |
 | `orders` | Public barrel for `orders` (state machine, order service, assignment/routing… | spec 015, 016 | — |
 | `partners` | Public barrel for `partners` (fulfilment partners, coverage, payouts) | spec 011, 026 | — |
 | `payments` | Public barrel for `payments` (PaymentProvider interface; stripe/, mollie/… | spec 013, 014 | — |
-| `seo` | Indexability rule engine, canonical builder, robots policy, page metadata (spec… | spec 007 | `unit/seo-canonical.test.ts`, `unit/seo-env.test.ts`, `unit/seo-environment.test.ts` +3 |
+| `seo` | Indexability rule engine, canonical builder, robots policy, page metadata (spec… | spec 007 | `unit/corridor-route.test.ts`, `unit/seo-canonical.test.ts`, `unit/seo-env.test.ts` +4 |
 | `ui` | The only import path for the design system (spec 004 §2 "Where the design… | spec 004 | `unit/consent-cookie.test.ts`, `unit/consent-islands.test.tsx`, `unit/consent-view.test.ts` +19 |
 
 ## Config (`src/config/`)
@@ -64,6 +64,7 @@ task actually touches.
 | `(dev)/dev/components/gated.ts` | The fake providers `/dev/components` renders the three data-gated sections'… | spec 004 |
 | `(dev)/dev/components/page.tsx` | `/dev/components` — the component gallery (spec 004 §2 "Component gallery —… | spec 004 |
 | `(dev)/layout.tsx` | Document layout for the `(dev)` route group — today only `/dev/components`… | spec 004 |
+| `[locale]/(marketing)/[destinations]/[country]/page.tsx` | `/{locale}/{destinations}/{country}` — the corridor page (spec 007 §2, §5.2,… | spec 007 |
 | `[locale]/boom/BoomIsland.tsx` | The throw that reaches `src/app/[locale]/error.tsx` (spec 004 AC-26, AC-27;… | spec 004 |
 | `[locale]/boom/page.tsx` | A route that throws on purpose: the localised 500 boundary, as an auditable… | spec 004 |
 | `[locale]/error.tsx` | Localised 500 boundary (spec 003 §5.3; TASK-034, rewired by TASK-085) | spec 003 |
@@ -94,6 +95,7 @@ task actually touches.
 | `cookie-register.ts` | `cookies:check` | `pnpm cookies:check [--write]` — renders `docs/compliance/cookie-register.md`'s… |
 | `corridor-check-cases.ts` | — | One deliberately failing fixture per `corridor:check` rule (spec 007 AC-2 /… |
 | `corridor-check.ts` | `corridor:check` | `pnpm corridor:check` — the corridor content gate (spec 007 §2, §11, AC-2 /… |
+| `corridor-index.ts` | `corridor:index` | `pnpm corridor:index` — regenerate the typed corridor-corpus index (spec 007 §2… |
 | `coverage-thresholds.ts` | — | Coverage-threshold loader for `vitest.coverage.json` (spec 001 §2 "Testing… |
 | `db-check.ts` | `db:check` | `pnpm db:check` — the migration gate (spec 001 §2 "Scripts", §5.1; TASK-011) |
 | `dev-os-check.ts` | `dev-os:check` | `pnpm dev-os:check` (spec 001 §2 "Scripts", §11 "Dev OS", AC-24/AC-25/AC-26 ·… |
@@ -119,12 +121,12 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 165 |
+| `tests/unit/` | 168 |
 | `tests/integration/` | 2 |
 | `tests/contract/` | 3 |
-| `tests/e2e/` | 20 |
-| `tests/a11y/` | 7 |
-| `tests/visual/` | 7 |
+| `tests/e2e/` | 21 |
+| `tests/a11y/` | 8 |
+| `tests/visual/` | 8 |
 | `tests/dev-os/` | 1 |
 | `tests/fixtures/` | 149 |
 | `tests/msw/` | 3 |

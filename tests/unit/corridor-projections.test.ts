@@ -23,7 +23,7 @@ import {
   COUNTRY_ROW_COLUMNS,
   toCountryRow,
 } from "../../src/config/countries.ts";
-import { readCorridorCorpus } from "../../src/modules/geo/content/corpus.ts";
+import { readCorridorCorpus } from "../../src/modules/geo/content/corpus-files.ts";
 import { parseCorridorContentOrThrow } from "../../src/modules/geo/content/parse.ts";
 import {
   COUNTRY_LOCALE_CONTENT_NATURAL_KEY_COLUMNS,

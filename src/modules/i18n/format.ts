@@ -331,12 +331,25 @@ export function formatPercentFromBasisPoints(
  * `short` is the numeric form (`14/02/2027` / `14.02.2027`) for tables and metadata;
  * `deliveryDate` is `plan/03` §7's unambiguous weekday + month-name form (`Sat 13 Feb`,
  * `Sa., 13. Feb.`, `sob., 13 lut`) and is the one a buyer picks and a florist reads.
+ *
+ * `calendarDate` is the third, added by TASK-091 for spec 007's occasion calendar: the full
+ * weekday, day, month **and year** the corridor artboards print ("Sunday 1 November 2026"). The
+ * year is load-bearing there and nowhere else — the calendar is a twelve-month window that
+ * crosses a new year, so `deliveryDate`'s year-less form would print two "8 March" rows a year
+ * apart. It is a style on the one formatter rather than an `Intl` call in the calendar component,
+ * because `fo/no-adhoc-intl` allows exactly one door (spec 003 §2, AC-21).
  */
-export type DateStyle = "short" | "deliveryDate";
+export type DateStyle = "short" | "deliveryDate" | "calendarDate";
 
 const DATE_STYLE_OPTIONS: Record<DateStyle, Intl.DateTimeFormatOptions> = {
   short: { day: "2-digit", month: "2-digit", year: "numeric" },
   deliveryDate: { weekday: "short", day: "numeric", month: "short" },
+  calendarDate: {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  },
 };
 
 /**

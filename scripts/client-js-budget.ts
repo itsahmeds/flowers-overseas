@@ -117,7 +117,18 @@ export const MESSAGES_PAYLOAD_BUDGET_BYTES = 4 * 1024;
  * (TASK-056 widened the list from spec 003's `/`, `/en`, `/de`; `lighthouse` measures the same
  * five, from `tests/fixtures/seo/lighthouse-urls.json`).
  */
-export const DEFAULT_URLS = ["/", "/en", "/en-gb", "/de", "/pl"] as const;
+export const DEFAULT_URLS = [
+  "/",
+  "/en",
+  "/en-gb",
+  "/de",
+  "/pl",
+  // The corridor page, one per locale that has one (spec 007 AC-24; TASK-091). It mounts no
+  // island of its own, so the number must equal the locale home's — which is the assertion, not
+  // a hope: a client component added to a corridor block would show up here as a regression.
+  "/en/send-flowers-to/poland",
+  "/en-gb/send-flowers-to/poland",
+] as const;
 
 export const DEFAULT_DIST = ".next";
 

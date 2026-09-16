@@ -69,3 +69,36 @@ export {
   occasionDate,
   upcomingOccasions,
 } from "./occasions/index.ts";
+// The corridor page: existence rule, states, view model and blocks (spec 007 §5.2; TASK-091).
+export {
+  CORRIDOR_CALENDAR_MONTHS,
+  CORRIDOR_STATE_TERMS,
+  type CorridorStateTerms,
+  type CorridorCrumb,
+  type CorridorFactsView,
+  type CorridorLiveSlots,
+  type CorridorOccasionView,
+  type CorridorPageParams,
+  type CorridorRelatedView,
+  type CorridorUndatedOccasionView,
+  type CorridorView,
+  type CorridorViewOptions,
+  corridorAlternatePaths,
+  corridorIso2ForSlug,
+  corridorPageExists,
+  corridorSlug,
+  corridorState,
+  corridorStateFrom,
+  corridorView,
+  listCorridorPages,
+} from "./corridor.ts";
+export {
+  type MarkdownBlock,
+  type MarkdownSpan,
+  markdownBlocks,
+} from "./content/markdown.ts";
+// The `ActivePartnersProvider` **interface** only: the provider object and the injection hook stay
+// module-internal for `content/provider.ts`'s reason — a caller able to name them could make the
+// site claim to deliver somewhere (spec 007 §13 Q3, AC-8).
+export type { ActivePartnersProvider } from "./partners.ts";
+export { CorridorPage, type CorridorPageProps } from "./ui/CorridorPage.tsx";

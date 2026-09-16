@@ -119,11 +119,21 @@ describe("tests/fixtures/seo/lighthouse-urls.json (AC-23)", () => {
     }
   });
 
-  it("measures the chooser and all four locale homes (spec 004 AC-24)", () => {
+  it("measures the chooser, all four locale homes and one corridor per English locale", () => {
     // AC-27 words the budget as "`/` and `/en`"; `/de` is measured too because it is the locale
     // whose catalogue is an unreviewed echo — the one whose document could differ from `/en` by
-    // accident rather than by design. Spec 004 §2 extends the list to all four launch locales.
-    expect(parseUrlList(raw)).toEqual(["/", "/en", "/en-gb", "/de", "/pl"]);
+    // accident rather than by design. Spec 004 §2 extends the list to all four launch locales,
+    // and spec 007 AC-25 extends it again to "one corridor per indexable locale" — which today
+    // is the two locales with an authored guide (TASK-091; the hub joins with TASK-092).
+    expect(parseUrlList(raw)).toEqual([
+      "/",
+      "/en",
+      "/en-gb",
+      "/de",
+      "/pl",
+      "/en/send-flowers-to/poland",
+      "/en-gb/send-flowers-to/poland",
+    ]);
   });
 
   it("rejects an empty list and an absolute URL", () => {
