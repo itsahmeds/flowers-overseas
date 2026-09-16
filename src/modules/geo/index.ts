@@ -22,7 +22,8 @@ export {
   FAQ_MIN,
   INTRO_WORD_MAX,
   INTRO_WORD_MIN,
-  RELATED_COUNT,
+  RELATED_MAX,
+  RELATED_MIN,
   SEO_DESCRIPTION_MAX,
   SEO_TITLE_MAX,
   corridorStates,
@@ -48,6 +49,7 @@ export {
 export {
   corridorContentView,
   listCorridorContent,
+  relatedCorridorViews,
   type CorridorContentView,
 } from "./content/view.ts";
 export type { CountryContentProvider } from "./content/provider.ts";

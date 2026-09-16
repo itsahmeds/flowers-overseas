@@ -129,9 +129,12 @@ export function applyCorridorCheckCase(
   const path = testCase.as ?? testCase.file;
   const source = applyOps(base.source, testCase.ops, path);
   const mutated: CorridorSourceFile = { path, source };
-  return testCase.as === undefined
-    ? files.map((file) => (file.path === testCase.file ? mutated : file))
-    : [...files, mutated].sort((a, b) => (a.path < b.path ? -1 : 1));
+  // `as` **replaces** the file at that path when the corpus already has one, and adds it when it
+  // does not. Appending unconditionally would put two files at one path in the corpus, and a rule
+  // that reads across the corpus (5, 18) would then be measuring a file against itself.
+  return [...files.filter((file) => file.path !== path), mutated].sort(
+    (a, b) => (a.path < b.path ? -1 : 1),
+  );
 }
 
 /** The eight generic questions the `faq-country-specific` fixture replaces the real ones with. */
@@ -179,7 +182,8 @@ export const CORRIDOR_CHECK_CASES: readonly CorridorCheckCase[] = [
   {
     rule: "parses",
     expect: "no `---` YAML frontmatter block",
-    why: "a file with no frontmatter is the commonest authoring mistake and must name the file, not throw.",
+    alsoRules: ["en-gb-overrides"],
+    why: "a file with no frontmatter is the commonest authoring mistake and must name the file, not throw. It correctly takes the `en-gb` Poland page down with it: that file says `extends: en`, and once the `en` Poland guide has stopped being a file there is no base to compare its overrides against, which rule 17 reports as the missing base rather than passing it in silence.",
     file: "en/pl-guide.md",
     ops: [{ op: "setRaw", text: "# Poland\n\nJust prose, no frontmatter.\n" }],
   },
@@ -218,9 +222,9 @@ export const CORRIDOR_CHECK_CASES: readonly CorridorCheckCase[] = [
   },
   {
     rule: "token-distinctness",
-    expect: "token-distinct from",
+    expect: "shingle distinctness",
     alsoRules: ["faq-country-specific", "other-country-in-body"],
-    why: "the copy of one guide filed under another country is exactly the duplication plan/02 §5.2 measures; it also, correctly, reads as a page about the wrong country.",
+    why: "the copy of one guide filed under another country is exactly the duplication plan/02 §5.2 measures — a templated page scores near zero on the 5-gram shingle metric of spec 007 §14 A4 — and it also, correctly, reads as a page about the wrong country.",
     file: "en/pl-guide.md",
     as: "en/nl-guide.md",
     ops: [{ op: "setField", field: "relatedIso2", value: ["PL", "RO", "DE"] }],
@@ -351,15 +355,9 @@ export const CORRIDOR_CHECK_CASES: readonly CorridorCheckCase[] = [
   },
   {
     rule: "related-targets",
-    expect: "does not name",
-    alsoRules: [
-      "faq-country-specific",
-      "other-country-in-body",
-      "token-distinctness",
-    ],
-    why: "a related pair that points one way is a dead end for a crawler; the copied body is what makes the other three fire, and it is the same copy the distinctness case uses.",
-    file: "en/pl-guide.md",
-    as: "en/nl-guide.md",
-    ops: [{ op: "setField", field: "relatedIso2", value: ["DE", "RO", "IT"] }],
+    expect: "has a free slot",
+    why: "spec 007 §14 A3 made reciprocity owed wherever the target can carry it, so the fixture has to be an omission rather than a full target: the Netherlands guide drops Germany and keeps only two neighbours, while Germany still names `NL`. That edge now points one way into a page with a slot going spare, which is the authoring mistake the rule exists to catch — and it is one field on one file, so nothing else moves.",
+    file: "en/nl-guide.md",
+    ops: [{ op: "setField", field: "relatedIso2", value: ["FR", "PL"] }],
   },
 ];
