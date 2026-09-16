@@ -35,6 +35,22 @@ One dated bullet per `/review`, newest last.
   or by marking the module server-only.
 - **From `/review 65` (2026-09-16, TASK-090):** the first task to put a canonical on a spec 004 page must narrow spec 004's T-18 assertion — 004 AC-16 is an ownership clause ("spec 007 owns them"), 007 AC-10 requires the canonical on a `noindex` page. Also carried from TASK-090: `pageMetadata()` / `canonicalFor()` / `pageIndexability()` in `src/modules/seo` are the only predicate behind robots meta; the route must not compute indexability itself.
 
+- **From `/review 70` (2026-09-16, this task, round 2):** four changes, all landed. (1) The
+  committed `corpus.generated.ts` was **stale** against the founder's `reviewed: true` flip on all
+  fourteen guides — regenerated, and `corridor-route.test.ts` now asserts the *consequence*: with a
+  production + canonical-host deployment the corridor descriptor yields `index,follow`, and
+  `noindex,follow` on every other deployment row, so the term that closes the page is visibly the
+  environment gate and not a stale artefact. (2) Spec 007 **§14 A6** rules the trailing slash a
+  permanent redirect to the bare URL; the e2e asserts `301|308` with `Location` exactly the bare
+  URL, not `[301, 308, 404]`. (3) The chrome's same-day / cutoff promise is **TASK-120's** (widened
+  by this review, and now TASK-095's dependency) — this PR touches no message catalogue. (4) The
+  `node:fs` module-graph walker resolved only relative specifiers, so the route's graph was one
+  module and its assertion vacuous; it now resolves `tsconfig.json`'s `compilerOptions.paths`
+  (route graph **116** modules, barrel **109**) and the test asserts `size > 1`. Also: the `§`
+  escape this PR introduced into `tests/fixtures/seo/bundle-baseline.json` is reverted (nit 5).
+  Left to others: nit 6 (`corridor:index --check` in the `corridor-check` CI job), nit 7
+  (`SITEMAP_CACHE_TAG` declaration order), nit 8 (`linux/` baselines — TASK-095).
+
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
@@ -49,7 +65,10 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   own. `docs/design/system/components.dc.html` — the **system** file, which is the component
   contract `src/modules/ui` implements — draws the same block with **three** columns (occasion,
   date, rule) and no such sentence. Shipped the three-column form. If the founder wants the fourth
-  column, it needs a schema field and a corpus pass, i.e. a task of its own.
+  column, it needs a schema field and a corpus pass, i.e. a task of its own. **Ruled 2026-09-16
+  (`/review 70`): amend the artboards, not the code.** Both page artboards now draw three columns
+  — occasion, date, rule — with the reason recorded in the calendar annotation and in the
+  `Amended` row of the `[internal]` block.
 - **2026-09-16 — the status chip's copy. Decided, and it is a behaviour change worth a reviewer's
   eye.** The artboards print "Guide · not delivering yet" on the chip; the shipped registry key
   (`destinations.state.guideWaitingList`) reads "Guide · waiting list", and the founder ruled that
@@ -60,7 +79,11 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
 - **2026-09-16 — the authored guide body has no block on the artboards.** §2 requires a ≥600-word
   country-specific body and `corridor:check` enforces it, but neither artboard draws where it
   renders. It ships between "how we will work here" and the calendar, which keeps every drawn block
-  in the artboards' order. Flagged for the reviewer rather than guessed silently.
+  in the artboards' order. Flagged for the reviewer rather than guessed silently. **Ruled
+  2026-09-16 (`/review 70`): placement is right; amend the artboards.** Both widths now draw the
+  authored body block where the code renders it, as the real opening of
+  `content/corridors/en/pl-guide.md` (no drawn copy, per the design README's honesty rules), with
+  `canvas.json` heights and the rows below it shifted to keep the ≥120 px gutter.
 
 ## Result
 
@@ -96,3 +119,25 @@ assertions green: `/en/send-flowers-to/poland` perf 1.00, a11y 1.00, best-practi
 Handed on: the JSON-LD slot (TASK-093), the hub, the `destinations` link id and the
 `guideWaitingList` rename (TASK-092), the sitemap rows (TASK-094), and the `fromPrice` /
 `shopEntryHref` slots of `CorridorLiveSlots` (specs 005/008).
+
+### Round 2 (`/review 70` fix round)
+
+Rebased onto `006c8f6`, which carries the founder's `reviewed: true` flip and `main`'s own fixture
+repairs. Four changes and no code change to the page itself. The regenerated index makes
+`corridor:index --check` and `corridor-corpus-index.test.ts` green and flips the `reviewed` term of
+the indexability predicate to `true` — two new unit cases pin both halves (`index,follow` under
+production + `flowersoverseas.com`, `noindex,follow` on development, preview, staging and a
+`*.vercel.app` production alias). The trailing slash is asserted per §14 A6: `curl -sI
+localhost:3000/en/send-flowers-to/poland/` answers `308` with `location:
+/en/send-flowers-to/poland`. The module-graph walker now resolves `tsconfig.json`'s `@/*` alias in
+the shared `tests/unit/support/import-closure.ts`, taking the route's graph from **1** module to
+**116** (barrel 109); planting `node:fs` in `src/modules/geo/corridor.ts` made both the route case
+and the barrel case fail, and the plant was removed. The chrome's same-day claim is TASK-120's and
+nothing in `messages/` was touched.
+
+Numbers: `lint`, `typecheck`, `format:check`, `corridor:check` (14 files × 18 rules),
+`corridor:index --check`, `codebase:map --check`, `specs:index --check` all clean; unit **3 815
+passed / 5 skipped** over 161 files (+2 this round); cold `pnpm build` 45 pages, 28 corridor URLs;
+e2e over `corridor.spec.ts` + `seo-indexability.spec.ts` + `seo-canonical.spec.ts` **120 passed**.
+No Lighthouse, visual or a11y run this round: no rendered pixel changed — the amendments are to the
+artboards and to tests.

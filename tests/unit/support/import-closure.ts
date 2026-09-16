@@ -13,6 +13,10 @@
  * safe direction — a type-only import of a value module still counts as an edge, so a guard built
  * on it can only be too strict, never too lax. `JSON` imports are recorded rather than followed,
  * because a static `messages/*.json` import is exactly what TASK-085 had to catch.
+ *
+ * The path aliases are **read from `tsconfig.json`** rather than hardcoded (`/review 70` change
+ * 4): a walker that follows only `./…` specifiers sees a one-module graph for any file that
+ * imports through `@/`, and a guard over a one-module graph cannot fail.
  */
 import { readFileSync } from "node:fs";
 import { dirname, extname, resolve } from "node:path";
@@ -23,19 +27,56 @@ const repoRoot = resolve(import.meta.dirname, "../../..");
 const MODULE_EXTENSIONS = [".ts", ".tsx", ".json", ".js", ".mjs", ".css"];
 
 /**
+ * `compilerOptions.paths` of the root `tsconfig.json`, as `[prefix, target]` pairs with the `*`
+ * stripped — today the single `@/*` -> `./src/*`. Reading it keeps the walker honest if the
+ * aliases ever change: nothing here has to be updated in two places.
+ *
+ * `tsconfig.json` is JSONC and the repository writes its comments on their own lines, so dropping
+ * comment-only lines is enough to hand it to `JSON.parse`; a full JSONC parser would be a
+ * dependency for one file.
+ */
+function tsconfigAliases(): readonly (readonly [string, string])[] {
+  const jsonc = readFileSync(resolve(repoRoot, "tsconfig.json"), "utf8");
+  const json = jsonc
+    .split("\n")
+    .filter((line) => !line.trimStart().startsWith("//"))
+    .join("\n");
+  const parsed = JSON.parse(json) as {
+    compilerOptions?: { paths?: Record<string, readonly string[]> };
+  };
+  return Object.entries(parsed.compilerOptions?.paths ?? {}).flatMap(
+    ([pattern, targets]) => {
+      const target = targets[0];
+      return target === undefined
+        ? []
+        : [
+            [
+              pattern.replace(/\*$/u, ""),
+              target.replace(/^\.\//u, "").replace(/\*$/u, ""),
+            ] as const,
+          ];
+    },
+  );
+}
+
+const ALIASES = tsconfigAliases();
+
+/**
  * Resolve a specifier to a file inside the repository, or `undefined` for a package. Handles the
- * repository's two conventions: explicit `.ts`/`.tsx` extensions and the `@/*` alias of
- * `tsconfig.json`.
+ * repository's two conventions: explicit `.ts`/`.tsx` extensions and the path aliases declared in
+ * `tsconfig.json`'s `compilerOptions.paths` (`@/*` today).
  */
 export function resolveImport(
   fromFile: string,
   specifier: string,
 ): string | undefined {
-  const base = specifier.startsWith("@/")
-    ? resolve(repoRoot, "src", specifier.slice(2))
-    : specifier.startsWith(".")
-      ? resolve(dirname(fromFile), specifier)
-      : undefined;
+  const alias = ALIASES.find(([prefix]) => specifier.startsWith(prefix));
+  const base =
+    alias !== undefined
+      ? resolve(repoRoot, alias[1], specifier.slice(alias[0].length))
+      : specifier.startsWith(".")
+        ? resolve(dirname(fromFile), specifier)
+        : undefined;
   if (base === undefined) return undefined;
   // Only a *module* extension means "this is the file"; `error-copy.data` ends in `.data`, which
   // is part of the name (`locales.data.ts`, `error-copy.data.ts` — the repository's convention for

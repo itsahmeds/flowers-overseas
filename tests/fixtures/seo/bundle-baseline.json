@@ -1,6 +1,6 @@
 {
   "//": [
-    "Committed bundle baseline (spec 004 \u00a711, AC-25; TASK-056).",
+    "Committed bundle baseline (spec 004 §11, AC-25; TASK-056).",
     "Brotli script transfer per public route, as `pnpm budget:client-js` measures it from the",
     "build output. The absolute budget is `budgetBytes`; a route that grows more than",
     "`regressionAllowanceBytes` against the number here fails the gate even while it is inside",

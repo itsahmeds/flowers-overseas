@@ -18,7 +18,7 @@
  * landed.
  */
 import { readFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { resolve } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
@@ -28,32 +28,22 @@ import {
 } from "../../scripts/corridor-index.ts";
 import { corridorCorpus } from "../../src/modules/geo/content/corpus.ts";
 import { readCorridorCorpus } from "../../src/modules/geo/content/corpus-files.ts";
+import { importClosure } from "./support/import-closure.ts";
 
 const repoRoot = resolve(import.meta.dirname, "../..");
 
-/** The relative import specifiers of one module, `.ts`/`.tsx` only (the repo's own style). */
-function importsOf(file: string): readonly string[] {
-  const source = readFileSync(file, "utf8");
-  return [...source.matchAll(/from\s+"(\.[^"]+)"/gu)].map(
-    (match) => match[1] ?? "",
-  );
-}
-
-/** Every first-party module reachable from `entry`, transitively. */
+/**
+ * Every first-party module reachable from `entry`, transitively.
+ *
+ * `importClosure()` resolves **both** conventions the repository writes: relative `./…`
+ * specifiers and the `@/*` alias it reads out of `tsconfig.json`'s `compilerOptions.paths`. That
+ * matters here and is `/review 70`'s change 4: the corridor route imports *only* through `@/`, so
+ * a walker that followed relative specifiers alone saw a graph of one module — itself — and the
+ * route's `node:fs` assertion could not fail whatever the route imported. It is now the real
+ * graph, which is why the size assertion below is part of the test rather than decoration.
+ */
 function moduleGraph(entry: string): ReadonlySet<string> {
-  const seen = new Set<string>();
-  const queue = [entry];
-  while (queue.length > 0) {
-    const file = queue.pop();
-    if (file === undefined || seen.has(file)) continue;
-    seen.add(file);
-    for (const specifier of importsOf(file)) {
-      const resolved = join(dirname(file), specifier);
-      if (!resolved.endsWith(".ts") && !resolved.endsWith(".tsx")) continue;
-      if (!seen.has(resolved)) queue.push(resolved);
-    }
-  }
-  return seen;
+  return importClosure(entry).files;
 }
 
 describe("the generated typed index (AC-1)", () => {
@@ -91,6 +81,8 @@ describe("no `node:fs` on the render path (`/review 63` carry-forward (b))", () 
   ] as const) {
     it(`${name} reaches no module that imports \`node:fs\``, () => {
       const graph = [...moduleGraph(entry)];
+      // A graph of one module is a vacuous assertion: it would pass however the entry imports.
+      expect(graph.length, `${name} graph size`).toBeGreaterThan(1);
       expect(graph).not.toContain(READER);
       const withFs = graph.filter((file) =>
         /from\s+"node:fs"/u.test(readFileSync(file, "utf8")),

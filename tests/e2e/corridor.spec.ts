@@ -68,11 +68,16 @@ test.describe("existence and 404s (AC-5, T-06)", () => {
     }
   });
 
-  test("the trailing-slash form is not a second URL", async ({ request }) => {
+  test("the trailing-slash form permanently redirects to the bare URL (§14 A6)", async ({
+    request,
+  }) => {
     const response = await request.get(`${GUIDE_URL}/`, { maxRedirects: 0 });
-    // Next answers the trailing-slash form with a 308 to the canonical one; what must never
-    // happen is a **200 at both forms**, which would be two URLs for one page.
-    expect([301, 308, 404]).toContain(response.status());
+    // Spec 007 §14 A6: AC-5's "404, no redirect" governs the unknown and mis-cased shapes;
+    // a trailing slash resolves by a **permanent redirect to the bare URL** — Next's 308 today,
+    // Cloudflare's 301 once spec 040 fronts the origin. What must never happen is a 200 at both
+    // forms (two URLs for one page) or a redirect to some other, guessed, form.
+    expect([301, 308], `status for ${GUIDE_URL}/`).toContain(response.status());
+    expect(response.headers()["location"]).toBe(GUIDE_URL);
   });
 });
 

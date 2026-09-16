@@ -29,6 +29,12 @@ import {
   listCorridorPages,
 } from "../../src/modules/geo";
 import { withActivePartnersProvider } from "../../src/modules/geo/partners.ts";
+import {
+  CANONICAL_HOST,
+  INDEX_FOLLOW,
+  NOINDEX_FOLLOW,
+  pageIndexability,
+} from "../../src/modules/seo";
 
 /** A date inside the committed corpus's lifetime; every window assertion starts here. */
 const FROM = "2026-09-15";
@@ -206,5 +212,54 @@ describe("the view model (AC-8, AC-19, AC-22; T-09, T-23)", () => {
     const uk = corridorView("PL", "en-gb", { from: FROM });
     expect(uk?.path).toBe("/en-gb/send-flowers-to/poland");
     expect(uk?.seoTitle).not.toBe(view?.seoTitle);
+  });
+});
+
+describe("the indexability predicate over a corridor page (AC-9; `/review 70` change 1)", () => {
+  /** The terms the route's `generateMetadata` gathers, for one authored corridor page. */
+  function corridorDescriptor(locale: string) {
+    const page = corridorView("PL", locale, { from: FROM });
+    if (page === undefined) throw new Error(`no corridor view for ${locale}`);
+    return {
+      pageType: "corridor",
+      locale,
+      exists: corridorPageExists("PL", locale),
+      reviewed: page.reviewed,
+    } as const;
+  }
+
+  it("yields `index,follow` on production + the canonical host, now that the corpus is reviewed", () => {
+    // The founder's review flip is in the committed generated index, so `reviewed` is `true` and
+    // the only term still capable of closing the page is the environment gate. This is the
+    // assertion that would have caught the stale index: with `reviewed: false` it reads
+    // `noindex,follow` under the very same deployment.
+    for (const locale of ENGLISH_LOCALES) {
+      const descriptor = corridorDescriptor(locale);
+      expect(descriptor.reviewed, locale).toBe(true);
+      expect(
+        pageIndexability(descriptor, {
+          environment: "production",
+          siteUrl: `https://${CANONICAL_HOST}`,
+        }).directive,
+        locale,
+      ).toBe(INDEX_FOLLOW);
+    }
+  });
+
+  it("still yields `noindex,follow` in Phase 0, because the environment gate is the one that is shut", () => {
+    for (const deployment of [
+      { environment: "development", siteUrl: "http://localhost:3000" },
+      { environment: "preview", siteUrl: `https://${CANONICAL_HOST}` },
+      { environment: "staging", siteUrl: `https://${CANONICAL_HOST}` },
+      {
+        environment: "production",
+        siteUrl: "https://flowers-overseas.vercel.app",
+      },
+    ] as const) {
+      const verdict = pageIndexability(corridorDescriptor("en"), deployment);
+      expect(verdict.directive, deployment.siteUrl).toBe(NOINDEX_FOLLOW);
+      expect(verdict.terms.reviewed).toBe(true);
+      expect(verdict.terms.indexingEnvironment).toBe(false);
+    }
   });
 });
