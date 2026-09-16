@@ -523,9 +523,12 @@ jobs:
             exit 1
           fi
 
-  # T-11 / AC-10 (TASK-005): a missing variable must fail the build, name the offending key and
-  # echo no other variable's value. A sentinel value is injected into a second key; the build
-  # output must contain the key name and not the sentinel.
+  # T-11 / AC-10 (TASK-005) and spec 002 T-04 / AC-2 (TASK-013). Two facts, one job:
+  #   1. a missing variable fails the build, names the offending key and echoes no other
+  #      variable's value (a sentinel injected into a second key must not appear in the output);
+  #   2. a deployed environment (`VERCEL_ENV=production`) whose `DATABASE_URL` is still the
+  #      `.env.example` placeholder fails the build naming **only** that key — spec 002 deleted the
+  #      escape hatch spec 001 carried, so there is no way to opt out.
   env-build-failure:
     name: env-build-failure
     runs-on: ubuntu-latest
@@ -538,22 +541,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
-      - name: Build with NEXT_PUBLIC_SUPABASE_URL removed and a sentinel in another key
+      - name: Build with R2_BUCKET removed and a sentinel in another key
         run: |
           set -o pipefail
-          grep -v '^NEXT_PUBLIC_SUPABASE_URL=' .env.example > .env.local
-          sed -i "s|^SUPABASE_SERVICE_ROLE_KEY=.*|SUPABASE_SERVICE_ROLE_KEY=$SENTINEL|" .env.local
+          grep -v '^R2_BUCKET=' .env.example > .env.local
+          sed -i "s|^R2_SECRET_ACCESS_KEY=.*|R2_SECRET_ACCESS_KEY=$SENTINEL|" .env.local
           set +e
           pnpm build > build.log 2>&1
           status=$?
           set -e
           cat build.log
           if [ "$status" -eq 0 ]; then
-            echo "::error::pnpm build exited 0 with NEXT_PUBLIC_SUPABASE_URL missing (AC-10)"
+            echo "::error::pnpm build exited 0 with R2_BUCKET missing (AC-10)"
             exit 1
           fi
-          if ! grep -q 'NEXT_PUBLIC_SUPABASE_URL' build.log; then
-            echo "::error::build output does not name NEXT_PUBLIC_SUPABASE_URL (AC-10)"
+          if ! grep -q 'R2_BUCKET' build.log; then
+            echo "::error::build output does not name R2_BUCKET (AC-10)"
             exit 1
           fi
           if grep -q "$SENTINEL" build.log; then
@@ -564,10 +567,58 @@ jobs:
             echo "### env-build-failure (T-11 / AC-10)"
             echo ""
             echo "- \`pnpm build\` exit status: $status (non-zero, as required)"
-            echo "- output names \`NEXT_PUBLIC_SUPABASE_URL\`: yes"
+            echo "- output names \`R2_BUCKET\`: yes"
             echo "- output contains the sentinel value of another key: no"
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Remove the tampered env file
+        if: always()
+        run: rm -f .env.local build.log
+      # spec 002 T-04 / AC-2: real values everywhere except `DATABASE_URL`, which keeps the
+      # `.env.example` placeholder, and `VERCEL_ENV=production`. The build must fail and the report
+      # must name that key and no other.
+      - name: Build in production with a placeholder DATABASE_URL (spec 002 T-04)
+        env:
+          VERCEL_ENV: production
+        run: |
+          set -o pipefail
+          sed \
+            -e 's|^NEXT_PUBLIC_SITE_URL=.*|NEXT_PUBLIC_SITE_URL=https://flowers-overseas.vercel.app|' \
+            -e 's|^DATABASE_URL_UNPOOLED=.*|DATABASE_URL_UNPOOLED=postgresql://u:p@ep-ci.eu-central-1.aws.neon.tech/fo|' \
+            -e 's|^INTERNAL_CRON_SECRET=.*|INTERNAL_CRON_SECRET=ci-cron-secret|' \
+            -e 's|^R2_ACCOUNT_ID=.*|R2_ACCOUNT_ID=0123456789abcdef0123456789abcdef|' \
+            -e 's|^R2_BUCKET=.*|R2_BUCKET=ci-media|' \
+            -e 's|^R2_BACKUPS_BUCKET=.*|R2_BACKUPS_BUCKET=ci-backups|' \
+            -e 's|^R2_S3_ENDPOINT=.*|R2_S3_ENDPOINT=https://0123456789abcdef0123456789abcdef.eu.r2.cloudflarestorage.com|' \
+            -e 's|^R2_ACCESS_KEY_ID=.*|R2_ACCESS_KEY_ID=ci-access-key-id|' \
+            -e 's|^R2_SECRET_ACCESS_KEY=.*|R2_SECRET_ACCESS_KEY=ci-secret-access-key|' \
+            -e 's|^R2_PUBLIC_BASE_URL=.*|R2_PUBLIC_BASE_URL=https://media.example.com|' \
+            -e 's|^ENABLE_PSEUDO_LOCALES=.*|ENABLE_PSEUDO_LOCALES=false|' \
+            -e 's|^ENABLE_DEV_UI=.*|ENABLE_DEV_UI=false|' \
+            .env.example > .env.local
+          set +e
+          pnpm build > build.log 2>&1
+          status=$?
+          set -e
+          cat build.log
+          if [ "$status" -eq 0 ]; then
+            echo "::error::pnpm build exited 0 with a placeholder DATABASE_URL in production (spec 002 AC-2)"
+            exit 1
+          fi
+          if ! grep -q 'DATABASE_URL: must be a real value in production' build.log; then
+            echo "::error::build output does not name DATABASE_URL as the placeholder offender (spec 002 T-04)"
+            exit 1
+          fi
+          if grep -qE '^\s+- (R2_|INTERNAL_CRON_SECRET|DATABASE_URL_UNPOOLED|NEXT_PUBLIC_)' build.log; then
+            echo "::error::build output named a key other than DATABASE_URL (spec 002 T-04)"
+            exit 1
+          fi
+          {
+            echo "### placeholder DATABASE_URL in production (spec 002 T-04 / AC-2)"
+            echo ""
+            echo "- \`pnpm build\` exit status: $status (non-zero, as required)"
+            echo "- output names \`DATABASE_URL\` and no other key: yes"
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Remove the tampered env file (T-04)
         if: always()
         run: rm -f .env.local build.log
 

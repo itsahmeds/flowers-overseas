@@ -33,9 +33,14 @@ encode the non-negotiables, four test layers, SEO validators, CI and the task gu
 | `python3` | 3.9+ | preinstalled on macOS; the PreToolUse task guard parses its payload with it |
 | gitleaks | 8.x, **optional locally** | `brew install gitleaks`; without it `pnpm test` skips the secret-scanning tests, and CI runs them anyway |
 
-No database, Supabase project, Vercel account or real credential is needed: the `.env.example`
+No database, Cloudflare account, Vercel account or real credential is needed: the `.env.example`
 placeholders are valid on purpose, so a clean clone builds and runs offline apart from the package
-registry.
+registry. Real credentials — **Neon** Postgres in Frankfurt (pooled `DATABASE_URL` + direct
+`DATABASE_URL_UNPOOLED`) and two **EU-jurisdiction Cloudflare R2** buckets (public media, private
+backups) — are needed only to run migrations, the seed or the storage seam;
+[`docs/runbooks/local-setup.md`](docs/runbooks/local-setup.md) §3.1 says where each value comes
+from. They are refused in `preview` and `production` as placeholders: the build fails and names the
+key, never the value, and there is no opt-out (spec 002 AC-2).
 
 ## Local setup
 
@@ -46,7 +51,7 @@ Target: under 15 minutes on a machine that already has Node and git (spec 001 AC
 1. `git clone https://github.com/itsahmeds/flowers-overseas.git && cd flowers-overseas`
 2. `corepack enable` — or `brew install pnpm` if Corepack is absent (see Troubleshooting)
 3. `pnpm install --frozen-lockfile`
-4. `cp .env.example .env.local`
+4. `cp .env.example .env.local` — `pnpm env:check` verifies the file and the zod schema agree in both directions
 5. `pnpm dev` — serves `http://localhost:3000`
 6. `curl -s http://localhost:3000/api/health` — expect `{"status":"ok",…}` with `cache-control: no-store` and an `x-request-id`
    · `open http://localhost:3000/dev/components` — the design-system gallery (every token ramp and every component state). It exists because `.env.example` ships `ENABLE_DEV_UI=true`; unset it and the URL answers 404, and the env schema refuses it outright in production (spec 004 AC-28)

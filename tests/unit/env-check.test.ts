@@ -48,7 +48,7 @@ describe("env:check (T-12)", () => {
   it("exits non-zero when a schema key is absent from the file", () => {
     const result = runCli("tests/fixtures/env/missing-key.env");
     expect(result.status).not.toBe(0);
-    expect(result.output).toContain("NEXT_PUBLIC_SUPABASE_URL");
+    expect(result.output).toContain("DATABASE_URL_UNPOOLED");
   });
 
   it("exits non-zero when the file has a key the schema does not know", () => {
@@ -69,7 +69,7 @@ describe("env:check (T-12)", () => {
 
   it("names both directions in the report", () => {
     const missing = checkEnvFile(fixture("missing-key.env"));
-    expect(missing.missingKeys).toEqual(["NEXT_PUBLIC_SUPABASE_URL"]);
+    expect(missing.missingKeys).toEqual(["DATABASE_URL_UNPOOLED"]);
     expect(formatEnvCheckReport("missing-key.env", missing)).toContain(
       "not in missing-key.env",
     );

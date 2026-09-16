@@ -215,6 +215,87 @@ describe("logger (T-13)", () => {
     }
   });
 
+  /**
+   * Spec 002 §8 / AC-2 (TASK-013, the `/review 5` carry-forward): `name` becomes `*name`, and the
+   * six fields the schema of spec 002 introduces join the list. Each is asserted as a key *and* at
+   * depth inside a nested object, because a redaction that only works at the top level is the
+   * failure mode this list exists to prevent.
+   */
+  describe("spec 002 §8 widening", () => {
+    const widened = [
+      "name",
+      "full_name",
+      "legal_name",
+      "recipient_name",
+      "recipientName",
+      "partner-name",
+      "card_message",
+      "cardMessage",
+      "phone_e164",
+      "phoneE164",
+      "postal_code",
+      "postalCode",
+      "session_token",
+      "sessionToken",
+      "public_token",
+      "publicToken",
+      "object_key",
+      "objectKey",
+    ] as const;
+
+    it("redacts every widened key", () => {
+      for (const key of widened) expect(isRedactedKey(key), key).toBe(true);
+    });
+
+    it("redacts each widened key at any nesting depth, in objects and arrays", () => {
+      for (const key of widened) {
+        const payload = {
+          order: { lines: [{ deep: { [key]: "secret-value-3f9a" } }] },
+        };
+        const out = redact(payload) as {
+          order: { lines: { deep: Record<string, unknown> }[] };
+        };
+        expect(out.order.lines[0]?.deep[key], key).toBe(REDACTED);
+        expect(JSON.stringify(out), key).not.toContain("secret-value-3f9a");
+      }
+    });
+
+    it("reads `*name` as a word boundary, so filenames and hostnames survive", () => {
+      // A blind suffix would redact the Sentry stack-frame `filename` that spec 001 AC-13 keeps.
+      for (const key of ["filename", "hostname", "pathname", "nickname"]) {
+        expect(isRedactedKey(key), key).toBe(false);
+      }
+      for (const key of ["name", "full_name", "file-name", "fileName"]) {
+        expect(isRedactedKey(key), key).toBe(true);
+      }
+    });
+
+    it("lets non-PII keys through, including the log context fields", () => {
+      for (const key of [
+        "request_id",
+        "order_id",
+        "partner_id",
+        "locale",
+        "status",
+        "latest_migration",
+        "latency_ms",
+        "duration_ms",
+        "country_iso2",
+        "sku",
+        "bucket",
+        "job",
+        "count",
+      ]) {
+        expect(isRedactedKey(key), key).toBe(false);
+      }
+      const out = redact({ a: { b: { request_id: "r-1", count: 2 } } }) as {
+        a: { b: Record<string, unknown> };
+      };
+      expect(out.a.b["request_id"]).toBe("r-1");
+      expect(out.a.b["count"]).toBe(2);
+    });
+  });
+
   it("exports a ready-made process logger", () => {
     expect(typeof logger.info).toBe("function");
     expect(typeof logger.child).toBe("function");
