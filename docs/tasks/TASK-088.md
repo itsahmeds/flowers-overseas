@@ -50,6 +50,25 @@ banned words) apply to every line. Content plus the two gate rules the rulings n
 - **From `/review 63` (2026-09-16, TASK-087):** the `price-literal` rule closes on a Unicode
   lookahead rather than `\b`, and `bannedVoiceWordsIn` deliberately has no word boundaries — copy
   written here must avoid "networked", "partnership" and every digit+currency form.
+- **From `/review 66` (2026-09-16, this task, round 3 — required change):** all seven `en-gb`
+  guides claimed a British establishment and UK governing law ("Your contract is with us, in
+  Britain, under UK consumer law") in the FAQ rights answer and in `## Money, and where you
+  stand`. The seller of record is an Estonian OÜ that is not yet registered (`plan/07` §1 and §7
+  "trader identity for a **non-UK trader**"; `src/config/company.ts` `registered: false`), and
+  governing law / jurisdiction is a lawyer-gated ⚖️ launch blocker that spec 007 §13 Q6 keeps out
+  of this spec. Per the orchestrator's ruling the fourteen sentences now keep only the true
+  reassurance — the buyer's contract is with us and not with the shop that makes the bouquet, and
+  a complaint comes to us in English — and say **nothing** about where we are established or which
+  law governs. No substitute claim (Estonia, EU law) was introduced; no terms-page slot exists in
+  the content model, so the sentences point at nothing. Two `seoDescription`s that advertised
+  "your UK rights" were reworded for the same reason. Also taken this round: the `en-gb/it-guide`
+  nit ("and we deal with the shop" → "rather than to a shop abroad"). Any future copy touching
+  trader identity, governing law or consumer-law rights must wait for the ⚖️ item.
+- **From `/review 66` (2026-09-16), carried by the orchestrator to TASK-095:** rule 5 measures
+  distinctness only **within** a locale, so a lazy `en-gb` override that near-copies its `en` base
+  would pass all eighteen rules (rule 17 checks only title, description and ≥2 FAQ answers). This
+  corpus does not exploit the gap — the reviewer measured the cross-locale pairs at 0.695–0.947 —
+  but the gate has no teeth against a future override. Not this task's scope.
 
 ## Escalations
 
@@ -82,7 +101,8 @@ The founder may veto either, in which case the corpus and the two rules come bac
 
 ## Result
 
-Branch `task/TASK-088-corridor-corpus-en-en-gb`, PR #66.
+Branch `task/TASK-088-corridor-corpus-en-en-gb`, PR #66. Round 3 is the `/review 66` fix round:
+the trader-establishment and governing-law claims are gone from all seven `en-gb` guides.
 
 **The corpus (round 1, unchanged in round 2).** Thirteen new corridor files —
 `content/corridors/en/{de,fr,es,it,ro,nl}-guide.md` and
@@ -133,6 +153,33 @@ touches: 48 in `corridor-check.test.ts`, 12 in `corridor-related.test.ts`, plus 
 `pnpm lint`, `pnpm typecheck`, `pnpm format:check`, `pnpm check:no-db`, `pnpm seed:check`,
 `pnpm codebase:map --check`, `pnpm specs:index --check` and a cold `pnpm build` all green. No
 route exists for this content yet, so no e2e, visual, a11y or Lighthouse run applies.
+
+**Round 3 — the compliance rewrite (`/review 66`).** Sixteen edits across the seven `en-gb`
+files, two per file plus two `seoDescription`s, and nothing else in the tree:
+
+| file | what changed |
+|---|---|
+| `en-gb/pl-guide.md` | FAQ question → "Who am I buying from, and who do I complain to?"; answer and `## Money` paragraph now say the contract is with us "not from/with the shop that makes the bouquet" |
+| `en-gb/de-guide.md` | FAQ question → "Who am I actually buying from?"; both places now say "not from whichever shop ends up making the bouquet" |
+| `en-gb/fr-guide.md` | FAQ question → "Who is the order with, and who do I chase?"; both places now say "rather than with the florist who ties the flowers" |
+| `en-gb/es-guide.md` | `seoDescription` "your UK rights" → "who your order is with"; FAQ question → "Who am I contracting with when I order?"; both places now say "not with the shop that arranges the flowers" |
+| `en-gb/it-guide.md` | FAQ question → "Who do I deal with if an order goes wrong?"; both places now say "not with the fiorista who makes the bouquet", and the nit "and we deal with the shop" became "rather than to a shop abroad" |
+| `en-gb/nl-guide.md` | `seoDescription` "your UK rights" → "who you buy from"; FAQ question → "Who am I buying from, and who handles a complaint?"; both places now say "never with the shop that ties the bunch" |
+| `en-gb/ro-guide.md` | FAQ question → "Who is my order with, and who puts it right?"; both places now say "not with the florist who assembles the bouquet" |
+
+`grep -rn -iE "britain|uk consumer law|uk law|under .* law|jurisdiction|estonia" content/corridors/`
+now returns only sentences about the **reader's** location and calendar ("a British sender", "the
+British dozen", "Sending flowers to X from the UK"), never about ours. `reviewed: false` is
+unchanged on all fourteen files. No `en` file needed the same treatment: no parallel sentence
+exists there.
+
+**Round 3 gates.** `pnpm corridor:check` still reports *14 corridor file(s), all 18 rules clean*;
+the rewrite raised the `en-gb` minimum pairwise 5-gram shingle distinctness to **0.9488** (DE vs
+IT, recomputed independently; `en` unchanged at 0.9648, DE vs PL). `pnpm test` 3651 passed / 5
+skipped / 0 failed across 155 files; `pnpm lint`, `typecheck`, `format:check`, `check:no-db`,
+`seed:check`, `codebase:map --check`, `specs:index --check` and a cold `pnpm build` green. The
+rebase onto `main` (post-PR-#65) took one conflict, the `tests/unit/` count in
+`docs/codebase-map.md`, resolved by regenerating the map (161 → 162).
 
 **Files changed beyond the corpus:** `src/modules/geo/content/schemas.ts`,
 `src/modules/geo/content/view.ts`, `src/modules/geo/index.ts`, `scripts/corridor-check.ts`,

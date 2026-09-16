@@ -33,8 +33,8 @@ faq:
     a: "In the Catholic south and west it often is, though quietly, and it has no British equivalent at all. A small bunch is the right scale. Nobody will be offended if you do not know the date."
   - q: "What will I pay, and in what currency?"
     a: "One figure in pounds sterling, with VAT and delivery already included, shown before you enter a card. That is the amount charged. Nothing is added at the end, and the person receiving the flowers never sees a price in euro or in anything else."
-  - q: "Where do I stand legally if I order from the UK?"
-    a: "Your contract is with us in Britain under UK consumer law, so a complaint comes to us rather than to a shop abroad. As we are not yet delivering in Germany, there is nothing to buy today, and we would rather say that than dress it up."
+  - q: "Who am I actually buying from?"
+    a: "From us, and not from whichever shop ends up making the bouquet, so a complaint comes to us rather than to a shop abroad. As we are not yet delivering in Germany, there is nothing to buy today, and we would rather say that than dress it up."
   - q: "Can you send flowers to Germany right now?"
     a: "No. We have chosen the cities we want to begin in and we are talking to shops, but until one of them has agreed to work with us this page will carry no date, no hour and no claim about arrival."
 localFlowers: >-
@@ -114,8 +114,8 @@ before you enter a card, and that is the figure that leaves your account. There 
 no conversion applied afterwards and no fee at the end. No price travels with the
 flowers, and there is no paperwork in the box.
 
-Your contract is with us, in Britain, under UK consumer law. A complaint comes to
-us, in English, rather than to a shop abroad.
+You are buying from us, and not from whichever shop ends up making the bouquet. A
+complaint comes to us, in English, rather than to a shop abroad.
 
 ## What we can honestly tell you today
 

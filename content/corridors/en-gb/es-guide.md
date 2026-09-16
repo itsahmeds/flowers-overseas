@@ -1,6 +1,6 @@
 ---
 seoTitle: "Sending flowers to Spain from the UK: an honest guide"
-seoDescription: "Sant Jordi, saints days, Holy Week and the summer heat. For British senders, with sterling pricing, your UK rights and what we can honestly do there today."
+seoDescription: "Sant Jordi, saints days, Holy Week and the summer heat. For British senders, with sterling pricing, who your order is with and what we can do today."
 h1: "Sending flowers to Spain from the UK"
 extends: en
 intro: >-
@@ -33,8 +33,8 @@ faq:
     a: "Outside the largest cities many shops close in the early afternoon and reopen in the evening, and Sunday trading is limited. Madrid, Barcelona and Valencia keep hours a British visitor would recognise; a small town will not."
   - q: "What will I pay, and in what currency?"
     a: "One figure in pounds sterling, VAT and delivery already inside it, shown before you enter a card. That is the amount charged. Nothing is added afterwards and the person receiving the flowers is shown no price in euro or anything else."
-  - q: "What are my rights if I order from the UK?"
-    a: "You are contracting with us in Britain under UK consumer law, so a complaint comes to us in English rather than to a shop abroad. We are not delivering in Spain yet, so there is nothing to buy today and we will not pretend otherwise."
+  - q: "Who am I contracting with when I order?"
+    a: "With us, not with the shop that arranges the flowers, so a complaint comes to us in English rather than to a shop abroad. We are not delivering in Spain yet, so there is nothing to buy today and we will not pretend otherwise."
   - q: "Can you send flowers to Spain now?"
     a: "Not yet. We are still choosing the shops we want to work with, and until one of them has agreed to make your flowers we will put no date, no hour and no claim of arrival on this page."
 localFlowers: >-
@@ -119,8 +119,9 @@ shown before you enter a card, and that figure is what leaves your account. No
 conversion is applied at the end and no fee appears afterwards. Nothing about money
 travels with the flowers.
 
-Your contract is with us, in Britain, under UK consumer law, so a complaint is made
-to us in English and not to a shop abroad in a language you may not have.
+You are contracting with us, not with the shop that arranges the flowers, so a
+complaint is made to us in English and not to a shop abroad in a language you may
+not have.
 
 ## What we can honestly tell you today
 

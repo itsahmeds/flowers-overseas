@@ -33,8 +33,8 @@ faq:
     a: "No. We write it by hand in whatever language you give us. If you would like Polish and are not sure how to put it, send us the sense of it in English and we will help you say it properly rather than word for word."
   - q: "What will I pay, and in what currency?"
     a: "You are shown one amount in pounds sterling, with VAT and delivery already inside it, before you enter a card. That figure is the figure charged. Nothing is added afterwards, and the person receiving the flowers is shown no price at all."
-  - q: "What are my rights if something goes wrong with an order from the UK?"
-    a: "You are buying from us, in Britain, under UK consumer law, so your contract and your complaint are both with us rather than with a shop abroad. We have not begun delivering to Poland yet, so today there is nothing to claim against, and we would rather say that plainly."
+  - q: "Who am I buying from, and who do I complain to?"
+    a: "You are buying from us, not from the shop that makes the bouquet, so your contract and your complaint are both with us rather than with a shop abroad. We have not begun delivering to Poland yet, so today there is nothing to claim against, and we would rather say that plainly."
   - q: "Can you deliver to Poland today?"
     a: "No. We are still choosing the shops we want to work with, and until one of them has agreed we will not print a date or an hour on this page. We would rather turn you away than promise something we cannot honour."
 localFlowers: >-
@@ -112,8 +112,8 @@ inside it, before you enter a card, and that figure is what leaves your account.
 currency conversion is applied afterwards and no fee appears at the end. The person
 receiving the flowers is never shown a price, and there is no paperwork in the box.
 
-Your contract is with us, here, under UK consumer law. If something is wrong you
-complain to us and we sort it out; you never have to take up an argument with a shop
+Your contract is with us, not with the shop that makes the bouquet. If something is
+wrong you complain to us and we sort it out; you never have to take up an argument with a shop
 abroad in a language you do not speak.
 
 ## What we can honestly tell you today

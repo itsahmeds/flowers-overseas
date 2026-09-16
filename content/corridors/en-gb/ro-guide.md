@@ -33,8 +33,8 @@ faq:
     a: "Probably not. The local taste is for large, dense, elaborately wrapped bouquets, and what would look extravagant in Britain looks normal there. A modest British-sized posy can read as an afterthought however fondly it was meant."
   - q: "What will I pay, and in what currency?"
     a: "One figure in pounds sterling, VAT and delivery already inside it, shown before you enter a card. That is what leaves your account. Nothing about money reaches the recipient, in lei or in anything else."
-  - q: "What are my rights ordering from the UK?"
-    a: "Your contract is with us in Britain under UK consumer law, so a complaint comes to us in English rather than to a shop abroad. We have not begun delivering in Romania, so there is nothing to buy today and we will not pretend there is."
+  - q: "Who is my order with, and who puts it right?"
+    a: "Your order is with us, not with the florist who assembles the bouquet, so a complaint comes to us in English rather than to a shop abroad. We have not begun delivering in Romania, so there is nothing to buy today and we will not pretend there is."
   - q: "Can you send flowers to Romania today?"
     a: "Not yet. We are choosing the shops we would like to work with and have not finished. Until one of them has agreed we will put no date, no hour and no arrival claim on this page."
 localFlowers: >-
@@ -117,8 +117,8 @@ You pay in pounds sterling: one figure, VAT and delivery already included, shown
 before you enter a card, and that is the amount charged. No conversion is applied
 afterwards and no fee appears at the end. The recipient sees no figure of any kind.
 
-Your contract is with us, in Britain, under UK consumer law, so anything that goes
-wrong is ours to put right, in English.
+Your contract is with us, not with the florist who assembles the bouquet, so anything
+that goes wrong is ours to put right, in English.
 
 ## What we can honestly tell you today
 

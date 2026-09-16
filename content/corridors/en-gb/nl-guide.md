@@ -1,6 +1,6 @@
 ---
 seoTitle: "Sending flowers to the Netherlands from the UK"
-seoDescription: "Tulip season, Moederdag, Koningsdag and why less is more. For British senders, with sterling pricing, your UK rights and what we can honestly do today."
+seoDescription: "Tulip season, Moederdag, Koningsdag and why less is more. For British senders, with sterling pricing, who you buy from and what we can honestly do today."
 h1: "Sending flowers to the Netherlands from the UK"
 extends: en
 intro: >-
@@ -33,8 +33,8 @@ faq:
     a: "No. Dodenherdenking is the remembrance of the war dead, marked by wreaths and two minutes of silence in the evening. Flowers that day belong at memorials rather than in a home. The 5th, Liberation Day, is the festive one."
   - q: "What will I pay, and in what currency?"
     a: "A single figure in pounds sterling, with VAT and delivery already included, shown before you enter a card. That figure is what leaves your account, nothing is added afterwards, and the recipient is shown no price at all."
-  - q: "What are my rights buying from the UK?"
-    a: "Your contract is with us in Britain under UK consumer law, so any complaint comes to us in English. We are not delivering in the Netherlands yet, so there is nothing to buy today and we would rather say so than imply otherwise."
+  - q: "Who am I buying from, and who handles a complaint?"
+    a: "You are buying from us, never from the shop that ties the bunch, so any complaint comes to us in English. We are not delivering in the Netherlands yet, so there is nothing to buy today and we would rather say so than imply otherwise."
   - q: "Can you deliver in the Netherlands today?"
     a: "No. We have not started there. We are choosing the shops we want to work with, and until one has agreed to make your flowers we will put no date, no hour and no claim about arrival on this page."
 localFlowers: >-
@@ -119,8 +119,8 @@ You pay in pounds sterling: one figure, VAT and delivery already inside it, show
 before you enter a card, and that is what leaves your account. No conversion afterwards
 and no fee at the end. Nothing about money travels with the flowers.
 
-Your contract is with us, in Britain, under UK consumer law, so a complaint comes to
-us in English rather than to a shop abroad.
+Your contract is with us, never with the shop that ties the bunch, so a complaint
+comes to us in English rather than to a shop abroad.
 
 ## What we can honestly tell you today
 

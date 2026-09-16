@@ -33,8 +33,8 @@ faq:
     a: "The 1st of January, Easter Monday, the 1st and 8th of May, Ascension, Whit Monday, the 14th of July, the 15th of August, the 1st and 11th of November and the 25th of December. Alsace and the Moselle add Good Friday and the 26th of December."
   - q: "What will I pay, and in what currency?"
     a: "A single figure in pounds sterling, VAT and delivery already included, shown before you enter a card. That is what leaves your account. No conversion is applied afterwards, and no price of any kind travels with the flowers."
-  - q: "What are my rights buying from the UK?"
-    a: "Your contract is with us in Britain under UK consumer law, so any complaint comes to us in English rather than to a shop abroad. Since we are not yet delivering in France there is nothing to buy today, and we would rather say so."
+  - q: "Who is the order with, and who do I chase?"
+    a: "Your contract is with us rather than with the florist who ties the flowers, so any complaint comes to us in English rather than to a shop abroad. Since we are not yet delivering in France there is nothing to buy today, and we would rather say so."
   - q: "Can you deliver to France today?"
     a: "No. We are still choosing the shops we want to work with, and until one of them has agreed we will print no date, no hour and no claim of arrival on this page."
 localFlowers: >-
@@ -121,8 +121,8 @@ before you enter a card. Nothing is added at the end and no conversion is applie
 afterwards. The person receiving the flowers is shown no price and finds no
 paperwork in the box.
 
-Your contract is with us, in Britain, under UK consumer law. If something is wrong
-you take it up with us, in English.
+Your contract is with us rather than with the florist who ties the flowers. If
+something is wrong you take it up with us, in English.
 
 ## What we can honestly tell you today
 

@@ -33,8 +33,8 @@ faq:
     a: "Ognissanti and then the Commemorazione dei Defunti. Families visit graves on both days carrying chrysanthemums, and for growers in the south it is the heaviest week of the year. The first of the two is a public holiday."
   - q: "What will I pay, and in what currency?"
     a: "One figure in pounds sterling, with VAT and delivery already included, shown before you enter a card. That figure is what leaves your account, nothing is added at the end, and the recipient is shown no price at all."
-  - q: "Where do I stand legally ordering from the UK?"
-    a: "Your contract is with us in Britain under UK consumer law, so any complaint comes to us in English rather than to a shop abroad. We are not delivering in Italy yet, so there is nothing to buy today, and we would rather say it plainly."
+  - q: "Who do I deal with if an order goes wrong?"
+    a: "Us. Your contract is with us and not with the fiorista who makes the bouquet, so any complaint comes to us in English rather than to a shop abroad. We are not delivering in Italy yet, so there is nothing to buy today, and we would rather say it plainly."
   - q: "Can you deliver flowers in Italy at the moment?"
     a: "No. We are choosing the shops we want to work with and have not finished. Until one of them has agreed, this page will carry no date, no hour and no claim about arrival."
 localFlowers: >-
@@ -119,8 +119,8 @@ before you enter a card, and that is what leaves your account. No conversion is
 applied at the end. No price travels with the flowers and there is no paperwork in
 the box.
 
-Your contract is with us, in Britain, under UK consumer law. A complaint comes to us
-in English, and we deal with the shop.
+Your contract is with us and not with the fiorista who makes the bouquet. A complaint
+comes to us in English, rather than to a shop abroad.
 
 ## What we can honestly tell you today
 
