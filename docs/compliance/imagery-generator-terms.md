@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | **pending** — the founder has not yet named the generator |
+| Status | **generator named 2026-09-16: ChatGPT (OpenAI GPT image generation)** — terms copy still **pending** (founder to paste OpenAI Terms of Use + Usage Policies as they stand on generation day, and answer the three questions below) |
 | Owner | Ahmed (founder) |
 | Required by | ADR-0014 ("check generator terms for commercial use"), spec 006 §8, AC-29 |
 | Blocks | approving any generated asset (`reviewState: "approved"`), committing image bytes (TASK-080) |

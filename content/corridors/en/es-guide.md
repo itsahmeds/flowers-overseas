@@ -49,7 +49,9 @@ taboos: >-
   stems.
 relatedIso2: ["FR", "IT", "RO"]
 source: human
-reviewed: false
+reviewed: true
+reviewedBy: "Ahmed (founder)"
+reviewedAt: 2026-09-16
 version: 1
 updatedAt: "2026-09-16"
 ---

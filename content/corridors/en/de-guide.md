@@ -49,7 +49,9 @@ taboos: >-
   worth avoiding. Never hand the flowers over still wrapped in their paper.
 relatedIso2: ["PL", "FR", "NL"]
 source: human
-reviewed: false
+reviewed: true
+reviewedBy: "Ahmed (founder)"
+reviewedAt: 2026-09-16
 version: 1
 updatedAt: "2026-09-16"
 ---

@@ -49,7 +49,9 @@ taboos: >-
   Thirteen stems is the one count to avoid. Hand the flowers over unwrapped.
 relatedIso2: ["PL", "FR", "NL"]
 source: human
-reviewed: false
+reviewed: true
+reviewedBy: "Ahmed (founder)"
+reviewedAt: 2026-09-16
 version: 1
 updatedAt: "2026-09-16"
 ---

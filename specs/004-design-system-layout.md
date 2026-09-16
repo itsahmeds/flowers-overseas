@@ -685,3 +685,6 @@ because both are decisions above an implementer:
   belongs to whoever revisits A12, not to a round-2 fix.
 
 Raised by: `/review 61`; measured, decided and escalated at TASK-056.
+
+- **A19 (2026-09-16, spec 009 design round PR #69 Q1; TASK-120).** The four strings `nav.utility.cutoff`, `nav.utility.cutoffShort`, `finder.cutoff` and `faq.whoDelivers.answer` state a 14:00 Warsaw cutoff and a same-day promise for a destination whose product page (spec 009 §2) says no delivery date can yet be offered. They are **gated on spec 009's `pickerState('PL') === 'live'`**: until then the utility bar and finder render their honest forms ("Delivery dates open when our first Polish florist is confirmed" or the copy key's final wording) and the FAQ answer drops the cutoff sentence. Same predicate as the picker, so the two surfaces can never disagree; the promise returns automatically with the data flip.
+

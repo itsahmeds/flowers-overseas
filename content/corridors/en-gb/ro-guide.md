@@ -48,7 +48,9 @@ taboos: >-
   belongs at a grave: give an odd number to a living person, always.
 relatedIso2: ["PL", "ES", "IT"]
 source: human
-reviewed: false
+reviewed: true
+reviewedBy: "Ahmed (founder)"
+reviewedAt: 2026-09-16
 version: 1
 updatedAt: "2026-09-16"
 ---

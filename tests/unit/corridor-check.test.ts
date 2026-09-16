@@ -332,9 +332,12 @@ describe("the published-set summary (spec 007 §11)", () => {
     const en = rows.find((row) => row.locale === "en");
     expect(en?.files).toBeGreaterThan(0);
     expect(en?.countries).toContain("PL");
-    // Nothing is reviewed yet: the founder's skim and the native reviewers of plan/13 B12 are
-    // what turn `reviewed` true, and indexability depends on it (spec 007 §6).
-    expect(en?.reviewed).toBe(0);
+    // The founder marked every `en` and `en-gb` guide reviewed on 2026-09-16 (decisions log);
+    // `reviewed` therefore equals `files` in both locales. Indexability still depends on the
+    // environment gate (spec 007 §6, TASK-096), not on this count alone.
+    expect(en?.reviewed).toBe(en?.files);
+    const enGb = rows.find((row) => row.locale === "en-gb");
+    expect(enGb?.reviewed).toBe(enGb?.files);
     // `de` and `pl` have no corridor page until a human writes one (plan/02 §12, §13 Q1).
     expect(rows.find((row) => row.locale === "de")?.files).toBe(0);
     expect(rows.find((row) => row.locale === "pl")?.files).toBe(0);

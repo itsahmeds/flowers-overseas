@@ -48,7 +48,9 @@ taboos: >-
   and sheer size are the British habits worth leaving at home.
 relatedIso2: ["PL", "DE", "FR"]
 source: human
-reviewed: false
+reviewed: true
+reviewedBy: "Ahmed (founder)"
+reviewedAt: 2026-09-16
 version: 1
 updatedAt: "2026-09-16"
 ---
