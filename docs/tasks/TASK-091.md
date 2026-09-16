@@ -20,7 +20,6 @@ be green. One paragraph or a short list — no restatement of the spec.
 
 One dated bullet per `/review`, newest last.
 
-- **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
 - **From `/review 63` (2026-09-16, TASK-087):** two things arrive with the route. (a) **AC-1's
   build-failure half.** `parseCorridorContentOrThrow()` throws naming file and field, but nothing
   under `src/app/` imports `src/modules/geo` yet, so TASK-087 could not prove `pnpm build` fails on
@@ -30,6 +29,7 @@ One dated bullet per `/review`, newest last.
   `fs` in the bundle. The moment this task imports the barrel that ships `node:fs` in the server
   bundle and forecloses the edge runtime — resolve it by generating the typed index at build time
   or by marking the module server-only.
+- **From `/review 65` (2026-09-16, TASK-090):** the first task to put a canonical on a spec 004 page must narrow spec 004's T-18 assertion — 004 AC-16 is an ownership clause ("spec 007 owns them"), 007 AC-10 requires the canonical on a `noindex` page. Also carried from TASK-090: `pageMetadata()` / `canonicalFor()` / `pageIndexability()` in `src/modules/seo` are the only predicate behind robots meta; the route must not compute indexability itself.
 
 ## Escalations
 

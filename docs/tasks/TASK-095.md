@@ -20,7 +20,7 @@ be green. One paragraph or a short list — no restatement of the spec.
 
 One dated bullet per `/review`, newest last.
 
-- **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From `/review 65` (2026-09-16, TASK-090):** add `src/modules/seo` to `SCANNED_PATHS` in `scripts/check-no-db-imports.ts` (spec 007 AC-1); the module is DB-free so the gate passes on addition.
 
 ## Escalations
 
