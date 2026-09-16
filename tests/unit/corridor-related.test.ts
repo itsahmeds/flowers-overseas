@@ -30,7 +30,7 @@
  */
 import { describe, expect, it } from "vitest";
 
-import { readCorridorCorpus } from "../../src/modules/geo/content/corpus.ts";
+import { readCorridorCorpus } from "../../src/modules/geo/content/corpus-files.ts";
 import {
   parseCorridorContent,
   splitCorridorFile,

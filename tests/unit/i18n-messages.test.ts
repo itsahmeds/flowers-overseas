@@ -41,6 +41,7 @@ describe("the shell catalogue", () => {
       // keys** the authored dataset refers to, seeded `retained: true` by TASK-062 and rendered
       // from TASK-067. It is deliberately in no `ROUTE_NAMESPACES` entry, so it reaches no
       // client provider and costs no client bytes (spec 005 AC-3).
+      "breadcrumb",
       "catalog",
       "chooser",
       "common",
@@ -51,6 +52,12 @@ describe("the shell catalogue", () => {
       // `consent` is the sheet's copy (TASK-051): server-resolved and handed to the islands as
       // props, so it is deliberately absent from `namespacesFor("localeDocument")` below.
       "consent",
+      // `corridor` is spec 007 §7's namespace (TASK-091): the corridor page's section headings,
+      // the fact labels and their honest blanks, the calendar caption and columns, and the FAQ
+      // and related-destination headings. The corridor *content* is not a message: it is
+      // human-authored markdown under `content/corridors/`, where a machine draft is forbidden
+      // (`plan/02` §12).
+      "corridor",
       "destinations",
       "errors",
       // `faq`, `occasions` and `trust` are the locale home's lower sections (TASK-053): the five

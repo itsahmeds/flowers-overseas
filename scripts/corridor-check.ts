@@ -102,11 +102,11 @@ import {
 } from "../src/config/countries.ts";
 import { launchLocales } from "../src/config/locales.ts";
 import { bannedVoiceWordsIn } from "../src/config/voice.ts";
+import type { CorridorSourceFile } from "../src/modules/geo/content/corpus.ts";
 import {
   readCorridorCorpus,
   repoRootFromModule,
-  type CorridorSourceFile,
-} from "../src/modules/geo/content/corpus.ts";
+} from "../src/modules/geo/content/corpus-files.ts";
 import {
   CORRIDOR_CONTENT_DIR,
   parseCorridorContentShape,

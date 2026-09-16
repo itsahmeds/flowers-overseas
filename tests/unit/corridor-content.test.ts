@@ -13,10 +13,8 @@
  */
 import { describe, expect, it } from "vitest";
 
-import {
-  readCorridorCorpus,
-  type CorridorSourceFile,
-} from "../../src/modules/geo/content/corpus.ts";
+import type { CorridorSourceFile } from "../../src/modules/geo/content/corpus.ts";
+import { readCorridorCorpus } from "../../src/modules/geo/content/corpus-files.ts";
 import {
   corridorContentPath,
   corridorPathFacts,

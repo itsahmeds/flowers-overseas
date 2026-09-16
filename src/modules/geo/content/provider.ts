@@ -21,7 +21,7 @@
  * provider that silently dropped an unparseable guide would turn a content fault into a missing
  * page, and a missing page is indistinguishable from a country we chose not to publish.
  */
-import { readCorridorCorpus, type CorridorSourceFile } from "./corpus.ts";
+import { type CorridorSourceFile, corridorCorpus } from "./corpus.ts";
 import {
   corridorContentPath,
   formatContentIssues,
@@ -81,9 +81,12 @@ export function countryContentProviderOf(
   };
 }
 
-/** The Phase 0 provider: the committed corpus, parsed at module load. */
+/**
+ * The Phase 0 provider: the committed corpus, parsed at module load — from the **generated typed
+ * index**, so no page pulls `node:fs` into its bundle (spec 007 §2; TASK-091).
+ */
 export const staticCountryContentProvider: CountryContentProvider =
-  countryContentProviderOf(readCorridorCorpus());
+  countryContentProviderOf(corridorCorpus());
 
 let active: CountryContentProvider = staticCountryContentProvider;
 

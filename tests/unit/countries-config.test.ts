@@ -65,10 +65,16 @@ describe("src/config/countries.ts", () => {
     expect([...countryStatuses]).toEqual(["demo", "live", "disabled"]);
   });
 
-  it("publishes no corridor page and no guide in Phase 0 (AC-14)", () => {
+  it("publishes every guide and links no corridor page yet (spec 004 AC-14, spec 007 AC-5)", () => {
     for (const country of COUNTRIES) {
+      // TASK-091 flipped `guidePublished` on all seven: the `en` and `en-gb` guides are authored
+      // and parsed, and this flag *is* `plan/02` §5.1's existence rule, so the corridor URLs
+      // exist because of it (spec 007 AC-5, AC-7).
+      expect(isGuidePublished(country.iso2), country.iso2).toBe(true);
+      // `corridorPagePublished` stays false until TASK-092 turns the finder, the destinations
+      // grid and the footer into navigation, so the chrome still links nowhere and spec 004
+      // AC-14's "zero links to a non-200 URL" holds in between.
       expect(isCorridorPagePublished(country.iso2), country.iso2).toBe(false);
-      expect(isGuidePublished(country.iso2), country.iso2).toBe(false);
     }
   });
 

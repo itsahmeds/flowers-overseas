@@ -20,7 +20,7 @@ import { join, relative, resolve } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { readCorridorCorpus } from "../../src/modules/geo/content/corpus.ts";
+import { readCorridorCorpus } from "../../src/modules/geo/content/corpus-files.ts";
 import {
   countryContentProviderOf,
   getCountryContentProvider,

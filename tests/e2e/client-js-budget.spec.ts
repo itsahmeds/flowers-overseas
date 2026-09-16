@@ -38,7 +38,17 @@ import {
 } from "../../scripts/client-js-budget.ts";
 
 const DIST = resolve(import.meta.dirname, "../../.next");
-const URLS = ["/", "/en", "/en-gb", "/de", "/pl"] as const;
+const URLS = [
+  "/",
+  "/en",
+  "/en-gb",
+  "/de",
+  "/pl",
+  // The corridor page (spec 007 AC-24; TASK-091): no island, so the browser must fetch exactly
+  // the locale home's script set and nothing more.
+  "/en/send-flowers-to/poland",
+  "/en-gb/send-flowers-to/poland",
+] as const;
 
 const SCRIPT_URL = /\/_next\/(static\/.+\.js)(?:\?|$)/;
 

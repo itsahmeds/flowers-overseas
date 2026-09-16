@@ -13,8 +13,12 @@
  * Three things about this file are load-bearing for later specs:
  *
  *  - **`corridorPagePublished` and `guidePublished` are the Phase 0 corridor go-live switches.**
- *    Both are `false` for every destination, which is why the home finder and the destinations
- *    grid link nowhere and the site has zero internal links to a non-200 URL (spec 004 AC-14).
+ *    TASK-091 set `guidePublished: true` on all seven, because the seven `en` and seven `en-gb`
+ *    guides are authored and parsed: that flag **is** `plan/02` §5.1's existence rule, so flipping
+ *    it is what creates the corridor URLs — a data change, with no edit under `src/app/` (spec 007
+ *    AC-5, AC-7). `corridorPagePublished` stays `false` on every destination until TASK-092 turns
+ *    the finder, the destinations grid and the footer into navigation, so the site still has zero
+ *    internal links to a non-200 URL in between (spec 004 AC-14).
  *    Spec 007 flips them and those surfaces become navigation with **no template edit** — the
  *    `plan/09` "a new country is data" promise applied to the layout (AC-11). As in spec 003 §12,
  *    a config-file flag is a bounded, stated deviation from `CLAUDE.md`'s "go-live is a data flip
@@ -251,7 +255,7 @@ const countries = [
     citiesKey: "destinations.pl.cities",
     slugs: { en: "poland", "en-gb": "poland", de: "polen", pl: "polska" },
     corridorPagePublished: false,
-    guidePublished: false,
+    guidePublished: true,
   },
   {
     iso2: "DE",
@@ -264,7 +268,7 @@ const countries = [
       pl: "niemcy",
     },
     corridorPagePublished: false,
-    guidePublished: false,
+    guidePublished: true,
   },
   {
     iso2: "FR",
@@ -272,7 +276,7 @@ const countries = [
     nameKey: "destinations.fr.name",
     slugs: { en: "france", "en-gb": "france", de: "frankreich", pl: "francja" },
     corridorPagePublished: false,
-    guidePublished: false,
+    guidePublished: true,
   },
   {
     iso2: "ES",
@@ -280,7 +284,7 @@ const countries = [
     nameKey: "destinations.es.name",
     slugs: { en: "spain", "en-gb": "spain", de: "spanien", pl: "hiszpania" },
     corridorPagePublished: false,
-    guidePublished: false,
+    guidePublished: true,
   },
   {
     iso2: "IT",
@@ -288,7 +292,7 @@ const countries = [
     nameKey: "destinations.it.name",
     slugs: { en: "italy", "en-gb": "italy", de: "italien", pl: "wlochy" },
     corridorPagePublished: false,
-    guidePublished: false,
+    guidePublished: true,
   },
   {
     iso2: "RO",
@@ -301,7 +305,7 @@ const countries = [
       pl: "rumunia",
     },
     corridorPagePublished: false,
-    guidePublished: false,
+    guidePublished: true,
   },
   {
     iso2: "NL",
@@ -314,7 +318,7 @@ const countries = [
       pl: "holandia",
     },
     corridorPagePublished: false,
-    guidePublished: false,
+    guidePublished: true,
   },
 ] as const;
 

@@ -39,3 +39,29 @@ export const cache: CacheAdapter = noopCache;
 export function homeCacheTag(locale: string): string {
   return `home:${locale}`;
 }
+
+/**
+ * Cache tags for one corridor page (spec 007 §5.4: `corridor:{iso2}`, `corridor:{iso2}:{locale}`
+ * and `sitemap`; TASK-091).
+ *
+ * The tag names live here, beside the invalidation seam, for `homeCacheTag()`'s reason: the page
+ * that is cached and the code that purges it must not be able to spell the tag differently. The
+ * first real callers are spec 012's admin (a content or status edit purges `corridor:{iso2}`) and
+ * the hourly sitemap job of `plan/01` §8 (`sitemap`), and both inherit this list rather than
+ * guessing it.
+ *
+ * Phase 0 attaches no tag to a cache entry: Next 16 only does that through `use cache` /
+ * `cacheTag()`, which needs `cacheComponents` — a repo-wide rendering change that belongs to the
+ * spec shipping the first real data fetch, exactly as `src/app/[locale]/page.tsx` records. The
+ * corridor route revalidates on time (86 400 s) and declares its tags here, so the switch is a
+ * one-line change at the call site rather than an archaeology exercise.
+ */
+export function corridorCacheTags(
+  iso2: string,
+  locale: string,
+): readonly string[] {
+  return [`corridor:${iso2}`, `corridor:${iso2}:${locale}`, SITEMAP_CACHE_TAG];
+}
+
+/** The tag every sitemap-bearing response shares (`plan/01` §8's hourly job; TASK-094). */
+export const SITEMAP_CACHE_TAG = "sitemap";
