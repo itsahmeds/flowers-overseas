@@ -16,7 +16,14 @@
  * ## What counts as a read
  *
  * A **member or index access** of one of the keys: a dotted `process.env` read, a bracketed
- * `source[…]` read, a field read off a parsed env object. That is the precise thing the spec
+ * `source[…]` read, a field read off a parsed env object — and, since `/review 68`, the two
+ * idiomatic spellings of the same read that a line-by-line member-access regex misses: a
+ * **destructuring** read (the key standing bare, or renamed with a colon, inside a `{ … }` pattern
+ * on the left of an assignment, however deeply nested) and a **wrapped member chain**, where the
+ * formatter has put the final `.KEY` or `["KEY"]` step on its own continuation line. A destructured
+ * read is a read; leaving it out left the gate with a door in it.
+ *
+ * That is the precise thing the spec
  * bans — this file scans itself, so the forms are described rather than written — and the
  * precision matters
  * because the tests for the abstraction have to *write* those keys to exercise the fallback path
@@ -55,11 +62,25 @@ export const BANNED_KEYS = [
 const SCANNED_EXTENSIONS = [".ts", ".tsx", ".mts", ".cts", ".js", ".jsx"];
 
 /**
- * A read of `KEY`: `<expression>.KEY` or `<expression>["KEY"]` / `<expression>['KEY']`.
+ * The four shapes of a read of `KEY`, in the order they are listed here:
  *
- * The leading `[\w$)\]]` is what keeps an object-literal key (`{ VERCEL_ENV: "preview" }`) and a
- * bare string in a list (`"VERCEL_GIT_COMMIT_SHA",`) out of the hit set: both are writes or data,
- * and T-01 needs to write every one of these keys.
+ * 1. a dotted member access, `<expression>.KEY`;
+ * 2. an index access, `<expression>["KEY"]` / `<expression>['KEY']`;
+ * 3. a **wrapped member chain**: the same two steps when the formatter has broken the chain and
+ *    the line carries only the final `.KEY` or `["KEY"]` step. Anchored at the start of the line
+ *    (whitespace only before it), which is the one position where a leading `.` cannot be anything
+ *    but a continuation;
+ * 4. a **destructuring** read: the key inside a `{ … }` pattern that an `=` immediately follows —
+ *    `{ KEY }`, the renamed `{ KEY: local }`, and either of those nested inside a larger pattern.
+ *    The trailing `=` is the whole discrimination: an object *literal* holding the key is followed
+ *    by `;`, `,` or `)`, never by `=`, so T-01's `appEnvironment({ VERCEL_ENV: "preview" })` stays
+ *    out of the hit set while `const { … } = process.env` does not. `[^;\n]` bounds the pattern to
+ *    one statement on one line so a later statement's `=` cannot reach back over a `;`, and
+ *    `(?!=)` keeps `===` from counting as an assignment.
+ *
+ * The leading `[\w$)\]]` of 1 and 2 is what keeps an object-literal key and a bare string in a list
+ * (`"VERCEL_GIT_COMMIT_SHA",`) out of the hit set: both are writes or data, and T-01 needs to write
+ * every one of these keys.
  *
  * `NEXT_PUBLIC_VERCEL_ENV` is checked before `VERCEL_ENV` by `readsOf()` so the longer key is
  * reported under its own name rather than as a suffix match.
@@ -68,6 +89,8 @@ function readPatterns(key: string): readonly RegExp[] {
   return [
     new RegExp(`[\\w$)\\]]\\s*\\.\\s*${key}\\b`),
     new RegExp(`[\\w$)\\]]\\s*\\[\\s*["']${key}["']\\s*\\]`),
+    new RegExp(`^\\s*(?:\\.\\s*${key}\\b|\\[\\s*["']${key}["']\\s*\\])`),
+    new RegExp(`\\{[^;\\n]*\\b${key}\\b[^;\\n]*\\}\\s*=(?!=)`),
   ];
 }
 

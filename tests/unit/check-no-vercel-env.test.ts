@@ -8,9 +8,13 @@
  *
  * The third group is the one that took the design decision: the tests of the abstraction have to
  * *write* `VERCEL_ENV` to exercise `appEnvironment()`'s fallback row, and the `.env` fixtures have
- * to carry the key. So the gate bans **reads** — member and index accesses — and leaves
- * object-literal keys, lists of key names and prose alone. Those rows are here so that a future
- * tightening of the regex fails loudly rather than making T-01 unwritable.
+ * to carry the key. So the gate bans **reads** — member and index accesses, destructurings, and
+ * either of the first two wrapped over lines — and leaves object-literal keys, lists of key names
+ * and prose alone. Those rows are here so that a future tightening of the regex fails loudly rather
+ * than making T-01 unwritable.
+ *
+ * `/review 68` added the last two read shapes: a destructured read and a wrapped member chain are
+ * both reads, and a gate that catches only `<expr>.KEY` has a door in it.
  */
 import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -55,6 +59,18 @@ const dotted = (key: string): string => `const value = process.env.${key};`;
 const bracketed = (key: string, quote = '"'): string =>
   `const value = source[${quote}${key}${quote}];`;
 const field = (key: string): string => `const value = parsed.${key};`;
+/** `const { KEY } = process.env;` — the idiomatic alternative spelling of `dotted` (`/review 68`). */
+const destructured = (key: string): string => `const { ${key} } = process.env;`;
+/** The same read with the binding renamed, which hides the key from a member-access regex. */
+const renamed = (key: string): string =>
+  `const { ${key}: local } = process.env;`;
+/** The same read one branch deep inside a larger destructuring pattern. */
+const nested = (key: string): string =>
+  `const { node, env: { ${key} }, rest } = source;`;
+/** The last step of a member chain the formatter has wrapped onto a continuation line. */
+const chained = (key: string): string => `  .${key};`;
+/** The bracketed last step of the same wrapped chain. */
+const chainedBracket = (key: string): string => `  ["${key}"];`;
 
 describe("a planted read is found and named (T-02)", () => {
   it.each([
@@ -78,6 +94,21 @@ describe("a planted read is found and named (T-02)", () => {
       line: field("VERCEL_GIT_COMMIT_SHA"),
       key: "VERCEL_GIT_COMMIT_SHA",
     },
+    {
+      name: "a destructured read (/review 68)",
+      line: destructured("VERCEL_ENV"),
+      key: "VERCEL_ENV",
+    },
+    {
+      name: "a destructured read with the binding renamed (/review 68)",
+      line: renamed("NEXT_PUBLIC_VERCEL_ENV"),
+      key: "NEXT_PUBLIC_VERCEL_ENV",
+    },
+    {
+      name: "a destructured read nested in a larger pattern (/review 68)",
+      line: nested("VERCEL_GIT_COMMIT_SHA"),
+      key: "VERCEL_GIT_COMMIT_SHA",
+    },
   ])("$name", ({ line, key }) => {
     const root = treeWith({ "src/modules/thing.ts": `${line}\n` });
     const hits = findVercelEnvReads(root);
@@ -85,6 +116,24 @@ describe("a planted read is found and named (T-02)", () => {
     expect(hits[0]?.file).toBe("src/modules/thing.ts");
     expect(hits[0]?.line).toBe(1);
     expect(hits[0]?.key).toBe(key);
+  });
+
+  /**
+   * `/review 68`: the member-access patterns are line-anchored, so a chain the formatter has
+   * wrapped — `process`, then `.env`, then the key, on three lines — used to slip past. The hit is
+   * reported on the line that names the key, which is the line an implementer has to edit.
+   */
+  it.each([
+    { name: "a dotted wrapped member chain", last: chained("VERCEL_ENV") },
+    { name: "a bracketed wrapped chain", last: chainedBracket("VERCEL_ENV") },
+  ])("$name is found on the line naming the key (/review 68)", ({ last }) => {
+    const root = treeWith({
+      "src/modules/thing.ts": `const value = process\n  .env\n${last}\n`,
+    });
+    const hits = findVercelEnvReads(root);
+    expect(hits).toHaveLength(1);
+    expect(hits[0]?.line).toBe(3);
+    expect(hits[0]?.key).toBe("VERCEL_ENV");
   });
 
   it("reports the longer key under its own name, not as a suffix match", () => {
@@ -143,6 +192,10 @@ describe("what is deliberately not a read", () => {
       line: ` * ${"VERCEL_ENV"} is the compatibility fallback.`,
     },
     { name: "a computed key", line: "process.env[key] = value;" },
+    {
+      name: "an object literal bound to a name",
+      line: `const source = { ${"VERCEL_ENV"}: "preview" } as const;`,
+    },
   ])("$name is left alone", ({ line }) => {
     const root = treeWith({ "tests/unit/x.ts": `${line}\n` });
     expect(findVercelEnvReads(root)).toEqual([]);
