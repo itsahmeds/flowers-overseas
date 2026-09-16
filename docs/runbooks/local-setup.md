@@ -57,7 +57,7 @@ the file and the schema still agree in both directions at any time:
 
 ```bash
 pnpm env:check
-# env:check: .env.example and the zod schema agree on 26 keys
+# env:check: .env.example and the zod schema agree on 28 keys
 pnpm env:check --file .env.local
 ```
 

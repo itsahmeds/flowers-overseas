@@ -8,8 +8,10 @@
  * - Sentry is a **no-op when the DSN is unset**: `sentryOptions()` returns `undefined` and the
  *   entrypoints skip `Sentry.init`, so `Sentry.getClient()` stays `undefined` and `pnpm build`
  *   needs neither network nor auth token.
- * - `sendDefaultPii: false`, release = `VERCEL_GIT_COMMIT_SHA` (or its `NEXT_PUBLIC_` mirror,
- *   which only a browser bundle can read), environment = `VERCEL_ENV` (spec 001 §11).
+ * - `sendDefaultPii: false`, release = the commit SHA of whichever platform built the image
+ *   (`RAILWAY_GIT_COMMIT_SHA`, else `VERCEL_GIT_COMMIT_SHA`, else its `NEXT_PUBLIC_` mirror,
+ *   which is the only one a browser bundle can read), environment = `APP_ENV` (spec 001 §11,
+ *   spec 040 §5.2 / AC-32; TASK-097).
  * - **Server and edge only.** TASK-043 deleted `instrumentation-client.ts` and
  *   `sentry.client.config.ts`: the browser SDK, plus the copy of zod it pulled in through this
  *   module's `./logger` import, measured 72 KB gzipped of the 297 KB `/` shipped, against a
@@ -224,12 +226,15 @@ function nonEmpty(value: string | undefined): string | undefined {
 }
 
 /**
- * Release = commit SHA (spec 001 §11). `VERCEL_GIT_COMMIT_SHA` is server-only; the browser bundle
- * can read `NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA`, which Next inlines, so client events get a
- * release too (TASK-007). Order: server value first, public mirror second.
+ * Release = commit SHA (spec 001 §11, spec 040 §5.2). Railway injects `RAILWAY_GIT_COMMIT_SHA`,
+ * Vercel `VERCEL_GIT_COMMIT_SHA`; both are server-only, so the browser bundle falls back to
+ * `NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA`, which Next inlines, and client events get a release too
+ * (TASK-007). This module and `src/lib/env.schema.ts` are the only two `pnpm check:no-vercel-env`
+ * exempts, which is what makes the eventual Vercel unlink (§13 Q5) a two-file diff.
  */
 function release(): string | undefined {
   return (
+    nonEmpty(process.env.RAILWAY_GIT_COMMIT_SHA) ??
     nonEmpty(process.env.VERCEL_GIT_COMMIT_SHA) ??
     nonEmpty(process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA)
   );
@@ -241,9 +246,12 @@ export function sentryOptions(
   if (dsn === undefined || dsn.trim() === "") return undefined;
   return {
     dsn,
+    // Spec 040 §5.2 / AC-32: the environment tag is `APP_ENV`, mirrored to the browser as
+    // `NEXT_PUBLIC_APP_ENV`. Unset ⇒ `development`, the same fail-closed default
+    // `appEnvironment()` uses; the literal member expressions are what Next inlines.
     environment:
-      process.env.VERCEL_ENV ??
-      process.env.NEXT_PUBLIC_VERCEL_ENV ??
+      nonEmpty(process.env.APP_ENV) ??
+      nonEmpty(process.env.NEXT_PUBLIC_APP_ENV) ??
       "development",
     release: release(),
     sendDefaultPii: false,

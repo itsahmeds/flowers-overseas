@@ -10,11 +10,27 @@
 import { loadEnvConfig } from "@next/env";
 
 import {
+  type DeploymentEnvironment,
+  type EnvSource,
   EnvValidationError,
-  deploymentEnvironment,
+  appEnvironment,
   formatEnvIssues,
   validateEnv,
 } from "./env.schema";
+
+/**
+ * The environment to label a *failure* report with. `appEnvironment()` itself throws when
+ * `APP_ENV` is present and unparseable (spec 040 AC-1) — and that is exactly the case this
+ * function is called in — so the label falls back to `development` rather than replacing the
+ * report, which already names `APP_ENV` as an issue.
+ */
+function environmentFor(source: EnvSource): DeploymentEnvironment {
+  try {
+    return appEnvironment(source);
+  } catch {
+    return "development";
+  }
+}
 
 let loaded = false;
 
@@ -36,7 +52,7 @@ export function assertEnv(source: NodeJS.ProcessEnv = process.env): void {
   loadDotEnvFiles();
   const result = validateEnv(source);
   if (result.issues.length > 0) {
-    throw new EnvValidationError(result.issues, deploymentEnvironment(source));
+    throw new EnvValidationError(result.issues, environmentFor(source));
   }
 }
 
@@ -47,5 +63,5 @@ export function envReport(
   loadDotEnvFiles();
   const result = validateEnv(source);
   if (result.issues.length === 0) return undefined;
-  return formatEnvIssues(result.issues, deploymentEnvironment(source));
+  return formatEnvIssues(result.issues, environmentFor(source));
 }

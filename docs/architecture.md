@@ -228,8 +228,8 @@ fourth exists only where `ENABLE_DEV_UI` is on):
   only when `ENABLE_DEV_UI=true`: it renders every token ramp and every component state, so one
   screenshot and one axe run cover states no Phase-0 page reaches (empty, error, disabled). It is
   `noindex`, it answers **404** when the flag is off, and the zod env schema fails the build when
-  the flag is true while `VERCEL_ENV=production` — the pattern spec 003 established for
-  `ENABLE_PSEUDO_LOCALES`. It is deliberately not Storybook: a second build, a second styling
+  the flag is true in a production-like environment — `APP_ENV=production` **and** `APP_ENV=staging`
+  are both refused (TASK-097) — the pattern spec 003 established for `ENABLE_PSEUDO_LOCALES`. It is deliberately not Storybook: a second build, a second styling
   entry point and ~100 MB of devDependencies for a solo founder, in exchange for controls this
   project does not need.
 - `src/app/global-error.tsx` — the last-resort 500 document (TASK-035, spec 003 §5.3), replacing
@@ -443,7 +443,7 @@ There is no `instrumentation-client.ts` and no `sentry.client.config.ts` — see
 Spec 001 ships the gates, not the product, and it deliberately left three things undone; spec 003
 removed two rows of its own from this table — the hard-coded English `lang` attribute (TASK-034) and
 `middleware.ts` → `proxy.ts` (TASK-032) — and added one. Spec 004 removed the **CSP** row
-(TASK-046). Each row is recorded here rather than in a comment nobody greps, with the spec that
+(TASK-046), and spec 040 the **`deploymentEnvironment()` Railway caveat** (TASK-097). Each row is recorded here rather than in a comment nobody greps, with the spec that
 lifts it. A later spec that touches one of these rows removes it.
 
 **The CSP row is discharged, not deferred.** A `Content-Security-Policy-Report-Only` header is sent
@@ -471,11 +471,27 @@ the reliable live-announcement pattern"* note is answered by `LiveRegion` in the
 by the banner mounting its region whatever it decides (§2). Neither is a row below, because neither
 is waiting on a later spec.
 
+**The `deploymentEnvironment()` Railway caveat is discharged, not deferred** (2026-09-16, TASK-097,
+spec 040 §5.2). The environment is no longer keyed on a platform signal: `appEnvironment(source)` in
+`src/lib/env.schema.ts` is the one reader, over `development | test | preview | staging |
+production`, resolving an explicit **`APP_ENV`** first, then the platform variable for `preview` and
+`production` only, then `NODE_ENV === "test"`, then `development` — and throwing
+`EnvValidationError` naming `APP_ENV`, printing no value, when the key is present and unparseable.
+So the ADR-0012 Railway + Cloudflare fallback host no longer looks like `development`: it declares
+itself, `X-Robots-Tag: noindex` is sent for every value except `production` (fail-closed), and
+`hostPlatform()` — `vercel` / `railway` / `local` — carries the only genuinely host-shaped
+decisions left (Vercel's preview-feedback origin in the CSP). The abstraction is a check rather than
+a claim: `pnpm check:no-vercel-env` (`scripts/check-no-vercel-env.ts`, a `lint` step beside
+`check:no-db`) fails on any read of `VERCEL_ENV`, `NEXT_PUBLIC_VERCEL_ENV` or
+`VERCEL_GIT_COMMIT_SHA` under `src/`, `scripts/` or `tests/` outside the two modules spec 040
+exempts, `src/lib/env.schema.ts` and `src/lib/sentry.ts`, which is what keeps the eventual unlink a
+two-file diff. `docs/runbooks/host-failover.md` and the ADR-0012 cutover belong to spec 040's own
+tasks, not to this row.
+
 | Decision | Deferred to | What lifts it |
 |---|---|---|
 | **No browser Sentry SDK on public routes** — `instrumentation-client.ts` and `sentry.client.config.ts` were deleted (TASK-043). Server and edge Sentry, `sentryOptions()` and the `beforeSend` PII scrubber are untouched, and `NEXT_PUBLIC_SENTRY_DSN` stays in the schema because `next.config.ts` reads it to decide whether to run the source-map plugin. The cost is real: a JavaScript error on a marketing page is invisible until someone reports it. The reason is measured: the browser SDK plus the zod it dragged in was ~230 KB gzipped against a 120 KB budget — ~72 KB gzipped of the 297 KB `/` used to ship (spec 004 §13 Q8, accepted 2026-09-08; the full
 measurement is spec 003 §14 A12). | spec 013 | The checkout spec re-adds a client SDK **scoped to the checkout routes**, where a client-side error costs money, and records the consent/PII position for browser events. `docs/compliance/ropa.md` row 1 is updated in the same PR. |
-| **`deploymentEnvironment()` Railway caveat** — it reads `VERCEL_ENV`, so on the ADR-0012 Railway + Cloudflare fallback host every response would look like `development` and take the blanket `X-Robots-Tag: noindex` (spec 001 §2 "Hosting", review of PR #6). Harmless on Vercel, wrong the day the fallback is used. | spec 007 / ADR-0012 follow-up | Key the environment on a host-independent signal (an explicit `APP_ENV`) before or during the first production launch, and note it in the host-failover runbook. |
 
 ## 5. Where the rest lives
 

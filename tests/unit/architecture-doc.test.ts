@@ -117,15 +117,50 @@ describe("docs/architecture.md (AC-30)", () => {
 
   it("records the deferred decisions with the spec that lifts each", () => {
     const deferred = doc.slice(doc.indexOf("## 4."));
+    const table = deferred.slice(
+      deferred.indexOf("| Decision |"),
+      deferred.indexOf("## 5."),
+    );
+    // A wrapped row continues on lines that do *not* start with `|`, so one chunk is one row.
+    const rows = table.split("\n|");
     for (const [item, spec] of [
-      ["deploymentEnvironment()", "ADR-0012"],
+      ["No browser Sentry SDK", "spec 013"],
     ] as const) {
-      const line = deferred
-        .split("\n")
-        .find((candidate) => candidate.includes(item));
-      expect(line, item).toBeDefined();
-      expect(line, item).toContain(spec);
+      const row = rows.find((candidate) => candidate.includes(item));
+      expect(row, item).toBeDefined();
+      expect(row, item).toContain(spec);
     }
+  });
+
+  /**
+   * TASK-097 (spec 040 AC-1 / AC-2) discharged the `deploymentEnvironment()` Railway caveat: the
+   * environment is keyed on an explicit `APP_ENV` rather than on the platform's own variable, which
+   * is exactly what the row named as the thing that would lift it. Same inverse assertion as the
+   * CSP row below — what is pinned is that the row is *gone* and that the facts it carried survive
+   * in prose: the function that replaced it, the host-independent key, the gate that keeps the
+   * abstraction honest, and the ADR whose cutover it was blocking.
+   */
+  describe("§4 no longer defers the deployment environment (spec 040 AC-1)", () => {
+    const deferred = doc.slice(doc.indexOf("## 4."));
+    const table = deferred.slice(
+      deferred.indexOf("| Decision |"),
+      deferred.indexOf("## 5."),
+    );
+
+    it("has no deferred row for the deployment environment", () => {
+      expect(table).not.toContain("deploymentEnvironment()");
+      expect(table).not.toContain("Railway caveat");
+    });
+
+    it("records the discharge with its date, its task and its mechanism", () => {
+      expect(deferred).toContain(
+        "discharged, not deferred** (2026-09-16, TASK-097",
+      );
+      expect(deferred).toContain("appEnvironment(source)");
+      expect(deferred).toContain("hostPlatform()");
+      expect(deferred).toContain("pnpm check:no-vercel-env");
+      expect(deferred).toContain("ADR-0012");
+    });
   });
 
   /**

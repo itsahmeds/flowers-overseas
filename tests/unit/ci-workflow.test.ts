@@ -221,6 +221,50 @@ describe("the jobs TASK-011 adds", () => {
     expect(action).toContain("sha256sum --check --strict");
   });
 
+  // Spec 040 AC-2 / AC-28 (TASK-097). Two pins, both about the same claim: the application is
+  // host-agnostic. The `lint` step is what keeps it that way; the `env-build-failure` env is what
+  // proves the failure mode still works when the signal is `APP_ENV` rather than `VERCEL_ENV`,
+  // which is the only version of that job a Railway deployment could ever reproduce.
+  it("runs check:no-vercel-env as a step of the lint job (spec 040 AC-2)", () => {
+    const steps = ci.jobs["lint"]?.steps ?? [];
+    const scripts = steps.map((step) => step.run ?? "").join("\n");
+    expect(scripts).toContain("pnpm check:no-vercel-env");
+    // Beside `check:no-db`, in the same job, and both before the summary step.
+    expect(scripts).toContain("pnpm check:no-db");
+    const index = (needle: string): number =>
+      steps.findIndex((step) => (step.run ?? "").includes(needle));
+    expect(index("pnpm check:no-vercel-env")).toBeGreaterThan(
+      index("pnpm check:no-db"),
+    );
+    expect(index("pnpm check:no-vercel-env")).toBeLessThan(
+      index("GITHUB_STEP_SUMMARY"),
+    );
+  });
+
+  it("summarises the host-agnostic gate like every other lint step (§11)", () => {
+    const summary = (ci.jobs["lint"]?.steps ?? [])
+      .map((step) => step.run ?? "")
+      .find((script) => script.includes("GITHUB_STEP_SUMMARY"));
+    expect(summary).toContain("check:no-vercel-env");
+  });
+
+  it("builds env-build-failure with APP_ENV, not VERCEL_ENV (spec 040 AC-28)", () => {
+    const job = ci.jobs["env-build-failure"];
+    const envs = (job?.steps ?? []).map(
+      (step) => (step as { env?: Record<string, string> }).env ?? {},
+    );
+    expect(envs.some((env) => env["APP_ENV"] === "production")).toBe(true);
+    expect(envs.some((env) => "VERCEL_ENV" in env)).toBe(false);
+    // The three assertions the job makes about its own output (AC-28): non-zero exit, the key
+    // named, and no other variable's value echoed.
+    const scripts = (job?.steps ?? []).map((step) => step.run ?? "").join("\n");
+    expect(scripts).toContain("exited 0 with a placeholder DATABASE_URL");
+    expect(scripts).toContain(
+      "DATABASE_URL: must be a real value in production",
+    );
+    expect(scripts).toContain("$SENTINEL");
+  });
+
   it("keeps env:check in the lint job, as the header comment documents", () => {
     const scripts = (ci.jobs["lint"]?.steps ?? [])
       .map((step) => step.run ?? "")

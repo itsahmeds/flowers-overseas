@@ -12,11 +12,14 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import {
+  APP_ENV_KEY,
   DEV_UI_KEY,
   ENV_KEYS,
   EnvValidationError,
+  NEXT_PUBLIC_APP_ENV_KEY,
+  UNPARSEABLE_APP_ENV_MESSAGE,
+  appEnvironment,
   clientEnvSchema,
-  deploymentEnvironment,
   devUiEnabled,
   formatEnvIssues,
   parseEnv,
@@ -39,6 +42,7 @@ function without(key: string): Record<string, string> {
 
 const validEnv: Record<string, string> = {
   NEXT_PUBLIC_SITE_URL: "http://localhost:3000",
+  NEXT_PUBLIC_APP_ENV: "",
   NEXT_PUBLIC_VERCEL_ENV: "",
   NEXT_PUBLIC_SENTRY_DSN: "",
   DATABASE_URL: "postgres://user:pass@localhost:5432/fo",
@@ -58,6 +62,7 @@ const validEnv: Record<string, string> = {
   NEON_API_KEY: "",
   NEON_PROJECT_ID: "",
   NEON_BRANCH: "",
+  APP_ENV: "",
   VERCEL_ENV: "",
   VERCEL_GIT_COMMIT_SHA: "",
   NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA: "",
@@ -79,11 +84,20 @@ const realValues: Record<string, string> = {
   R2_PUBLIC_BASE_URL: "https://media.flowersoverseas.com",
 };
 
+// Spec 040 §5.2 (TASK-097): the deployed fixture is keyed on `APP_ENV` now, not `VERCEL_ENV`.
+// The `VERCEL_ENV` fallback keeps its own coverage in `tests/unit/app-env.test.ts` (T-01).
 const productionEnv: Record<string, string> = {
   ...validEnv,
   ...realValues,
-  VERCEL_ENV: "production",
+  APP_ENV: "production",
 };
+
+/** The same, for each of the three deployed environments spec 040 AC-5 names. */
+function deployedEnv(
+  environment: "preview" | "staging" | "production",
+): Record<string, string> {
+  return { ...productionEnv, APP_ENV: environment };
+}
 
 describe("env schema", () => {
   it("accepts the .env.example placeholders in development", () => {
@@ -169,18 +183,20 @@ describe("env schema", () => {
     expect(validateEnv(without("LOG_LEVEL")).server?.LOG_LEVEL).toBe("info");
   });
 
-  it("derives the deployment environment from VERCEL_ENV, then NODE_ENV", () => {
-    expect(deploymentEnvironment({ VERCEL_ENV: "production" })).toBe(
-      "production",
-    );
-    expect(deploymentEnvironment({ VERCEL_ENV: "preview" })).toBe("preview");
-    expect(deploymentEnvironment({ NODE_ENV: "test" })).toBe("test");
-    expect(deploymentEnvironment({})).toBe("development");
+  // The full resolution table is spec 040 T-01, in `tests/unit/app-env.test.ts`. What this
+  // file keeps is the one line that matters to *it*: which environment `validateEnv()` grades
+  // against.
+  it("derives the deployment environment from APP_ENV, then VERCEL_ENV, then NODE_ENV", () => {
+    expect(appEnvironment({ APP_ENV: "staging" })).toBe("staging");
+    expect(appEnvironment({ VERCEL_ENV: "production" })).toBe("production");
+    expect(appEnvironment({ NODE_ENV: "test" })).toBe("test");
+    expect(appEnvironment({})).toBe("development");
   });
 
-  it("rejects .env.example placeholders and non-https origins in preview and production", () => {
-    for (const environment of ["preview", "production"] as const) {
-      const result = validateEnv({ ...validEnv, VERCEL_ENV: environment });
+  // Spec 040 AC-5 widened this from `preview | production` to `preview | staging | production`.
+  it("rejects .env.example placeholders and non-https origins in every deployed environment", () => {
+    for (const environment of ["preview", "staging", "production"] as const) {
+      const result = validateEnv({ ...validEnv, APP_ENV: environment });
       const keys = result.issues.map((issue) => issue.key);
       for (const key of [
         "DATABASE_URL",
@@ -317,11 +333,11 @@ describe("no placeholder escape hatch, no Supabase keys (spec 002 AC-2)", () => 
     );
   });
 
-  it("rejects placeholders in preview and production even when the old hatch is set", () => {
+  it("rejects placeholders in every deployed environment even when the old hatch is set", () => {
     for (const environment of ["preview", "production"] as const) {
       const keys = validateEnv({
         ...validEnv,
-        VERCEL_ENV: environment,
+        APP_ENV: environment,
         NEXT_PUBLIC_SITE_URL: "https://flowers-overseas.vercel.app",
       }).issues.map((issue) => issue.key);
       expect(keys, environment).toContain("DATABASE_URL");
@@ -461,7 +477,7 @@ describe("ENABLE_PSEUDO_LOCALES (TASK-042)", () => {
       { ...validEnv, ENABLE_PSEUDO_LOCALES: "true" },
       {
         ...productionEnv,
-        VERCEL_ENV: "preview",
+        APP_ENV: "preview",
         NEXT_PUBLIC_SITE_URL: "https://fo-preview.vercel.app",
         ENABLE_PSEUDO_LOCALES: "true",
       },
@@ -528,7 +544,7 @@ describe("ENABLE_DEV_UI (TASK-045)", () => {
       { ...validEnv, ENABLE_DEV_UI: "true" },
       {
         ...productionEnv,
-        VERCEL_ENV: "preview",
+        APP_ENV: "preview",
         NEXT_PUBLIC_SITE_URL: "https://fo-preview.vercel.app",
         ENABLE_DEV_UI: "true",
       },
@@ -563,5 +579,207 @@ describe("ENABLE_DEV_UI (TASK-045)", () => {
     expect(result.issues.map((issue) => issue.key).sort()).toEqual(
       [DEV_UI_KEY, PSEUDO_LOCALES_KEY].sort(),
     );
+  });
+});
+
+const repoFile = (relative: string): string =>
+  readFileSync(resolve(__dirname, "../..", relative), "utf8");
+
+/**
+ * Spec 040 T-03 / T-05 / T-29 (AC-3, AC-5, AC-28), TASK-097 — the environment contract after the
+ * `APP_ENV` swap. The resolution order itself is `tests/unit/app-env.test.ts`; what is asserted
+ * here is what `validateEnv()` does with the answer.
+ */
+describe("the APP_ENV contract (spec 040 AC-3, T-03)", () => {
+  it("carries APP_ENV and NEXT_PUBLIC_APP_ENV, and 28 keys in total", () => {
+    expect(ENV_KEYS).toContain(APP_ENV_KEY);
+    expect(ENV_KEYS).toContain(NEXT_PUBLIC_APP_ENV_KEY);
+    // PR #62's 26-key contract plus the two spec 040 adds. The number is spelled out because
+    // AC-3 is about the count agreeing from both sides, and `.env.example` is checked against
+    // this same list above (T-03).
+    expect(ENV_KEYS).toHaveLength(28);
+    expect(new Set(ENV_KEYS).size).toBe(ENV_KEYS.length);
+  });
+
+  it("puts APP_ENV on the server side and its mirror on the client side", () => {
+    expect(Object.keys(serverEnvSchema.shape)).toContain(APP_ENV_KEY);
+    expect(Object.keys(clientEnvSchema.shape)).toContain(
+      NEXT_PUBLIC_APP_ENV_KEY,
+    );
+  });
+
+  it("keeps NEXT_PUBLIC_VERCEL_ENV optional, in the schema and unread by app code", () => {
+    expect(Object.keys(clientEnvSchema.shape)).toContain(
+      "NEXT_PUBLIC_VERCEL_ENV",
+    );
+    // Optional: absent and blank both parse.
+    expect(clientEnvSchema.safeParse(validEnv).success).toBe(true);
+    expect(validateEnv(without("NEXT_PUBLIC_VERCEL_ENV")).issues).toEqual([]);
+    // Unread: `src/lib/env.client.ts` no longer materialises it, so nothing can consume it.
+    expect(repoFile("src/lib/env.client.ts")).not.toContain(
+      // Assembled, not written: `pnpm check:no-vercel-env` scans this file too (spec 040 AC-2).
+      `process.env.${"NEXT_PUBLIC_VERCEL_ENV"}`,
+    );
+  });
+
+  it("accepts every one of the five values for both keys, and blank for both", () => {
+    for (const value of [
+      "development",
+      "test",
+      "preview",
+      "staging",
+      "production",
+    ] as const) {
+      const source = {
+        ...productionEnv,
+        APP_ENV: value,
+        NEXT_PUBLIC_APP_ENV: value,
+        // A deployed value needs real values and an https origin, which `productionEnv` has.
+        ENABLE_PSEUDO_LOCALES: "false",
+        ENABLE_DEV_UI: "false",
+      };
+      expect(validateEnv(source).issues, value).toEqual([]);
+    }
+  });
+
+  it("reports an unparseable APP_ENV as an issue naming the key and no value (AC-1)", () => {
+    const result = validateEnv({ ...validEnv, APP_ENV: "prod" });
+    const keys = result.issues.map((issue) => issue.key);
+    expect(keys).toContain(APP_ENV_KEY);
+    const report = formatEnvIssues(result.issues, "development");
+    expect(report).toContain(UNPARSEABLE_APP_ENV_MESSAGE);
+    expect(report).not.toContain("`prod`");
+  });
+});
+
+describe("the deployed-environment rules widen to staging (spec 040 AC-5, T-05)", () => {
+  it.each(["preview", "staging", "production"] as const)(
+    "%s rejects every REAL_VALUE_REQUIRED placeholder and an http origin",
+    (environment) => {
+      const result = validateEnv({ ...validEnv, APP_ENV: environment });
+      const keys = result.issues.map((issue) => issue.key);
+      for (const key of [
+        "DATABASE_URL",
+        "DATABASE_URL_UNPOOLED",
+        "INTERNAL_CRON_SECRET",
+        "R2_ACCOUNT_ID",
+        "R2_BUCKET",
+        "R2_BACKUPS_BUCKET",
+        "R2_S3_ENDPOINT",
+        "R2_ACCESS_KEY_ID",
+        "R2_SECRET_ACCESS_KEY",
+        "R2_PUBLIC_BASE_URL",
+        "NEXT_PUBLIC_SITE_URL",
+      ]) {
+        expect(keys, `${environment}/${key}`).toContain(key);
+      }
+      expect(formatEnvIssues(result.issues, environment)).not.toContain(
+        "placeholder-r2-access-key-id",
+      );
+    },
+  );
+
+  it.each(["preview", "staging", "production"] as const)(
+    "%s rejects an http NEXT_PUBLIC_SITE_URL on its own",
+    (environment) => {
+      const result = validateEnv({
+        ...deployedEnv(environment),
+        NEXT_PUBLIC_SITE_URL: "http://flowersoverseas.com",
+      });
+      expect(result.issues.map((issue) => issue.key)).toEqual([
+        "NEXT_PUBLIC_SITE_URL",
+      ]);
+    },
+  );
+
+  // The one place `staging` differs from `preview`: it is shown to florists, so the two
+  // development affordances are refused there as they are in production (spec 040 §5.2).
+  it.each([PSEUDO_LOCALES_KEY, DEV_UI_KEY] as const)(
+    "refuses %s in production and staging, and allows it on a preview",
+    (key) => {
+      for (const environment of ["production", "staging"] as const) {
+        const result = validateEnv({
+          ...deployedEnv(environment),
+          [key]: "true",
+        });
+        expect(
+          result.issues.map((issue) => issue.key),
+          environment,
+        ).toEqual([key]);
+        expect(result.issues[0]?.message, environment).toContain(environment);
+        expect(result.issues[0]?.message, environment).not.toContain("`true`,");
+      }
+      expect(
+        validateEnv({
+          ...deployedEnv("preview"),
+          NEXT_PUBLIC_SITE_URL: "https://fo-preview.up.railway.app",
+          [key]: "true",
+        }).issues,
+      ).toEqual([]);
+    },
+  );
+
+  it("refuses both flags at once in staging, naming both keys", () => {
+    const result = validateEnv({
+      ...deployedEnv("staging"),
+      ENABLE_PSEUDO_LOCALES: "true",
+      ENABLE_DEV_UI: "true",
+    });
+    expect(result.issues.map((issue) => issue.key).sort()).toEqual(
+      [DEV_UI_KEY, PSEUDO_LOCALES_KEY].sort(),
+    );
+  });
+
+  it("leaves development and test untouched: both flags are a local affordance", () => {
+    expect(
+      validateEnv({
+        ...validEnv,
+        ENABLE_PSEUDO_LOCALES: "true",
+        ENABLE_DEV_UI: "true",
+      }).issues,
+    ).toEqual([]);
+  });
+});
+
+/**
+ * T-29 / AC-28: the `env-build-failure` job builds with `APP_ENV=production` and a placeholder.
+ * The real `pnpm build` is the CI job (and the local gate run recorded in the PR); what is pinned
+ * here is the report that build prints — non-empty (so the build exits non-zero), naming the
+ * offending key, and echoing no other variable's value.
+ */
+describe("the env-build-failure reproduction (spec 040 AC-28, T-29)", () => {
+  it("fails with APP_ENV=production and a placeholder, naming only that key", () => {
+    const result = validateEnv({
+      ...productionEnv,
+      APP_ENV: "production",
+      DATABASE_URL: "postgres://user:pass@localhost:5432/fo",
+      R2_SECRET_ACCESS_KEY: SENTINEL,
+    });
+    expect(result.issues.map((issue) => issue.key)).toEqual(["DATABASE_URL"]);
+    const report = formatEnvIssues(result.issues, "production");
+    expect(report).toContain(
+      "DATABASE_URL: must be a real value in production",
+    );
+    // AC-28: no other variable's value is echoed.
+    expect(report).not.toContain(SENTINEL);
+    expect(report).not.toContain("user:pass");
+  });
+
+  it("is keyed on APP_ENV rather than VERCEL_ENV, which is what makes it host-agnostic", () => {
+    // The same source with neither key set is a development build and passes: it is `APP_ENV`
+    // alone that promotes it to a deployed environment.
+    const withoutSignal = { ...productionEnv, APP_ENV: "" };
+    expect(
+      validateEnv({
+        ...withoutSignal,
+        DATABASE_URL: "postgres://user:pass@localhost:5432/fo",
+      }).issues,
+    ).toEqual([]);
+  });
+
+  it("the CI job sets APP_ENV, not VERCEL_ENV (AC-28)", () => {
+    const workflow = repoFile(".github/workflows/ci.yml");
+    expect(workflow).toContain("APP_ENV: production");
+    expect(workflow).not.toContain("VERCEL_ENV: production");
   });
 });

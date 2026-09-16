@@ -106,13 +106,18 @@ describe("Sentry beforeSend (T-14)", () => {
     expect(sentryOptions("   ")).toBeUndefined();
   });
 
-  it("sets sendDefaultPii false, release = commit SHA, environment = VERCEL_ENV", () => {
-    const previous = {
-      vercelEnv: process.env.VERCEL_ENV,
-      sha: process.env.VERCEL_GIT_COMMIT_SHA,
-    };
-    process.env.VERCEL_ENV = "preview";
-    process.env.VERCEL_GIT_COMMIT_SHA = "deadbeef";
+  // Spec 040 §5.2 / AC-32 (TASK-097) changed the two sources: the environment tag is `APP_ENV`
+  // (was `VERCEL_ENV`) and the release prefers `RAILWAY_GIT_COMMIT_SHA` (was the Vercel SHA
+  // alone). The *shape* — `sendDefaultPii: false`, `beforeSend === scrubEvent` — is unchanged.
+  it("sets sendDefaultPii false, release = commit SHA, environment = APP_ENV", () => {
+    const keys = ["APP_ENV", "RAILWAY_GIT_COMMIT_SHA"] as const;
+    const previous = keys.map((key) => [key, process.env[key]] as const);
+    for (const [key, value] of [
+      ["APP_ENV", "preview"],
+      ["RAILWAY_GIT_COMMIT_SHA", "deadbeef"],
+    ] as const) {
+      process.env[key] = value;
+    }
     try {
       const options = sentryOptions("https://public@de.sentry.io/1");
       expect(options).toMatchObject({
@@ -123,10 +128,10 @@ describe("Sentry beforeSend (T-14)", () => {
       });
       expect(options?.beforeSend).toBe(scrubEvent);
     } finally {
-      if (previous.vercelEnv === undefined) delete process.env.VERCEL_ENV;
-      else process.env.VERCEL_ENV = previous.vercelEnv;
-      if (previous.sha === undefined) delete process.env.VERCEL_GIT_COMMIT_SHA;
-      else process.env.VERCEL_GIT_COMMIT_SHA = previous.sha;
+      for (const [key, value] of previous) {
+        if (value === undefined) delete process.env[key];
+        else process.env[key] = value;
+      }
     }
   });
 
@@ -257,6 +262,7 @@ describe("Sentry beforeSend deep scrub (TASK-007)", () => {
  */
 describe("Sentry release and the NEXT_PUBLIC mirror (TASK-007, TASK-043)", () => {
   const keys = [
+    "RAILWAY_GIT_COMMIT_SHA",
     "VERCEL_GIT_COMMIT_SHA",
     "NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA",
   ] as const;
@@ -303,9 +309,30 @@ describe("Sentry release and the NEXT_PUBLIC mirror (TASK-007, TASK-043)", () =>
     );
   });
 
-  it("leaves the release undefined when neither is set or both are blank", () => {
+  // Spec 040 §5.2 (TASK-097): Railway's SHA is tried before Vercel's, so the image built by
+  // whichever platform is actually serving carries the right release.
+  it("prefers the Railway SHA over both Vercel variables (spec 040 §5.2)", () => {
     withEnv(
-      { VERCEL_GIT_COMMIT_SHA: "", NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA: "" },
+      {
+        RAILWAY_GIT_COMMIT_SHA: "railway-sha",
+        VERCEL_GIT_COMMIT_SHA: "server-sha",
+        NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA: "client-sha",
+      },
+      () => {
+        expect(sentryOptions("https://public@de.sentry.io/1")?.release).toBe(
+          "railway-sha",
+        );
+      },
+    );
+  });
+
+  it("leaves the release undefined when none is set or all are blank", () => {
+    withEnv(
+      {
+        RAILWAY_GIT_COMMIT_SHA: "",
+        VERCEL_GIT_COMMIT_SHA: "",
+        NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA: "",
+      },
       () => {
         expect(
           sentryOptions("https://public@de.sentry.io/1")?.release,

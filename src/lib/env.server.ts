@@ -11,7 +11,7 @@ import {
   type ClientEnv,
   type DeploymentEnvironment,
   type ServerEnv,
-  deploymentEnvironment,
+  appEnvironment,
   parseEnv,
 } from "./env.schema";
 
@@ -24,7 +24,7 @@ export const env: Readonly<ServerEnv & ClientEnv> = Object.freeze({
   ...parsed.client,
 });
 
-/** `preview`/`production` on Vercel, else `development`/`test`. */
+/** The resolved environment (spec 040 §5.2): `APP_ENV`, else the `VERCEL_ENV` fallback. */
 export const environment: DeploymentEnvironment = parsed.environment;
 
-export { deploymentEnvironment };
+export { appEnvironment };

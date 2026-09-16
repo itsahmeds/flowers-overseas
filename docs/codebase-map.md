@@ -22,7 +22,7 @@ task actually touches.
 | `orders` | Public barrel for `orders` (state machine, order service, assignment/routing… | spec 015, 016 | — |
 | `partners` | Public barrel for `partners` (fulfilment partners, coverage, payouts) | spec 011, 026 | — |
 | `payments` | Public barrel for `payments` (PaymentProvider interface; stripe/, mollie/… | spec 013, 014 | — |
-| `seo` | Indexability rule engine, canonical builder, robots policy, page metadata (spec… | spec 007 | `unit/seo-canonical.test.ts`, `unit/seo-environment.test.ts`, `unit/seo-indexability.test.ts` +2 |
+| `seo` | Indexability rule engine, canonical builder, robots policy, page metadata (spec… | spec 007 | `unit/seo-canonical.test.ts`, `unit/seo-env.test.ts`, `unit/seo-environment.test.ts` +3 |
 | `ui` | The only import path for the design system (spec 004 §2 "Where the design… | spec 004 | `unit/consent-cookie.test.ts`, `unit/consent-islands.test.tsx`, `unit/consent-view.test.ts` +19 |
 
 ## Config (`src/config/`)
@@ -88,6 +88,7 @@ task actually touches.
 | `check-layout.ts` | `check-layout` | Layout manifest for `plan/01-architecture.md` §5 (spec 001 AC-3 / T-03) |
 | `check-no-db-imports.ts` | `check:no-db` | `pnpm check:no-db` (spec 003 AC-2 / T-02, TASK-033) |
 | `check-no-literal-disable.ts` | `check:no-literal-disable` | `pnpm check:no-literal-disable` (spec 001 AC-6 / T-07, TASK-003) |
+| `check-no-vercel-env.ts` | `check:no-vercel-env` | Host-agnostic env gate (spec 040 AC-2) |
 | `client-js-budget.ts` | `budget:client-js` | `pnpm budget:client-js` — the AC-27 measurement (spec 003 §6 "CWV budget… |
 | `codebase-map.ts` | `codebase:map` | The codebase map — AC-33 / T-34 (spec 001 §14 A15, TASK-086) |
 | `cookie-register.ts` | `cookies:check` | `pnpm cookies:check [--write]` — renders `docs/compliance/cookie-register.md`'s… |
@@ -118,7 +119,7 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 162 |
+| `tests/unit/` | 165 |
 | `tests/integration/` | 2 |
 | `tests/contract/` | 3 |
 | `tests/e2e/` | 20 |

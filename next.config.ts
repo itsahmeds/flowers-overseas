@@ -7,9 +7,10 @@ import { securityHeaderRules } from "./src/lib/csp";
 import { assertEnv } from "./src/lib/env.assert";
 import { mediaCacheHeaderRules } from "./src/lib/media-headers";
 import {
+  appEnvironment,
   cspReportOnly,
-  deploymentEnvironment,
   ga4MeasurementId,
+  hostPlatform,
 } from "./src/lib/env.schema";
 import { noindexHeaderRules } from "./src/lib/robots-headers";
 
@@ -22,7 +23,16 @@ assertEnv();
 // — `src/app/robots.ts` and the root `noindex` meta cover the 001 production alias, and spec 007
 // lifts exactly those two. `/api/*` sets its own `X-Robots-Tag` in every environment
 // (`src/lib/health.ts`).
-const environment = deploymentEnvironment(process.env);
+//
+// Spec 040 §5.2 (TASK-097): the signal is `APP_ENV`, set by whichever platform runs the app, with
+// `VERCEL_ENV` kept only as the compatibility fallback of the cold Vercel rollback. Unset resolves
+// to `development` and therefore to `noindex`, which is the safe direction on a new host; a
+// present-but-unparseable value throws here and fails the build naming the key.
+const environment = appEnvironment(process.env);
+
+// The host, for the one thing it decides: whether `vercel.live` belongs in the policy (§5.2,
+// AC-6). Nothing else in the application may branch on it.
+const platform = hostPlatform(process.env);
 
 // Security headers on every path, per environment (spec 004 §5.2, AC-23, **ADR-0016**;
 // TASK-046). `headers()` rather than `src/proxy.ts` because it is applied to cached responses
@@ -52,6 +62,7 @@ const headerRules = [
     reportOnly: cspReportOnly(process.env),
     inlineHashes: [consentBootstrapHash()],
     ga4: ga4MeasurementId(process.env) !== undefined,
+    platform,
   }),
 ];
 

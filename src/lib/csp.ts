@@ -34,7 +34,7 @@
  * Chromium still only implement that one, and a violation nobody hears about is the failure mode
  * this whole exercise exists to avoid.
  */
-import type { DeploymentEnvironment } from "./env.schema";
+import type { DeploymentEnvironment, HostPlatform } from "./env.schema";
 import type { HeaderRule } from "./robots-headers";
 
 import { ALL_PATHS } from "./robots-headers";
@@ -101,22 +101,41 @@ export interface CspOptions {
    * enforceable rather than merely observed.
    */
   readonly ga4?: boolean;
+  /**
+   * Which platform serves this deployment (spec 040 §5.2, AC-6; TASK-097). It decides one thing
+   * and one thing only: whether `vercel.live` is in the policy. **Defaults to `"local"`**, the
+   * shortest allowlist, because ADR-0016's rule is that a shorter allowlist is strictly better
+   * and a default that widens a policy is the wrong way round. `next.config.ts` passes
+   * `hostPlatform(process.env)`.
+   */
+  readonly platform?: HostPlatform;
 }
 
 /**
- * Whether an environment gets the `vercel.live` allowance: everything except production. A local
- * `next start` and a preview run the same artefact and are checked by the same Playwright suites,
- * so they get the same policy; production is the one environment where the origin is both absent
- * and unwanted.
+ * Whether this deployment gets the `vercel.live` allowance (spec 040 §5.2, AC-6; TASK-097).
+ *
+ * Two terms, and both must hold: the widget is injected **by Vercel** into non-production
+ * deployments, so it is `hostPlatform === "vercel" && environment !== "production"`. On Railway
+ * the origin is absent in *every* environment — there is no `vercel.live` there to inject
+ * anything — and a policy that names an origin nothing can serve is exactly the widening ADR-0016
+ * says to avoid. A local `next start` is the same case: the platform is `"local"`, so the
+ * allowance is gone, and the Playwright suites that already branch on `isLocal` say so.
+ *
+ * Before spec 040 this was `environment !== "production"` alone, which was correct while Vercel
+ * was the only host. The Vercel *strings* are unchanged: `allowsPreviewFeedback(e, "vercel")`
+ * reproduces the old answer for every environment.
  */
 export function allowsPreviewFeedback(
   environment: DeploymentEnvironment,
+  platform: HostPlatform,
 ): boolean {
-  return environment !== "production";
+  return platform === "vercel" && environment !== "production";
 }
 
 /**
- * HSTS is production-only: an `http://localhost` build must not pin itself to https.
+ * HSTS is production-only: an `http://localhost` build must not pin itself to https. Unchanged by
+ * spec 040 — `staging` deliberately sends **no** HSTS, because it runs on a Railway subdomain we
+ * do not want a browser to pin (§5.2).
  *
  * On a Vercel **preview** a `Strict-Transport-Security` header arrives anyway — the platform adds
  * it, because `*.vercel.app` is itself on the HSTS preload list (measured on this PR's first CI
@@ -128,6 +147,13 @@ export function sendsHsts(environment: DeploymentEnvironment): boolean {
   return environment === "production";
 }
 
+/** The environments served over https, and therefore the ones with something to upgrade to. */
+const UPGRADES_INSECURE_REQUESTS: readonly DeploymentEnvironment[] = [
+  "preview",
+  "staging",
+  "production",
+];
+
 const quoted = (hash: string): string => `'${hash}'`;
 
 /**
@@ -138,7 +164,10 @@ export function cspValue(
   environment: DeploymentEnvironment,
   options: CspOptions = {},
 ): string {
-  const previewFeedback = allowsPreviewFeedback(environment);
+  const previewFeedback = allowsPreviewFeedback(
+    environment,
+    options.platform ?? "local",
+  );
   const live = previewFeedback ? [VERCEL_LIVE_ORIGIN] : [];
   // Present only when an id is configured (TASK-050); the build reads that from the env.
   const tagManager = (options.ga4 ?? false) ? [GOOGLE_TAG_MANAGER_ORIGIN] : [];
@@ -186,8 +215,10 @@ export function cspValue(
     ([name, values]) => `${name} ${values.join(" ")}`,
   );
   // Valueless directive, so it is appended rather than joined. Only where there is https to
-  // upgrade to: on `http://localhost` it is noise in every header dump.
-  if (environment === "preview" || environment === "production") {
+  // upgrade to: on `http://localhost` it is noise in every header dump. `staging` joined the list
+  // in spec 040 (§5.2, AC-6) — it is https and production-like, and it is the environment the
+  // florist demos run on.
+  if (UPGRADES_INSECURE_REQUESTS.includes(environment)) {
     parts.push("upgrade-insecure-requests");
   }
   return `${parts.join("; ")};`;
