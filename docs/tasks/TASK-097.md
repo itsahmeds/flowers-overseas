@@ -58,7 +58,7 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
 
 ## Result
 
-Shipped in **PR #67** (draft, base `main`, branch `task/TASK-097-app-env` **stacked on PR #62's
+Shipped in **PR #68** (draft, base `main`, branch `task/TASK-097-app-env` **stacked on PR #62's
 head `c6710bc`** — rebase onto `main` once #62 merges). `appEnvironment(source)` in
 `src/lib/env.schema.ts` is now the one environment reader, over the five values
 `development | test | preview | staging | production`, resolving `APP_ENV` → `VERCEL_ENV`
