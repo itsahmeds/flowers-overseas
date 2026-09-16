@@ -42,9 +42,8 @@
     .display { font-family: var(--font-display); font-weight: 500; letter-spacing: -0.015em; }
     .label { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-ink-3); }
     .photo { background: var(--color-photo); display: flex; align-items: flex-end; padding: var(--space-md); color: var(--color-photo-ink); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; }
-    .field { display: flex; flex-direction: column; gap: 6px; }
-    .field span.v { min-height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-bottom: 1px solid var(--color-ink); font-size: var(--text-md); color: var(--color-ink); }
-    .btn { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
+    .ph-box { border: 1px dashed var(--color-ink-3); background: var(--color-paper-2); display: flex; align-items: flex-end; padding: var(--space-md); color: var(--color-ink-3); font-size: var(--text-xs); letter-spacing: 0.06em; }
+    .btn { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 600; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
     .btn.accent { background: var(--color-accent); }
     .btn.secondary { background: var(--color-paper); color: var(--color-ink); border: 1px solid var(--color-ink-3); }
     .btn.sm { min-height: 44px; padding: 0 16px; font-size: var(--text-sm); }
@@ -61,164 +60,227 @@
     .stub { border: 1px dashed var(--color-ink-3); border-radius: var(--radius-sm); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; color: var(--color-ink-2); font-size: var(--text-sm); }
     .stub b { font-weight: 600; color: var(--color-ink); font-size: var(--text-sm); }
     .sec { display: flex; flex-direction: column; gap: var(--space-md); }
+    .cap { font-size: var(--text-xs); color: var(--color-ink-3); line-height: 1.55; }
     table.spec { border-collapse: collapse; width: 100%; font-size: var(--text-sm); }
     table.spec th, table.spec td { text-align: start; border-block-end: var(--rule); padding: 8px 12px; vertical-align: top; }
     table.spec th { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-3); }
+    table.cal { border-collapse: collapse; width: 100%; font-size: var(--text-sm); }
+    table.cal caption { text-align: start; font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-3); padding-block-end: var(--space-sm); }
+    table.cal th, table.cal td { text-align: start; border-block-end: var(--rule); padding: 8px 10px; vertical-align: top; }
+    table.cal thead th { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-3); }
     .grid { display: grid; gap: var(--space-lg); }
     .card { display: flex; flex-direction: column; gap: var(--space-sm); }
     .card .nm { font-family: var(--font-display); font-weight: 500; font-size: var(--text-lg); }
     .tile { border: var(--rule); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; }
     .kv { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px var(--space-md); font-size: var(--text-sm); }
     .kv > span:nth-child(even) { text-align: end; font-variant-numeric: tabular-nums; }
-    .faq { border-block-start: var(--rule); padding-block: var(--space-md); display: flex; flex-direction: column; gap: 6px; }
-    .faq b { font-weight: 600; font-size: var(--text-md); }
-    .faq span { font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.6; }
-    .steprow { display: flex; gap: var(--space-md); font-size: var(--text-sm); }
-    .steprow > span { flex: 1; border-block-start: 2px solid var(--color-rule); padding-block-start: var(--space-sm); color: var(--color-ink-3); }
-    .steprow > span.on { border-block-start-color: var(--color-ink); color: var(--color-ink); font-weight: 600; }
+    .crumb { font-size: var(--text-sm); color: var(--color-ink-3); }
+    .crumb b { color: var(--color-ink); }
+    .sel { display: inline-flex; align-items: center; justify-content: space-between; gap: var(--space-sm); min-height: 44px; padding: 0 12px; border: 1px solid var(--color-ink); border-radius: var(--radius-sm); font-size: var(--text-sm); background: var(--color-paper); }
     code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: var(--text-xs); color: var(--color-ink-2); }
     .prose { max-width: var(--measure); font-size: var(--text-md); line-height: 1.6; color: var(--color-ink-2); }
+    .day { box-sizing: border-box; display: flex; flex-direction: column; gap: 2px; text-align: center; border: 1px solid var(--color-ink-3); border-radius: var(--radius-sm); padding: 6px 4px; min-height: 72px; justify-content: center; font-size: 10px; }
+    .day b { font-size: var(--text-xs); font-weight: 600; }
+    .day .fee { font-variant-numeric: tabular-nums; color: var(--color-accent); font-weight: 600; }
+    .day .why { color: var(--color-ink-2); line-height: 1.3; }
+    .day.sel { border-color: var(--color-ink); border-width: 2px; background: var(--color-paper-2); }
+    .day.off { border-style: dashed; background: var(--color-paper-3); color: var(--color-ink-2); }
+    .day.occ { border-block-end: 3px solid var(--color-accent); }
+    .daygrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+    fieldset.pick { margin: 0; border: var(--rule); border-radius: var(--radius-sm); padding: var(--space-md); display: flex; flex-direction: column; gap: var(--space-md); }
+    fieldset.pick > legend { font-size: var(--text-sm); font-weight: 600; padding-inline: var(--space-sm); }
   </style>
 </helmet>
-<div style="width: 390px; min-height: 8280px; background: var(--color-paper); display: flex; flex-direction: column;">
+<div style="width: 390px; min-height: 13400px; background: var(--color-paper); display: flex; flex-direction: column;">
   <div style="display: flex; flex-direction: column; border-bottom: 1px solid var(--color-ink);">
-    <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm) var(--space-lg); align-items: center; justify-content: space-between; padding: 12px var(--space-md); font-size: var(--text-xs); color: var(--color-ink-2); border-bottom: var(--rule);">
-      <span>Order by 14:00 in Warsaw — the recipient's own time — and we deliver today</span><span>One price: VAT and delivery in</span><span>Talk to us: +1 (213) 592-5150 · WhatsApp · Mon–Sat 8–20 CET</span>
-    </div>
-    <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm) var(--space-lg); align-items: center; justify-content: space-between; padding: var(--space-md) var(--space-md);">
+    <div style="padding: 10px 16px; font-size: var(--text-xs); color: var(--color-ink-2); border-bottom: var(--rule);">Prices include delivery and VAT</div>
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: var(--space-md) 16px;">
       <span class="display" style="font-size: 20px; letter-spacing: 0.04em;">Flowers Overseas</span>
       <span style="font-size: var(--text-sm); color: var(--color-ink-3);">Search · Menu · Basket (0)</span>
     </div>
-    <div style="padding: 10px var(--space-md); border-top: var(--rule); font-size: var(--text-sm); color: var(--color-ink-2);">
-      <span class="label" style="margin-inline-end: var(--space-sm);">Categories</span>Best sellers · All Saints 1 Nov · Wigilia 24 Dec · Bouquets · Roses · Plants · Same-day
-    </div>
-    <div style="padding: 6px var(--space-md) 10px; font-size: var(--text-xs); color: var(--color-ink-3);">Chrome as approved in <b>homepage-v1</b>. Every category row entry and every utility link is <b>unpublished in Phase 0</b> and renders as text, not a link (site-links.ts, categories.ts; spec 004 AC-14). <b>Round 2:</b> the row prints the next real occasion dates for the destination, the way 1-800-Flowers prints "Labor Day (9/7)" — the dates come from the occasion calendar, so a row entry can never name a date we have not verified.</div>
+    <div style="padding: 6px 16px 10px; font-size: var(--text-xs); color: var(--color-ink-3);">Chrome as approved in <b>homepage-v1</b>, 390 wide, 16&nbsp;px gutter. The utility strip no longer carries a cutoff sentence: “Order by 14:00 in Warsaw … and we deliver today” is a delivery promise no destination&#39;s data supports, and the shipped keys that still carry it are founder question 1.</div>
   </div>
 
-  <section class="note" style="margin: var(--space-lg) var(--space-md) 0;">
-    <span class="label">Product page · [internal]</span>
+  <section class="note" style="margin: var(--space-lg) 16px 0;">
+    <span class="label">Product page · mobile 390 · three picker states · [internal]</span>
     <dl>
-      <dt>Purpose</dt><dd>Buy. Choose the stem tier, choose the delivery date, add nothing that we pre-ticked, and see the one all-in price that the checkout will charge.</dd>
-      <dt>URL</dt><dd><code>/en-gb/poland/product/amber-rose-bouquet</code> — country-scoped, self-canonical per (locale, country, product).</dd>
-      <dt>Index</dt><dd>yes when the country is <code>live</code> and the product has a description in this locale and alt text for its primary image. A product with a null description is non-indexable by construction.</dd>
-      <dt>Reads</dt><dd>product + translations, media with per-locale alt, tiers with stem counts and the default flag, <code>country_price</code>, add-ons with their own VAT rate and per-country price, cutoff, holidays, reviews.</dd>
-      <dt>Price identity</dt><dd><code>resolvePrice()</code> can only return an all-in amount — there is no variant returning a price without VAT, without delivery or without the date's surcharge. The number under the tier chip, the number in the checkout total and the number charged are the same integer.</dd>
-      <dt>Owning spec</dt><dd>009 (catalogue and pricing 005, imagery and honesty label 006)</dd>
+      <dt>Purpose</dt><dd>The same template at 390. The block order below is the <b>DOM order on both widths</b> — desktop re-flows the gallery into a left column with CSS only — so this artboard, not the desktop one, is the order a screen reader and a crawler read.</dd>
+      <dt>URL</dt><dd><code>/en-gb/poland/product/amber-hour</code>. One authored ASCII slug shared by all four locales (&sect;13 Q1); the <code>product</code> segment localises.</dd>
+      <dt>Index</dt><dd><code>noindex,follow</code> and in no sitemap, every locale, through spec 007&#39;s <code>indexability()</code>.</dd>
+      <dt>Reads</dt><dd><code>productView()</code>. Figures at <code>en-gb</code> / Poland from <code>priceProjection()</code>, <code>dateSurcharges()</code>, <code>listAddons(&quot;PL&quot;)</code>, <code>upcomingOccasions()</code> and <code>deliveryWindow()</code>, against the committed dataset and ECB snapshot. No number here was typed.</dd>
+      <dt>States shown</dt><dd><code>unavailable</code> &middot; <code>preview</code> &middot; <code>live</code> with the <b>sticky summary</b> &middot; past-cutoff &middot; surcharge date &middot; holiday date with its reason &middot; occasion-marked date &middot; no-photo &middot; stale FX &middot; the demo summary in place of a CTA.</dd>
+      <dt>Reflow</dt><dd>One column, 44 px minimum touch target on every chip, the date grid four across rather than seven, no horizontal scroller and no carousel. 200% reflow at 390 holds because nothing here is a fixed pixel width.</dd>
+      <dt>Owning spec</dt><dd>009 &middot; 005 pricing &middot; 006 imagery &middot; 007 indexability and delivery facts &middot; 008 card &middot; 010 checkout</dd>
     </dl>
   </section>
 
-  <main style="display: flex; flex-direction: column; gap: var(--space-xl); padding: var(--space-xl) var(--space-md);">
-<div class="sec"><nav style="font-size: var(--text-sm); color: var(--color-ink-3);">Home <span style="color: var(--color-rule);">/</span> Poland <span style="color: var(--color-rule);">/</span> Flowers <span style="color: var(--color-rule);">/</span> Roses <span style="color: var(--color-rule);">/</span> <b>Amber Hour</b></nav>
-      <div style="display: flex; flex-wrap: wrap; gap: var(--space-md); align-items: center; justify-content: space-between; border-block-start: var(--rule); border-block-end: var(--rule); padding-block: var(--space-sm);">
-        <span style="font-size: var(--text-md);"><span class="label" style="margin-inline-end: var(--space-sm);">1 · Where is it going?</span><b>Poland</b> · Warszawa and 5 more cities · <span style="color: var(--color-accent);">change destination</span></span>
-        <span style="font-size: var(--text-xs); color: var(--color-ink-3);">Changing it reloads the country-scoped URL, because the price, the cutoff and the florist all belong to the destination.</span>
-      </div>
-      <span style="font-size: var(--text-xs); color: var(--color-ink-3);">The three decisions are <b>numbered and gated</b> — destination, then date, then size — which is InternetFlorist's “1. Enter Your Delivery City / 2. Select Delivery Date / 3. Select Your Size” with our own destination already in the URL. Continue stays inert until all three are chosen, and the reason is written next to it rather than implied by a greyed button.</span>
-      <div style="display: grid; grid-template-columns: repeat(1, minmax(0, 1fr)); gap: var(--space-xl); align-items: start;">
-        <div class="sec">
-          <div class="photo" style="aspect-ratio: 1 / 1;">Photo slot · hero · 12 imaged products in Phase 0</div>
-          <div style="display: flex; gap: var(--space-sm);"><div class="photo" style="aspect-ratio: 1 / 1; flex: 1; padding: var(--space-sm); font-size: 9px;">detail</div><div class="photo" style="aspect-ratio: 1 / 1; flex: 1; padding: var(--space-sm); font-size: 9px;">scale</div><div class="photo" style="aspect-ratio: 1 / 1; flex: 1; padding: var(--space-sm); font-size: 9px;">packaging</div></div>
-          <div class="tile" style="border-color: var(--color-ink-3); background: var(--color-paper-2);">
-            <span style="font-size: var(--text-sm); font-weight: 600;">Example arrangement · our florist hand-makes each one</span>
-            <span style="font-size: var(--text-xs); color: var(--color-ink-3);">Rendered whenever any image on the page is generated. Server-rendered text, crawlable, and there is no prop that can switch it off.</span>
-          </div>
-        </div>
+  <main style="display: flex; flex-direction: column; gap: var(--space-xl); padding: var(--space-xl) 16px;">
 
-        <div class="sec">
-          <h1 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">Amber Hour</h1>
-          <p class="prose" style="margin: 0; font-size: var(--text-sm);"><span class="slot">[slot] 60–90 words: what is in it, what it looks like, and the substitution sentence every description ends with.</span></p>
+<div class="sec"><nav aria-label="Breadcrumb" class="crumb" style="line-height: 1.6;"><a href="#">Home</a> <span aria-hidden="true" style="color: var(--color-rule);">/</span> <a href="#">Send flowers to</a> <span aria-hidden="true" style="color: var(--color-rule);">/</span> <a href="#">Poland</a> <span aria-hidden="true" style="color: var(--color-rule);">/</span> <a href="#">Flowers</a> <span aria-hidden="true" style="color: var(--color-rule);">/</span> <a href="#">Roses</a> <span aria-hidden="true" style="color: var(--color-rule);">/</span> <b aria-current="page">Amber Hour</b></nav>
+<span class="cap">Six levels, wrapping rather than truncating. The <code>BreadcrumbList</code> mirrors them exactly and is the only schema type the page emits.</span>
+<div style="display: flex; flex-direction: column; gap: 4px; border-block-start: var(--rule); border-block-end: var(--rule); padding-block: var(--space-sm);">
+  <span style="font-size: var(--text-md);">Where is it going? <b>Poland</b> · <a href="#" style="color: var(--color-accent);">change</a></span>
+  <span style="font-size: var(--text-xs); color: var(--color-ink-3);">Changing it reloads the country-scoped URL: the price, the calendar and the cutoff belong to the destination, never to the buyer.</span>
+</div></div>
 
-          <div class="sec" style="gap: var(--space-sm);">
-            <span class="label">3 · Which size?</span>
-            <div style="display: flex; gap: var(--space-sm); flex-wrap: wrap;">
-              <span class="tile" style="flex: 1; min-width: 96px; gap: 2px; "><span style="font-weight: 600; font-size: var(--text-md);">12 stems</span><span class="price" style="font-size: var(--text-sm);">189 zł</span></span>
-              <span class="tile" style="flex: 1; min-width: 96px; gap: 2px; border-color: var(--color-ink); border-width: 2px; background: var(--color-paper-2);"><span style="font-weight: 600; font-size: var(--text-md);">18 stems</span><span class="price" style="font-size: var(--text-sm);">219 zł</span><span style="font-size: var(--text-xs); color: var(--color-accent);">selected</span></span>
-              <span class="tile" style="flex: 1; min-width: 96px; gap: 2px; "><span style="font-weight: 600; font-size: var(--text-md);">24 stems</span><span class="price" style="font-size: var(--text-sm);">269 zł</span></span>
-            </div>
-            <span style="font-size: var(--text-xs); color: var(--color-ink-3);">Stem counts, not adjectives. The middle tier is preselected from <code>product_tier.is_default</code> — data, so the A/B test “12 vs 18 stems” is a flag flip and not a template edit. Arrangements use S/M/L and plants use “single”; the same component renders all three.</span>
-          </div>
+<div class="sec">
+  <div class="photo" style="aspect-ratio: 1 / 1;">Photo slot · hero · one of the 12 imaged products</div>
+  <ul style="list-style: none; margin: 0; padding: 0; display: flex; gap: 6px;"><li style="flex: 1;"><div class="photo" style="aspect-ratio: 1 / 1; padding: 6px; font-size: 9px;">detail</div></li><li style="flex: 1;"><div class="photo" style="aspect-ratio: 1 / 1; padding: 6px; font-size: 9px;">scale</div></li><li style="flex: 1;"><div class="photo" style="aspect-ratio: 1 / 1; padding: 6px; font-size: 9px;">packaging</div></li><li style="flex: 1;"><div class="photo" style="aspect-ratio: 1 / 1; padding: 6px; font-size: 9px;">wrapped</div></li></ul>
+  <div class="tile" style="border-color: var(--color-ink-3); background: var(--color-paper-2);"><span style="font-size: var(--text-sm); font-weight: 600;">Example arrangement · our florist hand-makes each one</span><span style="font-size: var(--text-xs); color: var(--color-ink-3);"><code>media.provenance.aiExample</code>, verbatim, wherever a generated image is shown — and only there.</span></div>
+  <span class="cap">A <code>&lt;ul&gt;</code> labelled <b>Product images</b> (<code>a11y.media.gallery</code>). The hero is the one <code>priority</code> image and the one preload, sized from spec 006&#39;s manifest; the thumbs are lazy. No carousel: everything is in the DOM, in order, at 390.</span>
+</div>
 
-          <div class="sec" style="gap: var(--space-sm);">
-            <span class="label">2 · When should it arrive?</span>
-            <div style="display: flex; gap: var(--space-sm); flex-wrap: wrap;">
-              <span class="tile" style="flex: 1 1 78px; max-width: 132px; gap: 2px; text-align: center; border-color: var(--color-ink); border-width: 2px;"><span style="font-size: var(--text-sm); font-weight: 600;">Thu 10</span><span style="font-size: var(--text-xs); color: var(--color-accent);">included</span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">today</span></span>
-              <span class="tile" style="flex: 1 1 78px; max-width: 132px; gap: 2px; text-align: center;"><span style="font-size: var(--text-sm); font-weight: 600;">Fri 11</span><span style="font-size: var(--text-xs); color: var(--color-accent);">included</span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">&nbsp;</span></span>
-              <span class="tile" style="flex: 1 1 78px; max-width: 132px; gap: 2px; text-align: center;"><span style="font-size: var(--text-sm); font-weight: 600;">Sat 12</span><span style="font-size: var(--text-xs); color: var(--color-accent);">included</span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">&nbsp;</span></span>
-              <span class="tile" style="flex: 1 1 78px; max-width: 132px; gap: 2px; text-align: center; color: var(--color-warning); border-color: var(--color-warning);"><span style="font-size: var(--text-sm); font-weight: 600;">Sun 13</span><span style="font-size: var(--text-xs); font-weight: 600;">+29 zł</span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">Sunday</span></span>
-              <span class="tile" style="flex: 1 1 78px; max-width: 132px; gap: 2px; text-align: center;"><span style="font-size: var(--text-sm); font-weight: 600;">Mon 15</span><span style="font-size: var(--text-xs); color: var(--color-accent);">included</span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">&nbsp;</span></span>
-              <span class="tile" style="flex: 1 1 78px; max-width: 132px; gap: 2px; text-align: center; opacity: 0.55;"><span style="font-size: var(--text-sm); font-weight: 600; text-decoration: line-through;">Tue 16</span><span style="font-size: var(--text-xs);">closed</span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">holiday in Poland</span></span>
-              <span class="tile" style="flex: 1 1 78px; max-width: 132px; justify-content: center; text-align: center; font-size: var(--text-xs);">More dates</span>
-            </div>
-            <div class="tile" style="border-color: var(--color-accent); background: var(--color-paper-2); gap: 2px;"><span style="font-size: var(--text-sm); font-weight: 600;">Order within 3 h 20 m for Thursday</span><span style="font-size: var(--text-xs); color: var(--color-ink-2);">The cutoff is 14:00 in Warsaw — <b>the recipient's own time zone</b>, not yours. When the clock passes it the chip closes itself and the next date is preselected; the countdown renders only from real cutoff data, never as a marketing timer.</span></div>
-            <span style="font-size: var(--text-xs); color: var(--color-ink-3);">A horizontal row of day chips for the next 14 days, not a calendar grid; “more dates” opens the grid. <b>Every chip prints its own money</b> — “included”, “+29 zł” — and a closed chip prints its reason (Sunday, a public holiday <i>in the destination</i>, past the cutoff) <b>before</b> it is chosen. FloraQueen is the only site in the field that puts the fee next to the day and it still adds a fee; ours is the same element with nothing left to add. Keyboard-operable, with any price change announced on <code>aria-live</code>.</span>
-          </div>
+<div class="sec">
+  <h1 class="display" style="margin: 0; font-size: var(--text-xl); line-height: 1.15;">Amber Hour</h1>
+  <span style="font-size: var(--text-sm); color: var(--color-ink-3);">Amber Hour — hand-tied rose bouquet</span>
+  <p class="prose" style="margin: 0; font-size: var(--text-sm);"><span class="slot">[slot] 60–90 authored words ending in the substitution sentence. Spec 006 owns it; the dataset ships none, which is why this product is non-indexable in every locale.</span></p>
+</div>
 
-          <div class="sec" style="gap: var(--space-sm);">
-            <span class="label">Add something</span>
-            <div class="sec" style="gap: 0;">
-              <label style="display: flex; align-items: center; gap: var(--space-md); border-block-end: var(--rule); padding-block: var(--space-sm); font-size: var(--text-sm);"><span style="width: 18px; height: 18px; border: 1px solid var(--color-ink-3); border-radius: var(--radius-sm);"></span><span style="flex: 1;">Chocolates</span><span class="price">29 zł</span><span style="font-size: var(--text-xs); color: var(--color-ink-3); min-width: 110px; text-align: end;">VAT 23%</span></label>
-              <label style="display: flex; align-items: center; gap: var(--space-md); border-block-end: var(--rule); padding-block: var(--space-sm); font-size: var(--text-sm);"><span style="width: 18px; height: 18px; border: 1px solid var(--color-ink-3); border-radius: var(--radius-sm);"></span><span style="flex: 1;">Glass vase</span><span class="price">39 zł</span><span style="font-size: var(--text-xs); color: var(--color-ink-3); min-width: 110px; text-align: end;">VAT 23%</span></label>
-              <label style="display: flex; align-items: center; gap: var(--space-md); border-block-end: var(--rule); padding-block: var(--space-sm); font-size: var(--text-sm);"><span style="width: 18px; height: 18px; border: 1px solid var(--color-ink-3); border-radius: var(--radius-sm);"></span><span style="flex: 1;">Balloon</span><span class="price">19 zł</span><span style="font-size: var(--text-xs); color: var(--color-ink-3); min-width: 110px; text-align: end;">VAT 23%</span></label>
-              <label style="display: flex; align-items: center; gap: var(--space-md); border-block-end: var(--rule); padding-block: var(--space-sm); font-size: var(--text-sm);"><span style="width: 18px; height: 18px; border: 1px solid var(--color-ink-3); border-radius: var(--radius-sm);"></span><span style="flex: 1;">Plush</span><span class="price">49 zł</span><span style="font-size: var(--text-xs); color: var(--color-ink-3); min-width: 110px; text-align: end;">VAT 23%</span></label>
-              <label style="display: flex; align-items: center; gap: var(--space-md); border-block-end: var(--rule); padding-block: var(--space-sm); font-size: var(--text-sm);"><span style="width: 18px; height: 18px; border: 1px solid var(--color-ink-3); border-radius: var(--radius-sm);"></span><span style="flex: 1;">Handwritten card</span><span class="price">0 zł</span><span style="font-size: var(--text-xs); color: var(--color-ink-3); min-width: 110px; text-align: end;">included, still shown as a line</span></label>
-            </div>
-            <span style="font-size: var(--text-xs); color: var(--color-ink-3);"><b>Every box is empty.</b> There is no field in the add-on type that can pre-select one (CRD Art. 22), so “default off” is not a review item. Add-ons are priced per destination country with their own VAT rate, and the free card is still a visible line so the summary and the invoice agree.</span>
-          </div>
+<div class="sec">
+  <fieldset class="pick"><legend>Which size?</legend>
+    <div style="display: flex; gap: 6px;">
+      <span class="tile" style="flex: 1; gap: 2px; padding: var(--space-sm);"><span style="font-weight: 600; font-size: var(--text-sm);">12 stems</span><bdi class="price" style="font-size: var(--text-sm);">&pound;40.90</bdi></span>
+      <span class="tile" style="flex: 1; gap: 2px; padding: var(--space-sm); border-color: var(--color-ink); border-width: 2px; background: var(--color-paper-2);"><span style="font-weight: 600; font-size: var(--text-sm);">18 stems</span><bdi class="price" style="font-size: var(--text-sm);">&pound;46.90</bdi><span style="font-size: 10px; color: var(--color-accent);">selected</span></span>
+      <span class="tile" style="flex: 1; gap: 2px; padding: var(--space-sm);"><span style="font-weight: 600; font-size: var(--text-sm);">24 stems</span><bdi class="price" style="font-size: var(--text-sm);">&pound;52.90</bdi></span>
+    </div>
+    <span class="cap">Radios in the page&#39;s one <code>&lt;form method=&quot;get&quot;&gt;</code>, each printing its own all-in price. Stem counts (<code>catalog.tier.stems</code>), never adjectives. The middle tier is preselected from <code>product_tier.is_default</code>. <b>Single-tier products render as text</b>: <b>Anthurium</b> shows “One plant · &pound;40.90” with no control at all.</span>
+  </fieldset>
+</div>
 
-          <div class="tile" style="border-color: var(--color-ink); border-width: 2px;">
-            <div class="kv">
-              <span>18 stems</span><span class="price">219 zł</span>
-              <span style="color: var(--color-ink-3);">Delivery Thu 10 Sep</span><span style="color: var(--color-ink-3);">included</span>
-              <span style="color: var(--color-ink-3);">VAT 8%</span><span style="color: var(--color-ink-3);">included</span>
-            </div>
-            <div class="kv" style="border-block-start: 1px solid var(--color-ink); padding-block-start: var(--space-sm); font-size: var(--text-lg);"><span style="font-weight: 600;">You pay</span><span class="price" style="font-weight: 600;">219 zł</span></div>
-            <span style="font-size: var(--text-xs); color: var(--color-ink-3);">You pay in <span class="slot">[buyer currency]</span>; the florist is paid in złoty. The rate is fixed for 30 minutes when you continue.</span>
-            <span class="btn accent" style="width: 100%; margin-block-start: var(--space-sm);">Continue</span>
-            <span style="font-size: var(--text-xs); color: var(--color-ink-3);">Order within 3 h 20 m — 14:00 in Warsaw, the recipient's own time — and it arrives today. <b>Nothing is added at the next step:</b> no delivery line, no service percentage, no surcharge that appears after the date is chosen.</span>
-            <span style="font-size: var(--text-xs); color: var(--color-ink-3);"><b>What the price does not include:</b> a vase. The photograph is styled with one and the bouquet is delivered wrapped — say it here rather than let the picture imply it (Euroflorist PL, “Cena nie obejmuje wazonu”). A glass vase is the add-on above, priced and unticked.</span>
-          </div>
+<div class="sec">
+  <span class="label" style="color: var(--color-accent);">State · unavailable — every destination, today</span>
+  <fieldset class="pick" style="border-color: var(--color-ink-3); background: var(--color-paper-2);" disabled><legend>When should it arrive?</legend>
+    <span style="font-size: var(--text-md); line-height: 1.55;">We are still choosing florists in Poland, so we cannot offer delivery dates yet.</span>
+    <span style="font-size: var(--text-sm);"><a href="#" style="color: var(--color-accent); text-decoration: underline; text-underline-offset: 3px;">What we can tell you about sending flowers to Poland</a></span>
+    <span class="cap"><b>No day, no cutoff, no calendar.</b> <code>DeliveryWindowSchema</code> makes <code>state: &quot;unavailable&quot;</code> require <code>dates: []</code>, so this picker cannot name a date even if a component asked it to. Authoring Poland&#39;s <code>operations</code> block turns it into the <code>preview</code> below — a data flip, not a template edit.</span>
+  </fieldset>
+</div>
 
-          <div class="sec" style="gap: var(--space-sm);">
-            <span class="label">What we promise</span>
-            <span style="font-size: var(--text-sm); color: var(--color-ink-2);">Five sentences, on the page rather than in Help, because every one of them is a fear the field leaves unanswered.</span>
-            <div style="display: flex; flex-direction: column; gap: 2px; border-block-start: var(--rule); padding-block-start: var(--space-sm);"><span style="font-size: var(--text-sm); font-weight: 600;">We make it in the recipient's town</span><span style="font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.55;">Not shipped in a box. Our florist in the recipient's town makes it the morning it is delivered, and we chose every one of them ourselves.</span></div>
-            <div style="display: flex; flex-direction: column; gap: 2px; border-block-start: var(--rule); padding-block-start: var(--space-sm);"><span style="font-size: var(--text-sm); font-weight: 600;">Photo on delivery, the same day</span><span style="font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.55;">Our florist photographs it at the door and we email you the picture on the day it is delivered. If it is not what you see here, tell us — we hold the photo, so we never ask you for evidence.</span></div>
-            <div style="display: flex; flex-direction: column; gap: 2px; border-block-start: var(--rule); padding-block-start: var(--space-sm);"><span style="font-size: var(--text-sm); font-weight: 600;">7-day freshness guarantee</span><span style="font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.55;">If it does not last a week, we replace it or refund you.</span></div>
-            <div style="display: flex; flex-direction: column; gap: 2px; border-block-start: var(--rule); padding-block-start: var(--space-sm);"><span style="font-size: var(--text-sm); font-weight: 600;">If something is unavailable</span><span style="font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.55;">The florist substitutes to the same value, style and colour, and tells you what changed.</span></div>
-            <div style="display: flex; flex-direction: column; gap: 2px; border-block-start: var(--rule); padding-block-start: var(--space-sm);"><span style="font-size: var(--text-sm); font-weight: 600;">Flowers are perishable</span><span style="font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.55;">There is no 14-day right of withdrawal on made-to-order flowers (CRD Art. 16(d)); you can cancel free of charge until we send the order to the florist.</span></div>
-          </div>
-        </div>
-      </div></div>
+<div class="sec">
+  <span class="label" style="color: var(--color-accent);">State · preview — the 16 October demo</span>
+  <fieldset class="pick" disabled><legend>When should it arrive?</legend>
+    <div class="tile" style="border-color: var(--color-warning); gap: 2px;"><span style="font-size: var(--text-sm); font-weight: 600;">This is how delivery dates will work in Poland. We are not taking orders yet.</span></div>
+    <div class="daygrid">
+      <span class="day off"><b>Mon 26 Oct</b><span class="why">Not yet</span></span>
+      <span class="day off"><b>Tue 27 Oct</b><span class="why">Not yet</span></span>
+      <span class="day off"><b>Wed 28 Oct</b><span class="why">Not yet</span></span>
+      <span class="day off"><b>Thu 29 Oct</b><span class="why">Not yet</span></span>
+      <span class="day off"><b>Fri 30 Oct</b><span class="why">Not yet</span></span>
+      <span class="day off"><b>Sat 31 Oct</b><span class="why">Not yet</span></span>
+      <span class="day off occ"><b>Sun 1 Nov</b><span class="fee">18 zł</span><span class="why">No Sunday delivery · <span class="slot">[slot] public holiday</span> · <b style="color: var(--color-accent);">All Saints&#39; Day</b></span></span>
+      <span class="day off"><b>Mon 2 Nov</b><span class="why">Not yet</span></span>
+      <span class="day off"><b>Tue 3 Nov</b><span class="why">Not yet</span></span>
+      <span class="day off"><b>Wed 4 Nov</b><span class="why">Not yet</span></span>
+      <span class="day off"><b>Thu 5 Nov</b><span class="why">Not yet</span></span>
+      <span class="day off"><b>Fri 6 Nov</b><span class="why">Not yet</span></span>
+      <span class="day off"><b>Sat 7 Nov</b><span class="why">Not yet</span></span>
+      <span class="day off"><b>Sun 8 Nov</b><span class="fee">18 zł</span><span class="why">No Sunday delivery</span></span>
+    </div>
+    <span style="font-size: var(--text-sm); font-weight: 600;">When we open, you will order by 14:00 in Warsaw — the recipient&#39;s time, not yours</span>
+    <span class="cap">Four across rather than seven, same fourteen days, same facts. <b>Sun 1 Nov 2026 is All Saints&#39; Day in Poland</b> (<code>upcomingOccasions</code> + <code>catalog.facet.occasion.allSaints</code>), and the marker renders on a <b>closed</b> date: an occasion is a fact about Poland&#39;s calendar, the closure is a fact about us. The public-holiday reason is a <code>[slot]</code>, not a claim: <code>seed/data/holidays.json</code> <b>does not exist</b> in the repository and spec 009 task 3 owns it, so the chip shows where the reason goes rather than naming a holiday we have not verified.</span>
+  </fieldset>
+</div>
 
-<div class="sec"><div style="display: flex; flex-wrap: wrap; gap: var(--space-md); align-items: baseline; justify-content: space-between;"><div style="display: flex; flex-direction: column; gap: 4px;"><span class="label">Most sent to Poland</span><h2 class="display" style="margin: 0; font-size: var(--text-xl); line-height: 1.15;">Six we can deliver today</h2></div><span style="font-size: var(--text-sm); font-weight: 500; border-block-end: 1px solid var(--color-ink); padding-block-end: 2px;">See all 84</span></div>
-      <div style="display: flex; flex-wrap: wrap; gap: var(--space-md);">
-        <span style="flex: 1 1 180px; display: flex;"><a href="#" class="card"><div class="photo" style="aspect-ratio: 4 / 5;">Photo slot · bouquet</div><span class="nm"><span class="slot">[slot] name</span></span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">Roses and eucalyptus · 18 stems</span><span class="price" style="font-size: var(--text-lg); font-weight: 600;">189 zł</span><span style="font-size: var(--text-xs); color: var(--color-ink-2);">Delivery and VAT included</span><span class="chip accent" style="align-self: flex-start;">Arrives today</span></a></span>
-        <span style="flex: 1 1 180px; display: flex;"><a href="#" class="card"><div class="photo" style="aspect-ratio: 4 / 5;">Photo slot · bouquet</div><span class="nm"><span class="slot">[slot] name</span></span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">Peonies in season · 15 stems</span><span class="price" style="font-size: var(--text-lg); font-weight: 600;">219 zł</span><span style="font-size: var(--text-xs); color: var(--color-ink-2);">Delivery and VAT included</span><span class="chip accent" style="align-self: flex-start;">Arrives today</span></a></span>
-        <span style="flex: 1 1 180px; display: flex;"><a href="#" class="card"><div class="photo" style="aspect-ratio: 4 / 5;">Photo slot · bouquet</div><span class="nm"><span class="slot">[slot] name</span></span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">Seasonal hand-tied</span><span class="price" style="font-size: var(--text-lg); font-weight: 600;">149 zł</span><span style="font-size: var(--text-xs); color: var(--color-ink-2);">Delivery and VAT included</span><span class="chip accent" style="align-self: flex-start;">Arrives today</span></a></span>
-        <span style="flex: 1 1 180px; display: flex;"><a href="#" class="card"><div class="photo" style="aspect-ratio: 4 / 5;">Photo slot · bouquet</div><span class="nm"><span class="slot">[slot] name</span></span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">Two dozen roses</span><span class="price" style="font-size: var(--text-lg); font-weight: 600;">259 zł</span><span style="font-size: var(--text-xs); color: var(--color-ink-2);">Delivery and VAT included</span><span class="chip muted" style="align-self: flex-start;">Tomorrow</span></a></span>
-        <span style="flex: 1 1 180px; display: flex;"><a href="#" class="card"><div class="photo" style="aspect-ratio: 4 / 5;">Photo slot · bouquet</div><span class="nm"><span class="slot">[slot] name</span></span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">Sunflowers · 12 stems</span><span class="price" style="font-size: var(--text-lg); font-weight: 600;">179 zł</span><span style="font-size: var(--text-xs); color: var(--color-ink-2);">Delivery and VAT included</span><span class="chip accent" style="align-self: flex-start;">Arrives today</span></a></span>
-        <span style="flex: 1 1 180px; display: flex;"><a href="#" class="card"><div class="photo" style="aspect-ratio: 4 / 5;">Photo slot · bouquet</div><span class="nm"><span class="slot">[slot] name</span></span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">Lilies and lisianthus</span><span class="price" style="font-size: var(--text-lg); font-weight: 600;">239 zł</span><span style="font-size: var(--text-xs); color: var(--color-ink-2);">Delivery and VAT included</span><span class="chip muted" style="align-self: flex-start;">Tomorrow</span></a></span>
-      </div>
-      <span style="font-size: var(--text-xs); color: var(--color-ink-3);"><b>Products before prose.</b> This row is the first thing under the header on every shop page: six cards, a price on each, the badge computed from the destination's cutoff rather than written by hand. Every price is all-in — there is no delivery line at checkout and no service percentage anywhere. “Most sent” ranks on real orders and shows <b>our picks</b>, labelled, until those orders exist.</span></div>
+<div class="sec">
+  <span class="label" style="color: var(--color-accent);">State · live — Phase 1, Poland first</span>
+  <fieldset class="pick"><legend>When should it arrive?</legend>
+    <div class="daygrid">
+      <span class="day sel"><b>Mon 1 Mar</b><span style="color: var(--color-ink-2);">included</span><span style="font-size: 10px; color: var(--color-accent);">selected</span></span>
+      <span class="day"><b>Tue 2 Mar</b><span style="color: var(--color-ink-2);">included</span></span>
+      <span class="day"><b>Wed 3 Mar</b><span style="color: var(--color-ink-2);">included</span></span>
+      <span class="day"><b>Thu 4 Mar</b><span style="color: var(--color-ink-2);">included</span></span>
+      <span class="day"><b>Fri 5 Mar</b><span style="color: var(--color-ink-2);">included</span></span>
+      <span class="day"><b>Sat 6 Mar</b><span style="color: var(--color-ink-2);">included</span></span>
+      <span class="day off"><b>Sun 7 Mar</b><span class="why">No Sunday delivery in Poland</span></span>
+      <span class="day occ"><b>Mon 8 Mar</b><span class="fee">+&pound;5.00</span><span class="why"><b style="color: var(--color-accent);">Women&#39;s Day</b> · peak day</span></span>
+      <span class="day"><b>Tue 9 Mar</b><span style="color: var(--color-ink-2);">included</span></span>
+      <span class="day"><b>Wed 10 Mar</b><span style="color: var(--color-ink-2);">included</span></span>
+      <span class="day"><b>Thu 11 Mar</b><span style="color: var(--color-ink-2);">included</span></span>
+      <span class="day"><b>Fri 12 Mar</b><span style="color: var(--color-ink-2);">included</span></span>
+      <span class="day"><b>Sat 13 Mar</b><span style="color: var(--color-ink-2);">included</span></span>
+      <span class="day off"><b>Sun 14 Mar</b><span class="why">No Sunday delivery in Poland</span></span>
+    </div>
+    <span style="display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 16px; font-size: var(--text-sm); font-weight: 600; border-radius: var(--radius-sm); background: var(--color-paper); color: var(--color-ink); border: 1px solid var(--color-ink-3);">Use this date</span>
+    <div class="tile" style="border-color: var(--color-accent); background: var(--color-paper-2); gap: 2px;"><span style="font-size: var(--text-sm); font-weight: 600;">Order by 14:00 in Warsaw — the recipient&#39;s time, not yours</span><span style="font-size: var(--text-xs); color: var(--color-ink-2);">Absolute, with the zone named. <b>No countdown</b>: this page is served from cache for up to five minutes even when live, and a timer would be wrong within one.</span></div>
+    <span class="cap">Rendered at <b>09:00 Warsaw, Monday 1 March 2027</b>. Every chip prints its own money before it is chosen — “included” or “+&pound;5.00”, the difference between <code>priceProjection()</code> with <code>deliveryDate: &quot;2027-03-08&quot;</code> (&pound;51.90) and without (&pound;46.90), behind which sits the committed 25&nbsp;zł <code>peak_day</code> row. At <b>15:30</b> instead, Mon 1 Mar closes with “Ordering closed at 14:00 in Warsaw” and Tue 2 Mar is preselected.</span>
+  </fieldset>
+</div>
 
-<div class="sec"><div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">States</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;"></h2></div>
-      <div class="grid" style="grid-template-columns: repeat(1, minmax(0, 1fr));">
-      <div class="stub" style=""><b>Past the cutoff</b><span>Today's chip is disabled with the reason in words (“ordering closed at 14:00”) and the next possible date is preselected. The total updates and is announced.</span></div>
-      <div class="stub" style=""><b>Surcharge date</b><span>Sunday and a named peak day carry their surcharge on the chip before selection; selecting one changes the single all-in total, which is still the only number on the page.</span></div>
-      <div class="stub" style=""><b>No image for this product</b><span>72 of the 84 products have no imagery in Phase 0: the gallery is the captioned <code>--color-photo</code> box, there is no <code>&lt;img&gt;</code>, and the honesty label is <b>not</b> rendered — there is no generated image to be honest about.</span></div>
-      <div class="stub" style=""><b>Unavailable for every date</b><span>The tier row and the date row stay visible and the button becomes a link to the destination's shop root with the reason named. No “add to basket” that cannot be honoured.</span></div>
-      <div class="stub" style=""><b>Sticky total on mobile</b><span>At 390 the summary tile leaves the flow and docks: one bar, the amount named on the button (“Continue · 219 zł”), the date beside it, and the cutoff countdown under it. The button never says “Continue” alone, because a buyer scrolling a phone should not have to scroll back to learn what they are agreeing to pay.</span></div>
-      <div class="stub" style=""><b>Reviews</b><span>Zero reviews exist. The section is not rendered at all — not as an empty state, not as a “be the first”, and never with a seeded or sample review (EU UCPD/Omnibus blacklist; the founder's real-only decision, 2026-09-08).</span></div>
-      <div class="stub" style=""><b>Schema</b><span>One <code>Product</code> with one <code>Offer</code> per rendered configuration: <code>price</code> = the visible all-in amount, <code>priceCurrency</code> = the displayed currency, <code>eligibleRegion</code> = the destination, <code>hasMerchantReturnPolicy</code> = <code>MerchantReturnNotPermitted</code> so the structured data agrees with the perishable disclosure above. No <code>aggregateRating</code>, because there are no ratings.</span></div>
-      </div></div>
+<div class="sec">
+  <span class="label">Delivery facts</span>
+  <div class="tile"><span style="font-size: var(--text-sm); font-weight: 600;">What we can say about delivering here today</span><dl style="margin: 0; display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 6px var(--space-sm); font-size: var(--text-sm);"><dt style="color: var(--color-ink-3);">Delivering</dt><dd style="margin: 0;">Not yet. We are choosing florists in Poland now.</dd><dt style="color: var(--color-ink-3);">Order-by time</dt><dd style="margin: 0; color: var(--color-ink-3);">— no cutoff</dd><dt style="color: var(--color-ink-3);">Soonest date</dt><dd style="margin: 0; color: var(--color-ink-3);">— no date</dd><dt style="color: var(--color-ink-3);">Price covers</dt><dd style="margin: 0;">Includes VAT and delivery. Nothing is added later.</dd></dl></div>
+  <span class="cap">Spec 007&#39;s block, reused unchanged, in its <b>facts-unknown</b> form. In <code>live</code> the same four rows read “Yes, Monday to Saturday · 14:00 in Warsaw · Mon 1 Mar · Includes VAT and delivery”.</span>
+</div>
+
+<div class="sec">
+  <span class="label">Add something</span>
+  <div class="sec" style="gap: 0;">
+    <div style="display: flex; align-items: baseline; gap: var(--space-sm); border-block-end: var(--rule); padding-block: var(--space-sm); font-size: var(--text-sm);"><span style="flex: 1;">Box of chocolates</span><bdi class="price">25 zł</bdi><span style="font-size: var(--text-xs); color: var(--color-ink-3);">VAT 23%</span></div>
+    <div style="display: flex; align-items: baseline; gap: var(--space-sm); border-block-end: var(--rule); padding-block: var(--space-sm); font-size: var(--text-sm);"><span style="flex: 1;">Glass vase</span><bdi class="price">35 zł</bdi><span style="font-size: var(--text-xs); color: var(--color-ink-3);">VAT 23%</span></div>
+    <div style="display: flex; align-items: baseline; gap: var(--space-sm); border-block-end: var(--rule); padding-block: var(--space-sm); font-size: var(--text-sm);"><span style="flex: 1;">Balloon</span><bdi class="price">18 zł</bdi><span style="font-size: var(--text-xs); color: var(--color-ink-3);">VAT 23%</span></div>
+    <div style="display: flex; align-items: baseline; gap: var(--space-sm); border-block-end: var(--rule); padding-block: var(--space-sm); font-size: var(--text-sm);"><span style="flex: 1;">Soft toy</span><bdi class="price">39 zł</bdi><span style="font-size: var(--text-xs); color: var(--color-ink-3);">VAT 23%</span></div>
+    <div style="display: flex; align-items: baseline; gap: var(--space-sm); border-block-end: var(--rule); padding-block: var(--space-sm); font-size: var(--text-sm);"><span style="flex: 1;">Handwritten card</span><bdi class="price">0 zł</bdi><span style="font-size: var(--text-xs); color: var(--color-ink-3);">included</span></div>
+  </div>
+  <span class="cap"><b>No checkbox.</b> A priced, read-only list (&sect;13 Q6) — there is no basket to add one to. <code>listAddons(&quot;PL&quot;)</code> in <code>sort</code> order; wine is absent because its flag is off; each carries its own 23% VAT against the flowers&#39; 8%. Amounts are the committed <code>addon_country_price</code> rows in the destination&#39;s currency — founder question 4.</span>
+</div>
+
+<div class="sec">
+  <div class="tile" style="border-color: var(--color-ink); border-width: 2px;">
+    <div class="kv"><span>18 stems</span><bdi class="price">&pound;46.90</bdi><span style="color: var(--color-ink-3);">Delivery</span><span style="color: var(--color-ink-3);">included</span><span style="color: var(--color-ink-3);">VAT 8%</span><span style="color: var(--color-ink-3);">included</span></div>
+    <div class="kv" style="border-block-start: 1px solid var(--color-ink); padding-block-start: var(--space-sm); font-size: var(--text-lg);"><span style="font-weight: 600;">You pay</span><bdi class="price" style="font-weight: 600;">&pound;46.90</bdi></div>
+    <span style="font-size: var(--text-sm); color: var(--color-ink-2);">Includes VAT and delivery</span>
+    <div class="tile" style="border-color: var(--color-warning); gap: 2px; margin-block-start: var(--space-sm);"><span style="font-size: var(--text-sm); font-weight: 600;">Ordering is not open yet</span><span style="font-size: var(--text-xs); color: var(--color-ink-2);">We are still choosing florists in Poland. When we have one, this is the price you will pay.</span></div>
+    <span style="font-size: var(--text-xs); color: var(--color-ink-3);"><b>What the price does not include:</b> a vase. A glass vase is 35&nbsp;zł in the list above.</span>
+  </div>
+  <span class="cap">The <b>demo</b> summary: the sentence stands where a CTA would. No button, no disabled button, no basket link.</span>
+  <div class="tile" style="border-color: var(--color-ink); border-width: 2px; background: var(--color-paper-2);">
+    <span class="label">Sticky · docked at the bottom of the viewport</span>
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm);"><span style="display: flex; flex-direction: column; gap: 2px;"><bdi class="price" style="font-size: var(--text-lg); font-weight: 600;">&pound;51.90</bdi><span style="font-size: var(--text-xs); color: var(--color-ink-2);">18 stems · Mon 8 Mar · includes VAT and delivery</span></span></div>
+    <span style="font-size: var(--text-xs); color: var(--color-ink-2);">Ordering is not open yet</span>
+    <span class="cap">At 390 the summary leaves the flow and docks: <b>the amount is named in the bar</b>, with the size and the date beside it, because a buyer scrolling a phone should never have to scroll back to learn what they are agreeing to pay. In <code>live</code> the last line becomes the cutoff sentence; it <b>never</b> becomes a button that says “Continue” alone. The amount sits in the same <code>aria-live=&quot;polite&quot;</code> region as the summary above and is announced once, not twice.</span>
+  </div>
+</div>
+
+<div class="sec">
+  <span class="label">What we promise</span>
+  <div style="display: flex; flex-direction: column; gap: 2px; border-block-start: var(--rule); padding-block-start: var(--space-sm);"><span style="font-size: var(--text-sm); font-weight: 600;">If something is unavailable</span><span style="font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.55;"><span class="slot">[slot] the substitution sentence, spec 006.</span> We substitute to the same value, style and colour, and we tell you what changed.</span></div>
+  <span class="cap"><b>One claim, because one claim has its backing.</b> Gone from this round: the delivery-photograph promise (spec 027), the “our florist in the recipient&#39;s town” claim (gated on an active florist) and the withdrawal-right sentence (lawyer-gated, spec 010 and the legal set). A block whose data is missing renders nothing.</span>
+</div>
+
+<div class="sec">
+  <span class="label" style="color: var(--color-accent);">No photo · the common case</span>
+  <div class="ph-box" style="aspect-ratio: 1 / 1;">Photography to supply · this bouquet as our florist makes it</div>
+  <span class="cap">72 of 84 products. <code>media.placeholder.product</code> verbatim, <b>no <code>&lt;img&gt;</code></b>, and therefore no honesty label. Same fixed box, so the swap costs zero CLS.</span>
+  <span class="label" style="color: var(--color-accent);">Stale FX</span>
+  <div class="tile" style="border-color: var(--color-ink); border-width: 2px;">
+    <div class="kv" style="font-size: var(--text-lg);"><span style="font-weight: 600;">You pay</span><bdi class="price" style="font-weight: 600;">PLN 229.00</bdi></div>
+    <span style="font-size: var(--text-sm); color: var(--color-ink-2);">We are showing this price in the currency of the delivery country.</span>
+  </div>
+  <span class="cap">The fallback when the committed ECB snapshot is outside its freshness window — which is the <b>real state of the data today</b> (<code>fxAsOf 2026-09-08</code>). <code>catalog.availability.fxUnavailable</code>, verbatim.</span>
+</div>
+
+<div class="sec"><span class="label">More we make for Poland</span>
+  <ul style="list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-md);">
+    <li><article class="card"><a href="#" style="display: flex; flex-direction: column; gap: 6px;"><div class="photo" style="aspect-ratio: 4 / 5;">Photo slot · bouquet</div><span class="nm" style="font-size: var(--text-md);">Amber Hour + Chocolates</span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">18 stems</span><bdi class="price" style="font-size: var(--text-md); font-weight: 600;">&pound;62.90</bdi><span style="font-size: var(--text-xs); color: var(--color-ink-2);">Includes VAT and delivery</span></a></article></li>
+    <li><article class="card"><a href="#" style="display: flex; flex-direction: column; gap: 6px;"><div class="ph-box" style="aspect-ratio: 4 / 5;">Photography to supply · this bouquet as our florist makes it</div><span class="nm" style="font-size: var(--text-md);">Anthurium</span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">One plant</span><bdi class="price" style="font-size: var(--text-md); font-weight: 600;">&pound;40.90</bdi><span style="font-size: var(--text-xs); color: var(--color-ink-2);">Includes VAT and delivery</span></a></article></li>
+    <li><article class="card"><a href="#" style="display: flex; flex-direction: column; gap: 6px;"><div class="photo" style="aspect-ratio: 4 / 5;">Photo slot · bouquet</div><span class="nm" style="font-size: var(--text-md);">April Window</span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">25 stems</span><bdi class="price" style="font-size: var(--text-md); font-weight: 600;">&pound;46.90</bdi><span style="font-size: var(--text-xs); color: var(--color-ink-2);">Includes VAT and delivery</span></a></article></li>
+    <li><article class="card"><a href="#" style="display: flex; flex-direction: column; gap: 6px;"><div class="ph-box" style="aspect-ratio: 4 / 5;">Photography to supply · this bouquet as our florist makes it</div><span class="nm" style="font-size: var(--text-md);">Azalea Pot</span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">One plant</span><bdi class="price" style="font-size: var(--text-md); font-weight: 600;">&pound;30.90</bdi><span style="font-size: var(--text-xs); color: var(--color-ink-2);">Includes VAT and delivery</span></a></article></li>
+  </ul>
+  <span class="cap">Two across at 390, up to six in the list. Spec 008&#39;s <code>ProductCard</code>, unchanged — and this is the round in which it <b>becomes a link</b>: publishing the <code>product</code> id in <code>site-links.ts</code> turns every card on every listing page from a tile into an <code>&lt;a&gt;</code> with no markup change other than the element. Two of the four show the placeholder, because they have no imagery.</span></div>
+
+<div class="sec"><span class="label">What the markup says</span>
+  <div class="stub"><b>Schema</b><span><code>BreadcrumbList</code> only. No <code>Product</code>, no <code>Offer</code>, no <code>aggregateRating</code>, no <code>review</code> (&sect;13 Q8). The builder exists, is tested against <code>offerProjection()</code>, and emits the day a live country has a purchase path.</span></div>
+  <div class="stub"><b>Parameters</b><span><code>?tier=</code> and <code>?date=</code>: strict zod, <code>noindex,follow</code>, canonical to the bare URL, in no sitemap, never an <code>&lt;a href&gt;</code>. Anything unparseable falls back to the default rendering rather than erroring.</span></div>
+  <div class="stub"><b>The one island</b><span><code>DateAndTierEnhancer</code>, &le;2 048 B Brotli, no request of any kind, PDP only. Every state above renders with JavaScript disabled; the island only swaps a number already present and announces it.</span></div>
+  </div>
+
   </main>
 
-  <div style="margin-block-start: auto; border-top: 1px solid var(--color-ink); padding: var(--space-lg) var(--space-md); display: flex; flex-direction: column; gap: var(--space-sm); font-size: var(--text-sm); color: var(--color-ink-2);">
+  <div style="margin-block-start: auto; border-top: 1px solid var(--color-ink); padding: var(--space-lg) 16px; display: flex; flex-direction: column; gap: var(--space-sm); font-size: var(--text-sm); color: var(--color-ink-2);">
     <span class="label">Footer</span>
     <span>Sending: Destinations · Occasions · Delivery times and cutoffs · The guarantee — Company: How it works · For florists · Help and contact · Imprint — Legal: Terms · Privacy · Cookies · Withdrawal and refunds · Cookie settings</span>
-    <span>We send flowers across Europe. You order from us; our florist in the recipient's town makes the bouquet and hands it over in person. Operated by <span class="slot">[legal name]</span>, <span class="slot">[registered address]</span>, <span class="slot">[registration no]</span> — printed only once <code>company.registered</code> is true (company.ts; spec 004 AC-9).</span>
+    <span>We send flowers across Europe. You order from us; our florist in the recipient&#39;s town makes the bouquet and hands it over in person. Operated by <span class="slot">[legal name]</span>, <span class="slot">[registered address]</span>, <span class="slot">[registration no]</span>.</span>
     <span>BLIK · Klarna · PayPal · Visa · Mastercard · Apple Pay — card payments processed by Stripe. We never store card numbers.</span>
-    <span>Talk to a person: +1 (213) 592-5150 · WhatsApp · Mon–Sat 8–20 CET. Weekend hours are a founder decision, not a design one (benchmarks/README.md, open question 1).</span>
   </div>
 </div>
 </x-dc>

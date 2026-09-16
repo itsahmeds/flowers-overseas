@@ -41,6 +41,17 @@ row below and a row above cover the same artboard, the row below is the spec 008
 | `wireframes/category-hub-*.dc.html` | `02-category-and-shop-grid.md` §3.1 · `03-destination-and-corridor-pages.md` §2.1 | A grid with **no prices at all**, which FloraQueen's Poland grid also does — but with the sentence FloraQueen never writes, saying why there is none; the destination asked for **first**, above the products (`plan/04` §4); the three-sentence cross-border explanation as the intro's spine | FloraQueen's silent priceless grid; a converted "from €X" minimum across countries; a country-less categories index (`/{locale}/flowers` is a 404); a destination list padded out with countries we cannot serve | A cross-country minimum converted at today's rate is a price no configuration matches — the precise shape the Price Indication Directive and the DMCC drip-pricing ban exist to prevent (005 §13 Q10, binding); a page that shows no price must say why, which is the one condition the study's §3.1 attaches to a priceless grid |
 | `wireframes/occasion-hub-*.dc.html` | `05-occasion-pages.md` §2.1, §3.1 | The per-country **date table** — the study's single largest open goal: Mother's Day is four different dates across our seven destinations and not one competitor publishes them together; a reference table rather than an essay (Interflora UK's birth-flower table is the model); the countries that have a page rendered as links against the ones that do not, rendered as text with their state said plainly | Occasion pages with no dates (the field's default); a single "Mother's Day" date presented as universal; `Event` schema on a date we do not host; an occasion reminder email field, which is a personal-data flow spec 007 §13 Q4 already deferred | "Mother's Day is three different days for one cross-border buyer" is the problem we exist to solve, and a wrong date here is worse than no page — which is why every cell is `occasionDate(rule, year)` and why Romania's Orthodox Easter is printed as *omitted*, not guessed |
 
+## Spec 009's product page, one row
+
+Spec 009 §12 asks for the PDP to be traceable on its own, for the reason the spec 008 rows exist:
+the decisions moved. The row below is drawn against the same 2026-09-09 study and against the
+**2026-09-16 founder resolution**, and where it and the `product-*` row in the first table disagree,
+**this row wins** — the first table is the round-2 reading, this one is spec 009's.
+
+| Wireframe | Benchmark | What we took | What we dropped | Why |
+|---|---|---|---|---|
+| `wireframes/product-*.dc.html` | `01-product-page.md` §2.1, §2.3, §2.4, §2.6, §2.9, §3.1, §3.3, §3.9 | **The fee printed on every selectable date, not only the surcharged one** — FloraQueen's "Tomorrow 10 September €8,90" is the only place in the field where money sits next to a day, and ours is the same element with nothing left to add (`plan/04` §7). **The cutoff stated in the recipient's time zone** — 1-800-Flowers' "by the following times in your recipient's time zone"; ours reads "Order by 14:00 in Warsaw — the recipient's time, not yours", absolute, with the city named. Also kept: stem-count tiers over adjectives; the substitution sentence on the page rather than in Help; a closed date carrying its reason **in words** before it is chosen; Fleurop's regional-holiday warning made **factual per destination** instead of "it might be"; "what the price does not include: a vase" (Euroflorist PL); an availability state that is a sentence and a way onward rather than a dead end | **The live countdown** — taken in round 2 from Interflora PL's "Zamówisz w ciągu …", and dropped here **for a caching reason rather than an ethical one**: the PDP is served from cache for up to an hour (300 s once live), so a countdown is wrong within a minute of being rendered and a cached relative "Today" is wrong after destination-midnight. Both would be *false statements rendered by us, by a template, at scale, in four locales*. Also dropped: the struck-through "regular price" on every tier; a shared review pool presented as this product's; the delivery fee revealed at date selection or checkout; a percentage service fee in fine print; "BESTSELGER" on a fixed middle tier; date and address deferred to the basket; a client-rendered price and schema. And three things this round removes from our own draft: the **"Continue" button** and the **add-on checkboxes** (there is no basket), and the **withdrawal-right sentence** and the **photo-on-delivery promise** (lawyer-gated and spec-027-gated) | Drip pricing is banned by the UK DMCC and breaks `plan/07` §4, and the date chip is where we either keep that promise or break it. The countdown is the one item the study made a *must-have* that we now decline: `plan/07` §4 permits one only from real cutoff data, and cached HTML cannot carry a truthful clock — so it returns in Phase 1 with the shorter revalidate window and the scheduled cutoff purge, not as a client timer that would make the JS page say something the no-JS page does not. The three removals from our own draft follow the same rule the whole directory runs on: **a block whose backing is missing renders nothing** |
+
 `wireframes/how-it-works-*.dc.html` draws on `03-destination-and-corridor-pages.md` §2.1 and §2.2
 (the three-sentence explanation and the customs answer); `wireframes/category-hub-*.dc.html` has its
 own row in the spec 008 table above. `wireframes/blog-*`, `wireframes/errors-*`,
@@ -51,11 +62,11 @@ has nothing to say about them.
 
 | # | Pattern (`00-summary.md`) | Where it is now |
 |---|---|---|
-| 1 | Destination and date before the basket | Numbered steps 1–2–3 on `product-*`; the date control above the grid on `country-shop-*`; the date carried into step 1 of `checkout-*`; `flows/buyer-journey.dc.html` step order |
-| 2 | The fee printed next to each selectable date | Every chip on `product-*` prints "included" or "+29 zł"; the same chips repeat in `checkout-*` and above the grid on `country-shop-*` |
+| 1 | Destination and date before the basket | The destination in the URL and the date on `product-*`, never deferred to the basket; the date carried into step 1 of `checkout-*`; `flows/buyer-journey.dc.html` step order. The **numbered 1–2–3 gating is gone** with the "Continue" button it gated — in Phase 0 there is no basket, so there is nothing to gate |
+| 2 | The fee printed next to each selectable date | Every chip on `product-*` prints "included" or its exact amount ("+£5.00" on Women's Day, Mon 8 Mar 2027, from the committed 25 zł `peak_day` row); the same chips repeat in `checkout-*`. **Not** above the grid on `country-shop-*` any more — spec 008 dropped the date control with the badge, because no destination has a cutoff |
 | 3 | Nobody charges what they display | The all-in price on every card and every tier, the "nothing is added at the next step" line on `product-*`, and the one total in `checkout-*` step 3 |
 | 4 | The three-sentence cross-border explanation | `how-it-works-*` (as the opening), `corridor-country-*` (under the H1), the below-grid block on `country-shop-*` and `country-category-*`, and the homepage's "How we send your flowers" section |
-| 5 | Cutoffs in the recipient's time zone | The utility strip on every artboard, the countdown tile on `product-*`, the cutoff table on `guarantee-and-delivery-*`, and the timeline on `track-order-*` |
+| 5 | Cutoffs in the recipient's time zone | The **absolute** cutoff line on `product-*` ("Order by 14:00 in Warsaw — the recipient's time, not yours"), the cutoff table on `guarantee-and-delivery-*`, and the timeline on `track-order-*`. The **countdown tile is gone** (spec 009 §13 Q4) and so is the cutoff sentence in `product-*`'s utility strip, which promised same-day delivery to a destination with no florist |
 | 6 | Country pages as the SEO backbone | `corridor-country-*` (live and guide states on one artboard) plus `all-destinations-*` featured-then-A–Z; seven destinations, not 143 |
 | 7 | The unique country content is practical, not lyrical | The four-tile "Practical, for Poland" block on `corridor-country-*`: address format, hospitals, funerals, offices |
 | 8 | Occasions are the dominant query class and the calendar is mishandled | Dated vs everyday on `occasion-hub-*`; the three-country date table on `occasions-index-*`; the date and cutoff in the header category row on every artboard; the destination's date on `country-occasion-*` |
@@ -123,6 +134,40 @@ names it here.
     survives Phase 0: no destination has a cutoff, a delivery day or a soonest date. Confirm that
     the grid stays badge-free until a country is genuinely operational, rather than showing a
     date control that cannot be honoured. (`02` §2.1, §4.3)
+
+17. **Four shipped strings still promise same-day delivery to Poland.** `nav.utility.cutoff`
+    ("Order by 14:00 in Warsaw for delivery today"), `nav.utility.cutoffShort`, `finder.cutoff` and
+    `faq.whoDelivers.answer` are all in `messages/en.json` today, and every one of them states a
+    cutoff and a same-day promise for a destination whose picker says, one screen later, that we
+    cannot offer a delivery date at all. The spec 009 artboards drop the sentence from the product
+    page's own chrome, but the four keys are chrome and FAQ copy that spec 004 and spec 007 own.
+    **Either they are rewritten to the honest form, or they are gated on `pickerState() === 'live'`
+    the way the picker is.** (`01` §2.3, spec 009 §8)
+18. **The Sunday surcharge can never apply in Poland.** `prices.data.ts` carries an 18 zł `sunday`
+    surcharge row for every product in PL, and §13 Q3's authored `operations` block sets
+    `sundayDelivery: false` — so no Sunday is ever selectable and the 18 zł is unreachable. The
+    artboards print it on the closed Sunday chips, because it is real committed data and hiding it
+    would make the sheet lie about the dataset. **Either the surcharge rows come out, or Poland
+    delivers on Sundays at 18 zł.** The same question applies to the six other destinations, whose
+    surcharge rows exist and whose `operations` blocks do not. (`01` §4.3, spec 005 §2)
+19. **The surcharge on a chip is a difference of two totals, not a converted fee.** Women's Day,
+    Monday 8 March 2027 carries a committed 25 zł `peak_day` row. At `en-gb` that is £4.96 by the
+    rate and **£5.00** by the rounding ladder, which is what the chip prints, because the only
+    honest figure is `priceProjection(withDate) − priceProjection(withoutDate)` — the number the
+    buyer's total actually moves by. **Confirm the chip prints the delta of two projections**, not a
+    converted surcharge, and that the summary's surcharge line uses the same figure. (`01` §2.1)
+20. **Add-on prices have no display-currency projection.** `listAddons()` and
+    `addon_country_price` give a destination-currency amount and its own VAT rate; spec 005 exports
+    no add-on equivalent of `priceProjection()`, so the artboards print "25 zł" beside a £46.90
+    bouquet. That is honest and it is also two currencies on one page. **Either spec 010 adds an
+    add-on projection, or the list stays in the destination's currency with a sentence saying so.**
+    (`01` §2.7, spec 005 §5.2)
+21. **Does the 7-day freshness guarantee render on the product page?** `trust.guarantee.name` and
+    `trust.guarantee.claim` are shipped copy ("7-day freshness guarantee" / "We redeliver or
+    refund, your choice."). Spec 009 §2 names only the substitution sentence as the Phase 0 trust
+    claim, so the artboards draw one claim and no more. The guarantee is a statement about how we
+    work rather than a promise about a florist we do not have, so it is arguably in the same class
+    as substitution. **Confirm one claim or two.** (`01` §2.5, spec 009 §13 Q7)
 
 ## Related
 
