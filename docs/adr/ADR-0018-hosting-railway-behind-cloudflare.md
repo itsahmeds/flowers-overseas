@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | proposed (founder decision 2026-09-16; ADR text to be confirmed) |
+| Status | accepted (founder, 2026-09-16 — with spec 040 §13 Q1–Q6 defaults) |
 | Date | 2026-09-16 |
 | Deciders | Ahmed |
 | Supersedes | ADR-0012 (hosting half; the database half was already superseded by ADR-0015) |

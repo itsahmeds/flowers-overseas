@@ -12,8 +12,8 @@ International flower **relay** service for Europe (`flowersoverseas.com`). Buyer
 4. Operational simplicity for a solo founder
 5. Cost
 
-## Stack (ADR-0008, ADR-0012)
-Next.js App Router (TS strict) · Supabase Postgres EU (Drizzle for data, Supabase for Auth/Storage) · pg-boss jobs · Stripe primary / Mollie fallback · Resend · Vercel (Railway+Cloudflare fallback) · next-intl · Tailwind with logical properties · Vitest, Playwright, MSW · Sentry.
+## Stack (ADR-0008, ADR-0015, ADR-0018)
+Next.js App Router (TS strict) · Postgres on Neon EU (Drizzle; Auth.js for identity; Cloudflare R2 for media — ADR-0015) · pg-boss jobs · Stripe primary / Mollie fallback · Resend · Railway (Amsterdam, single replica) behind Cloudflare, Vercel Hobby kept only as a cold fallback until spec 040's exit signal (ADR-0018) · next-intl · Tailwind with logical properties · Vitest, Playwright, MSW · Sentry.
 
 ## Non-negotiable rules
 - **No application code without a spec in `specs/` and a task ID in `TASKS.md`.** The PreToolUse hook blocks edits under `src/`, `app/`, `supabase/`, `db/`, `emails/`, `seed/`, `tests/` unless `.claude/state/active-task` names a task. Set it with `.claude/bin/task.sh set TASK-XXX` (the `/implement` skill does this).

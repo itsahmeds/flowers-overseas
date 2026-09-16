@@ -80,11 +80,13 @@ Every architectural or business decision below has an ADR in `docs/adr/`. ADRs a
 | [ADR-0009](../docs/adr/ADR-0009-event-sourced-order-lifecycle.md) | Order lifecycle as a state machine emitting events to a single `order_events` table | accepted | 2026-09-05 |
 | [ADR-0010](../docs/adr/ADR-0010-buy-crm-build-vendor-portal.md) | Buy the CRM, build the vendor portal | accepted | 2026-09-05 |
 | [ADR-0011](../docs/adr/ADR-0011-spec-driven-dev-os.md) | Spec-driven development OS with agents, task IDs and an edit guard | accepted | 2026-09-05 |
-| [ADR-0012](../docs/adr/ADR-0012-hosting-vercel-supabase-railway-fallback.md) | Vercel + Supabase EU; Railway-behind-Cloudflare fallback | accepted | 2026-09-05 |
+| [ADR-0012](../docs/adr/ADR-0012-hosting-vercel-supabase-railway-fallback.md) | Vercel + Supabase EU; Railway-behind-Cloudflare fallback | superseded-by ADR-0018 (hosting) · ADR-0015 (data) | 2026-09-05 |
 | [ADR-0013](../docs/adr/ADR-0013-resend-transactional-email.md) | Resend for transactional email (EU); marketing automation in the CRM | accepted | 2026-09-05 |
 | [ADR-0014](../docs/adr/ADR-0014-ai-generated-seed-imagery.md) | AI-generated seed imagery under a locked style guide | accepted | 2026-09-05 |
 | [ADR-0015](../docs/adr/ADR-0015-portable-postgres-neon-hetzner-r2-authjs.md) | Portable Postgres (Neon now, Hetzner later), Cloudflare R2 for images, Auth.js for identity; Supabase dropped | accepted | 2026-09-08 |
 | [ADR-0016](../docs/adr/ADR-0016-csp-allowlist-hash-on-cached-html.md) | CSP on cached HTML: per-environment allowlist + inline-script hash; nonce + `'strict-dynamic'` reserved for `no-store` routes; Report-Only first | accepted | 2026-09-08 |
+| [ADR-0017](../docs/adr/ADR-0017-catalogue-dataset-ownership.md) | Catalogue dataset ownership: `src/config/catalogue/*.data.ts` is the single authored source; `seed/data/` are generated projections | accepted | 2026-09-09 |
+| [ADR-0018](../docs/adr/ADR-0018-hosting-railway-behind-cloudflare.md) | Hosting: Railway (Amsterdam, single replica) behind Cloudflare as primary; Vercel Hobby retained as cold fallback until spec 040's exit signal | accepted | 2026-09-16 |
 
 ## 7. Document map
 

@@ -2,12 +2,12 @@
 
 | Field | Value |
 |---|---|
-| Status | draft |
+| Status | approved |
 | Phase | 0 |
 | Plan refs | plan/01 §3 §5 §6 §7 · plan/02 §3 §4 §5 §6 §7 §8 §9 §10 §11 §12 §14 §15 · plan/03 §1 §5 §6 §7 §9 §10 §11 · plan/04 §2 §4 §6 §12 §15 §16 · plan/05 rows 6, 7, 8, 10, 13, 14 · plan/07 §2.1 §3 §4 §6 §7 §8 §9 · plan/09 Phase 0 (29 Sep–5 Oct; AC 1, 2, 3, 6) · plan/10 §1 §2 §3 §4 §5 · plan/12 §4 §5 · plan/13 §A (A4, A8), §B (B12), §C (C2) |
 | ADRs | ADR-0001 (one domain, locale subfolders) · ADR-0003 (tiered locale rollout) · ADR-0006 (no IP redirects) · ADR-0007 (index only true pages in Phase 0) · ADR-0014 (AI seed imagery) · ADR-0016 (CSP allowlist on cached HTML) · ADR-0017 (catalogue dataset ownership) · ADR-0018 (Railway behind Cloudflare, single replica) · requests one amendment to spec 005 §5.2 (§5.1 below) and one to spec 006 §2.3 (§5.1); proposes no new ADR |
 | Author / date | spec-writer via /spec · 2026-09-16 |
-| Approved by / date | — (draft; §13 must be ruled first) |
+| Approved by / date | Ahmed (founder) · 2026-09-16 — every §13 default (Q1–Q10) accepted as written |
 
 ## 0. Index
 
@@ -388,6 +388,8 @@ Each carries the default this spec is written against; the spec stays `draft` un
 - **Q8 — What does a product card do between 008 and 009?** **Default: nothing — it is a tile, not a link**, until spec 009 publishes the product link id; the flip is a data change with no markup change (spec 004 AC-11's proof, applied again). Since 008 and 009 land in the same week the window is short. Alternative: sequence 009's route first and have 008 land with working links — which reverses the roadmap's order and blocks the shop on the PDP.
 - **Q9 — Does the currency menu do anything on a listing page in Phase 0?** **Default: no.** Prices render in the locale's default currency (005 §7's rule that keeps cached HTML byte-identical), the currency chip stays the text spec 004 shipped, and neither the `fo_currency` cookie nor the embedded `priceTable` is used here. The repaint island and the embedded table belong to the page where the currency decides a payment, which is the PDP and checkout. Cost: a `/de/` buyer sending to Poland sees euros, not złoty, which is the correct default anyway.
 - **Q10 — Who authors the ~31 category and occasion slugs in `de` and `pl`, and when?** **Default: the founder, before task 2**, because a URL is never machine-drafted (`plan/02` §12; the same rule `countries.ts` records for country slugs) and because an unauthored slug means no page in that locale. Hub *intros* follow the corridor pattern: `en` authored now, `de`/`pl` queued for the `plan/13` B12 native reviewers and `noindex` until reviewed. Alternative: ship `de`/`pl` with English slugs — rejected; a German URL reading `/de/blumen/roses` is the kind of half-translated page `plan/02` §12 exists to prevent.
+
+**Resolution (2026-09-16, founder):** all ten defaults accepted without amendment. Q1 the shop is independent of the corridor (the country crumb links where a guide exists, plain text otherwise); Q2 `?page=N` kept, listing routes server-rendered behind the Cloudflare edge cache (`s-maxage=3600, stale-while-revalidate=86400`) with tag-keyed data caching beneath — no `plan/02` §7 amendment; Q3 a founder-set curation order labelled plainly with a one-sentence disclosure, price ascending/descending beside it, never "bestsellers"/"popular"/"recommended" before data exists; Q4 hubs list countries first, then unpriced products with the price-depends sentence, and `/{locale}/flowers` is a 404; Q5 no `Product`/`Offer` until a live country and spec 010's basket — `ItemList` + `BreadcrumbList` only; Q6 no filters, sort only, facet-shaped parameters neutralised, `noindex`-ed and canonicalised; Q7 product floor 6 applied to existence (1 for the shop root); Q8 the product card is a tile until spec 009 publishes the link id; Q9 the currency menu is inert on listings and cached HTML carries the locale's default currency; Q10 the founder authors the ~31 `de`/`pl` category and occasion slugs before task 2, hub intros `en` now and `de`/`pl` `noindex` until native review. Next: §12 artboards in `docs/design/` (design round), then `/plan-tasks`.
 
 ## 14. Amendments (post-approval corrections)
 

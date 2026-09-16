@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | accepted |
+| Status | superseded-by ADR-0018 (hosting half, 2026-09-16); data layer superseded-by ADR-0015 (2026-09-08) |
 | Date | 2026-09-05 |
 | Deciders | Ahmed |
 | Supersedes | — |

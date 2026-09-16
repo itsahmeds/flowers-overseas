@@ -2,12 +2,12 @@
 
 | Field | Value |
 |---|---|
-| Status | draft |
+| Status | approved |
 | Phase | 0 (platform series; see the numbering note below) |
 | Plan refs | plan/01 §3 §7 §9 §10 · plan/02 §7 §8 §10 §14 §15 §16 · plan/03 §2 (no geo redirect) · plan/07 §1.4 §8 §10 · plan/08 §2 (option 3) §3.3 §3.4 §3.5 §3.6 §3.7 §3.8 §6 §7 §8 §9 §10 · plan/12 §4 §5 |
 | ADRs | **ADR-0018** (Railway behind Cloudflare; supersedes ADR-0012's hosting half) · ADR-0015 (Neon + R2) · ADR-0016 (CSP allowlist + build-time inline hash on cached HTML) · ADR-0006 (no IP redirects) · ADR-0007 (index only true pages) · proposes no new ADR |
 | Author / date | spec-writer via /spec · 2026-09-16 |
-| Approved by / date | — |
+| Approved by / date | Ahmed (founder) · 2026-09-16 — ADR-0018 accepted; every §13 default (Q1–Q6) accepted as written |
 
 ## 0. Index
 
@@ -780,6 +780,8 @@ Six, each with a default the implementation follows if the founder says nothing.
   `src/proxy.ts`** (§5.4): free, testable, and it protects a Railway URL even before Cloudflare is in
   front of it. Cloudflare Access is nicer for humans (Google login, no shared password) and is a
   one-setting change later if the florist demos make a shared password awkward.
+
+**Resolution (2026-09-16, founder):** ADR-0018 accepted and all six defaults accepted without amendment. Q1 Dockerfile; Q2 the Railway project is transferred to a founder-owned workspace with Grovant added as a member before the first production deploy (the RoPA controller line and the DPA counterparty follow from that); Q3 Cloudflare Free; Q4 the shared ISR cache handler arrives only when p95 origin CPU exceeds 70 % for a day or a peak-day plan needs a second replica — a separate spec; Q5 Vercel is unlinked at §12's exit signal and no earlier; Q6 basic-auth in `src/proxy.ts` for non-production, Cloudflare Access revisited if shared passwords prove awkward for florist demos. Next: `/plan-tasks` (no design round — no page changes).
 
 ## 14. Task estimate (input to `/plan-tasks`)
 

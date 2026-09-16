@@ -2,12 +2,12 @@
 
 | Field | Value |
 |---|---|
-| Status | draft |
+| Status | approved |
 | Phase | 0 |
 | Plan refs | plan/01 §3 §5 §7 · plan/02 §3 §4.1 §4.2 §6 §7 §8 §9 §10 §11 §12 §14 §15 · plan/03 §5 §6 §7 §9 §10 §11 · plan/04 §5 §6 §7 §12 §15 §16 · plan/05 row 9 · plan/06 §5.2 §5.4 §7 · plan/07 §2.1 §4 §6 §7 §8 §9 · plan/09 Phase 0 (29 Sep–5 Oct) · plan/10 §1.1 §2.2 §2.3 §5 · plan/11 §2 · plan/12 §2 §4 §5 · plan/13 §B (B4, B12, B15), §D (D6) |
 | ADRs | ADR-0003 (tiered locale rollout) · ADR-0006 (no IP redirects) · ADR-0007 (index only true pages in Phase 0) · ADR-0014 (AI seed imagery) · ADR-0016 (CSP allowlist on cached HTML) · ADR-0017 (catalogue dataset ownership) · ADR-0018 (Railway behind Cloudflare, single replica) · requests one amendment to spec 007 §2/AC-24 (the island exception, §5.4), one to spec 005 §14 (`slugs.ts` gains `kind: "product"`, §5.1), one to spec 006 §14 (two seed occasion rows, §5.1); proposes no new ADR |
 | Author / date | spec-writer via /spec · 2026-09-16 |
-| Approved by / date | — (draft; §13 must be ruled first) |
+| Approved by / date | Ahmed (founder) · 2026-09-16 — every §13 default (Q1–Q8) accepted as written |
 
 ## 0. Index
 
@@ -383,6 +383,8 @@ Each carries the default this spec is written against; the spec stays `draft` un
 - **Q6 — Do add-ons get checkboxes in Phase 0?** **Default: no — a priced, read-only list.** There is no basket to add one to, and a checkbox that changes a total the buyer cannot act on is a worse experience than a clear price list. The inputs, and the recomputation with them, are spec 010's. Alternative: checkboxes that update the displayed total — one more parameter, one more island behaviour, and a "total" that nothing can charge.
 - **Q7 — Where does the withdrawal-right notice live, and what else does the trust block claim?** **Default: not on the Phase 0 PDP.** The perishable-goods withdrawal disclosure is a legal statement, is lawyer-gated (`plan/13` B4) and belongs to spec 010 and the legal page set; the delivery-photograph promise is gated on spec 027 (founder ruling 2026-09-15); the "our florist in the recipient's town" claim is gated on an active partner. What renders in Phase 0 is the substitution sentence and the honest demo sentence — and the artboard loses the other three. Alternative: keep an informational perishability sentence with no legal effect — cheap, but it is the kind of sentence a regulator reads as a disclosure, so it should go through the same lawyer pass as the rest.
 - **Q8 — May the PDP emit `Product` without `Offer` in Phase 0?** 008 §13 Q5 deferred exactly this decision to 009. **Default: emit neither — `BreadcrumbList` only.** A `Product` node with no `Offer` earns no rich result, produces a "missing field offers" warning in Search Console, and describes an item on a page that is `noindex` anyway; the builder is written, tested against `offerProjection()` and gated, so the day a live country has a purchase path it is a data flip. Alternative: emit `Product` (name, image, description, sku, brand) now for entity understanding — defensible, and it buys nothing while every PDP is `noindex`. Related and decided here, not deferred: **no cross-country canonical**; each (locale, country, product) is self-canonical per `plan/02` §4.2, with the 10% GSC duplicate rate as the trigger to revisit.
+
+**Resolution (2026-09-16, founder):** all eight defaults accepted without amendment. Q1 one authored ASCII product slug shared by all four locales, with an optional per-locale override honoured when a translation authors one; Q2 the three data-driven picker states — `unavailable` everywhere on day one, `preview` (full calendar, nothing selectable, labelled heading) wherever an `operations` block is authored, `live` only behind an active partner; Q3 PL = `Europe/Warsaw`, 14:00 same-day cutoff, Mon–Sat, no Sunday delivery, authored by the founder; no other country gets an `operations` block and there is no global default cutoff; Q4 the countdown and the "today"/"tomorrow" chips leave cached HTML — absolute cutoff and absolute dates render; Q5 exactly one client island, ≤2 048 B Brotli, no network, PDP only, recorded as an amendment to spec 007 AC-24 by the task that ships it; Q6 add-ons as a priced read-only list; Q7 no withdrawal notice, no delivery-photo promise and no "our florist in the recipient's town" claim on the Phase 0 PDP; Q8 `BreadcrumbList` only — no `Product`/`Offer` — and no cross-country canonical. Next: §12 artboards in `docs/design/` (design round), then `/plan-tasks`.
 
 ## 14. Amendments (post-approval corrections)
 

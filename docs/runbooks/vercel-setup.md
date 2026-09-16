@@ -1,5 +1,8 @@
 # Runbook — Vercel project setup (spec 001 AC-29, TASK-007)
 
+> **Superseded (2026-09-16, ADR-0018).** Hosting moves to Railway behind Cloudflare. This runbook is kept only for the cold Vercel fallback and is replaced by `docs/runbooks/railway-cloudflare-setup.md` (spec 040, TASK-104). Set no new production variables in Vercel; PR #62's variable gate is now the Railway variable set (spec 040, TASK-098).
+
+
 **Owner:** founder (account-level actions; the repository half is merged with TASK-007).
 **When:** once, before the `preview` CI job can pass on any PR.
 **Time:** ~20 minutes.
