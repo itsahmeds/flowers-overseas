@@ -64,7 +64,7 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
 
 ## Result
 
-Shipped as PR #69. The route `src/app/[locale]/(marketing)/[destinations]/[country]/page.tsx`
+Shipped as PR #70. The route `src/app/[locale]/(marketing)/[destinations]/[country]/page.tsx`
 (ISR 86 400 s, `dynamicParams = false`, `generateStaticParams()` over the existence rule) mounts
 one Server Component from `src/modules/geo/ui/`; `src/modules/geo/corridor.ts` holds the existence
 rule, the four-term state rule and `corridorView()`, and `partners.ts` holds the
