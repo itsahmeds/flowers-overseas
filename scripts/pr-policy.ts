@@ -36,7 +36,7 @@ export const NO_TASK_LABEL = "no-task";
 export const GUARDED_PATHS = [
   "src/",
   "tests/",
-  "supabase/",
+  "db/",
   "seed/",
   "emails/",
 ] as const;

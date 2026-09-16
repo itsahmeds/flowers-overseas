@@ -43,7 +43,14 @@ export const REQUIRED_DIRS = [
   "tests/contract",
   "tests/visual",
   "tests/fixtures",
-  "supabase/migrations",
+  // spec 002 §13 Q2 option A (ADR-0015, TASK-014): the data layer lives at the repository root
+  // under `db/`, not in a vendor's directory. `db/migrations/` holds `NNNN_name.sql` with its
+  // hand-written `NNNN_name.down.sql`; `db/schema/` holds the Drizzle table definitions that
+  // `drizzle.config.ts` generates from and `pnpm db:check` compares against. `supabase/` is gone:
+  // nothing in the stack is Supabase any more, and a directory named after a dead dependency is
+  // a direction sign pointing at a wall.
+  "db/migrations",
+  "db/schema",
   "seed",
   // spec 006 §2.2 (TASK-072): the seed dataset and the schemas it parses under. `seed/schema/`
   // holds every `Seed*Schema` and every `to*Row()` projection onto spec 002 §5.1's columns;

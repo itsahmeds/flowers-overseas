@@ -345,9 +345,10 @@ jobs:
             exit 1
           fi
 
-  # spec 001 §5.1: a stub until spec 002. It already enforces the rule that would otherwise be
-  # remembered too late — every migration has a checked-in rollback (`CLAUDE.md`) — and prints
-  # `no migrations` while `supabase/migrations/` holds only its `.gitkeep`.
+  # The offline migration gate (spec 001 §5.1, extended by spec 002 §2 / TASK-014): rollback
+  # pairing, version sequence, the `SET LOCAL ROLE app_owner` preamble and table-level drift
+  # between `db/schema/` and `db/migrations/`. No database and no credentials, by design — the
+  # connected half of AC-26 arrives with TASK-027.
   db-check:
     name: db-check
     runs-on: ubuntu-latest
@@ -364,16 +365,15 @@ jobs:
         if: always()
         run: |
           set -uo pipefail
-          migrations=$(find supabase/migrations -maxdepth 1 -type f -name '*.sql' ! -name '*.down.sql' | wc -l | tr -d ' ')
-          rollbacks=$(find supabase/migrations -maxdepth 1 -type f -name '*.down.sql' | wc -l | tr -d ' ')
+          migrations=$(find db/migrations -maxdepth 1 -type f -name '*.sql' ! -name '*.down.sql' | wc -l | tr -d ' ')
+          rollbacks=$(find db/migrations -maxdepth 1 -type f -name '*.down.sql' | wc -l | tr -d ' ')
           {
             echo "### db-check (spec 001 §5.1)"
             echo ""
             echo "- \`pnpm db:check\`: ${{ steps.db.outcome }} — $( [ -f db-check.log ] && tr '\n' ' ' < db-check.log || echo 'did not run' )"
             echo "- forward migrations: $migrations; rollback files: $rollbacks"
             if [ "$migrations" = "0" ]; then
-              echo "- stub until spec 002, which replaces the body of \`scripts/db-check.ts\` with"
-              echo "  schema-drift and RLS checks against a real database."
+              echo "- no migrations committed yet."
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 

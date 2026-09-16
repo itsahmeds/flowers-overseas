@@ -97,7 +97,8 @@ task actually touches.
 | `corridor-check.ts` | `corridor:check` | `pnpm corridor:check` — the corridor content gate (spec 007 §2, §11, AC-2 /… |
 | `corridor-index.ts` | `corridor:index` | `pnpm corridor:index` — regenerate the typed corridor-corpus index (spec 007 §2… |
 | `coverage-thresholds.ts` | — | Coverage-threshold loader for `vitest.coverage.json` (spec 001 §2 "Testing… |
-| `db-check.ts` | `db:check` | `pnpm db:check` — the migration gate (spec 001 §2 "Scripts", §5.1; TASK-011) |
+| `db-check.ts` | `db:check` | `pnpm db:check` — the migration gate (spec 001 §2 "Scripts", §5.1; spec 002 §2,… |
+| `db-migrate.ts` | `db:migrate` | `pnpm db:migrate` / `pnpm db:rollback` — the migration runner (spec 002 §2… |
 | `dev-os-check.ts` | `dev-os:check` | `pnpm dev-os:check` (spec 001 §2 "Scripts", §11 "Dev OS", AC-24/AC-25/AC-26 ·… |
 | `env-check.ts` | `env:check` | `pnpm env:check` (spec 001 AC-11 / T-12, TASK-005) |
 | `fonts/build-fonts.ts` | `fonts:build` | `pnpm fonts:build` — regenerates the committed WOFF2 subsets under… |
@@ -121,7 +122,7 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 168 |
+| `tests/unit/` | 170 |
 | `tests/integration/` | 2 |
 | `tests/contract/` | 3 |
 | `tests/e2e/` | 21 |

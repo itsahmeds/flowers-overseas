@@ -44,7 +44,7 @@ describe("pr-policy patterns", () => {
     expect([...GUARDED_PATHS]).toEqual([
       "src/",
       "tests/",
-      "supabase/",
+      "db/",
       "seed/",
       "emails/",
     ]);
