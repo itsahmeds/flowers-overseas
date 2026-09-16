@@ -23,15 +23,23 @@ import { describe, expect, it } from "vitest";
 import { parse } from "yaml";
 
 import {
+  parseCorridorContent,
+  splitCorridorFile,
+} from "../../src/modules/geo/content/parse.ts";
+import { RELATED_MAX } from "../../src/modules/geo/content/schemas.ts";
+import {
   CORRIDOR_CHECK_RULES,
   type CorridorCheckRule,
+  SHINGLE_DISTINCTNESS_MIN,
+  SHINGLE_SIZE,
   checkCorridorCorpus,
   corridorCheckExitCode,
   corridorSummary,
   corridorSummaryRows,
   formatCorridorProblems,
   readCorridorCheckCorpus,
-  tokenDistinctness,
+  shingleDistinctness,
+  shinglesOf,
 } from "../../scripts/corridor-check.ts";
 import {
   CORRIDOR_CHECK_CASES,
@@ -122,14 +130,124 @@ describe("one deliberately failing fixture per rule (T-03)", () => {
   });
 });
 
-describe("the rules that need the whole corpus", () => {
-  it("measures token distinctness as a multiset difference", () => {
-    expect(tokenDistinctness("one two three", "one two three")).toBe(0);
-    expect(tokenDistinctness("one two three", "four five six")).toBe(1);
-    expect(tokenDistinctness("one two three four", "one two")).toBeCloseTo(
-      0.5,
-      5,
+/**
+ * Rule 5 after spec 007 §14 A4, which replaced the token-multiset overlap with 5-gram shingle
+ * distinctness. The metric is asserted three ways: on its arithmetic, on two real guides (which
+ * must clear the floor), and on a templated page (which must not).
+ */
+describe("token-distinctness is 5-gram shingle distinctness (rule 5, §14 A4)", () => {
+  it("is the Jaccard distance between the two 5-gram shingle sets", () => {
+    expect(SHINGLE_SIZE).toBe(5);
+    expect(SHINGLE_DISTINCTNESS_MIN).toBe(0.8);
+    // Identical text: every shingle shared, so nothing is distinct.
+    expect(shingleDistinctness("a b c d e f", "a b c d e f")).toBe(0);
+    // No five-word run in common.
+    expect(shingleDistinctness("a b c d e", "f g h i j")).toBe(1);
+    // Under five tokens there is no shingle to share, so the union is empty.
+    expect(shingleDistinctness("a b c", "a b c")).toBe(1);
+    // `a b c d e f` has shingles {a b c d e, b c d e f}; `a b c d e x` has {a b c d e, b c d e x}.
+    // One of three union members is shared → 1 − 1/3.
+    expect(shingleDistinctness("a b c d e f", "a b c d e x")).toBeCloseTo(
+      2 / 3,
+      10,
     );
+  });
+
+  it("builds contiguous shingles as a set, so a repeated phrase counts once", () => {
+    expect([...shinglesOf("a b c d e a b c d e")]).toStrictEqual([
+      "a b c d e",
+      "b c d e a",
+      "c d e a b",
+      "d e a b c",
+      "e a b c d",
+    ]);
+  });
+
+  it("scores two genuine guides above the floor and a templated page below it", () => {
+    const bodyOf = (path: string): string => {
+      const file = corpus.files.find((candidate) => candidate.path === path);
+      if (file === undefined) throw new Error(`missing corpus file: ${path}`);
+      const split = splitCorridorFile(file.path, file.source);
+      if (!split.ok) throw new Error(`does not split: ${path}`);
+      return split.body;
+    };
+
+    const poland = bodyOf("en/pl-guide.md");
+    const germany = bodyOf("en/de-guide.md");
+    expect(shingleDistinctness(poland, germany)).toBeGreaterThanOrEqual(
+      SHINGLE_DISTINCTNESS_MIN,
+    );
+
+    // The templated page: the same guide with the place names swapped, which is the failure
+    // plan/02 §1 catalogues. It keeps every sentence, so it shares nearly every shingle.
+    const templated = poland
+      .replaceAll("Poland", "the Netherlands")
+      .replaceAll("Polish", "Dutch");
+    expect(shingleDistinctness(poland, templated)).toBeLessThan(
+      SHINGLE_DISTINCTNESS_MIN,
+    );
+  });
+
+  it("measures every committed body against every sibling in its locale", () => {
+    for (const locale of ["en", "en-gb"]) {
+      const bodies = corpus.files
+        .filter((file) => file.path.startsWith(`${locale}/`))
+        .map((file) => {
+          const split = splitCorridorFile(file.path, file.source);
+          if (!split.ok) throw new Error(`does not split: ${file.path}`);
+          return split.body;
+        });
+      expect(bodies).toHaveLength(7);
+      for (const own of bodies) {
+        for (const other of bodies) {
+          if (own === other) continue;
+          expect(shingleDistinctness(own, other)).toBeGreaterThanOrEqual(
+            SHINGLE_DISTINCTNESS_MIN,
+          );
+        }
+      }
+    }
+  });
+
+  it("has no trace of the multiset metric it replaced — a dead metric is a second answer", () => {
+    const source = readFileSync(
+      resolve(repoRoot, "scripts/corridor-check.ts"),
+      "utf8",
+    );
+    expect(source).not.toContain("tokenDistinctness");
+    expect(source).not.toContain("TOKEN_DISTINCTNESS_MIN");
+  });
+});
+
+describe("the rules that need the whole corpus", () => {
+  /**
+   * Rule 18 after spec 007 §14 A3. The failing fixture above is the free-slot half; this is the
+   * other half, and it has to be asserted here because the committed corpus depends on it: `NL`
+   * names `FR`, `FR` names `DE`, `ES` and `IT`, and that edge is one-way by parity, not by
+   * omission. A gate that failed it would have no clean corpus to accept.
+   */
+  it("passes a one-way edge whose target is already full (§14 A3)", () => {
+    const parsed = corpus.files.flatMap((file) => {
+      const result = parseCorridorContent(file.path, file.source);
+      return result.ok ? [result.content] : [];
+    });
+    const netherlands = parsed.find(
+      (content) => content.locale === "en" && content.iso2 === "NL",
+    );
+    const france = parsed.find(
+      (content) => content.locale === "en" && content.iso2 === "FR",
+    );
+
+    // Non-vacuous: the edge really is one-way, and the target really is full.
+    expect(netherlands?.relatedIso2).toContain("FR");
+    expect(france?.relatedIso2).not.toContain("NL");
+    expect(france?.relatedIso2).toHaveLength(RELATED_MAX);
+
+    expect(
+      checkCorridorCorpus(corpus).filter(
+        (problem) => problem.rule === "related-targets",
+      ),
+    ).toStrictEqual([]);
   });
 
   it("lets the same body under two locales through — those are alternates, not duplicates", () => {

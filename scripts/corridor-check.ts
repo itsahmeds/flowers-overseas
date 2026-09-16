@@ -25,7 +25,7 @@
  * | 2 | `source-human` | the file says `source: machine` (`plan/02` §12) |
  * | 3 | `body-word-floor` | the guide body is under 600 words |
  * | 4 | `intro-word-range` | the intro is outside 120–200 words |
- * | 5 | `token-distinctness` | under 70% token-distinct from another corridor file in the locale |
+ * | 5 | `token-distinctness` | under 0.80 5-gram shingle-distinct from another corridor file in the locale |
  * | 6 | `faq-count` | fewer than 8 or more than 12 FAQ items |
  * | 7 | `faq-country-specific` | under half the FAQ questions name the country or something in it |
  * | 8 | `seo-title` | `seoTitle` is absent or over 60 characters |
@@ -38,7 +38,7 @@
  * | 15 | `price-literal` | a price literal in copy (prices are data, `formatMoney` only) |
  * | 16 | `live-operations` | a `live` file for a country with no complete `operations` block |
  * | 17 | `en-gb-overrides` | an `en-gb` file that `extends: en` without overriding title, description and ≥2 FAQ answers |
- * | 18 | `related-targets` | `relatedIso2` names an unknown country, or a related file that does not name it back |
+ * | 18 | `related-targets` | `relatedIso2` names an unknown country, or a related file with a free slot that does not name it back |
  *
  * ## Three properties that are design, not accident
  *
@@ -73,6 +73,20 @@
  * therefore implemented as a **URL-shaped** grep — the slug adjacent to a `/` or a `-`
  * (`send-flowers-to/poland`, `poland-guide`) — which is the leak the rule exists to catch, while
  * prose may of course name the country. Recorded in `docs/tasks/TASK-087.md` and in the PR.
+ *
+ * ## Two rules the corpus proved unsatisfiable as written (spec 007 §14 A3, A4; TASK-088)
+ *
+ * **Rule 18 is slot-aware.** AC-18 wants every `relatedIso2` edge reciprocated, which makes the
+ * graph undirected; seven destinations each naming exactly three others is 21 edge-ends, and an
+ * undirected graph's edge-ends are even. A3 widened `relatedIso2` to a 2–3 band and made
+ * reciprocity owed only where the target has a free slot, so a one-way edge onto a target already
+ * full at `RELATED_MAX` passes and one onto a target with room does not.
+ *
+ * **Rule 5 measures 5-gram shingles, not a token multiset.** A4: distinctness is
+ * `1 − |S_a ∩ S_b| / |S_a ∪ S_b|` over the sets of contiguous five-token shingles, floored at 0.80.
+ * The old multiset metric measured shared English vocabulary — two unrelated documents scored 82%
+ * while seven genuinely different guides scored 36–51% — so it ranked padding above prose. The
+ * rule id and AC-2's "70%" intent are unchanged; only the measurement is.
  */
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -103,6 +117,7 @@ import {
   FAQ_MIN,
   INTRO_WORD_MAX,
   INTRO_WORD_MIN,
+  RELATED_MAX,
   SEO_DESCRIPTION_MAX,
   SEO_TITLE_MAX,
   type CountryLocaleContentBase,
@@ -134,8 +149,20 @@ export const CORRIDOR_CHECK_RULES = [
 
 export type CorridorCheckRule = (typeof CORRIDOR_CHECK_RULES)[number];
 
-/** `plan/02` §5.2's uniqueness test: a corridor page is ≥70% token-distinct from its siblings. */
-export const TOKEN_DISTINCTNESS_MIN = 0.7;
+/** Spec 007 §14 A4: the shingle length the distinctness metric measures over. */
+export const SHINGLE_SIZE = 5;
+/**
+ * `plan/02` §5.2's uniqueness test, as re-cut by spec 007 §14 A4: a corridor body is at least
+ * **0.80 5-gram shingle-distinct** from every other corridor file in its locale.
+ *
+ * AC-2 words the floor as "≥70% token-distinct" and that intent stands; the metric behind it is
+ * the correction. A token multiset with stop-words retained floors two honest English texts of
+ * this length at roughly 45–55% shared vocabulary — the seven `en` guides measured 36–51% distinct
+ * while two *unrelated* documents measured 82% — so 70% was reachable only by padding, which AC-19
+ * forbids. Shingle distinctness scores two genuine guides at ~0.95 and a templated page near 0,
+ * which is the failure `plan/02` §1 and §5.2 actually name.
+ */
+export const SHINGLE_DISTINCTNESS_MIN = 0.8;
 /** `plan/02` §5.2: at least half the FAQ questions are about *this* country. */
 export const COUNTRY_SPECIFIC_FAQ_MIN_SHARE = 0.5;
 /** Spec 007 §6 (b): an `en-gb` override changes at least two FAQ answers. */
@@ -398,7 +425,15 @@ export function readCorridorCheckCorpus(
 /** Words of a text: whitespace-separated tokens containing a letter or a digit (`seed/copy.ts`). */
 export { wordCount };
 
-/** The normalised token multiset of a body: lowercased words, stop-words retained (`plan/02` §5.2). */
+/**
+ * The normalised token sequence of a body: lower-cased, Unicode letters and digits only, every
+ * other character treated as a separator, stop-words retained (`plan/02` §5.2).
+ *
+ * Order matters here in a way it did not under the old multiset metric: the shingles below are
+ * *contiguous* runs of this sequence, so the normalisation is what decides whether "Mother's Day"
+ * is one shingle position or two. It is one rule, applied once, and both `shinglesOf` and any
+ * caller that wants raw tokens read it from here.
+ */
 export function tokensOf(text: string): readonly string[] {
   return (text.toLowerCase().match(/[\p{L}\p{N}]+/gu) ?? []).filter(
     (token) => token.length > 0,
@@ -406,25 +441,40 @@ export function tokensOf(text: string): readonly string[] {
 }
 
 /**
- * The share of `a`'s tokens that `b` does not also carry, as a multiset difference. 1 means
- * nothing in common; 0 means `a` is contained in `b`. `plan/02` §5.2 wants ≥0.70.
+ * The set of contiguous `size`-token shingles of a text, over `tokensOf`'s normalisation.
+ *
+ * A *set*, not a multiset: a phrase repeated inside one guide is one thing the author said twice,
+ * not two things two guides share.
  */
-export function tokenDistinctness(a: string, b: string): number {
-  const own = tokensOf(a);
-  if (own.length === 0) return 1;
-  const other = new Map<string, number>();
-  for (const token of tokensOf(b)) {
-    other.set(token, (other.get(token) ?? 0) + 1);
+export function shinglesOf(
+  text: string,
+  size: number = SHINGLE_SIZE,
+): ReadonlySet<string> {
+  const tokens = tokensOf(text);
+  const shingles = new Set<string>();
+  for (let index = 0; index + size <= tokens.length; index += 1) {
+    shingles.add(tokens.slice(index, index + size).join(" "));
   }
+  return shingles;
+}
+
+/**
+ * Spec 007 §14 A4's metric, exactly: the **Jaccard distance between the two texts' 5-gram shingle
+ * sets** — `1 − |S_a ∩ S_b| / |S_a ∪ S_b|`, where `S_x` is the set of contiguous five-token
+ * shingles of `x` under `tokensOf`'s normalisation.
+ *
+ * 1 means the two texts share no five-word run at all; 0 means they are the same text. Two texts
+ * with fewer than five tokens between them share nothing measurable, so the empty-union case is 1.
+ */
+export function shingleDistinctness(a: string, b: string): number {
+  const own = shinglesOf(a);
+  const other = shinglesOf(b);
   let shared = 0;
-  for (const token of own) {
-    const left = other.get(token) ?? 0;
-    if (left > 0) {
-      shared += 1;
-      other.set(token, left - 1);
-    }
+  for (const shingle of own) {
+    if (other.has(shingle)) shared += 1;
   }
-  return 1 - shared / own.length;
+  const union = own.size + other.size - shared;
+  return union === 0 ? 1 : 1 - shared / union;
 }
 
 /** A word-bounded, case-insensitive test for a phrase that may contain spaces. */
@@ -589,14 +639,17 @@ export function checkCorridorCorpus(
     /* 5. token-distinctness --------------------------------------------- */
     for (const other of parsed) {
       if (other === entry || other.content.locale !== content.locale) continue;
-      const distinctness = tokenDistinctness(content.body, other.content.body);
-      if (distinctness < TOKEN_DISTINCTNESS_MIN) {
+      const distinctness = shingleDistinctness(
+        content.body,
+        other.content.body,
+      );
+      if (distinctness < SHINGLE_DISTINCTNESS_MIN) {
         problems.push(
           problem(
             file,
             "body",
             "token-distinctness",
-            `body is ${(distinctness * 100).toFixed(1)}% token-distinct from ${other.file}; ${String(TOKEN_DISTINCTNESS_MIN * 100)}% is the floor (plan/02 §5.2)`,
+            `body scores ${distinctness.toFixed(3)} shingle distinctness against ${other.file}; ${SHINGLE_DISTINCTNESS_MIN.toFixed(2)} is the floor (1 − |S∩S'| / |S∪S'| over the sets of contiguous ${String(SHINGLE_SIZE)}-token shingles; plan/02 §5.2, spec 007 §14 A4)`,
           ),
         );
       }
@@ -863,16 +916,20 @@ export function checkCorridorCorpus(
           candidate.content.locale === content.locale &&
           candidate.content.state === content.state,
       );
-      if (
-        reciprocal !== undefined &&
-        !reciprocal.content.relatedIso2.includes(content.iso2)
-      ) {
+      if (reciprocal === undefined) continue;
+      if (reciprocal.content.relatedIso2.includes(content.iso2)) continue;
+      // Spec 007 §14 A3: reciprocity is owed only where the target can still pay it. A target
+      // already naming `RELATED_MAX` others has nothing free to give back, and forcing the edge
+      // would mean evicting one of its own authored neighbours — which is why a one-way edge onto
+      // a full target is the corpus's shape, not its defect. A target with a free slot that does
+      // not name the source back is an authoring omission, and that is what this reports.
+      if (reciprocal.content.relatedIso2.length < RELATED_MAX) {
         problems.push(
           problem(
             file,
             "relatedIso2",
             "related-targets",
-            `relatedIso2 names \`${target}\`, whose own file ${reciprocal.file} does not name \`${content.iso2}\` back (spec 007 AC-18)`,
+            `relatedIso2 names \`${target}\`, whose own file ${reciprocal.file} does not name \`${content.iso2}\` back and has a free slot (${String(reciprocal.content.relatedIso2.length)} of ${String(RELATED_MAX)} used); reciprocity is required wherever the target can carry it (spec 007 AC-18, §14 A3)`,
           ),
         );
       }

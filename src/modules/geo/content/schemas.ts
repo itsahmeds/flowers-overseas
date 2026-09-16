@@ -48,8 +48,19 @@ export const INTRO_WORD_MIN = 120;
 export const INTRO_WORD_MAX = 200;
 /** `plan/02` §5.1: the guide body is at least 600 country-specific words. */
 export const BODY_WORD_MIN = 600;
-/** `plan/02` §5.2: exactly three related destinations, authored per country. */
-export const RELATED_COUNT = 3;
+/**
+ * `plan/02` §5.2 as corrected by spec 007 §14 A3: **two or three** related destinations, authored
+ * per country.
+ *
+ * It was "exactly three" until TASK-088 tried to build the corpus. AC-18 wants every edge
+ * reciprocated, which makes the graph undirected; seven destinations each naming exactly three
+ * others is 7 × 3 = 21 edge-ends, and an undirected graph's edge-ends are even because every edge
+ * has two. No such graph exists (the handshake lemma), so "exactly three" and "fully reciprocal"
+ * could not both hold over an odd-sized set. The band is the correction: a page in an odd-sized
+ * set may carry two, and rule 18 requires reciprocation only where the target has a free slot.
+ */
+export const RELATED_MIN = 2;
+export const RELATED_MAX = 3;
 
 const Iso2Schema = z.enum([...COUNTRY_CODES] as [string, ...string[]]);
 const LocaleSchema = z.enum([...launchLocales] as [string, ...string[]]);
@@ -126,7 +137,8 @@ export type CountryLocaleContentBase = z.infer<
  *
  *  - the SEO fields fit the slots `plan/02` §5.3 gives them;
  *  - the FAQ is inside the 8–12 band a `FAQPage` is allowed to describe;
- *  - `relatedIso2` is exactly three distinct other countries — never the file's own;
+ *  - `relatedIso2` is two or three distinct other countries — never the file's own (spec 007 §14
+ *    A3; the band, not "exactly three", is what makes AC-18's reciprocity satisfiable);
  *  - `reviewed: true` requires a reviewer and a date, so "a native speaker read this" cannot be
  *    asserted by a boolean alone (it is the input to indexability, spec 007 §6);
  *  - `extends` only ever means "this `en-gb` file inherits `en`".
@@ -160,11 +172,14 @@ export const CountryLocaleContentSchema = CountryLocaleContentBaseSchema.extend(
       message: `faq has ${String(content.faq.length)} item(s); ${String(FAQ_MIN)}–${String(FAQ_MAX)} are required (plan/02 §5.2)`,
     });
   }
-  if (content.relatedIso2.length !== RELATED_COUNT) {
+  if (
+    content.relatedIso2.length < RELATED_MIN ||
+    content.relatedIso2.length > RELATED_MAX
+  ) {
     ctx.addIssue({
       code: "custom",
       path: ["relatedIso2"],
-      message: `relatedIso2 names ${String(content.relatedIso2.length)} countries; exactly ${String(RELATED_COUNT)} are required`,
+      message: `relatedIso2 names ${String(content.relatedIso2.length)} countries; ${String(RELATED_MIN)}–${String(RELATED_MAX)} are required (spec 007 §14 A3)`,
     });
   }
   if (new Set(content.relatedIso2).size !== content.relatedIso2.length) {
