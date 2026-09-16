@@ -38,7 +38,27 @@ One dated bullet per `/review`, newest last.
   `tests/unit/architecture-doc.test.ts`; **(2)** close the destructuring hole in
   `scripts/check-no-vercel-env.ts` — a planted `const { … } = process.env` and a wrapped member
   chain both exited 0, and "a destructured read is a read"; **(3)** refresh the PR body and this
-  file's `## Result
+  file's `## Result` with the post-rebase numbers (stale lint/test claims, closed escalation 1,
+  `environment.ts` modified not created, the spent stacking banner). All three done in round 2.
+- **From `/review 68` (2026-09-16) — `VERDICT: FAIL`, round 2, head `1d609aa`.** Changes 1 and 2
+  passed on the reviewer's own plants; the only blocker was this file — the round-2 edit left an
+  unterminated code span here and swallowed the `## Escalations` and `## Result` headings. Repaired
+  by the orchestrator (docs-only). Non-blocking nits left open: the gate still misses a destructured
+  function parameter and a multi-line destructuring; a bare `["VERCEL_ENV"],` line is a false
+  positive (safe direction); two ~150-column prose lines in `docs/architecture.md`.
+
+## Escalations
+
+- **2026-09-16 — `docs/codebase-map.md` 12 KB budget vs spec 040 AC-2 (to the orchestrator).**
+  On PR #62's stale base the map assertion was 12 288 B and the two new rows could not fit; the
+  branch raised it to 12 800 B. **Closed:** `main` already carries spec 001 §14 A16 (12 KB target,
+  16 KB hard cap); the branch's assertion change was dropped in the rebase and the map is 12 743 B.
+- **2026-09-16 — `docs/architecture.md` §4 deferred `deploymentEnvironment()` row (to the
+  orchestrator).** Discharged in fact by this task but pinned by `architecture-doc.test.ts` and
+  named by no AC. **Closed by the orchestrator's ruling:** mark it done in this PR and adjust the
+  pin — done in round 2.
+
+## Result
 
 Shipped in **PR #68** (base `main`, branch `task/TASK-097-app-env`, rebased onto `main` after
 PR #62 merged — nothing is stacked on anything now). `appEnvironment(source)` in
