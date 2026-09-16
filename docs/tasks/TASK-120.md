@@ -6,9 +6,9 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 ## Binding
 
-What the spec binds this task to, in the spec's own words: the resolution notes that override
-defaults, the AC ids owned, the rulings from earlier reviews that apply here, the gates that must
-be green. One paragraph or a short list — no restatement of the spec.
+- Spec 004 §14 A19 and spec 009's §13 design-round resolution (Q1, Q2): gate every same-day / cutoff promise in the site chrome on the destination's picker state, false everywhere in Phase 0; honest fallback copy in four locales; PL `sunday` surcharge seed rows removed while `sundayDelivery: false`.
+- **Widened by `/review 70` (2026-09-16):** the set is not only the four keys — the header's "Same-day delivery" and the footer's "Delivery times and cutoffs" links carry the same promise on every guide page whose facts block says "no cutoff" (spec 007 AC-19's forbidden set). Enumerate every chrome string that asserts a cutoff, a same-day or a delivery-time promise (grep `messages/*.json` for cutoff/same-day/today/delivery time) and gate them all by one predicate. TASK-095's whole-document AC-19 scan depends on this task.
+- Predicate: `deliveryDatesOpen(iso2)` in `src/config/countries.ts` until spec 009 task 3 (TASK-123/124) re-sources it to `pickerState()`; same shape as `ActivePartnersProvider`.
 
 ## Read
 

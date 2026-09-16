@@ -105,10 +105,11 @@ describe("toCountryLocaleContentRow() against spec 002 §5.1 (AC-3)", () => {
       expect(row.seo_title).toBe(content.seoTitle);
       expect(row.intro_md).toBe(content.intro);
       expect(row.faq).toStrictEqual(content.faq);
-      // An absence is NULL, not an empty string: nothing has been reviewed yet.
-      expect(row.reviewed).toBe(false);
-      expect(row.reviewed_by).toBeNull();
-      expect(row.reviewed_at).toBeNull();
+      // The review triple projects as authored; an absence is NULL, never an empty string
+      // (the founder reviewed the whole `en`/`en-gb` set on 2026-09-16).
+      expect(row.reviewed).toBe(content.reviewed);
+      expect(row.reviewed_by).toBe(content.reviewedBy ?? null);
+      expect(row.reviewed_at).toBe(content.reviewedAt ?? null);
     }
   });
 

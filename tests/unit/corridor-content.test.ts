@@ -38,12 +38,19 @@ function polandGuide(): CorridorSourceFile {
 
 /** The committed guide with one frontmatter field changed or removed. */
 function withField(field: string, value: unknown): string {
+  return withFields({ [field]: value });
+}
+
+/** Several front-matter edits at once; `undefined` deletes the key. */
+function withFields(fields: Record<string, unknown>): string {
   const base = polandGuide();
   const split = splitCorridorFile(base.path, base.source);
   if (!split.ok) throw new Error("the committed Poland guide does not split");
   const frontmatter = { ...(split.frontmatter as Record<string, unknown>) };
-  if (value === undefined) delete frontmatter[field];
-  else frontmatter[field] = value;
+  for (const [field, value] of Object.entries(fields)) {
+    if (value === undefined) delete frontmatter[field];
+    else frontmatter[field] = value;
+  }
   return renderCorridorFile(frontmatter, split.body);
 }
 
@@ -90,9 +97,15 @@ describe("a malformed file fails, naming the field (AC-1, T-01)", () => {
   });
 
   it("names `reviewedBy` when `reviewed: true` carries no reviewer", () => {
+    // The committed guide has been reviewed since 2026-09-16, so strip the reviewer fields to
+    // reproduce the malformed shape the rule exists for.
     const result = parseCorridorContent(
       "en/pl-guide.md",
-      withField("reviewed", true),
+      withFields({
+        reviewed: true,
+        reviewedBy: undefined,
+        reviewedAt: undefined,
+      }),
     );
     expect(result.ok).toBe(false);
     if (result.ok) return;
