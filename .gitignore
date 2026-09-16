@@ -40,3 +40,4 @@ npm-debug.log*
 # generated pseudo-locale catalogues (`pnpm i18n:pseudo`, spec 003 §2 / AC-29)
 messages/en-XA.json
 messages/ar-XB.json
+.claude/worktrees/
