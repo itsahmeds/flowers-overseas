@@ -17,14 +17,59 @@
  */
 import { z } from "zod";
 
-/** Deployment environment. `VERCEL_ENV` when on Vercel, otherwise derived from `NODE_ENV`. */
+/**
+ * Deployment environment (spec 040 §5.2, AC-1; TASK-097). `APP_ENV` is the single signal, set by
+ * whichever platform runs the app; `VERCEL_ENV` survives only as a compatibility fallback while
+ * the Vercel project stays linked as a cold rollback (ADR-0018, spec 040 §13 Q5).
+ *
+ * `staging` is spec 040's new value: it exists on Railway, it is the florist demo environment of
+ * `plan/08` §9, and it is production-like in configuration while remaining permanently `noindex`.
+ */
 export const deploymentEnvironments = [
   "development",
   "test",
   "preview",
+  "staging",
   "production",
 ] as const;
 export type DeploymentEnvironment = (typeof deploymentEnvironments)[number];
+
+/** The zod shape of a `DeploymentEnvironment`, reused by both schemas and by `appEnvironment()`. */
+const deploymentEnvironmentSchema = z.enum(deploymentEnvironments);
+
+/**
+ * The environments that are *deployed*: real values required, https origin required, and — for
+ * the two production-like ones — the development flags refused (spec 040 AC-5).
+ */
+const DEPLOYED_ENVIRONMENTS: readonly DeploymentEnvironment[] = [
+  "preview",
+  "staging",
+  "production",
+];
+
+/**
+ * The environments shown to people who are not the founder, where a development affordance is a
+ * defect rather than a convenience: `production` (buyers) and `staging` (the florist demos).
+ */
+const PRODUCTION_LIKE_ENVIRONMENTS: readonly DeploymentEnvironment[] = [
+  "production",
+  "staging",
+];
+
+/** The one key that decides the environment (spec 040 §5.2). */
+export const APP_ENV_KEY = "APP_ENV" as const;
+
+/** Its browser mirror, so client code can read the same value (spec 040 AC-3). */
+export const NEXT_PUBLIC_APP_ENV_KEY = "NEXT_PUBLIC_APP_ENV" as const;
+
+/**
+ * What a present-but-unparseable `APP_ENV` reports. It lists the accepted values — which are
+ * constants of this file — and never the received one (spec 040 AC-1, spec 001 AC-10).
+ */
+export const UNPARSEABLE_APP_ENV_MESSAGE = `must be one of ${deploymentEnvironments.join(" | ")}; the received value is not printed`;
+
+/** Where the app is running. Derived, never configured; see `hostPlatform()`. */
+export type HostPlatform = "vercel" | "railway" | "local";
 
 /**
  * Values `.env.example` ships (spec 001 §13 Q10: syntactically valid dummies so a clean clone
@@ -86,10 +131,23 @@ export type LogLevel = (typeof logLevels)[number];
 export const clientEnvSchema = z.object({
   /** Absolute origin of the site. Used for canonicals and absolute URLs from spec 007. */
   NEXT_PUBLIC_SITE_URL: requiredUrl,
-  /** Mirror of `VERCEL_ENV` for client code. Optional: unset locally. */
+  /**
+   * Browser mirror of `APP_ENV` (spec 040 §5.2, AC-3; TASK-097). Optional: unset locally, and a
+   * server bundle reads `APP_ENV` directly. `src/lib/sentry.ts` is the only reader, and only as
+   * the second half of `APP_ENV ?? NEXT_PUBLIC_APP_ENV`.
+   */
+  NEXT_PUBLIC_APP_ENV: z.preprocess(
+    emptyToUndefined,
+    deploymentEnvironmentSchema.optional(),
+  ),
+  /**
+   * Mirror of `VERCEL_ENV`. **Optional and unread by application code** since spec 040 (§5.2):
+   * it stays in the contract only until the Vercel unlink of §13 Q5 deletes it, and
+   * `pnpm check:no-vercel-env` is what keeps it unread.
+   */
   NEXT_PUBLIC_VERCEL_ENV: z.preprocess(
     emptyToUndefined,
-    z.enum(deploymentEnvironments).optional(),
+    deploymentEnvironmentSchema.optional(),
   ),
   /** Browser Sentry DSN. Unset ⇒ the browser SDK is a no-op (spec 001 §5, AC-13). */
   NEXT_PUBLIC_SENTRY_DSN: optionalUrl,
@@ -180,10 +238,25 @@ export const serverEnvSchema = z.object({
   INTERNAL_CRON_SECRET: requiredSecret,
   /** Logger threshold (`src/lib/logger.ts`). */
   LOG_LEVEL: z.enum(logLevels).default("info"),
-  /** Injected by Vercel; read-through only. Absent locally. */
+  /**
+   * The environment this deployment *is* (spec 040 §5.2, AC-1; TASK-097): set by Railway, by the
+   * Vercel env store and by CI, read by `appEnvironment()` and by nothing else. Optional, because
+   * unset must mean `development` — and therefore `noindex` — rather than a build failure on a
+   * clean clone. A value that is present and does **not** parse is a build failure, which is the
+   * point: a typo like `prod` must not quietly produce a `development` build that then passes the
+   * placeholder guard it was supposed to fail.
+   */
+  APP_ENV: z.preprocess(
+    emptyToUndefined,
+    deploymentEnvironmentSchema.optional(),
+  ),
+  /**
+   * Injected by Vercel; read-through only, and since spec 040 only as `appEnvironment()`'s
+   * compatibility fallback while the Vercel project stays linked (§13 Q5). Absent on Railway.
+   */
   VERCEL_ENV: z.preprocess(
     emptyToUndefined,
-    z.enum(deploymentEnvironments).optional(),
+    deploymentEnvironmentSchema.optional(),
   ),
   /** Injected by Vercel; the Sentry release. Absent locally. */
   VERCEL_GIT_COMMIT_SHA: optionalText,
@@ -253,22 +326,101 @@ const REAL_VALUE_REQUIRED = [
 export type EnvSource = Readonly<Record<string, string | undefined>>;
 
 /**
- * `preview`/`production` come from `VERCEL_ENV`, everything else is `development`/`test`.
+ * The environment, resolved without throwing. `unparseable` is `true` when `APP_ENV` is present
+ * and is not one of the five values — the case `appEnvironment()` turns into a build failure and
+ * `validateEnv()` turns into an issue naming the key.
  *
- * Note (TASK-007, review of PR #6): on the ADR-0012 fallback host (Railway + Cloudflare)
- * `VERCEL_ENV` is unset, so this returns `development` and the global `X-Robots-Tag: noindex` of
- * spec 001 §5 keeps firing. That is the safe direction — an unindexed production beats an
- * indexed staging — and it is correct for all of Phase 0, where every deploy is `noindex`
- * anyway (§12). The host-independent signal (an explicit `APP_ENV` set by whichever platform
- * runs the app) belongs to the spec that first makes a page indexable, and must land before the
- * first indexable deploy on the fallback host. No behaviour change here.
+ * Kept separate so `validateEnv()` can keep its contract ("pure: no throw, no value in the
+ * output") while `appEnvironment()` keeps AC-1's.
  */
-export function deploymentEnvironment(
-  source: EnvSource,
-): DeploymentEnvironment {
+function resolveEnvironment(source: EnvSource): {
+  environment: DeploymentEnvironment;
+  unparseable: boolean;
+} {
+  // 1. `APP_ENV`, when it parses. Blank counts as absent, like every other optional key.
+  const raw = source[APP_ENV_KEY];
+  if (raw !== undefined && raw.trim() !== "") {
+    const parsed = deploymentEnvironmentSchema.safeParse(raw.trim());
+    if (parsed.success) return { environment: parsed.data, unparseable: false };
+    return { environment: "development", unparseable: true };
+  }
+  // 2. `VERCEL_ENV`, `preview`/`production` only — the compatibility path for the cold Vercel
+  //    fallback (spec 040 §13 Q5) and the **only** remaining read of that key in the codebase,
+  //    which `pnpm check:no-vercel-env` enforces.
   const vercelEnv = source["VERCEL_ENV"];
-  if (vercelEnv === "preview" || vercelEnv === "production") return vercelEnv;
-  return source["NODE_ENV"] === "test" ? "test" : "development";
+  if (vercelEnv === "preview" || vercelEnv === "production") {
+    return { environment: vercelEnv, unparseable: false };
+  }
+  // 3./4. `NODE_ENV === "test"`, else `development` — which is `noindex`, i.e. fail-closed.
+  return {
+    environment: source["NODE_ENV"] === "test" ? "test" : "development",
+    unparseable: false,
+  };
+}
+
+/**
+ * The deployment environment (spec 040 §5.2, AC-1; TASK-097). **The one reader** of the
+ * environment signal; every call site that used to branch on `VERCEL_ENV` goes through here.
+ *
+ * Resolution order, fail-closed at every step:
+ *
+ *  1. `APP_ENV`, when it parses as one of the five values.
+ *  2. `VERCEL_ENV`, when `APP_ENV` is absent and it parses as `preview` or `production`.
+ *  3. `NODE_ENV === "test"` ⇒ `test`.
+ *  4. Otherwise `development` — which is `noindex` (`src/lib/robots-headers.ts`), so an unset
+ *     `APP_ENV` on a new host is safe in the only direction that matters.
+ *
+ * A present-but-unparseable `APP_ENV` **throws** `EnvValidationError` naming the key and printing
+ * no value: a typo like `prod` must not quietly produce a `development` build that then passes
+ * the placeholder guard it was supposed to fail (spec 040 §5.2, AC-1).
+ */
+export function appEnvironment(source: EnvSource): DeploymentEnvironment {
+  const { environment, unparseable } = resolveEnvironment(source);
+  if (unparseable) {
+    throw new EnvValidationError(
+      [{ key: APP_ENV_KEY, message: UNPARSEABLE_APP_ENV_MESSAGE }],
+      "development",
+    );
+  }
+  return environment;
+}
+
+/**
+ * @deprecated Spec 040 §5.2 renamed this to `appEnvironment()`. Kept as a re-export for one PR —
+ * PR #62's env contract and spec 007's `isIndexingEnvironment()` land in the same window — and
+ * deleted by the Vercel unlink of §13 Q5.
+ */
+export const deploymentEnvironment = appEnvironment;
+
+/**
+ * Where the app is running (spec 040 §5.2). Derived from what the platform injects: Vercel sets
+ * `VERCEL=1`, Railway sets `RAILWAY_ENVIRONMENT_NAME`, a laptop sets neither.
+ *
+ * It exists for exactly two callers — the `vercel.live` row of the CSP (`allowsPreviewFeedback`)
+ * and the CI preview-URL discovery of spec 040 §5.5. **Nothing else in the application may branch
+ * on it**: the environment is `appEnvironment()`, and a second axis of behaviour keyed on the
+ * host is how a codebase becomes host-specific again.
+ */
+export function hostPlatform(source: EnvSource): HostPlatform {
+  if (source["VERCEL"] === "1") return "vercel";
+  const railway = source["RAILWAY_ENVIRONMENT_NAME"];
+  if (railway !== undefined && railway.trim() !== "") return "railway";
+  return "local";
+}
+
+/**
+ * The commit this deployment was built from, or `undefined` (spec 040 §5.2). Railway first, then
+ * the Vercel server variable, then its `NEXT_PUBLIC_` mirror — the only one a browser bundle can
+ * read. Reading the platform SHAs **here**, in one of the two modules the grep gate exempts, is
+ * what lets `src/app/api/health/route.ts` and `src/lib/sentry.ts` stay host-agnostic.
+ */
+export function commitSha(source: EnvSource): string | undefined {
+  const values = [
+    source["RAILWAY_GIT_COMMIT_SHA"],
+    source["VERCEL_GIT_COMMIT_SHA"],
+    source["NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA"],
+  ];
+  return values.find((value) => value !== undefined && value.trim() !== "");
 }
 
 /** The key that switches the pseudo-locales on, and its only enabling value. */
@@ -370,27 +522,44 @@ function collect(error: z.ZodError, source: EnvSource): EnvIssue[] {
  * Validate a raw environment. Pure: no `process.env` read, no throw, no value in the output.
  */
 export function validateEnv(source: EnvSource): EnvValidationResult {
-  const environment = deploymentEnvironment(source);
+  const { environment, unparseable } = resolveEnvironment(source);
   const issues: EnvIssue[] = [];
+
+  // A typo in `APP_ENV` is reported here as well as by the schema, because this is the function
+  // `assertEnv()` and `envReport()` call: the build must fail naming the key (spec 040 AC-1).
+  if (unparseable) {
+    issues.push({ key: APP_ENV_KEY, message: UNPARSEABLE_APP_ENV_MESSAGE });
+  }
 
   const clientResult = clientEnvSchema.safeParse(source);
   if (!clientResult.success)
     issues.push(...collect(clientResult.error, source));
 
   const serverResult = serverEnvSchema.safeParse(source);
-  if (!serverResult.success)
-    issues.push(...collect(serverResult.error, source));
+  if (!serverResult.success) {
+    // `serverEnvSchema` also rejects a bad `APP_ENV`, so without this filter the report would
+    // carry the key twice — once with the message above and once with zod's, which lists the
+    // accepted values and is then mangled by `scrubValues()` when the received value happens to
+    // be a substring of one of them (`prod` inside `production`). One key, one line.
+    issues.push(
+      ...collect(serverResult.error, source).filter(
+        (issue) => !(unparseable && issue.key === APP_ENV_KEY),
+      ),
+    );
+  }
 
   // §8 "Security" / AC-29: pseudo-locales are a *development* affordance. Refusing them here —
   // in the gate `next.config.ts` runs before compiling anything — is what makes "a pseudo-locale
   // route cannot be exposed to buyers by configuration mistake" a build failure rather than a
   // code review. Checked against `production` only: a preview is password-protected and
   // `noindex`, and is where the visual and a11y suites run (§13 Q6).
-  if (environment === "production" && pseudoLocalesEnabled(source)) {
+  if (
+    PRODUCTION_LIKE_ENVIRONMENTS.includes(environment) &&
+    pseudoLocalesEnabled(source)
+  ) {
     issues.push({
       key: PSEUDO_LOCALES_KEY,
-      message:
-        "must not be `true` in production: the en-XA/ar-XB pseudo-locales are refused there (spec 003 §2, §8). Unset it or set it to `false`.",
+      message: `must not be \`true\` in ${environment}: the en-XA/ar-XB pseudo-locales are refused there (spec 003 §2, §8; spec 040 AC-5 adds staging, which is shown to florists). Unset it or set it to \`false\`.`,
     });
   }
 
@@ -398,15 +567,17 @@ export function validateEnv(source: EnvSource): EnvValidationResult {
   // gallery is a development surface, and refusing the flag in the gate `next.config.ts` runs
   // before compiling anything makes "the gallery cannot be served in production" a build failure
   // rather than a code review. Previews are password-protected and `noindex` (§12).
-  if (environment === "production" && devUiEnabled(source)) {
+  if (
+    PRODUCTION_LIKE_ENVIRONMENTS.includes(environment) &&
+    devUiEnabled(source)
+  ) {
     issues.push({
       key: DEV_UI_KEY,
-      message:
-        "must not be `true` in production: the /dev/components gallery is refused there (spec 004 §2, AC-28). Unset it or set it to `false`.",
+      message: `must not be \`true\` in ${environment}: the /dev/components gallery is refused there (spec 004 §2, AC-28; spec 040 AC-5 adds staging, which is shown to florists). Unset it or set it to \`false\`.`,
     });
   }
 
-  if (environment === "preview" || environment === "production") {
+  if (DEPLOYED_ENVIRONMENTS.includes(environment)) {
     // Spec 002 AC-2: there is no escape hatch any more. The opt-out spec 001 carried existed only
     // because no database existed to point at; with Neon and R2 provisioned, a deployed
     // environment carrying a `.env.example` placeholder is a misconfiguration and fails the build,
@@ -444,7 +615,7 @@ export function formatEnvIssues(
   const lines = [
     `Invalid environment (${environment}). ${String(issues.length)} problem(s); values are never printed:`,
     ...issues.map((issue) => `  - ${issue.key}: ${issue.message}`),
-    "Fix .env.local (see .env.example) or the Vercel env store, then rebuild.",
+    "Fix .env.local (see .env.example) or the platform env store, then rebuild.",
   ];
   return lines.join("\n");
 }
@@ -468,7 +639,7 @@ export function parseEnv(source: EnvSource): {
   server: ServerEnv;
   environment: DeploymentEnvironment;
 } {
-  const environment = deploymentEnvironment(source);
+  const { environment } = resolveEnvironment(source);
   const result = validateEnv(source);
   if (result.issues.length > 0 || !result.client || !result.server) {
     throw new EnvValidationError(result.issues, environment);

@@ -10,6 +10,15 @@
  *
  * The `next.config.ts` wiring is asserted from the file's source, because that module calls
  * `assertEnv()` at import time and cannot be imported into a unit test.
+ *
+ * Spec 040 T-06 / AC-6 (TASK-097) widened the same idea to a second axis. The policy is now a
+ * function of the environment **and** the host platform, because `vercel.live` is a Vercel widget
+ * and naming it in the policy of a Railway deploy would allow an origin nothing can serve
+ * (ADR-0016: a shorter allowlist is strictly better). So the table below is 5 environments × 3
+ * platforms = 15 rows, each asserted against one of **four verbatim strings** — the four distinct
+ * policies those fifteen combinations can produce. Two of them, `PRODUCTION_POLICY` and
+ * `PREVIEW_POLICY`, are byte-for-byte the strings this file pinned before spec 040, which is how
+ * "behaviour-preserving on Vercel" is checked rather than asserted.
  */
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -32,7 +41,11 @@ import {
   sendsHsts,
 } from "../../src/lib/csp";
 import { consentBootstrapHash } from "../../src/lib/consent-bootstrap";
-import { cspReportOnly } from "../../src/lib/env.schema";
+import type { HostPlatform } from "../../src/lib/env.schema";
+import {
+  cspReportOnly,
+  deploymentEnvironments,
+} from "../../src/lib/env.schema";
 import { ALL_PATHS } from "../../src/lib/robots-headers";
 
 /** The production policy, verbatim. */
@@ -69,48 +82,110 @@ const PREVIEW_POLICY =
   `report-uri ${CSP_REPORT_PATH}; ` +
   "upgrade-insecure-requests;";
 
-describe("the policy string per environment (AC-23)", () => {
-  it("is exactly the production policy in production", () => {
-    expect(cspValue("production")).toBe(PRODUCTION_POLICY);
+/** Http environments (`development`, `test`) off Vercel: no widget, nothing to upgrade to. */
+const LOCAL_POLICY = PRODUCTION_POLICY.replace(
+  " upgrade-insecure-requests;",
+  "",
+);
+
+/** The same, on Vercel, where the widget is injected into every non-production deployment. */
+const LOCAL_FEEDBACK_POLICY = PREVIEW_POLICY.replace(
+  " upgrade-insecure-requests;",
+  "",
+);
+
+/**
+ * T-06 / AC-6: environment × host platform → the exact policy string. Fifteen rows, four
+ * distinct strings, and the two Vercel https rows are the pre-spec-040 strings unchanged.
+ */
+const POLICY_TABLE: readonly {
+  environment: (typeof deploymentEnvironments)[number];
+  platform: HostPlatform;
+  policy: string;
+}[] = (["vercel", "railway", "local"] as const).flatMap((platform) =>
+  deploymentEnvironments.map((environment) => {
+    const feedback = platform === "vercel" && environment !== "production";
+    const https =
+      environment === "preview" ||
+      environment === "staging" ||
+      environment === "production";
+    return {
+      environment,
+      platform,
+      policy: https
+        ? feedback
+          ? PREVIEW_POLICY
+          : PRODUCTION_POLICY
+        : feedback
+          ? LOCAL_FEEDBACK_POLICY
+          : LOCAL_POLICY,
+    };
+  }),
+);
+
+describe("the policy string per environment × host platform (AC-23, spec 040 T-06)", () => {
+  it.each(POLICY_TABLE)(
+    "$environment on $platform is exactly one of the four policies",
+    ({ environment, platform, policy }) => {
+      expect(cspValue(environment, { platform })).toBe(policy);
+    },
+  );
+
+  it("is byte-identical to the pre-spec-040 strings on Vercel", () => {
+    expect(cspValue("production", { platform: "vercel" })).toBe(
+      PRODUCTION_POLICY,
+    );
+    expect(cspValue("preview", { platform: "vercel" })).toBe(PREVIEW_POLICY);
   });
 
-  it("is exactly the preview policy on a preview", () => {
-    expect(cspValue("preview")).toBe(PREVIEW_POLICY);
+  it("names no vercel.live on Railway, in any environment (spec 040 AC-6)", () => {
+    for (const environment of deploymentEnvironments) {
+      expect(
+        cspValue(environment, { platform: "railway" }),
+        environment,
+      ).not.toContain("vercel.live");
+      expect(allowsPreviewFeedback(environment, "railway"), environment).toBe(
+        false,
+      );
+    }
   });
 
-  it("names vercel.live on preview and never in production", () => {
-    expect(cspValue("preview")).toContain(VERCEL_LIVE_ORIGIN);
-    expect(cspValue("production")).not.toContain("vercel.live");
+  it("names vercel.live on a Vercel preview and never in production", () => {
+    const preview = cspValue("preview", { platform: "vercel" });
+    expect(preview).toContain(VERCEL_LIVE_ORIGIN);
+    expect(cspValue("production", { platform: "vercel" })).not.toContain(
+      "vercel.live",
+    );
     // The origin is allowed in exactly three directives, not everywhere.
-    expect(cspValue("preview").split(VERCEL_LIVE_ORIGIN)).toHaveLength(4);
+    expect(preview.split(VERCEL_LIVE_ORIGIN)).toHaveLength(4);
   });
 
-  it("frames nothing in production and only vercel.live on a preview", () => {
+  it("frames nothing in production and only vercel.live on a Vercel preview", () => {
     expect(cspValue("production")).toContain("frame-src 'none'");
-    expect(cspValue("preview")).toContain(`frame-src ${VERCEL_LIVE_ORIGIN}`);
+    expect(cspValue("preview", { platform: "vercel" })).toContain(
+      `frame-src ${VERCEL_LIVE_ORIGIN}`,
+    );
     // `frame-ancestors 'none'` is unconditional: no environment may be framed.
-    for (const environment of [
-      "development",
-      "test",
-      "preview",
-      "production",
-    ] as const) {
+    for (const environment of deploymentEnvironments) {
       expect(cspValue(environment), environment).toContain(
         "frame-ancestors 'none'",
       );
     }
   });
 
-  it("gives local and CI the preview policy, since they run the same artefact", () => {
-    for (const environment of ["development", "test"] as const) {
-      expect(allowsPreviewFeedback(environment), environment).toBe(true);
-      expect(cspValue(environment), environment).toContain(VERCEL_LIVE_ORIGIN);
-    }
-    expect(allowsPreviewFeedback("production")).toBe(false);
+  it("defaults the platform to `local`, the shortest allowlist", () => {
+    // A caller that says nothing must not widen the policy: ADR-0016's rule, and the reason the
+    // default is not `vercel`. `next.config.ts` passes `hostPlatform(process.env)`.
+    expect(cspValue("preview")).toBe(
+      cspValue("preview", { platform: "local" }),
+    );
+    expect(cspValue("preview")).not.toContain("vercel.live");
   });
 
   it("upgrades insecure requests only where there is https to upgrade to", () => {
-    for (const environment of ["preview", "production"] as const) {
+    // `staging` joined `preview` and `production` in spec 040 §5.2: it is https and
+    // production-like, and it is where the florist demos run.
+    for (const environment of ["preview", "staging", "production"] as const) {
       expect(cspValue(environment), environment).toContain(
         "upgrade-insecure-requests",
       );
@@ -181,11 +256,15 @@ describe("the inline-script hash slot (the seam TASK-050 uses)", () => {
    */
   it("is the consent bootstrap's hash that ships, in both environments, exactly once", () => {
     const hash = consentBootstrapHash();
-    for (const [environment, base] of [
-      ["production", PRODUCTION_POLICY],
-      ["preview", PREVIEW_POLICY],
+    for (const [environment, base, platform] of [
+      ["production", PRODUCTION_POLICY, "vercel"],
+      ["preview", PREVIEW_POLICY, "vercel"],
+      ["staging", PRODUCTION_POLICY, "railway"],
     ] as const) {
-      const policy = cspValue(environment, { inlineHashes: [hash] });
+      const policy = cspValue(environment, {
+        inlineHashes: [hash],
+        platform,
+      });
       expect(policy, environment).toBe(
         base.replace("script-src 'self'", `script-src 'self' '${hash}'`),
       );
@@ -194,9 +273,12 @@ describe("the inline-script hash slot (the seam TASK-050 uses)", () => {
   });
 
   it("puts the hash before the preview origin, so the diff of adding one is one token", () => {
-    expect(cspValue("preview", { inlineHashes: ["sha256-one"] })).toContain(
-      `script-src 'self' 'sha256-one' ${VERCEL_LIVE_ORIGIN};`,
-    );
+    expect(
+      cspValue("preview", {
+        inlineHashes: ["sha256-one"],
+        platform: "vercel",
+      }),
+    ).toContain(`script-src 'self' 'sha256-one' ${VERCEL_LIVE_ORIGIN};`);
   });
 });
 
@@ -211,8 +293,10 @@ describe("report-only versus enforce", () => {
   });
 
   it("sends the same policy either way, so the evidence is about the policy that will enforce", () => {
-    expect(cspHeader("preview", { reportOnly: true }).value).toBe(
-      cspHeader("preview", { reportOnly: false }).value,
+    expect(
+      cspHeader("preview", { reportOnly: true, platform: "vercel" }).value,
+    ).toBe(
+      cspHeader("preview", { reportOnly: false, platform: "vercel" }).value,
     );
   });
 
@@ -285,7 +369,14 @@ describe("the other security headers (AC-23)", () => {
       HSTS_VALUE,
     );
     expect(headerMap("preview").has("Strict-Transport-Security")).toBe(false);
-    for (const environment of ["development", "test", "preview"] as const) {
+    // `staging` sends none either: it runs on a Railway subdomain we do not want pinned
+    // (spec 040 §5.2, unchanged rule, new value).
+    for (const environment of [
+      "development",
+      "test",
+      "preview",
+      "staging",
+    ] as const) {
       expect(sendsHsts(environment), environment).toBe(false);
     }
     expect(HSTS_VALUE).toContain("max-age=63072000");
@@ -324,6 +415,15 @@ describe("next.config.ts wiring", () => {
     expect(source).toContain(
       "ga4: ga4MeasurementId(process.env) !== undefined",
     );
+  });
+
+  // Spec 040 AC-1, AC-6 (TASK-097): the config reads the environment through `appEnvironment()`
+  // and passes the host platform to the CSP, which is the only thing allowed to branch on it.
+  it("resolves the environment with appEnvironment and passes hostPlatform to the CSP", () => {
+    expect(source).toContain("appEnvironment(process.env)");
+    expect(source).not.toContain("deploymentEnvironment(process.env)");
+    expect(source).toContain("hostPlatform(process.env)");
+    expect(source).toContain("platform,");
   });
 
   it("keeps the policy out of src/proxy.ts", () => {

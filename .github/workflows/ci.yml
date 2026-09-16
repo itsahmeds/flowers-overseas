@@ -101,6 +101,13 @@ jobs:
       # which is what makes that spec implementable while spec 002's provisioning is parked.
       - name: No database import in the spec 003 file set (spec 003 AC-2)
         run: pnpm check:no-db | tee no-db.log
+      # Spec 040 AC-2 (TASK-097): `VERCEL_ENV`, `NEXT_PUBLIC_VERCEL_ENV` and `VERCEL_GIT_COMMIT_SHA`
+      # may be read in `src/lib/env.schema.ts` and `src/lib/sentry.ts` and nowhere else. It sits
+      # beside `check:no-db` because it is the same kind of gate: the assertion behind a claim the
+      # architecture makes ("the app is host-agnostic"), and the thing that makes the eventual
+      # Vercel unlink (spec 040 §13 Q5) a two-file diff.
+      - name: No platform env read outside the abstraction (spec 040 AC-2)
+        run: pnpm check:no-vercel-env | tee no-vercel-env.log
       - name: Prettier
         run: pnpm format:check | tee format.log
       # `.env.example` and the zod schema must agree in both directions (AC-11, TASK-005). It runs
@@ -135,6 +142,7 @@ jobs:
             echo "| ESLint + Stylelint | \`pnpm lint\` | ${{ steps.eslint.outcome }}, $problems problem(s) |"
             echo "| eslint-disable audit (AC-6) | \`pnpm check:no-literal-disable\` | $( [ -f no-literal-disable.log ] && tr '\n' ' ' < no-literal-disable.log || echo 'did not run' ) |"
             echo "| no-db seam (spec 003 AC-2) | \`pnpm check:no-db\` | $( [ -f no-db.log ] && tr '\n' ' ' < no-db.log || echo 'did not run' ) |"
+            echo "| host-agnostic env (spec 040 AC-2) | \`pnpm check:no-vercel-env\` | $( [ -f no-vercel-env.log ] && tr '\n' ' ' < no-vercel-env.log || echo 'did not run' ) |"
             echo "| Prettier | \`pnpm format:check\` | $( [ -f format.log ] && echo 'all matched' || echo 'did not run' ) |"
             echo "| env:check (AC-11) | \`pnpm env:check\` | $( [ -f env-check.log ] && tr '\n' ' ' < env-check.log || echo 'did not run' ) |"
             echo "| codebase map (AC-33) | \`pnpm codebase:map --check\` | $( [ -f codebase-map.log ] && tr '\n' ' ' < codebase-map.log || echo 'did not run' ) |"
@@ -526,7 +534,7 @@ jobs:
   # T-11 / AC-10 (TASK-005) and spec 002 T-04 / AC-2 (TASK-013). Two facts, one job:
   #   1. a missing variable fails the build, names the offending key and echoes no other
   #      variable's value (a sentinel injected into a second key must not appear in the output);
-  #   2. a deployed environment (`VERCEL_ENV=production`) whose `DATABASE_URL` is still the
+  #   2. a deployed environment (`APP_ENV=production`) whose `DATABASE_URL` is still the
   #      `.env.example` placeholder fails the build naming **only** that key — spec 002 deleted the
   #      escape hatch spec 001 carried, so there is no way to opt out.
   env-build-failure:
@@ -573,12 +581,14 @@ jobs:
       - name: Remove the tampered env file
         if: always()
         run: rm -f .env.local build.log
-      # spec 002 T-04 / AC-2: real values everywhere except `DATABASE_URL`, which keeps the
-      # `.env.example` placeholder, and `VERCEL_ENV=production`. The build must fail and the report
-      # must name that key and no other.
-      - name: Build in production with a placeholder DATABASE_URL (spec 002 T-04)
+      # spec 002 T-04 / AC-2 and spec 040 T-29 / AC-28: real values everywhere except
+      # `DATABASE_URL`, which keeps the `.env.example` placeholder, and `APP_ENV=production` —
+      # `APP_ENV`, not `VERCEL_ENV`, since spec 040 §5.2 made it the one environment signal, which
+      # is what makes this job reproduce a **Railway** production build as well as a Vercel one.
+      # The build must fail and the report must name that key and no other.
+      - name: Build in production with a placeholder DATABASE_URL (spec 002 T-04, spec 040 T-29)
         env:
-          VERCEL_ENV: production
+          APP_ENV: production
         run: |
           set -o pipefail
           sed \

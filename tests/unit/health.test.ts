@@ -29,13 +29,26 @@ describe("HealthResponse schema (spec 001 §5.2)", () => {
   });
 
   it("rejects an unknown environment", () => {
+    // `staging` became a real value with spec 040 §5.2 (TASK-097), so the unknown value here is
+    // one that is genuinely not an environment. `test` is excluded on purpose: a test run is a
+    // local run and reports `development` (see `reportedEnvironment`).
+    for (const env of ["qa", "prod", "test", ""]) {
+      expect(
+        HealthResponse.safeParse({ status: "ok", version: "abc123", env })
+          .success,
+        env,
+      ).toBe(false);
+    }
+  });
+
+  it("accepts staging, which spec 040 §5.2 added to the environment set", () => {
     expect(
       HealthResponse.safeParse({
         status: "ok",
         version: "abc123",
         env: "staging",
       }).success,
-    ).toBe(false);
+    ).toBe(true);
   });
 
   it("rejects a missing or non-string version", () => {

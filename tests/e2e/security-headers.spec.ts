@@ -77,14 +77,20 @@ test.describe("security headers (AC-23)", () => {
     });
   }
 
-  test("the non-production target carries the vercel.live allowance", async ({
+  test("the vercel.live allowance follows the host, not just the environment", async ({
     request,
+    baseURL,
   }) => {
-    // A property of *this* target being a preview or a local build, not of the policy in general:
-    // production drops the origin, which `tests/unit/csp.test.ts` asserts on the string because
-    // there is no production deployment to fetch.
-    const response = await request.get("/en");
-    expect(response.headers()[REPORT_ONLY]).toContain("https://vercel.live");
+    // A property of *this* target, not of the policy in general. Since spec 040 §5.2 (AC-6) the
+    // allowance is `hostPlatform() === "vercel" && environment !== "production"`, so a Vercel
+    // preview still carries the origin and a local `next start` — and every Railway deploy —
+    // carries none. `tests/unit/csp.test.ts` asserts the full string for all fifteen
+    // environment × platform combinations, because there is no production deployment to fetch.
+    const host = new URL(baseURL ?? "http://localhost:3000").hostname;
+    const onVercel = host.endsWith(".vercel.app");
+    const policy = (await request.get("/en")).headers()[REPORT_ONLY] ?? "";
+    if (onVercel) expect(policy).toContain("https://vercel.live");
+    else expect(policy).not.toContain("vercel.live");
   });
 
   test("HSTS, if present here, came from the platform and not from us", async ({

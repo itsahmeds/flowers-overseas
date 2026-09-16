@@ -18,11 +18,13 @@ import type { DeploymentEnvironment } from "./env.schema";
 export const HealthResponse = z.object({
   status: z.literal("ok"),
   version: z.string(),
-  env: z.enum(["development", "preview", "production"]),
+  // `staging` joined the set with spec 040 §5.2 (TASK-097): it is a real environment this
+  // deployment can be in, and a health body that cannot name it would fail its own schema.
+  env: z.enum(["development", "preview", "staging", "production"]),
 });
 export type HealthResponse = z.infer<typeof HealthResponse>;
 
-/** Reported when `VERCEL_GIT_COMMIT_SHA` is absent, i.e. every local and CI build. */
+/** Reported when no platform commit SHA is present, i.e. every local and CI build. */
 export const HEALTH_VERSION_FALLBACK = "dev";
 
 /**
@@ -40,13 +42,14 @@ export const HEALTH_HEADERS: Readonly<Record<string, string>> = Object.freeze({
 export interface HealthInput {
   /** Deployment environment from `@/lib/env` (`environment`). */
   readonly environment: DeploymentEnvironment;
-  /** `VERCEL_GIT_COMMIT_SHA` from `@/lib/env`; absent outside Vercel. */
+  /** `commitSha(process.env)` from `@/lib/env`; absent off a platform that injects one. */
   readonly version: string | undefined;
 }
 
 /**
- * `HealthResponse.env` has three values (spec 001 §5.2) while the env module also knows `test`
- * (`NODE_ENV=test`); a test run is a local run, so it reports `development`.
+ * `HealthResponse.env` omits `test` while the env module knows it (`NODE_ENV=test`); a test run is
+ * a local run, so it reports `development`. Every other value — including spec 040's `staging` —
+ * is reported as itself.
  */
 function reportedEnvironment(
   environment: DeploymentEnvironment,
