@@ -21,6 +21,7 @@ be green. One paragraph or a short list — no restatement of the spec.
 One dated bullet per `/review`, newest last.
 
 - **From `/review 65` (2026-09-16, TASK-090):** add `src/modules/seo` to `SCANNED_PATHS` in `scripts/check-no-db-imports.ts` (spec 007 AC-1); the module is DB-free so the gate passes on addition.
+- **From `/review 66` (2026-09-16, TASK-088):** rule 5 (shingle distinctness) compares bodies within one locale only, so an `en-gb` override that near-copies its `en` base is invisible to it (rule 17 checks title/description/≥2 FAQ answers, never the body); measured cross-locale `en/nl` vs `en-gb/nl` 0.695, others 0.80–0.95. Alternates are near-duplicate by design (§13 Q9), so decide at the gates close whether rule 17 gains a body clause or rule 5 a cross-locale term, and record it in spec 007 §14.
 
 ## Escalations
 
