@@ -8,6 +8,9 @@ allowBuilds:
   # `pnpm build` needs no network), so the `sentry-cli` binary is not downloaded/built.
   "@sentry/cli": false
   "@swc/core": false
+  # drizzle-kit bundles esbuild for loading `drizzle.config.ts`; the platform binary ships in the
+  # optional `@esbuild/<platform>` package, so the install script has nothing to fetch (TASK-014).
+  esbuild: false
   # `msw` only builds to copy the browser service worker into `public/`; the harness uses the
   # node `setupServer` (spec 001 §2 "Testing harness"), so the script is not needed.
   msw: false

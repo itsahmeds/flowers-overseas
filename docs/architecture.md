@@ -140,7 +140,22 @@ tests/e2e/                Playwright, chromium mobile + desktop
 tests/visual/             Playwright screenshots, 0.1% threshold
 tests/fixtures/           shared fixtures: occasion dates, currencies, addresses, lint, seo, env
 tests/a11y/, tests/dev-os/, tests/msw/   axe run, hook checks, request mocks
-supabase/migrations/      versioned SQL, each with a documented rollback (from spec 002)
+db/migrations/            versioned SQL, each with a hand-written `NNNN_name.down.sql` beside it
+                          (spec 002 §5.1, §13 Q2 option A — TASK-014). `0001` creates the two
+                          roles (`app_owner` owns every object; `app_web` is the runtime role,
+                          NOSUPERUSER, no BYPASSRLS, DML only), their grants and the shared
+                          `set_updated_at()` trigger function. Every later migration opens with
+                          `SET LOCAL ROLE app_owner;`, which `pnpm db:check` enforces along with
+                          rollback pairing and the version sequence. The runner is
+                          `scripts/db-migrate.ts` (`pnpm db:migrate` / `pnpm db:rollback --to
+                          NNNN`) over `DATABASE_URL_UNPOOLED`; `db/migrations/README.md` is the
+                          procedure. **`plan/01` §5 says `supabase/migrations/`: that line is
+                          superseded by ADR-0015** (Supabase is not in the stack; the database is
+                          portable Postgres on Neon), and this document carries the current
+                          truth. The plan is not edited
+db/schema/                the Drizzle table definitions `pnpm db:generate` generates migrations
+                          from and `pnpm db:check` compares against (table-level drift). Empty
+                          until spec 002's TASK-015 writes migration `0002`
 seed/                     idempotent seed scripts, keyed by natural keys
 seed/schema/              the seed dataset's zod schemas and its projections onto spec 002 §5.1's
                           row shapes (spec 006 §2.2, §5.1 — TASK-072): header.ts (the
@@ -511,7 +526,7 @@ measurement is spec 003 §14 A12). | spec 013 | The checkout spec re-adds a clie
 | Locale set, message catalogues, formatting | `plan/03`, and `docs/runbooks/i18n-translations.md` for the procedure |
 | Brand terms, tone, per-locale register | `content/i18n/glossary.en.md` and the per-locale files beside it |
 | Cookies and client storage | `docs/compliance/cookie-register.md` |
-| Data model, RLS, migrations | `plan/04`, then `supabase/migrations/` from spec 002 |
+| Data model, RLS, migrations | `plan/04`, then `db/migrations/` (+ its README) from spec 002 — `supabase/migrations/` in `plan/01` §5 is superseded by ADR-0015 |
 | Hosting, regions, protection, log drains | `plan/08`, `docs/runbooks/vercel-setup.md` |
 | Compliance, RoPA, data residency | `plan/07`, `docs/compliance/` |
 | Toolchain, CI gates, coverage policy | `plan/12`, `README.md` |

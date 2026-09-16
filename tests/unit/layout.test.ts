@@ -77,10 +77,10 @@ describe("plan/01 §5 layout manifest (T-03)", () => {
   it("reports a missing module barrel and a missing directory", () => {
     const root = scaffold();
     rmSync(join(root, "src/modules/orders/index.ts"));
-    rmSync(join(root, "supabase/migrations"), { recursive: true });
+    rmSync(join(root, "db/migrations"), { recursive: true });
     const report = checkLayout(root);
     expect(report.missing).toEqual([
-      "supabase/migrations/",
+      "db/migrations/",
       "src/modules/orders/index.ts",
     ]);
     expect(report.extraModules).toEqual([]);
