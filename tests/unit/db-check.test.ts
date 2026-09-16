@@ -11,7 +11,16 @@
  * recipient-email ban) is AC-26 on TASK-027 and needs `DATABASE_URL_UNPOOLED`.
  */
 import { execFileSync } from "node:child_process";
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
 import { describe, expect, it } from "vitest";
@@ -20,6 +29,7 @@ import {
   BOOTSTRAP_VERSION,
   checkMigrations,
   checkSources,
+  DRIZZLE_META_DIR,
   formatProblems,
   formatSourceProblems,
   formatSummary,
@@ -294,6 +304,88 @@ describe("table-level drift (the offline half of AC-26)", () => {
       checkSources(
         new Map([["0001_roles.sql", "CREATE ROLE app_owner NOLOGIN;"]]),
         new Map(),
+      ).ok,
+    ).toBe(true);
+  });
+});
+
+/**
+ * `pnpm db:generate` — the command `db/migrations/README.md` tells the next implementer to run —
+ * writes Drizzle Kit's `meta/` (the journal, plus one snapshot per generated migration) into the
+ * migrations root. `meta/` is committed, because drizzle-kit needs the journal to generate the
+ * *next* migration incrementally, so the gate has to know it is not a migration (`/review 71`).
+ */
+describe("directory entries in the migrations root (/review 71)", () => {
+  it("passes with Drizzle Kit's committed `meta/` next to the migration pair", () => {
+    const report = checkMigrations([
+      { name: "0001_init.sql", isFile: true },
+      { name: "0001_init.down.sql", isFile: true },
+      { name: DRIZZLE_META_DIR, isFile: false },
+      { name: "README.md", isFile: true },
+    ]);
+    expect(report.ok).toBe(true);
+    expect(formatProblems(report)).toEqual([]);
+    expect(report.migrations.map((migration) => migration.file)).toEqual([
+      "0001_init.sql",
+    ]);
+  });
+
+  it("ignores a stray `.sql` inside `meta/`, because the listing is not recursive", () => {
+    const dir = mkdtempSync(join(tmpdir(), "db-check-meta-"));
+    mkdirSync(join(dir, DRIZZLE_META_DIR));
+    writeFileSync(join(dir, DRIZZLE_META_DIR, "_journal.json"), "{}");
+    writeFileSync(join(dir, DRIZZLE_META_DIR, "0009_stray.sql"), "SELECT 1;");
+    writeFileSync(join(dir, "0001_init.sql"), `${OWNER_PREAMBLE}\n`);
+    writeFileSync(join(dir, "0001_init.down.sql"), `${OWNER_PREAMBLE}\n`);
+
+    expect(readMigrationDir(dir).map((entry) => entry.name)).toEqual([
+      "0001_init.down.sql",
+      "0001_init.sql",
+    ]);
+    expect([...readSources(dir, ".sql").keys()]).toEqual([
+      "0001_init.down.sql",
+      "0001_init.sql",
+    ]);
+    expect(runDbCheck(dir).ok).toBe(true);
+
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it("reports a directory named like a migration, which db:migrate would never read", () => {
+    const report = checkMigrations([
+      { name: "0001_init.sql", isFile: true },
+      { name: "0001_init.down.sql", isFile: true },
+      { name: "0002_orders.sql", isFile: false },
+    ]);
+    expect(report.ok).toBe(false);
+    expect(report.directoryEntries).toEqual(["0002_orders.sql"]);
+    expect(formatProblems(report)).toEqual([
+      "0002_orders.sql: is a directory, not a migration file; db:migrate reads files only.",
+    ]);
+  });
+
+  it("says nothing about a directory that does not claim to be a migration", () => {
+    const report = checkMigrations([
+      { name: "0001_init.sql", isFile: true },
+      { name: "0001_init.down.sql", isFile: true },
+      { name: "scratch", isFile: false },
+    ]);
+    expect(report.ok).toBe(true);
+    expect(report.unparseableFiles).toEqual([]);
+  });
+
+  it("survives `pnpm db:generate` on the committed tree: `meta/_journal.json` is committed", () => {
+    const journal = resolve(
+      repoRoot,
+      MIGRATIONS_DIR,
+      DRIZZLE_META_DIR,
+      "_journal.json",
+    );
+    expect(existsSync(journal)).toBe(true);
+    expect(
+      runDbCheck(
+        resolve(repoRoot, MIGRATIONS_DIR),
+        resolve(repoRoot, SCHEMA_DIR),
       ).ok,
     ).toBe(true);
   });

@@ -19,7 +19,19 @@ Branch `task/TASK-014-db-foundation-runner`. `MIGRATIONS_DIR` in `scripts/db-che
 
 ## Carry-forwards
 
-_None recorded._
+- 2026-09-16 — **`/review 71` (FAIL, round 1)** — two required changes, both addressed in round 2:
+  (1) `pnpm db:generate` writes `db/migrations/meta/_journal.json` and `db:check` failed on the
+  `meta` directory entry. Orchestrator ruling: **commit `meta/`** (drizzle-kit needs the journal to
+  generate the next migration incrementally) and teach `readMigrationDir`/`checkMigrations` to skip
+  directories, ignoring `meta/` by name. (2) `src/lib/db.ts`'s header overclaimed: the reviewer
+  measured `current_user = app_web` (`rolbypassrls = false`) but `session_user = neondb_owner` with
+  `rolbypassrls = true`, restorable by `RESET ROLE` inside the same transaction — so the isolation
+  is role discipline, not construction.
+- 2026-09-16 — reviewer nits carried to their owners, not fixed here: migration numbering
+  (spec §5.1 vs this README) is **TASK-015**'s to settle; AC-18's assertion on the *connecting*
+  role and the comma-separated `app.partner_ids` are **TASK-023**'s; `schema_migrations` surviving
+  `--to 0000` is **TASK-022**'s exemption to write down; the directory-entry rule joins
+  **TASK-027**'s connected half.
 
 ## Escalations
 
@@ -85,6 +97,32 @@ else; `app_web` may `SELECT`/`INSERT` on an `app_owner` table and may not `CREAT
 10 (T-05), `tests/unit/db-migrate.test.ts` 22, `tests/unit/db-check.test.ts` 42 (+18). The
 connected round trip is T-01/T-02, owned as AC-4 by TASK-022, and is re-run by hand per PR from
 here.
+
+### Round 2 (`/review 71` fix round)
+
+- `scripts/db-check.ts`: `DirEntry`/`DRIZZLE_META_DIR` and a `directoryEntries` rule —
+  `checkMigrations` takes names or name/kind pairs, skips directories, ignores `meta/` by name and
+  reports a directory whose name parses as a migration (`db:migrate` would never read it);
+  `readMigrationDir` now lists with `withFileTypes` and drops `meta/`. `scripts/db-migrate.ts`
+  reads through `readMigrationDir` instead of a bare `readdirSync`.
+- `db/migrations/meta/_journal.json` committed (`{"version":"7","dialect":"postgresql",
+  "entries":[]}` — `db:generate` reports `0 tables … nothing to migrate`, so no snapshot and no
+  generated SQL yet), and `db/migrations/README.md` gains a `meta/` + `db:generate` section: the
+  journal is committed, generated forward SQL is a **draft** to fold into the hand-written pair and
+  then delete, the rollback stays hand-written, `db:check` must be green before the commit.
+- `src/lib/db.ts` header rewritten (no behaviour change): each transaction *enters* `app_web`, the
+  `session_user` keeps `BYPASSRLS`, the isolation holds by role discipline until a dedicated
+  `app_web` login exists, and TASK-023's AC-18 must assert on the connecting role.
+- Tests: `tests/unit/db-check.test.ts` 24 → **29** (committed `meta/` passes; a stray `.sql` inside
+  `meta/` is invisible to `readMigrationDir`/`readSources`/`runDbCheck` on a temp tree; a directory
+  named like a migration is reported; a directory that is not migration-shaped is silent; the
+  committed journal keeps the real tree green) and `tests/unit/db.test.ts` 10 → **13** (a
+  grep-style static assertion that no file under `src/` other than `db.ts` contains `SET ROLE` /
+  `RESET ROLE`, that the helpers only ever issue `SET LOCAL ROLE`, and that the header states the
+  residual risk).
+- Gates, round 2: lint, typecheck, format, `db:check`, `check:no-db`, `codebase:map --check`,
+  `specs:index --check`, cold `pnpm build` all green; full suite **3835 passed / 5 skipped, 160
+  files**. No DB action this round (no migration changed).
 
 **Dependencies added**: `drizzle-orm`, `postgres` (runtime), `drizzle-kit` (dev); `esbuild`'s
 install script refused in `pnpm-workspace.yaml` like every other one.

@@ -30,13 +30,17 @@
  *   pnpm db:migrate [--dry-run]
  *   pnpm db:rollback --to 0000 [--dry-run]
  */
-import { readFileSync, readdirSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { z } from "zod";
 
-import { MIGRATIONS_DIR, checkMigrations } from "./db-check.ts";
+import {
+  MIGRATIONS_DIR,
+  checkMigrations,
+  readMigrationDir,
+} from "./db-check.ts";
 
 /** One forward migration and the rollback beside it. */
 export interface Migration {
@@ -99,7 +103,9 @@ export function parseArgs(argv: readonly string[]): RunnerOptions {
 
 /** Every migration in the directory, in ascending version order. Throws on an inconsistent set. */
 export function readMigrations(dir: string): Migration[] {
-  const report = checkMigrations(readdirSync(dir));
+  // `readMigrationDir`, not a bare `readdirSync`: it drops Drizzle Kit's committed `meta/` and
+  // tells a directory from a file, so `db:generate` output cannot look like a migration.
+  const report = checkMigrations(readMigrationDir(dir));
   if (!report.ok) {
     throw new Error(
       "the migration set is inconsistent; run `pnpm db:check` and fix it before migrating",

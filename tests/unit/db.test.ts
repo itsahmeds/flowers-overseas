@@ -1,17 +1,22 @@
 /**
  * `src/lib/db.ts` — spec 002 AC-3 / T-05 (TASK-014).
  *
- * Two claims, both about the seam rather than about SQL:
+ * Three claims, all about the seam rather than about SQL:
  *
  *  1. **the module exports no client** — the only query surface is `withDbContext`,
  *     `withAdminContext` and `withSystemContext`, so no module can run a query without a session
  *     context and every RLS policy of spec 002 §2 is load-bearing rather than advisory;
  *  2. **every helper issues the `SET LOCAL` preamble before the first statement of the
- *     transaction**, in the order AC-3 names, followed by the switch into the runtime role.
+ *     transaction**, in the order AC-3 names, followed by the switch into the runtime role;
+ *  3. **the role discipline the isolation rests on** — `SET LOCAL ROLE`, never `SET ROLE` or
+ *     `RESET ROLE`, and no module under `src/` other than this one names either (`/review 71`).
  *
  * The driver is a fake: `postgres` and `@/lib/env` are reached through dynamic `import()` in the
  * module under test precisely so this test needs no database and no connection string.
  */
+import { readdirSync, readFileSync } from "node:fs";
+import { join, relative, resolve } from "node:path";
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 /** Statements the fake transaction saw, in order, across every helper call in a test. */
@@ -195,5 +200,61 @@ describe("withAdminContext and withSystemContext (AC-3)", () => {
       withSystemContext("Retention Sweep", () => Promise.resolve(undefined)),
     ).rejects.toThrow();
     expect(statements).toEqual([]);
+  });
+});
+
+/**
+ * The residual risk the `/review 71` measurement pinned down: inside the transaction
+ * `current_user = app_web` (`rolbypassrls = false`), but `session_user` is the provider's managed
+ * login with `rolbypassrls = true`, and one `RESET ROLE` in the same transaction restores it.
+ * Until a dedicated `app_web` login exists, the isolation is role *discipline*, so the discipline
+ * is what a test can assert: the seam hands out no client, and no other module under `src/` says
+ * `RESET ROLE` or `SET ROLE`.
+ */
+describe("role discipline (spec 002 §13 Q4; /review 71)", () => {
+  // `SET LOCAL ROLE` does not match: the words are not adjacent.
+  const ROLE_ESCAPE = /\b(?:RESET|SET)\s+ROLE\b/i;
+
+  function sourceFiles(dir: string): string[] {
+    return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+      const path = join(dir, entry.name);
+      if (entry.isDirectory()) return sourceFiles(path);
+      return /\.(ts|tsx|mts|cts|js|mjs|sql)$/.test(entry.name) ? [path] : [];
+    });
+  }
+
+  it("leaves `db.ts` the only module under src/ that names a role statement", () => {
+    const srcDir = resolve(__dirname, "../../src");
+    const dbModule = join(srcDir, "lib", "db.ts");
+    const offenders = sourceFiles(srcDir)
+      .filter((path) => path !== dbModule)
+      .filter((path) => ROLE_ESCAPE.test(readFileSync(path, "utf8")))
+      .map((path) => relative(srcDir, path));
+
+    expect(offenders).toEqual([]);
+  });
+
+  it("issues `SET LOCAL ROLE` and never `SET ROLE` or `RESET ROLE`", async () => {
+    const { withDbContext } = await import("../../src/lib/db");
+    await withDbContext({ role: "customer", requestId: REQUEST_ID }, () =>
+      Promise.resolve(undefined),
+    );
+
+    expect(statements.at(-1)).toBe("SET LOCAL ROLE app_web");
+    for (const statement of statements) {
+      expect(ROLE_ESCAPE.test(statement), statement).toBe(false);
+    }
+  });
+
+  it("documents that the connecting role still holds BYPASSRLS (TASK-023 AC-18)", () => {
+    const header = readFileSync(
+      resolve(__dirname, "../../src/lib/db.ts"),
+      "utf8",
+    ).slice(0, 3000);
+
+    expect(header).toContain("role discipline");
+    expect(header).toContain("connects as");
+    expect(header).toMatch(/session_user/);
+    expect(header).toMatch(/AC-18/);
   });
 });

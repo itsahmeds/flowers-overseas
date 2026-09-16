@@ -33,9 +33,20 @@
  * Exit codes: 0 = the migration set is consistent (or empty); 1 = a problem, one line per
  * problem on stderr.
  */
+import type { Dirent } from "node:fs";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+
+/**
+ * One entry of the migrations directory. `checkMigrations` stays pure and name-driven, but it has
+ * to tell a *file* called `0002_x.sql` from a *directory* of that name, so a caller may pass
+ * either a bare name (taken to be a file) or this pair.
+ */
+export interface DirEntry {
+  readonly name: string;
+  readonly isFile: boolean;
+}
 
 /** A forward migration and the rollback the rules require next to it. */
 export interface MigrationFile {
@@ -61,6 +72,11 @@ export interface DbCheckReport {
   readonly versionGaps: readonly string[];
   /** Files that are neither `NNN_name.sql` nor `NNN_name.down.sql`. */
   readonly unparseableFiles: readonly string[];
+  /**
+   * Directories whose name parses as a migration filename. A directory is not a migration the
+   * runner can apply, and a silent skip would hide `0002_x.sql/` from `db:migrate`.
+   */
+  readonly directoryEntries: readonly string[];
   readonly ok: boolean;
 }
 
@@ -68,18 +84,44 @@ const MIGRATION = /^(\d+)_([a-z0-9_-]+)\.sql$/;
 const ROLLBACK = /^(\d+)_([a-z0-9_-]+)\.down\.sql$/;
 /** Files that are not migrations and are never reported: directory keepers and editor noise. */
 const IGNORED = new Set([".gitkeep", ".DS_Store", "README.md"]);
+/**
+ * Drizzle Kit's bookkeeping directory (`_journal.json` plus one snapshot per generated migration).
+ * It is committed — drizzle-kit needs the journal to generate the *next* migration incrementally —
+ * and it is not a migration, so the gate ignores it by name, whatever it contains. See
+ * `db/migrations/README.md` for how generated SQL is reconciled with the hand-written pairs.
+ */
+export const DRIZZLE_META_DIR = "meta";
 
 /**
  * Applies the rules above to a directory listing. Pure, so the unit test can drive every failure
- * mode without writing SQL files.
+ * mode without writing SQL files. Entries may be bare names (files) or {@link DirEntry} pairs;
+ * directories are skipped unless their name claims to be a migration, which is an error.
  */
-export function checkMigrations(entries: readonly string[]): DbCheckReport {
+export function checkMigrations(
+  entries: readonly (string | DirEntry)[],
+): DbCheckReport {
   const migrations: MigrationFile[] = [];
   const rollbacks = new Map<string, string>();
   const unparseableFiles: string[] = [];
+  const directoryEntries: string[] = [];
 
-  for (const entry of [...entries].sort()) {
+  const normalised: DirEntry[] = entries
+    .map((entry) =>
+      typeof entry === "string" ? { name: entry, isFile: true } : entry,
+    )
+    .sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
+
+  for (const { name: entry, isFile } of normalised) {
     if (IGNORED.has(entry)) continue;
+    if (entry === DRIZZLE_META_DIR) continue;
+    if (!isFile) {
+      // A plain subdirectory is someone's scratch space and none of the gate's business; one
+      // named like a migration is reported, because `db:migrate` would never read it.
+      if (MIGRATION.test(entry) || ROLLBACK.test(entry)) {
+        directoryEntries.push(entry);
+      }
+      continue;
+    }
     const rollback = ROLLBACK.exec(entry);
     if (rollback?.[1] !== undefined && rollback[2] !== undefined) {
       rollbacks.set(`${rollback[1]}_${rollback[2]}`, entry);
@@ -145,12 +187,14 @@ export function checkMigrations(entries: readonly string[]): DbCheckReport {
     duplicateVersions,
     versionGaps,
     unparseableFiles,
+    directoryEntries,
     ok:
       missingRollbacks.length === 0 &&
       orphanRollbacks.length === 0 &&
       duplicateVersions.length === 0 &&
       versionGaps.length === 0 &&
-      unparseableFiles.length === 0,
+      unparseableFiles.length === 0 &&
+      directoryEntries.length === 0,
   };
 }
 
@@ -180,16 +224,30 @@ export function formatProblems(report: DbCheckReport): string[] {
       `${file}: not a migration filename (expected NNN_name.sql or NNN_name.down.sql).`,
     );
   }
+  for (const dir of report.directoryEntries) {
+    lines.push(
+      `${dir}: is a directory, not a migration file; db:migrate reads files only.`,
+    );
+  }
   return lines;
 }
 
-/** `readdirSync` on the migrations directory, or `[]` when it does not exist yet. */
-export function readMigrationDir(dir: string): string[] {
+/**
+ * The migrations directory as name/kind pairs, or `[]` when it does not exist yet. Drizzle Kit's
+ * committed `meta/` is dropped here as well as in `checkMigrations`, so nothing under it is ever
+ * read as a migration — the listing is not recursive, so a stray `meta/0009_x.sql` never reaches
+ * the rules either.
+ */
+export function readMigrationDir(dir: string): DirEntry[] {
+  let entries: Dirent[];
   try {
-    return readdirSync(dir);
+    entries = readdirSync(dir, { withFileTypes: true });
   } catch {
     return [];
   }
+  return entries
+    .filter((entry) => entry.name !== DRIZZLE_META_DIR)
+    .map((entry) => ({ name: entry.name, isFile: entry.isFile() }));
 }
 
 /**
@@ -320,6 +378,7 @@ export function readSources(
   }
   for (const entry of entries.sort()) {
     const path = join(dir, entry);
+    if (entry === DRIZZLE_META_DIR) continue;
     if (!entry.endsWith(extension)) continue;
     if (!statSync(path).isFile()) continue;
     sources.set(entry, readFileSync(path, "utf8"));

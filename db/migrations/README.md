@@ -59,6 +59,34 @@ Applied migrations are recorded in `public.schema_migrations` (version, name, ap
 runner bookkeeping, not an application table: owned by the connecting role, carrying no personal
 data, and absent from `db/schema/`.
 
+## `meta/` and `pnpm db:generate`
+
+`pnpm db:generate` runs Drizzle Kit against `db/schema/`. It writes two kinds of output here:
+
+- `meta/_journal.json` and `meta/NNNN_snapshot.json` — its own bookkeeping. **Committed**:
+  drizzle-kit diffs the newest snapshot to generate the *next* migration, so a dropped journal
+  makes it re-emit the whole schema as `0000_*.sql`. `pnpm db:check` ignores `meta/` by name and
+  the runner never reads it, so nothing in there is ever applied.
+- a forward `NNNN_name.sql` — **a draft, not the migration**. The hand-written pair in this
+  directory is the source of truth, because the rollback is hand-written (`CLAUDE.md`) and
+  because the SQL carries the `SET LOCAL ROLE app_owner;` preamble, the RLS policies and the
+  grants that drizzle-kit does not know about.
+
+Reconciling the two, whenever `db:generate` emits SQL:
+
+1. Read the generated file, fold what it got right into the hand-written `NNNN_name.sql` (adding
+   the ownership preamble as its first statement), and **delete the generated file** — never
+   commit a generated duplicate of a migration that already exists. A generated file left behind
+   would claim a version twice and `pnpm db:check` would fail it.
+2. Write the matching `NNNN_name.down.sql` yourself.
+3. Keep the `meta/` change in the same commit as the migration, so the next `db:generate` diffs
+   against the schema that is actually committed.
+4. `pnpm db:check` must be green before the commit: it is the gate that catches an unpaired file,
+   a duplicate version, a missing preamble and a directory pretending to be a migration.
+
+Migration `0001` predates any Drizzle table, so today's journal is empty (`"entries": []`) and
+`db:generate` prints `0 tables … nothing to migrate`.
+
 ## Phase 0 caveat
 
 There is one shared database in Phase 0 (spec 002 §13 Q5), so a migration applied from a branch

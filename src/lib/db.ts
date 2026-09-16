@@ -9,11 +9,20 @@
  * raw client could run a query with no tenant context, and every partner-isolation policy would
  * then be advisory. That is why AC-3 is a statement about this module's *exports*.
  *
- * Roles (§13 Q4). The session enters `app_web` — `NOSUPERUSER`, no `BYPASSRLS`, DML only,
- * created by migration `0001` — for the duration of the transaction, so RLS applies to the
- * application by construction rather than by policy discipline. Administrator access is the
- * session variable `app.role = 'admin'` and **not** a second connection string: there is no
- * service-role key to leak (ADR-0015 removed the one we had).
+ * Roles (§13 Q4), stated precisely because the difference matters. Each transaction **enters**
+ * `app_web` — `NOSUPERUSER`, no `BYPASSRLS`, DML only, created by migration `0001` — with `SET
+ * LOCAL ROLE`, so inside the transaction `current_user = app_web` and `rolbypassrls` is false and
+ * `CREATE` on `public` is denied. The `session_user` is still the provider's managed login, whose
+ * `rolbypassrls` is **true**, and a `RESET ROLE` or `SET ROLE` in the same transaction restores
+ * it. The isolation therefore holds by **role discipline**, not by construction: no code path may
+ * issue `RESET ROLE` / `SET ROLE` (asserted statically in `tests/unit/db.test.ts`), and this
+ * module is the only one that holds a client. RLS is a control rather than defence in depth only
+ * once `DATABASE_URL` connects as a dedicated `app_web` **login** role with `rolbypassrls = false`;
+ * until then TASK-023's AC-18 must assert on the role the connection string *connects as*, not
+ * only on `app_web`.
+ *
+ * Administrator access is the session variable `app.role = 'admin'` and **not** a second
+ * connection string: there is no service-role key to leak (ADR-0015 removed the one we had).
  *
  * Connection (§13 Q6). Web requests use the pooled `DATABASE_URL` (PgBouncer transaction mode,
  * which is safe precisely because every statement here is `SET LOCAL` inside an explicit
