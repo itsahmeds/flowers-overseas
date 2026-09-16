@@ -175,6 +175,7 @@ Before `/plan-tasks` will break a spec into tasks:
 | The canvas's "medium" weight is 500; the shipped `--font-weight-medium` is **600**. | the code | Only two IBM Plex Sans faces ship (400, 600) to stay inside the 45 KB font budget, so 500 would be matched down to 400. The artboards are drawn at 600 where a canvas file says 500. |
 | The canvas's `.photo` caption ink is written inline as an `oklch()` value. | the code | It is `--color-photo-ink` in `globals.css` and a contrast-manifest pair. New artboards use the token. |
 | `system/components.dc.html` carries a **Country-page blocks (spec 007)** group — breadcrumb trail, fact list, FAQ list, occasion calendar, related-destinations row, status chip — that `src/modules/ui` does not export. | the sheet, for now | The one deliberate exception to "the sheet is a mirror, not a wish list": `CLAUDE.md` requires a UI spec's artboards **before** `/plan-tasks`, so the blocks spec 007 fixes are drawn before the tasks that build them exist. The group says so on itself. The implementer who ships them updates this row out of existence in the same PR. None of the six introduces a token: all are composed from `Chip`, `Stack`, `Grid`, `Text` and the existing scales. |
+| `system/components.dc.html` carries a **Listing and card blocks (spec 008)** group — product card, listing grid, listing toolbar, pagination, listing empty state, from-price chip — that `src/modules/ui` does not export. | the sheet, for now | The second deliberate exception, on the same footing and for the same reason as the 007 row above: spec 008 §5.2 names these six as `src/modules/ui/shop/ProductCard.tsx`, `ListingGrid.tsx`, `ListingToolbar.tsx`, `Pagination.tsx`, `ListingEmpty.tsx` and `FromPriceChip.tsx`, and `CLAUDE.md` requires the artboards **before** `/plan-tasks` splits the spec into the tasks that build them. None of the six exists in `src/modules/ui` today and the group says so on itself. The implementer of spec 008's UI-primitives task ships them, `/dev/components` and this row's deletion in one pull request. No new token: all six are composed from `Chip`, `Photo`, `Stack`, `Grid`, `Text` and the existing space, rule and ink scales. |
 
 ## Phase 0 page types → wireframes
 
@@ -187,13 +188,13 @@ Every row of `plan/05` §1 and §2 whose Phase column is 0. Rows outside §1–�
 | 2 | Locale home | `homepage-v1/homepage-desktop.dc.html` · `homepage-v1/homepage-mobile.dc.html` | 004 (approved direction) |
 | 3 | All destinations | `wireframes/all-destinations-desktop.dc.html` · `wireframes/all-destinations-mobile.dc.html` | 007 |
 | 4 | Corridor: country (guide and live states) | `wireframes/corridor-country-desktop.dc.html` · `wireframes/corridor-country-mobile.dc.html` | 007 |
-| 6 | Country shop root | `wireframes/country-shop-desktop.dc.html` · `wireframes/country-shop-mobile.dc.html` | 008 |
-| 7 | Country category | `wireframes/country-category-desktop.dc.html` · `wireframes/country-category-mobile.dc.html` | 008 |
-| 8 | Country occasion | `wireframes/country-occasion-desktop.dc.html` · `wireframes/country-occasion-mobile.dc.html` | 008 |
+| 6 | Country shop root | `wireframes/country-shop-desktop.dc.html` · `wireframes/country-shop-mobile.dc.html` — priced row, category tiles with `from` prices, the dated occasion table, toolbar (default and sorted), pagination, empty, no-photo, stale FX, card as tile and as link | 008 |
+| 7 | Country category | `wireframes/country-category-desktop.dc.html` · `wireframes/country-category-mobile.dc.html` — sibling-category chip row, breadcrumb, toolbar (default and sorted), the last page, why empty is unreachable | 008 |
+| 8 | Country occasion | `wireframes/country-occasion-desktop.dc.html` · `wireframes/country-occasion-mobile.dc.html` — the destination's own dated line, single-page listing (no pagination), the observed-but-below-the-floor state | 008 |
 | 9 | Product (country-scoped) | `wireframes/product-desktop.dc.html` · `wireframes/product-mobile.dc.html` | 009 |
-| 10 | Category hub (destination-less) | `wireframes/category-hub-desktop.dc.html` · `wireframes/category-hub-mobile.dc.html` | 008 |
-| 13 | Occasion hub | `wireframes/occasion-hub-desktop.dc.html` · `wireframes/occasion-hub-mobile.dc.html` | 008 |
-| 14 | Occasions index | `wireframes/occasions-index-desktop.dc.html` · `wireframes/occasions-index-mobile.dc.html` | 008 |
+| 10 | Category hub (destination-less) | `wireframes/category-hub-desktop.dc.html` · `wireframes/category-hub-mobile.dc.html` — the no-money state and its explanation sentence, the destination picker, the country list in `collator` order, unpriced cards | 008 |
+| 13 | Occasion hub | `wireframes/occasion-hub-desktop.dc.html` · `wireframes/occasion-hub-mobile.dc.html` — the per-country date table, country links that exist against the text-only ones, products without prices | 008 |
+| 14 | Occasions index | `wireframes/occasions-index-desktop.dc.html` · `wireframes/occasions-index-mobile.dc.html` — the everyday group and the dated group with their next dates | 008 |
 | 19 | Checkout (3 steps, demo guard) | `wireframes/checkout-desktop.dc.html` · `wireframes/checkout-mobile.dc.html` | 010 |
 | 25 | How it works | `wireframes/how-it-works-desktop.dc.html` · `wireframes/how-it-works-mobile.dc.html` | 007 |
 | 28 | Guarantee & substitution | `wireframes/guarantee-and-delivery-desktop.dc.html` · `wireframes/guarantee-and-delivery-mobile.dc.html` | 007 |

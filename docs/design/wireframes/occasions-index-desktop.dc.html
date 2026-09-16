@@ -42,9 +42,8 @@
     .display { font-family: var(--font-display); font-weight: 500; letter-spacing: -0.015em; }
     .label { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-ink-3); }
     .photo { background: var(--color-photo); display: flex; align-items: flex-end; padding: var(--space-md); color: var(--color-photo-ink); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; }
-    .field { display: flex; flex-direction: column; gap: 6px; }
-    .field span.v { min-height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-bottom: 1px solid var(--color-ink); font-size: var(--text-md); color: var(--color-ink); }
-    .btn { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
+    .ph-box { border: 1px dashed var(--color-ink-3); background: var(--color-paper-2); display: flex; align-items: flex-end; padding: var(--space-md); color: var(--color-ink-3); font-size: var(--text-xs); letter-spacing: 0.06em; }
+    .btn { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 600; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
     .btn.accent { background: var(--color-accent); }
     .btn.secondary { background: var(--color-paper); color: var(--color-ink); border: 1px solid var(--color-ink-3); }
     .btn.sm { min-height: 44px; padding: 0 16px; font-size: var(--text-sm); }
@@ -61,96 +60,64 @@
     .stub { border: 1px dashed var(--color-ink-3); border-radius: var(--radius-sm); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; color: var(--color-ink-2); font-size: var(--text-sm); }
     .stub b { font-weight: 600; color: var(--color-ink); font-size: var(--text-sm); }
     .sec { display: flex; flex-direction: column; gap: var(--space-md); }
+    .cap { font-size: var(--text-xs); color: var(--color-ink-3); line-height: 1.55; }
     table.spec { border-collapse: collapse; width: 100%; font-size: var(--text-sm); }
     table.spec th, table.spec td { text-align: start; border-block-end: var(--rule); padding: 8px 12px; vertical-align: top; }
     table.spec th { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-3); }
+    table.cal { border-collapse: collapse; width: 100%; font-size: var(--text-sm); }
+    table.cal caption { text-align: start; font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-3); padding-block-end: var(--space-sm); }
+    table.cal th, table.cal td { text-align: start; border-block-end: var(--rule); padding: 8px 10px; vertical-align: top; }
+    table.cal thead th { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-3); }
     .grid { display: grid; gap: var(--space-lg); }
     .card { display: flex; flex-direction: column; gap: var(--space-sm); }
     .card .nm { font-family: var(--font-display); font-weight: 500; font-size: var(--text-lg); }
     .tile { border: var(--rule); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; }
     .kv { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px var(--space-md); font-size: var(--text-sm); }
     .kv > span:nth-child(even) { text-align: end; font-variant-numeric: tabular-nums; }
-    .faq { border-block-start: var(--rule); padding-block: var(--space-md); display: flex; flex-direction: column; gap: 6px; }
-    .faq b { font-weight: 600; font-size: var(--text-md); }
-    .faq span { font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.6; }
-    .steprow { display: flex; gap: var(--space-md); font-size: var(--text-sm); }
-    .steprow > span { flex: 1; border-block-start: 2px solid var(--color-rule); padding-block-start: var(--space-sm); color: var(--color-ink-3); }
-    .steprow > span.on { border-block-start-color: var(--color-ink); color: var(--color-ink); font-weight: 600; }
+    .crumb { font-size: var(--text-sm); color: var(--color-ink-3); }
+    .crumb b { color: var(--color-ink); }
+    .sel { display: inline-flex; align-items: center; justify-content: space-between; gap: var(--space-sm); min-height: 44px; padding: 0 12px; border: 1px solid var(--color-ink); border-radius: var(--radius-sm); font-size: var(--text-sm); background: var(--color-paper); }
     code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: var(--text-xs); color: var(--color-ink-2); }
     .prose { max-width: var(--measure); font-size: var(--text-md); line-height: 1.6; color: var(--color-ink-2); }
   </style>
 </helmet>
-<div style="width: 1440px; min-height: 2620px; background: var(--color-paper); display: flex; flex-direction: column;">
+<div style="width: 1440px; min-height: 3600px; background: var(--color-paper); display: flex; flex-direction: column;">
   <div style="display: flex; flex-direction: column; border-bottom: 1px solid var(--color-ink);">
     <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm) var(--space-lg); align-items: center; justify-content: space-between; padding: 12px 56px; font-size: var(--text-xs); color: var(--color-ink-2); border-bottom: var(--rule);">
-      <span>Order by 14:00 in Warsaw — the recipient's own time — and we deliver today</span><span>One price: VAT and delivery in</span><span>Talk to us: +1 (213) 592-5150 · WhatsApp · Mon–Sat 8–20 CET</span>
+      <span>We send flowers across Europe — one price with VAT and delivery in</span><span>Prices include delivery and VAT</span><span>Talk to us: +1 (213) 592-5150 · WhatsApp · Mon–Sat 8–20 CET</span>
     </div>
     <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm) var(--space-lg); align-items: center; justify-content: space-between; padding: var(--space-md) 56px;">
       <span class="display" style="font-size: 26px; letter-spacing: 0.04em;">Flowers Overseas</span>
       <span style="font-size: var(--text-sm); color: var(--color-ink-3);">Search flowers, occasions, a city or a country · Sign in · My orders · Basket (0)</span>
     </div>
     <div style="padding: 10px 56px; border-top: var(--rule); font-size: var(--text-sm); color: var(--color-ink-2);">
-      <span class="label" style="margin-inline-end: var(--space-sm);">Categories</span>Best sellers · Birthday · Sympathy · All Saints 1 Nov · Andrzejki 29 Nov · Wigilia 24 Dec · Women's Day 8 Mar · Bouquets · Roses · Plants · Same-day · Poland
+      <span class="label" style="margin-inline-end: var(--space-sm);">Categories</span>Hand-tied bouquet · Arrangement · Plant · Funeral and sympathy · Flowers and gift set · Roses · Teachers&#39; Day 14 Oct · All Saints&#39; Day 1 Nov · Christmas 25 Dec · Poland
     </div>
-    <div style="padding: 6px 56px 10px; font-size: var(--text-xs); color: var(--color-ink-3);">Chrome as approved in <b>homepage-v1</b>. Every category row entry and every utility link is <b>unpublished in Phase 0</b> and renders as text, not a link (site-links.ts, categories.ts; spec 004 AC-14). <b>Round 2:</b> the row prints the next real occasion dates for the destination, the way 1-800-Flowers prints "Labor Day (9/7)" — the dates come from the occasion calendar, so a row entry can never name a date we have not verified.</div>
+    <div style="padding: 6px 56px 10px; font-size: var(--text-xs); color: var(--color-ink-3);">Chrome as approved in <b>homepage-v1</b>. The category names are the shipped <code>catalog.facet.*</code> strings, not invented labels, and every occasion in the row prints the destination&#39;s own computed date. A row entry is a link only where the target page exists (<code>site-links.ts</code>; spec 004 AC-14).</div>
   </div>
-
   <section class="note" style="margin: var(--space-lg) 56px 0;">
-    <span class="label">Occasions index · [internal]</span>
+    <span class="label">Occasions index — every occasion we have a page for · [internal]</span>
     <dl>
-      <dt>Purpose</dt><dd>Every occasion for this locale's market, with the next date for each. The parent of the occasion hubs and the page a browsing visitor lands on from the header's Occasions row.</dd>
-      <dt>URL</dt><dd><code>/en-gb/occasions</code> · <code>/de/anlaesse</code> · <code>/pl/okazje</code></dd>
-      <dt>Index</dt><dd>yes.</dd>
-      <dt>Reads</dt><dd>the occasion list, the next date per occasion for the locale market, and which have a live destination.</dd>
-      <dt>Owning spec</dt><dd>008</dd>
+      <dt>Purpose</dt><dd>One page listing every occasion hub, split into the ones that fall on a date and the ones that do not, each dated one carrying its next date.</dd>
+      <dt>URL</dt><dd><code>/{locale}/{occasions}</code>: <code>/en-gb/occasions</code> · <code>/de/anlaesse</code> · <code>/pl/okazje</code>.</dd>
+      <dt>Exists</dt><dd>iff at least one occasion hub exists in that locale.</dd>
+      <dt>Index</dt><dd>Indexable at the flip with the hubs. Phase 0: <code>noindex,follow</code>, in no sitemap.</dd>
+      <dt>Reads</dt><dd>The occasion registry, the authored slugs, and <code>nextOccasions()</code> for the date beside each seasonal entry. Ordered by <code>collator(locale)</code> inside each group.</dd>
+      <dt>States shown</dt><dd>The <b>everyday</b> group &middot; the <b>dated</b> group with its next dates &middot; the observed occasion that computes no date &middot; the occasion that is observed in no published destination and therefore has no row.</dd>
+      <dt>Owning spec</dt><dd>008 &middot; dates 007</dd>
     </dl>
   </section>
-
   <main style="display: flex; flex-direction: column; gap: var(--space-xl); padding: var(--space-xl) 56px;">
-<div class="sec"><nav style="font-size: var(--text-sm); color: var(--color-ink-3);">Home <span style="color: var(--color-rule);">/</span> <b>Occasions</b></nav>
-      <h1 class="display" style="margin: 0; font-size: var(--text-display-s); line-height: 1.08;">Flowers for every occasion</h1>
-      <p class="prose" style="margin: 0;">Evergreen reasons first, then the dated ones in the order they arrive. Each occasion explains when it falls in the country you are sending to.</p></div>
-
-<div class="sec"><div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">Any day</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">Evergreen</h2></div>
-      <div class="grid" style="grid-template-columns: repeat(3, minmax(0, 1fr));"><a href="#" class="card"><div class="photo" style="aspect-ratio: 4 / 3;">Photo slot · occasion tile</div><span class="nm">Birthday</span><span style="font-size: var(--text-sm); color: var(--color-ink-3);">Any day of the year</span></a><a href="#" class="card"><div class="photo" style="aspect-ratio: 4 / 3;">Photo slot · occasion tile</div><span class="nm">Anniversary</span><span style="font-size: var(--text-sm); color: var(--color-ink-3);">Any day of the year</span></a><a href="#" class="card"><div class="photo" style="aspect-ratio: 4 / 3;">Photo slot · occasion tile</div><span class="nm">Sympathy and funeral</span><span style="font-size: var(--text-sm); color: var(--color-ink-3);">Any day of the year</span></a><a href="#" class="card"><div class="photo" style="aspect-ratio: 4 / 3;">Photo slot · occasion tile</div><span class="nm">New baby</span><span style="font-size: var(--text-sm); color: var(--color-ink-3);">Any day of the year</span></a><a href="#" class="card"><div class="photo" style="aspect-ratio: 4 / 3;">Photo slot · occasion tile</div><span class="nm">Get well</span><span style="font-size: var(--text-sm); color: var(--color-ink-3);">Any day of the year</span></a><a href="#" class="card"><div class="photo" style="aspect-ratio: 4 / 3;">Photo slot · occasion tile</div><span class="nm">Thank you</span><span style="font-size: var(--text-sm); color: var(--color-ink-3);">Any day of the year</span></a></div></div>
-
-<div class="sec"><div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">Coming up</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">Dated, in the order they arrive</h2></div>
-      <div style="overflow-x: auto;">
-        <table class="spec" style="min-width: 560px;">
-          <tr><th>Occasion</th><th>Next date</th><th>Rule</th><th>Where we can deliver</th></tr>
-          <tr><td><a href="#"><b>Women's Day</b></a></td><td>8 March</td><td style="color: var(--color-ink-3);">fixed</td><td>Poland</td></tr>
-          <tr><td><a href="#"><b>Mother's Day</b></a></td><td>varies by country</td><td style="color: var(--color-ink-3);">computed</td><td>Poland</td></tr>
-          <tr><td><a href="#"><b>Valentine's Day</b></a></td><td>14 February</td><td style="color: var(--color-ink-3);">fixed</td><td>Poland</td></tr>
-          <tr><td><a href="#"><b>Easter</b></a></td><td>varies</td><td style="color: var(--color-ink-3);">computed</td><td>Poland</td></tr>
-          <tr><td><a href="#"><b>All Saints</b></a></td><td>1 November</td><td style="color: var(--color-ink-3);">fixed</td><td>Poland</td></tr>
-          <tr><td><a href="#"><b>Christmas and Wigilia</b></a></td><td>24–25 December</td><td style="color: var(--color-ink-3);">fixed</td><td>Poland</td></tr>
-        </table>
-      </div>
-      <span style="font-size: var(--text-xs); color: var(--color-ink-3);">The “rule” column is not shown to visitors; it is on the artboard so an implementer can see that every date is computed from a recorded rule. The occasion <em>calendar</em> page (<code>/occasions/calendar</code>, all dates for all live countries) is Phase 1, <code>plan/05</code> row 40.</span></div>
-
-<div class="sec"><div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">The calendar</span><h2 class="display" style="margin: 0; font-size: var(--text-xl); line-height: 1.15;">The same occasion, three different days</h2></div>
-      <div style="overflow-x: auto;">
-        <table class="spec" style="min-width: 560px;">
-          <tr><th>Occasion</th><th>United Kingdom</th><th>Poland</th><th>Germany</th><th>Order by</th></tr>
-          <tr><td>Mother's Day</td><td>22 March</td><td>26 May</td><td>10 May</td><td>14:00 in the destination, the day before</td></tr>
-          <tr><td>Women's Day</td><td>—</td><td>8 March</td><td>8 March</td><td>6 March, the busiest flower day in Poland</td></tr>
-          <tr><td>All Saints</td><td>—</td><td>1 November</td><td>1 November</td><td>30 October</td></tr>
-          <tr><td>Name day</td><td>—</td><td>every day, by name</td><td>—</td><td>the day before</td></tr>
-        </table>
-      </div>
-      <span style="font-size: var(--text-xs); color: var(--color-ink-3);">A reference table rather than an essay, which is the one kind of occasion editorial in the field a person would actually read (Interflora UK's birth-flower-by-month table). The rows exist only where the date is verified for that country and that year; a blank cell stays blank. Occasions are authored per market — Imieniny, Dzień Kobiet, Muttertag, Toussaint — and never translated out of English.</span></div>
-
-<div class="sec"><div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">States</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;"></h2></div>
-      <div class="stub" style=""><b>Occasion with no live destination</b><span>It is still listed and still links to its hub — the hub's country table is useful even when we cannot deliver anywhere on it yet. What it does not do is show an order-by date.</span></div>
-      <div class="stub" style=""><b>Reminder signup</b><span>The footer's occasion-reminder signup (already on the approved homepage) is the conversion path for this page: one email a few days before each date, double opt-in, nothing stored until confirmed.</span></div></div>
+<div class="sec"><nav aria-label="Breadcrumb" class="crumb"><a href="#">Home</a> <span aria-hidden="true" style="color: var(--color-rule);">/</span> <b aria-current="page">Occasions</b></nav><h1 class="display" style="margin: 0; font-size: var(--text-display-s); line-height: 1.08;">Occasions</h1><p class="prose" style="margin: 0;">Some of these fall on a date and the date is different in every country. Some of them are any day of the year. Each one has a page with what we make for it, and the dated ones carry the date for every destination we cover.</p></div>
+<div class="sec"><div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">Dated</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">The ones with a date</h2></div><table class="cal"><caption>The next date for each, in Poland — the one destination we have published</caption><thead><tr><th scope="col">Occasion</th><th scope="col">Next date</th></tr></thead><tbody><tr><th scope="row" style="font-weight: 600;"><a href="#">All Saints&#39; Day</a></th><td>Sunday 1 November 2026</td></tr><tr><th scope="row" style="font-weight: 600;"><a href="#">Christmas</a></th><td>Friday 25 December 2026</td></tr><tr><th scope="row" style="font-weight: 600;"><a href="#">Easter</a></th><td>Sunday 28 March 2027</td></tr><tr><th scope="row" style="font-weight: 600;"><a href="#">Father&#39;s Day</a></th><td>Wednesday 23 June 2027</td></tr><tr><th scope="row" style="font-weight: 600;"><a href="#">Grandparents&#39; Day</a></th><td>Thursday 21 January 2027</td></tr><tr><th scope="row" style="font-weight: 600;"><a href="#">Mother&#39;s Day</a></th><td>Wednesday 26 May 2027</td></tr><tr><th scope="row" style="font-weight: 600;"><a href="#">New Year</a></th><td>Friday 1 January 2027</td></tr><tr><th scope="row" style="font-weight: 600;"><a href="#">Teachers&#39; Day</a></th><td>Wednesday 14 October 2026</td></tr><tr><th scope="row" style="font-weight: 600;"><a href="#">Valentine&#39;s Day</a></th><td>Sunday 14 February 2027</td></tr><tr><th scope="row" style="font-weight: 600;"><a href="#">Women&#39;s Day</a></th><td>Monday 8 March 2027</td></tr></tbody></table><p class="prose" style="margin: 0; font-size: var(--text-sm);">And one more with no date of its own: <b><a href="#">Name day</a></b> — imieniny. Every day of the Polish calendar carries names, and for many people the name day matters more than the birthday. Its rule is <code>none</code>, so it is named here and never printed with a guessed date.</p><span class="cap">Every date is <code>nextOccasions()</code> over the destination&#39;s own rules, from <b>16 September 2026</b>, formatted by <code>formatDate</code>. Both groups are in <code>collator(locale)</code> order rather than date order, which is what the spec fixes — a Polish reader gets a different sequence from an English one, and neither is sorted by how soon the day falls. The caption says <i>in Poland</i> out loud, because an index with no destination would otherwise be quoting one country&#39;s calendar as if it were everyone&#39;s — each hub carries the full per-country table, and this page carries the soonest date in the destination we have actually published.</span></div>
+<div class="sec"><div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">Everyday</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">Any day of the year</h2></div><div style="display: flex; flex-wrap: wrap; gap: var(--space-sm);"><a href="#" class="chip">Anniversary</a><a href="#" class="chip">Birthday</a><a href="#" class="chip">Congratulations</a><a href="#" class="chip">Get well</a><a href="#" class="chip">Graduation</a><a href="#" class="chip">Housewarming</a><a href="#" class="chip">I am sorry</a><a href="#" class="chip">Just because</a><a href="#" class="chip">Love and romance</a><a href="#" class="chip">New baby</a><a href="#" class="chip">Retirement</a><a href="#" class="chip">Sympathy</a><a href="#" class="chip">Thank you</a><a href="#" class="chip">Wedding</a></div><span class="cap">Fourteen, in <code>collator(locale)</code> order, each a link to its own hub. They carry no date because they have none — not a blank, not an em dash, not “all year” dressed up as a date.</span></div>
+<div class="sec"><span class="label">States</span><div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-lg);"><div class="stub"><b>Observed nowhere we have published</b><span>Sant Jordi is observed in Spain, Grandmothers&#39; Day and the May Day lily of the valley in France — and Spain and France are not published destinations. None of the three has a hub and none of them has a row here. They appear the day their country does, with no template edit.</span></div><div class="stub"><b>Observed, no date</b><span>The name-day sentence above. An occasion whose rule is <code>none</code> never appears in the dated table.</span></div><div class="stub"><b>Schema</b><span><code>BreadcrumbList</code> + <code>ItemList</code> of the hubs in the rendered order, and nothing else. No <code>Event</code>: these are dates, not events we host.</span></div><div class="stub"><b>The occasion with no page in this locale</b><span>An occasion whose slug has not been authored in this locale is absent from this page in that locale, and contributes no <code>hreflang</code> alternate — the same rule the categories follow. A URL is never machine-drafted.</span></div></div></div>
   </main>
-
   <div style="margin-block-start: auto; border-top: 1px solid var(--color-ink); padding: var(--space-lg) 56px; display: flex; flex-direction: column; gap: var(--space-sm); font-size: var(--text-sm); color: var(--color-ink-2);">
     <span class="label">Footer</span>
     <span>Sending: Destinations · Occasions · Delivery times and cutoffs · The guarantee — Company: How it works · For florists · Help and contact · Imprint — Legal: Terms · Privacy · Cookies · Withdrawal and refunds · Cookie settings</span>
-    <span>We send flowers across Europe. You order from us; our florist in the recipient's town makes the bouquet and hands it over in person. Operated by <span class="slot">[legal name]</span>, <span class="slot">[registered address]</span>, <span class="slot">[registration no]</span> — printed only once <code>company.registered</code> is true (company.ts; spec 004 AC-9).</span>
+    <span>We send flowers across Europe. You order from us; our florist in the recipient&#39;s town makes the bouquet and hands it over in person. Operated by <span class="slot">[legal name]</span>, <span class="slot">[registered address]</span>, <span class="slot">[registration no]</span> — printed only once <code>company.registered</code> is true (company.ts; spec 004 AC-9).</span>
     <span>BLIK · Klarna · PayPal · Visa · Mastercard · Apple Pay — card payments processed by Stripe. We never store card numbers.</span>
-    <span>Talk to a person: +1 (213) 592-5150 · WhatsApp · Mon–Sat 8–20 CET. Weekend hours are a founder decision, not a design one (benchmarks/README.md, open question 1).</span>
   </div>
 </div>
 </x-dc>
