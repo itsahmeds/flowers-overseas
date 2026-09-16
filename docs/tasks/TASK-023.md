@@ -17,6 +17,7 @@ Branch `task/TASK-023-rls-policies`. §13 Q4 resolved: session-variable RLS, adm
 ## Carry-forwards
 
 _None recorded._
+- **From `/review 71` (2026-09-16, TASK-014):** both Neon URLs connect as `neondb_owner`, which has `rolbypassrls = true`; `SET LOCAL ROLE app_web` is the isolation and a `RESET ROLE` in the same transaction restores bypass. AC-18 must assert on the **connecting** role (a dedicated `app_web` login without `BYPASSRLS`, or a proof that no code path can `RESET ROLE`), not only on `current_user` inside the helper.
 
 ## Escalations
 
