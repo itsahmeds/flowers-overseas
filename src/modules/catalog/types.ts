@@ -676,3 +676,55 @@ export interface Quote {
  *    There is no fourth answer and no `ok`-with-a-warning.
  */
 export type QuoteVerdict = "ok" | "expired" | "tampered";
+
+/* -------------------------------------------------------------------------- */
+/* Slugs and listing parameters (spec 008 §5.1 amendment 1, §5.2; TASK-105).   */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The three namespaces a catalogue URL segment can belong to (spec 008 §5.1 amendment 1).
+ *
+ * They are namespaces, not tables: a slug is unique inside its kind **and** across the other two
+ * in the same locale, because `/en-gb/flowers/roses` and `/en-gb/occasions/roses` must not be able
+ * to describe different things under one word by accident (AC-4's collision matrix). `product` is
+ * here rather than in spec 009 because the rule that governs it (one shared ASCII slug, optional
+ * per-locale override — spec 009 §13 Q1) is a rule about *this* map, and spec 009's TASK-121 adds
+ * only the route that reads it.
+ */
+export const slugKinds = ["category", "occasion", "product"] as const;
+export type SlugKind = (typeof slugKinds)[number];
+
+/**
+ * The orders a listing offers (spec 008 §13 Q3, resolved): a founder-set curation index labelled
+ * plainly, and price ascending or descending beside it.
+ *
+ * What is deliberately unrepresentable: `bestsellers`, `popular`, `recommended` and anything
+ * personalised. We have no sales, no personalisation and no paid placement, so a listing that
+ * claimed one would be an unfair commercial practice (Omnibus Art. 6a, UK DMCC) with a true,
+ * cheap alternative available — and the only way to keep that true under maintenance is for the
+ * type to have no room for it.
+ */
+export const listingSorts = ["default", "price-asc", "price-desc"] as const;
+export type ListingSort = (typeof listingSorts)[number];
+
+/**
+ * A listing's query string after parsing (spec 008 §5.2 `ListingSearchParamsSchema`).
+ *
+ * The one form on a listing page is a `GET` form and a query string is whatever a visitor or a
+ * crawler puts in it, so parsing **never fails**: every parameter is either honoured (`page`,
+ * `sort`) or neutralised. `honoured` names the parameters that were present *and* parsed, which
+ * is what the `?page=1` → 301 and the canonical-to-base rule need; `ignored` names every other
+ * parameter that was present, which is what spec 005's `resolveFacets()` takes (it contributes
+ * only `indexable: false`). No decision is taken here: the redirect, the canonical and the robots
+ * directive are TASK-114's and spec 007's `indexability()`'s.
+ */
+export interface ListingSearchParams {
+  /** 1-based, ≥ 1. A missing, malformed or out-of-domain `page` parameter reads as page 1. */
+  readonly page: number;
+  /** The curation order unless a valid `sort` was asked for. */
+  readonly sort: ListingSort;
+  /** Which of `page` and `sort` were present and valid, in that order. */
+  readonly honoured: readonly ("page" | "sort")[];
+  /** Every other parameter name that was present, sorted — facet-shaped or not. */
+  readonly ignored: readonly string[];
+}
