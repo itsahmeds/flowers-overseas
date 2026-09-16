@@ -77,10 +77,23 @@ export {
   launchLocaleCodes,
   launchLocales,
   localePath,
+  type LocalePathParts,
   parseLocaleFromPath,
   type ParsedPath,
   routableLocale,
   routableLocaleCodes,
+} from "./routing.ts";
+
+// The six listing URLs of spec 008 §2 and the PDP pattern spec 009 owns (TASK-105). They are
+// `localePath()` compositions, not new builders: one place still knows that a path is
+// `/{locale}` plus the locale's own authored segments, so a listing URL cannot drift from a
+// corridor URL (spec 003 §6, AC-13).
+export {
+  LISTING_PAGE_TYPES,
+  type ListingPageType,
+  type ListingTarget,
+  listingPath,
+  productPath,
 } from "./routing.ts";
 
 export {

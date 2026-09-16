@@ -10,11 +10,14 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  LISTING_PAGE_TYPES,
   isLaunchLocale,
   launchLocale,
   launchLocaleCodes,
+  listingPath,
   localePath,
   parseLocaleFromPath,
+  productPath,
 } from "../../src/modules/i18n";
 
 describe("isLaunchLocale (AC-8)", () => {
@@ -111,5 +114,134 @@ describe("parseLocaleFromPath (spec 003 §11)", () => {
       locale: "de",
       rest: "/x",
     });
+  });
+});
+
+/* -------------------------------------------------------------------------- */
+/* The six listing URLs and the PDP pattern (spec 008 §2, AC-1 routing half,   */
+/* AC-4; spec 009 §5.2; TASK-105).                                            */
+/* -------------------------------------------------------------------------- */
+
+describe("listingPath and productPath (spec 008 §2, T-04)", () => {
+  /**
+   * The table is spec 008 §2's own, transcribed: one row per page type per launch locale, with the
+   * fixed segments taken from `plan/02` §4.1's authored columns. It is written out rather than
+   * computed from `pathSegments`, because a test that built the expectation the same way the
+   * builder does would pass on a swapped segment.
+   */
+  const cases = [
+    [
+      "en",
+      { pageType: "countryShopRoot", country: "poland" },
+      "/en/poland/flowers",
+    ],
+    [
+      "en-gb",
+      { pageType: "countryShopRoot", country: "poland" },
+      "/en-gb/poland/flowers",
+    ],
+    [
+      "de",
+      { pageType: "countryShopRoot", country: "polen" },
+      "/de/polen/blumen",
+    ],
+    [
+      "pl",
+      { pageType: "countryShopRoot", country: "polska" },
+      "/pl/polska/kwiaty",
+    ],
+    [
+      "en-gb",
+      { pageType: "countryCategory", country: "poland", slug: "roses" },
+      "/en-gb/poland/flowers/roses",
+    ],
+    [
+      "de",
+      { pageType: "countryCategory", country: "polen", slug: "rosen" },
+      "/de/polen/blumen/rosen",
+    ],
+    [
+      "en-gb",
+      { pageType: "countryOccasion", country: "poland", slug: "womens-day" },
+      "/en-gb/poland/occasions/womens-day",
+    ],
+    [
+      "pl",
+      { pageType: "countryOccasion", country: "polska", slug: "dzien-kobiet" },
+      "/pl/polska/okazje/dzien-kobiet",
+    ],
+    [
+      "en-gb",
+      { pageType: "categoryHub", slug: "roses" },
+      "/en-gb/flowers/roses",
+    ],
+    ["de", { pageType: "categoryHub", slug: "rosen" }, "/de/blumen/rosen"],
+    [
+      "en-gb",
+      { pageType: "occasionHub", slug: "mothers-day" },
+      "/en-gb/occasions/mothers-day",
+    ],
+    [
+      "pl",
+      { pageType: "occasionHub", slug: "dzien-matki" },
+      "/pl/okazje/dzien-matki",
+    ],
+    ["en", { pageType: "occasionsIndex" }, "/en/occasions"],
+    ["de", { pageType: "occasionsIndex" }, "/de/anlaesse"],
+    ["pl", { pageType: "occasionsIndex" }, "/pl/okazje"],
+  ] as const;
+
+  it.each(cases)("builds %s %o as %s", (locale, target, expected) => {
+    expect(listingPath(locale, target)).toBe(expected);
+  });
+
+  it("covers every page type spec 008 §2 defines", () => {
+    expect(new Set(cases.map(([, target]) => target.pageType))).toEqual(
+      new Set(LISTING_PAGE_TYPES),
+    );
+  });
+
+  it("puts the destination before the page segment on every country-scoped URL", () => {
+    for (const [locale, target, expected] of cases) {
+      if (!("country" in target)) continue;
+      expect(expected.split("/")[2], `${locale} ${expected}`).toBe(
+        target.country,
+      );
+    }
+  });
+
+  it("builds the PDP pattern of plan/02 §4.1 in each locale's own segment", () => {
+    expect(productPath("en-gb", "poland", "amber-hour")).toBe(
+      "/en-gb/poland/product/amber-hour",
+    );
+    expect(productPath("de", "polen", "amber-hour")).toBe(
+      "/de/polen/produkt/amber-hour",
+    );
+    expect(productPath("pl", "polska", "amber-hour")).toBe(
+      "/pl/polska/produkt/amber-hour",
+    );
+  });
+
+  it("refuses a country or slug segment that is not URL-shaped, rather than emitting it", () => {
+    for (const bad of ["Poland", "po land", "poland/", "", "poland?x=1"]) {
+      expect(() =>
+        listingPath("en", { pageType: "countryShopRoot", country: bad }),
+      ).toThrow(/lowercase ASCII/);
+      expect(() => productPath("en", "poland", bad)).toThrow(/lowercase ASCII/);
+    }
+  });
+
+  it("rejects an unknown locale instead of guessing one", () => {
+    expect(() => listingPath("fr", { pageType: "occasionsIndex" })).toThrow(
+      /unknown locale code/,
+    );
+  });
+
+  it("keeps the variadic form of localePath working unchanged", () => {
+    expect(localePath("en-gb", "destinations", "poland")).toBe(
+      "/en-gb/send-flowers-to/poland",
+    );
+    expect(localePath("de", "home")).toBe("/de");
+    expect(localePath("de", { pageType: "home" })).toBe("/de");
   });
 });

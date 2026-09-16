@@ -258,3 +258,34 @@ export { quote, verifyQuote } from "./pricing/quote";
 // prefix would be one line from building a tag with it (AC-2).
 export type { CacheEntity } from "./cache";
 export { CacheEntitySchema, cacheTagsFor } from "./cache";
+
+// Slugs and the listing boundary schemas (spec 008 §5.1 amendment 1, §5.2, AC-4; TASK-105).
+//
+// `slugFor` / `resolveSlug` / `hasSlug` are the two-way map between a catalogue key and the URL
+// segment that stands for it in a locale — the resolver neither spec 005 nor spec 006 exposed and
+// without which a listing route cannot be built. They are pure, synchronous and total: a key with
+// no **authored** slug in a locale answers `undefined`/`false`, which is spec 008 §2's existence
+// rule ("and an authored slug") and spec 008 §13 Q10's ruling that the `de`/`pl` pages appear as
+// data when the founder authors them (TASK-106), with no edit here.
+//
+// `ListingParamsSchema` parses a listing route's path segments (a bad one is `notFound()`, never a
+// redirect) and `ListingSearchParamsSchema` its query string — the latter cannot fail: every
+// parameter is honoured (`page`, `sort`) or neutralised, and the canonical, the 301 and the robots
+// directive stay TASK-114's and spec 007's `indexability()`'s.
+//
+// `slugKinds` and `listingSorts` are exported as value sets for the same reason the barrel exports
+// `surchargeKinds`: a caller iterating the closed set cannot invent a fourth namespace or a
+// "bestsellers" order that §8 forbids.
+export type { ListingSearchParams, ListingSort, SlugKind } from "./types";
+export { listingSorts, slugKinds } from "./types";
+export type { ListingParams } from "./schemas";
+export {
+  CatalogueSlugSchema,
+  EntityKeySchema,
+  ListingPageTypeSchema,
+  ListingParamsSchema,
+  ListingSearchParamsSchema,
+  ListingSortSchema,
+  SlugKindSchema,
+} from "./schemas";
+export { hasSlug, resolveSlug, slugFor } from "./slugs";
