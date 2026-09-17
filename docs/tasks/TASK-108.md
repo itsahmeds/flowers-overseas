@@ -58,11 +58,54 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- **2026-09-17 — the drawing and the spec disagree on two visible elements of the card.** The
+  sheet draws a **stem-count line** under each product name and draws **no** AI honesty label on
+  the card; AC-6 says a card renders "**exactly** photo …, name, one all-in price via `formatMoney`
+  with the `catalog.price.inclusive` label, and the provenance note where an `ai` asset is shown",
+  and §5.2's `ProductCardViewSchema` is a closed field list with nowhere for a stem count to
+  arrive. Resolved **in favour of the spec**, because the criterion is normative and the schema
+  makes the alternative unbuildable, and the sheet was corrected in the same PR (the drawing now
+  matches the shipped card) with the reason recorded in `docs/design/README.md` § "Where the sheet
+  and the code currently differ". Raised to the reviewer in the PR body rather than blocking: no
+  ambiguity existed to resolve, only a stale drawing.
+- **2026-09-17 — the `grid` slot's ratio is 3∶4 and both spec 008 §2 and the drawing say the card
+  box is 4∶5.** Resolved without changing spec 006's data: a fifth `Photo` ratio, `card` (4∶5), was
+  added and `MediaAsset` gained an optional box-`ratio` override. The seed's derived `grid`
+  variants are generated at aspect 0.8 — 4∶5 already — and `object-cover` crops any difference, the
+  case `MediaAsset` already documents. The `sizes` string is untouched and matches the drawing
+  (2-up mobile → 4-up desktop = `(min-width: 768px) 25vw, 50vw`).
+- **2026-09-17 — carried to the AC-9 owner (TASK-110/117), not blocking here:** `messages/*.json`
+  already contains `nav.category.bestSellers` ("Best sellers") and `nav.category.sameDayDelivery`
+  ("Same-day delivery") from spec 004's chrome. AC-9 requires that "bestseller", "most popular" and
+  "recommended for you" appear in **no** locale's messages, and AC-6's DOM scan refuses a
+  delivery-timing claim on a listing page; both strings are rendered by the site header on every
+  page a listing will live on. TASK-120 already owns the chrome-promise sweep (`/review 70`
+  required change 3) — this adds the ranking label to it.
+- **2026-09-17 — carried to the chrome owner:** axe at 390 px reports one existing serious
+  violation on `/dev/components` that is spec 004's, not this task's — the header utility strip is
+  `overflow-x-auto` below `md` and is not keyboard-focusable (`scrollable-region-focusable`). The
+  new mobile axe run is therefore scoped to the listing section rather than allow-listing a rule.
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
-
-_Pending._
+Seven Server Components under `src/modules/ui/shop/` — `ProductCard` (image · placeholder · tile ·
+link, one fixed 4∶5 box in all four), `ListingGrid` (a named `<ul>`, `Grid columns="2-4"`, the
+`grid` slot's `sizes`, one optional `priority` candidate), `ListingToolbar` (a `<form method="get">`
+with a visible label, a real `<select>` and a real submit; the plain default-sort label and the
+ranking-disclosure sentence), `Pagination` (a labelled `<nav>` of real `<a>`s, page 1 at the bare
+URL, nothing at all on a single page), `ListingEmpty`, `FromPriceChip` (default · stale FX ·
+absent) and `CategoryChipRow` (`collator(locale)` order, `aria-current` on the current category) —
+plus `src/modules/ui/shop/viewModel.ts` with `ProductCardViewSchema`, `CategoryTileViewSchema` and
+`ChipLinkViewSchema`, all `.strict()`. All seven are in `/dev/components` in sixteen states and on
+`docs/design/system/components.dc.html`, which this PR brings back into step (the spec-008 "sheet
+differs" row is deleted; two corrections were made **on the drawing**, see Escalations). Sixteen
+`shop.*` message keys in `en` with `de`/`pl` drafts whose plural-bearing values are hand-authored
+(`pl` one/few/many/other). Tests: unit **+54** over two new files (15 schema, 39 component) plus the
+shared `tests/support/listing-honesty.ts` scan used by three layers; e2e **+3** on the gallery
+(AC-6 DOM scan, every drawn state, the sort form with JavaScript disabled); a11y **+1** (the listing
+section at 390 px); visual **+12** baselines (`darwin/`, six parts × two widths) and the full-page
+gallery baseline regenerated. **Script budget: +0.0 KB Brotli on every measured route** — the whole
+set is server-rendered and ships zero client JavaScript. Handed on: TASK-107 imports
+`ProductCardView`/`CategoryTileView` from the `ui` barrel for `listingView()`'s projection;
+TASK-109/112/117 assemble these components and own T-01/T-07/T-08/T-26/T-27; TASK-120 gains the
+`nav.category.bestSellers` finding.
