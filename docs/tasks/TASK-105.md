@@ -52,7 +52,7 @@ _None recorded._
 
 ## Result
 
-PR: __PR_URL__. Shipped `src/modules/catalog/slugs.ts` (`slugFor` / `resolveSlug` / `hasSlug` —
+PR: https://github.com/itsahmeds/flowers-overseas/pull/72. Shipped `src/modules/catalog/slugs.ts` (`slugFor` / `resolveSlug` / `hasSlug` —
 pure, synchronous, build-time copy imports, `undefined`/`false` for an unauthored slug), the
 listing boundary schemas in `src/modules/catalog/schemas.ts` (`ListingParamsSchema` with its
 parsed type `ListingParams` for TASK-114, `ListingSearchParamsSchema`, `SlugKindSchema`,
