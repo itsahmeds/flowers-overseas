@@ -33,7 +33,7 @@ import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 import { preload } from "react-dom";
 
-import { Photo } from "../primitives/Photo.tsx";
+import { Photo, type PhotoRatio } from "../primitives/Photo.tsx";
 
 import type { MediaManifest } from "./manifest.ts";
 
@@ -90,6 +90,14 @@ export interface MediaAssetProps {
    * of `./resolve.ts` applies to whatever manifest it is given.
    */
   readonly manifest?: MediaManifest;
+  /**
+   * The box to reserve, where the drawing's box is not the slot's own ratio. The product card is
+   * the case that exists: spec 008 draws a **4∶5** box in all four card states while spec 006
+   * derives the `grid` variants at 3∶4, and `object-cover` crops the difference rather than
+   * letterboxing it. It changes the box, never the asset, the `sizes` or the alt text — and every
+   * state of one call site gets the same box, which is what keeps the swap at zero CLS.
+   */
+  readonly ratio?: PhotoRatio;
   readonly className?: string;
 }
 
@@ -100,6 +108,7 @@ export function MediaAsset({
   priority = false,
   productName,
   manifest,
+  ratio,
   className,
 }: MediaAssetProps): ReactElement {
   const t = useTranslations("media");
@@ -122,7 +131,7 @@ export function MediaAsset({
     return (
       <Photo
         caption={t(PLACEHOLDER_KEY[box])}
-        ratio={mediaSlot(box).ratio}
+        ratio={ratio ?? mediaSlot(box).ratio}
         {...(className === undefined ? {} : { className })}
         // Why this box is a box and not a photograph, on the box itself: a reviewer, an e2e
         // assertion and `/dev/components` all read the same reason (spec 006 §5.3's states).
@@ -152,7 +161,7 @@ export function MediaAsset({
       // photograph that should be there. `@utility photo`'s `:has(> picture)` branch drops the
       // padding that insets the caption, so the image fills the reserved box edge to edge.
       {...(className === undefined ? {} : { className })}
-      ratio={resolved.ratio}
+      ratio={ratio ?? resolved.ratio}
       dataset={{
         "data-fo-media-asset": assetId,
         "data-fo-media-slot": resolved.slot,

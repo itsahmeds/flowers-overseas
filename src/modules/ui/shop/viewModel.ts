@@ -127,18 +127,6 @@ export const LISTING_SORTS = ["default", "price-asc", "price-desc"] as const;
 export type ListingSort = (typeof LISTING_SORTS)[number];
 export const ListingSortSchema = z.enum(LISTING_SORTS);
 
-/**
- * The `shop.sort.*` message key each order is labelled by. §13 Q3: the default order is the
- * founder's curation, labelled plainly — never "bestsellers", "popular" or "recommended", which we
- * cannot evidence and which `plan/07` §2.1's ranking-transparency duty would make us describe
- * truthfully anyway.
- */
-export const SORT_LABEL_KEYS: Readonly<Record<ListingSort, string>> = {
-  default: "sort.default",
-  "price-asc": "sort.priceAsc",
-  "price-desc": "sort.priceDesc",
-};
-
 /** One chip in the category/occasion row: a link to a page that exists (§2, `plan/02` §7). */
 export const ChipLinkViewSchema = z
   .object({

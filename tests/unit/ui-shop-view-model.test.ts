@@ -18,8 +18,8 @@ import {
   PRICE_LABEL_KEYS,
   PRODUCT_PROVENANCE,
   ProductCardViewSchema,
-  SORT_LABEL_KEYS,
 } from "../../src/modules/ui/shop/viewModel.ts";
+import { SORT_LABEL_KEYS } from "../../src/modules/ui/shop/ListingToolbar.tsx";
 
 const CARD = {
   productId: "fo-bouquet-amber-hour",

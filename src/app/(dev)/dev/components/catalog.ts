@@ -247,6 +247,8 @@ export const PHOTO_CAPTIONS = {
   hero: "Photo slot · hero · founder to supply",
   landscape: "Photo slot · occasion tile",
   portrait: "Photo slot · florist portrait",
+  // TASK-108: the product card's box, 4∶5 in all four card states (spec 008 §2, §5.3).
+  card: "Photo slot · bouquet · product card",
   square: "Photo slot · bouquet",
 } as const;
 

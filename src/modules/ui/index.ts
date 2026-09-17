@@ -381,3 +381,52 @@ export type {
 // mount the same component on shop pages, which is why the page bleed is a prop.
 export { TRUST_CLAIMS, TrustStrip } from "./trust/TrustStrip.tsx";
 export type { TrustStripProps } from "./trust/TrustStrip.tsx";
+
+// The listing primitives (spec 008 §5.2, AC-6, §13 Q8; TASK-108). Seven Server Components and the
+// view models they render from: the grid is a list, the toolbar is a `GET` form, the pagination is
+// real links and the card is a **tile** until spec 009 publishes the `product` link id — so the
+// whole set adds **zero** bytes of client JavaScript (§5.4). `ProductCardViewSchema` is the place
+// the honesty rules of §8 are enforced: it has no field for a badge, a rating, a review count, an
+// old price or an add-to-basket, so a projection cannot carry one to a renderer.
+export { ProductCard } from "./shop/ProductCard.tsx";
+export type { ProductCardProps } from "./shop/ProductCard.tsx";
+export { ListingGrid } from "./shop/ListingGrid.tsx";
+export type { ListingGridProps } from "./shop/ListingGrid.tsx";
+export { ListingToolbar, SORT_LABEL_KEYS } from "./shop/ListingToolbar.tsx";
+export type { ListingToolbarProps } from "./shop/ListingToolbar.tsx";
+export { Pagination, pageHref } from "./shop/Pagination.tsx";
+export type { PaginationProps } from "./shop/Pagination.tsx";
+export { ListingEmpty } from "./shop/ListingEmpty.tsx";
+export type {
+  ListingEmptyLink,
+  ListingEmptyProps,
+} from "./shop/ListingEmpty.tsx";
+export { FromPriceChip } from "./shop/FromPriceChip.tsx";
+export type { FromPriceChipProps } from "./shop/FromPriceChip.tsx";
+export { CategoryChipRow } from "./shop/CategoryChipRow.tsx";
+export type { CategoryChipRowProps } from "./shop/CategoryChipRow.tsx";
+export {
+  CategoryTileViewSchema,
+  ChipLinkViewSchema,
+  LISTING_SORTS,
+  ListingSortSchema,
+  MediaSlotSchema,
+  PRICE_LABEL_KEYS,
+  PRICE_NOTE_KEYS,
+  PRODUCT_PROVENANCE,
+  PriceLabelKeySchema,
+  PriceNoteKeySchema,
+  ProductCardPhotoSchema,
+  ProductCardViewSchema,
+  ProductProvenanceSchema,
+} from "./shop/viewModel.ts";
+export type {
+  CategoryTileView,
+  ChipLinkView,
+  ListingSort,
+  PriceLabelKey,
+  PriceNoteKey,
+  ProductCardPhotoView,
+  ProductCardView,
+  ProductProvenance,
+} from "./shop/viewModel.ts";

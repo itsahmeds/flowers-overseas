@@ -702,5 +702,33 @@
       "saturday": "Saturday",
       "sunday": "Sunday"
     }
+  },
+  "shop": {
+    "grid": {
+      "label": "{count, plural, one {# bouquet on this page} other {# bouquets on this page}}"
+    },
+    "toolbar": {
+      "count": "{count, plural, one {# bouquet} other {# bouquets}}",
+      "summary": "{count, plural, one {# bouquet} other {# bouquets}} · page {page} of {pageCount}",
+      "disclosure": "Our order is the order we chose ourselves. It is not a ranking by sales, by popularity or by payment, and it does not change with who you are.",
+      "sortLabel": "Sort by",
+      "submit": "Sort"
+    },
+    "sort": {
+      "default": "Our order",
+      "priceAsc": "Price: low to high",
+      "priceDesc": "Price: high to low"
+    },
+    "pagination": {
+      "label": "Pages of products",
+      "previous": "Previous",
+      "next": "Next",
+      "page": "Page {page}",
+      "pageNumber": "{page, number}"
+    },
+    "empty": {
+      "heading": "Nothing we can deliver in {country} yet",
+      "body": "We have nothing we can deliver in {country} today. The {country} guide has what we have learned about sending flowers there, and the occasions pages have the dates."
+    }
   }
 }

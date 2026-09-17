@@ -18,11 +18,12 @@
  */
 import type { ReactElement, ReactNode } from "react";
 
-/** The aspect ratios the canvas uses. Named, so a call site cannot invent a fifth. */
+/** The aspect ratios the canvas uses. Named, so a call site cannot invent a sixth. */
 export const PHOTO_RATIOS = [
   "hero",
   "landscape",
   "portrait",
+  "card",
   "square",
 ] as const;
 export type PhotoRatio = (typeof PHOTO_RATIOS)[number];
@@ -31,6 +32,13 @@ const RATIO_CLASS: Readonly<Record<PhotoRatio, string>> = {
   hero: "aspect-[3/2]",
   landscape: "aspect-[4/3]",
   portrait: "aspect-[3/4]",
+  // The product card's box (spec 008 §2, §5.3; `docs/design/system/components.dc.html`, the
+  // "Listing and card blocks" group): 4∶5 in all four card states — photograph, placeholder, tile
+  // and link — so both swaps cost zero layout shift. It is a *box* ratio, not a crop: spec 006's
+  // `grid` variants are derived at 3∶4 and land inside it under `object-cover`, which is the case
+  // `MediaAsset` already documents ("where the asset's crop and the box's ratio differ, the
+  // difference is cropped rather than letterboxed").
+  card: "aspect-[4/5]",
   square: "aspect-square",
 };
 
