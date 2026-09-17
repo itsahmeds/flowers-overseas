@@ -84,7 +84,7 @@ test.describe("the locale home, above the fold", () => {
       expect(box?.width ?? 0).toBeGreaterThan(300);
     });
 
-    test(`${path} names all seven destinations with a state, and links none`, async ({
+    test(`${path} names all seven destinations with a state, and links the published ones`, async ({
       page,
     }) => {
       await page.goto(path);
@@ -94,10 +94,15 @@ test.describe("the locale home, above the fold", () => {
           page.locator(`${DESTINATIONS} [data-fo-destination="${iso2}"]`),
         ).toHaveCount(1);
       }
-      // AC-14: nothing in the finder or the destination list is a link while every corridor
-      // page is unpublished.
+      // The finder card itself never links: its `Continue` is a form submission (spec 004 §5.3).
       await expect(page.locator(`${FINDER} a[href]`)).toHaveCount(0);
-      await expect(page.locator(`${DESTINATIONS} a[href]`)).toHaveCount(0);
+      // Spec 007 AC-20: a destination is a link exactly where its guide exists in this locale.
+      // `/de` and `/pl` have none (§13 Q1), so they still link nothing at all — same markup,
+      // one element different.
+      const expected = path === "/de" || path === "/pl" ? 0 : 7;
+      await expect(page.locator(`${DESTINATIONS} a[href]`)).toHaveCount(
+        expected,
+      );
     });
 
     test(`${path} renders the four-fact proof row and no photo in it`, async ({
@@ -205,7 +210,7 @@ test.describe("the locale home, above the fold", () => {
       await expect(page.locator("[data-fo-review]")).toHaveCount(0);
     });
 
-    test(`${path} renders the destinations grid, links none and asks for nothing`, async ({
+    test(`${path} renders the destinations grid and asks for nothing`, async ({
       page,
     }) => {
       await page.goto(path);
@@ -213,7 +218,11 @@ test.describe("the locale home, above the fold", () => {
       await expect(page.locator(`${DESTINATIONS} li`)).toHaveCount(
         DESTINATIONS_COUNT + 1,
       );
-      await expect(page.locator(`${DESTINATIONS} a[href]`)).toHaveCount(0);
+      // Every link in the grid is a corridor page that exists; `tests/e2e/links.spec.ts` and
+      // `tests/e2e/destinations-hub.spec.ts` crawl them for their status (spec 007 AC-17).
+      await expect(
+        page.locator(`${DESTINATIONS} a[href^="/"]:not([href*="#"])`),
+      ).toHaveCount(path === "/de" || path === "/pl" ? 0 : 7);
       await expect(
         page.locator("[data-fo-destinations-elsewhere]"),
       ).toHaveCount(1);
