@@ -116,7 +116,10 @@ const COPY_FILES: Readonly<Record<SlugKind, readonly CopySlugFile[]>> = {
 } as unknown as Readonly<Record<SlugKind, readonly CopySlugFile[]>>;
 
 /** The authored (key → slug) rows of one kind in one locale, machine drafts excluded. */
-function authoredRows(kind: SlugKind, locale: string): ReadonlyMap<string, string> {
+function authoredRows(
+  kind: SlugKind,
+  locale: string,
+): ReadonlyMap<string, string> {
   const authored = new Map<string, string>();
   for (const file of COPY_FILES[kind]) {
     if (file.locale !== locale) continue;
