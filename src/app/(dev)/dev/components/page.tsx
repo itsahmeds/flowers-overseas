@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 
 import { devUiEnabled } from "@/lib/env.schema";
+import { isLocaleCode } from "@/config/locales";
 import { documentFallbackLocale, localePath } from "@/modules/i18n";
 import {
   Button,
@@ -15,6 +16,7 @@ import {
   Chip,
   Container,
   DestinationsGrid,
+  CategoryChipRow,
   Cluster,
   CONTRAST_PAIRS,
   Display,
@@ -22,12 +24,16 @@ import {
   Icon,
   ICON_NAMES,
   FinderCard,
+  FromPriceChip,
   HomeFaq,
   HomeHero,
   HowItWorks,
   OccasionDates,
   OccasionTiles,
   Label,
+  ListingEmpty,
+  ListingGrid,
+  ListingToolbar,
   Mark,
   Media,
   MediaAsset,
@@ -35,8 +41,11 @@ import {
   MEDIA_SLOTS,
   mediaSlot,
   MIRRORED_IN_RTL,
+  Pagination,
   Photo,
   PHOTO_RATIOS,
+  ProductCard,
+  type ProductCardView,
   ProofRow,
   Placeholder,
   ReviewsSection,
@@ -90,6 +99,12 @@ import {
   HOME_SECTION_STATES,
   HOME_STATES,
   LABEL_SAMPLE,
+  LISTING_CARDS,
+  LISTING_CHIP_HEADING,
+  LISTING_CHIPS,
+  LISTING_EMPTY_COUNTRY,
+  LISTING_EMPTY_LINKS,
+  LISTING_STATES,
   MEDIA_ASSET_STATES,
   MEDIA_SLOT_CAPTION,
   LAYER_TOKENS,
@@ -176,6 +191,53 @@ function StateRow({
 }
 
 /**
+ * The four card states of spec 008's first drawn row, as `ProductCardView`s (TASK-108).
+ *
+ * `image` and `link` resolve against the gallery's fixture manifest, so the photograph and the
+ * `<a>` are reviewable before the founder's imagery and before spec 009 publishes the product link
+ * id; `placeholder` carries no asset at all and `tile` carries no `href`. Nothing here reads the
+ * catalogue: a gallery that needed a real product would couple the design surface to the dataset.
+ */
+function galleryCard(
+  state: "image" | "placeholder" | "tile" | "link",
+): ProductCardView {
+  const named = {
+    image: LISTING_CARDS.name,
+    placeholder: LISTING_CARDS.secondName,
+    link: LISTING_CARDS.thirdName,
+    tile: LISTING_CARDS.fourthName,
+  }[state];
+  return {
+    productId: `gallery-${state}`,
+    name: named,
+    ...(state === "link" ? { href: LISTING_CARDS.href } : {}),
+    photo:
+      state === "placeholder"
+        ? { kind: "placeholder", slot: "grid" }
+        : {
+            kind: "asset",
+            assetId: GALLERY_AI_ASSET,
+            alt: GALLERY_MEDIA_MANIFEST.alt["en"]?.[GALLERY_AI_ASSET] ?? "",
+            slot: "grid",
+          },
+    price: state === "link" ? LISTING_CARDS.lowPrice : LISTING_CARDS.price,
+    priceLabelKey: "catalog.price.inclusive",
+    provenance: "ai",
+  };
+}
+
+/** The grid's four cards: the artboard's row, all four in the same state. */
+const GALLERY_LISTING_CARDS: readonly ProductCardView[] = [
+  "image",
+  "placeholder",
+  "tile",
+  "link",
+].map((state) => ({
+  ...galleryCard(state as "image" | "placeholder" | "tile" | "link"),
+  productId: `gallery-grid-${state}`,
+}));
+
+/**
  * The `FooterView` each of the five §5.3 states is rendered from (TASK-049). `links-populated`
  * and `company-registered` are the two states no Phase-0 page can reach: the first publishes one
  * target, the second fills the five registry fields of an **example** company — the numbers are
@@ -229,6 +291,15 @@ export default function DevComponentsPage(): ReactElement {
   // next-intl like every other component, so that locale is published to the request here rather
   // than the header growing a "no locale" branch it would never take in production.
   const galleryLocale = documentFallbackLocale().code;
+  // The listing primitives take a `LocaleCode` (they format money and collate names through
+  // `modules/i18n`, both of which are closed over the locale set). The registry's `code` is a
+  // `string` at the type level, so it is narrowed once, here, rather than cast at fifteen call
+  // sites — and an unknown code is a build-time throw rather than a wrong price.
+  if (!isLocaleCode(galleryLocale)) {
+    throw new Error(
+      `gallery locale is not a configured locale: ${galleryLocale}`,
+    );
+  }
   setRequestLocale(galleryLocale);
   const translate = useTranslations();
   // The same narrowing `SiteFooter` and `ConsentBanner` make: register-supplied keys are strings,
@@ -849,6 +920,190 @@ export default function DevComponentsPage(): ReactElement {
                   {GATED_STATES[state]}
                 </Text>
                 <div className="border-rule border">{element}</div>
+              </Stack>
+            ))}
+          </Stack>
+        </Section>
+        {/*
+          Spec 008's listing primitives (TASK-108). None of them is reachable from a Phase-0 page
+          until TASK-109 builds the shop root, and four of their states render **nothing** — the
+          single-page pagination, the empty chip row, the destination-less from-price chip and the
+          empty grid — so this section is the only surface on which the set can be screenshotted,
+          axe-run and compared with `docs/design/system/components.dc.html` side by side. The cards
+          resolve against the same fixture manifest the media section uses, so the image state is
+          reachable before the founder's imagery lands.
+        */}
+        <Section title={SECTIONS[19]}>
+          <Stack gap="lg">
+            {(
+              [
+                [
+                  "cardImage",
+                  <ProductCard
+                    card={galleryCard("image")}
+                    headingLevel="h3"
+                    key="card-image"
+                    locale={galleryLocale}
+                    manifest={GALLERY_MEDIA_MANIFEST}
+                  />,
+                ],
+                [
+                  "cardPlaceholder",
+                  <ProductCard
+                    card={galleryCard("placeholder")}
+                    headingLevel="h3"
+                    key="card-placeholder"
+                    locale={galleryLocale}
+                    manifest={GALLERY_MEDIA_MANIFEST}
+                  />,
+                ],
+                [
+                  "cardTile",
+                  <ProductCard
+                    card={galleryCard("tile")}
+                    headingLevel="h3"
+                    key="card-tile"
+                    locale={galleryLocale}
+                    manifest={GALLERY_MEDIA_MANIFEST}
+                  />,
+                ],
+                [
+                  "cardLink",
+                  <ProductCard
+                    card={galleryCard("link")}
+                    headingLevel="h3"
+                    key="card-link"
+                    locale={galleryLocale}
+                    manifest={GALLERY_MEDIA_MANIFEST}
+                  />,
+                ],
+                [
+                  "gridDesktop",
+                  <ListingGrid
+                    cards={GALLERY_LISTING_CARDS}
+                    headingLevel="h3"
+                    key="grid"
+                    locale={galleryLocale}
+                    manifest={GALLERY_MEDIA_MANIFEST}
+                  />,
+                ],
+                [
+                  "toolbarDefault",
+                  <ListingToolbar
+                    id="gallery-sort-default"
+                    key="toolbar-default"
+                    page={1}
+                    pageCount={7}
+                    productCount={84}
+                    sort="default"
+                  />,
+                ],
+                [
+                  "toolbarSorted",
+                  <ListingToolbar
+                    id="gallery-sort-sorted"
+                    key="toolbar-sorted"
+                    page={1}
+                    pageCount={7}
+                    productCount={84}
+                    sort="price-asc"
+                  />,
+                ],
+                [
+                  "paginationFirst",
+                  <Pagination
+                    baseHref={LISTING_CARDS.href}
+                    locale={galleryLocale}
+                    key="pagination-first"
+                    page={1}
+                    pageCount={7}
+                  />,
+                ],
+                [
+                  "paginationLast",
+                  <Pagination
+                    baseHref={LISTING_CARDS.href}
+                    locale={galleryLocale}
+                    key="pagination-last"
+                    page={7}
+                    pageCount={7}
+                  />,
+                ],
+                [
+                  "paginationSingle",
+                  <Pagination
+                    baseHref={LISTING_CARDS.href}
+                    locale={galleryLocale}
+                    key="pagination-single"
+                    page={1}
+                    pageCount={1}
+                  />,
+                ],
+                [
+                  "empty",
+                  <ListingEmpty
+                    country={LISTING_EMPTY_COUNTRY}
+                    headingLevel="h3"
+                    key="listing-empty"
+                    links={LISTING_EMPTY_LINKS}
+                  />,
+                ],
+                [
+                  "fromPrice",
+                  <FromPriceChip
+                    key="from-price"
+                    locale={galleryLocale}
+                    price={LISTING_CARDS.lowPrice}
+                  />,
+                ],
+                [
+                  "fromPriceFx",
+                  <FromPriceChip
+                    fxFallback
+                    key="from-price-fx"
+                    locale={galleryLocale}
+                    price={LISTING_CARDS.fxPrice}
+                  />,
+                ],
+                [
+                  "fromPriceNone",
+                  <FromPriceChip
+                    key="from-price-none"
+                    locale={galleryLocale}
+                  />,
+                ],
+                [
+                  "chipRow",
+                  <CategoryChipRow
+                    heading={LISTING_CHIP_HEADING}
+                    id="gallery-chips"
+                    items={LISTING_CHIPS}
+                    key="chip-row"
+                    locale={galleryLocale}
+                  />,
+                ],
+                [
+                  "chipRowEmpty",
+                  <CategoryChipRow
+                    heading={LISTING_CHIP_HEADING}
+                    id="gallery-chips-empty"
+                    items={[]}
+                    key="chip-row-empty"
+                    locale={galleryLocale}
+                  />,
+                ],
+              ] as const
+            ).map(([state, element]) => (
+              <Stack gap="sm" key={state}>
+                <Text measure size="sm" tone="muted">
+                  {LISTING_STATES[state]}
+                </Text>
+                <div
+                  className="border-rule p-md border"
+                  data-fo-listing-state={state}
+                >
+                  {element}
+                </div>
               </Stack>
             ))}
           </Stack>

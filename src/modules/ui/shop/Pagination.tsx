@@ -16,16 +16,21 @@
  * **A single-page listing renders nothing** — not a disabled control, not an empty `<nav>` (the
  * drawing's third state, and spec 004 §5.3's "a block whose data is missing renders nothing").
  *
- * The numeral itself goes through an ICU `{page, number}` message rather than being interpolated
- * raw, so a locale that does not use Western Arabic digits gets its own (`CLAUDE.md`: `Intl` for
- * all formatting) and no component calls `Intl` directly.
+ * The numeral itself goes through `formatNumber`, so a locale that does not use Western Arabic
+ * digits gets its own (`CLAUDE.md`: `Intl` for all formatting) and no component reaches for `Intl`
+ * itself. It is a *count*, not copy, so it is not a message key: a catalogue entry whose whole
+ * value is one placeholder has no text for the pseudo-locale to mirror.
  *
  * Server Component, no client bytes.
  */
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
+import { type LocaleCode } from "@/config/locales";
+import { formatNumber } from "@/modules/i18n";
+
 export interface PaginationProps {
+  readonly locale: LocaleCode;
   readonly page: number;
   readonly pageCount: number;
   /** The listing's unparameterised URL. Page 1 is this, exactly; page N is this + `?page=N`. */
@@ -40,6 +45,7 @@ export function pageHref(baseHref: string, page: number): string {
 const LINK_CLASS = "border-rule rounded-sm border px-sm py-sm text-sm";
 
 export function Pagination({
+  locale,
   page,
   pageCount,
   baseHref,
@@ -63,7 +69,7 @@ export function Pagination({
       {pages.map((n) =>
         n === page ? (
           <b aria-current="page" className={`${LINK_CLASS} border-ink`} key={n}>
-            {t("pagination.pageNumber", { page: n })}
+            {formatNumber(n, locale)}
           </b>
         ) : (
           // The visible text is the numeral; the accessible name says what the numeral means,
@@ -74,7 +80,7 @@ export function Pagination({
             href={pageHref(baseHref, n)}
             key={n}
           >
-            {t("pagination.pageNumber", { page: n })}
+            {formatNumber(n, locale)}
           </a>
         ),
       )}

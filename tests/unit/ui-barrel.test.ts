@@ -177,6 +177,32 @@ describe("src/modules/ui barrel", () => {
         "staticReviewsProvider",
         "staticTrendingProvider",
         "trendingProviderOf",
+        // spec 008's listing primitives and the view models they render from (TASK-108). Seven
+        // Server Components, three schemas, two enums and the one URL builder pagination needs.
+        // `ProductCardViewSchema` is the surface AC-6 names: it has no field for a badge, a
+        // rating, a review count, an old price or an add-to-basket.
+        "CategoryChipRow",
+        "CategoryTileViewSchema",
+        "ChipLinkViewSchema",
+        "FromPriceChip",
+        "LISTING_SORTS",
+        "ListingEmpty",
+        "ListingGrid",
+        "ListingSortSchema",
+        "ListingToolbar",
+        "MediaSlotSchema",
+        "PRICE_LABEL_KEYS",
+        "PRICE_NOTE_KEYS",
+        "PRODUCT_PROVENANCE",
+        "Pagination",
+        "PriceLabelKeySchema",
+        "PriceNoteKeySchema",
+        "ProductCard",
+        "ProductCardPhotoSchema",
+        "ProductCardViewSchema",
+        "ProductProvenanceSchema",
+        "SORT_LABEL_KEYS",
+        "pageHref",
       ].sort(),
     );
   });

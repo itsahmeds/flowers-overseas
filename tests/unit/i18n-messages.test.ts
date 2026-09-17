@@ -76,6 +76,12 @@ describe("the shell catalogue", () => {
       "meta",
       "nav",
       "occasions",
+      // `shop` is spec 008 §7's namespace (TASK-108): the listing grid's accessible name, the
+      // toolbar's count, its three sort labels and the ranking disclosure, the pagination labels
+      // and the empty state's two sentences. Like `catalog` and `media` it is in no
+      // `ROUTE_NAMESPACES` entry — every component that reads it is a Server Component and the
+      // whole set adds zero client bytes (spec 008 §5.4).
+      "shop",
       "trust",
     ]);
   });

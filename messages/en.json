@@ -723,8 +723,7 @@
       "label": "Pages of products",
       "previous": "Previous",
       "next": "Next",
-      "page": "Page {page}",
-      "pageNumber": "{page, number}"
+      "page": "Page {page}"
     },
     "empty": {
       "heading": "Nothing we can deliver in {country} yet",

@@ -2034,11 +2034,6 @@
     "reviewed": false,
     "sourceHash": "7b2478a95138b0b20b6b921d8051dfada24888778a8939f20624bfb7ec2b2ab8"
   },
-  "shop.pagination.pageNumber": {
-    "source": "machine",
-    "reviewed": false,
-    "sourceHash": "b8fa342147f680ac8950772e67bf41bd573cbe06fb81aff7ab09c88cc97ec7a4"
-  },
   "shop.pagination.previous": {
     "source": "machine",
     "reviewed": false,

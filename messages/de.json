@@ -700,7 +700,6 @@
       "label": "Pages of products",
       "next": "Next",
       "page": "Page {page}",
-      "pageNumber": "{page, number}",
       "previous": "Previous"
     },
     "sort": {

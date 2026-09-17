@@ -300,7 +300,12 @@ describe("Pagination: real links, page 1 bare, nothing on a single page", () => 
 
   it("is a labelled <nav> of <a>s with aria-current on the current page", () => {
     const html = render(
-      <Pagination baseHref="/en/poland/flowers" page={1} pageCount={7} />,
+      <Pagination
+        baseHref="/en/poland/flowers"
+        locale="en"
+        page={1}
+        pageCount={7}
+      />,
     );
     expect(html).toContain('aria-label="Pages of products"');
     expect(html).toContain('aria-current="page"');
@@ -312,10 +317,20 @@ describe("Pagination: real links, page 1 bare, nothing on a single page", () => 
 
   it("drops Next on the last page and Previous on the first", () => {
     const first = render(
-      <Pagination baseHref="/en/poland/flowers" page={1} pageCount={7} />,
+      <Pagination
+        baseHref="/en/poland/flowers"
+        locale="en"
+        page={1}
+        pageCount={7}
+      />,
     );
     const last = render(
-      <Pagination baseHref="/en/poland/flowers" page={7} pageCount={7} />,
+      <Pagination
+        baseHref="/en/poland/flowers"
+        locale="en"
+        page={7}
+        pageCount={7}
+      />,
     );
     expect(textOf(first)).toContain("Next");
     expect(textOf(first)).not.toContain("Previous");
@@ -326,7 +341,12 @@ describe("Pagination: real links, page 1 bare, nothing on a single page", () => 
   it("renders nothing when the listing fits on one page", () => {
     expect(
       render(
-        <Pagination baseHref="/en/poland/flowers" page={1} pageCount={1} />,
+        <Pagination
+          baseHref="/en/poland/flowers"
+          locale="en"
+          page={1}
+          pageCount={1}
+        />,
       ),
     ).toBe("");
   });
