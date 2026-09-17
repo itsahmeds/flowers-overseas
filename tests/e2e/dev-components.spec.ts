@@ -298,8 +298,13 @@ test.describe("/dev/components", () => {
     expect(await outsideListing(page, '[data-fo-media-provenance="ai"]')).toBe(
       1,
     );
+    // `.first()`: the listing section renders the same label on each card that displays a
+    // generated photograph (spec 008 §2), which is the correct behaviour there and is counted
+    // in that section's own tests.
     await expect(
-      page.getByText("Example arrangement · our florist hand-makes each one"),
+      page
+        .getByText("Example arrangement · our florist hand-makes each one")
+        .first(),
     ).toBeVisible();
   });
 
