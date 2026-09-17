@@ -11,7 +11,32 @@
  */
 import { expect, test } from "@playwright/test";
 
+import { listingHonestyViolations } from "../support/listing-honesty.ts";
+
 const GALLERY = "/dev/components";
+
+/** The listing section's marker: spec 008's states, which several media counts exclude. */
+const LISTING_STATE = "[data-fo-listing-state]";
+
+/**
+ * How many elements match `selector` **outside** the listing section (TASK-108). The media
+ * assertions below are about the asset path's own states, and spec 008's card states reuse the
+ * same fixture asset, so they are counted where they are made rather than globally.
+ */
+async function outsideListing(
+  page: import("@playwright/test").Page,
+  selector: string,
+): Promise<number> {
+  return (
+    await page
+      .locator(selector)
+      .evaluateAll(
+        (nodes, marker) =>
+          nodes.filter((node) => node.closest(marker) === null),
+        LISTING_STATE,
+      )
+  ).length;
+}
 
 /** Every section heading the gallery must render (`src/app/(dev)/dev/components/catalog.ts`). */
 const SECTIONS = [
@@ -30,6 +55,8 @@ const SECTIONS = [
   "Home hero and finder",
   "Home sections",
   "Contrast manifest",
+  // TASK-108: spec 008's seven listing primitives (the section `LISTING_STATES` names).
+  "Listing and card blocks",
 ];
 
 test.describe("/dev/components", () => {
@@ -130,7 +157,14 @@ test.describe("/dev/components", () => {
               node.closest("footer") === null &&
               node.closest("[data-fo-consent-panel]") === null &&
               node.closest("[data-fo-finder]") === null &&
-              node.closest("[data-fo-hero]") === null,
+              node.closest("[data-fo-hero]") === null &&
+              // TASK-108 narrows it by one more component, for the reason the footer, the finder
+              // and the hero narrowed it before: the listing toolbar is a *component's own* form
+              // — one labelled `<select>` and one submit on a `GET` form whose target is the
+              // listing itself (spec 008 §2) — and not a reusable form layer. The non-goal it
+              // must not violate is still asserted on the barrel: no exported `Field`, `Input`,
+              // `Select`, `Textarea` or `Price`.
+              node.closest("[data-fo-listing-toolbar]") === null,
           ).length,
       );
     expect(controlsOutsideKnownForms).toBe(0);
@@ -199,19 +233,23 @@ test.describe("/dev/components", () => {
   }) => {
     await page.goto(GALLERY);
 
-    // Exactly two displayable fixture assets, so exactly two images on the whole document.
+    // Exactly two displayable fixture assets in the media section, so exactly two images there.
+    // The listing section renders the same fixture asset in its card states (TASK-108), so this
+    // count is taken outside it — the assertion is about the asset path's states, not about how
+    // many sections happen to use one.
     const images = page.locator("img");
-    await expect(images).toHaveCount(2);
+    expect(await outsideListing(page, "img")).toBe(2);
     for (const alt of await images.evaluateAll((nodes) =>
       nodes.map((node) => node.getAttribute("alt")),
     )) {
       expect(alt ?? "").not.toBe("");
     }
 
-    // AVIF first, WebP as the `<img>`'s own ladder (spec 006 §2.5).
-    await expect(page.locator('picture source[type="image/avif"]')).toHaveCount(
-      2,
-    );
+    // AVIF first, WebP as the `<img>`'s own ladder (spec 006 §2.5) — one `<source>` per image,
+    // counted outside the listing section for the reason above.
+    expect(
+      await outsideListing(page, 'picture source[type="image/avif"]'),
+    ).toBe(2);
     const imgSrcSets = await images.evaluateAll((nodes) =>
       nodes.map((node) => node.getAttribute("srcset") ?? ""),
     );
@@ -248,18 +286,126 @@ test.describe("/dev/components", () => {
       preloadSrcSet,
     );
 
-    // Everything that is not the LCP candidate is lazy, and nothing above it is eager.
-    await expect(page.locator('img[loading="lazy"]')).toHaveCount(1);
-    await expect(page.locator('img[decoding="async"]')).toHaveCount(1);
+    // Everything that is not the LCP candidate is lazy, and nothing above it is eager. Counted
+    // outside the listing section, which renders the same fixture asset in its card states
+    // (TASK-108) and whose own lazy/eager contract is asserted in
+    // `tests/unit/ui-shop-components.test.tsx`.
+    expect(await outsideListing(page, 'img[loading="lazy"]')).toBe(1);
+    expect(await outsideListing(page, 'img[decoding="async"]')).toBe(1);
 
-    // AC-17: the label is in the HTML, in the page's locale, exactly once — and it is absent
-    // from the state whose only displayed asset is a photograph.
-    await expect(page.locator('[data-fo-media-provenance="ai"]')).toHaveCount(
+    // AC-17: the label is in the HTML, in the page's locale, exactly once in this section — and
+    // it is absent from the state whose only displayed asset is a photograph.
+    expect(await outsideListing(page, '[data-fo-media-provenance="ai"]')).toBe(
       1,
     );
     await expect(
       page.getByText("Example arrangement · our florist hand-makes each one"),
     ).toBeVisible();
+  });
+
+  /**
+   * **T-06 (DOM half) / AC-6**, served (spec 008 §8, §9 L261; TASK-108). The six page types are
+   * TASK-117's; what is assertable today is the set of components those pages are built from, in
+   * every state they can reach, through the same scan
+   * (`tests/support/listing-honesty.ts`) the component tests use.
+   */
+  test("says nothing spec 008 AC-6 forbids, anywhere in the listing section", async ({
+    page,
+  }) => {
+    await page.goto(GALLERY);
+    // The section is addressed through the heading id `sectionId()` builds, so the scan covers
+    // the listing primitives and not the gallery chrome around them (the site header's category
+    // row, for one, carries wording this scan would rightly refuse on a listing).
+    const section = page.locator("section:has(> #listing-and-card-blocks)");
+    await expect(section).toHaveCount(1);
+    const html = (await section.innerHTML()).trim();
+    const text = (await section.innerText()).trim();
+    expect(listingHonestyViolations({ html, text })).toEqual([]);
+  });
+
+  test("renders the listing primitives in every drawn state", async ({
+    page,
+  }) => {
+    await page.goto(GALLERY);
+
+    // §13 Q8: the card is a tile until spec 009 publishes the product link id, so the tile state
+    // carries no `<a>` at all and the link state carries exactly one.
+    const tile = page.locator('[data-fo-listing-state="cardTile"]');
+    await expect(tile.locator("a")).toHaveCount(0);
+    await expect(
+      tile.locator('[data-fo-product-card-kind="tile"]'),
+    ).toHaveCount(1);
+    await expect(
+      page.locator('[data-fo-listing-state="cardLink"] a'),
+    ).toHaveCount(1);
+
+    // The grid is a named list of four cards.
+    const grid = page.locator('[data-fo-listing-state="gridDesktop"] ul');
+    await expect(grid).toHaveCount(1);
+    expect(await grid.getAttribute("aria-label")).toContain("4");
+    await expect(grid.locator("li")).toHaveCount(4);
+
+    // The toolbar is a GET form with a real select and a real submit — no island, no auto-submit.
+    const toolbar = page.locator('[data-fo-listing-toolbar="default"] form');
+    await expect(toolbar).toHaveAttribute("method", "get");
+    await expect(toolbar.locator("select[name=sort]")).toHaveCount(1);
+    await expect(toolbar.locator('button[type="submit"]')).toHaveCount(1);
+    await expect(
+      page
+        .getByText(
+          "Our order is the order we chose ourselves. It is not a ranking by sales, by popularity or by payment, and it does not change with who you are.",
+        )
+        .first(),
+    ).toBeVisible();
+
+    // Pagination: a labelled nav of real links, nothing on a single page, and no `?page=1`.
+    const first = page.locator('[data-fo-listing-state="paginationFirst"] nav');
+    await expect(first).toHaveAttribute("aria-label", "Pages of products");
+    await expect(first.locator('[aria-current="page"]')).toHaveCount(1);
+    await expect(first.locator("button")).toHaveCount(0);
+    await expect(
+      page.locator('[data-fo-listing-state="paginationSingle"] nav'),
+    ).toHaveCount(0);
+
+    // The empty state: the sentence and the ways out, and no grid, skeleton or card.
+    const empty = page.locator('[data-fo-listing-state="empty"]');
+    await expect(empty.locator("ul")).toHaveCount(0);
+    await expect(empty.locator("[data-fo-product-card]")).toHaveCount(0);
+    await expect(empty.locator("a")).toHaveCount(3);
+
+    // The from-price chip renders nothing where there is no destination (§2, 005 §13 Q10).
+    expect(
+      (
+        await page
+          .locator('[data-fo-listing-state="fromPriceNone"]')
+          .innerText()
+      ).trim(),
+    ).toBe("");
+    await expect(
+      page.locator('[data-fo-listing-state="chipRowEmpty"] nav'),
+    ).toHaveCount(0);
+  });
+
+  test("the sort form works with JavaScript disabled and by keyboard alone", async ({
+    browser,
+  }) => {
+    // A context with JavaScript off: the toolbar must still submit, because it is a `GET` form
+    // and not an island (spec 008 §2, AC-9's render half).
+    const context = await browser.newContext({ javaScriptEnabled: false });
+    const page = await context.newPage();
+    await page.goto(GALLERY);
+
+    const select = page.locator("#gallery-sort-default");
+    await expect(select).toBeVisible();
+    await select.selectOption("price-desc");
+    await Promise.all([
+      page.waitForURL(/sort=price-desc/),
+      page
+        .locator('[data-fo-listing-toolbar="default"] button[type="submit"]')
+        .click(),
+    ]);
+    expect(new URL(page.url()).searchParams.get("sort")).toBe("price-desc");
+    await context.close();
   });
 
   test("gives the focused skip link a visible box above every layer", async ({
