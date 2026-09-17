@@ -176,19 +176,14 @@ export function localePath(
 /* -------------------------------------------------------------------------- */
 
 /**
- * The six page types spec 008 §2 defines, as the URL builder names them. A value list rather than
- * six literals, so the collision matrix, `generateStaticParams`, the sitemap builders and the
- * descriptor registry iterate one set.
+ * The six page types spec 008 §2 defines, as the URL builder names them.
+ *
+ * The **value** set lives in `src/modules/catalog` (`listingPageTypes`), next to the existence
+ * rules that read it: this barrel exports functions and a handful of zod schemas only (spec 003
+ * AC-3, `tests/unit/i18n-barrel.test.ts`), and a URL builder needs the names as types, not as an
+ * array. `tests/unit/i18n-routing.test.ts` pins the two spellings against each other.
  */
-export const LISTING_PAGE_TYPES = [
-  "countryShopRoot",
-  "countryCategory",
-  "countryOccasion",
-  "categoryHub",
-  "occasionHub",
-  "occasionsIndex",
-] as const;
-export type ListingPageType = (typeof LISTING_PAGE_TYPES)[number];
+export type ListingPageType = ListingTarget["pageType"];
 
 /**
  * What each listing URL is made of (spec 008 §2's table). `country` is a country slug **in this

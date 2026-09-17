@@ -682,6 +682,26 @@ export type QuoteVerdict = "ok" | "expired" | "tampered";
 /* -------------------------------------------------------------------------- */
 
 /**
+ * The six listing page types spec 008 §2 defines, as `listingPath()` names them.
+ *
+ * The **values** live here rather than in `src/modules/i18n`, whose barrel exports functions and
+ * schemas only (spec 003 AC-3, `tests/unit/i18n-barrel.test.ts`): a URL builder needs the six
+ * names as a *type*, while the callers that have to enumerate them — `ListingPageTypeSchema`,
+ * the existence rules of spec 008 §2, `generateStaticParams` and the sitemap builders — need one
+ * closed array so a seventh page type cannot appear in one list and not the other.
+ * `tests/unit/i18n-routing.test.ts` pins this array against `ListingTarget["pageType"]`.
+ */
+export const listingPageTypes = [
+  "countryShopRoot",
+  "countryCategory",
+  "countryOccasion",
+  "categoryHub",
+  "occasionHub",
+  "occasionsIndex",
+] as const;
+export type ListingPageType = (typeof listingPageTypes)[number];
+
+/**
  * The three namespaces a catalogue URL segment can belong to (spec 008 §5.1 amendment 1).
  *
  * They are namespaces, not tables: a slug is unique inside its kind **and** across the other two

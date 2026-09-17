@@ -94,6 +94,14 @@ const PINNED_EXPORTS = [
   "routableLocaleCodes",
   "parseAcceptLanguage",
   "preferredLocale",
+  // Added by TASK-105 (spec 008 AC-4, AC-1's routing half): the two listing URL builders. Both are
+  // functions that compose through `localePath()` and contribute no string of their own, so the
+  // locale's authored `pathSegments` stay the only source of a fixed segment. The *values* they
+  // are built from — the six page-type names — deliberately stay out of this barrel and live in
+  // `src/modules/catalog` as `listingPageTypes`, because a value list is exactly what AC-3 keeps
+  // out of here.
+  "listingPath",
+  "productPath",
 ].sort();
 
 /**

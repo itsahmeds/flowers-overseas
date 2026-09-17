@@ -222,6 +222,24 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         // cache tags (TASK-069): the one builder of `plan/01` §3's names
         "CacheEntitySchema",
         "cacheTagsFor",
+        // slugs and the listing boundary (TASK-105, spec 008 §5.1 amendment 1 / §5.2, AC-4):
+        // schemas, three value sets and the three pure functions of the slug map. No slug *data*
+        // and no locale→slug record is exported — the map is read through `slugFor` / `resolveSlug`
+        // / `hasSlug` only, so an unauthored `de`/`pl` category cannot be papered over by a caller
+        // reaching into the table (spec 008 §13 Q10).
+        "CatalogueSlugSchema",
+        "EntityKeySchema",
+        "ListingPageTypeSchema",
+        "ListingParamsSchema",
+        "ListingSearchParamsSchema",
+        "ListingSortSchema",
+        "SlugKindSchema",
+        "hasSlug",
+        "listingPageTypes",
+        "listingSorts",
+        "resolveSlug",
+        "slugFor",
+        "slugKinds",
       ].sort(),
     );
   });
@@ -244,6 +262,7 @@ describe("src/modules/catalog barrel (AC-1)", () => {
       `${moduleDir}/providers.ts`,
       `${moduleDir}/read.ts`,
       `${moduleDir}/schemas.ts`,
+      `${moduleDir}/slugs.ts`,
       `${moduleDir}/static/index.ts`,
       `${moduleDir}/types.ts`,
     ]);

@@ -30,11 +30,12 @@ import {
 } from "@/config/catalogue/schemas";
 import { type CountryIso2, isCountryIso2 } from "@/config/countries";
 import { type LocaleCode, isLocaleCode } from "@/config/locales";
-import { LISTING_PAGE_TYPES, MoneySchema } from "@/modules/i18n";
+import { MoneySchema } from "@/modules/i18n";
 
 import type { ListingSearchParams } from "./types";
 import {
   catalogAvailabilityKeys,
+  listingPageTypes,
   listingSorts,
   schemaAvailabilityValues,
   slugKinds,
@@ -858,7 +859,7 @@ export const CatalogueSlugSchema = SlugSchema;
 export const EntityKeySchema = z.string().min(2);
 
 /** One of the six listing page types of spec 008 §2, as `localePath()`'s builder names them. */
-export const ListingPageTypeSchema = z.enum(LISTING_PAGE_TYPES);
+export const ListingPageTypeSchema = z.enum(listingPageTypes);
 
 /** The three orders a listing offers (spec 008 §13 Q3). Nothing personalised, nothing claimed. */
 export const ListingSortSchema = z.enum(listingSorts);
@@ -939,7 +940,9 @@ const PAGE_PARAMETER_PATTERN = /^[1-9][0-9]*$/;
  */
 export const ListingSearchParamsSchema = FacetSearchParamsSchema.transform(
   (raw): ListingSearchParams => {
-    const first = (value: string | readonly string[] | undefined): string | undefined =>
+    const first = (
+      value: string | readonly string[] | undefined,
+    ): string | undefined =>
       Array.isArray(value) ? value[0] : (value as string | undefined);
 
     const honoured: ("page" | "sort")[] = [];

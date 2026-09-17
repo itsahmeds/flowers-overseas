@@ -276,8 +276,18 @@ export { CacheEntitySchema, cacheTagsFor } from "./cache";
 // `slugKinds` and `listingSorts` are exported as value sets for the same reason the barrel exports
 // `surchargeKinds`: a caller iterating the closed set cannot invent a fourth namespace or a
 // "bestsellers" order that §8 forbids.
-export type { ListingSearchParams, ListingSort, SlugKind } from "./types";
-export { listingSorts, slugKinds } from "./types";
+// `listingPageTypes` is the third value set, and it lives in this module rather than in spec 003's
+// i18n barrel (which exports functions and schemas only): `listingPath()` needs the six names as a
+// type, everything that *enumerates* them — this module's `ListingPageTypeSchema`, TASK-114's
+// `generateStaticParams`, the sitemap builders — needs one closed array, and one array cannot
+// disagree with itself.
+export type {
+  ListingPageType,
+  ListingSearchParams,
+  ListingSort,
+  SlugKind,
+} from "./types";
+export { listingPageTypes, listingSorts, slugKinds } from "./types";
 export type { ListingParams } from "./schemas";
 export {
   CatalogueSlugSchema,

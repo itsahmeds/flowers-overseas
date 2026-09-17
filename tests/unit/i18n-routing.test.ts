@@ -9,8 +9,9 @@
  */
 import { describe, expect, it } from "vitest";
 
+import { listingPageTypes } from "../../src/modules/catalog";
+import type { ListingTarget } from "../../src/modules/i18n";
 import {
-  LISTING_PAGE_TYPES,
   isLaunchLocale,
   launchLocale,
   launchLocaleCodes,
@@ -197,8 +198,22 @@ describe("listingPath and productPath (spec 008 §2, T-04)", () => {
 
   it("covers every page type spec 008 §2 defines", () => {
     expect(new Set(cases.map(([, target]) => target.pageType))).toEqual(
-      new Set(LISTING_PAGE_TYPES),
+      new Set(listingPageTypes),
     );
+  });
+
+  // The two spellings of the same six names: the catalogue module owns the array (a barrel that
+  // exports functions and schemas only cannot own a value list), `listingPath()`'s `ListingTarget`
+  // owns the type. `satisfies` in both directions makes a seventh page type added to one and not
+  // the other a typecheck failure rather than a route that builds no URL.
+  it("agrees with ListingTarget's page-type union in both directions", () => {
+    const everyValueIsATarget =
+      listingPageTypes satisfies readonly ListingTarget["pageType"][];
+    const everyTargetIsAValue = (pageType: ListingTarget["pageType"]) =>
+      pageType satisfies (typeof listingPageTypes)[number];
+    expect(everyValueIsATarget).toBe(listingPageTypes);
+    expect(everyTargetIsAValue("occasionsIndex")).toBe("occasionsIndex");
+    expect(listingPageTypes).toHaveLength(6);
   });
 
   it("puts the destination before the page segment on every country-scoped URL", () => {

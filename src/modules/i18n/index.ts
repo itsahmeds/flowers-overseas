@@ -89,7 +89,6 @@ export {
 // `/{locale}` plus the locale's own authored segments, so a listing URL cannot drift from a
 // corridor URL (spec 003 §6, AC-13).
 export {
-  LISTING_PAGE_TYPES,
   type ListingPageType,
   type ListingTarget,
   listingPath,
