@@ -244,6 +244,15 @@ fourth exists only where `ENABLE_DEV_UI` is on):
   the same Brotli total as the locale home. Title, description, robots and canonical come from
   `modules/seo` (`pageIndexability` → `pageMetadata`, `canonicalFor`) and the hreflang cluster from one
   `alternatesFor()` call; the page computes none of them itself.
+- `src/app/[locale]/(marketing)/[destinations]/page.tsx` — the **all-destinations hub** (spec 007,
+  TASK-092): the parent of every corridor page and the reason crawl depth from a locale home to a
+  destination is two. Same rendering contract as the corridor page — ISR `revalidate` 86 400 s, the
+  tags of `hubCacheTags()` in `src/lib/cache.ts`, `generateStaticParams()` over the routable locales
+  and `dynamicParams = false` — and it exists in **every** locale, including the two with no authored
+  guide, where it lists the same seven destinations as text with one state line. Which destinations
+  are links is `src/modules/geo`'s `corridorLinkHref()`: the country registry's flag, the
+  `site-links.ts` corridor id and the per-locale existence rule, which is the one predicate the
+  finder, the destinations grid, the footer column and the corridor breadcrumb also ask.
 - `src/app/not-found.tsx` — the 404 document, in the **x-default** locale from the registry
   (AC-8). Every 404 renders here: an unknown first segment and any unmatched path below a real
   locale alike, always status 404 and never a fabricated locale page.
