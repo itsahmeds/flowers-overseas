@@ -21,6 +21,7 @@ be green. One paragraph or a short list — no restatement of the spec.
 One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From `/review 72` (2026-09-17, TASK-105):** `ListingSearchParamsSchema` neutralises `?page=0` to page 1 — rule explicitly (AC-10 says `?page=1` → 301 to bare and beyond-last → 404; decide and test `page=0`, `page=1.5`, `page=abc`); `listingPath()`/`productPath()` accept any URL-shaped string, so route code must obtain slugs only through `slugFor()` — add a lint or a type brand if a caller passes free text.
 
 ## Escalations
 
