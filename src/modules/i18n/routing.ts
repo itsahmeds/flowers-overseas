@@ -112,16 +112,51 @@ export function routableLocale(
  * programming error and throws here rather than emitting a URL that `i18n:check` (AC-13) or the
  * canonical rule would reject later.
  */
+export interface LocalePathParts {
+  readonly pageType: PageType;
+  /**
+   * A destination slug rendered **before** the page segment: `/en-gb/poland/flowers`. Shop and
+   * product URLs are country-first (`plan/02` §4.1, spec 008 §2), which is the one shape the
+   * variadic form cannot express — and the reason it is a named field here rather than a leading
+   * element of `segments`, where a caller could put it by mistake on a corridor path.
+   */
+  readonly country?: string;
+  readonly segments?: readonly string[];
+}
+
 export function localePath(
   locale: string,
   pageType: PageType,
   ...segments: readonly string[]
+): string;
+export function localePath(locale: string, parts: LocalePathParts): string;
+export function localePath(
+  locale: string,
+  pageTypeOrParts: PageType | LocalePathParts,
+  ...rest: readonly string[]
 ): string {
+  const { pageType, country, segments } =
+    typeof pageTypeOrParts === "string"
+      ? { pageType: pageTypeOrParts, country: undefined, segments: rest }
+      : {
+          pageType: pageTypeOrParts.pageType,
+          country: pageTypeOrParts.country,
+          segments: pageTypeOrParts.segments ?? [],
+        };
+
   const config = getLocaleRegistry().get(locale);
   if (config === undefined) {
     throw new Error(`unknown locale code: ${locale}`);
   }
   const parts: string[] = [config.code];
+  if (country !== undefined) {
+    if (!TRAILING_SEGMENT_PATTERN.test(country)) {
+      throw new Error(
+        `path segment \`${country}\` must be lowercase ASCII, hyphen-separated and slash-free (plan/02 §4)`,
+      );
+    }
+    parts.push(country);
+  }
   if (pageType !== "home") {
     parts.push(config.pathSegments[pageType]);
   }
@@ -134,6 +169,99 @@ export function localePath(
     parts.push(segment);
   }
   return `/${parts.join("/")}`;
+}
+
+/* -------------------------------------------------------------------------- */
+/* The listing URLs of spec 008 §2 (TASK-105).                                 */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The six page types spec 008 §2 defines, as the URL builder names them.
+ *
+ * The **value** set lives in `src/modules/catalog` (`listingPageTypes`), next to the existence
+ * rules that read it: this barrel exports functions and a handful of zod schemas only (spec 003
+ * AC-3, `tests/unit/i18n-barrel.test.ts`), and a URL builder needs the names as types, not as an
+ * array. `tests/unit/i18n-routing.test.ts` pins the two spellings against each other.
+ */
+export type ListingPageType = ListingTarget["pageType"];
+
+/**
+ * What each listing URL is made of (spec 008 §2's table). `country` is a country slug **in this
+ * locale** and `slug` a category or occasion slug in this locale: both are authored data from
+ * `countries.ts` and spec 006's copy, and nothing here translates, folds or derives one.
+ */
+export type ListingTarget =
+  | { readonly pageType: "countryShopRoot"; readonly country: string }
+  | {
+      readonly pageType: "countryCategory";
+      readonly country: string;
+      readonly slug: string;
+    }
+  | {
+      readonly pageType: "countryOccasion";
+      readonly country: string;
+      readonly slug: string;
+    }
+  | { readonly pageType: "categoryHub"; readonly slug: string }
+  | { readonly pageType: "occasionHub"; readonly slug: string }
+  | { readonly pageType: "occasionsIndex" };
+
+/**
+ * The path of one of spec 008's six listing pages.
+ *
+ * It composes through `localePath()` and contributes no string of its own, so every fixed segment
+ * stays the locale's authored `pathSegments` (`flowers` / `blumen` / `kwiaty`, `occasions` /
+ * `anlaesse` / `okazje`) and a German segment can never appear on a Polish URL (spec 003 §6, spec
+ * 008 §2). The three country-scoped types put the destination before the page segment
+ * (`/en-gb/poland/flowers`) — `plan/02` §4.1's shape, and the reason `localePath()` grew a
+ * `country` prefix instead of a caller growing a concatenation.
+ */
+export function listingPath(locale: string, target: ListingTarget): string {
+  switch (target.pageType) {
+    case "countryShopRoot":
+      return localePath(locale, {
+        pageType: "shopCategory",
+        country: target.country,
+      });
+    case "countryCategory":
+      return localePath(locale, {
+        pageType: "shopCategory",
+        country: target.country,
+        segments: [target.slug],
+      });
+    case "countryOccasion":
+      return localePath(locale, {
+        pageType: "occasions",
+        country: target.country,
+        segments: [target.slug],
+      });
+    case "categoryHub":
+      return localePath(locale, "shopCategory", target.slug);
+    case "occasionHub":
+      return localePath(locale, "occasions", target.slug);
+    case "occasionsIndex":
+      return localePath(locale, "occasions");
+  }
+}
+
+/**
+ * The product-detail path `/{locale}/{country}/{product}/{slug}` (`plan/02` §4.1; spec 008 §2
+ * reserves the pattern, spec 009 §5.2 owns the route).
+ *
+ * Spec 008 builds it so a product card becomes a link the moment spec 009 publishes the link id,
+ * with no markup change (§13 Q8, AC-12). The slug is the shared authored ASCII slug of spec 009
+ * §13 Q1 — `slugFor("product", …)` produces it and this builder only places it.
+ */
+export function productPath(
+  locale: string,
+  country: string,
+  slug: string,
+): string {
+  return localePath(locale, {
+    pageType: "product",
+    country,
+    segments: [slug],
+  });
 }
 
 export interface ParsedPath {

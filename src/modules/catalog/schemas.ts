@@ -20,6 +20,7 @@ import {
   type FacetName,
   FxRateDataSchema,
   SkuSchema,
+  SlugSchema,
   addonKeys,
   addonKinds,
   facetNames,
@@ -31,9 +32,13 @@ import { type CountryIso2, isCountryIso2 } from "@/config/countries";
 import { type LocaleCode, isLocaleCode } from "@/config/locales";
 import { MoneySchema } from "@/modules/i18n";
 
+import type { ListingSearchParams } from "./types";
 import {
   catalogAvailabilityKeys,
+  listingPageTypes,
+  listingSorts,
   schemaAvailabilityValues,
+  slugKinds,
   surchargeKinds,
 } from "./types";
 
@@ -830,3 +835,142 @@ export const QuoteSchema = z
       path: ["priceVersion"],
     },
   );
+
+/* -------------------------------------------------------------------------- */
+/* Slugs and listing parameters (spec 008 §5.1 amendment 1, §5.2; TASK-105).   */
+/* -------------------------------------------------------------------------- */
+
+/** Which namespace a slug belongs to — the first argument of `slugFor()` / `resolveSlug()`. */
+export const SlugKindSchema = z.enum(slugKinds);
+
+/**
+ * A slug as it may appear in a URL: lowercase ASCII, hyphen-separated, no slash — reused from the
+ * dataset's own `SlugSchema` so the rule lives in one place (`plan/02` §4). An uppercase or
+ * trailing-slash variant therefore never resolves, which is spec 008 AC-1's 404 rather than a
+ * case-fixing rewrite (ADR-0006: no redirect, ever).
+ */
+export const CatalogueSlugSchema = SlugSchema;
+
+/**
+ * A catalogue entity's natural key — `category.key`, `occasion.key`, `product.sku` — in exactly
+ * the shape spec 006's `SeedCopySchema.key` accepts, because the copy rows are what this map is
+ * built from.
+ */
+export const EntityKeySchema = z.string().min(2);
+
+/** One of the six listing page types of spec 008 §2, as `localePath()`'s builder names them. */
+export const ListingPageTypeSchema = z.enum(listingPageTypes);
+
+/** The three orders a listing offers (spec 008 §13 Q3). Nothing personalised, nothing claimed. */
+export const ListingSortSchema = z.enum(listingSorts);
+
+/**
+ * The route parameters of a listing URL (spec 008 §5.2 `ListingParamsSchema`).
+ *
+ * `.strict()` and shape-checked, because this is the boundary where an unvalidated path segment
+ * arrives: an unknown locale, a segment belonging to another locale, an uppercase or
+ * trailing-slash variant and a page type carrying the wrong number of segments are all parse
+ * failures, and a parse failure is `notFound()` — never a redirect and never a case-fixing
+ * rewrite (spec 008 §5.2, AC-1; ADR-0006). Whether the *entity* behind a well-formed slug exists
+ * is a different question, answered by `resolveSlug()` and by spec 008's existence rules
+ * (TASK-107).
+ */
+export const ListingParamsSchema = z
+  .object({
+    locale: LocaleCodeSchema,
+    pageType: ListingPageTypeSchema,
+    /** The destination's slug in this locale — the three country-scoped types only. */
+    country: CatalogueSlugSchema.optional(),
+    /** The category or occasion slug — the four entity-scoped types only. */
+    entity: CatalogueSlugSchema.optional(),
+  })
+  .strict()
+  .superRefine((params, ctx) => {
+    const needsCountry = [
+      "countryShopRoot",
+      "countryCategory",
+      "countryOccasion",
+    ].includes(params.pageType);
+    const needsEntity = [
+      "countryCategory",
+      "countryOccasion",
+      "categoryHub",
+      "occasionHub",
+    ].includes(params.pageType);
+
+    for (const [field, needed, value] of [
+      ["country", needsCountry, params.country],
+      ["entity", needsEntity, params.entity],
+    ] as const) {
+      if (needed && value === undefined) {
+        ctx.addIssue({
+          code: "custom",
+          path: [field],
+          message: `\`${params.pageType}\` is scoped by a \`${field}\` slug (spec 008 §2)`,
+        });
+      }
+      if (!needed && value !== undefined) {
+        ctx.addIssue({
+          code: "custom",
+          path: [field],
+          message: `\`${params.pageType}\` carries no \`${field}\` segment; the URL with one is a different URL and 404s (spec 008 AC-1)`,
+        });
+      }
+    }
+  });
+
+export type ListingParams = z.output<typeof ListingParamsSchema>;
+
+/** `page` as it arrives in a query string: digits, no sign, no leading zero, ≥ 1. */
+const PAGE_PARAMETER_PATTERN = /^[1-9][0-9]*$/;
+
+/**
+ * A listing's query string (spec 008 §5.2 `ListingSearchParamsSchema`, AC-15).
+ *
+ * It **cannot fail**: a `GET` form's query is whatever a visitor or a crawler typed, and a page
+ * that 500s on `?sort=banana` would be a page a crawler can break. Every parameter is therefore
+ * either honoured (`page`, `sort`, when present *and* valid) or neutralised — an invalid value
+ * reads as absent and a facet-shaped parameter is only reported, so the page renders its base
+ * content and the caller passes `ignored` to spec 005's `resolveFacets()`, whose whole
+ * contribution is `indexable: false` (`plan/02` §7).
+ *
+ * No decision is taken here. `?page=1`'s 301 to the bare URL, `?page=N`'s self-canonical, the
+ * canonical-to-base on a sorted URL and the 404 past the last page all need the item count as
+ * well, and they are TASK-114's with spec 007's `indexability()`.
+ */
+export const ListingSearchParamsSchema = FacetSearchParamsSchema.transform(
+  (raw): ListingSearchParams => {
+    const first = (
+      value: string | readonly string[] | undefined,
+    ): string | undefined =>
+      Array.isArray(value) ? value[0] : (value as string | undefined);
+
+    const honoured: ("page" | "sort")[] = [];
+
+    const rawPage = first(raw["page"]);
+    const pageValid =
+      rawPage !== undefined && PAGE_PARAMETER_PATTERN.test(rawPage);
+    if (pageValid) honoured.push("page");
+
+    const rawSort = first(raw["sort"]);
+    const sort = ListingSortSchema.safeParse(rawSort);
+    if (sort.success) honoured.push("sort");
+
+    const ignored = Object.entries(raw)
+      .filter(
+        ([name, value]) =>
+          value !== undefined &&
+          !(name === "page" && pageValid) &&
+          !(name === "sort" && sort.success),
+      )
+      .map(([name]) => name)
+      .sort();
+
+    return {
+      page: pageValid ? Number(rawPage) : 1,
+      sort: sort.success ? sort.data : "default",
+      honoured,
+      ignored,
+    };
+  },
+);
