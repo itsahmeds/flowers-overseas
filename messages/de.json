@@ -404,6 +404,21 @@
       "guideNotDelivering": "Guide · not delivering yet"
     }
   },
+  "destinationsHub": {
+    "emptyBody": "We have not written a guide in this language yet, so every destination on this page is text. These are the countries we write about: {destinations}. Each guide is written by a person in the language you are reading, which is why this page waits rather than showing you a translation nobody checked.",
+    "h1": "Where we can send flowers",
+    "intro": "Seven countries in Europe, and we have written a guide to every one of them: what is given, what is never given, how an address is written, and which dates matter in a year there. We open a country only once we have chosen the florists ourselves, so the guide comes first and the delivery comes after it. Where we are not delivering yet, this page says so in the same words on every row.",
+    "noGuide": "We have not written a guide to {country} in this language yet. When we have, this line becomes a link.",
+    "readGuide": "Read the guide",
+    "region": {
+      "centralEurope": "Central Europe",
+      "southEasternEurope": "South-eastern Europe",
+      "westernSouthernEurope": "Western and Southern Europe"
+    },
+    "regionLabel": "Region · {region}",
+    "seoDescription": "Seven countries in Europe, each with a guide we wrote ourselves: what is given, what is never given, and which dates matter in a year there.",
+    "seoTitle": "Where we can send flowers"
+  },
   "errors": {
     "notFound": {
       "body": "That page does not exist. Check the address, or start again from the home page.",

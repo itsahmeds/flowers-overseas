@@ -28,8 +28,11 @@ import {
   CountryRegistrySchema,
   countryConfig,
   countrySlug,
+  countryRegions,
   countryStatuses,
+  countriesInRegion,
   destinationStateKey,
+  regionHeadingKey,
   isCorridorPagePublished,
   isCountryIso2,
   isGuidePublished,
@@ -43,6 +46,7 @@ const CANVAS_DESTINATIONS = ["PL", "DE", "FR", "ES", "IT", "RO", "NL"] as const;
 const valid = {
   iso2: "PT",
   status: "demo",
+  region: "westernSouthernEurope",
   nameKey: "destinations.pt.name",
   slugs: Object.fromEntries(launchLocales.map((code) => [code, "portugal"])),
   corridorPagePublished: false,
@@ -65,17 +69,50 @@ describe("src/config/countries.ts", () => {
     expect([...countryStatuses]).toEqual(["demo", "live", "disabled"]);
   });
 
-  it("publishes every guide and links no corridor page yet (spec 004 AC-14, spec 007 AC-5)", () => {
+  it("publishes every guide and every corridor page (spec 007 AC-7, AC-20)", () => {
     for (const country of COUNTRIES) {
       // TASK-091 flipped `guidePublished` on all seven: the `en` and `en-gb` guides are authored
       // and parsed, and this flag *is* `plan/02` §5.1's existence rule, so the corridor URLs
       // exist because of it (spec 007 AC-5, AC-7).
       expect(isGuidePublished(country.iso2), country.iso2).toBe(true);
-      // `corridorPagePublished` stays false until TASK-092 turns the finder, the destinations
-      // grid and the footer into navigation, so the chrome still links nowhere and spec 004
-      // AC-14's "zero links to a non-200 URL" holds in between.
-      expect(isCorridorPagePublished(country.iso2), country.iso2).toBe(false);
+      // TASK-092 flipped `corridorPagePublished`: the registry half of "this destination may be
+      // linked". A link is still rendered only where the `site-links.ts` corridor id is published
+      // **and** the page exists in that locale, which is why `/de` and `/pl` stay text.
+      expect(isCorridorPagePublished(country.iso2), country.iso2).toBe(true);
     }
+  });
+
+  it("groups every destination into one of the hub's three regions (spec 007 §5.3)", () => {
+    // The founder's 2026-09-15 ruling (b), in the hub's own order.
+    expect(countriesInRegion("centralEurope").map((c) => c.iso2)).toEqual([
+      "PL",
+      "DE",
+      "NL",
+    ]);
+    expect(
+      countriesInRegion("westernSouthernEurope").map((c) => c.iso2),
+    ).toEqual(["FR", "ES", "IT"]);
+    expect(countriesInRegion("southEasternEurope").map((c) => c.iso2)).toEqual([
+      "RO",
+    ]);
+    // Every destination is in exactly one group: the hub can neither drop nor double-count one.
+    expect(
+      countryRegions.flatMap((region) => countriesInRegion(region)).length,
+    ).toBe(COUNTRIES.length);
+    // The heading is a message key, never a literal (§7).
+    expect(regionHeadingKey("centralEurope")).toBe(
+      "destinationsHub.region.centralEurope",
+    );
+  });
+
+  it("refuses a destination with no region, or with a region the hub does not draw", () => {
+    const noRegion = Object.fromEntries(
+      Object.entries(valid).filter(([field]) => field !== "region"),
+    );
+    expect(CountryConfigSchema.safeParse(noRegion).success).toBe(false);
+    expect(
+      CountryConfigSchema.safeParse({ ...valid, region: "oceania" }).success,
+    ).toBe(false);
   });
 
   it("carries one slug per launch locale, unique inside each locale", () => {

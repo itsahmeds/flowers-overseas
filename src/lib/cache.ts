@@ -63,5 +63,19 @@ export function corridorCacheTags(
   return [`corridor:${iso2}`, `corridor:${iso2}:${locale}`, SITEMAP_CACHE_TAG];
 }
 
+/**
+ * Cache tags for one locale's all-destinations hub (spec 007 §5.4, which gives the hub the
+ * corridor page's caching; TASK-092).
+ *
+ * `hub:{locale}` rather than a corridor tag: the hub is one document per locale and what changes
+ * it is *any* destination's publication state, so spec 012's admin purges `corridor:{iso2}` for
+ * the country and `hub:{locale}` for the pages that list it, and the hourly sitemap job purges
+ * `sitemap`. Phase 0 attaches no tag to a cache entry — see `corridorCacheTags()` for why — and
+ * the route revalidates on time instead.
+ */
+export function hubCacheTags(locale: string): readonly string[] {
+  return [`hub:${locale}`, SITEMAP_CACHE_TAG];
+}
+
 /** The tag every sitemap-bearing response shares (`plan/01` §8's hourly job; TASK-094). */
 export const SITEMAP_CACHE_TAG = "sitemap";

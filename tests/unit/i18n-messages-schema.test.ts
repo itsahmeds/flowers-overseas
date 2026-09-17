@@ -337,6 +337,8 @@ describe("the shipped catalogues and manifests", () => {
       "footer",
       "company",
       "destinations",
+      // Spec 007 §7's hub namespace (TASK-092).
+      "destinationsHub",
       // Spec 005 §7's namespace: the dataset's label keys, seeded by TASK-062 and rendered from
       // TASK-067. Typed like the rest, so a tier label is `t()`-checkable rather than a string.
       "catalog",

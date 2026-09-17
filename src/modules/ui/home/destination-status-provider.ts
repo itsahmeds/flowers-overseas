@@ -11,9 +11,10 @@
  *
  * Two properties this file exists to keep true:
  *
- *  - **`href` is `undefined` until a corridor page exists.** It is the only way the grid can
- *    learn about a link, and `isCorridorPagePublished()` is the only thing that sets it. So the
- *    home cannot grow an internal link to a non-200 URL by a copy edit (AC-14).
+ *  - **`href` is `undefined` until a corridor page exists in this locale.** It is the only way the
+ *    grid can learn about a link, and `corridorLinkHref()` (spec 007's one predicate) is the only
+ *    thing that sets it. So the home cannot grow an internal link to a non-200 URL by a copy edit
+ *    (AC-14), and the German home keeps rendering text while no German guide is written.
  *  - **Cities are named only where we deliver.** `citiesKey` is already refused by
  *    `countries.ts`'s schema for a destination that is not `live`; the projection passes it
  *    through unchanged rather than deciding again, so the honesty rule (`plan/10` §3) lives in
@@ -27,12 +28,11 @@ import {
   COUNTRIES,
   type CountryConfig,
   type CountryIso2,
-  countrySlug,
   destinationStateKey,
-  isCorridorPagePublished,
 } from "../../../config/countries.ts";
 import type { LocaleCode } from "../../../config/locales.ts";
-import { localePath, sortBy } from "../../i18n";
+import { corridorLinkHref } from "../../geo";
+import { sortBy } from "../../i18n";
 
 /**
  * The same cast `./finder-model.ts` documents: the locale set is provider-backed data (spec 003
@@ -64,13 +64,37 @@ export interface DestinationStatusProvider {
   ): readonly DestinationStatus[];
 }
 
-/** Is this destination's corridor page published? `countries.ts`'s one predicate, by default. */
-export type CorridorPublishedPredicate = (iso2: CountryIso2) => boolean;
+/**
+ * Where this destination's corridor page is, in this locale — `undefined` when it may not be
+ * linked. The default is `src/modules/geo`'s one predicate (spec 007 §2 "Internal links", AC-20):
+ * the country registry's flag, the `site-links.ts` corridor id **and** the per-locale existence
+ * rule, so `/de` and `/pl` render text while no human has written a guide there.
+ */
+export type CorridorHrefResolver = (
+  iso2: CountryIso2,
+  locale: string,
+) => string | undefined;
+
+/**
+ * The default resolver, as a function declaration rather than as the imported binding itself.
+ *
+ * `src/modules/geo`'s barrel mounts the corridor page, which renders `src/modules/ui`'s
+ * primitives, so the two modules' barrels form a cycle at **module-evaluation** time and
+ * `corridorLinkHref` is not yet initialised when `staticDestinationStatusProvider` is built
+ * below. Calling it through this wrapper defers the lookup to request time, where the binding is
+ * live and the answer is the one predicate every surface shares (spec 007 AC-20).
+ */
+function defaultCorridorHref(
+  iso2: CountryIso2,
+  locale: string,
+): string | undefined {
+  return corridorLinkHref(iso2, locale);
+}
 
 function project(
   country: CountryConfig,
   locale: string,
-  publishedOf: CorridorPublishedPredicate,
+  hrefOf: CorridorHrefResolver,
 ): DestinationStatus {
   return {
     iso2: country.iso2,
@@ -78,23 +102,21 @@ function project(
     citiesKey: country.citiesKey,
     stateKey: destinationStateKey(country),
     delivering: country.status === "live",
-    href: publishedOf(country.iso2)
-      ? localePath(locale, "destinations", countrySlug(country.iso2, locale))
-      : undefined,
+    href: hrefOf(country.iso2, locale),
   };
 }
 
 /**
  * Build a provider over an arbitrary destination set — the fake, and spec 002's shape.
  *
- * `publishedOf` defaults to `countries.ts`'s single predicate, which keeps §5.1's "one predicate
- * per flag" contract for every real caller; it is a parameter only so that the seam test and the
- * gallery can render the published branch without mutating the registry, which is what AC-11's
- * "a country is data" proof needs to be observable before spec 007 exists.
+ * `hrefOf` defaults to `src/modules/geo`'s single predicate, which keeps §5.1's "one predicate"
+ * contract for every real caller; it is a parameter only so that the seam test and the gallery
+ * can render either branch without mutating the registry, which is what AC-11's "a country is
+ * data" proof needs to be observable.
  */
 export function destinationStatusProviderOf(
   countries: readonly CountryConfig[],
-  publishedOf: CorridorPublishedPredicate = isCorridorPagePublished,
+  hrefOf: CorridorHrefResolver = defaultCorridorHref,
 ): DestinationStatusProvider {
   return {
     list: (locale, nameOf) => {
@@ -107,7 +129,7 @@ export function destinationStatusProviderOf(
       return [
         ...collated.filter((entry) => entry.delivering),
         ...collated.filter((entry) => !entry.delivering),
-      ].map(({ country }) => project(country, locale, publishedOf));
+      ].map(({ country }) => project(country, locale, hrefOf));
     },
   };
 }

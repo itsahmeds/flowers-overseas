@@ -1856,6 +1856,83 @@
     "reviewedAt": "2026-09-15T00:00:00Z",
     "sourceHash": "9687cc0b20837784ae1ed2996a99bfd7dcd36d78695d97557cbef4fb58e1f8bf"
   },
+  "destinationsHub.emptyBody": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/all-destinations-desktop.dc.html and -mobile, 2026-09-15 design round; transcribed by TASK-092)",
+    "reviewedAt": "2026-09-16T00:00:00Z",
+    "sourceHash": "2fafd7edb3c17aafdaec14e01f925d0270d00e551f232af2ec58f49a1b8e2939"
+  },
+  "destinationsHub.h1": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/all-destinations-desktop.dc.html and -mobile, 2026-09-15 design round; transcribed by TASK-092)",
+    "reviewedAt": "2026-09-16T00:00:00Z",
+    "sourceHash": "bde980964168d925712f4b32e8edf8a8d798a99c64d8d0319e351fd7a3a4da84"
+  },
+  "destinationsHub.intro": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/all-destinations-desktop.dc.html and -mobile, 2026-09-15 design round; transcribed by TASK-092)",
+    "reviewedAt": "2026-09-16T00:00:00Z",
+    "sourceHash": "2dcd3f39bd10a427d987e7e4587e22a1f005feb5c1e82807eabcd0a3f8b92239"
+  },
+  "destinationsHub.noGuide": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/all-destinations-desktop.dc.html and -mobile, 2026-09-15 design round; transcribed by TASK-092)",
+    "reviewedAt": "2026-09-16T00:00:00Z",
+    "sourceHash": "40d76caab697c0f4a2d0af32c75bf0e2e7236b8e0cec173bc624a658a9fdbc8a"
+  },
+  "destinationsHub.readGuide": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/all-destinations-desktop.dc.html and -mobile, 2026-09-15 design round; transcribed by TASK-092)",
+    "reviewedAt": "2026-09-16T00:00:00Z",
+    "sourceHash": "83b3b277abbf82ba7b69a28ff551233716ba12660654e5889d4a48d495425af1"
+  },
+  "destinationsHub.region.centralEurope": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/all-destinations-desktop.dc.html and -mobile, 2026-09-15 design round; transcribed by TASK-092)",
+    "reviewedAt": "2026-09-16T00:00:00Z",
+    "sourceHash": "40d9a90716b05276fca533d74b9cd700522082225b27b996bf34f267f394e135"
+  },
+  "destinationsHub.region.southEasternEurope": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/all-destinations-desktop.dc.html and -mobile, 2026-09-15 design round; transcribed by TASK-092)",
+    "reviewedAt": "2026-09-16T00:00:00Z",
+    "sourceHash": "1a8e0e1f9bdd75c13498ad66096bece0cc721852a528b3b9c073ea79fa447e3e"
+  },
+  "destinationsHub.region.westernSouthernEurope": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/all-destinations-desktop.dc.html and -mobile, 2026-09-15 design round; transcribed by TASK-092)",
+    "reviewedAt": "2026-09-16T00:00:00Z",
+    "sourceHash": "5dcf6e1ad803ab60b589981bfeaf56e2732d8588b5d440adf131c41b67262405"
+  },
+  "destinationsHub.regionLabel": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/all-destinations-desktop.dc.html and -mobile, 2026-09-15 design round; transcribed by TASK-092)",
+    "reviewedAt": "2026-09-16T00:00:00Z",
+    "sourceHash": "1166f3b9a8b9a26b5c420040ac45120b66b61f712126e0262d6460f870077895"
+  },
+  "destinationsHub.seoDescription": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/all-destinations-desktop.dc.html and -mobile, 2026-09-15 design round; transcribed by TASK-092)",
+    "reviewedAt": "2026-09-16T00:00:00Z",
+    "sourceHash": "c0d8400f2261b33e580e8ffdf2b78cdd6c5d4815ea4e90d64131c378ff9141a9"
+  },
+  "destinationsHub.seoTitle": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/all-destinations-desktop.dc.html and -mobile, 2026-09-15 design round; transcribed by TASK-092)",
+    "reviewedAt": "2026-09-16T00:00:00Z",
+    "sourceHash": "bde980964168d925712f4b32e8edf8a8d798a99c64d8d0319e351fd7a3a4da84"
+  },
   "errors.notFound.body": {
     "source": "human",
     "reviewed": true,

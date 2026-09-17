@@ -27,6 +27,7 @@ import {
 } from "@/modules/ui";
 
 import { COUNTRIES } from "@/config/countries";
+import { localePath } from "@/modules/i18n";
 
 /** The picks, ranked by real orders — the branch spec 008/016 reaches. */
 export const GALLERY_TRENDING_RANKED: TrendingProvider = trendingProviderOf(
@@ -72,9 +73,12 @@ export const GALLERY_REVIEWS: ReviewsProvider = reviewsProviderOf([
 ]);
 
 /**
- * The destination set with Poland's corridor page published — the state spec 007 reaches by
- * flipping one flag, rendered here years before the page exists. It is built from the shipped
- * registry rather than from a hand-written country, so the projection under test is the real one.
+ * The destination set with only Poland's corridor page linked — the gallery's "one published
+ * destination" state. It is built from the shipped registry rather than from a hand-written
+ * country, so the projection under test is the real one. The resolver returns the *path* since
+ * TASK-092, because a corridor URL carries a per-locale slug (spec 007 AC-20).
  */
 export const GALLERY_DESTINATIONS_PUBLISHED: DestinationStatusProvider =
-  destinationStatusProviderOf(COUNTRIES, (iso2) => iso2 === "PL");
+  destinationStatusProviderOf(COUNTRIES, (iso2, locale) =>
+    iso2 === "PL" ? localePath(locale, "destinations", "poland") : undefined,
+  );

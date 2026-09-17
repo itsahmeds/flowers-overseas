@@ -91,7 +91,7 @@ export const CORRIDOR_CALENDAR_MONTHS = 12;
  * false for a non-launch locale, so `indexability()` answers `noindex,follow`, `alternatesFor()`
  * emits no alternate for it, and the production env schema refuses the flag that routes it at all.
  */
-function contentLocaleOf(locale: string): string | undefined {
+export function contentLocaleOf(locale: string): string | undefined {
   const config = routableLocale(locale);
   if (config === undefined) return undefined;
   if (!config.isPseudo) return config.code;
@@ -108,14 +108,28 @@ function contentLocaleOf(locale: string): string | undefined {
  * describe, which is exactly the claim AC-19 forbids. The chip therefore says what the page says.
  * The two converge the day `corridorState()` answers `live`, which is the same data flip.
  */
-function stateKeyOf(state: CorridorState): string {
+export function corridorStateKey(state: CorridorState): string {
   return state === "live"
     ? "destinations.state.deliveringNow"
     : "destinations.state.guideNotDelivering";
 }
 
-/** The `destinations` hub's link id in `site-links.ts`; TASK-092 publishes it. */
-const HUB_LINK_ID = "destinations";
+/**
+ * The all-destinations hub's link id in `site-links.ts` — `destinationsHub` in spec 007 AC-20 and
+ * in `SeoPageType`; the id itself is hyphen-case because `SiteLinkSchema` requires it. TASK-092
+ * published it, which is what turns the breadcrumb's middle crumb into a link.
+ */
+export const HUB_LINK_ID = "destinations";
+
+/**
+ * The hub's path in a locale, or `undefined` while its link id is unpublished. One predicate, so
+ * the breadcrumb, the footer column and the hub's own canonical cannot disagree (spec 004 AC-14).
+ */
+export function destinationsHubHref(locale: string): string | undefined {
+  return isPublished(HUB_LINK_ID)
+    ? localePath(locale, "destinations")
+    : undefined;
+}
 
 /** One corridor URL, as `generateStaticParams` needs it. */
 export interface CorridorPageParams {
@@ -354,11 +368,8 @@ function crumbsFor(
     },
     {
       labelKey: "breadcrumb.destinations",
-      // Not a link until TASK-092 ships the hub and publishes the id: an unpublished target
-      // renders as text, never as a link to a 404 (spec 004 AC-14).
-      href: isPublished(HUB_LINK_ID)
-        ? localePath(locale, "destinations")
-        : undefined,
+      // Text, never a link to a 404, while the hub's id is unpublished (spec 004 AC-14).
+      href: destinationsHubHref(locale),
       current: false,
     },
     {
@@ -406,7 +417,7 @@ function relatedViews(
         {
           iso2: target.iso2,
           nameKey: country.nameKey,
-          stateKey: stateKeyOf(corridorState(target.iso2, locale)),
+          stateKey: corridorStateKey(corridorState(target.iso2, locale)),
           href: localePath(
             locale,
             "destinations",
@@ -451,7 +462,7 @@ export function corridorView(
     path: localePath(locale, "destinations", slug),
     state,
     nameKey: country.nameKey,
-    stateKey: stateKeyOf(state),
+    stateKey: corridorStateKey(state),
     seoTitle: content.seoTitle,
     seoDescription: content.seoDescription,
     h1: content.h1,

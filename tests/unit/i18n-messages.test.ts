@@ -59,6 +59,10 @@ describe("the shell catalogue", () => {
       // (`plan/02` §12).
       "corridor",
       "destinations",
+      // `destinationsHub` is spec 007 §7's second namespace (TASK-092): the all-destinations
+      // hub's `h1`, intro, region headings and the one state line a destination without a page
+      // in this locale carries.
+      "destinationsHub",
       "errors",
       // `faq`, `occasions` and `trust` are the locale home's lower sections (TASK-053): the five
       // `<details>` questions, the occasion tiles and dated occasions, and the three trust

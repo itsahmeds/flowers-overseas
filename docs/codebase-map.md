@@ -65,6 +65,7 @@ task actually touches.
 | `(dev)/dev/components/page.tsx` | `/dev/components` — the component gallery (spec 004 §2 "Component gallery —… | spec 004 |
 | `(dev)/layout.tsx` | Document layout for the `(dev)` route group — today only `/dev/components`… | spec 004 |
 | `[locale]/(marketing)/[destinations]/[country]/page.tsx` | `/{locale}/{destinations}/{country}` — the corridor page (spec 007 §2, §5.2,… | spec 007 |
+| `[locale]/(marketing)/[destinations]/page.tsx` | `/{locale}/{destinations}` — the all-destinations hub (spec 007 §2 "Existence,… | spec 007 |
 | `[locale]/boom/BoomIsland.tsx` | The throw that reaches `src/app/[locale]/error.tsx` (spec 004 AC-26, AC-27;… | spec 004 |
 | `[locale]/boom/page.tsx` | A route that throws on purpose: the localised 500 boundary, as an auditable… | spec 004 |
 | `[locale]/error.tsx` | Localised 500 boundary (spec 003 §5.3; TASK-034, rewired by TASK-085) | spec 003 |

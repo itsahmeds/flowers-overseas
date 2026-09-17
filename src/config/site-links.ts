@@ -56,17 +56,44 @@ const OwningSpecSchema = z
   .string()
   .regex(/^0\d{2}$/, "must be a three-digit spec id such as `007`");
 
+/**
+ * A destination's ISO 3166-1 alpha-2 code, restated as a shape rather than imported from
+ * `countries.ts`: this registry says *which* corridor a link points at, and the registry that
+ * owns the country says whether that country exists, what its slug is in each locale and whether
+ * its guide is published. `tests/unit/site-links-config.test.ts` pins that the seven corridor ids
+ * here and the seven destinations there are the same set, so the two cannot drift apart without a
+ * failing test — the `linkPageTypes` pattern above, applied to the country registry.
+ */
+const CorridorIso2Schema = z
+  .string()
+  .regex(/^[A-Z]{2}$/, "must be an ISO 3166-1 alpha-2 code such as `PL`");
+
 export const SiteLinkTargetSchema = z.discriminatedUnion("kind", [
   z
     .object({ kind: z.literal("route"), pageType: z.enum(linkPageTypes) })
     .strict(),
+  /**
+   * A **corridor country page** — `/{locale}/{destinations}/{slug}` (spec 007 §2 "Internal
+   * links", AC-20). It is its own kind rather than a `route` with the `destinations` page type
+   * because its URL carries a second, per-locale segment (`poland` / `polen` / `polska`): a
+   * caller that treated it as a plain route would build the hub's URL and link seven times to the
+   * same page. The per-locale existence rule stays `src/modules/geo`'s — this flag only says
+   * whether the target **may** be linked at all.
+   */
+  z.object({ kind: z.literal("corridor"), iso2: CorridorIso2Schema }).strict(),
   z.object({ kind: z.literal("pending") }).strict(),
 ]);
 
 export type SiteLinkTarget = z.infer<typeof SiteLinkTargetSchema>;
 
-/** Where a link is drawn. `for-florists` is the one entry the canvas draws on both surfaces. */
-export const siteLinkSurfaces = ["header", "footer"] as const;
+/**
+ * Where a link is drawn. `for-florists` is the one entry the canvas draws on both chrome
+ * surfaces; `home` and `hub` are spec 007's two content surfaces — the locale home's finder and
+ * destinations grid, and the all-destinations hub — which is where the corridor targets appear
+ * (spec 007 §2 "Internal links", AC-20). A surface is a statement about *where a link is drawn*,
+ * not a permission: `isPublished()` is still the only predicate over the flag.
+ */
+export const siteLinkSurfaces = ["header", "footer", "home", "hub"] as const;
 export type SiteLinkSurface = (typeof siteLinkSurfaces)[number];
 
 export const SiteLinkSchema = z
@@ -184,12 +211,16 @@ const siteLinks = [
     surfaces: ["header", "footer"],
   },
   {
+    // The all-destinations hub — `destinationsHub` in spec 007 AC-20 and in `SeoPageType`; the id
+    // is hyphen-case because `SiteLinkSchema` requires it. TASK-092 shipped
+    // `/{locale}/{destinations}` in all four locales, so it is published: the footer column, the
+    // corridor breadcrumb and the finder's fallback all become links from this one flip.
     id: "destinations",
     labelKey: "footer.link.destinations",
     target: { kind: "route", pageType: "destinations" },
-    published: false,
+    published: true,
     owningSpec: "007",
-    surfaces: ["footer"],
+    surfaces: ["footer", "home", "hub"],
   },
   {
     id: "occasions",
@@ -271,6 +302,67 @@ const siteLinks = [
     owningSpec: "007",
     surfaces: ["footer"],
   },
+  // The seven corridor country pages (spec 007 §2 "Internal links", AC-17, AC-20; TASK-092), in
+  // the registry's own order. Published means "this destination may be linked"; whether a link is
+  // actually rendered in a given locale is `src/modules/geo`'s existence rule — `/de` and `/pl`
+  // have no authored guide, so their destinations stay text on every surface. The label is the
+  // country's `destinations.*.name` key, so no surface invents a name for a country.
+  {
+    id: "corridor-pl",
+    labelKey: "destinations.pl.name",
+    target: { kind: "corridor", iso2: "PL" },
+    published: true,
+    owningSpec: "007",
+    surfaces: ["home", "hub"],
+  },
+  {
+    id: "corridor-de",
+    labelKey: "destinations.de.name",
+    target: { kind: "corridor", iso2: "DE" },
+    published: true,
+    owningSpec: "007",
+    surfaces: ["home", "hub"],
+  },
+  {
+    id: "corridor-fr",
+    labelKey: "destinations.fr.name",
+    target: { kind: "corridor", iso2: "FR" },
+    published: true,
+    owningSpec: "007",
+    surfaces: ["home", "hub"],
+  },
+  {
+    id: "corridor-es",
+    labelKey: "destinations.es.name",
+    target: { kind: "corridor", iso2: "ES" },
+    published: true,
+    owningSpec: "007",
+    surfaces: ["home", "hub"],
+  },
+  {
+    id: "corridor-it",
+    labelKey: "destinations.it.name",
+    target: { kind: "corridor", iso2: "IT" },
+    published: true,
+    owningSpec: "007",
+    surfaces: ["home", "hub"],
+  },
+  {
+    id: "corridor-ro",
+    labelKey: "destinations.ro.name",
+    target: { kind: "corridor", iso2: "RO" },
+    published: true,
+    owningSpec: "007",
+    surfaces: ["home", "hub"],
+  },
+  {
+    id: "corridor-nl",
+    labelKey: "destinations.nl.name",
+    target: { kind: "corridor", iso2: "NL" },
+    published: true,
+    owningSpec: "007",
+    surfaces: ["home", "hub"],
+  },
 ] as const;
 
 /** Parsed at module load: a malformed registry throws on first import, never at request time. */
@@ -306,6 +398,28 @@ export function isSiteLinkId(id: string): id is SiteLinkId {
 export function isPublished(id: SiteLinkId): boolean {
   return siteLink(id).published;
 }
+
+/**
+ * The link id of one destination's corridor country page (spec 007 AC-20; TASK-092).
+ *
+ * The naming rule — `corridor-{iso2 lowercased}` — is a fact of this registry, so a caller asks
+ * for a country and gets the id rather than composing the string itself; `isPublished()` stays
+ * the one predicate over the flag. Throws for a country with no row, which is the same answer
+ * `siteLink()` gives and the reason an eighth destination cannot be linked before it is published
+ * here.
+ */
+export function corridorLinkId(iso2: string): SiteLinkId {
+  const id = `corridor-${iso2.toLowerCase()}`;
+  if (!isSiteLinkId(id)) {
+    throw new Error(`no corridor link id for country: ${iso2}`);
+  }
+  return id;
+}
+
+/** Every corridor link in registry order — the set `tests/unit/site-links-config.test.ts` pins. */
+export const CORRIDOR_LINKS: readonly SiteLink[] = SITE_LINKS.filter(
+  (link) => link.target.kind === "corridor",
+);
 
 export const SiteLinkGroupSchema = z
   .object({

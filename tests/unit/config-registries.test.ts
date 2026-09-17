@@ -172,7 +172,11 @@ describe("§7: every registry key resolves in every launch locale", () => {
         sources.length > 1 &&
         // The two state keys are shared **by design**: every guide destination prints the same
         // "Guide · not delivering yet" line, which is the point of `destinationStateKey()`.
-        !sources.every((source) => source.startsWith("destinationStateKey(")),
+        !sources.every((source) => source.startsWith("destinationStateKey(")) &&
+        // A corridor link's label **is** the country's name (spec 007 AC-20): `site-links.ts`
+        // says which destination may be linked, `countries.ts` owns what it is called, and
+        // pointing both at one key is what stops a second exonym from being authored.
+        !sources.some((source) => /^siteLinks\[corridor-/u.test(source)),
     );
     // `for-florists` is the one entry the canvas draws twice (header cluster and footer column),
     // and it is one link id with one label — not two rows that could drift.

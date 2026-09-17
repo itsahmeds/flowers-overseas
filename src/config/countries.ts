@@ -16,9 +16,12 @@
  *    TASK-091 set `guidePublished: true` on all seven, because the seven `en` and seven `en-gb`
  *    guides are authored and parsed: that flag **is** `plan/02` §5.1's existence rule, so flipping
  *    it is what creates the corridor URLs — a data change, with no edit under `src/app/` (spec 007
- *    AC-5, AC-7). `corridorPagePublished` stays `false` on every destination until TASK-092 turns
- *    the finder, the destinations grid and the footer into navigation, so the site still has zero
- *    internal links to a non-200 URL in between (spec 004 AC-14).
+ *    AC-5, AC-7). TASK-092 flipped `corridorPagePublished` to `true` on all seven, which is the
+ *    registry half of "this destination may be linked": the finder, the destinations grid, the
+ *    hub and the footer render a link only where that flag, the destination's `site-links.ts`
+ *    corridor id (`isPublished`) **and** the per-locale existence rule all hold, so `/de` and
+ *    `/pl` — which have no authored guide — still render every destination as text and the site
+ *    still has zero internal links to a non-200 URL (spec 004 AC-14, spec 007 AC-17, AC-20).
  *    Spec 007 flips them and those surfaces become navigation with **no template edit** — the
  *    `plan/09` "a new country is data" promise applied to the layout (AC-11). As in spec 003 §12,
  *    a config-file flag is a bounded, stated deviation from `CLAUDE.md`'s "go-live is a data flip
@@ -112,11 +115,48 @@ const SlugsSchema = z
   )
   .strict();
 
+/**
+ * The regions the all-destinations hub groups its destinations into, **in the order the hub
+ * renders them** (founder ruling 2026-09-15 (b), recorded in `docs/decisions-log.md`:
+ * Central Europe DE·NL·PL · Western and Southern Europe FR·ES·IT · South-eastern Europe RO;
+ * `docs/design/wireframes/all-destinations-desktop.dc.html`).
+ *
+ * A region is **country data**, so it lives on the registry row rather than in the hub: an eighth
+ * destination cannot be added without saying where in Europe it is, and the hub then groups it
+ * with no template edit (spec 007 AC-7's "a new country is data").
+ */
+export const countryRegions = [
+  "centralEurope",
+  "westernSouthernEurope",
+  "southEasternEurope",
+] as const;
+
+export type CountryRegion = (typeof countryRegions)[number];
+
+/**
+ * The hub's heading key for a region — `destinationsHub.region.*`, never a literal (§7).
+ *
+ * The keys are written out rather than composed, for `pnpm i18n:check`'s usage scan: a key that
+ * only ever exists as a template literal reads as unused, and an unused key is deleted by the
+ * next person who runs the check. It is the same rule `nameKey` and `citiesKey` follow above.
+ */
+const REGION_HEADING_KEYS: Readonly<Record<CountryRegion, string>> = {
+  centralEurope: "destinationsHub.region.centralEurope",
+  westernSouthernEurope: "destinationsHub.region.westernSouthernEurope",
+  southEasternEurope: "destinationsHub.region.southEasternEurope",
+};
+
+export function regionHeadingKey(region: CountryRegion): string {
+  return REGION_HEADING_KEYS[region];
+}
+
 export const CountryConfigSchema = z
   .object({
     iso2: Iso2Schema,
     /** Spec 002 §5.1 `country.status`; `live` is the canvas's "Delivering now" state. */
     status: z.enum(countryStatuses),
+    /** Which group of the all-destinations hub this destination is rendered in (spec 007 §5.3). */
+    region: z.enum(countryRegions),
     /** `destinations.{iso2 lowercased}.name` — the country name, per locale, in the catalogue. */
     nameKey: MessageKeySchema,
     /**
@@ -250,15 +290,17 @@ export const CountryRegistrySchema = z
 const countries = [
   {
     iso2: "PL",
+    region: "centralEurope",
     status: "live",
     nameKey: "destinations.pl.name",
     citiesKey: "destinations.pl.cities",
     slugs: { en: "poland", "en-gb": "poland", de: "polen", pl: "polska" },
-    corridorPagePublished: false,
+    corridorPagePublished: true,
     guidePublished: true,
   },
   {
     iso2: "DE",
+    region: "centralEurope",
     status: "demo",
     nameKey: "destinations.de.name",
     slugs: {
@@ -267,35 +309,39 @@ const countries = [
       de: "deutschland",
       pl: "niemcy",
     },
-    corridorPagePublished: false,
+    corridorPagePublished: true,
     guidePublished: true,
   },
   {
     iso2: "FR",
+    region: "westernSouthernEurope",
     status: "demo",
     nameKey: "destinations.fr.name",
     slugs: { en: "france", "en-gb": "france", de: "frankreich", pl: "francja" },
-    corridorPagePublished: false,
+    corridorPagePublished: true,
     guidePublished: true,
   },
   {
     iso2: "ES",
+    region: "westernSouthernEurope",
     status: "demo",
     nameKey: "destinations.es.name",
     slugs: { en: "spain", "en-gb": "spain", de: "spanien", pl: "hiszpania" },
-    corridorPagePublished: false,
+    corridorPagePublished: true,
     guidePublished: true,
   },
   {
     iso2: "IT",
+    region: "westernSouthernEurope",
     status: "demo",
     nameKey: "destinations.it.name",
     slugs: { en: "italy", "en-gb": "italy", de: "italien", pl: "wlochy" },
-    corridorPagePublished: false,
+    corridorPagePublished: true,
     guidePublished: true,
   },
   {
     iso2: "RO",
+    region: "southEasternEurope",
     status: "demo",
     nameKey: "destinations.ro.name",
     slugs: {
@@ -304,11 +350,12 @@ const countries = [
       de: "rumaenien",
       pl: "rumunia",
     },
-    corridorPagePublished: false,
+    corridorPagePublished: true,
     guidePublished: true,
   },
   {
     iso2: "NL",
+    region: "centralEurope",
     status: "demo",
     nameKey: "destinations.nl.name",
     slugs: {
@@ -317,7 +364,7 @@ const countries = [
       de: "niederlande",
       pl: "holandia",
     },
-    corridorPagePublished: false,
+    corridorPagePublished: true,
     guidePublished: true,
   },
 ] as const;
@@ -429,4 +476,17 @@ export function toCountryRow(country: CountryConfig): CountryRow {
     status: country.status,
     guide_published: country.guidePublished,
   };
+}
+
+/**
+ * The destinations of one hub region, in registry order (spec 007 §5.3; TASK-092).
+ *
+ * Order **inside** a group is the reader's, not the registry's: the hub sorts with
+ * `collator(locale)` over the translated names, which is why this returns the rows rather than a
+ * sorted list — a registry may not decide how Polish sorts `Łotwa` (§7).
+ */
+export function countriesInRegion(
+  region: CountryRegion,
+): readonly CountryConfig[] {
+  return COUNTRIES.filter((country) => country.region === region);
 }

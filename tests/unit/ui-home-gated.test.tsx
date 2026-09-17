@@ -230,7 +230,7 @@ describe("the destinations grid", () => {
   const grid = (locale: string): string =>
     render(<DestinationsGrid locale={locale} />, locale);
 
-  it("names all seven destinations with their state word, and links none (AC-14)", () => {
+  it("names all seven destinations with their state word (AC-14, spec 007 AC-20)", () => {
     const html = grid("en");
     const rendered = text(html);
 
@@ -241,7 +241,26 @@ describe("the destinations grid", () => {
     }
     expect(rendered).toContain("Delivering now");
     expect(rendered).toContain("Guide · not delivering yet");
-    expect(hrefs(html)).toEqual([]);
+    // TASK-092 published the seven corridor targets: every destination whose guide exists in
+    // this locale is a link, from the same loop and with no markup change (spec 007 AC-20).
+    expect(hrefs(html).length).toBe(COUNTRIES.length);
+    for (const href of hrefs(html)) {
+      expect(href).toMatch(/^\/en\/send-flowers-to\/[a-z-]+$/);
+    }
+  });
+
+  it("links nothing in a locale with no authored guide (spec 007 §13 Q1, AC-17)", () => {
+    // `/de` and `/pl` have no corridor page, so every destination is text — the same component,
+    // the same DOM shape, one element different.
+    for (const locale of ["de", "pl"]) {
+      const html = grid(locale);
+      expect(hrefs(html), locale).toEqual([]);
+      for (const country of COUNTRIES) {
+        expect(html, `${locale}/${country.iso2}`).toContain(
+          `data-fo-destination="${country.iso2}"`,
+        );
+      }
+    }
   });
 
   it("names Poland's five cities and no city anywhere else (plan/10 §3)", () => {
@@ -288,9 +307,8 @@ describe("the destinations grid", () => {
   });
 
   it("renders the published destination as a link, from the same loop (AC-11)", () => {
-    const provider = destinationStatusProviderOf(
-      COUNTRIES,
-      (iso2) => iso2 === "PL",
+    const provider = destinationStatusProviderOf(COUNTRIES, (iso2) =>
+      iso2 === "PL" ? "/en/send-flowers-to/poland" : undefined,
     );
     const html = render(
       <DestinationsGrid locale="en" provider={provider} />,
@@ -303,16 +321,19 @@ describe("the destinations grid", () => {
 
   it("swaps at the composition root, with no call-site change", async () => {
     const published = await withDestinationStatusProvider(
-      destinationStatusProviderOf(COUNTRIES, (iso2) => iso2 === "PL"),
+      destinationStatusProviderOf(COUNTRIES, (iso2) =>
+        iso2 === "PL" ? "/en/send-flowers-to/poland" : undefined,
+      ),
       () => grid("en"),
     );
 
     expect(hrefs(published)).toEqual(["/en/send-flowers-to/poland"]);
-    // Restored: the shipped provider links nothing.
-    expect(hrefs(grid("en"))).toEqual([]);
+    // Restored: the shipped provider answers from the registry again — seven links in `en`, none
+    // in `de`, which is the existence rule and not a second flag.
+    expect(hrefs(grid("en")).length).toBe(COUNTRIES.length);
     expect(
       staticDestinationStatusProvider
-        .list("en", (key) => key)
+        .list("de", (key) => key)
         .filter((destination) => destination.href !== undefined),
     ).toEqual([]);
   });
