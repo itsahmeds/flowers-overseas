@@ -6,15 +6,47 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 ## Binding
 
-What the spec binds this task to, in the spec's own words: the resolution notes that override
-defaults, the AC ids owned, the rulings from earlier reviews that apply here, the gates that must
-be green. One paragraph or a short list — no restatement of the spec.
+- **AC-6** (spec 008 §9 L261) is the one AC this task owns: "Every country-scoped card renders
+  **exactly**: photo (or spec 006's placeholder), name, one all-in price via `formatMoney` with the
+  `catalog.price.inclusive` label, and the provenance note where an `ai` asset is shown. No rating,
+  star, review count, badge, delivery-timing claim, strike-through, old price, countdown or
+  add-to-basket appears on any page in any locale — asserted by DOM scan and by the absence of those
+  fields from `ProductCardViewSchema`."
+- **T-06** (schema half + the reusable DOM-scan assertion) and **T-30** (`pl` plurals one/few/many/
+  other; `<bdi>` around the name/price pair) are this task's tests. The e2e half of T-06 runs here
+  over `/dev/components` and again over the six page types at TASK-117.
+- §5.2: the seven components live under `src/modules/ui/shop/`; `ProductCardViewSchema` is
+  `{ productId, name, href?, photo: { assetId | placeholder, alt, slot }, price: Money,
+  priceLabelKey, provenance }` and **has no** `badge`/`rating`/`reviewCount`/`oldPrice`/
+  `ctaAddToBasket` field; every price is a `Money` from `priceProjection()`; **no component receives
+  a number and no component calls `Intl`**.
+- §5.3: the card's four states (image · placeholder · link · tile) share one fixed 4∶5 box → zero
+  CLS across both swaps; the toolbar is a `GET` form, identical with JS off; pagination renders
+  nothing on a single page; the empty state is a sentence plus ways out, never a grid or a skeleton.
+- §5.4: **server components only, zero client islands, zero client bytes**; `sizes` for the card
+  photo comes from the named `grid` slot.
+- §13 **Q3** the default sort keeps a plain label and a one-sentence ranking disclosure; the strings
+  "bestseller", "most popular" and "recommended for you" appear in no locale. §13 **Q6** sort only,
+  no filters. §13 **Q8** the card is a **tile** until spec 009 publishes the `product` link id —
+  `href` absent → no `<a>`, same geometry. §13 **Q9** the currency chip stays inert.
+- §14 A1 (spec 004): script budget unchanged — this PR must move `bundle-baseline.json` by ±0 B.
+- `CLAUDE.md`: `docs/design/` is the source of truth and the sheet stays in step with
+  `src/modules/ui` in the same PR; no literal strings, logical CSS only, `Intl` only through
+  `modules/i18n`.
 
 ## Read
 
-- `specs/NNN-*.md` — read `## 0. Index` first, then only the sections the ACs name
-- `docs/codebase-map.md` — where everything lives
-- (the two or three files the deliverable actually touches)
+- `specs/008-country-shop-category-occasion-pages.md` — `## 0. Index`, then §5.2 (module layout and
+  the view schemas), §5.3 (UI states table and the accessibility paragraph), §9 AC-6, §10 T-06/T-30,
+  §13 Q3/Q6/Q8/Q9, §14 A1.
+- `docs/design/system/components.dc.html` — the "Listing and card blocks (spec 008)" group (product
+  card ×4, listing grid 2-up/4-up, listing toolbar default/sorted, pagination first/last/single,
+  listing empty state, from-price chip ×3) and the "Photo and Placeholder" row; `system/tokens.css`;
+  `docs/design/README.md` § "Where the sheet and the code currently differ" (the spec 008 row is
+  deleted by this PR).
+- `docs/codebase-map.md` → `src/modules/ui` (`Photo`/`Placeholder`, `MediaAsset`,
+  `MediaProvenanceNote`, `MEDIA_SLOTS` incl. `grid`, `Chip`, `Grid`, `Stack`, `Text`), `src/modules/
+  i18n` (`formatMoney`, `Money`, `MoneySchema`), `src/app/(dev)/dev/components/`.
 
 ## Carry-forwards
 
