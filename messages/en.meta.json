@@ -1849,12 +1849,12 @@
     "reviewedAt": "2026-09-09T00:00:00Z",
     "sourceHash": "a87cf2e4374e16ad11ea33ce2cae0965b2b29935452dcf7bac4060d2190f7ceb"
   },
-  "destinations.state.guideWaitingList": {
+  "destinations.state.guideNotDelivering": {
     "source": "human",
     "reviewed": true,
-    "reviewedBy": "founder",
-    "reviewedAt": "2026-09-09T00:00:00Z",
-    "sourceHash": "9f77a401542337c339bcf6a839a1a5ac51682b9fac9c5689e0c2333dbcefaee2"
+    "reviewedBy": "founder (decisions-log 2026-09-15, PR 60 design ruling (f))",
+    "reviewedAt": "2026-09-15T00:00:00Z",
+    "sourceHash": "9687cc0b20837784ae1ed2996a99bfd7dcd36d78695d97557cbef4fb58e1f8bf"
   },
   "errors.notFound.body": {
     "source": "human",

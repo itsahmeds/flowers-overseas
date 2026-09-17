@@ -401,7 +401,7 @@
     },
     "state": {
       "deliveringNow": "Delivering now",
-      "guideWaitingList": "Guide · waiting list"
+      "guideNotDelivering": "Guide · not delivering yet"
     }
   },
   "errors": {

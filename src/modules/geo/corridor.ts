@@ -111,7 +111,7 @@ function contentLocaleOf(locale: string): string | undefined {
 function stateKeyOf(state: CorridorState): string {
   return state === "live"
     ? "destinations.state.deliveringNow"
-    : "destinations.state.guideWaitingList";
+    : "destinations.state.guideNotDelivering";
 }
 
 /** The `destinations` hub's link id in `site-links.ts`; TASK-092 publishes it. */

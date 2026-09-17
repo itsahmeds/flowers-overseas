@@ -15,7 +15,7 @@
  *    destination may name cities — `countries.ts` refuses the combination for anything else, so
  *    naming a town we cannot deliver to is a failed parse rather than a copy review (`plan/10`
  *    §3).
- *  - **The six guide destinations**, each with *Guide · waiting list*. The state is a **word, not
+ *  - **The six guide destinations**, each with *Guide · not delivering yet*. The state is a **word, not
  *    a colour** (§5.3), which is also why nothing here carries a status dot.
  *  - **"Somewhere else?"** as the last cell: copy only. A waiting-list email field is a new
  *    personal-data flow and a RoPA row (010/016 own it), and an inert input that collects nothing

@@ -240,7 +240,7 @@ describe("the destinations grid", () => {
       );
     }
     expect(rendered).toContain("Delivering now");
-    expect(rendered).toContain("Guide · waiting list");
+    expect(rendered).toContain("Guide · not delivering yet");
     expect(hrefs(html)).toEqual([]);
   });
 

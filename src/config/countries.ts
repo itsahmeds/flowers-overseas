@@ -391,12 +391,12 @@ export function hasCompleteOperations(iso2: CountryIso2): boolean {
 /**
  * The state message the destinations grid and the finder print for a destination — the canvas's
  * two states, as keys rather than as a branch on a literal in a component: "Delivering now" for a
- * live destination, "Guide · waiting list" for everything else.
+ * live destination, "Guide · not delivering yet" for everything else.
  */
 export function destinationStateKey(country: CountryConfig): string {
   return country.status === "live"
     ? "destinations.state.deliveringNow"
-    : "destinations.state.guideWaitingList";
+    : "destinations.state.guideNotDelivering";
 }
 
 /**

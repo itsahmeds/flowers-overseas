@@ -54,7 +54,7 @@ describe("src/config/countries.ts", () => {
     expect([...COUNTRY_CODES]).toEqual([...CANVAS_DESTINATIONS]);
   });
 
-  it("delivers to Poland and treats the other six as guide + waiting list", () => {
+  it("delivers to Poland and treats the other six as guide + not-delivering", () => {
     expect(countryConfig("PL").status).toBe("live");
     for (const iso2 of CANVAS_DESTINATIONS.filter((code) => code !== "PL")) {
       expect(countryConfig(iso2).status, iso2).toBe("demo");
@@ -110,7 +110,7 @@ describe("src/config/countries.ts", () => {
       "destinations.state.deliveringNow",
     );
     expect(destinationStateKey(countryConfig("DE"))).toBe(
-      "destinations.state.guideWaitingList",
+      "destinations.state.guideNotDelivering",
     );
   });
 

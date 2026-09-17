@@ -49,7 +49,7 @@ export interface DestinationStatus {
   readonly nameKey: string;
   /** `destinations.{iso}.cities` — present only for a destination we deliver to. */
   readonly citiesKey: string | undefined;
-  /** `destinations.state.deliveringNow` | `destinations.state.guideWaitingList`. */
+  /** `destinations.state.deliveringNow` | `destinations.state.guideNotDelivering`. */
   readonly stateKey: string;
   /** True for a `status: "live"` destination. The state **word** carries the meaning, not a colour. */
   readonly delivering: boolean;

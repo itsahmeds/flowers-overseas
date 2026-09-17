@@ -192,7 +192,7 @@ describe("the finder card (AC-11)", () => {
       );
     }
     expect(rendered).toContain("Delivering now");
-    expect(rendered).toContain("Guide · waiting list");
+    expect(rendered).toContain("Guide · not delivering yet");
     // AC-14: while every flag is false the finder links nowhere at all.
     expect(hrefs(html)).toEqual([]);
   });

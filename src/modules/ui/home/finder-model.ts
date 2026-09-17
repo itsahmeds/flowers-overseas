@@ -97,7 +97,7 @@ export interface FinderDestination {
   readonly iso2: CountryIso2;
   /** `destinations.{iso}.name` — the name is catalogue copy, never a literal (§7). */
   readonly nameKey: string;
-  /** `destinations.state.deliveringNow` | `destinations.state.guideWaitingList`. */
+  /** `destinations.state.deliveringNow` | `destinations.state.guideNotDelivering`. */
   readonly stateKey: string;
   /** True for the one `status: "live"` destination; the state *word* carries the meaning. */
   readonly delivering: boolean;

@@ -171,7 +171,7 @@ describe("§7: every registry key resolves in every launch locale", () => {
       ([, sources]) =>
         sources.length > 1 &&
         // The two state keys are shared **by design**: every guide destination prints the same
-        // "Guide · waiting list" line, which is the point of `destinationStateKey()`.
+        // "Guide · not delivering yet" line, which is the point of `destinationStateKey()`.
         !sources.every((source) => source.startsWith("destinationStateKey(")),
     );
     // `for-florists` is the one entry the canvas draws twice (header cluster and footer column),
