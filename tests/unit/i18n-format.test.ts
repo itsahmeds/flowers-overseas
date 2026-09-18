@@ -45,6 +45,7 @@ import {
 } from "../../src/config/currencies.ts";
 import {
   MoneySchema,
+  formatCountryName,
   formatDate,
   formatList,
   formatMoney,
@@ -653,4 +654,43 @@ describe("the required-zone type contract (AC-17 / T-17)", () => {
       "error TS2554: Expected 4 arguments, but got 3.",
     );
   }, 120_000);
+});
+
+/**
+ * `formatCountryName` (spec 003 §14 A14; TASK-119) — the exonyms the locale suggestion dialog says
+ * "You seem to be in {country}" with.
+ *
+ * It is a formatter and not a message key because CLDR already holds every country in every locale
+ * we ship, and because the alternative is twenty-eight hand-authored, hand-reviewed strings that
+ * would drift from `src/config/country-locale.data.ts`. The table below is the whole reason that
+ * argument holds: the same code reads differently in each locale, and none of those spellings is
+ * in a catalogue.
+ */
+describe("formatCountryName (§14 A14)", () => {
+  it.each([
+    ["DE", "en", "Germany"],
+    ["DE", "de", "Deutschland"],
+    ["DE", "pl", "Niemcy"],
+    ["AT", "de", "Österreich"],
+    ["PL", "pl", "Polska"],
+    ["PL", "de", "Polen"],
+    ["GB", "en-gb", "United Kingdom"],
+    ["IE", "en-gb", "Ireland"],
+    ["CH", "de", "Schweiz"],
+  ])("names %s in %s", (country, locale, expected) => {
+    expect(formatCountryName(country, locale as LocaleCode)).toBe(expected);
+  });
+
+  it("falls back to the code rather than throwing on a country CLDR does not name", () => {
+    // `ZZ` is CLDR's "unknown region": a dialog reading "You seem to be in ZZ" is a better failure
+    // than a Server Component that threw while resolving a courtesy.
+    expect(formatCountryName("ZZ", "en")).toMatch(/^(?:ZZ|Unknown Region)$/);
+  });
+
+  it.each(["de", "DEU", "", "D1", "Germany"])(
+    "refuses %s, because a country code is not a free-text field",
+    (bad) => {
+      expect(() => formatCountryName(bad, "en")).toThrow();
+    },
+  );
 });

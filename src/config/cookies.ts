@@ -179,19 +179,11 @@ const REGISTER: readonly unknown[] = [
     spec: "003",
     scope: "Path=/; SameSite=Lax; Secure outside development",
   },
-  {
-    name: "fo_locale_suggestion_dismissed",
-    kind: "sessionStorage",
-    category: "essential",
-    consentRequired: false,
-    party: "first",
-    writer: "browser",
-    status: "set",
-    lifetime: { kind: "session" },
-    purposeKey: "consent.cookies.localeSuggestionDismissed.purpose",
-    spec: "003",
-    scope: "",
-  },
+  // `fo_locale_suggestion_dismissed` used to sit here: a per-tab `sessionStorage` flag for a
+  // visitor who dismissed the suggestion banner without answering it. Spec 003 §14 A14 removed the
+  // dismissal itself (TASK-119) — the popup has two actions, both of which record `fo_locale`, and
+  // `Esc` is one of them — so there is nothing left to remember for a tab, and a register row for a
+  // key nothing writes is worse than no row at all.
   {
     name: "fo_consent",
     kind: "cookie",

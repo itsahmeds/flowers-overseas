@@ -64,7 +64,9 @@ describe("the register itself (AC-22)", () => {
   it("parses at module load and carries every Phase 0 row the task names", () => {
     for (const name of [
       "fo_locale",
-      "fo_locale_suggestion_dismissed",
+      // `fo_locale_suggestion_dismissed` left the register with the dismissal itself: spec 003
+      // §14 A14 gave the suggestion popup two actions, both of which record `fo_locale`, so there
+      // is nothing per-tab to remember (TASK-119).
       "fo_consent",
       "fo_session",
       "fo_csrf",

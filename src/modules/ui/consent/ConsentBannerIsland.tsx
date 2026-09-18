@@ -59,6 +59,40 @@ const SettingsPanel = dynamic(() => import("./ConsentSettingsPanel"), {
   ssr: false,
 });
 
+/**
+ * The locale suggestion's overlay gate (spec 003 §14 A14; TASK-119).
+ *
+ * §14 A14 puts the language question **before** the consent question: a consent decision recorded
+ * in a language the visitor is about to leave reads as the site ignoring the answer, and two
+ * sheets stacked at the bottom of a phone is the interstitial Google penalises. The suggestion's
+ * loader sets this attribute on `<html>` during hydration — before any `ssr: false` chunk can
+ * resolve, so it is always in place before this island mounts — and fires the event when no
+ * language question is pending any more.
+ *
+ * The two names are **restated** rather than imported: this is a Client Component in
+ * `src/modules/ui` and the suggestion's is in `src/modules/i18n`, so the only legal import path
+ * between them runs through a public barrel that would pull the locale registry and its validator
+ * into this chunk (spec 004 §14 A1, the 70 KB zod regression of `/review 26`).
+ * `src/modules/i18n/ui/localeGate.ts` is the other copy and `tests/unit/locale-gate.test.ts` pins
+ * the two equal in both directions.
+ *
+ * **It fails open.** If the event never arrives — a failed chunk, a browser that refused the
+ * attribute, a future edit that forgets to release — the timeout below shows the sheet anyway. A
+ * language courtesy must never be able to suppress a consent question.
+ */
+const LOCALE_GATE_ATTRIBUTE = "data-fo-locale-gate";
+const LOCALE_GATE_RELEASED_EVENT = "fo:locale-gate-released";
+const LOCALE_GATE_FALLBACK_MS = 6_000;
+
+/** True while a language question is pending or on screen. Fails open on a hostile DOM. */
+function localeQuestionPending(): boolean {
+  try {
+    return document.documentElement.hasAttribute(LOCALE_GATE_ATTRIBUTE);
+  } catch {
+    return false;
+  }
+}
+
 const NO_CHOICES: ConsentChoices = { analytics: false, marketing: false };
 
 type Phase = "hidden" | "shown" | "settings" | "saved";
@@ -133,6 +167,14 @@ export function ConsentBannerIsland({ view }: ConsentBannerIslandProps) {
   const [phase, setPhase] = useState<Phase>(() =>
     stored === null ? "shown" : "hidden",
   );
+  /**
+   * Whether a language question is still pending (spec 003 §14 A14). Read once, on mount, and
+   * cleared by the suggestion's event, by the fallback timer, or by the visitor reopening the
+   * sheet themselves — in which case there is plainly no dialog in front of it.
+   */
+  const [localeGated, setLocaleGated] = useState<boolean>(
+    localeQuestionPending,
+  );
   const [choices, setChoices] = useState<ConsentChoices>(() =>
     stored === null ? NO_CHOICES : choicesOf(stored),
   );
@@ -170,6 +212,20 @@ export function ConsentBannerIsland({ view }: ConsentBannerIslandProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // The other half of the gate: wait for the language dialog, but never for long (see above).
+  useEffect(() => {
+    if (!localeGated) return undefined;
+    const release = (): void => {
+      setLocaleGated(false);
+    };
+    window.addEventListener(LOCALE_GATE_RELEASED_EVENT, release);
+    const timer = window.setTimeout(release, LOCALE_GATE_FALLBACK_MS);
+    return () => {
+      window.removeEventListener(LOCALE_GATE_RELEASED_EVENT, release);
+      window.clearTimeout(timer);
+    };
+  }, [localeGated]);
+
   /**
    * Withdrawal, from every page (§8, AC-9). Delegated from the document rather than bound to the
    * footer's button, so the control works wherever it is rendered — the colophon, the component
@@ -185,6 +241,8 @@ export function ConsentBannerIsland({ view }: ConsentBannerIslandProps) {
       const control = target.closest(`[${config.reopenAttribute}]`);
       if (control === null) return;
       trigger.current = control instanceof HTMLElement ? control : null;
+      // An explicit press: whatever the gate says, there is no dialog in front of this sheet.
+      setLocaleGated(false);
       setPhase("shown");
     };
     document.addEventListener("click", onClick);
@@ -273,6 +331,9 @@ export function ConsentBannerIsland({ view }: ConsentBannerIslandProps) {
   );
 
   if (phase === "hidden") return null;
+  // The language question owns the screen first (spec 003 §14 A14). Nothing is decided, written or
+  // recorded here: the sheet is simply not painted yet, and the effect above puts it back.
+  if (localeGated) return null;
 
   if (phase === "saved") {
     return (

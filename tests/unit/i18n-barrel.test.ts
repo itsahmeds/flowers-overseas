@@ -25,14 +25,19 @@
  * export lets a caller move it, `PSEUDO_LOCALES`/`isPseudoLocaleCode` stay in `src/config`, and
  * `generatePseudoCatalogues`/`mapIcuText` stay module-internal in `pseudo.ts`.
  *
- * TASK-041 adds `parseAcceptLanguage`, `preferredLocale`, the `LocaleSuggestionBanner` Server
+ * TASK-041 adds `parseAcceptLanguage`, `preferredLocale`, the `LocaleSuggestionDialog` Server
  * Component and `LocaleCookieSchema` — the fifth pinned schema, here for the `MoneySchema`
  * reason: `fo_locale` is read back from `document.cookie` and spec 004's currency UI will ask
  * "is this a locale code the application offers?" without restating the enum. The island's own
  * seams are in `FORBIDDEN_EXPORTS`: `decideSuggestion`, `languagePreferences`, `readLocaleCookie`,
- * `serialiseLocaleCookie` and `suggestionCandidates` are how the banner is assembled, and the two
+ * `serialiseLocaleCookie` and `suggestionCandidates` are how the popup is assembled, and the two
  * cookie constants are exported configuration of exactly the kind AC-3 forbids. `LocaleSwitcher`
- * and `LocaleSuggestionBanner` are the two components in the list.
+ * and `LocaleSuggestionDialog` are the two components in the list.
+ *
+ * TASK-119 adds `countryFromHeaders`, the one geo read ADR-0006 allows: it is exported because
+ * `GET /api/geo` is its only caller and a route may not name a country header itself
+ * (`fo/no-geo-redirect`). It is a pure function of a `Headers` object — no configuration, no
+ * provider, nothing AC-3 objects to.
  *
  * `LocaleSwitcher` (TASK-035) is the first component in the list. It is still a function and still
  * carries no configuration — a Server Component reading the registry through the same accessor as
@@ -51,8 +56,10 @@ const repoRoot = resolve(__dirname, "../..");
 /** Every runtime export of `src/modules/i18n/index.ts`, in alphabetical order. */
 const PINNED_EXPORTS = [
   "AddressInputSchema",
+  "countryFromHeaders",
+  "formatCountryName",
   "LocaleCookieSchema",
-  "LocaleSuggestionBanner",
+  "LocaleSuggestionDialog",
   "LocaleSwitcher",
   "MessageMetaManifestSchema",
   "MessageMetaSchema",

@@ -9,12 +9,6 @@
     },
     "skipToContent": "Skip to content"
   },
-  "banner": {
-    "dismiss": "Dismiss the language suggestion",
-    "headline": "Would you rather read this page in {language}?",
-    "stay": "Stay on this page",
-    "switch": "Switch to {language}"
-  },
   "breadcrumb": {
     "destinations": "Send flowers to",
     "entity": "{name}",
@@ -243,9 +237,6 @@
       },
       "locale": {
         "purpose": "Remembers the language you chose, so we do not ask again."
-      },
-      "localeSuggestionDismissed": {
-        "purpose": "Remembers that you closed the language suggestion, for this visit only."
       },
       "session": {
         "purpose": "Keeps you signed in while you order. Not set yet — there is no sign-in."
@@ -758,6 +749,12 @@
       "submit": "Sort",
       "summary": "{count, plural, one {# bukiet} few {# bukiety} many {# bukietów} other {# bukietu}} · strona {page} z {pageCount}"
     }
+  },
+  "suggestion": {
+    "continue": "Continue in {language}",
+    "headline": "Continue in {language}?",
+    "headlineInCountry": "You seem to be in {country}. Continue in {language}?",
+    "stay": "Stay in {language}"
   },
   "trust": {
     "guarantee": {

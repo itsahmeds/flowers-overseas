@@ -1,24 +1,30 @@
 /**
- * T-28 (unit half) / AC-28, and the "ignored" half of AC-12 (TASK-041): the language-preference
- * parser, the launch-locale matcher and the whole banner decision, as pure functions.
+ * T-28 (unit half) / AC-28, and the "ignored" half of AC-12 (TASK-041, TASK-119): the
+ * language-preference parser, the launch-locale matcher, the country reader and the whole dialog
+ * decision, as pure functions.
  *
- * The banner's behaviour is specified as a matrix (spec 003 §2 "Behaviour", §5.3, AC-28) and the
- * island is deliberately built so that the matrix is decidable without a browser: `hints.ts`
- * takes `{ urlLocale, languages, cookie, dismissed, candidates }` and returns shown/hidden with a
- * reason. `tests/e2e/banner.spec.ts` then proves the three things only a browser can prove — that
- * it appears after hydration, that it shifts no layout, and that the cookie the browser stores
- * carries the attributes of §13 Q4.
+ * The suggestion's behaviour is specified as a matrix (spec 003 §2 "Behaviour", §5.3, AC-28, and
+ * §14 A14's two-pass hint) and the island is deliberately built so that the matrix is decidable
+ * without a browser: `hints.ts` takes `{ urlLocale, languages, cookie, country, candidates }` and
+ * returns shown/hidden with a reason. `tests/e2e/banner.spec.ts` then proves the things only a
+ * browser can prove — that the dialog appears after hydration, that it shifts no layout, that
+ * `Esc` records "stay", and that the cookie the browser stores carries the attributes of §13 Q4.
  *
- * `hints.ts` reads no IP or geo header and this file asserts it: §7's "deliberate narrowing" of
- * `plan/03` §2 is a property of the source, so it is checked against the source (§13 Q9).
+ * **§14 A14 reversed §6/§7's "language preferences only" narrowing**, on the founder's ruling of
+ * 2026-09-16: `hints.ts` may now read the edge country header, and it is still the *only* file
+ * that may (`fo/no-geo-redirect`, ADR-0006). What it may still never do is read the *browser* —
+ * no `navigator`, no `document`, no `window` — or the request, or redirect anything, and this
+ * file asserts all of that against the source.
  */
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { readdirSync, readFileSync } from "node:fs";
+import { join, resolve } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
 import {
+  GEO_COUNTRY_HEADERS,
   type SuggestionCandidate,
+  countryFromHeaders,
   decideSuggestion,
   languagePreferences,
   parseAcceptLanguage,
@@ -249,15 +255,15 @@ describe("decideSuggestion (the AC-28 matrix)", () => {
     ).toEqual({ show: false, reason: "noBetterLocale" });
   });
 
-  it("never renders after a dismissal in this tab", () => {
-    expect(
-      decideSuggestion({
-        ...base,
-        languages: ["de-DE"],
-        cookie: null,
-        dismissed: true,
-      }),
-    ).toEqual({ show: false, reason: "dismissed" });
+  it("has no third way out: there is no dismissal, only the two recorded answers (§14 A14)", () => {
+    // The popup asks once and both of its actions write `fo_locale`. A "not now" that remembered
+    // nothing would ask again on the next page view, which is what §14 A14 removed.
+    const reasons = new Set<string>();
+    for (const languages of [["de-DE"], ["fr-FR"], ["en-US"]]) {
+      const decision = decideSuggestion({ ...base, languages, cookie: null });
+      if (!decision.show) reasons.add(decision.reason);
+    }
+    expect([...reasons].sort()).toEqual(["noBetterLocale", "sameLocale"]);
   });
 
   it("renders nothing on a URL whose locale is not a launch locale", () => {
@@ -280,6 +286,7 @@ describe("decideSuggestion (the AC-28 matrix)", () => {
 
     expect(decision).toEqual({
       show: true,
+      source: "language",
       target: expect.objectContaining({ code: "de" }),
     });
   });
@@ -306,7 +313,11 @@ describe("decideSuggestion (the AC-28 matrix)", () => {
       decideSuggestion({ ...base, languages: ["de-DE"], cookie }),
     ).not.toThrow();
     expect(decideSuggestion({ ...base, languages: ["de-DE"], cookie })).toEqual(
-      { show: true, target: expect.objectContaining({ code: "de" }) },
+      {
+        show: true,
+        source: "language",
+        target: expect.objectContaining({ code: "de" }),
+      },
     );
   });
 
@@ -351,29 +362,220 @@ describe("decideSuggestion (the AC-28 matrix)", () => {
   });
 });
 
-describe("§7's deliberate narrowing, asserted against the source (§13 Q9)", () => {
+describe("countryFromHeaders (the one geo read ADR-0006 allows — §14 A14)", () => {
+  it("reads Cloudflare's header in front of the Railway replica", () => {
+    expect(countryFromHeaders(new Headers({ "cf-ipcountry": "DE" }))).toBe(
+      "DE",
+    );
+  });
+
+  it("falls back to Vercel's on the cold-standby platform (ADR-0018)", () => {
+    expect(
+      countryFromHeaders(new Headers({ "x-vercel-ip-country": "PL" })),
+    ).toBe("PL");
+  });
+
+  it("prefers Cloudflare when both are present, in the declared order", () => {
+    expect(GEO_COUNTRY_HEADERS).toEqual([
+      "cf-ipcountry",
+      "x-vercel-ip-country",
+    ]);
+    expect(
+      countryFromHeaders(
+        new Headers({ "cf-ipcountry": "DE", "x-vercel-ip-country": "US" }),
+      ),
+    ).toBe("DE");
+  });
+
+  it("uppercases and trims, because a header is not a promise", () => {
+    expect(countryFromHeaders(new Headers({ "cf-ipcountry": " gb " }))).toBe(
+      "GB",
+    );
+  });
+
+  it("answers `null` when there is no country to read", () => {
+    expect(countryFromHeaders(new Headers())).toBeNull();
+    for (const value of ["", "XX", "T1", "DEU", "D", "1", "??"]) {
+      expect(
+        countryFromHeaders(new Headers({ "cf-ipcountry": value })),
+        value,
+      ).toBeNull();
+    }
+  });
+
+  it("reads nothing else off the request: no IP, no region, no city", () => {
+    const headers = new Headers({
+      "cf-ipcountry": "DE",
+      "cf-connecting-ip": "203.0.113.7",
+      "x-forwarded-for": "203.0.113.7",
+      "x-vercel-ip-city": "Berlin",
+    });
+
+    expect(countryFromHeaders(headers)).toBe("DE");
+  });
+});
+
+describe("the country pass (§14 A14: languages first, country second)", () => {
+  const base = {
+    urlLocale: "en",
+    candidates: CANDIDATES,
+    cookie: null,
+  } as const;
+
+  it("asks nothing of the country when the languages already answered", () => {
+    // A German browser in Poland is offered German: a stated preference outranks an inference.
+    const decision = decideSuggestion({
+      ...base,
+      languages: ["de-DE"],
+      country: "PL",
+    });
+
+    expect(decision).toEqual({
+      show: true,
+      source: "language",
+      target: expect.objectContaining({ code: "de" }),
+    });
+  });
+
+  it("is silent when the languages match the URL, whatever the country says", () => {
+    expect(
+      decideSuggestion({ ...base, languages: ["en-US"], country: "DE" }),
+    ).toEqual({ show: false, reason: "sameLocale" });
+  });
+
+  it.each([
+    ["DE", "de"],
+    ["AT", "de"],
+    ["CH", "de"],
+    ["PL", "pl"],
+    ["GB", "en-gb"],
+    ["IE", "en-gb"],
+  ])(
+    "offers %s's locale when the languages name none (a `fr` browser in %s)",
+    (country, expected) => {
+      const decision = decideSuggestion({
+        ...base,
+        languages: ["fr-FR", "fr"],
+        country,
+      });
+
+      expect(decision).toEqual({
+        show: true,
+        source: "country",
+        country,
+        target: expect.objectContaining({ code: expected }),
+      });
+    },
+  );
+
+  it("offers English on a German page to a visitor in an unmapped country", () => {
+    const decision = decideSuggestion({
+      urlLocale: "de",
+      candidates: CANDIDATES,
+      cookie: null,
+      languages: ["fr-FR"],
+      country: "FR",
+    });
+
+    expect(decision).toEqual({
+      show: true,
+      source: "country",
+      country: "FR",
+      target: expect.objectContaining({ code: "en" }),
+    });
+  });
+
+  it("stays silent on /en for an unmapped country, because `en` is already on screen", () => {
+    expect(
+      decideSuggestion({ ...base, languages: ["fr-FR"], country: "FR" }),
+    ).toEqual({ show: false, reason: "sameLocale" });
+  });
+
+  it.each([null, undefined, "", "XX", "T1", "france"])(
+    "stays silent when the country is %s — never falling back to English",
+    (country) => {
+      expect(
+        decideSuggestion({ ...base, languages: ["fr-FR"], country }),
+      ).toEqual({ show: false, reason: "noBetterLocale" });
+    },
+  );
+
+  it("normalises the country it echoes back, so the copy lookup has one spelling", () => {
+    const decision = decideSuggestion({
+      ...base,
+      languages: ["fr-FR"],
+      country: " de ",
+    });
+
+    expect(decision.show && decision.country).toBe("DE");
+  });
+
+  it("never offers a country's locale to a visitor who already chose one", () => {
+    expect(
+      decideSuggestion({
+        ...base,
+        languages: ["fr-FR"],
+        country: "DE",
+        cookie: "fo_locale=en",
+      }),
+    ).toEqual({ show: false, reason: "cookie" });
+  });
+});
+
+describe("what `hints.ts` may and may not read (§14 A14, ADR-0006)", () => {
   const source = readFileSync(
     resolve(repoRoot, "src/modules/i18n/hints.ts"),
     "utf8",
   );
   const code = source.replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, "");
 
+  // The browser and the request are still out of bounds: every function here is pure, which is
+  // what makes the matrix above a unit test and what keeps the island's props the only input.
   for (const forbidden of [
-    "ip-country",
-    "ip_country",
-    "x-vercel-ip",
-    "cf-ipcountry",
-    "geo",
-    "headers(",
-    "cookies(",
+    "headers()",
+    "cookies()",
     "navigator",
     "document",
     "window",
+    "redirect",
+    "fetch(",
   ]) {
     it(`reads no \`${forbidden}\``, () => {
       expect(code.toLowerCase()).not.toContain(forbidden.toLowerCase());
     });
   }
+
+  /**
+   * §14 A14 reversed the narrowing, and this is what replaced it: the country header may be read
+   * **here and nowhere else**, which is the rule `fo/no-geo-redirect` enforces and this test
+   * re-asserts over the shipped tree — including `src/app/api/geo/route.ts`, whose whole job is
+   * to call this module rather than to name a header itself.
+   */
+  it("is the only file under `src/` that names a geo header", () => {
+    const offenders: string[] = [];
+    const walk = (dir: string): void => {
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        const path = join(dir, entry.name);
+        if (entry.isDirectory()) {
+          walk(path);
+          continue;
+        }
+        if (!/\.tsx?$/.test(entry.name)) continue;
+        const content = readFileSync(path, "utf8").toLowerCase();
+        if (
+          GEO_COUNTRY_HEADERS.some((header) => content.includes(header)) &&
+          !path.endsWith("src/modules/i18n/hints.ts")
+        ) {
+          offenders.push(path.slice(repoRoot.length + 1));
+        }
+      }
+    };
+    walk(resolve(repoRoot, "src"));
+
+    // `src/app/api/geo/route.ts` names the header in its `Vary`, which is a cache instruction and
+    // not a read; nothing else may mention one at all.
+    expect(offenders).toEqual(["src/app/api/geo/route.ts"]);
+  });
 
   it("writes the cookie attributes of §13 Q4 and nothing else", () => {
     expect(serialiseLocaleCookie("de", { secure: true })).toBe(

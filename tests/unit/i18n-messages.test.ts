@@ -33,10 +33,6 @@ describe("the shell catalogue", () => {
   it("ships the spec 003 §2 shell namespaces plus spec 004's chrome namespaces", () => {
     expect([...MESSAGE_NAMESPACES].sort()).toEqual([
       "a11y",
-      // `banner` is the suggestion overlay's four strings (TASK-041), resolved on the server by
-      // `suggestionCopy()` and handed to the island as props since TASK-085 — so, like `consent`,
-      // it is deliberately absent from `namespacesFor("localeDocument")` below.
-      "banner",
       // `catalog` is spec 005 §7's namespace: the tier, add-on, surcharge and facet **label
       // keys** the authored dataset refers to, seeded `retained: true` by TASK-062 and rendered
       // from TASK-067. It is deliberately in no `ROUTE_NAMESPACES` entry, so it reaches no
@@ -86,6 +82,11 @@ describe("the shell catalogue", () => {
       // `ROUTE_NAMESPACES` entry — every component that reads it is a Server Component and the
       // whole set adds zero client bytes (spec 008 §5.4).
       "shop",
+      // `suggestion` is the locale popup's four strings (TASK-041 as `banner`, renamed and
+      // reshaped by TASK-119), resolved on the server by `suggestionCopy()` — in the language it
+      // offers — and handed to the island as props. So, like `consent`, it is deliberately absent
+      // from `namespacesFor("localeDocument")` below.
+      "suggestion",
       "trust",
     ]);
   });
@@ -207,8 +208,8 @@ describe("loadMessages (§6 'CWV budget impact')", () => {
 
 describe("namespacesFor", () => {
   it("gives the `[locale]` document the namespaces its own copy needs, and no client split", () => {
-    // `banner` joined the set in TASK-041, when the suggestion island rendered its copy in the
-    // browser and had to be handed a payload; TASK-085 took it back out (spec 004 §14 A1
+    // The suggestion namespace joined the set in TASK-041, when its island rendered its own copy
+    // in the browser and had to be handed a payload; TASK-085 took it back out (spec 004 §14 A1
     // addendum). The island is given resolved strings as props by `suggestionCopy()`, no
     // `NextIntlClientProvider` is mounted anywhere, and no namespace subset is serialised into a
     // document for a client to read — which `tests/unit/client-message-graph.test.ts` asserts

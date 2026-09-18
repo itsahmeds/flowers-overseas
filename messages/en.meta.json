@@ -43,34 +43,6 @@
     "reviewedAt": "2026-09-08T00:00:00Z",
     "sourceHash": "ac576a66d4563e600314a2ce6e731725e9826fd88baf2399e05f60bfb177dbc0"
   },
-  "banner.dismiss": {
-    "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder",
-    "reviewedAt": "2026-09-08T00:00:00Z",
-    "sourceHash": "0b097dd9f62f9ae71d5114f4095355465aee2daeb743f2c52b62bff616fee131"
-  },
-  "banner.headline": {
-    "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder",
-    "reviewedAt": "2026-09-08T00:00:00Z",
-    "sourceHash": "d963ea1e6e705d0984d9cfbda94987a25eac7d5fea34263eaa533c4f97a75732"
-  },
-  "banner.stay": {
-    "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder",
-    "reviewedAt": "2026-09-08T00:00:00Z",
-    "sourceHash": "3fcb2a5c05d605b8b3870ce7a06c2e7816b39a8c84c709da00330a6ccd1a155a"
-  },
-  "banner.switch": {
-    "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder",
-    "reviewedAt": "2026-09-08T00:00:00Z",
-    "sourceHash": "e74b4e0cb2ca0462eb247fb87cda16bcc26433ff0788de99ad35bd16aae781be"
-  },
   "breadcrumb.destinations": {
     "source": "human",
     "reviewed": true,
@@ -1225,13 +1197,6 @@
     "reviewedBy": "founder",
     "reviewedAt": "2026-09-09T00:00:00Z",
     "sourceHash": "e0c4adc9122408f28367675e232b5cd521c49ae49d616728ab39b6fc2e5c0203"
-  },
-  "consent.cookies.localeSuggestionDismissed.purpose": {
-    "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder",
-    "reviewedAt": "2026-09-09T00:00:00Z",
-    "sourceHash": "d77fc15de241931c4da5691d5d5e1a026bb9b1f6e68e402f6fd43d61ebf55f35"
   },
   "consent.cookies.session.purpose": {
     "source": "human",
@@ -3308,5 +3273,33 @@
     "reviewedBy": "frontend-implementer (spec 004 §2 trust strip, §14 A4 unpublished-target copy, /review 41 caption; TASK-053)",
     "reviewedAt": "2026-09-11T00:00:00Z",
     "sourceHash": "bcfc18f77c106b8fcb98a5a8fc51c977976d278e2dacd6a3ee2d5c73070c9aff"
+  },
+  "suggestion.headline": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-16T00:00:00Z",
+    "sourceHash": "f70fa0ed4021a9aa40a06b31bfe18dff104b957f8ae7248dc53c2c1abdb0ae32"
+  },
+  "suggestion.headlineInCountry": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-16T00:00:00Z",
+    "sourceHash": "d2a20bd5009e64a47b6bbe2f44cd66c1bb1ada15051fc7e2fc7a266f5fc098a4"
+  },
+  "suggestion.continue": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-16T00:00:00Z",
+    "sourceHash": "311cb4fb468ca83b69f4bb18a6d44c43b15a3d3379c5ecf2871d21d064eeb489"
+  },
+  "suggestion.stay": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-16T00:00:00Z",
+    "sourceHash": "6f8600e7aa55ed434dedb32f1e4f823a0c72816f74813b9890c024fc33732a70"
   }
 }

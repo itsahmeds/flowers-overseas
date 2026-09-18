@@ -341,7 +341,10 @@ describe("the shipped catalogues and manifests", () => {
     const namespaces: readonly (keyof Messages)[] = [
       "meta",
       "chooser",
-      "banner",
+      // The locale suggestion popup's four strings (spec 003 §14 A14, TASK-119): renamed from
+      // `banner` when the overlay became a dialog, and resolved on the server — in the language
+      // being *offered* — by `suggestionCopy()`.
+      "suggestion",
       "errors",
       "a11y",
       "common",
@@ -387,13 +390,14 @@ describe("the shipped catalogues and manifests", () => {
       enSource.media.provenance.aiExample;
     const tierLabel: Messages["catalog"]["tier"]["stems"] =
       enSource.catalog.tier.stems;
-    const headline: Messages["banner"]["headline"] = enSource.banner.headline;
+    const headline: Messages["suggestion"]["headlineInCountry"] =
+      enSource.suggestion.headlineInCountry;
     const floristCount: Messages["common"]["floristCount"] =
       enSource.common.floristCount;
-    const bannerActions: readonly string[] = [
-      enSource.banner.switch,
-      enSource.banner.stay,
-      enSource.banner.dismiss,
+    const suggestionActions: readonly string[] = [
+      enSource.suggestion.headline,
+      enSource.suggestion.continue,
+      enSource.suggestion.stay,
     ];
 
     const destinationName: Messages["destinations"]["pl"]["name"] =
@@ -419,10 +423,11 @@ describe("the shipped catalogues and manifests", () => {
     expect(occasionSubtitle).toContain("Imieniny");
     expect(faqQuestion).toBe("Is the price really final?");
     expect(headline).toContain("{language}");
+    expect(headline).toContain("{country}");
     expect(floristCount).toContain("plural");
     expect(tierLabel).toContain("plural");
     expect(provenanceLabel).toContain("our florist");
-    for (const action of bannerActions)
+    for (const action of suggestionActions)
       expect(action.length).toBeGreaterThan(0);
   });
 });
