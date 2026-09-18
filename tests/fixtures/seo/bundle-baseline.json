@@ -11,14 +11,14 @@
   "budgetBytes": 131072,
   "regressionAllowanceBytes": 5120,
   "routes": {
-    "/": 117356,
-    "/en": 124387,
-    "/en-gb": 124387,
-    "/de": 124387,
-    "/pl": 124387,
-    "/en/send-flowers-to/poland": 124387,
-    "/en-gb/send-flowers-to/poland": 124387,
-    "/en/poland/flowers": 124387,
-    "/en-gb/poland/flowers": 124387
+    "/": 117600,
+    "/en": 125181,
+    "/en-gb": 125181,
+    "/de": 125181,
+    "/pl": 125181,
+    "/en/send-flowers-to/poland": 125181,
+    "/en-gb/send-flowers-to/poland": 125181,
+    "/en/poland/flowers": 125181,
+    "/en-gb/poland/flowers": 125181
   }
 }

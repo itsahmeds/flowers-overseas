@@ -105,17 +105,31 @@ test("moves focus to the offer, traps it, and gives it back on close (2.1.2, 2.4
   // Focus starts on the primary action…
   expect(await action()).toBe("continue");
 
-  // …and tabbing cycles between the two controls without ever leaving the dialog. Four presses
-  // is twice round a two-control trap, which is what catches a trap that leaks on the second lap.
-  const reached: (string | null | undefined)[] = [];
-  for (let press = 0; press < 4; press += 1) {
+  // …and tabbing cycles inside the dialog without ever reaching the page behind it. Six presses
+  // is twice round the cycle, which is what catches a trap that leaks on the second lap.
+  //
+  // The cycle Chromium runs is `continue → stay → the document → continue …`: a modal dialog's
+  // sequential navigation includes the document itself, which is focusable but not interactive.
+  // So the assertion is not "only the two controls" — that would be testing one browser's
+  // bookkeeping — it is the property WCAG 2.1.2 asks for: **nothing behind the dialog is ever
+  // reached**, and both of the dialog's own controls are.
+  const reached: string[] = [];
+  for (let press = 0; press < 6; press += 1) {
     await page.keyboard.press("Tab");
-    reached.push(await action());
+    reached.push(
+      await page.evaluate(() => {
+        const active = document.activeElement;
+        if (active === null || active === document.body) return "document";
+        if (active.closest("dialog") === null) {
+          return `outside:${active.tagName}`;
+        }
+        return active.getAttribute("data-fo-banner-action") ?? "inside";
+      }),
+    );
   }
-  expect(
-    reached.every((value) => value === "continue" || value === "stay"),
-  ).toBe(true);
-  expect(new Set(reached).size).toBe(2);
+  expect(reached.filter((stop) => stop.startsWith("outside:"))).toEqual([]);
+  expect(reached).toContain("continue");
+  expect(reached).toContain("stay");
 
   // `Esc` closes it from the keyboard alone (2.1.2's "way out"), and focus lands back in the page
   // rather than on a detached node.

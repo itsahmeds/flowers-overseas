@@ -34,7 +34,38 @@ _None recorded._
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
+The locale suggestion is a native `<dialog>` (PR below). `src/config/country-locale.data.ts` holds
+the country → locale table (AT/CH/DE → `de`, GB/IE → `en-gb`, PL → `pl`, everything else → `en`)
+as zod-free constants and `src/config/country-locale.ts` parses them at module load;
+`hints.ts` gained `countryFromHeaders()` — still the only file `fo/no-geo-redirect` lets read a
+country — and `decideSuggestion()` gained the second pass (languages first, country second, and
+`null` rather than a default for anything that is not a country). `GET /api/geo` is `no-store`,
+answers `{"country":"DE"}` or `{"country":null}`, reads no IP and logs nothing (RoPA row 8).
+`ui/LocaleSuggestionDialog*` resolves its copy **in the locale it offers** (a translator per launch
+locale plus `formatCountryName()` through `Intl.DisplayNames`) with the current locale's "Stay in
+English" line beneath, opens with `showModal()` (browser-owned focus trap, `Esc` = stay, focus to
+the offer and back on close), and `ui/localeGate.ts` makes the consent sheet wait for it and fail
+open twice over. The `banner.*` namespace became `suggestion.*`; the dismiss action, its
+`sessionStorage` key and its cookie-register row are gone.
 
-_Pending._
+**Numbers.** Island chunk 2 775 B Brotli (8 217 B raw, 3 176 B gz) — the §14 A14 budget is
++≤3 KB. Per-route delta against the committed baseline: **+794 B br** on every locale document
+(124 387 → 125 181 B) and +244 B on `/`; `tests/fixtures/seo/bundle-baseline.json` regenerated.
+Lighthouse through `pnpm lighthouse:origin` (Brotli, the encoding the budget is written in): all
+nine URLs pass. Message payload unchanged at 0.6 KB gz per locale; no zod on any client path
+(`i18n-hints-zod-free`).
+
+**Tests.** Unit: `country-locale-config` (11), `geo-route` (14), `locale-gate` (8),
+`i18n-suggestion-dialog` (30, replacing `i18n-suggestion-banner`), the country half of
+`i18n-hints` (+16) and `formatCountryName` in `i18n-format` (+15). e2e: `banner.spec.ts` rewritten
+— appearance, the two actions, `Esc` = stay, the country pass over a mocked `/api/geo`, byte
+equality of `/en` with and without `Accept-Language` **and** `cf-ipcountry`, and the
+suggestion-before-consent sequence (792 e2e green). a11y: modal semantics, focus trap, `Esc`,
+focus indicators and the ≤35 % geometry on a 390×844 phone (76 green). Visual: the suggestion and
+consent-settings baselines regenerated (43 green).
+
+**Handed on.** `de`/`pl` `suggestion.*` are echoed English drafts like every other key, so the
+German sentence a German visitor reads is still English until a native reviewer approves it — the
+mechanism is in place (`suggestionCopy` resolves from the target locale's catalogue), the wording
+is a translation task. `tests/support/locale-choice.ts` is the shared "returning visitor" seed the
+other suites now use where a modal question would otherwise race their clicks.

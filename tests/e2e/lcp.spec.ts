@@ -28,6 +28,8 @@
  */
 import { expect, test } from "@playwright/test";
 
+import { recordLocaleChoice } from "../support/locale-choice.ts";
+
 /** Lighthouse's mobile emulation (`lighthouserc.json` → `collect.settings.screenEmulation`). */
 const LIGHTHOUSE_VIEWPORT = { width: 412, height: 823 } as const;
 
@@ -46,7 +48,14 @@ test.describe("the largest contentful paint is the page's own main content", () 
   for (const locale of LOCALES) {
     test(`/${locale}: the LCP element is the hero heading, not an overlay`, async ({
       page,
+      context,
+      baseURL,
     }) => {
+      // A returning visitor, so the locale suggestion of §14 A14 is silent and the two overlays
+      // this test does care about — the consent sheet and the header — are the only ones on
+      // screen. Without it, an `en-US` runner meets a modal dialog on `/de` and the sheet it
+      // waits for below is deliberately withheld until that question is answered (TASK-119).
+      await recordLocaleChoice(context, locale, baseURL);
       await page.addInitScript(() => {
         const candidates: unknown[] = [];
         (window as unknown as { __lcp: unknown[] }).__lcp = candidates;

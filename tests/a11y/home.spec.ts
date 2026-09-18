@@ -14,6 +14,8 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
+import { recordLocaleChoice } from "../support/locale-choice.ts";
+
 const BLOCKING = new Set(["serious", "critical"]);
 
 /** The four launch locales plus the RTL pseudo-locale (AC-26's list, home half). */
@@ -46,7 +48,13 @@ for (const path of AUDITED) {
 
   test(`${path} finder with the type-ahead open has no serious or critical violations`, async ({
     page,
+    context,
+    baseURL,
   }) => {
+    // A returning visitor. Since spec 003 §14 A14 the locale suggestion is a **modal** dialog, so
+    // on a non-English document this `en-US` runner would be typing into an inert page; the
+    // dialog's own audit is `tests/a11y/banner.spec.ts` (TASK-119).
+    await recordLocaleChoice(context, path.slice(1), baseURL);
     await page.goto(path);
     // The prefix is read from the document rather than written here, because a locale's
     // destination names are its own: `de`/`pl` are machine drafts of the English names and
