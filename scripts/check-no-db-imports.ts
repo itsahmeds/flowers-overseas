@@ -106,6 +106,14 @@ export const SCANNED_PATHS = [
   // implementation behind `CountryContentProvider`, inside `src/modules/geo/content/provider.ts`,
   // which is why the module is named as a whole rather than file by file.
   "src/modules/geo",
+  // spec 007 AC-1 again, for the surfaces TASK-090/094 added: the indexability engine, the
+  // canonical builder, the robots policy and the sitemap tree are pure functions over committed
+  // data, and the two sitemap route handlers are the only place spec 007 answers a request. A
+  // database import in any of them would mean a sitemap that cannot be built without Neon — the
+  // opposite of "buildable with `DATABASE_URL` unset".
+  "src/modules/seo",
+  "src/app/sitemap.xml",
+  "src/app/sitemaps",
   "scripts/corridor-check.ts",
   "scripts/corridor-check-cases.ts",
 ] as const;

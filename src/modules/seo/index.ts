@@ -56,6 +56,55 @@ export {
   robotsTxt,
 } from "./robots.ts";
 
+// The sitemap tree (spec 007 §2 "Sitemaps", AC-13 / AC-14; TASK-094). Functions, the two caps
+// and the child list only: membership is `pageIndexability()`'s verdict, and nothing exported
+// here lets a caller add a URL the engine did not announce.
+export {
+  SITEMAP_CHILDREN,
+  SITEMAP_INDEX_PATH,
+  SITEMAP_LOCALE_INDEX,
+  type SitemapChild,
+  type SitemapParams,
+  SitemapParamsSchema,
+  isSitemapChild,
+  localeSitemapChildren,
+  localeSitemapDocument,
+  localeSitemapIndexPath,
+  sitemapChildDocument,
+  sitemapChildEntries,
+  sitemapChildPath,
+  sitemapDocumentFor,
+  sitemapIndexDocument,
+  sitemapIndexEntries,
+  sitemapLocales,
+  sitemapNameOf,
+} from "./sitemap/index.ts";
+
+export {
+  SITEMAP_BYTE_CAP,
+  SITEMAP_CACHE_CONTROL,
+  SITEMAP_CONTENT_TYPE,
+  SITEMAP_URL_CAP,
+  type SitemapAlternate,
+  SitemapAlternateSchema,
+  type SitemapEntry,
+  SitemapEntrySchema,
+  type SitemapIndexEntry,
+  SitemapIndexEntrySchema,
+  type LastmodSources,
+  escapeXml,
+  lastmodOf,
+  sitemapIndexXml,
+  urlSetXml,
+} from "./sitemap/xml.ts";
+
+export { corridorSitemapEntries } from "./sitemap/corridors.ts";
+
+export {
+  STATIC_SITEMAP_PAGE_TYPES,
+  staticSitemapEntries,
+} from "./sitemap/statics.ts";
+
 export {
   SEO_DESCRIPTION_MAX_LENGTH,
   SEO_TITLE_MAX_LENGTH,

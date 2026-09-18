@@ -198,6 +198,20 @@ describe("the sitemap query and the robots decision call one function (AC-21, T-
       // `pageIndexability()`'s, and this spec's own product predicate is still `read.ts` alone.
       // The exception is that **one read**, not the file (`/review 76`): any other `.indexable`
       // appearing there fails this test exactly as it would anywhere else.
+      // TASK-094: spec 007's sitemap builders read `verdict.indexable` for the same reason and
+      // with the same limit. `indexability.ts` calls it "the one answer sitemap membership is
+      // allowed to read", and a sitemap that re-derived a directive from the terms is the
+      // disagreement `plan/02` §10 forbids. One read per builder, nothing else.
+      if (
+        path.endsWith(join("modules", "seo", "sitemap", "corridors.ts")) ||
+        path.endsWith(join("modules", "seo", "sitemap", "statics.ts"))
+      ) {
+        expect(
+          [...code.matchAll(/[\w$.]*\.indexable\b/gu)].map((match) => match[0]),
+          path,
+        ).toEqual(["verdict.indexable"]);
+        continue;
+      }
       if (path.endsWith(join("modules", "catalog", "listing.ts"))) {
         expect(
           [...code.matchAll(/[\w$.]*\.indexable\b/gu)].map((match) => match[0]),

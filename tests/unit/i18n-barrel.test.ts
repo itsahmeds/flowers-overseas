@@ -86,6 +86,10 @@ const PINNED_EXPORTS = [
   "parseLocaleFromPath",
   "sortBy",
   "alternatesFor",
+  // Added by TASK-094 (spec 007 AC-13): the newest `reviewedAt` day in the locale's catalogue
+  // chain, which is one of the three `<lastmod>` sources a sitemap row is the maximum of. A
+  // function over the manifests, like the three below it — no manifest and no path leaves here.
+  "catalogueUpdatedAt",
   "isLocaleIndexable",
   "localeBetaTag",
   "unreviewedShare",

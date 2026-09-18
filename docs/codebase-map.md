@@ -14,15 +14,15 @@ task actually touches.
 |---|---|---|---|
 | `admin` | Public barrel for `admin` (admin queries and actions) | spec 012 | — |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2 + the gated GA4 tag; GA4 event… | spec 004, 023 | `unit/consent-bootstrap.test.tsx` |
-| `catalog` | The only import path into the catalogue and pricing module (spec 005 §2, §5.2;… | spec 005 | `contract/catalog-static-providers.test.ts`, `contract/support/catalog-provider-contract.ts`, `unit/catalog-availability.test.ts` +23 |
+| `catalog` | The only import path into the catalogue and pricing module (spec 005 §2, §5.2;… | spec 005 | `contract/catalog-static-providers.test.ts`, `contract/support/catalog-provider-contract.ts`, `unit/catalog-availability.test.ts` +21 |
 | `customers` | Public barrel for `customers` (customers, recipients, consent) | spec 019 | — |
-| `geo` | The only import path into the geo module (spec 007 §5.2; TASK-087) | spec 007, 002, 009 | `unit/catalog-listing.test.ts`, `unit/catalog-routes.test.ts`, `unit/corridor-check.test.ts` +9 |
-| `i18n` | The only import path for the i18n module (spec 003 §5.2, AC-3; TASK-034) | spec 003 | `fixtures/ts/format-time-in-zone-no-zone.ts`, `unit/app-shell.test.tsx`, `unit/catalog-messages.test.ts` +42 |
+| `geo` | The only import path into the geo module (spec 007 §5.2; TASK-087) | spec 007, 002, 009 | `unit/catalog-listing.test.ts`, `unit/corridor-check.test.ts`, `unit/corridor-content-provider.test.ts` +8 |
+| `i18n` | The only import path for the i18n module (spec 003 §5.2, AC-3; TASK-034) | spec 003 | `fixtures/ts/format-time-in-zone-no-zone.ts`, `integration/sitemap.test.ts`, `unit/app-shell.test.tsx` +43 |
 | `notifications` | Public barrel for `notifications` (email + WhatsApp senders, templates, outbox… | spec 017 | — |
 | `orders` | Public barrel for `orders` (state machine, order service, assignment/routing… | spec 015, 016 | — |
 | `partners` | Public barrel for `partners` (fulfilment partners, coverage, payouts) | spec 011, 026 | — |
 | `payments` | Public barrel for `payments` (PaymentProvider interface; stripe/, mollie/… | spec 013, 014 | — |
-| `seo` | Indexability rule engine, canonical builder, robots policy, page metadata (spec… | spec 007 | `unit/catalog-listing.test.ts`, `unit/corridor-route.test.ts`, `unit/seo-canonical.test.ts` +5 |
+| `seo` | Indexability rule engine, canonical builder, robots policy, page metadata (spec… | spec 007 | `integration/sitemap.test.ts`, `unit/catalog-listing.test.ts`, `unit/corridor-route.test.ts` +8 |
 | `ui` | The only import path for the design system (spec 004 §2 "Where the design… | spec 004 | `unit/chrome-honesty.test.tsx`, `unit/consent-cookie.test.ts`, `unit/consent-islands.test.tsx` +22 |
 
 ## Config (`src/config/`)
@@ -64,8 +64,8 @@ task actually touches.
 | `(dev)/dev/components/gated.ts` | The fake providers `/dev/components` renders the three data-gated sections'… | spec 004 |
 | `(dev)/dev/components/page.tsx` | `/dev/components` — the component gallery (spec 004 §2 "Component gallery —… | spec 004 |
 | `(dev)/layout.tsx` | Document layout for the `(dev)` route group — today only `/dev/components`… | spec 004 |
-| `[locale]/[segment]/[child]/page.tsx` | `/{locale}/{segment}/{child}` — **one route file for one URL depth** (spec 008… | spec 008 |
-| `[locale]/[segment]/page.tsx` | `/{locale}/{segment}` — **one route file for one URL depth** (spec 008 §14… | spec 008 |
+| `[locale]/(marketing)/[destinations]/[country]/page.tsx` | `/{locale}/{destinations}/{country}` — the corridor page (spec 007 §2, §5.2,… | spec 007 |
+| `[locale]/(marketing)/[destinations]/page.tsx` | `/{locale}/{destinations}` — the all-destinations hub (spec 007 §2 "Existence,… | spec 007 |
 | `[locale]/boom/BoomIsland.tsx` | The throw that reaches `src/app/[locale]/error.tsx` (spec 004 AC-26, AC-27;… | spec 004 |
 | `[locale]/boom/page.tsx` | A route that throws on purpose: the localised 500 boundary, as an auditable… | spec 004 |
 | `[locale]/error.tsx` | Localised 500 boundary (spec 003 §5.3; TASK-034, rewired by TASK-085) | spec 003 |
@@ -79,6 +79,8 @@ task actually touches.
 | `layout.tsx` | App-root layout (spec 003 §5.3 "Recommended file layout"; TASK-034) | spec 003 |
 | `not-found.tsx` | The `.label` metadata line: the status code this document is served with, and… | spec 003 |
 | `robots.ts` | `robots.txt` (spec 001 §2, §6, AC-15, TASK-006; spec 007 §2, §6, §12, AC-12,… | spec 001 |
+| `sitemap.xml/route.ts` | `GET /sitemap.xml` — the sitemap index (spec 007 §2 "Sitemaps", §5.2, §5.4,… | spec 007 |
+| `sitemaps/[locale]/[child]/route.ts` | `GET /sitemaps/{locale}/{index\|static\|corridors}.xml` — the locale index and… | spec 007 |
 
 ## Scripts (`scripts/`)
 
@@ -111,6 +113,7 @@ task actually touches.
 | `railway-check.ts` | `railway:check` | `pnpm railway:check [--env <name>]` — the Railway drift gate (spec 040 §5.3,… |
 | `seo/brotli-origin.ts` | `lighthouse:origin` | `pnpm lighthouse:origin` — a Brotli reverse proxy in front of `next start`… |
 | `seo/generate-hreflang-fixtures.ts` | — | `node scripts/seo/generate-hreflang-fixtures.ts [--write]` (spec 003 §6… |
+| `seo/generate-sitemap-fixtures.ts` | — | The committed sitemap fixtures, generated from the real builders (spec 007 §2… |
 | `seo/lib.ts` | — | Shared plumbing for the three SEO validator CLIs (spec 001 §2 "CI", §6, AC-22 /… |
 | `seo/lighthouse-urls.ts` | `lighthouse` | `lighthouse-urls` (spec 001 §2 "CI", AC-23 / T-24, TASK-009) |
 | `seo/validate-hreflang.ts` | `seo:validate` | `validate-hreflang` (spec 001 §2 "CI", §6, AC-22 / T-23, TASK-009) |
@@ -126,12 +129,12 @@ task actually touches.
 |---|---|
 | `tests/unit/` | 185 |
 | `tests/integration/` | 5 |
-| `tests/contract/` | 4 |
+| `tests/contract/` | 5 |
 | `tests/e2e/` | 25 |
-| `tests/a11y/` | 10 |
-| `tests/visual/` | 11 |
+| `tests/a11y/` | 9 |
+| `tests/visual/` | 10 |
 | `tests/dev-os/` | 1 |
-| `tests/fixtures/` | 154 |
+| `tests/fixtures/` | 156 |
 | `tests/msw/` | 3 |
 
 ## Where does X live?
