@@ -48,17 +48,55 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per `/review`, newest last.
 
-- **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+_None yet._
 
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- **(2026-09-18) Three rulings taken in-task rather than escalated, each recorded here for the
+  reviewer to accept or reverse.** None of them changes an AC; all three are narrowings the spec
+  already implies, in the shape `/review 65` accepted for AC-10.
+  1. **Spec 004 AC-16's "a 004 page emits no JSON-LD" is narrowed to "none of spec 004's own".**
+     Spec 007 AC-15 requires the **locale home** to emit `Organization` + `WebSite`, and spec 004
+     §8 always said spec 007 owns structured data. `tests/e2e/honesty.spec.ts` now asserts the
+     stricter thing — exactly those two nodes, no `FAQPage` over the five disclosures, no
+     `Product`, no `Review` — instead of a bare count of zero. Same move as AC-10's canonical
+     clause, recorded on TASK-090's brief.
+  2. **`validate-schema`'s `ALLOWED_TYPES` gains `Question`.** Its own table has always read
+     "`FAQPage` (+ `Question`, `Answer`)" and `Answer` was already listed; the omission was a
+     transcription slip, found by the first real `FAQPage` fixture. `plan/02` §9 is unchanged —
+     a `FAQPage` without `Question` children is not a valid `FAQPage`.
+  3. **The `<script type="application/ld+json">` is the second `dangerouslySetInnerHTML` in
+     `src/`.** Spec 004 §5.2's "exactly one inline script" invariant
+     (`tests/unit/consent-bootstrap.test.tsx`) is re-worded to "one *executable* inline script":
+     a data block whose type is not a JavaScript MIME type is never prepared or executed as a
+     script, so the hash-based `script-src` still carries exactly one hash and needs no nonce.
+     `tests/e2e/security-headers.spec.ts` is green with the blocks present.
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
-
-_Pending._
+Shipped in PR #81. `src/modules/seo/schema/` holds the five files §5.2 L150 names —
+`breadcrumbList.ts`, `faqPage.ts`, `organization.ts`, `webSite.ts`, `JsonLd.tsx` — exported only
+through `src/modules/seo/index.ts`, plus `schemaOptions()`, the fail-closed rule that emits no
+document at all when `NEXT_PUBLIC_SITE_URL` is not a URL. Each builder is a projection of a view
+model: `BreadcrumbList` from the same `view.breadcrumb` array `CorridorBreadcrumb` renders (a crumb
+that renders as text announces no `item`; fewer than two crumbs emit nothing), `FAQPage` from the
+same `view.faq` the FAQ block renders and only inside the 8–12 band, `Organization` from
+`company.ts` (`name`/`url`/`logo` today; `address`/`vatID`/`sameAs` only once `registered` flips),
+`WebSite` with no parameter that could ever become a `SearchAction`. The corridor route, the hub
+route and the locale home fill the slots they had reserved; nothing else in them changed. Tests:
+**unit** `tests/unit/seo-schema.test.tsx` (17 cases — the trail and the Q&A compared against the
+*rendered* components in `en`/`en-gb`, the two field-set pins, the `@graph`/escaping cases, the
+allow-list walk), **contract** `tests/contract/seo-schema-fixtures.test.ts` (4 cases; the three new
+fixtures in `tests/fixtures/seo/schema/` are rebuilt from the builders every run and
+`validate-schema` runs over the committed directory — `4 fixture(s) ok`), **e2e**
+`tests/e2e/schema.spec.ts` (92 cases across 22 URLs × 2 projects: the type scan, the served trail,
+the served Q&A, the home identity). Numbers a reviewer wants: unit 4 225 / 5 skipped in 176 files,
+contract 26, e2e 873 passed with two pre-existing failures reproduced on `main`'s own files (the
+`darwin` casing 404 pair, green on rerun, and the `home.spec.ts` type-ahead hit test, which fails
+identically with this task's home page reverted to `main`'s), a11y 73, visual 43, Lighthouse green
+on all nine URLs over the Brotli origin, `budget:client-js` unchanged (JSON-LD is markup, not
+script). Handed on: TASK-115 extends `breadcrumbList` to spec 008's six page types and adds the
+`ItemList` builder; TASK-130 the gated `Product`/`Offer`; TASK-094's sitemap and TASK-095's
+honesty scan inherit `schemaOptions()` and the fixtures.
