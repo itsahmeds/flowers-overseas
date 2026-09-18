@@ -322,9 +322,9 @@ describe("SeedOccasionCountrySchema: plan/03 §9's rule types as data", () => {
     }
     // The list above is the whole closed set: a type added to `occasionRuleTypes` without a case
     // here — and therefore without a seed gate that has seen it — fails (spec 009 AC-12).
-    expect([...rules.map((variant) => variant.ruleType), "none"].sort()).toEqual(
-      [...occasionRuleTypes].sort(),
-    );
+    expect(
+      [...rules.map((variant) => variant.ruleType), "none"].sort(),
+    ).toEqual([...occasionRuleTypes].sort());
   });
 
   it("rejects a rule type the evaluator cannot date, so `seed:check` fails on it (AC-12)", () => {
