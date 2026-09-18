@@ -1,0 +1,114 @@
+{
+  "jsonld": {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://flowersoverseas.com/en"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Send flowers to",
+            "item": "https://flowersoverseas.com/en/send-flowers-to"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "Poland"
+          }
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Which flowers should I not send in Poland?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Chrysanthemums, above all. They belong on a grave there, and a beautiful bunch of them sent to a birthday will land as a shock rather than a gift. We would also avoid lilies for anything cheerful, for the same reason."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is it true that the number of flowers matters in Poland?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, and it is the mistake we see most often. An odd number is what you give a living person; an even number is what you take to a funeral or a grave. Our florists count the stems so you do not have to."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is a name day, and should I send flowers for it?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "A name day, or imieniny, is the feast day of the saint you are named after, and plenty of people in Poland celebrate it as warmly as a birthday. Flowers are the usual gift. If you know only the first name of the person you are sending to, that is enough to look the date up."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "When is Mother's Day in Poland?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "26 May, every year, and it does not move. That catches out a lot of people who live in the UK or the United States, where the date wanders. Dzień Matki is one of the busiest flower days of the Polish year."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What happens on 8 March in Poland?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Dzień Kobiet, Women's Day. Men give flowers to the women they work with, live with and are related to, usually a single tulip or a few carnations rather than a large bouquet. Shops sell out of tulips that morning."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Why is 1 November such a big day for flowers in Poland?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Wszystkich Świętych, All Saints' Day. Families travel across the country to clean graves, light lamps and lay flowers, and chrysanthemums are what they carry. It is the single heaviest day of the year for Polish florists, and it is why the flower is read the way it is."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I send flowers for Wigilia, the Christmas Eve supper?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "You can, and a poinsettia is the plant most homes already have on the table. If you are sending to a family gathering, earlier in the week is kinder than the day itself, when everyone is cooking."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Do I need to write my card message in Polish?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. We will write it in whatever language you choose, by hand. If you would like it in Polish and you are not sure of the wording, ask us and we will help you say it properly rather than literally."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Will the person paying in one currency and receiving in złoty cause confusion?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. You see one all-in amount in your own currency before you pay, and the person receiving the flowers never sees a price at all."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can you deliver to Poland today?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Not yet. We are still choosing the shops we want to work with there, and until we have, we will not put a date or a time on this page. We would rather tell you no than promise something we cannot honour."
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
