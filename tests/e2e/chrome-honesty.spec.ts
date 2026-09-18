@@ -8,9 +8,11 @@
  * `<main>` and passed while the header promised same-day delivery two bands above it.
  *
  * Every page type that exists in Phase 0 is covered, in every locale it exists in: the locale
- * chooser, the four locale homes, the corridor guides (`en` and `en-gb`, the two locales with
- * authored guide files) and the component gallery, which renders every chrome surface in every
- * state and is therefore the densest single document on the site.
+ * chooser, the four locale homes, the all-destinations hub in all four locales (TASK-092's
+ * `destinationsHub`, whose segment is localised: `send-flowers-to` / `blumen-verschicken` /
+ * `wyslij-kwiaty`), the corridor guides (`en` and `en-gb`, the two locales with authored guide
+ * files) and the component gallery, which renders every chrome surface in every state and is
+ * therefore the densest single document on the site.
  *
  * The assertion is an absence, so it is only worth making if it can fail: the last test plants a
  * promise into the served DOM and requires the same scan to catch it.
@@ -28,10 +30,10 @@ const PATTERNS = [
 ];
 
 /**
- * Every Phase 0 document, by page type. `hub` and `gallery` are the two the deliverable names
- * that exist today: the locale chooser is the destination hub of Phase 0 (spec 003), and
- * `/dev/components` is the component gallery. Spec 008's category and occasion hubs inherit this
- * list the moment they have a URL.
+ * Every Phase 0 document, by page type. The locale chooser is the site root (spec 003),
+ * `destinations hub` is TASK-092's all-destinations page (spec 007 AC-20) and `/dev/components`
+ * is the component gallery. Spec 008's category and occasion hubs inherit this list the moment
+ * they have a URL.
  */
 const PAGES: readonly { readonly type: string; readonly path: string }[] = [
   { type: "hub (locale chooser)", path: "/" },
@@ -39,6 +41,10 @@ const PAGES: readonly { readonly type: string; readonly path: string }[] = [
   { type: "home", path: "/en-gb" },
   { type: "home", path: "/de" },
   { type: "home", path: "/pl" },
+  { type: "destinations hub", path: "/en/send-flowers-to" },
+  { type: "destinations hub", path: "/en-gb/send-flowers-to" },
+  { type: "destinations hub", path: "/de/blumen-verschicken" },
+  { type: "destinations hub", path: "/pl/wyslij-kwiaty" },
   { type: "corridor", path: "/en/send-flowers-to/poland" },
   { type: "corridor", path: "/en-gb/send-flowers-to/poland" },
   { type: "corridor", path: "/en/send-flowers-to/germany" },
