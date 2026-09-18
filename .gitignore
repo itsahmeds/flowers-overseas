@@ -42,4 +42,3 @@ messages/en-XA.json
 messages/ar-XB.json
 .claude/worktrees/
 .vercel
-.env*
