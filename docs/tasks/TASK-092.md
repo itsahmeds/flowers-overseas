@@ -46,7 +46,15 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
 
 ## Escalations
 
-- **2026-09-18 — none blocking.** Two notes for `/review`, neither a spec ambiguity:
+- **2026-09-18 — CI cannot run: GitHub Actions billing.** `gh pr ready` fired once on PR 74 and
+  both workflows failed in 1-6 s with *"The job was not started because recent account payments
+  have failed or your spending limit needs to be increased"* (runs 35314872588 `ci`,
+  35314872596 `pr-policy`). No job executed. This is an account-level block outside TASK-092 and
+  is **not** allow-listed: every gate the CI spine runs was run locally and is recorded above.
+  The founder must clear the Actions spending limit, after which a single re-run of both
+  workflows is enough — the branch is `MERGEABLE` against `main`.
+
+- **2026-09-18 — none blocking (task scope).** Two notes for `/review`, neither a spec ambiguity:
   1. The *sitemap row* half of AC-7 cannot be observed as a row until TASK-094 ships
      `/sitemap.xml`; it is proven here through `pageIndexability().inSitemap`, the single
      predicate §2 requires a sitemap to read. Recorded as a hand-off rather than allow-listed.
