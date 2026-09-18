@@ -145,3 +145,48 @@ set is server-rendered and ships zero client JavaScript. Handed on: TASK-107 imp
 `ProductCardView`/`CategoryTileView` from the `ui` barrel for `listingView()`'s projection;
 TASK-109/112/117 assemble these components and own T-01/T-07/T-08/T-26/T-27; TASK-120 gains the
 `nav.category.bestSellers` finding.
+
+
+### Round 2 (2026-09-18, after `/review 73`)
+
+Two required changes, both done, plus the three nits.
+
+1. **Provenance-note placement, ruled by spec 008 §14 A2** — one note per card that shows an `ai`
+   asset, exactly as AC-6 reads; the shipped `ProductCard` was already right, so the design source
+   of truth was redrawn to follow it. `system/components.dc.html`: the listing-grid cells now
+   carry the note on all six drawn cards (4-up ×4, 2-up ×2) and the grid's "semantics" caption and
+   the card row's "the contract" cell cite A2. `wireframes/country-shop-desktop.dc.html` (29
+   cards), `country-shop-mobile.dc.html` (25) and `country-category-desktop.dc.html` (15): every
+   photo card carries the note, the placeholder card carries none, and the single after-grid
+   sentence is gone from all three. Re-measured in Chromium at 1440 and 390 with the frame
+   `min-height` released: components 14370 → **14522** (frame and root-canvas `h` 12600 → **14540**,
+   which also clears a ~1500 px overlap that predates this PR; every root-canvas row below it
+   shifts +1940, gutter 120 unchanged), country-shop-desktop 8163 → **8425** (frame and `h`
+   8200 → **8460**), country-shop-mobile 14319 → **14858** and country-category-desktop 4591 →
+   **4776** — both still inside their declared 15200 and 6000, so no row moved on
+   `wireframes/canvas.json`. `docs/design/README.md` keeps a difference row rather than claiming
+   parity: the listing artboards A2 does not name (`country-category-mobile`,
+   `country-occasion-*`, `category-hub-*`, `occasion-hub-*`) still draw the note once after the
+   grid, and every page artboard still draws a stem-count line — both belong to the page tasks
+   that build those pages (TASK-109/117), which must not copy either into a page.
+2. **`tests/support/listing-honesty.ts` negative control** — `tests/unit/listing-honesty-scan.test.ts`
+   (+19 unit tests) plants a sample per exported pattern, including the five the review named
+   ("bestseller", "same-day delivery", `<del>`, `line-through`, `data-fo-badge`), and asserts each
+   is reported under its own name and kind; a coverage test fails if a pattern is added without a
+   sample; the honest card and the word-boundary cases assert the other direction. The e2e call
+   site now pins `html` and `text` as non-empty before scanning them, so an empty `innerText()`
+   cannot pass silently.
+
+Nits: `ProductCardView.provenance` is documented in `viewModel.ts` as **data-only** and pinned by
+a new component test — the manifest, not the field, decides the honesty label, and a card that
+claims one while displaying the other is asserted both ways; the JS-off sort test now submits from
+the keyboard (`Tab` to the submit button, `Enter`) and its title says so; the `<bdi>` test explains
+why the name and the price are wrapped separately rather than as one element. The
+`tests/e2e/corridor.spec.ts` warm-up flake is left with the e2e owner as the review recorded it.
+
+Round-2 gates: `lint`, `typecheck`, `format:check` clean; unit **4060 → 4079 passing** in 167 files
+(`design-docs.test.ts` 174 green after the redraw); `codebase:map --check`, `specs:index --check`,
+`tasks:check` clean (the map was regenerated for the new test file); e2e gallery 20/20; a11y 62/62;
+visual 41/41 with **no baseline regenerated** — nothing that renders changed, the only `src/` edit
+being a doc comment. `pnpm build` green and `budget:client-js` within budget, `bundle-baseline.json`
+unmoved: **+0.0 KB br**.
