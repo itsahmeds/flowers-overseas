@@ -53,7 +53,7 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-- **2026-09-18 — the `linux/` baseline regeneration cannot be done from this task (open).** The
+- **2026-09-18 — the `linux/` baseline regeneration cannot be done from this task — **ruled 2026-09-18: moved to TASK-099** (PR environments + CI preview rewrite), recorded in `TASKS.md` and `docs/tasks/TASK-099.md` `## Carry-forwards`.** The
   brief's second item needs one run of the `visual` job's artefact. `visual` `needs: preview`, and
   `preview` is gated `github.event_name == 'pull_request' && contains(labels, 'ci:full')` — a
   `ready_for_review` run (the one an implementer can fire) skips `preview`, `visual`, `e2e` and
