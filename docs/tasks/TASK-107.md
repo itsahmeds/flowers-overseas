@@ -95,8 +95,12 @@ the floor at boundary−1/boundary for categories and occasions, evergreen vs se
 an unpublished country contributing nothing, `de`/`pl` emptiness, default-sort determinism against
 `topProductsForPrebuild()`, the six-type indexability table, the Phase 0 `noindex,follow` answer,
 hub-carries-no-money, both branches of the step-summary writer, and round 2's additions below.
-Full unit suite **4 104 passed / 5 skipped** (round 1: 4 092); every other gate green; cold `build`
-unchanged (no new route).
+Full unit suite **4 136 passed / 5 skipped** on the branch rebased onto `main` @ `5c675d8`
+(round 1 measured 4 092 on the older `main`; this task contributes 49). Every other gate green —
+`lint`, `typecheck`, `format:check`, `check:no-db`, `seed:check`, `codebase:map --check`,
+`specs:index --check`, `tasks:check`, `check-layout` — and the cold `build` leaves the route set
+unchanged (no new route, so no Playwright). The rebase's one conflict was the generated
+`docs/codebase-map.md`, resolved by regenerating it.
 
 ### Round 2 (`/review 76` fix round)
 
