@@ -20,7 +20,7 @@ be green. One paragraph or a short list — no restatement of the spec.
 
 One dated bullet per `/review`, newest last.
 
-- **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From `/review 80` (2026-09-18, TASK-098):** at the Vercel unlink (spec 040 §13 Q5) delete `VERCEL_ENV`, `VERCEL_GIT_COMMIT_SHA` and their two `NEXT_PUBLIC_` mirrors from the Railway contract so declared == required == 24 and the platform-injected special case disappears.
 
 ## Escalations
 
