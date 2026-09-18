@@ -102,16 +102,27 @@ plus the Meeus Julian algorithm worked by hand; the sources are cited in the hea
 Rusaliile +49); unit suite **171 files / 4 161 passed / 5 skipped / 0 failed**;
 `src/modules/geo/occasions/**` at **100 % statements, branches, functions and lines**, the
 `vitest.coverage.json` gate unchanged; `seed:check` 39 files, nine rule families clean;
-`typecheck`, `lint`, `codebase:map --check` and `build` green. The dataset flip was exercised
-end-to-end: **e2e 751 passed / 3 failed**, **a11y 73 passed**, **visual 40 passed / 2 failed** —
-and every one of those five failures is identically red on unpatched `main` (verified by a second
-build of the clean tree): `corridor.spec.ts:52` and `destinations-hub.spec.ts:113` 404 shapes,
-`home.spec.ts:378` type-ahead mouse pick, `listing.spec.ts:40` and `notices.spec.ts:210` visual
-baselines. Two caveats a reviewer should re-run: **`pnpm lint` and `tests/unit/
-module-boundaries.test.ts` are red inside a `.claude/worktrees/…` path** (37 `import/
-no-restricted-paths` errors on `@/modules/*` barrels in files this task does not touch) — the
-resolver does not see the dot-directory; both are green when the same tree is checked out at an
-ordinary path, which is how every gate above was run. Handed on: the three `## Escalations` above
+`typecheck`, `lint`, `format:check` and `codebase:map --check` green. The dataset flip was also
+exercised end-to-end **once, before the coordinator's single-build-slot correction arrived**, in a
+scratch clone of `main` with the patch applied: **e2e 751 passed / 3 failed**, **a11y 73 passed**,
+**visual 40 passed / 2 failed** — and every one of those five failures is identically red on the
+unpatched tree (verified by a second build of clean `main`): `corridor.spec.ts:52` and
+`destinations-hub.spec.ts:113` 404 shapes, `home.spec.ts:378` type-ahead mouse pick,
+`listing.spec.ts:40` and `notices.spec.ts:210` visual baselines. Those Playwright suites were not
+re-run afterwards (the machine allows one build/Playwright slot at a time and TASK-109 holds it),
+so **the reviewer should take the dataset-reading e2e and visual suites from CI**. CI on PR #79:
+`lint`, `typecheck`, `db-check`, `test-integration`, `test-contract`, `seed-check`,
+`catalogue-check`, `corridor-check`, `seo-validate`, `i18n-check`, `env-build-failure`,
+`dev-os-check` and `audit` all green; two reds that are artefacts rather than findings —
+`test-unit` **4 165 / 4 166 passed** with one 5 s **timeout flake** in
+`tests/unit/catalog-geo-surface.test.ts` on a runner saturated by the 169 s `media-variants` test
+(the same file passes locally in 2.4 s and is untouched by this task), and `commitlint`, which
+failed only because the run was a `workflow_dispatch` and so had empty `BASE_SHA`/`HEAD_SHA` — a
+`pull_request` event lints the range properly. One environment caveat: **`pnpm lint` and
+`tests/unit/module-boundaries.test.ts` are red inside a `.claude/worktrees/…` path** (37
+`import/no-restricted-paths` errors on `@/modules/*` barrels in files this task does not touch) —
+the resolver does not see the dot-directory; both are green at an ordinary path and in CI. Handed
+on: the three `## Escalations` above
 — `plan/13` D7 (recorded, not solved), the stale spec 002 `occasion_country_rule_type_check`
 CHECK list (needs a migration + rollback from a spec 002 task before the importer runs), and the
 Andrzejki/Wigilia rows (need two new catalogue occasion keys and their per-locale copy; spec
