@@ -73,7 +73,7 @@
  * first *buyer* market, ADR-0002, and is not a place we deliver to) — the seven are the authority,
  * because a price row for a country that cannot be chosen as a destination would price nothing.
  */
-import { COUNTRIES } from "../countries.ts";
+import { COUNTRIES, countryConfig, isCountryIso2 } from "../countries.ts";
 
 import { ADDONS } from "./addons.data.ts";
 import { PRODUCTS } from "./products.data.ts";
@@ -446,6 +446,33 @@ function retailRows(): CountryPriceData[] {
   return rows;
 }
 
+/**
+ * May this destination carry a `sunday` surcharge row? (Spec 004 §14 A19 / TASK-120.)
+ *
+ * A Sunday surcharge is the price of a delivery on a day nobody has agreed to work. For a
+ * **`live`** destination — one whose prices are a real offer — that agreement is spec 002 §5.1's
+ * `country.sunday_delivery`, carried by the `operations` block of `src/config/countries.ts`.
+ * Poland is `live` and has no `operations` at all, so its Sunday rows priced a Sunday delivery
+ * that no florist has accepted: the same fabrication as the 14:00 Warsaw cutoff A19 removed, in
+ * money instead of copy. They are therefore not emitted while the fact is absent.
+ *
+ * The six `demo` destinations keep theirs: their whole price column is `plan/10` §2.3's authored
+ * demo data for a country we do not serve, spec 005's `dateSurcharges`/`resolvePrice` contract is
+ * exercised against it, and suppressing it would delete the dataset's only open-ended surcharge
+ * window rather than remove a claim. The amounts stay authored in `DESTINATION_PRICING` either
+ * way — `catalogue:check --mode surcharge-amount` still transcribes them — and PL's rows return
+ * with no edit here the day a florist's operations land.
+ */
+function emitsSundaySurcharge(iso2: string): boolean {
+  if (!isCountryIso2(iso2)) return true;
+  const country = countryConfig(iso2);
+  if (country.status !== "live") return true;
+  return (
+    country.operations !== undefined &&
+    country.operations.sundayDelivery !== "none"
+  );
+}
+
 function surchargeRows(): CountryPriceData[] {
   const rows: CountryPriceData[] = [];
   for (const group of PRODUCT_TIER_GROUPS) {
@@ -454,17 +481,19 @@ function surchargeRows(): CountryPriceData[] {
       // what spec 002 §5.1's nullable `tier_key` on `country_price` is for. One row per
       // (product, country, surcharge window) instead of one per tier keeps the dataset
       // legible and keeps "exactly one open-ended row per key" checkable.
-      rows.push({
-        sku: group.sku,
-        countryIso2: destination.countryIso2,
-        tierKey: null,
-        retailMinor: destination.sundaySurchargeMinor,
-        currency: destination.currency,
-        vatRateBp: destination.flowersVatRateBp,
-        surchargeKind: "sunday",
-        activeFrom: PRICE_ACTIVE_FROM,
-        activeTo: null,
-      });
+      if (emitsSundaySurcharge(destination.countryIso2)) {
+        rows.push({
+          sku: group.sku,
+          countryIso2: destination.countryIso2,
+          tierKey: null,
+          retailMinor: destination.sundaySurchargeMinor,
+          currency: destination.currency,
+          vatRateBp: destination.flowersVatRateBp,
+          surchargeKind: "sunday",
+          activeFrom: PRICE_ACTIVE_FROM,
+          activeTo: null,
+        });
+      }
       for (const peakDay of PEAK_DAYS) {
         rows.push({
           sku: group.sku,

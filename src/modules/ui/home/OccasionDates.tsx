@@ -36,6 +36,7 @@
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
+import { anyDeliveryDatesOpen } from "../../../config/countries.ts";
 import { Grid, Stack } from "../primitives/layout.tsx";
 import { Display, Label, Text } from "../primitives/typography.tsx";
 
@@ -71,6 +72,7 @@ export function OccasionDates({
 }: OccasionDatesProps): ReactElement {
   const t = useTranslations();
   const home = useTranslations("home");
+  const datesOpen = anyDeliveryDatesOpen();
   const dates = occasionDateViews(locale, DATED_DESTINATION);
 
   return (
@@ -103,7 +105,7 @@ export function OccasionDates({
             <Text as="span" size="sm" tone="muted">
               {registryLabel(t, date.nameKey)}
             </Text>
-            {date.orderBy === undefined ? (
+            {date.orderBy === undefined || !datesOpen ? (
               // The schema guarantees exactly one of the two, so the note is present here; the
               // guard is the type system's, not a fallback that could print an empty line.
               date.noteKey === undefined ? null : (
@@ -112,6 +114,11 @@ export function OccasionDates({
                 </Text>
               )
             ) : (
+              // Gated by TASK-120 (spec 004 §14 A19, `/review 70`): `occasions.ts` carries a
+              // hand-authored `orderBy` instant per date, and printing it while no florist has
+              // agreed a cutoff put a fabricated order-by time on the home page of every locale.
+              // The row falls back to two lines — the date and its name, both facts — rather
+              // than to a second sentence, because there is nothing true to say in its place.
               // The artboards print the cutoff on the desktop band only; the mobile band is two
               // lines per date. Hidden rather than omitted so the two breakpoints render the same
               // component and the same data.

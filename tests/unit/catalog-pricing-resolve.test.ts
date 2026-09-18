@@ -81,6 +81,24 @@ const bouquetTiers =
 /** The authored PL ladder for the bouquet's band, smallest step first. */
 const plLadder = pl.ladders.classic ?? [];
 
+/**
+ * The destination the **surcharge** cases run against (TASK-120).
+ *
+ * Poland is the one `live` destination and, since spec 004 §14 A19, a `live` destination with no
+ * agreed `country.sunday_delivery` carries no `sunday` row at all — a surcharge for a day nobody
+ * has agreed to work is the cutoff fabrication in money. What these cases exercise is the
+ * *mechanism* (a dated row, never a multiplier; both rows when a peak day falls on a Sunday; the
+ * VAT re-split; the `+sunday@` price version), so they move to a destination that still carries
+ * the row. `resolvePrice` reads the destination off the row set, so nothing else in them changes.
+ */
+const SURCHARGED = "DE" as const;
+const de = DESTINATION_PRICING.find(
+  (destination) => destination.countryIso2 === SURCHARGED,
+);
+if (de === undefined) throw new Error("DE is not a priced destination");
+/** The authored DE ladder for the bouquet's band, smallest step first. */
+const deLadder = de.ladders.classic ?? [];
+
 /* -------------------------------------------------------------------------- */
 /* AC-8, the type-level half of T-06.                                         */
 /* -------------------------------------------------------------------------- */
@@ -419,13 +437,16 @@ describe("resolvePrice: the whole price of a tier in a destination (AC-8, T-06)"
 
 describe("dateSurcharges: the amount on the date chip before selection (AC-16, T-14)", () => {
   it("returns the Sunday row with its amount and its message key", async () => {
-    const found = await dateSurcharges(LIVE, { from: SUNDAY, to: SUNDAY });
+    const found = await dateSurcharges(SURCHARGED, {
+      from: SUNDAY,
+      to: SUNDAY,
+    });
 
     expect(found).toEqual([
       {
         kind: "sunday",
-        amountMinor: pl.sundaySurchargeMinor,
-        currency: pl.currency,
+        amountMinor: de.sundaySurchargeMinor,
+        currency: de.currency,
         // The Sunday row is open-ended, so the window it reports is the delivery day itself:
         // "this amount applies on this day" is what the date chip states, and the row's own
         // September start date would be a date no buyer can pick.
@@ -464,7 +485,7 @@ describe("dateSurcharges: the amount on the date chip before selection (AC-16, T
   it("reports both surcharges when a peak day falls on a Sunday", async () => {
     // 14 Feb 2027 is a Sunday: a buyer choosing it pays both authored rows, and the chip has to
     // show both amounts *before* the date is picked (`plan/07` §4).
-    const found = await dateSurcharges(LIVE, {
+    const found = await dateSurcharges(SURCHARGED, {
       from: VALENTINES,
       to: VALENTINES,
     });
@@ -473,7 +494,7 @@ describe("dateSurcharges: the amount on the date chip before selection (AC-16, T
   });
 
   it("enumerates a range one entry per (date, surcharge), in date order", async () => {
-    const found = await dateSurcharges(LIVE, {
+    const found = await dateSurcharges(SURCHARGED, {
       from: "2026-10-01",
       to: "2026-10-31",
     });
@@ -516,7 +537,7 @@ describe("dateSurcharges: the amount on the date chip before selection (AC-16, T
   it("throws when two products disagree about a destination's surcharge amount", async () => {
     const pricing = await withRows((rows) =>
       rows.map((row) =>
-        row.countryIso2 === LIVE &&
+        row.countryIso2 === SURCHARGED &&
         row.surchargeKind === "sunday" &&
         row.sku === "FO-BQ-002"
           ? { ...row, retailMinor: row.retailMinor + 500 }
@@ -525,28 +546,28 @@ describe("dateSurcharges: the amount on the date chip before selection (AC-16, T
     );
 
     await expect(
-      pricing.dateSurcharges(LIVE, { from: SUNDAY, to: SUNDAY }),
+      pricing.dateSurcharges(SURCHARGED, { from: SUNDAY, to: SUNDAY }),
     ).rejects.toThrow(/one amount per destination/);
   });
 });
 
 describe("resolvePrice includes the date's surcharges in the amount (AC-16)", () => {
   it("adds the Sunday row to the ladder step and re-splits the VAT", async () => {
-    const step = plLadder[1];
-    if (step === undefined) throw new Error("no authored PL ladder");
+    const step = deLadder[1];
+    if (step === undefined) throw new Error("no authored DE ladder");
     const gross = addMoney(
-      { amountMinor: step, currency: pl.currency },
-      { amountMinor: pl.sundaySurchargeMinor, currency: pl.currency },
+      { amountMinor: step, currency: de.currency },
+      { amountMinor: de.sundaySurchargeMinor, currency: de.currency },
     );
     const { netMinor, vatMinor } = netFromGross(
       gross.amountMinor,
-      pl.flowersVatRateBp,
+      de.flowersVatRateBp,
     );
 
     const price = await resolvePrice({
       productId: SKU,
       tierKey: "stems_18",
-      countryIso: LIVE,
+      countryIso: SURCHARGED,
       deliveryDate: SUNDAY,
     });
 
@@ -560,26 +581,26 @@ describe("resolvePrice includes the date's surcharges in the amount (AC-16)", ()
   });
 
   it("adds both rows when a peak day falls on a Sunday, and neither on a plain Monday", async () => {
-    const step = plLadder[0];
-    if (step === undefined) throw new Error("no authored PL ladder");
+    const step = deLadder[0];
+    if (step === undefined) throw new Error("no authored DE ladder");
     const both = await resolvePrice({
       productId: SKU,
       tierKey: "stems_12",
-      countryIso: LIVE,
+      countryIso: SURCHARGED,
       deliveryDate: VALENTINES,
     });
     const plain = await resolvePrice({
       productId: SKU,
       tierKey: "stems_12",
-      countryIso: LIVE,
+      countryIso: SURCHARGED,
       deliveryDate: MONDAY,
     });
 
     expect(both.amountMinor).toBe(
       sumMoney([
-        { amountMinor: step, currency: pl.currency },
-        { amountMinor: pl.sundaySurchargeMinor, currency: pl.currency },
-        { amountMinor: pl.peakDaySurchargeMinor, currency: pl.currency },
+        { amountMinor: step, currency: de.currency },
+        { amountMinor: de.sundaySurchargeMinor, currency: de.currency },
+        { amountMinor: de.peakDaySurchargeMinor, currency: de.currency },
       ]).amountMinor,
     );
     expect(plain.amountMinor).toBe(step);
@@ -663,13 +684,13 @@ describe("tierPrices and fromPrice (spec 005 §5.2, §6)", () => {
   it("prices every tier with the delivery date's surcharge", async () => {
     const prices = await tierPrices({
       productId: SKU,
-      countryIso: LIVE,
+      countryIso: SURCHARGED,
       deliveryDate: SUNDAY,
     });
 
     for (const [index, entry] of prices.entries()) {
       expect(entry.price.amountMinor).toBe(
-        (plLadder[index] ?? 0) + pl.sundaySurchargeMinor,
+        (deLadder[index] ?? 0) + de.sundaySurchargeMinor,
       );
     }
   });

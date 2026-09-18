@@ -95,6 +95,7 @@ import type { ReactElement } from "react";
 
 import { CATEGORY_NAV_LABEL_KEY } from "../../../config/categories.ts";
 import { COMPANY } from "../../../config/company.ts";
+import { anyDeliveryDatesOpen } from "../../../config/countries.ts";
 import { SEARCH_LINK_ID, siteLink } from "../../../config/site-links.ts";
 import { LocaleSwitcher, localePath } from "../../i18n/index.ts";
 import { Icon, type IconName } from "../icons/Icon.tsx";
@@ -396,6 +397,8 @@ export function SiteHeader({
       ? nav("basket", { count: basketCount })
       : registryLabel(t, item.labelKey);
   const { contact, tradingName } = COMPANY;
+  /** A19's single chrome predicate: may this document assert a delivery date at all? */
+  const datesOpen = anyDeliveryDatesOpen();
 
   return (
     <>
@@ -413,8 +416,22 @@ export function SiteHeader({
         data-fo-utility
       >
         <div className="gap-x-md gap-y-xs flex flex-wrap items-center md:flex-1 md:justify-center">
-          <span className="xl:hidden">{t("nav.utility.cutoffShort")}</span>
-          <span className={CLAIM_FROM.long}>{t("nav.utility.cutoff")}</span>
+          {/* The cutoff claim, gated (spec 004 §14 A19, `/review 70`; TASK-120). While no
+              destination has an agreed set of operations, the strip prints what is true —
+              "Delivery dates open when we confirm our first florist" — instead of
+              "Order by 14:00 in Warsaw for delivery today", which promised a window nobody had
+              accepted on every page of the site. `anyDeliveryDatesOpen()` is the one chrome
+              predicate; spec 009's `pickerState()` replaces its body with no edit here. */}
+          <span className="xl:hidden">
+            {datesOpen
+              ? t("nav.utility.cutoffShort")
+              : t("nav.utility.datesPendingShort")}
+          </span>
+          <span className={CLAIM_FROM.long}>
+            {datesOpen
+              ? t("nav.utility.cutoff")
+              : t("nav.utility.datesPending")}
+          </span>
           <Divider from="wide" />
           <span className={CLAIM_FROM.wide}>
             {t("nav.utility.pricesInclude")}

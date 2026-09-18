@@ -56,6 +56,7 @@
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
+import { anyDeliveryDatesOpen } from "../../../config/countries.ts";
 import type { LocaleCode } from "../../../config/locales.ts";
 import { formatList } from "../../i18n";
 import { FinderTypeahead } from "./FinderTypeahead.tsx";
@@ -239,9 +240,15 @@ export function FinderCard({ locale }: FinderCardProps): ReactElement {
             `tests/unit/ui-home.test.tsx`) — `/review 40` found the two phrased differently one
             screen apart. That it is Warsaw's clock and not the buyer's is said in full by
             `home.howItWorks.choose.body` and `faq.whoDelivers.answer`, further down the same
-            page, where a sentence has room to explain itself; the strip has room for one line. */}
+            page, where a sentence has room to explain itself; the strip has room for one line.
+
+            **Gated since TASK-120** (spec 004 §14 A19, `/review 70`): the cutoff sentence is a
+            promise of a delivery window, and no destination has an agreed one. While
+            `anyDeliveryDatesOpen()` is false the finder prints `finder.datesPending`, which is
+            pinned byte-equal to the strip's `nav.utility.datesPending` by the same unit test that
+            pinned the promise forms — the two surfaces still cannot phrase it differently. */}
         <Text size="sm" tone="subtle" measure data-fo-finder-cutoff>
-          {finder("cutoff")}
+          {anyDeliveryDatesOpen() ? finder("cutoff") : finder("datesPending")}
         </Text>
       </Stack>
     </Stack>

@@ -176,13 +176,17 @@ describe("spec 006 §2.2: one price file per priced destination (TASK-074)", () 
 describe("spec 006 AC-6: every row is money the way plan/07 §4 requires", () => {
   it("prices every tier of every product, plus one Sunday and two peak-day rows", () => {
     const retailRows = PRODUCT_TIERS.length;
-    const surchargeRows = PRODUCTS.length * (1 + PEAK_DAYS.length);
     for (const iso2 of PRICED_DESTINATIONS) {
       const { rows } = priceFile(iso2);
       const of = (kind: string | null): number =>
         rows.filter((row) => row.surchargeKind === kind).length;
+      // A `live` destination with no agreed `country.sunday_delivery` prices **no** Sunday since
+      // TASK-120 (spec 004 §14 A19): a surcharge for a day nobody has agreed to work is the
+      // 14:00-Warsaw fabrication in money. PL is the one such destination today.
+      const sundayRows = iso2 === "PL" ? 0 : PRODUCTS.length;
+      const surchargeRows = sundayRows + PRODUCTS.length * PEAK_DAYS.length;
       expect(of(null), iso2).toBe(retailRows);
-      expect(of("sunday"), iso2).toBe(PRODUCTS.length);
+      expect(of("sunday"), iso2).toBe(sundayRows);
       expect(of("peak_day"), iso2).toBe(PRODUCTS.length * PEAK_DAYS.length);
       expect(rows, iso2).toHaveLength(retailRows + surchargeRows);
       expect(addonPriceFile(iso2).rows, iso2).toHaveLength(ADDONS.length);
@@ -224,8 +228,11 @@ describe("spec 006 AC-6: every row is money the way plan/07 §4 requires", () =>
       for (const [key, count] of openEnded) {
         expect(count, `${iso2}/${key}`).toBe(1);
       }
-      // One retail row per tier + one Sunday row per product, and nothing else, is open-ended.
-      expect(openEnded.size, iso2).toBe(PRODUCT_TIERS.length + PRODUCTS.length);
+      // One retail row per tier + one Sunday row per product, and nothing else, is open-ended —
+      // and no Sunday row at all for the destination that prices no Sunday (TASK-120).
+      expect(openEnded.size, iso2).toBe(
+        PRODUCT_TIERS.length + (iso2 === "PL" ? 0 : PRODUCTS.length),
+      );
       for (const row of priceFile(iso2).rows) {
         if (row.surchargeKind !== "peak_day") continue;
         expect(row.activeTo, `${iso2}/${row.sku}`).not.toBeNull();

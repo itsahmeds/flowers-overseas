@@ -23,6 +23,7 @@ import {
   type CategoryId,
   isCategoryPublished,
 } from "../../../config/categories.ts";
+import { anyDeliveryDatesOpen } from "../../../config/countries.ts";
 import {
   CATEGORY_ROW_LINK_IDS,
   MASTHEAD_LINK_IDS,
@@ -224,9 +225,21 @@ function fromSiteLink(
   };
 }
 
-/** The category row, in the canvas's order, with each entry's link/text state resolved. */
+/**
+ * The category row, in the canvas's order, with each entry's link/text state resolved — minus
+ * every row that asserts a delivery date nobody has agreed to (spec 004 §14 A19; TASK-120).
+ *
+ * The filter is the registry's `requiresDeliveryDates` flag against `anyDeliveryDatesOpen()`, the
+ * single chrome predicate, so "Same-day delivery" is *absent* rather than reworded: a category
+ * whose whole subject is a delivery window we cannot offer has nothing honest to say. The
+ * surviving rows keep their `mobileOrder` values, which are registry positions and not render
+ * indices, so the row re-appears in its drawn place the day a florist's operations land.
+ */
 export function headerCategoryItems(locale: string): readonly HeaderItem[] {
-  return CATEGORIES.map((category) => fromCategory(locale, category));
+  const datesOpen = anyDeliveryDatesOpen();
+  return CATEGORIES.filter(
+    (category) => datesOpen || !category.requiresDeliveryDates,
+  ).map((category) => fromCategory(locale, category));
 }
 
 /**

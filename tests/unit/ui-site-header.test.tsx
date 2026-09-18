@@ -98,12 +98,19 @@ describe("headerCurrencyCode (AC-8)", () => {
 describe("the header's registry projections (AC-14)", () => {
   it("projects every category row entry, in the canvas's order, with no target", () => {
     const items = headerCategoryItems("en");
+    // Minus the rows gated on `anyDeliveryDatesOpen()` (spec 004 §14 A19; TASK-120): "Same-day
+    // delivery" is a delivery-timing claim, and no destination has an agreed cutoff, so the row
+    // is absent from the projection rather than reworded.
     expect(items.map((item) => item.id)).toEqual(
-      CATEGORIES.map((category) => category.id),
+      CATEGORIES.filter((category) => !category.requiresDeliveryDates).map(
+        (category) => category.id,
+      ),
     );
+    expect(items.map((item) => item.id)).not.toContain("same-day-delivery");
     // Phase 0: no shop, so not one entry may be a link.
     expect(items.filter((item) => item.href !== undefined)).toEqual([]);
-    expect(items.filter((item) => item.accent)).toHaveLength(1);
+    // The one accented entry is the gated one, so nothing in the rendered row is accented today.
+    expect(items.filter((item) => item.accent)).toHaveLength(0);
   });
 
   it("projects the account cluster and the end cluster with no target either", () => {
@@ -360,11 +367,15 @@ describe("the rendered header (AC-7, AC-14)", () => {
 
   it("re-orders the mobile category row from `mobileOrder`, one DOM list, no arbitrary variant", () => {
     const html = render("en");
-    // The mobile artboard's order (Best sellers · Bouquets · Roses · Plants · Occasions ·
-    // Same-day) as flex `order` utilities that `md` clears, so the row is one list.
-    for (const position of [1, 2, 3, 4, 5, 6]) {
+    // The mobile artboard's order (Our selection · Bouquets · Roses · Plants · Occasions ·
+    // Same-day) as flex `order` utilities that `md` clears, so the row is one list. Position 6 is
+    // the gated `same-day-delivery` row, absent while no destination takes delivery dates
+    // (spec 004 §14 A19; TASK-120) — the surviving positions keep their registry numbers, which
+    // is what puts the row back in its drawn place the day a florist's operations land.
+    for (const position of [1, 2, 3, 4, 5]) {
       expect(html).toContain(`order-${String(position)} md:order-none`);
     }
+    expect(html).not.toContain("order-6 md:order-none");
     // Tailwind's arbitrary `min-[…]:` variant compiles this project's stylesheet down to its base
     // layer with no error raised (measured twice on a clean `.next`), which would ship a header
     // with no styling at all. Named breakpoints only.

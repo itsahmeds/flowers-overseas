@@ -41,7 +41,10 @@ const mobile = readFileSync(
 
 /** The desktop artboard's category row, in order. */
 const CANVAS_ROW = [
-  "best-sellers",
+  // Renamed from `best-sellers` at TASK-120: spec 008 §8 / AC-9 forbid describing the default
+  // order as a ranking we cannot evidence, and both homepage artboards were redrawn in the same
+  // PR so the canvas and the registry still agree label for label.
+  "our-selection",
   "birthday",
   "sympathy",
   "occasions",
@@ -71,6 +74,13 @@ describe("src/config/categories.ts", () => {
       const label =
         messages.nav.category[category.labelKey.split(".").pop() ?? ""];
       expect(typeof label, category.labelKey).toBe("string");
+      // A row gated on `anyDeliveryDatesOpen()` is *not* drawn (spec 004 §14 A19; TASK-120): the
+      // artboards carry a TASK-120 comment in its place, so the drawing states the absence rather
+      // than going silent about it, and the label is still asserted to exist in the catalogue.
+      if (category.requiresDeliveryDates) {
+        expect(desktop, category.id).toContain("TASK-120");
+        continue;
+      }
       expect(desktop, `${category.id} → ${label ?? ""}`).toContain(
         `>${label ?? ""}<`,
       );
@@ -84,7 +94,7 @@ describe("src/config/categories.ts", () => {
     // `mobileOrder` (TASK-048, spec §14 A4): the smaller artboard prints these six in an order of
     // its own, which is why the registry carries a position and not just a flag.
     expect(mobileCategories.map((category) => category.id)).toEqual([
-      "best-sellers",
+      "our-selection",
       "bouquets",
       "roses",
       "plants",
@@ -103,14 +113,19 @@ describe("src/config/categories.ts", () => {
     const drawn = [...row.matchAll(/>([^<>]+)<\/a>/g)].map(
       (match) => match[1] ?? "",
     );
+    // Minus the gated row, which the artboard replaces with its TASK-120 comment.
     expect(drawn).toEqual(
-      mobileCategories.map(
-        (category) =>
-          messages.nav.category[
-            (category.shortLabelKey ?? category.labelKey).split(".").pop() ?? ""
-          ] ?? "",
-      ),
+      mobileCategories
+        .filter((category) => !category.requiresDeliveryDates)
+        .map(
+          (category) =>
+            messages.nav.category[
+              (category.shortLabelKey ?? category.labelKey).split(".").pop() ??
+                ""
+            ] ?? "",
+        ),
     );
+    expect(mobile).toContain("TASK-120");
     // A row outside the mobile subset may not carry a position, and the positions have no gap.
     expect(
       CATEGORIES.filter(
@@ -148,9 +163,12 @@ describe("src/config/categories.ts", () => {
     expect(accented.map((category) => category.id)).toEqual([
       "same-day-delivery",
     ]);
+    // The accented entry is the gated one, so the artboard draws the gate note in its place and
+    // records that the accent colour returns with it (TASK-120).
     expect(desktop).toContain(
-      'color: var(--color-accent);">Same-day delivery<',
+      "TASK-120 (spec 004 §14 A19): the `same-day-delivery` row is gated",
     );
+    expect(desktop).toContain("in the accent colour");
   });
 
   it("looks an entry up by id and rejects an unknown one", () => {

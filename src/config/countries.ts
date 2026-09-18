@@ -436,6 +436,42 @@ export function hasCompleteOperations(iso2: CountryIso2): boolean {
 }
 
 /**
+ * **The one predicate every same-day / cutoff / delivery-date promise in the site chrome is
+ * gated on** (spec 004 §14 A19, widened by `/review 70`; TASK-120).
+ *
+ * True when the destination both *delivers* (`status === "live"`) and has an agreed set of
+ * operational facts to compute a delivery date from (`operations`, i.e. an `iana_zone`, a
+ * `same_day_cutoff_local` and the delivery weekdays a florist has accepted). Both halves are
+ * required and both are load-bearing: a `live` country with no `operations` is exactly Phase 0's
+ * Poland — the canvas's "Delivering now" destination for which no florist has yet agreed a
+ * cutoff — and printing "Order by 14:00 in Warsaw for delivery today" for it is the promise A19
+ * removed.
+ *
+ * It is deliberately **one** predicate for the whole chrome, in the registry that owns the
+ * country row, for the reason A19 gives: the utility strip, the finder, the FAQ, the category row
+ * and the footer must never disagree with the picker. Spec 009 task 3 (TASK-123/124) re-sources
+ * the body of this function to `pickerState(iso2) === "live"` with **no call-site change**; until
+ * then the shipped `operations` data is the fact and the promise returns automatically the day a
+ * cutoff is authored.
+ */
+export function deliveryDatesOpen(iso2: CountryIso2): boolean {
+  const country = countryConfig(iso2);
+  return country.status === "live" && country.operations !== undefined;
+}
+
+/**
+ * The chrome's form of the same predicate: **is any destination at all taking delivery dates?**
+ *
+ * The header, the footer and the home page are not scoped to a destination — they render above
+ * every page in the site — so the fact they may assert is the disjunction, not one country's
+ * flag. `false` in Phase 0 (no destination carries `operations`), which is what makes the honest
+ * chrome copy the rendered copy and keeps `tests/e2e/chrome-honesty.spec.ts` green.
+ */
+export function anyDeliveryDatesOpen(): boolean {
+  return COUNTRIES.some((country) => deliveryDatesOpen(country.iso2));
+}
+
+/**
  * The state message the destinations grid and the finder print for a destination — the canvas's
  * two states, as keys rather than as a branch on a literal in a component: "Delivering now" for a
  * live destination, "Guide · not delivering yet" for everything else.

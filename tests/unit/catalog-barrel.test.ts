@@ -510,9 +510,11 @@ describe("the provider seam and its Phase 0 stubs", () => {
     ["catalogue.categories", () => providers.catalogue.categories(), 23],
     ["catalogue.occasions", () => providers.catalogue.occasions(), 32],
     ["catalogue.addons", () => providers.catalogue.addons(), 6],
-    // 1 652 retail rows (236 tiers x 7 destinations) + 1 764 dated surcharge rows
-    // (84 products x 7 destinations x {sunday, 2 peak days}) — TASK-062.
-    ["price.countryPrices", () => providers.price.countryPrices(), 3416],
+    // 1 652 retail rows (236 tiers x 7 destinations) + 1 680 dated surcharge rows: 84 products x
+    // 2 peak days x 7 destinations, plus one open-ended Sunday row per product for the **six**
+    // destinations that price a Sunday at all. PL, the one `live` destination, has no agreed
+    // `country.sunday_delivery`, so it carries none (spec 004 §14 A19; TASK-120) — TASK-062.
+    ["price.countryPrices", () => providers.price.countryPrices(), 3332],
     [
       "price.addonCountryPrices",
       () => providers.price.addonCountryPrices(),

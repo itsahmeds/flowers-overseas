@@ -259,14 +259,26 @@ describe("the shipped catalogues and manifests", () => {
    * that half.
    */
   const AWAITING_FOUNDER_REVIEW = [
+    // TASK-120's honest-chrome sweep (spec 004 §14 A19, `/review 70`) added eight of these: the
+    // gated fallbacks, the FAQ answer's split and the three home sentences it reworded. They are
+    // the implementer's wording, proposed to the founder in the task brief's `## Escalations`,
+    // and they wait here until he attests them — the same rule §14 A5 applied to TASK-084.
     "faq.whoDelivers.answer",
+    "faq.whoDelivers.answerCutoff",
     "finder.cutoff",
+    "finder.datesPending",
+    "finder.help",
     "footer.payment.methods",
     "home.destinations.elsewhere.body",
+    "home.howItWorks.choose.body",
+    "home.proof.photo.body",
     "meta.chooser.description",
     "meta.home.description",
+    "nav.category.ourSelection",
     "nav.utility.cutoff",
     "nav.utility.cutoffShort",
+    "nav.utility.datesPending",
+    "nav.utility.datesPendingShort",
   ];
 
   it("reviews the authored English and leaves the machine drafts unreviewed (§13 Q7, Q10)", () => {
@@ -381,8 +393,8 @@ describe("the shipped catalogues and manifests", () => {
 
     const destinationName: Messages["destinations"]["pl"]["name"] =
       enSource.destinations.pl.name;
-    const categoryLabel: Messages["nav"]["category"]["bestSellers"] =
-      enSource.nav.category.bestSellers;
+    const categoryLabel: Messages["nav"]["category"]["ourSelection"] =
+      enSource.nav.category.ourSelection;
     const heroHeading: Messages["home"]["hero"]["heading"] =
       enSource.home.hero.heading;
     const finderSubmit: Messages["finder"]["submit"] = enSource.finder.submit;
@@ -395,7 +407,7 @@ describe("the shipped catalogues and manifests", () => {
 
     expect([...namespaces].sort()).toEqual(Object.keys(enSource).sort());
     expect(destinationName).toBe("Poland");
-    expect(categoryLabel).toBe("Best sellers");
+    expect(categoryLabel).toBe("Our selection");
     expect(heroHeading).toBe("Flowers for someone far away.");
     expect(finderSubmit).toBe("Continue");
     expect(guaranteeName).toBe("7-day freshness guarantee");

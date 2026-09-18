@@ -50852,25 +50852,6 @@
         "sku": "FO-BQ-001",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-BQ-001",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -50909,25 +50890,6 @@
         "sku": "FO-BQ-002",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-BQ-002",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -50966,25 +50928,6 @@
         "sku": "FO-BQ-003",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-BQ-003",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -51023,25 +50966,6 @@
         "sku": "FO-BQ-004",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-BQ-004",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -51080,25 +51004,6 @@
         "sku": "FO-BQ-005",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-BQ-005",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -51137,25 +51042,6 @@
         "sku": "FO-BQ-006",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-BQ-006",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -51194,25 +51080,6 @@
         "sku": "FO-BQ-007",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-BQ-007",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -51251,25 +51118,6 @@
         "sku": "FO-BQ-008",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-BQ-008",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -51308,25 +51156,6 @@
         "sku": "FO-BQ-009",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-BQ-009",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -51365,25 +51194,6 @@
         "sku": "FO-BQ-010",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-BQ-010",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -51422,25 +51232,6 @@
         "sku": "FO-BQ-011",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-BQ-011",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -51479,25 +51270,6 @@
         "sku": "FO-BQ-012",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-BQ-012",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -51536,25 +51308,6 @@
         "sku": "FO-BQ-013",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-BQ-013",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -51593,25 +51346,6 @@
         "sku": "FO-BQ-014",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-BQ-014",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -51650,25 +51384,6 @@
         "sku": "FO-BQ-015",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-BQ-015",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -51707,25 +51422,6 @@
         "sku": "FO-BQ-016",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-BQ-016",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -51764,25 +51460,6 @@
         "sku": "FO-BQ-017",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-BQ-017",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -51821,25 +51498,6 @@
         "sku": "FO-BQ-018",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-BQ-018",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -51878,25 +51536,6 @@
         "sku": "FO-BQ-019",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-BQ-019",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -51935,25 +51574,6 @@
         "sku": "FO-BQ-020",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-BQ-020",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -51992,25 +51612,6 @@
         "sku": "FO-BQ-021",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-BQ-021",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -52049,25 +51650,6 @@
         "sku": "FO-BQ-022",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-BQ-022",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -52106,25 +51688,6 @@
         "sku": "FO-BQ-023",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-BQ-023",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -52163,25 +51726,6 @@
         "sku": "FO-BQ-024",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-BQ-024",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -52220,25 +51764,6 @@
         "sku": "FO-BQ-025",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-BQ-025",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -52277,25 +51802,6 @@
         "sku": "FO-BQ-026",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-BQ-026",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -52334,25 +51840,6 @@
         "sku": "FO-BQ-027",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-BQ-027",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -52391,25 +51878,6 @@
         "sku": "FO-BQ-028",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-BQ-028",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -52448,25 +51916,6 @@
         "sku": "FO-BQ-029",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-BQ-029",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -52505,25 +51954,6 @@
         "sku": "FO-BQ-030",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-BQ-030",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -52562,25 +51992,6 @@
         "sku": "FO-BQ-031",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-BQ-031",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -52619,25 +52030,6 @@
         "sku": "FO-BQ-032",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-BQ-032",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -52676,25 +52068,6 @@
         "sku": "FO-BQ-033",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-BQ-033",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -52733,25 +52106,6 @@
         "sku": "FO-BQ-034",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-BQ-034",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -52790,25 +52144,6 @@
         "sku": "FO-BQ-035",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-BQ-035",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -52847,25 +52182,6 @@
         "sku": "FO-BQ-036",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-BQ-036",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -52904,25 +52220,6 @@
         "sku": "FO-BQ-037",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-BQ-037",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -52961,25 +52258,6 @@
         "sku": "FO-BQ-038",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-BQ-038",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -53018,25 +52296,6 @@
         "sku": "FO-BQ-039",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-BQ-039",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -53075,25 +52334,6 @@
         "sku": "FO-BQ-040",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-BQ-040",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -53132,25 +52372,6 @@
         "sku": "FO-AR-001",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-AR-001",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -53189,25 +52410,6 @@
         "sku": "FO-AR-002",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-AR-002",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -53246,25 +52448,6 @@
         "sku": "FO-AR-003",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-AR-003",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -53303,25 +52486,6 @@
         "sku": "FO-AR-004",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-AR-004",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -53360,25 +52524,6 @@
         "sku": "FO-AR-005",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-AR-005",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -53417,25 +52562,6 @@
         "sku": "FO-AR-006",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-AR-006",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -53474,25 +52600,6 @@
         "sku": "FO-AR-007",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-AR-007",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -53531,25 +52638,6 @@
         "sku": "FO-AR-008",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-AR-008",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -53588,25 +52676,6 @@
         "sku": "FO-AR-009",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-AR-009",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -53645,25 +52714,6 @@
         "sku": "FO-AR-010",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-AR-010",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -53702,25 +52752,6 @@
         "sku": "FO-AR-011",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-AR-011",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -53759,25 +52790,6 @@
         "sku": "FO-AR-012",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-AR-012",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -53816,25 +52828,6 @@
         "sku": "FO-AR-013",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-AR-013",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -53873,25 +52866,6 @@
         "sku": "FO-AR-014",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-AR-014",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -53930,25 +52904,6 @@
         "sku": "FO-PT-001",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-PT-001",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -53987,25 +52942,6 @@
         "sku": "FO-PT-002",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-PT-002",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -54044,25 +52980,6 @@
         "sku": "FO-PT-003",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-PT-003",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -54101,25 +53018,6 @@
         "sku": "FO-PT-004",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-PT-004",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -54158,25 +53056,6 @@
         "sku": "FO-PT-005",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-PT-005",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -54215,25 +53094,6 @@
         "sku": "FO-PT-006",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-PT-006",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -54272,25 +53132,6 @@
         "sku": "FO-PT-007",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-PT-007",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -54329,25 +53170,6 @@
         "sku": "FO-PT-008",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-PT-008",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -54386,25 +53208,6 @@
         "sku": "FO-FN-001",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-FN-001",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -54443,25 +53246,6 @@
         "sku": "FO-FN-002",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-FN-002",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -54500,25 +53284,6 @@
         "sku": "FO-FN-003",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-FN-003",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -54557,25 +53322,6 @@
         "sku": "FO-FN-004",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-FN-004",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -54614,25 +53360,6 @@
         "sku": "FO-FN-005",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-FN-005",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -54671,25 +53398,6 @@
         "sku": "FO-FN-006",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-FN-006",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -54728,25 +53436,6 @@
         "sku": "FO-FN-007",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-FN-007",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -54785,25 +53474,6 @@
         "sku": "FO-FN-008",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-FN-008",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -54842,25 +53512,6 @@
         "sku": "FO-FN-009",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-FN-009",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -54899,25 +53550,6 @@
         "sku": "FO-FN-010",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-FN-010",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -54956,25 +53588,6 @@
         "sku": "FO-GS-001",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-GS-001",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -55013,25 +53626,6 @@
         "sku": "FO-GS-002",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-GS-002",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -55070,25 +53664,6 @@
         "sku": "FO-GS-003",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-GS-003",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -55127,25 +53702,6 @@
         "sku": "FO-GS-004",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-GS-004",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -55184,25 +53740,6 @@
         "sku": "FO-GS-005",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-GS-005",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -55241,25 +53778,6 @@
         "sku": "FO-GS-006",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-GS-006",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -55298,25 +53816,6 @@
         "sku": "FO-GS-007",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-GS-007",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -55355,25 +53854,6 @@
         "sku": "FO-GS-008",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-GS-008",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -55412,25 +53892,6 @@
         "sku": "FO-GS-009",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-GS-009",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -55469,25 +53930,6 @@
         "sku": "FO-GS-010",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-GS-010",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -55526,25 +53968,6 @@
         "sku": "FO-GS-011",
         "country": "PL",
         "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-GS-011",
-        "country": "PL",
-        "tier": "-",
         "surcharge": "peak_day",
         "active_from": "2027-02-14"
       },
@@ -55575,25 +53998,6 @@
         "surcharge_kind": "peak_day",
         "active_from": "2027-03-08",
         "active_to": "2027-03-09",
-        "source": "seed"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-GS-012",
-        "country": "PL",
-        "tier": "-",
-        "surcharge": "sunday",
-        "active_from": "2026-09-01"
-      },
-      "values": {
-        "tier_key": null,
-        "retail_minor": 1800,
-        "currency_code": "PLN",
-        "vat_rate_bp": 800,
-        "surcharge_kind": "sunday",
-        "active_from": "2026-09-01",
-        "active_to": null,
         "source": "seed"
       }
     },

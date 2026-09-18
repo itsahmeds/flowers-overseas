@@ -100,7 +100,8 @@ describe("SiteFooter: the Phase-0 colophon", () => {
       "Company",
       "Destinations",
       "Occasions",
-      "Delivery times and cutoffs",
+      // "Delivery times and cutoffs" is gated on `anyDeliveryDatesOpen()` (spec 004 §14 A19;
+      // TASK-120) and absent while no florist has agreed a cutoff — asserted below.
       "The guarantee",
       "How it works",
       "For florists",
@@ -113,6 +114,7 @@ describe("SiteFooter: the Phase-0 colophon", () => {
     ]) {
       expect(phase0, label).toContain(label);
     }
+    expect(phase0).not.toContain("Delivery times and cutoffs");
   });
 
   it("renders the language list and the cookie-settings control (AC-9)", () => {

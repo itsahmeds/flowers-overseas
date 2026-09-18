@@ -181,19 +181,24 @@ describe("the 'Coming up in Poland' strip", () => {
     );
   });
 
-  it("states each cutoff with its date and its wall clock in the recipient's zone", () => {
-    const rendered = text(dates("en"));
-
-    expect(rendered).toContain("Order by Fri, 30 Oct, 14:00 CET");
-    expect(rendered).toContain("Order by Sat, 28 Nov, 14:00 CET");
-    expect(rendered).toContain("Order by Tue, 22 Dec, 14:00 CET");
+  it("states no cutoff at all while no destination takes delivery dates", () => {
+    // Spec 004 §14 A19 (`/review 70`; TASK-120). `occasions.ts` carries a hand-authored `orderBy`
+    // instant per date, and the strip printed it — "Order by Fri, 30 Oct, 14:00 CET" — on the
+    // home page of every locale while no florist had agreed a cutoff. The line is gated on
+    // `anyDeliveryDatesOpen()`, which is false for every destination in Phase 0, so the row falls
+    // back to its two facts: the date and its name.
+    for (const locale of LOCALES) {
+      const rendered = text(dates(locale));
+      expect(rendered, locale).not.toMatch(/Order by|14:00/u);
+    }
+    expect(text(dates("en"))).toContain("Sun, 1 Nov");
   });
 
   it("formats the same instants in the reader's own language", () => {
-    // The zone is the recipient's in every locale; only the wording is the reader's.
-    expect(text(dates("de"))).toContain("Fr., 30. Okt.");
-    expect(text(dates("de"))).toContain("14:00 MEZ");
-    expect(text(dates("pl"))).toContain("30 paź");
+    // The date itself is still the reader's wording and the recipient's calendar; only the
+    // order-by line is gated (TASK-120).
+    expect(text(dates("de"))).toContain("So., 1. Nov.");
+    expect(text(dates("pl"))).toContain("1 lis");
   });
 
   it("is the desktop artboard's 300 px heading column beside the date grid (`/review 53`)", () => {
@@ -243,7 +248,7 @@ describe("the how-it-works explainer", () => {
     expect([...html.matchAll(/aria-hidden="true"/g)]).toHaveLength(3);
     for (const fragment of [
       "You choose the town, the day and a bouquet.",
-      "The cutoff is shown in the recipient's time, not yours.",
+      "any order-by time we show is on the recipient's clock, not yours.",
       "A florist a few streets away accepts it.",
       "Substitutions are like for like, and we tell you.",
       "Delivered by hand. You get the photo.",

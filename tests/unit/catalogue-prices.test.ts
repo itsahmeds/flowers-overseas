@@ -308,7 +308,18 @@ describe("surcharges are dated rows, never a multiplier (§13 Q7, AC-16's data h
   const peak = COUNTRY_PRICES.filter((row) => row.surchargeKind === "peak_day");
 
   it("has one open-ended Sunday row per (product, destination) at +EUR 4 equivalent", () => {
-    expect(sunday).toHaveLength(PRODUCTS.length * PRICED_DESTINATIONS.length);
+    // Minus the destinations that carry no Sunday row at all (spec 004 §14 A19; TASK-120): a
+    // `live` destination with no agreed `country.sunday_delivery` prices no Sunday, because a
+    // surcharge for a day nobody has agreed to work is the cutoff fabrication in money. Poland is
+    // the one such destination today, so this is `PRICED_DESTINATIONS` minus PL — asserted as a
+    // set below rather than as a number, so the day PL's operations land the count moves with it.
+    const sundayDestinations = PRICED_DESTINATIONS.filter(
+      (iso2) => iso2 !== "PL",
+    );
+    expect(
+      [...new Set(sunday.map((row) => row.countryIso2))].toSorted(),
+    ).toEqual([...sundayDestinations].toSorted());
+    expect(sunday).toHaveLength(PRODUCTS.length * sundayDestinations.length);
     for (const row of sunday) {
       expect(row.activeTo, `${row.sku} ${row.countryIso2}`).toBeNull();
       expect(row.tierKey).toBeNull();
@@ -499,8 +510,14 @@ describe("the price projections onto spec 002 §5.1 (AC-7's price half)", () => 
 
 describe("the dataset's own accessors", () => {
   it("returns one destination's rows and throws on a non-destination", () => {
+    // Not `COUNTRY_PRICES.length / PRICED_DESTINATIONS.length`: since TASK-120 the destinations
+    // no longer carry identical row counts — PL prices no Sunday (spec 004 §14 A19) — so the
+    // accessor is checked against the rows of its own destination.
     expect(countryPricesFor("PL").length).toBe(
-      COUNTRY_PRICES.length / PRICED_DESTINATIONS.length,
+      COUNTRY_PRICES.filter((row) => row.countryIso2 === "PL").length,
+    );
+    expect(countryPricesFor("DE").length).toBeGreaterThan(
+      countryPricesFor("PL").length,
     );
     expect(() => countryPricesFor("GB")).toThrow(/GB/);
     expect(() => destinationPricingFor("XX")).toThrow(/XX/);
