@@ -639,7 +639,7 @@ export const MEDIA_ASSET_STATES = {
   placeholderNoAlt:
     "MediaAsset \u00b7 placeholder/noAlt \u2014 approved, with bytes, and no alt text for this locale: the captioned box, never an English alt on a non-English page (WCAG 1.1.1 + 3.1.2).",
   placeholderCommitted:
-    "MediaAsset \u00b7 the committed Phase-0 state \u2014 the same asset id read from the real dataset: 31 rows, none reviewed and none derived, so the gate reports the first failure (unapproved) and no <img> exists (plan/10 \u00a73).",
+    "MediaAsset \u00b7 the committed Phase-0 state \u2014 the same asset id read from the real dataset: 31 rows, all approved by the founder on 2026-09-18 and none derived until TASK-080, so the gate reports the first remaining failure (noVariants) and no <img> exists (plan/10 \u00a73).",
   placeholderNoBytes:
     "MediaAsset \u00b7 placeholder/noVariants \u2014 the committed Phase-0 state of every one of the 31 asset rows: no derived file, so no <img> at all (plan/10 \u00a73).",
   provenance:

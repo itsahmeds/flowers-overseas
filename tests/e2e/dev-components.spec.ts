@@ -256,12 +256,13 @@ test.describe("/dev/components", () => {
     expect(imgSrcSets.every((value) => value.includes(".webp"))).toBe(true);
 
     // The placeholder reasons this section demonstrates, each with no image in its box.
-    // `unapproved` twice: the fixture's pending asset, and the committed dataset's own state —
-    // 31 rows, none reviewed and none derived, so the gate reports the first failure.
+    // `noVariants` twice: the fixture's variant-less asset, and the committed dataset's own state —
+    // 31 rows, all approved by the founder on 2026-09-18 and none derived until TASK-080, so the
+    // gate reports the first remaining failure. `unapproved` once: the fixture's pending asset.
     await expect(
-      page.locator('[data-fo-media-placeholder="unapproved"]'),
+      page.locator('[data-fo-media-placeholder="noVariants"]'),
     ).toHaveCount(2);
-    for (const reason of ["noAlt", "noVariants"]) {
+    for (const reason of ["noAlt", "unapproved"]) {
       await expect(
         page.locator(`[data-fo-media-placeholder="${reason}"]`),
       ).toHaveCount(1);
