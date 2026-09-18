@@ -136,7 +136,10 @@ test.describe("the cached response (AC-22)", () => {
     const withCookies = await request.get("/en/poland/flowers", {
       headers: { cookie: "fo_locale=en; fo_currency=PLN; fo_consent=all" },
     });
-    expect(plain.headers()["vary"]).toBeUndefined();
+    // Next's own `Vary` names the RSC routing headers and `Accept-Encoding`; what AC-22 forbids
+    // is a response that varies by **cookie**, which is what would make a cached body differ per
+    // visitor (`tests/e2e/corridor.spec.ts` reads AC-23 the same way).
+    expect(plain.headers()["vary"] ?? "").not.toMatch(/cookie/iu);
     expect(plain.headers()["set-cookie"]).toBeUndefined();
     expect(await withCookies.text()).toBe(await plain.text());
   });
