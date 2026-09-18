@@ -144,7 +144,9 @@ describe("migration 0002 — i18n + geo (AC-7, T-06)", () => {
       ["country_locale_content_source_check", rowSources],
       ["currency_rounding_style_check", roundingStyles],
       ["occasion_kind_check", occasionKinds],
-      ["occasion_country_rule_type_check", occasionRuleTypes],
+      // `occasion_country_rule_type_check` is asserted in the case below instead: `0002` declares
+      // `plan/03` §9's six values and migration `0003` widens the constraint to seven (spec 002
+      // §14 A5), so the mirror's tuple and this file's SQL no longer agree by construction.
       ["message_catalog_source_check", messageSources],
     ];
     for (const [constraint, values] of expected) {
@@ -154,8 +156,13 @@ describe("migration 0002 — i18n + geo (AC-7, T-06)", () => {
     }
   });
 
-  it("uses plan/03 §9's rule_type values verbatim", () => {
-    expect(occasionRuleTypes).toEqual([
+  it("uses plan/03 §9's rule_type values verbatim, and only those", () => {
+    // `0002` as merged: the six rule types of `plan/03` §9, in that section's order. The seventh,
+    // `orthodox_easter_offset`, arrives by `ALTER TABLE` in `0003` because `0002` is on `main`
+    // (spec 002 §14 A5) — migration text is history and is never edited in place.
+    expect(
+      checkList(geoStatements, "occasion_country_rule_type_check"),
+    ).toEqual([
       "fixed",
       "nth_weekday",
       "last_weekday",
@@ -163,9 +170,17 @@ describe("migration 0002 — i18n + geo (AC-7, T-06)", () => {
       "lent_sunday",
       "none",
     ]);
-    expect(
-      checkList(geoStatements, "occasion_country_rule_type_check"),
-    ).toEqual([...occasionRuleTypes]);
+    // The Drizzle mirror describes the schema *after* every applied migration, so it carries the
+    // widened list; `tests/unit/schema-catalog-pricing.test.ts` pins the widening to `0003`.
+    expect(occasionRuleTypes).toEqual([
+      "fixed",
+      "nth_weekday",
+      "last_weekday",
+      "easter_offset",
+      "orthodox_easter_offset",
+      "lent_sunday",
+      "none",
+    ]);
   });
 
   it("carries the §7 RTL columns on locale from this migration on", () => {
