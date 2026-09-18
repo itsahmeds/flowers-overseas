@@ -37,7 +37,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
   commits bytes — until then the honesty gates keep placeholders, so assert the mechanism on the
   fixture manifest and record the pending-bytes caveat in `## Result
 
-**Shipped** as PR #__PR__ (finisher round, after the orchestrator ruled E-1/E-2/E-3 as spec 008
+**Shipped** as [PR #81](https://github.com/itsahmeds/flowers-overseas/pull/81) (finisher round, after the orchestrator ruled E-1/E-2/E-3 as spec 008
 §14 A5–A8 and spec 007 §14 A8). The three blockers are closed above with the rulings applied.
 
 **What the rulings produced.**
