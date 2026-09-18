@@ -27,8 +27,14 @@ import {
   PSEUDO_LOCALES_KEY,
   pseudoLocalesEnabled,
   serverEnvSchema,
+  BUILD_ENV_KEYS,
+  RUNTIME_ENV_KEYS,
+  assertRuntimeEnv,
+  validateBuildEnv,
   validateEnv,
+  validateRuntimeEnv,
 } from "../../src/lib/env.schema";
+import { assertBuildEnv } from "../../src/lib/env.assert";
 import { parseEnvFileKeys } from "../../scripts/env-check";
 
 const SENTINEL = "sentinel-do-not-print-3f9a2c";
@@ -781,5 +787,123 @@ describe("the env-build-failure reproduction (spec 040 AC-28, T-29)", () => {
     const workflow = repoFile(".github/workflows/ci.yml");
     expect(workflow).toContain("APP_ENV: production");
     expect(workflow).not.toContain("VERCEL_ENV: production");
+  });
+});
+
+/**
+ * The build/runtime split of spec 001 §14 A16 and spec 040 §14 A1 (TASK-135).
+ *
+ * The defect it fixes: `next.config.ts` asserted all 28 keys at config load, so `RUN pnpm build`
+ * inside the container demanded ten credentials no build reads — the Railway staging build log of
+ * 2026-09-18. The two halves are pinned here as *behaviour*; `tests/unit/container.test.ts` pins
+ * them against the `Dockerfile`'s build-argument set.
+ */
+describe("the build/runtime split (spec 001 §14 A16, TASK-135)", () => {
+  /** Exactly what a credential-free `docker build` has: the ARG defaults of the build stage. */
+  const buildOnly: Record<string, string> = {
+    APP_ENV: "staging",
+    NEXT_PUBLIC_APP_ENV: "staging",
+    NEXT_PUBLIC_SITE_URL: "https://web-staging-dbe4.up.railway.app",
+  };
+
+  it("grades APP_ENV and the NEXT_PUBLIC_ keys at build time, and nothing else", () => {
+    expect([...BUILD_ENV_KEYS]).toEqual(
+      [APP_ENV_KEY, ...Object.keys(clientEnvSchema.shape)].sort(),
+    );
+    for (const key of BUILD_ENV_KEYS) {
+      expect(key === APP_ENV_KEY || key.startsWith("NEXT_PUBLIC_"), key).toBe(
+        true,
+      );
+    }
+  });
+
+  it("grades every other key at server start, losing none of them", () => {
+    expect([...BUILD_ENV_KEYS, ...RUNTIME_ENV_KEYS].sort()).toEqual([
+      ...ENV_KEYS,
+    ]);
+    for (const key of RUNTIME_ENV_KEYS) {
+      expect(BUILD_ENV_KEYS, key).not.toContain(key);
+    }
+  });
+
+  it("passes the build gate with the ten server keys absent (the container build)", () => {
+    expect(validateBuildEnv(buildOnly).issues).toEqual([]);
+    expect(() => {
+      assertBuildEnv(buildOnly);
+    }).not.toThrow();
+  });
+
+  it("fails the runtime gate on the same environment, naming the ten keys and no value", () => {
+    const issues = validateRuntimeEnv(buildOnly).issues;
+    expect(issues.map((issue) => issue.key)).toEqual([
+      "DATABASE_URL",
+      "DATABASE_URL_UNPOOLED",
+      "R2_ACCOUNT_ID",
+      "R2_BUCKET",
+      "R2_BACKUPS_BUCKET",
+      "R2_S3_ENDPOINT",
+      "R2_ACCESS_KEY_ID",
+      "R2_SECRET_ACCESS_KEY",
+      "R2_PUBLIC_BASE_URL",
+      "INTERNAL_CRON_SECRET",
+    ]);
+    let thrown: unknown;
+    try {
+      assertRuntimeEnv({ ...buildOnly, R2_SECRET_ACCESS_KEY: SENTINEL });
+    } catch (error) {
+      thrown = error;
+    }
+    expect(thrown).toBeInstanceOf(EnvValidationError);
+    const message = (thrown as EnvValidationError).message;
+    expect(message).toContain("Invalid environment (staging)");
+    expect(message).not.toContain(SENTINEL);
+    expect(message).not.toContain(buildOnly["NEXT_PUBLIC_SITE_URL"]);
+  });
+
+  it("still fails the build on a missing or malformed *build* key", () => {
+    expect(
+      validateBuildEnv({ APP_ENV: "staging" }).issues.map((issue) => issue.key),
+    ).toEqual(["NEXT_PUBLIC_SITE_URL"]);
+    expect(
+      validateBuildEnv({ ...buildOnly, APP_ENV: "prod" }).issues.map(
+        (issue) => issue.key,
+      ),
+    ).toEqual([APP_ENV_KEY]);
+    expect(
+      validateBuildEnv({
+        ...buildOnly,
+        NEXT_PUBLIC_SITE_URL: "http://staging.example.com",
+      }).issues.map((issue) => issue.key),
+    ).toEqual(["NEXT_PUBLIC_SITE_URL"]);
+  });
+
+  it("refuses a development flag in a production-like environment at server start", () => {
+    for (const key of [PSEUDO_LOCALES_KEY, DEV_UI_KEY]) {
+      const source = {
+        ...validEnv,
+        ...realValues,
+        APP_ENV: "staging",
+        [key]: "true",
+      };
+      expect(validateBuildEnv(source).issues).toEqual([]);
+      expect(
+        validateRuntimeEnv(source).issues.map((issue) => issue.key),
+      ).toEqual([key]);
+    }
+  });
+
+  it("keeps validateEnv the union of the two halves, so nothing falls between them", () => {
+    for (const source of [validEnv, productionEnv, buildOnly, {}]) {
+      expect(
+        validateEnv(source)
+          .issues.map((issue) => issue.key)
+          .sort(),
+      ).toEqual(
+        [
+          ...validateBuildEnv(source).issues.map((issue) => issue.key),
+          ...validateRuntimeEnv(source).issues.map((issue) => issue.key),
+        ].sort(),
+      );
+    }
   });
 });

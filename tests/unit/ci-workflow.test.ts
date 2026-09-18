@@ -58,6 +58,11 @@ const EXPECTED_JOBS = [
   "db-check",
   "audit",
   "build",
+  // spec 040 AC-8 / T-08 (TASK-135, from TASK-099's carry-forward): the daemon half of the
+  // container criterion — `docker build` with no credential in the environment, then the running
+  // image. On the spine beside `build`, with its expensive steps scoped to the pull requests that
+  // touch the container contract (spec 001 §14 A14, A16).
+  "container",
   "env-build-failure",
   "commitlint",
   "seo-validate",
@@ -258,11 +263,43 @@ describe("the jobs TASK-011 adds", () => {
     // The three assertions the job makes about its own output (AC-28): non-zero exit, the key
     // named, and no other variable's value echoed.
     const scripts = (job?.steps ?? []).map((step) => step.run ?? "").join("\n");
-    expect(scripts).toContain("exited 0 with a placeholder DATABASE_URL");
     expect(scripts).toContain(
-      "DATABASE_URL: must be a real value in production",
+      "exited 0 with a placeholder NEXT_PUBLIC_SITE_URL in production",
+    );
+    expect(scripts).toContain(
+      "NEXT_PUBLIC_SITE_URL: must be a real value in production",
     );
     expect(scripts).toContain("$SENTINEL");
+  });
+
+  // Spec 001 §14 A16 / spec 040 §14 A1 (TASK-135) moved the server half of the contract from the
+  // build to server start, so the two assertions that used to live in `env-build-failure` — a
+  // missing server key and a placeholder `DATABASE_URL` in a deployed environment — are now made
+  // against the running image. Both jobs are checked here so the pair cannot drift apart.
+  it("asserts the server half against the container, not against the build (spec 001 §14 A16)", () => {
+    const buildJob = (ci.jobs["env-build-failure"]?.steps ?? [])
+      .map((step) => step.run ?? "")
+      .join("\n");
+    expect(buildJob).toContain(
+      "pnpm build failed with R2_BUCKET missing; the build gate still demands a server key",
+    );
+
+    const containerJob = (ci.jobs["container"]?.steps ?? [])
+      .map((step) => step.run ?? "")
+      .join("\n");
+    expect(containerJob).toContain("docker build");
+    expect(containerJob).toContain("answered 200 with no server variable set");
+    expect(containerJob).toContain(
+      "exited 0 with a placeholder DATABASE_URL in production (spec 002 AC-2)",
+    );
+    expect(containerJob).toContain(
+      "DATABASE_URL: must be a real value in production",
+    );
+    // No credential may be handed to `docker build` — a build argument survives in layer history.
+    expect(containerJob).toContain(
+      "a server credential is present in the build environment",
+    );
+    expect(containerJob).not.toMatch(/--build-arg/u);
   });
 
   it("keeps env:check in the lint job, as the header comment documents", () => {

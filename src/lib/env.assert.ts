@@ -69,7 +69,7 @@ function loadDotEnvFiles(): void {
  * a build neither reads nor embeds them, and requiring them would force a container build to be
  * handed secrets it has no business holding (spec 001 §14 A16; Railway build log, 2026-09-18).
  */
-export function assertBuildEnv(source: NodeJS.ProcessEnv = process.env): void {
+export function assertBuildEnv(source: EnvSource = process.env): void {
   loadDotEnvFiles();
   const result = validateBuildEnv(source);
   if (result.issues.length > 0) {
@@ -81,7 +81,7 @@ export function assertBuildEnv(source: NodeJS.ProcessEnv = process.env): void {
  * Validate `process.env` against the **whole** contract, both halves. Used by scripts and by the
  * module-load parse of `env.server.ts`; `next.config.ts` calls `assertBuildEnv()` instead.
  */
-export function assertEnv(source: NodeJS.ProcessEnv = process.env): void {
+export function assertEnv(source: EnvSource = process.env): void {
   loadDotEnvFiles();
   const result = validateEnv(source);
   if (result.issues.length > 0) {
@@ -90,9 +90,7 @@ export function assertEnv(source: NodeJS.ProcessEnv = process.env): void {
 }
 
 /** `assertEnv` as a report instead of a throw, for scripts that print and exit. */
-export function envReport(
-  source: NodeJS.ProcessEnv = process.env,
-): string | undefined {
+export function envReport(source: EnvSource = process.env): string | undefined {
   loadDotEnvFiles();
   const result = validateEnv(source);
   if (result.issues.length === 0) return undefined;

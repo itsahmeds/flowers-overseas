@@ -3,10 +3,11 @@
 # the job names straight out of it, so a job added here is part of the branch-protection contract
 # without anybody editing a list (`pnpm branch-protection --verify`).
 #
-# Jobs (21): lint · typecheck · test-unit · test-integration · test-contract · build · db-check ·
-# env-build-failure · commitlint · seo-validate · i18n-check · catalogue-check · corridor-check · seed-check ·
-# dev-os-check · audit · preview · e2e · visual · a11y · lighthouse. The lint job also runs the
-# three orientation gates of §14 A15: `codebase:map --check`, `specs:index --check`, `tasks:check`.
+# Jobs (22): lint · typecheck · test-unit · test-integration · test-contract · build · container ·
+# db-check · env-build-failure · commitlint · seo-validate · i18n-check · catalogue-check ·
+# corridor-check · seed-check · dev-os-check · audit · preview · e2e · visual · a11y · lighthouse.
+# The lint job also runs the three orientation gates of §14 A15: `codebase:map --check`,
+# `specs:index --check`, `tasks:check`.
 #
 # Order, and where it departs from spec 001 §2 / plan/12 §5 (TASK-011 reconciliation; the
 # corrections are recorded on TASK-012 for the spec text):
@@ -44,6 +45,14 @@
 #    no reason. Spec correction recorded on TASK-012.
 #  - `audit` likewise sits early: `pnpm audit` and the secret scan are the cheapest way to find
 #    out that a PR should not be looked at further.
+#  - `container` (spec 040 AC-8 / T-08; TASK-135, from TASK-099's carry-forward) hangs off
+#    `test-unit` beside `build`: it is the only gate that exercises the artefact Railway actually
+#    runs — `docker build` with **no credential in the environment**, then the running image's
+#    `/api/health`, its user, and the two fail-closed cases the build stopped owning when spec 001
+#    §14 A16 split the env gate. It is on the spine rather than behind `ci:full` because a broken
+#    image is invisible until a deploy fails; the expensive steps are skipped when no file of the
+#    container contract changed, so the budget of §14 A14 is spent only on the pull requests that
+#    can break it.
 #  - `preview` → `e2e`/`visual`/`a11y` → `lighthouse` is the one real chain and matches the spec:
 #    the three Playwright suites and Lighthouse all run against the preview URL `preview` resolves.
 #
@@ -531,12 +540,222 @@ jobs:
             exit 1
           fi
 
-  # T-11 / AC-10 (TASK-005) and spec 002 T-04 / AC-2 (TASK-013). Two facts, one job:
-  #   1. a missing variable fails the build, names the offending key and echoes no other
-  #      variable's value (a sentinel injected into a second key must not appear in the output);
-  #   2. a deployed environment (`APP_ENV=production`) whose `DATABASE_URL` is still the
+  # AC-8 / T-08 (spec 040 §5.3): the daemon half of the container's acceptance criterion — the
+  # image **builds with no credential in the environment**, runs as a non-root user, carries no
+  # `.env*` file and serves `/api/health` from the standalone output. `tests/unit/container.test.ts`
+  # asserts the file; this job asserts the artefact.
+  #
+  # It is TASK-099's carry-forward, taken by **TASK-135**: no Docker daemon was available on the
+  # machine the build-time env split was written on (spec 001 §14 A16, spec 040 §14 A1), so CI is
+  # where "a container build needs no credential" is demonstrated rather than argued. The job also
+  # owns the two negative cases that used to be `pnpm build` failures and are now server-start
+  # failures: a missing server key and a `.env.example` placeholder in a deployed environment both
+  # keep `/api/health` from answering 200, which is what fails the Railway healthcheck.
+  #
+  # Budget (spec 001 §14 A14). The job sits on the spine so that a change to the container contract
+  # cannot merge unproven, but its expensive steps run **only** when the pull request touches that
+  # contract — the `Dockerfile`, the env modules, the health route, `next.config.ts`,
+  # `instrumentation.ts`, the manifest or this workflow. Otherwise it costs one runner start
+  # (~15 s) and writes a summary saying which files it looked at.
+  container:
+    name: container
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    needs: test-unit
+    env:
+      IMAGE: fo-web:ci
+      # The runtime variable set, in the shape Railway supplies it: `.env.example` placeholders,
+      # which are valid in `development` (spec 001 §13 Q10). No real credential is used, and none
+      # is passed to `docker build` — that is the whole point of the job.
+      RUNTIME_ENV: >-
+        -e DATABASE_URL=postgres://user:pass@localhost:5432/fo
+        -e DATABASE_URL_UNPOOLED=postgres://user:pass@localhost:5432/fo_direct
+        -e INTERNAL_CRON_SECRET=placeholder-cron-secret
+        -e R2_ACCOUNT_ID=00000000000000000000000000000000
+        -e R2_BUCKET=placeholder-bucket
+        -e R2_BACKUPS_BUCKET=placeholder-backups-bucket
+        -e R2_S3_ENDPOINT=https://00000000000000000000000000000000.eu.r2.cloudflarestorage.com
+        -e R2_ACCESS_KEY_ID=placeholder-r2-access-key-id
+        -e R2_SECRET_ACCESS_KEY=placeholder-r2-secret-access-key
+        -e R2_PUBLIC_BASE_URL=https://placeholder.r2.dev
+    steps:
+      - uses: actions/checkout@v4
+      - name: Decide whether the container contract changed
+        id: scope
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          set -uo pipefail
+          paths="Dockerfile .dockerignore next.config.ts instrumentation.ts package.json pnpm-lock.yaml src/lib src/app/api/health config/railway.json .github/workflows/ci.yml"
+          if [ -z "$BASE_REF" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "A manual run builds the image unconditionally." > scope.txt
+            exit 0
+          fi
+          git fetch --no-tags --depth=200 origin "$BASE_REF" || true
+          base=$(git merge-base FETCH_HEAD HEAD 2>/dev/null || true)
+          if [ -z "$base" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "No merge base with \`$BASE_REF\` was found, so the image is built anyway." > scope.txt
+            exit 0
+          fi
+          # shellcheck disable=SC2086
+          files=$(git diff --name-only "$base" HEAD -- $paths)
+          if [ -n "$files" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            printf 'The container contract changed:\n\n```\n%s\n```\n' "$files" > scope.txt
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No file of the container contract changed; the image was not rebuilt." > scope.txt
+          fi
+
+      # No `--build-arg` carrying a secret, and no secret in the environment either: the step
+      # refuses to run if one is present, so "the build needed no credential" is a fact the log
+      # can be read for (spec 001 §14 A16 — a build argument survives in layer history).
+      - name: Build the image with no credential in the environment (AC-8)
+        id: image
+        if: steps.scope.outputs.changed == 'true'
+        run: |
+          set -uo pipefail
+          if env | grep -qE '^(DATABASE_URL|DATABASE_URL_UNPOOLED|INTERNAL_CRON_SECRET|R2_)'; then
+            echo "::error::a server credential is present in the build environment (spec 001 §14 A16)"
+            exit 1
+          fi
+          set -o pipefail
+          docker build --progress=plain --tag "$IMAGE" . 2>&1 | tail -40
+
+      - name: Run it and probe /api/health (T-08)
+        id: probe
+        if: steps.scope.outputs.changed == 'true'
+        run: |
+          set -uo pipefail
+          # shellcheck disable=SC2086
+          docker run -d --name fo-web -p 3000:3000 $RUNTIME_ENV "$IMAGE"
+          code=000
+          for _ in $(seq 1 45); do
+            code=$(curl -s -o health.json -w '%{http_code}' http://127.0.0.1:3000/api/health || echo 000)
+            [ "$code" = "200" ] && break
+            sleep 1
+          done
+          echo "health_code=$code" >> "$GITHUB_OUTPUT"
+          if [ "$code" != "200" ]; then
+            docker logs fo-web | tail -40
+            echo "::error::/api/health answered $code from the image (AC-8)"
+            exit 1
+          fi
+          cat health.json
+          grep -q '"status":"ok"' health.json || { echo "::error::health body is not ok"; exit 1; }
+          user=$(docker exec fo-web id -un)
+          echo "user=$user" >> "$GITHUB_OUTPUT"
+          [ "$user" = "node" ] || { echo "::error::the image runs as $user, not node (AC-8)"; exit 1; }
+          envfiles=$(docker exec fo-web sh -c 'ls -a /app | grep -c "^\.env" || true')
+          echo "envfiles=$envfiles" >> "$GITHUB_OUTPUT"
+          [ "$envfiles" = "0" ] || { echo "::error::the image contains $envfiles .env file(s) (AC-8)"; exit 1; }
+
+      # The other half of the split (spec 001 §14 A16): the build stopped demanding the server keys,
+      # so the *server* must. Same image, no server variables — `/api/health` must not answer 200,
+      # because that is the Railway healthcheck and a deployment that cannot read its own database
+      # must never turn `● Active`.
+      - name: Assert the runtime gate is fail-closed (spec 001 §14 A16, AC-10's intent)
+        id: bare
+        if: steps.scope.outputs.changed == 'true'
+        run: |
+          set -uo pipefail
+          docker run -d --name fo-web-bare -p 3001:3000 "$IMAGE"
+          sleep 8
+          code=$(curl -s -o bare.json -w '%{http_code}' http://127.0.0.1:3001/api/health || echo 000)
+          echo "health_code=$code" >> "$GITHUB_OUTPUT"
+          if [ "$code" = "200" ]; then
+            echo "::error::/api/health answered 200 with no server variable set (spec 001 §14 A16)"
+            exit 1
+          fi
+          logs=$(docker logs fo-web-bare 2>&1 | tail -40)
+          echo "$logs"
+          echo "$logs" | grep -q 'DATABASE_URL' || {
+            echo "::error::the failure does not name DATABASE_URL"; exit 1; }
+
+      # spec 002 T-04 / AC-2 and spec 040 T-29 / AC-28, at their new gate: a deployed environment
+      # carrying a `.env.example` placeholder is refused. Until TASK-135 this was a `pnpm build`
+      # failure; the build no longer sees the key, so the same refusal is asserted here, where the
+      # value actually is. `APP_ENV=production`, every other key real-looking, `DATABASE_URL` the
+      # placeholder: the report must name that key and print no value.
+      - name: Assert a placeholder in production is refused at server start (spec 002 AC-2)
+        id: placeholder
+        if: steps.scope.outputs.changed == 'true'
+        run: |
+          set -uo pipefail
+          docker run -d --name fo-web-prod -p 3002:3000 \
+            -e APP_ENV=production \
+            -e DATABASE_URL=postgres://user:pass@localhost:5432/fo \
+            -e DATABASE_URL_UNPOOLED=postgresql://u:p@ep-x.eu-central-1.aws.neon.tech/fo \
+            -e INTERNAL_CRON_SECRET=ci-cron-secret \
+            -e R2_ACCOUNT_ID=0123456789abcdef0123456789abcdef \
+            -e R2_BUCKET=ci-media \
+            -e R2_BACKUPS_BUCKET=ci-backups \
+            -e R2_S3_ENDPOINT=https://0123456789abcdef0123456789abcdef.eu.r2.cloudflarestorage.com \
+            -e R2_ACCESS_KEY_ID=ci-access-key-id \
+            -e R2_SECRET_ACCESS_KEY=ci-secret-access-key \
+            -e R2_PUBLIC_BASE_URL=https://media.example.com \
+            "$IMAGE"
+          sleep 8
+          code=$(curl -s -o prod.json -w '%{http_code}' http://127.0.0.1:3002/api/health || echo 000)
+          echo "health_code=$code" >> "$GITHUB_OUTPUT"
+          if [ "$code" = "200" ]; then
+            echo "::error::/api/health exited 0 with a placeholder DATABASE_URL in production (spec 002 AC-2)"
+            exit 1
+          fi
+          logs=$(docker logs fo-web-prod 2>&1 | tail -40)
+          echo "$logs"
+          echo "$logs" | grep -q 'DATABASE_URL: must be a real value in production' || {
+            echo "::error::the report does not name DATABASE_URL as the placeholder offender (spec 002 T-04)"; exit 1; }
+          if echo "$logs" | grep -q 'ci-secret-access-key'; then
+            echo "::error::the report echoed another variable's value (AC-10)"
+            exit 1
+          fi
+
+      - name: Summarise the container run (AC-8 / T-08)
+        if: always()
+        env:
+          CHANGED: ${{ steps.scope.outputs.changed }}
+          IMAGE_OUTCOME: ${{ steps.image.outcome }}
+          HEALTH_CODE: ${{ steps.probe.outputs.health_code }}
+          RUN_USER: ${{ steps.probe.outputs.user }}
+          ENV_FILES: ${{ steps.probe.outputs.envfiles }}
+          BARE_CODE: ${{ steps.bare.outputs.health_code }}
+          PROD_CODE: ${{ steps.placeholder.outputs.health_code }}
+        run: |
+          set -uo pipefail
+          {
+            echo "### container (spec 040 AC-8 / T-08; spec 001 §14 A16)"
+            echo ""
+            if [ -f scope.txt ]; then cat scope.txt; fi
+            echo ""
+            if [ "${CHANGED:-false}" = "true" ]; then
+              echo "| fact | value |"
+              echo "|---|---|"
+              echo "| \`docker build\` with no credential in the environment | ${IMAGE_OUTCOME:-skipped} |"
+              echo "| \`GET /api/health\` from the running image | ${HEALTH_CODE:-n/a} |"
+              echo "| runtime user | ${RUN_USER:-n/a} |"
+              echo "| \`.env*\` files inside the image | ${ENV_FILES:-n/a} |"
+              echo "| same image with no server variable → \`/api/health\` | ${BARE_CODE:-n/a} (must not be 200) |"
+              echo "| placeholder \`DATABASE_URL\` in production → \`/api/health\` | ${PROD_CODE:-n/a} (must not be 200) |"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          docker rm -f fo-web fo-web-bare fo-web-prod >/dev/null 2>&1 || true
+
+  # T-11 / AC-10 (TASK-005) and spec 002 T-04 / AC-2 (TASK-013), as spec 001 §14 A16 and spec 040
+  # §14 A1 split them (TASK-135). The job asserts what a **build** owns, and asserts that it no
+  # longer owns the rest:
+  #   1. a missing variable **the build consumes** (`NEXT_PUBLIC_SITE_URL`) fails the build, names
+  #      the offending key and echoes no other variable's value (a sentinel injected into a second
+  #      key must not appear in the output);
+  #   2. a missing **server** variable (`R2_BUCKET`) leaves the build green — that is the split,
+  #      asserted positively, and it is what lets the container build with no credential. The key
+  #      is still refused, at server start, by the `container` job's fail-closed run above;
+  #   3. a deployed environment (`APP_ENV=production`) whose `NEXT_PUBLIC_SITE_URL` is still the
   #      `.env.example` placeholder fails the build naming **only** that key — spec 002 deleted the
-  #      escape hatch spec 001 carried, so there is no way to opt out.
+  #      escape hatch spec 001 carried, so there is no way to opt out. The same refusal for
+  #      `DATABASE_URL` is asserted by the `container` job, where the value now lives.
   env-build-failure:
     name: env-build-failure
     runs-on: ubuntu-latest
@@ -549,10 +768,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
-      - name: Build with R2_BUCKET removed and a sentinel in another key
+      - name: Build with NEXT_PUBLIC_SITE_URL removed and a sentinel in another key
         run: |
           set -o pipefail
-          grep -v '^R2_BUCKET=' .env.example > .env.local
+          grep -v '^NEXT_PUBLIC_SITE_URL=' .env.example > .env.local
           sed -i "s|^R2_SECRET_ACCESS_KEY=.*|R2_SECRET_ACCESS_KEY=$SENTINEL|" .env.local
           set +e
           pnpm build > build.log 2>&1
@@ -560,11 +779,11 @@ jobs:
           set -e
           cat build.log
           if [ "$status" -eq 0 ]; then
-            echo "::error::pnpm build exited 0 with R2_BUCKET missing (AC-10)"
+            echo "::error::pnpm build exited 0 with NEXT_PUBLIC_SITE_URL missing (AC-10)"
             exit 1
           fi
-          if ! grep -q 'R2_BUCKET' build.log; then
-            echo "::error::build output does not name R2_BUCKET (AC-10)"
+          if ! grep -q 'NEXT_PUBLIC_SITE_URL' build.log; then
+            echo "::error::build output does not name NEXT_PUBLIC_SITE_URL (AC-10)"
             exit 1
           fi
           if grep -q "$SENTINEL" build.log; then
@@ -572,27 +791,55 @@ jobs:
             exit 1
           fi
           {
-            echo "### env-build-failure (T-11 / AC-10)"
+            echo "### env-build-failure (T-11 / AC-10, build half)"
             echo ""
             echo "- \`pnpm build\` exit status: $status (non-zero, as required)"
-            echo "- output names \`R2_BUCKET\`: yes"
+            echo "- output names \`NEXT_PUBLIC_SITE_URL\`: yes"
             echo "- output contains the sentinel value of another key: no"
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Remove the tampered env file
         if: always()
         run: rm -f .env.local build.log
-      # spec 002 T-04 / AC-2 and spec 040 T-29 / AC-28: real values everywhere except
-      # `DATABASE_URL`, which keeps the `.env.example` placeholder, and `APP_ENV=production` —
-      # `APP_ENV`, not `VERCEL_ENV`, since spec 040 §5.2 made it the one environment signal, which
-      # is what makes this job reproduce a **Railway** production build as well as a Vercel one.
-      # The build must fail and the report must name that key and no other.
-      - name: Build in production with a placeholder DATABASE_URL (spec 002 T-04, spec 040 T-29)
+      # The split itself (spec 001 §14 A16): a **server** key is not a build input any more, so its
+      # absence must leave the build green. Without this assertion the amendment would be a comment
+      # rather than a gate, and the next person to "fix" the config by asserting everything again
+      # would break the container build exactly as the 2026-09-18 Railway build was broken.
+      - name: Build with a server key removed — it must now succeed (spec 001 §14 A16)
+        run: |
+          set -o pipefail
+          grep -v '^R2_BUCKET=' .env.example > .env.local
+          set +e
+          pnpm build > build.log 2>&1
+          status=$?
+          set -e
+          tail -20 build.log
+          if [ "$status" -ne 0 ]; then
+            echo "::error::pnpm build failed with R2_BUCKET missing; the build gate still demands a server key (spec 001 §14 A16)"
+            exit 1
+          fi
+          {
+            echo "### the build gate demands no server key (spec 001 §14 A16)"
+            echo ""
+            echo "- \`pnpm build\` with \`R2_BUCKET\` absent: exit $status (zero, as required)"
+            echo "- the key is refused at server start instead — see the \`container\` job"
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Remove the tampered env file (split)
+        if: always()
+        run: rm -f .env.local build.log
+      # spec 040 T-29 / AC-28: real values everywhere except `NEXT_PUBLIC_SITE_URL`, which keeps the
+      # `.env.example` placeholder, and `APP_ENV=production` — `APP_ENV`, not `VERCEL_ENV`, since
+      # spec 040 §5.2 made it the one environment signal, which is what makes this job reproduce a
+      # **Railway** production build as well as a Vercel one. The origin is inlined into every
+      # canonical the build writes, so it is a build key and this stays a build failure; the report
+      # must name that key and no other. The `DATABASE_URL` half of spec 002 T-04 moved to the
+      # `container` job with the gate (spec 001 §14 A16).
+      - name: Build in production with a placeholder NEXT_PUBLIC_SITE_URL (spec 040 T-29)
         env:
           APP_ENV: production
         run: |
           set -o pipefail
           sed \
-            -e 's|^NEXT_PUBLIC_SITE_URL=.*|NEXT_PUBLIC_SITE_URL=https://flowers-overseas.vercel.app|' \
+            -e 's|^DATABASE_URL=.*|DATABASE_URL=postgresql://u:p@ep-ci-pooler.eu-central-1.aws.neon.tech/fo|' \
             -e 's|^DATABASE_URL_UNPOOLED=.*|DATABASE_URL_UNPOOLED=postgresql://u:p@ep-ci.eu-central-1.aws.neon.tech/fo|' \
             -e 's|^INTERNAL_CRON_SECRET=.*|INTERNAL_CRON_SECRET=ci-cron-secret|' \
             -e 's|^R2_ACCOUNT_ID=.*|R2_ACCOUNT_ID=0123456789abcdef0123456789abcdef|' \
@@ -611,22 +858,22 @@ jobs:
           set -e
           cat build.log
           if [ "$status" -eq 0 ]; then
-            echo "::error::pnpm build exited 0 with a placeholder DATABASE_URL in production (spec 002 AC-2)"
+            echo "::error::pnpm build exited 0 with a placeholder NEXT_PUBLIC_SITE_URL in production (spec 040 AC-28)"
             exit 1
           fi
-          if ! grep -q 'DATABASE_URL: must be a real value in production' build.log; then
-            echo "::error::build output does not name DATABASE_URL as the placeholder offender (spec 002 T-04)"
+          if ! grep -q 'NEXT_PUBLIC_SITE_URL: must be a real value in production' build.log; then
+            echo "::error::build output does not name NEXT_PUBLIC_SITE_URL as the placeholder offender (spec 040 T-29)"
             exit 1
           fi
-          if grep -qE '^\s+- (R2_|INTERNAL_CRON_SECRET|DATABASE_URL_UNPOOLED|NEXT_PUBLIC_)' build.log; then
-            echo "::error::build output named a key other than DATABASE_URL (spec 002 T-04)"
+          if grep -qE '^\s+- (R2_|INTERNAL_CRON_SECRET|DATABASE_URL)' build.log; then
+            echo "::error::build output named a server key the build no longer grades (spec 001 §14 A16)"
             exit 1
           fi
           {
-            echo "### placeholder DATABASE_URL in production (spec 002 T-04 / AC-2)"
+            echo "### placeholder NEXT_PUBLIC_SITE_URL in production (spec 040 T-29 / AC-28)"
             echo ""
             echo "- \`pnpm build\` exit status: $status (non-zero, as required)"
-            echo "- output names \`DATABASE_URL\` and no other key: yes"
+            echo "- output names \`NEXT_PUBLIC_SITE_URL\` and no server key: yes"
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Remove the tampered env file (T-04)
         if: always()
