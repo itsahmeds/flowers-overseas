@@ -55,15 +55,29 @@ Quotations are from the captured texts in `imagery-generator-terms-texts-2026-09
 10. **Account facts not filed.** Residence country of the account, plan, and whether the training toggle is off were requested and **declined by the founder on 2026-09-18**. None of them is a condition of clauses 3–6 above: the commercial-use grant and the Output assignment apply to all plans and both the RoW and EU terms. The record is therefore complete for ADR-0014's purpose; the three facts can be appended later without reopening TASK-080.
 11. **Read by** the orchestrator (Claude), 2026-09-18; **filing accepted by** Ahmed (founder), 2026-09-18.
 
+## The swap, landed (TASK-080, 2026-09-18)
+
+- `generator` / `generatorModel` are now `OpenAI ChatGPT` / `gpt-image 2.0` on all 31
+  `seed/data/media.json` rows and in all 31 prompt records; `tests/unit/imagery-prompts.test.ts`
+  pins **those** values against this file, so the data and the compliance record cannot name
+  different generators. The placeholder appears nowhere in either, which the same test asserts.
+- Re-hashing every prompt record was intended and happened: `promptHash` covers the model, so the
+  change arrived as one whole-manifest diff rather than a silent edit.
+- Every asset is `reviewState: "approved"` (`reviewedBy: founder`, 2026-09-18 07:30Z / 07:45Z), the
+  bytes are derived and committed, and the pages render them under the honesty label.
+- **Clause 8 is discharged in data.** Every `ai` row records `originalSha256` — the digest of the
+  original that carries the C2PA manifest and the SynthID watermark — and `derivativeC2pa:
+  "stripped"`, because the AVIF/WebP re-encode cannot carry a JUMBF-boxed manifest. The originals
+  stay in the Drive store of record and in `.local/imagery/originals/`; the verification path is
+  written down in `docs/runbooks/imagery.md` §3.
+
 ## Until it was filed (historical — superseded 2026-09-18)
 
-- `generator` and `generatorModel` are the literal string `to-be-confirmed` on all 31 demo assets
-  and in all 31 prompt records. `tests/unit/imagery-prompts.test.ts` pins that value and names this
-  file, so the placeholder cannot quietly become permanent.
-- Every asset stays `reviewState: "pending"`, which means no image renders (spec 006 AC-18) —
-  there are no committed image bytes yet either.
-- Confirming the generator re-hashes every prompt record (the hash covers the model), so the change
-  arrives as one whole-manifest diff rather than a silent edit. That is intended.
+- `generator` and `generatorModel` were the literal string `to-be-confirmed` on all 31 demo assets
+  and in all 31 prompt records, pinned by a test that named this file, so the placeholder could not
+  quietly become permanent.
+- Every asset stayed `reviewState: "pending"`, which meant no image rendered (spec 006 AC-18) — and
+  there were no committed image bytes either.
 
 ## The related legal items that are *not* this file's
 

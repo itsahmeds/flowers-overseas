@@ -521,16 +521,16 @@ export const HOME_STATES = {
 /**
  * The manifest this section renders against.
  *
- * `seed/data/media-variants.json` and `seed/data/alt/*.json` are committed **empty** — the founder
- * has supplied no imagery and `plan/10` §3 forbids showing a photograph we do not have — so the
- * real dataset can only produce the placeholder state. This is the same dataset with the ladder and
- * the alt text the founder's assets will add (TASK-080), passed as `MediaAsset`'s `manifest` prop
- * so nothing mutates module state inside a request.
+ * TASK-080 filled `seed/data/media-variants.json` and `seed/data/alt/*.json`, so the **committed**
+ * dataset now renders photographs. This fixture manifest stays, because the states a gallery has to
+ * show are the ones the real dataset *cannot* produce: an asset that is `pending`, an approved asset
+ * with no derived bytes, and a locale with no alt text. It is passed as `MediaAsset`'s `manifest`
+ * prop so nothing mutates module state inside a request.
  *
- * **The variant files do not exist yet**, so the browser draws the `<img>`'s alt text rather than a
- * photograph here. That is the honest state of this section until TASK-080 commits the bytes, and
- * it is exactly what the section demonstrates: the markup, the ladder, the `sizes`, the preload and
- * the label are all in place and only the pixels are missing.
+ * Its `galleryLadder()` widths are invented and its files do not exist, so the browser draws the
+ * `<img>`'s alt text rather than a photograph in the *fixture* rows — which is what makes the
+ * markup, the ladder, the `sizes`, the preload and the label readable side by side. The row built
+ * from the committed dataset shows the real thing.
  */
 const GALLERY_WIDTHS = [384, 640, 1080] as const;
 
@@ -639,9 +639,9 @@ export const MEDIA_ASSET_STATES = {
   placeholderNoAlt:
     "MediaAsset \u00b7 placeholder/noAlt \u2014 approved, with bytes, and no alt text for this locale: the captioned box, never an English alt on a non-English page (WCAG 1.1.1 + 3.1.2).",
   placeholderCommitted:
-    "MediaAsset \u00b7 the committed Phase-0 state \u2014 the same asset id read from the real dataset: 31 rows, all approved by the founder on 2026-09-18 and none derived until TASK-080, so the gate reports the first remaining failure (noVariants) and no <img> exists (plan/10 \u00a73).",
+    "MediaAsset \u00b7 the committed Phase-0 state \u2014 the same asset id read from the real dataset: 31 rows, all approved by the founder on 2026-09-18, derived into the Phase-0 ladder and alt-texted in four locales (TASK-080), so this one renders the founder's photograph.",
   placeholderNoBytes:
-    "MediaAsset \u00b7 placeholder/noVariants \u2014 the committed Phase-0 state of every one of the 31 asset rows: no derived file, so no <img> at all (plan/10 \u00a73).",
+    "MediaAsset \u00b7 placeholder/noVariants \u2014 approved, alt-texted, and with no derived file: no <img> at all, the captioned box instead (plan/10 \u00a73). It is the state every asset was in before TASK-080 and the state the 72 products with no imagery are in now.",
   provenance:
     "MediaProvenanceNote \u00b7 ai \u2014 rendered whenever a page displays a generated asset; server-rendered, crawlable, in the page's locale, and with no prop that can switch it off (ADR-0014, spec 006 AC-17).",
   provenanceHidden:
