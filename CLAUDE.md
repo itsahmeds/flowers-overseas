@@ -66,7 +66,15 @@ Agents never write code except the implementers. The orchestrator refuses to dis
    **Where they run (2026-09-18): implementers run the cheap gates locally — `typecheck`, `lint`,
    `i18n:check`, `check:no-db`, `codebase:map --check`, and the unit/contract files their diff
    touches. The expensive ones — `build`, `e2e`, `a11y`, `visual`, `lighthouse` — belong to CI,
-   which runs them free on dedicated runners.** An implementer takes the machine's single build slot
+   which runs them free on dedicated runners.**
+   **Correction (2026-09-18, later): that is only true once a PR carries the `ci:full` label.**
+   Without it `preview`, `e2e`, `visual` and `a11y` are skipped by their `if:` guard — they had
+   never run on any PR in this repo, and the label itself did not exist until PR 85. `lighthouse`
+   and the unit/lint/typecheck spine do run unlabelled. **Add `ci:full` to every PR** (it is also a
+   `pull_request` trigger, so labelling fires the run). The `preview` job additionally waits on a
+   Vercel preview deployment, so while the account sits under a build rate limit the browser chain
+   cannot run at all and a local run is the evidence of record — said plainly in `## Result`, with
+   the load average. An implementer takes the machine's single build slot
    only when the change cannot be judged without it (a new page's visual baselines, a byte budget, a
    deliberate performance measurement) and says so in `## Result`. Measured basis: a median
    implementer run is 30 minutes and the tail reached 346; every agent was re-running ~950 browser
@@ -80,7 +88,7 @@ Agents never write code except the implementers. The orchestrator refuses to dis
 
 ## Conventions
 - Branch `task/TASK-012-short-slug`; PR title `feat(scope): … (TASK-012)`.
-- **Open every PR with `gh pr create --draft`, then `gh pr ready`.** `.github/workflows/ci.yml` triggers on `pull_request: [ready_for_review, labeled]` only, so a PR created directly as ready fires no run at all (TASK-109, 2026-09-18).
+- **Open every PR with `gh pr create --draft`, then `gh pr ready`.** `.github/workflows/ci.yml` triggers on `pull_request: [ready_for_review, labeled]` only, so a PR created directly as ready fires no run at all (TASK-109, 2026-09-18). **Then `gh pr edit <n> --add-label ci:full`** — without that label the browser jobs (`preview`, `e2e`, `visual`, `a11y`) skip silently and CI's green tick means only lint, types, units and Lighthouse (PR 85, 2026-09-18).
 - Module boundaries per `plan/01-architecture.md` §5; `app/` is thin.
 - Tests live in `tests/<layer>/`; fixtures for occasion dates, currencies, addresses are shared.
 - Commit messages end with `Co-Authored-By: Claude <noreply@anthropic.com>` when Claude authored.
