@@ -251,16 +251,34 @@ describe("where it is mounted", () => {
     );
   });
 
-  it("is the only place in `src/` that emits an inline script", () => {
+  it("is the only place in `src/` that emits an executable inline script", () => {
     // Asserted by walking `src/`, not by reading the one file we hope is the only one: the claim
     // in §5.2, in the CSP comment and in the register is that the application has exactly one
     // inline script, and a second `dangerouslySetInnerHTML` anywhere would silently invalidate
     // the hash-based `script-src` (`/review 28` item 2).
+    //
+    // `src/modules/seo/schema/JsonLd.tsx` is the second — and only other — writer of inline
+    // markup, and it is **not** a script (spec 007 AC-15, TASK-093): its element carries
+    // `type="application/ld+json"`, which is not a JavaScript MIME type, so the HTML parser never
+    // prepares it as a script, the browser never executes it and CSP's `script-src` never applies
+    // to it. The hash invariant above is therefore untouched: the consent bootstrap remains the
+    // only *executable* inline script and the only hash in the policy. `dangerouslySetInnerHTML`
+    // is how a JSON-LD data block has to be written — React escapes a text child of `<script>`
+    // into HTML entities, which the raw-text parser would not decode, producing invalid JSON.
     const inlineUsers = sourceFilesUnder(resolve(repoRoot, "src")).filter(
       (file) => readFileSync(file, "utf8").includes("dangerouslySetInnerHTML"),
     );
     expect(
       inlineUsers.map((file) => relative(repoRoot, file)).sort(),
-    ).toStrictEqual(["src/modules/analytics/ui/AnalyticsScripts.tsx"]);
+    ).toStrictEqual([
+      "src/modules/analytics/ui/AnalyticsScripts.tsx",
+      "src/modules/seo/schema/JsonLd.tsx",
+    ]);
+
+    const jsonLd = readFileSync(
+      resolve(repoRoot, "src/modules/seo/schema/JsonLd.tsx"),
+      "utf8",
+    );
+    expect(jsonLd).toContain('type="application/ld+json"');
   });
 });

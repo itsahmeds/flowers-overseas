@@ -1,7 +1,7 @@
 /** Public barrel for `seo` (hreflang, canonical, JSON-LD builders, sitemap generators, robots). Owned by: spec 007. */
 
 /**
- * @purpose Indexability rule engine, canonical builder, robots policy, page metadata (spec 007)
+ * @purpose Indexability rule engine, canonical builder, robots policy, page metadata, JSON-LD builders (spec 007)
  *
  * The only import path for the `seo` module (spec 007 §2, `plan/01` §5; TASK-090).
  *
@@ -127,6 +127,7 @@ export {
   type JsonLdProps,
   jsonLdDocument,
   jsonLdScript,
+  schemaOptions,
 } from "./schema/JsonLd.tsx";
 
 export {

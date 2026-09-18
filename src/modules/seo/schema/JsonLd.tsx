@@ -27,8 +27,31 @@
  */
 import type { ReactElement } from "react";
 
+import type { CanonicalOptions } from "../canonical.ts";
+
 /** The only `@context` this site emits. */
 export const SCHEMA_CONTEXT = "https://schema.org";
+
+/**
+ * The builders' `CanonicalOptions` for a deployment, or `undefined` when its `NEXT_PUBLIC_SITE_URL`
+ * is not a URL at all.
+ *
+ * Every `item`, `url` and `logo` in this directory is absolute, because a relative URL in JSON-LD
+ * resolves against nothing a crawler can rely on. `deploymentDescriptor()` yields the empty string
+ * when the variable is absent — a unit render or a misconfigured deployment, never a real one
+ * (`src/lib/env.ts` asserts it at build time) — and the honest answer there is the one the
+ * indexing gate already gives: **say nothing**, rather than announce a node with a broken URL.
+ * Each route therefore builds its nodes only when this returns options (spec 007 §6's fail-closed
+ * rule, applied to structured data).
+ */
+export function schemaOptions(siteUrl: string): CanonicalOptions | undefined {
+  try {
+    new URL(siteUrl);
+  } catch {
+    return undefined;
+  }
+  return { baseUrl: siteUrl };
+}
 
 /** A schema.org node as a builder returns it: `@type` plus its own properties, no `@context`. */
 export type JsonLdNode = Readonly<Record<string, unknown>>;
