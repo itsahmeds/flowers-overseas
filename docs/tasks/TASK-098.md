@@ -71,7 +71,7 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
 
 ## Result
 
-Shipped in **PR #78** (branch `task/TASK-098-container-railway-staging`, three commits). The
+Shipped in **PR #80** (branch `task/TASK-098-container-railway-staging`, three commits). The
 container half: `output: "standalone"` in `next.config.ts`, a multi-stage `Dockerfile`
 (`node:24-slim` in every stage, corepack-pinned pnpm, `pnpm install --frozen-lockfile`,
 `pnpm build`, a runtime stage copying `.next/standalone` + `.next/static` + `public/` only, `USER
