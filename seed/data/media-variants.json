@@ -8,6 +8,7 @@
     "libvips": "8.18.6",
     "widths": [384, 640, 828, 1080, 1200, 1600, 1920],
     "ogJpegWidth": 1200,
+    "ogJpegSlots": ["og"],
     "concurrency": 1,
     "formats": ["avif", "webp", "jpeg"],
     "aspects": {
@@ -18,43 +19,43 @@
         },
         {
           "ratio": "16:9",
-          "widths": [1080, 1200, 1600, 1920]
+          "widths": [1080, 1200]
         }
       ],
       "occasionTile": [
         {
           "ratio": "1:1",
-          "widths": [384, 640, 828, 1080, 1200, 1600, 1920]
+          "widths": [384]
         }
       ],
       "productHero": [
         {
           "ratio": "4:5",
-          "widths": [384, 640, 828, 1080, 1200, 1600, 1920]
+          "widths": [384, 640, 828]
         }
       ],
       "productDetail": [
         {
           "ratio": "4:5",
-          "widths": [384, 640, 828, 1080, 1200, 1600, 1920]
+          "widths": [384]
         }
       ],
       "productThumb": [
         {
           "ratio": "4:5",
-          "widths": [384, 640, 828, 1080, 1200, 1600, 1920]
+          "widths": [384]
         }
       ],
       "context": [
         {
           "ratio": "3:2",
-          "widths": [384, 640, 828, 1080, 1200, 1600, 1920]
+          "widths": [384, 640, 828]
         }
       ],
       "og": [
         {
           "ratio": "1.91:1",
-          "widths": [384, 640, 828, 1080, 1200, 1600, 1920]
+          "widths": [1200]
         }
       ]
     },
@@ -80,7 +81,7 @@
       },
       "webp": {
         "quality": 72,
-        "effort": 4,
+        "effort": 6,
         "alphaQuality": 100,
         "lossless": false,
         "nearLossless": false,
@@ -94,5 +95,1186 @@
       }
     }
   },
-  "rows": []
+  "rows": [
+    {
+      "assetId": "fo-bq-001-hero",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "avif",
+      "bytes": 9911,
+      "checksumSha256": "d503305eaac7460afa57900ca2b8b2e678dd5e8c51c435f0d6429f6fb1d2e9f4",
+      "objectKey": "media/fo-bq-001-hero/384.avif"
+    },
+    {
+      "assetId": "fo-bq-001-hero",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "webp",
+      "bytes": 13068,
+      "checksumSha256": "b5cd7c32ac04482db98b4e6e21ae3338f39de251637a315410ab57f96b82f185",
+      "objectKey": "media/fo-bq-001-hero/384.webp"
+    },
+    {
+      "assetId": "fo-bq-001-hero",
+      "variant": "640",
+      "width": 640,
+      "height": 800,
+      "format": "avif",
+      "bytes": 20752,
+      "checksumSha256": "7cb47c018a59a53cf1051acdbe7636c1030ec8f8627f78f186553c892406a937",
+      "objectKey": "media/fo-bq-001-hero/640.avif"
+    },
+    {
+      "assetId": "fo-bq-001-hero",
+      "variant": "640",
+      "width": 640,
+      "height": 800,
+      "format": "webp",
+      "bytes": 27534,
+      "checksumSha256": "deea3df5a9979d45676ca67650a37a3b6ef8c001cffda92c802bcf21c9067e0c",
+      "objectKey": "media/fo-bq-001-hero/640.webp"
+    },
+    {
+      "assetId": "fo-bq-001-hero",
+      "variant": "828",
+      "width": 828,
+      "height": 1035,
+      "format": "avif",
+      "bytes": 31472,
+      "checksumSha256": "abdafccc8b1da0389f1d1bead0753aab1a9afa2f5d22c071910208c100a2ba16",
+      "objectKey": "media/fo-bq-001-hero/828.avif"
+    },
+    {
+      "assetId": "fo-bq-001-hero",
+      "variant": "828",
+      "width": 828,
+      "height": 1035,
+      "format": "webp",
+      "bytes": 40386,
+      "checksumSha256": "99c90392a2d4534404f32f90338e59575a7ab9a1be201bb2d34a0816cd56a35d",
+      "objectKey": "media/fo-bq-001-hero/828.webp"
+    },
+    {
+      "assetId": "fo-bq-001-detail",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "avif",
+      "bytes": 18016,
+      "checksumSha256": "4898b891f7828108bcca419ab7d3dbd6f3bcc04690ce59ec56fd0839274ad99a",
+      "objectKey": "media/fo-bq-001-detail/384.avif"
+    },
+    {
+      "assetId": "fo-bq-001-detail",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "webp",
+      "bytes": 23560,
+      "checksumSha256": "b84add607a0363b46e636aff58c64fb2cd4b987f5323ac80b2b84c1e38cfb669",
+      "objectKey": "media/fo-bq-001-detail/384.webp"
+    },
+    {
+      "assetId": "fo-bq-002-hero",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "avif",
+      "bytes": 10783,
+      "checksumSha256": "0515926680793eac04f045c78a07945f7d52f60c25f1246ec801c6a30b752916",
+      "objectKey": "media/fo-bq-002-hero/384.avif"
+    },
+    {
+      "assetId": "fo-bq-002-hero",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "webp",
+      "bytes": 12414,
+      "checksumSha256": "47ad44ae588ce990874ba67e8df55d73d73a7924ffa81e5e82f06ad4e619bda1",
+      "objectKey": "media/fo-bq-002-hero/384.webp"
+    },
+    {
+      "assetId": "fo-bq-002-hero",
+      "variant": "640",
+      "width": 640,
+      "height": 800,
+      "format": "avif",
+      "bytes": 21843,
+      "checksumSha256": "592eb52c3924dc381d9b83ec0b57425bf007180c28ae3d4fbabb0c7f82b710ef",
+      "objectKey": "media/fo-bq-002-hero/640.avif"
+    },
+    {
+      "assetId": "fo-bq-002-hero",
+      "variant": "640",
+      "width": 640,
+      "height": 800,
+      "format": "webp",
+      "bytes": 26010,
+      "checksumSha256": "d7dc945936ddedde431fec5b9681a33ddf0a16bee8979985fc0b9b2a0b526693",
+      "objectKey": "media/fo-bq-002-hero/640.webp"
+    },
+    {
+      "assetId": "fo-bq-002-hero",
+      "variant": "828",
+      "width": 828,
+      "height": 1035,
+      "format": "avif",
+      "bytes": 31086,
+      "checksumSha256": "fd96e57f2b1ba7e3cc7a13dccfb1b6eecd9452720d4fa695d397edecb3ab72ef",
+      "objectKey": "media/fo-bq-002-hero/828.avif"
+    },
+    {
+      "assetId": "fo-bq-002-hero",
+      "variant": "828",
+      "width": 828,
+      "height": 1035,
+      "format": "webp",
+      "bytes": 37490,
+      "checksumSha256": "d8f571d8b3ec658336c154bfd20a742ce73d73a1c82ba65b146fb2865e4f8bc0",
+      "objectKey": "media/fo-bq-002-hero/828.webp"
+    },
+    {
+      "assetId": "fo-bq-002-detail",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "avif",
+      "bytes": 15337,
+      "checksumSha256": "26b7d0c12a78d06eaeb8155e48ccdd5c4dcc6c144d4c26eee890457793aa4363",
+      "objectKey": "media/fo-bq-002-detail/384.avif"
+    },
+    {
+      "assetId": "fo-bq-002-detail",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "webp",
+      "bytes": 18392,
+      "checksumSha256": "9ae71d3e4f8ff7e74c5cc7f869d7edf916127ae033371ee211faeceadc5c2695",
+      "objectKey": "media/fo-bq-002-detail/384.webp"
+    },
+    {
+      "assetId": "fo-bq-009-hero",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "avif",
+      "bytes": 10214,
+      "checksumSha256": "0ba6e1c8ea22d33377a926f43f72d9c1335111f980965ddef8d49e2a42d26f8b",
+      "objectKey": "media/fo-bq-009-hero/384.avif"
+    },
+    {
+      "assetId": "fo-bq-009-hero",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "webp",
+      "bytes": 13526,
+      "checksumSha256": "e0d5df83c6406d7ceeede36d14eaeb02629778d32744d9b50aa531431438f9e4",
+      "objectKey": "media/fo-bq-009-hero/384.webp"
+    },
+    {
+      "assetId": "fo-bq-009-hero",
+      "variant": "640",
+      "width": 640,
+      "height": 800,
+      "format": "avif",
+      "bytes": 22142,
+      "checksumSha256": "10bf1f144b5e66a0626df72ce9a0afe8ae598230c5f971e21bcd830479b14892",
+      "objectKey": "media/fo-bq-009-hero/640.avif"
+    },
+    {
+      "assetId": "fo-bq-009-hero",
+      "variant": "640",
+      "width": 640,
+      "height": 800,
+      "format": "webp",
+      "bytes": 28356,
+      "checksumSha256": "44be0a7fca14182dd6a116bab87f69b5f82089367c5307ad940735435eaec3e5",
+      "objectKey": "media/fo-bq-009-hero/640.webp"
+    },
+    {
+      "assetId": "fo-bq-009-hero",
+      "variant": "828",
+      "width": 828,
+      "height": 1035,
+      "format": "avif",
+      "bytes": 32718,
+      "checksumSha256": "d276fc0b65998b3aa9218b7061d4fc7b28813026f21cc9d858930d686926e585",
+      "objectKey": "media/fo-bq-009-hero/828.avif"
+    },
+    {
+      "assetId": "fo-bq-009-hero",
+      "variant": "828",
+      "width": 828,
+      "height": 1035,
+      "format": "webp",
+      "bytes": 40948,
+      "checksumSha256": "640b46785456dd1e57975b242f3a65e8b3b24298642a3c3edbb573557a12f991",
+      "objectKey": "media/fo-bq-009-hero/828.webp"
+    },
+    {
+      "assetId": "fo-bq-009-detail",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "avif",
+      "bytes": 13232,
+      "checksumSha256": "1a29b05bd8e881259b911dc7ba90df3c99887f20edf75cddc542061324c0708d",
+      "objectKey": "media/fo-bq-009-detail/384.avif"
+    },
+    {
+      "assetId": "fo-bq-009-detail",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "webp",
+      "bytes": 17446,
+      "checksumSha256": "cfe5d4b2ddaf7ee55286a725b45d75b7eede98c78b6b89ef706026bedf357429",
+      "objectKey": "media/fo-bq-009-detail/384.webp"
+    },
+    {
+      "assetId": "fo-bq-015-hero",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "avif",
+      "bytes": 9068,
+      "checksumSha256": "782c84a05f39e84fda7f8cdb0cf7bfd60dd36952151e8caf126bf2fc94cac5d1",
+      "objectKey": "media/fo-bq-015-hero/384.avif"
+    },
+    {
+      "assetId": "fo-bq-015-hero",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "webp",
+      "bytes": 12282,
+      "checksumSha256": "a02a31c1e4ffe207e6b547aef5944225f6280e17699fb0f0edbf6b2c9d7b35b7",
+      "objectKey": "media/fo-bq-015-hero/384.webp"
+    },
+    {
+      "assetId": "fo-bq-015-hero",
+      "variant": "640",
+      "width": 640,
+      "height": 800,
+      "format": "avif",
+      "bytes": 18501,
+      "checksumSha256": "d88ddb368b1567c7dc33c757c4acab7cf03918f550888c20eaa1558078d363a2",
+      "objectKey": "media/fo-bq-015-hero/640.avif"
+    },
+    {
+      "assetId": "fo-bq-015-hero",
+      "variant": "640",
+      "width": 640,
+      "height": 800,
+      "format": "webp",
+      "bytes": 24668,
+      "checksumSha256": "c61385adefd9db36977f5e853707594bf9571be83564874e7a8582e9e9a7f204",
+      "objectKey": "media/fo-bq-015-hero/640.webp"
+    },
+    {
+      "assetId": "fo-bq-015-hero",
+      "variant": "828",
+      "width": 828,
+      "height": 1035,
+      "format": "avif",
+      "bytes": 26638,
+      "checksumSha256": "2a903f1cca70c3bc3963b65430d8cbe6bf1c684d8398e748996daf8ee63438f3",
+      "objectKey": "media/fo-bq-015-hero/828.avif"
+    },
+    {
+      "assetId": "fo-bq-015-hero",
+      "variant": "828",
+      "width": 828,
+      "height": 1035,
+      "format": "webp",
+      "bytes": 34902,
+      "checksumSha256": "e399f97cdf84b75363e72051922e8c83ddf1504d7c578b8e8ecd677bae004b23",
+      "objectKey": "media/fo-bq-015-hero/828.webp"
+    },
+    {
+      "assetId": "fo-bq-015-detail",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "avif",
+      "bytes": 11731,
+      "checksumSha256": "4bb0a7f08d2fa106086a1f213f9092c397fdde29c8ed96ea90e717d78c9c352f",
+      "objectKey": "media/fo-bq-015-detail/384.avif"
+    },
+    {
+      "assetId": "fo-bq-015-detail",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "webp",
+      "bytes": 14896,
+      "checksumSha256": "6581cb6d6b63a0990fbb0e9712fd5e92f5330ef90a2dba0bbecfbbbf0e434e1b",
+      "objectKey": "media/fo-bq-015-detail/384.webp"
+    },
+    {
+      "assetId": "fo-bq-019-hero",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "avif",
+      "bytes": 10512,
+      "checksumSha256": "2f01abf8b6446bf018a10a4dced2424a0d58ac25f1ff86e7170138ed3148b7b7",
+      "objectKey": "media/fo-bq-019-hero/384.avif"
+    },
+    {
+      "assetId": "fo-bq-019-hero",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "webp",
+      "bytes": 15390,
+      "checksumSha256": "80822f3cc0425dd74bef8f4c0c996d6c3276d4e3da6d15572279c8f6ea1f6e75",
+      "objectKey": "media/fo-bq-019-hero/384.webp"
+    },
+    {
+      "assetId": "fo-bq-019-hero",
+      "variant": "640",
+      "width": 640,
+      "height": 800,
+      "format": "avif",
+      "bytes": 22524,
+      "checksumSha256": "041d8a563da73d8547a95bf838123afdf32550bcb9fbd155b399cb1c1e76a9ea",
+      "objectKey": "media/fo-bq-019-hero/640.avif"
+    },
+    {
+      "assetId": "fo-bq-019-hero",
+      "variant": "640",
+      "width": 640,
+      "height": 800,
+      "format": "webp",
+      "bytes": 32946,
+      "checksumSha256": "5a39175f168e03b35ace4965cf4de781948cabba8aa8f7147b106184022418e1",
+      "objectKey": "media/fo-bq-019-hero/640.webp"
+    },
+    {
+      "assetId": "fo-bq-019-hero",
+      "variant": "828",
+      "width": 828,
+      "height": 1035,
+      "format": "avif",
+      "bytes": 33632,
+      "checksumSha256": "a7b13a195e4c67f5c95375194fad547885c9106c22198ea868d8fdefeb48b19e",
+      "objectKey": "media/fo-bq-019-hero/828.avif"
+    },
+    {
+      "assetId": "fo-bq-019-hero",
+      "variant": "828",
+      "width": 828,
+      "height": 1035,
+      "format": "webp",
+      "bytes": 47662,
+      "checksumSha256": "699eda84f721e8066fc58ffea794bc4d01bc80e1b27dc506ec1ba33bcbd6a584",
+      "objectKey": "media/fo-bq-019-hero/828.webp"
+    },
+    {
+      "assetId": "fo-bq-019-detail",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "avif",
+      "bytes": 15140,
+      "checksumSha256": "b038d7a7638e466dff85f536c747471f56a112262b7c780901782d5a497b8d4e",
+      "objectKey": "media/fo-bq-019-detail/384.avif"
+    },
+    {
+      "assetId": "fo-bq-019-detail",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "webp",
+      "bytes": 21210,
+      "checksumSha256": "666c7230812313b8d605b00d7928d9b5a8da5c4bac9dc9a26bff066e9fd22a0a",
+      "objectKey": "media/fo-bq-019-detail/384.webp"
+    },
+    {
+      "assetId": "fo-bq-023-hero",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "avif",
+      "bytes": 11406,
+      "checksumSha256": "a428a477bb31b3468629c6fd5a4709ce6db6f8e7f99c6890af59f713d0fc6a3c",
+      "objectKey": "media/fo-bq-023-hero/384.avif"
+    },
+    {
+      "assetId": "fo-bq-023-hero",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "webp",
+      "bytes": 16822,
+      "checksumSha256": "86308cc37c7b80ce13702b677d93f6fffc52732161d69ae7260dfd506c55cfea",
+      "objectKey": "media/fo-bq-023-hero/384.webp"
+    },
+    {
+      "assetId": "fo-bq-023-hero",
+      "variant": "640",
+      "width": 640,
+      "height": 800,
+      "format": "avif",
+      "bytes": 24838,
+      "checksumSha256": "59cac66a7954398bc2fe35336ac2687aaf27e3b0006dbb3a8bc0c6cac682eaec",
+      "objectKey": "media/fo-bq-023-hero/640.avif"
+    },
+    {
+      "assetId": "fo-bq-023-hero",
+      "variant": "640",
+      "width": 640,
+      "height": 800,
+      "format": "webp",
+      "bytes": 37286,
+      "checksumSha256": "ef0b557606d9a07d6e6f257fcdc8229024baa3dc533e6b0af94c9fe26826984c",
+      "objectKey": "media/fo-bq-023-hero/640.webp"
+    },
+    {
+      "assetId": "fo-bq-023-hero",
+      "variant": "828",
+      "width": 828,
+      "height": 1035,
+      "format": "avif",
+      "bytes": 37582,
+      "checksumSha256": "1530b2f3472daa43630f2f3412dc1fcbea8341bda77ec9d515a6fae1d11be7e4",
+      "objectKey": "media/fo-bq-023-hero/828.avif"
+    },
+    {
+      "assetId": "fo-bq-023-hero",
+      "variant": "828",
+      "width": 828,
+      "height": 1035,
+      "format": "webp",
+      "bytes": 56218,
+      "checksumSha256": "c40ecfe86f6275a9856ee31c6830edeaf28225b08930a6f7b94c42762014b951",
+      "objectKey": "media/fo-bq-023-hero/828.webp"
+    },
+    {
+      "assetId": "fo-bq-023-detail",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "avif",
+      "bytes": 22342,
+      "checksumSha256": "d1ebfb9e48e6297f50795ad2dc2dc7bc2d2ea1d8180d228d45f5ee4ef6ef3016",
+      "objectKey": "media/fo-bq-023-detail/384.avif"
+    },
+    {
+      "assetId": "fo-bq-023-detail",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "webp",
+      "bytes": 33612,
+      "checksumSha256": "6457b0c0ce2cface762b8dd805586b033e1a290d4e1a08c50602bff71577e9c0",
+      "objectKey": "media/fo-bq-023-detail/384.webp"
+    },
+    {
+      "assetId": "fo-bq-028-hero",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "avif",
+      "bytes": 13518,
+      "checksumSha256": "dc31740ea24c238c1a0d61935eb07dba6036eb364e1bbc31da565a01c1692dfc",
+      "objectKey": "media/fo-bq-028-hero/384.avif"
+    },
+    {
+      "assetId": "fo-bq-028-hero",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "webp",
+      "bytes": 19382,
+      "checksumSha256": "78c261871d5b5d826c727d78d644472b5cd80e656d1b3113a26f6b1104dd65b0",
+      "objectKey": "media/fo-bq-028-hero/384.webp"
+    },
+    {
+      "assetId": "fo-bq-028-hero",
+      "variant": "640",
+      "width": 640,
+      "height": 800,
+      "format": "avif",
+      "bytes": 29871,
+      "checksumSha256": "f4ab7708eca9e7047ead9f9d6ea9024882d801d3d43dc6ec2971e556792f9de3",
+      "objectKey": "media/fo-bq-028-hero/640.avif"
+    },
+    {
+      "assetId": "fo-bq-028-hero",
+      "variant": "640",
+      "width": 640,
+      "height": 800,
+      "format": "webp",
+      "bytes": 43384,
+      "checksumSha256": "cbe8653b055958eb21500ddc888eabdc484e1812d15fbd30be80cb82709a778b",
+      "objectKey": "media/fo-bq-028-hero/640.webp"
+    },
+    {
+      "assetId": "fo-bq-028-hero",
+      "variant": "828",
+      "width": 828,
+      "height": 1035,
+      "format": "avif",
+      "bytes": 44592,
+      "checksumSha256": "21b6428bc797012a20dd71c25973cd78bec90d46d2e29797cd3075c564164269",
+      "objectKey": "media/fo-bq-028-hero/828.avif"
+    },
+    {
+      "assetId": "fo-bq-028-hero",
+      "variant": "828",
+      "width": 828,
+      "height": 1035,
+      "format": "webp",
+      "bytes": 62646,
+      "checksumSha256": "86caad5ea7fb41e8da1b9d2c4bd890b44c97c1fa94ec44a5a7d7fc2547a761e0",
+      "objectKey": "media/fo-bq-028-hero/828.webp"
+    },
+    {
+      "assetId": "fo-bq-028-detail",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "avif",
+      "bytes": 22258,
+      "checksumSha256": "e00d697c39878e1dc9026b578fde216e028ea14653f09097517670565875aecd",
+      "objectKey": "media/fo-bq-028-detail/384.avif"
+    },
+    {
+      "assetId": "fo-bq-028-detail",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "webp",
+      "bytes": 33086,
+      "checksumSha256": "416f8aa10dd75b3e4da08ddf977575fba5dd604537343c7f8732bc8994edcb4a",
+      "objectKey": "media/fo-bq-028-detail/384.webp"
+    },
+    {
+      "assetId": "fo-ar-001-hero",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "avif",
+      "bytes": 9464,
+      "checksumSha256": "881746241ea1642ed8c0b3819393d3c23f4bfc09dd11fab308b790dbbbcd1ad0",
+      "objectKey": "media/fo-ar-001-hero/384.avif"
+    },
+    {
+      "assetId": "fo-ar-001-hero",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "webp",
+      "bytes": 12574,
+      "checksumSha256": "1b51b0e8a60d99d1841884de8f1bce7a3ba11057381dbc2ff278920e3ae17d12",
+      "objectKey": "media/fo-ar-001-hero/384.webp"
+    },
+    {
+      "assetId": "fo-ar-001-hero",
+      "variant": "640",
+      "width": 640,
+      "height": 800,
+      "format": "avif",
+      "bytes": 21337,
+      "checksumSha256": "90d4c95470aedcd018c7e925217b53962530c962d2e38826d8632a0927636282",
+      "objectKey": "media/fo-ar-001-hero/640.avif"
+    },
+    {
+      "assetId": "fo-ar-001-hero",
+      "variant": "640",
+      "width": 640,
+      "height": 800,
+      "format": "webp",
+      "bytes": 27350,
+      "checksumSha256": "5add2663f645766ff69b1c041ae5d663daffb965486771a080fcb965b53bda6f",
+      "objectKey": "media/fo-ar-001-hero/640.webp"
+    },
+    {
+      "assetId": "fo-ar-001-hero",
+      "variant": "828",
+      "width": 828,
+      "height": 1035,
+      "format": "avif",
+      "bytes": 30955,
+      "checksumSha256": "1560ff1f698a90115ca5ddb866e4d24c740094a3853094faf0671910b475cb3c",
+      "objectKey": "media/fo-ar-001-hero/828.avif"
+    },
+    {
+      "assetId": "fo-ar-001-hero",
+      "variant": "828",
+      "width": 828,
+      "height": 1035,
+      "format": "webp",
+      "bytes": 40492,
+      "checksumSha256": "a42d0f6a65370775d00d42332ed75ad2ffab9385251dc5a998e83fa31c83affa",
+      "objectKey": "media/fo-ar-001-hero/828.webp"
+    },
+    {
+      "assetId": "fo-ar-001-detail",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "avif",
+      "bytes": 18529,
+      "checksumSha256": "2ae889043591c1e7f0908525ae8caadadaa676f81e5ad5d4c82d7266f3ddb5da",
+      "objectKey": "media/fo-ar-001-detail/384.avif"
+    },
+    {
+      "assetId": "fo-ar-001-detail",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "webp",
+      "bytes": 28150,
+      "checksumSha256": "fa4a308607ec4df3bd4e5773c081a8733f507da9108a2ae19680e44308e91a19",
+      "objectKey": "media/fo-ar-001-detail/384.webp"
+    },
+    {
+      "assetId": "fo-ar-003-hero",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "avif",
+      "bytes": 16898,
+      "checksumSha256": "0513c0040ca601dff57a53211986d50847642c55835d4832c4979eb552026853",
+      "objectKey": "media/fo-ar-003-hero/384.avif"
+    },
+    {
+      "assetId": "fo-ar-003-hero",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "webp",
+      "bytes": 24706,
+      "checksumSha256": "94fa9d0a10d8c9839cca2e74732bbab9977bbfdb579c46f389e6f6e16cbd9216",
+      "objectKey": "media/fo-ar-003-hero/384.webp"
+    },
+    {
+      "assetId": "fo-ar-003-hero",
+      "variant": "640",
+      "width": 640,
+      "height": 800,
+      "format": "avif",
+      "bytes": 36987,
+      "checksumSha256": "f8465277f4ee20c05d97c98349811c825601fe60bcc62d86af21650df44f8b4f",
+      "objectKey": "media/fo-ar-003-hero/640.avif"
+    },
+    {
+      "assetId": "fo-ar-003-hero",
+      "variant": "640",
+      "width": 640,
+      "height": 800,
+      "format": "webp",
+      "bytes": 55908,
+      "checksumSha256": "d705f9c4698e588fddd11932e4c8d0e7d12df5363a3f54332f83a24598bef1b5",
+      "objectKey": "media/fo-ar-003-hero/640.webp"
+    },
+    {
+      "assetId": "fo-ar-003-hero",
+      "variant": "828",
+      "width": 828,
+      "height": 1035,
+      "format": "avif",
+      "bytes": 54307,
+      "checksumSha256": "3bc76379288885b4487f9d4c5339bbbb7452af3941597175e167a3bdd0c39e42",
+      "objectKey": "media/fo-ar-003-hero/828.avif"
+    },
+    {
+      "assetId": "fo-ar-003-hero",
+      "variant": "828",
+      "width": 828,
+      "height": 1035,
+      "format": "webp",
+      "bytes": 80192,
+      "checksumSha256": "f33d651b8f1acb1f0a0ce6d3d092c3c09d9aaf0b9025b1de603edeb04cbfe34d",
+      "objectKey": "media/fo-ar-003-hero/828.webp"
+    },
+    {
+      "assetId": "fo-ar-003-detail",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "avif",
+      "bytes": 24348,
+      "checksumSha256": "1e66d1a1233fb6fa7c590df62b6e2b93f0b910fa64007ede96e752a48a168538",
+      "objectKey": "media/fo-ar-003-detail/384.avif"
+    },
+    {
+      "assetId": "fo-ar-003-detail",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "webp",
+      "bytes": 37756,
+      "checksumSha256": "9af0af9c0ebbae74c9e49ad444da8befa7e599c4125f5e8caa0e43fa43aa8f61",
+      "objectKey": "media/fo-ar-003-detail/384.webp"
+    },
+    {
+      "assetId": "fo-pt-001-hero",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "avif",
+      "bytes": 7112,
+      "checksumSha256": "28fcaaa221b75b6c0bce1eef9e5c0c4ee8b204f1551682a6f4c03a748793bec6",
+      "objectKey": "media/fo-pt-001-hero/384.avif"
+    },
+    {
+      "assetId": "fo-pt-001-hero",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "webp",
+      "bytes": 8332,
+      "checksumSha256": "d46942b29d88ad436b3f0aef67f1618637066dee307b7673f1e5b4417af8cf24",
+      "objectKey": "media/fo-pt-001-hero/384.webp"
+    },
+    {
+      "assetId": "fo-pt-001-hero",
+      "variant": "640",
+      "width": 640,
+      "height": 800,
+      "format": "avif",
+      "bytes": 14554,
+      "checksumSha256": "1975b5f3406daddd0d7a987739804059a8a59f8ae168259e7a7125356fcd4d39",
+      "objectKey": "media/fo-pt-001-hero/640.avif"
+    },
+    {
+      "assetId": "fo-pt-001-hero",
+      "variant": "640",
+      "width": 640,
+      "height": 800,
+      "format": "webp",
+      "bytes": 16744,
+      "checksumSha256": "340131b75a91c2d6a96ac884d6318bef873fc3b1e4524bf53e68f12296245fdc",
+      "objectKey": "media/fo-pt-001-hero/640.webp"
+    },
+    {
+      "assetId": "fo-pt-001-hero",
+      "variant": "828",
+      "width": 828,
+      "height": 1035,
+      "format": "avif",
+      "bytes": 19738,
+      "checksumSha256": "a5fe3b45749486ff553c08dc06b92d59f28fc3e9bdca76d4ed0b74af169577a0",
+      "objectKey": "media/fo-pt-001-hero/828.avif"
+    },
+    {
+      "assetId": "fo-pt-001-hero",
+      "variant": "828",
+      "width": 828,
+      "height": 1035,
+      "format": "webp",
+      "bytes": 24224,
+      "checksumSha256": "bdc3f6aa0b59291dd4f87bfe11ecaa188e439907638e0f279d599f6595b76c73",
+      "objectKey": "media/fo-pt-001-hero/828.webp"
+    },
+    {
+      "assetId": "fo-pt-001-detail",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "avif",
+      "bytes": 8169,
+      "checksumSha256": "b4f98242cc8fe7343ff669f405d8e32bb11a728b6c729b0eea0e9dafade4359c",
+      "objectKey": "media/fo-pt-001-detail/384.avif"
+    },
+    {
+      "assetId": "fo-pt-001-detail",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "webp",
+      "bytes": 9446,
+      "checksumSha256": "15bc1aea74dadb912c9b02762955b6ced3320f778a3be9f60fbdff53095d76d3",
+      "objectKey": "media/fo-pt-001-detail/384.webp"
+    },
+    {
+      "assetId": "fo-fn-001-hero",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "avif",
+      "bytes": 16043,
+      "checksumSha256": "d31b326973ee90e18d81ae6990b28f382c2506c77ed05a6c440940fdb100c055",
+      "objectKey": "media/fo-fn-001-hero/384.avif"
+    },
+    {
+      "assetId": "fo-fn-001-hero",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "webp",
+      "bytes": 22924,
+      "checksumSha256": "974ba7879658f31a7f814a705122f6430096fb97dbc029eb6d2f12e19d9432a4",
+      "objectKey": "media/fo-fn-001-hero/384.webp"
+    },
+    {
+      "assetId": "fo-fn-001-hero",
+      "variant": "640",
+      "width": 640,
+      "height": 800,
+      "format": "avif",
+      "bytes": 36392,
+      "checksumSha256": "bf85a8d37cfcf2e4c9a9a4387f6136db14bb419e2bbaa43a28b5dba44c209aad",
+      "objectKey": "media/fo-fn-001-hero/640.avif"
+    },
+    {
+      "assetId": "fo-fn-001-hero",
+      "variant": "640",
+      "width": 640,
+      "height": 800,
+      "format": "webp",
+      "bytes": 51926,
+      "checksumSha256": "860351ab65ca4c46769422075f2bfa7875b02d9ee475f812bf3d0758e5b418c7",
+      "objectKey": "media/fo-fn-001-hero/640.webp"
+    },
+    {
+      "assetId": "fo-fn-001-hero",
+      "variant": "828",
+      "width": 828,
+      "height": 1035,
+      "format": "avif",
+      "bytes": 54647,
+      "checksumSha256": "6adc70b671d651ccc6f161f2c0aac1144f15c1f575076bd28dd988fe007286a0",
+      "objectKey": "media/fo-fn-001-hero/828.avif"
+    },
+    {
+      "assetId": "fo-fn-001-hero",
+      "variant": "828",
+      "width": 828,
+      "height": 1035,
+      "format": "webp",
+      "bytes": 75744,
+      "checksumSha256": "8f36c1a05ad67bced907d24aef41b50779dc2dda1a9dfa1bc54b53e5c6d47210",
+      "objectKey": "media/fo-fn-001-hero/828.webp"
+    },
+    {
+      "assetId": "fo-fn-001-detail",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "avif",
+      "bytes": 18841,
+      "checksumSha256": "b472d529e48bb1438cde7ec8f3b5dcd22ca9dd51a2f076c8b5eac30f17ec50ee",
+      "objectKey": "media/fo-fn-001-detail/384.avif"
+    },
+    {
+      "assetId": "fo-fn-001-detail",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "webp",
+      "bytes": 26410,
+      "checksumSha256": "e3a91239e770093e381845bd65d92df002c4401dfaa0ea768c17a4d29790177a",
+      "objectKey": "media/fo-fn-001-detail/384.webp"
+    },
+    {
+      "assetId": "fo-gs-001-hero",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "avif",
+      "bytes": 10888,
+      "checksumSha256": "de4cf2618769c1ce1da2f589ab8011f703081d276fa53af371a72e44e0a3213a",
+      "objectKey": "media/fo-gs-001-hero/384.avif"
+    },
+    {
+      "assetId": "fo-gs-001-hero",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "webp",
+      "bytes": 14580,
+      "checksumSha256": "346c72192e567eaf65014a426893dfc3be8ee457d02743e9de601af42a08f6bf",
+      "objectKey": "media/fo-gs-001-hero/384.webp"
+    },
+    {
+      "assetId": "fo-gs-001-hero",
+      "variant": "640",
+      "width": 640,
+      "height": 800,
+      "format": "avif",
+      "bytes": 23308,
+      "checksumSha256": "48fd3de201453ea69dfee89fcf8b762fa869a264ff4e87c9307a2d62774f86a9",
+      "objectKey": "media/fo-gs-001-hero/640.avif"
+    },
+    {
+      "assetId": "fo-gs-001-hero",
+      "variant": "640",
+      "width": 640,
+      "height": 800,
+      "format": "webp",
+      "bytes": 30118,
+      "checksumSha256": "b01badfe7fd093712c7b43c4b6fb9543610df0cabe114828d8f19f201772ce42",
+      "objectKey": "media/fo-gs-001-hero/640.webp"
+    },
+    {
+      "assetId": "fo-gs-001-hero",
+      "variant": "828",
+      "width": 828,
+      "height": 1035,
+      "format": "avif",
+      "bytes": 34233,
+      "checksumSha256": "63133d6e9d1bbee068976bb60edc353f6efbd5b07a03b26e9cab9261d399e25b",
+      "objectKey": "media/fo-gs-001-hero/828.avif"
+    },
+    {
+      "assetId": "fo-gs-001-hero",
+      "variant": "828",
+      "width": 828,
+      "height": 1035,
+      "format": "webp",
+      "bytes": 43744,
+      "checksumSha256": "f9bdf95eff2642532cd186ff21c62769d77bcc4107dfc720c5eed1418311dfeb",
+      "objectKey": "media/fo-gs-001-hero/828.webp"
+    },
+    {
+      "assetId": "fo-gs-001-detail",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "avif",
+      "bytes": 13673,
+      "checksumSha256": "eb6f3994638e24c976d66dac97d7c3b68606de52a125c56f12836d421289352f",
+      "objectKey": "media/fo-gs-001-detail/384.avif"
+    },
+    {
+      "assetId": "fo-gs-001-detail",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "webp",
+      "bytes": 16958,
+      "checksumSha256": "28b39dec61c585df8af85709f4ca03232cf8890aa0d08f244bc691934c4255ac",
+      "objectKey": "media/fo-gs-001-detail/384.webp"
+    },
+    {
+      "assetId": "home-hero",
+      "variant": "384",
+      "width": 384,
+      "height": 288,
+      "format": "avif",
+      "bytes": 9700,
+      "checksumSha256": "46db59bee1527ddaf8183b6ca63988b9a422dafca29447afd3fbe2872ce27cb4",
+      "objectKey": "media/home-hero/384.avif"
+    },
+    {
+      "assetId": "home-hero",
+      "variant": "384",
+      "width": 384,
+      "height": 288,
+      "format": "webp",
+      "bytes": 13618,
+      "checksumSha256": "a0c9947f240b8ce3b20db61a9b32857c8c8e9d550e7bfe75a8a73d220dec77d1",
+      "objectKey": "media/home-hero/384.webp"
+    },
+    {
+      "assetId": "home-hero",
+      "variant": "640",
+      "width": 640,
+      "height": 480,
+      "format": "avif",
+      "bytes": 20999,
+      "checksumSha256": "2e82136ed8a5e3028f5a93935b73f5111cc6291749b4f59629602083d989e359",
+      "objectKey": "media/home-hero/640.avif"
+    },
+    {
+      "assetId": "home-hero",
+      "variant": "640",
+      "width": 640,
+      "height": 480,
+      "format": "webp",
+      "bytes": 31108,
+      "checksumSha256": "de462163997aaff0db9434ad0a16a554a33adacc831c4c2a1f168ef274c5a8a8",
+      "objectKey": "media/home-hero/640.webp"
+    },
+    {
+      "assetId": "home-hero",
+      "variant": "828",
+      "width": 828,
+      "height": 621,
+      "format": "avif",
+      "bytes": 31593,
+      "checksumSha256": "e7ef0d77266dabbf1b2a0a20b11632d3f8faadb7f3f488eaee777ae057b1ce97",
+      "objectKey": "media/home-hero/828.avif"
+    },
+    {
+      "assetId": "home-hero",
+      "variant": "828",
+      "width": 828,
+      "height": 621,
+      "format": "webp",
+      "bytes": 45682,
+      "checksumSha256": "8c8f9d718532bb8a5cac29cc5f200bf5fb44ac3542d0196d4dbbb816f08ca0f0",
+      "objectKey": "media/home-hero/828.webp"
+    },
+    {
+      "assetId": "home-hero",
+      "variant": "1080",
+      "width": 1080,
+      "height": 608,
+      "format": "avif",
+      "bytes": 34819,
+      "checksumSha256": "ea536bdb308647355d019ec059411c0f5917570f4086301020bc996821488985",
+      "objectKey": "media/home-hero/1080.avif"
+    },
+    {
+      "assetId": "home-hero",
+      "variant": "1080",
+      "width": 1080,
+      "height": 608,
+      "format": "webp",
+      "bytes": 49602,
+      "checksumSha256": "3e86e12cee700881e8b765cb949135a5c86d414a859cf435f84642da662574a6",
+      "objectKey": "media/home-hero/1080.webp"
+    },
+    {
+      "assetId": "home-hero",
+      "variant": "1200",
+      "width": 1200,
+      "height": 675,
+      "format": "avif",
+      "bytes": 41135,
+      "checksumSha256": "30b0d57b595479cb39ec79938ef0b151b98eef8ea08143d5d5b13e5c5df087fa",
+      "objectKey": "media/home-hero/1200.avif"
+    },
+    {
+      "assetId": "home-hero",
+      "variant": "1200",
+      "width": 1200,
+      "height": 675,
+      "format": "webp",
+      "bytes": 58434,
+      "checksumSha256": "00508596d44c54c3572e962849478ac52bdcce5411fa42228e40c9f27da29118",
+      "objectKey": "media/home-hero/1200.webp"
+    },
+    {
+      "assetId": "home-occasion-birthday",
+      "variant": "384",
+      "width": 384,
+      "height": 384,
+      "format": "avif",
+      "bytes": 12629,
+      "checksumSha256": "471a9688fd2d347b43f283f2484e5d65e6e930c8ba7c3774189a573744a68fe9",
+      "objectKey": "media/home-occasion-birthday/384.avif"
+    },
+    {
+      "assetId": "home-occasion-birthday",
+      "variant": "384",
+      "width": 384,
+      "height": 384,
+      "format": "webp",
+      "bytes": 17830,
+      "checksumSha256": "de3bb8c7605a9315c1fb5441b499094353499cb320d367e860ed5c9175dbf794",
+      "objectKey": "media/home-occasion-birthday/384.webp"
+    },
+    {
+      "assetId": "home-occasion-name-day",
+      "variant": "384",
+      "width": 384,
+      "height": 384,
+      "format": "avif",
+      "bytes": 11291,
+      "checksumSha256": "457a0b991117f82c6a372f5f792e8ca8c997ba76b14a732df6713692932696d7",
+      "objectKey": "media/home-occasion-name-day/384.avif"
+    },
+    {
+      "assetId": "home-occasion-name-day",
+      "variant": "384",
+      "width": 384,
+      "height": 384,
+      "format": "webp",
+      "bytes": 15642,
+      "checksumSha256": "aab076fdf8e84e4b59132a0c17e30007b0bfd90c3bb40fc476597c6306dcf539",
+      "objectKey": "media/home-occasion-name-day/384.webp"
+    },
+    {
+      "assetId": "home-occasion-anniversary",
+      "variant": "384",
+      "width": 384,
+      "height": 384,
+      "format": "avif",
+      "bytes": 10476,
+      "checksumSha256": "c57943bd17605b901e192afa286d6e24256c6949c1e0a3e82bedd8a184d4d7a1",
+      "objectKey": "media/home-occasion-anniversary/384.avif"
+    },
+    {
+      "assetId": "home-occasion-anniversary",
+      "variant": "384",
+      "width": 384,
+      "height": 384,
+      "format": "webp",
+      "bytes": 14766,
+      "checksumSha256": "de03eb07e847c36e354867b21dfb353e3122e7861a9bb67cd2e6b67e663a37d9",
+      "objectKey": "media/home-occasion-anniversary/384.webp"
+    },
+    {
+      "assetId": "home-occasion-sympathy",
+      "variant": "384",
+      "width": 384,
+      "height": 384,
+      "format": "avif",
+      "bytes": 12409,
+      "checksumSha256": "208d3e9377463588d29a55be5f534d6c915b228f188fa356293cf7799592470d",
+      "objectKey": "media/home-occasion-sympathy/384.avif"
+    },
+    {
+      "assetId": "home-occasion-sympathy",
+      "variant": "384",
+      "width": 384,
+      "height": 384,
+      "format": "webp",
+      "bytes": 17824,
+      "checksumSha256": "576a5f3c639b4c64056f783a090acd6523e8712bc7113f660d8fe3cfdf7bf710",
+      "objectKey": "media/home-occasion-sympathy/384.webp"
+    },
+    {
+      "assetId": "home-occasion-just-because",
+      "variant": "384",
+      "width": 384,
+      "height": 384,
+      "format": "avif",
+      "bytes": 10199,
+      "checksumSha256": "da2eedb8da1b32df281259fa0516996362002a149a0589bff41fc8607b00773b",
+      "objectKey": "media/home-occasion-just-because/384.avif"
+    },
+    {
+      "assetId": "home-occasion-just-because",
+      "variant": "384",
+      "width": 384,
+      "height": 384,
+      "format": "webp",
+      "bytes": 14082,
+      "checksumSha256": "d9f973fe6d4fc117220434fa2502fe2d4ec948357ba6555b554d8046c1e225b0",
+      "objectKey": "media/home-occasion-just-because/384.webp"
+    },
+    {
+      "assetId": "home-occasion-new-baby",
+      "variant": "384",
+      "width": 384,
+      "height": 384,
+      "format": "avif",
+      "bytes": 9638,
+      "checksumSha256": "21b7af260671b4299da56df4a44d71ddd03fc883851ce66471ffe93a5bc1d8ac",
+      "objectKey": "media/home-occasion-new-baby/384.avif"
+    },
+    {
+      "assetId": "home-occasion-new-baby",
+      "variant": "384",
+      "width": 384,
+      "height": 384,
+      "format": "webp",
+      "bytes": 13388,
+      "checksumSha256": "383669d3cbafd9b7476c12ac733a7d8f21ed564041e337426178d3b70873e6d0",
+      "objectKey": "media/home-occasion-new-baby/384.webp"
+    }
+  ]
 }

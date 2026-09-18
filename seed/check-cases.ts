@@ -61,6 +61,13 @@ const OpSchema = z.discriminatedUnion("op", [
     .strict(),
   /** Replace the whole file with a fixture file's contents. */
   z.object({ op: z.literal("setFile"), file: z.string().min(3) }).strict(),
+  /**
+   * Empty a file's row list, keeping its header. The case for it is family 9's two fixtures
+   * (TASK-080): they replace the committed-image *listing* wholesale with two invented files, and
+   * a variants manifest describing 118 real ones would then be 118 orphan-and-missing problems in
+   * family 7 — collateral that says nothing about the byte budget the fixture is there to test.
+   */
+  z.object({ op: z.literal("clearRows") }).strict(),
   /** Tree-level: the committed derived-image listing family 9 measures. */
   z
     .object({
@@ -188,6 +195,10 @@ export function applySeedCheckCase(
       }
       case "setFile": {
         value = readFixture(op.file) as FileValue;
+        break;
+      }
+      case "clearRows": {
+        value.rows = [];
         break;
       }
       case "setMediaFiles": {

@@ -100,6 +100,22 @@ export const mediaSlots = [
 ] as const;
 export type MediaSlot = (typeof mediaSlots)[number];
 
+/**
+ * What the **served derivative** carries of the original's content credentials (spec 006 §8;
+ * TASK-080, from `docs/compliance/imagery-generator-terms.md` answer 8).
+ *
+ * Every original this dataset was built from carries a C2PA manifest (issuer
+ * `OpenAI Media Service API`, `softwareAgent gpt-image 2.0`) and a SynthID watermark. The AVIF and
+ * WebP re-encode **cannot carry a JUMBF-boxed manifest** — `sharp` can preserve XMP and nothing
+ * else — so the file a browser downloads has no content credential on it at all. Saying so in the
+ * data is the honest alternative to implying a provenance chain the bytes do not have: `stripped`
+ * means "the original's manifest did not survive derivation, and `originalSha256` is how you get
+ * back to the artefact that has it"; `xmp` is reserved for the day a generator embeds the claim in
+ * XMP, which the pipeline's `keep-if-c2pa` policy does carry across.
+ */
+export const derivativeC2paStates = ["stripped", "xmp"] as const;
+export type DerivativeC2pa = (typeof derivativeC2paStates)[number];
+
 /* -------------------------------------------------------------------------- */
 /* Shared field schemas.                                                      */
 /* -------------------------------------------------------------------------- */
@@ -166,6 +182,8 @@ export const MediaAssetManifestSchema = z
     generatorModel: z.string().min(2).optional(),
     promptHash: Sha256Schema.optional(),
     generatorSeed: z.number().int().nonnegative().optional(),
+    originalSha256: Sha256Schema.optional(),
+    derivativeC2pa: z.enum(derivativeC2paStates).optional(),
     capturedAt: IsoDateSchema.optional(),
     credit: z.string().min(2).optional(),
     licence: LicenceSchema.optional(),
@@ -191,6 +209,12 @@ export const MediaAssetManifestSchema = z
         "generatorModel",
         "promptHash",
         "generatorSeed",
+        // The two content-credential fields (TASK-080). The re-encode drops the original's C2PA
+        // manifest, so an `ai` asset that records neither the original's digest nor what its
+        // derivative carries is one whose provenance stops at "a machine made it" — which is
+        // exactly the claim ADR-0014 made checkable rather than assertable.
+        "originalSha256",
+        "derivativeC2pa",
       ] as const) {
         if (asset[field] === undefined) {
           ctx.addIssue({

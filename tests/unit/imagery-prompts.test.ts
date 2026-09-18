@@ -346,24 +346,48 @@ describe("the style guide is enforced in the prompt text, not merely written dow
   });
 });
 
-describe("the generator is a labelled placeholder until the founder files its terms", () => {
-  it("records `to-be-confirmed`, which ADR-0014 names no value for", () => {
+/**
+ * The generator's identity, filed and then written into the data (TASK-080).
+ *
+ * `docs/compliance/imagery-generator-terms.md` was filed on 2026-09-18 with the two literals
+ * below, so the `to-be-confirmed` placeholder TASK-077 shipped is gone from every prompt record
+ * and every `seed/data/media.json` row. Pinning the filed values here rather than merely asserting
+ * "not the placeholder" is the point: the compliance record and the data must name the **same**
+ * generator, or the record documents terms that were never the ones we generated under.
+ */
+export const FILED_GENERATOR = "OpenAI ChatGPT";
+export const FILED_GENERATOR_MODEL = "gpt-image 2.0";
+
+describe("the generator is the one whose terms the founder filed", () => {
+  it("records the filed generator and model on every prompt record", () => {
     for (const record of records) {
-      expect(record.generator, record.assetId).toBe("to-be-confirmed");
-      expect(record.generatorModel, record.assetId).toBe("to-be-confirmed");
+      expect(record.generator, record.assetId).toBe(FILED_GENERATOR);
+      expect(record.generatorModel, record.assetId).toBe(FILED_GENERATOR_MODEL);
     }
   });
 
-  it("has a filed compliance record that still names the placeholder until TASK-080 swaps it (ADR-0014's condition)", () => {
+  it("leaves the placeholder nowhere in the prompt records or the media manifest", () => {
+    for (const record of records) {
+      expect(
+        JSON.stringify(record).includes("to-be-confirmed"),
+        record.assetId,
+      ).toBe(false);
+    }
+    const media = readFileSync(join(repoRoot, "seed/data/media.json"), "utf8");
+    expect(media).not.toContain("to-be-confirmed");
+    expect(media).toContain(FILED_GENERATOR);
+    expect(media).toContain(FILED_GENERATOR_MODEL);
+  });
+
+  it("has a filed compliance record naming that generator and its commercial-use answer (ADR-0014's condition)", () => {
     const terms = readFileSync(
       join(repoRoot, "docs/compliance/imagery-generator-terms.md"),
       "utf8",
     );
-    // Filed 2026-09-18 (orchestrator; founder accepted the filing). Until TASK-080 lands the
-    // swap, the record must still name the placeholder so it cannot quietly become permanent.
     expect(terms).toMatch(/\*\*Filed \d{4}-\d{2}-\d{2}\.\*\*/);
     expect(terms).toContain("ADR-0014");
-    expect(terms).toContain("to-be-confirmed");
+    expect(terms).toContain(FILED_GENERATOR);
+    expect(terms).toContain(FILED_GENERATOR_MODEL);
     expect(terms.toLowerCase()).toContain("commercial");
   });
 

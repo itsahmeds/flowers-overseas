@@ -861,13 +861,18 @@ export default function DevComponentsPage(): ReactElement {
               [
                 [
                   "trendingPicks",
-                  <TrendingRow headingLevel="h3" key="trending-picks" />,
+                  <TrendingRow
+                    headingLevel="h3"
+                    key="trending-picks"
+                    locale={galleryLocale}
+                  />,
                 ],
                 [
                   "trendingOrders",
                   <TrendingRow
                     headingLevel="h3"
                     key="trending-orders"
+                    locale={galleryLocale}
                     provider={GALLERY_TRENDING_RANKED}
                   />,
                 ],
@@ -876,6 +881,7 @@ export default function DevComponentsPage(): ReactElement {
                   <TrendingRow
                     headingLevel="h3"
                     key="trending-empty"
+                    locale={galleryLocale}
                     provider={GALLERY_TRENDING_EMPTY}
                   />,
                 ],

@@ -13,14 +13,16 @@
  *  - **mobile (390 px artboard)**: a 300 px photo slot, then the card pulled 56 px up over it with
  *    a 16 px inline margin, which is the artboard's overlap exactly.
  *
- * **The LCP element is the `H1`, and it is text** (§6 "CWV budget impact"): the photo slot renders
- * the `--color-photo` gradient and **no `<img>`** (`plan/10` §3 — spec 006 has generated no
- * imagery and a demo that shows a photograph it does not have is the one thing that rule
- * forbids), so there is no image to preload and nothing to preload beyond the two self-hosted
- * font subsets `fontVariables` already preloads. Both slots reserve their box — a fixed height per
- * breakpoint, set before paint rather than measured after it — so when 006 lands imagery the LCP
- * element changes from text to image with **no layout shift and no template edit**, which is
- * exactly what §2 asks the reserved slot for.
+ * **The band now holds a photograph, and the LCP element moved with it** (TASK-080). The slot is a
+ * `MediaAsset` for `home-hero` marked `priority`, so it is the page's single LCP candidate: it
+ * loads eagerly at `fetchpriority="high"` and emits its `<link rel="preload" as="image">` from the
+ * same manifest lookup that produced its `srcset`, which is why the two cannot disagree (spec 006
+ * AC-19). When the asset is missing, unapproved, byte-less or has no alt text in *this* locale the
+ * band falls back to the reserved `--color-photo` box with **no `<img>`** (`plan/10` §3), and the
+ * `H1` is the LCP element again. Both arms reserve the same box — a fixed height per breakpoint,
+ * set before paint rather than measured after it — so the swap between them is **zero layout
+ * shift and no template edit**, which is exactly what §2 asked the reserved slot for and what
+ * TASK-080's data-flip proof measures (AC-20).
  *
  * The copy is the artboards' copy, in the first person (§14 A5): *our* florist, in the
  * recipient's town, and "we never ship a box" — the claim that distinguishes us from every parcel
@@ -30,6 +32,8 @@ import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
 import { Media } from "../media/Media.tsx";
+import { MediaAsset } from "../media/MediaAsset.tsx";
+import { isDisplayable } from "../media/resolve.ts";
 import { Stack } from "../primitives/layout.tsx";
 import { Display, Label, Text } from "../primitives/typography.tsx";
 
@@ -44,6 +48,13 @@ export const HOME_BLEED = "px-md md:px-[56px]";
 
 /** The two artboard geometries, as one place a reviewer can check against the `.dc.html` files. */
 export const HERO_HEIGHTS = { mobilePhoto: 300, desktopBand: 820 } as const;
+
+/**
+ * The full-bleed band's photograph in `seed/data/media.json` (spec 006 §2.4; TASK-080). A constant
+ * rather than a prop: the locale home has one hero band, and a call site that could choose the
+ * picture could also choose a picture the page has no alt text for.
+ */
+export const HOME_HERO_ASSET = "home-hero";
 
 export interface HomeHeroProps {
   readonly locale: string;
@@ -62,6 +73,14 @@ export function HomeHero({
   headingLevel = "h1",
 }: HomeHeroProps): ReactElement {
   const t = useTranslations("home");
+  // The one branch in this file, and it is a *data* question, not a layout one: has the founder
+  // supplied and approved a photograph for this band, derived its bytes and written alt text in
+  // this locale? `media/resolve.ts` owns the answer (spec 006 AC-18) and both arms reserve the
+  // same box at the same two artboard heights, so the swap costs zero CLS and no template edit
+  // (AC-20). The placeholder arm is kept rather than folded into `MediaAsset` because it carries
+  // the artboards' **two** captions — the short one under the 300 px mobile slot and the long
+  // shooting brief under the desktop band (TASK-054) — which a single placeholder key cannot say.
+  const hasHeroPhoto = isDisplayable(HOME_HERO_ASSET, locale);
 
   return (
     <section
@@ -74,26 +93,36 @@ export function HomeHero({
         means spec 006's imagery arrives already marked as the LCP candidate rather than being
         found by a later audit. It renders no `<img>` today, so it costs nothing to nominate.
       */}
-      <Media
-        slot="hero"
-        priority
-        // No image exists, so there is nothing for a screen reader to be told about; the caption
-        // below says what the slot will hold, in the catalogue's words. Written out rather than
-        // defaulted, because `Media` has no default `alt` by design.
-        alt=""
-        // Two captions, one box: the mobile artboard writes a short caption under a 300 px slot
-        // ("Photography to supply · Warsaw florist, morning light") and the desktop one the long
-        // brief under a full-bleed band. Both are in the served HTML and CSS chooses — no media
-        // query in JavaScript, no second request, and the shooting brief a photographer reads
-        // stays the long one (TASK-054, closing the `/review 53` carry-forward).
-        caption={
-          <>
-            <span className="md:hidden">{t("hero.photoCaptionMobile")}</span>
-            <span className="hidden md:inline">{t("hero.photoCaption")}</span>
-          </>
-        }
-        className="h-[300px] md:absolute md:inset-0 md:h-full"
-      />
+      {hasHeroPhoto ? (
+        <MediaAsset
+          assetId={HOME_HERO_ASSET}
+          locale={locale}
+          slot="hero"
+          priority
+          className="h-[300px] md:absolute md:inset-0 md:h-full"
+        />
+      ) : (
+        <Media
+          slot="hero"
+          priority
+          // No image exists, so there is nothing for a screen reader to be told about; the caption
+          // below says what the slot will hold, in the catalogue's words. Written out rather than
+          // defaulted, because `Media` has no default `alt` by design.
+          alt=""
+          // Two captions, one box: the mobile artboard writes a short caption under a 300 px slot
+          // ("Photography to supply · Warsaw florist, morning light") and the desktop one the long
+          // brief under a full-bleed band. Both are in the served HTML and CSS chooses — no media
+          // query in JavaScript, no second request, and the shooting brief a photographer reads
+          // stays the long one (TASK-054, closing the `/review 53` carry-forward).
+          caption={
+            <>
+              <span className="md:hidden">{t("hero.photoCaptionMobile")}</span>
+              <span className="hidden md:inline">{t("hero.photoCaption")}</span>
+            </>
+          }
+          className="h-[300px] md:absolute md:inset-0 md:h-full"
+        />
+      )}
       {/*
         The card. On mobile it overlaps the photo by 56 px (`-mt-[56px]`, the artboard's overlap);
         on desktop it is positioned in the inline-start gutter and centred in the band. `relative`

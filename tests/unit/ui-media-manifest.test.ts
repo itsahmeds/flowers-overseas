@@ -126,18 +126,38 @@ describe("the seed ↔ UI slot mapping (`/review 42`)", () => {
   });
 });
 
-describe("Phase 0: the committed dataset has assets and no bytes", () => {
-  it("commits asset rows but no variant rows and no alt text", () => {
+describe("Phase 0 since TASK-080: the committed dataset has assets, bytes and alt text", () => {
+  it("commits asset rows, variant rows and alt text in all four launch locales", () => {
     expect(committedMediaManifest.assets.length).toBeGreaterThan(0);
-    expect(committedMediaManifest.variants).toHaveLength(0);
-    for (const index of Object.values(committedMediaManifest.alt)) {
-      expect(Object.keys(index)).toHaveLength(0);
+    expect(committedMediaManifest.variants.length).toBeGreaterThan(0);
+    expect(Object.keys(committedMediaManifest.alt).sort()).toEqual([
+      "de",
+      "en",
+      "en-gb",
+      "pl",
+    ]);
+    for (const [locale, index] of Object.entries(committedMediaManifest.alt)) {
+      expect(Object.keys(index).length, locale).toBe(
+        committedMediaManifest.assets.length,
+      );
     }
   });
 
-  it("therefore displays nothing at all — every asset is a placeholder", () => {
+  it("therefore displays every approved asset in every launch locale", () => {
     for (const asset of committedMediaManifest.assets) {
-      expect(isDisplayable(asset.id, "en"), asset.id).toBe(false);
+      for (const locale of ["en", "en-gb", "de", "pl"]) {
+        expect(isDisplayable(asset.id, locale), `${asset.id}/${locale}`).toBe(
+          true,
+        );
+      }
+    }
+  });
+
+  it("and displays none of them in a locale with no alt text (`plan/07` §8)", () => {
+    // The pseudo-locale nobody will ever author alt text for: the honest degradation of AC-18 is
+    // the captioned box, never an English sentence announced on a non-English page.
+    for (const asset of committedMediaManifest.assets) {
+      expect(isDisplayable(asset.id, "ar-XB"), asset.id).toBe(false);
     }
   });
 });

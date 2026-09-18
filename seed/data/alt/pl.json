@@ -4,5 +4,130 @@
   "entity": "product_media_alt",
   "origin": "authored",
   "locale": "pl",
-  "rows": []
+  "rows": [
+    {
+      "assetId": "fo-bq-001-hero",
+      "alt": "Ręcznie wiązany bukiet pomarańczowych róż ogrodowych z eukaliptusem, owinięty w papier kraft, na ciepłoszarym tle"
+    },
+    {
+      "assetId": "fo-bq-001-detail",
+      "alt": "Zbliżenie trzech rozwiniętych pomarańczowych róż z listkami eukaliptusa obok"
+    },
+    {
+      "assetId": "fo-bq-002-hero",
+      "alt": "Ręcznie wiązany bukiet ciemnoczerwonych róż na długich łodygach z ciemnozielonymi liśćmi, owinięty w biały papier"
+    },
+    {
+      "assetId": "fo-bq-002-detail",
+      "alt": "Zbliżenie dwóch na wpół rozwiniętych ciemnoczerwonych róż i jednego zamkniętego pąka na tle białego papieru"
+    },
+    {
+      "assetId": "fo-bq-009-hero",
+      "alt": "Luźno zebrany bukiet tulipanów w kolorach różowym, żółtym, białym i fioletowym, owinięty w papier kraft"
+    },
+    {
+      "assetId": "fo-bq-009-detail",
+      "alt": "Zbliżenie pięciu główek tulipanów w różnych kolorach z szerokimi zielonymi liśćmi"
+    },
+    {
+      "assetId": "fo-bq-015-hero",
+      "alt": "Ręcznie wiązany bukiet białych lilii orientalnych z ciemnozielonymi liśćmi, owinięty w biały papier"
+    },
+    {
+      "assetId": "fo-bq-015-detail",
+      "alt": "Zbliżenie dwóch rozwiniętych białych kwiatów lilii i jednego zamkniętego pąka z widocznymi pręcikami"
+    },
+    {
+      "assetId": "fo-bq-019-hero",
+      "alt": "Ręcznie wiązany bukiet różowych piwonii, rozwiniętych i w pąkach, owinięty w biały papier"
+    },
+    {
+      "assetId": "fo-bq-019-detail",
+      "alt": "Zbliżenie jednej w pełni rozwiniętej różowej piwonii i jednego zwartego pąka z zielonymi działkami"
+    },
+    {
+      "assetId": "fo-bq-023-hero",
+      "alt": "Bukiet żółtych słoneczników z kłosami pszenicy i zielonymi liśćmi, owinięty w papier kraft"
+    },
+    {
+      "assetId": "fo-bq-023-detail",
+      "alt": "Zbliżenie jednego żółtego słonecznika z ciemnym środkiem i kłosami pszenicy obok"
+    },
+    {
+      "assetId": "fo-bq-028-hero",
+      "alt": "Mieszany bukiet sezonowy z róż, alstromerii, chryzantem i zieleni, owinięty w papier kraft"
+    },
+    {
+      "assetId": "fo-bq-028-detail",
+      "alt": "Zbliżenie trzech różnych kwiatów w mieszanych kolorach z zielenią pomiędzy nimi"
+    },
+    {
+      "assetId": "fo-ar-001-hero",
+      "alt": "Niska kompozycja kwiatowa w delikatnych pastelowych barwach w prostym pudełku z kartonu kraft"
+    },
+    {
+      "assetId": "fo-ar-001-detail",
+      "alt": "Zbliżenie trzech pastelowych kwiatów i krawędzi prostego pudełka z kartonu kraft"
+    },
+    {
+      "assetId": "fo-ar-003-hero",
+      "alt": "Mieszana sezonowa kompozycja kwiatowa w prostym wiklinowym koszu, widziana z przodu"
+    },
+    {
+      "assetId": "fo-ar-003-detail",
+      "alt": "Zbliżenie dwóch kwiatów nad plecionym brzegiem kosza"
+    },
+    {
+      "assetId": "fo-pt-001-hero",
+      "alt": "Biały storczyk ćmy z dwoma łukowato wygiętymi pędami kwiatowymi w prostej białej ceramicznej doniczce"
+    },
+    {
+      "assetId": "fo-pt-001-detail",
+      "alt": "Zbliżenie dwóch rozwiniętych białych kwiatów storczyka na wygiętym pędzie nad brzegiem doniczki"
+    },
+    {
+      "assetId": "fo-fn-001-hero",
+      "alt": "Okrągły wieniec pogrzebowy z białych chryzantem z ciemnozielonymi liśćmi, stojący na neutralnym kamieniu"
+    },
+    {
+      "assetId": "fo-fn-001-detail",
+      "alt": "Zbliżenie ćwiartki wieńca z białymi chryzantemami na tle ciemnych liści"
+    },
+    {
+      "assetId": "fo-gs-001-hero",
+      "alt": "Bukiet pomarańczowych róż z eukaliptusem obok prostego zamkniętego pudełka czekoladek"
+    },
+    {
+      "assetId": "fo-gs-001-detail",
+      "alt": "Zbliżenie dwóch rozwiniętych pomarańczowych róż i rogu prostego pudełka czekoladek"
+    },
+    {
+      "assetId": "home-hero",
+      "alt": "Luźne sezonowe kwiaty, arkusz papieru kraft i kłębek sznurka rozłożone na ciepłoszarej powierzchni, widziane z góry"
+    },
+    {
+      "assetId": "home-occasion-birthday",
+      "alt": "Kolorowy mieszany bukiet z gerber i kwiatów sezonowych w żywych barwach, owinięty w papier kraft"
+    },
+    {
+      "assetId": "home-occasion-name-day",
+      "alt": "Skromny ręcznie wiązany bukiet z mieszanych kwiatów sezonowych w ciepłych barwach, owinięty w papier kraft"
+    },
+    {
+      "assetId": "home-occasion-anniversary",
+      "alt": "Ręcznie wiązany bukiet z ciemnoczerwonych róż i różowych piwonii, owinięty w biały papier"
+    },
+    {
+      "assetId": "home-occasion-sympathy",
+      "alt": "Stonowany bukiet z białych lilii orientalnych i białych chryzantem z ciemnozielonymi liśćmi, ułożony na neutralnym kamieniu"
+    },
+    {
+      "assetId": "home-occasion-just-because",
+      "alt": "Mały bukiecik z mieszanych pastelowych kwiatów sezonowych, owinięty w papier kraft i przewiązany sznurkiem"
+    },
+    {
+      "assetId": "home-occasion-new-baby",
+      "alt": "Delikatny bukiet z różowych i białych kwiatów sezonowych, owinięty w biały papier i przewiązany sznurkiem"
+    }
+  ]
 }

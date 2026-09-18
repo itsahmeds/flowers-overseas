@@ -25,7 +25,7 @@
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
-import { Media } from "../media/Media.tsx";
+import { MediaAsset } from "../media/MediaAsset.tsx";
 import { Grid, Stack } from "../primitives/layout.tsx";
 import { Display, Label, Text } from "../primitives/typography.tsx";
 
@@ -36,6 +36,12 @@ import {
 } from "./trending-provider.ts";
 
 export interface TrendingRowProps {
+  /**
+   * The resolved request locale. Required since TASK-080: a card's photograph is only rendered
+   * when the dataset has alt text **in this locale**, so a row that did not know its locale could
+   * only guess — and the guess a screen reader would hear is an English sentence on a Polish page.
+   */
+  readonly locale: string;
   /** `h2` on the locale home; `h3` in `/dev/components`, where the section is nested. */
   readonly headingLevel?: "h2" | "h3";
   /**
@@ -52,11 +58,11 @@ export const TRENDING_ANCHOR = "trending";
 const HEADING_ID = "trending-heading";
 
 export function TrendingRow({
+  locale,
   headingLevel = "h2",
   provider,
-}: TrendingRowProps = {}): ReactElement | null {
+}: TrendingRowProps): ReactElement | null {
   const home = useTranslations("home");
-  const media = useTranslations("media");
   const source = provider ?? getTrendingProvider();
   const picks = source.list();
 
@@ -83,12 +89,19 @@ export function TrendingRow({
       <Grid as="ul" columns="2-5" gap="lg">
         {picks.map((pick) => (
           <Stack as="li" gap="sm" key={pick.id} data-fo-trending-pick={pick.id}>
-            <Media
+            {/*
+              The pick's photograph, or the captioned placeholder — whichever the dataset earns.
+              Twelve of the eighty-four products have approved, derived, alt-texted imagery
+              (TASK-080); the rest render the `--color-photo` box with `media.placeholder.product`
+              and no `<img>`, which is `plan/10` §3's honesty rule and not a gap. The pick's name
+              is the heading the screen reader already announces, so it is handed to `MediaAsset`:
+              an alt that merely repeats it is refused and degrades to the box (AC-18).
+            */}
+            <MediaAsset
+              assetId={pick.assetId}
+              locale={locale}
               slot="grid"
-              // No image exists, so there is nothing to describe; the caption below the box says
-              // what it will hold. Written out because `Media` has no default `alt` by design.
-              alt=""
-              caption={media("placeholder.product")}
+              productName={pick.name}
             />
             <Text as="span" size="sm" className="font-medium">
               {pick.name}

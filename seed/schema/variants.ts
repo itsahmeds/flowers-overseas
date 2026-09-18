@@ -67,6 +67,83 @@ export const OG_JPEG_WIDTH = 1200;
 export const HERO_DESKTOP_MIN_WIDTH = 1080;
 
 /* -------------------------------------------------------------------------- */
+/* The Phase-0 ladder (TASK-080, from TASK-078's PR-44 carry-forward).         */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * **Which of the seven widths each slot actually ships in Phase 0**, and the single decision in
+ * this file that is a *choice* rather than a transcription.
+ *
+ * TASK-078 measured the arithmetic and recorded it: the full 15-file ladder cannot fit 31 assets
+ * inside §13 Q4's 6 MB committed-bytes cap — one 2000 × 2500 original derives 6.06 MB on its own.
+ * TASK-080's brief therefore says, in as many words, "choose which slots and widths ship in
+ * Phase 0". This is that choice, made once, as data, so it is in the manifest header, in
+ * `pnpm seed:check`'s report and in a diff — and so that unfreezing it when the bytes move to R2
+ * (AC-27) is an edit to one table.
+ *
+ * **Two independent limits decide every row, and neither is negotiable:**
+ *
+ *  1. **The per-slot byte cap of `seed/budgets.ts` applies to every committed file**, in both
+ *     formats. A slot's ladder therefore stops at the last width whose *largest* file — always the
+ *     WebP fallback, on the busiest asset in the set — is still inside the cap. Measured on the
+ *     31 approved originals at the pinned encoder options:
+ *
+ *     | slot | cap | last width inside it | the width above it |
+ *     |---|---|---|---|
+ *     | `hero` | 90 000 B | 1200 (WebP 59 878 B) | 1600 → WebP 89 076 B, and the original is 1672 px wide |
+ *     | `occasionTile` | 18 000 B | 384 (WebP 17 830 B) | 640 → WebP 41 322 B, 2.3× the cap |
+ *     | `productHero` | 90 000 B | 828 (WebP 81 486 B) | 1080 → WebP 116 940 B |
+ *     | `productDetail` | 60 000 B | 384 (WebP 38 398 B) | 640 → WebP 82 275 B |
+ *
+ *  2. **No committed file is an enlargement.** The approved intake originals are 1024–1672 px on
+ *     the long edge, not the ≥ 2000 px `plan/01` §6 asks for (recorded in the PR body and in
+ *     `docs/runbooks/imagery.md` as an intake finding, not papered over). `RESIZE_OPTIONS` allows
+ *     enlargement so that a ladder is never *incomplete*; shipping an upscaled 1920 px file would
+ *     make the ladder complete and the pixels invented. Every width below is inside the narrowest
+ *     original of its slot.
+ *
+ * **What this costs, stated rather than hidden.** An occasion tile is 195 CSS px at the mobile
+ * artboard and ~245 px at the desktop one, so 384 is the 1× file at both and a 2× phone upscales
+ * it; `productDetail` ships only its thumbnail step, which is honest because **no Phase-0 page
+ * renders a detail asset at all** — spec 009 owns the PDP and does not exist. Both are the
+ * consequence of a 6 MB repository budget, and both disappear at TASK-083's R2 flip, which is the
+ * row `docs/architecture.md` §4 already carries.
+ *
+ * The table is total over `mediaSlots`: a slot added without a Phase-0 ladder would be an asset
+ * the CLI silently derived nothing for.
+ */
+export const PHASE0_SLOT_WIDTHS: Readonly<
+  Record<MediaSlot, readonly number[]>
+> = {
+  hero: [384, 640, 828, 1080, 1200],
+  occasionTile: [384],
+  productHero: [384, 640, 828],
+  productDetail: [384],
+  // No Phase-0 asset uses either slot (`seed/data/media.json` is 12 × productHero, 12 ×
+  // productDetail, 6 × occasionTile and 1 × hero), so their ladders are the widths they would
+  // ship rather than a measurement. Stated, not empty: an empty ladder would read as "this slot
+  // ships nothing", which is a different and wrong claim.
+  productThumb: [384],
+  context: [384, 640, 828],
+  og: [1200],
+};
+
+/**
+ * The slots whose asset gets the single 1200 px OG/email JPEG of §13 Q5.
+ *
+ * **Phase 0 derives it for the `og` slot only, and there are no `og` assets**, so no JPEG is
+ * committed. The reason is arithmetic and honesty in equal parts: a 1200 px JPEG of one of these
+ * originals is 98 000–127 000 B, so 31 of them would be ~3.4 MB — **more than half the whole 6 MB
+ * cap** — spent on files that no page, no feed and no email in Phase 0 requests, and every one of
+ * them would also blow its asset's own per-slot cap (a 118 225 B JPEG under a `hero` asset against
+ * a 90 000 B cap). §13 Q5's "one JPEG per asset" is a promise to whatever consumes an `og:image`;
+ * spec 009 owns that metadata and does not exist yet, so the JPEG is derived when a slot needs it
+ * rather than 31 times in advance. Recorded in the manifest header, so widening it is a visible,
+ * whole-manifest change and not a quiet one.
+ */
+export const OG_JPEG_SLOTS: readonly MediaSlot[] = ["og"];
+
+/* -------------------------------------------------------------------------- */
 /* Aspect ratios per slot (spec 006 §13 Q5).                                  */
 /* -------------------------------------------------------------------------- */
 
@@ -106,9 +183,6 @@ export interface AspectStep {
   readonly ratio: string;
   readonly widths: readonly number[];
 }
-
-/** Every width of the page ladder, as a plain array (the manifest header is JSON). */
-const ALL_WIDTHS: readonly number[] = [...VARIANT_WIDTHS];
 
 /**
  * Slot → the aspect ratio(s) its variants are cropped to (spec 006 §13 Q5: 4:5 product, 1:1
@@ -158,20 +232,51 @@ export function variantDimensions(
   };
 }
 
-/** The slot's ladder as it is written into the manifest header: ratio → the widths derived at it. */
+/**
+ * The slot's ladder as it is written into the manifest header: ratio → the widths derived at it.
+ *
+ * The widths are `PHASE0_SLOT_WIDTHS[slot]`, not the whole of `VARIANT_WIDTHS`: the header's job
+ * is to describe the bytes that exist, so a header listing a width the CLI never derives would
+ * make `--check` compare a manifest against a pipeline that did not write it. `VARIANT_WIDTHS`
+ * stays the Q5 vocabulary every Phase-0 ladder is a subset of, and widening a ladder is an edit to
+ * one table plus a re-derive.
+ *
+ * A step with no widths is omitted rather than written empty — the hero band's 4:3 crop would
+ * otherwise appear in the header of a Phase-0 ladder that happened to start at 1080.
+ */
 export function aspectLadderFor(slot: MediaSlot): readonly AspectStep[] {
+  return aspectStepsFor(slot, PHASE0_SLOT_WIDTHS[slot]);
+}
+
+/**
+ * The slot's ratio steps over an arbitrary width list — `aspectLadderFor()` with the Phase-0
+ * table's decision taken out, so a test (or TASK-082's worker, or the R2 flip's wider ladder) can
+ * ask for the same ratio rules over a different set of widths without restating the 1080 boundary.
+ */
+export function aspectStepsFor(
+  slot: MediaSlot,
+  widths: readonly number[],
+): readonly AspectStep[] {
+  const ordered = [...widths].sort((left, right) => left - right);
   const ratios = SLOT_ASPECTS[slot];
   if (ratios.length === 1) {
-    return [{ ratio: (ratios[0] as AspectRatio).ratio, widths: ALL_WIDTHS }];
+    return [{ ratio: (ratios[0] as AspectRatio).ratio, widths: ordered }];
   }
-  return ratios.map((aspect, index) => ({
-    ratio: aspect.ratio,
-    widths: ALL_WIDTHS.filter((width) =>
-      index === 0
-        ? width < HERO_DESKTOP_MIN_WIDTH
-        : width >= HERO_DESKTOP_MIN_WIDTH,
-    ),
-  }));
+  return ratios
+    .map((aspect, index) => ({
+      ratio: aspect.ratio,
+      widths: ordered.filter((width) =>
+        index === 0
+          ? width < HERO_DESKTOP_MIN_WIDTH
+          : width >= HERO_DESKTOP_MIN_WIDTH,
+      ),
+    }))
+    .filter((step) => step.widths.length > 0);
+}
+
+/** Every width one slot ships, ascending — the flattened `aspectLadderFor()`. */
+export function widthsForSlot(slot: MediaSlot): readonly number[] {
+  return [...PHASE0_SLOT_WIDTHS[slot]].sort((a, b) => a - b);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -191,10 +296,21 @@ export const AVIF_OPTIONS = {
   bitdepth: 8,
 } as const;
 
-/** The WebP options of spec 006 §13 Q5 (quality 72), with every other lever pinned explicitly. */
+/**
+ * The WebP options of spec 006 §13 Q5 (quality 72), with every other lever pinned explicitly.
+ *
+ * **`effort` is 6, not libwebp's default 4** (TASK-080). It is not a quality lever — quality stays
+ * at the 72 the spec pins and the decoded pixels are the same picture — it is how long the encoder
+ * is allowed to search, and it buys 3–6 % of the file for encode time we pay once on a laptop and
+ * never in CI. That margin is load-bearing rather than cosmetic: at effort 4 the busiest two
+ * occasion tiles encode to 18 392 B and 18 908 B against `seed/budgets.ts`'s 18 000 B grid-tile
+ * cap, and the alternatives were to raise the cap (the spec's own number), to drop the WebP
+ * fallback (leaving a browser without AVIF with no image at all) or to lower the pinned quality.
+ * Spending encoder effort is the only one of the four that costs a reader nothing.
+ */
 export const WEBP_OPTIONS = {
   quality: 72,
-  effort: 4,
+  effort: 6,
   alphaQuality: 100,
   lossless: false,
   nearLossless: false,
@@ -293,6 +409,7 @@ export const MediaVariantPipelineSchema = z
     libvips: z.string().min(1),
     widths: z.array(z.number().int().positive()).nonempty(),
     ogJpegWidth: z.number().int().positive(),
+    ogJpegSlots: z.array(z.enum(mediaSlots)),
     concurrency: z.number().int().positive(),
     formats: z.array(z.enum(mediaFormats)).nonempty(),
     aspects: z.record(z.enum(mediaSlots), z.array(AspectStepSchema)),
@@ -362,6 +479,7 @@ export function variantPipeline(): MediaVariantPipeline {
     libvips: PINNED_LIBVIPS_VERSION,
     widths: [...VARIANT_WIDTHS],
     ogJpegWidth: OG_JPEG_WIDTH,
+    ogJpegSlots: [...OG_JPEG_SLOTS],
     concurrency: ENCODER_CONCURRENCY,
     formats: [...mediaFormats],
     aspects: Object.fromEntries(

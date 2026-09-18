@@ -4,5 +4,130 @@
   "entity": "product_media_alt",
   "origin": "authored",
   "locale": "de",
-  "rows": []
+  "rows": [
+    {
+      "assetId": "fo-bq-001-hero",
+      "alt": "Ein handgebundener Strauß orangefarbener Gartenrosen mit Eukalyptus, in Kraftpapier gewickelt, vor warmgrauem Hintergrund"
+    },
+    {
+      "assetId": "fo-bq-001-detail",
+      "alt": "Nahaufnahme von drei geöffneten orangefarbenen Rosenblüten mit Eukalyptusblättern daneben"
+    },
+    {
+      "assetId": "fo-bq-002-hero",
+      "alt": "Ein handgebundener Strauß dunkelroter langstieliger Rosen mit dunkelgrünem Blattwerk, in weißes Papier gewickelt"
+    },
+    {
+      "assetId": "fo-bq-002-detail",
+      "alt": "Nahaufnahme von zwei halb geöffneten dunkelroten Rosenblüten und einer geschlossenen Knospe vor weißem Papier"
+    },
+    {
+      "assetId": "fo-bq-009-hero",
+      "alt": "Ein locker gebundener Strauß Tulpen in Rosa, Gelb, Weiß und Violett, in Kraftpapier gewickelt"
+    },
+    {
+      "assetId": "fo-bq-009-detail",
+      "alt": "Nahaufnahme von fünf Tulpenblüten in gemischten Farben mit ihren breiten grünen Blättern"
+    },
+    {
+      "assetId": "fo-bq-015-hero",
+      "alt": "Ein handgebundener Strauß weißer orientalischer Lilien mit dunkelgrünem Blattwerk, in weißes Papier gewickelt"
+    },
+    {
+      "assetId": "fo-bq-015-detail",
+      "alt": "Nahaufnahme von zwei geöffneten weißen Lilienblüten und einer geschlossenen Knospe mit sichtbaren Staubblättern"
+    },
+    {
+      "assetId": "fo-bq-019-hero",
+      "alt": "Ein handgebundener Strauß rosafarbener Pfingstrosen mit offenen und geschlossenen Blüten, in weißes Papier gewickelt"
+    },
+    {
+      "assetId": "fo-bq-019-detail",
+      "alt": "Nahaufnahme einer voll geöffneten rosafarbenen Pfingstrose und einer festen Knospe mit grünen Kelchblättern"
+    },
+    {
+      "assetId": "fo-bq-023-hero",
+      "alt": "Ein Strauß gelber Sonnenblumen mit Weizenähren und grünem Blattwerk, in Kraftpapier gewickelt"
+    },
+    {
+      "assetId": "fo-bq-023-detail",
+      "alt": "Nahaufnahme einer gelben Sonnenblumenblüte mit dunklem Samenboden und Weizenähren daneben"
+    },
+    {
+      "assetId": "fo-bq-028-hero",
+      "alt": "Ein gemischter Saisonstrauß aus Rosen, Inkalilien, Chrysanthemen und Grün, in Kraftpapier gewickelt"
+    },
+    {
+      "assetId": "fo-bq-028-detail",
+      "alt": "Nahaufnahme von drei verschiedenen Blüten in gemischten Farben mit Grün dazwischen"
+    },
+    {
+      "assetId": "fo-ar-001-hero",
+      "alt": "Ein flaches Blumenarrangement in zarten Pastelltönen in einer schlichten Geschenkbox aus Kraftpapier"
+    },
+    {
+      "assetId": "fo-ar-001-detail",
+      "alt": "Nahaufnahme von drei pastellfarbenen Blüten und dem Rand der schlichten Kraftpapierbox"
+    },
+    {
+      "assetId": "fo-ar-003-hero",
+      "alt": "Ein gemischtes Saisonarrangement in einem schlichten Weidenkorb, von vorn gesehen"
+    },
+    {
+      "assetId": "fo-ar-003-detail",
+      "alt": "Nahaufnahme von zwei Blüten über dem geflochtenen Rand des Korbes"
+    },
+    {
+      "assetId": "fo-pt-001-hero",
+      "alt": "Eine weiße Schmetterlingsorchidee mit zwei überhängenden Blütentrieben in einem schlichten weißen Keramiktopf"
+    },
+    {
+      "assetId": "fo-pt-001-detail",
+      "alt": "Nahaufnahme von zwei geöffneten weißen Orchideenblüten am überhängenden Trieb über dem Topfrand"
+    },
+    {
+      "assetId": "fo-fn-001-hero",
+      "alt": "Ein runder Trauerkranz aus weißen Chrysanthemen mit dunkelgrünem Blattwerk auf neutralem Stein"
+    },
+    {
+      "assetId": "fo-fn-001-detail",
+      "alt": "Nahaufnahme eines Viertels des Kranzrings mit weißen Chrysanthemenblüten vor dunklem Blattwerk"
+    },
+    {
+      "assetId": "fo-gs-001-hero",
+      "alt": "Ein Strauß orangefarbener Rosen mit Eukalyptus neben einer schlichten geschlossenen Pralinenschachtel"
+    },
+    {
+      "assetId": "fo-gs-001-detail",
+      "alt": "Nahaufnahme von zwei geöffneten orangefarbenen Rosenblüten und der Ecke der schlichten Pralinenschachtel"
+    },
+    {
+      "assetId": "home-hero",
+      "alt": "Lose Saisonblumen, ein Bogen Kraftpapier und ein Knäuel Bindfaden auf einer warmgrauen Fläche, von oben gesehen"
+    },
+    {
+      "assetId": "home-occasion-birthday",
+      "alt": "Ein farbenfroher gemischter Strauß aus Gerbera und Saisonblumen in kräftigen Farben, in Kraftpapier gewickelt"
+    },
+    {
+      "assetId": "home-occasion-name-day",
+      "alt": "Ein zurückhaltender handgebundener Strauß aus gemischten Saisonblumen in warmen Farben, in Kraftpapier gewickelt"
+    },
+    {
+      "assetId": "home-occasion-anniversary",
+      "alt": "Ein handgebundener Strauß aus dunkelroten Rosen und rosafarbenen Pfingstrosen, in weißes Papier gewickelt"
+    },
+    {
+      "assetId": "home-occasion-sympathy",
+      "alt": "Ein zurückhaltender Strauß aus weißen orientalischen Lilien und weißen Chrysanthemen mit dunkelgrünem Blattwerk auf neutralem Stein"
+    },
+    {
+      "assetId": "home-occasion-just-because",
+      "alt": "Ein kleiner Strauß aus gemischten pastellfarbenen Saisonblumen, in Kraftpapier gewickelt und mit Bindfaden gebunden"
+    },
+    {
+      "assetId": "home-occasion-new-baby",
+      "alt": "Ein zarter Strauß aus rosa und weißen Saisonblumen, in weißes Papier gewickelt und mit Bindfaden gebunden"
+    }
+  ]
 }

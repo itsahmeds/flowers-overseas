@@ -42,6 +42,8 @@ const aiAsset = {
   generatorModel: "example-model-1",
   promptHash: "b".repeat(64),
   generatorSeed: 42,
+  originalSha256: "c".repeat(64),
+  derivativeC2pa: "stripped",
   reviewState: "approved",
   reviewedBy: "A. Founder",
   reviewedAt: "2026-09-09T10:00:00.000Z",
@@ -83,16 +85,22 @@ describe("MediaAssetManifestSchema: provenance is data, not a comment (AC-8, T-0
     expect(MediaAssetManifestSchema.safeParse(photoAsset).success).toBe(true);
   });
 
-  it.each(["generator", "generatorModel", "promptHash", "generatorSeed"])(
-    "rejects an `ai` asset with no %s",
-    (field) => {
-      const result = MediaAssetManifestSchema.safeParse(
-        without(aiAsset, field),
-      );
-      expect(result.success).toBe(false);
-      expect(issuePaths(result)).toContain(field);
-    },
-  );
+  // The last two are TASK-080's content-credential pair: the digest of the artefact that carries
+  // the C2PA manifest and the SynthID watermark, and what the served derivative carries of it
+  // (`docs/compliance/imagery-generator-terms.md` answer 8 — the AVIF/WebP re-encode carries
+  // neither, so "an image a machine made" stops being verifiable the moment the digest is absent).
+  it.each([
+    "generator",
+    "generatorModel",
+    "promptHash",
+    "generatorSeed",
+    "originalSha256",
+    "derivativeC2pa",
+  ])("rejects an `ai` asset with no %s", (field) => {
+    const result = MediaAssetManifestSchema.safeParse(without(aiAsset, field));
+    expect(result.success).toBe(false);
+    expect(issuePaths(result)).toContain(field);
+  });
 
   it.each(["credit", "licence"])(
     "rejects a `photo` asset with no %s",

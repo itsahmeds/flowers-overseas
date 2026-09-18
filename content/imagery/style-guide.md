@@ -205,9 +205,12 @@ founder signs off; an unapproved asset never renders — the page shows the plac
 ## 8. What appears on the page
 
 - **The honesty label.** Any page displaying a `source: "ai"` asset renders "Example arrangement ·
-  your florist hand-makes each one" as server-rendered, crawlable text, from a message key, with no
+  our florist hand-makes each one" as server-rendered, crawlable text, from a message key, with no
   prop that can suppress it (ADR-0014, spec 006 AC-17). It is the condition ADR-0014 was accepted
-  under.
+  under. The pronoun is **our**, as spec 008 §14 A2 settled and `media.provenance.aiExample` ships:
+  the florist is ours, working to our promise, and the second person would hand the buyer a
+  relationship they do not have (TASK-080, closing the `/review 49` carry-forward). The label is
+  written once, in the message catalogue; this file quotes it and must never drift from it.
 - **Alt text comes from data**, per locale, never generated at render, and never the product name.
   An asset with no alt for the resolved locale renders the placeholder and no `<img>` (spec 006
   AC-18).

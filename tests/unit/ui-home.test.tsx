@@ -27,6 +27,7 @@ import {
 } from "../../src/modules/ui/home/finder-model.ts";
 import { DestinationsGrid } from "../../src/modules/ui/home/DestinationsGrid.tsx";
 import { HOME_BLEED, HomeHero } from "../../src/modules/ui/home/HomeHero.tsx";
+import { setMediaManifest } from "../../src/modules/ui/media/manifest.ts";
 import { PROOF_FACTS, ProofRow } from "../../src/modules/ui/home/ProofRow.tsx";
 
 const LOCALES = ["en", "en-gb", "de", "pl"] as const;
@@ -100,13 +101,48 @@ describe("the hero band", () => {
     expect(html).toContain("We never ship a box.");
   });
 
-  it("reserves the hero photo slot with its caption and renders no image", () => {
+  it("fills the hero slot with the founder's photograph, eagerly and at high priority", () => {
+    // TASK-080: the band holds `home-hero`, approved by the founder, derived into the Phase-0
+    // ladder and alt-texted in this locale, so it is the page's single LCP candidate. The caption
+    // that used to say "Photography to supply" is gone because the photograph is here.
     const html = hero("en");
 
     expect(html).toContain('data-fo-media-slot="hero"');
-    expect(html).toContain('data-fo-media-sizes="100vw"');
-    expect(html).toContain("Photography to supply");
-    expect(html).not.toContain("<img");
+    expect(html).toContain('data-fo-media-asset="home-hero"');
+    expect(html).toContain('data-fo-media-source="ai"');
+    expect(html).toContain('type="image/avif"');
+    expect(html).toContain('loading="eager"');
+    expect(html).toContain('fetchPriority="high"');
+    // AC-19: the preload is built from the same manifest lookup as the `srcset`, so the two
+    // cannot disagree — asserted here as the identical ladder string in both places.
+    expect(html).toContain('rel="preload"');
+    expect(html).toContain('imageSizes="100vw"');
+    expect(html).toContain('sizes="100vw"');
+    expect([...html.matchAll(/<img/g)]).toHaveLength(1);
+    // The alt is the dataset's, word for word, and is never built at render (`plan/01` §6).
+    expect(html).toContain(
+      "Loose seasonal flower stems, a sheet of kraft paper and a ball of twine",
+    );
+    expect(html).not.toContain("Photography to supply");
+  });
+
+  it("falls back to the captioned box and no `<img>` when the dataset has no photograph", () => {
+    // The honest arm, reached the day an asset is withdrawn, its bytes are not derived or a locale
+    // has no alt text: the same reserved box at the same two artboard heights, the artboards' two
+    // shooting captions back, and **no `<img>`** (`plan/10` §3, spec 006 AC-18). The manifest seam
+    // is what reaches it without editing the dataset.
+    const previous = setMediaManifest({ assets: [], variants: [], alt: {} });
+    try {
+      const html = hero("en");
+
+      expect(html).not.toContain("<img");
+      expect(html).toContain('data-fo-media-slot="hero"');
+      expect(html).toContain('data-fo-media-sizes="100vw"');
+      expect(html).toContain("Photography to supply");
+      expect(html).toContain("h-[300px]");
+    } finally {
+      setMediaManifest(previous);
+    }
   });
 
   it("reserves a height at both artboard geometries, so nothing shifts", () => {

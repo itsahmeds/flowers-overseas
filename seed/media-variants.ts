@@ -72,6 +72,7 @@ import {
   variantDimensions,
   variantPipeline,
 } from "./schema/variants.ts";
+import { watermarkSvg } from "./watermark.ts";
 
 /* -------------------------------------------------------------------------- */
 /* Paths and keys.                                                            */
@@ -206,8 +207,13 @@ export function assertPinnedEncoder(): void {
 }
 
 /**
- * Derive the whole ladder of one asset: AVIF + WebP at each of the pinned widths in the slot's
- * declared aspect ratio, plus the single OG/email JPEG at `ogJpegWidth`.
+ * Derive the whole ladder of one asset: AVIF + WebP at each width **the slot ships** in its
+ * declared aspect ratio, plus the single OG/email JPEG where the slot is one of `ogJpegSlots`.
+ *
+ * The widths come from the pipeline header's `aspects[slot]` rather than from its `widths`
+ * (TASK-080). `widths` is the §13 Q5 vocabulary; `aspects[slot]` is the Phase-0 ladder
+ * `PHASE0_SLOT_WIDTHS` chose for this slot, and deriving from the same field `--check` verifies is
+ * what keeps "the manifest describes the bytes" true by construction rather than by agreement.
  *
  * Pure in the sense that matters: buffer in, buffers out, no filesystem and no clock. That is what
  * lets T-12/T-13 assert the ladder, the ratios, the stripped metadata and the byte-identity of two
@@ -215,18 +221,38 @@ export function assertPinnedEncoder(): void {
  * reproduce these checksums (AC-25).
  */
 export async function deriveVariants(
-  asset: { readonly id: string; readonly slot: MediaSlot },
+  asset: {
+    readonly id: string;
+    readonly slot: MediaSlot;
+    readonly depicts?: string;
+  },
   original: Buffer,
   pipeline: MediaVariantPipeline = variantPipeline(),
+  options: { readonly demo?: boolean } = {},
 ): Promise<readonly DerivedVariant[]> {
   sharp.concurrency(pipeline.concurrency);
   const keepXmp = hasC2paXmp((await sharp(original).metadata()).xmp);
 
+  // The demo watermark of §2.5, baked into the bytes rather than painted on with CSS, and applied
+  // to `depicts: "context"` assets only — the in-home shots that could be mistaken for a delivery
+  // photograph. §13 Q12 keeps the mechanism and ships nothing marked: `--demo` is off by default
+  // and the Phase-0 dataset has no `context` asset, so this branch is unreachable today and
+  // `tests/unit/media-watermark.test.ts` asserts both halves rather than trusting the sentence.
+  const watermark = options.demo === true && asset.depicts === "context";
+
+  const ladder = [
+    ...new Set(
+      (pipeline.aspects[asset.slot] ?? []).flatMap((step) => step.widths),
+    ),
+  ].sort((left, right) => left - right);
+
   const jobs: { readonly width: number; readonly format: MediaFormat }[] = [
-    ...pipeline.widths.flatMap((width) =>
+    ...ladder.flatMap((width) =>
       (["avif", "webp"] as const).map((format) => ({ width, format })),
     ),
-    { width: pipeline.ogJpegWidth, format: "jpeg" as const },
+    ...(pipeline.ogJpegSlots.includes(asset.slot)
+      ? [{ width: pipeline.ogJpegWidth, format: "jpeg" as const }]
+      : []),
   ];
 
   const derived: DerivedVariant[] = [];
@@ -247,6 +273,11 @@ export async function deriveVariants(
       })
       .keepIccProfile();
     if (keepXmp) pipe = pipe.keepXmp();
+    if (watermark) {
+      pipe = pipe.composite([
+        { input: Buffer.from(watermarkSvg(box.width, box.height)) },
+      ]);
+    }
 
     const data =
       job.format === "avif"
