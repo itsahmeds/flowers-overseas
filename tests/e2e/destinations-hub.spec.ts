@@ -21,6 +21,11 @@ import { SITE_LINKS, type SiteLink, isPublished } from "@/config/site-links";
 // By path and not through the barrel, for `tests/e2e/links.spec.ts`'s reason: the i18n barrel
 // re-exports a `next/dynamic` loader Playwright's ESM loader cannot resolve outside the build.
 import { localePath } from "@/modules/i18n/routing";
+// The country registry's own slug builder, so an unpublished corridor id contributes the path it
+// would occupy rather than nothing (`/review 74` nit). It is `countrySlug` and not
+// `geo`'s `corridorSlug` for the import reason above — `geo/corridor` reaches the i18n barrel —
+// and the two agree on every launch locale, which is the only set crawled here.
+import { countrySlug, isCountryIso2 } from "@/config/countries";
 
 const LOCALES = ["en", "en-gb", "de", "pl"] as const;
 
@@ -35,14 +40,34 @@ async function status(
   return response.status();
 }
 
-/** The paths every unpublished registry target would occupy — nothing may link to one. */
+/**
+ * The paths every unpublished registry target would occupy — nothing may link to one.
+ *
+ * Both target kinds that have a URL are covered: a `route` occupies one path per locale, and a
+ * `corridor` occupies its own per-locale slug under the destinations segment. (`pending` has no
+ * route shape at all, so there is no path it could occupy.) `/review 74` found the corridor half
+ * missing here: with all seven corridor ids published today the set is the same either way, but
+ * withdrawing one must make this crawl fail, which is the whole point of the assertion.
+ */
 function unpublishedPaths(): ReadonlySet<string> {
   const paths = new Set<string>();
   for (const link of SITE_LINKS as readonly SiteLink[]) {
     if (isPublished(link.id)) continue;
-    if (link.target.kind !== "route") continue;
     for (const locale of LOCALES) {
-      paths.add(localePath(locale, link.target.pageType));
+      if (link.target.kind === "route") {
+        paths.add(localePath(locale, link.target.pageType));
+      } else if (
+        link.target.kind === "corridor" &&
+        isCountryIso2(link.target.iso2)
+      ) {
+        paths.add(
+          localePath(
+            locale,
+            "destinations",
+            countrySlug(link.target.iso2, locale),
+          ),
+        );
+      }
     }
   }
   return paths;
