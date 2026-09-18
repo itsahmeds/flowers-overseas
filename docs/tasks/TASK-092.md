@@ -77,6 +77,26 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
   JSON-LD (TASK-093's slot is untouched); `/en/send-flowers-to/` → 308 to the bare URL and every
   other shape 404s; the hub's script transfer is 128 211 B, byte-identical to the locale home.
 
+- **From `/review 74` (2026-09-18, round 2 — PASS).** All five round-1 corrections verified on
+  `41cc92c`; nothing blocks merge. Four nits, none of them this task's to fix now:
+  1. **The casing probes are order-dependent on a case-insensitive filesystem.** On darwin the
+     first request to `/en/Send-Flowers-To` or `/en/send-flowers-to/GERMANY` writes the 404 body
+     over the prerendered `send-flowers-to.html` / `germany.html` for the life of the server, so
+     `destinations-hub.spec.ts:113` and `corridor.spec.ts:52` can each fail the other depending on
+     worker order (reproduced both ways in this review; each passes alone, and the whole suite is
+     green on a cold build). Linux CI is case-sensitive and cannot reproduce it. Worth a follow-up
+     that makes those two assertions deterministic (a serial project, or a fixture that restores
+     the prerender) rather than a recorded flake in every future review.
+  2. The desktop artboard's `.tile` uses an off-token `gap: 6px`; the component uses `gap-xs`
+     (4 px). The component is right — correct the artboard so the next implementer does not
+     re-derive 6 px.
+  3. WCAG 2.5.3 holds (the accessible name "Germany" is visible text inside the link), but a voice
+     user saying "Read the guide" matches nothing. If the whole-tile pattern spreads, the design
+     system should state that the tile's label is the destination name.
+  4. Rebase before merge: `origin/main` is `e560e79` and already carries the two `main`-owned test
+     fixes (`dev-components.spec.ts:231`, `listing-mobile-card-image`) that are the only red in
+     this branch's suites.
+
 ## Escalations
 
 - **2026-09-18 — CI cannot run: GitHub Actions billing.** `gh pr ready` fired once on PR 74 and
