@@ -102,6 +102,13 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
   header block comment of `tests/a11y/header.spec.ts` so the next axe run reads it instead of
   re-escalating it. The fix (a named, focusable scroller, or publishing the entries as links) is
   spec 008's and changes the tab order and the visual baselines; it is not a copy task's.
+- **2026-09-18 (round 2) — inherited from `origin/main`, not this branch:
+  `tests/unit/imagery-prompts.test.ts` is red.** Main's `fbe34c3` filed the imagery generator's
+  commercial-use terms — `docs/compliance/imagery-generator-terms.md` now opens "**Filed
+  2026-09-18**" — but the test still asserts the record contains "**pending**". This branch
+  touches neither file. Owner: spec 006 / TASK-080. It will show as a `test-unit` failure on any
+  PR built on today's main until someone re-pins that assertion.
+
 - **2026-09-18 (round 2) — the same macOS case-insensitivity now fails a second, TASK-092 test.**
   `tests/e2e/destinations-hub.spec.ts:113` expects `/en/Send-Flowers-To` to 404 and gets 200 on
   APFS, exactly as `corridor.spec.ts:52` does. It came in with the rebase, fails on `main` as much
@@ -152,11 +159,14 @@ forty page tasks are not a copy task's to move.
 unreviewed on purpose (see escalations). `unreviewedShare`: **en 2.740 %**, en-gb 2.740 %,
 de 100 %, pl 100 % — the `en` figure was 3.75 % before the flip, against the 5 % gate.
 
-**Gates, round 2.** `typecheck`, `lint`, `i18n:check` clean. Unit **4 118 passed / 5 skipped**
-(170 files) — including `tests/unit/catalog-geo-surface.test.ts`, which CI timed out at 5 000 ms
-on the Linux runner and which passes locally. E2E **782 passed / 2 failed / 2 skipped** — both
-failures are the macOS APFS case-insensitivity pair (see escalations), Linux-green. A11y **73
-passed**. Visual **43 passed**.
+**Gates, round 2** (final, after the second rebase onto `origin/main` `448f2f4`, which brought
+TASK-107's listing view model and the filed imagery terms). `typecheck`, `lint`, `i18n:check`
+clean. Unit **4 166 passed / 1 failed / 5 skipped** (172 files) — the one failure,
+`tests/unit/imagery-prompts.test.ts`, arrived with `origin/main` and is red on `main` itself (see
+escalations). `tests/unit/catalog-geo-surface.test.ts`, which CI timed out at 5 000 ms on the
+Linux runner, passes locally every run. E2E **782 passed / 2 failed / 2 skipped** — both failures
+are the macOS APFS case-insensitivity pair (see escalations), Linux-green. A11y **73 passed**.
+Visual **43 passed**, run twice, and again unchanged after the second rebase and rebuild.
 
 
 **PR:** `fix(chrome): honest cutoff and ranking copy, gated on corridor facts (TASK-120)`.
