@@ -24,6 +24,53 @@ export interface HonestyPattern {
   readonly pattern: RegExp;
 }
 
+/**
+ * **Ranking claims** — a description of the default order we cannot evidence (spec 008 §8, AC-9;
+ * `plan/07` §2.1's ranking-transparency duty; Omnibus Art. 6a / UK DMCC).
+ *
+ * Split out of `FORBIDDEN_LISTING_TEXT` by TASK-120 so the **chrome** scan can reuse exactly this
+ * half: a ranking phrase is forbidden in *every locale's messages*, unconditionally and with no
+ * gate, because we have no sales, no personalisation and no paid placement to describe truthfully
+ * — which is why `nav.category.bestSellers` was renamed rather than gated. The German and Polish
+ * forms are here even though `de`/`pl` ship as English echoes today: the day a native reviewer
+ * replaces them, the scan must already know what to look for.
+ */
+export const FORBIDDEN_RANKING_TEXT: readonly HonestyPattern[] = [
+  {
+    name: "ranking claim",
+    pattern:
+      /\bbest ?sellers?\b|\bbestseller|\bmost popular\b|\brecommended for you\b|\bmeistverkauft|\bbeliebteste[nrs]?\b|\bempfohlen f(?:ü|ue)r dich\b|\bnajcz(?:ę|e)(?:ś|s)ciej kupowane\b|\bnajpopularniejsz|\bpolecane dla ciebie\b/iu,
+  },
+];
+
+/**
+ * **Delivery-timing promises** — "same day", "next day", "delivery today", "order by HH:MM"
+ * (spec 004 §14 A19; spec 008 AC-6; spec 007 AC-19's forbidden set).
+ *
+ * Unlike a ranking claim, one of these is not forbidden *copy*: it is copy that may only render
+ * when the fact behind it is true. `anyDeliveryDatesOpen()` is the one predicate, false for every
+ * destination in Phase 0, so the scans built on these patterns assert an **absence from the
+ * rendered document** — and, in the catalogue, that every key carrying one is in the declared
+ * gated set (`tests/unit/chrome-honesty.test.tsx`).
+ *
+ * The bare word "cutoff" is deliberately **not** a pattern, and "order by" counts only when a
+ * time follows it: `corridor.facts.orderBy` prints the label `Order by` beside "— no cutoff,
+ * because no florist has agreed to one", which is the honest row this whole sweep exists to make
+ * possible. What is forbidden is the promise, not the noun.
+ */
+export const FORBIDDEN_DELIVERY_PROMISE_TEXT: readonly HonestyPattern[] = [
+  {
+    name: "delivery-timing claim",
+    pattern:
+      /\bsame[- ]day\b|\bnext[- ]day\b|\bdeliver(?:ed|y|s)? (?:today|tomorrow|the same day)\b|\border within\b|\btaggleiche|\bam selben tag\b|\bnoch heute\b|\bheute geliefert\b|\btego samego dnia\b|\b(?:dostawa )?jeszcze dzi(?:ś|s)/iu,
+  },
+  {
+    name: "order-by cutoff promise",
+    pattern:
+      /\border by\b[\s,]*(?:\d{1,2}[:.]\d{2}|\{(?:date|time)\})|\bbestellen sie bis\b|\bzam(?:ó|o)w do\b|\bbis \d{1,2}[:.]\d{2} uhr\b/iu,
+  },
+];
+
 /** Claims in words. Run against rendered **text**, per locale. */
 export const FORBIDDEN_LISTING_TEXT: readonly HonestyPattern[] = [
   { name: "rating", pattern: /\bratings?\b|\brated\b|\bbewertung/iu },
@@ -33,16 +80,8 @@ export const FORBIDDEN_LISTING_TEXT: readonly HonestyPattern[] = [
     name: "out-of-five score",
     pattern: /\b\d(?:[.,]\d)?\s*(?:\/|out of)\s*5\b/iu,
   },
-  {
-    name: "ranking claim",
-    pattern:
-      /\bbest ?sellers?\b|\bmost popular\b|\brecommended for you\b|\bbestseller/iu,
-  },
-  {
-    name: "delivery-timing claim",
-    pattern:
-      /\bsame[- ]day\b|\bnext[- ]day\b|\bdeliver(?:ed|y) (?:today|tomorrow)\b|\border within\b/iu,
-  },
+  ...FORBIDDEN_RANKING_TEXT,
+  ...FORBIDDEN_DELIVERY_PROMISE_TEXT,
   {
     name: "countdown",
     pattern: /\bcountdown\b|\bends in\b|\bhurry\b|\b\d+\s*h\s*\d+\s*m\b/iu,
