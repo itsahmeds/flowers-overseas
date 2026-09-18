@@ -65,7 +65,12 @@ two halves", so nothing falls between them); `tests/unit/ci-workflow.test.ts` an
 `build`, `env:check` (28 keys), `check:no-vercel-env`, `codebase:map --check`, `specs:index --check`,
 and `playwright --project=e2e-desktop` against `pnpm start` on :3202 (355 passed, 11 skipped).
 
-**Still owed** (not provable from here): a real `docker build` — the `container` job is the proof and
-it runs on this PR; the Railway redeploy reaching `● Active` with `/api/health` 200 and `/en` 401;
+**CI, run 35367188013 on PR 82 (2026-09-18): all six spine jobs green, `container` among them.** Its
+four assertion steps each passed: `docker build` with no credential in the environment,
+`/api/health` 200 from the running image with the user and `.env*` checks, the no-server-variable run
+(not 200), and the placeholder-`DATABASE_URL`-in-production run (not 200). So a credential-free
+`docker build` **has** now been executed — by GitHub Actions, not on this machine.
+
+**Still owed** (not provable from here): the Railway redeploy reaching `● Active` with `/api/health` 200 and `/en` 401;
 and `pnpm branch-protection` re-applied so the new `container` check is required in fact. Visual and
 a11y suites were not run: the diff renders nothing.
