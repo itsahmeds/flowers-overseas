@@ -18,7 +18,7 @@ import { noindexHeaderRules } from "./src/lib/robots-headers";
 // malformed. The error names the offending keys and prints no value (spec 001 AC-10, TASK-005).
 //
 // `assertBuildEnv()` grades `BUILD_ENV_KEYS` only — `APP_ENV` plus the `NEXT_PUBLIC_*` set — and
-// not the whole 28-key contract (spec 001 §14 A16, spec 040 §14 A1; TASK-135). Those are the keys
+// not the whole 28-key contract (spec 001 §14 A17, spec 040 §14 A1; TASK-135). Those are the keys
 // a compiled artefact actually carries: `APP_ENV` decides the headers baked in below, the
 // `NEXT_PUBLIC_*` values are inlined into the browser bundle. The server-only keys —
 // `DATABASE_URL`, the R2 credentials, `INTERNAL_CRON_SECRET` — are asserted at server start by

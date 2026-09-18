@@ -272,11 +272,11 @@ describe("the jobs TASK-011 adds", () => {
     expect(scripts).toContain("$SENTINEL");
   });
 
-  // Spec 001 §14 A16 / spec 040 §14 A1 (TASK-135) moved the server half of the contract from the
+  // Spec 001 §14 A17 / spec 040 §14 A1 (TASK-135) moved the server half of the contract from the
   // build to server start, so the two assertions that used to live in `env-build-failure` — a
   // missing server key and a placeholder `DATABASE_URL` in a deployed environment — are now made
   // against the running image. Both jobs are checked here so the pair cannot drift apart.
-  it("asserts the server half against the container, not against the build (spec 001 §14 A16)", () => {
+  it("asserts the server half against the container, not against the build (spec 001 §14 A17)", () => {
     const buildJob = (ci.jobs["env-build-failure"]?.steps ?? [])
       .map((step) => step.run ?? "")
       .join("\n");

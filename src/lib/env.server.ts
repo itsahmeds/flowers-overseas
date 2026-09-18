@@ -1,5 +1,5 @@
 /**
- * Server environment (spec 001 §5.2, TASK-005; lazy since spec 001 §14 A16, TASK-135).
+ * Server environment (spec 001 §5.2, TASK-005; lazy since spec 001 §14 A17, TASK-135).
  *
  * `import "server-only"` makes any client-bundle import of this module a build error, which is
  * the mechanical form of "import of a server variable from a client bundle fails" (spec 001 §5).

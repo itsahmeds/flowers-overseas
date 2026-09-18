@@ -310,7 +310,7 @@ export const ENV_KEYS: readonly string[] = [
 
 /**
  * The keys a **build** consumes, and therefore the only keys `next build` may demand (spec 001
- * §14 A16, spec 040 §14 A1; TASK-135).
+ * §14 A17, spec 040 §14 A1; TASK-135).
  *
  * `APP_ENV` (the per-environment headers `next.config.ts` bakes in) plus the `NEXT_PUBLIC_*` set
  * (inlined into the browser bundle by Next). Nothing else is readable from a compiled artefact,
@@ -329,7 +329,7 @@ export const BUILD_ENV_KEYS: readonly string[] = [
 
 /**
  * Everything else: the server-only keys — credentials among them — asserted at **server start**
- * instead of at build (spec 001 §14 A16). A miss there fails `/api/health`, and therefore the
+ * instead of at build (spec 001 §14 A17). A miss there fails `/api/health`, and therefore the
  * Railway healthcheck, so the deployment never takes traffic: fail-closed, one step later than
  * the build, and without a credential ever entering an image layer.
  */
@@ -575,7 +575,7 @@ function collect(error: z.ZodError, source: EnvSource): EnvIssue[] {
 
 /**
  * The build half of the contract: `APP_ENV` and the `NEXT_PUBLIC_*` set — the keys the compiled
- * artefact actually carries (spec 001 §14 A16, spec 040 §14 A1; TASK-135).
+ * artefact actually carries (spec 001 §14 A17, spec 040 §14 A1; TASK-135).
  *
  * Pure: no `process.env` read, no throw, no value in the output. This is what `next.config.ts`
  * runs, so a container build needs `BUILD_ENV_KEYS` and nothing else.
@@ -628,7 +628,7 @@ export function validateBuildEnv(source: EnvSource): {
 /**
  * The runtime half: every server-only key (`RUNTIME_ENV_KEYS`) and the two development flags that
  * are refused in production-like environments. Asserted at **server start**, not at build — the
- * image must build without a credential (spec 001 §14 A16, spec 040 §14 A1; TASK-135).
+ * image must build without a credential (spec 001 §14 A17, spec 040 §14 A1; TASK-135).
  *
  * Pure: no `process.env` read, no throw, no value in the output.
  */
@@ -720,7 +720,7 @@ export function validateEnv(source: EnvSource): EnvValidationResult {
 }
 
 /**
- * The server-start half of the gate (spec 001 §14 A16, spec 040 §14 A1; TASK-135). Throws
+ * The server-start half of the gate (spec 001 §14 A17, spec 040 §14 A1; TASK-135). Throws
  * `EnvValidationError` naming the offending server-only keys and printing no value.
  *
  * It lives in this module — not in `env.assert.ts` — because `instrumentation.ts` calls it and is

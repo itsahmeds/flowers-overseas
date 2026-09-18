@@ -49,7 +49,7 @@
 #    `test-unit` beside `build`: it is the only gate that exercises the artefact Railway actually
 #    runs — `docker build` with **no credential in the environment**, then the running image's
 #    `/api/health`, its user, and the two fail-closed cases the build stopped owning when spec 001
-#    §14 A16 split the env gate. It is on the spine rather than behind `ci:full` because a broken
+#    §14 A17 split the env gate. It is on the spine rather than behind `ci:full` because a broken
 #    image is invisible until a deploy fails; the expensive steps are skipped when no file of the
 #    container contract changed, so the budget of §14 A14 is spent only on the pull requests that
 #    can break it.
@@ -546,7 +546,7 @@ jobs:
   # asserts the file; this job asserts the artefact.
   #
   # It is TASK-099's carry-forward, taken by **TASK-135**: no Docker daemon was available on the
-  # machine the build-time env split was written on (spec 001 §14 A16, spec 040 §14 A1), so CI is
+  # machine the build-time env split was written on (spec 001 §14 A17, spec 040 §14 A1), so CI is
   # where "a container build needs no credential" is demonstrated rather than argued. The job also
   # owns the two negative cases that used to be `pnpm build` failures and are now server-start
   # failures: a missing server key and a `.env.example` placeholder in a deployed environment both
@@ -611,14 +611,14 @@ jobs:
 
       # No `--build-arg` carrying a secret, and no secret in the environment either: the step
       # refuses to run if one is present, so "the build needed no credential" is a fact the log
-      # can be read for (spec 001 §14 A16 — a build argument survives in layer history).
+      # can be read for (spec 001 §14 A17 — a build argument survives in layer history).
       - name: Build the image with no credential in the environment (AC-8)
         id: image
         if: steps.scope.outputs.changed == 'true'
         run: |
           set -uo pipefail
           if env | grep -qE '^(DATABASE_URL|DATABASE_URL_UNPOOLED|INTERNAL_CRON_SECRET|R2_)'; then
-            echo "::error::a server credential is present in the build environment (spec 001 §14 A16)"
+            echo "::error::a server credential is present in the build environment (spec 001 §14 A17)"
             exit 1
           fi
           set -o pipefail
@@ -652,11 +652,11 @@ jobs:
           echo "envfiles=$envfiles" >> "$GITHUB_OUTPUT"
           [ "$envfiles" = "0" ] || { echo "::error::the image contains $envfiles .env file(s) (AC-8)"; exit 1; }
 
-      # The other half of the split (spec 001 §14 A16): the build stopped demanding the server keys,
+      # The other half of the split (spec 001 §14 A17): the build stopped demanding the server keys,
       # so the *server* must. Same image, no server variables — `/api/health` must not answer 200,
       # because that is the Railway healthcheck and a deployment that cannot read its own database
       # must never turn `● Active`.
-      - name: Assert the runtime gate is fail-closed (spec 001 §14 A16, AC-10's intent)
+      - name: Assert the runtime gate is fail-closed (spec 001 §14 A17, AC-10's intent)
         id: bare
         if: steps.scope.outputs.changed == 'true'
         run: |
@@ -666,7 +666,7 @@ jobs:
           code=$(curl -s -o bare.json -w '%{http_code}' http://127.0.0.1:3001/api/health || echo 000)
           echo "health_code=$code" >> "$GITHUB_OUTPUT"
           if [ "$code" = "200" ]; then
-            echo "::error::/api/health answered 200 with no server variable set (spec 001 §14 A16)"
+            echo "::error::/api/health answered 200 with no server variable set (spec 001 §14 A17)"
             exit 1
           fi
           logs=$(docker logs fo-web-bare 2>&1 | tail -40)
@@ -726,7 +726,7 @@ jobs:
         run: |
           set -uo pipefail
           {
-            echo "### container (spec 040 AC-8 / T-08; spec 001 §14 A16)"
+            echo "### container (spec 040 AC-8 / T-08; spec 001 §14 A17)"
             echo ""
             if [ -f scope.txt ]; then cat scope.txt; fi
             echo ""
@@ -743,7 +743,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
           docker rm -f fo-web fo-web-bare fo-web-prod >/dev/null 2>&1 || true
 
-  # T-11 / AC-10 (TASK-005) and spec 002 T-04 / AC-2 (TASK-013), as spec 001 §14 A16 and spec 040
+  # T-11 / AC-10 (TASK-005) and spec 002 T-04 / AC-2 (TASK-013), as spec 001 §14 A17 and spec 040
   # §14 A1 split them (TASK-135). The job asserts what a **build** owns, and asserts that it no
   # longer owns the rest:
   #   1. a missing variable **the build consumes** (`NEXT_PUBLIC_SITE_URL`) fails the build, names
@@ -800,11 +800,11 @@ jobs:
       - name: Remove the tampered env file
         if: always()
         run: rm -f .env.local build.log
-      # The split itself (spec 001 §14 A16): a **server** key is not a build input any more, so its
+      # The split itself (spec 001 §14 A17): a **server** key is not a build input any more, so its
       # absence must leave the build green. Without this assertion the amendment would be a comment
       # rather than a gate, and the next person to "fix" the config by asserting everything again
       # would break the container build exactly as the 2026-09-18 Railway build was broken.
-      - name: Build with a server key removed — it must now succeed (spec 001 §14 A16)
+      - name: Build with a server key removed — it must now succeed (spec 001 §14 A17)
         run: |
           set -o pipefail
           grep -v '^R2_BUCKET=' .env.example > .env.local
@@ -814,11 +814,11 @@ jobs:
           set -e
           tail -20 build.log
           if [ "$status" -ne 0 ]; then
-            echo "::error::pnpm build failed with R2_BUCKET missing; the build gate still demands a server key (spec 001 §14 A16)"
+            echo "::error::pnpm build failed with R2_BUCKET missing; the build gate still demands a server key (spec 001 §14 A17)"
             exit 1
           fi
           {
-            echo "### the build gate demands no server key (spec 001 §14 A16)"
+            echo "### the build gate demands no server key (spec 001 §14 A17)"
             echo ""
             echo "- \`pnpm build\` with \`R2_BUCKET\` absent: exit $status (zero, as required)"
             echo "- the key is refused at server start instead — see the \`container\` job"
@@ -832,7 +832,7 @@ jobs:
       # **Railway** production build as well as a Vercel one. The origin is inlined into every
       # canonical the build writes, so it is a build key and this stays a build failure; the report
       # must name that key and no other. The `DATABASE_URL` half of spec 002 T-04 moved to the
-      # `container` job with the gate (spec 001 §14 A16).
+      # `container` job with the gate (spec 001 §14 A17).
       - name: Build in production with a placeholder NEXT_PUBLIC_SITE_URL (spec 040 T-29)
         env:
           APP_ENV: production
@@ -866,7 +866,7 @@ jobs:
             exit 1
           fi
           if grep -qE '^\s+- (R2_|INTERNAL_CRON_SECRET|DATABASE_URL)' build.log; then
-            echo "::error::build output named a server key the build no longer grades (spec 001 §14 A16)"
+            echo "::error::build output named a server key the build no longer grades (spec 001 §14 A17)"
             exit 1
           fi
           {
@@ -1512,7 +1512,7 @@ jobs:
   # outcome since TASK-035 gave `/` real text. The branch below stays because that outcome must
   # never be read as a verdict in either direction, and the step summary is written *after* the run
   # so it can say which of the three happened instead of guessing in advance. Spec 001 AC-23's
-  # queued correction to that wording is discharged here (spec 004 §14 A16).
+  # queued correction to that wording is discharged here (spec 004 §14 A17).
   #
   # `@lhci/cli` is fetched pinned by `npx` instead of being a devDependency: it pulls in Lighthouse
   # and Chrome plumbing that every other job would then install on every run, and it is needed in

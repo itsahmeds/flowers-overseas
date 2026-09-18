@@ -31,7 +31,7 @@ COPY . .
 # `NEXT_PUBLIC_*` set, which Next inlines into the browser bundle. Railway passes a service
 # variable to the build when — and only when — an `ARG` for it is declared here.
 #
-# **No server key is a build argument, and none may become one** (spec 001 §14 A16, spec 040 §14
+# **No server key is a build argument, and none may become one** (spec 001 §14 A17, spec 040 §14
 # A1; TASK-135). A build argument is recoverable from the build stage's layer history, and no
 # build reads `DATABASE_URL`, the R2 credentials or `INTERNAL_CRON_SECRET` — `next.config.ts`
 # asserts only the keys above, and `instrumentation.ts` asserts the rest at server start, where a

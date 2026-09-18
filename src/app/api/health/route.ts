@@ -17,7 +17,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export function GET(request: Request): Response {
-  // The server-only half of the env contract (spec 001 §14 A16, spec 040 §14 A1; TASK-135). The
+  // The server-only half of the env contract (spec 001 §14 A17, spec 040 §14 A1; TASK-135). The
   // build asserts only what it inlines, so this endpoint — the Railway healthcheck target — is
   // where a missing `DATABASE_URL`, R2 credential or `INTERNAL_CRON_SECRET` surfaces: it throws,
   // the response is a 500, the healthcheck fails and the deployment never takes traffic.

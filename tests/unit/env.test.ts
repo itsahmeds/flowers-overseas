@@ -791,14 +791,14 @@ describe("the env-build-failure reproduction (spec 040 AC-28, T-29)", () => {
 });
 
 /**
- * The build/runtime split of spec 001 §14 A16 and spec 040 §14 A1 (TASK-135).
+ * The build/runtime split of spec 001 §14 A17 and spec 040 §14 A1 (TASK-135).
  *
  * The defect it fixes: `next.config.ts` asserted all 28 keys at config load, so `RUN pnpm build`
  * inside the container demanded ten credentials no build reads — the Railway staging build log of
  * 2026-09-18. The two halves are pinned here as *behaviour*; `tests/unit/container.test.ts` pins
  * them against the `Dockerfile`'s build-argument set.
  */
-describe("the build/runtime split (spec 001 §14 A16, TASK-135)", () => {
+describe("the build/runtime split (spec 001 §14 A17, TASK-135)", () => {
   /** Exactly what a credential-free `docker build` has: the ARG defaults of the build stage. */
   const buildOnly: Record<string, string> = {
     APP_ENV: "staging",

@@ -470,3 +470,44 @@ docs close, which may lower the cap again once the tests column is compressed. 1
 meaningful: it is ~30 % of headroom, not an open cheque, and `pnpm codebase:map --check` (the
 staleness gate, which is the assertion that actually protects the artefact) is unchanged.
 Raised by: `/review 63` (PR #63), 2026-09-16, as the accepted condition of TASK-087's escalation 2.
+
+**A17 — the build-time env gate grades only what the build consumes (§5.2 "`assertEnv()` invoked from `next.config`"; AC-10; TASK-135, 2026-09-18).**
+Original: §5.2 — "`src/lib/env.ts` → `serverEnvSchema`, `clientEnvSchema` (zod), exported `env`
+object frozen at module load; `assertEnv()` invoked from `next.config` so the build fails early" —
+and AC-10, "with `.env.local` missing a variable, `pnpm build` exits non-zero, the error names it,
+and no value of any other variable appears in the output".
+Trigger: the **Railway staging build log of 2026-09-18**. `RUN pnpm build` inside the container of
+spec 040 §5.3 failed with `EnvValidationError: Invalid environment (staging). 10 problem(s)`, naming
+`DATABASE_URL`, `DATABASE_URL_UNPOOLED`, `INTERNAL_CRON_SECRET` and the seven `R2_*` keys.
+`APP_ENV=staging` did reach the build, which is how we learned that Railway passes a service
+variable to a build when — and only when — the `Dockerfile` declares an `ARG` for it. The image
+declared five; `next.config.ts` asserted all 28. The build was demanding ten credentials that no
+build reads.
+Corrected, in three parts.
+1. **The contract is split in two.** `BUILD_ENV_KEYS` — `APP_ENV` plus the `NEXT_PUBLIC_*` set — is
+   what a compiled artefact actually carries: `APP_ENV` decides the per-environment headers
+   `next.config.ts` bakes in, and the `NEXT_PUBLIC_*` values are inlined into the browser bundle.
+   `next.config.ts` calls `assertBuildEnv()`, which grades that set and nothing else, so AC-10 holds
+   unchanged **for every key the build consumes**. `RUNTIME_ENV_KEYS` — every server-only key — is
+   graded by `assertRuntimeEnv()` at server start (`instrumentation.ts`) and on every
+   `GET /api/health`. The two sets partition the 28 keys; `pnpm env:check` and `validateEnv()` still
+   see the whole contract.
+2. **No server key may become a build argument.** The orchestrator's ruling of 2026-09-18 refused
+   the obvious fix of declaring ten more `ARG`s: a build argument is recoverable from the build
+   stage's layer history, and a container build has no business holding a database credential. The
+   `Dockerfile`'s `ARG` set is therefore asserted to *equal* `BUILD_ENV_KEYS`
+   (`tests/unit/container.test.ts`), so a key added to `serverEnvSchema` cannot re-enter the build
+   gate and a credential cannot be added to the image quietly.
+3. **AC-10's intent is preserved for the other half by a different gate.** A missing server key is
+   caught before traffic rather than before compilation: `/api/health` — the Railway healthcheck
+   target — answers 500 naming the keys and printing no value, so the deployment never turns
+   `● Active`. Measured on Next 16.3 (TASK-135): a `register()` that throws does not stop the
+   standalone server from listening, which is why the assertion is made at the endpoint as well as
+   at boot. `env.server.ts` also parses on first *read* instead of at module load, because
+   `next build` imports every route module to collect its configuration and a module-load parse made
+   the server contract a build requirement through any route that imported the barrel.
+Evidence: `pnpm build` with an empty environment (no `.env*`, only the `Dockerfile`'s `ARG`
+defaults) exits 0; `node .next/standalone/server.js` with no server variable answers `/api/health`
+500 naming the ten keys, and 200 once they are supplied; the `container` CI job repeats all three
+against a real `docker build` (no daemon was available locally).
+Raised by: orchestrator ruling on the Railway build log, 2026-09-18; implemented by TASK-135.

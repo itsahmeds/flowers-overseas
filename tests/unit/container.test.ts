@@ -12,7 +12,7 @@
  * The second half of this file is TASK-135's pin: the `Dockerfile`'s build-argument set and the
  * **build half of the env contract** are one fact, asserted against each other, so a key added to
  * `serverEnvSchema` cannot re-enter the build gate — and a credential cannot become a build
- * argument — without a red test (spec 001 §14 A16, spec 040 §14 A1).
+ * argument — without a red test (spec 001 §14 A17, spec 040 §14 A1).
  */
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -130,7 +130,7 @@ describe("Dockerfile (AC-8)", () => {
   });
 });
 
-describe("build-time env contract (AC-8; spec 001 §14 A16, TASK-135)", () => {
+describe("build-time env contract (AC-8; spec 001 §14 A17, TASK-135)", () => {
   it("declares a build argument for exactly the keys the build consumes", () => {
     expect([...declaredArgs].sort()).toEqual([...BUILD_ENV_KEYS].sort());
   });

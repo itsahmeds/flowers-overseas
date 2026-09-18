@@ -4,7 +4,7 @@ import { assertRuntimeEnv } from "./src/lib/env.schema";
  * Is this `next build` collecting page data rather than a server taking traffic? Next sets
  * `NEXT_PHASE` to `phase-production-build` for the duration of a build, and it runs `register()`
  * in the build's workers too. The runtime assertion below must not fire there: the whole point of
- * spec 001 §14 A16 is that a build needs no credential (TASK-135).
+ * spec 001 §14 A17 is that a build needs no credential (TASK-135).
  */
 function isBuildPhase(): boolean {
   return process.env.NEXT_PHASE === "phase-production-build";
@@ -14,7 +14,7 @@ function isBuildPhase(): boolean {
  * Next server instrumentation (spec 001 §5, TASK-005). Loads the Sentry config for the runtime
  * that is starting; both are no-ops without `SENTRY_DSN`.
  *
- * It is also the **server-start half of the env gate** (spec 001 §14 A16, spec 040 §14 A1;
+ * It is also the **server-start half of the env gate** (spec 001 §14 A17, spec 040 §14 A1;
  * TASK-135): `next.config.ts` asserts only what the build inlines, so the server-only keys —
  * `DATABASE_URL`, the R2 credentials, `INTERNAL_CRON_SECRET` — are asserted here, in the first
  * application code a server runs, where the values exist. A miss throws `EnvValidationError`

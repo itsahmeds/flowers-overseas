@@ -1,5 +1,5 @@
 /**
- * Env gates (spec 001 §5.2, AC-10, TASK-005; split by spec 001 §14 A16 / spec 040 §14 A1,
+ * Env gates (spec 001 §5.2, AC-10, TASK-005; split by spec 001 §14 A17 / spec 040 §14 A1,
  * TASK-135).
  *
  * Two gates, because a build and a running server consume different halves of the contract:
@@ -67,7 +67,7 @@ function loadDotEnvFiles(): void {
  *
  * It deliberately says nothing about `DATABASE_URL`, the R2 credentials or `INTERNAL_CRON_SECRET`:
  * a build neither reads nor embeds them, and requiring them would force a container build to be
- * handed secrets it has no business holding (spec 001 §14 A16; Railway build log, 2026-09-18).
+ * handed secrets it has no business holding (spec 001 §14 A17; Railway build log, 2026-09-18).
  */
 export function assertBuildEnv(source: EnvSource = process.env): void {
   loadDotEnvFiles();
