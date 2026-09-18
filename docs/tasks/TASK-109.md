@@ -78,11 +78,107 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- **E-1 (2026-09-18, blocking, to the orchestrator): spec 008 §5.2's six route files cannot exist
+  in this application beside spec 007's routes. Next.js allows exactly one dynamic slug name per
+  (depth, position) across the whole `app/` tree, route groups included.** The shop root
+  `src/app/[locale]/(shop)/[country]/[shopCategory]/page.tsx` normalises to
+  `/[locale]/[country]/[shopCategory]`; spec 007's shipped corridor page is
+  `/[locale]/[destinations]/[country]`. Reproduced against the installed Next with its own router
+  utility:
+
+  ```
+  node -e "const{getSortedRoutes}=require('next/dist/shared/lib/router/utils/sorted-routes.js');
+  getSortedRoutes(['/[locale]/[destinations]/[country]','/[locale]/[country]/[shopCategory]'])"
+  # Error: You cannot use different slug names for the same dynamic path ('destinations' !== 'country').
+  ```
+
+  The same throw hits spec 008's occasions index (`/[locale]/[occasions]`) against spec 007's
+  destinations hub (`/[locale]/[destinations]`), so TASK-112/113 meet it too; only the depth-4
+  routes of TASK-110/111 are clear. `getSortedRoutes` is not a build-only lint: the server sorts
+  every dynamic matcher through it at start
+  (`node_modules/next/dist/server/route-matcher-managers/default-route-matcher-manager.js` L112).
+
+  **A catch-all does not rescue it.** `/[locale]/[...listing]` *sorts* cleanly beside the corridor,
+  but a request for `/en/poland/flowers` is matched by the more specific
+  `/[locale]/[destinations]/[country]` first and stops there: `resolve-routes.js` L190–211 returns
+  the **first** matching dynamic route, and only the *pages* router ever throws `NoFallbackError`
+  to make the loop continue (`route-modules/pages/pages-handler.js` L117 is its one call site).
+  With `dynamicParams = false` the corridor route would answer 404 for every shop URL.
+
+  Two resolutions, both outside this task's scope because both change a file or a seam another
+  spec owns:
+
+  1. **One route per URL depth.** `/{locale}/{a}/{b}` is one URL space and one route file that
+     dispatches corridor vs shop root (and later category hub / occasion hub) through
+     `listingExists()`. Honest, no new seam, matches §2's "segment collision is impossible by
+     test". Costs: spec 007's route file becomes shared (TASK-091's deliverable), `app/` stops
+     being thin, and the two page types must share one `revalidate` (corridor 86 400 vs listing
+     3 600 — a segment export cannot vary per param), which is a spec 007 §5.4 change.
+  2. **A rewrite in `src/proxy.ts`** mapping `/{locale}/{country}/{shopCategory}` to an internal
+     `/{locale}/_shop/...` prefix whose direct requests the same proxy 404s. Keeps both routes,
+     both `revalidate` values and both param names; costs a routing decision in a proxy that spec
+     001 §11 and spec 003 §11 deliberately keep free of them, and one reserved internal segment.
+
+  Recommendation: **(1)**, with a spec 008 §5.2 amendment recording the route table and a spec 007
+  §14 note that the corridor's route file is shared from here. Whichever is chosen also decides
+  TASK-110…113, so it wants an orchestrator ruling rather than an implementer's pick. **`open`.**
+
+- **E-2 (2026-09-18, blocking, to the orchestrator): `listingView()` carries no occasion row for
+  the country shop root, and this task may not build a second source for one.** §5.3 row 1 and the
+  `wf-country-shop` artboards put a dated occasion block ("Coming up in Poland — Poland's own
+  dates", one row per occasion with `occasionDate(rule, year)` through `formatDate`, the third
+  column saying which of them is a link) between the category tiles and the intro. In the shipped
+  view model (`src/modules/catalog/listing.ts`, TASK-107) `occasionDates` is populated only for
+  `occasionHub` and `countryOccasion`, `occasions` only for `occasionsIndex`, and `links.chips` is
+  built only when `kind !== undefined` — which the shop root never has. So a shop root view has
+  **nothing** to render that block from. Reading `upcomingOccasions()` in the route or the
+  component would be the second source §5.2 forbids ("`listingView()` is the **only** source for
+  the page, the JSON-LD builders and the sitemap"). Options: extend `listingView()` so a
+  `countryShopRoot` carries the destination's occasion entries (a `modules/catalog` change, i.e.
+  TASK-107's file, and it must land before TASK-115's `ItemList`/`BreadcrumbList` reads it), or
+  amend §5.3 to drop the block from the shop root and redraw both artboards. **`open`.**
+
+- **E-3 (2026-09-18, as the brief instructs, non-blocking): the trailing-slash shape on a shop
+  URL.** Spec 008 AC-1 lists "a trailing slash" among the shapes that must 404 with no redirect;
+  spec 007 §14 A6 rules a trailing slash a permanent redirect to the bare URL, but its own words
+  scope it to "AC-5's" shapes — spec 007's routes — and it argues from `plan/02` §7 and spec 003
+  §2, which are site-wide. The two readings give opposite answers on `/en/poland/flowers/` and
+  the e2e for T-01 has to assert one of them. Nothing is chosen here and no assertion is written
+  for that shape. **`open`.**
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
+**Blocked before any application code was written.** No `src/` or `app/` file was touched: the two
+blockers above (E-1 route shape, E-2 the missing occasion row on the shop-root view) both sit on
+the deliverable itself, and each resolution changes a file another task owns, so picking one here
+would have been an improvisation across specs 007 and 008 and tasks 110–113. What the reading
+produced, for whoever finishes this task:
 
-_Pending._
+- **Route.** E-1 with a reproduction and two costed resolutions. It is not a TASK-109-only
+  problem: TASK-112 (`/{locale}/{occasions}/{occasion}`) and TASK-113 (`/{locale}/{occasions}`)
+  hit the same throw; TASK-110/111 (depth 4) do not.
+- **View model.** E-2. Also: `listingView()` populates `links.chips` only for entity-scoped pages,
+  so the shop root has no chip row either — the category **tiles** cover that half, the occasions
+  half is the gap.
+- **Sort and pagination are TASK-114's.** `ListingToolbar` and `Pagination` are built (TASK-108)
+  but nothing reads `searchParams` yet, so this page must render neither: a sort form that cannot
+  sort and a `?page=2` link to a page that renders page 1 are both controls that lie. The page
+  ships grid-page-1-in-default-order, and TASK-114 adds the two controls with the parameter policy.
+- **Artboard reading.** `country-shop-desktop.dc.html` draws the priced row ("Six we make for
+  Poland") and the full listing ("Everything we can make for Poland") as separate sections whose
+  first six cards are the same six products. §5.3's normative block list for the shop root names
+  four blocks — priced row, tiles, occasion row, intro — and no second grid, so the artboard is
+  read as a state catalogue: **one** grid, placed first, with the toolbar and pagination panels
+  below it being that same grid's chrome. Worth confirming when E-1/E-2 are ruled on.
+- **Copy.** `messages/*.json` is missing four keys the shipped view model already names:
+  `shop.h1.countryShopRoot`, `breadcrumb.shopRoot`, `breadcrumb.entity`, `breadcrumb.occasions`
+  (`H1_KEYS` and `breadcrumbFor()` in `listing.ts`). Any listing page renders a broken heading or
+  crumb until they are authored in four locales with `de`/`pl` drafts and meta records.
+- **AC-8 is not observable in e2e as T-08 words it.** A shop root exists only where ≥1 deliverable
+  product does (§2 row 6), so the empty state has no URL on the committed corpus; it is reachable
+  only through a fabricated view (unit) or `/dev/components` (e2e/axe). T-08's "fixture country
+  with zero deliverable products" needs either a provider swap the e2e harness does not have or
+  re-wording to the gallery.
+
+No PR opened. `.claude/state/active-task` cleared; the branch `task/TASK-109-country-shop-root`
+carries this brief edit and nothing else.
