@@ -34,7 +34,26 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- **D-1 (2026-09-18, decided here, not escalated) — the destination picker links at depth-4 URLs
+  whose route TASK-110/111 had not merged when this branch was cut.** §2 row 7 gives a country
+  category page to every *published* destination with ≥ 6 products in that category, and the
+  committed corpus satisfies that for all seven, so `listingView()` hands the `roses` hub seven
+  destination links. Two options: render them (correct the moment the sibling tasks land, dead
+  until then) or invent a second predicate — a new `site-links.ts` id — to gate them. **Chosen:
+  render them.** §5.2 makes `listingExists()` the one source the router, the sitemap, the link
+  renderers and the crawl all read, and a second predicate for the same question is exactly what
+  that rule forbids; spec 008 §12's task order puts the country category (task 6) before the hubs
+  (task 8), which is why the orchestrator ran 110/111 beside this task. The e2e asserts the
+  **shape and the source** of each destination href (built by `listingPath()` for a destination
+  the existence rule claimed); AC-21's whole-site crawl, in its own task, is what asserts the 200
+  once both depth-4 routes have shipped.
+- **D-2 (2026-09-18, decided here) — the occasions-index crumb and out-link.** `linksFor()` and
+  `breadcrumbFor()` resolved `/{locale}/{occasions}` from `listingExists()` alone, and that page's
+  route is TASK-113's, so the occasion hub would have shipped a crumb pointing at a 404. Both now
+  read one helper, `occasionsIndexHref()`, which requires the page to exist **and** its
+  `site-links.ts` id (`occasions`, `owningSpec: "008"`, `published: false`) to be published — the
+  registry spec 004 §5.1 created for precisely this handover. The crumb is text until AC-20's task
+  flips the flag; no call site changes then.
 
 ## Result
 

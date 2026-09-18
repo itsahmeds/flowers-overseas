@@ -44,6 +44,7 @@ import {
   Pagination,
   Photo,
   PHOTO_RATIOS,
+  type HubCardView,
   ProductCard,
   type ProductCardView,
   ProofRow,
@@ -191,7 +192,8 @@ function StateRow({
 }
 
 /**
- * The four card states of spec 008's first drawn row, as `ProductCardView`s (TASK-108).
+ * The card states of spec 008's first drawn row, as view models (TASK-108; the priceless hub card
+ * added by TASK-112).
  *
  * `image` and `link` resolve against the gallery's fixture manifest, so the photograph and the
  * `<a>` are reviewable before the founder's imagery and before spec 009 publishes the product link
@@ -223,6 +225,22 @@ function galleryCard(
     price: state === "link" ? LISTING_CARDS.lowPrice : LISTING_CARDS.price,
     priceLabelKey: "catalog.price.inclusive",
     provenance: "ai",
+  };
+}
+
+/**
+ * The **hub** card (spec 008 §14 A3; TASK-112): the same card with the money removed, which is
+ * what `HubCardViewSchema` is. It is the one state no country-scoped listing can reach and the
+ * only one a destination-less hub may render, so it is drawn here beside the four that carry a
+ * price — the gallery is where the set is screenshotted and axe-run.
+ */
+function galleryHubCard(): HubCardView {
+  const priced = galleryCard("tile");
+  return {
+    productId: "gallery-hub",
+    name: LISTING_CARDS.name,
+    photo: priced.photo,
+    provenance: priced.provenance,
   };
 }
 
@@ -984,6 +1002,16 @@ export default function DevComponentsPage(): ReactElement {
                     card={galleryCard("link")}
                     headingLevel="h3"
                     key="card-link"
+                    locale={galleryLocale}
+                    manifest={GALLERY_MEDIA_MANIFEST}
+                  />,
+                ],
+                [
+                  "cardNoMoney",
+                  <ProductCard
+                    card={galleryHubCard()}
+                    headingLevel="h3"
+                    key="card-no-money"
                     locale={galleryLocale}
                     manifest={GALLERY_MEDIA_MANIFEST}
                   />,

@@ -269,6 +269,8 @@ export const LISTING_STATES = {
     "ProductCard \u00b7 placeholder \u2014 asset missing, unapproved, or no alt text in this locale: the captioned box renders and there is no <img> at all. The box is the same 4\u22365, so the swap costs zero layout shift.",
   cardTile:
     "ProductCard \u00b7 tile \u2014 Phase 0 (\u00a713 Q8): no href on the view model, so no <a> in the DOM. We never link at a URL that 404s, and spec 009's product page does not exist yet.",
+  cardNoMoney:
+    "ProductCard \u00b7 no money \u2014 the destination-less hubs only (spec 008 \u00a714 A3): a HubCardView is a ProductCardView with price and priceLabelKey omitted, so the card has nothing to render an amount from. The line stands where the price would be, and the page carries the full sentence once.",
   cardLink:
     "ProductCard \u00b7 link \u2014 the day spec 009 publishes the product link id: the same children wrapped in one <a>, and nothing else in the markup changes.",
   gridDesktop:
