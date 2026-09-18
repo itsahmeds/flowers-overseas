@@ -15,6 +15,20 @@
  *    lockup. The search band, the decorative menu glyph and every unpublished registry entry are
  *    deliberately *not* in the tab order, because they are text and a disabled control (spec §14
  *    A4) — a focus stop that does nothing is the failure this replaces.
+ *
+ * **Known, recorded, not fixed here: `scrollable-region-focusable` on the category row below
+ * 900 px** (serious; owner spec 004 / TASK-048). The category row is `overflow-x-auto` below the
+ * `md` breakpoint and carries no keyboard-focusable child while every entry is unpublished text,
+ * so axe reports a scrollable region a keyboard user cannot reach. It is found again on every
+ * mobile axe run — `/review 73` rediscovered it on `/dev/components` at 390 px (TASK-108's third
+ * escalation, "carried to the chrome owner") and TASK-120's sweep rediscovered it a third time —
+ * so it is written down here, where the next person to run axe on the header will read it.
+ *
+ * The audits above run at this project's default viewport and do not trip it. It is a **real**
+ * defect, not a false positive, and it is not fixed in a copy task: the fix is either a
+ * `tabindex="0"` with an accessible name on the scroller or (better) publishing the entries as
+ * links, which is spec 008's, and both change the header's tab order and its visual baselines.
+ * Whoever owns the next header change owns this.
  */
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
