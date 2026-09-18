@@ -308,9 +308,45 @@ export const ENV_KEYS: readonly string[] = [
   ...Object.keys(serverEnvSchema.shape),
 ].sort();
 
-/** Keys that must carry a real value once deployed (not a `.env.example` placeholder). */
-const REAL_VALUE_REQUIRED = [
-  "NEXT_PUBLIC_SITE_URL",
+/**
+ * The keys a **build** consumes, and therefore the only keys `next build` may demand (spec 001
+ * §14 A16, spec 040 §14 A1; TASK-135).
+ *
+ * `APP_ENV` (the per-environment headers `next.config.ts` bakes in) plus the `NEXT_PUBLIC_*` set
+ * (inlined into the browser bundle by Next). Nothing else is readable from a compiled artefact,
+ * so nothing else has any business being present while the artefact is produced — which is what
+ * makes `docker build` credential-free: the `Dockerfile` declares an `ARG` for exactly this set
+ * and for no secret, because a build argument survives in the build stage's layer history.
+ *
+ * `tests/unit/container.test.ts` pins this list against the `Dockerfile`'s `ARG` set **and**
+ * against `RUNTIME_ENV_KEYS`, so a key added to `serverEnvSchema` cannot re-enter the build gate
+ * without the pin failing.
+ */
+export const BUILD_ENV_KEYS: readonly string[] = [
+  APP_ENV_KEY,
+  ...Object.keys(clientEnvSchema.shape),
+].sort();
+
+/**
+ * Everything else: the server-only keys — credentials among them — asserted at **server start**
+ * instead of at build (spec 001 §14 A16). A miss there fails `/api/health`, and therefore the
+ * Railway healthcheck, so the deployment never takes traffic: fail-closed, one step later than
+ * the build, and without a credential ever entering an image layer.
+ */
+export const RUNTIME_ENV_KEYS: readonly string[] = Object.keys(
+  serverEnvSchema.shape,
+)
+  .filter((key) => key !== APP_ENV_KEY)
+  .sort();
+
+/**
+ * Keys that must carry a real value once deployed (not a `.env.example` placeholder), split the
+ * same way as the gate: the origin is inlined into the bundle and is judged at build time, the
+ * credentials are judged at server start.
+ */
+const BUILD_REAL_VALUE_REQUIRED = ["NEXT_PUBLIC_SITE_URL"] as const;
+
+const RUNTIME_REAL_VALUE_REQUIRED = [
   "DATABASE_URL",
   "DATABASE_URL_UNPOOLED",
   "INTERNAL_CRON_SECRET",
@@ -322,6 +358,12 @@ const REAL_VALUE_REQUIRED = [
   "R2_SECRET_ACCESS_KEY",
   "R2_PUBLIC_BASE_URL",
 ] as const;
+
+/** Both halves, in the order the report has always printed them. */
+export const REAL_VALUE_REQUIRED: readonly string[] = [
+  ...BUILD_REAL_VALUE_REQUIRED,
+  ...RUNTIME_REAL_VALUE_REQUIRED,
+];
 
 export type EnvSource = Readonly<Record<string, string | undefined>>;
 
@@ -532,14 +574,22 @@ function collect(error: z.ZodError, source: EnvSource): EnvIssue[] {
 }
 
 /**
- * Validate a raw environment. Pure: no `process.env` read, no throw, no value in the output.
+ * The build half of the contract: `APP_ENV` and the `NEXT_PUBLIC_*` set — the keys the compiled
+ * artefact actually carries (spec 001 §14 A16, spec 040 §14 A1; TASK-135).
+ *
+ * Pure: no `process.env` read, no throw, no value in the output. This is what `next.config.ts`
+ * runs, so a container build needs `BUILD_ENV_KEYS` and nothing else.
  */
-export function validateEnv(source: EnvSource): EnvValidationResult {
+export function validateBuildEnv(source: EnvSource): {
+  readonly issues: readonly EnvIssue[];
+  readonly client: ClientEnv | undefined;
+} {
   const { environment, unparseable } = resolveEnvironment(source);
   const issues: EnvIssue[] = [];
 
   // A typo in `APP_ENV` is reported here as well as by the schema, because this is the function
-  // `assertEnv()` and `envReport()` call: the build must fail naming the key (spec 040 AC-1).
+  // `assertBuildEnv()` calls: the build must fail naming the key (spec 040 AC-1). `APP_ENV` is a
+  // build key because `next.config.ts` bakes the per-environment headers from it (§5.2).
   if (unparseable) {
     issues.push({ key: APP_ENV_KEY, message: UNPARSEABLE_APP_ENV_MESSAGE });
   }
@@ -548,54 +598,10 @@ export function validateEnv(source: EnvSource): EnvValidationResult {
   if (!clientResult.success)
     issues.push(...collect(clientResult.error, source));
 
-  const serverResult = serverEnvSchema.safeParse(source);
-  if (!serverResult.success) {
-    // `serverEnvSchema` also rejects a bad `APP_ENV`, so without this filter the report would
-    // carry the key twice — once with the message above and once with zod's, which lists the
-    // accepted values and is then mangled by `scrubValues()` when the received value happens to
-    // be a substring of one of them (`prod` inside `production`). One key, one line.
-    issues.push(
-      ...collect(serverResult.error, source).filter(
-        (issue) => !(unparseable && issue.key === APP_ENV_KEY),
-      ),
-    );
-  }
-
-  // §8 "Security" / AC-29: pseudo-locales are a *development* affordance. Refusing them here —
-  // in the gate `next.config.ts` runs before compiling anything — is what makes "a pseudo-locale
-  // route cannot be exposed to buyers by configuration mistake" a build failure rather than a
-  // code review. Checked against `production` only: a preview is password-protected and
-  // `noindex`, and is where the visual and a11y suites run (§13 Q6).
-  if (
-    PRODUCTION_LIKE_ENVIRONMENTS.includes(environment) &&
-    pseudoLocalesEnabled(source)
-  ) {
-    issues.push({
-      key: PSEUDO_LOCALES_KEY,
-      message: `must not be \`true\` in ${environment}: the en-XA/ar-XB pseudo-locales are refused there (spec 003 §2, §8; spec 040 AC-5 adds staging, which is shown to florists). Unset it or set it to \`false\`.`,
-    });
-  }
-
-  // AC-28, the same reasoning as the pseudo-locales above and the same enforcement point: the
-  // gallery is a development surface, and refusing the flag in the gate `next.config.ts` runs
-  // before compiling anything makes "the gallery cannot be served in production" a build failure
-  // rather than a code review. Previews are password-protected and `noindex` (§12).
-  if (
-    PRODUCTION_LIKE_ENVIRONMENTS.includes(environment) &&
-    devUiEnabled(source)
-  ) {
-    issues.push({
-      key: DEV_UI_KEY,
-      message: `must not be \`true\` in ${environment}: the /dev/components gallery is refused there (spec 004 §2, AC-28; spec 040 AC-5 adds staging, which is shown to florists). Unset it or set it to \`false\`.`,
-    });
-  }
-
   if (DEPLOYED_ENVIRONMENTS.includes(environment)) {
-    // Spec 002 AC-2: there is no escape hatch any more. The opt-out spec 001 carried existed only
-    // because no database existed to point at; with Neon and R2 provisioned, a deployed
-    // environment carrying a `.env.example` placeholder is a misconfiguration and fails the build,
-    // naming the offending keys and no value.
-    for (const key of REAL_VALUE_REQUIRED) {
+    // The origin is inlined into every canonical and every absolute URL in the bundle, so a
+    // placeholder or an http origin is baked in at build time and must fail *the build*.
+    for (const key of BUILD_REAL_VALUE_REQUIRED) {
       const value = source[key];
       if (value !== undefined && placeholders.has(value)) {
         issues.push({
@@ -616,8 +622,120 @@ export function validateEnv(source: EnvSource): EnvValidationResult {
   return {
     issues,
     client: clientResult.success ? clientResult.data : undefined,
+  };
+}
+
+/**
+ * The runtime half: every server-only key (`RUNTIME_ENV_KEYS`) and the two development flags that
+ * are refused in production-like environments. Asserted at **server start**, not at build — the
+ * image must build without a credential (spec 001 §14 A16, spec 040 §14 A1; TASK-135).
+ *
+ * Pure: no `process.env` read, no throw, no value in the output.
+ */
+export function validateRuntimeEnv(source: EnvSource): {
+  readonly issues: readonly EnvIssue[];
+  readonly server: ServerEnv | undefined;
+} {
+  const { environment } = resolveEnvironment(source);
+  const issues: EnvIssue[] = [];
+
+  const serverResult = serverEnvSchema.safeParse(source);
+  if (!serverResult.success) {
+    // `serverEnvSchema` also rejects a bad `APP_ENV`, but that key is graded by the build half
+    // above — once, with the message that lists the accepted values and prints no received one.
+    // One key, one line, and never in two reports.
+    issues.push(
+      ...collect(serverResult.error, source).filter(
+        (issue) => issue.key !== APP_ENV_KEY,
+      ),
+    );
+  }
+
+  // §8 "Security" / AC-29: pseudo-locales are a *development* affordance. Refusing them in the
+  // boot assertion is what makes "a pseudo-locale route cannot be exposed to buyers by
+  // configuration mistake" fail-closed: the flag is a *runtime* variable on Railway (it is not a
+  // build argument, so it never reaches `docker build`), and a deployment that carries it never
+  // answers `/api/health` and therefore never takes traffic. Checked against the production-like
+  // environments only: a preview is password-protected and `noindex`, and is where the visual and
+  // a11y suites run (§13 Q6).
+  if (
+    PRODUCTION_LIKE_ENVIRONMENTS.includes(environment) &&
+    pseudoLocalesEnabled(source)
+  ) {
+    issues.push({
+      key: PSEUDO_LOCALES_KEY,
+      message: `must not be \`true\` in ${environment}: the en-XA/ar-XB pseudo-locales are refused there (spec 003 §2, §8; spec 040 AC-5 adds staging, which is shown to florists). Unset it or set it to \`false\`.`,
+    });
+  }
+
+  // AC-28, the same reasoning as the pseudo-locales above and the same enforcement point: the
+  // gallery is a development surface, and refusing the flag at boot makes "the gallery cannot be
+  // served in production" a failed healthcheck rather than a code review. Previews are
+  // password-protected and `noindex` (§12).
+  if (
+    PRODUCTION_LIKE_ENVIRONMENTS.includes(environment) &&
+    devUiEnabled(source)
+  ) {
+    issues.push({
+      key: DEV_UI_KEY,
+      message: `must not be \`true\` in ${environment}: the /dev/components gallery is refused there (spec 004 §2, AC-28; spec 040 AC-5 adds staging, which is shown to florists). Unset it or set it to \`false\`.`,
+    });
+  }
+
+  if (DEPLOYED_ENVIRONMENTS.includes(environment)) {
+    // Spec 002 AC-2: there is no escape hatch any more. The opt-out spec 001 carried existed only
+    // because no database existed to point at; with Neon and R2 provisioned, a deployed
+    // environment carrying a `.env.example` placeholder is a misconfiguration and fails — at the
+    // boot assertion since TASK-135, naming the offending keys and no value.
+    for (const key of RUNTIME_REAL_VALUE_REQUIRED) {
+      const value = source[key];
+      if (value !== undefined && placeholders.has(value)) {
+        issues.push({
+          key,
+          message: `must be a real value in ${environment}, not the .env.example placeholder`,
+        });
+      }
+    }
+  }
+
+  return {
+    issues,
     server: serverResult.success ? serverResult.data : undefined,
   };
+}
+
+/**
+ * Validate a raw environment, both halves at once. Pure: no `process.env` read, no throw, no value
+ * in the output. This is the whole 28-key contract — what `pnpm env:check`, `envReport()` and the
+ * module-load parse of `env.server.ts` use; the *build* uses `validateBuildEnv()` alone.
+ */
+export function validateEnv(source: EnvSource): EnvValidationResult {
+  const build = validateBuildEnv(source);
+  const runtime = validateRuntimeEnv(source);
+  return {
+    issues: [...build.issues, ...runtime.issues],
+    client: build.client,
+    server: runtime.server,
+  };
+}
+
+/**
+ * The server-start half of the gate (spec 001 §14 A16, spec 040 §14 A1; TASK-135). Throws
+ * `EnvValidationError` naming the offending server-only keys and printing no value.
+ *
+ * It lives in this module — not in `env.assert.ts` — because `instrumentation.ts` calls it and is
+ * bundled for the edge runtime as well as for Node, where `env.assert.ts`'s `@next/env` loader
+ * (`process.cwd()`) is not available. No loader is needed at server start: Next has already read
+ * the `.env*` files by the time instrumentation runs, and a container has none to read.
+ *
+ * The caller passes the source, so this file keeps its "no `process.env` read" rule.
+ */
+export function assertRuntimeEnv(source: EnvSource): void {
+  const { issues } = validateRuntimeEnv(source);
+  if (issues.length > 0) {
+    const { environment } = resolveEnvironment(source);
+    throw new EnvValidationError(issues, environment);
+  }
 }
 
 /** Human-readable, value-free report (AC-10). */

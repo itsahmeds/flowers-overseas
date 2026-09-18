@@ -13,10 +13,12 @@
  */
 export { clientEnv } from "./env.client";
 export { env, environment, serverEnv } from "./env.server";
-export { assertEnv, envReport } from "./env.assert";
+export { assertBuildEnv, assertEnv, envReport } from "./env.assert";
 export {
   APP_ENV_KEY,
+  BUILD_ENV_KEYS,
   ENV_KEYS,
+  RUNTIME_ENV_KEYS,
   EnvValidationError,
   NEXT_PUBLIC_APP_ENV_KEY,
   type ClientEnv,
@@ -26,6 +28,7 @@ export {
   type LogLevel,
   type ServerEnv,
   appEnvironment,
+  assertRuntimeEnv,
   clientEnvSchema,
   commitSha,
   deploymentEnvironment,
@@ -33,5 +36,7 @@ export {
   formatEnvIssues,
   hostPlatform,
   serverEnvSchema,
+  validateBuildEnv,
   validateEnv,
+  validateRuntimeEnv,
 } from "./env.schema";

@@ -4,7 +4,7 @@ import createNextIntlPlugin from "next-intl/plugin";
 
 import { consentBootstrapHash } from "./src/lib/consent-bootstrap";
 import { securityHeaderRules } from "./src/lib/csp";
-import { assertEnv } from "./src/lib/env.assert";
+import { assertBuildEnv } from "./src/lib/env.assert";
 import { mediaCacheHeaderRules } from "./src/lib/media-headers";
 import {
   appEnvironment,
@@ -14,9 +14,18 @@ import {
 } from "./src/lib/env.schema";
 import { noindexHeaderRules } from "./src/lib/robots-headers";
 
-// Fail the build before compiling anything when a variable is missing or malformed. The error
-// names the offending keys and prints no value (spec 001 AC-10, TASK-005).
-assertEnv();
+// Fail the build before compiling anything when a variable **the build consumes** is missing or
+// malformed. The error names the offending keys and prints no value (spec 001 AC-10, TASK-005).
+//
+// `assertBuildEnv()` grades `BUILD_ENV_KEYS` only — `APP_ENV` plus the `NEXT_PUBLIC_*` set — and
+// not the whole 28-key contract (spec 001 §14 A16, spec 040 §14 A1; TASK-135). Those are the keys
+// a compiled artefact actually carries: `APP_ENV` decides the headers baked in below, the
+// `NEXT_PUBLIC_*` values are inlined into the browser bundle. The server-only keys —
+// `DATABASE_URL`, the R2 credentials, `INTERNAL_CRON_SECRET` — are asserted at server start by
+// `instrumentation.ts` instead, because the alternative is handing a `docker build` ten secrets it
+// would then carry in its layer history. Trigger: the Railway staging build log of 2026-09-18,
+// where `RUN pnpm build` failed on ten keys that no build has ever read.
+assertBuildEnv();
 
 // `X-Robots-Tag: noindex` on every response outside production, permanently: previews and
 // staging are never indexable (spec 001 §2, §6, AC-15, TASK-006). Production gets no header here
