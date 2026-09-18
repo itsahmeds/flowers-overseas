@@ -35,8 +35,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
   manifest lookup as its `srcset`; it is the first product photo; initial image transfer
   ≤ 204 800 B; CLS 0 across the placeholder→image swap. Phase 0 assets render only once TASK-080
   commits bytes — until then the honesty gates keep placeholders, so assert the mechanism on the
-  fixture manifest and record the pending-bytes caveat in `## Result
-
+  fixture manifest and record the pending-bytes caveat in `## Result`.
 - **Copy.** No literal user-facing strings; `shop.*` keys exist from TASK-108 (16 keys, four
   locales). Add only what the empty state and the page chrome need, `pl` plurals hand-authored,
   `pnpm i18n:check` clean, no promise strings (spec 008 AC-9; add the page type to `PAGES` in
