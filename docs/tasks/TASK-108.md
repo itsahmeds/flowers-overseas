@@ -54,6 +54,33 @@ One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
 
+- **From `/review 73` (2026-09-18) — FAIL, two required changes.** (1) **The design source of
+  truth is still not in step on where the provenance note goes.** The shipped `ProductCard`
+  renders the spec 006 §2.5 label on **every** card that displays an `ai` asset (verified on the
+  served gallery: the `gridDesktop` state renders three labels across four cards), but
+  `system/components.dc.html`'s **listing-grid** cells draw none, and
+  `wireframes/country-shop-{desktop,mobile}.dc.html` and `country-category-desktop.dc.html` — the
+  founder-approved page artboards — draw the sentence **once, after the grid**. Escalation 1 was
+  resolved for the card cells only, and the PR deletes the README's "where the sheet differs" row
+  while a difference remains. Reconcile one way or the other and record the ruling (spec 008 §14
+  amendment or a founder-answered escalation), because TASK-109/117 inherit the placement and
+  TASK-118 asserts page ↔ artboard parity. Either: keep card-level labelling and redraw the grid
+  cells and the three page wireframes; or move the note to the grid/page level and revert the
+  card-cell drawing. (2) **`tests/support/listing-honesty.ts` has no negative control.** Three
+  layers and TASK-117 rely on it and every call site asserts `toEqual([])`, so a scan that matched
+  nothing — or a `text` that came back empty — would pass silently. Add a test that plants
+  "bestseller", "same-day delivery", `<del>`, `line-through` and `data-fo-badge` and asserts each
+  is reported, plus a non-empty assertion on the scanned text at the e2e call site.
+- **Nits from `/review 73` (2026-09-18), not blocking:** `ProductCardView.provenance` is required
+  by the schema but read by no component (the label comes from the manifest) and nothing asserts
+  the two agree — pin it in TASK-107's projection test or say in the schema doc that it is
+  data-only. The e2e test named "the sort form works with JavaScript disabled **and by keyboard
+  alone**" exercises only `selectOption`/`click`; drive it with `keyboard.press` or rename it.
+  `<bdi>` wraps the name and the price separately rather than the pair in one element — better
+  isolation, but T-30's wording says "pair", so add a line saying why. `tests/e2e/corridor.spec.ts`
+  ("casing … 404") returned 200 once on the first request after a cold `next start` and was green
+  on rerun and by `curl` — a harness warm-up, not this PR's, but worth carrying to the e2e owner.
+
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
