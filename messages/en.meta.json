@@ -3106,12 +3106,65 @@
     "reviewedAt": "2026-09-18T00:00:00Z",
     "sourceHash": "a399a16eca426eb0222c30aebfc60e5ee84d43610d2e2e38023d2fdf335b3522"
   },
+  "shop.h1.countryOccasion": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/country-occasion-desktop.dc.html, -mobile and country-shop-{desktop,mobile}.dc.html, 2026-09-16 design round; transcribed by TASK-111)",
+    "reviewedAt": "2026-09-18T00:00:00Z",
+    "sourceHash": "c60d731e8a5b0bb673360c58ac2cebb4de36e27436f408c9dfe6adf9dd408cd4"
+  },
   "shop.h1.countryShopRoot": {
     "source": "human",
     "reviewed": true,
     "reviewedBy": "founder (docs/design/wireframes/country-shop-desktop.dc.html and -mobile, 2026-09-16 design round; transcribed by TASK-109)",
     "reviewedAt": "2026-09-18T00:00:00Z",
     "sourceHash": "fb10e6e0ef520a1a17e2ef55052654cf6dda14260aabc413c30fc9b801269f97"
+  },
+  "shop.occasion.dateNote": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "24f43d2f7633db915fd1bbd348cb27bb2fd638017eb8df33b3d01d982f42deb3"
+  },
+  "shop.occasion.datedLine": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/country-occasion-desktop.dc.html, -mobile and country-shop-{desktop,mobile}.dc.html, 2026-09-16 design round; transcribed by TASK-111)",
+    "reviewedAt": "2026-09-18T00:00:00Z",
+    "sourceHash": "6de632d68c11f877a5453ce4c4badfd5be33cac63d5048f18c6bed002b7b9f8f"
+  },
+  "shop.occasion.lede": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "450182926e299b38403f1119d5c38f41c51be68157b75853df7840cd65d275c5"
+  },
+  "shop.occasion.seoDescription": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8abe14c83c44c1abe8be8032b4c8cc8b1a15fac5c4db452bb9ded8342d66cef3"
+  },
+  "shop.occasion.seoTitle": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d29c83f2febc750e7bb9284658dbe41e436bc363b15b844e2beda127aa4f4319"
+  },
+  "shop.occasion.shopRootLink": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/country-occasion-desktop.dc.html, -mobile and country-shop-{desktop,mobile}.dc.html, 2026-09-16 design round; transcribed by TASK-111)",
+    "reviewedAt": "2026-09-18T00:00:00Z",
+    "sourceHash": "85947eba46e11179b037c6c63b9c929079c33ed6f1002ca1b3c1558692594c94"
+  },
+  "shop.occasion.siblingsHeading": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/country-occasion-desktop.dc.html, -mobile and country-shop-{desktop,mobile}.dc.html, 2026-09-16 design round; transcribed by TASK-111)",
+    "reviewedAt": "2026-09-18T00:00:00Z",
+    "sourceHash": "ceea5a533c1ada46a3419709d867d4e88f128ce884a980adf115ae2b53bc4443"
+  },
+  "shop.occasion.undatedLine": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "45ad4802571d3361bb13db873558e37d2761fe5cb9ef89ca3064e070289c2693"
   },
   "shop.pagination.label": {
     "source": "human",
@@ -3190,6 +3243,11 @@
     "reviewedAt": "2026-09-18T00:00:00Z",
     "sourceHash": "f68e0b1ef1269baeea223f00199f2e45e5f8d4a4bddd585d7074efce4c33c435"
   },
+  "shop.root.occasionPageLink": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d2b2901ebd36c8640300a9b96366ce4707cac214167e51d3120f8f7d0babb7aa"
+  },
   "shop.root.occasionsCaption": {
     "source": "human",
     "reviewed": true,
@@ -3210,6 +3268,13 @@
     "reviewedBy": "founder (docs/design/wireframes/country-shop-desktop.dc.html and -mobile, 2026-09-16 design round; transcribed by TASK-109)",
     "reviewedAt": "2026-09-18T00:00:00Z",
     "sourceHash": "b284d53d04cc604e6d772caba6a66a9b859747d1c4bce672df303b8ce4627652"
+  },
+  "shop.root.pageColumn": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/country-occasion-desktop.dc.html, -mobile and country-shop-{desktop,mobile}.dc.html, 2026-09-16 design round; transcribed by TASK-111)",
+    "reviewedAt": "2026-09-18T00:00:00Z",
+    "sourceHash": "0a30a815d67d7dd2018fe18f4e995a26f3b753369cd4327e9b6034b50a2cd153"
   },
   "shop.root.seoDescription": {
     "source": "human",

@@ -284,6 +284,19 @@ describe("the shipped catalogues and manifests", () => {
     "meta.home.description",
     "nav.utility.cutoff",
     "nav.utility.cutoffShort",
+    // TASK-111, the country occasion page. Five of its eleven strings are transcribed from the
+    // founder-approved artboards (`wireframes/country-occasion-{desktop,mobile}.dc.html`,
+    // `country-shop-{desktop,mobile}.dc.html`) and carry his attestation; these six are wording
+    // the implementer composed — the generalised date note in place of the drawing's
+    // Poland-specific sentence, the honest blank for an occasion with no computable rule
+    // (§14 design round Q6), the lede, the two `<head>` strings and the third column's link
+    // label — so they wait here until he ticks them. No `reviewedBy`, by the rule above.
+    "shop.occasion.dateNote",
+    "shop.occasion.lede",
+    "shop.occasion.seoDescription",
+    "shop.occasion.seoTitle",
+    "shop.occasion.undatedLine",
+    "shop.root.occasionPageLink",
   ];
 
   it("reviews the authored English and leaves the machine drafts unreviewed (§13 Q7, Q10)", () => {

@@ -69,6 +69,7 @@ import {
   isGuidePublished,
 } from "@/config/countries";
 import { type LocaleCode, LOCALES, isLocaleCode } from "@/config/locales";
+import { isPublished } from "@/config/site-links";
 import {
   type CorridorState,
   committedOccasionCalendar,
@@ -241,6 +242,15 @@ export const ListingOccasionDateSchema = z
     iso2: z.string().length(2),
     nameKey: z.string().min(1),
     date: z.string().min(1).nullable(),
+    /**
+     * The row's own listing page, **where one exists** (spec 008 §14 **A10**; TASK-111). The
+     * shop root's table prints it as its third column — "which of these is a link" — and a row
+     * whose (occasion, country) pair fails the existence rule carries no `href` at all, so the
+     * cell is empty rather than a disabled link to a 404 (spec 004 AC-14). A10 deferred the
+     * column to this task for exactly that reason: until the country-occasion pages existed the
+     * column could only ever have said "no".
+     */
+    href: z.string().min(1).optional(),
   })
   .strict();
 export type ListingOccasionDate = z.infer<typeof ListingOccasionDateSchema>;
@@ -1115,9 +1125,11 @@ function nextDateIn(
  * §14 Q6's honest blank, not a guessed date.
  */
 async function shopRootOccasionDates(
+  locale: LocaleCode,
   iso2: CountryIso2,
   from: IsoDate,
 ): Promise<readonly ListingOccasionDate[]> {
+  const memo = newMemo();
   const rows: ListingOccasionDate[] = [];
   for (const dated of upcomingOccasions(
     iso2,
@@ -1126,9 +1138,56 @@ async function shopRootOccasionDates(
   )) {
     const occasion = await getOccasion(dated.occasionKey);
     if (occasion === null) continue;
-    rows.push({ iso2, nameKey: occasion.labelKey, date: dated.date });
+    // The third column of §14 **A10**: the row's own page, and only where the same predicate
+    // that gives it a URL says it has one. Mother's Day clears the floor in every destination
+    // today and nothing else does, so eight of the nine cells are empty — which is the honest
+    // shape of the rule and the reason the column waited for these pages (TASK-111).
+    const slug = slugFor("occasion", dated.occasionKey, locale);
+    const linked =
+      slug !== undefined &&
+      (await countryOccasionExists(dated.occasionKey, iso2, locale, memo));
+    rows.push({
+      iso2,
+      nameKey: occasion.labelKey,
+      date: dated.date,
+      ...(linked && slug !== undefined
+        ? {
+            href: pathOf(
+              locale,
+              "countryOccasion",
+              corridorSlug(iso2, locale),
+              slug,
+            ),
+          }
+        : {}),
+    });
   }
   return rows;
+}
+
+/**
+ * The occasions index's link id in `site-links.ts`. Spec 008 AC-20 reserves it and TASK-113 flips
+ * it; the id is the footer row spec 004 already carries (`owningSpec: "008"`, `published: false`).
+ */
+const OCCASIONS_LINK_ID = "occasions";
+
+/**
+ * The occasions index's path, or `undefined` while it may not be linked (TASK-111).
+ *
+ * **Existence is not permission.** `listingExists()` says the page *is a page* — it is what
+ * `generateStaticParams` emits — and `isPublished()` says the site may point at it, which is
+ * spec 004 AC-14's rule and `destinationsHubHref()`'s exact shape. While TASK-113 has not built
+ * the route, the index's link id is unpublished, so the breadcrumb crumb and the "more" link are
+ * **text and absence** rather than links to a URL that answers 404. Flipping the row turns both
+ * into links with no code change here.
+ */
+async function occasionsIndexHref(
+  locale: LocaleCode,
+): Promise<string | undefined> {
+  if (!isPublished(OCCASIONS_LINK_ID)) return undefined;
+  return (await listingExists({ pageType: "occasionsIndex", locale }))
+    ? pathOf(locale, "occasionsIndex")
+    : undefined;
 }
 
 function crumb(
@@ -1339,7 +1398,7 @@ export async function listingView(
         }
       : {}),
     ...(pageType === "countryShopRoot" && iso2 !== undefined
-      ? { occasionDates: await shopRootOccasionDates(iso2, from) }
+      ? { occasionDates: await shopRootOccasionDates(locale, iso2, from) }
       : {}),
     ...(pageType === "countryOccasion" &&
     entityKey !== undefined &&
@@ -1537,13 +1596,8 @@ async function breadcrumbFor(
   }
 
   if (pageType === "occasionHub" || pageType === "countryOccasion") {
-    const index = await listingExists({ pageType: "occasionsIndex", locale });
     crumbs.push(
-      crumb(
-        "breadcrumb.occasions",
-        index ? pathOf(locale, "occasionsIndex") : undefined,
-        false,
-      ),
+      crumb("breadcrumb.occasions", await occasionsIndexHref(locale), false),
     );
   }
 
@@ -1627,12 +1681,7 @@ async function linksFor(
     }
   }
 
-  const occasionsIndex = (await listingExists({
-    pageType: "occasionsIndex",
-    locale,
-  }))
-    ? pathOf(locale, "occasionsIndex")
-    : undefined;
+  const occasionsIndex = await occasionsIndexHref(locale);
 
   const destinationsHub = destinationsHubHref(locale);
 

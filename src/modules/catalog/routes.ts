@@ -26,6 +26,12 @@
  * knowledge of segments or slugs; everything a reader could get wrong about which page a URL is
  * lives here, beside the rules it reads.
  *
+ * **Depth 4 follows the same rule** (TASK-110, TASK-111): `/{locale}/{segment}/{child}/{grandchild}`
+ * is one more shared file, `src/app/[locale]/[segment]/[child]/[grandchild]/page.tsx`, because
+ * spec §5.2's two depth-4 drawings (`[country]/[shopCategory]/[category]` and
+ * `[country]/[occasions]/[occasion]`) collide with each other *and* with the depth-3 file's own
+ * slug names. Both the country category and the country occasion resolve here.
+ *
  * **What is not here yet.** `categoryHub` and `occasionHub` share depth 3 with the corridor and
  * the shop root, and `occasionsIndex` shares depth 2 with the destinations hub; TASK-112/113 add
  * their branches to this union and their components to the same two route files. Until then those
@@ -75,6 +81,16 @@ export type LocalePathResolution =
       readonly countrySlug: string;
       /** The category's slug in this locale, as the URL spells it. */
       readonly categorySlug: string;
+    }
+  | {
+      readonly kind: "countryOccasion";
+      readonly locale: LocaleCode;
+      readonly iso2: CountryIso2;
+      readonly countrySlug: string;
+      /** The catalogue key the URL's slug resolves to (`mothersDay`), never the slug itself. */
+      readonly occasionKey: string;
+      /** The occasion's slug in this locale, as the URL spells it. */
+      readonly occasionSlug: string;
     };
 
 const NOT_FOUND: LocalePathResolution = { kind: "notFound" };
@@ -82,7 +98,7 @@ const NOT_FOUND: LocalePathResolution = { kind: "notFound" };
 /** Whether `segment` is **this** locale's own segment for a page type (`plan/02` §4). */
 function isOwnSegment(
   locale: LocaleCode,
-  pageType: "destinations" | "shopCategory",
+  pageType: "destinations" | "shopCategory" | "occasions",
   segment: string,
 ): boolean {
   return localePath(locale, pageType) === `/${locale}/${segment}`;
@@ -158,8 +174,9 @@ export async function resolveLocalePath(
       segment === undefined ||
       child === undefined ||
       grandchild === undefined
-    )
+    ) {
       return NOT_FOUND;
+    }
 
     // `/{locale}/{countrySlug}/{shopCategory}/{categorySlug}` — spec 008's country category
     // (§2 row 7; TASK-110). The slug is turned into a catalogue key by `resolveSlug()`, the
@@ -184,6 +201,32 @@ export async function resolveLocalePath(
         iso2,
         countrySlug: segment,
         categorySlug: grandchild,
+      };
+    }
+
+    // `/{locale}/{countrySlug}/{occasions}/{occasionSlug}` — spec 008's country occasion
+    // (§2 row 8; TASK-111). The slug is resolved to a catalogue **key** here and the key is what
+    // the existence rule is asked about: `listingExists()` reads `observed`, the product-count
+    // floor and the authored slug, and this function adds none of them.
+    if (isOwnSegment(code, "occasions", child)) {
+      const iso2 = corridorIso2ForSlug(code, segment);
+      if (iso2 === undefined || !isCountryIso2(iso2)) return NOT_FOUND;
+      const occasionKey = resolveSlug(code, "occasion", grandchild);
+      if (occasionKey === undefined) return NOT_FOUND;
+      const exists = await listingExists({
+        pageType: "countryOccasion",
+        locale: code,
+        countryIso: iso2,
+        entityKey: occasionKey,
+      });
+      if (!exists) return NOT_FOUND;
+      return {
+        kind: "countryOccasion",
+        locale: code,
+        iso2,
+        countrySlug: segment,
+        occasionKey,
+        occasionSlug: grandchild,
       };
     }
   }
@@ -250,6 +293,47 @@ export async function localeChildParams(): Promise<
 }
 
 /**
+ * `generateStaticParams` for `/{locale}/{segment}/{child}/{grandchild}` — the **union** of the
+ * existence sets that share depth 4 (spec 008 §14 A5's rule applied one level down): the country
+ * categories of §2 row 7 (TASK-110) and the country occasions of §2 row 8 (TASK-111).
+ *
+ * Every field is read from `listingPages()` rather than restated: the destination's slug and the
+ * entity's slug are the ones the existence set already carries, and the page-type segment is the
+ * one `localePath()` builds — so a category that crosses the six-product floor gains its URL from
+ * the data alone (**AC-5**), and one that falls below it loses it at the next build rather than
+ * becoming a thin page. Neither branch names a country, a category or a floor.
+ */
+export async function localeGrandchildParams(): Promise<
+  readonly LocaleGrandchildParams[]
+> {
+  const params: LocaleGrandchildParams[] = [];
+
+  for (const locale of listingLocales()) {
+    const shopCategory = localePath(locale, "shopCategory").split("/")[2] ?? "";
+    const occasions = localePath(locale, "occasions").split("/")[2] ?? "";
+
+    for (const page of await listingPages(locale)) {
+      if (page.countrySlug === undefined || page.slug === undefined) continue;
+      const child =
+        page.pageType === "countryCategory"
+          ? shopCategory
+          : page.pageType === "countryOccasion"
+            ? occasions
+            : undefined;
+      if (child === undefined) continue;
+      params.push({
+        locale,
+        segment: page.countrySlug,
+        child,
+        grandchild: page.slug,
+      });
+    }
+  }
+
+  return params;
+}
+
+/**
  * Spec 007's corridor existence set for one locale, as slugs.
  *
  * `listCorridorPages()` is spec 007's own enumeration of that set — the list its route prebuilt
@@ -260,38 +344,4 @@ function corridorSlugsIn(locale: LocaleCode): readonly string[] {
   return listCorridorPages()
     .filter((page) => page.locale === locale)
     .map((page) => page.slug);
-}
-
-/**
- * `generateStaticParams` for `/{locale}/{segment}/{child}/{grandchild}` — the union of the
- * existence sets that share **depth 4** (spec 008 §14 A5). Today: the country categories of §2
- * row 7; TASK-111's country occasions join it with one more `pageType` here.
- *
- * Every field is read from `listingPages()` rather than restated: the destination's slug and the
- * category's slug are the ones the existence set already carries, and the page-type segment is
- * the one `localePath()` builds — so a category that crosses the six-product floor gains its URL
- * from the data alone (AC-5), and one that falls below it loses it at the next build rather than
- * becoming a thin page.
- */
-export async function localeGrandchildParams(): Promise<
-  readonly LocaleGrandchildParams[]
-> {
-  const params: LocaleGrandchildParams[] = [];
-
-  for (const locale of listingLocales()) {
-    const shopCategory = localePath(locale, "shopCategory").split("/")[2] ?? "";
-
-    for (const page of await listingPages(locale)) {
-      if (page.pageType !== "countryCategory") continue;
-      if (page.countrySlug === undefined || page.slug === undefined) continue;
-      params.push({
-        locale,
-        segment: page.countrySlug,
-        child: shopCategory,
-        grandchild: page.slug,
-      });
-    }
-  }
-
-  return params;
 }

@@ -279,6 +279,10 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         "localeGrandchildParams",
         "localeSegmentParams",
         "resolveLocalePath",
+        // the country occasion's page component and the depth-4 existence set (TASK-111): the
+        // same rule one level down, and the third React component the module owns.
+        "CountryOccasionPage",
+        "localeGrandchildParams",
       ].sort(),
     );
   });
@@ -308,6 +312,7 @@ describe("src/modules/catalog barrel (AC-1)", () => {
       `${moduleDir}/static/index.ts`,
       `${moduleDir}/types.ts`,
       `${moduleDir}/ui/CountryCategoryPage.tsx`,
+      `${moduleDir}/ui/CountryOccasionPage.tsx`,
       `${moduleDir}/ui/CountryShopRootPage.tsx`,
       `${moduleDir}/ui/ListingBreadcrumb.tsx`,
       `${moduleDir}/ui/labels.ts`,
