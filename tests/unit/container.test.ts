@@ -3,16 +3,30 @@
  *
  * T-08 is an integration case: `docker build`, then `GET /api/health` against the running image,
  * `whoami`, and a listing proving no `.env*` is inside. A Docker daemon is not available in every
- * environment this repository is worked in (it was not available when this task was implemented),
- * so the *static* half of AC-8 — the facts that make the image correct, and that a wrong edit
- * would silently break — is asserted here from the files themselves, and the runtime half is
- * recorded in `docs/runbooks/railway-cloudflare-setup.md` as a founder step.
+ * environment this repository is worked in (it was not available when this task was implemented,
+ * nor when TASK-135 fixed the build), so the *static* half of AC-8 — the facts that make the image
+ * correct, and that a wrong edit would silently break — is asserted here from the files
+ * themselves; the daemon half is the `container` job of `.github/workflows/ci.yml`, which builds
+ * the image with an empty environment and curls `/api/health` out of the running container.
+ *
+ * The second half of this file is TASK-135's pin: the `Dockerfile`'s build-argument set and the
+ * **build half of the env contract** are one fact, asserted against each other, so a key added to
+ * `serverEnvSchema` cannot re-enter the build gate — and a credential cannot become a build
+ * argument — without a red test (spec 001 §14 A17, spec 040 §14 A1).
  */
 import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { join, resolve } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
+import {
+  BUILD_ENV_KEYS,
+  ENV_KEYS,
+  hostPlatform,
+  RUNTIME_ENV_KEYS,
+  validateBuildEnv,
+  validateRuntimeEnv,
+} from "../../src/lib/env.schema";
 import {
   RAILWAY_CONFIG_PATH,
   RAILWAY_REGION,
@@ -27,14 +41,49 @@ const read = (relative: string): string =>
 const dockerfile = read("Dockerfile");
 const dockerignore = read(".dockerignore");
 const nextConfig = read("next.config.ts");
+const instrumentation = read("instrumentation.ts");
+const healthRoute = read("src/app/api/health/route.ts");
+const workflow = read(".github/workflows/ci.yml");
+
+/** The `build` stage of the image — the only stage that may declare a build argument. */
+const buildStage = dockerfile.slice(
+  dockerfile.indexOf("AS build"),
+  dockerfile.lastIndexOf("FROM node:24-slim"),
+);
+
+/** Every `ARG` the image declares, in declaration order. */
+const declaredArgs = [...dockerfile.matchAll(/^ARG\s+([A-Za-z0-9_]+)/gmu)].map(
+  (match) => match[1],
+);
+
+/**
+ * What `docker build` sees with **no** credentials in the environment: the `ARG` defaults of the
+ * build stage and nothing else. This is the environment the 2026-09-18 Railway build had, minus
+ * the `APP_ENV=staging` Railway passed in.
+ */
+const credentialFreeBuildEnv: Record<string, string> = {
+  NEXT_PUBLIC_SITE_URL: "http://localhost:3000",
+};
+
+/** The same build, on Railway staging: `APP_ENV` and the public values arrive, secrets do not. */
+const stagingBuildEnv: Record<string, string> = {
+  APP_ENV: "staging",
+  NEXT_PUBLIC_APP_ENV: "staging",
+  NEXT_PUBLIC_SITE_URL: "https://web-staging-dbe4.up.railway.app",
+};
 const manifest = JSON.parse(read("package.json")) as {
   packageManager: string;
   scripts: Record<string, string>;
 };
 
 describe("next.config.ts (AC-8)", () => {
-  it('sets output: "standalone", which is what `node server.js` needs', () => {
-    expect(nextConfig).toContain('output: "standalone"');
+  it("emits standalone output off Vercel, which is what `node server.js` needs", () => {
+    // Pinned as the *branch*, not a literal call: `output: "standalone"` unconditionally is the
+    // defect spec 040 §14 A2 records, and a bare substring match passes on either shape.
+    expect(nextConfig).toMatch(
+      /\.\.\.\(platform === "vercel" \? \{\} : \{ output: "standalone" as const \}\)/u,
+    );
+    expect(nextConfig).not.toMatch(/^\s*output: "standalone",\s*$/mu);
   });
 });
 
@@ -87,6 +136,83 @@ describe("Dockerfile (AC-8)", () => {
   });
 });
 
+describe("build-time env contract (AC-8; spec 001 §14 A17, TASK-135)", () => {
+  it("declares a build argument for exactly the keys the build consumes", () => {
+    expect([...declaredArgs].sort()).toEqual([...BUILD_ENV_KEYS].sort());
+  });
+
+  it("declares every build argument in the build stage, never in the runtime stage", () => {
+    const inBuildStage = [
+      ...buildStage.matchAll(/^ARG\s+([A-Za-z0-9_]+)/gmu),
+    ].map((match) => match[1]);
+    expect(inBuildStage).toEqual(declaredArgs);
+  });
+
+  it("makes no server-only key a build argument: a secret must not enter layer history", () => {
+    for (const key of RUNTIME_ENV_KEYS) {
+      expect(declaredArgs, key).not.toContain(key);
+      expect(dockerfile, key).not.toMatch(
+        new RegExp(`^(ARG|ENV)\\s+${key}\\b`, "mu"),
+      );
+    }
+  });
+
+  it("partitions the contract: every key is graded by exactly one of the two gates", () => {
+    expect([...BUILD_ENV_KEYS, ...RUNTIME_ENV_KEYS].sort()).toEqual([
+      ...ENV_KEYS,
+    ]);
+    for (const key of BUILD_ENV_KEYS)
+      expect(RUNTIME_ENV_KEYS, key).not.toContain(key);
+  });
+
+  it("runs the build half from next.config.ts and the runtime half at server start", () => {
+    expect(nextConfig).toContain("assertBuildEnv()");
+    // The whole-contract assertion must not be what a build runs (the defect of 2026-09-18).
+    expect(nextConfig).not.toMatch(/(?<!Build)assertEnv\(\)/u);
+    expect(instrumentation).toContain("assertRuntimeEnv(process.env)");
+    expect(healthRoute).toContain("assertRuntimeEnv(process.env)");
+  });
+
+  it("passes the build gate with no credential in the environment at all", () => {
+    for (const source of [credentialFreeBuildEnv, stagingBuildEnv]) {
+      expect(validateBuildEnv(source).issues).toEqual([]);
+    }
+  });
+
+  it("names no server-only key in the build gate, whatever the environment", () => {
+    for (const source of [{}, credentialFreeBuildEnv, stagingBuildEnv]) {
+      const named = validateBuildEnv(source).issues.map((issue) => issue.key);
+      expect(named.filter((key) => RUNTIME_ENV_KEYS.includes(key))).toEqual([]);
+    }
+  });
+
+  it("still catches the ten keys, at server start, printing no value (the 2026-09-18 log)", () => {
+    const named = validateRuntimeEnv(stagingBuildEnv).issues.map(
+      (issue) => issue.key,
+    );
+    expect(named).toEqual([
+      "DATABASE_URL",
+      "DATABASE_URL_UNPOOLED",
+      "R2_ACCOUNT_ID",
+      "R2_BUCKET",
+      "R2_BACKUPS_BUCKET",
+      "R2_S3_ENDPOINT",
+      "R2_ACCESS_KEY_ID",
+      "R2_SECRET_ACCESS_KEY",
+      "R2_PUBLIC_BASE_URL",
+      "INTERNAL_CRON_SECRET",
+    ]);
+    const report = JSON.stringify(validateRuntimeEnv(stagingBuildEnv).issues);
+    expect(report).not.toContain(stagingBuildEnv["NEXT_PUBLIC_SITE_URL"]);
+  });
+
+  it("is proved by a CI job that builds the image with an empty environment", () => {
+    expect(workflow).toMatch(/^ {2}container:$/mu);
+    expect(workflow).toContain("docker build");
+    expect(workflow).toContain("/api/health");
+  });
+});
+
 describe(`${RAILWAY_CONFIG_PATH} (AC-9, T-09)`, () => {
   const declared = railwayConfigSchema.parse(
     JSON.parse(read(RAILWAY_CONFIG_PATH)),
@@ -130,5 +256,27 @@ describe(`${RAILWAY_CONFIG_PATH} (AC-9, T-09)`, () => {
     expect(manifest.scripts["railway:check"]).toBe(
       "node scripts/railway-check.ts",
     );
+  });
+});
+
+describe("the standalone output is not emitted on Vercel (TASK-135)", () => {
+  const configSource = readFileSync(join(repoRoot, "next.config.ts"), "utf8");
+
+  it("branches the output shape on hostPlatform(), not unconditionally", () => {
+    // TASK-098 shipped `output: "standalone"` unconditionally on the claim that Vercel ignores it.
+    // Vercel's own tracer runs in `onBuildComplete` and reads `.next/next-server.js.nft.json`,
+    // which standalone output does not leave there, so every deployment after `d0a1d66` failed
+    // with ENOENT after generating all 31 pages.
+    expect(configSource).toMatch(/platform === "vercel"/u);
+    expect(configSource).toMatch(/output: "standalone" as const/);
+    expect(configSource).not.toMatch(/^\s*output: "standalone",\s*$/m);
+  });
+
+  it("still emits standalone everywhere that is not Vercel, which is what the image runs", () => {
+    expect(hostPlatform({})).toBe("local");
+    expect(hostPlatform({ RAILWAY_ENVIRONMENT_NAME: "staging" })).toBe(
+      "railway",
+    );
+    expect(hostPlatform({ VERCEL: "1" })).toBe("vercel");
   });
 });

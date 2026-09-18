@@ -783,7 +783,44 @@ Six, each with a default the implementation follows if the founder says nothing.
 
 **Resolution (2026-09-16, founder):** ADR-0018 accepted and all six defaults accepted without amendment. Q1 Dockerfile; Q2 **reversed by the founder later the same day: the Railway project stays in Grovant's workspace** (the Grovant account), Grovant holds the account and invoices, the founder is added as a member; the RoPA controller line names Flowers Overseas as controller and records Grovant's account as the contractual holder of the Railway relationship, and the DPA counterparty question goes on the lawyer list; Q3 Cloudflare Free; Q4 the shared ISR cache handler arrives only when p95 origin CPU exceeds 70 % for a day or a peak-day plan needs a second replica — a separate spec; Q5 Vercel is unlinked at §12's exit signal and no earlier; Q6 basic-auth in `src/proxy.ts` for non-production, Cloudflare Access revisited if shared passwords prove awkward for florist demos. Next: `/plan-tasks` (no design round — no page changes).
 
-## 14. Task estimate (input to `/plan-tasks`)
+## 14. Amendments (post-approval corrections)
+
+The spec was approved on 2026-09-16 and §1–§13 are kept as approved. Each correction below was
+ruled on when the implementation hit it, recorded on the task row that carried it, and is written
+out here so the spec and the repository agree.
+
+**A1 — the image builds without credentials; the env gate is split in two (§5.3 "the container", AC-8; TASK-135, 2026-09-18).**
+Original: AC-8 — "`pnpm build` produces a standalone server, and `docker build` from the committed
+`Dockerfile` produces an image that serves `/api/health` 200 on Node 24 as a non-root user; the
+image contains no `.env*` file and no `node_modules` dev tree" — with §5.3 declaring build arguments
+for `APP_ENV` and the `NEXT_PUBLIC_*` keys.
+Trigger: the **Railway staging build log of 2026-09-18**, the first real build of that image.
+`RUN pnpm build` failed with `EnvValidationError: Invalid environment (staging). 10 problem(s)`,
+naming `DATABASE_URL`, `DATABASE_URL_UNPOOLED`, `INTERNAL_CRON_SECRET` and the seven `R2_*` keys:
+`next.config.ts` asserted the whole 28-key contract at config load, while the image declared an
+`ARG` for five keys only. `APP_ENV=staging` did arrive, which established that Railway passes a
+service variable to a build exactly when the `Dockerfile` declares an `ARG` for it.
+Corrected (orchestrator ruling, 2026-09-18, binding):
+- **AC-8 gains a clause**: the image builds **with no credential in the build environment**. No
+  server key is a build argument — a build argument survives in the build stage's layer history —
+  and `tests/unit/container.test.ts` asserts the `ARG` set *equals* the build half of the env
+  contract, so one cannot be added without a red test.
+- The gate is split: `next.config.ts` asserts `APP_ENV` + the `NEXT_PUBLIC_*` set (the keys the
+  build inlines); the server-only keys are asserted at **server start** and on every
+  `GET /api/health`. A missing credential therefore fails the §5.3 healthcheck — the deployment
+  never turns `● Active` and never takes traffic — instead of failing the build. Spec 001 §14 A17
+  carries the same amendment from the env contract's side.
+- **T-08's daemon half runs in CI**: the `container` job of `.github/workflows/ci.yml` (taken from
+  TASK-099's carry-forward) builds the image with an empty environment, runs it, curls
+  `/api/health`, checks the runtime user and the absence of `.env*`, and asserts the two fail-closed
+  cases — no server variable, and a `.env.example` placeholder in `production` — do **not** answer
+  200. No Docker daemon was available on the machine the fix was written on, so this job is where
+  AC-8 is demonstrated rather than argued.
+- Still owed by this amendment: the Railway redeploy reaching `● Active` with `/api/health` 200 and
+  `/en` 401, recorded on TASK-135.
+Raised by: orchestrator, 2026-09-18, on the staging build log; implemented by TASK-135.
+
+## 15. Task estimate (input to `/plan-tasks`)
 
 Eight one-day tasks. Dependencies in brackets; tasks 3 and 4 are independent of each other, and 6
 is independent of 4 and 5.
@@ -810,3 +847,5 @@ is independent of 4 and 5.
 8. **Cutover, runbook and compliance** — `docs/runbooks/railway-cloudflare-setup.md` (superseding
    `docs/runbooks/vercel-setup.md`), rollback runbook section, RoPA row 2, both DPAs filed,
    production domain cut over per §12. (AC-33 and §12's checklist.) [3, 5, 6, 7]
+- **A2 (2026-09-18, TASK-135, from a live Vercel build log).** §5.3 and AC-8 say `next.config.ts` gains `output: "standalone"`. Corrected: **standalone everywhere except Vercel.** TASK-098 shipped the setting unconditionally on the comment "Vercel ignores this setting, so the cold fallback of ADR-0018 is unaffected". Vercel does not ignore it: its builder runs its own tracer in `onBuildComplete` and reads `.next/next-server.js.nft.json`, which standalone output does not leave at that path, so every deployment after `d0a1d66` compiled, generated all 31 static pages and then failed with `Error: ENOENT: no such file or directory, open '/vercel/path0/.next/next-server.js.nft.json'` — freezing the demo URL ADR-0018 keeps as the cold fallback on its last good build while four merged tasks sat invisible. The config now branches on `hostPlatform()`, which §5.2 permits as a property of the deploying toolchain rather than of the product (a Vercel preview and a Railway staging deploy can share an `APP_ENV`, so `appEnvironment()` cannot express it). `hostPlatform()`'s "exactly two callers" docstring becomes three. The container is unaffected: inside `docker build` neither `VERCEL` nor `RAILWAY_ENVIRONMENT_NAME` is set, so the host resolves `local` and standalone is still emitted for Railway and for a local image.
+Raised by: the 2026-09-18 production build log; fixed in TASK-135 and recorded at `/review 82`'s requirement.

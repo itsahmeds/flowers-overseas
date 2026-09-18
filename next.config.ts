@@ -4,7 +4,7 @@ import createNextIntlPlugin from "next-intl/plugin";
 
 import { consentBootstrapHash } from "./src/lib/consent-bootstrap";
 import { securityHeaderRules } from "./src/lib/csp";
-import { assertEnv } from "./src/lib/env.assert";
+import { assertBuildEnv } from "./src/lib/env.assert";
 import { mediaCacheHeaderRules } from "./src/lib/media-headers";
 import {
   appEnvironment,
@@ -14,9 +14,18 @@ import {
 } from "./src/lib/env.schema";
 import { noindexHeaderRules } from "./src/lib/robots-headers";
 
-// Fail the build before compiling anything when a variable is missing or malformed. The error
-// names the offending keys and prints no value (spec 001 AC-10, TASK-005).
-assertEnv();
+// Fail the build before compiling anything when a variable **the build consumes** is missing or
+// malformed. The error names the offending keys and prints no value (spec 001 AC-10, TASK-005).
+//
+// `assertBuildEnv()` grades `BUILD_ENV_KEYS` only — `APP_ENV` plus the `NEXT_PUBLIC_*` set — and
+// not the whole 28-key contract (spec 001 §14 A17, spec 040 §14 A1; TASK-135). Those are the keys
+// a compiled artefact actually carries: `APP_ENV` decides the headers baked in below, the
+// `NEXT_PUBLIC_*` values are inlined into the browser bundle. The server-only keys —
+// `DATABASE_URL`, the R2 credentials, `INTERNAL_CRON_SECRET` — are asserted at server start by
+// `instrumentation.ts` instead, because the alternative is handing a `docker build` ten secrets it
+// would then carry in its layer history. Trigger: the Railway staging build log of 2026-09-18,
+// where `RUN pnpm build` failed on ten keys that no build has ever read.
+assertBuildEnv();
 
 // `X-Robots-Tag: noindex` on every response outside production, permanently: previews and
 // staging are never indexable (spec 001 §2, §6, AC-15, TASK-006). Production gets no header here
@@ -30,8 +39,12 @@ assertEnv();
 // present-but-unparseable value throws here and fails the build naming the key.
 const environment = appEnvironment(process.env);
 
-// The host, for the one thing it decides: whether `vercel.live` belongs in the policy (§5.2,
-// AC-6). Nothing else in the application may branch on it.
+// The host, for the two things it decides: whether `vercel.live` belongs in the policy (§5.2,
+// AC-6), and whether the build emits standalone output (below, TASK-135). Both are properties of
+// the deploying toolchain rather than of the product — a Vercel preview and a Railway staging
+// deploy can share an `APP_ENV`, so `appEnvironment()` cannot express either. **No application
+// behaviour may branch on the host**; that rule (spec 040 §5.2) is about what the product does,
+// not about how it is packaged.
 const platform = hostPlatform(process.env);
 
 // Security headers on every path, per environment (spec 004 §5.2, AC-23, **ADR-0016**;
@@ -69,9 +82,17 @@ const headerRules = [
 const nextConfig: NextConfig = {
   // The container of spec 040 §5.3 (AC-8, TASK-098) runs `node server.js` from `.next/standalone`:
   // Next traces the server's dependencies and writes a self-contained tree, so the runtime image
-  // carries no development `node_modules`. Vercel ignores this setting, so the cold fallback of
-  // ADR-0018 is unaffected.
-  output: "standalone",
+  // carries no development `node_modules`.
+  //
+  // **Not on Vercel.** TASK-098 shipped this unconditionally on the claim that "Vercel ignores this
+  // setting"; it does not. Vercel runs its own tracer in `onBuildComplete` and reads
+  // `.next/next-server.js.nft.json`, which standalone output does not leave at that path, so every
+  // deployment after `d0a1d66` failed with `ENOENT … next-server.js.nft.json` — compiled, generated
+  // all 31 static pages, then died at the last step, freezing the demo URL of ADR-0018 on its last
+  // good build. `hostPlatform()` is the one host axis spec 040 §5.2 allows to exist, and this is a
+  // build-output shape rather than application behaviour, so branching on it here is inside that
+  // build-output shape, recorded as spec 040 §14 A2. Pinned by `tests/unit/container.test.ts`.
+  ...(platform === "vercel" ? {} : { output: "standalone" as const }),
   headers: () => Promise.resolve(headerRules),
 };
 

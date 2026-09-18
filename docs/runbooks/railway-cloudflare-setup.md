@@ -86,8 +86,9 @@ NEXT_PUBLIC_GA4_MEASUREMENT_ID=
 Two rules that are easy to get wrong:
 
 - **`ENABLE_PSEUDO_LOCALES` and `ENABLE_DEV_UI` must not be `true` on `staging`** — the zod schema
-  refuses them there and the build fails naming the key (spec 040 AC-5). `staging` is shown to
-  florists.
+  refuses them there, naming the key (spec 040 AC-5). Since TASK-135 the refusal happens at server
+  start rather than at build time: the deployment fails its healthcheck and never turns `● Active`.
+  `staging` is shown to florists.
 - The four Vercel keys (`VERCEL_ENV`, `VERCEL_GIT_COMMIT_SHA`, `NEXT_PUBLIC_VERCEL_ENV`,
   `NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA`) are **not** pasted here. They are part of the declared
   contract but are platform-injected on Vercel only; `railway:check` allows them to be absent and
@@ -115,6 +116,21 @@ in a PR description.
 Deployments → **Deploy**. The build runs the committed `Dockerfile`: `pnpm install
 --frozen-lockfile`, `pnpm build` (standalone), then a runtime stage that copies `.next/standalone`,
 `.next/static` and `public/` only and runs as the unprivileged `node` user.
+
+**The build sees no credential, by design** (spec 001 §14 A17, spec 040 §14 A1; TASK-135). Railway
+passes a service variable to a build only when the `Dockerfile` declares an `ARG` for it, and the
+image declares one for `APP_ENV` and the `NEXT_PUBLIC_*` keys only — a build argument would survive
+in the image's layer history. `next.config.ts` therefore asserts exactly those keys; `DATABASE_URL`,
+the `R2_*` keys and `INTERNAL_CRON_SECRET` are asserted when the **server starts** and on every
+`/api/health`.
+
+What that changes for you when something is wrong:
+
+| symptom | where to look |
+|---|---|
+| the build fails naming `NEXT_PUBLIC_*` or `APP_ENV` | the variable is missing or malformed in the service's variables; fix and redeploy |
+| the build succeeds, the deploy never turns `● Active`, and the deploy log shows `Invalid environment (staging). N problem(s)` with server keys | a server variable is missing or still a `.env.example` placeholder; paste the real value — no rebuild is needed, only a redeploy |
+| `/api/health` answers 500 | the same thing, seen from the outside: the report names keys and never prints a value |
 
 The deploy is healthy when Railway's healthcheck gets a 200 from `/api/health` inside the grace
 window.

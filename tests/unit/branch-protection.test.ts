@@ -104,6 +104,11 @@ describe("the required-check contract on the committed workflows (AC-21)", () =>
       "build",
       "catalogue-check",
       "commitlint",
+      // Spec 040 AC-8 / T-08 (TASK-135): the `container` job builds the image with no credential
+      // in the environment and probes the running artefact. Derived from `ci.yml` like every
+      // other entry, so it appeared here by itself — the settings on GitHub must be re-applied
+      // (`pnpm branch-protection`) before the new check is required in fact.
+      "container",
       "corridor-check",
       "db-check",
       "dev-os-check",

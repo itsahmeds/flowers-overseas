@@ -22,7 +22,7 @@ One dated bullet per `/review`, newest last.
 
 - **From TASK-134 / orchestrator ruling (2026-09-18):** regenerate the stale `tests/visual/__screenshots__/visual/linux/` Playwright baselines (3 PNGs vs 82 `darwin`; TASK-056 deferral) from the first green `visual` job artefact once this task's preview rewrite makes `preview` → `visual` runnable on a PR (`ci:full` label). `darwin/` untouched. TASK-134's `## Escalations` has the analysis of `ci.yml`'s `needs: preview` gate.
 
-- **From `/review 80` (2026-09-18, TASK-098):** (1) add a `container` job to `ci.yml` — `docker build --target runtime`, run it, `curl /api/health` — so spec 040 T-08 is a test, not a runbook step; (2) make `STAGING_BASIC_AUTH` **required** on `staging` and `preview` in `src/lib/railway.ts` (still unexpected on `production`) so `railway:check --env` catches a missing wall.
+- **From `/review 80` (2026-09-18, TASK-098):** (1) **TAKEN by TASK-135 (2026-09-18) — do not build twice.** Add a `container` job to `ci.yml` — `docker build --target runtime`, run it, `curl /api/health` — so spec 040 T-08 is a test, not a runbook step; (2) make `STAGING_BASIC_AUTH` **required** on `staging` and `preview` in `src/lib/railway.ts` (still unexpected on `production`) so `railway:check --env` catches a missing wall.
 
 ## Escalations
 
