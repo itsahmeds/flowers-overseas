@@ -35,150 +35,88 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
   manifest lookup as its `srcset`; it is the first product photo; initial image transfer
   ≤ 204 800 B; CLS 0 across the placeholder→image swap. Phase 0 assets render only once TASK-080
   commits bytes — until then the honesty gates keep placeholders, so assert the mechanism on the
-  fixture manifest and record the pending-bytes caveat in `## Result`.
-- Copy: no literal strings — `shop.*` keys exist from TASK-108 (16 keys, four locales); add only
-  what the empty state and the page chrome need, with `pl` plurals hand-authored and
-  `pnpm i18n:check` clean; **no** promise strings (spec 008 AC-9; TASK-120's honesty scan
-  `chrome-honesty.spec.ts` gains this page type in its `PAGES`). `en` unreviewed share must stay
-  under the 5 % gate — report the new share.
-- Gates: unit (view composition, metadata, empty state), e2e T-01 over all four locales, T-08,
-  T-24 (unit + performance), T-32 (`check:no-db`, build + test with `DATABASE_URL` unset),
-  Lighthouse on one shop root per indexable locale (spec 008 §6 L89) against the Brotli origin,
-  axe populated + empty, visual baselines (`darwin`) for both artboards, `pnpm typecheck`,
-  `pnpm lint`, `pnpm i18n:check`, `pnpm codebase:map --check`; script budget delta reported.
+  fixture manifest and record the pending-bytes caveat in `## Result
 
-## Read
+**Shipped** as PR #__PR__ (finisher round, after the orchestrator ruled E-1/E-2/E-3 as spec 008
+§14 A5–A8 and spec 007 §14 A8). The three blockers are closed above with the rulings applied.
 
-- `specs/008-country-shop-category-occasion-pages.md` — `## 0. Index`, §2 (rows 6 and the
-  existence rules), §5.2 L83–L84 (links up/down), L153 (route), §5.3 L180 (states), §6 L71 and
-  L89 (indexability, Lighthouse set), §9 AC-1/AC-8/AC-24, §10 T-01/T-08/T-24/T-32, §14 A1–A4.
-- `specs/007-corridor-pages.md` §14 A5–A7 only.
-- `docs/tasks/TASK-107.md` and `docs/tasks/TASK-108.md` `## Result` + carry-forwards;
-  `docs/tasks/TASK-120.md` `## Result` (which chrome strings are gated/absent).
-- `docs/design/wireframes/country-shop-{desktop,mobile}.dc.html`, `docs/design/README.md`
-  (§Density, the card correction), `docs/design/wireframes/canvas.json` `wf-country-shop`.
-- `docs/codebase-map.md` — `modules/catalog` (`listing.ts`, `copy.ts`, `slugs.ts`),
-  `modules/ui/shop`, `modules/seo` (`metadata.ts`, `indexability.ts`), the corridor route as the
-  pattern for 404 shapes and `generateStaticParams`, `tests/e2e/chrome-honesty.spec.ts`,
-  `tests/support/listing-honesty.ts`.
+**What the rulings produced.**
 
-## Carry-forwards
+- **Route shape (A5 / 007 A8).** `src/app/[locale]/[segment]/page.tsx` (depth 2: the
+  all-destinations hub today, the occasions index with TASK-113) and
+  `src/app/[locale]/[segment]/[child]/page.tsx` (depth 3: the corridor page and the country shop
+  root, the two hubs with TASK-112). Spec 007's two route files were deleted and their pages moved
+  here with TASK-091/092's suites intact and green. Each file calls one resolver,
+  `resolveLocalePath(locale, segments)` in `src/modules/catalog/routes.ts` (barrel-exported), which
+  returns `{ kind: 'destinationsHub' | 'corridor' | 'countryShopRoot', … } | { kind: 'notFound' }`
+  built from `corridorPageExists()` and `listingExists()` and **no third rule**.
+  `localeSegmentParams()` / `localeChildParams()` are the union of both existence sets; both files
+  export `revalidate = 3600` and `dynamicParams = false`. No proxy rewrite. `app/` stays thin: the
+  page components are `CorridorPage` (geo) and `CountryShopRootPage` (catalog).
+- **The occasion row (A6).** `listingView()` carries `occasionDates` for a `countryShopRoot`
+  through the same `upcomingOccasions()` path `countryOccasion` uses; the page renders the
+  captioned table from the view model alone.
+- **Trailing slash (A7).** 308 to the bare URL, asserted with its `Location`; the other seven
+  shapes 404 with no `Location`.
+- **A8.** (a) The four named keys plus fourteen page-chrome keys and three empty-state link labels
+  were authored in `en` (founder-approved artboard copy, `reviewed: true`) and drafted into `de`
+  and `pl` with `pnpm i18n:draft`; the Polish plural of `shop.root.tileCount` is hand-authored
+  (`one/few/many/other`) and recorded as `source: "human"`. `pnpm i18n:check` is clean and the `en`
+  unreviewed share is **2.6 %** (12 / 459), under the 5 % gate and lower than before the task.
+  (b) The empty state is proved by **the dev gallery plus the unit predicate** — recorded here as
+  A8 (b) asks: `tests/unit/catalog-shop-page.test.tsx` renders the page component with a view whose
+  products are removed and asserts the sentence, the ways out, zero cards, no grid, no skeleton and
+  no price; `tests/e2e/country-shop.spec.ts` scans TASK-108's `/dev/components` rendering of
+  `ListingEmpty` for the same three things. A fixture provider swap was not used: the e2e harness
+  has no seam for one. (c) No toolbar and no pagination render. (d) One grid, placed first.
 
-One dated bullet per `/review`, newest last.
+**Beyond the rulings, three things the shipped data forced.**
 
-- **From `/review 76` (2026-09-18, TASK-107, ruling 4):** AC-3's "the per-locale counts are
-  printed to the CI step summary" is **deferred to this task**. TASK-107 ships
-  `writeExistenceSummary()` in `src/modules/catalog/listing.ts` (it writes to
-  `$GITHUB_STEP_SUMMARY` when a runner sets one and to stdout otherwise) but leaves it with **no
-  call site**: no `scripts/` entry can import the module (`@/` alias plus the `@/modules/ui` React
-  graph). Call it from this route's `generateStaticParams`, beside `listingPages()`, so the numbers
-  describe the URLs the build just emitted.
+1. **The stale-FX state is the live one.** The committed ECB snapshot (2026-09-08) is older than
+   spec 005's ceiling, so every projection falls back to the destination's own currency and the
+   page prints złoty in every locale. `listingView()` therefore carries `fxFallback` (one
+   projection answers for the page: a rate is a property of a currency pair and a day) and the page
+   prints spec 005 §14 A3's sentence once, under the grid. A złoty price on an English page with
+   nothing beside it is exactly what that state exists to prevent.
+2. **The breadcrumb.** `breadcrumbFor()` was one crumb short of the artboards (no
+   all-destinations crumb) and used the `h1` message key as the shop root's leaf label — a key that
+   takes `{country}` as an argument and would have thrown at format time. The trail is now
+   Home / Send flowers to / {country} / Flowers, and the leaf is `breadcrumb.shopRoot`.
+3. **`node:fs` off the render path.** `listing.ts` imported `appendFileSync` at module scope, and
+   the shared route file puts that module on the corridor page's graph, which
+   `tests/unit/corridor-corpus-index.test.ts` forbids (`/review 63` (b)). The import is now dynamic
+   and taken only on the `$GITHUB_STEP_SUMMARY` branch, which only `generateStaticParams` reaches.
 
-## Escalations
+**Deliberately not built, with the reason.**
 
-One dated bullet per escalation: the question, who it went to, the answer or `open`.
+- **The delivery-facts panel** the desktop artboard draws between the demo sentence and the grid is
+  spec 007's `CorridorFacts` in its `facts-unknown` form: it reads a `CorridorView`, and §5.2 makes
+  `listingView()` the only source for this page. §5.3 row 1's normative block list names four
+  blocks and not that one, so it stays on the corridor page the breadcrumb links to. Worth an
+  orchestrator word if the artboard is meant to bind here.
+- **The occasion table's third column** ("which of these is a link"). `ListingOccasionDate` carries
+  `{ iso2, nameKey, date }` and nothing about a page, and no country-occasion page exists until
+  TASK-111, so the shipped table is two columns. The column arrives with the pages it would link
+  to.
+- **Toolbar, pagination, `ItemList`/`BreadcrumbList`, the five `site-links.ts` ids** — TASK-114,
+  TASK-115 and AC-20's owner.
 
-- **E-1 (2026-09-18, blocking, to the orchestrator): spec 008 §5.2's six route files cannot exist
-  in this application beside spec 007's routes. Next.js allows exactly one dynamic slug name per
-  (depth, position) across the whole `app/` tree, route groups included.** The shop root
-  `src/app/[locale]/(shop)/[country]/[shopCategory]/page.tsx` normalises to
-  `/[locale]/[country]/[shopCategory]`; spec 007's shipped corridor page is
-  `/[locale]/[destinations]/[country]`. Reproduced against the installed Next with its own router
-  utility:
+**Numbers.** Lighthouse (Brotli origin, three runs each): `/en/poland/flowers` and
+`/en-gb/poland/flowers` — performance **1.00**, accessibility **1.00**, best-practices **0.96**,
+LCP **1 281–1 477 ms** (budget 2 000), CLS **0**, script transfer **128 211 B**. Client-JS budget:
+the shop root is **124 387 B br**, byte-identical to the locale home (it mounts no island),
+6 685 B under the 131 072 B budget; **no existing route moved (+0.0 KB)**; both new URLs entered
+`bundle-baseline.json`. Existence set at build: 7 shop roots per locale, 28 in the four launch
+locales, printed once per build to the step summary.
 
-  ```
-  node -e "const{getSortedRoutes}=require('next/dist/shared/lib/router/utils/sorted-routes.js');
-  getSortedRoutes(['/[locale]/[destinations]/[country]','/[locale]/[country]/[shopCategory]'])"
-  # Error: You cannot use different slug names for the same dynamic path ('destinations' !== 'country').
-  ```
+**Pending-bytes caveat (AC-24).** TASK-080 has not committed image bytes, so every card renders
+spec 006's captioned placeholder, the page nominates **no** `priority` asset and emits no image
+preload — initial image transfer is 0 B. What is asserted is the mechanism: the page nominates at
+most one candidate (`assertSinglePriority`), and the served page carries exactly as many
+`link rel=preload as=image` in `<head>` as it has `fetchpriority="high"` images. The first real
+photograph makes both 1 with no code change.
 
-  The same throw hits spec 008's occasions index (`/[locale]/[occasions]`) against spec 007's
-  destinations hub (`/[locale]/[destinations]`), so TASK-112/113 meet it too; only the depth-4
-  routes of TASK-110/111 are clear. `getSortedRoutes` is not a build-only lint: the server sorts
-  every dynamic matcher through it at start
-  (`node_modules/next/dist/server/route-matcher-managers/default-route-matcher-manager.js` L112).
-
-  **A catch-all does not rescue it.** `/[locale]/[...listing]` *sorts* cleanly beside the corridor,
-  but a request for `/en/poland/flowers` is matched by the more specific
-  `/[locale]/[destinations]/[country]` first and stops there: `resolve-routes.js` L190–211 returns
-  the **first** matching dynamic route, and only the *pages* router ever throws `NoFallbackError`
-  to make the loop continue (`route-modules/pages/pages-handler.js` L117 is its one call site).
-  With `dynamicParams = false` the corridor route would answer 404 for every shop URL.
-
-  Two resolutions, both outside this task's scope because both change a file or a seam another
-  spec owns:
-
-  1. **One route per URL depth.** `/{locale}/{a}/{b}` is one URL space and one route file that
-     dispatches corridor vs shop root (and later category hub / occasion hub) through
-     `listingExists()`. Honest, no new seam, matches §2's "segment collision is impossible by
-     test". Costs: spec 007's route file becomes shared (TASK-091's deliverable), `app/` stops
-     being thin, and the two page types must share one `revalidate` (corridor 86 400 vs listing
-     3 600 — a segment export cannot vary per param), which is a spec 007 §5.4 change.
-  2. **A rewrite in `src/proxy.ts`** mapping `/{locale}/{country}/{shopCategory}` to an internal
-     `/{locale}/_shop/...` prefix whose direct requests the same proxy 404s. Keeps both routes,
-     both `revalidate` values and both param names; costs a routing decision in a proxy that spec
-     001 §11 and spec 003 §11 deliberately keep free of them, and one reserved internal segment.
-
-  Recommendation: **(1)**, with a spec 008 §5.2 amendment recording the route table and a spec 007
-  §14 note that the corridor's route file is shared from here. Whichever is chosen also decides
-  TASK-110…113, so it wants an orchestrator ruling rather than an implementer's pick. **`open`.**
-
-- **E-2 (2026-09-18, blocking, to the orchestrator): `listingView()` carries no occasion row for
-  the country shop root, and this task may not build a second source for one.** §5.3 row 1 and the
-  `wf-country-shop` artboards put a dated occasion block ("Coming up in Poland — Poland's own
-  dates", one row per occasion with `occasionDate(rule, year)` through `formatDate`, the third
-  column saying which of them is a link) between the category tiles and the intro. In the shipped
-  view model (`src/modules/catalog/listing.ts`, TASK-107) `occasionDates` is populated only for
-  `occasionHub` and `countryOccasion`, `occasions` only for `occasionsIndex`, and `links.chips` is
-  built only when `kind !== undefined` — which the shop root never has. So a shop root view has
-  **nothing** to render that block from. Reading `upcomingOccasions()` in the route or the
-  component would be the second source §5.2 forbids ("`listingView()` is the **only** source for
-  the page, the JSON-LD builders and the sitemap"). Options: extend `listingView()` so a
-  `countryShopRoot` carries the destination's occasion entries (a `modules/catalog` change, i.e.
-  TASK-107's file, and it must land before TASK-115's `ItemList`/`BreadcrumbList` reads it), or
-  amend §5.3 to drop the block from the shop root and redraw both artboards. **`open`.**
-
-- **E-3 (2026-09-18, as the brief instructs, non-blocking): the trailing-slash shape on a shop
-  URL.** Spec 008 AC-1 lists "a trailing slash" among the shapes that must 404 with no redirect;
-  spec 007 §14 A6 rules a trailing slash a permanent redirect to the bare URL, but its own words
-  scope it to "AC-5's" shapes — spec 007's routes — and it argues from `plan/02` §7 and spec 003
-  §2, which are site-wide. The two readings give opposite answers on `/en/poland/flowers/` and
-  the e2e for T-01 has to assert one of them. Nothing is chosen here and no assertion is written
-  for that shape. **`open`.**
-
-## Result
-
-**Blocked before any application code was written.** No `src/` or `app/` file was touched: the two
-blockers above (E-1 route shape, E-2 the missing occasion row on the shop-root view) both sit on
-the deliverable itself, and each resolution changes a file another task owns, so picking one here
-would have been an improvisation across specs 007 and 008 and tasks 110–113. What the reading
-produced, for whoever finishes this task:
-
-- **Route.** E-1 with a reproduction and two costed resolutions. It is not a TASK-109-only
-  problem: TASK-112 (`/{locale}/{occasions}/{occasion}`) and TASK-113 (`/{locale}/{occasions}`)
-  hit the same throw; TASK-110/111 (depth 4) do not.
-- **View model.** E-2. Also: `listingView()` populates `links.chips` only for entity-scoped pages,
-  so the shop root has no chip row either — the category **tiles** cover that half, the occasions
-  half is the gap.
-- **Sort and pagination are TASK-114's.** `ListingToolbar` and `Pagination` are built (TASK-108)
-  but nothing reads `searchParams` yet, so this page must render neither: a sort form that cannot
-  sort and a `?page=2` link to a page that renders page 1 are both controls that lie. The page
-  ships grid-page-1-in-default-order, and TASK-114 adds the two controls with the parameter policy.
-- **Artboard reading.** `country-shop-desktop.dc.html` draws the priced row ("Six we make for
-  Poland") and the full listing ("Everything we can make for Poland") as separate sections whose
-  first six cards are the same six products. §5.3's normative block list for the shop root names
-  four blocks — priced row, tiles, occasion row, intro — and no second grid, so the artboard is
-  read as a state catalogue: **one** grid, placed first, with the toolbar and pagination panels
-  below it being that same grid's chrome. Worth confirming when E-1/E-2 are ruled on.
-- **Copy.** `messages/*.json` is missing four keys the shipped view model already names:
-  `shop.h1.countryShopRoot`, `breadcrumb.shopRoot`, `breadcrumb.entity`, `breadcrumb.occasions`
-  (`H1_KEYS` and `breadcrumbFor()` in `listing.ts`). Any listing page renders a broken heading or
-  crumb until they are authored in four locales with `de`/`pl` drafts and meta records.
-- **AC-8 is not observable in e2e as T-08 words it.** A shop root exists only where ≥1 deliverable
-  product does (§2 row 6), so the empty state has no URL on the committed corpus; it is reachable
-  only through a fabricated view (unit) or `/dev/components` (e2e/axe). T-08's "fixture country
-  with zero deliverable products" needs either a provider swap the e2e harness does not have or
-  re-wording to the gallery.
-
-No PR opened. `.claude/state/active-task` cleared; the branch `task/TASK-109-country-shop-root`
-carries this brief edit and nothing else.
+**Known failures, recorded not fixed (macOS only, Linux green):**
+`tests/e2e/corridor.spec.ts:52` and `tests/e2e/destinations-hub.spec.ts:113` — an uppercase path
+answers 200 on a case-insensitive APFS checkout. My own uppercase assertion is written to the
+Linux answer and pins the thing that must never happen anywhere (a case-fixing redirect).
