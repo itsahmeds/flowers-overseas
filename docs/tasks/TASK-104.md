@@ -18,6 +18,7 @@ be green. One paragraph or a short list — no restatement of the spec.
 
 ## Carry-forwards
 
+- **From `/review 82` (2026-09-18, TASK-135):** the Vercel check has failed on every PR for days and was briefed to reviewers as "not a finding" — which is how a build-breaking `ENOENT` that froze the demo URL sat in a red check nobody read. At the spec 040 §12 exit signal, **unlink Vercel** rather than leaving a permanently-red check that trains everyone to ignore it; if the cold fallback is kept instead, give it a dummy env store so red means red and make the deployment gate distinguish "no env" from "build failed". Either way, no reviewer is briefed to ignore a deployment check again.
 One dated bullet per `/review`, newest last.
 
 - **From `/review 80` (2026-09-18, TASK-098):** at the Vercel unlink (spec 040 §13 Q5) delete `VERCEL_ENV`, `VERCEL_GIT_COMMIT_SHA` and their two `NEXT_PUBLIC_` mirrors from the Railway contract so declared == required == 24 and the platform-injected special case disappears.
