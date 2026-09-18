@@ -196,7 +196,15 @@ describe("the sitemap query and the robots decision call one function (AC-21, T-
       // for a *page*, carried onto the listing view model so the rendered meta, the sitemap
       // membership and the JSON-LD read one verdict. It decides nothing: the decision is
       // `pageIndexability()`'s, and this spec's own product predicate is still `read.ts` alone.
-      if (path.endsWith(join("modules", "catalog", "listing.ts"))) continue;
+      // The exception is that **one read**, not the file (`/review 76`): any other `.indexable`
+      // appearing there fails this test exactly as it would anywhere else.
+      if (path.endsWith(join("modules", "catalog", "listing.ts"))) {
+        expect(
+          [...code.matchAll(/[\w$.]*\.indexable\b/gu)].map((match) => match[0]),
+          path,
+        ).toEqual(["verdict.indexable"]);
+        continue;
+      }
       expect(code, path).not.toMatch(/\.indexable\b/);
     }
   });

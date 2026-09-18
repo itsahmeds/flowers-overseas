@@ -102,13 +102,15 @@ export const PAGE_TYPE_POLICY: Readonly<
 /**
  * The terms of the rule, in the order the header documents them.
  *
- * `operational` is spec 008 §6's sixth term (TASK-107): "the country is genuinely `live`
- * (`corridorState(iso2) === 'live'`, i.e. an active partner exists)". It is **optional** on the
- * term record and an omitted term reads as satisfied, because it is a gate only the three
- * country-scoped listing types have: a corridor guide, a locale home and a hub are honest pages
- * before any florist has signed, and forcing every descriptor to assert `operational: true` would
- * turn a gate into a ritual. A page type that *has* the gate must state it, which is what
- * `catalog/listing.ts` does for all three and what its table-driven test drives.
+ * `operational` is spec 008 §6's sixth term (TASK-107, spec 007 §14 **A7**): "the country is
+ * genuinely `live` (`corridorState(iso2) === 'live'`, i.e. an active partner exists)". It is
+ * **optional** on the term record, because it is a gate only the three country-scoped listing
+ * types have: a corridor guide, a locale home and a hub are honest pages before any florist has
+ * signed, and forcing every descriptor to assert `operational: true` would turn a gate into a
+ * ritual. A7 fixes what "optional" means: an omitted optional term is **not asserted by this page
+ * type** — it leaves the conjunction — and is never *satisfied by default*, which is how an
+ * omitted **required** term used to buy itself an `index` directive. A page type that has the gate
+ * must state it, which is what `catalog/listing.ts` does for all three.
  */
 export const INDEXABILITY_TERMS = [
   "pageTypeIndexable",
@@ -138,11 +140,32 @@ export interface IndexabilityVerdict {
   readonly terms: IndexabilityTerms;
 }
 
-/** The pure rule: the conjunction of every term. T-10's table drives exactly this function. */
+/** The terms a page type may omit, as data (spec 007 §14 A7); the type above says the same. */
+export const OPTIONAL_INDEXABILITY_TERMS = [
+  "operational",
+] as const satisfies readonly IndexabilityTerm[];
+
+function isOptionalTerm(term: IndexabilityTerm): boolean {
+  return (OPTIONAL_INDEXABILITY_TERMS as readonly IndexabilityTerm[]).includes(
+    term,
+  );
+}
+
+/**
+ * The pure rule: the conjunction of every term. T-10's table drives exactly this function.
+ *
+ * **An absent term is not a satisfied term** (spec 007 §14 A7). An absent *optional* term is one
+ * this page type does not assert, so it leaves the conjunction; an absent *required* term is a
+ * gate nobody answered, and the safe answer to that is `noindex`. The earlier `terms[term] ?? true`
+ * read both as satisfied — the one direction a robots rule must not fail in.
+ */
 export function indexability(terms: IndexabilityTerms): RobotsDirective {
-  return INDEXABILITY_TERMS.every((term) => terms[term] ?? true)
-    ? INDEX_FOLLOW
-    : NOINDEX_FOLLOW;
+  const holds = INDEXABILITY_TERMS.every((term) => {
+    const asserted: boolean | undefined = terms[term];
+    if (asserted === undefined) return isOptionalTerm(term);
+    return asserted;
+  });
+  return holds ? INDEX_FOLLOW : NOINDEX_FOLLOW;
 }
 
 /** The same rule, with the terms carried so a caller can report *why* a page is `noindex`. */

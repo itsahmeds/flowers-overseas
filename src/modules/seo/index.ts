@@ -25,6 +25,7 @@ export {
   INDEXABILITY_TERMS,
   INDEX_FOLLOW,
   NOINDEX_FOLLOW,
+  OPTIONAL_INDEXABILITY_TERMS,
   PAGE_TYPE_POLICY,
   type IndexabilityTerm,
   type IndexabilityTerms,
