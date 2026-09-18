@@ -448,13 +448,16 @@ describe.skipIf(sql === undefined)(
                 })
                 .catch(() => undefined);
 
-              // a city_translation may not claim a country its city does not belong to
+              // A city_translation may not claim a country its city does not belong to. The row
+              // uses `cityA2` (no translation yet) and a fresh slug, so nothing but the composite
+              // foreign key can reject it — with `cityA` the primary key collided first and the
+              // assertion proved nothing (`/review 75`).
               await tx
                 .savepoint(async (sp) => {
                   try {
                     await sp`
                 INSERT INTO city_translation (city_id, country_id, locale_code, name, slug)
-                VALUES (${cityA?.id ?? ""}, ${countryB}, 'zz', 'Wrong country', 'wrong-country')
+                VALUES (${cityA2?.id ?? ""}, ${countryB}, 'zz', 'Wrong country', 'wrong-country')
               `;
                   } catch (error: unknown) {
                     failures.push(
