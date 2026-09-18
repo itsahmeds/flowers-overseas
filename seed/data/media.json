@@ -13,10 +13,12 @@
       "generatorModel": "to-be-confirmed",
       "promptHash": "70e3d3964389e5d30e6d93682b93bf9f218253635606ba59eca444b4322f79db",
       "generatorSeed": 42343006,
-      "reviewState": "pending",
+      "reviewState": "approved",
       "productSku": "FO-BQ-001",
       "sortOrder": 0,
-      "isPrimary": true
+      "isPrimary": true,
+      "reviewedBy": "founder",
+      "reviewedAt": "2026-09-18T07:30:00.000Z"
     },
     {
       "id": "fo-bq-001-detail",
@@ -27,10 +29,12 @@
       "generatorModel": "to-be-confirmed",
       "promptHash": "8a5177fb45798c24182013169e221c0d2d21de26d9b39ed9372787e6a27cad83",
       "generatorSeed": 232190446,
-      "reviewState": "pending",
+      "reviewState": "approved",
       "productSku": "FO-BQ-001",
       "sortOrder": 1,
-      "isPrimary": false
+      "isPrimary": false,
+      "reviewedBy": "founder",
+      "reviewedAt": "2026-09-18T07:30:00.000Z"
     },
     {
       "id": "fo-bq-002-hero",
@@ -41,10 +45,12 @@
       "generatorModel": "to-be-confirmed",
       "promptHash": "6a9319404068cee29d895b8e7e1ddce718e97fd59e349bb378ce16a41fc0c236",
       "generatorSeed": 197787760,
-      "reviewState": "pending",
+      "reviewState": "approved",
       "productSku": "FO-BQ-002",
       "sortOrder": 0,
-      "isPrimary": true
+      "isPrimary": true,
+      "reviewedBy": "founder",
+      "reviewedAt": "2026-09-18T07:30:00.000Z"
     },
     {
       "id": "fo-bq-002-detail",
@@ -55,10 +61,12 @@
       "generatorModel": "to-be-confirmed",
       "promptHash": "df2cf09d31cafb7b925bb423d5bca15115f2a0dc516a2167b056cf0f1dc3c60a",
       "generatorSeed": 241954293,
-      "reviewState": "pending",
+      "reviewState": "approved",
       "productSku": "FO-BQ-002",
       "sortOrder": 1,
-      "isPrimary": false
+      "isPrimary": false,
+      "reviewedBy": "founder",
+      "reviewedAt": "2026-09-18T07:30:00.000Z"
     },
     {
       "id": "fo-bq-009-hero",
@@ -69,10 +77,12 @@
       "generatorModel": "to-be-confirmed",
       "promptHash": "77ceda8530e20ae80fbe204b33843a002083f96eb10a2e8b1fee397d3892de83",
       "generatorSeed": 15166168,
-      "reviewState": "pending",
+      "reviewState": "approved",
       "productSku": "FO-BQ-009",
       "sortOrder": 0,
-      "isPrimary": true
+      "isPrimary": true,
+      "reviewedBy": "founder",
+      "reviewedAt": "2026-09-18T07:30:00.000Z"
     },
     {
       "id": "fo-bq-009-detail",
@@ -83,10 +93,12 @@
       "generatorModel": "to-be-confirmed",
       "promptHash": "0fd0ad7fbfa53ed093ee45f4f55dec3423a25aae9744113057c7b6546295486c",
       "generatorSeed": 13772018,
-      "reviewState": "pending",
+      "reviewState": "approved",
       "productSku": "FO-BQ-009",
       "sortOrder": 1,
-      "isPrimary": false
+      "isPrimary": false,
+      "reviewedBy": "founder",
+      "reviewedAt": "2026-09-18T07:30:00.000Z"
     },
     {
       "id": "fo-bq-015-hero",
@@ -97,10 +109,12 @@
       "generatorModel": "to-be-confirmed",
       "promptHash": "809a2d5a2519d127a3c86991ccd88009c5a136143c5b512a355b0f955523ed4a",
       "generatorSeed": 129404557,
-      "reviewState": "pending",
+      "reviewState": "approved",
       "productSku": "FO-BQ-015",
       "sortOrder": 0,
-      "isPrimary": true
+      "isPrimary": true,
+      "reviewedBy": "founder",
+      "reviewedAt": "2026-09-18T07:30:00.000Z"
     },
     {
       "id": "fo-bq-015-detail",
@@ -111,10 +125,12 @@
       "generatorModel": "to-be-confirmed",
       "promptHash": "f28e3a538c110a18034c3371c2655ba3c6a37bfa27cd9c28ce996a8bbd017a56",
       "generatorSeed": 118217751,
-      "reviewState": "pending",
+      "reviewState": "approved",
       "productSku": "FO-BQ-015",
       "sortOrder": 1,
-      "isPrimary": false
+      "isPrimary": false,
+      "reviewedBy": "founder",
+      "reviewedAt": "2026-09-18T07:30:00.000Z"
     },
     {
       "id": "fo-bq-019-hero",
@@ -125,10 +141,12 @@
       "generatorModel": "to-be-confirmed",
       "promptHash": "106ae8cc7e8ae12b6bac4bf1528e673445312c926d91cbb821aa6badd7f2d764",
       "generatorSeed": 92842102,
-      "reviewState": "pending",
+      "reviewState": "approved",
       "productSku": "FO-BQ-019",
       "sortOrder": 0,
-      "isPrimary": true
+      "isPrimary": true,
+      "reviewedBy": "founder",
+      "reviewedAt": "2026-09-18T07:30:00.000Z"
     },
     {
       "id": "fo-bq-019-detail",
@@ -139,10 +157,12 @@
       "generatorModel": "to-be-confirmed",
       "promptHash": "3d4aaa52980cff038d92100d8aa973be18b9da90bfd907803fcebd70f456f94b",
       "generatorSeed": 196206998,
-      "reviewState": "pending",
+      "reviewState": "approved",
       "productSku": "FO-BQ-019",
       "sortOrder": 1,
-      "isPrimary": false
+      "isPrimary": false,
+      "reviewedBy": "founder",
+      "reviewedAt": "2026-09-18T07:30:00.000Z"
     },
     {
       "id": "fo-bq-023-hero",
@@ -153,10 +173,12 @@
       "generatorModel": "to-be-confirmed",
       "promptHash": "df8476f15a8efbfb049ee55afc153e391c6a2e034a13655815d563c27fccc200",
       "generatorSeed": 103828294,
-      "reviewState": "pending",
+      "reviewState": "approved",
       "productSku": "FO-BQ-023",
       "sortOrder": 0,
-      "isPrimary": true
+      "isPrimary": true,
+      "reviewedBy": "founder",
+      "reviewedAt": "2026-09-18T07:30:00.000Z"
     },
     {
       "id": "fo-bq-023-detail",
@@ -167,10 +189,12 @@
       "generatorModel": "to-be-confirmed",
       "promptHash": "6d22b44c9882214898eea67f08b0fa33677acebb7725a6ee82e8e372a5fea176",
       "generatorSeed": 174167443,
-      "reviewState": "pending",
+      "reviewState": "approved",
       "productSku": "FO-BQ-023",
       "sortOrder": 1,
-      "isPrimary": false
+      "isPrimary": false,
+      "reviewedBy": "founder",
+      "reviewedAt": "2026-09-18T07:30:00.000Z"
     },
     {
       "id": "fo-bq-028-hero",
@@ -181,10 +205,12 @@
       "generatorModel": "to-be-confirmed",
       "promptHash": "a88b0cce2aabb942dbdb298b12d962eb7d46ed2eaca3383e97617eafd05de422",
       "generatorSeed": 219586246,
-      "reviewState": "pending",
+      "reviewState": "approved",
       "productSku": "FO-BQ-028",
       "sortOrder": 0,
-      "isPrimary": true
+      "isPrimary": true,
+      "reviewedBy": "founder",
+      "reviewedAt": "2026-09-18T07:30:00.000Z"
     },
     {
       "id": "fo-bq-028-detail",
@@ -195,10 +221,12 @@
       "generatorModel": "to-be-confirmed",
       "promptHash": "39ae07ab922134cfede8b7324bf28b1b91ad4ad2c2ab099af3c206937504e465",
       "generatorSeed": 103697428,
-      "reviewState": "pending",
+      "reviewState": "approved",
       "productSku": "FO-BQ-028",
       "sortOrder": 1,
-      "isPrimary": false
+      "isPrimary": false,
+      "reviewedBy": "founder",
+      "reviewedAt": "2026-09-18T07:30:00.000Z"
     },
     {
       "id": "fo-ar-001-hero",
@@ -223,10 +251,12 @@
       "generatorModel": "to-be-confirmed",
       "promptHash": "c6a8e0640a9820fa9e44a33850138966aefd56d1531d054af7ce2e31cafc34b3",
       "generatorSeed": 72741979,
-      "reviewState": "pending",
+      "reviewState": "approved",
       "productSku": "FO-AR-001",
       "sortOrder": 1,
-      "isPrimary": false
+      "isPrimary": false,
+      "reviewedBy": "founder",
+      "reviewedAt": "2026-09-18T07:30:00.000Z"
     },
     {
       "id": "fo-ar-003-hero",
@@ -237,10 +267,12 @@
       "generatorModel": "to-be-confirmed",
       "promptHash": "07812a35a04eeedf77419afc4c3d39cc6a54a62669df5fe941c91d2bf27c7e8f",
       "generatorSeed": 106665735,
-      "reviewState": "pending",
+      "reviewState": "approved",
       "productSku": "FO-AR-003",
       "sortOrder": 0,
-      "isPrimary": true
+      "isPrimary": true,
+      "reviewedBy": "founder",
+      "reviewedAt": "2026-09-18T07:30:00.000Z"
     },
     {
       "id": "fo-ar-003-detail",
@@ -251,10 +283,12 @@
       "generatorModel": "to-be-confirmed",
       "promptHash": "1af92e6a4bcd7ed9aeaab1309f4392f283f0b9d15236454a7e6f9d4813c00bcf",
       "generatorSeed": 63693974,
-      "reviewState": "pending",
+      "reviewState": "approved",
       "productSku": "FO-AR-003",
       "sortOrder": 1,
-      "isPrimary": false
+      "isPrimary": false,
+      "reviewedBy": "founder",
+      "reviewedAt": "2026-09-18T07:30:00.000Z"
     },
     {
       "id": "fo-pt-001-hero",
@@ -265,10 +299,12 @@
       "generatorModel": "to-be-confirmed",
       "promptHash": "23589b1df28626d1ccabfeed49c71c482b4fe339343c3cf81ade848f6bdbda27",
       "generatorSeed": 229276161,
-      "reviewState": "pending",
+      "reviewState": "approved",
       "productSku": "FO-PT-001",
       "sortOrder": 0,
-      "isPrimary": true
+      "isPrimary": true,
+      "reviewedBy": "founder",
+      "reviewedAt": "2026-09-18T07:30:00.000Z"
     },
     {
       "id": "fo-pt-001-detail",
@@ -279,10 +315,12 @@
       "generatorModel": "to-be-confirmed",
       "promptHash": "310d7c62d53720937be8be7bff9fd2fd0caf89f7d6253010872afb20672746da",
       "generatorSeed": 129590203,
-      "reviewState": "pending",
+      "reviewState": "approved",
       "productSku": "FO-PT-001",
       "sortOrder": 1,
-      "isPrimary": false
+      "isPrimary": false,
+      "reviewedBy": "founder",
+      "reviewedAt": "2026-09-18T07:30:00.000Z"
     },
     {
       "id": "fo-fn-001-hero",
@@ -307,10 +345,12 @@
       "generatorModel": "to-be-confirmed",
       "promptHash": "4574cd7d34367a65de7c0d6616cf6470ce0f37b721e7602a19bf7e1e0be1801a",
       "generatorSeed": 131148262,
-      "reviewState": "pending",
+      "reviewState": "approved",
       "productSku": "FO-FN-001",
       "sortOrder": 1,
-      "isPrimary": false
+      "isPrimary": false,
+      "reviewedBy": "founder",
+      "reviewedAt": "2026-09-18T07:30:00.000Z"
     },
     {
       "id": "fo-gs-001-hero",
@@ -321,10 +361,12 @@
       "generatorModel": "to-be-confirmed",
       "promptHash": "37accc6101e94ef9c9e33e9a76fed617c6421893429405534bdb2c98397d61bc",
       "generatorSeed": 95462597,
-      "reviewState": "pending",
+      "reviewState": "approved",
       "productSku": "FO-GS-001",
       "sortOrder": 0,
-      "isPrimary": true
+      "isPrimary": true,
+      "reviewedBy": "founder",
+      "reviewedAt": "2026-09-18T07:30:00.000Z"
     },
     {
       "id": "fo-gs-001-detail",
@@ -335,10 +377,12 @@
       "generatorModel": "to-be-confirmed",
       "promptHash": "5263de6b4a5cbe73390696409362e73f6f3599c59242f2b84472330e5d6a2a7e",
       "generatorSeed": 178475041,
-      "reviewState": "pending",
+      "reviewState": "approved",
       "productSku": "FO-GS-001",
       "sortOrder": 1,
-      "isPrimary": false
+      "isPrimary": false,
+      "reviewedBy": "founder",
+      "reviewedAt": "2026-09-18T07:30:00.000Z"
     },
     {
       "id": "home-hero",
@@ -349,9 +393,11 @@
       "generatorModel": "to-be-confirmed",
       "promptHash": "ab20d7511e638072af3f20ee246a1dbc35b54566c9388c1ca0e53310f62d1e20",
       "generatorSeed": 52763141,
-      "reviewState": "pending",
+      "reviewState": "approved",
       "sortOrder": 0,
-      "isPrimary": false
+      "isPrimary": false,
+      "reviewedBy": "founder",
+      "reviewedAt": "2026-09-18T07:30:00.000Z"
     },
     {
       "id": "home-occasion-birthday",
@@ -362,9 +408,11 @@
       "generatorModel": "to-be-confirmed",
       "promptHash": "dc8c2601124f1e6457bf1ece3eca573281ef5415086541cf369e64bc2ab648c6",
       "generatorSeed": 173922574,
-      "reviewState": "pending",
+      "reviewState": "approved",
       "sortOrder": 1,
-      "isPrimary": false
+      "isPrimary": false,
+      "reviewedBy": "founder",
+      "reviewedAt": "2026-09-18T07:30:00.000Z"
     },
     {
       "id": "home-occasion-name-day",
@@ -375,9 +423,11 @@
       "generatorModel": "to-be-confirmed",
       "promptHash": "43f6a8e5bb3543a75529f4ee0d9bbd35f80371a247602953e3deaac9b4868618",
       "generatorSeed": 43637300,
-      "reviewState": "pending",
+      "reviewState": "approved",
       "sortOrder": 2,
-      "isPrimary": false
+      "isPrimary": false,
+      "reviewedBy": "founder",
+      "reviewedAt": "2026-09-18T07:30:00.000Z"
     },
     {
       "id": "home-occasion-anniversary",
@@ -388,9 +438,11 @@
       "generatorModel": "to-be-confirmed",
       "promptHash": "1bf6816f229deb1ac39bd73819327dbfd88e0343c6eb1a8e985cea6ebb976b3a",
       "generatorSeed": 70033907,
-      "reviewState": "pending",
+      "reviewState": "approved",
       "sortOrder": 3,
-      "isPrimary": false
+      "isPrimary": false,
+      "reviewedBy": "founder",
+      "reviewedAt": "2026-09-18T07:30:00.000Z"
     },
     {
       "id": "home-occasion-sympathy",

@@ -176,11 +176,27 @@ describe("spec 006 AC-8: provenance is complete on every committed asset", () =>
     }
   });
 
-  it("holds no approved asset: the founder has not signed off yet (§13 Q9)", () => {
+  it("records the founder's 2026-09-18 sign-off: every approved asset carries the founder role and an instant, and exactly the five undelivered or rejected assets stay pending (§13 Q9)", () => {
+    const pending = assets
+      .filter((asset) => asset.reviewState === "pending")
+      .map((asset) => asset.id)
+      .sort();
+    expect(pending).toEqual([
+      "fo-ar-001-hero",
+      "fo-fn-001-hero",
+      "home-occasion-just-because",
+      "home-occasion-new-baby",
+      "home-occasion-sympathy",
+    ]);
     for (const asset of assets) {
-      expect(asset.reviewState, asset.id).toBe("pending");
-      expect(asset.reviewedBy, asset.id).toBeUndefined();
-      expect(asset.reviewedAt, asset.id).toBeUndefined();
+      if (asset.reviewState === "pending") {
+        expect(asset.reviewedBy, asset.id).toBeUndefined();
+        expect(asset.reviewedAt, asset.id).toBeUndefined();
+        continue;
+      }
+      expect(asset.reviewState, asset.id).toBe("approved");
+      expect(asset.reviewedBy, asset.id).toBe("founder");
+      expect(asset.reviewedAt, asset.id).toBe("2026-09-18T07:30:00.000Z");
     }
   });
 
@@ -213,8 +229,11 @@ describe("the whole-file gate: a bad asset cannot hide inside a good manifest", 
   });
 
   it("rejects an approved asset with no reviewer or date in the committed manifest", () => {
+    const base = { ...assets[0] };
+    delete base.reviewedBy;
+    delete base.reviewedAt;
     const result = withRow({
-      ...assets[0],
+      ...base,
       id: "approved-with-no-reviewer",
       reviewState: "approved",
       isPrimary: false,
