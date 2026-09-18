@@ -45,7 +45,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per `/review`, newest last.
 
-- **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From `/review 80` (2026-09-18, PASS with a declared gap):** (1) **AC-8's runtime proof is owed** — `docker build` + `docker run` + `curl /api/health` were executed by nobody (no daemon for the implementer, none in CI, Docker not installed on the reviewer's Mac). Owner: the founder's first Railway build (runbook §4–5) — record "built and healthy" plus the health `curl` timing in `## Result`; TASK-099 adds a `container` CI job so T-08 becomes a test. (2) `railway:check --env staging` treats `STAGING_BASIC_AUTH` as optional, so a forgotten wall passes the gate — make it required on `staging`/`preview` (TASK-099). Nits: static assets bypass the wall (say so in the runbook); no `HEALTHCHECK` (Railway uses `healthcheckPath`); runbook §2 should open with "24 pasted, four Vercel keys never"; credential rotation needs a redeploy (runbook §3). Rulings accepted: `STAGING_BASIC_AUTH` is a runtime switch, not a 29th key; 28 declared / 24 required until TASK-104 drops the four Vercel keys.
 
 ## Escalations
 
