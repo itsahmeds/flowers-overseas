@@ -44,6 +44,39 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
   change** other than the element, and a fixture flip of `guidePublished` is a data change with
   `git diff --stat src/app` empty.
 
+- **From `/review 74` (2026-09-18, round 1 — FAIL).** Five record/test corrections, no redesign:
+  1. **`pageIndexability().inSitemap` does not exist.** `grep -rn inSitemap src tests` returns
+     nothing; the verdict object is `{ indexable, directive, terms }`. The PR body's and this
+     brief's AC-7 proof cite a phantom API, and TASK-094 inherits it. Restate the sitemap-row half
+     as a **declared carry-forward to TASK-094**, naming the real pair —
+     `listCorridorPages()` + `pageIndexability(...).indexable` — and drop the claim that it is
+     "proven" here.
+  2. **T-08's hreflang half is prose, not a test.** The flip test pins the URL, the hub link, the
+     teaser and `listCorridorPages()`; the finder/grid halves are pinned in `ui-home`. The
+     hreflang entry is observable today (`alternatesFor()` over the corridor page type) and must
+     be asserted under the same `isGuidePublished` mock.
+  3. **Undeclared artboard deviations.** `all-destinations-desktop.dc.html` draws each linked
+     destination as a **whole-tile `<a class="tile">`** with no underline and the label
+     *"Read the guide →"*. The component links the country name only, adds
+     `underline underline-offset-4`, and drops the arrow. Either align with the artboard or
+     declare the three deviations in the PR body and the brief.
+  4. **Nine committed visual baselines were regenerated and not disclosed.**
+     `home-{en,en-gb,de,pl}-mobile`, `home-{desktop,mobile}-destinations`,
+     `footer-{en,de}-mobile`, `not-found-mobile`. In a PR whose AC reads "no markup change" the
+     PR body must list them and say why (text → `<a>`, the element the `/review 70`
+     carry-forward allows).
+  5. **The new 390 px axe pass is scoped to `main`.** `tests/a11y/destinations-hub.spec.ts`
+     narrows the narrow-viewport audit to `main` because `SiteHeader`'s `overflow-x-auto`
+     category row trips `scrollable-region-focusable` (serious) at that width. It adds coverage
+     rather than removing any, but AC-26 words itself "with no exception list": record the header
+     defect in the PR body with its owner (spec 004 / TASK-048) so someone takes it.
+- **Verified by `/review 74`, for the record:** the `guidePublished`+`corridorPagePublished` flip
+  on `DE` removes the URL, the hub link, the finder href and the grid href and leaves
+  `git diff --stat -- src/app` empty (the registry's own refinement forces both booleans, which is
+  correct); hub `<head>` in `en`/`en-gb` carries one self-canonical and `noindex,follow`, no
+  JSON-LD (TASK-093's slot is untouched); `/en/send-flowers-to/` → 308 to the bare URL and every
+  other shape 404s; the hub's script transfer is 128 211 B, byte-identical to the locale home.
+
 ## Escalations
 
 - **2026-09-18 — CI cannot run: GitHub Actions billing.** `gh pr ready` fired once on PR 74 and
