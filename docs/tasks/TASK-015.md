@@ -60,6 +60,26 @@ Branch `task/TASK-015-schema-i18n-geo`. `locale` and `currency` are created befo
   `locale_code` column of the three translation tables; every other foreign key is covered by a
   primary key prefix or an explicit index. Revisit when spec 008's queries exist.
 
+- 2026-09-18 — `/review 75` round 2 **PASS**. Required change 1 verified in the migration, in
+  `db/schema/geo.ts` and live (`postcode_zone_pkey | PRIMARY KEY (id)`,
+  `postcode_zone_country_prefix_key | UNIQUE (country_id, prefix)`; `app_owner` owns all fifteen
+  tables, `app_web` holds exactly `SELECT, INSERT, UPDATE, DELETE`; `pg_extension` = `{plpgsql}`,
+  0 enum types). A fresh `drizzle-kit generate` in an isolated copy against the committed
+  `meta/0000`+`0001` snapshots prints "No schema changes" — the mirror is closed. Round trip
+  reproduced: 16 / 182 / 29 / 15 / 1 / 0 before, 1 / 4 / 1 / 0 / 1 / 0 at `0001`, 16 / 182 / 29 /
+  15 / 1 / 0 after `db:migrate`; `0002` left applied, no session open. Nits 1–6 accepted as
+  disposed (2's reason checked: nothing in `specs/` references `country_holiday` or
+  `occasion_country`, so `CASCADE` there cannot orphan a referencing row; 5's argument checked
+  against `scripts/db-check.ts`, which skips `meta/` by name so the journal can never fail the
+  gate — only an *undeleted* draft `.sql` can).
+- 2026-09-18 — `/review 75` round 2 nit (no action required): in
+  `tests/integration/schema-i18n-geo.test.ts`, `constraintOf` casts after its own `in` guard
+  (`(error as { constraint_name?: unknown }).constraint_name`); the `in` narrowing already gives
+  the property, so the cast can go when the file is next touched.
+- 2026-09-18 — `/review 75` round 2, still open for the orchestrator: the §7-vs-§5.1 review-triple
+  gap (nit 1) needs its spec 002 §14 A-record **before TASK-016** copies the translation pattern,
+  and the FK-index question (nit 6) is a TASK-016+ follow-up to measure, not a merge blocker.
+
 ## Escalations
 
 _None._ Two places where spec 002 §5.1 names a table or a column without spelling out what is in
