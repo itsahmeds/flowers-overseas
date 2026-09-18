@@ -53,11 +53,39 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- **2026-09-18 — the `linux/` baseline regeneration cannot be done from this task (open).** The
+  brief's second item needs one run of the `visual` job's artefact. `visual` `needs: preview`, and
+  `preview` is gated `github.event_name == 'pull_request' && contains(labels, 'ci:full')` — a
+  `ready_for_review` run (the one an implementer can fire) skips `preview`, `visual`, `e2e` and
+  `lighthouse`, and a `workflow_dispatch` run skips `preview` too because it is not a pull request.
+  Only the `ci:full` label produces a `visual` run, and an implementer must not add it
+  (spec 001 §14 A14; the orchestrator/reviewer owns that label). Second blocker, independent of the
+  label: the Vercel preview deployment fails on this PR (and on PR #77, "GitHub couldn't verify an
+  account for the commit"), so `preview` would fail and `visual` would never start even with the
+  label. **Asked of the orchestrator:** either add `ci:full` to PR #78 once the preview deployment
+  is healthy so the `visual` job uploads `playwright-report-visual` (it uploads `if: failure()`,
+  which is exactly the missing-baseline case), or move the baseline regeneration to its own task
+  behind the Vercel/Railway preview fix (spec 040). Current state of the baselines:
+  `tests/visual/__screenshots__/visual/linux` holds 3 PNGs against 82 in `darwin/`, and
+  `pseudo-rtl/` holds 1 each — no `darwin/` file was touched here.
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
-
-_Pending._
+PR [#78](https://github.com/itsahmeds/flowers-overseas/pull/78) — `chore(ci): CI-aware unit test
+budget on the public runner (TASK-134)`. `vitest.config.ts` gives the `unit` project
+`testTimeout: 30_000` when `process.env.CI` is set and keeps Vitest's 5 000 ms default locally
+(`CI_UNIT_TEST_TIMEOUT_MS`, commented with the reasoning above); nothing else changed and no
+assertion was touched. Tests: 2 unit cases appended to `tests/unit/ci-workflow.test.ts`, which load
+`vitest.config.ts` with and without `CI` and assert 30 000 ms / the default — verified red against
+the unmodified config first. Local `pnpm test:coverage`: 169 files, 4 089 passed, 5 skipped (the
+gitleaks cases, which only run where the binary exists); `typecheck`, `lint`, `format:check`,
+`codebase:map --check` green. Acceptance evidence — CI run
+[35339304431](https://github.com/itsahmeds/flowers-overseas/actions/runs/35339304431), conclusion
+**success**: `lint`, `typecheck`, **`test-unit`**, `build`, `lighthouse` all pass, everything else
+skipped for want of the `ci:full` label. `test-unit` reports **4 094 tests, 4 094 passed, 0 failed,
+0 skipped** across 813 suites (it was 2 failed on runs 35325400908 and 35327364249); the two former
+timeouts now finish inside the budget at 5 215 ms (`catalog-geo-surface` type surface) and 6 081 ms
+(`seed-prices` byte-for-byte projection). AC-16 / T-17 satisfied. **Not done, handed on:** the
+`linux/` Playwright baseline regeneration — see `## Escalations`; it needs a `visual` run, which
+needs the `ci:full` label and a working preview deployment, neither of which is an implementer's to
+produce.
