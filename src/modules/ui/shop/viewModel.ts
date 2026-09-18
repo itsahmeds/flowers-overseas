@@ -92,6 +92,14 @@ export type ProductCardPhotoView = z.infer<typeof ProductCardPhotoSchema>;
  * `href` is optional because §13 Q8 makes the card a *tile* until spec 009 publishes the `product`
  * link id: absent → no `<a>`, present → the same markup wrapped in one. Nothing else in the shape
  * changes across that flip, which is why it costs zero layout shift.
+ *
+ * `provenance` is **data-only**: it records what the product's own imagery is, for the projection
+ * that builds the view and for anything downstream that reasons about a catalogue row. No
+ * component reads it, and it is *not* what puts the honesty label on a card — what is displayed
+ * decides what is labelled, so `MediaProvenanceNote` asks the media manifest about the asset it
+ * actually rendered (spec 006 §2.5; AC-6). The two are pinned apart in
+ * `tests/unit/ui-shop-components.test.tsx`, "labels from the manifest, not from the view model's
+ * provenance field", so neither can be mistaken for the other's source of truth.
  */
 export const ProductCardViewSchema = z
   .object({

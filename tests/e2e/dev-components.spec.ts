@@ -325,6 +325,13 @@ test.describe("/dev/components", () => {
     await expect(section).toHaveCount(1);
     const html = (await section.innerHTML()).trim();
     const text = (await section.innerText()).trim();
+    // The scan is an absence assertion, so it passes on nothing at all: a section that rendered
+    // empty — or an `innerText()` that came back blank because nothing in it was visible — would
+    // read as honest. Pin both inputs before scanning them. The other half of this guard is
+    // `tests/unit/listing-honesty-scan.test.ts`, which proves the patterns fire on markup that
+    // does make a forbidden claim.
+    expect(html.length).toBeGreaterThan(1000);
+    expect(text).toContain("Includes VAT and delivery");
     expect(listingHonestyViolations({ html, text })).toEqual([]);
   });
 
@@ -391,7 +398,7 @@ test.describe("/dev/components", () => {
     ).toHaveCount(0);
   });
 
-  test("the sort form works with JavaScript disabled and by keyboard alone", async ({
+  test("the sort form works with JavaScript disabled and submits from the keyboard alone", async ({
     browser,
   }) => {
     // A context with JavaScript off: the toolbar must still submit, because it is a `GET` form
@@ -403,11 +410,19 @@ test.describe("/dev/components", () => {
     const select = page.locator("#gallery-sort-default");
     await expect(select).toBeVisible();
     await select.selectOption("price-desc");
+
+    // …and submitted from the keyboard: the select is focusable, the next tab stop is the submit
+    // button, and `Enter` on it sends the form. No pointer is used past the option choice, which
+    // is what the title claims.
+    await select.focus();
+    await page.keyboard.press("Tab");
+    const submit = page.locator(
+      '[data-fo-listing-toolbar="default"] button[type="submit"]',
+    );
+    await expect(submit).toBeFocused();
     await Promise.all([
       page.waitForURL(/sort=price-desc/),
-      page
-        .locator('[data-fo-listing-toolbar="default"] button[type="submit"]')
-        .click(),
+      page.keyboard.press("Enter"),
     ]);
     expect(new URL(page.url()).searchParams.get("sort")).toBe("price-desc");
     await context.close();

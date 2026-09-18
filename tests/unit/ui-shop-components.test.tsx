@@ -35,7 +35,12 @@ import {
   listingHonestyViolations,
   textOf,
 } from "../support/listing-honesty.ts";
-import { PRODUCT_ASSET, mediaFixture } from "./support/media-fixture.ts";
+import {
+  BAND_ASSET,
+  FIXTURE_ALT,
+  PRODUCT_ASSET,
+  mediaFixture,
+} from "./support/media-fixture.ts";
 
 const LOCALES: readonly LocaleCode[] = ["en", "en-gb", "de", "pl"];
 
@@ -135,6 +140,12 @@ describe("ProductCard: the four states of the sheet's first row", () => {
 
   it("wraps the name and the price in <bdi> (T-30)", () => {
     const html = render(<ProductCard card={CARD} locale="en" />);
+    // T-30 says the name/price **pair**; the pair is isolated by wrapping each of the two, not by
+    // one `<bdi>` around both. `<bdi>` isolates its contents from the surrounding run, so a single
+    // wrapper would still let a Latin name and the digits of the price reorder against *each
+    // other* inside it — which is the exact failure the criterion is about, on `/ar-XB` and on
+    // Arabic when it ships. Two elements isolate the name from the price as well as both from the
+    // page, and the card's DOM order (heading then price) is unchanged either way.
     expect(html).toContain("<bdi>Amber Hour</bdi>");
     expect(html).toMatch(/<bdi>[^<]*46[.,]90[^<]*<\/bdi>/u);
   });
@@ -147,6 +158,37 @@ describe("ProductCard: the four states of the sheet's first row", () => {
     expect(render(<ProductCard card={CARD} locale="en" />)).not.toContain(
       "data-fo-media-provenance",
     );
+  });
+
+  it("labels from the manifest, not from the view model's provenance field", () => {
+    // `ProductCardView.provenance` is **data about the product's imagery**, carried for the
+    // projection and for anything downstream that reasons about a catalogue row; no component
+    // reads it. What is displayed decides what is labelled, and what is displayed is a manifest
+    // asset, so `MediaProvenanceNote` asks the manifest. Pinned here so the two cannot be assumed
+    // interchangeable: a card that *claims* `ai` while displaying the manifest's `photo` asset
+    // carries no label, and a card that claims `photo` while displaying the `ai` asset does.
+    setMediaManifest(mediaFixture());
+    const claimsAiShowsPhoto = render(
+      <ProductCard
+        card={{
+          ...CARD,
+          photo: {
+            kind: "asset",
+            assetId: BAND_ASSET,
+            alt: FIXTURE_ALT.en ?? "",
+            slot: "grid",
+          },
+          provenance: "ai",
+        }}
+        locale="en"
+      />,
+    );
+    expect(claimsAiShowsPhoto).not.toContain("data-fo-media-provenance");
+
+    const claimsPhotoShowsAi = render(
+      <ProductCard card={{ ...IMAGE_CARD, provenance: "photo" }} locale="en" />,
+    );
+    expect(claimsPhotoShowsAi).toContain('data-fo-media-provenance="ai"');
   });
 
   it.each(LOCALES)("says nothing AC-6 forbids in %s", (locale) => {
