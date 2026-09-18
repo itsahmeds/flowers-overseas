@@ -66,11 +66,24 @@ export interface HomeHeroProps {
    * lie about the page's structure.
    */
   readonly headingLevel?: "h1" | "h2";
+  /**
+   * Is this band the **document's** single LCP candidate? `true` on the locale home, where it is;
+   * `false` in `/dev/components`, where the document already has one and a second `priority` image
+   * would emit a second `<link rel="preload" as="image">` and break the one-candidate rule
+   * (`plan/01` §6, spec 006 AC-19).
+   *
+   * It is the same decision `headingLevel` makes and is a prop for the same reason: whether this
+   * band is the page's subject is a fact about the **page**, which only the page knows. It cannot
+   * be inferred here, and inferring it wrongly is a Core Web Vitals regression rather than a
+   * visible bug — which is exactly the kind that survives review.
+   */
+  readonly priority?: boolean;
 }
 
 export function HomeHero({
   locale,
   headingLevel = "h1",
+  priority = true,
 }: HomeHeroProps): ReactElement {
   const t = useTranslations("home");
   // The one branch in this file, and it is a *data* question, not a layout one: has the founder
@@ -98,13 +111,13 @@ export function HomeHero({
           assetId={HOME_HERO_ASSET}
           locale={locale}
           slot="hero"
-          priority
+          priority={priority}
           className="h-[300px] md:absolute md:inset-0 md:h-full"
         />
       ) : (
         <Media
           slot="hero"
-          priority
+          priority={priority}
           // No image exists, so there is nothing for a screen reader to be told about; the caption
           // below says what the slot will hold, in the catalogue's words. Written out rather than
           // defaulted, because `Media` has no default `alt` by design.

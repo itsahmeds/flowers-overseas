@@ -733,10 +733,15 @@ export default function DevComponentsPage(): ReactElement {
               [
                 [
                   "hero",
+                  // `priority={false}` for the same reason as `headingLevel="h2"`: this document
+                  // already has an `<h1>` and already has an LCP candidate (the gallery's own
+                  // `MediaAsset · priority` row), and a second `priority` image would emit a
+                  // second image preload — the thing AC-19 forbids (TASK-080).
                   <HomeHero
                     headingLevel="h2"
                     key="hero"
                     locale={galleryLocale}
+                    priority={false}
                   />,
                 ],
                 ["finder", <FinderCard key="finder" locale={galleryLocale} />],

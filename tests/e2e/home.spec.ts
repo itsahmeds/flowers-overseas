@@ -55,7 +55,7 @@ const FIELDS = ["finder-country", "finder-town", "finder-date"] as const;
 
 test.describe("the locale home, above the fold", () => {
   for (const path of LOCALES) {
-    test(`${path} renders one h1, the reserved hero slot and no image`, async ({
+    test(`${path} renders one h1 and the hero band's photograph`, async ({
       page,
     }) => {
       const response = await page.goto(path);
@@ -66,11 +66,19 @@ test.describe("the locale home, above the fold", () => {
       await expect(
         page.locator(`${HERO} [data-fo-media-slot="hero"]`),
       ).toHaveCount(1);
-      // `plan/10` §3: the demo shows no photograph it does not have.
-      await expect(page.locator(`${HERO} img`)).toHaveCount(0);
-      await expect(
-        page.locator(`${HERO} [data-fo-media-slot="hero"]`),
-      ).toHaveAttribute("data-fo-media-sizes", "100vw");
+      // TASK-080 filled the slot the design reserved: one image, eager, at high fetch priority,
+      // and it is the page's single LCP candidate. `plan/10` §3 is unchanged — the page shows a
+      // photograph it *has*, and every slot it does not have one for is still a captioned box.
+      const hero = page.locator(`${HERO} img`);
+      await expect(hero).toHaveCount(1);
+      await expect(hero).toHaveAttribute("loading", "eager");
+      await expect(hero).toHaveAttribute("fetchpriority", "high");
+      await expect(hero).toHaveAttribute("sizes", "100vw");
+      // Alt text is per-locale data, so it is never empty and never the same in two languages by
+      // accident; the assertion here is the WCAG 1.1.1 one — it says something.
+      expect(((await hero.getAttribute("alt")) ?? "").length).toBeGreaterThan(
+        10,
+      );
     });
 
     test(`${path} reserves the hero slot's box before paint`, async ({
@@ -149,7 +157,12 @@ test.describe("the locale home, above the fold", () => {
 
       await expect(page.locator(`${OCCASIONS} li`)).toHaveCount(6);
       await expect(page.locator(`${OCCASIONS} a[href]`)).toHaveCount(0);
-      await expect(page.locator(`${OCCASIONS} img`)).toHaveCount(0);
+      // Six photographs since TASK-080, every one of them lazy: the grid is below the fold on
+      // both artboards, so none of them may compete with the hero for the LCP.
+      await expect(page.locator(`${OCCASIONS} img`)).toHaveCount(6);
+      await expect(
+        page.locator(`${OCCASIONS} img[loading="lazy"]`),
+      ).toHaveCount(6);
       await expect(
         page.locator(`${OCCASIONS} [data-fo-media-slot="tile"]`),
       ).toHaveCount(6);
@@ -182,7 +195,15 @@ test.describe("the locale home, above the fold", () => {
       await expect(
         page.locator(`${TRENDING} [data-fo-media-slot="grid"]`),
       ).toHaveCount(5);
-      await expect(page.locator(`${TRENDING} img`)).toHaveCount(0);
+      // The mixed state spec 006 §2.4 specifies, rendered: the picks the demo set has imagery for
+      // show it, and the rest keep the captioned box and no `<img>`. Every card is one or the
+      // other — never a broken image, never a photograph of a different bouquet.
+      const images = await page.locator(`${TRENDING} img`).count();
+      const boxes = await page
+        .locator(`${TRENDING} [data-fo-media-placeholder]`)
+        .count();
+      expect(images).toBeGreaterThan(0);
+      expect(images + boxes).toBe(5);
       await expect(page.locator(`${TRENDING} a[href]`)).toHaveCount(0);
       await expect(page.locator(TRENDING)).toHaveAttribute(
         "data-fo-trending-basis",
@@ -376,12 +397,37 @@ test.describe("the type-ahead enhancement (design round 7)", () => {
   });
 
   test("picks a match by mouse, closes the list and uncovers the town field", async ({
+    context,
     page,
   }) => {
     // 390 px is where `/review 40` measured the un-dismissed list over the town label and the top
     // 12 px of its input.
+    //
+    // A recorded consent refusal is seeded first (TASK-080), the same helper the visual suite
+    // carries and for the same reason: on the mobile artboard the consent sheet is a **bottom
+    // sheet that paints over the finder card**, so a hit test at the town field measures whether
+    // the island's chunk had arrived yet rather than whether the type-ahead list closed. It passed
+    // only because the sheet had not painted by the time the hit test ran, and the imagery landing
+    // in the hero changed that timing. Measured with and without the hero photograph, the finder's
+    // geometry is identical to the pixel — the sheet was always the thing on top.
+    await context.addCookies([
+      {
+        name: "fo_consent",
+        value: encodeURIComponent(
+          JSON.stringify({
+            v: 1,
+            a: false,
+            m: false,
+            ts: "2026-09-09T00:00:00.000Z",
+            cid: "6f1e6e6a-1d3a-4b5e-9c2f-8f0a1b2c3d4e",
+          }),
+        ),
+        url: process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3000",
+      },
+    ]);
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/en");
+    await expect(page.locator("[data-fo-consent]")).toHaveCount(0);
     await page.locator("#finder-country").fill("pol");
 
     await page.locator(`${MATCHES} button`).first().click();

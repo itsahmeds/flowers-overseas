@@ -26,7 +26,10 @@
  */
 import type { ReactElement } from "react";
 
-import { MediaProvenanceNote } from "../media/MediaProvenanceNote.tsx";
+import {
+  MediaProvenanceNote,
+  needsAiProvenanceNote,
+} from "../media/MediaProvenanceNote.tsx";
 
 import { HOME_BLEED, HOME_HERO_ASSET } from "./HomeHero.tsx";
 import { occasionTiles } from "./occasion-model.ts";
@@ -60,13 +63,18 @@ export function homeMediaAssetIds(
 export function HomeProvenanceNote({
   locale,
   provider,
-}: HomeProvenanceNoteProps): ReactElement {
+}: HomeProvenanceNoteProps): ReactElement | null {
+  const assetIds = homeMediaAssetIds(locale, provider ?? getTrendingProvider());
+  // `MediaProvenanceNote` already returns `null` when no label is owed, but the *wrapper* would
+  // still lay out its own padding — a 24 px band of nothing on a page that is displaying no
+  // generated image. So the question is asked here as well: a section that says nothing does not
+  // reserve space for saying it. `/ar-XB` is the page that proves it — no alt text, so every slot
+  // degrades to a placeholder, no label is owed, and the pseudo-RTL baseline is exactly the height
+  // it was before any of this landed.
+  if (!needsAiProvenanceNote(assetIds, locale)) return null;
   return (
     <div className={`pb-lg ${HOME_BLEED}`} data-fo-home-provenance>
-      <MediaProvenanceNote
-        assetIds={homeMediaAssetIds(locale, provider ?? getTrendingProvider())}
-        locale={locale}
-      />
+      <MediaProvenanceNote assetIds={assetIds} locale={locale} />
     </div>
   );
 }
