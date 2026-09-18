@@ -32,6 +32,36 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
   `nav.category.sameDayDelivery` are rendered by the site header on every page a listing will live
   on, and spec 008 AC-9 forbids the first outright. **Done:** renamed, not gated.
 
+- **From `/review 77` round 1 (2026-09-18) — required 1:** rebase onto `origin/main` (6 commits
+  ahead; TASK-092 landed the all-destinations hub). Eight `darwin` baselines are regenerated on
+  **both** sides — `footer-{de,en}-mobile`, `home-{de,en,en-gb,pl}-mobile`,
+  `home-{desktop,mobile}-destinations` — so a squash-merge of this branch reverts TASK-092's
+  drawings and leaves `test:visual` red on `main`. Rebase, regenerate those eight, rerun
+  `test:visual`.
+- **From `/review 77` round 1 (2026-09-18) — required 2:** after the rebase, add TASK-092's
+  all-destinations hub (`/[locale]/[destinations]`, four locales) to `PAGES` in
+  `tests/e2e/chrome-honesty.spec.ts`. The file's own claim — "every page type that exists in
+  Phase 0 is covered" — is false without it, and TASK-095's whole-document AC-19 scan inherits
+  this list.
+- **From `/review 77` round 1 (2026-09-18) — required 3:** design source of truth. Forty artboards
+  under `docs/design/wireframes/` still draw the superseded chrome band — "Best sellers",
+  "Same-day", "Delivery times and cutoffs", "Order by 14:00 Warsaw time for same-day delivery" —
+  and `CLAUDE.md` binds implementers to match them pixel-for-pixel, so the next chrome task
+  reintroduces exactly what this one removed. Redraw the band, or record one dated TASK-120 note
+  (e.g. in `docs/design/wireframes/canvas.json` or the design README) naming the four superseded
+  strings and the owning spec. Implementer's choice; the note is enough.
+- **From `/review 77` round 1 (2026-09-18) — nit, carried:** `FORBIDDEN_DELIVERY_PROMISE_TEXT`'s
+  `order-by cutoff promise` pattern requires a digit or an ICU placeholder directly after
+  "order by", so the *rendered* form of `home.dates.orderBy` — "Order by Fri, 30 Oct, 14:00 CET" —
+  escapes it (proved by flipping `anyDeliveryDatesOpen()` to true: `OccasionDates` still passes
+  the sweep). The targeted case in `tests/unit/ui-home-sections.test.tsx` nets it, so nothing
+  ships wrong; widen the pattern when spec 008 next touches it. Same class: bare `heute` /
+  `dzisiaj` without `noch` / `jeszcze`.
+- **From `/review 77` round 1 (2026-09-18) — nit, carried:** `unreviewedShare("en")` is now
+  **3.75 %** against the 5 % `isLocaleIndexable` gate (`plan/03` §6.4). The
+  `AWAITING_FOUNDER_REVIEW` queue doubling took it there; roughly five more unreviewed keys would
+  make `/en` and `/en-gb` `noindex`. Priority-1 risk to watch, not this PR's defect.
+
 ## Escalations
 
 - **2026-09-18 — the honest fallback wording is the implementer's, not the founder's.** Spec 004
