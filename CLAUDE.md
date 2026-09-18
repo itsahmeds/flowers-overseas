@@ -62,7 +62,16 @@ Agents never write code except the implementers. The orchestrator refuses to dis
 ## Definition of done (every task)
 1. Spec's acceptance criteria satisfied and referenced in the PR description.
 2. Tests the spec demands are written and green (unit / integration / e2e / contract / visual as applicable).
-3. CI green: lint, typecheck, tests, build, Lighthouse budgets, hreflang/sitemap/schema validators, dependency audit.
+   **Where they run (2026-09-18): implementers run the cheap gates locally — `typecheck`, `lint`,
+   `i18n:check`, `check:no-db`, `codebase:map --check`, and the unit/contract files their diff
+   touches. The expensive ones — `build`, `e2e`, `a11y`, `visual`, `lighthouse` — belong to CI,
+   which runs them free on dedicated runners.** An implementer takes the machine's single build slot
+   only when the change cannot be judged without it (a new page's visual baselines, a byte budget, a
+   deliberate performance measurement) and says so in `## Result`. Measured basis: a median
+   implementer run is 30 minutes and the tail reached 346; every agent was re-running ~950 browser
+   tests that CI runs again anyway, and eight agents queuing for one build slot held the 15-minute
+   load average at 32 on an 8-core machine — under which Lighthouse measures the machine, not the site.
+3. CI green: lint, typecheck, tests, build, Lighthouse budgets, hreflang/sitemap/schema validators, dependency audit. **CI is the gate of record for anything timing-sensitive**; a local performance number is reported with the machine's load average beside it or it is not evidence.
 4. `/review` pass recorded in the PR.
 5. Docs updated: README/runbooks/ADR as applicable; `.env.example` current; RoPA updated if a data flow changed.
 6. Deployed to preview and smoke-tested (checkout path in two locales where relevant).
