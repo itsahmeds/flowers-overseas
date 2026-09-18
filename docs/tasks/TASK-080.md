@@ -72,6 +72,13 @@ reason `budget:client-js` exists); LCP is 2.34 s on the image-free `/` against a
 contribution on `/en` is 468 ms (162 ms load delay + 306 ms load time) of a 3.18 s total. The gate
 is a preview-URL measurement and is read there.
 
+**Left alone deliberately:** `tests/visual/country-shop.spec.ts`'s baselines (TASK-109, landed on
+main mid-branch) are stale because the shop root's cards now render photographs. They belong to that
+task and this brief forbids touching the shop route files, so they are flagged in the PR rather than
+regenerated under an in-review PR. The one shop assertion changed here is
+`tests/unit/catalog-shop-page.test.tsx`'s LCP case, which counted zero eager images because none
+could render.
+
 **Carry-forwards closed:** the style guide's "your florist" (and `design-docs.test.ts` now checks
 `content/imagery/` for the pronoun); the AVIF-only `seed:check` rule; the alt-gate decision. New:
 `docs/runbooks/imagery.md` (the loop, the ladder, the review record, the C2PA verification path),
