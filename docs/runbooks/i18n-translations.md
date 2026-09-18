@@ -141,10 +141,12 @@ tree-shakes a JSON import only below a size threshold, so each copy edit moved t
 kilobytes. Both are gone and the rule that replaced them is simple:
 
 - `useTranslations`/`getTranslations` are **server-only**. A Server Component resolves the copy and
-  hands a client island plain strings as props — `suggestionCopy()` for the suggestion banner,
+  hands a client island plain strings as props — `suggestionCopy()` for the locale suggestion dialog,
   `consentView()` for the consent sheet, a pre-formatted array for the finder's live region.
 - An ICU message with an argument is formatted **on the server**, once per possible value if the
-  value is decided in the browser (the banner resolves `banner.headline` for each launch locale;
+  value is decided in the browser (the suggestion dialog resolves `suggestion.headline` and
+  `suggestion.headlineInCountry` **in each launch locale's own catalogue**, because §14 A14 asks
+  for the offer to be written in the language it offers;
   the finder resolves `finder.destinations.matches` per match count).
 - The two 500 boundaries are Client Components that no server can hand props to, so their four
   strings live in `src/modules/i18n/error-copy.data.ts` as constants, per launch locale.

@@ -47,11 +47,11 @@
     "homeLink": "Home",
     "floristCount": "{count, plural, one {# florist} other {# florists}}"
   },
-  "banner": {
-    "headline": "Would you rather read this page in {language}?",
-    "switch": "Switch to {language}",
-    "stay": "Stay on this page",
-    "dismiss": "Dismiss the language suggestion"
+  "suggestion": {
+    "headline": "Continue in {language}?",
+    "headlineInCountry": "You seem to be in {country}. Continue in {language}?",
+    "continue": "Continue in {language}",
+    "stay": "Stay in {language}"
   },
   "consent": {
     "headline": "Cookies, and what we set them for",
@@ -87,9 +87,6 @@
     "cookies": {
       "locale": {
         "purpose": "Remembers the language you chose, so we do not ask again."
-      },
-      "localeSuggestionDismissed": {
-        "purpose": "Remembers that you closed the language suggestion, for this visit only."
       },
       "consent": {
         "purpose": "Remembers these cookie choices and when you made them: 12 months if you accept anything, 6 months if you refuse everything."

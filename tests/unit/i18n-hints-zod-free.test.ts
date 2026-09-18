@@ -2,9 +2,9 @@
  * AC-25's precondition, the half `/review 26` found missing (TASK-046).
  *
  * TASK-046 took zod off `src/app/global-error.tsx` and reported the whole client bundle 72.5 KB
- * Brotli lighter. It was not: `src/modules/i18n/ui/LocaleSuggestionBannerIsland.tsx` imported
+ * Brotli lighter. It was not: `src/modules/i18n/ui/LocaleSuggestionDialogIsland.tsx` imported
  * `../hints.ts`, which imported `./schemas.ts`, which imports zod — and the island is rendered on
- * every locale document by `LocaleSuggestionBannerLoader.tsx` through
+ * every locale document by `LocaleSuggestionDialogLoader.tsx` through
  * `next/dynamic({ ssr: false })`, so the browser fetched a zod copy right after hydration whether
  * or not a banner appeared. The measurement script did not see it either (it read only the
  * document's `<script src>` list), so nothing in the suite could fail.
@@ -50,8 +50,8 @@ const repoRoot = resolve(__dirname, "../..");
  * root error boundary (attached by Next to *every* document).
  */
 const CLIENT_ENTRY_POINTS = [
-  "src/modules/i18n/ui/LocaleSuggestionBannerIsland.tsx",
-  "src/modules/i18n/ui/LocaleSuggestionBannerLoader.tsx",
+  "src/modules/i18n/ui/LocaleSuggestionDialogIsland.tsx",
+  "src/modules/i18n/ui/LocaleSuggestionDialogLoader.tsx",
   "src/app/global-error.tsx",
 ] as const;
 

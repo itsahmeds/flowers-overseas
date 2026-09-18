@@ -30,6 +30,8 @@ import { createHash } from "node:crypto";
 
 import { expect, test } from "@playwright/test";
 
+import { recordLocaleChoice } from "../support/locale-choice.ts";
+
 /** The sticky part: masthead + category row, and the `banner` landmark. */
 const HEADER = "[data-fo-header]";
 
@@ -261,7 +263,14 @@ test.describe("the site header (AC-7)", () => {
     });
   }
 
-  test("the wordmark lockup navigates to the locale home", async ({ page }) => {
+  test("the wordmark lockup navigates to the locale home", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    // A returning German visitor, so §14 A14's modal suggestion is silent and this test is about
+    // the lockup rather than about whichever island mounted first (TASK-119).
+    await recordLocaleChoice(context, "de", baseURL);
     await page.goto("/de");
     await page.locator(`${HEADER} a[href="/de"]`).first().click();
 

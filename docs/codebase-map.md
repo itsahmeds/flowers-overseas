@@ -17,13 +17,13 @@ task actually touches.
 | `catalog` | The only import path into the catalogue and pricing module (spec 005 §2, §5.2;… | spec 005 | `contract/catalog-static-providers.test.ts`, `contract/support/catalog-provider-contract.ts`, `unit/catalog-availability.test.ts` +23 |
 | `customers` | Public barrel for `customers` (customers, recipients, consent) | spec 019 | — |
 | `geo` | The only import path into the geo module (spec 007 §5.2; TASK-087) | spec 007, 002, 009 | `unit/catalog-listing.test.ts`, `unit/catalog-routes.test.ts`, `unit/corridor-check.test.ts` +9 |
-| `i18n` | The only import path for the i18n module (spec 003 §5.2, AC-3; TASK-034) | spec 003 | `fixtures/ts/format-time-in-zone-no-zone.ts`, `unit/app-shell.test.tsx`, `unit/catalog-messages.test.ts` +42 |
+| `i18n` | The only import path for the i18n module (spec 003 §5.2, AC-3; TASK-034) | spec 003 | `fixtures/ts/format-time-in-zone-no-zone.ts`, `unit/app-shell.test.tsx`, `unit/catalog-messages.test.ts` +43 |
 | `notifications` | Public barrel for `notifications` (email + WhatsApp senders, templates, outbox… | spec 017 | — |
 | `orders` | Public barrel for `orders` (state machine, order service, assignment/routing… | spec 015, 016 | — |
 | `partners` | Public barrel for `partners` (fulfilment partners, coverage, payouts) | spec 011, 026 | — |
 | `payments` | Public barrel for `payments` (PaymentProvider interface; stripe/, mollie/… | spec 013, 014 | — |
 | `seo` | Indexability rule engine, canonical builder, robots policy, page metadata (spec… | spec 007 | `unit/catalog-listing.test.ts`, `unit/corridor-route.test.ts`, `unit/seo-canonical.test.ts` +5 |
-| `ui` | The only import path for the design system (spec 004 §2 "Where the design… | spec 004 | `unit/chrome-honesty.test.tsx`, `unit/consent-cookie.test.ts`, `unit/consent-islands.test.tsx` +22 |
+| `ui` | The only import path for the design system (spec 004 §2 "Where the design… | spec 004 | `unit/chrome-honesty.test.tsx`, `unit/consent-cookie.test.ts`, `unit/consent-islands.test.tsx` +21 |
 
 ## Config (`src/config/`)
 
@@ -44,6 +44,8 @@ task actually touches.
 | `company.ts` | Company identity (spec 004 §2 "Everything data-gated is config", §5.1, §5.3… | spec 004 |
 | `cookies.ts` | The cookie register (spec 004 §2 "Consent", §5.1, §8, AC-22; TASK-050) | spec 004 |
 | `countries.ts` | Destination-country registry (spec 004 §2 "Everything data-gated is config",… | spec 004 |
+| `country-locale.data.ts` | Country → locale suggestion table, as plain typed constants (spec 003 §14 A14;… | spec 003 |
+| `country-locale.ts` | The parsed half of the country → locale suggestion table (spec 003 §14 A14;… | spec 003 |
 | `currencies.ts` | Currency configuration (spec 003 §2, §5.1/§5.2; TASK-033) | spec 003 |
 | `locales.data.ts` | Locale data as plain typed constants — the zod-free half of the locale registry… | spec 004 |
 | `locales.ts` | Locale registry (spec 003 §2 "the no-database seam", §5.2, §5.3, §6; TASK-033) | spec 003 |
@@ -73,6 +75,7 @@ task actually touches.
 | `[locale]/page.tsx` | `/{locale}` placeholder home (spec 003 §5.3, §5.4; TASK-034, extended by… | spec 003 |
 | `api/consent/route.ts` | `POST /api/consent` (spec 004 §5.2, AC-19; TASK-050) | spec 004 |
 | `api/csp-report/route.ts` | `POST /api/csp-report` (spec 004 §5.2, AC-23, ADR-0016; TASK-046) | spec 004 |
+| `api/geo/route.ts` | `GET /api/geo` — the country hint, and nothing else (spec 003 §14 A14; TASK-119) | spec 003 |
 | `api/health/route.ts` | `GET /api/health` (spec 001 §5.2, §5.4, AC-14, TASK-006) | spec 001 |
 | `api/reminders/route.ts` | `POST /api/reminders` — the occasion-reminder signup stub (spec 004 design… | spec 004 |
 | `global-error.tsx` | The last-resort 500 document (spec 003 §5.3 "and `src/app/global-error.tsx`… | spec 003 |
@@ -124,7 +127,7 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 185 |
+| `tests/unit/` | 188 |
 | `tests/integration/` | 5 |
 | `tests/contract/` | 4 |
 | `tests/e2e/` | 25 |

@@ -6,7 +6,7 @@ import { ga4MeasurementId } from "@/lib/env.schema";
 import { setLocaleTag } from "@/lib/sentry";
 import { AnalyticsScripts } from "@/modules/analytics";
 import {
-  LocaleSuggestionBanner,
+  LocaleSuggestionDialog,
   documentFallbackLocale,
   routableLocale,
   routableLocaleCodes,
@@ -163,13 +163,16 @@ export default async function LocaleLayout({
             the chooser stays at zero application JavaScript (spec 003 AC-7). */}
         <ConsentBanner />
         {/* Last in the document and out of flow: the language suggestion of ADR-0006 in its
-            positive form. `LocaleSuggestionBanner` is a Server Component that projects the
-            locale registry *and the resolved copy*, and hands both to a client loader, which
-            imports the island itself after hydration (`ssr: false`) — so this document's HTML is
-            identical for every visitor, carries no `Vary` and sets no cookie (spec 003 §5.4,
-            AC-12, AC-28), and the banner is reached by continuing to tab rather than by stealing
-            focus (§8). */}
-        <LocaleSuggestionBanner locale={locale.code} />
+            positive form, as the founder's 2026-09-16 ruling reshaped it (spec 003 §14 A14,
+            TASK-119). `LocaleSuggestionDialog` is a Server Component that projects the locale
+            registry *and the copy, resolved in the language it will offer*, and hands both to a
+            client loader, which imports the island itself after hydration (`ssr: false`) — so
+            this document's HTML is identical for every visitor, carries no `Vary` and sets no
+            cookie (spec 003 §5.4, AC-12, AC-28). The popup is a native `<dialog>`: it is shown
+            **before** the consent sheet, which waits for it (`ui/localeGate.ts`), and nothing it
+            does can redirect — the only way to another locale is the visitor pressing a real
+            link. */}
+        <LocaleSuggestionDialog locale={locale.code} />
       </body>
     </html>
   );

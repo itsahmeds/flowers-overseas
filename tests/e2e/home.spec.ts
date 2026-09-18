@@ -27,6 +27,8 @@
  */
 import { expect, test } from "@playwright/test";
 
+import { recordLocaleChoice } from "../support/locale-choice.ts";
+
 const LOCALES = ["/en", "/en-gb", "/de", "/pl"] as const;
 
 const HERO = "[data-fo-hero]";
@@ -237,7 +239,13 @@ test.describe("the locale home, above the fold", () => {
 
     test(`${path} opens and closes an FAQ answer with no JavaScript of ours`, async ({
       page,
+      context,
+      baseURL,
     }) => {
+      // A returning visitor: the modal locale suggestion of §14 A14 would otherwise open over a
+      // non-English page for this `en-US` runner and make the summary below unclickable
+      // (TASK-119). The suggestion has its own coverage in `tests/e2e/banner.spec.ts`.
+      await recordLocaleChoice(context, path.slice(1), baseURL);
       await page.goto(path);
 
       const entries = page.locator(`${FAQ} details`);
@@ -377,9 +385,33 @@ test.describe("the type-ahead enhancement (design round 7)", () => {
 
   test("picks a match by mouse, closes the list and uncovers the town field", async ({
     page,
+    context,
+    baseURL,
   }) => {
     // 390 px is where `/review 40` measured the un-dismissed list over the town label and the top
     // 12 px of its input.
+    //
+    // The claim is about the **type-ahead list**, so the other bottom-anchored overlay is taken
+    // out of the race rather than left to arrive somewhere in the middle of it: at 390×844 the
+    // town field sits at y≈784 and the consent sheet covers the bottom of the viewport, so
+    // whether this hit test sees the input or a sheet control depended on how long the island's
+    // chunk took (TASK-119 measured both outcomes on the same build). A recorded decision is what
+    // a returning visitor has; the sheet's own coverage is `tests/e2e/consent.spec.ts`.
+    await context.addCookies([
+      {
+        name: "fo_consent",
+        value: encodeURIComponent(
+          JSON.stringify({
+            v: 1,
+            a: false,
+            m: false,
+            ts: new Date().toISOString(),
+            cid: "6f1e6e6a-1d3a-4b5e-9c2f-8f0a1b2c3d4e",
+          }),
+        ),
+        url: baseURL ?? "http://localhost:3000",
+      },
+    ]);
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/en");
     await page.locator("#finder-country").fill("pol");

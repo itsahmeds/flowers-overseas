@@ -119,6 +119,9 @@
   --color-brand: var(--color-accent);
   --color-on-brand: var(--color-accent-ink);
   --color-on-accent: var(--color-accent-ink);
+  /* The dim behind the one modal surface (the locale suggestion dialog, spec 003 §14 A14). Not a
+     `--color-*` name: it is a translucent overlay, not a paint a contrast pair can name. */
+  --scrim-modal: color-mix(in oklab, var(--color-ink) 40%, transparent);
   --color-border: var(--color-rule);
   --color-border-strong: var(--color-ink-3);
   --color-border-emphasis: var(--color-ink);
@@ -346,6 +349,26 @@
 }
 
 /* The named z-scale as utilities, so no component writes a raw `z-index`. */
+/*
+ * The dim behind a modal `<dialog>`, painted by the browser's own `::backdrop` in the top layer
+ * (spec 003 §14 A14, TASK-119 — the locale suggestion popup is its one consumer, and the only
+ * modal surface the site has).
+ *
+ * A hand-written rule over a `--scrim-modal` token rather than a `--color-scrim` one or a
+ * `bg-ink/40` utility, for two reasons that are both about gates this repository already has: a
+ * translucent overlay cannot be a row in the contrast manifest (`tests/unit/contrast.test.ts`
+ * pairs a foreground with a background and a scrim is neither), and every `color-mix` Tailwind
+ * itself emits — from an opacity modifier or from inside `@utility` — carries the ink token's
+ * literal `oklch()` as an `srgb` fallback, which AC-1's "every colour literal lives in a custom
+ * property" forbids (`tests/unit/tokens.test.ts`). Declared as a custom property and consumed by
+ * `var()`, it is the same shape the shadow scale already has, so a palette swap still moves it.
+ */
+@layer components {
+  .scrim-backdrop::backdrop {
+    background-color: var(--scrim-modal);
+  }
+}
+
 @utility layer-header {
   z-index: var(--layer-header);
 }

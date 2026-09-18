@@ -42,6 +42,7 @@
  */
 import { z } from "zod";
 
+import { COUNTRY_CODE_PATTERN } from "../../config/country-locale.data.ts";
 import {
   CURRENCY_CODES,
   type CurrencyCode,
@@ -122,6 +123,7 @@ const numberFormats = new Map<string, Intl.NumberFormat>();
 const dateTimeFormats = new Map<string, Intl.DateTimeFormat>();
 const listFormats = new Map<string, Intl.ListFormat>();
 const relativeTimeFormats = new Map<string, Intl.RelativeTimeFormat>();
+const displayNames = new Map<string, Intl.DisplayNames>();
 
 function cacheKey(tag: string, options: object): string {
   return `${tag}|${JSON.stringify(options)}`;
@@ -172,6 +174,18 @@ function relativeTimeFormat(
   if (cached !== undefined) return cached;
   const created = new Intl.RelativeTimeFormat(tag, options);
   relativeTimeFormats.set(key, created);
+  return created;
+}
+
+function displayName(
+  tag: string,
+  options: Intl.DisplayNamesOptions,
+): Intl.DisplayNames {
+  const key = cacheKey(tag, options);
+  const cached = displayNames.get(key);
+  if (cached !== undefined) return cached;
+  const created = new Intl.DisplayNames([tag], options);
+  displayNames.set(key, created);
   return created;
 }
 
@@ -480,4 +494,39 @@ export function formatRange(
     ...DATE_STYLE_OPTIONS[style],
     timeZone: zone,
   }).formatRange(from, until);
+}
+
+/**
+ * A country's name in one locale's own language — "Deutschland" in `de`, "Niemcy" in `pl`
+ * (spec 003 §14 A14; TASK-119).
+ *
+ * The locale suggestion dialog says "You seem to be in {country}" **in the language it is
+ * offering**, so the country name has to be an exonym in the target locale, and CLDR already has
+ * every one of them. That is why this is a formatter and not a message key: seven countries times
+ * four locales of hand-authored exonyms is twenty-eight strings to translate, review and keep in
+ * step with `src/config/country-locale.data.ts`, and `Intl.DisplayNames` answers all of them from
+ * the same ICU data the rest of this file formats with. `src/config/countries.ts` keeps its
+ * `nameKey` message keys for the **destination** names a buyer shops by; those are marketing copy
+ * on an indexable page, this is a one-line courtesy in a dialog.
+ *
+ * Falls back to the code itself when CLDR has no name for it, which is what `Intl.DisplayNames`
+ * does with `fallback: "code"` — a dialog reading "You seem to be in ZZ" is a better failure than
+ * a thrown formatter inside a Server Component.
+ */
+export function formatCountryName(
+  countryIso: string,
+  locale: LocaleCode,
+): string {
+  const code = z
+    .string()
+    .regex(
+      COUNTRY_CODE_PATTERN,
+      "a country is two uppercase ASCII letters (ISO 3166-1 alpha-2)",
+    )
+    .parse(countryIso);
+  return (
+    displayName(tagFor(locale), { type: "region", fallback: "code" }).of(
+      code,
+    ) ?? code
+  );
 }

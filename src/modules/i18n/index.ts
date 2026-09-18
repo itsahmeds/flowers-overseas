@@ -54,9 +54,11 @@
  * `parseAcceptLanguage` and `preferredLocale` are pure functions over a string and a plain locale
  * list — the second argument is structural (`LocaleConfig[]` satisfies it), which is what lets the
  * client island decide from props instead of importing the registry into the browser.
- * `LocaleSuggestionBanner` is a Server Component like `LocaleSwitcher`, and it is the *only* entry
+ * `LocaleSuggestionDialog` is a Server Component like `LocaleSwitcher`, and it is the *only* entry
  * to the island: the `next/dynamic` boundary and the `"use client"` files stay inside the module,
- * so `app/` renders one element and nothing under `src/app/` knows how the banner is code-split.
+ * so `app/` renders one element and nothing under `src/app/` knows how the dialog is code-split.
+ * `countryFromHeaders` is the one header read ADR-0006 allows, exported for the single caller
+ * `GET /api/geo` (spec 003 §14 A14; TASK-119): the route names no header, this module does.
  * `LocaleCookieSchema` joins the pinned schemas for the `MoneySchema` reason — `fo_locale` is read
  * back from `document.cookie`, and spec 004's currency UI and spec 007's alternates will both want
  * "is this a locale code the application offers?" without hand-writing the enum again. The
@@ -123,13 +125,14 @@ export {
 } from "./ui/LocaleSwitcher.tsx";
 
 export {
-  LocaleSuggestionBanner,
-  type LocaleSuggestionBannerProps,
-} from "./ui/LocaleSuggestionBanner.tsx";
+  LocaleSuggestionDialog,
+  type LocaleSuggestionDialogProps,
+} from "./ui/LocaleSuggestionDialog.tsx";
 
 export {
   type LanguagePreference,
   type LocaleHint,
+  countryFromHeaders,
   parseAcceptLanguage,
   preferredLocale,
 } from "./hints.ts";
@@ -146,6 +149,7 @@ export {
   MoneySchema,
   type ZoneNameStyle,
   formatDate,
+  formatCountryName,
   formatList,
   formatMoney,
   formatNumber,

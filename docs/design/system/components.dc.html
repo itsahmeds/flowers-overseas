@@ -365,6 +365,74 @@
       </div></div>
     </div>
 
+    <div class="grp">
+      <div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">Locale suggestion dialog (spec 003 §14 A14)</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">One popup, two widths, two states</h2></div>
+      <p style="margin: 0; max-width: 68ch; font-size: var(--text-sm); line-height: 1.6; color: var(--color-ink-2);">A native <code>&lt;dialog&gt;</code> opened with <code>showModal()</code> after hydration — never a redirect, never a second document. The offer is written in the language it offers; the way out is written in the language of the page behind it. Two actions only: <b>Continue</b> is a real link to the same page in the other locale, <b>Stay</b> records this one. <kbd>Esc</kbd> is <b>Stay</b>. Whichever is pressed, <code>fo_locale</code> is written and the question is never asked again.</p>
+
+      <div class="cellrow"><span class="n">desktop · 1440</span><div class="cells" style="flex-direction: column; align-items: stretch; gap: var(--space-md);">
+        <div class="cell" style="align-items: stretch;">
+          <div style="position: relative; height: 320px; border: var(--rule); border-radius: var(--radius-sm); background: var(--color-paper); overflow: hidden;">
+            <div style="padding: var(--space-lg) var(--space-xl); display: flex; flex-direction: column; gap: var(--space-sm);"><span class="display" style="font-size: var(--text-2xl);">Flowers for someone far away.</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">The page the visitor asked for, still at its own URL.</span></div>
+            <div style="position: absolute; inset: 0; background: color-mix(in oklab, var(--color-ink) 40%, transparent); display: flex; align-items: center; justify-content: center;">
+              <div style="inline-size: 448px; background: var(--color-paper); border: 1px solid var(--color-ink-3); border-radius: var(--radius-sm); box-shadow: 0 8px 24px color-mix(in oklab, var(--color-ink) 12%, transparent); padding: var(--space-md); display: flex; flex-direction: column; gap: var(--space-md);">
+                <span style="font-size: var(--text-md); line-height: 1.5;" lang="de">Continue in Deutsch?</span>
+                <div style="display: flex; gap: var(--space-sm);"><a href="#" class="btn secondary sm" style="flex: 1;" lang="de">Continue in Deutsch</a><span class="btn secondary sm" style="flex: 1;">Stay in English</span></div>
+              </div>
+            </div>
+          </div>
+          <em>state 1 · the hint came from the browser&rsquo;s own language list — no country is named, and nothing was geolocated</em>
+        </div>
+        <div class="cell" style="align-items: stretch;">
+          <div style="position: relative; height: 320px; border: var(--rule); border-radius: var(--radius-sm); background: var(--color-paper); overflow: hidden;">
+            <div style="padding: var(--space-lg) var(--space-xl); display: flex; flex-direction: column; gap: var(--space-sm);"><span class="display" style="font-size: var(--text-2xl);">Flowers for someone far away.</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Focus moves to the first action and returns here when the popup closes.</span></div>
+            <div style="position: absolute; inset: 0; background: color-mix(in oklab, var(--color-ink) 40%, transparent); display: flex; align-items: center; justify-content: center;">
+              <div style="inline-size: 448px; background: var(--color-paper); border: 1px solid var(--color-ink-3); border-radius: var(--radius-sm); box-shadow: 0 8px 24px color-mix(in oklab, var(--color-ink) 12%, transparent); padding: var(--space-md); display: flex; flex-direction: column; gap: var(--space-md);">
+                <span style="font-size: var(--text-md); line-height: 1.5;" lang="de">You seem to be in Deutschland. Continue in Deutsch?</span>
+                <div style="display: flex; gap: var(--space-sm);"><a href="#" class="btn secondary sm" style="flex: 1; outline: 2px solid var(--color-accent); outline-offset: 2px;" lang="de">Continue in Deutsch</a><span class="btn secondary sm" style="flex: 1;">Stay in English</span></div>
+              </div>
+            </div>
+          </div>
+          <em>state 2 · the language list named nothing we ship, so <code>GET /api/geo</code> answered with a country — focus-visible on the first action</em>
+        </div>
+      </div></div>
+
+      <div class="cellrow"><span class="n">mobile · 390</span><div class="cells" style="align-items: flex-start; gap: var(--space-xl);">
+        <div class="cell">
+          <div style="position: relative; inline-size: 390px; block-size: 460px; border: var(--rule); border-radius: var(--radius-sm); background: var(--color-paper); overflow: hidden;">
+            <div style="padding: var(--space-md); display: flex; flex-direction: column; gap: var(--space-sm);"><span class="display" style="font-size: var(--text-xl);">Flowers for someone far away.</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">65&nbsp;% of the viewport stays readable: the sheet is capped at 35&nbsp;%, which is the interstitial rule for a first visit from search.</span></div>
+            <div style="position: absolute; inset: 0; background: color-mix(in oklab, var(--color-ink) 40%, transparent);"></div>
+            <div style="position: absolute; inset-inline: 0; inset-block-end: 0; max-block-size: 161px; background: var(--color-paper); border-block-start: 1px solid var(--color-ink-3); border-start-start-radius: var(--radius-md); border-start-end-radius: var(--radius-md); padding: var(--space-md); display: flex; flex-direction: column; gap: var(--space-md);">
+              <span style="font-size: var(--text-md); line-height: 1.5;" lang="de">Continue in Deutsch?</span>
+              <div style="display: flex; gap: var(--space-sm);"><a href="#" class="btn secondary sm" style="flex: 1;" lang="de">Continue in Deutsch</a><span class="btn secondary sm" style="flex: 1;">Stay in English</span></div>
+            </div>
+          </div>
+          <em>state 1 · language hint · sheet 161&nbsp;px of a 460&nbsp;px viewport (35&nbsp;%)</em>
+        </div>
+        <div class="cell">
+          <div style="position: relative; inline-size: 390px; block-size: 460px; border: var(--rule); border-radius: var(--radius-sm); background: var(--color-paper); overflow: hidden;">
+            <div style="padding: var(--space-md); display: flex; flex-direction: column; gap: var(--space-sm);"><span class="display" style="font-size: var(--text-xl);">Flowers for someone far away.</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Nothing behind the sheet moves: the popup is in the top layer, so the shift it causes is zero.</span></div>
+            <div style="position: absolute; inset: 0; background: color-mix(in oklab, var(--color-ink) 40%, transparent);"></div>
+            <div style="position: absolute; inset-inline: 0; inset-block-end: 0; max-block-size: 161px; background: var(--color-paper); border-block-start: 1px solid var(--color-ink-3); border-start-start-radius: var(--radius-md); border-start-end-radius: var(--radius-md); padding: var(--space-md); display: flex; flex-direction: column; gap: var(--space-md);">
+              <span style="font-size: var(--text-md); line-height: 1.5;" lang="de">You seem to be in Deutschland. Continue in Deutsch?</span>
+              <div style="display: flex; gap: var(--space-sm);"><a href="#" class="btn secondary sm" style="flex: 1;" lang="de">Continue in Deutsch</a><span class="btn secondary sm" style="flex: 1;">Stay in English</span></div>
+            </div>
+          </div>
+          <em>state 2 · country hint · same sheet, one longer line</em>
+        </div>
+      </div></div>
+
+      <div class="cellrow"><span class="n">the rules</span><div class="cells" style="flex-direction: column; align-items: stretch; gap: var(--space-md);">
+        <table class="spec">
+          <tr><th>Rule</th><th>What it means here</th></tr>
+          <tr><td>Two actions</td><td>Continue (a real <code>&lt;a href&gt;</code> to the same page in the other locale) and Stay. No dismiss, no close cross: a third way out would record nothing and ask again.</td></tr>
+          <tr><td>Equal weight</td><td>Both controls wear <code>.btn.secondary.sm</code>. Neither answer is dressed to win.</td></tr>
+          <tr><td>Language of each line</td><td>The offer carries <code>lang</code> for the language it offers; the Stay line has none, because it is already in the language of the page.</td></tr>
+          <tr><td>Keyboard</td><td>Focus moves to Continue on open and returns where it was on close. <kbd>Esc</kbd> records Stay. The trap and the top layer are the browser&rsquo;s, not ours.</td></tr>
+          <tr><td>Never</td><td>No redirect, no second document, no bot branch, no cookie set by a page response, no layout shift. Every locale keeps its own crawlable URL.</td></tr>
+        </table>
+      </div></div>
+    </div>
+
   </div>
 </div>
 </x-dc>

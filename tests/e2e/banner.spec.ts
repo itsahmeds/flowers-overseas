@@ -1,25 +1,29 @@
 /**
- * T-28 / AC-28 and T-12 / AC-12 (TASK-041): the language-suggestion banner matrix and the
- * `fo_locale` cookie, in a real browser.
+ * T-28 / AC-28 and T-12 / AC-12, as spec 003 §14 A14 reshaped them (TASK-041, TASK-119): the
+ * locale suggestion **popup** and the `fo_locale` cookie, in a real browser.
  *
- * This is ADR-0006's positive form under test. Everything here happens *after* the document
- * arrived: the response is the same for every visitor (`GET /` and `GET /en` set no cookie and
- * vary on no negotiation header — asserted below and in `shell.spec.ts`/`locale-routing.spec.ts`),
- * and the offer to switch language is made by a client island reading `navigator.languages` and
- * `document.cookie`. No redirect exists to observe, so the assertions are: the banner appears, the
- * URL did not change, nothing moved on the page, and the cookie the browser stores carries exactly
- * the attributes of spec 003 §2 / §13 Q4.
+ * This is ADR-0006's positive form under test, and the founder's 2026-09-16 ruling inside it.
+ * Everything here happens *after* the document arrived: the response is the same for every
+ * visitor — asserted below with and without `Accept-Language` **and** with and without
+ * `cf-ipcountry` — and the offer to switch language is made by a client island that decides from
+ * `navigator.languages`, `document.cookie` and, only when those say nothing, a country fetched
+ * from `GET /api/geo`. No redirect exists to observe, so the assertions are: the dialog appears,
+ * the URL did not change, nothing moved on the page, one tap goes back, and the cookie the
+ * browser stores carries exactly the attributes of §13 Q4.
  *
- * The decision matrix itself is a unit test (`tests/unit/i18n-hints.test.ts`, 20-odd cases over
- * the pure `decideSuggestion`); what is left here is the five things only a browser can answer:
+ * The decision matrix itself is a unit test (`tests/unit/i18n-hints.test.ts`, 40-odd cases over
+ * the pure `decideSuggestion`); what is left here is what only a browser can answer:
  *
- *  1. it renders after hydration and not before (the HTML has no banner in it);
+ *  1. it renders after hydration and not before (the HTML has no dialog in it);
  *  2. the CLS delta is 0 — measured with a `layout-shift` `PerformanceObserver` *and* by comparing
- *     the `<h1>` box before and after, because a zero from an observer that never fired and a
- *     zero from an overlay that reserves no space are different facts;
- *  3. "Switch" navigates by following a real link, not by scripting `location`;
- *  4. the cookie in the browser jar has `Path=/`, `SameSite=Lax` and a ≥365-day lifetime;
- *  5. `Esc` dismisses it without the banner ever having taken focus.
+ *     the `<h1>` box before and after, because a zero from an observer that never fired and a zero
+ *     from a top-layer dialog are different facts;
+ *  3. "Continue" navigates by following a real link, not by scripting `location`;
+ *  4. `Esc` is "stay" — it records the current locale rather than leaving the question open;
+ *  5. the cookie in the browser jar has `Path=/`, `SameSite=Lax` and a ≥365-day lifetime;
+ *  6. the country pass happens **only** when the languages found nothing, and never on a page the
+ *     visitor's own languages already match;
+ *  7. the consent sheet waits for the dialog and then appears.
  *
  * `navigator.languages` is forced with an init script rather than only by the context `locale`,
  * because `locale` sets `Accept-Language` too — and a test that passed *because* of the header
@@ -29,15 +33,13 @@
 import { type BrowserContext, type Page, expect, test } from "@playwright/test";
 
 const BANNER = '[data-fo-banner="shown"]';
-const SWITCH = '[data-fo-banner-action="switch"]';
+const CONTINUE = '[data-fo-banner-action="continue"]';
 const STAY = '[data-fo-banner-action="stay"]';
-const DISMISS = '[data-fo-banner-action="dismiss"]';
+const CONSENT = "[data-fo-consent]";
 /**
  * Spec 003's `LocaleSwitcher`, which TASK-048 moved out of `<main>`: spec 004's header hosts it on
- * every localised document (`data-fo-header-switcher`), so rendering it on the page as well would
- * put two identical switchers and two identically named `navigation` landmarks in the document.
- * The assertions below are re-scoped, not weakened — same markup, same four `<li>`, same beta
- * markers, one landmark.
+ * every localised document (`data-fo-header-switcher`), so a document-wide selector would match
+ * two switchers (the footer renders one too).
  */
 const SWITCHER = "[data-fo-header-switcher] nav";
 
@@ -62,6 +64,37 @@ async function forceLanguages(
       get: () => values[0],
     });
   }, languages);
+}
+
+/**
+ * Answer `GET /api/geo` with a country, as an edge network in front of the app would.
+ *
+ * The route itself is unit-tested against real headers (`tests/unit/geo-route.test.ts`); a local
+ * `pnpm start` sits behind no edge network, so the only way to exercise the *island's* country
+ * pass in a browser is to fulfil the request the island makes. The shape fulfilled here is the
+ * route's own shape, and the unit test is what keeps the two honest.
+ */
+async function answerGeoWith(
+  page: Page,
+  country: string | null,
+): Promise<void> {
+  await page.route("**/api/geo", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      headers: { "cache-control": "no-store" },
+      body: JSON.stringify({ country }),
+    });
+  });
+}
+
+/** Record every `/api/geo` request the page makes, so "it never asked" is assertable. */
+function recordGeoRequests(page: Page): string[] {
+  const asked: string[] = [];
+  page.on("request", (request) => {
+    if (request.url().includes("/api/geo")) asked.push(request.url());
+  });
+  return asked;
 }
 
 /** Collect unbuffered layout shifts from the first paint onwards. */
@@ -119,20 +152,13 @@ function isSecureOrigin(baseURL: string | undefined): boolean {
 }
 
 /**
- * Answer the consent question before the suggestion banner is exercised (TASK-051).
+ * Answer the consent question before the suggestion is exercised (TASK-051).
  *
- * Both overlays are anchored to the bottom of the viewport and the consent sheet paints above the
- * language suggestion, by design: `--layer-overlay` over `--layer-banner` (AC-13), and the
- * sequence `docs/design/flows/consent-and-locale.dc.html` draws is "consent sheet first, then the
- * locale suggestion — because switching language must not throw away a consent choice". A visitor
- * therefore answers consent and *then* meets the suggestion, which is the state these tests are
- * about; with the sheet still open, a click on `Switch` lands on the sheet instead.
- *
- * So a recorded decision is seeded into the jar, exactly as the island would write it (a refusal —
- * the cheaper answer for a test to make, and the one that grants nothing). Nothing else about
- * these tests changes, and spec 003 AC-28's matrix is asserted unchanged. The final layout
- * coordination of the two overlays — offsetting the suggestion banner clear of the sheet — is
- * TASK-055's, which owns AC-13 and the banner's restyle.
+ * Since TASK-119 the language dialog is shown **first** and the consent sheet waits for it (spec
+ * 003 §14 A14), so a test about the dialog does not need the sheet out of the way — but a test
+ * about the dialog's *actions* does, because after the dialog closes the sheet appears over the
+ * page. Seeding a recorded refusal keeps these tests about one overlay at a time; the sequencing
+ * itself has its own describe block at the end of the file.
  */
 async function recordConsentRefusal(
   context: BrowserContext,
@@ -173,30 +199,63 @@ test.describe("a German browser on /en (AC-28)", () => {
     page,
     request,
   }) => {
-    // The document itself: identical for everyone, so it renders no suggestion.
+    // The document itself: identical for everyone, so it renders no suggestion…
     const html = await (await request.get("/en")).text();
     expect(html).not.toContain('data-fo-banner="shown"');
-    // AC-28's real invariant, asserted directly since TASK-085: the same URL requested with a
-    // German `Accept-Language` and with no header at all is the **same document**. It used to be
-    // asserted as `not.toContain("Deutsch?")`, which stopped being the same claim when the island
-    // took its strings as props (spec 004 §14 A1 addendum): `banner.headline` is now resolved on
-    // the server for **every** launch locale and travels in the RSC payload as data — for every
-    // visitor alike, exactly as the consent sheet's copy always has. What must never appear is a
-    // *rendered* banner, which the assertion above pins, and a response that varies by request,
-    // which this one does.
+
+    // …and identical *is* the claim, so it is asserted as byte equality across both hints the
+    // island may use: the language header and the edge country header (AC-7, AC-9, T-09).
     const neutral = await request.get("/en", {
       headers: { "accept-language": "" },
     });
+    const german = await request.get("/en", {
+      headers: { "accept-language": "de-DE,de;q=0.9", "cf-ipcountry": "DE" },
+    });
     expect(await neutral.text()).toBe(html);
+    expect(await german.text()).toBe(html);
+    for (const response of [neutral, german]) {
+      expect(response.status()).toBe(200);
+      const headers = response.headersArray();
+      const named = (name: string): string[] =>
+        headers
+          .filter((header) => header.name.toLowerCase() === name)
+          .map((header) => header.value.toLowerCase());
+      expect(named("location")).toEqual([]);
+      expect(named("set-cookie")).toEqual([]);
+      for (const vary of named("vary")) {
+        expect(vary).not.toContain("accept-language");
+        expect(vary).not.toContain("ipcountry");
+      }
+    }
 
     const response = await page.goto("/en");
     expect(response?.status()).toBe(200);
 
     await expect(page.locator(BANNER)).toBeVisible();
     await expect(page.locator(BANNER)).toContainText("Deutsch");
-    // No navigation happened: the banner offers, it does not act (ADR-0006).
+    // No navigation happened: the dialog offers, it does not act (ADR-0006).
     await expect(page).toHaveURL(/\/en$/);
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  });
+
+  test("is a modal dialog: focus moves to the offer and `Esc` is a real answer", async ({
+    page,
+  }) => {
+    await page.goto("/en");
+    await expect(page.locator(BANNER)).toBeVisible();
+
+    // A native `<dialog>` opened with `showModal()`, so the browser owns the trap and the layer.
+    expect(
+      await page.evaluate(() =>
+        document.querySelector<HTMLDialogElement>("dialog")?.matches(":modal"),
+      ),
+    ).toBe(true);
+    // Focus is on the primary action (§14 A14), not left on the body behind the dim.
+    expect(
+      await page.evaluate(() =>
+        document.activeElement?.getAttribute("data-fo-banner-action"),
+      ),
+    ).toBe("continue");
   });
 
   test("shifts no layout when it appears (CLS delta 0)", async ({ page }) => {
@@ -215,47 +274,16 @@ test.describe("a German browser on /en (AC-28)", () => {
     expect(await cumulativeLayoutShift(page)).toBe(0);
   });
 
-  test("is keyboard reachable and takes no focus of its own", async ({
-    page,
-  }) => {
-    await page.goto("/en");
-    await expect(page.locator(BANNER)).toBeVisible();
-
-    // Nothing was focused by the banner appearing (§8: it steals no focus).
-    expect(await page.evaluate(() => document.activeElement?.tagName)).toBe(
-      "BODY",
-    );
-
-    // It is reachable by tabbing: the skip link, the switcher links, then the banner's controls.
-    const reached = await page.evaluate(async () => {
-      const focusable = Array.from(
-        document.querySelectorAll<HTMLElement>("a[href], button"),
-      );
-      const control = document.querySelector<HTMLElement>(
-        '[data-fo-banner-action="switch"]',
-      );
-      return control !== null && focusable.includes(control);
-    });
-    expect(reached).toBe(true);
-
-    await page.locator(SWITCH).focus();
-    expect(
-      await page.evaluate(() =>
-        document.activeElement?.getAttribute("data-fo-banner-action"),
-      ),
-    ).toBe("switch");
-  });
-
-  test("`Switch` follows a real link to /de and stores the choice", async ({
+  test("`Continue` follows a real link to /de and stores the choice", async ({
     page,
     context,
     baseURL,
   }) => {
     await page.goto("/en");
     await expect(page.locator(BANNER)).toBeVisible();
-    await expect(page.locator(SWITCH)).toHaveAttribute("href", "/de");
+    await expect(page.locator(CONTINUE)).toHaveAttribute("href", "/de");
 
-    await page.locator(SWITCH).click();
+    await page.locator(CONTINUE).click();
 
     await expect(page).toHaveURL(/\/de$/);
     await expect(page.locator("html")).toHaveAttribute("lang", "de");
@@ -263,7 +291,7 @@ test.describe("a German browser on /en (AC-28)", () => {
       value: "de",
       secure: isSecureOrigin(baseURL),
     });
-    // The choice is honoured, so the banner is gone on the German page too.
+    // The choice is honoured, so nothing is offered on the German page either.
     await expect(page.locator(BANNER)).toHaveCount(0);
   });
 
@@ -272,7 +300,7 @@ test.describe("a German browser on /en (AC-28)", () => {
     context,
   }) => {
     await page.goto("/en");
-    await page.locator(SWITCH).click();
+    await page.locator(CONTINUE).click();
     await expect(page).toHaveURL(/\/de$/);
 
     const response = await page.goto("/en");
@@ -281,7 +309,7 @@ test.describe("a German browser on /en (AC-28)", () => {
     expect(response?.request().redirectedFrom()).toBeNull();
     await expect(page).toHaveURL(/\/en$/);
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
-    // Given the island a chance to mount and decide, then assert it decided against showing.
+    // Give the island a chance to mount and decide, then assert it decided against showing.
     await expect(page.locator("h1")).toBeVisible();
     await expect(page.locator(BANNER)).toHaveCount(0);
     await expectLocaleCookie(context, {
@@ -290,16 +318,18 @@ test.describe("a German browser on /en (AC-28)", () => {
     });
   });
 
-  test("`Stay` writes the current locale and the banner never comes back", async ({
+  test("`Stay` is one tap back to English, and the popup never comes back", async ({
     page,
     context,
     baseURL,
   }) => {
     await page.goto("/en");
+    await expect(page.locator(STAY)).toHaveText("Stay in English");
     await page.locator(STAY).click();
 
     await expect(page.locator(BANNER)).toHaveCount(0);
     await expect(page).toHaveURL(/\/en$/);
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
     await expectLocaleCookie(context, {
       value: "en",
       secure: isSecureOrigin(baseURL),
@@ -314,44 +344,35 @@ test.describe("a German browser on /en (AC-28)", () => {
     await expect(page.locator(BANNER)).toHaveCount(0);
   });
 
-  test("`Esc` dismisses it without moving focus", async ({ page, context }) => {
+  test("`Esc` records `stay` rather than leaving the question open (§14 A14)", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
     await page.goto("/en");
     await expect(page.locator(BANNER)).toBeVisible();
 
-    const activeBefore = await page.evaluate(
-      () => document.activeElement?.tagName,
-    );
     await page.keyboard.press("Escape");
 
     await expect(page.locator(BANNER)).toHaveCount(0);
-    expect(await page.evaluate(() => document.activeElement?.tagName)).toBe(
-      activeBefore,
-    );
-    // A dismissal is not a language choice: it writes no cookie (§8 — the cookie is set only on
-    // an explicit choice). It is remembered for the tab only.
-    expect(await context.cookies()).toEqual(
-      expect.not.arrayContaining([
-        expect.objectContaining({ name: "fo_locale" }),
-      ]),
-    );
+    await expect(page).toHaveURL(/\/en$/);
+    await expectLocaleCookie(context, {
+      value: "en",
+      secure: isSecureOrigin(baseURL),
+    });
 
+    // The question was answered, so a reload asks nothing — the two-action contract.
     await page.reload();
     await expect(page.locator("h1")).toBeVisible();
     await expect(page.locator(BANNER)).toHaveCount(0);
   });
 
-  test("the dismiss button does the same as `Esc`", async ({ page }) => {
-    await page.goto("/en");
-    await page.locator(DISMISS).click();
-
-    await expect(page.locator(BANNER)).toHaveCount(0);
-  });
-
-  test("with `fo_locale` already set it never renders", async ({
+  test("with `fo_locale` already set it never renders, and never asks for a country", async ({
     page,
     context,
     baseURL,
   }) => {
+    const asked = recordGeoRequests(page);
     const url = new URL(baseURL ?? "http://localhost:3000");
     await context.addCookies([
       { name: "fo_locale", value: "en", domain: url.hostname, path: "/" },
@@ -361,27 +382,18 @@ test.describe("a German browser on /en (AC-28)", () => {
 
     await expect(page.locator("h1")).toBeVisible();
     await expect(page.locator(BANNER)).toHaveCount(0);
+    expect(asked).toEqual([]);
   });
 
   /**
-   * **Scoped to `main` since TASK-049.** The colophon renders spec 003's `LocaleSwitcher` a second
-   * time (the footer's language list), so a document-wide `nav ul li` now matches two switchers and
-   * a document-wide `nav a[href="/pl"]` is a strict-mode violation. Every selector below that means
-   * *the page's* switcher says so; the footer's copy is covered by `tests/e2e/footer.spec.ts`.
-   *
-   * `/review 23`'s blocker, in the browser it broke. `readLocaleCookie` used to decode the
-   * cookie value, so a `fo_locale` of `%` (or `en%`, or anything else `decodeURIComponent`
-   * rejects) threw `URIError` inside the island's `useState` initialiser — a throw during a
-   * Client Component's first render, which React unwinds past the banner to the root and
-   * replaces the document with the error page. Any script or extension can set that cookie, and
-   * it lives for a year, so every page of the site stayed broken until the visitor cleared it.
-   *
-   * This asserts the page, not the reader: the `<h1>` is the locale home heading and not the
-   * error one, the switcher is there, the response is a 200 — and the malformed value is treated
-   * as no choice at all, so the banner appears exactly as it does for a first-time visitor.
+   * `/review 23`'s blocker, in the browser it broke. `readLocaleCookie` used to decode the cookie
+   * value, so a `fo_locale` of `%` threw `URIError` inside the island's `useState` initialiser — a
+   * throw during a Client Component's first render, which React unwinds past the island to the
+   * root and replaces the document with the error page. Any script or extension can set that
+   * cookie, and it lives for a year.
    */
   for (const value of ["%", "en%", "%zz"] as const) {
-    test(`a malformed \`fo_locale=${value}\` leaves the page intact and shows the banner`, async ({
+    test(`a malformed \`fo_locale=${value}\` leaves the page intact and still offers`, async ({
       page,
       context,
       baseURL,
@@ -395,8 +407,6 @@ test.describe("a German browser on /en (AC-28)", () => {
       expect(response?.status()).toBe(200);
 
       // The page, not the error document: the real heading and the real switcher.
-      // TASK-052 replaced the placeholder heading with the artboards' headline (the `<h1>` is
-      // `home.hero.heading`; `meta.home.heading` is gone with the placeholder).
       await expect(page.locator("h1")).toHaveText(
         "Flowers for someone far away.",
       );
@@ -439,6 +449,104 @@ test.describe("a German browser on /en (AC-28)", () => {
   });
 });
 
+test.describe("the country pass (§14 A14: languages first, country second)", () => {
+  test("is never reached when the visitor's languages already answered", async ({
+    page,
+  }) => {
+    const asked = recordGeoRequests(page);
+    await forceLanguages(page, ["de-DE", "de"]);
+
+    await page.goto("/en");
+    await expect(page.locator(BANNER)).toBeVisible();
+
+    // German was named by the browser, so the island never geolocated anyone.
+    expect(asked).toEqual([]);
+  });
+
+  test("offers the country's locale when the languages name none", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await forceLanguages(page, ["fr-FR", "fr"]);
+    await answerGeoWith(page, "PL");
+
+    await page.goto("/en");
+
+    const dialog = page.locator(BANNER);
+    await expect(dialog).toBeVisible();
+    // The copy is written in the language being offered, and names the country in that language.
+    await expect(dialog).toContainText("Polska");
+    await expect(dialog).toContainText("Polski");
+    await expect(page.locator(CONTINUE)).toHaveAttribute("href", "/pl");
+    await expect(page.locator(CONTINUE)).toHaveAttribute("lang", "pl");
+    // Still no redirect and still the page that was asked for.
+    await expect(page).toHaveURL(/\/en$/);
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
+
+    await page.locator(CONTINUE).click();
+    await expect(page).toHaveURL(/\/pl$/);
+    await expectLocaleCookie(context, {
+      value: "pl",
+      secure: isSecureOrigin(baseURL),
+    });
+  });
+
+  test("offers nothing when the country maps to the locale already on screen", async ({
+    page,
+  }) => {
+    await forceLanguages(page, ["fr-FR", "fr"]);
+    // France is unmapped, so it resolves to the x-default locale — which is this page.
+    await answerGeoWith(page, "FR");
+
+    await page.goto("/en");
+
+    await expect(page.locator("h1")).toBeVisible();
+    await expect(page.locator(BANNER)).toHaveCount(0);
+  });
+
+  test("offers nothing when the edge could not place the visitor", async ({
+    page,
+  }) => {
+    await forceLanguages(page, ["fr-FR", "fr"]);
+    await answerGeoWith(page, null);
+
+    await page.goto("/en");
+
+    await expect(page.locator("h1")).toBeVisible();
+    await expect(page.locator(BANNER)).toHaveCount(0);
+  });
+
+  test("survives a failing `/api/geo` with no dialog and no error", async ({
+    page,
+  }) => {
+    await forceLanguages(page, ["fr-FR", "fr"]);
+    await page.route("**/api/geo", (route) => route.abort());
+
+    const response = await page.goto("/en");
+
+    expect(response?.status()).toBe(200);
+    await expect(page.locator("h1")).toHaveText(
+      "Flowers for someone far away.",
+    );
+    await expect(page.locator(BANNER)).toHaveCount(0);
+  });
+
+  test("`/api/geo` itself is never cached and answers only a country", async ({
+    request,
+  }) => {
+    const response = await request.get("/api/geo", {
+      headers: { "cf-ipcountry": "DE" },
+    });
+
+    expect(response.status()).toBe(200);
+    expect(response.headers()["cache-control"]).toContain("no-store");
+    // Behind a local `pnpm start` there is no edge network, so the forwarded header is what the
+    // route reads; the unit suite covers the header matrix.
+    expect(Object.keys(await response.json())).toEqual(["country"]);
+  });
+});
+
 test.describe("an English browser (AC-28's negative case)", () => {
   test.use({ locale: "en-US" });
 
@@ -446,7 +554,7 @@ test.describe("an English browser (AC-28's negative case)", () => {
     await forceLanguages(page, ["en-US"]);
   });
 
-  test("never sees the banner on /en", async ({ page }) => {
+  test("never sees the popup on /en", async ({ page }) => {
     await page.goto("/en");
 
     await expect(page.locator("h1")).toBeVisible();
@@ -463,27 +571,11 @@ test.describe("an English browser (AC-28's negative case)", () => {
   });
 });
 
-test.describe("a French browser (no better launch locale)", () => {
-  test.beforeEach(async ({ page }) => {
-    await forceLanguages(page, ["fr-FR", "fr"]);
-  });
-
-  test("is offered nothing, because there is no French locale to offer", async ({
-    page,
-  }) => {
-    await page.goto("/en");
-
-    await expect(page.locator("h1")).toBeVisible();
-    await expect(page.locator(BANNER)).toHaveCount(0);
-  });
-});
-
 /**
- * The `sameLocale` branch of §2 in a browser: the hint and the URL agree, so there is nothing to
- * suggest. The unit matrix covers the decision (`decideSuggestion` → `reason: "sameLocale"`);
- * what only a browser shows is that the island *mounts* — the page is `/de`, the German visitor
- * is exactly who the banner is for — and still renders nothing, rather than offering a switch to
- * the page they are already on.
+ * The `sameLocale` branch in a browser: the hint and the URL agree, so there is nothing to
+ * suggest. The unit matrix covers the decision; what only a browser shows is that the island
+ * *mounts* — the page is `/de`, the German visitor is exactly who the popup is for — and still
+ * renders nothing, rather than offering the page they are already reading.
  */
 test.describe("a German browser already on /de (the sameLocale branch)", () => {
   test.use({ locale: "de-DE" });
@@ -510,15 +602,18 @@ test.describe("a German browser already on /de (the sameLocale branch)", () => {
   });
 });
 
-test.describe("no response writes a cookie or varies by language (T-12, AC-12)", () => {
+test.describe("no response writes a cookie or varies by hint (T-12, AC-12, T-09)", () => {
   test.use({ locale: "de-DE" });
 
   for (const path of ["/", "/en", "/de"] as const) {
-    test(`GET ${path} sets no cookie and no \`Vary: Accept-Language\``, async ({
+    test(`GET ${path} sets no cookie and no \`Vary\` on a hint`, async ({
       request,
     }) => {
       const response = await request.get(path, {
-        headers: { "Accept-Language": "de-DE,de;q=0.9,en;q=0.5" },
+        headers: {
+          "Accept-Language": "de-DE,de;q=0.9,en;q=0.5",
+          "cf-ipcountry": "DE",
+        },
       });
       const headers = response.headersArray();
       const named = (name: string): string[] =>
@@ -532,6 +627,7 @@ test.describe("no response writes a cookie or varies by language (T-12, AC-12)",
       for (const vary of named("vary")) {
         expect(vary).not.toContain("accept-language");
         expect(vary).not.toContain("cookie");
+        expect(vary).not.toContain("ipcountry");
       }
     });
   }
@@ -581,7 +677,7 @@ test.describe("the switcher's beta markers (TASK-039, verified here)", () => {
     try {
       await page.goto("/en");
 
-      // No island, so no banner — and the switcher is still four plain links.
+      // No island, so no popup — and the switcher is still four plain links.
       await expect(page.locator(BANNER)).toHaveCount(0);
       await page.locator(`${SWITCHER} a[href="/pl"]`).click();
 
@@ -594,139 +690,61 @@ test.describe("the switcher's beta markers (TASK-039, verified here)", () => {
 });
 
 /**
- * T-15 / AC-13 (TASK-055): the two overlays share the bottom of the viewport, and the consent
- * sheet is the one on top.
+ * §14 A14's sequencing: "shown **before** the consent sheet, which waits for the dialog to close".
  *
- * The ordering is not a preference. `docs/design/flows/consent-and-locale.dc.html` draws consent
- * first and the locale suggestion second, because switching language must not throw away a
- * consent choice, and because a visitor who has not answered the consent question should not have
- * a language offer painted over it. It is expressed once, in the named z-scale of
- * `src/app/globals.css` — `--layer-overlay: 300` for the sheet, `--layer-banner: 200` for the
- * suggestion — and asserted here as **what the browser actually paints**, with
- * `elementFromPoint`, rather than as a class name or a computed `z-index`, either of which can be
- * right while a stacking context makes the paint order wrong.
+ * The order is not a preference. A consent decision recorded in a language the visitor is about to
+ * leave reads as the site ignoring the answer, and two sheets stacked at the bottom of a phone is
+ * the interstitial Google penalises — which is why the artboard in
+ * `docs/design/flows/consent-and-locale.dc.html` now draws the language question first. The
+ * mechanism is a gate on `<html>` (`src/modules/i18n/ui/localeGate.ts`), and what is asserted here
+ * is the observable consequence, not the attribute.
  *
- * This is the one describe block in the file with no recorded consent decision: everywhere else
- * the sheet is answered first, because the suggestion banner's own matrix is what is under test.
+ * This is the one describe block in the file with no recorded consent decision.
  */
-test.describe("the two overlays (AC-13)", () => {
+test.describe("the two first-visit surfaces, in order (§14 A14)", () => {
   test.use({ locale: "de-DE" });
 
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, context }) => {
+    await context.clearCookies();
     await forceLanguages(page, ["de-DE", "de"]);
   });
 
-  test("the consent sheet paints above the language suggestion", async ({
+  test("the language question is asked first and the sheet waits for it", async ({
     page,
-    context,
   }) => {
-    // No `fo_consent` in the jar: both overlays are on screen at once.
-    await context.clearCookies();
     await page.goto("/en");
 
-    await expect(page.locator("[data-fo-consent]")).toBeVisible();
     await expect(page.locator(BANNER)).toBeVisible();
+    // The sheet is not merely painted underneath: it is not in the document at all yet.
+    await expect(page.locator(CONSENT)).toHaveCount(0);
 
-    const sheet = await page.locator("[data-fo-consent]").boundingBox();
-    const banner = await page.locator(BANNER).boundingBox();
-    expect(sheet).not.toBeNull();
-    expect(banner).not.toBeNull();
+    await page.locator(STAY).click();
 
-    // Where the two boxes overlap, the topmost painted element must belong to the sheet.
-    const overlapTop = Math.max(sheet!.y, banner!.y);
-    const overlapBottom = Math.min(
-      sheet!.y + sheet!.height,
-      banner!.y + banner!.height,
-    );
-    const overlapStart = Math.max(sheet!.x, banner!.x);
-    const overlapEnd = Math.min(
-      sheet!.x + sheet!.width,
-      banner!.x + banner!.width,
-    );
-    expect(
-      overlapBottom - overlapTop,
-      "the two overlays overlap, which is what makes the order matter",
-    ).toBeGreaterThan(0);
-
-    const owner = await page.evaluate(
-      ([x, y]) => {
-        const node = document.elementFromPoint(x, y);
-        return {
-          consent: node?.closest("[data-fo-consent]") !== null,
-          banner: node?.closest('[data-fo-banner="shown"]') !== null,
-        };
-      },
-      [
-        (overlapStart + overlapEnd) / 2,
-        (overlapTop + overlapBottom) / 2,
-      ] as const,
-    );
-
-    expect(owner.consent).toBe(true);
-    expect(owner.banner).toBe(false);
-  });
-
-  test("the suggestion sits in the named z-scale, not on a raw z-index", async ({
-    page,
-    context,
-  }) => {
-    await context.clearCookies();
-    await page.goto("/en");
-    await expect(page.locator(BANNER)).toBeVisible();
-
-    const layers = await page.evaluate(() => {
-      const read = (selector: string): string => {
-        const node = document.querySelector(selector);
-        // The positioned wrapper carries the layer, not the panel inside it.
-        const positioned =
-          node?.closest<HTMLElement>('[class*="layer-"]') ??
-          (node as HTMLElement | null);
-        return positioned === null
-          ? ""
-          : window.getComputedStyle(positioned).zIndex;
-      };
-      return {
-        consent: read("[data-fo-consent]"),
-        banner: read('[data-fo-banner="shown"]'),
-        tokens: {
-          overlay: getComputedStyle(document.documentElement)
-            .getPropertyValue("--layer-overlay")
-            .trim(),
-          banner: getComputedStyle(document.documentElement)
-            .getPropertyValue("--layer-banner")
-            .trim(),
-        },
-      };
-    });
-
-    expect(layers.banner).toBe(layers.tokens.banner);
-    expect(layers.consent).toBe(layers.tokens.overlay);
-    expect(Number(layers.consent)).toBeGreaterThan(Number(layers.banner));
-  });
-
-  /**
-   * Spec 003's deferred `role="status"` note, closed by TASK-055: the region is in the document
-   * before it has anything to say, which is the only shape assistive technologies announce
-   * reliably. It is `fixed` and empty until then, so it still shifts nothing (AC-28's CLS delta).
-   */
-  test("the live region is mounted before there is anything to announce", async ({
-    page,
-    context,
-    baseURL,
-  }) => {
-    const url = new URL(baseURL ?? "http://localhost:3000");
-    await context.addCookies([
-      { name: "fo_locale", value: "en", domain: url.hostname, path: "/" },
-    ]);
-    await page.goto("/en");
-
-    // A recorded choice, so there is no suggestion to make — and the region is there anyway.
-    await expect(page.locator("h1")).toBeVisible();
     await expect(page.locator(BANNER)).toHaveCount(0);
-    const region = page.locator('[data-fo-live-region="locale-suggestion"]');
-    await expect(region).toHaveCount(1);
-    await expect(region).toHaveAttribute("role", "status");
-    await expect(region).toHaveAttribute("aria-live", "polite");
-    await expect(region).toBeEmpty();
+    await expect(page.locator(CONSENT)).toBeVisible();
+  });
+
+  test("the sheet is not held back when there is no language question", async ({
+    page,
+  }) => {
+    // An English browser on `/en`: the island decides "nothing to suggest" and releases at once.
+    await forceLanguages(page, ["en-US"]);
+
+    await page.goto("/en");
+
+    await expect(page.locator(CONSENT)).toBeVisible();
+    await expect(page.locator(BANNER)).toHaveCount(0);
+  });
+
+  test("answering the language question with `Continue` lets the sheet through", async ({
+    page,
+  }) => {
+    await page.goto("/en");
+    await expect(page.locator(BANNER)).toBeVisible();
+
+    await page.locator(CONTINUE).click();
+
+    await expect(page).toHaveURL(/\/de$/);
+    await expect(page.locator(CONSENT)).toBeVisible();
   });
 });

@@ -89,11 +89,11 @@
   <section class="note" style="margin: var(--space-lg) 56px 0;">
     <span class="label">Consent and locale · [internal]</span>
     <dl>
-      <dt>Purpose</dt><dd>The three overlapping surfaces of the first visit — the locale chooser, the language-suggestion banner and the consent sheet — with their states and their z-order. They are drawn together because they are the only elements in the design that can be on screen at the same time.</dd>
-      <dt>The rule they exist to keep</dt><dd><b>No IP redirect. Ever.</b> (ADR-0006) A visitor's language is never decided for them: <code>/</code> lists the locales, an <code>Accept-Language</code> mismatch is a dismissible <em>suggestion</em>, and the chosen locale is in the URL. Currency is a cookie; the destination country is in the shop URL.</dd>
-      <dt>Z-order</dt><dd><code>--layer-header</code> 100 (sticky header) &lt; <code>--layer-banner</code> 200 (locale suggestion) &lt; <code>--layer-overlay</code> 300 (consent sheet, and the skip link when focused). Named tokens, so the three cannot fight.</dd>
-      <dt>Copy status</dt><dd><code>chooser.*</code>, <code>banner.*</code> and <code>a11y.*</code> exist in <code>messages/en.json</code> and are quoted verbatim below. There are <b>no <code>consent.*</code> keys yet</b> — every string on the consent sheet is marked <code>[slot]</code> and is owned by the spec that ships it.</dd>
-      <dt>Owning spec</dt><dd>003 (locales, chooser, banner) · 004 (layers, chrome) · consent sheet and settings: not yet specified — see <code>docs/design/README.md</code></dd>
+      <dt>Purpose</dt><dd>The three surfaces of the first visit — the locale chooser, the language-suggestion dialog and the consent sheet — with their states and their order. They are drawn together because they are the only elements in the design that can want the screen at the same time, and because the order between them is the design (spec 003 §14 A14).</dd>
+      <dt>The rule they exist to keep</dt><dd><b>No IP redirect. Ever.</b> (ADR-0006) A visitor&rsquo;s language is never decided for them: <code>/</code> lists the locales, a language or country mismatch is a <em>suggestion</em> they answer once, and the chosen locale is in the URL. The country is read only by <code>hints.ts</code>, served only by a <code>no-store</code> <code>/api/geo</code>, and stored nowhere. Currency is a cookie; the destination country is in the shop URL.</dd>
+      <dt>Order</dt><dd>Sequence first, layers second: the language dialog is asked and answered, and only then is the consent sheet rendered (spec 003 §14 A14). The dialog is a modal <code>&lt;dialog&gt;</code>, so it is in the browser&rsquo;s top layer and needs no <code>z-index</code> at all; the named scale still orders what is left — <code>--layer-header</code> 100 &lt; <code>--layer-banner</code> 200 &lt; <code>--layer-overlay</code> 300 (consent sheet, and the skip link when focused).</dd>
+      <dt>Copy status</dt><dd><code>chooser.*</code>, <code>suggestion.*</code> and <code>a11y.*</code> exist in <code>messages/en.json</code> and are quoted verbatim below. There are <b>no <code>consent.*</code> keys yet</b> — every string on the consent sheet is marked <code>[slot]</code> and is owned by the spec that ships it.</dd>
+      <dt>Owning spec</dt><dd>003 (locales, chooser, suggestion dialog — §14 A14, TASK-119) · 004 (layers, chrome) · consent sheet and settings: not yet specified — see <code>docs/design/README.md</code></dd>
     </dl>
   </section>
   <div class="sheet">
@@ -113,16 +113,16 @@
         <dl class="meta"><dt>Copy</dt><dd><code>chooser.heading</code>, <code>chooser.intro</code>, <code>a11y.localeChooser</code> — verbatim above.</dd><dt>Index</dt><dd>noindex, follow. It is a signpost, not a page with a query.</dd><dt>Note</dt><dd>The one page in the product with no locale prefix and no header chrome beyond the wordmark.</dd></dl>
       </div>
       <div class="step">
-        <header><span class="i">02</span><b>Locale suggestion banner</b></header>
-        <code>any locale page · --layer-banner 200</code>
+        <header><span class="i">02</span><b>Locale suggestion dialog</b></header>
+        <code>any locale page · native &lt;dialog&gt; · top layer</code>
         <div class="thumb" style="min-height: 260px;">
           <div class="ink"></div>
-          <div class="box" style="border-color: var(--color-ink);">Would you rather read this page in Polski?<div style="display: flex; gap: 6px; margin-block-start: 5px;"><span style="background: var(--color-ink); color: var(--color-accent-ink); padding: 3px 7px;">Switch to Polski</span><span style="border: var(--rule); padding: 3px 7px;">Stay on this page</span><span style="border: var(--rule); padding: 3px 7px;">×</span></div></div>
+          <div class="ph2">the page is dimmed while the question is on screen</div>
+          <div class="box" style="border-color: var(--color-ink);">You seem to be in Polska. Continue in Polski?<div style="display: flex; gap: 6px; margin-block-start: 5px;"><span style="border: var(--rule); padding: 3px 7px;">Continue in Polski</span><span style="border: var(--rule); padding: 3px 7px;">Stay in English</span></div></div>
           <div class="bar"></div>
-          <div class="ph2">the page underneath is fully usable</div>
-          <span>Server-rendered from Accept-Language. Dismissal is remembered.</span>
+          <span>Decided in the browser after hydration: languages first, then a country from /api/geo.</span>
         </div>
-        <dl class="meta"><dt>Copy</dt><dd><code>banner.headline</code> / <code>.switch</code> / <code>.stay</code> / <code>.dismiss</code> — all four exist and are quoted above.</dd><dt>States</dt><dd>absent (language matches, or already dismissed) · shown · dismissed. Never blocks the page and never auto-switches.</dd><dt>Note</dt><dd>Below the consent sheet and above the header, which is the only order that lets a visitor consent first and choose language second.</dd></dl>
+        <dl class="meta"><dt>Copy</dt><dd><code>suggestion.headline</code> / <code>.headlineInCountry</code> / <code>.continue</code> — resolved in the language being offered — and <code>suggestion.stay</code>, resolved in the language of the page. All four exist and are quoted above.</dd><dt>States</dt><dd>absent (a recorded choice, a matching language, or nothing better to offer) · shown from a language hint · shown from a country hint. Two actions only, and both record <code>fo_locale</code> for a year, so it is asked once in a visitor&rsquo;s life.</dd><dt>Note</dt><dd>Asked <b>before</b> the consent sheet, which waits for it (spec 003 §14 A14, founder ruling 2026-09-16): a consent decision recorded in a language the visitor is about to leave reads as the site ignoring the answer, and two sheets stacked on a phone is the interstitial Google penalises. On a phone the sheet covers at most 35&nbsp;% of the viewport.</dd></dl>
       </div>
       <div class="step">
         <header><span class="i">03</span><b>Consent sheet</b></header>
@@ -159,17 +159,17 @@
         <header><span class="i">—</span><b>Z-order and first-visit sequence</b></header>
         <div style="display: flex; flex-direction: column; gap: var(--space-sm); font-size: var(--text-sm); color: var(--color-ink-2);">
           <div style="display: flex; align-items: center; gap: var(--space-sm);"><span style="min-width: 210px; background: var(--color-ink); color: var(--color-accent-ink); padding: 6px 10px; font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase;">layer-overlay · 300</span><span>Consent sheet · the focused skip link. Dismissible, focus-trapped, above everything.</span></div>
-          <div style="display: flex; align-items: center; gap: var(--space-sm);"><span style="min-width: 210px; background: var(--color-ink-2); color: var(--color-accent-ink); padding: 6px 10px; font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase;">layer-banner · 200</span><span>Locale suggestion. Pushes nothing, blocks nothing, remembers its dismissal.</span></div>
+          <div style="display: flex; align-items: center; gap: var(--space-sm);"><span style="min-width: 210px; background: var(--color-ink-2); color: var(--color-accent-ink); padding: 6px 10px; font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase;">top layer</span><span>Locale suggestion dialog. Pushes nothing (zero shift), holds the screen until it is answered, and is answered once.</span></div>
           <div style="display: flex; align-items: center; gap: var(--space-sm);"><span style="min-width: 210px; background: var(--color-ink-3); color: var(--color-accent-ink); padding: 6px 10px; font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase;">layer-header · 100</span><span>Sticky header. <code>scroll-padding-block-start</code> keeps a focused anchor target clear of it (WCAG 2.4.11).</span></div>
           <div style="display: flex; align-items: center; gap: var(--space-sm);"><span style="min-width: 210px; border: var(--rule); padding: 6px 10px; font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-3);">page</span><span>Everything else. No component writes a raw <code>z-index</code>.</span></div>
         </div>
         <div class="arrowrow" style="margin-block-start: var(--space-md); flex-wrap: wrap;">
           <span style="border: var(--rule); padding: 8px 12px;">Land on <code>/</code> or a locale page</span><span>→</span>
-          <span style="border: var(--rule); padding: 8px 12px;">Consent sheet (first visit only)</span><span>→</span>
-          <span style="border: var(--rule); padding: 8px 12px;">Locale suggestion, if the language does not match</span><span>→</span>
+          <span style="border: var(--rule); padding: 8px 12px;">Locale suggestion, if a language or country hint says another locale</span><span>→</span>
+          <span style="border: var(--rule); padding: 8px 12px;">Consent sheet (first visit only), once the question above is answered</span><span>→</span>
           <span style="border: var(--rule); padding: 8px 12px;">The page, in the locale that is in the URL</span>
         </div>
-        <p style="margin: 0; max-width: var(--measure); font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.6;">The order is deliberate: consent is asked before anything optional loads, and the language question comes after, because switching language must not throw away a consent choice. Neither surface may be the reason a crawler sees different content — both are additive to a fully server-rendered page.</p>
+        <p style="margin: 0; max-width: var(--measure); font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.6;">The order is deliberate, and it changed on the founder&rsquo;s ruling of 2026-09-16 (spec 003 §14 A14): the language question is asked <b>first</b> and the consent sheet waits for it, because a consent decision recorded in a language the visitor is about to leave reads as the site ignoring the answer — and because two sheets stacked at the bottom of a phone is the interstitial that costs ranking. The wait is a flag on <code>&lt;html&gt;</code> set during hydration and released the moment the dialog closes, and it fails open twice over: if the dialog never arrives, the sheet appears anyway. Neither surface may be the reason a crawler sees different content — both are additive to a fully server-rendered page.</p>
       </div>
     </div>
   </div>

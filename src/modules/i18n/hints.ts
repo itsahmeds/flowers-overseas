@@ -45,6 +45,11 @@
  * decides from. Reading and serialising it are pure string functions; the two lines that touch
  * `document.cookie` live in the island.
  */
+import {
+  COUNTRY_CODE_PATTERN,
+  NON_COUNTRY_CODES,
+  localeForCountry,
+} from "../../config/country-locale.data.ts";
 import { isLaunchLocaleCode } from "../../config/locales.data.ts";
 
 /** The cookie name, first-party and fixed (§2, `plan/07` §6 lists it among the essential ones). */
@@ -308,6 +313,47 @@ export function serialiseLocaleCookie(
   return attributes.join("; ");
 }
 
+/* -------------------------------------------------------------------------- */
+/* The country hint (spec 003 §14 A14, TASK-119)                               */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The edge headers that carry the caller's country, in the order they are trusted: Cloudflare's
+ * in front of the Railway replica we serve from, then Vercel's on the cold fallback (ADR-0018,
+ * spec 040). `fo/no-geo-redirect` allows this read **in this file only**, which is why
+ * `GET /api/geo` calls `countryFromHeaders()` instead of naming a header itself.
+ */
+export const GEO_COUNTRY_HEADERS = ["cf-ipcountry", "x-vercel-ip-country"];
+
+/**
+ * The visitor's country from the edge headers, or `null` when there is none to read.
+ *
+ * This is the whole of the IP read the founder's 2026-09-16 ruling reintroduced, and its shape is
+ * what keeps ADR-0006 intact: a **two-letter country code, returned to the caller**. Nothing here
+ * routes, redirects, varies a cached document or writes a cookie; the one caller is a `no-store`
+ * API route whose body the suggestion island fetches after hydration, and the one use of the
+ * answer is `decideSuggestion`'s second pass.
+ *
+ * Nothing is stored and nothing is logged, here or in the route (`docs/compliance/ropa.md`: the
+ * country lives in memory for the length of one request and the IP itself is never read at all —
+ * the edge resolved it before the request reached us).
+ *
+ * `XX` (Cloudflare's "could not place this address") and `T1` (a Tor exit node) are not countries
+ * and are dropped, so an unplaceable visitor is treated exactly like a visitor behind no edge
+ * network at all: no suggestion.
+ */
+export function countryFromHeaders(headers: Headers): string | null {
+  for (const name of GEO_COUNTRY_HEADERS) {
+    const raw = headers.get(name);
+    if (raw === null) continue;
+    const code = raw.trim().toUpperCase();
+    if (!COUNTRY_CODE_PATTERN.test(code)) continue;
+    if (NON_COUNTRY_CODES.includes(code)) continue;
+    return code;
+  }
+  return null;
+}
+
 /** A launch locale as the banner needs it: matchable, renderable and linkable. */
 export interface SuggestionCandidate extends LocaleHint {
   /** The locale's own name in its own language — never a country flag (`plan/03` §2). */
@@ -323,58 +369,108 @@ export interface SuggestionInput {
   readonly languages: readonly unknown[];
   /** The raw `document.cookie` string, or `null` when there is none. */
   readonly cookie: string | null;
-  /** Whether the visitor already dismissed the banner in this tab (see the island). */
-  readonly dismissed?: boolean;
+  /**
+   * The country `GET /api/geo` answered with, or `null`/absent when it has not been asked
+   * (spec 003 §14 A14; TASK-119).
+   *
+   * It is the **second** hint, never the first: the island calls this function once with no
+   * country, and asks the route only when the language pass found nothing to offer. So a browser
+   * that names a launch locale is never geolocated at all, which is both the §14 A14 order
+   * ("`navigator.languages`, then the edge country header") and one fewer request for the
+   * overwhelming majority of visitors.
+   */
+  readonly country?: string | null | undefined;
   /** The launch locales, in registry order, projected by the Server Component parent. */
   readonly candidates: readonly SuggestionCandidate[];
 }
 
 /**
- * Why the banner is not shown — one reason per hidden branch of §2, all of them observable, plus
- * `"error"`, which no branch of `decideSuggestion` returns: it is the island's fail-closed value
- * for "reading the three browser facts threw". A suggestion is an optional courtesy, so the only
- * defensible behaviour when deciding it fails is to render nothing; see the island's
- * `useState` initialiser.
+ * Why the dialog is not shown — one reason per hidden branch of §2 as §14 A14 amends it, all of
+ * them observable, plus `"error"`, which no branch of `decideSuggestion` returns: it is the
+ * island's fail-closed value for "reading the browser facts threw". A suggestion is an optional
+ * courtesy, so the only defensible behaviour when deciding it fails is to render nothing; see the
+ * island's `useState` initialiser.
  */
 export type SuggestionHiddenReason =
-  | "cookie"
-  | "dismissed"
-  | "unknownUrlLocale"
-  | "noBetterLocale"
-  | "sameLocale"
-  | "error";
+  "cookie" | "unknownUrlLocale" | "noBetterLocale" | "sameLocale" | "error";
+
+/**
+ * Which hint produced the suggestion, because the two are worded differently (§14 A14): a country
+ * says "You seem to be in Germany. Continue in Deutsch?", a language preference has no country to
+ * name and asks "Continue in Deutsch?". The island renders the copy the server resolved for
+ * whichever of the two this is; it formats nothing itself.
+ */
+export type SuggestionSource = "language" | "country";
 
 export type SuggestionDecision =
   | { readonly show: false; readonly reason: SuggestionHiddenReason }
-  | { readonly show: true; readonly target: SuggestionCandidate };
+  | {
+      readonly show: true;
+      readonly target: SuggestionCandidate;
+      readonly source: SuggestionSource;
+      /** The country that produced it, when `source` is `"country"`; never stored anywhere. */
+      readonly country?: string;
+    };
 
 /**
- * The whole banner decision, as a pure function of the three browser facts and the locale list
- * (§2 "Behaviour", §5.3, AC-28). `tests/unit/i18n-hints.test.ts` walks the matrix; the island
- * adds only the two `document` reads, the render and the cookie write.
+ * The whole dialog decision, as a pure function of the browser facts, the optional country and
+ * the locale list (§2 "Behaviour" as amended by §14 A14, §5.3, AC-28). `tests/unit/i18n-hints.test.ts`
+ * walks the matrix; the island adds only the two `document` reads, the `/api/geo` fetch, the
+ * render and the cookie write.
  *
- * Order matters and is the order §2 states: an existing choice wins over everything (a returning
- * visitor is never asked again), then this tab's dismissal, then the hint. `hidden` is the
- * default in every branch that is not "the visitor's languages name a launch locale that is not
- * the one they are looking at".
+ * Order matters and is the order §2 and §14 A14 state:
+ *
+ *  1. an existing `fo_locale` wins over everything — a visitor who has chosen is never asked
+ *     again, which is what "silences it forever" means;
+ *  2. then **language preferences**, which outrank the country whenever both exist: a German
+ *     speaker in Poland is offered German, because the browser's list is a statement by the
+ *     visitor and an IP is an inference about them;
+ *  3. then, only if the languages name no launch locale at all, the **country**.
+ *
+ * There is no "dismissed" branch any more: §14 A14 gives the dialog **two actions only**, both of
+ * which record a choice in `fo_locale`, and `Esc` is one of them ("stay"). A modal question with a
+ * third way out that remembers nothing would ask again on the next page view, which is the
+ * opposite of "never shown again once either is chosen".
+ *
+ * `hidden` is the default in every branch that is not "a hint names a launch locale that is not
+ * the one on screen".
  */
 export function decideSuggestion(input: SuggestionInput): SuggestionDecision {
   if (readLocaleCookie(input.cookie) !== null) {
     return { show: false, reason: "cookie" };
   }
-  if (input.dismissed === true) return { show: false, reason: "dismissed" };
   if (!input.candidates.some((c) => c.code === input.urlLocale)) {
     return { show: false, reason: "unknownUrlLocale" };
   }
 
-  const hint = preferredLocale(
+  const fromLanguages = preferredLocale(
     languagePreferences(input.languages),
     input.candidates,
   );
-  if (hint === null) return { show: false, reason: "noBetterLocale" };
-  if (hint === input.urlLocale) return { show: false, reason: "sameLocale" };
+  if (fromLanguages !== null) {
+    return offer(input, fromLanguages, "language");
+  }
 
+  // The country pass. `localeForCountry` answers `null` for "that is not a country" (a missing
+  // header, `XX`, a forged value) and a launch locale for everything else, including the countries
+  // the table does not name — which resolve to the x-default locale and therefore show nothing at
+  // all to the visitor already reading `/en`.
+  const fromCountry = localeForCountry(input.country);
+  if (fromCountry === null) return { show: false, reason: "noBetterLocale" };
+  return offer(input, fromCountry, "country", input.country ?? undefined);
+}
+
+/** The shared tail of both passes: same locale → nothing, otherwise the candidate to offer. */
+function offer(
+  input: SuggestionInput,
+  hint: string,
+  source: SuggestionSource,
+  country?: string,
+): SuggestionDecision {
+  if (hint === input.urlLocale) return { show: false, reason: "sameLocale" };
   const target = input.candidates.find((c) => c.code === hint);
   if (target === undefined) return { show: false, reason: "noBetterLocale" };
-  return { show: true, target };
+  return source === "country" && country !== undefined
+    ? { show: true, target, source, country: country.trim().toUpperCase() }
+    : { show: true, target, source };
 }

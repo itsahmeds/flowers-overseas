@@ -238,8 +238,9 @@ Three gates are informational for now, by decision rather than by neglect.
 
   What is left is the framework, and only the framework: `/` fetches nothing but the runtime
   (react-dom 61.1 KB br, the App Router runtime 36.5, ~16 KB of bootstrap and route shells), and a
-  locale document adds ~1.1 KB of route shell plus 4.4 KB of islands — the consent sheet, the
-  suggestion banner and the finder type-ahead — in `next/dynamic` chunks fetched after hydration.
+  locale document adds ~1.1 KB of route shell plus a few KB of islands — the consent sheet, the
+  locale suggestion dialog and the finder type-ahead — in `next/dynamic` chunks fetched after
+  hydration.
   TASK-085 closed the gap that TASK-046 escalated instead of loosening (**spec 004 §13 Q13 option
   (b)**, §14 A1's addendum): `NextIntlClientProvider` and its message payload (10 705 B) are gone
   from every document, every client island is handed translated strings as props, and the 500
