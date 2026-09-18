@@ -22,8 +22,10 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { launchLocales } from "../../src/config/locales.ts";
+import { COUNTRY_CODES } from "../../src/config/countries.ts";
 import {
   CATEGORY_ROW_LINK_IDS,
+  CORRIDOR_LINKS,
   MASTHEAD_LINK_IDS,
   SEARCH_LINK_ID,
   SITE_LINKS,
@@ -31,6 +33,7 @@ import {
   SiteLinkGroupRegistrySchema,
   SiteLinkRegistrySchema,
   SiteLinkSchema,
+  corridorLinkId,
   groupLinks,
   isPublished,
   isSiteLinkId,
@@ -87,18 +90,64 @@ describe("src/config/site-links.ts", () => {
         }
         continue;
       }
+      if (link.target.kind === "corridor") {
+        // A corridor target names a destination the country registry knows; the URL itself is
+        // built per locale from that registry's slug, never from this one (spec 007 AC-20).
+        expect(COUNTRY_CODES, link.id).toContain(link.target.iso2);
+        expect(link.labelKey, link.id).toBe(
+          `destinations.${link.target.iso2.toLowerCase()}.name`,
+        );
+        continue;
+      }
       expect(link.target.kind, link.id).toBe("pending");
       expect(isPublished(link.id), link.id).toBe(false);
     }
   });
 
-  it("publishes the locale home and nothing else in Phase 0", () => {
+  it("publishes the hub and the seven corridor targets, and nothing else (AC-20)", () => {
     const published = SITE_LINKS.filter((link) => link.published).map(
       (link) => link.id,
     );
-    expect(published).toEqual(["locale-home"]);
+    // Spec 007 AC-20 verbatim: `site-links.ts` publishes `destinationsHub` (the `destinations`
+    // row — ids are hyphen-case) and the corridor targets, and nothing else. Every other id is
+    // still text on every surface, which is what keeps spec 004 AC-14 true.
+    expect(published).toEqual([
+      "locale-home",
+      "destinations",
+      "corridor-pl",
+      "corridor-de",
+      "corridor-fr",
+      "corridor-es",
+      "corridor-it",
+      "corridor-ro",
+      "corridor-nl",
+    ]);
     expect(isPublished("locale-home")).toBe(true);
     expect(isPublished("terms")).toBe(false);
+  });
+
+  it("names one corridor link per destination, and resolves it by country code", () => {
+    expect(CORRIDOR_LINKS.map((link) => link.id)).toEqual(
+      COUNTRY_CODES.map((iso2) => `corridor-${iso2.toLowerCase()}`),
+    );
+    for (const iso2 of COUNTRY_CODES) {
+      expect(corridorLinkId(iso2), iso2).toBe(`corridor-${iso2.toLowerCase()}`);
+      expect(isPublished(corridorLinkId(iso2)), iso2).toBe(true);
+    }
+    // A country with no row cannot be linked: the same closed-set answer `siteLink()` gives.
+    expect(() => corridorLinkId("PT")).toThrow(/PT/);
+  });
+
+  it("refuses a corridor target whose code is not an ISO 3166-1 alpha-2 form", () => {
+    for (const iso2 of ["pl", "POL", "P1"]) {
+      expect(
+        SiteLinkSchema.safeParse({
+          ...valid,
+          target: { kind: "corridor", iso2 },
+        }).success,
+        iso2,
+      ).toBe(false);
+    }
   });
 
   it("refuses a published link with a pending target", () => {

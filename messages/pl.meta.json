@@ -1239,10 +1239,65 @@
     "reviewed": false,
     "sourceHash": "a87cf2e4374e16ad11ea33ce2cae0965b2b29935452dcf7bac4060d2190f7ceb"
   },
-  "destinations.state.guideWaitingList": {
+  "destinations.state.guideNotDelivering": {
     "source": "machine",
     "reviewed": false,
-    "sourceHash": "9f77a401542337c339bcf6a839a1a5ac51682b9fac9c5689e0c2333dbcefaee2"
+    "sourceHash": "9687cc0b20837784ae1ed2996a99bfd7dcd36d78695d97557cbef4fb58e1f8bf"
+  },
+  "destinationsHub.emptyBody": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "2fafd7edb3c17aafdaec14e01f925d0270d00e551f232af2ec58f49a1b8e2939"
+  },
+  "destinationsHub.h1": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "bde980964168d925712f4b32e8edf8a8d798a99c64d8d0319e351fd7a3a4da84"
+  },
+  "destinationsHub.intro": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "2dcd3f39bd10a427d987e7e4587e22a1f005feb5c1e82807eabcd0a3f8b92239"
+  },
+  "destinationsHub.noGuide": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "40d76caab697c0f4a2d0af32c75bf0e2e7236b8e0cec173bc624a658a9fdbc8a"
+  },
+  "destinationsHub.readGuide": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "ca30938da4069420f832215d1fa96185a4769796a2d1e1cea48aeb150ec5f022"
+  },
+  "destinationsHub.region.centralEurope": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "40d9a90716b05276fca533d74b9cd700522082225b27b996bf34f267f394e135"
+  },
+  "destinationsHub.region.southEasternEurope": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "1a8e0e1f9bdd75c13498ad66096bece0cc721852a528b3b9c073ea79fa447e3e"
+  },
+  "destinationsHub.region.westernSouthernEurope": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "5dcf6e1ad803ab60b589981bfeaf56e2732d8588b5d440adf131c41b67262405"
+  },
+  "destinationsHub.regionLabel": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "1166f3b9a8b9a26b5c420040ac45120b66b61f712126e0262d6460f870077895"
+  },
+  "destinationsHub.seoDescription": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "c0d8400f2261b33e580e8ffdf2b78cdd6c5d4815ea4e90d64131c378ff9141a9"
+  },
+  "destinationsHub.seoTitle": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "bde980964168d925712f4b32e8edf8a8d798a99c64d8d0319e351fd7a3a4da84"
   },
   "errors.notFound.body": {
     "source": "machine",

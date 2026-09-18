@@ -35,6 +35,7 @@ import {
   loadMessages,
   MESSAGE_NAMESPACES,
 } from "../../src/modules/i18n/messages.ts";
+import { localePath } from "../../src/modules/i18n/routing.ts";
 import {
   CONSENT_REOPEN_ATTRIBUTE,
   REMINDERS_ANCHOR,
@@ -124,26 +125,32 @@ describe("SiteFooter: the Phase-0 colophon", () => {
 });
 
 describe("AC-14: an unpublished target is text, never a link", () => {
-  it("renders no `<a>` for any unpublished footer link", () => {
+  it("renders an `<a>` for the published hub and for nothing else (spec 007 AC-20)", () => {
     const hrefs = [...phase0.matchAll(/href="([^"]*)"/g)].map(
       (match) => match[1],
     );
-    // Every href in the Phase-0 footer belongs to the locale switcher or to `tel:`; not one
-    // belongs to a `site-links.ts` target, because not one is published.
+    // Every href in the footer belongs to the locale switcher, to `tel:`, or to the one footer
+    // target spec 007 published — the all-destinations hub. No other `site-links.ts` row has a
+    // page, so no other row is a link (spec 004 AC-14).
     expect(
       hrefs.filter(
         (href) =>
-          href !== undefined && !/^(?:\/(?:en|en-gb|de|pl)$|tel:)/.test(href),
+          href !== undefined &&
+          !/^(?:\/(?:en|en-gb|de|pl)$|tel:)/.test(href) &&
+          href !== localePath("en", "destinations"),
       ),
     ).toEqual([]);
+    expect(phase0).toContain(`href="${localePath("en", "destinations")}"`);
   });
 
-  it("has no footer link published in Phase 0, so the column state is `links-empty`", () => {
+  it("publishes exactly one footer target: the hub (spec 007 AC-20)", () => {
     const footerLinks = SITE_LINKS.filter((link) =>
       link.surfaces.includes("footer"),
     );
     expect(footerLinks.length).toBeGreaterThan(0);
-    expect(footerLinks.filter((link) => link.published)).toEqual([]);
+    expect(
+      footerLinks.filter((link) => link.published).map((l) => l.id),
+    ).toEqual(["destinations"]);
   });
 
   it("renders a link the moment a target is published, with no template edit", () => {

@@ -182,7 +182,7 @@ describe("the finder card (AC-11)", () => {
     expect(polish).toHaveLength(COUNTRIES.length);
   });
 
-  it("names every destination with its state, and links none of them", () => {
+  it("names every destination with its state, and links the ones with a guide", () => {
     const html = destinationList("en");
     const rendered = text(html);
 
@@ -192,9 +192,11 @@ describe("the finder card (AC-11)", () => {
       );
     }
     expect(rendered).toContain("Delivering now");
-    expect(rendered).toContain("Guide · waiting list");
-    // AC-14: while every flag is false the finder links nowhere at all.
-    expect(hrefs(html)).toEqual([]);
+    expect(rendered).toContain("Guide · not delivering yet");
+    // Spec 007 AC-20: every destination whose guide exists in this locale is a link now, from
+    // the same loop; `/de` and `/pl` have no guide, so they keep linking nowhere (AC-17).
+    expect(hrefs(html).length).toBe(COUNTRIES.length);
+    expect(hrefs(destinationList("de"))).toEqual([]);
   });
 
   it("submits to a document that exists, with no `action` to a non-200 URL", () => {
@@ -272,46 +274,54 @@ describe("the finder card (AC-11)", () => {
 });
 
 describe("`finderTarget()` — where `Continue` goes", () => {
-  it("answers the on-page destination anchor while no corridor page is published", () => {
-    for (const locale of LOCALES) {
-      expect(finderTarget(locale), locale).toBe(
+  it("answers the corridor page where one exists, and the on-page anchor where none does", () => {
+    // `en` and `en-gb` have authored guides; `de` and `pl` do not (§13 Q1), so the honest answer
+    // there is still the destination list on the page the reader is already on.
+    expect(finderTarget("en", "PL")).toBe("/en/send-flowers-to/poland");
+    expect(finderTarget("en-gb", "PL")).toBe("/en-gb/send-flowers-to/poland");
+    for (const locale of ["de", "pl"]) {
+      expect(finderTarget(locale, "PL"), locale).toBe(
         `${localePath(locale, "home")}#destinations`,
       );
-      expect(finderTarget(locale, "PL"), locale).toBe(
+    }
+    // With no destination chosen the answer is the anchor in every locale.
+    for (const locale of LOCALES) {
+      expect(finderTarget(locale), locale).toBe(
         `${localePath(locale, "home")}#destinations`,
       );
     }
   });
 
-  it("answers the corridor country page once a flag is flipped, with no code change", async () => {
+  it("stops linking a destination the moment its guide is unpublished, with no code change", async () => {
+    // AC-7's flip, in reverse and as data: `guidePublished` is `plan/02` §5.1's existence rule,
+    // so turning it off for Germany removes its URL and its link from every surface at once.
+    // (Poland cannot be unpublished this way: its registry `status` is `live`, which is the
+    // other half of the existence rule.)
     vi.doMock("../../src/config/countries.ts", async () => {
       const actual = await vi.importActual<
         typeof import("../../src/config/countries.ts")
       >("../../src/config/countries.ts");
       return {
         ...actual,
-        isCorridorPagePublished: (iso2: string) => iso2 === "PL",
+        isGuidePublished: (iso2: string) => iso2 !== "DE",
       };
     });
 
-    const { finderTarget: withPublishedPl } =
+    const { finderTarget: withoutDe } =
       await import("../../src/modules/ui/home/finder-model.ts");
 
-    expect(withPublishedPl("en", "PL")).toBe("/en/send-flowers-to/poland");
-    expect(withPublishedPl("de", "PL")).toBe("/de/blumen-verschicken/polen");
-    expect(withPublishedPl("pl", "PL")).toBe("/pl/wyslij-kwiaty/polska");
-    // Everything else still has nowhere to go.
-    expect(withPublishedPl("en", "DE")).toBe("/en#destinations");
+    expect(withoutDe("en", "DE")).toBe("/en#destinations");
+    expect(withoutDe("en", "FR")).toBe("/en/send-flowers-to/france");
   });
 
-  it("renders the published destination as a link, from the same template", async () => {
+  it("renders the unpublished destination as text, from the same template", async () => {
     vi.doMock("../../src/config/countries.ts", async () => {
       const actual = await vi.importActual<
         typeof import("../../src/config/countries.ts")
       >("../../src/config/countries.ts");
       return {
         ...actual,
-        isCorridorPagePublished: (iso2: string) => iso2 === "PL",
+        isGuidePublished: (iso2: string) => iso2 === "PL",
       };
     });
 
@@ -319,7 +329,8 @@ describe("`finderTarget()` — where `Continue` goes", () => {
       await import("../../src/modules/ui/home/DestinationsGrid.tsx");
     const html = render(<List locale="en" />, "en");
 
-    // The one published destination is a link; the six unpublished ones are still text.
+    // The one destination with a guide is a link; the six others are text — same loop, same DOM
+    // shape, one element different (spec 007 AC-20).
     expect(hrefs(html)).toEqual(["/en/send-flowers-to/poland"]);
     expect(html).toContain('data-fo-destination="DE"');
   });

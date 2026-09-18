@@ -59,7 +59,6 @@ test.describe("existence and 404s (AC-5, T-06)", () => {
       "/en/send-flowers-to/Poland",
       "/en/send-flowers-to/narnia",
       "/fr/send-flowers-to/poland",
-      "/en/send-flowers-to",
     ]) {
       const response = await request.get(url, { maxRedirects: 0 });
       expect(response.status(), url).toBe(404);

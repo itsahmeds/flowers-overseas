@@ -194,10 +194,10 @@ test.describe("the 404 (AC-12, AC-14)", () => {
     const hrefs = await links.evaluateAll((nodes) =>
       nodes.map((node) => node.getAttribute("href")),
     );
-    // Every link on the page — the lockup and the one action — goes to the locale home, because
-    // `destinations` is unpublished in `src/config/site-links.ts`. When spec 007 publishes it the
-    // second action appears with no edit to this document.
-    expect(new Set(hrefs)).toEqual(new Set(["/en"]));
+    // The lockup and the first action go to the locale home; the second action is the
+    // all-destinations hub, which appeared the moment spec 007 published its `site-links.ts` id
+    // (TASK-092) — with no edit to this document, which is what AC-14's contract promised.
+    expect(new Set(hrefs)).toEqual(new Set(["/en", "/en/send-flowers-to"]));
 
     for (const href of hrefs) {
       const target = await page.request.get(href!);

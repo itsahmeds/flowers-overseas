@@ -30,7 +30,7 @@
  * AC-11's "every destination as plain text with the onboarding line while `corridorPagePublished`
  * is false" is the **destination list** below the button, `id="destinations"` and the country
  * field's `aria-describedby` target: all seven, named from `destinations.*`, each with its state
- * word (`Delivering now` / `Guide · waiting list`, never colour alone — §5.3), plus one onboarding
+ * word (`Delivering now` / `Guide · not delivering yet`, never colour alone — §5.3), plus one onboarding
  * sentence for the six. Round 7 removed the status column *from the type-ahead dropdown*, and
  * that is respected: nothing decorates the options, and the status is read after the field, in
  * the button's own line — which is also where a chosen country's status is announced once the

@@ -157,13 +157,13 @@ describe("the view model (AC-8, AC-19, AC-22; T-09, T-23)", () => {
     expect(view?.body.split(/\s+/u).length).toBeGreaterThanOrEqual(600);
   });
 
-  it("renders the breadcrumb's hub crumb as text while the hub is unpublished (AC-14)", () => {
+  it("links the breadcrumb's hub crumb now that the hub is published (AC-14)", () => {
     const crumbs = view?.breadcrumb ?? [];
     expect(crumbs).toHaveLength(3);
     expect(crumbs[0]?.href).toBe("/en");
-    // TASK-092 ships `/{locale}/{destinations}` and publishes the link id; until then the crumb
-    // is text, never a link to a 404.
-    expect(crumbs[1]?.href).toBeUndefined();
+    // TASK-092 shipped the hub and published its link id: the crumb is a link to a 200 document,
+    // and `destinationsHubHref()` is the one predicate that decided so.
+    expect(crumbs[1]?.href).toBe("/en/send-flowers-to");
     expect(crumbs[2]?.current).toBe(true);
   });
 

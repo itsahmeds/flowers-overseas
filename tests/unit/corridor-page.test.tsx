@@ -141,9 +141,11 @@ describe("the guide state (AC-8, AC-19)", () => {
     expect(body).toContain("Also kept here, with no date of its own");
   });
 
-  it("marks the breadcrumb leaf and renders the unpublished hub crumb as text", () => {
+  it("marks the breadcrumb leaf and links the hub crumb now that the hub exists", () => {
     expect(html).toContain('aria-current="page"');
-    expect(html).not.toContain('href="/en/send-flowers-to"');
+    // TASK-092 shipped `/{locale}/{destinations}` and published its link id, so the middle crumb
+    // is a link — from the same view model, with no edit to the breadcrumb component.
+    expect(html).toContain('href="/en/send-flowers-to"');
   });
 
   it("renders no shop entry while nothing is published", () => {

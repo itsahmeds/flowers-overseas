@@ -40,10 +40,9 @@ import {
   COUNTRIES,
   type CountryConfig,
   type CountryIso2,
-  countrySlug,
   destinationStateKey,
-  isCorridorPagePublished,
 } from "../../../config/countries.ts";
+import { corridorLinkHref } from "../../geo";
 import { localePath, sortBy } from "../../i18n";
 
 /**
@@ -97,7 +96,7 @@ export interface FinderDestination {
   readonly iso2: CountryIso2;
   /** `destinations.{iso}.name` — the name is catalogue copy, never a literal (§7). */
   readonly nameKey: string;
-  /** `destinations.state.deliveringNow` | `destinations.state.guideWaitingList`. */
+  /** `destinations.state.deliveringNow` | `destinations.state.guideNotDelivering`. */
   readonly stateKey: string;
   /** True for the one `status: "live"` destination; the state *word* carries the meaning. */
   readonly delivering: boolean;
@@ -128,9 +127,7 @@ export function finderDestinations(
       nameKey: country.nameKey,
       stateKey: destinationStateKey(country),
       delivering: country.status === "live",
-      href: isCorridorPagePublished(country.iso2)
-        ? localePath(locale, "destinations", countrySlug(country.iso2, locale))
-        : undefined,
+      href: corridorLinkHref(country.iso2, locale),
     }),
   );
 }
@@ -179,8 +176,7 @@ export function finderDestinationGroups(
  * somewhere that does not exist.
  */
 export function finderTarget(locale: string, iso2?: CountryIso2): string {
-  if (iso2 !== undefined && isCorridorPagePublished(iso2)) {
-    return localePath(locale, "destinations", countrySlug(iso2, locale));
-  }
+  const href = iso2 === undefined ? undefined : corridorLinkHref(iso2, locale);
+  if (href !== undefined) return href;
   return `${localePath(locale, "home")}#${DESTINATIONS_ANCHOR}`;
 }
