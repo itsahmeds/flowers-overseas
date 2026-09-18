@@ -54,9 +54,9 @@ test.describe("existence and the 404 shapes (AC-1, T-01)", () => {
       "/en/poland/bouquets",
       // an unknown locale
       "/fr/poland/flowers",
-      // the category hub and the bare page segment (§13 Q4) — TASK-112/113's URLs, and until they
-      // exist, a 404 rather than a thin page
-      "/en/flowers/roses",
+      // the bare page segment (§13 Q4): no country-less categories index ships. The category hub
+      // one level down (`/en/flowers/roses`) is TASK-112's and now answers 200 — its own matrix
+      // lives in `tests/e2e/hubs.spec.ts`.
       "/en/flowers",
     ]) {
       const response = await request.get(url, { maxRedirects: 0 });

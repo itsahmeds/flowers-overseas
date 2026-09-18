@@ -395,6 +395,18 @@ export {
   CountryShopRootPage,
   type CountryShopRootPageProps,
 } from "./ui/CountryShopRootPage.tsx";
+// The two destination-less hubs (spec 008 §2 rows 10 and 13, AC-7/AC-11; TASK-112). They are two
+// components and not one with a flag: the block order, the date table and the picker differ, and
+// §5.3 gives each its own state list and its own artboard. What they share — the card, the grid,
+// the breadcrumb, the view model and the no-money sentence — they share by composition.
+export {
+  CategoryHubPage,
+  type CategoryHubPageProps,
+} from "./ui/CategoryHubPage.tsx";
+export {
+  OccasionHubPage,
+  type OccasionHubPageProps,
+} from "./ui/OccasionHubPage.tsx";
 export {
   ListingBreadcrumb,
   type ListingBreadcrumbProps,

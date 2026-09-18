@@ -659,6 +659,46 @@
     "reviewed": false,
     "sourceHash": "f647ed8788feac99d2b45ea110df02f10a6f52f54de9195ba370c0b2b70df9d4"
   },
+  "categoryHub.destinationCount": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "19ccf94a00fc535b720ff43fcd6bd4940a3e9816f1ce5040298f782a1ee2d138"
+  },
+  "categoryHub.destinationLink": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "401d41f4d61cc74f76a6bb229c21b43d312434cde799f1b7907f154a4c186e57"
+  },
+  "categoryHub.destinationPending": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "a7f43dcda945f6c232ec97de479c3fb79673155a168dc40cbb2ebac16b8a44f9"
+  },
+  "categoryHub.destinationsEyebrow": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "d2ad26b6e716d82be4283748aacb6a7598e218f6c896031ec567e5e8ef96f361"
+  },
+  "categoryHub.destinationsHeading": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "ad9f000be694d1d2c95f603ac3c4a1da1761c98d6a53d1c3898138125a9279ad"
+  },
+  "categoryHub.h1": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "33f46a0509d292c68111452969ebe246863cd99f424cd5e541fb69410226d7bc"
+  },
+  "categoryHub.productsEyebrow": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "49827550360bc1158ae932daab3416871ffe0f43e162946be9d1d6cc1f95da51"
+  },
+  "categoryHub.productsHeading": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "f65e7db6dff727e7eca79e45ab1b6e2dbbab7662587abbfe75a7e0a451083603"
+  },
   "chooser.heading": {
     "source": "machine",
     "reviewed": false,
@@ -2009,6 +2049,61 @@
     "reviewed": false,
     "sourceHash": "14c03fcaa8c30420882c8b0fded3edfde4244a977d4ef566ffb0862ba1c30267"
   },
+  "occasionHub.countryColumn": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "701d021d08c54579f23343581e45b65ffb1150b2c99f94352fdac4b7036dbbd5"
+  },
+  "occasionHub.dateColumn": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "99c40ab405926cb5ad1def9cff4d7ce624f8f8abfff4e85f655347fcb949d08e"
+  },
+  "occasionHub.dateUnknown": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "85a52423c7244ec6130825e737e2bebe91f77a7ed1478b31a7903d2e3962baac"
+  },
+  "occasionHub.datesCaption": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "6b775d818b5d6a0e88a9620075989dd5dec50856b14b6a53cd5ff04750153775"
+  },
+  "occasionHub.datesEyebrow": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "5a92bc5291e2420b8a9205877437cc7281aa375b78c32145c29c25ae8260037e"
+  },
+  "occasionHub.datesHeading": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "b4e4eb6a69cfe57f26e4b4bd9ce8ab2503e1bbf4450c05eeefbb47a24ea208a7"
+  },
+  "occasionHub.destinationLink": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "c8f9aeab10629256ff5a938239b943cabae77703d1c1142dbe16193f975d9991"
+  },
+  "occasionHub.destinationsHeading": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "b0816f007940e32dda26c92eed56c902f8fc47d5a28425b685bbc1456c3d2db6"
+  },
+  "occasionHub.h1": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "48695298cd5baa712cdae671b3a0f392d18e0082f1b882fc70f69776a4164b11"
+  },
+  "occasionHub.productsEyebrow": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "d2b2901ebd36c8640300a9b96366ce4707cac214167e51d3120f8f7d0babb7aa"
+  },
+  "occasionHub.productsHeading": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "8b65d7668eccbf4c6e6123dfc000c5b4dcc66b33cdbd9ec253a1f7a5b117f989"
+  },
   "occasions.anniversary.name": {
     "source": "machine",
     "reviewed": false,
@@ -2094,6 +2189,11 @@
     "reviewed": false,
     "sourceHash": "4814fc4bfbee31d3178b6eff12045e53fba62eee1c01f82b5c2094a07e9c23d0"
   },
+  "shop.card.noPrice": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "293d08f61bba4dfa72c29578c5013b9fecbed58e92f96c0600902c98a1f069cf"
+  },
   "shop.category.lede": {
     "source": "machine",
     "reviewed": false,
@@ -2158,6 +2258,11 @@
     "source": "machine",
     "reviewed": false,
     "sourceHash": "fb10e6e0ef520a1a17e2ef55052654cf6dda14260aabc413c30fc9b801269f97"
+  },
+  "shop.hub.noMoney": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "d6c78659f21708394b63d5fd407783f26e51433cb3559df3339d7f98f7905a68"
   },
   "shop.occasion.dateNote": {
     "source": "machine",

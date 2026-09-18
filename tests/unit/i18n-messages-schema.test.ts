@@ -395,6 +395,12 @@ describe("the shipped catalogues and manifests", () => {
       // state. Every component that reads it is a Server Component, so it reaches no client
       // provider and costs no client bytes (spec 008 §5.4).
       "shop",
+      // Spec 008 §7's two hub namespaces (TASK-112): the `h1` patterns, the destination picker's
+      // headings and the date table's caption and columns. The "prices depend on where it is
+      // going" sentence is **one** key in `shop.hub` rather than one per hub, because both
+      // artboards draw the same sentence and one sentence is one thing to review.
+      "categoryHub",
+      "occasionHub",
     ];
     const provenanceLabel: Messages["media"]["provenance"]["aiExample"] =
       enSource.media.provenance.aiExample;

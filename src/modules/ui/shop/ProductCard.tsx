@@ -24,6 +24,15 @@
  * are wrapped in `<bdi>` so a Latin product name inside an RTL run — `/ar-XB`, and Arabic when it
  * ships — cannot reorder the digits of the price beside it (T-30).
  *
+ * **Or no price at all** (spec 008 §14 **A3**, **AC-7**; TASK-112). A destination-less hub shows
+ * the same card with the money removed: it takes a `HubCardView`, which is this schema without
+ * `price` and `priceLabelKey`, and prints the one line that says why there is none instead of an
+ * amount. There is no second card component — the geometry, the heading level, the photo box and
+ * the provenance note are the same objects on both hubs and every country-scoped listing, which is
+ * what keeps a card lifted from one surface to another from changing its claims. Which branch is
+ * taken is decided by the **shape**, through `hasCardPrice()`: a country-scoped card cannot reach
+ * the priceless branch, because its schema has no way to be missing a price.
+ *
  * Server Component. No state, no client bytes (§5.4).
  */
 import { useTranslations } from "next-intl";
@@ -39,10 +48,10 @@ import { Photo } from "../primitives/Photo.tsx";
 import { Stack } from "../primitives/layout.tsx";
 import { Display, Text } from "../primitives/typography.tsx";
 
-import type { ProductCardView } from "./viewModel.ts";
+import { type ListingCardView, hasCardPrice } from "./viewModel.ts";
 
 export interface ProductCardProps {
-  readonly card: ProductCardView;
+  readonly card: ListingCardView;
   readonly locale: LocaleCode;
   /**
    * The page's single LCP candidate — the first photograph of the first card, and nowhere else
@@ -71,6 +80,7 @@ export function ProductCard({
 }: ProductCardProps): ReactElement {
   const catalog = useTranslations("catalog");
   const media = useTranslations("media");
+  const shop = useTranslations("shop");
 
   const photo =
     card.photo.kind === "asset" ? (
@@ -105,12 +115,25 @@ export function ProductCard({
       <Display as={headingLevel} size="lg">
         <bdi>{card.name}</bdi>
       </Display>
-      <Text as="span" size="lg" className="font-semibold">
-        <bdi>{formatMoney(card.price, locale)}</bdi>
-      </Text>
-      <Text as="span" size="xs" tone="muted">
-        {catalog("price.inclusive")}
-      </Text>
+      {hasCardPrice(card) ? (
+        <>
+          <Text as="span" size="lg" className="font-semibold">
+            <bdi>{formatMoney(card.price, locale)}</bdi>
+          </Text>
+          <Text as="span" size="xs" tone="muted">
+            {catalog("price.inclusive")}
+          </Text>
+        </>
+      ) : (
+        /* The hub card's one line, in the place the price would be and drawn there on both hub
+           artboards: the claim stands beside the thing it is about, so a card lifted into another
+           surface carries its own explanation (the reasoning of spec 008 §14 A2, applied to the
+           absence of a price rather than to the provenance of a photograph). The page also carries
+           the fuller sentence once, above the grid (AC-7). */
+        <Text as="span" size="xs" tone="muted">
+          {shop("card.noPrice")}
+        </Text>
+      )}
     </>
   );
 
@@ -120,6 +143,7 @@ export function ProductCard({
       gap="sm"
       data-fo-product-card={card.productId}
       data-fo-product-card-kind={card.href === undefined ? "tile" : "link"}
+      data-fo-product-card-money={hasCardPrice(card) ? "priced" : "none"}
     >
       {card.href === undefined ? (
         body

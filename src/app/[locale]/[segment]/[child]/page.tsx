@@ -3,7 +3,9 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import {
+  CategoryHubPage,
   CountryShopRootPage,
+  OccasionHubPage,
   listingAlternatePaths,
   listingView,
   localeChildParams,
@@ -35,16 +37,18 @@ import {
  * Two page types share this depth and therefore this file:
  *
  * ```
- * /{locale}/{destinations}/{countrySlug}   spec 007's corridor page   (TASK-091)
- * /{locale}/{countrySlug}/{shopCategory}   spec 008's country shop root
+ * /{locale}/{destinations}/{countrySlug}   spec 007's corridor page       (TASK-091)
+ * /{locale}/{countrySlug}/{shopCategory}   spec 008's country shop root   (TASK-109)
+ * /{locale}/{shopCategory}/{categorySlug}  spec 008's category hub        (TASK-112)
+ * /{locale}/{occasions}/{occasionSlug}     spec 008's occasion hub        (TASK-112)
  * ```
  *
  * They cannot each own a route file: Next.js allows exactly one dynamic slug **name** per (depth,
  * position) across the whole `app/` tree, route groups included, and `getSortedRoutes` throws on
  * `[destinations]/[country]` beside `[country]/[shopCategory]` at build *and* at server start. A
  * catch-all does not rescue it — the router returns the **first** matching dynamic route, so with
- * `dynamicParams = false` the corridor route would answer 404 for every shop URL. TASK-112's
- * occasion hub and the category hub join this file with one more branch of the same resolver.
+ * `dynamicParams = false` the corridor route would answer 404 for every shop URL. The two hubs
+ * joined this file the same way: one branch of the same resolver each, and no new route file.
  *
  * `app/` stays thin: this file resolves one path, mounts one module page component and decides
  * nothing. `resolveLocalePath()` is the single resolver, and it reads the existence sets that
@@ -202,6 +206,55 @@ export async function generateMetadata({
     });
   }
 
+  if (match.kind === "categoryHub" || match.kind === "occasionHub") {
+    const view = await listingView(
+      {
+        locale: match.locale,
+        pageType: match.kind,
+        entity: match.slug,
+      },
+      { from: windowStart(), deployment },
+    );
+    if (view === undefined) notFound();
+    // The hub's `<title>` and description are the **authored** ones the founder wrote for this
+    // category or occasion (spec 006's copy corpus), carried here on the one view model rather
+    // than read from the copy files by this route (§5.2's single source). A template would give
+    // twenty-three hubs twenty-three near-identical titles, which is §6's duplication risk in the
+    // one place it is cheapest to avoid. The fallback is the page's own `h1` — never a literal.
+    const hub = await getTranslations({
+      locale: match.locale,
+      namespace: match.kind === "categoryHub" ? "categoryHub" : "occasionHub",
+    });
+    const entity = view.entity?.name ?? "";
+    const cluster = deployment.siteUrl.startsWith("https:")
+      ? alternatesFor(
+          {
+            pathByLocale: await listingAlternatePaths({
+              pageType: match.kind,
+              locale: match.locale,
+              ...(view.entity === undefined
+                ? {}
+                : { entityKey: view.entity.key }),
+            }),
+          },
+          { baseUrl: deployment.siteUrl },
+        ).find((page) => page.url.endsWith(view.path))?.alternates
+      : undefined;
+
+    return pageMetadata({
+      title: view.entity?.seoTitle ?? hub("h1", { entity }),
+      // The authored description, then the authored intro the page itself renders: both are
+      // founder-written copy about this entity, and neither is a literal composed here.
+      description:
+        view.entity?.seoDescription ?? view.intro ?? hub("h1", { entity }),
+      directive: view.directive,
+      canonical: canonicalFor(match.locale, view.path, {
+        baseUrl: deployment.siteUrl,
+      }),
+      ...(cluster === undefined ? {} : { alternates: cluster }),
+    });
+  }
+
   notFound();
 }
 
@@ -259,6 +312,20 @@ export default async function LocaleChildRoute({ params }: ChildParams) {
     if (view === undefined) notFound();
     setRequestLocale(match.locale);
     return <CountryShopRootPage view={view} />;
+  }
+
+  if (match.kind === "categoryHub" || match.kind === "occasionHub") {
+    const view = await listingView(
+      { locale: match.locale, pageType: match.kind, entity: match.slug },
+      { from: windowStart() },
+    );
+    if (view === undefined) notFound();
+    setRequestLocale(match.locale);
+    return match.kind === "categoryHub" ? (
+      <CategoryHubPage view={view} />
+    ) : (
+      <OccasionHubPage view={view} />
+    );
   }
 
   notFound();

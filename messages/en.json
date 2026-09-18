@@ -792,6 +792,35 @@
       "shopRootLink": "Flowers for {country}",
       "seoTitle": "{occasion} flowers for {country} — and {country}'s own date for it",
       "seoDescription": "Every bouquet our florist in {country} can make for {occasion}, with one all-in price that includes VAT and delivery. Nothing can be ordered yet."
+    },
+    "card": {
+      "noPrice": "No price here — the price depends on the destination"
+    },
+    "hub": {
+      "noMoney": "We show no price on this page, because the price depends on where the flowers are going. Choose a destination and every price you see there includes VAT and delivery."
     }
+  },
+  "categoryHub": {
+    "h1": "Sending {entity}",
+    "destinationsEyebrow": "First, the destination",
+    "destinationsHeading": "Where are they?",
+    "destinationCount": "{count, plural, one {We can make # of them there.} other {We can make # of them there.}}",
+    "destinationLink": "See them with prices for {country}",
+    "destinationPending": "No page yet. We are choosing florists here, and this becomes a link the day one of them starts taking our orders.",
+    "productsEyebrow": "Then, what we make",
+    "productsHeading": "Our {entity}"
+  },
+  "occasionHub": {
+    "h1": "{entity}, country by country",
+    "datesEyebrow": "The dates",
+    "datesHeading": "When it falls, where we deliver",
+    "datesCaption": "{entity} in every destination we cover, computed from each country's own rule",
+    "countryColumn": "Country",
+    "dateColumn": "Date",
+    "dateUnknown": "Omitted — we cannot compute this country's date yet",
+    "productsEyebrow": "What we make for it",
+    "productsHeading": "Flowers for {entity}",
+    "destinationsHeading": "Where we have a page for it",
+    "destinationLink": "{entity} flowers for {country}"
   }
 }

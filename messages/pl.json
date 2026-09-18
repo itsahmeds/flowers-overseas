@@ -185,6 +185,16 @@
       "stems": "{count, plural, one {# łodyga} few {# łodygi} many {# łodyg} other {# łodyg}}"
     }
   },
+  "categoryHub": {
+    "destinationCount": "{count, plural, one {Możemy tam wykonać # z nich.} few {Możemy tam wykonać # z nich.} many {Możemy tam wykonać # z nich.} other {Możemy tam wykonać # z nich.}}",
+    "destinationLink": "See them with prices for {country}",
+    "destinationPending": "No page yet. We are choosing florists here, and this becomes a link the day one of them starts taking our orders.",
+    "destinationsEyebrow": "First, the destination",
+    "destinationsHeading": "Where are they?",
+    "h1": "Sending {entity}",
+    "productsEyebrow": "Then, what we make",
+    "productsHeading": "Our {entity}"
+  },
   "chooser": {
     "heading": "Choose your language",
     "intro": "We send flowers to someone in another European country: you order from us, and our florist in their town makes the bouquet and hands it over in person. Choose a language to continue."
@@ -669,6 +679,19 @@
       "pricesInclude": "Prices include delivery and VAT"
     }
   },
+  "occasionHub": {
+    "countryColumn": "Country",
+    "dateColumn": "Date",
+    "dateUnknown": "Omitted — we cannot compute this country's date yet",
+    "datesCaption": "{entity} in every destination we cover, computed from each country's own rule",
+    "datesEyebrow": "The dates",
+    "datesHeading": "When it falls, where we deliver",
+    "destinationLink": "{entity} flowers for {country}",
+    "destinationsHeading": "Where we have a page for it",
+    "h1": "{entity}, country by country",
+    "productsEyebrow": "What we make for it",
+    "productsHeading": "Flowers for {entity}"
+  },
   "occasions": {
     "anniversary": {
       "name": "Anniversary",
@@ -711,6 +734,9 @@
     }
   },
   "shop": {
+    "card": {
+      "noPrice": "No price here — the price depends on the destination"
+    },
     "category": {
       "lede": "{count, plural, one {Jeden bukiet, który nasz florysta ułoży w mieście odbiorcy rano w dniu dostawy.} few {# bukiety, które nasz florysta ułoży w mieście odbiorcy rano w dniu dostawy.} many {# bukietów, które nasz florysta ułoży w mieście odbiorcy rano w dniu dostawy.} other {# bukietu, które nasz florysta ułoży w mieście odbiorcy rano w dniu dostawy.}} Każdy w jednej cenie — z VAT-em i dostawą już w środku.",
       "seoDescription": "The {entity} our florists can make in {country}, each with one price that includes VAT and delivery. Nothing can be ordered yet.",
@@ -731,6 +757,9 @@
       "countryCategory": "{entity} we make for {country}",
       "countryOccasion": "{occasion} flowers for {country}",
       "countryShopRoot": "Flowers we make for {country}"
+    },
+    "hub": {
+      "noMoney": "We show no price on this page, because the price depends on where the flowers are going. Choose a destination and every price you see there includes VAT and delivery."
     },
     "occasion": {
       "dateNote": "That is the date {country} keeps for it, worked out from that country's own rule. It can fall on a different day from the one you keep at home.",

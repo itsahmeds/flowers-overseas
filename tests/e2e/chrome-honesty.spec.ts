@@ -32,8 +32,7 @@ const PATTERNS = [
 /**
  * Every Phase 0 document, by page type. The locale chooser is the site root (spec 003),
  * `destinations hub` is TASK-092's all-destinations page (spec 007 AC-20), `country shop root` is
- * TASK-109's and `/dev/components` is the component gallery. Spec 008's category and occasion hubs
- * inherit this list the moment they have a URL.
+ * TASK-109's, the two **hubs** are TASK-112's and `/dev/components` is the component gallery.
  */
 const PAGES: readonly { readonly type: string; readonly path: string }[] = [
   { type: "hub (locale chooser)", path: "/" },
@@ -67,6 +66,13 @@ const PAGES: readonly { readonly type: string; readonly path: string }[] = [
   { type: "country occasion", path: "/en/poland/occasions/mothers-day" },
   { type: "country occasion", path: "/en-gb/poland/occasions/mothers-day" },
   { type: "country occasion", path: "/en/germany/occasions/mothers-day" },
+  // The destination-less hubs (TASK-112). They print no money at all, so a ranking claim would
+  // have nothing to rank and a delivery promise nothing to promise — which is exactly why they
+  // are scanned: the chrome around them is the same chrome, and A19's sweep is whole-document.
+  { type: "category hub", path: "/en/flowers/roses" },
+  { type: "category hub", path: "/en-gb/flowers/roses" },
+  { type: "occasion hub", path: "/en/occasions/mothers-day" },
+  { type: "occasion hub", path: "/en-gb/occasions/mothers-day" },
   { type: "gallery", path: "/dev/components" },
 ];
 

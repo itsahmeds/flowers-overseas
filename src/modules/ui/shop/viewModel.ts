@@ -115,6 +115,37 @@ export const ProductCardViewSchema = z
 export type ProductCardView = z.infer<typeof ProductCardViewSchema>;
 
 /**
+ * **A hub's card: the same card with the money removed** (spec 008 §14 **A3**; §2, §8; TASK-112).
+ *
+ * A destination-less category or occasion hub shows product names and photographs and **no price
+ * at all**, because a price without a destination would be wrong for every destination but one
+ * (005 §13 Q10, binding). `ProductCardViewSchema` makes `price` and `priceLabelKey` *required*
+ * precisely so no country-scoped card can ship priceless, so the hub's card is that schema with
+ * the two money fields omitted — "hubs show no money" as a fact about the type rather than a rule
+ * a renderer is asked to remember. `ProductCard` takes either, and renders a price only where the
+ * shape carries one; there is no second card component and no second grid (§5.2's one-source rule).
+ *
+ * It lives here, beside the schema it is derived from, so the two cannot drift and so
+ * `modules/catalog` (which re-exports it) keeps importing one direction only.
+ */
+export const HubCardViewSchema = ProductCardViewSchema.omit({
+  price: true,
+  priceLabelKey: true,
+});
+export type HubCardView = z.infer<typeof HubCardViewSchema>;
+
+/** Either card, as `ProductCard` and `ListingGrid` accept them. */
+export type ListingCardView = ProductCardView | HubCardView;
+
+/**
+ * Does this card carry money? The one discriminator both components use — a type predicate rather
+ * than an optional `price`, so a country-scoped card can never reach a renderer without one.
+ */
+export function hasCardPrice(card: ListingCardView): card is ProductCardView {
+  return "price" in card;
+}
+
+/**
  * A category tile (spec 008 §5.2). The **only** place a "from" price is allowed: a tile stands for
  * a set, so its lowest default-tier price is a payable number that has to be labelled as a floor.
  * `fromPrice` is absent on a destination-less hub, where §2 permits no money at all.
