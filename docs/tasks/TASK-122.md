@@ -39,17 +39,92 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per `/review`, newest last.
 
-- **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
 
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- **2026-09-18 — `plan/13` D7 (FR Fête des Mères / Pentecost), recorded, not solved.** FR Fête des
+  Mères is the last Sunday of May *unless* that Sunday is Pentecost, when it is the first Sunday
+  of June; `last_weekday` cannot express the exception. The committed FR `mothers_day` rule is
+  correct 2026–2033 and wrong in 2034, 2039, 2042, 2045, 2050, 2053, and FR is not live, so
+  nothing renders wrongly today. **No eighth rule type here** (the brief's instruction). The
+  `default:` narrowing in `occasionDate` is the seam it must come through, and the unit suite's
+  placeholder kind was renamed `pentecost_exception` so that seam stays covered at 100 % branches.
+  Recorded in spec 009 §14 A1. → orchestrator, before FR goes live. **open**.
+- **2026-09-18 — the DB CHECK constraint for the seventh `rule_type` (schema change the spec did
+  not list).** `db/schema/geo.ts`'s `occasionRuleTypes` and migration `0002`'s
+  `occasion_country_rule_type_check` still list six values, and `toOccasionCountryRow()` projects
+  `rule_type = 'orthodox_easter_offset'` onto that column. Spec 009 §5.2 scopes this task to "the
+  existing … occasion-rule schema, extended by one union member", so **no migration was written**;
+  a versioned migration with its rollback belongs to a spec 002 task before the importer
+  (TASK-083) runs. Nothing is broken in Phase 0 — the calendar is a committed JSON import and no
+  `occasion_country` row exists. Recorded in spec 009 §14 A2. → orchestrator. **open**.
+- **2026-09-18 — Andrzejki and Wigilia PL rows not shipped (material ambiguity, sub-clause
+  blocked).** §5.2 asks for them as `fixed` rows in `seed/data/occasion-country.json`, but
+  `seed:check` requires each `occasionKey` to be a row of `occasions.json` **and** a value of
+  `taxonomy.json`'s `occasion` facet, so the two rows need two new catalogue occasion keys and
+  everything that hangs off them: `seasonalOccasions`, `occasions.data.ts` rows with two new
+  `catalog.facet.occasion.*` keys in four message files, the projected `occasions.json` and
+  `taxonomy.json`, authored per-locale copy (name, slug, `descriptionMd`, `seoTitle`,
+  `seoDescription`) for `en`/`de`/`pl`, and the assertions pinning 32 occasions and 126 calendar
+  rows. That is spec 005/006 dataset and content scope under ADR-0017 and contradicts this brief's
+  "no message keys (occasion names already exist)". The two occasions are **not blocked on the
+  calendar**: the homepage strip renders them from `src/config/occasions.ts`'s authored dates
+  (spec 004), unchanged. Recorded in spec 009 §14 A3. → orchestrator / founder: authorise a spec
+  005/006 taxonomy task, or withdraw §5.2's sentence. **open**.
+
+- **Answers recorded 2026-09-18 (orchestrator).** Escalation 2 (the `occasion_country_rule_type_check` still lists six values) → **spec 009 §14 A5 / spec 002 §14 A5**: migration `0003` under **TASK-016** widens the check to seven values with a rollback; carry-forward is on `main` in `docs/tasks/TASK-016.md`. Escalation 3 (Andrzejki and Wigilia need catalogue keys, facet values and four-locale copy) → **spec 009 §14 A4**: the two rows ship in **TASK-106**; carry-forward is on `main` in `docs/tasks/TASK-106.md`. AC-12 is read as satisfied by TASK-122 + TASK-106 together. `plan/13` D7 stays recorded, not solved.
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
-
-_Pending._
+PR [#79](https://github.com/itsahmeds/flowers-overseas/pull/79) — `feat(occasions):
+orthodox_easter_offset rule type and the RO 2026–2030 fixture (TASK-122)`. `occasionDate` gained
+the seventh rule type `orthodox_easter_offset(days)`: the Julian computus (Meeus's Julian
+algorithm) converted to the Gregorian calendar through a **Julian Day Number** rather than a "+13
+days" century constant, plus a day offset; `orthodoxEasterSunday(year)` is exported beside
+`easterSunday(year)` through the `occasions` and `geo` barrels. The six existing rule types, their
+fixtures and `occasionDate`'s signature are untouched, and the `default:` narrowing to `never`
+still makes an eighth type a compile error. The rule union and `occasionRuleTypes` each gained one
+member (appended, so the six keep their `plan/03` §9 order), so an unknown rule type is still a
+parse error and `pnpm seed:check` fails on it — pinned by a new case in `tests/unit/
+seed-schemas.test.ts`. Seed: RO `easter` migrated from `rule_type: "none"` to
+`orthodox_easter_offset(0)` with the file's documented 14-day Easter campaign window, and
+`seed/snapshot/occasion_country.json` re-projected (`pnpm seed:diff --write`: 1 update, 0
+conflicts); PL name days stay undated; RO Easter left `observedUndatedOccasions()` with no change
+to that function. **The RO 2026–2030 dates — 12 Apr 2026, 2 May 2027, 16 Apr 2028, 8 Apr 2029,
+28 Apr 2030 — were verified before commit** against the Romanian Patriarchate's own calendar
+(`https://calendar.patriarhia.ro/`, retrieved 2026-09-18, which publishes 2026 and prints
+5 Apr Floriile, 12 Apr Învierea Domnului, 21 May Înălțarea, 31 May Rusaliile — so the offsets are
+verified as well as the anchor) and, for 2027–2030, two independent tables of the Julian computus
+plus the Meeus Julian algorithm worked by hand; the sources are cited in the header of
+`tests/fixtures/occasions.ts`. Numbers: fixture table 65 rules × 5 years = **325 dates** (was
+62 × 5 = 310), with three new `inSeed: false` Romanian reference rows (Floriile −7, Înălțarea +39,
+Rusaliile +49); unit suite **171 files / 4 161 passed / 5 skipped / 0 failed**;
+`src/modules/geo/occasions/**` at **100 % statements, branches, functions and lines**, the
+`vitest.coverage.json` gate unchanged; `seed:check` 39 files, nine rule families clean;
+`typecheck`, `lint`, `format:check` and `codebase:map --check` green. The dataset flip was also
+exercised end-to-end **once, before the coordinator's single-build-slot correction arrived**, in a
+scratch clone of `main` with the patch applied: **e2e 751 passed / 3 failed**, **a11y 73 passed**,
+**visual 40 passed / 2 failed** — and every one of those five failures is identically red on the
+unpatched tree (verified by a second build of clean `main`): `corridor.spec.ts:52` and
+`destinations-hub.spec.ts:113` 404 shapes, `home.spec.ts:378` type-ahead mouse pick,
+`listing.spec.ts:40` and `notices.spec.ts:210` visual baselines. Those Playwright suites were not
+re-run afterwards (the machine allows one build/Playwright slot at a time and TASK-109 holds it),
+so **the reviewer should take the dataset-reading e2e and visual suites from CI**. CI on PR #79:
+`lint`, `typecheck`, `db-check`, `test-integration`, `test-contract`, `seed-check`,
+`catalogue-check`, `corridor-check`, `seo-validate`, `i18n-check`, `env-build-failure`,
+`dev-os-check` and `audit` all green; two reds that are artefacts rather than findings —
+`test-unit` **4 165 / 4 166 passed** with one 5 s **timeout flake** in
+`tests/unit/catalog-geo-surface.test.ts` on a runner saturated by the 169 s `media-variants` test
+(the same file passes locally in 2.4 s and is untouched by this task), and `commitlint`, which
+failed only because the run was a `workflow_dispatch` and so had empty `BASE_SHA`/`HEAD_SHA` — a
+`pull_request` event lints the range properly. One environment caveat: **`pnpm lint` and
+`tests/unit/module-boundaries.test.ts` are red inside a `.claude/worktrees/…` path** (37
+`import/no-restricted-paths` errors on `@/modules/*` barrels in files this task does not touch) —
+the resolver does not see the dot-directory; both are green at an ordinary path and in CI. Handed
+on: the three `## Escalations` above
+— `plan/13` D7 (recorded, not solved), the stale spec 002 `occasion_country_rule_type_check`
+CHECK list (needs a migration + rollback from a spec 002 task before the importer runs), and the
+Andrzejki/Wigilia rows (need two new catalogue occasion keys and their per-locale copy; spec
+005/006 scope) — all three also written into spec 009 §14 as A1, A2, A3.

@@ -16,6 +16,7 @@ import {
   SeedOccasionCountryRegistrySchema,
   SeedOccasionCountrySchema,
   SeedProductSchema,
+  occasionRuleTypes,
 } from "../../seed/schema/catalogue.ts";
 import { SeedCopySchema } from "../../seed/schema/copy.ts";
 import {
@@ -295,7 +296,7 @@ describe("SeedOccasionCountrySchema: plan/03 §9's rule types as data", () => {
     promoStartOffsetDays: 14,
   } as const;
 
-  it("accepts each of the six rule types", () => {
+  it("accepts each of the seven rule types", () => {
     const rules = [
       { ruleType: "fixed", rule: { kind: "fixed", month: 2, day: 14 } },
       {
@@ -308,6 +309,10 @@ describe("SeedOccasionCountrySchema: plan/03 §9's rule types as data", () => {
       },
       { ruleType: "easter_offset", rule: { kind: "easter_offset", days: 39 } },
       { ruleType: "lent_sunday", rule: { kind: "lent_sunday", n: 4 } },
+      {
+        ruleType: "orthodox_easter_offset",
+        rule: { kind: "orthodox_easter_offset", days: 49 },
+      },
     ] as const;
     for (const variant of rules) {
       expect(
@@ -315,6 +320,21 @@ describe("SeedOccasionCountrySchema: plan/03 §9's rule types as data", () => {
         variant.ruleType,
       ).toBe(true);
     }
+    // The list above is the whole closed set: a type added to `occasionRuleTypes` without a case
+    // here — and therefore without a seed gate that has seen it — fails (spec 009 AC-12).
+    expect(
+      [...rules.map((variant) => variant.ruleType), "none"].sort(),
+    ).toEqual([...occasionRuleTypes].sort());
+  });
+
+  it("rejects a rule type the evaluator cannot date, so `seed:check` fails on it (AC-12)", () => {
+    const unknown = SeedOccasionCountrySchema.safeParse({
+      ...row,
+      ruleType: "pentecost_exception",
+      rule: { kind: "pentecost_exception", days: 0 },
+    });
+    expect(unknown.success).toBe(false);
+    expect(issuePaths(unknown)).toContain("ruleType");
   });
 
   it("rejects a rule whose kind disagrees with its `ruleType` column", () => {

@@ -13,10 +13,11 @@
  *    `tests/unit/geo-occasions.test.ts`, where the assertion is free, and by `pnpm seed:check`.
  *  - **Everything is pure and synchronous**, so `generateStaticParams`, the rendered calendar and
  *    spec 009's date picker cannot disagree about when Muttertag is.
- *  - **An undated occasion is never invented.** A row whose rule is `none` (PL `name_day`, RO
- *    `easter` — `plan/13` B15) and a row the destination does not observe are both absent from
- *    every list here; spec 007 §2 renders the observed-but-undated ones in the "also observed
- *    here" line, which is `observedUndatedOccasions()` below, never with a guessed date.
+ *  - **An undated occasion is never invented.** A row whose rule is `none` (PL `name_day` —
+ *    `plan/13` B15; RO `easter` until spec 009 AC-12 dated it) and a row the destination does not
+ *    observe are both absent from every list here; spec 007 §2 renders the observed-but-undated
+ *    ones in the "also observed here" line, which is `observedUndatedOccasions()` below, never
+ *    with a guessed date.
  */
 import type { OccasionRule } from "../../../../seed/schema/catalogue.ts";
 
@@ -174,8 +175,9 @@ export function nextOccasions(
 
 /**
  * The occasions a destination observes but cannot date — spec 007 §2's "also observed here" line.
- * PL `name_day` and RO `easter` today (`plan/13` B15); the RO row leaves this list the day spec
- * 009 adds the Orthodox-Easter rule type, with no change here.
+ * PL `name_day` alone today (`plan/13` B15): the RO `easter` row left this list the day spec 009
+ * added the Orthodox-Easter rule type (TASK-122), with no change here, which is what the seam
+ * was for.
  */
 export function observedUndatedOccasions(
   countryIso2: string,

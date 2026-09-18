@@ -67,6 +67,7 @@ export {
   nextOccasions,
   observedUndatedOccasions,
   occasionDate,
+  orthodoxEasterSunday,
   upcomingOccasions,
 } from "./occasions/index.ts";
 // The corridor page: existence rule, states, view model and blocks (spec 007 §5.2; TASK-091).

@@ -83,13 +83,14 @@ export interface PhoneFixture {
  * The occasion-date corpus (spec 007 AC-21 / T-22, TASK-089), re-exported from `occasions.ts` for
  * the same reason `catalogue.ts` is re-exported here: the barrel is the one import a suite needs,
  * and no spec may invent a second copy of a shared input. `occasions.ts` carries the full table —
- * rule, label, provenance and the `null` years of the two undated rows — while this flat view is
- * the `{occasion, country, date}` shape spec 001 reserved. Spec 003's lead-time rows extend the
- * array; they must not redefine the shape.
+ * rule, label, provenance and the `null` years of the undated rows, and both Easter anchors
+ * (Gregorian and Orthodox) — while this flat view is the `{occasion, country, date}` shape spec
+ * 001 reserved. Spec 003's lead-time rows extend the array; they must not redefine the shape.
  */
 export {
   EASTER_SUNDAYS,
   OCCASION_FIXTURE_YEARS,
+  ORTHODOX_EASTER_SUNDAYS,
   type OccasionFixtureYear,
   type OccasionRuleFixture,
   occasionDates,

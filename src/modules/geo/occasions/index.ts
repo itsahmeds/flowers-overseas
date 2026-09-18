@@ -12,6 +12,7 @@ export {
   type OccasionRuleKind,
   easterSunday,
   occasionDate,
+  orthodoxEasterSunday,
 } from "./evaluate.ts";
 export {
   type DatedOccasion,
