@@ -217,9 +217,17 @@ describe("the finder card (AC-11)", () => {
     expect(text(html)).not.toContain("Delivering now");
   });
 
-  it("prints the cutoff in the recipient's town, as static copy", () => {
-    expect(text(hero("en"))).toContain(
+  it("prints no cutoff at all while no destination takes delivery dates", () => {
+    // Spec 004 §14 A19 (`/review 70`; TASK-120): the finder's cutoff sentence is gated on
+    // `anyDeliveryDatesOpen()`, false for every destination in Phase 0, and prints the honest
+    // form instead. The promise returns with the data flip and with no edit to the component.
+    const rendered = text(hero("en"));
+
+    expect(rendered).not.toContain(
       "Order by 14:00 in Warsaw for delivery today",
+    );
+    expect(rendered).toContain(
+      "Delivery dates open when we confirm our first florist",
     );
   });
 
@@ -231,11 +239,16 @@ describe("the finder card (AC-11)", () => {
    */
   it("states the cutoff in the same words as the header's utility strip (`/review 40`)", () => {
     const messages = loadMessages("en", ["finder", "nav"]) as {
-      finder: { cutoff: string };
-      nav: { utility: { cutoff: string } };
+      finder: { cutoff: string; datesPending: string };
+      nav: { utility: { cutoff: string; datesPending: string } };
     };
 
     expect(messages.finder.cutoff).toBe(messages.nav.utility.cutoff);
+    // The pin holds for the gated pair too (TASK-120): the two surfaces cannot phrase the
+    // *absence* of a cutoff differently either.
+    expect(messages.finder.datesPending).toBe(
+      messages.nav.utility.datesPending,
+    );
   });
 
   it("describes the country field with one sentence, not the whole section (`/review 40`)", () => {
@@ -351,7 +364,7 @@ describe("the four-fact proof row", () => {
       "The price you see is what we charge",
       "Delivery and VAT already in it",
       "We photograph it at the door",
-      "The picture reaches you the same day",
+      "We email you the picture of what was handed over",
     ]) {
       expect(rendered, fragment).toContain(fragment);
     }

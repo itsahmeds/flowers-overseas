@@ -68,6 +68,16 @@ export const CategoryConfigSchema = z
      * data so the header template carries no per-label branch.
      */
     accent: z.boolean().default(false),
+    /**
+     * **This row asserts a delivery date, so it renders only when one exists** (spec 004 §14 A19,
+     * widened by `/review 70`; TASK-120). `Same-day delivery` is a delivery-timing claim in the
+     * site chrome — spec 008 AC-6 refuses one on any page in any locale — and it sat in the
+     * category row of every page while no destination had an agreed cutoff. Gated on
+     * `anyDeliveryDatesOpen()` in `header-model.ts`, the one predicate A19 names, so this row and
+     * the picker can never disagree. Data, not a per-label branch in the header: the row comes
+     * back the day a florist's operations are authored, with no template edit.
+     */
+    requiresDeliveryDates: z.boolean().default(false),
   })
   .strict();
 
@@ -145,8 +155,13 @@ export const CATEGORY_NAV_LABEL_KEY = "nav.categories.label";
 /** The category row, in the canvas's order. */
 const categories = [
   {
-    id: "best-sellers",
-    labelKey: "nav.category.bestSellers",
+    // Renamed from `best-sellers` / `nav.category.bestSellers` by TASK-120. Spec 008 §8 and AC-9
+    // forbid describing the default order as "bestsellers", "most popular" or "recommended for
+    // you": we have no sales, no personalisation and no paid placement, so a ranking label was an
+    // unfair commercial practice with a true, cheap alternative available. The default order is a
+    // founder-set curation index, and "Our selection" is what that is.
+    id: "our-selection",
+    labelKey: "nav.category.ourSelection",
     published: false,
     owningSpec: "008",
     showOnMobile: true,
@@ -218,6 +233,7 @@ const categories = [
     labelKey: "nav.category.sameDayDelivery",
     shortLabelKey: "nav.category.sameDayShort",
     published: false,
+    requiresDeliveryDates: true,
     owningSpec: "009",
     showOnMobile: true,
     mobileOrder: 6,

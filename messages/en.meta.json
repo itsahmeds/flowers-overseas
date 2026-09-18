@@ -2055,7 +2055,12 @@
   "faq.whoDelivers.answer": {
     "source": "human",
     "reviewed": false,
-    "sourceHash": "4b3071dea77d24a9b34e35e9c16599766636363ac50aa850ebf8a0fb4ad68b04"
+    "sourceHash": "4fb42a019a8d260a954d26c052b027ca592a91bedc73d0e16e78d92bd2d87a1d"
+  },
+  "faq.whoDelivers.answerCutoff": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "be34d26efe25b3db5c225065e69831317af1dc6db2b5b2855f85c52e6c0f4e03"
   },
   "faq.whoDelivers.question": {
     "source": "human",
@@ -2083,6 +2088,13 @@
     "source": "human",
     "sourceHash": "fea75f4d1cbafaedad93df25360ca9feb40e42df79e793bffc15b0013f1ac7fb"
   },
+  "finder.datesPending": {
+    "source": "human",
+    "reviewed": true,
+    "sourceHash": "9a67a6d3d1965934676bf27c1f266853f041ac96a7bea0ba848c7d398efdf8ab",
+    "reviewedAt": "2026-09-18T00:00:00Z",
+    "reviewedBy": "founder"
+  },
   "finder.destinations.matches": {
     "reviewed": true,
     "reviewedAt": "2026-09-09T00:00:00Z",
@@ -2098,11 +2110,9 @@
     "sourceHash": "f86e629b8cf4c32fc69ba0b49358a8485fd93b95d076735ae33d7976e179c89a"
   },
   "finder.help": {
-    "reviewed": true,
-    "reviewedAt": "2026-09-09T00:00:00Z",
-    "reviewedBy": "founder",
     "source": "human",
-    "sourceHash": "67849587a5ac94c6375bed84d830ac60913da7e8573a0fe83077cae4055cc633"
+    "reviewed": false,
+    "sourceHash": "e4a0b26739c6bf8ad5f6627425fa6891dbebe26b1ce2bbb9286c8599d33fcb37"
   },
   "finder.submit": {
     "reviewed": true,
@@ -2375,10 +2385,8 @@
   },
   "home.howItWorks.choose.body": {
     "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
-    "reviewedAt": "2026-09-11T00:00:00Z",
-    "sourceHash": "39bd4ff93c9aa49e4c6887502e5789e310283418bcd736582d3110fff9c5959c"
+    "reviewed": false,
+    "sourceHash": "42c8abf145906610fe314621659195c2b485d56425412d6fefd5484454bf6cfb"
   },
   "home.howItWorks.choose.title": {
     "source": "human",
@@ -2493,11 +2501,9 @@
     "sourceHash": "f61a51a4f56ea46eefcbb66218ce1c66d3f08289747a5cbe3aca9c080b1c85ff"
   },
   "home.proof.photo.body": {
-    "reviewed": true,
-    "reviewedAt": "2026-09-09T00:00:00Z",
-    "reviewedBy": "founder",
     "source": "human",
-    "sourceHash": "f209d12581852bedf59fc578fa273716ce4e3d70cbc140941a857ab538528490"
+    "reviewed": false,
+    "sourceHash": "7c8aaf317e0a2891275c4ccb3e3f3c5c12e15d9e18d6b0c0811de76de46dfd7f"
   },
   "home.proof.photo.title": {
     "reviewed": true,
@@ -2732,13 +2738,6 @@
     "reviewedAt": "2026-09-09T00:00:00Z",
     "sourceHash": "ccfc53fcbd494330a3afbd856579cb719eea870425321dcd1d04e24576d24ed7"
   },
-  "nav.category.bestSellers": {
-    "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder",
-    "reviewedAt": "2026-09-09T00:00:00Z",
-    "sourceHash": "f96dd77abe46a719e137e65f1af8155cd1943ace99cdcf915492a2edf957bd70"
-  },
   "nav.category.birthday": {
     "source": "human",
     "reviewed": true,
@@ -2766,6 +2765,13 @@
     "reviewedBy": "founder",
     "reviewedAt": "2026-09-09T00:00:00Z",
     "sourceHash": "e5b8470758e19d1615b82228a3ab96d0fce4c772d8a45bb3fbd4c968ab88eb39"
+  },
+  "nav.category.ourSelection": {
+    "source": "human",
+    "reviewed": true,
+    "sourceHash": "a2040966ffe53f09022064db402c7d8c1ba1f1ddbccc5dccaad4caffe3812624",
+    "reviewedAt": "2026-09-18T00:00:00Z",
+    "reviewedBy": "founder"
   },
   "nav.category.plants": {
     "source": "human",
@@ -2854,6 +2860,20 @@
     "source": "human",
     "reviewed": false,
     "sourceHash": "bad21fbae17ec6d6a7769ec0e51a852218691bf82a71af6c9a19c297ead08b6e"
+  },
+  "nav.utility.datesPending": {
+    "source": "human",
+    "reviewed": true,
+    "sourceHash": "9a67a6d3d1965934676bf27c1f266853f041ac96a7bea0ba848c7d398efdf8ab",
+    "reviewedAt": "2026-09-18T00:00:00Z",
+    "reviewedBy": "founder"
+  },
+  "nav.utility.datesPendingShort": {
+    "source": "human",
+    "reviewed": true,
+    "sourceHash": "70abcb4a801e65818911a6b064d13bf6a5f2a5b5d4ea17c3166abb9f2ef5351d",
+    "reviewedAt": "2026-09-18T00:00:00Z",
+    "reviewedBy": "founder"
   },
   "nav.utility.guarantee": {
     "source": "human",

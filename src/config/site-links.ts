@@ -113,6 +113,15 @@ export const SiteLinkSchema = z
     published: z.boolean(),
     owningSpec: OwningSpecSchema,
     surfaces: z.array(z.enum(siteLinkSurfaces)).min(1),
+    /**
+     * **This label asserts a delivery date, so the chrome renders it only when one exists** (spec
+     * 004 §14 A19, widened by `/review 70`; TASK-120). "Delivery times and cutoffs" promises that
+     * cutoffs exist, on every page, while `corridor.facts.orderBy.none` on the guide two scrolls
+     * below says "no cutoff, because no florist has agreed to one". Gated on
+     * `anyDeliveryDatesOpen()` in `footerView()` — the same predicate as the picker, the utility
+     * strip and the category row — so the row returns as data, not as a template edit.
+     */
+    requiresDeliveryDates: z.boolean().default(false),
   })
   .strict()
   .superRefine((link, ctx) => {
@@ -235,6 +244,7 @@ const siteLinks = [
     labelKey: "footer.link.deliveryTimes",
     target: { kind: "pending" },
     published: false,
+    requiresDeliveryDates: true,
     owningSpec: "007",
     surfaces: ["footer"],
   },

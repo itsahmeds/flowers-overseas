@@ -25,6 +25,7 @@
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
+import { anyDeliveryDatesOpen } from "../../../config/countries.ts";
 import { Grid, Stack } from "../primitives/layout.tsx";
 import { Display, Label, Text } from "../primitives/typography.tsx";
 
@@ -47,6 +48,10 @@ export const FAQ_ENTRIES = [
     id: "whoDelivers",
     questionKey: "whoDelivers.question",
     answerKey: "whoDelivers.answer",
+    // A19's gated sentence: "Order by 14:00 in Warsaw … for delivery today" is appended only
+    // when a destination actually has an agreed cutoff. Written out rather than assembled, for
+    // the reason the block comment above gives about `i18n:check`'s text scan.
+    gatedAnswerKey: "whoDelivers.answerCutoff",
   },
   {
     id: "lasting",
@@ -57,6 +62,8 @@ export const FAQ_ENTRIES = [
   id: string;
   questionKey: string;
   answerKey: string;
+  /** Appended to the answer only while `anyDeliveryDatesOpen()` (spec 004 §14 A19). */
+  gatedAnswerKey?: string;
 }[];
 
 const HEADING_ID = "faq-heading";
@@ -70,6 +77,7 @@ export function HomeFaq({
   headingLevel = "h2",
 }: HomeFaqProps = {}): ReactElement {
   const t = useTranslations("faq");
+  const datesOpen = anyDeliveryDatesOpen();
 
   return (
     <Grid
@@ -121,7 +129,12 @@ export function HomeFaq({
               </span>
             </summary>
             <Text className="mt-sm" measure size="sm" tone="muted">
-              {t(entry.answerKey)}
+              {/* A19: the cutoff sentence is a *second* sentence, appended only when a
+                  destination has an agreed one, so the answer drops it rather than restating a
+                  promise the utility strip has already stopped making (TASK-120). */}
+              {"gatedAnswerKey" in entry && datesOpen
+                ? `${t(entry.answerKey)} ${t(entry.gatedAnswerKey)}`
+                : t(entry.answerKey)}
             </Text>
           </details>
         ))}

@@ -259,10 +259,27 @@ describe("the shipped catalogues and manifests", () => {
    * that half.
    */
   const AWAITING_FOUNDER_REVIEW = [
+    // TASK-120's honest-chrome sweep (spec 004 §14 A19, `/review 70`) added eight of these: the
+    // gated fallbacks, the FAQ answer's split and the three home sentences it reworded. They are
+    // the implementer's wording, proposed to the founder in the task brief's `## Escalations`,
+    // and they wait here until he attests them — the same rule §14 A5 applied to TASK-084.
+    //
+    // On 2026-09-18 the founder attested four of them and they left this queue:
+    // `nav.utility.datesPending` and `finder.datesPending` ("Delivery dates open when we confirm
+    // our first florist"), `nav.utility.datesPendingShort` ("Delivery dates are not open yet")
+    // and `nav.category.ourSelection` ("Our selection", id `our-selection`). The decision is in
+    // `docs/decisions-log.md`; their `en` manifest entries carry `reviewedBy: "founder"` and
+    // `reviewedAt: "2026-09-18T00:00:00Z"`. The `de` and `pl` entries stay `source: "machine"`
+    // and unreviewed: what he attested is the English wording, not a German or Polish rendering
+    // of it, and those two catalogues still echo the English string verbatim.
     "faq.whoDelivers.answer",
+    "faq.whoDelivers.answerCutoff",
     "finder.cutoff",
+    "finder.help",
     "footer.payment.methods",
     "home.destinations.elsewhere.body",
+    "home.howItWorks.choose.body",
+    "home.proof.photo.body",
     "meta.chooser.description",
     "meta.home.description",
     "nav.utility.cutoff",
@@ -381,8 +398,8 @@ describe("the shipped catalogues and manifests", () => {
 
     const destinationName: Messages["destinations"]["pl"]["name"] =
       enSource.destinations.pl.name;
-    const categoryLabel: Messages["nav"]["category"]["bestSellers"] =
-      enSource.nav.category.bestSellers;
+    const categoryLabel: Messages["nav"]["category"]["ourSelection"] =
+      enSource.nav.category.ourSelection;
     const heroHeading: Messages["home"]["hero"]["heading"] =
       enSource.home.hero.heading;
     const finderSubmit: Messages["finder"]["submit"] = enSource.finder.submit;
@@ -395,7 +412,7 @@ describe("the shipped catalogues and manifests", () => {
 
     expect([...namespaces].sort()).toEqual(Object.keys(enSource).sort());
     expect(destinationName).toBe("Poland");
-    expect(categoryLabel).toBe("Best sellers");
+    expect(categoryLabel).toBe("Our selection");
     expect(heroHeading).toBe("Flowers for someone far away.");
     expect(finderSubmit).toBe("Continue");
     expect(guaranteeName).toBe("7-day freshness guarantee");

@@ -125,7 +125,7 @@
       "label": "Categories"
     },
     "category": {
-      "bestSellers": "Best sellers",
+      "ourSelection": "Our selection",
       "birthday": "Birthday",
       "sympathy": "Sympathy",
       "occasions": "Occasions",
@@ -152,7 +152,9 @@
       "cutoff": "Order by 14:00 in Warsaw for delivery today",
       "cutoffShort": "Order by 14:00 in Warsaw · today",
       "pricesInclude": "Prices include delivery and VAT",
-      "guarantee": "7-day freshness guarantee"
+      "guarantee": "7-day freshness guarantee",
+      "datesPending": "Delivery dates open when we confirm our first florist",
+      "datesPendingShort": "Delivery dates are not open yet"
     },
     "menu": {
       "label": "Menu"
@@ -447,7 +449,7 @@
       },
       "photo": {
         "title": "We photograph it at the door",
-        "body": "The picture reaches you the same day"
+        "body": "We email you the picture of what was handed over"
       }
     },
     "trending": {
@@ -482,7 +484,7 @@
       "intro": "You order from us in your own language and currency. Our florist in the recipient's town makes the bouquet the morning it is delivered and hands it over in person. Nothing crosses a border, so there is no customs form and nothing to pay on arrival.",
       "choose": {
         "title": "You choose the town, the day and a bouquet.",
-        "body": "Every price is final. The cutoff is shown in the recipient's time, not yours."
+        "body": "Every price is final, and any order-by time we show is on the recipient's clock, not yours."
       },
       "make": {
         "title": "A florist a few streets away accepts it.",
@@ -517,12 +519,13 @@
       "label": "Delivery date"
     },
     "submit": "Continue",
-    "help": "Continue shows you where we deliver today and where we are still choosing florists.",
+    "help": "Continue shows you where we deliver and where we are still choosing florists.",
     "cutoff": "Order by 14:00 in Warsaw for delivery today",
     "destinations": {
       "matches": "{count, plural, =0 {No country matches what you typed} one {# country matches} other {# countries match}}",
       "summary": "We deliver in {delivering} today. In {onboarding} we are still choosing florists."
-    }
+    },
+    "datesPending": "Delivery dates open when we confirm our first florist"
   },
   "occasions": {
     "birthday": {
@@ -599,7 +602,8 @@
     },
     "whoDelivers": {
       "question": "Who delivers, and when?",
-      "answer": "Our own florist in the recipient's town, by hand, on the day you choose. Order by 14:00 in Warsaw, the recipient's own time, for delivery today."
+      "answer": "Our own florist in the recipient's town, by hand, on the day you choose.",
+      "answerCutoff": "Order by 14:00 in Warsaw, the recipient's own time, for delivery today."
     },
     "lasting": {
       "question": "What if the flowers do not last?",

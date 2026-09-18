@@ -270,6 +270,12 @@ describe("src/config/site-links.ts", () => {
     for (const link of SITE_LINKS) {
       if (["locale-home", "search", "basket"].includes(link.id)) continue;
       const label = messageAt(link.labelKey) as string;
+      // A row gated on `anyDeliveryDatesOpen()` is not drawn (spec 004 §14 A19; TASK-120): the
+      // artboard carries a TASK-120 comment in its place, so the drawing states the absence.
+      if (link.requiresDeliveryDates) {
+        expect(canvas, link.id).toContain("TASK-120");
+        continue;
+      }
       expect(canvas, `${link.id} → ${label}`).toContain(`>${label}<`);
     }
     expect(canvas).toContain("Search flowers, occasions, a city or a country");

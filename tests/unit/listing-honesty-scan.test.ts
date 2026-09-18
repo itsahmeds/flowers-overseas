@@ -38,6 +38,9 @@ const TEXT_SAMPLES: readonly (readonly [name: string, html: string])[] = [
   ["out-of-five score", "<p>4.6 / 5</p>"],
   ["ranking claim", "<p>Bestseller in Poland</p>"],
   ["delivery-timing claim", "<p>Same-day delivery in Warsaw</p>"],
+  // TASK-120 split the cutoff promise out of the timing claim: "Order by" *with a time* is the
+  // promise, and the bare label is the corridor facts table's honest row.
+  ["order-by cutoff promise", "<p>Order by 14:00 in Warsaw</p>"],
   ["countdown", "<p>Hurry — ends in 2 h 15 m</p>"],
   ["old price", "<p>Was £59.90, save 20%</p>"],
   ["add to basket", "<button>Add to basket</button>"],

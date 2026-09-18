@@ -21,6 +21,7 @@
  * `plan/03` §5 and `CLAUDE.md`'s no-literal rule apply to the projection as much as to the JSX.
  */
 import { type Company, COMPANY, isCompanyRegistered } from "@/config/company";
+import { anyDeliveryDatesOpen } from "@/config/countries";
 import {
   availablePaymentMethods,
   type PaymentMethod,
@@ -106,15 +107,22 @@ function hrefFor(locale: string, link: SiteLink): string | undefined {
 }
 
 function groupView(locale: string, group: SiteLinkGroup): FooterGroupView {
+  const datesOpen = anyDeliveryDatesOpen();
   return {
     id: group.id,
     headingKey: group.headingKey,
-    links: groupLinks(group.id as SiteLinkGroupId).map((link) => {
-      const href = hrefFor(locale, link);
-      return href === undefined
-        ? { id: link.id, labelKey: link.labelKey }
-        : { id: link.id, labelKey: link.labelKey, href };
-    }),
+    // Every row that asserts a delivery date nobody has agreed to is *absent*, not reworded
+    // (spec 004 §14 A19, `/review 70`; TASK-120): "Delivery times and cutoffs" promised cutoffs
+    // on every page while the guide two scrolls below said no florist had agreed to one. Same
+    // predicate as the picker, the utility strip and the category row.
+    links: groupLinks(group.id as SiteLinkGroupId)
+      .filter((link) => datesOpen || !link.requiresDeliveryDates)
+      .map((link) => {
+        const href = hrefFor(locale, link);
+        return href === undefined
+          ? { id: link.id, labelKey: link.labelKey }
+          : { id: link.id, labelKey: link.labelKey, href };
+      }),
   };
 }
 

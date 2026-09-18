@@ -326,16 +326,19 @@ describe("every failure mode has a fixture (AC-5 / T-03)", () => {
   });
 
   it("surcharge-vat-rate: a surcharge row taxed differently from its retail rows", () => {
-    // `/review 47`: PL flowers are 8% and the standard rate is 23%. A Sunday surcharge that copied
-    // the standard rate would be added to an 8% bouquet and taxed at neither.
+    // `/review 47`: DE flowers are 7% and the standard rate is 19%. A Sunday surcharge that copied
+    // the standard rate would be added to a 7% bouquet and taxed at neither.
+    // The fixture moved from PL to DE at TASK-120: PL is the one `live` destination, and a `live`
+    // destination with no agreed `sunday_delivery` no longer carries Sunday rows at all (spec 004
+    // §14 A19). The rule under test is the dataset's, not Poland's.
     const standard =
-      clean.destinations.find((destination) => destination.countryIso2 === "PL")
-        ?.standardVatRateBp ?? 2300;
+      clean.destinations.find((destination) => destination.countryIso2 === "DE")
+        ?.standardVatRateBp ?? 1900;
     const problems = problemsFor(
       {
         countryPrices: clean.countryPrices.map((row) =>
           row.sku === "FO-BQ-001" &&
-          row.countryIso2 === "PL" &&
+          row.countryIso2 === "DE" &&
           row.surchargeKind === "sunday"
             ? { ...row, vatRateBp: standard }
             : row,
@@ -345,7 +348,7 @@ describe("every failure mode has a fixture (AC-5 / T-03)", () => {
     );
 
     expect(problems.length).toBeGreaterThanOrEqual(1);
-    expect(problems[0]).toContain("FO-BQ-001 PL sunday");
+    expect(problems[0]).toContain("FO-BQ-001 DE sunday");
     expect(problems[0]).toContain("while the retail rows");
   });
 
@@ -557,7 +560,9 @@ describe("every failure mode has a fixture (AC-5 / T-03)", () => {
       {
         countryPrices: clean.countryPrices.map((candidate) =>
           candidate.sku === "FO-BQ-001" &&
-          candidate.countryIso2 === "PL" &&
+          // DE, not PL, since TASK-120: the one `live` destination carries no Sunday row while
+          // no florist has agreed to work a Sunday (spec 004 §14 A19).
+          candidate.countryIso2 === "DE" &&
           candidate.surchargeKind === "sunday"
             ? { ...candidate, retailMinor: 9900 }
             : candidate,
@@ -577,8 +582,8 @@ describe("every failure mode has a fixture (AC-5 / T-03)", () => {
     ).toHaveLength(1);
     expect(peak[0]).toContain("+EUR 6 equivalent 2500");
     expect(row).toHaveLength(1);
-    expect(row[0]).toContain("FO-BQ-001 PL sunday");
-    expect(row[0]).toContain("authored `sunday` amount 1800");
+    expect(row[0]).toContain("FO-BQ-001 DE sunday");
+    expect(row[0]).toContain("authored `sunday` amount 400");
   });
 
   it("fx-snapshot: a cross rate, a float rate, a mixed date and a missing currency", () => {
