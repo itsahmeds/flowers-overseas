@@ -127,9 +127,9 @@ task actually touches.
 | `tests/unit/` | 184 |
 | `tests/integration/` | 4 |
 | `tests/contract/` | 4 |
-| `tests/e2e/` | 24 |
-| `tests/a11y/` | 9 |
-| `tests/visual/` | 10 |
+| `tests/e2e/` | 25 |
+| `tests/a11y/` | 10 |
+| `tests/visual/` | 11 |
 | `tests/dev-os/` | 1 |
 | `tests/fixtures/` | 154 |
 | `tests/msw/` | 3 |
