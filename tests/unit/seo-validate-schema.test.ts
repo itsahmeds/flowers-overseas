@@ -129,6 +129,9 @@ describe("@type allow-list (plan/02 §9)", () => {
       "AggregateRating",
       "Review",
       "FAQPage",
+      // The two children a valid `FAQPage` must have (TASK-093's corridor fixtures).
+      "Question",
+      "Answer",
       "BlogPosting",
       "WebPage",
     ]) {

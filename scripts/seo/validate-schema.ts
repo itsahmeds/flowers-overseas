@@ -80,6 +80,12 @@ export const ALLOWED_TYPES: readonly string[] = [
   "Person",
   "PostalAddress",
   "Product",
+  // `Question` is the mandatory child of every `FAQPage` (`mainEntity`), and the table above has
+  // always named it; it was missing from this list until the first real `FAQPage` fixture was
+  // written against it (TASK-093). Its absence was an oversight in the transcription, not a
+  // policy — `plan/02` §9 authorises `FAQPage` "for visible Q&A only", and a `FAQPage` without
+  // `Question`/`Answer` children is not a valid one.
+  "Question",
   "QuantitativeValue",
   "Rating",
   "Review",
