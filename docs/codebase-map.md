@@ -123,8 +123,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 175 |
-| `tests/integration/` | 2 |
+| `tests/unit/` | 176 |
+| `tests/integration/` | 3 |
 | `tests/contract/` | 3 |
 | `tests/e2e/` | 22 |
 | `tests/a11y/` | 9 |

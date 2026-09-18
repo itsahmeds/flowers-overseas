@@ -83,9 +83,14 @@ Reconciling the two, whenever `db:generate` emits SQL:
    against the schema that is actually committed.
 4. `pnpm db:check` must be green before the commit: it is the gate that catches an unpaired file,
    a duplicate version, a missing preamble and a directory pretending to be a migration.
+5. Run `npx prettier --write db/migrations/meta` afterwards: drizzle-kit writes its snapshot with
+   its own formatting and `pnpm format:check` covers the whole tree.
 
-Migration `0001` predates any Drizzle table, so today's journal is empty (`"entries": []`) and
-`db:generate` prints `0 tables … nothing to migrate`.
+Migration `0002` (TASK-015) is the first with Drizzle tables, so `meta/0000_snapshot.json` is the
+committed baseline the next `db:generate` diffs against. Its constraint names are the ones the
+hand-written SQL uses — including the Drizzle Kit foreign-key convention
+`<table>_<column>_<parent>_<parent_column>_fk` — so the generated draft and the applied migration
+stay comparable.
 
 ## Phase 0 caveat
 

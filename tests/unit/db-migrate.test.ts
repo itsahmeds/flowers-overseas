@@ -156,9 +156,12 @@ describe("the connection (§13 Q6)", () => {
 });
 
 describe("the committed migration set", () => {
-  it("reads 0001 and its rollback from db/migrations", () => {
+  // Every migration added from here on extends this list, in order: the runner applies exactly
+  // what it reads from the directory, so the committed set is worth pinning (TASK-015 added 0002).
+  it("reads each committed migration and its rollback from db/migrations", () => {
     expect(readMigrations(migrationsDir).map((m) => m.file)).toEqual([
       "0001_roles_grants_updated_at.sql",
+      "0002_i18n_geo.sql",
     ]);
   });
 });
