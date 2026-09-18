@@ -11,8 +11,9 @@
  * So the ruling is: **one route file per URL depth**, each calling this one resolver.
  *
  * ```
- * /{locale}/{segment}           → src/app/[locale]/[segment]/page.tsx
- * /{locale}/{segment}/{child}   → src/app/[locale]/[segment]/[child]/page.tsx
+ * /{locale}/{segment}                      → src/app/[locale]/[segment]/page.tsx
+ * /{locale}/{segment}/{child}              → src/app/[locale]/[segment]/[child]/page.tsx
+ * /{locale}/{segment}/{child}/{grandchild} → src/app/[locale]/[segment]/[child]/[grandchild]/page.tsx
  * ```
  *
  * `resolveLocalePath()` answers *which page a path names*, as a discriminated union over the two
@@ -42,6 +43,7 @@ import {
 import { localePath, routableLocale } from "@/modules/i18n";
 
 import { listingExists, listingLocales, listingPages } from "./listing";
+import { resolveSlug } from "./slugs";
 
 /**
  * The page a `/{locale}/…` path names, or `notFound`.
@@ -65,6 +67,14 @@ export type LocalePathResolution =
       readonly locale: LocaleCode;
       readonly iso2: CountryIso2;
       readonly countrySlug: string;
+    }
+  | {
+      readonly kind: "countryCategory";
+      readonly locale: LocaleCode;
+      readonly iso2: CountryIso2;
+      readonly countrySlug: string;
+      /** The category's slug in this locale, as the URL spells it. */
+      readonly categorySlug: string;
     };
 
 const NOT_FOUND: LocalePathResolution = { kind: "notFound" };
@@ -142,6 +152,42 @@ export async function resolveLocalePath(
     }
   }
 
+  if (segments.length === 3) {
+    const [segment, child, grandchild] = segments;
+    if (
+      segment === undefined ||
+      child === undefined ||
+      grandchild === undefined
+    )
+      return NOT_FOUND;
+
+    // `/{locale}/{countrySlug}/{shopCategory}/{categorySlug}` — spec 008's country category
+    // (§2 row 7; TASK-110). The slug is turned into a catalogue key by `resolveSlug()`, the
+    // inverse `slugFor()` built (AC-4), and the key is handed to the **one** existence predicate:
+    // no rule about the six-product floor is restated here, which is why lifting a category over
+    // it is a data flip with no edit under `src/app/` (AC-5).
+    if (isOwnSegment(code, "shopCategory", child)) {
+      const iso2 = corridorIso2ForSlug(code, segment);
+      if (iso2 === undefined || !isCountryIso2(iso2)) return NOT_FOUND;
+      const entityKey = resolveSlug(code, "category", grandchild);
+      if (entityKey === undefined) return NOT_FOUND;
+      const exists = await listingExists({
+        pageType: "countryCategory",
+        locale: code,
+        countryIso: iso2,
+        entityKey,
+      });
+      if (!exists) return NOT_FOUND;
+      return {
+        kind: "countryCategory",
+        locale: code,
+        iso2,
+        countrySlug: segment,
+        categorySlug: grandchild,
+      };
+    }
+  }
+
   return NOT_FOUND;
 }
 
@@ -154,6 +200,11 @@ export interface LocaleSegmentParams {
 /** One prebuilt URL of the depth-3 route file. */
 export interface LocaleChildParams extends LocaleSegmentParams {
   readonly child: string;
+}
+
+/** One prebuilt URL of the depth-4 route file (spec 008 §14 A5's "depth-4 routes"). */
+export interface LocaleGrandchildParams extends LocaleChildParams {
+  readonly grandchild: string;
 }
 
 /**
@@ -209,4 +260,38 @@ function corridorSlugsIn(locale: LocaleCode): readonly string[] {
   return listCorridorPages()
     .filter((page) => page.locale === locale)
     .map((page) => page.slug);
+}
+
+/**
+ * `generateStaticParams` for `/{locale}/{segment}/{child}/{grandchild}` — the union of the
+ * existence sets that share **depth 4** (spec 008 §14 A5). Today: the country categories of §2
+ * row 7; TASK-111's country occasions join it with one more `pageType` here.
+ *
+ * Every field is read from `listingPages()` rather than restated: the destination's slug and the
+ * category's slug are the ones the existence set already carries, and the page-type segment is
+ * the one `localePath()` builds — so a category that crosses the six-product floor gains its URL
+ * from the data alone (AC-5), and one that falls below it loses it at the next build rather than
+ * becoming a thin page.
+ */
+export async function localeGrandchildParams(): Promise<
+  readonly LocaleGrandchildParams[]
+> {
+  const params: LocaleGrandchildParams[] = [];
+
+  for (const locale of listingLocales()) {
+    const shopCategory = localePath(locale, "shopCategory").split("/")[2] ?? "";
+
+    for (const page of await listingPages(locale)) {
+      if (page.pageType !== "countryCategory") continue;
+      if (page.countrySlug === undefined || page.slug === undefined) continue;
+      params.push({
+        locale,
+        segment: page.countrySlug,
+        child: shopCategory,
+        grandchild: page.slug,
+      });
+    }
+  }
+
+  return params;
 }

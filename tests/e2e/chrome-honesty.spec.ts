@@ -56,6 +56,11 @@ const PAGES: readonly { readonly type: string; readonly path: string }[] = [
   { type: "country shop root", path: "/en-gb/poland/flowers" },
   { type: "country shop root", path: "/de/polen/blumen" },
   { type: "country shop root", path: "/pl/polska/kwiaty" },
+  // The country category (TASK-110): the densest listing document, and the one whose sibling chip
+  // row prints twenty category names — the row the four forbidden chrome strings used to live in.
+  // `de`/`pl` have no authored category slug yet (§13 Q10) and therefore no URL to sweep.
+  { type: "country category", path: "/en/poland/flowers/roses" },
+  { type: "country category", path: "/en-gb/poland/flowers/roses" },
   { type: "gallery", path: "/dev/components" },
 ];
 

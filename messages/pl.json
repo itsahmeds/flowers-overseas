@@ -711,6 +711,12 @@
     }
   },
   "shop": {
+    "category": {
+      "lede": "{count, plural, one {Jeden bukiet, który nasz florysta ułoży w mieście odbiorcy rano w dniu dostawy.} few {# bukiety, które nasz florysta ułoży w mieście odbiorcy rano w dniu dostawy.} many {# bukietów, które nasz florysta ułoży w mieście odbiorcy rano w dniu dostawy.} other {# bukietu, które nasz florysta ułoży w mieście odbiorcy rano w dniu dostawy.}} Każdy w jednej cenie — z VAT-em i dostawą już w środku.",
+      "seoDescription": "The {entity} our florists can make in {country}, each with one price that includes VAT and delivery. Nothing can be ordered yet.",
+      "seoTitle": "{entity} for {country} — one all-in price",
+      "siblingsHeading": "Also for {country}"
+    },
     "empty": {
       "body": "We have nothing we can deliver in {country} today. The {country} guide has what we have learned about sending flowers there, and the occasions pages have the dates.",
       "corridorLink": "Read the {country} guide",
@@ -722,6 +728,7 @@
       "label": "{count, plural, one {# bukiet na tej stronie} few {# bukiety na tej stronie} many {# bukietów na tej stronie} other {# bukietu na tej stronie}}"
     },
     "h1": {
+      "countryCategory": "{entity} we make for {country}",
       "countryShopRoot": "Flowers we make for {country}"
     },
     "pagination": {

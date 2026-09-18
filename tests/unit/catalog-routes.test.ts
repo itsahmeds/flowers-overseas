@@ -89,9 +89,11 @@ describe("resolveLocalePath: everything else is `notFound` (AC-1)", () => {
     ["en", ["flowers", "roses"]],
     ["en", ["flowers"]],
     ["en", ["occasions"]],
-    // the wrong number of segments
+    // the wrong number of segments. `/en/poland/flowers/roses` was one of these until TASK-110
+    // added the depth-4 branch; the shape that stays a miss at that depth is one segment deeper
+    // still, and the country category's own 404 matrix is `tests/unit/catalog-routes-category.test.ts`.
     ["en", []],
-    ["en", ["poland", "flowers", "roses"]],
+    ["en", ["poland", "flowers", "roses", "red"]],
   ];
 
   for (const [locale, segments] of misses) {

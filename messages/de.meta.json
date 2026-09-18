@@ -2094,6 +2094,26 @@
     "reviewed": false,
     "sourceHash": "4814fc4bfbee31d3178b6eff12045e53fba62eee1c01f82b5c2094a07e9c23d0"
   },
+  "shop.category.lede": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "406d11d82c87b98cf96334b9c47b1d8593628c450f58c0b8802bb527933ab5d9"
+  },
+  "shop.category.seoDescription": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "f57eac20bf34fd1bce15329639bd47a20dd63c4ca927c32031f9c011b187054d"
+  },
+  "shop.category.seoTitle": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "640e90b06a3fb641abfc6f77f5d66bec5fd24a6749ba31e4f9c40ac575061484"
+  },
+  "shop.category.siblingsHeading": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "d00086da0fd5a058eace77458c77366ec836ca0010007bc0f368dc4423153435"
+  },
   "shop.empty.body": {
     "source": "machine",
     "reviewed": false,
@@ -2123,6 +2143,11 @@
     "reviewed": false,
     "source": "human",
     "sourceHash": "8a3f54e7c4e3d5ff85f5335fc4489659c5a1f6e51451127a0ac6e81c4c426a6b"
+  },
+  "shop.h1.countryCategory": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "a399a16eca426eb0222c30aebfc60e5ee84d43610d2e2e38023d2fdf335b3522"
   },
   "shop.h1.countryShopRoot": {
     "source": "machine",

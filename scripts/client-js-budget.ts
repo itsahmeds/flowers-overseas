@@ -134,6 +134,12 @@ export const DEFAULT_URLS = [
   // currency repaint added here would show up as a regression against the committed baseline.
   "/en/poland/flowers",
   "/en-gb/poland/flowers",
+  // The country category, one per indexable locale (spec 008 AC-23; TASK-110). Twelve product
+  // cards and a twenty-chip sibling row, and still no island: its number must equal the shop
+  // root's, so the sort form TASK-114 will add is measured against this line rather than against
+  // a hope.
+  "/en/poland/flowers/roses",
+  "/en-gb/poland/flowers/roses",
 ] as const;
 
 export const DEFAULT_DIST = ".next";
