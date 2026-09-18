@@ -62,12 +62,24 @@ export const rowSources = ["seed", "real"] as const;
 export const contentStates = ["guide", "live"] as const;
 /** `occasion.kind` (`plan/10` §1.1). */
 export const occasionKinds = ["evergreen", "seasonal"] as const;
-/** `occasion_country.rule_type` — `plan/03` §9 verbatim. Evaluated by spec 009. */
+/**
+ * `occasion_country.rule_type` — `plan/03` §9's six rule types plus spec 009 §5.2's seventh,
+ * `orthodox_easter_offset` (the Julian computus RO needs). Evaluated by spec 009; nothing here
+ * computes a date.
+ *
+ * The seventh value is **migration `0003`'s** (spec 002 §14 A5): `0002` shipped the six-value
+ * `occasion_country_rule_type_check` and is on `main`, so `0003` drops and recreates the
+ * constraint and `0003_catalog_pricing.down.sql` restores the six. This tuple mirrors the
+ * database as it stands after `0003`; the migration text of `0002` still declares six, which is
+ * what `tests/unit/schema-i18n-geo.test.ts` and `tests/unit/schema-catalog-pricing.test.ts`
+ * assert from their two sides. The seed-side list in `seed/schema/catalogue.ts` is TASK-122's.
+ */
 export const occasionRuleTypes = [
   "fixed",
   "nth_weekday",
   "last_weekday",
   "easter_offset",
+  "orthodox_easter_offset",
   "lent_sunday",
   "none",
 ] as const;

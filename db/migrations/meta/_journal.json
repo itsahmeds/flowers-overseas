@@ -15,6 +15,13 @@
       "when": 1789718030052,
       "tag": "0001_cute_norman_osborn",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789747981943,
+      "tag": "0002_catalog_pricing",
+      "breakpoints": true
     }
   ]
 }
