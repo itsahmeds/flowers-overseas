@@ -760,7 +760,7 @@ Six, each with a default the implementation follows if the founder says nothing.
   builds. Choose Nixpacks instead if you would rather have zero build config and accept that the
   Node version lives in a dashboard.
 - **Q2 — Who owns the Railway project, and who pays?** The project currently sits in the **Grovant**
-  workspace (`grovant.teams@gmail.com`) and the Cloudflare zone in the **founder's** account. Default:
+  workspace (the Grovant account) and the Cloudflare zone in the **founder's** account. Default:
   **transfer the Railway project to a founder-owned workspace with Grovant added as a member, before
   the first production deploy**, so the production host, the domain and the billing all sit with the
   entity that owns the business, and a change of contractor is a membership edit rather than a
@@ -781,7 +781,7 @@ Six, each with a default the implementation follows if the founder says nothing.
   front of it. Cloudflare Access is nicer for humans (Google login, no shared password) and is a
   one-setting change later if the florist demos make a shared password awkward.
 
-**Resolution (2026-09-16, founder):** ADR-0018 accepted and all six defaults accepted without amendment. Q1 Dockerfile; Q2 **reversed by the founder later the same day: the Railway project stays in Grovant's workspace** (`grovant.teams@gmail.com`), Grovant holds the account and invoices, the founder is added as a member; the RoPA controller line names Flowers Overseas as controller and records Grovant's account as the contractual holder of the Railway relationship, and the DPA counterparty question goes on the lawyer list; Q3 Cloudflare Free; Q4 the shared ISR cache handler arrives only when p95 origin CPU exceeds 70 % for a day or a peak-day plan needs a second replica — a separate spec; Q5 Vercel is unlinked at §12's exit signal and no earlier; Q6 basic-auth in `src/proxy.ts` for non-production, Cloudflare Access revisited if shared passwords prove awkward for florist demos. Next: `/plan-tasks` (no design round — no page changes).
+**Resolution (2026-09-16, founder):** ADR-0018 accepted and all six defaults accepted without amendment. Q1 Dockerfile; Q2 **reversed by the founder later the same day: the Railway project stays in Grovant's workspace** (the Grovant account), Grovant holds the account and invoices, the founder is added as a member; the RoPA controller line names Flowers Overseas as controller and records Grovant's account as the contractual holder of the Railway relationship, and the DPA counterparty question goes on the lawyer list; Q3 Cloudflare Free; Q4 the shared ISR cache handler arrives only when p95 origin CPU exceeds 70 % for a day or a peak-day plan needs a second replica — a separate spec; Q5 Vercel is unlinked at §12's exit signal and no earlier; Q6 basic-auth in `src/proxy.ts` for non-production, Cloudflare Access revisited if shared passwords prove awkward for florist demos. Next: `/plan-tasks` (no design round — no page changes).
 
 ## 14. Task estimate (input to `/plan-tasks`)
 
