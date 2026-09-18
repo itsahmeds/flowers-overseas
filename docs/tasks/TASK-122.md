@@ -39,7 +39,6 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per `/review`, newest last.
 
-- **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
 
 ## Escalations
 
@@ -74,6 +73,8 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   calendar**: the homepage strip renders them from `src/config/occasions.ts`'s authored dates
   (spec 004), unchanged. Recorded in spec 009 §14 A3. → orchestrator / founder: authorise a spec
   005/006 taxonomy task, or withdraw §5.2's sentence. **open**.
+
+- **Answers recorded 2026-09-18 (orchestrator).** Escalation 2 (the `occasion_country_rule_type_check` still lists six values) → **spec 009 §14 A5 / spec 002 §14 A5**: migration `0003` under **TASK-016** widens the check to seven values with a rollback; carry-forward is on `main` in `docs/tasks/TASK-016.md`. Escalation 3 (Andrzejki and Wigilia need catalogue keys, facet values and four-locale copy) → **spec 009 §14 A4**: the two rows ship in **TASK-106**; carry-forward is on `main` in `docs/tasks/TASK-106.md`. AC-12 is read as satisfied by TASK-122 + TASK-106 together. `plan/13` D7 stays recorded, not solved.
 
 ## Result
 
