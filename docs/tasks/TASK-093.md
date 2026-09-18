@@ -6,15 +6,43 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 ## Binding
 
-What the spec binds this task to, in the spec's own words: the resolution notes that override
-defaults, the AC ids owned, the rulings from earlier reviews that apply here, the gates that must
-be green. One paragraph or a short list — no restatement of the spec.
+- Owns spec 007 **AC-15** (§9 L260) and **AC-16** (§9 L261); tests **T-16** (unit + contract) and
+  **T-17** (e2e JSON-LD type scan) (§10 L302–L303). §12 task (7) "schema builders + validators".
+- §5.2 L65 is the design: typed builders in `src/modules/seo/schema/` — `breadcrumbList.ts`,
+  `faqPage.ts`, `organization.ts`, `webSite.ts`, `JsonLd.tsx` (§5.2 L150 layout) — exported only
+  through `src/modules/seo/index.ts`. `BreadcrumbList` on the corridor **and** the all-destinations
+  hub, items equal to the visible breadcrumb in order and label; `FAQPage` built **from the same
+  `corridorView` the FAQ block renders** (never a second source of the Q&A) and emitted only where
+  8–12 visible Q&A exist; `Organization` on the locale home with only `name`/`url`/`logo`, gaining
+  `address`/`vatID`/`sameAs` only when `company.registered` is true (`src/config/company.ts`);
+  `WebSite` without `SearchAction`. **Never** `LocalBusiness`, `FloristShop`, a per-city entity,
+  `Product`, `Offer`, `aggregateRating`, `review`, and never an `Offer` for a non-live country.
+- Spec 001's `validate-schema` (`pnpm seo:validate`, `scripts/seo/validate-schema.ts`) must pass on
+  fixtures for **both corridor states** (guide / published) **and the hub**; the fixtures live where
+  TASK-009's validator already reads them — extend, do not fork.
+- Rulings that bind here: spec 007 §14 A1–A7 (read all; A6 for the 404 shapes a scan must not
+  visit, A7 for the sixth `operational` indexability term); spec 008 §14 A2 (provenance note once
+  per card — no schema counterpart), A3 (`HubCardViewSchema` + `hubItems`: listing JSON-LD is
+  TASK-109+'s, not this task's — build no `ItemList`/`Product` here).
+- Boundaries: `app/` stays thin — a page composes `JsonLd` from the builder's output and nothing
+  else; builders take view models, never fetch. No literal user-facing strings; the breadcrumb
+  labels come from the same message keys the visible trail renders.
+- Gates: unit (builders, equality with the visible trail/Q&A), contract (`seo:validate` schema on the
+  three fixtures), e2e T-17 type scan over every rendered page in every locale, `pnpm typecheck`,
+  `pnpm lint`, `pnpm codebase:map --check`, script budget unchanged (the JSON-LD is a
+  server-rendered `<script type="application/ld+json">`, no client JS).
 
 ## Read
 
-- `specs/NNN-*.md` — read `## 0. Index` first, then only the sections the ACs name
-- `docs/codebase-map.md` — where everything lives
-- (the two or three files the deliverable actually touches)
+- `specs/007-corridor-pages.md` — `## 0. Index`, then §5.2 L57–L65 (rule engine, schema
+  builders), §5.2 L127–L160 (module layout), §9 AC-15/AC-16, §10 T-16/T-17, §14 A1–A7.
+- `specs/008-country-shop-category-occasion-pages.md` §14 A2/A3 only (what is *not* this task's).
+- `docs/codebase-map.md` — `modules/seo`, `modules/corridor` (or wherever `corridorView` /
+  `listCorridorPages()` live), the hub and corridor routes, `config/company.ts`,
+  `scripts/seo/validate-schema.ts` and its fixtures, `tests/e2e/` scan specs to mirror.
+- `plan/02` §9 (schema policy), `plan/01` §5 (module boundaries).
+- `docs/tasks/TASK-091.md` and `docs/tasks/TASK-092.md` `## Result` — the corridor and hub view
+  models and breadcrumb components you must mirror, and their `/review` carry-forwards.
 
 ## Carry-forwards
 
