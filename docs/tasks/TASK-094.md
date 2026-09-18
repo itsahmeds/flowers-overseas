@@ -78,7 +78,7 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
 
 ## Result
 
-**PR [#81](https://github.com/itsahmeds/flowers-overseas/pull/81).** `src/modules/seo/sitemap/`
+**PR [#84](https://github.com/itsahmeds/flowers-overseas/pull/84).** `src/modules/seo/sitemap/`
 (`xml.ts` — the serialiser, `SitemapEntrySchema`, `lastmodOf()` and both caps; `corridors.ts`;
 `statics.ts`; `index.ts` — the three levels, the child registry and `SitemapParamsSchema`) plus
 `src/app/sitemap.xml/route.ts` and `src/app/sitemaps/[locale]/[child]/route.ts`. Membership is
