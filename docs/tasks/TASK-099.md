@@ -20,7 +20,7 @@ be green. One paragraph or a short list — no restatement of the spec.
 
 One dated bullet per `/review`, newest last.
 
-- **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From TASK-134 / orchestrator ruling (2026-09-18):** regenerate the stale `tests/visual/__screenshots__/visual/linux/` Playwright baselines (3 PNGs vs 82 `darwin`; TASK-056 deferral) from the first green `visual` job artefact once this task's preview rewrite makes `preview` → `visual` runnable on a PR (`ci:full` label). `darwin/` untouched. TASK-134's `## Escalations` has the analysis of `ci.yml`'s `needs: preview` gate.
 
 ## Escalations
 
