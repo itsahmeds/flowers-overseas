@@ -263,10 +263,18 @@ describe("the shipped catalogues and manifests", () => {
     // gated fallbacks, the FAQ answer's split and the three home sentences it reworded. They are
     // the implementer's wording, proposed to the founder in the task brief's `## Escalations`,
     // and they wait here until he attests them — the same rule §14 A5 applied to TASK-084.
+    //
+    // On 2026-09-18 the founder attested four of them and they left this queue:
+    // `nav.utility.datesPending` and `finder.datesPending` ("Delivery dates open when we confirm
+    // our first florist"), `nav.utility.datesPendingShort` ("Delivery dates are not open yet")
+    // and `nav.category.ourSelection` ("Our selection", id `our-selection`). The decision is in
+    // `docs/decisions-log.md`; their `en` manifest entries carry `reviewedBy: "founder"` and
+    // `reviewedAt: "2026-09-18T00:00:00Z"`. The `de` and `pl` entries stay `source: "machine"`
+    // and unreviewed: what he attested is the English wording, not a German or Polish rendering
+    // of it, and those two catalogues still echo the English string verbatim.
     "faq.whoDelivers.answer",
     "faq.whoDelivers.answerCutoff",
     "finder.cutoff",
-    "finder.datesPending",
     "finder.help",
     "footer.payment.methods",
     "home.destinations.elsewhere.body",
@@ -274,11 +282,8 @@ describe("the shipped catalogues and manifests", () => {
     "home.proof.photo.body",
     "meta.chooser.description",
     "meta.home.description",
-    "nav.category.ourSelection",
     "nav.utility.cutoff",
     "nav.utility.cutoffShort",
-    "nav.utility.datesPending",
-    "nav.utility.datesPendingShort",
   ];
 
   it("reviews the authored English and leaves the machine drafts unreviewed (§13 Q7, Q10)", () => {

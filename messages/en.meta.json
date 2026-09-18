@@ -2090,8 +2090,10 @@
   },
   "finder.datesPending": {
     "source": "human",
-    "reviewed": false,
-    "sourceHash": "9a67a6d3d1965934676bf27c1f266853f041ac96a7bea0ba848c7d398efdf8ab"
+    "reviewed": true,
+    "sourceHash": "9a67a6d3d1965934676bf27c1f266853f041ac96a7bea0ba848c7d398efdf8ab",
+    "reviewedAt": "2026-09-18T00:00:00Z",
+    "reviewedBy": "founder"
   },
   "finder.destinations.matches": {
     "reviewed": true,
@@ -2766,8 +2768,10 @@
   },
   "nav.category.ourSelection": {
     "source": "human",
-    "reviewed": false,
-    "sourceHash": "a2040966ffe53f09022064db402c7d8c1ba1f1ddbccc5dccaad4caffe3812624"
+    "reviewed": true,
+    "sourceHash": "a2040966ffe53f09022064db402c7d8c1ba1f1ddbccc5dccaad4caffe3812624",
+    "reviewedAt": "2026-09-18T00:00:00Z",
+    "reviewedBy": "founder"
   },
   "nav.category.plants": {
     "source": "human",
@@ -2859,13 +2863,17 @@
   },
   "nav.utility.datesPending": {
     "source": "human",
-    "reviewed": false,
-    "sourceHash": "9a67a6d3d1965934676bf27c1f266853f041ac96a7bea0ba848c7d398efdf8ab"
+    "reviewed": true,
+    "sourceHash": "9a67a6d3d1965934676bf27c1f266853f041ac96a7bea0ba848c7d398efdf8ab",
+    "reviewedAt": "2026-09-18T00:00:00Z",
+    "reviewedBy": "founder"
   },
   "nav.utility.datesPendingShort": {
     "source": "human",
-    "reviewed": false,
-    "sourceHash": "70abcb4a801e65818911a6b064d13bf6a5f2a5b5d4ea17c3166abb9f2ef5351d"
+    "reviewed": true,
+    "sourceHash": "70abcb4a801e65818911a6b064d13bf6a5f2a5b5d4ea17c3166abb9f2ef5351d",
+    "reviewedAt": "2026-09-18T00:00:00Z",
+    "reviewedBy": "founder"
   },
   "nav.utility.guarantee": {
     "source": "human",

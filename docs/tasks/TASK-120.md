@@ -64,7 +64,23 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 ## Escalations
 
-- **2026-09-18 — the honest fallback wording is the implementer's, not the founder's.** Spec 004
+- **2026-09-18 — RESOLVED, the founder approved the wording as shipped.** `TASKS.md` log and
+  `docs/decisions-log.md`: "Delivery dates open when we confirm our first florist" /
+  "Delivery dates are not open yet" and "Our selection" (id `our-selection`) stand. The four `en`
+  manifest entries — `nav.utility.datesPending`, `nav.utility.datesPendingShort`,
+  `finder.datesPending`, `nav.category.ourSelection` — are now `reviewed: true`,
+  `reviewedBy: "founder"`, `reviewedAt: "2026-09-18T00:00:00Z"`, and they left the pinned
+  `AWAITING_FOUNDER_REVIEW` queue in `tests/unit/i18n-messages-schema.test.ts` (16 keys → 12).
+  `unreviewedShare("en")` fell from **3.75 % to 2.74 %** against the 5 % `isLocaleIndexable` gate,
+  so `/en` and `/en-gb` keep their margin. **The `de` and `pl` entries were deliberately not
+  flipped**: both catalogues still echo the English string verbatim under `source: "machine"`, and
+  what the founder attested is the English wording, not a German or Polish rendering of it —
+  signing his name on a machine draft is the exact thing `/review 58` required change 2 forbids.
+  Their shares are 100 % either way. The remaining escalation below (the six other reworded
+  strings) is untouched and still open.
+
+- **2026-09-18 — the honest fallback wording is the implementer's, not the founder's.** *(The
+  `datesPending` half of this is resolved above; the six other reworded strings still wait.)* Spec 004
   §14 A19 offers "Delivery dates open when our first Polish florist is confirmed" *or the copy
   key's final wording*. The chrome is not destination-scoped — the header renders above every page
   in the site — so a sentence naming Poland would be wrong on the German guide. Shipped as
@@ -128,6 +144,13 @@ homepage artboards were redrawn and the forty page wireframes were not, and that
 redraws its own band. The Voice section's "Say the specific thing" bullet, which quotes the cutoff
 sentence as a model, now points at that row. No artboard was redrawn: forty files belonging to
 forty page tasks are not a copy task's to move.
+
+**Founder attestation (2026-09-18, mid-round).** The four approved keys were flipped to
+`reviewed: true` / `reviewedBy: "founder"` / `reviewedAt: "2026-09-18T00:00:00Z"` in
+`messages/en.meta.json` and removed from the pinned queue in
+`tests/unit/i18n-messages-schema.test.ts` (16 → 12). `de` and `pl` were left `machine` /
+unreviewed on purpose (see escalations). `unreviewedShare`: **en 2.740 %**, en-gb 2.740 %,
+de 100 %, pl 100 % — the `en` figure was 3.75 % before the flip, against the 5 % gate.
 
 **Gates, round 2.** `typecheck`, `lint`, `i18n:check` clean. Unit **4 118 passed / 5 skipped**
 (170 files) — including `tests/unit/catalog-geo-surface.test.ts`, which CI timed out at 5 000 ms
