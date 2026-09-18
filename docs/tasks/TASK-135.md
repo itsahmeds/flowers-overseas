@@ -9,7 +9,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 - **The defect, reproduced.** Railway staging build log, 2026-09-18: `RUN pnpm build` → `EnvValidationError: Invalid environment (staging). 10 problem(s)` naming `DATABASE_URL`, `DATABASE_URL_UNPOOLED`, `INTERNAL_CRON_SECRET` and the seven `R2_*` keys. `APP_ENV=staging` **did** reach the build, so Railway passes a service variable to the build when — and only when — the `Dockerfile` declares an `ARG` for it. The image declares five (`APP_ENV`, `NEXT_PUBLIC_APP_ENV`, `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_SENTRY_DSN`, `NEXT_PUBLIC_GA4_MEASUREMENT_ID`); `next.config.ts` asserts all 28.
 - **Orchestrator ruling (2026-09-18), binding:** do **not** declare the ten server keys as build arguments. A build argument is recoverable from the build stage's layer history, and a container build has no business holding a database credential. **Split the gate instead**: `next.config.ts` (via `assertEnv`) asserts only the keys the build actually inlines — `APP_ENV` and the `NEXT_PUBLIC_*` set; the server-only keys are asserted **at server start** (`instrumentation.ts` or the standalone server's first request path — implementer's choice, stated in `## Result
 
-**PR:** PR_URL_PLACEHOLDER — `fix(hosting): build the container without credentials (TASK-135)`.
+**PR:** https://github.com/itsahmeds/flowers-overseas/pull/82 — `fix(hosting): build the container without credentials (TASK-135)`.
 
 The env contract is split in two and the whole 28-key assertion is no longer a build input.
 `BUILD_ENV_KEYS` (`APP_ENV` + the six `NEXT_PUBLIC_*` keys) is graded by `assertBuildEnv()` from
