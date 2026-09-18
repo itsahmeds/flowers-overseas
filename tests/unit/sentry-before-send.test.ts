@@ -383,3 +383,80 @@ describe("the non-PII tags (spec 003 §11, spec 005 §11)", () => {
     });
   });
 });
+
+/**
+ * Spec 040 AC-32 / T-32 (TASK-098): the two tags a Railway deployment is read by. TASK-097 moved
+ * the sources; this block pins the values the staging service will actually report, which is what
+ * a reviewer of the staging cutover looks for in the Sentry UI.
+ */
+describe("Sentry environment and release on Railway (spec 040 AC-32, T-32)", () => {
+  const environmentKeys = [
+    "APP_ENV",
+    "NEXT_PUBLIC_APP_ENV",
+    "RAILWAY_GIT_COMMIT_SHA",
+    "VERCEL_GIT_COMMIT_SHA",
+    "NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA",
+  ] as const;
+
+  function withEnv(
+    values: Partial<Record<(typeof environmentKeys)[number], string>>,
+    body: () => void,
+  ): void {
+    const previous = environmentKeys.map(
+      (key) => [key, process.env[key]] as const,
+    );
+    try {
+      for (const key of environmentKeys) {
+        const value = values[key];
+        if (value === undefined) delete process.env[key];
+        else process.env[key] = value;
+      }
+      body();
+    } finally {
+      for (const [key, value] of previous) {
+        if (value === undefined) delete process.env[key];
+        else process.env[key] = value;
+      }
+    }
+  }
+
+  const dsn = "https://public@de.sentry.io/1";
+
+  it("tags every environment with its own APP_ENV value", () => {
+    for (const environment of [
+      "development",
+      "preview",
+      "staging",
+      "production",
+    ]) {
+      withEnv({ APP_ENV: environment }, () => {
+        expect(sentryOptions(dsn)?.environment, environment).toBe(environment);
+      });
+    }
+  });
+
+  it("uses the Railway commit SHA as the release on staging", () => {
+    withEnv({ APP_ENV: "staging", RAILWAY_GIT_COMMIT_SHA: "c0ffee1" }, () => {
+      expect(sentryOptions(dsn)).toMatchObject({
+        environment: "staging",
+        release: "c0ffee1",
+      });
+    });
+  });
+
+  it("falls back to the browser mirror of APP_ENV, then to development", () => {
+    withEnv({ NEXT_PUBLIC_APP_ENV: "staging" }, () => {
+      expect(sentryOptions(dsn)?.environment).toBe("staging");
+    });
+    withEnv({}, () => {
+      expect(sentryOptions(dsn)?.environment).toBe("development");
+    });
+  });
+
+  it("sends nothing at all when the DSN is unset, in any environment", () => {
+    withEnv({ APP_ENV: "staging", RAILWAY_GIT_COMMIT_SHA: "c0ffee1" }, () => {
+      expect(sentryOptions(undefined)).toBeUndefined();
+      expect(sentryOptions("")).toBeUndefined();
+    });
+  });
+});

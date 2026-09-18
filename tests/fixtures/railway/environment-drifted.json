@@ -1,0 +1,24 @@
+{
+  "_fixture": "The same answer with all four AC-9 values wrong: a second replica (forbidden by ADR-0018 until a shared ISR cache handler exists), the wrong region, the default healthcheck path and a restart policy that never gives up.",
+  "data": {
+    "environment": {
+      "name": "staging",
+      "serviceInstances": {
+        "edges": [
+          {
+            "node": {
+              "serviceName": "web",
+              "region": "us-west1",
+              "numReplicas": 2,
+              "healthcheckPath": null,
+              "healthcheckTimeout": 300,
+              "restartPolicyType": "ALWAYS",
+              "restartPolicyMaxRetries": 0,
+              "startCommand": "node server.js"
+            }
+          }
+        ]
+      }
+    }
+  }
+}

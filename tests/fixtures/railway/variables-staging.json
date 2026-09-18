@@ -1,0 +1,36 @@
+{
+  "_fixture": "Railway GraphQL `variables(projectId, environmentId)` answer for a correctly configured `staging` environment (spec 040 AC-11, T-11; TASK-098): the 28 contract keys plus the `STAGING_BASIC_AUTH` switch of §12, and the `RAILWAY_*` names the platform injects. Every value is the literal sentinel `SENTINEL-VALUE`, so a test can assert that no run of `railway:check` prints one.",
+  "data": {
+    "variables": {
+      "APP_ENV": "SENTINEL-VALUE",
+      "CSP_REPORT_ONLY": "SENTINEL-VALUE",
+      "DATABASE_URL": "SENTINEL-VALUE",
+      "DATABASE_URL_UNPOOLED": "SENTINEL-VALUE",
+      "ENABLE_DEV_UI": "SENTINEL-VALUE",
+      "ENABLE_PSEUDO_LOCALES": "SENTINEL-VALUE",
+      "INTERNAL_CRON_SECRET": "SENTINEL-VALUE",
+      "LOG_LEVEL": "SENTINEL-VALUE",
+      "NEON_API_KEY": "SENTINEL-VALUE",
+      "NEON_BRANCH": "SENTINEL-VALUE",
+      "NEON_PROJECT_ID": "SENTINEL-VALUE",
+      "NEXT_PUBLIC_APP_ENV": "SENTINEL-VALUE",
+      "NEXT_PUBLIC_GA4_MEASUREMENT_ID": "SENTINEL-VALUE",
+      "NEXT_PUBLIC_SENTRY_DSN": "SENTINEL-VALUE",
+      "NEXT_PUBLIC_SITE_URL": "SENTINEL-VALUE",
+      "R2_ACCESS_KEY_ID": "SENTINEL-VALUE",
+      "R2_ACCOUNT_ID": "SENTINEL-VALUE",
+      "R2_BACKUPS_BUCKET": "SENTINEL-VALUE",
+      "R2_BUCKET": "SENTINEL-VALUE",
+      "R2_PUBLIC_BASE_URL": "SENTINEL-VALUE",
+      "R2_S3_ENDPOINT": "SENTINEL-VALUE",
+      "R2_SECRET_ACCESS_KEY": "SENTINEL-VALUE",
+      "SENTRY_AUTH_TOKEN": "SENTINEL-VALUE",
+      "SENTRY_DSN": "SENTINEL-VALUE",
+      "STAGING_BASIC_AUTH": "SENTINEL-VALUE",
+      "RAILWAY_ENVIRONMENT_NAME": "SENTINEL-VALUE",
+      "RAILWAY_GIT_COMMIT_SHA": "SENTINEL-VALUE",
+      "RAILWAY_REPLICA_REGION": "SENTINEL-VALUE",
+      "PORT": "SENTINEL-VALUE"
+    }
+  }
+}

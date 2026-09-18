@@ -108,6 +108,7 @@ task actually touches.
 | `i18n-pseudo.ts` | `i18n:pseudo` | `pnpm i18n:pseudo [--check] [--messages-dir messages]` (spec 003 §2… |
 | `lint-fixtures.ts` | `lint:fixtures` | `pnpm lint:fixtures` (spec 001 AC-4 / AC-5, TASK-003) |
 | `pr-policy.ts` | `pr-policy` | PR policy (spec 001 §2 "CI", AC-19 / T-20, TASK-002) |
+| `railway-check.ts` | `railway:check` | `pnpm railway:check [--env <name>]` — the Railway drift gate (spec 040 §5.3,… |
 | `seo/brotli-origin.ts` | `lighthouse:origin` | `pnpm lighthouse:origin` — a Brotli reverse proxy in front of `next start`… |
 | `seo/generate-hreflang-fixtures.ts` | — | `node scripts/seo/generate-hreflang-fixtures.ts [--write]` (spec 003 §6… |
 | `seo/lib.ts` | — | Shared plumbing for the three SEO validator CLIs (spec 001 §2 "CI", §6, AC-22 /… |
@@ -123,14 +124,14 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 179 |
-| `tests/integration/` | 3 |
-| `tests/contract/` | 3 |
-| `tests/e2e/` | 23 |
+| `tests/unit/` | 182 |
+| `tests/integration/` | 4 |
+| `tests/contract/` | 4 |
+| `tests/e2e/` | 24 |
 | `tests/a11y/` | 9 |
 | `tests/visual/` | 10 |
 | `tests/dev-os/` | 1 |
-| `tests/fixtures/` | 149 |
+| `tests/fixtures/` | 154 |
 | `tests/msw/` | 3 |
 
 ## Where does X live?

@@ -1,0 +1,24 @@
+{
+  "_fixture": "Railway GraphQL `environment(id)` answer for a staging environment whose `web` service matches config/railway.json (spec 040 AC-9, T-10; TASK-098). Shape recorded from the public API schema; no token, no project id and no variable value appears in this file.",
+  "data": {
+    "environment": {
+      "name": "staging",
+      "serviceInstances": {
+        "edges": [
+          {
+            "node": {
+              "serviceName": "web",
+              "region": "europe-west4",
+              "numReplicas": 1,
+              "healthcheckPath": "/api/health",
+              "healthcheckTimeout": 300,
+              "restartPolicyType": "ON_FAILURE",
+              "restartPolicyMaxRetries": 10,
+              "startCommand": "node server.js"
+            }
+          }
+        ]
+      }
+    }
+  }
+}

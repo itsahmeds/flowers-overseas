@@ -423,6 +423,19 @@ export function commitSha(source: EnvSource): string | undefined {
   return values.find((value) => value !== undefined && value.trim() !== "");
 }
 
+/**
+ * The region this replica runs in, or `undefined` off a platform that names one (spec 040 §5.3,
+ * AC-31; TASK-098). Railway injects `RAILWAY_REPLICA_REGION` (`europe-west4` for Amsterdam);
+ * Vercel injects `VERCEL_REGION`. Both reads live here, in one of the two modules
+ * `pnpm check:no-vercel-env` exempts, so `/api/health` stays host-agnostic — and so the region in
+ * the health body is an observed fact about the running replica, never the declared one from
+ * `config/railway.json`, which is the whole point of reporting it.
+ */
+export function deploymentRegion(source: EnvSource): string | undefined {
+  const values = [source["RAILWAY_REPLICA_REGION"], source["VERCEL_REGION"]];
+  return values.find((value) => value !== undefined && value.trim() !== "");
+}
+
 /** The key that switches the pseudo-locales on, and its only enabling value. */
 export const PSEUDO_LOCALES_KEY = "ENABLE_PSEUDO_LOCALES" as const;
 

@@ -1,0 +1,26 @@
+# Build context exclusions (spec 040 §5.3, AC-8; TASK-098).
+# The image must contain no `.env*` file and no build/test leftovers; the runtime stage copies
+# only `.next/standalone`, `.next/static` and `public/`, but the build context is kept small and
+# secret-free here as well.
+.env
+.env.*
+.env.example
+.git
+.github
+.claude
+node_modules
+.next
+out
+coverage
+playwright-report
+test-results
+.lighthouseci
+.vercel
+.local
+docs
+plan
+specs
+tests
+*.md
+!README.md
+.DS_Store

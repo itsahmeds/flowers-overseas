@@ -10,22 +10,38 @@
  */
 import { z } from "zod";
 
+import { deploymentEnvironments } from "./env.schema";
 import { REQUEST_ID_HEADER, resolveRequestId } from "./request-id";
 
 import type { DeploymentEnvironment } from "./env.schema";
 
-/** Response shape of `GET /api/health` (spec 001 §5.2). */
+/**
+ * Response shape of `GET /api/health` (spec 001 §5.2; spec 040 §5.6, AC-31).
+ *
+ * Spec 040 **adds** `commit`, `appEnv` and `region` (§5.6: the endpoint "gains" them); `version`
+ * and `env` stay, because spec 001 AC-14 pins them and the e2e suite and the launch skill read
+ * them. `commit` is the same value as `version` under the name AC-31 uses; `appEnv` is the
+ * unreduced five-value `appEnvironment()` result, while `env` keeps spec 001's four-value shape
+ * (a `test` run reports `development`). No field is PII and none is a secret: a commit SHA, an
+ * environment name and a cloud region (spec 040 §8), and no field costs a database call (§11).
+ */
 export const HealthResponse = z.object({
   status: z.literal("ok"),
   version: z.string(),
   // `staging` joined the set with spec 040 §5.2 (TASK-097): it is a real environment this
   // deployment can be in, and a health body that cannot name it would fail its own schema.
   env: z.enum(["development", "preview", "staging", "production"]),
+  commit: z.string(),
+  appEnv: z.enum(deploymentEnvironments),
+  region: z.string(),
 });
 export type HealthResponse = z.infer<typeof HealthResponse>;
 
 /** Reported when no platform commit SHA is present, i.e. every local and CI build. */
 export const HEALTH_VERSION_FALLBACK = "dev";
+
+/** Reported when no platform names a region: a laptop, CI and a bare `docker run` (AC-31). */
+export const HEALTH_REGION_FALLBACK = "local";
 
 /**
  * Headers of every health response. `no-store` and `X-Robots-Tag: noindex` are AC-14; the
@@ -44,6 +60,8 @@ export interface HealthInput {
   readonly environment: DeploymentEnvironment;
   /** `commitSha(process.env)` from `@/lib/env`; absent off a platform that injects one. */
   readonly version: string | undefined;
+  /** `deploymentRegion(process.env)`; absent off a platform that names one (spec 040 AC-31). */
+  readonly region?: string | undefined;
 }
 
 /**
@@ -59,10 +77,14 @@ function reportedEnvironment(
 
 /** Build and validate the body. Throws if it ever stops matching the schema. */
 export function buildHealthResponse(input: HealthInput): HealthResponse {
+  const commit = input.version ?? HEALTH_VERSION_FALLBACK;
   return HealthResponse.parse({
     status: "ok",
-    version: input.version ?? HEALTH_VERSION_FALLBACK,
+    version: commit,
     env: reportedEnvironment(input.environment),
+    commit,
+    appEnv: input.environment,
+    region: input.region ?? HEALTH_REGION_FALLBACK,
   });
 }
 

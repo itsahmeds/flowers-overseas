@@ -18,12 +18,28 @@
  */
 import { type NextRequest, NextResponse } from "next/server";
 
+import {
+  BASIC_AUTH_CHALLENGE_HEADERS,
+  STAGING_BASIC_AUTH_KEY,
+  basicAuthDecision,
+} from "@/lib/basic-auth";
+import { appEnvironment } from "@/lib/env.schema";
 import { logger } from "@/lib/logger";
 import { REQUEST_ID_HEADER, resolveRequestId } from "@/lib/request-id";
 import { parseLocaleFromPath } from "@/modules/i18n";
 
 /** Downstream request header carrying the locale parsed from the path (spec 003 §11). */
 export const LOCALE_HEADER = "x-fo-locale";
+
+/**
+ * The environment and the access credential, read once at module load (spec 040 §5.3, AC-25;
+ * TASK-098). `appEnvironment()` is the only environment reader (§5.2) and `STAGING_BASIC_AUTH` is
+ * absent-means-off (§12), so a laptop, CI and `production` all behave exactly as before this
+ * task. The decision is a pure function in `@/lib/basic-auth`; nothing about the credential is
+ * logged (spec 001 §8).
+ */
+const environment = appEnvironment(process.env);
+const credential = process.env[STAGING_BASIC_AUTH_KEY];
 
 export function proxy(request: NextRequest): NextResponse {
   const requestId = resolveRequestId(request.headers.get(REQUEST_ID_HEADER));
@@ -38,6 +54,32 @@ export function proxy(request: NextRequest): NextResponse {
   });
 
   log.info({ method, path }, "request start");
+
+  // The non-production access gate (AC-25): 401 before anything renders, `/api/health` exempt.
+  if (
+    basicAuthDecision({
+      environment,
+      credential,
+      pathname: path,
+      authorization: request.headers.get("authorization"),
+    }) === "challenge"
+  ) {
+    const challenge = new NextResponse(null, {
+      status: 401,
+      headers: { ...BASIC_AUTH_CHALLENGE_HEADERS },
+    });
+    challenge.headers.set(REQUEST_ID_HEADER, requestId);
+    log.info(
+      {
+        method,
+        path,
+        status: challenge.status,
+        duration_ms: Date.now() - started,
+      },
+      "request end",
+    );
+    return challenge;
+  }
 
   const headers = new Headers(request.headers);
   headers.set(REQUEST_ID_HEADER, requestId);

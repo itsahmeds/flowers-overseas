@@ -8,6 +8,7 @@ area. `tests/unit/docs.test.ts` fails if a runbook exists but is not listed here
 |---|---|
 | [local-setup](local-setup.md) | Clean clone to a running app in under 15 minutes; verifying the task guard; common failures |
 | [vercel-setup](vercel-setup.md) | Linking the Vercel project, region `fra1`, Deployment Protection, env vars |
+| [railway-cloudflare-setup](railway-cloudflare-setup.md) | Standing the Railway `web` service up on `staging`: config-as-code, the 24 pasted variables, the `STAGING_BASIC_AUTH` wall, the health checks, `pnpm railway:check`, and what is still to verify against the live URL (ADR-0018) |
 | [branch-protection](branch-protection.md) | Required checks, merge method and review policy on `main`, and the verifier |
 | [payment-webhook-down](payment-webhook-down.md) | Stripe/Mollie webhooks failing or delayed |
 | [florist-declines-peak](florist-declines-peak.md) | A partner declines during a peak day |
