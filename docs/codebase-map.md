@@ -17,13 +17,13 @@ task actually touches.
 | `catalog` | The only import path into the catalogue and pricing module (spec 005 §2, §5.2;… | spec 005 | `contract/catalog-static-providers.test.ts`, `contract/support/catalog-provider-contract.ts`, `unit/catalog-availability.test.ts` +21 |
 | `customers` | Public barrel for `customers` (customers, recipients, consent) | spec 019 | — |
 | `geo` | The only import path into the geo module (spec 007 §5.2; TASK-087) | spec 007, 002, 009 | `unit/catalog-listing.test.ts`, `unit/corridor-check.test.ts`, `unit/corridor-content-provider.test.ts` +8 |
-| `i18n` | The only import path for the i18n module (spec 003 §5.2, AC-3; TASK-034) | spec 003 | `fixtures/ts/format-time-in-zone-no-zone.ts`, `unit/app-shell.test.tsx`, `unit/catalog-messages.test.ts` +40 |
+| `i18n` | The only import path for the i18n module (spec 003 §5.2, AC-3; TASK-034) | spec 003 | `fixtures/ts/format-time-in-zone-no-zone.ts`, `unit/app-shell.test.tsx`, `unit/catalog-messages.test.ts` +41 |
 | `notifications` | Public barrel for `notifications` (email + WhatsApp senders, templates, outbox… | spec 017 | — |
 | `orders` | Public barrel for `orders` (state machine, order service, assignment/routing… | spec 015, 016 | — |
 | `partners` | Public barrel for `partners` (fulfilment partners, coverage, payouts) | spec 011, 026 | — |
 | `payments` | Public barrel for `payments` (PaymentProvider interface; stripe/, mollie/… | spec 013, 014 | — |
 | `seo` | Indexability rule engine, canonical builder, robots policy, page metadata (spec… | spec 007 | `unit/catalog-listing.test.ts`, `unit/corridor-route.test.ts`, `unit/seo-canonical.test.ts` +5 |
-| `ui` | The only import path for the design system (spec 004 §2 "Where the design… | spec 004 | `unit/consent-cookie.test.ts`, `unit/consent-islands.test.tsx`, `unit/consent-view.test.ts` +21 |
+| `ui` | The only import path for the design system (spec 004 §2 "Where the design… | spec 004 | `unit/chrome-honesty.test.tsx`, `unit/consent-cookie.test.ts`, `unit/consent-islands.test.tsx` +22 |
 
 ## Config (`src/config/`)
 
@@ -123,10 +123,10 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 178 |
+| `tests/unit/` | 179 |
 | `tests/integration/` | 3 |
 | `tests/contract/` | 3 |
-| `tests/e2e/` | 22 |
+| `tests/e2e/` | 23 |
 | `tests/a11y/` | 9 |
 | `tests/visual/` | 10 |
 | `tests/dev-os/` | 1 |
