@@ -87,13 +87,36 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
   The founder must clear the Actions spending limit, after which a single re-run of both
   workflows is enough — the branch is `MERGEABLE` against `main`.
 
-- **2026-09-18 — none blocking (task scope).** Two notes for `/review`, neither a spec ambiguity:
-  1. The *sitemap row* half of AC-7 cannot be observed as a row until TASK-094 ships
-     `/sitemap.xml`; it is proven here through `pageIndexability().inSitemap`, the single
-     predicate §2 requires a sitemap to read. Recorded as a hand-off rather than allow-listed.
-  2. `categories:seo` reads 0.63-0.66 on every measured URL because the whole deployment is
-     `noindex` until the §12 environment flip. `lighthouserc.json` already asserts it only on
-     indexable URLs (AC-25), so this is the documented behaviour, not a regression.
+- **2026-09-18 — none blocking (task scope).** Three notes for `/review`, none a spec ambiguity.
+  Notes 1 and 2 are **corrected** after `/review 74` found both misstated:
+  1. **The sitemap half of AC-7 is a carry-forward to TASK-094, not a proof made here.** There is
+     no `/sitemap.xml` route yet, so no row exists to observe, and nothing in this PR proves one.
+     `pageIndexability()` returns `{ indexable, directive, terms }` — there is no `inSitemap`
+     field and never was; the round-1 record invented it. The real pair a sitemap will read is
+     **`listCorridorPages()`** (the URL set, which the AC-7 flip test already pins) and
+     **`pageIndexability(...).indexable`** (whether a URL of that set may be listed). TASK-094
+     builds the sitemap from those two and asserts the row itself there.
+  2. **`categories:seo` reads 0.63-0.66 on every measured URL** because the whole deployment is
+     `noindex` until the §12 environment flip. `lighthouserc.json` does **not** assert
+     `categories:seo` — anywhere, on any URL. Its assertion list is exactly
+     `categories:performance` ≥ 0.95, `categories:accessibility` ≥ 0.95,
+     `categories:best-practices` ≥ 0.95, `largest-contentful-paint` ≤ 2 000 ms,
+     `cumulative-layout-shift` ≤ 0.05, `resource-summary:script:size` ≤ 131 072 B and
+     `resource-summary:image:size` ≤ 204 800 B. The `seo` category is *collected* (it is in
+     `onlyCategories`) so the number is visible in the report, and deliberately unasserted while
+     every page is `noindex`. Round 1 claimed it was "asserted only on indexable URLs (AC-25)";
+     that is not what the file says.
+  3. **A pre-existing chrome defect, owned by spec 004 / TASK-048, not by this task.** Below
+     900 px `SiteHeader`'s category row is `overflow-x-auto` with no `tabindex`, so axe reports
+     **`scrollable-region-focusable` (serious)** on *every* page at that width — a keyboard user
+     cannot scroll that row. `tests/a11y/destinations-hub.spec.ts` therefore **scopes** its
+     390 px audit to `main`. AC-26 says "no exception list", and this is not one: no rule is
+     disabled and no violation is allow-listed, so a `scrollable-region-focusable` inside the
+     hub's own markup would still fail. Scoping narrows *where* the audit looks; an exception
+     list would narrow *what* it reports, and would have hidden this defect instead of naming
+     it. The 1 440 px audit is still whole-document, chrome included. `SiteHeader` needs a
+     `tabindex="0"` and an accessible name on the scroll container; that is a TASK-048 edit and
+     this task may not make it.
 
 ## Result
 
@@ -136,9 +159,17 @@ Registry flip on `DE` only, observed through the shipped modules:
 changed, 2 lines). Pinned as a regression test in `tests/unit/destinations-hub.test.tsx`
 ("a new country is data (AC-7; T-08)").
 
-**Hand-off:** the *sitemap row* half of AC-7 is proven today through
-`pageIndexability().inSitemap`, the one predicate a sitemap is allowed to read — there is no
-`/sitemap.xml` route yet. TASK-094 must assert the row itself against this same predicate.
+**Hand-off (corrected in round 2):** the *sitemap row* half of AC-7 is **not** proven here and is
+a declared carry-forward to **TASK-094** — there is no `/sitemap.xml` route yet, so there is no
+row to observe. The pair a sitemap will read is `listCorridorPages()` (the URL set, pinned by the
+flip test above) and `pageIndexability(...).indexable` (whether such a URL may be listed).
+`pageIndexability()` returns `{ indexable, directive, terms }`; the round-1 record cited an
+`inSitemap` field that does not exist.
+
+The **hreflang** half of AC-7, by contrast, is asserted here: under the same `isGuidePublished`
+mock, withdrawing Germany's guide empties `corridorAlternatePaths("DE")` and therefore
+`alternatesFor()`, and publishing it again restores the two-URL `en`/`en-gb` cluster with its
+`x-default` (`tests/unit/destinations-hub.test.tsx`).
 
 ### Gates (all green, local)
 
@@ -181,7 +212,77 @@ unasserted — every page is `noindex` until the §12 environment flip (`lightho
 
 - **TASK-093** — `BreadcrumbList` JSON-LD: the slot is in the hub route and empty, and
   `hubView().breadcrumb` is the visible crumb list AC-15 asks it to equal.
-- **TASK-094** — the sitemap builder: `listCorridorPages()` plus `pageIndexability()` are the one
-  predicate; add the hub path `hubView(locale).path` and assert the AC-7 sitemap row here.
+- **TASK-094** — the sitemap builder, and the owner of AC-7's sitemap-row half: build the rows
+  from `listCorridorPages()` filtered by `pageIndexability(...).indexable`, add the hub path
+  `hubView(locale).path`, and assert there that a `guidePublished` flip adds and removes the row.
+- **TASK-048 / spec 004** — `SiteHeader`'s `overflow-x-auto` category row is keyboard-inaccessible
+  below 900 px (`scrollable-region-focusable`, serious, on every page). See `## Escalations` 3.
 - **TASK-095** — `/de` and `/pl` hubs render the whole-page empty state today; they gain links the
   moment a reviewed guide exists, with no template edit.
+
+### Round 2 — the `/review 74` fix round (2026-09-18)
+
+Five corrections, in the reviewer's numbering. Only item 3 changes shipped markup.
+
+1. **AC-7's sitemap proof rewritten** as a declared carry-forward to TASK-094, naming
+   `listCorridorPages()` + `pageIndexability(...).indexable`; the phantom `inSitemap` is gone from
+   this brief and from the PR body. Escalation note 2 now states what `lighthouserc.json` really
+   asserts (see `## Escalations`).
+2. **T-08's hreflang half is now an assertion**, not prose: two new expectations in
+   `tests/unit/destinations-hub.test.tsx` under the existing `isGuidePublished` mock — withdraw
+   Germany and `corridorAlternatePaths("DE")` is `{}` and `alternatesFor()` is `[]` while Poland's
+   cluster is untouched; publish it again and the cluster is exactly
+   `…/en/send-flowers-to/germany` + `…/en-gb/send-flowers-to/germany`, each carrying `x-default`.
+3. **The artboard deviations are gone: the code was aligned**, per the orchestrator's ruling. No
+   rule forbids the artboard, so none is cited. `DestinationsHubPage` now draws a linked
+   destination as the artboards do — one whole-tile `<a>` (`<li>` → `<a class="… flex h-full
+   flex-col …">`), no underline (the canvas's own `a { text-decoration: none }` in `globals.css`,
+   so the previous `underline underline-offset-4` was the deviation), and the accent
+   "Read the guide →" label. The accessible name is the country name alone, through
+   `aria-labelledby` on the `<span>` that renders it: a screen reader's link list stays a list of
+   countries, and the name is visible text inside the link (WCAG 2.5.3). The arrow travels in the
+   `destinationsHub.readGuide` message in all three catalogues — never a literal in JSX — so a
+   locale can point it the other way; `sourceHash` was refreshed in all three manifests and
+   `pnpm i18n:check` is clean. AC-20's "no markup change" binds the finder, the grid and the
+   footer, which this does not touch.
+4. **Every regenerated visual baseline, declared.** Eleven in total, nine from round 1 and two
+   from this round:
+
+   | Baseline | Why it changed |
+   |---|---|
+   | `home-{en,en-gb,de,pl}-mobile` | full-page shots: the state line's words changed with the founder's rename (`Guide · waiting list` → `Guide · not delivering yet`, a longer chip that reflows the row), and in `en`/`en-gb` the seven destination rows are now `<a>` because their corridor ids are published |
+   | `home-{desktop,mobile}-destinations` | the same two causes, cropped to the destinations grid element |
+   | `footer-{en,de}-mobile` | the footer's destinations entry is a link now that `destinations` is published in `site-links.ts` |
+   | `not-found-mobile` | the 404 page renders the same footer, so it inherits the line above |
+   | `all-destinations-{desktop,mobile}-region` | **round 2 only**: the whole-tile link of item 3 |
+
+   This reconciles with AC-20's "no markup change": the `<a>`-versus-text branch was already in
+   `FinderCard`, `DestinationsGrid` and the footer before this task, and the only diff in those
+   files is a doc comment. Publishing a link id and renaming a message are data changes that move
+   pixels; they are not template changes. The two `all-destinations-*-head` baselines are
+   **unchanged**, which is the evidence item 3 is confined to the destination tile.
+5. **The `SiteHeader` defect is recorded** with its owner (spec 004 / TASK-048) in
+   `## Escalations` 3, together with why the hub's 390 px axe pass is *scoped* to `main` rather
+   than allow-listed — scoping narrows where the audit looks, an exception list would narrow what
+   it reports, and AC-26's "no exception list" is satisfied because no rule is disabled and no
+   violation is excused.
+
+**Nits.** `unpublishedPaths()` in `tests/e2e/destinations-hub.spec.ts` now collects
+`kind: "corridor"` targets as well as `kind: "route"` ones (it builds the slug with
+`countrySlug`, because `geo`'s `corridorSlug` reaches the i18n barrel Playwright cannot load);
+`tests/e2e/links.spec.ts`'s copy is spec 004's and was left alone. The `en` and `en-gb` hubs still
+share `seoTitle`, `seoDescription` and `intro` verbatim — a consolidation risk `plan/02` §4.2
+watches for; recorded, not invented around, since new copy needs a human. The `ui` ↔ `geo` barrel
+cycle dodge (the hub imports `../../ui/index.ts`, `ui/home` does not import `geo`) stays a local
+convention; if a third caller needs it, it wants an ADR rather than a third comment.
+
+### Gates after round 2 (all green, local; GitHub Actions still blocked by billing)
+
+`lint` · `typecheck` · `format:check` · `test` (165 files, 4 000 tests: 3 995 passed, 5 skipped) ·
+`check:no-db` · `corridor:check` (14 files, 18 rules) · `i18n:check` (4 locales) · `seo:validate` ·
+`codebase:map --check` · `specs:index --check` · `tasks:check` · cold `build` (`rm -rf .next`, hub
+prerendered in all four locales) · `test:e2e` (750 tests: 748 passed, 2 skipped) · `test:a11y`
+(72 passed) · `test:visual` (41 passed) · Lighthouse on the two hub URLs (3 runs each, every
+assertion green): perf 1.00 / a11y 1.00 / best-practices 0.96, LCP 1 306 ms (`/en`) and 1 286 ms
+(`/en-gb`), CLS 0.000, **script transfer 128 211 B — unchanged, still byte-identical to the locale
+home**, so the whole-tile link added no JavaScript. `categories:seo` 0.66, unasserted (note 2).
