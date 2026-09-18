@@ -15,7 +15,50 @@ Branch `task/TASK-015-schema-i18n-geo`. `locale` and `currency` are created befo
 
 ## Carry-forwards
 
-_None recorded._
+- 2026-09-18 — `/review 75` round 1 **FAIL**, required change 1: `postcode_zone` has no surrogate
+  key, so the `postcode_zone_id` foreign key that spec 002 §5.1 writes on **`partner_coverage`**
+  (`partner_coverage(partner_id, city_id NULL, postcode_zone_id NULL, …)`) and on
+  **`recipient_address`** (`recipient_address(…, country_id, postcode_zone_id NULL, …)`) cannot be
+  declared against it. Either give `postcode_zone` `id uuid PRIMARY KEY DEFAULT gen_random_uuid()`
+  while keeping `UNIQUE (country_id, prefix)` (mirror in `db/schema/geo.ts`, extend the
+  integration test's PK/UNIQUE list), or obtain a spec 002 §14 amendment rewriting both of those
+  columns as composite `(country_id, prefix)` references. The first is cheaper while `0002` is
+  unmerged; the second is a spec change, not an in-task decision. The same reading should be
+  confirmed for the other seven tables where the brief's "uniqueness as the primary key" deviation
+  replaced the §5.1 convention "primary keys are `uuid` … except reference tables keyed by a
+  natural code (`locale.code`, `currency.code`, `order_status.key`)" — none of the other seven is
+  referenced by a surrogate id anywhere in `specs/`, so only `postcode_zone` blocks.
+- 2026-09-18 — `/review 75` nit: §5.1 ("every localisable entity has a sibling `*_translation`
+  table … with the review triple `translation_status` / `reviewed` / `reviewed_by` / `reviewed_at`
+  / `source_hash`", §7) and §5.1's own column lists disagree for `country_translation` and
+  `city_translation`, which land here without any review column. The migration follows §5.1's
+  column list, which is the defensible reading (review gating lives on `country_locale_content`
+  and on `product_translation`), but spec 007's hreflang query ("alternates are exactly the
+  locales for which a translation row exists **and** is `reviewed`", §6) will meet the gap at
+  city level. Record the reading in the brief and raise it for a spec 002 §14 A-record before
+  TASK-016 copies the pattern.
+- 2026-09-18 — `/review 75` nit: §5.1's convention is "deletes are `ON DELETE RESTRICT` by
+  default; `CASCADE` only from a parent to its own translation/variant rows", but
+  `country_holiday.country_id` and both `occasion_country` foreign keys are `ON DELETE CASCADE`
+  and neither table is a translation or a variant. Harmless while a country is retired by a
+  `status` flip rather than a delete, but it is an undeclared deviation — declare it here or
+  change it.
+- 2026-09-18 — `/review 75` nit: `## Result` quotes `pnpm test` **3991 passed / 5 skipped, 165
+  files**; the branch as it stands gives **4069 passed / 5 skipped, 168 files** (the delta is work
+  merged into `main` before the branch, not this PR). Refresh the numbers so the brief is a record
+  of the branch and not of a moment in it.
+- 2026-09-18 — `/review 75` nit: the T-08 behavioural assertions record a *rejection*, not *which*
+  constraint rejected. A slug-regex `CHECK` or a primary-key collision would satisfy them just as
+  a duplicate `UNIQUE (locale_code, slug)` does. Assert `error.constraint_name` when TASK-016
+  verifies AC-8 proper.
+- 2026-09-18 — `/review 75` nit: `meta/_journal.json` names `0000_numerous_toad_men`, a tag with
+  no `.sql` file in `db/migrations/`. Harmless today (`drizzle-kit generate` prints "No schema
+  changes"), but the next draft it *does* emit will be `0001_*.sql` — a duplicate of the version
+  `0001_roles_grants_updated_at.sql` already carries, which `db:check` rejects. Worth one sentence
+  in `db/migrations/README.md` so the next implementer expects it.
+- 2026-09-18 — `/review 75` nit: no index on `occasion_country.country_id` or on the
+  `locale_code` column of the three translation tables; every other foreign key is covered by a
+  primary key prefix or an explicit index. Revisit when spec 008's queries exist.
 
 ## Escalations
 
