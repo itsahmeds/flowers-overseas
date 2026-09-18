@@ -86,14 +86,17 @@ Two further notes for the reviewer, deviations in mechanism and not in property:
   `db/migrations/README.md` prescribes; `meta/0000_snapshot.json` is committed as the baseline.
 - **Uniqueness as the primary key.** Where the spec's `UNIQUE (…)` *is* the row's natural key
   (`country_translation`, `city_translation`, `occasion_translation`, `country_locale_content`,
-  `country_holiday`, `occasion_country`, `postcode_zone`, `fx_rate`) it is declared as the primary
-  key instead of a surrogate `uuid` plus a redundant second index. The §6 slug rules are separate
-  `UNIQUE` constraints in every case, and a duplicate insert is rejected either way (T-08).
+  `country_holiday`, `occasion_country`, `fx_rate`) it is declared as the primary key instead of a
+  surrogate `uuid` plus a redundant second index. The §6 slug rules are separate `UNIQUE`
+  constraints in every case, and a duplicate insert is rejected either way (T-08). **Round 2:**
+  `postcode_zone` left this group — §5.1 gives `partner_coverage` and `recipient_address` a
+  single-column `postcode_zone_id`, so it carries a surrogate `id` *and* the natural
+  `UNIQUE (country_id, prefix)`. Seven tables, not eight.
 
 ## Result
 
 PR [#75](https://github.com/itsahmeds/flowers-overseas/pull/75) — `feat(db): schema i18n and geo —
-migration 0002 (TASK-015)`.
+migration 0002 (TASK-015)`. **Round 2** after `/review 75` returned FAIL.
 
 **Shipped**
 
@@ -106,9 +109,67 @@ migration 0002 (TASK-015)`.
   `db/schema/index.ts`; the closed value sets are exported `const` tuples (`countryStatuses`,
   `occasionRuleTypes`, …) so a value list has exactly one home and the tests read the same one the
   migration declares. No `pgEnum` anywhere.
-- `db/migrations/README.md`: the `meta/` section now names `0000_snapshot.json` as the committed
-  baseline, the foreign-key naming convention, and the `prettier --write db/migrations/meta` step
-  after a `db:generate`.
+- `db/migrations/README.md`: the `meta/` section names `0000_snapshot.json` as the committed
+  baseline, the foreign-key naming convention, the `prettier --write db/migrations/meta` step and,
+  from round 2, **"Journal tags are not migration versions"**.
+
+**Round 2 — required change: the `postcode_zone` surrogate key**
+
+`0002` keyed `postcode_zone` as `PRIMARY KEY (country_id, prefix)`, which the `postcode_zone_id`
+columns spec 002 §5.1 puts on `partner_coverage` and on `recipient_address` (migrations
+`0005`/`0006`, TASK-018/019) cannot reference. Fixed **inside `0002` while it is unmerged**, never
+by a later migration: `id uuid PRIMARY KEY DEFAULT gen_random_uuid()` — `gen_random_uuid()` is core
+Postgres 13+, so AC-7's "no `CREATE EXTENSION`" still holds — with the natural key kept as
+`CONSTRAINT postcode_zone_country_prefix_key UNIQUE (country_id, prefix)`. Mirrored in
+`db/schema/geo.ts` (`uuid("id").primaryKey().defaultRandom()`, the pattern `country`, `region`,
+`city`, `occasion` and `message_catalog` already use) and in the integration test's PK/UNIQUE list,
+which now expects both `postcode_zone: PRIMARY KEY (id)` and
+`postcode_zone: UNIQUE (country_id, prefix)`. `0002_i18n_geo.down.sql` needed no change — it drops
+the table whole. `pnpm db:generate` confirms the mirror: the only diff it emits is the three
+statements of this change, and the draft was deleted per `db/migrations/README.md`. The
+"uniqueness as the primary key" note under `## Escalations` above therefore now covers **seven**
+tables, not eight; `postcode_zone` is the declared exception and the migration header says so.
+
+**Round 2 — the six nits, each with its disposition**
+
+1. **§7-vs-§5.1 review triple on `country_translation`/`city_translation`** — *recorded, not
+   changed*. The migration follows §5.1's explicit column lists; §7's "review triple" sentence and
+   those lists disagree, and adding columns the spec does not name would be a spec change made in
+   a task. Raised for a spec 002 §14 A-record **before TASK-016** copies the pattern; spec 007's
+   hreflang query meets the gap at city level first.
+2. **Undeclared `ON DELETE CASCADE`** on `country_holiday.country_id` and both `occasion_country`
+   foreign keys — *declared, not changed*. The migration header now carries the deviation and its
+   reason: both tables are pure per-country derivatives of their parent, carry no identity of their
+   own and are referenced by nothing, so `RESTRICT` would only make a country delete fail on rows
+   nobody owns; in practice a country is retired by a `country.status` flip, never a delete.
+3. **Stale `## Result` test numbers** — *corrected*; every figure below is measured this round.
+4. **T-08 asserted a rejection, not which constraint rejected** — *fixed*. A `constraintOf(error)`
+   helper reads `error.constraint_name`, and each failure is recorded as `label: constraint_name`.
+   Doing so immediately found the bug the nit predicted: the "a `city_translation` may not claim a
+   country its city does not belong to" case reused a city that already had a `zz` translation, so
+   `city_translation_pkey` rejected the insert and `city_translation_city_fkey` was never
+   consulted. The row now uses a city with no translation and a fresh slug, and the assertion names
+   all five constraints — `city_translation_city_fkey`,
+   `city_translation_locale_country_slug_key`, `country_translation_locale_slug_key`,
+   `occasion_country_rule_type_check`, `occasion_translation_locale_slug_key`.
+5. **`_journal.json` tag `0000_numerous_toad_men` with no `.sql` file** — *documented, tag kept*.
+   Renaming it changes nothing: the runner applies `NNNN_*.sql` by filename and never reads
+   `meta/`, drizzle-kit only diffs `meta/NNNN_snapshot.json`, and deleting an entry orphans its
+   snapshot and makes the next `db:generate` re-emit the whole schema. The real hazard — a draft
+   numbered from `entries.length` colliding with a version this directory already uses — is exactly
+   why step 1 of the reconciliation says *delete the generated file*, and
+   `db/migrations/README.md` now says so under "Journal tags are not migration versions". This
+   round's own `db:generate` emitted `0001_cute_norman_osborn.sql`, the predicted collision; it was
+   diffed against the hand-written SQL and deleted, and its `meta/0001_snapshot.json` plus journal
+   entry are committed so the next `db:generate` diffs against the committed schema. `pnpm
+   db:check` is green.
+6. **Missing indexes on `occasion_country.country_id` and the translation tables' `locale_code`** —
+   *recorded as a TASK-016+ follow-up; no index added*. Basis: spec 002 §5.1 names no index on
+   these tables (the only index it names anywhere is `country_price`'s partial unique index), and
+   `plan/01` carries no FK-index convention to cite — its §6 is about images and alt text.
+   `city_country_idx` and `postcode_zone_city_idx` exist because those two columns are spec 016's
+   routing lookups, not because a rule requires an index per foreign key. Revisit when spec 008's
+   and spec 016's queries exist and can be measured.
 
 **AC-7** — no `CREATE EXTENSION` in any migration (`pg_extension` = `{plpgsql}` after a full
 migrate), no `enum` type (`pg_type.typtype = 'e'` empty), and a `CHECK` value list on every closed
@@ -119,34 +180,39 @@ value column: `country.status`, `country.sunday_delivery`, `country.supply_model
 `occasion_translation` and `UNIQUE (locale_code, country_id, slug)` on `city_translation` land
 here for TASK-016 to verify as AC-8.
 
-**Round trip** (shared Neon preview DB, `DATABASE_URL_UNPOOLED`): catalogue snapshot before
-(1 table, 4 constraints, 1 index, 0 triggers, 1 function, 0 enum types, 1 extension, 2 roles,
-1 migration row) → `db:migrate` (16 tables all owned by `app_owner`, 180 constraints, 28 indexes,
-15 triggers, still 0 enum types and only `plpgsql`) → integration suite green against it →
-`db:rollback --to 0001` → snapshot **byte-identical to before** → `db:migrate` again → snapshot
-**identical to the first migrated state**. `0002` is left applied on the preview database.
+**Round trip, round 2** (shared Neon preview DB, `DATABASE_URL_UNPOOLED`), recorded as
+tables / constraints / indexes / triggers / functions / enum types / extensions / applied:
 
-**Tests** — unit `tests/unit/schema-i18n-geo.test.ts` **14** (T-06 offline: no extension, no enum
-in SQL or Drizzle, no `numeric`/float/`money` type, integral money-adjacent columns, every CHECK
-list equal to its exported tuple, `rule_type` verbatim from `plan/03` §9, the §7 RTL columns, the
-§6 slug uniqueness, creation order, the preamble, one trigger per table, and a rollback that drops
-exactly what was created, leaf-first); integration `tests/integration/schema-i18n-geo.test.ts`
-**10** (T-06 connected: `pg_extension`, `pg_type`, the CHECK-list rule over
-`information_schema.columns`, no `numeric`/float column, the integral money-adjacent types; T-08:
-the fifteen tables and their owner, the twenty foreign keys and the twenty-five PK/UNIQUE
-constraints compared as whole sorted lists, a trigger per table, and the behavioural half — a
-duplicate slug per locale rejected on all three translation tables, the same city slug accepted in
-two countries, a `city_translation` pointing at the wrong country rejected, an unlisted
-`rule_type` rejected and `lent_sunday` accepted — all inside a transaction that ends in a
-rollback, with a post-condition proving the shared database is untouched). The suite skips itself
-when no non-localhost database URL is reachable, so CI and a clean clone stay green.
-`tests/unit/db-migrate.test.ts`'s pinned migration set was extended to `0001` + `0002` (22 → 22,
-one assertion widened).
+| step | snapshot |
+|---|---|
+| start (round-1 `0002` applied) | 16 / 180 / 28 / 15 / 1 / 0 / `plpgsql` / `0001,0002` |
+| `db:rollback --to 0001` | **1 / 4 / 1 / 0 / 1 / 0 / `plpgsql` / `0001`** |
+| `db:migrate` (amended `0002`) | 16 / **182** / **29** / 15 / 1 / 0 / `plpgsql` / `0001,0002` |
+| `db:rollback --to 0001` | **1 / 4 / 1 / 0 / 1 / 0 / `plpgsql` / `0001`** — identical |
+| `db:migrate` again | 16 / 182 / 29 / 15 / 1 / 0 / `plpgsql` / `0001,0002` — identical |
 
-**Gates** (all local; GitHub Actions is off at the account level): `lint`, `typecheck`,
-`format:check`, `db:check` (2 migrations, each with a rollback; table-level drift green),
-`check:no-db` (unchanged `SCANNED_PATHS`), `codebase:map --check`, `specs:index --check`,
-`tasks:check`, cold `pnpm build` (unchanged — no `src/app` file touched), `pnpm test`
-**3991 passed / 5 skipped, 165 files**, `pnpm test:integration` **10 passed, 1 skipped**.
+Both rollback snapshots equal the recorded `0001` state exactly (1 table — `schema_migrations` —
+4 constraints, 1 index, 0 triggers, 1 function). The migrated state is `+2` constraints and `+1`
+index against round 1, which is precisely the surrogate key and nothing else: the primary key on
+`id`, the `NOT NULL` on `id` that PG 17 records in `pg_constraint`, and
+`postcode_zone_country_prefix_key` replacing the old composite primary key.
+`pg_get_constraintdef` on `postcode_zone` reads `PRIMARY KEY (id) | UNIQUE (country_id, prefix)`.
+All fifteen tables are owned by `app_owner` (`schema_migrations`, runner bookkeeping, stays
+`neondb_owner`), and `app_web` holds exactly `SELECT, INSERT, UPDATE, DELETE` on `postcode_zone`
+and nothing more. `0002` is left applied; no session left open.
+
+**Tests** — unit `tests/unit/schema-i18n-geo.test.ts` **14** (T-06 offline) and
+`tests/unit/db-migrate.test.ts` **22**, both green; integration
+`tests/integration/schema-i18n-geo.test.ts` **10** (T-06 connected + T-08, the behavioural half now
+asserting `error.constraint_name`), all inside a transaction that ends in a rollback with a
+post-condition proving the shared database is untouched. The integration suite skips itself when no
+non-localhost database URL is reachable, so CI and a clean clone stay green.
+
+**Gates, round 2** (all local; GitHub Actions is off at the account level): `pnpm lint`,
+`typecheck`, `format:check`, `db:check` (2 migrations, each with a rollback), `check:no-db`
+(unchanged `SCANNED_PATHS`), `codebase:map --check`, `specs:index --check` and `tasks:check` — all
+green. `pnpm test` **4069 passed / 5 skipped, 168 files**; `pnpm test:integration` **10 passed,
+1 skipped**. No `src/` file is touched by this PR, so `next build`, Playwright e2e/visual/a11y and
+Lighthouse have nothing to exercise and were not re-run.
 
 **Dependencies added**: none.
