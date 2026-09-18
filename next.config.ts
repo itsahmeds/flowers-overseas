@@ -39,8 +39,12 @@ assertBuildEnv();
 // present-but-unparseable value throws here and fails the build naming the key.
 const environment = appEnvironment(process.env);
 
-// The host, for the one thing it decides: whether `vercel.live` belongs in the policy (§5.2,
-// AC-6). Nothing else in the application may branch on it.
+// The host, for the two things it decides: whether `vercel.live` belongs in the policy (§5.2,
+// AC-6), and whether the build emits standalone output (below, TASK-135). Both are properties of
+// the deploying toolchain rather than of the product — a Vercel preview and a Railway staging
+// deploy can share an `APP_ENV`, so `appEnvironment()` cannot express either. **No application
+// behaviour may branch on the host**; that rule (spec 040 §5.2) is about what the product does,
+// not about how it is packaged.
 const platform = hostPlatform(process.env);
 
 // Security headers on every path, per environment (spec 004 §5.2, AC-23, **ADR-0016**;
@@ -87,10 +91,8 @@ const nextConfig: NextConfig = {
   // all 31 static pages, then died at the last step, freezing the demo URL of ADR-0018 on its last
   // good build. `hostPlatform()` is the one host axis spec 040 §5.2 allows to exist, and this is a
   // build-output shape rather than application behaviour, so branching on it here is inside that
-  // rule. Pinned by `tests/unit/container.test.ts` (TASK-135).
-  ...(hostPlatform(process.env) === "vercel"
-    ? {}
-    : { output: "standalone" as const }),
+  // build-output shape, recorded as spec 040 §14 A2. Pinned by `tests/unit/container.test.ts`.
+  ...(platform === "vercel" ? {} : { output: "standalone" as const }),
   headers: () => Promise.resolve(headerRules),
 };
 

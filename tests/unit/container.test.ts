@@ -77,8 +77,13 @@ const manifest = JSON.parse(read("package.json")) as {
 };
 
 describe("next.config.ts (AC-8)", () => {
-  it('sets output: "standalone", which is what `node server.js` needs', () => {
-    expect(nextConfig).toContain('output: "standalone"');
+  it("emits standalone output off Vercel, which is what `node server.js` needs", () => {
+    // Pinned as the *branch*, not a literal call: `output: "standalone"` unconditionally is the
+    // defect spec 040 §14 A2 records, and a bare substring match passes on either shape.
+    expect(nextConfig).toMatch(
+      /\.\.\.\(platform === "vercel" \? \{\} : \{ output: "standalone" as const \}\)/u,
+    );
+    expect(nextConfig).not.toMatch(/^\s*output: "standalone",\s*$/mu);
   });
 });
 
@@ -262,7 +267,7 @@ describe("the standalone output is not emitted on Vercel (TASK-135)", () => {
     // Vercel's own tracer runs in `onBuildComplete` and reads `.next/next-server.js.nft.json`,
     // which standalone output does not leave there, so every deployment after `d0a1d66` failed
     // with ENOENT after generating all 31 pages.
-    expect(configSource).toMatch(/hostPlatform\(process\.env\) === "vercel"/);
+    expect(configSource).toMatch(/platform === "vercel"/u);
     expect(configSource).toMatch(/output: "standalone" as const/);
     expect(configSource).not.toMatch(/^\s*output: "standalone",\s*$/m);
   });

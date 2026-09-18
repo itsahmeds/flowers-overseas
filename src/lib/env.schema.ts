@@ -438,7 +438,9 @@ export const deploymentEnvironment = appEnvironment;
  * Where the app is running (spec 040 §5.2). Derived from what the platform injects: Vercel sets
  * `VERCEL=1`, Railway sets `RAILWAY_ENVIRONMENT_NAME`, a laptop sets neither.
  *
- * It exists for exactly two callers — the `vercel.live` row of the CSP (`allowsPreviewFeedback`)
+ * It exists for exactly three callers — the `vercel.live` row of the CSP (`allowsPreviewFeedback`),
+ * the build-output shape in `next.config.ts` (standalone everywhere but Vercel, whose own tracer
+ * reads `.next/next-server.js.nft.json`; spec 040 §14 A2, TASK-135)
  * and the CI preview-URL discovery of spec 040 §5.5. **Nothing else in the application may branch
  * on it**: the environment is `appEnvironment()`, and a second axis of behaviour keyed on the
  * host is how a codebase becomes host-specific again.
