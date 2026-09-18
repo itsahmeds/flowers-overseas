@@ -237,10 +237,12 @@
       "generatorModel": "to-be-confirmed",
       "promptHash": "e70efc57d4aa0b9b111720d91a270e8f5795f283cb8eafa41163a76e17ae4902",
       "generatorSeed": 165712354,
-      "reviewState": "pending",
+      "reviewState": "approved",
       "productSku": "FO-AR-001",
       "sortOrder": 0,
-      "isPrimary": true
+      "isPrimary": true,
+      "reviewedBy": "founder",
+      "reviewedAt": "2026-09-18T07:45:00.000Z"
     },
     {
       "id": "fo-ar-001-detail",
@@ -331,10 +333,12 @@
       "generatorModel": "to-be-confirmed",
       "promptHash": "7404971986b3a9ed226ef40ea0162a02f53e07a5ca3839c11106593b4610fe2d",
       "generatorSeed": 93308926,
-      "reviewState": "pending",
+      "reviewState": "approved",
       "productSku": "FO-FN-001",
       "sortOrder": 0,
-      "isPrimary": true
+      "isPrimary": true,
+      "reviewedBy": "founder",
+      "reviewedAt": "2026-09-18T07:45:00.000Z"
     },
     {
       "id": "fo-fn-001-detail",
@@ -453,9 +457,11 @@
       "generatorModel": "to-be-confirmed",
       "promptHash": "d0615ea14c3c2ba456863c4e20d0bea90e22bec970d631cfd5b4ac50c75d766a",
       "generatorSeed": 6255525,
-      "reviewState": "pending",
+      "reviewState": "approved",
       "sortOrder": 4,
-      "isPrimary": false
+      "isPrimary": false,
+      "reviewedBy": "founder",
+      "reviewedAt": "2026-09-18T07:45:00.000Z"
     },
     {
       "id": "home-occasion-just-because",
@@ -466,9 +472,11 @@
       "generatorModel": "to-be-confirmed",
       "promptHash": "5728f2d4da909db95bb0b3fb944a8a4e20021f041992199a2ce3713a211222a9",
       "generatorSeed": 98970999,
-      "reviewState": "pending",
+      "reviewState": "approved",
       "sortOrder": 5,
-      "isPrimary": false
+      "isPrimary": false,
+      "reviewedBy": "founder",
+      "reviewedAt": "2026-09-18T07:45:00.000Z"
     },
     {
       "id": "home-occasion-new-baby",
@@ -479,9 +487,11 @@
       "generatorModel": "to-be-confirmed",
       "promptHash": "817d2bd5520a265eeba1750b913e6c85c09db25c7fa79b915e56880cb7c951c4",
       "generatorSeed": 223522252,
-      "reviewState": "pending",
+      "reviewState": "approved",
       "sortOrder": 6,
-      "isPrimary": false
+      "isPrimary": false,
+      "reviewedBy": "founder",
+      "reviewedAt": "2026-09-18T07:45:00.000Z"
     }
   ]
 }

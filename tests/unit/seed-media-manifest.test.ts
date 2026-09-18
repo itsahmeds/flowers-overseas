@@ -176,27 +176,16 @@ describe("spec 006 AC-8: provenance is complete on every committed asset", () =>
     }
   });
 
-  it("records the founder's 2026-09-18 sign-off: every approved asset carries the founder role and an instant, and exactly the five undelivered or rejected assets stay pending (§13 Q9)", () => {
-    const pending = assets
-      .filter((asset) => asset.reviewState === "pending")
-      .map((asset) => asset.id)
-      .sort();
-    expect(pending).toEqual([
-      "fo-ar-001-hero",
-      "fo-fn-001-hero",
-      "home-occasion-just-because",
-      "home-occasion-new-baby",
-      "home-occasion-sympathy",
+  it("records the founder's 2026-09-18 sign-off: every asset is approved, by the founder role, at one of the two sign-off instants (§13 Q9)", () => {
+    const instants = new Set([
+      "2026-09-18T07:30:00.000Z",
+      "2026-09-18T07:45:00.000Z",
     ]);
+    expect(assets.length).toBe(31);
     for (const asset of assets) {
-      if (asset.reviewState === "pending") {
-        expect(asset.reviewedBy, asset.id).toBeUndefined();
-        expect(asset.reviewedAt, asset.id).toBeUndefined();
-        continue;
-      }
       expect(asset.reviewState, asset.id).toBe("approved");
       expect(asset.reviewedBy, asset.id).toBe("founder");
-      expect(asset.reviewedAt, asset.id).toBe("2026-09-18T07:30:00.000Z");
+      expect(instants.has(asset.reviewedAt ?? ""), asset.id).toBe(true);
     }
   });
 
