@@ -6,15 +6,34 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 ## Binding
 
-What the spec binds this task to, in the spec's own words: the resolution notes that override
-defaults, the AC ids owned, the rulings from earlier reviews that apply here, the gates that must
-be green. One paragraph or a short list — no restatement of the spec.
+- Owns spec 009 **AC-12** (§9 L267) / **T-12** (§10 L316): `occasionDate(rule, year)` gains the
+  seventh rule type **`orthodox_easter_offset(days)`** — Orthodox Easter by the Julian computus,
+  converted to Gregorian, plus a day offset (§5.2 L74–L75) — beside the six of `plan/03` §9
+  (TASK-089, unchanged). RO 2026–2030 fixture **verified against the Romanian Orthodox Church
+  calendar by you before commit** (`plan/13` D6 pattern: an unverified date is not a fixture) —
+  cite the source in the fixture file header. `modules/geo/occasions` stays at **100 % branch
+  coverage** (the existing gate). Andrzejki (30 Nov) and Wigilia (24 Dec) PL rows as `fixed`
+  (PR #60 ruling); Polish name days remain **undated** (`rule_type: none`, a category not an
+  occasion — `plan/13` B15).
+- Seed: `seed/data/occasion-country.json` RO rows migrate from `rule_type: "none"` to the seventh
+  type; the occasion-rule zod union gains one member; `pnpm seed:check` must fail on an unknown
+  rule type and pass after. This is a data flip on `main` → run the e2e/visual suites that read the
+  dataset, not only the seed suites (orchestrator rule 2026-09-18); if you cannot run Playwright
+  where you are, say so in `## Result` and the reviewer runs them.
+- `plan/13` **D7** (FR Fête des Mères / Pentecost exception) is **recorded, not solved**: one
+  dated note in `## Escalations` and in the spec's §13/§14, no eighth rule type here.
+- Gates: unit (fixture table + the six existing types' fixtures unchanged), coverage gate,
+  `pnpm seed:check`, `pnpm typecheck`, `pnpm lint`, `pnpm codebase:map --check`; no UI, no
+  message keys (occasion names already exist).
 
 ## Read
 
-- `specs/NNN-*.md` — read `## 0. Index` first, then only the sections the ACs name
-- `docs/codebase-map.md` — where everything lives
-- (the two or three files the deliverable actually touches)
+- `specs/009-product-page-date-picker.md` — `## 0. Index`, §5.2 L74–L75 and L123 (the seed
+  row/schema line), §9 AC-12, §10 T-12, §12 task 2.
+- `plan/13-open-questions.md` B15 and D7; `plan/03` §9 (the six rule types).
+- `docs/tasks/TASK-089.md` `## Result` and carry-forwards (the evaluator you extend, its fixture
+  layout and coverage gate); `docs/codebase-map.md` — `src/modules/geo/occasions/`
+  (`calendar.ts`, `evaluate.ts`, `schema.ts`), `seed/data/occasion-country.json`, `seed:check`.
 
 ## Carry-forwards
 
