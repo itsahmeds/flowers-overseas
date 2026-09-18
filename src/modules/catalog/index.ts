@@ -349,6 +349,9 @@ export {
   existenceSummaryMarkdown,
   hubCardView,
   isPublishedCountry,
+  // The per-locale paths of one listing page — spec 007's `corridorAlternatePaths()` precedent,
+  // so a hreflang cluster is one call over the pages that genuinely exist (AC-16; TASK-109).
+  listingAlternatePaths,
   listingDescriptor,
   listingExists,
   listingIndexability,
@@ -359,3 +362,38 @@ export {
   publishedCountries,
   writeExistenceSummary,
 } from "./listing";
+
+// The shared per-depth route resolver (spec 008 §14 **A5**, spec 007 §14 **A8**; TASK-109).
+//
+// Next.js allows one dynamic slug name per (depth, position) across `app/`, so spec 007's corridor
+// and spec 008's country shop root cannot each own a route file: they share one file per URL
+// depth, and `resolveLocalePath()` is the single resolver those files call. It invents no
+// existence rule — it reads `corridorPageExists()` and `listingExists()` — and returns the params
+// of the page a path names, never a rendered view, so the single-source rule of §5.2 stays with
+// `listingView()`. `localeSegmentParams()` / `localeChildParams()` are the union of both
+// existence sets, which is what each file's `generateStaticParams` emits under
+// `dynamicParams = false`.
+export type {
+  LocaleChildParams,
+  LocalePathResolution,
+  LocaleSegmentParams,
+} from "./routes";
+export {
+  localeChildParams,
+  localeSegmentParams,
+  resolveLocalePath,
+} from "./routes";
+
+// The country shop root's page component and its breadcrumb (spec 008 §5.3, AC-1/AC-8/AC-24;
+// TASK-109). The page component lives in the module that owns its view model — spec 007's
+// `CorridorPage` precedent — so `app/` holds one resolve and one mount, and every decision about
+// which block renders is made beside the rule that decides it. Both are Server Components; no file
+// in this module carries `"use client"`.
+export {
+  CountryShopRootPage,
+  type CountryShopRootPageProps,
+} from "./ui/CountryShopRootPage.tsx";
+export {
+  ListingBreadcrumb,
+  type ListingBreadcrumbProps,
+} from "./ui/ListingBreadcrumb.tsx";

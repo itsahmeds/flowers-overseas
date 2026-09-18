@@ -59,8 +59,6 @@
  * too. Making it synchronous would mean re-reading the dataset outside the provider seam, which
  * is the one thing spec 005 §5.2 forbids. `pnpm check:no-db` covers this file.
  */
-import { appendFileSync } from "node:fs";
-
 import { z } from "zod";
 
 import {
@@ -77,6 +75,7 @@ import {
   corridorIso2ForSlug,
   corridorSlug,
   corridorState,
+  destinationsHubHref,
   upcomingOccasions,
 } from "@/modules/geo";
 import {
@@ -90,6 +89,8 @@ import {
   type DeploymentDescriptor,
   type IndexabilityVerdict,
   type PageDescriptor,
+  INDEX_FOLLOW,
+  NOINDEX_FOLLOW,
   deploymentDescriptor,
   pageIndexability,
 } from "@/modules/seo";
@@ -146,6 +147,13 @@ export const PRODUCT_COUNT_FLOOR = 6;
 
 /** Products per page (§2 "Pagination", §5.4 — 12 keeps the image budget inside spec 006's). */
 export const LISTING_PAGE_SIZE = 12;
+
+/**
+ * The shop root's occasion window, in months (§5.3 row 1's "Coming up in {country}"; the corridor
+ * calendar's twelve, because the two blocks answer the same question about the same destination
+ * and a reader who saw one should not find the other longer).
+ */
+const SHOP_ROOT_CALENDAR_MONTHS = 12;
 
 /** The card's photo box (§2 "The product card contract": the named `grid` slot at 4∶5). */
 const CARD_MEDIA_SLOT = "grid" as const;
@@ -278,6 +286,13 @@ export const ListingLinksSchema = z
     self: z.string().min(1),
     shopRoot: z.string().min(1).optional(),
     corridor: z.string().min(1).optional(),
+    /**
+     * The all-destinations hub — present whenever its link id is published (spec 007's
+     * `destinationsHubHref()`), absent while it is not. AC-8's empty state names "the corridor
+     * page and the hubs", and a page that had to reach past `listingView()` for one of them would
+     * be a second source for a link (§5.2).
+     */
+    destinationsHub: z.string().min(1).optional(),
     occasionsIndex: z.string().min(1).optional(),
     /** Sibling categories or occasions, as the chip row renders them. */
     chips: z.array(ChipLinkViewSchema).readonly(),
@@ -319,7 +334,14 @@ export const ListingViewSchema = z
     sort: z.enum(["default", "price-asc", "price-desc"]),
     links: ListingLinksSchema,
     indexable: z.boolean(),
-    directive: z.string().min(1),
+    /**
+     * The robots directive, **as the one engine spells it** (`INDEX_FOLLOW` / `NOINDEX_FOLLOW`
+     * from `modules/seo`): a `string` here would let a route hand `pageMetadata()` a directive
+     * this module invented, and spec 008 AC-14's "no robots literal outside `modules/seo`" is only
+     * structural while the type admits nothing else. No literal is written here — the two values
+     * are imported (`/review 76`'s rule applied to the field, TASK-109).
+     */
+    directive: z.enum([INDEX_FOLLOW, NOINDEX_FOLLOW]),
   })
   .strict()
   // Spec 008 §14 **A3**: the two arrays are the two kinds of listing, and a view is one of them.
@@ -735,6 +757,44 @@ export async function listingPages(
   return pages;
 }
 
+/**
+ * The per-locale **paths** of one listing page, for `alternatesFor()`'s path target (spec 008 §6
+ * "hreflang set", AC-16; spec 007's `corridorAlternatePaths()` precedent).
+ *
+ * Only locales that genuinely have the page appear: a slug is per-locale data, so a cluster built
+ * from one path with the locale swapped would claim `/de/polen/blumen/roses` where no German slug
+ * was ever authored. A locale with no page contributes nothing, which is the honest answer and the
+ * reason the `de`/`pl` clusters are small today (§13 Q10).
+ */
+export async function listingAlternatePaths(
+  identity: ListingIdentity,
+): Promise<Readonly<Record<string, string>>> {
+  const paths: Record<string, string> = {};
+  for (const locale of listingLocales()) {
+    const here: ListingIdentity = { ...identity, locale };
+    if (!(await listingExists(here))) continue;
+    const countrySlug =
+      identity.countryIso === undefined
+        ? undefined
+        : corridorSlug(identity.countryIso, locale);
+    const kind =
+      identity.pageType === "countryCategory" ||
+      identity.pageType === "categoryHub"
+        ? "category"
+        : identity.pageType === "countryOccasion" ||
+            identity.pageType === "occasionHub"
+          ? "occasion"
+          : undefined;
+    const slug =
+      identity.entityKey === undefined || kind === undefined
+        ? undefined
+        : slugFor(kind, identity.entityKey, locale);
+    if (identity.entityKey !== undefined && slug === undefined) continue;
+    paths[locale] = pathOf(locale, identity.pageType, countrySlug, slug);
+  }
+  return paths;
+}
+
 /* -------------------------------------------------------------------------- */
 /* Indexability: six descriptors, one engine (spec 008 §6, AC-14).            */
 /* -------------------------------------------------------------------------- */
@@ -1027,6 +1087,42 @@ function nextDateIn(
   return found?.date ?? null;
 }
 
+/**
+ * The dated occasion rows of a **country shop root** (spec 008 §14 **A6**, §5.3 row 1).
+ *
+ * The artboard's "Coming up in Poland" block: the destination's own upcoming observed occasions,
+ * each with the date `occasionDate(rule, year)` produced — read through the same
+ * `upcomingOccasions()` path `countryOccasion` uses, so one page type cannot print a date another
+ * disagrees with, and the page renders it from `listingView()` alone rather than reading the
+ * calendar itself (§5.2's "the only source").
+ *
+ * `ListingOccasionDate.nameKey` names the row's **subject**: the *country* on an occasion hub
+ * (one row per destination, one occasion) and the *occasion* here (one row per occasion, one
+ * destination). The key comes from `getOccasion()`'s `labelKey` rather than from the catalogue
+ * dataset, because only `./static` may read a `*.data.ts` file (the barrel's rule).
+ *
+ * An occasion the catalogue does not carry is **skipped** rather than printed under its raw key:
+ * a row we cannot name is a row we cannot render honestly. A rule of kind `none` (Poland's name
+ * day) produces no dated row at all — `upcomingOccasions()` returns only dated ones — which is
+ * §14 Q6's honest blank, not a guessed date.
+ */
+async function shopRootOccasionDates(
+  iso2: CountryIso2,
+  from: IsoDate,
+): Promise<readonly ListingOccasionDate[]> {
+  const rows: ListingOccasionDate[] = [];
+  for (const dated of upcomingOccasions(
+    iso2,
+    from,
+    SHOP_ROOT_CALENDAR_MONTHS,
+  )) {
+    const occasion = await getOccasion(dated.occasionKey);
+    if (occasion === null) continue;
+    rows.push({ iso2, nameKey: occasion.labelKey, date: dated.date });
+  }
+  return rows;
+}
+
 function crumb(
   labelKey: string,
   href: string | undefined,
@@ -1234,6 +1330,9 @@ export async function listingView(
           })),
         }
       : {}),
+    ...(pageType === "countryShopRoot" && iso2 !== undefined
+      ? { occasionDates: await shopRootOccasionDates(iso2, from) }
+      : {}),
     ...(pageType === "countryOccasion" &&
     entityKey !== undefined &&
     iso2 !== undefined
@@ -1376,6 +1475,14 @@ async function breadcrumbFor(
   ];
 
   if (iso2 !== undefined && countrySlug !== undefined) {
+    // The all-destinations hub, exactly as spec 007's own trail carries it: the artboards draw
+    // four levels on a shop root (Home / Send flowers to / Poland / Flowers), and a country-scoped
+    // listing sits under the same parent the corridor page does. `destinationsHubHref()` answers
+    // `undefined` while the hub's link id is unpublished, and the crumb is then text rather than a
+    // link to a 404 (spec 004 AC-14).
+    crumbs.push(
+      crumb("breadcrumb.destinations", destinationsHubHref(locale), false),
+    );
     // The country crumb links to the corridor guide where one is published and is plain text
     // where it is not (§13 Q1, §14 design round Q7: `guidePublished` is the data flip).
     crumbs.push(
@@ -1409,14 +1516,17 @@ async function breadcrumbFor(
     );
   }
 
-  crumbs.push(
-    crumb(
-      entityName === undefined ? H1_KEYS[pageType] : "breadcrumb.entity",
-      path,
-      true,
-      entityName,
-    ),
-  );
+  // The leaf. An `h1` key is a *sentence* that takes the destination as an argument ("Flowers we
+  // make for {country}"); a crumb is a *label*, and rendering the heading key with no argument
+  // would throw at format time. The shop root's leaf is therefore `breadcrumb.shopRoot` — the same
+  // key the deeper pages use for their shop-root crumb, and the artboards' "Flowers".
+  const leafKey =
+    entityName !== undefined
+      ? "breadcrumb.entity"
+      : pageType === "countryShopRoot"
+        ? "breadcrumb.shopRoot"
+        : H1_KEYS[pageType];
+  crumbs.push(crumb(leafKey, path, true, entityName));
   return crumbs;
 }
 
@@ -1493,8 +1603,11 @@ async function linksFor(
     ? pathOf(locale, "occasionsIndex")
     : undefined;
 
+  const destinationsHub = destinationsHubHref(locale);
+
   return ListingLinksSchema.parse({
     self,
+    ...(destinationsHub === undefined ? {} : { destinationsHub }),
     ...(iso2 === undefined || pageType === "countryShopRoot"
       ? {}
       : {
@@ -1606,6 +1719,13 @@ export async function writeExistenceSummary(
   const summary = existenceSummaryMarkdown(await existenceCounts());
   const stepSummary = env["GITHUB_STEP_SUMMARY"];
   if (stepSummary !== undefined && stepSummary !== "") {
+    // `node:fs` is reached by a **dynamic** import, and only on the branch that needs it: this
+    // module is on the render path of the shared route files (TASK-109), and
+    // `tests/unit/corridor-corpus-index.test.ts` keeps a filesystem import off that graph
+    // (`/review 63` carry-forward (b)). The only caller is `generateStaticParams`, which runs at
+    // build time in a Node runtime; a request never takes this branch, so nothing is loaded for
+    // it.
+    const { appendFileSync } = await import("node:fs");
     appendFileSync(stepSummary, `${summary}\n`, "utf8");
   } else {
     write(`${summary}\n`);

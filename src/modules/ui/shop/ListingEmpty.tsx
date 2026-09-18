@@ -33,7 +33,12 @@ export interface ListingEmptyProps {
   readonly country: string;
   /** The ways out. An empty array renders the sentence alone rather than an empty row. */
   readonly links?: readonly ListingEmptyLink[];
-  readonly headingLevel?: "h2" | "h3";
+  /**
+   * `h1` when the empty state **is** the page (the country shop root of a destination with no
+   * deliverable product — TASK-109): a page has one heading, and on that page this sentence is it.
+   * `h2`/`h3` where a template nests it under its own heading (the gallery).
+   */
+  readonly headingLevel?: "h1" | "h2" | "h3";
 }
 
 export function ListingEmpty({
