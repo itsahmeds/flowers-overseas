@@ -235,18 +235,28 @@ fourth exists only where `ENABLE_DEV_UI` is on):
   first segment (`/fr`, `/xx`, `/EN`, `/nope`) renders the 404 rather than a redirect (ADR-0006).
   The locale reaches next-intl through `setRequestLocale()`, never through a request header, so no
   response varies by header and none carries `Vary`.
-- `src/app/[locale]/(marketing)/[destinations]/[country]/page.tsx` — the corridor page (spec 007,
-  TASK-091), the first page below `[locale]` with data behind it. **ISR, `revalidate` 86 400 s**, the
+- `src/app/[locale]/[segment]/[child]/page.tsx` — **one route file for one URL depth** (spec 008 §14
+  A5, spec 007 §14 A8; TASK-109). Next.js allows exactly one dynamic slug *name* per (depth,
+  position) across `app/`, route groups included, so `/{locale}/{destinations}/{country}` (the
+  corridor page, spec 007, TASK-091) and `/{locale}/{country}/{shopCategory}` (the country shop
+  root, spec 008) share this file; TASK-112/113's hubs join it. It calls **one** resolver,
+  `resolveLocalePath()` in `src/modules/catalog/routes.ts`, which returns a discriminated union
+  built from `corridorPageExists()` and `listingExists()` and no third rule, and it mounts the
+  matching module page component (`CorridorPage`, `CountryShopRootPage`) — `app/` stays thin.
+  **ISR, `revalidate` 3 600 s** (A8 lowers the corridor's 86 400: a segment export cannot vary per
+  param), the
   §5.4 tags named by `corridorCacheTags()` in `src/lib/cache.ts`, `generateStaticParams()` over the
-  existence rule and `dynamicParams = false` on the segment itself, so every other slug, every other
-  locale's `destinations` segment and every casing variant is a 404 the router answers. It mounts no
+  union of both existence sets and `dynamicParams = false` on the segment itself, so every other
+  slug, every other locale's segment and every casing variant is a 404 the router answers — while a
+  trailing slash is a 308 to the bare URL (spec 008 §14 A7). It mounts no
   island: the FAQ is text, the calendar a table, the breadcrumb a list, and `budget:client-js` measures
   the same Brotli total as the locale home. Title, description, robots and canonical come from
   `modules/seo` (`pageIndexability` → `pageMetadata`, `canonicalFor`) and the hreflang cluster from one
   `alternatesFor()` call; the page computes none of them itself.
-- `src/app/[locale]/(marketing)/[destinations]/page.tsx` — the **all-destinations hub** (spec 007,
-  TASK-092): the parent of every corridor page and the reason crawl depth from a locale home to a
-  destination is two. Same rendering contract as the corridor page — ISR `revalidate` 86 400 s, the
+- `src/app/[locale]/[segment]/page.tsx` — the depth-2 shared file, today the **all-destinations
+  hub** (spec 007, TASK-092; the occasions index joins it with TASK-113): the parent of every
+  corridor page and the reason crawl depth from a locale home to a destination is two. Same
+  rendering contract as the depth-3 file — ISR `revalidate` 3 600 s, the
   tags of `hubCacheTags()` in `src/lib/cache.ts`, `generateStaticParams()` over the routable locales
   and `dynamicParams = false` — and it exists in **every** locale, including the two with no authored
   guide, where it lists the same seven destinations as text with one state line. Which destinations

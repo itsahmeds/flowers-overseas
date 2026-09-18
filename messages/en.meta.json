@@ -78,6 +78,27 @@
     "reviewedAt": "2026-09-16T00:00:00Z",
     "sourceHash": "0e8f6a16cf2b79a259c6e476cd092f47a25f0c134fd1e8ec5db92f56f82332d9"
   },
+  "breadcrumb.entity": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/country-shop-desktop.dc.html and -mobile, 2026-09-16 design round; transcribed by TASK-109)",
+    "reviewedAt": "2026-09-18T00:00:00Z",
+    "sourceHash": "5e291d7bcb2dd847587ba2740ddd82717d198a9dca7b016fe26ab84acf58d856"
+  },
+  "breadcrumb.occasions": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/country-shop-desktop.dc.html and -mobile, 2026-09-16 design round; transcribed by TASK-109)",
+    "reviewedAt": "2026-09-18T00:00:00Z",
+    "sourceHash": "e5b8470758e19d1615b82228a3ab96d0fce4c772d8a45bb3fbd4c968ab88eb39"
+  },
+  "breadcrumb.shopRoot": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/country-shop-desktop.dc.html and -mobile, 2026-09-16 design round; transcribed by TASK-109)",
+    "reviewedAt": "2026-09-18T00:00:00Z",
+    "sourceHash": "a3b6cb52ce986ff4ca5baa8a1051a42b2748d06b0f33b93a75a87add2a7d74d2"
+  },
   "catalog.addon.allergen": {
     "source": "human",
     "reviewed": true,
@@ -3015,6 +3036,20 @@
     "reviewedAt": "2026-09-16T00:00:00Z",
     "sourceHash": "2d7d964067dac2ea60e5ba63862895dc63f2ecfd71a3eba0bbd7189dd59f0236"
   },
+  "shop.empty.corridorLink": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/country-shop-desktop.dc.html and -mobile, 2026-09-16 design round; transcribed by TASK-109)",
+    "reviewedAt": "2026-09-18T00:00:00Z",
+    "sourceHash": "dd87bac9716a65447d9794512f4294a396a47fcd9281bbfe8176ede1cf644a5c"
+  },
+  "shop.empty.destinationsLink": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/country-shop-desktop.dc.html and -mobile, 2026-09-16 design round; transcribed by TASK-109)",
+    "reviewedAt": "2026-09-18T00:00:00Z",
+    "sourceHash": "0fc7d71eb828a862691b7273d6c7f34344de1aa2276b842d65ece2911df0961f"
+  },
   "shop.empty.heading": {
     "source": "human",
     "reviewed": true,
@@ -3022,12 +3057,26 @@
     "reviewedAt": "2026-09-16T00:00:00Z",
     "sourceHash": "1a32d9d481c9aecfe99f820d14defc29ea5222c7d819fab73d3168d93f4e3c3f"
   },
+  "shop.empty.occasionsLink": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/country-shop-desktop.dc.html and -mobile, 2026-09-16 design round; transcribed by TASK-109)",
+    "reviewedAt": "2026-09-18T00:00:00Z",
+    "sourceHash": "e5b8470758e19d1615b82228a3ab96d0fce4c772d8a45bb3fbd4c968ab88eb39"
+  },
   "shop.grid.label": {
     "source": "human",
     "reviewed": true,
     "reviewedBy": "founder (docs/design/system/components.dc.html § Listing and card blocks and docs/design/wireframes/country-category-desktop.dc.html, 2026-09-16 design round; transcribed by TASK-108)",
     "reviewedAt": "2026-09-16T00:00:00Z",
     "sourceHash": "8a3f54e7c4e3d5ff85f5335fc4489659c5a1f6e51451127a0ac6e81c4c426a6b"
+  },
+  "shop.h1.countryShopRoot": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/country-shop-desktop.dc.html and -mobile, 2026-09-16 design round; transcribed by TASK-109)",
+    "reviewedAt": "2026-09-18T00:00:00Z",
+    "sourceHash": "fb10e6e0ef520a1a17e2ef55052654cf6dda14260aabc413c30fc9b801269f97"
   },
   "shop.pagination.label": {
     "source": "human",
@@ -3056,6 +3105,104 @@
     "reviewedBy": "founder (docs/design/system/components.dc.html § Listing and card blocks and docs/design/wireframes/country-category-desktop.dc.html, 2026-09-16 design round; transcribed by TASK-108)",
     "reviewedAt": "2026-09-16T00:00:00Z",
     "sourceHash": "a57b08a480b822a0a572b993391c292ede593bf8000b406675b180bbb16260fa"
+  },
+  "shop.root.dateColumn": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/country-shop-desktop.dc.html and -mobile, 2026-09-16 design round; transcribed by TASK-109)",
+    "reviewedAt": "2026-09-18T00:00:00Z",
+    "sourceHash": "99c40ab405926cb5ad1def9cff4d7ce624f8f8abfff4e85f655347fcb949d08e"
+  },
+  "shop.root.demoNotice": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/country-shop-desktop.dc.html and -mobile, 2026-09-16 design round; transcribed by TASK-109)",
+    "reviewedAt": "2026-09-18T00:00:00Z",
+    "sourceHash": "498b1004f4743400efa65ca434c167fd593c9b2c8e3a94dad4a2479cd798926a"
+  },
+  "shop.root.introBody": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/country-shop-desktop.dc.html and -mobile, 2026-09-16 design round; transcribed by TASK-109)",
+    "reviewedAt": "2026-09-18T00:00:00Z",
+    "sourceHash": "2983a69ec520aab0efa59c7870b20acd8c4ee2ade3544d9caadbfd95c7d5fac7"
+  },
+  "shop.root.introHeading": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/country-shop-desktop.dc.html and -mobile, 2026-09-16 design round; transcribed by TASK-109)",
+    "reviewedAt": "2026-09-18T00:00:00Z",
+    "sourceHash": "93ac72cb636ddf7b386486e5040226d73484ca3aaa0132275c09200c457592f4"
+  },
+  "shop.root.lede": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/country-shop-desktop.dc.html and -mobile, 2026-09-16 design round; transcribed by TASK-109)",
+    "reviewedAt": "2026-09-18T00:00:00Z",
+    "sourceHash": "8969e9cea4d0555cdda3cbf293b30366263cee7e307be434748cac28b8c154cf"
+  },
+  "shop.root.listingHeading": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/country-shop-desktop.dc.html and -mobile, 2026-09-16 design round; transcribed by TASK-109)",
+    "reviewedAt": "2026-09-18T00:00:00Z",
+    "sourceHash": "9c54209425f54b243f5db926478441aa8dee5df237c9472ef0b301a58f395b56"
+  },
+  "shop.root.occasionColumn": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/country-shop-desktop.dc.html and -mobile, 2026-09-16 design round; transcribed by TASK-109)",
+    "reviewedAt": "2026-09-18T00:00:00Z",
+    "sourceHash": "f68e0b1ef1269baeea223f00199f2e45e5f8d4a4bddd585d7074efce4c33c435"
+  },
+  "shop.root.occasionsCaption": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/country-shop-desktop.dc.html and -mobile, 2026-09-16 design round; transcribed by TASK-109)",
+    "reviewedAt": "2026-09-18T00:00:00Z",
+    "sourceHash": "55df1926d08e7db15d384f00310a28e732e344bea050d7211468b28bcc932051"
+  },
+  "shop.root.occasionsEyebrow": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/country-shop-desktop.dc.html and -mobile, 2026-09-16 design round; transcribed by TASK-109)",
+    "reviewedAt": "2026-09-18T00:00:00Z",
+    "sourceHash": "562f1135140e89f8648e5cab0ec151007885fb6a77fbc47ccdbfdc0f79401705"
+  },
+  "shop.root.occasionsHeading": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/country-shop-desktop.dc.html and -mobile, 2026-09-16 design round; transcribed by TASK-109)",
+    "reviewedAt": "2026-09-18T00:00:00Z",
+    "sourceHash": "b284d53d04cc604e6d772caba6a66a9b859747d1c4bce672df303b8ce4627652"
+  },
+  "shop.root.seoDescription": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/country-shop-desktop.dc.html and -mobile, 2026-09-16 design round; transcribed by TASK-109)",
+    "reviewedAt": "2026-09-18T00:00:00Z",
+    "sourceHash": "b96037055332670e868c2347019359052201e11aca886caef50cfed4da018cbb"
+  },
+  "shop.root.seoTitle": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/country-shop-desktop.dc.html and -mobile, 2026-09-16 design round; transcribed by TASK-109)",
+    "reviewedAt": "2026-09-18T00:00:00Z",
+    "sourceHash": "bed3361c2941d2361a85255e919003ad4af4317c19c4d365c6e1e9d3f9cd53a0"
+  },
+  "shop.root.tileCount": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/country-shop-desktop.dc.html and -mobile, 2026-09-16 design round; transcribed by TASK-109)",
+    "reviewedAt": "2026-09-18T00:00:00Z",
+    "sourceHash": "18c95e42a89f54edba69cba864a90c54e9fd600f847f22a968141f9a45657436"
+  },
+  "shop.root.tilesHeading": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/country-shop-desktop.dc.html and -mobile, 2026-09-16 design round; transcribed by TASK-109)",
+    "reviewedAt": "2026-09-18T00:00:00Z",
+    "sourceHash": "58acf2f993d516d97d824bff3c22d768f6bc216b323b701c5c24976710365e12"
   },
   "shop.sort.default": {
     "source": "human",

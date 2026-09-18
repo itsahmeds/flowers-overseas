@@ -127,11 +127,23 @@ describe(`${PSEUDO_ACCENT_LOCALE}: accented, expanded, bracketed (AC-29)`, () =>
   });
 });
 
+/** Whether an ICU message carries any text outside its arguments and plural keywords. */
+function hasLiteralRun(value: string): boolean {
+  return value.replaceAll(/\{[^{}]*\}/gu, "").trim() !== "";
+}
+
 describe(`${PSEUDO_RTL_LOCALE}: right-to-left mirror (AC-29)`, () => {
   it("marks every value right-to-left and wraps each literal run in an override", () => {
     for (const [key, value] of sourceKeys) {
       const pseudo = pseudoRtl(value);
       expect(pseudo.startsWith(RTL_MARK), key).toBe(true);
+      // A value that is **only** an ICU argument (`breadcrumb.entity` is `{name}`: a crumb whose
+      // visible label is the founder's authored category name, which is content and not chrome —
+      // `plan/02` §12) has no literal run to wrap, and the RTL mark is the whole of its mirror.
+      // The criterion is "every literal run is inside an override", not "every value contains
+      // one": asserting the latter would be satisfiable only by inventing filler text in a
+      // message whose whole job is to carry a name (TASK-109).
+      if (!hasLiteralRun(value)) continue;
       expect(pseudo, key).toContain("‮");
       expect(pseudo, key).toContain("‬");
     }

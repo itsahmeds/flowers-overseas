@@ -68,9 +68,13 @@ describe("the generated typed index (AC-1)", () => {
 });
 
 describe("no `node:fs` on the render path (`/review 63` carry-forward (b))", () => {
+  // The shared depth-3 route file: spec 008 §14 A5 / spec 007 §14 A8 moved the corridor page into
+  // `/[locale]/[segment]/[child]` beside the country shop root, because Next.js allows one dynamic
+  // slug name per (depth, position). The rule this suite pins is unchanged, and it now covers the
+  // shop root's graph too (TASK-109).
   const ROUTE = resolve(
     repoRoot,
-    "src/app/[locale]/(marketing)/[destinations]/[country]/page.tsx",
+    "src/app/[locale]/[segment]/[child]/page.tsx",
   );
   const BARREL = resolve(repoRoot, "src/modules/geo/index.ts");
   const READER = resolve(repoRoot, "src/modules/geo/content/corpus-files.ts");

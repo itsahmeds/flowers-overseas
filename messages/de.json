@@ -16,7 +16,10 @@
     "switch": "Switch to {language}"
   },
   "breadcrumb": {
-    "destinations": "Send flowers to"
+    "destinations": "Send flowers to",
+    "entity": "{name}",
+    "occasions": "Occasions",
+    "shopRoot": "Flowers"
   },
   "catalog": {
     "addon": {
@@ -710,16 +713,38 @@
   "shop": {
     "empty": {
       "body": "We have nothing we can deliver in {country} today. The {country} guide has what we have learned about sending flowers there, and the occasions pages have the dates.",
-      "heading": "Nothing we can deliver in {country} yet"
+      "corridorLink": "Read the {country} guide",
+      "destinationsLink": "All destinations",
+      "heading": "Nothing we can deliver in {country} yet",
+      "occasionsLink": "Occasions"
     },
     "grid": {
       "label": "{count, plural, one {# Strauß auf dieser Seite} other {# Sträuße auf dieser Seite}}"
+    },
+    "h1": {
+      "countryShopRoot": "Flowers we make for {country}"
     },
     "pagination": {
       "label": "Pages of products",
       "next": "Next",
       "page": "Page {page}",
       "previous": "Previous"
+    },
+    "root": {
+      "dateColumn": "Date",
+      "demoNotice": "You cannot order yet. We are still choosing our florists in {country}, so every price on this page is the price we would charge and nothing on it can be bought today.",
+      "introBody": "You order from us in your own language and currency. Our florist in the recipient's town makes the bouquet the morning it is delivered and hands it over in person. Nothing crosses a border, so there is no customs form, no paperwork and nothing to pay on arrival.",
+      "introHeading": "How it reaches {country}",
+      "lede": "Our florist in the recipient's town makes the bouquet the morning it is delivered and hands it over in person. Every price below is one number with VAT and delivery already inside it.",
+      "listingHeading": "Everything we can make for {country}",
+      "occasionColumn": "Occasion",
+      "occasionsCaption": "The next twelve months in {country}, computed from the destination's own rules",
+      "occasionsEyebrow": "Coming up in {country}",
+      "occasionsHeading": "{country}'s own dates",
+      "seoDescription": "Every bouquet our florists can make in {country}, with one all-in price that includes VAT and delivery. Nothing can be ordered yet.",
+      "seoTitle": "Send flowers to {country} — what we can make there",
+      "tileCount": "{count, plural, one {# bouquet we can make for {country}} other {# bouquets we can make for {country}}}",
+      "tilesHeading": "By what it is"
     },
     "sort": {
       "default": "Our order",

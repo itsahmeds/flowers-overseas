@@ -266,6 +266,17 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         "productCardView",
         "publishedCountries",
         "writeExistenceSummary",
+        // the shared per-depth route resolver and the country shop root's page component
+        // (TASK-109, spec 008 §14 A5 / spec 007 §14 A8). Two React components appear here for the
+        // `CorridorPage` reason: a page component belongs to the module that owns its view model,
+        // so `app/` holds one resolve and one mount. They are Server Components — no file in this
+        // module carries `"use client"` — so the barrel still adds zero client bytes (AC-3).
+        "CountryShopRootPage",
+        "ListingBreadcrumb",
+        "listingAlternatePaths",
+        "localeChildParams",
+        "localeSegmentParams",
+        "resolveLocalePath",
       ].sort(),
     );
   });
@@ -289,10 +300,14 @@ describe("src/modules/catalog barrel (AC-1)", () => {
       `${moduleDir}/pricing/vat.ts`,
       `${moduleDir}/providers.ts`,
       `${moduleDir}/read.ts`,
+      `${moduleDir}/routes.ts`,
       `${moduleDir}/schemas.ts`,
       `${moduleDir}/slugs.ts`,
       `${moduleDir}/static/index.ts`,
       `${moduleDir}/types.ts`,
+      `${moduleDir}/ui/CountryShopRootPage.tsx`,
+      `${moduleDir}/ui/ListingBreadcrumb.tsx`,
+      `${moduleDir}/ui/labels.ts`,
     ]);
   });
 });

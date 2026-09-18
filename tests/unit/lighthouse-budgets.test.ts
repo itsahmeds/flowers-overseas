@@ -119,7 +119,7 @@ describe("tests/fixtures/seo/lighthouse-urls.json (AC-23)", () => {
     }
   });
 
-  it("measures the chooser, four homes, both hubs and one corridor per English locale", () => {
+  it("measures the chooser, four homes, both hubs, one corridor and one shop root per English locale", () => {
     // AC-27 words the budget as "`/` and `/en`"; `/de` is measured too because it is the locale
     // whose catalogue is an unreviewed echo — the one whose document could differ from `/en` by
     // accident rather than by design. Spec 004 §2 extends the list to all four launch locales,
@@ -137,6 +137,13 @@ describe("tests/fixtures/seo/lighthouse-urls.json (AC-23)", () => {
       "/en-gb/send-flowers-to",
       "/en/send-flowers-to/poland",
       "/en-gb/send-flowers-to/poland",
+      // Spec 008 §6 L89 extends it once more: **one country shop root per indexable locale**
+      // (TASK-109). It is the heaviest document in the site — twelve product cards, twenty
+      // category tiles and a date table — so it is the one that would spend the LCP and image
+      // budgets first. `de` and `pl` are not indexable locales and are not measured here; the
+      // category, occasion and hub URLs join the list with TASK-110…113.
+      "/en/poland/flowers",
+      "/en-gb/poland/flowers",
     ]);
   });
 

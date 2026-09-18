@@ -31,9 +31,9 @@ const PATTERNS = [
 
 /**
  * Every Phase 0 document, by page type. The locale chooser is the site root (spec 003),
- * `destinations hub` is TASK-092's all-destinations page (spec 007 AC-20) and `/dev/components`
- * is the component gallery. Spec 008's category and occasion hubs inherit this list the moment
- * they have a URL.
+ * `destinations hub` is TASK-092's all-destinations page (spec 007 AC-20), `country shop root` is
+ * TASK-109's and `/dev/components` is the component gallery. Spec 008's category and occasion hubs
+ * inherit this list the moment they have a URL.
  */
 const PAGES: readonly { readonly type: string; readonly path: string }[] = [
   { type: "hub (locale chooser)", path: "/" },
@@ -48,6 +48,14 @@ const PAGES: readonly { readonly type: string; readonly path: string }[] = [
   { type: "corridor", path: "/en/send-flowers-to/poland" },
   { type: "corridor", path: "/en-gb/send-flowers-to/poland" },
   { type: "corridor", path: "/en/send-flowers-to/germany" },
+  // The country shop root (TASK-109): the first page type that prints money, and therefore the
+  // first one where a ranking claim would have something to rank. Its default order is labelled
+  // "Our order" with the disclosure sentence beside it and is never called a bestseller list
+  // (spec 008 §2 "Sort", AC-9).
+  { type: "country shop root", path: "/en/poland/flowers" },
+  { type: "country shop root", path: "/en-gb/poland/flowers" },
+  { type: "country shop root", path: "/de/polen/blumen" },
+  { type: "country shop root", path: "/pl/polska/kwiaty" },
   { type: "gallery", path: "/dev/components" },
 ];
 
