@@ -359,6 +359,10 @@ describe("the shipped catalogues and manifests", () => {
       // in `content/corridors/` where a machine draft is forbidden (`plan/02` §12).
       "breadcrumb",
       "corridor",
+      // Spec 008 §7's namespace (TASK-108): the listing grid, toolbar, pagination and empty
+      // state. Every component that reads it is a Server Component, so it reaches no client
+      // provider and costs no client bytes (spec 008 §5.4).
+      "shop",
     ];
     const provenanceLabel: Messages["media"]["provenance"]["aiExample"] =
       enSource.media.provenance.aiExample;

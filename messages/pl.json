@@ -688,6 +688,33 @@
       "subtitle": "Delivered with care"
     }
   },
+  "shop": {
+    "empty": {
+      "body": "We have nothing we can deliver in {country} today. The {country} guide has what we have learned about sending flowers there, and the occasions pages have the dates.",
+      "heading": "Nothing we can deliver in {country} yet"
+    },
+    "grid": {
+      "label": "{count, plural, one {# bukiet na tej stronie} few {# bukiety na tej stronie} many {# bukietów na tej stronie} other {# bukietu na tej stronie}}"
+    },
+    "pagination": {
+      "label": "Pages of products",
+      "next": "Next",
+      "page": "Page {page}",
+      "previous": "Previous"
+    },
+    "sort": {
+      "default": "Our order",
+      "priceAsc": "Price: low to high",
+      "priceDesc": "Price: high to low"
+    },
+    "toolbar": {
+      "count": "{count, plural, one {# bukiet} few {# bukiety} many {# bukietów} other {# bukietu}}",
+      "disclosure": "Our order is the order we chose ourselves. It is not a ranking by sales, by popularity or by payment, and it does not change with who you are.",
+      "sortLabel": "Sort by",
+      "submit": "Sort",
+      "summary": "{count, plural, one {# bukiet} few {# bukiety} many {# bukietów} other {# bukietu}} · strona {page} z {pageCount}"
+    }
+  },
   "trust": {
     "guarantee": {
       "claim": "We redeliver or refund, your choice.",

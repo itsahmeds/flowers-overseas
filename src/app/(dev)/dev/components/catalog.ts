@@ -60,6 +60,13 @@ export const SECTIONS = [
   // populated branch can be seen — reached through each section's `provider` prop with a fake
   // provider, which mutates no module state inside a request.
   "Home data-gated sections",
+  // TASK-108: spec 008's seven listing primitives, in every state the sheet draws
+  // (`docs/design/system/components.dc.html`, "Listing and card blocks"). Four of them render
+  // nothing in one of their states — the single-page pagination, the empty chip row, the
+  // destination-less from-price chip and the empty grid — and none of them is reachable from a
+  // Phase-0 page until TASK-109 builds the shop root, so this is their only visual and axe
+  // surface.
+  "Listing and card blocks",
 ] as const;
 
 /** The colour ramps, in the order `globals.css` declares them. */
@@ -247,8 +254,94 @@ export const PHOTO_CAPTIONS = {
   hero: "Photo slot · hero · founder to supply",
   landscape: "Photo slot · occasion tile",
   portrait: "Photo slot · florist portrait",
+  // TASK-108: the product card's box, 4∶5 in all four card states (spec 008 §2, §5.3).
+  card: "Photo slot · bouquet · product card",
   square: "Photo slot · bouquet",
 } as const;
+
+/**
+ * Spec 008's listing states, in the order `system/components.dc.html` draws them (TASK-108).
+ */
+export const LISTING_STATES = {
+  cardImage:
+    "ProductCard \u00b7 image \u2014 the photograph in a fixed 4\u22365 box, the name as the card's heading, one all-in price and the inclusive wording. The AI honesty label rides under it because the asset displayed is generated (spec 006 \u00a72.5).",
+  cardPlaceholder:
+    "ProductCard \u00b7 placeholder \u2014 asset missing, unapproved, or no alt text in this locale: the captioned box renders and there is no <img> at all. The box is the same 4\u22365, so the swap costs zero layout shift.",
+  cardTile:
+    "ProductCard \u00b7 tile \u2014 Phase 0 (\u00a713 Q8): no href on the view model, so no <a> in the DOM. We never link at a URL that 404s, and spec 009's product page does not exist yet.",
+  cardLink:
+    "ProductCard \u00b7 link \u2014 the day spec 009 publishes the product link id: the same children wrapped in one <a>, and nothing else in the markup changes.",
+  gridDesktop:
+    "ListingGrid \u2014 a <ul> with an accessible name carrying the count and one <li> per card; Grid columns=2-4, so 2-up at 390 and 4-up at 1440. Twelve products a page, six eager tiles.",
+  toolbarDefault:
+    "ListingToolbar \u00b7 default \u2014 no parameter on the URL, which is why the bare URL is the one canonical. The default order is the founder's curation, labelled plainly, with the ranking disclosure beside it (\u00a713 Q3).",
+  toolbarSorted:
+    "ListingToolbar \u00b7 sorted \u2014 ?sort=price-asc: produced by a form submission rather than by a link a crawler follows. A <form method=get> with a visible <label>, a real <select> and a real submit button: zero client JavaScript, identical with JS disabled.",
+  paginationFirst:
+    "Pagination \u00b7 first page of seven \u2014 real <a>s inside <nav aria-label> with aria-current on the current page. Page 1 links to the bare URL, never ?page=1.",
+  paginationLast:
+    "Pagination \u00b7 last page \u2014 no Next, and the final page carries whatever is left rather than filler.",
+  paginationSingle:
+    "Pagination \u00b7 single page \u2014 nothing renders: no <nav>, no greyed-out control.",
+  empty:
+    "ListingEmpty \u2014 a published country whose catalogue has no deliverable product: one honest sentence and the ways out. Never an empty grid, a 0-results heading, a skeleton or a card with no price (AC-8).",
+  fromPrice:
+    "FromPriceChip \u00b7 default \u2014 the only place a from-price appears: a tile stands for a set, so its lowest payable price is labelled a floor.",
+  fromPriceFx:
+    "FromPriceChip \u00b7 stale FX \u2014 the projection fails closed to the destination's own currency and says which currency it is quoting (spec 005 \u00a714 A3).",
+  fromPriceNone:
+    "FromPriceChip \u00b7 no destination \u2014 nothing renders: a hub quotes no money at all, and the chip is absent rather than empty.",
+  chipRow:
+    "CategoryChipRow \u2014 the sibling row: the other categories that clear the six-product floor for this destination, in collator(locale) order. Every chip is a link to a page that exists; the current category is text with aria-current. No filters ship in Phase 0 (\u00a713 Q6).",
+  chipRowEmpty:
+    "CategoryChipRow \u00b7 empty \u2014 nothing renders when no sibling clears the floor.",
+} as const;
+
+/**
+ * The four card states of the sheet's first row, as view models. The prices are the artboard's
+ * figures as integer minor units; nothing here is read by a page.
+ */
+export const LISTING_CARDS = {
+  name: "Amber Hour",
+  secondName: "Baltic Dawn",
+  thirdName: "Azalea Pot",
+  fourthName: "Bright Side",
+  price: { amountMinor: 4690, currency: "GBP" },
+  lowPrice: { amountMinor: 3090, currency: "GBP" },
+  fxPrice: { amountMinor: 22900, currency: "PLN" },
+  href: "#listing-and-card-blocks",
+} as const;
+
+/** The empty state's three ways out, as the artboard labels them. */
+export const LISTING_EMPTY_LINKS = [
+  {
+    id: "corridor",
+    href: "#listing-and-card-blocks",
+    label: "Read the Poland guide",
+  },
+  {
+    id: "destinations",
+    href: "#listing-and-card-blocks",
+    label: "All destinations",
+  },
+  { id: "occasions", href: "#listing-and-card-blocks", label: "Occasions" },
+] as const;
+
+/** The sibling chip row of `country-category-desktop.dc.html`, with one current chip. */
+export const LISTING_CHIPS = [
+  { key: "tulips", name: "Tulips", href: "#listing-and-card-blocks" },
+  { key: "lilies", name: "Lilies", href: "#listing-and-card-blocks" },
+  { key: "peonies", name: "Peonies", href: "#listing-and-card-blocks" },
+  {
+    key: "roses",
+    name: "Roses",
+    href: "#listing-and-card-blocks",
+    current: true,
+  },
+] as const;
+
+export const LISTING_CHIP_HEADING = "Also for Poland";
+export const LISTING_EMPTY_COUNTRY = "Poland";
 
 /** The in-page anchor of a section heading; used by the nav chips and the headings alike. */
 export function sectionId(section: string): string {

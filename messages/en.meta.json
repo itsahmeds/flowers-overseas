@@ -2911,6 +2911,111 @@
     "reviewedAt": "2026-09-11T00:00:00Z",
     "sourceHash": "4814fc4bfbee31d3178b6eff12045e53fba62eee1c01f82b5c2094a07e9c23d0"
   },
+  "shop.empty.body": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/system/components.dc.html § Listing and card blocks and docs/design/wireframes/country-category-desktop.dc.html, 2026-09-16 design round; transcribed by TASK-108)",
+    "reviewedAt": "2026-09-16T00:00:00Z",
+    "sourceHash": "2d7d964067dac2ea60e5ba63862895dc63f2ecfd71a3eba0bbd7189dd59f0236"
+  },
+  "shop.empty.heading": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/system/components.dc.html § Listing and card blocks and docs/design/wireframes/country-category-desktop.dc.html, 2026-09-16 design round; transcribed by TASK-108)",
+    "reviewedAt": "2026-09-16T00:00:00Z",
+    "sourceHash": "1a32d9d481c9aecfe99f820d14defc29ea5222c7d819fab73d3168d93f4e3c3f"
+  },
+  "shop.grid.label": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/system/components.dc.html § Listing and card blocks and docs/design/wireframes/country-category-desktop.dc.html, 2026-09-16 design round; transcribed by TASK-108)",
+    "reviewedAt": "2026-09-16T00:00:00Z",
+    "sourceHash": "8a3f54e7c4e3d5ff85f5335fc4489659c5a1f6e51451127a0ac6e81c4c426a6b"
+  },
+  "shop.pagination.label": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/system/components.dc.html § Listing and card blocks and docs/design/wireframes/country-category-desktop.dc.html, 2026-09-16 design round; transcribed by TASK-108)",
+    "reviewedAt": "2026-09-16T00:00:00Z",
+    "sourceHash": "caf655b6d76430e9010ce3766245e5c1a575a3988fd029753b3c73707f9ad6e2"
+  },
+  "shop.pagination.next": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/system/components.dc.html § Listing and card blocks and docs/design/wireframes/country-category-desktop.dc.html, 2026-09-16 design round; transcribed by TASK-108)",
+    "reviewedAt": "2026-09-16T00:00:00Z",
+    "sourceHash": "1ff57a29d7c9d11bdf61c1b80f2b289b44c1ea844824d4b94a0d52b6ba5fc858"
+  },
+  "shop.pagination.page": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/system/components.dc.html § Listing and card blocks and docs/design/wireframes/country-category-desktop.dc.html, 2026-09-16 design round; transcribed by TASK-108)",
+    "reviewedAt": "2026-09-16T00:00:00Z",
+    "sourceHash": "7b2478a95138b0b20b6b921d8051dfada24888778a8939f20624bfb7ec2b2ab8"
+  },
+  "shop.pagination.previous": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/system/components.dc.html § Listing and card blocks and docs/design/wireframes/country-category-desktop.dc.html, 2026-09-16 design round; transcribed by TASK-108)",
+    "reviewedAt": "2026-09-16T00:00:00Z",
+    "sourceHash": "a57b08a480b822a0a572b993391c292ede593bf8000b406675b180bbb16260fa"
+  },
+  "shop.sort.default": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/system/components.dc.html § Listing and card blocks and docs/design/wireframes/country-category-desktop.dc.html, 2026-09-16 design round; transcribed by TASK-108)",
+    "reviewedAt": "2026-09-16T00:00:00Z",
+    "sourceHash": "f31e87482cfc12ce7b6601ab8e476ec0c4ded48c770cbe8a68a797cbf398b4ec"
+  },
+  "shop.sort.priceAsc": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/system/components.dc.html § Listing and card blocks and docs/design/wireframes/country-category-desktop.dc.html, 2026-09-16 design round; transcribed by TASK-108)",
+    "reviewedAt": "2026-09-16T00:00:00Z",
+    "sourceHash": "b46704b1c86843bf5254a6978ac05cb77455c72250737c8d81a9021b58da6618"
+  },
+  "shop.sort.priceDesc": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/system/components.dc.html § Listing and card blocks and docs/design/wireframes/country-category-desktop.dc.html, 2026-09-16 design round; transcribed by TASK-108)",
+    "reviewedAt": "2026-09-16T00:00:00Z",
+    "sourceHash": "f2aec532cfbfa3b4e288eadc114bcc3b45b356acfb9ecac78ccf9b154c5ea7c5"
+  },
+  "shop.toolbar.count": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/system/components.dc.html § Listing and card blocks and docs/design/wireframes/country-category-desktop.dc.html, 2026-09-16 design round; transcribed by TASK-108)",
+    "reviewedAt": "2026-09-16T00:00:00Z",
+    "sourceHash": "1e7de6ed672f3ea351ac2bcd6c2401fc3c6999466cbfda96d933170a9a541a6f"
+  },
+  "shop.toolbar.disclosure": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/system/components.dc.html § Listing and card blocks and docs/design/wireframes/country-category-desktop.dc.html, 2026-09-16 design round; transcribed by TASK-108)",
+    "reviewedAt": "2026-09-16T00:00:00Z",
+    "sourceHash": "cc44e3bd92f25ddd462eeaec8a88579c0fe468ac7f22fa4439c2e067655eb0ef"
+  },
+  "shop.toolbar.sortLabel": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/system/components.dc.html § Listing and card blocks and docs/design/wireframes/country-category-desktop.dc.html, 2026-09-16 design round; transcribed by TASK-108)",
+    "reviewedAt": "2026-09-16T00:00:00Z",
+    "sourceHash": "c9129025bd3ff6522a7eeebc1abf1481f36e4ac9d74524a473ac1c3be1c6fc2f"
+  },
+  "shop.toolbar.submit": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/system/components.dc.html § Listing and card blocks and docs/design/wireframes/country-category-desktop.dc.html, 2026-09-16 design round; transcribed by TASK-108)",
+    "reviewedAt": "2026-09-16T00:00:00Z",
+    "sourceHash": "bec69036aa27e7fab7d44cad3909477b76631c39ba46fd7841ea71aae7e5a735"
+  },
+  "shop.toolbar.summary": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/system/components.dc.html § Listing and card blocks and docs/design/wireframes/country-category-desktop.dc.html, 2026-09-16 design round; transcribed by TASK-108)",
+    "reviewedAt": "2026-09-16T00:00:00Z",
+    "sourceHash": "4d03c5caf46ee4514723f56025c22ea771f52edef248ffa7230ef39f428225e0"
+  },
   "trust.guarantee.claim": {
     "source": "human",
     "reviewed": true,
