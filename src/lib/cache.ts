@@ -53,7 +53,7 @@ export function homeCacheTag(locale: string): string {
  * Phase 0 attaches no tag to a cache entry: Next 16 only does that through `use cache` /
  * `cacheTag()`, which needs `cacheComponents` — a repo-wide rendering change that belongs to the
  * spec shipping the first real data fetch, exactly as `src/app/[locale]/page.tsx` records. The
- * corridor route revalidates on time (86 400 s) and declares its tags here, so the switch is a
+ * corridor route revalidates on time (3 600 s, spec 007 §14 A8) and declares its tags here, so the switch is a
  * one-line change at the call site rather than an archaeology exercise.
  */
 export function corridorCacheTags(

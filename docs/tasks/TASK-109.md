@@ -37,6 +37,83 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
   commits bytes — until then the honesty gates keep placeholders, so assert the mechanism on the
   fixture manifest and record the pending-bytes caveat in `## Result
 
+- **Copy.** No literal user-facing strings; `shop.*` keys exist from TASK-108 (16 keys, four
+  locales). Add only what the empty state and the page chrome need, `pl` plurals hand-authored,
+  `pnpm i18n:check` clean, no promise strings (spec 008 AC-9; add the page type to `PAGES` in
+  `tests/e2e/chrome-honesty.spec.ts`). Keep the `en` unreviewed share under the 5 % gate and
+  report it.
+- **Gates.** Unit (view composition, metadata, empty state); e2e T-01 over four locales; T-08;
+  T-24; T-32 (`pnpm check:no-db`, build + test with `DATABASE_URL` unset); Lighthouse on one shop
+  root per indexable locale over the Brotli origin; axe populated + empty; `darwin` visual
+  baselines for both artboards; `pnpm typecheck`, `pnpm lint`, `pnpm i18n:check`,
+  `pnpm codebase:map --check`; report the script-budget delta.
+
+## Read
+
+- `specs/008-country-shop-category-occasion-pages.md` — `## 0. Index`, §2 (row 6 and the existence
+  rules), §5.2 L83–L84 (links up and down), §5.3 row 1 (states), §6 L71 and L89 (indexability, the
+  Lighthouse set), §9 AC-1/AC-8/AC-24, §10 T-01/T-08/T-24/T-32, §14 **A1–A10**.
+- `specs/007-corridor-pages.md` §14 **A5–A8** only.
+- `docs/tasks/TASK-107.md` and `docs/tasks/TASK-108.md` `## Result` and carry-forwards;
+  `docs/tasks/TASK-120.md` `## Result` (which chrome strings are gated or absent).
+- `docs/design/wireframes/country-shop-{desktop,mobile}.dc.html`, `docs/design/README.md`
+  (including its dated "where the sheet and the code currently differ" rows),
+  `docs/design/wireframes/canvas.json` `wf-country-shop`.
+- `docs/codebase-map.md` — `modules/catalog` (`listing.ts`, `routes.ts`, `copy.ts`, `slugs.ts`),
+  `modules/ui/shop`, `modules/seo` (`metadata.ts`, `indexability.ts`), the corridor route as the
+  pattern for the 404 shapes and `generateStaticParams`, `tests/e2e/chrome-honesty.spec.ts`,
+  `tests/support/listing-honesty.ts`.
+
+## Carry-forwards
+
+One dated bullet per `/review`, newest last.
+
+- **From `/review 76` (2026-09-18, TASK-107, ruling 4) — LANDED in PR #81.** AC-3's "the per-locale
+  counts are printed to the CI step summary" was deferred to this task because
+  `writeExistenceSummary()` shipped with no call site (no `scripts/` entry resolves `@/`). It is now
+  called from the shared depth-3 route's `generateStaticParams`, beside `listingPages()`, so the
+  numbers describe the URLs the build just emitted, and `node:fs` is a dynamic import on the
+  `$GITHUB_STEP_SUMMARY` branch so the render graph stays clean.
+- **From `/review 81` (2026-09-18, round 1 — VERDICT FAIL, documentation only; the code was found
+  sound).** Three required changes, all doc-only, **applied by the orchestrator on this branch**:
+  (1) spec 008 §14 **A9**'s dated row added to `docs/design/README.md` — the delivery-facts panel is
+  not rendered on the shop root and the desktop artboard is the stale artefact; (2) this brief's
+  `## Read`, `## Carry-forwards`, `## Escalations` and `## Result` headings restored after the
+  result text overwrote them, with the `/review 76` bullet reinstated and the truncated Binding
+  bullet repaired; (3) the superseded footer link **"Delivery times and cutoffs"** redrawn out of
+  `country-shop-desktop.dc.html` and `country-shop-mobile.dc.html` (the TASK-120 row's standing
+  instruction). Nit 1 also applied: `src/lib/cache.ts` said the corridor revalidates at 86 400 s,
+  stale since spec 007 §14 A8 — now 3 600 s. Nits 2–7 recorded, not actioned: the `registryLabel()`
+  cast sitting in `app/`, the e2e uppercase assertion accepting `[200, 404]` to survive APFS,
+  AC-24's "same manifest lookup" being provable only as 0 = 0 until TASK-080 commits bytes (hand the
+  "make both counts 1" assertion to that task), the weakened `i18n-pseudo` argument-only skip, a
+  pointer from `routes.ts` to the AC-4 collision matrix, and the corridor-scoped names
+  (`corridorIso2ForSlug`) used by a spec 008 page.
+
+## Escalations
+
+One dated bullet per escalation: the question, who it went to, the answer.
+
+- **E-1 (2026-09-18, blocking) — spec 008 §5.2's six route files cannot coexist with spec 007's.**
+  Next allows one dynamic slug name per (depth, position) across `app/`. To the orchestrator.
+  **Answered the same day: spec 008 §14 A5** — one route file per URL depth, dispatching through a
+  single `resolveLocalePath()` in `modules/catalog/routes.ts`; the proxy-rewrite alternative was
+  rejected because spec 001 §11 and 003 §11 keep `src/proxy.ts` free of routing. Consequence
+  recorded as **spec 007 §14 A8**: the corridor route file is shared and `revalidate` drops
+  86 400 → 3 600.
+- **E-2 (2026-09-18, blocking) — `listingView()` carried no occasion row for the shop root**, and
+  this task may not build a second source for one. To the orchestrator. **Answered: spec 008 §14
+  A6** — extend `listingView()` so a `countryShopRoot` carries `occasionDates` through the same
+  `nextOccasions` path `countryOccasion` uses.
+- **E-3 (2026-09-18, non-blocking) — the trailing-slash shape**, where AC-1 lists it among the 404
+  shapes and spec 007 §14 A6 makes it a 308. To the orchestrator. **Answered: spec 008 §14 A7** —
+  308 to the bare URL site-wide, one rule; T-01 asserts the redirect and its `Location`, and the
+  other seven shapes 404 with no `Location`.
+- **Deferred by ruling, not open:** the delivery-facts panel (**A9**) and the occasion table's third
+  column (**A10**, lands with TASK-111).
+
+## Result
+
 **Shipped** as [PR #81](https://github.com/itsahmeds/flowers-overseas/pull/81) (finisher round, after the orchestrator ruled E-1/E-2/E-3 as spec 008
 §14 A5–A8 and spec 007 §14 A8). The three blockers are closed above with the rulings applied.
 
