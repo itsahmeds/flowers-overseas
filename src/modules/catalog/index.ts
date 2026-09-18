@@ -331,9 +331,11 @@ export type {
   ListingViewOptions,
   LocaleExistenceCounts,
 } from "./listing";
+// `PRODUCT_COUNT_FLOOR` and `LISTING_PAGE_SIZE` stay internal for the reason every other constant
+// in this barrel does (AC-2): the barrel exports schemas, value sets and functions only. A caller
+// that could read the floor would be one line from applying it itself, and the whole point of §13
+// Q7's "one named constant read by one predicate" is that `listingExists()` is that predicate.
 export {
-  LISTING_PAGE_SIZE,
-  PRODUCT_COUNT_FLOOR,
   HubCardViewSchema,
   ListingCrumbSchema,
   ListingHeadingSchema,

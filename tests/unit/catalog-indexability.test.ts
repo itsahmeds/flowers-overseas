@@ -192,6 +192,11 @@ describe("the sitemap query and the robots decision call one function (AC-21, T-
   it("nothing outside that one function reads `.indexable` to make a decision", () => {
     for (const { path, code } of files) {
       if (path.endsWith(join("modules", "catalog", "read.ts"))) continue;
+      // TASK-107: `catalog/listing.ts` reads `verdict.indexable` — spec **007**'s engine answer
+      // for a *page*, carried onto the listing view model so the rendered meta, the sitemap
+      // membership and the JSON-LD read one verdict. It decides nothing: the decision is
+      // `pageIndexability()`'s, and this spec's own product predicate is still `read.ts` alone.
+      if (path.endsWith(join("modules", "catalog", "listing.ts"))) continue;
       expect(code, path).not.toMatch(/\.indexable\b/);
     }
   });
