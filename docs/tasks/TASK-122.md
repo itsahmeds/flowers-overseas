@@ -77,7 +77,42 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
-
-_Pending._
+PR [#79](https://github.com/itsahmeds/flowers-overseas/pull/79) — `feat(occasions):
+orthodox_easter_offset rule type and the RO 2026–2030 fixture (TASK-122)`. `occasionDate` gained
+the seventh rule type `orthodox_easter_offset(days)`: the Julian computus (Meeus's Julian
+algorithm) converted to the Gregorian calendar through a **Julian Day Number** rather than a "+13
+days" century constant, plus a day offset; `orthodoxEasterSunday(year)` is exported beside
+`easterSunday(year)` through the `occasions` and `geo` barrels. The six existing rule types, their
+fixtures and `occasionDate`'s signature are untouched, and the `default:` narrowing to `never`
+still makes an eighth type a compile error. The rule union and `occasionRuleTypes` each gained one
+member (appended, so the six keep their `plan/03` §9 order), so an unknown rule type is still a
+parse error and `pnpm seed:check` fails on it — pinned by a new case in `tests/unit/
+seed-schemas.test.ts`. Seed: RO `easter` migrated from `rule_type: "none"` to
+`orthodox_easter_offset(0)` with the file's documented 14-day Easter campaign window, and
+`seed/snapshot/occasion_country.json` re-projected (`pnpm seed:diff --write`: 1 update, 0
+conflicts); PL name days stay undated; RO Easter left `observedUndatedOccasions()` with no change
+to that function. **The RO 2026–2030 dates — 12 Apr 2026, 2 May 2027, 16 Apr 2028, 8 Apr 2029,
+28 Apr 2030 — were verified before commit** against the Romanian Patriarchate's own calendar
+(`https://calendar.patriarhia.ro/`, retrieved 2026-09-18, which publishes 2026 and prints
+5 Apr Floriile, 12 Apr Învierea Domnului, 21 May Înălțarea, 31 May Rusaliile — so the offsets are
+verified as well as the anchor) and, for 2027–2030, two independent tables of the Julian computus
+plus the Meeus Julian algorithm worked by hand; the sources are cited in the header of
+`tests/fixtures/occasions.ts`. Numbers: fixture table 65 rules × 5 years = **325 dates** (was
+62 × 5 = 310), with three new `inSeed: false` Romanian reference rows (Floriile −7, Înălțarea +39,
+Rusaliile +49); unit suite **171 files / 4 161 passed / 5 skipped / 0 failed**;
+`src/modules/geo/occasions/**` at **100 % statements, branches, functions and lines**, the
+`vitest.coverage.json` gate unchanged; `seed:check` 39 files, nine rule families clean;
+`typecheck`, `lint`, `codebase:map --check` and `build` green. The dataset flip was exercised
+end-to-end: **e2e 751 passed / 3 failed**, **a11y 73 passed**, **visual 40 passed / 2 failed** —
+and every one of those five failures is identically red on unpatched `main` (verified by a second
+build of the clean tree): `corridor.spec.ts:52` and `destinations-hub.spec.ts:113` 404 shapes,
+`home.spec.ts:378` type-ahead mouse pick, `listing.spec.ts:40` and `notices.spec.ts:210` visual
+baselines. Two caveats a reviewer should re-run: **`pnpm lint` and `tests/unit/
+module-boundaries.test.ts` are red inside a `.claude/worktrees/…` path** (37 `import/
+no-restricted-paths` errors on `@/modules/*` barrels in files this task does not touch) — the
+resolver does not see the dot-directory; both are green when the same tree is checked out at an
+ordinary path, which is how every gate above was run. Handed on: the three `## Escalations` above
+— `plan/13` D7 (recorded, not solved), the stale spec 002 `occasion_country_rule_type_check`
+CHECK list (needs a migration + rollback from a spec 002 task before the importer runs), and the
+Andrzejki/Wigilia rows (need two new catalogue occasion keys and their per-locale copy; spec
+005/006 scope) — all three also written into spec 009 §14 as A1, A2, A3.
