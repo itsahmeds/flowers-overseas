@@ -16,6 +16,8 @@ Branch `task/TASK-016-schema-catalog-pricing`. AC-9 is the SEO/compliance keysto
 
 _None recorded._
 
+- **From the orchestrator (2026-09-18), before dispatch — spec 002 §14 A4:** the review triple (`translation_status`/`reviewed`/`reviewed_by`/`reviewed_at`/`source_hash`) goes exactly where §5.1 spells it — `product_translation`, and "same translation shape" for `category_translation` and `addon_translation`. Do not add it to any name-only table and do not touch `country_translation`/`city_translation` (migration `0002` stands). Also carried from `/review 75` nit 6: measure and add FK indexes for the `0003` tables where a lookup needs them, stating the basis in the migration header.
+
 ## Escalations
 
 _None recorded._
