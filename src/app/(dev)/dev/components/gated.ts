@@ -32,11 +32,11 @@ import { localePath } from "@/modules/i18n";
 /** The picks, ranked by real orders — the branch spec 008/016 reaches. */
 export const GALLERY_TRENDING_RANKED: TrendingProvider = trendingProviderOf(
   [
-    { id: "gallery-1", name: "Amber Hour" },
-    { id: "gallery-2", name: "Vistula Red" },
-    { id: "gallery-3", name: "Baltic Dawn" },
-    { id: "gallery-4", name: "Quiet Blush" },
-    { id: "gallery-5", name: "Northern Light" },
+    { id: "gallery-1", name: "Amber Hour", assetId: "fo-bq-001-hero" },
+    { id: "gallery-2", name: "Vistula Red", assetId: "fo-bq-002-hero" },
+    { id: "gallery-3", name: "Baltic Dawn", assetId: "fo-bq-003-hero" },
+    { id: "gallery-4", name: "Quiet Blush", assetId: "fo-bq-004-hero" },
+    { id: "gallery-5", name: "Northern Light", assetId: "fo-bq-005-hero" },
   ],
   "orders",
 );

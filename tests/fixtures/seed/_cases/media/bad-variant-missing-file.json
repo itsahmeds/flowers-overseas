@@ -3,27 +3,39 @@
   "rule": "variant-file",
   "replaces": "media-variants.json",
   "expect": "is in the manifest with no file",
-  "why": "The conditional half of rule family 7: the variant rules apply the moment a variants manifest has entries (TASK-078 authors it; the dataset has none today). A manifest entry with no committed file is a 404 that degrades to the placeholder, which is what `media:variants --check` exists to make impossible (AC-14).",
+  "why": "The conditional half of rule family 7: the variant rules apply the moment a variants manifest has entries. TASK-080 filled the manifest, so the fixture adds a **width the Phase-0 ladder does not ship** (`PHASE0_SLOT_WIDTHS` stops `productHero` at 828) rather than restating a committed row: a manifest entry with no committed file is a 404 that degrades to the placeholder, which is what `media:variants --check` exists to make impossible (AC-14).",
   "ops": [
     {
       "op": "setHeader",
       "field": "version",
       "value": 1
     },
-    { "op": "setHeader", "field": "source", "value": "seed" },
-    { "op": "setHeader", "field": "entity", "value": "media_variant" },
-    { "op": "setHeader", "field": "origin", "value": "authored" },
+    {
+      "op": "setHeader",
+      "field": "source",
+      "value": "seed"
+    },
+    {
+      "op": "setHeader",
+      "field": "entity",
+      "value": "media_variant"
+    },
+    {
+      "op": "setHeader",
+      "field": "origin",
+      "value": "authored"
+    },
     {
       "op": "addRow",
       "row": {
         "assetId": "fo-bq-001-hero",
-        "variant": "640",
-        "width": 640,
-        "height": 800,
+        "variant": "1920",
+        "width": 1920,
+        "height": 2400,
         "format": "avif",
         "bytes": 24680,
         "checksumSha256": "3d0f3b5a2e6a4c1d8b7f9e0a1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d",
-        "objectKey": "media/fo-bq-001-hero/640.avif"
+        "objectKey": "media/fo-bq-001-hero/1920.avif"
       }
     }
   ]

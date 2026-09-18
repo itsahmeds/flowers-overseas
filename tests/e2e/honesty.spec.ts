@@ -67,21 +67,48 @@ test.describe("AC-15: nothing on a served page claims what we cannot support", (
       expect(offences, rendered.slice(0, 400)).toEqual([]);
     });
 
-    test(`${path} shows no photograph, no star glyph and no rating widget`, async ({
+    test(`${path} shows only photographs it has, and no star glyph or rating widget`, async ({
       page,
     }) => {
       await page.goto(path);
 
-      // `plan/10` §3: the demo shows no image it does not have. Every photo box on the page is a
-      // reserved slot with a caption.
-      await expect(page.locator("main img")).toHaveCount(0);
-      await expect(page.locator("main picture")).toHaveCount(0);
+      // `plan/10` §3 has not changed and is still the rule; what changed is that we now *have*
+      // photographs for some slots (spec 006 §2.4, TASK-080). So the assertion is the rule rather
+      // than its Phase-0 consequence: every photo box on the page is either an image the dataset
+      // approved, derived and alt-texted, or a captioned placeholder — and never both, never
+      // neither, never an `<img>` outside a media box.
+      const boxes = page.locator("main [data-fo-media-slot]");
+      expect(await boxes.count()).toBeGreaterThan(6);
+      // No `<img>` anywhere outside a reserved media box: an image the design did not reserve a
+      // box for is both a layout shift and a picture nobody gated.
+      expect(await page.locator("main img").count()).toBe(
+        await page.locator("main [data-fo-media-slot] img").count(),
+      );
+      // Some of them are photographs now, and every photograph says something to a screen reader.
+      const alts = await page
+        .locator("main [data-fo-media-slot] img")
+        .evaluateAll((nodes) =>
+          nodes.map((node) => (node as HTMLImageElement).alt),
+        );
+      expect(alts.length).toBeGreaterThan(0);
+      for (const alt of alts) expect(alt.trim()).not.toBe("");
+      // And every box without one says what it is waiting for, rather than looking broken.
+      const empty = await page
+        .locator("main [data-fo-media-slot]:not(:has(img))")
+        .evaluateAll((nodes) =>
+          nodes.map((node) => (node.textContent ?? "").trim()),
+        );
+      for (const caption of empty) expect(caption).not.toBe("");
+
+      // The delivery band is the one slot that stays a placeholder in every case, because we have
+      // no delivery photograph and may not fake one (spec 006 §2.4, `plan/10` §3, §5).
+      await expect(
+        page.locator('main [data-fo-media-slot="band"] img'),
+      ).toHaveCount(0);
+
       await expect(
         page.locator('[itemtype*="Review"], [itemprop="ratingValue"]'),
       ).toHaveCount(0);
-      // The reserved slots are present and each says what it will hold.
-      const slots = page.locator("main [data-fo-media-slot]");
-      expect(await slots.count()).toBeGreaterThan(6);
     });
   }
 

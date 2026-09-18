@@ -51,7 +51,7 @@ import {
   MediaVariantsFileSchema,
   SEED_DATA_DIR,
 } from "../../seed/schema/files.ts";
-import type { MediaSlot } from "../../seed/schema/media.ts";
+import { type MediaSlot, mediaSlots } from "../../seed/schema/media.ts";
 import {
   AVIF_OPTIONS,
   ENCODER_CONCURRENCY,
@@ -63,6 +63,7 @@ import {
   WEBP_OPTIONS,
   type MediaVariantPipeline,
   aspectFor,
+  aspectStepsFor,
   variantDimensions,
   variantPipeline,
 } from "../../seed/schema/variants.ts";
@@ -139,6 +140,10 @@ function fixtureMediaJson(): string {
         generatorModel: "fixture-1",
         promptHash: PROMPT_HASH,
         generatorSeed: 1,
+        // The content-credential pair every `ai` asset carries since TASK-080: the digest of the
+        // artefact that holds the C2PA manifest, and what the derivative carries of it.
+        originalSha256: PROMPT_HASH,
+        derivativeC2pa: "stripped",
         reviewState: "pending",
         sortOrder: index,
         isPrimary: false,
@@ -177,14 +182,33 @@ async function makeRoot(
  * policy are the real ones.
  */
 function reducedPipeline(
-  overrides: Partial<MediaVariantPipeline> = {},
+  overrides: Partial<MediaVariantPipeline> & {
+    readonly widths?: readonly number[];
+  } = {},
 ): MediaVariantPipeline {
+  // TASK-080: the CLI derives a slot's ladder from `aspects[slot]`, not from the header's `widths`
+  // vocabulary, so narrowing a ladder for a test means narrowing it there. The ratios stay the
+  // pinned ones — only which widths exist changes — and `ogJpegSlots` is opened to every slot so
+  // the cases whose subject is the JPEG still get one.
+  const widths = overrides.widths ?? [384, 1080];
   return {
     ...variantPipeline(),
-    widths: [384, 1080],
+    widths: [...widths],
     ogJpegWidth: 384,
+    ogJpegSlots: [...mediaSlots],
+    aspects: Object.fromEntries(
+      mediaSlots.map((slot) => [slot, [...aspectStepsFor(slot, widths)]]),
+    ) as MediaVariantPipeline["aspects"],
     ...overrides,
   };
+}
+
+/** The pinned pipeline with every slot opened to the whole §13 Q5 ladder and the OG JPEG. */
+function fullLadderPipeline(): MediaVariantPipeline {
+  return reducedPipeline({
+    widths: [...VARIANT_WIDTHS],
+    ogJpegWidth: OG_JPEG_WIDTH,
+  });
 }
 
 const roots: string[] = [];
@@ -282,7 +306,7 @@ describe("T-12: the ladder over three fixture originals (AC-12)", () => {
   it(
     "derives AVIF and WebP at every declared width plus one OG JPEG",
     async () => {
-      const pipeline = variantPipeline();
+      const pipeline = fullLadderPipeline();
       const original = await fixtureOriginal(1000, 1250);
       const derived = await deriveVariants(
         { id: "fixture-portrait", slot: "productHero" },
@@ -788,14 +812,15 @@ describe("T-14: --check fails on a deleted, an added and a one-byte-edited file 
     expect(report.problems[0]).toContain(VARIANT_MANIFEST_PATH);
   });
 
-  it("passes on the committed tree, which carries no derived bytes yet", () => {
-    // The Phase-0 state this PR ships: a manifest with the pinned header and an empty row list,
-    // no `public/media/` at all, and `pnpm media:variants --check` green (TASK-080 commits the
-    // demo bytes).
+  it("passes on the committed tree, which now carries the demo bytes (TASK-080)", () => {
+    // The Phase-0 state since TASK-080: the founder's 31 approved assets derived into the ladder
+    // `PHASE0_SLOT_WIDTHS` chose, committed under `public/media/`, with the manifest as the only
+    // source of widths, bytes and checksums for them. `--check` is what makes a deleted file, an
+    // extra file or a one-byte edit fail in CI, where nothing can be re-derived (AC-14).
     const report = checkVariants({ root: repoRoot });
     expect(report.problems).toEqual([]);
-    expect(report.rows).toBe(0);
-    expect(committedVariantFiles(repoRoot)).toEqual([]);
+    expect(report.rows).toBeGreaterThan(0);
+    expect(committedVariantFiles(repoRoot)).toHaveLength(report.rows);
     expect(
       existsSync(join(repoRoot, SEED_DATA_DIR, "media-variants.json")),
     ).toBe(true);

@@ -113,17 +113,33 @@ describe("the occasion tiles", () => {
     }
   });
 
-  it("renders a photo placeholder per tile and not one `<img>` (plan/10 §3)", () => {
+  it("renders the founder's six photographs, one per tile, lazily (TASK-080)", () => {
     const html = tiles("en");
 
     expect([...html.matchAll(/data-fo-media-slot="tile"/g)]).toHaveLength(
       OCCASION_TILES.length,
     );
-    expect(html).toContain(
-      'data-fo-media-sizes="(min-width: 768px) 17vw, 50vw"',
+    expect([...html.matchAll(/<img/g)]).toHaveLength(OCCASION_TILES.length);
+    expect(html).toContain('sizes="(min-width: 768px) 17vw, 50vw"');
+    // Below the fold on both artboards, so every tile is lazy and none is the LCP candidate.
+    expect([...html.matchAll(/loading="lazy"/g)]).toHaveLength(
+      OCCASION_TILES.length,
     );
-    expect(html).toContain("Photography to supply");
+    expect(html).not.toContain('fetchPriority="high"');
+    expect(html).not.toContain("Photography to supply");
+  });
+
+  it("falls back to the captioned box and no `<img>` in a locale with no alt text", () => {
+    // `plan/07` §8 and spec 006 AC-18: a missing translation degrades to something honest, never
+    // to an English sentence read aloud on a non-English page. `ar-XB` has no alt text and never
+    // will, so it is the locale that reaches the arm without editing the dataset.
+    const html = tiles("ar-XB");
+
     expect(html).not.toContain("<img");
+    expect([
+      ...html.matchAll(/data-fo-media-placeholder="noAlt"/g),
+    ]).toHaveLength(OCCASION_TILES.length);
+    expect(html).toContain("aspect-square");
   });
 
   it("renders a link per tile once `published` is flipped, from the same loop", async () => {

@@ -70,16 +70,18 @@ describe("AC-17: the note follows the displayed `ai` assets (T-17)", () => {
   }
 
   it("renders no note on a page with no image at all", () => {
-    // The committed manifest has no variants, so every asset degrades to a placeholder: a page
-    // showing no generated image owes no label.
+    // A page every one of whose assets degraded to a placeholder owes no label: it is claiming
+    // nothing. Since TASK-080 the committed dataset *does* render, so the state is reached the way
+    // a real page reaches it — a locale the dataset has no alt text for (`plan/07` §8).
     const html = render(
       <main>
-        <MediaAsset assetId={PRODUCT_ASSET} locale="en" />
-        <MediaProvenanceNote assetIds={[PRODUCT_ASSET]} locale="en" />
+        <MediaAsset assetId={PRODUCT_ASSET} locale="ar-XB" />
+        <MediaProvenanceNote assetIds={[PRODUCT_ASSET]} locale="ar-XB" />
       </main>,
       "en",
     );
 
+    expect(html).not.toContain("<img");
     expect(html).not.toContain("data-fo-media-provenance");
     expect(html).not.toContain("Example arrangement");
   });
