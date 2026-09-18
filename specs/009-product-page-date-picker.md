@@ -390,7 +390,39 @@ Each carries the default this spec is written against; the spec stays `draft` un
 
 ## 14. Amendments (post-approval corrections)
 
-_None yet._
+**A1 (2026-09-18, TASK-122, recorded — not a change of scope).** `plan/13` **D7** stays open and is
+**not** solved by AC-12: FR Fête des Mères is the last Sunday of May *unless that Sunday is
+Pentecost*, in which case it is the first Sunday of June, and `last_weekday` cannot say so. The
+seed's FR `mothers_day` rule is correct 2026–2033 and wrong in 2034, 2039, 2042, 2045, 2050 and
+2053, so nothing renders wrongly before FR goes live. The eighth rule type (or the per-year
+override table `plan/13` D7 prefers) belongs to whichever task makes FR live; the `default:`
+narrowing in `occasionDate` is the seam it must come through, and the unit suite's placeholder
+kind is now named `pentecost_exception` so the seam stays covered. Owner: orchestrator → founder,
+before FR goes live.
+
+**A2 (2026-09-18, TASK-122, escalation — needs a ruling).** Adding a seventh `rule_type` makes
+spec 002's `occasion_country_rule_type_check` CHECK constraint (migration `0002`) stale: the seed
+projects `rule_type = 'orthodox_easter_offset'` onto that column, and the constraint's list has
+six values. §5.2's contract line names only "the existing … occasion-rule schema, extended by one
+union member", so TASK-122 wrote **no migration** — a schema change this spec did not list. Phase 0
+reads the committed JSON and no database row exists, so nothing is broken today; the importer
+(TASK-083 / spec 002) fails the day it runs unless a migration adds the value to the CHECK list
+with its rollback. Owner: orchestrator → a spec 002 task.
+
+**A3 (2026-09-18, TASK-122, escalation — blocked sub-clause).** §5.2's two further seed rows,
+**Andrzejki (30 Nov)** and **Wigilia (24 Dec)** as `fixed` PL rows, were **not** shipped. They
+cannot be authored as `occasion-country.json` rows alone: `seed:check` requires every
+`occasionKey` to be a row of `occasions.json` and a value of `taxonomy.json`'s `occasion` facet, so
+the two rows need two new **catalogue occasion keys** — `seasonalOccasions` in
+`src/config/catalogue/schemas.ts`, rows in `occasions.data.ts` with new
+`catalog.facet.occasion.*` keys in four message files, the projected `occasions.json` and
+`taxonomy.json`, authored per-locale copy (name, slug, `descriptionMd`, `seoTitle`,
+`seoDescription`) in `seed/data/copy/{en,de,pl}/occasions.json`, and the count assertions that pin
+32 occasions and 126 calendar rows. That is spec 005/006 dataset and content scope under ADR-0017,
+and TASK-122's brief says "no message keys (occasion names already exist)". The two occasions are
+**not** blocking: the homepage strip renders them from `src/config/occasions.ts`'s authored dates
+(spec 004), which is unchanged. Owner: orchestrator → a spec 005/006 taxonomy task, or a founder
+ruling that the two occasions are homepage-strip-only and §5.2's sentence is withdrawn.
 
 **Note on §0.** The index block above was written by hand because this environment had no shell in which to run `pnpm specs:index`. Run `pnpm specs:index` before merge and let the generated block replace it.
 - **A4 (2026-09-18, orchestrator ruling, TASK-122 escalation 3).** AC-12's "the Andrzejki and Wigilia PL rows date correctly" is **not** satisfiable inside `modules/geo/occasions` alone: `seed:check` requires each `occasionKey` to be an `occasions.json` row and a `taxonomy.json` facet value, so the two rows need two catalogue occasion keys, `seasonalOccasions`/`occasions.data.ts` entries, four-locale `catalog.facet.occasion.*` copy and the 32 → 34 / 126 → … dataset pins — spec 005/006 dataset and content scope under ADR-0017. Ruled: TASK-122 ships the evaluator and the RO rows; the Andrzejki/Wigilia rows move to **TASK-106** (the de/pl occasion copy task) as a carry-forward, where the keys, facet values and copy are authored together; the homepage strip already renders both from `src/config/occasions.ts` and is unaffected. AC-12 is read as satisfied by TASK-122 + TASK-106 together.
