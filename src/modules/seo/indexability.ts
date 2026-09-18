@@ -61,7 +61,17 @@ export type SeoPageType =
   | "localeHome"
   | "destinationsHub"
   | "corridor"
-  | "devGallery";
+  | "devGallery"
+  // Spec 008 §2's six listing page types, registered here rather than branching there (spec 008
+  // §6 "Indexability — one engine, six descriptors", AC-14; TASK-107). `catalog/listing.ts`
+  // gathers their terms and calls `pageIndexability()`; no robots literal is written outside this
+  // module.
+  | "countryShopRoot"
+  | "countryCategory"
+  | "countryOccasion"
+  | "categoryHub"
+  | "occasionHub"
+  | "occasionsIndex";
 
 /**
  * Whether a page type may ever be indexed (`plan/02` §7; spec 004 AC-28; spec 007 §6).
@@ -78,20 +88,46 @@ export const PAGE_TYPE_POLICY: Readonly<
   localeHome: "byRule",
   destinationsHub: "byRule",
   corridor: "byRule",
+  // Spec 008 §6: all six are `byRule`. In Phase 0 every one of them answers `noindex,follow`
+  // because no country is operational and `isIndexingEnvironment()` is false — a data answer, not
+  // a policy one, which is what lets the hubs lift at the indexing flip with no edit here.
+  countryShopRoot: "byRule",
+  countryCategory: "byRule",
+  countryOccasion: "byRule",
+  categoryHub: "byRule",
+  occasionHub: "byRule",
+  occasionsIndex: "byRule",
 };
 
-/** The five terms of the rule, in the order the header documents them. */
+/**
+ * The terms of the rule, in the order the header documents them.
+ *
+ * `operational` is spec 008 §6's sixth term (TASK-107): "the country is genuinely `live`
+ * (`corridorState(iso2) === 'live'`, i.e. an active partner exists)". It is **optional** on the
+ * term record and an omitted term reads as satisfied, because it is a gate only the three
+ * country-scoped listing types have: a corridor guide, a locale home and a hub are honest pages
+ * before any florist has signed, and forcing every descriptor to assert `operational: true` would
+ * turn a gate into a ritual. A page type that *has* the gate must state it, which is what
+ * `catalog/listing.ts` does for all three and what its table-driven test drives.
+ */
 export const INDEXABILITY_TERMS = [
   "pageTypeIndexable",
   "exists",
   "reviewed",
   "localeIndexable",
   "indexingEnvironment",
+  "operational",
 ] as const;
 
 export type IndexabilityTerm = (typeof INDEXABILITY_TERMS)[number];
 
-export type IndexabilityTerms = Readonly<Record<IndexabilityTerm, boolean>>;
+/** The term that may be omitted, because not every page type has an operational gate (§6). */
+export type OptionalIndexabilityTerm = "operational";
+
+export type IndexabilityTerms = Readonly<
+  Record<Exclude<IndexabilityTerm, OptionalIndexabilityTerm>, boolean>
+> &
+  Readonly<Partial<Record<OptionalIndexabilityTerm, boolean>>>;
 
 export interface IndexabilityVerdict {
   /** `true` iff every term holds. The one answer sitemap membership is allowed to read. */
@@ -104,7 +140,7 @@ export interface IndexabilityVerdict {
 
 /** The pure rule: the conjunction of every term. T-10's table drives exactly this function. */
 export function indexability(terms: IndexabilityTerms): RobotsDirective {
-  return INDEXABILITY_TERMS.every((term) => terms[term])
+  return INDEXABILITY_TERMS.every((term) => terms[term] ?? true)
     ? INDEX_FOLLOW
     : NOINDEX_FOLLOW;
 }
@@ -130,6 +166,12 @@ export interface PageDescriptor {
   readonly exists: boolean;
   /** The content record's `reviewed` flag (`plan/02` §12). */
   readonly reviewed: boolean;
+  /**
+   * Spec 008 §6's operational gate, for the page types that have one: the destination is
+   * genuinely live (`corridorState(iso2) === 'live'` — an active partner, not a registry label).
+   * Omitted where the page type has no such gate, and an omitted term reads as satisfied.
+   */
+  readonly operational?: boolean;
 }
 
 /**
@@ -147,5 +189,8 @@ export function pageIndexability(
     reviewed: page.reviewed,
     localeIndexable: isLocaleIndexable(page.locale),
     indexingEnvironment: isIndexingEnvironment(deployment),
+    ...(page.operational === undefined
+      ? {}
+      : { operational: page.operational }),
   });
 }

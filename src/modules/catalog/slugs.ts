@@ -52,22 +52,13 @@
  * (spec 008 AC-2, TASK-106) and the collision matrix of `tests/unit/catalog-slugs.test.ts`
  * (AC-4).
  */
-import categoriesDe from "../../../seed/data/copy/de/categories.json" with { type: "json" };
-import occasionsDe from "../../../seed/data/copy/de/occasions.json" with { type: "json" };
-import productsDe from "../../../seed/data/copy/de/products.json" with { type: "json" };
-import categoriesEnGb from "../../../seed/data/copy/en-gb/categories.json" with { type: "json" };
-import occasionsEnGb from "../../../seed/data/copy/en-gb/occasions.json" with { type: "json" };
-import productsEnGb from "../../../seed/data/copy/en-gb/products.json" with { type: "json" };
-import categoriesEn from "../../../seed/data/copy/en/categories.json" with { type: "json" };
-import occasionsEn from "../../../seed/data/copy/en/occasions.json" with { type: "json" };
-import productsEn from "../../../seed/data/copy/en/products.json" with { type: "json" };
-import categoriesPl from "../../../seed/data/copy/pl/categories.json" with { type: "json" };
-import occasionsPl from "../../../seed/data/copy/pl/occasions.json" with { type: "json" };
-import productsPl from "../../../seed/data/copy/pl/products.json" with { type: "json" };
+import { type LocaleCode } from "@/config/locales";
 
-import { CATALOGUE_LOCALE } from "@/config/catalogue/schemas";
-import { type LocaleCode, isLocaleCode, localeConfig } from "@/config/locales";
-
+import {
+  AUTHORED_TRANSLATION_STATUS,
+  COPY_FILES,
+  inheritsCopyFrom,
+} from "./copy";
 import {
   CatalogueSlugSchema,
   EntityKeySchema,
@@ -75,45 +66,6 @@ import {
   SlugKindSchema,
 } from "./schemas";
 import type { SlugKind } from "./types";
-
-/* -------------------------------------------------------------------------- */
-/* The copy corpus as a build-time import (spec 006 `copy/{locale}/*.json`).   */
-/* -------------------------------------------------------------------------- */
-
-/**
- * The four fields of a copy row that routing reads. Everything else the row carries — the name,
- * the description, the SEO pair, the review trail — belongs to the page and to `seed:check`, and
- * naming it here would invite this file to answer a question that is not about a URL.
- */
-interface CopySlugRow {
-  readonly key: string;
-  readonly slug: string;
-  readonly translationStatus: string;
-}
-
-interface CopySlugFile {
-  readonly locale: string;
-  readonly rows: readonly CopySlugRow[];
-}
-
-/**
- * `product_translation.translation_status === 'human'` is the authored state: "a reviewer flips
- * `translationStatus` to `human`" (`seed/schema/copy.ts`, `plan/03` §6 gate 4). A `machine` row is
- * a draft, and a draft is not a URL.
- */
-const AUTHORED_TRANSLATION_STATUS = "human";
-
-/**
- * The twelve committed copy files, keyed by kind and locale. The casts are the "typed build-time
- * import" of spec 008 §5.2 and of `src/modules/ui/media/manifest.ts`: TypeScript widens every
- * JSON string, and re-narrowing here without a runtime parse is what keeps zod out of the render
- * path of every listing page.
- */
-const COPY_FILES: Readonly<Record<SlugKind, readonly CopySlugFile[]>> = {
-  category: [categoriesEn, categoriesEnGb, categoriesDe, categoriesPl],
-  occasion: [occasionsEn, occasionsEnGb, occasionsDe, occasionsPl],
-  product: [productsEn, productsEnGb, productsDe, productsPl],
-} as unknown as Readonly<Record<SlugKind, readonly CopySlugFile[]>>;
 
 /** The authored (key → slug) rows of one kind in one locale, machine drafts excluded. */
 function authoredRows(
@@ -129,36 +81,6 @@ function authoredRows(
     }
   }
   return authored;
-}
-
-/* -------------------------------------------------------------------------- */
-/* Inheritance (spec 006 §2's `en-gb` override layer; spec 009 §13 Q1).       */
-/* -------------------------------------------------------------------------- */
-
-/** The primary language subtag of a locale code: `en-gb` → `en`, `ar-XB` → `ar`. */
-function primaryLanguage(code: string): string {
-  return (code.split("-")[0] ?? code).toLowerCase();
-}
-
-/**
- * The locale a locale inherits its category and occasion slugs from, or `undefined` when it
- * inherits none. Two cases inherit and everything else does not:
- *
- *  - a locale whose `fallbackCode` is in the **same language** (`en-gb` → `en`), which is spec
- *    006 §2's "`en-gb` ships as a thin override only where British wording differs";
- *  - a **non-launch** locale — the pseudo-locales, which have no buyer, no crawler and no
- *    authored copy of their own, and whose `pathSegments` already mirror `en`.
- *
- * `de` and `pl` fall through both and therefore have exactly the slugs their own copy authors.
- */
-function inheritsSlugsFrom(locale: LocaleCode): LocaleCode | undefined {
-  const config = localeConfig(locale);
-  const fallback = config.fallbackCode;
-  if (fallback === null || !isLocaleCode(fallback)) return undefined;
-  if (!config.isLaunch) return fallback;
-  return primaryLanguage(fallback) === primaryLanguage(config.code)
-    ? fallback
-    : undefined;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -183,14 +105,10 @@ function effectiveKeyMap(
   locale: LocaleCode,
   seen: readonly string[] = [],
 ): ReadonlyMap<string, string> {
-  const inheritedFrom =
-    kind === "product"
-      ? // A product slug is shared by every locale from the dataset's one authored locale
-        // (spec 009 §13 Q1), never inherited along the message fallback chain.
-        locale === CATALOGUE_LOCALE
-        ? undefined
-        : (CATALOGUE_LOCALE as LocaleCode)
-      : inheritsSlugsFrom(locale);
+  // Which locale a locale inherits from is `copy.ts`'s answer, shared with the name and intro
+  // readers: a page whose URL came from `de` and whose name came from `en` would be a page no
+  // rule in spec 008 describes.
+  const inheritedFrom = inheritsCopyFrom(kind, locale);
 
   const effective = new Map<string, string>();
   if (inheritedFrom !== undefined && !seen.includes(inheritedFrom)) {

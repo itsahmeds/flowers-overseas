@@ -29,6 +29,7 @@ export {
   type IndexabilityTerm,
   type IndexabilityTerms,
   type IndexabilityVerdict,
+  type OptionalIndexabilityTerm,
   type PageDescriptor,
   type RobotsDirective,
   type SeoPageType,
