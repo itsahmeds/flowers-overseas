@@ -74,6 +74,7 @@ export function CountryShopRootPage({
 }: CountryShopRootPageProps): ReactElement {
   const t = useTranslations();
   const shop = useTranslations("shop");
+  const catalog = useTranslations("catalog");
   const code = localeCode(view.locale);
   const country = registryLabel(t, view.country?.nameKey ?? "");
 
@@ -114,7 +115,7 @@ export function CountryShopRootPage({
                 {shop("h1.countryShopRoot", { country })}
               </Display>
               <Text measure>{shop("root.lede", { country })}</Text>
-              <Text measure tone="muted" data-fo-demo-notice>
+              <Text measure tone="muted">
                 {shop("root.demoNotice", { country })}
               </Text>
             </Stack>
@@ -135,6 +136,14 @@ export function CountryShopRootPage({
                 {shop("toolbar.disclosure")}
               </Text>
               <ListingGrid cards={view.items} locale={code} priority />
+              {/* Stale FX (spec 005 §14 A3, §5.3's state): the projection fell back to the
+                  destination's own authored price, so the page says which currency it is
+                  quoting. One sentence for the page, because one rate priced all of it. */}
+              {view.fxFallback ? (
+                <Text measure size="sm" tone="muted">
+                  {catalog("availability.fxUnavailable")}
+                </Text>
+              ) : null}
             </Stack>
 
             {view.tiles.length === 0 ? null : (
@@ -162,6 +171,8 @@ export function CountryShopRootPage({
                             country,
                           })}
                         </Text>
+                        {/* The stale-FX sentence is the page's, once, above this row: six tiles
+                            each repeating it would be one snapshot claimed six times. */}
                         <FromPriceChip locale={code} price={tile.fromPrice} />
                       </Stack>
                     </li>

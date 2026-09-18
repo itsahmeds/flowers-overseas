@@ -328,6 +328,14 @@ export const ListingViewSchema = z
      * refuses a `number` under that name (it reads as money). `resultCount` is the same number
      * with a name that says it counts rather than adds up.
      */
+    /**
+     * The projections that priced this page **fell back to the destination's own currency**
+     * because no usable FX rate existed (spec 005 §14 A3, §5.3's "stale FX" state). The page then
+     * says which currency it is quoting, in the sentence spec 005 already ships
+     * (`catalog.availability.fxUnavailable`) — a converted amount is never shown without the rate
+     * that produced it, and an unconverted one is never shown without saying so.
+     */
+    fxFallback: z.boolean(),
     resultCount: z.int().nonnegative(),
     page: z.int().min(1),
     pageCount: z.int().nonnegative(),
@@ -1349,6 +1357,7 @@ export async function listingView(
     ...(pageType === "occasionsIndex"
       ? { occasions: await occasionEntries(locale, from) }
       : {}),
+    fxFallback: await pageFxFallback(locale, iso2, ordered[0]),
     resultCount: total,
     page,
     pageCount,
@@ -1359,6 +1368,28 @@ export async function listingView(
   };
 
   return ListingViewSchema.parse(view);
+}
+
+/**
+ * Did this page's prices fall back to the destination's own currency (spec 005 §14 A3)?
+ *
+ * One projection answers for the whole page: a rate is a property of a (currency pair, day) and
+ * not of a product, so every card and every tile on one listing converts — or fails to convert —
+ * together. Asking once keeps the page from making two claims about one snapshot.
+ *
+ * A hub has no destination and quotes no money at all, so it never falls back (§2, §8).
+ */
+async function pageFxFallback(
+  locale: LocaleCode,
+  iso2: CountryIso2 | undefined,
+  product: Product | undefined,
+): Promise<boolean> {
+  if (iso2 === undefined || product === undefined) return false;
+  const projection = await fromPriceProjection(locale, {
+    productId: product.sku,
+    countryIso: iso2,
+  });
+  return projection.fxReasonKey !== undefined;
 }
 
 /** A slug back to its catalogue key, for the four entity-scoped page types. */
