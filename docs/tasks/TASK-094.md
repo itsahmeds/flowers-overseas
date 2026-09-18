@@ -52,17 +52,54 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per `/review`, newest last.
 
-- **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From `/review 74` (2026-09-18, carried in at dispatch):** the membership predicate is
+  `listCorridorPages()` **and** `pageIndexability(descriptor).indexable`. There is no `inSitemap`
+  field and none was added; `corridors.ts` and `statics.ts` each read `verdict.indexable` exactly
+  once, which `tests/unit/catalog-indexability.test.ts` now pins the same way it pins
+  `catalog/listing.ts`'s single read.
 
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- **2026-09-18 — `static.xml` ships with the hub and without the locale home (decided, not
+  blocking; for the orchestrator's record).** §5.2 names `static.xml` as "(home, hub)". The hub's
+  route composes its `<head>` through `pageIndexability()`, so announcing it agrees with the
+  document it points at. `/{locale}` does not: it still inherits spec 003's blanket
+  `robots: noindex,nofollow` from `src/app/[locale]/layout.tsx`, which **TASK-096** lifts at the
+  indexing flip (its `TASKS.md` row says "`noindex` lifts on the qualifying set (reviewed
+  corridors, hub, locale homes)"), and `tests/e2e/links.spec.ts` + `tests/e2e/locale-routing.spec.ts`
+  pin the current directive. Listing the home today would put a URL whose own document says
+  `noindex` into a sitemap — exactly what AC-14 forbids — and wiring the home here would edit
+  another task's page and its tests. `STATIC_SITEMAP_PAGE_TYPES` in
+  `src/modules/seo/sitemap/statics.ts` is the one-line, auditable list TASK-096 adds `localeHome`
+  to, in the same commit that gives the home its engine-composed metadata. No answer needed unless
+  the orchestrator wants the home announced earlier.
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
-
-_Pending._
+**PR [#81](https://github.com/itsahmeds/flowers-overseas/pull/81).** `src/modules/seo/sitemap/`
+(`xml.ts` — the serialiser, `SitemapEntrySchema`, `lastmodOf()` and both caps; `corridors.ts`;
+`statics.ts`; `index.ts` — the three levels, the child registry and `SitemapParamsSchema`) plus
+`src/app/sitemap.xml/route.ts` and `src/app/sitemaps/[locale]/[child]/route.ts`. Membership is
+`listCorridorPages()` ∧ `pageIndexability(...).indexable`, so **nothing is announced outside an
+indexing environment** and the sitemap opens with the pages at TASK-096's flip. `<lastmod>` is the
+maximum of the authored file's `updatedAt`, the country registry entry (no date exists in Phase 0 —
+`COUNTRY_ROW_COLUMNS` omits the timestamps; the parameter is in the signature for spec 002) and the
+locale catalogue's newest `reviewedAt`, which needed one additive i18n export,
+`catalogueUpdatedAt()`. Every row's `xhtml:link` set comes from the same `alternatesFor()` call the
+`<head>` uses. **Numbers:** on a production/canonical-host build the tree is 1 index → 2 locale
+indexes (`en`, `en-gb`) → 2 children each → **16 URLs** (7 corridors + 1 hub per locale); largest
+child 5 027 B of a 10 MB cap, 7 URLs of a 10 000 cap; `de`/`pl` announce nothing (unreviewed
+catalogues). **Tests:** unit 38 (`seo-sitemap`, `sitemap-route`, `sitemap-fixtures`) + the extended
+`no-db`/`catalog-indexability`/`seo-validate-sitemap` pins; integration 8 (`tests/integration/sitemap.test.ts`
+— the tree, the caps, and the `<head>`-vs-`xhtml:link` equality against the corridor route's own
+`generateMetadata`); contract 3 (`validate-sitemap` over the committed real set, plus the two
+tampering controls); e2e 4 × 2 projects (`tests/e2e/sitemap.spec.ts`, the whole set fetched, no
+sampling). **Gates:** unit 4 246 / 5 skipped, integration 13, contract 24, e2e 790 + 2 known darwin
+casing flakes that pass on rerun (72/72), a11y 73, visual 43, `pnpm seo:validate` 7 sitemap + 3
+hreflang fixtures, typecheck, lint, format, `codebase:map --check`. The committed fixtures in
+`tests/fixtures/seo/sitemap/` are byte-identical to what the built server served on :3204.
+**Handed on:** TASK-096 adds `localeHome` to `STATIC_SITEMAP_PAGE_TYPES`; TASK-116 and TASK-131 add
+`categories`/`occasions`/`products` to `SITEMAP_CHILDREN` with a builder each and inherit the caps,
+the `<lastmod>` rule, the cache header and the 404 shapes.

@@ -51,18 +51,20 @@ function urlBlocks(xml: string): Map<string, string> {
   return blocks;
 }
 
-/** The `<head>` cluster of a served document, in document order. */
+/**
+ * The `<head>` cluster of a served document, in document order.
+ *
+ * Matched case-insensitively on the attribute name: React prints the property spelling
+ * (`hrefLang="en"`), HTML attribute names are case-insensitive, and what AC-11 compares is the
+ * `hreflang` **values** and their URLs — not how the serialiser capitalises an attribute.
+ */
 const headCluster = (html: string): { hreflang: string; href: string }[] =>
-  [
-    ...html.matchAll(
-      /<link[^>]+rel="alternate"[^>]*>|<link[^>]+rel='alternate'[^>]*>/gu,
-    ),
-  ]
+  [...html.matchAll(/<link[^>]+rel=["']alternate["'][^>]*>/giu)]
     .map((match) => match[0])
-    .filter((tag) => /hreflang=/u.test(tag))
+    .filter((tag) => /hreflang=/iu.test(tag))
     .map((tag) => ({
-      hreflang: /hreflang="([^"]+)"/u.exec(tag)?.[1] ?? "",
-      href: /href="([^"]+)"/u.exec(tag)?.[1] ?? "",
+      hreflang: /hreflang="([^"]+)"/iu.exec(tag)?.[1] ?? "",
+      href: /href="([^"]+)"/iu.exec(tag)?.[1] ?? "",
     }));
 
 const metaRobots = (html: string): string[] =>
@@ -90,7 +92,7 @@ async function fetchHere(
 }
 
 test.describe("sitemaps, as served (AC-13, AC-14; T-15)", () => {
-  test("the index is XML, cached for an hour, with no cookie and no Vary", async ({
+  test("the index is XML, cached for an hour, sets no cookie and varies on nothing we read", async ({
     request,
   }) => {
     const response = await request.get("/sitemap.xml", { maxRedirects: 0 });
@@ -99,8 +101,26 @@ test.describe("sitemaps, as served (AC-13, AC-14; T-15)", () => {
     expect(headers["content-type"]).toMatch(/xml/u);
     expect(headers["cache-control"]).toBe("public, max-age=3600");
     expect(headers["set-cookie"]).toBeUndefined();
-    expect(headers["vary"]).toBeUndefined();
+    // Next puts its RSC negotiation `Vary` on every response in this application (`/robots.txt`
+    // and every prerendered page carry the same one). §5.4's clause is that **our** response
+    // varies on nothing a visitor sends, which is what the corridor and hub suites assert too.
+    expect(headers["vary"] ?? "").not.toMatch(
+      /cookie|accept-language|user-agent/iu,
+    );
     expect(await response.text()).toContain("<sitemapindex");
+  });
+
+  test("is byte-identical with and without the three cookies (§5.4)", async ({
+    request,
+  }) => {
+    const plain = await request.get("/sitemap.xml", { maxRedirects: 0 });
+    const withCookies = await request.get("/sitemap.xml", {
+      maxRedirects: 0,
+      headers: { cookie: "fo_locale=de; fo_currency=PLN; fo_consent=all" },
+    });
+    expect(withCookies.status()).toBe(plain.status());
+    expect(await withCookies.text()).toBe(await plain.text());
+    expect(withCookies.headers()["set-cookie"]).toBeUndefined();
   });
 
   test("every sitemap URL answers 200, and none of them is noindex", async ({
