@@ -20,8 +20,52 @@ Branch `task/TASK-016-schema-catalog-pricing`. AC-9 is the SEO/compliance keysto
 
 ## Escalations
 
-_None recorded._
+_None blocking._ One judgement call is flagged for the reviewer rather than escalated, because
+§14 A2 (a) resolves it by naming its own authority: `category.kind`'s CHECK list is written as
+`productType | occasion | flowerType`, the values `toCategoryRow()` actually projects, not the
+hyphenated forms A2's prose renders. Hyphenating would reject every row spec 006's importer
+produces. If the prose is meant literally it is a one-line change here plus a mapping in the
+importer.
 
 ## Result
 
-_Pending._
+PR [#83](https://github.com/itsahmeds/flowers-overseas/pull/83) (ready, rebased on `78642af`).
+Migration `0003_catalog_pricing.sql` + `.down.sql`: eleven tables — `category`,
+`category_translation`, `product`, `product_translation`, `product_tier`, `product_category`,
+`product_occasion`, `addon`, `addon_translation`, `addon_country_price`, `country_price` — plus
+the §14 A5 widening of `occasion_country_rule_type_check` to seven values. Drizzle mirror
+`db/schema/catalog.ts` (+ barrel, + the widened `occasionRuleTypes` in `geo.ts`), journal entry and
+`meta/0002_snapshot.json` committed, generated draft deleted per `db/migrations/README.md`.
+
+- **AC-5** `retail_minor bigint` + `currency_code` FK'd to `currency` on both price tables, VAT in
+  basis points, no `numeric`/float/`bytea`.
+- **AC-8** `UNIQUE (locale_code, slug)` on `product_translation` and `category_translation`;
+  `addon_translation` has no slug because an add-on has no page.
+- **AC-9** `country_price_active_idx … NULLS NOT DISTINCT WHERE active_to IS NULL` +
+  `CHECK (active_to IS NULL OR active_to > active_from)`. `NULLS NOT DISTINCT` is the load-bearing
+  part: with nullable `tier_key`/`surcharge_kind` the default would leave the rule unenforced for
+  the base-price case.
+- **AC-10** one `updated_at` trigger per table on `0001`'s shared function.
+- **§14 A4** the review triple on the three prose translation tables and on no name-only table
+  (asserted in both directions); `0002` untouched.
+- **§14 A5** widened forward, six-value check restored in the rollback after deleting seventh-type
+  rows.
+
+Indexes measured, not copied (`/review 75` nit 6): two hub-page lookups, the country-first price
+read, the country add-on list — each argued in the migration header, with the deliberately
+unindexed foreign keys named too; the integration suite pins the complete index list.
+
+Tests: `tests/unit/schema-catalog-pricing.test.ts` (23 cases, offline half of T-06/T-08/T-09/T-10,
+column sets compared against `SPEC_002_ROW_COLUMNS`) and
+`tests/integration/schema-catalog-pricing.test.ts` (catalogue + one rolled-back behavioural case:
+ten rejections each recorded with the constraint that produced it, three acceptances, three
+`updated_at` advances). Updated: `tests/unit/db-migrate.test.ts` (three committed migrations) and
+`tests/unit/schema-i18n-geo.test.ts` (0002 still declares six rule types; the mirror carries seven).
+
+**No live round trip.** This worktree has no `DATABASE_URL`/`DATABASE_URL_UNPOOLED`, no `psql` and
+no container runtime, so the integration file skipped itself by design — nothing in this task was
+verified against a running Postgres. Offline gates green: `pnpm db:check` (3 migrations, each
+paired), `typecheck`, `lint`, `codebase:map --check`, unit 4 230 passing (the single red in a full
+parallel run is the known tmpdir-scanning `dev-os` flake; 20/20 in isolation). `pnpm db:generate`
+against the new mirror reproduces the same tables, constraints, foreign keys and indexes as the
+hand-written SQL, which is the closest cross-check available without a database.
