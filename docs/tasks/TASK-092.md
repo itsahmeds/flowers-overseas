@@ -278,11 +278,37 @@ convention; if a third caller needs it, it wants an ADR rather than a third comm
 
 ### Gates after round 2 (all green, local; GitHub Actions still blocked by billing)
 
-`lint` · `typecheck` · `format:check` · `test` (165 files, 4 000 tests: 3 995 passed, 5 skipped) ·
+Measured on the final tree, rebased on `origin/main` at `54510b2`.
+
+`lint` · `typecheck` · `format:check` · `test` (168 files, 4 078 tests: 4 073 passed, 5 skipped) ·
 `check:no-db` · `corridor:check` (14 files, 18 rules) · `i18n:check` (4 locales) · `seo:validate` ·
 `codebase:map --check` · `specs:index --check` · `tasks:check` · cold `build` (`rm -rf .next`, hub
-prerendered in all four locales) · `test:e2e` (750 tests: 748 passed, 2 skipped) · `test:a11y`
-(72 passed) · `test:visual` (41 passed) · Lighthouse on the two hub URLs (3 runs each, every
-assertion green): perf 1.00 / a11y 1.00 / best-practices 0.96, LCP 1 306 ms (`/en`) and 1 286 ms
-(`/en-gb`), CLS 0.000, **script transfer 128 211 B — unchanged, still byte-identical to the locale
-home**, so the whole-tile link added no JavaScript. `categories:seo` 0.66, unasserted (note 2).
+prerendered in all four locales) · `test:a11y` (73 passed, zero serious/critical) · `test:e2e`
+(756 tests: 752 passed, 2 skipped, **2 failed — both outside this task**, see below) ·
+`test:visual` (43: 42 passed, **1 failed — outside this task**) · Lighthouse on the two hub URLs
+(3 runs each, every assertion green).
+
+| URL | perf | a11y | best-practices | LCP | CLS | script transfer |
+|---|---|---|---|---|---|---|
+| `/en/send-flowers-to` | 1.00 | 1.00 | 0.96 | 1 433 ms | 0.000 | 128 211 B |
+| `/en-gb/send-flowers-to` | 1.00 | 1.00 | 0.96 | 1 331 ms | 0.000 | 128 211 B |
+
+Script transfer is **unchanged from round 1 and still byte-identical to the locale home**: the
+whole-tile link added no client JavaScript. `categories:seo` 0.66, collected and unasserted
+(`## Escalations` 2).
+
+**The three red tests are `main`'s, not this branch's.** `origin/main` 4632ecc + 54510b2 approved
+all 31 media rows; `tests/e2e/dev-components.spec.ts:231` still expects the committed dataset to
+contribute a second `unapproved` placeholder ("31 rows, none reviewed", its own comment) and now
+finds one, and `tests/visual/listing.spec.ts`'s `listing-mobile-card-image` baseline is 1 px
+taller than the page it now renders. Both belong to the media/listing tasks (spec 006 / TASK-108);
+`git diff origin/main..HEAD -- seed tests/e2e/dev-components.spec.ts tests/visual/listing.spec.ts`
+is **empty**, so nothing here caused them and regenerating another task's baseline is not this
+task's to do.
+
+**One macOS-only flake, recorded so the next runner does not chase it.** On a case-insensitive
+filesystem a request to `/en/send-flowers-to/GERMANY` can overwrite the prerendered `germany.html`
+with the 404 body for the life of the server, so `corridor.spec.ts`'s and
+`destinations-hub.spec.ts`'s casing probes can fail each other depending on worker order. Both
+pass in isolation and both passed in the final full run; the cure is `rm -rf .next && pnpm build`
+before the suite. Linux CI, which is case-sensitive, cannot reproduce it.
