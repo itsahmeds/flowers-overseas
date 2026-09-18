@@ -7,7 +7,8 @@
  * `ó` must not move it, while changing a word, the model or the seed must. Second, the committed
  * prompt files **say what the style guide requires them to say** — the exclusions are in the
  * negative prompt, no person or premises is described, and the generator is the labelled
- * placeholder that `docs/compliance/imagery-generator-terms.md` is pending on.
+ * placeholder that `docs/compliance/imagery-generator-terms.md` was pending on; the record was
+ * filed on 2026-09-18 and TASK-080 swaps the placeholder for the filed generator.
  *
  * The manifest side of the link — every asset's `promptHash` equals the hash of its record — is
  * `tests/unit/seed-media-manifest.test.ts`, where the dataset lives.
@@ -353,12 +354,14 @@ describe("the generator is a labelled placeholder until the founder files its te
     }
   });
 
-  it("has a pending compliance record naming what must be filed (ADR-0014's condition)", () => {
+  it("has a filed compliance record that still names the placeholder until TASK-080 swaps it (ADR-0014's condition)", () => {
     const terms = readFileSync(
       join(repoRoot, "docs/compliance/imagery-generator-terms.md"),
       "utf8",
     );
-    expect(terms).toContain("**pending**");
+    // Filed 2026-09-18 (orchestrator; founder accepted the filing). Until TASK-080 lands the
+    // swap, the record must still name the placeholder so it cannot quietly become permanent.
+    expect(terms).toMatch(/\*\*Filed \d{4}-\d{2}-\d{2}\.\*\*/);
     expect(terms).toContain("ADR-0014");
     expect(terms).toContain("to-be-confirmed");
     expect(terms.toLowerCase()).toContain("commercial");
