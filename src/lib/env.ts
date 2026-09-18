@@ -29,6 +29,7 @@ export {
   clientEnvSchema,
   commitSha,
   deploymentEnvironment,
+  deploymentRegion,
   formatEnvIssues,
   hostPlatform,
   serverEnvSchema,

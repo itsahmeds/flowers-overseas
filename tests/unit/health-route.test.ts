@@ -14,7 +14,11 @@ const UUID_V4 =
   /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const INCOMING = "11111111-1111-4111-8111-111111111111";
 
-const input = { environment: "preview", version: "abc123" } as const;
+const input = {
+  environment: "preview",
+  version: "abc123",
+  region: "europe-west4",
+} as const;
 
 function get(headers: Record<string, string> = {}): Response {
   return healthResponse(
@@ -32,6 +36,10 @@ describe("GET /api/health", () => {
       status: "ok",
       version: "abc123",
       env: "preview",
+      // Spec 040 AC-31 (TASK-098) added these three.
+      commit: "abc123",
+      appEnv: "preview",
+      region: "europe-west4",
     });
   });
 
