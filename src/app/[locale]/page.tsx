@@ -2,7 +2,15 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
+import { COMPANY } from "@/config/company.ts";
 import { routableLocale } from "@/modules/i18n";
+import {
+  JsonLd,
+  deploymentDescriptor,
+  organization,
+  schemaOptions,
+  webSite,
+} from "@/modules/seo";
 import {
   DestinationsGrid,
   HOME_BLEED,
@@ -52,6 +60,16 @@ import {
  * `src/app/`**. `meta.home.heading` is gone with the placeholder: the `<h1>` is
  * `home.hero.heading`, the artboards' headline.
  *
+ * **JSON-LD (TASK-093, spec 007 AC-15).** The locale home is the one page that carries the site's
+ * identity: `Organization` with the three fields `src/config/company.ts` actually holds
+ * (`name`, `url`, `logo`) — no registry number, no VAT id and no address while `registered` is
+ * false — and `WebSite` **without** a `SearchAction`, because there is no search until spec 008
+ * ships one. Nothing else: no `FAQPage` from the five disclosures (spec 004 AC-16 keeps the
+ * home's own structured data at none, and the visible FAQ here is chrome copy rather than the
+ * authored 8–12 band of a corridor guide), no `Product`, no `Offer`, no rating and no review
+ * (AC-16). This narrows spec 004 AC-16's "a 004 page emits no structured data" clause the same way
+ * AC-10 narrows its canonical clause: 004 emits none of its own, and 007 owns what the page emits.
+ *
  * The locale switcher moved off this page with TASK-048: spec 004's header hosts it on **every**
  * localised document, so rendering it here as well would put two identical switchers (and two
  * `navigation` landmarks with the same name) in the document. Every locale root still links to
@@ -82,16 +100,19 @@ export default async function LocaleHomePage({
   if (locale === undefined) notFound();
   setRequestLocale(locale.code);
 
+  const options = schemaOptions(deploymentDescriptor(process.env).siteUrl);
+
   return (
-    <main id="main">
-      {/* The above-the-fold band of the founder-approved artboards: the reserved full-bleed photo
+    <>
+      <main id="main">
+        {/* The above-the-fold band of the founder-approved artboards: the reserved full-bleed photo
           slot, the paper card with the eyebrow, the one `<h1>` (the text LCP element) and the
           proposition, and the finder — type-ahead country, town/postcode, delivery date, neutral
           `Continue` (TASK-052). */}
-      <HomeHero locale={locale.code} />
-      {/* The four-fact proof strip. */}
-      <ProofRow />
-      {/*
+        <HomeHero locale={locale.code} />
+        {/* The four-fact proof strip. */}
+        <ProofRow />
+        {/*
         The rest of the page, in the round-2 artboards' order (TASK-053, TASK-054).
 
         Three of these sections are **gated on data that does not exist**, and each decides for
@@ -105,18 +126,29 @@ export default async function LocaleHomePage({
         The artboards' priced row — "Bouquets we can deliver in Poland today" — is **not** here:
         it is spec 005/008/009's, and nothing on this page approximates a product or a price.
       */}
-      <TrendingRow />
-      <OccasionDates locale={locale.code} />
-      <OccasionTiles locale={locale.code} />
-      {/* Renders nothing until a completed order produces a real review (AC-15). */}
-      <ReviewsSection locale={locale.code} />
-      <HowItWorks />
-      <HomeFaq />
-      <TrustStrip className={HOME_BLEED} />
-      {/* AC-11's destination states and where the finder's `Continue` lands while no corridor
+        <TrendingRow />
+        <OccasionDates locale={locale.code} />
+        <OccasionTiles locale={locale.code} />
+        {/* Renders nothing until a completed order produces a real review (AC-15). */}
+        <ReviewsSection locale={locale.code} />
+        <HowItWorks />
+        <HomeFaq />
+        <TrustStrip className={HOME_BLEED} />
+        {/* AC-11's destination states and where the finder's `Continue` lands while no corridor
           page is published: the artboards' grid, carrying the `destinations` id TASK-052's
           stand-in list used to own. */}
-      <DestinationsGrid locale={locale.code} />
-    </main>
+        <DestinationsGrid locale={locale.code} />
+      </main>
+      <JsonLd
+        nodes={
+          options === undefined
+            ? []
+            : [
+                organization(COMPANY, options),
+                webSite(COMPANY.tradingName, options),
+              ]
+        }
+      />
+    </>
   );
 }
