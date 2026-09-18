@@ -100,16 +100,41 @@ test.describe("AC-15: nothing on a served page claims what we cannot support", (
   });
 });
 
+/**
+ * **Narrowed by TASK-093 (spec 007 AC-15), the way AC-10 narrowed the canonical clause.** AC-16's
+ * subject is structured data *this spec* would invent — a `FAQPage` over the five disclosures, a
+ * `Review`, a rating — and spec 007 §2 always owned what the locale home does publish. Since
+ * TASK-093 that is exactly two nodes in one document: `Organization` (name, url, logo — nothing
+ * `company.ts` does not hold) and `WebSite` without a `SearchAction`. The assertion is therefore
+ * "nothing but those two", which is stricter than the old "none at all" in the direction that
+ * matters: a third node, a rating or a product would fail it. The canonical and the hreflang
+ * cluster are still spec 007's and still absent here (TASK-094, TASK-096).
+ */
 test.describe("AC-16: no structured data, canonical or hreflang from a 004 page", () => {
   for (const path of LOCALES) {
-    test(`${path} emits no JSON-LD, no canonical and no alternate`, async ({
+    test(`${path} emits only spec 007's identity JSON-LD, no canonical and no alternate`, async ({
       page,
     }) => {
       await page.goto(path);
 
-      await expect(
-        page.locator('script[type="application/ld+json"]'),
-      ).toHaveCount(0);
+      const blocks = await page
+        .locator('script[type="application/ld+json"]')
+        .allTextContents();
+      expect(blocks).toHaveLength(1);
+      const document = JSON.parse(blocks[0] ?? "{}") as Record<string, unknown>;
+      const graph = (document["@graph"] ?? []) as readonly Record<
+        string,
+        unknown
+      >[];
+      expect(graph.map((node) => node["@type"])).toEqual([
+        "Organization",
+        "WebSite",
+      ]);
+      expect(blocks[0]).not.toContain("SearchAction");
+      expect(blocks[0]).not.toContain("FAQPage");
+      expect(blocks[0]).not.toContain("Product");
+      expect(blocks[0]).not.toContain("Review");
+
       await expect(page.locator('link[rel="canonical"]')).toHaveCount(0);
       await expect(page.locator('link[rel="alternate"]')).toHaveCount(0);
       // The document is still `noindex,nofollow` until spec 007 says otherwise (spec 003 AC-7).
@@ -129,5 +154,11 @@ test.describe("AC-16: no structured data, canonical or hreflang from a 004 page"
     await expect(
       page.locator('[data-fo-faq] [itemtype*="FAQPage"], [data-fo-faq] script'),
     ).toHaveCount(0);
+    // And none from the document either: the home's chrome FAQ is not the authored 8-12 band a
+    // corridor guide carries, so nothing on this page is a `FAQPage` (spec 007 AC-15).
+    const blocks = await page
+      .locator('script[type="application/ld+json"]')
+      .allTextContents();
+    expect(blocks.join("")).not.toContain("FAQPage");
   });
 });
