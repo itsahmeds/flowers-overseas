@@ -20,7 +20,7 @@ be green. One paragraph or a short list — no restatement of the spec.
 
 One dated bullet per `/review`, newest last.
 
-- **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From the orchestrator (2026-09-18, spec 008 §14 A5 / spec 007 §14 A8):** your page type is served from the shared per-depth route file TASK-109 introduces (`src/app/[locale]/[segment]/page.tsx` or `[segment]/[child]/page.tsx`) through `resolveLocalePath()` in `modules/catalog/routes.ts` — add your branch to the resolver and its module page component; create no new route file at depth 2 or 3. Trailing slash = 308 (A7).
 
 ## Escalations
 
