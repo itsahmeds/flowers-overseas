@@ -51,11 +51,83 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- **2026-09-18 — where does `STAGING_BASIC_AUTH` live, given AC-11's "exactly 28 keys"?
+  (resolved in the spec's own words, not escalated.)** The wall's variable cannot be a 29th key:
+  AC-3 and AC-11 both pin the contract at 26 + `APP_ENV` + `NEXT_PUBLIC_APP_ENV`, and `pnpm
+  env:check` compares `.env.example` with `ENV_KEYS` in both directions. §12 "Feature flags" calls
+  `STAGING_BASIC_AUTH` and `CLOUDFLARE_API_TOKEN` **runtime switches, absent-means-off**, i.e. not
+  part of the environment contract. Implemented that way: the 28 keys are untouched, the switch is
+  zod-parsed at its own boundary (`src/lib/basic-auth.ts`), documented as a commented block in
+  `.env.example`, and declared per environment in `src/lib/railway.ts` so
+  `railway:check --env staging` accepts it and `--env production` reports it as unexpected.
+- **2026-09-18 — the four Vercel keys inside the 28 on a host that does not inject them.**
+  `VERCEL_ENV`, `VERCEL_GIT_COMMIT_SHA` and the two `NEXT_PUBLIC_` mirrors are part of AC-11's
+  declared set but `docs/runbooks/vercel-setup.md` §6 says they must stay unset in an env store,
+  and nothing on Railway injects them. The contract therefore **declares 28 and requires 24**:
+  those four are allowed present or absent, everything else is required, anything unknown fails.
+  Named and reasoned in `src/lib/railway.ts`; pinned by two contract tests. Flagged for the
+  reviewer — if the intended reading is "all 28 required, pasted blank on Railway", it is a
+  one-line change to `REQUIRED_VARIABLE_KEYS`.
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
+Shipped in **PR #78** (branch `task/TASK-098-container-railway-staging`, three commits). The
+container half: `output: "standalone"` in `next.config.ts`, a multi-stage `Dockerfile`
+(`node:24-slim` in every stage, corepack-pinned pnpm, `pnpm install --frozen-lockfile`,
+`pnpm build`, a runtime stage copying `.next/standalone` + `.next/static` + `public/` only, `USER
+node`, `EXPOSE 3000`, `CMD ["node", "server.js"]`) and a `.dockerignore` that excludes `.env`,
+`.env.*` **and** `.env.example` with no negation. The declaration half: `config/railway.json` in
+Railway's own config-as-code shape (`europe-west4`, `numReplicas: 1`, `/api/health`,
+`ON_FAILURE`/10, `healthcheckTimeout: 300` — Railway's grace window; the spec's 5 s response
+budget and 30 s interval are platform defaults it cannot express), parsed by zod in
+`src/lib/railway.ts`, and `pnpm railway:check [--env <name>]` (`scripts/railway-check.ts`)
+comparing the four AC-9 values and the variable **key set** against it, with
+`--fixture-environment` / `--fixture-variables` for recorded responses. The runtime half:
+`/api/health` gains `commit`, `appEnv` and `region` (keeping spec 001's `version`/`env`, which
+AC-14 pins), `deploymentRegion()` joins `env.schema.ts` beside `commitSha()`, and
+`src/lib/basic-auth.ts` + six lines in `src/proxy.ts` answer 401 with `WWW-Authenticate` to every
+non-production request while `/api/health` stays open — `production` never gated, absent means
+off, a malformed credential fails closed.
 
-_Pending._
+**Tests — 4 layers, 62 new cases.** Unit: `basic-auth.test.ts` 17 (AC-25 decision table),
+`proxy-auth.test.ts` 6 (the wiring, including "no credential, header or query string in the log
+line"), `container.test.ts` 10 (AC-8's static facts + T-09 on `config/railway.json`), plus
+`health.test.ts` rewritten to 12 and 4 new AC-32/T-32 cases in `sentry-before-send.test.ts`.
+Contract: `railway-check.test.ts` 13 (T-10, T-11 — including "no line of any run contains the
+fixtures' `SENTINEL-VALUE`"). Integration: `health-endpoint.test.ts` 5 (T-31 — six known fields,
+no PII/secret token in the body, < 200 ms over 100 calls, no db import in either file). E2E:
+`staging-auth.spec.ts` 3 (T-26, skipping when the deployment has no wall).
+
+**Gates (local; CI is billing-blocked — AC-30).** `pnpm typecheck` ✅ · `pnpm lint` ✅ clean ·
+`pnpm test` ✅ **4 174 passed / 5 skipped / 1 failed**, the one failure `imagery-prompts.test.ts`
+being **pre-existing on `main` at `fbe34c3`** (the imagery terms record was filed in that commit
+and the test still expects `**pending**`; TASK-080's) · `pnpm test:contract` ✅ 21 · `pnpm
+test:integration` ✅ 5 passed / 11 skipped · `pnpm build` ✅ standalone, `.next/standalone/server.js`
+present, 61 MB, 17 prerendered routes · `pnpm env:check` ✅ 28 keys both ways · `pnpm
+check:no-vercel-env` ✅ · `pnpm codebase:map` regenerated (13 439 B, under spec 001 §14 A16's 16 KB
+cap). **Lint and the unit suite were run from a clean checkout path**: inside a
+`.claude/worktrees/…` path ESLint's `import/no-restricted-paths` reports 37 false positives and
+three suites fail — reproduced identically at `fbe34c3`, so it is the path, not the branch.
+
+**What was verified without Docker, and what was not.** No Docker daemon exists in this
+environment, so `docker build` and the `docker run` health probe of T-08 were **not** performed —
+not claimed anywhere. In their place the built standalone tree was assembled exactly as the
+runtime stage assembles it (`.next/standalone` + `.next/static` + `public/`) and run with
+`node server.js` under Railway-shaped variables: `/api/health` answered **200** with
+`{"status":"ok","version":"abc1234","env":"development","commit":"abc1234","appEnv":"development","region":"europe-west4"}`
+in **3–5 ms warm**, an anonymous `GET /en` answered **401** with
+`www-authenticate: Basic realm="Flowers Overseas", charset="UTF-8"`, `cache-control: no-store` and
+`x-robots-tag: noindex`, and the same request with the credential answered **200**. Playwright
+against that server: `staging-auth.spec.ts` **6/6** and `health.spec.ts` **6/6** (two projects).
+A full `pnpm test:e2e` run was started and abandoned mid-way on the founder's instruction (one
+build/Playwright slot on the machine, held by another agent); its earlier attempts failed only on
+harness mismatches (a stale origin in the build, a dead server), not on assertions. **Founder-executed
+and still outstanding:** the live `staging` deploy itself, `docker build` on Railway, and §12
+step 2's full Playwright + LHCI run against the staging URL — every click and paste for which is
+step-by-step in the new `docs/runbooks/railway-cloudflare-setup.md`.
+
+**Handed on.** TASK-099 gets `railway:check` and the gate for PR environments (the contract
+already treats any non-`production`/`staging` environment name as `preview`). TASK-103 gets the
+`worker` seat and AC-10's "no public domain" assertion — deliberately not implemented here, so no
+AC-10 claim is made. TASK-104 supersedes `vercel-setup.md` and files the RoPA row; `vercel-setup.md`
+is untouched, and the RoPA is untouched (no data flow changed by this PR).
