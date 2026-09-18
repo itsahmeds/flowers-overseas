@@ -32,18 +32,18 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
   `nav.category.sameDayDelivery` are rendered by the site header on every page a listing will live
   on, and spec 008 AC-9 forbids the first outright. **Done:** renamed, not gated.
 
-- **From `/review 77` round 1 (2026-09-18) — required 1:** rebase onto `origin/main` (6 commits
+- **From `/review 77` round 1 (2026-09-18) — required 1 — done (round 2):** rebase onto `origin/main` (6 commits
   ahead; TASK-092 landed the all-destinations hub). Eight `darwin` baselines are regenerated on
   **both** sides — `footer-{de,en}-mobile`, `home-{de,en,en-gb,pl}-mobile`,
   `home-{desktop,mobile}-destinations` — so a squash-merge of this branch reverts TASK-092's
   drawings and leaves `test:visual` red on `main`. Rebase, regenerate those eight, rerun
   `test:visual`.
-- **From `/review 77` round 1 (2026-09-18) — required 2:** after the rebase, add TASK-092's
+- **From `/review 77` round 1 (2026-09-18) — required 2 — done (round 2):** after the rebase, add TASK-092's
   all-destinations hub (`/[locale]/[destinations]`, four locales) to `PAGES` in
   `tests/e2e/chrome-honesty.spec.ts`. The file's own claim — "every page type that exists in
   Phase 0 is covered" — is false without it, and TASK-095's whole-document AC-19 scan inherits
   this list.
-- **From `/review 77` round 1 (2026-09-18) — required 3:** design source of truth. Forty artboards
+- **From `/review 77` round 1 (2026-09-18) — required 3 — done (round 2):** design source of truth. Forty artboards
   under `docs/design/wireframes/` still draw the superseded chrome band — "Best sellers",
   "Same-day", "Delivery times and cutoffs", "Order by 14:00 Warsaw time for same-day delivery" —
   and `CLAUDE.md` binds implementers to match them pixel-for-pixel, so the next chrome task
@@ -86,12 +86,55 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
   header block comment of `tests/a11y/header.spec.ts` so the next axe run reads it instead of
   re-escalating it. The fix (a named, focusable scroller, or publishing the entries as links) is
   spec 008's and changes the tab order and the visual baselines; it is not a copy task's.
+- **2026-09-18 (round 2) — the same macOS case-insensitivity now fails a second, TASK-092 test.**
+  `tests/e2e/destinations-hub.spec.ts:113` expects `/en/Send-Flowers-To` to 404 and gets 200 on
+  APFS, exactly as `corridor.spec.ts:52` does. It came in with the rebase, fails on `main` as much
+  as here, and is Linux-green. Owner: spec 007 / TASK-092.
+
 - **2026-09-18 — pre-existing, unrelated, local-only: `/en/send-flowers-to/Poland` answers 200 on
   macOS.** `tests/e2e/corridor.spec.ts:52` fails on a pristine server before any casing probe, on
   `main` as much as here: APFS is case-insensitive, so the prerendered `poland.html` is served for
   the mixed-case path. On Linux it 404s. Nothing in this branch touches routing. Owner: spec 007.
 
 ## Result
+
+### Round 2 (2026-09-18) — `/review 77` round 1 fix round
+
+**Required 1 — rebase and baselines.** Rebased onto `origin/main` (`e65baab`, 8 commits). Two
+conflict sets: `docs/codebase-map.md` (generated — resolved to main's and regenerated with
+`pnpm codebase:map`) and the eight `darwin` baselines both sides had drawn, resolved to **main's**
+so nothing of TASK-092's was carried over blind. Then every baseline in the tree was reset to
+`origin/main` and regenerated only where a run actually failed, one failing baseline at a time,
+because `--update-snapshots` rewrites passing baselines byte-wise (the defect this review found).
+**55** baselines ship, each pixel-compared against `origin/main` before it was staged — all 55
+differ in pixels, none is a byte-only rewrite. The eight the review named —
+`footer-{de,en}-mobile`, `home-{de,en,en-gb,pl}-mobile`, `home-{desktop,mobile}-destinations` —
+are rendered on top of the hub, so the squash reverts none of TASK-092's drawings. The eleven
+`listing-*` baselines moved too: the shorter utility strip puts the gallery's cards at a different
+subpixel offset, a 1 px vertical shift, the same class as `4680ea0` on main. `test:visual` **43
+passed**, run twice for stability.
+
+**Required 2 — the hub in the served sweep.** `tests/e2e/chrome-honesty.spec.ts` `PAGES` gains the
+all-destinations hub in all four locales with the localised segment from `locales.data.ts`:
+`/en/send-flowers-to`, `/en-gb/send-flowers-to`, `/de/blumen-verschicken`, `/pl/wyslij-kwiaty`.
+The file's header comment now says so. The spec runs **30 passed** (was 22).
+
+**Required 3 — design source of truth.** One dated note, in the place `docs/design/` already keeps
+them: a **2026-09-18 (TASK-120)** row in `README.md` → "Where the sheet and the code currently
+differ". It names the four superseded strings ("Best sellers", "Same-day", "Delivery times and
+cutoffs", "Order by 14:00 in Warsaw — the recipient's own time — and we deliver today"), their
+owning clauses (spec 008 §8 / AC-9, spec 004 §14 A19), what the code renders instead, that the two
+homepage artboards were redrawn and the forty page wireframes were not, and that each page task
+redraws its own band. The Voice section's "Say the specific thing" bullet, which quotes the cutoff
+sentence as a model, now points at that row. No artboard was redrawn: forty files belonging to
+forty page tasks are not a copy task's to move.
+
+**Gates, round 2.** `typecheck`, `lint`, `i18n:check` clean. Unit **4 118 passed / 5 skipped**
+(170 files) — including `tests/unit/catalog-geo-surface.test.ts`, which CI timed out at 5 000 ms
+on the Linux runner and which passes locally. E2E **782 passed / 2 failed / 2 skipped** — both
+failures are the macOS APFS case-insensitivity pair (see escalations), Linux-green. A11y **73
+passed**. Visual **43 passed**.
+
 
 **PR:** `fix(chrome): honest cutoff and ranking copy, gated on corridor facts (TASK-120)`.
 
