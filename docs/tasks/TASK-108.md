@@ -81,6 +81,30 @@ One dated bullet per `/review`, newest last.
   ("casing … 404") returned 200 once on the first request after a cold `next start` and was green
   on rerun and by `curl` — a harness warm-up, not this PR's, but worth carrying to the e2e owner.
 
+- **From `/review 73` round 2 (2026-09-18) — FAIL, one required change.** Both round-1 changes
+  landed and were verified independently: the A2 redraw is right (six of six grid cells on
+  `system/components.dc.html`, 29/30, 25/26 and 15/15 cards on the three page artboards — the
+  card without a note is the placeholder — and the single after-grid sentence is gone from all
+  three), the re-measurements reproduce exactly in headless Chromium (components 14522 ≤ 14540,
+  country-shop-desktop 8425 ≤ 8460, mobile 14858 ≤ 15200, category-desktop 4776 ≤ 6000), the
+  +1940 shift hides nothing (`origin/main`'s sheet measures 14100 against a declared 12600, a
+  pre-existing overflow that also overlapped the flows row by 1380 px, so the shift is a fix),
+  and the negative control falsifies both ways (dropping the `wishlist` sample fails the coverage
+  test; breaking the `line-through` regex fails two planted tests). **What must change:**
+  `docs/design/canvas.json` still declares `wireframes/country-shop-desktop.dc.html` at
+  `h: 8200` while the artboard frame and `wireframes/canvas.json` now say 8460 and the content
+  measures 8425 — the only one of 40 artboards where the two canvases disagree, and the root
+  canvas is the one that publishes. Set it to 8460 (the precedent is TASK-091, which moved both
+  files symmetrically). While there, correct two claims in `## Result` round 2: the unit total is
+  **4036 → 4060** (+24: 23 in `listing-honesty-scan.test.ts` and 1 in `ui-shop-components.test.tsx`),
+  not "4060 → 4079"; and "frame, `wireframes/canvas.json` and the root `canvas.json` `h` 8 200 → 8 460" describes only one of the two `h` values.
+- **Nits from `/review 73` round 2 (2026-09-18), not blocking:** `dev-os.test.ts` fails in a full
+  `pnpm test` while a second worktree runs and passes alone (20/20) — the documented cross-worktree
+  flake, worth a fixture-isolation fix by its owner. The listing artboards A2 does not name still
+  draw the note once after the grid and every page artboard still draws a stem-count line; leaving
+  those to TASK-109/112/117 is accepted scope discipline, but each of those briefs should carry the
+  instruction the README row gives, because the drawings they inherit contradict AC-6 and A2.
+
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
@@ -184,7 +208,7 @@ the keyboard (`Tab` to the submit button, `Enter`) and its title says so; the `<
 why the name and the price are wrapped separately rather than as one element. The
 `tests/e2e/corridor.spec.ts` warm-up flake is left with the e2e owner as the review recorded it.
 
-Round-2 gates: `lint`, `typecheck`, `format:check` clean; unit **4060 → 4079 passing** in 167 files
+Round-2 gates: `lint`, `typecheck`, `format:check` clean; unit **4036 → 4060 passing (+24)** in 167 files
 (`design-docs.test.ts` 174 green after the redraw); `codebase:map --check`, `specs:index --check`,
 `tasks:check` clean (the map was regenerated for the new test file); e2e gallery 20/20; a11y 62/62;
 visual 41/41 with **no baseline regenerated** — nothing that renders changed, the only `src/` edit
