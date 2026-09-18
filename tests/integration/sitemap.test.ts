@@ -21,7 +21,10 @@
 import { XMLParser } from "fast-xml-parser";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { generateMetadata as corridorMetadata } from "../../src/app/[locale]/(marketing)/[destinations]/[country]/page.tsx";
+// The corridor page shares its route file with spec 008's country shop root: one dynamic slug
+// name per depth (spec 007 §14 A8 / spec 008 §14 A5, TASK-109). `generateMetadata` resolves which
+// of the two a path is, so the corridor half is reached by passing a corridor's own segments.
+import { generateMetadata as childRouteMetadata } from "../../src/app/[locale]/[segment]/[child]/page.tsx";
 import { localePath } from "../../src/modules/i18n";
 import {
   CANONICAL_HOST,
@@ -190,12 +193,11 @@ describe("the <head> cluster and the xhtml:link set are one call (AC-11, T-12)",
     for (const locale of sitemapLocales(INDEXING)) {
       for (const entry of corridorSitemapEntries(locale, INDEXING)) {
         const slug = entry.loc.split("/").at(-1) ?? "";
-        const metadata = await corridorMetadata({
+        const metadata = await childRouteMetadata({
           params: Promise.resolve({
             locale,
-            destinations:
-              localePath(locale, "destinations").split("/")[2] ?? "",
-            country: slug,
+            segment: localePath(locale, "destinations").split("/")[2] ?? "",
+            child: slug,
           }),
         });
 
@@ -249,11 +251,11 @@ describe("sitemap ∩ noindex = ∅, at the module level (AC-14, T-15's unit twi
 
   it("announces no corridor URL whose document would say noindex", async () => {
     useDeployment(PREVIEW);
-    const metadata = await corridorMetadata({
+    const metadata = await childRouteMetadata({
       params: Promise.resolve({
         locale: "en",
-        destinations: "send-flowers-to",
-        country: "poland",
+        segment: "send-flowers-to",
+        child: "poland",
       }),
     });
     expect(metadata.robots).toBe("noindex,follow");

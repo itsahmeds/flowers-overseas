@@ -96,8 +96,10 @@ catalogues). **Tests:** unit 38 (`seo-sitemap`, `sitemap-route`, `sitemap-fixtur
 — the tree, the caps, and the `<head>`-vs-`xhtml:link` equality against the corridor route's own
 `generateMetadata`); contract 3 (`validate-sitemap` over the committed real set, plus the two
 tampering controls); e2e 4 × 2 projects (`tests/e2e/sitemap.spec.ts`, the whole set fetched, no
-sampling). **Gates:** unit 4 246 / 5 skipped, integration 13, contract 24, e2e 790 + 2 known darwin
-casing flakes that pass on rerun (72/72), a11y 73, visual 43, `pnpm seo:validate` 7 sitemap + 3
+sampling). **Gates** (rebased on `96d1e9f`, after TASK-109 merged the corridor route into
+`src/app/[locale]/[segment]/[child]/page.tsx` — the integration test follows it and the announced
+set is unchanged): unit **4 311** / 5 skipped, integration 13, contract 24, e2e **822** + the 2
+known darwin casing cases that pass on rerun (36/36), a11y 78, visual 45, `pnpm seo:validate` 7 sitemap + 3
 hreflang fixtures, typecheck, lint, format, `codebase:map --check`. The committed fixtures in
 `tests/fixtures/seo/sitemap/` are byte-identical to what the built server served on :3204.
 **Handed on:** TASK-096 adds `localeHome` to `STATIC_SITEMAP_PAGE_TYPES`; TASK-116 and TASK-131 add
