@@ -95,6 +95,15 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   matches the shipped card) with the reason recorded in `docs/design/README.md` § "Where the sheet
   and the code currently differ". Raised to the reviewer in the PR body rather than blocking: no
   ambiguity existed to resolve, only a stale drawing.
+- **2026-09-18 — answered by spec 008 §14 A2 (orchestrator ruling from `/review 73`).** The open
+  half of escalation 1 was *where* the provenance note goes: on every card that shows an `ai`
+  asset (as the shipped `ProductCard` renders it and as AC-6 reads), or once per grid (as the
+  founder-approved page artboards drew it). **A2 rules: one note per card, never consolidated per
+  grid or per page**, because the note belongs beside the picture it describes and so survives
+  reflow, lazy rendering and a card lifted into a hub list or a related band. The design source of
+  truth follows the criterion: `system/components.dc.html`'s listing-grid cells and the three page
+  artboards A2 names were redrawn in this PR (round 2), the single after-grid sentence is gone
+  from all three, and TASK-109/117 inherit one placement for TASK-118's parity check.
 - **2026-09-17 — the `grid` slot's ratio is 3∶4 and both spec 008 §2 and the drawing say the card
   box is 4∶5.** Resolved without changing spec 006's data: a fifth `Photo` ratio, `card` (4∶5), was
   added and `MediaAsset` gained an optional box-`ratio` override. The seed's derived `grid`
