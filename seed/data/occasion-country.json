@@ -7,7 +7,8 @@
     "plan/13 D6: every rule below is transcribed from plan/03 §9's rule types and must be verified against an official calendar for the destination before that country's status flips to `live`. plan/09 line 3's five reference dates are pinned by tests/unit/seed-dataset.test.ts as rules, not as computed dates: the evaluator `occasionDate(rule, year)` is spec 009's.",
     "Rows cover the seven destination countries of src/config/countries.ts and the eighteen seasonal occasions of plan/10 §1.1. Evergreen occasions carry no row: occasion_country exists to hold a per-destination date, and an evergreen occasion has none in any country.",
     "`observed: false` with the `none` rule is a deliberate value, not a gap: it says the destination does not keep the occasion, which is what stops a country occasion page from existing for it (plan/02 §6, ADR-0007). konfirmation, student, omatag and 17_mai are market-specific to countries we do not deliver to yet and are unobserved everywhere.",
-    "Two observed occasions carry the `none` rule because they have no computable date. PL `name_day` (imieniny) is per name, so the occasion is a category rather than a dated event. RO `easter` follows the Orthodox calendar, whose offset from the Gregorian Easter changes from year to year and which none of plan/03 §9's six rule types can express; a seventh rule type is the amendment that would fix it, and until then the row carries no date rather than a wrong one.",
+    "One observed occasion carries the `none` rule because it has no computable date: PL `name_day` (imieniny) is per name, so the occasion is a category rather than a dated event (plan/13 B15, spec 009 AC-12 — unchanged).",
+    "RO `easter` carried the `none` rule until spec 009 AC-12 (TASK-122) added the seventh rule type. It now reads `orthodox_easter_offset(0)`: the Julian computus read on the Gregorian calendar. The 2026–2030 dates it produces — 12 Apr 2026, 2 May 2027, 16 Apr 2028, 8 Apr 2029, 28 Apr 2030 — were verified against the official calendar of the Romanian Patriarchate (calendar.patriarhia.ro, retrieved 2026-09-18, which publishes 2026 and gives 12 Apr 2026 as Învierea Domnului) and against two independent tables of the Julian computus; the verification and its sources are in the header of tests/fixtures/occasions.ts.",
     "PL `grandparents_day` carries Dzień Babci (21 January); Dzień Dziadka (22 January) shares the same campaign window and would need a second occasion key to be its own row.",
     "`promoStartOffsetDays` is the number of days before the date that the campaign window opens: 21 for Christmas, 14 for Valentine's, Mother's Day, Easter and All Saints, 7 for the rest, 0 where there is no date."
   ],
@@ -1157,13 +1158,14 @@
     {
       "occasionKey": "easter",
       "countryIso2": "RO",
-      "ruleType": "none",
+      "ruleType": "orthodox_easter_offset",
       "rule": {
-        "kind": "none"
+        "kind": "orthodox_easter_offset",
+        "days": 0
       },
       "observed": true,
       "indexableOverride": null,
-      "promoStartOffsetDays": 0
+      "promoStartOffsetDays": 14
     },
     {
       "occasionKey": "all_saints",

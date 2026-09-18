@@ -297,7 +297,11 @@ export type SeedTaxonomy = z.infer<typeof SeedTaxonomySchema>;
 /* occasion-country.json — the per-destination calendar (authored here).      */
 /* -------------------------------------------------------------------------- */
 
-/** `occasion_country.rule_type` — spec 002 §5.1's CHECK list and `plan/03` §9's rule types. */
+/**
+ * `occasion_country.rule_type` — spec 002 §5.1's CHECK list and `plan/03` §9's rule types, plus
+ * spec 009 AC-12's seventh (`orthodox_easter_offset`, `plan/13` B15; TASK-122), appended so the
+ * six keep their `plan/03` §9 order and index.
+ */
 export const occasionRuleTypes = [
   "fixed",
   "nth_weekday",
@@ -305,6 +309,7 @@ export const occasionRuleTypes = [
   "easter_offset",
   "lent_sunday",
   "none",
+  "orthodox_easter_offset",
 ] as const;
 export type OccasionRuleType = (typeof occasionRuleTypes)[number];
 
@@ -315,7 +320,11 @@ const MonthSchema = z.number().int().min(1).max(12);
 /**
  * `occasion_country.rule` (jsonb), as the discriminated union of `plan/03` §9's rule types —
  * `fixed(MM-DD)`, `nth_weekday(month, weekday, n)`, `last_weekday(month, weekday)`,
- * `easter_offset(days)`, `lent_sunday(n)`, `none`.
+ * `easter_offset(days)`, `lent_sunday(n)`, `none` — and spec 009 AC-12's seventh,
+ * `orthodox_easter_offset(days)`: the Julian computus read on the Gregorian calendar, plus a day
+ * offset (`plan/13` B15; TASK-122). The offset bounds are `easter_offset`'s, for the same reason:
+ * ±90 days covers every observance that hangs off Pascha (Floriile − 7 … Rusalii + 49) and
+ * nothing that would be a different feast.
  *
  * **The evaluator is spec 009's** (`plan/03` §9: "a pure function `occasionDate(rule, year)` …
  * unit-tested against a fixture of 2026–2030 dates"). Nothing here computes a date: this task
@@ -358,6 +367,12 @@ export const OccasionRuleSchema = z.discriminatedUnion("kind", [
     })
     .strict(),
   z.object({ kind: z.literal("none") }).strict(),
+  z
+    .object({
+      kind: z.literal("orthodox_easter_offset"),
+      days: z.number().int().min(-90).max(90),
+    })
+    .strict(),
 ]);
 
 export type OccasionRule = z.infer<typeof OccasionRuleSchema>;
@@ -375,11 +390,12 @@ export type OccasionRule = z.infer<typeof OccasionRuleSchema>;
  * `promoStartOffsetDays` is the number of days **before** the occasion date that the campaign
  * window opens.
  *
- * An **observed occasion may carry the `none` rule**, and the two cases are real rather than
- * hypothetical: a Polish name day (`imieniny`) is per name and has no single date, and Romanian
- * Orthodox Easter cannot be expressed by any of `plan/03` §9's six rule types (its offset from
- * the Gregorian Easter changes from year to year). Both are kept occasions with no computable
- * date, which is exactly what `rule_type = 'none'` is for in spec 002 §5.1's CHECK list. The
+ * An **observed occasion may carry the `none` rule**, and the case is real rather than
+ * hypothetical: a Polish name day (`imieniny`) is per name and has no single date, so it stays a
+ * category and never becomes a dated occasion (`plan/13` B15, spec 009 AC-12). Romanian Orthodox
+ * Easter was the second such row until spec 009's seventh rule type landed and TASK-122 migrated
+ * it to `orthodox_easter_offset(0)`; it is dated now, and `none` is the honest blank for what is
+ * left. That is exactly what `rule_type = 'none'` is for in spec 002 §5.1's CHECK list. The
  * invariant that *is* enforced is the other direction: an **unobserved** occasion must carry the
  * `none` rule, so a date nobody keeps in that country can never be promoted by accident.
  */

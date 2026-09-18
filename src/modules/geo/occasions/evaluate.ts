@@ -1,6 +1,7 @@
 /**
  * `occasionDate(rule, year)` — the pure occasion-date evaluator for the six `plan/03` §9 rule
- * types (spec 007 §2 "Occasion dates", AC-21, T-22; TASK-089).
+ * types (spec 007 §2 "Occasion dates", AC-21, T-22; TASK-089) and the seventh spec 009 adds,
+ * `orthodox_easter_offset` (spec 009 §5.2, AC-12, T-12, `plan/13` B15; TASK-122).
  *
  * `plan/12` §4 names `modules/geo/occasions` as one of the four modules where a bug costs money
  * or rankings: a wrong Mother's Day is a corridor page that tells a buyer to order for the wrong
@@ -18,14 +19,15 @@
  *    with `Date.UTC` and read back with `getUTC*`, which is the only arithmetic that cannot.
  *  - **A rule that has no date returns `null`, never a guess** (AC-21: "a `rule_type: none`
  *    occasion is never given a date"; spec 007 §2: it is listed in the "also observed here" line
- *    instead). The two `none` rows in `seed/data/occasion-country.json` — PL `name_day`, which is
- *    per name, and RO `easter`, which follows the Orthodox calendar — are exactly the rows a
- *    guessed date would ruin.
- *  - **The seventh rule type is a compile error, not a silent wrong answer.** `plan/13` B15 adds
- *    an Orthodox-Easter-offset rule as a spec 009 amendment to `OccasionRuleSchema`. The `switch`
- *    below is exhaustive over that union and its `default` narrows `rule` to `never`, so the day
- *    the seventh member lands, `pnpm typecheck` fails here until it is handled. That is the seam
- *    spec 009 inherits; implementing the rule is **not** this spec's (spec 007 §13 Q7).
+ *    instead). One `none` row is left in `seed/data/occasion-country.json` — PL `name_day`, which
+ *    is per name and stays a category (`plan/13` B15) — and it is exactly the row a guessed date
+ *    would ruin. RO `easter` was the other until TASK-122; it is dated now, by rule, not by hand.
+ *  - **An eighth rule type would be a compile error, not a silent wrong answer.** The `switch`
+ *    below is exhaustive over the union and its `default` narrows `rule` to `never`, so the day
+ *    a new member lands in `OccasionRuleSchema`, `pnpm typecheck` fails here until it is handled.
+ *    That seam is how `orthodox_easter_offset` arrived, and it is the one `plan/13` **D7** (the
+ *    FR Fête des Mères / Pentecost exception, open at 2026-09-18) will come through — recorded,
+ *    not solved here.
  *
  * The rule *shape* is not redefined here: `OccasionRule` is spec 006's `OccasionRuleSchema`
  * (`seed/schema/catalogue.ts`), imported as a type so no zod reaches the render path. `./schema.ts`
@@ -41,7 +43,7 @@ import type { OccasionRule } from "../../../../seed/schema/catalogue.ts";
  */
 export type IsoDate = string;
 
-/** The six `plan/03` §9 rule kinds, as the discriminant of spec 006's `OccasionRuleSchema`. */
+/** The seven rule kinds, as the discriminant of spec 006's `OccasionRuleSchema`. */
 export type OccasionRuleKind = OccasionRule["kind"];
 
 const MS_PER_DAY = 86_400_000;
@@ -107,6 +109,62 @@ function easterMs(year: number): number {
   return Date.parse(`${easterSunday(year)}T00:00:00.000Z`);
 }
 
+/** Julian Day Number of 1 January 1970, the anchor that turns a JDN into a UTC instant. */
+const JDN_UNIX_EPOCH = 2_440_588;
+
+/**
+ * Julian Day Number of a date **in the Julian calendar** (Fliegel–Van Flandern, the Julian
+ * branch). Pure integer arithmetic with no branch, which is what lets the Julian → Gregorian
+ * conversion below be exact in every century instead of carrying the "+13 days" that is only
+ * true for 1900–2099.
+ */
+function julianCalendarJdn(year: number, month: number, day: number): number {
+  const a = Math.floor((14 - month) / 12);
+  const y = year + 4800 - a;
+  const m = month + 12 * a - 3;
+  return (
+    day +
+    Math.floor((153 * m + 2) / 5) +
+    365 * y +
+    Math.floor(y / 4) -
+    32_083
+  );
+}
+
+/**
+ * Orthodox Easter Sunday — the Julian computus (Meeus's Julian algorithm), read on the
+ * **Gregorian** calendar, which is the date a Romanian buyer has in their phone (spec 009 AC-12,
+ * `plan/13` B15; TASK-122).
+ *
+ * Two calendars, deliberately kept apart: the computus is done in the Julian calendar, where the
+ * paschal full moon is defined, and the result is converted by Julian Day Number rather than by
+ * adding a century constant. In 2026 the two Easters are a week apart (5 April Gregorian,
+ * 12 April Orthodox), in 2027 five weeks (28 March, 2 May); in 2028 they fall on the same day. Both cases are in the fixture, so an
+ * implementation that had quietly fallen back to `easterSunday()` fails four years out of five.
+ *
+ * Exported for the same reason `easterSunday` is: the dependent Romanian observances (Floriile,
+ * Înălțarea, Rusaliile) must come from the same arithmetic the calendar was built from. Verified
+ * against the Romanian Patriarchate's own calendar in `tests/fixtures/occasions.ts`
+ * (12 Apr 2026, 2 May 2027, 16 Apr 2028, 8 Apr 2029, 28 Apr 2030), not against itself.
+ */
+export function orthodoxEasterSunday(year: number): IsoDate {
+  assertYear(year);
+  const a = year % 4;
+  const b = year % 7;
+  const c = year % 19;
+  const d = (19 * c + 15) % 30;
+  const e = (2 * a + 4 * b - d + 34) % 7;
+  const julianMonth = Math.floor((d + e + 114) / 31);
+  const julianDay = ((d + e + 114) % 31) + 1;
+  const jdn = julianCalendarJdn(year, julianMonth, julianDay);
+  return isoDateOf((jdn - JDN_UNIX_EPOCH) * MS_PER_DAY);
+}
+
+/** Orthodox Easter Sunday as a UTC instant, for the rule that does arithmetic around it. */
+function orthodoxEasterMs(year: number): number {
+  return Date.parse(`${orthodoxEasterSunday(year)}T00:00:00.000Z`);
+}
+
 /**
  * `fixed(MM-DD)`. Returns `null` when the day does not exist in that year — only 29 February in a
  * common year, which is why the check is a date round-trip rather than a leap-year rule.
@@ -156,9 +214,11 @@ function lentSunday(year: number, n: number): IsoDate {
 }
 
 /**
- * The typed seam of `plan/13` B15 (spec 007 §13 Q7). `default:` narrows `rule` to `never`; adding
- * a seventh member to `OccasionRuleSchema` makes this call a compile error until the new kind has
- * a branch above. The runtime throw is for data that never went through the schema.
+ * The typed seam `plan/13` B15 opened and spec 009 AC-12 used. `default:` narrows `rule` to
+ * `never`; adding a member to `OccasionRuleSchema` makes this call a compile error until the new
+ * kind has a branch above. The runtime throw is for data that never went through the schema —
+ * a hand-edited `occasion_country` row, or an importer fed a `rule_type` this build has no
+ * branch for.
  */
 export function assertUnsupportedRule(rule: never): never {
   throw new TypeError(
@@ -184,6 +244,8 @@ export function occasionDate(rule: OccasionRule, year: number): IsoDate | null {
       return isoDateOf(easterMs(year) + rule.days * MS_PER_DAY);
     case "lent_sunday":
       return lentSunday(year, rule.n);
+    case "orthodox_easter_offset":
+      return isoDateOf(orthodoxEasterMs(year) + rule.days * MS_PER_DAY);
     case "none":
       return null;
     default:

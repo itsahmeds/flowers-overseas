@@ -1437,11 +1437,14 @@
         "country": "RO"
       },
       "values": {
-        "rule_type": "none",
-        "rule": null,
+        "rule_type": "orthodox_easter_offset",
+        "rule": {
+          "kind": "orthodox_easter_offset",
+          "days": 0
+        },
         "observed": true,
         "indexable_override": null,
-        "promo_start_offset_days": 0
+        "promo_start_offset_days": 14
       }
     },
     {
