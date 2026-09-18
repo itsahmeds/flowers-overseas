@@ -27,6 +27,9 @@ import { loadMessages } from "../../src/modules/i18n/messages.ts";
 
 const LOCALES = ["en", "en-gb", "de", "pl"] as const;
 
+/** `alternatesFor()` refuses a non-`https` origin, so the cluster assertions use the real one. */
+const BASE_URL = "https://flowersoverseas.com";
+
 /** Every namespace the hub resolves — the page is server-rendered, so it gets the catalogue. */
 function render(locale: string): string {
   const messages = loadMessages(locale, [
@@ -168,6 +171,31 @@ describe("the hub, rendered (T-08, AC-19, AC-20)", () => {
     }
   });
 
+  it("draws a linked destination as one whole-tile `<a>`, named by the country alone", () => {
+    // `docs/design/wireframes/all-destinations-{desktop,mobile}.dc.html`: the tile *is* the link
+    // (`<a class="tile">`), it carries the canvas's chrome link treatment (no underline) and the
+    // accent "Read the guide →" affordance, and its accessible name is the country name.
+    const html = render("en");
+    const tiles = [
+      ...html.matchAll(
+        /<li data-fo-hub-destination="([A-Z]{2})" data-fo-hub-linked="true"><a([^>]*)>/g,
+      ),
+    ];
+    expect(tiles).toHaveLength(COUNTRIES.length);
+    for (const [, iso2 = "", attributes = ""] of tiles) {
+      expect(attributes, iso2).toContain(
+        `aria-labelledby="hub-destination-${iso2.toLowerCase()}"`,
+      );
+      expect(attributes, iso2).toContain('href="/en/send-flowers-to/');
+      expect(attributes, iso2).not.toContain("underline");
+      // The element the name comes from is the country name, and it is visible text.
+      expect(html, iso2).toContain(
+        `id="hub-destination-${iso2.toLowerCase()}"`,
+      );
+    }
+    expect(text(html)).toContain("Read the guide →");
+  });
+
   it("renders a destination with no page as text plus one state line, never a link", () => {
     const html = render("de");
     expect(html).toContain("data-fo-hub-empty");
@@ -211,8 +239,12 @@ describe("a new country is data (AC-7; T-08)", () => {
       };
     });
 
-    const { hubView: flipped, listCorridorPages } =
-      await import("../../src/modules/geo/index.ts");
+    const {
+      hubView: flipped,
+      listCorridorPages,
+      corridorAlternatePaths,
+    } = await import("../../src/modules/geo/index.ts");
+    const { alternatesFor } = await import("../../src/modules/i18n/index.ts");
     const view = flipped("en", (nameKey) => nameKey);
     const germany = view.destinations.find((d) => d.iso2 === "DE");
 
@@ -223,6 +255,23 @@ describe("a new country is data (AC-7; T-08)", () => {
     expect(listCorridorPages().filter((page) => page.iso2 === "DE")).toEqual(
       [],
     );
+    // ...and so is the hreflang cluster: the same predicate feeds `corridorAlternatePaths()`, so
+    // a withdrawn guide has no per-locale path left and `alternatesFor()` has nothing to
+    // annotate. This is the hreflang half of AC-7, asserted rather than asserted-in-prose.
+    expect(corridorAlternatePaths("DE")).toEqual({});
+    expect(
+      alternatesFor(
+        { pathByLocale: corridorAlternatePaths("DE") },
+        { baseUrl: BASE_URL },
+      ),
+    ).toEqual([]);
+    // A country whose guide is still published keeps its cluster, so the flip is Germany's alone.
+    expect(
+      alternatesFor(
+        { pathByLocale: corridorAlternatePaths("PL") },
+        { baseUrl: BASE_URL },
+      ).length,
+    ).toBeGreaterThan(0);
     // Every other destination is untouched.
     expect(
       view.destinations
@@ -232,8 +281,12 @@ describe("a new country is data (AC-7; T-08)", () => {
   });
 
   it("puts the link back when the guide is published again, with no template edit", async () => {
-    const { hubView: shipped, listCorridorPages } =
-      await import("../../src/modules/geo/index.ts");
+    const {
+      hubView: shipped,
+      listCorridorPages,
+      corridorAlternatePaths,
+    } = await import("../../src/modules/geo/index.ts");
+    const { alternatesFor } = await import("../../src/modules/i18n/index.ts");
     const germany = shipped("en", (nameKey) => nameKey).destinations.find(
       (d) => d.iso2 === "DE",
     );
@@ -241,5 +294,25 @@ describe("a new country is data (AC-7; T-08)", () => {
     expect(
       listCorridorPages().filter((page) => page.iso2 === "DE").length,
     ).toBeGreaterThan(0);
+    // The hreflang entry comes back with the URL: `en` and `en-gb` both annotate Germany, and the
+    // cluster each of them carries names the other and an `x-default`.
+    const cluster = alternatesFor(
+      { pathByLocale: corridorAlternatePaths("DE") },
+      { baseUrl: BASE_URL },
+    );
+    expect(cluster.map((page) => page.url)).toEqual([
+      `${BASE_URL}/en/send-flowers-to/germany`,
+      `${BASE_URL}/en-gb/send-flowers-to/germany`,
+    ]);
+    for (const page of cluster) {
+      expect(page.alternates.map((alternate) => alternate.hreflang)).toContain(
+        "x-default",
+      );
+      expect(
+        page.alternates.filter((alternate) =>
+          alternate.href.endsWith("/en-gb/send-flowers-to/germany"),
+        ).length,
+      ).toBeGreaterThan(0);
+    }
   });
 });

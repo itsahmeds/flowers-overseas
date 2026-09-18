@@ -78,31 +78,36 @@ function Destination({
       </Stack>
     );
   }
+  // The artboards draw a linked destination as one whole-tile `<a class="tile">`: a target the
+  // size of the card, no underline (the canvas's own chrome link treatment in `globals.css`) and
+  // the accent "Read the guide →" line as its affordance. The accessible name is the country
+  // name alone — `aria-labelledby` points at the span that renders it, so a screen reader's
+  // link list reads "Germany" rather than the whole tile, and the name is still visible text
+  // inside the link (WCAG 2.5.3 label in name).
+  const nameId = `hub-destination-${destination.iso2.toLowerCase()}`;
   return (
-    <Stack
-      as="li"
-      className="border-rule p-md border"
-      data-fo-hub-destination={destination.iso2}
-      data-fo-hub-linked="true"
-      gap="xs"
-    >
-      <a className="underline underline-offset-4" href={destination.href}>
-        <Display as="span" size="xl">
+    <li data-fo-hub-destination={destination.iso2} data-fo-hub-linked="true">
+      <a
+        aria-labelledby={nameId}
+        className="border-rule p-md gap-xs flex h-full flex-col items-stretch border"
+        href={destination.href}
+      >
+        <Display as="span" id={nameId} size="xl">
           {country}
         </Display>
-      </a>
-      <Chip className="self-start" tone="muted">
-        {state}
-      </Chip>
-      {destination.teaser === undefined ? null : (
-        <Text as="span" size="sm" tone="muted">
-          {destination.teaser}
+        <Chip className="self-start" tone="muted">
+          {state}
+        </Chip>
+        {destination.teaser === undefined ? null : (
+          <Text as="span" size="sm" tone="muted">
+            {destination.teaser}
+          </Text>
+        )}
+        <Text as="span" size="xs" tone="accent">
+          {readGuide}
         </Text>
-      )}
-      <Text as="span" size="xs" tone="accent">
-        {readGuide}
-      </Text>
-    </Stack>
+      </a>
+    </li>
   );
 }
 

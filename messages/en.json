@@ -242,7 +242,7 @@
       "westernSouthernEurope": "Western and Southern Europe",
       "southEasternEurope": "South-eastern Europe"
     },
-    "readGuide": "Read the guide",
+    "readGuide": "Read the guide →",
     "noGuide": "We have not written a guide to {country} in this language yet. When we have, this line becomes a link.",
     "emptyBody": "We have not written a guide in this language yet, so every destination on this page is text. These are the countries we write about: {destinations}. Each guide is written by a person in the language you are reading, which is why this page waits rather than showing you a translation nobody checked."
   },

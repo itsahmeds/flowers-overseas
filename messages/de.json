@@ -409,7 +409,7 @@
     "h1": "Where we can send flowers",
     "intro": "Seven countries in Europe, and we have written a guide to every one of them: what is given, what is never given, how an address is written, and which dates matter in a year there. We open a country only once we have chosen the florists ourselves, so the guide comes first and the delivery comes after it. Where we are not delivering yet, this page says so in the same words on every row.",
     "noGuide": "We have not written a guide to {country} in this language yet. When we have, this line becomes a link.",
-    "readGuide": "Read the guide",
+    "readGuide": "Read the guide →",
     "region": {
       "centralEurope": "Central Europe",
       "southEasternEurope": "South-eastern Europe",
