@@ -128,6 +128,12 @@ export const DEFAULT_URLS = [
   // a hope: a client component added to a corridor block would show up here as a regression.
   "/en/send-flowers-to/poland",
   "/en-gb/send-flowers-to/poland",
+  // The country shop root, one per indexable locale (spec 008 AC-23; TASK-109). It renders twelve
+  // product cards, twenty category tiles and a date table and mounts **no island of its own**, so
+  // its number must equal the locale home's too — an add-to-basket button, a sort island or a
+  // currency repaint added here would show up as a regression against the committed baseline.
+  "/en/poland/flowers",
+  "/en-gb/poland/flowers",
 ] as const;
 
 export const DEFAULT_DIST = ".next";
