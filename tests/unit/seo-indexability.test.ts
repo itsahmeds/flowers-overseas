@@ -29,6 +29,7 @@ import {
   INDEXABILITY_TERMS,
   INDEX_FOLLOW,
   NOINDEX_FOLLOW,
+  OPTIONAL_INDEXABILITY_TERMS,
   PAGE_TYPE_POLICY,
   type IndexabilityTerms,
   type SeoPageType,
@@ -106,6 +107,36 @@ describe("indexability(): the sixteen-case table (AC-9, T-10)", () => {
       const verdict = indexabilityVerdict(terms(four));
       expect(verdict.terms).toEqual(terms(four));
       expect(verdict.indexable).toBe(verdict.directive === INDEX_FOLLOW);
+    }
+  });
+
+  /**
+   * Spec 007 §14 **A7**. `terms[term] ?? true` read *any* absent term as satisfied, so a terms
+   * object that lost a required gate — an unvalidated object, a refactor, a provider returning
+   * `undefined` — bought itself an `index,follow`. An absent **optional** term is not asserted by
+   * this page type and leaves the conjunction; an absent **required** one is a gate nobody
+   * answered, and the answer to that is `noindex`.
+   */
+  it("treats an absent optional term as not asserted, and an absent required term as unmet", () => {
+    const all = Object.fromEntries(
+      INDEXABILITY_TERMS.map((term) => [term, true]),
+    ) as IndexabilityTerms;
+
+    const withoutOptional: Record<string, boolean> = { ...all };
+    delete withoutOptional["operational"];
+    expect(indexability(withoutOptional as unknown as IndexabilityTerms)).toBe(
+      INDEX_FOLLOW,
+    );
+    expect(indexability({ ...all, operational: false })).toBe(NOINDEX_FOLLOW);
+
+    for (const term of INDEXABILITY_TERMS) {
+      const optional: readonly string[] = OPTIONAL_INDEXABILITY_TERMS;
+      if (optional.includes(term)) continue;
+      const missing: Record<string, boolean> = { ...all };
+      delete missing[term];
+      expect(indexability(missing as unknown as IndexabilityTerms), term).toBe(
+        NOINDEX_FOLLOW,
+      );
     }
   });
 

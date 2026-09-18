@@ -61,7 +61,17 @@ export type SeoPageType =
   | "localeHome"
   | "destinationsHub"
   | "corridor"
-  | "devGallery";
+  | "devGallery"
+  // Spec 008 §2's six listing page types, registered here rather than branching there (spec 008
+  // §6 "Indexability — one engine, six descriptors", AC-14; TASK-107). `catalog/listing.ts`
+  // gathers their terms and calls `pageIndexability()`; no robots literal is written outside this
+  // module.
+  | "countryShopRoot"
+  | "countryCategory"
+  | "countryOccasion"
+  | "categoryHub"
+  | "occasionHub"
+  | "occasionsIndex";
 
 /**
  * Whether a page type may ever be indexed (`plan/02` §7; spec 004 AC-28; spec 007 §6).
@@ -78,20 +88,48 @@ export const PAGE_TYPE_POLICY: Readonly<
   localeHome: "byRule",
   destinationsHub: "byRule",
   corridor: "byRule",
+  // Spec 008 §6: all six are `byRule`. In Phase 0 every one of them answers `noindex,follow`
+  // because no country is operational and `isIndexingEnvironment()` is false — a data answer, not
+  // a policy one, which is what lets the hubs lift at the indexing flip with no edit here.
+  countryShopRoot: "byRule",
+  countryCategory: "byRule",
+  countryOccasion: "byRule",
+  categoryHub: "byRule",
+  occasionHub: "byRule",
+  occasionsIndex: "byRule",
 };
 
-/** The five terms of the rule, in the order the header documents them. */
+/**
+ * The terms of the rule, in the order the header documents them.
+ *
+ * `operational` is spec 008 §6's sixth term (TASK-107, spec 007 §14 **A7**): "the country is
+ * genuinely `live` (`corridorState(iso2) === 'live'`, i.e. an active partner exists)". It is
+ * **optional** on the term record, because it is a gate only the three country-scoped listing
+ * types have: a corridor guide, a locale home and a hub are honest pages before any florist has
+ * signed, and forcing every descriptor to assert `operational: true` would turn a gate into a
+ * ritual. A7 fixes what "optional" means: an omitted optional term is **not asserted by this page
+ * type** — it leaves the conjunction — and is never *satisfied by default*, which is how an
+ * omitted **required** term used to buy itself an `index` directive. A page type that has the gate
+ * must state it, which is what `catalog/listing.ts` does for all three.
+ */
 export const INDEXABILITY_TERMS = [
   "pageTypeIndexable",
   "exists",
   "reviewed",
   "localeIndexable",
   "indexingEnvironment",
+  "operational",
 ] as const;
 
 export type IndexabilityTerm = (typeof INDEXABILITY_TERMS)[number];
 
-export type IndexabilityTerms = Readonly<Record<IndexabilityTerm, boolean>>;
+/** The term that may be omitted, because not every page type has an operational gate (§6). */
+export type OptionalIndexabilityTerm = "operational";
+
+export type IndexabilityTerms = Readonly<
+  Record<Exclude<IndexabilityTerm, OptionalIndexabilityTerm>, boolean>
+> &
+  Readonly<Partial<Record<OptionalIndexabilityTerm, boolean>>>;
 
 export interface IndexabilityVerdict {
   /** `true` iff every term holds. The one answer sitemap membership is allowed to read. */
@@ -102,11 +140,32 @@ export interface IndexabilityVerdict {
   readonly terms: IndexabilityTerms;
 }
 
-/** The pure rule: the conjunction of every term. T-10's table drives exactly this function. */
+/** The terms a page type may omit, as data (spec 007 §14 A7); the type above says the same. */
+export const OPTIONAL_INDEXABILITY_TERMS = [
+  "operational",
+] as const satisfies readonly IndexabilityTerm[];
+
+function isOptionalTerm(term: IndexabilityTerm): boolean {
+  return (OPTIONAL_INDEXABILITY_TERMS as readonly IndexabilityTerm[]).includes(
+    term,
+  );
+}
+
+/**
+ * The pure rule: the conjunction of every term. T-10's table drives exactly this function.
+ *
+ * **An absent term is not a satisfied term** (spec 007 §14 A7). An absent *optional* term is one
+ * this page type does not assert, so it leaves the conjunction; an absent *required* term is a
+ * gate nobody answered, and the safe answer to that is `noindex`. The earlier `terms[term] ?? true`
+ * read both as satisfied — the one direction a robots rule must not fail in.
+ */
 export function indexability(terms: IndexabilityTerms): RobotsDirective {
-  return INDEXABILITY_TERMS.every((term) => terms[term])
-    ? INDEX_FOLLOW
-    : NOINDEX_FOLLOW;
+  const holds = INDEXABILITY_TERMS.every((term) => {
+    const asserted: boolean | undefined = terms[term];
+    if (asserted === undefined) return isOptionalTerm(term);
+    return asserted;
+  });
+  return holds ? INDEX_FOLLOW : NOINDEX_FOLLOW;
 }
 
 /** The same rule, with the terms carried so a caller can report *why* a page is `noindex`. */
@@ -130,6 +189,12 @@ export interface PageDescriptor {
   readonly exists: boolean;
   /** The content record's `reviewed` flag (`plan/02` §12). */
   readonly reviewed: boolean;
+  /**
+   * Spec 008 §6's operational gate, for the page types that have one: the destination is
+   * genuinely live (`corridorState(iso2) === 'live'` — an active partner, not a registry label).
+   * Omitted where the page type has no such gate, and an omitted term reads as satisfied.
+   */
+  readonly operational?: boolean;
 }
 
 /**
@@ -147,5 +212,8 @@ export function pageIndexability(
     reviewed: page.reviewed,
     localeIndexable: isLocaleIndexable(page.locale),
     indexingEnvironment: isIndexingEnvironment(deployment),
+    ...(page.operational === undefined
+      ? {}
+      : { operational: page.operational }),
   });
 }

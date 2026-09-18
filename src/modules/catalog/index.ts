@@ -299,3 +299,63 @@ export {
   SlugKindSchema,
 } from "./schemas";
 export { hasSlug, resolveSlug, slugFor } from "./slugs";
+
+// The listing view model, the existence set and the six page descriptors (spec 008 §2, §5.2, §6,
+// §11, AC-3, AC-14; TASK-107).
+//
+// `listingView()` is the **single** input to the page, the JSON-LD builders and the sitemap row
+// (§5.2, spec 007's `corridorView()` precedent), and `listingExists()` / `listingPages()` are the
+// one answer `generateStaticParams`, the sitemap builders, the link renderers and the e2e crawl
+// share — which is what makes "a page that fails the existence rule has no URL" structural rather
+// than a convention. `PRODUCT_COUNT_FLOOR` is the one named constant of §13 Q7 (6, applied to
+// existence); the shop root's "≥1 deliverable product" is a non-empty list and not a second
+// number.
+//
+// `listingDescriptor()` / `listingIndexability()` gather spec 008 §6's terms and hand them to
+// spec 007's `pageIndexability()`: no `noindex` branch is written in this module (AC-14).
+//
+// What stays internal, for the reasons the rest of this barrel states: the copy corpus
+// (`./copy` — callers ask for a view, never for a row), the per-call count memo, and the
+// existence rules of each page type (one predicate, `listingExists`, reads them all).
+export type {
+  HubCardView,
+  ListingCrumb,
+  ListingHeading,
+  ListingIdentity,
+  ListingIndexabilityTerms,
+  ListingLinks,
+  ListingOccasionDate,
+  ListingOccasionEntry,
+  ListingPageRecord,
+  ListingView,
+  ListingViewOptions,
+  LocaleExistenceCounts,
+} from "./listing";
+// `PRODUCT_COUNT_FLOOR` and `LISTING_PAGE_SIZE` stay internal for the reason every other constant
+// in this barrel does (AC-2): the barrel exports schemas, value sets and functions only. A caller
+// that could read the floor would be one line from applying it itself, and the whole point of §13
+// Q7's "one named constant read by one predicate" is that `listingExists()` is that predicate.
+export {
+  HubCardViewSchema,
+  ListingCrumbSchema,
+  ListingHeadingSchema,
+  ListingIdentitySchema,
+  ListingLinksSchema,
+  ListingOccasionDateSchema,
+  ListingOccasionEntrySchema,
+  ListingViewSchema,
+  categoryTileView,
+  existenceCounts,
+  existenceSummaryMarkdown,
+  hubCardView,
+  isPublishedCountry,
+  listingDescriptor,
+  listingExists,
+  listingIndexability,
+  listingLocales,
+  listingPages,
+  listingView,
+  productCardView,
+  publishedCountries,
+  writeExistenceSummary,
+} from "./listing";

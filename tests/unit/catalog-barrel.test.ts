@@ -240,6 +240,32 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         "resolveSlug",
         "slugFor",
         "slugKinds",
+        // the listing view model, the existence set and the six page descriptors (TASK-107, spec
+        // 008 §2 / §5.2 / §6 / §11, AC-3, AC-14). Schemas, functions and nothing else: the
+        // product-count floor and the page size stay internal, because a caller that could read
+        // the floor would be one line from applying it instead of asking `listingExists()`.
+        "HubCardViewSchema",
+        "ListingCrumbSchema",
+        "ListingHeadingSchema",
+        "ListingIdentitySchema",
+        "ListingLinksSchema",
+        "ListingOccasionDateSchema",
+        "ListingOccasionEntrySchema",
+        "ListingViewSchema",
+        "categoryTileView",
+        "existenceCounts",
+        "existenceSummaryMarkdown",
+        "hubCardView",
+        "isPublishedCountry",
+        "listingDescriptor",
+        "listingExists",
+        "listingIndexability",
+        "listingLocales",
+        "listingPages",
+        "listingView",
+        "productCardView",
+        "publishedCountries",
+        "writeExistenceSummary",
       ].sort(),
     );
   });
@@ -248,8 +274,10 @@ describe("src/modules/catalog barrel (AC-1)", () => {
     expect(moduleFiles.sort()).toEqual([
       `${moduleDir}/availability.ts`,
       `${moduleDir}/cache.ts`,
+      `${moduleDir}/copy.ts`,
       `${moduleDir}/flags.ts`,
       `${moduleDir}/index.ts`,
+      `${moduleDir}/listing.ts`,
       `${moduleDir}/observability.ts`,
       `${moduleDir}/pricing/fx.ts`,
       `${moduleDir}/pricing/history.ts`,
@@ -363,12 +391,24 @@ describe("the barrel exposes no provider, dataset or database symbol (AC-2, T-01
     const reached = reachableFrom(`${moduleDir}/index.ts`);
 
     expect(reached.files).toContain(`${moduleDir}/providers.ts`);
-    for (const file of reached.files) {
+    // Scoped to **this module's** files, which is what the invariant says: TASK-070 replaces one
+    // file *here*. From TASK-107 the graph also reaches `modules/geo` (spec 008 §2 needs 007's
+    // occasion calendar), and `geo/corridor.ts` reads `occasions.data.ts` for its own reasons
+    // (spec 007, TASK-089/091) — a fact about that module, not a second reader of the catalogue
+    // inside this one.
+    for (const file of reached.files.filter((path) =>
+      path.startsWith(`${moduleDir}/`),
+    )) {
       for (const specifier of specifiersOf(sourceOf(file))) {
         if (!specifier.includes("config/catalogue")) continue;
-        // The taxonomy (`schemas.ts`) is not the dataset: it is the closed facet value sets and
-        // the record types, which the read API and the providers are typed against.
-        if (specifier.endsWith("config/catalogue/schemas")) continue;
+        // The invariant is about the **authored dataset** — the `*.data.ts` files — and nothing
+        // else under `config/catalogue/`: `schemas.ts` is the closed facet value sets and record
+        // types the read API and the providers are typed against, and `projections.ts` is the
+        // pure row projections `seed/schema/` shares with them. Matched on the specifier with its
+        // extension stripped, because a file reached through `seed/` spells it with one
+        // (TASK-107: `modules/geo` → `seed/schema/catalogue.ts` → `config/catalogue/*.ts`).
+        if (!/config\/catalogue\/[^/]+\.data(?:\.ts)?$/.test(specifier))
+          continue;
         expect(
           file,
           `${file} imports the dataset directly (${specifier})`,
