@@ -8,14 +8,39 @@
  * from a trusted source — 5 Apr 2026, 28 Mar 2027, 16 Apr 2028, 1 Apr 2029, 21 Apr 2030. Nothing
  * here was produced by `occasionDate`, which is the only way the fixture can catch it being wrong.
  *
- * Coverage: 62 rows × 5 years = 310 dates. 59 rows are every **observed** row of
+ * Coverage: 65 rows × 5 years = 325 dates. 59 rows are every **observed** row of
  * `seed/data/occasion-country.json` (the seven destinations of `src/config/countries.ts`),
- * including the two observed-but-undated ones — PL `name_day` and RO `easter`, `plan/13` B15 —
- * whose expected date is `null` in every year, which is AC-21's "a `rule_type: none` occasion is
- * never given a date". Three rows (`inSeed: false`) are the `plan/03` §9 / `plan/13` D6 reference
- * dates for countries we buy *from* rather than deliver to: GB Mothering Sunday, NO Morsdag and
- * SE Mors dag. They are here because the six rule types must all be covered and the committed
- * seed has no `lent_sunday` row — Mothering Sunday is a UK date and the UK is not a destination.
+ * including the one observed-but-undated one — PL `name_day`, `plan/13` B15 — whose expected date
+ * is `null` in every year, which is AC-21's "a `rule_type: none` occasion is never given a date".
+ * Six rows (`inSeed: false`) are reference dates: the `plan/03` §9 / `plan/13` D6 rows for
+ * countries we buy *from* rather than deliver to (GB Mothering Sunday, NO Morsdag, SE Mors dag),
+ * because the rule types must all be covered and the committed seed has no `lent_sunday` row; and
+ * the three Romanian observances that depend on Orthodox Easter (§ below).
+ *
+ * ---
+ *
+ * **Romanian Orthodox Easter, `plan/13` B15 / spec 009 AC-12 (TASK-122).** The RO `easter` row was
+ * carried as `rule_type: "none"` until spec 009 added the seventh rule type; it now reads
+ * `orthodox_easter_offset(0)` and carries the dates below. They were **verified before commit**,
+ * the `plan/13` D6 pattern ("a date we have not checked is not a fixture"), against:
+ *
+ *  1. the **official calendar of the Romanian Patriarchate**, `https://calendar.patriarhia.ro/`
+ *     (retrieved 2026-09-18), which publishes the current year only and gives, for 2026,
+ *     `20260405` "(†) Intrarea Domnului în Ierusalim … (a Floriilor)", `20260412` "(†) Învierea
+ *     Domnului nostru Iisus Hristos (Sfintele Paşti)", `20260521` "(†) Înălţarea Domnului" and
+ *     `20260531` "(†) Pogorârea Sfântului Duh (Cincizecimea sau Rusaliile)" — i.e. Pascha − 7,
+ *     Pascha, Pascha + 39 and Pascha + 49, which is what the three reference rows below assert;
+ *  2. for 2027–2030, where the Patriarchate publishes no calendar yet, two independent tables of
+ *     the Julian computus expressed in the Gregorian calendar — Wikipedia "List of dates for
+ *     Easter" and "Easter" (§ Table of dates of Easter, Julian Easter column), which agree on
+ *     12 Apr 2026, 2 May 2027, 16 Apr 2028, 8 Apr 2029, 28 Apr 2030 — cross-checked against
+ *     "Public holidays in Romania" (12 Apr 2026, 2 May 2027, 16 Apr 2028) and against the Meeus
+ *     Julian algorithm worked by hand (Julian 30 Mar 2026, 19 Apr 2027, 3 Apr 2028, 26 Mar 2029,
+ *     15 Apr 2030, each + 13 days for the 1900–2099 Julian-to-Gregorian offset).
+ *
+ * 2028 is the year the two Easters coincide (16 April in both calendars), which is why the table
+ * keeps both anchors: a fixture that only ever differed would not catch an evaluator that had
+ * silently fallen back to the Gregorian computus.
  *
  * ---
  *
@@ -69,6 +94,22 @@ export const EASTER_SUNDAYS: Readonly<Record<OccasionFixtureYear, string>> = {
   2028: "2028-04-16",
   2029: "2029-04-01",
   2030: "2030-04-21",
+};
+
+/**
+ * Orthodox (Julian-computus) Easter Sunday 2026–2030 in the Gregorian calendar, tabled from the
+ * sources named in the header rather than computed here, so the `orthodox_easter_offset` rows owe
+ * nothing to `orthodoxEasterSunday()`. Every Romanian movable date below is derived from these
+ * five days.
+ */
+export const ORTHODOX_EASTER_SUNDAYS: Readonly<
+  Record<OccasionFixtureYear, string>
+> = {
+  2026: "2026-04-12",
+  2027: "2027-05-02",
+  2028: "2028-04-16",
+  2029: "2029-04-08",
+  2030: "2030-04-28",
 };
 
 export const occasionRuleFixtures: readonly OccasionRuleFixture[] = [
@@ -761,14 +802,14 @@ export const occasionRuleFixtures: readonly OccasionRuleFixture[] = [
   {
     country: "RO",
     occasion: "easter",
-    label: "Easter Sunday",
-    rule: { kind: "none" },
+    label: "Sfintele Paști (Orthodox Easter Sunday)",
+    rule: { kind: "orthodox_easter_offset", days: 0 },
     dates: {
-      2026: null,
-      2027: null,
-      2028: null,
-      2029: null,
-      2030: null,
+      2026: "2026-04-12",
+      2027: "2027-05-02",
+      2028: "2028-04-16",
+      2029: "2029-04-08",
+      2030: "2030-04-28",
     },
     inSeed: true,
   },
@@ -937,6 +978,53 @@ export const occasionRuleFixtures: readonly OccasionRuleFixture[] = [
       2028: "2028-05-28",
       2029: "2029-05-27",
       2030: "2030-05-26",
+    },
+    inSeed: false,
+  },
+  // The three Romanian observances that hang off Orthodox Easter (spec 009 AC-12). They are not
+  // seed rows — `occasion-country.json` carries no Floriile, Înălțarea or Rusalii occasion — but
+  // they are the reason the offset half of the rule type exists, and their 2026 dates are the
+  // four the Patriarchate's own calendar prints (header § 1), which is what verifies the offsets
+  // rather than just the anchor.
+  {
+    country: "RO",
+    occasion: "palm_sunday",
+    label: "Floriile (Palm Sunday, Pascha − 7)",
+    rule: { kind: "orthodox_easter_offset", days: -7 },
+    dates: {
+      2026: "2026-04-05",
+      2027: "2027-04-25",
+      2028: "2028-04-09",
+      2029: "2029-04-01",
+      2030: "2030-04-21",
+    },
+    inSeed: false,
+  },
+  {
+    country: "RO",
+    occasion: "ascension",
+    label: "Înălțarea Domnului (Ascension, Pascha + 39)",
+    rule: { kind: "orthodox_easter_offset", days: 39 },
+    dates: {
+      2026: "2026-05-21",
+      2027: "2027-06-10",
+      2028: "2028-05-25",
+      2029: "2029-05-17",
+      2030: "2030-06-06",
+    },
+    inSeed: false,
+  },
+  {
+    country: "RO",
+    occasion: "pentecost",
+    label: "Rusaliile (Pentecost, Pascha + 49)",
+    rule: { kind: "orthodox_easter_offset", days: 49 },
+    dates: {
+      2026: "2026-05-31",
+      2027: "2027-06-20",
+      2028: "2028-06-04",
+      2029: "2029-05-27",
+      2030: "2030-06-16",
     },
     inSeed: false,
   },

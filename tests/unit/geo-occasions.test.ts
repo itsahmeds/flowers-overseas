@@ -1,20 +1,27 @@
 /**
  * T-22 (spec 007 AC-21) and the calendar half of AC-22 — `src/modules/geo/occasions`; TASK-089.
+ * Extended by **T-12 (spec 009 AC-12, TASK-122)**: the seventh rule type,
+ * `orthodox_easter_offset`, the migrated RO `easter` seed row, and the verified Romanian
+ * 2026–2030 fixture.
  *
- * The suite is table-driven over `tests/fixtures/occasions.ts`: 62 rules × 5 years = 310 dates,
- * every observed row of `seed/data/occasion-country.json` for the seven destinations plus the
- * three `plan/13` D6 reference rows that carry the rule types the seed has none of. The fixture
- * was computed by an independent implementation and is anchored on an **independently tabled**
- * Easter (`EASTER_SUNDAYS`), so no assertion here is `occasionDate` agreeing with itself.
+ * The suite is table-driven over `tests/fixtures/occasions.ts`: 65 rules × 5 years = 325 dates,
+ * every observed row of `seed/data/occasion-country.json` for the seven destinations plus the six
+ * reference rows that carry the rule types or the offsets the seed has none of. The fixture was
+ * computed by an independent implementation and is anchored on two **independently tabled**
+ * Easters (`EASTER_SUNDAYS`, `ORTHODOX_EASTER_SUNDAYS`), so no assertion here is `occasionDate`
+ * agreeing with itself.
  *
  * The threshold in `vitest.coverage.json` requires 100 % branches of this directory (`plan/12` §4,
- * AC-21), so the failure paths are tested as first-class cases, not as an afterthought: the year
- * guard, 29 February in a common year, a fifth weekday a month does not have, an unobserved row
- * that somehow carries a date, and the `plan/13` B15 seam's runtime throw.
+ * AC-21, AC-12), so the failure paths are tested as first-class cases, not as an afterthought: the
+ * year guard, 29 February in a common year, a fifth weekday a month does not have, an unobserved
+ * row that somehow carries a date, and the `plan/13` B15 seam's runtime throw.
  */
 import { describe, expect, it } from "vitest";
 
-import { SeedOccasionCountryRegistrySchema } from "../../seed/schema/catalogue.ts";
+import {
+  SeedOccasionCountryRegistrySchema,
+  occasionRuleTypes,
+} from "../../seed/schema/catalogue.ts";
 import {
   type IsoDate,
   MAX_YEAR,
@@ -24,6 +31,7 @@ import {
   committedOccasionCalendar,
   easterSunday,
   nextOccasions,
+  orthodoxEasterSunday,
   observedUndatedOccasions,
   occasionDate,
   upcomingOccasions,
@@ -31,6 +39,7 @@ import {
 import {
   EASTER_SUNDAYS,
   OCCASION_FIXTURE_YEARS,
+  ORTHODOX_EASTER_SUNDAYS,
   type OccasionFixtureYear,
   occasionDates,
   occasionRuleFixtures,
@@ -41,8 +50,12 @@ const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 /** The destinations of `src/config/countries.ts`, as the seed rows key them. */
 const DESTINATIONS = ["PL", "DE", "FR", "ES", "IT", "RO", "NL"] as const;
 
-/** A rule the schema does not know, cast through `never` to reach the B15 seam at runtime. */
-const UNKNOWN_RULE = { kind: "orthodox_easter_offset", days: 0 } as never;
+/**
+ * A rule the schema does not know, cast through `never` to reach the B15 seam at runtime. It was
+ * `orthodox_easter_offset` until TASK-122 made that a real kind, so the placeholder moves to the
+ * next candidate (`plan/13` D7's FR Pentecost exception) rather than disappearing.
+ */
+const UNKNOWN_RULE = { kind: "pentecost_exception", days: 0 } as never;
 
 describe("the committed calendar is the data the evaluator is fed (spec 006 → spec 007)", () => {
   it("parses under spec 006's registry schema, so the typed JSON import is honest", () => {
@@ -112,6 +125,61 @@ describe("easterSunday (the anchor of the movable feasts)", () => {
   });
 });
 
+describe("orthodoxEasterSunday: the Julian computus, converted (AC-12, T-12)", () => {
+  it.each(OCCASION_FIXTURE_YEARS)(
+    "matches the verified Romanian Orthodox Easter for %i",
+    (year) => {
+      expect(orthodoxEasterSunday(year)).toBe(ORTHODOX_EASTER_SUNDAYS[year]);
+    },
+  );
+
+  it("is a Sunday in every year of a long run, inside the Julian Paschal limits", () => {
+    for (let year = 1900; year <= 2100; year += 1) {
+      const date = orthodoxEasterSunday(year);
+      expect(ISO_DATE.test(date), date).toBe(true);
+      expect(new Date(`${date}T00:00:00.000Z`).getUTCDay(), date).toBe(0);
+      // Julian Easter, read on the Gregorian calendar, runs 4 April – 8 May in 1900–2099.
+      expect(date >= `${year}-04-04`, date).toBe(true);
+      expect(date <= `${year}-05-08`, date).toBe(true);
+    }
+  });
+
+  it("is never earlier than the Gregorian Easter, and equal only when the two coincide", () => {
+    let coincided = 0;
+    for (let year = 2000; year <= 2100; year += 1) {
+      const orthodox = orthodoxEasterSunday(year);
+      const gregorian = easterSunday(year);
+      expect(orthodox >= gregorian, `${String(year)} ${orthodox}`).toBe(true);
+      if (orthodox === gregorian) coincided += 1;
+    }
+    expect(coincided).toBeGreaterThan(0);
+    // 2028 is the coincidence inside the fixture range, which is why the table keeps both
+    // anchors: an evaluator that silently fell back to the Gregorian computus would pass 2028
+    // and fail the other four years.
+    expect(orthodoxEasterSunday(2028)).toBe(easterSunday(2028));
+    expect(orthodoxEasterSunday(2026)).not.toBe(easterSunday(2026));
+  });
+
+  it("rejects a year outside the evaluator's range, like every other rule", () => {
+    expect(() => orthodoxEasterSunday(MIN_YEAR - 1)).toThrow(RangeError);
+    expect(() => orthodoxEasterSunday(MAX_YEAR + 1)).toThrow(RangeError);
+    expect(() => orthodoxEasterSunday(2026.5)).toThrow(RangeError);
+  });
+
+  it("offsets the Romanian dependent observances the Patriarchate's own calendar prints", () => {
+    // https://calendar.patriarhia.ro/ retrieved 2026-09-18 — see the fixture header.
+    const of = (days: number, year: number) =>
+      occasionDate({ kind: "orthodox_easter_offset", days }, year);
+    expect(of(0, 2026)).toBe("2026-04-12"); // Învierea Domnului (Sfintele Paști)
+    expect(of(-7, 2026)).toBe("2026-04-05"); // Floriile
+    expect(of(39, 2026)).toBe("2026-05-21"); // Înălțarea Domnului
+    expect(of(49, 2026)).toBe("2026-05-31"); // Rusaliile
+    // A negative offset that crosses the month and the Gregorian/Julian gap both ways.
+    expect(of(-49, 2027)).toBe("2027-03-14");
+    expect(of(0, 2027)).toBe(ORTHODOX_EASTER_SUNDAYS[2027]);
+  });
+});
+
 describe("occasionDate over the 2026–2030 fixture (AC-21, T-22)", () => {
   for (const fixture of occasionRuleFixtures) {
     const cases = OCCASION_FIXTURE_YEARS.map(
@@ -125,7 +193,7 @@ describe("occasionDate over the 2026–2030 fixture (AC-21, T-22)", () => {
     );
   }
 
-  it("covers all six plan/03 §9 rule types", () => {
+  it("covers all seven rule types: plan/03 §9's six and spec 009's orthodox_easter_offset", () => {
     expect(
       [...new Set(occasionRuleFixtures.map((row) => row.rule.kind))].sort(),
     ).toEqual([
@@ -135,7 +203,13 @@ describe("occasionDate over the 2026–2030 fixture (AC-21, T-22)", () => {
       "lent_sunday",
       "none",
       "nth_weekday",
+      "orthodox_easter_offset",
     ]);
+    // Every rule type the seed schema declares is exercised by the table, so a member added to
+    // the union without a fixture fails here rather than shipping an unchecked date.
+    expect([...occasionRuleTypes].sort()).toEqual(
+      [...new Set(occasionRuleFixtures.map((row) => row.rule.kind))].sort(),
+    );
   });
 
   it("dates the three reference rows plan/13 D6 names, with the 2027 Mothering Sunday corrected", () => {
@@ -166,13 +240,15 @@ describe("occasionDate over the 2026–2030 fixture (AC-21, T-22)", () => {
         expect(occasionDate(row.rule, year)).toBeNull();
       }
     }
-    // The two observed-but-undated rows of plan/13 B15, named so a silent removal fails here.
+    // The one observed-but-undated row left after TASK-122 migrated RO Easter to the seventh
+    // rule type: a Polish name day is per name and stays a category, never a dated occasion
+    // (`plan/13` B15, AC-12). Named here so a silent removal — or a guessed date — fails.
     expect(
       undated
         .filter((row) => row.inSeed)
         .map((row) => `${row.country}/${row.occasion}`)
         .sort(),
-    ).toEqual(["PL/name_day", "RO/easter"]);
+    ).toEqual(["PL/name_day"]);
   });
 
   it("returns ISO calendar-date strings, never a Date or a timestamp", () => {
@@ -346,15 +422,17 @@ describe("upcomingOccasions: the corridor calendar API (AC-22)", () => {
     expect(upcomingOccasions("PL", "2027-07-01", 1)).toEqual([]);
   });
 
-  it("never lists an undated occasion: PL name day and RO Easter are absent", () => {
+  it("never lists an undated occasion: PL name day is absent, RO Easter now dates (AC-12)", () => {
     const pl = upcomingOccasions("PL", "2027-01-01");
     expect(pl.some((row) => row.occasionKey === "name_day")).toBe(false);
     const ro = upcomingOccasions("RO", "2027-01-01");
-    expect(ro.some((row) => row.occasionKey === "easter")).toBe(false);
+    // Orthodox Easter 2027 falls on 2 May, the same day as Romanian Mother's Day; the tie is
+    // broken by occasion key, which is what keeps the list total and a render from flapping.
     expect(ro.map((row) => `${row.occasionKey} ${row.date}`)).toEqual([
       "new_year 2027-01-01",
       "valentines 2027-02-14",
       "womens_day 2027-03-08",
+      "easter 2027-05-02",
       "mothers_day 2027-05-02",
       "fathers_day 2027-05-09",
       "all_saints 2027-11-01",
@@ -448,7 +526,9 @@ describe("nextOccasions: the count-windowed read (spec 007 §2)", () => {
 describe("observedUndatedOccasions: the 'also observed here' line (spec 007 §2)", () => {
   it("names the observed rows that carry no computable date", () => {
     expect(observedUndatedOccasions("PL")).toEqual(["name_day"]);
-    expect(observedUndatedOccasions("RO")).toEqual(["easter"]);
+    // RO Easter left this list the day the seventh rule type landed (TASK-122), exactly as the
+    // module header said it would, with no change to `observedUndatedOccasions` itself.
+    expect(observedUndatedOccasions("RO")).toEqual([]);
     expect(observedUndatedOccasions("DE")).toEqual([]);
     expect(observedUndatedOccasions("GB")).toEqual([]);
   });
@@ -510,8 +590,8 @@ describe("the shared fixture barrel (tests/fixtures/index.ts)", () => {
     }
   });
 
-  it("covers 62 rules across five years", () => {
-    expect(occasionRuleFixtures).toHaveLength(62);
+  it("covers 65 rules across five years", () => {
+    expect(occasionRuleFixtures).toHaveLength(65);
     expect(OCCASION_FIXTURE_YEARS).toHaveLength(5);
     const years: readonly OccasionFixtureYear[] = OCCASION_FIXTURE_YEARS;
     for (const row of occasionRuleFixtures) {
