@@ -21,6 +21,17 @@ const alias = {
   ),
 };
 
+// TASK-134: on the shared `ubuntu-latest` runner, under V8 coverage instrumentation, two CPU-bound
+// unit cases (the `catalog-geo-surface` type-surface walk and the `seed-prices` byte-for-byte
+// projection) cross Vitest's 5 000 ms default and turn `test-unit` red — both finish in well under
+// a second locally. The budget is a property of the runner, not of those assertions, so it is
+// raised for the whole `unit` project in CI and left at the tight default locally, where a slow
+// test still means a hung test and should fail fast (spec 001 AC-16 / T-17).
+const CI_UNIT_TEST_TIMEOUT_MS = 30_000;
+const unitTestTimeout = process.env.CI
+  ? { testTimeout: CI_UNIT_TEST_TIMEOUT_MS }
+  : {};
+
 export default defineConfig({
   resolve: { alias },
   test: {
@@ -37,6 +48,8 @@ export default defineConfig({
           include: ["tests/unit/**/*.test.ts", "tests/unit/**/*.test.tsx"],
           // MSW with `onUnhandledRequest: "error"`: no unit test may reach the network (AC-18).
           setupFiles: ["tests/msw/setup.ts"],
+          // 30 000 ms in CI, Vitest's default locally — see `CI_UNIT_TEST_TIMEOUT_MS` above.
+          ...unitTestTimeout,
         },
       },
       {
