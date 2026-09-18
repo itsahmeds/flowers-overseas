@@ -35,10 +35,10 @@
  *
  * ## Money, order and honesty
  *
- * - Every price comes from `priceProjection()` / `fromPrice()`: the card shows the **default
- *   tier's** all-in `displayPrice` (a payable configuration, so "price shown = price charged"
- *   holds without a qualifier), and the one "from" price in the model is the category tile's
- *   (§2, §8).
+ * - Every price comes from `priceProjection()` / `fromPriceProjection()`: the card shows the
+ *   **default tier's** all-in `displayPrice` (a payable configuration, so "price shown = price
+ *   charged" holds without a qualifier), and the one "from" price in the model is the category
+ *   tile's (§2, §8).
  * - A **destination-less hub carries no money at all** (§2, §8, 005 §13 Q10). That is enforced by
  *   the type: hub items are `HubCardView`, which is `ProductCardView` without `price` and
  *   `priceLabelKey`, so a projection cannot hand a renderer a price the page may not show.
@@ -106,8 +106,7 @@ import {
 } from "@/modules/ui";
 
 import { copyRow, copyRows } from "./copy";
-import { fromPrice } from "./pricing/resolve";
-import { priceProjection } from "./pricing/project";
+import { fromPriceProjection, priceProjection } from "./pricing/project";
 import {
   countProductsFor,
   countProductsIn,
@@ -117,10 +116,15 @@ import {
   listProducts,
   topProductsForPrebuild,
 } from "./read";
-import { ListingParamsSchema, ListingPageTypeSchema } from "./schemas";
+import {
+  IsoDateSchema,
+  ListingParamsSchema,
+  ListingPageTypeSchema,
+} from "./schemas";
 import { slugFor } from "./slugs";
 import type {
   Category,
+  IsoDate,
   ListingPageType,
   ListingSort,
   Occasion,
@@ -246,6 +250,25 @@ export const ListingOccasionEntrySchema = z
 export type ListingOccasionEntry = z.infer<typeof ListingOccasionEntrySchema>;
 
 /**
+ * One destination in a hub's picker (§2 "Links", §5.3).
+ *
+ * The visible label is the country's **`nameKey`** — a message the page resolves, exactly as the
+ * breadcrumb and the `h1` carry one — and never `corridorSlug()`, which is a *URL* spelling and
+ * would print "rumaenien" where a reader expects Rumänien (`/review 76`). The destination is
+ * named by its ISO code rather than by a catalogue key, because that is what it is.
+ */
+export const ListingDestinationLinkSchema = z
+  .object({
+    iso2: z.string().length(2),
+    nameKey: z.string().min(1),
+    href: z.string().min(1),
+  })
+  .strict();
+export type ListingDestinationLink = z.infer<
+  typeof ListingDestinationLinkSchema
+>;
+
+/**
  * The links §2 "Links" requires the page to render, all of them to pages that **exist**: a link
  * to a non-200 URL is the thing spec 004 AC-14 and spec 007 AC-17 forbid, so an absent field is
  * an absent link and never a placeholder.
@@ -259,7 +282,7 @@ export const ListingLinksSchema = z
     /** Sibling categories or occasions, as the chip row renders them. */
     chips: z.array(ChipLinkViewSchema).readonly(),
     /** A hub's destination picker: the country pages of this entity that exist. */
-    destinations: z.array(ChipLinkViewSchema).readonly(),
+    destinations: z.array(ListingDestinationLinkSchema).readonly(),
   })
   .strict();
 export type ListingLinks = z.infer<typeof ListingLinksSchema>;
@@ -298,7 +321,15 @@ export const ListingViewSchema = z
     indexable: z.boolean(),
     directive: z.string().min(1),
   })
-  .strict();
+  .strict()
+  // Spec 008 §14 **A3**: the two arrays are the two kinds of listing, and a view is one of them.
+  // A page with both would be one that shows money and claims not to, so the schema refuses it
+  // rather than leaving TASK-112 and TASK-115 to remember which array to read.
+  .refine((view) => view.items.length === 0 || view.hubItems.length === 0, {
+    message:
+      "a listing carries priced `items` (country-scoped) or priceless `hubItems` (a hub), never both (spec 008 §14 A3)",
+    path: ["hubItems"],
+  });
 export type ListingView = z.infer<typeof ListingViewSchema>;
 
 /* -------------------------------------------------------------------------- */
@@ -847,45 +878,64 @@ export async function hubCardView(
 
 /**
  * One category tile on a country shop root (§2): the count of products in it for this
- * destination, and the **one** "from" price the spec allows — the lowest default-tier price
- * inside the tile, which is a payable number and is labelled as a floor by the component.
+ * destination, and the **one** "from" price the spec allows — the lowest payable price inside the
+ * tile, which is labelled as a floor by the component.
+ *
+ * **The money is one projection's, never two halves of two** (`/review 76`). The amount and the
+ * currency both come from `fromPriceProjection()` for the **minimum product measured in the
+ * display currency**: every candidate is projected with one shared `now`, and the cheapest
+ * projection's `displayPrice` is carried whole. Spec 008 §8 is what fixes the rule — the tile's
+ * figure is "the lowest payable … price inside that tile", and what a buyer compares is what the
+ * cards *print*, which is the display-currency amount. Taking the minimum in the destination's
+ * currency and labelling it with the locale's was the round-1 defect: with FX available, `/en`
+ * over Poland stamped a PLN amount `EUR`. (The two orderings coincide whenever one rate converts
+ * the whole tile, which is every case the providers can produce; the display-currency rule is the
+ * one that stays true if they ever stop coinciding.)
+ *
+ * `undefined` is "no tile", not an error: a category with **no product** for this destination has
+ * no shop-root tile and no page to link to, and a locale with **no authored slug** for it
+ * (`de`/`pl` until TASK-106) has no URL to build. Both are inputs the signature accepts, so
+ * neither throws.
  */
 export async function categoryTileView(
   category: Category,
   locale: LocaleCode,
   iso2: CountryIso2,
-): Promise<CategoryTileView> {
+  options: { readonly now?: Date } = {},
+): Promise<CategoryTileView | undefined> {
+  const slug = slugFor("category", category.key, locale);
+  if (slug === undefined) return undefined;
+
   const products = await listProducts({
     facets: { [category.kind]: [category.key] },
     countryIso: iso2,
   });
-  const slug = slugFor("category", category.key, locale);
-  const prices = await Promise.all(
-    products.map(async (product) => {
-      const price = await fromPrice({
+  if (products.length === 0) return undefined;
+
+  // One clock for every candidate: two `new Date()`s could straddle a rate's validity bound and
+  // hand one product a converted amount and the next the destination's own (§14 A3).
+  const asOf = options.now ?? new Date();
+  const projections = await Promise.all(
+    products.map((product) =>
+      fromPriceProjection(locale, {
         productId: product.sku,
         countryIso: iso2,
-      });
-      return price.amountMinor;
-    }),
+        now: asOf,
+      }),
+    ),
   );
-  const lowest = prices.length === 0 ? undefined : Math.min(...prices);
-  const currency = (
-    await priceProjection(locale, {
-      productId: products[0]?.sku ?? "",
-      tierKey: (await defaultTier(products[0]?.sku ?? "")).tierKey,
-      countryIso: iso2,
-    })
-  ).displayPrice.currency;
+  const lowest = projections.reduce((cheapest, projection) =>
+    projection.displayPrice.amountMinor < cheapest.displayPrice.amountMinor
+      ? projection
+      : cheapest,
+  );
 
   return CategoryTileViewSchema.parse({
     key: category.key,
     name: copyRow("category", category.key, locale)?.name ?? category.key,
     href: pathOf(locale, "countryCategory", corridorSlug(iso2, locale), slug),
     count: products.length,
-    ...(lowest === undefined
-      ? {}
-      : { fromPrice: { amountMinor: lowest, currency } }),
+    fromPrice: lowest.displayPrice,
   });
 }
 
@@ -969,9 +1019,9 @@ function todayIso(): string {
 function nextDateIn(
   occasionKey: string,
   iso2: CountryIso2,
-  from: string,
+  from: IsoDate,
 ): string | null {
-  const found = upcomingOccasions(iso2, from as never).find(
+  const found = upcomingOccasions(iso2, from).find(
     (occasion) => occasion.occasionKey === occasionKey,
   );
   return found?.date ?? null;
@@ -1034,35 +1084,57 @@ export async function listingView(
   };
   if (!(await listingExists(identity))) return undefined;
 
-  const from = options.from ?? todayIso();
+  // The date window is a boundary value like any other: parsed, not asserted (`/review 76`).
+  const fromParse = IsoDateSchema.safeParse(options.from ?? todayIso());
+  if (!fromParse.success) return undefined;
+  const from: IsoDate = fromParse.data;
   const page = options.page ?? 1;
-  const sort = options.sort ?? "default";
+  const hub = iso2 === undefined;
+  /**
+   * A destination-less hub shows **no money at all** (§2, §8), so there is nothing on it to sort
+   * by price: the request is normalised to the default order rather than reported as a price sort
+   * the items cannot be in. The hub's order is `inDefaultOrder()`'s locale collation, applied to
+   * the whole set below.
+   */
+  const sort: ListingSort = hub ? "default" : (options.sort ?? "default");
   const products = await productsFor(pageType, entityKey, kind, iso2);
   const ordered = await inDefaultOrder(products, locale, iso2);
   const total = ordered.length;
   const pageCount = Math.ceil(total / LISTING_PAGE_SIZE);
   if (page > 1 && page > pageCount) return undefined;
-  const slice = ordered.slice(
-    (page - 1) * LISTING_PAGE_SIZE,
-    page * LISTING_PAGE_SIZE,
-  );
+  const pageOf = <T>(all: readonly T[]): readonly T[] =>
+    all.slice((page - 1) * LISTING_PAGE_SIZE, page * LISTING_PAGE_SIZE);
 
-  const hub = iso2 === undefined;
-  const items = hub
-    ? []
-    : byPrice(
-        await Promise.all(
-          slice.map((product) =>
-            productCardView(product, locale, iso2, {
-              productLinks: options.productLinks ?? false,
-            }),
-          ),
+  /*
+   * **Sort the whole set, then paginate** (§2 "Sort", §5.4; `/review 76`). Page 1 of
+   * `?sort=price-asc` is the twelve cheapest products of the listing and page 2 continues from
+   * the thirteenth — not the default page re-ordered inside itself, which is what slicing first
+   * produced and what a reader comparing two pages would catch before a test did.
+   *
+   * The default order needs no price to order by, so it pages first and projects twelve cards; a
+   * price sort has to project the whole set to order it, which is the cost of the honest answer.
+   */
+  let items: readonly ProductCardView[] = [];
+  let hubItems: readonly HubCardView[] = [];
+  if (iso2 === undefined) {
+    hubItems = await Promise.all(
+      pageOf(ordered).map((product) => hubCardView(product, locale)),
+    );
+  } else {
+    const productLinks = options.productLinks ?? false;
+    const cards = async (
+      list: readonly Product[],
+    ): Promise<readonly ProductCardView[]> =>
+      Promise.all(
+        list.map((product) =>
+          productCardView(product, locale, iso2, { productLinks }),
         ),
-        sort,
       );
-  const hubItems = hub
-    ? await Promise.all(slice.map((product) => hubCardView(product, locale)))
-    : [];
+    items =
+      sort === "default"
+        ? await cards(pageOf(ordered))
+        : pageOf(byPrice(await cards(ordered), sort));
+  }
 
   const entityRow =
     entityKey === undefined || kind === undefined
@@ -1252,7 +1324,11 @@ async function tilesFor(
     if (!(await countryCategoryExists(row.key, iso2, locale, memo))) continue;
     const category = await getCategory(row.key);
     if (category === null) continue;
-    tiles.push(await categoryTileView(category, locale, iso2));
+    const tile = await categoryTileView(category, locale, iso2);
+    // `undefined` is "no tile" (no product here, or no authored slug in this locale). The
+    // existence rule above already excludes both, so this is the type agreeing with it.
+    if (tile === undefined) continue;
+    tiles.push(tile);
   }
   return sortBy(tiles, locale, (tile) => tile.name);
 }
@@ -1355,7 +1431,7 @@ async function linksFor(
 ): Promise<ListingLinks> {
   const memo = newMemo();
   const chips: ChipLinkView[] = [];
-  const destinations: ChipLinkView[] = [];
+  const destinations: ListingDestinationLink[] = [];
 
   if (iso2 !== undefined && kind !== undefined) {
     // Sibling categories or occasions of this destination — links to real pages, which is what
@@ -1396,9 +1472,9 @@ async function linksFor(
       const slug = slugFor(kind, entityKey, locale);
       if (slug === undefined) continue;
       destinations.push(
-        ChipLinkViewSchema.parse({
-          key: country,
-          name: corridorSlug(country, locale),
+        ListingDestinationLinkSchema.parse({
+          iso2: country,
+          nameKey: countryConfig(country).nameKey,
           href: pathOf(
             locale,
             kind === "category" ? "countryCategory" : "countryOccasion",
@@ -1439,7 +1515,9 @@ async function linksFor(
       : {}),
     ...(occasionsIndex === undefined ? {} : { occasionsIndex }),
     chips: sortBy(chips, locale, (chip) => chip.name),
-    destinations: sortBy(destinations, locale, (chip) => chip.name),
+    // Registry order (Poland first): the visible label is a *message*, and collating the country
+    // names is the renderer's job because only it can resolve them (TASK-112).
+    destinations,
   });
 }
 
