@@ -95,6 +95,10 @@ describe("AC-2: no database import in the spec 003 file set (T-02)", () => {
       "src/modules/analytics",
       // spec 007 AC-1 (TASK-087): the corridor content model, its provider seam and its gate.
       "src/modules/geo",
+      // spec 007 AC-1, TASK-090/094: the seo module and the two sitemap route handlers.
+      "src/modules/seo",
+      "src/app/sitemap.xml",
+      "src/app/sitemaps",
       "scripts/corridor-check.ts",
       "scripts/corridor-check-cases.ts",
     ]);

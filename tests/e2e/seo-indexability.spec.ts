@@ -7,9 +7,10 @@
  * committed (locale, country) set — seven destinations × the two locales with an authored guide.
  * A page that stopped answering would now fail here rather than quietly skipping.
  *
- * TODO(TASK-094 — sitemaps): add the third agreement — a `noindex` URL appears in no sitemap —
- * here rather than in a second place, so AC-9's "meta, sitemap membership and header agree" is one
- * assertion (AC-14 owns the full-set fetch).
+ * **The third agreement is `tests/e2e/sitemap.spec.ts`'s** (TASK-094): it walks `/sitemap.xml` to
+ * every `<loc>`, fetches all of them and asserts none says `noindex` — AC-9's "meta, sitemap
+ * membership and header agree" completed on the deployment this suite is running against, where
+ * the answer today is that the sitemap is empty *because* these pages are `noindex`.
  *
  * What this suite asserts once it runs: on every deployment a reviewer can reach (local, CI,
  * preview and even the production alias — none of them is an indexing environment, §6, §12), the

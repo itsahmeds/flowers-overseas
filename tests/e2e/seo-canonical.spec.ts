@@ -5,8 +5,9 @@
  * **Un-parked by TASK-091**: the route exists and the list below is the committed set. The hub
  * arrives with TASK-092 and joins this list there.
  *
- * TODO(TASK-094 — sitemaps): add AC-10's last clause — a `noindex` page keeps its canonical **and
- * appears in no sitemap** — once a sitemap exists to intersect (AC-14).
+ * AC-10's last clause — a `noindex` page keeps its canonical **and appears in no sitemap** — is
+ * completed by `tests/e2e/sitemap.spec.ts` (TASK-094): the canonical is asserted here, the absence
+ * from every sitemap there, against the same documents.
  *
  * The property under test is the one that de-indexes a cluster when it is wrong: the canonical is
  * **self-referencing** and never points at another locale. Every page on a non-indexing deployment
