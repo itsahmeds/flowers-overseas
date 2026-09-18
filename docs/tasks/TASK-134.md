@@ -24,11 +24,24 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 - Gates: `pnpm test:coverage` locally, `pnpm typecheck`, `pnpm lint`; one full green `ci` run on the
   PR is the acceptance evidence (link it in `## Result`).
 
+## Decision — config-level budget, not per-test
+
+Taken: a CI-aware `testTimeout` on the `unit` project in `vitest.config.ts` (30 000 ms when
+`process.env.CI` is set, Vitest's 5 000 ms default otherwise). Why this over two per-test
+third-argument timeouts: the cost is a property of the shared `ubuntu-latest` runner under V8
+coverage instrumentation, not of these two assertions — both finish in under a second on any
+developer machine, and the next CPU-bound case added under spec 002+ would hit the same wall and
+need the same one-off number. Spec 001 §2 "Testing harness" puts project policy in
+`vitest.config.ts` (projects, environments, setup files, coverage thresholds), so the budget
+belongs there too, in one commented place, rather than as two magic numbers scattered through the
+suite. Locally the default stays tight, so a hung test still fails fast where a human is watching.
+
 ## Read
 
-- `specs/NNN-*.md` — read `## 0. Index` first, then only the sections the ACs name
-- `docs/codebase-map.md` — where everything lives
-- (the two or three files the deliverable actually touches)
+- `specs/001-repo-dev-os-bootstrap.md` — `## 0. Index`, then AC-16 (§9 L192) and T-17 (§10 L234)
+- `vitest.config.ts` — the `unit` project
+- `.github/workflows/ci.yml` — the `test-unit` job and the `visual` job's artefact upload
+- `tests/unit/ci-workflow.test.ts` — where the repo already asserts the shape of `vitest.config.ts`
 
 ## Carry-forwards
 

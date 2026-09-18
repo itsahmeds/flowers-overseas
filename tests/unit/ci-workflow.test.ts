@@ -10,7 +10,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { parse } from "yaml";
 
 import { GITLEAKS_VERSION } from "../../scripts/audit-secrets.ts";
@@ -378,5 +378,53 @@ describe("pr-policy.yml", () => {
   it("exposes exactly one job, named `pr-policy` (AC-21's extra required check)", () => {
     expect(Object.keys(prPolicy.jobs)).toEqual(["pr-policy"]);
     expect(prPolicy.jobs["pr-policy"]?.name).toBe("pr-policy");
+  });
+});
+
+/**
+ * TASK-134 (spec 001 AC-16 / T-17): `test-unit` runs `pnpm test:coverage` on `ubuntu-latest`, and
+ * under V8 instrumentation two CPU-bound cases cross Vitest's 5 000 ms default there while
+ * finishing in under a second locally. The budget therefore has to depend on `CI`, and it is a
+ * property of the config file rather than of any one test — so it is asserted by loading the
+ * config twice, once with `CI` set and once without.
+ */
+describe("the unit project's test budget (TASK-134)", () => {
+  const unitTimeoutFor = async (ci: string | undefined): Promise<unknown> => {
+    const previous = process.env["CI"];
+    if (ci === undefined) {
+      delete process.env["CI"];
+    } else {
+      process.env["CI"] = ci;
+    }
+    vi.resetModules();
+    try {
+      const loaded = (
+        await import(`${repoRoot}/vitest.config.ts?task-134=${ci ?? "unset"}`)
+      ).default as {
+        test?: {
+          projects?: { test?: { name?: string; testTimeout?: number } }[];
+        };
+      };
+      const unit = (loaded.test?.projects ?? []).find(
+        (project) => project.test?.name === "unit",
+      );
+      expect(unit).toBeDefined();
+      return unit?.test?.testTimeout;
+    } finally {
+      if (previous === undefined) {
+        delete process.env["CI"];
+      } else {
+        process.env["CI"] = previous;
+      }
+      vi.resetModules();
+    }
+  };
+
+  it("raises the unit timeout to 30 s when CI is set", async () => {
+    await expect(unitTimeoutFor("true")).resolves.toBe(30_000);
+  });
+
+  it("leaves the tight Vitest default in place locally, where slow means hung", async () => {
+    await expect(unitTimeoutFor(undefined)).resolves.toBeUndefined();
   });
 });
