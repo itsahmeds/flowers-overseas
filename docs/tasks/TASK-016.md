@@ -16,6 +16,8 @@ Branch `task/TASK-016-schema-catalog-pricing`. AC-9 is the SEO/compliance keysto
 
 - **From the orchestrator (2026-09-18), before dispatch — spec 002 §14 A4:** the review triple (`translation_status`/`reviewed`/`reviewed_by`/`reviewed_at`/`source_hash`) goes exactly where §5.1 spells it — `product_translation`, and "same translation shape" for `category_translation` and `addon_translation`. Do not add it to any name-only table and do not touch `country_translation`/`city_translation` (migration `0002` stands). Also carried from `/review 75` nit 6: measure and add FK indexes for the `0003` tables where a lookup needs them, stating the basis in the migration header.
 
+- **From TASK-122 / orchestrator ruling (2026-09-18, spec 002 §14 A5):** migration `0003` widens `occasion_country_rule_type_check` to seven values (adds `orthodox_easter_offset`) with a rollback that restores the six-value check; the seed already projects the seventh type for RO rows.
+
 ## Escalations
 
 _None recorded._
