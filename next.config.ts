@@ -67,6 +67,11 @@ const headerRules = [
 ];
 
 const nextConfig: NextConfig = {
+  // The container of spec 040 §5.3 (AC-8, TASK-098) runs `node server.js` from `.next/standalone`:
+  // Next traces the server's dependencies and writes a self-contained tree, so the runtime image
+  // carries no development `node_modules`. Vercel ignores this setting, so the cold fallback of
+  // ADR-0018 is unaffected.
+  output: "standalone",
   headers: () => Promise.resolve(headerRules),
 };
 

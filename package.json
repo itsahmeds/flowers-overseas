@@ -33,6 +33,7 @@
     "tasks:brief": "node scripts/tasks-brief.ts",
     "tasks:migrate": "node scripts/tasks-brief.ts --migrate",
     "env:check": "node scripts/env-check.ts",
+    "railway:check": "node scripts/railway-check.ts",
     "db:check": "node scripts/db-check.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "node scripts/db-migrate.ts",
