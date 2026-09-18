@@ -70,6 +70,7 @@ Agents never write code except the implementers. The orchestrator refuses to dis
 
 ## Conventions
 - Branch `task/TASK-012-short-slug`; PR title `feat(scope): … (TASK-012)`.
+- **Open every PR with `gh pr create --draft`, then `gh pr ready`.** `.github/workflows/ci.yml` triggers on `pull_request: [ready_for_review, labeled]` only, so a PR created directly as ready fires no run at all (TASK-109, 2026-09-18).
 - Module boundaries per `plan/01-architecture.md` §5; `app/` is thin.
 - Tests live in `tests/<layer>/`; fixtures for occasion dates, currencies, addresses are shared.
 - Commit messages end with `Co-Authored-By: Claude <noreply@anthropic.com>` when Claude authored.
