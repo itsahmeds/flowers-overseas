@@ -21,7 +21,6 @@ One dated bullet per `/review`, newest last.
 
 - **From `/review 72` (2026-09-17, TASK-105):** its nits are carried to TASK-114 and are **not** solved here.
 - **From `/review 73` (2026-09-18, TASK-108, spec 008 §14 A2):** the provenance note renders once per card, so `productCardView()` carries `provenance` and the photo it actually resolved per card and consolidates nothing per grid.
-- **From `/review 76` round 2 (2026-09-18) — PASS; nits carried:** (1) CI counted 4 097 unit tests vs 4 136 + 5 skipped locally — add one reconciling line here when next touched (environment-dependent test generation suspected); (2) the destination-collation hand-off belongs in TASK-112's brief too; (3) a price sort projects the whole set — watch build time as the six page types adopt it (TASK-109–112); (4) no fully green `ci` run exists on `984fe00` because `test-unit` timed out on two unrelated files (TASK-134) and the downstream jobs were skipped.
 
 - **From `/review 76` (2026-09-18, round 1 — VERDICT FAIL). Required before re-review:**
   1. `categoryTileView()` pairs the destination-currency amount from `fromPrice()` with
@@ -53,6 +52,7 @@ One dated bullet per `/review`, newest last.
   005's provider seam; (4) the module-level step summary is accepted, but `writeExistenceSummary()`
   has **no call site in the repo**, so AC-3's "printed to the CI step summary" is deferred to
   TASK-109…112 and must be declared as such in their briefs.
+- **From `/review 76` round 2 (2026-09-18) — PASS; nits carried:** (1) CI counted 4 097 unit tests vs 4 136 + 5 skipped locally — add one reconciling line here when next touched (environment-dependent test generation suspected); (2) the destination-collation hand-off belongs in TASK-112's brief too; (3) a price sort projects the whole set — watch build time as the six page types adopt it (TASK-109–112); (4) no fully green `ci` run exists on `984fe00` because `test-unit` timed out on two unrelated files (TASK-134) and the downstream jobs were skipped.
 
 ## Escalations
 
