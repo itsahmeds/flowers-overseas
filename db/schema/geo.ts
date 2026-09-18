@@ -301,19 +301,25 @@ export const cityTranslation = pgTable(
   ],
 );
 
+/**
+ * Surrogate `id` as well as the natural key: spec 002 §5.1 gives `partner_coverage` and
+ * `recipient_address` a single-column `postcode_zone_id`, which `(country_id, prefix)` cannot
+ * serve. `UNIQUE (country_id, prefix)` keeps the natural key enforced.
+ */
 export const postcodeZone = pgTable(
   "postcode_zone",
   {
+    id: uuid("id").primaryKey().defaultRandom(),
     countryId: uuid("country_id").notNull(),
     prefix: text("prefix").notNull(),
     cityId: uuid("city_id").notNull(),
     ...timestamps,
   },
   (table) => [
-    primaryKey({
-      name: "postcode_zone_pkey",
-      columns: [table.countryId, table.prefix],
-    }),
+    unique("postcode_zone_country_prefix_key").on(
+      table.countryId,
+      table.prefix,
+    ),
     foreignKey({
       name: "postcode_zone_city_fkey",
       columns: [table.cityId, table.countryId],

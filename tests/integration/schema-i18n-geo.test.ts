@@ -85,6 +85,22 @@ const TABLES = [
   "fx_rate",
 ] as const;
 
+/**
+ * The name of the constraint a Postgres error names, so a T-08 assertion records *which*
+ * constraint rejected an insert and not merely that one did (`/review 75`).
+ */
+function constraintOf(error: unknown): string {
+  if (
+    error !== null &&
+    typeof error === "object" &&
+    "constraint_name" in error
+  ) {
+    const name = (error as { constraint_name?: unknown }).constraint_name;
+    if (typeof name === "string") return name;
+  }
+  return "(no constraint name)";
+}
+
 describe.skipIf(sql === undefined)(
   "migration 0002 applied — i18n + geo",
   () => {
@@ -295,7 +311,8 @@ describe.skipIf(sql === undefined)(
           "occasion_country: PRIMARY KEY (occasion_id, country_id)",
           "occasion_translation: PRIMARY KEY (occasion_id, locale_code)",
           "occasion_translation: UNIQUE (locale_code, slug)",
-          "postcode_zone: PRIMARY KEY (country_id, prefix)",
+          "postcode_zone: PRIMARY KEY (id)",
+          "postcode_zone: UNIQUE (country_id, prefix)",
           "region: PRIMARY KEY (id)",
           "region: UNIQUE (country_id, code)",
           "region: UNIQUE (id, country_id)",
@@ -358,8 +375,10 @@ describe.skipIf(sql === undefined)(
                 INSERT INTO country_translation (country_id, locale_code, name, slug)
                 VALUES (${countryB}, 'zz', 'Beta', 'alpha')
               `;
-                  } catch {
-                    failures.push("country_translation duplicate slug");
+                  } catch (error: unknown) {
+                    failures.push(
+                      `country_translation duplicate slug: ${constraintOf(error)}`,
+                    );
                     throw new Error("expected rejection");
                   }
                 })
@@ -383,8 +402,10 @@ describe.skipIf(sql === undefined)(
                 INSERT INTO occasion_translation (occasion_id, locale_code, name, slug)
                 VALUES (${occasionB?.id ?? ""}, 'zz', 'Beta', 'alpha-occasion')
               `;
-                  } catch {
-                    failures.push("occasion_translation duplicate slug");
+                  } catch (error: unknown) {
+                    failures.push(
+                      `occasion_translation duplicate slug: ${constraintOf(error)}`,
+                    );
                     throw new Error("expected rejection");
                   }
                 })
@@ -418,9 +439,9 @@ describe.skipIf(sql === undefined)(
                 INSERT INTO city_translation (city_id, country_id, locale_code, name, slug)
                 VALUES (${cityA2?.id ?? ""}, ${countryA}, 'zz', 'Alpha city', 'alpha-city')
               `;
-                  } catch {
+                  } catch (error: unknown) {
                     failures.push(
-                      "city_translation duplicate slug within a country",
+                      `city_translation duplicate slug within a country: ${constraintOf(error)}`,
                     );
                     throw new Error("expected rejection");
                   }
@@ -435,8 +456,10 @@ describe.skipIf(sql === undefined)(
                 INSERT INTO city_translation (city_id, country_id, locale_code, name, slug)
                 VALUES (${cityA?.id ?? ""}, ${countryB}, 'zz', 'Wrong country', 'wrong-country')
               `;
-                  } catch {
-                    failures.push("city_translation country mismatch");
+                  } catch (error: unknown) {
+                    failures.push(
+                      `city_translation country mismatch: ${constraintOf(error)}`,
+                    );
                     throw new Error("expected rejection");
                   }
                 })
@@ -450,8 +473,10 @@ describe.skipIf(sql === undefined)(
                 INSERT INTO occasion_country (occasion_id, country_id, rule_type)
                 VALUES (${occasionA?.id ?? ""}, ${countryA}, 'phase_of_moon')
               `;
-                  } catch {
-                    failures.push("occasion_country unlisted rule_type");
+                  } catch (error: unknown) {
+                    failures.push(
+                      `occasion_country unlisted rule_type: ${constraintOf(error)}`,
+                    );
                     throw new Error("expected rejection");
                   }
                 })
@@ -477,12 +502,14 @@ describe.skipIf(sql === undefined)(
               }
             });
 
+          // the label *and* which constraint rejected: a slug-regex CHECK or a primary-key
+          // collision would satisfy "it was rejected" just as the UNIQUE does (review 75 nit)
           expect(failures.sort()).toEqual([
-            "city_translation country mismatch",
-            "city_translation duplicate slug within a country",
-            "country_translation duplicate slug",
-            "occasion_country unlisted rule_type",
-            "occasion_translation duplicate slug",
+            "city_translation country mismatch: city_translation_city_fkey",
+            "city_translation duplicate slug within a country: city_translation_locale_country_slug_key",
+            "country_translation duplicate slug: country_translation_locale_slug_key",
+            "occasion_country unlisted rule_type: occasion_country_rule_type_check",
+            "occasion_translation duplicate slug: occasion_translation_locale_slug_key",
           ]);
           expect(accepted.sort()).toEqual([
             "city_translation same slug across countries",

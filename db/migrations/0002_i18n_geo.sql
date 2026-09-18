@@ -30,9 +30,21 @@
 --
 -- Uniqueness is declared as the primary key wherever the spec's `UNIQUE (…)` *is* the row's
 -- natural key (`country_translation`, `city_translation`, `occasion_translation`,
--- `country_locale_content`, `country_holiday`, `occasion_country`, `postcode_zone`, `fx_rate`),
--- rather than as a surrogate `uuid` plus a redundant second index. A duplicate insert is rejected
--- by the same index either way, which is what §6 and T-08 assert.
+-- `country_locale_content`, `country_holiday`, `occasion_country`, `fx_rate`), rather than as a
+-- surrogate `uuid` plus a redundant second index. A duplicate insert is rejected by the same
+-- index either way, which is what §6 and T-08 assert. `postcode_zone` is the exception: §5.1
+-- declares `postcode_zone_id` columns on `partner_coverage` and on `recipient_address`, so it
+-- carries a surrogate `id` *and* `UNIQUE (country_id, prefix)`.
+--
+-- **Declared deviation — `ON DELETE CASCADE` outside the translation/variant rule.** §5.1's
+-- convention is "deletes are `ON DELETE RESTRICT` by default; `CASCADE` only from a parent to its
+-- own translation/variant rows", yet `country_holiday.country_id` and both `occasion_country`
+-- foreign keys cascade. Reason: both tables are pure per-country *derivatives* of their parent
+-- (a holiday date and an occasion's date rule), carry no identity of their own and are referenced
+-- by nothing, so a parent row cannot be deleted while they exist unless they go with it; leaving
+-- them `RESTRICT` would make a country delete fail on rows nobody owns. In practice a country is
+-- retired by a `status` flip (§5.1 `country.status`), never a delete, so the clause is reachable
+-- only from a data fix. Recorded rather than changed: the spec does not name these two tables.
 --
 -- `city_translation`'s uniqueness spans a column of its *parent* (`country_id`), so the column is
 -- carried on the child and kept honest by a composite foreign key to `city (id, country_id)` —
@@ -267,13 +279,19 @@ CREATE TABLE public.city_translation (
 
 -- Postcode prefix → city, the routing input of spec 016. `prefix` is the leading characters of a
 -- destination postcode, uppercased and stripped of spaces by the caller.
+--
+-- This is the one table in the "uniqueness as the primary key" group that keeps a surrogate `id`
+-- as well: §5.1 declares `partner_coverage(partner_id, city_id NULL, postcode_zone_id NULL, …)`
+-- and `recipient_address(…, country_id, postcode_zone_id NULL, …)`, so `0005`/`0006` need a
+-- single-column key to point at. `(country_id, prefix)` stays the natural key as a `UNIQUE`.
 CREATE TABLE public.postcode_zone (
+  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   country_id  uuid        NOT NULL,
   prefix      text        NOT NULL,
   city_id     uuid        NOT NULL,
   created_at  timestamptz NOT NULL DEFAULT now(),
   updated_at  timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT postcode_zone_pkey PRIMARY KEY (country_id, prefix),
+  CONSTRAINT postcode_zone_country_prefix_key UNIQUE (country_id, prefix),
   CONSTRAINT postcode_zone_city_fkey FOREIGN KEY (city_id, country_id)
     REFERENCES public.city (id, country_id) ON DELETE RESTRICT,
   CONSTRAINT postcode_zone_prefix_check CHECK (prefix = upper(prefix) AND prefix <> '')

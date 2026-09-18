@@ -86,6 +86,23 @@ Reconciling the two, whenever `db:generate` emits SQL:
 5. Run `npx prettier --write db/migrations/meta` afterwards: drizzle-kit writes its snapshot with
    its own formatting and `pnpm format:check` covers the whole tree.
 
+### Journal tags are not migration versions
+
+`meta/_journal.json` names tags like `0000_numerous_toad_men` and `0001_cute_norman_osborn`, and
+**none of them has a `.sql` file in this directory**. That is correct, not a missing file. The tag
+names a *snapshot*; the journal and the runner's `public.schema_migrations` are two independent
+ledgers. The runner applies `NNNN_*.sql` by filename and never reads `meta/`; drizzle-kit only
+diffs `meta/NNNN_snapshot.json` to decide what the *next* draft contains. Renaming a tag changes
+neither, and deleting an entry orphans its snapshot and makes the next `db:generate` re-emit the
+whole schema. So the tags stay, and they will keep drifting away from the migration versions.
+
+The consequence to expect: drizzle-kit numbers its next draft from `entries.length`, so the draft
+it emits will sooner or later carry a version this directory already uses — `pnpm db:check`
+rejects that as a duplicate. This is not a bug in the journal; it is why step 1 above says
+**delete the generated file** once its content is folded into the hand-written migration. Delete
+it before running `pnpm db:check` and nothing collides. Never rename a hand-written migration to
+dodge the clash, and never rename a journal tag to match one.
+
 Migration `0002` (TASK-015) is the first with Drizzle tables, so `meta/0000_snapshot.json` is the
 committed baseline the next `db:generate` diffs against. Its constraint names are the ones the
 hand-written SQL uses — including the Drizzle Kit foreign-key convention
