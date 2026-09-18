@@ -15,13 +15,14 @@
  * argument — without a red test (spec 001 §14 A17, spec 040 §14 A1).
  */
 import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { join, resolve } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
 import {
   BUILD_ENV_KEYS,
   ENV_KEYS,
+  hostPlatform,
   RUNTIME_ENV_KEYS,
   validateBuildEnv,
   validateRuntimeEnv,
@@ -250,5 +251,27 @@ describe(`${RAILWAY_CONFIG_PATH} (AC-9, T-09)`, () => {
     expect(manifest.scripts["railway:check"]).toBe(
       "node scripts/railway-check.ts",
     );
+  });
+});
+
+describe("the standalone output is not emitted on Vercel (TASK-135)", () => {
+  const configSource = readFileSync(join(repoRoot, "next.config.ts"), "utf8");
+
+  it("branches the output shape on hostPlatform(), not unconditionally", () => {
+    // TASK-098 shipped `output: "standalone"` unconditionally on the claim that Vercel ignores it.
+    // Vercel's own tracer runs in `onBuildComplete` and reads `.next/next-server.js.nft.json`,
+    // which standalone output does not leave there, so every deployment after `d0a1d66` failed
+    // with ENOENT after generating all 31 pages.
+    expect(configSource).toMatch(/hostPlatform\(process\.env\) === "vercel"/);
+    expect(configSource).toMatch(/output: "standalone" as const/);
+    expect(configSource).not.toMatch(/^\s*output: "standalone",\s*$/m);
+  });
+
+  it("still emits standalone everywhere that is not Vercel, which is what the image runs", () => {
+    expect(hostPlatform({})).toBe("local");
+    expect(hostPlatform({ RAILWAY_ENVIRONMENT_NAME: "staging" })).toBe(
+      "railway",
+    );
+    expect(hostPlatform({ VERCEL: "1" })).toBe("vercel");
   });
 });

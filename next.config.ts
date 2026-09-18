@@ -78,9 +78,19 @@ const headerRules = [
 const nextConfig: NextConfig = {
   // The container of spec 040 §5.3 (AC-8, TASK-098) runs `node server.js` from `.next/standalone`:
   // Next traces the server's dependencies and writes a self-contained tree, so the runtime image
-  // carries no development `node_modules`. Vercel ignores this setting, so the cold fallback of
-  // ADR-0018 is unaffected.
-  output: "standalone",
+  // carries no development `node_modules`.
+  //
+  // **Not on Vercel.** TASK-098 shipped this unconditionally on the claim that "Vercel ignores this
+  // setting"; it does not. Vercel runs its own tracer in `onBuildComplete` and reads
+  // `.next/next-server.js.nft.json`, which standalone output does not leave at that path, so every
+  // deployment after `d0a1d66` failed with `ENOENT … next-server.js.nft.json` — compiled, generated
+  // all 31 static pages, then died at the last step, freezing the demo URL of ADR-0018 on its last
+  // good build. `hostPlatform()` is the one host axis spec 040 §5.2 allows to exist, and this is a
+  // build-output shape rather than application behaviour, so branching on it here is inside that
+  // rule. Pinned by `tests/unit/container.test.ts` (TASK-135).
+  ...(hostPlatform(process.env) === "vercel"
+    ? {}
+    : { output: "standalone" as const }),
   headers: () => Promise.resolve(headerRules),
 };
 
