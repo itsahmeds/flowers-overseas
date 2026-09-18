@@ -1588,9 +1588,16 @@ export async function existenceCounts(): Promise<
  *
  * It lives in the module rather than in a `scripts/` entry point because the module is the only
  * place the counts can be computed: every read below it goes through spec 005's provider seam and
- * the `@/` alias, neither of which a bare `node scripts/*.ts` run resolves. The call site is
+ * the `@/` alias, and this module's graph reaches `@/modules/ui` — React components and
+ * `next/font` — so `node scripts/*.ts`, which resolves neither, cannot import it at all
+ * (`ERR_MODULE_NOT_FOUND: @/config`, verified in `/review 76`'s fix round).
+ *
+ * **It therefore has no call site yet, deliberately** (`/review 76` ruling 4). The call site is
  * `generateStaticParams` — the same function whose output the numbers describe (AC-3) — which
- * TASK-109…112 add, and this is the function they call.
+ * **TASK-109** adds for the country shop root and TASK-110…112 for the other five types; AC-3's
+ * "printed to the CI step summary" is satisfied there, in the build that produces the URLs, and
+ * not by a second enumeration in a script that would be a second answer to the same question. The
+ * function, its Markdown and its `GITHUB_STEP_SUMMARY` branch are tested here today.
  */
 export async function writeExistenceSummary(
   env: Readonly<Record<string, string | undefined>> = process.env,

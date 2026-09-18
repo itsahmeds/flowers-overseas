@@ -21,6 +21,13 @@ be green. One paragraph or a short list — no restatement of the spec.
 One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From `/review 76` (2026-09-18, TASK-107, ruling 4):** AC-3's "the per-locale counts are
+  printed to the CI step summary" is **deferred to this task**. TASK-107 ships
+  `writeExistenceSummary()` in `src/modules/catalog/listing.ts` (it writes to
+  `$GITHUB_STEP_SUMMARY` when a runner sets one and to stdout otherwise) but leaves it with **no
+  call site**: no `scripts/` entry can import the module (`@/` alias plus the `@/modules/ui` React
+  graph). Call it from this route's `generateStaticParams`, beside `listingPages()`, so the numbers
+  describe the URLs the build just emitted.
 
 ## Escalations
 

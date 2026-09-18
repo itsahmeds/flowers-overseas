@@ -56,10 +56,20 @@ One dated bullet per `/review`, newest last.
 
 ## Escalations
 
-- **2026-09-18 — hub cards and `ProductCardView` (open, non-blocking).** §5.2 sketches `ListingViewSchema.items` as `ProductCardView[]`, but §2 and §8 forbid any money on a destination-less hub and TASK-108 shipped `ProductCardViewSchema` with `price` and `priceLabelKey` **required** (correctly: every country-scoped card must carry one). Both cannot hold. Resolved here by adding `HubCardViewSchema = ProductCardViewSchema.omit({ price, priceLabelKey })` and a separate `hubItems` field, so "a hub shows no money" is a fact about the type rather than a rule a renderer must remember. Reversing it costs one schema and one field. Raised with the orchestrator in the PR body; TASK-112 (hub routes) is the next consumer.
-- **2026-09-18 — `listingExists()` "pure and synchronous" (resolved by construction).** §5.2 asks for a synchronous predicate; spec 005's read API (`countProductsIn`, `listProducts`, `priceProjection`) is `async` behind the provider seam TASK-070 will swap for Postgres. The functions here are pure — no clock, no environment, no I/O of their own — but `async`; making them synchronous would mean reading the dataset outside the provider seam, which spec 005 §5.2 forbids.
-- **2026-09-18 — the sixth indexability term (resolved).** §6 gates the three country-scoped types on `corridorState(iso2) === 'live'`, which spec 007's five terms do not express. Registered **inside `modules/seo`** as an optional `operational` term (an omitted term reads as satisfied), per spec 007 §2's "specs 008–011 register their page types here instead of writing their own branch". No existing descriptor changes and no robots literal is written outside that module.
-- **2026-09-18 — the step summary is a module function, not a `scripts/` entry (resolved).** A bare `node scripts/*.ts` run resolves neither the `@/` alias nor the module graph the counts need, so `writeExistenceSummary()` lives in `listing.ts` and writes to `$GITHUB_STEP_SUMMARY` when a runner sets one and to stdout otherwise. Its call site is `generateStaticParams` — the function whose output the numbers describe — which TASK-109…112 add.
+- **2026-09-18 — hub cards and `ProductCardView` (ANSWERED: spec 008 §14 A3).** §5.2 sketches `ListingViewSchema.items` as `ProductCardView[]`, but §2 and §8 forbid any money on a destination-less hub and TASK-108 shipped `ProductCardViewSchema` with `price` and `priceLabelKey` **required** (correctly: every country-scoped card must carry one). Both cannot hold. Resolved here by adding `HubCardViewSchema = ProductCardViewSchema.omit({ price, priceLabelKey })` and a separate `hubItems` field, so "a hub shows no money" is a fact about the type rather than a rule a renderer must remember. Reversing it costs one schema and one field. **Ruling (`/review 76`, now spec 008 §14 A3):** accepted as an amendment — §5.2's `items: ProductCardView[]` is what is corrected, not TASK-108's card contract; `ListingView` carries `items` **or** `hubItems`, a refinement forbids both being non-empty (shipped in round 2), and **TASK-115's `ItemList` builder reads both arrays**. TASK-112 (hub routes) is the next consumer.
+- **2026-09-18 — `listingExists()` "pure and synchronous" (ANSWERED: spec 008 §14 A4).** §5.2 asks for a synchronous predicate; spec 005's read API (`countProductsIn`, `listProducts`, `priceProjection`) is `async` behind the provider seam TASK-070 will swap for Postgres. The functions here are pure — no clock, no environment, no I/O of their own — but `async`; making them synchronous would mean reading the dataset outside the provider seam, which spec 005 §5.2 forbids. **Ruling (`/review 76`, now spec 008 §14 A4):** "synchronous" is a purity claim, not a call shape; determinism and freedom from side effects are what the tests assert.
+- **2026-09-18 — the sixth indexability term (ANSWERED: spec 007 §14 A7).** §6 gates the three country-scoped types on `corridorState(iso2) === 'live'`, which spec 007's five terms do not express. Registered **inside `modules/seo`** as an optional `operational` term (an omitted term reads as satisfied), per spec 007 §2's "specs 008–011 register their page types here instead of writing their own branch". No existing descriptor changes and no robots literal is written outside that module. **Ruling (`/review 76`, now spec 007 §14 A7):** accepted as a *term*, not a new `noindex` branch — and the round-1 reading "an omitted term reads as satisfied" is corrected: an absent **optional** term is *not asserted by this page type* and leaves the conjunction, an absent **required** term fails closed. Fixed in round 2 with `OPTIONAL_INDEXABILITY_TERMS` and a test over every term.
+- **2026-09-18 — the step summary is a module function, and its call site is deferred (ANSWERED).** A bare `node scripts/*.ts` run resolves neither the `@/` alias nor the module graph the counts need, so `writeExistenceSummary()` lives in `listing.ts` and writes to `$GITHUB_STEP_SUMMARY` when a runner sets one and to stdout otherwise. Its call site is `generateStaticParams` — the function whose output the numbers describe — which TASK-109…112 add.
+  **Ruling (`/review 76`):** the module-level function is accepted, but it has **no call site in
+  the repo**, so AC-3's "printed to the CI step summary" is **deferred, explicitly, to TASK-109**
+  (the first route with `generateStaticParams`; TASK-110…112 inherit it for the other five types).
+  Round 2 re-checked whether a `scripts/` entry could wire it instead, and it cannot under ~30
+  lines: no script in `scripts/` resolves the `@/` alias (they all import `../src/**.ts`
+  relatively), and this module's graph reaches `@/modules/ui` — React `.tsx` components and
+  `next/font` — so `node scripts/existence-summary.ts` dies at `ERR_MODULE_NOT_FOUND: @/config`
+  before any count is taken. Wiring it would mean a resolver hook plus a component-graph stub, and
+  a second enumeration of the URL set maintained apart from the one the build performs. The
+  deferral is recorded in `listing.ts`'s docblock and in TASK-109's brief.
 
 ## Result
 
@@ -79,16 +89,55 @@ country occasions · 23 category hubs · 28 occasion hubs · 1 occasions index =
 (category, destination) pairs below the floor; `en-gb` identical (**206**); `de` and `pl` **7** each
 — shop roots only, because no entity slug is authored there yet (§13 Q10, TASK-106).
 
-Tests: 37 new unit assertions across `tests/unit/catalog-listing.test.ts` (32) and
-`tests/unit/catalog-listing-country.test.ts` (5) — the floor at boundary−1/boundary for categories
-and occasions, evergreen vs seasonal hub existence, an unpublished country contributing nothing,
-`de`/`pl` emptiness, default-sort determinism against `topProductsForPrebuild()`, the six-type
-indexability table, the Phase 0 `noindex,follow` answer, hub-carries-no-money, and both branches of
-the step-summary writer. Full suite 4 092 passed / 5 skipped; cold `build` unchanged (no new route).
+Tests: 49 new unit assertions across `tests/unit/catalog-listing.test.ts` (43), 
+`tests/unit/catalog-listing-country.test.ts` (5) and `tests/unit/seo-indexability.test.ts` (1) —
+the floor at boundary−1/boundary for categories and occasions, evergreen vs seasonal hub existence,
+an unpublished country contributing nothing, `de`/`pl` emptiness, default-sort determinism against
+`topProductsForPrebuild()`, the six-type indexability table, the Phase 0 `noindex,follow` answer,
+hub-carries-no-money, both branches of the step-summary writer, and round 2's additions below.
+Full unit suite **4 104 passed / 5 skipped** (round 1: 4 092); every other gate green; cold `build`
+unchanged (no new route).
 
-Handed forward: TASK-109…112 call `listingPages()` in `generateStaticParams` and
-`writeExistenceSummary()` beside it; TASK-114 owns `?page=1`'s 301, the canonical and the parameter
-policy (`listingView()` already answers `undefined` past the last page); TASK-115/116 read the one
-view model for `ItemList` and the two sitemap children; the `shop.*` / `categoryHub.*` /
-`occasionHub.*` / `occasionsIndex.*` heading and breadcrumb keys the view model names are authored
-by the route tasks.
+### Round 2 (`/review 76` fix round)
+
+1. **The tile's money is one projection's.** `categoryTileView()` now projects every candidate with
+   `fromPriceProjection()` against one shared clock and carries the cheapest projection's
+   `displayPrice` whole — **the minimum measured in the display currency** (spec 008 §8: "the
+   lowest payable … price inside that tile", and what a buyer compares is what the cards print;
+   the two orderings coincide whenever one rate converts the tile, and the display-currency rule
+   is the one that stays true if they stop). Four tests: with the committed FX snapshot **live**,
+   `/en` over Poland must read `EUR` and must **not** carry the PLN minimum (the round-1 pairing
+   fails both); with a stale rate the destination's own currency and amount; plus the two no-tile
+   cases below.
+2. **Sort before pagination.** `listingView()` orders the whole set and cuts the page from it.
+   Tests assert `?sort=price-asc` page 1 is the twelve cheapest amounts of the whole listing and
+   page 2 is amounts 13–24 of the same ascending sequence, `price-desc` from the other end, and
+   that a destination-less hub keeps its collated default order (there is no money on a hub to
+   sort by, so the requested sort normalises to `default` rather than being claimed and not
+   applied).
+3. **`options.from` is parsed**, not asserted: `IsoDateSchema.safeParse` at the boundary, `IsoDate`
+   through `nextDateIn()`, and no `as never` anywhere in the module.
+4. **`categoryTileView()` returns `CategoryTileView | undefined`** — "no tile" for an empty product
+   list and for a locale with no authored slug (`de`/`pl` until TASK-106), both tested; `tilesFor()`
+   skips an absent tile.
+5. **The hub's destination picker** carries `{ iso2, nameKey, href }` through the new
+   `ListingDestinationLinkSchema` — the country's message key, never `corridorSlug()`. Order is the
+   registry's (Poland first) because collating the *visible* names needs the resolved messages,
+   which only the renderer has (hand-off to TASK-112).
+6. **`writeExistenceSummary()` stays without a call site, declared:** deferred to **TASK-109** (see
+   the escalation above for why a `scripts/` entry cannot resolve `@/` or this module's UI graph).
+
+Nits also closed: §11's counts pinned in the count test (`en`/`en-gb` 206 with 21 below the floor,
+`de`/`pl` 7 with 0 — nothing is measured there because no category has an authored slug yet);
+`ListingViewSchema` refined so `items` and `hubItems` cannot both be non-empty (§14 A3);
+`indexability()`'s absent-term defect fixed in `modules/seo` per spec 007 §14 A7, with a test over
+every required term; the `catalog-indexability` guard now excepts the single `verdict.indexable`
+read in `listing.ts` rather than the whole file.
+
+Handed forward: **TASK-109** calls `listingPages()` in `generateStaticParams` **and
+`writeExistenceSummary()` beside it** (AC-3's CI-summary half); TASK-112 renders the destination
+picker and collates the resolved country names; **TASK-115's `ItemList` builder reads both `items`
+and `hubItems`** (spec 008 §14 A3); TASK-114 owns `?page=1`'s 301, the canonical and the parameter
+policy (`listingView()` already answers `undefined` past the last page); TASK-116 reads the one view
+model for the two sitemap children; the `shop.*` / `categoryHub.*` / `occasionHub.*` /
+`occasionsIndex.*` heading and breadcrumb keys the view model names are authored by the route tasks.
