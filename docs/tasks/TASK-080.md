@@ -57,8 +57,9 @@ the `og` slot, which no Phase-0 asset uses. WebP `effort` 4 → 6 (quality still
 the 3–6 % that keeps the two busiest tiles under the 18 000 B cap without touching the cap, the
 quality or the fallback.
 
-**Measured.** Homepage image transfer at mobile width after a full scroll: **~143 KB** of 204 800 B;
-largest single response (the hero) **41 135 B** of 90 000 B. `budget:client-js`: **+0.0 KB against
+**Measured.** Homepage image transfer at the Pixel 7 profile with every image fetched:
+**150 372 B of 204 800 B (73 %)** — hero 1200 px 41 135 B, six tiles at 384 px 66 642 B, two product
+cards at 640 px 42 595 B; largest single response **41 135 B of 90 000 B**. `budget:client-js`: **+0.0 KB against
 the committed baseline on every route** — the AC-22 measurement, with no media component an island
 and no `sharp` in any chunk. CLS **0** in Lighthouse. Unit 4232 · e2e 794 · a11y 78 · visual 43,
 all green; 39 `darwin` baselines updated (home, shell, listing, gallery, footer, suggestion banner)
