@@ -79,12 +79,22 @@ function windowStart(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+/**
+ * Next calls `generateStaticParams` more than once per build (the collection pass and the render
+ * pass), and the counts describe the build rather than the call: printing them twice would put two
+ * identical tables in one CI step summary. One process, one table.
+ */
+let summaryWritten = false;
+
 export async function generateStaticParams(): Promise<
   { locale: string; segment: string; child: string }[]
 > {
   const params = [...(await localeChildParams())];
   // The counts of the set just emitted, where CI reads them (AC-3).
-  await writeExistenceSummary();
+  if (!summaryWritten) {
+    summaryWritten = true;
+    await writeExistenceSummary();
+  }
   return params;
 }
 
