@@ -210,3 +210,17 @@ changes no shipped byte, so `build`, `e2e`, `a11y`, `visual` and `lighthouse` ar
   at the Vercel preview and the spec skips off localhost, so the substitution this PR added is
   currently guarded only by local runs. **TASK-137 (PR 90, in review) moves the preview origin to
   `http://localhost:3000`, which starts that spec running the moment PR 90 merges.** No action here.
+
+**CI re-run, round 2** — [35622590214](https://github.com/itsahmeds/flowers-overseas/actions/runs/35622590214),
+conclusion `failure`, and neither cause is this PR. Fifteen jobs green (`lint` incl. the three
+orientation gates, `typecheck`, `test-unit`, `test-integration`, `test-contract`, `i18n-check`,
+`db-check`, `audit`, `catalogue-check`, `seo-validate`, `seed-check`, `corridor-check`,
+`dev-os-check`, `env-build-failure`). `commitlint` failed on **TASK-137's recorded defect**: its
+`if` admits `workflow_dispatch` but both its steps interpolate `github.event.pull_request.*.sha`,
+empty on a dispatch — locally, all 7 commits lint `0 problems, 0 warnings`. `preview` is
+`pull_request`-only by design, so it skipped and took `e2e`, `a11y`, `visual` and `lighthouse` with
+it. **The gap worth naming:** on an already-ready, already-labelled PR, `gh workflow run ci.yml` is
+the only re-trigger available and it **structurally cannot reach those five jobs**; they last ran on
+this branch at `pull_request` run 35616572158. Harmless here (this round adds two unit cases and
+changes no shipped byte), but it belongs next to TASK-137's `preview` work. I did not re-add the
+`ci:full` label to force a `labeled` event.
