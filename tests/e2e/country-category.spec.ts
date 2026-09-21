@@ -94,14 +94,30 @@ test.describe("existence and the 404 shapes (AC-1, T-01)", () => {
   test("an uppercase variant is not a page (ADR-0006: no case-fixing rewrite)", async ({
     request,
   }) => {
-    // Recorded, macOS-only: an APFS checkout answers 200 for an uppercase prebuilt path because
-    // the filesystem is case-insensitive; Linux (and CI) answers 404. The assertion is the Linux
-    // one — what must never happen anywhere is a **redirect** that fixes the casing.
+    // AC-1 names the uppercase variant as a 404 shape, so 404 is the assertion — not "200 or
+    // 404", which the route could not fail. Next resolves a prerendered route by reading
+    // `.next/server/app/<path>.html`, so on a case-insensitive volume (macOS APFS, the founder's
+    // machine) the mis-cased path finds the real page's file and answers 200. On the
+    // case-sensitive Linux of CI, the preview and production, the segment is not in
+    // `generateStaticParams`, `dynamicParams = false` refuses it, and the 404 document answers.
+    // The case is therefore skipped on darwin rather than weakened, per
+    // `tests/e2e/corridor.spec.ts`. Do not probe this URL against a local build you are still
+    // measuring — the 404 Next writes lands on the real page's file and serves "Page not found"
+    // until you rebuild (carried forward in `docs/tasks/TASK-110.md` for TASK-118's
+    // `docs/runbooks/shop-pages.md`).
+    test.skip(
+      process.platform === "darwin",
+      "case-insensitive local filesystem (APFS) serves the mis-cased path from the real page's prerendered HTML",
+    );
     const response = await request.get("/en/poland/flowers/Roses", {
       maxRedirects: 0,
     });
-    expect(response.headers()["location"]).toBeUndefined();
-    expect([200, 404]).toContain(response.status());
+    // What must never happen anywhere is a **redirect** that fixes the casing.
+    expect(
+      response.headers()["location"],
+      "/en/poland/flowers/Roses",
+    ).toBeUndefined();
+    expect(response.status(), "/en/poland/flowers/Roses").toBe(404);
   });
 
   test("a trailing slash is a permanent redirect to the bare URL (§14 A7)", async ({

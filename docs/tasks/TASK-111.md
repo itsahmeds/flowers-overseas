@@ -28,6 +28,31 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per `/review`, newest last.
 
+- 2026-09-21 `/review 89` round 1 — **required:** `expect([200, 404]).toContain(...)` in
+  `tests/e2e/country-category.spec.ts:104` and `country-occasion.spec.ts:80` asserts nothing;
+  AC-1 requires 404. Make it `toBe(404)` with a `test.skip(process.platform === "darwin")` and
+  the APFS reason, per `corridor.spec.ts:64`. **Done** in the round-1 fix commit: both cases now
+  assert `toBe(404)` and skip on darwin only.
+- 2026-09-21 `/review 89` round 1 — nit: the `## Result` claim that Romania's Orthodox Easter
+  renders a blank is stale; TASK-122 gave it a rule and it prints 2 May 2027. The only undated
+  observance (PL `name_day`) never reaches the table. **Done:** TASK-111's `## Result` now
+  describes what ships.
+- 2026-09-21 `/review 89` round 1 — nit: move the `t as unknown as` cast out of
+  `src/app/.../[grandchild]/page.tsx` into `modules/catalog/ui/labels.ts` beside
+  `registryLabel()`. **Open** — not taken in the round-1 fix, which was scoped to the two test
+  files; the pages passed review unchanged.
+- 2026-09-21 `/review 89` round 1 — for the orchestrator, not this task: `shop.root.introBody` is
+  identical on 140 category URLs per locale; authored per-corridor copy is needed before the
+  first country goes live.
+- 2026-09-21 `/review 89` round 1, **for TASK-118's `docs/runbooks/shop-pages.md`** (that runbook
+  does not exist yet, so the line is parked here rather than written): never curl a mis-cased URL
+  against a local `pnpm start` you are still measuring. On macOS APFS, `/en/poland/Flowers/roses`
+  answered 200 twice and then 404, and the 404 Next wrote to disk landed on
+  `.next/server/app/en/poland/flowers.html` — the *real* page's prerendered HTML — so
+  `/en/poland/flowers` served "Page not found" until the build was redone. Case-insensitive
+  filesystem only; not reachable on the Linux of CI, Railway or Vercel, which is why the two
+  casing e2e cases skip on darwin and run there.
+
 
 ## Escalations
 
@@ -53,8 +78,16 @@ renders breadcrumb, `h1`, the **dated line**, the lede, the demo sentence, the p
 `listingView().occasionDates` from spec 007's `occasionDate`/`nextOccasions` and is formatted by
 `formatDate`, so no two page types can print different days for one occasion and no date literal
 exists in any component or message string. `date: null` prints the honest blank of the design
-round's Q6 — Poland's `rule_type: none` name day, and Romania's Orthodox Easter until spec 009
-task 2 — rather than reusing the Western date.
+round's Q6 rather than reusing the Western date. **Which rows are blank, as shipped:** the brief's
+title names Romania's Orthodox Easter, and that is no longer true — TASK-122 landed spec 009's
+`orthodox_easter_offset`, so Romania's Easter prints **Sunday, 2 May 2027**, its own Orthodox date,
+where DE/ES/PL print 28 March 2027. The blank is correct and covered, but it is unreachable on the
+committed corpus: the only observance left with `rule_type: none` is Poland's `name_day`, and the
+shop root's table carries dated rows only, so it is filtered out before render. The Q6 state is
+therefore proved by a fabricated view (`date: null` on the real Mother's Day row) in
+`tests/unit/catalog-occasion-page.test.tsx`, and `tests/unit/catalog-country-occasion.test.ts`
+pins both halves: `observedUndatedOccasions("PL")` is `["name_day"]` and
+`observedUndatedOccasions("RO")` is empty.
 
 **§14 A10, the occasion table's third column.** `ListingOccasionDate` gains an optional `href`
 populated by the same predicate that gives a row a page, and `CountryShopRootPage` renders the
@@ -117,3 +150,70 @@ local run of those three gates, on the committed build, is the evidence of recor
 link with no code change here; TASK-114 owns the toolbar and pagination; TASK-115 owns the
 `ItemList`/`BreadcrumbList` slots. Three sheet-versus-code differences are recorded in
 `docs/design/README.md` under this task's dated row.
+
+
+### Round-1 fix (2026-09-21, `/review 89`)
+
+**The one required change: an assertion that tested nothing.** `tests/e2e/country-category.spec.ts`
+and `tests/e2e/country-occasion.spec.ts` asserted the uppercase URL shape with
+`expect([200, 404]).toContain(response.status())`. 200 and 404 are the only statuses that route
+can return, so the assertion passed with its subject removed — AC-1 names the uppercase variant as
+a **404** shape and the test could not have failed it. Both now read
+`expect(response.status(), url).toBe(404)`, the `location` assertion is kept and each carries
+`test.skip(process.platform === "darwin", …)` naming the case-insensitive filesystem, which is the
+shape `tests/e2e/corridor.spec.ts:64` already uses. No source file moved.
+
+**The replacement is not vacuous either — measured.** With the skip forced off on this macOS
+checkout, both cases go **red**: `Expected: 404, Received: 200` for `/en/poland/flowers/Roses` and
+`/en/poland/occasions/Mothers-Day`. APFS *is* the mutation the reviewer asked for — a filesystem
+that resolves the mis-cased path to the real page's prerendered file is the route's casing guard
+removed — and the same response that turns the new assertion red is the response the old
+`[200, 404]` assertion accepted as a pass. On the case-sensitive Linux of CI the guard is present,
+the case runs and it is green. Skipped, the pair shows as `4 skipped` locally; on CI it is 4 more
+assertions than the branch had.
+
+**Gates, all on this head.** `typecheck`, `lint` (ESLint + Stylelint), `i18n:check` (4 locales, no
+missing, unused, stale or malformed key), `check:no-db`, `codebase:map --check` (13 556 B, current),
+`specs:index --check`, `tasks:check`, `format:check` — all green. The two changed e2e specs against
+a fresh `pnpm build` + `pnpm start -p 3221` under the build slot: **46 passed, 4 skipped** (the
+skips are the two uppercase cases × two projects), then the forced-unskip run above. 15-minute load
+average 11.9 on 8 cores, so no timing number is claimed here; CI remains the gate of record.
+
+**The macOS hazard, reproduced.** Probing the two mis-cased URLs overwrote
+`.next/server/app/en/poland/flowers/roses.html` and `…/occasions/mothers-day.html` with the 404
+document — the real pages' prerendered HTML, because APFS matched `Roses` to `roses` — while the
+running server kept answering 200 from memory. The `.next` in this worktree was deleted afterwards
+so nobody inherits a build that serves "Page not found" for two live pages. The line is carried
+forward above for TASK-118's `docs/runbooks/shop-pages.md`, which does not exist yet.
+
+**Swept for the same class in every test file this PR touches**, per CLAUDE.md's new "no assertion
+may pass with its subject removed" rule. Four shapes were looked for: a `toContain` over a set that
+covers every reachable value, a `toBeDefined()` on something that cannot be undefined, a
+`try`/`catch` that swallows the assertion, and a loop whose collection can be empty. There is no
+`try`/`catch` in any of them, and every loop over a derived collection is preceded by a non-empty
+or an equality assertion except the two noted below. What the sweep found, none of it changed here:
+
+1. **The LCP nomination assertions are self-fulfilling at zero** —
+   `tests/unit/catalog-category-page.test.tsx:168`, `tests/unit/catalog-occasion-page.test.tsx:163`
+   and the e2e twins (`country-category.spec.ts:180`, `country-occasion.spec.ts:159`). The unit
+   form computes `priority = items.filter((card, index) => index === 0 && …)`, which can only be
+   0 or 1 by construction, so `expect(priority.length).toBeLessThanOrEqual(1)` is a property of
+   `filter`, not of the page: it passes with its subject removed. The three assertions that follow
+   then compare the preload, `fetchpriority` and `loading="eager"` counts **to `priority.length`**,
+   so a page that nominated no LCP image at all would assert zero of each and pass. AC-24 wants
+   exactly one on these two page types. The shipped behaviour is right (the reviewer counted one
+   `as="image"` preload in the built HTML), so this is a test-strength gap, not a defect — offered
+   for round 2 rather than fixed, because the required change was scoped to two lines.
+2. **A loop that can be empty on a broken view** —
+   `tests/unit/catalog-country-occasion.test.ts:220` iterates `view?.occasionDates ?? []`. The
+   `?? []` is needed for `de`/`pl`, where the view is legitimately `undefined`, but it also means
+   the case would pass if the `en` shop root stopped producing a view. Other tests in the same file
+   pin that view, so the coverage exists; the assertion alone does not carry it.
+3. **A universal over a possibly-empty set** — `tests/unit/catalog-occasion-page.test.tsx:150`
+   asserts that every `/en/poland/occasions/…` href is Mother's Day, over
+   `html.match(…) ?? []`. Zero hrefs satisfies it, so it would survive the chip row disappearing.
+   Logically honest, weaker than it reads.
+4. **`expect([301, 308]).toContain(status)`** for the trailing slash (both specs) — inspected and
+   **kept**: the reviewer ruled it out of scope (nit 2) because it follows `corridor.spec.ts`'s
+   documented reason, Cloudflare will answer 301 after spec 040, and unlike the uppercase case the
+   set excludes the statuses that would be failures (200 and 404).
