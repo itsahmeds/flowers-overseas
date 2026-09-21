@@ -12,6 +12,9 @@
  * here), the canonical string through `canonicalFor()`, and the page's own verdict through
  * `listingView()` over the real catalogue.
  */
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { describe, expect, it } from "vitest";
 
 import {
@@ -284,6 +287,14 @@ describe("the view model answers the parameters (AC-9, AC-10)", () => {
  * deployment the parameter is then the *only* variable left in the conjunction, and the two
  * answers genuinely differ.
  */
+/**
+ * The probe runs on `occasionsIndex` because `isCountryScoped()` excludes it, which leaves the
+ * flag as the only variable in the conjunction. It is a **page type, not a served page**: both
+ * depth-2 handlers `notFound()` unless the match is `destinationsHub` (`routes.ts:28-31`) until
+ * TASK-112/113 land. That costs nothing here — the `unparameterised` spread is one shared line
+ * (`listing.ts:1286`) reached identically by all six page types, so cutting it fails this case
+ * whichever type the probe uses — and the route that *is* served is pinned below (link 2).
+ */
 describe("`listingView()` really wires `parameterised` into the descriptor (AC-15)", () => {
   const directiveFor = async (options: {
     readonly parameterised?: boolean;
@@ -310,7 +321,8 @@ describe("`listingView()` really wires `parameterised` into the descriptor (AC-1
     // one of `corridorState()`'s four terms, and Poland still has no `operations` block and no
     // `-live` content file, so the shop root stays `noindex,follow` on both sides of the flag.
     // The day those two land this case goes red, and the assertion moves onto the shop root
-    // itself — where AC-15 actually bites.
+    // itself — where AC-15 actually bites. `docs/tasks/TASK-124.md` (PL's `operations` block)
+    // carries that instruction, so the agent who turns this red is told rather than guessing.
     await withActivePartnersProvider(
       { hasActivePartners: () => true },
       async () => {
@@ -329,5 +341,89 @@ describe("`listingView()` really wires `parameterised` into the descriptor (AC-1
         }
       },
     );
+  });
+});
+
+/**
+ * Link 2 of the four `parameterised` travels: `listingQuery()` computes it → **the route hands it
+ * to `listingView()`** → `listingView()` maps it to the `unparameterised` term → `indexability()`
+ * turns the term into `noindex,follow`. Links 1, 3 and 4 are asserted above by running them; link
+ * 2 is a wiring fact with no runtime seam, and `/review 93` round 2 measured what that costs:
+ * deleting `parameterised: request.parameterised` from **both** call sites in
+ * `src/app/[locale]/[segment]/[child]/page.tsx` leaves `typecheck`, `lint` and the whole
+ * unit/integration/contract suite byte-identically green. `ListingViewOptions.parameterised` is
+ * optional, so the omission is a legal call, and an absent term *leaves* the conjunction (spec 007
+ * §14 A7) — so the failure is silent and **fail-open**: `?sort=price-asc` would announce
+ * `index,follow` and duplicate its own base URL. The browser layer cannot see it either, because
+ * in Phase 0 the bare URL is `noindex,follow` too.
+ *
+ * So the route is read **as source**, the way `tests/unit/listing-cache-headers.test.ts` reads
+ * `next.config.ts` to prove the config actually mounts the headers: no server, no build, no
+ * network, and deleting either pass-through goes red.
+ */
+describe("the route really hands `parameterised` to `listingView()` (AC-15)", () => {
+  /**
+   * Comments are removed first: this file's own prose says "`listingView()`" more than once, and a
+   * sentence about the wiring must not be able to pass for the wiring. Only whole-line `//`
+   * comments go, which is enough — no trailing comment in the route carries a call.
+   */
+  const routeSource = readFileSync(
+    resolve(
+      import.meta.dirname,
+      "../../src/app/[locale]/[segment]/[child]/page.tsx",
+    ),
+    "utf8",
+  )
+    .replace(/\/\*[\s\S]*?\*\//gu, "")
+    .replace(/^[ \t]*\/\/.*$/gmu, "");
+
+  /** The argument text of every `name(…)` call in `source`, by balancing parentheses. */
+  const argumentsOfCallsTo = (source: string, name: string): string[] => {
+    const calls: string[] = [];
+    const opener = `${name}(`;
+    for (
+      let at = source.indexOf(opener);
+      at !== -1;
+      at = source.indexOf(opener, at + 1)
+    ) {
+      let depth = 0;
+      let cursor = at + name.length;
+      do {
+        if (source[cursor] === "(") depth += 1;
+        else if (source[cursor] === ")") depth -= 1;
+        cursor += 1;
+      } while (depth > 0 && cursor < source.length);
+      calls.push(source.slice(at + opener.length, cursor - 1));
+    }
+    return calls;
+  };
+
+  it("passes the parsed request's flag at every call site, and goes red if either is cut", () => {
+    const calls = argumentsOfCallsTo(routeSource, "listingView");
+    // `generateMetadata` and the page component are two renders of the same request (the route
+    // says so), so there are two call sites and both must carry the flag. A third listing branch
+    // — TASK-110/111's depth-4 URLs — fails here until it carries it too, which is the point.
+    expect(calls).toHaveLength(2);
+    for (const [index, call] of calls.entries()) {
+      const passThrough =
+        /parameterised:\s*([A-Za-z_$][\w$]*)\.parameterised/u.exec(call)?.[1];
+      expect(
+        passThrough,
+        `listingView() call ${String(index + 1)}`,
+      ).toBeDefined();
+      // …and the object it reads is this render's parsed query, not a literal or a stale value.
+      expect(routeSource).toContain(
+        `const ${passThrough ?? ""} = await listingQuery(searchParams)`,
+      );
+    }
+  });
+
+  it("parses that request from the request's own query string", () => {
+    // The link before link 2: `listingQuery()` is a three-line local wrapper, and a version that
+    // ignored `searchParams` would make every URL unparameterised — fail-open in the same
+    // direction. `listingRequest()`'s own decision table is asserted above.
+    const [query] = argumentsOfCallsTo(routeSource, "listingRequest");
+    expect(query).toBeDefined();
+    expect(query).toContain("searchParams");
   });
 });

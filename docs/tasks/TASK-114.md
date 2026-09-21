@@ -66,6 +66,26 @@ page type — a cold `pnpm build` plus the browser suites (see `## Result`).
   moved its goalposts: an island injected into the shop root alone raised both the shop root and
   the corridor by 0.2 KB br, so the substituted document carries the shop root's client references.
 
+- **From `/review 93` round 2 (2026-09-21) — VERDICT FAIL, one required change.** Round 1's blocker
+  is closed and the `occasionsIndex` relocation upheld, for a better reason than the one argued:
+  the mutation target is a **single shared line** (`src/modules/catalog/listing.ts:1286`) reached
+  identically by all six page types, so proving it through one type proves it for the shop root.
+  **But `parameterised` reaches the descriptor through four links and only link 3 was pinned.**
+  Link 2 — `parameterised: request.parameterised` at `src/app/[locale]/[segment]/[child]/page.tsx`
+  ~205 and ~295 — is exactly as deletable: with **both** lines gone the suite is byte-identical to
+  baseline (4 403 passed, 8 pre-existing `schema-catalog-pricing` failures for want of a local
+  Postgres), `typecheck` 0 and `lint` 0, because `parameterised?:` is optional at `listing.ts:1085`
+  so the omission is a legal call. The failure is silent and **fail-open** — an absent term leaves
+  the conjunction, so a sorted URL would announce `index,follow`. The browser layer cannot catch it
+  either: `tests/e2e/listing-params.spec.ts:217` asserts `noindex,follow` on `?sort=…`, but in
+  Phase 0 the base URL is `noindex,follow` too, so it passes for the wrong reason (the `?page=2`
+  case at line 101 is honest about this, comparing `robotsOf(second)` to `robotsOf(first)`).
+  Required: pin the route pass-through so deleting either call site goes red; the idiom is this
+  task's own `tests/unit/listing-cache-headers.test.ts:77`, which reads `next.config.ts` as source.
+  Nits: put the `corridorState` tripwire's instruction on the task that lands PL's `operations`
+  block, and say in the new describe that `occasionsIndex` has no route until TASK-112/113.
+  **Closed in round 3** — see `## Result`.
+
 ## Escalations
 
 - **E-1 (2026-09-21) — `?page=1` answers 308, not the 301 of AC-10. Applied on the spec 007 §14 A6
@@ -115,6 +135,19 @@ page type — a cold `pnpm build` plus the browser suites (see `## Result`).
   attribution style TASK-108 used for the same artboard — and not to a review the founder did not
   give. If the reviewer disagrees with that attribution the fix is two `reviewed: false` flags and
   two lines in `AWAITING_FOUNDER_REVIEW`.
+
+- **E-5 (2026-09-21) — the go-live tripwire has one owner, not two.** `/review 93` round 2 asked for
+  a dated carry-forward on "whichever task lands the `operations` block in `src/config/countries.ts`
+  and `content/corridors/en/pl-live.md`", suggesting TASK-096. TASK-096 is the indexing flip (spec
+  007 AC-29) and lands neither file. The `operations` half is **TASK-124** (spec 009 §12 step 4,
+  §13 Q3: `Europe/Warsaw`, 14:00, Mon–Sat, no Sunday delivery — "and **no other country's**"), and
+  the carry-forward is now in `docs/tasks/TASK-124.md`. **The `pl-live.md` half has no owning task
+  in `TASKS.md`**: spec 007's content task authored the `guide` corpus, `content/corridors/` holds
+  no `-live` file, and `corridor:check`'s `live-operations` rule refuses one until the `operations`
+  block exists — so authoring it is a Phase 1 go-live act that no planned task claims. Both files
+  must exist before `corridorState("PL","en")` leaves `guide`, so the tripwire stays green after
+  TASK-124 alone. **For the orchestrator:** place the second half when the go-live task exists;
+  I have not invented a task row for it, and I did not edit `TASKS.md`.
 
 ## Result
 
@@ -224,3 +257,62 @@ the only re-trigger available and it **structurally cannot reach those five jobs
 this branch at `pull_request` run 35616572158. Harmless here (this round adds two unit cases and
 changes no shipped byte), but it belongs next to TASK-137's `preview` work. I did not re-add the
 `ci:full` label to force a `labeled` event.
+
+### Round 3 — link 2 pinned, and the other three links audited
+
+`tests/unit/listing-params.test.ts` gains a third describe, "the route really hands `parameterised`
+to `listingView()` (AC-15)" (15 → 17 cases). No production code changed this round.
+
+The route is read **as source**, the idiom `tests/unit/listing-cache-headers.test.ts:77` uses on
+`next.config.ts`: comments are stripped first (this file's own prose says "`listingView()`" more
+than once, and a sentence about the wiring must not be able to pass for the wiring), then every
+`listingView(…)` call is extracted by balancing parentheses. Both call sites — `generateMetadata`
+and the page component — must carry `parameterised: <binding>.parameterised`, and `<binding>` must
+be the render's own `const … = await listingQuery(searchParams)`. A **third** listing branch
+(TASK-110/111's depth-4 URLs) fails the arity assertion until it carries the flag too, which is the
+point rather than a nuisance. A second case pins the link before it: `listingQuery()` must pass the
+request's query string to `listingRequest()`.
+
+**Mutations run, not described** (`pnpm vitest run --project unit tests/unit/listing-params.test.ts`,
+each mutation restored immediately after):
+
+| Mutation | Result |
+|---|---|
+| Both `parameterised: request.parameterised` lines deleted | **red** — `AssertionError: listingView() call 1: expected undefined to be defined`; `pnpm typecheck` still **0**, which is the reviewer's point about `parameterised?:` being optional |
+| Only `generateMetadata`'s deleted | **red** — `listingView() call 1` |
+| Only the page component's deleted | **red** — `listingView() call 2` |
+| `listingQuery()` rewritten to `listingRequest({})` (the link before link 2, same fail-open direction) | **red** — `expected '{}' to contain 'searchParams'` |
+
+**The other three links, audited by mutation over the whole unit project** (baseline **182 files,
+4 368 passed, 5 skipped**):
+
+- **Link 1 — `listingRequest()` computes the flag** (`src/modules/catalog/params.ts:104`). Pinned.
+  Forcing `const parameterised = false` gives **4 failed | 4 364 passed**, in "`?sort=` and the
+  facet shapes" (×3) and the `/review 72` malformed-page case.
+- **Link 4a — `pageIndexability()` carries the term** (`src/modules/seo/indexability.ts:239-241`).
+  Pinned. Deleting the spread gives **2 failed | 4 366 passed**: "carries the parameterised verdict
+  into its own directive" and round 2's "turns its own directive on the flag alone".
+- **Link 4b — `indexability()`'s conjunction contains the term** (`INDEXABILITY_TERMS`). Pinned.
+  Dropping `"unparameterised"` from the list gives **2 failed | 4 366 passed**: "is the one term
+  that removes `index` from an otherwise indexable page" and round 2's case.
+
+So all four links are now falsifiable, and the two that were pinned already were pinned on purpose
+rather than by accident — each mutation names the term, not a downstream coincidence.
+
+**Nit closed:** the round-2 describe now says in prose that `occasionsIndex` is a *page type, not a
+served page* (`src/modules/catalog/routes.ts:28-31` — both depth-2 handlers `notFound()` unless the
+match is `destinationsHub`, until TASK-112/113), and why that costs nothing: the `unparameterised`
+spread is one shared line reached by all six types.
+
+**Carry-forward placed:** `docs/tasks/TASK-124.md` (PL's `operations` block) now carries a dated
+bullet telling that agent what the `corridorState("PL","en") === "guide"` tripwire is, that it stays
+green for TASK-124 alone, and where the assertion moves when `pl-live.md` follows. The test comment
+names TASK-124 back, so the archaeology runs both ways. The `pl-live.md` half has no owning task —
+**E-5** above.
+
+**Gates, round 3:** `typecheck`, `lint`, `i18n:check`, `check:no-db`, `codebase:map --check`,
+`specs:index --check` all exit 0; full unit project **4 368 passed, 5 skipped, 182 files**. No build
+slot taken and no shipped byte changed, so `build`, `e2e`, `a11y`, `visual` and `lighthouse` are
+CI's. Load average 3.8 (1 min) / 7.9 (5 min) on 8 cores across these runs, which is why no local
+performance number is claimed. Rebased on `origin/main` (`a7d1970`); CI re-fired by toggling the
+`ci:full` label, since a push fires nothing on a ready PR and a dispatch cannot reach `preview`.
