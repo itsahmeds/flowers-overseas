@@ -76,7 +76,7 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
 
 ## Result
 
-Shipped in PR #81. `src/modules/seo/schema/` holds the five files §5.2 L150 names —
+Shipped in **PR #87**. `src/modules/seo/schema/` holds the five files §5.2 L150 names —
 `breadcrumbList.ts`, `faqPage.ts`, `organization.ts`, `webSite.ts`, `JsonLd.tsx` — exported only
 through `src/modules/seo/index.ts`, plus `schemaOptions()`, the fail-closed rule that emits no
 document at all when `NEXT_PUBLIC_SITE_URL` is not a URL. Each builder is a projection of a view
@@ -85,18 +85,43 @@ that renders as text announces no `item`; fewer than two crumbs emit nothing), `
 same `view.faq` the FAQ block renders and only inside the 8–12 band, `Organization` from
 `company.ts` (`name`/`url`/`logo` today; `address`/`vatID`/`sameAs` only once `registered` flips),
 `WebSite` with no parameter that could ever become a `SearchAction`. The corridor route, the hub
-route and the locale home fill the slots they had reserved; nothing else in them changed. Tests:
-**unit** `tests/unit/seo-schema.test.tsx` (17 cases — the trail and the Q&A compared against the
-*rendered* components in `en`/`en-gb`, the two field-set pins, the `@graph`/escaping cases, the
-allow-list walk), **contract** `tests/contract/seo-schema-fixtures.test.ts` (4 cases; the three new
-fixtures in `tests/fixtures/seo/schema/` are rebuilt from the builders every run and
-`validate-schema` runs over the committed directory — `4 fixture(s) ok`), **e2e**
-`tests/e2e/schema.spec.ts` (92 cases across 22 URLs × 2 projects: the type scan, the served trail,
-the served Q&A, the home identity). Numbers a reviewer wants: unit 4 225 / 5 skipped in 176 files,
-contract 26, e2e 873 passed with two pre-existing failures reproduced on `main`'s own files (the
-`darwin` casing 404 pair, green on rerun, and the `home.spec.ts` type-ahead hit test, which fails
-identically with this task's home page reverted to `main`'s), a11y 73, visual 43, Lighthouse green
-on all nine URLs over the Brotli origin, `budget:client-js` unchanged (JSON-LD is markup, not
-script). Handed on: TASK-115 extends `breadcrumbList` to spec 008's six page types and adds the
-`ItemList` builder; TASK-130 the gated `Product`/`Offer`; TASK-094's sitemap and TASK-095's
-honesty scan inherit `schemaOptions()` and the fixtures.
+route and the locale home fill the slots they had reserved; nothing else in them changed.
+
+**The gate now validates what we emit.** `validate-schema` checked the `@type` allow-list and
+`Offer.price` and nothing else: a `BreadcrumbList` whose positions ran `0, 7`, whose first
+`ListItem` had no `name` and whose `item` was the relative `/en`, a `Question` with no
+`acceptedAnswer`, and an `Organization` with neither `name` nor `url` and a relative `logo` all
+passed `pnpm seo:validate` with "1 fixture(s) ok". Because the committed fixtures are regenerated
+from the builders, a builder defect of that shape would have agreed with itself in every gate we
+had. `shapeProblems()` adds the required-shape half — per-type required properties read off the
+same `plan/02` §9 table as `ALLOWED_TYPES`, breadcrumb positions running 1..n over at least two
+crumbs, `FAQPage.mainEntity` a non-empty list of real `Question`s, and every URL-valued property an
+absolute http(s) URL. The same broken document now produces 12 named problems and exit 1.
+`Product`/`Offer` are deliberately given no required properties: that row is spec 009's and the
+builder is TASK-130's. The new rule failed `_cases/good-schema.json`, whose `BreadcrumbList`
+carried one crumb — which `breadcrumbList.ts` itself refuses to emit — so the fixture gained the
+`Home` crumb it always implied rather than the rule being relaxed.
+
+Tests: **unit** `tests/unit/seo-schema.test.tsx` (17 cases — the trail and the Q&A compared against
+the *rendered* components in `en`/`en-gb`, the two field-set pins, the `@graph`/escaping cases, the
+allow-list walk) and `tests/unit/seo-validate-schema.test.ts` (38, of which 12 new for the
+required-shape rules, two of them CLI cases proving the gate exits non-zero); **contract**
+`tests/contract/seo-schema-fixtures.test.ts` (the three fixtures in `tests/fixtures/seo/schema/`
+are rebuilt from the builders every run and `validate-schema` runs over the committed directory —
+`4 fixture(s) ok`); **e2e** `tests/e2e/schema.spec.ts` (22 URLs × 2 projects: the type scan, the
+served trail, the served Q&A, the home identity), left to CI.
+
+Verified locally on this branch after rebasing onto `origin/main`: `typecheck`, `lint`,
+`i18n:check`, `check:no-db`, `codebase:map --check`, `seo:validate`, `format:check`, the full unit
+project (4 366 passed / 5 skipped in 181 files) and the contract project (26). `build`, `e2e`,
+`a11y`, `visual` and `lighthouse` were **not** run locally and belong to CI: this task adds a
+schema-builder module and a validator, the JSON-LD is server-rendered markup rather than script, so
+`budget:client-js` is unchanged and no build slot was taken. Two unit failures in
+`tests/unit/tasks-brief.test.ts` are **pre-existing on `main`** (TASK-080's `TASKS.md` notes cell
+does not link its brief) and were reproduced on a clean `main` checkout; `TASKS.md` is the
+orchestrator's file and was left alone.
+
+Handed on: TASK-115 extends `breadcrumbList` to spec 008's six page types and adds the `ItemList`
+builder — and inherits `shapeProblems()`, so it must give its new types their required properties;
+TASK-130 the gated `Product`/`Offer`, which is where the `Product` row's required properties
+belong; TASK-094's sitemap and TASK-095's honesty scan inherit `schemaOptions()` and the fixtures.
