@@ -74,7 +74,12 @@ Agents never write code except the implementers. The orchestrator refuses to dis
    `pull_request` trigger, so labelling fires the run). The `preview` job additionally waits on a
    Vercel preview deployment, so while the account sits under a build rate limit the browser chain
    cannot run at all and a local run is the evidence of record — said plainly in `## Result`, with
-   the load average. An implementer takes the machine's single build slot
+   the load average.
+   **The build slot is a lock, not a `pgrep`: `.claude/bin/build-slot.sh acquire` … `release`.**
+   The old instruction ("sleep until `pgrep -f "next build|next start|playwright|lighthouse"`
+   is empty") matches the waiting shell's *own* command line, so waiters blocked each other
+   forever — 4 waiting shells against 16 real processes on 2026-09-18, and the likeliest cause of
+   the 346/243/199-minute runs. Never reintroduce that pattern. An implementer takes the machine's single build slot
    only when the change cannot be judged without it (a new page's visual baselines, a byte budget, a
    deliberate performance measurement) and says so in `## Result`. Measured basis: a median
    implementer run is 30 minutes and the tail reached 346; every agent was re-running ~950 browser
