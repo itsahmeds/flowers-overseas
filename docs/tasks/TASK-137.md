@@ -78,3 +78,12 @@ What shipped, in one paragraph: the PR, the tests added per layer, the numbers a
 (budgets, counts), and anything handed to a later task.
 
 _Pending._
+
+**Carried in 2026-09-21, found by `/review 84` round 2 — same family, same owner.** `commitlint`
+is *unrunnable* on a `workflow_dispatch` run: its `if` admits the event, but its command
+interpolates `github.event.pull_request.base.sha`, which is empty off a pull-request event, so
+both SHAs resolve empty and the job exits 9 with "Invalid input flags: --from and --to point to
+the same commit". Locally `commitlint --from <base> --to HEAD` reports 0 problems over the same
+commits, and the job was green on the earlier `pull_request` run. Fix it in the same pass that
+fixes `preview`: a dispatch run should either compute its range from the merge base or skip the
+job honestly, never fail on a range it was never given.
