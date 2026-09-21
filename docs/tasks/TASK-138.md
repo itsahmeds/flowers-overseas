@@ -105,7 +105,7 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
 
 ## Result
 
-**PR:** #89 · **branch** `task/TASK-138-r2-media-delivery`.
+**PR:** [#94](https://github.com/itsahmeds/flowers-overseas/pull/94) · **branch** `task/TASK-138-r2-media-delivery`.
 
 All 118 derived variants are objects in `flowersoverseas-media` and every photograph on the site
 is served from the bucket. The flip is `r2VariantLoader` and `r2Loader` installed through the
