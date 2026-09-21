@@ -242,3 +242,18 @@ and points at both amendments.
 **Not touched, by instruction:** `visual`'s Linux baselines (TASK-139) and everything under `src/`.
 The measured `preview` figure above is corrected from 81 s (queued) to **69 s** (step timings
 14:21:37 → 14:22:46), per the review.
+
+**Confirmed on a dispatch run — [35617573587](https://github.com/itsahmeds/flowers-overseas/actions/runs/35617573587), `workflow_dispatch`, 2026-09-21.** `commitlint`
+**success in 26 s**, all three steps green, where every dispatch run before it was red:
+
+```
+range: 3dbaa1d..8220388 (the merge base with main)
+✔ found 0 problems, 0 warnings   (x3, one per commit of the branch)
+```
+
+The run is green end to end: `lint`, `typecheck`, `test-unit` (the five new cases among them),
+`test-integration`, `test-contract`, `build`, `container`, `db-check`, `audit`,
+`env-build-failure`, `commitlint`, `seo-validate`, `i18n-check`, `catalogue-check`,
+`corridor-check`, `seed-check`, `dev-os-check`, `lighthouse`. `preview` and the three browser jobs
+are `skipped`, as they must be: `preview`'s `if` is `pull_request`-only, which is why the origin
+work was proved on run 35611605977 and the commitlint fix here.
