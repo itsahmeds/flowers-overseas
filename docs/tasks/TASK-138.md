@@ -176,6 +176,18 @@ TASK-137's territory, not this one's.
 this ran, so a local LCP number would measure the machine (CLAUDE.md's own rule). CI is the gate of
 record, and the risk it should be read against is the `r2.dev` host in the escalation above.
 
+**CI (run 35621421001, `ci:full`).** Two jobs failed. `test-unit` was mine — one skipped unit
+test, which CI refuses outright — and is fixed in `666e6de`: the whole-set watermark check no
+longer skips when the derived tree is absent, it asserts the gate that runs there instead
+(verified by moving `.local/media/` away: 46 tests, 0 skipped). `preview` is **TASK-137's
+documented failure**, in its own words: the Vercel preview's `/api/health` answers 500 from the
+cold fallback's empty env store (ADR-0018), identical on PRs 84, 85 and 87. Since `e2e`, `visual`,
+`a11y` and Lighthouse are each `needs: preview`, no browser gate can execute on any PR until
+TASK-137 lands — which is exactly why those suites were run locally here and their counts are
+above. The fix push fired no new run: the workflow triggers on `ready_for_review` and `labeled`
+only, and re-labelling would spend the spine's minutes on a run whose `preview` job fails again
+regardless.
+
 **Handed on:** spec 002 §13 Q7's bucket names and the missing preview bucket; the custom domain;
 and, for whoever revisits it, the `NEXT_PUBLIC_MEDIA_BASE_URL` alternative to the committed origin
 constant.
