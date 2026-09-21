@@ -93,8 +93,8 @@ were regenerated because the third column changes that page.
 
 **Gates run, and where.** The same local set as TASK-110 (they are one branch): `typecheck`,
 `lint`, `i18n:check`, `check:no-db`, `codebase:map --check`, `specs:index --check`, `format:check`,
-`seed:check`, `corridor:check`, unit + contract **4 459 pass** (the two `tasks-brief` failures are
-pre-existing on `main` and belong to TASK-080's row). The build slot was taken deliberately for the
+`seed:check`, `corridor:check`, unit + contract **4 461 pass, 0 fail** (after rebasing onto
+`main`'s `b5160ac`). The build slot was taken deliberately for the
 new pages' `darwin` visual baselines — `country-occasion-{desktop,mobile}` are new and
 `country-shop-{desktop,mobile}` were regenerated because A10's third column changes that page; no
 other baseline moved. Beside them: e2e 50/50, a11y 6/6, chrome-honesty and client-JS 90/90, visual

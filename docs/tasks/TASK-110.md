@@ -80,9 +80,9 @@ JS-disabled render) and the page type added to `tests/e2e/chrome-honesty.spec.ts
 
 **Gates run, and where.** Locally: `typecheck`, `lint`, `i18n:check`, `check:no-db`,
 `codebase:map --check`, `specs:index --check`, `format:check`, `seed:check`, `corridor:check`, and
-the unit + contract suites (**4 459 pass**; the only two failures are `tests/unit/tasks-brief.test.ts`,
-pre-existing on `main` — TASK-080's `TASKS.md` notes cell does not link its brief, and that file is
-the orchestrator's). The build slot was taken **deliberately** for the one thing CI cannot give
+the unit + contract suites — **4 461 pass, 0 fail** after rebasing onto `main`'s `b5160ac`, which
+repaired the TASK-080 row that had been failing `tests/unit/tasks-brief.test.ts` on `main` while
+this branch was in flight. The build slot was taken **deliberately** for the one thing CI cannot give
 back: a new page's `darwin` visual baselines. With the server up the cheap browser gates ran
 beside them — e2e 50/50 over both page types, a11y 6/6 (`en`, `en-gb`, `ar-XB`), the chrome-honesty
 and client-JS suites 90/90, visual 49/49. Measured script transfer:
