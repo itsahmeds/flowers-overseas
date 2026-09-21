@@ -208,6 +208,8 @@ describe("the shop root's third column (§14 A10)", () => {
   });
 
   it("never links at a URL outside the existence set, in any locale", async () => {
+    let rows = 0;
+    const linked: string[] = [];
     for (const locale of ["en", "en-gb", "de", "pl"] as const) {
       const paths = new Set(
         (await listingPages(locale)).map((page) => page.path),
@@ -218,11 +220,22 @@ describe("the shop root's third column (§14 A10)", () => {
           { from: FROM },
         );
         for (const row of view?.occasionDates ?? []) {
+          rows += 1;
           if (row.href === undefined) continue;
+          linked.push(`${locale} ${row.href}`);
           expect(paths.has(row.href), `${locale} ${row.href}`).toBe(true);
         }
       }
     }
+    // The view the loop walked, pinned: four shop roots answer (one per locale, each under its
+    // own authored country segment — `polen` and `polska` are not `en` URLs), ten observed
+    // occasions each, and two of those forty rows carry a link today. Without these the loop
+    // could be satisfied by iterating nothing at all.
+    expect(rows).toBe(40);
+    expect(linked).toEqual([
+      "en /en/poland/occasions/mothers-day",
+      "en-gb /en-gb/poland/occasions/mothers-day",
+    ]);
   });
 });
 

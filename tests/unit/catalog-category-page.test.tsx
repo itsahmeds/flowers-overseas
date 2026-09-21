@@ -20,6 +20,12 @@ import { describe, expect, it } from "vitest";
 import { type ListingView, listingView } from "../../src/modules/catalog";
 import { CountryCategoryPage } from "../../src/modules/catalog/ui/CountryCategoryPage.tsx";
 import { loadMessages } from "../../src/modules/i18n";
+import {
+  expectedPreloads,
+  firstCardPhotograph,
+  lcpNominations,
+  nominatedImageCard,
+} from "../support/lcp-nomination.ts";
 import { listingHonestyViolations, textOf } from "../support/listing-honesty";
 
 /** A fixed window start, so a rendered date is assertable without freezing a clock. */
@@ -155,29 +161,93 @@ describe("the populated country category (§5.3 row 2)", () => {
     expect(html).not.toContain("<table");
   });
 
-  it("nominates exactly one LCP candidate and one preload for it (AC-24)", () => {
-    // TASK-080 committed the image bytes, so the first card is on the asset branch and the
-    // nomination is real rather than latent. The assertion is written to hold in **both** states —
-    // "as many eager, high-priority images as the page nominated, and never more than one" — so
-    // withdrawing an image is not a test edit. The match is case-insensitive because
-    // `renderToStaticMarkup` writes React's `fetchPriority` while the DOM attribute is
-    // `fetchpriority`; the browser-side half is `tests/e2e/media-budgets.spec.ts`'s.
-    const priority = roses.items.filter(
-      (card, index) => index === 0 && card.photo.kind === "asset",
-    );
-    expect(priority.length).toBeLessThanOrEqual(1);
-    expect(html.match(/<img[^>]*fetchpriority="high"/giu) ?? []).toHaveLength(
-      priority.length,
-    );
-    expect(
-      html.match(/<link[^>]*rel="preload"[^>]*as="image"/giu) ?? [],
-    ).toHaveLength(priority.length);
-    expect(html.match(/loading="eager"/gu) ?? []).toHaveLength(priority.length);
-  });
-
   it("adds no client island and no inline script (§5.4)", () => {
     expect(html).not.toContain("<script");
     expect(html).not.toContain("onclick");
+  });
+});
+
+/**
+ * **AC-24: one nomination, and it is the first card's photograph** (§5.4, **AC-24**, T-24).
+ *
+ * `/en/poland/flowers/roses` is the one page type in the corpus whose first card does carry a
+ * photograph — three of its twelve cards do (TASK-080's bytes) — so the count it ships with is
+ * pinned as a stated number rather than recomputed from the page's own output, and the two
+ * fabricated views below prove that the nomination follows the *first card's* photograph rather
+ * than the page having one anywhere. The occasion twin is
+ * `tests/unit/catalog-occasion-page.test.tsx`, where the corpus has no photograph at all;
+ * `tests/support/lcp-nomination.ts` carries the reading of AC-24 both assert, and the byte
+ * budgets of its second half are `tests/e2e/media-budgets.spec.ts`'s.
+ */
+describe("the one LCP nomination (§5.4, AC-24, T-24)", () => {
+  const shipped = render(<CountryCategoryPage view={roses} />, "en");
+
+  /** `roses` with the named cards' photographs withdrawn — the state TASK-080 reversed. */
+  function withoutPhotographAt(...indices: readonly number[]): ListingView {
+    return {
+      ...roses,
+      items: roses.items.map((card, index) =>
+        indices.includes(index)
+          ? { ...card, photo: { kind: "placeholder", slot: "grid" } as const }
+          : card,
+      ),
+    };
+  }
+
+  it("nominates exactly one on the page as it ships: three of twelve cards are photographs, and the first is one", () => {
+    // The pin. Stated numbers, read from the view model: if the corpus changes, this line goes
+    // red and the new numbers are written here deliberately.
+    expect(
+      roses.items.filter((card) => card.photo.kind === "asset"),
+    ).toHaveLength(3);
+    expect(roses.items[0]?.photo.kind).toBe("asset");
+    const nominated = lcpNominations(shipped);
+    expect(nominated.images).toBe(3);
+    // One of the three, never two: the preload's `imagesrcset`/`imagesizes` are the first card's
+    // own `<source>`, which is AC-24's "built from the same manifest lookup as its `srcset`".
+    expect(nominated.eager).toBe(1);
+    expect(nominated.high).toBe(1);
+    expect(nominated.preloaded).toHaveLength(1);
+    expect(nominated.preloaded).toEqual(
+      expectedPreloads(firstCardPhotograph(shipped)),
+    );
+    // And it is the **first card's** image, not merely one of the three.
+    expect(nominatedImageCard(shipped)).toBe(0);
+  });
+
+  it("withdraws the nomination with the first card's photograph, and promotes nothing in its place", () => {
+    // The data flip AC-20 promises, in the direction nobody tests: withdraw the first card's
+    // image and the page must nominate **nothing** — not the next photograph down the grid,
+    // whose box is not the LCP element. Two photographs remain, both lazy.
+    const markup = render(
+      <CountryCategoryPage view={withoutPhotographAt(0)} />,
+      "en",
+    );
+    const nominated = lcpNominations(markup);
+    expect(nominated.images).toBe(2);
+    expect(firstCardPhotograph(markup)).toBeUndefined();
+    expect(nominated.preloaded).toEqual(expectedPreloads(undefined));
+    expect(nominated.eager).toBe(0);
+    expect(nominated.high).toBe(0);
+  });
+
+  it("nominates the first card even when every card carries a photograph", () => {
+    const every: ListingView = {
+      ...roses,
+      items: roses.items.map((card) => ({
+        ...card,
+        photo: roses.items[0]?.photo ?? card.photo,
+      })),
+    };
+    const markup = render(<CountryCategoryPage view={every} />, "en");
+    const nominated = lcpNominations(markup);
+    expect(nominated.images).toBe(roses.items.length);
+    expect(nominated.eager).toBe(1);
+    expect(nominated.high).toBe(1);
+    expect(nominated.preloaded).toEqual(
+      expectedPreloads(firstCardPhotograph(markup)),
+    );
+    expect(nominatedImageCard(markup)).toBe(0);
   });
 });
 

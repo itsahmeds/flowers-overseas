@@ -72,11 +72,16 @@ One dated bullet per `/review`, newest last.
   counted from the page itself. Make all four falsifiable: the expected count must be a stated
   number derived from the data, never the page's own output, and on the occasion page `toBe(0)`
   with the reason written down so it goes red the day a photograph lands.
+  **Done** in the round-3 fix: what AC-24 requires of a page with no photograph is stated in
+  `tests/support/lcp-nomination.ts` and asserted from the **first card's** photograph on both
+  layers; the occasion page's "exactly one" is exercised today on fabricated views; every case was
+  watched go red under a mutation and restored (round-3 section of `## Result`).
 - 2026-09-21 `/review 89` round 2 — **required (the record):** both `## Result` sections say the
   shipped AC-24 behaviour "is right (the reviewer counted one `as="image"` preload in the built
   HTML)". That count was the **category** page. State that the country occasion page ships with no
   product photograph in any locale, that it is deliberately outside the Lighthouse URL set, and
-  that nothing therefore measures its LCP.
+  that nothing therefore measures its LCP. **Done:** the round-1 sweep's sentence is corrected in
+  place and the correction restated in the round-3 section.
 - 2026-09-21 `/review 89` round 2 — **required (skip predicate and a wrong citation):** the new
   comments in both specs say the skip is "the shape `tests/e2e/corridor.spec.ts` already uses". It
   is not: `corridor.spec.ts` asserts `/en/send-flowers-to/Poland` `toBe(404)` with **no** skip, and
@@ -84,7 +89,10 @@ One dated bullet per `/review`, newest last.
   local macOS run. The repo's real precedent is `tests/e2e/locale-routing.spec.ts:45`
   `skipsOnCaseInsensitiveHost(baseURL)`, which skips only when the **target host is localhost**, so
   the assertion still runs when Playwright runs from a Mac against the preview or Railway. Adopt
-  that predicate and correct the citation.
+  that predicate and correct the citation. **Done:** both specs call
+  `skipsOnCaseInsensitiveHost(baseURL)` from the new `tests/support/case-insensitive-host.ts`,
+  which cites `locale-routing.spec.ts:45` as its source and records that `corridor.spec.ts` is not
+  a precedent.
 - 2026-09-21 `/review 89` round 2 — nits, not blocking: (a) `catalog-occasion-page.test.tsx:150` —
   the `/en/poland/occasions/…` href set is **empty today** (measured: the page's only internal
   links are `/en`, `/en/send-flowers-to`, `/en/send-flowers-to/poland` and `/en/poland/flowers`
@@ -93,6 +101,8 @@ One dated bullet per `/review`, newest last.
   (c) `expect([301, 308]).toContain(...)` is **accepted** — a tolerance across two acceptable
   implementations that still excludes 200, 404, 302 and 307, unlike the uppercase set which covered
   the whole outcome space; collapse it to one status when spec 040 fronts the origin.
+  **Done** for (a) and (b): the occasion href set is pinned at 0 before its loop and the
+  view-model loop pins 40 rows and the two linked hrefs it walks. (c) left exactly as it is.
 - 2026-09-21 `/review 89` round 2 — for the orchestrator, not this task: (a)
   `tests/e2e/corridor.spec.ts`'s unskipped mis-cased case is red on a local macOS run (measured
   200) and needs the `skipsOnCaseInsensitiveHost` treatment; (b) the same
@@ -240,6 +250,12 @@ or an equality assertion except the two noted below. What the sweep found, none 
    exactly one on these two page types. The shipped behaviour is right (the reviewer counted one
    `as="image"` preload in the built HTML), so this is a test-strength gap, not a defect — offered
    for round 2 rather than fixed, because the required change was scoped to two lines.
+   **Corrected in round 3 (2026-09-21): the last sentence is wrong.** That preload count was the
+   **country category** page, and it says nothing about the country occasion page — which renders
+   no product photograph in any locale, is deliberately outside the Lighthouse URL set (AC-25
+   names one shop root, one country category, one occasion hub and the occasions index), and whose
+   LCP is therefore measured by nothing. "The shipped behaviour is right" was verified on one of
+   the two page types and asserted of both. See the round-3 section below.
 2. **A loop that can be empty on a broken view** —
    `tests/unit/catalog-country-occasion.test.ts:220` iterates `view?.occasionDates ?? []`. The
    `?? []` is needed for `de`/`pl`, where the view is legitimately `undefined`, but it also means
@@ -253,3 +269,90 @@ or an equality assertion except the two noted below. What the sweep found, none 
    **kept**: the reviewer ruled it out of scope (nit 2) because it follows `corridor.spec.ts`'s
    documented reason, Cloudflare will answer 301 after spec 040, and unlike the uppercase case the
    set excludes the statuses that would be failures (200 and 404).
+
+### Round-3 fix (2026-09-21, `/review 89` round 2)
+
+**What AC-24 requires of a page that has no photograph — decided, stated, asserted.** AC-24 reads
+"Exactly one image per page carries `priority` and has a matching `<link rel="preload">` built from
+the same manifest lookup as its `srcset`; **it is the first product photo**". Spec 006 §5.3's
+placeholder renders *no `<img>`* — it is a captioned box — so on `/en/poland/occasions/mothers-day`,
+where all seven cards are placeholders, there is no first product photo and "exactly one" has
+nothing to range over. What still binds is the rest of the sentence: **the nomination is the first
+card's photograph and nothing else.** Zero photographs therefore means **zero nominations**, and
+that zero is falsifiable — a page that preloaded a placeholder, preloaded an asset it did not
+render, or promoted a photograph further down the grid fails it. Promoting a lower card would be
+wrong on its own terms as well: the LCP element is the first card's box, so preloading a tile below
+it spends the LCP budget on a resource the LCP element never uses. That reading is written down in
+the new `tests/support/lcp-nomination.ts`, beside the helpers that assert it, and both page types
+now assert it the same way.
+
+**The expectation is derived from the first card, never from the page's own output.** The shape the
+reviewer struck down — `expect(preloads).toBe(priority)` with `priority` counted off the page — is
+gone from all four sites. In its place: `lcpNominations(html).preloaded` (one
+`imagesrcset`/`imagesizes` descriptor per image preload) must `toEqual` `expectedPreloads(
+firstCardPhotograph(html))` (the first card's own `<source>`, or nothing). One `toEqual` that fails
+on either side — a missing nomination, a second one, or one built from a different lookup than the
+`<picture>` it belongs to, which is AC-24's "same manifest lookup" as a markup fact — plus
+`nominatedImageCard(html) === 0`, which is "it is the first product photo" as a number. The counts
+beside them are **stated numbers read from the view model**: 0 photographs on the occasion page, 3
+of 12 on the category page with the first among them. When a Mother's Day SKU is photographed those
+lines go red and the new number is written deliberately.
+
+**And "exactly one" now bites on the occasion page today.** Three unit cases per page type, the
+fabricated views built from a photograph the corpus really has (the first card of
+`/en/poland/flowers/roses`, so they resolve through the real manifest and the real `resolveMedia`
+gate): the page as it ships; every card photographed — **one** eager, **one** `fetchpriority="high"`,
+**one** preload, and it is card 0 out of seven candidates; and a photograph on the third card only —
+nominated by nothing, rendered lazily. The category twin adds the direction nobody had tested:
+withdraw the first card's photograph and the page must promote nothing in its place.
+
+**Proved red on both layers, then restored** (CLAUDE.md DoD 2). Three mutations, each applied to
+`src/`, run, and reverted:
+
+| Mutation | Unit | e2e (built server, `:3223`) |
+|---|---|---|
+| `ListingGrid`: `priority && index === 1` — move the nomination | 4 red (3 category, 1 occasion) | — |
+| `ListingGrid`: `priority={false}` — nominate nothing | 3 red (2 category, 1 occasion) | — |
+| `CountryOccasionPage` gives its first card a photograph + `CountryCategoryPage` drops `priority` | 2 red (occasion) | **2 red**: category `expect(preloaded).toEqual(firstPhotograph)` — `[] ` against the roses AVIF ladder; occasion `expect(firstPhotograph).toHaveLength(0)` — received `["/media/fo-bq-001-hero/384.avif 384w, …"]` |
+
+The old assertions survived every one of those on the occasion page. With `src/` restored and the
+tree rebuilt: unit 53/53 over the three touched files, e2e **46 passed, 4 skipped** over both specs
+(the skips are the two uppercase cases × two projects).
+
+**The record corrected.** The round-1 sweep said the shipped AC-24 behaviour "is right (the
+reviewer counted one `as="image"` preload in the built HTML)". That count was the **country
+category** page. The **country occasion** page renders no product photograph in any locale — no
+Mother's Day SKU has one, in any of the seven destinations — it is deliberately not in
+`tests/fixtures/seo/lighthouse-urls.json` (AC-25's set is one shop root, one country category, one
+occasion hub and the occasions index), and so **nothing measures its LCP**. Its AC-24 conformance
+rests entirely on the unit and e2e cases above. The sweep's sentence is corrected in place in the
+round-1 section rather than deleted.
+
+**The skip predicate and the citation.** `process.platform === "darwin"` also stood the uppercase
+case down when Playwright runs from a Mac against the preview or Railway — a Linux target, where
+the case is exactly the one that should run. Both specs now call `skipsOnCaseInsensitiveHost(
+baseURL)` from the new `tests/support/case-insensitive-host.ts`, lifted from
+`tests/e2e/locale-routing.spec.ts:45` (TASK-034): it skips only when the **target host** is
+localhost *and* the runner is darwin. The `corridor.spec.ts` citation is withdrawn from both
+comments and the support file records why — that file's mis-cased case has **no** skip and answers
+200 on a local macOS run, so it is red there; it is carried forward for the orchestrator, not fixed
+here.
+
+**The two nits, pinned rather than waved through.** `catalog-occasion-page.test.tsx`'s
+`/en/poland/occasions/…` href loop now asserts `toHaveLength(0)` before it runs — the set is empty
+today (the page's only internal links are `/en`, `/en/send-flowers-to`,
+`/en/send-flowers-to/poland` and `/en/poland/flowers` twice), so the universal cannot be satisfied
+by having nothing to iterate. `catalog-country-occasion.test.ts`'s existence-set loop counts what it
+walked and pins it: **40 rows** (four shop roots, one per locale under its own authored country
+segment, ten observed occasions each) of which exactly **two** carry a link, `en` and `en-gb`
+Mother's Day. `expect([301, 308])` is untouched, per the ruling.
+
+**Gates, all on this head.** `typecheck`, `lint` (ESLint + Stylelint), `i18n:check`, `check:no-db`,
+`codebase:map --check` (regenerated: the occasion test now imports `modules/ui`'s view model),
+`specs:index --check`, `format:check` — green. Unit: the three touched files, **53 pass, 0 fail**.
+e2e: both country specs against a fresh `pnpm build` + `pnpm start` on `:3223` under the build slot
+— **46 pass, 4 skip**. The build slot was taken for the mutation proof the reviewer asked for and
+released; `.next` was deleted afterwards, and no mis-cased URL was probed on either build. 15-minute
+load average 7.7 on 8 cores; no timing number is claimed here and CI remains the gate of record.
+No source file changed in this round — the diff is two support files, three unit files, two e2e
+specs, the two briefs and the regenerated codebase map.

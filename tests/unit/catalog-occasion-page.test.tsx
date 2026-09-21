@@ -28,6 +28,13 @@ import { describe, expect, it } from "vitest";
 import { type ListingView, listingView } from "../../src/modules/catalog";
 import { CountryOccasionPage } from "../../src/modules/catalog/ui/CountryOccasionPage.tsx";
 import { loadMessages } from "../../src/modules/i18n";
+import type { ProductCardPhotoView } from "../../src/modules/ui/shop/viewModel.ts";
+import {
+  expectedPreloads,
+  firstCardPhotograph,
+  lcpNominations,
+  nominatedImageCard,
+} from "../support/lcp-nomination.ts";
 import { listingHonestyViolations, textOf } from "../support/listing-honesty";
 
 /** A fixed window start, so the rendered date is assertable without freezing a clock. */
@@ -81,6 +88,31 @@ async function viewFor(locale: string, country: string): Promise<ListingView> {
 }
 
 const en = await viewFor("en", "poland");
+
+/**
+ * A photograph the committed corpus really has: the first card of `/en/poland/flowers/roses`,
+ * whose bytes and per-locale alt text TASK-080 approved. Borrowed rather than invented, so the
+ * fabricated views of the AC-24 block below resolve through the real manifest and the real
+ * `resolveMedia` gate instead of a hand-written asset id that no longer exists.
+ */
+const PHOTOGRAPH: ProductCardPhotoView = await (async () => {
+  const roses = await listingView(
+    {
+      locale: "en",
+      pageType: "countryCategory",
+      country: "poland",
+      entity: "roses",
+    },
+    { from: FROM },
+  );
+  const photo = roses?.items[0]?.photo;
+  if (photo?.kind !== "asset") {
+    throw new Error(
+      "the first card of /en/poland/flowers/roses must carry a photograph for the AC-24 cases to mean anything",
+    );
+  }
+  return photo;
+})();
 
 describe("the country occasion page (§5.3 row 2)", () => {
   const html = render(<CountryOccasionPage view={en} />, "en");
@@ -146,31 +178,104 @@ describe("the country occasion page (§5.3 row 2)", () => {
   it("links out to the shop root and to no page that does not exist", () => {
     expect(html).toContain('href="/en/poland/flowers"');
     expect(text).toContain("Flowers for Poland");
-    // The other Polish occasions are all below the floor, so none of them is a chip.
-    for (const href of html.match(/href="\/en\/poland\/occasions\/[^"]+"/gu) ??
-      []) {
+    // The other Polish occasions are all below the floor, so none of them is a chip — the match
+    // set is **empty today**, and the count is pinned so the loop under it cannot be satisfied by
+    // having nothing to iterate. When a second Polish occasion clears the floor this line goes
+    // red, someone writes the new number, and the loop then does the work it was written for.
+    const occasionHrefs =
+      html.match(/href="\/en\/poland\/occasions\/[^"]+"/gu) ?? [];
+    expect(occasionHrefs).toHaveLength(0);
+    for (const href of occasionHrefs) {
       expect(href).toBe('href="/en/poland/occasions/mothers-day"');
     }
   });
 
-  it("nominates at most one LCP candidate and adds no script (§5.4, AC-24)", () => {
-    // Case-insensitive for the same reason the shop root's twin is: `renderToStaticMarkup` writes
-    // React's `fetchPriority` and the DOM attribute is `fetchpriority`. The counts are tied to
-    // what the page nominated, so the assertion holds whether or not the first card has an
-    // approved photograph.
-    const priority = en.items.filter(
-      (card, index) => index === 0 && card.photo.kind === "asset",
-    );
-    expect(priority.length).toBeLessThanOrEqual(1);
-    expect(html.match(/<img[^>]*fetchpriority="high"/giu) ?? []).toHaveLength(
-      priority.length,
-    );
-    expect(
-      html.match(/<link[^>]*rel="preload"[^>]*as="image"/giu) ?? [],
-    ).toHaveLength(priority.length);
-    expect(html.match(/loading="eager"/gu) ?? []).toHaveLength(priority.length);
+  it("adds no client island and no inline script (§5.4)", () => {
     expect(html).not.toContain("<script");
     expect(html).not.toContain("onclick");
+  });
+});
+
+/**
+ * **AC-24 on a page whose products have no photograph** (§5.4, **AC-24**, T-24).
+ *
+ * No Mother's Day SKU in the committed corpus has an approved photograph, so all seven cards of
+ * `/en/poland/occasions/mothers-day` are spec 006's captioned placeholder and the page renders no
+ * `<img>` at all. A case that counted this page's nominations against this page's own output
+ * would compare 0 to 0 and pass with its subject deleted — what the round-2 review of PR #89
+ * found here. So every expectation below is derived from the **first card's photograph**, present
+ * or absent, never from what the page emitted; and the two fabricated views make the "exactly
+ * one" half of AC-24 bite on this component **today** rather than on the day an image lands.
+ *
+ * `tests/support/lcp-nomination.ts` carries the reading of AC-24 these cases assert, including
+ * what it requires of a page that has no photograph to nominate.
+ */
+describe("the one LCP nomination (§5.4, AC-24, T-24)", () => {
+  const shipped = render(<CountryOccasionPage view={en} />, "en");
+
+  /** The shipped occasion view with the named cards' placeholders replaced by a photograph. */
+  function withPhotographAt(...indices: readonly number[]): ListingView {
+    return {
+      ...en,
+      items: en.items.map((card, index) =>
+        indices.includes(index) ? { ...card, photo: PHOTOGRAPH } : card,
+      ),
+    };
+  }
+
+  it("nominates nothing on the page as it ships — no card has a photograph to nominate", () => {
+    // The pin: zero photographs on this page today, stated as a number read from the view model
+    // rather than from the markup. The day a Mother's Day SKU gets one this goes red and the real
+    // number has to be written here — the two cases below already say what the page must do then.
+    expect(en.items.filter((card) => card.photo.kind === "asset")).toHaveLength(
+      0,
+    );
+    const nominated = lcpNominations(shipped);
+    expect(nominated.images).toBe(0);
+    expect(firstCardPhotograph(shipped)).toBeUndefined();
+    // Falsifiable at zero: a page that preloaded a placeholder, an asset it did not render, or a
+    // photograph further down the grid would fail these three.
+    expect(nominated.preloaded).toEqual(expectedPreloads(undefined));
+    expect(nominated.eager).toBe(0);
+    expect(nominated.high).toBe(0);
+  });
+
+  it("nominates exactly one when every card carries a photograph, and it is the first card's", () => {
+    const markup = render(
+      <CountryOccasionPage view={withPhotographAt(...en.items.keys())} />,
+      "en",
+    );
+    const nominated = lcpNominations(markup);
+    expect(nominated.images).toBe(en.items.length);
+    expect(nominated.images).toBeGreaterThan(1);
+    // Exactly one out of seven candidates — one eager, one `fetchpriority="high"`, one preload —
+    // and the preload's descriptor is the first card's own `<source>`, which is AC-24's "built
+    // from the same manifest lookup as its `srcset`" as a markup fact.
+    expect(nominated.eager).toBe(1);
+    expect(nominated.high).toBe(1);
+    expect(nominated.preloaded).toHaveLength(1);
+    expect(nominated.preloaded).toEqual(
+      expectedPreloads(firstCardPhotograph(markup)),
+    );
+    // And it is the **first card's** image, not merely one of the seven.
+    expect(nominatedImageCard(markup)).toBe(0);
+  });
+
+  it("nominates nothing when the only photograph is not the first card's", () => {
+    // The first card's box is the LCP element, so preloading a tile below it would spend the LCP
+    // budget on a resource the LCP element never uses. A photograph on the third card is
+    // therefore rendered lazily and nominated by nothing (`ListingGrid`: `priority && index === 0`).
+    const markup = render(
+      <CountryOccasionPage view={withPhotographAt(2)} />,
+      "en",
+    );
+    const nominated = lcpNominations(markup);
+    expect(nominated.images).toBe(1);
+    expect(markup).toContain('loading="lazy"');
+    expect(firstCardPhotograph(markup)).toBeUndefined();
+    expect(nominated.preloaded).toEqual(expectedPreloads(undefined));
+    expect(nominated.eager).toBe(0);
+    expect(nominated.high).toBe(0);
   });
 });
 

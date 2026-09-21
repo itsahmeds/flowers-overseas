@@ -21,6 +21,8 @@
  */
 import { type APIRequestContext, expect, test } from "@playwright/test";
 
+import { skipsOnCaseInsensitiveHost } from "../support/case-insensitive-host.ts";
+
 /** One category page per locale that has one; the two that do not are asserted as 404s below. */
 const CATEGORY_URLS = [
   "/en/poland/flowers/roses",
@@ -92,21 +94,23 @@ test.describe("existence and the 404 shapes (AC-1, T-01)", () => {
   });
 
   test("an uppercase variant is not a page (ADR-0006: no case-fixing rewrite)", async ({
+    baseURL,
     request,
   }) => {
     // AC-1 names the uppercase variant as a 404 shape, so 404 is the assertion — not "200 or
-    // 404", which the route could not fail. Next resolves a prerendered route by reading
-    // `.next/server/app/<path>.html`, so on a case-insensitive volume (macOS APFS, the founder's
-    // machine) the mis-cased path finds the real page's file and answers 200. On the
-    // case-sensitive Linux of CI, the preview and production, the segment is not in
-    // `generateStaticParams`, `dynamicParams = false` refuses it, and the 404 document answers.
-    // The case is therefore skipped on darwin rather than weakened, per
-    // `tests/e2e/corridor.spec.ts`. Do not probe this URL against a local build you are still
-    // measuring — the 404 Next writes lands on the real page's file and serves "Page not found"
-    // until you rebuild (carried forward in `docs/tasks/TASK-110.md` for TASK-118's
-    // `docs/runbooks/shop-pages.md`).
+    // 404", which the route could not fail. The skip is about the **target**, not about the
+    // machine Playwright runs on: `skipsOnCaseInsensitiveHost` (the shape of
+    // `tests/e2e/locale-routing.spec.ts:45`, TASK-034) stands the case down only when the URL
+    // points at a local macOS `pnpm start`, where Next resolves the mis-cased path out of the
+    // correctly-cased prerendered file and answers 200 — a fact about APFS, not about this
+    // repository. Pointed at the preview, Railway or CI's Linux it runs, including from a Mac,
+    // which a `process.platform === "darwin"` predicate would have dropped in silence. The same
+    // guard on every platform and every run is `tests/unit/catalog-routes-depth4.test.ts`'s six
+    // uppercase rows. Do not probe this URL against a local build you are still measuring — the
+    // 404 Next writes lands on the real page's file and serves "Page not found" until you rebuild
+    // (carried forward in `docs/tasks/TASK-110.md` for TASK-118's `docs/runbooks/shop-pages.md`).
     test.skip(
-      process.platform === "darwin",
+      skipsOnCaseInsensitiveHost(baseURL),
       "case-insensitive local filesystem (APFS) serves the mis-cased path from the real page's prerendered HTML",
     );
     const response = await request.get("/en/poland/flowers/Roses", {
@@ -177,16 +181,51 @@ test.describe("what the page renders (AC-6, §14 A8 (c))", () => {
     }
   });
 
-  test("nominates at most one LCP image and preloads exactly that one (AC-24)", async ({
+  test("nominates exactly one LCP image — the first card's photograph — and preloads that one (AC-24)", async ({
     page,
   }) => {
+    // **The stated number, and why it is 1.** Three of the twelve cards of
+    // `/en/poland/flowers/roses` carry an approved photograph (TASK-080's bytes) and the first is
+    // one of them, so AC-24's "exactly one image per page carries `priority`" has three
+    // candidates and must pick the first. `EXPECTED_NOMINATIONS` is pinned to that corpus rather
+    // than recomputed from the page: if the first card's photograph is ever withdrawn this goes
+    // red and the new number is written here deliberately.
+    //
+    // Nothing below is counted from the page's own nominations — `preloads === priority` reads
+    // the page against itself and would pass on a page that nominates nothing. The expectation is
+    // the **first card's own `<source>`**, which is also AC-24's "built from the same manifest
+    // lookup as its `srcset`": a nomination that moved to the second card would carry a different
+    // descriptor and fail here.
+    const EXPECTED_NOMINATIONS = 1;
     await page.goto("/en/poland/flowers/roses");
-    const priority = await page.locator('img[fetchpriority="high"]').count();
-    expect(priority).toBeLessThanOrEqual(1);
-    const preloads = await page
+
+    const firstCard = page.locator("[data-fo-product-card]").first();
+    await expect(firstCard).toBeVisible();
+    const firstPhotograph = await firstCard
+      .locator("picture source")
+      .first()
+      .evaluateAll((nodes) =>
+        nodes.map((node) => node.getAttribute("srcset") ?? ""),
+      );
+    expect(firstPhotograph).toHaveLength(EXPECTED_NOMINATIONS);
+
+    const preloaded = await page
       .locator('head link[rel="preload"][as="image"]')
-      .count();
-    expect(preloads).toBe(priority);
+      .evaluateAll((nodes) =>
+        nodes.map((node) => node.getAttribute("imagesrcset") ?? ""),
+      );
+    // One `toEqual` that can fail on either side: a missing nomination, a second one, or one
+    // built from a different lookup than the first card's own `<picture>`.
+    expect(preloaded).toEqual(firstPhotograph);
+    await expect(page.locator('img[fetchpriority="high"]')).toHaveCount(
+      EXPECTED_NOMINATIONS,
+    );
+    await expect(page.locator('img[loading="eager"]')).toHaveCount(
+      EXPECTED_NOMINATIONS,
+    );
+    // The other two photographs on the page are lazy, which is the "and nothing else" half.
+    await expect(page.locator("[data-fo-product-card] img")).toHaveCount(3);
+    await expect(page.locator('img[loading="lazy"]')).toHaveCount(2);
   });
 
   test("renders with JavaScript disabled (AC-23)", async ({ browser }) => {
