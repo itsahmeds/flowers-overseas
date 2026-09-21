@@ -168,6 +168,149 @@ export function typeProblem(type: string): string | null {
   return null;
 }
 
+/**
+ * Properties whose value is a URL. A relative URL in JSON-LD resolves against the document's
+ * `@context` base, not against the page that carries it, so `/icon.svg` names no logo and `/en`
+ * names no breadcrumb target — the claim silently evaporates. Every builder in
+ * `src/modules/seo/schema/` goes through `absoluteUrl()` for exactly this reason; this is the gate
+ * that keeps it true of whatever a later spec adds.
+ */
+export const URL_PROPERTIES: readonly string[] = [
+  "item",
+  "logo",
+  "merchantReturnLink",
+  "sameAs",
+  "url",
+];
+
+/**
+ * The properties a node of each type must carry to be the thing it says it is.
+ *
+ * Derived from the `plan/02` §9 table the same way `ALLOWED_TYPES` is — the Organization row names
+ * `name`, `url`, `logo`; the corridor row's "markup stays valid" is the FAQ requirement — plus the
+ * cardinalities schema.org fixes for the types themselves (a `Question` without an `acceptedAnswer`
+ * is not a Question; a `BreadcrumbList` is an ordered list from 1).
+ *
+ * **`Product` and `Offer` are deliberately absent.** Their row is spec 009's and their builder is
+ * TASK-130's; requiring `sku` or `image[]` here would make this task legislate for one that has not
+ * been written, and would fail a fixture whose author never agreed to the rule. `Offer` already has
+ * the price gate below, which is the rule `CLAUDE.md` actually states.
+ */
+export const REQUIRED_PROPERTIES: Readonly<Record<string, readonly string[]>> =
+  {
+    Answer: ["text"],
+    ListItem: ["name"],
+    Organization: ["name", "url", "logo"],
+    Question: ["name", "acceptedAnswer"],
+    WebSite: ["name", "url"],
+  };
+
+/** The smallest trail worth announcing — a parent and the page (`breadcrumbList.ts`'s own rule). */
+const BREADCRUMB_MIN_ITEMS = 2;
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.trim() !== "";
+}
+
+function isAbsoluteHttpUrl(value: string): boolean {
+  try {
+    const { protocol } = new URL(value);
+    return protocol === "http:" || protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+/** `BreadcrumbList` problems: an ordered, named trail of at least two crumbs. */
+function breadcrumbProblems(node: Readonly<Record<string, unknown>>): string[] {
+  const items = node["itemListElement"];
+  if (!Array.isArray(items) || items.length < BREADCRUMB_MIN_ITEMS) {
+    return [
+      `BreadcrumbList.itemListElement must be an array of at least ${String(BREADCRUMB_MIN_ITEMS)} ListItem (one crumb is not a trail: it tells a crawler the page's parent is itself)`,
+    ];
+  }
+  const problems: string[] = [];
+  items.forEach((entry, index) => {
+    const expected = index + 1;
+    if (!isRecord(entry)) {
+      problems.push(
+        `BreadcrumbList.itemListElement[${String(index)}] is not a ListItem object`,
+      );
+      return;
+    }
+    if (!typesOf(entry["@type"]).includes("ListItem")) {
+      problems.push(
+        `BreadcrumbList.itemListElement[${String(index)}] has no @type ListItem`,
+      );
+    }
+    const position = entry["position"];
+    if (position !== expected) {
+      problems.push(
+        `BreadcrumbList.itemListElement[${String(index)}].position is ${JSON.stringify(position)}, expected ${String(expected)} (positions must run 1..n in the order the trail is shown)`,
+      );
+    }
+  });
+  return problems;
+}
+
+/** `FAQPage` problems: at least one `Question`, each of them a real question. */
+function faqPageProblems(node: Readonly<Record<string, unknown>>): string[] {
+  const entities = node["mainEntity"];
+  if (!Array.isArray(entities) || entities.length === 0) {
+    return [
+      "FAQPage.mainEntity must be a non-empty array of Question (a FAQPage that marks up no question describes nothing the page shows)",
+    ];
+  }
+  return entities.flatMap((entry, index) =>
+    isRecord(entry) && typesOf(entry["@type"]).includes("Question")
+      ? []
+      : [`FAQPage.mainEntity[${String(index)}] is not a Question`],
+  );
+}
+
+/**
+ * Everything wrong with the *shape* of one node, as opposed to its `@type` (`typeProblem`).
+ *
+ * Google's rich-result requirements and schema.org's own definitions are the source; the point is
+ * that the committed fixtures are regenerated from the builders, so a builder that emitted a
+ * nameless crumb or an answerless question would agree with itself in every other gate. This is
+ * the gate that does not take the document's word for it.
+ */
+export function shapeProblems(node: TypedNode): string[] {
+  const problems: string[] = [];
+
+  for (const type of node.types) {
+    for (const property of REQUIRED_PROPERTIES[type] ?? []) {
+      const value = node.node[property];
+      const missing = isRecord(value)
+        ? Object.keys(value).length === 0
+        : !isNonEmptyString(value);
+      if (missing) {
+        problems.push(
+          `${type} requires a non-empty ${property} (plan/02 §9), and has ${JSON.stringify(value)}`,
+        );
+      }
+    }
+    if (type === "BreadcrumbList")
+      problems.push(...breadcrumbProblems(node.node));
+    if (type === "FAQPage") problems.push(...faqPageProblems(node.node));
+  }
+
+  for (const property of URL_PROPERTIES) {
+    const value = node.node[property];
+    const urls = typeof value === "string" ? [value] : [];
+    for (const url of urls) {
+      if (!isAbsoluteHttpUrl(url)) {
+        problems.push(
+          `${property} ${JSON.stringify(url)} is not an absolute http(s) URL (a relative URL in JSON-LD resolves against the @context, not the page, so it names nothing)`,
+        );
+      }
+    }
+  }
+
+  return problems;
+}
+
 /** Price/currency problems of one fixture, comparing `Offer` nodes with the visible values. */
 export function offerProblems(
   fixture: SchemaFixture,
@@ -278,6 +421,9 @@ export function validateSchemaFile(
       const reason = typeProblem(type);
       if (reason !== null)
         problems.push({ file, reason: `${node.path}: ${reason}` });
+    }
+    for (const reason of shapeProblems(node)) {
+      problems.push({ file, reason: `${node.path}: ${reason}` });
     }
   }
   for (const reason of offerProblems(parsed.data, nodes)) {

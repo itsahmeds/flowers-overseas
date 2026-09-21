@@ -1,0 +1,10 @@
+{
+  "jsonld": {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 0, "item": "/en" },
+      { "@type": "ListItem", "position": 7, "name": "Send flowers to" }
+    ]
+  }
+}
