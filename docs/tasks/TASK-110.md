@@ -37,7 +37,47 @@ _None recorded._
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
+**Shipped with TASK-111 in one branch and one pull request** (`task/TASK-110-111-country-category-occasion`),
+because the two page types share a URL depth and therefore — under spec 008 §14 **A5** — one route
+file, one `resolveLocalePath()`, one `localeGrandchildParams()` and one resolver test. Two earlier
+solo runs (one per task, each killed by an API rate limit with one commit on disk) had each written
+its own copy of all four; both commits are preserved in the history and the fifth commit merges
+them.
 
-_Pending._
+**What the country category is.** `/{locale}/{countrySlug}/{shopCategory}/{categorySlug}` —
+§2 row 7, §5.3 row 2, **AC-5**, AC-1, AC-6. `CountryCategoryPage` in `src/modules/catalog/ui`
+composes TASK-108's shop primitives into the artboard's block order: breadcrumb, `h1` + the
+counted lede + the demo sentence, the sibling-category chip row, the one priced grid with the
+result count and the ranking disclosure above it, the country intro last. No toolbar and no
+pagination (§14 **A8 (c)**); no delivery-facts panel (§14 **A9**, dated row in
+`docs/design/README.md`). Nothing under `src/app/` names a country, a category or a floor, which
+is the data-flip proof AC-5 asks for — `tests/unit/catalog-category-data-flip.test.ts` lifts a
+fixture category over `PRODUCT_COUNT_FLOOR` and watches the URL, the chips and the shop-root tile
+appear.
+
+**Numbers a reviewer needs.** The depth-4 existence set is **294 URLs** (`en` + `en-gb`; `de` and
+`pl` have no authored category or occasion slug, so they have no page and no alternate — §13 Q10),
+of which the category rows are the majority. `/en/poland/flowers/roses` renders **12 of 15** roses
+(page 1; the remaining three arrive with TASK-114's `?page=N`) and a **20**-chip sibling row.
+Copy: five `shop.category.*` keys plus `shop.h1.countryCategory`, `en` transcribed from the
+founder-approved artboards and `de`/`pl` drafted, the `pl` plural of `shop.category.lede`
+hand-authored (one/few/many/other). `pnpm i18n:check` clean; the **`en` unreviewed share is 3.79 %
+(18 / 475)**, inside the 5 % gate (the six unreviewed keys are TASK-111's occasion sentences,
+queued for founder review). Script budget: the page mounts no island, so the expected delta is
+**+0.0 KB**; `/en/poland/flowers/roses` and its `en-gb` twin joined
+`scripts/client-js-budget.ts`, `tests/e2e/client-js-budget.spec.ts` and
+`tests/fixtures/seo/lighthouse-urls.json` (AC-25 names the country category; the country occasion
+is deliberately not in the Lighthouse set).
+
+**Tests.** Unit: `catalog-category-page.test.tsx` (the rendered page, the honesty scan in four
+locales, the plural of the lede), `catalog-category-data-flip.test.ts` (AC-5),
+`catalog-routes-depth4.test.ts` (the shared resolver — see TASK-111's note on why the two route
+tests became one). e2e: `tests/e2e/country-category.spec.ts` (10 tests: the 200 set, the eight 404
+shapes with no `Location`, the trailing-slash 308, the link crawl, the LCP nomination, the
+JS-disabled render) and the page type added to `tests/e2e/chrome-honesty.spec.ts`. a11y:
+`tests/a11y/country-category.spec.ts` (`en`, `en-gb`, `ar-XB`). Visual:
+`tests/visual/country-category.spec.ts`, two `darwin` baselines at 1440 and 390 px.
+
+**Handed on.** TASK-114 owns the toolbar, the pagination and the three roses page 1 cannot show;
+TASK-115 owns the `BreadcrumbList` and `ItemList` slots; the two artboard rows in
+`docs/design/README.md` close when the drawings are redrawn and when TASK-114 lands.
