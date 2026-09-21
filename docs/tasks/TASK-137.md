@@ -102,13 +102,18 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   baselines are produced — that is a task for the specs that own those pages, and no baseline was
   regenerated here to make a runner agree. (b) Three visual specs are also red on `darwin` at
   `origin/main` — `country-shop.spec.ts` (desktop, mobile) and `listing.spec.ts` (desktop card
-  image). (c) Two `e2e` cases fail on macOS only and should pass on CI's case-sensitive
-  filesystem: `corridor.spec.ts` and `destinations-hub.spec.ts` expect `/en/Send-Flowers-To` to
-  404.
+  image). (c) Two `e2e` cases fail on macOS only — `corridor.spec.ts` and
+  `destinations-hub.spec.ts` expect `/en/Send-Flowers-To` to 404 — and passed on CI's
+  case-sensitive filesystem, as expected. Worth knowing for anyone running `pnpm test:e2e` on a
+  Mac: those two are false alarms there.
+  **Confirmed on CI (run 35611605977):** `visual` failed with **45** red specs — 42 with no
+  `linux/` baseline at all and 3 that mismatch the three stale ones (including
+  `pseudo-rtl` `/ar-XB` and `shell` `/de`) — while `e2e` (828 passed) and `a11y` (83 passed) are
+  green.
 
 ## Result
 
-PR: pending. `preview` no longer waits on Vercel: it builds the app on the runner from the
+PR: **#90** (run 35611605977, label `ci:full`). `preview` no longer waits on Vercel: it builds the app on the runner from the
 committed `.env.example` placeholders (no credential in scope — the same `env | grep` assertion
 the `container` job makes), packages `.next` minus `cache` and `standalone` into a 17 MB
 `preview-build` artifact, serves it with `next start` and refuses to succeed until
@@ -128,5 +133,24 @@ the probe's non-blocking status; `tests/unit/vercel-config.test.ts`'s preview bl
 scope AC-29 / T-30 to the evidence step. Full unit suite: 180 files, 4 349 passed, 5 skipped.
 Rehearsed locally against `pnpm start` on :3215 (build slot held): `serve.sh` green end to end,
 `a11y` 83/83, `e2e` 824 passed / 2 failed (macOS case-insensitivity only) / 8 skipped, `visual`
-42 passed / 3 failed (pre-existing on `main`). Handed to later tasks: the three findings in
-`## Escalations`, and the `linux/` visual baselines the first red `visual` run uploads.
+42 passed / 3 failed (pre-existing on `main`).
+
+**What CI reported — the number this task exists for.** On run 35611605977 the three suites gave
+a real conclusion for the first time on this project:
+
+| job | before (PRs 84, 85, 87) | this PR |
+|---|---|---|
+| `preview` | failure after a 15-minute wait | **success in 81 s** (build, 17 MB artifact, `/api/health` 200) |
+| `e2e` | skipped | **success** — 828 passed, 6 skipped, 3.8 min |
+| `a11y` | skipped | **success** — 83 passed, 42 s |
+| `visual` | skipped | **failure** — 45 specs, all red: 42 have no `linux/` baseline, 3 mismatch the 3 stale ones |
+
+Every other job of the run is green, including `container`, `build` and `lighthouse`. The two
+macOS-only `e2e` failures of the local rehearsal passed on the runner's case-sensitive
+filesystem, as expected. The Vercel evidence step recorded exactly the defect the task named and
+did not block anything: deployment present, `302` to `vercel.com/sso-api` (protected),
+`x-vercel-id: sfo1::fra1::…`, `X-Robots-Tag: noindex`, **`/api/health` with the bypass: 500**.
+
+Handed to later tasks: the findings in `## Escalations`, and the `linux/` baselines inside the
+`playwright-report-visual` artifact of this run (104 MB) — the screenshots the job wrote are what
+`playwright.config.ts` says the Linux baselines are produced from. **None was committed here.**
