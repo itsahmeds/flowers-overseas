@@ -93,6 +93,18 @@ never saw: two are reworded off the artboards and two are drawn nowhere on them.
 name", so they now carry `reviewed: false` and are pinned into `AWAITING_FOUNDER_REVIEW` with the
 reason, and clause (e) of the TASK-112 row in `docs/design/README.md` records it.
 
+**CI (run 35608450438, `ci:full`).** 14 jobs green — `lint`, `typecheck`, `commitlint`,
+`test-contract`, `test-integration`, `i18n-check`, `seo-validate`, `catalogue-check`, `seed-check`,
+`corridor-check`, `db-check`, `audit`, `dev-os-check`, `env-build-failure`. Two failures, **neither
+this branch's**: `test-unit` is 4383 passed / 2 failed and both are `tasks-brief.test.ts` on
+**TASK-080's row in `TASKS.md`** (reproduced on `origin/main`; `TASKS.md` is the orchestrator's
+file and this task was told not to edit it), and `preview` got a **500 from `/api/health`** on the
+Vercel deployment — the same Hobby-environment failure TASK-080's row records three days ago.
+`visual`, `e2e`, `a11y`, `build`, `container` and `lighthouse` all `need: preview`, so all six
+skipped. **The local runs against a real `pnpm build && pnpm start` are therefore the evidence of
+record for the browser gates on this task**: e2e 40 green, a11y 7 green, visual 48 green. The
+reviewer should read them as such, or re-run CI once the preview environment is healthy.
+
 **Handed to a later task.** TASK-110/111: the 14 depth-4 destination links this page renders are
 404 until your routes land — see **E-1**, which is a merge-order ask, not a code change. TASK-111:
 the occasion table's third column and its artboard parity check. TASK-113: the occasions-index
