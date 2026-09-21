@@ -356,3 +356,12 @@ released; `.next` was deleted afterwards, and no mis-cased URL was probed on eit
 load average 7.7 on 8 cores; no timing number is claimed here and CI remains the gate of record.
 No source file changed in this round — the diff is two support files, three unit files, two e2e
 specs, the two briefs and the regenerated codebase map.
+
+**CI, run [35627184467](https://github.com/itsahmeds/flowers-overseas/actions/runs/35627184467)**
+on `bd87445` (fired by toggling `ci:full`, since a push fires nothing). Green: `lint`, `typecheck`,
+`commitlint`, `test-unit`, `test-contract`, `test-integration`, `build`, `container`, `audit`,
+`seed-check`, `seo-validate`, `i18n-check`, `catalogue-check`, `corridor-check`, `db-check`,
+`dev-os-check`, `env-build-failure` and **`lighthouse`**. `preview` failed again at "Verify
+protection, region and noindex on the preview (T-30)" — the same TASK-137 failure the round-2
+review scoped out — so `e2e`, `a11y` and `visual` **skipped**; the local run of both e2e specs
+above is the evidence of record for the two cases this round changed.
