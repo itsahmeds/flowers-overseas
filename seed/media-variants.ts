@@ -51,6 +51,7 @@ import { fileURLToPath } from "node:url";
 import { format as formatWithPrettier, resolveConfig } from "prettier";
 import sharp from "sharp";
 
+import { DERIVED_MEDIA_DIR } from "./budgets.ts";
 import {
   MediaFileSchema,
   MediaVariantsFileSchema,
@@ -84,8 +85,13 @@ export const MEDIA_MANIFEST_PATH = `${SEED_DATA_DIR}/media.json`;
 /** The variant manifest this CLI writes, relative to the repository root. */
 export const VARIANT_MANIFEST_PATH = `${SEED_DATA_DIR}/media-variants.json`;
 
-/** Where the derived bytes go in Phase 0 (deleted in TASK-082's R2 flip, spec 006 AC-27). */
-export const MEDIA_OUTPUT_DIR = "public/media";
+/**
+ * Where the derived bytes go. `.local/media/` since TASK-138: git-ignored, like the originals,
+ * because the bytes now live in `flowersoverseas-media` and `scripts/media-upload.ts` puts them
+ * there from this directory. It is `seed/budgets.ts`'s constant so that the gate over these
+ * files and the CLI that writes them cannot name two different directories.
+ */
+export const MEDIA_OUTPUT_DIR = DERIVED_MEDIA_DIR;
 
 /** Where the git-ignored originals live for the generation loop (spec 006 §13 Q6). */
 export const ORIGINALS_DIR = ".local/imagery/originals";
@@ -574,6 +580,13 @@ export interface CheckReport {
   readonly rows: number;
   readonly files: number;
   /**
+   * Whether a derived tree was there to check at all. `false` on a clean clone and on every CI
+   * runner since TASK-138 — the bytes are git-ignored — and the flag is reported rather than
+   * inferred from `files === 0` so that "no tree" and "an empty tree" cannot be confused, and so
+   * that a reader of the CI log can see which half of the check ran.
+   */
+  readonly derivedTreePresent: boolean;
+  /**
    * The bytes of every file the manifest lists — the input to spec 006 AC-15's 6 MB cap, printed
    * rather than enforced: the cap is `pnpm seed:check`'s rule 9 (TASK-075) and the committed set
    * is TASK-080's. (The field is not called `total…` because `fo/no-float-money` reads that word
@@ -583,13 +596,24 @@ export interface CheckReport {
 }
 
 /**
- * Verify the committed tree: manifest ↔ files ↔ checksums, plus the two invariants a hand edit
- * would break — the header still equals the pinned pipeline, and every row's box is the one the
- * slot's declared aspect ratio gives at that width.
+ * Verify the manifest, and the files wherever they exist: manifest ↔ files ↔ checksums, plus the
+ * invariants a hand edit would break — the header still equals the pinned pipeline, every row's
+ * box is the one the slot's declared aspect ratio gives at that width, every `objectKey` and
+ * `variant` is the canonical one.
+ *
+ * **Two halves since TASK-138, and the split is deliberate.** The derived bytes are no longer
+ * committed, so a clean clone and every CI runner have no files to read. The manifest half —
+ * which is every rule above — runs *always*, because the manifest is committed, is what both the
+ * loader and the uploader read, and is therefore the artefact a review can actually catch a fault
+ * in. The file half runs wherever `.local/media/` exists (the founder's machine, immediately
+ * after a derivation, and before every upload), and there it is exact: byte count and SHA-256 per
+ * file, plus an orphan check in the other direction. What CI loses by not holding the bytes it
+ * gets back at the only moment it matters — `scripts/media-upload.ts` runs this same check and
+ * refuses to put a single object into the bucket while it reports a problem.
  *
  * No `sharp` call and no image decode: the checksum already ties the recorded width, height and
- * byte count to those exact bytes, so re-decoding would only add a dependency to the one mode that
- * runs in CI.
+ * byte count to those exact bytes, so re-decoding would only add a dependency to the mode that
+ * runs most often.
  */
 export function checkVariants(options: {
   readonly root: string;
@@ -607,6 +631,7 @@ export function checkVariants(options: {
       ],
       rows: 0,
       files: 0,
+      derivedTreePresent: false,
       manifestBytes: 0,
     };
   }
@@ -626,6 +651,7 @@ export function checkVariants(options: {
     readMediaAssets(root).map((asset) => [asset.id, asset.slot]),
   );
   const expectedFiles = new Set<string>();
+  const derivedTreePresent = existsSync(join(root, MEDIA_OUTPUT_DIR));
 
   for (const row of manifest.rows) {
     const path = variantFilePath(row.assetId, row.width, row.format);
@@ -657,6 +683,12 @@ export function checkVariants(options: {
       );
     }
 
+    // No derived tree: the manifest is checked on its own terms and the byte-level half is
+    // reported as not run (see the header). Reporting 118 "missing file" problems for a tree
+    // nobody is expected to hold would turn the gate into noise, and noise is how a real missing
+    // file gets scrolled past.
+    if (!derivedTreePresent) continue;
+
     const absolute = join(root, path);
     if (!existsSync(absolute)) {
       problems.push(
@@ -678,10 +710,10 @@ export function checkVariants(options: {
     }
   }
 
-  for (const path of committedVariantFiles(root)) {
+  for (const path of derivedVariantFiles(root)) {
     if (!expectedFiles.has(path)) {
       problems.push(
-        `${path}: no entry in ${VARIANT_MANIFEST_PATH} — every committed byte under ${MEDIA_OUTPUT_DIR}/ is listed with its checksum or it is not shipped (spec 006 AC-14)`,
+        `${path}: no entry in ${VARIANT_MANIFEST_PATH} — every derived byte under ${MEDIA_OUTPUT_DIR}/ is listed with its checksum or it is not uploaded (spec 006 AC-14)`,
       );
     }
   }
@@ -689,13 +721,14 @@ export function checkVariants(options: {
   return {
     problems,
     rows: manifest.rows.length,
-    files: committedVariantFiles(root).length,
+    files: derivedVariantFiles(root).length,
+    derivedTreePresent,
     manifestBytes: manifest.rows.reduce((sum, row) => sum + row.bytes, 0),
   };
 }
 
-/** Every file under `public/media/`, repository-relative, sorted — the "every file" of AC-14. */
-export function committedVariantFiles(root: string): readonly string[] {
+/** Every derived file, repository-relative, sorted — the "every file" of AC-14. */
+export function derivedVariantFiles(root: string): readonly string[] {
   const walk = (relativeDirectory: string): string[] => {
     const absolute = join(root, relativeDirectory);
     if (!existsSync(absolute)) return [];
@@ -763,7 +796,9 @@ if (isMain) {
     }
     if (report.problems.length > 0) process.exit(1);
     process.stdout.write(
-      `${VARIANT_MANIFEST_PATH}: ${String(report.rows)} variant(s), ${String(report.files)} file(s) under ${MEDIA_OUTPUT_DIR}/, ${String(report.manifestBytes)} byte(s), every checksum matched (sharp ${PINNED_SHARP_VERSION}, ${String(ENCODER_CONCURRENCY)} thread)\n`,
+      report.derivedTreePresent
+        ? `${VARIANT_MANIFEST_PATH}: ${String(report.rows)} variant(s), ${String(report.files)} file(s) under ${MEDIA_OUTPUT_DIR}/, ${String(report.manifestBytes)} byte(s), every checksum matched (sharp ${PINNED_SHARP_VERSION}, ${String(ENCODER_CONCURRENCY)} thread)\n`
+        : `${VARIANT_MANIFEST_PATH}: ${String(report.rows)} variant(s), ${String(report.manifestBytes)} byte(s), manifest clean — no derived tree under ${MEDIA_OUTPUT_DIR}/, so the checksum half did not run (the bytes live in the media bucket since TASK-138; run \`pnpm media:variants\` to derive them locally)\n`,
     );
   } else {
     const report = await generateVariants({

@@ -39,6 +39,7 @@ import {
   GA4_MEASUREMENT_ID_KEY,
   ga4MeasurementId,
 } from "../../src/lib/env.schema";
+import { MEDIA_ORIGIN } from "../../src/lib/media-origin";
 import { AnalyticsScripts, ga4TagUrl } from "../../src/modules/analytics";
 
 const repoRoot = resolve(__dirname, "../..");
@@ -159,7 +160,7 @@ describe("the hash and the policy (ADR-0016, AC-23)", () => {
     );
     // The tag origin is never an image or a frame source: a container that wants either is a
     // reviewed diff, not a silent allowance.
-    expect(lit).toContain("img-src 'self' data: blob:;");
+    expect(lit).toContain(`img-src 'self' data: blob: ${MEDIA_ORIGIN};`);
     expect(lit).toContain("frame-src 'none';");
   });
 });

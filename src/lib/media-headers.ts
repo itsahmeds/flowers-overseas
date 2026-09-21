@@ -1,44 +1,30 @@
 /**
- * `Cache-Control` for the image space (spec 006 §2.5 "Cache headers", §5.4; TASK-079).
+ * `Cache-Control` for the image space (spec 006 §2.5 "Cache headers", §5.4; TASK-079, moved onto
+ * the objects themselves by TASK-138).
  *
  * > `/media/*` is served `public, max-age=31536000, immutable`. Variant URLs never mutate; a new
- * > image is a new asset version. This is the only new response-header change in the spec.
+ * > image is a new asset version.
  *
- * `immutable` is a promise, and the thing that makes it keepable is `staticVariantLoader`'s URL
- * shape: `/media/{assetId}/{width}.{fmt}`, content-addressed by asset **version** and width. A
- * changed photograph is a new asset id, never the same URL with new bytes — so a year-long cache
- * can never serve a stale image, and a client that has one has the right one.
+ * **Where the header comes from changed; the header did not.** Until TASK-138 the derived bytes
+ * were committed under `public/media/` and Next sent this value from a `headers()` rule in
+ * `next.config.ts`. The bytes are now objects in `flowersoverseas-media` and the application
+ * serves no image at all, so the rule went with the files and the value is written **onto each
+ * object** by `scripts/media-upload.ts` (`Cache-Control` is stored metadata in R2 and is returned
+ * on every GET of the object). One constant, one place, still asserted as a whole string by
+ * `tests/unit/media-headers.test.ts` — and now checkable against a real response, which the old
+ * rule never was, because a 404 in that space correctly answered `no-store` and there were no
+ * bytes to ask for.
  *
- * Factored out of `next.config.ts` for the same reason `robots-headers.ts` was: the config calls
- * `assertEnv()` at import time, so a rule asserted from that module cannot be unit-tested without
- * a valid environment. `tests/unit/media-headers.test.ts` asserts this one as a whole string.
+ * `immutable` is a promise, and the thing that makes it keepable is the object key:
+ * `media/{assetId}/{width}.{fmt}`, content-addressed by asset **version** and width. A changed
+ * photograph is a new asset id, never the same key with new bytes — so a year-long cache can
+ * never serve a stale image, and a client that has one has the right one.
  *
- * **Why there is no e2e assertion yet.** No bytes are committed under `public/media/` until
- * TASK-080, and Next answers a **404** in this space with its own
- * `private, no-cache, no-store` — correctly, since a missing file must not be cached for a year.
- * Measured locally against `pnpm start` with a throwaway file present: `200` +
- * `public, max-age=31536000, immutable`. The e2e assertion belongs in the PR that commits the
- * first variant, so it cannot pass for the wrong reason.
- *
- * **Crawlability, recorded here because this is where the path is written:** when spec 007 lifts
- * `Disallow: /`, `/media/*` — and later the R2 public host — **must stay crawlable**. Google
- * cannot index or even fetch the images it evaluates for Core Web Vitals if the image space is
- * disallowed, and blocking it is the classic own-goal (spec 006 §6). The requirement is carried
- * for 007 in `docs/runbooks/imagery.md` (TASK-081).
+ * **Crawlability, recorded here because this is where the cache promise is written:** when spec
+ * 007 lifts `Disallow: /`, the image origin must stay crawlable, or Google cannot fetch the
+ * images it evaluates for Core Web Vitals. That requirement moved to the bucket's public host
+ * along with the bytes (`src/lib/media-origin.ts`, `docs/runbooks/imagery.md`, spec 006 §6).
  */
-import type { HeaderRule } from "./robots-headers.ts";
 
-/** The static image space, in Next's header-source syntax. */
-export const MEDIA_PATHS = "/media/:path*";
-
+/** The value every derived variant is stored with and served with. */
 export const MEDIA_CACHE_CONTROL = "public, max-age=31536000, immutable";
-
-/** Fresh objects on every call, matching `noindexHeaderRules()`. */
-export function mediaCacheHeaderRules(): HeaderRule[] {
-  return [
-    {
-      source: MEDIA_PATHS,
-      headers: [{ key: "Cache-Control", value: MEDIA_CACHE_CONTROL }],
-    },
-  ];
-}

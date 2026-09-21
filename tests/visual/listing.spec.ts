@@ -14,6 +14,8 @@
  */
 import { expect, test } from "@playwright/test";
 
+import { settleImages } from "../support/settle-images.ts";
+
 const GALLERY = "/dev/components";
 
 const PARTS = [
@@ -46,6 +48,10 @@ for (const { name, viewport } of CASES) {
       response?.status(),
       `${GALLERY} must be served; is ENABLE_DEV_UI=true on the target?`,
     ).toBe(200);
+
+    // Cross-origin photographs (TASK-138): wait for them, or an element screenshot can be taken
+    // of a card whose image has not landed.
+    await settleImages(page);
 
     for (const { suffix, selector } of PARTS) {
       await expect(page.locator(selector)).toHaveScreenshot(

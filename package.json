@@ -44,6 +44,7 @@
     "seed:check": "node seed/check.ts",
     "seed:diff": "node seed/diff.ts",
     "media:variants": "node seed/media-variants.ts",
+    "media:upload": "node scripts/media-upload.ts",
     "i18n:check": "node scripts/i18n-check.ts",
     "catalogue:check": "node scripts/catalogue-check.ts",
     "corridor:check": "node scripts/corridor-check.ts",

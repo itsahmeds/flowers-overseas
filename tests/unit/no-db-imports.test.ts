@@ -59,7 +59,7 @@ describe("AC-2: no database import in the spec 003 file set (T-02)", () => {
       "seed/copy.ts",
       "seed/copy-draft.ts",
       // spec 006 AC-1/AC-14 (TASK-078): the variant CLI, whose `--check` mode is a CI gate and
-      // reads only `seed/data/` and `public/media/`.
+      // reads only `seed/data/` and the git-ignored derived tree.
       "seed/media-variants.ts",
       // spec 006 AC-1 (TASK-075): the dataset gate, its byte budgets and its fixture-overlay
       // tooling. `pnpm seed:check` runs on every pull request with `DATABASE_URL` unset.
@@ -92,6 +92,7 @@ describe("AC-2: no database import in the spec 003 file set (T-02)", () => {
       "src/lib/consent-bootstrap.ts",
       "src/lib/robots-headers.ts",
       "src/lib/media-headers.ts",
+      "src/lib/media-origin.ts",
       "src/modules/analytics",
       // spec 007 AC-1 (TASK-087): the corridor content model, its provider seam and its gate.
       "src/modules/geo",

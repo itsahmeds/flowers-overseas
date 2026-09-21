@@ -529,10 +529,13 @@ export const HOME_STATES = {
  * with no derived bytes, and a locale with no alt text. It is passed as `MediaAsset`'s `manifest`
  * prop so nothing mutates module state inside a request.
  *
- * Its `galleryLadder()` widths are invented and its files do not exist, so the browser draws the
- * `<img>`'s alt text rather than a photograph in the *fixture* rows — which is what makes the
- * markup, the ladder, the `sizes`, the preload and the label readable side by side. The row built
- * from the committed dataset shows the real thing.
+ * Its `galleryLadder()` widths are invented — 1080 is a step the Phase-0 ladder does not derive —
+ * so the ladder, the `sizes` and the preload are readable side by side while the browser resolves
+ * whichever step it picks against the real objects (TASK-138: keys are canonical, so the steps
+ * that exist render a photograph and the ones that do not are the missing-step case this gallery
+ * is here to show). The fixture assets that carry **no** bytes at all — `fo-gallery-no-bytes`,
+ * the pending asset, the alt-less locale — stay exactly as they were: those are the states the
+ * committed dataset cannot produce, and they are the reason this manifest exists.
  */
 const GALLERY_WIDTHS = [384, 640, 1080] as const;
 
@@ -548,7 +551,12 @@ function galleryLadder(
       height: Math.round(width / aspect),
       format,
       bytes: width * 20,
-      objectKey: `derived/${assetId}/${String(width)}.${format}`,
+      // The **canonical** key (`seed/media-variants.ts`'s `variantObjectKey`), not an invented
+      // one: since TASK-138 the loader addresses R2 by the manifest's own `objectKey`, so a
+      // fixture key that names no object is a gallery of broken images. The widths here are
+      // still invented, which is the point — the steps that exist resolve to the real objects
+      // and the ones that do not are exactly the missing-step case the gallery demonstrates.
+      objectKey: `media/${assetId}/${String(width)}.${format}`,
     })),
   );
 }

@@ -104,6 +104,7 @@ describe("src/modules/ui barrel", () => {
         "getMediaLoader",
         "mediaSlot",
         "placeholderLoader",
+        "r2Loader",
         "setMediaLoader",
         // media: the asset path, the variant loader, the LCP preload and the honesty label
         // (TASK-079). `MediaAsset` has no `alt` prop — alt text is data (spec 006 AC-18) — and
@@ -124,12 +125,12 @@ describe("src/modules/ui barrel", () => {
         "isDisplayable",
         "needsAiProvenanceNote",
         "preloadArgsFor",
+        "r2VariantLoader",
         "resolveLoader",
         "resolveMedia",
         "setMediaManifest",
         "setVariantLoader",
         "srcSetFor",
-        "staticVariantLoader",
         "uiSlotForSeedSlot",
         "variantsFor",
         // the locale home's above-the-fold surfaces and the finder's projection (TASK-052)
