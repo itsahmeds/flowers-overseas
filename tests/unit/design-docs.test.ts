@@ -430,6 +430,33 @@ describe("every artboard speaks in the first person (spec 004 §14 A5)", () => {
     }
   });
 
+  /**
+   * The same pronoun, on the *written* source of the label (TASK-080, closing the `/review 49`
+   * carry-forward). `content/imagery/style-guide.md` is what a founder or an implementer reads
+   * when they are about to author a prompt or copy the label into a message catalogue, and it
+   * quoted the label with "your florist" while four artboards and `messages/*.json` said "our".
+   * Two sources of one legally-read sentence is one too many.
+   */
+  it("writes the same label in the first person in content/imagery/", () => {
+    const files = readdirSync(join(repoRoot, "content/imagery"), {
+      recursive: true,
+      encoding: "utf8",
+    }).filter((name) => name.endsWith(".md") || name.endsWith(".json"));
+    expect(files.length).toBeGreaterThan(10);
+    for (const name of files) {
+      const source = readFileSync(
+        join(repoRoot, "content/imagery", name),
+        "utf8",
+      );
+      expect(source, name).not.toContain("your florist");
+    }
+    const guide = readFileSync(
+      join(repoRoot, "content/imagery/style-guide.md"),
+      "utf8",
+    );
+    expect(guide).toContain("our florist hand-makes each one");
+  });
+
   it("states the rule in the README", () => {
     expect(readme).toContain("## Voice");
     expect(readme).toContain("## Density");

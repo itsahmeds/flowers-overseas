@@ -1459,6 +1459,30 @@ function checkMedia(tree: SeedTree, parsed: Parsed): SeedProblem[] {
         );
       }
     }
+
+    // **No asset ships AVIF only** (TASK-080, closing the `/review 49` carry-forward).
+    // `src/modules/ui/media/resolve.ts` picks the `<img>`'s own `src` as the largest **WebP** step
+    // and falls through to the AVIF step when there is none — a sensible last resort in a resolver
+    // and a silent failure in a dataset: a browser that cannot decode AVIF would be served an AVIF
+    // and draw the alt text instead of the photograph. Trimming a ladder to fit a per-slot byte cap
+    // is exactly how an asset loses its fallback, so the gate refuses it here, before the bytes are
+    // committed, rather than leaving it to a browser nobody on the team uses.
+    const formatsByAsset = new Map<string, Set<string>>();
+    for (const variant of variants) {
+      const seen = formatsByAsset.get(variant.assetId) ?? new Set<string>();
+      seen.add(variant.format);
+      formatsByAsset.set(variant.assetId, seen);
+    }
+    for (const [assetId, formats] of formatsByAsset) {
+      if (formats.has("avif") && !formats.has("webp")) {
+        at(
+          VARIANTS_FILE,
+          assetId,
+          "avif-only",
+          "ships AVIF with no WebP step: the resolver falls through to the AVIF file, so a browser without AVIF is served a format it cannot decode and draws the alt text instead of the photograph (spec 006 §2.5, AC-18)",
+        );
+      }
+    }
   }
 
   // Alt text is per-locale data, required for a rendered product image, and never generated at

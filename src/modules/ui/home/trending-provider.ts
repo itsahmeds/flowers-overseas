@@ -32,6 +32,25 @@ export interface TrendingPick {
   readonly id: string;
   /** Content, not a message key: product names travel untranslated (spec 005 §7's glossary). */
   readonly name: string;
+  /**
+   * The card's photograph in `seed/data/media.json`, by id (spec 006 §2.4; TASK-080).
+   *
+   * Spec 004 §3's "nothing that knows what a product is" kept an image reference off this type;
+   * **spec 006 is the spec that owns imagery**, and it makes the card's photograph data: a product
+   * with an approved, derived, alt-texted hero asset shows it, and every other product shows the
+   * captioned placeholder and no `<img>` (§2.4's honesty rule, AC-18). That mixed state is the
+   * specified Phase-0 state, not a gap — twelve of the eighty-four products have imagery.
+   *
+   * Derived from the SKU by the dataset's own convention (`FO-BQ-001` → `fo-bq-001-hero`) rather
+   * than authored, so landing the photograph of a pick that has none is one asset row plus its
+   * variants and alt text, with no edit here (AC-20).
+   */
+  readonly assetId: string;
+}
+
+/** `FO-BQ-001` → `fo-bq-001-hero` — `seed/data/media.json`'s id convention for a product hero. */
+export function productHeroAssetId(sku: string): string {
+  return `${sku.toLowerCase()}-hero`;
 }
 
 /**
@@ -51,6 +70,7 @@ export const staticTrendingProvider: TrendingProvider = (() => {
   const picks: readonly TrendingPick[] = TRENDING_PICKS.map((pick) => ({
     id: pick.id,
     name: productBySku(pick.sku).name,
+    assetId: productHeroAssetId(pick.sku),
   }));
   return {
     basis: () => "picks",

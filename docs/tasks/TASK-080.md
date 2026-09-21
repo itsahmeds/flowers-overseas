@@ -31,4 +31,58 @@ _None recorded._
 
 ## Result
 
-_Pending._
+**Implemented on `task/TASK-080-imagery-budgets-honesty-gates`. The homepage renders the founder's
+photographs.** `/en`, `/en-gb`, `/de` and `/pl` serve a full-bleed hero photograph (eager,
+`fetchpriority="high"`, with its `<link rel="preload">` built from the same manifest lookup as its
+`srcset`), six occasion tiles and two of five "most sent" cards; the other three cards and the
+delivery band keep the captioned `--color-photo` box and no `<img>`, which is the state spec 006
+§2.4 specifies rather than a gap. The honesty label — "Example arrangement · our florist hand-makes
+each one" — is server-rendered once per page under the last image-bearing section.
+
+**Data.** `generator`/`generatorModel` are `OpenAI ChatGPT` / `gpt-image 2.0` on all 31
+`seed/data/media.json` rows and all 31 prompt records, re-hashed; the placeholder appears in
+neither, and `tests/unit/imagery-prompts.test.ts` now pins the filed values against
+`docs/compliance/imagery-generator-terms.md` so the record and the data cannot name different
+generators. Every `ai` row also records `originalSha256` and `derivativeC2pa: "stripped"` — the
+C2PA carry-forward as data, because the AVIF/WebP re-encode drops the JUMBF manifest (the CLI
+reports it per asset). Alt text authored for 31 assets × 4 launch locales; the all-or-nothing alt
+gate was **kept** and satisfied rather than relaxed.
+
+**Bytes.** 118 variants, **3 012 746 B** (47.9 % of the 6 MB cap), byte-identical on a second
+derive. `PHASE0_SLOT_WIDTHS` in `seed/schema/variants.ts` is the recorded choice of which of §13
+Q5's seven widths each slot ships: hero 384–1200, occasionTile 384, productHero 384–828,
+productDetail 384 — each stopping at the last width whose largest file is inside its
+`seed/budgets.ts` cap and inside its own original. `OG_JPEG_SLOTS` restricts the 1200 px JPEG to
+the `og` slot, which no Phase-0 asset uses. WebP `effort` 4 → 6 (quality still the pinned 72) buys
+the 3–6 % that keeps the two busiest tiles under the 18 000 B cap without touching the cap, the
+quality or the fallback.
+
+**Measured.** Homepage image transfer at the Pixel 7 profile with every image fetched:
+**150 372 B of 204 800 B (73 %)** — hero 1200 px 41 135 B, six tiles at 384 px 66 642 B, two product
+cards at 640 px 42 595 B; largest single response **41 135 B of 90 000 B**. `budget:client-js`: **+0.0 KB against
+the committed baseline on every route** — the AC-22 measurement, with no media component an island
+and no `sharp` in any chunk. CLS **0** in Lighthouse. Unit 4232 · e2e 794 · a11y 78 · visual 43,
+all green; 39 `darwin` baselines updated (home, shell, listing, gallery, footer, suggestion banner)
+and `pseudo-rtl/ar-XB.png` deliberately **unchanged**, which is the CLS-delta-0 evidence.
+
+**Not green, and why:** `pnpm lighthouse` fails locally on **every** URL in the set, including `/`
+and `/en/send-flowers-to`, which carry no imagery at all. `resource-summary.script.size` is
+146–158 KB against a 131 072 B **Brotli** budget because `next start` serves gzip locally (the
+reason `budget:client-js` exists); LCP is 2.34 s on the image-free `/` against a 2.0 s budget, with
+**71 % of it render delay** on a machine at load average 20 running six agents. The image's own
+contribution on `/en` is 468 ms (162 ms load delay + 306 ms load time) of a 3.18 s total. The gate
+is a preview-URL measurement and is read there.
+
+**Left alone deliberately:** `tests/visual/country-shop.spec.ts`'s baselines (TASK-109, landed on
+main mid-branch) are stale because the shop root's cards now render photographs. They belong to that
+task and this brief forbids touching the shop route files, so they are flagged in the PR rather than
+regenerated under an in-review PR. The one shop assertion changed here is
+`tests/unit/catalog-shop-page.test.tsx`'s LCP case, which counted zero eager images because none
+could render.
+
+**Carry-forwards closed:** the style guide's "your florist" (and `design-docs.test.ts` now checks
+`content/imagery/` for the pronoun); the AVIF-only `seed:check` rule; the alt-gate decision. New:
+`docs/runbooks/imagery.md` (the loop, the ladder, the review record, the C2PA verification path),
+the `docs/architecture.md` §4 deviation row, and the intake finding that the approved originals are
+1024–1672 px rather than the ≥ 2000 px `plan/01` §6 asks for — no upscaled file ships, and the next
+run should generate larger.

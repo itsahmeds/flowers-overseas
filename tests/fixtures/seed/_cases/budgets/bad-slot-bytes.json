@@ -1,10 +1,13 @@
 {
   "family": "budgets",
   "rule": "slot-bytes",
-  "replaces": "-",
+  "replaces": "media-variants.json",
   "expect": "above the 18000 B cap for the `occasionTile` slot",
-  "why": "The per-slot half: a 900 KB tile must fail a gate rather than a Lighthouse run (spec 006 §6). The slot comes from the asset's row in `media.json`, so the cap that applies is the one for the place the image is actually rendered.",
+  "why": "The per-slot half: a 900 KB tile must fail a gate rather than a Lighthouse run (spec 006 §6). The slot comes from the asset's row in `media.json`, so the cap that applies is the one for the place the image is actually rendered. The variants manifest is emptied with the listing so the case tests the cap and nothing else.",
   "ops": [
+    {
+      "op": "clearRows"
+    },
     {
       "op": "setMediaFiles",
       "files": [

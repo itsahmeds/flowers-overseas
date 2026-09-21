@@ -16,12 +16,15 @@
  * (AC-14). When 008 flips the flag, `occasionTiles()` starts answering with an `href` and the
  * same loop renders an `<a>`: a data change, with no edit here and none under `src/app/`.
  *
- * **The photo slots hold no `<img>`** (`plan/10` §3): the founder has supplied no imagery, so each
- * box renders the `--color-photo` gradient with the caption that says what it will hold. The
- * caption is `media.placeholder.occasion`, one key for all six, because the sentence is about the
- * kind of photograph and not about the occasion; the per-tile shooting brief is the PR body's
- * photo-slot list, which is where a shooting list belongs rather than in six message keys nobody
- * reads.
+ * **The photo slots hold the founder's six approved photographs** (TASK-080). Each box is a
+ * `MediaAsset` keyed on `tile.assetId` — `home-occasion-{id}` in `seed/data/media.json` — with its
+ * alt text read per locale from `seed/data/alt/{locale}.json`. A tile whose asset is missing,
+ * unapproved, has no derived bytes or has no alt text in *this* locale renders the
+ * `--color-photo` gradient with `media.placeholder.occasion` and **no `<img>`** (`plan/10` §3,
+ * spec 006 AC-18) — one key for all six, because the sentence is about the kind of photograph and
+ * not about the occasion. Nothing in this file decides which of the two happens: the gate is
+ * `media/resolve.ts`'s, so a seventh occasion, a withdrawn image or a missing Polish alt is a data
+ * change with no edit here (AC-20).
  *
  * The grid is `Grid columns="2-6"` — **2-up mobile, 6-up desktop** (TASK-054, closing the
  * `/review 53` carry-forward: the 3-up desktop rendering left six ~430 px empty placeholder
@@ -35,7 +38,7 @@
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
-import { Media } from "../media/Media.tsx";
+import { MediaAsset } from "../media/MediaAsset.tsx";
 import { Grid, Stack } from "../primitives/layout.tsx";
 import { Display, Label, Text } from "../primitives/typography.tsx";
 
@@ -65,7 +68,6 @@ export function OccasionTiles({
 }: OccasionTilesProps): ReactElement {
   const t = useTranslations();
   const home = useTranslations("home");
-  const media = useTranslations("media");
   const tiles = occasionTiles(locale);
 
   return (
@@ -86,13 +88,15 @@ export function OccasionTiles({
       <Grid as="ul" columns="2-6" gap="lg">
         {tiles.map((tile) => (
           <Stack as="li" gap="sm" key={tile.id} data-fo-occasion={tile.id}>
-            <Media
-              slot="tile"
-              // No image exists, so there is nothing to describe; the caption below the box says
-              // what it will hold. Written out because `Media` has no default `alt` by design.
-              alt=""
-              caption={media("placeholder.occasion")}
-            />
+            {/*
+              The tile's photograph, or the captioned placeholder — one component, one reserved
+              box, and the gate of `media/resolve.ts` deciding which (spec 006 AC-18). There is no
+              `alt` prop: alt text is per-locale data from `seed/data/alt/{locale}.json`, so a
+              locale with none renders the box rather than an English alt on a Polish page
+              (TASK-080). `media.placeholder.occasion` is still the caption in the placeholder
+              state — `MediaAsset` reads it from the same key this call site used to pass.
+            */}
+            <MediaAsset assetId={tile.assetId} locale={locale} slot="tile" />
             {tile.href === undefined ? (
               <Text as="span" size="sm" className="font-medium">
                 {registryLabel(t, tile.nameKey)}

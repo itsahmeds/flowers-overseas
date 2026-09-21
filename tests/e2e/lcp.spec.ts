@@ -38,13 +38,15 @@ interface LcpCandidate {
   readonly size: number;
   readonly tag: string;
   readonly text: string;
+  /** Is the candidate inside the hero band — the page's own above-the-fold content? */
+  readonly inHero: boolean;
 }
 
 test.describe("the largest contentful paint is the page's own main content", () => {
   test.use({ viewport: LIGHTHOUSE_VIEWPORT });
 
   for (const locale of LOCALES) {
-    test(`/${locale}: the LCP element is the hero heading, not an overlay`, async ({
+    test(`/${locale}: the LCP element is the hero band, not an overlay`, async ({
       page,
     }) => {
       await page.addInitScript(() => {
@@ -58,6 +60,7 @@ test.describe("the largest contentful paint is the page's own main content", () 
               size: (entry as unknown as { size: number }).size,
               tag: element?.tagName ?? "",
               text: (element?.textContent ?? "").slice(0, 80),
+              inHero: element?.closest("[data-fo-hero]") !== null,
             });
           }
         }).observe({ type: "largest-contentful-paint", buffered: true });
@@ -87,19 +90,24 @@ test.describe("the largest contentful paint is the page's own main content", () 
       expect(candidates.length).toBeGreaterThan(0);
 
       const winner = candidates.at(-1)!;
-      expect(
-        winner.tag,
-        `the last LCP candidate on /${locale} is <${winner.tag}> "${winner.text}" at ${String(
-          Math.round(winner.startTime),
-        )} ms (${String(winner.size)} px²) — every candidate: ${candidates
-          .map(
-            (candidate) =>
-              `<${candidate.tag}> ${String(candidate.size)} px² @ ${String(
-                Math.round(candidate.startTime),
-              )} ms`,
-          )
-          .join("; ")}`,
-      ).toBe("H1");
+      const detail = `the last LCP candidate on /${locale} is <${winner.tag}> "${winner.text}" at ${String(
+        Math.round(winner.startTime),
+      )} ms (${String(winner.size)} px²) — every candidate: ${candidates
+        .map(
+          (candidate) =>
+            `<${candidate.tag}> ${String(candidate.size)} px² @ ${String(
+              Math.round(candidate.startTime),
+            )} ms`,
+        )
+        .join("; ")}`;
+      // TASK-080 put a photograph in the band, so the largest element is the hero `<img>` rather
+      // than the `<h1>` — the change spec 006 §2.5 designed for, and the reason the slot was
+      // nominated `priority` from the day it was reserved. What this file guards is unchanged and
+      // is the thing that was actually red: the winner must be the page's **own above-the-fold
+      // content**, not an `ssr: false` island that paints after hydration. So the assertion is
+      // "inside `[data-fo-hero]`, and an image or the heading" rather than a fixed tag name.
+      expect(winner.inHero, detail).toBe(true);
+      expect(["IMG", "H1"], detail).toContain(winner.tag);
     });
   }
 });

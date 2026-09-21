@@ -288,8 +288,21 @@ export type { VariantLoader, VariantRef } from "./media/loader.ts";
 // `DESTINATIONS_ANCHOR` is exported because TASK-054's destinations grid inherits the id the
 // finder's `Continue` points at, and `finderTarget`/`finderDestinations` because AC-11's two
 // branches are unit-tested against them.
-export { HERO_HEIGHTS, HOME_BLEED, HomeHero } from "./home/HomeHero.tsx";
+export {
+  HERO_HEIGHTS,
+  HOME_BLEED,
+  HOME_HERO_ASSET,
+  HomeHero,
+} from "./home/HomeHero.tsx";
 export type { HomeHeroProps } from "./home/HomeHero.tsx";
+// The locale home's one honesty label (spec 006 AC-17; TASK-080): the page mounts it, the
+// component collects the asset ids the page displays, and `MediaProvenanceNote` decides whether
+// anything is owed. No prop can suppress it at either level.
+export {
+  HomeProvenanceNote,
+  homeMediaAssetIds,
+} from "./home/HomeProvenanceNote.tsx";
+export type { HomeProvenanceNoteProps } from "./home/HomeProvenanceNote.tsx";
 export { FinderCard } from "./home/FinderCard.tsx";
 export type { FinderCardProps } from "./home/FinderCard.tsx";
 export {
@@ -360,6 +373,7 @@ export {
 // the two projections are exported because spec 008 flips `published` in
 // `src/config/occasions.ts` and the tests assert both branches from here.
 export { OccasionTiles } from "./home/OccasionTiles.tsx";
+export { occasionAssetId } from "./home/occasion-model.ts";
 export type { OccasionTilesProps } from "./home/OccasionTiles.tsx";
 export { OccasionDates } from "./home/OccasionDates.tsx";
 export type { OccasionDatesProps } from "./home/OccasionDates.tsx";

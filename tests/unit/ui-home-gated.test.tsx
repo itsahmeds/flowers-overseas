@@ -90,7 +90,7 @@ const VERBATIM_BASIS =
 
 describe("the trending row is gated on real orders", () => {
   it("renders the five florists' picks by name, with no price element of any kind", () => {
-    const html = render(<TrendingRow />, "en");
+    const html = render(<TrendingRow locale="en" />, "en");
     const rendered = text(html);
 
     expect([...html.matchAll(/<li/g)]).toHaveLength(TRENDING_PICKS.length);
@@ -104,7 +104,7 @@ describe("the trending row is gated on real orders", () => {
   });
 
   it("carries the founder's verbatim label while the basis is the florists' picks", () => {
-    const html = render(<TrendingRow />, "en");
+    const html = render(<TrendingRow locale="en" />, "en");
 
     expect(html).toContain('data-fo-trending-basis="picks"');
     expect(text(html)).toContain(VERBATIM_BASIS);
@@ -112,10 +112,10 @@ describe("the trending row is gated on real orders", () => {
 
   it("drops the label the moment the ranking is real, with no call-site change", () => {
     const ranked = trendingProviderOf(
-      [{ id: "one", name: "Amber Hour" }],
+      [{ id: "one", name: "Amber Hour", assetId: "fo-bq-001-hero" }],
       "orders",
     );
-    const html = render(<TrendingRow provider={ranked} />, "en");
+    const html = render(<TrendingRow locale="en" provider={ranked} />, "en");
 
     expect(html).toContain('data-fo-trending-basis="orders"');
     // The sentence is only true while the row is picks; a ranked row must not keep claiming it.
@@ -124,23 +124,33 @@ describe("the trending row is gated on real orders", () => {
   });
 
   it("renders no section at all when the provider answers with nothing", () => {
-    expect(render(<TrendingRow provider={emptyTrendingProvider} />, "en")).toBe(
-      "",
-    );
+    expect(
+      render(
+        <TrendingRow locale="en" provider={emptyTrendingProvider} />,
+        "en",
+      ),
+    ).toBe("");
   });
 
-  it("links nothing and shows no `<img>`, one photo placeholder per pick (AC-14)", () => {
-    const html = render(<TrendingRow />, "en");
+  it("links nothing, and gives every pick one `grid` box whatever the dataset holds (AC-14)", () => {
+    const html = render(<TrendingRow locale="en" />, "en");
 
     expect(hrefs(html)).toEqual([]);
-    expect(html).not.toContain("<img");
     expect([...html.matchAll(/data-fo-media-slot="grid"/g)]).toHaveLength(
       TRENDING_PICKS.length,
     );
+    // TASK-080: twelve of the eighty-four products have approved, derived, alt-texted imagery, so
+    // a pick either shows its photograph or shows the captioned placeholder and **no `<img>`** —
+    // never a broken image and never a picture of something else (`plan/10` §3, spec 006 AC-18).
+    const images = [...html.matchAll(/<img/g)].length;
+    const placeholders = [...html.matchAll(/data-fo-media-placeholder="/g)]
+      .length;
+    expect(images + placeholders).toBe(TRENDING_PICKS.length);
+    expect(images).toBeGreaterThan(0);
   });
 
   it("takes its names from the committed catalogue, so none of them is invented", () => {
-    const rendered = text(render(<TrendingRow />, "en"));
+    const rendered = text(render(<TrendingRow locale="en" />, "en"));
     for (const pick of staticTrendingProvider.list()) {
       expect(rendered, pick.name).toContain(pick.name);
     }
@@ -148,11 +158,11 @@ describe("the trending row is gated on real orders", () => {
   });
 
   it("swaps at the composition root: the module-level provider changes the output", async () => {
-    const before = render(<TrendingRow />, "en");
+    const before = render(<TrendingRow locale="en" />, "en");
     const after = await withTrendingProvider(emptyTrendingProvider, () =>
-      render(<TrendingRow />, "en"),
+      render(<TrendingRow locale="en" />, "en"),
     );
-    const restored = render(<TrendingRow />, "en");
+    const restored = render(<TrendingRow locale="en" />, "en");
 
     expect(before).not.toBe("");
     expect(after).toBe("");

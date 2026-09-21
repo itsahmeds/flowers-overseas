@@ -15,29 +15,6 @@ import { listingHonestyViolations } from "../support/listing-honesty.ts";
 
 const GALLERY = "/dev/components";
 
-/** The listing section's marker: spec 008's states, which several media counts exclude. */
-const LISTING_STATE = "[data-fo-listing-state]";
-
-/**
- * How many elements match `selector` **outside** the listing section (TASK-108). The media
- * assertions below are about the asset path's own states, and spec 008's card states reuse the
- * same fixture asset, so they are counted where they are made rather than globally.
- */
-async function outsideListing(
-  page: import("@playwright/test").Page,
-  selector: string,
-): Promise<number> {
-  return (
-    await page
-      .locator(selector)
-      .evaluateAll(
-        (nodes, marker) =>
-          nodes.filter((node) => node.closest(marker) === null),
-        LISTING_STATE,
-      )
-  ).length;
-}
-
 /** Every section heading the gallery must render (`src/app/(dev)/dev/components/catalog.ts`). */
 const SECTIONS = [
   "Colour",
@@ -58,6 +35,9 @@ const SECTIONS = [
   // TASK-108: spec 008's seven listing primitives (the section `LISTING_STATES` names).
   "Listing and card blocks",
 ];
+
+/** The anchor `sectionId("Media asset states")` builds — the section this file's media case scopes to. */
+const MEDIA_SECTION_ID = "media-asset-states";
 
 test.describe("/dev/components", () => {
   test("is served with the flag on, and is noindex", async ({ page }) => {
@@ -223,22 +203,24 @@ test.describe("/dev/components", () => {
   });
 
   /**
-   * The asset path's states (spec 006 §5.3, AC-17/AC-18/AC-19; TASK-079). The committed dataset
-   * has no derived bytes, so this section renders against the fixture manifest in `catalog.ts`
-   * and is the only place in the running application where an `<img>` exists at all — which is
-   * what makes the counts below meaningful rather than incidental.
+   * The asset path's states (spec 006 §5.3, AC-17/AC-18/AC-19; TASK-079, counts updated by
+   * TASK-080). Three of the four placeholder reasons can only be produced by a fixture manifest —
+   * the committed dataset is approved, derived and alt-texted in every launch locale — so this
+   * section renders against `catalog.ts`'s fixture for those and against the **real** manifest for
+   * the one row that shows what a page actually serves.
    */
   test("renders the media asset states: image, placeholder and the honesty label", async ({
     page,
   }) => {
     await page.goto(GALLERY);
 
-    // Exactly two displayable fixture assets in the media section, so exactly two images there.
-    // The listing section renders the same fixture asset in its card states (TASK-108), so this
-    // count is taken outside it — the assertion is about the asset path's states, not about how
-    // many sections happen to use one.
-    const images = page.locator("img");
-    expect(await outsideListing(page, "img")).toBe(2);
+    // Scoped to this section, and that scoping is TASK-080's doing: the home sections further down
+    // the gallery now render the founder's imagery too, so a page-wide count would be a count of
+    // how many sections happen to use a photograph rather than of the states this one demonstrates.
+    // Two displayable fixture assets plus the row rendered from the committed dataset.
+    const section = page.locator(`section:has(> h2#${MEDIA_SECTION_ID})`);
+    const images = section.locator("img");
+    await expect(images).toHaveCount(3);
     for (const alt of await images.evaluateAll((nodes) =>
       nodes.map((node) => node.getAttribute("alt")),
     )) {
@@ -247,24 +229,24 @@ test.describe("/dev/components", () => {
 
     // AVIF first, WebP as the `<img>`'s own ladder (spec 006 §2.5) — one `<source>` per image,
     // counted outside the listing section for the reason above.
-    expect(
-      await outsideListing(page, 'picture source[type="image/avif"]'),
-    ).toBe(2);
+    await expect(
+      section.locator('picture source[type="image/avif"]'),
+    ).toHaveCount(3);
     const imgSrcSets = await images.evaluateAll((nodes) =>
       nodes.map((node) => node.getAttribute("srcset") ?? ""),
     );
     expect(imgSrcSets.every((value) => value.includes(".webp"))).toBe(true);
 
-    // The placeholder reasons this section demonstrates, each with no image in its box.
-    // `noVariants` twice: the fixture's variant-less asset, and the committed dataset's own state —
-    // 31 rows, all approved by the founder on 2026-09-18 and none derived until TASK-080, so the
-    // gate reports the first remaining failure. `unapproved` once: the fixture's pending asset.
+    // The placeholder reasons this section demonstrates, each with no image in its box. Since
+    // TASK-080 `noVariants` is reachable only through the fixture's variant-less asset: the
+    // committed dataset's own row renders a photograph, which is the point of keeping it here.
     await expect(
-      page.locator('[data-fo-media-placeholder="noVariants"]'),
-    ).toHaveCount(2);
+      section.locator('[data-fo-media-placeholder="noVariants"]'),
+    ).toHaveCount(1);
     for (const reason of ["noAlt", "unapproved"]) {
       await expect(
-        page.locator(`[data-fo-media-placeholder="${reason}"]`),
+        section.locator(`[data-fo-media-placeholder="${reason}"]`),
+        reason,
       ).toHaveCount(1);
     }
 
@@ -287,18 +269,19 @@ test.describe("/dev/components", () => {
       preloadSrcSet,
     );
 
-    // Everything that is not the LCP candidate is lazy, and nothing above it is eager. Counted
-    // outside the listing section, which renders the same fixture asset in its card states
-    // (TASK-108) and whose own lazy/eager contract is asserted in
-    // `tests/unit/ui-shop-components.test.tsx`.
-    expect(await outsideListing(page, 'img[loading="lazy"]')).toBe(1);
-    expect(await outsideListing(page, 'img[decoding="async"]')).toBe(1);
+    // Everything in this section that is not its LCP candidate is lazy, and nothing above it is
+    // eager. Counted inside the section since TASK-080: the listing section renders the same
+    // fixture asset in its card states (TASK-108) and the home sections below render the real
+    // imagery, and both have their own lazy/eager contracts.
+    await expect(section.locator('img[loading="lazy"]')).toHaveCount(2);
+    await expect(section.locator('img[decoding="async"]')).toHaveCount(2);
+    await expect(section.locator('img[loading="eager"]')).toHaveCount(1);
 
     // AC-17: the label is in the HTML, in the page's locale, exactly once in this section — and
     // it is absent from the state whose only displayed asset is a photograph.
-    expect(await outsideListing(page, '[data-fo-media-provenance="ai"]')).toBe(
-      1,
-    );
+    await expect(
+      section.locator('[data-fo-media-provenance="ai"]'),
+    ).toHaveCount(1);
     // `.first()`: the listing section renders the same label on each card that displays a
     // generated photograph (spec 008 §2), which is the correct behaviour there and is counted
     // in that section's own tests.

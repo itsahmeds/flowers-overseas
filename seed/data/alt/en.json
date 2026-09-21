@@ -4,5 +4,130 @@
   "entity": "product_media_alt",
   "origin": "authored",
   "locale": "en",
-  "rows": []
+  "rows": [
+    {
+      "assetId": "fo-bq-001-hero",
+      "alt": "A hand-tied bouquet of orange garden roses with eucalyptus, wrapped in kraft paper, on a warm grey background"
+    },
+    {
+      "assetId": "fo-bq-001-detail",
+      "alt": "Close view of three open orange rose heads with eucalyptus leaves beside them"
+    },
+    {
+      "assetId": "fo-bq-002-hero",
+      "alt": "A hand-tied bouquet of deep red long-stemmed roses with dark green foliage, wrapped in white paper"
+    },
+    {
+      "assetId": "fo-bq-002-detail",
+      "alt": "Close view of two half-open deep red rose heads and one closed bud against white paper"
+    },
+    {
+      "assetId": "fo-bq-009-hero",
+      "alt": "A loosely gathered bouquet of tulips in pink, yellow, white and purple, wrapped in kraft paper"
+    },
+    {
+      "assetId": "fo-bq-009-detail",
+      "alt": "Close view of five tulip heads in mixed colours with their broad green leaves"
+    },
+    {
+      "assetId": "fo-bq-015-hero",
+      "alt": "A hand-tied bouquet of white oriental lilies with dark green foliage, wrapped in white paper"
+    },
+    {
+      "assetId": "fo-bq-015-detail",
+      "alt": "Close view of two open white lily trumpets and one closed bud, stamens visible"
+    },
+    {
+      "assetId": "fo-bq-019-hero",
+      "alt": "A hand-tied bouquet of pink peonies, open and closed heads mixed, wrapped in white paper"
+    },
+    {
+      "assetId": "fo-bq-019-detail",
+      "alt": "Close view of one fully open pink peony and one tight bud with green sepals"
+    },
+    {
+      "assetId": "fo-bq-023-hero",
+      "alt": "A bouquet of yellow sunflowers with wheat ears and green foliage, wrapped in kraft paper"
+    },
+    {
+      "assetId": "fo-bq-023-detail",
+      "alt": "Close view of one yellow sunflower head with its dark seed centre and wheat ears beside it"
+    },
+    {
+      "assetId": "fo-bq-028-hero",
+      "alt": "A mixed seasonal bouquet of roses, alstroemeria, chrysanthemums and greenery, wrapped in kraft paper"
+    },
+    {
+      "assetId": "fo-bq-028-detail",
+      "alt": "Close view of three different flower heads in mixed colours with greenery between them"
+    },
+    {
+      "assetId": "fo-ar-001-hero",
+      "alt": "A low flower arrangement in soft pastel colours set in a plain kraft gift box"
+    },
+    {
+      "assetId": "fo-ar-001-detail",
+      "alt": "Close view of three pastel flower heads and the edge of the plain kraft box"
+    },
+    {
+      "assetId": "fo-ar-003-hero",
+      "alt": "A mixed seasonal flower arrangement in a plain woven basket, seen from the front"
+    },
+    {
+      "assetId": "fo-ar-003-detail",
+      "alt": "Close view of two flower heads above the woven rim of the basket"
+    },
+    {
+      "assetId": "fo-pt-001-hero",
+      "alt": "A white moth orchid with two arching flowering stems in a plain white ceramic pot"
+    },
+    {
+      "assetId": "fo-pt-001-detail",
+      "alt": "Close view of two open white orchid flowers on their arching stem above the pot rim"
+    },
+    {
+      "assetId": "fo-fn-001-hero",
+      "alt": "A round white chrysanthemum funeral wreath with dark green foliage, standing on neutral stone"
+    },
+    {
+      "assetId": "fo-fn-001-detail",
+      "alt": "Close view of a quarter of the wreath ring, white chrysanthemum heads against dark foliage"
+    },
+    {
+      "assetId": "fo-gs-001-hero",
+      "alt": "A bouquet of orange roses with eucalyptus standing beside a plain closed box of chocolates"
+    },
+    {
+      "assetId": "fo-gs-001-detail",
+      "alt": "Close view of two open orange rose heads and the corner of the plain chocolate box"
+    },
+    {
+      "assetId": "home-hero",
+      "alt": "Loose seasonal flower stems, a sheet of kraft paper and a ball of twine laid out on a warm grey surface, seen from above"
+    },
+    {
+      "assetId": "home-occasion-birthday",
+      "alt": "A bright mixed bouquet of gerberas and seasonal stems in vivid colours, wrapped in kraft paper"
+    },
+    {
+      "assetId": "home-occasion-name-day",
+      "alt": "A modest hand-tied bouquet of mixed seasonal stems in warm colours, wrapped in kraft paper"
+    },
+    {
+      "assetId": "home-occasion-anniversary",
+      "alt": "A hand-tied bouquet of deep red roses and pink peonies together, wrapped in white paper"
+    },
+    {
+      "assetId": "home-occasion-sympathy",
+      "alt": "A restrained bouquet of white oriental lilies and white chrysanthemums with dark green foliage, laid on neutral stone"
+    },
+    {
+      "assetId": "home-occasion-just-because",
+      "alt": "A small posy of mixed pastel seasonal stems, wrapped in kraft paper and tied with twine"
+    },
+    {
+      "assetId": "home-occasion-new-baby",
+      "alt": "A soft bouquet of pink and white seasonal stems, wrapped in white paper and tied with twine"
+    }
+  ]
 }

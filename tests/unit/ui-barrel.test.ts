@@ -138,7 +138,13 @@ describe("src/modules/ui barrel", () => {
         "FinderCard",
         "HERO_HEIGHTS",
         "HOME_BLEED",
+        // TASK-080: the hero band's asset id, the locale home's one honesty label and the list of
+        // asset ids it covers, and the occasion tile's asset-id derivation. All four exist so that
+        // landing a photograph is a data change with no edit under `src/app/` (spec 006 AC-20).
+        "HOME_HERO_ASSET",
         "HomeHero",
+        "HomeProvenanceNote",
+        "homeMediaAssetIds",
         "PROOF_FACTS",
         "ProofRow",
         "finderDestinations",
@@ -152,6 +158,7 @@ describe("src/modules/ui barrel", () => {
         "OCCASIONS_ANCHOR",
         "OccasionDates",
         "OccasionTiles",
+        "occasionAssetId",
         "TRUST_CLAIMS",
         "TrustStrip",
         "occasionDateViews",
@@ -254,6 +261,9 @@ describe("src/modules/ui barrel", () => {
       // and the header can be pinned to the same inline gutter by a test.
       "DESTINATIONS_ANCHOR",
       "HOME_BLEED",
+      // TASK-080: the id of the hero band's asset in `seed/data/media.json` — a *data* key, like
+      // the anchors above are DOM keys, and nothing a token could ever be.
+      "HOME_HERO_ASSET",
       // TASK-053: the id of the occasion grid — a DOM contract for the same reasons, and the
       // anchor spec 008's occasion hub will be linked from.
       "OCCASIONS_ANCHOR",

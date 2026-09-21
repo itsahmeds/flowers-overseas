@@ -2,5 +2,1062 @@
   "version": 1,
   "source": "seed",
   "table": "product_media_alt",
-  "rows": []
+  "rows": [
+    {
+      "key": {
+        "sku": "FO-BQ-001",
+        "asset": "fo-bq-001-hero",
+        "locale": "de"
+      },
+      "values": {
+        "locale_code": "de",
+        "alt": "Ein handgebundener Strauß orangefarbener Gartenrosen mit Eukalyptus, in Kraftpapier gewickelt, vor warmgrauem Hintergrund"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-001",
+        "asset": "fo-bq-001-detail",
+        "locale": "de"
+      },
+      "values": {
+        "locale_code": "de",
+        "alt": "Nahaufnahme von drei geöffneten orangefarbenen Rosenblüten mit Eukalyptusblättern daneben"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-002",
+        "asset": "fo-bq-002-hero",
+        "locale": "de"
+      },
+      "values": {
+        "locale_code": "de",
+        "alt": "Ein handgebundener Strauß dunkelroter langstieliger Rosen mit dunkelgrünem Blattwerk, in weißes Papier gewickelt"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-002",
+        "asset": "fo-bq-002-detail",
+        "locale": "de"
+      },
+      "values": {
+        "locale_code": "de",
+        "alt": "Nahaufnahme von zwei halb geöffneten dunkelroten Rosenblüten und einer geschlossenen Knospe vor weißem Papier"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-009",
+        "asset": "fo-bq-009-hero",
+        "locale": "de"
+      },
+      "values": {
+        "locale_code": "de",
+        "alt": "Ein locker gebundener Strauß Tulpen in Rosa, Gelb, Weiß und Violett, in Kraftpapier gewickelt"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-009",
+        "asset": "fo-bq-009-detail",
+        "locale": "de"
+      },
+      "values": {
+        "locale_code": "de",
+        "alt": "Nahaufnahme von fünf Tulpenblüten in gemischten Farben mit ihren breiten grünen Blättern"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-015",
+        "asset": "fo-bq-015-hero",
+        "locale": "de"
+      },
+      "values": {
+        "locale_code": "de",
+        "alt": "Ein handgebundener Strauß weißer orientalischer Lilien mit dunkelgrünem Blattwerk, in weißes Papier gewickelt"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-015",
+        "asset": "fo-bq-015-detail",
+        "locale": "de"
+      },
+      "values": {
+        "locale_code": "de",
+        "alt": "Nahaufnahme von zwei geöffneten weißen Lilienblüten und einer geschlossenen Knospe mit sichtbaren Staubblättern"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-019",
+        "asset": "fo-bq-019-hero",
+        "locale": "de"
+      },
+      "values": {
+        "locale_code": "de",
+        "alt": "Ein handgebundener Strauß rosafarbener Pfingstrosen mit offenen und geschlossenen Blüten, in weißes Papier gewickelt"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-019",
+        "asset": "fo-bq-019-detail",
+        "locale": "de"
+      },
+      "values": {
+        "locale_code": "de",
+        "alt": "Nahaufnahme einer voll geöffneten rosafarbenen Pfingstrose und einer festen Knospe mit grünen Kelchblättern"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-023",
+        "asset": "fo-bq-023-hero",
+        "locale": "de"
+      },
+      "values": {
+        "locale_code": "de",
+        "alt": "Ein Strauß gelber Sonnenblumen mit Weizenähren und grünem Blattwerk, in Kraftpapier gewickelt"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-023",
+        "asset": "fo-bq-023-detail",
+        "locale": "de"
+      },
+      "values": {
+        "locale_code": "de",
+        "alt": "Nahaufnahme einer gelben Sonnenblumenblüte mit dunklem Samenboden und Weizenähren daneben"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-028",
+        "asset": "fo-bq-028-hero",
+        "locale": "de"
+      },
+      "values": {
+        "locale_code": "de",
+        "alt": "Ein gemischter Saisonstrauß aus Rosen, Inkalilien, Chrysanthemen und Grün, in Kraftpapier gewickelt"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-028",
+        "asset": "fo-bq-028-detail",
+        "locale": "de"
+      },
+      "values": {
+        "locale_code": "de",
+        "alt": "Nahaufnahme von drei verschiedenen Blüten in gemischten Farben mit Grün dazwischen"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-001",
+        "asset": "fo-ar-001-hero",
+        "locale": "de"
+      },
+      "values": {
+        "locale_code": "de",
+        "alt": "Ein flaches Blumenarrangement in zarten Pastelltönen in einer schlichten Geschenkbox aus Kraftpapier"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-001",
+        "asset": "fo-ar-001-detail",
+        "locale": "de"
+      },
+      "values": {
+        "locale_code": "de",
+        "alt": "Nahaufnahme von drei pastellfarbenen Blüten und dem Rand der schlichten Kraftpapierbox"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-003",
+        "asset": "fo-ar-003-hero",
+        "locale": "de"
+      },
+      "values": {
+        "locale_code": "de",
+        "alt": "Ein gemischtes Saisonarrangement in einem schlichten Weidenkorb, von vorn gesehen"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-003",
+        "asset": "fo-ar-003-detail",
+        "locale": "de"
+      },
+      "values": {
+        "locale_code": "de",
+        "alt": "Nahaufnahme von zwei Blüten über dem geflochtenen Rand des Korbes"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-PT-001",
+        "asset": "fo-pt-001-hero",
+        "locale": "de"
+      },
+      "values": {
+        "locale_code": "de",
+        "alt": "Eine weiße Schmetterlingsorchidee mit zwei überhängenden Blütentrieben in einem schlichten weißen Keramiktopf"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-PT-001",
+        "asset": "fo-pt-001-detail",
+        "locale": "de"
+      },
+      "values": {
+        "locale_code": "de",
+        "alt": "Nahaufnahme von zwei geöffneten weißen Orchideenblüten am überhängenden Trieb über dem Topfrand"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-001",
+        "asset": "fo-fn-001-hero",
+        "locale": "de"
+      },
+      "values": {
+        "locale_code": "de",
+        "alt": "Ein runder Trauerkranz aus weißen Chrysanthemen mit dunkelgrünem Blattwerk auf neutralem Stein"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-001",
+        "asset": "fo-fn-001-detail",
+        "locale": "de"
+      },
+      "values": {
+        "locale_code": "de",
+        "alt": "Nahaufnahme eines Viertels des Kranzrings mit weißen Chrysanthemenblüten vor dunklem Blattwerk"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-001",
+        "asset": "fo-gs-001-hero",
+        "locale": "de"
+      },
+      "values": {
+        "locale_code": "de",
+        "alt": "Ein Strauß orangefarbener Rosen mit Eukalyptus neben einer schlichten geschlossenen Pralinenschachtel"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-001",
+        "asset": "fo-gs-001-detail",
+        "locale": "de"
+      },
+      "values": {
+        "locale_code": "de",
+        "alt": "Nahaufnahme von zwei geöffneten orangefarbenen Rosenblüten und der Ecke der schlichten Pralinenschachtel"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-001",
+        "asset": "fo-bq-001-hero",
+        "locale": "en"
+      },
+      "values": {
+        "locale_code": "en",
+        "alt": "A hand-tied bouquet of orange garden roses with eucalyptus, wrapped in kraft paper, on a warm grey background"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-001",
+        "asset": "fo-bq-001-detail",
+        "locale": "en"
+      },
+      "values": {
+        "locale_code": "en",
+        "alt": "Close view of three open orange rose heads with eucalyptus leaves beside them"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-002",
+        "asset": "fo-bq-002-hero",
+        "locale": "en"
+      },
+      "values": {
+        "locale_code": "en",
+        "alt": "A hand-tied bouquet of deep red long-stemmed roses with dark green foliage, wrapped in white paper"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-002",
+        "asset": "fo-bq-002-detail",
+        "locale": "en"
+      },
+      "values": {
+        "locale_code": "en",
+        "alt": "Close view of two half-open deep red rose heads and one closed bud against white paper"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-009",
+        "asset": "fo-bq-009-hero",
+        "locale": "en"
+      },
+      "values": {
+        "locale_code": "en",
+        "alt": "A loosely gathered bouquet of tulips in pink, yellow, white and purple, wrapped in kraft paper"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-009",
+        "asset": "fo-bq-009-detail",
+        "locale": "en"
+      },
+      "values": {
+        "locale_code": "en",
+        "alt": "Close view of five tulip heads in mixed colours with their broad green leaves"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-015",
+        "asset": "fo-bq-015-hero",
+        "locale": "en"
+      },
+      "values": {
+        "locale_code": "en",
+        "alt": "A hand-tied bouquet of white oriental lilies with dark green foliage, wrapped in white paper"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-015",
+        "asset": "fo-bq-015-detail",
+        "locale": "en"
+      },
+      "values": {
+        "locale_code": "en",
+        "alt": "Close view of two open white lily trumpets and one closed bud, stamens visible"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-019",
+        "asset": "fo-bq-019-hero",
+        "locale": "en"
+      },
+      "values": {
+        "locale_code": "en",
+        "alt": "A hand-tied bouquet of pink peonies, open and closed heads mixed, wrapped in white paper"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-019",
+        "asset": "fo-bq-019-detail",
+        "locale": "en"
+      },
+      "values": {
+        "locale_code": "en",
+        "alt": "Close view of one fully open pink peony and one tight bud with green sepals"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-023",
+        "asset": "fo-bq-023-hero",
+        "locale": "en"
+      },
+      "values": {
+        "locale_code": "en",
+        "alt": "A bouquet of yellow sunflowers with wheat ears and green foliage, wrapped in kraft paper"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-023",
+        "asset": "fo-bq-023-detail",
+        "locale": "en"
+      },
+      "values": {
+        "locale_code": "en",
+        "alt": "Close view of one yellow sunflower head with its dark seed centre and wheat ears beside it"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-028",
+        "asset": "fo-bq-028-hero",
+        "locale": "en"
+      },
+      "values": {
+        "locale_code": "en",
+        "alt": "A mixed seasonal bouquet of roses, alstroemeria, chrysanthemums and greenery, wrapped in kraft paper"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-028",
+        "asset": "fo-bq-028-detail",
+        "locale": "en"
+      },
+      "values": {
+        "locale_code": "en",
+        "alt": "Close view of three different flower heads in mixed colours with greenery between them"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-001",
+        "asset": "fo-ar-001-hero",
+        "locale": "en"
+      },
+      "values": {
+        "locale_code": "en",
+        "alt": "A low flower arrangement in soft pastel colours set in a plain kraft gift box"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-001",
+        "asset": "fo-ar-001-detail",
+        "locale": "en"
+      },
+      "values": {
+        "locale_code": "en",
+        "alt": "Close view of three pastel flower heads and the edge of the plain kraft box"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-003",
+        "asset": "fo-ar-003-hero",
+        "locale": "en"
+      },
+      "values": {
+        "locale_code": "en",
+        "alt": "A mixed seasonal flower arrangement in a plain woven basket, seen from the front"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-003",
+        "asset": "fo-ar-003-detail",
+        "locale": "en"
+      },
+      "values": {
+        "locale_code": "en",
+        "alt": "Close view of two flower heads above the woven rim of the basket"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-PT-001",
+        "asset": "fo-pt-001-hero",
+        "locale": "en"
+      },
+      "values": {
+        "locale_code": "en",
+        "alt": "A white moth orchid with two arching flowering stems in a plain white ceramic pot"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-PT-001",
+        "asset": "fo-pt-001-detail",
+        "locale": "en"
+      },
+      "values": {
+        "locale_code": "en",
+        "alt": "Close view of two open white orchid flowers on their arching stem above the pot rim"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-001",
+        "asset": "fo-fn-001-hero",
+        "locale": "en"
+      },
+      "values": {
+        "locale_code": "en",
+        "alt": "A round white chrysanthemum funeral wreath with dark green foliage, standing on neutral stone"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-001",
+        "asset": "fo-fn-001-detail",
+        "locale": "en"
+      },
+      "values": {
+        "locale_code": "en",
+        "alt": "Close view of a quarter of the wreath ring, white chrysanthemum heads against dark foliage"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-001",
+        "asset": "fo-gs-001-hero",
+        "locale": "en"
+      },
+      "values": {
+        "locale_code": "en",
+        "alt": "A bouquet of orange roses with eucalyptus standing beside a plain closed box of chocolates"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-001",
+        "asset": "fo-gs-001-detail",
+        "locale": "en"
+      },
+      "values": {
+        "locale_code": "en",
+        "alt": "Close view of two open orange rose heads and the corner of the plain chocolate box"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-001",
+        "asset": "fo-bq-001-hero",
+        "locale": "en-gb"
+      },
+      "values": {
+        "locale_code": "en-gb",
+        "alt": "A hand-tied bouquet of orange garden roses with eucalyptus, wrapped in kraft paper, on a warm grey background"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-001",
+        "asset": "fo-bq-001-detail",
+        "locale": "en-gb"
+      },
+      "values": {
+        "locale_code": "en-gb",
+        "alt": "Close view of three open orange rose heads with eucalyptus leaves beside them"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-002",
+        "asset": "fo-bq-002-hero",
+        "locale": "en-gb"
+      },
+      "values": {
+        "locale_code": "en-gb",
+        "alt": "A hand-tied bouquet of deep red long-stemmed roses with dark green foliage, wrapped in white paper"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-002",
+        "asset": "fo-bq-002-detail",
+        "locale": "en-gb"
+      },
+      "values": {
+        "locale_code": "en-gb",
+        "alt": "Close view of two half-open deep red rose heads and one closed bud against white paper"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-009",
+        "asset": "fo-bq-009-hero",
+        "locale": "en-gb"
+      },
+      "values": {
+        "locale_code": "en-gb",
+        "alt": "A loosely gathered bouquet of tulips in pink, yellow, white and purple, wrapped in kraft paper"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-009",
+        "asset": "fo-bq-009-detail",
+        "locale": "en-gb"
+      },
+      "values": {
+        "locale_code": "en-gb",
+        "alt": "Close view of five tulip heads in mixed colours with their broad green leaves"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-015",
+        "asset": "fo-bq-015-hero",
+        "locale": "en-gb"
+      },
+      "values": {
+        "locale_code": "en-gb",
+        "alt": "A hand-tied bouquet of white oriental lilies with dark green foliage, wrapped in white paper"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-015",
+        "asset": "fo-bq-015-detail",
+        "locale": "en-gb"
+      },
+      "values": {
+        "locale_code": "en-gb",
+        "alt": "Close view of two open white lily trumpets and one closed bud, stamens visible"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-019",
+        "asset": "fo-bq-019-hero",
+        "locale": "en-gb"
+      },
+      "values": {
+        "locale_code": "en-gb",
+        "alt": "A hand-tied bouquet of pink peonies, open and closed heads mixed, wrapped in white paper"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-019",
+        "asset": "fo-bq-019-detail",
+        "locale": "en-gb"
+      },
+      "values": {
+        "locale_code": "en-gb",
+        "alt": "Close view of one fully open pink peony and one tight bud with green sepals"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-023",
+        "asset": "fo-bq-023-hero",
+        "locale": "en-gb"
+      },
+      "values": {
+        "locale_code": "en-gb",
+        "alt": "A bouquet of yellow sunflowers with wheat ears and green foliage, wrapped in kraft paper"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-023",
+        "asset": "fo-bq-023-detail",
+        "locale": "en-gb"
+      },
+      "values": {
+        "locale_code": "en-gb",
+        "alt": "Close view of one yellow sunflower head with its dark seed centre and wheat ears beside it"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-028",
+        "asset": "fo-bq-028-hero",
+        "locale": "en-gb"
+      },
+      "values": {
+        "locale_code": "en-gb",
+        "alt": "A mixed seasonal bouquet of roses, alstroemeria, chrysanthemums and greenery, wrapped in kraft paper"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-028",
+        "asset": "fo-bq-028-detail",
+        "locale": "en-gb"
+      },
+      "values": {
+        "locale_code": "en-gb",
+        "alt": "Close view of three different flower heads in mixed colours with greenery between them"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-001",
+        "asset": "fo-ar-001-hero",
+        "locale": "en-gb"
+      },
+      "values": {
+        "locale_code": "en-gb",
+        "alt": "A low flower arrangement in soft pastel colours set in a plain kraft gift box"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-001",
+        "asset": "fo-ar-001-detail",
+        "locale": "en-gb"
+      },
+      "values": {
+        "locale_code": "en-gb",
+        "alt": "Close view of three pastel flower heads and the edge of the plain kraft box"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-003",
+        "asset": "fo-ar-003-hero",
+        "locale": "en-gb"
+      },
+      "values": {
+        "locale_code": "en-gb",
+        "alt": "A mixed seasonal flower arrangement in a plain woven basket, seen from the front"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-003",
+        "asset": "fo-ar-003-detail",
+        "locale": "en-gb"
+      },
+      "values": {
+        "locale_code": "en-gb",
+        "alt": "Close view of two flower heads above the woven rim of the basket"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-PT-001",
+        "asset": "fo-pt-001-hero",
+        "locale": "en-gb"
+      },
+      "values": {
+        "locale_code": "en-gb",
+        "alt": "A white moth orchid with two arching flowering stems in a plain white ceramic pot"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-PT-001",
+        "asset": "fo-pt-001-detail",
+        "locale": "en-gb"
+      },
+      "values": {
+        "locale_code": "en-gb",
+        "alt": "Close view of two open white orchid flowers on their arching stem above the pot rim"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-001",
+        "asset": "fo-fn-001-hero",
+        "locale": "en-gb"
+      },
+      "values": {
+        "locale_code": "en-gb",
+        "alt": "A round white chrysanthemum funeral wreath with dark green foliage, standing on neutral stone"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-001",
+        "asset": "fo-fn-001-detail",
+        "locale": "en-gb"
+      },
+      "values": {
+        "locale_code": "en-gb",
+        "alt": "Close view of a quarter of the wreath ring, white chrysanthemum heads against dark foliage"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-001",
+        "asset": "fo-gs-001-hero",
+        "locale": "en-gb"
+      },
+      "values": {
+        "locale_code": "en-gb",
+        "alt": "A bouquet of orange roses with eucalyptus standing beside a plain closed box of chocolates"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-001",
+        "asset": "fo-gs-001-detail",
+        "locale": "en-gb"
+      },
+      "values": {
+        "locale_code": "en-gb",
+        "alt": "Close view of two open orange rose heads and the corner of the plain chocolate box"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-001",
+        "asset": "fo-bq-001-hero",
+        "locale": "pl"
+      },
+      "values": {
+        "locale_code": "pl",
+        "alt": "Ręcznie wiązany bukiet pomarańczowych róż ogrodowych z eukaliptusem, owinięty w papier kraft, na ciepłoszarym tle"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-001",
+        "asset": "fo-bq-001-detail",
+        "locale": "pl"
+      },
+      "values": {
+        "locale_code": "pl",
+        "alt": "Zbliżenie trzech rozwiniętych pomarańczowych róż z listkami eukaliptusa obok"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-002",
+        "asset": "fo-bq-002-hero",
+        "locale": "pl"
+      },
+      "values": {
+        "locale_code": "pl",
+        "alt": "Ręcznie wiązany bukiet ciemnoczerwonych róż na długich łodygach z ciemnozielonymi liśćmi, owinięty w biały papier"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-002",
+        "asset": "fo-bq-002-detail",
+        "locale": "pl"
+      },
+      "values": {
+        "locale_code": "pl",
+        "alt": "Zbliżenie dwóch na wpół rozwiniętych ciemnoczerwonych róż i jednego zamkniętego pąka na tle białego papieru"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-009",
+        "asset": "fo-bq-009-hero",
+        "locale": "pl"
+      },
+      "values": {
+        "locale_code": "pl",
+        "alt": "Luźno zebrany bukiet tulipanów w kolorach różowym, żółtym, białym i fioletowym, owinięty w papier kraft"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-009",
+        "asset": "fo-bq-009-detail",
+        "locale": "pl"
+      },
+      "values": {
+        "locale_code": "pl",
+        "alt": "Zbliżenie pięciu główek tulipanów w różnych kolorach z szerokimi zielonymi liśćmi"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-015",
+        "asset": "fo-bq-015-hero",
+        "locale": "pl"
+      },
+      "values": {
+        "locale_code": "pl",
+        "alt": "Ręcznie wiązany bukiet białych lilii orientalnych z ciemnozielonymi liśćmi, owinięty w biały papier"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-015",
+        "asset": "fo-bq-015-detail",
+        "locale": "pl"
+      },
+      "values": {
+        "locale_code": "pl",
+        "alt": "Zbliżenie dwóch rozwiniętych białych kwiatów lilii i jednego zamkniętego pąka z widocznymi pręcikami"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-019",
+        "asset": "fo-bq-019-hero",
+        "locale": "pl"
+      },
+      "values": {
+        "locale_code": "pl",
+        "alt": "Ręcznie wiązany bukiet różowych piwonii, rozwiniętych i w pąkach, owinięty w biały papier"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-019",
+        "asset": "fo-bq-019-detail",
+        "locale": "pl"
+      },
+      "values": {
+        "locale_code": "pl",
+        "alt": "Zbliżenie jednej w pełni rozwiniętej różowej piwonii i jednego zwartego pąka z zielonymi działkami"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-023",
+        "asset": "fo-bq-023-hero",
+        "locale": "pl"
+      },
+      "values": {
+        "locale_code": "pl",
+        "alt": "Bukiet żółtych słoneczników z kłosami pszenicy i zielonymi liśćmi, owinięty w papier kraft"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-023",
+        "asset": "fo-bq-023-detail",
+        "locale": "pl"
+      },
+      "values": {
+        "locale_code": "pl",
+        "alt": "Zbliżenie jednego żółtego słonecznika z ciemnym środkiem i kłosami pszenicy obok"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-028",
+        "asset": "fo-bq-028-hero",
+        "locale": "pl"
+      },
+      "values": {
+        "locale_code": "pl",
+        "alt": "Mieszany bukiet sezonowy z róż, alstromerii, chryzantem i zieleni, owinięty w papier kraft"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-028",
+        "asset": "fo-bq-028-detail",
+        "locale": "pl"
+      },
+      "values": {
+        "locale_code": "pl",
+        "alt": "Zbliżenie trzech różnych kwiatów w mieszanych kolorach z zielenią pomiędzy nimi"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-001",
+        "asset": "fo-ar-001-hero",
+        "locale": "pl"
+      },
+      "values": {
+        "locale_code": "pl",
+        "alt": "Niska kompozycja kwiatowa w delikatnych pastelowych barwach w prostym pudełku z kartonu kraft"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-001",
+        "asset": "fo-ar-001-detail",
+        "locale": "pl"
+      },
+      "values": {
+        "locale_code": "pl",
+        "alt": "Zbliżenie trzech pastelowych kwiatów i krawędzi prostego pudełka z kartonu kraft"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-003",
+        "asset": "fo-ar-003-hero",
+        "locale": "pl"
+      },
+      "values": {
+        "locale_code": "pl",
+        "alt": "Mieszana sezonowa kompozycja kwiatowa w prostym wiklinowym koszu, widziana z przodu"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-AR-003",
+        "asset": "fo-ar-003-detail",
+        "locale": "pl"
+      },
+      "values": {
+        "locale_code": "pl",
+        "alt": "Zbliżenie dwóch kwiatów nad plecionym brzegiem kosza"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-PT-001",
+        "asset": "fo-pt-001-hero",
+        "locale": "pl"
+      },
+      "values": {
+        "locale_code": "pl",
+        "alt": "Biały storczyk ćmy z dwoma łukowato wygiętymi pędami kwiatowymi w prostej białej ceramicznej doniczce"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-PT-001",
+        "asset": "fo-pt-001-detail",
+        "locale": "pl"
+      },
+      "values": {
+        "locale_code": "pl",
+        "alt": "Zbliżenie dwóch rozwiniętych białych kwiatów storczyka na wygiętym pędzie nad brzegiem doniczki"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-001",
+        "asset": "fo-fn-001-hero",
+        "locale": "pl"
+      },
+      "values": {
+        "locale_code": "pl",
+        "alt": "Okrągły wieniec pogrzebowy z białych chryzantem z ciemnozielonymi liśćmi, stojący na neutralnym kamieniu"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-FN-001",
+        "asset": "fo-fn-001-detail",
+        "locale": "pl"
+      },
+      "values": {
+        "locale_code": "pl",
+        "alt": "Zbliżenie ćwiartki wieńca z białymi chryzantemami na tle ciemnych liści"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-001",
+        "asset": "fo-gs-001-hero",
+        "locale": "pl"
+      },
+      "values": {
+        "locale_code": "pl",
+        "alt": "Bukiet pomarańczowych róż z eukaliptusem obok prostego zamkniętego pudełka czekoladek"
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-GS-001",
+        "asset": "fo-gs-001-detail",
+        "locale": "pl"
+      },
+      "values": {
+        "locale_code": "pl",
+        "alt": "Zbliżenie dwóch rozwiniętych pomarańczowych róż i rogu prostego pudełka czekoladek"
+      }
+    }
+  ]
 }

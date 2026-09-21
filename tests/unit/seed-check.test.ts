@@ -148,22 +148,28 @@ describe("spec 006 AC-10: the merged tree passes every rule family", () => {
     expect(tree.missing).toEqual([]);
     expect(tree.stale).toEqual([]);
     expect(tree.raw.size).toBeGreaterThan(30);
-    // TASK-078 shipped `media-variants.json` with a pinned pipeline header and **no rows** (no
-    // originals are committed), and TASK-079 shipped `alt/{locale}.json` for all four launch
-    // locales the same way — the renderer imports them at build time, the strings arrive with the
-    // imagery (TASK-080). Both are legal Phase-0 states, and the conditional halves of family 7
-    // are written for exactly them: the variant rules bite the moment the manifest has an entry,
-    // and the alt rules the moment a locale has an alt row.
+    // TASK-078 shipped `media-variants.json` with a pinned header and no rows and TASK-079 shipped
+    // `alt/{locale}.json` with no rows, because the founder had supplied no imagery. **TASK-080
+    // filled both**, and the conditional halves of family 7 — written for exactly this moment —
+    // are now the ones doing the work: every variant row has a file of the right size, and every
+    // product asset has alt text in all four launch locales or the gate fails.
     expect(tree.raw.has("media-variants.json")).toBe(true);
-    expect(
-      (tree.raw.get("media-variants.json") as { rows: unknown[] }).rows,
-    ).toEqual([]);
+    const variantRows = (
+      tree.raw.get("media-variants.json") as { rows: unknown[] }
+    ).rows;
+    expect(variantRows.length).toBeGreaterThan(0);
     expect([...tree.altLocales].sort()).toEqual(["de", "en", "en-gb", "pl"]);
+    const assetCount = (tree.raw.get("media.json") as { rows: unknown[] }).rows
+      .length;
     for (const locale of tree.altLocales) {
+      // The alt gate is all-or-nothing across locales by design (`seed/check.ts` family 7): one
+      // alt row anywhere obliges every launch locale to carry one per product asset, because a
+      // locale that is missing one renders the placeholder instead of the photograph (AC-18) and
+      // a half-translated alt set is how an English sentence ends up on a Polish page.
       expect(
-        (tree.raw.get(`alt/${locale}.json`) as { rows: unknown[] }).rows,
+        (tree.raw.get(`alt/${locale}.json`) as { rows: unknown[] }).rows.length,
         locale,
-      ).toEqual([]);
+      ).toBe(assetCount);
     }
   });
 

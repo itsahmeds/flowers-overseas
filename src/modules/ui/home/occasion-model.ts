@@ -59,6 +59,26 @@ export interface OccasionTileView {
    * AC-14's "never a dead link": the caller has nothing to link to and renders text.
    */
   readonly href: string | undefined;
+  /**
+   * The tile's photograph in `seed/data/media.json`, by id (spec 006 §2.4; TASK-080).
+   *
+   * Derived from the occasion's own id rather than authored in a second registry, so a seventh
+   * occasion needs one asset row and no mapping table to keep in step. The id is allowed to name
+   * an asset the dataset does not have: `MediaAsset` answers that with the captioned placeholder
+   * and no `<img>` (`plan/10` §3), which is what keeps landing a photograph a data change with no
+   * edit here and none under `src/app/` (AC-20).
+   */
+  readonly assetId: string;
+}
+
+/**
+ * `nameDay` → `home-occasion-name-day`. The registry keys are camel-case TypeScript identifiers
+ * and an asset id is a URL segment (`seed/schema/media.ts`'s `AssetIdSchema`), so one of the two
+ * has to be derived from the other; deriving the id keeps `src/config/occasions.ts` the single
+ * place an occasion is named.
+ */
+export function occasionAssetId(id: OccasionId): string {
+  return `home-occasion-${id.replace(/([a-z0-9])([A-Z])/gu, "$1-$2").toLowerCase()}`;
 }
 
 /**
@@ -73,6 +93,7 @@ export function occasionTiles(locale: string): readonly OccasionTileView[] {
     href: isOccasionPagePublished(tile.id)
       ? localePath(locale, "occasions", occasionSlug(tile.id, locale))
       : undefined,
+    assetId: occasionAssetId(tile.id),
   }));
 }
 
