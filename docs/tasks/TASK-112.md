@@ -35,7 +35,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 ## Result
 
-**PR:** <PR_URL> — `feat(shop): category and occasion hubs (TASK-112)`, three commits on
+**PR:** https://github.com/itsahmeds/flowers-overseas/pull/88 — `feat(shop): category and occasion hubs (TASK-112)`, three commits on
 `task/TASK-112-category-occasion-hubs`, rebased onto `origin/main` at `3a16b3b` (so the cards
 render TASK-080's photographs, not grey boxes).
 
