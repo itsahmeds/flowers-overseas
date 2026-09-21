@@ -93,7 +93,7 @@ page type — a cold `pnpm build` plus the browser suites (see `## Result`).
 
 ## Result
 
-Shipped in PR **[#89](https://github.com/itsahmeds/flowers-overseas/pull/89)** (branch
+Shipped in PR **[#93](https://github.com/itsahmeds/flowers-overseas/pull/93)** (branch
 `task/TASK-114-sort-pagination-params`, 4 commits). `listingRequest()` in
 `src/modules/catalog/params.ts` is the one answer to what a listing's query string does — the
 `?page=1` permanent redirect, the page and order `listingView()` takes, the `· Page N` title, the
