@@ -102,6 +102,7 @@ export { corridorSitemapEntries } from "./sitemap/corridors.ts";
 
 export {
   STATIC_SITEMAP_PAGE_TYPES,
+  type StaticSitemapPageType,
   staticSitemapEntries,
 } from "./sitemap/statics.ts";
 

@@ -18,9 +18,15 @@
  *    to make impossible — and lifting it from this task would edit another task's pages and
  *    tests.
  *
- * So the registry below is the auditable list, with one line per page type and the condition each
- * satisfies. TASK-096 adds `localeHome` to it in the same commit that wires the home's metadata
- * to the engine, and nothing else here changes.
+ * So the registry below is the auditable list: **one entry builder per page type**, and
+ * `staticSitemapEntries()` is nothing but that registry applied. TASK-096 adds
+ * `localeHome: localeHomeEntry` to it in the same commit that wires the home's metadata to the
+ * engine, and the row appears — no other line in this file changes, and
+ * `STATIC_SITEMAP_PAGE_TYPES` (derived from the registry's keys, never written twice) moves with
+ * it, so the constant cannot drift from what the child actually announces. The correspondence is
+ * pinned in `tests/unit/seo-sitemap.test.ts` ("the list is the child"), which is what makes this
+ * a seam rather than a comment: a row that no page type in the list explains fails the suite, and
+ * so does a page type in the list that produces no row.
  *
  * The alternates are the hub page's own: one `alternatesFor({ pageType: "destinations" })` call,
  * the same target the route passes, so the `xhtml:link` set and the `<head>` cluster are one
@@ -43,12 +49,13 @@ import { type SeoPageType, pageIndexability } from "../indexability.ts";
 import { type SitemapEntry, lastmodOf } from "./xml.ts";
 
 /**
- * The page types `static.xml` announces today, as data a test can read (see the header for why
- * `localeHome` is not one of them yet).
+ * What a page type contributes to `static.xml`: at most one row, or nothing when the engine says
+ * the page is not indexable in this locale and deployment.
  */
-export const STATIC_SITEMAP_PAGE_TYPES = [
-  "destinationsHub",
-] as const satisfies readonly SeoPageType[];
+type StaticSitemapEntryBuilder = (
+  locale: string,
+  deployment: DeploymentDescriptor,
+) => SitemapEntry | undefined;
 
 /** The newest authored corridor date in this locale — the copy the hub itself prints. */
 function newestCorridorContent(locale: string): string | undefined {
@@ -106,11 +113,37 @@ function hubEntry(
   };
 }
 
+/**
+ * The registry: one builder per page type `static.xml` announces. This is the extension point —
+ * the only edit a new standing page type needs here — and `staticSitemapEntries()` below reads
+ * nothing else.
+ */
+const STATIC_SITEMAP_ENTRY_BUILDERS = {
+  destinationsHub: hubEntry,
+} as const satisfies Readonly<
+  Partial<Record<SeoPageType, StaticSitemapEntryBuilder>>
+>;
+
+/** The page types `static.xml` announces today (see the header for why `localeHome` is not one). */
+export type StaticSitemapPageType = keyof typeof STATIC_SITEMAP_ENTRY_BUILDERS;
+
+/**
+ * The same list as data, for a caller or a test that wants to read it. Derived from the registry
+ * rather than written beside it, so the two cannot disagree.
+ */
+export const STATIC_SITEMAP_PAGE_TYPES = Object.keys(
+  STATIC_SITEMAP_ENTRY_BUILDERS,
+) as readonly StaticSitemapPageType[];
+
 /** Every standing URL this locale announces. Empty outside an indexing environment. */
 export function staticSitemapEntries(
   locale: string,
   deployment: DeploymentDescriptor,
 ): readonly SitemapEntry[] {
-  const hub = hubEntry(locale, deployment);
-  return hub === undefined ? [] : [hub];
+  const entries: SitemapEntry[] = [];
+  for (const pageType of STATIC_SITEMAP_PAGE_TYPES) {
+    const entry = STATIC_SITEMAP_ENTRY_BUILDERS[pageType](locale, deployment);
+    if (entry !== undefined) entries.push(entry);
+  }
+  return entries;
 }
