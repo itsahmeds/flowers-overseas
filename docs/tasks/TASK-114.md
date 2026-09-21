@@ -41,6 +41,31 @@ page type — a cold `pnpm build` plus the browser suites (see `## Result`).
   path**, and the redirect target is `listingView().path`, so this task's route code builds no URL
   at all (§5.2's single source).
 
+- **From `/review 93` (2026-09-21, round 1) — VERDICT FAIL, one required change.**
+  `listingView()`'s `unparameterised` wiring is unasserted: deleting the three-line spread
+  `...(options.parameterised === undefined ? {} : { unparameterised: !options.parameterised })`
+  from `src/modules/catalog/listing.ts` leaves the **whole unit suite green (182 files, 4 364
+  tests)**, and no e2e can catch it because Phase 0's `operational: false` makes every listing
+  `noindex,follow` regardless. `tests/unit/listing-params.test.ts`'s "carries the parameterised
+  verdict into its own directive" only *looks* like coverage — its two `listingView` expectations
+  are tautologies in Phase 0, and its real assertions call `listingIndexability()` with the term
+  already set, bypassing the wiring. Add a case under
+  `withActivePartnersProvider({ hasActivePartners: () => true }, …)` with an indexing deployment:
+  `parameterised: false` → `index,follow`, `parameterised: true` → `noindex,follow`; verify it goes
+  red with the spread removed and say so in `## Result`.
+  Nits carried, none blocking: the href-scan regex `^page=[2-9][0-9]*$` rejects `?page=10`; the
+  "anywhere on the site" scan visits only shop-root URLs; paging out of a sorted view silently
+  drops the sort; axe does not visit `?page=2` or `?sort=`; `tests/e2e/client-js-budget.spec.ts` —
+  the cross-check the `measuredFrom` substitution depends on — never runs in CI because the `e2e`
+  job targets the Vercel preview and the spec skips off localhost; `?zzz=N` gives Cloudflare an
+  unbounded cache-key space (spec 040, follows from §13 Q6 rather than from this PR).
+  Verified, not accepted: **E-1** — a real one-hop `308` to the bare URL with the query dropped,
+  terminal 200, and the `301|308` set is *not* vacuous (mutating to `redirect()` turned four cases
+  red). **E-2** — `searchParams` is confined to the listing branch and **exactly 28 corridor
+  documents are still prerendered**, with no shop-root HTML on disk. The budget tool has **not**
+  moved its goalposts: an island injected into the shop root alone raised both the shop root and
+  the corridor by 0.2 KB br, so the substituted document carries the shop root's client references.
+
 ## Escalations
 
 - **E-1 (2026-09-21) — `?page=1` answers 308, not the 301 of AC-10. Applied on the spec 007 §14 A6
