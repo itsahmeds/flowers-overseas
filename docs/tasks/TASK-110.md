@@ -78,6 +78,19 @@ JS-disabled render) and the page type added to `tests/e2e/chrome-honesty.spec.ts
 `tests/a11y/country-category.spec.ts` (`en`, `en-gb`, `ar-XB`). Visual:
 `tests/visual/country-category.spec.ts`, two `darwin` baselines at 1440 and 390 px.
 
+**Gates run, and where.** Locally: `typecheck`, `lint`, `i18n:check`, `check:no-db`,
+`codebase:map --check`, `specs:index --check`, `format:check`, `seed:check`, `corridor:check`, and
+the unit + contract suites (**4 459 pass**; the only two failures are `tests/unit/tasks-brief.test.ts`,
+pre-existing on `main` — TASK-080's `TASKS.md` notes cell does not link its brief, and that file is
+the orchestrator's). The build slot was taken **deliberately** for the one thing CI cannot give
+back: a new page's `darwin` visual baselines. With the server up the cheap browser gates ran
+beside them — e2e 50/50 over both page types, a11y 6/6 (`en`, `en-gb`, `ar-XB`), the chrome-honesty
+and client-JS suites 90/90, visual 49/49. Measured script transfer:
+**124 387 B br**, byte-identical to the shop root and the locale home, **+0.0 KB**, 6 685 B under
+the budget; both country-category URLs are now rows in `tests/fixtures/seo/bundle-baseline.json`.
+**Lighthouse was not run locally**: the 15-minute load average was **20.7 on 8 cores**, under which
+Lighthouse measures the machine and not the site (CLAUDE.md DoD 3). CI is the gate of record for it.
+
 **Handed on.** TASK-114 owns the toolbar, the pagination and the three roses page 1 cannot show;
 TASK-115 owns the `BreadcrumbList` and `ItemList` slots; the two artboard rows in
 `docs/design/README.md` close when the drawings are redrawn and when TASK-114 lands.

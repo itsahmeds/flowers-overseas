@@ -91,6 +91,16 @@ body and the JS-disabled date) plus the page type in `tests/e2e/chrome-honesty.s
 `tests/visual/country-occasion.spec.ts`, two `darwin` baselines; `country-shop-{desktop,mobile}`
 were regenerated because the third column changes that page.
 
+**Gates run, and where.** The same local set as TASK-110 (they are one branch): `typecheck`,
+`lint`, `i18n:check`, `check:no-db`, `codebase:map --check`, `specs:index --check`, `format:check`,
+`seed:check`, `corridor:check`, unit + contract **4 459 pass** (the two `tasks-brief` failures are
+pre-existing on `main` and belong to TASK-080's row). The build slot was taken deliberately for the
+new pages' `darwin` visual baselines — `country-occasion-{desktop,mobile}` are new and
+`country-shop-{desktop,mobile}` were regenerated because A10's third column changes that page; no
+other baseline moved. Beside them: e2e 50/50, a11y 6/6, chrome-honesty and client-JS 90/90, visual
+49/49. **Lighthouse was not run locally** (15-minute load average **20.7 on 8 cores**); CI is the
+gate of record.
+
 **Handed on.** TASK-113 publishes the occasions-index link id and the breadcrumb crumb becomes a
 link with no code change here; TASK-114 owns the toolbar and pagination; TASK-115 owns the
 `ItemList`/`BreadcrumbList` slots. Three sheet-versus-code differences are recorded in
