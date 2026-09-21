@@ -91,6 +91,18 @@ the budget; both country-category URLs are now rows in `tests/fixtures/seo/bundl
 **Lighthouse was not run locally**: the 15-minute load average was **20.7 on 8 cores**, under which
 Lighthouse measures the machine and not the site (CLAUDE.md DoD 3). CI is the gate of record for it.
 
+**CI, run [35612390493](https://github.com/itsahmeds/flowers-overseas/actions/runs/35612390493).**
+Green: `lint`, `typecheck`, `commitlint`, `test-unit`, `test-contract`, `test-integration`,
+`build`, `container`, `audit`, `seed-check`, `seo-validate`, `i18n-check`, `catalogue-check`,
+`corridor-check`, `db-check`, `dev-os-check`, `env-build-failure` — and **`lighthouse`**, which is
+the gate of record for the numbers this machine could not measure: `/en/poland/flowers/roses`
+**performance 1.00, accessibility 1.00, best-practices 0.96, LCP 1 501 ms, CLS 0, script
+128 211 B**, and `/en-gb/poland/flowers/roses` the same at **LCP 1 474 ms** — every
+`lighthouserc.json` assertion met. The `preview` job failed (`/api/health` answered 500 through
+the Vercel bypass at 14:30:36; the same URL answers 200 now), so `e2e`, `a11y` and `visual`
+**skipped** for the same reason TASK-080 recorded on 2026-09-21 and TASK-137 was opened for. The
+local run of those three gates, on the committed build, is the evidence of record for them here.
+
 **Handed on.** TASK-114 owns the toolbar, the pagination and the three roses page 1 cannot show;
 TASK-115 owns the `BreadcrumbList` and `ItemList` slots; the two artboard rows in
 `docs/design/README.md` close when the drawings are redrawn and when TASK-114 lands.

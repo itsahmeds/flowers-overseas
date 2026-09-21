@@ -101,6 +101,18 @@ other baseline moved. Beside them: e2e 50/50, a11y 6/6, chrome-honesty and clien
 49/49. **Lighthouse was not run locally** (15-minute load average **20.7 on 8 cores**); CI is the
 gate of record.
 
+**CI, run [35612390493](https://github.com/itsahmeds/flowers-overseas/actions/runs/35612390493).**
+Green: `lint`, `typecheck`, `commitlint`, `test-unit`, `test-contract`, `test-integration`,
+`build`, `container`, `audit`, `seed-check`, `seo-validate`, `i18n-check`, `catalogue-check`,
+`corridor-check`, `db-check`, `dev-os-check`, `env-build-failure` — and **`lighthouse`**, which is
+the gate of record for the numbers this machine could not measure: `/en/poland/flowers/roses`
+**performance 1.00, accessibility 1.00, best-practices 0.96, LCP 1 501 ms, CLS 0, script
+128 211 B**, and `/en-gb/poland/flowers/roses` the same at **LCP 1 474 ms** — every
+`lighthouserc.json` assertion met. The `preview` job failed (`/api/health` answered 500 through
+the Vercel bypass at 14:30:36; the same URL answers 200 now), so `e2e`, `a11y` and `visual`
+**skipped** for the same reason TASK-080 recorded on 2026-09-21 and TASK-137 was opened for. The
+local run of those three gates, on the committed build, is the evidence of record for them here.
+
 **Handed on.** TASK-113 publishes the occasions-index link id and the breadcrumb crumb becomes a
 link with no code change here; TASK-114 owns the toolbar and pagination; TASK-115 owns the
 `ItemList`/`BreadcrumbList` slots. Three sheet-versus-code differences are recorded in
