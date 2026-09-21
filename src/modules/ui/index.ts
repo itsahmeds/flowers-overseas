@@ -217,6 +217,7 @@ export type { MediaSlot, MediaSlotSpec } from "./media/slots.ts";
 export {
   getMediaLoader,
   placeholderLoader,
+  r2Loader,
   setMediaLoader,
 } from "./media/loader.ts";
 export type { MediaLoader } from "./media/loader.ts";
@@ -275,9 +276,9 @@ export type {
 export { SEED_SLOT_TO_UI_SLOT, uiSlotForSeedSlot } from "./media/slots.ts";
 export type { SeedMediaSlot } from "./media/slots.ts";
 export {
+  r2VariantLoader,
   resolveLoader,
   setVariantLoader,
-  staticVariantLoader,
 } from "./media/loader.ts";
 export type { VariantLoader, VariantRef } from "./media/loader.ts";
 

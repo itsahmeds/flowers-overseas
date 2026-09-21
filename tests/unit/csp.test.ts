@@ -41,6 +41,7 @@ import {
   sendsHsts,
 } from "../../src/lib/csp";
 import { consentBootstrapHash } from "../../src/lib/consent-bootstrap";
+import { MEDIA_ORIGIN } from "../../src/lib/media-origin";
 import type { HostPlatform } from "../../src/lib/env.schema";
 import {
   cspReportOnly,
@@ -53,7 +54,7 @@ const PRODUCTION_POLICY =
   "default-src 'self'; " +
   "script-src 'self'; " +
   "style-src 'self' 'unsafe-inline'; " +
-  "img-src 'self' data: blob:; " +
+  `img-src 'self' data: blob: ${MEDIA_ORIGIN}; ` +
   "font-src 'self'; " +
   "connect-src 'self'; " +
   "frame-src 'none'; " +
@@ -70,7 +71,7 @@ const PREVIEW_POLICY =
   "default-src 'self'; " +
   `script-src 'self' ${VERCEL_LIVE_ORIGIN}; ` +
   "style-src 'self' 'unsafe-inline'; " +
-  "img-src 'self' data: blob:; " +
+  `img-src 'self' data: blob: ${MEDIA_ORIGIN}; ` +
   "font-src 'self'; " +
   `connect-src 'self' ${VERCEL_LIVE_ORIGIN}; ` +
   `frame-src ${VERCEL_LIVE_ORIGIN}; ` +

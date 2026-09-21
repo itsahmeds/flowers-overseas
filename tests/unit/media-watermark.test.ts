@@ -10,27 +10,32 @@
  *  1. `applyWatermark()` on a fixture produces bytes the check finds the mark in — asserted
  *     through the same lossy AVIF and WebP encoders the ladder uses, because a mark that only
  *     survives a PNG round trip is not a mark on anything we serve;
- *  2. **every one of the committed variants under `public/media/`** is checked and none carries
- *     it — the whole set, not a sample, because "no watermarked asset ships" is a statement about
- *     all of them;
+ *  2. **every one of the derived variants** is checked and none carries it — the whole set, not
+ *     a sample, because "no watermarked asset ships" is a statement about all of them. Since
+ *     TASK-138 the bytes live in `flowersoverseas-media` rather than in the repository, so this
+ *     runs against `.local/media/` where that tree exists and is enforced for real by
+ *     `scripts/media-upload.ts`, which checks every file it is about to upload and refuses a
+ *     marked one;
  *  3. the dataset has no `depicts: "context"` asset, which is the only class the CLI would mark,
  *     so the branch is unreachable as well as unused (§13 Q12's "the mechanism is kept and no
  *     watermarked asset ships in Phase 0").
  *
  * **On AC-16's "no watermarked asset appears on a production-rendered page".** The production
- * render has exactly one image origin in Phase 0 — `/media/*`, served from `public/media/` — so
+ * render has exactly one image origin — the media bucket, and every URL on a page comes from the
+ * manifest rows the uploader uploaded — so
  * (2) *is* that assertion: there is no other file a page could serve. The one nuance the
  * orchestrator's 2026-09-18 carry-forward records is that the live site is `noindex` and behind a
  * preview domain, so "production-rendered" is read against the real domain; the invariant asserted
  * here is stronger and domain-independent, because it is about the bytes rather than the host.
  */
+import { existsSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
 
-import { COMMITTED_MEDIA_DIR } from "../../seed/budgets.ts";
+import { DERIVED_MEDIA_DIR } from "../../seed/budgets.ts";
 import { AVIF_OPTIONS, WEBP_OPTIONS } from "../../seed/schema/variants.ts";
 import {
   WATERMARK_MARKER_RGB,
@@ -108,10 +113,15 @@ describe("T-16: the watermark mechanism exists and is checkable (AC-16)", () => 
 });
 
 describe("T-16: no watermarked asset ships in Phase 0 (§13 Q12)", () => {
-  it(
-    "finds the mark in none of the committed variants — the whole set, not a sample",
+  // TASK-138 moved the derived bytes out of the repository and into `flowersoverseas-media`, so
+  // this assertion runs where the bytes are: on a machine that has just derived them, and —
+  // decisively — inside `scripts/media-upload.ts`, which runs the same `isWatermarked()` check
+  // over every file and refuses to put a marked one into the bucket. A runner holding no image
+  // cannot check an image; what it can do is make sure no unchecked image is ever uploaded.
+  it.skipIf(!existsSync(join(repoRoot, DERIVED_MEDIA_DIR)))(
+    "finds the mark in none of the derived variants — the whole set, not a sample",
     async () => {
-      const root = join(repoRoot, COMMITTED_MEDIA_DIR);
+      const root = join(repoRoot, DERIVED_MEDIA_DIR);
       const checked: string[] = [];
       for (const assetDir of await readdir(root)) {
         for (const leaf of await readdir(join(root, assetDir))) {

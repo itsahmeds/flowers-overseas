@@ -18,11 +18,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextIntlClientProvider } from "next-intl";
 
 import { loadMessages } from "../../src/modules/i18n";
+import { MEDIA_ORIGIN } from "../../src/lib/media-origin.ts";
 import { MediaAsset } from "../../src/modules/ui/media/MediaAsset.tsx";
 import {
   type VariantLoader,
+  r2VariantLoader,
   setVariantLoader,
-  staticVariantLoader,
 } from "../../src/modules/ui/media/loader.ts";
 import {
   committedMediaManifest,
@@ -111,7 +112,7 @@ beforeEach(() => {
 
 afterEach(() => {
   setMediaManifest(committedMediaManifest);
-  setVariantLoader(staticVariantLoader);
+  setVariantLoader(r2VariantLoader);
 });
 
 describe("AC-18: an `<img>` only when approved, with variants and with alt (T-18)", () => {
@@ -256,12 +257,21 @@ describe("AC-18: an `<img>` only when approved, with variants and with alt (T-18
 });
 
 describe("AC-2: the loader is the only thing that knows a URL (T-02)", () => {
-  it("addresses the committed bytes as `/media/{assetId}/{width}.{fmt}`", () => {
+  it("addresses the stored objects as `${MEDIA_ORIGIN}/{objectKey}` (TASK-138's R2 flip)", () => {
     const html = withManifest(
       <MediaAsset assetId={PRODUCT_ASSET} locale="en" />,
     );
-    expect(urls(html).every((url) => url.startsWith("/media/"))).toBe(true);
-    expect(urls(html)).toContain(`/media/${PRODUCT_ASSET}/640.avif`);
+    expect(urls(html).every((url) => url.startsWith(`${MEDIA_ORIGIN}/`))).toBe(
+      true,
+    );
+    // The fixture's `objectKey` is deliberately **not** `media/{assetId}/{width}.{fmt}`: the
+    // URL follows the manifest's own key, so a loader that re-derived a path instead of using
+    // the key it was given would fail here rather than in the bucket.
+    expect(urls(html)).toContain(
+      `${MEDIA_ORIGIN}/derived/${PRODUCT_ASSET}/640.avif`,
+    );
+    // Not one URL is same-origin any more: the application serves no image byte.
+    expect(urls(html).some((url) => url.startsWith("/"))).toBe(false);
   });
 
   it("changes **every** rendered URL when a fake loader is installed, with no call-site change", () => {
@@ -304,7 +314,7 @@ describe("AC-2: the loader is the only thing that knows a URL (T-02)", () => {
 
   it("returns the loader it replaced, so a caller can restore it", () => {
     const previous = setVariantLoader(() => "x");
-    expect(previous).toBe(staticVariantLoader);
+    expect(previous).toBe(r2VariantLoader);
   });
 });
 

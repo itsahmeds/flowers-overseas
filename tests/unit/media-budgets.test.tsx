@@ -17,7 +17,7 @@
  * through the manifest seam, the absence of any asset id under `src/app/`, and the reserved box
  * being identical in both states (which is the CLS delta of 0).
  */
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { readdir, readFile, stat } from "node:fs/promises";
 import { join, relative, resolve } from "node:path";
 
@@ -25,12 +25,9 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { NextIntlClientProvider } from "next-intl";
 import { describe, expect, it } from "vitest";
 
-import {
-  COMMITTED_MEDIA_BYTE_CAP,
-  COMMITTED_MEDIA_DIR,
-  SLOT_BYTE_CAPS,
-} from "../../seed/budgets.ts";
+import { DERIVED_MEDIA_DIR, SLOT_BYTE_CAPS } from "../../seed/budgets.ts";
 import type { MediaSlot } from "../../seed/schema/media.ts";
+import { MEDIA_ORIGIN } from "../../src/lib/media-origin.ts";
 import { loadMessages } from "../../src/modules/i18n";
 import { OccasionTiles } from "../../src/modules/ui/home/OccasionTiles.tsx";
 import {
@@ -72,16 +69,7 @@ const slotOf = new Map(assets.map((asset) => [asset.id, asset.slot]));
 /* T-15 — the committed byte total and the per-slot maxima (AC-15).           */
 /* -------------------------------------------------------------------------- */
 
-describe("T-15: the committed imagery is inside every byte cap (AC-15)", () => {
-  it("is under the 6 MB total the founder accepted until R2 exists (§13 Q4)", () => {
-    const total = variants.reduce((sum, variant) => sum + variant.bytes, 0);
-    expect(total).toBeGreaterThan(0);
-    expect(
-      total,
-      `${String(total)} B committed under ${COMMITTED_MEDIA_DIR}/ against a ${String(COMMITTED_MEDIA_BYTE_CAP)} B cap`,
-    ).toBeLessThanOrEqual(COMMITTED_MEDIA_BYTE_CAP);
-  });
-
+describe("T-15: the imagery in the manifest is inside every byte cap (AC-15)", () => {
   it("keeps every single variant inside its slot's cap, in both formats", () => {
     for (const variant of variants) {
       const slot = slotOf.get(variant.assetId);
@@ -94,8 +82,18 @@ describe("T-15: the committed imagery is inside every byte cap (AC-15)", () => {
     }
   });
 
-  it("commits a file for every manifest row and a row for every file (AC-14's tree half)", async () => {
-    const root = join(repoRoot, COMMITTED_MEDIA_DIR);
+  it("has a file for every manifest row and a row for every file, where the derived tree exists (AC-14's tree half)", async () => {
+    // TASK-138: the derived bytes are git-ignored (`.local/media/`) because they live in the
+    // media bucket, so this half runs on a machine that has just derived them and is skipped on
+    // a clean clone. It is not the only thing standing between a bad row and a buyer:
+    // `pnpm media:variants --check` makes the same comparison, `scripts/media-upload.ts` refuses
+    // to upload while it reports a problem, and the caps above are read from the committed
+    // manifest and therefore run everywhere.
+    const root = join(repoRoot, DERIVED_MEDIA_DIR);
+    if (!existsSync(root)) {
+      expect(variants.length).toBeGreaterThan(0);
+      return;
+    }
     const onDisk = new Map<string, number>();
     for (const assetDir of await readdir(root)) {
       for (const leaf of await readdir(join(root, assetDir))) {
@@ -197,7 +195,7 @@ describe("T-20: landing one asset flips a homepage slot, and nothing else moves 
 
     const after = renderTiles("en");
     expect(isDisplayable(FLIPPED, "en")).toBe(true);
-    expect(after).toContain(`/media/${FLIPPED}/384.avif`);
+    expect(after).toContain(`${MEDIA_ORIGIN}/media/${FLIPPED}/384.avif`);
     expect([...after.matchAll(/<img/g)].length).toBe(
       [...before.matchAll(/<img/g)].length + 1,
     );

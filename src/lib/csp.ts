@@ -35,6 +35,7 @@
  * this whole exercise exists to avoid.
  */
 import type { DeploymentEnvironment, HostPlatform } from "./env.schema";
+import { MEDIA_ORIGIN } from "./media-origin";
 import type { HeaderRule } from "./robots-headers";
 
 import { ALL_PATHS } from "./robots-headers";
@@ -196,7 +197,13 @@ export function cspValue(
     // critical CSS, so a policy without `'unsafe-inline'` would report on every page. Revisited
     // the day either stops being true (spec 004 §5.2).
     ["style-src", ["'self'", "'unsafe-inline'"]],
-    ["img-src", ["'self'", "data:", "blob:"]],
+    // The media origin joins `img-src` with TASK-138's R2 flip: every photograph on the site is
+    // an object in `flowersoverseas-media`, so a policy of `'self' data: blob:` would block the
+    // entire catalogue. One constant, shared with the loader that builds the URLs
+    // (`src/lib/media-origin.ts`), because a policy and a `src` that disagree is a page of
+    // blocked images — and it is named unconditionally, in every environment, since the bucket
+    // is the same one everywhere (there is no preview bucket; see TASK-138's defect note).
+    ["img-src", ["'self'", "data:", "blob:", MEDIA_ORIGIN]],
     // Self-hosted Latin + Latin-Ext faces; no Google Fonts origin, ever (spec 004 §5.1).
     ["font-src", ["'self'"]],
     // No Sentry ingest: the browser SDK is off public routes in Phase 0 and returns scoped to
