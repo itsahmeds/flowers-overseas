@@ -391,6 +391,62 @@
       "y": 179340,
       "w": 390,
       "h": 3280
+    },
+    {
+      "file": "benchmarks/benchmark-measurements.dc.html",
+      "title": "Competitor benchmark · the measurements",
+      "x": 0,
+      "y": 183000,
+      "w": 1440,
+      "h": 3060
+    },
+    {
+      "file": "benchmarks/benchmark-home-desktop.dc.html",
+      "title": "Benchmark · locale home · desktop 1440",
+      "x": 1520,
+      "y": 183000,
+      "w": 1440,
+      "h": 3340
+    },
+    {
+      "file": "benchmarks/benchmark-home-mobile.dc.html",
+      "title": "Benchmark · locale home · mobile 390",
+      "x": 3040,
+      "y": 183000,
+      "w": 390,
+      "h": 3860
+    },
+    {
+      "file": "benchmarks/benchmark-listing-desktop.dc.html",
+      "title": "Benchmark · country shop root · desktop 1440",
+      "x": 3510,
+      "y": 183000,
+      "w": 1440,
+      "h": 3320
+    },
+    {
+      "file": "benchmarks/benchmark-listing-mobile.dc.html",
+      "title": "Benchmark · country shop root · mobile 390",
+      "x": 5030,
+      "y": 183000,
+      "w": 390,
+      "h": 4340
+    },
+    {
+      "file": "benchmarks/benchmark-product-desktop.dc.html",
+      "title": "Benchmark · product · desktop 1440",
+      "x": 5500,
+      "y": 183000,
+      "w": 1440,
+      "h": 3180
+    },
+    {
+      "file": "benchmarks/benchmark-product-mobile.dc.html",
+      "title": "Benchmark · product · mobile 390",
+      "x": 7020,
+      "y": 183000,
+      "w": 390,
+      "h": 3800
     }
   ],
   "annotations": [
@@ -561,6 +617,13 @@
       "y": 177354,
       "w": 1200,
       "text": "404 · 410 · 500 — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
+    },
+    {
+      "id": "benchmark-2026-09",
+      "x": 0,
+      "y": 182880,
+      "w": 1400,
+      "text": "Competitor benchmark, 2026-09-21 — measured against FloraQueen, Interflora UK, Euroflorist NL and Bloom & Wild at 1280x900 and 375x812. The measurements artboard first, then current-and-proposed for the three page types. These are decision artefacts: an approved change is redrawn on the owning page wireframe, and that is what an implementer builds from. The argued change list is docs/design/competitor-benchmark-2026-09.md."
     }
   ],
   "launch": {

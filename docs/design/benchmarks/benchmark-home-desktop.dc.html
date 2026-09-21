@@ -1,0 +1,186 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+  <style>
+:root{
+  --color-paper: oklch(99.3% 0.002 90);
+  --color-paper-2: oklch(97.2% 0.004 90);
+  --color-paper-3: oklch(94.5% 0.005 90);
+  --color-ink: oklch(19% 0.01 250);
+  --color-ink-2: oklch(36% 0.01 250);
+  --color-ink-3: oklch(52% 0.008 250);
+  --color-rule: oklch(90% 0.004 250);
+  --color-accent: oklch(42% 0.10 155);
+  --color-accent-strong: oklch(34% 0.09 155);
+  --color-accent-ink: oklch(99% 0.002 90);
+  --color-success: oklch(42% 0.10 150);
+  --color-warning: oklch(45% 0.12 75);
+  --color-danger: oklch(45% 0.17 25);
+  --color-danger-strong: oklch(38% 0.15 25);
+  --color-photo-stop-1: oklch(93% 0.02 120);
+  --color-photo-stop-2: oklch(88% 0.03 140);
+  --color-photo-stop-3: oklch(80% 0.04 150);
+  --color-photo-ink: oklch(40% 0.03 150);
+  --color-photo: linear-gradient(160deg, var(--color-photo-stop-1) 0%, var(--color-photo-stop-2) 45%, var(--color-photo-stop-3) 100%);
+  --font-display: "Newsreader", "Iowan Old Style", Georgia, "Times New Roman", serif;
+  --font-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --text-display: 68px; --text-display-s: 42px; --text-2xl: 34px; --text-xl: 24px; --text-lg: 18px; --text-md: 15px; --text-sm: 13px; --text-xs: 11px;
+  --space-xs: 4px; --space-sm: 8px; --space-md: 16px; --space-lg: 24px; --space-xl: 40px; --space-2xl: 72px; --space-3xl: 128px;
+  --radius-sm: 2px; --radius-md: 4px; --radius-full: 9999px;
+  --measure: 68ch;
+  --rule: 1px solid var(--color-rule);
+}
+    body { margin: 0; font-family: var(--font-body); color: var(--color-ink); background: var(--color-paper); -webkit-font-smoothing: antialiased; }
+    a { color: var(--color-ink); text-decoration: none; } a:hover { color: var(--color-accent); }
+    .display { font-family: var(--font-display); font-weight: 500; letter-spacing: -0.015em; }
+    .label { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-ink-3); }
+    .photo { background: var(--color-photo); display: flex; align-items: flex-end; padding: var(--space-md); color: var(--color-photo-ink); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field span.v { min-height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-bottom: 1px solid var(--color-ink); font-size: var(--text-md); color: var(--color-ink); }
+    .btn { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
+    .btn.accent { background: var(--color-accent); }
+    .btn.secondary { background: var(--color-paper); color: var(--color-ink); border: 1px solid var(--color-ink-3); }
+    .btn.sm { min-height: 44px; padding: 0 16px; font-size: var(--text-sm); }
+    .price { font-variant-numeric: tabular-nums; }
+    .ph { display: inline-block; min-width: 56px; height: 14px; background: var(--color-paper-3); border-radius: 2px; vertical-align: middle; }
+    .chip { display: inline-flex; align-items: center; gap: var(--space-xs); border: 1px solid var(--color-ink-3); border-radius: var(--radius-sm); padding: var(--space-sm) var(--space-sm); font-size: var(--text-sm); }
+    .chip.accent { border-color: var(--color-accent); color: var(--color-accent); }
+    .chip.muted { border-color: transparent; background: var(--color-paper-3); color: var(--color-ink-2); }
+    .note { border: 1px solid var(--color-ink-3); border-radius: var(--radius-sm); background: var(--color-paper-2); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; font-size: var(--text-sm); line-height: 1.55; }
+    .note dl { margin: 0; display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 4px var(--space-md); font-size: var(--text-sm); }
+    .note dt { color: var(--color-ink-3); font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding-block-start: 2px; }
+    .note dd { margin: 0; color: var(--color-ink-2); }
+    .slot { color: var(--color-ink-3); font-style: italic; }
+    .stub { border: 1px dashed var(--color-ink-3); border-radius: var(--radius-sm); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; color: var(--color-ink-2); font-size: var(--text-sm); }
+    .stub b { font-weight: 600; color: var(--color-ink); font-size: var(--text-sm); }
+    .sec { display: flex; flex-direction: column; gap: var(--space-md); }
+    table.spec { border-collapse: collapse; width: 100%; font-size: var(--text-sm); }
+    table.spec th, table.spec td { text-align: start; border-block-end: var(--rule); padding: 8px 12px; vertical-align: top; }
+    table.spec th { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-3); }
+    .grid { display: grid; gap: var(--space-lg); }
+    .card { display: flex; flex-direction: column; gap: var(--space-sm); }
+    .card .nm { font-family: var(--font-display); font-weight: 500; font-size: var(--text-lg); }
+    .tile { border: var(--rule); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; }
+    .kv { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px var(--space-md); font-size: var(--text-sm); }
+    .kv > span:nth-child(even) { text-align: end; font-variant-numeric: tabular-nums; }
+    .faq { border-block-start: var(--rule); padding-block: var(--space-md); display: flex; flex-direction: column; gap: 6px; }
+    .faq b { font-weight: 600; font-size: var(--text-md); }
+    .faq span { font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.6; }
+    .steprow { display: flex; gap: var(--space-md); font-size: var(--text-sm); }
+    .steprow > span { flex: 1; border-block-start: 2px solid var(--color-rule); padding-block-start: var(--space-sm); color: var(--color-ink-3); }
+    .steprow > span.on { border-block-start-color: var(--color-ink); color: var(--color-ink); font-weight: 600; }
+    code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: var(--text-xs); color: var(--color-ink-2); }
+    .prose { max-width: var(--measure); font-size: var(--text-md); line-height: 1.6; color: var(--color-ink-2); }
+
+    /* ---- benchmark-artboard helpers (this study only) ---- */
+    .frame { position: relative; box-sizing: border-box; border: 1px solid var(--color-ink-3); background: var(--color-paper); overflow: hidden; }
+    .frame .foldline { position: absolute; inset-inline: 0; border-block-start: 2px dashed var(--color-danger); }
+    .frame .foldtag { position: absolute; inset-inline-end: 6px; font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-danger); background: var(--color-paper); padding: 0 4px; }
+    .band { box-sizing: border-box; display: flex; align-items: center; gap: var(--space-sm); padding: 0 16px; font-size: var(--text-xs); color: var(--color-ink-2); border-block-end: var(--rule); }
+    .band.util { background: var(--color-paper-3); }
+    .band.hdr { background: var(--color-paper-2); }
+    .band.nav { background: var(--color-paper-2); letter-spacing: 0.08em; text-transform: uppercase; }
+    .body { box-sizing: border-box; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+    .measure-tick { font-size: var(--text-xs); font-variant-numeric: tabular-nums; color: var(--color-ink-3); letter-spacing: 0.06em; }
+    .kind { display: inline-block; font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 6px; border-radius: var(--radius-sm); }
+    .kind.rearr { background: var(--color-paper-3); color: var(--color-ink-2); }
+    .kind.rem { background: var(--color-danger); color: var(--color-accent-ink); }
+    .kind.keep { border: 1px solid var(--color-accent); color: var(--color-accent); }
+    .pair { display: flex; gap: var(--space-xl); align-items: flex-start; }
+    .col { display: flex; flex-direction: column; gap: var(--space-sm); }
+    .barrow { display: grid; grid-template-columns: 210px minmax(0,1fr) 92px; gap: var(--space-sm) var(--space-md); align-items: center; font-size: var(--text-sm); }
+    .bar { height: 18px; background: var(--color-paper-3); position: relative; }
+    .bar > i { position: absolute; inset-block: 0; inset-inline-start: 0; background: var(--color-ink-3); display: block; }
+    .bar > i.ours { background: var(--color-danger); }
+    .lock { border-inline-start: 3px solid var(--color-accent); padding-inline-start: var(--space-md); font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.6; }
+  </style>
+</helmet>
+<div style="box-sizing: border-box; width: 1440px; min-height: 3340px; background: var(--color-paper); display: flex; flex-direction: column; gap: var(--space-xl); padding: var(--space-xl) 56px var(--space-3xl);">
+
+  <section class="note">
+    <span class="label">Locale home · current and proposed · desktop · [internal]</span>
+    <dl>
+      <dt>Purpose</dt><dd>Show what the shipped locale home spends its first screen on, next to what this study proposes, with every change argued and labelled. A <b>decision artefact</b>: approval here sends the change to <code>homepage-v1/homepage-desktop.dc.html</code>, which is what an implementer builds from.</dd>
+      <dt>URL</dt><dd><code>/en</code> (and <code>/en-gb</code>, <code>/de</code>, <code>/pl</code>). Measured on production, <b>2026-09-21</b>, at 1280&times;900.</dd>
+      <dt>Index</dt><dd>yes. Every proposal below keeps the page server-rendered, keeps all four locales reachable as ordinary links, and adds no client JavaScript to the header.</dd>
+      <dt>Measured</dt><dd>chrome 183 (45 utility strip + 138 header, of which 53 is the category row); hero photograph 183&ndash;1003; <code>&lt;h1&gt;</code> at 384; finder button at 730; the delivery-dates sentence at 808; first product photograph 1112, <b>unpriced</b>; <b>19 anchors in the whole document</b>; zero prices.</dd>
+      <dt>Owning spec</dt><dd>004 (the approved direction) and 008 (what a product row may claim).</dd>
+    </dl>
+  </section>
+
+  <div class="sec">
+    <span class="label">Current · 1280&times;900, drawn 1:1</span>
+    <div class="frame" style="width: 1280px; height: 900px;">
+      <div class="band util" style="height: 45px;"><span>Delivery dates open when we confirm our first florist</span><span style="color: var(--color-rule);">|</span><span>Help &amp; WhatsApp: +1 (213) 592-5150 &middot; Mon&ndash;Sat 8&ndash;20 CET</span><span style="margin-inline-start: auto;">English &middot; English (UK) &middot; Deutsch &middot; Polski</span><span class="chip" style="padding: 2px 6px;">EUR</span></div>
+      <div class="band hdr" style="height: 84px;"><span class="display" style="font-size: 26px; letter-spacing: 0.04em;">Flowers Overseas</span><span style="flex: 1; display: flex; align-items: center; min-height: 48px; border: var(--rule); padding-inline: 12px; color: var(--color-ink-3); margin-inline: var(--space-xl);">Search flowers, occasions, a city or a country</span><span>Sign in</span><span>My orders</span><span>Basket (0)</span></div>
+      <div class="band nav" style="height: 53px;"><span>Our selection</span><span>Birthday</span><span>Sympathy</span><span>Occasions</span><span>Bouquets</span><span>Roses</span><span>Plants</span><span>Add-ons</span><span>Destinations</span><span style="margin-inline-start: auto;">For florists</span></div>
+      <div class="photo" style="height: 717px; align-items: flex-start; padding: 0;">
+        <div style="padding: 174px 56px 0; display: flex; flex-direction: column; gap: 12px; width: 560px; text-transform: none; letter-spacing: normal; color: var(--color-ink);">
+          <span class="label">International flower delivery</span>
+          <h1 class="display" style="margin: 0; font-size: 60px; line-height: 1.05;">Flowers for someone far away.</h1>
+          <p style="margin: 0; font-size: var(--text-md); line-height: 1.5;">Our florist in your recipient's town makes it and hands it over in person. We never ship a box.</p>
+          <div style="display: flex; gap: 8px; margin-block-start: 8px;"><span class="field" style="flex: 1;"><span class="v" style="background: var(--color-paper);">Country</span></span><span class="field" style="flex: 1;"><span class="v" style="background: var(--color-paper);">Town, city or postcode</span></span><span class="field" style="flex: 1;"><span class="v" style="background: var(--color-paper);">Delivery date</span></span></div>
+          <span class="btn" style="align-self: flex-start;">Continue</span>
+          <span style="font-size: var(--text-sm); color: var(--color-ink-2);">Delivery dates open when we confirm our first florist</span>
+        </div>
+      </div>
+      <span class="measure-tick" style="position: absolute; inset-inline-start: 6px; top: 190px;">183 &mdash; chrome ends</span>
+      <span class="measure-tick" style="position: absolute; inset-inline-start: 6px; top: 866px;">900 &mdash; fold. No product, no price, and 19 links in the whole document.</span>
+    </div>
+  </div>
+
+  <div class="sec">
+    <span class="label">Proposed · 1280&times;900, drawn 1:1</span>
+    <div class="frame" style="width: 1280px; height: 900px;">
+      <div class="band util" style="height: 45px;"><span>Delivery dates open when we confirm our first florist</span><span style="color: var(--color-rule);">|</span><span>Help &amp; WhatsApp: +1 (213) 592-5150 &middot; Mon&ndash;Sat 8&ndash;20 CET</span><span style="margin-inline-start: auto;">English &middot; English (UK) &middot; Deutsch &middot; Polski</span><span class="chip" style="padding: 2px 6px;">EUR</span></div>
+      <div class="band hdr" style="height: 84px;"><span class="display" style="font-size: 26px; letter-spacing: 0.04em;">Flowers Overseas</span><span style="flex: 1; display: flex; align-items: center; min-height: 48px; border: var(--rule); padding-inline: 12px; color: var(--color-ink-3); margin-inline: var(--space-xl);">Search flowers, occasions, a city or a country <span style="margin-inline-start: auto; font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.1em;">Opens with the shop</span></span><span style="color: var(--color-ink-3);">Sign in</span><span style="color: var(--color-ink-3);">My orders</span><span style="color: var(--color-ink-3);">Basket (0)</span></div>
+      <div class="band nav" style="height: 53px;"><a href="/en/poland/flowers" style="text-decoration: underline;">Our selection</a><a href="/en/poland/flowers/birthday-flowers" style="text-decoration: underline;">Birthday</a><a href="/en/poland/flowers/sympathy-flowers" style="text-decoration: underline;">Sympathy</a><span style="color: var(--color-ink-3);">Occasions</span><a href="/en/poland/flowers/hand-tied-bouquets" style="text-decoration: underline;">Bouquets</a><a href="/en/poland/flowers/roses" style="text-decoration: underline;">Roses</a><a href="/en/poland/flowers/plants" style="text-decoration: underline;">Plants</a><span style="color: var(--color-ink-3);">Add-ons</span><a href="/en/send-flowers-to" style="text-decoration: underline;">Destinations</a><span style="margin-inline-start: auto; color: var(--color-ink-3);">For florists</span></div>
+      <div class="photo" style="height: 500px; align-items: flex-start; padding: 0;">
+        <div style="padding: 92px 56px 0; display: flex; flex-direction: column; gap: 10px; width: 560px; text-transform: none; letter-spacing: normal; color: var(--color-ink);">
+          <span class="label">International flower delivery</span>
+          <h1 class="display" style="margin: 0; font-size: 54px; line-height: 1.05;">Flowers for someone far away.</h1>
+          <p style="margin: 0; font-size: var(--text-md); line-height: 1.5;">Our florist in your recipient's town makes it and hands it over in person. We never ship a box.</p>
+          <div style="display: flex; gap: 8px; margin-block-start: 4px;"><span class="field" style="flex: 1;"><span class="v" style="background: var(--color-paper);">Country</span></span><span class="field" style="flex: 1;"><span class="v" style="background: var(--color-paper);">Town, city or postcode</span></span><span class="field" style="flex: 1;"><span class="v" style="background: var(--color-paper);">Delivery date</span></span></div>
+          <div style="display: flex; align-items: center; gap: 12px;"><span class="btn">Continue</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Delivery dates open when we confirm our first florist</span></div>
+        </div>
+      </div>
+      <div style="box-sizing: border-box; padding: 12px 56px 0; display: flex; flex-direction: column; gap: 8px;">
+        <div style="display: flex; align-items: baseline; gap: var(--space-md);"><span class="label">What we can make for Poland today</span><a href="/en/poland/flowers" style="font-size: var(--text-sm); text-decoration: underline;">All 84 &rarr;</a><span style="font-size: var(--text-sm); color: var(--color-ink-3); margin-inline-start: auto;">Our own order. Not a ranking by sales, popularity or payment. Prices in the delivery country's currency.</span></div>
+        <div class="grid" style="grid-template-columns: repeat(6, minmax(0,1fr)); gap: var(--space-md);">
+          <a class="card" href="/en/poland/flowers"><span class="photo" style="aspect-ratio: 4/5;">Photo slot</span><span class="nm" style="font-size: var(--text-md);">Amber Hour</span><span class="price" style="font-size: var(--text-md);">229.00 PLN</span></a>
+          <a class="card" href="/en/poland/flowers"><span class="photo" style="aspect-ratio: 4/5;">Photo slot</span><span class="nm" style="font-size: var(--text-md);">Vistula Red</span><span class="price" style="font-size: var(--text-md);">309.00 PLN</span></a>
+          <a class="card" href="/en/poland/flowers"><span class="photo" style="aspect-ratio: 4/5;">Photo slot</span><span class="nm" style="font-size: var(--text-md);">Baltic Dawn</span><span class="price" style="font-size: var(--text-md);">229.00 PLN</span></a>
+          <a class="card" href="/en/poland/flowers"><span class="photo" style="aspect-ratio: 4/5;">Photo slot</span><span class="nm" style="font-size: var(--text-md);">Quiet Blush</span><span class="price" style="font-size: var(--text-md);">169.00 PLN</span></a>
+          <a class="card" href="/en/poland/flowers"><span class="photo" style="aspect-ratio: 4/5;">Photo slot</span><span class="nm" style="font-size: var(--text-md);">Northern Light</span><span class="price" style="font-size: var(--text-md);">199.00 PLN</span></a>
+          <a class="card" href="/en/poland/flowers"><span class="photo" style="aspect-ratio: 4/5;">Photo slot</span><span class="nm" style="font-size: var(--text-md);">Carousel</span><span class="price" style="font-size: var(--text-md);">169.00 PLN</span></a>
+        </div>
+      </div>
+      <span class="measure-tick" style="position: absolute; inset-inline-start: 6px; top: 190px;">183 &mdash; chrome ends, unchanged</span>
+      <span class="measure-tick" style="position: absolute; inset-inline-end: 6px; top: 690px;">720 &mdash; first priced card, cut by the fold</span>
+    </div>
+    <div class="lock">The proposed frame shows one priced row cut by the fold, the header's category row as real links, and the finder's button and its honest delivery-dates sentence on one line. Card photography is the <code>--color-photo</code> slot at 4:5, as every artboard in this directory draws it &mdash; the twelve imaged products would use their photograph and the other seventy-two their captioned placeholder, exactly as the listing page already does. The honesty label under a card is drawn on <code>benchmark-listing-desktop.dc.html</code>, where it is argued.</div>
+  </div>
+
+  <div class="sec">
+    <span class="label">The changes, argued</span>
+    <table class="spec">
+      <thead><tr><th style="width: 46px;">#</th><th style="width: 200px;">Change</th><th style="width: 120px;">Kind</th><th>The argument</th></tr></thead>
+      <tbody>
+        <tr><td>H1</td><td>The header's ten category items become anchors instead of <code>&lt;span&gt;</code>, for the seven that have a live destination; the three with nowhere to go keep the muted treatment and say so.</td><td><span class="kind rearr">Rearrangement</span></td><td>Measured: our home page carries 19 anchors against FloraQueen's 319, Interflora's 249 and Bloom &amp; Wild's 159, and <b>not one anchor on it reaches <code>/en/poland/flowers</code></b>, a live page holding 84 priced products. Fourteen of the fifteen visible header affordances are inert, which costs us every internal link <code>plan/02</code> &sect;11 expects the home page to pass and is the most plausible cause of "it looks unfinished": a thing that looks clickable and is not reads as broken.</td></tr>
+        <tr><td>H2</td><td>The three dead account affordances and the dead search field keep their position but take the muted ink the system already has, and search gains the words "Opens with the shop".</td><td><span class="kind rearr">Rearrangement</span></td><td>They cannot become links &mdash; there is no account and no search &mdash; so the only honest options are to remove them or to say what they are. Saying it costs nothing, keeps the layout stable for the day they do work, and turns four apparent faults into four statements of fact. The screen-reader-only sentence already there ("Search opens when the shop does") becomes visible to everyone.</td></tr>
+        <tr><td>H3</td><td>The hero photograph goes from 820&nbsp;px to 500&nbsp;px, and the finder's delivery-dates line moves onto the button's row.</td><td><span class="kind rearr">Rearrangement</span></td><td>No word and no control is lost; 320&nbsp;px of photograph is. It buys the priced row in H4. Against the field our hero is the largest at 820, where Euroflorist runs 600, Interflora 452 and FloraQueen 400, so 500 is still generous and is still the biggest single element on the page.</td></tr>
+        <tr><td>H4</td><td>A six-card row of <b>priced</b> Poland products, scoped to the one live destination, replaces the unpriced row currently at 1112.</td><td><span class="kind rearr">Rearrangement</span></td><td>The row already exists and already names these products. What it lacks is the price, and the price exists: <code>/en/poland/flowers</code> publishes 229.00&nbsp;PLN for Amber Hour one click away. <code>CLAUDE.md</code>'s density rule already requires priced rows under the hero and forbids a card without a price; the shipped page keeps the row and drops the price, which is the worst of both. Scoping it to Poland is what makes the price sayable: a destination-less card genuinely may not carry one, and that rule is preserved by attaching the row to the live destination rather than by leaving it blank. <b>This one needs a spec decision, not just a drawing</b> &mdash; 008 owns what a home row may claim.</td></tr>
+        <tr><td>H5</td><td>The heading "Trending now / Most sent this week" is deleted and replaced with "What we can make for Poland today", plus the ordering sentence the listing page already uses.</td><td><span class="kind rem">Removal</span></td><td>A stronger argument, as the brief requires. We have taken no orders, so nothing has been "most sent this week": the claim is unevidenced. It is also self-contradicting on our own site &mdash; the disclaimer directly beneath it says the ranking "switches on once we have" real orders, and <code>/en/poland/flowers</code>, one click away, says in as many words "It is not a ranking by sales, by popularity or by payment." Spec 008 &sect;8 / AC-9 already deleted exactly this language from the navigation ("Best sellers" &rarr; "Our selection") on the ground that Omnibus Art. 6a makes an unevidenced popularity claim an unfair commercial practice when an honest alternative is free. The row, its five products and the disclaimer all stay; only the claim goes.</td></tr>
+        <tr><td>H6</td><td>Chrome height, the utility strip, the four language links and the currency chip: unchanged on desktop.</td><td><span class="kind keep">Kept</span></td><td>183&nbsp;px is mid-field (128 / 143 / 174 / <b>183</b> / 200). There is nothing here to win, and the earlier report of 377&nbsp;px / 42% that prompted this exercise was simply wrong.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>

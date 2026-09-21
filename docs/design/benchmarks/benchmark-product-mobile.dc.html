@@ -1,0 +1,177 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+  <style>
+:root{
+  --color-paper: oklch(99.3% 0.002 90);
+  --color-paper-2: oklch(97.2% 0.004 90);
+  --color-paper-3: oklch(94.5% 0.005 90);
+  --color-ink: oklch(19% 0.01 250);
+  --color-ink-2: oklch(36% 0.01 250);
+  --color-ink-3: oklch(52% 0.008 250);
+  --color-rule: oklch(90% 0.004 250);
+  --color-accent: oklch(42% 0.10 155);
+  --color-accent-strong: oklch(34% 0.09 155);
+  --color-accent-ink: oklch(99% 0.002 90);
+  --color-success: oklch(42% 0.10 150);
+  --color-warning: oklch(45% 0.12 75);
+  --color-danger: oklch(45% 0.17 25);
+  --color-danger-strong: oklch(38% 0.15 25);
+  --color-photo-stop-1: oklch(93% 0.02 120);
+  --color-photo-stop-2: oklch(88% 0.03 140);
+  --color-photo-stop-3: oklch(80% 0.04 150);
+  --color-photo-ink: oklch(40% 0.03 150);
+  --color-photo: linear-gradient(160deg, var(--color-photo-stop-1) 0%, var(--color-photo-stop-2) 45%, var(--color-photo-stop-3) 100%);
+  --font-display: "Newsreader", "Iowan Old Style", Georgia, "Times New Roman", serif;
+  --font-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --text-display: 68px; --text-display-s: 42px; --text-2xl: 34px; --text-xl: 24px; --text-lg: 18px; --text-md: 15px; --text-sm: 13px; --text-xs: 11px;
+  --space-xs: 4px; --space-sm: 8px; --space-md: 16px; --space-lg: 24px; --space-xl: 40px; --space-2xl: 72px; --space-3xl: 128px;
+  --radius-sm: 2px; --radius-md: 4px; --radius-full: 9999px;
+  --measure: 68ch;
+  --rule: 1px solid var(--color-rule);
+}
+    body { margin: 0; font-family: var(--font-body); color: var(--color-ink); background: var(--color-paper); -webkit-font-smoothing: antialiased; }
+    a { color: var(--color-ink); text-decoration: none; } a:hover { color: var(--color-accent); }
+    .display { font-family: var(--font-display); font-weight: 500; letter-spacing: -0.015em; }
+    .label { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-ink-3); }
+    .photo { background: var(--color-photo); display: flex; align-items: flex-end; padding: var(--space-md); color: var(--color-photo-ink); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field span.v { min-height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-bottom: 1px solid var(--color-ink); font-size: var(--text-md); color: var(--color-ink); }
+    .btn { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
+    .btn.accent { background: var(--color-accent); }
+    .btn.secondary { background: var(--color-paper); color: var(--color-ink); border: 1px solid var(--color-ink-3); }
+    .btn.sm { min-height: 44px; padding: 0 16px; font-size: var(--text-sm); }
+    .price { font-variant-numeric: tabular-nums; }
+    .ph { display: inline-block; min-width: 56px; height: 14px; background: var(--color-paper-3); border-radius: 2px; vertical-align: middle; }
+    .chip { display: inline-flex; align-items: center; gap: var(--space-xs); border: 1px solid var(--color-ink-3); border-radius: var(--radius-sm); padding: var(--space-sm) var(--space-sm); font-size: var(--text-sm); }
+    .chip.accent { border-color: var(--color-accent); color: var(--color-accent); }
+    .chip.muted { border-color: transparent; background: var(--color-paper-3); color: var(--color-ink-2); }
+    .note { border: 1px solid var(--color-ink-3); border-radius: var(--radius-sm); background: var(--color-paper-2); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; font-size: var(--text-sm); line-height: 1.55; }
+    .note dl { margin: 0; display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 4px var(--space-md); font-size: var(--text-sm); }
+    .note dt { color: var(--color-ink-3); font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding-block-start: 2px; }
+    .note dd { margin: 0; color: var(--color-ink-2); }
+    .slot { color: var(--color-ink-3); font-style: italic; }
+    .stub { border: 1px dashed var(--color-ink-3); border-radius: var(--radius-sm); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; color: var(--color-ink-2); font-size: var(--text-sm); }
+    .stub b { font-weight: 600; color: var(--color-ink); font-size: var(--text-sm); }
+    .sec { display: flex; flex-direction: column; gap: var(--space-md); }
+    table.spec { border-collapse: collapse; width: 100%; font-size: var(--text-sm); }
+    table.spec th, table.spec td { text-align: start; border-block-end: var(--rule); padding: 8px 12px; vertical-align: top; }
+    table.spec th { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-3); }
+    .grid { display: grid; gap: var(--space-lg); }
+    .card { display: flex; flex-direction: column; gap: var(--space-sm); }
+    .card .nm { font-family: var(--font-display); font-weight: 500; font-size: var(--text-lg); }
+    .tile { border: var(--rule); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; }
+    .kv { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px var(--space-md); font-size: var(--text-sm); }
+    .kv > span:nth-child(even) { text-align: end; font-variant-numeric: tabular-nums; }
+    .faq { border-block-start: var(--rule); padding-block: var(--space-md); display: flex; flex-direction: column; gap: 6px; }
+    .faq b { font-weight: 600; font-size: var(--text-md); }
+    .faq span { font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.6; }
+    .steprow { display: flex; gap: var(--space-md); font-size: var(--text-sm); }
+    .steprow > span { flex: 1; border-block-start: 2px solid var(--color-rule); padding-block-start: var(--space-sm); color: var(--color-ink-3); }
+    .steprow > span.on { border-block-start-color: var(--color-ink); color: var(--color-ink); font-weight: 600; }
+    code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: var(--text-xs); color: var(--color-ink-2); }
+    .prose { max-width: var(--measure); font-size: var(--text-md); line-height: 1.6; color: var(--color-ink-2); }
+
+    /* ---- benchmark-artboard helpers (this study only) ---- */
+    .frame { position: relative; box-sizing: border-box; border: 1px solid var(--color-ink-3); background: var(--color-paper); overflow: hidden; }
+    .frame .foldline { position: absolute; inset-inline: 0; border-block-start: 2px dashed var(--color-danger); }
+    .frame .foldtag { position: absolute; inset-inline-end: 6px; font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-danger); background: var(--color-paper); padding: 0 4px; }
+    .band { box-sizing: border-box; display: flex; align-items: center; gap: var(--space-sm); padding: 0 16px; font-size: var(--text-xs); color: var(--color-ink-2); border-block-end: var(--rule); }
+    .band.util { background: var(--color-paper-3); }
+    .band.hdr { background: var(--color-paper-2); }
+    .band.nav { background: var(--color-paper-2); letter-spacing: 0.08em; text-transform: uppercase; }
+    .body { box-sizing: border-box; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+    .measure-tick { font-size: var(--text-xs); font-variant-numeric: tabular-nums; color: var(--color-ink-3); letter-spacing: 0.06em; }
+    .kind { display: inline-block; font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 6px; border-radius: var(--radius-sm); }
+    .kind.rearr { background: var(--color-paper-3); color: var(--color-ink-2); }
+    .kind.rem { background: var(--color-danger); color: var(--color-accent-ink); }
+    .kind.keep { border: 1px solid var(--color-accent); color: var(--color-accent); }
+    .pair { display: flex; gap: var(--space-xl); align-items: flex-start; }
+    .col { display: flex; flex-direction: column; gap: var(--space-sm); }
+    .barrow { display: grid; grid-template-columns: 210px minmax(0,1fr) 92px; gap: var(--space-sm) var(--space-md); align-items: center; font-size: var(--text-sm); }
+    .bar { height: 18px; background: var(--color-paper-3); position: relative; }
+    .bar > i { position: absolute; inset-block: 0; inset-inline-start: 0; background: var(--color-ink-3); display: block; }
+    .bar > i.ours { background: var(--color-danger); }
+    .lock { border-inline-start: 3px solid var(--color-accent); padding-inline-start: var(--space-md); font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.6; }
+  </style>
+</helmet>
+<div style="box-sizing: border-box; width: 390px; min-height: 3800px; background: var(--color-paper); display: flex; flex-direction: column; gap: var(--space-lg); padding: var(--space-lg) 16px var(--space-2xl);">
+
+  <section class="note">
+    <span class="label">Product page · current and proposed · mobile · [internal]</span>
+    <dl>
+      <dt>Purpose</dt><dd>The same single reordering as the desktop artboard, drawn at the width where it costs the most. A <b>decision artefact</b>: approval sends the change to <code>wireframes/product-mobile.dc.html</code>.</dd>
+      <dt>The honest caveat</dt><dd><b>Not shipped, not measured.</b> No product URL resolves on production, so "current" is <code>wireframes/product-mobile.dc.html</code> redrawn at 375 in its <code>unavailable</code> state. Only the competitor figures in this study are live readings.</dd>
+      <dt>Why it costs more here</dt><dd>On a phone the DOM order <i>is</i> the visual order &mdash; there is no second column for the description to sit in. Four to six lines of authored prose between the name and the first price is four to six lines the thumb must pass, on top of the 245&nbsp;px of chrome measured on every other page of the site.</dd>
+      <dt>Honesty</dt><dd>Every line spec 009 requires survives: the demo sentence where a button would be, the all-in price wording, the "nothing is added at a later step" line, the vase exclusion, the substitution promise, the <code>unavailable</code> date state and the "Example arrangement" label.</dd>
+      <dt>Owning spec</dt><dd>009.</dd>
+    </dl>
+  </section>
+
+  <div class="sec">
+    <span class="label">Current · the drawn block order, at 375&times;812</span>
+    <div class="frame" style="width: 358px; height: 812px;">
+      <div class="band util" style="height: 36px; font-size: var(--text-xs);">Delivery dates are not open yet</div>
+      <div class="band util" style="height: 44px; font-size: var(--text-xs);">Help &amp; WhatsApp: +1 (213) 592-5150</div>
+      <div class="band util" style="height: 33px; font-size: var(--text-xs);"><span>English</span><span>English (UK)</span><span>Deutsch</span><span>Polski</span><span class="chip" style="padding: 0 4px; font-size: var(--text-xs);">EUR</span></div>
+      <div class="band hdr" style="height: 76px;"><span class="display" style="font-size: 19px; letter-spacing: 0.04em;">Flowers Overseas</span><span style="margin-inline-start: auto; font-size: var(--text-xs); color: var(--color-ink-3);">Sign in &middot; Basket</span></div>
+      <div class="band nav" style="height: 56px; font-size: var(--text-xs);"><span>Our selection</span><span>Occasions</span><span>Bouquets</span><span>Roses</span></div>
+      <div style="box-sizing: border-box; padding: 14px 16px 0; display: flex; flex-direction: column; gap: 10px;">
+        <nav style="font-size: var(--text-xs); color: var(--color-ink-3);">Home / Send flowers to / Poland / Flowers / Amber Hour</nav>
+        <span style="font-size: var(--text-xs); color: var(--color-ink-2);">Going to <b>Poland</b> &middot; change destination</span>
+        <span class="photo" style="height: 250px; align-items: flex-start;">Photo slot &middot; hero</span>
+        <span class="label" style="font-size: var(--text-xs);">Example arrangement · our florist hand-makes each one</span>
+        <h1 class="display" style="margin: 0; font-size: var(--text-xl); line-height: 1.12;">Amber Hour</h1>
+        <p style="margin: 0; font-size: var(--text-sm); line-height: 1.6; color: var(--color-ink-2);"><span class="slot">[slot] 60–90 authored words: what is in it, what it looks like, how to care for it, ending in the substitution sentence.</span></p>
+      </div>
+      <div class="foldline" style="top: 810px;"></div>
+      <span class="measure-tick" style="position: absolute; inset-inline-start: 6px; top: 250px;">245 &mdash; chrome ends</span>
+      <span class="measure-tick" style="position: absolute; inset-inline-start: 6px; top: 786px;">812 &mdash; the sizes and the price are below this line.</span>
+    </div>
+  </div>
+
+  <div class="sec">
+    <span class="label">Proposed · 375&times;812</span>
+    <div class="frame" style="width: 358px; height: 812px;">
+      <div class="band util" style="height: 44px; font-size: var(--text-xs);"><span>Delivery dates are not open yet</span><span style="margin-inline-start: auto;">EN</span><span class="chip" style="padding: 0 4px; font-size: var(--text-xs);">EUR</span></div>
+      <div class="band hdr" style="height: 76px;"><span class="display" style="font-size: 19px; letter-spacing: 0.04em;">Flowers Overseas</span><span style="margin-inline-start: auto; font-size: var(--text-xs); color: var(--color-ink-3);">Sign in &middot; Basket</span></div>
+      <div class="band nav" style="height: 56px; font-size: var(--text-xs);"><a href="/en/poland/flowers" style="text-decoration: underline;">Our selection</a><span style="color: var(--color-ink-3);">Occasions</span><a href="/en/poland/flowers/hand-tied-bouquets" style="text-decoration: underline;">Bouquets</a><a href="/en/poland/flowers/roses" style="text-decoration: underline;">Roses</a></div>
+      <div style="box-sizing: border-box; padding: 12px 16px 0; display: flex; flex-direction: column; gap: 8px;">
+        <nav style="font-size: var(--text-xs); color: var(--color-ink-3);">Home / Send flowers to / Poland / Flowers / Amber Hour</nav>
+        <span class="photo" style="height: 280px; align-items: flex-start;">Photo slot &middot; hero</span>
+        <span class="label" style="font-size: var(--text-xs);">Example arrangement · our florist hand-makes each one</span>
+        <span style="font-size: var(--text-xs); color: var(--color-ink-2);">Going to <b>Poland</b> &middot; change destination</span>
+        <h1 class="display" style="margin: 0; font-size: var(--text-xl); line-height: 1.1;">Amber Hour</h1>
+        <div style="display: flex; gap: 6px;"><span class="chip" style="font-size: var(--text-xs); padding: 4px 6px;">12 · 40.90</span><span class="chip accent" style="font-size: var(--text-xs); padding: 4px 6px;">18 · 46.90</span><span class="chip" style="font-size: var(--text-xs); padding: 4px 6px;">24 · 52.90</span></div>
+        <div style="display: flex; align-items: baseline; gap: 8px;"><b class="price display" style="font-size: var(--text-2xl);">46.90</b><span style="font-size: var(--text-xs); color: var(--color-ink-2);">Includes VAT and delivery. Nothing is added at a later step.</span></div>
+      </div>
+      <div class="foldline" style="top: 810px;"></div>
+      <span class="measure-tick" style="position: absolute; inset-inline-start: 6px; top: 182px;">176 &mdash; chrome ends</span>
+      <span class="measure-tick" style="position: absolute; inset-inline-end: 6px; top: 786px;">812 &mdash; photograph, name, the three sizes and the all-in price are above this line.</span>
+    </div>
+    <div class="lock">A sticky summary bar carrying the same one number stays at the bottom of the viewport exactly as <code>wireframes/product-mobile.dc.html</code> already draws it; it is left off this frame so the two states can be compared without it.</div>
+  </div>
+
+  <div class="sec">
+    <span class="label">The changes, argued</span>
+    <table class="spec">
+      <thead><tr><th style="width: 34px;">#</th><th>Change, kind and argument</th></tr></thead>
+      <tbody>
+        <tr><td>PM1</td><td><b>Chrome 245 &rarr; 176, by the same three moves as every other page.</b> <span class="kind rearr">Rearrangement</span> + <span class="kind rem">Removal</span> See M1&ndash;M3. This is one change to one component and it is worth 69&nbsp;px on every page of the site, which is why it is the first thing to do.</td></tr>
+        <tr><td>PM2</td><td><b>The description moves below the delivery facts; the sizes and the price take its place.</b> <span class="kind rearr">Rearrangement</span> Same argument as P1, and stronger here because there is no second column: on a phone the buyer scrolls past four to six lines of prose to find out what the bouquet costs. The words are not cut and are not collapsed &mdash; they move, and they stay in the server-rendered HTML.</td></tr>
+        <tr><td>PM3</td><td><b>The destination line moves below the photograph, next to the name.</b> <span class="kind rearr">Rearrangement</span> Same words. Above the photograph it is the first thing on the page and the least useful; beside the name it is read at the moment it matters.</td></tr>
+        <tr><td>PM4</td><td><b>The photograph goes from 250&nbsp;px to 280&nbsp;px.</b> <span class="kind rearr">Rearrangement</span> Consequential. Bloom &amp; Wild gives a product 327&nbsp;px of width on a phone in a <i>list</i>; a product page should not give it less.</td></tr>
+        <tr><td>PM5</td><td><b>The honesty label stays directly under the photograph.</b> <span class="kind keep">Kept</span> It belongs to the image, and spec 006 &sect;2.5 places it wherever an <code>ai</code> asset is shown. On the product page it is one line at this width, so the card-level wrapping problem in LM5 does not arise.</td></tr>
+        <tr><td>PM6</td><td><b>The date block's <code>unavailable</code> wording, the demo sentence in place of a button, the vase exclusion and the sticky summary: unchanged.</b> <span class="kind keep">Kept</span> Spec 009 &sect;13 settled all four and this study found nothing against them.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>

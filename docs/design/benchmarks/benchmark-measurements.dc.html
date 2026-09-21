@@ -1,0 +1,199 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+  <style>
+:root{
+  --color-paper: oklch(99.3% 0.002 90);
+  --color-paper-2: oklch(97.2% 0.004 90);
+  --color-paper-3: oklch(94.5% 0.005 90);
+  --color-ink: oklch(19% 0.01 250);
+  --color-ink-2: oklch(36% 0.01 250);
+  --color-ink-3: oklch(52% 0.008 250);
+  --color-rule: oklch(90% 0.004 250);
+  --color-accent: oklch(42% 0.10 155);
+  --color-accent-strong: oklch(34% 0.09 155);
+  --color-accent-ink: oklch(99% 0.002 90);
+  --color-success: oklch(42% 0.10 150);
+  --color-warning: oklch(45% 0.12 75);
+  --color-danger: oklch(45% 0.17 25);
+  --color-danger-strong: oklch(38% 0.15 25);
+  --color-photo-stop-1: oklch(93% 0.02 120);
+  --color-photo-stop-2: oklch(88% 0.03 140);
+  --color-photo-stop-3: oklch(80% 0.04 150);
+  --color-photo-ink: oklch(40% 0.03 150);
+  --color-photo: linear-gradient(160deg, var(--color-photo-stop-1) 0%, var(--color-photo-stop-2) 45%, var(--color-photo-stop-3) 100%);
+  --font-display: "Newsreader", "Iowan Old Style", Georgia, "Times New Roman", serif;
+  --font-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --text-display: 68px; --text-display-s: 42px; --text-2xl: 34px; --text-xl: 24px; --text-lg: 18px; --text-md: 15px; --text-sm: 13px; --text-xs: 11px;
+  --space-xs: 4px; --space-sm: 8px; --space-md: 16px; --space-lg: 24px; --space-xl: 40px; --space-2xl: 72px; --space-3xl: 128px;
+  --radius-sm: 2px; --radius-md: 4px; --radius-full: 9999px;
+  --measure: 68ch;
+  --rule: 1px solid var(--color-rule);
+}
+    body { margin: 0; font-family: var(--font-body); color: var(--color-ink); background: var(--color-paper); -webkit-font-smoothing: antialiased; }
+    a { color: var(--color-ink); text-decoration: none; } a:hover { color: var(--color-accent); }
+    .display { font-family: var(--font-display); font-weight: 500; letter-spacing: -0.015em; }
+    .label { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-ink-3); }
+    .photo { background: var(--color-photo); display: flex; align-items: flex-end; padding: var(--space-md); color: var(--color-photo-ink); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field span.v { min-height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-bottom: 1px solid var(--color-ink); font-size: var(--text-md); color: var(--color-ink); }
+    .btn { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
+    .btn.accent { background: var(--color-accent); }
+    .btn.secondary { background: var(--color-paper); color: var(--color-ink); border: 1px solid var(--color-ink-3); }
+    .btn.sm { min-height: 44px; padding: 0 16px; font-size: var(--text-sm); }
+    .price { font-variant-numeric: tabular-nums; }
+    .ph { display: inline-block; min-width: 56px; height: 14px; background: var(--color-paper-3); border-radius: 2px; vertical-align: middle; }
+    .chip { display: inline-flex; align-items: center; gap: var(--space-xs); border: 1px solid var(--color-ink-3); border-radius: var(--radius-sm); padding: var(--space-sm) var(--space-sm); font-size: var(--text-sm); }
+    .chip.accent { border-color: var(--color-accent); color: var(--color-accent); }
+    .chip.muted { border-color: transparent; background: var(--color-paper-3); color: var(--color-ink-2); }
+    .note { border: 1px solid var(--color-ink-3); border-radius: var(--radius-sm); background: var(--color-paper-2); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; font-size: var(--text-sm); line-height: 1.55; }
+    .note dl { margin: 0; display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 4px var(--space-md); font-size: var(--text-sm); }
+    .note dt { color: var(--color-ink-3); font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding-block-start: 2px; }
+    .note dd { margin: 0; color: var(--color-ink-2); }
+    .slot { color: var(--color-ink-3); font-style: italic; }
+    .stub { border: 1px dashed var(--color-ink-3); border-radius: var(--radius-sm); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; color: var(--color-ink-2); font-size: var(--text-sm); }
+    .stub b { font-weight: 600; color: var(--color-ink); font-size: var(--text-sm); }
+    .sec { display: flex; flex-direction: column; gap: var(--space-md); }
+    table.spec { border-collapse: collapse; width: 100%; font-size: var(--text-sm); }
+    table.spec th, table.spec td { text-align: start; border-block-end: var(--rule); padding: 8px 12px; vertical-align: top; }
+    table.spec th { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-3); }
+    .grid { display: grid; gap: var(--space-lg); }
+    .card { display: flex; flex-direction: column; gap: var(--space-sm); }
+    .card .nm { font-family: var(--font-display); font-weight: 500; font-size: var(--text-lg); }
+    .tile { border: var(--rule); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; }
+    .kv { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px var(--space-md); font-size: var(--text-sm); }
+    .kv > span:nth-child(even) { text-align: end; font-variant-numeric: tabular-nums; }
+    .faq { border-block-start: var(--rule); padding-block: var(--space-md); display: flex; flex-direction: column; gap: 6px; }
+    .faq b { font-weight: 600; font-size: var(--text-md); }
+    .faq span { font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.6; }
+    .steprow { display: flex; gap: var(--space-md); font-size: var(--text-sm); }
+    .steprow > span { flex: 1; border-block-start: 2px solid var(--color-rule); padding-block-start: var(--space-sm); color: var(--color-ink-3); }
+    .steprow > span.on { border-block-start-color: var(--color-ink); color: var(--color-ink); font-weight: 600; }
+    code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: var(--text-xs); color: var(--color-ink-2); }
+    .prose { max-width: var(--measure); font-size: var(--text-md); line-height: 1.6; color: var(--color-ink-2); }
+
+    /* ---- benchmark-artboard helpers (this study only) ---- */
+    .frame { position: relative; box-sizing: border-box; border: 1px solid var(--color-ink-3); background: var(--color-paper); overflow: hidden; }
+    .frame .foldline { position: absolute; inset-inline: 0; border-block-start: 2px dashed var(--color-danger); }
+    .frame .foldtag { position: absolute; inset-inline-end: 6px; font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-danger); background: var(--color-paper); padding: 0 4px; }
+    .band { box-sizing: border-box; display: flex; align-items: center; gap: var(--space-sm); padding: 0 16px; font-size: var(--text-xs); color: var(--color-ink-2); border-block-end: var(--rule); }
+    .band.util { background: var(--color-paper-3); }
+    .band.hdr { background: var(--color-paper-2); }
+    .band.nav { background: var(--color-paper-2); letter-spacing: 0.08em; text-transform: uppercase; }
+    .body { box-sizing: border-box; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+    .measure-tick { font-size: var(--text-xs); font-variant-numeric: tabular-nums; color: var(--color-ink-3); letter-spacing: 0.06em; }
+    .kind { display: inline-block; font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 6px; border-radius: var(--radius-sm); }
+    .kind.rearr { background: var(--color-paper-3); color: var(--color-ink-2); }
+    .kind.rem { background: var(--color-danger); color: var(--color-accent-ink); }
+    .kind.keep { border: 1px solid var(--color-accent); color: var(--color-accent); }
+    .pair { display: flex; gap: var(--space-xl); align-items: flex-start; }
+    .col { display: flex; flex-direction: column; gap: var(--space-sm); }
+    .barrow { display: grid; grid-template-columns: 210px minmax(0,1fr) 92px; gap: var(--space-sm) var(--space-md); align-items: center; font-size: var(--text-sm); }
+    .bar { height: 18px; background: var(--color-paper-3); position: relative; }
+    .bar > i { position: absolute; inset-block: 0; inset-inline-start: 0; background: var(--color-ink-3); display: block; }
+    .bar > i.ours { background: var(--color-danger); }
+    .lock { border-inline-start: 3px solid var(--color-accent); padding-inline-start: var(--space-md); font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.6; }
+  </style>
+</helmet>
+<div style="box-sizing: border-box; width: 1440px; min-height: 3060px; background: var(--color-paper); display: flex; flex-direction: column; gap: var(--space-xl); padding: var(--space-xl) 56px var(--space-3xl);">
+
+  <section class="note">
+    <span class="label">Competitor benchmark · the measurements · [internal]</span>
+    <dl>
+      <dt>Purpose</dt><dd>The founder said the site looks worse than the competition and called it cluttered. This artboard is the measurement that tests that sentence, page type by page type, so the redesign argues from numbers rather than from taste. It is a <b>decision artefact</b>, not a build target: when a change on the three page-type artboards beside this one is approved, the owning page wireframe under <code>wireframes/</code> is redrawn and <i>that</i> is what an implementer builds from.</dd>
+      <dt>Method</dt><dd>Every figure was read from the live DOM with <code>getBoundingClientRect()</code> at an emulated <b>1280&times;900</b> and <b>375&times;812</b> on <b>2026-09-21</b>. Nothing here was estimated from a screenshot. "Chrome" is the height of the stacked bars above the first page content; "preamble" is the distance from the bottom of that chrome to the top of the first product photograph.</dd>
+      <dt>Read against</dt><dd>the 2026-09-09 study in this folder, which measured <i>content patterns</i>. This pass measures <i>space</i>, which that study did not, and does not restate its findings.</dd>
+      <dt>Who we measured</dt><dd>FloraQueen (the one competitor with our exact model: one brand, many languages, delivery by a florist in the recipient's country), Interflora UK (the country-page and same-name-many-countries incumbent), Euroflorist NL (the European site-per-country model), Bloom &amp; Wild (not cross-border, and included on purpose: it is the visual standard a European buyer's eye is calibrated by, and it is the only one of the four a designer would call well made).</dd>
+      <dt>What we could not read</dt><dd>Nothing was blocked. FloraQueen, Interflora UK and Euroflorist NL show a consent sheet that offers no plain refusal, so none was accepted and none was dismissed; each sits at the bottom or the centre of the window and changes no figure above. Bloom &amp; Wild offers "Reject all" and it was taken.</dd>
+      <dt>Owning spec</dt><dd>none. This is research for 004, 008 and 009, and for the founder's decision before any of them is amended.</dd>
+    </dl>
+  </section>
+
+  <div class="sec">
+    <span class="label">Desktop 1280&times;900 · pixels of chrome before any page content</span>
+    <p class="prose" style="margin: 0;">Read this row first, because it is the one the complaint pointed at and the one the complaint gets wrong. Our chrome sits in the middle of the field, not at the end of it.</p>
+    <div class="barrow">
+      <span>FloraQueen</span><span class="bar"><i style="width: 32%;"></i></span><span class="measure-tick">128 px · 14.2%</span>
+      <span>Bloom &amp; Wild</span><span class="bar"><i style="width: 35.8%;"></i></span><span class="measure-tick">143 px · 15.9%</span>
+      <span>Euroflorist NL</span><span class="bar"><i style="width: 43.5%;"></i></span><span class="measure-tick">174 px · 19.3%</span>
+      <span><b>Flowers Overseas</b></span><span class="bar"><i class="ours" style="width: 45.8%;"></i></span><span class="measure-tick">183 px · 20.3%</span>
+      <span>Interflora UK</span><span class="bar"><i style="width: 50%;"></i></span><span class="measure-tick">200 px · 22.2%</span>
+    </div>
+    <div class="lock">Bars are drawn to scale against a 400&nbsp;px full width. <b>Finding: the desktop chrome is not the problem.</b> 183&nbsp;px is 17&nbsp;px below Interflora's and 9&nbsp;px above Euroflorist's. No change is proposed to the desktop chrome height, and the 377&nbsp;px / 42% figure reported to the founder before this pass was wrong.</div>
+  </div>
+
+  <div class="sec">
+    <span class="label">Mobile 375&times;812 · pixels of chrome before any page content</span>
+    <p class="prose" style="margin: 0;">The same measurement on a phone, where the complaint <b>is</b> supported, by a wide margin.</p>
+    <div class="barrow">
+      <span>FloraQueen</span><span class="bar"><i style="width: 11.6%;"></i></span><span class="measure-tick">57 px · 7.0%</span>
+      <span>Euroflorist NL</span><span class="bar"><i style="width: 21.8%;"></i></span><span class="measure-tick">107 px · 13.2%</span>
+      <span>Bloom &amp; Wild</span><span class="bar"><i style="width: 31.4%;"></i></span><span class="measure-tick">154 px · 19.0%</span>
+      <span>Interflora UK</span><span class="bar"><i style="width: 31.8%;"></i></span><span class="measure-tick">156 px · 19.2%</span>
+      <span><b>Flowers Overseas</b></span><span class="bar"><i class="ours" style="width: 50%;"></i></span><span class="measure-tick">245 px · 30.2%</span>
+    </div>
+    <div class="lock">Bars to scale against 490&nbsp;px. <b>Finding: we spend 89&nbsp;px more than the next worst and 188&nbsp;px more than the best.</b> 113 of our 245 are one utility strip that stacks into three rows at 375: the delivery-dates sentence, a telephone number with its hours, and a row carrying four language links and a currency chip. The header below it is 132.</div>
+  </div>
+
+  <div class="sec">
+    <span class="label">The listing page · how far down the first photograph starts</span>
+    <table class="spec">
+      <thead><tr><th>Page</th><th>Chrome</th><th>Preamble</th><th>First photo at</th><th>First price at</th><th>Photo share of the card</th></tr></thead>
+      <tbody>
+        <tr><td>FloraQueen collection · 1280</td><td>118</td><td>222</td><td>340 &middot; 38% of the fold</td><td>790</td><td>377&times;377 of 411&times;477 &middot; 72.5%</td></tr>
+        <tr><td>Bloom &amp; Wild listing · 1280</td><td>143</td><td>276</td><td>419 &middot; 47%</td><td>908</td><td>387&times;387 of 387&times;583 &middot; 66.4%</td></tr>
+        <tr><td>Interflora UK listing · 1280</td><td>200</td><td>435</td><td>635 &middot; 71%</td><td>1143</td><td>294&times;500 of 294&times;672 &middot; 74.4%</td></tr>
+        <tr><td><b>Ours, <code>/en/poland/flowers</code> · 1280</b></td><td><b>183</b></td><td><b>466</b></td><td><b>649 &middot; 72%</b></td><td><b>1026</b></td><td><b>266&times;333 of 266&times;475 &middot; 70.1%</b></td></tr>
+        <tr><td>Bloom &amp; Wild listing · 375</td><td>154</td><td>232</td><td>386 &middot; 48% of the fold</td><td>815</td><td>327&times;327 &middot; 1-up</td></tr>
+        <tr><td>Interflora UK listing · 375</td><td>156</td><td>589</td><td>745 &middot; 92%</td><td>—</td><td>359&times;436 of 359&times;580 &middot; 75.2%</td></tr>
+        <tr><td><b>Ours, <code>/en/poland/flowers</code> · 375</b></td><td><b>245</b></td><td><b>534</b></td><td><b>779 &middot; 96%</b></td><td><b>1023</b></td><td><b>160&times;199 of 160&times;362 &middot; 55.0%</b></td></tr>
+      </tbody>
+    </table>
+    <div class="lock"><b>Two findings, one of them against the complaint.</b> On desktop our card is in the field's range (70.1% photograph, against 66.4 / 72.5 / 74.4) and our preamble is worse than two of three but not an outlier &mdash; Interflora's is 435 to our 466. On a phone the card collapses to 55% photograph, the worst figure in the set, because the honesty label wraps to three lines in a 160&nbsp;px column; and 96% of the first screen is chrome and prose. <b>Every one of the 252&nbsp;px of body prose we print above the grid at 375 is prose neither comparator prints at all</b> &mdash; Bloom &amp; Wild drops its intro paragraph below 768, Interflora folds its behind a "Read more".</div>
+  </div>
+
+  <div class="sec">
+    <span class="label">The home page · what the first screen is spent on, and what it links to</span>
+    <table class="spec">
+      <thead><tr><th>Home page</th><th>Chrome</th><th>First screen below it</th><th>First product photo</th><th>Price anywhere on the page</th><th>Links in the document</th></tr></thead>
+      <tbody>
+        <tr><td>FloraQueen · 1280</td><td>128</td><td>400 px photograph + a search field</td><td>520</td><td>&euro;62,90 at 833</td><td>319</td></tr>
+        <tr><td>Interflora UK · 1280</td><td>200</td><td>a date / address / occasion bar, then a 452 px photograph</td><td>826 (category discs)</td><td>below the fold</td><td>249</td></tr>
+        <tr><td>Euroflorist NL · 1280</td><td>174</td><td>600 px photograph</td><td>1303</td><td>below the fold</td><td>not counted</td></tr>
+        <tr><td>Bloom &amp; Wild · 1280</td><td>143</td><td>a five-tile photographic mosaic from 217</td><td>217</td><td>below the fold</td><td>159</td></tr>
+        <tr><td><b>Ours, <code>/en</code> · 1280</b></td><td><b>183</b></td><td><b>820 px photograph carrying the H1 and the finder</b></td><td><b>1112</b></td><td><b>none &mdash; zero prices on the whole document</b></td><td><b>19</b></td></tr>
+      </tbody>
+    </table>
+    <div class="lock"><b>The single largest gap in this study is the last column.</b> Our locale home carries <b>19</b> anchors against 319, 249 and 159. Seven of ours are destination links, one is the brand, one a telephone number, three are language links. <b>Not one of them points at <code>/en/poland/flowers</code></b>, which exists, is live and holds 84 priced products. The header's ten category items, its search field and its three account affordances are <code>&lt;span&gt;</code> elements: fourteen of the fifteen things that look clickable in our header do nothing, carry no link and pass no ranking weight. That is a <code>plan/02</code> &sect;11 finding before it is a design one, and it is the most likely single cause of "it looks worse" &mdash; a page reads as unfinished when the things on it do not respond.</div>
+  </div>
+
+  <div class="sec">
+    <span class="label">The product page</span>
+    <div class="stub">
+      <b>Ours is not shipped, and is not measured here.</b>
+      <span><code>src/app/[locale]/</code> routes <code>[segment]/[child]</code> and no deeper, so no product URL resolves; the twelve cards on the Poland listing are deliberately not links, because a card pointing at a 404 would be worse than a card that waits. The page type is therefore benchmarked against <code>wireframes/product-desktop.dc.html</code>, which is the only artefact that exists, and the comparison is of <b>block order</b>, not of pixels.</span>
+      <span><b>FloraQueen, measured.</b> Chrome ends at 118. Gallery and <code>&lt;h1&gt;</code> at 138. The size selector, with an all-in price printed on each option, at 226&ndash;322. Add-ons with their prices at 440. <b>Add to cart at 620.</b> Every decision the buyer makes is inside the first 900&nbsp;px, and the 60&ndash;90 words of description sit behind two accordion buttons at 701 and 826.</span>
+      <span><b>Ours, as drawn.</b> The DOM order on the artboard is breadcrumb &rarr; destination line &rarr; gallery &rarr; <code>&lt;h1&gt;</code> &rarr; <b>description and care</b> &rarr; tier selector &rarr; date picker &rarr; delivery facts &rarr; add-on prices &rarr; price summary. The 60&ndash;90 authored words sit <i>between</i> the name and the first price. That is the one ordering difference worth arguing about, and it is argued on <code>benchmark-product-desktop.dc.html</code>.</span>
+    </div>
+  </div>
+
+  <div class="sec">
+    <span class="label">What this study does not propose to change</span>
+    <div class="stub">
+      <b>Said plainly, because the brief asked for it.</b>
+      <span><b>Desktop chrome height.</b> 183&nbsp;px is mid-field. Nothing to win.</span>
+      <span><b>The desktop product card.</b> 70.1% photograph is inside the field's range and above Bloom &amp; Wild's.</span>
+      <span><b>The breadcrumb.</b> It costs 20&nbsp;px plus its gap and none of the four comparators prints one on a listing page. It stays: it is the <code>BreadcrumbList</code> source and ranking is priority&nbsp;1.</span>
+      <span><b>The 820 px home hero.</b> Every one of the four leads with one large photograph and none of them puts a priced product above the fold on a home page. Ours is the largest at 820 against 600, 452 and 400, and it is the one page where the photography is real. It is trimmed on the home artboard to buy the finder's button, not because it is wrong.</span>
+      <span><b>The 72 captioned placeholders.</b> A known state, not a defect, and no proposal here designs around them.</span>
+    </div>
+  </div>
+
+</div>
