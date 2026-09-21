@@ -29,7 +29,28 @@ visitor nothing today.
 2. A plain upload of the already-derived files to the `flowersoverseas-media` bucket, idempotent
    by checksum. A script, not a worker. No queue, no database.
 3. Deletion of `public/media/` and `staticVariantLoader`, and the CSP `img-src` change.
-4. `COMMITTED_MEDIA_BYTE_CAP` stops governing shipped imagery. Say in `## Result` what now
+4. `COMMITTED_MEDIA_BYTE_CAP` stops governing shipped imagery. Say in `- **2026-09-21 (round 2) — Lighthouse's LCP budget fails on all four locale homepages, and this
+  is the first time it has been measured (founder / orchestrator, `open`).** CI run
+  `35630208213`: `largest-contentful-paint` ≤ 2 000 ms asserted, medians of three runs found at
+  **2 248 ms (`/en`), 2 238 ms (`/pl`)** and the same order on `/de` and `/en-gb` (individual
+  values 2 238–2 559). It had never run on this branch before: in run `35621421001` the
+  `lighthouse`, `build` and `container` jobs were all **skipped** because `test-unit` failed, so
+  the brief's earlier "not measured here: Lighthouse" is now measured — by the gate of record —
+  and it is red. Every other job is green.
+
+  **Why this is not absorbed here.** The likely cause is the thing escalation 2 above already
+  names: the LCP element on each homepage is the hero photograph, and it now comes from a
+  third-party `pub-*.r2.dev` origin, so a DNS lookup, a TCP handshake and a TLS handshake sit on
+  the LCP critical path that were not there when the bytes were served from our own origin. The
+  two candidate mitigations are a `<link rel="preconnect">` to the media origin in the root
+  layout — a change to a page-shell file this task's brief does not list, whose effect is a guess
+  until CI measures it — and **the custom domain (`media.flowersoverseas.com`), which is the
+  founder action already open in escalation 2** and which would remove the third-party origin
+  rather than paper over it. Choosing between them, and deciding whether the R2 flip may land
+  while the budget is red, is not an implementer's call: lowering the budget is forbidden
+  (CLAUDE.md), and CWV is priority 1. Reported with the numbers; not improvised.
+
+## Result` what now
    guards against unbounded media, because "nothing" is not an acceptable answer — per-asset
    caps and the manifest check must still hold.
 
@@ -306,6 +327,16 @@ not reproduce: neither "in the spec's own words" nor a `## Read` stub is present
 **Not addressed, as instructed:** the `preview` job's Vercel 500 (TASK-137), the two parallelism
 flakes in `corridor.spec.ts:52` and `destinations-hub.spec.ts:113`, and the two founder-gated
 escalations above.
+
+**CI (run `35630208213`, `ci:full`, head `cd2474b`).** Re-fired by toggling the label, as a push
+fires nothing. **`test-unit` is green** — blocker 3 closed — along with `lint`, `typecheck`,
+`build`, `container`, `test-integration`, `test-contract`, `seed-check`, `db-check`,
+`catalogue-check`, `corridor-check`, `i18n-check`, `seo-validate`, `env-build-failure`,
+`dev-os-check`, `audit` and `commitlint`: **17 jobs green**. Two failed. `preview` is TASK-137's
+documented Vercel 500 (`/api/health` with the bypass header returns 500), which skips `e2e`,
+`visual` and `a11y` as before. **`lighthouse` failed, for the first time ever on this branch** —
+see the new escalation above; it was skipped in the previous run because `test-unit` had failed,
+so this is new information, not a regression from this commit.
 
 **Gates run locally for this round:** `typecheck`, `lint`, `format:check`, `check:no-db`,
 `seed:check`, `codebase:map --check` — all clean; unit **4 366 passed / 5 skipped** (the 5 are
