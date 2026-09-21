@@ -365,4 +365,18 @@ above, which is marked rather than rewritten so the record of what was believed 
 
 **Gates, round 4:** `typecheck`, `lint`, `format:check`, `codebase:map --check` all exit 0; the
 touched unit file **17 passed**. Test-only change, no shipped byte, no build slot. Rebased on
-`origin/main` before pushing; CI re-fired by toggling the `ci:full` label.
+`origin/main` (`0afe51d`) before pushing; CI re-fired by toggling the `ci:full` label.
+
+**CI, round 4** — run [35631531581](https://github.com/itsahmeds/flowers-overseas/actions/runs/35631531581),
+`pull_request` on the rebased head, so it did reach the full spine this time. **22 of 23 jobs green**,
+including `build`, `test-unit`, `test-integration`, `test-contract`, `lighthouse`, `container`,
+`seo-validate` and `audit`. The one failure is **`preview`**: `GET <preview>/api/health` with the
+bypass header returns **500**, which also skips `e2e`, `a11y` and `visual` through `needs`.
+
+That failure is **not this branch's**. The same job fails the same way on every branch that ran in
+the last hour — `task/TASK-138-r2-media-delivery` (35630208213) and
+`task/TASK-110-111-country-category-occasion` (35627184467) — while
+`task/TASK-137-ci-self-hosted-preview` (35619396292) is green, i.e. it is the Vercel Hobby preview
+environment, not a repository regression, and TASK-137 owns it. This round changed one test file
+and no shipped byte, so no job it blocks could have been affected by it. **Not escalated as new**:
+round 3 already recorded the preview/TASK-137 gap; this is the same gap with a run number.
