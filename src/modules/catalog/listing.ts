@@ -868,6 +868,13 @@ export interface ListingIndexabilityTerms {
   readonly reviewed: boolean;
   /** `corridorState(iso2) === 'live'` — the three country-scoped types only. */
   readonly operational?: boolean;
+  /**
+   * The request's URL carries **no** sort or facet parameter (spec 008 §6, AC-15; TASK-114).
+   * Absent on a page reached with no query at all — an omitted optional term is one this page
+   * does not assert (spec 007 §14 A7) — and `false` on a sorted or faceted URL, which is the one
+   * thing that makes it a duplicate of the base.
+   */
+  readonly unparameterised?: boolean;
 }
 
 /**
@@ -888,6 +895,9 @@ export function listingDescriptor(
     ...(terms.operational === undefined
       ? {}
       : { operational: terms.operational }),
+    ...(terms.unparameterised === undefined
+      ? {}
+      : { unparameterised: terms.unparameterised }),
   };
 }
 
@@ -1120,6 +1130,13 @@ export interface ListingViewOptions {
   readonly from?: string;
   /** Spec 009's `product` link id. `false` until it is published: a tile, not a link (§13 Q8). */
   readonly productLinks?: boolean;
+  /**
+   * This request's URL carries a **sort or facet** parameter (`listingRequest()`, TASK-114), so
+   * the view's own verdict is `noindex,follow` and the route canonicals to the base URL (§6,
+   * AC-15). The page and its head read the same verdict, so they cannot disagree about a URL
+   * neither of them should announce.
+   */
+  readonly parameterised?: boolean;
   readonly deployment?: DeploymentDescriptor;
 }
 
@@ -1372,6 +1389,9 @@ export async function listingView(
       exists: true,
       reviewed,
       ...(isCountryScoped(pageType) ? { operational: state === "live" } : {}),
+      ...(options.parameterised === undefined
+        ? {}
+        : { unparameterised: !options.parameterised }),
     },
     options.deployment ?? deploymentDescriptor(process.env),
   );

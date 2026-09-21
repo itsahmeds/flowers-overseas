@@ -3333,6 +3333,13 @@
     "reviewedAt": "2026-09-16T00:00:00Z",
     "sourceHash": "a57b08a480b822a0a572b993391c292ede593bf8000b406675b180bbb16260fa"
   },
+  "shop.pagination.titleSuffix": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/country-shop-desktop.dc.html pagination caption and spec 008 AC-10, 2026-09-16 design round — the drawn `· Page N` suffix in its ICU form, transcribed by TASK-114)",
+    "reviewedAt": "2026-09-16T00:00:00Z",
+    "sourceHash": "522ac70d90f79ffacb459beabbc4b5d4704d18f0d28c6145395215b38d773fe1"
+  },
   "shop.root.dateColumn": {
     "source": "human",
     "reviewed": true,
@@ -3367,6 +3374,13 @@
     "reviewedBy": "founder (docs/design/wireframes/country-shop-desktop.dc.html and -mobile, 2026-09-16 design round; transcribed by TASK-109)",
     "reviewedAt": "2026-09-18T00:00:00Z",
     "sourceHash": "8969e9cea4d0555cdda3cbf293b30366263cee7e307be434748cac28b8c154cf"
+  },
+  "shop.root.listingEyebrow": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/country-shop-desktop.dc.html § the listing, 2026-09-16 design round — the drawn eyebrow, transcribed verbatim by TASK-114)",
+    "reviewedAt": "2026-09-16T00:00:00Z",
+    "sourceHash": "7d89b60a4f1025bb57f54c372e0e6c5d8ffe84d5c02337847fcb95cf1a82d7ff"
   },
   "shop.root.listingHeading": {
     "source": "human",

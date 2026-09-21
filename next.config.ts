@@ -5,6 +5,7 @@ import createNextIntlPlugin from "next-intl/plugin";
 import { consentBootstrapHash } from "./src/lib/consent-bootstrap";
 import { securityHeaderRules } from "./src/lib/csp";
 import { assertBuildEnv } from "./src/lib/env.assert";
+import { listingCacheHeaderRules } from "./src/lib/listing-cache-headers";
 import { mediaCacheHeaderRules } from "./src/lib/media-headers";
 import {
   appEnvironment,
@@ -71,6 +72,12 @@ const headerRules = [
   // cache entry is impossible. `src/lib/media-headers.ts` carries the reasoning and the
   // crawlability requirement this path puts on spec 007.
   ...mediaCacheHeaderRules(),
+  // The country shop root is rendered per request (it reads `?page=`/`?sort=`) and cached at the
+  // edge by full URL for an hour, stale-while-revalidate for a day — spec 008 §5.4 and §13 Q2 as
+  // the founder resolved them, under ADR-0018's single replica behind Cloudflare. The sources
+  // name each locale's own shop segment, so no other page type's caching changes
+  // (`src/lib/listing-cache-headers.ts` carries the reasoning; TASK-114).
+  ...listingCacheHeaderRules(),
   ...securityHeaderRules(environment, {
     reportOnly: cspReportOnly(process.env),
     inlineHashes: [consentBootstrapHash()],

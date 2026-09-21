@@ -52,6 +52,31 @@ export function siteOrigin(baseUrl: string): string {
 export interface CanonicalOptions {
   /** Absolute site origin, e.g. `https://flowersoverseas.com` (`NEXT_PUBLIC_SITE_URL`). */
   readonly baseUrl: string;
+  /**
+   * The **one** parameter a canonical may carry: an honoured `?page=N` (spec 008 §6 "Canonical",
+   * AC-16 — "parameter-free except an honoured `page`"; TASK-114).
+   *
+   * `plan/02` §7 makes page 2 upward a real page that is self-canonical, so its canonical has to
+   * be able to say `?page=2`. Page 1 is the bare URL (the route redirects `?page=1` to it), and a
+   * URL carrying a **sort or facet** parameter passes no page at all — it canonicals to the base.
+   * Both of those decisions belong to the caller that knows what the request asked for
+   * (`listingRequest()` in `modules/catalog`); what this module owns is the shape of the string.
+   *
+   * A value below 2, or not an integer, is **refused** rather than silently dropped: a canonical
+   * that quietly disagreed with the page it sits on is the failure this builder exists to prevent.
+   */
+  readonly page?: number;
+}
+
+/** `?page=N` for an honoured page, or `""`. The only query a canonical may carry (AC-16). */
+function canonicalQuery(page: number | undefined): string {
+  if (page === undefined) return "";
+  if (!Number.isInteger(page) || page < 2) {
+    throw new TypeError(
+      `a canonical may carry only an honoured \`page\` of 2 or more; got \`${String(page)}\` (spec 008 AC-16)`,
+    );
+  }
+  return `?page=${String(page)}`;
 }
 
 /**
@@ -69,9 +94,9 @@ export function canonicalPath(path: string): string {
 /** `origin` + a canonical path. The `absoluteUrl()` spec 007 §6 names. */
 export function absoluteUrl(
   path: string,
-  { baseUrl }: CanonicalOptions,
+  { baseUrl, page }: CanonicalOptions,
 ): string {
-  return `${siteOrigin(baseUrl)}${canonicalPath(path)}`;
+  return `${siteOrigin(baseUrl)}${canonicalPath(path)}${canonicalQuery(page)}`;
 }
 
 /** The first path segment of a canonical path, or `""` for the root. */

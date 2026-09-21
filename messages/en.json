@@ -745,7 +745,8 @@
       "label": "Pages of products",
       "previous": "Previous",
       "next": "Next",
-      "page": "Page {page}"
+      "page": "Page {page}",
+      "titleSuffix": "{title} · Page {page}"
     },
     "empty": {
       "heading": "Nothing we can deliver in {country} yet",
@@ -768,6 +769,7 @@
     "root": {
       "lede": "Our florist in the recipient's town makes the bouquet the morning it is delivered and hands it over in person. Every price below is one number with VAT and delivery already inside it.",
       "demoNotice": "You cannot order yet. We are still choosing our florists in {country}, so every price on this page is the price we would charge and nothing on it can be bought today.",
+      "listingEyebrow": "The listing",
       "listingHeading": "Everything we can make for {country}",
       "tilesHeading": "By what it is",
       "tileCount": "{count, plural, one {# bouquet we can make for {country}} other {# bouquets we can make for {country}}}",

@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import {
   CategoryHubPage,
   CountryShopRootPage,
   OccasionHubPage,
+  type ListingRequest,
   listingAlternatePaths,
+  listingRequest,
   listingView,
   localeChildParams,
   resolveLocalePath,
@@ -117,10 +119,57 @@ export async function generateStaticParams(): Promise<
 
 interface ChildParams {
   params: Promise<{ locale: string; segment: string; child: string }>;
+  /**
+   * The listing query string (spec 008 §2 "Sort, filters, pagination", AC-9, AC-10, AC-15;
+   * TASK-114). **Awaited in the listing branch only**, and that placement is load-bearing: an
+   * awaited `searchParams` is what makes a Next render dynamic, and Next decides that *per
+   * prerendered path* — so the corridor page, which never reaches the await, keeps the prebuilt
+   * ISR entry spec 007 §5.4 requires (measured: the build prints `●` for the corridor paths and
+   * `ƒ` for the route). The listing paths are the ones spec 008 §13 **Q2** ruled dynamic:
+   * "server-rendered behind the Cloudflare edge cache (`s-maxage=3600,
+   * stale-while-revalidate=86400`) with tag-keyed data caching beneath", which is also what the
+   * artboard's "Caching" panel says, and the header is set for exactly those paths in
+   * `next.config.ts` (`src/lib/listing-cache-headers.ts`).
+   */
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}
+
+/**
+ * One request's query string, parsed once per render pass.
+ *
+ * `generateMetadata` and the page component are separate renders of the same request, so each
+ * asks `listingRequest()` and each gets the same answer from the same pure function rather than
+ * one of them deciding and handing the other a value it cannot check.
+ */
+async function listingQuery(
+  searchParams: ChildParams["searchParams"],
+): Promise<ListingRequest> {
+  return listingRequest(await (searchParams ?? Promise.resolve({})));
+}
+
+/**
+ * `?page=1` → the listing's bare URL, permanently (spec 008 AC-10).
+ *
+ * The target is the **view model's** own `path`, which is why the caller resolves the view first:
+ * §5.2 makes `listingView()` the only source of a listing's URL, so the redirect cannot disagree
+ * with the canonical, the sitemap row or the pagination links.
+ *
+ * `permanentRedirect()` is Next's permanent redirect and emits **308**, not the 301 AC-10 names.
+ * Spec 007 §14 **A6** already ruled that exact shape for the trailing slash — "Next's 308 today;
+ * Cloudflare's 301 once spec 040 fronts the origin", with the e2e asserting `301|308` and the
+ * `Location` — and this is the same platform limit: a page render cannot choose a status code,
+ * and a `next.config` redirect cannot strip the parameter it matched (its destination query is
+ * `{...requestQuery, ...destinationQuery}`, so a rule matching `?page=1` redirects to `?page=1`
+ * forever — measured on Next 16.3.4). `src/proxy.ts`, the one place that could emit a 301, is
+ * closed to redirects by spec 001 §11 and `fo/no-geo-redirect`.
+ */
+function redirectToBare(request: ListingRequest, path: string): void {
+  if (request.redirectToBare) permanentRedirect(path);
 }
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: ChildParams): Promise<Metadata> {
   const { locale, segment, child } = await params;
   const match = await resolveLocalePath(locale, [segment, child]);
@@ -158,15 +207,23 @@ export async function generateMetadata({
   }
 
   if (match.kind === "countryShopRoot") {
+    const request = await listingQuery(searchParams);
     const view = await listingView(
       {
         locale: match.locale,
         pageType: "countryShopRoot",
         country: match.countrySlug,
       },
-      { from: windowStart(), deployment },
+      {
+        from: windowStart(),
+        deployment,
+        page: request.page,
+        sort: request.sort,
+        parameterised: request.parameterised,
+      },
     );
     if (view === undefined) notFound();
+    redirectToBare(request, view.path);
     // `countries.ts` holds the country's name as a **dotted message key**, and next-intl types
     // `t()` against the catalogue's literal key union: a key read from a registry is not a
     // literal, so the cast is made here with the reason written down (the
@@ -192,15 +249,30 @@ export async function generateMetadata({
         ).find((page) => page.url.endsWith(view.path))?.alternates
       : undefined;
 
+    const title = shop("root.seoTitle", { country });
+
     return pageMetadata({
-      title: shop("root.seoTitle", { country }),
+      // `· Page N` from page 2 upward, in the locale's own words and numerals (AC-10). Page 1 is
+      // the bare title, because page 1 is the bare URL.
+      title:
+        request.titlePage === undefined
+          ? title
+          : shop("pagination.titleSuffix", { title, page: request.titlePage }),
       description: shop("root.seoDescription", { country }),
       // `listingView()`'s own verdict, from `pageIndexability()` through
       // `listingIndexability()`: the page and its head cannot disagree about whether it is
-      // indexable, and no robots literal is written outside `modules/seo` (spec 008 AC-14).
+      // indexable, and no robots literal is written outside `modules/seo` (spec 008 AC-14). The
+      // `unparameterised` term this request carried is what makes a sorted or faceted URL
+      // `noindex,follow` (AC-15).
       directive: view.directive,
+      // Parameter-free, **except** an honoured `?page=N ≥ 2`, which is self-canonical (AC-16).
+      // A sorted or faceted URL passes no page: it canonicals to the base, which is the URL that
+      // should be indexed instead of it.
       canonical: canonicalFor(match.locale, view.path, {
         baseUrl: deployment.siteUrl,
+        ...(request.canonicalPage === undefined
+          ? {}
+          : { page: request.canonicalPage }),
       }),
       ...(cluster === undefined ? {} : { alternates: cluster }),
     });
@@ -263,13 +335,22 @@ export async function generateMetadata({
  * **registry data** (`countries.ts`'s `nameKey`), and next-intl types `t()` against the literal key
  * union of the catalogue, which a dotted string held as data is not. Resolving it here — with the
  * same translator the components use — keeps the JSON-LD label and the visible label one message.
+ *
+ * Not exported, and deliberately placed *before* the page component rather than between the two
+ * renders' bodies: `tests/unit/listing-params.test.ts` slices this file at its top-level
+ * `export [default] async function` declarations and asserts each render's `parameterised`
+ * pass-through alone, so a helper sitting here joins `generateMetadata`'s slice and carries no
+ * `listingView(` call into it (TASK-093 + TASK-114, merged 2026-09-22).
  */
 async function registryLabels(locale: string): Promise<BreadcrumbLabel> {
   const t = await getTranslations({ locale });
   return (key: string): string => (t as unknown as BreadcrumbLabel)(key);
 }
 
-export default async function LocaleChildRoute({ params }: ChildParams) {
+export default async function LocaleChildRoute({
+  params,
+  searchParams,
+}: ChildParams) {
   const { locale, segment, child } = await params;
   const match = await resolveLocalePath(locale, [segment, child]);
 
@@ -301,15 +382,24 @@ export default async function LocaleChildRoute({ params }: ChildParams) {
   }
 
   if (match.kind === "countryShopRoot") {
+    const request = await listingQuery(searchParams);
     const view = await listingView(
       {
         locale: match.locale,
         pageType: "countryShopRoot",
         country: match.countrySlug,
       },
-      { from: windowStart() },
+      {
+        from: windowStart(),
+        page: request.page,
+        sort: request.sort,
+        parameterised: request.parameterised,
+      },
     );
+    // A page past the last is `undefined` here and therefore a **404**, never an empty grid
+    // (AC-10); `?page=1` is the bare URL's content at a duplicate URL, so it redirects.
     if (view === undefined) notFound();
+    redirectToBare(request, view.path);
     setRequestLocale(match.locale);
     return <CountryShopRootPage view={view} />;
   }

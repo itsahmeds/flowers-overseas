@@ -119,12 +119,24 @@ export const INDEXABILITY_TERMS = [
   "localeIndexable",
   "indexingEnvironment",
   "operational",
+  "unparameterised",
 ] as const;
 
 export type IndexabilityTerm = (typeof INDEXABILITY_TERMS)[number];
 
-/** The term that may be omitted, because not every page type has an operational gate (§6). */
-export type OptionalIndexabilityTerm = "operational";
+/**
+ * The terms that may be omitted: not every page type has an operational gate (§6), and not every
+ * page type can be reached with a query string.
+ *
+ * `unparameterised` is spec 008 §6's "any URL carrying a sort or facet parameter is
+ * `noindex,follow`, always, canonical to the base" (AC-15; TASK-114) — registered here for the
+ * reason `operational` was (spec 007 §14 **A7**): it is a *term*, not a second `noindex` branch.
+ * It can only remove `index`, it lives where §2 sends specs 008–011, and AC-14's "no robots
+ * literal outside `modules/seo`" holds. `?page=N` is deliberately **not** part of it: a paginated
+ * URL is a real page that inherits the base page's directive and is self-canonical (`plan/02` §7),
+ * so the term names the parameters that make a *duplicate*, not the one that makes a page.
+ */
+export type OptionalIndexabilityTerm = "operational" | "unparameterised";
 
 export type IndexabilityTerms = Readonly<
   Record<Exclude<IndexabilityTerm, OptionalIndexabilityTerm>, boolean>
@@ -143,6 +155,7 @@ export interface IndexabilityVerdict {
 /** The terms a page type may omit, as data (spec 007 §14 A7); the type above says the same. */
 export const OPTIONAL_INDEXABILITY_TERMS = [
   "operational",
+  "unparameterised",
 ] as const satisfies readonly IndexabilityTerm[];
 
 function isOptionalTerm(term: IndexabilityTerm): boolean {
@@ -195,6 +208,14 @@ export interface PageDescriptor {
    * Omitted where the page type has no such gate, and an omitted term reads as satisfied.
    */
   readonly operational?: boolean;
+  /**
+   * Spec 008 §6's parameter gate (AC-15; TASK-114): `false` when this request's URL carries a
+   * **sort or facet** parameter, which makes it a duplicate of the base URL and therefore
+   * `noindex,follow` with a canonical back to that base. Omitted by the page types that take no
+   * parameters at all, and never set `false` for `?page=N` — a paginated URL inherits the base
+   * page's directive.
+   */
+  readonly unparameterised?: boolean;
 }
 
 /**
@@ -215,5 +236,8 @@ export function pageIndexability(
     ...(page.operational === undefined
       ? {}
       : { operational: page.operational }),
+    ...(page.unparameterised === undefined
+      ? {}
+      : { unparameterised: page.unparameterised }),
   });
 }
