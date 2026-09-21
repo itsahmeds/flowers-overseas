@@ -268,10 +268,15 @@ The route is read **as source**, the idiom `tests/unit/listing-cache-headers.tes
 than once, and a sentence about the wiring must not be able to pass for the wiring), then every
 `listingView(…)` call is extracted by balancing parentheses. Both call sites — `generateMetadata`
 and the page component — must carry `parameterised: <binding>.parameterised`, and `<binding>` must
-be the render's own `const … = await listingQuery(searchParams)`. A **third** listing branch
-(TASK-110/111's depth-4 URLs) fails the arity assertion until it carries the flag too, which is the
-point rather than a nuisance. A second case pins the link before it: `listingQuery()` must pass the
-request's query string to `listingRequest()`.
+be a `const … = await listingQuery(searchParams)`. A **third** listing branch (TASK-110/111's
+depth-4 URLs) fails the arity assertion until it carries the flag too, which is the point rather
+than a nuisance. A second case pins the link before it: `listingQuery()` must pass the request's
+query string to `listingRequest()`.
+
+> **Corrected in round 4.** This paragraph originally claimed the binding had to be "the render's
+> own" line. It did not: the provenance half was a file-global `toContain`, both renders bind the
+> name `request`, and so one render's correct line satisfied the other's check. Round 4 makes the
+> claim true; the sentence above now describes only what round 3 actually enforced.
 
 **Mutations run, not described** (`pnpm vitest run --project unit tests/unit/listing-params.test.ts`,
 each mutation restored immediately after):
@@ -316,3 +321,48 @@ slot taken and no shipped byte changed, so `build`, `e2e`, `a11y`, `visual` and 
 CI's. Load average 3.8 (1 min) / 7.9 (5 min) on 8 cores across these runs, which is why no local
 performance number is claimed. Rebased on `origin/main` (`a7d1970`); CI re-fired by toggling the
 `ci:full` label, since a push fires nothing on a ready PR and a dispatch cannot reach `preview`.
+
+### Round 4 — the provenance half made per-render
+
+One nit from `/review 93` round 3, and nothing else touched.
+
+**The hole.** The link-2 case checked `parameterised: <binding>.parameterised` inside each call's
+own argument text, but then looked the binding up with `expect(routeSource).toContain(...)` — the
+**whole file**. Both renders name it `request`, so the page component's line stood in for
+`generateMetadata`'s. Editing `generateMetadata` to `const request = await listingQuery(undefined)`
+left **17 passed** and `typecheck` **0**, with the render that decides `<meta name="robots">`
+reading an empty query: `?sort=price-asc` would have announced `index,follow`.
+
+**Approach taken: slice at the function boundaries** — the stronger of the two the reviewer named,
+and robust here because the boundary is unambiguous. The route's renders are top-level
+`export [default] async function` declarations, so the stripped source splits on a lookahead at
+that declaration and the slices that contain `listingView(` are the renders under test. Each slice
+is then asserted alone: exactly one `listingView(…)` call, a `parameterised: <b>.parameterised`
+pass-through in **its** call, `const <b> = await listingQuery(searchParams)` in **its** source, and
+`searchParams` in **its** own declared parameter list (the same paren-balancing helper, applied to
+the declaration). Counting call sites instead — the other option — would have pinned the arity but
+still said nothing about *which* render each `const` belongs to; the slice says it directly.
+
+Nothing the reviewer measured as fail-closed was weakened: the parser still keys on the literal
+`listingView(`, so an alias, a `listingView\n(` split or a hoisted options object still breaks it,
+and comments are still stripped before anything is parsed. Both were re-measured below.
+
+**Mutations run, not described** (`pnpm vitest run --project unit tests/unit/listing-params.test.ts`,
+each restored immediately after):
+
+| Mutation | Result |
+|---|---|
+| **The reviewer's**: `generateMetadata`'s `listingQuery(searchParams)` → `listingQuery(undefined)` | **red** — `generateMetadata: expected 'export async function generateMetadat…' to contain 'const request = await listingQuery(se…'`; `pnpm typecheck` still **0** (this was green before round 4) |
+| The mirror, on the page component | **red** — same assertion, labelled `LocaleChildRoute` |
+| Only `generateMetadata`'s `parameterised: request.parameterised` deleted | **red** — `generateMetadata: expected undefined to be defined` |
+| Both pass-throughs deleted, **plus** two complete fake `listingView(…, { parameterised: request.parameterised })` calls planted in a doc comment and a line comment | **red** — comment-stripping holds; the fakes rescue nothing |
+| `generateMetadata`'s call split as `listingView\n(` | **red** — `renders resolving a listing view: LocaleChildRoute: expected [ 'LocaleChildRoute' ] to have a length of 2 but got 1`, i.e. the render vanishes loudly rather than passing |
+| **Control** (must stay green): `generateMetadata`'s binding renamed to `metaRequest`, wired correctly | **green** — the case pins provenance, not a name |
+
+Two prose claims corrected in the same commit: the test comment that said the binding "is this
+render's parsed query" (it now is, and the comment says how) and the round-3 `## Result` paragraph
+above, which is marked rather than rewritten so the record of what was believed stays readable.
+
+**Gates, round 4:** `typecheck`, `lint`, `format:check`, `codebase:map --check` all exit 0; the
+touched unit file **17 passed**. Test-only change, no shipped byte, no build slot. Rebased on
+`origin/main` before pushing; CI re-fired by toggling the `ci:full` label.

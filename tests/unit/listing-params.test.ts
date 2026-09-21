@@ -398,23 +398,60 @@ describe("the route really hands `parameterised` to `listingView()` (AC-15)", ()
     return calls;
   };
 
-  it("passes the parsed request's flag at every call site, and goes red if either is cut", () => {
-    const calls = argumentsOfCallsTo(routeSource, "listingView");
+  /**
+   * The route sliced at its own top-level `export … function` declarations, keeping the slices
+   * that resolve a listing view. Each render is then asserted **alone**, because a file-global
+   * `toContain` cannot tell the two apart: both renders bind the name `request`, so one render's
+   * correct `const request = await listingQuery(searchParams)` satisfied the other's provenance
+   * check. `/review 93` round 3 measured it — editing **`generateMetadata`**'s call to
+   * `listingQuery(undefined)` left 17 passed and `typecheck` 0, while the render that decides
+   * `<meta name="robots">` read an empty query and `?sort=price-asc` announced `index,follow`.
+   * (Only `tests/e2e/listing-params.spec.ts:97,100` caught that, via the `titlePage` and
+   * `canonicalPage` that ride the same binding — true today, and not a property of this link.)
+   */
+  const renders = routeSource
+    .split(/^(?=export (?:default )?async function )/gmu)
+    .filter((slice) => slice.includes("listingView("));
+
+  /** The declared name of a render slice, which is also the label on every failure below. */
+  const nameOf = (render: string): string =>
+    /^export (?:default )?async function ([A-Za-z_$][\w$]*)/u.exec(
+      render,
+    )?.[1] ?? "(unnamed)";
+
+  it("gives each render its own query, and goes red if either pass-through is cut", () => {
     // `generateMetadata` and the page component are two renders of the same request (the route
-    // says so), so there are two call sites and both must carry the flag. A third listing branch
-    // — TASK-110/111's depth-4 URLs — fails here until it carries it too, which is the point.
-    expect(calls).toHaveLength(2);
-    for (const [index, call] of calls.entries()) {
+    // says so), so exactly two renders resolve a listing view and the file holds exactly two
+    // calls — which together put every call inside a render asserted below. A third listing
+    // branch — TASK-110/111's depth-4 URLs — fails here until it carries the flag too, whether it
+    // arrives as a third render or as a second branch inside one of these two: that is the point.
+    const names = renders.map(nameOf);
+    expect(
+      names,
+      `renders resolving a listing view: ${names.join(", ")}`,
+    ).toHaveLength(2);
+    expect(argumentsOfCallsTo(routeSource, "listingView")).toHaveLength(2);
+
+    for (const render of renders) {
+      const where = nameOf(render);
+      const calls = argumentsOfCallsTo(render, "listingView");
+      expect(calls, where).toHaveLength(1);
+
       const passThrough =
-        /parameterised:\s*([A-Za-z_$][\w$]*)\.parameterised/u.exec(call)?.[1];
-      expect(
-        passThrough,
-        `listingView() call ${String(index + 1)}`,
-      ).toBeDefined();
-      // …and the object it reads is this render's parsed query, not a literal or a stale value.
-      expect(routeSource).toContain(
+        /parameterised:\s*([A-Za-z_$][\w$]*)\.parameterised/u.exec(
+          calls[0] ?? "",
+        )?.[1];
+      expect(passThrough, where).toBeDefined();
+      // …and the object it reads is a query **this** render parsed from **its own** query string:
+      // the binding is looked up inside this render's own source, not the file's, so the other
+      // render's line cannot stand in for one that is missing or rewired here.
+      expect(render, where).toContain(
         `const ${passThrough ?? ""} = await listingQuery(searchParams)`,
       );
+      expect(
+        argumentsOfCallsTo(render, where)[0] ?? "",
+        `${where} parameters`,
+      ).toContain("searchParams");
     }
   });
 
