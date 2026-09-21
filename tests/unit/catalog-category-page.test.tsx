@@ -156,17 +156,23 @@ describe("the populated country category (§5.3 row 2)", () => {
   });
 
   it("nominates exactly one LCP candidate and one preload for it (AC-24)", () => {
-    // Phase 0 has no committed image bytes (TASK-080), so every card is on spec 006's placeholder
-    // branch and the page nominates **nothing**: `MediaAsset` emits a preload only for an asset it
-    // renders, so "at most one" is what holds on the committed manifest.
+    // TASK-080 committed the image bytes, so the first card is on the asset branch and the
+    // nomination is real rather than latent. The assertion is written to hold in **both** states —
+    // "as many eager, high-priority images as the page nominated, and never more than one" — so
+    // withdrawing an image is not a test edit. The match is case-insensitive because
+    // `renderToStaticMarkup` writes React's `fetchPriority` while the DOM attribute is
+    // `fetchpriority`; the browser-side half is `tests/e2e/media-budgets.spec.ts`'s.
     const priority = roses.items.filter(
       (card, index) => index === 0 && card.photo.kind === "asset",
     );
     expect(priority.length).toBeLessThanOrEqual(1);
-    expect(html.match(/fetchpriority="high"/gu) ?? []).toHaveLength(
+    expect(html.match(/<img[^>]*fetchpriority="high"/giu) ?? []).toHaveLength(
       priority.length,
     );
-    expect(html.match(/loading="eager"/gu) ?? []).toHaveLength(0);
+    expect(
+      html.match(/<link[^>]*rel="preload"[^>]*as="image"/giu) ?? [],
+    ).toHaveLength(priority.length);
+    expect(html.match(/loading="eager"/gu) ?? []).toHaveLength(priority.length);
   });
 
   it("adds no client island and no inline script (§5.4)", () => {

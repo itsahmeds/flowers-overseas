@@ -279,10 +279,10 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         "localeGrandchildParams",
         "localeSegmentParams",
         "resolveLocalePath",
-        // the country occasion's page component and the depth-4 existence set (TASK-111): the
-        // same rule one level down, and the third React component the module owns.
+        // the country occasion's page component (TASK-111): the same rule one level down, and the
+        // third React component the module owns. Its URLs share `localeGrandchildParams()` with
+        // the country category, because they share the route file.
         "CountryOccasionPage",
-        "localeGrandchildParams",
       ].sort(),
     );
   });

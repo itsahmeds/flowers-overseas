@@ -154,13 +154,21 @@ describe("the country occasion page (§5.3 row 2)", () => {
   });
 
   it("nominates at most one LCP candidate and adds no script (§5.4, AC-24)", () => {
+    // Case-insensitive for the same reason the shop root's twin is: `renderToStaticMarkup` writes
+    // React's `fetchPriority` and the DOM attribute is `fetchpriority`. The counts are tied to
+    // what the page nominated, so the assertion holds whether or not the first card has an
+    // approved photograph.
     const priority = en.items.filter(
       (card, index) => index === 0 && card.photo.kind === "asset",
     );
-    expect(html.match(/fetchpriority="high"/gu) ?? []).toHaveLength(
+    expect(priority.length).toBeLessThanOrEqual(1);
+    expect(html.match(/<img[^>]*fetchpriority="high"/giu) ?? []).toHaveLength(
       priority.length,
     );
-    expect(html.match(/loading="eager"/gu) ?? []).toHaveLength(0);
+    expect(
+      html.match(/<link[^>]*rel="preload"[^>]*as="image"/giu) ?? [],
+    ).toHaveLength(priority.length);
+    expect(html.match(/loading="eager"/gu) ?? []).toHaveLength(priority.length);
     expect(html).not.toContain("<script");
     expect(html).not.toContain("onclick");
   });

@@ -8,10 +8,12 @@
  *    against a hand-computed table for 2026–2030 rather than against the function that produced
  *    it: the fixtures below were worked out from the committed rule (`seed/data/occasion-country`)
  *    with an independent calendar, so a regression in the rule evaluator fails here;
- *  - **which URLs exist** (AC-1): `resolveLocalePath()` answers the country occasion for exactly
- *    the existence set and `notFound` for every other shape — an unknown slug, an occasion below
- *    the six-product floor, one the destination does not observe, another locale's segment, a
- *    casing variant, a locale with no authored slug, an unknown locale;
+ *  - **which URLs exist** (AC-1): the existence set is exactly the observed occasions above the
+ *    floor with an authored slug. The resolver's own misses — an unknown slug, one below the
+ *    floor, one the destination does not observe, another locale's segment, a casing variant, an
+ *    unknown locale — are asserted for both depth-4 page types together in
+ *    `tests/unit/catalog-routes-depth4.test.ts`, because a shared resolver's one new failure mode
+ *    is answering for the sibling page type;
  *  - **the shop root's third column** (§14 **A10**): a row carries an `href` exactly when the
  *    (occasion, country) pair has a page, so the column can never link at a URL that 404s.
  */
@@ -22,7 +24,6 @@ import {
   listingPages,
   listingView,
   localeGrandchildParams,
-  resolveLocalePath,
 } from "../../src/modules/catalog";
 import { observedUndatedOccasions } from "../../src/modules/geo";
 
@@ -111,7 +112,11 @@ describe("the existence set (AC-1, T-01)", () => {
     expect(await occasionPages("pl")).toEqual([]);
   });
 
-  it("is exactly what `generateStaticParams` emits at depth 4 (AC-3)", async () => {
+  it("is exactly the occasion half of what `generateStaticParams` emits (AC-3)", async () => {
+    // The depth-4 set is shared with the country category (TASK-110), so the occasions are
+    // isolated by their own segment rather than by position — and the assertion is still an
+    // equality, not a subset: an occasion URL the prebuild missed is a 404 with `dynamicParams`
+    // off, and one it invented is a page the existence rule never claimed.
     const params = await localeGrandchildParams();
     const expected = [
       ...(await occasionPages("en")),
@@ -121,72 +126,13 @@ describe("the existence set (AC-1, T-01)", () => {
         `/${page.locale}/${page.countrySlug ?? ""}/occasions/${page.slug ?? ""}`,
     );
     expect(
-      params.map(
-        ({ locale, segment, child, grandchild }) =>
-          `/${locale}/${segment}/${child}/${grandchild}`,
-      ),
+      params
+        .filter((row) => row.child === "occasions")
+        .map(
+          ({ locale, segment, child, grandchild }) =>
+            `/${locale}/${segment}/${child}/${grandchild}`,
+        ),
     ).toEqual(expected);
-  });
-});
-
-describe("`resolveLocalePath()` at depth 4 (AC-1, T-01)", () => {
-  it("resolves the country occasion, carrying the key rather than the slug", async () => {
-    const match = await resolveLocalePath("en", [
-      "poland",
-      "occasions",
-      "mothers-day",
-    ]);
-    expect(match).toEqual({
-      kind: "countryOccasion",
-      locale: "en",
-      iso2: "PL",
-      countrySlug: "poland",
-      occasionKey: "mothers_day",
-      occasionSlug: "mothers-day",
-    });
-  });
-
-  it("answers `notFound` for every shape AC-1 lists", async () => {
-    for (const segments of [
-      // an occasion the destination observes that is below the six-product floor
-      ["poland", "occasions", "all-saints-day"],
-      ["poland", "occasions", "womens-day"],
-      // an occasion this destination does not observe at all
-      ["france", "occasions", "name-day"],
-      // an unknown slug and an unknown destination
-      ["poland", "occasions", "arbor-day"],
-      ["atlantis", "occasions", "mothers-day"],
-      // a country we do not deliver to
-      ["belgium", "occasions", "mothers-day"],
-      // another locale's segment, and another locale's country slug
-      ["poland", "anlaesse", "mothers-day"],
-      ["polska", "occasions", "mothers-day"],
-      // a casing variant — slugs are authored lowercase and nothing folds case (ADR-0006)
-      ["Poland", "occasions", "mothers-day"],
-      ["poland", "Occasions", "mothers-day"],
-      ["poland", "occasions", "Mothers-Day"],
-      // the shop-category segment at this depth is the country **category** (TASK-110)
-      ["poland", "flowers", "roses"],
-    ]) {
-      expect(
-        await resolveLocalePath("en", segments),
-        segments.join("/"),
-      ).toEqual({
-        kind: "notFound",
-      });
-    }
-  });
-
-  it("answers `notFound` in a locale with no authored occasion slug, and in an unknown locale", async () => {
-    expect(
-      await resolveLocalePath("de", ["polen", "anlaesse", "muttertag"]),
-    ).toEqual({ kind: "notFound" });
-    expect(
-      await resolveLocalePath("pl", ["polska", "okazje", "dzien-matki"]),
-    ).toEqual({ kind: "notFound" });
-    expect(
-      await resolveLocalePath("fr", ["poland", "occasions", "mothers-day"]),
-    ).toEqual({ kind: "notFound" });
   });
 });
 

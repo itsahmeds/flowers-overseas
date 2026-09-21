@@ -140,10 +140,17 @@ describe("tests/fixtures/seo/lighthouse-urls.json (AC-23)", () => {
       // Spec 008 §6 L89 extends it once more: **one country shop root per indexable locale**
       // (TASK-109). It is the heaviest document in the site — twelve product cards, twenty
       // category tiles and a date table — so it is the one that would spend the LCP and image
-      // budgets first. `de` and `pl` are not indexable locales and are not measured here; the
-      // category, occasion and hub URLs join the list with TASK-110…113.
+      // budgets first. `de` and `pl` are not indexable locales and are not measured here.
       "/en/poland/flowers",
       "/en-gb/poland/flowers",
+      // And **one country category per indexable locale** (spec 008 AC-25's list; TASK-110): the
+      // same twelve cards under a sibling chip row, so its number must equal the shop root's and
+      // the sort form TASK-114 adds is measured against this line rather than against a hope. The
+      // country **occasion** is deliberately absent — AC-25 names the shop root, the category, the
+      // occasion hub and the occasions index, and the occasion page is the category's template
+      // with one dated line. The hub and index URLs join with TASK-112/113.
+      "/en/poland/flowers/roses",
+      "/en-gb/poland/flowers/roses",
     ]);
   });
 
