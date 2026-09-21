@@ -197,11 +197,16 @@ numbers against both build shapes still describe these bytes.
 
 **CI:** a push does **not** start a run — `.github/workflows/ci.yml` triggers on
 `pull_request: [ready_for_review, labeled]` and `workflow_dispatch` only, and PR 84 is already
-ready and already labelled `ci:full`. The last run, [35376593214](https://github.com/itsahmeds/flowers-overseas/actions/runs/35376593214)
-(2026-09-18), failed in **`preview`** (no Vercel deployment with an `environment_url` inside 15
-minutes; the Vercel check said "Deployment rate limited — retry in 24 hours"), and `e2e`, `visual`
-and `a11y` were skipped behind it. **TASK-137 — which exists precisely because CI's browser gates
-have never executed in this project — is still open on `main` (`479dc96` opens it; `main`'s head is
-`7ac0da7`), so nothing has changed that would make `preview` pass.** The rate-limit window has
-passed, so a fresh `ci:full` dispatch from the orchestrator is worth one attempt; it is not mine to
-trigger.
+ready and already labelled `ci:full`. The last run,
+[35376593214](https://github.com/itsahmeds/flowers-overseas/actions/runs/35376593214) (2026-09-18),
+failed in **`preview`** — its log ends "no successful Vercel deployment with an `environment_url`
+appeared … within 15 minutes" after 45 polls — and `e2e`, `visual` and `a11y`, each
+`needs: preview`, were **skipped** behind it. **Yes, `preview` is still failing.** Nothing has
+landed that would change it: TASK-137 (CI's browser gates have never executed) is open, and so is
+TASK-104, which `main`'s decisions log names as the owner of the real cause TASK-093's agent
+diagnosed — the Vercel Hobby preview answering `/api/health` with 500 from an empty env store
+(ADR-0018's cold fallback), identically on PRs 84, 85 and 87, rather than the build rate limit the
+earlier note blamed. So this round is **not** the first run where `e2e`, `visual` and `a11y`
+execute. A fresh `ci:full` dispatch is worth one attempt now that the rate-limit window has passed,
+but it is the orchestrator's to trigger, not mine: a push fires nothing, and the label is already
+on.
