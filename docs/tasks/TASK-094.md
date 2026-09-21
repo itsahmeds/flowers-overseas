@@ -153,8 +153,9 @@ the `<lastmod>` rule, the cache header and the 404 shapes.
 
 ### Fix round — `/review 84` (2026-09-21)
 
-Three required changes, no change to the sitemap logic the review passed. Rebased on `7ac0da7`
-(already the branch's base; `git fetch` confirmed no further movement), so the numbers above stand.
+Three required changes, no change to the sitemap logic the review passed. Rebased on `f6da9a6`
+(`main` moved twice more while this round was in flight — `abb2c3d`, `f6da9a6`, both
+`TASKS.md`-only), and the announced set is unchanged by it, so the numbers above stand.
 
 1. **`codebase:map --check`** — regenerated and committed. The rebase moved the generated test-file
    counts (`tests/unit` 187→190, `tests/integration` 5→6, `tests/contract` 4→5, `tests/e2e` 26→27,
