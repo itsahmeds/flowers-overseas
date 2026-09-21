@@ -67,7 +67,33 @@ be green. One paragraph or a short list — no restatement of the spec.
 
 One dated bullet per `/review`, newest last.
 
-- **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From `/review 90` round 1 (2026-09-21) — FAIL, one required change.** The `commitlint`
+  carry-in at the foot of this brief (found by `/review 84` round 2, bound here by "fix it in the
+  same pass that fixes `preview`") is **not addressed and not declared**: `.github/workflows/ci.yml`
+  lines 889-918 still admit `workflow_dispatch` in the job's `if` and still interpolate
+  `github.event.pull_request.base.sha` / `head.sha`, which are empty off a pull-request event, so a
+  dispatch run exits 9 on "--from and --to point to the same commit" and the summary step then runs
+  `git rev-list --count ..`. No other task owns it (`grep commitlint docs/tasks TASKS.md`). Fix it
+  here — compute the range from the merge base on dispatch, or restrict the `if` to
+  `pull_request` — or declare the deviation and open the task that takes it.
+- **From `/review 90` round 1 (2026-09-21) — the AC-29 ruling, for the record.** Demoting the
+  Vercel probe to `continue-on-error` evidence is accepted **in this PR**: keeping it blocking on a
+  host that answers 500 would rebuild the exact defect the task removes, and the probe still makes
+  all three assertions and writes them to the step summary. But a `continue-on-error` step is
+  telemetry, not an acceptance criterion: while spec 001 AC-29 stands unamended, the spec claims an
+  enforcement CI no longer provides. **Re-point it by spec, not by a comment** — spec 040 §5.5 /
+  AC-26 takes Deployment Protection on PR environments, the `fra1`/residency assertion and
+  `X-Robots-Tag: noindex`; spec 001 AC-29 is marked superseded with a pointer; the probe is
+  re-pointed at the Railway PR environment and restored to **blocking** at that moment. Not this
+  PR's work (a spec edit needs its own task); it must not be closed by the workflow comment alone.
+- **From `/review 90` round 1 (2026-09-21) — carried to the spec 040 §5.5 task, not fixable here.**
+  `tests/e2e/security-headers.spec.ts`'s docstring states its reason for existing as "the unit test
+  cannot tell whether `next.config.ts`'s `headers()` reached a cached edge response". A bare
+  `next start` on the runner has no edge, so that is no longer what the file proves, and the same
+  origin change puts `vercel.live`, HSTS and cookie-`Secure` assertions permanently on their
+  negative branch (`http://localhost`). All are covered by unit tests today; the docstrings should
+  be corrected and the positive branches restored when PRs get an https Railway origin. The brief
+  forbids touching these files here ("`e2e`, `visual` and `a11y` keep their existing contents").
 
 ## Escalations
 
