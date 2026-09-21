@@ -79,7 +79,9 @@ Agents never write code except the implementers. The orchestrator refuses to dis
    The old instruction ("sleep until `pgrep -f "next build|next start|playwright|lighthouse"`
    is empty") matches the waiting shell's *own* command line, so waiters blocked each other
    forever — 4 waiting shells against 16 real processes on 2026-09-18, and the likeliest cause of
-   the 346/243/199-minute runs. Never reintroduce that pattern. An implementer takes the machine's single build slot
+   the 346/243/199-minute runs. Never reintroduce that pattern.
+   **Kill only your own PID when you release it.** A broad `pkill -f "next-server"` kills the
+   siblings' servers too (TASK-112 did this on 2026-09-21 and took out TASK-110's). An implementer takes the machine's single build slot
    only when the change cannot be judged without it (a new page's visual baselines, a byte budget, a
    deliberate performance measurement) and says so in `## Result`. Measured basis: a median
    implementer run is 30 minutes and the tail reached 346; every agent was re-running ~950 browser
