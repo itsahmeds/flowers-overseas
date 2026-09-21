@@ -148,3 +148,65 @@ routes land (a cache header on a path that still 404s would have Cloudflare hold
 inherits the `301|308` reading of AC-10, the "no sorted or faceted URL in any `<a href>`" scan (the
 pagination `?page=N` link is AC-10's required exception) and the `measuredFrom` substitution in
 `budget:client-js`. **Spec 040** can close E-1 by normalising `?page=1` to a 301 at the edge.
+
+### Round 2 — `/review 93`'s required change (2026-09-21)
+
+**The blocker is closed, and I broke the test myself before calling it closed.** `/review 93` found
+that `listingView()`'s `unparameterised` wiring was unasserted: the reviewer deleted the spread
+`...(options.parameterised === undefined ? {} : { unparameterised: !options.parameterised })` from
+`src/modules/catalog/listing.ts` and the whole unit suite stayed green. AC-15's `noindex` half —
+the clause that decides whether Google indexes `?sort=price-asc` — was unfalsifiable.
+
+`tests/unit/listing-params.test.ts` gains two cases (13 → 15) under a new describe, "`listingView()`
+really wires `parameterised` into the descriptor (AC-15)":
+
+1. **The falsifying case.** Under a hypothetical indexing deployment, `listingView()` on
+   `occasionsIndex` answers `index,follow` for `parameterised: false`, `noindex,follow` for
+   `parameterised: true`, and `index,follow` when the option is absent (an unasserted optional term
+   leaves the conjunction — spec 007 §14 A7). The three-way shape pins both the polarity and the
+   absent case.
+2. **Why it is not the shop root.** `withActivePartnersProvider({ hasActivePartners: () => true })`
+   — the seam the review named — does **not** reach a differing verdict, and the case says so with
+   an assertion rather than a comment.
+
+**Deviation from the review's literal recipe, with the measurement behind it.** The review asked for
+the case under `withActivePartnersProvider` on a country-scoped type. That cannot move the verdict
+today: an active florist is one of *four* terms in `corridorState()`, and Poland fails two more that
+have no test seam — `hasCompleteOperations("PL")` is `false` (no `operations` block in
+`src/config/countries.ts`) and `content/corridors/en/` holds only `pl-guide.md`, no `-live` file. So
+PL stays `guide`, `operational` stays `false`, and `listingView(…, { parameterised })` answers
+`noindex,follow` on both sides — measured, not assumed. `tests/unit/corridor-route.test.ts:132`
+already asserts the same thing from the corridor side. The seam that *does* work is a page type
+carrying **no `operational` gate** at all: `isCountryScoped()` excludes the two hubs and the
+occasions index, so under an indexing deployment the parameter is the only variable left in the
+conjunction. Case 2 above holds the country-scoped path pinned, and goes red the day Poland's
+`operations` block and `pl-live.md` land — at which point the assertion moves onto the shop root,
+where AC-15 actually bites.
+
+**Mutation evidence (I deleted the spread, watched it go red, and restored it).** With the three
+lines removed, `pnpm test` reports **1 failed | 4 364 passed | 5 skipped** — the one failure is the
+new case, `AssertionError: expected 'index,follow' to be 'noindex,follow'` (plus a
+`codebase:map --check` case, unrelated and since regenerated). The same mutation before this change
+left the suite fully green, which is exactly the defect. Restored: `pnpm test` **182 files, 4 366
+passed, 5 skipped, 0 failed** at load average 7.2.
+
+The inline `indexing` deployment literal is hoisted to a file-level `INDEXING` const so both
+describes name the same hypothetical; no production code changed in this round.
+
+**Gates, round 2:** `typecheck`, `lint`, `i18n:check`, `check:no-db`, `codebase:map --check`,
+`specs:index --check` all exit 0; full unit suite green (above). No build slot taken — this round
+changes no shipped byte, so `build`, `e2e`, `a11y`, `visual` and `lighthouse` are CI's.
+
+**Recorded, deliberately not fixed:**
+
+- The two `e2e` load flakes the review saw on run 1 (`banner.spec.ts:669`, `destinations-hub.spec.ts:113`)
+  both pass in isolation and both passed on the reviewer's run 2 at a *higher* load. Environmental.
+- `?zzz=1`, `?zzz=2`, … give Cloudflare an unbounded cache-key space over bounded content. This
+  follows from spec 008 §13 Q6's founder ruling that the search-param schema *neutralises* rather
+  than rejects, so it is spec 040's edge rule (strip unknown parameters before the cache key), not
+  this PR's.
+- **`tests/e2e/client-js-budget.spec.ts` never runs in CI** — the browser cross-check that makes
+  `budget:client-js`'s `measuredFrom` substitution safe. The `e2e` job points `PLAYWRIGHT_BASE_URL`
+  at the Vercel preview and the spec skips off localhost, so the substitution this PR added is
+  currently guarded only by local runs. **TASK-137 (PR 90, in review) moves the preview origin to
+  `http://localhost:3000`, which starts that spec running the moment PR 90 merges.** No action here.

@@ -20,6 +20,8 @@ import {
   listingRequest,
   listingView,
 } from "../../src/modules/catalog";
+import { corridorState } from "../../src/modules/geo";
+import { withActivePartnersProvider } from "../../src/modules/geo/partners.ts";
 import {
   NOINDEX_FOLLOW,
   canonicalFor,
@@ -30,6 +32,16 @@ const BASE = "/en/poland/flowers";
 const SITE = { baseUrl: "https://flowersoverseas.com" };
 
 /** The terms every listing page of Phase 0 answers `true` to, so one term is the variable. */
+/**
+ * A **hypothetical** indexing deployment. Phase 0's real one answers `indexingEnvironment: false`,
+ * which alone makes every page `noindex,follow`; passing this one is the only way to see any other
+ * term move an answer at all (AC-14's table).
+ */
+const INDEXING = {
+  environment: "production",
+  siteUrl: "https://flowersoverseas.com",
+} as const;
+
 const PHASE_0_TERMS = {
   pageTypeIndexable: true,
   exists: true,
@@ -227,16 +239,12 @@ describe("the view model answers the parameters (AC-9, AC-10)", () => {
     // Phase 0 is `noindex,follow` for every listing whatever the query says, because no
     // destination is operational — so the term is proven against a *hypothetical* indexing
     // deployment, which is the only way to see it move the answer at all (AC-14's table).
-    const indexing = {
-      environment: "production",
-      siteUrl: "https://flowersoverseas.com",
-    } as const;
     const viewIn = async (
       parameterised: boolean,
     ): Promise<ListingView | undefined> =>
       listingView(
         { locale: "en", pageType: "countryShopRoot", country: "poland" },
-        { from: "2026-09-15", page: 1, parameterised, deployment: indexing },
+        { from: "2026-09-15", page: 1, parameterised, deployment: INDEXING },
       );
     expect((await viewIn(false))?.directive).toBe(NOINDEX_FOLLOW);
     expect((await viewIn(true))?.directive).toBe(NOINDEX_FOLLOW);
@@ -249,15 +257,77 @@ describe("the view model answers the parameters (AC-9, AC-10)", () => {
     } as const;
     const terms = { exists: true, reviewed: true, operational: true } as const;
     expect(
-      listingIndexability(identity, { ...terms }, indexing).terms
+      listingIndexability(identity, { ...terms }, INDEXING).terms
         .unparameterised,
     ).toBeUndefined();
     expect(
       listingIndexability(
         identity,
         { ...terms, unparameterised: false },
-        indexing,
+        INDEXING,
       ).terms.unparameterised,
     ).toBe(false);
+  });
+});
+
+/**
+ * `/review 93`'s required change. The case above is **true but not falsifiable**: in Phase 0 a
+ * country-scoped listing is `noindex,follow` on both sides of the flag, because `operational:
+ * false` fails the conjunction before `unparameterised` is ever consulted. The reviewer proved
+ * that by deleting the `unparameterised` spread from `listingView()` and watching the whole unit
+ * suite stay green — 182 files, 4 364 tests — on the one clause that decides whether Google
+ * indexes `?sort=price-asc`.
+ *
+ * The seam that makes it falsifiable is a page type with **no `operational` gate**. Spec 007
+ * §14 A7: an omitted optional term is one this page type does not assert, and the hubs and the
+ * occasions index do not assert it (`isCountryScoped()`). Under a hypothetical indexing
+ * deployment the parameter is then the *only* variable left in the conjunction, and the two
+ * answers genuinely differ.
+ */
+describe("`listingView()` really wires `parameterised` into the descriptor (AC-15)", () => {
+  const directiveFor = async (options: {
+    readonly parameterised?: boolean;
+  }): Promise<string | undefined> =>
+    (
+      await listingView(
+        { locale: "en", pageType: "occasionsIndex" },
+        { from: "2026-09-15", page: 1, deployment: INDEXING, ...options },
+      )
+    )?.directive;
+
+  it("turns its own directive on the flag alone, and goes red if the wiring is cut", async () => {
+    // Delete `...(options.parameterised === undefined ? {} : { unparameterised:
+    // !options.parameterised })` from `src/modules/catalog/listing.ts` and the middle expectation
+    // fails: the sorted view would announce `index,follow` and duplicate its own base URL.
+    expect(await directiveFor({ parameterised: false })).toBe("index,follow");
+    expect(await directiveFor({ parameterised: true })).toBe(NOINDEX_FOLLOW);
+    // No query at all asserts nothing, which leaves the conjunction rather than failing it.
+    expect(await directiveFor({})).toBe("index,follow");
+  });
+
+  it("cannot be asserted on a country-scoped type yet, and this is why", async () => {
+    // `/review 93` asked for this seam. It does not reach `index,follow`: an active florist is
+    // one of `corridorState()`'s four terms, and Poland still has no `operations` block and no
+    // `-live` content file, so the shop root stays `noindex,follow` on both sides of the flag.
+    // The day those two land this case goes red, and the assertion moves onto the shop root
+    // itself — where AC-15 actually bites.
+    await withActivePartnersProvider(
+      { hasActivePartners: () => true },
+      async () => {
+        expect(corridorState("PL", "en")).toBe("guide");
+        for (const parameterised of [false, true]) {
+          const view = await listingView(
+            { locale: "en", pageType: "countryShopRoot", country: "poland" },
+            {
+              from: "2026-09-15",
+              page: 1,
+              parameterised,
+              deployment: INDEXING,
+            },
+          );
+          expect(view?.directive, String(parameterised)).toBe(NOINDEX_FOLLOW);
+        }
+      },
+    );
   });
 });
