@@ -89,6 +89,15 @@ Agents never write code except the implementers. The orchestrator refuses to dis
    load average at 32 on an 8-core machine — under which Lighthouse measures the machine, not the site.
 3. CI green: lint, typecheck, tests, build, Lighthouse budgets, hreflang/sitemap/schema validators, dependency audit. **CI is the gate of record for anything timing-sensitive**; a local performance number is reported with the machine's load average beside it or it is not evidence.
 4. `/review` pass recorded in the PR.
+   **No assertion may pass with its subject removed.** Three times now this project has shipped a
+   test that tested nothing: `expect([200, 404]).toContain(status)` where those are the only two
+   statuses the route can return (PR 89); an AC "proved" by prose rather than the fixture flip its
+   brief bound (PR 84); a `seo:validate` that checked the type allow-list and nothing else, so a
+   document with breadcrumb positions `0, 7`, an unnamed `ListItem` and a nameless `Organization`
+   reported `1 fixture(s) ok` (PR 87). Every one was caught by a reviewer **breaking the test** —
+   mutating the subject and confirming the case goes red — not by reading it. Writers: assert the
+   one value, not the set of reachable values. Reviewers: for any assertion that carries an AC,
+   mutate it and watch it fail before you pass it.
 5. Docs updated: README/runbooks/ADR as applicable; `.env.example` current; RoPA updated if a data flow changed.
 6. Deployed to preview and smoke-tested (checkout path in two locales where relevant).
 7. `TASKS.md` updated (status, PR link); `.claude/state/active-task` cleared.
