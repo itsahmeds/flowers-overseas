@@ -762,7 +762,7 @@
     "category": {
       "lede": "{count, plural, one {One of ours, made by our florist in the recipient's town on the morning it is delivered.} other {# of ours, made by our florist in the recipient's town on the morning they are delivered.}} One price each, with VAT and delivery already in it.",
       "siblingsHeading": "Also for {country}",
-      "seoTitle": "{entity} for {country} \u2014 one all-in price",
+      "seoTitle": "{entity} for {country} — one all-in price",
       "seoDescription": "The {entity} our florists can make in {country}, each with one price that includes VAT and delivery. Nothing can be ordered yet."
     },
     "root": {
