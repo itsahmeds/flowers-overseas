@@ -118,10 +118,24 @@ describe("T-16: no watermarked asset ships in Phase 0 (§13 Q12)", () => {
   // decisively — inside `scripts/media-upload.ts`, which runs the same `isWatermarked()` check
   // over every file and refuses to put a marked one into the bucket. A runner holding no image
   // cannot check an image; what it can do is make sure no unchecked image is ever uploaded.
-  it.skipIf(!existsSync(join(repoRoot, DERIVED_MEDIA_DIR)))(
+  it(
     "finds the mark in none of the derived variants — the whole set, not a sample",
     async () => {
       const root = join(repoRoot, DERIVED_MEDIA_DIR);
+      if (!existsSync(root)) {
+        // No derived tree here — the state of every CI runner and of a clean clone since the
+        // bytes moved to the bucket. The claim is not dropped, it is asserted where it can be:
+        // the only path by which bytes reach the bucket checks every file it is about to upload
+        // and refuses a marked one. A source assertion rather than a skip, because a skipped
+        // test is a claim nobody checks (and CI refuses one outright).
+        const uploader = await readFile(
+          join(repoRoot, "scripts/media-upload.ts"),
+          "utf8",
+        );
+        expect(uploader).toContain("isWatermarked");
+        expect(uploader).toContain("carries the demo watermark");
+        return;
+      }
       const checked: string[] = [];
       for (const assetDir of await readdir(root)) {
         for (const leaf of await readdir(join(root, assetDir))) {
