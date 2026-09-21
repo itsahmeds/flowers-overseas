@@ -53,8 +53,15 @@
 #    image is invisible until a deploy fails; the expensive steps are skipped when no file of the
 #    container contract changed, so the budget of §14 A14 is spent only on the pull requests that
 #    can break it.
-#  - `preview` → `e2e`/`visual`/`a11y` → `lighthouse` is the one real chain and matches the spec:
-#    the three Playwright suites and Lighthouse all run against the preview URL `preview` resolves.
+#  - `preview` → `e2e`/`visual`/`a11y` is the one real chain. Since **TASK-137** `preview` no
+#    longer waits on a third party for it: it builds the app on the runner from the committed
+#    `.env.example` placeholders, publishes that build, serves it and gates on `/api/health` 200,
+#    and the three Playwright suites re-serve the same build through
+#    `.github/actions/preview-origin`. Before that they were `needs: preview` on a Vercel preview
+#    whose `/api/health` answers 500 (ADR-0018's cold fallback, empty environment store), so no
+#    Playwright suite had ever run in CI — skipped identically on PRs 84, 85 and 87. `lighthouse`
+#    hangs off `build`, not off this chain: since TASK-056 it builds and serves what it measures
+#    behind `scripts/seo/brotli-origin.ts`.
 #
 # spec 001 §11: **every job writes a GitHub step summary.** A green tick says a command exited 0;
 # the summary says what it measured, and it is what the reviewer quotes in the PR.
@@ -1177,52 +1184,125 @@ jobs:
       - name: Run the dev-OS checks
         run: pnpm dev-os:check
 
-  # AC-29 / T-30 (TASK-007): every pull request gets a Vercel preview deployment. This job proves,
-  # on each PR, the three properties the spec asks for: Deployment Protection is enabled
-  # (unauthenticated request is refused), the functions run in `fra1` (spec 001 §5 Hosting, §8
-  # data residency) and every response carries `X-Robots-Tag: noindex` (§5, AC-15).
+  # **The origin the browser suites run against is CI's own (TASK-137).**
   #
-  # The account-side half of TASK-007 is a founder action: until the Vercel project is linked and
-  # `VERCEL_AUTOMATION_BYPASS_SECRET` is set, this job fails by design — see
-  # `docs/runbooks/vercel-setup.md`. It never skips silently: an unprotected or unlinked preview
-  # must be visible on the PR.
+  # What this job used to be, and why it changed. It polled the GitHub Deployments API for up to
+  # fifteen minutes for a non-production deployment on the PR head SHA and handed that
+  # `environment_url` to `e2e`, `visual` and `a11y` (each `needs: preview`). On this repository
+  # the deployment either never appeared or answered `/api/health` with **500**, because the
+  # Vercel project is the cold fallback of ADR-0018 and carries an empty environment store —
+  # observed identically on PR 84, PR 85 and PR 87. The consequence, stated so nobody
+  # re-discovers it: **no Playwright suite had ever run in CI on this project.** Every "CI green"
+  # before 2026-09-21 meant lint, types, units and Lighthouse.
+  #
+  # So the job now produces the origin itself: `next build` from the committed `.env.example`
+  # placeholders, `next start` on the runner, and a `/api/health` 200 gate before it declares
+  # success. The build is uploaded once and re-served by the three browser jobs through
+  # `.github/actions/preview-origin`, so all three measure the same bytes and the Actions-minutes
+  # budget (spec 001 §14 A14) pays for one build, not four. `preview_url` still names the origin,
+  # so no downstream job changed how it consumes it.
+  #
+  # **No secret is a build argument or a run-time value here** — the ruling of spec 001 §14 A17 /
+  # spec 040 §14 A1 (TASK-135) stands, and the first step asserts it. `hostPlatform()` is
+  # untouched: on a runner it resolves `local`, exactly as it does for the reviewer's `pnpm start`.
+  #
+  # Vercel's own check keeps its place on the pull request and keeps meaning what it says. The
+  # last step still probes whatever Vercel deployed for Deployment Protection, the `fra1` function
+  # region and `X-Robots-Tag: noindex` (AC-29 / T-30) and writes the verdict into the step
+  # summary — but as **evidence**, `continue-on-error`, because a host we are leaving must never
+  # again deny four suites an origin. When spec 040 §5.5 gives PRs a Railway environment (AC-26),
+  # that is the deployment this job probes, and this step is where it lands.
   preview:
     name: preview
-    # Pull requests only (a manual dispatch has no PR to deploy), and only with the `ci:full` label.
+    # Pull requests only (a manual dispatch has no PR to probe), and only with the `ci:full` label.
     if: github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'ci:full')
     runs-on: ubuntu-latest
     timeout-minutes: 25
     permissions:
       contents: read
+      # Read-only, and now only so the evidence step can *look at* what Vercel deployed.
       deployments: read
     outputs:
-      preview_url: ${{ steps.wait.outputs.preview_url }}
+      preview_url: ${{ steps.serve.outputs.preview_url }}
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
     steps:
-      - name: Require the protection-bypass secret
-        env:
-          BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+
+      # The same clean-clone build the `build` job makes (spec 001 §13 Q10, AC-1), and the same
+      # assertion the `container` job makes about its environment: a server credential in scope
+      # here would end up inlined or in a layer, and neither is allowed (spec 001 §14 A17).
+      - name: Build the app from the committed placeholders, with no credential in scope
+        id: next
         run: |
-          if [ -z "$BYPASS_SECRET" ]; then
-            echo "::error::VERCEL_AUTOMATION_BYPASS_SECRET is not set in this repository. Create a Protection Bypass for Automation in the Vercel project and run 'gh secret set VERCEL_AUTOMATION_BYPASS_SECRET' (docs/runbooks/vercel-setup.md)."
+          set -euo pipefail
+          if env | grep -qE '^(DATABASE_URL|DATABASE_URL_UNPOOLED|INTERNAL_CRON_SECRET|R2_)'; then
+            echo "::error::a server credential is present in the build environment (spec 001 §14 A17)"
             exit 1
           fi
+          cp .env.example .env.local
+          pnpm build
 
-      - name: Wait for the Vercel preview deployment
-        id: wait
+      # `.next/cache` is the incremental cache and `.next/standalone` is a second copy of the
+      # server that `next start` never reads: excluding both is what keeps the artifact in the
+      # tens of megabytes instead of hundreds.
+      - name: Package the build for the browser jobs
+        id: package
+        run: |
+          set -euo pipefail
+          tar -czf "$RUNNER_TEMP/preview-build.tgz" \
+            --exclude='.next/cache' --exclude='.next/standalone' .next
+          size=$(du -h "$RUNNER_TEMP/preview-build.tgz" | cut -f1)
+          echo "size=$size" >> "$GITHUB_OUTPUT"
+          echo "packaged $size"
+
+      - name: Publish it
+        uses: actions/upload-artifact@v4
+        with:
+          name: preview-build
+          path: ${{ runner.temp }}/preview-build.tgz
+          retention-days: 1
+          if-no-files-found: error
+
+      # The gate: this step cannot succeed unless `/api/health` answers 200 with `"status":"ok"`,
+      # so `preview` can never again hand four suites a URL that is not serving the application.
+      - name: Serve it and gate on /api/health (TASK-137)
+        id: serve
+        run: bash ./.github/actions/preview-origin/serve.sh
+
+      # AC-29 / T-30, as evidence rather than as a gate. Three facts about whatever Vercel
+      # deployed for this head SHA — Deployment Protection refuses an unauthenticated request,
+      # the function region is `fra1`, the response is `noindex` — reported in the step summary
+      # and in the job log. Absences (no bypass secret, no deployment) are facts about the
+      # platform, not defects in the pull request, and are recorded rather than failed.
+      - name: Vercel's own preview, probed as evidence (AC-29 / T-30)
+        id: vercel
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          # 45 attempts x 20 s = 15 minutes (spec 001 §5: preview must exist before e2e runs).
-          ATTEMPTS: "45"
-          INTERVAL: "20"
+          BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+          # One short look, not fifteen minutes: the browser suites are waiting on this job.
+          ATTEMPTS: "3"
+          INTERVAL: "10"
         run: |
-          set -euo pipefail
+          set -uo pipefail
+          summary() { printf '%s\n' "$@" | tee -a "$GITHUB_STEP_SUMMARY"; }
+          summary "### Vercel preview, as evidence (AC-29 / T-30)" ""
+          if [ -z "$BYPASS_SECRET" ]; then
+            summary "- no \`VERCEL_AUTOMATION_BYPASS_SECRET\` is set in this repository, so" \
+                    "  Deployment Protection cannot be probed. Recorded, not failed: the browser" \
+                    "  suites run against CI's own origin (TASK-137), and \`docs/runbooks/vercel-setup.md\`" \
+                    "  says how to create the bypass if this evidence is wanted again."
+            exit 0
+          fi
+          set -o pipefail
           preview_url=""
           for attempt in $(seq 1 "$ATTEMPTS"); do
             # `select(... != "production")`: a push to `main` and a PR can share a head SHA, and
-            # the Production deployment must never be handed to the e2e/visual/a11y jobs — they
-            # run destructive-by-default browser traffic and assert preview-only headers.
+            # the Production deployment must never be probed as if it were a preview.
             deployments=$(gh api "repos/$REPO/deployments?sha=$HEAD_SHA&per_page=100" \
               --jq '.[] | select(((.environment // "") | ascii_downcase) != "production") | .id' || true)
             for id in $deployments; do
@@ -1238,29 +1318,22 @@ jobs:
             sleep "$INTERVAL"
           done
           if [ -z "$preview_url" ]; then
-            echo "::error::no successful Vercel deployment with an environment_url appeared for $HEAD_SHA within 15 minutes. Is the Vercel Git integration connected (docs/runbooks/vercel-setup.md)?"
-            exit 1
+            summary "- no non-production Vercel deployment with an \`environment_url\` for" \
+                    "  \`$HEAD_SHA\` after $((ATTEMPTS * INTERVAL)) s. ADR-0018 keeps the Vercel project as a" \
+                    "  cold fallback with an empty environment store, so this is the expected" \
+                    "  state; it is recorded, not failed. The \`Vercel\` check on this pull" \
+                    "  request reports what the platform itself did."
+            exit 0
           fi
           preview_url="${preview_url%/}"
-          echo "preview_url=$preview_url" >> "$GITHUB_OUTPUT"
-          {
-            echo "### preview (AC-29)"
-            echo ""
-            echo "- preview URL: $preview_url"
-          } >> "$GITHUB_STEP_SUMMARY"
+          summary "- deployment: $preview_url"
 
-      - name: Verify protection, region and noindex on the preview (T-30)
-        env:
-          PREVIEW_URL: ${{ steps.wait.outputs.preview_url }}
-          BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
-        run: |
-          set -euo pipefail
           # 1. Without the bypass: Deployment Protection must refuse the request. Vercel
           # Authentication does not answer 401/403 to a plain GET: it answers a 302 to
           # `https://vercel.com/sso-api?url=...` (plus a `_vercel_sso_nonce` cookie). Both shapes
           # count as protected; a 200, or a redirect anywhere else, does not.
           unauth_headers=$(mktemp)
-          unprotected_status=$(curl -sSI -o "$unauth_headers" -w '%{http_code}' "$PREVIEW_URL/api/health")
+          unprotected_status=$(curl -sSI -o "$unauth_headers" -w '%{http_code}' "$preview_url/api/health")
           unprotected_location=$(grep -i '^location:' "$unauth_headers" | head -n1 | cut -d' ' -f2- | tr -d '\r' || true)
           rm -f "$unauth_headers"
           case "$unprotected_status" in
@@ -1273,13 +1346,15 @@ jobs:
                   protection_evidence="$unprotected_status to vercel.com/sso-api"
                   ;;
                 *)
-                  echo "::error::GET $PREVIEW_URL/api/health without the bypass header returned $unprotected_status redirecting to '$unprotected_location'; expected 401, 403, or a redirect to https://vercel.com/sso-api. Deployment Protection is not enabled on previews (AC-29)."
+                  echo "::error::GET $preview_url/api/health without the bypass header returned $unprotected_status redirecting to '$unprotected_location'; expected 401, 403, or a redirect to https://vercel.com/sso-api. Deployment Protection is not enabled on previews (AC-29)."
+                  summary "- **unauthenticated \`/api/health\`: $unprotected_status to '$unprotected_location' — not protected**"
                   exit 1
                   ;;
               esac
               ;;
             *)
-              echo "::error::GET $PREVIEW_URL/api/health without the bypass header returned $unprotected_status; expected 401, 403, or a 302 to https://vercel.com/sso-api. Deployment Protection is not enabled on previews (AC-29)."
+              echo "::error::GET $preview_url/api/health without the bypass header returned $unprotected_status; expected 401, 403, or a 302 to https://vercel.com/sso-api. Deployment Protection is not enabled on previews (AC-29)."
+              summary "- **unauthenticated \`/api/health\`: $unprotected_status — not protected**"
               exit 1
               ;;
           esac
@@ -1289,12 +1364,18 @@ jobs:
           bypass_status=$(curl -sSI -o "$headers" -w '%{http_code}' \
             -H "x-vercel-protection-bypass: $BYPASS_SECRET" \
             -H "x-vercel-set-bypass-cookie: false" \
-            "$PREVIEW_URL/api/health")
+            "$preview_url/api/health")
+          vercel_id=$(grep -i '^x-vercel-id:' "$headers" | head -n1 | cut -d' ' -f2- | tr -d '\r')
+          robots=$(grep -i '^x-robots-tag:' "$headers" | head -n1 | cut -d' ' -f2- | tr -d '\r')
+          rm -f "$headers"
+          summary "- unauthenticated \`/api/health\`: $protection_evidence (protected)" \
+                  "- with bypass: $bypass_status" \
+                  "- \`x-vercel-id\`: ${vercel_id:-absent}" \
+                  "- \`X-Robots-Tag\`: ${robots:-absent}"
           if [ "$bypass_status" != "200" ]; then
-            echo "::error::GET $PREVIEW_URL/api/health with the bypass header returned $bypass_status; expected 200 (AC-29)."
+            echo "::error::GET $preview_url/api/health with the bypass header returned $bypass_status; expected 200 (AC-29). ADR-0018's cold fallback has an empty environment store, which is what makes this 500 — it is why the browser suites no longer depend on it (TASK-137)."
             exit 1
           fi
-          vercel_id=$(grep -i '^x-vercel-id:' "$headers" | head -n1 | cut -d' ' -f2- | tr -d '\r')
           if [ -z "$vercel_id" ]; then
             echo "::error::no x-vercel-id response header; cannot verify the function region (AC-29)."
             exit 1
@@ -1309,7 +1390,6 @@ jobs:
               exit 1
               ;;
           esac
-          robots=$(grep -i '^x-robots-tag:' "$headers" | head -n1 | cut -d' ' -f2- | tr -d '\r')
           case "$robots" in
             *noindex*) ;;
             *)
@@ -1317,21 +1397,25 @@ jobs:
               exit 1
               ;;
           esac
-          # `tee` so the T-30 evidence is in the job *log* as well: a step summary cannot be read
-          # back through the API, and the reviewer has to quote these four values in the PR.
-          {
-            echo "- unauthenticated \`/api/health\`: $protection_evidence (protected)"
-            echo "- with bypass: $bypass_status"
-            echo "- \`x-vercel-id\`: $vercel_id (fra1 present)"
-            echo "- \`X-Robots-Tag\`: $robots"
-          } | tee -a "$GITHUB_STEP_SUMMARY"
-          rm -f "$headers"
 
-  # AC-17 / T-15, T-16, T-18 (TASK-008): the Playwright suites run against the *preview*
-  # deployment, not a local server — that is what the AC asks for and the only place the Vercel
-  # headers (`fra1`, `X-Robots-Tag`, Deployment Protection) are real. `PLAYWRIGHT_BASE_URL` is the
-  # URL the `preview` job resolved; `VERCEL_AUTOMATION_BYPASS_SECRET` gets the request past
-  # Deployment Protection (`playwright.config.ts` sends it, and never logs it).
+  # AC-17 / T-15, T-16, T-18 (TASK-008), on the origin TASK-137 gave them. The three suites ran
+  # against the Vercel preview until 2026-09-21 — that is what the AC asked for, and it is why
+  # they never ran at all: the deployment answers `/api/health` with 500 (ADR-0018's cold
+  # fallback, empty environment store), so `preview` failed and all three were skipped on PRs 84,
+  # 85 and 87. Each job now unpacks the build `preview` published and serves it on its own runner
+  # through `./.github/actions/preview-origin`, which does not return until `/api/health` answers
+  # 200. `PLAYWRIGHT_BASE_URL` is still `${{ needs.preview.outputs.preview_url }}`; it now names
+  # that origin (`http://localhost:3000`), which is also the origin `.env.example`'s
+  # `NEXT_PUBLIC_SITE_URL` inlines, so every canonical under test matches the host serving it.
+  #
+  # What this costs: the Vercel-only assertions (`fra1`, Deployment Protection, the `vercel.live`
+  # allowance) are not exercised by these suites any more — the specs that make them branch on
+  # the hostname already, and `preview`'s evidence step reports them. What it buys: the suites
+  # run.
+  #
+  # `VERCEL_AUTOMATION_BYPASS_SECRET` is gone from all three: a localhost origin has no
+  # Deployment Protection to get past, and sending the header would put a secret on the wire for
+  # nothing.
   #
   # These jobs are skipped on `push` to `main`, because `preview` is a pull-request job.
   e2e:
@@ -1341,10 +1425,12 @@ jobs:
     needs: preview
     env:
       PLAYWRIGHT_BASE_URL: ${{ needs.preview.outputs.preview_url }}
-      VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
+      # Unpack the build `preview` published, serve it, and do not proceed until `/api/health`
+      # answers 200 (TASK-137).
+      - uses: ./.github/actions/preview-origin
       - run: pnpm exec playwright install --with-deps chromium
       - name: pnpm test:e2e
         env:
@@ -1388,10 +1474,12 @@ jobs:
     needs: preview
     env:
       PLAYWRIGHT_BASE_URL: ${{ needs.preview.outputs.preview_url }}
-      VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
+      # Unpack the build `preview` published, serve it, and do not proceed until `/api/health`
+      # answers 200 (TASK-137).
+      - uses: ./.github/actions/preview-origin
       - run: pnpm exec playwright install --with-deps chromium
       # Baselines are committed (AC-17) and, since spec 003 gave `/` real text, per platform:
       # this job compares against `__screenshots__/<project>/linux/`. `--update-snapshots` is
@@ -1443,10 +1531,12 @@ jobs:
     needs: preview
     env:
       PLAYWRIGHT_BASE_URL: ${{ needs.preview.outputs.preview_url }}
-      VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
+      # Unpack the build `preview` published, serve it, and do not proceed until `/api/health`
+      # answers 200 (TASK-137).
+      - uses: ./.github/actions/preview-origin
       - run: pnpm exec playwright install --with-deps chromium
       # spec 001 §8: zero serious/critical axe violations on `/`.
       - name: pnpm test:a11y

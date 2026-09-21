@@ -2,6 +2,17 @@
 
 > **Superseded (2026-09-16, ADR-0018).** Hosting moves to Railway behind Cloudflare. This runbook is kept only for the cold Vercel fallback and is replaced by `docs/runbooks/railway-cloudflare-setup.md` (spec 040, TASK-104). Set no new production variables in Vercel; PR #62's variable gate is now the Railway variable set (spec 040, TASK-098).
 
+> **The `preview` CI job no longer depends on any of this (2026-09-21, TASK-137).** It builds the
+> app on the GitHub runner from the committed `.env.example` placeholders, serves it, gates on
+> `/api/health` 200 and hands that origin to `e2e`, `visual` and `a11y`. Until then the three
+> suites were `needs: preview` on the Vercel preview, whose `/api/health` answers 500 because
+> this project is the cold fallback with an empty environment store — so **no Playwright suite
+> had ever run in CI** (PRs 84, 85, 87). The steps below still describe how to make the AC-29
+> evidence real; the `preview` job's last step probes whatever Vercel deployed for Deployment
+> Protection, `fra1` and `noindex`, reports it in the step summary, and does not fail the job
+> when the secret or the deployment is absent. The `Vercel` check itself still sits on every pull
+> request and still means what it says.
+
 
 **Owner:** founder (account-level actions; the repository half is merged with TASK-007).
 **When:** once, before the `preview` CI job can pass on any PR.
@@ -56,8 +67,10 @@ Confirm the detected GitHub remote. Then in the dashboard
 (Project → Settings → Git), check:
 
 - **Production Branch** = `main`.
-- **Preview Deployments**: enabled for all branches (default) — the `preview` CI job waits for the
-  GitHub Deployment that this integration creates for the PR head SHA.
+- **Preview Deployments**: enabled for all branches (default) — the `preview` CI job's evidence
+  step looks for the GitHub Deployment that this integration creates for the PR head SHA (a
+  30-second look since TASK-137, not a 15-minute wait, and an absence is recorded rather than
+  failed).
 - Deploy hooks: none needed.
 
 ## 3. Build and runtime settings

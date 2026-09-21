@@ -53,6 +53,7 @@ interface WorkflowStep {
   uses?: string;
   run?: string;
   id?: string;
+  "continue-on-error"?: boolean;
   env?: Record<string, string>;
   with?: Record<string, string>;
 }
@@ -71,13 +72,26 @@ interface Workflow {
   jobs: Record<string, WorkflowJob>;
 }
 
+/**
+ * The `preview` job's Vercel probe (AC-29 / T-30), as TASK-137 left it.
+ *
+ * Until 2026-09-21 the whole job was this probe: find the Vercel preview deployment for the head
+ * SHA and hand its URL to `e2e`, `visual` and `a11y`. On this repository that deployment answers
+ * `/api/health` with 500 — ADR-0018 keeps the Vercel project as a cold fallback with an empty
+ * environment store — so the three suites never ran at all (PRs 84, 85, 87). The origin the
+ * suites use is CI's own since TASK-137 (`tests/unit/ci-workflow.test.ts` pins that half), and
+ * what survives here is the AC-29 evidence: the same three assertions about Deployment
+ * Protection, the `fra1` function region and `X-Robots-Tag: noindex`, made against whatever
+ * Vercel deployed and reported in the step summary — but no longer able to deny four suites an
+ * origin. The `Vercel` check itself still sits on the pull request and still means what it says.
+ */
 describe("ci.yml preview gate (AC-29 / T-30)", () => {
   const workflow = parse(read(".github/workflows/ci.yml")) as Workflow;
   const preview = workflow.jobs["preview"];
-  /** Only the shell of the `preview` job's steps: no comment and no other job can satisfy these. */
-  const script = (preview?.steps ?? [])
-    .map((step) => step.run ?? "")
-    .join("\n");
+  const steps = preview?.steps ?? [];
+  /** The Vercel evidence step alone: no comment and no other step can satisfy these. */
+  const probe = steps.find((step) => (step.run ?? "").includes("gh api"));
+  const script = probe?.run ?? "";
 
   it("declares a preview job that runs on labelled pull requests only (spec 001 §14 A14)", () => {
     expect(preview).toBeDefined();
@@ -89,20 +103,18 @@ describe("ci.yml preview gate (AC-29 / T-30)", () => {
     );
   });
 
-  it("reads deployments to find the preview URL for the PR head SHA", () => {
+  it("reads deployments to find the Vercel URL for the PR head SHA", () => {
     expect(preview?.permissions?.["deployments"]).toBe("read");
     expect(script).toContain("gh api");
     expect(script).toContain("environment_url");
-    const env = (preview?.steps ?? []).flatMap((step) =>
-      Object.values(step.env ?? {}),
-    );
-    expect(env.join("\n")).toContain("pull_request.head.sha");
+    const env = Object.values(probe?.env ?? {}).join("\n");
+    expect(env).toContain("pull_request.head.sha");
   });
 
-  it("exports the preview URL as a job output and to the step summary", () => {
-    expect(preview?.outputs?.["preview_url"]).toBe(
-      "${{ steps.wait.outputs.preview_url }}",
-    );
+  it("cannot block the browser suites, whatever Vercel did (TASK-137)", () => {
+    // The measured defect: 45 x 20 s of polling, then a hard failure, then three skipped suites.
+    // The probe is now a single short look, marked `continue-on-error`, and its verdict is text.
+    expect(probe?.["continue-on-error"]).toBe(true);
     expect(script).toContain("GITHUB_STEP_SUMMARY");
   });
 
@@ -117,7 +129,7 @@ describe("ci.yml preview gate (AC-29 / T-30)", () => {
     expect(script).toContain(
       "https://vercel.com/sso-api|https://vercel.com/sso-api[?/]*",
     );
-    // A redirect to any other location, and a 200, must still fail.
+    // A redirect to any other location, and a 200, must still be reported as a failure.
     expect(script).toMatch(
       /::error::[^\n]*without the bypass header returned \$unprotected_status redirecting to/,
     );
@@ -131,19 +143,21 @@ describe("ci.yml preview gate (AC-29 / T-30)", () => {
 
   it("asserts noindex and 200 with the protection-bypass header", () => {
     expect(script).toContain("x-vercel-protection-bypass");
-    const secrets = (preview?.steps ?? [])
-      .flatMap((step) => Object.values(step.env ?? {}))
-      .join("\n");
+    const secrets = Object.values(probe?.env ?? {}).join("\n");
     expect(secrets).toContain("secrets.VERCEL_AUTOMATION_BYPASS_SECRET");
     expect(script).toContain("X-Robots-Tag");
     expect(script.toLowerCase()).toContain("noindex");
   });
 
-  it("fails loudly, naming the secret, instead of skipping when it is unset", () => {
-    expect(script).toMatch(/::error::[^\n]*VERCEL_AUTOMATION_BYPASS_SECRET/);
+  it("says so in the summary, rather than failing, when there is nothing to probe", () => {
+    // Two absences are facts about the platform, not defects in this pull request: no
+    // `VERCEL_AUTOMATION_BYPASS_SECRET` in the repository, and no non-production deployment for
+    // the head SHA. Both used to fail the job and take the three browser suites with them.
+    expect(script).toContain("VERCEL_AUTOMATION_BYPASS_SECRET");
+    expect(script).toContain("no non-production Vercel deployment");
   });
 
-  it("hands the resolved URL to the browser jobs rather than letting them guess", () => {
+  it("hands the CI-owned origin to the browser jobs rather than letting them guess", () => {
     // `lighthouse` is deliberately not in this list since TASK-056: it builds and serves what it
     // measures behind `scripts/seo/brotli-origin.ts`, because the budget is Brotli transfer and a
     // protected preview adds tens of KB of `vercel.live` to the script total (spec 004 AC-24).

@@ -1,0 +1,37 @@
+# The browser jobs' half of TASK-137: take the build `preview` published, serve it on this
+# runner, and hand the suites an origin that is known-healthy before the first test starts.
+#
+# One build, four servers: `preview` builds once and uploads `.next` (minus the incremental
+# cache and the standalone copy, neither of which `next start` reads), and `e2e`, `visual` and
+# `a11y` each unpack the same bytes. Re-building per job would spend three more build slots of
+# the Actions-minutes budget (spec 001 §14 A14) and would let the three suites measure three
+# different builds.
+name: Serve the CI-owned preview origin
+description: Unpack the build the `preview` job published, start it, and gate on /api/health 200
+
+inputs:
+  port:
+    description: Port `next start` listens on
+    required: false
+    default: "3000"
+
+runs:
+  using: composite
+  steps:
+    - name: Download the build the preview job published
+      uses: actions/download-artifact@v4
+      with:
+        name: preview-build
+
+    - name: Unpack it
+      shell: bash
+      run: |
+        set -euo pipefail
+        tar -xzf preview-build.tgz
+        rm -f preview-build.tgz
+
+    - name: Start the origin and gate on /api/health (TASK-137)
+      shell: bash
+      env:
+        PREVIEW_PORT: ${{ inputs.port }}
+      run: bash ./.github/actions/preview-origin/serve.sh

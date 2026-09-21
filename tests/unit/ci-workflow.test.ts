@@ -21,14 +21,19 @@ const read = (relative: string): string =>
 
 interface Step {
   name?: string;
+  id?: string;
   uses?: string;
   run?: string;
   if?: string;
+  "continue-on-error"?: boolean;
+  env?: Record<string, string>;
   with?: Record<string, string>;
 }
 
 interface Job {
   name?: string;
+  env?: Record<string, string>;
+  outputs?: Record<string, string>;
   needs?: string | string[];
   if?: string;
   "runs-on"?: string;
@@ -44,6 +49,11 @@ interface Workflow {
   defaults?: { run?: { shell?: string } };
   jobs: Record<string, Job>;
 }
+
+/** The origin the browser suites run against, served by CI itself (TASK-137). */
+const PREVIEW_ORIGIN_SCRIPT = ".github/actions/preview-origin/serve.sh";
+/** The build the `preview` job publishes and the three browser jobs re-serve (TASK-137). */
+const PREVIEW_ARTIFACT = "preview-build";
 
 const ci = parse(read(".github/workflows/ci.yml")) as Workflow;
 const jobs = Object.entries(ci.jobs);
@@ -463,5 +473,110 @@ describe("the unit project's test budget (TASK-134)", () => {
 
   it("leaves the tight Vitest default in place locally, where slow means hung", async () => {
     await expect(unitTimeoutFor(undefined)).resolves.toBeUndefined();
+  });
+});
+
+/**
+ * TASK-137: the origin the Playwright suites run against is CI's own.
+ *
+ * Measured on PRs 84, 85 and 87: `preview` polled the GitHub Deployments API for a Vercel
+ * preview, and the deployment either never appeared or answered `/api/health` with 500 — the
+ * cold fallback of ADR-0018 carries an empty environment store. `e2e`, `visual` and `a11y` are
+ * each `needs: preview`, so **no Playwright suite had ever run in CI on this project**.
+ *
+ * The job now builds the app on the runner from the committed `.env.example` placeholders,
+ * publishes that build as an artifact, serves it and gates on `/api/health` 200 before handing
+ * the origin to the three browser jobs, which serve the same bytes through
+ * `.github/actions/preview-origin`. No secret is a build input (spec 001 §14 A17, spec 040 §14
+ * A1): the values are the ones `.env.example` publishes.
+ */
+describe("the preview job serves an origin CI owns (TASK-137)", () => {
+  const preview = ci.jobs["preview"];
+  const steps = preview?.steps ?? [];
+  const script = steps.map((step) => step.run ?? "").join("\n");
+  const BROWSER_JOBS = ["e2e", "visual", "a11y"] as const;
+
+  it("builds the app on the runner rather than waiting for a third party to deploy it", () => {
+    expect(script).toContain("pnpm build");
+    // The 15-minute Deployments-API poll that produced no origin is gone from the critical path:
+    // no step of this job may block the browser suites on a deployment we do not control.
+    const blocking = steps.filter(
+      (step) =>
+        (step.run ?? "").includes("gh api") &&
+        step["continue-on-error"] !== true,
+    );
+    expect(blocking).toEqual([]);
+  });
+
+  it("gives the build only the committed placeholders — no secret is a build input", () => {
+    expect(script).toContain("cp .env.example .env.local");
+    const envValues = steps
+      .flatMap((step) => Object.values(step.env ?? {}))
+      .join("\n");
+    // `VERCEL_AUTOMATION_BYPASS_SECRET` may still reach the evidence step below; nothing else may.
+    const otherSecrets = envValues
+      .split("\n")
+      .filter(
+        (value) =>
+          value.includes("secrets.") &&
+          !value.includes("secrets.VERCEL_AUTOMATION_BYPASS_SECRET"),
+      );
+    expect(otherSecrets).toEqual([]);
+    expect(script).not.toMatch(/--build-arg/u);
+  });
+
+  it("gates on /api/health 200 before it can declare an origin healthy", () => {
+    const serve = steps.find((step) => step.id === "serve");
+    expect(serve).toBeDefined();
+    const serveScript = (serve?.run ?? "") + (serve?.uses ?? "");
+    expect(serveScript).toContain(PREVIEW_ORIGIN_SCRIPT);
+    const gate = read(PREVIEW_ORIGIN_SCRIPT);
+    expect(gate).toContain("/api/health");
+    expect(gate).toContain('"status":"ok"');
+    expect(gate).toMatch(/::error::[^\n]*\/api\/health/);
+  });
+
+  it("publishes the served origin as `preview_url`", () => {
+    expect(preview?.outputs?.["preview_url"]).toBe(
+      "${{ steps.serve.outputs.preview_url }}",
+    );
+    expect(read(PREVIEW_ORIGIN_SCRIPT)).toContain(
+      'preview_url=$origin" >> "$GITHUB_OUTPUT',
+    );
+  });
+
+  it("publishes the build so the browser jobs measure the same bytes, not three of their own", () => {
+    const upload = steps.find((step) =>
+      (step.uses ?? "").startsWith("actions/upload-artifact"),
+    );
+    expect(upload?.with?.["name"]).toBe(PREVIEW_ARTIFACT);
+    const action = read(".github/actions/preview-origin/action.yml");
+    expect(action).toContain("actions/download-artifact");
+    expect(action).toContain(PREVIEW_ARTIFACT);
+    expect(action).toContain(PREVIEW_ORIGIN_SCRIPT);
+  });
+
+  it.each(BROWSER_JOBS)(
+    "%s starts that origin through the shared action and targets the job's output",
+    (name) => {
+      const job = ci.jobs[name];
+      expect(job?.needs).toBe("preview");
+      expect(job?.env?.["PLAYWRIGHT_BASE_URL"]).toBe(
+        "${{ needs.preview.outputs.preview_url }}",
+      );
+      expect((job?.steps ?? []).map((step) => step.uses)).toContain(
+        "./.github/actions/preview-origin",
+      );
+    },
+  );
+
+  it("keeps the Vercel probe as evidence and never as a blocker (ADR-0018)", () => {
+    // The `Vercel` check stays on the pull request and keeps meaning what it says; what changed
+    // is that a host we are leaving can no longer deny four suites an origin. The probe still
+    // asserts Deployment Protection, `fra1` and `noindex` when a deployment exists, and its
+    // verdict is written to the step summary either way.
+    const probe = steps.find((step) => (step.run ?? "").includes("gh api"));
+    expect(probe?.["continue-on-error"]).toBe(true);
+    expect(script).toContain("GITHUB_STEP_SUMMARY");
   });
 });
