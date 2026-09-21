@@ -15,8 +15,17 @@ import { mkdtempSync, copyFileSync, mkdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
+import sharp from "sharp";
 import { afterAll, describe, expect, it } from "vitest";
 
+import { SLOT_BYTE_CAPS } from "../../seed/budgets.ts";
+import { AVIF_OPTIONS } from "../../seed/schema/variants.ts";
+import { applyWatermark, isWatermarked } from "../../seed/watermark.ts";
+import {
+  removeDerivedTrees,
+  variantBox,
+  writeDerivedTree,
+} from "./support/derived-tree.ts";
 import {
   EMPTY_SHA256,
   type Fetcher,
@@ -30,7 +39,9 @@ import {
   parseArgs,
   readR2Config,
   signRequest,
+  verifyPublished,
 } from "../../scripts/media-upload.ts";
+import type { MediaVariantManifest } from "../../seed/schema/media.ts";
 import { MEDIA_CACHE_CONTROL } from "../../src/lib/media-headers.ts";
 import { MEDIA_ORIGIN } from "../../src/lib/media-origin.ts";
 
@@ -107,6 +118,7 @@ function fakeFetcher(
 const temporary: string[] = [];
 afterAll(() => {
   for (const dir of temporary) rmSync(dir, { recursive: true, force: true });
+  removeDerivedTrees();
 });
 
 /* -------------------------------------------------------------------------- */
@@ -146,13 +158,123 @@ describe("configuration", () => {
   });
 
   it("reads the flags the runbook documents", () => {
-    expect(parseArgs(["--dry-run"])).toEqual({ dryRun: true, force: false });
+    expect(parseArgs(["--dry-run"])).toEqual({
+      dryRun: true,
+      force: false,
+      verify: false,
+    });
     expect(parseArgs(["--only", "home-hero", "--force"])).toEqual({
       dryRun: false,
       force: true,
+      verify: false,
       only: ["home-hero"],
     });
+    expect(parseArgs(["--verify"])).toEqual({
+      dryRun: false,
+      force: false,
+      verify: true,
+    });
     expect(() => parseArgs(["--nope"])).toThrow(/unknown flag/u);
+  });
+});
+
+/**
+ * `--verify`, the one check that reads the bucket rather than the machine about to write to it.
+ *
+ * `/review 94` round 2 found the direction nothing covered: a manifest row's `bytes` can be
+ * lowered from 9 911 to 900 and both `pnpm seed:check` and `pnpm media:variants --check` stay
+ * clean in the CI condition, because neither has the file. The upload's own gates cannot see it
+ * either — they run before the bytes leave. This does, from the published object's own headers,
+ * with no credential.
+ */
+describe("`--verify`: the bucket audited against the manifest (AC-14)", () => {
+  const row = (bytes: number): MediaVariantManifest => ({
+    ...item("e".repeat(64)).row,
+    bytes,
+  });
+
+  const head = (
+    headers: Record<string, string>,
+    status = 200,
+  ): { fetcher: Fetcher; calls: Call[] } => fakeFetcher([{ status, headers }]);
+
+  it("passes a published object whose headers match its row, and signs nothing", async () => {
+    const { fetcher, calls } = head({
+      "content-length": "1234",
+      "content-type": "image/avif",
+    });
+
+    expect(await verifyPublished({ rows: [row(1234)], fetcher })).toEqual([]);
+
+    expect(calls[0]?.method).toBe("HEAD");
+    expect(calls[0]?.url).toBe(`${MEDIA_ORIGIN}/media/fo-bq-001-hero/384.avif`);
+    // A public object needs no credential, and a command that asked for one would be one more
+    // place a secret could be printed.
+    expect(Object.keys(calls[0]?.headers ?? {})).toEqual([]);
+    expect(JSON.stringify(calls)).not.toContain(SECRET);
+  });
+
+  it("reports a row whose byte count disagrees with the object it names", async () => {
+    const { fetcher } = head({
+      "content-length": "9911",
+      "content-type": "image/avif",
+    });
+
+    const problems = await verifyPublished({ rows: [row(900)], fetcher });
+
+    expect(problems).toHaveLength(1);
+    expect(problems[0]).toContain("9911 B published but 900 B");
+    expect(problems[0]).toContain("media/fo-bq-001-hero/384.avif");
+  });
+
+  it("reports an object the manifest lists but the bucket does not publish", async () => {
+    const { fetcher } = head({}, 404);
+
+    expect((await verifyPublished({ rows: [row(1234)], fetcher }))[0]).toMatch(
+      /the bucket does not publish it \(404/u,
+    );
+  });
+
+  it("reports a wrong content type and an unexpected status", async () => {
+    const wrongType = head({
+      "content-length": "1234",
+      "content-type": "image/webp",
+    });
+    expect(
+      (
+        await verifyPublished({ rows: [row(1234)], fetcher: wrongType.fetcher })
+      )[0],
+    ).toMatch(/published as `image\/webp`, expected `image\/avif`/u);
+
+    const server = head({}, 503);
+    expect(
+      (
+        await verifyPublished({ rows: [row(1234)], fetcher: server.fetcher })
+      )[0],
+    ).toMatch(/HEAD returned 503/u);
+  });
+
+  it("collects every disagreement in one run rather than stopping at the first", async () => {
+    const { fetcher } = fakeFetcher([
+      { status: 404 },
+      {
+        status: 200,
+        headers: { "content-length": "1", "content-type": "image/avif" },
+      },
+      {
+        status: 200,
+        headers: { "content-length": "1234", "content-type": "image/avif" },
+      },
+    ]);
+
+    // `concurrency: 1` so the fake's scripted responses line up with the rows in order.
+    const problems = await verifyPublished({
+      rows: [row(1234), row(1234), row(1234)],
+      fetcher,
+      concurrency: 1,
+    });
+
+    expect(problems).toHaveLength(2);
   });
 });
 
@@ -341,4 +463,144 @@ describe("nothing reaches the bucket that the gates have not seen", () => {
     // bytes, and uploading nothing while reporting success is how a bucket ends up half full.
     await expect(loadUploadSet({ root })).rejects.toThrow(/no derived tree/u);
   });
+});
+
+/* -------------------------------------------------------------------------- */
+/* The two refusals AC-15 and AC-16 now rest on, exercised as behaviour.       */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * `/review 94` round 2, and the reason this block exists at all: the reviewer replaced
+ * `const cap = SLOT_BYTE_CAPS[slot]` with `Number.MAX_SAFE_INTEGER || …` and guarded the
+ * watermark branch behind `items.length < 0`, leaving both source strings intact — and the whole
+ * 4 357-case unit suite stayed green. With the committed tree gone, `scripts/media-upload.ts` is
+ * the **only** file-level enforcement of AC-16 and the last per-file enforcement of AC-15, so
+ * "the upload refuses" has to be a property something can falsify rather than a sentence in a
+ * header.
+ *
+ * Each case builds a real tree with `writeDerivedTree()` — the repository's own `media.json`, so
+ * the slot and therefore the cap are the shipped ones — and drives `loadUploadSet()`, the
+ * function `main()` calls before it opens a socket. A clean tree of the same shape is asserted to
+ * load, so a refusal cannot be passing for some unrelated reason.
+ */
+describe("the uploader's own refusals (AC-15, AC-16)", () => {
+  // `occasionTile` is the tightest cap of any slot the Phase-0 dataset uses: 18 000 B at a single
+  // 384 px width, which is small enough that both fixtures encode in well under a second.
+  const ASSET = "home-occasion-birthday";
+  const WIDTH = 384;
+
+  const encodeAvif = async (input: Buffer): Promise<Buffer> =>
+    await sharp(input).avif(AVIF_OPTIONS).toBuffer();
+
+  /** A flat style-guide frame: a few hundred bytes, no magenta, inside every cap. */
+  async function cleanFrame(): Promise<Buffer> {
+    const box = variantBox(ASSET, WIDTH);
+    return await encodeAvif(
+      await sharp({
+        create: {
+          width: box.width,
+          height: box.height,
+          channels: 3,
+          background: { r: 214, g: 209, b: 201 },
+        },
+      })
+        .png()
+        .toBuffer(),
+    );
+  }
+
+  /**
+   * Deterministic RGB noise at the same box. Noise is what an encoder cannot compress, so this is
+   * how a 384 px tile gets past an 18 000 B cap without inventing a fake byte count: the file is
+   * genuinely that big, and the manifest row records the size it genuinely is.
+   */
+  async function oversizedFrame(): Promise<Buffer> {
+    const box = variantBox(ASSET, WIDTH);
+    const pixels = Buffer.alloc(box.width * box.height * 3);
+    let state = 123_456_789;
+    for (let index = 0; index < pixels.length; index += 1) {
+      state = (state * 1_103_515_245 + 12_345) >>> 0;
+      pixels[index] = state & 0xff;
+    }
+    return await encodeAvif(
+      await sharp(pixels, {
+        raw: { width: box.width, height: box.height, channels: 3 },
+      })
+        .png()
+        .toBuffer(),
+    );
+  }
+
+  it("loads a clean tree, so a refusal below is the refusal and not the fixture", async () => {
+    const clean = await cleanFrame();
+    const root = writeDerivedTree([
+      { assetId: ASSET, width: WIDTH, format: "avif", data: clean },
+    ]);
+
+    const items = await loadUploadSet({ root });
+
+    expect(items).toHaveLength(1);
+    expect(items[0]?.row.objectKey).toBe(`media/${ASSET}/384.avif`);
+    expect(items[0]?.bytes.byteLength).toBe(clean.byteLength);
+    expect(clean.byteLength).toBeLessThanOrEqual(
+      SLOT_BYTE_CAPS["occasionTile"],
+    );
+    expect(await isWatermarked(clean)).toBe(false);
+  }, 60_000);
+
+  it("refuses a file above its slot's cap, naming the cap (AC-15)", async () => {
+    const oversized = await oversizedFrame();
+    // The fixture is only a fixture if it is genuinely over the cap.
+    expect(oversized.byteLength).toBeGreaterThan(
+      SLOT_BYTE_CAPS["occasionTile"],
+    );
+
+    const root = writeDerivedTree([
+      { assetId: ASSET, width: WIDTH, format: "avif", data: oversized },
+    ]);
+
+    await expect(loadUploadSet({ root })).rejects.toThrow(
+      new RegExp(
+        `${String(oversized.byteLength)} B is above the ${String(SLOT_BYTE_CAPS["occasionTile"])} B cap for the .occasionTile. slot`,
+        "u",
+      ),
+    );
+  }, 60_000);
+
+  it("refuses a file carrying the demo watermark (AC-16)", async () => {
+    const marked = await encodeAvif(await applyWatermark(await cleanFrame()));
+    // Under the cap, so the refusal below can only be the watermark one: the cap is checked first.
+    expect(marked.byteLength).toBeLessThanOrEqual(
+      SLOT_BYTE_CAPS["occasionTile"],
+    );
+    expect(await isWatermarked(marked)).toBe(true);
+
+    const root = writeDerivedTree([
+      { assetId: ASSET, width: WIDTH, format: "avif", data: marked },
+    ]);
+
+    await expect(loadUploadSet({ root })).rejects.toThrow(
+      /carries the demo watermark, which never ships/u,
+    );
+  }, 60_000);
+
+  it("refuses a row whose bytes disagree with the file it names (AC-14)", async () => {
+    const clean = await cleanFrame();
+    const root = writeDerivedTree([
+      {
+        assetId: ASSET,
+        width: WIDTH,
+        format: "avif",
+        data: clean,
+        // The row claims a different file. `checkVariants()` compares byte count and SHA-256, so
+        // the upload stops before the first socket — this is the gate the bucket-side `--verify`
+        // below complements once the bytes have left the machine.
+        recordAs: Buffer.concat([clean, Buffer.from("tampered")]),
+      },
+    ]);
+
+    await expect(loadUploadSet({ root })).rejects.toThrow(
+      /does not match the manifest/u,
+    );
+  }, 60_000);
 });

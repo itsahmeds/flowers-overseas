@@ -23,9 +23,10 @@ import { join, relative, resolve } from "node:path";
 
 import { renderToStaticMarkup } from "react-dom/server";
 import { NextIntlClientProvider } from "next-intl";
-import { describe, expect, it } from "vitest";
+import { afterAll, describe, expect, it } from "vitest";
 
 import { DERIVED_MEDIA_DIR, SLOT_BYTE_CAPS } from "../../seed/budgets.ts";
+import { checkVariants } from "../../seed/media-variants.ts";
 import type { MediaSlot } from "../../seed/schema/media.ts";
 import { MEDIA_ORIGIN } from "../../src/lib/media-origin.ts";
 import { loadMessages } from "../../src/modules/i18n";
@@ -35,8 +36,14 @@ import {
   setMediaManifest,
 } from "../../src/modules/ui/media/manifest.ts";
 import { isDisplayable } from "../../src/modules/ui/media/resolve.ts";
+import {
+  removeDerivedTrees,
+  writeDerivedTree,
+} from "./support/derived-tree.ts";
 
 const repoRoot = resolve(import.meta.dirname, "../..");
+
+afterAll(removeDerivedTrees);
 
 interface AssetRow {
   readonly id: string;
@@ -82,18 +89,34 @@ describe("T-15: the imagery in the manifest is inside every byte cap (AC-15)", (
     }
   });
 
-  it("has a file for every manifest row and a row for every file, where the derived tree exists (AC-14's tree half)", async () => {
-    // TASK-138: the derived bytes are git-ignored (`.local/media/`) because they live in the
-    // media bucket, so this half runs on a machine that has just derived them and is skipped on
-    // a clean clone. It is not the only thing standing between a bad row and a buyer:
-    // `pnpm media:variants --check` makes the same comparison, `scripts/media-upload.ts` refuses
-    // to upload while it reports a problem, and the caps above are read from the committed
-    // manifest and therefore run everywhere.
+  it("catches a row that disagrees with its file, and agrees with every real file this machine holds (AC-14's tree half)", async () => {
+    // TASK-138 git-ignored the derived bytes (`.local/media/`) because they live in the media
+    // bucket, so on a clean clone and on every CI runner there is no tree for this half to read.
+    // `/review 94` round 2: the stand-in for that case was `expect(variants.length)
+    // .toBeGreaterThan(0)` — a tautology, reported as AC-14 coverage. What it should assert is
+    // that the comparison *works*, and that needs a tree, so it builds one: a file, and a row
+    // that claims different bytes. `checkVariants()` is the same function `pnpm media:variants
+    // --check` and `scripts/media-upload.ts` both run, so this fires on every machine.
+    const tampered = Buffer.from("not the bytes the row describes");
+    const report = checkVariants({
+      root: writeDerivedTree([
+        {
+          assetId: "home-occasion-birthday",
+          width: 384,
+          format: "avif",
+          data: tampered,
+          recordAs: Buffer.concat([tampered, Buffer.from("!")]),
+        },
+      ]),
+    });
+    expect(report.derivedTreePresent).toBe(true);
+    expect(report.problems.join("\n")).toMatch(
+      /home-occasion-birthday\/384\.avif: \d+ bytes on disk/u,
+    );
+
+    // And, where this machine has just derived the real ladder, every row against its real file.
     const root = join(repoRoot, DERIVED_MEDIA_DIR);
-    if (!existsSync(root)) {
-      expect(variants.length).toBeGreaterThan(0);
-      return;
-    }
+    if (!existsSync(root)) return;
     const onDisk = new Map<string, number>();
     for (const assetDir of await readdir(root)) {
       for (const leaf of await readdir(join(root, assetDir))) {

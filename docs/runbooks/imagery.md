@@ -21,7 +21,8 @@ the §2.4 review checklist. This file is the *procedure*, not the rules.
 | 7. Write alt text | `seed/data/alt/{locale}.json`, **all four launch locales** | the only thing that lets `MediaAsset` render an `<img>` at all |
 | 8. Gate | `pnpm seed:check` then `pnpm media:variants --check` | byte caps, provenance, alt coverage, manifest ↔ file ↔ checksum |
 | 9. Upload | `pnpm media:upload` (`--dry-run` first if you like) | the objects in `flowersoverseas-media`, idempotent by checksum, `Cache-Control: public, max-age=31536000, immutable` on each |
-| 10. Snapshot | `pnpm seed:diff --write` | `seed/snapshot/**` back in step with the dataset |
+| 10. Verify | `pnpm media:upload --verify` | every manifest row `HEAD`ed on the public origin: the published `content-length` and `content-type` must equal the row's. No credential and no derived tree needed |
+| 11. Snapshot | `pnpm seed:diff --write` | `seed/snapshot/**` back in step with the dataset |
 
 **Step 7 is all-or-nothing across locales, deliberately.** The first alt row anywhere obliges every
 launch locale to carry one for every product asset, because a locale with no alt text renders the
@@ -102,6 +103,7 @@ from the Drive store of record or `.local/imagery/originals/`, check its manifes
 | Hero LCP candidate | ≤ 90 000 B | the same spec |
 | LCP / CLS | < 2.0 s / < 0.05 | `pnpm lighthouse` |
 | Total bytes in the bucket | **reported, not capped** — 118 variants, 3 012 746 B today | printed by `pnpm seed:check`'s §11 report and by `pnpm media:upload` |
+| Manifest row ↔ **published object** | exact, on demand | `pnpm media:upload --verify` — the only check that reads the bucket. See the note in §6 |
 
 The order matters and is the point: **the per-variant caps fail in `seed:check`, before the bytes
 are ever uploaded.** A 900 KB hero must fail a gate, not a Lighthouse run (spec 006 §6).
@@ -112,8 +114,10 @@ objects, and keeping that cap would have held the catalogue at twelve photograph
 84. What guards against unbounded media now: the per-slot caps above, enforced against committed
 manifest rows that a reviewer reads in a diff; the manifest↔file↔checksum tie, which means nothing
 can be uploaded that no row describes; the upload's own refusals (cap, checksum, watermark, origin
-agreement); and the per-page transfer budget measured in a real browser, which is the number a
-buyer actually pays.
+agreement), each of which now has a test that fails when the refusal is made unreachable rather
+than deleted; `pnpm media:upload --verify`, which audits the published objects against the rows;
+and the per-page transfer budget measured in a real browser, which is the number a buyer actually
+pays.
 
 ---
 
@@ -130,7 +134,7 @@ buyer actually pays.
 - **Withdrawing an image.** Set `reviewState` to `rejected` (or delete the row and its variants).
   The slot returns to the captioned placeholder with no `<img>`; no template changes.
 
-## 6. Four standing notes
+## 6. Five standing notes
 
 - **The image origin must stay crawlable.** When spec 007 lifts `Disallow: /`, the media host must
   not be blocked, or Google cannot fetch the images it evaluates for Core Web Vitals. Since
@@ -143,6 +147,16 @@ buyer actually pays.
   `media.flowersoverseas.com` is a founder action in the Cloudflare dashboard**; in this repository
   it is one line in that file (and `R2_PUBLIC_BASE_URL`, which `pnpm media:upload` checks against
   it and refuses to run if the two disagree).
+- **The manifest's byte column is verified on demand, not continuously.** Every automatic gate
+  runs before the bytes leave this machine, so a row edited *after* an upload — lowering `bytes`
+  from 9 911 to 900, say — leaves `pnpm seed:check` and `pnpm media:variants --check` both clean
+  on a runner that holds no derived tree (measured, `/review 94` round 2). Nothing bad can be
+  *uploaded* that way, because the upload reads the real file; what can drift is the number the
+  budget gates read. `pnpm media:upload --verify` is the audit: 118 public `HEAD`s, about 18
+  seconds, no credential. Run it after an upload and whenever the byte column has been touched by
+  anything but `pnpm media:variants`. It is not a CI job because 118 requests against a
+  rate-limited `pub-*.r2.dev` origin on every pull request would be a worse trade than the drift
+  it catches.
 - **The bucket names deviate from spec 002 §13 Q7.** That section binds `fo-media` /
   `fo-media-preview` / `fo-backups`; what exists is `flowersoverseas-media` and
   `flowersoverseas-backups`, and **there is no preview bucket at all**. Names are configuration, so

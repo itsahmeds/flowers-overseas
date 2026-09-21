@@ -49,11 +49,15 @@ for (const { name, viewport } of CASES) {
       `${GALLERY} must be served; is ENABLE_DEV_UI=true on the target?`,
     ).toBe(200);
 
-    // Cross-origin photographs (TASK-138): wait for them, or an element screenshot can be taken
-    // of a card whose image has not landed.
-    await settleImages(page);
-
     for (const { suffix, selector } of PARTS) {
+      // Cross-origin photographs (TASK-138): settle **this part**, not the page. Its card sits
+      // tens of thousands of pixels down a gallery of every component, so its `loading="lazy"`
+      // image is not requested until something scrolls to it — and until it has arrived, an
+      // element screenshot shows a card the baseline has never contained. Page-wide settling
+      // could not do this job: measured on this page, 19 of its 20 images are never requested at
+      // all, and the only thing that used to start this one was `toHaveScreenshot`'s own
+      // scroll-and-retry racing the origin (`/review 94` round 2's 2-in-9 flake).
+      await settleImages(page, selector);
       await expect(page.locator(selector)).toHaveScreenshot(
         `${name}-${suffix}.png`,
       );
