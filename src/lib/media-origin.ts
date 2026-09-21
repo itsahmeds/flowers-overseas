@@ -25,6 +25,14 @@
  * that writes to the bucket, and `scripts/media-upload.ts` **fails if the two disagree**, so the
  * "single configuration point" is enforced rather than merely intended.
  *
+ * **Where that enforcement is not.** `R2_PUBLIC_BASE_URL` is required at runtime (`lib/env.ts`
+ * refuses to boot without it) but nothing at runtime compares it to this constant — only the
+ * upload script does, and only when it runs. Today that is harmless, because no request path
+ * reads the variable at all: every image URL on every page comes from here, at build time. It
+ * would stop being harmless the day something server-side starts building an image URL from the
+ * environment, and the fix then is to make *that* read this constant rather than to add a check
+ * (`/review 94` round 2 nit).
+ *
  * ## The `r2.dev` risk, stated rather than hidden
  *
  * The configured host is a `pub-*.r2.dev` development URL. Cloudflare rate-limits `r2.dev` and

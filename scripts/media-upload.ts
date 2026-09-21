@@ -1,7 +1,7 @@
 /**
- * `pnpm media:upload [--dry-run] [--only <assetId>] [--force]` — put the derived variants into
- * the media bucket, idempotently, with no database and no queue (spec 006 §2.6, AC-27;
- * ADR-0015; TASK-138).
+ * `pnpm media:upload [--dry-run] [--only <assetId>] [--force] [--verify]` — put the derived
+ * variants into the media bucket, idempotently, with no database and no queue (spec 006 §2.6,
+ * AC-27; ADR-0015; TASK-138).
  *
  * ## Why this is a script and not a worker
  *
@@ -39,6 +39,23 @@
  *    image URL and the CSP `img-src` allowance from. Uploading to a bucket the site does not
  *    read from is the one failure this whole path cannot detect afterwards.
  *
+ * ## `--verify`: auditing the bucket against the manifest, with no credential
+ *
+ * Those four gates all run *before* the bytes leave this machine, which leaves one direction
+ * unchecked and `/review 94` round 2 measured it: lowering a row's `bytes` from 9 911 to 900
+ * leaves `pnpm seed:check` and `pnpm media:variants --check` both clean in the CI condition,
+ * because neither has the file. The hole is narrow — a sanctioned upload reads the real file, so
+ * an over-cap object cannot get into the bucket that way — but "no row can disagree with its
+ * file" was a stronger claim than what ran.
+ *
+ * `pnpm media:upload --verify` closes it from the other end. It `HEAD`s every row's `objectKey`
+ * on the **public** origin and compares the published `content-length` and `content-type` to the
+ * row, so it needs no access key, no secret and no derived tree: the manifest and a network are
+ * the whole input. It is an operator command rather than a CI job because 118 requests against a
+ * rate-limited `pub-*.r2.dev` origin is not a thing to put on every pull request; the runbook
+ * (`docs/runbooks/imagery.md` §6) names when to run it — after an upload, and before trusting a
+ * byte column nobody watched being written.
+ *
  * ## Credentials
  *
  * Read through `@next/env`'s `loadEnvConfig` (the loader `scripts/db-migrate.ts` uses) and parsed
@@ -58,6 +75,7 @@ import { z } from "zod";
 
 import { SLOT_BYTE_CAPS } from "../seed/budgets.ts";
 import {
+  VARIANT_MANIFEST_PATH,
   checkVariants,
   readMediaAssets,
   readVariantManifest,
@@ -413,20 +431,89 @@ export async function syncObject(options: {
   };
 }
 
+/**
+ * Audit what is published against what the manifest says is published: one `HEAD` per row on the
+ * **public** origin, comparing `content-length` and `content-type` to the row.
+ *
+ * No credential, no signing, no derived tree — which is the point. The gates in `loadUploadSet()`
+ * all run before the bytes leave this machine and are blind to a manifest edited afterwards; this
+ * is the only check that reads the bucket. Every problem is collected rather than thrown on, so
+ * one run names every disagreement instead of the first.
+ *
+ * `concurrency` is deliberately small: the origin is rate-limited (`docs/tasks/TASK-138.md`
+ * escalation 2) and a burst of 118 is exactly the shape that makes it answer slowly.
+ */
+export async function verifyPublished(options: {
+  readonly rows: readonly MediaVariantManifest[];
+  readonly fetcher: Fetcher;
+  readonly origin?: string;
+  readonly concurrency?: number;
+}): Promise<readonly string[]> {
+  const origin = options.origin ?? MEDIA_ORIGIN;
+  const size = Math.max(1, options.concurrency ?? 8);
+  const problems: string[] = [];
+
+  const check = async (row: MediaVariantManifest): Promise<void> => {
+    // No `authorization` header and no `x-amz-*`: a public object needs none, and a command that
+    // asked for a secret would be one more place a secret could be printed.
+    const response = await options.fetcher(`${origin}/${row.objectKey}`, {
+      method: "HEAD",
+      headers: {},
+    });
+    if (response.status === 404) {
+      problems.push(
+        `${row.objectKey}: the manifest lists it but the bucket does not publish it (404 at ${origin}) — run \`pnpm media:upload\``,
+      );
+      return;
+    }
+    if (response.status !== 200) {
+      problems.push(
+        `${row.objectKey}: HEAD returned ${String(response.status)} from ${origin}`,
+      );
+      return;
+    }
+    const length = Number(response.headers.get("content-length"));
+    if (!Number.isInteger(length)) {
+      problems.push(
+        `${row.objectKey}: no usable \`content-length\` on the published object`,
+      );
+    } else if (length !== row.bytes) {
+      problems.push(
+        `${row.objectKey}: ${String(length)} B published but ${String(row.bytes)} B in ${VARIANT_MANIFEST_PATH} — the row and the object it names disagree`,
+      );
+    }
+    const type = response.headers.get("content-type");
+    const expected = contentTypeFor(row.format);
+    if (type !== expected) {
+      problems.push(
+        `${row.objectKey}: published as \`${type ?? "(none)"}\`, expected \`${expected}\``,
+      );
+    }
+  };
+
+  for (let index = 0; index < options.rows.length; index += size) {
+    await Promise.all(options.rows.slice(index, index + size).map(check));
+  }
+  return problems;
+}
+
 export interface UploadArgs {
   readonly dryRun: boolean;
   readonly force: boolean;
+  readonly verify: boolean;
   readonly only?: readonly string[];
 }
 
 export function parseArgs(argv: readonly string[]): UploadArgs {
   let dryRun = false;
   let force = false;
+  let verify = false;
   const only: string[] = [];
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index] ?? "";
     if (arg === "--dry-run") dryRun = true;
     else if (arg === "--force") force = true;
+    else if (arg === "--verify") verify = true;
     else if (arg === "--only" || arg.startsWith("--only=")) {
       const value = arg.startsWith("--only=")
         ? arg.slice("--only=".length)
@@ -436,11 +523,11 @@ export function parseArgs(argv: readonly string[]): UploadArgs {
       only.push(value);
     } else {
       throw new Error(
-        `unknown flag \`${arg}\` — \`pnpm media:upload [--dry-run] [--only <assetId>] [--force]\``,
+        `unknown flag \`${arg}\` — \`pnpm media:upload [--dry-run] [--only <assetId>] [--force] [--verify]\``,
       );
     }
   }
-  return { dryRun, force, ...(only.length > 0 ? { only } : {}) };
+  return { dryRun, force, verify, ...(only.length > 0 ? { only } : {}) };
 }
 
 /* c8 ignore start -- the connected half: proved by a real run against the bucket, not in CI */
@@ -456,14 +543,6 @@ async function main(): Promise<void> {
     root,
   );
 
-  const config = readR2Config(process.env);
-  assertOriginAgrees(config.R2_PUBLIC_BASE_URL);
-
-  const items = await loadUploadSet({
-    root,
-    ...(args.only === undefined ? {} : { only: args.only }),
-  });
-
   const fetcher: Fetcher = async (url, init) =>
     await fetch(url, {
       method: init.method,
@@ -472,6 +551,32 @@ async function main(): Promise<void> {
         ? {}
         : { body: new Uint8Array(init.body) as BodyInit }),
     });
+
+  // `--verify` reads the public origin only, so it runs before any credential is asked for: a
+  // command that needs no secret must not fail because a secret is absent.
+  if (args.verify) {
+    const rows = (readVariantManifest(root)?.rows ?? []).filter(
+      (row) => args.only === undefined || args.only.includes(row.assetId),
+    );
+    const problems = await verifyPublished({ rows, fetcher });
+    if (problems.length > 0) {
+      throw new Error(
+        `${String(problems.length)} published object(s) disagree with ${VARIANT_MANIFEST_PATH}:\n${problems.join("\n")}`,
+      );
+    }
+    process.stdout.write(
+      `${String(rows.length)} row(s) verified against ${MEDIA_ORIGIN}/: every object is published with the byte count and content type its row records.\n`,
+    );
+    return;
+  }
+
+  const config = readR2Config(process.env);
+  assertOriginAgrees(config.R2_PUBLIC_BASE_URL);
+
+  const items = await loadUploadSet({
+    root,
+    ...(args.only === undefined ? {} : { only: args.only }),
+  });
 
   let uploaded = 0;
   let skipped = 0;

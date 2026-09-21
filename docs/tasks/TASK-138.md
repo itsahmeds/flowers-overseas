@@ -71,7 +71,17 @@ their images exist. This task changes where images are served from; it does not 
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- **From `/review 94` (2026-09-21):** the uploader's cap and watermark refusals have no
+  behavioural test — both made unreachable with 4 357 unit tests still green; add two
+  `loadUploadSet()` cases against a temp tree.
+- **From `/review 94` (2026-09-21):** the no-tree branches of `media-watermark.test.ts` (source
+  grep) and `media-budgets.test.tsx` (`variants.length > 0`) must not stand in for AC-16 / AC-14
+  coverage.
+- **From `/review 94` (2026-09-21):** a manifest `bytes` value can disagree with its object with
+  no gate noticing (verified); add a public-origin `HEAD` verification or state the limit plainly
+  instead of "no row can disagree with its file".
+- **From `/review 94` (2026-09-21):** `listing-mobile-card-image` still flakes 2 runs in 9 (origin
+  max 5.34 s vs the helper's 5 s bound); `## Result` must not present the flake as resolved.
 
 ## Escalations
 
@@ -138,11 +148,14 @@ and none of them needs the bytes to be in the repository:
    `objectKey`, and `pnpm media:variants --check` ties rows to files by byte count and SHA-256
    wherever the derived tree exists (always, before an upload), plus manifest-internal checks —
    pinned pipeline, canonical keys, declared boxes — everywhere, including a runner holding no
-   image.
-3. **The upload refuses.** `scripts/media-upload.ts` will not send a byte unless `checkVariants()`
-   is clean, every file is inside its slot's cap, no file carries the demo watermark (the AC-16
-   invariant moved here from the committed tree, where it can no longer run) and
-   `R2_PUBLIC_BASE_URL` equals `MEDIA_ORIGIN`.
+   image. **What that does not cover**, and round 2 measured it: once the bytes are in the bucket,
+   a row's `bytes` can be edited afterwards and no automatic gate notices, because no automatic
+   gate has the file. `pnpm media:upload --verify` is the audit that closes it — see **Round 2**.
+3. **The upload refuses, and each refusal now has a test that can fail.** `scripts/media-upload.ts`
+   will not send a byte unless `checkVariants()` is clean, every file is inside its slot's cap, no
+   file carries the demo watermark (the AC-16 invariant moved here from the committed tree, where
+   it can no longer run) and `R2_PUBLIC_BASE_URL` equals `MEDIA_ORIGIN`. Round 2 of `/review 94`
+   showed that two of those four were unfalsifiable — see **Round 2** below.
 4. **Page weight is still measured where a buyer pays it.** `tests/e2e/media-budgets.spec.ts`
    counts every image response by content type, whatever origin serves it, against 204 800 B per
    page and 90 000 B for the hero — written origin-agnostically in TASK-080 for exactly this day,
@@ -163,9 +176,10 @@ state), and `tests/e2e/seo-canonical.spec.ts` fails only because the local harne
 while the build's `NEXT_PUBLIC_SITE_URL` is :3000.
 
 **Two things a reviewer should look at closely.** (a) `tests/support/settle-images.ts`: moving the
-images to a remote origin made two visual specs genuinely flaky — a baseline passed on one run and
-failed on the next with the photograph missing — so the visual specs now scroll the page and wait
-for `decode()`, bounded at 5 s. (b) `tests/visual/__screenshots__/visual/darwin/country-shop-*.png`
+images to a remote origin made two visual specs genuinely flaky. **The first version of this
+paragraph claimed that was fixed; it was not** — `/review 94` round 2 measured
+`listing-mobile-card-image` still failing 2 runs in 9. What the helper does now, and why it is a
+different fix rather than a bigger number, is in **Round 2** below. (b) `tests/visual/__screenshots__/visual/darwin/country-shop-*.png`
 were **already stale on main**: they were recorded by TASK-109 and TASK-080 landed imagery
 afterwards, so they still show placeholders for products that have had photographs since. The
 pixels this branch produces there are the pixels main produces; the baselines are refreshed and
@@ -191,3 +205,110 @@ regardless.
 **Handed on:** spec 002 §13 Q7's bucket names and the missing preview bucket; the custom domain;
 and, for whoever revisits it, the `NEXT_PUBLIC_MEDIA_BASE_URL` alternative to the committed origin
 constant.
+
+---
+
+### Round 2 (2026-09-21) — what `/review 94`'s FAIL asked for, and what it actually found
+
+**1. The uploader's two refusals were unfalsifiable. They are not now.** The reviewer replaced
+`const cap = SLOT_BYTE_CAPS[slot]` with `Number.MAX_SAFE_INTEGER || …` and put the watermark
+branch behind `items.length < 0` — both refusals dead, both source strings intact — and all 4 357
+unit tests stayed green. With the committed tree gone, that script is AC-16's only file-level
+enforcement and AC-15's last per-file one.
+
+`tests/unit/media-upload.test.ts` gains four cases against `loadUploadSet()` on a fixture tree
+(`tests/unit/support/derived-tree.ts`, a temporary repository root built from the repository's own
+`seed/data/media.json`, so the slot and therefore the cap are the shipped ones): a clean tree
+loads, an over-cap file is refused naming the cap, a watermarked file is refused, and a row whose
+bytes disagree with its file is refused. The over-cap fixture is 384×384 deterministic RGB noise —
+genuinely 55 190 B against the 18 000 B `occasionTile` cap, not a faked byte count.
+
+**Proved by mutation, both with and without a derived tree** (the second is the CI condition;
+`.local/media/` moved away):
+
+| Mutation | Result |
+|---|---|
+| `const cap = Number.MAX_SAFE_INTEGER \|\| SLOT_BYTE_CAPS[slot]` | `refuses a file above its slot's cap` **fails** |
+| `if (items.length < 0 && (await isWatermarked(bytes)))` | `refuses a file carrying the demo watermark` **fails**, and so does the watermark file's own case |
+
+Both mutations reverted; `git diff scripts/media-upload.ts` shows only the `--verify` addition.
+
+**2. The two stand-ins that could not fail are gone.**
+`tests/unit/media-watermark.test.ts`'s no-tree branch was `expect(uploader).toContain("isWatermarked")`
+— a grep over source that passed against the neutered build. It now builds a marked fixture and a
+clean twin and asserts the uploader refuses one and accepts the other, on **every** machine; the
+loop over this machine's real derived tree stays as the stronger statement where it can be made,
+but the claim no longer rests on it. `tests/unit/media-budgets.test.tsx`'s
+`expect(variants.length).toBeGreaterThan(0)` is replaced by a `checkVariants()` call over a fixture
+tree whose row claims different bytes than its file, asserting the problem is reported — mutation-
+proved by guarding `data.byteLength !== row.bytes` behind `problems.length < 0`, which turns it red.
+In the CI condition the four media unit files run **70 tests, 0 skipped**.
+
+**3. The manifest's byte column: implemented, not weakened.** The reviewer's finding is exact —
+lowering `fo-bq-001-hero/384.avif` from 9 911 to 900 leaves `seed:check` and `media:variants
+--check` both clean on a runner with no tree. `pnpm media:upload --verify` closes it from the
+bucket end: a public `HEAD` per manifest row comparing the published `content-length` and
+`content-type` to the row, with **no access key, no secret and no derived tree**. Real runs, not
+faked: 118 rows verified against the live bucket in 18 s; then the reviewer's own mutation
+(9 911 → 900) reproduced, and `--verify` exits 1 with
+`media/fo-bq-001-hero/384.avif: 9911 B published but 900 B in seed/data/media-variants.json`.
+Six unit cases cover the decision layer through the injected fetcher, including that it sends no
+`authorization` header at all.
+
+It is an operator command and **not** a CI job — 118 requests against a rate-limited `pub-*.r2.dev`
+origin on every pull request is a worse trade than the drift it catches — so the honest statement,
+now in `docs/runbooks/imagery.md` §6 and in the README, is: *the byte column is verified on demand,
+not continuously; run `--verify` after an upload and whenever anything but `pnpm media:variants`
+has touched it.* The stronger sentence this brief used to carry is corrected above.
+
+**4. The visual flake — the measurement found a bigger fault than the bound.** Raising the 5 000 ms
+bound and making its expiry loud instead of silent turned the flake into a failure on **every** run,
+which is how the real cause surfaced: on `/dev/components` at 1440 px, **19 of the page's 20 images
+had never started loading at all**. They are `loading="lazy"`, the page is ~32 000 px tall, and the
+helper's whole-page scroll ran as one synchronous task, so intersection was only ever evaluated at
+the final position. Measured directly: those 19 have `complete === false` **and `currentSrc === ""`**
+— the browser saying it was never asked. The old helper was very nearly a no-op; what made the
+baselines pass was `toHaveScreenshot`'s own scroll-and-retry racing the origin inside its 5 s expect
+timeout. **Waiting longer would never have fixed it.**
+
+So `settleImages` now settles **the element about to be photographed**: it scrolls it into view,
+sets its images `eager` so the request is a fact rather than an intersection heuristic, waits for
+each to reach a terminal state, decodes, and throws naming the URLs if any is still in flight.
+`tests/visual/listing.spec.ts` settles each of its six parts immediately before that part's
+screenshot. Page mode is kept for `country-shop.spec.ts` with the scroll unchanged — it waits only
+for images that have **started** — because making it load more images would be a pixel change to
+committed baselines dressed as a test fix.
+
+Both properties the review insisted on, proved rather than asserted:
+
+- **A genuinely missing image still fails red.** With every media request fulfilled as 404, the
+  helper returns in 38 ms (`complete: true, naturalWidth: 0` — terminal), the screenshot is taken,
+  and the *comparison* is what goes red. Unchanged and correct.
+- **A slow image no longer gets screenshotted.** With the origin delayed past the budget, the
+  helper throws `settleImages: 1 image(s) were still loading after 2000 ms in
+  [data-fo-listing-state="cardImage"]`, naming the URL, instead of producing a pixel diff nobody
+  can read.
+
+Result on this machine: `listing.spec.ts` **6 of 6** green (3.8 s per run, against 21.4 s and a
+hard failure before), and the full visual suite **9 of 9 green** at 21–23 s per run, load averages
+1.27–6.88. The reviewer's sample was 7 of 9. The 20 s ceiling stays, justified against the measured
+distribution — round 2's 30-key burst (p50 0.74 s, max 5.34 s) and three cache-busted 118-object
+bursts re-measured here at load 5.66 (p50 1.25 / 1.56 / 2.51 s, max 2.67 / 3.10 / 3.72 s, every
+response a 200) — but it is now a ceiling that is never approached rather than a bound inside the
+distribution.
+
+**Nits taken:** the stale "6 MB cap" sentence in `tests/e2e/media-budgets.spec.ts`, the two stale
+`seed:check` phrases in `README.md`, and a paragraph in `src/lib/media-origin.ts` saying plainly
+that nothing at runtime compares `R2_PUBLIC_BASE_URL` to the constant — and why that is harmless
+today and what the fix is the day it is not. The third nit (template paragraphs in this brief) does
+not reproduce: neither "in the spec's own words" nor a `## Read` stub is present at this commit.
+
+**Not addressed, as instructed:** the `preview` job's Vercel 500 (TASK-137), the two parallelism
+flakes in `corridor.spec.ts:52` and `destinations-hub.spec.ts:113`, and the two founder-gated
+escalations above.
+
+**Gates run locally for this round:** `typecheck`, `lint`, `format:check`, `check:no-db`,
+`seed:check`, `codebase:map --check` — all clean; unit **4 366 passed / 5 skipped** (the 5 are
+`audit-secrets.test.ts`, which needs gitleaks; CI installs it) and **70 passed / 0 skipped** across
+the four media files in the CI condition; visual 45 × 9 runs green. `pnpm build` was taken under
+`build-slot.sh` because the visual measurement cannot be made without it.
