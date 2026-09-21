@@ -886,6 +886,21 @@ jobs:
         if: always()
         run: rm -f .env.local build.log
 
+  # AC-20 / T-21 (TASK-002): every commit of the branch under `@commitlint/config-conventional`.
+  #
+  # The range is resolved in its own step instead of being interpolated from the event, because
+  # this job also runs on `workflow_dispatch` — which is how CI is re-fired on a pull request that
+  # is already ready and already labelled (b8dc8d1) — and on that event
+  # `github.event.pull_request.base.sha` and `.head.sha` are both empty. Every dispatch run
+  # therefore carried a guaranteed red job: commitlint exited 9 with "--from and --to point to the
+  # same commit", and the summary step went on to run `git rev-list --count ..`. Found by
+  # `/review 84` round 2, fixed by TASK-137. On a dispatch the range is the merge base with the
+  # default branch, which is the same set of commits the pull-request event would have given; when
+  # that leaves nothing to lint (a dispatch on the default branch itself) the job says so and
+  # passes, because an empty range is not a convention violation.
+  #
+  # Every step below keeps its script free of `${{ }}` interpolation and takes the range through
+  # `env:` from `steps.range.outputs`, so no command can be handed a value the event did not have.
   commitlint:
     name: commitlint
     if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci:full') }}
@@ -896,23 +911,65 @@ jobs:
         with:
           fetch-depth: 0
       - uses: ./.github/actions/setup
-      - name: Lint every commit in the PR
-        id: commitlint
+      - name: Resolve the commit range
+        id: range
+        env:
+          EVENT_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          EVENT_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
           set -uo pipefail
+          head="${EVENT_HEAD_SHA:-}"
+          if [ -z "$head" ]; then
+            head=$(git rev-parse HEAD)
+          fi
+          base="${EVENT_BASE_SHA:-}"
+          source="the pull_request event"
+          if [ -z "$base" ]; then
+            branch="${DEFAULT_BRANCH:-main}"
+            source="the merge base with $branch"
+            git fetch --no-tags --quiet origin "$branch"
+            if ! base=$(git merge-base FETCH_HEAD "$head"); then
+              echo "::error::no merge base between $head and origin/$branch: the commit range cannot be resolved"
+              exit 1
+            fi
+          fi
+          {
+            echo "base=$base"
+            echo "head=$head"
+            echo "source=$source"
+          } >> "$GITHUB_OUTPUT"
+          echo "range: $base..$head ($source)"
+      - name: Lint every commit in the range
+        id: commitlint
+        env:
+          BASE_SHA: ${{ steps.range.outputs.base }}
+          HEAD_SHA: ${{ steps.range.outputs.head }}
+        run: |
+          set -uo pipefail
+          if [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "$HEAD_SHA" ]; then
+            echo "no commits in range; nothing to lint"
+            exit 0
+          fi
           pnpm exec commitlint \
-            --from "${{ github.event.pull_request.base.sha }}" \
-            --to "${{ github.event.pull_request.head.sha }}" \
+            --from "$BASE_SHA" \
+            --to "$HEAD_SHA" \
             --verbose 2>&1 | tee commitlint.log
           exit "${PIPESTATUS[0]}"
       - name: Summarise the commit range (AC-20)
+        id: summary
         if: always()
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ steps.range.outputs.base }}
+          HEAD_SHA: ${{ steps.range.outputs.head }}
+          RANGE_SOURCE: ${{ steps.range.outputs.source }}
+          RESULT: ${{ steps.commitlint.outcome }}
         run: |
           set -uo pipefail
-          commits=$(git rev-list --count "$BASE_SHA..$HEAD_SHA")
+          commits=0
+          if [ -n "$BASE_SHA" ] && [ -n "$HEAD_SHA" ] && [ "$BASE_SHA" != "$HEAD_SHA" ]; then
+            commits=$(git rev-list --count "$BASE_SHA..$HEAD_SHA")
+          fi
           problems=0
           if [ -f commitlint.log ]; then
             problems=$(grep -cE '^\s*✖' commitlint.log || true)
@@ -921,7 +978,8 @@ jobs:
             echo "### commitlint (AC-20 / T-21)"
             echo ""
             echo "- commits linted: $commits (\`$BASE_SHA..$HEAD_SHA\`)"
-            echo "- config: \`@commitlint/config-conventional\`; result: ${{ steps.commitlint.outcome }}, $problems problem(s)"
+            echo "- range from: ${RANGE_SOURCE:-unresolved}"
+            echo "- config: \`@commitlint/config-conventional\`; result: ${RESULT:-unknown}, $problems problem(s)"
           } >> "$GITHUB_STEP_SUMMARY"
 
   # AC-22 / T-23 (TASK-009): the three SEO validator CLIs over their committed fixture

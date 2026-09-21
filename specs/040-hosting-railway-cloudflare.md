@@ -820,6 +820,42 @@ Corrected (orchestrator ruling, 2026-09-18, binding):
   `/en` 401, recorded on TASK-135.
 Raised by: orchestrator, 2026-09-18, on the staging build log; implemented by TASK-135.
 
+**A2 — AC-26 inherits spec 001 AC-29's preview criterion, and inherits the browser suites' origin with it (§5.5 "`preview` job", AC-26; TASK-137, 2026-09-21).**
+Original: AC-26 — "The `preview` job resolves the Railway PR environment's Cloudflare-proxied URL,
+fails (never skips) when none appears within 15 minutes, and asserts three properties on it:
+unauthenticated 401, `x-fo-region` reporting the Amsterdam region, and `X-Robots-Tag: noindex`;
+`e2e`, `visual`, `a11y` and `lighthouse` all run against that URL."
+Trigger: TASK-137 had to decouple the browser gates from Vercel before this spec's Railway PR
+environments exist. Vercel is ADR-0018's cold fallback with an empty environment store: its preview
+answered `/api/health` 500 **with** the bypass secret, and since `e2e`, `visual`, `a11y` and
+`lighthouse` are each `needs: preview`, no Playwright suite had ever run in CI on this project. As
+an interim, `preview` now builds the app on the runner, publishes it as the `preview-build`
+artifact and serves it at `http://localhost:3000`; the Vercel probe survives inside `preview` as a
+`continue-on-error` evidence step. Spec 001 §14 A18 supersedes AC-29 / T-30 and points here.
+Corrected — AC-26 gains three clauses, all owed by the task that implements it:
+1. **It is the only home of the preview-deployment criterion.** Its three properties are read as
+   the Railway form of spec 001 AC-29's: authentication in front of every non-production
+   environment (401, not an SSO 302), proof the origin runs in Amsterdam (`x-fo-region`, not
+   `x-vercel-id`), and `X-Robots-Tag: noindex`. The probe is **blocking** on that environment; the
+   interim `continue-on-error` Vercel step is deleted in the same PR, not left beside it.
+2. **The browser suites move with it.** `e2e`, `visual`, `a11y` and `lighthouse` are re-pointed from
+   the runner-served origin to the Cloudflare-proxied PR URL, and
+   `.github/actions/preview-origin` is retired at that moment — the artifact exists only because
+   there was no environment to point at.
+3. **Three properties the localhost origin cannot prove are restored here, and their docstrings
+   corrected** (`/review 90`, 2026-09-21): `tests/e2e/security-headers.spec.ts` states its reason
+   for existing as "the unit test cannot tell whether `next.config.ts`'s `headers()` reached a
+   cached edge response" — a bare `next start` has no edge, so the file does not prove that today
+   and its docstring overstates it; `http://localhost` pins the `vercel.live`, HSTS and
+   cookie-`Secure` assertions of `consent*.spec.ts`, `banner.spec.ts` and `security-headers.spec.ts`
+   on their negative branch; and `APP_ENV` is necessarily `development` on the runner where a PR
+   environment is `preview` (the delta is Sentry-off and log prettiness only — indexability, CSP
+   mode, pseudo-locales and `/dev/components` are identical). `tests/unit/csp.test.ts` and
+   `tests/unit/seo-env.test.ts` cover all three today, so nothing is unasserted; nothing is asserted
+   *as served* either, and this clause is what makes that temporary.
+Raised by: `/review 90` (PR #90), 2026-09-21; accepted by the founder the same day; interim
+implemented by TASK-137, the clauses above owed by the AC-26 task.
+
 ## 15. Task estimate (input to `/plan-tasks`)
 
 Eight one-day tasks. Dependencies in brackets; tasks 3 and 4 are independent of each other, and 6

@@ -67,6 +67,17 @@ be green. One paragraph or a short list — no restatement of the spec.
 
 One dated bullet per `/review`, newest last.
 
+- **From `/review 84` round 2 (2026-09-21) — carried in, same family, same owner.** `commitlint`
+  is *unrunnable* on a `workflow_dispatch` run: its `if` admits the event, but its command
+  interpolates `github.event.pull_request.base.sha`, which is empty off a pull-request event, so
+  both SHAs resolve empty and the job exits 9 with "Invalid input flags: --from and --to point to
+  the same commit". Locally `commitlint --from <base> --to HEAD` reports 0 problems over the same
+  commits, and the job was green on the earlier `pull_request` run. Fix it in the same pass that
+  fixes `preview`: a dispatch run should either compute its range from the merge base or skip the
+  job honestly, never fail on a range it was never given. *(Missed in round 1 of this PR because
+  it sat below `## Result`, outside any section; moved here by the finisher, done 2026-09-21 —
+  see `## Result`.)*
+
 - **From `/review 90` round 1 (2026-09-21) — FAIL, one required change.** The `commitlint`
   carry-in at the foot of this brief (found by `/review 84` round 2, bound here by "fix it in the
   same pass that fixes `preview`") is **not addressed and not declared**: `.github/workflows/ci.yml`
@@ -121,6 +132,13 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   AC-26 already schedules the replacement — when PRs get a Railway environment, that is the
   deployment this step probes. **Open question for the reviewer:** whether AC-29 should be
   re-pointed at Railway by spec, not just by this step's comment.
+  **Answered (`/review 90`, accepted by the founder, 2026-09-21): yes, and in this pass.** Spec 001
+  §14 **A18** supersedes AC-29 / T-30 and names the replacement gate; spec 040 §14 **A2** puts the
+  three properties on AC-26 against the Railway PR environment, restores the probe to **blocking**
+  there, and makes the AC-26 task delete the interim `continue-on-error` step, re-point the four
+  downstream jobs and retire `.github/actions/preview-origin`. The two named residues of the
+  localhost origin (`security-headers.spec.ts`'s docstring; the `vercel.live` / HSTS /
+  cookie-`Secure` assertions pinned on their negative branch) are clause 3 of A2.
 - **(2026-09-21) Findings the suites surfaced, belonging to other tasks — not fixed here.**
   (a) `visual` will be red on CI: `tests/visual/__screenshots__/visual/linux/` holds **3**
   baselines against **84** in `darwin/`, because this suite has never run on a Linux runner. The
@@ -166,7 +184,7 @@ a real conclusion for the first time on this project:
 
 | job | before (PRs 84, 85, 87) | this PR |
 |---|---|---|
-| `preview` | failure after a 15-minute wait | **success in 81 s** (build, 17 MB artifact, `/api/health` 200) |
+| `preview` | failure after a 15-minute wait | **success in 69 s** (build, 17 MB artifact, `/api/health` 200) |
 | `e2e` | skipped | **success** — 828 passed, 6 skipped, 3.8 min |
 | `a11y` | skipped | **success** — 83 passed, 42 s |
 | `visual` | skipped | **failure** — 45 specs, all red: 42 have no `linux/` baseline, 3 mismatch the 3 stale ones |
@@ -180,3 +198,47 @@ did not block anything: deployment present, `302` to `vercel.com/sso-api` (prote
 Handed to later tasks: the findings in `## Escalations`, and the `linux/` baselines inside the
 `playwright-report-visual` artifact of this run (104 MB) — the screenshots the job wrote are what
 `playwright.config.ts` says the Linux baselines are produced from. **None was committed here.**
+
+
+## Round 2 (finisher, 2026-09-21) — the required change and the spec amendment
+
+**1. `commitlint` is runnable on a `workflow_dispatch` run.** The job's three scripts are now free
+of `${{ }}` interpolation and take their range through `env:` from one `range` step: on a
+pull-request event that step passes the event's own `base.sha`/`head.sha` through; on any other
+event — a dispatch, which is how CI is re-fired on an already-ready, already-labelled PR — it
+fetches the default branch and takes `git merge-base FETCH_HEAD HEAD`, the same set of commits the
+pull-request event would have given. An empty range (a dispatch on the default branch itself) lints
+nothing and passes; a range that genuinely cannot be resolved `::error::`s and exits 1. The summary
+step reads the same two outputs, reports 0 commits rather than running `git rev-list --count ..`,
+and prints which event the range came from. Reproduced the old failure before fixing it:
+`pnpm exec commitlint --from "" --to "" --verbose` → *"Invalid input flags: --from and --to point to
+the same commit"*, **exit 9**.
+
+**Tests (5 new cases, `tests/unit/ci-workflow.test.ts` → "the commitlint job resolves its own commit
+range").** Four of the five *execute* the job's scripts the way the runner does
+(`bash --noprofile --norc -eo pipefail`, values through `env:`) against a throwaway git repository —
+a clone with a two-commit branch off `main` — because the defect was in what the shell did with an
+empty variable, not in what the YAML said: merge-base resolution with no event SHAs, passthrough
+with them, the empty-range guard and the real invocation (a stubbed `pnpm` on `PATH` records the
+argv, so "`--from <base> --to <head>` and no invocation at all on an empty range" is asserted, not
+assumed), and the summary on an unresolved range. The fifth is the defect in one assertion: no step
+of this job may put `${{ github.event… }}` in a command. All five were run against the pre-fix
+`ci.yml` first and **all five fail there** (5 failed / 64 skipped); green after: 69 passed in this
+file, 81 with `tests/unit/vercel-config.test.ts`.
+
+**2. AC-29 re-pointed by spec, not by a workflow comment.** `specs/001-repo-dev-os-bootstrap.md`
+§14 **A18** records AC-29 / T-30 as *superseded*, states that no gate in this repository asserts
+them in their Vercel form after 2026-09-21, and names the replacement.
+`specs/040-hosting-railway-cloudflare.md` §14 **A2** gives AC-26 the three properties in their
+Railway form and three clauses the AC-26 task owes: the probe is **blocking** there and the interim
+`continue-on-error` step is deleted in the same PR; the four downstream jobs move to the
+Cloudflare-proxied URL and `.github/actions/preview-origin` is retired; and the three properties the
+localhost origin cannot prove — `security-headers.spec.ts`'s cached-edge docstring, the
+`vercel.live` / HSTS / cookie-`Secure` assertions stuck on their negative branch, and
+`APP_ENV=development` — are restored with their docstrings corrected.
+`tests/unit/vercel-config.test.ts`'s AC-29 block now says in its docstring that it pins *evidence*
+and points at both amendments.
+
+**Not touched, by instruction:** `visual`'s Linux baselines (TASK-139) and everything under `src/`.
+The measured `preview` figure above is corrected from 81 s (queued) to **69 s** (step timings
+14:21:37 → 14:22:46), per the review.

@@ -84,6 +84,14 @@ interface Workflow {
  * Protection, the `fra1` function region and `X-Robots-Tag: noindex`, made against whatever
  * Vercel deployed and reported in the step summary — but no longer able to deny four suites an
  * origin. The `Vercel` check itself still sits on the pull request and still means what it says.
+ *
+ * Since 2026-09-21 that demotion has a spec behind it rather than only a workflow comment:
+ * **spec 001 §14 A18 supersedes AC-29 / T-30**, and spec 040 §14 A2 puts the three properties —
+ * authentication in front of a non-production environment, an Amsterdam origin, and
+ * `X-Robots-Tag: noindex` — on spec 040 AC-26, against the Railway PR environment, where the probe
+ * is blocking again. So the assertions below are deliberately assertions about *evidence*: they
+ * pin that the step records the three facts and cannot fail the job, and the AC they once enforced
+ * is enforced by the AC-26 task, not by this file.
  */
 describe("ci.yml preview gate (AC-29 / T-30)", () => {
   const workflow = parse(read(".github/workflows/ci.yml")) as Workflow;
