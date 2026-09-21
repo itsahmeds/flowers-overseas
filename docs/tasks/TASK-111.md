@@ -52,6 +52,61 @@ One dated bullet per `/review`, newest last.
   `/en/poland/flowers` served "Page not found" until the build was redone. Case-insensitive
   filesystem only; not reachable on the Linux of CI, Railway or Vercel, which is why the two
   casing e2e cases skip on darwin and run there.
+- 2026-09-21 `/review 89` round 2 — **the required change is accepted.** Both uppercase cases now
+  assert `toBe(404)`, and the reviewer reproduced the premise independently on a disposable build
+  in `~/dev/fo-wt-110`: `/en/poland/flowers/Roses` and `/en/poland/occasions/Mothers-Day` both
+  answer **200** with no `Location` on this APFS checkout, which is the response the old
+  `[200, 404]` set accepted as a pass. The casing guard is additionally covered on every platform
+  by `tests/unit/catalog-routes-depth4.test.ts` (six uppercase rows, `toEqual({ kind: "notFound" })`),
+  so the darwin skip leaves no gap in the logic — only in the served proof, which CI's Linux runs.
+- 2026-09-21 `/review 89` round 2 — **required (AC-24 / T-24):** the LCP assertions on the country
+  occasion page are vacuous **today, not hypothetically**. Measured on the built server
+  (`pnpm build && pnpm start`), `/en/poland/occasions/mothers-day` renders **0 `<img>`, 0
+  `<link rel="preload" as="image">`, 0 `loading="eager"`, 0 `fetchpriority="high"`** — all seven
+  Mother's Day cards are placeholders, because no Mother's Day SKU has an approved photograph. So
+  `tests/unit/catalog-occasion-page.test.tsx:163` and `tests/e2e/country-occasion.spec.ts:159`
+  compare 0 to 0 and pass with their subject removed, on both layers, while their names claim
+  AC-24. The category twin has teeth only by data accident (`/en/poland/flowers/roses`: 12 cards,
+  first is an asset, 1 preload, 1 eager), and its e2e form
+  (`tests/e2e/country-category.spec.ts:180`) is self-referential in the same way — `priority` is
+  counted from the page itself. Make all four falsifiable: the expected count must be a stated
+  number derived from the data, never the page's own output, and on the occasion page `toBe(0)`
+  with the reason written down so it goes red the day a photograph lands.
+- 2026-09-21 `/review 89` round 2 — **required (the record):** both `## Result` sections say the
+  shipped AC-24 behaviour "is right (the reviewer counted one `as="image"` preload in the built
+  HTML)". That count was the **category** page. State that the country occasion page ships with no
+  product photograph in any locale, that it is deliberately outside the Lighthouse URL set, and
+  that nothing therefore measures its LCP.
+- 2026-09-21 `/review 89` round 2 — **required (skip predicate and a wrong citation):** the new
+  comments in both specs say the skip is "the shape `tests/e2e/corridor.spec.ts` already uses". It
+  is not: `corridor.spec.ts` asserts `/en/send-flowers-to/Poland` `toBe(404)` with **no** skip, and
+  the reviewer measured that URL answering **200** on the same APFS build — that case is red on any
+  local macOS run. The repo's real precedent is `tests/e2e/locale-routing.spec.ts:45`
+  `skipsOnCaseInsensitiveHost(baseURL)`, which skips only when the **target host is localhost**, so
+  the assertion still runs when Playwright runs from a Mac against the preview or Railway. Adopt
+  that predicate and correct the citation.
+- 2026-09-21 `/review 89` round 2 — nits, not blocking: (a) `catalog-occasion-page.test.tsx:150` —
+  the `/en/poland/occasions/…` href set is **empty today** (measured: the page's only internal
+  links are `/en`, `/en/send-flowers-to`, `/en/send-flowers-to/poland` and `/en/poland/flowers`
+  twice), so pin the count rather than assert a universal; (b)
+  `catalog-country-occasion.test.ts:220` — 10 rows today, assert the length before the loop;
+  (c) `expect([301, 308]).toContain(...)` is **accepted** — a tolerance across two acceptable
+  implementations that still excludes 200, 404, 302 and 307, unlike the uppercase set which covered
+  the whole outcome space; collapse it to one status when spec 040 fronts the origin.
+- 2026-09-21 `/review 89` round 2 — for the orchestrator, not this task: (a)
+  `tests/e2e/corridor.spec.ts`'s unskipped mis-cased case is red on a local macOS run (measured
+  200) and needs the `skipsOnCaseInsensitiveHost` treatment; (b) the same
+  `toBeLessThanOrEqual(1)` + `toHaveLength(priority.length)` pattern is on `main` in
+  `tests/unit/catalog-shop-page.test.tsx:173` and `tests/e2e/country-shop.spec.ts:111` — the shop
+  root has teeth today (measured 1 preload, 1 eager) but the shape is the same; (c) **media
+  coverage:** the only occasion page that exists in the corpus — Mother's Day, seven destinations —
+  has no product photograph at all, which the founder should know before the first country goes
+  live (TASK-080 / spec 006).
+- 2026-09-21 `/review 89` round 2 — confirmed as asked: the macOS hazard is parked explicitly for
+  TASK-118 with the reason ("that runbook does not exist yet"), `docs/runbooks/shop-pages.md` is
+  indeed absent and TASK-118's row owns it; and TASK-111's corrected Romania description matches
+  behaviour — measured from the view model, RO prints **2027-05-02** for Orthodox Easter where
+  DE/ES/PL print **2027-03-28**.
 
 
 ## Escalations
