@@ -74,6 +74,19 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
      script, so the hash-based `script-src` still carries exactly one hash and needs no nonce.
      `tests/e2e/security-headers.spec.ts` is green with the blocks present.
 
+- **(2026-09-21) CI on PR #87 cannot reach all-green for two reasons that are not this task's, and
+  neither is mine to fix.** (1) `test-unit` fails **2 of 4 374** cases in
+  `tests/unit/tasks-brief.test.ts` because TASK-080's `TASKS.md` notes cell does not link
+  `docs/tasks/TASK-080.md`; reproduced on a clean `main` checkout at `3a16b3b` with this branch
+  absent, and `TASKS.md` is the orchestrator's file. Because `build` is `needs: test-unit`, this
+  also skips `build`, `lighthouse` and `container`. (2) `preview` fails at "Verify protection,
+  region and noindex" — the Vercel Hobby cold-fallback deploy answers `/api/health` with **500**
+  under the bypass header. It failed identically on TASK-094 (run 35376593214) and on TASK-080
+  (run 35376503075, merged anyway), so it is an environment failure on every branch that runs it.
+  Because `e2e`, `visual` and `a11y` are all `needs: preview`, T-17's scan still has not executed
+  on any PR — the condition `3849438` recorded. Every other job on #87 is green, `seo-validate`
+  included.
+
 ## Result
 
 Shipped in **PR #87**. `src/modules/seo/schema/` holds the five files §5.2 L150 names —
