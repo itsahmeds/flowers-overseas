@@ -306,3 +306,14 @@ case-insensitive-host guards), exit 0.
 **Local gates (exit codes).** `typecheck` 0, `lint` 0, `format:check` 0, `i18n:check` 0 (`en`
 25/511 = 4.9 %), `check:no-db` 0, `codebase:map --check` 0, `pnpm test` 0 (197 files, 4650
 passed, 5 skipped). `tests/unit/listing-params.test.ts` is unchanged and green.
+
+**Third rebase (2026-09-23)**, onto `origin/main` at `e51798e` (TASK-121 merged as #96). Two
+hand-resolved conflicts, both keeping both sides: `tests/unit/catalog-barrel.test.ts` (TASK-121's
+product exports and this task's `corridorShopEntry`) and the `LocalePathResolution` union in
+`src/modules/catalog/routes.ts` (TASK-121's `product` variant and this task's `occasionsIndex`).
+`docs/codebase-map.md` was regenerated with `pnpm codebase:map` at every step, not hand-merged.
+The rebased tree differs from the pre-rebase head by exactly `main`'s own 14-file change set.
+`tests/unit/listing-params.test.ts` is byte-identical to `main`'s. On the rebased head, every
+gate exits 0 again (`pnpm test`: 199 files, 4688 passed, 5 skipped). The same ten e2e specs,
+against a clean build of this head, gave 270 passed and 14 skipped, exit 0 (load average 9.3 at
+the end, from sibling agents).
