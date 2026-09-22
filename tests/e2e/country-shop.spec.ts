@@ -140,18 +140,28 @@ test.describe("what the page renders (AC-6, AC-24)", () => {
 
     const firstCard = page.locator("[data-fo-product-card]").first();
     await expect(firstCard).toBeVisible();
+    // The whole descriptor React's `preload()` emits, `imagesrcset` **and** `imagesizes`
+    // (`tests/support/lcp-nomination.ts`'s `ImageDescriptor`): comparing the srcset alone let a
+    // preload with the wrong `sizes` — the browser then fetches a different candidate than the
+    // `<picture>` does — pass here and fail only in the unit half (`/review 99` round 1).
     const firstPhotograph = await firstCard
       .locator("picture source")
       .first()
       .evaluateAll((nodes) =>
-        nodes.map((node) => node.getAttribute("srcset") ?? ""),
+        nodes.map((node) => ({
+          srcset: node.getAttribute("srcset") ?? "",
+          sizes: node.getAttribute("sizes") ?? "",
+        })),
       );
     expect(firstPhotograph).toHaveLength(EXPECTED_NOMINATIONS);
 
     const preloaded = await page
       .locator('head link[rel="preload"][as="image"]')
       .evaluateAll((nodes) =>
-        nodes.map((node) => node.getAttribute("imagesrcset") ?? ""),
+        nodes.map((node) => ({
+          srcset: node.getAttribute("imagesrcset") ?? "",
+          sizes: node.getAttribute("imagesizes") ?? "",
+        })),
       );
     expect(preloaded).toEqual(firstPhotograph);
     await expect(
