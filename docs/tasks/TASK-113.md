@@ -82,4 +82,64 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
 
 ## Result
 
-_Pending._
+**Rebase (2026-09-22).** Rebased onto `origin/main` at `d1c0537` (TASK-114 merged as #93). The
+depth-3 route conflicted on one import line only: this task's diff to
+`src/app/[locale]/[segment]/[child]/page.tsx` is the corridor branch's `liveSlots` line and the
+`corridorShopEntry` import, and neither touches a `listingView(` call. TASK-114's source-reading
+test `tests/unit/listing-params.test.ts` passes **unchanged**. `docs/codebase-map.md` was
+regenerated with `pnpm codebase:map`, not hand-merged.
+
+**404 lists.** `/en/occasions` was already retired from `tests/e2e/hubs.spec.ts` and
+`tests/e2e/country-occasion.spec.ts` (`9bf169f`). A grep of every e2e/a11y/unit 404 list for the
+four occasions-index URLs (`/en/occasions`, `/en-gb/occasions`, `/de/anlaesse`, `/pl/okazje`)
+turned up no other stale entry. The `de`/`pl` ones are still correctly listed as 404s, because
+neither locale has an occasion slug.
+
+**The crawl, against a production build** (`pnpm build` + `pnpm start` on :3000, build slot
+held; load average 6.8/6.1/6.6 on 8 cores; BFS over rendered `<a href>` only, `redirect:
+manual`):
+
+| Start | Locale | Shop URLs reached (of existence set) | Max depth | Per type |
+|---|---|---|---|---|
+| `/en` | en | 183 / 206 | 3 | shop root 7/7 (d2), country category 140/140 (d3), country occasion 7/7 (d3), occasion hub 28/28 (d2), occasions index 1/1 (d1), **category hub 0/23** |
+| `/en-gb` | en-gb | 183 / 206 | 3 | identical to `en` |
+| `/de` | de | 0 / 7 | — | shop root 0/7 (escalated: no corridor page in a draft locale) |
+| `/pl` | pl | 0 / 7 | — | shop root 0/7 (same escalation) |
+| `/` | all | en 183, en-gb 183, de 0, pl 0 | 4 | every locale home at depth 1; broken links 0 across 473 documents |
+
+Zero non-200 links in every crawl. The 23 unreached URLs per English locale are exactly the
+category hubs, which are the open escalation above. `tests/e2e/shop-reachability.spec.ts` is
+green on both projects, as are `occasions-index`, `country-occasion`, `hubs`, `corridor`,
+`destinations-hub`, `listing-params`, `country-shop` and `country-category` (236 passed, 14
+skipped, which are the mis-cased-URL guards that skip on a local macOS target by design).
+
+**What changed in the crawl.** There is a new case for `/`: it links exactly the four locale
+homes, each answering 200, so ≤3 from every home means ≤4 from the root. The four finding lists
+are now `expect.soft`, so one failure names both the broken link and the page it orphaned.
+
+**Mutation evidence.** Each mutation below was applied, rebuilt with `rm -rf .next && pnpm
+build`, run, then restored and rebuilt:
+
+- **(a) The home page's links into the shop removed.** In `layout.tsx` the footer was given
+  `unavailable: ["occasions"]`, and the depth-3 route's `liveSlots` line was deleted, so the
+  corridor loses its shop entry. The link registry and the test oracle were untouched. →
+  **red**: `Error: unreachable from /en within 3 clicks`, `Received + 185`, a list of 183 URLs
+  starting `"countryShopRoot /en/poland/flowers"`, `"countryCategory
+  /en/poland/flowers/hand-tied-bouquets"`, … Restored → green.
+- **(b) An empty or unreachable target set**, test side, against the clean build:
+  (b1) the `en` fixture entry emptied → **red** `Error: en has listing pages — Expected: > 0,
+  Received: 0`;
+  (b2) the `en` set cut to category hubs only, all of them waived, which is the "0 of 0" shape →
+  **red** `Error: en crawl targets — Expected: >= 180, Received: 0`;
+  (b3) the category-hub waiver dropped, so the crawl targets 23 URLs nothing links to → **red**
+  `unreachable from /en within 3 clicks`, `Received + 25`, `"categoryHub
+  /en/flowers/hand-tied-bouquets"`, … Each one restored → green.
+- **(c) One hub→category link broken.** In `listing.ts`'s category tile builder, the Polish
+  shop root's `roses` tile was pointed at `/en/poland/flowers/rosesx`. → **red** with both named
+  URLs: `unreachable … + "countryCategory /en/poland/flowers/roses"` and `non-200 links from /en …
+  + "/en/poland/flowers/rosesx → 404"`. Restored → green.
+- **(d) The new `/` case.** The chooser was made to drop its `/pl` link. → **red** `locale homes
+  linked from / — - "/pl"`. Restored → green.
+
+**Local gates (exit codes).** `typecheck` 0, `lint` 0, `format:check` 0, `i18n:check` 0,
+`check:no-db` 0, `codebase:map --check` 0, `pnpm test` 0 (195 files, 4625 passed, 5 skipped).
