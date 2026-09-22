@@ -288,7 +288,12 @@ export type {
   SlugKind,
 } from "./types";
 export { listingPageTypes, listingSorts, slugKinds } from "./types";
-export type { ListingParams } from "./schemas";
+// `ProductParamsSchema` is the same door one page type down (spec 009 §2, §5.2; TASK-121): the
+// three path segments of `/{locale}/{country}/{product}/{slug}`, `.strict()` so an uppercase
+// variant, a slash-bearing segment or a fourth parameter is a parse failure and therefore a 404.
+// `ProductPageIdentitySchema` is the same page named by (locale, destination, SKU) — what
+// `productPageExists()` answers for.
+export type { ListingParams, ProductParams } from "./schemas";
 export {
   CatalogueSlugSchema,
   EntityKeySchema,
@@ -296,6 +301,8 @@ export {
   ListingParamsSchema,
   ListingSearchParamsSchema,
   ListingSortSchema,
+  ProductPageIdentitySchema,
+  ProductParamsSchema,
   SlugKindSchema,
 } from "./schemas";
 export { hasSlug, resolveSlug, slugFor } from "./slugs";
@@ -395,9 +402,30 @@ export type {
 export {
   localeChildParams,
   localeGrandchildParams,
+  localeProductParams,
   localeSegmentParams,
   resolveLocalePath,
 } from "./routes";
+
+// The product page's existence set and its prebuild list (spec 009 §2, §5.2, §11, **AC-3**,
+// **AC-4**; TASK-121). `productPageExists()` is the single answer to "is this URL a page", on the
+// same footing as `listingExists()` one level up: the route, `generateStaticParams`, the sitemap
+// builder, spec 008's card-link renderer and the e2e crawl all read it, so they cannot disagree.
+// `PRODUCT_PREBUILD_COUNT` stays internal for `PRODUCT_COUNT_FLOOR`'s reason (AC-2) — a caller
+// that could read it would be one line from applying it instead of asking for the list.
+export type {
+  LocaleProductCounts,
+  ProductPageIdentity,
+  ProductPageRecord,
+} from "./product";
+export {
+  listProductPages,
+  productExistenceCounts,
+  productExistenceSummaryMarkdown,
+  productPageExists,
+  productPrebuildPages,
+  writeProductExistenceSummary,
+} from "./product";
 
 // The country shop root's page component and its breadcrumb (spec 008 §5.3, AC-1/AC-8/AC-24;
 // TASK-109). The page component lives in the module that owns its view model — spec 007's
