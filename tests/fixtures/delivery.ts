@@ -715,3 +715,104 @@ export const REFERENCE_HOLIDAYS = [
     closed: false,
   },
 ] as const;
+
+/* -------------------------------------------------------------------------- */
+/* AC-7 precedence: a holiday outranks the weekly rules, not only Sunday's.   */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Poland's Christmas and New Year closures, 2026–2027, as fixture rows: Wigilia (a statutory day
+ * off from 2025), Christmas Day, the Second Day of Christmas and New Year's Day. Checked against
+ * a paper calendar: 24 December 2026 is a Thursday, 25th a Friday, **26th a Saturday**, and
+ * 1 January 2027 a Friday.
+ *
+ * They exist for one rule `types.ts` documents and `REFERENCE_HOLIDAYS` could not test: **a public
+ * holiday outranks the weekly rules.** `REFERENCE_HOLIDAYS`' only closing row falls on a Sunday,
+ * so it pins "holiday above `sundayClosed`" and nothing else — the inversion "a closed weekday
+ * outranks the holiday" left every case green (`/review 97` round 1). Under
+ * `WEEKDAYS_ONLY_OPERATIONS` the 26th is a holiday **on a weekday the destination does not
+ * deliver on**, which is the day that inversion changes; the 25th and the 1st are holidays on
+ * weekdays it does deliver on, for contrast; and 2 January is the same Saturday with no holiday,
+ * so `notDeliveryDay` is shown to be what a holiday-free Saturday still says.
+ */
+export const WEEKDAY_HOLIDAYS = [
+  {
+    iso2: "PL",
+    date: "2026-12-24",
+    nameKey: "delivery.holiday.pl.christmasEve",
+    closed: true,
+  },
+  {
+    iso2: "PL",
+    date: "2026-12-25",
+    nameKey: "delivery.holiday.pl.christmasDay",
+    closed: true,
+  },
+  {
+    iso2: "PL",
+    date: "2026-12-26",
+    nameKey: "delivery.holiday.pl.secondDayOfChristmas",
+    closed: true,
+  },
+  {
+    iso2: "PL",
+    date: "2027-01-01",
+    nameKey: "delivery.holiday.pl.newYearsDay",
+    closed: true,
+  },
+] as const;
+
+/** 09:00 CET on Monday 21 December 2026 in Warsaw: before the cutoff, so no day is past it. */
+export const WEEKDAY_HOLIDAY_INSTANT = "2026-12-21T08:00:00Z";
+
+/**
+ * The fortnight from `WEEKDAY_HOLIDAY_INSTANT` under `WEEKDAYS_ONLY_OPERATIONS` (Monday–Friday,
+ * no Sunday) with `WEEKDAY_HOLIDAYS`, hand-tabled — each closed day with the **one** reason it
+ * carries.
+ */
+export const WEEKDAY_HOLIDAY_GRID: readonly ExpectedDay[] = [
+  { date: "2026-12-21", weekday: "Mon", reason: null },
+  { date: "2026-12-22", weekday: "Tue", reason: null },
+  { date: "2026-12-23", weekday: "Wed", reason: null },
+  {
+    date: "2026-12-24",
+    weekday: "Thu",
+    reason: "delivery.reason.publicHoliday",
+  },
+  {
+    date: "2026-12-25",
+    weekday: "Fri",
+    reason: "delivery.reason.publicHoliday",
+  },
+  {
+    // The case: a holiday on a closed weekday says `publicHoliday`, not `notDeliveryDay`.
+    date: "2026-12-26",
+    weekday: "Sat",
+    reason: "delivery.reason.publicHoliday",
+  },
+  {
+    date: "2026-12-27",
+    weekday: "Sun",
+    reason: "delivery.reason.sundayClosed",
+  },
+  { date: "2026-12-28", weekday: "Mon", reason: null },
+  { date: "2026-12-29", weekday: "Tue", reason: null },
+  { date: "2026-12-30", weekday: "Wed", reason: null },
+  { date: "2026-12-31", weekday: "Thu", reason: null },
+  {
+    date: "2027-01-01",
+    weekday: "Fri",
+    reason: "delivery.reason.publicHoliday",
+  },
+  {
+    // The contrast: the same weekday with no holiday on it.
+    date: "2027-01-02",
+    weekday: "Sat",
+    reason: "delivery.reason.notDeliveryDay",
+  },
+  {
+    date: "2027-01-03",
+    weekday: "Sun",
+    reason: "delivery.reason.sundayClosed",
+  },
+];

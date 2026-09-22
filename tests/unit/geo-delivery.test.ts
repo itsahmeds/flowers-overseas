@@ -108,6 +108,9 @@ import {
   SUNDAY_ALWAYS_OPERATIONS,
   SUNDAY_PEAK_OPERATIONS,
   WARSAW_OPERATIONS,
+  WEEKDAY_HOLIDAY_GRID,
+  WEEKDAY_HOLIDAY_INSTANT,
+  WEEKDAY_HOLIDAYS,
   WEEKDAYS_ONLY_OPERATIONS,
 } from "../fixtures/delivery.ts";
 
@@ -707,6 +710,17 @@ underEachProcessZone(
         reason: "delivery.reason.notDeliveryDay",
       },
       {
+        why: "a public holiday on a Saturday the destination does not deliver on",
+        context: () =>
+          contextOf({
+            at: "2026-10-26T08:00:00Z",
+            operations: WEEKDAYS_ONLY_OPERATIONS,
+            closedHolidays: new Set(["2026-10-31"]),
+          }),
+        date: "2026-10-31",
+        reason: "delivery.reason.publicHoliday",
+      },
+      {
         why: "an ordinary delivery weekday inside the window",
         context: () => contextOf({ at: "2026-10-26T08:00:00Z" }),
         date: "2026-10-28",
@@ -761,6 +775,54 @@ underEachProcessZone(
       expect(reasonFor(context, "2026-10-28")).toBe(
         "delivery.reason.pastCutoff",
       );
+    });
+
+    it("precedence: a public holiday outranks the weekly rules — on a closed weekday it says `publicHoliday`, once", () => {
+      // `REFERENCE_HOLIDAYS`' only closing row is a Sunday, so it pins "holiday above Sunday" and
+      // nothing else. Here, Monday–Friday with Poland's Christmas rows: the 26th is a holiday on a
+      // Saturday the destination does not deliver on, the 25th and the 1st are holidays on days it
+      // does, and 2 January is the same Saturday with no holiday. Each date carries one key, and it
+      // is the tabled one.
+      const grid = deliveryGrid({
+        countryIso: REFERENCE_ISO,
+        operations: WEEKDAYS_ONLY_OPERATIONS,
+        state: "live",
+        at: new Date(WEEKDAY_HOLIDAY_INSTANT),
+        days: WEEKDAY_HOLIDAY_GRID.length,
+        holidayProvider: fixtureHolidays(WEEKDAY_HOLIDAYS),
+        occasionCalendar: NO_OCCASIONS,
+      });
+      const expected: DeliveryDate[] = WEEKDAY_HOLIDAY_GRID.map((day) => ({
+        date: day.date,
+        selectable: day.reason === null,
+        ...(day.reason === null
+          ? {}
+          : { reasonKey: day.reason as DeliveryDate["reasonKey"] }),
+        occasionKeys: [],
+      }));
+      expect(grid.dates).toStrictEqual(expected);
+      // Said once more as the two days the rule is about, so a failure names them.
+      const reasonOf = (date: string) =>
+        grid.dates.find((day) => day.date === date)?.reasonKey;
+      expect(isoWeekday("2026-12-26")).toBe(6);
+      expect(reasonOf("2026-12-26")).toBe("delivery.reason.publicHoliday");
+      expect(isoWeekday("2027-01-02")).toBe(6);
+      expect(reasonOf("2027-01-02")).toBe("delivery.reason.notDeliveryDay");
+      expect(
+        SeedCountryHolidayRegistrySchema.safeParse([...WEEKDAY_HOLIDAYS])
+          .success,
+      ).toBe(true);
+
+      // The promise path agrees: Christmas week reopens on the Monday after.
+      const plan: DeliveryPlanInput = {
+        countryIso: REFERENCE_ISO,
+        operations: WEEKDAYS_ONLY_OPERATIONS,
+        state: "live",
+        at: new Date(WEEKDAY_HOLIDAY_INSTANT),
+        holidayProvider: fixtureHolidays(WEEKDAY_HOLIDAYS),
+      };
+      expect(isOpenOn(plan, "2026-12-26")).toBe(false);
+      expect(nextOpenDate(plan, "2026-12-24")).toBe("2026-12-28");
     });
 
     it("across a sweep of grids, `reasonKey` is present exactly when `selectable` is false", () => {
@@ -916,6 +978,23 @@ underEachProcessZone(
           reasonKey: "delivery.reason.sundayClosed",
         }).success,
       ).toBe(false);
+    });
+
+    it("rejects a day that does not exist, and accepts the leap day that does", () => {
+      for (const date of [
+        "2026-02-30",
+        "2027-02-29",
+        "2026-04-31",
+        "2026-13-01",
+      ]) {
+        expect(
+          DeliveryDateSchema.safeParse({ ...valid, date }).success,
+          date,
+        ).toBe(false);
+      }
+      expect(
+        DeliveryDateSchema.safeParse({ ...valid, date: "2028-02-29" }).success,
+      ).toBe(true);
     });
 
     it("rejects a reason outside the enumeration", () => {
@@ -1181,6 +1260,30 @@ underEachProcessZone(
       expect(
         grid.dates.find((date) => date.date === "2026-11-01")?.occasionKeys,
       ).toEqual(["alpha_day", "zulu_day"]);
+    });
+
+    it("the order is code-point order, not the host locale's collation", () => {
+      // ICU's collation puts `_` before digits and letters; code-point order puts `2` (0x32) before
+      // `_` (0x5F). Only a locale-independent sort gives `name2, name_day, nameday` on every host.
+      const rows: readonly OccasionCalendarRow[] = [
+        "nameday",
+        "name_day",
+        "name2",
+      ].map((occasionKey) => ({
+        occasionKey,
+        countryIso2: REFERENCE_COUNTRY,
+        ruleType: "fixed",
+        rule: { kind: "fixed", month: 11, day: 1 },
+        observed: true,
+        indexableOverride: null,
+        promoStartOffsetDays: 0,
+      }));
+      const grid = deliveryGrid(
+        referenceInput("live", { occasionCalendar: rows }),
+      );
+      expect(
+        grid.dates.find((date) => date.date === "2026-11-01")?.occasionKeys,
+      ).toEqual(["name2", "name_day", "nameday"]);
     });
 
     it("every mark is a key, and the calendar module writes no date literal", () => {
