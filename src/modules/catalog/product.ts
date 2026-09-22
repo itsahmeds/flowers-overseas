@@ -47,6 +47,14 @@
  * `listing.ts` uses: the same (sku, destination) question is asked once per locale inside one
  * enumeration, the answer cannot change inside one call, and the dataset is 84 products against 7
  * destinations.
+ *
+ * ## The view model (TASK-125)
+ *
+ * The second half of the file is `productView()` — spec 009 §5.2's single view model, the one
+ * input to the page, its JSON-LD and its sitemap row (T-32), with `tierOptions()`, `dateTotals()`
+ * and the PDP's `PageDescriptor` for spec 007's `indexability()` (AC-16). It is the one function
+ * here that reads a clock and the environment, and both are parameters with defaults (`now`,
+ * `deployment`), so a test pins them. Its section header states the money rules.
  */
 import { z } from "zod";
 
