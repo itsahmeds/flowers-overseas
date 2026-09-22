@@ -101,13 +101,28 @@ function footerGroups(): readonly SiteLinkGroup[] {
  * published link's `target.kind` is `"route"` by `SiteLinkSchema`'s refinement, which is what
  * makes "published implies a real page type" a schema fact rather than a hope here.
  */
-function hrefFor(locale: string, link: SiteLink): string | undefined {
+function hrefFor(
+  locale: string,
+  link: SiteLink,
+  unavailable: ReadonlySet<string>,
+): string | undefined {
   if (!isPublished(link.id)) return undefined;
   if (link.target.kind !== "route") return undefined;
+  // **Permission is not existence** (spec 004 AC-14; TASK-113). `isPublished()` says the site may
+  // link at this page type; whether the page is *there in this locale* is a fact only the owning
+  // module knows, and `src/modules/ui` may not import it (`plan/01` §5 — the catalogue depends on
+  // the UI, not the other way round). So the caller hands in the ids whose page is missing here,
+  // and the row renders as text exactly as an unpublished one does. `/de/anlaesse` and
+  // `/pl/okazje` are 404s while no occasion carries a German or Polish slug.
+  if (unavailable.has(link.id)) return undefined;
   return localePath(locale, link.target.pageType);
 }
 
-function groupView(locale: string, group: SiteLinkGroup): FooterGroupView {
+function groupView(
+  locale: string,
+  group: SiteLinkGroup,
+  unavailable: ReadonlySet<string>,
+): FooterGroupView {
   const datesOpen = anyDeliveryDatesOpen();
   return {
     id: group.id,
@@ -119,7 +134,7 @@ function groupView(locale: string, group: SiteLinkGroup): FooterGroupView {
     links: groupLinks(group.id as SiteLinkGroupId)
       .filter((link) => datesOpen || !link.requiresDeliveryDates)
       .map((link) => {
-        const href = hrefFor(locale, link);
+        const href = hrefFor(locale, link, unavailable);
         return href === undefined
           ? { id: link.id, labelKey: linkLabelKey(link) }
           : { id: link.id, labelKey: linkLabelKey(link), href };
@@ -190,6 +205,15 @@ export interface FooterViewOptions {
   readonly company?: Company;
   readonly registered?: boolean;
   readonly paymentMethods?: readonly PaymentMethod[];
+  /**
+   * Link ids whose target is **published but does not exist in this locale** (spec 008 AC-20,
+   * spec 004 AC-14; TASK-113). Their labels render as text, exactly as an unpublished row's do.
+   *
+   * The layout supplies it, because only a module that may read the catalogue can answer "is
+   * there an occasions index in German" — see `hrefFor()`. Empty by default, so every existing
+   * caller and every test keeps its behaviour.
+   */
+  readonly unavailable?: readonly string[];
 }
 
 /**
@@ -202,10 +226,11 @@ export function footerView(
 ): FooterView {
   const company = options.company ?? COMPANY;
   const registered = options.registered ?? isCompanyRegistered();
+  const unavailable = new Set(options.unavailable ?? []);
   return {
     columns: footerGroups()
       .filter((group) => group.id !== LEGAL_GROUP_ID)
-      .map((group) => groupView(locale, group)),
+      .map((group) => groupView(locale, group, unavailable)),
     legal: groupView(
       locale,
       footerGroups().find((group) => group.id === LEGAL_GROUP_ID) ??
@@ -216,6 +241,7 @@ export function footerView(
             `site-links.ts has no \`${LEGAL_GROUP_ID}\` footer group`,
           );
         })(),
+      unavailable,
     ),
     company: companyView(company, registered),
     paymentMethods: availablePaymentMethods(options.paymentMethods),

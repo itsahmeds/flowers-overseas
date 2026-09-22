@@ -164,6 +164,28 @@ describe("AC-14: an unpublished target is text, never a link", () => {
     ).toEqual(["destinations", "occasions"]);
   });
 
+  it("renders a published row as text where its page does not exist in this locale", () => {
+    // **Permission is not existence** (spec 008 AC-20, spec 004 AC-14; TASK-113). `occasions` is
+    // published, and `/en/occasions` is a page — but `/de/anlaesse` and `/pl/okazje` are 404s
+    // while no occasion carries a German or Polish slug, so the German colophon prints the word
+    // and no href. Publishing the row without this produced exactly that broken link, measured
+    // against a local `pnpm start` before it was fixed.
+    const german = render(
+      <SiteFooter
+        locale="de"
+        view={footerView("de", { unavailable: ["occasions"] })}
+      />,
+      "de",
+    );
+    expect(german).toContain(">Occasions<");
+    expect(german).not.toContain(`href="${localePath("de", "occasions")}"`);
+
+    // And the same registry row, in a locale where the page exists, is a link — one option, two
+    // outcomes, so neither branch is dead.
+    const english = render(<SiteFooter locale="en" view={footerView("en")} />);
+    expect(english).toContain(`href="${localePath("en", "occasions")}"`);
+  });
+
   it("renders a link the moment a target is published, with no template edit", () => {
     // The `links-populated` state of §5.3, reached the way 007 will reach it: a published target.
     const view = footerView("en");

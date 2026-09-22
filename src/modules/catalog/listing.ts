@@ -1249,17 +1249,27 @@ const OCCASIONS_LINK_ID = "occasions";
 /**
  * The occasions index's path, or `undefined` while it may not be linked (TASK-111).
  *
- * **Existence is not permission.** `listingExists()` says the page *is a page* — it is what
- * `generateStaticParams` emits — and `isPublished()` says the site may point at it, which is
- * spec 004 AC-14's rule and `destinationsHubHref()`'s exact shape. While TASK-113 has not built
- * the route, the index's link id is unpublished, so the breadcrumb crumb and the "more" link are
- * **text and absence** rather than links to a URL that answers 404. Flipping the row turns both
- * into links with no code change here.
+ * **Existence is not permission, and permission is not existence.** `listingExists()` says the
+ * page *is a page* — it is what `generateStaticParams` emits — and `isPublished()` says the site
+ * may point at it, which is spec 004 AC-14's rule and `destinationsHubHref()`'s exact shape.
+ * TASK-113 published the row; **both** gates still have to hold per locale, because the index
+ * exists only where an occasion hub does: `/de/anlaesse` and `/pl/okazje` are 404s while no
+ * occasion carries a German or Polish slug, so nothing may link at them there.
+ *
+ * Exported since TASK-113, because the **footer** needs the same answer: a published row whose
+ * page does not exist in this locale must render as text, and the chrome cannot ask the
+ * catalogue itself (`src/modules/ui` may not import `modules/catalog` — the dependency runs the
+ * other way). One function, one rule, three callers: the breadcrumb, the "more" link and the
+ * colophon.
  */
-async function occasionsIndexHref(
-  locale: LocaleCode,
+export async function occasionsIndexHref(
+  locale: string,
 ): Promise<string | undefined> {
   if (!isPublished(OCCASIONS_LINK_ID)) return undefined;
+  // `string` and not `LocaleCode`, because the document layout calls it with whatever the path
+  // carried — `/ar-XB` included. `listingExists()` already answers `false` for a code that is not
+  // a listing locale, so this narrowing decides nothing; it only lets `pathOf()` be called.
+  if (!isLocaleCode(locale)) return undefined;
   return (await listingExists({ pageType: "occasionsIndex", locale }))
     ? pathOf(locale, "occasionsIndex")
     : undefined;
