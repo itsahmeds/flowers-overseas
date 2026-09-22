@@ -169,9 +169,11 @@ so the owning task decides:
 PR [#95](https://github.com/itsahmeds/flowers-overseas/pull/95). **93 `linux` baselines added
 (92 `visual` + 1 `pseudo-rtl`) — the same set `darwin` holds, so `visual:baselines --check` now
 reports `linux: 93, darwin: 93`**, where the task opened at 84 `darwin` against 3 `linux`. Every
-byte came from the `visual-baselines` workflow on `ubuntu-latest`, **run 35700989506**, and every
-committed file matches that run's sha256 manifest (`pnpm visual:baselines --verify` → "93
-committed linux baseline(s) match the manifest byte for byte"). **Images actually looked at: 93 of
+byte came from the `visual-baselines` workflow on `ubuntu-latest` — **run 35700989506**, and
+**run 35711495539** for the two files the fix round replaced — and every committed file matches
+the committed sha256 manifest (`pnpm visual:baselines --verify
+tests/visual/__screenshots__/visual-baselines-manifest.json` → "93 committed linux baseline(s)
+match the manifest byte for byte"). **Images actually looked at: 93 of
 93** — reviewed as 152 tiles and crops (tall documents cut into readable strips at 880–900 px wide;
 the 1440 × 35 371 px component gallery in 13), with every questionable region diffed against the
 committed `darwin` baseline of the same page before it was accepted. **Images escalated instead of
@@ -185,12 +187,17 @@ captures is why the expectation never converged), and that one assertion gets `t
 `timeout: 60_000` — the failure was speed, not instability, and the threshold was **not** widened.
 With both in place the runner reported **53 passed** and wrote all 93 files.
 
-Tests: 1 unit file, `tests/unit/visual-baselines.test.ts`, 10 cases over the ledger
-(`--check`/`--manifest`/`--verify`); mutation-checked — replacing `missingOnLinux` with `[]` turns
-it red (1 failed / 9 passed). No e2e or visual test was added; this task's own gate *is* the visual
-suite, which CI runs. Gates green locally: `typecheck`, `lint`, `codebase:map --check`,
-`i18n:check`, `check:no-db`, `specs:index --check`, `tasks:check`, `visual:baselines --check`.
-`build`/`e2e`/`visual`/`a11y` belong to CI and no build slot was taken.
+Tests: 1 unit file, `tests/unit/visual-baselines.test.ts`, **16 cases** over the ledger
+(`--check`/`--manifest`/`--verify`) and the manifest parser — 10 from round 1, mutation-checked
+(replacing `missingOnLinux` with `[]` turns it red, 1 failed / 9 passed), plus 6 from the fix round
+over `parseManifest()`'s failure shapes. No e2e or visual test was added; this task's own gate *is*
+the visual suite. Gates green locally: `typecheck`, `lint`, `format:check`,
+`codebase:map --check`, `i18n:check`, `check:no-db`, `specs:index --check`, `tasks:check`,
+`visual:baselines --check`, and in the fix round **`pnpm test:visual` itself — 53 passed (14.1 s)**
+against a local build, which is the one place this task had to take the build slot: the `darwin`
+set is not rendered anywhere else, so nothing but a local run could show that
+`dev-components-desktop` had gone stale. Slot acquired and released, `.next` deleted before and
+after, port 3230, load average quoted above. `build`/`e2e`/`a11y`/`lighthouse` belong to CI.
 
 **State of the world baselined against (round 2, after `/review 1`):** `origin/main` at
 `c6d665b`, i.e. **PR 93 (TASK-114) merged** and **PR 94 (TASK-138) still open** — remote
