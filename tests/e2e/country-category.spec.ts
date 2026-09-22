@@ -131,9 +131,9 @@ test.describe("existence and the 404 shapes (AC-1, T-01)", () => {
       maxRedirects: 0,
     });
     expect([301, 308]).toContain(response.status());
-    expect(response.headers()["location"]).toContain(
-      "/en/poland/flowers/roses",
-    );
+    // The bare URL exactly (TASK-143): `toContain` was also satisfied by a redirect to itself or
+    // to a guessed form of it.
+    expect(response.headers()["location"]).toBe("/en/poland/flowers/roses");
   });
 });
 
