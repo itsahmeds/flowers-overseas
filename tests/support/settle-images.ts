@@ -5,8 +5,8 @@
  * Needed the day the images stopped being local. Until TASK-138 every variant was a file under
  * `public/media/`, served by the same process the test was driving, so an `<img>` was painted
  * within a frame of being scrolled into view and a screenshot could not race it. They are now
- * objects in `flowersoverseas-media`, fetched over the public internet from a rate-limited
- * `pub-*.r2.dev` origin.
+ * objects in `flowersoverseas-media`, fetched over the public internet from the
+ * media origin (`media.flowersoverseas.com`).
  *
  * ## What the first version got wrong, and how that was found
  *

@@ -52,7 +52,7 @@
  * on the **public** origin and compares the published `content-length` and `content-type` to the
  * row, so it needs no access key, no secret and no derived tree: the manifest and a network are
  * the whole input. It is an operator command rather than a CI job because 118 requests against a
- * rate-limited `pub-*.r2.dev` origin is not a thing to put on every pull request; the runbook
+ * public origin is not a thing to put on every pull request; the runbook
  * (`docs/runbooks/imagery.md` §6) names when to run it — after an upload, and before trusting a
  * byte column nobody watched being written.
  *

@@ -140,13 +140,18 @@ pays.
   not be blocked, or Google cannot fetch the images it evaluates for Core Web Vitals. Since
   TASK-138 that host is the bucket's public origin rather than `/media/*` on our own domain, so it
   is the bucket's `robots.txt` that matters.
-- **The origin is one constant, and today it is an `r2.dev` host.** `src/lib/media-origin.ts`
-  holds it; the loader builds every URL from it and `src/lib/csp.ts` names it in `img-src`, so the
-  policy and the images cannot disagree. Cloudflare rate-limits `r2.dev` and does not recommend it
-  for production traffic, and it is a third-party origin in the CSP. **Moving to
-  `media.flowersoverseas.com` is a founder action in the Cloudflare dashboard**; in this repository
-  it is one line in that file (and `R2_PUBLIC_BASE_URL`, which `pnpm media:upload` checks against
-  it and refuses to run if the two disagree).
+- **The origin is one constant, and since 2026-09-22 it is `media.flowersoverseas.com`.**
+  `src/lib/media-origin.ts` holds it; the loader builds every URL from it, `src/lib/csp.ts` names
+  it in `img-src` and `src/lib/media-headers.ts` builds the `preconnect` hint from it, so the
+  policy, the hint and the images cannot disagree. The founder connected the Cloudflare custom
+  domain to `flowersoverseas-media`; in this repository the move was one line in that file. **It
+  is also one line in `R2_PUBLIC_BASE_URL`**, which `pnpm media:upload` checks against the
+  constant and refuses to run if the two disagree — so an `.env.local` still holding the old
+  `pub-*.r2.dev` value will stop the next upload with a message naming both values.
+- **The bucket's `r2.dev` public development URL is still enabled, and should be disabled.** It
+  serves the same objects from a rate-limited origin nobody is watching, and nothing in this
+  repository points at it any more. Disabling it is a founder action in the Cloudflare dashboard
+  (R2 → bucket → Settings → Public access). Recommended by TASK-138, not taken by it.
 - **The manifest's byte column is verified on demand, not continuously.** Every automatic gate
   runs before the bytes leave this machine, so a row edited *after* an upload — lowering `bytes`
   from 9 911 to 900, say — leaves `pnpm seed:check` and `pnpm media:variants --check` both clean
@@ -154,9 +159,9 @@ pays.
   *uploaded* that way, because the upload reads the real file; what can drift is the number the
   budget gates read. `pnpm media:upload --verify` is the audit: 118 public `HEAD`s, about 18
   seconds, no credential. Run it after an upload and whenever the byte column has been touched by
-  anything but `pnpm media:variants`. It is not a CI job because 118 requests against a
-  rate-limited `pub-*.r2.dev` origin on every pull request would be a worse trade than the drift
-  it catches.
+  anything but `pnpm media:variants`. It is not a CI job because 118 public `HEAD`s on
+  every pull request would be a worse trade than the drift it catches — that was true when the
+  origin was rate-limited and it stays true now that it is not.
 - **The bucket names deviate from spec 002 §13 Q7.** That section binds `fo-media` /
   `fo-media-preview` / `fo-backups`; what exists is `flowersoverseas-media` and
   `flowersoverseas-backups`, and **there is no preview bucket at all**. Names are configuration, so

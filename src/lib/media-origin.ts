@@ -33,22 +33,37 @@
  * environment, and the fix then is to make *that* read this constant rather than to add a check
  * (`/review 94` round 2 nit).
  *
- * ## The `r2.dev` risk, stated rather than hidden
+ * ## The host, and why it is this one
  *
- * The configured host is a `pub-*.r2.dev` development URL. Cloudflare rate-limits `r2.dev` and
- * does not recommend it for production traffic, and it puts a third-party origin into `img-src`
- * against ADR-0016's preference for the shortest possible allowlist. **A custom domain
- * (`media.flowersoverseas.com`) is a founder action**; when it exists, this one line changes, the
- * CSP string changes with it, and nothing else does — which is the whole reason the value is in
- * one place. Recorded in `docs/tasks/TASK-138.md` and `docs/runbooks/imagery.md`.
+ * `media.flowersoverseas.com`, a Cloudflare **custom domain** on the `flowersoverseas-media`
+ * bucket (founder action, 2026-09-22). It replaced the `pub-*.r2.dev` development URL this task
+ * shipped against, and the swap was the one line below plus nothing else — which is the whole
+ * reason the value is in one place. The bucket's jurisdiction still reads European Union, so
+ * ADR-0015 holds; verified serving over HTTP/2 with `cache-control: public, max-age=31536000,
+ * immutable` on the objects.
+ *
+ * Three things the move bought, in the order they matter:
+ *
+ *  - **`r2.dev` is rate-limited and Cloudflare does not recommend it for production traffic.**
+ *    That ceiling is gone.
+ *  - **It is on the site's own Cloudflare zone**, so the handshake the hero image waits for is
+ *    cheaper than a handshake to a third-party edge — see `src/lib/media-headers.ts` for the LCP
+ *    measurement that made this urgent.
+ *  - **`img-src` names a subdomain of our own site** instead of an unrelated third party, which
+ *    is what ADR-0016 prefers. It is still a *separate origin*, so it is still a cross-origin
+ *    fetch and the `preconnect` hint is still correct.
+ *
+ * **Still open:** the bucket's `r2.dev` public development URL serves the same objects and is
+ * still enabled. Two front doors to the same bytes, one of them rate-limited and unwatched, is a
+ * thing to close — a founder action in the Cloudflare dashboard, recommended in
+ * `docs/tasks/TASK-138.md` and `docs/runbooks/imagery.md`, not taken here.
  */
 
 /**
  * Where derived image variants are served from. No trailing slash: a URL is
  * `${MEDIA_ORIGIN}/${objectKey}` and the separator belongs to the join, not to the origin.
  */
-export const MEDIA_ORIGIN =
-  "https://pub-92d8bd7f38564349a725f321388b8c9c.r2.dev";
+export const MEDIA_ORIGIN = "https://media.flowersoverseas.com";
 
 /**
  * The URL of one stored object, from the **manifest's own** `objectKey`
