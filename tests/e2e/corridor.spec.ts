@@ -17,6 +17,19 @@ import { skipsOnCaseInsensitiveHost } from "../support/case-insensitive-host.ts"
 const GUIDE_URL = "/en/send-flowers-to/poland";
 const UK_GUIDE_URL = "/en-gb/send-flowers-to/poland";
 
+/**
+ * Sentences only the live state may say (`/review 98` round 1): a florist who makes something
+ * *here*, a thing that *can arrive*, a price *for* the destination. `corridor.shop.heading` and
+ * `corridor.shop.body` are the strings that said them on guide pages; the unit twin is
+ * `tests/unit/corridor-page.test.tsx`.
+ */
+const GUIDE_STATE_CLAIMS = [
+  /\bour florists? in\b/iu,
+  /\bcan arrive\b/iu,
+  /\bcan make\b/iu,
+  /\bpriced for\b/iu,
+] as const;
+
 /** Every published corridor URL, both locales, all seven destinations. */
 const SLUGS = [
   "poland",
@@ -117,20 +130,49 @@ test.describe("the guide state, rendered (AC-8, AC-19, T-09)", () => {
     expect(body).not.toMatch(/\d[\d\s.,]*\s?(?:zł|€|£|EUR|PLN|GBP)/u);
     expect(body).not.toMatch(/same[- ]day/iu);
     expect(body).not.toMatch(/Delivering now/u);
-    // **The shop entry is here now, and it is not one of the claims above** (spec 008 AC-20;
-    // TASK-113). This line used to assert `toHaveCount(0)` on the reasoning "no link into a shop
-    // that does not exist" — true while nothing published `country-shop-root`, and false from the
-    // moment `/en/poland/flowers` began serving 200 with 84 priced products. A 404-shaped claim
-    // about the site has to be retired by the task that starts serving the page, so the assertion
-    // is inverted rather than deleted: the section is present, it carries **one** link, and that
-    // link is inside the `main` this test has already proven names no cutoff, no time, no price
-    // and no same-day promise. A guide page may point at a shop; it may not price it.
+    // **The shop entry is here now, and it is the link and nothing else** (spec 008 AC-20;
+    // TASK-113; `/review 98` round 1). This line used to assert `toHaveCount(0)` on the reasoning
+    // "no link into a shop that does not exist" — true while nothing published
+    // `country-shop-root`, and false from the moment `/en/poland/flowers` began serving 200 with
+    // 84 priced products. The first inversion kept the live state's heading and body with the
+    // link, and the body said "Bouquets our florists in Poland can make… with delivery and VAT
+    // already in the price" beside "Not yet. We are choosing florists in Poland now". So the
+    // section's whole text is pinned to the link label, and the claims below are refused over the
+    // whole `main`. The corridor artboards' state A draws exactly this.
     const shop = page.locator("[data-fo-corridor-shop]");
     await expect(shop).toHaveCount(1);
     await expect(shop.locator("a")).toHaveCount(1);
     expect(await shop.locator("a").getAttribute("href")).toBe(
       "/en/poland/flowers",
     );
+    expect((await shop.innerText()).trim()).toBe("See flowers for Poland");
+    for (const claim of GUIDE_STATE_CLAIMS) {
+      expect(body, String(claim)).not.toMatch(claim);
+    }
+  });
+
+  test("no guide page says what a florist makes or what can arrive (AC-19)", async ({
+    page,
+  }) => {
+    // Every published corridor page is in the guide state today (no destination has an
+    // `operations` block), so every one of them is asked, not only Poland's: the shop entry is on
+    // all fourteen, and a claim is a claim in any of them.
+    for (const locale of ["en", "en-gb"]) {
+      for (const slug of SLUGS) {
+        await page.goto(`/${locale}/send-flowers-to/${slug}`);
+        await expect(
+          page.locator("[data-fo-corridor-state=guide]"),
+          `${locale}/${slug}`,
+        ).toHaveCount(1);
+        const body = (await page.locator("main").innerText()).replaceAll(
+          /\s+/g,
+          " ",
+        );
+        for (const claim of GUIDE_STATE_CLAIMS) {
+          expect(body, `${locale}/${slug} ${String(claim)}`).not.toMatch(claim);
+        }
+      }
+    }
   });
 
   test("links only to pages that exist", async ({ page, request }) => {
