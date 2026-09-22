@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "key": "FO-GS-004",
+  "records": [
+    {
+      "assetId": "fo-gs-004-hero",
+      "sku": "FO-GS-004",
+      "slot": "productHero",
+      "role": "hero",
+      "aspectRatio": "4:5",
+      "generator": "OpenAI ChatGPT",
+      "generatorModel": "gpt-image 2.0",
+      "generatorSeed": 156784078,
+      "prompt": "A hand-tied bouquet of 18 soft pink mixed, wrapped in kraft paper, beside a plain closed box of chocolates with an unmarked lid and no branding, centred at 4:5 with an 8% margin on every side, on a neutral warm-grey seamless background, soft north light from the left, colour-accurate soft pink heads, natural stem structure, no hands, no faces, no text.",
+      "negativePrompt": "hands, fingers, arms, faces, people, shop interior, shopfront, premises, signage, text, lettering, numbers, watermark, logo, price tag, greetings card message, fused or impossible stems, extra petals, melted or waxy petals, plastic or silk flowers, wilted flowers, wrong flower species, implausible stem count, harsh flash, heavy vignette, cluttered background, props, tiled or repeated pattern",
+      "parameters": {
+        "aspectRatio": "4:5",
+        "colourProfile": "sRGB",
+        "minLongEdgePx": 2000,
+        "styleReference": "content/imagery/style-guide.md"
+      }
+    },
+    {
+      "assetId": "fo-gs-004-detail",
+      "sku": "FO-GS-004",
+      "slot": "productDetail",
+      "role": "detail",
+      "aspectRatio": "4:5",
+      "generator": "OpenAI ChatGPT",
+      "generatorModel": "gpt-image 2.0",
+      "generatorSeed": 241474770,
+      "prompt": "A close detail of the same bouquet of 18 soft pink mixed: the three nearest heads filling the frame at 4:5, the kraft paper edge visible at the bottom, on a neutral warm-grey seamless background, soft north light from the left, petal texture across the three nearest heads sharp, colour-accurate soft pink, no hands, no faces, no text.",
+      "negativePrompt": "hands, fingers, arms, faces, people, shop interior, shopfront, premises, signage, text, lettering, numbers, watermark, logo, price tag, greetings card message, fused or impossible stems, extra petals, melted or waxy petals, plastic or silk flowers, wilted flowers, wrong flower species, implausible stem count, harsh flash, heavy vignette, cluttered background, props, tiled or repeated pattern",
+      "parameters": {
+        "aspectRatio": "4:5",
+        "colourProfile": "sRGB",
+        "minLongEdgePx": 2000,
+        "styleReference": "content/imagery/style-guide.md"
+      }
+    }
+  ]
+}

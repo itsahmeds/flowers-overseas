@@ -145,10 +145,26 @@ describe("promptSeed: the seed is declared, not discovered", () => {
 });
 
 describe("the committed prompt files (spec 006 §2.4)", () => {
-  it("holds one file per demo product plus the homepage slots", () => {
+  it("holds one file per active product plus the homepage slots", () => {
+    // Derived from the catalogue, not a literal. This read `toHaveLength(12)` while only the demo
+    // dozen had records (TASK-080); TASK-144 added the other 72, and a hard-coded count would have
+    // had to be edited every time the catalogue moved — which is a test that tracks the answer
+    // instead of checking it. The catalogue is now the subject: add a product without a prompt
+    // record and this fails, which is the thing worth knowing.
+    const activeSkus = (
+      JSON.parse(
+        readFileSync(join(repoRoot, "seed/data/products.json"), "utf8"),
+      ) as { rows: { sku: string; status: string }[] }
+    ).rows
+      .filter((row) => row.status === "active")
+      .map((row) => row.sku);
     const skuFiles = promptFileNames.filter((name) => name !== "homepage.json");
+
     expect(promptFileNames).toContain("homepage.json");
-    expect(skuFiles).toHaveLength(12);
+    expect(activeSkus.length).toBeGreaterThan(0);
+    expect(skuFiles.toSorted()).toEqual(
+      activeSkus.map((sku) => `${sku}.json`).toSorted(),
+    );
   });
 
   it("names the file after the key it declares, so a record cannot sit in the wrong file", () => {

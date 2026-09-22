@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "key": "FO-PT-003",
+  "records": [
+    {
+      "assetId": "fo-pt-003-hero",
+      "sku": "FO-PT-003",
+      "slot": "productHero",
+      "role": "hero",
+      "aspectRatio": "4:5",
+      "generator": "OpenAI ChatGPT",
+      "generatorModel": "gpt-image 2.0",
+      "generatorSeed": 139829166,
+      "prompt": "An orchid plant in flower, its pure white blooms open, in a plain white ceramic pot, centred at 4:5 with an 8% margin on every side, on a neutral warm-grey seamless background, soft north light from the left, colour-accurate pure white heads, natural stem structure, no hands, no faces, no text.",
+      "negativePrompt": "hands, fingers, arms, faces, people, shop interior, shopfront, premises, signage, text, lettering, numbers, watermark, logo, price tag, greetings card message, fused or impossible stems, extra petals, melted or waxy petals, plastic or silk flowers, wilted flowers, wrong flower species, implausible stem count, harsh flash, heavy vignette, cluttered background, props, tiled or repeated pattern",
+      "parameters": {
+        "aspectRatio": "4:5",
+        "colourProfile": "sRGB",
+        "minLongEdgePx": 2000,
+        "styleReference": "content/imagery/style-guide.md"
+      }
+    },
+    {
+      "assetId": "fo-pt-003-detail",
+      "sku": "FO-PT-003",
+      "slot": "productDetail",
+      "role": "detail",
+      "aspectRatio": "4:5",
+      "generator": "OpenAI ChatGPT",
+      "generatorModel": "gpt-image 2.0",
+      "generatorSeed": 253936657,
+      "prompt": "A close detail of the same orchid plant: two or three pure white blooms filling the frame at 4:5, the rim of the plain pot visible at the bottom, on a neutral warm-grey seamless background, soft north light from the left, the lip and column sharp, colour-accurate pure white, no hands, no faces, no text.",
+      "negativePrompt": "hands, fingers, arms, faces, people, shop interior, shopfront, premises, signage, text, lettering, numbers, watermark, logo, price tag, greetings card message, fused or impossible stems, extra petals, melted or waxy petals, plastic or silk flowers, wilted flowers, wrong flower species, implausible stem count, harsh flash, heavy vignette, cluttered background, props, tiled or repeated pattern",
+      "parameters": {
+        "aspectRatio": "4:5",
+        "colourProfile": "sRGB",
+        "minLongEdgePx": 2000,
+        "styleReference": "content/imagery/style-guide.md"
+      }
+    }
+  ]
+}

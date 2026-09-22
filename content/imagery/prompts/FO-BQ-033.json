@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "key": "FO-BQ-033",
+  "records": [
+    {
+      "assetId": "fo-bq-033-hero",
+      "sku": "FO-BQ-033",
+      "slot": "productHero",
+      "role": "hero",
+      "aspectRatio": "4:5",
+      "generator": "OpenAI ChatGPT",
+      "generatorModel": "gpt-image 2.0",
+      "generatorSeed": 219320956,
+      "prompt": "A hand-tied rustic bouquet of 18 mixed-colour mixed, wrapped in kraft paper and tied with plain twine, centred at 4:5 with an 8% margin on every side, on a neutral warm-grey seamless background, soft north light from the left, colour-accurate mixed-colour heads, natural stem structure, no hands, no faces, no text.",
+      "negativePrompt": "hands, fingers, arms, faces, people, shop interior, shopfront, premises, signage, text, lettering, numbers, watermark, logo, price tag, greetings card message, fused or impossible stems, extra petals, melted or waxy petals, plastic or silk flowers, wilted flowers, wrong flower species, implausible stem count, harsh flash, heavy vignette, cluttered background, props, tiled or repeated pattern",
+      "parameters": {
+        "aspectRatio": "4:5",
+        "colourProfile": "sRGB",
+        "minLongEdgePx": 2000,
+        "styleReference": "content/imagery/style-guide.md"
+      }
+    },
+    {
+      "assetId": "fo-bq-033-detail",
+      "sku": "FO-BQ-033",
+      "slot": "productDetail",
+      "role": "detail",
+      "aspectRatio": "4:5",
+      "generator": "OpenAI ChatGPT",
+      "generatorModel": "gpt-image 2.0",
+      "generatorSeed": 182297281,
+      "prompt": "A close detail of the same bouquet of 18 mixed-colour mixed: the three nearest heads filling the frame at 4:5, the kraft paper edge visible at the bottom, on a neutral warm-grey seamless background, soft north light from the left, petal texture across the three nearest heads sharp, colour-accurate mixed-colour, no hands, no faces, no text.",
+      "negativePrompt": "hands, fingers, arms, faces, people, shop interior, shopfront, premises, signage, text, lettering, numbers, watermark, logo, price tag, greetings card message, fused or impossible stems, extra petals, melted or waxy petals, plastic or silk flowers, wilted flowers, wrong flower species, implausible stem count, harsh flash, heavy vignette, cluttered background, props, tiled or repeated pattern",
+      "parameters": {
+        "aspectRatio": "4:5",
+        "colourProfile": "sRGB",
+        "minLongEdgePx": 2000,
+        "styleReference": "content/imagery/style-guide.md"
+      }
+    }
+  ]
+}

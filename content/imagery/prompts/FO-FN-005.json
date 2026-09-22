@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "key": "FO-FN-005",
+  "records": [
+    {
+      "assetId": "fo-fn-005-hero",
+      "sku": "FO-FN-005",
+      "slot": "productHero",
+      "role": "hero",
+      "aspectRatio": "4:5",
+      "generator": "OpenAI ChatGPT",
+      "generatorModel": "gpt-image 2.0",
+      "generatorSeed": 67661122,
+      "prompt": "A restrained funeral tribute of pure white mixed, standing on a neutral stone surface, dignified and unadorned, no ribbon lettering, centred at 4:5 with an 8% margin on every side, on a neutral warm-grey seamless background, soft north light from the left, colour-accurate pure white heads, natural stem structure, no hands, no faces, no text.",
+      "negativePrompt": "hands, fingers, arms, faces, people, shop interior, shopfront, premises, signage, text, lettering, numbers, watermark, logo, price tag, greetings card message, fused or impossible stems, extra petals, melted or waxy petals, plastic or silk flowers, wilted flowers, wrong flower species, implausible stem count, harsh flash, heavy vignette, cluttered background, props, tiled or repeated pattern",
+      "parameters": {
+        "aspectRatio": "4:5",
+        "colourProfile": "sRGB",
+        "minLongEdgePx": 2000,
+        "styleReference": "content/imagery/style-guide.md"
+      }
+    },
+    {
+      "assetId": "fo-fn-005-detail",
+      "sku": "FO-FN-005",
+      "slot": "productDetail",
+      "role": "detail",
+      "aspectRatio": "4:5",
+      "generator": "OpenAI ChatGPT",
+      "generatorModel": "gpt-image 2.0",
+      "generatorSeed": 10409541,
+      "prompt": "A close detail of the same tribute of pure white mixed: the three nearest heads filling the frame at 4:5, the stone surface visible beneath, on a neutral warm-grey seamless background, soft north light from the left, petal texture across the three nearest heads sharp, colour-accurate pure white, no hands, no faces, no text.",
+      "negativePrompt": "hands, fingers, arms, faces, people, shop interior, shopfront, premises, signage, text, lettering, numbers, watermark, logo, price tag, greetings card message, fused or impossible stems, extra petals, melted or waxy petals, plastic or silk flowers, wilted flowers, wrong flower species, implausible stem count, harsh flash, heavy vignette, cluttered background, props, tiled or repeated pattern",
+      "parameters": {
+        "aspectRatio": "4:5",
+        "colourProfile": "sRGB",
+        "minLongEdgePx": 2000,
+        "styleReference": "content/imagery/style-guide.md"
+      }
+    }
+  ]
+}
