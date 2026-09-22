@@ -134,6 +134,9 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   `cf-cache-status: DYNAMIC`, i.e. Cloudflare is not caching them at its edge, so every image is
   still fetched from R2 itself. A cache rule on `media.flowersoverseas.com` is a founder action.
   **Recommended, not taken.**
+  **Update, round 4 (2026-09-22, still `open`):** the edge now caches — every `home-hero` AVIF
+  answers `HIT` — and CI on `d40e4cd` (run `35766301997`) measured the four documents **worse**,
+  not better: 2 118-2 144 ms asserted, medians 2 136-2 738 ms. Edge caching did not close the gap.
 
 - **2026-09-21 — the origin is a committed constant, not an env read (decided here, recorded for
   review).** Both consumers are build-time: every indexable page is prerendered, so image URLs
@@ -481,3 +484,95 @@ constant; it carries no `crossorigin`; it is the origin `img-src` allows in all 
 the rule's shape; fresh objects per call; it is wired into the config) and 1 e2e case in
 `tests/e2e/media-delivery.spec.ts` (the served document carries the hint, without `crossorigin`,
 for the origin its images come from).
+
+### Round 4 (2026-09-22) — the edge cache is on; LCP did not come down
+
+**Asked:** produce the LCP number on CI now that Cloudflare caches the media origin, not tune for
+it. **Answer: still over on all four locale documents, by more than before.** Nothing on the page
+was changed; this round is a rebase, one comment fix and a measurement.
+
+**Rebased onto `origin/main` `12dacd4`** (13 commits: TASK-114 #93, TASK-139 #95 and their docs).
+Two conflicts, both in `next.config.ts`, resolved by keeping both sides: main's
+`listingCacheHeaderRules()` import and rule (TASK-114) stay; this branch's removal of
+`mediaCacheHeaderRules()` stays; this branch's `mediaHeaderRules()` — the credentialed
+`Link: <MEDIA_ORIGIN>; rel=preconnect`, no `crossorigin` — sits before the listing rule. The two
+rules set different keys (`Link` on every path, `Cache-Control` on the shop roots), so neither
+overrides the other. `docs/codebase-map.md` conflicted once and was regenerated, not merged. Our
+`chore(format)` commit dropped as already upstream (main's `7c49028`). One follow-up commit
+(`d40e4cd`) points two main-side comments in `listing-cache-headers` at `mediaHeaderRules()`,
+since the function they named no longer exists. **No baseline changed:** `visual` ran main's new
+Linux set against R2-served images and passed 53/53, so nothing was re-snapped.
+
+**Which image is the LCP, read off a rendered page.** CI's own `preview-build` artifact for
+`d40e4cd`, served by `next start` locally (build slot held, own PID stopped): `/en`, `/pl`,
+`/en-gb` and `/de` each preload the same object set —
+`https://media.flowersoverseas.com/media/home-hero/{384,640,828,1080,1200}.avif`, `imageSizes="100vw"`,
+and each response carries `Link: <https://media.flowersoverseas.com>; rel=preconnect`. At
+Lighthouse's 412 px x 1.75 DPR (721 device px) the browser selects **`828.avif`** (31 593 B,
+matching its manifest row).
+
+**Cache evidence** (GET, three times each, 18:22 UTC, from colo `KHI` — the probing machine's PoP,
+not the GitHub runner's):
+
+| Object | #1 | #2 | #3 | `cache-control` |
+|---|---|---|---|---|
+| `home-hero/828.avif` (the LCP) | HIT, no `age` | HIT, age 37 295 | HIT, age 37 296 | `public, max-age=31536000, immutable` |
+| `home-hero/384.avif` | HIT, no `age` | HIT, age 38 239 | HIT, age 38 240 | same |
+| `home-hero/640.avif` | HIT, no `age` | HIT, age 38 265 | HIT, age 38 265 | same |
+| `home-hero/1080.avif` | HIT, no `age` | HIT, age 38 112 | HIT, age 38 112 | same |
+| `home-hero/1200.avif` | HIT, no `age` | HIT, age 38 277 | HIT, age 38 277 | same |
+
+No `DYNAMIC`, `BYPASS` or `EXPIRED`. An `age` of ~37 000 s puts these entries in the PoP's cache
+from about 08:00 UTC, i.e. just after round 3's run. The first request of each triple is a `HIT`
+without an `age` header, reproducibly — recorded as seen, not explained. Whether the runner's PoP
+was warm cannot be read from here (see the artefact note below).
+
+**CI, run `35766301997`, head `d40e4cd`, fired by toggling `ci:full`.** Every job green except
+`lighthouse`: commitlint, lint, typecheck, test-unit, test-integration, test-contract, audit,
+i18n-check, dev-os-check, db-check, corridor-check, seo-validate, seed-check, catalogue-check,
+env-build-failure, build, container, preview, **e2e 1 078 passed**, **visual 53 passed**,
+**a11y 96 passed** — all success. `lighthouse` **failure**, on LCP only:
+
+| URL | run 1 | run 2 | run 3 | median | asserted (fastest) | round 3 asserted | budget |
+|---|---|---|---|---|---|---|---|
+| `/en` | 2 738 | 3 005 | 2 118 | **2 738** | 2 118 | 2 036 | 2 000 |
+| `/en-gb` | 2 133 | 2 136 | 2 147 | **2 136** | 2 133 | 2 039 | 2 000 |
+| `/de` | 2 136 | 2 227 | 2 145 | **2 145** | 2 136 | 2 039 | 2 000 |
+| `/pl` | 2 144 | 2 145 | 2 157 | **2 145** | 2 144 | 2 030 | 2 000 |
+
+Runs are in LHCI's order. `lighthouserc.json`'s assertion is evaluated against the fastest run
+(LHCI's default `optimistic` aggregation), which is why "asserted" and "median" differ. The other
+eleven URLs pass; their representative-run LCP: `/` 1 380, `/en/send-flowers-to` 1 478,
+`/en-gb/send-flowers-to` 1 313, both `/send-flowers-to/poland` 1 462, `/en/poland/flowers` 1 458,
+`/en-gb/poland/flowers` 1 623, both `/poland/flowers/roses` 1 458-1 461, both
+`/occasions/mothers-day` 1 475-1 478. Script transfer 128 211 B on every locale document (as in
+round 3), CLS 0, performance 0.99 except `/en`'s representative run at 0.94.
+
+**Is run 1 the slow one?** No. Three of the four documents are flat to within 25 ms (`/de` run 2 is
++90 ms), which is not the shape a cold-PoP `MISS` on the first run would leave. `/en` is the
+outlier with runs 1 **and** 2 slow (2 738, 3 005) and run 3 at 2 118 — two slow runs, so not a
+single first-fetch miss either. The flat three sit ~100 ms **above** round 3's numbers with the
+edge now caching, so edge caching did not buy the 30-50 ms that was missing. One likely reason,
+stated as an inference rather than a measurement: under `throttlingMethod: simulate` Lighthouse
+charges the second origin's DNS/TCP/TLS at its modelled 150 ms RTT whatever the real edge does,
+and a cache `HIT` only changes the observed server-latency input to that model.
+
+**Per-run evidence the job cannot currently give, and why.** `Upload the Lighthouse reports`
+uploads `.lighthouseci/` with `actions/upload-artifact@v4`, whose `include-hidden-files`
+defaults to `false`; the directory is dot-named, so the step logs "No files were found with the
+provided path: .lighthouseci/" on this run and on round 3's. The LHR JSON — which names the LCP
+request, its timing and its response headers from the runner — has therefore never been uploaded.
+The per-run values above come from the assertion log's `all values:` lines. Setting
+`include-hidden-files: true` on that step would expose them; not done here (outside this task's
+scope and not a gate change either way).
+
+**Stopped here, as instructed.** No budget lowered, no URL removed from
+`tests/fixtures/seo/lighthouse-urls.json`, no `continue-on-error`, nothing on the page tuned.
+The merge stays gated on LCP.
+
+**Gates run locally this round, exit codes read directly:** `typecheck` 0, `lint` 0,
+`format:check` 0, `i18n:check` 0, `check:no-db` 0, `codebase:map --check` 0; unit 12 files /
+244 tests passed (every file that reads `next.config.ts`, plus `media-origin`,
+`seed-media-manifest`, `media-upload`, `ui-media`). The build slot was taken only to serve CI's
+own build and read the preload off the page; no local build and no local Lighthouse.
+`.env.local` untouched; `media:upload` not run.
