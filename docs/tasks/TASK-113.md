@@ -441,3 +441,15 @@ and `en-gb` 25/511 = 4.9 %, unchanged), `check:no-db` 0, `codebase:map --check` 
 dependent unit files: `corridor-page`, `shop-crawl-targets`, `listing-url-fixture`,
 `listing-params`, `catalog-shop-entry`, `catalog-occasions-index`, `catalog-listing-link-gates`,
 `site-links-config`, `i18n-messages-schema`, `codebase-map`: 10 files, 132 passed, exit 0.
+
+**Fifth rebase (2026-09-23)**, onto `origin/main` at `02c2eee` (TASK-124 merged as #100). `main`
+moved while CI run 35778523309 was running. That run was green, 22/22, on `433c707`, but the PR
+then conflicted. Again only `docs/codebase-map.md` conflicted, and it was regenerated at every
+step and once more on the head. TASK-124 gives Poland an `operations` block, so one e2e comment
+that said "no destination has an `operations` block" is corrected. No assertion changed: all 14
+guide views still report `state: "guide"` (no `live` content file, no signed florist), and the 14
+unit pins are green. `tests/unit/listing-params.test.ts` is byte-identical to `main`'s. Gates on
+the rebased head: `typecheck` 0, `lint` 0, `format:check` 0, `i18n:check` 0 (`en`/`en-gb`
+25/511 = 4.9 %), `check:no-db` 0, `codebase:map --check` 0, 12 unit files (the ten above plus
+`corridor-route` and `corridor-projections`) 156 passed. The browser suites were not re-run
+locally for this rebase. CI's `e2e` on the new head is the evidence.

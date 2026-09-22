@@ -199,8 +199,9 @@ test.describe("the guide state, rendered (AC-8, AC-19, T-09)", () => {
   test("no guide page carries one of the four state-B shop-entry phrasings (a second net, not a completeness check)", async ({
     page,
   }) => {
-    // Every published corridor page is in the guide state today (no destination has an
-    // `operations` block), so all fourteen are asked. This refuses the four sentences in
+    // Every published corridor page is in the guide state today (Poland has an `operations`
+    // block since TASK-124, but no destination has a `live` content file or a signed florist),
+    // so all fourteen are asked. This refuses the four sentences in
     // `GUIDE_STATE_CLAIMS` over `main` and nothing else: it does not prove the page makes no
     // florist claim (TASK-091's guide copy does make one, which is spec 007's owner's call), and
     // it does not catch a paraphrase. The exact-text cases above do that for the shop entry.
