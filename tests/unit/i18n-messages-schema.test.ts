@@ -304,6 +304,12 @@ describe("the shipped catalogues and manifests", () => {
     // (Sant Jordi, Grandmothers' Day in France, the May Day lily of the valley). No `<head>` pair
     // waits here, because the page has none: its `<title>` is its own `h1` and its description is
     // its own intro, both of them artboard copy.
+    // `/review 98` round 1 moved `occasionsIndex.datedCaption` back here: its transcribed
+    // "— the one destination we have published" stopped being true when TASK-091 published all
+    // seven guides, so the implementer cut the count and the string waits for the founder again.
+    // `undatedNote` was reworded in the same round ("a country we have not published yet" →
+    // "another country") and was already waiting.
+    "occasionsIndex.datedCaption",
     "occasionsIndex.undatedHeading",
     "occasionsIndex.undatedNote",
     // TASK-111, the country occasion page. Five of its eleven strings are transcribed from the

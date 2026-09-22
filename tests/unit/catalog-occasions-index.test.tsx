@@ -30,6 +30,11 @@ import type { ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
+import {
+  COUNTRY_CODES,
+  countryConfig,
+  isCountryIso2,
+} from "../../src/config/countries.ts";
 import type { LocaleCode } from "../../src/config/locales.ts";
 import {
   type ListingView,
@@ -37,6 +42,10 @@ import {
   listingPages,
   listingView,
 } from "../../src/modules/catalog";
+import {
+  isPublishedCountry,
+  publishedCountries,
+} from "../../src/modules/catalog/listing.ts";
 import { OccasionsIndexPage } from "../../src/modules/catalog/ui/OccasionsIndexPage.tsx";
 import { formatDate, loadMessages } from "../../src/modules/i18n";
 import { listingHonestyViolations, textOf } from "../support/listing-honesty";
@@ -156,6 +165,49 @@ describe("the dated table quotes one country, and says which (§14 Q4)", () => {
         "UTC",
       ),
     );
+  });
+
+  /**
+   * `/review 98` round 1, required change 2. The captions said "in Poland — the one destination
+   * we have published" and "the day belongs to a country we have not published yet", beside
+   * Sant Jordi and Grandmothers' Day in France, while all seven destinations were published and
+   * `/en` linked France's and Spain's guides. A count in prose is false the day the count moves,
+   * so the caption now carries **one** fact and it is computed: the country the dates are from.
+   */
+  it("names the date source the registry gives, computed here and not read off the view", () => {
+    // The rule, restated from the registry and not from `listingView()`: the first **published**
+    // destination whose status is `live`.
+    const source = COUNTRY_CODES.filter(isCountryIso2).find(
+      (iso2) =>
+        isPublishedCountry(iso2) && countryConfig(iso2).status === "live",
+    );
+    expect(source, "a published, live destination exists").toBeDefined();
+    expect(en.occasionsDateCountryKey).toBe(
+      source === undefined ? undefined : countryConfig(source).nameKey,
+    );
+    // **Pinned to today's data**, as `tests/e2e/shop-reachability.spec.ts` pins its counts: seven
+    // destinations published, one of them live. The day either number moves — a country is
+    // unpublished, or a second one goes live — this goes red, and whoever moved it re-reads the
+    // caption against the new data before re-pinning it.
+    expect(publishedCountries()).toHaveLength(7);
+    expect(source).toBe("PL");
+    const caption = /<caption[^>]*>([^<]*)<\/caption>/u.exec(html)?.[1] ?? "";
+    expect(textOf(caption)).toBe(
+      "The next date for each, in Poland. Every other country keeps its own date, and each page below carries the whole table.",
+    );
+  });
+
+  it("says nothing about which destinations are published, in the caption or the undated note", () => {
+    const caption = /<caption[^>]*>([^<]*)<\/caption>/u.exec(html)?.[1] ?? "";
+    const undated =
+      /data-fo-occasions-undated="\d+"[^>]*>(.*?)<ul/su.exec(html)?.[1] ?? "";
+    expect(undated, "the undated group renders its note").toContain("calendar");
+    for (const copy of [caption, textOf(undated)]) {
+      expect(copy).not.toMatch(/\bpublish/iu);
+      expect(copy).not.toMatch(
+        /\b(?:the one|the only|only one) destination\b/iu,
+      );
+    }
   });
 
   it("puts every dated entry in the table and no undated one", () => {
