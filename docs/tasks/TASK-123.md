@@ -131,8 +131,11 @@ holiday source at runtime, or pull zod into the render path of every page that s
 deliverable is a pure module with no route and no markup. Full local run **191 files /
 4 685 passed / 5 skipped**; contract + integration **42 passed / 20 skipped**; `typecheck`,
 `lint`, `i18n:check`, `check:no-db`, `seed:check` (40 files) and `codebase:map --check` green. The
-suite also passes with `DATABASE_URL` unset and no network under `TZ=UTC`,
-`TZ=America/New_York`, `TZ=Pacific/Auckland` and `TZ=Europe/Warsaw`. No build slot taken.
+suite also passed with `DATABASE_URL` unset and no network when launched under `TZ=UTC`,
+`TZ=America/New_York`, `TZ=Pacific/Auckland` and `TZ=Europe/Warsaw`. **Corrected in round 2:**
+that sentence overstated what was run. The AC-5 block ended with `delete process.env.TZ`, so from
+AC-6 on every case ran in the host's zone whatever the launch `TZ` was, and the DST readings never
+ran under the three zones. See "Round 2" below. No build slot taken.
 
 **The three assertions that decide whether this is right.** (1) AC-5 is asserted in-process —
 `process.env.TZ` is really moved under the subject, with a **control case** proving the move is
@@ -182,3 +185,54 @@ here in the only state it can reach (every answer closed, and the holiday rows n
 read) and end to end in TASK-124. Three repo pins moved with the new surface: `i18n-barrel` now
 lists `zonedClock`, `seed-dataset` lists `holidays.json` as authored, and `docs/codebase-map.md`
 was regenerated.
+
+### Round 2 (`/review 97` round 1 fixes)
+
+Rebased on `main` `12dacd4`, which includes PR 95's Linux baselines at `46db59b`.
+`docs/codebase-map.md` was regenerated at each conflict and never merged by hand. Calendar
+behaviour is unchanged apart from the two nits.
+
+**1. The harness no longer leaks the process zone.** `withProcessTimeZoneAsync` restores the zone
+in `finally`, and "unset" comes back unset. `underEachProcessZone` declares every block from AC-6
+onward (AC-6, AC-7, `DeliveryDateSchema`, AC-8's shape half, AC-11, `pickerState`, the
+`CutoffEvaluator`, the holiday seam, the mutations) once per zone. Each case starts by moving the
+process to that zone and asserting that `process.env.TZ` **and** the naive `Date` clock at
+`REFERENCE_INSTANT` both read it. The case ends by putting back the zone it found. A root
+`beforeEach` fails any case that starts outside the launch zone. AC-7's contexts are built inside
+`it`. AC-11 now pins the reference window to the tabled days, so it no longer adapts to whichever
+window it is given.
+
+| Mutation (reverted after each) | Result |
+|---|---|
+| host `getDate` in `zonedDate`, suite before the fix, launched under `TZ=UTC`/`America/New_York`/`Pacific/Auckland` | 6/6/8 failed, **0 in AC-6** (reproduces the finding) |
+| same mutation, suite after the fix, launched under UTC / New York / Auckland / `TZ` unset | **51/322 under every launch zone**. AC-6: 6 under the UTC block, 22 under New York, 9 under Auckland. AC-7: 3 under Auckland. AC-11: 1 under New York |
+| the block stops moving the zone (the `process.env.TZ = zone` line removed) | 206 failed (every case in the two blocks whose zone differs from the launch zone) |
+| the reviewer's leak reintroduced (the block's `afterEach` does `delete process.env.TZ`) | 308 failed under a set launch `TZ`. Under an unset launch `TZ` there is nothing to leak |
+
+**2. A holiday outranks the weekly rules, on a closed weekday too.** `WEEKDAY_HOLIDAYS` (Poland,
+24–26 Dec 2026 and 1 Jan 2027) and `WEEKDAY_HOLIDAY_GRID` apply under `WEEKDAYS_ONLY_OPERATIONS`.
+Saturday 26 Dec is a holiday on a closed weekday and gives `publicHoliday`. Friday 25 Dec and
+Friday 1 Jan are holidays on open weekdays. Saturday 2 Jan has no holiday and gives
+`notDeliveryDay`. The whole grid is asserted with `toStrictEqual`, so each date has exactly one
+`reasonKey`. There is also a `reasonFor` case for a Saturday holiday under Monday–Friday.
+
+| Precedence mutation (under `TZ=UTC`, reverted after each) | Result |
+|---|---|
+| a non-Sunday closed weekday outranks `publicHoliday` (previously 112/112 green) | 6 failed (2 cases × 3 zones) |
+| Sunday outranks the holiday | 3 failed |
+| the holiday outranks past-cutoff | 3 failed |
+| not-a-delivery-day outranks Sunday | 14 failed |
+| past-cutoff outranks before-earliest | 9 failed |
+
+**Nits done.** `occasionKeysByDate` now sorts by code point. With `localeCompare` put back, the
+`name2`/`name_day`/`nameday` case fails 3 times. `DeliveryDateSchema` now reuses
+`HolidayDateSchema`, so `2026-02-30`, `2027-02-29`, `2026-04-31` and `2026-13-01` are refused and
+`2028-02-29` is accepted. With the check put back to shape-only, that case fails 3 times.
+`holidays.json`'s third note now says TASK-124's coverage rule does not exist yet. The
+fail-open-past-the-data finding is TASK-124's and was not touched.
+
+**Counts.** `tests/unit/geo-delivery.test.ts` has **322** cases, all passing when launched under
+`TZ=UTC`, `TZ=America/New_York`, `TZ=Pacific/Auckland` and with `TZ` unset. The host is
+`Asia/Karachi`, and the load average was 3.9 on 8 cores. `seed-dataset`, `i18n-barrel` and
+`visual-baselines` pass 39/39. `typecheck`, `lint`, `format:check`, `i18n:check`, `check:no-db`,
+`seed:check` and `codebase:map --check` all exited 0. No build slot was taken.
