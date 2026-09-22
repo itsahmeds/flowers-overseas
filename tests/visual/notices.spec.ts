@@ -253,8 +253,16 @@ test.describe("the 500 documents and the gallery", () => {
     await settle(page);
     await loadLazyImages(page);
 
+    // 1440 x 35 333 px — 50 megapixels, and the only baseline in the suite of a document that
+    // size. Playwright decides a screenshot is stable by taking two and comparing them, and each
+    // capture of this one costs seconds on a shared runner: on `ubuntu-latest` the pair never
+    // fit inside the default 5 000 ms expect timeout and no `linux` baseline could be written at
+    // all (runs 35698369912 and 35700517643). The wait is longer here, and only here; nothing
+    // about what is compared changes.
+    test.slow();
     await expect(page).toHaveScreenshot("dev-components-desktop.png", {
       fullPage: true,
+      timeout: 60_000,
     });
   });
 });
