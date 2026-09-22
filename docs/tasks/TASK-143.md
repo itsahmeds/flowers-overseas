@@ -130,7 +130,7 @@ survivors):
 - 16 structural source greps (thin-route, placement, message-key liveness) — wiring rules with a
   behavioural twin elsewhere, not behaviour stood in for.
 - Unreachable checker branches: `i18n-check.ts:542` (the live registry is valid; the same function
-  is killed through `--registry`), `seed/check.ts:480` (non-Zod parse error), `corridor-check.ts:903`
+  is killed through `--registry`), `seed/check.ts:482` (non-Zod parse error), `corridor-check.ts:903`
   (the parse enum rejects a non-destination first), `tasks-brief.ts:264` (lossless split/concat guard).
 
 **Out of scope, untouched:** the depth-3 route and its source-read tests, `country-occasion.spec.ts`,
