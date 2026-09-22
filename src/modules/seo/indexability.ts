@@ -71,7 +71,11 @@ export type SeoPageType =
   | "countryOccasion"
   | "categoryHub"
   | "occasionHub"
-  | "occasionsIndex";
+  | "occasionsIndex"
+  // Spec 009 §6's product detail page, registered here rather than branching there (spec 009
+  // AC-16, "no new `noindex` branch in this spec"; TASK-125). `catalog/product.ts` gathers its
+  // terms — every one of them **stated**, none omitted — and calls `pageIndexability()`.
+  | "product";
 
 /**
  * Whether a page type may ever be indexed (`plan/02` §7; spec 004 AC-28; spec 007 §6).
@@ -97,6 +101,10 @@ export const PAGE_TYPE_POLICY: Readonly<
   categoryHub: "byRule",
   occasionHub: "byRule",
   occasionsIndex: "byRule",
+  // Spec 009 §6: `index,follow` iff the page exists **and** its destination is genuinely live
+  // **and** the product is indexable there **and** the locale is **and** this is the indexing
+  // environment. Every PDP answers `noindex,follow` in Phase 0 by data, not by policy.
+  product: "byRule",
 };
 
 /**
