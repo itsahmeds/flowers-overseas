@@ -180,6 +180,58 @@ page type — a cold `pnpm build` plus the browser suites (see `## Result`).
   **The depth-3 slicing test was not weakened to accommodate any of this.** It reads one file —
   the depth-3 route — so the depth-4 route is outside its subject, not excused by it.
 
+- **E-7 (2026-09-22) — the two hub branches do not carry `parameterised`, and should not. Applied
+  on §5.4 + §13 Q2 read together; orchestrator or reviewer may reverse, and one assertion is the
+  whole reversal.** PR 88 (TASK-112) merged while this PR was founder-approved and waiting, and it
+  put the category and occasion hubs into **this task's route file** as two more branches of the
+  same resolver (§14 A5 gives the depth one file). Each render therefore now resolves *two* listing
+  views, and the round-3/round-4 slicing test — which asserted exactly one `listingView(…)` per
+  render — had to be answered rather than side-stepped. The substantive question the count asks is
+  whether a hub render should hand `parameterised` to `listingView()` too. **It should not**, and
+  the reason is not convenience:
+
+  1. **A hub honours no parameter.** `listingView()` forces `sort: "default"` whenever the listing
+     has no country (`src/modules/catalog/listing.ts` — "a destination-less hub shows no money at
+     all, so there is nothing on it to sort by"), and PR 88 shipped the hubs with no toolbar and no
+     page nav. There is no parameter for the flag to describe.
+  2. **§13 Q2 bought dynamism for the routes that *honour* `?page=`/`?sort=`, and for nothing
+     else.** §5.4 states the default — "the bare URL of every page type is prebuilt" — and then
+     names the exception: "**the listing routes** are rendered on the server per request and cached
+     at the edge by full URL", in the bullet whose subject is "Parameterised requests (`?page=N`,
+     `?sort=…`)". A hub matches the default, not the exception.
+  3. **Wiring it would cost the prerender of two page types for a term they cannot use.** Awaiting
+     `searchParams` in the hub branch is what would make those paths dynamic (E-2's measurement),
+     and a dynamic response carries Next's `private, no-cache, no-store` unless `LISTING_CACHE_PATHS`
+     gains its shape — so the change is not two lines: it is two new path shapes × four locales in
+     `next.config.ts`, two `measuredFrom` substitutions in `budget:client-js`, fresh
+     `bundle-baseline.json` rows and a build to re-prove the prerender counts, on a branch whose
+     remaining work is a merge. It would also invalidate the byte and prerender evidence PR 88
+     shipped four days after it was reviewed.
+  4. **The residual is real and is recorded, not hidden.** After the indexing flip (TASK-096) a
+     facet-shaped parameter on a hub URL — `/en/flowers/roses?colour=red` — is answered by the
+     prebuilt document, which says `index,follow` with a canonical to the bare URL. That is AC-15's
+     canonical half without its `noindex` half, at the one page type that flips indexable *before*
+     any country goes live. `?sort=` is `robots.txt`-blocked (E-3), no such URL is linked or
+     sitemapped (asserted by this task's href scan), and the canonical is the consolidation signal;
+     but the gap is a gap. **Its cheapest close is an edge rule, not a branch**: spec 040 can answer
+     a non-empty query string on a prebuilt page with `X-Robots-Tag: noindex, follow` at Cloudflare,
+     which costs no prerendering — the same place §13 Q6's unbounded cache-key space already waits.
+     Otherwise it belongs to the parameter-policy task **E-6** asks for, widened from "depth 4" to
+     "every page type this route file serves that is not the country shop root".
+
+  **What the test says now, and how to reverse this.** Every `listingView(…)` call in each render is
+  classified by its own `pageType:` and asserted: the country-scoped call must carry
+  `parameterised: <b>.parameterised` with `<b>` bound by *this* render's
+  `const <b> = await listingQuery(searchParams)`, and the hub call must carry **no** `page`, **no**
+  `sort` and **no** `parameterised`. The classification is total — a call that is neither fails the
+  count — so a third listing branch still announces itself, which was the original case's point. The
+  hub half is a positive assertion of the policy rather than an exemption from it: whoever decides a
+  hub should honour a parameter edits that one `not.toContain` and says why, and the route header
+  tells them what else moves with it. **Nothing was deleted, loosened or re-scoped:** the parser
+  still keys on the literal `listingView(`, comments are still stripped before anything is parsed,
+  and the file now has *more* of its calls under assertion than before the merge — four instead of
+  two, and see round 6 for why "before the merge" was itself two out of three.
+
 ## Result
 
 Shipped in PR **[#93](https://github.com/itsahmeds/flowers-overseas/pull/93)** (branch
@@ -492,3 +544,108 @@ record it where it will be found (`src/lib/listing-cache-headers.ts` and
 keeps the depth-4 shapes out of `LISTING_CACHE_PATHS` is unchanged and still passes, and it is
 still **correct** — those routes are prerendered ISR and would *lose* a working `Cache-Control` to
 that rule.
+
+### Round 6 — rebased onto the hubs (`origin/main` `6c19880`, 2026-09-22)
+
+**Conflict resolution only; no new page behaviour.** PR **#88** (TASK-112) merged underneath this
+branch and appended the **category and occasion hub branches to this task's own route file**
+(`src/app/[locale]/[segment]/[child]/page.tsx`) — spec 008 §14 **A5** gives the depth one route
+file, so this was an additive merge from the start, not a choice of sides. Also underneath:
+`5d9c153` (media-manifest test fix) and `6c19880` (docs).
+
+**Three conflicts.** The route file · `docs/codebase-map.md` (generated — regenerated with
+`pnpm codebase:map`: 12 modules, 23 config files, 25 routes, 37 scripts) · the two `darwin`
+`country-shop-{desktop,mobile}` baselines, where both sides had regenerated the same PNGs. This
+task's side was kept and then **verified rather than assumed**: `tests/visual/country-shop.spec.ts`
+passes against a cold build of the merged tree, so #88's `ProductCard`/`ListingGrid` edits do not
+change this page at the diff threshold. The full visual project is **53 passed**.
+
+**The route file's textual conflict was one hunk — the import list — and both sides were kept.**
+`git` auto-merged the rest, which is exactly what made the real work non-textual: the two hub
+branches now sit *inside* the two renders this task's tests dissect.
+
+#### The comment stripper was eating source, and the merge is what exposed it
+
+`tests/unit/listing-params.test.ts` reads the route **as source**. Before anything is parsed it
+strips comments — and it stripped **block comments first**. The route carries a `//` line whose
+backticked path is a glob, so that line contains a block-comment *opener*; the regex paired it with
+the next terminator far below (the doc comment above `registryLabels()`) and deleted **everything
+between them**. Round 4's assertions then ran on what was left.
+
+Before the merge that silently removed the tail of `generateMetadata` — the `pageMetadata({…})`
+block — while leaving its `listingView(` call, so every count still came out right and the suite
+was green. **After the merge the eaten region contained a whole `listingView(…)` call**: the
+stripped file held **3** calls where the file has 4, and `generateMetadata`'s hub branch was
+invisible to the test. A test that reads source can lose its subject without losing its colour.
+
+Fixed by stripping whole-line `//` comments **first**, after which the block regex pairs correctly
+(4 calls, 2 renders, braces balanced). Round 4's anti-forgery measurements were re-run and still
+hold: a complete fake `listingView(…, { parameterised: request.parameterised })` planted in a doc
+comment or a line comment is still removed before parsing, and a `listingView\n(` split still makes
+the render vanish loudly rather than pass. A **new case** — "keeps each render whole through the
+comment strip" — asserts each render slice's braces balance after the strip, which is how a
+stripper that eats code announces itself: with the old order `generateMetadata` comes out with
+**17 `{` against 15 `}`** and the case is red.
+
+#### The hub branches, and why they carry no flag
+
+Each render now resolves **two** listing views, so round 3's "exactly one `listingView(…)` per
+render" had to be answered. **The decision: a hub carries no `parameterised`, no `page` and no
+`sort` — and the test asserts that positively rather than exempting it.** The reasoning, the
+measurements behind it and the one-assertion path to reversing it are **E-7** above. In short: a
+hub honours no parameter (`listingView()` forces the default order on a listing with no country,
+because a hub shows no money to sort by), §13 **Q2** bought dynamic rendering only for the routes
+that *honour* `?page=`/`?sort=` while §5.4's "the bare URL of every page type is prebuilt" governs
+the rest, and awaiting `searchParams` in the hub branch would take **204 prerendered documents**
+(92 category-hub + 112 occasion-hub paths, counted in this build's `prerender-manifest.json`) out
+of the build for a term they cannot use — plus two new shapes in `LISTING_CACHE_PATHS`, two
+`measuredFrom` substitutions and fresh baselines. The residual is recorded in E-7 and, so the next
+agent finds it without the brief, in the route file's header comment.
+
+**Every `listingView(…)` call in the file is now under assertion — four, where two were before,**
+and each is classified by its own `pageType:`: the country-scoped call must carry
+`parameterised: <b>.parameterised` with `<b>` bound by *this* render's
+`const <b> = await listingQuery(searchParams)`; the hub call must carry none of the three terms.
+The classification is **total**, so a call that is neither still fails the count — round 3's point,
+kept. Nothing was deleted, loosened or re-scoped, and the parser is unchanged apart from the
+comment-order fix.
+
+**Mutations re-run on the merged file** (`pnpm vitest run --project unit tests/unit/listing-params.test.ts`,
+each restored immediately after):
+
+| Mutation | Result |
+|---|---|
+| `generateMetadata`'s `parameterised: request.parameterised` deleted | **red** — `generateMetadata: expected undefined to be defined` (1 failed / 17 passed); `pnpm typecheck` **0** |
+| `generateMetadata`'s `listingQuery(searchParams)` → `listingQuery(undefined)` | **red** — `generateMetadata: expected 'export async function generateMetadat…' to contain 'const request = await listingQuery(se…'`; `pnpm typecheck` **0**, so the test is still the only gate on it |
+| **Control**: `generateMetadata`'s binding renamed to `metaRequest`, wired correctly throughout | **green** — 18 passed, `typecheck` **0**. The case pins provenance, not a name |
+| New, on the hub half: `{ from: windowStart(), parameterised: false }` planted on the page component's hub call | **red** — `LocaleChildRoute: the hub branch honours no parameterised:`. Half-wiring a hub cannot pass quietly |
+| New, on the stripper: the old block-comments-first order restored | **red** ×2 — `generateMetadata: braces surviving the comment strip: expected 15 to be 17` and `expected [ …(3) ] to have a length of 4`. The defect this round found is now itself falsifiable |
+
+**Measured, not assumed** (production build on :3228, merged tree): `/en/flowers/roses` and
+`/en/flowers/roses?colour=red` return the **same prebuilt document** with the hub's own
+`s-maxage=3600, stale-while-revalidate=31532400`, while `/en/poland/flowers` and its faceted twin
+carry §5.4's `public, s-maxage=3600, stale-while-revalidate=86400`. Both read `noindex,follow`
+today — the hub because no indexing environment exists yet, which is precisely why E-7's residual
+is a post-flip concern rather than a live defect.
+
+**Gates, round 6** — all local, against the merged tree. `typecheck` **0** · `lint` **0** (js+css)
+· `format:check` **0** (the rebase left a double blank line in `src/modules/catalog/listing.ts`;
+Prettier removed it) · `i18n:check` **0** (4 locales, nothing missing, unused, stale or malformed)
+· `check:no-db` **0** · `codebase:map --check` **0** · unit **192 files, 4 602 passed, 5 skipped,
+0 failed** · contract **29 passed** · integration **24 passed, 1 skipped, 8 failed** — the
+pre-existing `schema-catalog-pricing` failures for want of a local Postgres (`PostgresError`),
+unchanged by this branch · **build green**, and E-2's blast radius intact and now extended: the
+depth-3 route entry is `ƒ`, **232 depth-3 paths still prerendered** (28 corridor + 204 hub), all
+**588** depth-4 paths still `●`, **no shop-root HTML on disk** · **e2e 76 passed / 0 failed** over
+the three specs this touches (`listing-params`, `country-shop`, `client-js-budget`, desktop +
+mobile) · **visual 53 passed** · `budget:client-js` **every measured URL within budget, +0.0 KB vs
+baseline on every route**. The substitution line now reads `measured from
+/en/flowers/anniversary-flowers` — a hub rather than a corridor, because the merge gave the route
+entry new prerendered paths; same route entry, same client references, and
+`tests/e2e/client-js-budget.spec.ts` re-proves it in a browser (10/10).
+
+**Build slot** acquired via `.claude/bin/build-slot.sh` (it reaped a 45-minute-stale lock),
+server on **:3228**, both own PIDs killed, slot released. No Lighthouse number is claimed: the
+one-minute load average ran 17 → 55 across this window with six sibling agents on the machine, so
+CI's `lighthouse` job is the gate of record. `visual` on CI is expected red until TASK-139's Linux
+baselines land (PR 95) — not this branch's.
