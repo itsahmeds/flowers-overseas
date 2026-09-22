@@ -137,9 +137,8 @@ describe("listingHonestyViolations reports what AC-6 forbids", () => {
  * then German, then Polish — and one English sample exercises one branch. Deleting
  * `|\bsterne\b` from the star pattern, or `|\btaggleiche` from the timing claim, left all 179
  * cases of the seven unit files that import this helper green, which is PR 93's "a term deletable
- * with the whole suite green"
- * again: the scan fails **open** on exactly the locales whose copy is still an English echo and
- * will not stay one. So each top-level alternative is listed here, in order, with a sample that
+ * with the whole suite green" again: the scan fails **open** on exactly the locales whose copy
+ * is still an English echo and will not stay one. So each top-level alternative is listed here, in order, with a sample that
  * that alternative matches **and no other alternative of the same pattern does** — so deleting or
  * neutering any one branch leaves its sample unmatched and this goes red.
  */
