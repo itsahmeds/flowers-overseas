@@ -40,7 +40,7 @@
  * — the country category's link list is "shop root, sibling categories, corridor, products". The
  * header's category row could carry them, but it is `src/config/categories.ts`, spec 004's
  * registry, and no task in spec 008 owns it. Recorded as an open question in
- * `docs/tasks/TASK-113.md` rather than resolved by inventing a link id. `EXCLUDED` below holds it
+ * `docs/tasks/TASK-113.md` rather than resolved by inventing a link id. `EXCLUDED` (`tests/support/shop-crawl-targets.ts`) holds it
  * and the second escalation (the draft locales' shop roots), and is asserted to be exactly those
  * three rules, so it cannot quietly grow.
  */
@@ -49,7 +49,6 @@ import { resolve } from "node:path";
 
 import { type APIRequestContext, expect, test } from "@playwright/test";
 
-import { COUNTRIES } from "../../src/config/countries.ts";
 import {
   SITE_LINKS,
   type SiteLink,
@@ -58,6 +57,11 @@ import {
 // By path and not through the barrel: `@/modules/i18n`'s index re-exports the suggestion banner's
 // `next/dynamic` loader, which Playwright's ESM loader cannot resolve outside the Next build.
 import { localePath } from "../../src/modules/i18n/routing.ts";
+import {
+  EXCLUDED,
+  TARGETS,
+  isExcluded,
+} from "../support/shop-crawl-targets.ts";
 
 /**
  * The existence set, read from the committed fixture rather than computed.
@@ -79,42 +83,6 @@ const EXISTENCE_SET = JSON.parse(
 /** AC-21's bound, and the reason this file is a BFS (`plan/02` §11). */
 const MAX_DEPTH = 3;
 
-/**
- * The **two** orphans this crawl found and could not close inside AC-20's "exactly the five link
- * ids". Each is an open question in `docs/tasks/TASK-113.md` §Escalations with a reason, and each
- * is asserted below to be a non-empty set — a waiver that covered nothing would be a way of
- * making the gate pass by describing it.
- *
- *  1. **`categoryHub`, every locale.** Spec 008 §2 reserves five link ids and none publishes a
- *     country-less category hub; no page type in the spec links to one either. The rows that
- *     could are the header's category row in `src/config/categories.ts` — spec 004's registry,
- *     owned by no task in spec 008.
- *  2. **`countryShopRoot` in `de` and `pl`.** The shop root's only inbound link in §2's plan is
- *     the **corridor page**, and neither locale has one: their guides are machine drafts, so
- *     `corridorPageExists()` is false for every destination there. Seven URLs each, all
- *     `noindex,follow` and in no sitemap (the locale is not indexable), so the cost today is
- *     reachability and not ranking — but it is a hole, and it is named rather than hidden.
- *
- * Everything else — non-200, a link into an unpublished id, a malformed `href` — applies to every
- * page in every locale with no exception at all.
- */
-const EXCLUDED: readonly {
-  readonly locale?: string;
-  readonly pageType: string;
-}[] = [
-  { pageType: "categoryHub" },
-  { locale: "de", pageType: "countryShopRoot" },
-  { locale: "pl", pageType: "countryShopRoot" },
-];
-
-function isExcluded(locale: string, pageType: string): boolean {
-  return EXCLUDED.some(
-    (rule) =>
-      rule.pageType === pageType &&
-      (rule.locale === undefined || rule.locale === locale),
-  );
-}
-
 const locales = Object.keys(EXISTENCE_SET);
 
 /** The listing pages that exist in one locale, minus the escalated ones. */
@@ -125,49 +93,6 @@ function expectedPages(
     (page) => !isExcluded(locale, page.pageType),
   );
 }
-
-/**
- * How many destinations the registry publishes (`status === "live" || guidePublished`, spec 008
- * §2's rule, restated from the one source it reads). The shop-root count is **derived** from it:
- * every published destination has a shop root in a locale with a shop, so the day an eighth
- * country is published this number moves with it and nothing here needs re-typing.
- */
-const PUBLISHED_DESTINATIONS = COUNTRIES.filter(
-  (country) => country.status === "live" || country.guidePublished,
-).length;
-
-/**
- * The crawl's target set, **exactly**, per locale and per page type (`/review 98` round 1,
- * required change 5).
- *
- * It used to be a floor (`>= 180`), and a floor let three deleted `en` country categories pass:
- * 180 ≥ 180, green, while three pages had dropped out of the criterion unseen. So each count is
- * the one value it has today. The shop root is derived from the registry above. The other four
- * have no source but the existence set itself, which is this test's subject, and deriving a pin
- * from its own subject pins nothing. When the catalogue grows, `listing-url-fixture.test.ts` goes
- * red first, the fixture is regenerated, and this table is re-pinned in the same commit, which is
- * the diff a reviewer should see.
- *
- * `de` and `pl` are empty: every URL they have is a shop root, and both are escalated.
- */
-const TARGETS: Readonly<Record<string, Readonly<Record<string, number>>>> = {
-  en: {
-    countryShopRoot: PUBLISHED_DESTINATIONS,
-    countryCategory: 140,
-    countryOccasion: 7,
-    occasionHub: 28,
-    occasionsIndex: 1,
-  },
-  "en-gb": {
-    countryShopRoot: PUBLISHED_DESTINATIONS,
-    countryCategory: 140,
-    countryOccasion: 7,
-    occasionHub: 28,
-    occasionsIndex: 1,
-  },
-  de: {},
-  pl: {},
-};
 
 /** A page list counted by page type, in the shape `TARGETS` is written in. */
 function countByType(
