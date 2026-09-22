@@ -59,6 +59,37 @@ async function settle(page: Page): Promise<void> {
   });
 }
 
+/**
+ * Every `loading="lazy"` image on the page, requested and decoded before the shutter (TASK-139).
+ *
+ * `/dev/components` is the one baseline taken of a document three times taller than any other,
+ * and it carries 19 lazy images. A full-page screenshot scrolls the document, so a lazy image
+ * loads *between* the two captures Playwright compares to decide the page is stable, the
+ * expectation never converges, and the test dies on its 5 000 ms timeout with "generating new
+ * stable screenshot expectation" — reproduced on `ubuntu-latest` in run 35698369912, where no
+ * `linux` baseline could be written for it at all, while the same test settles in 5.0 s on the
+ * Mac that wrote the `darwin` one. Flipping the images to `eager` and awaiting their decode makes
+ * the document the same on both captures, on a fast machine and a slow one alike. It does not
+ * change what is photographed: the `darwin` baseline, taken before this existed, still matches.
+ */
+async function loadLazyImages(page: Page): Promise<void> {
+  await page.evaluate(async () => {
+    const images = [...document.querySelectorAll("img")];
+    for (const image of images) image.loading = "eager";
+    await Promise.all(
+      images.map(async (image) => {
+        if (image.complete) return;
+        try {
+          await image.decode();
+        } catch {
+          // A broken image is the page's problem and the screenshot's subject, not the wait's.
+        }
+      }),
+    );
+  });
+  await page.waitForLoadState("networkidle");
+}
+
 async function recordConsentRefusal(
   context: BrowserContext,
   baseURL: string | undefined,
@@ -220,6 +251,7 @@ test.describe("the 500 documents and the gallery", () => {
       "/dev/components must be served; is ENABLE_DEV_UI=true on the target?",
     ).toBe(200);
     await settle(page);
+    await loadLazyImages(page);
 
     await expect(page).toHaveScreenshot("dev-components-desktop.png", {
       fullPage: true,
