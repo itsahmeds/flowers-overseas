@@ -203,21 +203,36 @@ describe("AC-15: the message catalogues carry no claim we cannot support", () =>
       FORBIDDEN.map(({ name }) => name),
     );
     const survivors: string[] = [];
-    let mutants = 0;
+    const mutants: Record<string, number> = {};
     for (const { name, pattern } of FORBIDDEN) {
       const samples = SAMPLES.get(name) ?? [];
       expect(samples.length, name).toBeGreaterThan(0);
       for (const sample of samples)
         expect(pattern.test(sample), sample).toBe(true);
+      mutants[name] = 0;
       for (const { branch, mutant } of branchDeletions(pattern)) {
-        mutants += 1;
+        mutants[name] += 1;
         if (!samples.some((sample) => !mutant.test(sample))) {
           survivors.push(`${name}: ${branch}`);
         }
       }
     }
-    // Stated, so a generator that found no alternation cannot pass as zero-vs-zero.
-    expect(mutants).toBe(28);
+    // Stated per pattern (`/review 99` round 1), so a generator that found no alternation cannot
+    // pass as zero-vs-zero, and one claim losing a branch cannot hide behind another gaining one.
+    // They sum to 28; a single-branch pattern yields none.
+    expect(mutants).toStrictEqual({
+      review: 0,
+      rating: 2,
+      star: 3,
+      testimonial: 0,
+      "review count": 2,
+      "out-of-five score": 2,
+      "Trustpilot mark": 3,
+      "florist count": 0,
+      "customer count": 3,
+      "partner name": 6,
+      "delivery-photo gallery claim": 7,
+    });
     expect(survivors).toStrictEqual([]);
   });
 
