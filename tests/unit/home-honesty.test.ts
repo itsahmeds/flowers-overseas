@@ -32,6 +32,7 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { launchLocales } from "../../src/config/locales.ts";
+import { branchDeletions } from "./support/regex-branches.ts";
 
 const repoRoot = resolve(import.meta.dirname, "../..");
 
@@ -153,6 +154,71 @@ describe("AC-15: the message catalogues carry no claim we cannot support", () =>
         claim,
       ).toBe(true);
     }
+  });
+
+  /**
+   * The case above asks only that *some* pattern fires on each claim, so a pattern — or one
+   * branch of one — that another pattern shadows can be deleted with every case green: "Rated
+   * 4.8 out of 5" is caught by `rating` whether or not `out-of-five score` exists, and no claim
+   * above exercises `review count`, `feefo` or `fleurop` at all (TASK-143). So every pattern is
+   * mutated — each `|` branch at every depth deleted in turn — and some sample of **that** pattern
+   * must be caught by it and missed by the mutant.
+   */
+  it("needs every branch of every pattern: each single-branch deletion is caught by a sample", () => {
+    const SAMPLES: ReadonlyMap<string, readonly string[]> = new Map([
+      ["review", ["Read the reviews"]],
+      ["rating", ["Our rating", "Rated highly"]],
+      ["star", ["Five stars", "★★★★★", "⭐"]],
+      ["testimonial", ["A testimonial from Berlin"]],
+      ["review count", ["112 reviews", "112 ratings"]],
+      ["out-of-five score", ["4.8 out of 5", "4.8/5"]],
+      ["Trustpilot mark", ["Trustpilot", "Feefo", "reviews.io"]],
+      ["florist count", ["47 florists"]],
+      [
+        "customer count",
+        ["1,240 customers", "900 orders delivered", "900 deliveries"],
+      ],
+      [
+        "partner name",
+        [
+          "Kwiaciarnia Rosa",
+          "Blumen Schmidt",
+          "Fleurs de Paris",
+          "Interflora",
+          "Euroflorist",
+          "Fleurop",
+        ],
+      ],
+      [
+        "delivery-photo gallery claim",
+        [
+          "photo gallery",
+          "picture below",
+          "photo of our deliveries",
+          "photo of recent deliveries",
+        ],
+      ],
+    ]);
+    expect([...SAMPLES.keys()]).toStrictEqual(
+      FORBIDDEN.map(({ name }) => name),
+    );
+    const survivors: string[] = [];
+    let mutants = 0;
+    for (const { name, pattern } of FORBIDDEN) {
+      const samples = SAMPLES.get(name) ?? [];
+      expect(samples.length, name).toBeGreaterThan(0);
+      for (const sample of samples)
+        expect(pattern.test(sample), sample).toBe(true);
+      for (const { branch, mutant } of branchDeletions(pattern)) {
+        mutants += 1;
+        if (!samples.some((sample) => !mutant.test(sample))) {
+          survivors.push(`${name}: ${branch}`);
+        }
+      }
+    }
+    // Stated, so a generator that found no alternation cannot pass as zero-vs-zero.
+    expect(mutants).toBe(28);
+    expect(survivors).toStrictEqual([]);
   });
 
   it("leaves the shipped copy's innocent prose alone", () => {
