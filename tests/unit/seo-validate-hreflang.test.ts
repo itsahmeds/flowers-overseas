@@ -3,6 +3,10 @@
  * `tests/fixtures/seo/hreflang/bad-nonreciprocal.json` explicitly, so the case is copied in under
  * exactly that name (into a temp directory — see `support/seo-cli.ts`).
  */
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
 import { describe, expect, it } from "vitest";
 
 import {
@@ -10,10 +14,17 @@ import {
   hreflangFixtureSchema,
   isAbsoluteHttpsUrl,
   isValidHreflang,
+  validateHreflangFile,
 } from "../../scripts/seo/validate-hreflang";
 import { runSeoCli, withEmptyDir, withFixtureDir } from "./support/seo-cli";
 
 const CLI = "validate-hreflang.ts";
+
+/** The two URL reasons `validateHreflangFile` gives for a non-https page and a relative href. */
+const URL_REASONS = [
+  "http://a.test/en/: url is not an absolute https:// URL",
+  "http://a.test/en/: alternate x-default href is not an absolute https:// URL: /en/",
+];
 
 describe("validate-hreflang CLI (T-23)", () => {
   it("exits 0 with 'no fixtures' on an empty directory", () => {
@@ -116,6 +127,35 @@ describe("validate-hreflang helpers", () => {
     expect(isAbsoluteHttpsUrl("https://a.test/en/")).toBe(true);
     expect(isAbsoluteHttpsUrl("http://a.test/en/")).toBe(false);
     expect(isAbsoluteHttpsUrl("/en/")).toBe(false);
+  });
+
+  it("applies that rule to a page's url and to every alternate's href", () => {
+    // The helper above is exercised on its own; this is the file validator *using* it (TASK-143).
+    // Neutering either call left every case in this file green, because no fixture carried a
+    // non-https URL: a page at `http://` and a relative alternate are each reported, by name.
+    const dir = mkdtempSync(join(tmpdir(), "fo-hreflang-"));
+    const path = join(dir, "bad-urls.json");
+    writeFileSync(
+      path,
+      JSON.stringify({
+        pages: [
+          {
+            url: "http://a.test/en/",
+            alternates: [
+              { hreflang: "en", href: "http://a.test/en/" },
+              { hreflang: "x-default", href: "/en/" },
+            ],
+          },
+        ],
+      }),
+    );
+    try {
+      expect(
+        validateHreflangFile(path, "bad-urls.json").map(({ reason }) => reason),
+      ).toEqual(expect.arrayContaining(URL_REASONS));
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 
   it("reports a one-way link as non-reciprocal and a missing target as unverifiable", () => {
