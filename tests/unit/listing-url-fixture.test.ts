@@ -28,7 +28,68 @@ import {
   serialiseListingUrlFixture,
   writeListingUrlFixture,
 } from "../../scripts/shop/generate-listing-url-fixture.ts";
-import { listingExists, listingLocales } from "../../src/modules/catalog";
+import type { LocaleCode } from "../../src/config/locales.ts";
+import {
+  type ListingIdentity,
+  listingExists,
+  listingLocales,
+} from "../../src/modules/catalog";
+import { resolveLocalePath } from "../../src/modules/catalog/routes.ts";
+import { resolveSlug } from "../../src/modules/catalog/slugs.ts";
+
+/**
+ * One committed row as the identity `listingExists()` is asked about, recovered from the **URL**
+ * through the router (`resolveLocalePath()`) and the slug index (`resolveSlug()`) rather than
+ * from the generator, so the row is checked by a path that does not share the enumerator's code.
+ * `undefined` when the router does not serve the path as the row's page type.
+ */
+async function identityOf(
+  locale: string,
+  pageType: string,
+  path: string,
+): Promise<ListingIdentity | undefined> {
+  const segments = path.split("/").slice(2);
+  const page = await resolveLocalePath(locale, segments);
+  if (page.kind !== pageType) return undefined;
+  switch (page.kind) {
+    case "countryShopRoot":
+      return {
+        pageType: page.kind,
+        locale: page.locale,
+        countryIso: page.iso2,
+      };
+    case "countryCategory": {
+      const entityKey = resolveSlug(page.locale, "category", page.categorySlug);
+      return entityKey === undefined
+        ? undefined
+        : {
+            pageType: page.kind,
+            locale: page.locale,
+            countryIso: page.iso2,
+            entityKey,
+          };
+    }
+    case "countryOccasion":
+      return {
+        pageType: page.kind,
+        locale: page.locale,
+        countryIso: page.iso2,
+        entityKey: page.occasionKey,
+      };
+    case "categoryHub":
+    case "occasionHub": {
+      const kind = page.kind === "categoryHub" ? "category" : "occasion";
+      const entityKey = resolveSlug(page.locale, kind, page.slug);
+      return entityKey === undefined
+        ? undefined
+        : { pageType: page.kind, locale: page.locale, entityKey };
+    }
+    case "occasionsIndex":
+      return { pageType: page.kind, locale: page.locale };
+    default:
+      return undefined;
+  }
+}
 
 const generated = await generateListingUrlFixture();
 
@@ -62,9 +123,25 @@ describe(`${FIXTURE_PATH} is generated, not written`, () => {
         expect(entry.path, entry.path).toMatch(
           new RegExp(`^/${locale}/[a-z0-9/-]+$`, "u"),
         );
-        // Every row is a page the **predicate** claims, asked one row at a time — so the fixture
-        // cannot drift from `listingExists()` even if the enumerator did.
         expect(entry.path).toBe(entry.path.toLowerCase());
+        // Every row is a page the **predicate** claims, asked one row at a time — so the fixture
+        // cannot drift from `listingExists()` even if the enumerator did (`/review 98` round 1,
+        // required change 7: this comment used to sit over the lowercase check alone). The row's
+        // identity comes from the router, so the router, the row's page type and the predicate
+        // all have to agree.
+        const identity = await identityOf(
+          locale as LocaleCode,
+          entry.pageType,
+          entry.path,
+        );
+        expect(
+          identity,
+          `${entry.pageType} ${entry.path} routes`,
+        ).toBeDefined();
+        expect(
+          identity === undefined ? false : await listingExists(identity),
+          `${entry.pageType} ${entry.path} exists`,
+        ).toBe(true);
       }
       total += entries.length;
     }
