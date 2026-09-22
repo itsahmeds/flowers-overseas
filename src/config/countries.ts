@@ -45,6 +45,8 @@
  */
 import { z } from "zod";
 
+import { pickerState } from "../modules/geo/delivery/state.ts";
+
 import { launchLocales } from "./locales.ts";
 
 /**
@@ -177,12 +179,19 @@ export const CountryConfigSchema = z
      * the Sunday rule — spec 002 §5.1's `iana_zone`, `same_day_cutoff_local`, `delivery_days` and
      * `sunday_delivery`.
      *
-     * **Absent for every destination**, and that absence is the point: no florist has been signed,
-     * so no cutoff has been agreed, and a country whose `operations` block is missing cannot have
-     * a `live` corridor file (`pnpm corridor:check`'s `live-operations` rule refuses one). A
-     * cutoff we cannot honour is therefore unrenderable rather than merely unwritten. The block is
-     * authored the day the founder has real values; `COUNTRY_ROW_COLUMNS` and `toCountryRow()`
-     * grow with it, pinned together by `tests/unit/countries-config.test.ts` as they are today.
+     * **Authored for Poland only** (spec 009 §13 Q3, founder ruling 2026-09-16; TASK-124):
+     * `Europe/Warsaw`, `14:00`, Monday–Saturday, no Sunday delivery. Every other destination has
+     * no block, and that absence is the point — no florist has been signed there, so no cutoff has
+     * been agreed, there is **no global default cutoff**, and a missing block is spec 009's
+     * `unavailable` picker state: no dates, no cutoff, one honest sentence. A country whose block
+     * is missing also cannot have a `live` corridor file (`pnpm corridor:check`'s `live-operations`
+     * rule refuses one), so a cutoff we cannot honour is unrenderable rather than merely unwritten.
+     *
+     * A block alone promises nothing. Poland's makes its picker `preview` (the full calendar, every
+     * date closed, labelled as a demonstration) because `hasActivePartners("PL")` is still false;
+     * `deliveryDatesOpen()` below is what the chrome asks, and it is false until a florist is
+     * signed. `COUNTRY_ROW_COLUMNS` / `toCountryRow()` do **not** project the block yet: spec 002's
+     * `country.iana_zone` is `NOT NULL`, and six destinations have no zone anybody agreed to.
      */
     operations: CountryOperationsSchema.optional(),
   })
@@ -297,6 +306,14 @@ const countries = [
     slugs: { en: "poland", "en-gb": "poland", de: "polen", pl: "polska" },
     corridorPagePublished: true,
     guidePublished: true,
+    // spec 009 §13 Q3 (founder, 2026-09-16), verbatim: the recipient's zone, the same-day cutoff
+    // in it, Monday–Saturday, and §13 Q3's "sundayDelivery: false" as spec 002 §5.1's `none`.
+    operations: {
+      ianaZone: "Europe/Warsaw",
+      sameDayCutoffLocal: "14:00",
+      deliveryDays: [1, 2, 3, 4, 5, 6],
+      sundayDelivery: "none",
+    },
   },
   {
     iso2: "DE",
@@ -427,9 +444,9 @@ export function isGuidePublished(iso2: CountryIso2): boolean {
 
 /**
  * The one predicate over `operations`: true when every operational fact a live corridor page
- * needs has been authored (spec 007 §5.1, AC-2). False for every destination in Phase 0 — the
- * schema above makes the block optional and no country has one, so `corridor:check` refuses a
- * `live` content file and no page can print a cutoff that nobody agreed to.
+ * needs has been authored (spec 007 §5.1, AC-2). True for Poland alone since TASK-124 (spec 009
+ * §13 Q3) and false for the six other destinations, so `corridor:check` refuses a `live` content
+ * file for any of them and no page can print a cutoff that nobody agreed to.
  */
 export function hasCompleteOperations(iso2: CountryIso2): boolean {
   return countryConfig(iso2).operations !== undefined;
@@ -449,14 +466,15 @@ export function hasCompleteOperations(iso2: CountryIso2): boolean {
  *
  * It is deliberately **one** predicate for the whole chrome, in the registry that owns the
  * country row, for the reason A19 gives: the utility strip, the finder, the FAQ, the category row
- * and the footer must never disagree with the picker. Spec 009 task 3 (TASK-123/124) re-sources
- * the body of this function to `pickerState(iso2) === "live"` with **no call-site change**; until
- * then the shipped `operations` data is the fact and the promise returns automatically the day a
- * cutoff is authored.
+ * and the footer must never disagree with the picker. **TASK-124 re-sourced it to the picker
+ * itself** — `pickerState(iso2) === "live"`, spec 009's single decision — with no call-site
+ * change. It had to happen in the same change that authored Poland's `operations` block: the old
+ * body (`status === "live"` and a block) would have turned true for Poland that moment and printed
+ * "Order by 14:00 in Warsaw" with no florist behind it. `live` needs a block **and** an active
+ * partner, so the promise now returns the day a florist is signed, and not a day earlier.
  */
 export function deliveryDatesOpen(iso2: CountryIso2): boolean {
-  const country = countryConfig(iso2);
-  return country.status === "live" && country.operations !== undefined;
+  return pickerState(iso2) === "live";
 }
 
 /**
@@ -464,8 +482,9 @@ export function deliveryDatesOpen(iso2: CountryIso2): boolean {
  *
  * The header, the footer and the home page are not scoped to a destination — they render above
  * every page in the site — so the fact they may assert is the disjunction, not one country's
- * flag. `false` in Phase 0 (no destination carries `operations`), which is what makes the honest
- * chrome copy the rendered copy and keeps `tests/e2e/chrome-honesty.spec.ts` green.
+ * flag. `false` in Phase 0 (no destination has an active partner, so no picker is `live`), which
+ * is what makes the honest chrome copy the rendered copy and keeps
+ * `tests/e2e/chrome-honesty.spec.ts` green.
  */
 export function anyDeliveryDatesOpen(): boolean {
   return COUNTRIES.some((country) => deliveryDatesOpen(country.iso2));

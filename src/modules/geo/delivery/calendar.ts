@@ -57,8 +57,6 @@ import {
   committedOccasionCalendar,
   upcomingOccasions,
 } from "../occasions/index.ts";
-import { hasActivePartners } from "../partners.ts";
-
 import {
   type HolidayProvider,
   closedHolidaysBetween,
@@ -72,6 +70,7 @@ import {
   PICKER_NOTICE_KEYS,
   type PickerState,
 } from "./types.ts";
+import { NEXT_AVAILABLE_HORIZON_DAYS, pickerState } from "./state.ts";
 import {
   addDays,
   assertDayCount,
@@ -96,48 +95,26 @@ export const DELIVERY_WINDOW_DAYS = 14;
 export const DELIVERY_WINDOW_MAX_DAYS = 21;
 
 /**
- * How far `nextAvailableDate` looks before giving up. A year and a day: a destination whose
- * `deliveryDays` and holidays leave no open day inside a full year is a data fault, and `null`
- * ("no date is known") is the honest answer rather than an unbounded loop.
+ * How far `nextAvailableDate` looks, and the window `pnpm seed:check` requires holiday rows for.
+ * Declared in `./state.ts` (so plain `node` can read it) and re-exported here unchanged.
  */
-export const NEXT_AVAILABLE_HORIZON_DAYS = 366;
+export { NEXT_AVAILABLE_HORIZON_DAYS };
 
 /* -------------------------------------------------------------------------- */
 /* The state gate.                                                            */
 /* -------------------------------------------------------------------------- */
 
-/** The two facts §2's states table is a function of, and the only two. */
-export interface PickerStateTerms {
-  /** The destination's `operations` block is complete: a cutoff somebody agreed to. */
-  readonly operationsComplete: boolean;
-  /** A florist is taking our orders there (`hasActivePartners`). */
-  readonly activePartners: boolean;
-}
-
 /**
- * The pure rule of §2's table, in one place (§5.2: "`pickerState()` is a pure function of
- * (`operations` present, `hasActivePartners`) and is the **single** place the three states are
- * decided").
- *
- * No `operations` → `unavailable`: no dates, no cutoff, no calendar. There is deliberately no
- * global default cutoff (§13 Q3), because an assumed 14:00 is exactly the plausible invention
- * this project's gates exist to prevent.
+ * `pickerState()` and the pure rule under it live in `./state.ts` since TASK-124, which re-sourced
+ * spec 004 §14 A19's chrome predicate (`deliveryDatesOpen()` in `src/config/countries.ts`) onto
+ * them: the registry and `pnpm seed:check` are loaded by plain `node`, and this file is not
+ * (`zone.ts` reaches the `i18n` barrel). Re-exported here unchanged, so no import site moved.
  */
-export function pickerStateFrom(terms: PickerStateTerms): PickerState {
-  if (!terms.operationsComplete) return "unavailable";
-  return terms.activePartners ? "live" : "preview";
-}
-
-/**
- * The state of one destination's picker: the single answer the page, the chrome copy of spec 004
- * §14 A19 and TASK-124's CI summary all read.
- */
-export function pickerState(iso2: CountryIso2): PickerState {
-  return pickerStateFrom({
-    operationsComplete: countryConfig(iso2).operations !== undefined,
-    activePartners: hasActivePartners(iso2),
-  });
-}
+export {
+  type PickerStateTerms,
+  pickerState,
+  pickerStateFrom,
+} from "./state.ts";
 
 /* -------------------------------------------------------------------------- */
 /* The cutoff.                                                                */

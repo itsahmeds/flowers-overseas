@@ -20,14 +20,19 @@
  *     are load-bearing rather than decorative; they fail if the calendar ever stops reading one
  *     of its four inputs.
  *
- * **What this task cannot assert, and why.** In Phase 0 no country in `src/config/countries.ts`
- * carries an `operations` block (spec 009 §13 Q3), so `pickerState()` is `unavailable` for all
- * seven destinations and there is no registry path to a `preview` or `live` grid. That is the
- * seam between this task and **TASK-124**, which authors Poland's block and its holidays: the
- * arithmetic is exercised here through `deliveryGrid`/`isOpenOn`/`nextOpenDate`, which take
- * `operations` and `state` as parameters, and the registry wiring (`deliveryWindow`,
- * `deliveryCalendar`) is asserted here in the only state it can reach today — `unavailable`,
- * every answer closed — and end to end in TASK-124.
+ * **The registry path, end to end (TASK-124).** TASK-123 shipped this suite when no country in
+ * `src/config/countries.ts` carried an `operations` block, so the registry wiring could only be
+ * asserted in `unavailable`. TASK-124 authored Poland's block (spec 009 §13 Q3) and its 2026–2027
+ * holidays, and the "`pickerState()`" and "holiday provider" blocks below now assert the three
+ * states through the **real** registry and the **real** holiday rows: Poland `preview` with every
+ * date closed, the six others `unavailable` with no dates, and Poland `live` under a fixture
+ * partner with the committed All Saints and Independence Day closing their dates. The arithmetic
+ * is still exercised through `deliveryGrid`/`isOpenOn`/`nextOpenDate`, which take `operations`
+ * and `state` as parameters.
+ *
+ * **Every fixture table a loop declares cases from is pinned by length** (`/review 97` via
+ * TASK-124): an emptied `DST_READINGS` or `DST_WINDOWS` used to leave the suite green, because a
+ * `for … of` over an empty array declares no case at all.
  */
 import { readFileSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
@@ -546,6 +551,19 @@ describe("AC-5 / T-05: every answer is computed in the destination's zone", () =
 /* -------------------------------------------------------------------------- */
 /* AC-6 / T-06 — the four transition Sundays.                                 */
 /* -------------------------------------------------------------------------- */
+
+describe("AC-6 / T-06: the DST fixture tables are pinned by length", () => {
+  // `for … of DST_READINGS` / `DST_WINDOWS` below declare one case per row, so an emptied table
+  // used to leave the suite green with nothing asserted (`/review 97` via TASK-124). These two
+  // counts are the only thing that makes the loops' absence a failure.
+  it("`DST_READINGS` has 30 rows: the 00:30, 02:30 (and repeated-hour) and 14:00 readings of the four transition Sundays, Warsaw and London", () => {
+    expect(DST_READINGS).toHaveLength(30);
+  });
+
+  it("`DST_WINDOWS` has 8 rows: four transition Sundays × Warsaw and London", () => {
+    expect(DST_WINDOWS).toHaveLength(8);
+  });
+});
 
 underEachProcessZone(
   "AC-6 / T-06: DST across the 2026–2027 transition Sundays",
@@ -1343,27 +1361,58 @@ underEachProcessZone(
       expect(new Set(Object.values(PICKER_NOTICE_KEYS)).size).toBe(3);
     });
 
-    it("Phase 0: every destination is `unavailable`, and a partner alone does not change that", async () => {
-      for (const country of COUNTRIES) {
-        expect(pickerState(country.iso2), country.iso2).toBe("unavailable");
-      }
+    it("Phase 0: Poland is `preview`, the six others `unavailable`, and a partner lifts Poland alone", async () => {
+      const states = (): Record<string, PickerState> =>
+        Object.fromEntries(
+          COUNTRIES.map((country) => [country.iso2, pickerState(country.iso2)]),
+        );
+      // Poland has §13 Q3's block and no florist; nobody else has a block.
+      expect(states()).toEqual({
+        PL: "preview",
+        DE: "unavailable",
+        FR: "unavailable",
+        ES: "unavailable",
+        IT: "unavailable",
+        RO: "unavailable",
+        NL: "unavailable",
+      });
       await withActivePartnersProvider(
         { hasActivePartners: () => true },
         () => {
-          for (const country of COUNTRIES) {
-            // No `operations` block, so no cutoff anybody agreed to: a partner cannot conjure one.
-            expect(pickerState(country.iso2), country.iso2).toBe("unavailable");
-          }
+          // No `operations` block, so no cutoff anybody agreed to: a partner cannot conjure one.
+          // Poland's authored block plus a partner is the one `live` picker.
+          expect(states()).toEqual({
+            PL: "live",
+            DE: "unavailable",
+            FR: "unavailable",
+            ES: "unavailable",
+            IT: "unavailable",
+            RO: "unavailable",
+            NL: "unavailable",
+          });
         },
       );
       // The provider is back where it was.
       expect(staticNoPartnersProvider.hasActivePartners("PL")).toBe(false);
+      expect(pickerState("PL")).toBe("preview");
     });
 
     it("an `unavailable` window has no dates, no zone and no cutoff", async () => {
       const { deliveryWindow } =
         await import("../../src/modules/geo/delivery/calendar.ts");
-      for (const country of COUNTRIES) {
+      const withoutOperations = COUNTRIES.filter(
+        (country) => country.operations === undefined,
+      );
+      // Pinned, so an emptied registry cannot make this loop declare nothing.
+      expect(withoutOperations.map((country) => country.iso2)).toEqual([
+        "DE",
+        "FR",
+        "ES",
+        "IT",
+        "RO",
+        "NL",
+      ]);
+      for (const country of withoutOperations) {
         const window = deliveryWindow({
           countryIso: country.iso2,
           from: new Date(REFERENCE_INSTANT),
@@ -1375,6 +1424,103 @@ underEachProcessZone(
         expect(window.noticeKey).toBe(PICKER_NOTICE_KEYS.unavailable);
         expect(DeliveryWindowSchema.safeParse(window).success).toBe(true);
       }
+    });
+
+    it("Poland's registry window is `preview`: the whole calendar, the committed holidays, nothing selectable", async () => {
+      const { deliveryWindow } =
+        await import("../../src/modules/geo/delivery/calendar.ts");
+      const window = deliveryWindow({
+        countryIso: "PL",
+        from: new Date(REFERENCE_INSTANT),
+        days: DELIVERY_WINDOW_MAX_DAYS,
+        occasionCalendar: NO_OCCASIONS,
+      });
+      expect(DeliveryWindowSchema.safeParse(window).success).toBe(true);
+      expect(window.state).toBe("preview");
+      expect(window.noticeKey).toBe(PICKER_NOTICE_KEYS.preview);
+      // §13 Q3's authored values, read from the registry rather than from a fixture.
+      expect(window.timeZone).toBe("Europe/Warsaw");
+      expect(window.cutoffLocal).toBe("14:00");
+      expect(window.dates).toHaveLength(DELIVERY_WINDOW_MAX_DAYS);
+      expect(window.dates.filter((date) => date.selectable)).toEqual([]);
+      const reasons = Object.fromEntries(
+        window.dates.map((date) => [date.date, date.reasonKey]),
+      );
+      // 25 Oct 2026 is a Sunday; 1 Nov is All Saints on a Sunday; 11 Nov (Independence Day) is a
+      // Wednesday the weekly rules would open — so only the committed holiday row closes it.
+      expect(reasons["2026-10-25"]).toBe("delivery.reason.sundayClosed");
+      expect(reasons["2026-10-26"]).toBe(NOT_ORDERABLE_REASON);
+      expect(reasons["2026-11-01"]).toBe("delivery.reason.publicHoliday");
+      expect(reasons["2026-11-10"]).toBe(NOT_ORDERABLE_REASON);
+      expect(reasons["2026-11-11"]).toBe("delivery.reason.publicHoliday");
+      expect(
+        window.dates
+          .filter((date) => date.reasonKey === "delivery.reason.publicHoliday")
+          .map((date) => date.date),
+      ).toEqual(["2026-11-01", "2026-11-11"]);
+    });
+
+    it("the same route under a fixture partner is `live`: real selectable dates, the holidays still closed", async () => {
+      const { deliveryWindow } =
+        await import("../../src/modules/geo/delivery/calendar.ts");
+      await withActivePartnersProvider(
+        { hasActivePartners: (iso2) => iso2 === "PL" },
+        async () => {
+          const window = deliveryWindow({
+            countryIso: "PL",
+            from: new Date(REFERENCE_INSTANT),
+            days: DELIVERY_WINDOW_MAX_DAYS,
+            occasionCalendar: NO_OCCASIONS,
+          });
+          expect(DeliveryWindowSchema.safeParse(window).success).toBe(true);
+          expect(window.state).toBe("live");
+          expect(window.noticeKey).toBe(PICKER_NOTICE_KEYS.live);
+          const open = window.dates
+            .filter((date) => date.selectable)
+            .map((date) => date.date);
+          // Mon–Sat, minus the Wednesday that is Independence Day; Sundays closed.
+          expect(open).toEqual([
+            "2026-10-26",
+            "2026-10-27",
+            "2026-10-28",
+            "2026-10-29",
+            "2026-10-30",
+            "2026-10-31",
+            "2026-11-02",
+            "2026-11-03",
+            "2026-11-04",
+            "2026-11-05",
+            "2026-11-06",
+            "2026-11-07",
+            "2026-11-09",
+            "2026-11-10",
+            "2026-11-12",
+            "2026-11-13",
+            "2026-11-14",
+          ]);
+          const calendar = deliveryCalendar({
+            now: () => new Date(REFERENCE_INSTANT),
+          });
+          await expect(
+            calendar.nextAvailableDate({
+              countryIso: "PL",
+              from: "2026-10-25",
+            }),
+          ).resolves.toBe("2026-10-26");
+          await expect(
+            calendar.isDateAvailable({ countryIso: "PL", date: "2026-11-11" }),
+          ).resolves.toBe(false);
+          await expect(
+            calendar.nextAvailableDate({
+              countryIso: "PL",
+              from: "2026-11-11",
+            }),
+          ).resolves.toBe("2026-11-12");
+          await expect(
+            calendar.cutoffFor({ countryIso: "PL", date: "2026-10-26" }),
+          ).resolves.toEqual({ localTime: "14:00", timeZone: "Europe/Warsaw" });
+        },
+      );
     });
 
     it("a grid longer than the priced table is refused", () => {
@@ -1493,15 +1639,72 @@ underEachProcessZone(
 /* -------------------------------------------------------------------------- */
 
 underEachProcessZone("the holiday provider and its committed file", () => {
-  it("`seed/data/holidays.json` parses, and is empty in Phase 0", () => {
+  it("`seed/data/holidays.json` parses, and carries Poland's 2026–2027 holidays and nobody else's", () => {
     const file = JSON.parse(
       readFileSync(resolve(__dirname, "../../seed/data/holidays.json"), "utf8"),
     ) as { rows: unknown };
     expect(SeedCountryHolidayRegistrySchema.safeParse(file.rows).success).toBe(
       true,
     );
-    // No destination has an `operations` block, so no window exists for a holiday to fall in.
-    expect(committedHolidayProvider.holidays("PL")).toEqual([]);
+    // Poland is the only destination with an `operations` block (spec 009 §13 Q3), so it is the
+    // only one with a window for a holiday to fall in.
+    for (const country of COUNTRIES) {
+      if (country.iso2 === "PL") continue;
+      expect(
+        committedHolidayProvider.holidays(country.iso2),
+        country.iso2,
+      ).toEqual([]);
+    }
+    // The fourteen statutory days of each year, pinned by date so a moved row is a red case.
+    // Easter 5 Apr 2026 / 28 Mar 2027: Easter Monday +1, Pentecost +49, Corpus Christi +60.
+    const byYear = (year: string): string[] =>
+      committedHolidayProvider
+        .holidays("PL")
+        .filter((holiday) => holiday.date.startsWith(year))
+        .map(
+          (holiday) =>
+            `${holiday.date} ${holiday.nameKey.split(".").at(-1) ?? ""}`,
+        )
+        .sort(byCodePoint);
+    expect(byYear("2026")).toEqual([
+      "2026-01-01 newYear",
+      "2026-01-06 epiphany",
+      "2026-04-05 easterSunday",
+      "2026-04-06 easterMonday",
+      "2026-05-01 labourDay",
+      "2026-05-03 constitutionDay",
+      "2026-05-24 pentecost",
+      "2026-06-04 corpusChristi",
+      "2026-08-15 assumption",
+      "2026-11-01 allSaints",
+      "2026-11-11 independenceDay",
+      "2026-12-24 christmasEve",
+      "2026-12-25 christmasDay",
+      "2026-12-26 secondDayOfChristmas",
+    ]);
+    expect(byYear("2027")).toEqual([
+      "2027-01-01 newYear",
+      "2027-01-06 epiphany",
+      "2027-03-28 easterSunday",
+      "2027-03-29 easterMonday",
+      "2027-05-01 labourDay",
+      "2027-05-03 constitutionDay",
+      "2027-05-16 pentecost",
+      "2027-05-27 corpusChristi",
+      "2027-08-15 assumption",
+      "2027-11-01 allSaints",
+      "2027-11-11 independenceDay",
+      "2027-12-24 christmasEve",
+      "2027-12-25 christmasDay",
+      "2027-12-26 secondDayOfChristmas",
+    ]);
+    expect(committedHolidayProvider.holidays("PL")).toHaveLength(28);
+    // Every one of them shuts the florists: none is an observance that still delivers.
+    expect(
+      committedHolidayProvider
+        .holidays("PL")
+        .every((holiday) => holiday.closed),
+    ).toBe(true);
   });
 
   it("a nameKey that names another country is a parse error", () => {
@@ -1579,16 +1782,24 @@ underEachProcessZone("the holiday provider and its committed file", () => {
   });
 
   it("`withHolidayProvider` swaps the active provider and puts it back", async () => {
-    const before = closedHolidaysBetween("PL", "2026-10-25", "2026-11-07");
-    expect(before.size).toBe(0);
-    await withHolidayProvider(fixtureHolidays(), () => {
-      expect(closedHolidaysBetween("PL", "2026-10-25", "2026-11-07").size).toBe(
-        1,
-      );
+    // The committed rows close All Saints (1 Nov) and Independence Day (11 Nov) in this window.
+    const window = ["2026-10-25", "2026-11-14"] as const;
+    expect([...closedHolidaysBetween("PL", ...window).keys()]).toEqual([
+      "2026-11-01",
+      "2026-11-11",
+    ]);
+    await withHolidayProvider(NO_HOLIDAYS, () => {
+      expect(closedHolidaysBetween("PL", ...window).size).toBe(0);
     });
-    expect(closedHolidaysBetween("PL", "2026-10-25", "2026-11-07").size).toBe(
-      0,
-    );
+    await withHolidayProvider(fixtureHolidays(), () => {
+      expect([...closedHolidaysBetween("PL", ...window).keys()]).toEqual([
+        "2026-11-01",
+      ]);
+    });
+    expect([...closedHolidaysBetween("PL", ...window).keys()]).toEqual([
+      "2026-11-01",
+      "2026-11-11",
+    ]);
   });
 
   it("`toCountryHolidayRow` is pinned to spec 002's column list", () => {
