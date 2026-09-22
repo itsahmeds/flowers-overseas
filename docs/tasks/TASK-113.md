@@ -112,6 +112,62 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
   (linked from `/de` and `/pl` at depth 1) a shop-root link for each destination that has a shop
   root but no corridor page (`country-shop-root` gains the `hub` surface, gated the way
   `corridorShopEntry()` is). That is a spec 007/008 amendment, so it is not blocking here.
+- **From `/review 98` round 2 (2026-09-23, head `d4da869`): VERDICT FAIL.** The seven round-1
+  fixes hold: every mutation I re-ran went red and went green again when restored. The fail rests
+  on one AC the brief itself calls unmet, one guard whose title claims more than it checks, and a
+  stale PR body. CI run 35773069595 is on `d4da869`, 22/22 success. I made three production builds
+  from a clean `.next` on :3198 (build slot held, PID-killed, load 3.1–12.3 on 8 cores); `.next` is
+  deleted and the tree is clean. Reproduced:
+  (3) with `isPublished` mocked, one family ignored → red on that case alone: `countryOccasion
+  expected 9`, `occasionHub expected 28`. With one call-site gate deleted → red: calendar row `1`,
+  picker `7`+`7`, shop-root crumb `2`. The real data flip, each of the five rows `published: false`,
+  over all 206 `en` views: the family's links go to 0 and the others stay unchanged (the corridor
+  entry for `country-shop-root`, the footer for `occasions`). A production build with
+  `country-occasion` off renders 0 links into it across 215 documents per English locale, and the
+  7 pages still answer 200. The crawl's only red is those 7 `unreachable`, with no
+  "unpublished link" finding. §5.1's rollback works for every family.
+  (5) 3 `en` categories removed from the fixture → red `countryCategory: 140 / + 137`. The
+  independent count (`staticCatalogueProvider` categories and occasions × 7 countries, each asked
+  of `listingExists()`) gives 7/140/7/28/1 plus 23 category hubs for `en`/`en-gb`, which equals
+  the pins. So `TARGETS`' comment "no source but the existence set" is inaccurate (nit), but the
+  pins are literals that match the independent count, not the fixture's own length.
+  (6) the header `roses` row published → red: waived `categoryHub /en/flowers/roses`, the same for
+  `/en-gb`, `/de/blumen/roses → 404`, `/pl/kwiaty/roses → 404`.
+  (7) `rosesx` → red `routes: expected undefined`. Nit: the separate `exists` expect cannot go red
+  on its own, because `resolveLocalePath()` already asks `listingExists()`.
+  (8) no conflict markers (0 and 0). `listing-params.test.ts` is byte-identical to `e51798e` and
+  to `4acac33` (18/18). Both resolutions keep both sides (`product` + `occasionsIndex`, and
+  TASK-121's exports + `corridorShopEntry`/`OccasionsIndexPage`/`occasionsIndexHref`).
+  (9) `i18n:check --summary`: `en` 25/511 = 4.9 %. The only review-state change against main is
+  the addition of 13 keys, and none of main's existing keys changed. `datedCaption`
+  and `undatedNote` are `reviewed: false` with no `reviewedBy`. `datedCaption` went from
+  founder-reviewed in round 1 to unreviewed.
+  (2) The old caption put back → red, 2 cases. Poland made non-live → red, 5 cases. In that
+  no-live state the page names no country: the table and the note vanish, and all 14 seasonal
+  occasions, Christmas and Valentine's included, sit under "Kept on a date we cannot compute
+  here" (nit, untested). **That is not Phase 0 today**: `countries.ts` has PL `status: "live"`,
+  which spec 007 §13 Q3 calls a design label. The caption names Poland, which is not delivering,
+  but it makes no delivery claim. Both drafts are true against the data. Required:
+  1. **The guide-state guard claims more than it checks.** "no guide page says what a florist
+     makes or what can arrive" is green on the Poland guide, which renders "Our florist makes it
+     where it is going" and "Our florists count the stems so you do not have to" (TASK-091 copy).
+     With "Bouquets made by florists in {country}." added inside the guide shop entry on all 14
+     pages, only Poland-en's exact-text pin (`corridor.spec.ts:119`) and the unit pin went red. The
+     14-page case and the unit "anywhere on the page" case stayed **green**. Fix: pin the shop
+     section's text to "See flowers for {country}" on all 14 pages, and retitle the phrase list to
+     what it is, the four state-B shop-entry phrasings. The TASK-091 sentences go to spec 007's owner.
+  2. **AC-20 is not demonstrably met, and its escalation is unresolved.** `## Result` and
+     `## Escalations` say it plainly (shop root only, no chips). The reviewer may not pass a PR on a
+     claimed AC with an open escalation. The orchestrator must rule: amend AC-20 or spec 007 §2
+     (and say which task renders the chips), or have the chip row built here.
+  3. **The PR body is stale.** It still opens "Draft — recovered work… Nobody has run the crawl
+     gate against a build yet", says "Two escalations are still open" (the brief has five), and
+     mentions neither round-2's fixes, AC-20's partial state, nor the two strings awaiting the
+     founder. It does not claim AC-20 is met, but it must say it is not.
+  Nits: `origin/main` moved to `4acac33` (TASK-123), and the merge conflicts only in
+  `docs/codebase-map.md`, so rebase, regenerate and re-fire CI on the new head. The founder-reviewed
+  intro "Each one has a page with what we make for it" is a make-claim on a site that delivers
+  nowhere. Put it to the founder with the two drafts.
 
 ## Escalations
 
