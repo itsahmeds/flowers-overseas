@@ -126,10 +126,26 @@ describe("spec 006 §13 Q3: exactly the demo set, and nothing more", () => {
     expect(assets.every((asset) => asset.depicts !== "delivery")).toBe(true);
   });
 
-  it("has a prompt record for every asset, and an asset for every prompt record", () => {
-    expect([...promptRecords.keys()].sort()).toEqual(
-      assets.map((asset) => asset.id).sort(),
-    );
+  it("has a prompt record for every asset", () => {
+    // One-way since TASK-144. This asserted set equality while the two sets were the same 31
+    // things; then the prompt records for the remaining 144 images landed ahead of the images
+    // themselves, which is the point of a generation sheet — the founder cannot generate a
+    // photograph from a record that does not exist yet.
+    //
+    // The direction that still binds is the one that protects the product: **an asset we ship
+    // must be able to say where it came from.** A prompt record with no asset is work not yet
+    // done; an asset with no prompt record is a photograph of unknown provenance, which ADR-0014
+    // forbids outright.
+    //
+    // The lost direction needs no replacement here: a record naming a product the catalogue does
+    // not sell throws at module load, because the prompt schema validates the SKU. A test for it
+    // was written and then deleted after the mutation proved it could never fail — the schema
+    // gets there first, earlier and more strictly.
+    const assetIds = assets.map((asset) => asset.id).sort();
+    const orphans = assetIds.filter((id) => !promptRecords.has(id));
+
+    expect(assetIds.length).toBeGreaterThan(0);
+    expect(orphans).toEqual([]);
   });
 });
 
