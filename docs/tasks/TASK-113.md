@@ -82,7 +82,8 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
 
 ## Result
 
-**Rebase (2026-09-22).** Rebased onto `origin/main` at `d1c0537` (TASK-114 merged as #93). The
+**Rebase (2026-09-22).** Rebased onto `origin/main` at `d1c0537` (TASK-114 merged as #93), then
+again onto `46db59b` (TASK-139's Linux baselines, #95), where only the generated map conflicted. The
 depth-3 route conflicted on one import line only: this task's diff to
 `src/app/[locale]/[segment]/[child]/page.tsx` is the corridor branch's `liveSlots` line and the
 `corridorShopEntry` import, and neither touches a `listingView(` call. TASK-114's source-reading
