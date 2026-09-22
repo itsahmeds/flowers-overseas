@@ -97,7 +97,10 @@ test.describe("existence and the 404 shapes (AC-1, T-01)", () => {
       maxRedirects: 0,
     });
     expect([301, 308]).toContain(response.status());
-    expect(response.headers()["location"]).toContain("/en/poland/flowers");
+    // The bare URL exactly (TASK-143): `toContain` was also satisfied by a redirect to itself,
+    // `/en/poland/flowers/`, or to a guessed form such as `/en/poland/flowers?…` — the two things
+    // this case exists to forbid. `tests/e2e/corridor.spec.ts` pins its target the same way.
+    expect(response.headers()["location"]).toBe("/en/poland/flowers");
   });
 });
 
