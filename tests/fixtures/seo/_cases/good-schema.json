@@ -10,8 +10,14 @@
           {
             "@type": "ListItem",
             "position": 1,
+            "name": "Home",
+            "item": "https://flowersoverseas.com/en"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
             "name": "Germany",
-            "item": "https://flowersoverseas.com/en/de/"
+            "item": "https://flowersoverseas.com/en/de"
           }
         ]
       },

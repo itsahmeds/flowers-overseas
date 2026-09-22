@@ -1,0 +1,9 @@
+{
+  "jsonld": {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      { "@type": "Question", "name": "Do you deliver to Poland?" }
+    ]
+  }
+}

@@ -17,10 +17,15 @@ import {
 } from "@/modules/geo";
 import { alternatesFor } from "@/modules/i18n";
 import {
+  type BreadcrumbLabel,
+  JsonLd,
+  breadcrumbList,
   canonicalFor,
   deploymentDescriptor,
+  faqPage,
   pageIndexability,
   pageMetadata,
+  schemaOptions,
 } from "@/modules/seo";
 
 /**
@@ -69,7 +74,15 @@ import {
  * for the shop root and `pageIndexability()` directly for the corridor; no robots literal is
  * written here (spec 008 AC-14). The canonical is `canonicalFor()`'s, emitted unchanged on a
  * `noindex` page, and the hreflang cluster is one `alternatesFor()` call over the locales that
- * genuinely have this page. JSON-LD is TASK-093's and TASK-115's; the slot is here and empty.
+ * genuinely have this page.
+ *
+ * **JSON-LD.** The corridor branch mounts `BreadcrumbList` + `FAQPage`, built by `src/modules/seo`
+ * from **the same `corridorView` the page renders** — the trail is `view.breadcrumb`, the array
+ * `CorridorBreadcrumb` renders, and the Q&A is `view.faq`, the array `CorridorFaq` renders, so
+ * markup and visible text cannot diverge (spec 007 AC-15, TASK-093). A guide whose FAQ left the
+ * 8–12 band emits no `FAQPage` at all rather than a partial one. The **shop-root branch emits
+ * none**: its `BreadcrumbList` and `ItemList` are spec 008's and TASK-115's, and this file gains
+ * one composition line there, not a second description of the page.
  */
 export const revalidate = 3600;
 export const dynamicParams = false;
@@ -192,6 +205,17 @@ export async function generateMetadata({
   notFound();
 }
 
+/**
+ * The one cast this route makes, for `src/modules/geo/ui/labels.ts`'s reason: a breadcrumb label is
+ * **registry data** (`countries.ts`'s `nameKey`), and next-intl types `t()` against the literal key
+ * union of the catalogue, which a dotted string held as data is not. Resolving it here — with the
+ * same translator the components use — keeps the JSON-LD label and the visible label one message.
+ */
+async function registryLabels(locale: string): Promise<BreadcrumbLabel> {
+  const t = await getTranslations({ locale });
+  return (key: string): string => (t as unknown as BreadcrumbLabel)(key);
+}
+
 export default async function LocaleChildRoute({ params }: ChildParams) {
   const { locale, segment, child } = await params;
   const match = await resolveLocalePath(locale, [segment, child]);
@@ -202,7 +226,25 @@ export default async function LocaleChildRoute({ params }: ChildParams) {
     });
     if (view === undefined) notFound();
     setRequestLocale(match.locale);
-    return <CorridorPage view={view} />;
+
+    const options = schemaOptions(deploymentDescriptor(process.env).siteUrl);
+    const label = await registryLabels(match.locale);
+
+    return (
+      <>
+        <CorridorPage view={view} />
+        <JsonLd
+          nodes={
+            options === undefined
+              ? []
+              : [
+                  breadcrumbList(view.breadcrumb, label, options),
+                  faqPage(view.faq),
+                ]
+          }
+        />
+      </>
+    );
   }
 
   if (match.kind === "countryShopRoot") {

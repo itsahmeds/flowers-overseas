@@ -18,6 +18,7 @@ import {
   FORBIDDEN_TYPES,
   offerProblems,
   schemaFixtureSchema,
+  shapeProblems,
   typeProblem,
 } from "../../scripts/seo/validate-schema";
 import { runSeoCli, withEmptyDir, withFixtureDir } from "./support/seo-cli";
@@ -129,6 +130,9 @@ describe("@type allow-list (plan/02 §9)", () => {
       "AggregateRating",
       "Review",
       "FAQPage",
+      // The two children a valid `FAQPage` must have (TASK-093's corridor fixtures).
+      "Question",
+      "Answer",
       "BlogPosting",
       "WebPage",
     ]) {
@@ -295,5 +299,190 @@ describe("hasCommaDecimalSeparator (schema.org requires '.')", () => {
     expect(hasCommaDecimalSeparator("49")).toBe(false);
     // Rejected by `normaliseMoney` already; not this predicate's business to relabel it.
     expect(hasCommaDecimalSeparator("1,234")).toBe(false);
+  });
+});
+
+/**
+ * The required-shape half of the gate (TASK-093, spec 007 AC-15).
+ *
+ * The allow-list above proves a document names no type we may not emit. It says nothing about
+ * whether the node is a *valid* one: before these cases, a `BreadcrumbList` whose positions ran
+ * `0, 7`, whose first `ListItem` had no `name` and whose `item` was the relative `/en`, and a
+ * `Question` with no `acceptedAnswer`, all passed `pnpm seo:validate` with "1 fixture(s) ok".
+ * Since the committed fixtures are regenerated from the builders, a builder defect of that kind
+ * would have agreed with itself in every gate we had.
+ *
+ * The rules are the `plan/02` §9 table read a second way — the row names `Organization`'s
+ * `name`/`url`/`logo`, and "markup stays valid" is the FAQ row's own wording — plus the property
+ * cardinalities schema.org fixes for the types themselves. `Product` and `Offer` are deliberately
+ * **not** given required properties here: their row is spec 009's (TASK-130's), and inventing the
+ * requirement before the builder exists would be this task legislating for another.
+ */
+describe("required shape, not just allowed types (AC-15)", () => {
+  const shapeOf = (jsonld: unknown): string[] =>
+    collectTypedNodes(jsonld).flatMap((node) => shapeProblems(node));
+
+  it("accepts the shapes the builders actually emit", () => {
+    expect(
+      shapeOf({
+        "@graph": [
+          {
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              {
+                "@type": "ListItem",
+                position: 1,
+                name: "Home",
+                item: "https://flowersoverseas.com/en",
+              },
+              { "@type": "ListItem", position: 2, name: "Poland" },
+            ],
+          },
+          {
+            "@type": "FAQPage",
+            mainEntity: [
+              {
+                "@type": "Question",
+                name: "Do you deliver to Poland?",
+                acceptedAnswer: { "@type": "Answer", text: "Yes." },
+              },
+            ],
+          },
+          {
+            "@type": "Organization",
+            name: "Flowers Overseas",
+            url: "https://flowersoverseas.com",
+            logo: "https://flowersoverseas.com/icon.svg",
+          },
+          {
+            "@type": "WebSite",
+            name: "Flowers Overseas",
+            url: "https://flowersoverseas.com",
+          },
+        ],
+      }),
+    ).toStrictEqual([]);
+  });
+
+  it("rejects breadcrumb positions that are not 1..n in order", () => {
+    const problems = shapeOf({
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home" },
+        { "@type": "ListItem", position: 7, name: "Poland" },
+      ],
+    });
+    expect(problems).toHaveLength(1);
+    expect(problems[0]).toContain("position");
+    expect(problems[0]).toContain("7");
+  });
+
+  it("rejects a ListItem with no name: an unnamed crumb shows nothing", () => {
+    expect(
+      shapeOf({
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, item: "https://x.test/en" },
+          { "@type": "ListItem", position: 2, name: "Poland" },
+        ],
+      }).join(" "),
+    ).toContain("name");
+  });
+
+  it("rejects an empty or single-item BreadcrumbList", () => {
+    expect(
+      shapeOf({ "@type": "BreadcrumbList", itemListElement: [] }).join(" "),
+    ).toContain("itemListElement");
+    expect(
+      shapeOf({
+        "@type": "BreadcrumbList",
+        itemListElement: [{ "@type": "ListItem", position: 1, name: "Home" }],
+      }).join(" "),
+    ).toContain("itemListElement");
+  });
+
+  it("rejects a Question with no acceptedAnswer, and an Answer with no text", () => {
+    expect(
+      shapeOf({
+        "@type": "FAQPage",
+        mainEntity: [{ "@type": "Question", name: "Where?" }],
+      }).join(" "),
+    ).toContain("acceptedAnswer");
+    expect(
+      shapeOf({
+        "@type": "FAQPage",
+        mainEntity: [
+          {
+            "@type": "Question",
+            name: "Where?",
+            acceptedAnswer: { "@type": "Answer", text: "   " },
+          },
+        ],
+      }).join(" "),
+    ).toContain("text");
+  });
+
+  it("rejects a FAQPage with no mainEntity at all", () => {
+    expect(shapeOf({ "@type": "FAQPage" }).join(" ")).toContain("mainEntity");
+  });
+
+  it("requires Organization's name, url and logo — the three plan/02 §9 names", () => {
+    const problems = shapeOf({ "@type": "Organization" }).join(" ");
+    for (const property of ["name", "url", "logo"]) {
+      expect(problems).toContain(property);
+    }
+  });
+
+  it("requires WebSite's name and url", () => {
+    const problems = shapeOf({ "@type": "WebSite" }).join(" ");
+    expect(problems).toContain("name");
+    expect(problems).toContain("url");
+  });
+
+  it("rejects a relative URL in any URL-valued property", () => {
+    // A relative URL in JSON-LD resolves against the @context's base, not the page: `/icon.svg`
+    // is not the logo, it is nothing.
+    expect(
+      shapeOf({
+        "@type": "Organization",
+        name: "Flowers Overseas",
+        url: "https://flowersoverseas.com",
+        logo: "/icon.svg",
+      }).join(" "),
+    ).toContain("logo");
+    expect(
+      shapeOf({
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: "/en" },
+          { "@type": "ListItem", position: 2, name: "Poland" },
+        ],
+      }).join(" "),
+    ).toContain("item");
+  });
+
+  it("leaves Product and Offer to spec 009: no required property is invented here", () => {
+    expect(shapeOf({ "@type": "Product" })).toStrictEqual([]);
+    expect(shapeOf({ "@type": "Offer" })).toStrictEqual([]);
+  });
+});
+
+describe("the required-shape gate fails the CLI, not just the unit test (AC-15)", () => {
+  it("fails on a BreadcrumbList whose positions and names are wrong", () => {
+    const result = withFixtureDir(
+      { "bad-breadcrumb-shape.json": "bad-breadcrumb-shape.json" },
+      (dir) => runSeoCli(CLI, dir),
+    );
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("bad-breadcrumb-shape.json");
+  });
+
+  it("fails on a Question that marks up an answer the page cannot show", () => {
+    const result = withFixtureDir(
+      { "bad-faq-answerless.json": "bad-faq-answerless.json" },
+      (dir) => runSeoCli(CLI, dir),
+    );
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("acceptedAnswer");
   });
 });

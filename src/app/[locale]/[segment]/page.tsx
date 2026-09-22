@@ -6,10 +6,14 @@ import { resolveLocalePath, localeSegmentParams } from "@/modules/catalog";
 import { DestinationsHubPage, hubView } from "@/modules/geo";
 import { alternatesFor } from "@/modules/i18n";
 import {
+  type BreadcrumbLabel,
+  JsonLd,
+  breadcrumbList,
   canonicalFor,
   deploymentDescriptor,
   pageIndexability,
   pageMetadata,
+  schemaOptions,
 } from "@/modules/seo";
 
 /**
@@ -34,6 +38,12 @@ import {
  * and unknown locale a hard **404 answered by the router**; a trailing slash is Next's own
  * permanent redirect to the bare URL (spec 007 §14 A6, spec 008 §14 A7). Nothing here reads a
  * cookie or a header, so the response carries no `Vary` and is byte-identical for every visitor.
+ *
+ * **JSON-LD** — the hub's `BreadcrumbList`, from the same `hubView()` the page renders, mounted
+ * below as one `<script type="application/ld+json">` (spec 007 AC-15, TASK-093). Its second crumb
+ * is the page itself and renders as text, so it announces no `item`: the markup says exactly what
+ * the `<nav>` says. No `ItemList` of destinations — this page lists countries we have a guide for,
+ * not products (AC-16); spec 008's listing schema is TASK-115's.
  */
 export const revalidate = 3600;
 export const dynamicParams = false;
@@ -90,11 +100,37 @@ export async function generateMetadata({
   });
 }
 
+/**
+ * The one cast this route makes, for `src/modules/geo/ui/labels.ts`'s reason: the breadcrumb's
+ * labels are **registry data** (`countries.ts`'s `nameKey`, `site-links.ts`'s keys), and next-intl
+ * types `t()` against the literal key union of the catalogue, which a dotted string held as data is
+ * not. Resolving them here — with the same translator the components use — is what keeps the
+ * JSON-LD label and the visible label one message in one catalogue.
+ */
+async function registryLabels(locale: string): Promise<BreadcrumbLabel> {
+  const t = await getTranslations({ locale });
+  return (key: string): string => (t as unknown as BreadcrumbLabel)(key);
+}
+
 export default async function LocaleSegmentRoute({ params }: SegmentParams) {
   const { locale, segment } = await params;
   const match = await resolveLocalePath(locale, [segment]);
   if (match.kind !== "destinationsHub") notFound();
   setRequestLocale(match.locale);
 
-  return <DestinationsHubPage locale={match.locale} />;
+  const options = schemaOptions(deploymentDescriptor(process.env).siteUrl);
+  const label = await registryLabels(match.locale);
+
+  return (
+    <>
+      <DestinationsHubPage locale={match.locale} />
+      <JsonLd
+        nodes={
+          options === undefined
+            ? []
+            : [breadcrumbList(hubView(match.locale).breadcrumb, label, options)]
+        }
+      />
+    </>
+  );
 }

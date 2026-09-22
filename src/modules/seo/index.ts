@@ -1,7 +1,7 @@
 /** Public barrel for `seo` (hreflang, canonical, JSON-LD builders, sitemap generators, robots). Owned by: spec 007. */
 
 /**
- * @purpose Indexability rule engine, canonical builder, robots policy, page metadata (spec 007)
+ * @purpose Indexability rule engine, canonical builder, robots policy, page metadata, JSON-LD builders (spec 007)
  *
  * The only import path for the `seo` module (spec 007 §2, `plan/01` §5; TASK-090).
  *
@@ -114,3 +114,40 @@ export {
   pageMetadata,
   robotsMeta,
 } from "./metadata.ts";
+
+/**
+ * The JSON-LD builders and the element that serialises them (spec 007 §5.2 L65, AC-15, AC-16;
+ * TASK-093). Each builder is a projection of a view model: it fetches nothing, decides nothing
+ * about indexability, and returns `undefined` when the page has nothing honest to announce.
+ */
+export {
+  JsonLd,
+  SCHEMA_CONTEXT,
+  type JsonLdNode,
+  type JsonLdProps,
+  jsonLdDocument,
+  jsonLdScript,
+  schemaOptions,
+} from "./schema/JsonLd.tsx";
+
+export {
+  BREADCRUMB_MIN_ITEMS,
+  type BreadcrumbCrumb,
+  type BreadcrumbLabel,
+  breadcrumbList,
+} from "./schema/breadcrumbList.ts";
+
+export {
+  FAQ_MAX_ITEMS,
+  FAQ_MIN_ITEMS,
+  type FaqEntry,
+  faqPage,
+} from "./schema/faqPage.ts";
+
+export {
+  ORGANIZATION_LOGO_PATH,
+  type OrganizationOptions,
+  organization,
+} from "./schema/organization.ts";
+
+export { webSite } from "./schema/webSite.ts";
