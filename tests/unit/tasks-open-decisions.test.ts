@@ -215,6 +215,22 @@ describe("checkLedger failure paths", () => {
     const broken = fixture.replace("| Owner agent |", "| Agent |");
     expect(checkLedger(broken).join("\n")).toContain("tasks table header is");
   });
+
+  // The two sections whose *absence* no case exercised (TASK-143): with either `problems.push`
+  // neutered, every case here stayed green — a ledger that lost its Phase 0 row or its whole
+  // Tasks table would have passed the one check that reads them.
+  it("reports a phase-progress table with no Phase 0 row", () => {
+    const broken = fixture.replace(
+      "| 0 Demo | 10 / 12 |",
+      "| 1 Launch | 10 / 12 |",
+    );
+    expect(checkLedger(broken)).toContain("phase progress: no Phase 0 row");
+  });
+
+  it("reports a ledger with no Tasks table", () => {
+    const broken = fixture.replace("## Tasks", "## Work");
+    expect(checkLedger(broken)).toContain('no "Tasks" table');
+  });
 });
 
 // --- the AC-34 checks: the notes cap and the brief file ---------------------------------------
