@@ -130,6 +130,145 @@ describe("listingHonestyViolations reports what AC-6 forbids", () => {
   });
 });
 
+/**
+ * **Every alternative of every pattern, with a sample only it matches** (TASK-143).
+ *
+ * The samples above prove each *pattern* fires, but most patterns are an alternation — English,
+ * then German, then Polish — and one English sample exercises one branch. Deleting
+ * `|\bsterne\b` from the star pattern, or `|\btaggleiche` from the timing claim, left all 179
+ * cases of the seven unit files that import this helper green, which is PR 93's "a term deletable
+ * with the whole suite green"
+ * again: the scan fails **open** on exactly the locales whose copy is still an English echo and
+ * will not stay one. So each top-level alternative is listed here, in order, with a sample that
+ * that alternative matches **and no other alternative of the same pattern does** — so deleting or
+ * neutering any one branch leaves its sample unmatched and this goes red.
+ */
+const ALTERNATIVE_SAMPLES: ReadonlyMap<string, readonly string[]> = new Map([
+  ["rating", ["Customer rating", "Highly rated", "Bewertungen"]],
+  ["star", ["Four stars", "5 Sterne", "★", "⭐"]],
+  ["review", ["112 reviews", "Rezensionen", "Opinie klientów"]],
+  ["out-of-five score", ["4.6 / 5"]],
+  [
+    "ranking claim",
+    [
+      "Best sellers",
+      "Bestsellerliste",
+      "Most popular",
+      "Recommended for you",
+      "Meistverkaufte Sträuße",
+      "Die beliebteste Wahl",
+      "Empfohlen für dich",
+      "Najczęściej kupowane",
+      "Najpopularniejsze bukiety",
+      "Polecane dla ciebie",
+    ],
+  ],
+  [
+    "delivery-timing claim",
+    [
+      "Same-day",
+      "Next-day",
+      "Delivered today",
+      "Order within two hours",
+      "Taggleiche Lieferung",
+      "am selben Tag",
+      "noch heute",
+      "heute geliefert",
+      "tego samego dnia",
+      "jeszcze dziś",
+    ],
+  ],
+  [
+    "order-by cutoff promise",
+    [
+      "Order by 14:00",
+      "Bestellen Sie bis morgen",
+      "Zamów do piątku",
+      "bis 14:00 Uhr",
+    ],
+  ],
+  ["countdown", ["Countdown", "Offer ends in two days", "Hurry", "2 h 15 m"]],
+  ["old price", ["was £59.90", "RRP £59.90", "save 20%", "20% off"]],
+  ["add to basket", ["Add to cart", "Buy now", "In den Warenkorb"]],
+  ["wishlist", ["Wishlist", "Quick view"]],
+  ["<del>/<s> strike-through", ["<del>£59.90</del>"]],
+  ["line-through styling", ['<span class="line-through">£59.90</span>']],
+  ["rating markup", ['<span aria-label="rating 4.6"></span>']],
+  [
+    "basket control",
+    ['<button data-fo-cart="FO-BQ-001">', '<input name="add-to-basket">'],
+  ],
+  ["badge hook", ['<span data-fo-badge="new">New</span>']],
+  ["itemprop rating", ['<span itemprop="ratingValue">4.6</span>']],
+]);
+
+/** The top-level `|` branches of a pattern's source: not inside a group, a class or an escape. */
+function topLevelAlternatives(pattern: RegExp): readonly RegExp[] {
+  const branches: string[] = [];
+  let depth = 0;
+  let inClass = false;
+  let current = "";
+  for (let index = 0; index < pattern.source.length; index += 1) {
+    const char = pattern.source.charAt(index);
+    if (char === "\\") {
+      current += char + pattern.source.charAt(index + 1);
+      index += 1;
+      continue;
+    }
+    if (inClass) {
+      if (char === "]") inClass = false;
+    } else if (char === "[") {
+      inClass = true;
+    } else if (char === "(") {
+      depth += 1;
+    } else if (char === ")") {
+      depth -= 1;
+    } else if (char === "|" && depth === 0) {
+      branches.push(current);
+      current = "";
+      continue;
+    }
+    current += char;
+  }
+  branches.push(current);
+  return branches.map((branch) => new RegExp(branch, pattern.flags));
+}
+
+describe("every branch of every pattern is exercised (TASK-143)", () => {
+  const patterns = [...FORBIDDEN_LISTING_TEXT, ...FORBIDDEN_LISTING_MARKUP];
+
+  it("lists a sample row for every pattern the helper exports, and no other", () => {
+    expect([...ALTERNATIVE_SAMPLES.keys()]).toStrictEqual(
+      patterns.map((pattern) => pattern.name),
+    );
+  });
+
+  it.each(patterns.map(({ name, pattern }) => [name, pattern] as const))(
+    "%s: one sample per alternative, each matched by that alternative alone",
+    (name, pattern) => {
+      const samples = ALTERNATIVE_SAMPLES.get(name);
+      if (samples === undefined) throw new Error(`no samples for ${name}`);
+      const branches = topLevelAlternatives(pattern);
+      expect(samples, name).toHaveLength(branches.length);
+      branches.forEach((branch, index) => {
+        const sample = samples[index] ?? "";
+        const matching = branches.filter((other) => other.test(sample));
+        expect(matching, `${name} ← ${JSON.stringify(sample)}`).toEqual([
+          branch,
+        ]);
+        const found = listingHonestyViolations({
+          html: sample,
+          text: textOf(sample),
+        });
+        expect(
+          found.map((violation) => violation.name),
+          sample,
+        ).toContain(name);
+      });
+    },
+  );
+});
+
 describe("textOf is the browser-free half of the scan", () => {
   it("returns the words a buyer reads, and nothing of the markup", () => {
     expect(textOf(HONEST_CARD)).toContain("Amber Hour");
