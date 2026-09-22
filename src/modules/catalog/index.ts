@@ -383,6 +383,12 @@ export {
   writeExistenceSummary,
 } from "./listing";
 
+// The corridor page's shop entry (spec 007 §2 "Internal links", spec 008 §2 "Links", AC-20;
+// TASK-113). `src/modules/geo` cannot read the catalogue — the dependency runs catalog → geo — so
+// the corridor's `liveSlots` are supplied by its route, and this is the one function that answers
+// "may the site link into this destination's shop, and is there a shop root there to link at".
+export { corridorShopEntry } from "./shop-entry";
+
 // The shared per-depth route resolver (spec 008 §14 **A5**, spec 007 §14 **A8**; TASK-109).
 //
 // Next.js allows one dynamic slug name per (depth, position) across `app/`, so spec 007's corridor

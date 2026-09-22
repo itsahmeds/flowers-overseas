@@ -19,7 +19,8 @@
  * string is stored either: a link carries `labelKey`, a `nav.*`/`footer.*`/`common.*` message key
  * resolved through the catalogue (`CLAUDE.md`, spec 004 §7).
  *
- * **How a target resolves.** Two honest shapes and nothing else:
+ * **How a target resolves.** Three honest shapes and nothing else (four with `listing`, added by
+ * spec 008 AC-20 for the URL families whose members carry a slug):
  *
  *  - `{ kind: "route", pageType }` — the URL exists as a *route shape* today: `pageType` is one of
  *    `localePath()`'s page types, so `src/config/locales.ts` already fixes the localised segment
@@ -42,6 +43,30 @@ import { PATH_SEGMENT_KEYS } from "./locales.data.ts";
  */
 export const linkPageTypes = ["home", ...PATH_SEGMENT_KEYS] as const;
 export type LinkPageType = (typeof linkPageTypes)[number];
+
+/**
+ * The **families** of listing URL spec 007 reserved and spec 008 AC-20 publishes.
+ *
+ * These four are not `route` targets and cannot be: a `route` target is one URL per locale, and
+ * each of these is a *set* of URLs whose members carry a destination slug, an entity slug or
+ * both — `/en/poland/flowers`, `/en/poland/flowers/roses`, `/en/poland/occasions/womens-day`,
+ * `/en/occasions/mothers-day`. What the registry says about a family is the only thing it is
+ * competent to say: **may the site link into it at all**. Which member exists in which locale
+ * stays `listingExists()`'s answer in `src/modules/catalog`, exactly as the per-locale existence
+ * of a corridor page stays `src/modules/geo`'s (the `corridor` kind's rule, applied again).
+ *
+ * The names are `ListingPageType`'s, restated here because `src/config` imports no module — the
+ * `linkPageTypes` pattern above, and `tests/unit/site-links-config.test.ts` asserts the two
+ * agree. The fifth reserved id, the occasions index, is a plain `route` target: it is one URL per
+ * locale (`/en/occasions`), so it needs no family.
+ */
+export const listingLinkPageTypes = [
+  "countryShopRoot",
+  "countryCategory",
+  "countryOccasion",
+  "occasionHub",
+] as const;
+export type ListingLinkPageType = (typeof listingLinkPageTypes)[number];
 
 /** A dotted message key (`nav.search.label`, `footer.link.terms`, `common.homeLink`). */
 const MessageKeySchema = z
@@ -81,6 +106,19 @@ export const SiteLinkTargetSchema = z.discriminatedUnion("kind", [
    * whether the target **may** be linked at all.
    */
   z.object({ kind: z.literal("corridor"), iso2: CorridorIso2Schema }).strict(),
+  /**
+   * A **family of listing URLs** — the country shop root, a country category, a country occasion
+   * or an occasion hub (spec 008 §2 "Links", AC-20). Its own kind for the `corridor` kind's
+   * reason: the URL carries a destination slug and/or an entity slug, so there is no single path
+   * a caller could build from the page type alone, and treating it as a `route` would name
+   * `/{locale}/flowers` — a URL spec 008 §13 Q4 keeps a 404.
+   */
+  z
+    .object({
+      kind: z.literal("listing"),
+      pageType: z.enum(listingLinkPageTypes),
+    })
+    .strict(),
   z.object({ kind: z.literal("pending") }).strict(),
 ]);
 
@@ -93,7 +131,16 @@ export type SiteLinkTarget = z.infer<typeof SiteLinkTargetSchema>;
  * (spec 007 §2 "Internal links", AC-20). A surface is a statement about *where a link is drawn*,
  * not a permission: `isPublished()` is still the only predicate over the flag.
  */
-export const siteLinkSurfaces = ["header", "footer", "home", "hub"] as const;
+export const siteLinkSurfaces = [
+  "header",
+  "footer",
+  "home",
+  "hub",
+  /** Spec 007's corridor page — its shop-entry slot (007 §2 "Internal links", spec 008 AC-20). */
+  "corridor",
+  /** Spec 008's six listing page types — tiles, chip rows, destination pickers, breadcrumbs. */
+  "listing",
+] as const;
 export type SiteLinkSurface = (typeof siteLinkSurfaces)[number];
 
 export const SiteLinkSchema = z
@@ -105,7 +152,18 @@ export const SiteLinkSchema = z
         /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
         "must be a lowercase, hyphen-separated link id",
       ),
-    labelKey: MessageKeySchema,
+    /**
+     * The message key a surface prints for this link — **required for every drawn link, and
+     * absent for a `listing` family** (spec 008 AC-20; TASK-113).
+     *
+     * A family is not a link: it is the permission to link into a *set* of URLs whose members are
+     * named by their own entity (`catalog.facet.*`) or their own destination
+     * (`destinations.*.name`). No surface prints a family's name, so a `labelKey` here would be a
+     * string in the catalogue that nothing renders — the invented literal `CLAUDE.md` forbids,
+     * and a second key that could drift from the one the page actually shows. The `superRefine`
+     * below makes both directions a parse error.
+     */
+    labelKey: MessageKeySchema.optional(),
     /** Optional help/description copy (the search field's `aria-describedby` sentence). */
     descriptionKey: MessageKeySchema.optional(),
     target: SiteLinkTargetSchema,
@@ -125,6 +183,20 @@ export const SiteLinkSchema = z
   })
   .strict()
   .superRefine((link, ctx) => {
+    if (link.target.kind === "listing" && link.labelKey !== undefined) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["labelKey"],
+        message: `link \`${link.id}\` is a listing **family**, not a link: no surface prints its name, so a \`labelKey\` here would be a catalogue string nothing renders (spec 008 AC-20)`,
+      });
+    }
+    if (link.target.kind !== "listing" && link.labelKey === undefined) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["labelKey"],
+        message: `link \`${link.id}\` is drawn on ${link.surfaces.join(", ")} and has no \`labelKey\`: every drawn link carries the message key its surface prints (spec 004 §7)`,
+      });
+    }
     if (link.published && link.target.kind === "pending") {
       ctx.addIssue({
         code: "custom",
@@ -232,12 +304,16 @@ const siteLinks = [
     surfaces: ["footer", "home", "hub"],
   },
   {
+    // The occasions index — `/{locale}/{occasions}` (spec 008 §2 row 14, AC-20; TASK-113). It is
+    // one URL per locale, so it is a plain `route` target. Publishing it turns the footer's
+    // "Occasions" from text into the link that makes every occasion hub reachable in two clicks
+    // from any page on the site, and turns `occasionsIndexHref()`'s `undefined` into a crumb.
     id: "occasions",
     labelKey: "footer.link.occasions",
     target: { kind: "route", pageType: "occasions" },
     published: false,
     owningSpec: "008",
-    surfaces: ["footer"],
+    surfaces: ["footer", "listing"],
   },
   {
     id: "delivery-times",
@@ -373,6 +449,53 @@ const siteLinks = [
     owningSpec: "007",
     surfaces: ["home", "hub"],
   },
+  // The four listing **families** spec 007 §2 "Internal links" reserved and left unpublished —
+  // "the country shop root, up to 6 country categories, the indexable country occasions, the
+  // occasion hubs" — and spec 008 AC-20 publishes. With the occasions index row above they are
+  // the five ids of AC-20, and the flip is the whole of it: **no markup change other than the
+  // element** (AC-20, spec 007 AC-7).
+  //
+  // A family is published only once **its route serves**, never on the strength of a merged
+  // spec: the three country-scoped ones the day TASK-110/111 merged (PR #89), the occasion hub
+  // the day TASK-112 did (PR #88). Measured on production on 2026-09-22, before this flip:
+  // `/en/send-flowers-to/poland` carried four internal links and **not one** of them reached
+  // `/en/poland/flowers`, a page live since PR #89 with 84 priced products. 294 shop URLs were
+  // orphans on a site whose first priority is organic ranking.
+  //
+  // What each publication actually turns on today is one seam, and only one, so a reviewer can
+  // check it: `country-shop-root` → `corridorShopEntry()` fills spec 007's empty shop-entry slot
+  // on every corridor page (`src/modules/catalog/shop-entry.ts`). The other three are the
+  // permission half of AC-21's "zero links to an unpublished link id" for the chip rows, the
+  // destination pickers and the occasions-index entries `listingView()` already renders at URLs
+  // `listingExists()` has claimed; `occasions` is `occasionsIndexHref()`'s gate.
+  {
+    id: "country-shop-root",
+    target: { kind: "listing", pageType: "countryShopRoot" },
+    published: true,
+    owningSpec: "008",
+    surfaces: ["corridor", "listing"],
+  },
+  {
+    id: "country-category",
+    target: { kind: "listing", pageType: "countryCategory" },
+    published: true,
+    owningSpec: "008",
+    surfaces: ["listing", "hub"],
+  },
+  {
+    id: "country-occasion",
+    target: { kind: "listing", pageType: "countryOccasion" },
+    published: true,
+    owningSpec: "008",
+    surfaces: ["listing", "hub"],
+  },
+  {
+    id: "occasion-hub",
+    target: { kind: "listing", pageType: "occasionHub" },
+    published: true,
+    owningSpec: "008",
+    surfaces: ["listing", "hub"],
+  },
 ] as const;
 
 /** Parsed at module load: a malformed registry throws on first import, never at request time. */
@@ -394,6 +517,26 @@ export function siteLink(id: SiteLinkId): SiteLink {
     throw new Error(`unknown site link id: ${id}`);
   }
   return link;
+}
+
+/**
+ * The message key a chrome surface prints for a **drawn** link.
+ *
+ * Total by construction rather than by a fallback string: `SiteLinkSchema` requires a `labelKey`
+ * on every target kind but `listing`, and a listing **family** is never a member of a footer
+ * group, of the masthead set, of the category row or of the search slot — the one thing that
+ * could reach this function with no label — which `tests/unit/site-links-config.test.ts` asserts
+ * over the whole registry. So the throw is unreachable through the committed data and is a
+ * configuration fault when it is not, exactly like `groupLinks()`'s unknown-group throw. A
+ * chrome surface may not be the place where a malformed registry becomes the word "undefined".
+ */
+export function linkLabelKey(link: SiteLink): string {
+  if (link.labelKey === undefined) {
+    throw new Error(
+      `site link \`${link.id}\` is a listing family and has no label: no chrome surface draws one (spec 008 AC-20)`,
+    );
+  }
+  return link.labelKey;
 }
 
 /** True when the string is one of the configured link ids (boundary parsing helper). */
@@ -424,6 +567,44 @@ export function corridorLinkId(iso2: string): SiteLinkId {
     throw new Error(`no corridor link id for country: ${iso2}`);
   }
   return id;
+}
+
+/**
+ * The five ids spec 007 §2 "Internal links" reserved and spec 008 **AC-20** publishes, in
+ * registry order. Exported as a set so the AC-20 test and the AC-21 crawl name them once, and so
+ * a sixth id cannot be smuggled into "the five" without a failing test.
+ */
+export const SHOP_LINK_IDS = [
+  "occasions",
+  "country-shop-root",
+  "country-category",
+  "country-occasion",
+  "occasion-hub",
+] as const satisfies readonly SiteLinkId[];
+
+/** The occasions index — one URL per locale, `/{locale}/{occasions}`. */
+export const OCCASIONS_INDEX_LINK_ID = "occasions" satisfies SiteLinkId;
+
+/**
+ * The link id of one listing **family** (spec 008 AC-20).
+ *
+ * A caller asks for a page type and gets the id, as `corridorLinkId()` does for a country: the
+ * naming rule is a fact of this registry and `isPublished()` stays the one predicate over the
+ * flag. Total over `ListingLinkPageType`, so a renderer cannot forget a family, and the
+ * destination-less **category hub** is deliberately absent — spec 008 §2's link plan gives it no
+ * id, which `docs/tasks/TASK-113.md` records as an open question rather than inventing one here.
+ */
+export function listingLinkId(pageType: ListingLinkPageType): SiteLinkId {
+  switch (pageType) {
+    case "countryShopRoot":
+      return "country-shop-root";
+    case "countryCategory":
+      return "country-category";
+    case "countryOccasion":
+      return "country-occasion";
+    case "occasionHub":
+      return "occasion-hub";
+  }
 }
 
 /** Every corridor link in registry order — the set `tests/unit/site-links-config.test.ts` pins. */
