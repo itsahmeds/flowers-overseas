@@ -644,6 +644,15 @@ baseline on every route**. The substitution line now reads `measured from
 entry new prerendered paths; same route entry, same client references, and
 `tests/e2e/client-js-budget.spec.ts` re-proves it in a browser (10/10).
 
+**CI, round 6.** The first re-fire ([35703475351](https://github.com/itsahmeds/flowers-overseas/actions/runs/35703475351))
+came back `failure` on two jobs, **neither of them this branch's**. `e2e`: 1 066 passed, 2 failed —
+`tests/e2e/country-occasion.spec.ts:41` asserted `/en/occasions/mothers-day` **404s**, and PR 88's
+occasion hub serves it **200**. That is two merged PRs contradicting each other on `main` (89's 404
+list against 88's new page), inherited by every branch opened after them; the founder's
+`7c49028` — "unbreak main" — retired the entry, and this branch is rebased onto it and re-fired.
+`visual`: the Linux baselines TASK-139 (PR 95) is landing. The other 20 jobs were green, including
+`lint`, `typecheck`, `test-unit`, `build`, `container`, `a11y`, `preview` and `commitlint`.
+
 **Build slot** acquired via `.claude/bin/build-slot.sh` (it reaped a 45-minute-stale lock),
 server on **:3228**, both own PIDs killed, slot released. No Lighthouse number is claimed: the
 one-minute load average ran 17 → 55 across this window with six sibling agents on the machine, so
