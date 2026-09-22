@@ -875,6 +875,18 @@ describe("the build/runtime split (spec 001 §14 A17, TASK-135)", () => {
         NEXT_PUBLIC_SITE_URL: "http://staging.example.com",
       }).issues.map((issue) => issue.key),
     ).toEqual(["NEXT_PUBLIC_SITE_URL"]);
+    // The `.env.example` placeholder origin, which is also `http`: two findings, and the
+    // placeholder one is its own rule (TASK-143) — neutered, it left every case in this file
+    // green, because the https rule alone still named the key.
+    expect(
+      validateBuildEnv({
+        ...buildOnly,
+        NEXT_PUBLIC_SITE_URL: "http://localhost:3000",
+      }).issues.map((issue) => issue.message),
+    ).toEqual([
+      "must be a real value in staging, not the .env.example placeholder",
+      "must use https in staging",
+    ]);
   });
 
   it("refuses a development flag in a production-like environment at server start", () => {

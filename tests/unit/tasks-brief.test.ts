@@ -11,7 +11,13 @@
  * The two new ledger checks — the 400-character cap and the brief-present rule — are driven from
  * fixture markdown in `tests/unit/tasks-open-decisions.test.ts`, beside the older ones.
  */
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
@@ -165,6 +171,17 @@ describe("the migration is lossless (T-35)", () => {
     expect(readFileSync(join(root, briefPath("TASK-002")), "utf8")).toBe(
       briefAfterFirst,
     );
+  });
+
+  it("reports a migrated row whose brief has since gone missing (TASK-143)", () => {
+    // No case reached this rule: with its `problems.push` neutered every case stayed green, so a
+    // deleted brief behind an already-migrated row would have been silently accepted.
+    const root = fixtureRepo();
+    migrate(root);
+    rmSync(join(root, briefPath("TASK-002")));
+    expect(migrate(root).problems).toEqual([
+      "TASK-002: row points at docs/tasks/TASK-002.md, which is missing",
+    ]);
   });
 
   it("refuses a row whose existing brief does not reproduce its notes", () => {

@@ -797,9 +797,64 @@ describe("T-14: --check fails on a deleted, an added and a one-byte-edited file 
     writeFileSync(path, JSON.stringify(manifest, null, 2));
     try {
       const problems = checkVariants({ root, pipeline }).problems;
-      expect(problems.some((problem) => problem.includes("ghost-asset"))).toBe(
-        true,
-      );
+      // The rule's own words (TASK-143): `ghost-asset` also appears in the expected object key and
+      // in the missing file's path, so "some problem mentions it" passed with this rule neutered.
+      expect(
+        problems.some((problem) =>
+          problem.includes(
+            "names `ghost-asset`, which is not an asset in seed/data/media.json",
+          ),
+        ),
+        problems.join("\n"),
+      ).toBe(true);
+    } finally {
+      writeFileSync(path, text);
+    }
+  });
+
+  /**
+   * Three per-row rules no case reached (TASK-143): with any one neutered, all 41 cases stayed
+   * green. Each edits one field of the first manifest row and must be reported in its own words.
+   */
+  it.each([
+    [
+      "a height that is not the slot's declared aspect ratio",
+      (row: Record<string, unknown>) => ({
+        ...row,
+        height: Number(row["height"]) + 1,
+      }),
+      /manifest says 384×\d+ but slot `[a-zA-Z]+` at width 384 is 384×\d+/u,
+    ],
+    [
+      "an objectKey that is not the one the variant's id derives",
+      (row: Record<string, unknown>) => ({
+        ...row,
+        objectKey: "elsewhere.avif",
+      }),
+      /manifest `objectKey` is `elsewhere\.avif`, expected `/u,
+    ],
+    [
+      "a ladder step whose name is not its width",
+      (row: Record<string, unknown>) => ({ ...row, variant: "small" }),
+      /manifest `variant` is `small`, expected `384`/u,
+    ],
+  ] as const)("fails on %s", (_name, edit, reason) => {
+    const path = join(root, VARIANT_MANIFEST_PATH);
+    const text = readFileSync(path, "utf8");
+    const manifest = JSON.parse(text) as { rows: Record<string, unknown>[] };
+    const [first, ...rest] = manifest.rows;
+    if (first === undefined)
+      throw new Error("the derived manifest has no rows");
+    writeFileSync(
+      path,
+      JSON.stringify({ ...manifest, rows: [edit(first), ...rest] }, null, 2),
+    );
+    try {
+      const problems = checkVariants({ root, pipeline }).problems;
+      expect(
+        problems.filter((problem) => reason.test(problem)),
+        problems.join("\n"),
+      ).toHaveLength(1);
     } finally {
       writeFileSync(path, text);
     }

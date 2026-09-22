@@ -43,6 +43,7 @@ import {
 } from "../../scripts/corridor-check.ts";
 import {
   CORRIDOR_CHECK_CASES,
+  type CorridorCheckCase,
   applyCorridorCheckCase,
 } from "../../scripts/corridor-check-cases.ts";
 import { SCANNED_PATHS } from "../../scripts/check-no-db-imports.ts";
@@ -127,6 +128,59 @@ describe("one deliberately failing fixture per rule (T-03)", () => {
         expect(testCase.why.length, testCase.rule).toBeGreaterThan(40);
       }
     }
+  });
+});
+
+/**
+ * **The second branch of three rules** (TASK-143). One case per rule is pinned above, but these
+ * rules report from two places and the pinned case reaches one: neutering the other left all 54
+ * cases green. `seoTitle` and `seoDescription` can be over-long *or absent*; another destination
+ * can be *named* or appear as a *URL slug* — `rumaenien` is the German ASCII fold of Rumänien, so
+ * no name matches it and only the slug branch can. (`related-targets`' "not a destination" branch
+ * has no case because it cannot be reached: the parse schema rejects the value first, as `parses`.)
+ */
+const SECOND_BRANCH_CASES: readonly CorridorCheckCase[] = [
+  {
+    rule: "seo-title",
+    expect: "seoTitle is absent",
+    why: "a guide with no authored title falls back to whatever the template writes.",
+    file: "en/pl-guide.md",
+    ops: [{ op: "unsetField", field: "seoTitle" }],
+  },
+  {
+    rule: "seo-description",
+    expect: "seoDescription is absent",
+    why: "a guide with no authored description hands the snippet to the crawler.",
+    file: "en/pl-guide.md",
+    ops: [{ op: "unsetField", field: "seoDescription" }],
+  },
+  {
+    rule: "other-country-in-body",
+    expect: "another destination's URL slug `rumaenien` (RO)",
+    why: "a pasted link to another destination's page is the fleurop.de failure in URL form.",
+    file: "en/pl-guide.md",
+    ops: [
+      {
+        op: "appendBody",
+        text: "Some buyers reach us through /de/rumaenien first.",
+      },
+    ],
+  },
+];
+
+describe("the second branch of a two-branch rule (TASK-143)", () => {
+  it.each(
+    SECOND_BRANCH_CASES.map((testCase) => [testCase.expect, testCase] as const),
+  )("%s", (_expect, testCase) => {
+    const problems = checkCorridorCorpus({
+      files: applyCorridorCheckCase(corpus.files, testCase),
+      names: corpus.names,
+    });
+    const named = problems.filter((problem) => problem.rule === testCase.rule);
+    expect(
+      named.map((problem) => problem.message).join("\n"),
+      formatCorridorProblems(problems),
+    ).toContain(testCase.expect);
   });
 });
 
