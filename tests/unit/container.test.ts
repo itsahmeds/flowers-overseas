@@ -17,7 +17,7 @@
 import { readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   BUILD_ENV_KEYS,
@@ -33,6 +33,10 @@ import {
   WEB_SERVICE_NAME,
   railwayConfigSchema,
 } from "../../src/lib/railway";
+
+// `server-only` is Next's build-time guard and has no runtime body; the health route reaches it
+// through `@/lib/env`, which the runtime-gate cases below import.
+vi.mock("server-only", () => ({}));
 
 const repoRoot = resolve(__dirname, "../..");
 const read = (relative: string): string =>
@@ -171,6 +175,51 @@ describe("build-time env contract (AC-8; spec 001 §14 A17, TASK-135)", () => {
     expect(nextConfig).not.toMatch(/(?<!Build)assertEnv\(\)/u);
     expect(instrumentation).toContain("assertRuntimeEnv(process.env)");
     expect(healthRoute).toContain("assertRuntimeEnv(process.env)");
+  });
+
+  /**
+   * **The runtime half as behaviour, not as text** (TASK-143). The two `toContain` lines above
+   * catch a deleted call and nothing else: `// assertRuntimeEnv(process.env)` or
+   * `if (false) assertRuntimeEnv(process.env)` still contains the string. What spec 040 §14 A1
+   * needs is that a server started without its credentials *fails*: `register()` throws at boot,
+   * and `GET /api/health` — the Railway healthcheck target — throws so the response is a 500.
+   * Both are called here with the ten server-only keys absent and must name `DATABASE_URL`.
+   */
+  describe("with the server-only keys absent", () => {
+    const saved = { ...process.env };
+    const missing = (): void => {
+      for (const key of RUNTIME_ENV_KEYS)
+        Reflect.deleteProperty(process.env, key);
+    };
+    afterEach(() => {
+      for (const key of Object.keys(process.env)) {
+        if (!(key in saved)) Reflect.deleteProperty(process.env, key);
+      }
+      Object.assign(process.env, saved);
+    });
+
+    it("fails `register()` at server start, and not during `next build`", async () => {
+      const { register } = await import("../../instrumentation.ts");
+      missing();
+      process.env["NEXT_RUNTIME"] = "nodejs";
+      Reflect.deleteProperty(process.env, "NEXT_PHASE");
+      await expect(register()).rejects.toThrow(/DATABASE_URL/u);
+      // …and the same missing keys are no failure while `next build` collects page data, which
+      // is the whole of spec 001 §14 A17: a build needs no credential.
+      process.env["NEXT_PHASE"] = "phase-production-build";
+      await expect(register()).resolves.toBeUndefined();
+    });
+
+    it("fails `GET /api/health`, so the healthcheck never passes", async () => {
+      // `@/lib/env` parses the browser half at import, so the route is loaded under the staging
+      // build environment — every key a build has — and the server-only ten are then removed.
+      Object.assign(process.env, stagingBuildEnv);
+      const { GET } = await import("../../src/app/api/health/route.ts");
+      missing();
+      expect(() => GET(new Request("https://example.test/api/health"))).toThrow(
+        /DATABASE_URL/u,
+      );
+    });
   });
 
   it("passes the build gate with no credential in the environment at all", () => {
