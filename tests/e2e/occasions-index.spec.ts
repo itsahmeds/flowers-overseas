@@ -138,8 +138,9 @@ test.describe("what the index renders (AC-11, AC-7, §14 Q4)", () => {
     const caption = await page.locator("main table caption").innerText();
     // Poland is the one published destination, so it is the calendar the table quotes — read out
     // of the document rather than asserted as a constant, so a page that printed Poland's dates
-    // under another country's name fails here.
-    expect(caption).toContain("Poland");
+    // under another country's name fails here. Case-insensitively, because the caption carries the
+    // canvas's `.label` voice and `innerText` returns what `text-transform: uppercase` rendered.
+    expect(caption).toMatch(/poland/iu);
     const table = await page.locator("main table").innerText();
     expect(table).toMatch(/\d{1,2} \w+ 20\d{2}/u);
     // Every dated row is a link, and the undated groups carry no date cell at all — the three

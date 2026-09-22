@@ -125,6 +125,24 @@ function expectedPages(
 }
 
 /**
+ * The size each locale's crawl target set **must** have, pinned per locale.
+ *
+ * Without this the two draft locales pass their reachability assertion over an **empty** set —
+ * every URL they have is a `countryShopRoot`, and both are escalated — which is the vacuous shape
+ * this file exists to refuse. Pinning the number makes the zero a stated fact of the escalation
+ * rather than an accident, and makes an exclusion that quietly emptied `en` a failure rather than
+ * a faster green run. `en`/`en-gb` are floors because the catalogue grows; `de`/`pl` are exact,
+ * because the day either grows past zero the escalation has been resolved and this line is the
+ * reminder to delete it.
+ */
+const TARGET_SET: Readonly<Record<string, { min: number; exact?: number }>> = {
+  en: { min: 180 },
+  "en-gb": { min: 180 },
+  de: { min: 0, exact: 0 },
+  pl: { min: 0, exact: 0 },
+};
+
+/**
  * Every URL an **unpublished** link id would occupy, in one locale.
  *
  * A `route` target occupies one path. A `listing` **family** occupies every member of its page
@@ -276,6 +294,17 @@ test.describe("AC-21: the shop is reachable, and links at nothing that is not", 
         `${locale} has listing pages`,
       ).toBeGreaterThan(0);
       const expected = expectedPages(locale);
+      // And the **crawl's own** target set is the size this locale is supposed to have. `de` and
+      // `pl` are pinned at exactly zero by their escalation, so their green is an honest zero and
+      // not an undetected emptying of the corpus; `en` and `en-gb` carry the whole shop.
+      const bound = TARGET_SET[locale];
+      expect(bound, `${locale} has a pinned target-set size`).toBeDefined();
+      expect(expected.length, `${locale} crawl targets`).toBeGreaterThanOrEqual(
+        bound?.min ?? 1,
+      );
+      if (bound?.exact !== undefined) {
+        expect(expected.length, `${locale} crawl targets`).toBe(bound.exact);
+      }
 
       const result = await crawl(request, locale);
 
@@ -295,6 +324,15 @@ test.describe("AC-21: the shop is reachable, and links at nothing that is not", 
         `links into an unpublished link id from /${locale}`,
       ).toEqual([]);
       expect(result.malformed, `malformed hrefs from /${locale}`).toEqual([]);
+
+      // Last, and about the crawl rather than about the site: it walked a neighbourhood, not an
+      // empty frontier. Every list above is `[]` when nothing was fetched, so this is the line
+      // that makes a silent `[]` a failure. Measured: 195 documents from `/en` with the shop
+      // published, 48 with `country-shop-root` withdrawn.
+      expect(
+        result.depthOf.size,
+        `documents reached from /${locale}`,
+      ).toBeGreaterThan(expected.length);
     });
   }
 

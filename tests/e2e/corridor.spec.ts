@@ -117,8 +117,20 @@ test.describe("the guide state, rendered (AC-8, AC-19, T-09)", () => {
     expect(body).not.toMatch(/\d[\d\s.,]*\s?(?:zł|€|£|EUR|PLN|GBP)/u);
     expect(body).not.toMatch(/same[- ]day/iu);
     expect(body).not.toMatch(/Delivering now/u);
-    // No shop entry, and therefore no link into a shop that does not exist.
-    await expect(page.locator("[data-fo-corridor-shop]")).toHaveCount(0);
+    // **The shop entry is here now, and it is not one of the claims above** (spec 008 AC-20;
+    // TASK-113). This line used to assert `toHaveCount(0)` on the reasoning "no link into a shop
+    // that does not exist" — true while nothing published `country-shop-root`, and false from the
+    // moment `/en/poland/flowers` began serving 200 with 84 priced products. A 404-shaped claim
+    // about the site has to be retired by the task that starts serving the page, so the assertion
+    // is inverted rather than deleted: the section is present, it carries **one** link, and that
+    // link is inside the `main` this test has already proven names no cutoff, no time, no price
+    // and no same-day promise. A guide page may point at a shop; it may not price it.
+    const shop = page.locator("[data-fo-corridor-shop]");
+    await expect(shop).toHaveCount(1);
+    await expect(shop.locator("a")).toHaveCount(1);
+    expect(await shop.locator("a").getAttribute("href")).toBe(
+      "/en/poland/flowers",
+    );
   });
 
   test("links only to pages that exist", async ({ page, request }) => {
