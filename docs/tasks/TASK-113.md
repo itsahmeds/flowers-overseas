@@ -47,6 +47,71 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
   own `routes.ts` comment reserves the depth-2 `occasionsIndex` branch for this task, so that
   branch is added here; `listing.ts` gains one optional view field and one extracted helper, and
   the depth-3 route seven lines at one call site — neither is a reshape.
+- **From `/review 98` round 1 (2026-09-22, head `bbdc71b`): VERDICT FAIL.** CI run 35765819126
+  is green on that SHA, and the crawl is real: it goes red with its subject removed. Four
+  production builds from a clean `.next` (load 3–4.6 on 8 cores), every mutation restored.
+  Reproduced: `country-shop-root` + `occasions` set `published: false` → red, 183 URLs
+  unreachable from `/en` and from `/en-gb`; the Polish `roses` tile pointed at `…/rosesx` → red,
+  naming `countryCategory /en/poland/flowers/roses` and `/en/poland/flowers/rosesx → 404`. A
+  soft-only failure exits 1 (`status: unexpected`), and CI's e2e step has no
+  `continue-on-error`. A sixth published id turns `site-links-config.test.ts` red (15 ≠ 14).
+  `listing-params.test.ts` is byte-identical to main and green (18/18). No `listingView(` call
+  moved (+7 lines only). No 404 list names a URL this PR serves. The occasions index's head is
+  right, checked with an `https` origin: `noindex,follow`, a self canonical, `en`/`en-IE`/`en-NL`/`en-GB`/`x-default`,
+  and no `de`/`pl`. The page has no physical CSS, no literal and no client island. Required:
+  1. **The guide-state corridor now claims florists.** `/en/send-flowers-to/poland` renders the
+     shop entry with `corridor.shop.body`, "Bouquets our florists in Poland can make…", on the
+     page that also says "Not yet. We are choosing florists in Poland now" and "Guide · not
+     delivering yet". That string was written for state B (live). The corridor artboard's state A
+     still says "Shop entry · Nothing renders here", and `corridor.spec.ts`'s guide-state guard
+     was inverted without an artboard amendment or a spec 007 §14 record. Fix: give the guide
+     state its own copy with no florist or delivery claim (founder-approved), amend both corridor
+     artboards' state A, record the deviation, and extend the guide-state assertion to refuse
+     `our florists? in` (mutation-proven).
+  2. **The occasions-index captions are false against today's data.** "in Poland — the one
+     destination we have published" and "the day belongs to a country we have not published
+     yet", beside Grandmothers' Day in France and Sant Jordi: all seven countries are
+     `guidePublished` (TASK-091), and `/en` links France's and Spain's guides. Q4's premise, that
+     Poland is the only published destination, stopped being true. The artboard's "Observed
+     nowhere we have published" block is stale for the same reason. Escalate the wording to the
+     founder, amend the artboard, and pin the caption's claim to the data it describes.
+  3. **Three of the five flags do not switch anything.** With `country-occasion` set to
+     `published: false`, 14 links into it still render: 7 from the shop roots, 7 from
+     `/en/occasions/mothers-day`. The crawl caught them, but production would still render them,
+     so spec 008 §5.1's rollback ("rows back to `published: false`") and spec 007 §2's "gated on
+     `isPublished(linkId)`" fail for `country-category`, `country-occasion` and `occasion-hub`.
+     Gate `listingView()`'s tiles, chips, pickers and entries on
+     `isPublished(listingLinkId(pageType))`, as `corridorShopEntry()` does, and add a unit case
+     per family.
+  4. **AC-20 is only partly met on the corridor, and the PR does not say so.** Spec 007 §2 and the
+     corridor artboard's state B draw the shop entry as the shop root plus up to six country
+     categories and the indexable occasions. Only the shop root renders. Either render the chips
+     or declare it in `## Result` and escalate the "no markup change" conflict.
+  5. **Pin the crawl's target set exactly.** With 3 `en` country categories deleted from the
+     fixture, the crawl stayed **green** (180 ≥ 180). Only `listing-url-fixture.test.ts`'s byte
+     compare went red. Assert the one value per locale and per page type (en: 7/140/7/28/1 = 183),
+     not a floor.
+  6. **The waiver cannot expire.** With the header's `roses` row published, `/en/flowers/roses`
+     was reachable at depth 1 and `/en`/`/en-gb` stayed green: nothing asserts that a waived page
+     is still unreachable. Add that inverse assertion so the waiver fails the day an escalation is
+     resolved. The same run shows why the header row needs `slugFor()` plus an existence gate:
+     `/de/blumen/roses → 404` and `/pl/kwiaty/roses → 404`.
+  7. `listing-url-fixture.test.ts` says "every row is a page the **predicate** claims, asked one
+     row at a time", but it asks no predicate, only `toLowerCase()`. Add the `listingExists()`
+     call or correct the comment.
+  Not this task's (carry to the owner): no test pins the occasions index's robots, canonical or
+  hreflang, and `?x=` variants are not `noindex` (TASK-114/117, AC-15/16). Lighthouse, axe and
+  visual do not yet cover it (TASK-117). Its JSON-LD belongs to TASK-115.
+  Escalations: (a) do not add a sixth id for the category hubs. Publish the header's
+  `categories.ts` rows (owningSpec `008`) through `categoryHref()` with `slugFor()` and
+  `listingExists()`. That reaches only the header's categories, plus Occasions → the index. The
+  other hubs need a spec 008 §14 amendment for an inbound edge within depth 3, such as a
+  shop-root link to the category's hub, in a follow-up task. (b) The `de`/`pl` escalation cites
+  "TASK-119's reviewed corridor copy", but TASK-119 is the locale-suggestion popup, and no task
+  produces reviewed `de`/`pl` corridor copy, so waiting has no end. Give the destinations hub
+  (linked from `/de` and `/pl` at depth 1) a shop-root link for each destination that has a shop
+  root but no corridor page (`country-shop-root` gains the `hub` surface, gated the way
+  `corridorShopEntry()` is). That is a spec 007/008 amendment, so it is not blocking here.
 
 ## Escalations
 
