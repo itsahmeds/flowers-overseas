@@ -113,6 +113,25 @@ One dated bullet per `/review`, newest last.
   number on every European page and is visible in ~20 committed baselines — same class as the
   three observations already escalated, so add it there rather than pinning it silently.
 
+- **From `/review 95` round 2 (2026-09-22): PASS at `55434e6`.** Nothing is required before merge.
+  All of this was verified by the reviewer: 93 of 93 committed `linux` PNGs re-hashed against the
+  downloaded artifact of run 35711495539 (0 altered, 0 uncommitted); the committed manifest is
+  byte-identical to the artifact's; the two regenerated `country-shop` files were read in the
+  pixels; the `darwin/dev-components-desktop` refresh is a real fix (the old file pinned unloaded
+  lazy images, and the new one agrees with the CI-rendered `linux` set); Playwright's own
+  comparator goes red on the round-1 stale pair; the merge onto `d1c0537` differs from the tree CI
+  tested in 3 docs files only. Nits for a follow-up, not blocking:
+  1. `tests/visual/notices.spec.ts` L72–73 says `loadLazyImages()` "does not change what is
+     photographed … the `darwin` baseline … still matches". It does change it (ratio 0.10 against
+     the old baseline). Correct the comment.
+  2. This brief's `## Binding` decision 3 still quotes round 1's "0.23 % – 47.7 %", "27 of the
+     91" and "181 px". Align it with runbook §1.3.
+  3. For spec 001 §2's owner: at `maxDiffPixelRatio: 0.001`, the `country-shop-desktop` budget is
+     about 4 803 px. Erasing the pagination control (1 437 px), the Sort form (1 401 px) or the
+     Mother's Day "What we make for it" link (847 px) in place, with no reflow, stays green. The
+     measured noise is zero, so this points toward tightening the threshold or adding
+     element-level shots of AC-bearing controls, never toward widening it.
+
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
