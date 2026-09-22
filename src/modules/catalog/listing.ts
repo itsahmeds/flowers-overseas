@@ -69,7 +69,11 @@ import {
   isGuidePublished,
 } from "@/config/countries";
 import { type LocaleCode, LOCALES, isLocaleCode } from "@/config/locales";
-import { isPublished } from "@/config/site-links";
+import {
+  type ListingLinkPageType,
+  isPublished,
+  listingLinkId,
+} from "@/config/site-links";
 import {
   type CorridorState,
   committedOccasionCalendar,
@@ -1216,6 +1220,7 @@ async function shopRootOccasionDates(
     // shape of the rule and the reason the column waited for these pages (TASK-111).
     const slug = slugFor("occasion", dated.occasionKey, locale);
     const linked =
+      familyPublished("countryOccasion") &&
       slug !== undefined &&
       (await countryOccasionExists(dated.occasionKey, iso2, locale, memo));
     rows.push({
@@ -1608,11 +1613,28 @@ async function facetsFor(
   return category === null ? undefined : { [category.kind]: [category.key] };
 }
 
+/**
+ * May the site link into this listing **family** at all (spec 008 AC-20, spec 004 §5.1)?
+ *
+ * The permission half of every listing link `listingView()` draws — tiles, chips, destination
+ * pickers, calendar rows, the shop-root link and crumb, the occasions-index entries. The existence
+ * half is `listingExists()`, and a link needs both: `corridorShopEntry()`'s shape, asked here too.
+ * Before `/review 98` only the corridor asked, so `published: false` on `country-category`,
+ * `country-occasion` or `occasion-hub` switched nothing off and spec 008 §5.1's rollback ("rows
+ * back to `published: false`") was a no-op. An unpublished family's links become **text or
+ * absence** — whichever the view field allows — never a link (spec 004 AC-14).
+ */
+function familyPublished(pageType: ListingLinkPageType): boolean {
+  return isPublished(listingLinkId(pageType));
+}
+
 /** The category tiles of a country shop root: every category that has a page here (§2, §5.3). */
 async function tilesFor(
   locale: LocaleCode,
   iso2: CountryIso2,
 ): Promise<readonly CategoryTileView[]> {
+  // A tile *is* a link into the country-category family, so an unpublished family draws none.
+  if (!familyPublished("countryCategory")) return [];
   const memo = newMemo();
   const tiles: CategoryTileView[] = [];
   for (const row of copyRows("category", locale)) {
@@ -1646,6 +1668,9 @@ async function occasionEntries(
   locale: LocaleCode,
   from: string,
 ): Promise<readonly ListingOccasionEntry[]> {
+  // Every entry is a link into the occasion-hub family (its `href` is required), so an
+  // unpublished family leaves the index with nothing to list rather than with links it may not draw.
+  if (!familyPublished("occasionHub")) return [];
   const memo = newMemo();
   const entries: ListingOccasionEntry[] = [];
   for (const row of copyRows("occasion", locale)) {
@@ -1705,7 +1730,9 @@ async function breadcrumbFor(
       crumbs.push(
         crumb(
           "breadcrumb.shopRoot",
-          pathOf(locale, "countryShopRoot", countrySlug),
+          familyPublished("countryShopRoot")
+            ? pathOf(locale, "countryShopRoot", countrySlug)
+            : undefined,
           false,
         ),
       );
@@ -1754,7 +1781,11 @@ async function linksFor(
   const chips: ChipLinkView[] = [];
   const destinations: ListingDestinationLink[] = [];
 
-  if (iso2 !== undefined && kind !== undefined) {
+  if (
+    iso2 !== undefined &&
+    kind !== undefined &&
+    familyPublished(kind === "category" ? "countryCategory" : "countryOccasion")
+  ) {
     // Sibling categories or occasions of this destination — links to real pages, which is what
     // `plan/02` §7 means by "facets worth ranking get a real authored path".
     for (const row of copyRows(kind, locale)) {
@@ -1787,8 +1818,12 @@ async function linksFor(
     // Collating the names is the renderer's job — the label is a message key and only the page can
     // resolve it — so the order here is the registry's and the order on screen is `collator()`'s.
     const slug = slugFor(kind, entityKey, locale);
+    const linkable = familyPublished(
+      kind === "category" ? "countryCategory" : "countryOccasion",
+    );
     for (const country of publishedCountries()) {
       const exists =
+        linkable &&
         slug !== undefined &&
         (kind === "category"
           ? await countryCategoryExists(entityKey, country, locale, memo)
@@ -1823,7 +1858,9 @@ async function linksFor(
   return ListingLinksSchema.parse({
     self,
     ...(destinationsHub === undefined ? {} : { destinationsHub }),
-    ...(iso2 === undefined || pageType === "countryShopRoot"
+    ...(iso2 === undefined ||
+    pageType === "countryShopRoot" ||
+    !familyPublished("countryShopRoot")
       ? {}
       : {
           shopRoot: pathOf(
