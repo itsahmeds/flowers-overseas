@@ -114,13 +114,27 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   are configuration and nothing is broken today, but §13 Q7 must be amended or the buckets
   renamed — and the missing preview bucket matters the day preview environments need their own
   image store (today they would read and write production's).
-- **2026-09-21 — the public origin is a `pub-*.r2.dev` host (founder, `open`).** Cloudflare
+- **2026-09-21 — the public origin is a `pub-*.r2.dev` host (founder, answered 2026-09-22:
+  `media.flowersoverseas.com` connected, see round 3).** Cloudflare
   rate-limits `r2.dev` and does not recommend it for production traffic, and it puts a
   third-party origin into CSP `img-src` against ADR-0016's preference for the shortest allowlist.
   Built against the configured value as instructed and reduced to **one** configuration point
   (`src/lib/media-origin.ts`, checked against `R2_PUBLIC_BASE_URL` by the upload script), so
   moving to `media.flowersoverseas.com` is one line here plus the Cloudflare custom-domain
   setup — **a founder action**.
+- **2026-09-22 — Lighthouse LCP is 29-48 ms over budget on the four locale documents, after both
+  available fixes (orchestrator/founder, `open`).** `/en` 2 048 ms, `/en-gb` 2 039, `/de` 2 039,
+  `/pl` 2 029 against `lighthouserc.json`'s 2 000 ms, measured by CI on run `35701725761` with the
+  `preconnect` hint in place and the origin on `media.flowersoverseas.com`. Both fixes worked —
+  roughly 200 ms came off — and neither was enough. **This PR's merge is gated on it and nothing
+  in this repository is left to try**: lowering the budget, dropping a URL from
+  `lighthouse-urls.json`, `continue-on-error` and moving the LCP candidate are all refused
+  (`/review 90`), and each would be a spec amendment rather than a workflow edit. What is left is
+  outside the repository, and is recorded in round 3 below: the objects answer
+  `cf-cache-status: DYNAMIC`, i.e. Cloudflare is not caching them at its edge, so every image is
+  still fetched from R2 itself. A cache rule on `media.flowersoverseas.com` is a founder action.
+  **Recommended, not taken.**
+
 - **2026-09-21 — the origin is a committed constant, not an env read (decided here, recorded for
   review).** Both consumers are build-time: every indexable page is prerendered, so image URLs
   are written into HTML by `next build`, and the CSP is baked into the same artefact. That build
@@ -343,3 +357,127 @@ so this is new information, not a regression from this commit.
 `audit-secrets.test.ts`, which needs gitleaks; CI installs it) and **70 passed / 0 skipped** across
 the four media files in the CI condition; visual 45 × 9 runs green. `pnpm build` was taken under
 `build-slot.sh` because the visual measurement cannot be made without it.
+
+---
+
+### Round 3 (2026-09-22) — the Lighthouse LCP blocker: two fixes, 200 ms, still 39 ms short
+
+**Rebased twice.** `origin/main` moved under this branch during the round: the first rebase landed
+on `68163e6` (PRs #90, #84, #87, #89) and `TASK-144` plus `TASK-112` (#88) arrived while CI ran, so
+the branch is now on `6c19880`. Two conflicts, both in generated or regenerated files:
+`docs/codebase-map.md` (resolved to main's, then regenerated with `pnpm codebase:map`) and the two
+`country-shop-*.png` darwin baselines, resolved to **main's**, because #89 re-recorded them after
+this branch had and main's are the ones that match the post-rebase render.
+
+**1. The hint, and why it is a response header rather than a `<link>`.** The deliverable was
+"`<link rel="preconnect">` in the root layout's `<head>`, before the hero preload". Both
+in-document forms were implemented and then **measured on a rendered page**, and neither can be
+emitted before that preload:
+
+| Form | What the document actually contains |
+|---|---|
+| `<link rel="preconnect">` rendered in `<head>` | serialised **after** the image preload — React hoistables flush behind `highImagePreloads`. Reproduced against this repository's React 19.2 with `renderToReadableStream`. |
+| `preconnect()` from `react-dom` in the locale layout | **no `<link>` at all.** Nor does `prefetchDNS()`. A `preload()` call added on the next line of the same render *does* appear, so the `C`/`D` hints are dropped crossing the RSC boundary while `L` survives. Measured on `/en` against `next dev`, Next 16.3.4. |
+
+A preconnect that arrives after the preload has already opened the connection buys nothing, so the
+first form would have been markup that looked right and did nothing — this project's signature
+failure mode, arrived at from the other direction. The hint is therefore
+`Link: <origin>; rel=preconnect` on the response, emitted from the same `headers()` block as the
+CSP, from the same `MEDIA_ORIGIN` constant (`src/lib/media-headers.ts`, `next.config.ts`). It is
+the earliest a hint can act — before the first byte of HTML is parsed — and
+`scripts/seo/brotli-origin.ts` forwards every header on an HTML document, so it is present in
+exactly the origin CI measures. Next already ships its font preloads the same way, which is the
+existing proof the mechanism reaches the browser.
+
+**No `crossorigin`, against the brief's instruction, and this is the one deviation in the round.**
+A connection is reused only by a request whose credentials mode matches the mode it was opened in.
+`crossorigin` opens an **anonymous** connection; the `<img>`/`<source>` elements `Photo` renders
+carry no `crossorigin` attribute and neither does `preloadArgsFor()`'s descriptor, so both are
+credentialed non-CORS fetches and would ignore an anonymous socket. The familiar "always add
+`crossorigin`" rule is about **fonts**, which are always CORS fetches; for a plain image the
+instruction inverts. `tests/unit/media-headers.test.ts` states the rule as an assertion so the two
+halves cannot drift apart silently.
+
+**2. The custom domain, which arrived mid-round and was the other half.** The founder connected
+`media.flowersoverseas.com` to `flowersoverseas-media`, so `src/lib/media-origin.ts` now reads that
+host. It was **one line**, which is the whole point of what round 2 built: the loader, `img-src`
+and now the preconnect hint all read the one constant, and nothing else needed touching. Verified
+before committing: `HTTP/2 200`, `content-type: image/avif`, `cache-control: public,
+max-age=31536000, immutable`, and `content-length: 9911` on `media/fo-bq-001-hero/384.avif` —
+the same 9 911 the manifest row claims.
+
+**3. What CI measured (run `35701725761`, `ci:full`, head `cb5496c`).** LCP, mobile, simulated
+throttling, three runs per URL, against the Brotli origin:
+
+| URL | LCP before (round 2, `pub-*.r2.dev`, no hint) | LCP now | Budget |
+|---|---|---|---|
+| `/en` | 2 248 ms | **2 048 ms** | 2 000 ms |
+| `/en-gb` | ~2 24x ms | **2 039 ms** | 2 000 ms |
+| `/de` | ~2 24x ms | **2 039 ms** | 2 000 ms |
+| `/pl` | 2 238 ms | **2 029 ms** | 2 000 ms |
+
+Performance category **0.99** on all four (budget 0.95), CLS **0**, script transfer 128 211 B
+against 131 072 B. Every other measured URL is comfortably inside: `/` 1 466, the hubs 1 307-1 322,
+the corridor and shop pages 1 469-1 654.
+
+**So: both fixes worked, roughly 200 ms came off, and all four are still 29-48 ms over. The
+blocker is not closed, and this PR's merge is gated on it.** Reported as instructed rather than
+chased: no budget was lowered, no URL removed from `lighthouse-urls.json`, no
+`continue-on-error` added, and the LCP candidate was not moved — `/review 90` settled that
+demoting a gate is a spec amendment, not a workflow edit.
+
+**The one thing left, and it is outside this repository.** Every object on the new domain answers
+`cf-cache-status: DYNAMIC` — Cloudflare is *not* caching them at its edge, so each image is still
+fetched from R2 on every request rather than from the PoP nearest the visitor. A cache rule on
+`media.flowersoverseas.com` (R2 custom domains do not cache by default) is a founder action in the
+Cloudflare dashboard. **Recommended, not taken**, and named in the escalation above. The dashboard
+also still showed the domain as `Initializing` when it was connected, so a first-request TLS
+warm-up may be in these numbers.
+
+**Also recommended, not taken:** disable the bucket's `pub-*.r2.dev` public development URL. It
+still serves the same objects from a rate-limited origin nobody watches, and nothing in this
+repository points at it any more (`docs/runbooks/imagery.md` §6).
+
+**The founder's `.env.local` needs one edit.** `R2_PUBLIC_BASE_URL` still holds the old
+`pub-*.r2.dev` value, and `pnpm media:upload` refuses to run — by design — while it disagrees with
+`MEDIA_ORIGIN`, naming both values. Set it to `https://media.flowersoverseas.com`. No secret is
+printed, committed or changed by any of this; `.env.example` carries the documented shape and a
+placeholder, not the host.
+
+**The two confirmations asked for.** The hero preload's `imageSrcSet` still points at the media
+origin — `https://media.flowersoverseas.com/media/home-hero/{384,640,828,1080,1200}.avif`, read off
+a rendered `/en`. CSP `img-src` is structurally unchanged — `img-src 'self' data: blob:
+${MEDIA_ORIGIN};` in all five environments, asserted for each in
+`tests/unit/media-origin.test.ts` and now in `tests/unit/media-headers.test.ts` too. Its *value*
+moved with the origin constant, which is the domain change, not a policy change.
+
+**The rest of the run, including what is red and not mine.**
+
+- **`preview` is green for the first time on this branch** (PR #90 landed), so the browser gates
+  ran on CI rather than only locally. **`a11y` green.** **`e2e` 1 040 passed, 2 failed** — both
+  `tests/e2e/country-occasion.spec.ts:41`, which asserts `/en/occasions/mothers-day` 404s, while
+  #88 (TASK-112) merged the occasion hubs that make it exist. Two merged PRs contradicting each
+  other on `main`; the new `media-delivery` case for the preconnect header is among the 1 040.
+- **`visual` is red**, as expected and not mine: 81 of 84 baselines are `darwin`-only and TASK-139
+  owns the Linux set.
+- **`test-unit` was red on the first re-fire** for `tests/unit/seed-media-manifest.test.ts`, which
+  was `main`'s drift from TASK-144 (144 new prompt records, 31 manifest rows) and was fixed on
+  `main` in `5d9c153` while this ran. Rebasing took it.
+- **`lint` was red on the second re-fire** for `src/modules/catalog/listing.ts` — one stray blank
+  line that arrived unformatted on `main` in `2f8bcbf` (TASK-112, #88). It is not this task's file,
+  but `lint` is what `build`, `test-unit` and `lighthouse` all `need`, so **no pull request in this
+  repository could reach a Lighthouse number while it stood**. Removed in its own commit
+  (`chore(format)`, one deletion, `prettier --write` output and nothing else) and disclosed here
+  and in the PR rather than folded into a feature commit.
+
+**Gates run locally for this round:** `typecheck`, `lint`, `check:no-db`, `codebase:map --check`,
+`format:check` — all clean; unit **195 passed** across the eight files that pin the origin, the
+CSP, the env contract and the media components, plus `seed-media-manifest` 17 passed after the
+rebase. The build slot was not taken: nothing in this round needed a local build, and CI is the
+gate of record for every number above.
+
+**Tests added this round:** 6 unit cases in `tests/unit/media-headers.test.ts` (the hint is the
+constant; it carries no `crossorigin`; it is the origin `img-src` allows in all five environments;
+the rule's shape; fresh objects per call; it is wired into the config) and 1 e2e case in
+`tests/e2e/media-delivery.spec.ts` (the served document carries the hint, without `crossorigin`,
+for the origin its images come from).
