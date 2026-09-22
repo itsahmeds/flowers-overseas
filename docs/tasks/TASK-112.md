@@ -114,3 +114,49 @@ changes. TASK-114: toolbar and pagination. TASK-115: `BreadcrumbList` and `ItemL
 same `view.breadcrumb`/`view.hubItems` arrays the page renders; the slots are in both components and
 empty. Also regenerated `country-shop-{desktop,mobile}` darwin baselines, which were stale on
 `origin/main` because TASK-080's imagery refreshed 41 baselines and missed those two.
+
+## Carry-forwards
+
+Post-merge review of squash `2f8bcbf` against `main`, 2026-09-22 (`/review 88`, round 1 — the
+only gate this code gets; PR 88 was merged unreviewed and the rebased tree never ran CI).
+
+- **2026-09-22 — S1, `main` is red on `lint`.** `pnpm format:check` fails on
+  `src/modules/catalog/listing.ts:1683`: the rebase left a second consecutive blank line above
+  `linksFor()`. CI run 35701617203's `lint` job failed on exactly this and every other job was
+  `skipped`, so **no CI job has run against `main` since the merge**. One-line fix (delete the
+  line). Note `pnpm lint` does *not* catch it — only `pnpm format:check` does — which is why the
+  implementer's "lint green" claim was honest and still wrong.
+- **2026-09-22 — S2, two `darwin` visual baselines regressed by the squash.**
+  `tests/visual/__screenshots__/visual/darwin/country-shop-{desktop,mobile}.png` on `main` are the
+  branch's pre-TASK-111 versions. Measured: the merged mobile baseline is 390×5578 px, the
+  pre-merge one 390×5739 px, and the current build renders 390×5739 px — the 161 px is TASK-111's
+  third column. Full `--project=visual` run on `main`: 50 passed, 2 failed, and the 2 are these.
+  CI compares `linux/`, so CI is unaffected; it bites the next local `pnpm test:visual` on a Mac.
+  **Ruled: TASK-139 (PR 95) absorbs it** — it already holds the build slot for the Linux set and
+  the correct file can only be produced from a build of current `main`.
+- **2026-09-22 — S3, the `TASKS.md` row states a fact that is not true.** "CI fully green after a
+  16-file rebase" — the rebased tree never ran CI and the only run against it is red. Cell is 161
+  characters (within the 400 limit); correct the claim.
+- **2026-09-22 — S4, the `en` unreviewed share in `## Result` is stale and the headroom is thin.**
+  Reported 3.3 % (16/480); the merged tree is **4.4 % (22/496)** — six of the additions are
+  TASK-111's `shop.occasion.*`. The gate is 5 %, so `en` stays indexable, but the margin is now
+  **three strings**. The four TASK-112 strings awaiting the founder's attestation
+  (`categoryHub.destinationLink`, `occasionHub.datesCaption`, `occasionHub.dateUnknown`,
+  `occasionHub.destinationsHeading`) are now load-bearing for locale indexability, not cosmetic.
+- **2026-09-22 — S5, the honesty sweep cannot see `<head>`.** `tests/e2e/chrome-honesty.spec.ts`
+  scans `body.innerText`. This task is the first consumer of the copy corpus's authored
+  `seoTitle`/`seoDescription` (`view.entity?.seoDescription`, `[locale]/[segment]/[child]/page.tsx`
+  L249), so from this merge the `<title>` and meta description are page surface the A19 sweep does
+  not reach. Scanned all 102 hub URLs' `<head>` against the project's own patterns: **no breach** —
+  the cutoff mentions are the pointing-not-promising form spec 006 §14 A4 licenses and
+  `DELIVERY_TIMING_PATTERN` deliberately permits. A gap, not a defect. Follow-up task: widen the
+  sweep to `<title>` and `<meta name="description">`.
+- **2026-09-22 — N1.** `tests/e2e/hubs.spec.ts:105` asserts `expect([301, 308]).toContain(status)`
+  for the trailing slash; §14 **A7** rules 308 and the server returns 308. Tighten to `toBe(308)`.
+  (`tests/e2e/country-occasion.spec.ts:108` has the same looseness — pre-existing, TASK-111's.)
+- **2026-09-22 — N2.** AC-25's Lighthouse set gained the two **occasion** hubs but no **category**
+  hub. The category hub is the one with the photograph grid and therefore the hub whose LCP is
+  worth measuring; the occasion hub is a date table. Consider adding `/en/flowers/roses`.
+- **2026-09-22 — N3.** No `<link rel="alternate">` hreflang cluster (**AC-16**) and no JSON-LD
+  (**AC-17**) on either hub. Both are consistent with the already-merged shop root and country
+  category, and both belong to TASK-113/TASK-115; recorded so they are not lost.
