@@ -20,7 +20,20 @@ be green. One paragraph or a short list — no restatement of the spec.
 
 One dated bullet per `/review`, newest last.
 
-- **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From `/review 96` (2026-09-22), TASK-121 merged as `8d64899`:** two of spec 009 AC-3's five
+  clauses were deliberately left to this task, and **both are yours**:
+  1. **Flip the shared depth-4 route to `dynamicParams = true`.** This is a one-way decision.
+     Flipping it preserves the listings' behaviour: every AC-1 404 shape in
+     `tests/unit/catalog-routes-depth4.test.ts` is asserted against `resolveLocalePath()` returning
+     `{ kind: "notFound" }`, so those suites need no rewrite. Leaving it `false` while mounting the
+     PDP turns the 1,680 on-demand PDPs into router 404s and breaks AC-3's union clause. The
+     consequence to record: arbitrary URLs render dynamically instead of being refused by the static
+     router, and 404 responses become cacheable under `revalidate`. That is a Cloudflare and caching
+     note, not a change to the 200 set.
+  2. **Give `writeProductExistenceSummary()` its call site.** It has none today, so no build prints
+     the spec 009 §11 per-locale counts. Follow the `writeExistenceSummary()` precedent: the depth-3
+     `generateStaticParams` calls it exactly once per build. The failure mode to avoid is two
+     tables in one `$GITHUB_STEP_SUMMARY`. Prove the call happens once by mutation.
 
 ## Escalations
 
