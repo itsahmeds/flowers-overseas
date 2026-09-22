@@ -15,6 +15,13 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
   *copy*. Make it mutate the value the provider **returned**, then read again and assert the second
   read is unchanged. Prove this on **both** providers the contract runs: remove the freeze or copy
   and the case goes red on each. Assert exact row counts, not `> 0`.
+- **Widened by `/review 99` (2026-09-23): all nine static reads.** Catalogue, price, add-on
+  price, FX and flags all hand out module arrays unfrozen, **with unfrozen rows**. Mutating one
+  row's `amountMinor` changes the price every later caller reads, which is worse than truncation
+  because it is silent. Freeze deeply, rows included, or copy per call, across all nine. The
+  contract mutates both the returned array (`.length`) and a row field, then re-reads. Run it
+  against **TASK-070's DB providers** as well as the static ones, so both implementations are
+  held to the same promise.
 - **Fix in the provider, not at the callers.** Return a frozen value (`Object.freeze` deep enough
   for the rows) or a fresh copy per call. If you copy, say why in `## Result`, and note the cost at
   3,332 rows. Callers must not need to change. If one does, escalate.

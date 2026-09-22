@@ -61,6 +61,14 @@ One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
 
+- **From `/review 99` via TASK-143 (2026-09-23), confirmed by the reviewer:** three weak
+  assertions sit in files this task's routes share. Fix each, and prove each by mutation:
+  1. `tests/e2e/hubs.spec.ts:108` and `tests/e2e/country-occasion.spec.ts:115` assert the
+     trailing-slash `Location` with `toContain(bare)`. A self-redirect satisfies that. Use `toBe`,
+     as TASK-143 did for `country-shop` and `country-category`. They are the last two such sites.
+  2. `tests/unit/catalog-listing.test.ts:384` claims "grouped by kind" but asserts no grouping. It
+     stays green with the order reversed and with every `kind` set to `evergreen`.
+
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
