@@ -38,7 +38,37 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
 
 ## Carry-forwards
 
-_None yet — this is the first round._
+- **From `/review 96` (2026-09-22) — verdict PASS.** Nothing in the code has to change. Four
+  items to carry, none of them a code fix:
+  1. **The `dynamicParams` escalation is a one-way decision, not a two-way one — say so.** The
+     reasoning in `## Escalations` holds only in the flip direction. Flipping the shared depth-4
+     file to `dynamicParams = true` **is** behaviour-preserving for the listings: every AC-1 404
+     shape in `tests/unit/catalog-routes-depth4.test.ts` is asserted against
+     `resolveLocalePath()` returning `{ kind: "notFound" }`, and the app route calls `notFound()`
+     for every non-match, so the listing 200 set is the resolver's, not the router's, already —
+     and those suites need **no** rewriting, contrary to the escalation's last sentence. The other
+     direction is **not** equivalent: leaving `dynamicParams = false` while mounting the PDP makes
+     the 1 680 on-demand PDPs router-404s and breaks AC-3's union clause outright. TASK-127 must
+     flip it to `true`; the open question is only the 404-cost consequence (arbitrary URLs render
+     dynamically instead of being refused by the static router, and 404 responses become
+     cacheable under `revalidate`), which is a Cloudflare/caching note for TASK-127, not a choice
+     about the 200 set.
+  2. **Two of AC-3's five clauses are not met by this PR and must not be read as met.**
+     `dynamicParams === true` is not exported anywhere, and `writeProductExistenceSummary()` has
+     **no call site**, so no build prints the §11 counts today. The module doc and `## Result`
+     both say TASK-127 owns the call site; the PR body's AC-3 bullet ("the per-locale counts go
+     to `$GITHUB_STEP_SUMMARY`") reads as done and should be qualified. TASK-127's brief must
+     carry both clauses explicitly, on the `writeExistenceSummary()` precedent (the depth-3
+     `generateStaticParams` calls it exactly once per build — two tables in one step summary is
+     the failure mode to avoid).
+  3. **Row hygiene.** `TASKS.md` TASK-121 is still `in_progress` with no PR link in its notes cell
+     (cell is 243 chars, within the 400 limit). Set it `in_review` / then `done` with `PR #96`.
+  4. **Merge against a rebased head.** The branch's merge base is `6c19880`; `main` is at
+     `90389f4`, which already deletes the same `listing.ts` blank line (`7c49028`) and already
+     retires the `/en/occasions/mothers-day` 404 assertion that produced e2e red (a). After a
+     rebase the disclosed out-of-scope hunk disappears and that e2e failure cannot recur; per the
+     orchestrator's own rule (`b6a3377`), merge on a green run against the head being merged.
+     `visual` remains PR 95's.
 
 ## Escalations
 
