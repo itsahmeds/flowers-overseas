@@ -165,3 +165,39 @@ export function isLocaleIndexable(locale: string): boolean {
 export function resetReviewCache(): void {
   cache.clear();
 }
+
+/**
+ * The newest review date in the locale's own catalogue, as a `YYYY-MM-DD` day, or `undefined`
+ * when the locale ships no manifest (spec 007 §2 "Sitemaps", AC-13; TASK-094).
+ *
+ * Spec 007 fixes a sitemap `<lastmod>` as "the real maximum `updatedAt` across the content file,
+ * the country registry entry and the **message catalogue** — never `now`". The catalogue's own
+ * dated fact is `reviewedAt` in `messages/{locale}.meta.json`: the day a human last signed off a
+ * string the page renders. It lives here rather than in `modules/seo` for the reason the header
+ * gives for every other function in this file — `messages/` never leaves the i18n module, so the
+ * sitemap builder asks a question instead of reading a path — and it is a *function over the
+ * manifests*, not a data export, so AC-3's ban on exported configuration is untouched.
+ *
+ * The **chain** is read, not just the locale's own file, because a locale renders what it
+ * inherits: `en-gb` overrides 24 keys and shows English for the rest, so the day its page last
+ * changed is the newer of the two manifests. Manifests are not merged for `unreviewedShare()`
+ * (that question is about the locale's own file); this one is about the document a crawler sees.
+ *
+ * The answer is a **day**, not a timestamp: `<lastmod>` accepts either W3C form, the corridor
+ * files carry `updatedAt` as a date, and comparing a date with a date is the only way the maximum
+ * of the three sources is a total order rather than a timezone argument.
+ */
+export function catalogueUpdatedAt(locale: string): string | undefined {
+  const source = getMessageSource();
+  let newest: string | undefined;
+  for (const code of fallbackChain(locale)) {
+    const manifest = source.meta(code);
+    if (manifest === undefined) continue;
+    for (const record of Object.values(manifest)) {
+      const day = record.reviewedAt?.slice(0, 10);
+      if (day === undefined) continue;
+      if (newest === undefined || day > newest) newest = day;
+    }
+  }
+  return newest;
+}

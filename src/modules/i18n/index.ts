@@ -158,7 +158,12 @@ export {
 
 export { collator, sortBy } from "./collate.ts";
 
-export { isLocaleIndexable, localeBetaTag, unreviewedShare } from "./review.ts";
+export {
+  catalogueUpdatedAt,
+  isLocaleIndexable,
+  localeBetaTag,
+  unreviewedShare,
+} from "./review.ts";
 
 export {
   type AlternatesOptions,
