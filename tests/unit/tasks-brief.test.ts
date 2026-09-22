@@ -12,6 +12,7 @@
  * fixture markdown in `tests/unit/tasks-open-decisions.test.ts`, beside the older ones.
  */
 import {
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -182,6 +183,38 @@ describe("the migration is lossless (T-35)", () => {
     expect(migrate(root).problems).toEqual([
       "TASK-002: row points at docs/tasks/TASK-002.md, which is missing",
     ]);
+  });
+
+  it("refuses a row whose spacing before a `/review` marker the split cannot reproduce (TASK-143)", () => {
+    // `concatNotes` rejoins the fragments with exactly one space, so a cell with two spaces — or
+    // none — before a marker would come back altered. The guard refuses the row instead of writing a
+    // brief that silently rewrites it; round 1 had recorded this site as unreachable.
+    const root = fixtureRepo();
+    const twoSpaces =
+      "Gates: lint.  **From `/review 3` (2026-09-01):** rename it.";
+    const noSpace = (NOTES["TASK-003"] ?? "").replace(
+      ". **From `/review 12`",
+      ".**From `/review 12`",
+    );
+    expect(noSpace).not.toBe(NOTES["TASK-003"]);
+    const original = readLedger(root)
+      .replace(NOTES["TASK-001"] ?? "", twoSpaces)
+      .replace(NOTES["TASK-003"] ?? "", noSpace);
+    writeFileSync(join(root, "TASKS.md"), original, "utf8");
+
+    const report = migrate(root);
+    expect(report.problems).toEqual([
+      "TASK-001: notes would not survive the split — migration refused",
+      "TASK-003: notes would not survive the split — migration refused",
+    ]);
+    expect(report.migrated).toEqual(["TASK-002", "TASK-004"]);
+    expect(existsSync(join(root, briefPath("TASK-001")))).toBe(false);
+    expect(existsSync(join(root, briefPath("TASK-003")))).toBe(false);
+    const cells = new Map(
+      parseTaskRows(readLedger(root)).map((row) => [row.id, row.notes]),
+    );
+    expect(cells.get("TASK-001")).toBe(twoSpaces);
+    expect(cells.get("TASK-003")).toBe(noSpace);
   });
 
   it("refuses a row whose existing brief does not reproduce its notes", () => {
