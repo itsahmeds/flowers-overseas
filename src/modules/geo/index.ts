@@ -10,6 +10,10 @@
  * caller that could name `staticCountryContentProvider` could swap the corpus at runtime, which
  * is what the seam of `content/provider.ts` exists to prevent (spec 007 AC-4).
  *
+ * TASK-123 added `delivery/` (spec 009 §2): the cutoff, the holiday list and the date grid the
+ * product page renders — the four things spec 005's `availability.ts` declared as a seam and
+ * refused to implement.
+ *
  * TASK-089 added `occasions/` (spec 007 §13 Q7): `occasionDate` for the six `plan/03` §9 rule
  * types and the per-destination calendar; spec 009 consumes them and adds `plan/13` B15's seventh.
  */
@@ -70,6 +74,41 @@ export {
   orthodoxEasterSunday,
   upcomingOccasions,
 } from "./occasions/index.ts";
+// The delivery calendar (spec 009 §2, §5.2; TASK-123): spec 005's `CutoffEvaluator` implemented,
+// the grid the product page renders in the destination's own zone, and the three picker states.
+// `./delivery/schemas.ts` and the holiday provider object stay out of the barrel — see its header.
+export {
+  CALENDAR_REASON_KEYS,
+  COUNTRY_HOLIDAY_NATURAL_KEY_COLUMNS,
+  COUNTRY_HOLIDAY_ROW_COLUMNS,
+  DELIVERY_WINDOW_DAYS,
+  DELIVERY_WINDOW_MAX_DAYS,
+  NEXT_AVAILABLE_HORIZON_DAYS,
+  NOT_ORDERABLE_REASON,
+  PICKER_NOTICE_KEYS,
+  type CalendarContext,
+  type CountryHoliday,
+  type CountryHolidayRow,
+  type CutoffReading,
+  type DeliveryCalendarOptions,
+  type DeliveryDate,
+  type DeliveryReasonKey,
+  type DeliveryWindow,
+  type DeliveryPlanInput,
+  type DeliveryWindowInput,
+  type HolidayProvider,
+  type PickerState,
+  type PickerStateTerms,
+  cutoffAt,
+  deliveryCalendar,
+  deliveryReasonKeys,
+  deliveryWindow,
+  pickerState,
+  pickerStateFrom,
+  pickerStates,
+  reasonFor,
+  toCountryHolidayRow,
+} from "./delivery/index.ts";
 // The corridor page: existence rule, states, view model and blocks (spec 007 §5.2; TASK-091).
 export {
   CORRIDOR_CALENDAR_MONTHS,

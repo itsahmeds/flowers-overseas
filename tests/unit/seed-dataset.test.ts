@@ -65,11 +65,16 @@ describe("spec 006 §2.2: every dataset file parses and carries its header", () 
     const authored = SEED_DATA_FILES.filter(
       (file) => file.origin === "authored",
     ).map((file) => file.path);
-    // The calendar (spec 006 owns no catalogue rows), the imagery manifest (TASK-077) and the
-    // variant manifest `pnpm media:variants` writes (TASK-078): none is a projection of
-    // `src/config/catalogue/`, which is what ADR-0017 forbids duplicating.
+    // The calendar (spec 006 owns no catalogue rows), the public holidays (spec 009 §5.1's
+    // second amendment request, TASK-123), the imagery manifest (TASK-077) and the variant
+    // manifest `pnpm media:variants` writes (TASK-078): none is a projection of
+    // `src/config/catalogue/`, which is what ADR-0017 forbids duplicating. `holidays.json` is
+    // authored rather than projected for the stronger reason `seed/schema/holidays.ts` gives —
+    // a public holiday is a fact read off an official calendar for one exact year, never a
+    // recurrence rule (`plan/13` D6).
     expect(authored).toEqual([
       "occasion-country.json",
+      "holidays.json",
       "media.json",
       "media-variants.json",
     ]);

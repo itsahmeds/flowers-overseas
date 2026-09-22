@@ -32,6 +32,7 @@ import {
 } from "./catalogue.ts";
 import { SeedCopyRegistrySchema } from "./copy.ts";
 import { seedFileSchema } from "./header.ts";
+import { SeedCountryHolidayRegistrySchema } from "./holidays.ts";
 import {
   AltEntrySchema,
   MediaAssetManifestSchema,
@@ -67,6 +68,20 @@ export const OccasionsFileSchema = seedFileSchema("occasion", {
 export const OccasionCountryFileSchema = seedFileSchema("occasion_country", {
   notes: z.array(z.string().min(8)).nonempty(),
   rows: SeedOccasionCountryRegistrySchema,
+});
+
+/**
+ * `seed/data/holidays.json` — the destinations' public holidays, authored per year (spec 009
+ * §5.1; spec 002 §5.1's `country_holiday`; TASK-123).
+ *
+ * Authored, like `occasion-country.json` and for a stronger version of the same reason: an
+ * occasion is a rule, a holiday is a fact that has to be read off an official calendar
+ * (`plan/13` D6). `notes` is required and non-empty for the same reason that file's is — the
+ * verification rule belongs where a reader of the data will see it.
+ */
+export const HolidaysFileSchema = seedFileSchema("country_holiday", {
+  notes: z.array(z.string().min(8)).nonempty(),
+  rows: SeedCountryHolidayRegistrySchema,
 });
 
 /** `seed/data/products.json` — the 84 products of `plan/10` §2.1 in its 40/14/8/10/12 split. */
@@ -397,6 +412,12 @@ export const SEED_DATA_FILES = [
     entity: "occasion_country",
     origin: "authored",
     schema: OccasionCountryFileSchema,
+  },
+  {
+    path: "holidays.json",
+    entity: "country_holiday",
+    origin: "authored",
+    schema: HolidaysFileSchema,
   },
   {
     path: "media.json",
