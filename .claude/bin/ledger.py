@@ -3,6 +3,9 @@
 
 Run at session close, then republish the artifact (url in CLAUDE.md) with the refreshed data.
 Reads only ~/.claude/projects/<project>/**/*.jsonl — no network, no secrets.
+Sessions started outside the repo (e.g. from ~/dev) live under another project folder; list their
+top-level transcript paths, one per line, in docs/ledger/extra-sessions.txt and they are read too,
+with their subagents.
 """
 import json, os, glob, re, collections, datetime
 ROOT="/Users/ahmed/.claude/projects/-Users-ahmed-dev-flowers-overseas"
@@ -13,6 +16,9 @@ PR2TASK={"71":"TASK-014","75":"TASK-015","32":"TASK-059","66":"TASK-088","65":"T
  "76":"TASK-107","73":"TASK-108","77":"TASK-120","79":"TASK-122","78":"TASK-134",
  "67":"TASK-059","69":"TASK-059","60":"TASK-059","63":"TASK-087","64":"TASK-089","61":"TASK-056","62":"TASK-013"}
 PLAIN={
+ "TASK-124":"Poland's delivery rules, holidays and the data checks behind them",
+ "TASK-125":"One price model feeding the product page, its markup and its sitemap row",
+ "TASK-143":"Find and fix tests that could not fail",
  "TASK-016":"The catalogue and pricing tables",
  "TASK-080":"Put the first photographs on the site",
  "TASK-082":"Real image storage on Cloudflare R2",
@@ -95,14 +101,17 @@ def dur(a,b):
     except Exception: return 0
 
 agents=[]; sessions=[]
-for f in sorted(glob.glob(ROOT+"/*.jsonl")):
+EXTRA=os.path.join(SCR,"extra-sessions.txt")
+extra=[l.strip() for l in open(EXTRA)] if os.path.exists(EXTRA) else []
+extra=[l for l in extra if l and not l.startswith("#") and os.path.exists(l)]
+for f in sorted(glob.glob(ROOT+"/*.jsonl"))+extra:
     sid=os.path.basename(f)[:-6]; per,fi,la=scan(f)
     rows=[]
     for mod,days in per.items():
         for day,r in days.items():
             rows.append(dict(model=mod, day=day, **r))
     if rows: sessions.append(dict(id=sid, short=sid[:8], first=fi, last=la, rows=rows))
-for f in sorted(glob.glob(ROOT+"/*/subagents/agent-*.jsonl")):
+for f in sorted(glob.glob(ROOT+"/*/subagents/agent-*.jsonl"))+sorted(g for e in extra for g in glob.glob(e[:-6]+"/subagents/agent-*.jsonl")):
     sid=f.split("/")[-3]; aid=os.path.basename(f)[6:-6]
     per,fi,la=scan(f); txt=firstuser(f)
     pr=re.search(r'/review\s+(\d+)', txt); task=re.search(r'TASK-(\d+)', txt)

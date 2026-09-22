@@ -1,0 +1,3 @@
+# Orchestrator sessions started outside the repo, read by .claude/bin/ledger.py in addition to its ROOT.
+# One absolute path per line to a top-level session transcript; its subagents/ folder is read too.
+/Users/ahmed/.claude/projects/-Users-ahmed-dev/1eaaa239-84a3-4b7e-ad52-9926f11f6804.jsonl
