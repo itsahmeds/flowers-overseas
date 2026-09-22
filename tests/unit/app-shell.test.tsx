@@ -93,6 +93,23 @@ const { default: GlobalErrorDocument } =
   await import("../../src/app/global-error");
 const { default: RootLayout, metadata: rootMetadata } =
   await import("../../src/app/layout");
+
+/**
+ * The `meta` strings of the document fallback locale (`en`), which the chooser and the 404 title
+ * themselves from — read from the catalogue so a description is asserted as the authored words.
+ */
+function fallbackMeta(): {
+  chooser: { description: string };
+  notFound: { description: string };
+} {
+  const meta = loadMessages("en", ["meta"])["meta"] as {
+    chooser: { description: string };
+    notFound: { description: string };
+  };
+  expect(meta.chooser.description).not.toBe("");
+  expect(meta.notFound.description).not.toBe("");
+  return meta;
+}
 const { default: NotFoundDocument, generateMetadata: notFoundMetadata } =
   await import("../../src/app/not-found");
 
@@ -213,7 +230,8 @@ describe("the `/` locale chooser (AC-7, AC-25)", () => {
     const metadata = await chooserPageMetadata();
 
     expect(metadata.title).toBe("Flowers Overseas — choose your language");
-    expect(String(metadata.description).length).toBeGreaterThan(0);
+    // The authored string, not `String(…).length > 0`, which `undefined` passes (TASK-143).
+    expect(metadata.description).toBe(fallbackMeta().chooser.description);
   });
 
   it("contains no Client Component boundary, so `/` needs no JavaScript", () => {
@@ -274,8 +292,17 @@ describe("the `[locale]` document (AC-6)", () => {
         params: Promise.resolve({ locale }),
       });
 
-      expect(String(metadata.title).length, locale).toBeGreaterThan(0);
-      expect(String(metadata.description).length, locale).toBeGreaterThan(0);
+      // The locale's own authored strings, not "non-empty" (TASK-143): the old form was
+      // `String(metadata.title).length > 0`, which `undefined` satisfies — `String(undefined)` is
+      // nine characters — so a page exporting no title at all passed. What it cannot yet tell
+      // apart is "localised" from "English everywhere": `de` and `pl` still carry the English
+      // `meta.home` strings in Phase 0, so the two states coincide until they are translated.
+      const meta = loadMessages(locale, ["meta"])["meta"] as {
+        home: { title: string; description: string };
+      };
+      expect(meta.home.title, locale).not.toBe("");
+      expect(metadata.title, locale).toBe(meta.home.title);
+      expect(metadata.description, locale).toBe(meta.home.description);
     }
   });
 
@@ -387,7 +414,8 @@ describe("the 404's metadata (AC-25)", () => {
     const metadata = await notFoundMetadata();
 
     expect(metadata.title).toBe("Page not found — Flowers Overseas");
-    expect(String(metadata.description).length).toBeGreaterThan(0);
+    // The authored string, not `String(…).length > 0`, which `undefined` passes (TASK-143).
+    expect(metadata.description).toBe(fallbackMeta().notFound.description);
   });
 });
 
