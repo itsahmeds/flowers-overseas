@@ -49,6 +49,7 @@ import { resolve } from "node:path";
 
 import { type APIRequestContext, expect, test } from "@playwright/test";
 
+import { COUNTRIES } from "../../src/config/countries.ts";
 import {
   SITE_LINKS,
   type SiteLink,
@@ -126,22 +127,58 @@ function expectedPages(
 }
 
 /**
- * The size each locale's crawl target set **must** have, pinned per locale.
- *
- * Without this the two draft locales pass their reachability assertion over an **empty** set —
- * every URL they have is a `countryShopRoot`, and both are escalated — which is the vacuous shape
- * this file exists to refuse. Pinning the number makes the zero a stated fact of the escalation
- * rather than an accident, and makes an exclusion that quietly emptied `en` a failure rather than
- * a faster green run. `en`/`en-gb` are floors because the catalogue grows; `de`/`pl` are exact,
- * because the day either grows past zero the escalation has been resolved and this line is the
- * reminder to delete it.
+ * How many destinations the registry publishes (`status === "live" || guidePublished`, spec 008
+ * §2's rule, restated from the one source it reads). The shop-root count is **derived** from it:
+ * every published destination has a shop root in a locale with a shop, so the day an eighth
+ * country is published this number moves with it and nothing here needs re-typing.
  */
-const TARGET_SET: Readonly<Record<string, { min: number; exact?: number }>> = {
-  en: { min: 180 },
-  "en-gb": { min: 180 },
-  de: { min: 0, exact: 0 },
-  pl: { min: 0, exact: 0 },
+const PUBLISHED_DESTINATIONS = COUNTRIES.filter(
+  (country) => country.status === "live" || country.guidePublished,
+).length;
+
+/**
+ * The crawl's target set, **exactly**, per locale and per page type (`/review 98` round 1,
+ * required change 5).
+ *
+ * It used to be a floor (`>= 180`), and a floor let three deleted `en` country categories pass:
+ * 180 ≥ 180, green, while three pages had dropped out of the criterion unseen. So each count is
+ * the one value it has today. The shop root is derived from the registry above. The other four
+ * have no source but the existence set itself, which is this test's subject, and deriving a pin
+ * from its own subject pins nothing. When the catalogue grows, `listing-url-fixture.test.ts` goes
+ * red first, the fixture is regenerated, and this table is re-pinned in the same commit, which is
+ * the diff a reviewer should see.
+ *
+ * `de` and `pl` are empty: every URL they have is a shop root, and both are escalated.
+ */
+const TARGETS: Readonly<Record<string, Readonly<Record<string, number>>>> = {
+  en: {
+    countryShopRoot: PUBLISHED_DESTINATIONS,
+    countryCategory: 140,
+    countryOccasion: 7,
+    occasionHub: 28,
+    occasionsIndex: 1,
+  },
+  "en-gb": {
+    countryShopRoot: PUBLISHED_DESTINATIONS,
+    countryCategory: 140,
+    countryOccasion: 7,
+    occasionHub: 28,
+    occasionsIndex: 1,
+  },
+  de: {},
+  pl: {},
 };
+
+/** A page list counted by page type, in the shape `TARGETS` is written in. */
+function countByType(
+  pages: readonly { pageType: string }[],
+): Record<string, number> {
+  const counts: Record<string, number> = {};
+  for (const page of pages) {
+    counts[page.pageType] = (counts[page.pageType] ?? 0) + 1;
+  }
+  return counts;
+}
 
 /**
  * Every URL an **unpublished** link id would occupy, in one locale.
@@ -295,17 +332,14 @@ test.describe("AC-21: the shop is reachable, and links at nothing that is not", 
         `${locale} has listing pages`,
       ).toBeGreaterThan(0);
       const expected = expectedPages(locale);
-      // And the **crawl's own** target set is the size this locale is supposed to have. `de` and
-      // `pl` are pinned at exactly zero by their escalation, so their green is an honest zero and
-      // not an undetected emptying of the corpus; `en` and `en-gb` carry the whole shop.
-      const bound = TARGET_SET[locale];
-      expect(bound, `${locale} has a pinned target-set size`).toBeDefined();
-      expect(expected.length, `${locale} crawl targets`).toBeGreaterThanOrEqual(
-        bound?.min ?? 1,
+      // And the **crawl's own** target set is exactly the one this locale is supposed to have,
+      // type by type. `de` and `pl` are pinned empty by their escalation, so their green is an
+      // honest zero and not an undetected emptying of the corpus; `en` and `en-gb` carry the shop.
+      const pinned = TARGETS[locale];
+      expect(pinned, `${locale} has a pinned target set`).toBeDefined();
+      expect(countByType(expected), `${locale} crawl targets by type`).toEqual(
+        pinned,
       );
-      if (bound?.exact !== undefined) {
-        expect(expected.length, `${locale} crawl targets`).toBe(bound.exact);
-      }
 
       const result = await crawl(request, locale);
 
@@ -333,6 +367,24 @@ test.describe("AC-21: the shop is reachable, and links at nothing that is not", 
         .toEqual([]);
       expect
         .soft(result.malformed, `malformed hrefs from /${locale}`)
+        .toEqual([]);
+
+      // **A waiver expires** (`/review 98` round 1, required change 6). Every page `EXCLUDED`
+      // covers is asserted to be still out of reach. The day an escalation is resolved (the
+      // header's category row publishes the hubs, or a draft locale gains an inbound edge), its
+      // pages become reachable, this goes red, and the rule has to be deleted rather than left to
+      // excuse whatever breaks next.
+      const waivedButReached = (EXISTENCE_SET[locale] ?? [])
+        .filter((page) => isExcluded(locale, page.pageType))
+        .filter(
+          (page) => (result.depthOf.get(page.path) ?? Infinity) <= MAX_DEPTH,
+        )
+        .map((page) => `${page.pageType} ${page.path}`);
+      expect
+        .soft(
+          waivedButReached,
+          `waived pages reachable from /${locale}: delete their EXCLUDED rule`,
+        )
         .toEqual([]);
 
       // Last, and about the crawl rather than about the site: it walked a neighbourhood, not an
@@ -397,7 +449,7 @@ test.describe("AC-21: the shop is reachable, and links at nothing that is not", 
         [...new Set(excluded.map((page) => page.pageType))],
         locale,
       ).toEqual(["categoryHub"]);
-      expect(expectedPages(locale).length, locale).toBeGreaterThanOrEqual(180);
+      expect(expectedPages(locale).length, locale).toBe(183);
     }
   });
 });
