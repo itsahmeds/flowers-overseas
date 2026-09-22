@@ -36,7 +36,88 @@ second idiom.
 **The rule that makes this task safe, and it is not optional.** A weak assertion is a **finding**.
 Do not widen a gate, loosen a threshold, or delete a case to turn red green. If a sweep turns up
 something that is red for a real reason, that is a defect in the code, and it stops being this
-task's business the moment you have identified whose it is — record it in `## Escalations
+task's business the moment you have identified whose it is — record it in `## Escalations` with
+the owning task and move on.
+
+**Prove every fix.** Mutate the subject, watch the case go red, restore, and say so. A
+strengthened assertion that was never observed failing is the same defect wearing a new coat, and
+would be the seventh instance — in the task written to stop the class.
+
+**Judgement, not a regex.** `expect([301, 308])` was *inspected and kept*, and that is the line
+for the whole codebase: the rule is not "never assert over a set", it is **"the assertion must be
+able to fail"**. `[200, 404]` covered the entire outcome space of its request; `[301, 308]` is a
+tolerance across two acceptable implementations that still excludes 200, 404, 302 and 307, with a
+separate `Location` assertion carrying the substance. Expect to keep things. Record why.
+
+**Scope discipline.** Tests and test helpers only. If a sweep would require a production change
+to become falsifiable, that is an escalation, not a licence — say so and leave it.
+
+**Report a count, not a vibe.** `## Result` says how many files were swept, how many shapes were
+found, how many were fixed, how many were kept deliberately and why.
+
+What the spec binds this task to, in the spec's own words: the resolution notes that override
+defaults, the AC ids owned, the rulings from earlier reviews that apply here, the gates that must
+be green. One paragraph or a short list — no restatement of the spec.
+
+## Read
+
+- `specs/NNN-*.md` — read `## 0. Index` first, then only the sections the ACs name
+- `docs/codebase-map.md` — where everything lives
+- (the two or three files the deliverable actually touches)
+
+## Carry-forwards
+
+One dated bullet per `/review`, newest last. (Heading restored by the reviewer: `53aa9f7` had
+deleted it — see item 1.)
+
+- **From `/review 99` round 1 (2026-09-23) — FAIL, head `08f621c`** (CI run 35773941500 green,
+  24 pass, `ci:full`; the diff is `tests/`, `docs/codebase-map.md` and this brief only, with no
+  production file). The mutation evidence mostly holds. Reproduced: shop-page AC-24 with preload
+  `imageSizes: "100vw"` and with the nomination moved to the second photograph (old case passes,
+  new case fails `expected [ { …(2) } ] to deeply equal …`). Deleting `\bsterne\b` (old scan
+  green, new scan `5 Sterne: expected [] to include 'star'` and `expected 88 to be 89`).
+  `regex-branches.ts` returning zero mutants (`expected +0 to be 89` / `28`). It parses escaped
+  `|`, `|` inside a class, nesting, named groups and lookbehinds correctly. Neutered sites
+  `tasks-brief` missing-brief, `seed/check` person-allowlist and `corridor-check` other-destination
+  slug all fail. Commenting out `assertRuntimeEnv` in the health route leaves the old greps green
+  and fails the new case. `container.test.ts` is deterministic across five ambient envs and with
+  fake credentials exported, reads nothing from `.env.local` (vitest never loads it), and prints
+  no values. Required changes:
+  1. **Restore the brief.** `53aa9f7` rewrote `## Binding` from `record it in \`## Escalations`
+     onward. It deleted "Prove every fix", "Judgement, not a regex", "Scope discipline" and
+     "Report a count", and removed the `## Read`, `## Carry-forwards` and `## Escalations`
+     headings, so the three escalations now sit inside a broken sentence. Restore the section from
+     `origin/main` and put the escalations back under `## Escalations`.
+  2. **`scripts/tasks-brief.ts:264` is not unreachable.** `concatNotes` rejoins with exactly one
+     space, so a TASKS.md cell with two spaces (or none) before a `**From \`/review` marker makes
+     `migrate()` return `TASK-009: notes would not survive the split — migration refused`. Probed
+     end to end through a fixture ledger. Add that case, prove it with the site neutered, and
+     change the count to 3 unreachable.
+  3. **A kept item is the vacuous shape.** `tests/unit/seo-indexability.test.ts:173`
+     `expect(["never", "byRule"]).toContain(policy)` ranges over
+     `Record<SeoPageType, "never" | "byRule">`, which is every value the type allows (PR 89's
+     `[200, 404]`). With `corridor` deleted from `PAGE_TYPE_POLICY` and `categoryHub` flipped to
+     `"never"`, the case stays green, and the flip alone leaves all 29 cases in that file green.
+     (`catalog-listing.test.ts` catches it elsewhere.) State the whole map, or at least the key
+     list, and prove both mutants.
+  4. **The provider escalation understates the defect.** Every static provider method returns its
+     module array itself, unfrozen, with unfrozen rows: all nine across catalogue, price, addon
+     price, FX and flags (`same array: true`, `frozen: false`, `row frozen: false`). A caller can
+     change `amountMinor` for every later reader, not just truncate `countryPrices()`. Rewrite the
+     escalation to that scope. It stays `open` until the orchestrator names the owning task; see
+     the review report for the recommendation.
+  Nits (not blocking): `country-shop.spec.ts` AC-24 compares `imagesrcset` but not `imagesizes`,
+  so the sizes mutant is caught only by the unit half. `regex-branches.ts` mis-parses `(?i:…)`
+  modifier groups, though it throws rather than passing. Its pin is an aggregate, where a
+  per-pattern count would be tighter. `i18n-check.ts:542` is untestable without mocking the live
+  registry rather than unreachable. `container.test.ts` and `## Result` say "ten server keys", but
+  `RUNTIME_ENV_KEYS` has 21. The `seed-copy` AC-5 loop over `?? []` passes with every `en-gb` file
+  deleted; a sibling case catches it, but a non-empty guard would be clearer. The three TASK-113
+  findings are all confirmed real: the occasions-index case stays green with the order reversed
+  and with every `kind` set to `evergreen`, and `hubs.spec.ts:108` / `country-occasion.spec.ts:115`
+  accept a self-redirect.
+
+## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
