@@ -96,7 +96,11 @@ import type { ReactElement } from "react";
 import { CATEGORY_NAV_LABEL_KEY } from "../../../config/categories.ts";
 import { COMPANY } from "../../../config/company.ts";
 import { anyDeliveryDatesOpen } from "../../../config/countries.ts";
-import { SEARCH_LINK_ID, siteLink } from "../../../config/site-links.ts";
+import {
+  SEARCH_LINK_ID,
+  linkLabelKey,
+  siteLink,
+} from "../../../config/site-links.ts";
 import { LocaleSwitcher, localePath } from "../../i18n/index.ts";
 import { Icon, type IconName } from "../icons/Icon.tsx";
 import { Mark } from "../icons/Mark.tsx";
@@ -558,7 +562,7 @@ export function SiteHeader({
                 the dark `Search` box instead and no glyph. */}
               <Icon className="me-sm md:hidden" name="search" size={16} />
               <span className="truncate">
-                {registryLabel(t, search.labelKey)}
+                {registryLabel(t, linkLabelKey(search))}
               </span>
               <span className="sr-only">
                 {registryLabel(t, search.descriptionKey ?? "nav.search.help")}

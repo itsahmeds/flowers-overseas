@@ -7,6 +7,7 @@ import {
   CountryShopRootPage,
   OccasionHubPage,
   type ListingRequest,
+  corridorShopEntry,
   listingAlternatePaths,
   listingRequest,
   listingView,
@@ -372,8 +373,14 @@ export default async function LocaleChildRoute({
   const match = await resolveLocalePath(locale, [segment, child]);
 
   if (match.kind === "corridor") {
+    // The corridor's **shop entry** (spec 007 §2 "Internal links", spec 008 AC-20; TASK-113).
+    // `corridorView()` takes the slot as data because `src/modules/geo` may not read the
+    // catalogue, so this file — the one place the two modules already meet — composes them. The
+    // slot stays empty unless the `country-shop-root` link id is published *and* that country's
+    // shop root exists in this locale, so the corridor still links at no 404 (spec 004 AC-14).
     const view = corridorView(match.iso2, match.locale, {
       from: windowStart(),
+      liveSlots: await corridorShopEntry(match.locale, match.iso2),
     });
     if (view === undefined) notFound();
     setRequestLocale(match.locale);

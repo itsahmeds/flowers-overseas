@@ -30,6 +30,7 @@ import {
   type SiteLink,
   type SiteLinkId,
   isPublished,
+  linkLabelKey,
   siteLink,
 } from "../../../config/site-links.ts";
 import {
@@ -218,7 +219,7 @@ function fromSiteLink(
   const href = siteLinkHref(locale, link.id);
   return {
     id: link.id,
-    labelKey: link.labelKey,
+    labelKey: linkLabelKey(link),
     ...(href === undefined ? {} : { href }),
     accent: false,
     showOnMobile,

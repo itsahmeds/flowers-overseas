@@ -302,6 +302,10 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         "productPageExists",
         "productPrebuildPages",
         "writeProductExistenceSummary",
+        // the corridor's shop entry (TASK-113): the one function that composes "may the site
+        // link into the shop" with "does this destination have a shop root in this locale", so
+        // `src/modules/geo` never reads the catalogue (spec 008 AC-20).
+        "corridorShopEntry",
       ].sort(),
     );
   });
@@ -329,6 +333,7 @@ describe("src/modules/catalog barrel (AC-1)", () => {
       `${moduleDir}/read.ts`,
       `${moduleDir}/routes.ts`,
       `${moduleDir}/schemas.ts`,
+      `${moduleDir}/shop-entry.ts`,
       `${moduleDir}/slugs.ts`,
       `${moduleDir}/static/index.ts`,
       `${moduleDir}/types.ts`,

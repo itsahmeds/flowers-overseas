@@ -29,6 +29,7 @@ import {
 import {
   groupLinks,
   isPublished,
+  linkLabelKey,
   type SiteLink,
   type SiteLinkGroup,
   type SiteLinkGroupId,
@@ -120,8 +121,8 @@ function groupView(locale: string, group: SiteLinkGroup): FooterGroupView {
       .map((link) => {
         const href = hrefFor(locale, link);
         return href === undefined
-          ? { id: link.id, labelKey: link.labelKey }
-          : { id: link.id, labelKey: link.labelKey, href };
+          ? { id: link.id, labelKey: linkLabelKey(link) }
+          : { id: link.id, labelKey: linkLabelKey(link), href };
       }),
   };
 }
