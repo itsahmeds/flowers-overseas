@@ -140,6 +140,14 @@ jobs:
         run: pnpm specs:index --check | tee specs-index.log
       - name: tasks:check — the TASKS.md ledger, notes cap and briefs (AC-31, AC-34)
         run: pnpm tasks:check | tee tasks-check.log
+      # The visual gate's own orientation check (AC-17, TASK-139). `linux` is the authoritative
+      # baseline set — it is the only platform the `visual` job compares against — and `darwin` is
+      # a local convenience. A baseline that exists only for `darwin` is a `visual` failure waiting
+      # to happen on the next pull request that carries the `ci:full` label, so it is caught here,
+      # in the cheapest job, by reading committed files. `docs/runbooks/visual-baselines.md` says
+      # how to refresh the Linux set from a Mac.
+      - name: visual:baselines --check — every baseline exists for Linux (AC-17)
+        run: pnpm visual:baselines --check | tee visual-baselines.log
       - name: Summarise the lint gate
         if: always()
         run: |
@@ -164,6 +172,7 @@ jobs:
             echo "| codebase map (AC-33) | \`pnpm codebase:map --check\` | $( [ -f codebase-map.log ] && tr '\n' ' ' < codebase-map.log || echo 'did not run' ) |"
             echo "| spec indexes (AC-35) | \`pnpm specs:index --check\` | $( [ -f specs-index.log ] && tr '\n' ' ' < specs-index.log || echo 'did not run' ) |"
             echo "| ledger + briefs (AC-31, AC-34) | \`pnpm tasks:check\` | $( [ -f tasks-check.log ] && tr '\n' ' ' < tasks-check.log || echo 'did not run' ) |"
+            echo "| visual baselines (AC-17) | \`pnpm visual:baselines --check\` | $( [ -f visual-baselines.log ] && head -1 visual-baselines.log || echo 'did not run' ) |"
           } >> "$GITHUB_STEP_SUMMARY"
 
   typecheck:

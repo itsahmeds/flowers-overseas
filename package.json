@@ -24,6 +24,7 @@
     "test:e2e": "playwright test --project=e2e-desktop --project=e2e-mobile",
     "test:visual": "playwright test --project=visual --project=pseudo-rtl",
     "test:a11y": "playwright test --project=a11y",
+    "visual:baselines": "node scripts/visual/baselines.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check-layout": "node scripts/check-layout.ts",

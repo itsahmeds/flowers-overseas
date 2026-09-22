@@ -124,17 +124,18 @@ task actually touches.
 | `specs-index.ts` | `specs:index` | Section-anchored spec indexes — AC-35 / T-36 (spec 001 §14 A15, TASK-086) |
 | `tasks-brief.ts` | `tasks:brief` | Per-task brief files — AC-34 / T-35 (spec 001 §14 A15, TASK-086) |
 | `tasks-open-decisions.ts` | `tasks:check` | `TASKS.md` ledger parser — AC-31 / T-32 (spec 001 §2 "Documentation and… |
+| `visual/baselines.ts` | `visual:baselines` | The visual-baseline ledger (spec 001 §2 "Testing harness", AC-17 / T-18;… |
 
 ## Test layers (`tests/`)
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 199 |
+| `tests/unit/` | 200 |
 | `tests/integration/` | 6 |
 | `tests/contract/` | 6 |
 | `tests/e2e/` | 32 |
 | `tests/a11y/` | 14 |
-| `tests/visual/` | 14 |
+| `tests/visual/` | 15 |
 | `tests/dev-os/` | 1 |
 | `tests/fixtures/` | 161 |
 | `tests/msw/` | 3 |
