@@ -95,4 +95,29 @@ test.describe("R2 delivery (AC-27)", () => {
     ).toBeDefined();
     expect(imgSrc).toContain(MEDIA_ORIGIN);
   });
+
+  test("the document hints the connection its images need, before the document is parsed", async ({
+    page,
+  }) => {
+    // The third-party handshake TASK-138 introduced is on the LCP critical path, and the only
+    // place a hint can be emitted ahead of the hero preload is the response itself: a rendered
+    // `<link rel="preconnect">` flushes after React's image preloads, and `preconnect()` from
+    // `react-dom` does not cross the RSC boundary under Next at all (both measured — see
+    // `src/lib/media-headers.ts`). So the assertion is on the header, on the same document whose
+    // `img-src` the test above checks, and the two name the same origin.
+    const response = await page.goto(PAGE, { waitUntil: "domcontentloaded" });
+    const link = response?.headers()["link"] ?? "";
+
+    expect(link, "no Link header on the document").toContain(
+      `<${MEDIA_ORIGIN}>; rel=preconnect`,
+    );
+    // No `crossorigin`: the images and the hero preload are credentialed non-CORS fetches, and an
+    // anonymous connection is not the connection they would reuse.
+    const hint = link
+      .split(",")
+      .map((part) => part.trim())
+      .find((part) => part.includes("rel=preconnect"));
+
+    expect(hint).not.toContain("crossorigin");
+  });
 });
