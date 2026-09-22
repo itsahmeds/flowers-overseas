@@ -51,18 +51,22 @@ diffs). The commit is a human step, on purpose — see §2.
 ### 1.3 The threshold stays at 0.1 % (`maxDiffPixelRatio: 0.001`)
 
 Measured on 2026-09-22, PR 95, by decoding the PNGs and counting pixels that differ by more than
-1/255 in any channel:
+1/255 in any channel (pages of unequal height are compared on the region they share):
 
 | comparison | pages | differing pixels |
 |---|---|---|
-| Linux run 35611605977 vs Linux run 35698369912, same page, unchanged template | 13 | **0.000 %** on every one — the files are byte-identical |
-| `darwin` vs `linux`, same page, same commit | 13 | **1.2 % – 38 %** (median ≈ 9 %) |
+| Linux run 35700517643 vs Linux run 35700989506, two commits apart | 92 | **0.000 %** on every one — all 92 files are byte-identical |
+| `darwin` vs `linux`, same page, same commit | 91 | **0.23 % – 47.7 %**, median ≈ 9 % |
 
 Run-to-run noise on one platform is *zero*, not merely small: `animations: "disabled"`,
 `caret: "hide"` and `settle()` (network idle, `document.fonts.ready`, two animation frames) make
-the render deterministic, and two independent runners a day apart produced the same bytes. The
-cross-platform delta is three to four orders of magnitude larger, which is why baselines are kept
-per platform instead of the threshold being widened to straddle both.
+the render deterministic, and two independent runners produced byte-identical files for all 92
+baselines. The cross-platform delta is two to three orders of magnitude larger — and it is not
+only anti-aliasing: the host's font stack changes line-breaking, so 27 of the 91 pages have a
+different *geometry* on the two platforms (`country-shop-mobile` by 181 px), and the browser's own
+locale decides the `<input type="date">` placeholder (`mm/dd/yyyy` on the runner, `dd/mm/yyyy` on
+the founder's Mac). No single threshold can straddle that, which is why baselines are per
+platform.
 
 So 0.1 % is not merely defensible, it is generous: it is ~920 pixels on a 1280×720 shot and ~5 000
 on a long full-page one, against measured noise of zero. **Do not widen it.** A visual failure on
@@ -135,6 +139,16 @@ Four questions, in order. Any "no" is a change request.
   the failed job; `test-results/**/-diff.png` shows where. Decide whether the change is intended
   (refresh, §2) or a regression (fix the page — do **not** refresh).
 - **Red on `darwin` only, green on CI** — §1.1: nothing is broken; your local set is stale.
+- **`Timeout 5000ms exceeded` … `generating new stable screenshot expectation`** — the runner
+  could not take two identical screenshots inside the expect timeout, so no baseline was written.
+  It is a *speed* symptom, not an instability one, on a long document: `/dev/components` is
+  1440 × 35 371 px, 50 megapixels, and each capture costs seconds on a shared runner (runs
+  35698369912 and 35700517643 both failed on it while the same test settles in 5.0 s on the
+  founder's Mac). The fix is a longer wait on that one assertion — `test.slow()` and an explicit
+  `timeout:` on `toHaveScreenshot` — never a wider `maxDiffPixelRatio`. Lazy images on a long
+  full-page shot make it worse, because a `loading="lazy"` image can load *between* the two
+  captures: `tests/visual/notices.spec.ts`'s `loadLazyImages()` flips them to `eager` and awaits
+  `decode()` first.
 - **A page with no photographs** is not necessarily a failure. Spec 008 §14 A11: where no SKU on a
   page has an approved asset, the cards render placeholders and AC-24's "exactly one LCP
   nomination" has no subject; zero is correct. `/en/poland/occasions/mothers-day` is the standing
