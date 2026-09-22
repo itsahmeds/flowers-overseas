@@ -366,6 +366,15 @@ describe("the route really hands `parameterised` to `listingView()` (AC-15)", ()
    * Comments are removed first: this file's own prose says "`listingView()`" more than once, and a
    * sentence about the wiring must not be able to pass for the wiring. Only whole-line `//`
    * comments go, which is enough — no trailing comment in the route carries a call.
+   *
+   * **The line comments go first, and that order is load-bearing** (found while merging TASK-112,
+   * 2026-09-22). Stripping block comments first let a `//` line that *contains* a block-comment
+   * opener — the route's `modules` cast note, whose backticked path is a glob — pair with the
+   * next block-comment terminator far below and silently swallow everything between them,
+   * including, once the hubs joined this file, a whole `listingView(` call. The subject shrank
+   * and the suite stayed green. Removing whole-line `//` comments first makes the block regex
+   * pair correctly, and the brace-balance case below is the tripwire that says so out loud if
+   * this ever stops being true.
    */
   const routeSource = readFileSync(
     resolve(
@@ -374,8 +383,8 @@ describe("the route really hands `parameterised` to `listingView()` (AC-15)", ()
     ),
     "utf8",
   )
-    .replace(/\/\*[\s\S]*?\*\//gu, "")
-    .replace(/^[ \t]*\/\/.*$/gmu, "");
+    .replace(/^[ \t]*\/\/.*$/gmu, "")
+    .replace(/\/\*[\s\S]*?\*\//gu, "");
 
   /** The argument text of every `name(…)` call in `source`, by balancing parentheses. */
   const argumentsOfCallsTo = (source: string, name: string): string[] => {
@@ -419,27 +428,64 @@ describe("the route really hands `parameterised` to `listingView()` (AC-15)", ()
       render,
     )?.[1] ?? "(unnamed)";
 
+  /**
+   * The `pageType:` a `listingView(…)` call resolves, exactly as its own arguments write it. Every
+   * call inside a render is classified by it below and the classification is **total**, so a call
+   * that is neither the country-scoped listing nor the hub branch fails the count rather than
+   * passing unexamined.
+   */
+  const pageTypeOf = (call: string): string =>
+    /pageType:\s*([^,\n]+)/u.exec(call)?.[1]?.trim() ?? "(none)";
+
+  it("keeps each render whole through the comment strip", () => {
+    // The tripwire for the stripper documented above: a strip that eats source almost always eats
+    // a brace with it. Before the order was fixed, `generateMetadata` came out of the strip with
+    // 17 `{` against 15 `}` — and one of its two `listingView(` calls gone — while every
+    // assertion below still passed, on what was left.
+    for (const render of renders) {
+      const where = nameOf(render);
+      const opens = (render.match(/\{/gu) ?? []).length;
+      const closes = (render.match(/\}/gu) ?? []).length;
+      expect(closes, `${where}: braces surviving the comment strip`).toBe(
+        opens,
+      );
+    }
+  });
+
   it("gives each render its own query, and goes red if either pass-through is cut", () => {
     // `generateMetadata` and the page component are two renders of the same request (the route
-    // says so), so exactly two renders resolve a listing view and the file holds exactly two
-    // calls — which together put every call inside a render asserted below. A third listing
-    // branch — TASK-110/111's depth-4 URLs — fails here until it carries the flag too, whether it
-    // arrives as a third render or as a second branch inside one of these two: that is the point.
+    // says so), and each resolves **two** listing views: the country-scoped listing, and the
+    // branch the two hubs share (TASK-112, merged 2026-09-22). Four calls in the file, all four
+    // classified and asserted below — which is what puts every call inside an assertion. A third
+    // listing branch — TASK-110/111's depth-4 URLs — fails here until it carries the flag too,
+    // whether it arrives as a third render or as a third branch inside one of these two: that is
+    // the point.
     const names = renders.map(nameOf);
     expect(
       names,
       `renders resolving a listing view: ${names.join(", ")}`,
     ).toHaveLength(2);
-    expect(argumentsOfCallsTo(routeSource, "listingView")).toHaveLength(2);
+    expect(argumentsOfCallsTo(routeSource, "listingView")).toHaveLength(4);
 
     for (const render of renders) {
       const where = nameOf(render);
       const calls = argumentsOfCallsTo(render, "listingView");
-      expect(calls, where).toHaveLength(1);
+      const listings = calls.filter(
+        (call) => pageTypeOf(call) === '"countryShopRoot"',
+      );
+      const hubs = calls.filter((call) => pageTypeOf(call) === "match.kind");
+      expect(
+        listings.length + hubs.length,
+        `${where}: every listingView call classified — ${calls
+          .map(pageTypeOf)
+          .join(", ")}`,
+      ).toBe(calls.length);
+      expect(listings, `${where}: the country-scoped listing`).toHaveLength(1);
+      expect(hubs, `${where}: the hub branch`).toHaveLength(1);
 
       const passThrough =
         /parameterised:\s*([A-Za-z_$][\w$]*)\.parameterised/u.exec(
-          calls[0] ?? "",
+          listings[0] ?? "",
         )?.[1];
       expect(passThrough, where).toBeDefined();
       // …and the object it reads is a query **this** render parsed from **its own** query string:
@@ -452,6 +498,22 @@ describe("the route really hands `parameterised` to `listingView()` (AC-15)", ()
         argumentsOfCallsTo(render, where)[0] ?? "",
         `${where} parameters`,
       ).toContain("searchParams");
+
+      // **The hub half of the policy, asserted rather than exempted.** A destination-less hub
+      // honours no parameter at all: `listingView()` forces `sort: "default"` on it because a hub
+      // shows no money to sort by (§2, §8; `src/modules/catalog/listing.ts`), no hub renders a
+      // toolbar or a page nav, and §5.4's "the bare URL of every page type is prebuilt" stands
+      // for it — §13 Q2 bought dynamic rendering for the routes that *honour* `?page=`/`?sort=`,
+      // which a hub does not, and a render that awaited `searchParams` here would take both hub
+      // page types out of the prerender for a term they cannot use. So the hub call passes no
+      // `page`, no `sort` and no `parameterised`, and that is a decision this case pins: adding
+      // any of the three goes red and makes whoever adds it say why (TASK-114 E-7).
+      for (const term of ["page:", "sort:", "parameterised:"]) {
+        expect(
+          hubs[0] ?? "",
+          `${where}: the hub branch honours no ${term}`,
+        ).not.toContain(term);
+      }
     }
   });
 

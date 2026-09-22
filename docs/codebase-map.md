@@ -14,10 +14,10 @@ task actually touches.
 |---|---|---|---|
 | `admin` | Public barrel for `admin` (admin queries and actions) | spec 012 | — |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2 + the gated GA4 tag; GA4 event… | spec 004, 023 | `unit/consent-bootstrap.test.tsx` |
-| `catalog` | The only import path into the catalogue and pricing module (spec 005 §2, §5.2;… | spec 005 | `contract/catalog-static-providers.test.ts`, `contract/support/catalog-provider-contract.ts`, `unit/catalog-availability.test.ts` +29 |
+| `catalog` | The only import path into the catalogue and pricing module (spec 005 §2, §5.2;… | spec 005 | `contract/catalog-static-providers.test.ts`, `contract/support/catalog-provider-contract.ts`, `unit/catalog-availability.test.ts` +30 |
 | `customers` | Public barrel for `customers` (customers, recipients, consent) | spec 019 | — |
 | `geo` | The only import path into the geo module (spec 007 §5.2; TASK-087) | spec 007, 002, 009 | `contract/seo-schema-fixtures.test.ts`, `unit/catalog-country-occasion.test.ts`, `unit/catalog-listing.test.ts` +13 |
-| `i18n` | The only import path for the i18n module (spec 003 §5.2, AC-3; TASK-034) | spec 003 | `contract/seo-schema-fixtures.test.ts`, `fixtures/ts/format-time-in-zone-no-zone.ts`, `integration/sitemap.test.ts` +49 |
+| `i18n` | The only import path for the i18n module (spec 003 §5.2, AC-3; TASK-034) | spec 003 | `contract/seo-schema-fixtures.test.ts`, `fixtures/ts/format-time-in-zone-no-zone.ts`, `integration/sitemap.test.ts` +51 |
 | `notifications` | Public barrel for `notifications` (email + WhatsApp senders, templates, outbox… | spec 017 | — |
 | `orders` | Public barrel for `orders` (state machine, order service, assignment/routing… | spec 015, 016 | — |
 | `partners` | Public barrel for `partners` (fulfilment partners, coverage, payouts) | spec 011, 026 | — |
@@ -109,6 +109,7 @@ task actually touches.
 | `i18n-check.ts` | `i18n:check` | `pnpm i18n:check` (spec 003 §2 "Lint, checks, CI", §6 "URL pattern", §11,… |
 | `i18n-draft.ts` | `i18n:draft` | `pnpm i18n:draft --locale <code> [--dry-run]` (spec 003 §2 "Messages", §13 Q7,… |
 | `i18n-pseudo.ts` | `i18n:pseudo` | `pnpm i18n:pseudo [--check] [--messages-dir messages]` (spec 003 §2… |
+| `imagery-prompts-remaining.ts` | — | Generate the prompt records for every product that has no imagery yet |
 | `lint-fixtures.ts` | `lint:fixtures` | `pnpm lint:fixtures` (spec 001 AC-4 / AC-5, TASK-003) |
 | `pr-policy.ts` | `pr-policy` | PR policy (spec 001 §2 "CI", AC-19 / T-20, TASK-002) |
 | `railway-check.ts` | `railway:check` | `pnpm railway:check [--env <name>]` — the Railway drift gate (spec 040 §5.3,… |
@@ -128,12 +129,12 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 198 |
+| `tests/unit/` | 199 |
 | `tests/integration/` | 6 |
 | `tests/contract/` | 6 |
-| `tests/e2e/` | 31 |
-| `tests/a11y/` | 13 |
-| `tests/visual/` | 13 |
+| `tests/e2e/` | 32 |
+| `tests/a11y/` | 14 |
+| `tests/visual/` | 14 |
 | `tests/dev-os/` | 1 |
 | `tests/fixtures/` | 161 |
 | `tests/msw/` | 3 |

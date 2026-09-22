@@ -89,6 +89,23 @@ import {
  * 8–12 band emits no `FAQPage` at all rather than a partial one. The **shop-root branch emits
  * none**: its `BreadcrumbList` and `ItemList` are spec 008's and TASK-115's, and this file gains
  * one composition line there, not a second description of the page.
+ *
+ * **Query parameters, per branch** (spec 008 §2, §5.4, AC-9/AC-10/AC-15; TASK-114, merged with
+ * TASK-112's hubs 2026-09-22). `searchParams` is awaited in the **country shop root branch
+ * only**, and both renders hand that request's `parameterised` flag to `listingView()`. The
+ * corridor and the two hub branches never reach the await, so they keep the prebuilt entry §5.4
+ * requires of "the bare URL of every page type": §13 **Q2** bought dynamic rendering for the
+ * routes that *honour* `?page=` and `?sort=`, and a destination-less hub honours neither — it
+ * shows no money to sort by, so `listingView()` forces the default order on it (§2, §8), and it
+ * renders no toolbar and no page nav. The consequence is recorded rather than hidden: after the
+ * indexing flip a facet-shaped parameter on a hub URL is answered by the prebuilt document,
+ * which is `index,follow` with a canonical to the bare URL — AC-15's canonical half without its
+ * `noindex` half, at a page type that cannot compute the term without leaving the prerender
+ * (`?sort=` is `robots.txt`-blocked, spec 007 §14 A5). Closing it is an edge rule (spec 040) or
+ * the parameter-policy task TASK-114 **E-6** asks for, not a branch added here.
+ * `tests/unit/listing-params.test.ts` pins both halves: each render's listing call must carry the
+ * flag from its own parsed query, and its hub call must carry no `page`, no `sort` and no
+ * `parameterised`.
  */
 export const revalidate = 3600;
 export const dynamicParams = false;

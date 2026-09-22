@@ -59,7 +59,9 @@ describe("`Cache-Control` for the listing routes (§5.4, AC-22)", () => {
     // listing URLs are all prerendered: none may lose its own `Cache-Control` to this rule. The
     // depth-4 rows were hypothetical when this case was written and are live as of the 2026-09-22
     // rebase — those routes exist now, read no `searchParams`, and so must stay unmatched until
-    // some task makes them dynamic.
+    // some task makes them dynamic. The two **hub** rows became live in the same rebase
+    // (TASK-112): they are branches of the depth-3 route, prerendered for the same reason, and
+    // the shape below is what keeps their ISR header theirs.
     for (const path of [
       "/en/send-flowers-to/poland",
       "/en/flowers/roses",

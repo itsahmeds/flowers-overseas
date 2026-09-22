@@ -34,8 +34,12 @@
  *
  * That shape is the country shop root and nothing else. It cannot match the corridor page
  * (`/en/send-flowers-to/poland` — third segment is a country slug), the category hub
- * (`/en/flowers/roses` — the segment is second, not third), the destinations hub, the locale home
- * or any static page, so no prerendered ISR response has its own `Cache-Control` replaced. The
+ * (`/en/flowers/roses` — the segment is second, not third), the occasion hub
+ * (`/en/occasions/mothers-day`), the destinations hub, the locale home or any static page, so no
+ * prerendered ISR response has its own `Cache-Control` replaced. The two hubs stopped being
+ * hypothetical in the 2026-09-22 rebase — TASK-112 landed them as branches of the same depth-3
+ * route file, prerendered, reading no `searchParams` — so their exclusion is now load-bearing
+ * rather than theoretical, and asserted as such. The
  * depth-4 country category and country occasion URLs are **not** here, and the reason changed
  * under this branch rather than going away: TASK-110/111 landed those routes
  * (`[locale]/[segment]/[child]/[grandchild]/page.tsx`) while this task was in review, but they
