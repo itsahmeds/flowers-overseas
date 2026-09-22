@@ -30,8 +30,11 @@ import {
   countrySlug,
   countryRegions,
   countryStatuses,
+  anyDeliveryDatesOpen,
   countriesInRegion,
+  deliveryDatesOpen,
   destinationStateKey,
+  hasCompleteOperations,
   regionHeadingKey,
   isCorridorPagePublished,
   isCountryIso2,
@@ -39,6 +42,7 @@ import {
   toCountryRow,
 } from "../../src/config/countries.ts";
 import { launchLocales } from "../../src/config/locales.ts";
+import { withActivePartnersProvider } from "../../src/modules/geo/partners.ts";
 
 /** Spec 004 §13 Q12 / `plan/13` A7, in the canvas's grid order. */
 const CANVAS_DESTINATIONS = ["PL", "DE", "FR", "ES", "IT", "RO", "NL"] as const;
@@ -293,5 +297,45 @@ describe("toCountryRow() against spec 002 §5.1", () => {
         guide_published: country.guidePublished,
       });
     }
+  });
+});
+
+/* -------------------------------------------------------------------------- */
+/* Spec 009 §13 Q3 and spec 004 §14 A19 (TASK-124).                           */
+/* -------------------------------------------------------------------------- */
+
+describe("Poland's operations block, and the chrome predicate that reads the picker", () => {
+  it("authors §13 Q3's values for Poland and no block for any other destination", () => {
+    expect(countryConfig("PL").operations).toEqual({
+      ianaZone: "Europe/Warsaw",
+      sameDayCutoffLocal: "14:00",
+      deliveryDays: [1, 2, 3, 4, 5, 6],
+      sundayDelivery: "none",
+    });
+    expect(
+      COUNTRIES.filter((country) => hasCompleteOperations(country.iso2)).map(
+        (country) => country.iso2,
+      ),
+    ).toEqual(["PL"]);
+  });
+
+  it("`deliveryDatesOpen` is false for Poland while no florist is signed, block or no block", () => {
+    // The body TASK-120 shipped (`status === "live"` and a block) is true here; the picker is not.
+    expect(countryConfig("PL").status).toBe("live");
+    expect(hasCompleteOperations("PL")).toBe(true);
+    expect(deliveryDatesOpen("PL")).toBe(false);
+    expect(anyDeliveryDatesOpen()).toBe(false);
+  });
+
+  it("opens for Poland alone the moment a partner is active, and a partner without a block opens nothing", async () => {
+    await withActivePartnersProvider({ hasActivePartners: () => true }, () => {
+      expect(
+        COUNTRIES.filter((country) => deliveryDatesOpen(country.iso2)).map(
+          (country) => country.iso2,
+        ),
+      ).toEqual(["PL"]);
+      expect(anyDeliveryDatesOpen()).toBe(true);
+    });
+    expect(deliveryDatesOpen("PL")).toBe(false);
   });
 });

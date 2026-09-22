@@ -14,6 +14,7 @@ import { describe, expect, it } from "vitest";
 import {
   COUNTRIES,
   countrySlug,
+  hasCompleteOperations,
   isCountryIso2,
 } from "../../src/config/countries.ts";
 import { launchLocales } from "../../src/config/locales.ts";
@@ -125,10 +126,12 @@ describe("the state rule (AC-8; T-09)", () => {
     expect(corridorStateFrom(ALL_TRUE)).toBe("live");
   });
 
-  it("keeps Poland in the guide state even with a florist, because no cutoff is authored", async () => {
-    // The registry says `live` and the fixture provider says a florist is taking our orders —
-    // and the page is *still* a guide, because `operations` is absent and no `live` content file
-    // exists. This is the failure §13 Q3 exists to prevent: a design label printing a cutoff.
+  it("keeps Poland in the guide state even with a florist and a cutoff, because no live copy exists", async () => {
+    // The registry says `live`, Poland has had its `operations` block since TASK-124 (spec 009
+    // §13 Q3), and the fixture provider says a florist is taking our orders — and the page is
+    // *still* a guide, because no `live` content file exists (TASK-142 authors `pl-live.md`). A
+    // design label cannot print a cutoff on its own; neither can an authored block without copy.
+    expect(hasCompleteOperations("PL")).toBe(true);
     await withActivePartnersProvider({ hasActivePartners: () => true }, () => {
       expect(corridorState("PL", "en")).toBe("guide");
       const view = corridorView("PL", "en", { from: FROM });

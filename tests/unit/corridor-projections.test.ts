@@ -134,9 +134,16 @@ describe("toCountryRow() is unchanged by this task (AC-3)", () => {
     }
   });
 
-  it("does not project the `operations` block, which no destination has authored", () => {
+  it("does not project the `operations` block — Poland's alone is authored, and none is projected", () => {
+    // TASK-124 authored Poland's block (spec 009 §13 Q3) and no other destination's. Spec 002's
+    // `country.iana_zone` is NOT NULL, so the projection cannot grow until every row has a zone
+    // somebody agreed to; until then no operational column reaches a seed row.
+    expect(
+      COUNTRIES.filter((country) => country.operations !== undefined).map(
+        (country) => country.iso2,
+      ),
+    ).toEqual(["PL"]);
     for (const country of COUNTRIES) {
-      expect(country.operations, country.iso2).toBeUndefined();
       expect(Object.keys(toCountryRow(country))).toStrictEqual([
         ...COUNTRY_ROW_COLUMNS,
       ]);

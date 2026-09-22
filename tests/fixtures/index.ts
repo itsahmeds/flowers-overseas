@@ -632,11 +632,11 @@ export {
 
 /**
  * The delivery-calendar corpus (spec 009 AC-5/AC-6/AC-7/AC-11, T-05/T-06/T-07/T-11; TASK-123),
- * re-exported for the reason the barrel exists: **TASK-124 lands Poland's real `operations` block
+ * re-exported for the reason the barrel exists: **TASK-124 landed Poland's real `operations` block
  * and its public holidays against these same shapes**, and a second hand-tabled DST table would
- * be a second chance to mistranscribe one. The `operations` blocks here are fixtures — no country
- * in `src/config/countries.ts` carries one in Phase 0 — and `delivery.ts` says which task is
- * expected to replace each of them with data.
+ * be a second chance to mistranscribe one. The `operations` blocks here are fixtures — Poland's
+ * registry block is asserted on its own in `tests/unit/countries-config.test.ts` — and
+ * `delivery.ts` says why each stays one.
  */
 export {
   DST_READINGS,

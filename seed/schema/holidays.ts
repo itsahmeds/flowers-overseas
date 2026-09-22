@@ -28,9 +28,10 @@
  *    non-destructive against `source = 'real'` rows; repeating it per row would be a second place
  *    it could disagree with itself.
  *
- * Nothing here computes a date and nothing reads a database (`pnpm check:no-db`). **This task
- * ships the shape; the rows are TASK-124's** — Poland's `operations` block and its holidays land
- * together, because a holiday list for a country with no cutoff answers a question nobody asked.
+ * Nothing here computes a date and nothing reads a database (`pnpm check:no-db`). TASK-123
+ * shipped the shape; TASK-124 authored the rows — Poland's 2026–2027 holidays, landed together
+ * with Poland's `operations` block, because a holiday list for a country with no cutoff answers a
+ * question nobody asked.
  */
 import { z } from "zod";
 
@@ -101,10 +102,11 @@ export type SeedCountryHoliday = z.infer<typeof SeedCountryHolidaySchema>;
  * — because two rows for one day would be two reasons for one closed date, and spec 009 AC-7
  * allows exactly one.
  *
- * **Empty is legal**, and in Phase 0 it is the honest value: no destination has an `operations`
- * block yet, so no destination has a rendered delivery window for a holiday to fall inside. The
- * gate that a *published* country with a rendered window must carry rows is `pnpm seed:check`'s
- * (spec 009 AC-2, TASK-124) — a cross-file rule, which is not something a file schema can see.
+ * **Empty is legal** here, because the schema cannot see which destinations render a calendar.
+ * The gate that a *published* country with a rendered window carries rows for every year of its
+ * 366-day horizon is `pnpm seed:check`'s `calendar/holiday-coverage` rule (spec 009 AC-2,
+ * TASK-124) — a cross-file rule over this file, `src/config/countries.ts` and today's date, which
+ * is not something a file schema can see.
  */
 export const SeedCountryHolidayRegistrySchema = z
   .array(SeedCountryHolidaySchema)
