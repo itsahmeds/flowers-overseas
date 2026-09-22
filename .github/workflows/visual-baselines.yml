@@ -1,0 +1,127 @@
+# Refresh the authoritative (`linux`) visual baselines — spec 001 §2 "Testing harness", AC-17 /
+# T-18; TASK-139.
+#
+# Why this workflow exists. `playwright.config.ts` keeps one baseline per platform, and the only
+# platform the `visual` job in `ci.yml` ever compares against is `linux`. Nobody on this project
+# owns a Linux machine, so before TASK-139 a UI change could only be answered with a `darwin`
+# baseline: the Linux set went stale in silence and the next pull request paid for it with a red
+# `visual` job it did not cause. This workflow is the answer — it renders the baselines on the
+# same `ubuntu-latest` runner, from the same `.env.example` build the browser suites run against,
+# and publishes them as an artifact together with a sha256 manifest.
+#
+# It deliberately does **not** commit anything. A baseline is a pinned picture of what the product
+# looks like: committing one nobody has opened pins whatever was on screen, bugs included, and
+# every later run then defends that bug. The human (or agent) downloads the artifact, looks at
+# every image, and commits. `pnpm visual:baselines --verify <manifest.json>` then proves that what
+# was committed is byte-for-byte what this runner produced — which is how a reviewer tells a
+# legitimately-refreshed baseline from an accidental one. `docs/runbooks/visual-baselines.md`.
+#
+# Actions-minutes budget (spec 001 §14 A14): one job, one build, ~8 minutes, and it runs only when
+# it is asked for — a manual dispatch, or the `visual:baselines` label on a pull request. Removing
+# and re-adding the label runs it again.
+name: visual-baselines
+
+on:
+  workflow_dispatch:
+    inputs:
+      update:
+        description: "Playwright --update-snapshots mode"
+        required: false
+        default: all
+        type: choice
+        options: [all, changed, missing]
+  pull_request:
+    types: [labeled]
+
+concurrency:
+  group: visual-baselines-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  refresh:
+    name: refresh linux baselines
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.label.name == 'visual:baselines' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+      UPDATE_MODE: ${{ inputs.update || 'all' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+
+      # The same build `preview` makes for the browser suites: the committed `.env.example`
+      # placeholders and no credential in scope (spec 001 §14 A17).
+      - name: Build the app from the committed placeholders
+        run: |
+          set -euo pipefail
+          if env | grep -qE '^(DATABASE_URL|DATABASE_URL_UNPOOLED|INTERNAL_CRON_SECRET|R2_)'; then
+            echo "::error::a server credential is present in the build environment (spec 001 §14 A17)"
+            exit 1
+          fi
+          cp .env.example .env.local
+          pnpm build
+
+      # `serve.sh` is the same origin gate `ci.yml`'s browser jobs use: `next start`, then refuse
+      # to continue until `/api/health` answers 200 with `"status":"ok"` (TASK-137).
+      - name: Serve it and gate on /api/health
+        run: bash ./.github/actions/preview-origin/serve.sh
+
+      - run: pnpm exec playwright install --with-deps chromium
+
+      # Failure is the normal outcome: Playwright reports a test whose snapshot it had to write
+      # as failed. The manifest and the artifact below are the output that matters.
+      - name: Render the baselines
+        id: render
+        continue-on-error: true
+        run: pnpm test:visual --update-snapshots="$UPDATE_MODE" --reporter=list
+
+      - name: Manifest and change list
+        if: always()
+        run: |
+          set -euo pipefail
+          node scripts/visual/baselines.ts --manifest --out visual-baselines-manifest.json
+          {
+            echo "### visual baselines, rendered on ubuntu-latest (TASK-139)"
+            echo ""
+            echo "- commit: \`${{ github.sha }}\`  ·  run: \`${{ github.run_id }}\`"
+            echo "- \`--update-snapshots=$UPDATE_MODE\`; Playwright $(pnpm exec playwright --version | tail -1)"
+            echo "- rendered: $(jq '.files | length' visual-baselines-manifest.json) \`linux\` baseline(s)"
+            echo ""
+            echo "Changed against what is committed on this branch:"
+            echo ""
+            echo '```'
+            git status --porcelain -- tests/visual/__screenshots__ || true
+            echo '```'
+            echo ""
+            echo "Download \`visual-baselines-linux\`, **look at every image you are about to"
+            echo "commit**, copy them over \`tests/visual/__screenshots__/*/linux/\`, then run"
+            echo "\`pnpm visual:baselines --verify visual-baselines-manifest.json\`."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Publish the baselines and the manifest
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-baselines-linux
+          path: |
+            tests/visual/__screenshots__/visual/linux/
+            tests/visual/__screenshots__/pseudo-rtl/linux/
+            visual-baselines-manifest.json
+          retention-days: 14
+          if-no-files-found: error
+
+      # The diffs, so an unexpected change can be read without re-running anything.
+      - name: Publish the Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-baselines-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+          if-no-files-found: ignore
