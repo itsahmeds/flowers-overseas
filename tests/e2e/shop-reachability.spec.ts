@@ -40,8 +40,9 @@
  * — the country category's link list is "shop root, sibling categories, corridor, products". The
  * header's category row could carry them, but it is `src/config/categories.ts`, spec 004's
  * registry, and no task in spec 008 owns it. Recorded as an open question in
- * `docs/tasks/TASK-113.md` rather than resolved by inventing a link id. The exclusion is asserted
- * to have exactly one member, so it cannot quietly grow.
+ * `docs/tasks/TASK-113.md` rather than resolved by inventing a link id. `EXCLUDED` below holds it
+ * and the second escalation (the draft locales' shop roots), and is asserted to be exactly those
+ * three rules, so it cannot quietly grow.
  */
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -313,28 +314,59 @@ test.describe("AC-21: the shop is reachable, and links at nothing that is not", 
           (page) => (result.depthOf.get(page.path) ?? Infinity) > MAX_DEPTH,
         )
         .map((page) => `${page.pageType} ${page.path}`);
-      expect(
-        unreachable,
-        `unreachable from /${locale} within ${String(MAX_DEPTH)} clicks`,
-      ).toEqual([]);
+      // Soft, so one run names **every** finding: a broken link usually also orphans its target,
+      // and the reviewer needs the 404 *and* the page it stranded, not the first of the two. A
+      // soft failure still fails the test.
+      expect
+        .soft(
+          unreachable,
+          `unreachable from /${locale} within ${String(MAX_DEPTH)} clicks`,
+        )
+        .toEqual([]);
 
-      expect(result.broken, `non-200 links from /${locale}`).toEqual([]);
-      expect(
-        result.unpublished,
-        `links into an unpublished link id from /${locale}`,
-      ).toEqual([]);
-      expect(result.malformed, `malformed hrefs from /${locale}`).toEqual([]);
+      expect.soft(result.broken, `non-200 links from /${locale}`).toEqual([]);
+      expect
+        .soft(
+          result.unpublished,
+          `links into an unpublished link id from /${locale}`,
+        )
+        .toEqual([]);
+      expect
+        .soft(result.malformed, `malformed hrefs from /${locale}`)
+        .toEqual([]);
 
       // Last, and about the crawl rather than about the site: it walked a neighbourhood, not an
       // empty frontier. Every list above is `[]` when nothing was fetched, so this is the line
-      // that makes a silent `[]` a failure. Measured: 195 documents from `/en` with the shop
-      // published, 48 with `country-shop-root` withdrawn.
+      // that makes a silent `[]` a failure. Measured on a production build (2026-09-22, after the
+      // rebase onto TASK-114): 237 documents from `/en` and from `/en-gb`, 5 from `/de` and `/pl`.
       expect(
         result.depthOf.size,
         `documents reached from /${locale}`,
       ).toBeGreaterThan(expected.length);
     });
   }
+
+  test("`/` links every locale home at depth 1, so the shop is ≤4 clicks from the root", async ({
+    request,
+  }) => {
+    // The per-locale bound above starts at the locale home; a visitor with no locale starts at
+    // the chooser. Asserting the one hop in between — a rendered `<a href>` to each home, each
+    // answering 200 — is what turns "≤3 from every locale home" into "≤4 from `/`" without a
+    // fifth crawl. Asserted as the exact set of homes, not "some links exist".
+    const root = await get(request, "/");
+    expect(root.status, "/").toBe(200);
+    const homes = new Set(
+      hrefsIn(root.html).filter((href) =>
+        locales.some((locale) => href === `/${locale}`),
+      ),
+    );
+    expect([...homes].sort(), "locale homes linked from /").toEqual(
+      locales.map((locale) => `/${locale}`).sort(),
+    );
+    for (const home of homes) {
+      expect((await get(request, home)).status, home).toBe(200);
+    }
+  });
 
   test("the escalated exclusions are exactly the two named, and each covers real URLs", () => {
     // A test over the *waiver*, so widening it is a diff a reviewer sees, and a waiver that
