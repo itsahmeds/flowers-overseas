@@ -96,7 +96,7 @@ describe("`Cache-Control` for the listing routes (§5.4, AC-22)", () => {
         { key: "Cache-Control", value: LISTING_CACHE_CONTROL },
       ]);
     }
-    // Fresh objects per call, like `noindexHeaderRules()` and `mediaCacheHeaderRules()`.
+    // Fresh objects per call, like `noindexHeaderRules()` and `mediaHeaderRules()`.
     expect(listingCacheHeaderRules()[0]).not.toBe(rules[0]);
   });
 });
