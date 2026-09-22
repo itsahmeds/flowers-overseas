@@ -59,8 +59,13 @@ test.describe("existence and the 404 shapes (AC-1, T-01)", () => {
       "/pl/polska/okazje/dzien-matki",
       // an unknown locale
       "/fr/poland/occasions/mothers-day",
-      // the occasion hub and the occasions index are TASK-112/113's URLs, not this depth's
-      "/en/occasions/mothers-day",
+      // The occasions index is still TASK-113's URL and does not exist yet.
+      //
+      // `/en/occasions/mothers-day` used to sit here on the same reasoning — "TASK-112's URL, not
+      // this depth's" — and TASK-112 then shipped it (PR 88). Two merged PRs contradicted each
+      // other on `main` for an hour: this case asserted a 404 on a page the hub task had made
+      // answer 200. A 404 list is a claim about what the site does *not* serve, so an entry must
+      // be retired the moment another task starts serving it.
       "/en/occasions",
     ]) {
       const response = await request.get(url, { maxRedirects: 0 });

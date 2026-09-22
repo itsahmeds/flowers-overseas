@@ -1680,7 +1680,6 @@ async function breadcrumbFor(
   return crumbs;
 }
 
-
 /** Every link §2 asks the page to render, and only to pages that exist. */
 async function linksFor(
   locale: LocaleCode,
