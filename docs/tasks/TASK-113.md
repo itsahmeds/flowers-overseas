@@ -145,6 +145,41 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
   set of real URLs — and the two indexable locales are asserted to carry **no** exclusion but the
   category hub, so the half of AC-21 that protects organic ranking is not waived anywhere.
 
+- **2026-09-23 — two English strings for the founder (`/review 98` round 1, changes 1 and 2).
+  `open`.** Both are the implementer's wording, `reviewed: false` with no `reviewedBy` in
+  `messages/en.meta.json`, and queued in `tests/unit/i18n-messages-schema.test.ts`'s
+  `AWAITING_FOUNDER_REVIEW`. Neither may be marked reviewed by anyone but the founder.
+  1. `occasionsIndex.datedCaption`, was the transcribed "The next date for each, in {country} —
+     the one destination we have published. Every other country keeps its own date, and each page
+     below carries the whole table.", now:
+     > The next date for each, in {country}. Every other country keeps its own date, and each page below carries the whole table.
+  2. `occasionsIndex.undatedNote` (already unreviewed), was "…the day belongs to a country we have
+     not published yet, or the rule names no day at all…", now:
+     > These fall on a date, but not one we can work out from {country}'s calendar — the day belongs to another country, or the rule names no day at all. Each page says so in full. We would rather print nothing than a date we guessed.
+  The guide-state shop entry (change 1) needed **no** new string: it reuses the reviewed
+  `corridor.shop.cta` ("See flowers for {country}") and drops the heading and body.
+  **English unreviewed share: 24/511 = 4.7 % before this round, 25/511 = 4.9 % after** (the
+  brief's 4.4 % was out of date). The 5 % gate now has **no headroom**: one more unreviewed `en`
+  string makes 26/512 = 5.1 %, and `en`/`en-gb` stop being indexable. The founder approving
+  either string above buys one back.
+- **2026-09-23 — AC-20 on the live corridor: the shop root only, not the chips. `open`,
+  to the orchestrator.** Spec 007 §2 "Internal links" and the corridor artboards' state B draw
+  the shop entry as the shop root **plus** up to six country categories and the indexable
+  country occasions. What ships in the live state is the shop-root link with its heading and
+  body, and **no chips**. Rendering them is a markup change in `CorridorPage` (a chip row) and a
+  second catalogue read in `corridorShopEntry()`, and AC-20 says "no markup change". No
+  destination is live in Phase 0, so today no page renders state B. In the guide state the
+  question does not arise: change 1 makes the entry the link alone.
+  **Question:** does spec 007/008 amend AC-20 to allow the chip row, and in which task?
+- **2026-09-23 — deviation from spec 007 §2, recorded (`/review 98` round 1, change 1).** Spec
+  007 draws the guide state's shop entry as absent ("Nothing renders here", artboard state A).
+  Since spec 008 AC-20 published `country-shop-root`, the guide page renders the **shop-root link
+  alone**, labelled `corridor.shop.cta`, with no heading, body, price or chip. It is the only
+  inbound edge to the 7 English shop roots, and so to 183 URLs per English locale, while no
+  destination is live. Both corridor artboards' state A and state C are amended, with an
+  `Amended` entry, and `docs/design/README.md` has the row. A spec 007 §14 entry is the
+  orchestrator's to write.
+
 ## Result
 
 **Rebase (2026-09-22).** Rebased onto `origin/main` at `d1c0537` (TASK-114 merged as #93), then
@@ -209,3 +244,65 @@ build`, run, then restored and rebuilt:
 
 **Local gates (exit codes).** `typecheck` 0, `lint` 0, `format:check` 0, `i18n:check` 0,
 `check:no-db` 0, `codebase:map --check` 0, `pnpm test` 0 (195 files, 4625 passed, 5 skipped).
+
+**`/review 98` round 1 fix round (2026-09-23).** All seven required changes. Every mutation
+below was applied, run, and restored, and the tree was clean after each. The two source mutations
+were built together from a clean `.next` (`rm -rf .next && pnpm build`), then the sources were
+restored and rebuilt clean. Servers ran on a private port (`next start -p 3113`, killed by PID).
+The build slot was held throughout. Load average was 2.4 to 4.5 on 8 cores.
+
+1. **The guide-state corridor claims nothing.** In the guide state the shop entry is the
+   `corridor.shop.cta` link alone. The heading and body are the live state's only.
+   `tests/unit/corridor-page.test.tsx` pins the section's text to "See flowers for Poland".
+   `tests/e2e/corridor.spec.ts` refuses `/\bour florists? in\b/`, `/\bcan arrive\b/`,
+   `/\bcan make\b/` and `/\bpriced for\b/` over `main` on all 14 guide pages. **Mutation**
+   (old heading and body back in the guide state): unit **red**, 2 cases (`expected 'See what can
+   arrive in Poland Bouquet…' to be 'See flowers for Poland'`). e2e **red**, 2 cases:
+   `en/poland /\bour florists? in\b/iu` and `+ See what can arrive in Poland / + Bouquets our
+   florists in Poland can make, priced for Poland…`. Restored → green. Both corridor artboards
+   are amended, and the deviation is recorded above.
+2. **The occasions-index captions are tied to the data.** The dated caption names the date
+   country (the first published destination that is `live`) and nothing else. The undated note
+   says "another country". `tests/unit/catalog-occasions-index.test.tsx` derives the date source
+   from the registry, not the view, and pins today's data (7 published, source `PL`, the exact
+   caption). It also refuses `publish`/"the one destination" in both captions. **Mutations:** the
+   old strings back → **red**, 2 cases (`expected 'The next date for each, in Poland — t…' not to
+   match /\bpublish/iu`). France unpublished → **red** (`expected [ 'PL', 'DE', 'ES', 'IT', 'RO',
+   'NL' ] to have a length of 7 but got 6`). Poland no longer `live` → **red**, 5 cases (`a
+   published, live destination exists: expected undefined to be defined`). Restored → green. Both
+   occasions-index artboards are amended ("Observed nowhere we have published" is withdrawn).
+3. **All five flags now switch their links off.** `listingView()` asks
+   `familyPublished(pageType)` (that is, `isPublished(listingLinkId(…))`) before it draws tiles,
+   chips, pickers, calendar rows, the shop-root link and crumb, and the occasions-index entries.
+   `tests/unit/catalog-listing-link-gates.test.ts` has one case per family. Each case withdraws
+   that family alone, asserts zero hrefs into it across the six page types, and asserts the other
+   families are unchanged. **Mutation** (`familyPublished()` ignores one family's flag), one run
+   per family, each **red** on its own case only: `links into countryShopRoot: expected 4 to be
+   +0`, `countryCategory: expected 47`, `countryOccasion: expected 9`, `occasionHub: expected
+   28`. Restored → 5/5 green.
+4. **AC-20 on the live corridor** is declared, not implied: only the shop-root link renders, and
+   the chips are escalated above. In the guide state the question does not arise.
+5. **The crawl's targets are pinned exactly**, per locale and page type (`TARGETS`): `en` and
+   `en-gb` are 7/140/7/28/1 = 183, and `de`/`pl` are empty. The shop-root count is derived from
+   the country registry. The other four have no source but the fixture, which is the subject.
+   **Mutation** (3 `en` country categories deleted from the fixture, clean build) → **red**: `en
+   crawl targets by type - "countryCategory": 140, + "countryCategory": 137`. Restored → green.
+6. **The waivers expire.** Every `EXCLUDED` URL is asserted still unreachable within 3 clicks.
+   **Mutation** (the header's `roses` row published, clean build) → **red**, 4 cases: `waived
+   pages reachable from /en: + "categoryHub /en/flowers/roses"`, the same for `/en-gb`, and
+   `non-200 links from /de: + "/de/blumen/roses → 404"` and `from /pl: + "/pl/kwiaty/roses →
+   404"`. So the crawl reports the two draft-locale 404s as broken. Restored → green.
+7. **The fixture test asks the predicate.** Each committed row's identity is recovered from its
+   URL through `resolveLocalePath()` and `resolveSlug()`, and then `listingExists()` must answer
+   `true`. **Mutation** (one row's path → `/en/poland/flowers/rosesx`) → **red** on that row
+   (`countryCategory /en/poland/flowers/rosesx routes: expected undefined to be defined`), where
+   before only the byte compare went red. Restored → green.
+
+**e2e against the clean build**: `corridor`, `shop-reachability`, `occasions-index`,
+`country-occasion`, `hubs`, `destinations-hub`, `country-shop`, `country-category`,
+`listing-params` and `links` on `e2e-desktop` and `e2e-mobile` gave **270 passed, 14 skipped** (the
+case-insensitive-host guards), exit 0.
+
+**Local gates (exit codes).** `typecheck` 0, `lint` 0, `format:check` 0, `i18n:check` 0 (`en`
+25/511 = 4.9 %), `check:no-db` 0, `codebase:map --check` 0, `pnpm test` 0 (197 files, 4650
+passed, 5 skipped). `tests/unit/listing-params.test.ts` is unchanged and green.
