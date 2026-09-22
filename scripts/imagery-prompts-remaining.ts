@@ -19,6 +19,7 @@ import { promptSeed } from "../seed/schema/prompts.ts";
 const ROOT = process.cwd();
 const PROMPTS_DIR = join(ROOT, "content/imagery/prompts");
 const SHEET = join(ROOT, "content/imagery/requirements-remaining.md");
+const CSV = join(ROOT, "content/imagery/remaining-images.csv");
 
 /** Identical on every record: every rejection reason belongs to every asset (style guide §6). */
 const NEGATIVE =
@@ -261,14 +262,68 @@ function main(): void {
     }
   }
 
-  const rows = todo
-    .map((p, i) => {
-      const md = p.occasions?.includes("mothers_day")
-        ? " **· Mother's Day**"
-        : "";
-      return `| ${i * 2 + 1}–${i * 2 + 2} | \`${p.sku}\` | ${p.name}${md} | ${p.productType} · ${p.style} · ${p.priceTier} | ${subject(p)} | \`${p.sku}.json\` |`;
-    })
+  // One row per IMAGE, not per product, and carrying the prompt itself: the founder should never
+  // have to open a JSON file to generate a picture.
+  type Row = {
+    n: number;
+    assetId: string;
+    sku: string;
+    name: string;
+    mothersDay: boolean;
+    role: string;
+    facets: string;
+    seed: number;
+    prompt: string;
+  };
+  const imageRows: Row[] = [];
+  let n = 0;
+  for (const p of todo) {
+    for (const role of ["hero", "detail"] as const) {
+      const rec = recordFor(p, role);
+      imageRows.push({
+        n: (n += 1),
+        assetId: rec.assetId,
+        sku: p.sku,
+        name: p.name,
+        mothersDay: Boolean(p.occasions?.includes("mothers_day")),
+        role,
+        facets: `${p.productType} · ${p.style} · ${p.priceTier}`,
+        seed: rec.generatorSeed,
+        prompt: rec.prompt,
+      });
+    }
+  }
+
+  const rows = imageRows
+    .map(
+      (r) =>
+        `| ${r.n} | \`${r.assetId}\` | ${r.name}${r.mothersDay ? " **·&nbsp;MD**" : ""} | ${r.role} | ${r.seed} | ${r.prompt} |`,
+    )
     .join("\n");
+
+  const csvCell = (v: string | number) =>
+    `"${String(v).replaceAll('"', '""')}"`;
+  const csv =
+    [
+      "n,assetId,sku,product,mothersDay,role,facets,seed,filename,prompt,negativePrompt",
+      ...imageRows.map((r) =>
+        [
+          r.n,
+          r.assetId,
+          r.sku,
+          r.name,
+          r.mothersDay ? "yes" : "",
+          r.role,
+          r.facets,
+          r.seed,
+          `${r.assetId}.png`,
+          r.prompt,
+          NEGATIVE,
+        ]
+          .map(csvCell)
+          .join(","),
+      ),
+    ].join("\n") + "\n";
 
   const sheet = `# Imagery requirements — the remaining ${todo.length} products
 
@@ -281,6 +336,10 @@ have imagery are excluded. Mother's Day products are first in the table, because
 \`/{locale}/{country}/occasions/mothers-day\` is the only occasion page the catalogue has and it
 renders **no photograph at all** today.
 
+> **Open \`content/imagery/remaining-images.csv\` in a spreadsheet.** One row per image, with the
+> prompt, the negative prompt, the seed and the filename to save as. The table at the bottom of
+> this page is the same data if you would rather read it here.
+
 ## Before you start
 
 1. **Generator and terms are already filed** — \`docs/compliance/imagery-generator-terms.md\`
@@ -291,8 +350,10 @@ renders **no photograph at all** today.
    \`fo-bq-007-hero.png\`.
 3. **Long edge ≥ 2000 px, sRGB, 4:5.** The existing set came in at 1024–1672 px, which forced a
    shorter variant ladder; 2000 px fixes that. No upscaling — generate large.
-4. Paste the **prompt** and the **negative prompt** from the product's JSON record. The seed is
-   recorded; if the generator will not take it, record the run's actual seed back into the file.
+4. Paste the **prompt** from the \`prompt\` column and the **negative prompt** from
+   \`negativePrompt\` — both are in \`content/imagery/remaining-images.csv\`, one row per image,
+   so you never need to open a JSON file. The seed is in the \`seed\` column; if the generator
+   will not take it, record the run's actual seed back into \`content/imagery/prompts/{SKU}.json\`.
 
 ## The review checklist — apply to every image before you keep it
 
@@ -324,22 +385,30 @@ Approving an asset is a data edit, not a code change: set \`reviewState: "approv
 
 ## The ${todo.length * 2} images
 
-| # | SKU | Product | Type · style · tier | Subject | Prompt record |
+\`MD\` marks a Mother's Day product. Save each file as \`.local/imagery/originals/{assetId}.png\`.
+
+| # | Save as | Product | Shot | Seed | Prompt |
 |---|---|---|---|---|---|
 ${rows}
 `;
 
-  let sheetStale = false;
-  try {
-    sheetStale = readFileSync(SHEET, "utf8") !== sheet;
-  } catch {
-    sheetStale = true;
+  const isStale = (path: string, body: string): boolean => {
+    try {
+      return readFileSync(path, "utf8") !== body;
+    } catch {
+      return true;
+    }
+  };
+  const sheetStale = isStale(SHEET, sheet);
+  const csvStale = isStale(CSV, csv);
+  if (!check) {
+    if (sheetStale) writeFileSync(SHEET, sheet);
+    if (csvStale) writeFileSync(CSV, csv);
   }
-  if (sheetStale && !check) writeFileSync(SHEET, sheet);
 
-  if (check && (stale > 0 || sheetStale)) {
+  if (check && (stale > 0 || sheetStale || csvStale)) {
     console.error(
-      `imagery prompts: ${stale} record(s)${sheetStale ? " and the sheet" : ""} are stale — run \`pnpm tsx scripts/imagery-prompts-remaining.ts\``,
+      `imagery prompts: ${stale} record(s)${sheetStale || csvStale ? " and the sheet/CSV" : ""} are stale — run \`pnpm tsx scripts/imagery-prompts-remaining.ts\``,
     );
     process.exit(1);
   }
