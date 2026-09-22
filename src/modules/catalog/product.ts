@@ -274,8 +274,13 @@ export interface LocaleProductCounts {
   readonly exists: number;
   /** How many of them a build prebuilds; the rest are generated on first request. */
   readonly prebuilt: number;
-  /** How many are indexable — `isProductIndexable()`, never a second reading of its six terms. */
-  readonly indexable: number;
+  /**
+   * How many are indexable — `isProductIndexable()`, never a second reading of its six terms.
+   * Named `indexablePages` rather than `indexable` because `tests/unit/catalog-indexability.test.ts`
+   * keeps a `.indexable` read out of every file but `read.ts` (spec 005 AC-21, T-19): the one
+   * indexability *decision* is that function's, and this is a count of its answers.
+   */
+  readonly indexablePages: number;
   /**
    * The honest number §11 asks for: how many **products** have no reviewed description in this
    * locale and are therefore non-indexable there, whatever else is true of them.
@@ -303,10 +308,10 @@ export async function productExistenceCounts(): Promise<
     const pages = await listProductPages(locale);
     const prebuilt = await productPrebuildPages(locale);
 
-    let indexable = 0;
+    let indexablePages = 0;
     for (const page of pages) {
       if (await isProductIndexable(page.sku, locale, page.countryIso)) {
-        indexable += 1;
+        indexablePages += 1;
       }
     }
 
@@ -314,7 +319,7 @@ export async function productExistenceCounts(): Promise<
       locale,
       exists: pages.length,
       prebuilt: prebuilt.length,
-      indexable,
+      indexablePages,
       withoutDescription: products.filter(
         (product) => !hasReviewedDescription(product.sku, locale),
       ).length,
@@ -341,7 +346,7 @@ export function productExistenceSummaryMarkdown(
       `| ${count.locale}`,
       String(count.exists),
       String(count.prebuilt),
-      String(count.indexable),
+      String(count.indexablePages),
       `${String(count.withoutDescription)} |`,
     ].join(" | "),
   );
