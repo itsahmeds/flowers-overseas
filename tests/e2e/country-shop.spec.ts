@@ -17,6 +17,8 @@
  */
 import { type APIRequestContext, expect, test } from "@playwright/test";
 
+import { skipsOnCaseInsensitiveHost } from "../support/case-insensitive-host.ts";
+
 const SHOP_URLS = [
   "/en/poland/flowers",
   "/en-gb/poland/flowers",
@@ -67,15 +69,25 @@ test.describe("existence and the 404 shapes (AC-1, T-01)", () => {
 
   test("an uppercase variant is not a page (ADR-0006: no case-fixing rewrite)", async ({
     request,
+    baseURL,
   }) => {
-    // Recorded, macOS-only: an APFS checkout answers 200 for an uppercase prebuilt path because
-    // the filesystem is case-insensitive; Linux (and CI) answers 404. The assertion is the Linux
-    // one — what must never happen anywhere is a **redirect** that fixes the casing.
+    // Skipped against a case-insensitive *target*, not on a case-insensitive *machine* — a run
+    // from a Mac against the preview or Railway is testing Linux and must run the case.
+    //
+    // It used to assert `expect([200, 404]).toContain(status)`, which is the whole outcome space
+    // of this request: the case passed with its subject removed (TASK-143). Worse, it issued the
+    // mis-cased request unguarded, and on APFS that makes Next write its 404 document into the
+    // correctly-cased prerender file — `/en/poland/flowers` then serves "Page not found" across
+    // server restarts until `.next` is deleted. A local e2e run was corrupting its own build.
+    test.skip(
+      skipsOnCaseInsensitiveHost(baseURL),
+      "case-insensitive target filesystem serves the mis-cased path from the real page's prerendered HTML",
+    );
     const response = await request.get("/en/Poland/flowers", {
       maxRedirects: 0,
     });
     expect(response.headers()["location"]).toBeUndefined();
-    expect([200, 404]).toContain(response.status());
+    expect(response.status()).toBe(404);
   });
 
   test("a trailing slash is a permanent redirect to the bare URL (§14 A7)", async ({

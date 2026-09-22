@@ -12,6 +12,8 @@
  */
 import { type APIRequestContext, expect, test } from "@playwright/test";
 
+import { skipsOnCaseInsensitiveHost } from "../support/case-insensitive-host.ts";
+
 const GUIDE_URL = "/en/send-flowers-to/poland";
 const UK_GUIDE_URL = "/en-gb/send-flowers-to/poland";
 
@@ -56,7 +58,6 @@ test.describe("existence and 404s (AC-5, T-06)", () => {
       "/en/blumen-verschicken/poland",
       "/en/wyslij-kwiaty/poland",
       "/en/send-flowers-to/polska",
-      "/en/send-flowers-to/Poland",
       "/en/send-flowers-to/narnia",
       "/fr/send-flowers-to/poland",
     ]) {
@@ -65,6 +66,27 @@ test.describe("existence and 404s (AC-5, T-06)", () => {
       // Never a redirect to a guessed form, never a lowercase-fixing rewrite (ADR-0006).
       expect(response.headers()["location"], url).toBeUndefined();
     }
+  });
+
+  test("a mis-cased destination slug 404s (ADR-0006: no case-fixing rewrite)", async ({
+    request,
+    baseURL,
+  }) => {
+    // Split out of the loop above and guarded (TASK-143). Unguarded, this request is what
+    // corrupts a local build: on APFS, Next writes its 404 document into the correctly-cased
+    // prerender file, and `/en/send-flowers-to/poland` then serves "Page not found" across server
+    // restarts until `.next` is deleted. The loop's other five shapes are case-safe and stay there.
+    //
+    // The predicate is about the **target host**, so a run from a Mac against the preview or
+    // Railway still executes this case — which is where it matters.
+    test.skip(
+      skipsOnCaseInsensitiveHost(baseURL),
+      "case-insensitive target filesystem serves the mis-cased path from the real page's prerendered HTML",
+    );
+    const url = "/en/send-flowers-to/Poland";
+    const response = await request.get(url, { maxRedirects: 0 });
+    expect(response.status(), url).toBe(404);
+    expect(response.headers()["location"], url).toBeUndefined();
   });
 
   test("the trailing-slash form permanently redirects to the bare URL (§14 A6)", async ({
