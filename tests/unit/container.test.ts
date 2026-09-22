@@ -183,9 +183,11 @@ describe("build-time env contract (AC-8; spec 001 §14 A17, TASK-135)", () => {
    * `if (false) assertRuntimeEnv(process.env)` still contains the string. What spec 040 §14 A1
    * needs is that a server started without its credentials *fails*: `register()` throws at boot,
    * and `GET /api/health` — the Railway healthcheck target — throws so the response is a 500.
-   * Both are called here with the ten server-only keys absent and must name `DATABASE_URL`.
+   * Both are called here with every key of `RUNTIME_ENV_KEYS` absent and must name
+   * `DATABASE_URL`. The count is read off the constant, not written here: round 1's prose said
+   * "ten", which is how many of them are *required*, while the list itself is longer.
    */
-  describe("with the server-only keys absent", () => {
+  describe(`with all ${String(RUNTIME_ENV_KEYS.length)} server-only keys absent`, () => {
     const saved = { ...process.env };
     const missing = (): void => {
       for (const key of RUNTIME_ENV_KEYS)
@@ -212,7 +214,7 @@ describe("build-time env contract (AC-8; spec 001 §14 A17, TASK-135)", () => {
 
     it("fails `GET /api/health`, so the healthcheck never passes", async () => {
       // `@/lib/env` parses the browser half at import, so the route is loaded under the staging
-      // build environment — every key a build has — and the server-only ten are then removed.
+      // build environment — every key a build has — and every server-only key is then removed.
       Object.assign(process.env, stagingBuildEnv);
       const { GET } = await import("../../src/app/api/health/route.ts");
       missing();
