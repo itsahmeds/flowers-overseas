@@ -49,6 +49,41 @@ One dated bullet per `/review`, newest last.
      pin by emptying its table. The same class of hole applies to any `for … of FIXTURE` loop you
      add.
 
+- **From `/review 100` round 1 (2026-09-23): PASS on `545e056`** (CI run 35775978715, 22/22, on
+  that exact SHA). Both carry-forwards landed. Every claim was checked by breaking it:
+  `deliveryDatesOpen` reverted to the TASK-120 body → 17 red over the chrome suites (the claimed 15
+  plus two new `countries-config` cases); `!== "unavailable"` → 17 red; stuck `false` → 1 red. A
+  local build with the block and no partner printed **no** "14:00", "Order by 14", "same-day" or
+  "delivery today" on `/en`, `/en-gb`, `/de`, `/pl`, `/en/send-flowers-to/poland` or the four PL
+  shop roots, and the same build with the old rule printed "Order by 14:00" 8× on `/en`. Every
+  cutoff/date surface goes through `anyDeliveryDatesOpen()` or `pickerState()`, or through
+  `corridorState()`, which is stricter. A default cutoff in the schema → 39 red. A default in
+  `deliveryWindow` → 3 red. `pickerStateFrom` treating a missing block as preview → 10 red. With
+  each of the four rules disabled, 5/2/2/2 red. Horizon counted in UTC → 2 red, 365 days → 4 red,
+  2027 rows dropped → exit 1. `--as-of=2026-12-30T22:59Z` exits 0 and `…23:00Z` exits 1 on
+  `PL/2028`. All 28 holiday dates match an independent computus (Easter 5 Apr 2026 / 28 Mar 2027).
+  Emptying `DST_READINGS` or `DST_WINDOWS` gives 1 red each. `listing-params` changed only in
+  comments and passes 18/18, and indexing a `pl-live.md` turns both designed tripwires red.
+  `pickerState` is defined once. The i18n files are untouched. Nits, none blocking:
+  1. **Orchestrator: open a row for Poland's 2028 holidays before 30 Dec 2026 23:00 UTC.** From
+     then on `seed-check` is red on every PR. The line is actionable (it names the file, the rule,
+     `PL/2028`, the horizon and 2028-01-01), but nothing warns ahead of time and no row exists.
+  2. Stale prose. The first paragraph of the `deliveryDatesOpen` docstring (`countries.ts`
+     L459–465) still describes the old `status && operations` body. `prices.data.ts` L455 still
+     says Poland "has no `operations` at all".
+  3. To TASK-125/126: a `preview` `DeliveryWindow` carries `cutoffLocal`/`timeZone`, and the schema
+     allows it. The renderer must print the cutoff line in `live` only (§2's table).
+  4. Pre-existing: the PL-only `OccasionDates` strip is gated on the global `anyDeliveryDatesOpen()`
+     instead of `deliveryDatesOpen("PL")`. It fails open for Poland once any other country goes
+     live first.
+  5. `holiday-coverage` asks for at least one row per year, not a complete year. Only the unit pin
+     guards the 14 per year of the committed data.
+  6. **To TASK-126/127 (copy gate):** there are **14** distinct `delivery.holiday.pl.*` keys across
+     28 rows, not 28. The measured baseline on `main` 430cf34 is en 22/498 = 4.4%. If all 14 land
+     unreviewed that becomes 36/512 = 7.0%, and 39/525 = 7.4% from the quoted 25/511. Either way
+     `en`/`en-gb` stop being indexable. At most 3 of the 14 (1 from 25/511) may land unreviewed.
+  7. `TASKS.md` row is still `todo` with PR `—`; orchestrator to set `in_review` + #100.
+
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
