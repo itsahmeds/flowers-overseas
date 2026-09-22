@@ -59,7 +59,7 @@ _None yet — this is the first round._
 
 ## Result
 
-**PR:** #95 (draft → ready). **Branch:** `task/TASK-121-product-slug-route-plumbing`, rebased on
+**PR:** [#96](https://github.com/itsahmeds/flowers-overseas/pull/96) (draft → ready). **Branch:** `task/TASK-121-product-slug-route-plumbing`, rebased on
 `origin/main` at `6c19880` (after PR 88's hubs landed in `routes.ts`; both conflicts resolved
 **additively** — the product branch is appended to the depth-4 union and no existing branch moved).
 
