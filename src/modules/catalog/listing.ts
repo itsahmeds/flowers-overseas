@@ -384,7 +384,9 @@ export const ListingViewSchema = z
     /**
      * The destination whose calendar the **occasions index** quotes, as its `nameKey` (§14 design
      * round **Q4**: "the occasions index prints the soonest date in Poland, the only published
-     * destination, with the caption saying so"; TASK-113).
+     * destination, with the caption saying so"; TASK-113). Its premise is out of date: TASK-091
+     * published all seven guides, so the caption names this country and claims nothing about how
+     * many are published (`/review 98`).
      *
      * One field rather than a component lookup, for the reason every other date on this page is a
      * field: the caption and the dates must name the same country or the page quotes one
@@ -1663,7 +1665,7 @@ function occasionsIndexDateCountry(): CountryIso2 | undefined {
   );
 }
 
-/** The occasions index's entries, grouped by the component and dated in Poland (§14 Q4). */
+/** The occasions index's entries, grouped by the component and dated in the date country (§14 Q4). */
 async function occasionEntries(
   locale: LocaleCode,
   from: string,

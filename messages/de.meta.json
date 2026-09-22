@@ -2202,7 +2202,7 @@
   "occasionsIndex.datedCaption": {
     "source": "machine",
     "reviewed": false,
-    "sourceHash": "741b89efcbc4e64b84e9a29a8a76d6b8d6a83e3c065ca895b4bdfb2aa546dbbd"
+    "sourceHash": "316fd52443951b0c5bb1eabe49ffb1f97d3f100ddbfad3a54b19560ee266193f"
   },
   "occasionsIndex.datedEyebrow": {
     "source": "machine",
@@ -2252,7 +2252,7 @@
   "occasionsIndex.undatedNote": {
     "source": "machine",
     "reviewed": false,
-    "sourceHash": "290ff574e37ca42f9619a5556fece5bebb3f2dcaa662323af516ec3680ff9acb"
+    "sourceHash": "290d56a719db44fd4dbae562a1a7b6ca6384e2d6f8ad45a46f4cfd5cc44a7115"
   },
   "shop.card.noPrice": {
     "source": "machine",

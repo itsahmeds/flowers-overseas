@@ -136,7 +136,8 @@ test.describe("what the index renders (AC-11, AC-7, §14 Q4)", () => {
   }) => {
     await page.goto("/en/occasions");
     const caption = await page.locator("main table caption").innerText();
-    // Poland is the one published destination, so it is the calendar the table quotes — read out
+    // Poland is the destination the dates are computed in (the first published one whose registry
+    // status is `live`; all seven are published), so it is the calendar the table quotes — read out
     // of the document rather than asserted as a constant, so a page that printed Poland's dates
     // under another country's name fails here. Case-insensitively, because the caption carries the
     // canvas's `.label` voice and `innerText` returns what `text-transform: uppercase` rendered.

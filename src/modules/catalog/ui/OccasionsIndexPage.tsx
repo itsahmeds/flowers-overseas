@@ -13,14 +13,18 @@
  * block):
  *
  *  - *dated* — an occasion that falls on a day, with a day we can compute: the table, with the
- *    **next date in the one destination we have published**. The caption names that country out
- *    loud, and it names it from the same `occasionsDateCountryKey` the dates were computed from
- *    (§14 **Q4**), so the page cannot quote Poland's calendar under another country's name. Both
+ *    **next date in the destination the dates are computed in** (the first published destination
+ *    whose registry status is `live`: Poland). The caption names that country out loud, and it
+ *    names it from the same `occasionsDateCountryKey` the dates were computed from (§14 **Q4**),
+ *    so the page cannot quote Poland's calendar under another country's name. **It says nothing
+ *    else about the data** (`/review 98`): §14 Q4's "the one published destination" stopped being
+ *    true when TASK-091 published all seven guides, and a caption that counts destinations in
+ *    prose is false the day the count moves. Both
  *    groups are in `collator(locale)` order and **not** in date order: a Polish reader gets a
  *    different sequence from an English one, and neither is sorted by how soon the day falls.
  *  - *observed, no date* — Name day, whose rule names no day at all; Sant Jordi, Grandmothers' Day
- *    in France and the May Day lily of the valley, whose days belong to countries we have not
- *    published. They are **named, linked and explained** — never a row with a blank date, never an
+ *    in France and the May Day lily of the valley, whose days belong to another country's calendar
+ *    (Spain's, France's). They are **named, linked and explained** — never a row with a blank date, never an
  *    em dash, never the Western date quietly reused (§14 **Q6**). An occasion with a hub but no
  *    row here would be a page nothing links to, which is the orphan this whole task exists to end.
  *  - *everyday* — an evergreen occasion (birthday, sympathy, wedding…), which carries no date

@@ -3592,10 +3592,8 @@
   },
   "occasionsIndex.datedCaption": {
     "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder (docs/design/wireframes/occasions-index-{desktop,mobile}.dc.html, 2026-09-16 design round; transcribed by TASK-113)",
-    "reviewedAt": "2026-09-22T00:00:00Z",
-    "sourceHash": "741b89efcbc4e64b84e9a29a8a76d6b8d6a83e3c065ca895b4bdfb2aa546dbbd"
+    "reviewed": false,
+    "sourceHash": "316fd52443951b0c5bb1eabe49ffb1f97d3f100ddbfad3a54b19560ee266193f"
   },
   "occasionsIndex.occasionColumn": {
     "source": "human",
@@ -3619,7 +3617,7 @@
   "occasionsIndex.undatedNote": {
     "source": "human",
     "reviewed": false,
-    "sourceHash": "290ff574e37ca42f9619a5556fece5bebb3f2dcaa662323af516ec3680ff9acb"
+    "sourceHash": "290d56a719db44fd4dbae562a1a7b6ca6384e2d6f8ad45a46f4cfd5cc44a7115"
   },
   "occasionsIndex.everydayEyebrow": {
     "source": "human",
