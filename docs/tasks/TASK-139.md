@@ -84,6 +84,35 @@ One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
 
+- **From `/review 1` (2026-09-22): FAIL, on one thing the Linux set itself does not touch.** The
+  93 `linux` baselines are sound and independently verified (every sha256 matches run 35700989506's
+  manifest, downloaded and re-hashed by the reviewer, not read from the PR's own output; the
+  `visual` job is green on the current head; only `not-found-*` shows a 404 document). What is not
+  done is the defect this task was told to absorb (`TASKS.md` decision log, 2026-09-22, TASK-112
+  post-merge review, finding S2). Three changes:
+  1. **The two `darwin` `country-shop` baselines on `main` are still the stale ones, and this PR
+     asserts the opposite.** Verified by pixels, not bytes: the committed `linux`
+     `country-shop-{desktop,mobile}` carry TASK-111's third table column (`PAGE` / "What we make
+     for it" on the Mother's Day row); the committed `darwin` pair has only `OCCASION | DATE`.
+     `darwin/country-shop-mobile` is 390×5578 against `linux`'s 390×5759. Either regenerate the two
+     `darwin` files from a build of current `main` (runbook §3; expect 390×5739 for the mobile one)
+     or delete them — `--check` permits `linux`-only, and no picture is better than a wrong one.
+     Do not leave them as they are.
+  2. **`docs/runbooks/visual-baselines.md` §1.3 measures the cross-platform delta against that
+     stale file.** "`country-shop-mobile` by 181 px" is ~161 px of missing content plus ~20 px of
+     platform, so the runbook's own worked example is wrong and the "27 of the 91 pages differ in
+     geometry" count is measured against a set containing a known-stale member. Re-measure or
+     exclude the stale pair and say so. The 0.1 % conclusion is not in question; the evidence for
+     it is.
+  3. **`TASKS.md` row 157 is still `in_progress` with no PR link.** Move it to `in_review` with
+     PR #95, inside the 400-character cell cap.
+  Nits, not blocking: the manifest that is the reviewer's only provenance proof expires with the
+  artifact in 14 days — consider committing `visual-baselines-manifest.json` beside the PNGs;
+  `parseManifest()` accepts `files: null` and non-string hashes (structural check plus an `as`
+  cast, not zod) and would throw rather than report; the footer's `+1 (213) 592-5150` is a US
+  number on every European page and is visible in ~20 committed baselines — same class as the
+  three observations already escalated, so add it there rather than pinning it silently.
+
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
