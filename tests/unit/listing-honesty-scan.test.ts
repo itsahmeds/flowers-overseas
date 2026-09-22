@@ -259,8 +259,31 @@ const SUBSUMED_BRANCHES: ReadonlyMap<string, string> = new Map([
   ["delivery-timing claim: the same day", "\\bsame[- ]day\\b"],
 ]);
 
-/** How many single-branch deletions the seventeen patterns yield today. */
-const BRANCH_MUTANTS = 89;
+/**
+ * How many single-branch deletions each of the seventeen patterns yields today — pinned **per
+ * pattern**, not as one total, so a branch lost from one pattern cannot hide behind a branch gained
+ * in another (`/review 99` round 1). They sum to 89.
+ */
+const BRANCH_MUTANTS: Readonly<Record<string, number>> = {
+  rating: 3,
+  star: 4,
+  review: 3,
+  "out-of-five score": 2,
+  "ranking claim": 16,
+  "delivery-timing claim": 18,
+  "order-by cutoff promise": 10,
+  countdown: 4,
+  "old price": 4,
+  "add to basket": 6,
+  wishlist: 2,
+  "<del>/<s> strike-through": 2,
+  // A single-branch pattern: nothing to delete, so its sample is its only control.
+  "line-through styling": 0,
+  "rating markup": 3,
+  "basket control": 5,
+  "badge hook": 4,
+  "itemprop rating": 3,
+};
 
 describe("every branch of every pattern is needed by a sample (TASK-143)", () => {
   const patterns = [
@@ -306,20 +329,22 @@ describe("every branch of every pattern is needed by a sample (TASK-143)", () =>
 
   it("kills every single-branch deletion but the subsumed ones", () => {
     const survivors: string[] = [];
-    let mutants = 0;
+    const mutants: Record<string, number> = {};
     for (const { name, pattern, kind } of patterns) {
       const samples = samplesFor(name).map((sample) => subject(kind, sample));
+      mutants[name] = 0;
       for (const { branch, mutant } of branchDeletions(pattern)) {
-        mutants += 1;
+        mutants[name] += 1;
         const killed = samples.some(
           (sample) => pattern.test(sample) && !mutant.test(sample),
         );
         if (!killed) survivors.push(`${name}: ${branch}`);
       }
     }
-    // The mutant count is stated, so a generator that silently found no alternation — and so
-    // killed nothing because it made nothing — fails here rather than passing as zero-vs-zero.
-    expect(mutants).toBe(BRANCH_MUTANTS);
+    // The mutant counts are stated per pattern, so a generator that silently found no alternation
+    // — and so killed nothing because it made nothing — fails here rather than passing as
+    // zero-vs-zero, and so does one pattern losing a branch while another gains one.
+    expect(mutants).toStrictEqual(BRANCH_MUTANTS);
     expect(survivors).toStrictEqual([...SUBSUMED_BRANCHES.keys()]);
   });
 });
