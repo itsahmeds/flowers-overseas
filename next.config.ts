@@ -12,6 +12,7 @@ import {
   ga4MeasurementId,
   hostPlatform,
 } from "./src/lib/env.schema";
+import { mediaHeaderRules } from "./src/lib/media-headers";
 import { noindexHeaderRules } from "./src/lib/robots-headers";
 
 // Fail the build before compiling anything when a variable **the build consumes** is missing or
@@ -70,6 +71,13 @@ const headerRules = [
   // `flowersoverseas-media` and this application serves no image. The year-long `immutable`
   // promise moved with them and is written onto each object at upload
   // (`src/lib/media-headers.ts`, `scripts/media-upload.ts`).
+  //
+  // What the move left behind is a third-party handshake on the LCP critical path, so the one
+  // header this application still sends about images is the connection hint for the origin that
+  // now serves them — same `MEDIA_ORIGIN` constant as the `img-src` below and as every image
+  // URL, and a response header rather than a `<link>` because nothing rendered into `<head>` can
+  // be emitted ahead of the hero preload (`src/lib/media-headers.ts` has the measurements).
+  ...mediaHeaderRules(),
   // The country shop root is rendered per request (it reads `?page=`/`?sort=`) and cached at the
   // edge by full URL for an hour, stale-while-revalidate for a day — spec 008 §5.4 and §13 Q2 as
   // the founder resolved them, under ADR-0018's single replica behind Cloudflare. The sources
