@@ -88,7 +88,20 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None blocking._ Three things seen while reviewing the 93 images are **not** defects this task
+- **2026-09-22 — `main` is red on two gates that are nobody's task, and both fail this PR's CI.**
+  Raised to the orchestrator in PR 95's body. (a) **`lint` / `format:check`**: `prettier --check`
+  rejects `src/modules/catalog/listing.ts` on `origin/main` itself, from `2f8bcbf` (TASK-112, PR
+  88) — and because `typecheck`, the unit suites, `build` and `container` all sit behind `lint`,
+  every pull request loses them. One stray blank line; repaired here in a separate,
+  clearly-labelled commit rather than left to skip twelve jobs. (b) **`e2e`**:
+  `tests/e2e/country-occasion.spec.ts:41` asserts `/en/occasions/mothers-day` **404s**, and its
+  own comment says "the occasion hub … are TASK-112/113's URLs, not this depth's" — TASK-112 has
+  since published that URL, so the assertion is stale and 2 cases fail on `main`. Deciding whether
+  the hub should 200 or the list should shrink is spec 008's call and TASK-110/111/112's scope,
+  **not this task's**; left untouched and escalated. Nothing about it touches the baselines: the
+  `visual` job is green.
+
+_No baseline was withheld._ Three things seen while reviewing the 93 images are **not** defects this task
 may fix and **not** reasons to withhold a baseline — each is identical on the `darwin` baseline
 `main` already pins, so the Linux set pins nothing new. They are recorded here and in the PR body
 so the owning task decides:
