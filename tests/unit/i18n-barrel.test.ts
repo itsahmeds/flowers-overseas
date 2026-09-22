@@ -106,6 +106,13 @@ const PINNED_EXPORTS = [
   // out of here.
   "listingPath",
   "productPath",
+  // Added by TASK-123 (spec 009 §2, AC-5/AC-6): the wall clock in an IANA zone, as integers. It
+  // is a function of (instant, zone) with no locale, no provider and no state, and it lives in
+  // this module for the reason `format.ts` states — `fo/no-adhoc-intl` puts the single door to
+  // ICU here, and ICU's zone database is the only source in the runtime for "was Warsaw on CET
+  // or CEST at this instant". **No date is computed there**: every piece of arithmetic that
+  // turns these integers into a delivery grid is in `src/modules/geo/delivery` (plan/03 §9/§10).
+  "zonedClock",
 ].sort();
 
 /**
