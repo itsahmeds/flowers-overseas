@@ -2189,6 +2189,71 @@
     "reviewed": false,
     "sourceHash": "4814fc4bfbee31d3178b6eff12045e53fba62eee1c01f82b5c2094a07e9c23d0"
   },
+  "occasionsIndex.dateColumn": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "259f577df539d7cd8e62a42346f928637e9df6ee7cfd0fecdd866c9ae950e831"
+  },
+  "occasionsIndex.dateSource": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "91f834542eeabfa1a2f67cfd5dc65889d2ccc3437923d491ce7f8fab96f45f4e"
+  },
+  "occasionsIndex.datedCaption": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "741b89efcbc4e64b84e9a29a8a76d6b8d6a83e3c065ca895b4bdfb2aa546dbbd"
+  },
+  "occasionsIndex.datedEyebrow": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "ee250566cff8b9fc68554eebdff88a16c7f22822f916046bb29b6ad8b282bff0"
+  },
+  "occasionsIndex.datedHeading": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "429a1a3ed764b6495852f2d6304f65efda0155b6b01fea0c872b7a6822f9bab0"
+  },
+  "occasionsIndex.everydayEyebrow": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "d01872ef001015abdec78b3f823546386517bc20008bbb99f3a807d7e2ef87f2"
+  },
+  "occasionsIndex.everydayHeading": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "406834ea6e28888bea6174d7e548f4e18029dd3b4e6f13bfda94ece1f4806969"
+  },
+  "occasionsIndex.everydayNote": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "5b07b1b34b1036a00416ff39aef8015cf6d47e16555b9dfe85fb43af1ffe516d"
+  },
+  "occasionsIndex.h1": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "e5b8470758e19d1615b82228a3ab96d0fce4c772d8a45bb3fbd4c968ab88eb39"
+  },
+  "occasionsIndex.intro": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "0f3f295db09b12f5d8faa61b649cf272c75bf8400e0726421c3bcfccf4e654ed"
+  },
+  "occasionsIndex.occasionColumn": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "f68e0b1ef1269baeea223f00199f2e45e5f8d4a4bddd585d7074efce4c33c435"
+  },
+  "occasionsIndex.undatedHeading": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "9722548d436ef46e2b6a551ab73e8d78778b973158ceb3d6cca24f9554067eb4"
+  },
+  "occasionsIndex.undatedNote": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "290ff574e37ca42f9619a5556fece5bebb3f2dcaa662323af516ec3680ff9acb"
+  },
   "shop.card.noPrice": {
     "source": "machine",
     "reviewed": false,

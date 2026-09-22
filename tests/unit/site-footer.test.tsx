@@ -127,32 +127,41 @@ describe("SiteFooter: the Phase-0 colophon", () => {
 });
 
 describe("AC-14: an unpublished target is text, never a link", () => {
-  it("renders an `<a>` for the published hub and for nothing else (spec 007 AC-20)", () => {
+  it("renders an `<a>` for each published footer target and for nothing else (007 AC-20, 008 AC-20)", () => {
     const hrefs = [...phase0.matchAll(/href="([^"]*)"/g)].map(
       (match) => match[1],
     );
-    // Every href in the footer belongs to the locale switcher, to `tel:`, or to the one footer
-    // target spec 007 published — the all-destinations hub. No other `site-links.ts` row has a
-    // page, so no other row is a link (spec 004 AC-14).
+    // Every href in the footer belongs to the locale switcher, to `tel:`, or to a footer target
+    // whose page exists: spec 007's all-destinations hub, and spec 008's occasions index from the
+    // day TASK-113 built its route. No other `site-links.ts` row has a page, so no other row is a
+    // link (spec 004 AC-14).
+    const published = [
+      localePath("en", "destinations"),
+      localePath("en", "occasions"),
+    ];
     expect(
       hrefs.filter(
         (href) =>
           href !== undefined &&
           !/^(?:\/(?:en|en-gb|de|pl)$|tel:)/.test(href) &&
-          href !== localePath("en", "destinations"),
+          !published.includes(href),
       ),
     ).toEqual([]);
-    expect(phase0).toContain(`href="${localePath("en", "destinations")}"`);
+    for (const href of published) {
+      expect(phase0).toContain(`href="${href}"`);
+    }
   });
 
-  it("publishes exactly one footer target: the hub (spec 007 AC-20)", () => {
+  it("publishes exactly the footer targets whose page exists (007 AC-20, 008 AC-20)", () => {
     const footerLinks = SITE_LINKS.filter((link) =>
       link.surfaces.includes("footer"),
     );
     expect(footerLinks.length).toBeGreaterThan(0);
+    // The list is exact in both directions: publishing a sixth footer row, or dropping one of
+    // these two, is a failing test rather than a link to a 404 in production.
     expect(
       footerLinks.filter((link) => link.published).map((l) => l.id),
-    ).toEqual(["destinations"]);
+    ).toEqual(["destinations", "occasions"]);
   });
 
   it("renders a link the moment a target is published, with no template edit", () => {

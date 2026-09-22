@@ -733,6 +733,21 @@
       "subtitle": "Delivered with care"
     }
   },
+  "occasionsIndex": {
+    "dateColumn": "Next date",
+    "dateSource": "Every date is computed from the destination's own rule, not copied from a list.",
+    "datedCaption": "The next date for each, in {country} — the one destination we have published. Every other country keeps its own date, and each page below carries the whole table.",
+    "datedEyebrow": "Dated",
+    "datedHeading": "The ones with a date",
+    "everydayEyebrow": "Everyday",
+    "everydayHeading": "Any day of the year",
+    "everydayNote": "These carry no date because they have none.",
+    "h1": "Occasions",
+    "intro": "Some of these fall on a date, and the date is different in every country. Some of them are any day of the year. Each one has a page with what we make for it, and the dated ones carry the date for every destination we cover.",
+    "occasionColumn": "Occasion",
+    "undatedHeading": "Kept on a date we cannot compute here",
+    "undatedNote": "These fall on a date, but not one we can work out from {country}'s calendar — the day belongs to a country we have not published yet, or the rule names no day at all. Each page says so in full. We would rather print nothing than a date we guessed."
+  },
   "shop": {
     "card": {
       "noPrice": "No price here — the price depends on the destination"

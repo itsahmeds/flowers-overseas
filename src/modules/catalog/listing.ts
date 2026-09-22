@@ -378,6 +378,17 @@ export const ListingViewSchema = z
     occasionDates: z.array(ListingOccasionDateSchema).readonly().optional(),
     occasions: z.array(ListingOccasionEntrySchema).readonly().optional(),
     /**
+     * The destination whose calendar the **occasions index** quotes, as its `nameKey` (§14 design
+     * round **Q4**: "the occasions index prints the soonest date in Poland, the only published
+     * destination, with the caption saying so"; TASK-113).
+     *
+     * One field rather than a component lookup, for the reason every other date on this page is a
+     * field: the caption and the dates must name the same country or the page quotes one
+     * country's calendar as if it were everyone's. Absent when no destination is live, in which
+     * case `occasions[].nextDate` is `null` throughout and the dated group does not render.
+     */
+    occasionsDateCountryKey: z.string().min(1).optional(),
+    /**
      * How many products the listing has in total — §5.2 names it `total`, and `fo/no-float-money`
      * refuses a `number` under that name (it reads as money). `resultCount` is the same number
      * with a name that says it counts rather than adds up.
@@ -1490,7 +1501,16 @@ export async function listingView(
         }
       : {}),
     ...(pageType === "occasionsIndex"
-      ? { occasions: await occasionEntries(locale, from) }
+      ? {
+          occasions: await occasionEntries(locale, from),
+          ...(occasionsIndexDateCountry() === undefined
+            ? {}
+            : {
+                occasionsDateCountryKey: countryConfig(
+                  occasionsIndexDateCountry() as CountryIso2,
+                ).nameKey,
+              }),
+        }
       : {}),
     fxFallback: await pageFxFallback(locale, iso2, ordered[0]),
     resultCount: total,
@@ -1598,6 +1618,19 @@ async function tilesFor(
   return sortBy(tiles, locale, (tile) => tile.name);
 }
 
+/**
+ * The destination whose calendar the occasions index quotes (§14 design round **Q4**).
+ *
+ * One rule in one place: the dates in `occasions[].nextDate` and the country the caption names
+ * come from this function, so the page cannot print Poland's calendar under another country's
+ * name. `undefined` while no destination is live, which leaves every entry undated.
+ */
+function occasionsIndexDateCountry(): CountryIso2 | undefined {
+  return publishedCountries().find(
+    (iso2) => countryConfig(iso2).status === "live",
+  );
+}
+
 /** The occasions index's entries, grouped by the component and dated in Poland (§14 Q4). */
 async function occasionEntries(
   locale: LocaleCode,
@@ -1610,9 +1643,7 @@ async function occasionEntries(
     const occasion = await getOccasion(row.key);
     const slug = slugFor("occasion", row.key, locale);
     if (occasion === null || slug === undefined) continue;
-    const dateCountry = publishedCountries().find(
-      (iso2) => countryConfig(iso2).status === "live",
-    );
+    const dateCountry = occasionsIndexDateCountry();
     entries.push({
       key: row.key,
       name: row.name,

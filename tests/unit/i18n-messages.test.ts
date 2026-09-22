@@ -86,6 +86,11 @@ describe("the shell catalogue", () => {
       "nav",
       "occasionHub",
       "occasions",
+      // `occasionsIndex` is spec 008 §7's namespace for `/{locale}/{occasions}` (TASK-113): the
+      // `h1` and intro, the dated and everyday group headings, the dated table's caption and
+      // columns, and the two sentences an occasion with no computable date carries. A Server
+      // Component again, so it is in no `ROUTE_NAMESPACES` entry and costs no client bytes.
+      "occasionsIndex",
       // `shop` is spec 008 §7's namespace (TASK-108): the listing grid's accessible name, the
       // toolbar's count, its three sort labels and the ranking disclosure, the pagination labels
       // and the empty state's two sentences. Like `catalog` and `media` it is in no

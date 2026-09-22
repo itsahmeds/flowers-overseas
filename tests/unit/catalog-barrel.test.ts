@@ -306,6 +306,9 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         // link into the shop" with "does this destination have a shop root in this locale", so
         // `src/modules/geo` never reads the catalogue (spec 008 AC-20).
         "corridorShopEntry",
+        // the occasions index's page component (TASK-113): the page that puts every occasion hub
+        // two clicks from any document, which is how AC-21's depth bound closes for the hubs.
+        "OccasionsIndexPage",
       ].sort(),
     );
   });
@@ -343,6 +346,7 @@ describe("src/modules/catalog barrel (AC-1)", () => {
       `${moduleDir}/ui/CountryShopRootPage.tsx`,
       `${moduleDir}/ui/ListingBreadcrumb.tsx`,
       `${moduleDir}/ui/OccasionHubPage.tsx`,
+      `${moduleDir}/ui/OccasionsIndexPage.tsx`,
       `${moduleDir}/ui/labels.ts`,
     ]);
   });

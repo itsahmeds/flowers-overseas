@@ -3561,5 +3561,92 @@
     "reviewedBy": "frontend-implementer (spec 004 §2 trust strip, §14 A4 unpublished-target copy, /review 41 caption; TASK-053)",
     "reviewedAt": "2026-09-11T00:00:00Z",
     "sourceHash": "bcfc18f77c106b8fcb98a5a8fc51c977976d278e2dacd6a3ee2d5c73070c9aff"
+  },
+  "occasionsIndex.h1": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/occasions-index-{desktop,mobile}.dc.html, 2026-09-16 design round; transcribed by TASK-113)",
+    "reviewedAt": "2026-09-22T00:00:00Z",
+    "sourceHash": "e5b8470758e19d1615b82228a3ab96d0fce4c772d8a45bb3fbd4c968ab88eb39"
+  },
+  "occasionsIndex.intro": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/occasions-index-{desktop,mobile}.dc.html, 2026-09-16 design round; transcribed by TASK-113)",
+    "reviewedAt": "2026-09-22T00:00:00Z",
+    "sourceHash": "0f3f295db09b12f5d8faa61b649cf272c75bf8400e0726421c3bcfccf4e654ed"
+  },
+  "occasionsIndex.datedEyebrow": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/occasions-index-{desktop,mobile}.dc.html, 2026-09-16 design round; transcribed by TASK-113)",
+    "reviewedAt": "2026-09-22T00:00:00Z",
+    "sourceHash": "ee250566cff8b9fc68554eebdff88a16c7f22822f916046bb29b6ad8b282bff0"
+  },
+  "occasionsIndex.datedHeading": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/occasions-index-{desktop,mobile}.dc.html, 2026-09-16 design round; transcribed by TASK-113)",
+    "reviewedAt": "2026-09-22T00:00:00Z",
+    "sourceHash": "429a1a3ed764b6495852f2d6304f65efda0155b6b01fea0c872b7a6822f9bab0"
+  },
+  "occasionsIndex.datedCaption": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/occasions-index-{desktop,mobile}.dc.html, 2026-09-16 design round; transcribed by TASK-113)",
+    "reviewedAt": "2026-09-22T00:00:00Z",
+    "sourceHash": "741b89efcbc4e64b84e9a29a8a76d6b8d6a83e3c065ca895b4bdfb2aa546dbbd"
+  },
+  "occasionsIndex.occasionColumn": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/occasions-index-{desktop,mobile}.dc.html, 2026-09-16 design round; transcribed by TASK-113)",
+    "reviewedAt": "2026-09-22T00:00:00Z",
+    "sourceHash": "f68e0b1ef1269baeea223f00199f2e45e5f8d4a4bddd585d7074efce4c33c435"
+  },
+  "occasionsIndex.dateColumn": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/occasions-index-{desktop,mobile}.dc.html, 2026-09-16 design round; transcribed by TASK-113)",
+    "reviewedAt": "2026-09-22T00:00:00Z",
+    "sourceHash": "259f577df539d7cd8e62a42346f928637e9df6ee7cfd0fecdd866c9ae950e831"
+  },
+  "occasionsIndex.undatedHeading": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9722548d436ef46e2b6a551ab73e8d78778b973158ceb3d6cca24f9554067eb4"
+  },
+  "occasionsIndex.undatedNote": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "290ff574e37ca42f9619a5556fece5bebb3f2dcaa662323af516ec3680ff9acb"
+  },
+  "occasionsIndex.everydayEyebrow": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/occasions-index-{desktop,mobile}.dc.html, 2026-09-16 design round; transcribed by TASK-113)",
+    "reviewedAt": "2026-09-22T00:00:00Z",
+    "sourceHash": "d01872ef001015abdec78b3f823546386517bc20008bbb99f3a807d7e2ef87f2"
+  },
+  "occasionsIndex.everydayHeading": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/occasions-index-{desktop,mobile}.dc.html, 2026-09-16 design round; transcribed by TASK-113)",
+    "reviewedAt": "2026-09-22T00:00:00Z",
+    "sourceHash": "406834ea6e28888bea6174d7e548f4e18029dd3b4e6f13bfda94ece1f4806969"
+  },
+  "occasionsIndex.everydayNote": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/occasions-index-{desktop,mobile}.dc.html, 2026-09-16 design round; transcribed by TASK-113)",
+    "reviewedAt": "2026-09-22T00:00:00Z",
+    "sourceHash": "5b07b1b34b1036a00416ff39aef8015cf6d47e16555b9dfe85fb43af1ffe516d"
+  },
+  "occasionsIndex.dateSource": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/wireframes/occasions-index-{desktop,mobile}.dc.html, 2026-09-16 design round; transcribed by TASK-113)",
+    "reviewedAt": "2026-09-22T00:00:00Z",
+    "sourceHash": "91f834542eeabfa1a2f67cfd5dc65889d2ccc3437923d491ce7f8fab96f45f4e"
   }
 }

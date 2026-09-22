@@ -454,6 +454,13 @@ export {
   OccasionHubPage,
   type OccasionHubPageProps,
 } from "./ui/OccasionHubPage.tsx";
+// The occasions index's page component (spec 008 §2 row 14, **AC-20**; TASK-113) — the page that
+// makes every occasion hub reachable from the footer of every document, which is how AC-21's
+// "crawl depth ≤3 from any locale home" closes for the hubs.
+export {
+  OccasionsIndexPage,
+  type OccasionsIndexPageProps,
+} from "./ui/OccasionsIndexPage.tsx";
 export {
   ListingBreadcrumb,
   type ListingBreadcrumbProps,

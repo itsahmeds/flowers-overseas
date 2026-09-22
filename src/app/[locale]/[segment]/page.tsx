@@ -2,7 +2,14 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
-import { resolveLocalePath, localeSegmentParams } from "@/modules/catalog";
+import type { LocaleCode } from "@/config/locales";
+import {
+  OccasionsIndexPage,
+  listingAlternatePaths,
+  listingView,
+  localeSegmentParams,
+  resolveLocalePath,
+} from "@/modules/catalog";
 import { DestinationsHubPage, hubView } from "@/modules/geo";
 import { alternatesFor } from "@/modules/i18n";
 import {
@@ -26,8 +33,10 @@ import {
  * one, and which page a path names is `resolveLocalePath()`'s single answer, built from the same
  * existence predicates the sitemap and the crawl read.
  *
- * Today the union is the hub alone; TASK-113 adds the occasions index to the resolver and one
- * branch to the component below, with no change to the routing shape.
+ * The union is the hub and spec 008's occasions index `/{locale}/{occasions}` (§2 row 14,
+ * **AC-20**; TASK-113) — disjoint by segment, resolved by the one resolver, each mounting its own
+ * module page component. The index exists only where an occasion hub does, so `/pl/okazje` is a
+ * hard 404 while no occasion carries a Polish slug.
  *
  * `app/` stays thin: this file resolves, mounts one module page component, and decides nothing.
  *
@@ -48,8 +57,66 @@ import {
 export const revalidate = 3600;
 export const dynamicParams = false;
 
-export function generateStaticParams(): { locale: string; segment: string }[] {
-  return [...localeSegmentParams()];
+/** The build's date, as the first day of the occasions index's date window (spec 007 AC-22). */
+function windowStart(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+/**
+ * The occasions index's `<head>` (spec 008 §2 row 14, **AC-20**; TASK-113).
+ *
+ * Its own function rather than a branch inside `generateMetadata`, because it shares nothing with
+ * the hub's: a different translator namespace, a different indexability descriptor, a different
+ * alternates source. What it does share is the **engine** — spec 007's `pageIndexability()`,
+ * `canonicalFor()` and `alternatesFor()`, with no second robots branch written here (AC-14).
+ *
+ * `alternatesFor()` refuses a non-`https` origin: a development deployment emits **no** hreflang
+ * rather than an invalid one (the corridor route documents the rule in full). The cluster is
+ * built from `listingAlternatePaths()`, so a locale in which the index does not exist — `pl`
+ * today, which has no occasion slugs — contributes no alternate.
+ */
+async function occasionsIndexMetadata(locale: LocaleCode): Promise<Metadata> {
+  const deployment = deploymentDescriptor(process.env);
+  const view = await listingView(
+    { locale, pageType: "occasionsIndex" },
+    { from: windowStart(), deployment },
+  );
+  if (view === undefined) notFound();
+
+  const t = await getTranslations({ locale, namespace: "occasionsIndex" });
+  const cluster = deployment.siteUrl.startsWith("https:")
+    ? alternatesFor(
+        {
+          pathByLocale: await listingAlternatePaths({
+            pageType: "occasionsIndex",
+            locale,
+          }),
+        },
+        { baseUrl: deployment.siteUrl },
+      ).find((page) => page.url.endsWith(view.path))?.alternates
+    : undefined;
+
+  return pageMetadata({
+    // The page's **own** heading and its **own** intro, which is what the page shows and what the
+    // founder approved on the artboard — the hub route's `view.entity?.seoDescription ?? view.intro`
+    // fallback, applied where there is no authored `<head>` pair to prefer. A separate SEO title
+    // and description for this page are the founder's to write before the indexing flip; inventing
+    // them here would be two unreviewed strings claiming to be approved copy, and the page is
+    // `noindex,follow` until that flip anyway (ADR-0007).
+    title: t("h1"),
+    description: t("intro"),
+    // `listingView()`'s own verdict, so the page and its head cannot disagree about whether it is
+    // indexable and no robots literal is written outside `modules/seo` (AC-14).
+    directive: view.directive,
+    canonical: canonicalFor(locale, view.path, { baseUrl: deployment.siteUrl }),
+    ...(cluster === undefined ? {} : { alternates: cluster }),
+  });
+}
+
+export async function generateStaticParams(): Promise<
+  { locale: string; segment: string }[]
+> {
+  return [...(await localeSegmentParams())];
 }
 
 interface SegmentParams {
@@ -61,6 +128,9 @@ export async function generateMetadata({
 }: SegmentParams): Promise<Metadata> {
   const { locale, segment } = await params;
   const match = await resolveLocalePath(locale, [segment]);
+  if (match.kind === "occasionsIndex") {
+    return occasionsIndexMetadata(match.locale);
+  }
   if (match.kind !== "destinationsHub") notFound();
 
   const t = await getTranslations({
@@ -115,6 +185,19 @@ async function registryLabels(locale: string): Promise<BreadcrumbLabel> {
 export default async function LocaleSegmentRoute({ params }: SegmentParams) {
   const { locale, segment } = await params;
   const match = await resolveLocalePath(locale, [segment]);
+
+  if (match.kind === "occasionsIndex") {
+    const view = await listingView(
+      { locale: match.locale, pageType: "occasionsIndex" },
+      { from: windowStart(), deployment: deploymentDescriptor(process.env) },
+    );
+    if (view === undefined) notFound();
+    setRequestLocale(match.locale);
+    // `BreadcrumbList` is TASK-115's, from this same `view.breadcrumb`; the slot is the empty
+    // `JsonLd` below on the hub branch and is deliberately not duplicated here.
+    return <OccasionsIndexPage view={view} />;
+  }
+
   if (match.kind !== "destinationsHub") notFound();
   setRequestLocale(match.locale);
 
