@@ -7,10 +7,20 @@
  * is not a job, and this file is the reason the comment block at the top of `ci.yml` cannot drift
  * from the jobs below it.
  */
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { execFileSync, spawnSync } from "node:child_process";
+import {
+  chmodSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
 
-import { describe, expect, it, vi } from "vitest";
+import { afterAll, describe, expect, it, vi } from "vitest";
 import { parse } from "yaml";
 
 import { GITLEAKS_VERSION } from "../../scripts/audit-secrets.ts";
@@ -21,14 +31,19 @@ const read = (relative: string): string =>
 
 interface Step {
   name?: string;
+  id?: string;
   uses?: string;
   run?: string;
   if?: string;
+  "continue-on-error"?: boolean;
+  env?: Record<string, string>;
   with?: Record<string, string>;
 }
 
 interface Job {
   name?: string;
+  env?: Record<string, string>;
+  outputs?: Record<string, string>;
   needs?: string | string[];
   if?: string;
   "runs-on"?: string;
@@ -44,6 +59,11 @@ interface Workflow {
   defaults?: { run?: { shell?: string } };
   jobs: Record<string, Job>;
 }
+
+/** The origin the browser suites run against, served by CI itself (TASK-137). */
+const PREVIEW_ORIGIN_SCRIPT = ".github/actions/preview-origin/serve.sh";
+/** The build the `preview` job publishes and the three browser jobs re-serve (TASK-137). */
+const PREVIEW_ARTIFACT = "preview-build";
 
 const ci = parse(read(".github/workflows/ci.yml")) as Workflow;
 const jobs = Object.entries(ci.jobs);
@@ -463,5 +483,328 @@ describe("the unit project's test budget (TASK-134)", () => {
 
   it("leaves the tight Vitest default in place locally, where slow means hung", async () => {
     await expect(unitTimeoutFor(undefined)).resolves.toBeUndefined();
+  });
+});
+
+/**
+ * TASK-137: the origin the Playwright suites run against is CI's own.
+ *
+ * Measured on PRs 84, 85 and 87: `preview` polled the GitHub Deployments API for a Vercel
+ * preview, and the deployment either never appeared or answered `/api/health` with 500 — the
+ * cold fallback of ADR-0018 carries an empty environment store. `e2e`, `visual` and `a11y` are
+ * each `needs: preview`, so **no Playwright suite had ever run in CI on this project**.
+ *
+ * The job now builds the app on the runner from the committed `.env.example` placeholders,
+ * publishes that build as an artifact, serves it and gates on `/api/health` 200 before handing
+ * the origin to the three browser jobs, which serve the same bytes through
+ * `.github/actions/preview-origin`. No secret is a build input (spec 001 §14 A17, spec 040 §14
+ * A1): the values are the ones `.env.example` publishes.
+ */
+describe("the preview job serves an origin CI owns (TASK-137)", () => {
+  const preview = ci.jobs["preview"];
+  const steps = preview?.steps ?? [];
+  const script = steps.map((step) => step.run ?? "").join("\n");
+  const BROWSER_JOBS = ["e2e", "visual", "a11y"] as const;
+
+  it("builds the app on the runner rather than waiting for a third party to deploy it", () => {
+    expect(script).toContain("pnpm build");
+    // The 15-minute Deployments-API poll that produced no origin is gone from the critical path:
+    // no step of this job may block the browser suites on a deployment we do not control.
+    const blocking = steps.filter(
+      (step) =>
+        (step.run ?? "").includes("gh api") &&
+        step["continue-on-error"] !== true,
+    );
+    expect(blocking).toEqual([]);
+  });
+
+  it("gives the build only the committed placeholders — no secret is a build input", () => {
+    expect(script).toContain("cp .env.example .env.local");
+    const envValues = steps
+      .flatMap((step) => Object.values(step.env ?? {}))
+      .join("\n");
+    // `VERCEL_AUTOMATION_BYPASS_SECRET` may still reach the evidence step below; nothing else may.
+    const otherSecrets = envValues
+      .split("\n")
+      .filter(
+        (value) =>
+          value.includes("secrets.") &&
+          !value.includes("secrets.VERCEL_AUTOMATION_BYPASS_SECRET"),
+      );
+    expect(otherSecrets).toEqual([]);
+    expect(script).not.toMatch(/--build-arg/u);
+  });
+
+  it("gates on /api/health 200 before it can declare an origin healthy", () => {
+    const serve = steps.find((step) => step.id === "serve");
+    expect(serve).toBeDefined();
+    const serveScript = (serve?.run ?? "") + (serve?.uses ?? "");
+    expect(serveScript).toContain(PREVIEW_ORIGIN_SCRIPT);
+    const gate = read(PREVIEW_ORIGIN_SCRIPT);
+    expect(gate).toContain("/api/health");
+    expect(gate).toContain('"status":"ok"');
+    expect(gate).toMatch(/::error::[^\n]*\/api\/health/);
+  });
+
+  it("publishes the served origin as `preview_url`", () => {
+    expect(preview?.outputs?.["preview_url"]).toBe(
+      "${{ steps.serve.outputs.preview_url }}",
+    );
+    expect(read(PREVIEW_ORIGIN_SCRIPT)).toContain(
+      'preview_url=$origin" >> "$GITHUB_OUTPUT',
+    );
+  });
+
+  it("publishes the build so the browser jobs measure the same bytes, not three of their own", () => {
+    const upload = steps.find((step) =>
+      (step.uses ?? "").startsWith("actions/upload-artifact"),
+    );
+    expect(upload?.with?.["name"]).toBe(PREVIEW_ARTIFACT);
+    const action = read(".github/actions/preview-origin/action.yml");
+    expect(action).toContain("actions/download-artifact");
+    expect(action).toContain(PREVIEW_ARTIFACT);
+    expect(action).toContain(PREVIEW_ORIGIN_SCRIPT);
+  });
+
+  it.each(BROWSER_JOBS)(
+    "%s starts that origin through the shared action and targets the job's output",
+    (name) => {
+      const job = ci.jobs[name];
+      expect(job?.needs).toBe("preview");
+      expect(job?.env?.["PLAYWRIGHT_BASE_URL"]).toBe(
+        "${{ needs.preview.outputs.preview_url }}",
+      );
+      expect((job?.steps ?? []).map((step) => step.uses)).toContain(
+        "./.github/actions/preview-origin",
+      );
+    },
+  );
+
+  it("keeps the Vercel probe as evidence and never as a blocker (ADR-0018)", () => {
+    // The `Vercel` check stays on the pull request and keeps meaning what it says; what changed
+    // is that a host we are leaving can no longer deny four suites an origin. The probe still
+    // asserts Deployment Protection, `fra1` and `noindex` when a deployment exists, and its
+    // verdict is written to the step summary either way.
+    const probe = steps.find((step) => (step.run ?? "").includes("gh api"));
+    expect(probe?.["continue-on-error"]).toBe(true);
+    expect(script).toContain("GITHUB_STEP_SUMMARY");
+  });
+});
+
+/**
+ * TASK-137 (carried in from `/review 84` round 2): `commitlint` must be runnable on the event CI
+ * is actually re-fired with.
+ *
+ * The job's `if` admits `workflow_dispatch` — the only way to re-run CI on a pull request that is
+ * already ready and already labelled — but its command interpolated
+ * `github.event.pull_request.base.sha` and `.head.sha`, which that event does not carry. Both
+ * resolved to the empty string, so every dispatch run ended in exit 9 ("--from and --to point to
+ * the same commit") and the summary step ran `git rev-list --count ..`: a guaranteed red job on a
+ * range it was never given.
+ *
+ * The three cases below execute the job's own scripts rather than reading them, because the defect
+ * was in what the shell did with an empty variable, not in what the YAML said. Each script is run
+ * the way the runner runs it (`bash --noprofile --norc -eo pipefail`, values through `env:`), so a
+ * regression here is a failing test and not a red check discovered on the next dispatch.
+ */
+describe("the commitlint job resolves its own commit range (TASK-137)", () => {
+  const commitlint = ci.jobs["commitlint"];
+  const steps = commitlint?.steps ?? [];
+  const stepById = (id: string): Step => {
+    const step = steps.find((candidate) => candidate.id === id);
+    if (!step?.run)
+      throw new Error(`commitlint has no \`${id}\` step with a script`);
+    return step;
+  };
+
+  const tmpRoots: string[] = [];
+  const git = (cwd: string, ...args: string[]): string =>
+    execFileSync(
+      "git",
+      [
+        "-c",
+        "user.name=ci-test",
+        "-c",
+        "user.email=ci-test@example.invalid",
+        "-c",
+        "commit.gpgsign=false",
+        ...args,
+      ],
+      { cwd, encoding: "utf8" },
+    ).trim();
+
+  /** A repository shaped like a pull request: `main`, then a branch of two commits off it. */
+  const fixtureRepo = (): {
+    clone: string;
+    mergeBase: string;
+    head: string;
+    mainTip: string;
+  } => {
+    const root = mkdtempSync(join(tmpdir(), "fo-commitlint-range-"));
+    tmpRoots.push(root);
+    const origin = join(root, "origin");
+    mkdirSync(origin);
+    git(origin, "init", "--quiet", "--initial-branch=main");
+    for (const subject of ["feat: one", "fix: two"]) {
+      writeFileSync(join(origin, "file.txt"), `${subject}\n`);
+      git(origin, "add", "-A");
+      git(origin, "commit", "--quiet", "-m", subject);
+    }
+    const mainTip = git(origin, "rev-parse", "HEAD");
+    const clone = join(root, "clone");
+    git(root, "clone", "--quiet", origin, "clone");
+    git(clone, "checkout", "--quiet", "-b", "topic");
+    for (const subject of ["feat: three", "chore: four"]) {
+      writeFileSync(join(clone, "file.txt"), `${subject}\n`);
+      git(clone, "add", "-A");
+      git(clone, "commit", "--quiet", "-m", subject);
+    }
+    return {
+      clone,
+      mergeBase: mainTip,
+      head: git(clone, "rev-parse", "HEAD"),
+      mainTip,
+    };
+  };
+
+  /** Runs a step's script exactly as the runner does, and returns what it wrote. */
+  const runStep = (
+    step: Step,
+    options: { cwd: string; env?: Record<string, string> },
+  ): {
+    status: number | null;
+    stdout: string;
+    outputs: string;
+    summary: string;
+  } => {
+    const outputFile = join(options.cwd, "step-output.txt");
+    const summaryFile = join(options.cwd, "step-summary.md");
+    writeFileSync(outputFile, "");
+    writeFileSync(summaryFile, "");
+    const scriptFile = join(options.cwd, "step.sh");
+    writeFileSync(scriptFile, step.run ?? "");
+    const result = spawnSync(
+      "bash",
+      ["--noprofile", "--norc", "-eo", "pipefail", scriptFile],
+      {
+        cwd: options.cwd,
+        encoding: "utf8",
+        env: {
+          ...process.env,
+          GITHUB_OUTPUT: outputFile,
+          GITHUB_STEP_SUMMARY: summaryFile,
+          ...options.env,
+        },
+      },
+    );
+    return {
+      status: result.status,
+      stdout: `${result.stdout}${result.stderr}`,
+      outputs: readFileSync(outputFile, "utf8"),
+      summary: readFileSync(summaryFile, "utf8"),
+    };
+  };
+
+  /** A `pnpm` on PATH that records its arguments instead of linting. */
+  const stubPnpm = (
+    cwd: string,
+  ): { env: Record<string, string>; calls: () => string } => {
+    const bin = join(cwd, "stub-bin");
+    mkdirSync(bin, { recursive: true });
+    const log = join(cwd, "pnpm-calls.txt");
+    writeFileSync(
+      join(bin, "pnpm"),
+      `#!/bin/sh\nprintf '%s\\n' "$*" >> ${JSON.stringify(log)}\n`,
+    );
+    chmodSync(join(bin, "pnpm"), 0o755);
+    return {
+      env: { PATH: `${bin}:${process.env["PATH"] ?? ""}` },
+      calls: () => (existsSync(log) ? readFileSync(log, "utf8") : ""),
+    };
+  };
+
+  afterAll(() => {
+    for (const root of tmpRoots) rmSync(root, { recursive: true, force: true });
+  });
+
+  it("hands no step a value the event may not carry: the range comes from one resolver", () => {
+    // The defect in one assertion. A pull-request SHA interpolated into a command is empty on the
+    // `workflow_dispatch` this job's own `if` admits, and an empty `--from`/`--to` is exit 9.
+    expect(commitlint?.if).toContain("workflow_dispatch");
+    for (const step of steps) {
+      expect(step.run ?? "").not.toContain("github.event");
+      expect(step.run ?? "").not.toContain("${{");
+    }
+    const eventSHAs = steps
+      .filter((step) => step.id !== "range")
+      .flatMap((step) => Object.values(step.env ?? {}))
+      .filter((value) => value.includes("github.event.pull_request"));
+    expect(eventSHAs).toEqual([]);
+    for (const id of ["commitlint"]) {
+      expect(stepById(id).env?.["BASE_SHA"]).toBe(
+        "${{ steps.range.outputs.base }}",
+      );
+      expect(stepById(id).env?.["HEAD_SHA"]).toBe(
+        "${{ steps.range.outputs.head }}",
+      );
+    }
+  });
+
+  it("resolves the range from the merge base when the event carries no pull request", () => {
+    const repo = fixtureRepo();
+    const run = runStep(stepById("range"), {
+      cwd: repo.clone,
+      env: { EVENT_BASE_SHA: "", EVENT_HEAD_SHA: "", DEFAULT_BRANCH: "main" },
+    });
+    expect(run.status).toBe(0);
+    expect(run.outputs).toContain(`base=${repo.mergeBase}`);
+    expect(run.outputs).toContain(`head=${repo.head}`);
+    expect(run.outputs).toContain("source=the merge base with main");
+  });
+
+  it("keeps the pull-request event's own range when it has one", () => {
+    const repo = fixtureRepo();
+    const run = runStep(stepById("range"), {
+      cwd: repo.clone,
+      env: {
+        EVENT_BASE_SHA: repo.mergeBase,
+        EVENT_HEAD_SHA: repo.head,
+        DEFAULT_BRANCH: "main",
+      },
+    });
+    expect(run.status).toBe(0);
+    expect(run.outputs).toContain(`base=${repo.mergeBase}`);
+    expect(run.outputs).toContain("source=the pull_request event");
+  });
+
+  it("lints the resolved range, and lints nothing rather than failing on an empty one", () => {
+    const repo = fixtureRepo();
+    const stub = stubPnpm(repo.clone);
+    const empty = runStep(stepById("commitlint"), {
+      cwd: repo.clone,
+      env: { ...stub.env, BASE_SHA: repo.head, HEAD_SHA: repo.head },
+    });
+    expect(empty.status).toBe(0);
+    expect(stub.calls()).toBe("");
+
+    const real = runStep(stepById("commitlint"), {
+      cwd: repo.clone,
+      env: { ...stub.env, BASE_SHA: repo.mergeBase, HEAD_SHA: repo.head },
+    });
+    expect(real.status).toBe(0);
+    expect(stub.calls()).toContain(
+      `exec commitlint --from ${repo.mergeBase} --to ${repo.head} --verbose`,
+    );
+  });
+
+  it("summarises an unresolved range as zero commits instead of running `git rev-list ..`", () => {
+    const repo = fixtureRepo();
+    const run = runStep(stepById("summary"), {
+      cwd: repo.clone,
+      env: { BASE_SHA: "", HEAD_SHA: "", RANGE_SOURCE: "", RESULT: "skipped" },
+    });
+    expect(run.status).toBe(0);
+    expect(run.stdout).not.toContain("fatal");
+    expect(run.summary).toContain("commits linted: 0");
   });
 });

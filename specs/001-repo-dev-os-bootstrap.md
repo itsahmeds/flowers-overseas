@@ -511,3 +511,37 @@ defaults) exits 0; `node .next/standalone/server.js` with no server variable ans
 500 naming the ten keys, and 200 once they are supplied; the `container` CI job repeats all three
 against a real `docker build` (no daemon was available locally).
 Raised by: orchestrator ruling on the Railway build log, 2026-09-18; implemented by TASK-135.
+
+**A18 — AC-29 / T-30 are superseded by spec 040 AC-26; the Vercel probe is evidence, not a gate (§9 "Hosting and docs"; §10 T-30; TASK-137, 2026-09-21).**
+Original: AC-29 — "Opening a PR produces a Vercel preview deployment whose URL requires Deployment
+Protection authentication for a browser without the bypass, and whose functions report region
+`fra1` (from `x-vercel-id` header prefix or `/api/health` `region` field if added); production
+deploys only from `main`" — asserted by T-30, a manual reviewer check, and enforced in CI by the
+`preview` job's probe.
+Trigger: measured on PRs 84, 85 and 87 and again on PR 90. Vercel is the **cold fallback** of
+ADR-0018: its environment store is empty, so the preview deployment answers `/api/health` **500
+even with the bypass secret** (`x-vercel-id: sfo1::fra1::…`, `X-Robots-Tag: noindex`, unauthenticated
+302 to `vercel.com/sso-api` — the protection and residency halves still hold; the application does
+not run). Because `e2e`, `visual`, `a11y` and `lighthouse` are each `needs: preview`, a blocking
+probe on that host had denied every Playwright suite an origin since the project began.
+Corrected:
+1. **The criterion moves hosts.** Spec 040 §5.5 / AC-26 is the sole home of the three properties —
+   authentication in front of a non-production environment, an assertion that the origin runs in
+   Amsterdam, and `X-Robots-Tag: noindex` — restated against the Railway PR environment
+   (basic-auth 401 rather than an SSO 302, `x-fo-region` rather than `x-vercel-id`). Spec 040 §14 A2
+   records the inheritance from this AC.
+2. **AC-29 and T-30 are superseded here, not merely unmet.** No gate in this repository asserts them
+   in their Vercel form after 2026-09-21, and nothing may claim they do. What remains of AC-29 in
+   `ci.yml` is a `continue-on-error` evidence step inside `preview` that records the same four facts
+   about whatever Vercel deployment exists and writes them to the step summary — telemetry about a
+   host we are leaving. `tests/unit/vercel-config.test.ts` pins it as non-blocking, and
+   `vercel.json`'s `fra1` pin stays as the code half of the old criterion for as long as the project
+   is linked (spec 040 §13 Q5 unlinks it at the exit signal).
+3. **Blocking returns with Railway, by spec.** The task that implements spec 040 AC-26 re-points the
+   probe at the PR environment and restores it to blocking in the same PR; until then the enforcement
+   this AC once described does not exist, and this amendment is the record of that.
+Why it is written down rather than left to a workflow comment: this project's recurring failure mode
+is a check believed to run that does not. An acceptance criterion an implementation has demoted to a
+`continue-on-error` step is that same failure one level up, in the spec.
+Raised by: `/review 90` (PR #90), 2026-09-21; accepted by the founder the same day; implemented by
+TASK-137.
