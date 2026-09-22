@@ -92,14 +92,15 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   Raised to the orchestrator in PR 95's body. (a) **`lint` / `format:check`**: `prettier --check`
   rejects `src/modules/catalog/listing.ts` on `origin/main` itself, from `2f8bcbf` (TASK-112, PR
   88) — and because `typecheck`, the unit suites, `build` and `container` all sit behind `lint`,
-  every pull request loses them. One stray blank line; repaired here in a separate,
-  clearly-labelled commit rather than left to skip twelve jobs. (b) **`e2e`**:
+  every pull request loses them. One stray blank line. (b) **`e2e`**:
   `tests/e2e/country-occasion.spec.ts:41` asserts `/en/occasions/mothers-day` **404s**, and its
   own comment says "the occasion hub … are TASK-112/113's URLs, not this depth's" — TASK-112 has
   since published that URL, so the assertion is stale and 2 cases fail on `main`. Deciding whether
   the hub should 200 or the list should shrink is spec 008's call and TASK-110/111/112's scope,
-  **not this task's**; left untouched and escalated. Nothing about it touches the baselines: the
-  `visual` job is green.
+  **not this task's**; left untouched and escalated. Nothing about either touches the baselines:
+  the `visual` job was green on both runs while they were red. **Both are fixed on `main` by
+  `7c49028` ("unbreak main"), pushed while this PR was in its fix round**; this branch is rebased
+  onto it and its own one-line formatting repair was dropped as already upstream.
 
 _No baseline was withheld._ Three things seen while reviewing the 93 images are **not** defects this task
 may fix and **not** reasons to withhold a baseline — each is identical on the `darwin` baseline
