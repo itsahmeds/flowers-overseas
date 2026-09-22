@@ -47,9 +47,11 @@ test.describe("existence and the 404 shapes (AC-1, T-01)", () => {
   }) => {
     for (const url of [
       // `/{locale}/{shopCategory}` with no category: no country-less categories index ships
-      // (§13 Q4), and `/{locale}/{occasions}` is the occasions index, TASK-113's
+      // (§13 Q4). Its sibling `/{locale}/{occasions}` is **not** here — the occasions index
+      // shipped with TASK-113 and answers 200, asserted in `tests/e2e/occasions-index.spec.ts`.
+      // The two namespaces are deliberately asymmetric at depth 1, and the 404 list says so about
+      // the one that is a 404 only.
       "/en/flowers",
-      "/en/occasions",
       // an unknown slug in either namespace
       "/en/flowers/atlantis",
       "/en/occasions/atlantis",

@@ -67,6 +67,18 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
   BFS bound and **only** that page type, with the exclusion itself asserted to have exactly one
   member so it cannot grow silently. Every other criterion — non-200, unpublished, malformed —
   covers the category hub like every other page.
+- **2026-09-22 — the shop root has no inbound link in `de` and `pl`. `open`.** §2's link plan
+  gives the country shop root exactly one publisher, the **corridor page** (`corridorShopEntry()`),
+  and neither draft locale has one: their guides are machine drafts, so `corridorPageExists()` is
+  false for every destination in `de` and `pl` and there is no document that could carry the link.
+  Seven URLs per locale, all `noindex,follow` and in no sitemap because the locale is not
+  indexable, so today's cost is reachability and not ranking — but it is a hole.
+  **Question, to the orchestrator:** does the German and Polish shop wait for TASK-119's reviewed
+  corridor copy, or does a draft locale get a different inbound edge?
+  **Handled meanwhile:** named in `tests/e2e/shop-reachability.spec.ts`'s `EXCLUDED`, which is
+  itself asserted to be exactly these two rules plus the category hub, each covering a non-empty
+  set of real URLs — and the two indexable locales are asserted to carry **no** exclusion but the
+  category hub, so the half of AC-21 that protects organic ranking is not waived anywhere.
 
 ## Result
 
