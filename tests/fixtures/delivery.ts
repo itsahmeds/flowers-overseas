@@ -150,7 +150,8 @@ export const DST_READINGS: readonly ZoneReadingFixture[] = [
     offsetHours: 1,
   },
   {
-    label: "Warsaw, the instant a frozen +1 would call 02:30 — 02:30 does not exist that day",
+    label:
+      "Warsaw, the instant a frozen +1 would call 02:30 — 02:30 does not exist that day",
     instant: "2026-03-29T01:30:00Z",
     timeZone: "Europe/Warsaw",
     localDate: "2026-03-29",
@@ -224,7 +225,8 @@ export const DST_READINGS: readonly ZoneReadingFixture[] = [
     offsetHours: 2,
   },
   {
-    label: "Warsaw 2027, exactly the authored 14:00 cutoff on the spring Sunday",
+    label:
+      "Warsaw 2027, exactly the authored 14:00 cutoff on the spring Sunday",
     instant: "2027-03-28T12:00:00Z",
     timeZone: "Europe/Warsaw",
     localDate: "2027-03-28",
@@ -261,7 +263,8 @@ export const DST_READINGS: readonly ZoneReadingFixture[] = [
     offsetHours: 1,
   },
   {
-    label: "Warsaw 2027, exactly the authored 14:00 cutoff on the autumn Sunday",
+    label:
+      "Warsaw 2027, exactly the authored 14:00 cutoff on the autumn Sunday",
     instant: "2027-10-31T13:00:00Z",
     timeZone: "Europe/Warsaw",
     localDate: "2027-10-31",
@@ -280,7 +283,8 @@ export const DST_READINGS: readonly ZoneReadingFixture[] = [
     offsetHours: 0,
   },
   {
-    label: "London, 02:30 on the spring Sunday — a frozen +0 would call it 01:30, which is the hour that vanished",
+    label:
+      "London, 02:30 on the spring Sunday — a frozen +0 would call it 01:30, which is the hour that vanished",
     instant: "2026-03-29T01:30:00Z",
     timeZone: "Europe/London",
     localDate: "2026-03-29",
@@ -363,7 +367,8 @@ export const DST_READINGS: readonly ZoneReadingFixture[] = [
     offsetHours: 1,
   },
   {
-    label: "London 2027, exactly the authored 14:00 cutoff on the spring Sunday",
+    label:
+      "London 2027, exactly the authored 14:00 cutoff on the spring Sunday",
     instant: "2027-03-28T13:00:00Z",
     timeZone: "Europe/London",
     localDate: "2027-03-28",
@@ -400,7 +405,8 @@ export const DST_READINGS: readonly ZoneReadingFixture[] = [
     offsetHours: 0,
   },
   {
-    label: "London 2027, exactly the authored 14:00 cutoff on the autumn Sunday",
+    label:
+      "London 2027, exactly the authored 14:00 cutoff on the autumn Sunday",
     instant: "2027-10-31T14:00:00Z",
     timeZone: "Europe/London",
     localDate: "2027-10-31",
@@ -625,14 +631,7 @@ export const DST_WINDOWS: readonly DstWindowFixture[] = [
 export interface ExpectedDay {
   readonly date: string;
   /** The weekday a human reads off a calendar, so a reviewer can check the Sunday. */
-  readonly weekday:
-    | "Mon"
-    | "Tue"
-    | "Wed"
-    | "Thu"
-    | "Fri"
-    | "Sat"
-    | "Sun";
+  readonly weekday: "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat" | "Sun";
   /** The one reason this day is closed on the destination's calendar, or `null`. */
   readonly reason: string | null;
 }
