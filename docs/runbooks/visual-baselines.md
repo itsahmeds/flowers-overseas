@@ -50,23 +50,41 @@ diffs). The commit is a human step, on purpose — see §2.
 
 ### 1.3 The threshold stays at 0.1 % (`maxDiffPixelRatio: 0.001`)
 
-Measured on 2026-09-22, PR 95, by decoding the PNGs and counting pixels that differ by more than
-1/255 in any channel (pages of unequal height are compared on the region they share):
+Measured on 2026-09-22, PR 95, at `5646005` — after PR 93 (TASK-114) merged, so **both platforms'
+93 baselines are pictures of the same commit**. Method: decode the PNGs and count pixels that
+differ in any RGB channel; where two pictures of the same page have different heights, compare the
+region they share.
 
 | comparison | pages | differing pixels |
 |---|---|---|
 | Linux run 35700517643 vs Linux run 35700989506, two commits apart | 92 | **0.000 %** on every one — all 92 files are byte-identical |
-| `darwin` vs `linux`, same page, same commit | 91 | **0.23 % – 47.7 %**, median ≈ 9 % |
+| Linux run 35700989506 vs Linux run 35711495539, **across PR 93's merge** | 93 | **91 byte-identical**; the only two that moved are `country-shop-{desktop,mobile}`, which is the one page TASK-114 changed |
+| `darwin` vs `linux`, same page, same commit | 93 | **0.24 % – 60.9 %**, median **9.2 %** |
 
 Run-to-run noise on one platform is *zero*, not merely small: `animations: "disabled"`,
 `caret: "hide"` and `settle()` (network idle, `document.fonts.ready`, two animation frames) make
-the render deterministic, and two independent runners produced byte-identical files for all 92
-baselines. The cross-platform delta is two to three orders of magnitude larger — and it is not
-only anti-aliasing: the host's font stack changes line-breaking, so 27 of the 91 pages have a
-different *geometry* on the two platforms (`country-shop-mobile` by 181 px), and the browser's own
-locale decides the `<input type="date">` placeholder (`mm/dd/yyyy` on the runner, `dd/mm/yyyy` on
-the founder's Mac). No single threshold can straddle that, which is why baselines are per
-platform.
+the render deterministic, and three independent runners produced byte-identical files for every
+baseline the commit between them did not touch. The third run is the sharper evidence, because it
+shows the gate is **sensitive** as well as deterministic: 91 of 93 files came back byte-for-byte
+identical across a merge, and the two that moved were exactly the two that merge could move.
+
+The cross-platform delta is two to three orders of magnitude larger — and it is not only
+anti-aliasing. The host's font stack changes line-breaking, so **28 of the 93 pages have a
+different *geometry* on the two platforms**: the largest gap is **60 px**, on the four mobile home
+artboards (`home-{en,en-gb,de,pl}-mobile`, 7 496–7 500 px on `darwin` against 7 556–7 560 on
+`linux`); eleven of the 28 differ by a single pixel; `country-shop-mobile` differs by **20 px**.
+The browser's own locale decides the `<input type="date">` placeholder on top of that
+(`mm/dd/yyyy` on the runner, `dd/mm/yyyy` on the founder's Mac). No single threshold can straddle
+that, which is why baselines are per platform.
+
+**Nothing was excluded from those numbers, and that is why the commit is quoted.** An earlier
+edition of this table measured 91 pages and gave `country-shop-mobile` as the worked example "by
+181 px". Its `darwin` file was a pre-TASK-111 picture that PR 88's squash had left behind, so
+about 161 px of that 181 was *missing content* and only ~20 px was the font stack — the example
+was measuring a stale baseline, not the platform (`/review 1` on PR 95, 2026-09-22). Re-measured
+with both sets rendered from `5646005`, the residue is the 20 px quoted above. **If you re-measure
+this table, name the commit both sets came from first**: a set with a stale member measures the
+staleness.
 
 So 0.1 % is not merely defensible, it is generous: it is ~920 pixels on a 1280×720 shot and ~5 000
 on a long full-page one, against measured noise of zero. **Do not widen it.** A visual failure on
@@ -94,17 +112,23 @@ CI is a real pixel change; read the diff in the artifact and find out which one.
    `--space-4` changed" is.
    If an image shows something that looks wrong, **stop**. That is a finding for the task that owns
    the page, not a baseline to accept.
-6. Copy them in and prove they are the runner's bytes:
+6. Copy them in, **copy the manifest in with them**, and prove they are the runner's bytes:
 
    ```sh
-   cp -R /tmp/baselines/visual/linux/.     tests/visual/__screenshots__/visual/linux/
-   cp -R /tmp/baselines/pseudo-rtl/linux/. tests/visual/__screenshots__/pseudo-rtl/linux/
-   pnpm visual:baselines --verify /tmp/baselines/visual-baselines-manifest.json
+   cp -R /tmp/baselines/tests/visual/__screenshots__/visual/linux/.     tests/visual/__screenshots__/visual/linux/
+   cp -R /tmp/baselines/tests/visual/__screenshots__/pseudo-rtl/linux/. tests/visual/__screenshots__/pseudo-rtl/linux/
+   cp /tmp/baselines/visual-baselines-manifest.json tests/visual/__screenshots__/visual-baselines-manifest.json
+   pnpm visual:baselines --verify tests/visual/__screenshots__/visual-baselines-manifest.json
    pnpm visual:baselines --check
    ```
 
-7. Commit the PNGs in their own commit, with the run id in the message, and say in the PR body how
-   many images you looked at.
+   `tests/visual/__screenshots__/visual-baselines-manifest.json` is **committed next to the PNGs
+   on purpose**: an artifact expires after 14 days, and with it the only proof that a baseline came
+   off a runner. The committed manifest keeps §4's first question answerable a year from now, and
+   it has to move whenever a PNG moves — a baseline edited by hand fails `--verify` against it.
+
+7. Commit the PNGs and the manifest in their own commit, with the run id in the message, and say
+   in the PR body how many images you looked at.
 
 ## 3. Refresh the local (`darwin`) set
 
@@ -122,9 +146,13 @@ a substitute for them — `--check` will say so.
 
 Four questions, in order. Any "no" is a change request.
 
-1. **Do the bytes come from a runner?** `pnpm visual:baselines --verify <manifest>` against the
-   manifest of the `visual-baselines` run named in the commit message must report every committed
-   `linux` PNG as matched. A PNG made anywhere else cannot be reproduced and must not be trusted.
+1. **Do the bytes come from a runner?**
+   `pnpm visual:baselines --verify tests/visual/__screenshots__/visual-baselines-manifest.json`
+   must report every committed `linux` PNG as matched. That manifest is committed, so this question
+   is answerable after the artifact has expired; check it against the run named in the commit
+   message, and re-run the same command against the freshly downloaded manifest if you want to
+   confirm the committed one was not edited too. A PNG made anywhere else cannot be reproduced and
+   must not be trusted.
 2. **Is the change list the expected one?** The workflow's step summary lists every file that
    moved. A one-line CSS change that moves 40 baselines is a question, not a formality.
 3. **Does the PR say why each baseline moved**, in terms of the change — not "updated snapshots"?
