@@ -1,0 +1,24 @@
+{
+  "family": "calendar",
+  "rule": "undatable-rule",
+  "replaces": "occasion-country.json",
+  "expect": "valentines/PL `rule_type: fixed` yields no date in 2026",
+  "why": "spec 009 AC-2's third rule: an occasion row whose `rule_type` the evaluator cannot date. A `fixed` 30 February parses — `OccasionRuleSchema` bounds `day` at 31, not by month — and `occasionDate()` returns `null` for it every year, so the occasion would silently drop off every calendar. Only `none` may be undated (a name day, AC-11).",
+  "asOf": "2026-09-23T10:00:00Z",
+  "ops": [
+    {
+      "op": "setRow",
+      "match": {
+        "occasionKey": "valentines",
+        "countryIso2": "PL"
+      },
+      "set": {
+        "rule": {
+          "kind": "fixed",
+          "month": 2,
+          "day": 30
+        }
+      }
+    }
+  ]
+}

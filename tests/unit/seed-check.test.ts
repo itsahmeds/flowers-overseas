@@ -42,6 +42,9 @@ import { parse } from "yaml";
 import {
   COMPETITOR_MARKS,
   PII_PATTERNS,
+  ROUTED_SLUG_TRANSLATION_STATUS,
+  calendarHorizons,
+  pickerStateReport,
   PRODUCT_COUNT,
   PRODUCT_TYPE_SPLIT,
   SEED_CHECK_FAMILIES,
@@ -74,16 +77,34 @@ import { SEED_DATA_DIR } from "../../seed/schema/files.ts";
 import { COUNTRIES } from "../../src/config/countries.ts";
 import { launchLocales } from "../../src/config/locales.ts";
 import { isLocaleIndexable } from "../../src/modules/i18n/review.ts";
+import { AUTHORED_TRANSLATION_STATUS } from "../../src/modules/catalog/copy.ts";
+import { withActivePartnersProvider } from "../../src/modules/geo/partners.ts";
 
 const repoRoot = resolve(__dirname, "../..");
 const CASES_DIR = "tests/fixtures/seed/_cases";
 /** Re-projecting and hashing the whole dataset: see the header. */
 const TREE_TIMEOUT = 30_000;
 
+/**
+ * The instant the in-process tree is judged at. Family 10's holiday-coverage rule reads today
+ * (spec 009 AC-2), and a unit suite whose verdict changed at midnight would be testing the
+ * calendar rather than the rule — so the suite pins the day it was written, the boundary cases
+ * below pin the exact minute the committed rows run out, and the real clock is the CI job's.
+ */
+const AS_OF = new Date("2026-09-23T10:00:00Z");
+
+/** The new rules of spec 009 AC-2 and the fixture each must have (T-02). */
+const SPEC_009_RULES = [
+  "calendar/holiday-coverage",
+  "calendar/holiday-name-key",
+  "calendar/undatable-rule",
+  "slugs/product-slug-required",
+] as const;
+
 let tree: SeedTree;
 
 beforeAll(async () => {
-  tree = await readSeedTree(repoRoot);
+  tree = await readSeedTree(repoRoot, new Map(), AS_OF);
 }, TREE_TIMEOUT);
 
 /* -------------------------------------------------------------------------- */
@@ -173,9 +194,25 @@ describe("spec 006 AC-10: the merged tree passes every rule family", () => {
     }
   });
 
-  it("covers all nine families with at least one fixture (AC-10's 'a fixture per family')", () => {
+  it("covers all ten families with at least one fixture (AC-10's 'a fixture per family')", () => {
     const covered = new Set(cases.map((testCase) => testCase.value.family));
     expect([...covered].sort()).toEqual([...SEED_CHECK_FAMILIES].sort());
+    expect(SEED_CHECK_FAMILIES).toHaveLength(10);
+  });
+
+  it("declares its cases from a table of 25 fixtures, and spec 009 AC-2's four rules have one each (T-02)", () => {
+    // The `describe.each` below declares its cases from this directory; an emptied or thinned
+    // directory would otherwise just declare fewer cases and stay green.
+    expect(cases).toHaveLength(25);
+    for (const rule of SPEC_009_RULES) {
+      expect(
+        cases.filter(
+          (testCase) =>
+            `${testCase.value.family}/${testCase.value.rule}` === rule,
+        ),
+        rule,
+      ).toHaveLength(1);
+    }
   });
 });
 
@@ -523,6 +560,102 @@ describe("§11: a locale or a country cannot look ready in CI while it is gated 
 });
 
 /* -------------------------------------------------------------------------- */
+/* Spec 009 AC-2 / T-02: the delivery-calendar rules and the picker summary.  */
+/* -------------------------------------------------------------------------- */
+
+describe("spec 009 AC-2: the calendar family and the product-slug rule", () => {
+  it("routes a product slug by the same translation status the catalogue does", () => {
+    expect(ROUTED_SLUG_TRANSLATION_STATUS).toBe(AUTHORED_TRANSLATION_STATUS);
+  });
+
+  it("gives Poland — and nobody else — a horizon, of the picker's full 366 days in Warsaw", () => {
+    expect(calendarHorizons(tree)).toEqual([
+      {
+        iso2: "PL",
+        timeZone: "Europe/Warsaw",
+        from: "2026-09-23",
+        through: "2027-09-24",
+        years: [2026, 2027],
+      },
+    ]);
+  });
+
+  it(
+    "measures the horizon from today in the destination, not in UTC",
+    () => {
+      // 23:30 UTC on 30 Dec is already 31 Dec in Warsaw, so the horizon reaches 2028.
+      const late = { ...tree, asOf: new Date("2026-12-30T23:30:00Z") };
+      expect(calendarHorizons(late)[0]?.from).toBe("2026-12-31");
+      expect(calendarHorizons(late)[0]?.years).toEqual([2026, 2027, 2028]);
+      const problems = checkSeedDataset(late).filter(
+        (problem) => problem.family === "calendar",
+      );
+      expect(
+        problems.map((problem) => `${problem.rule} ${problem.key}`),
+      ).toEqual(["holiday-coverage PL/2028"]);
+    },
+    TREE_TIMEOUT,
+  );
+
+  it(
+    "names a year in the middle of the horizon too, not only the last one",
+    () => {
+      const withoutFirstYear: SeedCheckCase = {
+        family: "calendar",
+        rule: "holiday-coverage",
+        replaces: "holidays.json",
+        expect: "PL/2026",
+        alsoFamilies: [],
+        why: "spec 009 AC-2, driven from a literal: the horizon's first year is uncovered.",
+        ops: [{ op: "clearRows" }],
+      };
+      const problems = checkSeedDataset(
+        applySeedCheckCase(tree, withoutFirstYear, () => ({})),
+      ).filter((problem) => problem.rule === "holiday-coverage");
+      expect(problems.map((problem) => problem.key)).toEqual([
+        "PL/2026",
+        "PL/2027",
+      ]);
+      // The first uncovered date of the current year is today, not 1 January.
+      expect(problems[0]?.message).toContain(
+        "the first uncovered date is 2026-09-23",
+      );
+    },
+    TREE_TIMEOUT,
+  );
+
+  it("prints the picker state of every destination as the step summary's second line (spec 009 §11)", async () => {
+    const report = pickerStateReport(tree).join("\n");
+    expect(report).toContain(
+      "| PL | yes | Europe/Warsaw · 14:00 · days 1,2,3,4,5,6 · Sunday none | no | **preview** | 2026, 2027 | 2026-09-23 → 2027-09-24 | yes |",
+    );
+    for (const iso2 of ["DE", "FR", "ES", "IT", "RO", "NL"]) {
+      expect(report).toContain(
+        `| ${iso2} | yes | none | no | **unavailable** | — | — | — |`,
+      );
+    }
+    expect(report).toContain(
+      "Destinations promising a delivery date today: **none**.",
+    );
+    expect(seedHealthReport(tree)).toContain(
+      "#### delivery picker state per destination (spec 009 §11)",
+    );
+    await withActivePartnersProvider(
+      { hasActivePartners: (iso2) => iso2 === "PL" },
+      () => {
+        const live = pickerStateReport(tree).join("\n");
+        expect(live).toContain(
+          "| PL | yes | Europe/Warsaw · 14:00 · days 1,2,3,4,5,6 · Sunday none | yes | **live** |",
+        );
+        expect(live).toContain(
+          "Destinations promising a delivery date today: PL.",
+        );
+      },
+    );
+  });
+});
+
+/* -------------------------------------------------------------------------- */
 /* The CLI (AC-10's exit codes).                                              */
 /* -------------------------------------------------------------------------- */
 
@@ -530,14 +663,68 @@ describe("the `pnpm seed:check` CLI", () => {
   it(
     "exits 0 on the committed tree and prints what it read",
     () => {
-      const stdout = execFileSync("node", ["seed/check.ts"], {
-        cwd: repoRoot,
-        encoding: "utf8",
-      });
-      expect(stdout).toContain("all nine rule families clean");
+      const stdout = execFileSync(
+        "node",
+        ["seed/check.ts", `--as-of=${AS_OF.toISOString()}`],
+        { cwd: repoRoot, encoding: "utf8" },
+      );
+      expect(stdout).toContain("all ten rule families clean");
     },
     TREE_TIMEOUT,
   );
+
+  it(
+    "goes red the Warsaw day Poland's committed holidays stop covering the horizon, and not a minute before (spec 009 AC-2)",
+    () => {
+      // 30 Dec 2026 23:59 in Warsaw: the horizon ends 31 Dec 2027, inside the committed rows.
+      const before = execFileSync(
+        "node",
+        ["seed/check.ts", "--as-of=2026-12-30T22:59:00Z"],
+        { cwd: repoRoot, encoding: "utf8" },
+      );
+      expect(before).toContain("all ten rule families clean");
+
+      // 31 Dec 2026 00:00 in Warsaw: the horizon reaches 1 Jan 2028, and there is no 2028 row.
+      let status = 0;
+      let output = "";
+      try {
+        execFileSync(
+          "node",
+          ["seed/check.ts", "--as-of=2026-12-30T23:00:00Z"],
+          {
+            cwd: repoRoot,
+            encoding: "utf8",
+            stdio: ["ignore", "pipe", "pipe"],
+          },
+        );
+      } catch (error) {
+        const failure = error as { status?: number; stderr?: string };
+        status = failure.status ?? 0;
+        output = failure.stderr ?? "";
+      }
+      expect(status).toBe(1);
+      expect(output).toContain(
+        "seed/data/holidays.json: [calendar/holiday-coverage] `PL/2028`",
+      );
+      expect(output).toContain("the first uncovered date is 2028-01-01");
+      expect(output).toContain("1 problem(s) in 1 rule family/families");
+    },
+    TREE_TIMEOUT,
+  );
+
+  it("refuses an `--as-of=` that is not an instant", () => {
+    let status = 0;
+    try {
+      execFileSync("node", ["seed/check.ts", "--as-of=next-tuesday"], {
+        cwd: repoRoot,
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "pipe"],
+      });
+    } catch (error) {
+      status = (error as { status?: number }).status ?? 0;
+    }
+    expect(status).toBe(2);
+  });
 
   it(
     "exits non-zero with one line per problem on a faulty tree",
@@ -652,7 +839,7 @@ describe("spec 006 AC-30 / T-30: the `seed-check` CI job", () => {
       "pnpm seed:check",
     );
     const seedReadme = readFileSync(join(repoRoot, "seed/README.md"), "utf8");
-    expect(seedReadme).toContain("nine rule families");
+    expect(seedReadme).toContain("ten rule families");
     expect(seedReadme).toContain("`--report`");
   });
 });

@@ -1171,7 +1171,11 @@ jobs:
   # families over `seed/data/**` — schema and `version` headers, counts and the 40/14/8/10/12
   # split, referential integrity, slugs, prices, copy, media, "no PII and no third-party marks",
   # and the committed-imagery byte budgets — each reported as one line naming the file, the entity
-  # key and the rule.
+  # key and the rule. Spec 009 AC-2 (TASK-124) added a tenth, `calendar`: a destination whose
+  # picker renders dates carries holiday rows for every year of its 366-day horizon **from today**
+  # (so this job can turn red on the day the holiday data runs out, which is the point), every
+  # holiday has a `nameKey`, every dated occasion rule is datable; plus `slugs/product-slug-required`.
+  # `--report` also prints spec 009 §11's picker state per destination as its first table.
   #
   # `needs: typecheck` beside `i18n-check` and `catalogue-check` (spec 001 §14 A9's placement
   # rule): it reads committed JSON, touches no browser, no database and no preview deployment, and
@@ -1192,7 +1196,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
-      - name: seed:check — the nine rule families and the health report (AC-10, AC-30)
+      - name: seed:check — the ten rule families, the health report and the picker-state summary (AC-10, AC-30; spec 009 AC-2)
         id: seed
         run: pnpm seed:check --report 2>&1 | tee seed-check.log
       - name: Summarise the verdict

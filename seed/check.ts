@@ -5,11 +5,13 @@
  * ```
  * pnpm seed:check            # exit 0 on the merged tree, one line per problem otherwise
  * pnpm seed:check --report   # also append the §11 catalogue-health report to the step summary
+ * pnpm seed:check --as-of=2026-12-31T12:00:00Z   # judge the calendar rules at another instant
  * ```
  *
  * ## What it is
  *
- * Nine rule families, in the order spec 006 §2.3 lists them, over the committed dataset:
+ * Ten rule families over the committed dataset — the nine of spec 006 §2.3, in the order it lists
+ * them, and the delivery-calendar family spec 009 AC-2 added (TASK-124):
  *
  *  1. **schema** — every file parses under its own schema, carries the `version`/`source` header,
  *     claims the right `origin`, and every projected file is byte-identical to a fresh projection
@@ -33,7 +35,13 @@
  *     allowlist in a person field, no competitor mark, reported with the file **and the JSON
  *     path** (AC-9);
  *  9. **budgets** — committed derived bytes under the 6 MB cap and every variant inside its
- *     slot's cap (`seed/budgets.ts`).
+ *     slot's cap (`seed/budgets.ts`);
+ * 10. **calendar** (spec 009 AC-2, §5.1 amendment 2) — a published destination whose picker
+ *     renders a calendar carries holiday rows for every calendar year its full 366-day horizon
+ *     reaches; every holiday row has a `nameKey`; every dated occasion rule is one the evaluator
+ *     can date in every year of that horizon. AC-2's fourth rule — a product with no authored
+ *     slug where spec 009 §13 Q1 requires one — is family 4's `product-slug-required`, because
+ *     every slug rule lives in one family (AC-7).
  *
  * One line per problem, naming the file, the entity key and the rule. Exit 0 on the merged tree.
  *
@@ -52,10 +60,15 @@
  * 60 KB copy of it, and it is why the unit suite can prove all nine families without a temp
  * directory per case.
  *
- * **No clock, no network, no database, no environment** — `pnpm check:no-db` covers this file, the
- * only `process.env` read is `GITHUB_STEP_SUMMARY` inside `main()` (the precedent of
- * `scripts/catalogue-check.ts`), and nothing in the rule families can see the date. A gate whose
- * verdict changes at midnight is not a gate.
+ * **One clock, read once, and no network, database or environment** — `pnpm check:no-db` covers
+ * this file, and the only `process.env` read is `GITHUB_STEP_SUMMARY` inside `main()` (the
+ * precedent of `scripts/catalogue-check.ts`). Until TASK-124 no rule could see the date; family
+ * 10's holiday-coverage rule has to, because "in-window" is the picker's horizon **from today**
+ * (`/review 97`: with 2027 rows only, the grid offered 1 January 2028 as open). So the instant is
+ * a *value on the tree* — `SeedTree.asOf`, read by `readSeedTree()` beside the other I/O, pinned by
+ * `--as-of=` and by the unit suite — and the rules stay pure functions of the tree. The verdict can
+ * change at midnight exactly when the holiday data runs out under the horizon, and that is the
+ * one change it exists to make.
  *
  * ## The one thing this file is *for* (§11)
  *
@@ -81,6 +94,14 @@ import {
 } from "../scripts/catalogue-check.ts";
 import { floristSentenceFor } from "../scripts/i18n-draft.ts";
 import { COUNTRIES, COUNTRY_CODES } from "../src/config/countries.ts";
+import {
+  NEXT_AVAILABLE_HORIZON_DAYS,
+  pickerState,
+} from "../src/modules/geo/delivery/state.ts";
+import { hasActivePartners } from "../src/modules/geo/partners.ts";
+import { occasionDate } from "../src/modules/geo/occasions/evaluate.ts";
+import type { OccasionRule } from "./schema/catalogue.ts";
+import { zonedClock } from "../src/modules/i18n/format.ts";
 import type {
   AddonCountryPriceData,
   AddonData,
@@ -150,7 +171,10 @@ export const CLI_NAME = "seed:check";
 /* Problems.                                                                  */
 /* -------------------------------------------------------------------------- */
 
-/** The nine rule families of spec 006 §2.3, in reporting order. */
+/**
+ * The nine rule families of spec 006 §2.3 and spec 009 AC-2's delivery-calendar family, in
+ * reporting order.
+ */
 export const SEED_CHECK_FAMILIES = [
   "schema",
   "counts",
@@ -161,6 +185,7 @@ export const SEED_CHECK_FAMILIES = [
   "media",
   "privacy",
   "budgets",
+  "calendar",
 ] as const;
 
 export type SeedCheckFamily = (typeof SEED_CHECK_FAMILIES)[number];
@@ -245,6 +270,12 @@ export interface SeedTree {
   /** Raw `content/imagery/prompts/{key}.json`, keyed by file stem. */
   readonly prompts: ReadonlyMap<string, unknown>;
   readonly mediaFiles: readonly CommittedMediaFile[];
+  /**
+   * The instant family 10 judges the holiday horizon from (spec 009 AC-2). Read once by
+   * `readSeedTree()`, as the rest of the I/O is; a case or a test pins it, and `--as-of=` replays
+   * a CI run. Nothing else in the gate reads it.
+   */
+  readonly asOf: Date;
 }
 
 /** A fixture overlay: raw JSON replacing (or adding) one dataset file. */
@@ -303,6 +334,7 @@ export function seedDataFilePaths(tree: {
 export async function readSeedTree(
   root: string,
   overlay: SeedTreeOverlay = new Map(),
+  asOf: Date = new Date(),
 ): Promise<SeedTree> {
   const dataDir = join(root, SEED_DATA_DIR);
   const copyLocales = existsSync(join(dataDir, SEED_COPY_DIR))
@@ -362,6 +394,7 @@ export async function readSeedTree(
     floristSentences,
     prompts,
     mediaFiles,
+    asOf,
   };
 }
 
@@ -1107,8 +1140,88 @@ function rawSlugs(tree: SeedTree): readonly RawSlug[] {
   return out;
 }
 
-function checkSlugs(tree: SeedTree): SeedProblem[] {
+/**
+ * The `translationStatus` a copy row must carry for its slug to route — the catalogue's
+ * `AUTHORED_TRANSLATION_STATUS` (`src/modules/catalog/copy.ts`), which plain `node` cannot import
+ * (it resolves `@/` aliases). `tests/unit/seed-check.test.ts` pins the two equal.
+ */
+export const ROUTED_SLUG_TRANSLATION_STATUS = "human";
+
+/**
+ * A destination that has pages at all: spec 009 §2's existence rule, `status === 'live' ||
+ * guidePublished`, over the registry the application reads.
+ */
+function isPublishedDestination(country: {
+  readonly status: string;
+  readonly guidePublished: boolean;
+}): boolean {
+  return country.status === "live" || country.guidePublished;
+}
+
+/**
+ * Spec 009 AC-2's fourth rule, `product-slug-required`: **a product that has a page must have an
+ * authored slug** (§13 Q1).
+ *
+ * A PDP exists iff the destination is published, the product is `active`, it has a retail price
+ * row there, and it has a slug in the locale. §13 Q1 makes the last term one **shared** slug —
+ * authored once in the dataset's source locale (`en`) and used by all four launch locales, with a
+ * per-locale override honoured when a translation authors one. So a product that satisfies the
+ * first three terms anywhere and has no human-authored `en` slug has no page in *any* locale,
+ * silently: `slugFor()` answers `undefined`, which is a routine state there and a data fault here.
+ * A machine-drafted row does not count, because a machine slug never routes
+ * (`src/modules/catalog/slugs.ts`).
+ */
+function checkRequiredProductSlugs(
+  tree: SeedTree,
+  parsed: Parsed,
+): SeedProblem[] {
   const problems: SeedProblem[] = [];
+  const path = seedCopyPath(COPY_SOURCE_LOCALE, "product");
+  const rows = (tree.raw.get(path) as { rows?: unknown } | undefined)?.rows;
+  const routed = new Set<string>();
+  for (const row of Array.isArray(rows)
+    ? (rows as readonly Record<string, unknown>[])
+    : []) {
+    if (
+      typeof row["key"] === "string" &&
+      typeof row["slug"] === "string" &&
+      row["slug"] !== "" &&
+      row["translationStatus"] === ROUTED_SLUG_TRANSLATION_STATUS
+    ) {
+      routed.add(row["key"]);
+    }
+  }
+  const published = new Set<string>(
+    COUNTRIES.filter(isPublishedDestination).map((country) => country.iso2),
+  );
+  for (const product of parsed.products) {
+    if (product.status !== "active") continue;
+    const pricedIn = [
+      ...new Set(
+        parsed.prices
+          .filter(
+            (row) =>
+              row.sku === product.sku &&
+              row.surchargeKind === null &&
+              published.has(row.countryIso2),
+          )
+          .map((row) => row.countryIso2),
+      ),
+    ].sort();
+    if (pricedIn.length === 0 || routed.has(product.sku)) continue;
+    problems.push({
+      family: "slugs",
+      file: dataFile(path),
+      key: `product:${product.sku} (${COPY_SOURCE_LOCALE})`,
+      rule: "product-slug-required",
+      message: `is an active product priced in published ${pricedIn.join(", ")} with no human-authored \`${COPY_SOURCE_LOCALE}\` slug: spec 009 §13 Q1 shares that one slug across all four launch locales, so without it the product has no page in any locale`,
+    });
+  }
+  return problems;
+}
+
+function checkSlugs(tree: SeedTree, parsed: Parsed): SeedProblem[] {
+  const problems: SeedProblem[] = [...checkRequiredProductSlugs(tree, parsed)];
   const slugs = rawSlugs(tree);
   const at = (slug: RawSlug, rule: string, message: string): void => {
     problems.push({
@@ -1755,6 +1868,203 @@ function checkBudgets(tree: SeedTree, parsed: Parsed): SeedProblem[] {
 }
 
 /* -------------------------------------------------------------------------- */
+/* Family 10: the delivery calendar (spec 009 AC-2).                          */
+/* -------------------------------------------------------------------------- */
+
+const HOLIDAYS_FILE = "holidays.json";
+const OCCASION_COUNTRY_FILE = "occasion-country.json";
+const MS_PER_DAY = 86_400_000;
+
+/** `YYYY-MM-DD` plus whole days, on the calendar rather than on a clock (no zone involved). */
+function addCalendarDays(date: string, days: number): string {
+  return new Date(Date.parse(`${date}T00:00:00.000Z`) + days * MS_PER_DAY)
+    .toISOString()
+    .slice(0, 10);
+}
+
+/** The calendar day it is in `timeZone` at `instant` — the destination's today, not the host's. */
+function zonedIsoDate(instant: Date, timeZone: string): string {
+  const clock = zonedClock(instant, timeZone);
+  return `${String(clock.year).padStart(4, "0")}-${String(clock.month).padStart(2, "0")}-${String(clock.day).padStart(2, "0")}`;
+}
+
+/** One destination's picker horizon, as family 10 and the report read it. */
+export interface CalendarHorizon {
+  readonly iso2: string;
+  readonly timeZone: string;
+  /** Today in the destination, at `SeedTree.asOf`. */
+  readonly from: string;
+  /** The last day the picker can reach: `from` + `NEXT_AVAILABLE_HORIZON_DAYS`. */
+  readonly through: string;
+  /** Every calendar year in `[from, through]`, ascending. */
+  readonly years: readonly number[];
+}
+
+/**
+ * The destinations whose picker **renders a calendar** — published (spec 009 §2's existence rule)
+ * and not `unavailable` — with the horizon that calendar can reach from `asOf`.
+ *
+ * `pickerState()` is the application's own answer, so a destination cannot need holiday rows here
+ * while its picker shows no dates, or show dates while this rule ignores it. The horizon is
+ * `NEXT_AVAILABLE_HORIZON_DAYS` from today in the destination's zone — the full distance
+ * `nextAvailableDate` scans (its earliest start is tomorrow, plus 365 more steps) — and not "this
+ * year" or "the 14-day grid", because the finding this rule answers was a date 366 days out.
+ */
+export function calendarHorizons(tree: SeedTree): readonly CalendarHorizon[] {
+  const out: CalendarHorizon[] = [];
+  for (const country of COUNTRIES) {
+    if (!isPublishedDestination(country)) continue;
+    if (pickerState(country.iso2) === "unavailable") continue;
+    const operations = country.operations;
+    if (operations === undefined) continue;
+    const from = zonedIsoDate(tree.asOf, operations.ianaZone);
+    const through = addCalendarDays(from, NEXT_AVAILABLE_HORIZON_DAYS);
+    const years: number[] = [];
+    for (
+      let year = Number(from.slice(0, 4));
+      year <= Number(through.slice(0, 4));
+      year += 1
+    ) {
+      years.push(year);
+    }
+    out.push({
+      iso2: country.iso2,
+      timeZone: operations.ianaZone,
+      from,
+      through,
+      years,
+    });
+  }
+  return out;
+}
+
+/** The raw `holidays.json` rows, tolerant of a mistyped field (family 1 reports those). */
+function rawHolidayRows(tree: SeedTree): readonly Record<string, unknown>[] {
+  const rows = (tree.raw.get(HOLIDAYS_FILE) as { rows?: unknown } | undefined)
+    ?.rows;
+  if (!Array.isArray(rows)) return [];
+  return rows.filter(
+    (row): row is Record<string, unknown> =>
+      typeof row === "object" && row !== null,
+  );
+}
+
+/**
+ * Family 10. Three rules, each reading **raw** rows so that a fault the file schema also rejects
+ * (a missing `nameKey`, an unknown `rule_type`) is still named by the rule that owns it rather
+ * than by a zod path — the reason family 4 reads raw slugs.
+ *
+ *  - **`holiday-coverage`** — every calendar year a rendering destination's horizon reaches has
+ *    at least one holiday row for that destination. The line names the country and the **first
+ *    uncovered date**, which is the day the grid would wrongly offer as open.
+ *  - **`holiday-name-key`** — every holiday row carries a `nameKey`, because a closed date renders
+ *    its reason in words (AC-7) and a holiday with no name has nothing to say.
+ *  - **`undatable-rule`** — every occasion row whose `rule_type` is not `none` is dated by
+ *    `occasionDate()` in every year of the horizon. `none` is the honest blank (a Polish name day,
+ *    AC-11: it marks nothing); any other type that yields no date — a kind the evaluator has no
+ *    branch for, or a `fixed` 30 February the schema's `day ≤ 31` cannot see — would drop an
+ *    occasion marker silently.
+ */
+function checkCalendar(tree: SeedTree): SeedProblem[] {
+  const problems: SeedProblem[] = [];
+  const holidays = rawHolidayRows(tree);
+  const horizons = calendarHorizons(tree);
+
+  for (const row of holidays) {
+    const nameKey = row["nameKey"];
+    if (typeof nameKey === "string" && nameKey.trim() !== "") continue;
+    problems.push({
+      family: "calendar",
+      file: dataFile(HOLIDAYS_FILE),
+      key: `${String(row["iso2"])}/${String(row["date"])}`,
+      rule: "holiday-name-key",
+      message:
+        "is a holiday row with no `nameKey`: a closed date renders its reason in words beside the date (spec 009 AC-7), and `delivery.holiday.{iso2}.{name}` is those words",
+    });
+  }
+
+  for (const horizon of horizons) {
+    const covered = new Set<number>();
+    for (const row of holidays) {
+      if (row["iso2"] !== horizon.iso2) continue;
+      const date = row["date"];
+      if (typeof date !== "string" || !/^\d{4}-/u.test(date)) continue;
+      covered.add(Number(date.slice(0, 4)));
+    }
+    for (const year of horizon.years) {
+      if (covered.has(year)) continue;
+      const firstUncovered =
+        `${String(year)}-01-01` > horizon.from
+          ? `${String(year)}-01-01`
+          : horizon.from;
+      problems.push({
+        family: "calendar",
+        file: dataFile(HOLIDAYS_FILE),
+        key: `${horizon.iso2}/${String(year)}`,
+        rule: "holiday-coverage",
+        message: `has no holiday row for ${String(year)}, and \`${horizon.iso2}\` renders a delivery calendar whose ${String(NEXT_AVAILABLE_HORIZON_DAYS)}-day horizon runs from ${horizon.from} to ${horizon.through} (${horizon.timeZone}): the first uncovered date is ${firstUncovered}, and the picker would offer that year's holidays as open days (spec 009 AC-2)`,
+      });
+    }
+  }
+
+  const years = [...new Set(horizons.flatMap((horizon) => horizon.years))].sort(
+    (a, b) => a - b,
+  );
+  // With no rendering destination there is no horizon; the rule still has to date the rules,
+  // so it falls back to the years `asOf` and its horizon span in UTC.
+  if (years.length === 0) {
+    const from = tree.asOf.toISOString().slice(0, 10);
+    const through = addCalendarDays(from, NEXT_AVAILABLE_HORIZON_DAYS);
+    for (
+      let year = Number(from.slice(0, 4));
+      year <= Number(through.slice(0, 4));
+      year += 1
+    ) {
+      years.push(year);
+    }
+  }
+  const occasionRows = (
+    tree.raw.get(OCCASION_COUNTRY_FILE) as { rows?: unknown } | undefined
+  )?.rows;
+  for (const row of Array.isArray(occasionRows)
+    ? (occasionRows as readonly Record<string, unknown>[])
+    : []) {
+    if (typeof row !== "object" || row === null) continue;
+    const ruleType = row["ruleType"];
+    if (ruleType === "none") continue;
+    const rule = row["rule"];
+    const key = `${String(row["occasionKey"])}/${String(row["countryIso2"])}`;
+    // The row is dated by its `rule_type` column — the value the importer projects onto
+    // `occasion_country.rule_type` — with the parameters of its `rule`.
+    const asRule = {
+      ...(typeof rule === "object" && rule !== null ? rule : {}),
+      kind: ruleType,
+    } as unknown as OccasionRule;
+    for (const year of years) {
+      let failure: string | undefined;
+      try {
+        if (occasionDate(asRule, year) === null) {
+          failure = `yields no date in ${String(year)}`;
+        }
+      } catch (error) {
+        failure = `cannot be evaluated for ${String(year)} (${error instanceof Error ? error.message : String(error)})`;
+      }
+      if (failure === undefined) continue;
+      problems.push({
+        family: "calendar",
+        file: dataFile(OCCASION_COUNTRY_FILE),
+        key,
+        rule: "undatable-rule",
+        message: `\`rule_type: ${String(ruleType)}\` ${failure}: only \`none\` may be undated (a name day, spec 009 AC-11), and any other rule the evaluator cannot date drops its occasion marker from the calendar silently`,
+      });
+      break;
+    }
+  }
+
+  return problems;
+}
+
+/* -------------------------------------------------------------------------- */
 /* The gate.                                                                  */
 /* -------------------------------------------------------------------------- */
 
@@ -1765,12 +2075,13 @@ export function checkSeedDataset(tree: SeedTree): readonly SeedProblem[] {
     ...parsed.problems,
     ...checkCounts(parsed),
     ...checkReferences(tree, parsed),
-    ...checkSlugs(tree),
+    ...checkSlugs(tree, parsed),
     ...checkPrices(parsed),
     ...checkCopy(tree, parsed),
     ...checkMedia(tree, parsed),
     ...checkPrivacy(tree),
     ...checkBudgets(tree, parsed),
+    ...checkCalendar(tree),
   ];
 }
 
@@ -1942,6 +2253,61 @@ export function seoTitleNearDuplicates(tree: SeedTree): readonly {
 const percent = (share: number): string => `${(share * 100).toFixed(0)} %`;
 
 /**
+ * Spec 009 §11's second line: **which destinations currently promise a delivery date**, as one
+ * glance rather than an audit. Every column is the application's own predicate —
+ * `pickerState()`, `hasActivePartners()`, the registry's `operations` — so a destination cannot
+ * read `live` here while the picker shows it closed, and the holiday column is family 10's own
+ * horizon, so "covered" here and a green `holiday-coverage` rule are the same fact.
+ */
+export function pickerStateReport(tree: SeedTree): readonly string[] {
+  const horizons = new Map(
+    calendarHorizons(tree).map((horizon) => [horizon.iso2, horizon]),
+  );
+  const holidayYears = new Map<string, Set<number>>();
+  for (const row of rawHolidayRows(tree)) {
+    const iso2 = row["iso2"];
+    const date = row["date"];
+    if (typeof iso2 !== "string" || typeof date !== "string") continue;
+    const years = holidayYears.get(iso2) ?? new Set<number>();
+    years.add(Number(date.slice(0, 4)));
+    holidayYears.set(iso2, years);
+  }
+  const lines: string[] = [
+    "#### delivery picker state per destination (spec 009 §11)",
+    "",
+    `\`unavailable\` renders no dates and no cutoff; \`preview\` renders the whole calendar with every date closed; \`live\` takes orders. Judged at ${tree.asOf.toISOString()}; the horizon is ${String(NEXT_AVAILABLE_HORIZON_DAYS)} days from today in the destination.`,
+    "",
+    "| destination | published | operations | active partners | picker state | holiday years | horizon | covered |",
+    "|---|---|---|---|---|---|---|---|",
+  ];
+  for (const country of COUNTRIES) {
+    const horizon = horizons.get(country.iso2);
+    const years = [...(holidayYears.get(country.iso2) ?? [])].sort(
+      (a, b) => a - b,
+    );
+    const covered =
+      horizon === undefined
+        ? "—"
+        : horizon.years.every((year) => years.includes(year))
+          ? "yes"
+          : "**no**";
+    const operations = country.operations;
+    lines.push(
+      `| ${country.iso2} | ${isPublishedDestination(country) ? "yes" : "no"} | ${operations === undefined ? "none" : `${operations.ianaZone} · ${operations.sameDayCutoffLocal} · days ${operations.deliveryDays.join(",")} · Sunday ${operations.sundayDelivery}`} | ${hasActivePartners(country.iso2) ? "yes" : "no"} | **${pickerState(country.iso2)}** | ${years.length === 0 ? "—" : years.join(", ")} | ${horizon === undefined ? "—" : `${horizon.from} → ${horizon.through}`} | ${covered} |`,
+    );
+  }
+  const promising = COUNTRIES.filter(
+    (country) => pickerState(country.iso2) === "live",
+  ).map((country) => country.iso2);
+  lines.push(
+    "",
+    `Destinations promising a delivery date today: ${promising.length === 0 ? "**none**" : promising.join(", ")}.`,
+    "",
+  );
+  return lines;
+}
+
+/**
  * The standing catalogue-health report of spec 006 §11 and AC-30, as Markdown for the step
  * summary. Read-only: it never changes the verdict, and every readiness column in it comes from
  * the predicate the application gates on.
@@ -1950,6 +2316,8 @@ export function seedHealthReport(tree: SeedTree): string {
   const parsed = parseTree(tree);
   const lines: string[] = [];
   const coverage = coverageRows(tree);
+
+  lines.push(...pickerStateReport(tree));
 
   lines.push("#### products by type", "");
   lines.push("| product type | products | expected |", "|---|---|---|");
@@ -2125,7 +2493,18 @@ async function main(argv: readonly string[]): Promise<number> {
     argv.find((argument) => !argument.startsWith("--")) ??
       fileURLToPath(new URL("..", import.meta.url)),
   );
-  const tree = await readSeedTree(root);
+  const asOfFlag = argv.find((argument) => argument.startsWith("--as-of="));
+  const asOf =
+    asOfFlag === undefined
+      ? new Date()
+      : new Date(asOfFlag.slice("--as-of=".length));
+  if (Number.isNaN(asOf.getTime())) {
+    console.error(
+      `${CLI_NAME}: \`${String(asOfFlag)}\` is not an instant; pass \`--as-of=2026-12-31T12:00:00Z\``,
+    );
+    return 2;
+  }
+  const tree = await readSeedTree(root, new Map(), asOf);
   const problems = checkSeedDataset(tree);
 
   if (problems.length > 0) {
@@ -2135,7 +2514,7 @@ async function main(argv: readonly string[]): Promise<number> {
     console.error(formatSeedProblems(problems));
   } else {
     console.log(
-      `${CLI_NAME}: ${String(tree.raw.size)} dataset file(s), all nine rule families clean.`,
+      `${CLI_NAME}: ${String(tree.raw.size)} dataset file(s), all ten rule families clean.`,
     );
   }
 

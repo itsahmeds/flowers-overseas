@@ -1,0 +1,108 @@
+{
+  "family": "calendar",
+  "rule": "holiday-coverage",
+  "replaces": "holidays.json",
+  "expect": "the first uncovered date is 2027-01-01",
+  "why": "spec 009 AC-2's holiday-coverage rule, and the exact fault `/review 97` found in TASK-123: holiday rows that stop at the end of one year while the picker looks 366 days ahead, so New Year's Day of the next year is offered as an open delivery day. Judged at a pinned instant (23 Sep 2026, whose Warsaw horizon reaches 24 Sep 2027) with Poland's last year of rows dropped, the gate must name `PL` and 2027-01-01.",
+  "asOf": "2026-09-23T10:00:00Z",
+  "ops": [
+    {
+      "op": "removeRow",
+      "match": {
+        "iso2": "PL",
+        "date": "2027-01-01"
+      }
+    },
+    {
+      "op": "removeRow",
+      "match": {
+        "iso2": "PL",
+        "date": "2027-01-06"
+      }
+    },
+    {
+      "op": "removeRow",
+      "match": {
+        "iso2": "PL",
+        "date": "2027-03-28"
+      }
+    },
+    {
+      "op": "removeRow",
+      "match": {
+        "iso2": "PL",
+        "date": "2027-03-29"
+      }
+    },
+    {
+      "op": "removeRow",
+      "match": {
+        "iso2": "PL",
+        "date": "2027-05-01"
+      }
+    },
+    {
+      "op": "removeRow",
+      "match": {
+        "iso2": "PL",
+        "date": "2027-05-03"
+      }
+    },
+    {
+      "op": "removeRow",
+      "match": {
+        "iso2": "PL",
+        "date": "2027-05-16"
+      }
+    },
+    {
+      "op": "removeRow",
+      "match": {
+        "iso2": "PL",
+        "date": "2027-05-27"
+      }
+    },
+    {
+      "op": "removeRow",
+      "match": {
+        "iso2": "PL",
+        "date": "2027-08-15"
+      }
+    },
+    {
+      "op": "removeRow",
+      "match": {
+        "iso2": "PL",
+        "date": "2027-11-01"
+      }
+    },
+    {
+      "op": "removeRow",
+      "match": {
+        "iso2": "PL",
+        "date": "2027-11-11"
+      }
+    },
+    {
+      "op": "removeRow",
+      "match": {
+        "iso2": "PL",
+        "date": "2027-12-24"
+      }
+    },
+    {
+      "op": "removeRow",
+      "match": {
+        "iso2": "PL",
+        "date": "2027-12-25"
+      }
+    },
+    {
+      "op": "removeRow",
+      "match": {
+        "iso2": "PL",
+        "date": "2027-12-26"
+      }
+    }
+  ]
+}

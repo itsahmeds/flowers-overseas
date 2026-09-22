@@ -32,7 +32,7 @@ seed/media-variants.ts
                  slot's aspect ratio, AVIF+WebP at seven widths plus one OG/email JPEG, and
                  seed/data/media-variants.json rewritten with a checksum per file. `--check` is
                  the CI mode (manifest ↔ files ↔ checksums); generation never runs in CI
-seed/check.ts    pnpm seed:check  — the gate: nine rule families + the health report (--report)
+seed/check.ts    pnpm seed:check  — the gate: ten rule families + the health report (--report)
 seed/copy.ts     the copy rules (word band, closing sentence, superlatives, delivery timing)
 seed/budgets.ts  the committed-imagery byte caps rule family 9 enforces
 seed/diff.ts     pnpm seed:diff   — the per-table diff of the dataset against a SeedTarget

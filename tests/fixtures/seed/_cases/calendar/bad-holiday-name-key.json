@@ -1,0 +1,19 @@
+{
+  "family": "calendar",
+  "rule": "holiday-name-key",
+  "replaces": "holidays.json",
+  "expect": "PL/2026-06-01 is a holiday row with no `nameKey`",
+  "alsoFamilies": ["schema"],
+  "why": "spec 009 AC-2's second rule: a closed date renders its reason in words (AC-7), so a holiday row with no `nameKey` has nothing to say beside the date. It also trips family 1, because `SeedCountryHolidaySchema` makes `nameKey` required — and that is the point: the calendar family reads raw rows so the line names the country and the day rather than a zod path.",
+  "asOf": "2026-09-23T10:00:00Z",
+  "ops": [
+    {
+      "op": "addRow",
+      "row": {
+        "iso2": "PL",
+        "date": "2026-06-01",
+        "closed": true
+      }
+    }
+  ]
+}

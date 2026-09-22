@@ -104,6 +104,12 @@ export const SeedCheckCaseSchema = z
      */
     alsoFamilies: z.array(z.enum(SEED_CHECK_FAMILIES)).default([]),
     why: z.string().min(10),
+    /**
+     * The instant the case is judged at (`SeedTree.asOf`), for a rule whose verdict depends on
+     * today — family 10's holiday horizon (spec 009 AC-2). Pinned so the case fails for its own
+     * reason on every day it is run, not only on the day it was written.
+     */
+    asOf: z.iso.datetime().optional(),
     ops: z.array(OpSchema).min(1),
   })
   .strict();
@@ -213,5 +219,11 @@ export function applySeedCheckCase(
     raw.set(path, value);
     if (!overlaid.includes(path)) overlaid.push(path);
   }
-  return { ...tree, raw, overlaid, mediaFiles };
+  return {
+    ...tree,
+    raw,
+    overlaid,
+    mediaFiles,
+    ...(testCase.asOf === undefined ? {} : { asOf: new Date(testCase.asOf) }),
+  };
 }

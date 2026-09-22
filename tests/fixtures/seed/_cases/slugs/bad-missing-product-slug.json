@@ -1,0 +1,15 @@
+{
+  "family": "slugs",
+  "rule": "product-slug-required",
+  "replaces": "copy/en/products.json",
+  "expect": "product:FO-BQ-001 (en) is an active product priced in published",
+  "why": "spec 009 AC-2's fourth rule: §13 Q1 gives every product one authored `en` slug that all four launch locales share, so an active product with a price in a published destination and no human-authored `en` row has no page in any locale — silently, because `slugFor()` answering `undefined` is a routine state in the route.",
+  "ops": [
+    {
+      "op": "removeRow",
+      "match": {
+        "key": "FO-BQ-001"
+      }
+    }
+  ]
+}
