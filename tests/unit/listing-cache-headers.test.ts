@@ -55,9 +55,11 @@ describe("`Cache-Control` for the listing routes (§5.4, AC-22)", () => {
     expect(anyMatch("/en-gb/poland/flowers")).toBe(true);
     expect(anyMatch("/pl/polska/kwiaty")).toBe(true);
     // The corridor page (third segment is the country), the category hub (the shop segment is
-    // second, not third), the destinations hub, the locale home and the depth-4 listing URLs
-    // TASK-110/111 will add are all prerendered or not yet built: none may lose its own
-    // `Cache-Control` to this rule.
+    // second, not third), the destinations hub, the locale home and TASK-110/111's depth-4
+    // listing URLs are all prerendered: none may lose its own `Cache-Control` to this rule. The
+    // depth-4 rows were hypothetical when this case was written and are live as of the 2026-09-22
+    // rebase — those routes exist now, read no `searchParams`, and so must stay unmatched until
+    // some task makes them dynamic.
     for (const path of [
       "/en/send-flowers-to/poland",
       "/en/flowers/roses",

@@ -36,9 +36,14 @@
  * (`/en/send-flowers-to/poland` — third segment is a country slug), the category hub
  * (`/en/flowers/roses` — the segment is second, not third), the destinations hub, the locale home
  * or any static page, so no prerendered ISR response has its own `Cache-Control` replaced. The
- * depth-4 country category and country occasion URLs are **not** here: their routes do not exist
- * yet (TASK-110, TASK-111), and a cache header on a path that 404s would have Cloudflare hold the
- * 404. Each of those tasks adds its own depth to `LISTING_CACHE_PATHS` when its route lands.
+ * depth-4 country category and country occasion URLs are **not** here, and the reason changed
+ * under this branch rather than going away: TASK-110/111 landed those routes
+ * (`[locale]/[segment]/[child]/[grandchild]/page.tsx`) while this task was in review, but they
+ * read no `searchParams`, so they are **prerendered ISR** with a `Cache-Control` of their own.
+ * Giving them this rule would replace a working ISR header, which is the one thing the paragraph
+ * above exists to prevent. The handoff therefore moves rather than closes: whichever task makes
+ * a depth-4 listing honour `?page=`/`?sort=` makes it dynamic, and *that* task adds its depth
+ * here. `tests/unit/listing-cache-headers.test.ts` asserts both depth-4 shapes stay unmatched.
  *
  * A listing URL that 404s *inside* this shape (`/en/atlantis/flowers`) does get the header, and
  * that is correct rather than tolerated: the existence set is fixed at build time

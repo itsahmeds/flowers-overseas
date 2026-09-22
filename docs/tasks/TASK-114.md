@@ -149,6 +149,37 @@ page type — a cold `pnpm build` plus the browser suites (see `## Result`).
   TASK-124 alone. **For the orchestrator:** place the second half when the go-live task exists;
   I have not invented a task row for it, and I did not edit `TASKS.md`.
 
+- **E-6 (2026-09-22) — the depth-4 listings carry no parameter policy, and this task is not the
+  one that should give them one.** TASK-110/111 merged (PR 89) while this PR was in review and
+  added `src/app/[locale]/[segment]/[child]/[grandchild]/page.tsx`. Neither of its two renders
+  declares `searchParams`, and its shared `viewFor()` passes no `parameterised`, so
+  `/en/poland/flowers/roses?sort=price-asc` and `?zzz=1` render page 1 with the `unparameterised`
+  term **absent** — and an absent optional term leaves the conjunction (spec 007 §14 A7). The day
+  Poland's `operations` block and `pl-live.md` land, those URLs announce `index,follow`. That is
+  the same fail-open direction `/review 93` rounds 2 and 3 closed at depth 3.
+  **Not fixed here, deliberately**, for four reasons. (1) This branch's remaining work is a
+  rebase of a review-passed, founder-approved PR; wiring depth 4 is new production behaviour, not
+  a merge artefact. (2) It would change the **rendering mode of two page types**: reading
+  `searchParams` is what makes a render dynamic (E-2), and the depth-4 route currently prerenders
+  **588 paths** (measured in this rebase's build, all `●`). Moving them to `ƒ` needs two new
+  shapes × four locales in `LISTING_CACHE_PATHS`, two new `measuredFrom` substitutions in
+  `budget:client-js`, fresh `bundle-baseline.json` rows and a build to prove the new prerender
+  count — and it invalidates the byte and prerender evidence PR 89 shipped. (3) Spec 008 §14
+  **A8 (c)** defers "the toolbar and the pagination" and PR 89 applied it: the depth-4 pages ship
+  with **no sort control and no page nav**, so honouring a parameter there without the controls
+  that produce it is a half-move the spec did not order. (4) Nothing is live: Phase 0's
+  `operational: false` makes every country-scoped listing `noindex,follow` regardless, and
+  `robots.txt` blocks `sort=` (E-3).
+  **For the orchestrator:** this wants a task of its own — "the parameter policy at depth 4" —
+  owning the same AC-9/AC-10/AC-15 clauses for `countryCategory` and `countryOccasion`, and it
+  should land with or after the depth-4 toolbar. The two places a future agent will look already
+  say so in prose: `src/lib/listing-cache-headers.ts`'s header block and the negative-match case
+  in `tests/unit/listing-cache-headers.test.ts`, both corrected in this rebase to state that the
+  depth-4 routes now **exist**, are **prerendered**, and must therefore stay out of
+  `LISTING_CACHE_PATHS` until something makes them dynamic.
+  **The depth-3 slicing test was not weakened to accommodate any of this.** It reads one file —
+  the depth-3 route — so the depth-4 route is outside its subject, not excused by it.
+
 ## Result
 
 Shipped in PR **[#93](https://github.com/itsahmeds/flowers-overseas/pull/93)** (branch
@@ -380,3 +411,84 @@ the last hour — `task/TASK-138-r2-media-delivery` (35630208213) and
 environment, not a repository regression, and TASK-137 owns it. This round changed one test file
 and no shipped byte, so no job it blocks could have been affected by it. **Not escalated as new**:
 round 3 already recorded the preview/TASK-137 gap; this is the same gap with a run number.
+
+### Round 5 — rebased onto `origin/main` `68163e6` (2026-09-22)
+
+**Conflict resolution only; no new behaviour.** Four PRs merged underneath this branch — #90
+(TASK-137, CI preview origin), #84 (TASK-094, sitemaps), #87 (TASK-093, JSON-LD builders) and #89
+(TASK-110 + TASK-111, the depth-4 routes). Five conflicts, all resolved keeping both sides.
+
+**The one in load-bearing source** is `src/app/[locale]/[segment]/[child]/page.tsx`, and the
+dispatch's premise was off by one PR: **#89 never touched this file** — it added a *separate*
+`[grandchild]/page.tsx` — so the collision is **#87's**. TASK-093 inserted a non-exported
+`registryLabels()` helper immediately before the page component and rewrote the corridor branch's
+return to a fragment with `<JsonLd>`; this branch rewrote the page component's **signature** to
+`{ params, searchParams }`. Both survive: the helper keeps its place, the signature keeps
+`searchParams`.
+
+**Why the shape still satisfies the round-4 slicer**, checked before the rebase was continued
+rather than after: the test splits the comment-stripped source on a lookahead at
+`export [default] async function`, so a **non-exported** helper does not open a slice — it joins
+`generateMetadata`'s, and it carries no `listingView(` call in with it. The file's four top-level
+slices are `(preamble)`, `generateStaticParams`, `generateMetadata`, `LocaleChildRoute`; exactly
+two contain `listingView(`; each holds exactly one call, one `parameterised: request.parameterised`,
+one `const request = await listingQuery(searchParams)` of its own, and `searchParams` in its own
+parameter list. **No assertion was loosened, deleted or re-scoped**, and the parser was not touched.
+A comment was added to the helper saying why its position is load-bearing, so the next agent who
+moves it learns it from the file rather than from a red test.
+
+**Mutations re-run on the merged file** (`pnpm vitest run --project unit tests/unit/listing-params.test.ts`,
+each restored immediately):
+
+| Mutation | Result |
+|---|---|
+| `generateMetadata`'s `parameterised: request.parameterised` deleted | **red** — `generateMetadata: expected undefined to be defined` (1 failed / 16 passed) |
+| `generateMetadata`'s `listingQuery(searchParams)` → `listingQuery(undefined)` | **red** — `generateMetadata: expected 'export async function generateMetadat…' to contain 'const request = await listingQuery(se…'`; `pnpm typecheck` still **0**, so the test remains the only gate on it |
+| **Control**: `generateMetadata`'s binding renamed to `metaRequest`, wired correctly throughout | **green** — 17 passed, `typecheck` **0**. The case pins provenance, not a name |
+| Extra, because the merge introduced a non-exported helper: `generateMetadata`'s `listingView(…)` moved into a non-exported `metaView()` beside `registryLabels()` — the `viewFor()` shape the depth-4 route uses | **red** — `generateStaticParams: expected … to contain 'const request = await listingQuery(se…'`. Hiding a render's call in a helper fails closed and loudly |
+
+**The other four conflicts.** `docs/codebase-map.md` (generated — regenerated with
+`pnpm codebase:map`, 12 modules / 23 config / 25 routes / 36 scripts) · `docs/design/README.md`
+(both sides appended difference rows; all three kept, in date order) ·
+`tests/e2e/client-js-budget.spec.ts` (both sides added listing URLs to `URLS`; **all four kept** —
+`/en/poland/flowers`, `/en-gb/poland/flowers` from this task and `/en/poland/flowers/roses` from
+TASK-110 — with one comment explaining both jobs the list now does) ·
+`tests/visual/__screenshots__/visual/darwin/country-shop-{desktop,mobile}.png`.
+
+**The visual baselines were a real conflict, not a formality.** Both sides regenerated the *same*
+two PNGs of the *same* page for *different* reasons — TASK-110's §14 A10 occasion-table third
+column, and this task's toolbar and pagination — so **neither side's baseline is correct for the
+merged page**, and taking either would have failed CI's `visual` job. Both were regenerated
+against a cold build of the merged tree (mobile grew 5 725 → 5 886 px). The diff was inspected
+before regenerating: it is confined to the occasion table at the foot of the page, with the
+toolbar and the page nav matching, which is the expected signature of A10 landing under a
+baseline that already had TASK-114's controls.
+
+**Build slot taken**, and this is why: a new baseline cannot be produced without a real browser
+against a real build, and a wrong baseline is a red CI job. Acquired via
+`.claude/bin/build-slot.sh`, server on **:3228**, released after; only this run's own PID killed.
+
+**Gates, round 5** — all local, all against the merged tree. `typecheck` **0** · `lint` **0**
+(js + css) · `i18n:check` **0** (4 locales, no missing/unused/stale/malformed) · `check:no-db`
+**0** · `codebase:map --check` **0** · `format:check` **0** · full unit + contract suite **191
+files, 4 558 passed, 5 skipped, 0 failed** · `build` green with the blast radius of **E-2 intact
+after the merge**: 28 corridor paths and all 588 depth-4 paths still `●`, only the depth-3 route
+entry `ƒ` · **e2e 963 passed / 12 skipped / 0 failed** (desktop + mobile) · **a11y 89 passed**,
+zero serious or critical · **visual 49 passed** including both regenerated baselines ·
+`budget:client-js` **every URL within budget, +0.0 KB vs baseline**, and the `measuredFrom`
+substitution still prints for both dynamic shop roots.
+
+**The cross-check that proves the two URL lists merged correctly:**
+`tests/e2e/client-js-budget.spec.ts` ran **10/10** against the local build — the first time it has
+run with both tasks' URLs present. It covers TASK-110's prerendered `/en/poland/flowers/roses`
+*and*, through the `measuredFrom` substitution, this task's two dynamically rendered shop roots.
+That is the browser half of the substitution's safety argument, and it is green on the merged tree.
+
+**One finding, escalated not fixed:** **E-6** above — TASK-110/111's depth-4 routes read no
+`searchParams` and pass no `parameterised`, which is the same fail-open this task closed at depth
+3. It is not this rebase's to fix; it needs a task of its own. Two comments were corrected to
+record it where it will be found (`src/lib/listing-cache-headers.ts` and
+`tests/unit/listing-cache-headers.test.ts`), both prose-only: the negative-match assertion that
+keeps the depth-4 shapes out of `LISTING_CACHE_PATHS` is unchanged and still passes, and it is
+still **correct** — those routes are prerendered ISR and would *lose* a working `Cache-Control` to
+that rule.
