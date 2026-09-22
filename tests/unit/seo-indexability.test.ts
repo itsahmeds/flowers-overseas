@@ -168,10 +168,34 @@ describe("page-type policy (plan/02 §7, spec 004 AC-28)", () => {
     }
   });
 
-  it("states a policy for every page type it knows", () => {
-    for (const policy of Object.values(PAGE_TYPE_POLICY)) {
-      expect(["never", "byRule"]).toContain(policy);
-    }
+  it("states the specified policy for every page type it knows, and no other (TASK-143)", () => {
+    // Round 1 asserted `["never", "byRule"]).toContain(policy)` over a
+    // `Record<SeoPageType, "never" | "byRule">` — every value the type allows, PR 89's
+    // `[200, 404]` shape. Flipping `categoryHub` to `"never"` or deleting `corridor` left it green.
+    // The expected map is the specs' own answer per page type, not a copy of the module's.
+    expect(PAGE_TYPE_POLICY).toStrictEqual({
+      // `plan/02` §7 table: "Locale chooser `/` | `noindex,follow`"; spec 007 §6 "`/` stays
+      // `noindex,follow`".
+      localeChooser: "never",
+      // spec 004 AC-28 / spec 007 §6: "`/dev/components` … stay `noindex`".
+      devGallery: "never",
+      // spec 007 §6: "The locale home lifts to `index,follow` under the same engine".
+      localeHome: "byRule",
+      // spec 007 §6: "The hub is indexable when at least one corridor in that locale is".
+      destinationsHub: "byRule",
+      // spec 007 §6: "A corridor page is indexable iff it exists … **and** `content.reviewed`…".
+      corridor: "byRule",
+      // spec 008 §6 "one engine, six descriptors": the three country-scoped types are
+      // `index,follow` iff exists ∧ operational ∧ ≥ 6 products ∧ reviewed ∧ locale ∧ environment.
+      countryShopRoot: "byRule",
+      countryCategory: "byRule",
+      countryOccasion: "byRule",
+      // spec 008 §6: the three hubs are `index,follow` iff exists ∧ reviewed intro ∧ ≥ 1 link ∧
+      // locale ∧ environment — "the page types `plan/09` Phase 0 AC 1 expects in the indexed set".
+      categoryHub: "byRule",
+      occasionHub: "byRule",
+      occasionsIndex: "byRule",
+    });
   });
 });
 
