@@ -34,6 +34,21 @@ One dated bullet per `/review`, newest last.
   base URL and a `noindex,follow` `?sort=` URL become distinguishable for the first time and spec
   008 **AC-15** actually bites. Nothing else in TASK-114 changes.
 
+- **From `/review 97` rounds 1–2 via TASK-123 (2026-09-22; merged as `2b64267`):** two findings
+  land on you, because this task next edits the calendar's data and its suite.
+  1. **The holiday data runs out silently.** With holiday rows for 2027 only, the grid offered
+     **2028-01-01 (New Year) as open** and `nextOpenDate` returned it. The picker looks 366 days
+     ahead, and nothing refuses a window that runs past the last year of holiday data. Your
+     `seed:check` rule ("published country without holiday rows in-window") is the fix. Define
+     *in-window* as the picker's full horizon, not the current year. Prove it by mutation: drop
+     the last year's rows and the rule goes red, naming the country and the first uncovered date.
+     `seed/data/holidays.json`'s note now says this rule does not exist yet; update it when it does.
+  2. **Pin the DST fixture table lengths.** In `tests/unit/geo-delivery.test.ts`, emptying
+     `DST_READINGS` leaves the suite 232/232 green, and emptying `DST_WINDOWS` leaves it 298/298
+     green, because their loops then declare no cases. Pin them at **30** and **8**, and prove each
+     pin by emptying its table. The same class of hole applies to any `for … of FIXTURE` loop you
+     add.
+
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
