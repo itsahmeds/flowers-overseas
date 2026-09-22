@@ -14,6 +14,8 @@
  */
 import { type APIRequestContext, expect, test } from "@playwright/test";
 
+import { skipsOnCaseInsensitiveHost } from "../support/case-insensitive-host.ts";
+
 /** The hubs that exist on the committed corpus: `en` and `en-gb`, one of each type. */
 const HUB_URLS = [
   "/en/flowers/roses",
@@ -74,16 +76,27 @@ test.describe("existence and the 404 shapes (AC-1, T-01)", () => {
   });
 
   test("an uppercase variant is not a page (ADR-0006: no case-fixing rewrite)", async ({
+    baseURL,
     request,
   }) => {
-    // Recorded, macOS-only: an APFS checkout answers 200 for an uppercase prebuilt path because
-    // the filesystem is case-insensitive; Linux (and CI) answers 404. The assertion is the Linux
-    // one — what must never happen anywhere is a **redirect** that fixes the casing.
+    // The predicate is about the **target host**, not the machine Playwright runs on: an APFS
+    // checkout answers 200 for a mis-cased prebuilt path because Next resolves it out of the
+    // correctly-cased prerendered file, which is a fact about the filesystem and not about this
+    // repository. `skipsOnCaseInsensitiveHost` (TASK-110's helper, itself the shape of
+    // `tests/e2e/locale-routing.spec.ts:45`) stands the case down only for a local macOS
+    // `pnpm start`; pointed at the preview, Railway or CI's Linux it runs and asserts the 404,
+    // including from a Mac. The `[200, 404]` this case used to accept would never have caught a
+    // regression anywhere.
+    test.skip(
+      skipsOnCaseInsensitiveHost(baseURL),
+      "case-insensitive local filesystem (APFS) serves the mis-cased path from the real page's prerendered HTML",
+    );
     const response = await request.get("/en/flowers/Roses", {
       maxRedirects: 0,
     });
+    // What must never happen anywhere is a **redirect** that fixes the casing.
     expect(response.headers()["location"]).toBeUndefined();
-    expect([200, 404]).toContain(response.status());
+    expect(response.status()).toBe(404);
   });
 
   test("a trailing slash is a permanent redirect to the bare URL (§14 A7)", async ({
@@ -166,13 +179,15 @@ test.describe("what the hubs render (AC-11, §13 Q4)", () => {
 
   test("every link out of a hub points at a page the existence rule claims", async ({
     page,
+    request,
   }) => {
     // The destination picker's targets are the **country** pages of this entity
     // (`/{locale}/{country}/{shopCategory}/{slug}`), whose route is TASK-110's and TASK-111's.
-    // What is asserted here is the shape and the source: the hub links at a country-scoped
-    // listing URL built by `listingPath()` for a destination `listingExists()` claimed, and never
-    // at an invented one. AC-21's whole-site crawl (its own task) is what asserts the 200 once
-    // both depth-4 routes have shipped.
+    // Two assertions: the shape and the source — the hub links at a country-scoped listing URL
+    // built by `listingPath()` for a destination `listingExists()` claimed, never at an invented
+    // one — and, since PR #89 landed the depth-4 route, the **status**. This task's escalation
+    // E-1 was exactly that the seven targets 404'd while the two page types were unmerged; the
+    // merge order resolved it, and this loop is what keeps it resolved.
     await page.goto("/en/flowers/roses");
     const hrefs = await page
       .locator("[data-fo-hub-destination] a, a[data-fo-hub-destination]")
@@ -182,6 +197,7 @@ test.describe("what the hubs render (AC-11, §13 Q4)", () => {
     expect(hrefs).toHaveLength(7);
     for (const href of hrefs) {
       expect(href).toMatch(/^\/en\/[a-z-]+\/flowers\/roses$/u);
+      expect(await status(request, href), href).toBe(200);
     }
   });
 

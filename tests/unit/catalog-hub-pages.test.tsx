@@ -35,6 +35,12 @@ import {
 import { CategoryHubPage } from "../../src/modules/catalog/ui/CategoryHubPage.tsx";
 import { OccasionHubPage } from "../../src/modules/catalog/ui/OccasionHubPage.tsx";
 import { loadMessages } from "../../src/modules/i18n";
+import {
+  expectedPreloads,
+  firstCardPhotograph,
+  lcpNominations,
+  nominatedImageCard,
+} from "../support/lcp-nomination.ts";
 import { listingHonestyViolations, textOf } from "../support/listing-honesty";
 
 /** A fixed window start, so a rendered date is assertable without freezing a clock. */
@@ -170,6 +176,72 @@ describe("a hub carries no money, and the type is what says so (AC-7, §14 A3)",
       }
     });
   }
+});
+
+describe("AC-24's nomination on a hub (spec 008 §14 **A11**)", () => {
+  /**
+   * A11, applied to the two page types it names: **on a page whose first card carries no
+   * photograph the page nominates nothing, and zero is asserted as a positive claim.** The three
+   * shapes below are all real views of the committed corpus rather than fabrications, which is
+   * what keeps the zero falsifiable — `expectedPreloads(firstCardPhotograph(html))` fails on a
+   * preload of a placeholder, of an unrendered asset, or of a photograph further down the grid,
+   * because it is compared against the **first card's own** `<source>` and nothing else.
+   *
+   * `tests/support/lcp-nomination.ts` is TASK-110/111's helper, reused rather than restated: one
+   * idiom for this assertion across every listing page type is the point of A11's implementation
+   * note.
+   */
+  it("nominates the first card's photograph, exactly once, when it has one", () => {
+    // `/en/flowers/roses`: twelve cards, three of them photographs, the first of them the first
+    // card. The numbers are the corpus's and are written here deliberately — a media flip that
+    // changes them makes this case red rather than silently moving the nomination.
+    expect(roses.hubItems[0]?.photo.kind).toBe("asset");
+    const html = render(<CategoryHubPage view={roses} />, "en");
+    const nominated = lcpNominations(html);
+    expect(nominated.images).toBe(3);
+    expect(nominated.eager).toBe(1);
+    expect(nominated.high).toBe(1);
+    expect(nominated.preloaded).toEqual(
+      expectedPreloads(firstCardPhotograph(html)),
+    );
+    expect(nominatedImageCard(html)).toBe(0);
+  });
+
+  it("nominates nothing at all on a hub whose cards are all placeholders", () => {
+    // `/en/occasions/mothers-day`: A11's founding case. No Mother's Day SKU has an approved
+    // asset, so the grid renders seven captioned boxes and **no `<img>`** — the quantifier of
+    // AC-24 has no subject, and the honest answer is zero. Asserted as four positive numbers,
+    // not as the absence of an assertion.
+    expect(
+      mothersDay.hubItems.every((card) => card.photo.kind !== "asset"),
+    ).toBe(true);
+    const html = render(<OccasionHubPage view={mothersDay} />, "en");
+    const nominated = lcpNominations(html);
+    expect(nominated.images).toBe(0);
+    expect(nominated.eager).toBe(0);
+    expect(nominated.high).toBe(0);
+    expect(firstCardPhotograph(html)).toBeUndefined();
+    expect(nominated.preloaded).toEqual(expectedPreloads(undefined));
+  });
+
+  it("promotes no lower photograph when the first card is a placeholder", () => {
+    // `/en/flowers/orchids` and `/en/occasions/all-saints-day` both render a photograph on their
+    // **second** card. Preloading it would spend the LCP budget on a resource the LCP element —
+    // the first card's fixed 4∶5 box — never uses, which is the half of A11 a 0-vs-0 comparison
+    // cannot see: the page renders an image and still must nominate none.
+    for (const [name, html] of [
+      ["orchids", render(<CategoryHubPage view={orchids} />, "en")],
+      ["all-saints-day", render(<OccasionHubPage view={allSaints} />, "en")],
+    ] as const) {
+      const nominated = lcpNominations(html);
+      expect(nominated.images, name).toBe(1);
+      expect(firstCardPhotograph(html), name).toBeUndefined();
+      expect(nominated.preloaded, name).toEqual(expectedPreloads(undefined));
+      expect(nominated.eager, name).toBe(0);
+      expect(nominated.high, name).toBe(0);
+      expect(nominatedImageCard(html), name).toBeUndefined();
+    }
+  });
 });
 
 describe("the category hub (§5.3 row 3, §13 Q4)", () => {
