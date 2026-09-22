@@ -97,6 +97,10 @@ export const SCANNED_PATHS = [
   "src/lib/consent-bootstrap.ts",
   "src/lib/robots-headers.ts",
   "src/lib/media-headers.ts",
+  // TASK-138: the media origin every image URL and the CSP `img-src` allowance are built from.
+  // A constant with no import at all today, and listed so it stays that way — the day it reads
+  // a database for a per-tenant host is the day the no-database render is over.
+  "src/lib/media-origin.ts",
   // spec 004 §2 "Analytics": the gated GA4 loader. It reads one env variable and renders two
   // script elements; a database import here would be a surprise of the worst kind.
   "src/modules/analytics",

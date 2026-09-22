@@ -23,7 +23,7 @@ task actually touches.
 | `partners` | Public barrel for `partners` (fulfilment partners, coverage, payouts) | spec 011, 026 | — |
 | `payments` | Public barrel for `payments` (PaymentProvider interface; stripe/, mollie/… | spec 013, 014 | — |
 | `seo` | Indexability rule engine, canonical builder, robots policy, page metadata,… | spec 007 | `contract/seo-schema-fixtures.test.ts`, `integration/sitemap.test.ts`, `unit/catalog-listing.test.ts` +12 |
-| `ui` | The only import path for the design system (spec 004 §2 "Where the design… | spec 004 | `unit/catalog-occasion-page.test.tsx`, `unit/chrome-honesty.test.tsx`, `unit/consent-cookie.test.ts` +24 |
+| `ui` | The only import path for the design system (spec 004 §2 "Where the design… | spec 004 | `unit/catalog-occasion-page.test.tsx`, `unit/chrome-honesty.test.tsx`, `unit/consent-cookie.test.ts` +25 |
 
 ## Config (`src/config/`)
 
@@ -111,6 +111,7 @@ task actually touches.
 | `i18n-pseudo.ts` | `i18n:pseudo` | `pnpm i18n:pseudo [--check] [--messages-dir messages]` (spec 003 §2… |
 | `imagery-prompts-remaining.ts` | — | Generate the prompt records for every product that has no imagery yet |
 | `lint-fixtures.ts` | `lint:fixtures` | `pnpm lint:fixtures` (spec 001 AC-4 / AC-5, TASK-003) |
+| `media-upload.ts` | `media:upload` | `pnpm media:upload [--dry-run] [--only <assetId>] [--force] [--verify]` — put… |
 | `pr-policy.ts` | `pr-policy` | PR policy (spec 001 §2 "CI", AC-19 / T-20, TASK-002) |
 | `railway-check.ts` | `railway:check` | `pnpm railway:check [--env <name>]` — the Railway drift gate (spec 040 §5.3,… |
 | `seo/brotli-origin.ts` | `lighthouse:origin` | `pnpm lighthouse:origin` — a Brotli reverse proxy in front of `next start`… |
@@ -130,14 +131,14 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 200 |
+| `tests/unit/` | 203 |
 | `tests/integration/` | 6 |
 | `tests/contract/` | 6 |
-| `tests/e2e/` | 32 |
+| `tests/e2e/` | 33 |
 | `tests/a11y/` | 14 |
 | `tests/visual/` | 15 |
 | `tests/dev-os/` | 1 |
-| `tests/fixtures/` | 161 |
+| `tests/fixtures/` | 160 |
 | `tests/msw/` | 3 |
 
 ## Where does X live?

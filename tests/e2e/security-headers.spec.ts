@@ -17,6 +17,8 @@
  */
 import { expect, test } from "@playwright/test";
 
+import { MEDIA_ORIGIN } from "../../src/lib/media-origin";
+
 /** Every path that must carry the headers, one per response class. */
 const PATHS = ["/", "/en", "/api/health"] as const;
 
@@ -38,7 +40,11 @@ test.describe("security headers (AC-23)", () => {
         "default-src 'self'",
         "script-src 'self'",
         "style-src 'self' 'unsafe-inline'",
-        "img-src 'self' data: blob:",
+        // The media bucket is named since TASK-138: every photograph on the site is served
+        // from it, so a policy without it would report — and, once enforced, block — the whole
+        // catalogue's imagery. `tests/e2e/media-delivery.spec.ts` checks the other direction:
+        // that the images a page actually loads are inside this allowance.
+        `img-src 'self' data: blob: ${MEDIA_ORIGIN}`,
         "font-src 'self'",
         "connect-src 'self'",
         "frame-ancestors 'none'",

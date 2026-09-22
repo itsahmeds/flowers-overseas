@@ -10,27 +10,33 @@
  *  1. `applyWatermark()` on a fixture produces bytes the check finds the mark in — asserted
  *     through the same lossy AVIF and WebP encoders the ladder uses, because a mark that only
  *     survives a PNG round trip is not a mark on anything we serve;
- *  2. **every one of the committed variants under `public/media/`** is checked and none carries
- *     it — the whole set, not a sample, because "no watermarked asset ships" is a statement about
- *     all of them;
+ *  2. **every one of the derived variants** is checked and none carries it — the whole set, not
+ *     a sample, because "no watermarked asset ships" is a statement about all of them. Since
+ *     TASK-138 the bytes live in `flowersoverseas-media` rather than in the repository, so this
+ *     runs against `.local/media/` where that tree exists and is enforced for real by
+ *     `scripts/media-upload.ts`, which checks every file it is about to upload and refuses a
+ *     marked one;
  *  3. the dataset has no `depicts: "context"` asset, which is the only class the CLI would mark,
  *     so the branch is unreachable as well as unused (§13 Q12's "the mechanism is kept and no
  *     watermarked asset ships in Phase 0").
  *
  * **On AC-16's "no watermarked asset appears on a production-rendered page".** The production
- * render has exactly one image origin in Phase 0 — `/media/*`, served from `public/media/` — so
+ * render has exactly one image origin — the media bucket, and every URL on a page comes from the
+ * manifest rows the uploader uploaded — so
  * (2) *is* that assertion: there is no other file a page could serve. The one nuance the
  * orchestrator's 2026-09-18 carry-forward records is that the live site is `noindex` and behind a
  * preview domain, so "production-rendered" is read against the real domain; the invariant asserted
  * here is stronger and domain-independent, because it is about the bytes rather than the host.
  */
+import { existsSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 
 import sharp from "sharp";
-import { describe, expect, it } from "vitest";
+import { afterAll, describe, expect, it } from "vitest";
 
-import { COMMITTED_MEDIA_DIR } from "../../seed/budgets.ts";
+import { loadUploadSet } from "../../scripts/media-upload.ts";
+import { DERIVED_MEDIA_DIR } from "../../seed/budgets.ts";
 import { AVIF_OPTIONS, WEBP_OPTIONS } from "../../seed/schema/variants.ts";
 import {
   WATERMARK_MARKER_RGB,
@@ -40,9 +46,20 @@ import {
   markerMean,
   watermarkSvg,
 } from "../../seed/watermark.ts";
+import {
+  removeDerivedTrees,
+  variantBox,
+  writeDerivedTree,
+} from "./support/derived-tree.ts";
 
 const repoRoot = resolve(import.meta.dirname, "../..");
 const ENCODE_TIMEOUT = 60_000;
+
+/** The fixture asset: `occasionTile`, a single 384 px width, the tightest cap in the dataset. */
+const TILE_ASSET = "home-occasion-birthday";
+const TILE_WIDTH = 384;
+
+afterAll(removeDerivedTrees);
 
 /** A plausible stand-in for a style-guide frame: warm grey, no magenta anywhere in it. */
 async function warmGreyFrame(width = 640, height = 640): Promise<Buffer> {
@@ -108,20 +125,64 @@ describe("T-16: the watermark mechanism exists and is checkable (AC-16)", () => 
 });
 
 describe("T-16: no watermarked asset ships in Phase 0 (§13 Q12)", () => {
+  // TASK-138 moved the derived bytes out of the repository and into `flowersoverseas-media`, so
+  // the files this claim is about are on no runner at all. The test below therefore builds one,
+  // and asserts AC-16 where it is actually enforced: `scripts/media-upload.ts` is the only path
+  // by which a byte reaches the bucket, and a marked file has to die there.
+  //
+  // `/review 94` round 2 is why it is written this way rather than branching. The stand-in for a
+  // runner with no tree used to be `expect(uploader).toContain("isWatermarked")` — a grep over
+  // the uploader's source, which catches deleting the refusal and nothing else. The reviewer left
+  // the text in place, put the branch behind `items.length < 0`, and the whole 4 357-case unit
+  // suite stayed green. A fixture tree closes that: the guard is exercised, not read. The loop
+  // over this machine's own derived tree stays, as the stronger statement where it can be made,
+  // but it is no longer the part the claim rests on.
   it(
-    "finds the mark in none of the committed variants — the whole set, not a sample",
+    "is refused by the only path bytes take to the bucket, and marks none of the variants this machine holds",
     async () => {
-      const root = join(repoRoot, COMMITTED_MEDIA_DIR);
-      const checked: string[] = [];
-      for (const assetDir of await readdir(root)) {
+      const box = variantBox(TILE_ASSET, TILE_WIDTH);
+      const frame = await warmGreyFrame(box.width, box.height);
+      const encode = async (input: Buffer): Promise<Buffer> =>
+        await sharp(input).avif(AVIF_OPTIONS).toBuffer();
+      const clean = await encode(frame);
+      const marked = await encode(await applyWatermark(frame));
+      expect(await isWatermarked(clean)).toBe(false);
+      expect(await isWatermarked(marked)).toBe(true);
+
+      // The clean twin loads, so the refusal below is the watermark refusal and not the fixture.
+      await expect(
+        loadUploadSet({
+          root: writeDerivedTree([
+            {
+              assetId: TILE_ASSET,
+              width: TILE_WIDTH,
+              format: "avif",
+              data: clean,
+            },
+          ]),
+        }),
+      ).resolves.toHaveLength(1);
+      await expect(
+        loadUploadSet({
+          root: writeDerivedTree([
+            {
+              assetId: TILE_ASSET,
+              width: TILE_WIDTH,
+              format: "avif",
+              data: marked,
+            },
+          ]),
+        }),
+      ).rejects.toThrow(/carries the demo watermark, which never ships/u);
+
+      // And, where this machine has just derived the real ladder, every one of those files too.
+      const root = join(repoRoot, DERIVED_MEDIA_DIR);
+      for (const assetDir of existsSync(root) ? await readdir(root) : []) {
         for (const leaf of await readdir(join(root, assetDir))) {
-          const path = `${assetDir}/${leaf}`;
           const bytes = await readFile(join(root, assetDir, leaf));
-          expect(await isWatermarked(bytes), path).toBe(false);
-          checked.push(path);
+          expect(await isWatermarked(bytes), `${assetDir}/${leaf}`).toBe(false);
         }
       }
-      expect(checked.length).toBeGreaterThan(0);
     },
     5 * ENCODE_TIMEOUT,
   );

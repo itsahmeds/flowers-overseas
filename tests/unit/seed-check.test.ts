@@ -64,11 +64,7 @@ import {
   type SeedCheckCase,
   applySeedCheckCase,
 } from "../../seed/check-cases.ts";
-import {
-  COMMITTED_MEDIA_BYTE_CAP,
-  SLOT_BYTE_CAPS,
-  SLOTS_WITHOUT_A_CAP,
-} from "../../seed/budgets.ts";
+import { SLOT_BYTE_CAPS, SLOTS_WITHOUT_A_CAP } from "../../seed/budgets.ts";
 import { asciiFoldSlug } from "../../seed/copy.ts";
 import { SEED_DATA_DIR } from "../../seed/schema/files.ts";
 import { COUNTRIES } from "../../src/config/countries.ts";
@@ -452,8 +448,10 @@ describe("spec 006 §11 / AC-30: the catalogue-health report", () => {
     }
   });
 
-  it("prints the committed image bytes, the per-slot maxima and the placeholder count", () => {
-    expect(report).toContain(String(COMMITTED_MEDIA_BYTE_CAP));
+  it("prints the stored image bytes, the per-slot maxima and the placeholder count", () => {
+    // No total cap since TASK-138 — the bytes are in the media bucket, not the repository — so
+    // the report states the total it measures and the caps it enforces, which are per variant.
+    expect(report).toContain("reported, not capped");
     for (const [slot, cap] of Object.entries(SLOT_BYTE_CAPS)) {
       expect(report).toContain(`| ${slot} | ${String(cap)} |`);
     }

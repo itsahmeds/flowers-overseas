@@ -6,13 +6,13 @@ import { consentBootstrapHash } from "./src/lib/consent-bootstrap";
 import { securityHeaderRules } from "./src/lib/csp";
 import { assertBuildEnv } from "./src/lib/env.assert";
 import { listingCacheHeaderRules } from "./src/lib/listing-cache-headers";
-import { mediaCacheHeaderRules } from "./src/lib/media-headers";
 import {
   appEnvironment,
   cspReportOnly,
   ga4MeasurementId,
   hostPlatform,
 } from "./src/lib/env.schema";
+import { mediaHeaderRules } from "./src/lib/media-headers";
 import { noindexHeaderRules } from "./src/lib/robots-headers";
 
 // Fail the build before compiling anything when a variable **the build consumes** is missing or
@@ -67,11 +67,17 @@ const platform = hostPlatform(process.env);
 // an environment that loads no tag.
 const headerRules = [
   ...noindexHeaderRules(environment),
-  // `/media/*` for a year, `immutable` (spec 006 §2.5, §5.4; TASK-079): a variant URL is
-  // content-addressed by asset version and width, so a changed image is a new URL and a stale
-  // cache entry is impossible. `src/lib/media-headers.ts` carries the reasoning and the
-  // crawlability requirement this path puts on spec 007.
-  ...mediaCacheHeaderRules(),
+  // There is no `/media/*` rule any more: TASK-138 moved the derived bytes into
+  // `flowersoverseas-media` and this application serves no image. The year-long `immutable`
+  // promise moved with them and is written onto each object at upload
+  // (`src/lib/media-headers.ts`, `scripts/media-upload.ts`).
+  //
+  // What the move left behind is a third-party handshake on the LCP critical path, so the one
+  // header this application still sends about images is the connection hint for the origin that
+  // now serves them — same `MEDIA_ORIGIN` constant as the `img-src` below and as every image
+  // URL, and a response header rather than a `<link>` because nothing rendered into `<head>` can
+  // be emitted ahead of the hero preload (`src/lib/media-headers.ts` has the measurements).
+  ...mediaHeaderRules(),
   // The country shop root is rendered per request (it reads `?page=`/`?sort=`) and cached at the
   // edge by full URL for an hour, stale-while-revalidate for a day — spec 008 §5.4 and §13 Q2 as
   // the founder resolved them, under ADR-0018's single replica behind Cloudflare. The sources

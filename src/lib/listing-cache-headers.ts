@@ -71,7 +71,7 @@ export const LISTING_CACHE_PATHS: readonly string[] = launchLocales.map(
     `/${locale}/:country/${localeConfig(locale).pathSegments.shopCategory}`,
 );
 
-/** Fresh objects on every call, matching `noindexHeaderRules()` and `mediaCacheHeaderRules()`. */
+/** Fresh objects on every call, matching `noindexHeaderRules()` and `mediaHeaderRules()`. */
 export function listingCacheHeaderRules(): HeaderRule[] {
   return LISTING_CACHE_PATHS.map((source) => ({
     source,

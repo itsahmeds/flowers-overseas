@@ -37,7 +37,7 @@ import {
   VARIANT_MANIFEST_PATH,
   assertPinnedEncoder,
   checkVariants,
-  committedVariantFiles,
+  derivedVariantFiles,
   deriveVariants,
   findOriginal,
   generateVariants,
@@ -594,9 +594,9 @@ describe("T-13: two runs are byte-identical; one changed option is a whole-manif
   }, ENCODE_TIMEOUT);
 
   it("produces byte-identical files across two runs", () => {
-    const files = committedVariantFiles(first);
+    const files = derivedVariantFiles(first);
     expect(files).toHaveLength(FIXTURES.length * 3);
-    expect(committedVariantFiles(second)).toEqual(files);
+    expect(derivedVariantFiles(second)).toEqual(files);
     for (const path of files) {
       expect(
         Buffer.compare(
@@ -618,7 +618,7 @@ describe("T-13: two runs are byte-identical; one changed option is a whole-manif
     "re-running in the same tree rewrites the same bytes",
     async () => {
       const before = readFileSync(join(first, VARIANT_MANIFEST_PATH), "utf8");
-      const files = committedVariantFiles(first).map(
+      const files = derivedVariantFiles(first).map(
         (path) => [path, readFileSync(join(first, path))] as const,
       );
       await generateVariants({ root: first, pipeline });
@@ -812,17 +812,50 @@ describe("T-14: --check fails on a deleted, an added and a one-byte-edited file 
     expect(report.problems[0]).toContain(VARIANT_MANIFEST_PATH);
   });
 
-  it("passes on the committed tree, which now carries the demo bytes (TASK-080)", () => {
-    // The Phase-0 state since TASK-080: the founder's 31 approved assets derived into the ladder
-    // `PHASE0_SLOT_WIDTHS` chose, committed under `public/media/`, with the manifest as the only
-    // source of widths, bytes and checksums for them. `--check` is what makes a deleted file, an
-    // extra file or a one-byte edit fail in CI, where nothing can be re-derived (AC-14).
+  it("passes on this repository, whose derived bytes now live in the bucket (TASK-138)", () => {
+    // Since TASK-138 the derived tree is git-ignored: the 31 approved assets are objects in
+    // `flowersoverseas-media` and the manifest is the committed record of them. So `--check`
+    // here verifies the manifest — pinned pipeline, canonical object keys, declared boxes — and
+    // reports that the checksum half did not run, which is exactly what it should say on a
+    // runner that holds no image. Where the tree *does* exist (the tests above, a founder's
+    // machine, every upload) the byte-level half is unchanged and as strict as ever.
     const report = checkVariants({ root: repoRoot });
     expect(report.problems).toEqual([]);
     expect(report.rows).toBeGreaterThan(0);
-    expect(committedVariantFiles(repoRoot)).toHaveLength(report.rows);
+    expect(report.derivedTreePresent).toBe(
+      existsSync(join(repoRoot, MEDIA_OUTPUT_DIR)),
+    );
+    if (!report.derivedTreePresent) {
+      expect(derivedVariantFiles(repoRoot)).toHaveLength(0);
+    }
     expect(
       existsSync(join(repoRoot, SEED_DATA_DIR, "media-variants.json")),
     ).toBe(true);
+  });
+
+  it("checks the manifest even with no derived tree, and says the checksum half did not run", async () => {
+    // The CI shape of the gate (TASK-138). A manifest fault must still fail here, because this
+    // is the only place it can: a row whose `objectKey` is not the canonical one would upload
+    // to one key and be addressed at another.
+    const bare = trackedRoot(await makeRoot({ withOriginals: false }));
+    const rows = readVariantManifest(root)?.rows ?? [];
+    expect(rows.length).toBeGreaterThan(0);
+    writeFileSync(
+      join(bare, VARIANT_MANIFEST_PATH),
+      await serialiseVariantManifest(
+        bare,
+        rows.map((row, index) =>
+          index === 0 ? { ...row, objectKey: "media/elsewhere/1.avif" } : row,
+        ),
+        pipeline,
+      ),
+    );
+
+    const report = checkVariants({ root: bare, pipeline });
+
+    expect(report.derivedTreePresent).toBe(false);
+    expect(report.files).toBe(0);
+    expect(report.problems).toHaveLength(1);
+    expect(report.problems[0]).toContain("objectKey");
   });
 });

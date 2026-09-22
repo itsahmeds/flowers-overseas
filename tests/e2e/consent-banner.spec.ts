@@ -33,6 +33,7 @@ import { type BrowserContext, type Page, expect, test } from "@playwright/test";
 
 import { COOKIE_REGISTRY, isRegisteredCookie } from "../../src/config/cookies";
 import { ConsentDecisionSchema } from "../../src/lib/consent";
+import { MEDIA_ORIGIN } from "../../src/lib/media-origin";
 
 const LOCALES = ["en", "en-gb", "de", "pl"] as const;
 
@@ -733,9 +734,16 @@ test.describe("post-decision: the register and the third-party silence hold", ()
 
     const base = new URL(baseURL ?? "http://localhost:3000");
     const local = new Set(["localhost", "127.0.0.1", "::1", "[::1]"]);
-    const allowed = new Set(
-      local.has(base.hostname) ? [] : ["https://vercel.live"],
-    );
+    const allowed = new Set([
+      // The media bucket (TASK-138). It is a different *origin* but it is not a third party in
+      // the sense this test exists to police: it is our own storage, it is named in `img-src`,
+      // it sets no cookie and it receives nothing but a key — no identifier, no referrer data
+      // that is not in the URL of a public image. What must stay absent is an origin that could
+      // profile a visitor, and the two assertions below still say so: an analytics or ad origin
+      // appearing here fails exactly as it did before.
+      MEDIA_ORIGIN,
+      ...(local.has(base.hostname) ? [] : ["https://vercel.live"]),
+    ]);
     const thirdParty = [
       ...new Set(
         requested

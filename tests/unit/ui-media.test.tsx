@@ -16,10 +16,12 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it } from "vitest";
 
+import { MEDIA_ORIGIN } from "../../src/lib/media-origin.ts";
 import { Media } from "../../src/modules/ui/media/Media.tsx";
 import {
   getMediaLoader,
   placeholderLoader,
+  r2Loader,
   setMediaLoader,
 } from "../../src/modules/ui/media/loader.ts";
 import {
@@ -111,14 +113,23 @@ describe("Media in Phase 0", () => {
 
 describe("the loader seam (ADR-0015)", () => {
   afterEach(() => {
-    setMediaLoader(placeholderLoader);
+    setMediaLoader(r2Loader);
   });
 
-  it("starts as the placeholder loader, which invents no URL", () => {
-    expect(getMediaLoader()).toBe(placeholderLoader);
+  it("addresses R2 by default, and the refusal still refuses", () => {
+    expect(getMediaLoader()).toBe(r2Loader);
+    expect(
+      getMediaLoader()({
+        src: "media/fo-bq-001-hero/640.avif",
+        width: 640,
+        quality: 75,
+      }),
+    ).toBe(`${MEDIA_ORIGIN}/media/fo-bq-001-hero/640.avif`);
+    // TASK-138 moved where images are served from; it invented none. A caller that asks for the
+    // URL of an image nobody derived still gets an error rather than a plausible URL.
     expect(() =>
       placeholderLoader({ src: "bouquet.jpg", width: 800, quality: 75 }),
-    ).toThrow(/no image store in Phase 0/);
+    ).toThrow(/no derived variant/);
   });
 
   it("is swapped inside the module and returns the loader it replaced", () => {
@@ -127,7 +138,7 @@ describe("the loader seam (ADR-0015)", () => {
 
     const previous = setMediaLoader(r2);
 
-    expect(previous).toBe(placeholderLoader);
+    expect(previous).toBe(r2Loader);
     expect(getMediaLoader()).toBe(r2);
     // Read at call time, not captured at import time: this is the property that makes the swap
     // work regardless of module evaluation order.

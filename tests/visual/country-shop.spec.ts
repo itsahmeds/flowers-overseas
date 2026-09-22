@@ -13,6 +13,8 @@
 import type { BrowserContext } from "@playwright/test";
 import { expect, test } from "@playwright/test";
 
+import { settleImages } from "../support/settle-images.ts";
+
 /**
  * A recorded refusal, so the consent banner is not in the photograph — `tests/visual/corridor.spec.ts`'s
  * helper, and for its reason: the banner has its own baseline (TASK-054) and a page shot that
@@ -64,6 +66,9 @@ for (const { name, viewport } of CASES) {
     const response = await page.goto(SHOP_URL);
     expect(response?.status(), SHOP_URL).toBe(200);
     await expect(page.locator("[data-fo-listing-grid]")).toBeVisible();
+    // The photographs come from the media bucket since TASK-138, so they have to be waited for
+    // rather than assumed painted.
+    await settleImages(page);
     await expect(page.locator("main")).toHaveScreenshot(`${name}.png`);
   });
 }

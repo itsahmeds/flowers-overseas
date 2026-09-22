@@ -1,6 +1,6 @@
 /**
- * The committed-imagery byte budgets of spec 006 §2.5 — rule family 9 of §2.3 — in one place
- * (TASK-075).
+ * The per-variant byte budgets of spec 006 §2.5 — rule family 9 of §2.3 — in one place
+ * (TASK-075; the repository-total cap removed by TASK-138, see below).
  *
  * `pnpm seed:check` is the gate that makes "a 900 KB hero fails a gate rather than a Lighthouse
  * run" true (spec 006 §6 "CWV budget impact"): the caps have to be readable by a script that runs
@@ -14,11 +14,23 @@
  * `seed/schema/media.ts` is the closed slot list both sides key off, and the exhaustiveness of
  * this record is a type error rather than a runtime surprise.
  *
- * Provenance of each number, because two of them are the spec's and the rest are an
+ * **The 6 MB total is gone (TASK-138), and what replaced it.** `COMMITTED_MEDIA_BYTE_CAP` capped
+ * the derived bytes *committed to the repository*, which spec 006 §13 Q4 accepted "only until R2
+ * exists". R2 exists: the variants are objects in `flowersoverseas-media` and nothing derived is
+ * committed, so a cap on the repository would now measure nothing — and keeping it would have
+ * held the catalogue at twelve photographed products, which is the whole reason the task existed.
+ * The caps below did **not** go with it. They are now enforced against the **manifest rows**
+ * (`seed/data/media-variants.json`, which is committed, reviewed in a diff and carries the byte
+ * count and checksum of every variant) by `pnpm seed:check` rule family 9, so the gate still
+ * fires before any byte is served and no longer needs the bytes to be present to fire. Three
+ * other guards stand behind it: `pnpm media:variants --check` ties those rows to the real files
+ * wherever the derived tree exists, `scripts/media-upload.ts` refuses to upload a file that
+ * disagrees with its row or exceeds its slot's cap, and `tests/e2e/media-budgets.spec.ts`
+ * measures image transfer per page in a browser whatever origin serves it.
+ *
+ * Provenance of each number, because one of them is the spec's and the rest are an
  * `[agent-inferred]` split of the same page budget:
  *
- *  - **6 MB total** — spec 006 §13 Q4, the founder-accepted cap on derived bytes committed to the
- *    repository until R2 exists (deleted in the R2-flip task, AC-27). Spec 006 §2.5 repeats it.
  *  - **hero 90 000 B** — spec 006 §2.5: "the hero LCP candidate ≤ 90 000 B at the mobile width".
  *    `productHero` carries the same cap because it is the same thing on a PDP: `plan/01` §6 makes
  *    the product image the LCP element there.
@@ -37,13 +49,15 @@
 import { type MediaSlot, mediaSlots } from "./schema/media.ts";
 
 /**
- * Total committed bytes under `public/media/`, the whole derived set (spec 006 §13 Q4, §2.5).
- * 6 MB as 6 × 1024 × 1024, which is what `du -h` reports as `6.0M`.
+ * Where `pnpm media:variants` writes the derived ladder, relative to the repository root.
+ *
+ * Git-ignored, like the originals beside it (`.local/imagery/originals`): the bytes are an
+ * artefact of a deterministic derivation from an original the repository never holds, and their
+ * home is the bucket. A clean clone and every CI runner therefore have **no** derived tree at
+ * all, which is why every gate over these bytes is written to check the manifest first and the
+ * files only where they exist.
  */
-export const COMMITTED_MEDIA_BYTE_CAP = 6 * 1024 * 1024;
-
-/** The directory the committed variants live in, relative to the repository root. */
-export const COMMITTED_MEDIA_DIR = "public/media";
+export const DERIVED_MEDIA_DIR = ".local/media";
 
 /** The per-slot cap on a single variant file, in bytes (see the header for each number). */
 export const SLOT_BYTE_CAPS: Readonly<Record<MediaSlot, number>> = {
