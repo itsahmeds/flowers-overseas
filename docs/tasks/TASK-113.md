@@ -218,8 +218,8 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
   brief's 4.4 % was out of date). The 5 % gate now has **no headroom**: one more unreviewed `en`
   string makes 26/512 = 5.1 %, and `en`/`en-gb` stop being indexable. The founder approving
   either string above buys one back.
-- **2026-09-23 — AC-20 on the live corridor: the shop root only, not the chips. `open`,
-  to the orchestrator.** Spec 007 §2 "Internal links" and the corridor artboards' state B draw
+- **2026-09-23 — AC-20 on the live corridor: the shop root only, not the chips. `answered
+  (orchestrator, 2026-09-23)`.** Spec 007 §2 "Internal links" and the corridor artboards' state B draw
   the shop entry as the shop root **plus** up to six country categories and the indexable
   country occasions. What ships in the live state is the shop-root link with its heading and
   body, and **no chips**. Rendering them is a markup change in `CorridorPage` (a chip row) and a
@@ -227,7 +227,13 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
   destination is live in Phase 0, so today no page renders state B. In the guide state the
   question does not arise: change 1 makes the entry the link alone.
   **Question:** does spec 007/008 amend AC-20 to allow the chip row, and in which task?
-- **2026-09-23 — deviation from spec 007 §2, recorded (`/review 98` round 1, change 1).** Spec
+  **Answer (spec 007 §14 A10, `main` `f1f7644`):** spec 008 AC-20 does not require the chips. It
+  requires the five ids published and rendered with no markup change, and this branch does that:
+  the shop-root link renders in both states. The chip row is **TASK-147**'s, and it must land
+  before any destination's corridor enters state B (and so before TASK-096's indexing flip on a
+  live corridor). State B renders on no page in Phase 0. Nothing is built here.
+- **2026-09-23 — deviation from spec 007 §2, recorded (`/review 98` round 1, change 1).
+  `answered (orchestrator, 2026-09-23)`.** Spec
   007 draws the guide state's shop entry as absent ("Nothing renders here", artboard state A).
   Since spec 008 AC-20 published `country-shop-root`, the guide page renders the **shop-root link
   alone**, labelled `corridor.shop.cta`, with no heading, body, price or chip. It is the only
@@ -235,8 +241,16 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
   destination is live. Both corridor artboards' state A and state C are amended, with an
   `Amended` entry, and `docs/design/README.md` has the row. A spec 007 §14 entry is the
   orchestrator's to write.
+  **Answer (spec 007 §14 A9, `main` `f1f7644`):** the guide state's shop entry is the reviewed
+  shop-root link alone ("See flowers for {country}"). The state-B heading and body never render
+  in state A, and any florist, delivery or price claim is refused on every guide page. Round 2's
+  fix pins that text on all 14 guide pages (see `## Result`).
 
 ## Result
+
+**AC-20 met as written (spec 008); state-B chips deferred to TASK-147 per spec 007 §14 A10.**
+AC-21 is met with the two escalated waivers above still `open` (category hubs; `de`/`pl` shop
+roots). The two founder strings are still `open`.
 
 **Rebase (2026-09-22).** Rebased onto `origin/main` at `d1c0537` (TASK-114 merged as #93), then
 again onto `46db59b` (TASK-139's Linux baselines, #95), where only the generated map conflicted. The
@@ -373,3 +387,57 @@ The rebased tree differs from the pre-rebase head by exactly `main`'s own 14-fil
 gate exits 0 again (`pnpm test`: 199 files, 4688 passed, 5 skipped). The same ten e2e specs,
 against a clean build of this head, gave 270 passed and 14 skipped, exit 0 (load average 9.3 at
 the end, from sibling agents).
+
+**`/review 98` round 2 fix round (2026-09-23).** Every mutation below was applied, run and
+restored, and the tree was clean after each. The source mutation was built from a clean `.next`
+(`rm -rf .next && pnpm build`), then the source was restored and rebuilt clean. Servers ran on
+`next start -p 3113` and were killed by PID. The build slot was held throughout. Load average was
+3.4 to 7.0 on 8 cores. `.next` is deleted.
+
+1. **The guide-state shop entry is pinned on all 14 guide pages** (spec 007 §14 A9). The e2e has
+   one case per page (seven destinations × `en`/`en-gb`), and the unit twin
+   `tests/unit/corridor-page.test.tsx` has the same fourteen, each fed the href
+   `corridorShopEntry()` really returns. Each case asserts one `<a>` to `/{locale}/{slug}/flowers`
+   and the section's whole text equal to "See flowers for {country}". The phrase-list cases are
+   retitled "…the four state-B shop-entry phrasings (a second net, not a completeness check)",
+   and their comments say a paraphrase passes them. **Mutation** ("Bouquets made by florists in
+   {country}." added inside the guide-state shop entry in `CorridorPage.tsx`): unit **red, 14
+   cases** (`en/PL` … `en-gb/NL`), e2e **red, 15 cases** on `e2e-desktop`: all 14 new pins
+   (`Expected: "See flowers for Netherlands"`, `Received: "Bouquets made by florists in
+   Netherlands. See flowers for Netherlands"`) plus Poland-en's existing pin. The phrase-list
+   cases stayed green, as their new titles say they would. Restored → green.
+2. **AC-20 is ruled** (spec 007 §14 A9 and A10). Both escalations are closed above. Nothing was
+   built.
+3. **The PR body is rewritten** to the current state (`gh pr edit 98 --body-file`).
+4. **Nit: `TARGETS` is derived a second way.** `TARGETS` and `EXCLUDED` moved to
+   `tests/support/shop-crawl-targets.ts`, the one module both runners can load.
+   `tests/unit/shop-crawl-targets.test.ts` asks `listingExists()` about every catalogue category
+   and occasion × every registry country, applies `EXCLUDED`, and requires the result to equal
+   `TARGETS` for every listing locale. The comment no longer claims the pins have no source but
+   the existence set. **Mutation** (`en` `countryCategory: 139`): unit **red** (`- 139 / + 140`)
+   and the crawl **red** on the clean build (`/en: every listing page is ≤3 clicks from the
+   locale home`, `- "countryCategory": 139, + "countryCategory": 140`). Restored → green.
+5. **Nit: the fixture test's `exists` expect is removed**, not made independent.
+   `resolveLocalePath()` answers a listing kind only after it asks `listingExists()`, so the
+   router check is the predicate check. The helper is now `routesAs()` and says so. **Mutation**
+   (one row → `/en/poland/flowers/rosesx`) → **red**, `countryCategory /en/poland/flowers/rosesx
+   routes: expected false to be true`, plus the byte compare. Restored → green.
+
+No copy changed. The founder-approved occasions-index intro and TASK-091's guide sentences are the
+founder's and spec 007's owner's.
+
+**Fourth rebase (2026-09-23)**, onto `origin/main` at `f1f7644` (spec 007 A9/A10, TASK-123).
+Only `docs/codebase-map.md` conflicted. It was regenerated with `pnpm codebase:map` at every
+conflicting step and never hand-merged. One non-conflicting hunk (the `tests/unit/` count)
+auto-merged stale, so the map was regenerated once more on the rebased head, as its own commit.
+`tests/unit/listing-params.test.ts` is byte-identical to `main`'s and green. The branch history
+adds no conflict-marker line (0 across all commits past `main`).
+
+**e2e against the clean build** (the same ten specs as round 1, `e2e-desktop` and `e2e-mobile`):
+**298 passed, 14 skipped** (the case-insensitive-host guards), exit 0.
+
+**Local gates (exit codes).** `typecheck` 0, `lint` 0, `format:check` 0, `i18n:check` 0 (`en`
+and `en-gb` 25/511 = 4.9 %, unchanged), `check:no-db` 0, `codebase:map --check` 0. Touched and
+dependent unit files: `corridor-page`, `shop-crawl-targets`, `listing-url-fixture`,
+`listing-params`, `catalog-shop-entry`, `catalog-occasions-index`, `catalog-listing-link-gates`,
+`site-links-config`, `i18n-messages-schema`, `codebase-map`: 10 files, 132 passed, exit 0.
