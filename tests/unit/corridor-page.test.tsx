@@ -22,6 +22,7 @@ import type { ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
+import { corridorShopEntry } from "../../src/modules/catalog/shop-entry.ts";
 import { type CorridorView, corridorView } from "../../src/modules/geo";
 import { CorridorPage } from "../../src/modules/geo/ui/CorridorPage.tsx";
 import { loadMessages } from "../../src/modules/i18n";
@@ -63,9 +64,12 @@ function text(html: string): string {
 }
 
 /**
- * Sentences only the live state may say: a florist who makes something *here*, a thing that *can
- * arrive*, a price *for* the destination. `tests/e2e/corridor.spec.ts` refuses the same set on
- * every rendered guide page.
+ * The four phrasings of the **state-B shop entry** (`corridor.shop.heading` and
+ * `corridor.shop.body`): a florist *in* the destination, a thing that *can arrive*, a thing we *can
+ * make*, a price *for* the destination. Four known sentences and nothing more. A paraphrase
+ * passes it, so it is the second net. The first is the exact-text pin of the shop section on
+ * every guide page below (spec 007 §14 A9; `/review 98` round 2, required change 1).
+ * `tests/e2e/corridor.spec.ts` refuses the same four on every rendered guide page.
  */
 const GUIDE_STATE_CLAIMS = [
   /\bour florists? in\b/iu,
@@ -171,29 +175,66 @@ describe("the guide state (AC-8, AC-19)", () => {
  * carried the live state's heading and body with it: "Bouquets our florists in Poland can make,
  * priced for Poland, with delivery and VAT already in the price", beside "Not yet. We are choosing
  * florists in Poland now". The guide state may point at the shop; it may not describe it.
+ *
+ * Asked of all fourteen guide pages (`/review 98` round 2, required change 1): every published
+ * destination in both English locales, with the href `corridorShopEntry()` actually hands the
+ * route. The section's whole text is pinned, so any sentence added to it, a paraphrase included,
+ * fails on every page it reaches.
  */
-describe("the shop entry in the guide state (AC-19, spec 008 AC-20)", () => {
-  const withShop = corridorView("PL", "en", {
-    from: FROM,
-    liveSlots: { shopEntryHref: "/en/poland/flowers" },
-  });
-  if (withShop === undefined) throw new Error("the en Poland guide must exist");
-  const html = render(<CorridorPage view={withShop} />, "en");
-  const section =
-    /<section[^>]*data-fo-corridor-shop[^>]*>(.*?)<\/section>/su.exec(
-      html,
-    )?.[1];
+const DESTINATIONS = [
+  ["PL", "Poland"],
+  ["DE", "Germany"],
+  ["FR", "France"],
+  ["ES", "Spain"],
+  ["IT", "Italy"],
+  ["RO", "Romania"],
+  ["NL", "Netherlands"],
+] as const;
+const pages = await Promise.all(
+  (["en", "en-gb"] as const).flatMap((locale) =>
+    DESTINATIONS.map(async ([iso2, name]) => {
+      const view = corridorView(iso2, locale, {
+        from: FROM,
+        liveSlots: await corridorShopEntry(locale, iso2),
+      });
+      if (view === undefined)
+        throw new Error(`the ${locale} ${iso2} guide must exist`);
+      return { locale, iso2, name, view };
+    }),
+  ),
+);
 
-  it("is the link and nothing else", () => {
-    expect(withShop.state).toBe("guide");
-    expect(section, "the shop entry renders").toBeDefined();
-    expect(section?.match(/<a\b/gu) ?? []).toHaveLength(1);
-    expect(section).toContain('href="/en/poland/flowers"');
-    expect(text(section ?? "")).toBe("See flowers for Poland");
+describe("the shop entry in the guide state (AC-19, spec 008 AC-20, spec 007 §14 A9)", () => {
+  it("covers all fourteen guide pages", () => {
+    expect(pages).toHaveLength(14);
   });
 
-  it("makes no florist, delivery or availability claim anywhere on the page", () => {
-    const body = text(html);
+  for (const { locale, iso2, name, view } of pages) {
+    it(`${locale}/${iso2}: is the link to the shop root, labelled "See flowers for ${name}", and nothing else`, () => {
+      const html = render(<CorridorPage view={view} />, locale);
+      const section =
+        /<section[^>]*data-fo-corridor-shop[^>]*>(.*?)<\/section>/su.exec(
+          html,
+        )?.[1];
+      expect(view.state).toBe("guide");
+      expect(section, "the shop entry renders").toBeDefined();
+      expect(section?.match(/<a\b/gu) ?? []).toHaveLength(1);
+      expect(section).toContain(
+        `href="${view.liveSlots.shopEntryHref ?? "!"}"`,
+      );
+      expect(view.liveSlots.shopEntryHref).toMatch(
+        new RegExp(`^/${locale}/[a-z-]+/flowers$`, "u"),
+      );
+      expect(text(section ?? "")).toBe(`See flowers for ${name}`);
+    });
+  }
+
+  it("carries none of the four state-B shop-entry phrasings on the Poland page (a second net, not a completeness check)", () => {
+    const poland = pages.find(
+      (page) => page.locale === "en" && page.iso2 === "PL",
+    );
+    if (poland === undefined) throw new Error("the en Poland guide must exist");
+    const body = text(render(<CorridorPage view={poland.view} />, "en"));
     for (const claim of GUIDE_STATE_CLAIMS) {
       expect(body, String(claim)).not.toMatch(claim);
     }
