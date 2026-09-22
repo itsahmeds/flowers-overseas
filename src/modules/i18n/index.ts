@@ -145,6 +145,7 @@ export {
   type Money,
   MoneySchema,
   type ZoneNameStyle,
+  type ZonedClock,
   formatDate,
   formatList,
   formatMoney,
@@ -154,6 +155,7 @@ export {
   formatRelativeTime,
   formatTimeInZone,
   moneyDecimalString,
+  zonedClock,
 } from "./format.ts";
 
 export { collator, sortBy } from "./collate.ts";

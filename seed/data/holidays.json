@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "source": "seed",
+  "entity": "country_holiday",
+  "origin": "authored",
+  "notes": [
+    "plan/13 D6: every row below is a public holiday transcribed from the destination's official calendar for that exact year and verified by a human before it is committed. There is no recurrence rule and no derived date in this file on purpose — Corpus Christi and Whit Monday move with Easter, and several fixed holidays gain a substitute day when they fall on a weekend, so 'the usual date' is how a florist gets closed on a day they are open.",
+    "`closed: true` means the destination's florists do not deliver that day; src/modules/geo/delivery renders it as spec 009 AC-7's `publicHoliday` reason, in words, beside the date. `closed: false` is the shape for a holiday a country observes and still delivers on.",
+    "Empty in Phase 0, and that is the honest value rather than a gap: no destination carries an `operations` block yet (spec 009 §13 Q3), so no destination renders a delivery window for a holiday to fall inside. Poland's rows land with Poland's cutoff in TASK-124, and `pnpm seed:check` fails a published country whose rendered window has no holiday rows from that day on."
+  ],
+  "rows": []
+}

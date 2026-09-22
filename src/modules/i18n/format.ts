@@ -400,6 +400,97 @@ export function formatTimeInZone(
   }).format(at);
 }
 
+/* -------------------------------------------------------------------------- */
+/* The zone reader: ICU's only non-formatting door (spec 009 §2; `plan/03` §10). */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * A wall clock in some IANA zone, as integers. Months are 1–12 and days 1–31, i.e. what a human
+ * reads off a calendar, not `Date`'s zero-based month.
+ */
+export interface ZonedClock {
+  readonly year: number;
+  /** 1–12. */
+  readonly month: number;
+  /** 1–31. */
+  readonly day: number;
+  /** 0–23, on a 24-hour clock: midnight is `0`, never `24`. */
+  readonly hour: number;
+  readonly minute: number;
+  readonly second: number;
+}
+
+/**
+ * **What time is it in `timeZone` at `instant`?** — the one primitive spec 009's delivery
+ * calendar needs from ICU, and the only function in this file that returns numbers instead of a
+ * string.
+ *
+ * It is here, in a module whose header says "no date is computed here", for one reason and it is
+ * a rule rather than a preference: `fo/no-adhoc-intl` denies `Intl.*` everywhere in `src/` except
+ * this file and `collate.ts`, and `CLAUDE.md` forbids disabling a lint rule. ICU's zone database
+ * is the only source in the runtime for "was Warsaw on CET or CEST at this instant" (Node ships
+ * no `Temporal` and the project has no date dependency), so either the door is opened here or a
+ * second `Intl` door is opened somewhere else. **Nothing is computed here**: no day is added, no
+ * cutoff is compared, no window is built, no date is rendered. The arithmetic that turns these
+ * integers into a delivery grid, and every DST decision in it, stays in
+ * `src/modules/geo/delivery/` where `plan/03` §9/§10 and spec 009 §3 put it.
+ *
+ * `hourCycle: "h23"` is load-bearing: `hour12` locales render midnight as `24` under `h24` and as
+ * `12 AM` under the default, and a delivery calendar that read midnight as hour 24 would put the
+ * cutoff comparison a day out. The tag is fixed at `en-US-u-ca-iso8601` — not the reader's locale
+ * — because the answer is a number, not copy: a Hijri or Buddhist calendar (locales `ar-SA`,
+ * `th-TH` select them by default) would return a different `year` for the same instant.
+ *
+ * @throws when `timeZone` is not an IANA identifier ICU knows, or `instant` is an Invalid Date.
+ */
+export function zonedClock(instant: Date, timeZone: string): ZonedClock {
+  const at = InstantSchema.parse(instant);
+  const zone = TimeZoneSchema.parse(timeZone);
+  const parts = dateTimeFormat(ZONE_CLOCK_TAG, {
+    ...ZONE_CLOCK_OPTIONS,
+    timeZone: zone,
+  }).formatToParts(at);
+  const read = (type: Intl.DateTimeFormatPartTypes): number => {
+    const part = parts.find((candidate) => candidate.type === type);
+    if (part === undefined) {
+      throw new Error(
+        `ICU returned no \`${type}\` part for zone \`${zone}\`: the zone clock cannot be read`,
+      );
+    }
+    return Number(part.value);
+  };
+  // `era` is requested so a year before 1 CE is not silently read as its positive mirror; the
+  // delivery calendar never sees one, and a reader that did would rather have the throw.
+  const era = parts.find((candidate) => candidate.type === "era")?.value;
+  if (era !== undefined && era !== "AD") {
+    throw new Error(
+      `zone clock in \`${zone}\` fell in era \`${era}\`; only the common era is supported`,
+    );
+  }
+  return {
+    year: read("year"),
+    month: read("month"),
+    day: read("day"),
+    hour: read("hour"),
+    minute: read("minute"),
+    second: read("second"),
+  };
+}
+
+/** Fixed, deliberately not the reader's locale — see `zonedClock`. */
+const ZONE_CLOCK_TAG = "en-US-u-ca-iso8601";
+
+const ZONE_CLOCK_OPTIONS: Intl.DateTimeFormatOptions = {
+  era: "short",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+  hourCycle: "h23",
+};
+
 /**
  * Thresholds for picking the unit `Intl.RelativeTimeFormat` is given, coarsest last. The month
  * and year lengths are the display approximations 30 and 365 days, not calendar lengths: this
