@@ -48,6 +48,56 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
   `delivery.picker.{unavailable,preview,live}`, `delivery.reason.*` (six keys, exported as
   `deliveryReasonKeys`), `delivery.holiday.{iso2}.{name}` and the occasion names. AC-7's "visible
   words, present in the accessible name" half is rendered there against this schema.
+- **2026-09-22 — `/review 97` round 1: FAIL on `945c049`** (CI run 35764143295 on that SHA: every
+  job green except `visual`, which failed on 53 missing `linux/` baselines, TASK-139's gate. This
+  diff has no markup). The module is right. I checked the outputs of all three launch zones
+  directly, not only the pass counts: the grid, 32 DST readings, 8 DST windows, `nextOpenDate` and
+  a 1 152-point half-hourly `cutoffAt` sweep across the four Sundays for both zones were identical
+  under `TZ=UTC`, `America/New_York` and `Pacific/Auckland`. The sweep also matched the EU rule
+  worked out by hand with 0 mismatches. Every host-zone mutation went red under all three launch
+  zones: host `getDate` 6/6/8 failed, `setHours(0)` start-of-day 15/15/15, host `getHours`
+  39/39/39, `toLocaleDateString` with no zone 6/6/8. Frozen `+01:00/+00:00` failed 20 and frozen
+  `+02:00/+01:00` failed 19, so between them both sides of all four Sundays in both zones went
+  red. Most reason mutations went red too: Sunday above holiday 1, holiday above past-cutoff 1,
+  not-a-delivery-day above Sunday 5, `reasonKey` dropped from the Sunday branch 5, a second
+  reason in a `reasonKeys` field 1, two keys joined in one field 1, holiday branch removed 5.
+  **Required before round 2:**
+  1. **The test harness leaks the process zone.**
+     `tests/unit/geo-delivery.test.ts` L415–423 sets `process.env.TZ` and then runs
+     `delete process.env.TZ` instead of putting back the zone it found. From that point on (AC-6,
+     AC-7, AC-11, mutations, which is about two thirds of the file) every case runs in the host's
+     `/etc/localtime`, whatever `TZ` the suite was started with. A probe placed before the AC-6
+     and AC-7 blocks read `TZ=undefined, icu=Asia/Karachi` under all three launch zones. Result:
+     the 32 `DST_READINGS` cases never run under the three zones. With the host-`getDate` mutation
+     applied they stayed **green** on this Karachi (+05:00) machine and would be red on a UTC
+     runner, so whether they catch the bug depends on the machine. CI sets no `TZ` matrix either.
+     Fix: restore the previous value, using `withProcessTimeZone` or an async-safe twin. Run
+     `DST_READINGS` and the exactly-at-cutoff case inside the `PROCESS_ZONES` loop. Build the AC-7
+     `cases` contexts inside `it`, not when the file is collected. Correct the "passes under `TZ=…`"
+     sentence in `## Result` and in the PR body.
+  2. **One documented precedence rule has no test.** The mutation "a non-Sunday
+     non-delivery weekday outranks `publicHoliday`" left all **112/112 green** under `TZ=UTC`.
+     `types.ts` documents that a holiday outranks the weekly rules, but the only holiday in the
+     fixture falls on a Sunday. Add the case of a public holiday on a Saturday under
+     `WEEKDAYS_ONLY_OPERATIONS`, expecting `delivery.reason.publicHoliday`, and show it going red
+     under that mutation.
+- **2026-09-22 — `/review 97` → TASK-124 (not blocking PR 97): the holiday data fails open past its
+  last year.** The calendar has no idea which years the holiday data covers. A probe used 2027
+  PL rows only, a grid from 27 Dec 2027 and `live`. It offered **2028-01-01 (New Year, a
+  Saturday) as OPEN**, and `nextOpenDate` after the 31 Dec cutoff returned `2028-01-01`.
+  `nextAvailableDate` looks 366 days ahead and a grid covers 21 days. A `seed:check` "in-window"
+  rule is only checked when CI runs, so a site served weeks later without a rebuild still reaches
+  years with no rows. TASK-124's rule must cover the build date plus the full 366-day horizon.
+  Otherwise the orchestrator decides whether the calendar should close dates in an uncovered year,
+  which needs a coverage field in `holidays.json`'s schema. Also, the third `notes` line of
+  `seed/data/holidays.json` describes, in the present tense, a `seed:check` rule that does not
+  exist yet. Make the sentence true when the rule lands.
+- **2026-09-22 — `/review 97` nits (fix with round 2 if convenient):** `occasionKeysByDate` sorts
+  with `localeCompare`, which depends on the host's locale, so use a code-point comparison.
+  `DeliveryDateSchema`'s `IsoDateSchema` accepts `2026-02-30`, so reuse `HolidayDateSchema`'s
+  round-trip check. `deliveryCalendar()` defaults `now` to `new Date()`. That default is fine as
+  the production seam and I am noting it only. The orchestrator still needs to set the `TASKS.md`
+  row to `in_review` with the PR link, since it shows `in_progress` / `—`.
 
 ## Escalations
 
