@@ -381,6 +381,10 @@ export {
   productCardView,
   publishedCountries,
   writeExistenceSummary,
+  // The occasions index's URL in one locale, or `undefined` where it may not be linked or does
+  // not exist (TASK-113). The footer reads it through the layout, for `corridorShopEntry()`'s
+  // reason: `src/modules/ui` may not import the catalogue.
+  occasionsIndexHref,
 } from "./listing";
 
 // The corridor page's shop entry (spec 007 §2 "Internal links", spec 008 §2 "Links", AC-20;
