@@ -69,6 +69,9 @@ function bottomOf(sku: string, iso2: string): number {
   );
 }
 
+/** The funeral sub-band after `funeral_essential` in `priceBandKeys` order. */
+const FUNERAL_SECOND_SUB_BAND = "funeral_classic";
+
 /** Problems of one mode, for a one-field mutation of the clean input. */
 function problemsFor(
   overrides: Partial<CatalogueCheckInput>,
@@ -307,6 +310,104 @@ describe("every failure mode has a fixture (AC-5 / T-03)", () => {
     expect(problems).toHaveLength(1);
     expect(problems[0]).toContain("funeral_luxury");
     expect(problems[0]).toContain("ladder at 1200");
+  });
+
+  /**
+   * Four rules no case reached (TASK-143): with any one of their `problems.push` neutered, all 82
+   * cases of the catalogue suites stayed green. Each is one field of the clean input moved.
+   */
+  it("band: a funeral ladder that starts off plan/10 §2.3's funeral row", () => {
+    const problems = problemsFor(
+      {
+        destinations: clean.destinations.map((destination) =>
+          destination.countryIso2 === "PL"
+            ? {
+                ...destination,
+                bands: {
+                  ...destination.bands,
+                  funeral_essential: {
+                    ...(destination.bands.funeral_essential ?? {
+                      fromMinor: 0,
+                      toMinor: 0,
+                    }),
+                    fromMinor: 100,
+                  },
+                },
+              }
+            : destination,
+        ),
+      },
+      "band",
+    ).filter((problem) => problem.includes("starts the funeral ladder"));
+    expect(problems).toHaveLength(1);
+    expect(problems[0]).toContain(
+      "PL funeral_essential starts the funeral ladder at 1 ",
+    );
+  });
+
+  it("band: two funeral sub-bands that overlap instead of partitioning the row", () => {
+    const pl = clean.destinations.find(
+      (destination) => destination.countryIso2 === "PL",
+    );
+    const essential = pl?.bands.funeral_essential;
+    const next = pl?.bands[FUNERAL_SECOND_SUB_BAND];
+    if (essential === undefined || next === undefined) {
+      throw new Error("PL must author its funeral sub-bands");
+    }
+    const problems = problemsFor(
+      {
+        destinations: clean.destinations.map((destination) =>
+          destination.countryIso2 === "PL"
+            ? {
+                ...destination,
+                bands: {
+                  ...destination.bands,
+                  [FUNERAL_SECOND_SUB_BAND]: {
+                    ...next,
+                    fromMinor: essential.toMinor,
+                  },
+                },
+              }
+            : destination,
+        ),
+      },
+      "band",
+    ).filter((problem) =>
+      problem.includes("not above the previous sub-band's ceiling"),
+    );
+    expect(problems).toHaveLength(1);
+    expect(problems[0]).toContain(`PL ${FUNERAL_SECOND_SUB_BAND} starts at`);
+  });
+
+  it("surcharge-amount: a destination with no transcribed plan/10 surcharge equivalent", () => {
+    const problems = problemsFor(
+      {
+        destinations: clean.destinations.map((destination) =>
+          destination.countryIso2 === "NL"
+            ? { ...destination, countryIso2: "SE" }
+            : destination,
+        ),
+      },
+      "surcharge-amount",
+    ).filter((problem) => problem.startsWith("SE "));
+    expect(problems).toHaveLength(1);
+    expect(problems[0]).toContain(
+      "has no transcribed plan/10 §2.3 surcharge equivalent in `PLAN_10_SURCHARGES`",
+    );
+  });
+
+  it("fx-snapshot: a rate from a currency to itself", () => {
+    const problems = problemsFor(
+      {
+        fxRates: clean.fxRates.map((rate, index) =>
+          index === 0 ? { ...rate, quote: rate.base } : rate,
+        ),
+      },
+      "fx-snapshot",
+    ).filter((problem) => problem.includes("to itself"));
+    expect(problems).toEqual([
+      "EUR/EUR is a rate from a currency to itself, which is not a rate",
+    ]);
   });
 
   it("band: a destination with no transcribed plan/10 column", () => {
