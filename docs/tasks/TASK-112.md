@@ -20,25 +20,97 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 - `specs/008-country-shop-category-occasion-pages.md` — `## 0. Index` first, then §2 (the existence rules), §5.2 (module layout, the one-source rule), §5.3 (the state list for your page type), §6, your own AC lines, the matching T rows, and §14 **A1–A10**.
 - `specs/007-corridor-pages.md` §14 A5–A8 only.
-- `docs/tasks/TASK-109.md` `## Result` — the shared routes, the resolver and the conventions you are extending; `docs/tasks/TASK-107.md` and `docs/tasks/TASK-108.md` `## Result`.
-- `docs/design/wireframes/` — your page type's desktop and mobile artboards, `docs/design/README.md` (including its "where the sheet and the code differ" rows), `docs/design/wireframes/canvas.json`.
-- `docs/codebase-map.md` — `modules/catalog` (`listing.ts`, `routes.ts`, `slugs.ts`), `modules/ui/shop`, `modules/seo`.
-
-## Carry-forwards
-
-One dated bullet per `/review`, newest last.
-
-- **From the orchestrator (2026-09-18, spec 008 §14 A5 / spec 007 §14 A8):** your page type is served from the shared per-depth route file TASK-109 introduces (`src/app/[locale]/[segment]/page.tsx` or `[segment]/[child]/page.tsx`) through `resolveLocalePath()` in `modules/catalog/routes.ts` — add your branch to the resolver and its module page component; create no new route file at depth 2 or 3. Trailing slash = 308 (A7).
-
-## Escalations
-
-One dated bullet per escalation: the question, who it went to, the answer or `open`.
-
-_None recorded._
+- `docs/tasks/TASK-109.md` `- **E-1 (2026-09-21, open — for the orchestrator, not a design question).** D-1's decision below
+  is kept, and it has a **merge-order consequence** that needs a decision from whoever sequences
+  the wave: on the committed corpus the two hubs render **14 destination links** (7 per hub in
+  `en`, and the same again in `en-gb`) at depth-4 URLs — `/en/{country}/flowers/roses` and
+  `/en/{country}/occasions/mothers-day` — whose route files are **TASK-110's and TASK-111's**.
+  Verified against a real server on 2026-09-21: every one of them is a 404 today. Spec 004 AC-14
+  and spec 007 AC-17 forbid a link to a non-200, and spec 008 AC-21's whole-site crawl (its own
+  task) will fail if this branch is on `main` without them. There is no `site-links.ts` id to gate
+  them behind: AC-20 creates the country-category and country-occasion ids and has not run, so
+  option (b) — invent the flag here — is another task's scope and is what §5.2's one-source rule
+  forbids besides. **Asked: merge this PR after TASK-110 and TASK-111, or hold all three for one
+  merge.** No code change is needed either way; the hubs light up the moment those routes exist.
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
+**PR:** https://github.com/itsahmeds/flowers-overseas/pull/88 — `feat(shop): category and occasion hubs (TASK-112)`, three commits on
+`task/TASK-112-category-occasion-hubs`, rebased onto `origin/main` at `3a16b3b` (so the cards
+render TASK-080's photographs, not grey boxes).
 
-_Pending._
+**What shipped.** The two destination-less hubs, `/{locale}/{shopCategory}/{category}` and
+`/{locale}/{occasions}/{occasion}` — spec 008 **AC-7** and **AC-11**. Both are branches of the
+**existing** depth-3 route file `src/app/[locale]/[segment]/[child]/page.tsx` and of the one
+resolver `resolveLocalePath()` (§14 **A5**): no new route file at any depth, and the four page
+types now sharing depth 3 are disjoint by their first segment, which
+`tests/unit/catalog-routes.test.ts` asserts both ways (each shape resolves to exactly one kind, and
+a path matching two branch shapes still resolves deterministically). New module code is
+`src/modules/catalog/ui/{CategoryHubPage,OccasionHubPage}.tsx` plus the `hubItems` half of
+`listingView()`; `ListingGrid`/`ProductCard` take a `ListingCardView` union so one card renders
+both the priced and the priceless state — there is no second card and no second grid. A hub reads
+`hubItems` through `HubCardViewSchema`, which has no `price` field at all, so "a hub shows no
+money" (§14 **A3**) holds at the parse exit: the e2e scans the whole served document for `€ £ PLN
+zł` and finds none. The occasion hub's table is `occasionDate(rule, year)`'s answer per published
+destination through `formatDate`, two columns (the third is TASK-111's, §14 **A10**), rows absent
+where the occasion is not observed and present-but-dateless where it is observed and no date
+computes (Romania's Orthodox Easter); an **evergreen** occasion renders no table at all (§14
+**A1**). Countries come before products on the category hub, in `collator(locale)` order.
+
+**Tests, per layer.** unit 380 across the nine files this diff touches (`catalog-hub-pages` 
+alone is new, 376 lines of assertions over both page components, the resolver branch order, the
+date-table branches and the no-money refinement); e2e 40 green against a real
+`pnpm build && pnpm start` — `tests/e2e/hubs.spec.ts` (T-01's existence set, the 15 404 shapes with
+no `Location`, the trailing-slash **308** of §14 **A7**, `/en/flowers` still 404 per §13 Q4, T-07's
+money scan, T-11's date table, JS-disabled rendering, no `Vary`/`Set-Cookie`) plus the four hub
+rows added to `chrome-honesty`; a11y 7 green (both hub types, an evergreen hub, `/ar-XB`, zero
+serious/critical, no exception list); visual 48 green including four new `darwin` baselines. Full
+`pnpm vitest run` is 4404 passed / 2 failed, and both failures are `tests/unit/tasks-brief.test.ts`
+complaining about **TASK-080's row in `TASKS.md`** — reproduced on `origin/main`, the orchestrator's
+file, untouched here.
+
+**Numbers a reviewer needs.** Script budget **+0.0 KB on every route**, measured from the build:
+each of `/en/flowers/roses`, `/en-gb/flowers/roses`, `/en/occasions/mothers-day` and
+`/en-gb/occasions/mothers-day` is 121.5 KB br total (116.9 first-load + 4.6 `next/dynamic`), exactly
+the locale home's number and inside the 128 KB budget — these pages mount no island, as AC-23
+requires until TASK-114. All four are committed to `bundle-baseline.json` and joined
+`DEFAULT_URLS`; the two occasion hubs joined the Lighthouse URL set. `en` unreviewed message share
+**3.3 %** (16/480), inside the 5 % gate that keeps the locale indexable. `pnpm typecheck`, `lint`,
+`i18n:check`, `check:no-db`, `codebase:map --check`, `specs:index --check` all green.
+
+**The build slot was taken deliberately, once**, for the three things that cannot be judged without
+a build: the four new visual baselines, the +0.0 KB budget measurement, and one pass of the new
+e2e/a11y against real HTML. Load average at acquisition was **13.86** on 8 cores, which is why no
+Lighthouse number is reported here — under that load it would measure the machine. CI owns it.
+
+**Corrections to the killed run.** The first two commits are the previous agent's, kept; the third
+commit fixes three things it left behind. A `§` had been mangled into `\u00a7` in
+`bundle-baseline.json`. The codebase map was regenerated after the rebase. And four `en` strings
+were marked `reviewed: true` under the founder's name — `categoryHub.destinationLink`,
+`occasionHub.datesCaption`, `occasionHub.dateUnknown`, `occasionHub.destinationsHeading` — which he
+never saw: two are reworded off the artboards and two are drawn nowhere on them.
+`tests/unit/i18n-messages-schema.test.ts` is explicit that "an implementer never signs the founder's
+name", so they now carry `reviewed: false` and are pinned into `AWAITING_FOUNDER_REVIEW` with the
+reason, and clause (e) of the TASK-112 row in `docs/design/README.md` records it.
+
+**CI (run 35608450438, `ci:full`).** 14 jobs green — `lint`, `typecheck`, `commitlint`,
+`test-contract`, `test-integration`, `i18n-check`, `seo-validate`, `catalogue-check`, `seed-check`,
+`corridor-check`, `db-check`, `audit`, `dev-os-check`, `env-build-failure`. Two failures, **neither
+this branch's**: `test-unit` is 4383 passed / 2 failed and both are `tasks-brief.test.ts` on
+**TASK-080's row in `TASKS.md`** (reproduced on `origin/main`; `TASKS.md` is the orchestrator's
+file and this task was told not to edit it), and `preview` got a **500 from `/api/health`** on the
+Vercel deployment — the same Hobby-environment failure TASK-080's row records three days ago.
+`visual`, `e2e`, `a11y`, `build`, `container` and `lighthouse` all `need: preview`, so all six
+skipped. **The local runs against a real `pnpm build && pnpm start` are therefore the evidence of
+record for the browser gates on this task**: e2e 40 green, a11y 7 green, visual 48 green. The
+reviewer should read them as such, or re-run CI once the preview environment is healthy.
+
+**Handed to a later task.** TASK-110/111: the 14 depth-4 destination links this page renders are
+404 until your routes land — see **E-1**, which is a merge-order ask, not a code change. TASK-111:
+the occasion table's third column and its artboard parity check. TASK-113: the occasions-index
+crumb and out-link are text, gated on one helper, `occasionsIndexHref()`, which wants both
+`listingExists()` and the `occasions` `site-links.ts` id published — flip the flag, no call site
+changes. TASK-114: toolbar and pagination. TASK-115: `BreadcrumbList` and `ItemList` build from the
+same `view.breadcrumb`/`view.hubItems` arrays the page renders; the slots are in both components and
+empty. Also regenerated `country-shop-{desktop,mobile}` darwin baselines, which were stale on
+`origin/main` because TASK-080's imagery refreshed 41 baselines and missed those two.

@@ -140,6 +140,14 @@ export const DEFAULT_URLS = [
   // a hope.
   "/en/poland/flowers/roses",
   "/en-gb/poland/flowers/roses",
+  // The two destination-less hubs (spec 008 AC-23; TASK-112). They mount no island either — a
+  // destination picker is seven links and a date table is a table — so their number must equal the
+  // locale home's, and a client-side currency repaint or a sort island added here would show up as
+  // a regression against the committed baseline.
+  "/en/flowers/roses",
+  "/en-gb/flowers/roses",
+  "/en/occasions/mothers-day",
+  "/en-gb/occasions/mothers-day",
 ] as const;
 
 export const DEFAULT_DIST = ".next";

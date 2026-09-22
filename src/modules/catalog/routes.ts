@@ -32,10 +32,21 @@
  * `[country]/[occasions]/[occasion]`) collide with each other *and* with the depth-3 file's own
  * slug names. Both the country category and the country occasion resolve here.
  *
- * **What is not here yet.** `categoryHub` and `occasionHub` share depth 3 with the corridor and
- * the shop root, and `occasionsIndex` shares depth 2 with the destinations hub; TASK-112/113 add
- * their branches to this union and their components to the same two route files. Until then those
- * URLs resolve to `notFound`, which is what they must do while the pages do not exist.
+ * **Four page types now share depth 3** (TASK-112): the corridor page, the country shop root, the
+ * category hub `/{locale}/{shopCategory}/{categorySlug}` and the occasion hub
+ * `/{locale}/{occasions}/{occasionSlug}`. They are **disjoint by their first segment** — this
+ * locale's `destinations` segment (corridor), its `shopCategory` segment (category hub), its
+ * `occasions` segment (occasion hub), or a country slug (shop root) — and spec 008 **AC-4**'s
+ * collision matrix is what keeps those four sets from intersecting: no country slug equals a path
+ * segment in its locale, and `seed:check` refuses a category or occasion slug that equals a
+ * `PATH_SEGMENT_KEYS` value or a country slug. The branches below are therefore **appended**
+ * rather than interleaved, and `tests/unit/catalog-routes.test.ts` asserts both halves — that each
+ * shape resolves to exactly one kind, and that a path whose segments match two branches' shapes
+ * still resolves deterministically to the one listed first.
+ *
+ * **What is not here yet.** `occasionsIndex` shares depth 2 with the destinations hub; TASK-113
+ * adds its branch to this union and its component to the depth-2 route file. Until then that URL
+ * resolves to `notFound`, which is what it must do while the page does not exist.
  *
  * Nothing here reads a cookie, a header or the clock.
  */
@@ -91,6 +102,25 @@ export type LocalePathResolution =
       readonly occasionKey: string;
       /** The occasion's slug in this locale, as the URL spells it. */
       readonly occasionSlug: string;
+    }
+  /**
+   * The two destination-less hubs (spec 008 §2 rows 10 and 13, **AC-7**, **AC-11**; TASK-112).
+   *
+   * They carry the **slug** and not the catalogue key, exactly as the corridor and the shop root
+   * carry the country slug: the page asks `listingView()` for the view model with the slug the URL
+   * spells, so one function resolves a slug to a key and the route never holds a second answer to
+   * "which entity is this". No `iso2`: a hub has no destination, which is the whole reason it
+   * shows no money (§8).
+   */
+  | {
+      readonly kind: "categoryHub";
+      readonly locale: LocaleCode;
+      readonly slug: string;
+    }
+  | {
+      readonly kind: "occasionHub";
+      readonly locale: LocaleCode;
+      readonly slug: string;
     };
 
 const NOT_FOUND: LocalePathResolution = { kind: "notFound" };
@@ -166,6 +196,19 @@ export async function resolveLocalePath(
         countrySlug: segment,
       };
     }
+
+    // `/{locale}/{shopCategory}/{categorySlug}` — the destination-less category hub (§2 row 10).
+    // The bare `/{locale}/{shopCategory}` stays a 404: no country-less categories index ships
+    // (§13 Q4), which is the depth-2 branch above refusing this segment.
+    if (isOwnSegment(code, "shopCategory", segment)) {
+      return hubResolution(code, "categoryHub", "category", child);
+    }
+
+    // `/{locale}/{occasions}/{occasionSlug}` — the occasion hub (§2 row 13). The bare
+    // `/{locale}/{occasions}` is the occasions index, TASK-113's, and 404s until it exists.
+    if (isOwnSegment(code, "occasions", segment)) {
+      return hubResolution(code, "occasionHub", "occasion", child);
+    }
   }
 
   if (segments.length === 3) {
@@ -234,6 +277,28 @@ export async function resolveLocalePath(
   return NOT_FOUND;
 }
 
+/**
+ * One hub, resolved from the slug the URL spells (spec 008 §2 rows 10 and 13, §14 **A1**).
+ *
+ * Two misses, both of them 404s and neither a redirect: a slug this locale has never authored
+ * (`resolveSlug()` answers `undefined` — the German and Polish hubs do not exist until TASK-106
+ * authors their slugs), and an entity whose hub fails its existence rule (`listingExists()`, which
+ * reads §14 A1's evergreen clause as well as the seasonal one). The rule is read here and nowhere
+ * else, so the router, `generateStaticParams`, the sitemap and the link renderers cannot disagree.
+ */
+async function hubResolution(
+  locale: LocaleCode,
+  pageType: "categoryHub" | "occasionHub",
+  kind: "category" | "occasion",
+  slug: string,
+): Promise<LocalePathResolution> {
+  const entityKey = resolveSlug(locale, kind, slug);
+  if (entityKey === undefined) return NOT_FOUND;
+  const exists = await listingExists({ pageType, locale, entityKey });
+  if (!exists) return NOT_FOUND;
+  return { kind: pageType, locale, slug };
+}
+
 /** One prebuilt URL of the depth-2 route file. */
 export interface LocaleSegmentParams {
   readonly locale: string;
@@ -278,10 +343,26 @@ export async function localeChildParams(): Promise<
     const destinations = localePath(locale, "destinations").split("/")[2] ?? "";
     const shopCategory = localePath(locale, "shopCategory").split("/")[2] ?? "";
 
+    const occasions = localePath(locale, "occasions").split("/")[2] ?? "";
+
     for (const page of await listingPages(locale)) {
-      if (page.pageType !== "countryShopRoot") continue;
-      if (page.countrySlug === undefined) continue;
-      params.push({ locale, segment: page.countrySlug, child: shopCategory });
+      if (
+        page.countrySlug !== undefined &&
+        page.pageType === "countryShopRoot"
+      ) {
+        params.push({ locale, segment: page.countrySlug, child: shopCategory });
+        continue;
+      }
+      // The two hubs (TASK-112). Their segment is the *page type's* localised segment and their
+      // child is the entity's authored slug — the mirror image of the shop root, whose segment is
+      // the destination. Both come from `listingPages()`, so the prebuilt set is the existence set
+      // and nothing here restates a rule (AC-3).
+      if (page.slug === undefined) continue;
+      if (page.pageType === "categoryHub") {
+        params.push({ locale, segment: shopCategory, child: page.slug });
+      } else if (page.pageType === "occasionHub") {
+        params.push({ locale, segment: occasions, child: page.slug });
+      }
     }
 
     for (const slug of corridorSlugsIn(locale)) {

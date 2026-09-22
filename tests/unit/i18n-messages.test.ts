@@ -43,6 +43,11 @@ describe("the shell catalogue", () => {
       // client provider and costs no client bytes (spec 005 AC-3).
       "breadcrumb",
       "catalog",
+      // `categoryHub` and `occasionHub` are spec 008 §7's two hub namespaces (TASK-112): the
+      // `h1` patterns, the destination picker's headings and its two destination states, and the
+      // date table's caption, columns and "omitted" cell. Server Components again, so they are in
+      // no `ROUTE_NAMESPACES` entry and cost no client bytes.
+      "categoryHub",
       "chooser",
       "common",
       // `company`, `destinations`, `footer` and `nav` are spec 004 §7's chrome namespaces, added
@@ -79,6 +84,7 @@ describe("the shell catalogue", () => {
       "media",
       "meta",
       "nav",
+      "occasionHub",
       "occasions",
       // `shop` is spec 008 §7's namespace (TASK-108): the listing grid's accessible name, the
       // toolbar's count, its three sort labels and the ranking disclosure, the pagination labels

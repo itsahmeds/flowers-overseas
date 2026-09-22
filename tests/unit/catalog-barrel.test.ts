@@ -274,6 +274,9 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         "CountryCategoryPage",
         "CountryShopRootPage",
         "ListingBreadcrumb",
+        // the two destination-less hubs' page components (TASK-112), for the same reason.
+        "CategoryHubPage",
+        "OccasionHubPage",
         "listingAlternatePaths",
         "localeChildParams",
         "localeGrandchildParams",
@@ -311,10 +314,12 @@ describe("src/modules/catalog barrel (AC-1)", () => {
       `${moduleDir}/slugs.ts`,
       `${moduleDir}/static/index.ts`,
       `${moduleDir}/types.ts`,
+      `${moduleDir}/ui/CategoryHubPage.tsx`,
       `${moduleDir}/ui/CountryCategoryPage.tsx`,
       `${moduleDir}/ui/CountryOccasionPage.tsx`,
       `${moduleDir}/ui/CountryShopRootPage.tsx`,
       `${moduleDir}/ui/ListingBreadcrumb.tsx`,
+      `${moduleDir}/ui/OccasionHubPage.tsx`,
       `${moduleDir}/ui/labels.ts`,
     ]);
   });

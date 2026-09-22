@@ -98,9 +98,11 @@ import {
 import {
   type CategoryTileView,
   type ChipLinkView,
+  type HubCardView,
   type ProductCardView,
   CategoryTileViewSchema,
   ChipLinkViewSchema,
+  HubCardViewSchema,
   ProductCardViewSchema,
   altFor,
   assetsForProduct,
@@ -172,15 +174,17 @@ const PRICE_LABEL_KEY = "catalog.price.inclusive" as const;
  * §2 and §8 forbid any money on a destination-less hub ("a cross-country minimum converted at
  * today's rate is a price no configuration matches"), and TASK-108 made `price` and
  * `priceLabelKey` required on `ProductCardView` because every *country-scoped* card must carry
- * one. Omitting them here is how "hubs show no money" becomes a fact about the type rather than a
- * rule a renderer is asked to remember. Recorded as an escalation in `docs/tasks/TASK-107.md`:
+ * one. Omitting them is how "hubs show no money" becomes a fact about the type rather than a rule
+ * a renderer is asked to remember. Recorded as an escalation in `docs/tasks/TASK-107.md`:
  * reversing it costs this one schema.
+ *
+ * It is **defined beside `ProductCardViewSchema` in `modules/ui`** and re-exported here (TASK-112):
+ * `ProductCard` renders either shape and decides by the shape, so the derivation and the renderer
+ * that reads it live in one file, and this module keeps importing `modules/ui` in the one
+ * direction it already does.
  */
-export const HubCardViewSchema = ProductCardViewSchema.omit({
-  price: true,
-  priceLabelKey: true,
-});
-export type HubCardView = z.infer<typeof HubCardViewSchema>;
+export { HubCardViewSchema };
+export type { HubCardView };
 
 /** One crumb, in spec 007's `CorridorCrumb` shape: a message key, never a literal (§7). */
 export const ListingCrumbSchema = z
@@ -232,6 +236,19 @@ export const ListingEntitySchema = z
     name: z.string().min(1),
     /** The authored intro; a hub has one by its existence rule, a country page may not. */
     intro: z.string().min(1).optional(),
+    /**
+     * The entity's **authored** `<title>` and meta description (spec 006's copy corpus, one pair
+     * per category and occasion per locale, 32–64 and 120–153 characters as committed).
+     *
+     * They are carried on the view model rather than read from the copy files by a route, because
+     * §5.2 makes `listingView()` the only source for the page *and its head*: a route that reached
+     * past it for a title would be the second source the rule exists to prevent. They are also the
+     * answer to §6's duplication risk — a templated "{entity} — flowers" would give twenty-three
+     * hubs twenty-three near-identical titles, which is the thin-content shape `seed:check`'s own
+     * `seoTitleNearDuplicates()` rule already polices in the corpus (TASK-112).
+     */
+    seoTitle: z.string().min(1).optional(),
+    seoDescription: z.string().min(1).optional(),
     reviewed: z.boolean(),
   })
   .strict();
@@ -251,6 +268,19 @@ export const ListingOccasionDateSchema = z
      * column could only ever have said "no".
      */
     href: z.string().min(1).optional(),
+    /**
+     * Does that destination **keep** this occasion at all (`occasion_country.observed`)?
+     *
+     * The two blanks a date table can have are different facts and the drawing renders them
+     * differently (`docs/design/wireframes/occasion-hub-desktop.dc.html`, "The two branches this
+     * table has to get right"): a country with **no rule** for the occasion is not a row with an
+     * empty date — it is absent, because "the Netherlands keeps no All Saints' Day" is not a
+     * missing date; a country that observes it but whose rule cannot be computed yet (Romania's
+     * Orthodox Easter, `plan/13` B15) **is** a row, with the date omitted and said to be omitted
+     * (§14 design-round Q6). `date: null` alone cannot tell those apart, so the view model carries
+     * both facts and the page renders each one as the artboard draws it (TASK-112).
+     */
+    observed: z.boolean(),
   })
   .strict();
 export type ListingOccasionDate = z.infer<typeof ListingOccasionDateSchema>;
@@ -279,7 +309,21 @@ export const ListingDestinationLinkSchema = z
   .object({
     iso2: z.string().length(2),
     nameKey: z.string().min(1),
-    href: z.string().min(1),
+    /**
+     * The destination's page for this entity — **absent when it has none**, which is most of them
+     * in Phase 0 (`docs/design/wireframes/category-hub-desktop.dc.html`: "Six of the seven
+     * destinations are text, not links"). The picker names every published destination, because
+     * naming only the one with a page would hide six countries we do serve; it **links** only
+     * where a page exists, because a hub never links at a 404 (spec 004 AC-14, 007 AC-17).
+     */
+    href: z.string().min(1).optional(),
+    /**
+     * How many of this entity's products that destination can be sent — the number the category
+     * hub's artboard prints beside the link ("15 of our roses can be made there"). It is a
+     * **count**, never money: a hub quotes no price at all (§2, §8), and the one figure it is
+     * allowed to show is how much choice a destination has.
+     */
+    count: z.int().nonnegative(),
   })
   .strict();
 export type ListingDestinationLink = z.infer<
@@ -1149,6 +1193,9 @@ async function shopRootOccasionDates(
     rows.push({
       iso2,
       nameKey: occasion.labelKey,
+      // `upcomingOccasions()` enumerates the destination's **own** calendar, so every row it
+      // yields is one this country keeps.
+      observed: true,
       date: dated.date,
       ...(linked && slug !== undefined
         ? {
@@ -1362,6 +1409,12 @@ export async function listingView(
             ...(authoredIntro(kind, entityKey, locale) === undefined
               ? {}
               : { intro: authoredIntro(kind, entityKey, locale) }),
+            ...(entityRow.seoTitle === undefined
+              ? {}
+              : { seoTitle: entityRow.seoTitle }),
+            ...(entityRow.seoDescription === undefined
+              ? {}
+              : { seoDescription: entityRow.seoDescription }),
             reviewed: entityRow.reviewed,
           },
         }),
@@ -1391,6 +1444,7 @@ export async function listingView(
           occasionDates: publishedCountries().map((country2) => ({
             iso2: country2,
             nameKey: countryConfig(country2).nameKey,
+            observed: isObservedIn(entityKey, country2),
             date: isObservedIn(entityKey, country2)
               ? nextDateIn(entityKey, country2, from)
               : null,
@@ -1408,6 +1462,8 @@ export async function listingView(
             {
               iso2,
               nameKey: countryConfig(iso2).nameKey,
+              // The page exists only where the destination keeps the occasion (§2 row 8).
+              observed: true,
               date: nextDateIn(entityKey, iso2, from),
             },
           ],
@@ -1595,6 +1651,15 @@ async function breadcrumbFor(
     }
   }
 
+  if (pageType === "categoryHub") {
+    // `docs/design/wireframes/category-hub-desktop.dc.html`: Home / Flowers / Roses, and the
+    // middle crumb is **text**. `/{locale}/{shopCategory}` is a 404 — no country-less categories
+    // index ships (§13 Q4) — and a breadcrumb never links at a page that does not exist
+    // (spec 004 AC-14). `breadcrumb.shopRoot` is the same "Flowers" label the country-scoped
+    // trail already uses for this level.
+    crumbs.push(crumb("breadcrumb.shopRoot", undefined, false));
+  }
+
   if (pageType === "occasionHub" || pageType === "countryOccasion") {
     crumbs.push(
       crumb("breadcrumb.occasions", await occasionsIndexHref(locale), false),
@@ -1614,6 +1679,7 @@ async function breadcrumbFor(
   crumbs.push(crumb(leafKey, path, true, entityName));
   return crumbs;
 }
+
 
 /** Every link §2 asks the page to render, and only to pages that exist. */
 async function linksFor(
@@ -1656,26 +1722,35 @@ async function linksFor(
   }
 
   if (iso2 === undefined && entityKey !== undefined && kind !== undefined) {
-    // The hub's destination picker: every country page of this entity that exists, in the
-    // locale's collation (§2, §5.3).
+    // The hub's destination picker (§2, §5.3, §13 Q4: countries first). **Every published
+    // destination is named**, and the ones whose page exists are the ones that carry an `href`.
+    // Collating the names is the renderer's job — the label is a message key and only the page can
+    // resolve it — so the order here is the registry's and the order on screen is `collator()`'s.
+    const slug = slugFor(kind, entityKey, locale);
     for (const country of publishedCountries()) {
       const exists =
-        kind === "category"
+        slug !== undefined &&
+        (kind === "category"
           ? await countryCategoryExists(entityKey, country, locale, memo)
-          : await countryOccasionExists(entityKey, country, locale, memo);
-      if (!exists) continue;
-      const slug = slugFor(kind, entityKey, locale);
-      if (slug === undefined) continue;
+          : await countryOccasionExists(entityKey, country, locale, memo));
       destinations.push(
         ListingDestinationLinkSchema.parse({
           iso2: country,
           nameKey: countryConfig(country).nameKey,
-          href: pathOf(
-            locale,
-            kind === "category" ? "countryCategory" : "countryOccasion",
-            corridorSlug(country, locale),
-            slug,
-          ),
+          count:
+            kind === "category"
+              ? await countIn(memo, entityKey, country)
+              : await countFor(memo, entityKey, country),
+          ...(!exists || slug === undefined
+            ? {}
+            : {
+                href: pathOf(
+                  locale,
+                  kind === "category" ? "countryCategory" : "countryOccasion",
+                  corridorSlug(country, locale),
+                  slug,
+                ),
+              }),
         }),
       );
     }

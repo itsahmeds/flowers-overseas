@@ -26,10 +26,15 @@ import type { MediaManifest } from "../media/manifest.ts";
 import { Grid } from "../primitives/layout.tsx";
 
 import { ProductCard } from "./ProductCard.tsx";
-import type { ProductCardView } from "./viewModel.ts";
+import type { ListingCardView } from "./viewModel.ts";
 
 export interface ListingGridProps {
-  readonly cards: readonly ProductCardView[];
+  /**
+   * Priced cards on a country-scoped listing, priceless ones on a hub (spec 008 §14 **A3**). One
+   * grid renders both: the geometry, the list semantics and the LCP nomination are the same
+   * question on either, and a second grid would be a second place for them to drift (TASK-112).
+   */
+  readonly cards: readonly ListingCardView[];
   readonly locale: LocaleCode;
   /**
    * Nominate the first card's photograph as the page's single LCP candidate. Off by default: a

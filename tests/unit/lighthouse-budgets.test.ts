@@ -119,7 +119,7 @@ describe("tests/fixtures/seo/lighthouse-urls.json (AC-23)", () => {
     }
   });
 
-  it("measures the chooser, four homes, both hubs, one corridor and one shop root per English locale", () => {
+  it("measures the chooser, four homes, both hubs, one corridor, one shop root and one occasion hub per English locale", () => {
     // AC-27 words the budget as "`/` and `/en`"; `/de` is measured too because it is the locale
     // whose catalogue is an unreviewed echo — the one whose document could differ from `/en` by
     // accident rather than by design. Spec 004 §2 extends the list to all four launch locales,
@@ -148,9 +148,15 @@ describe("tests/fixtures/seo/lighthouse-urls.json (AC-23)", () => {
       // the sort form TASK-114 adds is measured against this line rather than against a hope. The
       // country **occasion** is deliberately absent — AC-25 names the shop root, the category, the
       // occasion hub and the occasions index, and the occasion page is the category's template
-      // with one dated line. The hub and index URLs join with TASK-112/113.
+      // with one dated line.
       "/en/poland/flowers/roses",
       "/en-gb/poland/flowers/roses",
+      // …and once more for **one occasion hub per indexable locale** (TASK-112). It is the page
+      // type §6 names in the extended set and the one whose LCP is a grid of photographs under a
+      // computed date table; the category hub renders the same two blocks in the other order, and
+      // the occasions index joins with TASK-113.
+      "/en/occasions/mothers-day",
+      "/en-gb/occasions/mothers-day",
     ]);
   });
 

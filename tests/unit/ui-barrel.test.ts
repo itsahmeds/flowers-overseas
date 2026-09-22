@@ -192,6 +192,10 @@ describe("src/modules/ui barrel", () => {
         "CategoryTileViewSchema",
         "ChipLinkViewSchema",
         "FromPriceChip",
+        // `HubCardViewSchema` is `ProductCardViewSchema` with the money omitted, and
+        // `hasCardPrice()` is the discriminator `ProductCard` reads: a destination-less hub shows
+        // no price, and the shape is what says so (spec 008 §14 A3; TASK-112).
+        "HubCardViewSchema",
         "LISTING_SORTS",
         "ListingEmpty",
         "ListingGrid",
@@ -209,6 +213,7 @@ describe("src/modules/ui barrel", () => {
         "ProductCardViewSchema",
         "ProductProvenanceSchema",
         "SORT_LABEL_KEYS",
+        "hasCardPrice",
         "pageHref",
       ].sort(),
     );

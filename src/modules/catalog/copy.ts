@@ -57,6 +57,14 @@ export interface CopyRow {
   readonly slug: string;
   /** The authored prose: a hub's intro (spec 008 §2) and a card's description source. */
   readonly descriptionMd: string;
+  /**
+   * The entity's authored `<title>` and meta description (spec 006 §2.2's copy rules; every
+   * committed category and occasion row carries both). Optional on the type because a *product*
+   * row need not, and because the schema that validates the corpus — not this interface — is what
+   * makes them present; `listingView()` carries them onto the hub's head (spec 008 §6, TASK-112).
+   */
+  readonly seoTitle?: string;
+  readonly seoDescription?: string;
   /** `human` is the authored state; `machine` is an `pnpm i18n:draft` draft (`plan/03` §6). */
   readonly translationStatus: string;
   /** The content record's own sign-off (`plan/02` §12) — the `reviewed` term of `indexability()`. */

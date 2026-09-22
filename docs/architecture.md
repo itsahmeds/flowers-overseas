@@ -238,11 +238,18 @@ fourth exists only where `ENABLE_DEV_UI` is on):
 - `src/app/[locale]/[segment]/[child]/page.tsx` — **one route file for one URL depth** (spec 008 §14
   A5, spec 007 §14 A8; TASK-109). Next.js allows exactly one dynamic slug *name* per (depth,
   position) across `app/`, route groups included, so `/{locale}/{destinations}/{country}` (the
-  corridor page, spec 007, TASK-091) and `/{locale}/{country}/{shopCategory}` (the country shop
-  root, spec 008) share this file; TASK-112/113's hubs join it. It calls **one** resolver,
+  corridor page, spec 007, TASK-091), `/{locale}/{country}/{shopCategory}` (the country shop
+  root, spec 008, TASK-109), `/{locale}/{shopCategory}/{category}` (the **category hub**) and
+  `/{locale}/{occasions}/{occasion}` (the **occasion hub**, both spec 008 §2 rows 10 and 13,
+  TASK-112) share this file. The four are disjoint by their **first** segment — a page-type segment
+  or a country slug — which spec 008 AC-4's collision matrix and `seed:check` guarantee in the data,
+  so the resolver's branches are a list and not a cascade. It calls **one** resolver,
   `resolveLocalePath()` in `src/modules/catalog/routes.ts`, which returns a discriminated union
   built from `corridorPageExists()` and `listingExists()` and no third rule, and it mounts the
-  matching module page component (`CorridorPage`, `CountryShopRootPage`) — `app/` stays thin.
+  matching module page component (`CorridorPage`, `CountryShopRootPage`, `CategoryHubPage`,
+  `OccasionHubPage`) — `app/` stays thin. A hub shows **no money at all** (§2, §8, §14 A3): it
+  reads `hubItems` off the one view model, an array whose card type has no price field, and
+  `ListingViewSchema` refuses a view that carries both arrays.
   **ISR, `revalidate` 3 600 s** (A8 lowers the corridor's 86 400: a segment export cannot vary per
   param), the
   §5.4 tags named by `corridorCacheTags()` in `src/lib/cache.ts`, `generateStaticParams()` over the

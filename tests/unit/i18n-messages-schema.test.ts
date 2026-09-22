@@ -272,6 +272,16 @@ describe("the shipped catalogues and manifests", () => {
     // `reviewedAt: "2026-09-18T00:00:00Z"`. The `de` and `pl` entries stay `source: "machine"`
     // and unreviewed: what he attested is the English wording, not a German or Polish rendering
     // of it, and those two catalogues still echo the English string verbatim.
+    // TASK-112 added four (spec 008 AC-7, AC-11). The two hub artboards were the founder's
+    // 2026-09-16 design round, so the strings transcribed from them carry his attestation; these
+    // four are **not** on the sheets. `categoryHub.destinationLink` and `occasionHub.datesCaption`
+    // are reworded off it (the sheet's "See them with Poland's prices" is not English for the
+    // other six destinations; the sheet's caption carries a year literal, which AC-11 forbids in
+    // a message string), and `occasionHub.dateUnknown` and `occasionHub.destinationsHeading` are
+    // drawn nowhere — the sheet states Romania's honest blank as an annotation and labels the
+    // out-links block "Out of this page", which is architecture, not copy. Recorded in
+    // `docs/design/README.md`'s TASK-112 row, clauses (c), (d) and (e).
+    "categoryHub.destinationLink",
     "faq.whoDelivers.answer",
     "faq.whoDelivers.answerCutoff",
     "finder.cutoff",
@@ -284,6 +294,9 @@ describe("the shipped catalogues and manifests", () => {
     "meta.home.description",
     "nav.utility.cutoff",
     "nav.utility.cutoffShort",
+    "occasionHub.dateUnknown",
+    "occasionHub.datesCaption",
+    "occasionHub.destinationsHeading",
     // TASK-111, the country occasion page. Five of its eleven strings are transcribed from the
     // founder-approved artboards (`wireframes/country-occasion-{desktop,mobile}.dc.html`,
     // `country-shop-{desktop,mobile}.dc.html`) and carry his attestation; these six are wording
@@ -395,6 +408,12 @@ describe("the shipped catalogues and manifests", () => {
       // state. Every component that reads it is a Server Component, so it reaches no client
       // provider and costs no client bytes (spec 008 §5.4).
       "shop",
+      // Spec 008 §7's two hub namespaces (TASK-112): the `h1` patterns, the destination picker's
+      // headings and the date table's caption and columns. The "prices depend on where it is
+      // going" sentence is **one** key in `shop.hub` rather than one per hub, because both
+      // artboards draw the same sentence and one sentence is one thing to review.
+      "categoryHub",
+      "occasionHub",
     ];
     const provenanceLabel: Messages["media"]["provenance"]["aiExample"] =
       enSource.media.provenance.aiExample;

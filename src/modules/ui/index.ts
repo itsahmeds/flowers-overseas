@@ -422,6 +422,7 @@ export type { CategoryChipRowProps } from "./shop/CategoryChipRow.tsx";
 export {
   CategoryTileViewSchema,
   ChipLinkViewSchema,
+  HubCardViewSchema,
   LISTING_SORTS,
   ListingSortSchema,
   MediaSlotSchema,
@@ -433,10 +434,13 @@ export {
   ProductCardPhotoSchema,
   ProductCardViewSchema,
   ProductProvenanceSchema,
+  hasCardPrice,
 } from "./shop/viewModel.ts";
 export type {
   CategoryTileView,
   ChipLinkView,
+  HubCardView,
+  ListingCardView,
   ListingSort,
   PriceLabelKey,
   PriceNoteKey,

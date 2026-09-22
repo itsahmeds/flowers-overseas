@@ -289,7 +289,17 @@ describe("the honest blank (§14 design round Q6)", () => {
   const undated: ListingView = {
     ...en,
     occasionDates: [
-      { ...(en.occasionDates?.[0] ?? { iso2: "PL", nameKey: "" }), date: null },
+      {
+        // `observed` is required on every row (TASK-112 added it so an occasion hub can tell a
+        // country that keeps no rule from one whose rule cannot be computed); this page exists
+        // only where the destination keeps the occasion, so the fallback row is observed.
+        ...(en.occasionDates?.[0] ?? {
+          iso2: "PL",
+          nameKey: "",
+          observed: true,
+        }),
+        date: null,
+      },
     ],
   };
   const html = render(<CountryOccasionPage view={undated} />, "en");
