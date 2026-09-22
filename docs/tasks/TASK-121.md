@@ -42,6 +42,18 @@ _None yet — this is the first round._
 
 ## Escalations
 
+- **2026-09-22 — two red CI jobs that belong to other tasks, reported not fixed.** (a) `visual` is
+  red on the whole fleet until **TASK-139** lands the Linux baselines (84 `darwin` against 3
+  `linux`); this PR adds no artboard and no screenshot. (b) `e2e` is red on `main` itself for a
+  contradiction between two merged PRs: `tests/e2e/country-occasion.spec.ts:41` (PR 89, TASK-110/111)
+  asserts `/en/occasions/mothers-day` and `/en/occasions` **404**, with the comment "the occasion hub
+  and the occasions index are TASK-112/113's URLs, not this depth's" — and PR 88 (TASK-112) then
+  shipped the occasion hub at exactly that URL, so it now 200s. The fix is to drop those two lines
+  from PR 89's 404 list; that is TASK-112's owner's call or the orchestrator's, not this task's, and
+  this branch adds no URL, no link id and no sitemap row. Two consent/banner e2e cases
+  (`banner.spec.ts:669`, `consent-banner.spec.ts:666`) also failed and touch nothing this task
+  changes. Owner: orchestrator → TASK-112 and TASK-139.
+
 - **2026-09-22 — one `dynamicParams` export, two page types at depth 4. Flagged, not blocking;
   owner TASK-127.** AC-3 requires `dynamicParams === true` on the PDP route. Spec 008 §14 A5 rules
   one route file per URL depth, and `src/app/[locale]/[segment]/[child]/[grandchild]/page.tsx`
@@ -92,6 +104,15 @@ segments and the category/occasion namespaces; `slugFor`/`resolveSlug` round-tri
 contract + integration **4 678 tests green** (197 files, 3 skipped). `typecheck`, `lint`,
 `i18n:check`, `check:no-db`, `codebase:map --check` and `specs:index` all green. No build slot
 taken: this task adds no page, no byte budget and no timing-sensitive number.
+
+**CI (run 35702190659, head `ef0301a`).** **20 of 22 jobs green**: `lint`, `typecheck`,
+`test-unit`, `test-integration`, `test-contract`, `build`, `container`, `db-check`,
+`env-build-failure`, `commitlint`, `seo-validate`, `i18n-check`, `catalogue-check`,
+`corridor-check`, `seed-check`, `dev-os-check`, `audit`, `preview`, `a11y`, `lighthouse`. The two
+reds are the escalations above and belong to other tasks: `visual` (TASK-139's Linux baselines) and
+`e2e` — **1 031 passed, 2 failed**, one of them `main`'s PR 88 / PR 89 contradiction over
+`/en/occasions/mothers-day` and one a known consent-cookie flake that named a different fixture
+string on each of the two runs.
 
 **Definition of done item 4 — every AC-bearing assertion was mutated and watched go red.** Nine
 mutations, each reverted after: (1) `PRODUCT_PREBUILD_COUNT` 24 → 23 → 6 failures; (2) the slug term
