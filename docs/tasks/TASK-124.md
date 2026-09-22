@@ -57,7 +57,48 @@ _None recorded._
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
+**PR [#100](https://github.com/itsahmeds/flowers-overseas/pull/100)** · spec 009 AC-2, AC-8 (data
+half) · T-02. Poland's `operations` block is authored in `src/config/countries.ts` exactly as §13 Q3
+rules (`Europe/Warsaw`, `14:00`, Mon–Sat, `sundayDelivery: "none"` — spec 002's value for "false")
+and **no other destination has one**, so Poland's picker is `preview` and the six others stay
+`unavailable` (no global default cutoff). `deliveryDatesOpen(iso2)` is now `pickerState(iso2) ===
+"live"`, with no call-site change; it had to move in the same commit, because the TASK-120 body
+(`status === "live"` and a block) turns true for Poland the moment the block exists — reverting it
+turns **15** chrome-honesty / footer / home-strip cases red. `pickerState()` and
+`NEXT_AVAILABLE_HORIZON_DAYS` moved to `src/modules/geo/delivery/state.ts` (re-exported by
+`calendar.ts` unchanged), because the registry and `seed:check` are loaded by plain `node` and
+`calendar.ts` reaches the `i18n` barrel's `.tsx`. `seed/data/holidays.json` carries Poland's 14
+statutory holidays for 2026 and 2027 (incl. Wigilia, a day off since 2025), pinned by date in
+`geo-delivery.test.ts`.
 
-_Pending._
+`pnpm seed:check` gains a tenth family, **`calendar`** — `holiday-coverage` (in-window = the
+picker's full 366-day horizon from today in the destination's zone; the line names the country and
+the first uncovered date), `holiday-name-key`, `undatable-rule` — plus **`slugs/product-slug-required`**
+(§13 Q1). The instant is `SeedTree.asOf`, read once by `readSeedTree()`, pinned by the unit suite
+and by `--as-of=`; the CI job uses the real clock. `--report` opens with the §11 picker-state table.
+One failing fixture per rule under `tests/fixtures/seed/_cases/{calendar,slugs}/`; the fixture
+table is pinned at 25 and each new rule at exactly one. `DST_READINGS` / `DST_WINDOWS` pinned at
+30 / 8.
+
+**Mutations (each run, red, restored, green):** coverage loop disabled → `bad-holiday-horizon` 2
+red; name-key check disabled → `bad-holiday-name-key` 2 red; undatable check disabled →
+`bad-undatable-rule` 2 red; product-slug check disabled → `bad-missing-product-slug` 2 red;
+**2027 rows dropped from the committed file** → `pnpm seed:check` exit 1, "`PL/2027` … the first
+uncovered date is 2027-01-01"; `DST_READINGS` emptied → 1 red (239 green); `DST_WINDOWS` emptied →
+1 red (305 green); predicate forced false → 1 red; PL block removed → 22 red and a DE block added → 7 (both over the `-t "Poland|horizon|picker"` subset)
+red, and `seed:check` names DE 2026/2027. The horizon boundary is pinned on committed data by the
+CLI: `--as-of=2026-12-30T22:59:00Z` exit 0, `…23:00:00Z` (00:00 Warsaw) exit 1 on `PL/2028`.
+
+**The TASK-114 tripwire stayed green** (`listing-params.test.ts`, 18/18): `corridorState("PL","en")`
+is still `guide` because `pl-live.md` does not exist. Only its comment changed (it said Poland had
+no block). `corridor:check`'s `live-operations` fixture moved from `pl-live.md` to `de-live.md`,
+since a live Polish file is now permitted.
+
+**Handed on.** (1) **`seed:check` goes red on 31 Dec 2026 (Warsaw)** unless Poland's 2028 holidays
+are authored first — the rule working as designed, not a flake. (2) The 28 `delivery.holiday.pl.*`
+name keys have no message strings yet; the UI task that renders a holiday reason (TASK-126/127)
+authors them in four locales. (3) When TASK-142 lands `pl-live.md`, both
+`listing-params.test.ts` (carry-forward above) and `corridor-route.test.ts` "keeps Poland in the
+guide state even with a florist and a cutoff" go red by design. (4) The spec 006 §14 amendment
+record for the new family is AC-29's (task 13). (5) `toCountryRow()` still projects three
+columns: spec 002's `iana_zone` is `NOT NULL` and six destinations have no zone.
