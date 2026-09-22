@@ -289,6 +289,19 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         // third React component the module owns. Its URLs share `localeGrandchildParams()` with
         // the country category, because they share the route file.
         "CountryOccasionPage",
+        // spec 009's product page: its existence set, its prebuild list and the two schemas its
+        // route parses (TASK-121). `productPageExists()` is the single existence answer, on the
+        // same footing as `listingExists()`; `PRODUCT_PREBUILD_COUNT` stays internal for
+        // `PRODUCT_COUNT_FLOOR`'s reason.
+        "ProductPageIdentitySchema",
+        "ProductParamsSchema",
+        "listProductPages",
+        "localeProductParams",
+        "productExistenceCounts",
+        "productExistenceSummaryMarkdown",
+        "productPageExists",
+        "productPrebuildPages",
+        "writeProductExistenceSummary",
       ].sort(),
     );
   });
@@ -311,6 +324,7 @@ describe("src/modules/catalog barrel (AC-1)", () => {
       `${moduleDir}/pricing/resolve.ts`,
       `${moduleDir}/pricing/round.ts`,
       `${moduleDir}/pricing/vat.ts`,
+      `${moduleDir}/product.ts`,
       `${moduleDir}/providers.ts`,
       `${moduleDir}/read.ts`,
       `${moduleDir}/routes.ts`,

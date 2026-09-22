@@ -921,6 +921,51 @@ export const ListingParamsSchema = z
 
 export type ListingParams = z.output<typeof ListingParamsSchema>;
 
+/* -------------------------------------------------------------------------- */
+/* The product page's parameters and identity (spec 009 §2, §5.2; TASK-121).   */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The route parameters of a product URL — `/{locale}/{country}/{product}/{slug}` (spec 009 §2,
+ * **AC-1**'s routing half).
+ *
+ * `.strict()` and shape-checked, because this is the boundary where three unvalidated path
+ * segments arrive. An unknown locale, an uppercase variant, a segment carrying a slash and a
+ * fourth parameter are all parse failures, and a parse failure is `notFound()` — never a redirect
+ * and never a case-fixing rewrite (ADR-0006). Whether the *product* behind a well-formed slug is
+ * a page in that destination is a different question, answered once by `productPageExists()`.
+ *
+ * The localised `product` segment itself (`product` / `produkt`) is **not** a field: it is the
+ * locale's own `pathSegments` value, and `resolveLocalePath()` compares the URL's segment against
+ * `localePath()`'s, so another locale's segment is a 404 rather than an accepted synonym.
+ */
+export const ProductParamsSchema = z
+  .object({
+    locale: LocaleCodeSchema,
+    /** The destination's slug in this locale — `poland`, `polen`, `polska`. */
+    country: CatalogueSlugSchema,
+    /** The product's slug in this locale: shared ASCII unless it authored one (§13 Q1). */
+    slug: CatalogueSlugSchema,
+  })
+  .strict();
+
+export type ProductParams = z.output<typeof ProductParamsSchema>;
+
+/**
+ * One product page named the way the existence rule thinks about it rather than the way a URL
+ * spells it: `ProductParamsSchema` is the URL, this is the (locale, destination, SKU) triple
+ * `productPageExists()` answers for. Kept as loose as `ListingIdentitySchema` — the ISO code and
+ * the locale are narrowed by their own registries inside the predicate, which is where "not a
+ * country we know" has to be a `false` rather than a throw.
+ */
+export const ProductPageIdentitySchema = z
+  .object({
+    locale: z.string().min(2),
+    countryIso: z.string().length(2),
+    sku: ProductSkuSchema,
+  })
+  .strict();
+
 /** `page` as it arrives in a query string: digits, no sign, no leading zero, ≥ 1. */
 const PAGE_PARAMETER_PATTERN = /^[1-9][0-9]*$/;
 

@@ -32,6 +32,13 @@
  * `[country]/[occasions]/[occasion]`) collide with each other *and* with the depth-3 file's own
  * slug names. Both the country category and the country occasion resolve here.
  *
+ * **Spec 009's product page is the third page type at depth 4** (TASK-121):
+ * `/{locale}/{countrySlug}/{product}/{productSlug}` is the same three dynamic positions under a
+ * third set of names, so it resolves here too, through `productPageExists()`. It is the one
+ * branch whose route sets `dynamicParams = true` — the prebuild is the top 24 products per
+ * (locale, destination) rather than the whole existence set (spec 009 §2, AC-3) — which is why
+ * its existence rule is read on every request instead of once at build time.
+ *
  * **Four page types now share depth 3** (TASK-112): the corridor page, the country shop root, the
  * category hub `/{locale}/{shopCategory}/{categorySlug}` and the occasion hub
  * `/{locale}/{occasions}/{occasionSlug}`. They are **disjoint by their first segment** — this
@@ -60,6 +67,8 @@ import {
 import { localePath, routableLocale } from "@/modules/i18n";
 
 import { listingExists, listingLocales, listingPages } from "./listing";
+import { productPageExists, productPrebuildPages } from "./product";
+import { ProductParamsSchema } from "./schemas";
 import { resolveSlug } from "./slugs";
 
 /**
@@ -121,6 +130,21 @@ export type LocalePathResolution =
       readonly kind: "occasionHub";
       readonly locale: LocaleCode;
       readonly slug: string;
+    }
+  | {
+      /**
+       * Spec 009's product detail page, `/{locale}/{countrySlug}/{product}/{productSlug}` — the
+       * third page type at depth 4 (TASK-121). Its existence answer is `productPageExists()`,
+       * exactly as the two listing branches read `listingExists()`.
+       */
+      readonly kind: "product";
+      readonly locale: LocaleCode;
+      readonly iso2: CountryIso2;
+      readonly countrySlug: string;
+      /** The catalogue key the URL's slug resolves to (`FO-BQ-001`), never the slug itself. */
+      readonly sku: string;
+      /** The product's slug in this locale, as the URL spells it. */
+      readonly productSlug: string;
     };
 
 const NOT_FOUND: LocalePathResolution = { kind: "notFound" };
@@ -128,7 +152,7 @@ const NOT_FOUND: LocalePathResolution = { kind: "notFound" };
 /** Whether `segment` is **this** locale's own segment for a page type (`plan/02` §4). */
 function isOwnSegment(
   locale: LocaleCode,
-  pageType: "destinations" | "shopCategory" | "occasions",
+  pageType: "destinations" | "shopCategory" | "occasions" | "product",
   segment: string,
 ): boolean {
   return localePath(locale, pageType) === `/${locale}/${segment}`;
@@ -272,6 +296,39 @@ export async function resolveLocalePath(
         occasionSlug: grandchild,
       };
     }
+
+    // `/{locale}/{countrySlug}/{product}/{productSlug}` — spec 009's product detail page (§2;
+    // TASK-121), the third page type sharing this depth. Two things make it the only route in the
+    // site that reads its existence rule at **request** time as well as at build time: the PDP
+    // route sets `dynamicParams = true` (the prebuild is the top 24 per locale and destination,
+    // not the 200 set — spec 009 AC-3), and `productPageExists()` is what keeps the two equal.
+    // Every 404 shape of AC-1 arrives here as a miss: an unknown slug (`resolveSlug`), a product
+    // with no active price in that destination, an unpublished destination and a locale with no
+    // slug for the product (`productPageExists`), another locale's `product` segment
+    // (`isOwnSegment`), and an uppercase or otherwise non-canonical segment (the schema).
+    if (isOwnSegment(code, "product", child)) {
+      const params = ProductParamsSchema.safeParse({
+        locale: code,
+        country: segment,
+        slug: grandchild,
+      });
+      if (!params.success) return NOT_FOUND;
+      const iso2 = corridorIso2ForSlug(code, params.data.country);
+      if (iso2 === undefined || !isCountryIso2(iso2)) return NOT_FOUND;
+      const sku = resolveSlug(code, "product", params.data.slug);
+      if (sku === undefined) return NOT_FOUND;
+      if (!(await productPageExists({ locale: code, countryIso: iso2, sku }))) {
+        return NOT_FOUND;
+      }
+      return {
+        kind: "product",
+        locale: code,
+        iso2,
+        countrySlug: params.data.country,
+        sku,
+        productSlug: params.data.slug,
+      };
+    }
   }
 
   return NOT_FOUND;
@@ -409,6 +466,40 @@ export async function localeGrandchildParams(): Promise<
         grandchild: page.slug,
       });
     }
+  }
+
+  return params;
+}
+
+/**
+ * `generateStaticParams` for the **product** pages of `/{locale}/{segment}/{child}/{grandchild}`
+ * (spec 009 **AC-3**; TASK-121).
+ *
+ * Separate from `localeGrandchildParams()` and unioned with it by the route file, because the two
+ * halves of that depth answer a different question. The listing half **is** the 200 set:
+ * `dynamicParams = false` makes every URL outside it a 404 answered by the router. The product
+ * half is a *prebuild*: `plan/01` §3's budget says prebuild the top 24 per (locale, destination)
+ * and generate the rest on demand, so the PDP route sets `dynamicParams = true` and the 404
+ * guarantee moves into `productPageExists()`, which this resolver calls on every request. Mixing
+ * the two lists into one function would hide exactly that difference.
+ *
+ * Every field is read from `productPrebuildPages()` rather than restated: the destination's slug
+ * and the product's slug are the ones the existence set already carries, and the page-type
+ * segment is the one `localePath()` builds — so a product that gains a price in a destination
+ * gains its URL from the data alone, with no edit under `src/app/`.
+ */
+export async function localeProductParams(): Promise<
+  readonly LocaleGrandchildParams[]
+> {
+  const params: LocaleGrandchildParams[] = [];
+
+  for (const page of await productPrebuildPages()) {
+    params.push({
+      locale: page.locale,
+      segment: page.countrySlug,
+      child: localePath(page.locale, "product").split("/")[2] ?? "",
+      grandchild: page.slug,
+    });
   }
 
   return params;
