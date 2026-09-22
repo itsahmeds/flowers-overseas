@@ -499,6 +499,62 @@ function dayAfter(date: IsoDate, offset: number): IsoDate {
 }
 
 /* -------------------------------------------------------------------------- */
+/* Add-on prices (spec 009 §2 "Add-ons", §13 design round Q4; TASK-125).       */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The whole price of one add-on in one destination, **in that destination's currency** — the
+ * figure spec 009's read-only add-on row prints (§13 design round **Q4**: "add-on prices render in
+ * the destination currency with one sentence saying so until spec 010 adds a projection").
+ *
+ * `listAddons()` decides *which* add-ons are offered (flag, active row, exactly one) and says of
+ * itself that "an add-on price is a `PricePoint` from `pricing/*` or it is nothing, so a partial
+ * price cannot be rendered". This is that `PricePoint`: gross, with its own VAT split at **the
+ * add-on's own rate** (PL chocolates 2 300 bp against flowers 800 bp — spec 005 §13 Q3), no
+ * surcharge (a surcharge is a delivery-date fact, and the add-on rides the bouquet's delivery) and
+ * a version naming the `addon_country_price` row it came from. Zero is a price: the card is 0 and
+ * still a line (spec 005 §2).
+ *
+ * Internal to the module, like `resolveByPriceVersion`: spec 010's projection of add-ons into the
+ * display currency is the one that will be exported, and until it exists nothing may convert one.
+ * Zero rows or two rows throw — the "never a silent pick, never a fake zero" rule of
+ * `activeRetailRow()`, one table over.
+ */
+export async function resolveAddonPrice(query: {
+  readonly addonKey: string;
+  readonly countryIso: CountryIso2;
+}): Promise<PricePoint> {
+  const destination = DestinationIsoSchema.parse(query.countryIso);
+  const rows = (await catalogProviders().price.addonCountryPrices()).filter(
+    (row) =>
+      row.addonKey === query.addonKey &&
+      row.countryIso2 === destination &&
+      row.activeTo === null,
+  );
+  const [row, ...rest] = rows;
+  if (row === undefined || rest.length > 0) {
+    throw new Error(
+      `\`${query.addonKey}\` has ${String(rows.length)} active \`addon_country_price\` rows for \`${destination}\`; exactly one is required (spec 002 §14 A1 (a)) — a missing or ambiguous add-on price is never shown`,
+    );
+  }
+  const { netMinor, vatMinor } = netFromGross(row.retailMinor, row.vatRateBp);
+  return PricePointSchema.parse({
+    amountMinor: row.retailMinor,
+    currency: row.currency,
+    vatRateBp: row.vatRateBp,
+    vatAmountMinor: vatMinor,
+    netAmountMinor: netMinor,
+    deliveryIncluded: true,
+    surcharges: [],
+    activeFrom: row.activeFrom,
+    activeTo: row.activeTo,
+    priceVersion: ["acp", row.addonKey, row.countryIso2, row.activeFrom].join(
+      ":",
+    ),
+  });
+}
+
+/* -------------------------------------------------------------------------- */
 /* Re-resolution by version: what makes a signed quote refusable (TASK-068).  */
 /* -------------------------------------------------------------------------- */
 

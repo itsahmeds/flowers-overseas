@@ -302,6 +302,22 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         "productPageExists",
         "productPrebuildPages",
         "writeProductExistenceSummary",
+        // spec 009's product view model (TASK-125): the single input to the page, its JSON-LD
+        // and its sitemap row, the tier ladder and the totals table it is built from, and the
+        // PDP descriptor for spec 007's engine. `trustClaims` and `fxStates` are value sets; the
+        // price grid, the chip-fee arithmetic and the numeric bounds stay internal.
+        "AddonLineSchema",
+        "DateTotalsSchema",
+        "ProductGallerySchema",
+        "ProductViewSchema",
+        "TierOptionSchema",
+        "dateTotals",
+        "fxStates",
+        "productDescriptor",
+        "productPageIndexability",
+        "productView",
+        "tierOptions",
+        "trustClaims",
       ].sort(),
     );
   });
