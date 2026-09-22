@@ -36,50 +36,107 @@ second idiom.
 **The rule that makes this task safe, and it is not optional.** A weak assertion is a **finding**.
 Do not widen a gate, loosen a threshold, or delete a case to turn red green. If a sweep turns up
 something that is red for a real reason, that is a defect in the code, and it stops being this
-task's business the moment you have identified whose it is — record it in `## Escalations` with
-the owning task and move on.
-
-**Prove every fix.** Mutate the subject, watch the case go red, restore, and say so. A
-strengthened assertion that was never observed failing is the same defect wearing a new coat, and
-would be the seventh instance — in the task written to stop the class.
-
-**Judgement, not a regex.** `expect([301, 308])` was *inspected and kept*, and that is the line
-for the whole codebase: the rule is not "never assert over a set", it is **"the assertion must be
-able to fail"**. `[200, 404]` covered the entire outcome space of its request; `[301, 308]` is a
-tolerance across two acceptable implementations that still excludes 200, 404, 302 and 307, with a
-separate `Location` assertion carrying the substance. Expect to keep things. Record why.
-
-**Scope discipline.** Tests and test helpers only. If a sweep would require a production change
-to become falsifiable, that is an escalation, not a licence — say so and leave it.
-
-**Report a count, not a vibe.** `## Result` says how many files were swept, how many shapes were
-found, how many were fixed, how many were kept deliberately and why.
-
-What the spec binds this task to, in the spec's own words: the resolution notes that override
-defaults, the AC ids owned, the rulings from earlier reviews that apply here, the gates that must
-be green. One paragraph or a short list — no restatement of the spec.
-
-## Read
-
-- `specs/NNN-*.md` — read `## 0. Index` first, then only the sections the ACs name
-- `docs/codebase-map.md` — where everything lives
-- (the two or three files the deliverable actually touches)
-
-## Carry-forwards
-
-One dated bullet per `/review`, newest last.
-
-- **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
-
-## Escalations
+task's business the moment you have identified whose it is — record it in `## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- **2026-09-23 — a real defect, not this task's: the static price provider hands out its own
+  module array** (owner: spec 005's provider layer — TASK-069 shipped it and is `done`; TASK-070's
+  DB providers run the same contract). `tests/contract/support/catalog-provider-contract.ts:136`
+  ("a caller's mutation is not shared") truncates **a copy** (`[...first]`) and then checks the
+  next read, so it can never observe sharing. Written to mutate what the provider returned, it
+  goes red: `expected 1 to be 3332` — `staticPriceProvider.countryPrices()` returns
+  `COUNTRY_PRICES` itself, unfrozen, so one caller's `.length = 1` truncates every later read.
+  The case is **left as it is**: strengthening it here would turn CI red for a production defect
+  this task may not fix. The fix is the provider's (freeze or copy), then the case can mutate
+  `first` directly. To the orchestrator — `open`.
+- **2026-09-23 — handed to TASK-113 (PR 98 owns the subject):**
+  `tests/unit/catalog-listing.test.ts:384` "lists every occasion hub … grouped by kind" asserts no
+  grouping at all: its count is corpus-vs-corpus, the loop is over `view?.occasions ?? []`, and the
+  `toContain(entry.kind)` is over a `z.enum` the view is parsed with. With `listing.ts`'s
+  occasions reversed, or every `kind` set to `evergreen`, the case stays green. PR 98 rewrites
+  that surface and adds `catalog-occasions-index.test.tsx`; it should pin the grouped order there.
+- **2026-09-23 — handed to TASK-113 (files in PR 98):** `tests/e2e/hubs.spec.ts:108` and
+  `tests/e2e/country-occasion.spec.ts:115` check the trailing-slash `Location` with
+  `toContain(bare)`, which a 308 to the slash form itself (a loop) satisfies — proved on the two
+  siblings fixed below. Make them `toBe(bare)`.
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
+**PR [#99](https://github.com/itsahmeds/flowers-overseas/pull/99)** — tests and test helpers only;
+no production file changed. Method: every catalogued shape was grepped across the **276** test
+files on `main` at `d1c0537` (unit 199, e2e 32, a11y 14, visual 14, integration 6, contract 5,
+msw 3, support 3) and every hit read; then, because PR 87's class lives in validators rather than
+in assertions, **17 checker sources** were mutation-swept — each of their **193** problem-reporting
+sites neutered in turn (`problems.push(` → a no-op call) and the checker's own unit/contract suite
+run. A site whose neutering leaves the suite green is a rule no test can see fail.
 
-_Pending._
+| | found | fixed | kept, with reason | escalated / handed over |
+|---|---|---|---|---|
+| Assertion shapes (the catalogue) | 122 inspected | **12** | 107 | 1 escalation, 2 to TASK-113 |
+| Checker rules no test reached | 48 of 193 sites | **44** | 4 (unreachable) | — |
+
+**The two merged instances** (brief's starting point), rewritten on PR 89 round 3's
+`tests/support/lcp-nomination.ts` rather than a second idiom:
+
+| Fix | Mutation of the subject (old case → new case) |
+|---|---|
+| `catalog-shop-page.test.tsx` AC-24 (stated `PHOTOGRAPHED_CARDS = 2`, descriptor equality, `nominatedImageCard === 0`) | `listing.ts` `photoFor` → no asset: old **pass**, new `expected [] to have a length of 2 but got +0`. `ListingGrid` nominates the second photograph: old **pass**, new `expected [ { …(2) } ] to deeply equal [ { …(2) } ]`. `preload.ts` `imageSizes: "100vw"`: old **pass**, new same descriptor failure. |
+| `country-shop.spec.ts` AC-24 (first card's `<source>` vs head preloads, eager/high/lazy pinned) | Local build (slot held, port 3143, load 4–7 on 8 cores). Second-photograph mutant: old **pass**, new `expect(received).toEqual(expected)`. No-photograph mutant: old **pass**, new `Expected length: 1 / Received length: 0`. Clean build: 22 passed, 2 skipped (the mis-cased case self-skips on a case-insensitive local target). |
+
+**The other ten assertion fixes:**
+
+| Fix | Mutation (old → new) |
+|---|---|
+| `catalog-hub-pages.test.tsx` "names every published destination": count was view-vs-page, "sorted" ran over names scraped from all page text. Now the `data-fo-hub-destination` codes in order, stated. | `listing.ts` hub destinations emptied: old **pass**, new `expected [] to deeply equal [ 'FR', 'DE', … ]`; only Poland: old **pass**, new `expected [ 'PL' ] …`. (The old case *did* catch a renderer-side reversal; its gap was view-side.) |
+| `corridor-page.test.tsx` FAQ: loop and `<h3>` count both over `guide.faq`. Now `GUIDE_FAQ_ITEMS = 10`. | `corridor.ts` `faq: []`: old **pass**, new `expected [] to have a length of 10 but got +0`. |
+| `app-shell.test.tsx` ×3: `String(metadata.title).length > 0` is true for `undefined` (nine characters). Now the authored `meta` strings. | Home metadata `return {}`: old **pass**, new `en: expected undefined to be 'Flowers Overseas — …'`; title/description keys swapped: old **pass**, new red. Chooser and 404 descriptions dropped: old **pass**, new `expected undefined to be 'We send…'` / `'That page does not exist…'`. De/pl `meta.home` are still English, so "localised" and "English everywhere" coincide in Phase 0 — noted in the case. |
+| `container.test.ts`: `toContain("assertRuntimeEnv(process.env)")` passes a commented-out or never-taken call. Added `register()` and `GET /api/health` called with the ten server keys absent. | Guard `isBuildPhase() && !isBuildPhase()`: old **pass**, new `promise resolved "undefined" instead of rejecting`; health call commented out: old **pass**, new `expected [Function] to throw an error`; build-phase guard removed: new `promise rejected … instead of resolving`. |
+| `listing-honesty-scan.test.ts`: one sample per pattern, so a German/Polish branch was deletable (fail-open). New `tests/unit/support/regex-branches.ts` generates every single-branch deletion at every depth; each of the **89** must be missed on some sample. | On `tests/support/listing-honesty.ts`, against the old scan plus all six unit files that import the helper (179 cases): delete `\bsterne\b`, delete `\btaggleiche`, neuter `\bpolecane dla ciebie\b` — each old **179 pass**; delete inner `cart` — old **155 pass**. New: `5 Sterne: expected [] to include 'star'` and `expected 88 to be 89`, and the same for each. Dropping one sample: `expected [ 'star: \bsterne\b', … ]`. One branch is genuinely redundant and named (`the same day` inside `deliver…`, already matched by `\bsame[- ]day\b`). |
+| `home-honesty.test.ts`: `FORBIDDEN.some(…)` per claim, so a shadowed pattern (`out-of-five`, `review count`) or branch (`feefo`, `fleurop`) was deletable. Same branch check, **28** mutants, 0 survivors. | Delete `\|fleurop`, `\|feefo`: old **13 pass**; new `Fleurop: expected false to be true`; drop the Feefo sample: `expected [ 'Trustpilot mark: feefo' ] to strictly equal []`. |
+| `country-shop.spec.ts` / `country-category.spec.ts` trailing slash: `Location` `toContain(bare)`. Now `toBe(bare)`, as `corridor.spec.ts` does. | Mutant `skipTrailingSlashRedirect` + proxy 308 to the slash form itself (a loop): old **pass** ×2; new `Expected: "/en/poland/flowers" / Received: "/en/poland/flowers/"` and the `roses` twin. Clean: 46 passed, 4 skipped, desktop + mobile. |
+
+**Checker rules no test reached** (every site re-neutered after the fix; the "after" column is
+survivors):
+
+| Checker | sites | survived before → after | added |
+|---|---|---|---|
+| `scripts/seo/validate-hreflang.ts` | 7 | 2 → 0 | file-level case: non-https page URL and relative alternate |
+| `scripts/seo/validate-sitemap.ts` | 4 | 2 → 0 | a sitemap with **no `<loc>`** (PR 87's class), an unreadable `noindex.json` |
+| `scripts/seo/validate-schema.ts` | 20 | 5 → 0 | a graph with **no typed node**, a crumb that is not an object / has no `@type ListItem`, non-money `visiblePrice` and `Offer.price` |
+| `scripts/i18n-check.ts` | 23 | 11 → 1 | seven single-fault copies of `_cases/clean/` + two registry fixtures |
+| `scripts/catalogue-check.ts` | 38 | 4 → 0 | funeral ladder start, overlapping sub-bands, no surcharge transcription, FX self-rate |
+| `seed/check.ts` | 23 | 11 → 1 | ten tree mutations (stray/missing/stale file, lying `origin`, broken prompt file, orphan copy, no `en`, no florist sentence, a person's name, an image with no asset) |
+| `scripts/corridor-check.ts` | 23 | 4 → 1 | second branches: `seoTitle`/`seoDescription` absent, a destination as a URL slug (`rumaenien`) |
+| `seed/media-variants.ts` | 9 | 4 → 0 | height, `objectKey`, `variant`; and the "asset not in media.json" case, which passed **for the wrong reason** — `ghost-asset` is also in the expected object key and the missing file's path |
+| `scripts/tasks-open-decisions.ts` | 14 | 2 → 0 | no Phase 0 row, no Tasks table |
+| `scripts/tasks-brief.ts` | 3 | 2 → 1 | a migrated row whose brief was deleted |
+| `src/lib/env.schema.ts` | 8 | 1 → 0 | the `.env.example` placeholder origin in a deployed build |
+| branch-protection, codebase-map, specs-index, pr-policy, i18n-pseudo, seo/lib | 21 | 0 | — |
+
+**Kept deliberately (107 assertion sites, 4 checker sites):**
+- `[301, 308]` ×8 — the settled line: a tolerance across Next's 308 and Cloudflare's 301 that
+  still excludes 200/404/302/307, each beside a `Location` assertion.
+- `["IMG", "H1"]` (`lcp.spec.ts`) — with `inHero`, excludes the lede, the CTA and any island.
+- 17 allow-list memberships (`CATALOG_LOG_FIELDS`, `*_COLUMNS`, `SCANNED_PATHS`, …) — an observed
+  key against a declared list; a new key fails. `seed-media-manifest` `source`/`depicts` — the
+  literal is spec 002's CHECK list, independent of the schema enum. `PAGE_TYPE_POLICY` values —
+  a widened union fails it. `seed-copy` `[…].toContain(true)` — false when no field differs.
+- 16 view-derived counts and loops with an independent guard (`> 0`, `FAQ_MIN_ITEMS`, a throwing
+  reader — `seo-schema`'s corridor trail was proved: an empty breadcrumb throws in `visibleTrail`).
+- 31 `.every` universals, each beside a non-empty guard or an exact count.
+- 14 cases whose only assertions are `toBeDefined`/`> 0`, each of which can fail (a missing lookup,
+  `undefined` is not a number); `integration/db.test.ts` is a skipped placeholder.
+- 16 structural source greps (thin-route, placement, message-key liveness) — wiring rules with a
+  behavioural twin elsewhere, not behaviour stood in for.
+- Unreachable checker branches: `i18n-check.ts:542` (the live registry is valid; the same function
+  is killed through `--registry`), `seed/check.ts:480` (non-Zod parse error), `corridor-check.ts:903`
+  (the parse enum rejects a non-destination first), `tasks-brief.ts:264` (lossless split/concat guard).
+
+**Out of scope, untouched:** the depth-3 route and its source-read tests, `country-occasion.spec.ts`,
+`src/modules/geo/**` (mutated only transiently for proofs and restored), `geo-delivery.test.ts`,
+`tests/visual/**`, and every test file an open PR (86, 94, 96, 97, 98) was changing.
+
+**Gates (local, exit codes):** `typecheck` 0, `lint` 0, `format:check` 0, `codebase:map --check` 0,
+the 18 touched unit files plus every caller of a changed helper — 28 files, 796 tests — 0. CI run
+and per-job result on the head SHA: see the PR.
