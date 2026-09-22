@@ -135,6 +135,7 @@ describe("src/config/site-links.ts", () => {
     expect(published).toEqual([
       "locale-home",
       "destinations",
+      "occasions",
       "corridor-pl",
       "corridor-de",
       "corridor-fr",
@@ -151,7 +152,7 @@ describe("src/config/site-links.ts", () => {
     expect(isPublished("terms")).toBe(false);
   });
 
-  it("names the five ids spec 007 reserved, and publishes the four whose routes serve (AC-20)", () => {
+  it("names the five ids spec 007 reserved, and publishes every one of them (AC-20)", () => {
     expect([...SHOP_LINK_IDS]).toEqual([
       "occasions",
       "country-shop-root",
@@ -159,16 +160,12 @@ describe("src/config/site-links.ts", () => {
       "country-occasion",
       "occasion-hub",
     ]);
+    // Each was published in the commit that made its route serve, never before: the three
+    // country-scoped families the day TASK-110/111 merged (PR #89), the occasion hub the day
+    // TASK-112 did (PR #88), the index itself with the route this task adds.
     for (const id of SHOP_LINK_IDS) {
-      expect(siteLink(id).owningSpec, id).toBe("008");
-    }
-    // The four whose route already serves: the three country-scoped families the day TASK-110/111
-    // merged, the occasion hub the day TASK-112 did. `occasions` — the index itself — is the one
-    // id whose page this task builds, and it is published in the commit that adds its route, not
-    // before: a footer link to `/en/occasions` while that URL answers 404 is exactly the defect
-    // spec 004 AC-14 forbids.
-    for (const id of SHOP_LINK_IDS.filter((each) => each !== "occasions")) {
       expect(isPublished(id), id).toBe(true);
+      expect(siteLink(id).owningSpec, id).toBe("008");
     }
   });
 

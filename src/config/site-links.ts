@@ -305,13 +305,17 @@ const siteLinks = [
   },
   {
     // The occasions index — `/{locale}/{occasions}` (spec 008 §2 row 14, AC-20; TASK-113). It is
-    // one URL per locale, so it is a plain `route` target. Publishing it turns the footer's
-    // "Occasions" from text into the link that makes every occasion hub reachable in two clicks
-    // from any page on the site, and turns `occasionsIndexHref()`'s `undefined` into a crumb.
+    // one URL per locale, so it is a plain `route` target and not a family. Published now that
+    // its route serves: the footer's "Occasions" becomes the link that puts every occasion hub
+    // two clicks from any document on the site, and `occasionsIndexHref()`'s `undefined` becomes
+    // the crumb on every occasion page. **`isPublished()` is permission, not existence** — the
+    // one caller pairs it with `listingExists()`, so `/pl/okazje`, which has no occasion slug to
+    // list and therefore no page, is still absent from the Polish footer rather than a 404 with
+    // a link pointing at it (spec 004 AC-14).
     id: "occasions",
     labelKey: "footer.link.occasions",
     target: { kind: "route", pageType: "occasions" },
-    published: false,
+    published: true,
     owningSpec: "008",
     surfaces: ["footer", "listing"],
   },
