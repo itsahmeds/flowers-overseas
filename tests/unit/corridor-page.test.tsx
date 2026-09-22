@@ -62,6 +62,18 @@ function text(html: string): string {
     .trim();
 }
 
+/**
+ * Sentences only the live state may say: a florist who makes something *here*, a thing that *can
+ * arrive*, a price *for* the destination. `tests/e2e/corridor.spec.ts` refuses the same set on
+ * every rendered guide page.
+ */
+const GUIDE_STATE_CLAIMS = [
+  /\bour florists? in\b/iu,
+  /\bcan arrive\b/iu,
+  /\bcan make\b/iu,
+  /\bpriced for\b/iu,
+] as const;
+
 const guide = corridorView("PL", "en", { from: FROM });
 if (guide === undefined) throw new Error("the en Poland guide must exist");
 
@@ -150,6 +162,41 @@ describe("the guide state (AC-8, AC-19)", () => {
 
   it("renders no shop entry while nothing is published", () => {
     expect(html).not.toContain("data-fo-corridor-shop");
+  });
+});
+
+/**
+ * The shop entry **on a guide page** (spec 008 AC-20; `/review 98` round 1, required change 1;
+ * TASK-113). Since `country-shop-root` was published, every guide page carries it — and it
+ * carried the live state's heading and body with it: "Bouquets our florists in Poland can make,
+ * priced for Poland, with delivery and VAT already in the price", beside "Not yet. We are choosing
+ * florists in Poland now". The guide state may point at the shop; it may not describe it.
+ */
+describe("the shop entry in the guide state (AC-19, spec 008 AC-20)", () => {
+  const withShop = corridorView("PL", "en", {
+    from: FROM,
+    liveSlots: { shopEntryHref: "/en/poland/flowers" },
+  });
+  if (withShop === undefined) throw new Error("the en Poland guide must exist");
+  const html = render(<CorridorPage view={withShop} />, "en");
+  const section =
+    /<section[^>]*data-fo-corridor-shop[^>]*>(.*?)<\/section>/su.exec(
+      html,
+    )?.[1];
+
+  it("is the link and nothing else", () => {
+    expect(withShop.state).toBe("guide");
+    expect(section, "the shop entry renders").toBeDefined();
+    expect(section?.match(/<a\b/gu) ?? []).toHaveLength(1);
+    expect(section).toContain('href="/en/poland/flowers"');
+    expect(text(section ?? "")).toBe("See flowers for Poland");
+  });
+
+  it("makes no florist, delivery or availability claim anywhere on the page", () => {
+    const body = text(html);
+    for (const claim of GUIDE_STATE_CLAIMS) {
+      expect(body, String(claim)).not.toMatch(claim);
+    }
   });
 });
 

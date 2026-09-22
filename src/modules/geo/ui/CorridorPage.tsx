@@ -17,7 +17,8 @@
  *    related row and the shop entry each disappear — heading included — rather than printing a
  *    placeholder (spec 004 §5.3's `TrustMarks` rule, and the artboards' state C).
  *  - **It claims nothing in the guide state.** No cutoff, no delivery date, no price, no florist,
- *    no city, no count. The `h1` itself carries the difference the founder ruled on 2026-09-15:
+ *    no city, no count. The shop entry, which spec 008 AC-20 now fills on a guide page, is its bare
+ *    link there: its heading and body are the live state's (`/review 98`; TASK-113). The `h1` itself carries the difference the founder ruled on 2026-09-15:
  *    the guide says "Sending flowers to {country}" (the authored `h1` of the content file), and
  *    the imperative "Send flowers to {country}" belongs to the live state, because it is a call
  *    to an action the page cannot yet take.
@@ -205,7 +206,13 @@ export function CorridorPage({ view }: CorridorPageProps): ReactElement {
 
         {/* The shop entry. Rendered only when spec 008 has published a target for this country:
             an unpublished link id renders no heading, no disabled button and no "coming soon"
-            box, which is what keeps "zero links to a non-200 URL" true by construction. */}
+            box, which is what keeps "zero links to a non-200 URL" true by construction.
+            **In the guide state it is the link and nothing else** (`/review 98`, TASK-113): the
+            heading ("See what can arrive in…") and the body ("Bouquets our florists in… can
+            make, … with delivery…") are state-B copy, and each is a florist, delivery or
+            availability claim the guide state may not make beside "Not yet. We are choosing
+            florists in {country} now". The link's own label names flowers and a country and
+            claims nothing, so a guide page may carry it. */}
         {view.liveSlots.shopEntryHref === undefined ? null : (
           <Stack
             as="section"
@@ -213,10 +220,14 @@ export function CorridorPage({ view }: CorridorPageProps): ReactElement {
             data-fo-corridor-shop
             gap="sm"
           >
-            <Display size="xl">{c("shop.heading", { country })}</Display>
-            <Text size="sm" tone="muted">
-              {c("shop.body", { country })}
-            </Text>
+            {live ? (
+              <>
+                <Display size="xl">{c("shop.heading", { country })}</Display>
+                <Text size="sm" tone="muted">
+                  {c("shop.body", { country })}
+                </Text>
+              </>
+            ) : null}
             <a
               className="text-accent font-semibold"
               href={view.liveSlots.shopEntryHref}
