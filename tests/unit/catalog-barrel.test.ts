@@ -309,6 +309,9 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         // the occasions index's page component (TASK-113): the page that puts every occasion hub
         // two clicks from any document, which is how AC-21's depth bound closes for the hubs.
         "OccasionsIndexPage",
+        // and its href, for the colophon (TASK-113): published **and** existing in this locale,
+        // answered once so the footer never has to ask the catalogue itself.
+        "occasionsIndexHref",
       ].sort(),
     );
   });
