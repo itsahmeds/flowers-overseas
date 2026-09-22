@@ -19,6 +19,7 @@ import {
   checkBaselines,
   LOCAL_PLATFORM,
   manifestFor,
+  parseManifest,
   SNAPSHOT_ROOT,
   verifyAgainstManifest,
 } from "../../scripts/visual/baselines.ts";
@@ -187,5 +188,78 @@ describe("the manifest and --verify", () => {
     expect(result.uncommitted).toEqual(["visual/gone.png"]);
     expect(result.altered).toEqual([]);
     expect(result.unknown).toEqual([]);
+  });
+});
+
+/**
+ * The manifest arrives as a file out of a downloaded artifact, so it is untrusted input:
+ * `--verify` has to *report* a malformed one rather than throw a `TypeError` from inside
+ * `verifyAgainstManifest` (`/review 1` on PR 95, 2026-09-22 — the old hand-rolled check was a
+ * structural test plus an `as` cast and let `files: null` through).
+ */
+describe("parseManifest", () => {
+  it("accepts a manifest the refresh workflow wrote", () => {
+    const root = tree({
+      [`visual/${AUTHORITATIVE_PLATFORM}/home.png`]: "pixels",
+    });
+
+    const parsed = parseManifest(JSON.stringify(manifestFor(root)));
+
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) throw new Error("expected a valid manifest");
+    expect(parsed.manifest.platform).toBe(AUTHORITATIVE_PLATFORM);
+    expect(Object.keys(parsed.manifest.files)).toEqual(["visual/home.png"]);
+  });
+
+  it("reports `files: null` instead of letting it through", () => {
+    const parsed = parseManifest(
+      JSON.stringify({ platform: AUTHORITATIVE_PLATFORM, files: null }),
+    );
+
+    expect(parsed.ok).toBe(false);
+    if (parsed.ok) throw new Error("expected a rejection");
+    expect(parsed.problems.join(" ")).toContain("files");
+  });
+
+  it("reports a hash that is not a sha256 digest", () => {
+    const parsed = parseManifest(
+      JSON.stringify({
+        platform: AUTHORITATIVE_PLATFORM,
+        files: { "visual/home.png": 12345 },
+      }),
+    );
+
+    expect(parsed.ok).toBe(false);
+    if (parsed.ok) throw new Error("expected a rejection");
+    expect(parsed.problems.join(" ")).toContain("visual/home.png");
+  });
+
+  it("reports a truncated hex digest, which a length-blind check would accept", () => {
+    const parsed = parseManifest(
+      JSON.stringify({
+        platform: AUTHORITATIVE_PLATFORM,
+        files: { "visual/home.png": "deadbeef" },
+      }),
+    );
+
+    expect(parsed.ok).toBe(false);
+    if (parsed.ok) throw new Error("expected a rejection");
+    expect(parsed.problems.join(" ")).toContain("sha256");
+  });
+
+  it("reports a missing platform", () => {
+    const parsed = parseManifest(JSON.stringify({ files: {} }));
+
+    expect(parsed.ok).toBe(false);
+    if (parsed.ok) throw new Error("expected a rejection");
+    expect(parsed.problems.join(" ")).toContain("platform");
+  });
+
+  it("reports a file that is not JSON at all", () => {
+    const parsed = parseManifest("<html>404 Not Found</html>");
+
+    expect(parsed.ok).toBe(false);
+    if (parsed.ok) throw new Error("expected a rejection");
+    expect(parsed.problems.join(" ")).toContain("not JSON");
   });
 });

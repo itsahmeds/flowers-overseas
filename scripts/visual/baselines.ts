@@ -30,6 +30,8 @@ import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { z } from "zod";
+
 /** The platform CI renders on, and therefore the set that decides pass or fail. */
 export const AUTHORITATIVE_PLATFORM = "linux";
 
@@ -78,11 +80,25 @@ export function checkBaselines(root: string): BaselineCheck {
   };
 }
 
-export interface BaselineManifest {
-  readonly platform: string;
-  /** `<project>/<name>.png` -> sha256 of the file, hex. */
-  readonly files: Readonly<Record<string, string>>;
-}
+/**
+ * A refresh run's manifest, parsed at the boundary (CLAUDE.md: "Zod at every boundary"). It is a
+ * file from an artifact somebody downloaded, so it is untrusted input even though it is local: a
+ * `files: null` or a numeric hash has to be *reported*, not thrown over as a `TypeError` three
+ * frames later.
+ */
+export const BaselineManifest = z
+  .object({
+    platform: z.string().min(1),
+    /** `<project>/<name>.png` -> sha256 of the file, lowercase hex. */
+    files: z.record(
+      z.string().min(1),
+      z
+        .string()
+        .regex(/^[0-9a-f]{64}$/, "expected a lowercase sha256 hex digest"),
+    ),
+  })
+  .strict();
+export type BaselineManifest = z.infer<typeof BaselineManifest>;
 
 export function manifestFor(
   root: string,
@@ -129,19 +145,31 @@ export function verifyAgainstManifest(
   return { unknown, altered, uncommitted, matched };
 }
 
-function parseManifest(raw: string): BaselineManifest {
-  const parsed: unknown = JSON.parse(raw);
-  if (
-    typeof parsed !== "object" ||
-    parsed === null ||
-    !("platform" in parsed) ||
-    !("files" in parsed) ||
-    typeof (parsed as { platform: unknown }).platform !== "string" ||
-    typeof (parsed as { files: unknown }).files !== "object"
-  ) {
-    throw new Error("not a baseline manifest: expected { platform, files }");
+/** The manifest's parse result: the value, or every reason it is not one. */
+export type ParsedManifest =
+  | { readonly ok: true; readonly manifest: BaselineManifest }
+  | { readonly ok: false; readonly problems: readonly string[] };
+
+export function parseManifest(raw: string): ParsedManifest {
+  let json: unknown;
+  try {
+    json = JSON.parse(raw);
+  } catch (error) {
+    return {
+      ok: false,
+      problems: [
+        `not JSON: ${error instanceof Error ? error.message : String(error)}`,
+      ],
+    };
   }
-  return parsed as BaselineManifest;
+  const result = BaselineManifest.safeParse(json);
+  if (result.success) return { ok: true, manifest: result.data };
+  return {
+    ok: false,
+    problems: result.error.issues.map(
+      (issue) => `${issue.path.join(".") || "(root)"}: ${issue.message}`,
+    ),
+  };
 }
 
 function runCheck(root: string): number {
@@ -175,7 +203,16 @@ function runCheck(root: string): number {
 }
 
 function runVerify(root: string, manifestPath: string): number {
-  const manifest = parseManifest(readFileSync(resolve(manifestPath), "utf8"));
+  const parsed = parseManifest(readFileSync(resolve(manifestPath), "utf8"));
+  if (!parsed.ok) {
+    console.error(
+      `visual baselines: ${manifestPath} is not a baseline manifest — ` +
+        'expected { platform, files: { "<project>/<name>.png": "<sha256>" } }:',
+    );
+    for (const problem of parsed.problems) console.error(`  - ${problem}`);
+    return 2;
+  }
+  const manifest = parsed.manifest;
   const result = verifyAgainstManifest(root, manifest);
   if (result.unknown.length > 0 || result.altered.length > 0) {
     console.error(
