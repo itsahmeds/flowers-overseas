@@ -13,9 +13,9 @@
  *    florist count and no shop link, asserted over the rendered text rather than over the source
  *    (AC-19).
  *
- * The live view model is a fixture, and it has to be: no country has an `operations` block and no
- * `live` content file exists, because no florist has been signed (§13 Q3). That is the point of
- * the seam — the flip is data, and this is what the data produces.
+ * The live view model is a fixture, and it has to be: only Poland has an `operations` block
+ * (TASK-124), no `live` content file exists, and no florist has been signed (§13 Q3). That is the
+ * point of the seam — the flip is data, and this is what the data produces.
  */
 import { NextIntlClientProvider } from "next-intl";
 import type { ReactElement } from "react";

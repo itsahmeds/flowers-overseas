@@ -340,9 +340,9 @@ export const CORRIDOR_CHECK_CASES: readonly CorridorCheckCase[] = [
     rule: "live-operations",
     expect: "no complete `operations` block",
     alsoRules: ["token-distinctness"],
-    why: "the live state must be unreachable while no cutoff has been agreed; the copy is deliberately the guide's, which is what the distinctness rule then says.",
-    file: "en/pl-guide.md",
-    as: "en/pl-live.md",
+    why: "the live state must be unreachable while no cutoff has been agreed; the copy is deliberately the guide's, which is what the distinctness rule then says. Germany, because Poland has had an `operations` block since TASK-124 (spec 009 §13 Q3) and a live Polish file is now permitted — the rule's subject is a country with no block.",
+    file: "en/de-guide.md",
+    as: "en/de-live.md",
     ops: [],
   },
   {

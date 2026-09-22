@@ -20,9 +20,10 @@
  *    data; spec 002's `country_holiday` read replaces the body of `getHolidayProvider()` and
  *    nothing else ("country go-live is a data flip, never a code change").
  *
- * **This task ships the seam; the rows are TASK-124's.** `seed/data/holidays.json` is committed
- * empty, which is the honest Phase 0 value: no destination has an `operations` block, so no
- * destination renders a window for a holiday to fall inside.
+ * TASK-123 shipped the seam; **TASK-124 authored the rows**: Poland's 2026–2027 public holidays,
+ * the only destination with an `operations` block and so the only one whose picker renders a
+ * window for a holiday to fall inside. `pnpm seed:check`'s `calendar/holiday-coverage` rule fails
+ * the day those rows stop covering the picker's 366-day horizon.
  */
 import holidaysFile from "../../../../seed/data/holidays.json" with { type: "json" };
 

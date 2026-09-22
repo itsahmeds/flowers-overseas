@@ -241,8 +241,8 @@ export function reasonFor(
  * The operational facts one answer is computed from.
  *
  * `operations` and `state` are **parameters rather than registry reads**, and that is what makes
- * the arithmetic testable without committing a country's data: TASK-124 authors Poland's block,
- * this task ships the machinery, and the fixture seam between them is exactly here. The wrappers
+ * the arithmetic testable independently of any country's data: TASK-124 authored Poland's block,
+ * TASK-123 shipped the machinery, and the fixture seam between them is exactly here. The wrappers
  * below (`deliveryWindow`, `deliveryCalendar`) are the only callers inside `src/` that decide
  * what `state` is, and they read it from `pickerState()`; nothing in this file is exported from
  * `src/modules/geo/index.ts` except through them, so a page cannot fabricate a cutoff.

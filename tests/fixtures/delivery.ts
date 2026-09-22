@@ -14,10 +14,11 @@
  *    `zonedClock`, `cutoffAt` or `deliveryGrid`;
  *  - the expected grid is written out day by day with its weekday beside it, so a reader can
  *    check it against a paper calendar and a reviewer can see the Sunday;
- *  - the `operations` blocks are **fixtures, not data**. In Phase 0 no country in
- *    `src/config/countries.ts` carries one (spec 009 §13 Q3), and Poland's is TASK-124's to
- *    author. This file is the seam between the two tasks: TASK-123 ships the machinery and proves
- *    it against these shapes; TASK-124 lands the real block and the real holidays.
+ *  - the `operations` blocks are **fixtures, not data**. TASK-123 shipped the machinery and proved
+ *    it against these shapes; TASK-124 authored Poland's real block in `src/config/countries.ts`
+ *    (spec 009 §13 Q3) and its real holidays in `seed/data/holidays.json`, and the registry path
+ *    over those is asserted in `tests/unit/geo-delivery.test.ts`. The fixtures stay, because the
+ *    arithmetic must not depend on what one country happens to have authored.
  *
  * `plan/13` D6's rule applies to all of it: a date we have not checked is not a fixture.
  */
@@ -29,9 +30,9 @@ import type { CountryOperations } from "../../src/config/countries.ts";
 
 /**
  * The shape spec 009 §13 Q3 describes for Poland — `Europe/Warsaw`, a 14:00 cutoff, Monday to
- * Saturday, no Sunday delivery. **A fixture, deliberately**: authoring it into
- * `src/config/countries.ts` is TASK-124's act and flips Poland from `unavailable` to `preview`
- * across the whole site, which is not a thing a test may do.
+ * Saturday, no Sunday delivery. **A fixture, deliberately**, equal to what TASK-124 authored into
+ * `src/config/countries.ts`: a test that needs the shape must not depend on the registry keeping
+ * it, and `tests/unit/countries-config.test.ts` pins the registry's own copy.
  */
 export const WARSAW_OPERATIONS: CountryOperations = {
   ianaZone: "Europe/Warsaw",
@@ -697,8 +698,8 @@ export const REFERENCE_OCCASION = {
  * holiday is the specific fact about the day and the Sunday rule is a standing fact the delivery
  * facts state once.
  *
- * It is a fixture rather than a seed row: `seed/data/holidays.json` is empty in Phase 0 and
- * Poland's real rows land with Poland's cutoff in TASK-124.
+ * It is a fixture rather than a seed row, so the precedence cases do not move when the seed does;
+ * Poland's real rows (TASK-124) are asserted against `seed/data/holidays.json` itself.
  */
 export const REFERENCE_HOLIDAYS = [
   {

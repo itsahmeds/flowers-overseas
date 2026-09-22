@@ -107,7 +107,8 @@ const GATED_PROMISE_KEYS: readonly string[] = [
   // Home occasion strip's third line — `anyDeliveryDatesOpen()` in `OccasionDates`.
   "home.dates.orderBy",
   // Corridor guide, **live** state only: `corridor:check`'s `live-operations` rule refuses a
-  // `live` content file for a destination with no `operations`, and none has one (spec 007 §5.1).
+  // `live` content file for a destination with no `operations`; Poland has one since TASK-124, but
+  // no `live` file exists (TASK-142) and no florist is signed, so no corridor is `live`.
   "corridor.facts.orderBy.value",
   "corridor.steps.live.threeBody",
 ];

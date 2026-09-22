@@ -318,11 +318,12 @@ describe("`listingView()` really wires `parameterised` into the descriptor (AC-1
 
   it("cannot be asserted on a country-scoped type yet, and this is why", async () => {
     // `/review 93` asked for this seam. It does not reach `index,follow`: an active florist is
-    // one of `corridorState()`'s four terms, and Poland still has no `operations` block and no
-    // `-live` content file, so the shop root stays `noindex,follow` on both sides of the flag.
-    // The day those two land this case goes red, and the assertion moves onto the shop root
-    // itself — where AC-15 actually bites. `docs/tasks/TASK-124.md` (PL's `operations` block)
-    // carries that instruction, so the agent who turns this red is told rather than guessing.
+    // one of `corridorState()`'s four terms, and Poland has its `operations` block (TASK-124) but
+    // still no `-live` content file (TASK-142), so the shop root stays `noindex,follow` on both
+    // sides of the flag. The day the live file lands this case goes red, and the assertion moves
+    // onto the shop root itself — where AC-15 actually bites. `docs/tasks/TASK-124.md` (PL's
+    // `operations` block) carries that instruction, so the agent who turns this red is told
+    // rather than guessing.
     await withActivePartnersProvider(
       { hasActivePartners: () => true },
       async () => {

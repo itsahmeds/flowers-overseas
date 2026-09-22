@@ -15,8 +15,8 @@
  *    a `state` as parameters. `deliveryWindow` and `deliveryCalendar` are the only callers inside
  *    `src/` that decide what the state is, and they read it from `pickerState()`; exporting the
  *    core here would let a page hand the calendar a cutoff nobody authored. Its own tests import
- *    `./calendar.ts` by path, which is how the arithmetic is exercised before any country has an
- *    `operations` block (TASK-124 authors Poland's).
+ *    `./calendar.ts` by path, which is how the arithmetic is exercised against fixture blocks
+ *    independent of the one country (Poland, TASK-124) that has a real one.
  *  - `./holidays.ts`'s provider object and injection hook. A caller able to name them could
  *    decide at runtime whether we promise delivery on a day every florist in the country is shut
  *    (the rule `partners.ts` and `content/provider.ts` already keep). The `HolidayProvider`
