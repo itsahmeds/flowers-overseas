@@ -17,6 +17,8 @@
  */
 import { type APIRequestContext, expect, test } from "@playwright/test";
 
+import { skipsOnCaseInsensitiveHost } from "../support/case-insensitive-host.ts";
+
 import { SITE_LINKS, type SiteLink, isPublished } from "@/config/site-links";
 // By path and not through the barrel, for `tests/e2e/links.spec.ts`'s reason: the i18n barrel
 // re-exports a `next/dynamic` loader Playwright's ESM loader cannot resolve outside the build.
@@ -117,7 +119,6 @@ test.describe("the 404 shapes and the trailing slash (AC-5, §14 A6)", () => {
       "/en/blumen-verschicken",
       "/de/send-flowers-to",
       "/pl/send-flowers-to",
-      "/en/Send-Flowers-To",
       "/fr/send-flowers-to",
       "/en/send-flowers-to/narnia",
     ]) {
@@ -125,6 +126,30 @@ test.describe("the 404 shapes and the trailing slash (AC-5, §14 A6)", () => {
       expect(response.status(), url).toBe(404);
       expect(response.headers()["location"], url).toBeUndefined();
     }
+  });
+
+  test("a mis-cased hub segment 404s (ADR-0006: no case-fixing rewrite)", async ({
+    baseURL,
+    request,
+  }) => {
+    // Split out of the loop above and guarded — the **third** instance of the defect `90389f4`
+    // fixed in `corridor.spec.ts` and `country-shop.spec.ts`, found by TASK-113 when its own
+    // verification build started answering 404 for `/en/send-flowers-to`. Unguarded, this request
+    // is what corrupts a local build: on APFS Next writes its 404 document into the
+    // correctly-cased prerender file, and the hub then serves "Page not found" across server
+    // restarts until `.next` is deleted — which also breaks every downstream crawl, because the
+    // hub is on the path from the locale home to seven corridor pages.
+    //
+    // The predicate is about the **target host**, so a run from a Mac against the preview or
+    // Railway still executes this case, which is where it matters.
+    test.skip(
+      skipsOnCaseInsensitiveHost(baseURL),
+      "case-insensitive target filesystem serves the mis-cased path from the real page's prerendered HTML",
+    );
+    const url = "/en/Send-Flowers-To";
+    const response = await request.get(url, { maxRedirects: 0 });
+    expect(response.status(), url).toBe(404);
+    expect(response.headers()["location"], url).toBeUndefined();
   });
 
   test("the trailing-slash form permanently redirects to the bare URL", async ({
