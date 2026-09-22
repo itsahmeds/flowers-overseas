@@ -415,8 +415,8 @@ export function nextOpenDate(
  *
  * A `rule_type: none` row — a Polish name day, `plan/13` B15 — has no date, so `occasionDate()`
  * returns `null` and it appears in no list here: an occasion the evaluator cannot date marks
- * nothing rather than marking today. Keys are sorted so two renders of the same day cannot
- * differ.
+ * nothing rather than marking today. Keys are sorted by code point so two renders of the same
+ * day cannot differ, on any host.
  */
 function occasionKeysByDate(
   countryIso: CountryIso2,
@@ -433,7 +433,11 @@ function occasionKeysByDate(
     keys.push(occasion.occasionKey);
     found.set(occasion.date, keys);
   }
-  for (const keys of found.values()) keys.sort((a, b) => a.localeCompare(b));
+  // Code-point order, not `localeCompare`: the host's locale must not reorder a grid (the same
+  // rule as the process zone — nothing here reads the machine it runs on).
+  for (const keys of found.values()) {
+    keys.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+  }
   return found;
 }
 

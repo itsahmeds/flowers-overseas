@@ -30,6 +30,7 @@
  */
 import { z } from "zod";
 
+import { HolidayDateSchema } from "../../../../seed/schema/holidays.ts";
 import { MoneySchema } from "../../i18n/index.ts";
 
 import {
@@ -40,10 +41,12 @@ import {
   pickerStates,
 } from "./types.ts";
 
-/** `YYYY-MM-DD`, shape only — `zone.ts`'s `parseIsoDate` is what proves the day exists. */
-const IsoDateSchema = z
-  .string()
-  .regex(/^\d{4}-\d{2}-\d{2}$/u, "must be a `YYYY-MM-DD` calendar date");
+/**
+ * `YYYY-MM-DD` **and a day that exists**: the seed schema's round trip through `Date.UTC`, reused
+ * rather than restated, so `2026-02-30` is refused here exactly as a holiday row refuses it. A
+ * shape-only check would let an impossible day reach a rendered grid.
+ */
+const IsoDateSchema = HolidayDateSchema;
 
 /** One day in the grid (spec 009 §2 "Each date in the grid is a value, not a rendering decision"). */
 export const DeliveryDateSchema = z
