@@ -98,6 +98,64 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
   round-trip check. `deliveryCalendar()` defaults `now` to `new Date()`. That default is fine as
   the production seam and I am noting it only. The orchestrator still needs to set the `TASKS.md`
   row to `in_review` with the PR link, since it shows `in_progress` / `—`.
+- **2026-09-22 — `/review 97` round 2: PASS on `13bc138`** (CI run 35767869454 on that SHA, all
+  22 jobs green, `visual` included). Scoped to the diff since `945c049`. Host `Asia/Karachi`,
+  load 1.4–2.9 on 8 cores. Every mutation below was reverted, and the tree was checked clean
+  after each one. Baseline: 322/322 under `TZ=UTC`, `America/New_York`, `Pacific/Auckland` and
+  with `TZ` unset.
+  1. **Harness, required 1: landed.** Host `getDate` in `zonedDate` fails **51/322 under all four
+     launch zones**, with the same spread every time. AC-6: 6 under UTC, 22 under New York, 9
+     under Auckland. AC-7: 3 under Auckland. AC-11: 1 under New York. The same mutation now fails
+     independently of the host zone. Attacks on the harness itself:
+     - Removing the zone switch fails 206 under UTC and 309 with `TZ` unset.
+     - A `delete` leak in the block's `afterEach` fails 308 under UTC and under Auckland. It stays
+       green with `TZ` unset, which is correct because there is nothing to leak.
+     - Reintroducing round 1's original `delete` in `withProcessTimeZone` fails 321/322.
+     - The guard runs before the body. With every DST case throwing on its first line and the UTC
+       probe also broken, the 103 UTC cases report the guard's message and not the throw.
+       `afterEach` still restores after a thrown case or a failed `beforeEach`: the 90 throwing
+       cases fail alone and nothing cascades into the next case.
+     - `PROCESS_ZONES = []` and `["UTC"]` both go red on the control's hard-coded three-zone
+       list. The zone list cannot empty a block without anyone noticing.
+     - Only the primitives, the control and the AC-5 block (13 cases) sit outside
+       `underEachProcessZone`. The AC-5 block moves the zone per zone itself.
+     - Nothing inside a zone block reads a clock when the file is collected. The AC-7 contexts
+       are thunks.
+  2. **Precedence, required 2: landed.** "A non-Sunday closed weekday outranks `publicHoliday`"
+     now fails **6/322** (the grid `toStrictEqual` case and the `reasonFor` case, once per zone),
+     under UTC and with `TZ` unset. In round 1 it was 112/112 green. The weekdays were checked
+     against `cal` and against a UTC `Intl` reading: Thu 24 Dec, Fri 25, Sat 26, Sun 27 Dec 2026,
+     then Fri 1, Sat 2, Sun 3 Jan 2027. 26 Dec (Drugi dzień Bożego Narodzenia) and 1 Jan (Nowy
+     Rok) are statutory public holidays under the Polish *ustawa o dniach wolnych od pracy*, and
+     24 Dec (Wigilia) is one from 2025.
+  3. **Nits: landed.**
+     - Putting `localeCompare` back fails 3, getting `name_day, name2, nameday` instead of
+       `name2, name_day, nameday`.
+     - `HolidayDateSchema` refuses `2026-02-30`, `2027-02-29`, `2026-04-31` and `2026-13-01` and
+       accepts `2028-02-29`. A shape-only regex fails 3. A check that refuses 29 February fails 3.
+     - `holidays.json`'s third note is now true: `seed/check.ts` has no holiday-coverage rule.
+  4. **Rebase: clean.**
+     - `git log -p origin/main..13bc138` contains 0 `<<<<<<<`, 0 `>>>>>>>` and 0 `=======` lines.
+       `git grep` finds no conflict markers in the tree of any of the 10 commits.
+     - `codebase:map --check` passes, and so do `seed:check` (40 files), `prettier --check` on
+       the 6 touched files, and `seed-dataset` + `i18n-barrel` (23/23).
+     - `git diff 945c049 13bc138 -- src/` is exactly the two nits (`calendar.ts` sort,
+       `schemas.ts` date).
+     - Compared file by file, the branch's own patch before and after the rebase is
+       byte-identical for the other 15 files. Only the map, the brief, `holidays.json`, the two
+       `src` files, the fixture and the suite differ, and each for a reason the report states.
+     - `main` has since moved to `b37c7b7`, which touches only agent docs and `TASKS.md`. That
+       commit does not overlap this branch and `git merge-tree` reports it merges clean.
+  **Nits (non-blocking, for whoever next edits the suite, likely TASK-124):**
+  (a) The fixture tables are not length-pinned. Emptying `DST_READINGS` leaves **232/232
+  green**, and emptying `DST_WINDOWS` leaves **298/298 green**, because their `for` loops
+  declare zero cases. Pin `DST_READINGS.length === 30` and `DST_WINDOWS.length === 8`.
+  (b) `## Result` says "31 wall-clock rows", but `DST_READINGS` has 30, unchanged since round 1.
+  Round 1's "32 DST readings" was the 30 rows plus the autumn-pair case and the exactly-at-cutoff
+  case.
+  (c) `schemas.ts` is the first *value* import from `seed/schema/` into `src/`. The others are
+  type-only. It is acceptable because `schemas.ts` stays out of the barrel, and I am noting it
+  only.
 
 ## Escalations
 
