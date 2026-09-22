@@ -1,37 +1,660 @@
-# TASK-114 — Sort, pagination and the parameter policy: `?sort=price-asc
+# TASK-114 — Sort, pagination and the parameter policy: `?sort=price-asc`
 
 Row: `TASKS.md` → TASK-114. This brief is the task's long form: the row keeps a link and one
-sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it with
-`pnpm tasks:brief TASK-114`; keep it current by editing this file, not the row.
+sentence, everything else lives here (spec 001 §14 A15, AC-34).
 
 ## Binding
 
-What the spec binds this task to, in the spec's own words: the resolution notes that override
-defaults, the AC ids owned, the rulings from earlier reviews that apply here, the gates that must
-be green. One paragraph or a short list — no restatement of the spec.
+Spec 008 §12 task 10 — "`GET` form, `?page=1` 301, canonical/`noindex` on parameterised URLs,
+`robots.txt` facet shapes, the shared-cache header" — owning **AC-9, AC-10, AC-15, AC-22** and
+tests **T-09, T-10, T-15, T-22**. Rulings that apply: §14 **A5** (one route file per URL depth,
+`resolveLocalePath()` the single resolver), **A7** (a trailing slash is a 308), **A8 (c)** ("the
+toolbar and pagination stay unrendered until TASK-114 reads `searchParams`"), §13 **Q2** (founder:
+`?page=N` kept, listing routes **server-rendered behind the Cloudflare edge cache**
+`s-maxage=3600, stale-while-revalidate=86400` with tag-keyed data caching beneath), §13 **Q3** (the
+default order is a founder-set curation labelled plainly, never "bestsellers"/"popular"/
+"recommended"), §13 **Q6** (no filters; facet-shaped parameters neutralised), and spec 007 §14
+**A5** (`robots.txt` blocks `sort=` only — the dispatch's carry-forward, followed rather than
+re-argued) and **A7** (an optional indexability *term*, never a second `noindex` branch).
+
+Gates green locally: `typecheck`, `lint`, `i18n:check`, `check:no-db`, `codebase:map --check`,
+`budget:client-js`, the touched unit files, and — because the change alters the rendering mode of a
+page type — a cold `pnpm build` plus the browser suites (see `## Result`).
 
 ## Read
 
-- `specs/NNN-*.md` — read `## 0. Index` first, then only the sections the ACs name
-- `docs/codebase-map.md` — where everything lives
-- (the two or three files the deliverable actually touches)
+- `specs/008-country-shop-category-occasion-pages.md` §2, §5.2, §5.4, §6, §8, §9, §10, §12, §13, §14
+- `src/modules/catalog/{schemas,types,listing}.ts` (TASK-105/107), `src/modules/ui/shop/{ListingToolbar,Pagination}.tsx` (TASK-108)
+- `src/app/[locale]/[segment]/[child]/page.tsx` (TASK-109), `src/modules/seo/{indexability,canonical,robots}.ts` (TASK-090)
+- `docs/design/wireframes/country-shop-desktop.dc.html` — the toolbar, the pagination nav and the "Caching" panel
 
 ## Carry-forwards
 
-One dated bullet per `/review`, newest last.
-
-- **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
 - **From `/review 72` (2026-09-17, TASK-105):** `ListingSearchParamsSchema` neutralises `?page=0` to page 1 — rule explicitly (AC-10 says `?page=1` → 301 to bare and beyond-last → 404; decide and test `page=0`, `page=1.5`, `page=abc`); `listingPath()`/`productPath()` accept any URL-shaped string, so route code must obtain slugs only through `slugFor()` — add a lint or a type brand if a caller passes free text.
+  **Closed.** `?page=0`, `?page=-1`, `?page=1.5`, `?page=abc`, `?page=01`, `?page=` and `?page=٢`
+  are **neutralised, not redirected**: an invalid value reads as absent, and an absent `page` is
+  not the `page=1` AC-10 names, so each renders page 1 at a `noindex,follow` URL whose canonical is
+  the bare one — the same answer `?colour=red` gets. Only an **honoured** `page=1` redirects, which
+  keeps §6's "no redirect chains (one 301: `?page=1`)" literally true instead of inventing a
+  redirect shape per malformed string. Ruled and tested in `tests/unit/listing-params.test.ts`.
+  The second half is closed by construction rather than by a lint: `listingRequest()` takes **no
+  path**, and the redirect target is `listingView().path`, so this task's route code builds no URL
+  at all (§5.2's single source).
+
+- **From `/review 93` (2026-09-21, round 1) — VERDICT FAIL, one required change.**
+  `listingView()`'s `unparameterised` wiring is unasserted: deleting the three-line spread
+  `...(options.parameterised === undefined ? {} : { unparameterised: !options.parameterised })`
+  from `src/modules/catalog/listing.ts` leaves the **whole unit suite green (182 files, 4 364
+  tests)**, and no e2e can catch it because Phase 0's `operational: false` makes every listing
+  `noindex,follow` regardless. `tests/unit/listing-params.test.ts`'s "carries the parameterised
+  verdict into its own directive" only *looks* like coverage — its two `listingView` expectations
+  are tautologies in Phase 0, and its real assertions call `listingIndexability()` with the term
+  already set, bypassing the wiring. Add a case under
+  `withActivePartnersProvider({ hasActivePartners: () => true }, …)` with an indexing deployment:
+  `parameterised: false` → `index,follow`, `parameterised: true` → `noindex,follow`; verify it goes
+  red with the spread removed and say so in `## Result`.
+  Nits carried, none blocking: the href-scan regex `^page=[2-9][0-9]*$` rejects `?page=10`; the
+  "anywhere on the site" scan visits only shop-root URLs; paging out of a sorted view silently
+  drops the sort; axe does not visit `?page=2` or `?sort=`; `tests/e2e/client-js-budget.spec.ts` —
+  the cross-check the `measuredFrom` substitution depends on — never runs in CI because the `e2e`
+  job targets the Vercel preview and the spec skips off localhost; `?zzz=N` gives Cloudflare an
+  unbounded cache-key space (spec 040, follows from §13 Q6 rather than from this PR).
+  Verified, not accepted: **E-1** — a real one-hop `308` to the bare URL with the query dropped,
+  terminal 200, and the `301|308` set is *not* vacuous (mutating to `redirect()` turned four cases
+  red). **E-2** — `searchParams` is confined to the listing branch and **exactly 28 corridor
+  documents are still prerendered**, with no shop-root HTML on disk. The budget tool has **not**
+  moved its goalposts: an island injected into the shop root alone raised both the shop root and
+  the corridor by 0.2 KB br, so the substituted document carries the shop root's client references.
+
+- **From `/review 93` round 2 (2026-09-21) — VERDICT FAIL, one required change.** Round 1's blocker
+  is closed and the `occasionsIndex` relocation upheld, for a better reason than the one argued:
+  the mutation target is a **single shared line** (`src/modules/catalog/listing.ts:1286`) reached
+  identically by all six page types, so proving it through one type proves it for the shop root.
+  **But `parameterised` reaches the descriptor through four links and only link 3 was pinned.**
+  Link 2 — `parameterised: request.parameterised` at `src/app/[locale]/[segment]/[child]/page.tsx`
+  ~205 and ~295 — is exactly as deletable: with **both** lines gone the suite is byte-identical to
+  baseline (4 403 passed, 8 pre-existing `schema-catalog-pricing` failures for want of a local
+  Postgres), `typecheck` 0 and `lint` 0, because `parameterised?:` is optional at `listing.ts:1085`
+  so the omission is a legal call. The failure is silent and **fail-open** — an absent term leaves
+  the conjunction, so a sorted URL would announce `index,follow`. The browser layer cannot catch it
+  either: `tests/e2e/listing-params.spec.ts:217` asserts `noindex,follow` on `?sort=…`, but in
+  Phase 0 the base URL is `noindex,follow` too, so it passes for the wrong reason (the `?page=2`
+  case at line 101 is honest about this, comparing `robotsOf(second)` to `robotsOf(first)`).
+  Required: pin the route pass-through so deleting either call site goes red; the idiom is this
+  task's own `tests/unit/listing-cache-headers.test.ts:77`, which reads `next.config.ts` as source.
+  Nits: put the `corridorState` tripwire's instruction on the task that lands PL's `operations`
+  block, and say in the new describe that `occasionsIndex` has no route until TASK-112/113.
+  **Closed in round 3** — see `## Result`.
 
 ## Escalations
 
-One dated bullet per escalation: the question, who it went to, the answer or `open`.
+- **E-1 (2026-09-21) — `?page=1` answers 308, not the 301 of AC-10. Applied on the spec 007 §14 A6
+  precedent; orchestrator or reviewer may reverse.** A Next page render cannot choose a status code
+  (`permanentRedirect()` is 308, `redirect()` 307); a `next.config` redirect cannot strip the
+  parameter it matched — `prepareDestination()` merges `{...requestQuery, ...destinationQuery}`,
+  and a rule matching `?page=1` was **measured** on Next 16.3.4 answering `location: /one?page=1`,
+  an infinite loop; and `src/proxy.ts`, the one component that could emit a 301, is closed to
+  redirects by spec 001 §11 and the `fo/no-geo-redirect` lint. Spec 007 §14 **A6** already ruled
+  this exact shape for the trailing slash — "Next's 308 today; Cloudflare's 301 once spec 040
+  fronts the origin", with the e2e asserting `301|308` and the `Location` — and spec 008 §14 A7
+  extended that ruling to spec 008's URLs. This task asserts `301|308` with `Location` = the bare
+  URL, and `docs/design/README.md` carries a dated difference row so the artboard's "301" caption
+  is not read as shipped. 301 and 308 are the same permanent signal to a crawler.
 
-_None recorded._
+- **E-2 (2026-09-21) — the country shop root is now dynamically rendered; the corridor page is not.
+  Applied on §13 Q2 + §5.4 + the artboard; AC-22's "bare URLs are prebuilt" is the clause that
+  gives.** Reading `searchParams` is what makes a Next render dynamic, so a page that honours
+  `?page=`/`?sort=` cannot also be prerendered (measured: with the await the route prints `ƒ`, and
+  Next's own `Cache-Control` on such a response is `private, no-cache, no-store`). §5.4 states both
+  "the bare URL of every page type is prebuilt" and "the listing routes are rendered on the server
+  per request and cached at the edge by full URL"; §13 Q2's founder resolution — repeated in the
+  artboard's "Caching" panel — is the later, explicit decision, so the second governs. The blast
+  radius is held to the listing: `searchParams` is awaited **only** in the `countryShopRoot`
+  branch, and Next decides dynamism per prerendered path, so all **28** corridor documents stay `●`
+  in the build output (`prerender-manifest.json` lists them unchanged) with their own
+  `s-maxage=3600, stale-while-revalidate=31532400`, while the four shop roots move to `ƒ` and take
+  §5.4's `public, s-maxage=3600, stale-while-revalidate=86400` from `next.config.ts`. Two
+  consequences recorded rather than hidden: (a) `dynamicParams = false` no longer answers the 404s
+  for the listing — `resolveLocalePath()` + `notFound()` does, and every 404 shape of T-01 still
+  answers 404 with no `Location` (re-run green); (b) TTFB for the shop root is ~145 ms against the
+  corridor's ~3 ms on this machine at load 5, which the edge cache absorbs in production and for
+  which CI's Lighthouse job is the gate of record.
+
+- **E-3 (2026-09-21) — AC-15's `robots.txt` clause contradicts spec 007 §14 A5; A5 followed, per
+  the dispatch.** AC-15 asks `robots.txt` to "list the facet parameter shapes and not block the
+  sorted URLs"; A5 ruled the opposite pairing and shipped it (facets stay crawlable so their
+  `noindex` is seen, `sort=` is blocked because no sorted URL is indexable). `robots.txt` is
+  therefore **unchanged** by this task and asserted as shipped in
+  `tests/unit/listing-cache-headers.test.ts`, with the conflict written beside the assertion.
+
+- **E-4 (2026-09-21) — two `en` strings added, both transcribed from the founder-reviewed
+  artboard.** `shop.root.listingEyebrow` = "The listing" (drawn verbatim on
+  `country-shop-desktop.dc.html`; it replaces the count in that slot, which the toolbar now prints)
+  and `shop.pagination.titleSuffix` = "{title} · Page {page}" (the drawn `· Page N` suffix in its
+  ICU form, AC-10). Attributed to the 2026-09-16 design round with "transcribed by TASK-114" — the
+  attribution style TASK-108 used for the same artboard — and not to a review the founder did not
+  give. If the reviewer disagrees with that attribution the fix is two `reviewed: false` flags and
+  two lines in `AWAITING_FOUNDER_REVIEW`.
+
+- **E-5 (2026-09-21) — the go-live tripwire has one owner, not two.** `/review 93` round 2 asked for
+  a dated carry-forward on "whichever task lands the `operations` block in `src/config/countries.ts`
+  and `content/corridors/en/pl-live.md`", suggesting TASK-096. TASK-096 is the indexing flip (spec
+  007 AC-29) and lands neither file. The `operations` half is **TASK-124** (spec 009 §12 step 4,
+  §13 Q3: `Europe/Warsaw`, 14:00, Mon–Sat, no Sunday delivery — "and **no other country's**"), and
+  the carry-forward is now in `docs/tasks/TASK-124.md`. **The `pl-live.md` half has no owning task
+  in `TASKS.md`**: spec 007's content task authored the `guide` corpus, `content/corridors/` holds
+  no `-live` file, and `corridor:check`'s `live-operations` rule refuses one until the `operations`
+  block exists — so authoring it is a Phase 1 go-live act that no planned task claims. Both files
+  must exist before `corridorState("PL","en")` leaves `guide`, so the tripwire stays green after
+  TASK-124 alone. **For the orchestrator:** place the second half when the go-live task exists;
+  I have not invented a task row for it, and I did not edit `TASKS.md`.
+
+- **E-6 (2026-09-22) — the depth-4 listings carry no parameter policy, and this task is not the
+  one that should give them one.** TASK-110/111 merged (PR 89) while this PR was in review and
+  added `src/app/[locale]/[segment]/[child]/[grandchild]/page.tsx`. Neither of its two renders
+  declares `searchParams`, and its shared `viewFor()` passes no `parameterised`, so
+  `/en/poland/flowers/roses?sort=price-asc` and `?zzz=1` render page 1 with the `unparameterised`
+  term **absent** — and an absent optional term leaves the conjunction (spec 007 §14 A7). The day
+  Poland's `operations` block and `pl-live.md` land, those URLs announce `index,follow`. That is
+  the same fail-open direction `/review 93` rounds 2 and 3 closed at depth 3.
+  **Not fixed here, deliberately**, for four reasons. (1) This branch's remaining work is a
+  rebase of a review-passed, founder-approved PR; wiring depth 4 is new production behaviour, not
+  a merge artefact. (2) It would change the **rendering mode of two page types**: reading
+  `searchParams` is what makes a render dynamic (E-2), and the depth-4 route currently prerenders
+  **588 paths** (measured in this rebase's build, all `●`). Moving them to `ƒ` needs two new
+  shapes × four locales in `LISTING_CACHE_PATHS`, two new `measuredFrom` substitutions in
+  `budget:client-js`, fresh `bundle-baseline.json` rows and a build to prove the new prerender
+  count — and it invalidates the byte and prerender evidence PR 89 shipped. (3) Spec 008 §14
+  **A8 (c)** defers "the toolbar and the pagination" and PR 89 applied it: the depth-4 pages ship
+  with **no sort control and no page nav**, so honouring a parameter there without the controls
+  that produce it is a half-move the spec did not order. (4) Nothing is live: Phase 0's
+  `operational: false` makes every country-scoped listing `noindex,follow` regardless, and
+  `robots.txt` blocks `sort=` (E-3).
+  **For the orchestrator:** this wants a task of its own — "the parameter policy at depth 4" —
+  owning the same AC-9/AC-10/AC-15 clauses for `countryCategory` and `countryOccasion`, and it
+  should land with or after the depth-4 toolbar. The two places a future agent will look already
+  say so in prose: `src/lib/listing-cache-headers.ts`'s header block and the negative-match case
+  in `tests/unit/listing-cache-headers.test.ts`, both corrected in this rebase to state that the
+  depth-4 routes now **exist**, are **prerendered**, and must therefore stay out of
+  `LISTING_CACHE_PATHS` until something makes them dynamic.
+  **The depth-3 slicing test was not weakened to accommodate any of this.** It reads one file —
+  the depth-3 route — so the depth-4 route is outside its subject, not excused by it.
+
+- **E-7 (2026-09-22) — the two hub branches do not carry `parameterised`, and should not. Applied
+  on §5.4 + §13 Q2 read together; orchestrator or reviewer may reverse, and one assertion is the
+  whole reversal.** PR 88 (TASK-112) merged while this PR was founder-approved and waiting, and it
+  put the category and occasion hubs into **this task's route file** as two more branches of the
+  same resolver (§14 A5 gives the depth one file). Each render therefore now resolves *two* listing
+  views, and the round-3/round-4 slicing test — which asserted exactly one `listingView(…)` per
+  render — had to be answered rather than side-stepped. The substantive question the count asks is
+  whether a hub render should hand `parameterised` to `listingView()` too. **It should not**, and
+  the reason is not convenience:
+
+  1. **A hub honours no parameter.** `listingView()` forces `sort: "default"` whenever the listing
+     has no country (`src/modules/catalog/listing.ts` — "a destination-less hub shows no money at
+     all, so there is nothing on it to sort by"), and PR 88 shipped the hubs with no toolbar and no
+     page nav. There is no parameter for the flag to describe.
+  2. **§13 Q2 bought dynamism for the routes that *honour* `?page=`/`?sort=`, and for nothing
+     else.** §5.4 states the default — "the bare URL of every page type is prebuilt" — and then
+     names the exception: "**the listing routes** are rendered on the server per request and cached
+     at the edge by full URL", in the bullet whose subject is "Parameterised requests (`?page=N`,
+     `?sort=…`)". A hub matches the default, not the exception.
+  3. **Wiring it would cost the prerender of two page types for a term they cannot use.** Awaiting
+     `searchParams` in the hub branch is what would make those paths dynamic (E-2's measurement),
+     and a dynamic response carries Next's `private, no-cache, no-store` unless `LISTING_CACHE_PATHS`
+     gains its shape — so the change is not two lines: it is two new path shapes × four locales in
+     `next.config.ts`, two `measuredFrom` substitutions in `budget:client-js`, fresh
+     `bundle-baseline.json` rows and a build to re-prove the prerender counts, on a branch whose
+     remaining work is a merge. It would also invalidate the byte and prerender evidence PR 88
+     shipped four days after it was reviewed.
+  4. **The residual is real and is recorded, not hidden.** After the indexing flip (TASK-096) a
+     facet-shaped parameter on a hub URL — `/en/flowers/roses?colour=red` — is answered by the
+     prebuilt document, which says `index,follow` with a canonical to the bare URL. That is AC-15's
+     canonical half without its `noindex` half, at the one page type that flips indexable *before*
+     any country goes live. `?sort=` is `robots.txt`-blocked (E-3), no such URL is linked or
+     sitemapped (asserted by this task's href scan), and the canonical is the consolidation signal;
+     but the gap is a gap. **Its cheapest close is an edge rule, not a branch**: spec 040 can answer
+     a non-empty query string on a prebuilt page with `X-Robots-Tag: noindex, follow` at Cloudflare,
+     which costs no prerendering — the same place §13 Q6's unbounded cache-key space already waits.
+     Otherwise it belongs to the parameter-policy task **E-6** asks for, widened from "depth 4" to
+     "every page type this route file serves that is not the country shop root".
+
+  **What the test says now, and how to reverse this.** Every `listingView(…)` call in each render is
+  classified by its own `pageType:` and asserted: the country-scoped call must carry
+  `parameterised: <b>.parameterised` with `<b>` bound by *this* render's
+  `const <b> = await listingQuery(searchParams)`, and the hub call must carry **no** `page`, **no**
+  `sort` and **no** `parameterised`. The classification is total — a call that is neither fails the
+  count — so a third listing branch still announces itself, which was the original case's point. The
+  hub half is a positive assertion of the policy rather than an exemption from it: whoever decides a
+  hub should honour a parameter edits that one `not.toContain` and says why, and the route header
+  tells them what else moves with it. **Nothing was deleted, loosened or re-scoped:** the parser
+  still keys on the literal `listingView(`, comments are still stripped before anything is parsed,
+  and the file now has *more* of its calls under assertion than before the merge — four instead of
+  two, and see round 6 for why "before the merge" was itself two out of three.
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
+Shipped in PR **[#93](https://github.com/itsahmeds/flowers-overseas/pull/93)** (branch
+`task/TASK-114-sort-pagination-params`, 4 commits). `listingRequest()` in
+`src/modules/catalog/params.ts` is the one answer to what a listing's query string does — the
+`?page=1` permanent redirect, the page and order `listingView()` takes, the `· Page N` title, the
+canonical's single permitted parameter and the `parameterised` flag — and it takes no path, so no
+route builds a URL. The flag becomes `unparameterised`, a new **optional term** on spec 007's
+`indexability()` (the §14 A7 precedent), so a sorted or faceted URL is `noindex,follow` with no
+robots literal outside `modules/seo`; `canonicalFor()` gained the one parameter AC-16 permits and
+**throws** on a page below 2. The country shop root renders TASK-108's `ListingToolbar` and
+`Pagination` (§14 A8 (c)); `next.config.ts` puts §5.4's shared-cache header on the four listing
+paths, whose segments come from the locale registry, and on nothing else.
 
-_Pending._
+Tests: **unit +26** across three files (`listing-params` 13, `listing-cache-headers` 7,
+`catalog-shop-page` +6; `catalog-barrel` updated for the new export and the new file); **e2e +16**
+(`tests/e2e/listing-params.spec.ts`) plus the two shop URLs added to the client-JS cross-check.
+Full local browser run against a cold build: **e2e-desktop 402 passed / 4 skipped, e2e-mobile 403 /
+4, a11y 83 (zero serious or critical), visual 45** — two `darwin` shop-root baselines regenerated
+for the toolbar and the nav. Build green: 28 corridor paths still prerendered, four shop roots now
+dynamic. **Script budget +0.0 KB on every route**; the shop root is 121.5 KB br of 128 KB, the same
+nine chunks as the locale home, proven against a real browser. No Lighthouse number is claimed: the
+machine was at load 3.3–5.0 with sibling agents running, and CI's lighthouse job is the gate of
+record. `budget:client-js` learned to measure a dynamically rendered route from a prerendered URL
+of the **same route entry** and to print the substitution.
+
+Handed to later tasks: **TASK-110/111** add their depth-4 paths to `LISTING_CACHE_PATHS` when their
+routes land (a cache header on a path that still 404s would have Cloudflare hold the 404) and call
+`listingRequest()` the way the depth-3 route does — two lines each, no new policy. **TASK-117**
+inherits the `301|308` reading of AC-10, the "no sorted or faceted URL in any `<a href>`" scan (the
+pagination `?page=N` link is AC-10's required exception) and the `measuredFrom` substitution in
+`budget:client-js`. **Spec 040** can close E-1 by normalising `?page=1` to a 301 at the edge.
+
+### Round 2 — `/review 93`'s required change (2026-09-21)
+
+**The blocker is closed, and I broke the test myself before calling it closed.** `/review 93` found
+that `listingView()`'s `unparameterised` wiring was unasserted: the reviewer deleted the spread
+`...(options.parameterised === undefined ? {} : { unparameterised: !options.parameterised })` from
+`src/modules/catalog/listing.ts` and the whole unit suite stayed green. AC-15's `noindex` half —
+the clause that decides whether Google indexes `?sort=price-asc` — was unfalsifiable.
+
+`tests/unit/listing-params.test.ts` gains two cases (13 → 15) under a new describe, "`listingView()`
+really wires `parameterised` into the descriptor (AC-15)":
+
+1. **The falsifying case.** Under a hypothetical indexing deployment, `listingView()` on
+   `occasionsIndex` answers `index,follow` for `parameterised: false`, `noindex,follow` for
+   `parameterised: true`, and `index,follow` when the option is absent (an unasserted optional term
+   leaves the conjunction — spec 007 §14 A7). The three-way shape pins both the polarity and the
+   absent case.
+2. **Why it is not the shop root.** `withActivePartnersProvider({ hasActivePartners: () => true })`
+   — the seam the review named — does **not** reach a differing verdict, and the case says so with
+   an assertion rather than a comment.
+
+**Deviation from the review's literal recipe, with the measurement behind it.** The review asked for
+the case under `withActivePartnersProvider` on a country-scoped type. That cannot move the verdict
+today: an active florist is one of *four* terms in `corridorState()`, and Poland fails two more that
+have no test seam — `hasCompleteOperations("PL")` is `false` (no `operations` block in
+`src/config/countries.ts`) and `content/corridors/en/` holds only `pl-guide.md`, no `-live` file. So
+PL stays `guide`, `operational` stays `false`, and `listingView(…, { parameterised })` answers
+`noindex,follow` on both sides — measured, not assumed. `tests/unit/corridor-route.test.ts:132`
+already asserts the same thing from the corridor side. The seam that *does* work is a page type
+carrying **no `operational` gate** at all: `isCountryScoped()` excludes the two hubs and the
+occasions index, so under an indexing deployment the parameter is the only variable left in the
+conjunction. Case 2 above holds the country-scoped path pinned, and goes red the day Poland's
+`operations` block and `pl-live.md` land — at which point the assertion moves onto the shop root,
+where AC-15 actually bites.
+
+**Mutation evidence (I deleted the spread, watched it go red, and restored it).** With the three
+lines removed, `pnpm test` reports **1 failed | 4 364 passed | 5 skipped** — the one failure is the
+new case, `AssertionError: expected 'index,follow' to be 'noindex,follow'` (plus a
+`codebase:map --check` case, unrelated and since regenerated). The same mutation before this change
+left the suite fully green, which is exactly the defect. Restored: `pnpm test` **182 files, 4 366
+passed, 5 skipped, 0 failed** at load average 7.2.
+
+The inline `indexing` deployment literal is hoisted to a file-level `INDEXING` const so both
+describes name the same hypothetical; no production code changed in this round.
+
+**Gates, round 2:** `typecheck`, `lint`, `i18n:check`, `check:no-db`, `codebase:map --check`,
+`specs:index --check` all exit 0; full unit suite green (above). No build slot taken — this round
+changes no shipped byte, so `build`, `e2e`, `a11y`, `visual` and `lighthouse` are CI's.
+
+**Recorded, deliberately not fixed:**
+
+- The two `e2e` load flakes the review saw on run 1 (`banner.spec.ts:669`, `destinations-hub.spec.ts:113`)
+  both pass in isolation and both passed on the reviewer's run 2 at a *higher* load. Environmental.
+- `?zzz=1`, `?zzz=2`, … give Cloudflare an unbounded cache-key space over bounded content. This
+  follows from spec 008 §13 Q6's founder ruling that the search-param schema *neutralises* rather
+  than rejects, so it is spec 040's edge rule (strip unknown parameters before the cache key), not
+  this PR's.
+- **`tests/e2e/client-js-budget.spec.ts` never runs in CI** — the browser cross-check that makes
+  `budget:client-js`'s `measuredFrom` substitution safe. The `e2e` job points `PLAYWRIGHT_BASE_URL`
+  at the Vercel preview and the spec skips off localhost, so the substitution this PR added is
+  currently guarded only by local runs. **TASK-137 (PR 90, in review) moves the preview origin to
+  `http://localhost:3000`, which starts that spec running the moment PR 90 merges.** No action here.
+
+**CI re-run, round 2** — [35622590214](https://github.com/itsahmeds/flowers-overseas/actions/runs/35622590214),
+conclusion `failure`, and neither cause is this PR. Fifteen jobs green (`lint` incl. the three
+orientation gates, `typecheck`, `test-unit`, `test-integration`, `test-contract`, `i18n-check`,
+`db-check`, `audit`, `catalogue-check`, `seo-validate`, `seed-check`, `corridor-check`,
+`dev-os-check`, `env-build-failure`). `commitlint` failed on **TASK-137's recorded defect**: its
+`if` admits `workflow_dispatch` but both its steps interpolate `github.event.pull_request.*.sha`,
+empty on a dispatch — locally, all 7 commits lint `0 problems, 0 warnings`. `preview` is
+`pull_request`-only by design, so it skipped and took `e2e`, `a11y`, `visual` and `lighthouse` with
+it. **The gap worth naming:** on an already-ready, already-labelled PR, `gh workflow run ci.yml` is
+the only re-trigger available and it **structurally cannot reach those five jobs**; they last ran on
+this branch at `pull_request` run 35616572158. Harmless here (this round adds two unit cases and
+changes no shipped byte), but it belongs next to TASK-137's `preview` work. I did not re-add the
+`ci:full` label to force a `labeled` event.
+
+### Round 3 — link 2 pinned, and the other three links audited
+
+`tests/unit/listing-params.test.ts` gains a third describe, "the route really hands `parameterised`
+to `listingView()` (AC-15)" (15 → 17 cases). No production code changed this round.
+
+The route is read **as source**, the idiom `tests/unit/listing-cache-headers.test.ts:77` uses on
+`next.config.ts`: comments are stripped first (this file's own prose says "`listingView()`" more
+than once, and a sentence about the wiring must not be able to pass for the wiring), then every
+`listingView(…)` call is extracted by balancing parentheses. Both call sites — `generateMetadata`
+and the page component — must carry `parameterised: <binding>.parameterised`, and `<binding>` must
+be a `const … = await listingQuery(searchParams)`. A **third** listing branch (TASK-110/111's
+depth-4 URLs) fails the arity assertion until it carries the flag too, which is the point rather
+than a nuisance. A second case pins the link before it: `listingQuery()` must pass the request's
+query string to `listingRequest()`.
+
+> **Corrected in round 4.** This paragraph originally claimed the binding had to be "the render's
+> own" line. It did not: the provenance half was a file-global `toContain`, both renders bind the
+> name `request`, and so one render's correct line satisfied the other's check. Round 4 makes the
+> claim true; the sentence above now describes only what round 3 actually enforced.
+
+**Mutations run, not described** (`pnpm vitest run --project unit tests/unit/listing-params.test.ts`,
+each mutation restored immediately after):
+
+| Mutation | Result |
+|---|---|
+| Both `parameterised: request.parameterised` lines deleted | **red** — `AssertionError: listingView() call 1: expected undefined to be defined`; `pnpm typecheck` still **0**, which is the reviewer's point about `parameterised?:` being optional |
+| Only `generateMetadata`'s deleted | **red** — `listingView() call 1` |
+| Only the page component's deleted | **red** — `listingView() call 2` |
+| `listingQuery()` rewritten to `listingRequest({})` (the link before link 2, same fail-open direction) | **red** — `expected '{}' to contain 'searchParams'` |
+
+**The other three links, audited by mutation over the whole unit project** (baseline **182 files,
+4 368 passed, 5 skipped**):
+
+- **Link 1 — `listingRequest()` computes the flag** (`src/modules/catalog/params.ts:104`). Pinned.
+  Forcing `const parameterised = false` gives **4 failed | 4 364 passed**, in "`?sort=` and the
+  facet shapes" (×3) and the `/review 72` malformed-page case.
+- **Link 4a — `pageIndexability()` carries the term** (`src/modules/seo/indexability.ts:239-241`).
+  Pinned. Deleting the spread gives **2 failed | 4 366 passed**: "carries the parameterised verdict
+  into its own directive" and round 2's "turns its own directive on the flag alone".
+- **Link 4b — `indexability()`'s conjunction contains the term** (`INDEXABILITY_TERMS`). Pinned.
+  Dropping `"unparameterised"` from the list gives **2 failed | 4 366 passed**: "is the one term
+  that removes `index` from an otherwise indexable page" and round 2's case.
+
+So all four links are now falsifiable, and the two that were pinned already were pinned on purpose
+rather than by accident — each mutation names the term, not a downstream coincidence.
+
+**Nit closed:** the round-2 describe now says in prose that `occasionsIndex` is a *page type, not a
+served page* (`src/modules/catalog/routes.ts:28-31` — both depth-2 handlers `notFound()` unless the
+match is `destinationsHub`, until TASK-112/113), and why that costs nothing: the `unparameterised`
+spread is one shared line reached by all six types.
+
+**Carry-forward placed:** `docs/tasks/TASK-124.md` (PL's `operations` block) now carries a dated
+bullet telling that agent what the `corridorState("PL","en") === "guide"` tripwire is, that it stays
+green for TASK-124 alone, and where the assertion moves when `pl-live.md` follows. The test comment
+names TASK-124 back, so the archaeology runs both ways. The `pl-live.md` half has no owning task —
+**E-5** above.
+
+**Gates, round 3:** `typecheck`, `lint`, `i18n:check`, `check:no-db`, `codebase:map --check`,
+`specs:index --check` all exit 0; full unit project **4 368 passed, 5 skipped, 182 files**. No build
+slot taken and no shipped byte changed, so `build`, `e2e`, `a11y`, `visual` and `lighthouse` are
+CI's. Load average 3.8 (1 min) / 7.9 (5 min) on 8 cores across these runs, which is why no local
+performance number is claimed. Rebased on `origin/main` (`a7d1970`); CI re-fired by toggling the
+`ci:full` label, since a push fires nothing on a ready PR and a dispatch cannot reach `preview`.
+
+### Round 4 — the provenance half made per-render
+
+One nit from `/review 93` round 3, and nothing else touched.
+
+**The hole.** The link-2 case checked `parameterised: <binding>.parameterised` inside each call's
+own argument text, but then looked the binding up with `expect(routeSource).toContain(...)` — the
+**whole file**. Both renders name it `request`, so the page component's line stood in for
+`generateMetadata`'s. Editing `generateMetadata` to `const request = await listingQuery(undefined)`
+left **17 passed** and `typecheck` **0**, with the render that decides `<meta name="robots">`
+reading an empty query: `?sort=price-asc` would have announced `index,follow`.
+
+**Approach taken: slice at the function boundaries** — the stronger of the two the reviewer named,
+and robust here because the boundary is unambiguous. The route's renders are top-level
+`export [default] async function` declarations, so the stripped source splits on a lookahead at
+that declaration and the slices that contain `listingView(` are the renders under test. Each slice
+is then asserted alone: exactly one `listingView(…)` call, a `parameterised: <b>.parameterised`
+pass-through in **its** call, `const <b> = await listingQuery(searchParams)` in **its** source, and
+`searchParams` in **its** own declared parameter list (the same paren-balancing helper, applied to
+the declaration). Counting call sites instead — the other option — would have pinned the arity but
+still said nothing about *which* render each `const` belongs to; the slice says it directly.
+
+Nothing the reviewer measured as fail-closed was weakened: the parser still keys on the literal
+`listingView(`, so an alias, a `listingView\n(` split or a hoisted options object still breaks it,
+and comments are still stripped before anything is parsed. Both were re-measured below.
+
+**Mutations run, not described** (`pnpm vitest run --project unit tests/unit/listing-params.test.ts`,
+each restored immediately after):
+
+| Mutation | Result |
+|---|---|
+| **The reviewer's**: `generateMetadata`'s `listingQuery(searchParams)` → `listingQuery(undefined)` | **red** — `generateMetadata: expected 'export async function generateMetadat…' to contain 'const request = await listingQuery(se…'`; `pnpm typecheck` still **0** (this was green before round 4) |
+| The mirror, on the page component | **red** — same assertion, labelled `LocaleChildRoute` |
+| Only `generateMetadata`'s `parameterised: request.parameterised` deleted | **red** — `generateMetadata: expected undefined to be defined` |
+| Both pass-throughs deleted, **plus** two complete fake `listingView(…, { parameterised: request.parameterised })` calls planted in a doc comment and a line comment | **red** — comment-stripping holds; the fakes rescue nothing |
+| `generateMetadata`'s call split as `listingView\n(` | **red** — `renders resolving a listing view: LocaleChildRoute: expected [ 'LocaleChildRoute' ] to have a length of 2 but got 1`, i.e. the render vanishes loudly rather than passing |
+| **Control** (must stay green): `generateMetadata`'s binding renamed to `metaRequest`, wired correctly | **green** — the case pins provenance, not a name |
+
+Two prose claims corrected in the same commit: the test comment that said the binding "is this
+render's parsed query" (it now is, and the comment says how) and the round-3 `## Result` paragraph
+above, which is marked rather than rewritten so the record of what was believed stays readable.
+
+**Gates, round 4:** `typecheck`, `lint`, `format:check`, `codebase:map --check` all exit 0; the
+touched unit file **17 passed**. Test-only change, no shipped byte, no build slot. Rebased on
+`origin/main` (`0afe51d`) before pushing; CI re-fired by toggling the `ci:full` label.
+
+**CI, round 4** — run [35631531581](https://github.com/itsahmeds/flowers-overseas/actions/runs/35631531581),
+`pull_request` on the rebased head, so it did reach the full spine this time. **22 of 23 jobs green**,
+including `build`, `test-unit`, `test-integration`, `test-contract`, `lighthouse`, `container`,
+`seo-validate` and `audit`. The one failure is **`preview`**: `GET <preview>/api/health` with the
+bypass header returns **500**, which also skips `e2e`, `a11y` and `visual` through `needs`.
+
+That failure is **not this branch's**. The same job fails the same way on every branch that ran in
+the last hour — `task/TASK-138-r2-media-delivery` (35630208213) and
+`task/TASK-110-111-country-category-occasion` (35627184467) — while
+`task/TASK-137-ci-self-hosted-preview` (35619396292) is green, i.e. it is the Vercel Hobby preview
+environment, not a repository regression, and TASK-137 owns it. This round changed one test file
+and no shipped byte, so no job it blocks could have been affected by it. **Not escalated as new**:
+round 3 already recorded the preview/TASK-137 gap; this is the same gap with a run number.
+
+### Round 5 — rebased onto `origin/main` `68163e6` (2026-09-22)
+
+**Conflict resolution only; no new behaviour.** Four PRs merged underneath this branch — #90
+(TASK-137, CI preview origin), #84 (TASK-094, sitemaps), #87 (TASK-093, JSON-LD builders) and #89
+(TASK-110 + TASK-111, the depth-4 routes). Five conflicts, all resolved keeping both sides.
+
+**The one in load-bearing source** is `src/app/[locale]/[segment]/[child]/page.tsx`, and the
+dispatch's premise was off by one PR: **#89 never touched this file** — it added a *separate*
+`[grandchild]/page.tsx` — so the collision is **#87's**. TASK-093 inserted a non-exported
+`registryLabels()` helper immediately before the page component and rewrote the corridor branch's
+return to a fragment with `<JsonLd>`; this branch rewrote the page component's **signature** to
+`{ params, searchParams }`. Both survive: the helper keeps its place, the signature keeps
+`searchParams`.
+
+**Why the shape still satisfies the round-4 slicer**, checked before the rebase was continued
+rather than after: the test splits the comment-stripped source on a lookahead at
+`export [default] async function`, so a **non-exported** helper does not open a slice — it joins
+`generateMetadata`'s, and it carries no `listingView(` call in with it. The file's four top-level
+slices are `(preamble)`, `generateStaticParams`, `generateMetadata`, `LocaleChildRoute`; exactly
+two contain `listingView(`; each holds exactly one call, one `parameterised: request.parameterised`,
+one `const request = await listingQuery(searchParams)` of its own, and `searchParams` in its own
+parameter list. **No assertion was loosened, deleted or re-scoped**, and the parser was not touched.
+A comment was added to the helper saying why its position is load-bearing, so the next agent who
+moves it learns it from the file rather than from a red test.
+
+**Mutations re-run on the merged file** (`pnpm vitest run --project unit tests/unit/listing-params.test.ts`,
+each restored immediately):
+
+| Mutation | Result |
+|---|---|
+| `generateMetadata`'s `parameterised: request.parameterised` deleted | **red** — `generateMetadata: expected undefined to be defined` (1 failed / 16 passed) |
+| `generateMetadata`'s `listingQuery(searchParams)` → `listingQuery(undefined)` | **red** — `generateMetadata: expected 'export async function generateMetadat…' to contain 'const request = await listingQuery(se…'`; `pnpm typecheck` still **0**, so the test remains the only gate on it |
+| **Control**: `generateMetadata`'s binding renamed to `metaRequest`, wired correctly throughout | **green** — 17 passed, `typecheck` **0**. The case pins provenance, not a name |
+| Extra, because the merge introduced a non-exported helper: `generateMetadata`'s `listingView(…)` moved into a non-exported `metaView()` beside `registryLabels()` — the `viewFor()` shape the depth-4 route uses | **red** — `generateStaticParams: expected … to contain 'const request = await listingQuery(se…'`. Hiding a render's call in a helper fails closed and loudly |
+
+**The other four conflicts.** `docs/codebase-map.md` (generated — regenerated with
+`pnpm codebase:map`, 12 modules / 23 config / 25 routes / 36 scripts) · `docs/design/README.md`
+(both sides appended difference rows; all three kept, in date order) ·
+`tests/e2e/client-js-budget.spec.ts` (both sides added listing URLs to `URLS`; **all four kept** —
+`/en/poland/flowers`, `/en-gb/poland/flowers` from this task and `/en/poland/flowers/roses` from
+TASK-110 — with one comment explaining both jobs the list now does) ·
+`tests/visual/__screenshots__/visual/darwin/country-shop-{desktop,mobile}.png`.
+
+**The visual baselines were a real conflict, not a formality.** Both sides regenerated the *same*
+two PNGs of the *same* page for *different* reasons — TASK-110's §14 A10 occasion-table third
+column, and this task's toolbar and pagination — so **neither side's baseline is correct for the
+merged page**, and taking either would have failed CI's `visual` job. Both were regenerated
+against a cold build of the merged tree (mobile grew 5 725 → 5 886 px). The diff was inspected
+before regenerating: it is confined to the occasion table at the foot of the page, with the
+toolbar and the page nav matching, which is the expected signature of A10 landing under a
+baseline that already had TASK-114's controls.
+
+**Build slot taken**, and this is why: a new baseline cannot be produced without a real browser
+against a real build, and a wrong baseline is a red CI job. Acquired via
+`.claude/bin/build-slot.sh`, server on **:3228**, released after; only this run's own PID killed.
+
+**Gates, round 5** — all local, all against the merged tree. `typecheck` **0** · `lint` **0**
+(js + css) · `i18n:check` **0** (4 locales, no missing/unused/stale/malformed) · `check:no-db`
+**0** · `codebase:map --check` **0** · `format:check` **0** · full unit + contract suite **191
+files, 4 558 passed, 5 skipped, 0 failed** · `build` green with the blast radius of **E-2 intact
+after the merge**: 28 corridor paths and all 588 depth-4 paths still `●`, only the depth-3 route
+entry `ƒ` · **e2e 963 passed / 12 skipped / 0 failed** (desktop + mobile) · **a11y 89 passed**,
+zero serious or critical · **visual 49 passed** including both regenerated baselines ·
+`budget:client-js` **every URL within budget, +0.0 KB vs baseline**, and the `measuredFrom`
+substitution still prints for both dynamic shop roots.
+
+**The cross-check that proves the two URL lists merged correctly:**
+`tests/e2e/client-js-budget.spec.ts` ran **10/10** against the local build — the first time it has
+run with both tasks' URLs present. It covers TASK-110's prerendered `/en/poland/flowers/roses`
+*and*, through the `measuredFrom` substitution, this task's two dynamically rendered shop roots.
+That is the browser half of the substitution's safety argument, and it is green on the merged tree.
+
+**One finding, escalated not fixed:** **E-6** above — TASK-110/111's depth-4 routes read no
+`searchParams` and pass no `parameterised`, which is the same fail-open this task closed at depth
+3. It is not this rebase's to fix; it needs a task of its own. Two comments were corrected to
+record it where it will be found (`src/lib/listing-cache-headers.ts` and
+`tests/unit/listing-cache-headers.test.ts`), both prose-only: the negative-match assertion that
+keeps the depth-4 shapes out of `LISTING_CACHE_PATHS` is unchanged and still passes, and it is
+still **correct** — those routes are prerendered ISR and would *lose* a working `Cache-Control` to
+that rule.
+
+### Round 6 — rebased onto the hubs (`origin/main` `6c19880`, 2026-09-22)
+
+**Conflict resolution only; no new page behaviour.** PR **#88** (TASK-112) merged underneath this
+branch and appended the **category and occasion hub branches to this task's own route file**
+(`src/app/[locale]/[segment]/[child]/page.tsx`) — spec 008 §14 **A5** gives the depth one route
+file, so this was an additive merge from the start, not a choice of sides. Also underneath:
+`5d9c153` (media-manifest test fix) and `6c19880` (docs).
+
+**Three conflicts.** The route file · `docs/codebase-map.md` (generated — regenerated with
+`pnpm codebase:map`: 12 modules, 23 config files, 25 routes, 37 scripts) · the two `darwin`
+`country-shop-{desktop,mobile}` baselines, where both sides had regenerated the same PNGs. This
+task's side was kept and then **verified rather than assumed**: `tests/visual/country-shop.spec.ts`
+passes against a cold build of the merged tree, so #88's `ProductCard`/`ListingGrid` edits do not
+change this page at the diff threshold. The full visual project is **53 passed**.
+
+**The route file's textual conflict was one hunk — the import list — and both sides were kept.**
+`git` auto-merged the rest, which is exactly what made the real work non-textual: the two hub
+branches now sit *inside* the two renders this task's tests dissect.
+
+#### The comment stripper was eating source, and the merge is what exposed it
+
+`tests/unit/listing-params.test.ts` reads the route **as source**. Before anything is parsed it
+strips comments — and it stripped **block comments first**. The route carries a `//` line whose
+backticked path is a glob, so that line contains a block-comment *opener*; the regex paired it with
+the next terminator far below (the doc comment above `registryLabels()`) and deleted **everything
+between them**. Round 4's assertions then ran on what was left.
+
+Before the merge that silently removed the tail of `generateMetadata` — the `pageMetadata({…})`
+block — while leaving its `listingView(` call, so every count still came out right and the suite
+was green. **After the merge the eaten region contained a whole `listingView(…)` call**: the
+stripped file held **3** calls where the file has 4, and `generateMetadata`'s hub branch was
+invisible to the test. A test that reads source can lose its subject without losing its colour.
+
+Fixed by stripping whole-line `//` comments **first**, after which the block regex pairs correctly
+(4 calls, 2 renders, braces balanced). Round 4's anti-forgery measurements were re-run and still
+hold: a complete fake `listingView(…, { parameterised: request.parameterised })` planted in a doc
+comment or a line comment is still removed before parsing, and a `listingView\n(` split still makes
+the render vanish loudly rather than pass. A **new case** — "keeps each render whole through the
+comment strip" — asserts each render slice's braces balance after the strip, which is how a
+stripper that eats code announces itself: with the old order `generateMetadata` comes out with
+**17 `{` against 15 `}`** and the case is red.
+
+#### The hub branches, and why they carry no flag
+
+Each render now resolves **two** listing views, so round 3's "exactly one `listingView(…)` per
+render" had to be answered. **The decision: a hub carries no `parameterised`, no `page` and no
+`sort` — and the test asserts that positively rather than exempting it.** The reasoning, the
+measurements behind it and the one-assertion path to reversing it are **E-7** above. In short: a
+hub honours no parameter (`listingView()` forces the default order on a listing with no country,
+because a hub shows no money to sort by), §13 **Q2** bought dynamic rendering only for the routes
+that *honour* `?page=`/`?sort=` while §5.4's "the bare URL of every page type is prebuilt" governs
+the rest, and awaiting `searchParams` in the hub branch would take **204 prerendered documents**
+(92 category-hub + 112 occasion-hub paths, counted in this build's `prerender-manifest.json`) out
+of the build for a term they cannot use — plus two new shapes in `LISTING_CACHE_PATHS`, two
+`measuredFrom` substitutions and fresh baselines. The residual is recorded in E-7 and, so the next
+agent finds it without the brief, in the route file's header comment.
+
+**Every `listingView(…)` call in the file is now under assertion — four, where two were before,**
+and each is classified by its own `pageType:`: the country-scoped call must carry
+`parameterised: <b>.parameterised` with `<b>` bound by *this* render's
+`const <b> = await listingQuery(searchParams)`; the hub call must carry none of the three terms.
+The classification is **total**, so a call that is neither still fails the count — round 3's point,
+kept. Nothing was deleted, loosened or re-scoped, and the parser is unchanged apart from the
+comment-order fix.
+
+**Mutations re-run on the merged file** (`pnpm vitest run --project unit tests/unit/listing-params.test.ts`,
+each restored immediately after):
+
+| Mutation | Result |
+|---|---|
+| `generateMetadata`'s `parameterised: request.parameterised` deleted | **red** — `generateMetadata: expected undefined to be defined` (1 failed / 17 passed); `pnpm typecheck` **0** |
+| `generateMetadata`'s `listingQuery(searchParams)` → `listingQuery(undefined)` | **red** — `generateMetadata: expected 'export async function generateMetadat…' to contain 'const request = await listingQuery(se…'`; `pnpm typecheck` **0**, so the test is still the only gate on it |
+| **Control**: `generateMetadata`'s binding renamed to `metaRequest`, wired correctly throughout | **green** — 18 passed, `typecheck` **0**. The case pins provenance, not a name |
+| New, on the hub half: `{ from: windowStart(), parameterised: false }` planted on the page component's hub call | **red** — `LocaleChildRoute: the hub branch honours no parameterised:`. Half-wiring a hub cannot pass quietly |
+| New, on the stripper: the old block-comments-first order restored | **red** ×2 — `generateMetadata: braces surviving the comment strip: expected 15 to be 17` and `expected [ …(3) ] to have a length of 4`. The defect this round found is now itself falsifiable |
+
+**Measured, not assumed** (production build on :3228, merged tree): `/en/flowers/roses` and
+`/en/flowers/roses?colour=red` return the **same prebuilt document** with the hub's own
+`s-maxage=3600, stale-while-revalidate=31532400`, while `/en/poland/flowers` and its faceted twin
+carry §5.4's `public, s-maxage=3600, stale-while-revalidate=86400`. Both read `noindex,follow`
+today — the hub because no indexing environment exists yet, which is precisely why E-7's residual
+is a post-flip concern rather than a live defect.
+
+**Gates, round 6** — all local, against the merged tree. `typecheck` **0** · `lint` **0** (js+css)
+· `format:check` **0** (the rebase left a double blank line in `src/modules/catalog/listing.ts`;
+Prettier removed it) · `i18n:check` **0** (4 locales, nothing missing, unused, stale or malformed)
+· `check:no-db` **0** · `codebase:map --check` **0** · unit **192 files, 4 602 passed, 5 skipped,
+0 failed** · contract **29 passed** · integration **24 passed, 1 skipped, 8 failed** — the
+pre-existing `schema-catalog-pricing` failures for want of a local Postgres (`PostgresError`),
+unchanged by this branch · **build green**, and E-2's blast radius intact and now extended: the
+depth-3 route entry is `ƒ`, **232 depth-3 paths still prerendered** (28 corridor + 204 hub), all
+**588** depth-4 paths still `●`, **no shop-root HTML on disk** · **e2e 76 passed / 0 failed** over
+the three specs this touches (`listing-params`, `country-shop`, `client-js-budget`, desktop +
+mobile) · **visual 53 passed** · `budget:client-js` **every measured URL within budget, +0.0 KB vs
+baseline on every route**. The substitution line now reads `measured from
+/en/flowers/anniversary-flowers` — a hub rather than a corridor, because the merge gave the route
+entry new prerendered paths; same route entry, same client references, and
+`tests/e2e/client-js-budget.spec.ts` re-proves it in a browser (10/10).
+
+**CI, round 6.** The first re-fire ([35703475351](https://github.com/itsahmeds/flowers-overseas/actions/runs/35703475351))
+came back `failure` on two jobs, **neither of them this branch's**. `e2e`: 1 066 passed, 2 failed —
+`tests/e2e/country-occasion.spec.ts:41` asserted `/en/occasions/mothers-day` **404s**, and PR 88's
+occasion hub serves it **200**. That is two merged PRs contradicting each other on `main` (89's 404
+list against 88's new page), inherited by every branch opened after them; the founder's
+`7c49028` — "unbreak main" — retired the entry, and this branch is rebased onto it and re-fired.
+`visual`: the Linux baselines TASK-139 (PR 95) is landing. The other 20 jobs were green, including
+`lint`, `typecheck`, `test-unit`, `build`, `container`, `a11y`, `preview` and `commitlint`.
+
+**Build slot** acquired via `.claude/bin/build-slot.sh` (it reaped a 45-minute-stale lock),
+server on **:3228**, both own PIDs killed, slot released. No Lighthouse number is claimed: the
+one-minute load average ran 17 → 55 across this window with six sibling agents on the machine, so
+CI's `lighthouse` job is the gate of record. `visual` on CI is expected red until TASK-139's Linux
+baselines land (PR 95) — not this branch's.

@@ -91,7 +91,7 @@
  *
  * Usage: `node scripts/client-js-budget.ts [--dist .next] [--url /en]…`
  */
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { brotliCompressSync, constants, gzipSync } from "node:zlib";
@@ -223,6 +223,12 @@ export interface PageMeasurement {
   /** Brotli total of the route's `next/dynamic` chunks, printed so the delta is never hidden. */
   readonly lazyBrotliBytes: number;
   readonly withinBudget: boolean;
+  /**
+   * The URL whose prerendered document was actually read, when this URL has none of its own
+   * (spec 008 §5.4 / §13 Q2; TASK-114). Absent for every prerendered URL, which is all of them
+   * but the listing routes.
+   */
+  readonly measuredFrom?: string;
 }
 
 const SCRIPT_TAG =
@@ -446,6 +452,87 @@ function measureAsset(dist: string, tag: ScriptTag): MeasuredAsset {
 }
 
 /**
+ * The document to measure a URL from: its own prerendered HTML, or — for a **dynamically
+ * rendered** route — a prerendered URL served by the same route entry (spec 008 §5.4, §13 Q2;
+ * TASK-114).
+ *
+ * The listing routes read `?page=`/`?sort=`, so Next renders them per request and writes no
+ * `.next/server/app/**.html` for them; the country shop root and the corridor page nevertheless
+ * share one route file (spec 008 §14 A5), and a route entry's script set is a property of the
+ * entry. The substitution is therefore exact rather than approximate — and it is **checked
+ * against a browser** rather than trusted: `tests/e2e/client-js-budget.spec.ts` records every
+ * script response Chromium makes for the served shop root and asserts the two sets are equal in
+ * both directions, which is what would fail the day an island made the two documents differ.
+ * Measured on the TASK-114 build: the served `/en/poland/flowers` lists the same nine chunks as
+ * the prerendered `/en/send-flowers-to/poland` and `/en`.
+ *
+ * A URL with neither its own document nor a prerendered sibling throws with both facts in the
+ * message: "the page was not prerendered" and "the page ships no JavaScript" must never be
+ * reported as the same 0 KB.
+ */
+function documentSourceFor(
+  dist: string,
+  url: string,
+): { html: string; measuredFrom?: string } {
+  const own = documentPathFor(dist, url);
+  try {
+    return { html: readFileSync(own, "utf8") };
+  } catch {
+    // Fall through to the same entry's prerendered sibling.
+  }
+
+  const entry = routeEntryFor(dist, url);
+  const sibling =
+    entry === null ? undefined : prerenderedSiblingFor(dist, url, entry);
+  if (sibling !== undefined) {
+    return {
+      html: readFileSync(documentPathFor(dist, sibling), "utf8"),
+      measuredFrom: sibling,
+    };
+  }
+
+  throw new Error(
+    `no prerendered document for ${url} at ${own}, and no prerendered URL of its route entry (${entry ?? "unknown"}) to measure it from — run \`pnpm build\` first`,
+  );
+}
+
+/**
+ * A prerendered URL of the same route entry whose document exists on disk, preferring one in the
+ * **same locale** so the substituted document is one a reader of the report recognises (a
+ * pseudo-locale document would measure the same chunks and read as a mistake).
+ */
+function prerenderedSiblingFor(
+  dist: string,
+  url: string,
+  entry: string,
+): string | undefined {
+  let routes: Record<string, unknown>;
+  try {
+    routes =
+      (
+        JSON.parse(
+          readFileSync(join(dist, "prerender-manifest.json"), "utf8"),
+        ) as { routes?: Record<string, unknown> }
+      ).routes ?? {};
+  } catch {
+    return undefined;
+  }
+  const locale = url.split("/")[1] ?? "";
+  const candidates = Object.keys(routes)
+    .sort()
+    .filter(
+      (candidate) =>
+        candidate !== url &&
+        routeEntryFor(dist, candidate) === entry &&
+        existsSync(documentPathFor(dist, candidate)),
+    );
+  return (
+    candidates.find((candidate) => candidate.split("/")[1] === locale) ??
+    candidates[0]
+  );
+}
+
+/**
  * Measure each URL against the build output in `dist`. A missing document throws with the URL in
  * the message: "the page was not prerendered" and "the page ships no JavaScript" must never be
  * reported as the same 0 KB.
@@ -455,15 +542,8 @@ export function measurePages(
   urls: readonly string[],
 ): PageMeasurement[] {
   return urls.map((url) => {
-    const documentPath = documentPathFor(dist, url);
-    let html: string;
-    try {
-      html = readFileSync(documentPath, "utf8");
-    } catch {
-      throw new Error(
-        `no prerendered document for ${url} at ${documentPath} — run \`pnpm build\` first`,
-      );
-    }
+    const source = documentSourceFor(dist, url);
+    const html = source.html;
     const documentTags = parseScriptTags(html);
     const documented = new Set(documentTags.map((tag) => tag.asset));
     const references = parseClientReferences(html);
@@ -507,6 +587,9 @@ export function measurePages(
     );
     return {
       url,
+      ...(source.measuredFrom === undefined
+        ? {}
+        : { measuredFrom: source.measuredFrom }),
       assets,
       references,
       fetchedGzipBytes: fetched.reduce(
@@ -903,8 +986,14 @@ export function formatMarkdownTable(
         : `${page.fetchedBrotliBytes - baselineBytes >= 0 ? "+" : "−"}${kb(
             Math.abs(page.fetchedBrotliBytes - baselineBytes),
           )}`;
+    // A dynamically rendered route has no document of its own; say whose was read rather than
+    // letting the row read as a measurement of a file that does not exist (TASK-114).
+    const measured =
+      page.measuredFrom === undefined
+        ? ""
+        : ` (dynamic; measured from \`${page.measuredFrom}\`)`;
     lines.push(
-      `| \`${page.url}\` | ${kb(page.documentBrotliBytes)} | ${kb(page.lazyBrotliBytes)} | ${kb(
+      `| \`${page.url}\`${measured} | ${kb(page.documentBrotliBytes)} | ${kb(page.lazyBrotliBytes)} | ${kb(
         page.fetchedBrotliBytes,
       )} | ${kb(page.fetchedGzipBytes)} | ${delta} | ${kb(fonts.transferBytes)} | ${
         page.withinBudget ? "within 128 KB br" : "**over 128 KB br**"

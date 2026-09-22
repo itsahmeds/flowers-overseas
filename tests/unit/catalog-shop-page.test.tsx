@@ -88,9 +88,47 @@ describe("the populated shop root (§5.3 row 1)", () => {
 
   it("carries the demo sentence — the whole of the Phase 0 state (§13 Q8)", () => {
     expect(text).toContain("You cannot order yet");
-    // No purchase affordance of any kind, disabled or otherwise.
-    expect(html).not.toMatch(/<button/iu);
-    expect(html).not.toMatch(/<form/iu);
+    // No **purchase** affordance of any kind, disabled or otherwise. The one `<form>` and the one
+    // `<button>` on the page are the sort control TASK-114 added (`method="get"`, submit): a
+    // control that only re-renders the same twelve bouquets in another order, and the only way to
+    // sort with JavaScript off. Counted exactly, so a second form — a basket, an email capture —
+    // fails here.
+    expect(html.match(/<form/giu) ?? []).toHaveLength(1);
+    expect(html).toContain('<form class="gap-sm flex items-end" method="get"');
+    expect(html.match(/<button/giu) ?? []).toHaveLength(1);
+    expect(html).toContain('type="submit"');
+    expect(html).not.toMatch(/basket|cart|buy now|add to/iu);
+  });
+
+  it("renders the sort form and its disclosure, and offers three orders (AC-9)", () => {
+    // A visible `<label>` bound to the `<select>`, three options and a submit button — no island,
+    // no `onchange`, nothing that needs JavaScript to work.
+    expect(html).toContain('<label class="text-ink-muted self-center text-sm"');
+    expect(html).toContain('for="listing-sort"');
+    expect(html).toContain('id="listing-sort"');
+    expect(html).toContain('name="sort"');
+    expect(html).not.toMatch(/onchange/iu);
+    expect(html.match(/<option/gu) ?? []).toHaveLength(3);
+    expect(text).toContain("Our order");
+    expect(text).toContain("Price: low to high");
+    expect(text).toContain("Price: high to low");
+    // The ranking disclosure, on the page beside the control (`plan/07` §2.1).
+    expect(text).toContain("It is not a ranking by sales");
+    expect(text).not.toMatch(/bestsell|most popular|recommended for you/iu);
+  });
+
+  it("paginates with real links in a labelled nav, page 1 linking to the bare URL (AC-10)", () => {
+    expect(en.pageCount).toBeGreaterThan(1);
+    const nav = html.slice(html.indexOf("data-fo-pagination"));
+    expect(html).toContain(`data-fo-pagination="${String(en.pageCount)}"`);
+    expect(nav).toContain(`href="${en.path}?page=2"`);
+    // Never `?page=1`: that URL redirects, and no crawlable link may point at a redirect.
+    expect(html).not.toContain("?page=1");
+    expect(nav).toContain('aria-current="page"');
+    expect(html).toMatch(/<nav[^>]*aria-label="[^"]+"[^>]*data-fo-pagination/u);
+    // Real anchors, no buttons and no "load more".
+    expect(nav).not.toMatch(/<button/iu);
+    expect(text).not.toMatch(/load more/iu);
   });
 
   it("prices every card, through `formatMoney` and nowhere else", () => {
@@ -188,6 +226,39 @@ describe("the populated shop root (§5.3 row 1)", () => {
   it("adds no client island and no inline script (§5.4)", () => {
     expect(html).not.toContain("<script");
     expect(html).not.toContain("onclick");
+  });
+});
+
+describe("page 2 and a sorted page (AC-9, AC-10; TASK-114)", () => {
+  it("moves `aria-current`, offers Previous, and counts the page in the summary", async () => {
+    const second = await listingView(
+      { locale: "en", pageType: "countryShopRoot", country: "poland" },
+      { from: FROM, page: 2 },
+    );
+    if (second === undefined) throw new Error("page 2 must exist");
+    const html = render(<CountryShopRootPage view={second} />, "en");
+    const text = textOf(html);
+    expect(second.page).toBe(2);
+    expect(second.items).toHaveLength(12);
+    expect(text).toContain("page 2 of");
+    expect(text).toContain("Previous");
+    // Page 1's link is the bare URL, and the current page is not a link at all.
+    expect(html).toContain(`>1</a>`);
+    expect(html).toContain(`href="${second.path}"`);
+    expect(html).toMatch(/<b aria-current="page"[^>]*>2<\/b>/u);
+  });
+
+  it("renders the chosen order as the selected option, from the server", async () => {
+    const sorted = await listingView(
+      { locale: "en", pageType: "countryShopRoot", country: "poland" },
+      { from: FROM, sort: "price-desc", parameterised: true },
+    );
+    if (sorted === undefined) throw new Error("the sorted view must exist");
+    const html = render(<CountryShopRootPage view={sorted} />, "en");
+    // `defaultValue` on the `<select>` renders as `selected` on the option the URL asked for, so
+    // the control shows the order the server actually rendered — with JavaScript off.
+    expect(html).toContain('<option value="price-desc" selected=""');
+    expect(html).toContain('data-fo-listing-toolbar="price-desc"');
   });
 });
 

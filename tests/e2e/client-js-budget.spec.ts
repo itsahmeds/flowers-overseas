@@ -48,9 +48,17 @@ const URLS = [
   // the locale home's script set and nothing more.
   "/en/send-flowers-to/poland",
   "/en-gb/send-flowers-to/poland",
-  // The two listing page types (spec 008 AC-23; TASK-109, TASK-110): neither mounts an island, so
-  // the browser must fetch exactly the locale home's script set on both.
+  // The listing page types (spec 008 AC-23; TASK-109, TASK-110, TASK-111): none of them mounts an
+  // island, so the browser must fetch exactly the locale home's script set on every one.
+  //
+  // The **country shop root** carries a second job here. It is dynamically rendered — it reads
+  // `?page=`/`?sort=` (TASK-114) — so `budget:client-js` has no prerendered document for it and
+  // measures the corridor page, which shares its route entry (spec 008 §14 A5). These two rows
+  // are the check that makes that substitution safe rather than assumed: the browser's real
+  // script set for the served shop root must equal what the script charges, in both directions.
   "/en/poland/flowers",
+  "/en-gb/poland/flowers",
+  // The depth-4 listings (TASK-110, TASK-111) are prerendered and measured directly.
   "/en/poland/flowers/roses",
 ] as const;
 

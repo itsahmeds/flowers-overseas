@@ -21,6 +21,18 @@ be green. One paragraph or a short list — no restatement of the spec.
 One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From `/review 93` round 2 via TASK-114 (2026-09-21):** landing PL's `operations` block is the
+  first of the two facts that arm a deliberate tripwire. `tests/unit/listing-params.test.ts`,
+  case "cannot be asserted on a country-scoped type yet, and this is why", asserts
+  `corridorState("PL","en") === "guide"` **inside** `withActivePartnersProvider({ hasActivePartners:
+  () => true }, …)` and then asserts `noindex,follow` on both sides of the `parameterised` flag.
+  It stays green for you — `corridorState()` also needs a `live` content file, and
+  `content/corridors/en/` holds only `pl-guide.md`, which `corridor:check`'s `live-operations` rule
+  will now permit for the first time. When the `pl-live.md` half lands too, that case goes **red**,
+  and the fix is not to relax it: move the two-directive assertion onto `countryShopRoot`
+  (`{ locale: "en", pageType: "countryShopRoot", country: "poland" }`), where an `index,follow`
+  base URL and a `noindex,follow` `?sort=` URL become distinguishable for the first time and spec
+  008 **AC-15** actually bites. Nothing else in TASK-114 changes.
 
 ## Escalations
 

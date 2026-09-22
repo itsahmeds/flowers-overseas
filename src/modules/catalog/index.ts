@@ -300,6 +300,19 @@ export {
 } from "./schemas";
 export { hasSlug, resolveSlug, slugFor } from "./slugs";
 
+// The listing parameter policy (spec 008 §2 "Sort, filters, pagination", §6, AC-9, AC-10, AC-15;
+// TASK-114).
+//
+// `listingRequest(path, searchParams)` is the **one** answer to "what does this query string do":
+// the `?page=1` redirect to the listing's bare path, the page number `listingView()` takes, the order, the
+// `· Page N` title, the canonical's single permitted parameter, and the `parameterised` flag that
+// becomes spec 007's `unparameterised` indexability term. It is pure and total — a query string is
+// whatever a crawler typed, so there is no input it can refuse — and it is the only place a route
+// may learn any of those six things, which is what stops the six page types answering one URL
+// three ways.
+export type { ListingRequest } from "./params";
+export { listingRequest } from "./params";
+
 // The listing view model, the existence set and the six page descriptors (spec 008 §2, §5.2, §6,
 // §11, AC-3, AC-14; TASK-107).
 //

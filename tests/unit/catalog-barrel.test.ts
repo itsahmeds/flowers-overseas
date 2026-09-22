@@ -266,6 +266,9 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         "productCardView",
         "publishedCountries",
         "writeExistenceSummary",
+        // the listing parameter policy (TASK-114, spec 008 AC-9/AC-10/AC-15): one pure function,
+        // so no route can decide for itself what `?page=` or `?sort=` means.
+        "listingRequest",
         // the shared per-depth route resolver and the country shop root's page component
         // (TASK-109, spec 008 §14 A5 / spec 007 §14 A8). Two React components appear here for the
         // `CorridorPage` reason: a page component belongs to the module that owns its view model,
@@ -299,6 +302,7 @@ describe("src/modules/catalog barrel (AC-1)", () => {
       `${moduleDir}/index.ts`,
       `${moduleDir}/listing.ts`,
       `${moduleDir}/observability.ts`,
+      `${moduleDir}/params.ts`,
       `${moduleDir}/pricing/fx.ts`,
       `${moduleDir}/pricing/history.ts`,
       `${moduleDir}/pricing/money.ts`,

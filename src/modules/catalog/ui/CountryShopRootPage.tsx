@@ -56,6 +56,8 @@ import {
   Label,
   ListingEmpty,
   ListingGrid,
+  ListingToolbar,
+  Pagination,
   Stack,
   Text,
   assertSinglePriority,
@@ -129,18 +131,22 @@ export function CountryShopRootPage({
             {/* Products before prose (§5.3 row 1, `docs/design/README.md` §Density). */}
             <Stack as="section" gap="md" data-fo-shop-listing>
               <Stack gap="xs">
-                <Label>
-                  {shop("toolbar.count", { count: view.resultCount })}
-                </Label>
+                <Label>{shop("root.listingEyebrow")}</Label>
                 <Display as="h2" size="2xl">
                   {shop("root.listingHeading", { country })}
                 </Display>
               </Stack>
-              {/* §2 "Sort": the default order is labelled for what it is and never called a
-                  ranking by sales. The sentence ships with the order, not with the control. */}
-              <Text measure size="sm" tone="muted">
-                {shop("toolbar.disclosure")}
-              </Text>
+              {/* The toolbar carries the count, the ranking disclosure and the sort form — one
+                  `<form method="get">` with a visible label and a submit button, so sorting works
+                  with JavaScript off and from the keyboard alone and adds zero client bytes (§2
+                  "Sort", AC-9, TASK-114). The order it shows is the order the server rendered:
+                  `view.sort` comes from `listingRequest()`, never from the browser. */}
+              <ListingToolbar
+                page={view.page}
+                pageCount={view.pageCount}
+                productCount={view.resultCount}
+                sort={view.sort}
+              />
               <ListingGrid cards={view.items} locale={code} priority />
               {/* Stale FX (spec 005 §14 A3, §5.3's state): the projection fell back to the
                   destination's own authored price, so the page says which currency it is
@@ -150,6 +156,17 @@ export function CountryShopRootPage({
                   {catalog("availability.fxUnavailable")}
                 </Text>
               ) : null}
+              {/* Real `<a>`s in a labelled `<nav>`, page 1 linking to the bare URL, nothing at
+                  all on a single-page listing (AC-10). The sort is deliberately **not** carried
+                  into these hrefs: a sorted URL is `noindex` and may never be a crawlable link
+                  (AC-15), so paging out of a sorted view returns the reader to the order the
+                  page canonicals to. */}
+              <Pagination
+                baseHref={view.path}
+                locale={code}
+                page={view.page}
+                pageCount={view.pageCount}
+              />
             </Stack>
 
             {view.tiles.length === 0 ? null : (
