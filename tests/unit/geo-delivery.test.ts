@@ -32,7 +32,7 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import {
   SeedCountryHolidayRegistrySchema,
@@ -115,13 +115,24 @@ import {
 /* Harness.                                                                   */
 /* -------------------------------------------------------------------------- */
 
+type ProcessZone = (typeof PROCESS_ZONES)[number];
+
+/** Put back a `process.env.TZ` value exactly as it was found — including "was never set". */
+function restoreProcessZone(previous: string | undefined): void {
+  if (previous === undefined) {
+    delete process.env.TZ;
+  } else {
+    process.env.TZ = previous;
+  }
+}
+
 /**
  * Run `body` with the **process** zone set to `timeZone`, then restore it.
  *
  * Node re-reads `process.env.TZ` on every `Date` call, so this really does move the machine's
  * clock under the subject — which is what AC-5 asks for and what a `vi.stubEnv` of a cached value
- * would not give. `body` must be synchronous: two tests swapping the process zone across an
- * `await` would interleave.
+ * would not give. `body` must be synchronous; `withProcessTimeZoneAsync` is its twin for a body
+ * that awaits.
  */
 function withProcessTimeZone<T>(timeZone: string, body: () => T): T {
   const previous = process.env.TZ;
@@ -129,12 +140,100 @@ function withProcessTimeZone<T>(timeZone: string, body: () => T): T {
   try {
     return body();
   } finally {
-    if (previous === undefined) {
-      delete process.env.TZ;
-    } else {
-      process.env.TZ = previous;
-    }
+    restoreProcessZone(previous);
   }
+}
+
+/**
+ * The async twin: the zone is held across the body's awaits and restored in `finally`. Safe
+ * because Vitest runs one file's cases one after another; nothing else in this worker reads the
+ * process zone while the body is suspended.
+ */
+async function withProcessTimeZoneAsync<T>(
+  timeZone: string,
+  body: () => Promise<T>,
+): Promise<T> {
+  const previous = process.env.TZ;
+  process.env.TZ = timeZone;
+  try {
+    return await body();
+  } finally {
+    restoreProcessZone(previous);
+  }
+}
+
+/**
+ * What the process's own clock reads at `REFERENCE_INSTANT` — the naive `Date` getters, which are
+ * exactly the reads the calendar must never make. It tells the three zones apart from each other
+ * and from any other host zone (Karachi reads `2026-10-25 5`), so it is how the harness proves
+ * which zone it is really in rather than which one it set.
+ */
+function processClockProbe(): string {
+  const at = new Date(REFERENCE_INSTANT);
+  return `${String(at.getFullYear())}-${String(at.getMonth() + 1)}-${String(at.getDate())} ${String(at.getHours())}`;
+}
+
+/** The probe each of AC-5's three zones must read. Hand-worked: 00:30 UTC on 25 October 2026. */
+const PROBE_BY_ZONE: Readonly<Record<ProcessZone, string>> = {
+  UTC: "2026-10-25 0",
+  "America/New_York": "2026-10-24 20",
+  "Pacific/Auckland": "2026-10-25 13",
+};
+
+/** Fail unless the process is really in `zone`: the variable is set *and* the clock follows it. */
+function assertProcessZone(zone: ProcessZone): void {
+  expect(process.env.TZ, "process.env.TZ at the start of the case").toBe(zone);
+  expect(processClockProbe(), `the process clock under TZ=${zone}`).toBe(
+    PROBE_BY_ZONE[zone],
+  );
+}
+
+/**
+ * The zone this file was launched in, captured when it is collected. Every case outside an
+ * `underEachProcessZone` block must start in it, and the root `beforeEach` below fails the first
+ * case that does not — which is how a harness that `delete`s the variable instead of restoring it
+ * (`/review 97` round 1) is caught: the case after the leak goes red, whatever the host.
+ */
+const LAUNCH_TZ = process.env.TZ;
+const LAUNCH_PROBE = processClockProbe();
+
+beforeEach(() => {
+  expect(process.env.TZ, "the launch zone, restored by the previous case").toBe(
+    LAUNCH_TZ,
+  );
+  expect(processClockProbe(), "the launch clock").toBe(LAUNCH_PROBE);
+});
+
+/**
+ * Declare `body`'s cases once per AC-5 zone, **really run in that zone**: each case starts with the
+ * process moved to it, proves the move with `assertProcessZone`, and ends with the zone it found
+ * put back. Whatever `TZ` the suite is launched with — or none, on a machine in Karachi — every
+ * case below runs under `UTC`, `America/New_York` and `Pacific/Auckland`, so a calendar that read
+ * the host's day goes red on every machine, not only on the one whose zone happens to expose it.
+ *
+ * `body` runs at collection time, in the launch zone, so it may only *declare*: anything read from
+ * a clock belongs inside an `it`.
+ */
+function underEachProcessZone(title: string, body: () => void): void {
+  for (const zone of PROCESS_ZONES) {
+    describe(`${title} [TZ=${zone}]`, () => {
+      let previous: string | undefined;
+      beforeEach(() => {
+        previous = process.env.TZ;
+        process.env.TZ = zone;
+        assertProcessZone(zone);
+      });
+      afterEach(() => {
+        restoreProcessZone(previous);
+      });
+      body();
+    });
+  }
+}
+
+/** Locale-independent ordering, the one the calendar sorts occasion keys by. */
+function byCodePoint(a: string, b: string): number {
+  return a < b ? -1 : a > b ? 1 : 0;
 }
 
 /** A holiday provider over fixture rows. The seam TASK-124 replaces with Poland's real ones. */
@@ -214,19 +313,33 @@ describe("the control: the process zone really moves under the subject", () => {
    */
   it("`new Date(instant)` reads a different day and hour in each of AC-5's three zones", () => {
     const naive = PROCESS_ZONES.map((zone) =>
-      withProcessTimeZone(zone, () => {
-        const at = new Date(REFERENCE_INSTANT);
-        return `${String(at.getFullYear())}-${String(at.getMonth() + 1)}-${String(at.getDate())} ${String(at.getHours())}`;
-      }),
+      withProcessTimeZone(zone, processClockProbe),
     );
     expect(naive).toEqual(["2026-10-25 0", "2026-10-24 20", "2026-10-25 13"]);
+    expect(naive).toEqual(PROCESS_ZONES.map((zone) => PROBE_BY_ZONE[zone]));
     expect(new Set(naive).size).toBe(PROCESS_ZONES.length);
   });
 
-  it("restores the process zone it found", () => {
+  it("restores the process zone it found, sync and async, set or unset", async () => {
     const before = process.env.TZ;
     withProcessTimeZone("Pacific/Auckland", () => undefined);
     expect(process.env.TZ).toBe(before);
+    await withProcessTimeZoneAsync("Pacific/Auckland", async () => {
+      await Promise.resolve();
+      expect(processClockProbe()).toBe(PROBE_BY_ZONE["Pacific/Auckland"]);
+    });
+    expect(process.env.TZ).toBe(before);
+    expect(processClockProbe()).toBe(LAUNCH_PROBE);
+    // "Was never set" is a value too: it must come back unset, not as the string "undefined".
+    try {
+      delete process.env.TZ;
+      withProcessTimeZone("UTC", () => undefined);
+      expect(Object.hasOwn(process.env, "TZ")).toBe(false);
+      await withProcessTimeZoneAsync("UTC", () => Promise.resolve());
+      expect(Object.hasOwn(process.env, "TZ")).toBe(false);
+    } finally {
+      restoreProcessZone(before);
+    }
   });
 });
 
@@ -412,15 +525,18 @@ describe("AC-5 / T-05: every answer is computed in the destination's zone", () =
       now: () => new Date(REFERENCE_INSTANT),
     });
     for (const zone of PROCESS_ZONES) {
-      process.env.TZ = zone;
-      await expect(
-        calendar.nextAvailableDate({
-          countryIso: REFERENCE_ISO,
-          from: "2026-10-25",
-        }),
-      ).resolves.toBeNull();
+      // Restored in `finally` to the zone it found — never `delete`d, which put every case after
+      // this one into the host's zone (`/review 97` round 1).
+      await withProcessTimeZoneAsync(zone, async () => {
+        expect(processClockProbe()).toBe(PROBE_BY_ZONE[zone]);
+        await expect(
+          calendar.nextAvailableDate({
+            countryIso: REFERENCE_ISO,
+            from: "2026-10-25",
+          }),
+        ).resolves.toBeNull();
+      });
     }
-    delete process.env.TZ;
   });
 });
 
@@ -428,104 +544,106 @@ describe("AC-5 / T-05: every answer is computed in the destination's zone", () =
 /* AC-6 / T-06 — the four transition Sundays.                                 */
 /* -------------------------------------------------------------------------- */
 
-describe("AC-6 / T-06: DST across the 2026–2027 transition Sundays", () => {
-  for (const reading of DST_READINGS) {
-    it(`${reading.label}`, () => {
-      const operations =
-        reading.timeZone === "Europe/Warsaw"
-          ? WARSAW_OPERATIONS
-          : LONDON_OPERATIONS;
-      const at = new Date(reading.instant);
+underEachProcessZone(
+  "AC-6 / T-06: DST across the 2026–2027 transition Sundays",
+  () => {
+    for (const reading of DST_READINGS) {
+      it(`${reading.label}`, () => {
+        const operations =
+          reading.timeZone === "Europe/Warsaw"
+            ? WARSAW_OPERATIONS
+            : LONDON_OPERATIONS;
+        const at = new Date(reading.instant);
 
-      // The offset the fixture tables is the offset the reader must be using: this is what
-      // "not an hour-shifted one" means, stated as a number rather than as a hope.
-      const utcMinuteOfDay =
-        at.getUTCHours() * 60 + at.getUTCMinutes() + reading.offsetHours * 60;
-      const expectedMinuteOfDay = ((utcMinuteOfDay % 1440) + 1440) % 1440;
-      expect(expectedMinuteOfDay).toBe(
-        reading.localHour * 60 + reading.localMinute,
-      );
-
-      const result = cutoffAt(operations, at);
-      expect(result.localDate).toBe(reading.localDate);
-      expect(result.localMinuteOfDay).toBe(
-        reading.localHour * 60 + reading.localMinute,
-      );
-      // The authored wall-clock cutoff is carried through unshifted: it is a string a human wrote,
-      // not a value derived from an instant.
-      expect(result.localTime).toBe("14:00");
-      expect(result.timeZone).toBe(reading.timeZone);
-      expect(result.sameDayOpen).toBe(result.localMinuteOfDay < 840);
-      expect(result.earliestDate).toBe(
-        result.sameDayOpen ? reading.localDate : addDays(reading.localDate, 1),
-      );
-    });
-  }
-
-  it("the two 02:30s of each autumn Sunday are the same wall clock and the same delivery day", () => {
-    const pairs = [
-      ["2026-10-25T00:30:00Z", "2026-10-25T01:30:00Z", WARSAW_OPERATIONS],
-      ["2027-10-31T00:30:00Z", "2027-10-31T01:30:00Z", WARSAW_OPERATIONS],
-      ["2026-10-25T00:30:00Z", "2026-10-25T01:30:00Z", LONDON_OPERATIONS],
-      ["2027-10-31T00:30:00Z", "2027-10-31T01:30:00Z", LONDON_OPERATIONS],
-    ] as const;
-    for (const [first, second, operations] of pairs) {
-      const a = cutoffAt(operations, new Date(first));
-      const b = cutoffAt(operations, new Date(second));
-      expect(a.localMinuteOfDay).toBe(b.localMinuteOfDay);
-      expect(a.localDate).toBe(b.localDate);
-      expect(a.earliestDate).toBe(b.earliestDate);
-    }
-  });
-
-  it("exactly at the authored cutoff the day has gone: 14:00 is not 'by 14:00'", () => {
-    const justBefore = cutoffAt(
-      WARSAW_OPERATIONS,
-      new Date("2026-10-25T12:59:00Z"),
-    );
-    const exactly = cutoffAt(
-      WARSAW_OPERATIONS,
-      new Date("2026-10-25T13:00:00Z"),
-    );
-    expect(justBefore.localMinuteOfDay).toBe(839);
-    expect(justBefore.sameDayOpen).toBe(true);
-    expect(justBefore.earliestDate).toBe("2026-10-25");
-    expect(exactly.localMinuteOfDay).toBe(840);
-    expect(exactly.sameDayOpen).toBe(false);
-    expect(exactly.earliestDate).toBe("2026-10-26");
-  });
-
-  for (const window of DST_WINDOWS) {
-    it(`${window.label}: every day once, none skipped, none duplicated`, () => {
-      const operations =
-        window.timeZone === "Europe/Warsaw"
-          ? WARSAW_OPERATIONS
-          : LONDON_OPERATIONS;
-      for (const zone of PROCESS_ZONES) {
-        const grid = withProcessTimeZone(zone, () =>
-          deliveryGrid({
-            countryIso: REFERENCE_ISO,
-            operations,
-            state: "live",
-            at: new Date(window.startInstant),
-            days: window.days.length,
-            holidayProvider: NO_HOLIDAYS,
-            occasionCalendar: NO_OCCASIONS,
-          }),
+        // The offset the fixture tables is the offset the reader must be using: this is what
+        // "not an hour-shifted one" means, stated as a number rather than as a hope.
+        const utcMinuteOfDay =
+          at.getUTCHours() * 60 + at.getUTCMinutes() + reading.offsetHours * 60;
+        const expectedMinuteOfDay = ((utcMinuteOfDay % 1440) + 1440) % 1440;
+        expect(expectedMinuteOfDay).toBe(
+          reading.localHour * 60 + reading.localMinute,
         );
+
+        const result = cutoffAt(operations, at);
+        expect(result.localDate).toBe(reading.localDate);
+        expect(result.localMinuteOfDay).toBe(
+          reading.localHour * 60 + reading.localMinute,
+        );
+        // The authored wall-clock cutoff is carried through unshifted: it is a string a human wrote,
+        // not a value derived from an instant.
+        expect(result.localTime).toBe("14:00");
+        expect(result.timeZone).toBe(reading.timeZone);
+        expect(result.sameDayOpen).toBe(result.localMinuteOfDay < 840);
+        expect(result.earliestDate).toBe(
+          result.sameDayOpen
+            ? reading.localDate
+            : addDays(reading.localDate, 1),
+        );
+      });
+    }
+
+    it("the two 02:30s of each autumn Sunday are the same wall clock and the same delivery day", () => {
+      const pairs = [
+        ["2026-10-25T00:30:00Z", "2026-10-25T01:30:00Z", WARSAW_OPERATIONS],
+        ["2027-10-31T00:30:00Z", "2027-10-31T01:30:00Z", WARSAW_OPERATIONS],
+        ["2026-10-25T00:30:00Z", "2026-10-25T01:30:00Z", LONDON_OPERATIONS],
+        ["2027-10-31T00:30:00Z", "2027-10-31T01:30:00Z", LONDON_OPERATIONS],
+      ] as const;
+      for (const [first, second, operations] of pairs) {
+        const a = cutoffAt(operations, new Date(first));
+        const b = cutoffAt(operations, new Date(second));
+        expect(a.localMinuteOfDay).toBe(b.localMinuteOfDay);
+        expect(a.localDate).toBe(b.localDate);
+        expect(a.earliestDate).toBe(b.earliestDate);
+      }
+    });
+
+    it("exactly at the authored cutoff the day has gone: 14:00 is not 'by 14:00'", () => {
+      const justBefore = cutoffAt(
+        WARSAW_OPERATIONS,
+        new Date("2026-10-25T12:59:00Z"),
+      );
+      const exactly = cutoffAt(
+        WARSAW_OPERATIONS,
+        new Date("2026-10-25T13:00:00Z"),
+      );
+      expect(justBefore.localMinuteOfDay).toBe(839);
+      expect(justBefore.sameDayOpen).toBe(true);
+      expect(justBefore.earliestDate).toBe("2026-10-25");
+      expect(exactly.localMinuteOfDay).toBe(840);
+      expect(exactly.sameDayOpen).toBe(false);
+      expect(exactly.earliestDate).toBe("2026-10-26");
+    });
+
+    for (const window of DST_WINDOWS) {
+      it(`${window.label}: every day once, none skipped, none duplicated`, () => {
+        const operations =
+          window.timeZone === "Europe/Warsaw"
+            ? WARSAW_OPERATIONS
+            : LONDON_OPERATIONS;
+        // The enclosing block runs this case under each of AC-5's three process zones.
+        const grid = deliveryGrid({
+          countryIso: REFERENCE_ISO,
+          operations,
+          state: "live",
+          at: new Date(window.startInstant),
+          days: window.days.length,
+          holidayProvider: NO_HOLIDAYS,
+          occasionCalendar: NO_OCCASIONS,
+        });
         const dates = grid.dates.map((date) => date.date);
-        expect(dates, `${window.label} under ${zone}`).toEqual(window.days);
+        expect(dates, window.label).toEqual(window.days);
         expect(new Set(dates).size).toBe(window.days.length);
-        expect([...dates].sort((a, b) => a.localeCompare(b))).toEqual(dates);
+        expect([...dates].sort(byCodePoint)).toEqual(dates);
         // The transition Sunday is in the grid exactly once — the day a duration-stepped grid
         // either skips or repeats.
         expect(dates.filter((date) => date === window.transition)).toHaveLength(
           1,
         );
-      }
-    });
-  }
-});
+      });
+    }
+  },
+);
 
 /* -------------------------------------------------------------------------- */
 /* AC-7 / T-07 — exactly one reason.                                          */
@@ -544,480 +662,511 @@ function contextOf(
   };
 }
 
-describe("AC-7 / T-07: a closed date carries exactly one enumerated reason", () => {
-  const cases = [
-    {
-      why: "a day that has already gone in the destination",
-      context: contextOf({ at: "2026-10-26T08:00:00Z" }),
-      date: "2026-10-24",
-      reason: "delivery.reason.beforeEarliest",
-    },
-    {
-      why: "today, after today's cutoff",
-      context: contextOf({ at: "2026-10-26T13:00:00Z" }),
-      date: "2026-10-26",
-      reason: "delivery.reason.pastCutoff",
-    },
-    {
-      why: "a public holiday in the destination",
-      context: contextOf({
+underEachProcessZone(
+  "AC-7 / T-07: a closed date carries exactly one enumerated reason",
+  () => {
+    // Each `context` is a thunk: `contextOf` reads a clock through `cutoffAt`, and a context built
+    // while the file is collected would be built in the launch zone rather than the case's.
+    const cases = [
+      {
+        why: "a day that has already gone in the destination",
+        context: () => contextOf({ at: "2026-10-26T08:00:00Z" }),
+        date: "2026-10-24",
+        reason: "delivery.reason.beforeEarliest",
+      },
+      {
+        why: "today, after today's cutoff",
+        context: () => contextOf({ at: "2026-10-26T13:00:00Z" }),
+        date: "2026-10-26",
+        reason: "delivery.reason.pastCutoff",
+      },
+      {
+        why: "a public holiday in the destination",
+        context: () =>
+          contextOf({
+            at: "2026-10-26T08:00:00Z",
+            closedHolidays: new Set(["2026-10-28"]),
+          }),
+        date: "2026-10-28",
+        reason: "delivery.reason.publicHoliday",
+      },
+      {
+        why: "a Sunday where `sundayDelivery` is `none`",
+        context: () => contextOf({ at: "2026-10-26T08:00:00Z" }),
+        date: "2026-11-01",
+        reason: "delivery.reason.sundayClosed",
+      },
+      {
+        why: "a weekday the destination does not deliver on",
+        context: () =>
+          contextOf({
+            at: "2026-10-26T08:00:00Z",
+            operations: { ...WARSAW_OPERATIONS, deliveryDays: [1, 2, 3, 4, 5] },
+          }),
+        date: "2026-10-31",
+        reason: "delivery.reason.notDeliveryDay",
+      },
+      {
+        why: "an ordinary delivery weekday inside the window",
+        context: () => contextOf({ at: "2026-10-26T08:00:00Z" }),
+        date: "2026-10-28",
+        reason: undefined,
+      },
+    ] as const;
+
+    for (const testCase of cases) {
+      it(`${testCase.why} → ${testCase.reason ?? "selectable"}`, () => {
+        expect(reasonFor(testCase.context(), testCase.date)).toBe(
+          testCase.reason,
+        );
+      });
+    }
+
+    it("every one of AC-7's five enumerated reasons is reachable, and no sixth is", () => {
+      const reached = new Set<string>(
+        cases
+          .map((testCase) => reasonFor(testCase.context(), testCase.date))
+          .filter((reason) => reason !== undefined),
+      );
+      expect([...reached].sort(byCodePoint)).toEqual(
+        [...deliveryReasonKeys]
+          .filter((key) => key !== NOT_ORDERABLE_REASON)
+          .sort(byCodePoint),
+      );
+    });
+
+    it("precedence: a Sunday that is also a public holiday says `publicHoliday`, once", () => {
+      const context = contextOf({
         at: "2026-10-26T08:00:00Z",
+        closedHolidays: new Set(["2026-11-01"]),
+      });
+      expect(isoWeekday("2026-11-01")).toBe(7);
+      expect(reasonFor(context, "2026-11-01")).toBe(
+        "delivery.reason.publicHoliday",
+      );
+    });
+
+    it("precedence: a past Sunday says `beforeEarliest`, not `sundayClosed`", () => {
+      const context = contextOf({ at: "2026-10-28T08:00:00Z" });
+      expect(reasonFor(context, "2026-10-25")).toBe(
+        "delivery.reason.beforeEarliest",
+      );
+    });
+
+    it("precedence: today past its cutoff says `pastCutoff` even when it is also a holiday", () => {
+      const context = contextOf({
+        at: "2026-10-28T13:00:00Z",
         closedHolidays: new Set(["2026-10-28"]),
-      }),
-      date: "2026-10-28",
-      reason: "delivery.reason.publicHoliday",
-    },
-    {
-      why: "a Sunday where `sundayDelivery` is `none`",
-      context: contextOf({ at: "2026-10-26T08:00:00Z" }),
-      date: "2026-11-01",
-      reason: "delivery.reason.sundayClosed",
-    },
-    {
-      why: "a weekday the destination does not deliver on",
-      context: contextOf({
-        at: "2026-10-26T08:00:00Z",
-        operations: { ...WARSAW_OPERATIONS, deliveryDays: [1, 2, 3, 4, 5] },
-      }),
-      date: "2026-10-31",
-      reason: "delivery.reason.notDeliveryDay",
-    },
-    {
-      why: "an ordinary delivery weekday inside the window",
-      context: contextOf({ at: "2026-10-26T08:00:00Z" }),
-      date: "2026-10-28",
-      reason: undefined,
-    },
-  ] as const;
-
-  for (const testCase of cases) {
-    it(`${testCase.why} → ${testCase.reason ?? "selectable"}`, () => {
-      expect(reasonFor(testCase.context, testCase.date)).toBe(testCase.reason);
+      });
+      expect(reasonFor(context, "2026-10-28")).toBe(
+        "delivery.reason.pastCutoff",
+      );
     });
-  }
 
-  it("every one of AC-7's five enumerated reasons is reachable, and no sixth is", () => {
-    const reached = new Set<string>(
-      cases
-        .map((testCase) => reasonFor(testCase.context, testCase.date))
-        .filter((reason) => reason !== undefined),
-    );
-    expect([...reached].sort((a, b) => a.localeCompare(b))).toEqual(
-      [...deliveryReasonKeys]
-        .filter((key) => key !== NOT_ORDERABLE_REASON)
-        .sort((a, b) => a.localeCompare(b)),
-    );
-  });
-
-  it("precedence: a Sunday that is also a public holiday says `publicHoliday`, once", () => {
-    const context = contextOf({
-      at: "2026-10-26T08:00:00Z",
-      closedHolidays: new Set(["2026-11-01"]),
-    });
-    expect(isoWeekday("2026-11-01")).toBe(7);
-    expect(reasonFor(context, "2026-11-01")).toBe(
-      "delivery.reason.publicHoliday",
-    );
-  });
-
-  it("precedence: a past Sunday says `beforeEarliest`, not `sundayClosed`", () => {
-    const context = contextOf({ at: "2026-10-28T08:00:00Z" });
-    expect(reasonFor(context, "2026-10-25")).toBe(
-      "delivery.reason.beforeEarliest",
-    );
-  });
-
-  it("precedence: today past its cutoff says `pastCutoff` even when it is also a holiday", () => {
-    const context = contextOf({
-      at: "2026-10-28T13:00:00Z",
-      closedHolidays: new Set(["2026-10-28"]),
-    });
-    expect(reasonFor(context, "2026-10-28")).toBe("delivery.reason.pastCutoff");
-  });
-
-  it("across a sweep of grids, `reasonKey` is present exactly when `selectable` is false", () => {
-    const seen = new Set<string>();
-    let closed = 0;
-    for (const operations of [
-      WARSAW_OPERATIONS,
-      LONDON_OPERATIONS,
-      SUNDAY_ALWAYS_OPERATIONS,
-      SUNDAY_PEAK_OPERATIONS,
-      MIDNIGHT_CUTOFF_OPERATIONS,
-      // Monday–Friday, so `notDeliveryDay` is reachable: without it the sweep would report four
-      // of the five reasons and the enumeration's last branch would go unexercised here.
-      WEEKDAYS_ONLY_OPERATIONS,
-    ]) {
-      for (let day = 0; day < 40; day += 1) {
-        for (const state of ["preview", "live"] as const) {
-          const at = new Date(
-            Date.parse("2026-10-20T11:00:00Z") + day * 86_400_000,
-          );
-          const grid = deliveryGrid({
-            countryIso: REFERENCE_ISO,
-            operations,
-            state,
-            at,
-            days: DELIVERY_WINDOW_MAX_DAYS,
-            holidayProvider: fixtureHolidays(),
-            occasionCalendar: committedOccasionCalendar,
-          });
-          expect(DeliveryWindowSchema.safeParse(grid).success).toBe(true);
-          for (const date of grid.dates) {
-            expect(Object.hasOwn(date, "reasonKey")).toBe(!date.selectable);
-            if (date.reasonKey !== undefined) {
-              closed += 1;
-              seen.add(date.reasonKey);
-              expect(deliveryReasonKeys).toContain(date.reasonKey);
+    it("across a sweep of grids, `reasonKey` is present exactly when `selectable` is false", () => {
+      const seen = new Set<string>();
+      let closed = 0;
+      for (const operations of [
+        WARSAW_OPERATIONS,
+        LONDON_OPERATIONS,
+        SUNDAY_ALWAYS_OPERATIONS,
+        SUNDAY_PEAK_OPERATIONS,
+        MIDNIGHT_CUTOFF_OPERATIONS,
+        // Monday–Friday, so `notDeliveryDay` is reachable: without it the sweep would report four
+        // of the five reasons and the enumeration's last branch would go unexercised here.
+        WEEKDAYS_ONLY_OPERATIONS,
+      ]) {
+        for (let day = 0; day < 40; day += 1) {
+          for (const state of ["preview", "live"] as const) {
+            const at = new Date(
+              Date.parse("2026-10-20T11:00:00Z") + day * 86_400_000,
+            );
+            const grid = deliveryGrid({
+              countryIso: REFERENCE_ISO,
+              operations,
+              state,
+              at,
+              days: DELIVERY_WINDOW_MAX_DAYS,
+              holidayProvider: fixtureHolidays(),
+              occasionCalendar: committedOccasionCalendar,
+            });
+            expect(DeliveryWindowSchema.safeParse(grid).success).toBe(true);
+            for (const date of grid.dates) {
+              expect(Object.hasOwn(date, "reasonKey")).toBe(!date.selectable);
+              if (date.reasonKey !== undefined) {
+                closed += 1;
+                seen.add(date.reasonKey);
+                expect(deliveryReasonKeys).toContain(date.reasonKey);
+              }
             }
           }
         }
       }
-    }
-    expect(closed).toBeGreaterThan(100);
-    // `beforeEarliest` cannot occur in a grid — a grid begins at today in the destination — so
-    // the four the sweep can reach are asserted here and the fifth in the case table above.
-    expect([...seen].sort((a, b) => a.localeCompare(b))).toEqual(
-      [
-        NOT_ORDERABLE_REASON,
-        "delivery.reason.notDeliveryDay",
-        "delivery.reason.pastCutoff",
-        "delivery.reason.publicHoliday",
-        "delivery.reason.sundayClosed",
-      ].sort((a, b) => a.localeCompare(b)),
-    );
-  });
-
-  it("`notOrderable` is the preview state's own sentence and appears nowhere else", () => {
-    const preview = deliveryGrid(referenceInput("preview"));
-    const live = deliveryGrid(referenceInput("live"));
-    expect(
-      preview.dates.filter((date) => date.reasonKey === NOT_ORDERABLE_REASON),
-    ).toHaveLength(REFERENCE_GRID.filter((day) => day.reason === null).length);
-    expect(
-      live.dates.some((date) => date.reasonKey === NOT_ORDERABLE_REASON),
-    ).toBe(false);
-  });
-
-  it("the three `sundayDelivery` rules are the only thing that opens a Sunday", () => {
-    const base = {
-      countryIso: REFERENCE_ISO,
-      state: "live" as const,
-      at: new Date("2026-10-26T08:00:00Z"),
-      days: 7,
-      holidayProvider: NO_HOLIDAYS,
-      occasionCalendar: NO_OCCASIONS,
-    };
-    const sunday = "2026-11-01";
-    const dayOf = (grid: DeliveryWindow) =>
-      grid.dates.find((date) => date.date === sunday);
-
-    expect(
-      dayOf(deliveryGrid({ ...base, operations: WARSAW_OPERATIONS }))
-        ?.reasonKey,
-    ).toBe("delivery.reason.sundayClosed");
-    expect(
-      dayOf(deliveryGrid({ ...base, operations: SUNDAY_ALWAYS_OPERATIONS }))
-        ?.selectable,
-    ).toBe(true);
-    expect(
-      dayOf(deliveryGrid({ ...base, operations: SUNDAY_PEAK_OPERATIONS }))
-        ?.reasonKey,
-    ).toBe("delivery.reason.sundayClosed");
-    expect(
-      dayOf(
-        deliveryGrid({
-          ...base,
-          operations: SUNDAY_PEAK_OPERATIONS,
-          peakDates: [sunday],
-        }),
-      )?.selectable,
-    ).toBe(true);
-  });
-
-  it("a Sunday that `deliveryDays` omits stays closed even under `sundayDelivery: always`", () => {
-    // `always` answers "is Sunday deliverable at all"; `deliveryDays` is still the weekly rule,
-    // so an inconsistent block closes the day rather than opening it.
-    const grid = deliveryGrid({
-      countryIso: REFERENCE_ISO,
-      operations: {
-        ...SUNDAY_ALWAYS_OPERATIONS,
-        deliveryDays: [1, 2, 3, 4, 5, 6],
-      },
-      state: "live",
-      at: new Date("2026-10-26T08:00:00Z"),
-      days: 7,
-      holidayProvider: NO_HOLIDAYS,
-      occasionCalendar: NO_OCCASIONS,
+      expect(closed).toBeGreaterThan(100);
+      // `beforeEarliest` cannot occur in a grid — a grid begins at today in the destination — so
+      // the four the sweep can reach are asserted here and the fifth in the case table above.
+      expect([...seen].sort(byCodePoint)).toEqual(
+        [
+          NOT_ORDERABLE_REASON,
+          "delivery.reason.notDeliveryDay",
+          "delivery.reason.pastCutoff",
+          "delivery.reason.publicHoliday",
+          "delivery.reason.sundayClosed",
+        ].sort(byCodePoint),
+      );
     });
-    expect(
-      grid.dates.find((date) => date.date === "2026-11-01")?.reasonKey,
-    ).toBe("delivery.reason.notDeliveryDay");
-  });
-});
 
-describe("AC-7: `DeliveryDateSchema` refuses a state without its explanation", () => {
-  const valid = {
-    date: "2026-10-26",
-    selectable: true,
-    occasionKeys: [],
-  };
-
-  it("accepts a selectable date with no reason", () => {
-    expect(DeliveryDateSchema.safeParse(valid).success).toBe(true);
-  });
-
-  it("rejects `selectable: false` with no `reasonKey`", () => {
-    const result = DeliveryDateSchema.safeParse({
-      ...valid,
-      selectable: false,
-    });
-    expect(result.success).toBe(false);
-    expect(JSON.stringify(result.error?.issues)).toMatch(/reasonKey/u);
-  });
-
-  it("rejects a selectable date that carries a reason — two ways to say 'open' is one too many", () => {
-    expect(
-      DeliveryDateSchema.safeParse({
-        ...valid,
-        reasonKey: "delivery.reason.sundayClosed",
-      }).success,
-    ).toBe(false);
-  });
-
-  it("rejects a reason outside the enumeration", () => {
-    expect(
-      DeliveryDateSchema.safeParse({
-        ...valid,
-        selectable: false,
-        reasonKey: "delivery.reason.florist_is_tired",
-      }).success,
-    ).toBe(false);
-  });
-
-  it("has no field in which a second reason could be carried", () => {
-    expect(
-      DeliveryDateSchema.safeParse({
-        ...valid,
-        selectable: false,
-        reasonKey: "delivery.reason.sundayClosed",
-        reasonKeys: ["delivery.reason.publicHoliday"],
-      }).success,
-    ).toBe(false);
-  });
-});
-
-describe("AC-8's shape half: `DeliveryWindowSchema` refuses a dishonest picker", () => {
-  const live = expectedReferenceWindow("live");
-
-  it("accepts the windows the calendar builds", () => {
-    for (const state of ["preview", "live"] as const) {
+    it("`notOrderable` is the preview state's own sentence and appears nowhere else", () => {
+      const preview = deliveryGrid(referenceInput("preview"));
+      const live = deliveryGrid(referenceInput("live"));
       expect(
-        DeliveryWindowSchema.safeParse(deliveryGrid(referenceInput(state)))
-          .success,
+        preview.dates.filter((date) => date.reasonKey === NOT_ORDERABLE_REASON),
+      ).toHaveLength(
+        REFERENCE_GRID.filter((day) => day.reason === null).length,
+      );
+      expect(
+        live.dates.some((date) => date.reasonKey === NOT_ORDERABLE_REASON),
+      ).toBe(false);
+    });
+
+    it("the three `sundayDelivery` rules are the only thing that opens a Sunday", () => {
+      const base = {
+        countryIso: REFERENCE_ISO,
+        state: "live" as const,
+        at: new Date("2026-10-26T08:00:00Z"),
+        days: 7,
+        holidayProvider: NO_HOLIDAYS,
+        occasionCalendar: NO_OCCASIONS,
+      };
+      const sunday = "2026-11-01";
+      const dayOf = (grid: DeliveryWindow) =>
+        grid.dates.find((date) => date.date === sunday);
+
+      expect(
+        dayOf(deliveryGrid({ ...base, operations: WARSAW_OPERATIONS }))
+          ?.reasonKey,
+      ).toBe("delivery.reason.sundayClosed");
+      expect(
+        dayOf(deliveryGrid({ ...base, operations: SUNDAY_ALWAYS_OPERATIONS }))
+          ?.selectable,
       ).toBe(true);
-    }
-  });
+      expect(
+        dayOf(deliveryGrid({ ...base, operations: SUNDAY_PEAK_OPERATIONS }))
+          ?.reasonKey,
+      ).toBe("delivery.reason.sundayClosed");
+      expect(
+        dayOf(
+          deliveryGrid({
+            ...base,
+            operations: SUNDAY_PEAK_OPERATIONS,
+            peakDates: [sunday],
+          }),
+        )?.selectable,
+      ).toBe(true);
+    });
 
-  it("refuses an `unavailable` window that lists a date, or names a cutoff", () => {
-    expect(
-      DeliveryWindowSchema.safeParse({ ...live, state: "unavailable" }).success,
-    ).toBe(false);
-    expect(
-      DeliveryWindowSchema.safeParse({
-        state: "unavailable",
-        timeZone: "Europe/Warsaw",
-        cutoffLocal: "14:00",
-        dates: [],
-        noticeKey: PICKER_NOTICE_KEYS.unavailable,
-      }).success,
-    ).toBe(false);
-    expect(
-      DeliveryWindowSchema.safeParse({
-        state: "unavailable",
-        dates: [],
-        noticeKey: PICKER_NOTICE_KEYS.unavailable,
-      }).success,
-    ).toBe(true);
-  });
+    it("a Sunday that `deliveryDays` omits stays closed even under `sundayDelivery: always`", () => {
+      // `always` answers "is Sunday deliverable at all"; `deliveryDays` is still the weekly rule,
+      // so an inconsistent block closes the day rather than opening it.
+      const grid = deliveryGrid({
+        countryIso: REFERENCE_ISO,
+        operations: {
+          ...SUNDAY_ALWAYS_OPERATIONS,
+          deliveryDays: [1, 2, 3, 4, 5, 6],
+        },
+        state: "live",
+        at: new Date("2026-10-26T08:00:00Z"),
+        days: 7,
+        holidayProvider: NO_HOLIDAYS,
+        occasionCalendar: NO_OCCASIONS,
+      });
+      expect(
+        grid.dates.find((date) => date.date === "2026-11-01")?.reasonKey,
+      ).toBe("delivery.reason.notDeliveryDay");
+    });
+  },
+);
 
-  it("refuses a cutoff with no zone and a zone with no cutoff", () => {
-    const without = (field: "cutoffLocal" | "timeZone") => {
-      const copy: Record<string, unknown> = { ...live };
-      delete copy[field];
-      return copy;
+underEachProcessZone(
+  "AC-7: `DeliveryDateSchema` refuses a state without its explanation",
+  () => {
+    const valid = {
+      date: "2026-10-26",
+      selectable: true,
+      occasionKeys: [],
     };
-    expect(DeliveryWindowSchema.safeParse(without("cutoffLocal")).success).toBe(
-      false,
-    );
-    expect(DeliveryWindowSchema.safeParse(without("timeZone")).success).toBe(
-      false,
-    );
-  });
 
-  it("refuses a selectable date in a `preview` window", () => {
-    const preview = expectedReferenceWindow("preview");
-    const dates = preview.dates.map((date, index) =>
-      index === 1
-        ? { date: date.date, selectable: true, occasionKeys: [] }
-        : date,
-    );
-    expect(DeliveryWindowSchema.safeParse({ ...preview, dates }).success).toBe(
-      false,
-    );
-  });
+    it("accepts a selectable date with no reason", () => {
+      expect(DeliveryDateSchema.safeParse(valid).success).toBe(true);
+    });
 
-  it("refuses `notOrderable` outside `preview`", () => {
-    const dates = live.dates.map((date, index) =>
-      index === 1
-        ? {
-            date: date.date,
-            selectable: false,
-            reasonKey: NOT_ORDERABLE_REASON,
-            occasionKeys: [],
-          }
-        : date,
-    );
-    expect(DeliveryWindowSchema.safeParse({ ...live, dates }).success).toBe(
-      false,
-    );
-  });
-});
+    it("rejects `selectable: false` with no `reasonKey`", () => {
+      const result = DeliveryDateSchema.safeParse({
+        ...valid,
+        selectable: false,
+      });
+      expect(result.success).toBe(false);
+      expect(JSON.stringify(result.error?.issues)).toMatch(/reasonKey/u);
+    });
+
+    it("rejects a selectable date that carries a reason — two ways to say 'open' is one too many", () => {
+      expect(
+        DeliveryDateSchema.safeParse({
+          ...valid,
+          reasonKey: "delivery.reason.sundayClosed",
+        }).success,
+      ).toBe(false);
+    });
+
+    it("rejects a reason outside the enumeration", () => {
+      expect(
+        DeliveryDateSchema.safeParse({
+          ...valid,
+          selectable: false,
+          reasonKey: "delivery.reason.florist_is_tired",
+        }).success,
+      ).toBe(false);
+    });
+
+    it("has no field in which a second reason could be carried", () => {
+      expect(
+        DeliveryDateSchema.safeParse({
+          ...valid,
+          selectable: false,
+          reasonKey: "delivery.reason.sundayClosed",
+          reasonKeys: ["delivery.reason.publicHoliday"],
+        }).success,
+      ).toBe(false);
+    });
+  },
+);
+
+underEachProcessZone(
+  "AC-8's shape half: `DeliveryWindowSchema` refuses a dishonest picker",
+  () => {
+    const live = expectedReferenceWindow("live");
+
+    it("accepts the windows the calendar builds", () => {
+      for (const state of ["preview", "live"] as const) {
+        expect(
+          DeliveryWindowSchema.safeParse(deliveryGrid(referenceInput(state)))
+            .success,
+        ).toBe(true);
+      }
+    });
+
+    it("refuses an `unavailable` window that lists a date, or names a cutoff", () => {
+      expect(
+        DeliveryWindowSchema.safeParse({ ...live, state: "unavailable" })
+          .success,
+      ).toBe(false);
+      expect(
+        DeliveryWindowSchema.safeParse({
+          state: "unavailable",
+          timeZone: "Europe/Warsaw",
+          cutoffLocal: "14:00",
+          dates: [],
+          noticeKey: PICKER_NOTICE_KEYS.unavailable,
+        }).success,
+      ).toBe(false);
+      expect(
+        DeliveryWindowSchema.safeParse({
+          state: "unavailable",
+          dates: [],
+          noticeKey: PICKER_NOTICE_KEYS.unavailable,
+        }).success,
+      ).toBe(true);
+    });
+
+    it("refuses a cutoff with no zone and a zone with no cutoff", () => {
+      const without = (field: "cutoffLocal" | "timeZone") => {
+        const copy: Record<string, unknown> = { ...live };
+        delete copy[field];
+        return copy;
+      };
+      expect(
+        DeliveryWindowSchema.safeParse(without("cutoffLocal")).success,
+      ).toBe(false);
+      expect(DeliveryWindowSchema.safeParse(without("timeZone")).success).toBe(
+        false,
+      );
+    });
+
+    it("refuses a selectable date in a `preview` window", () => {
+      const preview = expectedReferenceWindow("preview");
+      const dates = preview.dates.map((date, index) =>
+        index === 1
+          ? { date: date.date, selectable: true, occasionKeys: [] }
+          : date,
+      );
+      expect(
+        DeliveryWindowSchema.safeParse({ ...preview, dates }).success,
+      ).toBe(false);
+    });
+
+    it("refuses `notOrderable` outside `preview`", () => {
+      const dates = live.dates.map((date, index) =>
+        index === 1
+          ? {
+              date: date.date,
+              selectable: false,
+              reasonKey: NOT_ORDERABLE_REASON,
+              occasionKeys: [],
+            }
+          : date,
+      );
+      expect(DeliveryWindowSchema.safeParse({ ...live, dates }).success).toBe(
+        false,
+      );
+    });
+  },
+);
 
 /* -------------------------------------------------------------------------- */
 /* AC-11 / T-11 — occasion marks.                                             */
 /* -------------------------------------------------------------------------- */
 
-describe("AC-11 / T-11: an occasion is marked, never invented", () => {
-  it("the grid's marks equal `upcomingOccasions` for that destination and window", () => {
-    for (const instant of [
-      REFERENCE_INSTANT,
-      "2026-03-26T08:00:00Z",
-      "2027-03-25T08:00:00Z",
-      "2026-05-20T08:00:00Z",
-      "2026-12-18T08:00:00Z",
-    ]) {
-      const grid = deliveryGrid(
-        referenceInput("live", { at: new Date(instant), days: 14 }),
-      );
-      const first = grid.dates[0]?.date ?? "";
-      const last = grid.dates.at(-1)?.date ?? "";
-      const expected = new Map<string, string[]>();
-      for (const occasion of upcomingOccasions(
-        REFERENCE_COUNTRY,
-        first,
-        2,
-        committedOccasionCalendar,
-      )) {
-        if (occasion.date > last) continue;
-        expected.set(occasion.date, [
-          ...(expected.get(occasion.date) ?? []),
-          occasion.occasionKey,
-        ]);
-      }
-      for (const date of grid.dates) {
-        expect([...date.occasionKeys], `${instant} → ${date.date}`).toEqual(
-          (expected.get(date.date) ?? []).sort((a, b) => a.localeCompare(b)),
+underEachProcessZone(
+  "AC-11 / T-11: an occasion is marked, never invented",
+  () => {
+    it("the grid's marks equal `upcomingOccasions` for that destination and window", () => {
+      for (const instant of [
+        REFERENCE_INSTANT,
+        "2026-03-26T08:00:00Z",
+        "2027-03-25T08:00:00Z",
+        "2026-05-20T08:00:00Z",
+        "2026-12-18T08:00:00Z",
+      ]) {
+        const grid = deliveryGrid(
+          referenceInput("live", { at: new Date(instant), days: 14 }),
         );
-      }
-      // Not a vacuous pass: the reference windows really do contain an occasion.
-      expect([...expected.keys()].length).toBeGreaterThan(0);
-    }
-  });
-
-  it("the tabled occasion is on the tabled day and on no other", () => {
-    const grid = deliveryGrid(referenceInput("live"));
-    const marked = grid.dates.filter((date) => date.occasionKeys.length > 0);
-    expect(marked.map((date) => date.date)).toEqual([REFERENCE_OCCASION.date]);
-    expect(marked[0]?.occasionKeys).toEqual([REFERENCE_OCCASION.occasionKey]);
-  });
-
-  it("a `rule_type: none` occasion marks nothing, in any window of a whole year", () => {
-    // Scoped to the destination on purpose: `grandparents_day` is `none` in one country and
-    // `fixed` in Poland, so a set built across all seven would have failed this grid for a row
-    // that is perfectly datable here. "Undatable" is a property of a (country, occasion) pair.
-    const noneRows = committedOccasionCalendar.filter(
-      (row) =>
-        row.rule.kind === "none" && row.countryIso2 === REFERENCE_COUNTRY,
-    );
-    // The seam is real data: PL's `name_day` is `none` **and observed** (`plan/13` B15).
-    expect(noneRows.some((row) => row.observed)).toBe(true);
-    const undatable = new Set(noneRows.map((row) => row.occasionKey));
-
-    const onlyNone: readonly OccasionCalendarRow[] = noneRows;
-    for (let fortnight = 0; fortnight < 26; fortnight += 1) {
-      const at = new Date(
-        Date.parse("2026-01-05T09:00:00Z") + fortnight * 14 * 86_400_000,
-      );
-      const withEverything = deliveryGrid(
-        referenceInput("live", { at, days: 14 }),
-      );
-      for (const date of withEverything.dates) {
-        for (const key of date.occasionKeys) {
-          expect(undatable.has(key), `${date.date} marked \`${key}\``).toBe(
-            false,
+        const first = grid.dates[0]?.date ?? "";
+        const last = grid.dates.at(-1)?.date ?? "";
+        const expected = new Map<string, string[]>();
+        for (const occasion of upcomingOccasions(
+          REFERENCE_COUNTRY,
+          first,
+          2,
+          committedOccasionCalendar,
+        )) {
+          if (occasion.date > last) continue;
+          expected.set(occasion.date, [
+            ...(expected.get(occasion.date) ?? []),
+            occasion.occasionKey,
+          ]);
+        }
+        for (const date of grid.dates) {
+          expect([...date.occasionKeys], `${instant} → ${date.date}`).toEqual(
+            (expected.get(date.date) ?? []).sort(byCodePoint),
           );
         }
+        // Not a vacuous pass: the reference windows really do contain an occasion.
+        expect([...expected.keys()].length).toBeGreaterThan(0);
       }
-      const onlyUndatable = deliveryGrid(
-        referenceInput("live", { at, days: 14, occasionCalendar: onlyNone }),
+    });
+
+    it("the tabled occasion is on the tabled day and on no other", () => {
+      const grid = deliveryGrid(referenceInput("live"));
+      // "The tabled day" is a day of the tabled grid: a window started on the server's day would
+      // still contain 1 November, so the window itself is pinned before the mark is read.
+      expect(grid.dates.map((date) => date.date)).toEqual(
+        REFERENCE_GRID.map((day) => day.date),
+      );
+      const marked = grid.dates.filter((date) => date.occasionKeys.length > 0);
+      expect(marked.map((date) => date.date)).toEqual([
+        REFERENCE_OCCASION.date,
+      ]);
+      expect(marked[0]?.occasionKeys).toEqual([REFERENCE_OCCASION.occasionKey]);
+    });
+
+    it("a `rule_type: none` occasion marks nothing, in any window of a whole year", () => {
+      // Scoped to the destination on purpose: `grandparents_day` is `none` in one country and
+      // `fixed` in Poland, so a set built across all seven would have failed this grid for a row
+      // that is perfectly datable here. "Undatable" is a property of a (country, occasion) pair.
+      const noneRows = committedOccasionCalendar.filter(
+        (row) =>
+          row.rule.kind === "none" && row.countryIso2 === REFERENCE_COUNTRY,
+      );
+      // The seam is real data: PL's `name_day` is `none` **and observed** (`plan/13` B15).
+      expect(noneRows.some((row) => row.observed)).toBe(true);
+      const undatable = new Set(noneRows.map((row) => row.occasionKey));
+
+      const onlyNone: readonly OccasionCalendarRow[] = noneRows;
+      for (let fortnight = 0; fortnight < 26; fortnight += 1) {
+        const at = new Date(
+          Date.parse("2026-01-05T09:00:00Z") + fortnight * 14 * 86_400_000,
+        );
+        const withEverything = deliveryGrid(
+          referenceInput("live", { at, days: 14 }),
+        );
+        for (const date of withEverything.dates) {
+          for (const key of date.occasionKeys) {
+            expect(undatable.has(key), `${date.date} marked \`${key}\``).toBe(
+              false,
+            );
+          }
+        }
+        const onlyUndatable = deliveryGrid(
+          referenceInput("live", { at, days: 14, occasionCalendar: onlyNone }),
+        );
+        expect(
+          onlyUndatable.dates.flatMap((date) => [...date.occasionKeys]),
+        ).toEqual([]);
+      }
+    });
+
+    it("an unobserved occasion marks nothing even where its rule has a date", () => {
+      const rows: readonly OccasionCalendarRow[] = [
+        {
+          occasionKey: "reference_unobserved",
+          countryIso2: REFERENCE_COUNTRY,
+          ruleType: "fixed",
+          rule: { kind: "fixed", month: 11, day: 1 },
+          observed: false,
+          indexableOverride: null,
+          promoStartOffsetDays: 0,
+        },
+        {
+          occasionKey: "reference_observed",
+          countryIso2: REFERENCE_COUNTRY,
+          ruleType: "fixed",
+          rule: { kind: "fixed", month: 11, day: 1 },
+          observed: true,
+          indexableOverride: null,
+          promoStartOffsetDays: 0,
+        },
+      ];
+      const grid = deliveryGrid(
+        referenceInput("live", { occasionCalendar: rows }),
       );
       expect(
-        onlyUndatable.dates.flatMap((date) => [...date.occasionKeys]),
-      ).toEqual([]);
-    }
-  });
+        grid.dates.find((date) => date.date === "2026-11-01")?.occasionKeys,
+      ).toEqual(["reference_observed"]);
+    });
 
-  it("an unobserved occasion marks nothing even where its rule has a date", () => {
-    const rows: readonly OccasionCalendarRow[] = [
-      {
-        occasionKey: "reference_unobserved",
-        countryIso2: REFERENCE_COUNTRY,
-        ruleType: "fixed",
-        rule: { kind: "fixed", month: 11, day: 1 },
-        observed: false,
-        indexableOverride: null,
-        promoStartOffsetDays: 0,
-      },
-      {
-        occasionKey: "reference_observed",
-        countryIso2: REFERENCE_COUNTRY,
-        ruleType: "fixed",
-        rule: { kind: "fixed", month: 11, day: 1 },
-        observed: true,
-        indexableOverride: null,
-        promoStartOffsetDays: 0,
-      },
-    ];
-    const grid = deliveryGrid(
-      referenceInput("live", { occasionCalendar: rows }),
-    );
-    expect(
-      grid.dates.find((date) => date.date === "2026-11-01")?.occasionKeys,
-    ).toEqual(["reference_observed"]);
-  });
+    it("another destination's occasion never reaches this destination's grid", () => {
+      const rows: readonly OccasionCalendarRow[] = [
+        {
+          occasionKey: "someone_elses_day",
+          countryIso2: "IT",
+          ruleType: "fixed",
+          rule: { kind: "fixed", month: 11, day: 1 },
+          observed: true,
+          indexableOverride: null,
+          promoStartOffsetDays: 0,
+        },
+      ];
+      const grid = deliveryGrid(
+        referenceInput("live", { occasionCalendar: rows }),
+      );
+      expect(grid.dates.flatMap((date) => [...date.occasionKeys])).toEqual([]);
+    });
 
-  it("another destination's occasion never reaches this destination's grid", () => {
-    const rows: readonly OccasionCalendarRow[] = [
-      {
-        occasionKey: "someone_elses_day",
-        countryIso2: "IT",
-        ruleType: "fixed",
-        rule: { kind: "fixed", month: 11, day: 1 },
-        observed: true,
-        indexableOverride: null,
-        promoStartOffsetDays: 0,
-      },
-    ];
-    const grid = deliveryGrid(
-      referenceInput("live", { occasionCalendar: rows }),
-    );
-    expect(grid.dates.flatMap((date) => [...date.occasionKeys])).toEqual([]);
-  });
-
-  it("two occasions on one day are both marked, in a stable order", () => {
-    const rows: readonly OccasionCalendarRow[] = ["zulu_day", "alpha_day"].map(
-      (occasionKey) => ({
+    it("two occasions on one day are both marked, in a stable order", () => {
+      const rows: readonly OccasionCalendarRow[] = [
+        "zulu_day",
+        "alpha_day",
+      ].map((occasionKey) => ({
         occasionKey,
         countryIso2: REFERENCE_COUNTRY,
         ruleType: "fixed",
@@ -1025,206 +1174,222 @@ describe("AC-11 / T-11: an occasion is marked, never invented", () => {
         observed: true,
         indexableOverride: null,
         promoStartOffsetDays: 0,
-      }),
-    );
-    const grid = deliveryGrid(
-      referenceInput("live", { occasionCalendar: rows }),
-    );
-    expect(
-      grid.dates.find((date) => date.date === "2026-11-01")?.occasionKeys,
-    ).toEqual(["alpha_day", "zulu_day"]);
-  });
-
-  it("every mark is a key, and the calendar module writes no date literal", () => {
-    const grid = deliveryGrid(referenceInput("live"));
-    for (const date of grid.dates) {
-      for (const key of date.occasionKeys) {
-        expect(key).toMatch(/^[a-z][a-z0-9_]*$/u);
-      }
-    }
-    const moduleDir = resolve(__dirname, "../../src/modules/geo/delivery");
-    // A `YYYY-MM-DD` or a spelled month-and-day in **code**; the prose in these files names 29
-    // March and 26 October on purpose, so comments are stripped before the grep.
-    const DATE_LITERAL =
-      /\b\d{4}-\d{2}-\d{2}\b|\b\d{1,2}\s+(?:January|February|March|April|May|June|July|August|September|October|November|December)\b/u;
-    for (const file of readdirSync(moduleDir)) {
-      const source = readFileSync(join(moduleDir, file), "utf8")
-        .replace(/\/\*[\s\S]*?\*\//gu, "")
-        .replace(/\/\/.*$/gmu, "");
-      expect(DATE_LITERAL.test(source), `${file} carries a date literal`).toBe(
-        false,
+      }));
+      const grid = deliveryGrid(
+        referenceInput("live", { occasionCalendar: rows }),
       );
-    }
-  });
-});
+      expect(
+        grid.dates.find((date) => date.date === "2026-11-01")?.occasionKeys,
+      ).toEqual(["alpha_day", "zulu_day"]);
+    });
+
+    it("every mark is a key, and the calendar module writes no date literal", () => {
+      const grid = deliveryGrid(referenceInput("live"));
+      for (const date of grid.dates) {
+        for (const key of date.occasionKeys) {
+          expect(key).toMatch(/^[a-z][a-z0-9_]*$/u);
+        }
+      }
+      const moduleDir = resolve(__dirname, "../../src/modules/geo/delivery");
+      // A `YYYY-MM-DD` or a spelled month-and-day in **code**; the prose in these files names 29
+      // March and 26 October on purpose, so comments are stripped before the grep.
+      const DATE_LITERAL =
+        /\b\d{4}-\d{2}-\d{2}\b|\b\d{1,2}\s+(?:January|February|March|April|May|June|July|August|September|October|November|December)\b/u;
+      for (const file of readdirSync(moduleDir)) {
+        const source = readFileSync(join(moduleDir, file), "utf8")
+          .replace(/\/\*[\s\S]*?\*\//gu, "")
+          .replace(/\/\/.*$/gmu, "");
+        expect(
+          DATE_LITERAL.test(source),
+          `${file} carries a date literal`,
+        ).toBe(false);
+      }
+    });
+  },
+);
 
 /* -------------------------------------------------------------------------- */
 /* `pickerState`, and the registry wiring it gates.                           */
 /* -------------------------------------------------------------------------- */
 
-describe("`pickerState()` is the single place the three states are decided", () => {
-  const table = [
-    { operationsComplete: false, activePartners: false, state: "unavailable" },
-    { operationsComplete: false, activePartners: true, state: "unavailable" },
-    { operationsComplete: true, activePartners: false, state: "preview" },
-    { operationsComplete: true, activePartners: true, state: "live" },
-  ] as const;
+underEachProcessZone(
+  "`pickerState()` is the single place the three states are decided",
+  () => {
+    const table = [
+      {
+        operationsComplete: false,
+        activePartners: false,
+        state: "unavailable",
+      },
+      { operationsComplete: false, activePartners: true, state: "unavailable" },
+      { operationsComplete: true, activePartners: false, state: "preview" },
+      { operationsComplete: true, activePartners: true, state: "live" },
+    ] as const;
 
-  for (const row of table) {
-    it(`operations ${String(row.operationsComplete)} × partners ${String(row.activePartners)} → ${row.state}`, () => {
-      expect(pickerStateFrom(row)).toBe(row.state);
-    });
-  }
-
-  it("names exactly the three states of §2's table, and one notice key each", () => {
-    expect([...pickerStates]).toEqual(["unavailable", "preview", "live"]);
-    expect(
-      Object.keys(PICKER_NOTICE_KEYS).sort((a, b) => a.localeCompare(b)),
-    ).toEqual([...pickerStates].sort((a, b) => a.localeCompare(b)));
-    expect(new Set(Object.values(PICKER_NOTICE_KEYS)).size).toBe(3);
-  });
-
-  it("Phase 0: every destination is `unavailable`, and a partner alone does not change that", async () => {
-    for (const country of COUNTRIES) {
-      expect(pickerState(country.iso2), country.iso2).toBe("unavailable");
+    for (const row of table) {
+      it(`operations ${String(row.operationsComplete)} × partners ${String(row.activePartners)} → ${row.state}`, () => {
+        expect(pickerStateFrom(row)).toBe(row.state);
+      });
     }
-    await withActivePartnersProvider({ hasActivePartners: () => true }, () => {
+
+    it("names exactly the three states of §2's table, and one notice key each", () => {
+      expect([...pickerStates]).toEqual(["unavailable", "preview", "live"]);
+      expect(Object.keys(PICKER_NOTICE_KEYS).sort(byCodePoint)).toEqual(
+        [...pickerStates].sort(byCodePoint),
+      );
+      expect(new Set(Object.values(PICKER_NOTICE_KEYS)).size).toBe(3);
+    });
+
+    it("Phase 0: every destination is `unavailable`, and a partner alone does not change that", async () => {
       for (const country of COUNTRIES) {
-        // No `operations` block, so no cutoff anybody agreed to: a partner cannot conjure one.
         expect(pickerState(country.iso2), country.iso2).toBe("unavailable");
       }
-    });
-    // The provider is back where it was.
-    expect(staticNoPartnersProvider.hasActivePartners("PL")).toBe(false);
-  });
-
-  it("an `unavailable` window has no dates, no zone and no cutoff", async () => {
-    const { deliveryWindow } =
-      await import("../../src/modules/geo/delivery/calendar.ts");
-    for (const country of COUNTRIES) {
-      const window = deliveryWindow({
-        countryIso: country.iso2,
-        from: new Date(REFERENCE_INSTANT),
-      });
-      expect(window.state).toBe("unavailable");
-      expect(window.dates).toEqual([]);
-      expect(window.timeZone).toBeUndefined();
-      expect(window.cutoffLocal).toBeUndefined();
-      expect(window.noticeKey).toBe(PICKER_NOTICE_KEYS.unavailable);
-      expect(DeliveryWindowSchema.safeParse(window).success).toBe(true);
-    }
-  });
-
-  it("a grid longer than the priced table is refused", () => {
-    expect(() =>
-      deliveryGrid(
-        referenceInput("live", { days: DELIVERY_WINDOW_MAX_DAYS + 1 }),
-      ),
-    ).toThrow(/1…21 days/u);
-    expect(() => deliveryGrid(referenceInput("live", { days: 0 }))).toThrow();
-    expect(() => deliveryGrid(referenceInput("live", { days: 1.5 }))).toThrow();
-  });
-});
-
-describe("spec 005's `CutoffEvaluator`, implemented and gated", () => {
-  const calendar = deliveryCalendar({
-    now: () => new Date(REFERENCE_INSTANT),
-    holidayProvider: NO_HOLIDAYS,
-  });
-
-  it("has the three methods spec 005 declared, each async", () => {
-    expect(typeof calendar.nextAvailableDate).toBe("function");
-    expect(typeof calendar.isDateAvailable).toBe("function");
-    expect(typeof calendar.cutoffFor).toBe("function");
-  });
-
-  it("promises nothing while no destination is `live`", async () => {
-    for (const country of COUNTRIES) {
-      await expect(
-        calendar.isDateAvailable({
-          countryIso: country.iso2,
-          date: "2026-10-26",
-        }),
-      ).resolves.toBe(false);
-      await expect(
-        calendar.cutoffFor({ countryIso: country.iso2, date: "2026-10-26" }),
-      ).resolves.toBeNull();
-      await expect(
-        calendar.nextAvailableDate({
-          countryIso: country.iso2,
-          from: "2026-10-25",
-        }),
-      ).resolves.toBeNull();
-    }
-  });
-
-  it("does not so much as read the holiday rows for a destination that is not live", async () => {
-    let reads = 0;
-    const counting = deliveryCalendar({
-      now: () => new Date(REFERENCE_INSTANT),
-      holidayProvider: {
-        holidays: () => {
-          reads += 1;
-          return [];
+      await withActivePartnersProvider(
+        { hasActivePartners: () => true },
+        () => {
+          for (const country of COUNTRIES) {
+            // No `operations` block, so no cutoff anybody agreed to: a partner cannot conjure one.
+            expect(pickerState(country.iso2), country.iso2).toBe("unavailable");
+          }
         },
-      },
+      );
+      // The provider is back where it was.
+      expect(staticNoPartnersProvider.hasActivePartners("PL")).toBe(false);
     });
-    await counting.isDateAvailable({
-      countryIso: REFERENCE_ISO,
-      date: "2026-10-26",
+
+    it("an `unavailable` window has no dates, no zone and no cutoff", async () => {
+      const { deliveryWindow } =
+        await import("../../src/modules/geo/delivery/calendar.ts");
+      for (const country of COUNTRIES) {
+        const window = deliveryWindow({
+          countryIso: country.iso2,
+          from: new Date(REFERENCE_INSTANT),
+        });
+        expect(window.state).toBe("unavailable");
+        expect(window.dates).toEqual([]);
+        expect(window.timeZone).toBeUndefined();
+        expect(window.cutoffLocal).toBeUndefined();
+        expect(window.noticeKey).toBe(PICKER_NOTICE_KEYS.unavailable);
+        expect(DeliveryWindowSchema.safeParse(window).success).toBe(true);
+      }
     });
-    expect(reads).toBe(0);
-  });
 
-  it("the pure core answers a `live` plan from the destination's calendar", () => {
-    const plan: DeliveryPlanInput = {
-      countryIso: REFERENCE_ISO,
-      operations: WARSAW_OPERATIONS,
-      state: "live",
-      at: new Date(REFERENCE_INSTANT),
-      holidayProvider: fixtureHolidays(),
-    };
-    expect(isOpenOn(plan, "2026-10-26")).toBe(true);
-    expect(isOpenOn(plan, "2026-10-25")).toBe(false); // Sunday
-    expect(isOpenOn(plan, "2026-11-01")).toBe(false); // Sunday and a closing holiday
-    expect(isOpenOn(plan, "2026-10-30")).toBe(true); // an observance, `closed: false`
-    expect(isOpenOn(plan, "2026-10-24")).toBe(false); // already gone
-    expect(nextOpenDate(plan, "2026-10-25")).toBe("2026-10-26");
-    expect(nextOpenDate(plan, "2026-11-01")).toBe("2026-11-02");
-    // A `from` in the past means "the soonest from now on", not "scan the past".
-    expect(nextOpenDate(plan, "2020-01-01")).toBe("2026-10-26");
-  });
+    it("a grid longer than the priced table is refused", () => {
+      expect(() =>
+        deliveryGrid(
+          referenceInput("live", { days: DELIVERY_WINDOW_MAX_DAYS + 1 }),
+        ),
+      ).toThrow(/1…21 days/u);
+      expect(() => deliveryGrid(referenceInput("live", { days: 0 }))).toThrow();
+      expect(() =>
+        deliveryGrid(referenceInput("live", { days: 1.5 })),
+      ).toThrow();
+    });
+  },
+);
 
-  it("the same plan in `preview` promises nothing at all", () => {
-    const plan: DeliveryPlanInput = {
-      countryIso: REFERENCE_ISO,
-      operations: WARSAW_OPERATIONS,
-      state: "preview",
-      at: new Date(REFERENCE_INSTANT),
+underEachProcessZone(
+  "spec 005's `CutoffEvaluator`, implemented and gated",
+  () => {
+    const calendar = deliveryCalendar({
+      now: () => new Date(REFERENCE_INSTANT),
       holidayProvider: NO_HOLIDAYS,
-    };
-    expect(isOpenOn(plan, "2026-10-26")).toBe(false);
-    expect(nextOpenDate(plan, "2026-10-26")).toBeNull();
-  });
+    });
 
-  it("`nextAvailableDate` gives up honestly when the destination never opens", () => {
-    const plan: DeliveryPlanInput = {
-      countryIso: REFERENCE_ISO,
-      operations: { ...WARSAW_OPERATIONS, deliveryDays: [7] },
-      state: "live",
-      at: new Date(REFERENCE_INSTANT),
-      holidayProvider: NO_HOLIDAYS,
-    };
-    // Sunday is the only delivery day and `sundayDelivery` is `none`: no day can ever open.
-    expect(nextOpenDate(plan, "2026-10-26")).toBeNull();
-  });
-});
+    it("has the three methods spec 005 declared, each async", () => {
+      expect(typeof calendar.nextAvailableDate).toBe("function");
+      expect(typeof calendar.isDateAvailable).toBe("function");
+      expect(typeof calendar.cutoffFor).toBe("function");
+    });
+
+    it("promises nothing while no destination is `live`", async () => {
+      for (const country of COUNTRIES) {
+        await expect(
+          calendar.isDateAvailable({
+            countryIso: country.iso2,
+            date: "2026-10-26",
+          }),
+        ).resolves.toBe(false);
+        await expect(
+          calendar.cutoffFor({ countryIso: country.iso2, date: "2026-10-26" }),
+        ).resolves.toBeNull();
+        await expect(
+          calendar.nextAvailableDate({
+            countryIso: country.iso2,
+            from: "2026-10-25",
+          }),
+        ).resolves.toBeNull();
+      }
+    });
+
+    it("does not so much as read the holiday rows for a destination that is not live", async () => {
+      let reads = 0;
+      const counting = deliveryCalendar({
+        now: () => new Date(REFERENCE_INSTANT),
+        holidayProvider: {
+          holidays: () => {
+            reads += 1;
+            return [];
+          },
+        },
+      });
+      await counting.isDateAvailable({
+        countryIso: REFERENCE_ISO,
+        date: "2026-10-26",
+      });
+      expect(reads).toBe(0);
+    });
+
+    it("the pure core answers a `live` plan from the destination's calendar", () => {
+      const plan: DeliveryPlanInput = {
+        countryIso: REFERENCE_ISO,
+        operations: WARSAW_OPERATIONS,
+        state: "live",
+        at: new Date(REFERENCE_INSTANT),
+        holidayProvider: fixtureHolidays(),
+      };
+      expect(isOpenOn(plan, "2026-10-26")).toBe(true);
+      expect(isOpenOn(plan, "2026-10-25")).toBe(false); // Sunday
+      expect(isOpenOn(plan, "2026-11-01")).toBe(false); // Sunday and a closing holiday
+      expect(isOpenOn(plan, "2026-10-30")).toBe(true); // an observance, `closed: false`
+      expect(isOpenOn(plan, "2026-10-24")).toBe(false); // already gone
+      expect(nextOpenDate(plan, "2026-10-25")).toBe("2026-10-26");
+      expect(nextOpenDate(plan, "2026-11-01")).toBe("2026-11-02");
+      // A `from` in the past means "the soonest from now on", not "scan the past".
+      expect(nextOpenDate(plan, "2020-01-01")).toBe("2026-10-26");
+    });
+
+    it("the same plan in `preview` promises nothing at all", () => {
+      const plan: DeliveryPlanInput = {
+        countryIso: REFERENCE_ISO,
+        operations: WARSAW_OPERATIONS,
+        state: "preview",
+        at: new Date(REFERENCE_INSTANT),
+        holidayProvider: NO_HOLIDAYS,
+      };
+      expect(isOpenOn(plan, "2026-10-26")).toBe(false);
+      expect(nextOpenDate(plan, "2026-10-26")).toBeNull();
+    });
+
+    it("`nextAvailableDate` gives up honestly when the destination never opens", () => {
+      const plan: DeliveryPlanInput = {
+        countryIso: REFERENCE_ISO,
+        operations: { ...WARSAW_OPERATIONS, deliveryDays: [7] },
+        state: "live",
+        at: new Date(REFERENCE_INSTANT),
+        holidayProvider: NO_HOLIDAYS,
+      };
+      // Sunday is the only delivery day and `sundayDelivery` is `none`: no day can ever open.
+      expect(nextOpenDate(plan, "2026-10-26")).toBeNull();
+    });
+  },
+);
 
 /* -------------------------------------------------------------------------- */
 /* The holiday seam.                                                          */
 /* -------------------------------------------------------------------------- */
 
-describe("the holiday provider and its committed file", () => {
+underEachProcessZone("the holiday provider and its committed file", () => {
   it("`seed/data/holidays.json` parses, and is empty in Phase 0", () => {
     const file = JSON.parse(
       readFileSync(resolve(__dirname, "../../seed/data/holidays.json"), "utf8"),
@@ -1339,124 +1504,127 @@ describe("the holiday provider and its committed file", () => {
 /* The mutations: the standing proof that the assertions above bite.          */
 /* -------------------------------------------------------------------------- */
 
-describe("mutations: each of the calendar's four inputs changes the answer", () => {
-  it("shifting the authored cutoff by an hour moves the earliest deliverable date", () => {
-    // 13:30 in Warsaw. With a 14:00 cutoff same-day is still open; with 13:00 it has gone.
-    const at = new Date("2026-10-26T12:30:00Z");
-    expect(cutoffAt(WARSAW_OPERATIONS, at).earliestDate).toBe("2026-10-26");
-    expect(
-      cutoffAt({ ...WARSAW_OPERATIONS, sameDayCutoffLocal: "13:00" }, at)
-        .earliestDate,
-    ).toBe("2026-10-27");
-  });
+underEachProcessZone(
+  "mutations: each of the calendar's four inputs changes the answer",
+  () => {
+    it("shifting the authored cutoff by an hour moves the earliest deliverable date", () => {
+      // 13:30 in Warsaw. With a 14:00 cutoff same-day is still open; with 13:00 it has gone.
+      const at = new Date("2026-10-26T12:30:00Z");
+      expect(cutoffAt(WARSAW_OPERATIONS, at).earliestDate).toBe("2026-10-26");
+      expect(
+        cutoffAt({ ...WARSAW_OPERATIONS, sameDayCutoffLocal: "13:00" }, at)
+          .earliestDate,
+      ).toBe("2026-10-27");
+    });
 
-  it("moving a holiday by one day moves the closed date by one day", () => {
-    const base = {
-      countryIso: REFERENCE_ISO,
-      operations: WARSAW_OPERATIONS,
-      state: "live" as const,
-      at: new Date("2026-10-26T08:00:00Z"),
-      days: 7,
-      occasionCalendar: NO_OCCASIONS,
-    };
-    const closedOn = (date: string) =>
-      deliveryGrid({
-        ...base,
-        holidayProvider: fixtureHolidays([
-          {
-            iso2: "PL",
-            date,
-            nameKey: "delivery.holiday.pl.movable",
-            closed: true,
-          },
-        ]),
-      })
-        .dates.filter(
-          (day) => day.reasonKey === "delivery.reason.publicHoliday",
-        )
-        .map((day) => day.date);
-    expect(closedOn("2026-10-28")).toEqual(["2026-10-28"]);
-    expect(closedOn("2026-10-29")).toEqual(["2026-10-29"]);
-  });
-
-  it("naming a different zone changes the day the grid starts on", () => {
-    const at = new Date("2026-11-01T22:00:00Z");
-    const startsOn = (ianaZone: string) =>
-      deliveryGrid({
+    it("moving a holiday by one day moves the closed date by one day", () => {
+      const base = {
         countryIso: REFERENCE_ISO,
-        operations: { ...WARSAW_OPERATIONS, ianaZone },
-        state: "live",
-        at,
-        days: 3,
+        operations: WARSAW_OPERATIONS,
+        state: "live" as const,
+        at: new Date("2026-10-26T08:00:00Z"),
+        days: 7,
+        occasionCalendar: NO_OCCASIONS,
+      };
+      const closedOn = (date: string) =>
+        deliveryGrid({
+          ...base,
+          holidayProvider: fixtureHolidays([
+            {
+              iso2: "PL",
+              date,
+              nameKey: "delivery.holiday.pl.movable",
+              closed: true,
+            },
+          ]),
+        })
+          .dates.filter(
+            (day) => day.reasonKey === "delivery.reason.publicHoliday",
+          )
+          .map((day) => day.date);
+      expect(closedOn("2026-10-28")).toEqual(["2026-10-28"]);
+      expect(closedOn("2026-10-29")).toEqual(["2026-10-29"]);
+    });
+
+    it("naming a different zone changes the day the grid starts on", () => {
+      const at = new Date("2026-11-01T22:00:00Z");
+      const startsOn = (ianaZone: string) =>
+        deliveryGrid({
+          countryIso: REFERENCE_ISO,
+          operations: { ...WARSAW_OPERATIONS, ianaZone },
+          state: "live",
+          at,
+          days: 3,
+          holidayProvider: NO_HOLIDAYS,
+          occasionCalendar: NO_OCCASIONS,
+        }).dates[0]?.date;
+      expect(startsOn("Europe/Warsaw")).toBe("2026-11-01");
+      expect(startsOn("Pacific/Auckland")).toBe("2026-11-02");
+      expect(startsOn("America/New_York")).toBe("2026-11-01");
+    });
+
+    it("dropping a weekday from `deliveryDays` closes exactly that weekday", () => {
+      const base = {
+        countryIso: REFERENCE_ISO,
+        state: "live" as const,
+        at: new Date("2026-10-26T08:00:00Z"),
+        days: 7,
         holidayProvider: NO_HOLIDAYS,
         occasionCalendar: NO_OCCASIONS,
-      }).dates[0]?.date;
-    expect(startsOn("Europe/Warsaw")).toBe("2026-11-01");
-    expect(startsOn("Pacific/Auckland")).toBe("2026-11-02");
-    expect(startsOn("America/New_York")).toBe("2026-11-01");
-  });
+      };
+      const open = (deliveryDays: readonly number[]) =>
+        deliveryGrid({
+          ...base,
+          operations: { ...WARSAW_OPERATIONS, deliveryDays: [...deliveryDays] },
+        })
+          .dates.filter((day) => day.selectable)
+          .map((day) => day.date);
+      expect(open([1, 2, 3, 4, 5, 6])).toEqual([
+        "2026-10-26",
+        "2026-10-27",
+        "2026-10-28",
+        "2026-10-29",
+        "2026-10-30",
+        "2026-10-31",
+      ]);
+      expect(open([1, 2, 4, 5, 6])).toEqual([
+        "2026-10-26",
+        "2026-10-27",
+        "2026-10-29",
+        "2026-10-30",
+        "2026-10-31",
+      ]);
+    });
 
-  it("dropping a weekday from `deliveryDays` closes exactly that weekday", () => {
-    const base = {
-      countryIso: REFERENCE_ISO,
-      state: "live" as const,
-      at: new Date("2026-10-26T08:00:00Z"),
-      days: 7,
-      holidayProvider: NO_HOLIDAYS,
-      occasionCalendar: NO_OCCASIONS,
-    };
-    const open = (deliveryDays: readonly number[]) =>
-      deliveryGrid({
-        ...base,
-        operations: { ...WARSAW_OPERATIONS, deliveryDays: [...deliveryDays] },
-      })
-        .dates.filter((day) => day.selectable)
-        .map((day) => day.date);
-    expect(open([1, 2, 3, 4, 5, 6])).toEqual([
-      "2026-10-26",
-      "2026-10-27",
-      "2026-10-28",
-      "2026-10-29",
-      "2026-10-30",
-      "2026-10-31",
-    ]);
-    expect(open([1, 2, 4, 5, 6])).toEqual([
-      "2026-10-26",
-      "2026-10-27",
-      "2026-10-29",
-      "2026-10-30",
-      "2026-10-31",
-    ]);
-  });
+    it("removing the occasion rows removes the marks, and only the marks", () => {
+      const marked = deliveryGrid(referenceInput("live"));
+      const unmarked = deliveryGrid(
+        referenceInput("live", { occasionCalendar: NO_OCCASIONS }),
+      );
+      expect(marked.dates.flatMap((date) => [...date.occasionKeys])).toEqual([
+        REFERENCE_OCCASION.occasionKey,
+      ]);
+      expect(unmarked.dates.flatMap((date) => [...date.occasionKeys])).toEqual(
+        [],
+      );
+      expect(unmarked.dates.map((date) => date.selectable)).toEqual(
+        marked.dates.map((date) => date.selectable),
+      );
+    });
 
-  it("removing the occasion rows removes the marks, and only the marks", () => {
-    const marked = deliveryGrid(referenceInput("live"));
-    const unmarked = deliveryGrid(
-      referenceInput("live", { occasionCalendar: NO_OCCASIONS }),
-    );
-    expect(marked.dates.flatMap((date) => [...date.occasionKeys])).toEqual([
-      REFERENCE_OCCASION.occasionKey,
-    ]);
-    expect(unmarked.dates.flatMap((date) => [...date.occasionKeys])).toEqual(
-      [],
-    );
-    expect(unmarked.dates.map((date) => date.selectable)).toEqual(
-      marked.dates.map((date) => date.selectable),
-    );
-  });
-
-  it("changing the state changes every verdict and nothing else about the calendar", () => {
-    const live = deliveryGrid(referenceInput("live"));
-    const preview = deliveryGrid(referenceInput("preview"));
-    expect(preview.dates.map((date) => date.date)).toEqual(
-      live.dates.map((date) => date.date),
-    );
-    expect(preview.dates.map((date) => date.occasionKeys)).toEqual(
-      live.dates.map((date) => date.occasionKeys),
-    );
-    expect(live.dates.filter((date) => date.selectable).length).toBeGreaterThan(
-      0,
-    );
-    expect(preview.dates.filter((date) => date.selectable)).toHaveLength(0);
-  });
-});
+    it("changing the state changes every verdict and nothing else about the calendar", () => {
+      const live = deliveryGrid(referenceInput("live"));
+      const preview = deliveryGrid(referenceInput("preview"));
+      expect(preview.dates.map((date) => date.date)).toEqual(
+        live.dates.map((date) => date.date),
+      );
+      expect(preview.dates.map((date) => date.occasionKeys)).toEqual(
+        live.dates.map((date) => date.occasionKeys),
+      );
+      expect(
+        live.dates.filter((date) => date.selectable).length,
+      ).toBeGreaterThan(0);
+      expect(preview.dates.filter((date) => date.selectable)).toHaveLength(0);
+    });
+  },
+);
