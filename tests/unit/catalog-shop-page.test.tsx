@@ -24,6 +24,12 @@ import { describe, expect, it } from "vitest";
 import { type ListingView, listingView } from "../../src/modules/catalog";
 import { CountryShopRootPage } from "../../src/modules/catalog/ui/CountryShopRootPage.tsx";
 import { loadMessages } from "../../src/modules/i18n";
+import {
+  expectedPreloads,
+  firstCardPhotograph,
+  lcpNominations,
+  nominatedImageCard,
+} from "../support/lcp-nomination.ts";
 import { listingHonestyViolations, textOf } from "../support/listing-honesty";
 
 /** A fixed window start, so a rendered date is assertable without freezing a clock. */
@@ -65,6 +71,12 @@ async function viewFor(locale: string, country: string): Promise<ListingView> {
 }
 
 const en = await viewFor("en", "poland");
+
+/**
+ * How many of the twelve cards on `/en/poland/flowers` carry an approved photograph (TASK-080's
+ * bytes). Pinned, not recomputed, so AC-24's case cannot drift with the corpus unnoticed.
+ */
+const PHOTOGRAPHED_CARDS = 2;
 
 describe("the populated shop root (§5.3 row 1)", () => {
   const html = render(<CountryShopRootPage view={en} />, "en");
@@ -198,29 +210,30 @@ describe("the populated shop root (§5.3 row 1)", () => {
     expect(textOf(html.slice(0, html.indexOf("</nav>")))).toContain("Flowers");
   });
 
-  it("nominates exactly one LCP candidate and one preload for it (AC-24)", () => {
-    // TASK-080 committed the image bytes, so the first card is now on the asset branch and the
-    // nomination is real rather than latent. The assertion is written to hold in **both** states —
-    // "as many eager, high-priority images as the page nominated, and never more than one" — so
-    // that withdrawing an image is not a test edit. The match is case-insensitive because
-    // `renderToStaticMarkup` writes React's `fetchPriority` while the DOM attribute is
-    // `fetchpriority`; the browser-side half is `tests/e2e/media-budgets.spec.ts`'s.
-    const priority = en.items.filter(
-      (card, index) => index === 0 && card.photo.kind === "asset",
+  it("nominates exactly one LCP candidate — the first card's photograph — and one preload for it (AC-24)", () => {
+    // **Stated numbers, not the page read against itself** (TASK-143). This case used to count
+    // eager images, high-priority images and preloads against `priority.length`, a list derived
+    // from the same view — so a page that nominated nothing and whose first card had lost its
+    // photograph passed as zero-vs-zero. The pin below is the committed corpus: if TASK-080's
+    // bytes for the first Polish card are ever withdrawn this goes red and the new numbers are
+    // written here deliberately. `tests/support/lcp-nomination.ts` is PR 89 round 3's reading of
+    // AC-24, reused rather than restated; the browser-side half is `tests/e2e/country-shop.spec.ts`.
+    expect(en.items.filter((card) => card.photo.kind === "asset")).toHaveLength(
+      PHOTOGRAPHED_CARDS,
     );
-    expect(priority.length).toBeLessThanOrEqual(1);
-    // One image marked high, and **one preload for that image** — the two halves the test's name
-    // promises, counted apart because `fetchPriority` appears on both and counting them together
-    // would pass a page that emitted two preloads and no image.
-    expect(html.match(/<img[^>]*fetchpriority="high"/giu) ?? []).toHaveLength(
-      priority.length,
+    expect(en.items[0]?.photo.kind).toBe("asset");
+    const nominated = lcpNominations(html);
+    expect(nominated.images).toBe(PHOTOGRAPHED_CARDS);
+    expect(nominated.eager).toBe(1);
+    expect(nominated.high).toBe(1);
+    // One `toEqual` that fails on either side: no preload, a second one, or one built from a
+    // different lookup than the first card's own `<source>` (AC-24's "same manifest lookup").
+    expect(nominated.preloaded).toEqual(
+      expectedPreloads(firstCardPhotograph(html)),
     );
-    expect(
-      html.match(/<link[^>]*rel="preload"[^>]*as="image"/giu) ?? [],
-    ).toHaveLength(priority.length);
-    // Nothing below the first card is eager, in either state: the count of eager images equals the
-    // count of nominations, so a second one would fail here rather than in a Lighthouse run.
-    expect(html.match(/loading="eager"/gu) ?? []).toHaveLength(priority.length);
+    expect(nominated.preloaded).toHaveLength(1);
+    // And it is the **first card's** image, not merely one of the photographs.
+    expect(nominatedImageCard(html)).toBe(0);
   });
 
   it("adds no client island and no inline script (§5.4)", () => {
