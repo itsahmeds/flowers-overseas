@@ -31,6 +31,12 @@
  * `assertSinglePriority()` is called with what this page nominated, so a second grid added here
  * later fails loudly at render rather than in a Lighthouse report.
  *
+ * **The occasion table's third column** (spec 008 §14 **A10**; TASK-111): the artboards draw
+ * three columns — occasion, date, page — and this page shipped two, because no country-occasion
+ * page existed for the third to link to. It now does, so the column is here: a link where
+ * `listingView()` resolved one, an empty cell where the (occasion, country) pair fails the
+ * existence rule, and no placeholder in either case.
+ *
  * **What is deliberately not here.** The delivery-facts panel the desktop artboard draws between
  * the demo sentence and the grid is spec 007's `CorridorFacts` in its `facts-unknown` form: it
  * reads a `CorridorView`, and §5.2 makes `listingView()` the **only** source for this page, its
@@ -207,10 +213,20 @@ export function CountryShopRootPage({
                         {shop("root.occasionColumn")}
                       </th>
                       <th
-                        className="border-rule py-sm text-ink-subtle border-b text-start text-xs font-semibold uppercase"
+                        className="border-rule py-sm pe-md text-ink-subtle border-b text-start text-xs font-semibold uppercase"
                         scope="col"
                       >
                         {shop("root.dateColumn")}
+                      </th>
+                      {/* The third column (§14 **A10**, TASK-111): which of these occasions has a
+                          page of its own. It waited for the pages it links to — a column that
+                          could only ever say "no" is not information — and a row without one
+                          renders an **empty cell**, never a disabled link (spec 004 AC-14). */}
+                      <th
+                        className="border-rule py-sm text-ink-subtle border-b text-start text-xs font-semibold uppercase"
+                        scope="col"
+                      >
+                        {shop("root.pageColumn")}
                       </th>
                     </tr>
                   </thead>
@@ -223,7 +239,7 @@ export function CountryShopRootPage({
                         >
                           {registryLabel(t, occasion.nameKey)}
                         </th>
-                        <td className="border-rule py-sm border-b">
+                        <td className="border-rule py-sm pe-md border-b">
                           {occasion.date === null
                             ? null
                             : formatDate(
@@ -232,6 +248,17 @@ export function CountryShopRootPage({
                                 "calendarDate",
                                 "UTC",
                               )}
+                        </td>
+                        <td className="border-rule py-sm border-b">
+                          {occasion.href === undefined ? null : (
+                            <a
+                              className="hover:text-accent underline"
+                              data-fo-occasion-page={occasion.nameKey}
+                              href={occasion.href}
+                            >
+                              {shop("root.occasionPageLink")}
+                            </a>
+                          )}
                         </td>
                       </tr>
                     ))}

@@ -48,6 +48,10 @@ const URLS = [
   // the locale home's script set and nothing more.
   "/en/send-flowers-to/poland",
   "/en-gb/send-flowers-to/poland",
+  // The two listing page types (spec 008 AC-23; TASK-109, TASK-110): neither mounts an island, so
+  // the browser must fetch exactly the locale home's script set on both.
+  "/en/poland/flowers",
+  "/en/poland/flowers/roses",
 ] as const;
 
 const SCRIPT_URL = /\/_next\/(static\/.+\.js)(?:\?|$)/;

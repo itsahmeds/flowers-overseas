@@ -755,7 +755,15 @@
       "occasionsLink": "Occasions"
     },
     "h1": {
+      "countryCategory": "{entity} we make for {country}",
+      "countryOccasion": "{occasion} flowers for {country}",
       "countryShopRoot": "Flowers we make for {country}"
+    },
+    "category": {
+      "lede": "{count, plural, one {One of ours, made by our florist in the recipient's town on the morning it is delivered.} other {# of ours, made by our florist in the recipient's town on the morning they are delivered.}} One price each, with VAT and delivery already in it.",
+      "siblingsHeading": "Also for {country}",
+      "seoTitle": "{entity} for {country} — one all-in price",
+      "seoDescription": "The {entity} our florists can make in {country}, each with one price that includes VAT and delivery. Nothing can be ordered yet."
     },
     "root": {
       "lede": "Our florist in the recipient's town makes the bouquet the morning it is delivered and hands it over in person. Every price below is one number with VAT and delivery already inside it.",
@@ -771,7 +779,19 @@
       "introHeading": "How it reaches {country}",
       "introBody": "You order from us in your own language and currency. Our florist in the recipient's town makes the bouquet the morning it is delivered and hands it over in person. Nothing crosses a border, so there is no customs form, no paperwork and nothing to pay on arrival.",
       "seoTitle": "Send flowers to {country} — what we can make there",
-      "seoDescription": "Every bouquet our florists can make in {country}, with one all-in price that includes VAT and delivery. Nothing can be ordered yet."
+      "seoDescription": "Every bouquet our florists can make in {country}, with one all-in price that includes VAT and delivery. Nothing can be ordered yet.",
+      "pageColumn": "Page",
+      "occasionPageLink": "What we make for it"
+    },
+    "occasion": {
+      "datedLine": "{occasion} in {country} is {date}.",
+      "dateNote": "That is the date {country} keeps for it, worked out from that country's own rule. It can fall on a different day from the one you keep at home.",
+      "undatedLine": "We are not printing a date for {occasion} in {country}. We do not have a rule we can work it out from, and a date we cannot stand behind is worse than none.",
+      "lede": "These are the ones we make for it, and our florist in {country} hands them over in person.",
+      "siblingsHeading": "Also in {country}",
+      "shopRootLink": "Flowers for {country}",
+      "seoTitle": "{occasion} flowers for {country} — and {country}'s own date for it",
+      "seoDescription": "Every bouquet our florist in {country} can make for {occasion}, with one all-in price that includes VAT and delivery. Nothing can be ordered yet."
     }
   }
 }

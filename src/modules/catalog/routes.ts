@@ -11,8 +11,9 @@
  * So the ruling is: **one route file per URL depth**, each calling this one resolver.
  *
  * ```
- * /{locale}/{segment}           → src/app/[locale]/[segment]/page.tsx
- * /{locale}/{segment}/{child}   → src/app/[locale]/[segment]/[child]/page.tsx
+ * /{locale}/{segment}                      → src/app/[locale]/[segment]/page.tsx
+ * /{locale}/{segment}/{child}              → src/app/[locale]/[segment]/[child]/page.tsx
+ * /{locale}/{segment}/{child}/{grandchild} → src/app/[locale]/[segment]/[child]/[grandchild]/page.tsx
  * ```
  *
  * `resolveLocalePath()` answers *which page a path names*, as a discriminated union over the two
@@ -24,6 +25,12 @@
  * **`app/` stays thin.** The route files resolve, mount one module page component, and hold no
  * knowledge of segments or slugs; everything a reader could get wrong about which page a URL is
  * lives here, beside the rules it reads.
+ *
+ * **Depth 4 follows the same rule** (TASK-110, TASK-111): `/{locale}/{segment}/{child}/{grandchild}`
+ * is one more shared file, `src/app/[locale]/[segment]/[child]/[grandchild]/page.tsx`, because
+ * spec §5.2's two depth-4 drawings (`[country]/[shopCategory]/[category]` and
+ * `[country]/[occasions]/[occasion]`) collide with each other *and* with the depth-3 file's own
+ * slug names. Both the country category and the country occasion resolve here.
  *
  * **What is not here yet.** `categoryHub` and `occasionHub` share depth 3 with the corridor and
  * the shop root, and `occasionsIndex` shares depth 2 with the destinations hub; TASK-112/113 add
@@ -42,6 +49,7 @@ import {
 import { localePath, routableLocale } from "@/modules/i18n";
 
 import { listingExists, listingLocales, listingPages } from "./listing";
+import { resolveSlug } from "./slugs";
 
 /**
  * The page a `/{locale}/…` path names, or `notFound`.
@@ -65,6 +73,24 @@ export type LocalePathResolution =
       readonly locale: LocaleCode;
       readonly iso2: CountryIso2;
       readonly countrySlug: string;
+    }
+  | {
+      readonly kind: "countryCategory";
+      readonly locale: LocaleCode;
+      readonly iso2: CountryIso2;
+      readonly countrySlug: string;
+      /** The category's slug in this locale, as the URL spells it. */
+      readonly categorySlug: string;
+    }
+  | {
+      readonly kind: "countryOccasion";
+      readonly locale: LocaleCode;
+      readonly iso2: CountryIso2;
+      readonly countrySlug: string;
+      /** The catalogue key the URL's slug resolves to (`mothersDay`), never the slug itself. */
+      readonly occasionKey: string;
+      /** The occasion's slug in this locale, as the URL spells it. */
+      readonly occasionSlug: string;
     };
 
 const NOT_FOUND: LocalePathResolution = { kind: "notFound" };
@@ -72,7 +98,7 @@ const NOT_FOUND: LocalePathResolution = { kind: "notFound" };
 /** Whether `segment` is **this** locale's own segment for a page type (`plan/02` §4). */
 function isOwnSegment(
   locale: LocaleCode,
-  pageType: "destinations" | "shopCategory",
+  pageType: "destinations" | "shopCategory" | "occasions",
   segment: string,
 ): boolean {
   return localePath(locale, pageType) === `/${locale}/${segment}`;
@@ -142,6 +168,69 @@ export async function resolveLocalePath(
     }
   }
 
+  if (segments.length === 3) {
+    const [segment, child, grandchild] = segments;
+    if (
+      segment === undefined ||
+      child === undefined ||
+      grandchild === undefined
+    ) {
+      return NOT_FOUND;
+    }
+
+    // `/{locale}/{countrySlug}/{shopCategory}/{categorySlug}` — spec 008's country category
+    // (§2 row 7; TASK-110). The slug is turned into a catalogue key by `resolveSlug()`, the
+    // inverse `slugFor()` built (AC-4), and the key is handed to the **one** existence predicate:
+    // no rule about the six-product floor is restated here, which is why lifting a category over
+    // it is a data flip with no edit under `src/app/` (AC-5).
+    if (isOwnSegment(code, "shopCategory", child)) {
+      const iso2 = corridorIso2ForSlug(code, segment);
+      if (iso2 === undefined || !isCountryIso2(iso2)) return NOT_FOUND;
+      const entityKey = resolveSlug(code, "category", grandchild);
+      if (entityKey === undefined) return NOT_FOUND;
+      const exists = await listingExists({
+        pageType: "countryCategory",
+        locale: code,
+        countryIso: iso2,
+        entityKey,
+      });
+      if (!exists) return NOT_FOUND;
+      return {
+        kind: "countryCategory",
+        locale: code,
+        iso2,
+        countrySlug: segment,
+        categorySlug: grandchild,
+      };
+    }
+
+    // `/{locale}/{countrySlug}/{occasions}/{occasionSlug}` — spec 008's country occasion
+    // (§2 row 8; TASK-111). The slug is resolved to a catalogue **key** here and the key is what
+    // the existence rule is asked about: `listingExists()` reads `observed`, the product-count
+    // floor and the authored slug, and this function adds none of them.
+    if (isOwnSegment(code, "occasions", child)) {
+      const iso2 = corridorIso2ForSlug(code, segment);
+      if (iso2 === undefined || !isCountryIso2(iso2)) return NOT_FOUND;
+      const occasionKey = resolveSlug(code, "occasion", grandchild);
+      if (occasionKey === undefined) return NOT_FOUND;
+      const exists = await listingExists({
+        pageType: "countryOccasion",
+        locale: code,
+        countryIso: iso2,
+        entityKey: occasionKey,
+      });
+      if (!exists) return NOT_FOUND;
+      return {
+        kind: "countryOccasion",
+        locale: code,
+        iso2,
+        countrySlug: segment,
+        occasionKey,
+        occasionSlug: grandchild,
+      };
+    }
+  }
+
   return NOT_FOUND;
 }
 
@@ -154,6 +243,11 @@ export interface LocaleSegmentParams {
 /** One prebuilt URL of the depth-3 route file. */
 export interface LocaleChildParams extends LocaleSegmentParams {
   readonly child: string;
+}
+
+/** One prebuilt URL of the depth-4 route file (spec 008 §14 A5's "depth-4 routes"). */
+export interface LocaleGrandchildParams extends LocaleChildParams {
+  readonly grandchild: string;
 }
 
 /**
@@ -192,6 +286,47 @@ export async function localeChildParams(): Promise<
 
     for (const slug of corridorSlugsIn(locale)) {
       params.push({ locale, segment: destinations, child: slug });
+    }
+  }
+
+  return params;
+}
+
+/**
+ * `generateStaticParams` for `/{locale}/{segment}/{child}/{grandchild}` — the **union** of the
+ * existence sets that share depth 4 (spec 008 §14 A5's rule applied one level down): the country
+ * categories of §2 row 7 (TASK-110) and the country occasions of §2 row 8 (TASK-111).
+ *
+ * Every field is read from `listingPages()` rather than restated: the destination's slug and the
+ * entity's slug are the ones the existence set already carries, and the page-type segment is the
+ * one `localePath()` builds — so a category that crosses the six-product floor gains its URL from
+ * the data alone (**AC-5**), and one that falls below it loses it at the next build rather than
+ * becoming a thin page. Neither branch names a country, a category or a floor.
+ */
+export async function localeGrandchildParams(): Promise<
+  readonly LocaleGrandchildParams[]
+> {
+  const params: LocaleGrandchildParams[] = [];
+
+  for (const locale of listingLocales()) {
+    const shopCategory = localePath(locale, "shopCategory").split("/")[2] ?? "";
+    const occasions = localePath(locale, "occasions").split("/")[2] ?? "";
+
+    for (const page of await listingPages(locale)) {
+      if (page.countrySlug === undefined || page.slug === undefined) continue;
+      const child =
+        page.pageType === "countryCategory"
+          ? shopCategory
+          : page.pageType === "countryOccasion"
+            ? occasions
+            : undefined;
+      if (child === undefined) continue;
+      params.push({
+        locale,
+        segment: page.countrySlug,
+        child,
+        grandchild: page.slug,
+      });
     }
   }
 

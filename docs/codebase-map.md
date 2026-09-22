@@ -14,16 +14,16 @@ task actually touches.
 |---|---|---|---|
 | `admin` | Public barrel for `admin` (admin queries and actions) | spec 012 | — |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2 + the gated GA4 tag; GA4 event… | spec 004, 023 | `unit/consent-bootstrap.test.tsx` |
-| `catalog` | The only import path into the catalogue and pricing module (spec 005 §2, §5.2;… | spec 005 | `contract/catalog-static-providers.test.ts`, `contract/support/catalog-provider-contract.ts`, `unit/catalog-availability.test.ts` +23 |
+| `catalog` | The only import path into the catalogue and pricing module (spec 005 §2, §5.2;… | spec 005 | `contract/catalog-static-providers.test.ts`, `contract/support/catalog-provider-contract.ts`, `unit/catalog-availability.test.ts` +28 |
 | `customers` | Public barrel for `customers` (customers, recipients, consent) | spec 019 | — |
-| `geo` | The only import path into the geo module (spec 007 §5.2; TASK-087) | spec 007, 002, 009 | `contract/seo-schema-fixtures.test.ts`, `unit/catalog-listing.test.ts`, `unit/catalog-routes.test.ts` +11 |
-| `i18n` | The only import path for the i18n module (spec 003 §5.2, AC-3; TASK-034) | spec 003 | `contract/seo-schema-fixtures.test.ts`, `fixtures/ts/format-time-in-zone-no-zone.ts`, `integration/sitemap.test.ts` +47 |
+| `geo` | The only import path into the geo module (spec 007 §5.2; TASK-087) | spec 007, 002, 009 | `contract/seo-schema-fixtures.test.ts`, `unit/catalog-country-occasion.test.ts`, `unit/catalog-listing.test.ts` +12 |
+| `i18n` | The only import path for the i18n module (spec 003 §5.2, AC-3; TASK-034) | spec 003 | `contract/seo-schema-fixtures.test.ts`, `fixtures/ts/format-time-in-zone-no-zone.ts`, `integration/sitemap.test.ts` +49 |
 | `notifications` | Public barrel for `notifications` (email + WhatsApp senders, templates, outbox… | spec 017 | — |
 | `orders` | Public barrel for `orders` (state machine, order service, assignment/routing… | spec 015, 016 | — |
 | `partners` | Public barrel for `partners` (fulfilment partners, coverage, payouts) | spec 011, 026 | — |
 | `payments` | Public barrel for `payments` (PaymentProvider interface; stripe/, mollie/… | spec 013, 014 | — |
 | `seo` | Indexability rule engine, canonical builder, robots policy, page metadata,… | spec 007 | `contract/seo-schema-fixtures.test.ts`, `integration/sitemap.test.ts`, `unit/catalog-listing.test.ts` +10 |
-| `ui` | The only import path for the design system (spec 004 §2 "Where the design… | spec 004 | `unit/chrome-honesty.test.tsx`, `unit/consent-cookie.test.ts`, `unit/consent-islands.test.tsx` +23 |
+| `ui` | The only import path for the design system (spec 004 §2 "Where the design… | spec 004 | `unit/catalog-occasion-page.test.tsx`, `unit/chrome-honesty.test.tsx`, `unit/consent-cookie.test.ts` +24 |
 
 ## Config (`src/config/`)
 
@@ -64,6 +64,7 @@ task actually touches.
 | `(dev)/dev/components/gated.ts` | The fake providers `/dev/components` renders the three data-gated sections'… | spec 004 |
 | `(dev)/dev/components/page.tsx` | `/dev/components` — the component gallery (spec 004 §2 "Component gallery —… | spec 004 |
 | `(dev)/layout.tsx` | Document layout for the `(dev)` route group — today only `/dev/components`… | spec 004 |
+| `[locale]/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/{segment}/{child}/{grandchild}` — **one route file for one URL… | spec 008 |
 | `[locale]/[segment]/[child]/page.tsx` | `/{locale}/{segment}/{child}` — **one route file for one URL depth** (spec 008… | spec 008 |
 | `[locale]/[segment]/page.tsx` | `/{locale}/{segment}` — **one route file for one URL depth** (spec 008 §14… | spec 008 |
 | `[locale]/boom/BoomIsland.tsx` | The throw that reaches `src/app/[locale]/error.tsx` (spec 004 AC-26, AC-27;… | spec 004 |
@@ -127,12 +128,12 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 191 |
+| `tests/unit/` | 196 |
 | `tests/integration/` | 6 |
 | `tests/contract/` | 6 |
-| `tests/e2e/` | 28 |
-| `tests/a11y/` | 11 |
-| `tests/visual/` | 11 |
+| `tests/e2e/` | 30 |
+| `tests/a11y/` | 13 |
+| `tests/visual/` | 13 |
 | `tests/dev-os/` | 1 |
 | `tests/fixtures/` | 161 |
 | `tests/msw/` | 3 |

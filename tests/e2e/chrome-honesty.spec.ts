@@ -56,6 +56,17 @@ const PAGES: readonly { readonly type: string; readonly path: string }[] = [
   { type: "country shop root", path: "/en-gb/poland/flowers" },
   { type: "country shop root", path: "/de/polen/blumen" },
   { type: "country shop root", path: "/pl/polska/kwiaty" },
+  // The country category (TASK-110): the densest listing document, and the one whose sibling chip
+  // row prints twenty category names — the row the four forbidden chrome strings used to live in.
+  // `de`/`pl` have no authored category slug yet (§13 Q10) and therefore no URL to sweep.
+  { type: "country category", path: "/en/poland/flowers/roses" },
+  { type: "country category", path: "/en-gb/poland/flowers/roses" },
+  // The country occasion (TASK-111): the page type that prints a **date**, and therefore the one
+  // where a delivery-timing promise would look most at home. The date it prints is the occasion's
+  // own, never a delivery date, and no cutoff or same-day string may reach it.
+  { type: "country occasion", path: "/en/poland/occasions/mothers-day" },
+  { type: "country occasion", path: "/en-gb/poland/occasions/mothers-day" },
+  { type: "country occasion", path: "/en/germany/occasions/mothers-day" },
   { type: "gallery", path: "/dev/components" },
 ];
 

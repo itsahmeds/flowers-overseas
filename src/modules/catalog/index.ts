@@ -375,11 +375,13 @@ export {
 // `dynamicParams = false`.
 export type {
   LocaleChildParams,
+  LocaleGrandchildParams,
   LocalePathResolution,
   LocaleSegmentParams,
 } from "./routes";
 export {
   localeChildParams,
+  localeGrandchildParams,
   localeSegmentParams,
   resolveLocalePath,
 } from "./routes";
@@ -397,3 +399,18 @@ export {
   ListingBreadcrumb,
   type ListingBreadcrumbProps,
 } from "./ui/ListingBreadcrumb.tsx";
+// The country category's page component (spec 008 §2 row 7, §5.3 row 2, **AC-5**; TASK-110), on
+// the same footing as the shop root's: the page lives in the module that owns its view model, so
+// `app/` holds one resolve and one mount. A Server Component; no file in this module carries
+// `"use client"`.
+export {
+  CountryCategoryPage,
+  type CountryCategoryPageProps,
+} from "./ui/CountryCategoryPage.tsx";
+
+// The country occasion's page component (spec 008 §2 row 8, §5.3 row 2, §12 task 7 — the country
+// half of AC-11; TASK-111). Same rule, same footing.
+export {
+  CountryOccasionPage,
+  type CountryOccasionPageProps,
+} from "./ui/CountryOccasionPage.tsx";

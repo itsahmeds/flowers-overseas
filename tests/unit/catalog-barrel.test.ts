@@ -271,12 +271,18 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         // `CorridorPage` reason: a page component belongs to the module that owns its view model,
         // so `app/` holds one resolve and one mount. They are Server Components — no file in this
         // module carries `"use client"` — so the barrel still adds zero client bytes (AC-3).
+        "CountryCategoryPage",
         "CountryShopRootPage",
         "ListingBreadcrumb",
         "listingAlternatePaths",
         "localeChildParams",
+        "localeGrandchildParams",
         "localeSegmentParams",
         "resolveLocalePath",
+        // the country occasion's page component (TASK-111): the same rule one level down, and the
+        // third React component the module owns. Its URLs share `localeGrandchildParams()` with
+        // the country category, because they share the route file.
+        "CountryOccasionPage",
       ].sort(),
     );
   });
@@ -305,6 +311,8 @@ describe("src/modules/catalog barrel (AC-1)", () => {
       `${moduleDir}/slugs.ts`,
       `${moduleDir}/static/index.ts`,
       `${moduleDir}/types.ts`,
+      `${moduleDir}/ui/CountryCategoryPage.tsx`,
+      `${moduleDir}/ui/CountryOccasionPage.tsx`,
       `${moduleDir}/ui/CountryShopRootPage.tsx`,
       `${moduleDir}/ui/ListingBreadcrumb.tsx`,
       `${moduleDir}/ui/labels.ts`,

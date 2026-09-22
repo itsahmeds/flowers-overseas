@@ -711,6 +711,12 @@
     }
   },
   "shop": {
+    "category": {
+      "lede": "{count, plural, one {Jeden bukiet, który nasz florysta ułoży w mieście odbiorcy rano w dniu dostawy.} few {# bukiety, które nasz florysta ułoży w mieście odbiorcy rano w dniu dostawy.} many {# bukietów, które nasz florysta ułoży w mieście odbiorcy rano w dniu dostawy.} other {# bukietu, które nasz florysta ułoży w mieście odbiorcy rano w dniu dostawy.}} Każdy w jednej cenie — z VAT-em i dostawą już w środku.",
+      "seoDescription": "The {entity} our florists can make in {country}, each with one price that includes VAT and delivery. Nothing can be ordered yet.",
+      "seoTitle": "{entity} for {country} — one all-in price",
+      "siblingsHeading": "Also for {country}"
+    },
     "empty": {
       "body": "We have nothing we can deliver in {country} today. The {country} guide has what we have learned about sending flowers there, and the occasions pages have the dates.",
       "corridorLink": "Read the {country} guide",
@@ -722,7 +728,19 @@
       "label": "{count, plural, one {# bukiet na tej stronie} few {# bukiety na tej stronie} many {# bukietów na tej stronie} other {# bukietu na tej stronie}}"
     },
     "h1": {
+      "countryCategory": "{entity} we make for {country}",
+      "countryOccasion": "{occasion} flowers for {country}",
       "countryShopRoot": "Flowers we make for {country}"
+    },
+    "occasion": {
+      "dateNote": "That is the date {country} keeps for it, worked out from that country's own rule. It can fall on a different day from the one you keep at home.",
+      "datedLine": "{occasion} in {country} is {date}.",
+      "lede": "These are the ones we make for it, and our florist in {country} hands them over in person.",
+      "seoDescription": "Every bouquet our florist in {country} can make for {occasion}, with one all-in price that includes VAT and delivery. Nothing can be ordered yet.",
+      "seoTitle": "{occasion} flowers for {country} — and {country}'s own date for it",
+      "shopRootLink": "Flowers for {country}",
+      "siblingsHeading": "Also in {country}",
+      "undatedLine": "We are not printing a date for {occasion} in {country}. We do not have a rule we can work it out from, and a date we cannot stand behind is worse than none."
     },
     "pagination": {
       "label": "Pages of products",
@@ -738,9 +756,11 @@
       "lede": "Our florist in the recipient's town makes the bouquet the morning it is delivered and hands it over in person. Every price below is one number with VAT and delivery already inside it.",
       "listingHeading": "Everything we can make for {country}",
       "occasionColumn": "Occasion",
+      "occasionPageLink": "What we make for it",
       "occasionsCaption": "The next twelve months in {country}, computed from the destination's own rules",
       "occasionsEyebrow": "Coming up in {country}",
       "occasionsHeading": "{country}'s own dates",
+      "pageColumn": "Page",
       "seoDescription": "Every bouquet our florists can make in {country}, with one all-in price that includes VAT and delivery. Nothing can be ordered yet.",
       "seoTitle": "Send flowers to {country} — what we can make there",
       "tileCount": "{count, plural, one {# bukiet, który możemy wykonać dla {country}} few {# bukiety, które możemy wykonać dla {country}} many {# bukietów, które możemy wykonać dla {country}} other {# bukietu, które możemy wykonać dla {country}}}",

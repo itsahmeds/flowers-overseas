@@ -131,6 +131,24 @@ describe("the populated shop root (§5.3 row 1)", () => {
     expect(html).toContain('scope="row"');
   });
 
+  it("gives the occasion table its third column, linked only where a page exists (§14 A10)", () => {
+    // TASK-109 shipped two columns because no country-occasion page existed for a third to link
+    // to; TASK-111 built them, so the column is here. Mother's Day is the one Polish occasion
+    // that clears the six-product floor, so it is the only linked row — every other cell is
+    // **empty**, never a disabled link or a "no page" placeholder (spec 004 AC-14).
+    expect(html).toContain("Page</th>");
+    const linked = (en.occasionDates ?? []).filter(
+      (row) => row.href !== undefined,
+    );
+    expect(linked).toHaveLength(1);
+    expect(linked[0]?.href).toBe("/en/poland/occasions/mothers-day");
+    expect(html).toContain('href="/en/poland/occasions/mothers-day"');
+    expect(html.match(/data-fo-occasion-page=/gu) ?? []).toHaveLength(1);
+    expect(text).toContain("What we make for it");
+    // Three header cells, and one more `<td>` per row than the two-column table had.
+    expect(html.match(/scope="col"/gu) ?? []).toHaveLength(3);
+  });
+
   it("is a breadcrumb of four crumbs, the leaf marked and not a link", () => {
     expect(en.breadcrumb.map((crumb) => crumb.labelKey)).toEqual([
       "common.homeLink",
