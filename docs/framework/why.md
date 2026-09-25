@@ -111,6 +111,52 @@ red — never by reading it.
 **2026-09-18.** Lighthouse figures collected at a load average of 32 described the machine. A
 local performance number without the load average beside it is not evidence.
 
+## W-15 · A breaker on every PR
+
+**2026-09-25, founder's decision.** Ten tests that could not fail reached PRs on 2026-09-21/22, and
+every one was caught by someone changing the code on purpose, never by someone reading the test
+(W-13). A reviewer judges against a checklist and leans towards passing. Anthropic's own write-up
+on long-running agents makes the same point: agents grade work leniently, and a separate tester
+catches more. So the breaker is its own agent, it only wins by finding a hole, and it runs on every
+PR, including docs-only ones, where it breaks whatever check reads the changed files. The founder
+chose every PR over risky-only PRs.
+
+## W-16 · An advisor before the founder approves
+
+**2026-09-25, founder's decision.** The founder is new to software and approved specs with only the
+orchestrator's explanation — and the orchestrator is on the side that wrote them. Phase 1 (payments)
+is next, where a legal or money mistake is expensive. The advisor is one agent with four angles
+(building, Google, law and compliance, customer) and no power. It is not a lawyer: VAT and terms
+still need a human professional's sign-off (`docs/compliance/`).
+
+## W-17 · A designer owns the artboards
+
+**2026-09-25.** `CLAUDE.md` required `.dc.html` artboards before `/plan-tasks` (TASK-059), and
+implementers must match them, but no agent's definition said who draws them. A rule with no owner
+is a rule that happens by accident. The founder chose a separate designer over folding it into the
+spec writer, which also gives the founder a moment to look before anything is built.
+
+## W-18 · Every dispatch uses the work order
+
+**2026-09-25.** A search of `docs/sessions/`, `docs/tasks/` and `TASKS.md` found about 35 incidents
+that trace back to what an agent was or was not told when dispatched. They group into eleven
+missing fields:
+- the fence, and who else is working;
+- preconditions that were not true (TASK-082; TASK-113 told to wait for something that would never come);
+- wrong or missing context;
+- which gates to run locally;
+- the push and progress policy (TASK-113's eight hours);
+- the evidence standard (TASK-093 cited another task's PR; TASK-138 called a 2-in-9 flake "fixed");
+- authority limits (TASK-112 marked copy "reviewed" under the founder's name; TASK-069 amended a spec);
+- where carry-forwards go;
+- review scope;
+- founder decisions;
+- where the verdict goes.
+
+Fifteen outside sources (Anthropic, GitHub Copilot, Devin, OpenAI, A2A, military orders, SBAR) name
+the same fields. The ledger put the median implementer run at 62 minutes (reviewer 15), which set
+the size limits.
+
 ## Retired
 
 - **"The `preview` job waits on a Vercel preview deployment, so under Vercel's build rate limit the

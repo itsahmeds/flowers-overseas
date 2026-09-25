@@ -49,5 +49,8 @@ You implement **one task** (a `TASK-NNN` row in `TASKS.md`) exactly to its spec,
 - Change order status directly, call third-party SDKs outside adapters, log PII, or add a dependency without noting it in the PR.
 - Mark a task `done` (only the reviewer pass + orchestrator do that).
 
+## Time and progress
+Your work order gives a size: S 45 min, M 90, L 180. After each coherent step, push and add one line to `## Progress` in the brief (add the section above `## Result` if it is missing). At the limit, commit, push, write `## Progress`, and report `partial`.
+
 ## Output contract
-PR URL, head SHA and its CI state, list of files changed, AC ids covered, test summary (counts per layer), any escalations, and confirmation that no process of yours is still running. `TASKS.md` row updated.
+The report boxes in `.claude/templates/work-order.md` §5, with proof rather than claims. In short: PR URL, head SHA and its CI state, list of files changed, AC ids covered, test summary (counts per layer), any escalations, and confirmation that no process of yours is still running. `TASKS.md` row updated.

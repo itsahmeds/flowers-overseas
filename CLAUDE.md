@@ -41,6 +41,10 @@ Next.js App Router (TS strict) · Postgres on Neon EU (Drizzle; Auth.js for iden
 | Specs | `specs/NNN-<slug>.md` (template `specs/_template.md`); each opens with `## 0. Index` — `§section Lline` per `AC-n`/`T-n`, from `pnpm specs:index` |
 | Decisions | `docs/adr/ADR-NNNN-*.md` (immutable; supersede, never edit) + `docs/decisions-log.md` |
 | Why each rule exists | `docs/framework/why.md` |
+| Framework gaps (what is still wrong with this process, and which step fixes it) | `docs/framework/gaps.md` |
+| Work order (what every dispatched agent is told) | `.claude/templates/work-order.md` |
+| Agents in flight (task → files it owns; kept by the orchestrator, not committed) | `.claude/state/in-flight.md` |
+| Advisor memos | `docs/advice/YYYY-MM-DD-<slug>.md` |
 | Plan | `plan/*.md` |
 | Runbooks | `docs/runbooks/*.md` |
 | Session memory | `docs/sessions/`, `docs/topics/` (maintained by `/session-summary`) |
@@ -52,8 +56,11 @@ Next.js App Router (TS strict) · Postgres on Neon EU (Drizzle; Auth.js for iden
 | Skill | Agent | Use |
 |---|---|---|
 | `/spec <feature>` | spec-writer | write `specs/NNN-<slug>.md`; may call `/define-requirements` for large features |
+| `/advise <spec|decision>` | advisor | one-page second opinion for the founder before a spec is approved or an ADR is written: GO, GO WITH FIXES or NO-GO; never approves or blocks |
+| `/design <spec>` | designer | flows and wireframes in `docs/design/` for an approved UI spec, before `/plan-tasks` |
 | `/plan-tasks <spec>` | orchestrator | break an approved spec into tasks in `TASKS.md` |
 | `/implement <TASK-ID>` | frontend-implementer / backend-implementer | one task, one PR |
+| `/break <PR|TASK-ID>` | breaker | tries to make the PR fail; runs on every PR beside `/review`; HOLDS or HOLES |
 | `/review <PR|TASK-ID>` | reviewer | pass/fail gate; never edits code |
 | `/seo-audit <url-set|page-type>` | seo-auditor | hreflang, sitemaps, canonicals, schema, thin content, CWV, link flow |
 | `/launch <env>` | launch | pre-deploy gates, promotion, post-deploy verification, release note |
@@ -61,13 +68,15 @@ Next.js App Router (TS strict) · Postgres on Neon EU (Drizzle; Auth.js for iden
 | `/adr <title>` | (inline) | new decision record from template |
 | `/session-bootstrap`, `/session-summary`, `/session-search`, `/define-requirements` | user-level | session memory and requirements elicitation |
 
-Agents never write code except the implementers. The orchestrator refuses to dispatch a task without a spec. **This file wins over an agent or skill file that disagrees with it.**
+**The order of work:** `/spec` → `/advise` → the founder approves → `/design` (if the spec changes a page or journey) → `/plan-tasks` → `/implement` → `/break` + `/review` → merge.
+
+Agents never write code except the implementers; the designer writes only under `docs/design/`, the advisor only its memo. The orchestrator refuses to dispatch a task without a spec, and dispatches every agent with a filled-in `.claude/templates/work-order.md`. **This file wins over an agent or skill file that disagrees with it.**
 
 ## Definition of done (every task)
 1. The spec's acceptance criteria are satisfied and referenced in the PR description.
 2. The tests the spec demands are written and green. Implementers run the **cheap** gates locally and read each exit code: `typecheck`, `lint`, `format:check`, `i18n:check`, `check:no-db`, `codebase:map --check`, and the unit/contract files the diff touches. The **expensive** gates — `build`, `e2e`, `a11y`, `visual`, `lighthouse` — are CI's. Take the build slot for one only when the change cannot be judged without it (a new page's visual baselines, a byte budget, a deliberate performance measurement), and say so in `## Result`. (why: W-1)
 3. CI is green on the PR's **current head SHA**: lint, typecheck, tests, build, Lighthouse budgets, hreflang/sitemap/schema validators, dependency audit. CI is the gate of record for anything timing-sensitive; a local performance number is reported with the machine's load average beside it or it is not evidence. (why: W-6, W-14)
-4. A `/review` pass is recorded in the PR. **No assertion may pass with its subject removed:** writers assert the one value, not the set of reachable values; reviewers, for any assertion that carries an AC, mutate the subject and watch the case go red before they pass it. (why: W-13)
+4. A `/review` pass **and** a `/break` verdict are recorded in the PR; every hole the breaker found is closed by a test or recorded by the reviewer in the brief as acceptable, with the reason. **No assertion may pass with its subject removed:** writers assert the one value, not the set of reachable values; the breaker, and the reviewer for any assertion that carries an AC, mutate the subject and watch the case go red. (why: W-13, W-15)
 5. Docs updated: README/runbooks/ADR as applicable; `.env.example` current; RoPA updated if a data flow changed.
 6. Deployed to preview and smoke-tested (checkout path in two locales where relevant).
 7. `TASKS.md` updated (status, PR link); `.claude/state/active-task` cleared.
@@ -78,7 +87,7 @@ Agents never write code except the implementers. The orchestrator refuses to dis
 - **Opening a PR:** `gh pr create --draft` → before going ready, `git fetch origin && git rebase origin/main` and push, because no run fires while the PR conflicts → `gh pr ready` → `gh pr edit <n> --add-label ci:full`. Without the label the browser jobs (`preview`, `e2e`, `visual`, `a11y`) skip and a green tick means only the spine. (why: W-2, W-3, W-5)
 - **Re-running CI after a fix:** a push to a ready, labelled PR fires nothing. Toggle the label: `gh pr edit <n> --remove-label ci:full`, then `--add-label ci:full`. Never `gh workflow run` — on a dispatch the browser chain skips. (why: W-4)
 - **`docs/codebase-map.md` conflicts are regenerated** with `pnpm codebase:map`, never hand-merged. (why: W-5)
-- **Merging.** The orchestrator merges a PR when **both** hold: a `/review` **pass** is recorded on it, and CI is green on its current head SHA (check the SHA — `gh pr view --json statusCheckRollup` reports the latest run, not necessarily one on the head). After any rebase or force-push, re-fire CI and wait. Merge with `--match-head-commit`, in dependency order, and say what was merged and why. Never merge on a review fail, an unreviewed PR, or any red gate. (why: W-6, W-7)
+- **Merging.** The orchestrator merges a PR when **all three** hold: a `/review` **pass** is recorded on it, its `/break` verdict is `HOLDS` or every hole is closed or recorded as acceptable, and CI is green on its current head SHA (check the SHA — `gh pr view --json statusCheckRollup` reports the latest run, not necessarily one on the head). After any rebase or force-push, re-fire CI and wait. Merge with `--match-head-commit`, in dependency order, and say what was merged and why. Never merge on a review fail, an unreviewed or unbroken PR, an open hole, or any red gate. (why: W-6, W-7)
 - Module boundaries per `plan/01-architecture.md` §5; `app/` is thin.
 - Tests live in `tests/<layer>/`; fixtures for occasion dates, currencies, addresses are shared.
 
