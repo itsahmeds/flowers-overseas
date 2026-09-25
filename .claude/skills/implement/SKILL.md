@@ -20,4 +20,4 @@ disable-model-invocation: true
 5. Suggest `/review <PR>`.
 
 ## Never
-Run two implementers on the same module at once. Widen scope. Skip `task.sh set`. Paste spec or brief prose into the row — the cell is capped at 400 characters and `pnpm tasks:check` enforces it.
+Run two implementers on the same module at once, or more than four or five agents in total (`CLAUDE.md` "Working on this machine"). Widen scope. Skip `task.sh set`. Paste spec or brief prose into the row — the cell is capped at 400 characters and `pnpm tasks:check` enforces it.

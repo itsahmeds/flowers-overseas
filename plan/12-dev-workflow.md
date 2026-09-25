@@ -19,7 +19,7 @@ This is a product, not a prototype. This document defines the engineering standa
 |---|---|---|
 | Language | TypeScript `strict`, `noUncheckedIndexedAccess`, no `any`, no non-null assertions without comment | tsconfig + ESLint + reviewer |
 | Validation | zod schemas for API input, server actions, webhooks, forms, third-party responses, job and event payloads (versioned) | reviewer; contract tests |
-| DB | Drizzle schema → versioned SQL migrations; each migration has `NNNN_name.down.sql`; RLS in migrations; `supabase gen types`/Drizzle types committed; no schema drift (CI diff of generated schema vs migrations) | CI job `db:check` |
+| DB | Drizzle schema → versioned SQL migrations; each migration has `NNNN_name.down.sql`; RLS in migrations; generated Drizzle types committed (ADR-0015: Neon, not Supabase); no schema drift (CI diff of generated schema vs migrations) | CI job `db:check` |
 | Seeds | Idempotent upserts by natural key; never touch `source='real'` | backend-implementer; review |
 | Money | integer minor units + ISO currency; never floats | lint rule on `price` fields + review |
 | Time | store UTC; compute cutoffs in destination IANA zone; occasion rules as data | unit tests with DST fixtures |
@@ -34,17 +34,9 @@ This is a product, not a prototype. This document defines the engineering standa
 | Env | `.env.example` validated against `lib/env.ts` zod schema in CI; build fails on missing vars | CI |
 | Docs | README (local env <15 min), runbooks, architecture diagram (`docs/architecture.md`, Mermaid, updated when modules change), ADRs | definition of done |
 
-## 3. Definition of done (verbatim from `CLAUDE.md`)
+## 3. Definition of done
 
-1. Spec's acceptance criteria satisfied and referenced in the PR description.
-2. Tests the spec demands written and green.
-3. CI green: lint, typecheck, tests, build, Lighthouse budgets, hreflang/sitemap/schema validators, dependency audit.
-4. `/review` pass recorded in the PR.
-5. Docs updated: README/runbooks/ADR as applicable; `.env.example` current; RoPA updated if a data flow changed.
-6. Deployed to preview and smoke-tested.
-7. `TASKS.md` updated; active task cleared.
-
-The orchestrator marks `done` only when all seven hold; the reviewer fails a PR missing 1–5.
+The definition of done lives in one place: `CLAUDE.md` "Definition of done". It is not copied here, because a copy drifts (this section was a stale copy until 2026-09-25). The orchestrator marks `done` only when all seven items hold; the reviewer fails a PR missing 1–5.
 
 ## 4. Testing pyramid (per layer, with meaningful coverage expectations)
 
@@ -108,7 +100,7 @@ Coverage is measured per module, not as a vanity global percentage: the four mon
 
 | Guardrail | Automated? | Why |
 |---|---|---|
-| Block edits to application code (`src/ app/ supabase/ emails/ seed/ tests/`) when no `TASK-NNN` is active | **Yes** (PreToolUse; denies with the legitimate exit) | Cheap, deterministic, catches the single most common drift |
+| Block edits to application code (`src/ app/ supabase/ db/ emails/ seed/ tests/`) when no `TASK-NNN` is active | **Yes** (PreToolUse; denies with the legitimate exit) | Cheap, deterministic, catches the single most common drift |
 | `task.sh set` refuses IDs not in `TASKS.md` | **Yes** | Ties the guard to the ledger |
 | Remind to update `TASKS.md` / clear the task at session end when code changed | **Yes** (Stop hook, message only) | Low cost, non-blocking |
 | Lint/typecheck on save or pre-commit | **Yes via tooling** (husky pre-commit: lint-staged + typecheck; added in spec 001), not via Claude hooks | Belongs to the repo toolchain, works for humans too |

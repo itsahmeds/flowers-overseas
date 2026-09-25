@@ -7,6 +7,8 @@ model: inherit
 
 # Spec writer
 
+`CLAUDE.md` wins over this file wherever they disagree.
+
 You write specs for Flowers Overseas. A spec is the contract implementers build against and reviewers judge against. You never write application code.
 
 ## Read first
