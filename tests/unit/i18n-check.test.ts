@@ -200,6 +200,96 @@ describe("the seven seeded faults (AC-22 / T-22)", () => {
   });
 });
 
+/**
+ * **The file-level faults no case reached** (TASK-143). Neutering each `problems.push` of
+ * `scripts/i18n-check.ts` in turn left 11 of its 23 sites with all 54 cases green: a catalogue or
+ * manifest that is not the documented shape, a file that is not JSON, a missing `en`, a key that
+ * `en` does not have, a missing manifest, an orphan review record and a registry that is not one.
+ * Each is a miniature copy of `clean/` with that one fault, so it fails for exactly the reason it
+ * is named after; the line must name the file and the diagnosis.
+ */
+const FILE_FAULTS = [
+  {
+    fault: "a catalogue that is JSON but not a message catalogue",
+    directory: "malformed-catalogue",
+    file: "malformed-catalogue/de.json",
+    reason: /is not a valid message catalogue/,
+  },
+  {
+    fault: "a review manifest that is JSON but not a manifest",
+    directory: "malformed-meta",
+    file: "malformed-meta/de.meta.json",
+    reason: /is not a valid review manifest/,
+  },
+  {
+    fault: "a catalogue that is not JSON at all",
+    directory: "invalid-json",
+    file: "invalid-json/de.json",
+    reason: /is not valid JSON/,
+  },
+  {
+    fault: "no source catalogue",
+    directory: "missing-source",
+    file: "missing-source/en.json",
+    reason: /the source catalogue `en` is missing/,
+  },
+  {
+    fault: "a key the source catalogue does not have",
+    directory: "extra-key",
+    file: "extra-key/de.json",
+    reason: /\[banner\.footnote\]: is not a key of `en`/,
+  },
+  {
+    fault: "a catalogue with no review manifest",
+    directory: "missing-manifest",
+    file: "missing-manifest/de.meta.json",
+    reason: /is missing: a catalogue file needs its review manifest/,
+  },
+  {
+    fault: "a review record for a message that does not exist",
+    directory: "orphan-meta",
+    file: "orphan-meta/de.meta.json",
+    reason: /\[banner\.footnote\]: is an orphan review record/,
+  },
+] as const;
+
+const REGISTRY_FAULTS = [
+  {
+    fault: "a registry file that is not a list of locales",
+    fixture: "registry-not-a-registry.json",
+    reason: /is not a locale registry/,
+  },
+  {
+    fault: "a registry whose segments are fine but whose `dir` is not ltr/rtl",
+    fixture: "registry-bad-direction.json",
+    reason: /does not parse as a locale registry \(0\.dir:/,
+  },
+] as const;
+
+describe("the file-level faults (TASK-143)", () => {
+  it.each(FILE_FAULTS)("$fault", ({ directory, file, reason }) => {
+    const result = runCase(directory);
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("i18n:check failed with 1 problem(s)");
+    const line = result.stderr
+      .split("\n")
+      .find((candidate) => candidate.includes(file));
+    expect(line, `no line names ${file}`).toBeDefined();
+    expect(line).toMatch(reason);
+  });
+
+  it.each(REGISTRY_FAULTS)("$fault", ({ fixture, reason }) => {
+    const result = runCli("--registry", `${casesDir}/${fixture}`);
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("i18n:check failed with 1 problem(s)");
+    const line = result.stderr
+      .split("\n")
+      .find((candidate) => candidate.includes(fixture));
+    expect(line, `no line names ${fixture}`).toBeDefined();
+    expect(line).toMatch(reason);
+  });
+});
+
 describe("pathSegments shape and per-locale uniqueness (AC-13 / T-13)", () => {
   const MALFORMED = [
     {

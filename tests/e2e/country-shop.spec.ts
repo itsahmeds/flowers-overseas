@@ -97,7 +97,10 @@ test.describe("existence and the 404 shapes (AC-1, T-01)", () => {
       maxRedirects: 0,
     });
     expect([301, 308]).toContain(response.status());
-    expect(response.headers()["location"]).toContain("/en/poland/flowers");
+    // The bare URL exactly (TASK-143): `toContain` was also satisfied by a redirect to itself,
+    // `/en/poland/flowers/`, or to a guessed form such as `/en/poland/flowers?…` — the two things
+    // this case exists to forbid. `tests/e2e/corridor.spec.ts` pins its target the same way.
+    expect(response.headers()["location"]).toBe("/en/poland/flowers");
   });
 });
 
@@ -120,18 +123,59 @@ test.describe("what the page renders (AC-6, AC-24)", () => {
     await expect(page.locator('main button[type="submit"]')).toHaveCount(1);
   });
 
-  test("nominates at most one LCP image and preloads exactly that one (AC-24)", async ({
+  test("nominates exactly one LCP image — the first card's photograph — and preloads that one (AC-24)", async ({
     page,
   }) => {
+    // **The stated number, and why it is 1** (TASK-143). Two of the twelve cards on
+    // `/en/poland/flowers` carry an approved photograph (TASK-080's bytes) and the first is one
+    // of them, so AC-24's "exactly one image per page carries `priority`" must pick the first.
+    // This case used to assert `preloads === priority` with `priority <= 1`: the page read
+    // against itself, which a page nominating nothing passes as zero-vs-zero. The expectation is
+    // now the **first card's own `<source>`** — PR 89 round 3's idiom from
+    // `tests/e2e/country-category.spec.ts` — so a missing nomination, a second one, or one that
+    // moved to the second photograph fails here. If the first card's photograph is ever
+    // withdrawn this goes red and the new numbers are written here deliberately.
+    const EXPECTED_NOMINATIONS = 1;
     await page.goto("/en/poland/flowers");
-    const priority = await page.locator('img[fetchpriority="high"]').count();
-    expect(priority).toBeLessThanOrEqual(1);
-    // The preload is emitted from the same manifest lookup as the `srcset`, and hoisted into
-    // `<head>` by React's `preload()` — so there is one of it exactly when there is one of them.
-    const preloads = await page
+
+    const firstCard = page.locator("[data-fo-product-card]").first();
+    await expect(firstCard).toBeVisible();
+    // The whole descriptor React's `preload()` emits, `imagesrcset` **and** `imagesizes`
+    // (`tests/support/lcp-nomination.ts`'s `ImageDescriptor`): comparing the srcset alone let a
+    // preload with the wrong `sizes` — the browser then fetches a different candidate than the
+    // `<picture>` does — pass here and fail only in the unit half (`/review 99` round 1).
+    const firstPhotograph = await firstCard
+      .locator("picture source")
+      .first()
+      .evaluateAll((nodes) =>
+        nodes.map((node) => ({
+          srcset: node.getAttribute("srcset") ?? "",
+          sizes: node.getAttribute("sizes") ?? "",
+        })),
+      );
+    expect(firstPhotograph).toHaveLength(EXPECTED_NOMINATIONS);
+
+    const preloaded = await page
       .locator('head link[rel="preload"][as="image"]')
-      .count();
-    expect(preloads).toBe(priority);
+      .evaluateAll((nodes) =>
+        nodes.map((node) => ({
+          srcset: node.getAttribute("imagesrcset") ?? "",
+          sizes: node.getAttribute("imagesizes") ?? "",
+        })),
+      );
+    expect(preloaded).toEqual(firstPhotograph);
+    await expect(
+      firstCard.locator('img[fetchpriority="high"][loading="eager"]'),
+    ).toHaveCount(EXPECTED_NOMINATIONS);
+    await expect(page.locator('img[fetchpriority="high"]')).toHaveCount(
+      EXPECTED_NOMINATIONS,
+    );
+    await expect(page.locator('img[loading="eager"]')).toHaveCount(
+      EXPECTED_NOMINATIONS,
+    );
+    // The other photograph on the page is lazy, which is the "and nothing else" half.
+    await expect(page.locator("[data-fo-product-card] img")).toHaveCount(2);
+    await expect(page.locator('img[loading="lazy"]')).toHaveCount(1);
   });
 
   test("renders with JavaScript disabled (AC-23)", async ({ browser }) => {

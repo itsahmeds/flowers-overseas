@@ -65,6 +65,9 @@ function text(html: string): string {
 const guide = corridorView("PL", "en", { from: FROM });
 if (guide === undefined) throw new Error("the en Poland guide must exist");
 
+/** How many questions the committed `en` Poland guide authors (`content/corridors/`). */
+const GUIDE_FAQ_ITEMS = 10;
+
 /**
  * The live state, as the flip produces it: a florist is taking our orders, the `operations` block
  * is authored, and spec 005/008 have supplied the two slots this spec does not own.
@@ -123,11 +126,15 @@ describe("the guide state (AC-8, AC-19)", () => {
     expect(html).not.toContain("<details");
     expect(html).not.toContain("<script");
     expect(html).not.toContain("onclick");
+    // The stated number (TASK-143): the loop and the `<h3>` count below both range over
+    // `guide.faq`, so a view that carried no FAQ passed them as zero-vs-zero. The committed `en`
+    // Poland guide authors this many questions; a change to it is written here deliberately.
+    expect(guide.faq).toHaveLength(GUIDE_FAQ_ITEMS);
     for (const item of guide.faq) {
       expect(body).toContain(item.q);
       expect(body).toContain(item.a.slice(0, 40));
     }
-    expect(html.match(/<h3/g) ?? []).toHaveLength(guide.faq.length);
+    expect(html.match(/<h3/g) ?? []).toHaveLength(GUIDE_FAQ_ITEMS);
   });
 
   it("renders the calendar as a captioned table with formatted dates and the rule", () => {
