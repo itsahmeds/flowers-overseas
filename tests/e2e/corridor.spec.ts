@@ -17,6 +17,22 @@ import { skipsOnCaseInsensitiveHost } from "../support/case-insensitive-host.ts"
 const GUIDE_URL = "/en/send-flowers-to/poland";
 const UK_GUIDE_URL = "/en-gb/send-flowers-to/poland";
 
+/**
+ * The four phrasings of the **state-B shop entry** (`corridor.shop.heading` and
+ * `corridor.shop.body`, `/review 98` round 1): a florist *in* the destination, a thing that *can
+ * arrive*, a thing we *can make*, a price *for* the destination. This is a list of four known
+ * sentences and nothing more. It does not catch a paraphrase ("Bouquets made by florists in
+ * Poland" passes it), so it is the **second** net. The first is the exact-text pin of the shop
+ * section on every guide page below (spec 007 §14 A9; `/review 98` round 2, required change 1).
+ * The unit twin is `tests/unit/corridor-page.test.tsx`.
+ */
+const GUIDE_STATE_CLAIMS = [
+  /\bour florists? in\b/iu,
+  /\bcan arrive\b/iu,
+  /\bcan make\b/iu,
+  /\bpriced for\b/iu,
+] as const;
+
 /** Every published corridor URL, both locales, all seven destinations. */
 const SLUGS = [
   "poland",
@@ -27,6 +43,21 @@ const SLUGS = [
   "romania",
   "netherlands",
 ] as const;
+
+/**
+ * Each destination's English name as `corridor.shop.cta` interpolates it
+ * (`destinations.{iso2}.name`; `en-gb` has no override). Written out rather than read from the
+ * messages, so a renamed country is a diff here too.
+ */
+const COUNTRY_NAME: Readonly<Record<(typeof SLUGS)[number], string>> = {
+  poland: "Poland",
+  germany: "Germany",
+  france: "France",
+  spain: "Spain",
+  italy: "Italy",
+  romania: "Romania",
+  netherlands: "Netherlands",
+};
 
 async function status(
   request: APIRequestContext,
@@ -117,8 +148,79 @@ test.describe("the guide state, rendered (AC-8, AC-19, T-09)", () => {
     expect(body).not.toMatch(/\d[\d\s.,]*\s?(?:zł|€|£|EUR|PLN|GBP)/u);
     expect(body).not.toMatch(/same[- ]day/iu);
     expect(body).not.toMatch(/Delivering now/u);
-    // No shop entry, and therefore no link into a shop that does not exist.
-    await expect(page.locator("[data-fo-corridor-shop]")).toHaveCount(0);
+    // **The shop entry is here now, and it is the link and nothing else** (spec 008 AC-20;
+    // TASK-113; `/review 98` round 1). This line used to assert `toHaveCount(0)` on the reasoning
+    // "no link into a shop that does not exist" — true while nothing published
+    // `country-shop-root`, and false from the moment `/en/poland/flowers` began serving 200 with
+    // 84 priced products. The first inversion kept the live state's heading and body with the
+    // link, and the body said "Bouquets our florists in Poland can make… with delivery and VAT
+    // already in the price" beside "Not yet. We are choosing florists in Poland now". So the
+    // section's whole text is pinned to the link label, and the claims below are refused over the
+    // whole `main`. The corridor artboards' state A draws exactly this.
+    const shop = page.locator("[data-fo-corridor-shop]");
+    await expect(shop).toHaveCount(1);
+    await expect(shop.locator("a")).toHaveCount(1);
+    expect(await shop.locator("a").getAttribute("href")).toBe(
+      "/en/poland/flowers",
+    );
+    expect((await shop.innerText()).trim()).toBe("See flowers for Poland");
+    for (const claim of GUIDE_STATE_CLAIMS) {
+      expect(body, String(claim)).not.toMatch(claim);
+    }
+  });
+
+  // **The shop entry on every guide page is the shop-root link and its label, exactly** (spec 007
+  // §14 A9; `/review 98` round 2, required change 1). One case per page, so a change to the
+  // entry's text fails fourteen times and names each page. This is the guard that carries A9:
+  // the phrase list below only knows four sentences, and a paraphrase added to this section
+  // passed it on all fourteen pages while only Poland-en's pin above went red.
+  for (const locale of ["en", "en-gb"]) {
+    for (const slug of SLUGS) {
+      test(`${locale}/${slug}: the shop entry is "See flowers for ${COUNTRY_NAME[slug]}" and nothing else (§14 A9)`, async ({
+        page,
+      }) => {
+        await page.goto(`/${locale}/send-flowers-to/${slug}`);
+        await expect(
+          page.locator("[data-fo-corridor-state=guide]"),
+        ).toHaveCount(1);
+        const shop = page.locator("[data-fo-corridor-shop]");
+        await expect(shop).toHaveCount(1);
+        await expect(shop.locator("a")).toHaveCount(1);
+        expect(await shop.locator("a").getAttribute("href")).toBe(
+          `/${locale}/${slug}/flowers`,
+        );
+        expect((await shop.innerText()).replaceAll(/\s+/g, " ").trim()).toBe(
+          `See flowers for ${COUNTRY_NAME[slug]}`,
+        );
+      });
+    }
+  }
+
+  test("no guide page carries one of the four state-B shop-entry phrasings (a second net, not a completeness check)", async ({
+    page,
+  }) => {
+    // Every published corridor page is in the guide state today (Poland has an `operations`
+    // block since TASK-124, but no destination has a `live` content file or a signed florist),
+    // so all fourteen are asked. This refuses the four sentences in
+    // `GUIDE_STATE_CLAIMS` over `main` and nothing else: it does not prove the page makes no
+    // florist claim (TASK-091's guide copy does make one, which is spec 007's owner's call), and
+    // it does not catch a paraphrase. The exact-text cases above do that for the shop entry.
+    for (const locale of ["en", "en-gb"]) {
+      for (const slug of SLUGS) {
+        await page.goto(`/${locale}/send-flowers-to/${slug}`);
+        await expect(
+          page.locator("[data-fo-corridor-state=guide]"),
+          `${locale}/${slug}`,
+        ).toHaveCount(1);
+        const body = (await page.locator("main").innerText()).replaceAll(
+          /\s+/g,
+          " ",
+        );
+        for (const claim of GUIDE_STATE_CLAIMS) {
+          expect(body, `${locale}/${slug} ${String(claim)}`).not.toMatch(claim);
+        }
+      }
+    }
   });
 
   test("links only to pages that exist", async ({ page, request }) => {

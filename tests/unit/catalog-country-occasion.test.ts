@@ -251,14 +251,17 @@ describe("the page's own links (§2 'Links')", () => {
       { from: FROM },
     );
     expect(view?.links.shopRoot).toBe("/en/poland/flowers");
-    // TASK-113 has not built the occasions index and its link id is unpublished, so the page
-    // carries no href for it — existence is not permission (spec 004 AC-14).
-    expect(view?.links.occasionsIndex).toBeUndefined();
+    // TASK-113 built the occasions index and published its link id, so the page carries the href
+    // and the "Occasions" crumb is a link. It became one with **no change to this page's code**:
+    // `occasionsIndexHref()` pairs `isPublished()` with `listingExists()`, and until both held
+    // the value was `undefined` (spec 004 AC-14 — existence is not permission, and permission is
+    // not existence either).
+    expect(view?.links.occasionsIndex).toBe("/en/occasions");
     expect(
       view?.breadcrumb.find(
         (crumb) => crumb.labelKey === "breadcrumb.occasions",
       )?.href,
-    ).toBeUndefined();
+    ).toBe("/en/occasions");
   });
 
   it("cannot be empty: the existence rule keeps six products behind every page", async () => {

@@ -51,9 +51,10 @@
  * shape resolves to exactly one kind, and that a path whose segments match two branches' shapes
  * still resolves deterministically to the one listed first.
  *
- * **What is not here yet.** `occasionsIndex` shares depth 2 with the destinations hub; TASK-113
- * adds its branch to this union and its component to the depth-2 route file. Until then that URL
- * resolves to `notFound`, which is what it must do while the page does not exist.
+ * **Depth 2 carries two page types** (TASK-113): spec 007's all-destinations hub and spec 008's
+ * occasions index `/{locale}/{occasions}` (§2 row 14). They are disjoint by segment — this
+ * locale's `destinations` segment against its `occasions` segment — and `/{locale}/{shopCategory}`
+ * stays a 404 at this depth, because no country-less categories index ships (§13 Q4).
  *
  * Nothing here reads a cookie, a header or the clock.
  */
@@ -145,7 +146,15 @@ export type LocalePathResolution =
       readonly sku: string;
       /** The product's slug in this locale, as the URL spells it. */
       readonly productSlug: string;
-    };
+    }
+  /**
+   * The **occasions index** `/{locale}/{occasions}` (spec 008 §2 row 14, **AC-20**; TASK-113).
+   *
+   * One URL per locale and no entity at all, so it carries the locale and nothing else — the
+   * destinations hub's shape, one segment over. It exists iff at least one occasion hub exists in
+   * that locale, which is `listingExists()`'s answer and not a rule restated here.
+   */
+  | { readonly kind: "occasionsIndex"; readonly locale: LocaleCode };
 
 const NOT_FOUND: LocalePathResolution = { kind: "notFound" };
 
@@ -184,7 +193,18 @@ export async function resolveLocalePath(
     if (isOwnSegment(code, "destinations", segment)) {
       return { kind: "destinationsHub", locale: code };
     }
-    // `/{locale}/{occasions}` is TASK-113's, and `/{locale}/{shopCategory}` is a 404 by §13 Q4.
+    // `/{locale}/{occasions}` — the occasions index (§2 row 14; TASK-113). Unlike the hub above
+    // it is **not** in every routable locale: a locale in which no occasion has an authored slug
+    // has no hub to list, so the page does not exist there and the URL is a hard 404. That is
+    // `listingExists()`'s rule, asked once.
+    if (isOwnSegment(code, "occasions", segment)) {
+      const exists = await listingExists({
+        pageType: "occasionsIndex",
+        locale: code,
+      });
+      return exists ? { kind: "occasionsIndex", locale: code } : NOT_FOUND;
+    }
+    // `/{locale}/{shopCategory}` is a 404 by §13 Q4: no country-less categories index ships.
     return NOT_FOUND;
   }
 
@@ -374,15 +394,34 @@ export interface LocaleGrandchildParams extends LocaleChildParams {
 
 /**
  * `generateStaticParams` for `/{locale}/{segment}` — the **union** of the existence sets that
- * share the depth (spec 008 §14 A5). Today: the all-destinations hub in every routable locale.
+ * share the depth (spec 008 §14 A5): spec 007's all-destinations hub, which exists in every
+ * routable locale, and spec 008's occasions index, which exists only where an occasion hub does
+ * (TASK-113). With `dynamicParams = false` this list *is* the 200 set at this depth.
+ *
+ * Asynchronous since the index joined it, for `localeChildParams()`'s reason: the second member
+ * is `listingExists()`'s answer and not a fact about the locale registry, so it is read from the
+ * predicate rather than restated. `/pl/okazje` is a 404 today because no occasion has a Polish
+ * slug yet, and it becomes a page the day one is authored — with no edit here.
  */
-export function localeSegmentParams(): readonly LocaleSegmentParams[] {
-  return listingLocales().map((locale) => ({
-    locale,
-    // The localised segment, from `locales.data.ts` through the one URL builder:
-    // `/en/send-flowers-to`, `/de/blumen-verschicken`, `/pl/wyslij-kwiaty`.
-    segment: localePath(locale, "destinations").split("/")[2] ?? "",
-  }));
+export async function localeSegmentParams(): Promise<
+  readonly LocaleSegmentParams[]
+> {
+  const params: LocaleSegmentParams[] = [];
+  for (const locale of listingLocales()) {
+    params.push({
+      locale,
+      // The localised segment, from `locales.data.ts` through the one URL builder:
+      // `/en/send-flowers-to`, `/de/blumen-verschicken`, `/pl/wyslij-kwiaty`.
+      segment: localePath(locale, "destinations").split("/")[2] ?? "",
+    });
+    if (await listingExists({ pageType: "occasionsIndex", locale })) {
+      params.push({
+        locale,
+        segment: localePath(locale, "occasions").split("/")[2] ?? "",
+      });
+    }
+  }
+  return params;
 }
 
 /**

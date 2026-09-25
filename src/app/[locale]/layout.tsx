@@ -11,9 +11,11 @@ import {
   routableLocale,
   routableLocaleCodes,
 } from "@/modules/i18n";
+import { occasionsIndexHref } from "@/modules/catalog";
 import {
   ConsentBanner,
   fontVariables,
+  footerView,
   SiteFooter,
   SiteHeader,
   SkipLink,
@@ -150,8 +152,24 @@ export default async function LocaleLayout({
         {children}
         {/* The colophon of spec 004 §5.3, on every localised document (AC-9): a Server
             Component with zero client JavaScript, whose links, company identity and payment
-            line all come from the Phase-0 registries (TASK-049). */}
-        <SiteFooter locale={locale.code} />
+            line all come from the Phase-0 registries (TASK-049).
+
+            The one fact the registries cannot supply is **whether a published page exists in
+            this locale** (spec 008 AC-20; TASK-113): `/en/occasions` is a page and
+            `/de/anlaesse` is a 404, because the index exists only where an occasion hub does.
+            `src/modules/ui` may not read the catalogue — the dependency runs catalog → ui — so
+            this layout, the one place both are already in scope, composes the two and the
+            colophon renders that label as text where the page is missing (spec 004 AC-14). Same
+            shape as the corridor route's shop entry, for the same reason. */}
+        <SiteFooter
+          locale={locale.code}
+          view={footerView(locale.code, {
+            unavailable:
+              (await occasionsIndexHref(locale.code)) === undefined
+                ? ["occasions"]
+                : [],
+          })}
+        />
         {/* Out of flow and above everything: the consent sheet (AC-17, AC-19, AC-20). A
             Server Component resolves the copy and projects the cookie register, and a client
             loader imports the island after hydration (`ssr: false`), so this document's HTML is

@@ -302,6 +302,16 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         "productPageExists",
         "productPrebuildPages",
         "writeProductExistenceSummary",
+        // the corridor's shop entry (TASK-113): the one function that composes "may the site
+        // link into the shop" with "does this destination have a shop root in this locale", so
+        // `src/modules/geo` never reads the catalogue (spec 008 AC-20).
+        "corridorShopEntry",
+        // the occasions index's page component (TASK-113): the page that puts every occasion hub
+        // two clicks from any document, which is how AC-21's depth bound closes for the hubs.
+        "OccasionsIndexPage",
+        // and its href, for the colophon (TASK-113): published **and** existing in this locale,
+        // answered once so the footer never has to ask the catalogue itself.
+        "occasionsIndexHref",
       ].sort(),
     );
   });
@@ -329,6 +339,7 @@ describe("src/modules/catalog barrel (AC-1)", () => {
       `${moduleDir}/read.ts`,
       `${moduleDir}/routes.ts`,
       `${moduleDir}/schemas.ts`,
+      `${moduleDir}/shop-entry.ts`,
       `${moduleDir}/slugs.ts`,
       `${moduleDir}/static/index.ts`,
       `${moduleDir}/types.ts`,
@@ -338,6 +349,7 @@ describe("src/modules/catalog barrel (AC-1)", () => {
       `${moduleDir}/ui/CountryShopRootPage.tsx`,
       `${moduleDir}/ui/ListingBreadcrumb.tsx`,
       `${moduleDir}/ui/OccasionHubPage.tsx`,
+      `${moduleDir}/ui/OccasionsIndexPage.tsx`,
       `${moduleDir}/ui/labels.ts`,
     ]);
   });

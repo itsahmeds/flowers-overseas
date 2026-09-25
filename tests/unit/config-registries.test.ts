@@ -60,7 +60,13 @@ const referencedKeys: readonly { key: string; source: string }[] = [
     },
   ]),
   ...SITE_LINKS.flatMap((link) => [
-    { key: link.labelKey, source: `siteLinks[${link.id}].labelKey` },
+    // A `listing` **family** carries no label at all — no surface prints a family's name, so
+    // there is no key here to resolve (spec 008 AC-20; TASK-113). Every other row has one, which
+    // `SiteLinkSchema`'s refinement makes a parse error rather than an omission this loop could
+    // quietly tolerate.
+    ...(link.labelKey === undefined
+      ? []
+      : [{ key: link.labelKey, source: `siteLinks[${link.id}].labelKey` }]),
     ...(link.descriptionKey === undefined
       ? []
       : [

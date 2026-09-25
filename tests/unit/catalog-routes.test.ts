@@ -16,6 +16,8 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  listingExists,
+  listingLocales,
   listingPages,
   localeChildParams,
   localeSegmentParams,
@@ -171,10 +173,11 @@ describe("resolveLocalePath: everything else is `notFound` (AC-1)", () => {
     // a destination that exists in another locale's spelling, and one that is not a destination
     ["en", ["rumaenien", "flowers"]],
     ["en", ["belgium", "flowers"]],
-    // the bare `/en/flowers` is a 404 by §13 Q4 (no country-less categories index ships) and the
-    // bare `/en/occasions` is the occasions index, TASK-113's and not yet built
+    // the bare `/en/flowers` is a 404 by §13 Q4: no country-less categories index ships. The
+    // bare `/en/occasions` **is** a page now (TASK-113) and is asserted as one below; `/pl/okazje`
+    // is the 404, because no occasion carries a Polish slug and so no hub exists there to list.
     ["en", ["flowers"]],
-    ["en", ["occasions"]],
+    ["pl", ["okazje"]],
     // a hub slug this locale has never authored: `de` and `pl` carry machine drafts, so they have
     // no category or occasion slugs and therefore no hubs at all until TASK-106 (§13 Q10)
     ["de", ["blumen", "rosen"]],
@@ -209,13 +212,51 @@ describe("resolveLocalePath: everything else is `notFound` (AC-1)", () => {
 });
 
 describe("generateStaticParams is the union of both existence sets (AC-3)", () => {
-  it("emits the destinations hub for every routable locale, and nothing else", async () => {
-    const params = localeSegmentParams();
+  it("emits the destinations hub and the occasions index, and nothing else", async () => {
+    const params = await localeSegmentParams();
     expect(params.length).toBeGreaterThan(0);
+    const kinds = new Map<string, string>();
     for (const param of params) {
       const match = await resolveLocalePath(param.locale, [param.segment]);
-      expect(match.kind, `${param.locale}/${param.segment}`).toBe(
-        "destinationsHub",
+      // Every prebuilt URL at this depth resolves, and to one of the depth's two page types —
+      // never to `notFound`, which with `dynamicParams = false` would be a prebuilt 404
+      // (spec 008 AC-3; TASK-113).
+      expect(
+        ["destinationsHub", "occasionsIndex"],
+        `${param.locale}/${param.segment}`,
+      ).toContain(match.kind);
+      kinds.set(`${param.locale}/${param.segment}`, match.kind);
+    }
+    // The hub is in every listing locale; the index only where an occasion hub exists, which is
+    // `listingExists()`'s answer and not a fact about the locale registry.
+    const hubs = [...kinds.values()].filter(
+      (kind) => kind === "destinationsHub",
+    );
+    expect(hubs).toHaveLength(listingLocales().length);
+    const indexes = [...kinds.values()].filter(
+      (kind) => kind === "occasionsIndex",
+    );
+    expect(indexes).toHaveLength(
+      (await listingPages()).filter(
+        (page) => page.pageType === "occasionsIndex",
+      ).length,
+    );
+    expect(indexes.length).toBeGreaterThan(0);
+  });
+
+  it("404s a locale's occasions segment where no occasion hub exists", async () => {
+    // `/pl/okazje` is a hard 404 today because no occasion has a Polish slug yet — the existence
+    // rule of §2 row 14, not a special case. It becomes a page the day one is authored, with no
+    // edit under `src/app/` (AC-5's promise applied to this page type).
+    for (const locale of listingLocales()) {
+      const segment = localePath(locale, "occasions").split("/")[2] ?? "";
+      const exists = await listingExists({
+        pageType: "occasionsIndex",
+        locale,
+      });
+      const match = await resolveLocalePath(locale, [segment]);
+      expect(match.kind, `${locale}/${segment}`).toBe(
+        exists ? "occasionsIndex" : "notFound",
       );
     }
   });

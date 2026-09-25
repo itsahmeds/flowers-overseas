@@ -381,7 +381,17 @@ export {
   productCardView,
   publishedCountries,
   writeExistenceSummary,
+  // The occasions index's URL in one locale, or `undefined` where it may not be linked or does
+  // not exist (TASK-113). The footer reads it through the layout, for `corridorShopEntry()`'s
+  // reason: `src/modules/ui` may not import the catalogue.
+  occasionsIndexHref,
 } from "./listing";
+
+// The corridor page's shop entry (spec 007 §2 "Internal links", spec 008 §2 "Links", AC-20;
+// TASK-113). `src/modules/geo` cannot read the catalogue — the dependency runs catalog → geo — so
+// the corridor's `liveSlots` are supplied by its route, and this is the one function that answers
+// "may the site link into this destination's shop, and is there a shop root there to link at".
+export { corridorShopEntry } from "./shop-entry";
 
 // The shared per-depth route resolver (spec 008 §14 **A5**, spec 007 §14 **A8**; TASK-109).
 //
@@ -448,6 +458,13 @@ export {
   OccasionHubPage,
   type OccasionHubPageProps,
 } from "./ui/OccasionHubPage.tsx";
+// The occasions index's page component (spec 008 §2 row 14, **AC-20**; TASK-113) — the page that
+// makes every occasion hub reachable from the footer of every document, which is how AC-21's
+// "crawl depth ≤3 from any locale home" closes for the hubs.
+export {
+  OccasionsIndexPage,
+  type OccasionsIndexPageProps,
+} from "./ui/OccasionsIndexPage.tsx";
 export {
   ListingBreadcrumb,
   type ListingBreadcrumbProps,

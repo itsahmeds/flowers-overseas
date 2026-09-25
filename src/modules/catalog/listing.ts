@@ -69,7 +69,11 @@ import {
   isGuidePublished,
 } from "@/config/countries";
 import { type LocaleCode, LOCALES, isLocaleCode } from "@/config/locales";
-import { isPublished } from "@/config/site-links";
+import {
+  type ListingLinkPageType,
+  isPublished,
+  listingLinkId,
+} from "@/config/site-links";
 import {
   type CorridorState,
   committedOccasionCalendar,
@@ -377,6 +381,19 @@ export const ListingViewSchema = z
     tiles: z.array(CategoryTileViewSchema).readonly(),
     occasionDates: z.array(ListingOccasionDateSchema).readonly().optional(),
     occasions: z.array(ListingOccasionEntrySchema).readonly().optional(),
+    /**
+     * The destination whose calendar the **occasions index** quotes, as its `nameKey` (§14 design
+     * round **Q4**: "the occasions index prints the soonest date in Poland, the only published
+     * destination, with the caption saying so"; TASK-113). Its premise is out of date: TASK-091
+     * published all seven guides, so the caption names this country and claims nothing about how
+     * many are published (`/review 98`).
+     *
+     * One field rather than a component lookup, for the reason every other date on this page is a
+     * field: the caption and the dates must name the same country or the page quotes one
+     * country's calendar as if it were everyone's. Absent when no destination is live, in which
+     * case `occasions[].nextDate` is `null` throughout and the dated group does not render.
+     */
+    occasionsDateCountryKey: z.string().min(1).optional(),
     /**
      * How many products the listing has in total — §5.2 names it `total`, and `fo/no-float-money`
      * refuses a `number` under that name (it reads as money). `resultCount` is the same number
@@ -1205,6 +1222,7 @@ async function shopRootOccasionDates(
     // shape of the rule and the reason the column waited for these pages (TASK-111).
     const slug = slugFor("occasion", dated.occasionKey, locale);
     const linked =
+      familyPublished("countryOccasion") &&
       slug !== undefined &&
       (await countryOccasionExists(dated.occasionKey, iso2, locale, memo));
     rows.push({
@@ -1238,17 +1256,27 @@ const OCCASIONS_LINK_ID = "occasions";
 /**
  * The occasions index's path, or `undefined` while it may not be linked (TASK-111).
  *
- * **Existence is not permission.** `listingExists()` says the page *is a page* — it is what
- * `generateStaticParams` emits — and `isPublished()` says the site may point at it, which is
- * spec 004 AC-14's rule and `destinationsHubHref()`'s exact shape. While TASK-113 has not built
- * the route, the index's link id is unpublished, so the breadcrumb crumb and the "more" link are
- * **text and absence** rather than links to a URL that answers 404. Flipping the row turns both
- * into links with no code change here.
+ * **Existence is not permission, and permission is not existence.** `listingExists()` says the
+ * page *is a page* — it is what `generateStaticParams` emits — and `isPublished()` says the site
+ * may point at it, which is spec 004 AC-14's rule and `destinationsHubHref()`'s exact shape.
+ * TASK-113 published the row; **both** gates still have to hold per locale, because the index
+ * exists only where an occasion hub does: `/de/anlaesse` and `/pl/okazje` are 404s while no
+ * occasion carries a German or Polish slug, so nothing may link at them there.
+ *
+ * Exported since TASK-113, because the **footer** needs the same answer: a published row whose
+ * page does not exist in this locale must render as text, and the chrome cannot ask the
+ * catalogue itself (`src/modules/ui` may not import `modules/catalog` — the dependency runs the
+ * other way). One function, one rule, three callers: the breadcrumb, the "more" link and the
+ * colophon.
  */
-async function occasionsIndexHref(
-  locale: LocaleCode,
+export async function occasionsIndexHref(
+  locale: string,
 ): Promise<string | undefined> {
   if (!isPublished(OCCASIONS_LINK_ID)) return undefined;
+  // `string` and not `LocaleCode`, because the document layout calls it with whatever the path
+  // carried — `/ar-XB` included. `listingExists()` already answers `false` for a code that is not
+  // a listing locale, so this narrowing decides nothing; it only lets `pathOf()` be called.
+  if (!isLocaleCode(locale)) return undefined;
   return (await listingExists({ pageType: "occasionsIndex", locale }))
     ? pathOf(locale, "occasionsIndex")
     : undefined;
@@ -1490,7 +1518,16 @@ export async function listingView(
         }
       : {}),
     ...(pageType === "occasionsIndex"
-      ? { occasions: await occasionEntries(locale, from) }
+      ? {
+          occasions: await occasionEntries(locale, from),
+          ...(occasionsIndexDateCountry() === undefined
+            ? {}
+            : {
+                occasionsDateCountryKey: countryConfig(
+                  occasionsIndexDateCountry() as CountryIso2,
+                ).nameKey,
+              }),
+        }
       : {}),
     fxFallback: await pageFxFallback(locale, iso2, ordered[0]),
     resultCount: total,
@@ -1578,11 +1615,28 @@ async function facetsFor(
   return category === null ? undefined : { [category.kind]: [category.key] };
 }
 
+/**
+ * May the site link into this listing **family** at all (spec 008 AC-20, spec 004 §5.1)?
+ *
+ * The permission half of every listing link `listingView()` draws — tiles, chips, destination
+ * pickers, calendar rows, the shop-root link and crumb, the occasions-index entries. The existence
+ * half is `listingExists()`, and a link needs both: `corridorShopEntry()`'s shape, asked here too.
+ * Before `/review 98` only the corridor asked, so `published: false` on `country-category`,
+ * `country-occasion` or `occasion-hub` switched nothing off and spec 008 §5.1's rollback ("rows
+ * back to `published: false`") was a no-op. An unpublished family's links become **text or
+ * absence** — whichever the view field allows — never a link (spec 004 AC-14).
+ */
+function familyPublished(pageType: ListingLinkPageType): boolean {
+  return isPublished(listingLinkId(pageType));
+}
+
 /** The category tiles of a country shop root: every category that has a page here (§2, §5.3). */
 async function tilesFor(
   locale: LocaleCode,
   iso2: CountryIso2,
 ): Promise<readonly CategoryTileView[]> {
+  // A tile *is* a link into the country-category family, so an unpublished family draws none.
+  if (!familyPublished("countryCategory")) return [];
   const memo = newMemo();
   const tiles: CategoryTileView[] = [];
   for (const row of copyRows("category", locale)) {
@@ -1598,11 +1652,27 @@ async function tilesFor(
   return sortBy(tiles, locale, (tile) => tile.name);
 }
 
-/** The occasions index's entries, grouped by the component and dated in Poland (§14 Q4). */
+/**
+ * The destination whose calendar the occasions index quotes (§14 design round **Q4**).
+ *
+ * One rule in one place: the dates in `occasions[].nextDate` and the country the caption names
+ * come from this function, so the page cannot print Poland's calendar under another country's
+ * name. `undefined` while no destination is live, which leaves every entry undated.
+ */
+function occasionsIndexDateCountry(): CountryIso2 | undefined {
+  return publishedCountries().find(
+    (iso2) => countryConfig(iso2).status === "live",
+  );
+}
+
+/** The occasions index's entries, grouped by the component and dated in the date country (§14 Q4). */
 async function occasionEntries(
   locale: LocaleCode,
   from: string,
 ): Promise<readonly ListingOccasionEntry[]> {
+  // Every entry is a link into the occasion-hub family (its `href` is required), so an
+  // unpublished family leaves the index with nothing to list rather than with links it may not draw.
+  if (!familyPublished("occasionHub")) return [];
   const memo = newMemo();
   const entries: ListingOccasionEntry[] = [];
   for (const row of copyRows("occasion", locale)) {
@@ -1610,9 +1680,7 @@ async function occasionEntries(
     const occasion = await getOccasion(row.key);
     const slug = slugFor("occasion", row.key, locale);
     if (occasion === null || slug === undefined) continue;
-    const dateCountry = publishedCountries().find(
-      (iso2) => countryConfig(iso2).status === "live",
-    );
+    const dateCountry = occasionsIndexDateCountry();
     entries.push({
       key: row.key,
       name: row.name,
@@ -1664,7 +1732,9 @@ async function breadcrumbFor(
       crumbs.push(
         crumb(
           "breadcrumb.shopRoot",
-          pathOf(locale, "countryShopRoot", countrySlug),
+          familyPublished("countryShopRoot")
+            ? pathOf(locale, "countryShopRoot", countrySlug)
+            : undefined,
           false,
         ),
       );
@@ -1713,7 +1783,11 @@ async function linksFor(
   const chips: ChipLinkView[] = [];
   const destinations: ListingDestinationLink[] = [];
 
-  if (iso2 !== undefined && kind !== undefined) {
+  if (
+    iso2 !== undefined &&
+    kind !== undefined &&
+    familyPublished(kind === "category" ? "countryCategory" : "countryOccasion")
+  ) {
     // Sibling categories or occasions of this destination — links to real pages, which is what
     // `plan/02` §7 means by "facets worth ranking get a real authored path".
     for (const row of copyRows(kind, locale)) {
@@ -1746,8 +1820,12 @@ async function linksFor(
     // Collating the names is the renderer's job — the label is a message key and only the page can
     // resolve it — so the order here is the registry's and the order on screen is `collator()`'s.
     const slug = slugFor(kind, entityKey, locale);
+    const linkable = familyPublished(
+      kind === "category" ? "countryCategory" : "countryOccasion",
+    );
     for (const country of publishedCountries()) {
       const exists =
+        linkable &&
         slug !== undefined &&
         (kind === "category"
           ? await countryCategoryExists(entityKey, country, locale, memo)
@@ -1782,7 +1860,9 @@ async function linksFor(
   return ListingLinksSchema.parse({
     self,
     ...(destinationsHub === undefined ? {} : { destinationsHub }),
-    ...(iso2 === undefined || pageType === "countryShopRoot"
+    ...(iso2 === undefined ||
+    pageType === "countryShopRoot" ||
+    !familyPublished("countryShopRoot")
       ? {}
       : {
           shopRoot: pathOf(
