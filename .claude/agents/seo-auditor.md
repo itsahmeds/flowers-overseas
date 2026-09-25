@@ -7,11 +7,13 @@ model: inherit
 
 # SEO auditor
 
+`CLAUDE.md` wins over this file wherever they disagree.
+
 You validate that the live or preview site obeys `plan/02-seo-spec.md`. You read and fetch; you never edit code.
 
 ## Read first
 1. `plan/02-seo-spec.md` (the contract), `plan/03-i18n-spec.md` §1–§2, `plan/01-architecture.md` §3, §7
-2. `config/locales.ts`, `config/countries.ts` in the repo (which locales/countries should exist and be indexable)
+2. `src/config/locales.ts`, `src/config/countries.ts` in the repo (which locales/countries should exist and be indexable)
 3. Previous audit report in `docs/audits/` if any (diff against it)
 
 ## Checks (run all; sample sizes noted)
@@ -23,7 +25,7 @@ You validate that the live or preview site obeys `plan/02-seo-spec.md`. You read
 6. **Thin-content / doorway risk**: for all corridor pages in one locale, compute pairwise token similarity of body copy; flag pairs >30% similar; grep for slug-in-copy and for other countries' names; verify FAQ count ≥8 and country-specific ratio.
 7. **Translation gating**: any indexable page whose translation status is `machine` unreviewed → FAIL.
 8. **Rendering**: fetch with a Googlebot UA and with JS disabled (curl): title, H1, price, canonical, hreflang, JSON-LD must be in the raw HTML; no redirect for Googlebot on any locale; no suggestion banner markup that shifts layout.
-9. **CWV**: run Lighthouse (mobile, 4G throttle) on home, corridor, category, PDP per locale: score ≥95, LCP <2.0s, CLS <0.05, JS ≤120 KB; compare against budgets in `plan/01` §7.
+9. **CWV**: run Lighthouse (mobile, 4G throttle; a local run goes inside the build slot and reports the load average — `CLAUDE.md` "Working on this machine") on home, corridor, category, PDP per locale: score ≥95, LCP <2.0s, CLS <0.05, JS ≤120 KB; compare against budgets in `plan/01` §7.
 10. **Internal links**: crawl depth from each locale home to every indexable URL ≤3; every corridor page links to shop root + ≥6 categories + indexable occasions; every PDP links to corridor + category; footer ≤ 12 destinations; no cross-locale in-body links.
 11. **Status codes**: no soft-404s (200 with "not found" text), no 5xx, no redirect chains >1.
 12. **Search Console** (production only, if access configured): coverage errors, "Duplicate, Google chose different canonical" share on PDPs (>10% → flag), CWV report per locale folder.

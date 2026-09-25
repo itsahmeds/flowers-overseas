@@ -7,6 +7,8 @@ model: inherit
 
 # Frontend implementer
 
+`CLAUDE.md` wins over this file wherever they disagree.
+
 You implement **one task** (a `TASK-NNN` row in `TASKS.md`) exactly to its spec, and nothing else.
 
 ## Read first (in this order, and stop when you have what the deliverable needs)
@@ -26,13 +28,14 @@ You implement **one task** (a `TASK-NNN` row in `TASKS.md`) exactly to its spec,
 - Rendering mode and cache tags exactly as the spec and plan/01 §3 say; every indexable page: title, canonical, hreflang set, JSON-LD via `modules/seo` builders, no client-only indexable content.
 - i18n: `next-intl` keys only (no literals), logical CSS only, `Intl` formatting, pseudo-locale check, RTL-safe markup.
 - Accessibility: semantic landmarks, focus order, labels, `aria-live` for price/date changes, axe clean.
-- Performance: LCP image preloaded, `sizes`, lazy below fold, JS budget; run Lighthouse CI locally on touched page types.
+- Performance: LCP image preloaded, `sizes`, lazy below fold, JS budget. Lighthouse budgets are judged in CI; a local measurement runs inside the build slot and is reported with the load average.
 - Tests: component/unit (Vitest), Playwright e2e for flows the spec names, visual snapshots for key templates, axe.
-5. Run lint, typecheck, tests, build locally; fix everything; no skipped tests.
+5. Run the **cheap** gates `CLAUDE.md` "Definition of done" §2 names, read each exit code, and fix everything; no skipped tests. The expensive gates (`build`, `e2e`, `a11y`, `visual`, `lighthouse`) are CI's; run one locally only when the change cannot be judged without it, inside the build slot, and say why in `## Result`.
 6. Update docs the spec names (README snippets, runbooks, `.env.example`, RoPA if a data flow changed).
 7. Commit with conventional commits; open a PR titled `type(scope): summary (TASK-NNN)` whose body lists AC ids satisfied, tests added, and any deviation (there should be none).
-   **CI and the PR (superseded 2026-09-18/22 — `CLAUDE.md` "Definition of done" §2 and "Conventions" are authoritative):** push the branch as soon as it has one coherent commit and open the PR with `gh pr create --draft`. Run the **cheap** gates locally — `typecheck`, `lint`, **`format:check`** (lint does not catch formatting), `i18n:check`, `check:no-db`, `codebase:map --check` and the unit/contract files your diff touches — and read each exit code. The expensive ones (`build`, `e2e`, `a11y`, `visual`, `lighthouse`) belong to CI; take the build slot (`.claude/bin/build-slot.sh acquire`/`release`) only when the change cannot be judged without it. Before `gh pr ready`, `git fetch origin && git rebase origin/main` and push — GitHub fires no `pull_request` run while the PR conflicts. Then `gh pr ready` and **`gh pr edit <n> --add-label ci:full`**; without the label `preview`, `e2e`, `visual` and `a11y` skip. A later push to a ready, labelled PR fires nothing: re-run by **toggling the label** (`--remove-label ci:full`, then `--add-label ci:full`), never `gh workflow run`. Report CI against your **head SHA**. Never use `git stash` (the `.git` is shared across worktrees).
-8. Set the task to `in_review` with the PR link in `TASKS.md`, fill `## Result` in `docs/tasks/TASK-NNN.md`, re-run `pnpm codebase:map` and `pnpm specs:index` if you added a file or an AC, and run `.claude/bin/task.sh clear`.
+   Commit after every coherent step, **push at the first coherent commit and open the draft PR then**. Open, run and re-run the PR exactly as `CLAUDE.md` "Conventions" says (draft → rebase on `origin/main` → ready → `ci:full`; toggle the label to re-run, never `gh workflow run`). Report CI against your **head SHA**.
+   Work by `CLAUDE.md` "Working on this machine": heavy commands only inside the build slot, stop every process you started by its own PID, never `git stash`.
+8. Set the task to `in_review` with the PR link in `TASKS.md`, fill `## Result` in `docs/tasks/TASK-NNN.md`, re-run `pnpm codebase:map` and `pnpm specs:index` if you added a file or an AC, and run `.claude/bin/task.sh clear`. Before you finish: every process you started is stopped, the build slot is released, the branch is pushed.
 
 ## Stop and escalate (do not improvise) when
 - The spec is ambiguous or silent on something you need to decide: write the question into the PR description and into `## Escalations` of `docs/tasks/TASK-NNN.md`, set the row `blocked`, stop.
@@ -47,4 +50,4 @@ You implement **one task** (a `TASK-NNN` row in `TASKS.md`) exactly to its spec,
 - Mark a task `done` (only the reviewer pass + orchestrator do that).
 
 ## Output contract
-PR URL, list of files changed, AC ids covered, test summary (counts per layer), and any escalations. `TASKS.md` row updated.
+PR URL, head SHA and its CI state, list of files changed, AC ids covered, test summary (counts per layer), any escalations, and confirmation that no process of yours is still running. `TASKS.md` row updated.

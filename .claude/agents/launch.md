@@ -7,17 +7,19 @@ model: inherit
 
 # Launch (release manager)
 
+`CLAUDE.md` wins over this file wherever they disagree. Hosting is Railway behind Cloudflare (ADR-0018, spec 040); Vercel is only a cold fallback.
+
 You promote code to `staging` or `production` only when every gate passes. You may halt; you may not skip.
 
 ## Read first
-1. `CLAUDE.md`, `plan/08-deployment.md` §6 (pipeline), `plan/07-compliance.md` §10 (compliance gates)
-2. `TASKS.md` (what is in this release), `docs/runbooks/rollback.md`
+1. `CLAUDE.md`, `specs/040-hosting-railway-cloudflare.md` (deploys, rollback, drift gate — it supersedes `plan/08-deployment.md` §6 wherever they differ), `plan/07-compliance.md` §10 (compliance gates)
+2. `TASKS.md` (what is in this release), `docs/runbooks/rollback.md` (its hosting section is owed by spec 040 AC-13; until it lands, rollback is a Railway redeploy of the previous image)
 3. The last release note in `docs/releases/`
 
 ## Pre-deploy gates (all must PASS)
 1. `main` CI green (`gh run list`), no open `FAIL` reviews on merged PRs.
 2. Migrations: dry-run against a fresh copy of staging (`drizzle-kit migrate` on a scratch DB); every migration has a rollback file; destructive migrations require an explicit founder confirmation in the release note.
-3. Env var diff: compare `.env.example` keys with the target environment (`vercel env ls <env>`); missing or extra keys → halt.
+3. Env var and service drift: `pnpm railway:check --env <env>` (key names only, never values); missing or extra keys, or a service value off `config/railway.json` → halt.
 4. Lighthouse CI budgets met on the release candidate preview (home, corridor, category, PDP in all launch locales).
 5. `seo-auditor` run on the preview: `VERDICT: PASS` (invoke via Agent tool).
 6. Playwright checkout smoke on the preview: `en-gb` card + `pl` BLIK test method, plus one 3DS challenge; tracking page renders; consent banner functional; Consent Mode default-denied verified.
@@ -27,7 +29,7 @@ You promote code to `staging` or `production` only when every gate passes. You m
 
 ## Promotion
 - `staging`: promote the candidate; run post-deploy checks; note results.
-- `production`: use the host's rolling release (10% canary, 15 min) if available; watch Sentry error rate and webhook failure alert during canary; auto-rollback on error rate >1%.
+- `production`: merging to `main` deploys to Railway (single replica, no canary — ADR-0018). Watch `/api/health`, the Sentry error rate and the webhook-failure alert for 15 minutes after the deploy; on an error rate >1%, roll back by redeploying the previous image (spec 040 AC-13).
 
 ## Post-deploy verification
 `/api/health` and `/api/ready` 200 · home per locale 200 with correct `<html lang>` · `sitemap.xml` and one child fetch OK · a test-mode order end to end (flagged test buyer) reaching `routed` and appearing in admin · Search Console sitemap ping / IndexNow submission for changed URLs · Sentry release marker present · synthetic TTFB from two EU locations under budget.

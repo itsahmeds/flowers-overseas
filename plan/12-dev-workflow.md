@@ -19,7 +19,7 @@ This is a product, not a prototype. This document defines the engineering standa
 |---|---|---|
 | Language | TypeScript `strict`, `noUncheckedIndexedAccess`, no `any`, no non-null assertions without comment | tsconfig + ESLint + reviewer |
 | Validation | zod schemas for API input, server actions, webhooks, forms, third-party responses, job and event payloads (versioned) | reviewer; contract tests |
-| DB | Drizzle schema → versioned SQL migrations; each migration has `NNNN_name.down.sql`; RLS in migrations; `supabase gen types`/Drizzle types committed; no schema drift (CI diff of generated schema vs migrations) | CI job `db:check` |
+| DB | Drizzle schema → versioned SQL migrations; each migration has `NNNN_name.down.sql`; RLS in migrations; generated Drizzle types committed (ADR-0015: Neon, not Supabase); no schema drift (CI diff of generated schema vs migrations) | CI job `db:check` |
 | Seeds | Idempotent upserts by natural key; never touch `source='real'` | backend-implementer; review |
 | Money | integer minor units + ISO currency; never floats | lint rule on `price` fields + review |
 | Time | store UTC; compute cutoffs in destination IANA zone; occasion rules as data | unit tests with DST fixtures |
@@ -34,24 +34,16 @@ This is a product, not a prototype. This document defines the engineering standa
 | Env | `.env.example` validated against `lib/env.ts` zod schema in CI; build fails on missing vars | CI |
 | Docs | README (local env <15 min), runbooks, architecture diagram (`docs/architecture.md`, Mermaid, updated when modules change), ADRs | definition of done |
 
-## 3. Definition of done (verbatim from `CLAUDE.md`)
+## 3. Definition of done
 
-1. Spec's acceptance criteria satisfied and referenced in the PR description.
-2. Tests the spec demands written and green.
-3. CI green: lint, typecheck, tests, build, Lighthouse budgets, hreflang/sitemap/schema validators, dependency audit.
-4. `/review` pass recorded in the PR.
-5. Docs updated: README/runbooks/ADR as applicable; `.env.example` current; RoPA updated if a data flow changed.
-6. Deployed to preview and smoke-tested.
-7. `TASKS.md` updated; active task cleared.
-
-The orchestrator marks `done` only when all seven hold; the reviewer fails a PR missing 1–5.
+The definition of done lives in one place: `CLAUDE.md` "Definition of done". It is not copied here, because a copy drifts (this section was a stale copy until 2026-09-25). The orchestrator marks `done` only when all seven items hold; the reviewer fails a PR missing 1–5.
 
 ## 4. Testing pyramid (per layer, with meaningful coverage expectations)
 
 | Layer | Tool | What | Expectation |
 |---|---|---|---|
 | Unit | Vitest | pricing (tiers, FX buffer, rounding), currency formatting, cutoff/holiday/date logic, occasion date rules 2026–2030, address/phone validation per country, slug transliteration, hreflang set generation, schema builders | **100% of branches** in `modules/catalog/pricing`, `modules/geo/cutoff`, `modules/geo/occasions`, `modules/seo/*`; these are the modules where a bug costs money or rankings |
-| Integration | Vitest + test Postgres (Supabase local) | order state machine (every legal transition and every illegal one), routing (coverage/capacity/rating/timeout/exhaustion), outbox delivery/retry, RLS (vendor cannot read another partner's orders), seed idempotency | every transition and guard has a test; every routing rule has a positive and negative case |
+| Integration | Vitest + test Postgres (ephemeral Postgres; ADR-0015) | order state machine (every legal transition and every illegal one), routing (coverage/capacity/rating/timeout/exhaustion), outbox delivery/retry, RLS (vendor cannot read another partner's orders), seed idempotency | every transition and guard has a test; every routing rule has a positive and negative case |
 | Contract | Vitest + recorded fixtures + Stripe CLI | Stripe/Mollie webhooks (signature valid/invalid, duplicate, out-of-order), Resend webhooks, WhatsApp callbacks | fixtures updated when provider API version changes; run on every PR touching adapters |
 | E2E | Playwright | full checkout in `en-gb` (card + wallet simulated) and `pl` (card + BLIK test) incl. 3DS challenge; locale switcher preserving entity/destination; suggestion banner rules; tracking page; vendor magic-link accept + photo upload; admin flip country → sitemap change | green on every PR against preview; runs against staging nightly |
 | Visual | Playwright screenshots | home, corridor, category, PDP, checkout steps, emails, in `en-gb`, `pl`, `de`, pseudo-RTL | diff threshold 0.1%; updated only via explicit approval |
@@ -64,7 +56,7 @@ Coverage is measured per module, not as a vanity global percentage: the four mon
 
 ## 5. CI gates on every PR (nothing merges red)
 
-`lint` (ESLint incl. custom rules, Stylelint/Tailwind ban list) → `typecheck` → `test:unit` → `test:integration` (ephemeral Postgres) → `test:contract` → `build` → `db:check` (migration ↔ schema drift, rollback file present) → `env:check` → Vercel preview → `test:e2e` + `test:visual` + `axe` against preview → `lighthouse-ci` with budgets → `seo:validate` (sitemap, hreflang fixtures, schema) → `audit` (`pnpm audit --prod`, gitleaks) → `commitlint`. Branch protection requires all checks and one `/review` PASS.
+`lint` (ESLint incl. custom rules, Stylelint/Tailwind ban list) → `typecheck` → `test:unit` → `test:integration` (ephemeral Postgres) → `test:contract` → `build` → `db:check` (migration ↔ schema drift, rollback file present) → `env:check` → `preview` (the app built and served on the CI runner — TASK-137; not a Vercel preview) → `test:e2e` + `test:visual` + `axe` against it → `lighthouse-ci` with budgets → `seo:validate` (sitemap, hreflang fixtures, schema) → `audit` (`pnpm audit --prod`, gitleaks) → `commitlint`. Branch protection is meant to require all checks and one `/review` PASS; as of 2026-09-25 it is **not switched on** for `main` (framework gap 13). `.github/workflows/ci.yml` is the authoritative job list.
 
 ## 6. Observability from day one
 
@@ -108,7 +100,7 @@ Coverage is measured per module, not as a vanity global percentage: the four mon
 
 | Guardrail | Automated? | Why |
 |---|---|---|
-| Block edits to application code (`src/ app/ supabase/ emails/ seed/ tests/`) when no `TASK-NNN` is active | **Yes** (PreToolUse; denies with the legitimate exit) | Cheap, deterministic, catches the single most common drift |
+| Block edits to application code (`src/ app/ supabase/ db/ emails/ seed/ tests/`) when no `TASK-NNN` is active | **Yes** (PreToolUse; denies with the legitimate exit) | Cheap, deterministic, catches the single most common drift |
 | `task.sh set` refuses IDs not in `TASKS.md` | **Yes** | Ties the guard to the ledger |
 | Remind to update `TASKS.md` / clear the task at session end when code changed | **Yes** (Stop hook, message only) | Low cost, non-blocking |
 | Lint/typecheck on save or pre-commit | **Yes via tooling** (husky pre-commit: lint-staged + typecheck; added in spec 001), not via Claude hooks | Belongs to the repo toolchain, works for humans too |
@@ -138,9 +130,9 @@ Kill-switch: remove the hook entries from `.claude/settings.json`. The guard fai
 
 **Session B (build)**
 6. `/status` → next: `/implement TASK-031`.
-7. `/implement TASK-031` → skill runs `.claude/bin/task.sh set TASK-031`; backend-implementer creates `task/TASK-031-pdp-availability`, writes failing tests `tests/unit/geo/cutoff.test.ts`, `tests/integration/catalog/availability.test.ts`, implements `src/modules/geo/cutoff.ts`, `src/modules/catalog/availability.ts`, `src/modules/catalog/dto.ts` (zod), runs lint/typecheck/tests/build, opens PR #41 `feat(catalog): delivery availability and surcharge service (TASK-031)`, sets row `in_review`, clears the task.
+7. `/implement TASK-031` → skill runs `.claude/bin/task.sh set TASK-031`; backend-implementer creates `task/TASK-031-pdp-availability`, writes failing tests `tests/unit/geo/cutoff.test.ts`, `tests/integration/catalog/availability.test.ts`, implements `src/modules/geo/cutoff.ts`, `src/modules/catalog/availability.ts`, `src/modules/catalog/dto.ts` (zod), runs the cheap gates (`CLAUDE.md` "Definition of done" §2; `build` is CI's), opens PR #41 `feat(catalog): delivery availability and surcharge service (TASK-031)`, sets row `in_review`, clears the task.
    Gate passed: edit guard (task active). Files: tests, modules, `TASKS.md`.
-8. `/review 41` → reviewer runs the suite, checks money as minor units, DST fixtures present, no PII in logs, boundaries respected → `VERDICT: PASS` with two nits; orchestrator merges; TASK-031 `done`.
+8. `/review 41` → reviewer reads CI on the PR's head SHA rather than re-running it, breaks each AC's assertion on purpose, checks money as minor units, DST fixtures present, no PII in logs, boundaries respected → `VERDICT: PASS` with two nits; orchestrator merges; TASK-031 `done`.
 9. `/implement TASK-032` → frontend-implementer builds `app/[locale]/[country]/product/[slug]/page.tsx` (ISR, tags `product:{id}`, `country:{iso}`), components under `src/modules/catalog/ui/`, message keys in `messages/en.json` + machine drafts for `de`/`pl` flagged unreviewed, JSON-LD via `modules/seo/schema/product.ts`, preload of the LCP image; Playwright + visual + axe tests; PR #42.
    Gates: guard; lint bans (no literals, logical CSS); CI incl. Lighthouse ≥95 on PDP preview and `seo:validate` (schema price = visible price).
 10. `/review 42` → reviewer fetches preview HTML with curl: title, canonical, hreflang set, JSON-LD present; checks withdrawal sentence; runs 3DS test card in checkout continuity → `FAIL`: "AC-9 sentence missing in `pl`; `de` PDP indexable while translation unreviewed". Row → `in_progress` with blockers.

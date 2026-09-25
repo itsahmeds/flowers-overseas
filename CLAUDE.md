@@ -1,6 +1,8 @@
 # Flowers Overseas — project guide for Claude Code
 
-Read this first in every session. Then read `TASKS.md` and the spec for the task you are working on. Nothing else is required to start.
+This is the kernel: the rules every session and every agent follows. Rules only, present tense.
+The reason behind a rule lives in `docs/framework/why.md` under its `W-n`; read that before you
+change or remove one. Never add dates, PR numbers or "correction" notes here.
 
 ## What this is
 International flower **relay** service for Europe (`flowersoverseas.com`). Buyers order for a recipient in another country; a vetted local florist makes and delivers; we own brand, payment, customer and quality promise. We ship nothing. Product = trust + routing. Full plan in `plan/00-summary.md` → `plan/13-open-questions.md`. Decisions in `docs/adr/`.
@@ -13,21 +15,22 @@ International flower **relay** service for Europe (`flowersoverseas.com`). Buyer
 5. Cost
 
 ## Stack (ADR-0008, ADR-0015, ADR-0018)
-Next.js App Router (TS strict) · Postgres on Neon EU (Drizzle; Auth.js for identity; Cloudflare R2 for media — ADR-0015) · pg-boss jobs · Stripe primary / Mollie fallback · Resend · Railway (Amsterdam, single replica) behind Cloudflare, Vercel Hobby kept only as a cold fallback until spec 040's exit signal (ADR-0018) · next-intl · Tailwind with logical properties · Vitest, Playwright, MSW · Sentry.
+Next.js App Router (TS strict) · Postgres on Neon EU (Drizzle; Auth.js for identity; Cloudflare R2 for media) · pg-boss jobs · Stripe primary / Mollie fallback · Resend · Railway (Amsterdam, single replica) behind Cloudflare, Vercel Hobby only as a cold fallback until spec 040's exit signal · next-intl · Tailwind with logical properties · Vitest, Playwright, MSW · Sentry.
 
 ## Non-negotiable rules
-- **No application code without a spec in `specs/` and a task ID in `TASKS.md`.** The PreToolUse hook blocks edits under `src/`, `app/`, `supabase/`, `db/`, `emails/`, `seed/`, `tests/` unless `.claude/state/active-task` names a task. Set it with `.claude/bin/task.sh set TASK-XXX` (the `/implement` skill does this).
+- **No application code without a spec in `specs/` and a task ID in `TASKS.md`.** The edit guard blocks edits under `src/`, `app/`, `supabase/`, `db/`, `emails/`, `seed/`, `tests/` unless `.claude/state/active-task` names a task; set it with `.claude/bin/task.sh set TASK-XXX` (`/implement` does this).
 - Every indexable page is server-rendered HTML; no client-only indexable content. Locale in URL; destination country in shop URLs; currency in cookie (plan/02, plan/03).
 - No IP redirects. Ever. (ADR-0006)
 - Order status changes only via `orderService.transition` (ADR-0009). Never `UPDATE orders SET status`.
 - No literal user-facing strings in components; no physical CSS properties (`ml-`, `left-`…); `Intl` for all formatting.
 - Zod at every boundary. Generated DB types. Versioned migrations with a rollback file each.
+- Money is integer minor units plus an ISO currency, never a float.
 - Price shown = price charged, VAT and delivery included. Schema price = visible price.
 - Country/partner go-live is a data flip in admin, never a code change.
 - No PII in logs, URLs, analytics. Recipient data minimised (plan/07).
 - Secrets only in env; `.env.example` kept current and validated by `lib/env.ts`.
 - Conventional commits; one task = one PR; feature flags for corridor/locale/payment-method rollout.
-- **`docs/design/` is the design source of truth** (TASK-059). Every UI spec adds its flows and wireframes there as `.dc.html` artboards before `/plan-tasks`; implementers match them pixel-for-pixel; the system files stay in step with `src/modules/ui`. No page is built from a description alone.
+- **`docs/design/` is the design source of truth.** Every UI spec adds its flows and wireframes there as `.dc.html` artboards before `/plan-tasks`; implementers match them pixel-for-pixel; the system files stay in step with `src/modules/ui`. No page is built from a description alone.
 
 ## Where state lives
 | What | Where |
@@ -37,12 +40,12 @@ Next.js App Router (TS strict) · Postgres on Neon EU (Drizzle; Auth.js for iden
 | Codebase map (what lives where, with purpose, owning spec and tests) | `docs/codebase-map.md` (generated: `pnpm codebase:map`, checked by `pnpm codebase:map --check`) |
 | Specs | `specs/NNN-<slug>.md` (template `specs/_template.md`); each opens with `## 0. Index` — `§section Lline` per `AC-n`/`T-n`, from `pnpm specs:index` |
 | Decisions | `docs/adr/ADR-NNNN-*.md` (immutable; supersede, never edit) + `docs/decisions-log.md` |
+| Why each rule exists | `docs/framework/why.md` |
 | Plan | `plan/*.md` |
 | Runbooks | `docs/runbooks/*.md` |
 | Session memory | `docs/sessions/`, `docs/topics/` (maintained by `/session-summary`) |
-| **Two-day sprint plan** | `docs/sessions/two-day-plan.md` — scope, the seven speed rules (CI is the gate of record; 4–5 agents not 8; batch sibling tasks into one agent; one gates task per spec), the wave order, and what the founder must do. Read it before dispatching. |
 | Active task pointer | `.claude/state/active-task` |
-| Fleet ledger (models, tokens, per-task cost) | `docs/ledger/ledger.json`, regenerated by `python3 .claude/bin/ledger.py`; published at https://claude.ai/artifact/1f9qu9kZ9ztd2acPr4EASE — **`/session-summary` regenerates it and republishes to that same URL** (pass it as `url`, never publish a new one) |
+| Fleet ledger (models, tokens, per-task cost) | `docs/ledger/ledger.json`, regenerated by `python3 .claude/bin/ledger.py`; published at https://claude.ai/artifact/1f9qu9kZ9ztd2acPr4EASE — `/session-summary` republishes to that same URL (pass it as `url`, never publish a new one) |
 | Compliance records | `docs/compliance/` (RoPA, DPAs, VAT sign-off) |
 
 ## Agents (`.claude/agents/`) and skills (`.claude/skills/`)
@@ -56,61 +59,37 @@ Next.js App Router (TS strict) · Postgres on Neon EU (Drizzle; Auth.js for iden
 | `/launch <env>` | launch | pre-deploy gates, promotion, post-deploy verification, release note |
 | `/status` | orchestrator | done / in progress / blocked / next; phase progress; open decisions |
 | `/adr <title>` | (inline) | new decision record from template |
-| `/session-bootstrap`, `/session-summary`, `/session-search`, `/define-requirements` | user-level | session memory and requirements elicitation; wired in by the skills above |
+| `/session-bootstrap`, `/session-summary`, `/session-search`, `/define-requirements` | user-level | session memory and requirements elicitation |
 
-Agents never write code except the implementers. The orchestrator refuses to dispatch a task without a spec.
+Agents never write code except the implementers. The orchestrator refuses to dispatch a task without a spec. **This file wins over an agent or skill file that disagrees with it.**
 
 ## Definition of done (every task)
-1. Spec's acceptance criteria satisfied and referenced in the PR description.
-2. Tests the spec demands are written and green (unit / integration / e2e / contract / visual as applicable).
-   **Where they run (2026-09-18): implementers run the cheap gates locally — `typecheck`, `lint`,
-   `i18n:check`, `check:no-db`, `codebase:map --check`, and the unit/contract files their diff
-   touches. The expensive ones — `build`, `e2e`, `a11y`, `visual`, `lighthouse` — belong to CI,
-   which runs them free on dedicated runners.**
-   **Correction (2026-09-18, later): that is only true once a PR carries the `ci:full` label.**
-   Without it `preview`, `e2e`, `visual` and `a11y` are skipped by their `if:` guard — they had
-   never run on any PR in this repo, and the label itself did not exist until PR 85. `lighthouse`
-   and the unit/lint/typecheck spine do run unlabelled. **Add `ci:full` to every PR** (it is also a
-   `pull_request` trigger, so labelling fires the run). The `preview` job additionally waits on a
-   Vercel preview deployment, so while the account sits under a build rate limit the browser chain
-   cannot run at all and a local run is the evidence of record — said plainly in `## Result`, with
-   the load average.
-   **The build slot is a lock, not a `pgrep`: `.claude/bin/build-slot.sh acquire` … `release`.**
-   The old instruction ("sleep until `pgrep -f "next build|next start|playwright|lighthouse"`
-   is empty") matches the waiting shell's *own* command line, so waiters blocked each other
-   forever — 4 waiting shells against 16 real processes on 2026-09-18, and the likeliest cause of
-   the 346/243/199-minute runs. Never reintroduce that pattern.
-   **Kill only your own PID when you release it.** A broad `pkill -f "next-server"` kills the
-   siblings' servers too (TASK-112 did this on 2026-09-21 and took out TASK-110's). An implementer takes the machine's single build slot
-   only when the change cannot be judged without it (a new page's visual baselines, a byte budget, a
-   deliberate performance measurement) and says so in `## Result`. Measured basis: a median
-   implementer run is 30 minutes and the tail reached 346; every agent was re-running ~950 browser
-   tests that CI runs again anyway, and eight agents queuing for one build slot held the 15-minute
-   load average at 32 on an 8-core machine — under which Lighthouse measures the machine, not the site.
-3. CI green: lint, typecheck, tests, build, Lighthouse budgets, hreflang/sitemap/schema validators, dependency audit. **CI is the gate of record for anything timing-sensitive**; a local performance number is reported with the machine's load average beside it or it is not evidence.
-4. `/review` pass recorded in the PR.
-   **No assertion may pass with its subject removed.** Three times now this project has shipped a
-   test that tested nothing: `expect([200, 404]).toContain(status)` where those are the only two
-   statuses the route can return (PR 89); an AC "proved" by prose rather than the fixture flip its
-   brief bound (PR 84); a `seo:validate` that checked the type allow-list and nothing else, so a
-   document with breadcrumb positions `0, 7`, an unnamed `ListItem` and a nameless `Organization`
-   reported `1 fixture(s) ok` (PR 87). Every one was caught by a reviewer **breaking the test** —
-   mutating the subject and confirming the case goes red — not by reading it. Writers: assert the
-   one value, not the set of reachable values. Reviewers: for any assertion that carries an AC,
-   mutate it and watch it fail before you pass it.
+1. The spec's acceptance criteria are satisfied and referenced in the PR description.
+2. The tests the spec demands are written and green. Implementers run the **cheap** gates locally and read each exit code: `typecheck`, `lint`, `format:check`, `i18n:check`, `check:no-db`, `codebase:map --check`, and the unit/contract files the diff touches. The **expensive** gates — `build`, `e2e`, `a11y`, `visual`, `lighthouse` — are CI's. Take the build slot for one only when the change cannot be judged without it (a new page's visual baselines, a byte budget, a deliberate performance measurement), and say so in `## Result`. (why: W-1)
+3. CI is green on the PR's **current head SHA**: lint, typecheck, tests, build, Lighthouse budgets, hreflang/sitemap/schema validators, dependency audit. CI is the gate of record for anything timing-sensitive; a local performance number is reported with the machine's load average beside it or it is not evidence. (why: W-6, W-14)
+4. A `/review` pass is recorded in the PR. **No assertion may pass with its subject removed:** writers assert the one value, not the set of reachable values; reviewers, for any assertion that carries an AC, mutate the subject and watch the case go red before they pass it. (why: W-13)
 5. Docs updated: README/runbooks/ADR as applicable; `.env.example` current; RoPA updated if a data flow changed.
 6. Deployed to preview and smoke-tested (checkout path in two locales where relevant).
 7. `TASKS.md` updated (status, PR link); `.claude/state/active-task` cleared.
 
 ## Conventions
-- Branch `task/TASK-012-short-slug`; PR title `feat(scope): … (TASK-012)`.
-- **Push the branch as soon as it has one coherent commit, not at the end.** A worktree is not a backup: TASK-113's eight-hour run existed on one laptop with no remote branch and no PR when its session ended (2026-09-22), and was only saved because the orchestrator went looking. Open the draft PR early too — it costs nothing and makes the work visible.
-- **Merging (2026-09-22, founder's instruction).** The orchestrator merges a PR when **both** hold: a `/review` **pass** is recorded on it, and CI is green apart from gates a task owns elsewhere (`visual` until TASK-139's Linux baselines land). **The review is still the gate; only the clicking changed hands.** Never merge on a review fail, an unreviewed PR, or a red gate that belongs to the diff. Merge in dependency order and say what was merged and why.
-  **Green against the head you are merging, not an earlier one.** PR 88 was merged on a green run that predated its own 17-path rebase, so the tree that landed on `main` had never been through CI (2026-09-22). After any rebase or force-push, re-fire by toggling the `ci:full` label and wait for that run. `gh pr view --json statusCheckRollup` reports the latest run, **not necessarily one against the current head** — check the SHA.
-- **Open every PR with `gh pr create --draft`, then `gh pr ready`.** `.github/workflows/ci.yml` triggers on `pull_request: [ready_for_review, labeled]` only, so a PR created directly as ready fires no run at all (TASK-109, 2026-09-18). **Then `gh pr edit <n> --add-label ci:full`** — without that label the browser jobs (`preview`, `e2e`, `visual`, `a11y`) skip silently and CI's green tick means only lint, types, units and Lighthouse (PR 85, 2026-09-18). **A later push to a PR that is already ready and already labelled fires nothing at all.** To re-run after a fix round, **toggle the label** — `gh pr edit <n> --remove-label ci:full` then `--add-label ci:full` — which fires a `labeled` event and reaches every job. **`gh workflow run ci.yml --ref <branch>` is not equivalent and is usually wrong**: `preview`'s guard is `github.event_name == 'pull_request'`, so on a dispatch it skips and takes `e2e`, `a11y`, `visual` and `lighthouse` with it — the dispatch reaches the spine and never the browser chain, which is exactly the half you re-ran for (PR 84 and PR 93, 2026-09-21).
+- Branch `task/TASK-012-short-slug`; PR title `feat(scope): … (TASK-012)`; conventional commits ending with the `Co-Authored-By:` line when Claude authored.
+- **Push the branch as soon as it has one coherent commit, and open the draft PR then** — it costs nothing and makes the work visible. Commit after every coherent step. A worktree is not a backup. (why: W-8)
+- **Opening a PR:** `gh pr create --draft` → before going ready, `git fetch origin && git rebase origin/main` and push, because no run fires while the PR conflicts → `gh pr ready` → `gh pr edit <n> --add-label ci:full`. Without the label the browser jobs (`preview`, `e2e`, `visual`, `a11y`) skip and a green tick means only the spine. (why: W-2, W-3, W-5)
+- **Re-running CI after a fix:** a push to a ready, labelled PR fires nothing. Toggle the label: `gh pr edit <n> --remove-label ci:full`, then `--add-label ci:full`. Never `gh workflow run` — on a dispatch the browser chain skips. (why: W-4)
+- **`docs/codebase-map.md` conflicts are regenerated** with `pnpm codebase:map`, never hand-merged. (why: W-5)
+- **Merging.** The orchestrator merges a PR when **both** hold: a `/review` **pass** is recorded on it, and CI is green on its current head SHA (check the SHA — `gh pr view --json statusCheckRollup` reports the latest run, not necessarily one on the head). After any rebase or force-push, re-fire CI and wait. Merge with `--match-head-commit`, in dependency order, and say what was merged and why. Never merge on a review fail, an unreviewed PR, or any red gate. (why: W-6, W-7)
 - Module boundaries per `plan/01-architecture.md` §5; `app/` is thin.
 - Tests live in `tests/<layer>/`; fixtures for occasion dates, currencies, addresses are shared.
-- Commit messages end with `Co-Authored-By: Claude <noreply@anthropic.com>` when Claude authored.
+
+## Working on this machine
+One Mac (8 cores, 16 GB) runs every agent. Anything left running slows every other agent.
+- **At most four or five agents at once.** Sibling tasks that share a resolver, view model or test file go to one agent. (why: W-11)
+- **Heavy work runs only inside the build slot:** `.claude/bin/build-slot.sh acquire` … `release`. That means `next build`, `next start`, Playwright and Lighthouse. Release it on success **and** on failure. Never wait for the machine with a `pgrep` or `sleep` loop. (why: W-9)
+- **Stop what you start.** Note the PID of every server or background command you start, stop it by that PID when you have its result, and never leave one running when your turn ends. Never `pkill -f`, `killall`, or kill a process you did not start. (why: W-10)
+- **Do not start what you will not read.** No background command whose output nobody collects; no dev server "just in case"; no re-run of a suite CI already runs. (why: W-1)
+- **Before you finish, clean up:** your processes are stopped, the build slot is released, the branch is pushed, and `.claude/bin/task.sh clear` has run.
+- Never `git stash`: every worktree shares one `.git`. (why: W-12)
 
 ## How to start a session
 Run `/status`, then read `docs/codebase-map.md` — it is the index to everything under `src/`, `scripts/` and `tests/`, and it replaces grepping the tree. For a task, read its brief `docs/tasks/TASK-NNN.md` and the spec's `## 0. Index`, then only the spec sections your AC ids name. If `docs/topics/index.md` exists, `/session-search <topic>` before touching an unfamiliar area. End with `/session-summary`.
