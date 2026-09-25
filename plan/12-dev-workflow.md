@@ -56,7 +56,7 @@ Coverage is measured per module, not as a vanity global percentage: the four mon
 
 ## 5. CI gates on every PR (nothing merges red)
 
-`lint` (ESLint incl. custom rules, Stylelint/Tailwind ban list) → `typecheck` → `test:unit` → `test:integration` (ephemeral Postgres) → `test:contract` → `build` → `db:check` (migration ↔ schema drift, rollback file present) → `env:check` → `preview` (the app built and served on the CI runner — TASK-137; not a Vercel preview) → `test:e2e` + `test:visual` + `axe` against it → `lighthouse-ci` with budgets → `seo:validate` (sitemap, hreflang fixtures, schema) → `audit` (`pnpm audit --prod`, gitleaks) → `commitlint`. Branch protection is meant to require all checks and one `/review` PASS; as of 2026-09-25 it is **not switched on** for `main` (framework gap 13). `.github/workflows/ci.yml` is the authoritative job list.
+`lint` (ESLint incl. custom rules, Stylelint/Tailwind ban list) → `typecheck` → `test:unit` → `test:integration` (ephemeral Postgres) → `test:contract` → `build` → `db:check` (migration ↔ schema drift, rollback file present) → `env:check` → `preview` (the app built and served on the CI runner — TASK-137; not a Vercel preview) → `test:e2e` + `test:visual` + `axe` against it; `lighthouse-ci` with budgets hangs off `build` and serves its own copy, not `preview` → `seo:validate` (sitemap, hreflang fixtures, schema) → `audit` (`pnpm audit --prod`, gitleaks) → `commitlint`. Branch protection is meant to require all checks and one `/review` PASS; as of 2026-09-25 it is **not switched on** for `main` (`docs/framework/gaps.md`, gap 13). `.github/workflows/ci.yml` is the authoritative job list.
 
 ## 6. Observability from day one
 
@@ -119,6 +119,10 @@ Kill-switch: remove the hook entries from `.claude/settings.json`. The guard fai
 
 ## 8. Worked example: spec 009 "PDP with delivery date picker" from `/spec` to `/launch`
 
+> The order of work has since grown: `/advise` before approval, `/design` before `/plan-tasks`, and
+> `/break` beside every `/review` (`CLAUDE.md` "The order of work"). The example below predates
+> them and is kept as written.
+
 **Session A (planning)**
 1. `/status` → orchestrator reports Phase 0, spec 008 approved, next: `/spec 009`.
 2. `/spec 009 PDP with date picker and all-in price` → spec-writer reads `plan/04` §7, `plan/01` §3/§4, `plan/02` §4.1/§9, `plan/03` §7/§10, `plan/07` §2/§4; writes `specs/009-pdp-date-picker.md` with 14 ACs (e.g. AC-3 "date chips show fee delta from `country_price` surcharge rows"; AC-7 "PDP HTML contains `Offer.price` equal to default tier price"; AC-9 "perishable withdrawal sentence present"; AC-11 "no literal strings; pseudo-locale renders"), 18 test cases across unit (cutoff, fee delta), integration (draft order), e2e (pick date → checkout), visual (PDP en-gb/pl/pseudo-RTL), axe, Lighthouse; §13 open question: "Sunday surcharge amount per country?".
@@ -134,7 +138,7 @@ Kill-switch: remove the hook entries from `.claude/settings.json`. The guard fai
    Gate passed: edit guard (task active). Files: tests, modules, `TASKS.md`.
 8. `/review 41` → reviewer reads CI on the PR's head SHA rather than re-running it, breaks each AC's assertion on purpose, checks money as minor units, DST fixtures present, no PII in logs, boundaries respected → `VERDICT: PASS` with two nits; orchestrator merges; TASK-031 `done`.
 9. `/implement TASK-032` → frontend-implementer builds `app/[locale]/[country]/product/[slug]/page.tsx` (ISR, tags `product:{id}`, `country:{iso}`), components under `src/modules/catalog/ui/`, message keys in `messages/en.json` + machine drafts for `de`/`pl` flagged unreviewed, JSON-LD via `modules/seo/schema/product.ts`, preload of the LCP image; Playwright + visual + axe tests; PR #42.
-   Gates: guard; lint bans (no literals, logical CSS); CI incl. Lighthouse ≥95 on PDP preview and `seo:validate` (schema price = visible price).
+   Gates: guard; lint bans (no literals, logical CSS); CI incl. Lighthouse ≥95 on the PDP and `seo:validate` (schema price = visible price).
 10. `/review 42` → reviewer fetches preview HTML with curl: title, canonical, hreflang set, JSON-LD present; checks withdrawal sentence; runs 3DS test card in checkout continuity → `FAIL`: "AC-9 sentence missing in `pl`; `de` PDP indexable while translation unreviewed". Row → `in_progress` with blockers.
 11. `/implement TASK-032` (again) → fix: add key, ensure `noindex` when translation status is machine; PR updated. `/review 42` → `PASS`. Merge; `done`.
 12. `/implement TASK-033` → e2e/visual/Lighthouse assertions; PR #43; `/review 43` PASS; `done`. Native reviewer approves `pl`/`de` strings in `/admin/translations` (data, not code).

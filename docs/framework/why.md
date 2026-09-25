@@ -111,6 +111,84 @@ red — never by reading it.
 **2026-09-18.** Lighthouse figures collected at a load average of 32 described the machine. A
 local performance number without the load average beside it is not evidence.
 
+## W-15 · A breaker on every PR
+
+**2026-09-25, founder's decision.** Ten tests that could not fail reached PRs on 2026-09-21/22, and
+every one was caught by someone changing the code on purpose, never by someone reading the test
+(W-13). A reviewer judges against a checklist and leans towards passing. Anthropic's own write-up
+on long-running agents makes the same point: agents grade work leniently, and a separate tester
+catches more (https://www.anthropic.com/engineering/harness-design-long-running-apps, 2026-03-24:
+a generator agent paired with a separate evaluator agent). So the breaker is its own agent, it only wins by finding a hole, and it runs on every
+PR, including docs-only ones, where it breaks whatever check reads the changed files. The founder
+chose every PR over risky-only PRs.
+
+## W-16 · An advisor before the founder approves
+
+**2026-09-25, founder's decision.** The founder is new to software and approved specs with only the
+orchestrator's explanation — and the orchestrator is on the side that wrote them. Phase 1 (payments)
+is next, where a legal or money mistake is expensive. The advisor is one agent with four angles
+(building, Google, law and compliance, customer) and no power. It is not a lawyer: VAT and terms
+still need a human professional's sign-off (`docs/compliance/`).
+
+## W-17 · A designer owns the artboards
+
+**2026-09-25.** `CLAUDE.md` required `.dc.html` artboards before `/plan-tasks` (TASK-059), and
+implementers must match them, but no agent's definition said who draws them. A rule with no owner
+is a rule that happens by accident. The founder chose a separate designer over folding it into the
+spec writer, which also gives the founder a moment to look before anything is built.
+
+## W-18 · Every dispatch uses the work order
+
+**2026-09-25.** A search of `docs/sessions/`, `docs/tasks/` and `TASKS.md` for incidents that trace
+back to what an agent was or was not told when dispatched grouped them into eleven missing fields,
+each with at least one `TASKS.md` line:
+- the fence, and who else is working;
+- preconditions that were not true (TASK-082, `TASKS.md` L421; TASK-113's brief said "wait for
+  TASK-119", a task that produces no corridor copy, so "it would wait forever", `TASKS.md` L461);
+- wrong or missing context;
+- which gates to run locally;
+- the push and progress policy (TASK-113's eight hours);
+- the evidence standard (TASK-093 cited another task's PR, `TASKS.md` L418; TASK-138 called a 2-in-9
+  flake "fixed", L438);
+- authority limits (TASK-112 marked copy "reviewed" under the founder's name, L419; TASK-069
+  amended a spec, L290);
+- where carry-forwards go;
+- review scope;
+- founder decisions;
+- where the verdict goes.
+
+Outside sources name the same fields, among them Anthropic's multi-agent research system
+(https://www.anthropic.com/engineering/multi-agent-research-system), Devin's guide
+(https://docs.devin.ai/essential-guidelines/instructing-devin-effectively), GitHub Copilot's
+coding-agent guidance (https://docs.github.com/en/copilot/tutorials/coding-agent/get-the-best-results),
+and commander's intent (https://pavilion.dinfos.edu/Article/Article/2163950/the-elements-of-commanders-intent/).
+The line numbers above are the `TASKS.md` Log as of 2026-09-25. The ledger put the median implementer run at 62 minutes (reviewer 15), which set
+the size limits.
+
+## W-19 · Verdicts name a SHA; only the reviewer accepts a hole
+
+**2026-09-26, the breaker's first run (PR 103).** It found that a PR could get `HOLDS` on one head and
+merge on another; that nothing defined when a hole was "closed"; and that in practice the
+orchestrator, the one party that wants the merge, would end up writing "acceptable" itself. So
+every breaker verdict names its SHA, a hole closes only when a later round breaks the same thing
+and the new test goes red, and only the reviewer can accept one. The same run found that the
+`prettier --check` quoted as evidence on PRs 102 and 103 checked none of their files:
+`.prettierignore` excludes `.claude/`, `docs/`, `plan/` and `CLAUDE.md`.
+
+## W-20 · Verdicts survive a clean rebase; docs holes close by replay
+
+**2026-09-26, the breaker's second run (PR 103).** Two consequences of W-19 had not been thought through:
+- **A rebase left a PR with no valid break verdict.** `git diff old new` after a rebase pulls in `main`'s commits, so no verdict could ever cover the head. Now the verdict carries across a rebase when `git range-diff` shows the PR's own commits unchanged.
+- **"Closed means a test went red" is unsatisfiable on a docs-only PR.** Now a docs hole closes when the replayed scenario fails against the new text, citing the line.
+
+The same run found:
+- the finisher forbidden to push to the branch it was sent to finish;
+- `launch` filed as a read-only auditor although it promotes and rolls back.
+
+It also found that this session's auto-mode permission classifier refused the breaker's
+temporary mutations of `CLAUDE.md` and agent files even inside its own worktree, so on framework
+PRs the breaker replays scenarios rather than mutating text (`docs/framework/gaps.md`, step C).
+
 ## Retired
 
 - **"The `preview` job waits on a Vercel preview deployment, so under Vercel's build rate limit the

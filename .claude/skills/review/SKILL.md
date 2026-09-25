@@ -7,12 +7,12 @@ disable-model-invocation: true
 
 # /review <pr-or-task-id>
 
-**When:** a task is `in_review`.
+**When:** a task is `in_review`. Dispatched together with `/break`.
 **Inputs:** PR number (or task ID → resolve PR from `TASKS.md`).
 **Agent:** `reviewer`.
-**Outputs:** `VERDICT: PASS|FAIL`, checklist table, required changes; posted as a PR review via `gh`. On PASS the orchestrator (or the founder) merges and marks the task `done`; on FAIL the task returns to `in_progress` with the list in Blockers.
+**Outputs:** `VERDICT: PASS|FAIL`, checklist table, required changes, a ruling on every breaker hole; posted as a PR comment via `gh pr review --comment --body-file`. On PASS, with the `/break` verdict on the current head `HOLDS` (or every hole closed or accepted) and CI green on it, the orchestrator merges and marks the task `done`; on FAIL the task returns to `in_progress` with the list in Blockers.
 
 ## Steps
 1. Resolve the PR and its task + spec, and read `docs/tasks/TASK-NNN.md` — the brief, not the row.
-2. Launch `reviewer` with PR number, the brief path `docs/tasks/TASK-NNN.md`, the spec path with the `## 0. Index` anchors for the claimed AC ids, `docs/codebase-map.md`, and the preview URL. Round 2+: add "scoped to the diff since round 1".
-3. Relay the verdict verbatim. If PASS: merge only as `CLAUDE.md` "Conventions → Merging" allows (CI green on the current head SHA, `--match-head-commit`, squash, conventional title), set task `done`, log in `TASKS.md`. If FAIL: set `in_progress`, append the required changes as a dated bullet under `## Carry-forwards` in `docs/tasks/TASK-NNN.md`, suggest `/implement TASK-NNN` again.
+2. Launch `reviewer` with a filled-in `.claude/templates/work-order.md` (reviewer role): PR number, the brief path `docs/tasks/TASK-NNN.md`, the spec path with the `## 0. Index` anchors for the claimed AC ids, `docs/codebase-map.md`, and the preview URL. Round 2+: add "scoped to the diff since round 1".
+3. Relay the verdict verbatim. If PASS and the `/break` verdict on the current head is `HOLDS`, or every hole is closed or accepted by the reviewer: merge only as `CLAUDE.md` "Conventions → Merging" allows (CI green on the current head SHA, `--match-head-commit`, squash, conventional title), set task `done`, log in `TASKS.md`. If FAIL: set `in_progress`, append the required changes as a dated bullet under `## Carry-forwards` in `docs/tasks/TASK-NNN.md`, suggest `/implement TASK-NNN` again.

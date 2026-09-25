@@ -28,6 +28,14 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
 
 _None recorded._
 
+## Progress
+
+One line per coherent step, newest last, written by the agent doing the work and pushed with
+the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
+here.
+
+_Not started._
+
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs

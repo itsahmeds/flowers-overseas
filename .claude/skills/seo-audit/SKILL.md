@@ -14,5 +14,5 @@ disable-model-invocation: true
 
 ## Steps
 1. Resolve base URL and sample set (from sitemaps if env given).
-2. Launch `seo-auditor`.
+2. Launch `seo-auditor` with a filled-in `.claude/templates/work-order.md` (SEO auditor role), naming the checkout to write the report into. Commit the report afterwards.
 3. Relay verdict and top 5. If FAIL on index-state, hreflang, translation gating or rendering checks, note that `/launch` is blocked and suggest `/spec` or a fix task.
