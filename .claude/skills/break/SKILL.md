@@ -10,7 +10,7 @@ disable-model-invocation: true
 **When:** every PR, dispatched with `/review` (they run in parallel, in separate worktrees).
 **Inputs:** PR number (or task ID → resolve the PR from `TASKS.md`).
 **Agent:** `breaker`.
-**Outputs:** `BREAKER: HOLDS | HOLES`, a table of breaks tried (`CAUGHT` / `SURVIVED`), posted on the PR.
+**Outputs:** `BREAKER: HOLDS | HOLES on <head-sha>`, a table of breaks tried (`CAUGHT` / `SURVIVED`), posted on the PR.
 
 ## Steps
 1. Resolve the PR, its head SHA, and the brief `docs/tasks/TASK-NNN.md` (none for a `no-task` PR).
@@ -22,4 +22,5 @@ disable-model-invocation: true
    send the task back to its implementer with the holes the reviewer did not accept and any
    `/review` required changes, in one round.
 4. Round 2+ breaks the diff since the last broken SHA and re-breaks every open hole. A hole
-   closes only when the new test goes red. Never accept a hole yourself.
+   closes only when the new test goes red, or, for text no check reads, when the replayed scenario
+   fails against the new text, citing the line. Never accept a hole yourself.

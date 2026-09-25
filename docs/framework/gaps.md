@@ -27,6 +27,9 @@ gap closes, mark it ✅ with the PR, and don't delete the row.
   and the merge rule: deleting any of them leaves every check green (the breaker, PR 103);
 - `scripts/pr-policy.ts` guards only `src/ tests/ db/ seed/ emails/`, so an owner's `no-task` PR can
   change `scripts/`, `.github/`, `messages/` or `package.json` unchecked (the breaker, PR 103);
+- the breaker cannot mutate `CLAUDE.md` or `.claude/` files under this session's auto-mode
+  classifier, even inside its own worktree, so framework holes are closed by replay, not mutation
+  (the founder decides whether to allow it; no agent changes permission settings);
 - `.prettierignore` excludes `.claude/`, `docs/`, `plan/`, `specs/` and `CLAUDE.md`: no formatter
   checks any framework file;
 - a unit test that fails if a skill stops pointing at `.claude/templates/work-order.md`;

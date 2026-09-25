@@ -139,9 +139,9 @@ spec writer, which also gives the founder a moment to look before anything is bu
 
 ## W-18 · Every dispatch uses the work order
 
-**2026-09-25.** A search of `docs/sessions/`, `docs/tasks/` and `TASKS.md` found about 35 incidents
-that trace back to what an agent was or was not told when dispatched. They group into eleven
-missing fields:
+**2026-09-25.** A search of `docs/sessions/`, `docs/tasks/` and `TASKS.md` for incidents that trace
+back to what an agent was or was not told when dispatched grouped them into eleven missing fields,
+each with at least one `TASKS.md` line:
 - the fence, and who else is working;
 - preconditions that were not true (TASK-082, `TASKS.md` L421; TASK-113's brief said "wait for
   TASK-119", a task that produces no corridor copy, so "it would wait forever", `TASKS.md` L461);
@@ -174,6 +174,20 @@ every breaker verdict names its SHA, a hole closes only when a later round break
 and the new test goes red, and only the reviewer can accept one. The same run found that the
 `prettier --check` quoted as evidence on PRs 102 and 103 checked none of their files:
 `.prettierignore` excludes `.claude/`, `docs/`, `plan/` and `CLAUDE.md`.
+
+## W-20 · Verdicts survive a clean rebase; docs holes close by replay
+
+**2026-09-26, the breaker's second run (PR 103).** Two consequences of W-19 had not been thought through:
+- **A rebase left a PR with no valid break verdict.** `git diff old new` after a rebase pulls in `main`'s commits, so no verdict could ever cover the head. Now the verdict carries across a rebase when `git range-diff` shows the PR's own commits unchanged.
+- **"Closed means a test went red" is unsatisfiable on a docs-only PR.** Now a docs hole closes when the replayed scenario fails against the new text, citing the line.
+
+The same run found:
+- the finisher forbidden to push to the branch it was sent to finish;
+- `launch` filed as a read-only auditor although it promotes and rolls back.
+
+It also found that this session's auto-mode permission classifier refused the breaker's
+temporary mutations of `CLAUDE.md` and agent files even inside its own worktree, so on framework
+PRs the breaker replays scenarios rather than mutating text (`docs/framework/gaps.md`, step C).
 
 ## Retired
 

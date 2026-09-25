@@ -34,7 +34,7 @@ not sent:
 
 **Task:** TASK-NNN — <title> (or the spec / PR / decision for a role with no task) · **Role:**
 implementer | breaker (round N) | reviewer (round N) | finisher | spec writer | advisor | designer |
-auditor ·
+SEO auditor | launch ·
 **Size:** S | M | L
 **Brief:** `docs/tasks/TASK-NNN.md` (on branch `task/TASK-NNN-<slug>`)
 **Spec:** `specs/NNN-<slug>.md` — read `## 0. Index`, then only: <§ anchors for the AC ids owned>
@@ -74,7 +74,7 @@ open a **draft** PR · add `ci:full` to your own PR once it is ready, and toggle
 add) to re-run CI · add `no-task` to your own PR when it has no task ID · update your brief's
 `## Progress`, `## Result` and `## Escalations`.
 
-**Read-only roles** (breaker, reviewer, advisor, auditor) may: read anything · run tests and
+**Read-only roles** (breaker, reviewer, advisor, SEO auditor) may: read anything · run tests and
 checks · make temporary mutations **inside their own detached worktree** · post **one** PR comment
 per round with `gh pr review <n> --comment --body-file <file>`. The advisor also writes its one
 memo file, and the orchestrator commits it. They commit, push and label nothing.
@@ -99,10 +99,11 @@ new step:
 
 ## 5. Coming back
 
-**As you go:** after each coherent step, commit and push, and add one line to `## Progress` in the
+**As you go (writing roles):** after each coherent step, commit and push, and add one line to `## Progress` in the
 brief (add the section above `## Result` if an older brief lacks it; a `no-task` PR has no brief,
 so keep `## Progress` in the PR description with `gh pr edit <n> --body-file`): what is done, what is next, and anything a replacement agent must know. Someone else may
-have to finish from exactly where you stop.
+have to finish from exactly where you stop. Read-only roles keep no progress file: their round
+is short, and their report is the record.
 
 **Report** — these boxes, in this order, with proof rather than claims:
 1. **Status:** `done` | `partial` | `blocked` | `declined`, with a one-line reason.
@@ -145,21 +146,32 @@ Keep the report under about 400 words. Detail belongs in the brief and the PR, n
   does not cover holes.
 - Verdict first (`VERDICT: PASS | FAIL`), posted with
   `gh pr review <n> --comment --body-file <file>`. The orchestrator copies your required changes
-  and any accepted holes into the brief's `## Carry-forwards`; you write nothing to the repository.
+  and any accepted holes into the brief's `## Carry-forwards` (for a `no-task` PR, into the PR
+  description); you write nothing to the repository.
 
 ## Role: finisher (picking up someone else's run)
 
 - **Start from:** branch `<branch>`, head `<sha>`. Commits already made: <list, one line each>.
+- **This branch is yours for this run:** commit and push to it. The agent you replace has stopped.
 - **Already done — do not redo:** <from the brief's `## Progress`>.
 - **Left to do:** <only the remaining steps>.
 - If the worktree has uncommitted changes you did not make, stop and report them. Don't commit
   or discard them.
 
-## Role: auditor (SEO, launch)
+## Role: SEO auditor
 
 - Read-only. Target: <env / URL set / page types> · sample sizes as the agent definition says.
 - A local Lighthouse run goes inside the build slot and reports the load average.
-- Output file: <`docs/audits/YYYY-MM-DD-<env>.md` | `docs/releases/…`>.
+- Write the report at <absolute path of the checkout to write in>/`docs/audits/YYYY-MM-DD-<env>.md`;
+  that file is your one write, and the orchestrator commits it.
+
+## Role: launch
+
+- Target: `staging` | `production`. Scope: <the tasks since the last release>.
+- **May**, and only as `.claude/agents/launch.md` sets out, gate by gate: promote to the target,
+  and roll back on a failed post-deploy check. Never skip or reorder a gate; halt instead.
+- Write the release note at <absolute path of the checkout to write in>/`docs/releases/…`; the
+  orchestrator commits it. You commit, push, label and merge nothing.
 
 ## Role: breaker
 
@@ -169,7 +181,8 @@ Keep the report under about 400 words. Detail belongs in the brief and the PR, n
   Never use the implementer's or the reviewer's. Remove it when you finish.
 - Round <N>: <round 1: the whole diff | round 2+: only `git diff <last-broken-sha> <head>`, plus
   every hole you reported last round. A hole is **closed** only when you break the same thing
-  again and the new test goes red>.
+  again and the new test goes red, or — where no check reads the text — when you replay the scenario
+  against the new text and it fails, citing the line>.
 - Areas to attack: <from the diff — money, dates and cutoffs, order status, SEO gates, security,
   i18n; or "docs only: break whatever check reads the changed files">.
 - Verdict first: `BREAKER: HOLDS | HOLES on <head-sha>`, posted with
@@ -187,8 +200,8 @@ Keep the report under about 400 words. Detail belongs in the brief and the PR, n
 
 - Subject: <`specs/NNN-<slug>.md` at `Status: draft` | the decision in `docs/adr/…` or in plain words>.
 - What the founder is weighing: <the options as the founder sees them> | the whole spec.
-- Opinion only. The orchestrator commits your memo with the spec it advises (on the spec's branch,
-  or on a `no-task` docs branch for a decision). Open the memo with `ADVISOR: GO | GO WITH FIXES | NO-GO`, write it to
+- Opinion only. Write the memo at <absolute path of the checkout to write in, on the spec's branch
+  or a `no-task` docs branch>/`docs/advice/…`; the orchestrator commits it. Open the memo with `ADVISOR: GO | GO WITH FIXES | NO-GO`, write it to
   `docs/advice/YYYY-MM-DD-<subject>.md`, and change nothing else.
 
 ## Role: designer
