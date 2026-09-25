@@ -74,11 +74,11 @@ Agents never write code except the implementers. The orchestrator refuses to dis
 
 ## Conventions
 - Branch `task/TASK-012-short-slug`; PR title `feat(scope): … (TASK-012)`; conventional commits ending with the `Co-Authored-By:` line when Claude authored.
-- **Push the branch as soon as it has one coherent commit**, and commit after every coherent step. A worktree is not a backup. (why: W-8)
+- **Push the branch as soon as it has one coherent commit, and open the draft PR then** — it costs nothing and makes the work visible. Commit after every coherent step. A worktree is not a backup. (why: W-8)
 - **Opening a PR:** `gh pr create --draft` → before going ready, `git fetch origin && git rebase origin/main` and push, because no run fires while the PR conflicts → `gh pr ready` → `gh pr edit <n> --add-label ci:full`. Without the label the browser jobs (`preview`, `e2e`, `visual`, `a11y`) skip and a green tick means only the spine. (why: W-2, W-3, W-5)
 - **Re-running CI after a fix:** a push to a ready, labelled PR fires nothing. Toggle the label: `gh pr edit <n> --remove-label ci:full`, then `--add-label ci:full`. Never `gh workflow run` — on a dispatch the browser chain skips. (why: W-4)
 - **`docs/codebase-map.md` conflicts are regenerated** with `pnpm codebase:map`, never hand-merged. (why: W-5)
-- **Merging.** The orchestrator merges a PR when **both** hold: a `/review` **pass** is recorded on it, and CI is green on its current head SHA (check the SHA — `gh pr view --json statusCheckRollup` reports the latest run, not necessarily one on the head). After any rebase or force-push, re-fire CI and wait. Merge with `--match-head-commit`, in dependency order, and say what was merged and why. Never merge on a review fail, an unreviewed PR, or a red gate the diff owns. (why: W-6, W-7)
+- **Merging.** The orchestrator merges a PR when **both** hold: a `/review` **pass** is recorded on it, and CI is green on its current head SHA (check the SHA — `gh pr view --json statusCheckRollup` reports the latest run, not necessarily one on the head). After any rebase or force-push, re-fire CI and wait. Merge with `--match-head-commit`, in dependency order, and say what was merged and why. Never merge on a review fail, an unreviewed PR, or any red gate. (why: W-6, W-7)
 - Module boundaries per `plan/01-architecture.md` §5; `app/` is thin.
 - Tests live in `tests/<layer>/`; fixtures for occasion dates, currencies, addresses are shared.
 

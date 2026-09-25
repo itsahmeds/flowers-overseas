@@ -37,9 +37,10 @@ a PR created directly as ready fired no run at all.
 
 **2026-09-21, PRs 84 and 93.** A push to a PR that is already ready and labelled fires nothing.
 A `workflow_dispatch` looks like a re-run but `preview`'s guard is
-`github.event_name == 'pull_request'`, so it skips, and `e2e`, `a11y`, `visual` and `lighthouse`
-skip with it — the dispatch reaches the spine and never the browser chain, which is the half you
-re-ran for.
+`github.event_name == 'pull_request'`, so it skips, and `e2e`, `a11y` and `visual` skip with it —
+the dispatch reaches the spine and never the browser chain, which is the half you re-ran for.
+(`lighthouse` hangs off `build` with no guard, so it does run on a dispatch; the old `CLAUDE.md`
+listed it among the skipped jobs, which was wrong.)
 
 ## W-5 · Rebase before `gh pr ready`; no run fires on a conflicting PR
 
@@ -58,15 +59,15 @@ latest run, not necessarily one against the current head.
 **2026-09-22, founder's instruction.** Eight agents produced PRs faster than one person could
 click merge, so merges became the bottleneck. The review stays the gate; only the clicking changed
 hands. The `visual` gate was excused while TASK-139's Linux baselines were missing; they landed in
-PR 95 on 2026-09-23, so `visual` is no longer excused.
+PR 95 on 2026-09-22, and `visual` has been green on PRs 98, 99 and 100 since, so no gate is excused.
 
 ## W-8 · Push as soon as there is one coherent commit
 
 **2026-09-22, TASK-113.** An eight-hour run existed only in a worktree on one laptop, with no
 remote branch and no PR, when its session ended. It was saved only because the orchestrator went
 looking. **2026-09-16/17:** every background Opus agent hit the 600-second stream watchdog for
-several hours; agents that had committed after each step lost nothing, and a twice-stalled agent
-was replaced by a fresh finisher with a tight brief.
+several hours. The fix adopted was to commit after each coherent step and to replace a
+twice-stalled agent with a fresh finisher on a tight brief, which worked first time for TASK-105.
 
 ## W-9 · The build slot is a lock, not a `pgrep` wait loop
 
@@ -117,3 +118,12 @@ local performance number without the load average beside it is not evidence.
   `preview` started building and serving the app on the runner itself
   (`.github/actions/preview-origin`). Removed from the kernel on 2026-09-25.
 - **"The `pgrep` wait loop."** Replaced by the build-slot lock (W-9).
+- **"CI green apart from gates a task owns elsewhere"** (the merge exception for `visual` while
+  TASK-139's baselines were missing). Retired 2026-09-25: the baselines landed (W-7), and the kernel
+  now says never merge on any red gate.
+- **The `docs/sessions/two-day-plan.md` row in "Where state lives"** ("read it before
+  dispatching"). Retired 2026-09-25: the sprint it planned is over. Its durable rules moved — the
+  agent cap and batching into the kernel's "Working on this machine" (W-11), CI as gate of record
+  into the definition of done (W-1), and the three orchestrator-only rules (one gates task per
+  spec, scoped round-2 reviews, docs-only failures fixed on the branch) into
+  `.claude/agents/orchestrator.md`. The file stays as a record.
