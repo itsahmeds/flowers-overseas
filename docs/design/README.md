@@ -16,7 +16,7 @@ way: `src/modules/ui` is the implementation of `system/`, and `system/` is edite
 | `system/` | `tokens.css` (canonical), `components.dc.html` (every shipped primitive at every state), `typography.dc.html` (ramp, measure, script coverage), `colour.dc.html` (palette, semantic aliases, contrast manifest). | whoever changes `src/modules/ui` |
 | `flows/` | `buyer-journey.dc.html`, `florist-journey.dc.html`, `consent-and-locale.dc.html` — screen-thumbnail flows annotated with the decision points, the trust moments and the data each step reads. | the spec that changes a journey |
 | `wireframes/` | One desktop (1440) and one mobile (390) artboard per Phase 0 page type. Structural, in the approved system: grey photo slots, real registry copy where it exists, `[slot]` markers where it does not, every state and empty state shown. | the spec that owns the page |
-| `benchmarks/` | The 2026-09-09 competitor study — nine files across eight page types and nine brands — plus a `README.md` mapping every page type's wireframe to its benchmark file with "what we took / what we dropped / why", the ten patterns and where each landed, and the fourteen questions only the founder can answer. Evidence, not instructions: where the study and `CLAUDE.md` disagree, `CLAUDE.md` wins. | the study that replaces it |
+| `benchmarks/` | Two studies. The **2026-09-09 content study** — nine files across eight page types and nine brands — plus a `README.md` mapping every page type's wireframe to its benchmark file with "what we took / what we dropped / why", the ten patterns and where each landed, and the fourteen questions only the founder can answer. And the **2026-09-21 measurement pass**, seven `benchmark-*.dc.html` artboards that measure space rather than content: chrome, fold, card ratios and link counts for us and four competitors, then current-and-proposed for the home, listing and product page types. Its argued change list is `../competitor-benchmark-2026-09.md`. Evidence, not instructions: where a study and `CLAUDE.md` disagree, `CLAUDE.md` wins. | the study that replaces it |
 | `canvas.json` (root) | Every artboard in the directory, laid out in labelled rows by folder, for the founder's design canvas. `flows/` and `wireframes/` carry their own so a subset can be published alone. | whoever adds an artboard |
 
 ## How an artboard is authored
@@ -251,5 +251,11 @@ template and its variants together rather than inferring one from the other.
   wireframe row it claims.
 - `docs/design/benchmarks/` — the study every round-2 wireframe was reworked against, and the
   founder questions it left open.
+- `docs/design/competitor-benchmark-2026-09.md` — the 2026-09-21 measurement pass: what our
+  chrome, folds, cards and link counts actually are next to FloraQueen, Interflora UK,
+  Euroflorist NL and Bloom & Wild, and every proposed change argued and marked as a
+  fact-preserving rearrangement or a removal. Its seven artboards are
+  `benchmarks/benchmark-*.dc.html`. They are **decision artefacts**: an approved change is
+  redrawn on the owning page wireframe, and that is what an implementer builds from.
 - `specs/004-design-system-layout.md` §2, §5, §13, §14 A3 — the spec this directory serves.
 - `plan/05-page-inventory.md` §1–§2 — the page inventory the wireframe table maps.
