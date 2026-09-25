@@ -10,7 +10,7 @@ disable-model-invocation: true
 **When:** a task is `in_review`. Dispatched together with `/break`.
 **Inputs:** PR number (or task ID → resolve PR from `TASKS.md`).
 **Agent:** `reviewer`.
-**Outputs:** `VERDICT: PASS|FAIL`, checklist table, required changes, a ruling on every breaker hole; posted as a PR comment via `gh pr review --comment --body-file`. On PASS, with the `/break` verdict on the current head closed and CI green on it, the orchestrator merges and marks the task `done`; on FAIL the task returns to `in_progress` with the list in Blockers.
+**Outputs:** `VERDICT: PASS|FAIL`, checklist table, required changes, a ruling on every breaker hole; posted as a PR comment via `gh pr review --comment --body-file`. On PASS, with the `/break` verdict on the current head `HOLDS` (or every hole closed or accepted) and CI green on it, the orchestrator merges and marks the task `done`; on FAIL the task returns to `in_progress` with the list in Blockers.
 
 ## Steps
 1. Resolve the PR and its task + spec, and read `docs/tasks/TASK-NNN.md` — the brief, not the row.

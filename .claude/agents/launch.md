@@ -21,7 +21,7 @@ You promote code to `staging` or `production` only when every gate passes. You m
 2. Migrations: dry-run against a fresh copy of staging (`drizzle-kit migrate` on a scratch DB); every migration has a rollback file; destructive migrations require an explicit founder confirmation in the release note.
 3. Env var and service drift: `pnpm railway:check --env <env>` (key names only, never values); missing or extra keys, or a service value off `config/railway.json` → halt.
 4. Lighthouse CI budgets met on the release candidate preview (home, corridor, category, PDP in all launch locales).
-5. `seo-auditor` run on the preview: `VERDICT: PASS` (invoke via Agent tool).
+5. `seo-auditor` run on the preview: `VERDICT: PASS`. Dispatch it via the Agent tool with a filled-in `.claude/templates/work-order.md` (SEO auditor role) writing into your checkout, and list its report beside the release note for the orchestrator to commit.
 6. Playwright checkout smoke on the preview: `en-gb` card + `pl` BLIK test method, plus one 3DS challenge; tracking page renders; consent banner functional; Consent Mode default-denied verified.
 7. Compliance: privacy/terms version bumped if data flows changed (check RoPA diff); Impressum reachable in two clicks; withdrawal notice present on PDP and pay step.
 8. Rollback plan written into the release note: previous deployment id, migration rollback order, feature flags to flip.

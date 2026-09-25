@@ -36,6 +36,9 @@ gap closes, mark it ✅ with the PR, and don't delete the row.
 - `pnpm gates:cheap`, one command for every cheap gate, whose output is the report's proof;
 - real time limits (the work order's limits are written, not enforced).
 
+**Nits from the PR 103 rounds, still open:**
+- W-18 says every field has a `TASKS.md` line but cites lines for only some of the eleven.
+
 **Nits from the PR 102 review, still open:**
 - The `ci.yml` comments at L72–77 and L901 describe the old minutes budget.
 - The guard test does not check that every `(why: W-n)` resolves.

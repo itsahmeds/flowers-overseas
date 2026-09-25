@@ -91,7 +91,7 @@ starts a second task · edits a spec, unless it is the spec writer writing its o
 - <task-specific trigger, e.g. "the budget is still missed after the change: stop, don't tune">.
 
 **Time:** S = 45 min · M = 90 min · L = 180 min · reviewer and breaker = 30 min per round ·
-advisor = 30 min · spec writer and designer take the size limit. At the limit, don't start a
+advisor = 30 min · spec writer, designer, SEO auditor and launch take the size limit. At the limit, don't start a
 new step:
 - **writing roles:** commit, push, write `## Progress`, and report `partial` with what is left;
 - **read-only roles:** restore every mutation, remove your worktree, and report `partial` with
@@ -101,7 +101,9 @@ new step:
 
 **As you go (writing roles):** after each coherent step, commit and push, and add one line to `## Progress` in the
 brief (add the section above `## Result` if an older brief lacks it; a `no-task` PR has no brief,
-so keep `## Progress` in the PR description with `gh pr edit <n> --body-file`): what is done, what is next, and anything a replacement agent must know. Someone else may
+so keep `## Progress` in the PR description: read the current body first with
+`gh pr view <n> --json body`, change only its `## Progress` section, then `gh pr edit <n> --body-file`,
+so nothing the orchestrator recorded there is lost): what is done, what is next, and anything a replacement agent must know. Someone else may
 have to finish from exactly where you stop. Read-only roles keep no progress file: their round
 is short, and their report is the record.
 
@@ -170,8 +172,12 @@ Keep the report under about 400 words. Detail belongs in the brief and the PR, n
 - Target: `staging` | `production`. Scope: <the tasks since the last release>.
 - **May**, and only as `.claude/agents/launch.md` sets out, gate by gate: promote to the target,
   and roll back on a failed post-deploy check. Never skip or reorder a gate; halt instead.
+- Gate 5 (the SEO audit): dispatch `seo-auditor` with this work order's **SEO auditor** role filled
+  in, writing into your checkout. List its report path next to the release note.
 - Write the release note at <absolute path of the checkout to write in>/`docs/releases/…`; the
-  orchestrator commits it. You commit, push, label and merge nothing.
+  orchestrator commits it together with the audit report. You commit, push, label and merge
+  nothing. For `production`, the orchestrator's merge to `main` **is** the promotion: you run the
+  gates before it, and watch and roll back after it.
 
 ## Role: breaker
 
@@ -179,7 +185,8 @@ Keep the report under about 400 words. Detail belongs in the brief and the PR, n
 - Work in your **own** detached worktree at the head SHA: `git fetch origin`, remove any leftover
   `../fo-break-<PR>` from an interrupted round, then `git worktree add ../fo-break-<PR> <head-sha>`.
   Never use the implementer's or the reviewer's. Remove it when you finish.
-- Round <N>: <round 1: the whole diff | round 2+: only `git diff <last-broken-sha> <head>`, plus
+- Round <N>: <round 1: the whole diff | round 2+: only `git diff <last-broken-sha> <head>` (after a
+  rebase, what `git range-diff` shows changed instead), plus
   every hole you reported last round. A hole is **closed** only when you break the same thing
   again and the new test goes red, or — where no check reads the text — when you replay the scenario
   against the new text and it fails, citing the line>.

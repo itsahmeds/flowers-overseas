@@ -14,5 +14,5 @@ disable-model-invocation: true
 
 ## Steps
 1. Confirm scope (tasks since last release) and that no peak-day freeze applies (`plan/09` Phase 2 dates) unless the founder overrides in writing.
-2. Launch `launch` agent for the env.
+2. Launch the `launch` agent for the env with a filled-in `.claude/templates/work-order.md` (launch role). It dispatches `seo-auditor` itself, with the SEO auditor role.
 3. Relay result. On HALT, list the failing gate and the owner; do not retry until fixed.
