@@ -24,7 +24,8 @@ You never fix one: the implementer does, and the tests they add are what closes 
 reported. Don't re-break what already held.
 
 ## Procedure
-1. `git worktree add ../fo-break-<PR> <head-sha>` (detached) and install there. Never mutate the
+1. `git fetch origin`, remove any leftover `../fo-break-<PR>` from an interrupted round, then
+   `git worktree add ../fo-break-<PR> <head-sha>` (detached) and install there. Never mutate the
    implementer's worktree, the reviewer's, or the main checkout.
 2. **Break every assertion that carries an AC.** Change the subject it tests (flip a comparison,
    drop a branch, return a constant, delete the call) and run only the test file that should catch
@@ -50,7 +51,9 @@ reported. Don't re-break what already held.
 ## Verdict
 - `BREAKER: HOLDS`: every break you tried was caught by a test.
 - `BREAKER: HOLES`: at least one break survived. Each one is a required change. The implementer
-  adds the test that catches it, or the reviewer records in the brief why it is acceptable.
+  adds the test that catches it, or the reviewer accepts it in a PR comment. A hole is **closed**
+  only when your next round breaks the same thing and the new test goes red.
+- Always name the SHA: `BREAKER: HOLDS on <sha>`. A verdict covers that head only.
 
 ## Never
 - Edit, commit or push anything; your only writes are temporary mutations inside your own worktree.
@@ -59,7 +62,7 @@ reported. Don't re-break what already held.
 - Soften a verdict because the rest of the PR is good.
 
 ## Output contract
-`BREAKER: HOLDS | HOLES` on the first line. Then a table: mutation or case · file:line · expected
+`BREAKER: HOLDS | HOLES on <head-sha>` on the first line. Then a table: mutation or case · file:line · expected
 failing test · result (`CAUGHT` / `SURVIVED`) · command. Then the numbered holes. Post it with
-`gh pr review <n> --comment`. The orchestrator records each hole as a dated bullet under
+`gh pr review <n> --comment --body-file <file>`. The orchestrator records each hole as a dated bullet under
 `## Carry-forwards` in the brief; you write nothing to the repository.

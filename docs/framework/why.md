@@ -117,7 +117,8 @@ local performance number without the load average beside it is not evidence.
 every one was caught by someone changing the code on purpose, never by someone reading the test
 (W-13). A reviewer judges against a checklist and leans towards passing. Anthropic's own write-up
 on long-running agents makes the same point: agents grade work leniently, and a separate tester
-catches more. So the breaker is its own agent, it only wins by finding a hole, and it runs on every
+catches more (https://www.anthropic.com/engineering/harness-design-long-running-apps, 2026-03-24:
+a generator agent paired with a separate evaluator agent). So the breaker is its own agent, it only wins by finding a hole, and it runs on every
 PR, including docs-only ones, where it breaks whatever check reads the changed files. The founder
 chose every PR over risky-only PRs.
 
@@ -142,20 +143,37 @@ spec writer, which also gives the founder a moment to look before anything is bu
 that trace back to what an agent was or was not told when dispatched. They group into eleven
 missing fields:
 - the fence, and who else is working;
-- preconditions that were not true (TASK-082; TASK-113 told to wait for something that would never come);
+- preconditions that were not true (TASK-082, `TASKS.md` L421; TASK-113's brief said "wait for
+  TASK-119", a task that produces no corridor copy, so "it would wait forever", `TASKS.md` L461);
 - wrong or missing context;
 - which gates to run locally;
 - the push and progress policy (TASK-113's eight hours);
-- the evidence standard (TASK-093 cited another task's PR; TASK-138 called a 2-in-9 flake "fixed");
-- authority limits (TASK-112 marked copy "reviewed" under the founder's name; TASK-069 amended a spec);
+- the evidence standard (TASK-093 cited another task's PR, `TASKS.md` L418; TASK-138 called a 2-in-9
+  flake "fixed", L438);
+- authority limits (TASK-112 marked copy "reviewed" under the founder's name, L419; TASK-069
+  amended a spec, L290);
 - where carry-forwards go;
 - review scope;
 - founder decisions;
 - where the verdict goes.
 
-Fifteen outside sources (Anthropic, GitHub Copilot, Devin, OpenAI, A2A, military orders, SBAR) name
-the same fields. The ledger put the median implementer run at 62 minutes (reviewer 15), which set
+Outside sources name the same fields, among them Anthropic's multi-agent research system
+(https://www.anthropic.com/engineering/multi-agent-research-system), Devin's guide
+(https://docs.devin.ai/essential-guidelines/instructing-devin-effectively), GitHub Copilot's
+coding-agent guidance (https://docs.github.com/en/copilot/tutorials/coding-agent/get-the-best-results),
+and commander's intent (https://pavilion.dinfos.edu/Article/Article/2163950/the-elements-of-commanders-intent/).
+The line numbers above are the `TASKS.md` Log as of 2026-09-25. The ledger put the median implementer run at 62 minutes (reviewer 15), which set
 the size limits.
+
+## W-19 · Verdicts name a SHA; only the reviewer accepts a hole
+
+**2026-09-26, the breaker's first run (PR 103).** It found that a PR could get `HOLDS` on one head and
+merge on another; that nothing defined when a hole was "closed"; and that in practice the
+orchestrator, the one party that wants the merge, would end up writing "acceptable" itself. So
+every breaker verdict names its SHA, a hole closes only when a later round breaks the same thing
+and the new test goes red, and only the reviewer can accept one. The same run found that the
+`prettier --check` quoted as evidence on PRs 102 and 103 checked none of their files:
+`.prettierignore` excludes `.claude/`, `docs/`, `plan/` and `CLAUDE.md`.
 
 ## Retired
 

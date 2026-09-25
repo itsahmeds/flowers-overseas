@@ -18,5 +18,8 @@ disable-model-invocation: true
    attack that the diff invites, and dispatch `breaker`. Round 2+: scoped to the diff since the
    last round, plus the holes it reported.
 3. Relay the verdict. On `HOLES`, record each hole as a dated bullet under `## Carry-forwards` in the
-   brief, and send the task back to its implementer together with any `/review` required changes,
-   in one round.
+   brief (for a `no-task` PR, in the PR description). Send the holes to the reviewer to rule on, and
+   send the task back to its implementer with the holes the reviewer did not accept and any
+   `/review` required changes, in one round.
+4. Round 2+ breaks the diff since the last broken SHA and re-breaks every open hole. A hole
+   closes only when the new test goes red. Never accept a hole yourself.

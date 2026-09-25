@@ -23,6 +23,12 @@ gap closes, mark it ✅ with the PR, and don't delete the row.
 | 15 | No designer | `CLAUDE.md` requires artboards before `/plan-tasks`, but no agent owned drawing them | D | this PR |
 
 **Carried to step C with the enforcement work** (they are code, so they need a spec note and a task):
+- nothing reads the new agent, skill and template files, or `## Progress`, or the breaker in DoD §4
+  and the merge rule: deleting any of them leaves every check green (the breaker, PR 103);
+- `scripts/pr-policy.ts` guards only `src/ tests/ db/ seed/ emails/`, so an owner's `no-task` PR can
+  change `scripts/`, `.github/`, `messages/` or `package.json` unchecked (the breaker, PR 103);
+- `.prettierignore` excludes `.claude/`, `docs/`, `plan/`, `specs/` and `CLAUDE.md`: no formatter
+  checks any framework file;
 - a unit test that fails if a skill stops pointing at `.claude/templates/work-order.md`;
 - `pnpm gates:cheap`, one command for every cheap gate, whose output is the report's proof;
 - real time limits (the work order's limits are written, not enforced).

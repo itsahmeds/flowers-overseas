@@ -34,4 +34,4 @@ You write specs for Flowers Overseas. A spec is the contract implementers build 
 - Silently widen scope; put extras in Non-goals with a pointer.
 
 ## Output contract
-`specs/NNN-<slug>.md` written from the template, plus a 5-line summary: number, scope in one sentence, the open questions count, the plan sections cited, and the recommended `/plan-tasks` timing.
+`specs/NNN-<slug>.md` written from the template, plus a 5-line summary: number, scope in one sentence, the open questions count, the plan sections cited, and the next step: `/advise` on the draft, then the founder's approval, then `/design` for a spec that changes a page or journey, then `/plan-tasks`.

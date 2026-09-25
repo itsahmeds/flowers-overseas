@@ -15,12 +15,16 @@ How to fill it in:
 
 Before sending, the orchestrator has checked the **Ready** list. A work order that fails one is
 not sent:
-- every task this one depends on is `done` on `main`, not only merged somewhere or assumed;
+- every task this one depends on is `done` in `origin/main:TASKS.md` after a `git fetch` — not in
+  the checkout you happen to be standing in, and not assumed;
+- every dependency the brief names **produces what this task needs**: read what it delivers, not
+  only its status (a task told to wait for one that will never produce its input waits forever);
 - the brief `docs/tasks/TASK-NNN.md` is filled in on the branch the agent will read, not a template;
 - the brief's blockers are current (re-read, not remembered);
 - the spec is `approved`, and every founder decision the task needs has been taken;
-- the task does not share files with anything in `.claude/state/in-flight.md`, or the overlap is
-  named under "Who else is working" with an owner for each shared file;
+- the task does not share files with anything in the main checkout's `.claude/state/in-flight.md`,
+  or the overlap is named under "Who else is working" with an owner for each shared file. **A
+  missing in-flight file fails this check**; it does not pass it;
 - starting this agent keeps the fleet at four or five agents at most (`CLAUDE.md` "Working on this
   machine").
 
@@ -62,12 +66,22 @@ carry-forwards in the brief apply> | none
 
 ## 4. Rules of the road
 
-**You may, without asking:** read anything · run the cheap gates and the tests your diff touches ·
-commit · push your own branch · open a **draft** PR · update your brief's `## Progress`, `## Result`
-and `## Escalations`.
-**Never:** merge · add or remove labels · trigger workflows · push to `main` or to anyone else's
-branch · mark any copy `reviewed` · edit a spec or ADR · change another task's row or brief ·
-start a second task.
+What you may do depends on your role. **Your role section below overrides anything here.**
+
+**Writing roles** (implementer, finisher, spec writer, designer) may, without asking: read
+anything · run the cheap gates and the tests your diff touches · commit · push your own branch ·
+open a **draft** PR · add `ci:full` to your own PR once it is ready, and toggle it (remove, then
+add) to re-run CI · add `no-task` to your own PR when it has no task ID · update your brief's
+`## Progress`, `## Result` and `## Escalations`.
+
+**Read-only roles** (breaker, reviewer, advisor, auditor) may: read anything · run tests and
+checks · make temporary mutations **inside their own detached worktree** · post **one** PR comment
+per round with `gh pr review <n> --comment --body-file <file>`. The advisor also writes its one
+memo file, and the orchestrator commits it. They commit, push and label nothing.
+
+**No role ever:** merges · triggers workflows (`gh workflow run`) · pushes to `main` or to anyone
+else's branch · marks any copy `reviewed` · edits an ADR · changes another task's row or brief ·
+starts a second task · edits a spec, unless it is the spec writer writing its own draft.
 
 **Stop and hand back — report `blocked`, don't push on — when:**
 - the spec or brief is ambiguous or silent on something you would have to decide;
@@ -77,14 +91,17 @@ start a second task.
 - <task-specific trigger, e.g. "the budget is still missed after the change: stop, don't tune">.
 
 **Time:** S = 45 min · M = 90 min · L = 180 min · reviewer and breaker = 30 min per round ·
-advisor = 30 min · spec writer and designer take the size limit. At the limit: commit,
-push, write `## Progress`, and report `partial` with what is left. Don't start a new step after
-the limit.
+advisor = 30 min · spec writer and designer take the size limit. At the limit, don't start a
+new step:
+- **writing roles:** commit, push, write `## Progress`, and report `partial` with what is left;
+- **read-only roles:** restore every mutation, remove your worktree, and report `partial` with
+  what you did and did not check. Never commit or push anything.
 
 ## 5. Coming back
 
 **As you go:** after each coherent step, commit and push, and add one line to `## Progress` in the
-brief (add the section above `## Result` if an older brief lacks it): what is done, what is next, and anything a replacement agent must know. Someone else may
+brief (add the section above `## Result` if an older brief lacks it; a `no-task` PR has no brief,
+so keep `## Progress` in the PR description with `gh pr edit <n> --body-file`): what is done, what is next, and anything a replacement agent must know. Someone else may
 have to finish from exactly where you stop.
 
 **Report** — these boxes, in this order, with proof rather than claims:
@@ -94,9 +111,11 @@ have to finish from exactly where you stop.
    and what went red when you broke it on purpose.
 4. **Changed:** the files, and anything outside "Only touch" together with why.
 5. **Found vs suggested:** what you observed, kept separate from what you recommend.
-6. **Escalations:** each question, already written into the brief's `## Escalations`.
+6. **Escalations:** each question, already written into the brief's `## Escalations` (writing
+   roles), or listed here for the orchestrator to record (read-only roles).
 7. **Clean-up:** the processes you started and confirmation that each is stopped, the build slot
-   released, the branch pushed, `task.sh clear` run.
+   released; writing roles: the branch pushed and `task.sh clear` run; read-only roles: every
+   mutation restored and your worktree removed (`git worktree list`).
 8. **Time taken** against the size limit.
 
 Keep the report under about 400 words. Detail belongs in the brief and the PR, not the report.
@@ -112,14 +131,21 @@ Keep the report under about 400 words. Detail belongs in the brief and the PR, n
 
 ## Role: reviewer
 
-- Read-only. Your only write is the temporary mutation you use to break a test, restored
-  before you finish (`git status` clean).
+- Read-only. Work in your **own** detached worktree: `git fetch origin` then
+  `git worktree add ../fo-review-<PR> <head-sha>` (remove a leftover from an interrupted round
+  first). Your only writes are temporary mutations there, restored before you finish; remove the
+  worktree at the end. Never mutate the implementer's worktree or the main checkout.
 - Round <N>: <round 1: full checklist | round 2+: scoped to `git diff <last-reviewed-sha> <head>`;
   do not re-read what earlier rounds passed>.
 - Read CI on the head SHA; don't re-run what CI ran green. If the browser jobs did not run on
   the head: `FAIL — CI not run on head`.
-- Verdict first (`VERDICT: PASS | FAIL`), posted with `gh pr review <n> --comment`. Required changes
-  also go into the brief's `## Carry-forwards`, dated.
+- If the breaker reported `HOLES`, rule on each one: either it is a required change, or post
+  `HOLE <n> ACCEPTABLE: <reason>` in your comment. Only you can accept a hole; the orchestrator
+  never does. If the breaker's report for this head is not on the PR yet, say so; your PASS then
+  does not cover holes.
+- Verdict first (`VERDICT: PASS | FAIL`), posted with
+  `gh pr review <n> --comment --body-file <file>`. The orchestrator copies your required changes
+  and any accepted holes into the brief's `## Carry-forwards`; you write nothing to the repository.
 
 ## Role: finisher (picking up someone else's run)
 
@@ -138,14 +164,17 @@ Keep the report under about 400 words. Detail belongs in the brief and the PR, n
 ## Role: breaker
 
 - Your job is to make this PR fail. You win when you find a hole, so look for one.
-- Work in your **own** detached worktree at the head SHA (`git worktree add ../fo-break-<PR> <sha>`),
-  never the implementer's or the reviewer's, and remove it when you finish.
-- Round <N>: <round 1: the whole diff | round 2+: only `git diff <last-broken-sha> <head>` and the
-  holes you reported last round>.
+- Work in your **own** detached worktree at the head SHA: `git fetch origin`, remove any leftover
+  `../fo-break-<PR>` from an interrupted round, then `git worktree add ../fo-break-<PR> <head-sha>`.
+  Never use the implementer's or the reviewer's. Remove it when you finish.
+- Round <N>: <round 1: the whole diff | round 2+: only `git diff <last-broken-sha> <head>`, plus
+  every hole you reported last round. A hole is **closed** only when you break the same thing
+  again and the new test goes red>.
 - Areas to attack: <from the diff — money, dates and cutoffs, order status, SEO gates, security,
   i18n; or "docs only: break whatever check reads the changed files">.
-- Verdict first: `BREAKER: HOLDS | HOLES`, posted with `gh pr review <n> --comment`. The
-  orchestrator copies each hole into the brief's `## Carry-forwards`; you write nothing.
+- Verdict first: `BREAKER: HOLDS | HOLES on <head-sha>`, posted with
+  `gh pr review <n> --comment --body-file <file>`. The orchestrator copies each hole into the
+  brief's `## Carry-forwards` (for a `no-task` PR, into the PR description); you write nothing.
 
 ## Role: spec writer
 
@@ -158,7 +187,8 @@ Keep the report under about 400 words. Detail belongs in the brief and the PR, n
 
 - Subject: <`specs/NNN-<slug>.md` at `Status: draft` | the decision in `docs/adr/…` or in plain words>.
 - What the founder is weighing: <the options as the founder sees them> | the whole spec.
-- Opinion only. Open the memo with `ADVISOR: GO | GO WITH FIXES | NO-GO`, write it to
+- Opinion only. The orchestrator commits your memo with the spec it advises (on the spec's branch,
+  or on a `no-task` docs branch for a decision). Open the memo with `ADVISOR: GO | GO WITH FIXES | NO-GO`, write it to
   `docs/advice/YYYY-MM-DD-<subject>.md`, and change nothing else.
 
 ## Role: designer
@@ -167,5 +197,7 @@ Keep the report under about 400 words. Detail belongs in the brief and the PR, n
 - Existing artboards to extend: <files in `docs/design/wireframes/` and `flows/`> | none.
 - Registry copy that already exists: <paths in `messages/` or `src/config/`> | none.
 - Write only under `docs/design/`. Open a draft PR with the `no-task` label (a design PR has no
-  task ID); the founder looks at the canvas before `/plan-tasks`.
+  task ID). Note that `scripts/pr-policy.ts` guards only `src/ tests/ db/ seed/ emails/`, so
+  staying inside `docs/design/` is your rule to keep, not something the code checks. The founder
+  looks at the canvas before `/plan-tasks`.
 

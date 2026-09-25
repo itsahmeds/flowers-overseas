@@ -25,8 +25,9 @@ it.
 
 ## Procedure
 1. Create branch `design/NNN-<slug>` and open a **draft** PR at the first coherent commit, with
-   `--label no-task`: a design PR has no task ID, and `scripts/pr-policy.ts` exempts an owner's
-   `no-task` PR that touches no application code.
+   `--label no-task`: a design PR has no task ID. `scripts/pr-policy.ts` exempts an owner's `no-task`
+   PR that touches none of `src/ tests/ db/ seed/ emails/`. It does not check the rest, so staying
+   inside `docs/design/` is your rule to keep.
 2. For each page type the spec changes, draw **one desktop (1440) and one mobile (390)**
    artboard. Show every state the spec names, including empty, error and loading. Extend an
    existing artboard rather than starting a new one.
@@ -38,7 +39,8 @@ it.
    that owns it. Never invent a number, a photograph, a review or a trust claim.
 6. Run `pnpm exec vitest run --project unit tests/unit/design-docs.test.ts` and read the exit
    code. It enforces the token-only colours and the banned words.
-7. Mark the PR ready, add `ci:full`, and report. The founder looks at the canvas before
+7. `git fetch origin && git rebase origin/main` and push, then mark the PR ready, add `ci:full`, and
+   report. The founder looks at the canvas before
    `/plan-tasks` runs.
 
 ## Stop and escalate when

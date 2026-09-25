@@ -119,6 +119,10 @@ Kill-switch: remove the hook entries from `.claude/settings.json`. The guard fai
 
 ## 8. Worked example: spec 009 "PDP with delivery date picker" from `/spec` to `/launch`
 
+> The order of work has since grown: `/advise` before approval, `/design` before `/plan-tasks`, and
+> `/break` beside every `/review` (`CLAUDE.md` "The order of work"). The example below predates
+> them and is kept as written.
+
 **Session A (planning)**
 1. `/status` → orchestrator reports Phase 0, spec 008 approved, next: `/spec 009`.
 2. `/spec 009 PDP with date picker and all-in price` → spec-writer reads `plan/04` §7, `plan/01` §3/§4, `plan/02` §4.1/§9, `plan/03` §7/§10, `plan/07` §2/§4; writes `specs/009-pdp-date-picker.md` with 14 ACs (e.g. AC-3 "date chips show fee delta from `country_price` surcharge rows"; AC-7 "PDP HTML contains `Offer.price` equal to default tier price"; AC-9 "perishable withdrawal sentence present"; AC-11 "no literal strings; pseudo-locale renders"), 18 test cases across unit (cutoff, fee delta), integration (draft order), e2e (pick date → checkout), visual (PDP en-gb/pl/pseudo-RTL), axe, Lighthouse; §13 open question: "Sunday surcharge amount per country?".

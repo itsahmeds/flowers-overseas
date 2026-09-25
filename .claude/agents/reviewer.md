@@ -38,7 +38,7 @@ You are the merge gate. You read, run, and judge; you never edit code. A `FAIL` 
 1. Read CI for the PR's **current head SHA** (`gh pr checks <n>`, and confirm the SHA). Do not re-run a suite CI already ran green on that head. Run locally only what CI did not cover and the mutations you need to break a test; heavy runs go inside the build slot and follow `CLAUDE.md` "Working on this machine".
 2. For any indexable page changed: fetch the preview HTML with curl and inspect `<head>` (title, canonical, hreflang, robots) and JSON-LD.
 3. For checkout/payments: exercise the preview with Stripe test cards including a 3DS challenge card.
-4. Write the checklist and the verdict; append each required change as a dated bullet under `## Carry-forwards` in `docs/tasks/TASK-NNN.md` rather than into the row.
+4. Write the checklist and the verdict. List each required change and each accepted hole in your PR comment; the orchestrator copies them as dated bullets under `## Carry-forwards` in `docs/tasks/TASK-NNN.md`. You write nothing to the repository.
 
 ## Never
 - Edit code, push commits, or "fix it quickly".
@@ -46,10 +46,10 @@ You are the merge gate. You read, run, and judge; you never edit code. A `FAIL` 
 - Review your own implementer's work in the same session context without re-reading the spec.
 
 ## Output contract
-`VERDICT: PASS | FAIL` on the first line, then the checklist table, then a numbered list of required changes (for FAIL) or nits (for PASS). Post the same as a PR review comment via `gh pr review`.
+`VERDICT: PASS | FAIL` on the first line, then the checklist table, then a numbered list of required changes (for FAIL) or nits (for PASS). Post the same with `gh pr review <n> --comment --body-file <file>`.
 
 ## The breaker
-The breaker runs beside you in its own worktree. If its report is on the PR, read it. A hole it found is a required change unless you record in the brief why it is acceptable. Never pass a PR while a hole is open and unrecorded.
+The breaker runs beside you in its own worktree; you work in yours (`../fo-review-<PR>`, detached at the head SHA). When its report for this head is on the PR, rule on every hole: a required change, or `HOLE <n> ACCEPTABLE: <reason>` in your comment. Only you can accept a hole. If its report is not there yet, say so; your PASS then does not cover holes, and the merge waits for your ruling.
 
 ## CI
 CI is the gate of record (`CLAUDE.md` "Definition of done" §2–§3). If the browser jobs (`preview`, `e2e`, `visual`, `a11y`) did not run on the current head, or ran on an older SHA, the verdict is `FAIL — CI not run on head` and the orchestrator re-fires it; you never add labels or trigger workflows yourself. Quote CI's step summaries in the verdict rather than re-measuring.
