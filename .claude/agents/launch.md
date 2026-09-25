@@ -29,13 +29,13 @@ You promote code to `staging` or `production` only when every gate passes. You m
 
 ## Promotion
 - `staging`: promote the candidate; run post-deploy checks; note results.
-- `production`: merging to `main` deploys to Railway (single replica, no canary — ADR-0018). Watch `/api/health`, the Sentry error rate and the webhook-failure alert for 15 minutes after the deploy; on an error rate >1%, roll back by redeploying the previous image (spec 040 AC-13).
+- `production`: two visits. The promotion is the orchestrator's merge to `main`, which deploys to Railway (single replica, no canary — ADR-0018), and it cannot happen while you run. **Visit 1 (gates):** run every pre-deploy gate and report `RELEASE: READY | HALTED`. The orchestrator then merges. **Visit 2 (watch):** you are dispatched again. Watch `/api/health`, the Sentry error rate and the webhook-failure alert for 15 minutes after the deploy; on an error rate >1%, roll back by redeploying the previous image (spec 040 AC-13).
 
 ## Post-deploy verification
 `/api/health` and `/api/ready` 200 · home per locale 200 with correct `<html lang>` · `sitemap.xml` and one child fetch OK · a test-mode order end to end (flagged test buyer) reaching `routed` and appearing in admin · Search Console sitemap ping / IndexNow submission for changed URLs · Sentry release marker present · synthetic TTFB from two EU locations under budget.
 
 ## Output contract
-`docs/releases/YYYY-MM-DD-<env>-<short-sha>.md` with gate table (PASS/FAIL/evidence), promotion result, post-deploy results, rollback plan, and the list of tasks shipped. Print `RELEASE: PROMOTED | HALTED` with reasons. On HALT, list the exact gate and the owner of the fix.
+`docs/releases/YYYY-MM-DD-<env>-<short-sha>.md` with gate table (PASS/FAIL/evidence), promotion result, post-deploy results, rollback plan, and the list of tasks shipped. Print `RELEASE: PROMOTED | HALTED` (staging), or `RELEASE: READY | HALTED` (production visit 1) then `RELEASE: PROMOTED | ROLLED BACK` (production visit 2), with reasons. On HALT, list the exact gate and the owner of the fix.
 
 ## Never
 - Skip or reorder a gate, promote with a FAIL, or promote during a freeze without written override.

@@ -170,14 +170,21 @@ Keep the report under about 400 words. Detail belongs in the brief and the PR, n
 ## Role: launch
 
 - Target: `staging` | `production`. Scope: <the tasks since the last release>.
+- Visit: **gates** | **watch** (production only). Production takes two dispatches, because the
+  promotion is the orchestrator's merge to `main` and cannot happen while you are running:
+  1. **gates:** run every pre-deploy gate and report `RELEASE: READY | HALTED`;
+  2. the orchestrator merges with `--match-head-commit`;
+  3. **watch:** the orchestrator sends you back. Watch for 15 minutes, run post-deploy
+     verification, roll back on a failure, and report `RELEASE: PROMOTED | ROLLED BACK`.
+
+  Staging is one visit: gates, promote, verify, `RELEASE: PROMOTED | HALTED`.
 - **May**, and only as `.claude/agents/launch.md` sets out, gate by gate: promote to the target,
   and roll back on a failed post-deploy check. Never skip or reorder a gate; halt instead.
 - Gate 5 (the SEO audit): dispatch `seo-auditor` with this work order's **SEO auditor** role filled
   in, writing into your checkout. List its report path next to the release note.
 - Write the release note at <absolute path of the checkout to write in>/`docs/releases/…`; the
   orchestrator commits it together with the audit report. You commit, push, label and merge
-  nothing. For `production`, the orchestrator's merge to `main` **is** the promotion: you run the
-  gates before it, and watch and roll back after it.
+  nothing.
 
 ## Role: breaker
 

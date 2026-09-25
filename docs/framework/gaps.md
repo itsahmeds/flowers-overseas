@@ -21,6 +21,7 @@ gap closes, mark it ✅ with the PR, and don't delete the row.
 | 13 | `main` has no branch protection | GitHub would merge a PR with red CI | C (to decide) | open |
 | 14 | The orchestrator has too few rules of its own | It broke `main` three times with untested commits and once committed onto an agent's branch | G | open |
 | 15 | No designer | `CLAUDE.md` requires artboards before `/plan-tasks`, but no agent owned drawing them | D | this PR |
+| 16 | Production gates don't sit in front of ordinary merges | Spec 040 deploys every merge to `main` to production, so `/launch production`'s gates guard only the release it is run for, not each task merge (found while fixing PR 103's hole H) | to decide | open |
 
 **Carried to step C with the enforcement work** (they are code, so they need a spec note and a task):
 - nothing reads the new agent, skill and template files, or `## Progress`, or the breaker in DoD §4
