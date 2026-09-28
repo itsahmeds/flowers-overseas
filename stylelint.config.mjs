@@ -94,6 +94,10 @@ const config = {
   // The rule fixtures under `tests/fixtures/lint/` are outside the main run because `lint:css`
   // globs `src/**/*.css`; `lint:fixtures` points Stylelint at them deliberately.
   ignoreFiles: ["**/node_modules/**", ".next/**", "coverage/**"],
+  // spec 001 §14 A20, AC-50 (§13 Q18: yes): a `/* stylelint-disable */` comment has no effect,
+  // so one line of CSS cannot switch the physical-CSS or raw-colour bans off.
+  // `pnpm check:no-literal-disable` (AC-51 (c)) also fails on the comment itself.
+  ignoreDisables: true,
   rules: {
     "property-disallowed-list": DISALLOWED_PROPERTIES,
     "color-no-hex": true,

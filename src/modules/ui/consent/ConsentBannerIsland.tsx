@@ -108,6 +108,11 @@ export interface ConsentBannerIslandProps {
   readonly view: ConsentView;
 }
 
+/** Whether the page is served over HTTPS, so the cookie carries `Secure`. Read at call time. */
+function secure(): boolean {
+  return window.location.protocol === "https:";
+}
+
 export function ConsentBannerIsland({ view }: ConsentBannerIslandProps) {
   const { config, strings, categories } = view;
   const headlineId = useId();
@@ -137,8 +142,6 @@ export function ConsentBannerIsland({ view }: ConsentBannerIslandProps) {
     stored === null ? NO_CHOICES : choicesOf(stored),
   );
 
-  const secure = (): boolean => window.location.protocol === "https:";
-
   /** Move focus back to the control that opened the sheet, but only if the sheet holds it. */
   const restoreFocus = useCallback(() => {
     const active = document.activeElement;
@@ -154,20 +157,22 @@ export function ConsentBannerIsland({ view }: ConsentBannerIslandProps) {
 
   // A value we could not parse is deleted rather than left to rot in the browser (AC-19). One
   // pass, on mount: nothing is stored in its place and no request is sent, so no decision is
-  // recorded by this effect.
+  // recorded by this effect. Mount only: `stored` changes when a decision is made, and a decision
+  // writes its own value, so the pass reads the values the island mounted with, held in a ref
+  // (no lint comment may switch the hooks rule off: spec 001 AC-50).
+  const mounted = useRef({ stored, cookieName: config.cookieName });
   useEffect(() => {
-    if (stored !== null) return;
+    const { stored: initial, cookieName } = mounted.current;
+    if (initial !== null) return;
     try {
-      if (rawCookieValue(document.cookie, config.cookieName) === null) return;
+      if (rawCookieValue(document.cookie, cookieName) === null) return;
       document.cookie = clearConsentCookie({
-        name: config.cookieName,
+        name: cookieName,
         secure: secure(),
       });
     } catch {
       // A blocked storage context. The banner is showing anyway, which is the safe answer.
     }
-    // Mount only: `stored` changes when a decision is made, and a decision writes its own value.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /**

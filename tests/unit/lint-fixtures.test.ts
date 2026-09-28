@@ -8,8 +8,10 @@ import { ESLint } from "eslint";
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import stylelint from "stylelint";
 import { describe, expect, it } from "vitest";
 
+import { findLockedCommentsInSource } from "../../scripts/check-no-literal-disable";
 import { lintFixtures } from "../../scripts/lint-fixtures";
 
 const repoRoot = resolve(__dirname, "../..");
@@ -126,6 +128,143 @@ describe("pnpm lint:fixtures over the real configs", () => {
       "fo/no-float-money",
       "fo/no-float-money",
     ]);
+  });
+
+  /**
+   * T-54 (spec 001 §14 A20, AC-50 and AC-51; TASK-158): the audit's plant. Before A20 a bare
+   * disable above `export const price = 1.5` gave exit 0 from every check
+   * (`docs/framework/standards-audit-2026-09-28.md`). Now the comment is powerless
+   * (`noInlineConfig`), ESLint says so in a warning, `--max-warnings 0` fails the run on that
+   * warning even when the comment suppressed nothing, and the scan outside ESLint names it.
+   */
+  describe("T-54: the audit's plant goes red", () => {
+    const plant = readFileSync(
+      resolve(repoRoot, "tests/fixtures/lint/bare-disable.ts"),
+      "utf8",
+    );
+    const noEffect = /has no effect because you have 'noInlineConfig'/;
+
+    /** The `--max-warnings` threshold of `pnpm lint:js`; `undefined` when there is none. */
+    const lintJsMaxWarnings = (): number | undefined => {
+      const pkg = JSON.parse(
+        readFileSync(resolve(repoRoot, "package.json"), "utf8"),
+      ) as { scripts: Record<string, string> };
+      const match = /--max-warnings[= ](\d+)\b/.exec(
+        pkg.scripts["lint:js"] ?? "",
+      );
+      return match?.[1] === undefined ? undefined : Number(match[1]);
+    };
+    /** Whether `pnpm lint:js` exits non-zero on this result: an error, or too many warnings. */
+    const lintJsFails = (result: ESLint.LintResult): boolean => {
+      const max = lintJsMaxWarnings();
+      return (
+        result.errorCount > 0 ||
+        (max !== undefined && result.warningCount > max)
+      );
+    };
+    const brief = (result: ESLint.LintResult | undefined) =>
+      (result?.messages ?? []).map((message) => ({
+        ruleId: message.ruleId,
+        line: message.line,
+        severity: message.severity,
+        noEffect: noEffect.test(message.message),
+      }));
+    const realConfig = (): ESLint =>
+      new ESLint({
+        cwd: repoRoot,
+        overrideConfigFile: resolve(repoRoot, "eslint.config.mjs"),
+      });
+
+    it("is the audit's two lines, byte for byte", () => {
+      expect(plant).toBe("/* eslint-disable */\nexport const price = 1.5;\n");
+    });
+
+    it("lint:fixtures reports fo/no-float-money on line 2 and the no-effect warning on line 1", async () => {
+      expect(rulesFor("bare-disable.ts")).toContain("fo/no-float-money");
+      const eslint = new ESLint({
+        cwd: repoRoot,
+        ignore: false,
+        overrideConfigFile: resolve(repoRoot, "eslint.config.mjs"),
+      });
+      const [result] = await eslint.lintFiles([
+        "tests/fixtures/lint/bare-disable.ts",
+      ]);
+      expect(brief(result)).toEqual([
+        { ruleId: null, line: 1, severity: 1, noEffect: true },
+        { ruleId: "fo/no-float-money", line: 2, severity: 2, noEffect: false },
+      ]);
+    });
+
+    it("the scan outside ESLint reports a bare disable on line 1", () => {
+      expect(
+        findLockedCommentsInSource(
+          "tests/fixtures/lint/bare-disable.ts",
+          plant,
+        ),
+      ).toEqual([
+        {
+          file: "tests/fixtures/lint/bare-disable.ts",
+          line: 1,
+          text: "/* eslint-disable */",
+          reason: "bare-directive",
+        },
+      ]);
+    });
+
+    it("fails pnpm lint:js when planted in src/modules/geo/", async () => {
+      const [result] = await realConfig().lintText(plant, {
+        filePath: resolve(repoRoot, "src/modules/geo/plant.ts"),
+      });
+      expect(brief(result)).toEqual([
+        { ruleId: null, line: 1, severity: 1, noEffect: true },
+        { ruleId: "fo/no-float-money", line: 2, severity: 2, noEffect: false },
+      ]);
+      expect(result !== undefined && lintJsFails(result)).toBe(true);
+    });
+
+    it("fails pnpm lint:js on a bare disable that suppresses nothing (--max-warnings 0)", async () => {
+      const [result] = await realConfig().lintText(
+        "/* eslint-disable */\nexport const a = 1;\n",
+        { filePath: resolve(repoRoot, "src/modules/geo/plant.ts") },
+      );
+      expect(brief(result)).toEqual([
+        { ruleId: null, line: 1, severity: 1, noEffect: true },
+      ]);
+      expect(lintJsMaxWarnings()).toBe(0);
+      expect(result !== undefined && lintJsFails(result)).toBe(true);
+    });
+
+    it("leaves a named disable of a rule that is not ours powerless too (AC-50)", async () => {
+      const [result] = await realConfig().lintText(
+        [
+          "/* eslint no-console: off */",
+          "export function f(x: string): void {",
+          "  // eslint-disable-next-line no-console",
+          "  console.log(x);",
+          "}",
+          "",
+        ].join("\n"),
+        { filePath: resolve(repoRoot, "src/modules/geo/plant.ts") },
+      );
+      expect(brief(result)).toEqual([
+        { ruleId: null, line: 1, severity: 1, noEffect: true },
+        { ruleId: null, line: 3, severity: 1, noEffect: true },
+        { ruleId: "no-console", line: 4, severity: 2, noEffect: false },
+      ]);
+    });
+
+    it("leaves /* stylelint-disable */ powerless in CSS (§13 Q18, ignoreDisables)", async () => {
+      const result = await stylelint.lint({
+        code: "/* stylelint-disable */\na { margin-left: 0; }\n",
+        codeFilename: resolve(repoRoot, "src/app/plant.css"),
+        configFile: resolve(repoRoot, "stylelint.config.mjs"),
+      });
+      expect(
+        result.results.flatMap((entry) =>
+          entry.warnings.map((warning) => warning.rule),
+        ),
+      ).toEqual(["property-disallowed-list"]);
+    });
   });
 
   it("keeps the fixture directory out of the main lint run", async () => {
