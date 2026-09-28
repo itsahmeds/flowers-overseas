@@ -39,6 +39,7 @@ import {
   runDevOsCheck,
   runDevOsChecks,
 } from "../../scripts/dev-os-check.ts";
+import { mappedTests } from "../../scripts/gates-cheap.ts";
 
 const repoRoot = resolve(__dirname, "../..");
 const tempRoots: string[] = [];
@@ -619,6 +620,12 @@ describe("agent turn caps (T-47, AC-45)", () => {
       expect(fm.maxTurns).toBe(turns);
     },
   );
+
+  it("runs in gates:cheap whenever an agent file changes (PATH_TESTS)", () => {
+    expect(mappedTests([".claude/agents/reviewer.md"])).toContain(
+      "tests/unit/dev-os.test.ts",
+    );
+  });
 
   it("orchestrator.md declares no maxTurns", () => {
     const fm = frontmatter("orchestrator.md");

@@ -90,6 +90,11 @@ export const PATH_TESTS: readonly PathTestEntry[] = [
     paths: [".claude/templates/work-order.md", ".claude/agents/"],
     tests: ["tests/unit/work-order-roles.test.ts"],
   },
+  // T-47 (AC-45, TASK-154): every agent file's `maxTurns` against §13 Q11's table.
+  {
+    paths: [".claude/agents/"],
+    tests: ["tests/unit/dev-os.test.ts"],
+  },
 ];
 
 function pathMatches(pattern: string, path: string): boolean {

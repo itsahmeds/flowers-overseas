@@ -11,13 +11,14 @@ scripts, which run inside a Claude Code session:
 | `.claude/hooks/bash-guard.sh` → `bash_guard.py` | PreToolUse hook (`Bash`) | denies `pkill`/`killall`, `kill` of a `pgrep`/`lsof` PID, `git stash`, `pgrep`/`sleep` wait loops, dispatching `ci.yml`, `build-slot.sh release --force` in a subagent, and shell writes into application code with no task; heredoc bodies and quoted strings are data |
 | `.claude/bin/task.sh` | CLI | `set TASK-NNN` · `show` · `clear` · `check` — the main checkout's pointer (refused while a task worktree exists); in a linked worktree it reports the branch's task and changes nothing |
 | `.claude/bin/build-slot.sh` | CLI | `acquire` prints a token, `release <token>` (exit 3 without it), `release --force`, `status` |
+| `.claude/hooks/agent-clock.sh` → `agent_clock.py` | `SubagentStart`, `SubagentStop`, `PreToolUse` (every tool) | writes and removes `.claude/state/agent-clock/<agent_id>`; past the role's ceiling (180 or 30 min) denies every tool call outside the save set, which always lets an agent commit, push, post its verdict, open a draft PR and write a body file or memo |
 | `.claude/hooks/tasks-reminder.sh` | Stop hook | prints the "application code changed but TASKS.md was not updated" reminder, the "active task … is set but no code changed" note, and `task.sh check`'s reasons for a stale pointer |
 
 Nothing in the product exercises them, and a broken hook is silent: it either lets code through
 that should have been blocked, or it blocks everything and the session gets worked around. This
 directory is the executable proof that they behave as documented (spec
-`specs/001-repo-dev-os-bootstrap.md` AC-24, AC-25, AC-26 · T-25, T-26, T-27; §14 A19 AC-37…AC-42 ·
-T-38…T-44, T-52, T-53; §11 "Dev OS": this output is the audit trail).
+`specs/001-repo-dev-os-bootstrap.md` AC-24, AC-25, AC-26 · T-25, T-26, T-27; §14 A19 AC-37…AC-42,
+AC-45, AC-46 · T-38…T-44, T-47, T-48, T-52, T-53; §11 "Dev OS": this output is the audit trail).
 
 | File | Covers |
 |---|---|
@@ -26,8 +27,9 @@ T-38…T-44, T-52, T-53; §11 "Dev OS": this output is the audit trail).
 | `build-slot.test.sh` | AC-41 / T-43 — the token, exit 3 without it, `--force`, the 45-minute reap, all under a private `TMPDIR` |
 | `guard.test.sh` | AC-24 / T-25 — deny with no active task, allow with `TASK-001`, unguarded roots (`specs/`, `messages/`, `TASKS.md`), `tests/` is guarded, non-`Edit` tools, fail-open on a malformed payload |
 | `task-sh.test.sh` | AC-25, AC-42 / T-26, T-44, T-53 — `set` refused without a row, for a `done` task and while a task worktree exists; `show`/`clear`/`check` and every stale reason; the task derived from the branch in a linked worktree |
+| `agent-clock.test.sh` | AC-46 / T-48 — every T-48 row (the save set past the ceiling, the scratch places with `..` and symlinks resolved), each role's ceiling, the orchestrator and built-in agents untimed, fail-open, and `SubagentStop` removing the file |
 | `stop-hook.test.sh` | AC-26, AC-40, AC-42 / T-27, T-42 — the reminder when code changed (under `db/` too) and `TASKS.md` did not, silence on a clean tree, the "no code changed" note, a stale pointer's reasons |
-| `../unit/dev-os.test.ts` | the Vitest wrapper: runs `pnpm dev-os:check` inside `pnpm test` (and so inside the `test-unit` CI job), the negative cases proving the harness reports a failure, T-41 (one path table through both hooks, and `db/` deleted from a scratch copy of `guarded_paths.py`) and T-52 (exactly the committed checks) |
+| `../unit/dev-os.test.ts` | the Vitest wrapper: runs `pnpm dev-os:check` inside `pnpm test` (and so inside the `test-unit` CI job), the negative cases proving the harness reports a failure, T-41 (one path table through both hooks, and `db/` deleted from a scratch copy of `guarded_paths.py`), T-47 (every agent file's `maxTurns`) and T-52 (exactly the committed checks) |
 
 ## Run them
 
