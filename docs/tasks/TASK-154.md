@@ -25,6 +25,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From `/break 108` (2026-09-28):** TASK-159 waits for you, because both write `scripts/gates-cheap.ts`.
 
 ## Escalations
 

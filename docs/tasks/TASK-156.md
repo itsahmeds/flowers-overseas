@@ -28,6 +28,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From `/break 108` (2026-09-28):** you wait for TASK-158, because both edit `package.json` (your `release:*` scripts, its lint flags).
 
 ## Escalations
 
