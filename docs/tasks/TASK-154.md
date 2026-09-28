@@ -35,11 +35,13 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   procedure for a partial result: resume the agent with 'save, clean up and report partial'; if
   that fails, send a finisher and force the dead owner's slot (AC-41)". The work order's fence
   allows only the `maxTurns` frontmatter line in agent files, so PR 112 does not add it. Who writes
-  that paragraph (this PR with a widened fence, or a follow-up)? `open`.
+  that paragraph (this PR with a widened fence, or a follow-up)? **Answered by the orchestrator,
+  2026-09-28: this PR; fence widened to that paragraph.**
 - **2026-09-28, to the orchestrator:** CI run 36462270081 on `a188b7e` fails `tests/unit/docs.test.ts`
   L165, `expect(Object.keys(settings.hooks ?? {})).toEqual(["PreToolUse", "Stop"])`, which the three
   clock entries necessarily change to `["PreToolUse", "SubagentStart", "SubagentStop", "Stop"]`.
-  The file is outside the fence. Widen it to that one line? `open`.
+  The file is outside the fence. Widen it to that one line? **Answered by the orchestrator,
+  2026-09-28: yes, plus mapping `.claude/settings.json` to `docs.test.ts` in `PATH_TESTS`.**
 
 ## Progress
 
@@ -50,6 +52,7 @@ here.
 - 2026-09-28: clock hook (`agent-clock.sh` → `agent_clock.py`) and `tests/dev-os/agent-clock.test.sh` (T-48, 237 assertions) green; draft PR 112 opened.
 - 2026-09-28: `maxTurns` in nine agent files, the three `.claude/settings.json` entries, T-47 and T-52's count in `tests/unit/dev-os.test.ts`; `PATH_TESTS` entry; runbook and README. Rebased on `origin/main` `bfae5c9` (TASKS.md row conflict only). Mutations shown red; `gates:cheap` PASS. Next: ready + `ci:full`, founder's yes on the settings entries.
 - 2026-09-28: CI on `a188b7e` red: T-48's `/tmp`-link row assumed macOS (fixed: the row applies only where `/tmp` → `/private/tmp`), and `tests/unit/docs.test.ts` L165 pins the settings hook keys (outside the fence, escalated). Handed back.
+- 2026-09-28: fence widened: `orchestrator.md` gains AC-45's partial-result paragraph (frontmatter unchanged), `docs.test.ts` L165 pins the four hook events (red with `SubagentStop` removed), `PATH_TESTS` maps `.claude/settings.json` → `docs.test.ts`.
 
 ## Result
 
@@ -64,4 +67,8 @@ breaker, advisor). Tests: integration (shell) `tests/dev-os/agent-clock.test.sh`
 (every T-48 row plus each role's ceiling, symlink and `..` escapes, fail-open); unit
 `tests/unit/dev-os.test.ts` 69 cases, 17 new (T-47: 9 roles, orchestrator absent, the file set, the
 `PATH_TESTS` mapping; T-52 now six checks; the settings registration). No build slot taken.
-Handed on: the orchestrator's partial-result paragraph (Escalations).
+`orchestrator.md` carries AC-45's partial-result procedure; `docs.test.ts` pins the four hook
+events. Suggestions, not done: `SubagentStart` also fires when an agent is resumed, so a resume
+resets its clock (the resumed agent gets a fresh ceiling); a clock file whose `SubagentStop` never
+fired (a crashed session) stays in `.claude/state/agent-clock/` with nothing to reap it, and the
+wrapper's fast path then no longer skips python for that agent id.
