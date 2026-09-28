@@ -15,12 +15,15 @@
  */
 import { execFileSync } from "node:child_process";
 import {
+  cpSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
   readdirSync,
   readFileSync,
+  realpathSync,
   rmSync,
+  statSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -95,8 +98,10 @@ describe("pnpm dev-os:check (AC-24, AC-25, AC-26)", () => {
 
   it.each([
     ["guard.test.sh", "AC-24"],
-    ["task-sh.test.sh", "AC-25"],
-    ["stop-hook.test.sh", "AC-26"],
+    ["task-sh.test.sh", "AC-25, AC-42"],
+    ["stop-hook.test.sh", "AC-26, AC-40, AC-42"],
+    ["bash-guard.test.sh", "AC-37, AC-38, AC-39"],
+    ["build-slot.test.sh", "AC-41"],
   ])("reports %s as passed (%s)", (script) => {
     expect(result.stdout).toMatch(
       new RegExp(`dev-os:check ${script.replace(".", "\\.")}: \\d+ passed`),
@@ -108,7 +113,7 @@ describe("pnpm dev-os:check (AC-24, AC-25, AC-26)", () => {
       "### dev-os-check (AC-24, AC-25, AC-26 / T-25, T-26, T-27)",
     );
     expect(result.stdout).toMatch(
-      /\*\*3 check\(s\), \d+ assertion\(s\): \d+ passed, 0 failed\.\*\*/,
+      /\*\*5 check\(s\), \d+ assertion\(s\): \d+ passed, 0 failed\.\*\*/,
     );
   });
 
@@ -139,8 +144,12 @@ describe("pnpm dev-os:check (AC-24, AC-25, AC-26)", () => {
     expect(pkg.scripts["dev-os:check"]).toBe("node scripts/dev-os-check.ts");
   });
 
-  it("discovers exactly the three committed checks", () => {
+  // T-52 (spec 001 §14 A19): the count covers the shell guard's and the build slot's checks, so a
+  // deleted check file turns this red. TASK-154 adds its clock check here.
+  it("discovers exactly the committed checks", () => {
     expect(devOsCheckScripts(repoRoot)).toEqual([
+      "bash-guard.test.sh",
+      "build-slot.test.sh",
       "guard.test.sh",
       "stop-hook.test.sh",
       "task-sh.test.sh",
@@ -304,5 +313,221 @@ describe("tests/dev-os/lib.sh assertions (the checks' own gate)", () => {
     const before = snapshot();
     run(process.execPath, ["scripts/dev-os-check.ts"]);
     expect(snapshot()).toBe(before);
+    // A full second run of every check (the shell guard's alone feeds its hook over a hundred
+    // payloads), so it gets the time a full run takes rather than the 5 s default.
+  }, 120_000);
+});
+
+/**
+ * T-41 / AC-38, AC-40 (spec 001 §14 A19, TASK-150): one table of paths, fed to both hooks'
+ * classifier — `task-guard.sh` as a `Write`, `bash-guard.sh` as `echo x > <path>` — gives identical
+ * verdicts, because both import `.claude/hooks/guarded_paths.py`. The deletion case runs the same
+ * table against a scratch copy of `.claude/hooks/` whose `guarded_paths.py` has lost `db/`: the
+ * `db/` rows flip to "allowed" in both hooks at once, and nothing else changes.
+ */
+describe("the shared guarded-path classifier (T-41)", () => {
+  function git(cwd: string, ...args: string[]): void {
+    execFileSync("git", args, { cwd, stdio: "ignore" });
+  }
+
+  const main = realpathSync(tempRoot());
+  mkdirSync(join(main, ".claude/state"), { recursive: true });
+  writeFileSync(
+    join(main, "TASKS.md"),
+    "| ID | Title | Spec | Phase | Status |\n|---|---|---|---|---|\n| TASK-001 | x | y | 0 | in_progress |\n",
+  );
+  git(main, "-c", "init.defaultBranch=main", "init", "-q");
+  git(
+    main,
+    "-c",
+    "user.name=dev-os check",
+    "-c",
+    "user.email=dev-os@example.invalid",
+    "-c",
+    "commit.gpgsign=false",
+    "-c",
+    "core.hooksPath=/dev/null",
+    "commit",
+    "-q",
+    "--no-verify",
+    "--allow-empty",
+    "-m",
+    "fixture",
+  );
+  const branchWorktree = join(realpathSync(tempRoot()), "wt");
+  const detachedWorktree = join(realpathSync(tempRoot()), "wt");
+  git(main, "worktree", "add", "-q", "-b", "spec/x", branchWorktree);
+  git(main, "worktree", "add", "-q", "--detach", detachedWorktree);
+  // Folder names whose casefold changes length: `ß` → `ss`, `İ` → `i̇` (PR 107 breaker, hole 7).
+  const eszettWorktree = join(realpathSync(tempRoot()), "straße");
+  const dottedIWorktree = join(realpathSync(tempRoot()), "İstanbul");
+  git(main, "worktree", "add", "-q", "-b", "spec/y", eszettWorktree);
+  git(main, "worktree", "add", "-q", "-b", "spec/z", dottedIWorktree);
+  // One name, two Unicode spellings: composed `é` (NFC) and `e` + combining acute (NFD). This Mac's
+  // disk treats them as the same folder (PR 107 breaker, hole 8).
+  const composed = "caf\u00e9";
+  const decomposed = "cafe\u0301";
+  const nfcParent = realpathSync(tempRoot());
+  const nfdParent = realpathSync(tempRoot());
+  git(
+    main,
+    "worktree",
+    "add",
+    "-q",
+    "-b",
+    "spec/nfc",
+    join(nfcParent, composed),
+  );
+  git(
+    main,
+    "worktree",
+    "add",
+    "-q",
+    "-b",
+    "spec/nfd",
+    join(nfdParent, decomposed),
+  );
+  const outside = join(realpathSync(tempRoot()), "outside.ts");
+
+  // [path, guarded?] — no task is active anywhere: the main pointer is absent, `spec/x` has none.
+  const table: readonly (readonly [string, boolean])[] = [
+    [join(main, "src/lib/a.ts"), true],
+    [join(main, "app/page.tsx"), true],
+    [join(main, "supabase/migrations/1.sql"), true],
+    [join(main, "db/migrations/0001_init.sql"), true],
+    [join(main, "emails/welcome.tsx"), true],
+    [join(main, "seed/catalog.ts"), true],
+    [join(main, "tests/unit/a.test.ts"), true],
+    // this Mac's disk ignores case, so the classifier casefolds (PR 107 breaker, hole 6)
+    [join(main, "SRC/a.ts"), true],
+    [join(main, "Db/migrations/0003.sql"), true],
+    [join(main.toUpperCase(), "src/a.ts"), true],
+    [join(main, "docs/notes.md"), false],
+    [join(main, "specs/001.md"), false],
+    [join(main, ".claude/state/note"), false],
+    [join(main, "messages/en.json"), false],
+    [join(main, "srcx/a.ts"), false],
+    [join(main, "TASKS.md"), false],
+    [outside, false],
+    [join(branchWorktree, "src/a.ts"), true],
+    [join(branchWorktree, "db/migrations/0002.sql"), true],
+    [join(eszettWorktree, "src/a.ts"), true],
+    [join(dottedIWorktree, "src/a.ts"), true],
+    [join(nfcParent, decomposed, "src/a.ts"), true],
+    [join(nfdParent, composed, "src/a.ts"), true],
+    [join(detachedWorktree, "src/a.ts"), false],
+    [join(detachedWorktree, "db/migrations/0002.sql"), false],
+  ];
+
+  /** Runs one hook on one payload; "deny" or "allow". */
+  function verdict(hook: string, payload: object): "deny" | "allow" {
+    const out = execFileSync("bash", [hook], {
+      input: JSON.stringify(payload),
+      encoding: "utf8",
+      env: { ...process.env, CLAUDE_PROJECT_DIR: main },
+    });
+    if (out.trim() === "") return "allow";
+    const decision = (
+      JSON.parse(out) as {
+        hookSpecificOutput?: { permissionDecision?: string };
+      }
+    ).hookSpecificOutput?.permissionDecision;
+    return decision === "deny" ? "deny" : "allow";
+  }
+
+  function verdicts(hooksDir: string, path: string) {
+    return {
+      edit: verdict(join(hooksDir, "task-guard.sh"), {
+        tool_name: "Write",
+        cwd: main,
+        tool_input: { file_path: path, content: "x" },
+      }),
+      shell: verdict(join(hooksDir, "bash-guard.sh"), {
+        tool_name: "Bash",
+        cwd: main,
+        tool_input: { command: `echo x > ${path}` },
+      }),
+    };
+  }
+
+  const realHooks = join(repoRoot, ".claude/hooks");
+
+  it.each(table)("%s → guarded %s, in both hooks", (path, guarded) => {
+    const expected = guarded ? "deny" : "allow";
+    expect(verdicts(realHooks, path)).toEqual({
+      edit: expected,
+      shell: expected,
+    });
   });
+
+  it("deleting db/ from guarded_paths.py turns the db/ rows red in both hooks, and only them", () => {
+    const copy = join(tempRoot(), "hooks");
+    cpSync(realHooks, copy, { recursive: true });
+    const shared = join(copy, "guarded_paths.py");
+    const source = readFileSync(shared, "utf8");
+    expect(source).toContain('"db/", ');
+    writeFileSync(shared, source.replace('"db/", ', ""));
+
+    for (const [path, guarded] of table) {
+      const isDbRow = path.toLowerCase().includes("/db/");
+      const expected = guarded && !isDbRow ? "deny" : "allow";
+      expect({ path, ...verdicts(copy, path) }).toEqual({
+        path,
+        edit: expected,
+        shell: expected,
+      });
+    }
+    // The real file still guards db/: the table above is what the rows turn red against.
+    expect(verdicts(realHooks, join(main, "db/x.sql"))).toEqual({
+      edit: "deny",
+      shell: "deny",
+    });
+  });
+});
+
+/**
+ * PR 107 breaker, hole 1: the shell guard only works if Claude Code runs it. `.claude/settings.json`
+ * must register `bash-guard.sh` as a `PreToolUse` hook on the `Bash` tool (AC-37), beside
+ * `task-guard.sh` on the edit tools, and both scripts must be executable, since the command runs
+ * them directly.
+ */
+describe("hook registration in .claude/settings.json (AC-37)", () => {
+  interface HookEntry {
+    readonly matcher?: string;
+    readonly hooks?: readonly {
+      readonly type?: string;
+      readonly command?: string;
+    }[];
+  }
+  const settings = JSON.parse(
+    readFileSync(join(repoRoot, ".claude/settings.json"), "utf8"),
+  ) as { hooks?: { PreToolUse?: readonly HookEntry[] } };
+  const preToolUse = settings.hooks?.PreToolUse ?? [];
+
+  function commandsFor(matcher: string): string[] {
+    return preToolUse
+      .filter((entry) => entry.matcher === matcher)
+      .flatMap((entry) => entry.hooks ?? [])
+      .filter((hook) => hook.type === "command")
+      .map((hook) => hook.command ?? "");
+  }
+
+  it("runs bash-guard.sh on the Bash tool", () => {
+    expect(commandsFor("Bash")).toEqual([
+      '"$CLAUDE_PROJECT_DIR"/.claude/hooks/bash-guard.sh',
+    ]);
+  });
+
+  it("still runs task-guard.sh on Edit|Write|NotebookEdit", () => {
+    expect(commandsFor("Edit|Write|NotebookEdit")).toEqual([
+      '"$CLAUDE_PROJECT_DIR"/.claude/hooks/task-guard.sh',
+    ]);
+  });
+
+  it.each([".claude/hooks/bash-guard.sh", ".claude/hooks/task-guard.sh"])(
+    "%s is executable",
+    (path) => {
+      expect(statSync(join(repoRoot, path)).mode & 0o111).not.toBe(0);
+    },
+  );
 });

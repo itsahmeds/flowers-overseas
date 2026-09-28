@@ -77,6 +77,56 @@ describe("the skills (AC-36)", () => {
   });
 });
 
+/**
+ * T-53 (spec 001 §14 A19 AC-42, TASK-151): an implementer's task comes from its
+ * `task/TASK-NNN-<slug>` branch, so nothing tells it to set or clear the main checkout's pointer. A
+ * `set` run after its shell cwd resets into the main checkout is how a stale pointer (TASK-143's)
+ * comes back. The prohibition is written as "do not touch `.claude/state/active-task`", so these
+ * stay plain string tests. The work order's `## Role: implementer` section is read too (PR 107
+ * breaker, hole 9). Files are read from `FRAMEWORK_ROOT` when it is set, so a breaker can mutate a
+ * scratch copy instead of the real tree.
+ */
+describe("the task comes from the branch (T-53)", () => {
+  const root = resolve(process.env.FRAMEWORK_ROOT ?? repoRoot);
+  const readFrom = (path: string): string =>
+    readFileSync(join(root, path), "utf8");
+  const IMPLEMENTER_TEXTS = [
+    ".claude/agents/frontend-implementer.md",
+    ".claude/agents/backend-implementer.md",
+    ".claude/skills/implement/SKILL.md",
+  ] as const;
+
+  it.each(IMPLEMENTER_TEXTS)(
+    "%s says the task comes from the branch",
+    (path) => {
+      expect(readFrom(path)).toContain("the task comes from the branch");
+    },
+  );
+
+  it.each(IMPLEMENTER_TEXTS)(
+    "%s contains neither `task.sh set` nor `task.sh clear`",
+    (path) => {
+      const text = readFrom(path);
+      expect(text).not.toContain("task.sh set");
+      expect(text).not.toContain("task.sh clear");
+    },
+  );
+
+  it("the work order's `## Role: implementer` section says the same", () => {
+    const workOrder = readFrom(".claude/templates/work-order.md");
+    const start = workOrder.indexOf("## Role: implementer");
+    expect(start).toBeGreaterThanOrEqual(0);
+    const next = workOrder.indexOf("\n## ", start + 1);
+    const section = workOrder.slice(
+      start,
+      next === -1 ? workOrder.length : next,
+    );
+    expect(section).toContain("the task comes from the branch");
+    expect(section).not.toContain("task.sh set");
+    expect(section).not.toContain("task.sh clear");
+  });
+});
+
 describe("CLAUDE.md (AC-36)", () => {
   const claude = read("CLAUDE.md");
 

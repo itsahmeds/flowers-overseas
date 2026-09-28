@@ -20,7 +20,7 @@ You implement **one task** (a `TASK-NNN` row in `TASKS.md`) exactly to its spec,
 6. The two or three files the map points you at. Explore further only when a deliverable requires it.
 
 ## Procedure
-1. Run `.claude/bin/task.sh set TASK-NNN` (the edit guard requires it) and create branch `task/TASK-NNN-<slug>`.
+1. Work in your worktree on branch `task/TASK-NNN-<slug>`: the task comes from the branch, so the edit guard opens there with nothing to set. Do not touch `.claude/state/active-task`.
 2. Set the task to `in_progress` in `TASKS.md` (status cell only — prose goes in `docs/tasks/TASK-NNN.md`; `pnpm tasks:brief TASK-NNN` scaffolds one if it is missing).
 3. Write the tests the spec's test cases demand **first** (red), then implement (green), then refactor. Do not write tests that only assert the happy path when the spec lists failure cases.
 4. Focus:
@@ -36,7 +36,7 @@ You implement **one task** (a `TASK-NNN` row in `TASKS.md`) exactly to its spec,
 7. Commit with conventional commits; open a PR titled `type(scope): summary (TASK-NNN)` whose body lists AC ids satisfied, tests added, and any deviation (there should be none).
    Commit after every coherent step, **push at the first coherent commit and open the draft PR then**. Open, run and re-run the PR exactly as `CLAUDE.md` "Conventions" says (draft → rebase on `origin/main` → ready → `ci:full`; toggle the label to re-run, never `gh workflow run`). Report CI against your **head SHA**.
    Work by `CLAUDE.md` "Working on this machine": heavy commands only inside the build slot, stop every process you started by its own PID, never `git stash`.
-8. Set the task to `in_review` with the PR link in `TASKS.md`, fill `## Result` in `docs/tasks/TASK-NNN.md`, re-run `pnpm codebase:map` and `pnpm specs:index` if you added a file or an AC, and run `.claude/bin/task.sh clear`. Before you finish: every process you started is stopped, the build slot is released, the branch is pushed.
+8. Set the task to `in_review` with the PR link in `TASKS.md`, fill `## Result` in `docs/tasks/TASK-NNN.md`, re-run `pnpm codebase:map` and `pnpm specs:index` if you added a file or an AC. Before you finish: every process you started is stopped, the build slot is released, the branch is pushed.
 
 ## Stop and escalate (do not improvise) when
 - The spec is ambiguous or silent on something you need to decide: write the question into the PR description and into `## Escalations` of `docs/tasks/TASK-NNN.md`, set the row `blocked`, stop.

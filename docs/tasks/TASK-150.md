@@ -29,7 +29,9 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- **2026-09-28, orchestrator (fence update, from PR 106's escalations):** (1) `tests/unit/agent-orientation.test.ts` joins this task's fence for T-53's one text case; PR 106 also edits the file (five headings to six), and whichever PR merges second rebases and keeps both. (2) `docs/framework/gaps.md` row 5 is marked closed by whichever of PR 107 and PR 106 merges second, after checking `origin/main`; row 4 is this PR's regardless. Rebase on `origin/main` `d85b69e` before `gh pr ready`, keeping both sides of any `gaps.md` clash.
+- **2026-09-28, implementer → orchestrator (resolved by the rulings below):** AC-42 says `/status` runs `task.sh check` and prints a **Guard** line, and `CLAUDE.md` "How to start a session" should mention it. The `/status` report is defined in `.claude/agents/orchestrator.md` L27 and `.claude/skills/status/SKILL.md`, both outside this fence, so neither is edited and the `CLAUDE.md` mention is held back (it would claim a line `/status` does not print yet). Proposed text for L27: "then a **Guard** line: `.claude/bin/task.sh check`'s output for the pointer, and `git -C <worktree> … task.sh check` for every `task/*` worktree, with `.claude/bin/task.sh clear` as the command when the pointer is stale; never clear it yourself." Also owed by AC-42 to this PR and outside the fence: `.claude/templates/work-order.md` L120/L130 (`task.sh clear`/`set` in the writing-role lines), which belong to TASK-152+153.
+- **2026-09-28, orchestrator rulings on PR 107's escalations:** (a) the fence widens to `.claude/skills/status/SKILL.md` and `.claude/agents/orchestrator.md` L27 for the `/status` Guard line, and to `CLAUDE.md` "How to start a session" for its mention; done. The proposed text above said `git -C <worktree> … task.sh check`, but `task.sh` reads its working directory, so the line as written runs `(cd <worktree> && .claude/bin/task.sh check)`. (b) `.claude/templates/work-order.md` L120/L130 wait for PR 106: when it merges, rebase on `origin/main`, apply the L120/L130 change, close `gaps.md` row 5 if this PR merges second, and toggle `ci:full`.
 
 ## Progress
 
@@ -37,11 +39,14 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-09-28: `guarded_paths.py` (shared classifier, worktree rule, Q16), `bash-guard.sh`/`bash_guard.py` (AC-37–AC-39, the release `--force` rule), `task-guard.sh` and the Stop hook on the shared module; T-38–T-41 and T-52 written and green; every denial mutated red on a scratch copy (28 mutations); `CLAUDE.md` rule, DoD §7 and machine lines edited. Next: cheap gates, rebase on `d85b69e`, ready + `ci:full`.
+- 2026-09-28: `/break 107` round 1 holes 1–6 fixed with red-by-mutation cases (see the TASK-151 brief and the PR comment); `guarded_paths.py` casefolds relative paths and worktree containment.
+- 2026-09-28: `/break 107` round 2, hole 7 fixed. `_inside` now compares folder by folder, casefolded, and returns the target's own folders, so a checkout at `…/straße` or `…/İstanbul` no longer reads `src/a.ts` as `rc/a.ts`. The new T-41 rows fail with the old slicing.
+- 2026-09-28: `/break 107` round 3, hole 8 fixed. `_inside` compares each folder name NFC-normalised, then casefolded. T-41 rows for a `café` worktree written in the other Unicode spelling; the composed-worktree row fails without the NFC step.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR [#107](https://github.com/itsahmeds/flowers-overseas/pull/107), shipped with TASK-151 (one PR; the title carries `(TASK-150)` only, because `TITLE_PATTERN` accepts one id). `.claude/hooks/bash-guard.sh` → `bash_guard.py` is registered on `Bash` beside `task-guard.sh` and denies every AC-37 row (reason carries the rule's `W-n` and alternative) and, with no task for the target's worktree, every AC-38 shell write; `.claude/hooks/guarded_paths.py` is the one classifier that `task-guard.sh`, the shell guard and the Stop hook read, so `db/` reaches the Stop hook (AC-40). Tests: `tests/dev-os/bash-guard.test.sh` (206 assertions: T-38, T-39, T-40, T-53 guard half, T-43 guard half), `stop-hook.test.sh` +6 (T-42), `tests/unit/dev-os.test.ts` +19 cases (T-41: 18 path rows through both hooks, and the `db/` deletion on a scratch copy flipping exactly the `db/` rows in both) and T-52's count of five checks. Mutation: 28 single-rule removals on a scratch copy of `.claude/` + `tests/dev-os/`, each turning its case red (listed in the PR). One addition beyond the AC text: `mv`'s **source** under a guarded root counts as a write (moving a file out of `src/` deletes it there); said in the PR. Cheap gates exit 0: typecheck, lint, format:check, i18n:check, check:no-db, codebase:map --check (map unchanged). No build slot taken. `gaps.md` row 5 left for whichever of PR 107 / PR 106 merges second (orchestrator, 2026-09-28).

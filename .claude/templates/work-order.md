@@ -122,7 +122,8 @@ is short, and their report is the record.
 6. **Escalations:** each question, already written into the brief's `## Escalations` (writing
    roles), or listed here for the orchestrator to record (read-only roles).
 7. **Clean-up:** the processes you started and confirmation that each is stopped, the build slot
-   released; writing roles: the branch pushed and `task.sh clear` run; read-only roles: every
+   released; writing roles: the branch pushed, and `task.sh clear` run only if you ran `task.sh set`
+   in the main checkout (a `task/TASK-NNN-<slug>` worktree has nothing to clear); read-only roles: every
    mutation restored and your worktree removed (`git worktree list`).
 8. **Time taken** against the size limit.
 
@@ -132,8 +133,9 @@ Keep the report under about 400 words. Detail belongs in the brief and the PR, n
 
 ## Role: implementer
 
-- Set the active task (`.claude/bin/task.sh set TASK-NNN`), create or check out the branch, write
-  the tests first, and push and open the draft PR at the first coherent commit.
+- Work in the worktree on branch `task/TASK-NNN-<slug>`: the task comes from the branch, so there is
+  nothing to set or clear; do not touch `.claude/state/active-task`. Write the tests first, and push
+  and open the draft PR at the first coherent commit.
 - Fix the code, not the tests: a test bent to go green is a defect, not progress.
 - Before `gh pr ready`: rebase on `origin/main` and push. After it: add `ci:full`.
 

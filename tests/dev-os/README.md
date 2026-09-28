@@ -1,32 +1,38 @@
 # Dev-OS checks
 
 The gates in `CLAUDE.md` — "no application code without a spec and a task ID", "update `TASKS.md`
-before you stop" — are enforced by three shell scripts that run inside a Claude Code session:
+before you stop", and the machine rules of "Working on this machine" — are enforced by these
+scripts, which run inside a Claude Code session:
 
 | Script | Kind | What it does |
 |---|---|---|
-| `.claude/hooks/task-guard.sh` | PreToolUse hook | denies `Edit`/`Write`/`NotebookEdit` under `src/ app/ supabase/ emails/ seed/ tests/` unless `.claude/state/active-task` names a `TASK-NNN` |
-| `.claude/bin/task.sh` | CLI | `set TASK-NNN` (only if `TASKS.md` has that row) · `show` · `clear` — the pointer the guard reads |
-| `.claude/hooks/tasks-reminder.sh` | Stop hook | prints the "application code changed but TASKS.md was not updated" reminder, or the "active task … is set but no code changed" note |
+| `.claude/hooks/guarded_paths.py` | shared module | the guarded roots (`src/ app/ supabase/ db/ emails/ seed/ tests/`) and the one classifier every hook uses: guarded in the main checkout and every branch worktree (not detached ones); the task is the worktree's own (its `task/TASK-NNN-<slug>` branch, or the main checkout's pointer); a `done` task or one with no row counts as none |
+| `.claude/hooks/task-guard.sh` | PreToolUse hook (`Edit\|Write\|NotebookEdit`) | denies a write to application code when no task is active for the target's worktree |
+| `.claude/hooks/bash-guard.sh` → `bash_guard.py` | PreToolUse hook (`Bash`) | denies `pkill`/`killall`, `kill` of a `pgrep`/`lsof` PID, `git stash`, `pgrep`/`sleep` wait loops, dispatching `ci.yml`, `build-slot.sh release --force` in a subagent, and shell writes into application code with no task; heredoc bodies and quoted strings are data |
+| `.claude/bin/task.sh` | CLI | `set TASK-NNN` · `show` · `clear` · `check` — the main checkout's pointer (refused while a task worktree exists); in a linked worktree it reports the branch's task and changes nothing |
+| `.claude/bin/build-slot.sh` | CLI | `acquire` prints a token, `release <token>` (exit 3 without it), `release --force`, `status` |
+| `.claude/hooks/tasks-reminder.sh` | Stop hook | prints the "application code changed but TASKS.md was not updated" reminder, the "active task … is set but no code changed" note, and `task.sh check`'s reasons for a stale pointer |
 
 Nothing in the product exercises them, and a broken hook is silent: it either lets code through
 that should have been blocked, or it blocks everything and the session gets worked around. This
-directory is the executable proof that all three behave as documented (spec
-`specs/001-repo-dev-os-bootstrap.md` AC-24, AC-25, AC-26 · T-25, T-26, T-27; §11 "Dev OS": this
-output is the audit trail).
+directory is the executable proof that they behave as documented (spec
+`specs/001-repo-dev-os-bootstrap.md` AC-24, AC-25, AC-26 · T-25, T-26, T-27; §14 A19 AC-37…AC-42 ·
+T-38…T-44, T-52, T-53; §11 "Dev OS": this output is the audit trail).
 
 | File | Covers |
 |---|---|
 | `lib.sh` | helpers: temp projects, running the three scripts, TAP-ish assertions (`ok N - …` / `not ok N - …`) and the `# <name>: P passed, F failed` summary line |
+| `bash-guard.test.sh` | AC-37, AC-38, AC-39 / T-38, T-39, T-40, T-53 (guard half), T-43 (guard half) — every denial with its `W-n` and alternative, every look-alike that must pass, fail-open, shell writes with and without a task, and the per-worktree task in a temp repository with linked worktrees |
+| `build-slot.test.sh` | AC-41 / T-43 — the token, exit 3 without it, `--force`, the 45-minute reap, all under a private `TMPDIR` |
 | `guard.test.sh` | AC-24 / T-25 — deny with no active task, allow with `TASK-001`, unguarded roots (`specs/`, `messages/`, `TASKS.md`), `tests/` is guarded, non-`Edit` tools, fail-open on a malformed payload |
-| `task-sh.test.sh` | AC-25 / T-26 — `set` refused without a `TASKS.md` row, accepted with one, `show`/`clear`, usage errors, and that the pointer `set` writes is the one the guard reads |
-| `stop-hook.test.sh` | AC-26 / T-27 — the reminder when code changed and `TASKS.md` did not, silence on a clean tree, the "no code changed" note with a task still active |
-| `../unit/dev-os.test.ts` | the Vitest wrapper: runs `pnpm dev-os:check` inside `pnpm test` (and so inside the `test-unit` CI job), plus the negative cases proving the harness reports a failure instead of swallowing it |
+| `task-sh.test.sh` | AC-25, AC-42 / T-26, T-44, T-53 — `set` refused without a row, for a `done` task and while a task worktree exists; `show`/`clear`/`check` and every stale reason; the task derived from the branch in a linked worktree |
+| `stop-hook.test.sh` | AC-26, AC-40, AC-42 / T-27, T-42 — the reminder when code changed (under `db/` too) and `TASKS.md` did not, silence on a clean tree, the "no code changed" note, a stale pointer's reasons |
+| `../unit/dev-os.test.ts` | the Vitest wrapper: runs `pnpm dev-os:check` inside `pnpm test` (and so inside the `test-unit` CI job), the negative cases proving the harness reports a failure, T-41 (one path table through both hooks, and `db/` deleted from a scratch copy of `guarded_paths.py`) and T-52 (exactly the committed checks) |
 
 ## Run them
 
 ```
-pnpm dev-os:check            # all three, aggregated (scripts/dev-os-check.ts) — the CI job
+pnpm dev-os:check            # every check, aggregated (scripts/dev-os-check.ts) — the CI job
 bash tests/dev-os/guard.test.sh   # one check; exits non-zero on any failed assertion
 pnpm test                    # via tests/unit/dev-os.test.ts
 ```

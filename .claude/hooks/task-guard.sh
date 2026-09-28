@@ -1,29 +1,35 @@
 #!/bin/bash
 # PreToolUse guard: block Edit/Write/NotebookEdit to application code when no task is active.
-# Protected roots: src/ app/ supabase/ db/ emails/ seed/ tests/ (tests are code too; db/ = migrations per ADR-0015).
-# Not protected: plan/ specs/ docs/ .claude/ TASKS.md CLAUDE.md README* content/ messages/ (docs, specs, copy, translations).
+# What is guarded, and which task opens it, is decided by .claude/hooks/guarded_paths.py — the one
+# file this hook, the shell guard (bash-guard.sh) and the Stop hook share (spec 001 AC-38, AC-40):
+#   guarded roots src/ app/ supabase/ db/ emails/ seed/ tests/, in the main checkout and in every
+#   linked worktree with a branch checked out (detached worktrees are not guarded);
+#   the task is the worktree's own: from its task/TASK-NNN-<slug> branch, or in the main checkout
+#   from .claude/state/active-task; a task that is done, or has no row in TASKS.md, counts as none.
+# Not protected: plan/ specs/ docs/ .claude/ TASKS.md CLAUDE.md README* content/ messages/.
 # Fails open on any parse error (never brick the session). Kill-switch: remove from .claude/settings.json.
+export PYTHONDONTWRITEBYTECODE=1  # no __pycache__/ beside the shared module
+HOOK_DIR="$(cd "$(dirname "$0")" && pwd)"
 TMP="$(mktemp)"; trap 'rm -f "$TMP"' EXIT; cat > "$TMP"
-/usr/bin/env python3 - "$TMP" <<'PY'
-import json, os, sys, re
+/usr/bin/env python3 - "$TMP" "$HOOK_DIR" <<'PY'
+import json, os, sys
 def allow(): sys.exit(0)
 def deny(reason):
     print(json.dumps({"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":reason}})); sys.exit(0)
-try: d=json.load(open(sys.argv[1]))
+try:
+    d=json.load(open(sys.argv[1]))
+    sys.path.insert(0, sys.argv[2])
+    import guarded_paths
 except Exception: allow()
-if d.get("tool_name") not in ("Edit","Write","NotebookEdit"): allow()
-path=(d.get("tool_input") or {}).get("file_path") or (d.get("tool_input") or {}).get("notebook_path") or ""
-root=os.environ.get("CLAUDE_PROJECT_DIR") or d.get("cwd") or os.getcwd()
-try: rel=os.path.relpath(os.path.abspath(path), os.path.abspath(root))
+if not isinstance(d, dict) or d.get("tool_name") not in ("Edit","Write","NotebookEdit"): allow()
+try:
+    ti=d.get("tool_input") or {}
+    path=ti.get("file_path") or ti.get("notebook_path") or ""
+    if not path: allow()
+    cwd=d.get("cwd") or os.getcwd()
+    reason=guarded_paths.write_denial(os.path.join(cwd, path), guarded_paths.anchor_dir(cwd))
 except Exception: allow()
-if rel.startswith(".."): allow()
-protected=("src/","app/","supabase/","db/","emails/","seed/","tests/")
-if not rel.startswith(protected): allow()
-f=os.path.join(root,".claude","state","active-task")
-try: task=open(f).read().strip()
-except Exception: task=""
-if re.match(r"^TASK-\d{3,}$",task): allow()
-deny(f"'{rel}' is application code and no task is active. Rule: no code without a spec and a task ID (CLAUDE.md). "
-     "Legitimate exit: /spec → /plan-tasks → /implement TASK-NNN (which runs .claude/bin/task.sh set TASK-NNN). "
-     "Docs, specs, plan, translations and .claude/ are not guarded.")
+if reason: deny(reason)
+allow()
 PY
+exit 0

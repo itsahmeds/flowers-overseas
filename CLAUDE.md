@@ -18,7 +18,7 @@ International flower **relay** service for Europe (`flowersoverseas.com`). Buyer
 Next.js App Router (TS strict) · Postgres on Neon EU (Drizzle; Auth.js for identity; Cloudflare R2 for media) · pg-boss jobs · Stripe primary / Mollie fallback · Resend · Railway (Amsterdam, single replica) behind Cloudflare, Vercel Hobby only as a cold fallback until spec 040's exit signal · next-intl · Tailwind with logical properties · Vitest, Playwright, MSW · Sentry.
 
 ## Non-negotiable rules
-- **No application code without a spec in `specs/` and a task ID in `TASKS.md`.** The edit guard blocks edits under `src/`, `app/`, `supabase/`, `db/`, `emails/`, `seed/`, `tests/` unless `.claude/state/active-task` names a task; set it with `.claude/bin/task.sh set TASK-XXX` (`/implement` does this).
+- **No application code without a spec in `specs/` and a task ID in `TASKS.md`.** The edit guard blocks edits **and shell writes** under `src/`, `app/`, `supabase/`, `db/`, `emails/`, `seed/`, `tests/`, in the main checkout and in every branch worktree, unless a task is active there. In a linked worktree the task comes from its `task/TASK-NNN-<slug>` branch; in the main checkout `.claude/state/active-task` names it, set with `.claude/bin/task.sh set TASK-XXX` (in the main checkout only, and only while no task worktree exists). A task that is `done`, or has no row, counts as none.
 - Every indexable page is server-rendered HTML; no client-only indexable content. Locale in URL; destination country in shop URLs; currency in cookie (plan/02, plan/03).
 - No IP redirects. Ever. (ADR-0006)
 - Order status changes only via `orderService.transition` (ADR-0009). Never `UPDATE orders SET status`.
@@ -79,7 +79,7 @@ Agents never write code except the implementers; the designer writes only under 
 4. A `/review` pass **and** a `/break` verdict (`HOLDS`, or `HOLES`) **on the current head SHA** (or on the diff since the last broken SHA, or carried across a clean rebase — see Merging) are recorded in the PR. Every hole the breaker found is either **closed** or **accepted**. A hole is **closed** when a later breaker round breaks the same thing and the new test goes red — or, where no check reads the text (a docs-only PR), when that round replays the scenario against the new text and it fails, citing the line. A hole is **accepted** only by the reviewer, in a PR comment (`HOLE n ACCEPTABLE: reason`), which the orchestrator copies into the brief — or, for a `no-task` PR, into the PR description. The orchestrator never accepts a hole. **No assertion may pass with its subject removed:** writers assert the one value, not the set of reachable values; the breaker, and the reviewer for any assertion that carries an AC, mutate the subject and watch the case go red before they pass it. (why: W-13, W-15)
 5. Docs updated: README/runbooks/ADR as applicable; `.env.example` current; RoPA updated if a data flow changed.
 6. Deployed to preview and smoke-tested (checkout path in two locales where relevant).
-7. `TASKS.md` updated (status, PR link); `.claude/state/active-task` cleared.
+7. `TASKS.md` updated (status, PR link); `.claude/state/active-task` cleared where `task.sh set` was run (a branch worktree has nothing to clear).
 
 ## Conventions
 - Branch `task/TASK-012-short-slug`; PR title `feat(scope): … (TASK-012)`; conventional commits ending with the `Co-Authored-By:` line when Claude authored.
@@ -94,11 +94,12 @@ Agents never write code except the implementers; the designer writes only under 
 ## Working on this machine
 One Mac (8 cores, 16 GB) runs every agent. Anything left running slows every other agent.
 - **At most four or five agents at once.** Sibling tasks that share a resolver, view model or test file go to one agent. (why: W-11)
-- **Heavy work runs only inside the build slot:** `.claude/bin/build-slot.sh acquire` … `release`. That means `next build`, `next start`, Playwright and Lighthouse. Release it on success **and** on failure. Never wait for the machine with a `pgrep` or `sleep` loop. (why: W-9)
+- **Heavy work runs only inside the build slot:** `.claude/bin/build-slot.sh acquire` (keep the token it prints) … `release <token>`; only the orchestrator forces a dead owner's lock with `release --force`. That means `next build`, `next start`, Playwright and Lighthouse. Release it on success **and** on failure. Never wait for the machine with a `pgrep` or `sleep` loop. (why: W-9)
 - **Stop what you start.** Note the PID of every server or background command you start, stop it by that PID when you have its result, and never leave one running when your turn ends. Never `pkill -f`, `killall`, or kill a process you did not start. (why: W-10)
 - **Do not start what you will not read.** No background command whose output nobody collects; no dev server "just in case"; no re-run of a suite CI already runs. (why: W-1)
-- **Before you finish, clean up:** your processes are stopped, the build slot is released, the branch is pushed, and `.claude/bin/task.sh clear` has run.
+- **Before you finish, clean up:** your processes are stopped, the build slot is released, the branch is pushed, and, only where you ran `task.sh set`, `.claude/bin/task.sh clear` has run.
 - Never `git stash`: every worktree shares one `.git`. (why: W-12)
+- **The shell guard refuses these on the Bash tool:** `pkill`, `killall`, a `kill` of a PID found by `pgrep` or `lsof`, `git stash`, `pgrep`/`sleep` wait loops, a dispatch of `ci.yml`, and a shell write into application code with no task. The header of `.claude/hooks/bash_guard.py` lists what it does not catch.
 
 ## How to start a session
-Run `/status`, then read `docs/codebase-map.md` — it is the index to everything under `src/`, `scripts/` and `tests/`, and it replaces grepping the tree. For a task, read its brief `docs/tasks/TASK-NNN.md` and the spec's `## 0. Index`, then only the spec sections your AC ids name. If `docs/topics/index.md` exists, `/session-search <topic>` before touching an unfamiliar area. End with `/session-summary`.
+Run `/status` (its **Guard** line reports a stale active-task pointer with the command to clear it), then read `docs/codebase-map.md` — it is the index to everything under `src/`, `scripts/` and `tests/`, and it replaces grepping the tree. For a task, read its brief `docs/tasks/TASK-NNN.md` and the spec's `## 0. Index`, then only the spec sections your AC ids name. If `docs/topics/index.md` exists, `/session-search <topic>` before touching an unfamiliar area. End with `/session-summary`.
