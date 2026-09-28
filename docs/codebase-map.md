@@ -138,7 +138,7 @@ task actually touches.
 | `tests/a11y/` | 14 |
 | `tests/visual/` | 15 |
 | `tests/dev-os/` | 1 |
-| `tests/fixtures/` | 166 |
+| `tests/fixtures/` | 189 |
 | `tests/msw/` | 3 |
 
 ## Where does X live?

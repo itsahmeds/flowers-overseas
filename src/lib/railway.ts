@@ -20,8 +20,10 @@
  */
 import { z } from "zod";
 
-import { ENV_KEYS } from "./env.schema";
-import { STAGING_BASIC_AUTH_KEY } from "./basic-auth";
+// `.ts` extensions, because `pnpm railway:check` runs this file under plain `node`, whose ESM
+// resolver does not guess extensions (spec 040 AC-34; TASK-155 found the CLI could not start).
+import { ENV_KEYS } from "./env.schema.ts";
+import { STAGING_BASIC_AUTH_KEY } from "./basic-auth.ts";
 
 /** Path of the declaration, relative to the repository root. */
 export const RAILWAY_CONFIG_PATH = "config/railway.json";
@@ -253,5 +255,304 @@ export function compareVariableKeys(
     missing,
     unexpected,
     ok: missing.length === 0 && unexpected.length === 0,
+  };
+}
+
+/*
+ * ---------------------------------------------------------------------------------------------
+ * Trigger branches (spec 040 §14 A3 change 6, AC-34, T-34 / T-35; TASK-155).
+ *
+ * Railway deploys each service from one trigger branch per environment, set in the dashboard.
+ * Its config-as-code has no key for it, so the declaration lives in `config/deploy-triggers.json`,
+ * which only our scripts read, and `pnpm railway:check` compares it with the public API's
+ * `deploymentTriggers` (`environmentId`, `branch`). Production deploys only from `release`, which
+ * only `pnpm release:promote` moves; `main` deploys to staging; no other environment may trigger
+ * on `release`.
+ * ---------------------------------------------------------------------------------------------
+ */
+
+/** Path of the trigger declaration, relative to the repository root. */
+export const DEPLOY_TRIGGERS_PATH = "config/deploy-triggers.json";
+
+/** The branch production deploys from, and the only one no other environment may use. */
+export const RELEASE_BRANCH = "release";
+
+/** The two branches a declared environment may follow (§14 A3 changes 1 and 2). */
+export const deployBranches = [RELEASE_BRANCH, "main"] as const;
+export type DeployBranch = (typeof deployBranches)[number];
+
+/** The services AC-34 declares, in the order the check reports them. */
+export const DEPLOY_SERVICES = ["web", "worker"] as const;
+export type DeployService = (typeof DEPLOY_SERVICES)[number];
+
+/**
+ * Services that may be provisioned with **no repository source** (§5.3: `worker` is a seat, not
+ * started until spec 002). With no repository there is no trigger, and no branch it could follow,
+ * so there is nothing to check; F1 sets its trigger "if it has a source". `web` is never exempt:
+ * a production `web` with no trigger is exactly the state AC-34 exists to report.
+ */
+export const SOURCE_OPTIONAL_SERVICES: readonly DeployService[] = ["worker"];
+
+const serviceBranchesSchema = z.strictObject({
+  web: z.enum(deployBranches),
+  worker: z.enum(deployBranches),
+});
+
+/** `config/deploy-triggers.json` (T-35). Strict, so a misspelt environment or service fails. */
+export const deployTriggersSchema = z.strictObject({
+  $comment: z.string().optional(),
+  production: serviceBranchesSchema,
+  staging: serviceBranchesSchema,
+});
+export type DeployTriggers = z.infer<typeof deployTriggersSchema>;
+
+/** The environments the declaration names, in report order. */
+export const DECLARED_ENVIRONMENTS = ["production", "staging"] as const;
+
+/**
+ * The branch **every** staging trigger must follow, declared service or not (AC-34: "staging's
+ * triggers on anything but `main`"). A staging `cron` or a trigger with no service on `release`
+ * would ship an ungated commit to the release candidate, so it fails like `web` would.
+ */
+export const STAGING_BRANCH = "main";
+
+/**
+ * The branch every trigger of a declared environment must follow, including services the
+ * declaration does not name (a `cron`, or a trigger with no service). Production deploys only
+ * from `release` (§14 A3): a production `cron` on `main` would ship ungated commits, so it fails
+ * like `web` would (`/break 110` round 2, hole 5).
+ */
+export const ENVIRONMENT_BRANCH: Readonly<
+  Record<(typeof DECLARED_ENVIRONMENTS)[number], DeployBranch>
+> = Object.freeze({ production: RELEASE_BRANCH, staging: STAGING_BRANCH });
+
+/**
+ * The trigger query's payload: every environment of the project, with its service instances (to
+ * name a trigger's service, and to tell an absent service from one with no trigger) and its
+ * deployment triggers. Field names and nullability are the live schema's (introspected
+ * 2026-09-28): `branch` and `environmentId` are non-null, `serviceId` may be null.
+ */
+export const railwayTriggersResponseSchema = z.object({
+  data: z.object({
+    project: z.object({
+      environments: z.object({
+        edges: z.array(
+          z.object({
+            node: z.object({
+              id: z.string(),
+              name: z.string(),
+              serviceInstances: z.object({
+                edges: z.array(
+                  z.object({
+                    node: z.object({
+                      serviceId: z.string(),
+                      serviceName: z.string(),
+                      source: z
+                        .object({
+                          repo: z.string().nullable().optional(),
+                          image: z.string().nullable().optional(),
+                        })
+                        .nullable()
+                        .optional(),
+                    }),
+                  }),
+                ),
+              }),
+              deploymentTriggers: z.object({
+                edges: z.array(
+                  z.object({
+                    node: z.object({
+                      id: z.string(),
+                      branch: z.string(),
+                      environmentId: z.string(),
+                      serviceId: z.string().nullable().optional(),
+                    }),
+                  }),
+                ),
+              }),
+            }),
+          }),
+        ),
+      }),
+    }),
+  }),
+});
+export type RailwayTriggersResponse = z.infer<
+  typeof railwayTriggersResponseSchema
+>;
+
+/** Why a row failed: the service is not there, has no trigger, follows the wrong branch, or ships `release` outside production. */
+export type TriggerFailure =
+  "absent" | "no-trigger" | "wrong-branch" | "release-outside-production";
+
+export interface TriggerRow {
+  readonly environment: string;
+  readonly service: string;
+  /** The branches the live triggers follow; empty when there is none. */
+  readonly live: readonly string[];
+  /** The declared branch, or `not release` for an environment the declaration does not name. */
+  readonly declared: string;
+  readonly status: "match" | "not-checked" | TriggerFailure;
+}
+
+export interface TriggerReport {
+  readonly ok: boolean;
+  readonly rows: readonly TriggerRow[];
+  /**
+   * What `railway:check` prints: every row when all match, and **only the failing rows**
+   * otherwise, so the red run of AC-42 is exactly its `triggers on none` lines.
+   */
+  readonly lines: readonly string[];
+  /**
+   * True only for the expected red of spec 040 AC-42, until TASK-104 creates production `web` on
+   * `release`. All of these must hold: the check failed, the production environment is in the
+   * response, its `web` row is absent, and every failure is a declared production service that
+   * does not exist and has no live trigger. A service that exists with no trigger, a wrong branch,
+   * or any staging failure is never this. The CLI also withholds the label when another check
+   * failed (`failureVerdict`).
+   */
+  readonly onlyAbsentProductionServices: boolean;
+}
+
+/** `<environment> · <service> · triggers on <live>, declared <declared>` (AC-34's line). */
+export function formatTriggerRow(row: TriggerRow): string {
+  if (row.status === "not-checked") {
+    return `${row.environment} · ${row.service} · no repository source, not checked`;
+  }
+  const live = row.live.length === 0 ? "none" : row.live.join(", ");
+  return `${row.environment} · ${row.service} · triggers on ${live}, declared ${row.declared}`;
+}
+
+/**
+ * AC-34's comparison, pure. Triggers are grouped by their own `environmentId` (the field the
+ * spec names), not by where the response nests them, and named by the instance whose `serviceId`
+ * they carry.
+ */
+export function compareDeployTriggers(
+  declared: DeployTriggers,
+  response: RailwayTriggersResponse,
+): TriggerReport {
+  const environments = response.data.project.environments.edges.map(
+    (edge) => edge.node,
+  );
+  const environmentName = new Map(
+    environments.map((env) => [env.id, env.name]),
+  );
+  const serviceName = new Map(
+    environments.flatMap((env) =>
+      env.serviceInstances.edges.map(
+        (edge) => [edge.node.serviceId, edge.node.serviceName] as const,
+      ),
+    ),
+  );
+  // environment name → service name → live branches
+  const live = new Map<string, Map<string, string[]>>();
+  for (const trigger of environments.flatMap((env) =>
+    env.deploymentTriggers.edges.map((edge) => edge.node),
+  )) {
+    const environment =
+      environmentName.get(trigger.environmentId) ??
+      `environment ${trigger.environmentId}`;
+    const service =
+      trigger.serviceId === null || trigger.serviceId === undefined
+        ? "(no service)"
+        : (serviceName.get(trigger.serviceId) ??
+          `service ${trigger.serviceId}`);
+    const byService = live.get(environment) ?? new Map<string, string[]>();
+    byService.set(service, [...(byService.get(service) ?? []), trigger.branch]);
+    live.set(environment, byService);
+  }
+
+  const rows: TriggerRow[] = [];
+  for (const environment of DECLARED_ENVIRONMENTS) {
+    const instances =
+      environments
+        .find((env) => env.name === environment)
+        ?.serviceInstances.edges.map((edge) => edge.node) ?? [];
+    for (const service of DEPLOY_SERVICES) {
+      const want = declared[environment][service];
+      const branches = [...(live.get(environment)?.get(service) ?? [])].sort();
+      const instance = instances.find((node) => node.serviceName === service);
+      const hasRepository =
+        typeof instance?.source?.repo === "string" &&
+        instance.source.repo !== "";
+      // Exact: one trigger, on the declared branch. A live trigger is judged before absence, so a
+      // service Railway still deploys from `main` is a wrong branch even if no instance is listed.
+      let status: TriggerRow["status"];
+      if (branches.length === 1 && branches[0] === want) status = "match";
+      else if (branches.length > 0) status = "wrong-branch";
+      else if (instance === undefined) status = "absent";
+      else if (!hasRepository && SOURCE_OPTIONAL_SERVICES.includes(service))
+        status = "not-checked";
+      else status = "no-trigger";
+      rows.push({
+        environment,
+        service,
+        live: branches,
+        declared: want,
+        status,
+      });
+    }
+  }
+
+  // Triggers beyond the declared services, in production and staging: every one must follow
+  // the environment's branch (`release` and `main`).
+  const declaredServices: readonly string[] = DEPLOY_SERVICES;
+  for (const environment of DECLARED_ENVIRONMENTS) {
+    const want = ENVIRONMENT_BRANCH[environment];
+    for (const [service, branches] of [
+      ...(live.get(environment) ?? new Map<string, string[]>()),
+    ].sort(([a], [b]) => a.localeCompare(b))) {
+      if (declaredServices.includes(service)) continue;
+      if (branches.every((branch) => branch === want)) continue;
+      rows.push({
+        environment,
+        service,
+        live: [...branches].sort(),
+        declared: want,
+        status: "wrong-branch",
+      });
+    }
+  }
+
+  const declaredNames: readonly string[] = DECLARED_ENVIRONMENTS;
+  for (const [environment, byService] of [...live].sort(([a], [b]) =>
+    a.localeCompare(b),
+  )) {
+    if (declaredNames.includes(environment)) continue;
+    for (const [service, branches] of [...byService].sort(([a], [b]) =>
+      a.localeCompare(b),
+    )) {
+      if (!branches.includes(RELEASE_BRANCH)) continue;
+      rows.push({
+        environment,
+        service,
+        live: [...branches].sort(),
+        declared: `not ${RELEASE_BRANCH}`,
+        status: "release-outside-production",
+      });
+    }
+  }
+
+  const failing = rows.filter(
+    (row) => row.status !== "match" && row.status !== "not-checked",
+  );
+  const ok = failing.length === 0;
+  return {
+    ok,
+    rows,
+    lines: (ok ? rows : failing).map(formatTriggerRow),
+    onlyAbsentProductionServices:
+      !ok &&
+      environments.some((env) => env.name === "production") &&
+      rows.some(
+        (row) =>
+          row.environment === "production" &&
+          row.service === WEB_SERVICE_NAME &&
+          row.status === "absent",
+      ) &&
+      failing.every(
+        (row) => row.environment === "production" && row.status === "absent",
+      ),
   };
 }

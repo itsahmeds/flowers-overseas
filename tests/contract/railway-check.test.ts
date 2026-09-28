@@ -11,20 +11,32 @@
  * variable value**. Every value in the variable fixtures is the literal `SENTINEL-VALUE`, so the
  * check "stdout contains no sentinel" is mechanical rather than a judgement.
  */
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { spawnSync } from "node:child_process";
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
 import {
   loadDeclaredConfig,
+  loadDeclaredTriggers,
   runRailwayCheck,
 } from "../../scripts/railway-check.ts";
 import {
   CONTRACT_VARIABLE_KEYS,
   PLATFORM_INJECTED_CONTRACT_KEYS,
   REQUIRED_VARIABLE_KEYS,
+  compareDeployTriggers,
+  deployTriggersSchema,
   railwayEnvironmentResponseSchema,
+  railwayTriggersResponseSchema,
   railwayVariablesResponseSchema,
 } from "../../src/lib/railway";
 
@@ -205,5 +217,450 @@ describe("variable key sets (AC-11, T-11)", () => {
       });
       expect(report.lines.join("\n"), name).not.toContain(SENTINEL);
     }
+  });
+});
+
+/**
+ * Spec 040 §14 A3 change 6, AC-34: the trigger branch of each environment's services, declared in
+ * `config/deploy-triggers.json` (Railway config-as-code has no trigger key) and compared with the
+ * public API's `deploymentTriggers` (`environmentId`, `branch`). Production deploys only from
+ * `release`; staging from `main`; no other environment from `release`.
+ *
+ * T-35 sits in this file rather than in `tests/unit/` so that the declaration and the recorded
+ * responses it is compared with are read in one place.
+ */
+const declaredTriggers = loadDeclaredTriggers(repoRoot);
+const triggers = (name: string) =>
+  railwayTriggersResponseSchema.parse(fixture(name));
+const checkTriggers = (name: string) =>
+  compareDeployTriggers(declaredTriggers, triggers(name));
+
+describe("config/deploy-triggers.json (AC-34, T-35)", () => {
+  const valid = {
+    production: { web: "release", worker: "release" },
+    staging: { web: "main", worker: "main" },
+  };
+
+  it("declares production on `release` and staging on `main`, and nothing else", () => {
+    expect({
+      production: declaredTriggers.production,
+      staging: declaredTriggers.staging,
+    }).toEqual(valid);
+  });
+
+  it("parses the declared shape", () => {
+    expect(deployTriggersSchema.safeParse(valid).success).toBe(true);
+  });
+
+  it("rejects a missing environment", () => {
+    expect(
+      deployTriggersSchema.safeParse({ production: valid.production }).success,
+    ).toBe(false);
+  });
+
+  it("rejects a missing service", () => {
+    expect(
+      deployTriggersSchema.safeParse({
+        ...valid,
+        production: { web: "release" },
+      }).success,
+    ).toBe(false);
+  });
+
+  it("rejects an unknown branch value", () => {
+    expect(
+      deployTriggersSchema.safeParse({
+        ...valid,
+        staging: { web: "develop", worker: "main" },
+      }).success,
+    ).toBe(false);
+  });
+
+  it("rejects an unknown environment or service key, so a typo cannot pass unread", () => {
+    expect(
+      deployTriggersSchema.safeParse({ ...valid, prod: valid.production })
+        .success,
+    ).toBe(false);
+    expect(
+      deployTriggersSchema.safeParse({
+        ...valid,
+        staging: { ...valid.staging, cron: "main" },
+      }).success,
+    ).toBe(false);
+  });
+});
+
+describe("the recorded deploymentTriggers responses still parse (T-34)", () => {
+  it("carries a trigger's environmentId and branch, as the public API names them", () => {
+    const production = triggers(
+      "triggers-as-declared.json",
+    ).data.project.environments.edges.find(
+      (edge) => edge.node.name === "production",
+    )?.node;
+    const trigger = production?.deploymentTriggers.edges[0]?.node;
+    expect(trigger?.branch).toBe("release");
+    expect(trigger?.environmentId).toBe(production?.id);
+  });
+
+  it("rejects a response without deploymentTriggers rather than reading it as no triggers", () => {
+    expect(
+      railwayTriggersResponseSchema.safeParse({
+        data: {
+          project: {
+            environments: {
+              edges: [
+                {
+                  node: {
+                    id: "e",
+                    name: "production",
+                    serviceInstances: { edges: [] },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      }).success,
+    ).toBe(false);
+  });
+});
+
+describe("the trigger-branch check (AC-34, T-34)", () => {
+  it("passes when every trigger is as declared, and says so per service", () => {
+    const report = checkTriggers("triggers-as-declared.json");
+    expect(report.ok).toBe(true);
+    expect(report.lines).toEqual([
+      "production · web · triggers on release, declared release",
+      "production · worker · triggers on release, declared release",
+      "staging · web · triggers on main, declared main",
+      "staging · worker · triggers on main, declared main",
+    ]);
+  });
+
+  it("fails when production `web` triggers on `main`, naming it and nothing else", () => {
+    const report = checkTriggers("triggers-production-web-on-main.json");
+    expect(report.ok).toBe(false);
+    expect(report.lines).toEqual([
+      "production · web · triggers on main, declared release",
+    ]);
+  });
+
+  it("fails when production `worker` triggers on `main`", () => {
+    const report = checkTriggers("triggers-production-worker-on-main.json");
+    expect(report.ok).toBe(false);
+    expect(report.lines).toEqual([
+      "production · worker · triggers on main, declared release",
+    ]);
+  });
+
+  it("fails when staging triggers on `release`", () => {
+    const report = checkTriggers("triggers-staging-on-release.json");
+    expect(report.ok).toBe(false);
+    expect(report.lines).toEqual([
+      "staging · web · triggers on release, declared main",
+    ]);
+  });
+
+  it("fails when a PR environment triggers on `release`", () => {
+    const report = checkTriggers("triggers-pr-on-release.json");
+    expect(report.ok).toBe(false);
+    expect(report.lines).toEqual([
+      "pr-123 · web · triggers on release, declared not release",
+    ]);
+  });
+
+  it("fails when production has no `web` service, printing `triggers on none`", () => {
+    const report = checkTriggers("triggers-production-no-web.json");
+    expect(report.ok).toBe(false);
+    expect(report.lines).toEqual([
+      "production · web · triggers on none, declared release",
+    ]);
+    expect(report.onlyAbsentProductionServices).toBe(true);
+  });
+
+  it("fails when production `web` exists with no trigger, and does not call that the expected red", () => {
+    const report = checkTriggers("triggers-production-web-no-trigger.json");
+    expect(report.ok).toBe(false);
+    expect(report.lines).toEqual([
+      "production · web · triggers on none, declared release",
+    ]);
+    expect(report.onlyAbsentProductionServices).toBe(false);
+  });
+
+  it("prints only the two `none` lines while production has no service at all (AC-42)", () => {
+    const report = checkTriggers("triggers-production-empty.json");
+    expect(report.ok).toBe(false);
+    expect(report.lines).toEqual([
+      "production · web · triggers on none, declared release",
+      "production · worker · triggers on none, declared release",
+    ]);
+    expect(report.onlyAbsentProductionServices).toBe(true);
+  });
+
+  it("does not call a wrong branch the expected red", () => {
+    expect(
+      checkTriggers("triggers-production-web-on-main.json")
+        .onlyAbsentProductionServices,
+    ).toBe(false);
+  });
+
+  it("does not check a `worker` with no repository source: it can follow no branch", () => {
+    const report = checkTriggers("triggers-worker-no-source.json");
+    expect(report.ok).toBe(true);
+    expect(report.lines).toEqual([
+      "production · web · triggers on release, declared release",
+      "production · worker · no repository source, not checked",
+      "staging · web · triggers on main, declared main",
+      "staging · worker · no repository source, not checked",
+    ]);
+  });
+});
+
+describe("the trigger-branch check, round 2 (AC-34, T-34; /break 110, /review 110)", () => {
+  it("fails a service with two triggers, even when one is the declared branch", () => {
+    const report = checkTriggers("triggers-production-web-two-branches.json");
+    expect(report.ok).toBe(false);
+    expect(report.lines).toEqual([
+      "production · web · triggers on main, release, declared release",
+    ]);
+  });
+
+  it("fails a missing staging service and does not call it the expected red", () => {
+    const report = checkTriggers("triggers-staging-no-worker.json");
+    expect(report.ok).toBe(false);
+    expect(report.lines).toEqual([
+      "staging · worker · triggers on none, declared main",
+    ]);
+    expect(report.onlyAbsentProductionServices).toBe(false);
+  });
+
+  it("fails a `worker` that has a repository but no trigger", () => {
+    const report = checkTriggers("triggers-production-worker-no-trigger.json");
+    expect(report.ok).toBe(false);
+    expect(report.lines).toEqual([
+      "production · worker · triggers on none, declared release",
+    ]);
+    expect(report.onlyAbsentProductionServices).toBe(false);
+  });
+
+  it("fails a `web` with no source and no trigger: only `worker` is exempt", () => {
+    const report = checkTriggers("triggers-production-web-no-source.json");
+    expect(report.ok).toBe(false);
+    expect(report.lines).toEqual([
+      "production · web · triggers on none, declared release",
+    ]);
+    expect(report.onlyAbsentProductionServices).toBe(false);
+  });
+
+  it("fails an undeclared staging service on `release`", () => {
+    const report = checkTriggers("triggers-staging-cron-on-release.json");
+    expect(report.ok).toBe(false);
+    expect(report.lines).toEqual([
+      "staging · cron · triggers on release, declared main",
+    ]);
+  });
+
+  it("fails a staging trigger with no service on `release`", () => {
+    const report = checkTriggers(
+      "triggers-staging-null-service-on-release.json",
+    );
+    expect(report.ok).toBe(false);
+    expect(report.lines).toEqual([
+      "staging · (no service) · triggers on release, declared main",
+    ]);
+  });
+
+  it("judges a live trigger before absence: `web` still on `main` is a wrong branch, not the expected red", () => {
+    const report = checkTriggers(
+      "triggers-production-no-instance-web-on-main.json",
+    );
+    expect(report.ok).toBe(false);
+    expect(report.lines).toEqual([
+      "production · web · triggers on main, declared release",
+      "production · worker · triggers on none, declared release",
+    ]);
+    expect(report.onlyAbsentProductionServices).toBe(false);
+  });
+
+  it("does not call a missing production `worker` alone the expected red: the label needs `web` absent", () => {
+    const report = checkTriggers("triggers-production-no-worker.json");
+    expect(report.ok).toBe(false);
+    expect(report.lines).toEqual([
+      "production · worker · triggers on none, declared release",
+    ]);
+    expect(report.onlyAbsentProductionServices).toBe(false);
+  });
+
+  it("does not call a response with no production environment the expected red", () => {
+    const report = checkTriggers("triggers-no-production-environment.json");
+    expect(report.ok).toBe(false);
+    expect(report.lines).toEqual([
+      "production · web · triggers on none, declared release",
+      "production · worker · triggers on none, declared release",
+    ]);
+    expect(report.onlyAbsentProductionServices).toBe(false);
+  });
+});
+
+describe("the trigger-branch check, round 3 (AC-34, T-34; /break 110, /review 110 round 2)", () => {
+  it("does not call production `web` absent plus staging `worker` absent the expected red", () => {
+    const report = checkTriggers(
+      "triggers-production-no-web-staging-no-worker.json",
+    );
+    expect(report.ok).toBe(false);
+    expect(report.lines).toEqual([
+      "production · web · triggers on none, declared release",
+      "staging · worker · triggers on none, declared main",
+    ]);
+    expect(report.onlyAbsentProductionServices).toBe(false);
+  });
+
+  it("does not call production `web` absent plus `worker` on `main` the expected red", () => {
+    const report = checkTriggers(
+      "triggers-production-no-web-worker-on-main.json",
+    );
+    expect(report.ok).toBe(false);
+    expect(report.lines).toEqual([
+      "production · web · triggers on none, declared release",
+      "production · worker · triggers on main, declared release",
+    ]);
+    expect(report.onlyAbsentProductionServices).toBe(false);
+  });
+
+  it("fails an undeclared staging service on both `main` and `release`", () => {
+    const report = checkTriggers("triggers-staging-cron-two-branches.json");
+    expect(report.ok).toBe(false);
+    expect(report.lines).toEqual([
+      "staging · cron · triggers on main, release, declared main",
+    ]);
+  });
+
+  it("fails an undeclared production service on `main`", () => {
+    const report = checkTriggers("triggers-production-cron-on-main.json");
+    expect(report.ok).toBe(false);
+    expect(report.lines).toEqual([
+      "production · cron · triggers on main, declared release",
+    ]);
+    expect(report.onlyAbsentProductionServices).toBe(false);
+  });
+
+  it("fails a production trigger with no service on `main`", () => {
+    const report = checkTriggers(
+      "triggers-production-null-service-on-main.json",
+    );
+    expect(report.ok).toBe(false);
+    expect(report.lines).toEqual([
+      "production · (no service) · triggers on main, declared release",
+    ]);
+    expect(report.onlyAbsentProductionServices).toBe(false);
+  });
+});
+
+describe("`railway:check` on the command line (AC-34, AC-42)", () => {
+  const cli = (...args: string[]) =>
+    spawnSync(process.execPath, ["scripts/railway-check.ts", ...args], {
+      cwd: repoRoot,
+      encoding: "utf8",
+      // No Railway key reaches the child: every run below is a fixture, or the no-credential case.
+      env: { PATH: process.env["PATH"] ?? "", NODE_ENV: "test" },
+    });
+  const triggersFixture = (name: string) => [
+    "--fixture-triggers",
+    `tests/fixtures/railway/${name}`,
+  ];
+
+  it("exits 0 when every trigger is as declared", () => {
+    const run = cli(...triggersFixture("triggers-as-declared.json"));
+    expect(run.status, run.stderr).toBe(0);
+    expect(run.stdout).toContain(
+      "production · web · triggers on release, declared release",
+    );
+  });
+
+  it("exits 1 with only the `none` lines on stdout while production has no service, labelled as expected on stderr", () => {
+    const run = cli(...triggersFixture("triggers-production-empty.json"));
+    expect(run.status).toBe(1);
+    expect(run.stdout).toBe(
+      "production · web · triggers on none, declared release\n" +
+        "production · worker · triggers on none, declared release\n",
+    );
+    expect(run.stderr).toContain("EXPECTED RED until TASK-104");
+  });
+
+  it("exits 1 on a wrong branch without the expected-red label", () => {
+    const run = cli(...triggersFixture("triggers-production-web-on-main.json"));
+    expect(run.status).toBe(1);
+    expect(run.stdout).toBe(
+      "production · web · triggers on main, declared release\n",
+    );
+    expect(run.stderr).not.toContain("EXPECTED RED");
+  });
+
+  it("withholds the expected-red label when another check failed on the same run", () => {
+    const run = cli(
+      ...triggersFixture("triggers-production-empty.json"),
+      "--fixture-environment",
+      "tests/fixtures/railway/environment-drifted.json",
+    );
+    expect(run.status).toBe(1);
+    expect(run.stdout).toContain(
+      "production · web · triggers on none, declared release",
+    );
+    expect(run.stdout).toContain("numReplicas is 2");
+    expect(run.stderr).not.toContain("EXPECTED RED");
+  });
+
+  it("keeps the expected-red label when the service check on the same run passed", () => {
+    const run = cli(
+      ...triggersFixture("triggers-production-empty.json"),
+      "--fixture-environment",
+      "tests/fixtures/railway/environment-staging.json",
+    );
+    expect(run.status).toBe(1);
+    expect(run.stdout).toContain(
+      "production · web · triggers on none, declared release",
+    );
+    expect(run.stdout).toContain("match config/railway.json");
+    expect(run.stderr).toContain("EXPECTED RED until TASK-104");
+  });
+
+  it("refuses a config/deploy-triggers.json the zod schema rejects, before reading any trigger", () => {
+    const root = mkdtempSync(join(tmpdir(), "deploy-triggers-"));
+    try {
+      mkdirSync(join(root, "config"));
+      writeFileSync(
+        join(root, "config/deploy-triggers.json"),
+        JSON.stringify({
+          production: { web: "develop", worker: "release" },
+          staging: { web: "main", worker: "main" },
+        }),
+      );
+      const run = spawnSync(
+        process.execPath,
+        [
+          resolve(repoRoot, "scripts/railway-check.ts"),
+          "--fixture-triggers",
+          resolve(repoRoot, "tests/fixtures/railway/triggers-as-declared.json"),
+        ],
+        {
+          cwd: root,
+          encoding: "utf8",
+          env: { PATH: process.env["PATH"] ?? "", NODE_ENV: "test" },
+        },
+      );
+      expect(run.status).toBe(1);
+      expect(run.stdout).toBe("");
+      expect(run.stderr).toContain("ZodError");
+      expect(run.stderr).toContain('"web"');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("exits 2 naming what is missing when it has neither credentials nor a fixture", () => {
+    const run = cli();
+    expect(run.status).toBe(2);
+    expect(run.stderr).toContain("RAILWAY_API_TOKEN");
+    expect(run.stderr).toContain("RAILWAY_PROJECT_ID");
   });
 });

@@ -166,14 +166,31 @@ Tokens) exported in your shell only:
 ```bash
 export RAILWAY_API_TOKEN='<project token>'
 export RAILWAY_PROJECT_ID='<project id>'
-export RAILWAY_ENVIRONMENT_ID='<the staging environment id>'
 
-pnpm railway:check                 # the four AC-9 values of `web` against config/railway.json
-pnpm railway:check --env staging   # the key set: missing or unexpected keys, names only
+pnpm railway:check                 # trigger branches only (spec 040 AC-34)
+
+export RAILWAY_ENVIRONMENT_ID='<the staging environment id>'
+pnpm railway:check                 # triggers, plus the four AC-9 values of `web` against config/railway.json
+pnpm railway:check --env staging   # all of that, plus the key set: missing or unexpected keys, names only
 ```
 
-Both must exit 0. `railway:check` prints key names and configuration values only; it never reads a
-variable value, which is why it is safe to paste its output into a PR.
+Every run checks the **trigger branches** of every environment against
+`config/deploy-triggers.json` (spec 040 AC-34). Production's `web` and `worker` must trigger on
+`release`, staging's services on `main`, and no other environment on `release`. A `worker` with no
+repository source is not checked. `RAILWAY_ENVIRONMENT_ID` is **optional**: it enables the service
+check (AC-9), and `--env` needs it. A red run prints one line per difference, such as
+`production · web · triggers on main, declared release`, on stdout, and a verdict on stderr.
+
+**The expected red, until TASK-104.** While production has no `web` service (TASK-104 creates it,
+on `release`), a run with `RAILWAY_ENVIRONMENT_ID` unset exits **1**. Its stdout is exactly the
+`production · <service> · triggers on none, declared release` lines for the production services
+that do not exist. Its stderr starts `railway:check: EXPECTED RED until TASK-104`. That label
+appears only when every failure is a missing production service, production's `web` is one of
+them, and every other check on the run passed. Any other red carries no label, and is a real
+failure. Once TASK-104 has created `web`, every run must exit 0.
+
+Otherwise every run must exit 0. `railway:check` prints key names and configuration values only; it
+never reads a variable value, which is why it is safe to paste its output into a PR.
 
 ## 7. The verification that is still outstanding
 

@@ -133,8 +133,9 @@ describe("the required-check contract on the committed workflows (AC-21)", () =>
   });
 
   it("requires the pull-request-only checks too", () => {
-    // They never run on a push to `main`, which is the point: a required check that no push can
-    // satisfy is what makes the PR the only way in.
+    // `preview`, `e2e`, `visual`, `a11y` and `pr-policy` never run on a push to `main`; since spec
+    // 040 AC-38 `commitlint` and `corridor-check` do, but only after the commit has landed. Either
+    // way no push can satisfy them first, which is what makes the PR the only way in.
     for (const name of [
       "preview",
       "e2e",

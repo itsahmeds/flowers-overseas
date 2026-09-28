@@ -96,9 +96,11 @@ export interface CheckContract {
  * The status checks that must be required on `main`: every job of every workflow that gates a PR,
  * minus the informational ones.
  *
- * `preview`, `e2e`, `visual`, `a11y`, `commitlint` and `pr-policy` only run on `pull_request`.
- * They are required anyway and that is deliberate: a required check that never runs on a push to
- * `main` is exactly what stops a direct push, and every change is supposed to arrive by PR.
+ * `preview`, `e2e`, `visual`, `a11y` and `pr-policy` only run on `pull_request`. Since spec 040
+ * AC-38 every other `ci.yml` job, `commitlint` and `corridor-check` included, also runs on a push
+ * to `main`, but only after the commit has landed. They are all required anyway, and that is
+ * deliberate: no check can pass on a commit before it is pushed, which is exactly what stops a
+ * direct push, and every change is supposed to arrive by PR.
  */
 export function checkContract(workflows: readonly string[]): CheckContract {
   const jobs = workflows.flatMap((source) => parseWorkflowJobs(source));
