@@ -62,6 +62,16 @@ gap closes, mark it ✅ with the PR, and don't delete the row.
 - Dev-OS tests running in two worktrees at once share `$TMPDIR`, and a foreign `fo-dev-os.*` folder turns one case red. That's a false red only, never a false green (`/break 106`). Candidate fix: count only the folders your own run created.
 - Orchestrator planning: three plans in a row were caught with the same class of error (guessed T-ids, fences missing the files that ACs, T-rows and fixtures name, concurrent tasks sharing a file). A planning checklist belongs in step G (gap 14).
 
+**Found in wave 2 (PRs 110, 112, 113):**
+- `/break 110` round 3: no fixture for a production trigger on an unknown `serviceId`; the code is correct.
+- `/break 112` round 2: the shell lexer fails open on process substitution (`<(`, `>(`), so the clock allows it; also an unquoted heredoc joined by `$\`+newline, `$(( $(cmd) ))`, and a `BASH_ENV=` prefix. The `.claude/settings.json` → `docs.test.ts` `PATH_TESTS` entry has no `gates-cheap.test.ts` assertion.
+- `/review 112`: `git push | tail` and `--body "$(cat f)"` are denied past the ceiling (work-order wording); stale clock files are never reaped; `git diff --output=` writes from the save set; the `<<\EOF` form is untested.
+- `/break 112` round 1: `gh pr create --title "--draft"` passes as a draft.
+- TASK-154 `## Result`: `SubagentStart` fires again on resume and resets the clock.
+- Spec 040 §14 A3 (L1182–1186) still lists the `CLAUDE.md` line as owed "with the founder's approval"; the founder declined it on 2026-09-29 (`docs/decisions-log.md`), so the line is not owed. TASK-156's brief strikes it in PR for TASK-156.
+- `/break 113` round 3: a parser replaced in place under the same name silences every TS file; candidate fix: an identity check (`parser === tseslint.parser`). HOLE 3 (`.stylelintignore`) was accepted; its leftovers are in `docs/tasks/TASK-158.md`.
+- Orchestrator (step G, gap 14): it quoted a `pr-policy` run as CI twice; always read `gh run list --workflow ci`.
+
 **Found by `/break 104`:**
 - `tasks:check` and `specs:index --check` don't validate a task row's AC/T ids against its spec: a row changed to `AC-99, T-99` stays green. The orchestrator guessed spec 040's T-ids, and only the reviewer caught it. Candidate for step E tooling.
 
