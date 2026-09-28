@@ -29,7 +29,7 @@ This is a product, not a prototype. This document defines the engineering standa
 | Security | webhook signatures + inbox; RLS; CSP with nonces; no secrets in code (gitleaks in CI); dependency audit (`pnpm audit`, Renovate) | CI + review |
 | Performance | budgets in `plan/01` §7 as Lighthouse CI assertions; bundle budget | CI |
 | Accessibility | axe in Playwright on key templates; WCAG 2.1 AA | CI + review |
-| Commits | Conventional commits; PR title `type(scope): summary (TASK-NNN)`; squash merge | commitlint in the pre-commit hook, and in CI only with `ci:full`; `pr-policy` checks PR titles on ready/label (audit: `docs/framework/standards-audit-2026-09-28.md`) |
+| Commits | Conventional commits; PR title `type(scope): summary (TASK-NNN)`; squash merge | commitlint in the `.husky/commit-msg` hook, and in CI only with `ci:full`; `pr-policy` checks PR titles on ready/label (audit: `docs/framework/standards-audit-2026-09-28.md`) |
 | Flags | corridor/locale/payment-method rollout via `feature_flag` table; no env-based feature flags | review |
 | Env | `.env.example` validated against `lib/env.ts` zod schema in CI; build fails on missing vars | CI |
 | Docs | README (local env <15 min), runbooks, architecture diagram (`docs/architecture.md`, Mermaid, updated when modules change), ADRs | definition of done |

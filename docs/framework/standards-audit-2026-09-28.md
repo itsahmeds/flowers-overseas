@@ -8,7 +8,7 @@ Gap 17. A breaker agent audited `origin/main` at `bacd403`, read-only, in its ow
 
 "Spine" means CI's `lint → typecheck → test-unit → build`. "Label" means the job runs only with `ci:full`.
 
-**Result: 6 ENFORCED (3 only within a stated scope), 8 PARTIAL, 4 WORDS ONLY, and 6 false claims in the docs.**
+**Result, counted from the table's 23 rows: 6 ENFORCED (3 only within a stated scope), 14 PARTIAL, 3 WORDS ONLY, and row 9 split between PARTIAL (logs) and WORDS ONLY (URLs, analytics); plus 6 false claims in the docs.** (The first summary said 8 PARTIAL and 4 WORDS ONLY, which was wrong; `/review 104` recounted it.)
 
 ## The biggest finding
 

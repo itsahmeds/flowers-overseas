@@ -19,6 +19,8 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 ## Carry-forwards
 
+- **From `/break 104` and `/review 104` (2026-09-28):** ship in **one PR with TASK-151**; the worktree guard (AC-38, T-53's guard half) must not land without the per-worktree task. Deny `kill` whose arguments come from `$(pgrep …)` or `$(lsof …)`, and `xargs kill` after `pgrep`/`lsof` (the W-10 incident), with T-38 cases — spec text follows in A19. Make the `CLAUDE.md` edits A19 lists under "Owed to `CLAUDE.md`" for AC-37–AC-40. Own T-52's count, and leave it correct for 151 and 154 to extend.
+
 One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.

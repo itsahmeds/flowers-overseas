@@ -6,7 +6,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 ## Binding
 
-`specs/040-hosting-railway-cloudflare.md` §14 A3 L907: AC-34, AC-38 (T-34, T-38). Trigger branches go in a new `config/deploy-triggers.json`, because Railway config-as-code has no trigger key. `railway:check` verifies production follows `release` and staging `main`. `ci.yml` gains a push trigger on `main`, which is required before the first `/launch production` (Q9). Also report read-only whether Railway production `web` exists today; if no Railway token is in the environment, say so rather than guess. Founder answers of 2026-09-28 (`docs/decisions-log.md`, last rows) and the advisor fixes are already written into the amendment; do not reopen them.
+`specs/040-hosting-railway-cloudflare.md` §14 A3 L907: AC-34, AC-38 (T-34, T-35, T-39). Trigger branches go in a new `config/deploy-triggers.json`, because Railway config-as-code has no trigger key. `railway:check` verifies production follows `release` and staging `main`. `ci.yml` gains a push trigger on `main`, which is required before the first `/launch production` (Q9). Also report read-only whether Railway production `web` exists today; if no Railway token is in the environment, say so rather than guess. Founder answers of 2026-09-28 (`docs/decisions-log.md`, last rows) and the advisor fixes are already written into the amendment; do not reopen them.
 
 ## Read
 
@@ -17,6 +17,12 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 - .github/workflows/ci.yml (the `on:` block and concurrency)
 
 ## Carry-forwards
+
+- **From `/break 104` and `/review 104` (2026-09-28):**
+- Your test rows are **T-34, T-35, T-39**, not T-38.
+- On a push, `github.event.pull_request` is null, so every label-guarded job **skips** and the run still reports `success`. T-39 must evaluate each job's `if:` for a push event, and gate 1 must require each named job to be `success`, not `skipped` — spec text follows in A3.
+- Say what `cancel-in-progress` does to two push runs on `main` close together.
+- Starts after TASK-153 merges.
 
 One dated bullet per `/review`, newest last.
 

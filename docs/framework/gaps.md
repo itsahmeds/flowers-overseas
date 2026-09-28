@@ -22,7 +22,7 @@ gap closes, mark it ✅ with the PR, and don't delete the row.
 | 14 | The orchestrator has too few rules of its own | It broke `main` three times with untested commits and once committed onto an agent's branch | G | open |
 | 15 | No designer | `CLAUDE.md` requires artboards before `/plan-tasks`, but no agent owned drawing them | D | ✅ PR 103 |
 | 16 | Production gates don't sit in front of ordinary merges | Spec 040 deploys every merge to `main` to production, so `/launch production`'s gates guard only the release it is run for, not each task merge (found while fixing PR 103's hole H) | C | decided 2026-09-28: production deploys only from a release ref `/launch` promotes (spec 040 amendment) |
-| 17 | Coding standards never audited | `plan/12` §2 and `CLAUDE.md` claim some coding standards are machine-enforced (e.g. a lint rule against direct order-status updates); none of those claims has been checked, and others rely on the reviewer noticing | H | audited 2026-09-28: `docs/framework/standards-audit-2026-09-28.md` (6 enforced, 8 partial, 4 words only, 6 false claims); locks to decide |
+| 17 | Coding standards never audited | `plan/12` §2 and `CLAUDE.md` claim some coding standards are machine-enforced (e.g. a lint rule against direct order-status updates); none of those claims has been checked, and others rely on the reviewer noticing | H | audited 2026-09-28: `docs/framework/standards-audit-2026-09-28.md` (6 enforced, 14 partial, 3 words only, one split row, 6 false claims); locks to decide |
 
 **Carried to step C with the enforcement work** (they are code, so they need a spec note and a task):
 - nothing reads the new agent, skill and template files, or `## Progress`, or the breaker in DoD §4
@@ -42,6 +42,9 @@ gap closes, mark it ✅ with the PR, and don't delete the row.
 - `RELEASE: READY` must name the SHA its gates ran on, and the merge/promotion must be pinned to it, or a push between the two launch visits reaches production ungated.
 - `work-order.md` Role: launch still says "May … promote to the target"; for production the promotion is the orchestrator's act.
 - A production `HALTED` has no step that commits the release note.
+
+**Found by `/break 104`:**
+- `tasks:check` and `specs:index --check` don't validate a task row's AC/T ids against its spec: a row changed to `AC-99, T-99` stays green. The orchestrator guessed spec 040's T-ids, and only the reviewer caught it. Candidate for step E tooling.
 
 **Nits from the PR 103 rounds, still open:**
 - W-18 says every field has a `TASKS.md` line but cites lines for only some of the eleven.

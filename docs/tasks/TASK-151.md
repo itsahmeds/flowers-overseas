@@ -19,6 +19,13 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 ## Carry-forwards
 
+- **From `/break 104` and `/review 104` (2026-09-28):**
+- Same agent and PR as TASK-150.
+- Remove `task.sh set` and `clear` from `.claude/agents/backend-implementer.md`, `frontend-implementer.md` and `/implement`, because the task now comes from the branch; or make `set` refuse while a `task/TASK-NNN-*` worktree exists. Add a framework-text case either way. A shell whose working directory resets into the main checkout would otherwise recreate the TASK-143 stale pointer.
+- Update `CLAUDE.md` "Working on this machine" L97 (`acquire` … `release`) to the token form, or every slot stays held until the 45-minute reap.
+- Mark `docs/framework/gaps.md` row 4 closed here, not in TASK-153.
+- Extend T-52's count.
+
 One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.

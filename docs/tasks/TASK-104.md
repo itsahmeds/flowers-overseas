@@ -18,6 +18,8 @@ be green. One paragraph or a short list — no restatement of the spec.
 
 ## Carry-forwards
 
+- **Spec 040 §14 A3 AC-43 (2026-09-28):** the cutover points the domain only at a production `web` whose trigger is `release`, and `pnpm railway:check` exits 0 before the DNS change.
+
 - **From `/review 82` (2026-09-18, TASK-135):** the Vercel check has failed on every PR for days and was briefed to reviewers as "not a finding" — which is how a build-breaking `ENOENT` that froze the demo URL sat in a red check nobody read. At the spec 040 §12 exit signal, **unlink Vercel** rather than leaving a permanently-red check that trains everyone to ignore it; if the cold fallback is kept instead, give it a dummy env store so red means red and make the deployment gate distinguish "no env" from "build failed". Either way, no reviewer is briefed to ignore a deployment check again.
 One dated bullet per `/review`, newest last.
 

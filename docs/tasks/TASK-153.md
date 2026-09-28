@@ -18,6 +18,8 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 ## Carry-forwards
 
+- **From `/break 104` and `/review 104` (2026-09-28):** `pr-policy` reads `previous_filename` as well as `filename`, so a rename out of a guarded path is caught; add a rename case to T-49. Don't mark gaps.md row 4 closed (TASK-151 closes it). Keep `ci.yml` edits to comments, so that TASK-155 (after you) owns the `on:` block.
+
 - **From the standards audit (2026-09-28):** `ci.yml` L197 claims the strict flags "are asserted by `pnpm typecheck:fixtures`", but that test ignores `unchecked-index.ts`. Correct the comment, or make the test assert it (`docs/framework/standards-audit-2026-09-28.md`, false claim 2).
 
 One dated bullet per `/review`, newest last.

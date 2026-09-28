@@ -6,7 +6,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 ## Binding
 
-`specs/040-hosting-railway-cloudflare.md` §14 A3 L907: AC-37, AC-41, AC-42 (T-37, T-42). Production launch is two visits: gates → `RELEASE: READY | HALTED` naming the SHA; the orchestrator promotes `release` to that SHA; the watch visit reports `PROMOTED | ROLLED BACK`. The release note is committed on `HALTED` too. The founder is Railway Admin and does F1–F4; F5 is the token scope; F6 is the deletion-only ruleset on `release`. Founder answers of 2026-09-28 (`docs/decisions-log.md`, last rows) and the advisor fixes are already written into the amendment; do not reopen them.
+`specs/040-hosting-railway-cloudflare.md` §14 A3 L907: AC-37, AC-41, AC-42 (T-41). Production launch is two visits: gates → `RELEASE: READY | HALTED` naming the SHA; the orchestrator promotes `release` to that SHA; the watch visit reports `PROMOTED | ROLLED BACK`. The release note is committed on `HALTED` too. The founder is Railway Admin and does F1–F4; F5 is the token scope; F6 is the deletion-only ruleset on `release`. Founder answers of 2026-09-28 (`docs/decisions-log.md`, last rows) and the advisor fixes are already written into the amendment; do not reopen them.
 
 ## Read
 
@@ -18,6 +18,8 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 - docs/runbooks/railway-cloudflare-setup.md
 
 ## Carry-forwards
+
+- **From `/review 104` (2026-09-28):** your test row is **T-41**. You depend on TASK-152 (`framework-text.test.ts`) and TASK-153 (`work-order.md`) as well as TASK-156. T-42, the first release, is a `/launch`, not this task.
 
 One dated bullet per `/review`, newest last.
 
