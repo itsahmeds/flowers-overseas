@@ -105,6 +105,35 @@ One dated bullet per `/review`, newest last.
   negative branch (`http://localhost`). All are covered by unit tests today; the docstrings should
   be corrected and the positive branches restored when PRs get an https Railway origin. The brief
   forbids touching these files here ("`e2e`, `visual` and `a11y` keep their existing contents").
+- **From `/review 90` round 2 (2026-09-21) — PASS; three carries, none blocking.**
+  (a) *Carried to the spec 040 AC-26 task, and A2 clause 3 should name it.* `playwright.config.ts`
+  lines 9-18 still assert the old criterion in its Vercel form — "`baseURL` … the Vercel preview
+  URL in CI (from the `preview` job's output)" and "Previews are behind Vercel Deployment
+  Protection (AC-29), so every request carries `x-vercel-protection-bypass`". Neither is true of
+  CI as of this PR: the origin is the runner's `http://localhost:3000` and
+  `VERCEL_AUTOMATION_BYPASS_SECRET` is no longer given to `e2e`/`visual`/`a11y`, so
+  `protectionBypassHeaders` is `{}`. Spec 040 §14 A2 clause 3 lists three docstrings to correct
+  and omits this one, which is the harness file an implementer reads first.
+  (b) *Unasserted failure branch, same family as the defect this round fixed.* Mutating the
+  resolver so the unresolvable-range guard is dropped (`base=$(git merge-base … || true)` in place
+  of the `if ! … ::error:: … exit 1` block) leaves **all five new cases green** — and an empty
+  `BASE_SHA` then reaches the lint step's `[ -z "$BASE_SHA" ]` branch, which exits 0 having linted
+  nothing. The guard is correct today and two independent things close the path in practice
+  (`defaults.run.shell: bash` gives `-e`, and a missing `FETCH_HEAD` makes `merge-base` fail), but
+  nothing pins it. Add the sixth case: an unresolvable range `::error::`s and exits non-zero.
+  Bundle with `/review 90` round 1 nit 2 (the secret scan reads step-level `env:` only, so the
+  `env | grep -qE '^(DATABASE_URL|…|R2_)'` guard that actually enforces spec 001 §14 A17 in
+  `preview` is pinned by nothing) — both are "the assertion passes with its subject removed".
+  (c) *Process, for the tooling owner, not for this task.* The misplaced carry-in is fixed in this
+  file but the mechanism is not. `scripts/tasks-brief.ts` exports `BRIEF_HEADINGS` in order, yet
+  `tests/unit/tasks-brief.test.ts` only checks briefs the generator writes into a fixture repo,
+  and `scripts/tasks-open-decisions.ts` checks the 400-char cap and that the brief file exists —
+  nothing validates a committed brief's heading set or ordering, or forbids content below
+  `## Result`. This brief already carries a seventh, non-template `## Round 2 …` heading after
+  `## Result` (harmless prose today, the same shape that cost round 1). One check —
+  a committed brief's H2 set equals `BRIEF_HEADINGS`, in that order — closes it.
+  (d) *One-line correction.* The `TASKS.md` row 155 notes cell still reads "`preview` 81 s"; the
+  `## Result` was corrected to 69 s but the row was not.
 
 ## Escalations
 
