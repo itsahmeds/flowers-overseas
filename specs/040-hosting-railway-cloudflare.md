@@ -905,7 +905,7 @@ Raised by: `/review 90` (PR #90), 2026-09-21; accepted by the founder the same d
 implemented by TASK-137, the clauses above owed by the AC-26 task.
 
 **A3 — Production deploys from a release ref that `/launch` promotes (§4 founder story; §5.3 "Deploys and rollback"; §5.5; §9 AC-9, AC-12, AC-13, AC-31; §12 step 6 and "Rollback"; new AC-34…AC-43 and T-34…T-43; framework gap 16).**
-**Status: draft — answers applied, awaiting founder's final approval.** §13 Q7–Q12 were answered
+**Status: approved — founder, 2026-09-28 ("approved"), after the advisor memos in `docs/advice/2026-09-28-*` and the answers in `docs/decisions-log.md`.** §13 Q7–Q12 were answered
 on 2026-09-28 (all recommended). The three fixes of
 `docs/advice/2026-09-28-spec-040-a3-release-branch.md` are applied: fix 1 in change 10 (F1) and
 AC-36; fix 2 in change 3, AC-38 and the suggested tasks; fix 3 in change 4, AC-39 and T-43. An ADR

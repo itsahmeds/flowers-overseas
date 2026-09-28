@@ -17,19 +17,19 @@ This is a product, not a prototype. This document defines the engineering standa
 
 | Area | Standard | Enforced by |
 |---|---|---|
-| Language | TypeScript `strict`, `noUncheckedIndexedAccess`, no `any`, no non-null assertions without comment | tsconfig + ESLint + reviewer |
+| Language | TypeScript `strict`, `noUncheckedIndexedAccess`, no `any`, no non-null assertions without comment | tsconfig + ESLint for `strict` and `any`; **no rule** for uncommented `!` and no test that `noUncheckedIndexedAccess` stays on — reviewer only (audit: `docs/framework/standards-audit-2026-09-28.md`) |
 | Validation | zod schemas for API input, server actions, webhooks, forms, third-party responses, job and event payloads (versioned) | reviewer; contract tests |
-| DB | Drizzle schema → versioned SQL migrations; each migration has `NNNN_name.down.sql`; RLS in migrations; generated Drizzle types committed (ADR-0015: Neon, not Supabase); no schema drift (CI diff of generated schema vs migrations) | CI job `db:check` |
+| DB | Drizzle schema → versioned SQL migrations; each migration has `NNNN_name.down.sql`; RLS in migrations; generated Drizzle types committed (ADR-0015: Neon, not Supabase); no schema drift (CI diff of generated schema vs migrations) | CI job `db:check`: checks tables and `.down.sql` presence only (an empty rollback or a column-level drift passes), and runs only with `ci:full` (audit: `docs/framework/standards-audit-2026-09-28.md`) |
 | Seeds | Idempotent upserts by natural key; never touch `source='real'` | backend-implementer; review |
 | Money | integer minor units + ISO currency; never floats | lint rule on `price` fields + review |
 | Time | store UTC; compute cutoffs in destination IANA zone; occasion rules as data | unit tests with DST fixtures |
-| i18n | no literal strings (ESLint `no-literal-strings` on JSX text/aria/alt/title); logical CSS only (ban `ml-|mr-|pl-|pr-|left-|right-|text-left|text-right`); `Intl` for all formatting | ESLint + Tailwind plugin + review |
-| SEO | indexable pages server-render title/canonical/hreflang/JSON-LD; schema via typed builders; sitemap membership by rules in `plan/02` | CI validators + seo-auditor |
+| i18n | no literal strings (ESLint `no-literal-strings` on JSX text/aria/alt/title); logical CSS only (ban `ml-|mr-|pl-|pr-|left-|right-|text-left|text-right`); `Intl` for all formatting | ESLint custom rules (`fo/no-literal-strings`, `fo/no-physical-css`, `fo/no-adhoc-intl`) + Stylelint + review; there is **no** Tailwind ESLint plugin — `prettier-plugin-tailwindcss` only sorts classes; each rule has known gaps (audit: `docs/framework/standards-audit-2026-09-28.md`) |
+| SEO | indexable pages server-render title/canonical/hreflang/JSON-LD; schema via typed builders; sitemap membership by rules in `plan/02` | CI validators check committed fixtures only, never a rendered page; per-page coverage is the label-only e2e over 14 hand-listed URLs, plus the seo-auditor (audit: `docs/framework/standards-audit-2026-09-28.md`) |
 | Order integrity | status only via `orderService.transition`; lint rule bans `update(orders).set({status` outside the service | ESLint custom rule + review |
 | Security | webhook signatures + inbox; RLS; CSP with nonces; no secrets in code (gitleaks in CI); dependency audit (`pnpm audit`, Renovate) | CI + review |
 | Performance | budgets in `plan/01` §7 as Lighthouse CI assertions; bundle budget | CI |
 | Accessibility | axe in Playwright on key templates; WCAG 2.1 AA | CI + review |
-| Commits | Conventional commits; PR title `type(scope): summary (TASK-NNN)`; squash merge | commitlint in CI |
+| Commits | Conventional commits; PR title `type(scope): summary (TASK-NNN)`; squash merge | commitlint in the pre-commit hook, and in CI only with `ci:full`; `pr-policy` checks PR titles on ready/label (audit: `docs/framework/standards-audit-2026-09-28.md`) |
 | Flags | corridor/locale/payment-method rollout via `feature_flag` table; no env-based feature flags | review |
 | Env | `.env.example` validated against `lib/env.ts` zod schema in CI; build fails on missing vars | CI |
 | Docs | README (local env <15 min), runbooks, architecture diagram (`docs/architecture.md`, Mermaid, updated when modules change), ADRs | definition of done |

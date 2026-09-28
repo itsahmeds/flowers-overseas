@@ -610,7 +610,7 @@ Raised by: `/review 90` (PR #90), 2026-09-21; accepted by the founder the same d
 TASK-137.
 
 **A19 — Enforcement: the written safety rules become checks (§2 "Dev OS" and "CI"; §9 AC-19, AC-24–AC-26; §10 T-20, T-25–T-27; new AC-37…AC-49 and T-38…T-52; framework gaps 4 and 5 and the step C list in `docs/framework/gaps.md`).**
-**Status: draft — answers applied, awaiting founder's final approval.** §13 Q11–Q16 were answered
+**Status: approved — founder, 2026-09-28 ("approved"), after the advisor memos in `docs/advice/2026-09-28-*` and the answers in `docs/decisions-log.md`.** §13 Q11–Q16 were answered
 on 2026-09-28 (all recommended; Q13 takes its alternative). The five fixes of
 `docs/advice/2026-09-28-spec-001-a19-enforcement.md` are applied: fix 1 in AC-38, AC-42 and T-53;
 fix 2 in AC-46 and T-48; fix 3 in AC-37, AC-39 and T-39; fix 4 in change 9 and AC-47; fix 5 in
