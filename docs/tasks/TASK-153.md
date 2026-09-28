@@ -31,7 +31,9 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- **2026-09-28 · `.github/workflows/pr-policy.yml` is outside the fence** (to the orchestrator; `open`). AC-47 and T-49 need its listing to emit `previous_filename`. Proposed: `--jq '.[] | .filename, (.previous_filename // empty)'`, and the header comment's stale list "(src/ tests/ supabase/ seed/ emails/)" rewritten to name `NO_TASK_ALLOWED`. The T-49 case that reads the file is written and red until then.
+- **2026-09-28 · `docs/framework/why.md` W-18 is outside the fence** (to the orchestrator; `open`). AC-49 says W-18 "stops claiming a `TASKS.md` line for all eleven fields: it says lines are cited where the Log has one" (L142–144: "each with at least one `TASKS.md` line"). The matching gaps.md nit is left open until it lands.
+- **2026-09-28 · gaps.md row 5** (to the orchestrator; `open`). AC-49 says this PR marks row 5 ✅, but row 5 (shell writes past the guard, the Stop hook's `db/`) is closed by TASK-150's code, and `.claude/state/in-flight.md` gives rows 4–5 to TASK-150+151. Row 5 is left as it is; mark it when TASK-150's PR merges.
 
 ## Progress
 
@@ -39,7 +41,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-09-28 · `scripts/pr-policy.ts` `NO_TASK_ALLOWED` + T-49 in `pr-policy.test.ts`; work-order text (AC-47 designer line, AC-48 spec writer; L120/L130 untouched for TASK-151) + T-50 `tests/unit/work-order-roles.test.ts` (in `PATH_TESTS`); `ci.yml` comments (header, L197 `typecheck:fixtures` claim corrected, commitlint) + T-51 in `ci-workflow.test.ts`; gaps.md step C items and nits. Blocked on the out-of-fence edits in `## Escalations`.
 
 ## Result
 

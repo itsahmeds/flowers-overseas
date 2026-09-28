@@ -592,11 +592,11 @@ describe("the preview job serves an origin CI owns (TASK-137)", () => {
 });
 
 /**
- * TASK-137 (carried in from `/review 84` round 2): `commitlint` must be runnable on the event CI
- * is actually re-fired with.
+ * TASK-137 (carried in from `/review 84` round 2): `commitlint` must survive a `workflow_dispatch`
+ * run.
  *
- * The job's `if` admits `workflow_dispatch` — the only way to re-run CI on a pull request that is
- * already ready and already labelled — but its command interpolated
+ * The job's `if` admits `workflow_dispatch` — an event the job has to survive, not a way to re-run
+ * CI (W-4: a dispatch skips the browser chain) — but its command interpolated
  * `github.event.pull_request.base.sha` and `.head.sha`, which that event does not carry. Both
  * resolved to the empty string, so every dispatch run ended in exit 9 ("--from and --to point to
  * the same commit") and the summary step ran `git rev-list --count ..`: a guaranteed red job on a
@@ -806,5 +806,33 @@ describe("the commitlint job resolves its own commit range (TASK-137)", () => {
     expect(run.status).toBe(0);
     expect(run.stdout).not.toContain("fatal");
     expect(run.summary).toContain("commits linted: 0");
+  });
+});
+
+/**
+ * T-51 (spec 001 AC-49, TASK-153): two comments in `ci.yml` stated as current what is not. The
+ * header presented a private repository's 2,000-minute budget and the reviewer's local re-run as
+ * how CI works, and the `commitlint` comment called `workflow_dispatch` "how CI is re-fired on a
+ * pull request", which W-4 forbids. Comments are matched with their line breaks and `#` markers
+ * folded away, so a phrase wrapped across two comment lines is still found.
+ */
+describe("stale ci.yml comments stay gone (T-51)", () => {
+  const folded = read(".github/workflows/ci.yml")
+    .split("\n")
+    .map((line) => line.replace(/^\s*#\s?/, "").trim())
+    .join(" ");
+
+  it.each([
+    "2,000 minutes",
+    "how CI is re-fired",
+    "the reviewer runs the same suites locally",
+  ])("no comment says %s", (phrase) => {
+    expect(folded).not.toContain(phrase);
+  });
+
+  it("the trigger comment points at §14 A14 and W-2", () => {
+    expect(folded).toMatch(
+      /When CI runs\. Why the triggers are what they are: spec 001 §14 A14 and `docs\/framework\/why\.md` W-2/,
+    );
   });
 });

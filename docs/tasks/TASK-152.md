@@ -30,7 +30,9 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- **2026-09-28 · `.claude/skills/spec/SKILL.md` is outside the fence** (to the orchestrator; `open`). AC-44 case 1 is "red on today's tree: `/spec` launches `spec-writer` with no pointer. The implementing PR adds it." Tested fix (on a scratch copy, 23/23 green): step 2 → "Launch the `spec-writer` agent with a filled-in `.claude/templates/work-order.md` (spec writer role): the feature, …".
+- **2026-09-28 · `CLAUDE.md` DoD §4 has no `HOLDS`** (to the orchestrator; `open`). AC-44 case 3 says "DoD §4 names `/break` and `HOLDS`"; today only "Merging" names `HOLDS`, and the fence gives me only the DoD §2 line. Tested fix: "a `/break` verdict (`HOLDS`, or `HOLES`) **on the current head SHA**".
+- **2026-09-28 · `tests/unit/agent-orientation.test.ts` is outside the fence** (to the orchestrator; `open`). AC-44 case 2 says its five-heading case "becomes six". TASK-150+151 edits the same file (T-53). `framework-text.test.ts` case 2 already asserts `## Progress` above `## Result`; adding `"## Progress"` to that list is a one-line change for whoever owns the file.
 
 ## Progress
 
@@ -39,6 +41,7 @@ the commit: what is done, what is next, anything a replacement agent must know. 
 here.
 
 - 2026-09-28 · `scripts/gates-cheap.ts` + `pnpm gates:cheap`, `PATH_TESTS` (incl. T-50's `work-order-roles.test.ts`), `tests/unit/gates-cheap.test.ts` (T-45 runner + map), `tests/unit/framework-text.test.ts` (T-46 five cases + T-45 drift, `FRAMEWORK_ROOT`), CLAUDE.md DoD §2 line. Red on the real tree until out-of-fence edits land (see `## Escalations`): `/spec` skill pointer, DoD §4 `HOLDS`. Next: TASK-153.
+- 2026-09-28 · TASK-153 committed on the same branch (see its brief). Blocked on the out-of-fence edits in `## Escalations`; PR 106 stays draft until they land.
 
 ## Result
 
