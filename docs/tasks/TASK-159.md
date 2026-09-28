@@ -51,4 +51,17 @@ here.
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR [#116](https://github.com/itsahmeds/flowers-overseas/pull/116). **AC-53 / T-57:** `tests/unit/zod-boundaries.test.ts` parses every `.ts`/`.tsx` under `src/` with the compiler API and finds the three kinds of raw input; `READERS = [src/lib/consent.ts#readBoundedBody]` and `PARSERS = [src/modules/catalog/params.ts#listingRequest]` live in the test, each with a reason, and a comment exempts nothing. Unit: 22 cases over 14 fixture trees in `tests/fixtures/zod-boundaries/` (T-57's nine red and five green cases, the empty tree, plus the flips: the plant's function added to `READERS`, the escaping `use()` added to `PARSERS`, and the one-call follow switched off, each flipping its case). The real tree is green with 6 raw inputs (2 page `searchParams`, 2 `readBoundedBody` calls, 1 `.json()`, 1 exempt `.text()` inside the reader), so `reminders.ts` and `consentCookie.ts` were not touched. `useSearchParams()` in client components is listed as not covered in the test header and the `plan/12` row. **AC-61 local clause / T-66:** `ALWAYS_TESTS` in `scripts/gates-cheap.ts` runs `zod-boundaries` and `lint-coverage` on every diff and names them on the test gate's line; a missing entry turns the gate red. `gates-cheap.test.ts` has 5 new cases (26 total); removing `lint-coverage` from the list turned 4 red. TASK-160 adds `url-pii` to `ALWAYS_TESTS` and to `EXPECTED_ALWAYS`. **AC-62:** the `plan/12` §2 Validation row. No expensive gate was run locally. Left for someone else: `tests/fixtures/README.md` has no row for `zod-boundaries/` because it is outside this fence.
+
+```
+gates:cheap · 967ee1f7d231f6b275761ccf9930c82a5bba5a3e · tree clean · base origin/main · 2026-09-28T19:42:30.529Z
+typecheck             exit 0 · 1.8 s
+lint                  exit 0 · 9.3 s
+format:check          exit 0 · 7.4 s
+i18n:check            exit 0 · 0.3 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 85.6 s · changed 4 + map 0 + always 1 · always run: zod-boundaries, lint-coverage
+format:check covers: every path except node_modules/ .next/ out/ coverage/ playwright-report/ test-results/ pnpm-lock.yaml next-env.d.ts .claude/ plan/ specs/ docs/ README.md TASKS.md CLAUDE.md /tests/fixtures/lint/ /tests/fixtures/seo/_cases/ /tests/fixtures/i18n/_cases/ /src/modules/geo/content/corpus.generated.ts
+RESULT: PASS
+```
