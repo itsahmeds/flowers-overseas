@@ -8,15 +8,26 @@
  * outside, exactly as the spec's "stubbed runner that records the test files it is given" asks.
  * The drift half of T-45 (the `CLAUDE.md` sentence) lives in `framework-text.test.ts`, which is
  * the test the path map runs when `CLAUDE.md` changes.
+ *
+ * T-66 (spec 001 AC-61's local clause, TASK-159): the always-run list. The T-45 cases stub it
+ * empty so they stay about the path map; the T-66 cases run with the committed `ALWAYS_TESTS`, so
+ * deleting a name from it turns that name's case red.
  */
 import { execFileSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 
 import { afterEach, describe, expect, it } from "vitest";
 
 import {
+  ALWAYS_TESTS,
   CHEAP_GATES,
   PATH_TESTS,
   TEST_GATE,
@@ -56,6 +67,7 @@ function tempRepo(): string {
   sh(root, "config", "commit.gpgsign", "false");
   for (const entry of PATH_TESTS)
     for (const test of entry.tests) put(root, test);
+  for (const test of ALWAYS_TESTS) put(root, test);
   put(root, "CLAUDE.md");
   put(root, ".claude/hooks/task-guard.sh");
   put(root, ".github/workflows/ci.yml");
@@ -90,7 +102,9 @@ interface Recorded {
 
 function stubbed(
   root: string,
-  overrides: Partial<Pick<Deps, "gates" | "map" | "listChangedTests">> = {},
+  overrides: Partial<
+    Pick<Deps, "gates" | "map" | "listChangedTests" | "always">
+  > = {},
 ): Recorded {
   const gatesRun: string[] = [];
   const testFiles: string[][] = [];
@@ -101,6 +115,8 @@ function stubbed(
     ...real,
     stdio: "ignore",
     listChangedTests: () => [],
+    // T-45's cases are about the path map; T-66's pass `always: real.always` back in.
+    always: [],
     runTests: (files) => {
       testFiles.push([...files]);
       return 0;
@@ -383,6 +399,87 @@ describe("T-45: the path map runs the tests that read changed text", () => {
     ]);
     expect(
       mappedTests(["docs/tasks/TASK-152.md", "specs/001-x.md", "CLAUDE.mdx"]),
+    ).toEqual([]);
+  });
+});
+
+describe("T-66: the always-run list runs whatever the diff", () => {
+  /** The names AC-61's local clause lists today. TASK-160 adds `url-pii` here and to the list. */
+  const EXPECTED_ALWAYS = ["zod-boundaries", "lint-coverage"];
+  const testLine = (block: string): string =>
+    block.split("\n").find((line) => line.startsWith(`${TEST_GATE} `)) ?? "";
+  const withAlways = (
+    root: string,
+    overrides: Parameters<typeof stubbed>[1] = {},
+  ): Recorded =>
+    stubbed(root, { always: defaultDeps(root, "main").always, ...overrides });
+
+  it("a diff that only adds src/app/api/x/route.ts → exactly the always-run tests run, and the line names them", () => {
+    const root = tempRepo();
+    put(root, "src/app/api/x/route.ts", "export {};\n"); // untracked, as a new route is
+    const { deps, testFiles } = withAlways(root);
+    const result = runGatesCheap(deps);
+    expect(testFiles).toEqual([
+      EXPECTED_ALWAYS.map((name) => `tests/unit/${name}.test.ts`),
+    ]);
+    expect(testLine(result.block)).toMatch(
+      new RegExp(
+        `exit 0 · [\\d.]+ s · changed 0 \\+ map 0 \\+ always 2 · always run: ${EXPECTED_ALWAYS.join(", ")}$`,
+      ),
+    );
+    expect(result.exitCode).toBe(0);
+  });
+
+  it.each(EXPECTED_ALWAYS)(
+    "%s is on the committed list, so it runs on a diff that touches nothing it imports",
+    (name) => {
+      const root = tempRepo();
+      commitChange(root, "src/a.ts");
+      const { deps, testFiles } = withAlways(root);
+      const result = runGatesCheap(deps);
+      expect(testFiles.flat()).toContain(`tests/unit/${name}.test.ts`);
+      expect(
+        testLine(result.block).split(" · always run: ")[1]?.split(", "),
+      ).toContain(name);
+    },
+  );
+
+  it("a test `--changed` already found runs once, counted there", () => {
+    const root = tempRepo();
+    commitChange(root, "src/a.ts");
+    const { deps, testFiles } = withAlways(root, {
+      listChangedTests: () => ["tests/unit/zod-boundaries.test.ts"],
+    });
+    const result = runGatesCheap(deps);
+    expect(testFiles).toEqual([
+      ["tests/unit/zod-boundaries.test.ts", "tests/unit/lint-coverage.test.ts"],
+    ]);
+    expect(testLine(result.block)).toContain("changed 1 + map 0 + always 1");
+  });
+
+  it("an always-run entry naming a missing file → the test gate red, naming it", () => {
+    const root = tempRepo();
+    const { deps, testFiles } = withAlways(root, {
+      always: ["tests/unit/zod-boundaries.test.ts", "tests/unit/gone.test.ts"],
+    });
+    const result = runGatesCheap(deps);
+    expect(testFiles).toEqual([["tests/unit/zod-boundaries.test.ts"]]);
+    expect(testLine(result.block)).toMatch(
+      /exit 1 .*ALWAYS_TESTS names missing file\(s\): tests\/unit\/gone\.test\.ts$/,
+    );
+    expect(result.exitCode).toBe(1);
+  });
+
+  it("the committed list is AC-61's, and every file on it exists in this repository", () => {
+    expect(ALWAYS_TESTS).toEqual(
+      EXPECTED_ALWAYS.map((name) => `tests/unit/${name}.test.ts`),
+    );
+    expect(defaultDeps(join(__dirname, "../.."), "main").always).toBe(
+      ALWAYS_TESTS,
+    );
+    const repo = join(__dirname, "../..");
+    expect(
+      ALWAYS_TESTS.filter((test) => !existsSync(join(repo, test))),
     ).toEqual([]);
   });
 });
