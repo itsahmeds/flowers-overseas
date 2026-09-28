@@ -26,6 +26,7 @@ import os
 import re
 import subprocess
 import sys
+import unicodedata
 
 GUARDED_ROOTS = ("src/", "app/", "supabase/", "db/", "emails/", "seed/", "tests/")
 
@@ -110,11 +111,21 @@ def main_root(anchor):
     return worktrees(anchor)[0].path
 
 
+def _fold(name):
+    """A folder name as this Mac's disk compares it: one Unicode spelling (NFC), then casefolded.
+
+    APFS treats a composed `é` and `e` + combining accent as the same name; without the NFC step a
+    worktree `café` written to in the other spelling fell outside every worktree (PR 107 breaker,
+    hole 8).
+    """
+    return unicodedata.normalize("NFC", name).casefold()
+
+
 def _inside(target, top):
     """`target` relative to `top` when it lies inside it, else None.
 
-    Compared folder by folder, each casefolded (the disk ignores case), and the answer is built
-    from the target's *own* remaining folders. Slicing the original string at the casefolded
+    Compared folder by folder, each through `_fold` (the disk ignores case and Unicode spelling),
+    and the answer is built from the target's *own* remaining folders. Slicing the original string at the casefolded
     length is wrong: `ß` folds to `ss` and `İ` to two code points, so a checkout at `…/straße`
     read `src/a.ts` as `rc/a.ts` and let it through (the PR 107 breaker, hole 7).
     """
@@ -122,7 +133,7 @@ def _inside(target, top):
     w_parts = [part for part in top.split("/") if part]
     if len(t_parts) < len(w_parts):
         return None
-    if any(a.casefold() != b.casefold() for a, b in zip(t_parts, w_parts)):
+    if any(_fold(a) != _fold(b) for a, b in zip(t_parts, w_parts)):
         return None
     rest = t_parts[len(w_parts):]
     return "/".join(rest) if rest else "."

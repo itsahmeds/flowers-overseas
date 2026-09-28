@@ -42,6 +42,7 @@ here.
 - 2026-09-28: `guarded_paths.py` (shared classifier, worktree rule, Q16), `bash-guard.sh`/`bash_guard.py` (AC-37–AC-39, the release `--force` rule), `task-guard.sh` and the Stop hook on the shared module; T-38–T-41 and T-52 written and green; every denial mutated red on a scratch copy (28 mutations); `CLAUDE.md` rule, DoD §7 and machine lines edited. Next: cheap gates, rebase on `d85b69e`, ready + `ci:full`.
 - 2026-09-28: `/break 107` round 1 holes 1–6 fixed with red-by-mutation cases (see the TASK-151 brief and the PR comment); `guarded_paths.py` casefolds relative paths and worktree containment.
 - 2026-09-28: `/break 107` round 2, hole 7 fixed. `_inside` now compares folder by folder, casefolded, and returns the target's own folders, so a checkout at `…/straße` or `…/İstanbul` no longer reads `src/a.ts` as `rc/a.ts`. The new T-41 rows fail with the old slicing.
+- 2026-09-28: `/break 107` round 3, hole 8 fixed. `_inside` compares each folder name NFC-normalised, then casefolded. T-41 rows for a `café` worktree written in the other Unicode spelling; the composed-worktree row fails without the NFC step.
 
 ## Result
 

@@ -363,6 +363,30 @@ describe("the shared guarded-path classifier (T-41)", () => {
   const dottedIWorktree = join(realpathSync(tempRoot()), "İstanbul");
   git(main, "worktree", "add", "-q", "-b", "spec/y", eszettWorktree);
   git(main, "worktree", "add", "-q", "-b", "spec/z", dottedIWorktree);
+  // One name, two Unicode spellings: composed `é` (NFC) and `e` + combining acute (NFD). This Mac's
+  // disk treats them as the same folder (PR 107 breaker, hole 8).
+  const composed = "caf\u00e9";
+  const decomposed = "cafe\u0301";
+  const nfcParent = realpathSync(tempRoot());
+  const nfdParent = realpathSync(tempRoot());
+  git(
+    main,
+    "worktree",
+    "add",
+    "-q",
+    "-b",
+    "spec/nfc",
+    join(nfcParent, composed),
+  );
+  git(
+    main,
+    "worktree",
+    "add",
+    "-q",
+    "-b",
+    "spec/nfd",
+    join(nfdParent, decomposed),
+  );
   const outside = join(realpathSync(tempRoot()), "outside.ts");
 
   // [path, guarded?] — no task is active anywhere: the main pointer is absent, `spec/x` has none.
@@ -389,6 +413,8 @@ describe("the shared guarded-path classifier (T-41)", () => {
     [join(branchWorktree, "db/migrations/0002.sql"), true],
     [join(eszettWorktree, "src/a.ts"), true],
     [join(dottedIWorktree, "src/a.ts"), true],
+    [join(nfcParent, decomposed, "src/a.ts"), true],
+    [join(nfdParent, composed, "src/a.ts"), true],
     [join(detachedWorktree, "src/a.ts"), false],
     [join(detachedWorktree, "db/migrations/0002.sql"), false],
   ];

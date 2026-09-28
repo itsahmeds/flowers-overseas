@@ -52,6 +52,7 @@ here.
 - 2026-09-28: `build-slot.sh` owner token (AC-41), `task.sh` `check`, the branch-derived task and the `set` refusal (AC-42); T-42–T-44 and T-53 (shell halves in `task-sh.test.sh`/`bash-guard.test.sh`, the text case in `agent-orientation.test.ts`) green and mutated red; implementer files and `/implement` no longer mention `task.sh set`/`clear`; `gaps.md` row 4 closed. The `/status` Guard line was outside the fence at this step (see Escalations).
 - 2026-09-28: `/status` Guard line added (fence widened). `/break 107` round 1 holes 1–6 fixed, each with a case that goes red when its subject is removed: hook registration, `eval`, the `sudo`/`nohup`/`time` prefixes, the other write forms, `bash build-slot.sh release --force`, and casefolded paths (`SRC/`). Plus the must-pass `pgrep` loop with no `sleep`. Next: `work-order.md` L120/L130 once PR 106 merges.
 - 2026-09-28: `/break 107` round 2, hole 7 fixed. `_inside` now compares folder by folder, casefolded, and returns the target's own folders, so a checkout at `…/straße` or `…/İstanbul` no longer reads `src/a.ts` as `rc/a.ts`. The new T-41 rows fail with the old slicing.
+- 2026-09-28: `/break 107` round 3, hole 9 fixed. The T-53 text case also reads `work-order.md` `## Role: implementer`, from `FRAMEWORK_ROOT` when set; putting `task.sh set` back there in a scratch copy fails it.
 
 ## Result
 
