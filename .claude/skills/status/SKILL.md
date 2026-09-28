@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 **When:** start of every session; any time you need the state.
 **Agent:** `orchestrator` (read-only mode).
-**Outputs:** ≤40 lines: Position · Next command · tables for tasks by status · phase progress · open decisions (from `plan/13-open-questions.md` and `TASKS.md`) · stale/red PRs.
+**Outputs:** ≤40 lines: Position · Next command · tables for tasks by status · phase progress · open decisions (from `plan/13-open-questions.md` and `TASKS.md`) · stale/red PRs · **Guard** line (`.claude/bin/task.sh check` for the pointer and for every `task/*` worktree, with the exact command to clear a stale pointer; `/status` never clears it).
 
 ## Steps
 1. Launch `orchestrator` with instruction "status only, no edits".
