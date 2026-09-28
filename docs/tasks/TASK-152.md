@@ -46,10 +46,11 @@ here.
 - 2026-09-28 · TASK-153 committed on the same branch (see its brief). Blocked on the out-of-fence edits in `## Escalations`; PR 106 stays draft until they land.
 - 2026-09-28 · Ruling applied (see `## Escalations`), rebased on `origin/main` `d85b69e`; all 11 red cases green on the real tree; row set `in_review`.
 - 2026-09-28 · `/review 106` + `/break 106` round 1 fixes: gates-cheap cases for an untracked `.claude/hooks/new.sh` and a throwing lister; brief escalations bullet restored and the ruling given its own bullet; `## Result` updated. Breaker hole 4 and the dirty-tree PASS left as the orchestrator ruled.
+- 2026-09-28 · `/review 106` round 2 nit: `## Result` counts corrected (gates-cheap 20).
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-PR 106 (ready, `ci:full`, shared with TASK-153; CI green on `0955ed7` before `/review 106` round 1). `scripts/gates-cheap.ts` + `pnpm gates:cheap`; `PATH_TESTS` with the spec's entries plus T-50's `work-order-roles.test.ts`. Tests: `tests/unit/gates-cheap.test.ts` 18 (T-45 runner, block, map, temp git repos, stubbed Vitest calls); `tests/unit/framework-text.test.ts` 23 (T-46's five cases over `FRAMEWORK_ROOT`, 12 red-by-deletion cases on scratch copies, 4 T-45 drift fixtures). 23/23 green on the real tree; each of the five subjects deleted in its own copy turns exactly its case red. No build slot taken; no expensive gate run. TASK-154 adds T-47's test to `PATH_TESTS`.
+PR 106 (ready, `ci:full`, shared with TASK-153; CI green on `0955ed7` before `/review 106` round 1). `scripts/gates-cheap.ts` + `pnpm gates:cheap`; `PATH_TESTS` with the spec's entries plus T-50's `work-order-roles.test.ts`. Tests: `tests/unit/gates-cheap.test.ts` 20 (T-45 runner, block, map incl. an untracked file, a throwing lister, temp git repos, stubbed Vitest calls); `tests/unit/framework-text.test.ts` 23 (T-46's five cases over `FRAMEWORK_ROOT`, 12 red-by-deletion cases on scratch copies, 4 T-45 drift fixtures). 23/23 green on the real tree; each of the five subjects deleted in its own copy turns exactly its case red. No build slot taken; no expensive gate run. TASK-154 adds T-47's test to `PATH_TESTS`.
