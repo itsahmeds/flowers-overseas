@@ -84,7 +84,13 @@ rev_write_allow "$PROJECT/docs/advice/2026-09-28-x.md" "Write docs/advice/2026-0
 rev_write_deny "$PROJECT/src/a.ts" "Write src/a.ts"
 rev_write_allow "$CLOCK_TMPDIR/v.md" "Write \$TMPDIR/v.md"
 rev_write_allow "$SCRATCH_ROOT/p/s/scratchpad/v.md" "Write /private/tmp/claude-<uid>/p/s/scratchpad/v.md"
-rev_write_allow "/tmp/claude-$(id -u)/p/s/scratchpad/w.md" "Write /tmp/claude-<uid>/… (the /tmp link)"
+# `/tmp` is a link to `/private/tmp` on macOS (AC-46), not on ubuntu-latest, where the row does not apply.
+if [ "$(cd /tmp && pwd -P)" = "/private/tmp" ]; then
+  rev_write_allow "/tmp/claude-$(id -u)/p/s/scratchpad/w.md" "Write /tmp/claude-<uid>/… (the /tmp link)"
+else
+  ok "Write /tmp/claude-<uid>/… (the /tmp link) # SKIP /tmp is not a link to /private/tmp here"
+  ok "exits 0: Write /tmp/claude-<uid>/… # SKIP /tmp is not a link to /private/tmp here"
+fi
 rev_bash_allow "cat > $CLOCK_TMPDIR/v.md <<'EOF'
 Verdict: PASS
 EOF" "Bash cat > \$TMPDIR/v.md <<'EOF' (a two-line body)"

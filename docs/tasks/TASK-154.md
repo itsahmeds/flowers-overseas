@@ -36,6 +36,10 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   that fails, send a finisher and force the dead owner's slot (AC-41)". The work order's fence
   allows only the `maxTurns` frontmatter line in agent files, so PR 112 does not add it. Who writes
   that paragraph (this PR with a widened fence, or a follow-up)? `open`.
+- **2026-09-28, to the orchestrator:** CI run 36462270081 on `a188b7e` fails `tests/unit/docs.test.ts`
+  L165, `expect(Object.keys(settings.hooks ?? {})).toEqual(["PreToolUse", "Stop"])`, which the three
+  clock entries necessarily change to `["PreToolUse", "SubagentStart", "SubagentStop", "Stop"]`.
+  The file is outside the fence. Widen it to that one line? `open`.
 
 ## Progress
 
@@ -45,6 +49,7 @@ here.
 
 - 2026-09-28: clock hook (`agent-clock.sh` → `agent_clock.py`) and `tests/dev-os/agent-clock.test.sh` (T-48, 237 assertions) green; draft PR 112 opened.
 - 2026-09-28: `maxTurns` in nine agent files, the three `.claude/settings.json` entries, T-47 and T-52's count in `tests/unit/dev-os.test.ts`; `PATH_TESTS` entry; runbook and README. Rebased on `origin/main` `bfae5c9` (TASKS.md row conflict only). Mutations shown red; `gates:cheap` PASS. Next: ready + `ci:full`, founder's yes on the settings entries.
+- 2026-09-28: CI on `a188b7e` red: T-48's `/tmp`-link row assumed macOS (fixed: the row applies only where `/tmp` → `/private/tmp`), and `tests/unit/docs.test.ts` L165 pins the settings hook keys (outside the fence, escalated). Handed back.
 
 ## Result
 
