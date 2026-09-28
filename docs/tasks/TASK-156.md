@@ -23,12 +23,13 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 - `release:rollback --to` must be a commit production has already run successfully, or the previous release note's SHA, never just any ancestor; add that case to T-37.
 - T-40 needs allowed branch names that contain `release` (e.g. `task/TASK-156-release-promote`) and deny rows for `--mirror`, `--delete release` and `+sha:release` (landed in A3 via PR 104).
 - T-43 is the rollback rehearsal with the founder, recorded in `TASKS.md`.
-- Make the `CLAUDE.md` edits A3 owes.
+- ~~Make the `CLAUDE.md` edits A3 owes.~~ Dropped by the founder, 2026-09-29 (see below).
 
 One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
 - **From `/break 108` (2026-09-28):** you wait for TASK-158, because both edit `package.json` (your `release:*` scripts, its lint flags).
+- **From the founder (2026-09-29):** spec 040 A3's owed `CLAUDE.md` line and its W-n are dropped (`docs/decisions-log.md`, 2026-09-29); do not edit `CLAUDE.md` or `docs/framework/why.md`. The release mechanism is unchanged.
 
 ## Escalations
 
