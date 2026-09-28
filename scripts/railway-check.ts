@@ -1,40 +1,59 @@
 /**
  * `pnpm railway:check [--env <name>]` — the Railway drift gate (spec 040 §5.3, AC-9 / AC-11,
- * T-10 / T-11; TASK-098).
+ * T-10 / T-11; TASK-098; §14 A3 AC-34, T-34; TASK-155).
  *
- * Two checks, both read-only:
+ * Three checks, all read-only:
  *
- *  - **Service** (AC-9): the four live values of the `web` service — region, replica count,
- *    healthcheck path and restart policy — against `config/railway.json`. A raised replica count
- *    is a correctness bug until a shared ISR cache handler exists (ADR-0018), which is why it is
- *    a gate and not a note in a runbook.
- *  - **Variables** (`--env <name>`, AC-11): the live **key set** against the 28-key contract plus
- *    the environment's optional switch. Only key *names* are ever read or printed; the API's
- *    values are parsed as `unknown` in `src/lib/railway.ts` and never touched.
+ *  - **Triggers** (AC-34), always: every environment's deployment triggers against
+ *    `config/deploy-triggers.json`. Production's `web` and `worker` must follow `release`,
+ *    staging's `main`, and no other environment may follow `release`. One project-level query;
+ *    needs `RAILWAY_API_TOKEN` and `RAILWAY_PROJECT_ID` only.
+ *  - **Service** (AC-9), when `RAILWAY_ENVIRONMENT_ID` is set: the four live values of that
+ *    environment's `web` service — region, replica count, healthcheck path and restart policy —
+ *    against `config/railway.json`. A raised replica count is a correctness bug until a shared ISR
+ *    cache handler exists (ADR-0018), which is why it is a gate and not a note in a runbook.
+ *  - **Variables** (`--env <name>`, AC-11, needs `RAILWAY_ENVIRONMENT_ID`): the live **key set**
+ *    against the 28-key contract plus the environment's optional switch. Only key *names* are
+ *    ever read or printed; the API's values are parsed as `unknown` in `src/lib/railway.ts` and
+ *    never touched.
  *
- * Credentials: `RAILWAY_API_TOKEN` (a project token, pasted by the founder into their shell or
- * the CI secret store) and `RAILWAY_PROJECT_ID`. Neither is in the repository, and with neither
- * present the script exits non-zero saying so rather than pretending to pass.
+ * Output: the report lines go to **stdout**, and on a red run the verdict goes to **stderr**. A
+ * red trigger check prints only its failing rows, so with `RAILWAY_ENVIRONMENT_ID` unset the run
+ * AC-42 records while production has no `web` (TASK-104 creates it) is exactly its
+ * `production · <service> · triggers on none, declared release` lines on stdout, exit 1, and a
+ * stderr verdict that labels it `EXPECTED RED until TASK-104`. Any other failure carries no such
+ * label.
  *
- * `--fixture-environment <path>` / `--fixture-variables <path>` replace the two API calls with
- * recorded responses. That is how `tests/contract/railway-check.test.ts` exercises the whole
- * comparison without a token, and how a reviewer reproduces a failure.
+ * Credentials: `RAILWAY_API_TOKEN` (a token the founder pastes into their shell or the CI secret
+ * store) and `RAILWAY_PROJECT_ID`. Neither is in the repository, and with either absent the
+ * script exits 2 saying so rather than pretending to pass.
+ *
+ * `--fixture-triggers <path>`, `--fixture-environment <path>` and `--fixture-variables <path>`
+ * replace the API calls with recorded responses, and only the checks given a fixture run. That is
+ * how `tests/contract/railway-check.test.ts` exercises the whole comparison without a token, and
+ * how a reviewer reproduces a failure.
  */
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import {
+  DEPLOY_TRIGGERS_PATH,
+  type DeployTriggers,
   RAILWAY_CONFIG_PATH,
   type RailwayConfig,
   type RailwayEnvironmentResponse,
   type RailwayVariablesResponse,
+  type TriggerReport,
   WEB_SERVICE_NAME,
+  compareDeployTriggers,
   compareVariableKeys,
   compareWebService,
+  deployTriggersSchema,
   findServiceInstance,
   railwayConfigSchema,
   railwayEnvironmentResponseSchema,
+  railwayTriggersResponseSchema,
   railwayVariablesResponseSchema,
 } from "../src/lib/railway.ts";
 
@@ -109,6 +128,24 @@ export function loadDeclaredConfig(repoRoot: string): RailwayConfig {
   return railwayConfigSchema.parse(JSON.parse(readFileSync(path, "utf8")));
 }
 
+/** Parse `config/deploy-triggers.json` (T-35). Throws a zod error naming the offending field. */
+export function loadDeclaredTriggers(repoRoot: string): DeployTriggers {
+  const path = resolve(repoRoot, DEPLOY_TRIGGERS_PATH);
+  return deployTriggersSchema.parse(JSON.parse(readFileSync(path, "utf8")));
+}
+
+/** The stderr verdict of a red run: the expected red of AC-42 is labelled, nothing else is. */
+export function failureVerdict(triggers: TriggerReport | undefined): string {
+  if (triggers?.onlyAbsentProductionServices === true) {
+    return (
+      "railway:check: EXPECTED RED until TASK-104 creates production `web` on `release` " +
+      "(spec 040 AC-42, T-44): every failure above is a declared production service that does " +
+      "not exist yet. Once production `web` exists, this output is a real failure.\n"
+    );
+  }
+  return "railway:check failed: the lines above name each difference.\n";
+}
+
 function flagValue(argv: readonly string[], flag: string): string | undefined {
   const index = argv.indexOf(flag);
   return index === -1 ? undefined : argv[index + 1];
@@ -128,6 +165,41 @@ const ENVIRONMENT_QUERY = `query Environment($id: String!) {
           restartPolicyType
           restartPolicyMaxRetries
           startCommand
+        }
+      }
+    }
+  }
+}`;
+
+const TRIGGERS_QUERY = `query DeploymentTriggers($projectId: String!) {
+  project(id: $projectId) {
+    environments {
+      edges {
+        node {
+          id
+          name
+          serviceInstances {
+            edges {
+              node {
+                serviceId
+                serviceName
+                source {
+                  repo
+                  image
+                }
+              }
+            }
+          }
+          deploymentTriggers {
+            edges {
+              node {
+                id
+                branch
+                environmentId
+                serviceId
+              }
+            }
+          }
         }
       }
     }
@@ -161,6 +233,7 @@ async function post(
 
 interface CliOptions {
   readonly environmentName: string | undefined;
+  readonly fixtureTriggers: string | undefined;
   readonly fixtureEnvironment: string | undefined;
   readonly fixtureVariables: string | undefined;
 }
@@ -168,6 +241,7 @@ interface CliOptions {
 function parseArgs(argv: readonly string[]): CliOptions {
   return {
     environmentName: flagValue(argv, "--env"),
+    fixtureTriggers: flagValue(argv, "--fixture-triggers"),
     fixtureEnvironment: flagValue(argv, "--fixture-environment"),
     fixtureVariables: flagValue(argv, "--fixture-variables"),
   };
@@ -177,69 +251,110 @@ function readFixture(path: string): unknown {
   return JSON.parse(readFileSync(resolve(process.cwd(), path), "utf8"));
 }
 
+const present = (value: string | undefined): value is string =>
+  value !== undefined && value !== "";
+
+interface Payloads {
+  readonly triggers: unknown;
+  readonly environment: unknown;
+  readonly variables: unknown;
+}
+
+/** Recorded responses, or the live API; `undefined` for a check that does not run. */
+async function fetchPayloads(options: CliOptions): Promise<Payloads | string> {
+  const fixtureMode =
+    options.fixtureTriggers !== undefined ||
+    options.fixtureEnvironment !== undefined;
+  if (fixtureMode) {
+    return {
+      triggers:
+        options.fixtureTriggers === undefined
+          ? undefined
+          : readFixture(options.fixtureTriggers),
+      environment:
+        options.fixtureEnvironment === undefined
+          ? undefined
+          : readFixture(options.fixtureEnvironment),
+      variables:
+        options.fixtureEnvironment === undefined ||
+        options.fixtureVariables === undefined
+          ? undefined
+          : readFixture(options.fixtureVariables),
+    };
+  }
+
+  const token = process.env["RAILWAY_API_TOKEN"];
+  const projectId = process.env["RAILWAY_PROJECT_ID"];
+  const environmentId = process.env["RAILWAY_ENVIRONMENT_ID"];
+  if (!present(token) || !present(projectId)) {
+    return (
+      "railway:check needs RAILWAY_API_TOKEN and RAILWAY_PROJECT_ID in the environment " +
+      "(docs/runbooks/railway-cloudflare-setup.md), plus RAILWAY_ENVIRONMENT_ID for the service " +
+      "and --env checks, or --fixture-triggers / --fixture-environment <path> for a recorded response\n"
+    );
+  }
+  if (options.environmentName !== undefined && !present(environmentId)) {
+    return "railway:check --env needs RAILWAY_ENVIRONMENT_ID: the variable check reads one environment\n";
+  }
+  const triggers = await post(token, TRIGGERS_QUERY, { projectId });
+  if (!present(environmentId)) {
+    return { triggers, environment: undefined, variables: undefined };
+  }
+  const environment = await post(token, ENVIRONMENT_QUERY, {
+    id: environmentId,
+  });
+  const variables =
+    options.environmentName === undefined
+      ? undefined
+      : await post(token, VARIABLES_QUERY, { projectId, environmentId });
+  return { triggers, environment, variables };
+}
+
 async function main(argv: readonly string[]): Promise<number> {
   const options = parseArgs(argv);
-  const declared = loadDeclaredConfig(process.cwd());
-
-  let environmentPayload: unknown;
-  let variablesPayload: unknown;
-
-  if (options.fixtureEnvironment !== undefined) {
-    environmentPayload = readFixture(options.fixtureEnvironment);
-    if (options.fixtureVariables !== undefined) {
-      variablesPayload = readFixture(options.fixtureVariables);
-    }
-  } else {
-    const token = process.env["RAILWAY_API_TOKEN"];
-    const environmentId = process.env["RAILWAY_ENVIRONMENT_ID"];
-    const projectId = process.env["RAILWAY_PROJECT_ID"];
-    if (
-      token === undefined ||
-      token === "" ||
-      environmentId === undefined ||
-      environmentId === "" ||
-      projectId === undefined ||
-      projectId === ""
-    ) {
-      process.stderr.write(
-        "railway:check needs RAILWAY_API_TOKEN, RAILWAY_PROJECT_ID and RAILWAY_ENVIRONMENT_ID " +
-          "in the environment (docs/runbooks/railway-cloudflare-setup.md), or " +
-          "--fixture-environment <path> for a recorded response\n",
-      );
-      return 2;
-    }
-    environmentPayload = await post(token, ENVIRONMENT_QUERY, {
-      id: environmentId,
-    });
-    if (options.environmentName !== undefined) {
-      variablesPayload = await post(token, VARIABLES_QUERY, {
-        projectId,
-        environmentId,
-      });
-    }
+  const payloads = await fetchPayloads(options);
+  if (typeof payloads === "string") {
+    process.stderr.write(payloads);
+    return 2;
   }
 
-  const environment =
-    railwayEnvironmentResponseSchema.parse(environmentPayload);
-  const variables =
-    options.environmentName === undefined || variablesPayload === undefined
+  const lines: string[] = [];
+  let ok = true;
+
+  const triggerReport =
+    payloads.triggers === undefined
       ? undefined
-      : railwayVariablesResponseSchema.parse(variablesPayload);
-
-  const report = runRailwayCheck({
-    declared,
-    environmentName:
-      options.environmentName ?? environment.data.environment.name,
-    environment,
-    variables,
-  });
-
-  const output = `${report.lines.join("\n")}\n`;
-  if (report.ok) {
-    process.stdout.write(output);
-    return 0;
+      : compareDeployTriggers(
+          loadDeclaredTriggers(process.cwd()),
+          railwayTriggersResponseSchema.parse(payloads.triggers),
+        );
+  if (triggerReport !== undefined) {
+    ok &&= triggerReport.ok;
+    lines.push(...triggerReport.lines);
   }
-  process.stderr.write(`railway:check failed:\n${output}`);
+
+  if (payloads.environment !== undefined) {
+    const environment = railwayEnvironmentResponseSchema.parse(
+      payloads.environment,
+    );
+    const variables =
+      options.environmentName === undefined || payloads.variables === undefined
+        ? undefined
+        : railwayVariablesResponseSchema.parse(payloads.variables);
+    const report = runRailwayCheck({
+      declared: loadDeclaredConfig(process.cwd()),
+      environmentName:
+        options.environmentName ?? environment.data.environment.name,
+      environment,
+      variables,
+    });
+    ok &&= report.ok;
+    lines.push(...report.lines);
+  }
+
+  process.stdout.write(lines.length === 0 ? "" : `${lines.join("\n")}\n`);
+  if (ok) return 0;
+  process.stderr.write(failureVerdict(triggerReport));
   return 1;
 }
 
