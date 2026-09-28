@@ -358,6 +358,11 @@ describe("the shared guarded-path classifier (T-41)", () => {
   const detachedWorktree = join(realpathSync(tempRoot()), "wt");
   git(main, "worktree", "add", "-q", "-b", "spec/x", branchWorktree);
   git(main, "worktree", "add", "-q", "--detach", detachedWorktree);
+  // Folder names whose casefold changes length: `ß` → `ss`, `İ` → `i̇` (PR 107 breaker, hole 7).
+  const eszettWorktree = join(realpathSync(tempRoot()), "straße");
+  const dottedIWorktree = join(realpathSync(tempRoot()), "İstanbul");
+  git(main, "worktree", "add", "-q", "-b", "spec/y", eszettWorktree);
+  git(main, "worktree", "add", "-q", "-b", "spec/z", dottedIWorktree);
   const outside = join(realpathSync(tempRoot()), "outside.ts");
 
   // [path, guarded?] — no task is active anywhere: the main pointer is absent, `spec/x` has none.
@@ -382,6 +387,8 @@ describe("the shared guarded-path classifier (T-41)", () => {
     [outside, false],
     [join(branchWorktree, "src/a.ts"), true],
     [join(branchWorktree, "db/migrations/0002.sql"), true],
+    [join(eszettWorktree, "src/a.ts"), true],
+    [join(dottedIWorktree, "src/a.ts"), true],
     [join(detachedWorktree, "src/a.ts"), false],
     [join(detachedWorktree, "db/migrations/0002.sql"), false],
   ];

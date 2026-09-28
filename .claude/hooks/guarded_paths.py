@@ -111,13 +111,21 @@ def main_root(anchor):
 
 
 def _inside(target, top):
-    """`target` relative to `top` when it lies inside it (compared casefolded, like the disk), else None."""
-    t, w = target.casefold(), top.rstrip("/").casefold()
-    if t == w:
-        return "."
-    if t.startswith(w + "/"):
-        return target[len(w) + 1:]
-    return None
+    """`target` relative to `top` when it lies inside it, else None.
+
+    Compared folder by folder, each casefolded (the disk ignores case), and the answer is built
+    from the target's *own* remaining folders. Slicing the original string at the casefolded
+    length is wrong: `ß` folds to `ss` and `İ` to two code points, so a checkout at `…/straße`
+    read `src/a.ts` as `rc/a.ts` and let it through (the PR 107 breaker, hole 7).
+    """
+    t_parts = [part for part in target.split("/") if part]
+    w_parts = [part for part in top.split("/") if part]
+    if len(t_parts) < len(w_parts):
+        return None
+    if any(a.casefold() != b.casefold() for a, b in zip(t_parts, w_parts)):
+        return None
+    rest = t_parts[len(w_parts):]
+    return "/".join(rest) if rest else "."
 
 
 def containing_worktree(path, anchor):
