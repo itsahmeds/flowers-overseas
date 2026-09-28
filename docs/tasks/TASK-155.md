@@ -43,6 +43,7 @@ the commit: what is done, what is next, anything a replacement agent must know. 
 here.
 
 - 2026-09-28 — `ci.yml` gains `push: branches: [main]`; the 12 label-guarded `if:`s admit `push`; `on:`/`concurrency` comments rewritten. T-39 in `tests/unit/ci-workflow.test.ts` evaluates every job `if:` for push, PR (with and without `ci:full`) and dispatch; 86/86 green. Next: `config/deploy-triggers.json`, the trigger check, T-34/T-35.
+- 2026-09-28 — `config/deploy-triggers.json` + trigger check in `railway:check` (T-34, T-35, CLI cases; 35/35 contract green). Found and fixed: the CLI could not start under plain `node` (extensionless imports in `src/lib/railway.ts`). Ten mutations each turned their case red. Next: `gates:cheap`, PR body, ready, `ci:full`.
 
 ## Result
 
