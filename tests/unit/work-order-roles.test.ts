@@ -45,8 +45,9 @@ function tools(agent: string): string[] {
 
 /**
  * The work order's text addressed to the spec writer: its `## Role: spec writer` section first,
- * then every paragraph or list item elsewhere that names the spec writer, except the "No role
- * ever" prohibition list. A block ends at a blank line or where the next item or heading starts.
+ * then every paragraph or list item elsewhere that names the spec writer ("spec writer" or
+ * "spec-writer"), the "No role ever" list included. A block ends at a blank line or where the
+ * next item or heading starts.
  */
 function addressedToSpecWriter(workOrder: string): string[] {
   const roleStart = workOrder.indexOf("## Role: spec writer");
@@ -77,12 +78,7 @@ function addressedToSpecWriter(workOrder: string): string[] {
     } else block.push(line);
   }
   flush();
-  return [
-    role,
-    ...blocks.filter(
-      (b) => /spec writer/i.test(b) && !b.startsWith("**No role ever:**"),
-    ),
-  ];
+  return [role, ...blocks.filter((b) => /spec[- ]writer/i.test(b))];
 }
 
 describe("T-50: who may commit ↔ who has a shell (AC-48)", () => {
@@ -122,20 +118,27 @@ describe("T-50: who may commit ↔ who has a shell (AC-48)", () => {
     expect(specWriter).not.toContain("Bash");
   });
 
-  it("nothing tells the spec writer to commit, push or run git/gh", () => {
+  it("nothing tells the spec writer to commit, push, index or run git/gh", () => {
     // What is addressed to the spec writer: its role section, and every paragraph or list item
-    // of the work order that names it (the rules paragraph, the time-limit bullet, …). In those,
-    // only two statements may mention committing or pushing: the orchestrator doing it, and the
-    // spec writer doing none of it. Any other `commit`, `push`, `git …` or `gh …` there is an
-    // instruction to a role with no shell and contradicts §13 Q14. The "No role ever" list names
-    // `gh workflow run` and pushing as prohibitions for every role, so it is not addressed to it.
+    // of the work order that names it (the rules paragraph, the time-limit bullet, the "No role
+    // ever" list, …). In those, only two kinds of statement may mention committing, pushing or
+    // indexing: the orchestrator doing it, and the spec writer doing none of it. Any other
+    // `commit`, `push`, `specs:index`, `git …` or `gh …` there is an instruction to a role with
+    // no shell and contradicts §13 Q14 / AC-48 ("the orchestrator commits it, pushes it and runs
+    // `pnpm specs:index`"). The "No role ever" list's own prohibitions are stripped from that
+    // list only, so an instruction appended inside it is still read.
     const allowed = [
       "the orchestrator commits the file, pushes it and runs `pnpm specs:index`",
       "The orchestrator commits that file, pushes it and runs `pnpm specs:index` for it",
       "you commit, push and index nothing",
       "the orchestrator commits it",
     ];
-    const forbidden = /\b(commit|push)|(^|[\s`(])(git|gh)\s/i;
+    /** Prohibitions for every role, allowed only inside the "No role ever" list. */
+    const prohibitions = [
+      "triggers workflows (`gh workflow run`)",
+      "pushes to `main` or to anyone else's branch",
+    ];
+    const forbidden = /\b(commit|push)|(^|[\s`(])(git|gh)\s|specs:index/i;
     const texts = addressedToSpecWriter(workOrder);
     const role = texts[0] ?? "";
     expect(role).toMatch(/^## Role: spec writer/);
@@ -144,9 +147,13 @@ describe("T-50: who may commit ↔ who has a shell (AC-48)", () => {
       texts.some((t) => t.startsWith("**The spec writer** has no shell")),
     ).toBe(true);
     expect(texts.some((t) => t.startsWith("- **spec writer:**"))).toBe(true);
+    expect(texts.some((t) => t.startsWith("**No role ever:**"))).toBe(true);
     for (const text of texts) {
       let rest = text.replace(/\s+/g, " ");
       for (const phrase of allowed) rest = rest.split(phrase).join("");
+      if (text.startsWith("**No role ever:**")) {
+        for (const phrase of prohibitions) rest = rest.split(phrase).join("");
+      }
       expect(rest, text).not.toMatch(forbidden);
     }
   });
