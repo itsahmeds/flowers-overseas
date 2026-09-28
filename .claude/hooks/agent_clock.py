@@ -17,7 +17,10 @@ The save set (every simple command of the Bash command, substitutions included, 
 as `-C <dir>` allowed), `gh pr edit … --body-file`/`-F`, `gh pr comment`, `gh pr review`,
 `gh pr create --draft`/`-d`, `build-slot.sh release`, `task.sh clear`, `kill <pid>…` (literal
 PIDs above 1), and `cat` with no file operand, which covers `cat > <file>`, `cat >> <file>` with or
-without a heredoc, and the `$(cat <<'EOF' … EOF)` of a commit message. Every command's write
+without a heredoc, and the `$(cat <<'EOF' … EOF)` of a commit message. `build-slot.sh release` may
+be run as `bash <path>/build-slot.sh release …` or `sh …`. A heredoc whose delimiter is unquoted
+(`<<EOF`) and whose body holds a backtick or `$(` is denied, because bash runs those; the quoted
+forms (`<<'EOF'`, `<<"EOF"`, `<<\EOF`) are data and pass. Every command's write
 redirections must land in a scratch place (or `/dev/null`); a redirection target built from a
 substitution does not count.
 
@@ -131,6 +134,44 @@ def absolute(path, cwd):
 # --- the Bash save set ---------------------------------------------------------------------------
 
 
+class _ClockLexer(bash_guard.Lexer):
+    """bash_guard's lexer, plus a note of every unquoted heredoc whose body would run a command.
+
+    bash_guard treats every heredoc body as data, which is right for its rules (a line starting
+    with `pkill` inside a body never runs). But bash expands `` `…` `` and `$( … )` in a body whose
+    delimiter is unquoted, so past the ceiling `cat > $TMPDIR/v.md <<EOF` with a code span in the
+    body would run it. Installed as `bash_guard.Lexer` in the clock's own process only, so the
+    sub-lexers of `$( … )` and `bash -c` strings record too; bash_guard.py itself is unchanged.
+    """
+
+    expanding = []  # reset per bash_allowed call: one entry per expanding heredoc body seen
+
+    def __init__(self, src, depth):
+        super().__init__(src, depth)
+        self._unquoted = []  # parallel to pending_heredocs: True when the delimiter is unquoted
+
+    def try_redirect(self):
+        tok = super().try_redirect()
+        if tok is not None and tok.value in ("<<", "<<-"):
+            self._unquoted.append(not tok.word.quoted)
+        return tok
+
+    def read_heredocs(self):
+        while self.pending_heredocs:
+            rest = self.pending_heredocs[1:]
+            self.pending_heredocs = self.pending_heredocs[:1]
+            unquoted = self._unquoted.pop(0) if self._unquoted else False
+            start = self.i
+            super().read_heredocs()
+            body = self.s[start:self.i]
+            if unquoted and ("`" in body or "$(" in body):
+                _ClockLexer.expanding.append(body)
+            self.pending_heredocs = rest
+
+
+bash_guard.Lexer = _ClockLexer
+
+
 def redirections_ok(cmd, cwd):
     for r in cmd.redirs:
         if r.value not in bash_guard.WRITE_REDIRS:
@@ -193,6 +234,9 @@ def command_ok(cmd, cwd):
         return sub == "worktree" and bool(rest) and rest[0].text == "remove"
     if name == "gh":
         return gh_ok(args)
+    if name in ("bash", "sh") and args and os.path.basename(args[0]) == "build-slot.sh":
+        args = args[1:]
+        name = "build-slot.sh"
     if name == "build-slot.sh":
         return bool(args) and args[0] == "release"
     if name == "task.sh":
@@ -217,10 +261,13 @@ def commands_ok(commands, cwd):
 def bash_allowed(command, cwd):
     if not isinstance(command, str) or not command.strip():
         return True
+    _ClockLexer.expanding = []
     try:
         commands = bash_guard.parse_command_string(command, 0)
     except (bash_guard.ParseError, RecursionError):
         return True  # fail open: no decision on what cannot be split
+    if _ClockLexer.expanding:
+        return False  # an unquoted heredoc would run a command
     return commands_ok(commands, cwd)
 
 

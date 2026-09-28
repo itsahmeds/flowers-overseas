@@ -156,6 +156,37 @@ rev_bash_deny 'bash -c "git push"' "a save-set command inside bash -c"
 rev_bash_deny "rm -rf $CLOCK_TMPDIR/x" "rm, even in a scratch place"
 rev_bash_deny "echo x > $CLOCK_TMPDIR/v.md" "echo > \$TMPDIR (only cat)"
 
+# /break 112 hole 1: every command a substitution runs must be in the save set too
+rev_bash_deny 'gh pr comment 104 --body "$(pnpm test)"' "a save-set command whose substitution runs pnpm test"
+rev_bash_deny 'git commit -m "`pnpm build`"' "a save-set command whose backtick runs pnpm build"
+
+# /break 112 hole 2: bash runs `…` and $( … ) in a heredoc whose delimiter is unquoted
+rev_bash_deny "cat > $CLOCK_TMPDIR/v.md <<EOF
+BREAKER: HOLDS \`pnpm test\`
+EOF" "cat > \$TMPDIR <<EOF whose body holds a backtick"
+rev_bash_deny "cat > $CLOCK_TMPDIR/v.md <<-EOF
+	Verdict \$(pnpm test)
+	EOF" "cat > \$TMPDIR <<-EOF whose body holds \$("
+rev_bash_deny "gh pr comment 104 --body \"\$(cat <<EOF
+run \`pnpm test\`
+EOF
+)\"" "an unquoted heredoc inside a substitution"
+rev_bash_allow "cat > $CLOCK_TMPDIR/v.md <<'EOF'
+BREAKER: HOLDS \`pnpm test\` and \$(pnpm build)
+EOF" "cat > \$TMPDIR <<'EOF' with a backtick and \$( in the body (quoted: data)"
+rev_bash_allow "cat > $CLOCK_TMPDIR/v.md <<\"EOF\"
+\`x\`
+EOF" "cat > \$TMPDIR <<\"EOF\" with a backtick in the body"
+rev_bash_allow "cat > $CLOCK_TMPDIR/v.md <<EOF
+Verdict: PASS, no code spans
+EOF" "cat > \$TMPDIR <<EOF whose body runs nothing"
+
+# AC-46 puts build-slot.sh release in the save set, however the script is started
+rev_bash_allow "bash .claude/bin/build-slot.sh release abc123" "bash build-slot.sh release"
+rev_bash_allow "sh /x/.claude/bin/build-slot.sh release abc123" "sh build-slot.sh release"
+rev_bash_deny "bash .claude/bin/build-slot.sh acquire" "bash build-slot.sh acquire"
+rev_bash_deny "bash other.sh release" "bash of another script"
+
 # --- ceilings per role ---------------------------------------------------------------------------
 clock SubagentStart impl-1 backend-implementer
 backdate_clock "$PROJECT" impl-1 170
