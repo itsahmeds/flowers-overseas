@@ -38,7 +38,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-09-28 · `scripts/gates-cheap.ts` + `pnpm gates:cheap`, `PATH_TESTS` (incl. T-50's `work-order-roles.test.ts`), `tests/unit/gates-cheap.test.ts` (T-45 runner + map), `tests/unit/framework-text.test.ts` (T-46 five cases + T-45 drift, `FRAMEWORK_ROOT`), CLAUDE.md DoD §2 line. Red on the real tree until out-of-fence edits land (see `## Escalations`): `/spec` skill pointer, DoD §4 `HOLDS`. Next: TASK-153.
 
 ## Result
 

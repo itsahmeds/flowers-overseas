@@ -106,6 +106,7 @@ task actually touches.
 | `dev-os-check.ts` | `dev-os:check` | `pnpm dev-os:check` (spec 001 §2 "Scripts", §11 "Dev OS", AC-24/AC-25/AC-26 ·… |
 | `env-check.ts` | `env:check` | `pnpm env:check` (spec 001 AC-11 / T-12, TASK-005) |
 | `fonts/build-fonts.ts` | `fonts:build` | `pnpm fonts:build` — regenerates the committed WOFF2 subsets under… |
+| `gates-cheap.ts` | `gates:cheap` | `pnpm gates:cheap` — every cheap gate of `CLAUDE.md` DoD §2, one pasteable… |
 | `i18n-check.ts` | `i18n:check` | `pnpm i18n:check` (spec 003 §2 "Lint, checks, CI", §6 "URL pattern", §11,… |
 | `i18n-draft.ts` | `i18n:draft` | `pnpm i18n:draft --locale <code> [--dry-run]` (spec 003 §2 "Messages", §13 Q7,… |
 | `i18n-pseudo.ts` | `i18n:pseudo` | `pnpm i18n:pseudo [--check] [--messages-dir messages]` (spec 003 §2… |
@@ -130,7 +131,7 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 203 |
+| `tests/unit/` | 205 |
 | `tests/integration/` | 6 |
 | `tests/contract/` | 6 |
 | `tests/e2e/` | 32 |

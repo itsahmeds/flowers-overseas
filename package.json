@@ -64,6 +64,7 @@
     "check:no-db": "node scripts/check-no-db-imports.ts",
     "check:no-vercel-env": "node scripts/check-no-vercel-env.ts",
     "cookies:check": "node scripts/cookie-register.ts",
+    "gates:cheap": "node scripts/gates-cheap.ts",
     "prepare": "husky"
   },
   "dependencies": {
