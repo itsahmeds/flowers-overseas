@@ -39,7 +39,8 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- **2026-09-28, orchestrator (fence update, from PR 106's escalations):** (1) `tests/unit/agent-orientation.test.ts` joins this task's fence for T-53's one text case; PR 106 also edits the file (five headings to six), and whichever PR merges second rebases and keeps both. (2) `docs/framework/gaps.md` row 5 is marked closed by whichever of PR 107 and PR 106 merges second, after checking `origin/main`; row 4 is this PR's regardless. Rebase on `origin/main` `d85b69e` before `gh pr ready`, keeping both sides of any `gaps.md` clash.
+- **2026-09-28, implementer → orchestrator (open):** AC-42 says `/status` runs `task.sh check` and prints a **Guard** line, and `CLAUDE.md` "How to start a session" should mention it. The `/status` report is defined in `.claude/agents/orchestrator.md` L27 and `.claude/skills/status/SKILL.md`, both outside this fence, so neither is edited and the `CLAUDE.md` mention is held back (it would claim a line `/status` does not print yet). Proposed text for L27: "then a **Guard** line: `.claude/bin/task.sh check`'s output for the pointer, and `git -C <worktree> … task.sh check` for every `task/*` worktree, with `.claude/bin/task.sh clear` as the command when the pointer is stale; never clear it yourself." Also owed by AC-42 to this PR and outside the fence: `.claude/templates/work-order.md` L120/L130 (`task.sh clear`/`set` in the writing-role lines), which belong to TASK-152+153.
 
 ## Progress
 
@@ -47,7 +48,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-09-28: `build-slot.sh` owner token (AC-41), `task.sh` `check`, the branch-derived task and the `set` refusal (AC-42); T-42–T-44 and T-53 (shell halves in `task-sh.test.sh`/`bash-guard.test.sh`, the text case in `agent-orientation.test.ts`) green and mutated red; implementer files and `/implement` no longer mention `task.sh set`/`clear`; `gaps.md` row 4 closed. Open: the `/status` Guard line (outside the fence, see Escalations).
 
 ## Result
 

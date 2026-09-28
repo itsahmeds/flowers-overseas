@@ -77,6 +77,37 @@ describe("the skills (AC-36)", () => {
   });
 });
 
+/**
+ * T-53 (spec 001 §14 A19 AC-42, TASK-151): an implementer's task comes from its
+ * `task/TASK-NNN-<slug>` branch, so nothing tells it to set or clear the main checkout's pointer. A
+ * `set` run after its shell cwd resets into the main checkout is how a stale pointer (TASK-143's)
+ * comes back. The prohibition is written as "do not touch `.claude/state/active-task`", so these
+ * stay plain string tests.
+ */
+describe("the task comes from the branch (T-53)", () => {
+  const IMPLEMENTER_TEXTS = [
+    ".claude/agents/frontend-implementer.md",
+    ".claude/agents/backend-implementer.md",
+    ".claude/skills/implement/SKILL.md",
+  ] as const;
+
+  it.each(IMPLEMENTER_TEXTS)(
+    "%s says the task comes from the branch",
+    (path) => {
+      expect(read(path)).toContain("the task comes from the branch");
+    },
+  );
+
+  it.each(IMPLEMENTER_TEXTS)(
+    "%s contains neither `task.sh set` nor `task.sh clear`",
+    (path) => {
+      const text = read(path);
+      expect(text).not.toContain("task.sh set");
+      expect(text).not.toContain("task.sh clear");
+    },
+  );
+});
+
 describe("CLAUDE.md (AC-36)", () => {
   const claude = read("CLAUDE.md");
 
