@@ -20,12 +20,15 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 - scripts/gates-cheap.ts (the always-run list)
 - src/lib/reminders.ts and src/modules/ui/consent/consentCookie.ts (only if AC-53 names a missing parse)
 - plan/12-dev-workflow.md (its own §2 row)
+- tests/fixtures/zod-boundaries/ (new; T-57)
+- tests/unit/gates-cheap.test.ts (T-45's test, extended by T-66)
 
 ## Carry-forwards
 
 One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From `/break 108` (2026-09-28):** AC-53's `PARSERS` check follows one call inside the same file (e.g. `listingRequest` → `parseSearch()` → the `.parse` at `params.ts` L141), as the input rule does (spec text follows). You run after TASK-154, because both write `scripts/gates-cheap.ts`.
 
 ## Escalations
 

@@ -21,12 +21,15 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 - src/modules/catalog/listing.ts (the L1117 `Number(...amountMinor)`)
 - src/modules/catalog/pricing/vat.ts
 - plan/12-dev-workflow.md (its own §2 row)
+- seed/check.ts (L2437 `percent(total / COMMITTED_MEDIA_BYTE_CAP)`: a byte count, not money; listed in A20's goes-red list)
+- tests/unit/lint-coverage.test.ts (your row)
 
 ## Carry-forwards
 
 One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From `/break 108` (2026-09-28):** `seed/check.ts` L2437 divides a byte count, and AC-58 clause 3 would block it. A20 now lists it as known code to exempt or rename (spec text follows).
 
 ## Escalations
 

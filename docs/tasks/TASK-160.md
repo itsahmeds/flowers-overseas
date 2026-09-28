@@ -7,7 +7,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 ## Binding
 
 `specs/001-repo-dev-os-bootstrap.md` §14 A20: AC-54, AC-55, AC-56, AC-57 (T-58–T-61).
-- **PII:** the logger scrubs email and phone patterns in values, the message and error stacks; Sentry does the same for `request.url`. The phone pattern has a boundary on both sides; the Q21 shapes are international, UK `0` + 10–11 digits, and PL 3-3-3.
+- **PII:** the logger scrubs email and phone patterns in values, the message and error stacks; Sentry does the same for `request.url`. The phone pattern has a boundary on both sides; the Q21 shapes are international, UK numbers of 10–11 digits starting `0`, and PL 3-3-3.
 - **URLs:** `EXTERNAL_QUERY_KEYS` starts with `src/modules/analytics/ga4.ts#id`, so AC-55 is green on its first run.
 - **Side doors:** `globalThis.console`, `process.stdout.write` and console aliases are locked; the stdout calls move to `src/lib/step-summary.ts`.
 - **SDKs:** `no-restricted-imports` + `no-restricted-syntax` (not `import/no-restricted-paths`); `drizzle-orm/postgres-js` now (Q22). Founder answers (2026-09-28, `docs/decisions-log.md`) and the four advisor fixes are already in the amendment; do not reopen them. Each task updates its own `plan/12` §2 row (AC-62).
@@ -30,12 +30,16 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 - eslint/modules.js, eslint/sdk-adapters.js (new), eslint.config.mjs
 - src/lib/db.ts and scripts/db-migrate.ts (the `drizzle-orm/postgres-js` adapter, Q22)
 - plan/12-dev-workflow.md (its own §2 rows)
+- src/modules/catalog/schemas.ts (the listing schema's hard-coded keys, L993; AC-55 (d))
+- tests/unit/lint-fixtures.test.ts and tests/fixtures/lint/** (T-60, T-61)
+- tests/unit/lint-coverage.test.ts (add your rows to AC-52's table)
 
 ## Carry-forwards
 
 One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From `/break 108` (2026-09-28):** AC-55(c) must identify a `URLSearchParams` receiver through the type checker (or by the definition A20 gives), never by method name alone. `src/` has 13 string-keyed `.get`/`.has`/`.set` calls today, none on a `URLSearchParams` (e.g. `consent.ts` L196, `address-formats.ts` L108). Spec text follows.
 
 ## Escalations
 

@@ -17,14 +17,16 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 **Fence: every file the ACs name** (read from the spec, 2026-09-28). Anything else needs an escalation:
 
 - eslint/fo/no-direct-order-status-write.js and its test
-- src/lib/db.ts (only if AC-60 names it)
 - plan/12-dev-workflow.md (its own §2 row)
+- eslint.config.mjs (the order-status rule's `files` widened from `src/**` to `scripts/`, `seed/` and `db/`)
+- tests/unit/lint-coverage.test.ts (your row)
 
 ## Carry-forwards
 
 One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From `/review 108` (2026-09-28):** AC-60 only *cites* `src/lib/db.ts`; don't edit it. You wait for TASK-160 because both edit `eslint.config.mjs` and `lint-coverage.test.ts`.
 
 ## Escalations
 

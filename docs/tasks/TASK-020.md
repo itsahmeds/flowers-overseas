@@ -15,7 +15,7 @@ Branch `task/TASK-020-order-integrity-triggers`. The database half of ADR-0009 w
 ## Carry-forwards
 
 _None recorded._
-- **From spec 001 §14 A20 Q20 (2026-09-28, founder: "A20 all recommended"):** before this task is dispatched, spec 002 needs an amendment so that AC-13's trigger flag `app.allow_status_write` is set **only** with `SET LOCAL` / `set_config(…, true)`. PgBouncer runs in transaction mode (`src/lib/db.ts` L27), so a session-level `SET` leaks or vanishes. The amendment also gives integration tests one documented way to set an order's state. The lint rule now covers the table name `"order"` as well as `orders`.
+- **From spec 001 §14 A20 Q20 (2026-09-28, founder: "A20 all recommended"):** before this task is dispatched, spec 002 needs an amendment so that AC-13's trigger flag `app.allow_status_write` is set **only** with `SET LOCAL` / `set_config(…, true)`. PgBouncer runs in transaction mode (`src/lib/db.ts` L27), so a session-level `SET` leaks or vanishes. The amendment also gives integration tests one documented way to set an order's state. Once TASK-162 lands, the lint rule also covers the table name `"order"`. The documented test setup lives under `tests/` and never disables the trigger.
 
 ## Escalations
 

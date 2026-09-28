@@ -25,12 +25,14 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 - package.json (lint scripts)
 - .github/workflows/ci.yml and tests/unit/ci-workflow.test.ts (AC-61)
 - plan/12-dev-workflow.md (its own §2 row, AC-62)
+- tests/fixtures/lint/bare-disable.ts (new) and tests/unit/lint-fixtures.test.ts (T-54)
 
 ## Carry-forwards
 
 One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From `/break 108` and `/review 108` (2026-09-28):** AC-52's lint-coverage table checks only the locks that exist when you merge; TASK-160, 162 and 163 add their rows as they land (spec text follows in A20). You run before TASK-156, because both edit `package.json`.
 
 ## Escalations
 
