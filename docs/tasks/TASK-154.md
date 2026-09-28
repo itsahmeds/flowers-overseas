@@ -18,7 +18,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 ## Carry-forwards
 
-- **From `/break 104` round 2 (2026-09-28):** you depend on TASK-152 too. Add T-47's and T-50's tests to `scripts/gates-cheap.ts`'s `PATH_TESTS` map, which TASK-152 creates.
+- **From `/break 104` round 2 (2026-09-28):** you depend on TASK-152 too. Add T-47's test to `scripts/gates-cheap.ts`'s `PATH_TESTS` map (T-50's belongs to TASK-153, the PR that adds it), which TASK-152 creates.
 
 - **From `/break 104` and `/review 104` (2026-09-28):** the clock's save set must also allow writing a `--body-file`: `Write` or `cat >` to `$TMPDIR` and the session scratchpad. Add a T-48 row where `Write $TMPDIR/v.md` is allowed past the ceiling — spec text follows in A19. Extend T-52's count.
 

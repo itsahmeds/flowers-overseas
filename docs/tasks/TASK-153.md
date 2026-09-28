@@ -25,6 +25,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From `/break 104` round 3 (2026-09-28):** you add T-50's test to TASK-152's `PATH_TESTS` map in `scripts/gates-cheap.ts` (spec 001 L776–777: the PR that adds a test adds it to the map).
 
 ## Escalations
 

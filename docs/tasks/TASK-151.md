@@ -22,7 +22,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 - **From `/review 104` and `/break 104` round 2 (2026-09-28):**
   - T-53 needs **both**: drop `task.sh set`/`clear` from the implementer files and `/implement`, **and** make `set` refuse while a `task/TASK-NNN-*` worktree exists. The spec wins over the "or" above.
   - You also own `CLAUDE.md`'s AC-42 edits: the guard line `/status` reads, "(`/implement` does this)", and DoD §7.
-  - ~18 stale `task/*` worktrees from merged tasks exist on this Mac, so `set` would refuse until they are pruned. List them with their uncommitted state in `## Result`. **Delete none**; the orchestrator prunes them with the founder's OK.
+  - 21 `task/*` worktrees (16 of them from merged or closed tasks) from merged tasks exist on this Mac, so `set` would refuse until they are pruned. List them with their uncommitted state in `## Result`. **Delete none**; the orchestrator prunes them with the founder's OK.
 
 - **From `/break 104` and `/review 104` (2026-09-28):**
 - Same agent and PR as TASK-150.
