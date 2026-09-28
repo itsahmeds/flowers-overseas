@@ -33,6 +33,7 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
 - **2026-09-28 · `.claude/skills/spec/SKILL.md` is outside the fence** (to the orchestrator; `open`). AC-44 case 1 is "red on today's tree: `/spec` launches `spec-writer` with no pointer. The implementing PR adds it." Tested fix (on a scratch copy, 23/23 green): step 2 → "Launch the `spec-writer` agent with a filled-in `.claude/templates/work-order.md` (spec writer role): the feature, …".
 - **2026-09-28 · `CLAUDE.md` DoD §4 has no `HOLDS`** (to the orchestrator; `open`). AC-44 case 3 says "DoD §4 names `/break` and `HOLDS`"; today only "Merging" names `HOLDS`, and the fence gives me only the DoD §2 line. Tested fix: "a `/break` verdict (`HOLDS`, or `HOLES`) **on the current head SHA**".
 - **2026-09-28 · `tests/unit/agent-orientation.test.ts` is outside the fence** (to the orchestrator; `open`). AC-44 case 2 says its five-heading case "becomes six". TASK-150+151 edits the same file (T-53). `framework-text.test.ts` case 2 already asserts `## Progress` above `## Result`; adding `"## Progress"` to that list is a one-line change for whoever owns the file.
+- **2026-09-28 · `README.md` is outside the fence** (to the orchestrator; `open`). `tests/unit/docs.test.ts` (AC-30) requires every `package.json` script in README's scripts table exactly once, so adding `gates:cheap` needs one README row, e.g. "`pnpm gates:cheap` | every cheap gate of `CLAUDE.md` DoD §2 plus the related unit/contract tests; paste its block".
 
 ## Progress
 
@@ -48,4 +49,4 @@ here.
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+**Partial, blocked on four out-of-fence edits (`## Escalations`).** PR 106 (draft, shared with TASK-153). `scripts/gates-cheap.ts` + `pnpm gates:cheap`; `PATH_TESTS` with the spec's entries plus T-50's `work-order-roles.test.ts`. Tests: `tests/unit/gates-cheap.test.ts` 18 (T-45 runner, block, map, temp git repos, stubbed Vitest calls); `tests/unit/framework-text.test.ts` 23 (T-46's five cases over `FRAMEWORK_ROOT`, 12 red-by-deletion cases on scratch copies, 4 T-45 drift fixtures). With the escalated `/spec` pointer and DoD §4 `HOLDS` applied to a scratch copy, 23/23 green; each of the five subjects deleted in its own copy turns exactly its case red. No build slot taken; no expensive gate run. TASK-154 adds T-47's test to `PATH_TESTS`.

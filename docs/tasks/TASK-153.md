@@ -48,4 +48,4 @@ here.
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+**Partial, blocked on the `pr-policy.yml` and `why.md` edits (`## Escalations`).** PR 106 (draft, shared with TASK-152). `NO_TASK_ALLOWED` replaces `GUARDED_PATHS`; T-49 in `tests/unit/pr-policy.test.ts` (11 allowed, 16 refused, both rename cases, dedupe, CLI, the `--jq` case red until the workflow emits `previous_filename`); T-50 `tests/unit/work-order-roles.test.ts` 7; T-51 in `tests/unit/ci-workflow.test.ts` 4, red against the old `ci.yml`. `ci.yml` diff checked to touch comment lines only; the `on:` block is TASK-155's. The L197 claim is corrected, not made true. Checked every past `no-task` PR (102–105): none touches a path outside the allow-list.
