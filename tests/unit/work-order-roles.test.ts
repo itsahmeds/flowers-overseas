@@ -45,8 +45,8 @@ function tools(agent: string): string[] {
 
 /**
  * The work order's text addressed to the spec writer: its `## Role: spec writer` section first,
- * then every paragraph or list item elsewhere that names the spec writer ("spec writer" or
- * "spec-writer"), the "No role ever" list included. A block ends at a blank line or where the
+ * then every paragraph or list item elsewhere that names the spec writer ("spec writer",
+ * "spec-writer", or the name wrapped across a line), the "No role ever" list included. A block ends at a blank line or where the
  * next item or heading starts.
  */
 function addressedToSpecWriter(workOrder: string): string[] {
@@ -78,7 +78,7 @@ function addressedToSpecWriter(workOrder: string): string[] {
     } else block.push(line);
   }
   flush();
-  return [role, ...blocks.filter((b) => /spec[- ]writer/i.test(b))];
+  return [role, ...blocks.filter((b) => /spec[\s-]+writer/i.test(b))];
 }
 
 describe("T-50: who may commit ↔ who has a shell (AC-48)", () => {
