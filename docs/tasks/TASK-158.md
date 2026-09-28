@@ -32,7 +32,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
-- **From `/break 108` and `/review 108` (2026-09-28):** AC-52's lint-coverage table checks only the locks that exist when you merge; TASK-160, 162 and 163 add their rows as they land (spec text follows in A20). You run before TASK-156, because both edit `package.json`.
+- **From `/break 108` and `/review 108` (2026-09-28):** AC-52's lint-coverage table checks only the locks that exist when you merge; TASK-160, 162 and 163 add their rows as they land (landed in A20, round 3). You run before TASK-156, because both edit `package.json`.
 
 ## Escalations
 

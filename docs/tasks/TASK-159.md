@@ -28,7 +28,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
-- **From `/break 108` (2026-09-28):** AC-53's `PARSERS` check follows one call inside the same file (e.g. `listingRequest` → `parseSearch()` → the `.parse` at `params.ts` L141), as the input rule does (spec text follows). You run after TASK-154, because both write `scripts/gates-cheap.ts`.
+- **From `/break 108` (2026-09-28):** AC-53's `PARSERS` check follows one call inside the same file (e.g. `listingRequest` → `parseSearch()` → the `.parse` at `params.ts` L141), as the input rule does (landed in A20, round 3). You run after TASK-154, because both write `scripts/gates-cheap.ts`.
 
 ## Escalations
 

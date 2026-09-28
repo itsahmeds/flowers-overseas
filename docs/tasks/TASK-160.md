@@ -40,7 +40,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
-- **From `/break 108` (2026-09-28):** AC-55(c) must identify a `URLSearchParams` receiver through the type checker (or by the definition A20 gives), never by method name alone. `src/` has 13 string-keyed `.get`/`.has`/`.set` calls today, none on a `URLSearchParams` (e.g. `consent.ts` L196, `address-formats.ts` L108). Spec text follows.
+- **From `/break 108` (2026-09-28):** AC-55(c) must identify a `URLSearchParams` receiver through the type checker (or by the definition A20 gives), never by method name alone. `src/` has 13 string-keyed `.get`/`.has`/`.set` calls today, none on a `URLSearchParams` (e.g. `consent.ts` L196, `address-formats.ts` L108). This landed in A20, round 3.
 - **From A20 round 3 (2026-09-28):** `url-pii` joins `gates:cheap`'s always-run list here, not in TASK-159. You wait for TASK-159, and TASK-154 before it, because all three write `scripts/gates-cheap.ts`.
 
 ## Escalations
