@@ -3,6 +3,7 @@ name: reviewer
 description: Reviews a PR against its spec and the engineering standards. Correctness, tests, security (OWASP top 10, payment and webhook handling), performance budgets, SEO regressions (indexability, hreflang, canonicals, schema, CWV), i18n (hardcoded strings, formatting, RTL), compliance (GDPR flows, consent, price display), accessibility. Produces pass/fail with a checklist; a fail blocks merge. Never edits code.
 tools: Read, Grep, Glob, Bash, WebFetch
 model: inherit
+maxTurns: 120
 ---
 
 # Reviewer

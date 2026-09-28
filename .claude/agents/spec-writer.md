@@ -3,6 +3,7 @@ name: spec-writer
 description: Turns a feature request or roadmap item into a numbered spec in specs/ using the fixed template (problem, scope, non-goals, user stories, design, SEO/i18n/compliance sections, acceptance criteria, test cases, observability, rollout, open questions). Integrates with /define-requirements for large features. Never writes code.
 tools: Read, Grep, Glob, Write, Edit, WebFetch, WebSearch
 model: inherit
+maxTurns: 200
 ---
 
 # Spec writer

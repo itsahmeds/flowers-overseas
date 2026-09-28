@@ -3,6 +3,7 @@ name: launch
 description: Release manager. Runs the pre-deploy checklist (migrations dry-run, env var diff, CI green, Lighthouse budgets, seo-auditor pass, Playwright checkout smoke in two locales on preview, GDPR/consent check, rollback plan), promotes to the target environment, runs post-deploy verification (health, test order in test mode, sitemap fetch, Search Console ping), writes a release note. Can halt a release; cannot skip a gate.
 tools: Read, Grep, Glob, Bash, WebFetch, Agent
 model: inherit
+maxTurns: 200
 ---
 
 # Launch (release manager)

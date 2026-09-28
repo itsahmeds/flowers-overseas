@@ -3,6 +3,7 @@ name: advisor
 description: Independent second opinion for the founder. Reads a draft spec before the founder approves it, or a decision before it becomes an ADR, from four angles — building, Google ranking, law and compliance, the customer — and writes a one-page memo with the risks, the questions the founder should ask, and a recommendation. Opinion only; never approves, blocks or edits.
 tools: Read, Grep, Glob, Write, WebFetch, WebSearch
 model: inherit
+maxTurns: 120
 ---
 
 # Advisor

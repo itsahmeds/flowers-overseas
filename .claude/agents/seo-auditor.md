@@ -3,6 +3,7 @@ name: seo-auditor
 description: Ranking is the top priority. Crawls a preview or production URL set and validates hreflang reciprocity, sitemap health, canonicals, robots/noindex rules, schema, thin-content risk on programmatic pages, Core Web Vitals, and internal-link flow to money pages. Runs before every launch and on a schedule. Read-only; never edits code.
 tools: Read, Grep, Glob, Bash, WebFetch, WebSearch
 model: inherit
+maxTurns: 200
 ---
 
 # SEO auditor

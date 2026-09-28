@@ -102,6 +102,7 @@ describe("pnpm dev-os:check (AC-24, AC-25, AC-26)", () => {
     ["stop-hook.test.sh", "AC-26, AC-40, AC-42"],
     ["bash-guard.test.sh", "AC-37, AC-38, AC-39"],
     ["build-slot.test.sh", "AC-41"],
+    ["agent-clock.test.sh", "AC-46"],
   ])("reports %s as passed (%s)", (script) => {
     expect(result.stdout).toMatch(
       new RegExp(`dev-os:check ${script.replace(".", "\\.")}: \\d+ passed`),
@@ -113,7 +114,7 @@ describe("pnpm dev-os:check (AC-24, AC-25, AC-26)", () => {
       "### dev-os-check (AC-24, AC-25, AC-26 / T-25, T-26, T-27)",
     );
     expect(result.stdout).toMatch(
-      /\*\*5 check\(s\), \d+ assertion\(s\): \d+ passed, 0 failed\.\*\*/,
+      /\*\*6 check\(s\), \d+ assertion\(s\): \d+ passed, 0 failed\.\*\*/,
     );
   });
 
@@ -144,10 +145,11 @@ describe("pnpm dev-os:check (AC-24, AC-25, AC-26)", () => {
     expect(pkg.scripts["dev-os:check"]).toBe("node scripts/dev-os-check.ts");
   });
 
-  // T-52 (spec 001 §14 A19): the count covers the shell guard's and the build slot's checks, so a
-  // deleted check file turns this red. TASK-154 adds its clock check here.
+  // T-52 (spec 001 §14 A19): the count covers the shell guard's, the build slot's and the agent
+  // clock's checks (TASK-154), so a deleted check file turns this red.
   it("discovers exactly the committed checks", () => {
     expect(devOsCheckScripts(repoRoot)).toEqual([
+      "agent-clock.test.sh",
       "bash-guard.test.sh",
       "build-slot.test.sh",
       "guard.test.sh",
@@ -524,10 +526,103 @@ describe("hook registration in .claude/settings.json (AC-37)", () => {
     ]);
   });
 
-  it.each([".claude/hooks/bash-guard.sh", ".claude/hooks/task-guard.sh"])(
-    "%s is executable",
-    (path) => {
-      expect(statSync(join(repoRoot, path)).mode & 0o111).not.toBe(0);
+  // AC-46 (TASK-154): the clock is one script on three events; on PreToolUse it has no matcher,
+  // so it sees every tool (a matcher would let the unlisted tools past it, and those are allowed
+  // anyway, but Agent/WebFetch/WebSearch/Edit/Write/Bash must reach it).
+  const clockCommand = '"$CLAUDE_PROJECT_DIR"/.claude/hooks/agent-clock.sh';
+  const allHooks = settings.hooks as
+    Readonly<Record<string, readonly HookEntry[]>> | undefined;
+
+  it("runs agent-clock.sh on every tool (PreToolUse with no matcher)", () => {
+    const unmatched = preToolUse
+      .filter((entry) => entry.matcher === undefined)
+      .flatMap((entry) => entry.hooks ?? [])
+      .map((hook) => hook.command);
+    expect(unmatched).toEqual([clockCommand]);
+  });
+
+  it.each(["SubagentStart", "SubagentStop"])(
+    "runs agent-clock.sh on %s, for every agent type",
+    (event) => {
+      const entries = allHooks?.[event] ?? [];
+      expect(entries).toHaveLength(1);
+      expect(entries[0]?.matcher).toBeUndefined();
+      expect((entries[0]?.hooks ?? []).map((hook) => hook.command)).toEqual([
+        clockCommand,
+      ]);
     },
   );
+
+  it.each([
+    ".claude/hooks/bash-guard.sh",
+    ".claude/hooks/task-guard.sh",
+    ".claude/hooks/agent-clock.sh",
+  ])("%s is executable", (path) => {
+    expect(statSync(join(repoRoot, path)).mode & 0o111).not.toBe(0);
+  });
+});
+
+// T-47 / AC-45 (spec 001 §14 A19, §13 Q11; TASK-154): every agent file's turn cap. `maxTurns` is the
+// one limit Claude Code documents for a subagent (https://code.claude.com/docs/en/sub-agents); the
+// orchestrator has none, because being stopped halfway through a merge or a promotion is worse than
+// a long run. The table is §13 Q11's answer; the ledger tunes it later, in a PR that edits both.
+describe("agent turn caps (T-47, AC-45)", () => {
+  const Q11_MAX_TURNS: Readonly<Record<string, number>> = {
+    "frontend-implementer": 300,
+    "backend-implementer": 300,
+    designer: 200,
+    "spec-writer": 200,
+    launch: 200,
+    "seo-auditor": 200,
+    reviewer: 120,
+    breaker: 120,
+    advisor: 120,
+  };
+  const agentsDir = join(repoRoot, ".claude/agents");
+  const agentFiles = readdirSync(agentsDir)
+    .filter((name) => name.endsWith(".md"))
+    .sort();
+
+  /**
+   * One `key: value` per line, split at the first colon. The agent files' descriptions carry
+   * `: ` inside unquoted text, which strict YAML rejects and Claude Code reads the same way.
+   * A whole-number value becomes a number; anything else stays a string, so `maxTurns: "300"`
+   * or `maxTurns: 300x` does not pass as 300.
+   */
+  function frontmatter(name: string): Record<string, string | number> {
+    const text = readFileSync(join(agentsDir, name), "utf8");
+    const match = /^---\n([\s\S]*?)\n---\n/.exec(text);
+    if (!match?.[1]) throw new Error(`${name} has no frontmatter`);
+    const fields: Record<string, string | number> = {};
+    for (const line of match[1].split("\n")) {
+      const field = /^([A-Za-z][\w-]*):\s*(.*)$/.exec(line);
+      if (!field?.[1]) continue;
+      const value = (field[2] ?? "").trim();
+      fields[field[1]] = /^\d+$/.test(value) ? Number(value) : value;
+    }
+    return fields;
+  }
+
+  it("covers every agent file: the Q11 roles and the orchestrator, nothing else", () => {
+    expect(agentFiles).toEqual(
+      [...Object.keys(Q11_MAX_TURNS), "orchestrator"]
+        .map((role) => `${role}.md`)
+        .sort(),
+    );
+  });
+
+  it.each(Object.entries(Q11_MAX_TURNS))(
+    "%s.md declares maxTurns: %i",
+    (role, turns) => {
+      const fm = frontmatter(`${role}.md`);
+      expect(fm.name).toBe(role);
+      expect(fm.maxTurns).toBe(turns);
+    },
+  );
+
+  it("orchestrator.md declares no maxTurns", () => {
+    const fm = frontmatter("orchestrator.md");
+    expect(fm.name).toBe("orchestrator");
+    expect(Object.keys(fm)).not.toContain("maxTurns");
+  });
 });
