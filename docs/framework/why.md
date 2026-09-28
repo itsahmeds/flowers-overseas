@@ -140,8 +140,8 @@ spec writer, which also gives the founder a moment to look before anything is bu
 ## W-18 · Every dispatch uses the work order
 
 **2026-09-25.** A search of `docs/sessions/`, `docs/tasks/` and `TASKS.md` for incidents that trace
-back to what an agent was or was not told when dispatched grouped them into eleven missing fields,
-each with at least one `TASKS.md` line:
+back to what an agent was or was not told when dispatched grouped them into eleven missing fields.
+Each field is backed by at least one incident; a `TASKS.md` line is cited where the Log has one:
 - the fence, and who else is working;
 - preconditions that were not true (TASK-082, `TASKS.md` L421; TASK-113's brief said "wait for
   TASK-119", a task that produces no corridor copy, so "it would wait forever", `TASKS.md` L461);

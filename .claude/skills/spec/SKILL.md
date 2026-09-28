@@ -14,7 +14,7 @@ disable-model-invocation: true
 
 ## Steps
 1. Resolve the number: reserved in the roadmap, else next free (`ls specs/`).
-2. Launch the `spec-writer` agent with: the feature, the number, the plan sections to read, and the instruction to fill all template sections (SEO/i18n/compliance mandatory).
+2. Launch the `spec-writer` agent with a filled-in `.claude/templates/work-order.md` (spec writer role): the feature, the number, the plan sections to read, and the instruction to fill all template sections (SEO/i18n/compliance mandatory).
 3. Run `/advise specs/NNN-<slug>.md`. Present the summary, the open questions and the advisor's memo (sentence, recommendation, questions). Ask the founder to answer them; update the spec; when the founder says "approved", set `Status: approved`, `Approved by / date`.
 4. If the spec changes a page or journey, suggest `/design specs/NNN-<slug>.md`; otherwise suggest `/plan-tasks specs/NNN-<slug>.md`.
 

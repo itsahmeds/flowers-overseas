@@ -68,11 +68,14 @@ carry-forwards in the brief apply> | none
 
 What you may do depends on your role. **Your role section below overrides anything here.**
 
-**Writing roles** (implementer, finisher, spec writer, designer) may, without asking: read
+**Writing roles** (implementer, finisher, designer) may, without asking: read
 anything · run the cheap gates and the tests your diff touches · commit · push your own branch ·
 open a **draft** PR · add `ci:full` to your own PR once it is ready, and toggle it (remove, then
 add) to re-run CI · add `no-task` to your own PR when it has no task ID · update your brief's
 `## Progress`, `## Result` and `## Escalations`.
+
+**The spec writer** has no shell: it writes its one spec file and nothing else. The orchestrator
+commits that file, pushes it and runs `pnpm specs:index` for it.
 
 **Read-only roles** (breaker, reviewer, advisor, SEO auditor) may: read anything · run tests and
 checks · make temporary mutations **inside their own detached worktree** · post **one** PR comment
@@ -94,6 +97,8 @@ starts a second task · edits a spec, unless it is the spec writer writing its o
 advisor = 30 min · spec writer, designer, SEO auditor and launch take the size limit. At the limit, don't start a
 new step:
 - **writing roles:** commit, push, write `## Progress`, and report `partial` with what is left;
+- **spec writer:** save the spec file as it stands and report `partial` with what is left; the
+  orchestrator commits it;
 - **read-only roles:** restore every mutation, remove your worktree, and report `partial` with
   what you did and did not check. Never commit or push anything.
 
@@ -209,6 +214,8 @@ Keep the report under about 400 words. Detail belongs in the brief and the PR, n
 - Plan sections to read: <list>. Existing specs that overlap: <list> | none.
 - Founder inputs already given: <answers, decisions> | none.
 - Stop at `Status: draft` with the open questions in §13. The advisor reads it next.
+- Write `specs/<NNN>-<slug>.md` and nothing else. You have no shell, so you commit, push and index
+  nothing: the orchestrator commits the file, pushes it and runs `pnpm specs:index`.
 
 ## Role: advisor
 
@@ -224,7 +231,9 @@ Keep the report under about 400 words. Detail belongs in the brief and the PR, n
 - Existing artboards to extend: <files in `docs/design/wireframes/` and `flows/`> | none.
 - Registry copy that already exists: <paths in `messages/` or `src/config/`> | none.
 - Write only under `docs/design/`. Open a draft PR with the `no-task` label (a design PR has no
-  task ID). Note that `scripts/pr-policy.ts` guards only `src/ tests/ db/ seed/ emails/`, so
-  staying inside `docs/design/` is your rule to keep, not something the code checks. The founder
-  looks at the canvas before `/plan-tasks`.
+  task ID). `scripts/pr-policy.ts` honours that label only when every changed path is on its
+  `NO_TASK_ALLOWED` list (`docs/ specs/ plan/ .claude/agents/ .claude/skills/ .claude/templates/
+  CLAUDE.md README.md TASKS.md LICENSE`), so any other path fails the check. The list allows all
+  of `docs/`, so staying inside `docs/design/` is still your rule to keep. The founder looks at the
+  canvas before `/plan-tasks`.
 

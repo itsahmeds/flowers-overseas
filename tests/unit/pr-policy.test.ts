@@ -1,14 +1,17 @@
 /**
  * T-20 (spec 001 AC-19, TASK-002): pr-policy rules as pure functions. The live GitHub
  * check is exercised by the TASK-002 PR itself (run URL recorded in the PR body).
+ * T-49 (AC-47, TASK-153): the `no-task` allow-list, renames, and the workflow's file listing.
  */
 import { execFileSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { parse } from "yaml";
 
 import {
   BRANCH_PATTERN,
-  GUARDED_PATHS,
+  NO_TASK_ALLOWED,
   TITLE_PATTERN,
   evaluate,
   factsFromEnv,
@@ -40,13 +43,18 @@ describe("pr-policy patterns", () => {
     );
   });
 
-  it("guarded paths are the §13 Q5 set", () => {
-    expect([...GUARDED_PATHS]).toEqual([
-      "src/",
-      "tests/",
-      "db/",
-      "seed/",
-      "emails/",
+  it("the no-task allow-list is exactly §13 Q12's answer (AC-47)", () => {
+    expect([...NO_TASK_ALLOWED]).toEqual([
+      "docs/",
+      "specs/",
+      "plan/",
+      ".claude/agents/",
+      ".claude/skills/",
+      ".claude/templates/",
+      "CLAUDE.md",
+      "README.md",
+      "TASKS.md",
+      "LICENSE",
     ]);
   });
 });
@@ -201,6 +209,137 @@ describe("§13 Q5 exemptions", () => {
     expect(result.ok).toBe(false);
     // documented behaviour: the label claims an exemption it is not entitled to
     expect(result.errors).toHaveLength(1);
+  });
+});
+
+describe("T-49: what a no-task PR may touch (AC-47)", () => {
+  const noTask = (changedFiles: string[]) =>
+    evaluate({
+      ...base,
+      title: "docs: framework text",
+      headRef: "docs/framework-text",
+      labels: ["no-task"],
+      changedFiles,
+    });
+
+  it.each([
+    "docs/design/wireframes/checkout.dc.html",
+    "docs/advice/2026-09-28-x.md",
+    "specs/041-x.md",
+    "plan/09-roadmap.md",
+    ".claude/agents/breaker.md",
+    ".claude/skills/break/SKILL.md",
+    ".claude/templates/work-order.md",
+    "CLAUDE.md",
+    "README.md",
+    "TASKS.md",
+    "LICENSE",
+  ])("allows %s", (path) => {
+    const result = noTask([path]);
+    expect(result).toEqual({
+      ok: true,
+      exemption:
+        'label "no-task" by repository owner, every path on the no-task allow-list',
+      errors: [],
+    });
+  });
+
+  it.each([
+    "package.json",
+    "pnpm-lock.yaml",
+    "scripts/x.ts",
+    "app/x.ts",
+    ".github/workflows/ci.yml",
+    "messages/en.json",
+    "content/corridors/en/pl-guide.md",
+    ".claude/hooks/task-guard.sh",
+    ".claude/settings.json",
+    "foo.config.ts",
+    "src/lib/env.ts",
+    ".claude/bin/task.sh",
+    ".prettierignore",
+    "docs",
+    "CLAUDE.md.bak",
+    "specsx/a.md",
+  ])("refuses %s, naming it", (path) => {
+    const result = noTask(["README.md", path]);
+    expect(result.ok).toBe(false);
+    expect(result.errors[0]).toContain(`this PR touches: ${path}. `);
+  });
+
+  it("a rename src/x.ts → docs/x.ts (both names listed) is refused, naming src/x.ts only", () => {
+    const result = noTask(["docs/x.ts", "src/x.ts"]);
+    expect(result.ok).toBe(false);
+    expect(result.errors[0]).toContain("this PR touches: src/x.ts. ");
+    expect(result.errors[0]).not.toContain("docs/x.ts");
+  });
+
+  it("a rename docs/a.md → specs/a.md is allowed", () => {
+    expect(noTask(["specs/a.md", "docs/a.md"]).ok).toBe(true);
+  });
+
+  it("names each refused path once", () => {
+    const result = noTask(["src/x.ts", "src/x.ts", "package.json"]);
+    expect(result.errors[0]).toContain(
+      "this PR touches: src/x.ts, package.json. ",
+    );
+  });
+
+  it("the workflow's file listing emits previous_filename as well as filename", () => {
+    const workflow = parse(
+      readFileSync(join(repoRoot, ".github/workflows/pr-policy.yml"), "utf8"),
+    ) as {
+      jobs: Record<string, { steps: { id?: string; run?: string }[] }>;
+    };
+    const steps = Object.values(workflow.jobs).flatMap((job) => job.steps);
+    const listing = steps.find((step) => step.id === "files");
+    const jq = /--jq\s+'([^']*)'/.exec(listing?.run ?? "")?.[1] ?? "";
+    expect(jq).toContain(".filename");
+    expect(jq).toContain(".previous_filename");
+  });
+
+  it("the workflow's jq, run on a files-API fixture, lists a rename under both names", () => {
+    const workflow = parse(
+      readFileSync(join(repoRoot, ".github/workflows/pr-policy.yml"), "utf8"),
+    ) as {
+      jobs: Record<string, { steps: { id?: string; run?: string }[] }>;
+    };
+    const listing = Object.values(workflow.jobs)
+      .flatMap((job) => job.steps)
+      .find((step) => step.id === "files");
+    const jq = /--jq\s+'([^']*)'/.exec(listing?.run ?? "")?.[1];
+    expect(jq, "no --jq expression in the files step").toBeDefined();
+    // The shape GitHub's `pulls/{n}/files` returns: `previous_filename` only on a rename.
+    const fixture = JSON.stringify([
+      {
+        filename: "docs/x.ts",
+        previous_filename: "src/x.ts",
+        status: "renamed",
+      },
+      { filename: "README.md", status: "modified" },
+    ]);
+    const out = execFileSync("jq", ["-r", jq ?? ""], {
+      input: fixture,
+      encoding: "utf8",
+    });
+    expect(out.split("\n").filter((line) => line !== "")).toEqual([
+      "docs/x.ts",
+      "src/x.ts",
+      "README.md",
+    ]);
+  });
+
+  it("the CLI refuses a rename out of src/ exactly as the workflow feeds it", () => {
+    const facts = factsFromEnv({
+      PR_TITLE: "docs: move",
+      PR_HEAD_REF: "docs/move",
+      PR_AUTHOR_LOGIN: "itsahmeds",
+      PR_AUTHOR_TYPE: "User",
+      REPOSITORY_OWNER: "itsahmeds",
+      PR_LABELS: "no-task",
+      PR_CHANGED_FILES: "docs/x.ts\nsrc/x.ts\n",
+    });
+    expect(evaluate(facts).errors[0]).toContain("this PR touches: src/x.ts. ");
   });
 });
 

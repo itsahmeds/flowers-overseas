@@ -9,8 +9,11 @@
  *  - title must match TITLE_PATTERN (Conventional Commits header ending in `(TASK-NNN)`);
  *  - head branch must match BRANCH_PATTERN, or a dependency-bot branch prefix;
  *  - both checks are exempt for PRs authored by a dependency bot, and for PRs labelled
- *    `no-task` **only when** the author is the repository owner and no changed file lives
- *    under a guarded path (§13 Q5 default).
+ *    `no-task` **only when** the author is the repository owner and every changed path is on
+ *    the `NO_TASK_ALLOWED` allow-list (§13 Q5; since spec 001 §14 A19 AC-47, §13 Q12's answer,
+ *    an allow-list rather than a list of forbidden folders, so a path nobody thought of needs a
+ *    task ID by default). A renamed file is listed under both names by the workflow
+ *    (`previous_filename` as well as `filename`), so a rename out of a guarded path is caught.
  */
 import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
@@ -32,13 +35,24 @@ export const BOT_LOGINS = new Set([
 
 export const NO_TASK_LABEL = "no-task";
 
-/** Paths where application code lives; a `no-task` PR may not touch them. */
-export const GUARDED_PATHS = [
-  "src/",
-  "tests/",
-  "db/",
-  "seed/",
-  "emails/",
+/**
+ * The only paths a `no-task` PR may change (spec 001 AC-47, §13 Q12). An entry ending in `/` is a
+ * directory prefix; any other entry is one exact root file. Everything else — `src/`, `app/`,
+ * `scripts/`, `.github/`, `messages/`, `content/`, the hooks, `.claude/bin/`,
+ * `.claude/settings.json`, `package.json`, the lockfile and every root config file — needs a
+ * task ID.
+ */
+export const NO_TASK_ALLOWED = [
+  "docs/",
+  "specs/",
+  "plan/",
+  ".claude/agents/",
+  ".claude/skills/",
+  ".claude/templates/",
+  "CLAUDE.md",
+  "README.md",
+  "TASKS.md",
+  "LICENSE",
 ] as const;
 
 export interface PullRequestFacts {
@@ -63,8 +77,15 @@ export function isBotAuthor(facts: PullRequestFacts): boolean {
   return facts.authorType === "Bot" || BOT_LOGINS.has(facts.authorLogin);
 }
 
-export function guardedFiles(files: readonly string[]): string[] {
-  return files.filter((f) => GUARDED_PATHS.some((p) => f.startsWith(p)));
+export function isNoTaskAllowed(path: string): boolean {
+  return NO_TASK_ALLOWED.some((entry) =>
+    entry.endsWith("/") ? path.startsWith(entry) : path === entry,
+  );
+}
+
+/** The changed paths (both names of a rename) a `no-task` PR may not touch, each once. */
+export function disallowedFiles(files: readonly string[]): string[] {
+  return [...new Set(files.filter((f) => !isNoTaskAllowed(f)))];
 }
 
 export function titleErrors(title: string): string[] {
@@ -103,18 +124,18 @@ export function evaluate(facts: PullRequestFacts): PolicyResult {
           `owner ("${facts.repositoryOwner}"); author is "${facts.authorLogin}".`,
       );
     }
-    const guarded = guardedFiles(facts.changedFiles);
-    if (guarded.length > 0) {
+    const disallowed = disallowedFiles(facts.changedFiles);
+    if (disallowed.length > 0) {
       errors.push(
-        `Label "${NO_TASK_LABEL}" is only honoured when no file under ` +
-          `${GUARDED_PATHS.join(" ")} changes; this PR touches: ${guarded.join(", ")}. ` +
+        `Label "${NO_TASK_LABEL}" is only honoured when every changed path is under ` +
+          `${NO_TASK_ALLOWED.join(" ")}; this PR touches: ${disallowed.join(", ")}. ` +
           `Remove the label and add a task ID (TASK-NNN) to the title and branch.`,
       );
     }
     if (errors.length === 0) {
       return {
         ok: true,
-        exemption: `label "${NO_TASK_LABEL}" by repository owner, no guarded path touched`,
+        exemption: `label "${NO_TASK_LABEL}" by repository owner, every path on the no-task allow-list`,
         errors: [],
       };
     }

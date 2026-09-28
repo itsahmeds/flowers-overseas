@@ -67,14 +67,17 @@
 # the summary says what it measured, and it is what the reviewer quotes in the PR.
 name: ci
 
-# Actions-minutes budget (spec 001 §14 A14, 2026-09-09). GitHub Free gives this private repo 2,000
-# minutes a month and a full run costs ~30, so the workflow runs only when it is asked to:
+# When CI runs. Why the triggers are what they are: spec 001 §14 A14 and `docs/framework/why.md`
+# W-2 (the label began as an Actions-minutes guard), W-3 (draft, then ready, then label) and W-4
+# (re-running). The workflow runs only when it is asked to:
 #  - a PR marked ready for review (`ready_for_review`) runs the spine — `lint` → `typecheck` →
-#    `test-unit` → `build` — once. Drafts and every later push cost nothing; implementers run the
-#    whole gate set locally and push once when it is green.
+#    `test-unit` → `build` — once. A draft runs nothing, and a later push to a ready PR fires
+#    nothing; implementers run the cheap gates locally (`pnpm gates:cheap`), and CI is the gate of
+#    record for everything else (W-1).
 #  - the fan-out jobs and the preview → Playwright → Lighthouse chain run only with the `ci:full`
-#    label (`labeled` is in the trigger types) or a manual `workflow_dispatch`; the reviewer runs the
-#    same suites locally against `pnpm start` and records the result in `TASKS.md`.
+#    label (`labeled` is in the trigger types). To re-run after a fix, remove the label and add it
+#    again (W-4). A `workflow_dispatch` is accepted but skips the browser chain, so it is not a
+#    re-run.
 #  - nothing runs on push to `main`: the squash-merged tree is the PR head that already passed.
 on:
   pull_request:
@@ -194,8 +197,10 @@ jobs:
           if [ -f tsc.log ]; then
             errors=$(grep -cE 'error TS[0-9]+' tsc.log || true)
           fi
-          # The strict flags themselves (AC-2) are asserted by `pnpm typecheck:fixtures` in the
-          # unit suite (`tests/unit/*`, TASK-001), not here; this job's job is the project tree.
+          # This job checks the project tree only. The strict flags themselves (AC-2) are not
+          # asserted by any gate: `tests/fixtures/ts/unchecked-index.ts` fails only under a manual
+          # `pnpm typecheck:fixtures`, and the one unit test that compiles that project
+          # (`tests/unit/i18n-format.test.ts`) reads only its zone-less formatter fixture.
           {
             echo "### typecheck"
             echo ""
@@ -898,8 +903,8 @@ jobs:
   # AC-20 / T-21 (TASK-002): every commit of the branch under `@commitlint/config-conventional`.
   #
   # The range is resolved in its own step instead of being interpolated from the event, because
-  # this job also runs on `workflow_dispatch` — which is how CI is re-fired on a pull request that
-  # is already ready and already labelled (b8dc8d1) — and on that event
+  # this job's `if` also admits a `workflow_dispatch` run. That is an event the job has to survive,
+  # not a way to re-run CI (W-4 forbids it: a dispatch skips the browser chain), and on that event
   # `github.event.pull_request.base.sha` and `.head.sha` are both empty. Every dispatch run
   # therefore carried a guaranteed red job: commitlint exited 9 with "--from and --to point to the
   # same commit", and the summary step went on to run `git rev-list --count ..`. Found by

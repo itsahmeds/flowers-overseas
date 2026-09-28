@@ -31,7 +31,11 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- **2026-09-28 · `.github/workflows/pr-policy.yml` is outside the fence** (to the orchestrator; `open`). AC-47 and T-49 need its listing to emit `previous_filename`. Proposed: `--jq '.[] | .filename, (.previous_filename // empty)'`, and the header comment's stale list "(src/ tests/ supabase/ seed/ emails/)" rewritten to name `NO_TASK_ALLOWED`. The T-49 case that reads the file is written and red until then.
+- **2026-09-28 · `docs/framework/why.md` W-18 is outside the fence** (to the orchestrator; `open`). AC-49 says W-18 "stops claiming a `TASKS.md` line for all eleven fields: it says lines are cited where the Log has one" (L142–144: "each with at least one `TASKS.md` line"). The matching gaps.md nit is left open until it lands.
+- **2026-09-28 · gaps.md row 5** (to the orchestrator; `open`). AC-49 says this PR marks row 5 ✅, but row 5 (shell writes past the guard, the Stop hook's `db/`) is closed by TASK-150's code, and `.claude/state/in-flight.md` gives rows 4–5 to TASK-150+151. Row 5 is left as it is; mark it when TASK-150's PR merges.
+
+- **2026-09-28 · Orchestrator ruling on all seven escalations of PR 106:** the fence is widened to every one of them ("the fence was my mistake: every file is one the spec itself requires"). Applied: the `/spec` skill pointer, `HOLDS` in DoD §4 (that wording only), the `pr-policy.yml` `--jq` and header, the README `gates:cheap` row, W-18's sentence, `agent-orientation.test.ts` five → six headings (TASK-150+151 may add a T-53 case to the same file; whichever PR merges second rebases and keeps both). gaps.md row 5 is marked by whichever of PR 106 and the TASK-150+151 PR merges second; PR 107 was still open on `origin/main` `d85b69e`, so row 5 stays open here.
 
 ## Progress
 
@@ -39,11 +43,16 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-09-28 · `scripts/pr-policy.ts` `NO_TASK_ALLOWED` + T-49 in `pr-policy.test.ts`; work-order text (AC-47 designer line, AC-48 spec writer; L120/L130 untouched for TASK-151) + T-50 `tests/unit/work-order-roles.test.ts` (in `PATH_TESTS`); `ci.yml` comments (header, L197 `typecheck:fixtures` claim corrected, commitlint) + T-51 in `ci-workflow.test.ts`; gaps.md step C items and nits. Blocked on the out-of-fence edits in `## Escalations`.
+- 2026-09-28 · Ruling applied (see `## Escalations`), rebased on `origin/main` `d85b69e`; all 11 red cases green on the real tree; row set `in_review`.
+- 2026-09-28 · `/review 106` + `/break 106` round 1 fixes: T-49 now runs the workflow's jq on a files-API rename fixture (exact output); T-50 asserts nothing in `Role: spec writer` or the rules paragraph tells the spec writer to commit or push.
+- 2026-09-28 · `/break 106` round 2 hole 6: T-50 reads every work-order block addressed to the spec writer (incl. the time-limit bullet) and refuses `git`/`gh` commands too; `## Result` counts corrected.
+- 2026-09-28 · `/review 106` round 3: T-50 reads the "No role ever" list (its prohibitions stripped, not the list skipped; hole 7), matches `spec[- ]writer` (hole 9) and forbids `specs:index` (hole 8a). HOLE 8's draft-PR wording ruled acceptable, not chased.
+- 2026-09-28 · `/review 106` round 4 hole 10: T-50 selects blocks with `/spec[\s-]+writer/i`, so a name wrapped across a line is read. HOLE 11 (U+2011) ruled acceptable.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 106 (ready, `ci:full`, shared with TASK-152; CI green on `0955ed7` before `/review 106` round 1). `NO_TASK_ALLOWED` replaces `GUARDED_PATHS`; T-49 in `tests/unit/pr-policy.test.ts`, +33 cases (11 allowed, 16 refused, both rename cases, dedupe, CLI, the `--jq` text case, and the workflow's own jq run on a files-API rename fixture with its exact output); T-50 `tests/unit/work-order-roles.test.ts` 8 (the committing roles ↔ `Bash`, and nothing addressed to the spec writer, in its role section or any paragraph or item naming it as "spec writer", "spec-writer" or the name wrapped across a line, the "No role ever" list included once its own prohibitions are stripped, says commit, push, `specs:index`, `git` or `gh`); T-51 in `tests/unit/ci-workflow.test.ts` 4, red against the old `ci.yml`. `ci.yml` diff checked to touch comment lines only; the `on:` block is TASK-155's. The L197 claim is corrected, not made true. Checked every past `no-task` PR (102–105): none touches a path outside the allow-list.

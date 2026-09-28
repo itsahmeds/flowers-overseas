@@ -27,15 +27,22 @@ gap closes, mark it ✅ with the PR, and don't delete the row.
 **Carried to step C with the enforcement work** (they are code, so they need a spec note and a task):
 - nothing reads the new agent, skill and template files, or `## Progress`, or the breaker in DoD §4
   and the merge rule: deleting any of them leaves every check green (the breaker, PR 103);
+  ✅ PR 106: `tests/unit/framework-text.test.ts` (spec 001 AC-44), red by deletion on a scratch
+  copy passed as `FRAMEWORK_ROOT`;
 - `scripts/pr-policy.ts` guards only `src/ tests/ db/ seed/ emails/`, so an owner's `no-task` PR can
   change `scripts/`, `.github/`, `messages/` or `package.json` unchecked (the breaker, PR 103);
+  ✅ PR 106: the `NO_TASK_ALLOWED` allow-list (spec 001 AC-47);
 - the breaker cannot mutate `CLAUDE.md` or `.claude/` files under this session's auto-mode
   classifier, even inside its own worktree, so framework holes are closed by replay, not mutation
   (founder decided 2026-09-28 to keep it blocked; revisit once tests read those files);
+  PR 106's `FRAMEWORK_ROOT` lets a breaker mutate a scratch copy instead, which reaches the
+  revisit trigger; the orchestrator raises it;
 - `.prettierignore` excludes `.claude/`, `docs/`, `plan/`, `specs/` and `CLAUDE.md`: no formatter
-  checks any framework file;
-- a unit test that fails if a skill stops pointing at `.claude/templates/work-order.md`;
+  checks any framework file; decided 2026-09-28 (spec 001 §13 Q13: not reformatted), and
+  `pnpm gates:cheap` prints what `format:check` covers (PR 106);
+- a unit test that fails if a skill stops pointing at `.claude/templates/work-order.md`; ✅ PR 106;
 - `pnpm gates:cheap`, one command for every cheap gate, whose output is the report's proof;
+  ✅ PR 106;
 - real time limits (the work order's limits are written, not enforced).
 
 **From the PR 103 breaker, round 5, for the release work (gap 16):**
@@ -55,8 +62,11 @@ gap closes, mark it ✅ with the PR, and don't delete the row.
 - `tasks:check` and `specs:index --check` don't validate a task row's AC/T ids against its spec: a row changed to `AC-99, T-99` stays green. The orchestrator guessed spec 040's T-ids, and only the reviewer caught it. Candidate for step E tooling.
 
 **Nits from the PR 103 rounds, still open:**
-- W-18 says every field has a `TASKS.md` line but cites lines for only some of the eleven.
+- W-18 says every field has a `TASKS.md` line but cites lines for only some of the eleven. ✅ PR 106
+  (W-18 now says a line is cited where the Log has one).
 
 **Nits from the PR 102 review, still open:**
-- The `ci.yml` comments at L72–77 and L901 describe the old minutes budget.
-- The guard test does not check that every `(why: W-n)` resolves.
+- The `ci.yml` comments at L72–77 and L901 describe the old minutes budget. ✅ PR 106
+  (`tests/unit/ci-workflow.test.ts` T-51).
+- The guard test does not check that every `(why: W-n)` resolves. ✅ PR 106
+  (`tests/unit/framework-text.test.ts` case 5).
