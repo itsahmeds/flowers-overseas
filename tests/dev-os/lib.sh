@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Shared helpers for the dev-OS checks (spec 001 §2 "Testing harness", AC-24…AC-26, TASK-010).
 #
-# Sourced by `guard.test.sh`, `task-sh.test.sh` and `stop-hook.test.sh`, which are run by
+# Sourced by every `*.test.sh` here (`guard`, `bash-guard`, `build-slot`, `task-sh`, `stop-hook`), run by
 # `pnpm dev-os:check` (`scripts/dev-os-check.ts`) and by `tests/unit/dev-os.test.ts`.
 #
 # Two rules govern everything here:
@@ -34,8 +34,11 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd -P)"
 GUARD_HOOK="$REPO_ROOT/.claude/hooks/task-guard.sh"
 STOP_HOOK="$REPO_ROOT/.claude/hooks/tasks-reminder.sh"
 TASK_SH="$REPO_ROOT/.claude/bin/task.sh"
+BASH_GUARD_HOOK="$REPO_ROOT/.claude/hooks/bash-guard.sh"
+BUILD_SLOT="$REPO_ROOT/.claude/bin/build-slot.sh"
 
-for _required in "$GUARD_HOOK" "$STOP_HOOK" "$TASK_SH"; do
+for _required in "$GUARD_HOOK" "$STOP_HOOK" "$TASK_SH" "$BASH_GUARD_HOOK" "$BUILD_SLOT" \
+  "$REPO_ROOT/.claude/hooks/guarded_paths.py" "$REPO_ROOT/.claude/hooks/bash_guard.py"; do
   if [ ! -f "$_required" ]; then
     echo "Bail out! missing dev-OS script under test: $_required" >&2
     exit 99
@@ -144,8 +147,9 @@ dev_os_cleanup() {
 # `bash -c`, `tests/unit/dev-os.test.ts` — cleans up after itself.
 trap dev_os_cleanup EXIT
 
-# make_project: a throwaway project root with `.claude/state/` and a TASKS.md holding a
-# `| TASK-001 |` row (the row `task.sh set` greps for). Echoes the path.
+# make_project: a throwaway project root with `.claude/state/`, a TASKS.md holding a
+# `| TASK-001 |` row that is `in_progress` (AC-42: a `done` row, or none, would close the guard and
+# turn AC-24's allow case red for the wrong reason) and an in-flight.md naming it. Echoes the path.
 make_project() {
   local dir
   dir="$(mktemp -d "${TMPDIR:-/tmp}/fo-dev-os.XXXXXX")"
@@ -158,8 +162,15 @@ make_project() {
 
 | ID | Title | Spec | Phase | Status | Owner | PR | Depends on | Notes |
 |---|---|---|---|---|---|---|---|---|
-| TASK-001 | Fixture row | `specs/001-repo-dev-os-bootstrap.md` | 0 | todo | backend-implementer | — | — | — |
+| TASK-001 | Fixture row | `specs/001-repo-dev-os-bootstrap.md` | 0 | in_progress | backend-implementer | — | — | — |
 TASKS
+  cat > "$dir/.claude/state/in-flight.md" <<'FLIGHT'
+# Agents in flight (fixture)
+
+| Task / PR | Role | Branch · head | Files it owns (writes) | Started |
+|---|---|---|---|---|
+| TASK-001 | implementer | `task/TASK-001-fixture` | `src/` | 2026-09-28 |
+FLIGHT
   echo "$dir"
 }
 
@@ -169,13 +180,7 @@ make_git_project() {
   local dir
   dir="$(make_project)" || return 1
   git -C "$dir" -c init.defaultBranch=main init -q
-  git -C "$dir" add -A
-  git -C "$dir" \
-    -c user.name="dev-os check" \
-    -c user.email="dev-os@example.invalid" \
-    -c commit.gpgsign=false \
-    -c core.hooksPath=/dev/null \
-    commit -q --no-verify -m "fixture"
+  git_commit_all "$dir" "fixture"
   echo "$dir"
 }
 
@@ -250,6 +255,65 @@ print(out.get(sys.argv[1], ""))
 ' "$2"
 }
 
+# bash_payload <command> <cwd> [agent_id]: the PreToolUse JSON for the Bash tool. Built by python so
+# quotes, backslashes and newlines in the command reach the hook exactly as Claude Code sends them.
+bash_payload() {
+  /usr/bin/env python3 -c '
+import json, sys
+p = {"session_id": "dev-os-check", "cwd": sys.argv[2], "hook_event_name": "PreToolUse",
+     "tool_name": "Bash", "tool_input": {"command": sys.argv[1]}}
+if len(sys.argv) > 3 and sys.argv[3]:
+    p["agent_id"] = sys.argv[3]
+print(json.dumps(p))
+' "$@"
+}
+
+# run_bash_guard <project> <command> [cwd, default the project] [agent_id]
+# Sets GUARD_STATUS, GUARD_STDOUT, GUARD_DECISION, GUARD_REASON, like run_guard.
+run_bash_guard() {
+  local project="$1" command="$2" cwd="${3:-$1}" agent="${4:-}"
+  run_bash_guard_raw "$project" "$(bash_payload "$command" "$cwd" "$agent")"
+}
+
+# run_bash_guard_raw <project> <stdin payload>
+run_bash_guard_raw() {
+  local project="$1" payload="$2"
+  assert_not_repo_root "$project"
+  dev_os_errexit_off
+  GUARD_STDOUT="$(printf '%s' "$payload" | CLAUDE_PROJECT_DIR="$project" bash "$BASH_GUARD_HOOK" 2>/dev/null)"
+  GUARD_STATUS=$?
+  dev_os_errexit_restore
+  GUARD_DECISION="$(guard_field "$GUARD_STDOUT" permissionDecision)"
+  GUARD_REASON="$(guard_field "$GUARD_STDOUT" permissionDecisionReason)"
+}
+
+# git_commit_all <repo>: commit everything, immune to the developer's global git configuration.
+git_commit_all() {
+  git -C "$1" add -A
+  git -C "$1" \
+    -c user.name="dev-os check" \
+    -c user.email="dev-os@example.invalid" \
+    -c commit.gpgsign=false \
+    -c core.hooksPath=/dev/null \
+    commit -q --no-verify --allow-empty -m "${2:-fixture}"
+}
+
+# add_worktree <main repo> <branch>: a linked worktree on a new branch, registered for cleanup.
+# `--detach` as the branch makes a detached worktree instead. Echoes its path.
+add_worktree() {
+  local repo="$1" branch="$2" dir
+  dir="$(mktemp -d "${TMPDIR:-/tmp}/fo-dev-os.XXXXXX")"
+  dir="$(cd "$dir" && pwd -P)"
+  echo "$dir" >> "$DEV_OS_REGISTRY"
+  rmdir "$dir"
+  if [ "$branch" = "--detach" ]; then
+    git -C "$repo" worktree add -q --detach "$dir" >/dev/null 2>&1 || return 1
+  else
+    git -C "$repo" worktree add -q -b "$branch" "$dir" >/dev/null 2>&1 || return 1
+  fi
+  echo "$dir"
+}
+
 # active_task_file <project>: writes or clears the pointer the guard reads.
 set_active_task() {
   assert_not_repo_root "$1"
@@ -262,6 +326,8 @@ clear_active_task() {
 }
 
 # run_task_sh <project> [args…]: sets TASK_STATUS, TASK_STDOUT, TASK_STDERR.
+# TASK_SH_CWD, when set, is the directory task.sh runs in (a linked worktree, say); by default it
+# runs in the project itself.
 run_task_sh() {
   local project="$1"
   shift
@@ -269,7 +335,7 @@ run_task_sh() {
   local err
   err="$(mktemp "${TMPDIR:-/tmp}/fo-dev-os-err.XXXXXX")"
   dev_os_errexit_off
-  TASK_STDOUT="$(CLAUDE_PROJECT_DIR="$project" bash "$TASK_SH" "$@" 2>"$err")"
+  TASK_STDOUT="$(cd "${TASK_SH_CWD:-$project}" && CLAUDE_PROJECT_DIR="$project" bash "$TASK_SH" "$@" 2>"$err")"
   TASK_STATUS=$?
   dev_os_errexit_restore
   TASK_STDERR="$(cat "$err")"
