@@ -288,6 +288,59 @@ Hosting and docs
 - **Q9 — Deployment Protection mode for previews.** Default: Vercel Authentication (team members only) for previews and a shared password for `staging` (florists need to open it, `plan/08` §9). Confirm both, and whether the Playwright/Lighthouse bypass uses the protection-bypass secret (needed for AC-17/23 to run in CI).
 - **Q10 — `.env.example` placeholder policy.** Default: syntactically valid dummy values (`https://placeholder.supabase.co`, `postgres://user:pass@localhost:5432/fo`) so `pnpm build` passes on a clean clone (AC-1), with the schema tightening to real-value formats where safe. Alternative: require `vercel env pull` before first build (fails AC-1 as written; the AC would change).
 
+**Open, raised by §14 A19 (2026-09-28).** A19 is `draft` until the founder answers these. Each has
+a default; saying "defaults" accepts all six.
+
+- **Q11 — How many turns each agent gets, and whether to add a clock (A19 AC-45, AC-46).** Claude
+  Code's agent files support a `maxTurns` field: when an agent reaches it, the agent stops and its
+  output comes back marked *partial*. There is **no** field for minutes. Default: set these starting
+  values and tune them from the ledger after two weeks — implementers 300, designer and spec writer
+  200, launch and SEO auditor 200, reviewer, breaker and advisor 120; no cap on the orchestrator
+  (it merges and promotes, and being stopped halfway through either is worse than a long run).
+  These numbers are estimates: the ledger records tokens and minutes, not turns. **And** build the clock hook of AC-46, because `maxTurns` stops an agent
+  mid-step with no chance to push, while the clock tells it to save and report while it still can.
+  Alternative: `maxTurns` only, and the orchestrator keeps watching the clock by hand.
+- **Q12 — What a `no-task` PR may touch (A19 AC-47).** Today `pr-policy` lists five forbidden
+  folders, so anything new (a root config file, `scripts/`, `.github/`, `package.json`) is allowed by
+  default. Default: **turn it round into an allow-list**: a `no-task` PR may touch only `docs/`,
+  `specs/`, `plan/`, `.claude/agents/`, `.claude/skills/`, `.claude/templates/`, `CLAUDE.md`,
+  `README.md`, `TASKS.md` and `LICENSE`; everything else needs a task ID. That puts the hooks,
+  `.claude/bin/`, `.claude/settings.json`, `messages/` and `content/` (both change what buyers
+  read) behind a task too. Alternative: keep a forbidden list and add `app/ supabase/ scripts/
+  .github/ messages/ content/ config/ public/ package.json pnpm-lock.yaml Dockerfile` and every root
+  config file by name — which has to be remembered each time a file is added.
+- **Q13 — Should the formatter check the framework's own text? (A19 change 9.)**
+  `.prettierignore` excludes `.claude/`, `docs/`, `plan/`, `specs/`, `README.md`, `TASKS.md` and
+  `CLAUDE.md`, so `pnpm format:check` has never looked at any of them, and it was quoted as evidence
+  on PRs 102 and 103 as if it had (W-19). Cost of switching it on: one large one-off diff that
+  re-spaces lists and tables, a rebase for every open branch that touches those files, and a
+  regenerated `## 0. Index` in every spec whose lines move. Default: **format the framework text only**
+  — `CLAUDE.md`, `.claude/**/*.md` and `docs/framework/` — in one `no-task` PR on a quiet day; keep
+  `specs/`, `plan/`, `TASKS.md` and the rest of `docs/` excluded. Alternative: format nothing, and
+  rely on AC-43 printing which paths `format:check` actually covers so nobody quotes it for a file
+  it skipped.
+- **Q14 — The spec writer has no shell but the work order says writing roles commit (A19 AC-48).**
+  Default: **keep it without a shell; the orchestrator commits, pushes and regenerates the index for
+  it**, as on this PR. A spec writer only ever writes one file, a shell would put it under every
+  Bash rule in AC-37…AC-39 for no gain, and it cannot run `pnpm specs:index` without `pnpm` anyway.
+  The work order's text is corrected instead. Alternative: give it `Bash`, and it commits and pushes
+  its own draft branch like the designer.
+- **Q15 — Guard worktrees outside the main checkout? (Found while writing A19.)** Both guards
+  decide "is this application code?" from the path relative to `CLAUDE_PROJECT_DIR`, and anything
+  outside it is allowed. Agents work in sibling worktrees (`~/dev/fo-wt-NNN`, `~/dev/fo-spec-104`),
+  which sit outside it, so today neither the edit guard nor the new shell guard stops a write into
+  `src/` of any worktree. Default: **yes** — a path is guarded when it lies inside any worktree of
+  *this* repository (same `git rev-parse --git-common-dir`) that has a branch checked out, and its
+  path relative to that worktree's top starts with a guarded root; **detached** worktrees stay
+  unguarded, which is exactly what keeps the breaker's and reviewer's temporary mutations legal.
+  Alternative: leave the rule as it is and record that the guards protect only the main checkout.
+- **Q16 — Does a stale pointer close the guard? (A19 AC-42.)** Default: **only when the pointer names
+  a task that is `done` or has no row**; then both guards treat it as "no task is active". A task
+  that is `in_review` or has no line in `.claude/state/in-flight.md` is *reported* (by `task.sh
+  check`, `/status` and the Stop hook) but not blocked, because an implementer fixing review
+  comments is legitimately working on an `in_review` task. Alternative: block on anything that is
+  not `in_progress`.
+
 ## 14. Amendments (post-approval corrections)
 
 The spec was approved on 2026-09-07 and §1–§13 are kept as approved. Implementation found ten
@@ -545,3 +598,217 @@ is a check believed to run that does not. An acceptance criterion an implementat
 `continue-on-error` step is that same failure one level up, in the spec.
 Raised by: `/review 90` (PR #90), 2026-09-21; accepted by the founder the same day; implemented by
 TASK-137.
+
+**A19 — Enforcement: the written safety rules become checks (§2 "Dev OS" and "CI"; §9 AC-19, AC-24–AC-26; §10 T-20, T-25–T-27; new AC-37…AC-49 and T-38…T-52; framework gaps 4 and 5 and the step C list in `docs/framework/gaps.md`).**
+**Status: draft — awaiting founder approval.** Open questions: §13 Q11–Q16.
+Original: the only rule the machine enforces is "no application code without a task", and only
+through the Edit/Write tools (AC-24). Everything in `CLAUDE.md` "Working on this machine" — stop
+only your own processes, never `git stash`, no `pgrep` wait loops, one build at a time, re-run CI
+by toggling the label — and the cheap-gate duty of DoD §2 are written rules and nothing else.
+Trigger: W-4, W-9, W-10 and W-12 each record an incident that happened while its rule was already
+written down. `docs/framework/gaps.md` rows 4 and 5: anyone can release another agent's build
+slot; a shell command (`echo > src/x.ts`, `sed -i`, `cp`) writes into `src/` past the edit guard;
+the Stop hook's list forgets `db/`. On 2026-09-28 the active-task pointer still named TASK-143, an
+`in_review` task nobody had touched for days, which held the edit guard open for every session on
+the machine. The PR 103 breaker found that deleting a skill's work-order pointer, the brief's
+`## Progress`, or the breaker from DoD §4 left every check green.
+Corrected — eleven changes, each an AC below:
+1. A shell guard on the Bash tool (AC-37–AC-39).
+2. The Stop hook sees `db/` (AC-40).
+3. The build slot is released only by its owner (AC-41).
+4. A stale active-task pointer is found, reported and, when its task is `done`, ignored (AC-42).
+5. `pnpm gates:cheap` (AC-43).
+6. Tests that read the framework's own text (AC-44).
+7. Enforced limits: `maxTurns`, and a clock built from hooks because no minutes field exists
+   (AC-45, AC-46).
+8. What a `no-task` PR may touch (AC-47).
+9. Formatting the framework text: a founder question only (§13 Q13). The one thing A19 does
+   regardless is make `gates:cheap` print what `format:check` covers (AC-43), so nobody quotes it
+   for a file it skipped. If Q13 is answered yes, the reformat is its own `no-task` PR.
+10. The spec writer's commits (AC-48).
+11. Stale `ci.yml` comments and the open `gaps.md` nits (AC-49).
+
+What stays unenforced, said plainly: the hooks are a guardrail against habit, not a sandbox.
+`python -c`, `node -e`, `git apply`, `git checkout -- <path>` and command strings assembled at run
+time still write into `src/`; the four-or-five agent cap and push-early (W-8, W-11) are not
+touched here (step G). Q15 records a larger hole found while writing this: neither guard looks at
+worktrees outside the main checkout.
+
+- **AC-37 — shell guard: process, stash and CI denials.** `.claude/hooks/bash-guard.sh` is
+  registered in `.claude/settings.json` as a `PreToolUse` hook with matcher `Bash`, beside
+  `task-guard.sh`. It reads `tool_input.command`, splits it into simple commands (on `;`, `&&`,
+  `||`, `|`, newlines, `$( … )` and backticks, and one level into the string given to `bash -c`,
+  `sh -c`, `zsh -c` or `eval`), and answers `permissionDecision: "deny"` for a command in command
+  position (its first word after variable assignments and `sudo`, `env`, `command`, `xargs`,
+  `nohup`, `time`) that matches a row below. The reason names the rule, its `W-n` and the
+  alternative:
+
+  | Denied | Alternative the message gives |
+  |---|---|
+  | `pkill` with any flags (without `-f` it still matches other agents' processes by name); `killall` | `kill <pid>` with the PID you noted when you started it (W-10) |
+  | `git stash` with any subcommand except `list` and `show`, including `git -C <dir> stash` | a `wip:` commit on your own branch, or a second worktree (W-12) |
+  | a `while` or `until` loop whose condition or body runs `pgrep` (or `ps … \| grep`) and whose body runs `sleep` | `.claude/bin/build-slot.sh acquire`, which waits on a lock (W-9) |
+  | `gh workflow run` naming `ci`, `ci.yml` or `.github/workflows/ci.yml`; `gh api` POSTs to `…/workflows/ci.yml/dispatches` | toggle the label: `gh pr edit <n> --remove-label ci:full`, then `--add-label ci:full` (W-4) |
+
+- **AC-38 — shell guard: the edit guard's back door is shut.** With no active task (as AC-42
+  defines it), the hook denies a shell write whose target is application code: output redirection
+  (`>`, `>>`, `>|`, `&>`, `N>`), `tee` and `tee -a`, `sed -i` (both GNU and BSD forms) and
+  `perl -i`, `cp`, `mv`, `install` and `ln` whose destination is guarded, and `rm`, `touch` and
+  `truncate` of a guarded path. A relative target is resolved against the hook input's `cwd`,
+  updated by any `cd <dir>` earlier in the same command. It is classified by **the same function**
+  `task-guard.sh` uses: the guarded roots (`src/ app/ supabase/ db/ emails/ seed/ tests/`) live in
+  one file, `.claude/hooks/guarded_paths.py`, which both hooks import. If §13 Q15 is answered yes,
+  that function also applies Q15's worktree rule, so both hooks gain it at once and T-41 gains a
+  branch-worktree row (guarded) and a detached-worktree row (not guarded). With an active task the same
+  commands pass. A write to `/dev/null`, `docs/`, `specs/`, `.claude/`, the scratchpad, or any path
+  outside the guarded roots always passes. The deny reason is `task-guard.sh`'s, marked
+  "(shell write)", with the same legitimate exit.
+- **AC-39 — fails open; look-alikes pass.** A command the parser cannot split (an unbalanced quote,
+  an unreadable heredoc) or a hook payload that is not JSON is **allowed** with no output, as
+  `task-guard.sh` already does. These legitimate commands are never denied, one test case each:
+  `kill 12345` · `grep -rn "pkill -f" docs/` · `git commit -m "docs: never git stash"` ·
+  `git log --grep=stash` · `git stash list` · `pgrep -f next-server` (one look, no loop) ·
+  `sleep 3 && curl -sI localhost:3000/api/health` · `gh workflow list` · `gh workflow view ci.yml`
+  · `gh pr edit 104 --add-label ci:full` · `cat src/lib/env.ts > /dev/null` ·
+  `echo x > docs/notes.md` · `cp src/lib/a.ts /tmp/a.ts` (guarded source, unguarded destination) ·
+  `sed -n 1,5p src/lib/env.ts`. The hook's header lists what it does not catch (see above).
+- **AC-40 — the Stop hook sees `db/`.** `.claude/hooks/tasks-reminder.sh` counts changes under the
+  guarded roots read from the same `guarded_paths.py` as AC-38, which include `db/`, so a change
+  under `db/` alone prints the "application code changed" reminder.
+- **AC-41 — only the owner releases the build slot.** `build-slot.sh acquire` writes a random
+  token (at least 64 bits, hex) into the lock beside the owner line and prints it on its own line,
+  `build-slot: token <hex>`. `release <token>` removes the lock only when the token matches.
+  `release` with no token, or a wrong one, exits 3, prints the holder and the lock's age, and leaves
+  the lock in place. `release --force` removes any lock and prints whose lock it removed. It is the
+  orchestrator's alone: the shell guard denies `build-slot.sh release --force` whenever the hook
+  input carries `agent_id` (the documented field that is present only inside a subagent), with
+  "ask the orchestrator; it forces a dead owner's lock". `status` prints holder and age, never the
+  token. The 45-minute reap is unchanged. The token stops accidents, not malice: it sits in a
+  readable file under `$TMPDIR`.
+- **AC-42 — a stale pointer is found and reported.** `task.sh check` exits 0 with
+  `ok: TASK-NNN in_progress, in flight` only when the pointer names a task whose status in the main
+  checkout's `TASKS.md` is `in_progress` **and** a line of `.claude/state/in-flight.md` names it.
+  Otherwise it exits 1 with one reason per line: `stale: TASK-NNN is <status> in TASKS.md`,
+  `stale: TASK-NNN has no row in TASKS.md`, `stale: TASK-NNN is not in .claude/state/in-flight.md`,
+  or `unknown: .claude/state/in-flight.md is missing`. A missing file fails, as the work order's
+  Ready list already rules. With no pointer it exits 0 with `no active task`. `task.sh show` prints
+  the same reasons under the task id. `task.sh set` refuses a task whose status is `done`. The Stop
+  hook prints `check`'s reasons when it exits 1. `/status` runs `task.sh check` and reports it as a
+  **Guard** line with the exact command to clear it; it never clears the pointer itself. Per §13
+  Q16's default, both guards treat a pointer naming a `done` task, or a task with no row, as "no
+  task is active". A stale pointer then closes the guard instead of holding it open. (Under that
+  default, the TASK-143 pointer of 2026-09-28, an `in_review` task, would have been reported at
+  every `/status` and session end, not blocked.) AC-24's fixture row for `TASK-001` must be
+  `in_progress`, or T-25's allow case turns red for the wrong reason.
+- **AC-43 — `pnpm gates:cheap`.** One command (`scripts/gates-cheap.ts`) runs every cheap gate
+  `CLAUDE.md` DoD §2 lists — `typecheck`, `lint`, `format:check`, `i18n:check`, `check:no-db`,
+  `codebase:map --check` — then the unit and contract tests related to the diff against
+  `--base <ref>` (default `origin/main`, through Vitest's `--changed`). It runs them one after
+  another, never in parallel, and runs all of them even after one fails. It reads each exit code,
+  starts no server, takes no build slot, and exits non-zero when any gate did. It ends with one
+  block, which is what an agent pastes into its report:
+  `gates:cheap · <40-char HEAD sha> · tree clean|DIRTY · base <ref> · <ISO time>`, one line per
+  gate with its exit code and duration (the test line also says how many files related to the
+  diff, including `0`), a line `format:check covers: every path except <.prettierignore's
+  entries>` read from `.prettierignore` at run time, and `RESULT: PASS` or
+  `RESULT: FAIL (<n> of 7 red: <names>)`. A test reads the backticked gate names in `CLAUDE.md` DoD
+  §2 and fails when the script's list differs, so the kernel and the command cannot drift.
+- **AC-44 — tests that read the framework text.** `tests/unit/framework-text.test.ts` fails when
+  any of these stops being true. Each case is shown red in the PR by deleting its subject (W-13):
+  1. every `.claude/skills/*/SKILL.md` whose `**Agent:**` line names an agent other than
+     `orchestrator` references `.claude/templates/work-order.md`, and so does
+     `.claude/agents/orchestrator.md` (the orchestrator is the one dispatching, so the skills that
+     launch it are exempt). This case is **red on today's tree**: `/spec` launches `spec-writer`
+     with no pointer. The implementing PR adds it;
+  2. `docs/tasks/_template.md` carries `## Progress` above `## Result`. The five-heading case in
+     `tests/unit/agent-orientation.test.ts` becomes six;
+  3. `CLAUDE.md` DoD §4 names `/break` and `HOLDS`, and the "Merging" convention names `/break`,
+     `HOLDS`, and the reviewer as the only one who accepts a hole;
+  4. every agent in `CLAUDE.md`'s Agents table has `.claude/agents/<name>.md`, and every agent file
+     is in the table (`(inline)` and `user-level` are exempt; `a / b` counts as two agents); every
+     skill in the table has `.claude/skills/<name>/SKILL.md`;
+  5. every `(why: W-n)` in `CLAUDE.md`, `.claude/agents/` and `.claude/skills/` resolves to a
+     `## W-n ·` heading in `docs/framework/why.md`.
+
+  When this lands, the founder's breaker decision of 2026-09-28 ("revisit once step C adds tests
+  that read those files", `docs/decisions-log.md`) reaches its revisit trigger. The orchestrator
+  raises it.
+- **AC-45 — every agent file declares a turn cap.** Every `.claude/agents/*.md` except
+  `orchestrator.md` declares `maxTurns` in its frontmatter, with the values §13 Q11 settles; a test
+  pins them. This is the one limit Claude Code documents. The sub-agents reference
+  (https://code.claude.com/docs/en/sub-agents, read 2026-09-28) says `maxTurns` is the "Maximum
+  number of agentic turns before the subagent stops. When the subagent reaches the limit, Claude
+  Code returns its output marked as partial, and Claude can resume it to continue". The partial
+  marking needs Claude Code v2.1.246 or later, so `docs/runbooks/local-setup.md` records that
+  minimum. **The reference has no field for minutes, and none is invented here.** The cap stops an
+  agent between two tool calls. It can leave a server running, the build slot held and commits
+  unpushed. So `.claude/agents/orchestrator.md` gains a procedure for a partial result: resume the
+  agent (the documented resume) with "save, clean up and report partial"; if that fails, send a
+  finisher and force the dead owner's slot (AC-41).
+- **AC-46 — a clock built from documented hooks (subject to §13 Q11).** A `SubagentStart` hook
+  writes `.claude/state/agent-clock/<agent_id>` (start time and `agent_type`); a `SubagentStop`
+  hook removes it. A `PreToolUse` hook on every tool reads it. Once the role's ceiling has passed,
+  it denies `Agent`, `WebFetch`, `WebSearch`, `Edit`, `Write` and `NotebookEdit` outside
+  `docs/tasks/`, and every `Bash` command outside a save set. The ceiling is the largest size the
+  role is ever sent at: 180 minutes for writing roles, launch and the SEO auditor; 30 for the
+  reviewer, breaker and advisor. The save set is `git add|commit|push|status|diff|log|restore`,
+  `git worktree remove`, `gh pr edit … --body-file`, `build-slot.sh release`, `task.sh clear` and
+  `kill <pid>`. The message: "time limit for <role> (<n> min) reached: save, clean up and report
+  partial". It denies no other tool, so the agent can always hand back. A hook cannot see a task's
+  size, so a 45-minute task is still watched by the orchestrator; the clock only guarantees the
+  ceiling. It fails open like the other hooks.
+- **AC-47 — what a `no-task` PR may touch.** `scripts/pr-policy.ts` applies §13 Q12's answer. By
+  default that is an allow-list, `NO_TASK_ALLOWED` = `docs/ specs/ plan/ .claude/agents/
+  .claude/skills/ .claude/templates/ CLAUDE.md README.md TASKS.md LICENSE`, and a `no-task` PR that
+  changes any other path fails, naming the path. `tests/unit/pr-policy.test.ts` has one allowed case
+  per entry and refuses each of `package.json`, `pnpm-lock.yaml`, `scripts/x.ts`, `app/x.ts`,
+  `.github/workflows/ci.yml`, `messages/en.json`, `content/corridors/en/pl-guide.md`,
+  `.claude/hooks/task-guard.sh`, `.claude/settings.json` and a new root file `foo.config.ts`. The
+  designer's line in `.claude/templates/work-order.md` ("`scripts/pr-policy.ts` guards only `src/
+  tests/ db/ seed/ emails/`") is rewritten to state the new rule.
+- **AC-48 — who commits for the spec writer.** Per §13 Q14's default,
+  `.claude/templates/work-order.md` "Rules of the road" moves the spec writer out of the roles that
+  commit. It writes its spec file only; the orchestrator commits it, pushes it and runs
+  `pnpm specs:index`. `Role: spec writer` says the same. A test asserts that every role the work
+  order says may commit has `Bash` in its agent file's `tools:` line, and that `spec-writer` is not
+  one of them, so the text and the tools cannot disagree again. (If the founder chooses Bash
+  instead, the test asserts the reverse and `spec-writer.md` gains `Bash`.)
+- **AC-49 — stale text folded in.** The header comment of `.github/workflows/ci.yml` (today
+  L70–78) stops presenting a private repository's 2,000-minute budget and the reviewer's local
+  re-run as current, and points at §14 A14 and W-2 for why the triggers are what they are. The
+  `commitlint` comment (today L900–903) stops calling `workflow_dispatch` "how CI is re-fired on a
+  pull request", which W-4 forbids; it describes the dispatch as an event the job survives.
+  `tests/unit/ci-workflow.test.ts` asserts the file contains neither `2,000 minutes` nor
+  `how CI is re-fired`. `docs/framework/why.md` W-18 stops claiming a `TASKS.md` line for all eleven
+  fields: it says lines are cited where the Log has one. `docs/framework/gaps.md` marks rows 4 and 5
+  ✅ with the PR, and clears the step C nits it closes.
+
+| ID | Layer | Given / When / Then | Covers AC |
+|---|---|---|---|
+| T-38 | integration (shell, `tests/dev-os/bash-guard.test.sh`) | One PreToolUse payload per row of AC-37's table (plus `git -C x stash`, `bash -c "pkill -f next"`, `until ! pgrep -f build; do sleep 5; done`) → `deny`, and the reason contains the row's `W-n` and alternative | AC-37 |
+| T-39 | integration (shell) | Each look-alike of AC-39 → no output, exit 0; a payload with an unbalanced quote and a non-JSON payload → no output, exit 0 | AC-39 |
+| T-40 | integration (shell, temp project per §14 A4) | No task: `echo x > src/a.ts`, `>> tests/b.ts`, `tee db/c.sql`, `sed -i '' s/a/b/ src/a.ts`, `cp /tmp/a src/a.ts`, `mv x seed/y`, `rm src/a.ts`, `cd src && echo > a.ts` → `deny` each; the same with a task set → allowed; `echo x > docs/a.md` and a target outside the project → allowed | AC-38 |
+| T-41 | unit | One table of paths fed to both hooks' classifier → identical verdicts; deleting `db/` from `guarded_paths.py` turns the `db/` rows red in both | AC-38, AC-40 |
+| T-42 | integration (shell, `stop-hook.test.sh`) | A change under `db/` only, `TASKS.md` clean → reminder printed; a stale pointer → `check`'s reasons printed | AC-40, AC-42 |
+| T-43 | integration (shell, `build-slot.test.sh`, private `TMPDIR`) | `acquire` prints a token; `release` without it and with a wrong one → exit 3, lock present; with it → released; `--force` → released with the holder named; a guard payload for `release --force` carrying `agent_id` → `deny`, without `agent_id` → allowed; a 46-minute-old lock is reaped | AC-41 |
+| T-44 | integration (shell, `task-sh.test.sh`) | Fixture `TASKS.md` and `in-flight.md`: `in_progress` and listed → exit 0; `in_review` → exit 1 with the reason; unlisted → exit 1; missing `in-flight.md` → exit 1 `unknown`; `done` → `set` refused, and `task-guard.sh` denies a `src/` write as if no task were set | AC-42 |
+| T-45 | integration | `gates:cheap` with a stubbed gate list in which the third gate exits 3 → every gate still runs, the block shows `exit 3`, `RESULT: FAIL (1 of 7 red: …)`, the exit is non-zero, the SHA and `DIRTY` are printed; a `CLAUDE.md` fixture with one gate removed from DoD §2 → the drift case goes red | AC-43 |
+| T-46 | unit (`framework-text.test.ts`) | The five checks of AC-44 over the real tree; each shown red in the PR by deleting its subject (a skill's pointer, `## Progress`, `/break` in DoD §4, one agent file, one `W-n` heading) | AC-44 |
+| T-47 | unit | Every agent file's frontmatter parsed: `maxTurns` present and equal to the Q11 table, and absent from `orchestrator.md` | AC-45 |
+| T-48 | integration (shell) | A `SubagentStart` payload, then a `PreToolUse` payload with the clock file back-dated past the ceiling → `Bash pnpm test` denied, `Bash git push` allowed, `Write docs/tasks/TASK-1.md` allowed, `Write src/a.ts` denied, an unlisted tool allowed; `SubagentStop` removes the file | AC-46 |
+| T-49 | unit (`pr-policy.test.ts`) | AC-47's allowed and refused cases, each with the path named in the error | AC-47 |
+| T-50 | unit | Roles the work order says may commit ↔ agent files with `Bash` in `tools:`; `spec-writer` absent from both | AC-48 |
+| T-51 | unit (`ci-workflow.test.ts`) + docs replay by the breaker (W-20) | The two stale strings are absent; the replay of W-18's claim against the new text fails, citing the line | AC-49 |
+| T-52 | unit (`dev-os.test.ts`) | "discovers exactly the committed checks" counts the new `bash-guard`, `build-slot` and clock checks, so a deleted check file turns it red | AC-37, AC-41, AC-46 |
+
+Owed to `CLAUDE.md` (this spec does not edit it; the implementing PRs do, with the founder's
+approval): the first non-negotiable rule says the guard blocks edits **and shell writes**, and that a
+pointer naming a `done` task counts as none; "Working on this machine" shows `acquire` (keep the
+token) … `release <token>` and says the shell guard refuses `pkill`, `killall`, `git stash` and wait
+loops; DoD §2 says "run `pnpm gates:cheap` and paste its block"; "How to start a session" mentions
+`/status`'s Guard line.
+Suggested tasks (each at most one day): (1) the shell guard, the shared path file and the Stop hook
+(AC-37–AC-40, T-52's count); (2) the build slot and the stale pointer (AC-41, AC-42); (3)
+`gates:cheap`, the framework-text tests, `pr-policy`, the work-order text and the stale comments
+(AC-43, AC-44, AC-47–AC-49); (4) `maxTurns` and the clock (AC-45, AC-46).
+Raised by: the founder and the orchestrator, framework step C, 2026-09-28; written for PR 104.

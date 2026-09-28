@@ -783,6 +783,43 @@ Six, each with a default the implementation follows if the founder says nothing.
 
 **Resolution (2026-09-16, founder):** ADR-0018 accepted and all six defaults accepted without amendment. Q1 Dockerfile; Q2 **reversed by the founder later the same day: the Railway project stays in Grovant's workspace** (the Grovant account), Grovant holds the account and invoices, the founder is added as a member; the RoPA controller line names Flowers Overseas as controller and records Grovant's account as the contractual holder of the Railway relationship, and the DPA counterparty question goes on the lawyer list; Q3 Cloudflare Free; Q4 the shared ISR cache handler arrives only when p95 origin CPU exceeds 70 % for a day or a peak-day plan needs a second replica — a separate spec; Q5 Vercel is unlinked at §12's exit signal and no earlier; Q6 basic-auth in `src/proxy.ts` for non-production, Cloudflare Access revisited if shared passwords prove awkward for florist demos. Next: `/plan-tasks` (no design round — no page changes).
 
+**Open, raised by §14 A3 (2026-09-28).** A3 is `draft` until the founder answers these. Each has a
+default; saying "defaults" accepts all six.
+
+- **Q7 — A `release` branch or release tags?** Default: **a branch named `release`.** Railway
+  deploys a service automatically from one *trigger branch* per environment, which is a setting it
+  documents; it does not document deploying from tags. Tags would mean a GitHub workflow calling
+  Railway's API with a deploy token: a new secret in CI and a second way to deploy. Alternative:
+  tags (`release-2026-10-01-<sha>`), which read nicely as history but need that workflow. Either
+  way the release notes in `docs/releases/` are the history.
+- **Q8 — Does `release` get any GitHub protection?** You declined protection for `main` (gap 13),
+  and that choice does not carry over by itself. Options: (a) none, like `main`; (b) a ruleset that
+  only **stops the branch being deleted**; (c) (b) plus "block force pushes". Default: **(b)**. It
+  never gets in the way, and deleting `release` by accident would leave production tracking a
+  branch that does not exist. (c) would block rollback step 2 (A3 change 4), which moves the branch
+  backwards. Rulesets are free only while the repository is public; if it goes private on GitHub
+  Free, they stop applying (spec 001 §14 A10).
+- **Q9 — Should CI run when something lands on `main`?** `/launch` must show CI green on the exact
+  commit it releases, and today nothing runs on `main` (spec 001 §14 A14), while a squash merge
+  makes a commit CI has never seen. Default: **yes, run the spine and the jobs that need no preview**
+  on every push to `main` (about 10 runner minutes a merge; free while the repository is public).
+  The browser checks are covered by `/launch`'s own gates against staging. Alternative: `/launch`
+  accepts "every PR merged since the last release was green on its own head". That is weaker,
+  because the merged tree can differ from every head that was tested.
+- **Q10 — Do you want to say "ship" before each production release?** Your 2026-09-28 decision is
+  that `/launch` promotes once its gates pass. Default: **no extra step.** The orchestrator promotes
+  on `RELEASE: READY` and tells you in plain words what went out. Alternative: the orchestrator
+  waits for a one-word "ship" from you between READY and the promotion. It is worth reconsidering
+  on the day payments go live (spec 013).
+- **Q11 — A lighter gate set for hotfixes?** Default: **no.** The fast way out of a bad release is
+  the rollback, which takes under five minutes and needs no gates. The fix then goes through the
+  full `/launch`. Alternative: name gates a hotfix may skip, which weakens the promise "a release
+  cannot skip a gate".
+- **Q12 — Should staging wait for CI before it deploys?** Railway has a documented "Wait for CI"
+  switch. It works only when a workflow runs on push, which Q9 adds. Default: **on**, once Q9's push
+  run exists, so a red `main` never reaches staging or the florist demos. Cost: staging lags `main`
+  by the length of the CI run. Alternative: off; staging deploys every merge straight away.
+
 ## 14. Amendments (post-approval corrections)
 
 The spec was approved on 2026-09-16 and §1–§13 are kept as approved. Each correction below was
@@ -855,6 +892,198 @@ Corrected — AC-26 gains three clauses, all owed by the task that implements it
    *as served* either, and this clause is what makes that temporary.
 Raised by: `/review 90` (PR #90), 2026-09-21; accepted by the founder the same day; interim
 implemented by TASK-137, the clauses above owed by the AC-26 task.
+
+**A3 — Production deploys from a release ref that `/launch` promotes (§4 founder story; §5.3 "Deploys and rollback"; §5.5; §9 AC-9, AC-12, AC-13, AC-31; §12 step 6 and "Rollback"; new AC-34…AC-43 and T-34…T-43; framework gap 16).**
+**Status: draft — awaiting founder approval.** Open questions: §13 Q7–Q12. An ADR should record
+this decision once the founder approves it (`/adr`, after the advisor's memo); this amendment does
+not write it.
+Original: §5.3 — "GitHub integration: `main` → `production`, PR branches → their ephemeral
+environment." §4 — "As the founder, I deploy by merging to `main`". `.claude/agents/launch.md`
+calls "the orchestrator's merge to `main`" the promotion. That is how the spec reads today.
+Trigger: gap 16 in `docs/framework/gaps.md`. Because every merge to `main` deploys to production,
+`/launch production`'s gates guard only the one merge they are run for, not the task merges in
+between. The PR 103 breaker, round 5, added three holes: `RELEASE: READY` names no commit, so a
+push between the two launch visits reaches production ungated; the work order's launch role says
+it "may … promote to the target", although for production the promotion is the orchestrator's
+act; and a production `HALTED` has no step that commits the release note. The founder decided on
+2026-09-28 (`docs/decisions-log.md`) that production stops deploying on every merge and deploys only
+from a release ref that `/launch production` promotes, now rather than at payments.
+Corrected:
+1. **The ref.** Production deploys from a **branch named `release`** (§13 Q7 offers tags). Railway
+   deploys each service automatically from one trigger branch per environment ("go to your Service
+   Settings and choose the appropriate trigger branch", Railway docs, *GitHub autodeploys*); it
+   documents no tag trigger. `release` keeps one invariant: **it always equals `origin/main` or is
+   an ancestor of it.** Nothing is committed on it and nothing is cherry-picked onto it. It moves
+   forward only to a commit already on `main`, and backward only to the previous release in a
+   rollback.
+2. **`main` deploys to `staging`.** Every merge lands on staging, the release candidate, and never
+   on production. PR environments are unchanged: forked from staging, each deploying its PR branch
+   (AC-12). Nothing in A3 touches them except that none may trigger on `release`.
+3. **Promotion, in four steps.**
+   1. While the gates run, the orchestrator merges and pushes nothing to `main`, docs commits
+      included. Any new commit would redeploy staging underneath them.
+   2. **Visit 1 (gates)** names the commit: staging's `/api/health` `commit` (AC-31) read at the
+      start. It requires a green CI run whose head SHA is that commit (§13 Q9 gives `main` one),
+      runs gates 2–9 against staging, and reads staging's `commit` again at the end. If it changed,
+      the result is `HALTED`. The report is `RELEASE: READY <sha> (release at <old-sha>)` or
+      `RELEASE: HALTED <sha>: <gate>`.
+   3. The orchestrator runs `pnpm release:promote --sha <sha> --expect <old-sha>`, the only way
+      `release` moves forward. It refuses unless `<sha>` is on `origin/main`, the remote `release`
+      still equals `<old-sha>`, and `<old-sha>` is an ancestor of `<sha>`. Then it pushes
+      `<sha>:refs/heads/release` with `--force-with-lease=release:<old-sha>`, so the move is
+      fast-forward only and fails if anyone moved `release` in between. It moves `release` to
+      exactly `<sha>`, never to `main`'s tip. Whatever reached `main` after the gates stays on
+      staging.
+   4. **Visit 2 (watch)** confirms production's `/api/health` `commit` equals `<sha>` within 15
+      minutes of the push, then watches for 15 minutes and runs the post-deploy checks:
+      `RELEASE: PROMOTED <sha>` or `RELEASE: ROLLED BACK <sha>`.
+
+   Said honestly: Railway builds production's image from `<sha>` with production's build
+   variables (`APP_ENV` and the `NEXT_PUBLIC_*` keys are baked in, §14 A1), so the image the gates
+   tested on staging is not the exact image that goes live. The watch visit is the test of that
+   image, and the rollback is its safety net.
+4. **Rollback.** Step 1 is unchanged (AC-13): redeploy the previous production image, with no
+   rebuild, in under five minutes. The launch agent or the founder does it. Step 2 follows
+   straight after, by the orchestrator: `pnpm release:rollback --to <previous-release-sha>
+   --expect <bad-sha>` moves `release` back, with a lease, so the branch names what is running and
+   no later redeploy can ship the bad commit again. Step 2 makes Railway rebuild the previous
+   commit; that is the same code as the restored image, and the extra build is accepted. The
+   invariant still holds, because the previous release is an ancestor of `main`. The fix then goes
+   forward through `main` like any change.
+5. **Hotfix.** There is no path around the gates. First roll back (change 4); that is the fast
+   path. Then fix on `main` through the normal loop (task, `/break`, `/review`, CI), and run
+   `/launch production` on the fix's commit. If `main` holds other unreleased commits that must
+   not ship, revert them on `main` with a normal PR before the launch. Never commit to `release`,
+   and never cherry-pick onto it. §13 Q11 asks about a lighter hotfix gate set; the default is no.
+6. **What the repository checks.** Railway's config-as-code reference lists `build`, `deploy` and
+   `environments` keys and none for a trigger branch, and it does not say what Railway does with an
+   unknown key. So the declaration does **not** go into `config/railway.json`, which Railway reads.
+   It goes into a new `config/deploy-triggers.json`, which only our scripts read: `production` →
+   `web` and `worker` on `release`; `staging` → `web` and `worker` on `main`. `pnpm railway:check`
+   compares it with Railway's public-API `deploymentTriggers` (fields `environmentId`, `branch`).
+   `config/railway.json` itself is unchanged.
+7. **Knock-on text** in `.claude/agents/launch.md`, `.claude/skills/launch/SKILL.md` and
+   `.claude/templates/work-order.md` `Role: launch` (AC-41). The two-visit flow stays. What sits
+   between the visits becomes `release:promote`, not a merge to `main`, and the release note is
+   committed on every outcome, `HALTED` included.
+8. **The shell guard enforces it** (spec 001 §14 A19's hook, AC-40 below).
+9. **TASK-104 and TASK-096** inherit it (AC-43).
+10. **Founder actions.** Credentials for Railway and GitHub settings are the founder's, so these are
+    the founder's to do (the orchestrator gives the exact clicks and the check that proves each):
+    - **F1** — in Railway, `production` → `web` → Settings → Source: set the trigger branch to
+      `release`, and do the same for `worker` if it has a source. If production's `web` service
+      does not exist yet (TASK-104 creates it), create it with `release` from the start and never
+      with `main`. F1 comes right after approval: until then, if production already tracks `main`,
+      every merge still deploys. Before F1, the orchestrator creates `release` (AC-36's
+      `--create`) at the commit production runs now, or, if production has never deployed, at
+      the first commit `/launch production` gates. That way production never tracks a missing
+      branch.
+    - **F2** — `staging` → `web` and `worker`: trigger branch `main` (confirm, or set it).
+    - **F3** — Railway project settings, PR environments: base environment stays `staging` (confirm).
+    - **F4** — if §13 Q12 is yes: `staging` → `web` → "Wait for CI" on, once Q9's push run exists.
+    - **F5** — the Railway token `railway:check` uses can read deployment triggers. The project
+      sits in Grovant's workspace (§13 Q2 resolution); if the founder's membership cannot change
+      service settings, Grovant's account holder does F1–F4 at the founder's request.
+    - **F6** — if §13 Q8 is (b) or (c): the GitHub ruleset on `release`.
+
+- **AC-34 — each environment's trigger branch is declared and checked.** `config/deploy-triggers.json`
+  (zod-validated) declares `production: { web: "release", worker: "release" }` and
+  `staging: { web: "main", worker: "main" }`. `pnpm railway:check` reads each environment's
+  deployment triggers and exits non-zero, printing `<environment> · <service> · triggers on <live>,
+  declared <declared>`, when production's `web` or `worker` triggers on anything but `release`,
+  when staging's triggers on anything but `main`, or when any other environment triggers on
+  `release`. It exits 0 when all match. The nightly `cloudflare-check` job (AC-29) runs it, so a
+  change made by clicking in the dashboard shows up the next morning.
+- **AC-35 — the invariant is visible.** `pnpm release:status` prints `release` and `origin/main`
+  with their SHAs, the count and subjects of the commits on `main` not yet released, production's
+  live `/api/health` `commit`, and `invariant: ok`. It exits 1 with
+  `invariant: BROKEN (release has <n> commits not on main)` when `release` is not an ancestor of
+  `origin/main`. It exits 1 with `production runs <a>, release is <b>` when the two differ and
+  Railway reports no production deployment of `<b>` in progress. While one is building or
+  deploying, it prints `deploying <b>` and does not fail.
+- **AC-36 — promotion moves `release` to exactly the gated commit.**
+  `pnpm release:promote --sha <sha> --expect <old-sha>` refuses and pushes nothing when `<sha>` is
+  not on `origin/main`, when the remote `release` is not `<old-sha>`, or when `<old-sha>` is not an
+  ancestor of `<sha>`. Each refusal names its reason. Otherwise it pushes with
+  `--force-with-lease=release:<old-sha>` and prints the new tip. `--create` is accepted only when the
+  remote `release` does not exist yet. When `main` moves on after `RELEASE: READY`, promotion still
+  leaves `release` at `<sha>`, not at `main`'s tip.
+- **AC-37 — the gates run against one named commit.** `/launch production` visit 1 reports
+  `RELEASE: READY <40-char sha> (release at <sha>)` or `RELEASE: HALTED <sha>: <gate>`. The named SHA
+  is staging's `/api/health` `commit`, read at the start and again at the end; a difference halts.
+  Gate 1 is a green CI run whose `head_sha` is that SHA; `gh run list` on `main` alone no longer
+  passes it. Gates 4–6 run against staging, running that SHA, instead of "the preview".
+  `.claude/skills/launch/SKILL.md` has the orchestrator hold every merge and push to `main` from
+  dispatch until visit 1 reports.
+- **AC-38 — CI runs on the commits that can be released (subject to §13 Q9).** `ci.yml` gains a
+  `push` trigger on `main` that runs the spine (`lint`, `typecheck`, `test-unit`, `build`) and every
+  job that does not need `preview`. `tests/unit/ci-workflow.test.ts` pins the trigger and that job
+  set. The pull-request triggers and the `ci:full` label behaviour are unchanged (gap 6 is step E's).
+- **AC-39 — a rollback puts both the image and the branch back.** The hosting section of
+  `docs/runbooks/rollback.md` (owed by AC-13) has two steps: step 1, redeploy the previous image;
+  step 2, `pnpm release:rollback --to <previous-release-sha> --expect <bad-sha>`, which refuses when
+  `--to` is not an ancestor of the current `release` or the remote is not `<bad-sha>`, and moves the
+  branch with a lease. Afterwards `release:status` shows `invariant: ok`, and production's `commit`
+  equals `release`. Every release note records the previous release SHA and the previous
+  deployment id (gate 8), which is what step 1 and step 2 need.
+- **AC-40 — the shell guard makes the rules checks.** Spec 001 §14 A19's `bash-guard.sh`
+  additionally denies: any `git push` whose destination is `release` or `refs/heads/release`,
+  including `--all`, `--mirror` and a delete, **from anyone**, with "only `pnpm release:promote` or
+  `release:rollback` moves `release`"; those two commands whenever the hook input carries `agent_id`
+  (inside a subagent), with "promotion and rollback of the branch are the orchestrator's"; and a
+  `git push` whose destination is `main` inside a subagent. The work order already forbids a
+  subagent pushing to `main`; this makes that a check. The orchestrator's own session carries no
+  `agent_id` and is unaffected.
+- **AC-41 — the launch texts say what the process now is.** A case in spec 001's
+  `tests/unit/framework-text.test.ts` asserts:
+  - `.claude/agents/launch.md` "Promotion" names `pnpm release:promote` and no longer says a merge
+    to `main` deploys production. Gate 1 names the SHA. Gates 4–6 name staging at that SHA.
+    Staging's result is `RELEASE: VERIFIED | HALTED`: `main` already deployed it, and "promoted"
+    would be untrue. The release note is written on every outcome.
+  - `.claude/skills/launch/SKILL.md` step 4 runs `release:promote` with the SHA from `READY`, and
+    the orchestrator commits the release note (and the audit report) after **every** visit,
+    `HALTED` included.
+  - `.claude/templates/work-order.md` `Role: launch` no longer says the agent "may … promote to the
+    target". It says the promotion is the orchestrator's `release:promote`, and that the launch
+    agent may roll production back by redeploying the previous image but never moves `release`.
+
+  §4's founder story and §5.3's "Deploys and rollback" read as corrected here.
+- **AC-42 — the founder actions are done and proven.** `docs/runbooks/railway-cloudflare-setup.md`
+  gains a "Release branch" section listing F1–F6, each with the command that proves it. The
+  implementing task's brief records `pnpm railway:check` exiting 0 against the live project after
+  F1–F3 (and F4 if Q12 is yes), with its output.
+- **AC-43 — the first release, TASK-104 and TASK-096.** The first `/launch production` after A3 is
+  recorded end to end in its release note (T-42). TASK-104's cutover points the domain only at a
+  production `web` whose trigger is `release`; `railway:check` exits 0 before the DNS change. TASK-096's
+  indexing flip ships as a `/launch production` release. Its `/seo-audit` runs against staging at
+  the release SHA and then against production. Its `NEXT_PUBLIC_SITE_URL` change rebuilds the
+  `release` tip, not `main`. The orchestrator writes these clauses into both briefs.
+
+| ID | Layer | Given / When / Then | Covers AC |
+|---|---|---|---|
+| T-34 | contract | `railway:check` against recorded `deploymentTriggers` responses: production `web` on `main` → fail naming it; production `worker` on `main` → fail; staging on `release` → fail; a PR environment on `release` → fail; all as declared → exit 0 | AC-34 |
+| T-35 | unit | `config/deploy-triggers.json` parsed by zod; a missing environment or service, or an unknown branch value → parse error | AC-34 |
+| T-36 | integration (temporary bare repository) | `release:promote`: fast-forward → `release` = `<sha>`; remote moved since READY → refused, nothing pushed; `<sha>` not on `main` → refused; non-fast-forward → refused; `main` advanced after READY → `release` = `<sha>`, not `main`'s tip; `--create` on an existing ref → refused | AC-36 |
+| T-37 | integration (temporary bare repository) | `release:rollback`: back to the previous release → moved with a lease; `--to` not an ancestor → refused; afterwards `release:status` → `invariant: ok` | AC-39, AC-35 |
+| T-38 | integration (temporary bare repository) | `release:status` on a `release` carrying a commit not on `main` → exit 1 `invariant: BROKEN`; on a clean pair → exit 0 with the pending-commit count | AC-35 |
+| T-39 | unit (`ci-workflow.test.ts`) | `push: branches: [main]` present; the job set on push equals the spine plus the non-`preview` jobs | AC-38 |
+| T-40 | integration (shell, spec 001's `bash-guard.test.sh`) | `git push origin HEAD:release`, `git push origin :release`, `git push --all` → `deny` for everyone; `pnpm release:promote …` with `agent_id` → `deny`, without → allowed; `git push origin HEAD:main` with `agent_id` → `deny`; `git push origin task/TASK-1-x` with `agent_id` → allowed | AC-40 |
+| T-41 | unit (spec 001's `framework-text.test.ts`) | The three files of AC-41 carry the stated text; each case shown red by reverting one sentence | AC-41, AC-37 |
+| T-42 | e2e (manual, recorded in the release note) | First real release: staging at `<sha>`, `READY <sha>`, a commit merged to `main` after `READY` and before promotion, `release:promote`, production `commit` = `<sha>` (not the later commit) within 15 minutes, `PROMOTED`; the note is committed | AC-36, AC-37, AC-43 |
+| T-43 | e2e (manual, recorded in `TASKS.md`; extends T-13) | Rollback rehearsal: image redeploy under five minutes, then `release:rollback`; `release:status` clean; production `commit` = `release` | AC-39, AC-13 |
+
+Owed to `CLAUDE.md` (this spec does not edit it; the implementing PR does, with the founder's
+approval): one rule, "Production deploys only from `release`, which only `pnpm release:promote`
+moves, after `/launch production` reports `READY` on that commit; `main` deploys to staging", with
+a new `W-n` in `docs/framework/why.md` telling gap 16's story. `plan/08` §6's deploy description
+gains a pointer to this amendment.
+Suggested tasks (each at most one day): (1) `deploy-triggers.json`, the `railway:check` trigger
+check and the push trigger in `ci.yml` (AC-34, AC-38); (2) `release:status`, `release:promote` and
+`release:rollback`, the rollback runbook steps and the guard rules (AC-35, AC-36, AC-39, AC-40;
+after spec 001 A19's shell guard); (3) the launch texts and the founder-action runbook (AC-37,
+AC-41, AC-42); the first release (AC-43) is a `/launch`, not a task.
+Raised by: the founder's decision of 2026-09-28 on gap 16, and the PR 103 breaker's round 5;
+written for PR 104.
 
 ## 15. Task estimate (input to `/plan-tasks`)
 
