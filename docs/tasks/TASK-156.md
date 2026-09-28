@@ -34,7 +34,12 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- **2026-09-29 — A3's owed `CLAUDE.md` line and its `W-n`** ("Production deploys only from
+  `release`, which only `pnpm release:promote` moves…", spec 040 §14 A3, last paragraph; and the
+  carry-forward "Make the `CLAUDE.md` edits A3 owes"). To: the founder, via the orchestrator.
+  **Answered 2026-09-29: dropped.** No kernel line and no `W-n` are written; `CLAUDE.md` and
+  `docs/framework/why.md` are not touched by this task. The mechanism (the three commands and the
+  guard rules) stays.
 
 ## Progress
 
@@ -42,7 +47,8 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-09-29 — started: row `in_progress`, kernel-line drop recorded under Escalations. Next: the
+  T-36/T-37/T-38 integration tests (temporary bare repo) and T-40 guard rows, red first.
 
 ## Result
 
