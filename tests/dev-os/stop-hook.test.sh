@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# T-27 / AC-26 (spec 001, TASK-010): the Stop hook `.claude/hooks/tasks-reminder.sh`.
+# T-27 / AC-26 (spec 001, TASK-010) and T-42 / AC-40, AC-42 (spec 001 §14 A19, TASK-150/151): the
+# Stop hook `.claude/hooks/tasks-reminder.sh`.
 #
 # AC-26 verbatim: "The Stop hook prints the 'application code changed but TASKS.md was not
 # updated' reminder when `git status` shows a change under `src/` and none in `TASKS.md` (tested
@@ -63,5 +64,30 @@ assert_contains "$STOP_STDOUT" "$NO_CODE_NOTE" "an active task with a clean tree
 assert_contains "$STOP_STDOUT" "TASK-001" "the note names the active task"
 assert_contains "$STOP_STDOUT" "task.sh clear" "the note says how to clear the pointer"
 assert_not_contains "$STOP_STDOUT" "$REMINDER" "the note is not paired with the TASKS.md reminder"
+
+# --- T-42 / AC-40: a change under db/ alone is application code ----------------------------------
+DB="$(make_git_project)"
+clear_active_task "$DB"
+mkdir -p "$DB/db/migrations"
+echo "select 1;" > "$DB/db/migrations/0001_init.sql"
+run_stop_hook "$DB"
+assert_contains "$STOP_STDOUT" "$REMINDER" "a change under db/ only, TASKS.md clean, prints the reminder"
+
+# --- T-42 / AC-42: a stale pointer -> check's reasons are printed --------------------------------
+STALE="$(make_git_project)"
+set_active_task "$STALE" "TASK-001"
+sed -i.bak 's/| in_progress |/| in_review |/' "$STALE/TASKS.md" && rm -f "$STALE/TASKS.md.bak"
+run_stop_hook "$STALE"
+assert_eq "0" "$STOP_STATUS" "the Stop hook exits 0 with a stale pointer"
+assert_contains "$STOP_STDOUT" "stale: TASK-001 is in_review in TASKS.md" "a stale pointer: check's reason is printed"
+assert_contains "$STOP_STDOUT" "task.sh check" "the stale report names the command"
+
+set_active_task "$STALE" "TASK-404"
+run_stop_hook "$STALE"
+assert_contains "$STOP_STDOUT" "stale: TASK-404 has no row in TASKS.md" "a pointer with no row: check's reason is printed"
+
+set_active_task "$QUIET" "TASK-001"
+run_stop_hook "$QUIET"
+assert_not_contains "$STOP_STDOUT" "stale:" "a pointer that is in_progress and in flight prints no stale reason"
 
 finish "stop-hook.test.sh"

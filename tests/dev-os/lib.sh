@@ -233,8 +233,27 @@ run_guard_raw() {
   GUARD_STDOUT="$(printf '%s' "$payload" | CLAUDE_PROJECT_DIR="$project" bash "$GUARD_HOOK" 2>/dev/null)"
   GUARD_STATUS=$?
   dev_os_errexit_restore
-  GUARD_DECISION="$(guard_field "$GUARD_STDOUT" permissionDecision)"
-  GUARD_REASON="$(guard_field "$GUARD_STDOUT" permissionDecisionReason)"
+  guard_fields "$GUARD_STDOUT"
+}
+
+# guard_fields <stdout>: sets GUARD_DECISION and GUARD_REASON from one parse (one python start per
+# case instead of two keeps the bash-guard check fast on a loaded machine).
+guard_fields() {
+  local parsed
+  parsed="$(printf '%s' "$1" | /usr/bin/env python3 -c '
+import json, sys
+raw = sys.stdin.read().strip()
+if not raw:
+    print(""); print(""); sys.exit(0)
+try:
+    out = json.loads(raw).get("hookSpecificOutput") or {}
+except Exception:
+    print("UNPARSEABLE"); print(""); sys.exit(0)
+print(out.get("permissionDecision", ""))
+print(" ".join(str(out.get("permissionDecisionReason", "")).splitlines()))
+')"
+  GUARD_DECISION="$(printf '%s\n' "$parsed" | sed -n 1p)"
+  GUARD_REASON="$(printf '%s\n' "$parsed" | sed -n 2p)"
 }
 
 # guard_field <stdout> <key>: the value of hookSpecificOutput.<key>, or "" when the guard printed
@@ -283,8 +302,7 @@ run_bash_guard_raw() {
   GUARD_STDOUT="$(printf '%s' "$payload" | CLAUDE_PROJECT_DIR="$project" bash "$BASH_GUARD_HOOK" 2>/dev/null)"
   GUARD_STATUS=$?
   dev_os_errexit_restore
-  GUARD_DECISION="$(guard_field "$GUARD_STDOUT" permissionDecision)"
-  GUARD_REASON="$(guard_field "$GUARD_STDOUT" permissionDecisionReason)"
+  guard_fields "$GUARD_STDOUT"
 }
 
 # git_commit_all <repo>: commit everything, immune to the developer's global git configuration.
@@ -312,6 +330,29 @@ add_worktree() {
     git -C "$repo" worktree add -q -b "$branch" "$dir" >/dev/null 2>&1 || return 1
   fi
   echo "$dir"
+}
+
+# make_worktree_repo: the T-53 fixture (spec 001 §14 A19). A git main checkout whose TASKS.md has
+# TASK-201 and TASK-202 `in_progress` (both in flight) and TASK-203 `done`, with linked worktrees on
+# task/TASK-201-a, task/TASK-202-b, spec/x and task/TASK-203-c, plus one detached worktree.
+# Sets WT_MAIN, WT_201, WT_202, WT_SPEC, WT_203, WT_DETACHED. Call it in the parent shell (not in
+# `$( … )`), so the variables survive.
+make_worktree_repo() {
+  WT_MAIN="$(make_project)"
+  cat >> "$WT_MAIN/TASKS.md" <<'ROWS'
+| TASK-201 | Worktree fixture a | `specs/001` | 0 | in_progress | backend-implementer | — | — | — |
+| TASK-202 | Worktree fixture b | `specs/001` | 0 | in_progress | backend-implementer | — | — | — |
+| TASK-203 | Worktree fixture c | `specs/001` | 0 | done | backend-implementer | — | — | — |
+ROWS
+  printf '%s\n' "| TASK-201 | implementer | \`task/TASK-201-a\` | \`src/\` | 2026-09-28 |" \
+    "| TASK-202 | implementer | \`task/TASK-202-b\` | \`src/\` | 2026-09-28 |" >> "$WT_MAIN/.claude/state/in-flight.md"
+  git -C "$WT_MAIN" -c init.defaultBranch=main init -q
+  git_commit_all "$WT_MAIN" "fixture"
+  WT_201="$(add_worktree "$WT_MAIN" task/TASK-201-a)"
+  WT_202="$(add_worktree "$WT_MAIN" task/TASK-202-b)"
+  WT_SPEC="$(add_worktree "$WT_MAIN" spec/x)"
+  WT_203="$(add_worktree "$WT_MAIN" task/TASK-203-c)"
+  WT_DETACHED="$(add_worktree "$WT_MAIN" --detach)"
 }
 
 # active_task_file <project>: writes or clears the pointer the guard reads.

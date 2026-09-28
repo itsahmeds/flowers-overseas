@@ -19,6 +19,7 @@
 # the main checkout's TASKS.md and a line of `.claude/state/in-flight.md` names it; otherwise exit 1
 # with one reason per line. A task that is `done`, or has no row, counts as none for both guards
 # (§13 Q16); the rules live in `.claude/hooks/guarded_paths.py`.
+export PYTHONDONTWRITEBYTECODE=1  # no __pycache__/ beside the shared module
 HOOKS="$(cd "$(dirname "$0")/../hooks" && pwd)"
 exec /usr/bin/env python3 - "$HOOKS" "$@" <<'PY'
 import os, re, sys

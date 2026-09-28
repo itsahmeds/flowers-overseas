@@ -3,6 +3,7 @@
 # The roots it counts come from .claude/hooks/guarded_paths.py, the file task-guard.sh and
 # bash-guard.sh classify with, so db/ (and any root added later) counts here too (spec 001 AC-40).
 # When `task.sh check` finds the pointer stale it prints the reasons (AC-42). Always exits 0.
+export PYTHONDONTWRITEBYTECODE=1  # no __pycache__/ beside the shared module
 HOOK_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 cd "$ROOT" || exit 0

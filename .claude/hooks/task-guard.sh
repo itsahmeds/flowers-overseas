@@ -8,6 +8,7 @@
 #   from .claude/state/active-task; a task that is done, or has no row in TASKS.md, counts as none.
 # Not protected: plan/ specs/ docs/ .claude/ TASKS.md CLAUDE.md README* content/ messages/.
 # Fails open on any parse error (never brick the session). Kill-switch: remove from .claude/settings.json.
+export PYTHONDONTWRITEBYTECODE=1  # no __pycache__/ beside the shared module
 HOOK_DIR="$(cd "$(dirname "$0")" && pwd)"
 TMP="$(mktemp)"; trap 'rm -f "$TMP"' EXIT; cat > "$TMP"
 /usr/bin/env python3 - "$TMP" "$HOOK_DIR" <<'PY'
