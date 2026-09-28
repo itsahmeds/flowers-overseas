@@ -33,6 +33,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 - src/modules/catalog/schemas.ts (the listing schema's hard-coded keys, L993; AC-55 (d))
 - tests/unit/lint-fixtures.test.ts and tests/fixtures/lint/** (T-60, T-61)
 - tests/unit/lint-coverage.test.ts (add your rows to AC-52's table)
+- scripts/gates-cheap.ts (`url-pii` joins the always-run list; AC-52, per A20 round 3)
 
 ## Carry-forwards
 
@@ -40,6 +41,7 @@ One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
 - **From `/break 108` (2026-09-28):** AC-55(c) must identify a `URLSearchParams` receiver through the type checker (or by the definition A20 gives), never by method name alone. `src/` has 13 string-keyed `.get`/`.has`/`.set` calls today, none on a `URLSearchParams` (e.g. `consent.ts` L196, `address-formats.ts` L108). Spec text follows.
+- **From A20 round 3 (2026-09-28):** `url-pii` joins `gates:cheap`'s always-run list here, not in TASK-159. You wait for TASK-159, and TASK-154 before it, because all three write `scripts/gates-cheap.ts`.
 
 ## Escalations
 
