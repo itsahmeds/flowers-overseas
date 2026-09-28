@@ -121,14 +121,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
-      # ESLint (incl. the five `fo/*` rules and the module boundaries) + Stylelint. `--max-warnings
-      # 0` is not passed because every rule in `eslint.config.mjs` is configured as an error; the
-      # count below is therefore the error count.
-      - name: ESLint and Stylelint
+      # `pnpm lint` is ESLint (the `fo/*` rules and the module boundaries, with
+      # `--max-warnings 0`), then Stylelint, then the comment scan `check:no-literal-disable`
+      # (spec 001 §14 A20, AC-50 and AC-51). No comment can switch a lint rule off: ESLint's
+      # `noInlineConfig` makes one powerless and warns that it "has no effect", `--max-warnings 0`
+      # fails on that warning, and the scan names every bare or `fo/` directive and every
+      # `stylelint-disable` without reading `eslint.config.mjs`. AC-61: neither this job nor this
+      # step has an `if:`, so every A20 lint check runs on every event that starts the workflow
+      # (`tests/unit/ci-workflow.test.ts`, T-65).
+      - name: ESLint, Stylelint and the comment scan (AC-50, AC-51)
         id: eslint
         run: pnpm lint 2>&1 | tee lint.log
-      - name: No `eslint-disable` for fo/no-literal-strings under src/ (AC-6)
-        run: pnpm check:no-literal-disable | tee no-literal-disable.log
       # The no-database seam of spec 003 (AC-2): the locale/currency/address config and the i18n
       # module must stay free of a database client, an ORM, a Postgres driver and `DATABASE_URL`,
       # which is what makes that spec implementable while spec 002's provisioning is parked.
@@ -181,7 +184,7 @@ jobs:
             echo "| check | command | result |"
             echo "|---|---|---|"
             echo "| ESLint + Stylelint | \`pnpm lint\` | ${{ steps.eslint.outcome }}, $problems problem(s) |"
-            echo "| eslint-disable audit (AC-6) | \`pnpm check:no-literal-disable\` | $( [ -f no-literal-disable.log ] && tr '\n' ' ' < no-literal-disable.log || echo 'did not run' ) |"
+            echo "| comment scan (AC-51, AC-6) | \`pnpm check:no-literal-disable\` (in \`pnpm lint\`) | $( grep -m1 '^check:no-literal-disable:' lint.log 2>/dev/null || echo 'did not run' ) |"
             echo "| no-db seam (spec 003 AC-2) | \`pnpm check:no-db\` | $( [ -f no-db.log ] && tr '\n' ' ' < no-db.log || echo 'did not run' ) |"
             echo "| host-agnostic env (spec 040 AC-2) | \`pnpm check:no-vercel-env\` | $( [ -f no-vercel-env.log ] && tr '\n' ' ' < no-vercel-env.log || echo 'did not run' ) |"
             echo "| Prettier | \`pnpm format:check\` | $( [ -f format.log ] && echo 'all matched' || echo 'did not run' ) |"

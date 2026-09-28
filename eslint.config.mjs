@@ -22,6 +22,20 @@ const eslintConfig = defineConfig([
   ...nextTs,
   prettier,
   {
+    // spec 001 §14 A20, AC-50 (§13 Q17: no comment may ever switch a lint rule off). One object
+    // with no `files` key, so it applies to every file `eslint .` lints: an `eslint-disable`,
+    // `eslint-disable-line`, `eslint-disable-next-line`, `eslint-enable` or `eslint <rule>: off`
+    // comment has no effect, and ESLint's "has no effect" warning fails `pnpm lint:js`
+    // (`--max-warnings 0`). An exception is a config object named `fo/exception/<path>` whose
+    // `files` is exactly that one path, turning off one rule that is not ours, with a comment
+    // giving the reason; none may turn off an `fo/*` rule or `no-console`.
+    // `tests/unit/lint-coverage.test.ts` (AC-52) fails if this line goes, or if any object turns
+    // a lock off or down; `pnpm check:no-literal-disable` (AC-51) still catches bare and `fo/`
+    // comments without reading this file.
+    name: "fo/no-inline-config",
+    linterOptions: { noInlineConfig: true },
+  },
+  {
     // spec 001 §7: logical CSS and no literal user-facing strings; §5 + ADR-0009 + ADR-0006:
     // no direct order-status writes and no geo redirects. Enforced on application code.
     // `fo/no-float-money` is switched on for four roots by the `fo/float-money` block below,
@@ -120,8 +134,13 @@ const eslintConfig = defineConfig([
     // would blur which rule each fixture is evidence for. `float-money.ts` carries one violation
     // per shape the rule detects (decimal literal, `number` annotation, `parseFloat`, `toFixed`)
     // and `float-money-valid.ts` — integer minor units through `Intl` — must stay clean.
+    // `bare-disable.ts` is the standards audit's plant (spec 001 AC-50, T-54): a bare disable
+    // above `price = 1.5`, which must still report the money rule.
     name: "fo/float-money-fixtures",
-    files: ["tests/fixtures/lint/float-money*.ts"],
+    files: [
+      "tests/fixtures/lint/float-money*.ts",
+      "tests/fixtures/lint/bare-disable.ts",
+    ],
     plugins: { fo },
     languageOptions: {
       parserOptions: { project: false, projectService: false },

@@ -830,6 +830,8 @@ describe("stale ci.yml comments stay gone (T-51)", () => {
     "the reviewer runs the same suites locally",
     // Spec 040 AC-38 (TASK-155): `main` now has a push run, so the old promise is untrue.
     "nothing runs on push",
+    // Spec 001 AC-50 (TASK-158): `pnpm lint:js` now passes `--max-warnings 0`.
+    "is not passed because every rule",
   ])("no comment says %s", (phrase) => {
     expect(folded).not.toContain(phrase);
   });
@@ -1217,5 +1219,177 @@ describe("CI on every push to main (spec 040 AC-38, T-39)", () => {
     expect(interpolate(group, pullRequestContext(["ci:full"]))).toBe(
       "ci-ci-107",
     );
+  });
+});
+
+/**
+ * Spec 001 §14 A20, AC-61 / T-65 (TASK-158; the local clause is TASK-159's): every A20 check runs
+ * on every PR, with or without `ci:full`. A20 adds no job: its lint checks run in `lint` through
+ * `pnpm lint` (AC-51 folds the comment scan into it) and its tests in `test-unit` through the
+ * whole unit suite. Neither job, nor the step that runs the check, may carry an `if:`, so both
+ * run on every event that starts the workflow. The checker is a function so the red cases can
+ * hand it a scratch workflow or a scratch `package.json`.
+ */
+interface PackageScripts {
+  scripts: Record<string, string | undefined>;
+}
+
+/** The whole unit suite: the `unit` project, no file filter, no `--changed`, no shard. */
+const WHOLE_UNIT_SUITE = /^vitest run --project unit(?: --coverage)?$/;
+/** Flags the `test-unit` step may add; anything else could narrow the run. */
+const REPORTING_FLAG = /^--(?:reporter|outputFile)=\S+$/;
+
+function ac61Violations(workflow: Workflow, pkg: PackageScripts): string[] {
+  const violations: string[] = [];
+  const lint = workflow.jobs["lint"];
+  const unit = workflow.jobs["test-unit"];
+  if (lint === undefined) violations.push("lint: no such job");
+  if (unit === undefined) violations.push("test-unit: no such job");
+  if (lint?.if !== undefined) violations.push(`lint: has an if: ${lint.if}`);
+  if (unit?.if !== undefined)
+    violations.push(`test-unit: has an if: ${unit.if}`);
+
+  const lintSteps = (lint?.steps ?? []).filter((step) =>
+    /^pnpm lint(?:\s|$)/.test(step.run?.trim() ?? ""),
+  );
+  if (lintSteps.length === 0) violations.push("lint: no step runs pnpm lint");
+  for (const step of lintSteps) {
+    if (step.if !== undefined)
+      violations.push(`lint: the pnpm lint step has an if: ${step.if}`);
+  }
+
+  const unitSteps = (unit?.steps ?? []).flatMap((step) => {
+    const words = (step.run ?? "").trim().split(/\s+/);
+    return words[0] === "pnpm" &&
+      (words[1] === "test" || words[1] === "test:coverage")
+      ? [{ step, script: words[1], flags: words.slice(2) }]
+      : [];
+  });
+  if (unitSteps.length === 0)
+    violations.push("test-unit: no step runs pnpm test or pnpm test:coverage");
+  for (const { step, script, flags } of unitSteps) {
+    if (step.if !== undefined)
+      violations.push(`test-unit: the unit-suite step has an if: ${step.if}`);
+    const narrowing = flags.filter((flag) => !REPORTING_FLAG.test(flag));
+    if (narrowing.length > 0)
+      violations.push(
+        `test-unit: pnpm ${script} is narrowed by ${narrowing.join(" ")}`,
+      );
+    if (!WHOLE_UNIT_SUITE.test(pkg.scripts[script] ?? ""))
+      violations.push(
+        `package.json: ${script} is not the whole unit suite (${pkg.scripts[script] ?? "missing"})`,
+      );
+  }
+
+  const lintScript = pkg.scripts["lint"] ?? "";
+  const parts = lintScript.split("&&").map((part) => part.trim());
+  for (const needed of [
+    "pnpm lint:js",
+    "pnpm lint:css",
+    "pnpm check:no-literal-disable",
+  ]) {
+    if (!parts.includes(needed))
+      violations.push(`package.json: lint does not run ${needed}`);
+  }
+  if (/\|\||;|&(?!&)/.test(lintScript.replaceAll("&&", "")))
+    violations.push(
+      `package.json: lint must chain with && only (${lintScript})`,
+    );
+  if (!/(?:^|\s)--max-warnings[= ]0(?:\s|$)/.test(pkg.scripts["lint:js"] ?? ""))
+    violations.push("package.json: lint:js does not pass --max-warnings 0");
+  return violations;
+}
+
+describe("every A20 check runs on every PR (spec 001 AC-61, T-65)", () => {
+  const ciText = read(".github/workflows/ci.yml");
+  const pkg = JSON.parse(read("package.json")) as PackageScripts;
+  const guard =
+    "    if: ${{ contains(github.event.pull_request.labels.*.name, 'ci:full') }}\n";
+  /** `ci.yml` with the old label guard put back on one job, right under its `name:`. */
+  const guarded = (job: "lint" | "test-unit"): Workflow => {
+    const anchor = `\n  ${job}:\n    name: ${job}\n`;
+    expect(ciText.split(anchor).length - 1, job).toBe(1);
+    return parse(ciText.replace(anchor, `${anchor}${guard}`)) as Workflow;
+  };
+  const withScripts = (
+    scripts: Record<string, string | undefined>,
+  ): PackageScripts => ({ scripts: { ...pkg.scripts, ...scripts } });
+
+  it("holds over the real ci.yml and package.json", () => {
+    expect(ac61Violations(ci, pkg)).toEqual([]);
+    expect(pkg.scripts["lint"]).toBe(
+      "pnpm lint:js && pnpm lint:css && pnpm check:no-literal-disable",
+    );
+    expect(pkg.scripts["lint:js"]).toBe("eslint . --max-warnings 0");
+  });
+
+  it.each(["lint", "test-unit"] as const)(
+    "goes red when %s gets the ci:full guard back",
+    (job) => {
+      const violations = ac61Violations(guarded(job), pkg);
+      expect(violations).toEqual([
+        `${job}: has an if: \${{ contains(github.event.pull_request.labels.*.name, 'ci:full') }}`,
+      ]);
+    },
+  );
+
+  it("goes red when the pnpm lint step or the unit-suite step gets an if:", () => {
+    const workflow = parse(ciText) as Workflow;
+    const lintStep = workflow.jobs["lint"]?.steps.find((step) =>
+      /^pnpm lint(?:\s|$)/.test(step.run?.trim() ?? ""),
+    );
+    const unitStep = workflow.jobs["test-unit"]?.steps.find((step) =>
+      (step.run ?? "").trim().startsWith("pnpm test:coverage"),
+    );
+    expect(lintStep).toBeDefined();
+    expect(unitStep).toBeDefined();
+    if (lintStep) lintStep.if = "github.event_name == 'push'";
+    if (unitStep) unitStep.if = "github.event_name == 'push'";
+    expect(ac61Violations(workflow, pkg)).toEqual([
+      "lint: the pnpm lint step has an if: github.event_name == 'push'",
+      "test-unit: the unit-suite step has an if: github.event_name == 'push'",
+    ]);
+  });
+
+  it("goes red when package.json's lint drops check:no-literal-disable", () => {
+    expect(
+      ac61Violations(
+        ci,
+        withScripts({ lint: "pnpm lint:js && pnpm lint:css" }),
+      ),
+    ).toEqual([
+      "package.json: lint does not run pnpm check:no-literal-disable",
+    ]);
+  });
+
+  it("goes red when the scan is chained so its failure is swallowed", () => {
+    expect(
+      ac61Violations(
+        ci,
+        withScripts({
+          lint: "pnpm lint:js && pnpm lint:css && pnpm check:no-literal-disable || true",
+        }),
+      ),
+    ).toEqual([
+      "package.json: lint does not run pnpm check:no-literal-disable",
+      "package.json: lint must chain with && only (pnpm lint:js && pnpm lint:css && pnpm check:no-literal-disable || true)",
+    ]);
+  });
+
+  it("goes red when lint:js drops --max-warnings 0", () => {
+    expect(ac61Violations(ci, withScripts({ "lint:js": "eslint ." }))).toEqual([
+      "package.json: lint:js does not pass --max-warnings 0",
+    ]);
+  });
+
+  it("goes red when the unit suite is narrowed", () => {
+    expect(
+      ac61Violations(
+        ci,
+        withScripts({ "test:coverage": "vitest run --project unit --changed" }),
+      ),
+    ).toEqual([
+      "package.json: test:coverage is not the whole unit suite (vitest run --project unit --changed)",
+    ]);
   });
 });
