@@ -57,6 +57,6 @@ PR 112. `maxTurns` per §13 Q11 in every agent file except `orchestrator.md`; th
 ceilings 180 min (implementers, designer, spec writer, launch, SEO auditor) and 30 (reviewer,
 breaker, advisor). Tests: integration (shell) `tests/dev-os/agent-clock.test.sh`, 237 assertions
 (every T-48 row plus each role's ceiling, symlink and `..` escapes, fail-open); unit
-`tests/unit/dev-os.test.ts` +15 cases (T-47: 9 roles, orchestrator absent, the file set, the
+`tests/unit/dev-os.test.ts` 69 cases, 17 new (T-47: 9 roles, orchestrator absent, the file set, the
 `PATH_TESTS` mapping; T-52 now six checks; the settings registration). No build slot taken.
 Handed on: the orchestrator's partial-result paragraph (Escalations).
