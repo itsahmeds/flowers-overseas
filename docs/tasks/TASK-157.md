@@ -24,6 +24,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From `/break 108` round 3 (2026-09-28):** you wait for TASK-154 too, because it adds `maxTurns` to every `.claude/agents/*.md` frontmatter, `launch.md` included, and you edit `launch.md`. Rebase on it and keep its frontmatter.
 
 ## Escalations
 
