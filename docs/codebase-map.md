@@ -92,7 +92,7 @@ task actually touches.
 | `catalogue-check.ts` | `catalogue:check` | `pnpm catalogue:check` (spec 005 §2 "Docs, fixtures, gates", §6 "Crawl… |
 | `check-layout.ts` | `check-layout` | Layout manifest for `plan/01-architecture.md` §5 (spec 001 AC-3 / T-03) |
 | `check-no-db-imports.ts` | `check:no-db` | `pnpm check:no-db` (spec 003 AC-2 / T-02, TASK-033) |
-| `check-no-literal-disable.ts` | `check:no-literal-disable` | `pnpm check:no-literal-disable` (spec 001 AC-6 / T-07, TASK-003) |
+| `check-no-literal-disable.ts` | `check:no-literal-disable` | `pnpm check:no-literal-disable` (spec 001 §14 A20, AC-51 / T-55, TASK-158; AC-6… |
 | `check-no-vercel-env.ts` | `check:no-vercel-env` | Host-agnostic env gate (spec 040 AC-2) |
 | `client-js-budget.ts` | `budget:client-js` | `pnpm budget:client-js` — the AC-27 measurement (spec 003 §6 "CWV budget… |
 | `codebase-map.ts` | `codebase:map` | The codebase map — AC-33 / T-34 (spec 001 §14 A15, TASK-086) |
@@ -131,14 +131,14 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 206 |
+| `tests/unit/` | 207 |
 | `tests/integration/` | 6 |
 | `tests/contract/` | 6 |
 | `tests/e2e/` | 32 |
 | `tests/a11y/` | 14 |
 | `tests/visual/` | 15 |
 | `tests/dev-os/` | 1 |
-| `tests/fixtures/` | 189 |
+| `tests/fixtures/` | 190 |
 | `tests/msw/` | 3 |
 
 ## Where does X live?

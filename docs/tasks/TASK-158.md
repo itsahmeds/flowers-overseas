@@ -46,7 +46,8 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-09-28: measured `eslint .` on bfae5c9 before the flip: 0 warnings, 0 errors (610 files). Tests first (T-54, T-55, T-56, T-65: 50 red), then `noInlineConfig`, `--max-warnings 0`, `ignoreDisables`, the rewritten scan, the ConsentBannerIsland ref fix and the `ci.yml` fold; 181 green in the five touched files. Draft PR 113, commit 9eb32e8.
+- 2026-09-28: broke each lock on purpose and watched its test go red: `noInlineConfig` removed (T-54 and T-56), `--max-warnings 0` removed (T-54 and T-65), each of the scan's four patterns deleted in turn (T-55), `fo/no-raw-color` set to `off` (T-56), the `ci:full` guard put back on `lint` (T-65, T-39), and `ignoreDisables` removed (T-54). Added the `plan/12` §2 "Lint locks" row and regenerated the map. Next: gates:cheap, rebase, ready, `ci:full`.
 
 ## Result
 
