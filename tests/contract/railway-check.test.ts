@@ -502,6 +502,60 @@ describe("the trigger-branch check, round 2 (AC-34, T-34; /break 110, /review 11
   });
 });
 
+describe("the trigger-branch check, round 3 (AC-34, T-34; /break 110, /review 110 round 2)", () => {
+  it("does not call production `web` absent plus staging `worker` absent the expected red", () => {
+    const report = checkTriggers(
+      "triggers-production-no-web-staging-no-worker.json",
+    );
+    expect(report.ok).toBe(false);
+    expect(report.lines).toEqual([
+      "production · web · triggers on none, declared release",
+      "staging · worker · triggers on none, declared main",
+    ]);
+    expect(report.onlyAbsentProductionServices).toBe(false);
+  });
+
+  it("does not call production `web` absent plus `worker` on `main` the expected red", () => {
+    const report = checkTriggers(
+      "triggers-production-no-web-worker-on-main.json",
+    );
+    expect(report.ok).toBe(false);
+    expect(report.lines).toEqual([
+      "production · web · triggers on none, declared release",
+      "production · worker · triggers on main, declared release",
+    ]);
+    expect(report.onlyAbsentProductionServices).toBe(false);
+  });
+
+  it("fails an undeclared staging service on both `main` and `release`", () => {
+    const report = checkTriggers("triggers-staging-cron-two-branches.json");
+    expect(report.ok).toBe(false);
+    expect(report.lines).toEqual([
+      "staging · cron · triggers on main, release, declared main",
+    ]);
+  });
+
+  it("fails an undeclared production service on `main`", () => {
+    const report = checkTriggers("triggers-production-cron-on-main.json");
+    expect(report.ok).toBe(false);
+    expect(report.lines).toEqual([
+      "production · cron · triggers on main, declared release",
+    ]);
+    expect(report.onlyAbsentProductionServices).toBe(false);
+  });
+
+  it("fails a production trigger with no service on `main`", () => {
+    const report = checkTriggers(
+      "triggers-production-null-service-on-main.json",
+    );
+    expect(report.ok).toBe(false);
+    expect(report.lines).toEqual([
+      "production · (no service) · triggers on main, declared release",
+    ]);
+    expect(report.onlyAbsentProductionServices).toBe(false);
+  });
+});
+
 describe("`railway:check` on the command line (AC-34, AC-42)", () => {
   const cli = (...args: string[]) =>
     spawnSync(process.execPath, ["scripts/railway-check.ts", ...args], {
@@ -554,6 +608,20 @@ describe("`railway:check` on the command line (AC-34, AC-42)", () => {
     );
     expect(run.stdout).toContain("numReplicas is 2");
     expect(run.stderr).not.toContain("EXPECTED RED");
+  });
+
+  it("keeps the expected-red label when the service check on the same run passed", () => {
+    const run = cli(
+      ...triggersFixture("triggers-production-empty.json"),
+      "--fixture-environment",
+      "tests/fixtures/railway/environment-staging.json",
+    );
+    expect(run.status).toBe(1);
+    expect(run.stdout).toContain(
+      "production · web · triggers on none, declared release",
+    );
+    expect(run.stdout).toContain("match config/railway.json");
+    expect(run.stderr).toContain("EXPECTED RED until TASK-104");
   });
 
   it("refuses a config/deploy-triggers.json the zod schema rejects, before reading any trigger", () => {

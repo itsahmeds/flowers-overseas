@@ -317,6 +317,16 @@ export const DECLARED_ENVIRONMENTS = ["production", "staging"] as const;
 export const STAGING_BRANCH = "main";
 
 /**
+ * The branch every trigger of a declared environment must follow, including services the
+ * declaration does not name (a `cron`, or a trigger with no service). Production deploys only
+ * from `release` (§14 A3): a production `cron` on `main` would ship ungated commits, so it fails
+ * like `web` would (`/break 110` round 2, hole 5).
+ */
+export const ENVIRONMENT_BRANCH: Readonly<
+  Record<(typeof DECLARED_ENVIRONMENTS)[number], DeployBranch>
+> = Object.freeze({ production: RELEASE_BRANCH, staging: STAGING_BRANCH });
+
+/**
  * The trigger query's payload: every environment of the project, with its service instances (to
  * name a trigger's service, and to tell an absent service from one with no trigger) and its
  * deployment triggers. Field names and nullability are the live schema's (introspected
@@ -485,20 +495,24 @@ export function compareDeployTriggers(
     }
   }
 
-  // Staging's triggers beyond the declared services: every one must follow `main`.
+  // Triggers beyond the declared services, in production and staging: every one must follow
+  // the environment's branch (`release` and `main`).
   const declaredServices: readonly string[] = DEPLOY_SERVICES;
-  for (const [service, branches] of [
-    ...(live.get("staging") ?? new Map<string, string[]>()),
-  ].sort(([a], [b]) => a.localeCompare(b))) {
-    if (declaredServices.includes(service)) continue;
-    if (branches.every((branch) => branch === STAGING_BRANCH)) continue;
-    rows.push({
-      environment: "staging",
-      service,
-      live: [...branches].sort(),
-      declared: STAGING_BRANCH,
-      status: "wrong-branch",
-    });
+  for (const environment of DECLARED_ENVIRONMENTS) {
+    const want = ENVIRONMENT_BRANCH[environment];
+    for (const [service, branches] of [
+      ...(live.get(environment) ?? new Map<string, string[]>()),
+    ].sort(([a], [b]) => a.localeCompare(b))) {
+      if (declaredServices.includes(service)) continue;
+      if (branches.every((branch) => branch === want)) continue;
+      rows.push({
+        environment,
+        service,
+        live: [...branches].sort(),
+        declared: want,
+        status: "wrong-branch",
+      });
+    }
   }
 
   const declaredNames: readonly string[] = DECLARED_ENVIRONMENTS;
