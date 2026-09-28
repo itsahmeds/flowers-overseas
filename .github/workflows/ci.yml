@@ -70,20 +70,34 @@ name: ci
 # When CI runs. Why the triggers are what they are: spec 001 §14 A14 and `docs/framework/why.md`
 # W-2 (the label began as an Actions-minutes guard), W-3 (draft, then ready, then label) and W-4
 # (re-running). The workflow runs only when it is asked to:
-#  - a PR marked ready for review (`ready_for_review`) runs the spine — `lint` → `typecheck` →
-#    `test-unit` → `build` — once. A draft runs nothing, and a later push to a ready PR fires
-#    nothing; implementers run the cheap gates locally (`pnpm gates:cheap`), and CI is the gate of
-#    record for everything else (W-1).
-#  - the fan-out jobs and the preview → Playwright → Lighthouse chain run only with the `ci:full`
-#    label (`labeled` is in the trigger types). To re-run after a fix, remove the label and add it
-#    again (W-4). A `workflow_dispatch` is accepted but skips the browser chain, so it is not a
-#    re-run.
-#  - nothing runs on push to `main`: the squash-merged tree is the PR head that already passed.
+#  - a PR marked ready for review (`ready_for_review`) runs the jobs with no `if:` once: the spine
+#    `lint` → `typecheck` → `test-unit` → `build`, plus `container` and `lighthouse`, which hang
+#    off it. A draft runs nothing, and a later push to a ready PR fires nothing; implementers run
+#    the cheap gates locally (`pnpm gates:cheap`), and CI is the gate of record for everything
+#    else (W-1).
+#  - the fan-out jobs and the preview → Playwright chain run only with the `ci:full` label
+#    (`labeled` is in the trigger types). To re-run after a fix, remove the label and add it again
+#    (W-4). A `workflow_dispatch` is accepted but skips the browser chain, so it is not a re-run.
+#  - every push to `main` runs every job except the preview chain (spec 040 §14 A3, AC-38). A
+#    squash merge makes a commit no PR run has seen, and `/launch production`'s gate 1 needs a run
+#    whose head SHA is the commit it releases, read job by job (AC-37). On a push
+#    `github.event.pull_request` is null, so each fan-out job's `if:` admits `push` explicitly;
+#    `preview` stays pull-request-only, so `preview`, `e2e`, `visual` and `a11y` are the only jobs
+#    a push skips. `lighthouse` has no `if:` and must keep none: every release carries its budgets.
+#    `tests/unit/ci-workflow.test.ts` (T-39) evaluates every `if:` for a push to hold this.
 on:
   pull_request:
     types: [ready_for_review, labeled]
+  push:
+    branches: [main]
   workflow_dispatch:
 
+# One group per PR, and one for each pushed ref. Two pushes to `main` close together share
+# `refs/heads/main`'s group, so the second cancels the first's run: that earlier commit gets no
+# green run, and gate 1 never accepts a cancelled one. Accepted in spec 040 AC-38, because staging
+# deploys the later commit and that commit's run is the one that survives. If the SHA a release
+# names had its run cancelled anyway, `gh run rerun <id>` repeats that same push run on the same
+# SHA; it is not a dispatch, so W-4 does not bar it.
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
@@ -272,7 +286,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     needs: typecheck
-    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci:full') }}
+    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci:full') }}
     services:
       postgres:
         image: postgres:16
@@ -338,7 +352,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: typecheck
-    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci:full') }}
+    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci:full') }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
@@ -384,7 +398,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: typecheck
-    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci:full') }}
+    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci:full') }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
@@ -421,7 +435,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: typecheck
-    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci:full') }}
+    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci:full') }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -782,7 +796,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     needs: typecheck
-    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci:full') }}
+    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci:full') }}
     env:
       NEXT_TELEMETRY_DISABLED: "1"
       SENTINEL: SENTINEL_DO_NOT_PRINT_9f3a
@@ -917,7 +931,7 @@ jobs:
   # `env:` from `steps.range.outputs`, so no command can be handed a value the event did not have.
   commitlint:
     name: commitlint
-    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci:full') }}
+    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci:full') }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -1009,7 +1023,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: typecheck
-    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci:full') }}
+    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci:full') }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
@@ -1055,7 +1069,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: typecheck
-    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci:full') }}
+    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci:full') }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
@@ -1102,7 +1116,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: typecheck
-    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci:full') }}
+    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci:full') }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
@@ -1142,7 +1156,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: typecheck
-    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci:full') }}
+    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci:full') }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
@@ -1197,7 +1211,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: typecheck
-    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci:full') }}
+    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci:full') }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
@@ -1247,7 +1261,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: typecheck
-    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci:full') }}
+    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci:full') }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup

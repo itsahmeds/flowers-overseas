@@ -1,0 +1,11 @@
+{
+  "$comment": "Trigger branch per Railway environment and service (spec 040 §14 A3 change 6, AC-34). Railway config-as-code has no trigger key, so this file is read only by `pnpm railway:check` (src/lib/railway.ts, zod), never by Railway. Production deploys only from `release`, which only `pnpm release:promote` moves; `main` deploys to staging.",
+  "production": {
+    "web": "release",
+    "worker": "release"
+  },
+  "staging": {
+    "web": "main",
+    "worker": "main"
+  }
+}

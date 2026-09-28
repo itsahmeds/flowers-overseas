@@ -42,7 +42,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-09-28 — `ci.yml` gains `push: branches: [main]`; the 12 label-guarded `if:`s admit `push`; `on:`/`concurrency` comments rewritten. T-39 in `tests/unit/ci-workflow.test.ts` evaluates every job `if:` for push, PR (with and without `ci:full`) and dispatch; 86/86 green. Next: `config/deploy-triggers.json`, the trigger check, T-34/T-35.
 
 ## Result
 

@@ -55,6 +55,8 @@ interface Job {
 
 interface Workflow {
   name: string;
+  on?: Record<string, unknown>;
+  concurrency?: { group?: string; "cancel-in-progress"?: boolean };
   permissions?: Record<string, string>;
   defaults?: { run?: { shell?: string } };
   jobs: Record<string, Job>;
@@ -826,6 +828,8 @@ describe("stale ci.yml comments stay gone (T-51)", () => {
     "2,000 minutes",
     "how CI is re-fired",
     "the reviewer runs the same suites locally",
+    // Spec 040 AC-38 (TASK-155): `main` now has a push run, so the old promise is untrue.
+    "nothing runs on push",
   ])("no comment says %s", (phrase) => {
     expect(folded).not.toContain(phrase);
   });
@@ -833,6 +837,385 @@ describe("stale ci.yml comments stay gone (T-51)", () => {
   it("the trigger comment points at §14 A14 and W-2", () => {
     expect(folded).toMatch(
       /When CI runs\. Why the triggers are what they are: spec 001 §14 A14 and `docs\/framework\/why\.md` W-2/,
+    );
+  });
+});
+
+/**
+ * Spec 040 §14 A3, AC-38 / T-39 (TASK-155): CI runs on every push to `main`, so a release can
+ * name a commit that has a run of its own (AC-37's gate 1; a squash merge makes a commit no PR
+ * run has seen).
+ *
+ * Adding the trigger is not enough on its own. On a push `github.event.pull_request` is null, so
+ * a job whose `if:` reads only the `ci:full` label is skipped and the run still concludes
+ * `success`. The job set is therefore **computed, not listed**: each job's `if:` is evaluated
+ * against the event's context by the small evaluator below, and a job counts only when its `if:`
+ * is true (or absent) and every job in its `needs:` counts too, which is GitHub's rule for a job
+ * with no `always()`. The evaluator understands exactly the grammar the job-level `if:`s use
+ * (`||`, `&&`, `==`, `!=`, `!`, parentheses, quoted strings, context paths with `.*.`, and
+ * `contains`) and throws on anything else, so a new construct fails loudly instead of being
+ * read as `false`.
+ */
+type ExprValue =
+  | string
+  | number
+  | boolean
+  | null
+  | readonly ExprValue[]
+  | { readonly [key: string]: ExprValue };
+
+type Token =
+  | { kind: "op"; value: "(" | ")" | "," | "&&" | "||" | "==" | "!=" | "!" }
+  | { kind: "string"; value: string }
+  | { kind: "ident"; value: string };
+
+function tokenize(source: string): Token[] {
+  const tokens: Token[] = [];
+  let i = 0;
+  while (i < source.length) {
+    const rest = source.slice(i);
+    const space = /^\s+/.exec(rest);
+    if (space) {
+      i += space[0].length;
+      continue;
+    }
+    const op = /^(&&|\|\||==|!=|!|\(|\)|,)/.exec(rest);
+    if (op) {
+      tokens.push({ kind: "op", value: op[0] as "(" });
+      i += op[0].length;
+      continue;
+    }
+    const quoted = /^'((?:[^']|'')*)'/.exec(rest);
+    if (quoted) {
+      tokens.push({
+        kind: "string",
+        value: (quoted[1] ?? "").replace(/''/g, "'"),
+      });
+      i += quoted[0].length;
+      continue;
+    }
+    const ident = /^[A-Za-z_][\w-]*(?:\.(?:\*|[A-Za-z_][\w-]*))*/.exec(rest);
+    if (ident) {
+      tokens.push({ kind: "ident", value: ident[0] });
+      i += ident[0].length;
+      continue;
+    }
+    throw new Error(`unsupported expression syntax at: ${rest}`);
+  }
+  return tokens;
+}
+
+const truthy = (value: ExprValue): boolean =>
+  !(value === null || value === false || value === 0 || value === "");
+
+function resolvePath(value: ExprValue, segments: readonly string[]): ExprValue {
+  const [head, ...rest] = segments;
+  if (head === undefined) return value;
+  if (head === "*") {
+    const items: readonly ExprValue[] = Array.isArray(value)
+      ? value
+      : value !== null && typeof value === "object"
+        ? Object.values(value)
+        : [];
+    return items.map((item) => resolvePath(item, rest));
+  }
+  if (value === null || typeof value !== "object" || Array.isArray(value)) {
+    return null;
+  }
+  return resolvePath((value as Record<string, ExprValue>)[head] ?? null, rest);
+}
+
+/** GitHub's `==`: strings compare case-insensitively; everything else strictly. */
+function looseEquals(left: ExprValue, right: ExprValue): boolean {
+  if (typeof left === "string" && typeof right === "string") {
+    return left.toLowerCase() === right.toLowerCase();
+  }
+  return left === right;
+}
+
+function evaluateExpression(
+  source: string,
+  context: Record<string, ExprValue>,
+): ExprValue {
+  const tokens = tokenize(source);
+  let position = 0;
+  const peek = (): Token | undefined => tokens[position];
+  const isOp = (value: string): boolean => {
+    const token = peek();
+    return token?.kind === "op" && token.value === value;
+  };
+  const expectOp = (value: string): void => {
+    if (!isOp(value)) throw new Error(`expected ${value} in: ${source}`);
+    position += 1;
+  };
+
+  const primary = (): ExprValue => {
+    const token = peek();
+    if (token === undefined) throw new Error(`unexpected end of: ${source}`);
+    position += 1;
+    if (token.kind === "string") return token.value;
+    if (token.kind === "op" && token.value === "(") {
+      const inner = or();
+      expectOp(")");
+      return inner;
+    }
+    if (token.kind === "op" && token.value === "!") return !truthy(primary());
+    if (token.kind === "ident") {
+      if (token.value === "true") return true;
+      if (token.value === "false") return false;
+      if (token.value === "null") return null;
+      if (isOp("(")) {
+        if (token.value !== "contains") {
+          throw new Error(
+            `unsupported function ${token.value}() in: ${source}`,
+          );
+        }
+        expectOp("(");
+        const haystack = or();
+        expectOp(",");
+        const needle = or();
+        expectOp(")");
+        if (Array.isArray(haystack)) {
+          return haystack.some((item: ExprValue) => looseEquals(item, needle));
+        }
+        return (
+          typeof haystack === "string" &&
+          typeof needle === "string" &&
+          haystack.toLowerCase().includes(needle.toLowerCase())
+        );
+      }
+      const [root, ...segments] = token.value.split(".");
+      if (root === undefined || !(root in context)) {
+        throw new Error(`unknown context ${String(root)} in: ${source}`);
+      }
+      return resolvePath(context[root] ?? null, segments);
+    }
+    throw new Error(`unexpected token ${token.value} in: ${source}`);
+  };
+  const comparison = (): ExprValue => {
+    const left = primary();
+    if (isOp("==") || isOp("!=")) {
+      const negate = isOp("!=");
+      position += 1;
+      const equal = looseEquals(left, primary());
+      return negate ? !equal : equal;
+    }
+    return left;
+  };
+  const and = (): ExprValue => {
+    let left = comparison();
+    while (isOp("&&")) {
+      position += 1;
+      const right = comparison();
+      left = truthy(left) ? right : left;
+    }
+    return left;
+  };
+  function or(): ExprValue {
+    let left = and();
+    while (isOp("||")) {
+      position += 1;
+      const right = and();
+      left = truthy(left) ? left : right;
+    }
+    return left;
+  }
+
+  const value = or();
+  if (position !== tokens.length) {
+    throw new Error(`trailing tokens in: ${source}`);
+  }
+  return value;
+}
+
+/** A job-level `if:`, with or without its `${{ }}` wrapper. Absent means "run". */
+function evaluateIf(
+  condition: string | undefined,
+  context: Record<string, ExprValue>,
+): boolean {
+  if (condition === undefined) return true;
+  const bare = /^\s*\$\{\{([\s\S]*)\}\}\s*$/.exec(condition)?.[1] ?? condition;
+  return truthy(evaluateExpression(bare, context));
+}
+
+/** A string with `${{ }}` interpolations, such as the concurrency group. */
+function interpolate(
+  template: string,
+  context: Record<string, ExprValue>,
+): string {
+  return template.replace(/\$\{\{([\s\S]*?)\}\}/g, (_, inner: string) => {
+    const value = evaluateExpression(inner, context);
+    return value === null ? "" : String(value);
+  });
+}
+
+/** Every job the event runs, in file order: its `if:` holds and each of its `needs:` runs. */
+function jobSet(context: Record<string, ExprValue>): string[] {
+  const memo = new Map<string, boolean>();
+  const runs = (key: string): boolean => {
+    const known = memo.get(key);
+    if (known !== undefined) return known;
+    const job = ci.jobs[key];
+    if (job === undefined) throw new Error(`needs: names no job ${key}`);
+    const needs = job.needs === undefined ? [] : [job.needs].flat();
+    const result = evaluateIf(job.if, context) && needs.every(runs);
+    memo.set(key, result);
+    return result;
+  };
+  return jobs.map(([key]) => key).filter(runs);
+}
+
+const githubContext = (github: Record<string, ExprValue>) => ({
+  github: { workflow: "ci", ...github },
+});
+
+/** Two pushes to `main`: no pull request on the event (T-39's push context). */
+const pushContext = githubContext({
+  event_name: "push",
+  ref: "refs/heads/main",
+  event: { pull_request: null },
+});
+const pullRequestContext = (labels: readonly string[]) =>
+  githubContext({
+    event_name: "pull_request",
+    ref: "refs/pull/107/merge",
+    event: {
+      pull_request: { number: 107, labels: labels.map((name) => ({ name })) },
+    },
+  });
+const dispatchContext = githubContext({
+  event_name: "workflow_dispatch",
+  ref: "refs/heads/main",
+  event: {},
+});
+
+/** The four jobs a push may skip: `preview` on its own `if:`, the rest through `needs: preview`. */
+const PREVIEW_CHAIN = ["preview", "e2e", "visual", "a11y"] as const;
+const SPINE = ["lint", "typecheck", "test-unit", "build"] as const;
+
+describe("the evaluator T-39 relies on", () => {
+  it("reads the label and the event the way GitHub does", () => {
+    const labelled = pullRequestContext(["ci:full"]);
+    const guard =
+      "${{ github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci:full') }}";
+    expect(evaluateIf(guard, labelled)).toBe(true);
+    expect(evaluateIf(guard, pullRequestContext(["other"]))).toBe(false);
+    expect(evaluateIf(guard, pushContext)).toBe(false);
+    expect(evaluateIf(guard, dispatchContext)).toBe(true);
+    expect(evaluateIf("github.event_name == 'PUSH'", pushContext)).toBe(true);
+    expect(evaluateIf("!(github.event_name != 'push')", pushContext)).toBe(
+      true,
+    );
+    expect(evaluateIf(undefined, pushContext)).toBe(true);
+  });
+
+  it("throws on syntax it does not understand instead of answering false", () => {
+    expect(() => evaluateIf("always()", pushContext)).toThrow(
+      /unsupported function/,
+    );
+    expect(() => evaluateIf("github.event_name >= 'a'", pushContext)).toThrow();
+    expect(() => evaluateIf("secrets.X == 'y'", pushContext)).toThrow(
+      /unknown context/,
+    );
+  });
+
+  it("parses every job-level `if:` in ci.yml", () => {
+    for (const context of [
+      pushContext,
+      pullRequestContext([]),
+      dispatchContext,
+    ]) {
+      for (const [key, job] of jobs) {
+        expect(() => evaluateIf(job.if, context), `job ${key}`).not.toThrow();
+      }
+    }
+  });
+});
+
+describe("CI on every push to main (spec 040 AC-38, T-39)", () => {
+  it("adds `push: branches: [main]` and leaves the other triggers as they were", () => {
+    expect(ci.on).toEqual({
+      pull_request: { types: ["ready_for_review", "labeled"] },
+      push: { branches: ["main"] },
+      workflow_dispatch: null,
+    });
+  });
+
+  it("runs every job on a push except exactly preview, e2e, visual and a11y", () => {
+    const push = jobSet(pushContext);
+    const skipped = jobs
+      .map(([key]) => key)
+      .filter((key) => !push.includes(key));
+    expect(skipped).toEqual([...PREVIEW_CHAIN]);
+    for (const key of SPINE) expect(push, key).toContain(key);
+    expect(push).toHaveLength(EXPECTED_JOBS.length - PREVIEW_CHAIN.length);
+  });
+
+  it("skips `preview` on its own `if:` and the three browser jobs only through `needs: preview`", () => {
+    expect(evaluateIf(ci.jobs.preview?.if, pushContext)).toBe(false);
+    for (const key of ["e2e", "visual", "a11y"]) {
+      const job = ci.jobs[key];
+      expect(job?.if, key).toBeUndefined();
+      expect([job?.needs].flat(), key).toContain("preview");
+    }
+  });
+
+  it("runs `lighthouse` on a push through `needs: build`, so every release carries its budgets", () => {
+    // AC-37: gate 1 requires `lighthouse` to conclude `success`, not `skipped`. A pull-request-only
+    // `if:` here would take the budgets off every release and turn this case red.
+    expect(ci.jobs.lighthouse?.if).toBeUndefined();
+    expect(ci.jobs.lighthouse?.needs).toBe("build");
+    expect(jobSet(pushContext)).toContain("lighthouse");
+  });
+
+  it("keeps the unlabelled pull-request set: the jobs with no `if:`", () => {
+    const withoutIf = jobs
+      .filter(([, job]) => job.if === undefined)
+      .map(([key]) => key);
+    const unlabelled = jobSet(pullRequestContext([]));
+    expect(unlabelled).toEqual([
+      "lint",
+      "typecheck",
+      "test-unit",
+      "build",
+      "container",
+      "lighthouse",
+    ]);
+    // e2e, visual and a11y have no `if:` either, but `needs: preview` keeps them out.
+    expect(withoutIf.filter((key) => !unlabelled.includes(key))).toEqual([
+      "e2e",
+      "visual",
+      "a11y",
+    ]);
+  });
+
+  it("keeps the labelled pull-request set: every job", () => {
+    expect(jobSet(pullRequestContext(["ci:full"]))).toEqual([...EXPECTED_JOBS]);
+  });
+
+  it("keeps a dispatch off the browser chain (W-4)", () => {
+    const dispatch = jobSet(dispatchContext);
+    expect(
+      jobs.map(([key]) => key).filter((key) => !dispatch.includes(key)),
+    ).toEqual([...PREVIEW_CHAIN]);
+  });
+
+  it("pins the concurrency group and cancel-in-progress", () => {
+    expect(ci.concurrency).toEqual({
+      group:
+        "ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}",
+      "cancel-in-progress": true,
+    });
+  });
+
+  it("puts two pushes to main in one group, so the later one cancels the earlier run", () => {
+    // AC-38 accepts this: staging deploys the later commit, visit 1 names staging's commit, and
+    // that commit's run is the one that survives. A cancelled run is not green (AC-37), and
+    // `gh run rerun <id>` repeats that same push run on the same SHA.
+    const group = ci.concurrency?.group ?? "";
+    expect(interpolate(group, pushContext)).toBe("ci-ci-refs/heads/main");
+    expect(interpolate(group, pullRequestContext(["ci:full"]))).toBe(
+      "ci-ci-107",
     );
   });
 });

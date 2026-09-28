@@ -1,0 +1,161 @@
+{
+  "_fixture": "Railway public GraphQL `project(id) { environments { \u2026 serviceInstances \u2026 deploymentTriggers \u2026 } }` answer (spec 040 AC-34, T-34; TASK-155). Shape recorded from the live schema by introspection on 2026-09-28 (`DeploymentTrigger.branch` / `environmentId` non-null, `serviceId` nullable; `ServiceInstance.source { repo image }`). Ids are placeholders; no token, project id or variable value appears in this file. Production `web` triggers on `main` (the pre-A3 setting); everything else as declared.",
+  "data": {
+    "project": {
+      "environments": {
+        "edges": [
+          {
+            "node": {
+              "id": "env-0000-production",
+              "name": "production",
+              "serviceInstances": {
+                "edges": [
+                  {
+                    "node": {
+                      "serviceId": "svc-0000-web",
+                      "serviceName": "web",
+                      "source": {
+                        "repo": "itsahmeds/flowers-overseas",
+                        "image": null
+                      }
+                    }
+                  },
+                  {
+                    "node": {
+                      "serviceId": "svc-0000-worker",
+                      "serviceName": "worker",
+                      "source": {
+                        "repo": "itsahmeds/flowers-overseas",
+                        "image": null
+                      }
+                    }
+                  }
+                ]
+              },
+              "deploymentTriggers": {
+                "edges": [
+                  {
+                    "node": {
+                      "id": "trg-production-web",
+                      "branch": "main",
+                      "environmentId": "env-0000-production",
+                      "serviceId": "svc-0000-web"
+                    }
+                  },
+                  {
+                    "node": {
+                      "id": "trg-production-worker",
+                      "branch": "release",
+                      "environmentId": "env-0000-production",
+                      "serviceId": "svc-0000-worker"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "node": {
+              "id": "env-0000-staging",
+              "name": "staging",
+              "serviceInstances": {
+                "edges": [
+                  {
+                    "node": {
+                      "serviceId": "svc-0000-web",
+                      "serviceName": "web",
+                      "source": {
+                        "repo": "itsahmeds/flowers-overseas",
+                        "image": null
+                      }
+                    }
+                  },
+                  {
+                    "node": {
+                      "serviceId": "svc-0000-worker",
+                      "serviceName": "worker",
+                      "source": {
+                        "repo": "itsahmeds/flowers-overseas",
+                        "image": null
+                      }
+                    }
+                  }
+                ]
+              },
+              "deploymentTriggers": {
+                "edges": [
+                  {
+                    "node": {
+                      "id": "trg-staging-web",
+                      "branch": "main",
+                      "environmentId": "env-0000-staging",
+                      "serviceId": "svc-0000-web"
+                    }
+                  },
+                  {
+                    "node": {
+                      "id": "trg-staging-worker",
+                      "branch": "main",
+                      "environmentId": "env-0000-staging",
+                      "serviceId": "svc-0000-worker"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "node": {
+              "id": "env-0000-pr-123",
+              "name": "pr-123",
+              "serviceInstances": {
+                "edges": [
+                  {
+                    "node": {
+                      "serviceId": "svc-0000-web",
+                      "serviceName": "web",
+                      "source": {
+                        "repo": "itsahmeds/flowers-overseas",
+                        "image": null
+                      }
+                    }
+                  },
+                  {
+                    "node": {
+                      "serviceId": "svc-0000-worker",
+                      "serviceName": "worker",
+                      "source": {
+                        "repo": "itsahmeds/flowers-overseas",
+                        "image": null
+                      }
+                    }
+                  }
+                ]
+              },
+              "deploymentTriggers": {
+                "edges": [
+                  {
+                    "node": {
+                      "id": "trg-pr-123-web",
+                      "branch": "task/TASK-1-x",
+                      "environmentId": "env-0000-pr-123",
+                      "serviceId": "svc-0000-web"
+                    }
+                  },
+                  {
+                    "node": {
+                      "id": "trg-pr-123-worker",
+                      "branch": "task/TASK-1-x",
+                      "environmentId": "env-0000-pr-123",
+                      "serviceId": "svc-0000-worker"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}
