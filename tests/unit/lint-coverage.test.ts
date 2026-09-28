@@ -33,6 +33,7 @@ import { execFileSync } from "node:child_process";
 import {
   mkdirSync,
   mkdtempSync,
+  readdirSync,
   readFileSync,
   rmSync,
   writeFileSync,
@@ -100,6 +101,23 @@ const GLOBAL_IGNORES = [
   "tests/fixtures/**",
 ];
 
+/** One untracked path under each of today's patterns; each must stay ignored. */
+const IGNORE_PROBES = [
+  ".next/server/x.js",
+  "out/x.js",
+  "build/x.js",
+  "coverage/x.js",
+  "next-env.d.ts",
+  "tests/fixtures/x.ts",
+];
+
+/**
+ * Config objects allowed to set a `processor` (the name, or `#index` for an unnamed one). A
+ * processor decides which code blocks ESLint lints and which messages survive, so a no-op one
+ * silences every rule while `calculateConfigForFile` still reads `error`. None exists today.
+ */
+const PROCESSORS_TODAY: readonly string[] = [];
+
 const LINTABLE = /\.(?:[cm]?[jt]s|[jt]sx)$/;
 const TRACKED = execFileSync("git", ["ls-files"], {
   cwd: repoRoot,
@@ -132,11 +150,20 @@ async function coverageViolations(configFile: string): Promise<string[]> {
   ).default;
 
   // The config objects themselves: global ignores, noInlineConfig, and every lock set off or down.
+  // ESLint 9 reads an object whose keys are only `name`, `basePath` and `ignores` as global
+  // ignores; a `basePath` prefixes its patterns.
   const globalIgnores = new Set<string>();
   for (const config of configs) {
-    const keys = Object.keys(config).filter((key) => key !== "name");
+    const keys = Object.keys(config).filter(
+      (key) => key !== "name" && key !== "basePath",
+    );
     if (keys.length === 1 && keys[0] === "ignores") {
-      for (const pattern of config.ignores ?? []) globalIgnores.add(pattern);
+      const base = (config as { basePath?: string }).basePath;
+      for (const pattern of config.ignores ?? []) {
+        globalIgnores.add(
+          base === undefined ? String(pattern) : `${base}/${String(pattern)}`,
+        );
+      }
     }
   }
   const actualIgnores = [...globalIgnores].sort();
@@ -160,6 +187,11 @@ async function coverageViolations(configFile: string): Promise<string[]> {
   }
   configs.forEach((config, index) => {
     const label = config.name ?? `#${String(index)}`;
+    if (config.processor !== undefined && !PROCESSORS_TODAY.includes(label)) {
+      violations.push(
+        `processor: config object ${label} sets a processor for ${describeFiles(config.files)}; only PROCESSORS_TODAY may (${JSON.stringify(PROCESSORS_TODAY)})`,
+      );
+    }
     for (const row of TABLE) {
       for (const rule of row.rules) {
         const severity = severityOf(config.rules?.[rule]);
@@ -217,6 +249,27 @@ async function coverageViolations(configFile: string): Promise<string[]> {
     }
     return resolved.get(file);
   };
+
+  // What ESLint ignores must be exactly what today's six patterns say, whatever object ignores
+  // it: every tracked lintable file, plus one path under each pattern that git does not track.
+  const expectedIgnored = (file: string): boolean =>
+    GLOBAL_IGNORES.some((pattern) =>
+      pattern.endsWith("/**")
+        ? file.startsWith(pattern.slice(0, -2))
+        : file === pattern,
+    );
+  for (const file of [...TRACKED, ...IGNORE_PROBES]) {
+    const ignored = await eslint.isPathIgnored(resolve(repoRoot, file));
+    if (ignored && !expectedIgnored(file)) {
+      violations.push(
+        `globalIgnores: ${file} is ignored, but none of today's patterns matches it`,
+      );
+    } else if (!ignored && expectedIgnored(file)) {
+      violations.push(
+        `globalIgnores: ${file} matches today's patterns, but ESLint lints it`,
+      );
+    }
+  }
 
   for (const file of TRACKED) {
     const config = await configFor(file);
@@ -435,5 +488,103 @@ describe("a one-line edit to eslint.config.mjs goes red and names the lock (T-56
         ),
       ),
     ).toEqual([]);
+  });
+
+  // /review 113 round 1: ESLint 9 reads an object of only `name`, `basePath` and `ignores` as
+  // global ignores, so `db/` drops out of `eslint .` without a `globalIgnores(...)` call.
+  it("a basePath global-ignores object switching db/ off", async () => {
+    const violations = await redFor(
+      addBlock('{ basePath: "db", ignores: ["**"] }'),
+    );
+    expect(violations.some((v) => v.startsWith("globalIgnores: ["))).toBe(true);
+    expect(
+      violations.some(
+        (v) =>
+          v.startsWith("globalIgnores: db/") &&
+          v.endsWith("is ignored, but none of today's patterns matches it"),
+      ),
+    ).toBe(true);
+  });
+
+  // /break 113 hole 2: a processor that yields no code blocks drops every message for its files
+  // while the resolved config still reads `error`.
+  it("a no-op processor block for src/modules/partners/**", async () => {
+    const violations = await redFor(
+      addBlock(
+        '{ files: ["src/modules/partners/**"], processor: { preprocess: () => [], postprocess: () => [] } }',
+      ),
+    );
+    expect(
+      violations.some(
+        (v) =>
+          v.startsWith("processor: config object #") &&
+          v.endsWith(
+            'sets a processor for ["src/modules/partners/**"]; only PROCESSORS_TODAY may ([])',
+          ),
+      ),
+    ).toBe(true);
+  });
+});
+
+/**
+ * /break 113 hole 1: ESLint 9 looks for `eslint.config.js` before `eslint.config.mjs`, and
+ * Stylelint's search finds `.stylelintrc*` (or a `stylelint` key in `package.json`) from each
+ * CSS file's folder upward. Every other test here names the config file explicitly, so a sibling
+ * config would replace the real one for `pnpm lint` and nothing else would notice.
+ */
+describe("the config files pnpm lint loads are the two that are tested", () => {
+  const ESLINT_NAMES =
+    /^(?:eslint\.config\.(?:js|mjs|cjs|ts|mts|cts)|\.eslintrc(?:\.(?:js|cjs|yaml|yml|json))?)$/;
+  const STYLELINT_NAMES =
+    /^(?:stylelint\.config\.(?:js|mjs|cjs|ts|mts|cts)|\.stylelintrc(?:\.(?:json|yaml|yml|js|mjs|cjs|ts|mts|cts))?)$/;
+  const isConfigName = (path: string): boolean => {
+    const base = path.slice(path.lastIndexOf("/") + 1);
+    return ESLINT_NAMES.test(base) || STYLELINT_NAMES.test(base);
+  };
+
+  it("names each config file of ESLint and Stylelint in the patterns", () => {
+    for (const name of [
+      "eslint.config.js",
+      "eslint.config.cjs",
+      "eslint.config.ts",
+      "eslint.config.mts",
+      "eslint.config.cts",
+      ".eslintrc",
+      ".eslintrc.json",
+      ".stylelintrc",
+      ".stylelintrc.json",
+      "stylelint.config.js",
+      "stylelint.config.cjs",
+      "stylelint.config.ts",
+    ]) {
+      expect(isConfigName(name), name).toBe(true);
+    }
+  });
+
+  it("finds only eslint.config.mjs and stylelint.config.mjs, at the root and in the tree", () => {
+    const atRoot = readdirSync(repoRoot).filter(isConfigName).sort();
+    const tracked = execFileSync("git", ["ls-files"], {
+      cwd: repoRoot,
+      encoding: "utf8",
+    })
+      .split("\n")
+      .filter(isConfigName)
+      .sort();
+    expect(atRoot).toEqual(["eslint.config.mjs", "stylelint.config.mjs"]);
+    expect(tracked).toEqual(["eslint.config.mjs", "stylelint.config.mjs"]);
+  });
+
+  it("keeps ESLint and Stylelint config out of package.json", () => {
+    const pkg = JSON.parse(
+      readFileSync(resolve(repoRoot, "package.json"), "utf8"),
+    ) as Record<string, unknown>;
+    expect(pkg["eslintConfig"]).toBeUndefined();
+    expect(pkg["stylelint"]).toBeUndefined();
+  });
+
+  it("is the file eslint . itself resolves", async () => {
+    expect(await new ESLint({ cwd: repoRoot }).findConfigFile()).toBe(
+      REAL_CONFIG,
+    );
   });
 });

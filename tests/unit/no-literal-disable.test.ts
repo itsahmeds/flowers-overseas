@@ -67,6 +67,12 @@ const RED_FORMS = [
   ["/* eslint-enable */", "bare-directive"],
   ["/* eslint-disable fo/no-raw-color */", "fo-rule"],
   ["/* eslint fo/no-physical-css: off */", "fo-rule"],
+  // /review 113 round 1: ESLint splits the list on commas, strips one pair of quotes and drops
+  // empty names, and an empty result means "every rule". Each of these is a bare disable.
+  ["/* eslint-disable , */", "bare-directive"],
+  ['/* eslint-disable "" */', "bare-directive"],
+  ["/* eslint-disable '' */", "bare-directive"],
+  ["// eslint-disable-next-line ,", "bare-directive"],
 ] as const;
 
 /** T-55 names these three roots; each form is planted in `x.ts` of each. */

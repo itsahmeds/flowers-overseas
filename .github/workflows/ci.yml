@@ -173,10 +173,12 @@ jobs:
         run: |
           set -uo pipefail
           # `problems` counts ESLint/Stylelint problem lines; zero on a green run, which is the
-          # only run that reaches this step with the earlier ones green.
+          # only run that reaches this step with the earlier ones green. `grep -c` prints 0 and
+          # exits 1 on no match; this step has no `-e`, so that needs no guard, and no step of
+          # this job may carry one (spec 001 AC-61, `tests/unit/ci-workflow.test.ts`).
           problems=0
           if [ -f lint.log ]; then
-            problems=$(grep -cE '^\s+[0-9]+:[0-9]+\s+(error|warning)' lint.log || true)
+            problems=$(grep -cE '^\s+[0-9]+:[0-9]+\s+(error|warning)' lint.log)
           fi
           {
             echo "### lint"

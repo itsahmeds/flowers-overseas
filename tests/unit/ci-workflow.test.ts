@@ -1238,6 +1238,20 @@ interface PackageScripts {
 const WHOLE_UNIT_SUITE = /^vitest run --project unit(?: --coverage)?$/;
 /** Flags the `test-unit` step may add; anything else could narrow the run. */
 const REPORTING_FLAG = /^--(?:reporter|outputFile)=\S+$/;
+/**
+ * Every script `pnpm lint` runs, pinned exactly (/break 113 hole 3): a `|| true`, a `;` or a
+ * `--rule … off` in any one of them would switch its check off without touching `lint` itself.
+ */
+const LINT_SCRIPTS = {
+  lint: "pnpm lint:js && pnpm lint:css && pnpm check:no-literal-disable",
+  "lint:js": "eslint . --max-warnings 0",
+  "lint:css": 'stylelint "src/**/*.css"',
+  "check:no-literal-disable": "node scripts/check-no-literal-disable.ts",
+} as const;
+/** The one form of the `lint` job's `pnpm lint` step; `pipefail` comes from `defaults.run`. */
+const LINT_STEP_RUN = "pnpm lint 2>&1 | tee lint.log";
+/** A shell idiom that turns a failing command into a passing one. */
+const SWALLOWED = /\|\|\s*(?:true|:)(?=[\s;)]|$)/m;
 
 function ac61Violations(workflow: Workflow, pkg: PackageScripts): string[] {
   const violations: string[] = [];
@@ -1256,6 +1270,19 @@ function ac61Violations(workflow: Workflow, pkg: PackageScripts): string[] {
   for (const step of lintSteps) {
     if (step.if !== undefined)
       violations.push(`lint: the pnpm lint step has an if: ${step.if}`);
+    if (step.run?.trim() !== LINT_STEP_RUN)
+      violations.push(
+        `lint: the pnpm lint step runs ${JSON.stringify(step.run?.trim())}, not ${JSON.stringify(LINT_STEP_RUN)}`,
+      );
+  }
+  for (const step of lint?.steps ?? []) {
+    const label = step.name ?? step.uses ?? step.id ?? "(unnamed)";
+    if (step["continue-on-error"] !== undefined)
+      violations.push(`lint: step ${label} has continue-on-error`);
+    if (SWALLOWED.test(step.run ?? ""))
+      violations.push(
+        `lint: step ${label} swallows a failure with || true or || :`,
+      );
   }
 
   const unitSteps = (unit?.steps ?? []).flatMap((step) => {
@@ -1297,6 +1324,13 @@ function ac61Violations(workflow: Workflow, pkg: PackageScripts): string[] {
     );
   if (!/(?:^|\s)--max-warnings[= ]0(?:\s|$)/.test(pkg.scripts["lint:js"] ?? ""))
     violations.push("package.json: lint:js does not pass --max-warnings 0");
+  for (const [script, expected] of Object.entries(LINT_SCRIPTS)) {
+    const actual = pkg.scripts[script];
+    if (actual !== expected)
+      violations.push(
+        `package.json: ${script} is ${JSON.stringify(actual)}, not ${JSON.stringify(expected)}`,
+      );
+  }
   return violations;
 }
 
@@ -1359,6 +1393,7 @@ describe("every A20 check runs on every PR (spec 001 AC-61, T-65)", () => {
       ),
     ).toEqual([
       "package.json: lint does not run pnpm check:no-literal-disable",
+      'package.json: lint is "pnpm lint:js && pnpm lint:css", not "pnpm lint:js && pnpm lint:css && pnpm check:no-literal-disable"',
     ]);
   });
 
@@ -1373,12 +1408,77 @@ describe("every A20 check runs on every PR (spec 001 AC-61, T-65)", () => {
     ).toEqual([
       "package.json: lint does not run pnpm check:no-literal-disable",
       "package.json: lint must chain with && only (pnpm lint:js && pnpm lint:css && pnpm check:no-literal-disable || true)",
+      'package.json: lint is "pnpm lint:js && pnpm lint:css && pnpm check:no-literal-disable || true", not "pnpm lint:js && pnpm lint:css && pnpm check:no-literal-disable"',
     ]);
   });
 
   it("goes red when lint:js drops --max-warnings 0", () => {
     expect(ac61Violations(ci, withScripts({ "lint:js": "eslint ." }))).toEqual([
       "package.json: lint:js does not pass --max-warnings 0",
+      'package.json: lint:js is "eslint .", not "eslint . --max-warnings 0"',
+    ]);
+  });
+
+  // /break 113 hole 3: each lint sub-script is pinned exactly, so none can swallow its own exit.
+  it.each([
+    [
+      "check:no-literal-disable",
+      "node scripts/check-no-literal-disable.ts || true",
+    ],
+    ["lint:css", 'stylelint "src/**/*.css" || true'],
+    ["lint:js", "eslint . --max-warnings 0; true"],
+    ["lint:js", "eslint . --max-warnings 0 --rule 'fo/no-float-money: off'"],
+  ] as const)("goes red when %s becomes %s", (script, value) => {
+    expect(ac61Violations(ci, withScripts({ [script]: value }))).toContain(
+      `package.json: ${script} is ${JSON.stringify(value)}, not ${JSON.stringify(LINT_SCRIPTS[script])}`,
+    );
+  });
+
+  // /break 113 hole 4: no step of the lint job may be made non-blocking.
+  const lintJobWith = (edit: (steps: Step[]) => void): Workflow => {
+    const workflow = parse(ciText) as Workflow;
+    const steps = workflow.jobs["lint"]?.steps;
+    expect(steps).toBeDefined();
+    if (steps) edit(steps);
+    return workflow;
+  };
+  const lintStepOf = (steps: Step[]): Step => {
+    const step = steps.find((candidate) => candidate.id === "eslint");
+    expect(step?.run).toBe("pnpm lint 2>&1 | tee lint.log");
+    return step ?? {};
+  };
+
+  it("goes red when the pnpm lint step gets continue-on-error", () => {
+    const workflow = lintJobWith((steps) => {
+      lintStepOf(steps)["continue-on-error"] = true;
+    });
+    expect(ac61Violations(workflow, pkg)).toEqual([
+      "lint: step ESLint, Stylelint and the comment scan (AC-50, AC-51) has continue-on-error",
+    ]);
+  });
+
+  it("goes red when the pnpm lint step swallows its exit with || true", () => {
+    const workflow = lintJobWith((steps) => {
+      lintStepOf(steps).run = "pnpm lint 2>&1 | tee lint.log || true";
+    });
+    expect(ac61Violations(workflow, pkg)).toEqual([
+      'lint: the pnpm lint step runs "pnpm lint 2>&1 | tee lint.log || true", not "pnpm lint 2>&1 | tee lint.log"',
+      "lint: step ESLint, Stylelint and the comment scan (AC-50, AC-51) swallows a failure with || true or || :",
+    ]);
+  });
+
+  it("goes red when any other step of the lint job gets continue-on-error or || :", () => {
+    const workflow = lintJobWith((steps) => {
+      const prettier = steps.find((step) => step.name === "Prettier");
+      expect(prettier).toBeDefined();
+      if (prettier) {
+        prettier["continue-on-error"] = true;
+        prettier.run = `${prettier.run ?? ""} || :`;
+      }
+    });
+    expect(ac61Violations(workflow, pkg)).toEqual([
+      "lint: step Prettier has continue-on-error",
+      "lint: step Prettier swallows a failure with || true or || :",
     ]);
   });
 

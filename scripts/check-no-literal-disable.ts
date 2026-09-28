@@ -96,6 +96,20 @@ function extension(file: string): string {
 }
 
 /**
+ * The rule names of a disable/enable directive, read as ESLint's `parseListConfig` reads them:
+ * split on commas, trim, strip one pair of matching quotes, drop empty names. An empty list is
+ * what ESLint treats as "every rule", so `eslint-disable ,` and `eslint-disable ""` are bare too.
+ */
+function ruleList(value: string): string[] {
+  return value
+    .split(",")
+    .map((name) =>
+      name.trim().replace(/^(?<quote>['"]?)(?<rule>.*)\k<quote>$/su, "$<rule>"),
+    )
+    .filter((name) => name !== "");
+}
+
+/**
  * Classifies one ESLint comment by its value (the text between the delimiters), the way ESLint
  * parses it: split off a ` -- ` justification, trim, and read the label.
  */
@@ -108,9 +122,9 @@ export function classifyEslintComment(
   ).trim();
   const disable = DISABLE_LABEL.exec(directive);
   if (disable !== null) {
-    const rules = directive.slice(disable[1]?.length ?? 0).trim();
-    if (rules === "") return "bare-directive";
-    return FO_RULE.test(rules) ? "fo-rule" : undefined;
+    const rules = ruleList(directive.slice(disable[1]?.length ?? 0));
+    if (rules.length === 0) return "bare-directive";
+    return rules.some((rule) => rule.startsWith("fo/")) ? "fo-rule" : undefined;
   }
   if (CONFIG_LABEL.test(directive)) {
     return FO_RULE.test(directive.slice("eslint".length).trim())

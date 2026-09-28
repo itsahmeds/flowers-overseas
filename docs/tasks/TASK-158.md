@@ -38,7 +38,7 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-- 2026-09-28, to the orchestrator: `README.md` L86 and L102 describe `pnpm lint` as `lint:js` + `lint:css` and the scan as "no file under `src/` disables `fo/no-literal-strings`". Both are stale after this PR, and README is outside the fence. Not blocking. Answer: `open`.
+- 2026-09-28, to the orchestrator: `README.md` L86 and L102 describe `pnpm lint` as `lint:js` + `lint:css` and the scan as "no file under `src/` disables `fo/no-literal-strings`". Both are stale after this PR, and README is outside the fence. Not blocking. Answer (orchestrator, round-1 fixes, 2026-09-28): fence widened to those two rows only. Both are updated in round 1.
 
 ## Progress
 
@@ -48,6 +48,14 @@ here.
 
 - 2026-09-28: measured `eslint .` on bfae5c9 before the flip: 0 warnings, 0 errors (610 files). Tests first (T-54, T-55, T-56, T-65: 50 red), then `noInlineConfig`, `--max-warnings 0`, `ignoreDisables`, the rewritten scan, the ConsentBannerIsland ref fix and the `ci.yml` fold; 181 green in the five touched files. Draft PR 113, commit 9eb32e8.
 - 2026-09-28: broke each lock on purpose and watched its test go red: `noInlineConfig` removed (T-54 and T-56), `--max-warnings 0` removed (T-54 and T-65), each of the scan's four patterns deleted in turn (T-55), `fo/no-raw-color` set to `off` (T-56), the `ci:full` guard put back on `lint` (T-65, T-39), and `ignoreDisables` removed (T-54). Added the `plan/12` §2 "Lint locks" row and regenerated the map. Next: gates:cheap, rebase, ready, `ci:full`.
+- 2026-09-28, round 1 (`/review 113` FAIL and `/break 113` HOLES on 4bf006d): fixes and holes below; each new test was seen red with its fix removed.
+  - Review 1, AC-51 (a): the rule list is now parsed like ESLint's `parseListConfig`, so `eslint-disable ,`, `""`, `''` and `-next-line ,` are bare (four new T-55 forms).
+  - Review 2, AC-52: `basePath` global-ignores objects are counted, and `isPathIgnored` over every tracked lintable file plus one probe per pattern must equal today's six patterns (new T-56 case `{ basePath: "db", ignores: ["**"] }`).
+  - Review 3: README L86 and L102 are updated.
+  - H1: no other ESLint or Stylelint config name anywhere (root or tracked tree), no `eslintConfig` or `stylelint` key in `package.json`, and `new ESLint({ cwd }).findConfigFile()` is `eslint.config.mjs`.
+  - H2: any `processor` outside `PROCESSORS_TODAY` (empty) is red.
+  - H3: `lint`, `lint:js`, `lint:css` and `check:no-literal-disable` are pinned exactly.
+  - H4: no step of the `lint` job may have `continue-on-error` or run `|| true` / `|| :`, and the `pnpm lint` step's run is pinned. The summary step's no-op `|| true` is removed: it runs `set -uo pipefail` without `-e`.
 
 ## Result
 
@@ -83,3 +91,8 @@ PR [#113](https://github.com/itsahmeds/flowers-overseas/pull/113). **Warnings be
 **Handed on:**
 - `README.md` rows for `pnpm lint` and `pnpm check:no-literal-disable` (L86, L102) still describe the old scripts. README is outside this fence.
 - TASK-160, 162 and 163 add their rows to `TABLE` in `lint-coverage.test.ts`.
+
+**Suggestions left open by round 1 (not required):**
+- An unnamed block such as `{ files: ["src/**"], rules: { "react-hooks/exhaustive-deps": "off" } }` still passes. The `fo/exception/<path>` shape is enforced only on objects that carry that name, and a rule that is not in the lock table may be turned off by any block.
+- `consent-islands.test.tsx` does not cover the `ConsentBannerIsland` mount-only effect. Inverting `initial !== null` stays green there, and the e2e `consent-banner.spec.ts` is its only cover.
+- `lint-coverage`'s static `globalIgnores` union includes `eslint-config-next`'s own ignore objects, so dropping `.next/**`, `out/**`, `build/**` or `next-env.d.ts` from ours goes unseen. That is harmless, because ESLint still ignores them (review nit).
