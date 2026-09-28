@@ -134,6 +134,7 @@ One dated bullet per `/review`, newest last.
   a committed brief's H2 set equals `BRIEF_HEADINGS`, in that order — closes it.
   (d) *One-line correction.* The `TASKS.md` row 155 notes cell still reads "`preview` 81 s"; the
   `## Result` was corrected to 69 s but the row was not.
+  *Status as of 2026-09-28 (checked against `main` by `/break 105`):* (a) still true, and now carried into `docs/tasks/TASK-099.md` (the task owning spec 040 AC-26); (b) still true, but no open task owns it yet, so it is listed in `docs/framework/gaps.md`; (c) still true, and TASK-141 owns it; (d) **already fixed on `main`**: the `TASKS.md` notes cell no longer says "81 s".
 
 ## Escalations
 

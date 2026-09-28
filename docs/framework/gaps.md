@@ -43,6 +43,9 @@ gap closes, mark it ✅ with the PR, and don't delete the row.
 - `work-order.md` Role: launch still says "May … promote to the target"; for production the promotion is the orchestrator's act.
 - A production `HALTED` has no step that commits the release note.
 
+**Orphan carry-forwards (no open task owns them yet):**
+- From `/review 90` round 2, rescued in PR 105: the commitlint resolver has five test cases (`tests/unit/ci-workflow.test.ts` L730–800) and the review asked for a sixth. See `docs/tasks/TASK-137.md`.
+
 **Found by `/break 104`:**
 - `tasks:check` and `specs:index --check` don't validate a task row's AC/T ids against its spec: a row changed to `AC-99, T-99` stays green. The orchestrator guessed spec 040's T-ids, and only the reviewer caught it. Candidate for step E tooling.
 
