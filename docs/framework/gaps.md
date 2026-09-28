@@ -10,7 +10,7 @@ gap closes, mark it ✅ with the PR, and don't delete the row.
 | 2 | Rulebook contradicts itself | Job descriptions said the opposite of `CLAUDE.md` in places | A | ✅ PR 102 |
 | 3 | No standard work order | Every dispatch was written from scratch | B | ✅ PR 103 |
 | 4 | Safety rules only on paper | Stop your processes, push early, one build at a time: nothing enforces them; anyone can release another agent's build lock | C | ✅ PR 107 (the shell guard refuses `pkill`, `killall`, `git stash`, wait loops and a `ci.yml` dispatch; the build slot is released only with its owner's token); push early (W-8) and the agent cap (W-11) stay unenforced, step G |
-| 5 | Edit guard has a back door | It watches the Edit/Write tools only; a shell command can write into `src/`; the Stop hook forgets `db/` | C | open |
+| 5 | Edit guard has a back door | It watches the Edit/Write tools only; a shell command can write into `src/`; the Stop hook forgets `db/` | C | ✅ PR 107 (the shell guard denies shell writes into application code with no task, in every branch worktree; the Stop hook reads `db/` from the shared `guarded_paths.py`); `python -c`, `node -e`, `git apply` and run-time command strings stay open, as the hook's header says |
 | 6 | The CI label dance | Browser jobs run only with `ci:full`; a later push fires nothing; re-running means toggling the label | E | open |
 | 7 | No breaker | "Break it on purpose" was one buried sentence | D | ✅ PR 103 (breaker on every PR) |
 | 8 | No advisors | Nobody gave the founder a second opinion on specs and decisions | D | ✅ PR 103 (one advisor, four angles) |
