@@ -16,7 +16,7 @@
 
 **Acceptance criteria** — `AC-1` §9 L173 · `AC-2` §9 L174 · `AC-3` §9 L175 · `AC-4` §9 L176 · `AC-5` §9 L177 · `AC-6` §9 L178 · `AC-7` §9 L179 · `AC-8` §9 L180 · `AC-9` §9 L181 · `AC-10` §9 L184 · `AC-11` §9 L185 · `AC-12` §9 L186 · `AC-13` §9 L187 · `AC-14` §9 L188 · `AC-15` §9 L189 · `AC-16` §9 L192 · `AC-17` §9 L193 · `AC-18` §9 L194 · `AC-19` §9 L197 · `AC-20` §9 L198 · `AC-21` §9 L199 · `AC-22` §9 L200 · `AC-23` §9 L201 · `AC-24` §9 L202 · `AC-25` §9 L203 · `AC-26` §9 L204 · `AC-27` §9 L205 · `AC-28` §9 L206 · `AC-29` §9 L209 · `AC-30` §9 L210 · `AC-31` §9 L211 · `AC-32` §9 L212 · `AC-33` §14 L516 · `AC-34` §14 L517 · `AC-35` §14 L518 · `AC-36` §14 L519 · `AC-37` §14 L653 · `AC-38` §14 L673 · `AC-39` §14 L690 · `AC-40` §14 L705 · `AC-41` §14 L708 · `AC-42` §14 L718 · `AC-43` §14 L765 · `AC-44` §14 L796 · `AC-45` §14 L821 · `AC-46` §14 L834 · `AC-47` §14 L858 · `AC-48` §14 L873 · `AC-49` §14 L879
 
-**Test cases** — `T-01` §10 L218 · `T-02` §10 L219 · `T-03` §10 L220 · `T-04` §10 L221 · `T-05` §10 L222 · `T-06` §10 L223 · `T-07` §10 L224 · `T-08` §10 L225 · `T-09` §10 L226 · `T-10` §10 L227 · `T-11` §10 L228 · `T-12` §10 L229 · `T-13` §10 L230 · `T-14` §10 L231 · `T-15` §10 L232 · `T-16` §10 L233 · `T-17` §10 L234 · `T-18` §10 L235 · `T-19` §10 L236 · `T-20` §10 L237 · `T-21` §10 L238 · `T-22` §10 L239 · `T-23` §10 L240 · `T-24` §10 L241 · `T-25` §10 L242 · `T-26` §10 L243 · `T-27` §10 L244 · `T-28` §10 L245 · `T-29` §10 L246 · `T-30` §10 L247 · `T-31` §10 L248 · `T-32` §10 L249 · `T-33` §10 L250 · `T-34` §14 L520 · `T-35` §14 L520 · `T-36` §14 L520 · `T-37` §14 L520 · `T-38` §14 L891 · `T-39` §14 L892 · `T-40` §14 L893 · `T-41` §14 L894 · `T-42` §14 L895 · `T-43` §14 L896 · `T-44` §14 L897 · `T-45` §14 L898 · `T-46` §14 L899 · `T-47` §14 L900 · `T-48` §14 L901 · `T-49` §14 L902 · `T-50` §14 L903 · `T-51` §14 L904 · `T-52` §14 L905 · `T-53` §14 L906
+**Test cases** — `T-01` §10 L218 · `T-02` §10 L219 · `T-03` §10 L220 · `T-04` §10 L221 · `T-05` §10 L222 · `T-06` §10 L223 · `T-07` §10 L224 · `T-08` §10 L225 · `T-09` §10 L226 · `T-10` §10 L227 · `T-11` §10 L228 · `T-12` §10 L229 · `T-13` §10 L230 · `T-14` §10 L231 · `T-15` §10 L232 · `T-16` §10 L233 · `T-17` §10 L234 · `T-18` §10 L235 · `T-19` §10 L236 · `T-20` §10 L237 · `T-21` §10 L238 · `T-22` §10 L239 · `T-23` §10 L240 · `T-24` §10 L241 · `T-25` §10 L242 · `T-26` §10 L243 · `T-27` §10 L244 · `T-28` §10 L245 · `T-29` §10 L246 · `T-30` §10 L247 · `T-31` §10 L248 · `T-32` §10 L249 · `T-33` §10 L250 · `T-34` §14 L520 · `T-35` §14 L520 · `T-36` §14 L520 · `T-37` §14 L520 · `T-38` §14 L892 · `T-39` §14 L893 · `T-40` §14 L894 · `T-41` §14 L895 · `T-42` §14 L896 · `T-43` §14 L897 · `T-44` §14 L898 · `T-45` §14 L899 · `T-46` §14 L900 · `T-47` §14 L901 · `T-48` §14 L902 · `T-49` §14 L903 · `T-50` §14 L904 · `T-51` §14 L905 · `T-52` §14 L906 · `T-53` §14 L907
 
 <!-- /index -->
 
@@ -883,8 +883,9 @@ at worktrees outside the main checkout. Its answer (yes) closes it in AC-38 and 
   pull request", which W-4 forbids; it describes the dispatch as an event the job survives.
   `tests/unit/ci-workflow.test.ts` asserts the file contains neither `2,000 minutes` nor
   `how CI is re-fired`. `docs/framework/why.md` W-18 stops claiming a `TASKS.md` line for all eleven
-  fields: it says lines are cited where the Log has one. `docs/framework/gaps.md` marks rows 4 and 5
-  ✅ with the PR, and clears the step C nits it closes.
+  fields: it says lines are cited where the Log has one. `docs/framework/gaps.md` marks row 5 ✅
+  with the PR, and clears the step C nits it closes. Row 4 is not this AC's: the build-slot token
+  of AC-41 closes it, and the PR that implements AC-41 marks it.
 
 | ID | Layer | Given / When / Then | Covers AC |
 |---|---|---|---|
