@@ -31,7 +31,11 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- **2026-09-28, to the orchestrator:** AC-45 also says "`.claude/agents/orchestrator.md` gains a
+  procedure for a partial result: resume the agent with 'save, clean up and report partial'; if
+  that fails, send a finisher and force the dead owner's slot (AC-41)". The work order's fence
+  allows only the `maxTurns` frontmatter line in agent files, so PR 112 does not add it. Who writes
+  that paragraph (this PR with a widened fence, or a follow-up)? `open`.
 
 ## Progress
 
@@ -39,11 +43,20 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-09-28: clock hook (`agent-clock.sh` → `agent_clock.py`) and `tests/dev-os/agent-clock.test.sh` (T-48, 237 assertions) green; draft PR 112 opened.
+- 2026-09-28: `maxTurns` in nine agent files, the three `.claude/settings.json` entries, T-47 and T-52's count in `tests/unit/dev-os.test.ts`; `PATH_TESTS` entry; runbook and README. Rebased on `origin/main` `bfae5c9` (TASKS.md row conflict only). Mutations shown red; `gates:cheap` PASS. Next: ready + `ci:full`, founder's yes on the settings entries.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 112. `maxTurns` per §13 Q11 in every agent file except `orchestrator.md`; the agent clock
+(`.claude/hooks/agent-clock.sh` → `agent_clock.py`, which reuses `bash_guard.py`'s parser and
+`guarded_paths.py`'s worktree tops) on `SubagentStart`, `SubagentStop` and every `PreToolUse`;
+ceilings 180 min (implementers, designer, spec writer, launch, SEO auditor) and 30 (reviewer,
+breaker, advisor). Tests: integration (shell) `tests/dev-os/agent-clock.test.sh`, 237 assertions
+(every T-48 row plus each role's ceiling, symlink and `..` escapes, fail-open); unit
+`tests/unit/dev-os.test.ts` +15 cases (T-47: 9 roles, orchestrator absent, the file set, the
+`PATH_TESTS` mapping; T-52 now six checks; the settings registration). No build slot taken.
+Handed on: the orchestrator's partial-result paragraph (Escalations).
