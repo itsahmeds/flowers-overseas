@@ -134,9 +134,16 @@ export function loadDeclaredTriggers(repoRoot: string): DeployTriggers {
   return deployTriggersSchema.parse(JSON.parse(readFileSync(path, "utf8")));
 }
 
-/** The stderr verdict of a red run: the expected red of AC-42 is labelled, nothing else is. */
-export function failureVerdict(triggers: TriggerReport | undefined): string {
-  if (triggers?.onlyAbsentProductionServices === true) {
+/**
+ * The stderr verdict of a red run. Only the expected red of AC-42 is labelled, and only when the
+ * trigger check is its sole failure: a service drift or key-set failure on the same run is a real
+ * failure, and the label would hide it.
+ */
+export function failureVerdict(
+  triggers: TriggerReport | undefined,
+  otherChecksOk: boolean,
+): string {
+  if (otherChecksOk && triggers?.onlyAbsentProductionServices === true) {
     return (
       "railway:check: EXPECTED RED until TASK-104 creates production `web` on `release` " +
       "(spec 040 AC-42, T-44): every failure above is a declared production service that does " +
@@ -320,6 +327,7 @@ async function main(argv: readonly string[]): Promise<number> {
 
   const lines: string[] = [];
   let ok = true;
+  let otherChecksOk = true;
 
   const triggerReport =
     payloads.triggers === undefined
@@ -349,12 +357,13 @@ async function main(argv: readonly string[]): Promise<number> {
       variables,
     });
     ok &&= report.ok;
+    otherChecksOk &&= report.ok;
     lines.push(...report.lines);
   }
 
   process.stdout.write(lines.length === 0 ? "" : `${lines.join("\n")}\n`);
   if (ok) return 0;
-  process.stderr.write(failureVerdict(triggerReport));
+  process.stderr.write(failureVerdict(triggerReport, otherChecksOk));
   return 1;
 }
 

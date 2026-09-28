@@ -310,6 +310,13 @@ export type DeployTriggers = z.infer<typeof deployTriggersSchema>;
 export const DECLARED_ENVIRONMENTS = ["production", "staging"] as const;
 
 /**
+ * The branch **every** staging trigger must follow, declared service or not (AC-34: "staging's
+ * triggers on anything but `main`"). A staging `cron` or a trigger with no service on `release`
+ * would ship an ungated commit to the release candidate, so it fails like `web` would.
+ */
+export const STAGING_BRANCH = "main";
+
+/**
  * The trigger query's payload: every environment of the project, with its service instances (to
  * name a trigger's service, and to tell an absent service from one with no trigger) and its
  * deployment triggers. Field names and nullability are the live schema's (introspected
@@ -387,9 +394,12 @@ export interface TriggerReport {
    */
   readonly lines: readonly string[];
   /**
-   * True when the check failed and every failure is a declared production service that does not
-   * exist: the expected red of spec 040 AC-42 until TASK-104 creates production `web` on
-   * `release`. A service that exists with no trigger, or a wrong branch, is never this.
+   * True only for the expected red of spec 040 AC-42, until TASK-104 creates production `web` on
+   * `release`. All of these must hold: the check failed, the production environment is in the
+   * response, its `web` row is absent, and every failure is a declared production service that
+   * does not exist and has no live trigger. A service that exists with no trigger, a wrong branch,
+   * or any staging failure is never this. The CLI also withholds the label when another check
+   * failed (`failureVerdict`).
    */
   readonly onlyAbsentProductionServices: boolean;
 }
@@ -456,10 +466,12 @@ export function compareDeployTriggers(
       const hasRepository =
         typeof instance?.source?.repo === "string" &&
         instance.source.repo !== "";
+      // Exact: one trigger, on the declared branch. A live trigger is judged before absence, so a
+      // service Railway still deploys from `main` is a wrong branch even if no instance is listed.
       let status: TriggerRow["status"];
       if (branches.length === 1 && branches[0] === want) status = "match";
-      else if (instance === undefined) status = "absent";
       else if (branches.length > 0) status = "wrong-branch";
+      else if (instance === undefined) status = "absent";
       else if (!hasRepository && SOURCE_OPTIONAL_SERVICES.includes(service))
         status = "not-checked";
       else status = "no-trigger";
@@ -471,6 +483,22 @@ export function compareDeployTriggers(
         status,
       });
     }
+  }
+
+  // Staging's triggers beyond the declared services: every one must follow `main`.
+  const declaredServices: readonly string[] = DEPLOY_SERVICES;
+  for (const [service, branches] of [
+    ...(live.get("staging") ?? new Map<string, string[]>()),
+  ].sort(([a], [b]) => a.localeCompare(b))) {
+    if (declaredServices.includes(service)) continue;
+    if (branches.every((branch) => branch === STAGING_BRANCH)) continue;
+    rows.push({
+      environment: "staging",
+      service,
+      live: [...branches].sort(),
+      declared: STAGING_BRANCH,
+      status: "wrong-branch",
+    });
   }
 
   const declaredNames: readonly string[] = DECLARED_ENVIRONMENTS;
@@ -502,6 +530,13 @@ export function compareDeployTriggers(
     lines: (ok ? rows : failing).map(formatTriggerRow),
     onlyAbsentProductionServices:
       !ok &&
+      environments.some((env) => env.name === "production") &&
+      rows.some(
+        (row) =>
+          row.environment === "production" &&
+          row.service === WEB_SERVICE_NAME &&
+          row.status === "absent",
+      ) &&
       failing.every(
         (row) => row.environment === "production" && row.status === "absent",
       ),

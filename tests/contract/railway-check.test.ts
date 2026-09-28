@@ -12,8 +12,15 @@
  * check "stdout contains no sentinel" is mechanical rather than a judgement.
  */
 import { spawnSync } from "node:child_process";
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
@@ -409,6 +416,92 @@ describe("the trigger-branch check (AC-34, T-34)", () => {
   });
 });
 
+describe("the trigger-branch check, round 2 (AC-34, T-34; /break 110, /review 110)", () => {
+  it("fails a service with two triggers, even when one is the declared branch", () => {
+    const report = checkTriggers("triggers-production-web-two-branches.json");
+    expect(report.ok).toBe(false);
+    expect(report.lines).toEqual([
+      "production · web · triggers on main, release, declared release",
+    ]);
+  });
+
+  it("fails a missing staging service and does not call it the expected red", () => {
+    const report = checkTriggers("triggers-staging-no-worker.json");
+    expect(report.ok).toBe(false);
+    expect(report.lines).toEqual([
+      "staging · worker · triggers on none, declared main",
+    ]);
+    expect(report.onlyAbsentProductionServices).toBe(false);
+  });
+
+  it("fails a `worker` that has a repository but no trigger", () => {
+    const report = checkTriggers("triggers-production-worker-no-trigger.json");
+    expect(report.ok).toBe(false);
+    expect(report.lines).toEqual([
+      "production · worker · triggers on none, declared release",
+    ]);
+    expect(report.onlyAbsentProductionServices).toBe(false);
+  });
+
+  it("fails a `web` with no source and no trigger: only `worker` is exempt", () => {
+    const report = checkTriggers("triggers-production-web-no-source.json");
+    expect(report.ok).toBe(false);
+    expect(report.lines).toEqual([
+      "production · web · triggers on none, declared release",
+    ]);
+    expect(report.onlyAbsentProductionServices).toBe(false);
+  });
+
+  it("fails an undeclared staging service on `release`", () => {
+    const report = checkTriggers("triggers-staging-cron-on-release.json");
+    expect(report.ok).toBe(false);
+    expect(report.lines).toEqual([
+      "staging · cron · triggers on release, declared main",
+    ]);
+  });
+
+  it("fails a staging trigger with no service on `release`", () => {
+    const report = checkTriggers(
+      "triggers-staging-null-service-on-release.json",
+    );
+    expect(report.ok).toBe(false);
+    expect(report.lines).toEqual([
+      "staging · (no service) · triggers on release, declared main",
+    ]);
+  });
+
+  it("judges a live trigger before absence: `web` still on `main` is a wrong branch, not the expected red", () => {
+    const report = checkTriggers(
+      "triggers-production-no-instance-web-on-main.json",
+    );
+    expect(report.ok).toBe(false);
+    expect(report.lines).toEqual([
+      "production · web · triggers on main, declared release",
+      "production · worker · triggers on none, declared release",
+    ]);
+    expect(report.onlyAbsentProductionServices).toBe(false);
+  });
+
+  it("does not call a missing production `worker` alone the expected red: the label needs `web` absent", () => {
+    const report = checkTriggers("triggers-production-no-worker.json");
+    expect(report.ok).toBe(false);
+    expect(report.lines).toEqual([
+      "production · worker · triggers on none, declared release",
+    ]);
+    expect(report.onlyAbsentProductionServices).toBe(false);
+  });
+
+  it("does not call a response with no production environment the expected red", () => {
+    const report = checkTriggers("triggers-no-production-environment.json");
+    expect(report.ok).toBe(false);
+    expect(report.lines).toEqual([
+      "production · web · triggers on none, declared release",
+      "production · worker · triggers on none, declared release",
+    ]);
+    expect(report.onlyAbsentProductionServices).toBe(false);
+  });
+});
+
 describe("`railway:check` on the command line (AC-34, AC-42)", () => {
   const cli = (...args: string[]) =>
     spawnSync(process.execPath, ["scripts/railway-check.ts", ...args], {
@@ -447,6 +540,53 @@ describe("`railway:check` on the command line (AC-34, AC-42)", () => {
       "production · web · triggers on main, declared release\n",
     );
     expect(run.stderr).not.toContain("EXPECTED RED");
+  });
+
+  it("withholds the expected-red label when another check failed on the same run", () => {
+    const run = cli(
+      ...triggersFixture("triggers-production-empty.json"),
+      "--fixture-environment",
+      "tests/fixtures/railway/environment-drifted.json",
+    );
+    expect(run.status).toBe(1);
+    expect(run.stdout).toContain(
+      "production · web · triggers on none, declared release",
+    );
+    expect(run.stdout).toContain("numReplicas is 2");
+    expect(run.stderr).not.toContain("EXPECTED RED");
+  });
+
+  it("refuses a config/deploy-triggers.json the zod schema rejects, before reading any trigger", () => {
+    const root = mkdtempSync(join(tmpdir(), "deploy-triggers-"));
+    try {
+      mkdirSync(join(root, "config"));
+      writeFileSync(
+        join(root, "config/deploy-triggers.json"),
+        JSON.stringify({
+          production: { web: "develop", worker: "release" },
+          staging: { web: "main", worker: "main" },
+        }),
+      );
+      const run = spawnSync(
+        process.execPath,
+        [
+          resolve(repoRoot, "scripts/railway-check.ts"),
+          "--fixture-triggers",
+          resolve(repoRoot, "tests/fixtures/railway/triggers-as-declared.json"),
+        ],
+        {
+          cwd: root,
+          encoding: "utf8",
+          env: { PATH: process.env["PATH"] ?? "", NODE_ENV: "test" },
+        },
+      );
+      expect(run.status).toBe(1);
+      expect(run.stdout).toBe("");
+      expect(run.stderr).toContain("ZodError");
+      expect(run.stderr).toContain('"web"');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
   });
 
   it("exits 2 naming what is missing when it has neither credentials nor a fixture", () => {
