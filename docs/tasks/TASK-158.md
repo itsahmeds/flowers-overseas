@@ -38,7 +38,7 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-09-28, to the orchestrator: `README.md` L86 and L102 describe `pnpm lint` as `lint:js` + `lint:css` and the scan as "no file under `src/` disables `fo/no-literal-strings`". Both are stale after this PR, and README is outside the fence. Not blocking. Answer: `open`.
 
 ## Progress
 
@@ -54,4 +54,32 @@ here.
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR [#113](https://github.com/itsahmeds/flowers-overseas/pull/113). **Warnings before the flip:** `eslint .` on bfae5c9 gave 0 warnings and 0 errors over 610 files, so `--max-warnings 0` needed no fixes. What changed:
+- `eslint.config.mjs` gains `fo/no-inline-config`, one object with no `files` key, setting `noInlineConfig: true` (AC-50).
+- `pnpm lint:js` is `eslint . --max-warnings 0`, and `pnpm lint` also runs `check:no-literal-disable`.
+- `stylelint.config.mjs` sets `ignoreDisables: true` (§13 Q18).
+- The scan is rewritten (AC-51). It reads comments through TypeScript's parse tree, so JSX text and strings never count. It uses ESLint's directive grammar and covers 612 files. It adds `types/`, which the spec's root list leaves out but ESLint lints.
+- The one disable, `ConsentBannerIsland.tsx` L170, is gone. The mount-only effect now reads its mount-time values from a ref and `secure()` moved to module scope, so behaviour is unchanged and no `fo/exception` block was needed.
+- `ci.yml` folds the separate scan step into `pnpm lint`.
+
+**Tests (unit):**
+- T-54: 7 cases in `lint-fixtures.test.ts`, with the new fixture `tests/fixtures/lint/bare-disable.ts`.
+- T-55: 31 cases in `no-literal-disable.test.ts`. One checks the scan's file list against ESLint's own `isPathIgnored` over `git ls-files`.
+- T-56: 11 cases in the new `lint-coverage.test.ts`. It runs every tracked file in each table root, plus `noInlineConfig` for every file ESLint lints. Scratch configs go under `node_modules/.cache/` and are removed in `afterAll`.
+- T-65: 7 cases in `ci-workflow.test.ts`, plus one T-51 stale-comment phrase.
+
+**Mutations, each seen red:**
+- `noInlineConfig` removed: T-54 and T-56.
+- `--max-warnings 0` removed: T-54 and T-65.
+- Each of the scan's four patterns deleted: T-55.
+- `fo/no-raw-color` set to `off`: T-56.
+- The `ci:full` guard put back on `lint`: T-65.
+- `ignoreDisables` removed: T-54.
+
+`plan/12` §2 gains a "Lint locks" row, because AC-62 names no row for this task. No expensive gate was run locally.
+
+`gates:cheap` on 972f666 (clean tree): typecheck, lint, format:check, i18n:check, check:no-db and codebase:map --check all exit 0. Tests exit 0: 204 files, 5270 passed, 5 skipped. RESULT: PASS. A first run went red on `dev-os.test.ts` "leaves no temp project behind". Those were `fo-dev-os.*` folders from another worktree's run in the shared tmpdir, and the file is green alone.
+
+**Handed on:**
+- `README.md` rows for `pnpm lint` and `pnpm check:no-literal-disable` (L86, L102) still describe the old scripts. README is outside this fence.
+- TASK-160, 162 and 163 add their rows to `TABLE` in `lint-coverage.test.ts`.
