@@ -98,13 +98,14 @@ describe("CLAUDE.md (AC-36)", () => {
 });
 
 describe("the templates the convention rests on", () => {
-  it("the brief template carries the five fixed headings", () => {
+  it("the brief template carries the six fixed headings", () => {
     const template = read(`${BRIEF_DIR}/_template.md`);
     for (const heading of [
       "## Binding",
       "## Read",
       "## Carry-forwards",
       "## Escalations",
+      "## Progress",
       "## Result",
     ]) {
       expect(template, heading).toContain(heading);

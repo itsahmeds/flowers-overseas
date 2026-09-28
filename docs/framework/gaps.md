@@ -62,7 +62,8 @@ gap closes, mark it ✅ with the PR, and don't delete the row.
 - `tasks:check` and `specs:index --check` don't validate a task row's AC/T ids against its spec: a row changed to `AC-99, T-99` stays green. The orchestrator guessed spec 040's T-ids, and only the reviewer caught it. Candidate for step E tooling.
 
 **Nits from the PR 103 rounds, still open:**
-- W-18 says every field has a `TASKS.md` line but cites lines for only some of the eleven.
+- W-18 says every field has a `TASKS.md` line but cites lines for only some of the eleven. ✅ PR 106
+  (W-18 now says a line is cited where the Log has one).
 
 **Nits from the PR 102 review, still open:**
 - The `ci.yml` comments at L72–77 and L901 describe the old minutes budget. ✅ PR 106

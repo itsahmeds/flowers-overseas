@@ -87,6 +87,7 @@ Every script in `package.json`, once.
 | `pnpm lint:js` | ESLint, including the custom `fo/*` rules in `eslint/fo/` |
 | `pnpm lint:css` | Stylelint on `src/**/*.css` (the CSS half of the logical-properties ban) |
 | `pnpm lint:fixtures` | runs both over `tests/fixtures/lint/`, which violates the rules on purpose: **exit 1 with a list of files and rules is the pass condition** |
+| `pnpm gates:cheap` | every cheap gate of `CLAUDE.md` DoD §2 (`typecheck`, `lint`, `format:check`, `i18n:check`, `check:no-db`, `codebase:map --check`) one after another, then the unit/contract tests related to the diff against `--base <ref>` (default `origin/main`): those `vitest --changed` finds plus those `PATH_TESTS` maps from text-only paths. Reads every exit code and ends with one block to paste into a report, including what `format:check` covers (spec 001 AC-43) |
 | `pnpm typecheck` | `tsc --noEmit` on the app (strict, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`) |
 | `pnpm typecheck:fixtures` | the same over `tests/fixtures/ts/`, which must fail to typecheck |
 | `pnpm format` | Prettier, write |

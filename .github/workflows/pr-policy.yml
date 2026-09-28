@@ -1,7 +1,9 @@
 # PR policy (spec 001 §2 "CI", AC-19 / T-20, TASK-002).
 # Title must end in `(TASK-NNN)`, head branch must be `task/TASK-NNN-<slug>`.
-# Exempt: dependency-bot authors; `no-task` label by the repo owner when no guarded path
-# (src/ tests/ supabase/ seed/ emails/) changes (§13 Q5). Rules live in scripts/pr-policy.ts.
+# Exempt: dependency-bot authors; `no-task` label by the repo owner when every changed path is on
+# the `NO_TASK_ALLOWED` allow-list (§13 Q5, Q12; spec 001 AC-47). The file listing emits each
+# renamed file's `previous_filename` as well as its `filename`, so a rename out of a guarded path
+# is judged by both names. Rules live in scripts/pr-policy.ts.
 name: pr-policy
 
 on:
@@ -35,7 +37,7 @@ jobs:
           {
             echo 'files<<EOF'
             gh api "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" \
-              --paginate --jq '.[].filename'
+              --paginate --jq '.[] | .filename, (.previous_filename // empty)'
             echo 'EOF'
           } >> "$GITHUB_OUTPUT"
 
