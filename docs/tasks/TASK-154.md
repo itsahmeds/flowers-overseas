@@ -20,7 +20,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 - **From `/break 104` round 2 (2026-09-28):** you depend on TASK-152 too. Add T-47's test to `scripts/gates-cheap.ts`'s `PATH_TESTS` map (T-50's belongs to TASK-153, the PR that adds it), which TASK-152 creates.
 
-- **From `/break 104` and `/review 104` (2026-09-28):** the clock's save set must also allow writing a `--body-file`: `Write` or `cat >` to `$TMPDIR` and the session scratchpad. Add a T-48 row where `Write $TMPDIR/v.md` is allowed past the ceiling — spec text follows in A19. Extend T-52's count.
+- **From `/break 104` and `/review 104` (2026-09-28):** the clock's save set must also allow writing a `--body-file`: `Write` or `cat >` to `$TMPDIR` and the session scratchpad. Add a T-48 row where `Write $TMPDIR/v.md` is allowed past the ceiling (landed in A19 via PR 104). Extend T-52's count.
 
 One dated bullet per `/review`, newest last.
 
