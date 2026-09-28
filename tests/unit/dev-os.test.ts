@@ -590,19 +590,36 @@ describe("agent turn caps (T-47, AC-45)", () => {
    * A whole-number value becomes a number; anything else stays a string, so `maxTurns: "300"`
    * or `maxTurns: 300x` does not pass as 300.
    */
-  function frontmatter(name: string): Record<string, string | number> {
-    const text = readFileSync(join(agentsDir, name), "utf8");
+  function parseFrontmatter(
+    text: string,
+    name: string,
+  ): Record<string, string | number> {
     const match = /^---\n([\s\S]*?)\n---\n/.exec(text);
     if (!match?.[1]) throw new Error(`${name} has no frontmatter`);
     const fields: Record<string, string | number> = {};
     for (const line of match[1].split("\n")) {
       const field = /^([A-Za-z][\w-]*):\s*(.*)$/.exec(line);
       if (!field?.[1]) continue;
+      // Strict YAML rejects a repeated key, so Claude Code might drop the cap: never last-wins.
+      if (Object.hasOwn(fields, field[1]))
+        throw new Error(`${name} repeats the key ${field[1]}`);
       const value = (field[2] ?? "").trim();
       fields[field[1]] = /^\d+$/.test(value) ? Number(value) : value;
     }
     return fields;
   }
+
+  function frontmatter(name: string): Record<string, string | number> {
+    return parseFrontmatter(readFileSync(join(agentsDir, name), "utf8"), name);
+  }
+
+  it("a repeated frontmatter key fails instead of taking the last value", () => {
+    const text =
+      "---\nname: reviewer\nmaxTurns: 5\nmaxTurns: 120\n---\n\n# Reviewer\n";
+    expect(() => parseFrontmatter(text, "reviewer.md")).toThrow(
+      "reviewer.md repeats the key maxTurns",
+    );
+  });
 
   it("covers every agent file: the Q11 roles and the orchestrator, nothing else", () => {
     expect(agentFiles).toEqual(
@@ -625,6 +642,19 @@ describe("agent turn caps (T-47, AC-45)", () => {
     expect(mappedTests([".claude/agents/reviewer.md"])).toContain(
       "tests/unit/dev-os.test.ts",
     );
+  });
+
+  // AC-45: the orchestrator's procedure for an agent stopped at its cap (the /review 112 ask).
+  it("orchestrator.md says how to handle a partial result", () => {
+    const text = readFileSync(join(agentsDir, "orchestrator.md"), "utf8");
+    const line = text
+      .split("\n")
+      .find((l) => l.startsWith("- **A partial result**"));
+    expect(line).toBeDefined();
+    expect(line).toContain('with "save, clean up and report partial"');
+    expect(line).toContain("send a finisher");
+    expect(line).toContain(".claude/bin/build-slot.sh release --force");
+    expect(line).toContain("(AC-41)");
   });
 
   it("orchestrator.md declares no maxTurns", () => {
