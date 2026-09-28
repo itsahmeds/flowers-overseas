@@ -20,6 +20,7 @@ credentials are needed only once you run migrations, the seed or the storage sea
 | git | any current | — |
 | `gh` | any current | `brew install gh`, then `gh auth login` — needed for PRs and `pnpm branch-protection` |
 | `python3` | 3.9+ | preinstalled on macOS; the PreToolUse guard parses its payload with it |
+| Claude Code | v2.1.246 or later | `claude update` — older versions stop an agent at its `maxTurns` without marking its output *partial* (spec 001 §14 A19 AC-45) |
 | gitleaks | 8.x (optional locally) | `brew install gitleaks` — without it `pnpm test` skips 5 secret-scanning tests |
 
 ```bash
@@ -152,6 +153,18 @@ with no active task is **denied** by `.claude/hooks/task-guard.sh` with a reason
 the PR is open. `pnpm dev-os:check` never touches this repository's real
 `.claude/state/active-task`.
 
+Every agent file except `orchestrator.md` declares a `maxTurns` turn cap (spec 001 §13 Q11). There
+is no minutes field, so a clock is built from hooks: `.claude/hooks/agent-clock.sh` runs on
+`SubagentStart` (writes `.claude/state/agent-clock/<agent_id>`), `SubagentStop` (removes it) and
+every `PreToolUse`. Once a subagent passes its role's ceiling (180 min for the implementers,
+designer, spec writer, launch and SEO auditor; 30 for the reviewer, breaker and advisor), every
+tool call outside the save set is denied with `time limit for <role> (<n> min) reached: save,
+clean up and report partial`. The save set still commits and pushes (`git -C <dir>`, not `cd`),
+posts a verdict (`gh pr comment`, `gh pr review`, `gh pr edit --body-file`), opens a draft PR,
+releases the build slot, writes a body file with `Write` or `cat >` into `$TMPDIR` or the session
+scratchpad, and writes `docs/tasks/` and `docs/advice/`. It fails open on any error. Kill switch:
+remove its three entries from `.claude/settings.json`.
+
 ## 6. Common failures
 
 | Symptom | Cause | Fix |
@@ -162,6 +175,7 @@ the PR is open. `pnpm dev-os:check` never touches this repository's real
 | Build fails with `invalid environment variables` and a key name | `.env.local` missing or missing that key | `cp .env.example .env.local`. The error prints the **variable name only, never a value** — by design (AC-10) |
 | `pnpm test` reports `5 skipped` | gitleaks is not installed | expected locally; `brew install gitleaks` to run them, and the `audit` CI job always does |
 | Claude Code refuses to edit a file under `src/` | the PreToolUse guard, no active task | `.claude/bin/task.sh set TASK-NNN` (§5) |
+| A subagent's tool call is denied with `time limit for <role> (<n> min) reached` | the agent clock (§5): the role's ceiling has passed | expected: the agent saves, cleans up and reports partial; the orchestrator resumes it or sends a finisher |
 | `pnpm lighthouse` fails with `NO_FCP` | `/` paints nothing yet | expected until spec 004; the CI job is informational (`continue-on-error: true`, spec 001 §13 Q4) |
 | `pnpm lint:fixtures` "fails" | it is supposed to | `tests/fixtures/lint/` violates the custom rules on purpose; exit 1 with a list of files is the pass condition |
 | Playwright: `browserType.launch: Executable doesn't exist` | browsers not downloaded | `pnpm exec playwright install chromium` |

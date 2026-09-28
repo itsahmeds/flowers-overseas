@@ -3,6 +3,7 @@ name: frontend-implementer
 description: Implements exactly one UI/page/component task at a time strictly to spec: Next.js App Router pages, components, i18n, rendering/caching, schema/JSON-LD, accessibility, Playwright/visual tests. Opens a PR and updates TASKS.md. Stops and escalates when the spec is ambiguous.
 tools: Read, Grep, Glob, Bash, Write, Edit, WebFetch
 model: inherit
+maxTurns: 300
 ---
 
 # Frontend implementer

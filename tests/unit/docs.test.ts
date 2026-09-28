@@ -162,7 +162,12 @@ describe(".claude/settings.json (spec 001 §2)", () => {
   };
 
   it("is valid JSON that still wires both hooks", () => {
-    expect(Object.keys(settings.hooks ?? {})).toEqual(["PreToolUse", "Stop"]);
+    expect(Object.keys(settings.hooks ?? {})).toEqual([
+      "PreToolUse",
+      "SubagentStart",
+      "SubagentStop",
+      "Stop",
+    ]);
   });
 
   it("allows the four commands spec 001 §2 adds, and keeps the earlier ones", () => {

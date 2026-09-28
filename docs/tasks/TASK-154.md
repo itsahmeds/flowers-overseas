@@ -31,7 +31,17 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- **2026-09-28, to the orchestrator:** AC-45 also says "`.claude/agents/orchestrator.md` gains a
+  procedure for a partial result: resume the agent with 'save, clean up and report partial'; if
+  that fails, send a finisher and force the dead owner's slot (AC-41)". The work order's fence
+  allows only the `maxTurns` frontmatter line in agent files, so PR 112 does not add it. Who writes
+  that paragraph (this PR with a widened fence, or a follow-up)? **Answered by the orchestrator,
+  2026-09-28: this PR; fence widened to that paragraph.**
+- **2026-09-28, to the orchestrator:** CI run 36462270081 on `a188b7e` fails `tests/unit/docs.test.ts`
+  L165, `expect(Object.keys(settings.hooks ?? {})).toEqual(["PreToolUse", "Stop"])`, which the three
+  clock entries necessarily change to `["PreToolUse", "SubagentStart", "SubagentStop", "Stop"]`.
+  The file is outside the fence. Widen it to that one line? **Answered by the orchestrator,
+  2026-09-28: yes, plus mapping `.claude/settings.json` to `docs.test.ts` in `PATH_TESTS`.**
 
 ## Progress
 
@@ -39,11 +49,36 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-09-28: clock hook (`agent-clock.sh` → `agent_clock.py`) and `tests/dev-os/agent-clock.test.sh` (T-48, 237 assertions) green; draft PR 112 opened.
+- 2026-09-28: `maxTurns` in nine agent files, the three `.claude/settings.json` entries, T-47 and T-52's count in `tests/unit/dev-os.test.ts`; `PATH_TESTS` entry; runbook and README. Rebased on `origin/main` `bfae5c9` (TASKS.md row conflict only). Mutations shown red; `gates:cheap` PASS. Next: ready + `ci:full`, founder's yes on the settings entries.
+- 2026-09-28: CI on `a188b7e` red: T-48's `/tmp`-link row assumed macOS (fixed: the row applies only where `/tmp` → `/private/tmp`), and `tests/unit/docs.test.ts` L165 pins the settings hook keys (outside the fence, escalated). Handed back.
+- 2026-09-28: fence widened: `orchestrator.md` gains AC-45's partial-result paragraph (frontmatter unchanged), `docs.test.ts` L165 pins the four hook events (red with `SubagentStop` removed), `PATH_TESTS` maps `.claude/settings.json` → `docs.test.ts`. CI run 36465040169 on `3968643`: 22/22 green.
+- 2026-09-28: round 2 (`/break 112` HOLES and `/review 112` FAIL on `cff9a5f`). Hole 1: a row pins the nested-substitution check (`gh pr comment 104 --body "$(pnpm test)"` denied). Hole 2: the clock denies an unquoted heredoc whose body holds `` ` `` or `$(` (a clock-only lexer subclass; `bash_guard.py` unchanged), and the quoted forms pass. Also: T-47 fails on a repeated frontmatter key; `bash|sh …/build-slot.sh release` is in the save set; a text case pins the orchestrator's partial-result paragraph. Each fix was shown red with the fix removed.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 112. `maxTurns` per §13 Q11 in every agent file except `orchestrator.md`; the agent clock
+(`.claude/hooks/agent-clock.sh` → `agent_clock.py`, which reuses `bash_guard.py`'s parser and
+`guarded_paths.py`'s worktree tops) on `SubagentStart`, `SubagentStop` and every `PreToolUse`;
+ceilings 180 min (implementers, designer, spec writer, launch, SEO auditor) and 30 (reviewer,
+breaker, advisor). Tests: integration (shell) `tests/dev-os/agent-clock.test.sh`, 237 assertions
+(every T-48 row plus each role's ceiling, symlink and `..` escapes, fail-open); unit
+`tests/unit/dev-os.test.ts` 69 cases, 17 new (T-47: 9 roles, orchestrator absent, the file set, the
+`PATH_TESTS` mapping; T-52 now six checks; the settings registration). No build slot taken.
+`orchestrator.md` carries AC-45's partial-result procedure; `docs.test.ts` pins the four hook
+events. After round 2: `agent-clock.test.sh` 268 assertions, `dev-os.test.ts` 71 cases.
+
+Follow-ups, not done (from `/break 112` and `/review 112`):
+- `git push … | tail` (and any pipe into a non-save-set command) is denied past the ceiling;
+  harmless, and the deny message lists the allowed forms.
+- `gh pr create --title "--draft" …` passes as a draft (the flag test reads option values too);
+  `gh pr create -dt x` is denied.
+- Stale clock files: a `SubagentStop` that never fires (a crashed session) leaves
+  `.claude/state/agent-clock/<id>` with nothing to reap it; a reaper for files older than a day.
+- Resume resets the clock: `SubagentStart` also fires when an agent is resumed, so the resumed
+  agent gets a fresh ceiling.
+- A save-set command can still write through its own options (`git diff --output=src/a.ts`,
+  `git -c core.hooksPath=…`); outside a cooperative-agent threat model.

@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Shared helpers for the dev-OS checks (spec 001 §2 "Testing harness", AC-24…AC-26, TASK-010).
 #
-# Sourced by every `*.test.sh` here (`guard`, `bash-guard`, `build-slot`, `task-sh`, `stop-hook`), run by
+# Sourced by every `*.test.sh` here (`guard`, `bash-guard`, `build-slot`, `task-sh`, `stop-hook`,
+# `agent-clock`), run by
 # `pnpm dev-os:check` (`scripts/dev-os-check.ts`) and by `tests/unit/dev-os.test.ts`.
 #
 # Two rules govern everything here:
@@ -36,9 +37,11 @@ STOP_HOOK="$REPO_ROOT/.claude/hooks/tasks-reminder.sh"
 TASK_SH="$REPO_ROOT/.claude/bin/task.sh"
 BASH_GUARD_HOOK="$REPO_ROOT/.claude/hooks/bash-guard.sh"
 BUILD_SLOT="$REPO_ROOT/.claude/bin/build-slot.sh"
+CLOCK_HOOK="$REPO_ROOT/.claude/hooks/agent-clock.sh"
 
-for _required in "$GUARD_HOOK" "$STOP_HOOK" "$TASK_SH" "$BASH_GUARD_HOOK" "$BUILD_SLOT" \
-  "$REPO_ROOT/.claude/hooks/guarded_paths.py" "$REPO_ROOT/.claude/hooks/bash_guard.py"; do
+for _required in "$GUARD_HOOK" "$STOP_HOOK" "$TASK_SH" "$BASH_GUARD_HOOK" "$BUILD_SLOT" "$CLOCK_HOOK" \
+  "$REPO_ROOT/.claude/hooks/guarded_paths.py" "$REPO_ROOT/.claude/hooks/bash_guard.py" \
+  "$REPO_ROOT/.claude/hooks/agent_clock.py"; do
   if [ ! -f "$_required" ]; then
     echo "Bail out! missing dev-OS script under test: $_required" >&2
     exit 99
@@ -391,4 +394,51 @@ run_stop_hook() {
   STOP_STDOUT="$(cd "$project" && CLAUDE_PROJECT_DIR="$project" bash "$STOP_HOOK" 2>/dev/null)"
   STOP_STATUS=$?
   dev_os_errexit_restore
+}
+
+# --- the agent clock (AC-46, T-48) --------------------------------------------------------------
+
+# clock_payload <event> <agent_id> <agent_type> [tool_name] [tool_input JSON] [cwd]: the JSON Claude
+# Code sends to `.claude/hooks/agent-clock.sh` for SubagentStart, SubagentStop or PreToolUse. An
+# empty agent_id leaves the field out (a main-thread call).
+clock_payload() {
+  /usr/bin/env python3 -c '
+import json, sys
+event, agent_id, agent_type = sys.argv[1], sys.argv[2], sys.argv[3]
+p = {"session_id": "dev-os-check", "cwd": sys.argv[6] if len(sys.argv) > 6 else "/", "hook_event_name": event}
+if agent_id:
+    p["agent_id"] = agent_id
+if agent_type:
+    p["agent_type"] = agent_type
+if len(sys.argv) > 4 and sys.argv[4]:
+    p["tool_name"] = sys.argv[4]
+    p["tool_input"] = json.loads(sys.argv[5]) if len(sys.argv) > 5 and sys.argv[5] else {}
+print(json.dumps(p))
+' "$@"
+}
+
+# run_clock_raw <project> <stdin payload>: runs the real clock hook with CLAUDE_PROJECT_DIR at the
+# temp project and TMPDIR at CLOCK_TMPDIR (a private scratch place the check creates).
+# Sets GUARD_STATUS, GUARD_STDOUT, GUARD_DECISION, GUARD_REASON, like run_guard.
+run_clock_raw() {
+  local project="$1" payload="$2"
+  assert_not_repo_root "$project"
+  dev_os_errexit_off
+  GUARD_STDOUT="$(printf '%s' "$payload" | CLAUDE_PROJECT_DIR="$project" TMPDIR="${CLOCK_TMPDIR:-${TMPDIR:-/tmp}}" bash "$CLOCK_HOOK" 2>/dev/null)"
+  GUARD_STATUS=$?
+  dev_os_errexit_restore
+  guard_fields "$GUARD_STDOUT"
+}
+
+# backdate_clock <project> <agent_id> <minutes>: rewrites the clock file's start time so the agent
+# looks <minutes> old. Leaves agent_type as the SubagentStart hook wrote it.
+backdate_clock() {
+  assert_not_repo_root "$1"
+  /usr/bin/env python3 -c '
+import json, sys, time
+path = sys.argv[1]
+data = json.load(open(path))
+data["started"] = int(time.time()) - int(float(sys.argv[2]) * 60)
+open(path, "w").write(json.dumps(data))
+' "$1/.claude/state/agent-clock/$2" "$3"
 }

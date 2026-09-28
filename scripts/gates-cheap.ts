@@ -90,6 +90,16 @@ export const PATH_TESTS: readonly PathTestEntry[] = [
     paths: [".claude/templates/work-order.md", ".claude/agents/"],
     tests: ["tests/unit/work-order-roles.test.ts"],
   },
+  // TASK-154: `docs.test.ts` pins the hook events `.claude/settings.json` wires.
+  {
+    paths: [".claude/settings.json"],
+    tests: ["tests/unit/docs.test.ts"],
+  },
+  // T-47 (AC-45, TASK-154): every agent file's `maxTurns` against §13 Q11's table.
+  {
+    paths: [".claude/agents/"],
+    tests: ["tests/unit/dev-os.test.ts"],
+  },
 ];
 
 function pathMatches(pattern: string, path: string): boolean {

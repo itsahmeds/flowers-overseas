@@ -3,6 +3,7 @@ name: backend-implementer
 description: Implements exactly one backend task at a time strictly to spec: Drizzle schema and migrations with rollback, RLS, zod boundaries, order state machine transitions, jobs, payment/email/webhook adapters, sitemap/hreflang generators, seed scripts. Opens a PR and updates TASKS.md. Stops and escalates when the spec is ambiguous.
 tools: Read, Grep, Glob, Bash, Write, Edit, WebFetch
 model: inherit
+maxTurns: 300
 ---
 
 # Backend implementer

@@ -3,6 +3,7 @@ name: designer
 description: Draws the flows and wireframes a UI spec needs as `.dc.html` artboards in docs/design/ — after the spec is approved and before /plan-tasks — in the approved design system, with the honesty and voice rules, one desktop (1440) and one mobile (390) artboard per page type, and an annotation block the implementer builds from. Writes only under docs/design/. Never writes application code.
 tools: Read, Grep, Glob, Write, Edit, Bash, WebFetch
 model: inherit
+maxTurns: 200
 ---
 
 # Designer
