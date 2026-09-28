@@ -297,6 +297,45 @@ describe("T-45: the path map runs the tests that read changed text", () => {
     expect(result.exitCode).toBe(1);
   });
 
+  it("an untracked file counts: a new .claude/hooks/new.sh selects dev-os.test.ts", () => {
+    const root = tempRepo();
+    put(root, ".claude/hooks/new.sh"); // never added: untracked
+    expect(sh(root, "status", "--porcelain")).toContain(
+      "?? .claude/hooks/new.sh",
+    );
+    const { deps, testFiles } = stubbed(root);
+    const result = runGatesCheap(deps);
+    expect(testFiles).toEqual([
+      [
+        "tests/unit/framework-text.test.ts",
+        "tests/unit/agent-orientation.test.ts",
+        "tests/unit/dev-os.test.ts",
+      ],
+    ]);
+    expect(testLine(result.block)).toContain("changed 0 + map 3");
+  });
+
+  it("a lister that throws → the test gate exits 1 and says it could not list", () => {
+    const root = tempRepo();
+    commitChange(root, "CLAUDE.md");
+    const { deps, testFiles } = stubbed(root, {
+      listChangedTests: () => {
+        throw new Error("vitest list --changed exited 1: boom");
+      },
+    });
+    const result = runGatesCheap(deps);
+    expect(result.outcomes.at(-1)).toMatchObject({
+      name: TEST_GATE,
+      status: 1,
+    });
+    expect(testLine(result.block)).toMatch(
+      /exit 1 · [\d.]+ s · could not list changed tests: vitest list --changed exited 1: boom$/,
+    );
+    expect(testFiles).toEqual([]);
+    expect(result.block).toContain(`RESULT: FAIL (1 of 7 red: ${TEST_GATE})`);
+    expect(result.exitCode).toBe(1);
+  });
+
   it("a red test run turns the gate red", () => {
     const root = tempRepo();
     commitChange(root, "CLAUDE.md");

@@ -80,6 +80,29 @@ describe("T-50: who may commit ↔ who has a shell (AC-48)", () => {
     expect(specWriter).not.toContain("Bash");
   });
 
+  it("nothing tells the spec writer to commit or push", () => {
+    // What may mention committing or pushing: the orchestrator doing it, and the spec writer
+    // doing none of it. Anything else that names commit/push in these two places is addressed to
+    // the spec writer and contradicts §13 Q14.
+    const allowed = [
+      "the orchestrator commits the file, pushes it and runs `pnpm specs:index`",
+      "The orchestrator commits that file, pushes it and runs `pnpm specs:index` for it",
+      "you commit, push and index nothing",
+    ];
+    const flat = (text: string) => text.replace(/\s+/g, " ");
+    const role = workOrder.slice(workOrder.indexOf("## Role: spec writer"));
+    const section = role.slice(0, role.indexOf("\n## ", 1));
+    const rules =
+      /\*\*The spec writer\*\*[^\n]*(?:\n[^\n]+)*/.exec(workOrder)?.[0] ?? "";
+    expect(section).not.toBe("");
+    expect(rules).not.toBe("");
+    for (const text of [section, rules]) {
+      let rest = flat(text);
+      for (const phrase of allowed) rest = rest.split(phrase).join("");
+      expect(rest).not.toMatch(/\b(commit|push)/i);
+    }
+  });
+
   it("the work order says the orchestrator commits, pushes and indexes for the spec writer", () => {
     const role = workOrder.slice(workOrder.indexOf("## Role: spec writer"));
     const section = role.slice(0, role.indexOf("\n## ", 1));

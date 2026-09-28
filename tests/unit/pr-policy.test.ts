@@ -298,6 +298,37 @@ describe("T-49: what a no-task PR may touch (AC-47)", () => {
     expect(jq).toContain(".previous_filename");
   });
 
+  it("the workflow's jq, run on a files-API fixture, lists a rename under both names", () => {
+    const workflow = parse(
+      readFileSync(join(repoRoot, ".github/workflows/pr-policy.yml"), "utf8"),
+    ) as {
+      jobs: Record<string, { steps: { id?: string; run?: string }[] }>;
+    };
+    const listing = Object.values(workflow.jobs)
+      .flatMap((job) => job.steps)
+      .find((step) => step.id === "files");
+    const jq = /--jq\s+'([^']*)'/.exec(listing?.run ?? "")?.[1];
+    expect(jq, "no --jq expression in the files step").toBeDefined();
+    // The shape GitHub's `pulls/{n}/files` returns: `previous_filename` only on a rename.
+    const fixture = JSON.stringify([
+      {
+        filename: "docs/x.ts",
+        previous_filename: "src/x.ts",
+        status: "renamed",
+      },
+      { filename: "README.md", status: "modified" },
+    ]);
+    const out = execFileSync("jq", ["-r", jq ?? ""], {
+      input: fixture,
+      encoding: "utf8",
+    });
+    expect(out.split("\n").filter((line) => line !== "")).toEqual([
+      "docs/x.ts",
+      "src/x.ts",
+      "README.md",
+    ]);
+  });
+
   it("the CLI refuses a rename out of src/ exactly as the workflow feeds it", () => {
     const facts = factsFromEnv({
       PR_TITLE: "docs: move",

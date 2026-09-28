@@ -45,10 +45,11 @@ here.
 
 - 2026-09-28 · `scripts/pr-policy.ts` `NO_TASK_ALLOWED` + T-49 in `pr-policy.test.ts`; work-order text (AC-47 designer line, AC-48 spec writer; L120/L130 untouched for TASK-151) + T-50 `tests/unit/work-order-roles.test.ts` (in `PATH_TESTS`); `ci.yml` comments (header, L197 `typecheck:fixtures` claim corrected, commitlint) + T-51 in `ci-workflow.test.ts`; gaps.md step C items and nits. Blocked on the out-of-fence edits in `## Escalations`.
 - 2026-09-28 · Ruling applied (see `## Escalations`), rebased on `origin/main` `d85b69e`; all 11 red cases green on the real tree; row set `in_review`.
+- 2026-09-28 · `/review 106` + `/break 106` round 1 fixes: T-49 now runs the workflow's jq on a files-API rename fixture (exact output); T-50 asserts nothing in `Role: spec writer` or the rules paragraph tells the spec writer to commit or push.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-PR 106 (draft, shared with TASK-152). `NO_TASK_ALLOWED` replaces `GUARDED_PATHS`; T-49 in `tests/unit/pr-policy.test.ts` (11 allowed, 16 refused, both rename cases, dedupe, CLI, the `--jq` case red when `previous_filename` is dropped from the workflow); T-50 `tests/unit/work-order-roles.test.ts` 7; T-51 in `tests/unit/ci-workflow.test.ts` 4, red against the old `ci.yml`. `ci.yml` diff checked to touch comment lines only; the `on:` block is TASK-155's. The L197 claim is corrected, not made true. Checked every past `no-task` PR (102–105): none touches a path outside the allow-list.
+PR 106 (ready, `ci:full`, shared with TASK-152; CI green on `0955ed7` before `/review 106` round 1). `NO_TASK_ALLOWED` replaces `GUARDED_PATHS`; T-49 in `tests/unit/pr-policy.test.ts` (11 allowed, 16 refused, both rename cases, dedupe, CLI, the `--jq` case red when `previous_filename` is dropped from the workflow); T-50 `tests/unit/work-order-roles.test.ts` 7; T-51 in `tests/unit/ci-workflow.test.ts` 4, red against the old `ci.yml`. `ci.yml` diff checked to touch comment lines only; the `on:` block is TASK-155's. The L197 claim is corrected, not made true. Checked every past `no-task` PR (102–105): none touches a path outside the allow-list.
