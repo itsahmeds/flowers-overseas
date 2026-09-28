@@ -42,7 +42,9 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-09-29: T-57 written — `tests/unit/zod-boundaries.test.ts` (scanner and the `READERS`/`PARSERS` lists inside it) and 14 fixture trees under `tests/fixtures/zod-boundaries/`. The real tree is green with the spec's two entries (6 raw inputs, all parsed or exempt), so `reminders.ts` and `consentCookie.ts` need no fix. Draft PR #116.
+- 2026-09-29: T-66 — `ALWAYS_TESTS` in `scripts/gates-cheap.ts` (zod-boundaries, lint-coverage), named on the test gate's line; five cases in `gates-cheap.test.ts`; deleting `lint-coverage` from the list turns 4 cases red (checked).
+- 2026-09-29: `plan/12` §2 Validation row names the test and its limits (AC-62); codebase map regenerated. Next: `gates:cheap`, rebase, ready, `ci:full`.
 
 ## Result
 
