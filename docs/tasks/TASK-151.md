@@ -55,4 +55,12 @@ here.
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR [#107](https://github.com/itsahmeds/flowers-overseas/pull/107), with TASK-150. `build-slot.sh acquire` prints `build-slot: token <32 hex>`; `release <token>` alone removes the lock; no token or a wrong one exits 3 naming holder and age; `release --force` names whose lock it removed and is denied by the shell guard when the payload carries `agent_id`; `status` never prints the token (AC-41). `task.sh check`/`show` report `ok:`/`stale:`/`unknown:` reasons; `set` refuses a `done` task and, in the main checkout, refuses while any linked worktree is on `task/TASK-NNN-*`; in a linked worktree `set`/`clear` change nothing and print the branch's task; both guards treat a `done` or rowless task as none; the Stop hook prints `check`'s reasons (AC-42). Implementer files and `/implement` drop `task.sh set`/`clear` ("the task comes from the branch"); `CLAUDE.md` rule, machine lines and DoD §7 edited; `gaps.md` row 4 closed. Tests: `tests/dev-os/build-slot.test.sh` (24, T-43), `task-sh.test.sh` +41 (T-44, T-53 task.sh half), `tests/unit/agent-orientation.test.ts` +6 (T-53 text case; red with today's step 1 restored). **Open, outside the fence:** the `/status` Guard line (`orchestrator.md` L27 / `skills/status/SKILL.md`) and its `CLAUDE.md` "How to start a session" mention; `work-order.md` L120/L130 (TASK-152+153's file). Task worktrees left on this Mac, none deleted (after merge, `set` in the main checkout refuses until the task ones are pruned):
+  - `/Users/ahmed/dev/fo-spec-a20` on `spec/001-a20-standards-locks`, 1 uncommitted path (not a task branch: does not block `set`)
+  - `/Users/ahmed/dev/fo-wt-113` on `task/TASK-113-occasions-index-link-publishing`, clean
+  - `/Users/ahmed/dev/fo-wt-119` on `task/TASK-119-locale-suggestion-popup`, clean
+  - `/Users/ahmed/dev/fo-wt-125` on `task/TASK-125-product-view-model`, clean
+  - `/Users/ahmed/dev/fo-wt-138` on `task/TASK-138-r2-media-delivery`, clean
+  - `/Users/ahmed/dev/fo-wt-143` on `task/TASK-143-assertion-strength-sweep`, clean
+  - `/Users/ahmed/dev/fo-wt-150` (this PR) and `/Users/ahmed/dev/fo-wt-152` (PR 106), clean
+  - the main checkout: 1 untracked file (`.claude/launch.json`)
