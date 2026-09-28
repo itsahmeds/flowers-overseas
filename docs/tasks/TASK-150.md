@@ -40,6 +40,7 @@ the commit: what is done, what is next, anything a replacement agent must know. 
 here.
 
 - 2026-09-28: `guarded_paths.py` (shared classifier, worktree rule, Q16), `bash-guard.sh`/`bash_guard.py` (AC-37–AC-39, the release `--force` rule), `task-guard.sh` and the Stop hook on the shared module; T-38–T-41 and T-52 written and green; every denial mutated red on a scratch copy (28 mutations); `CLAUDE.md` rule, DoD §7 and machine lines edited. Next: cheap gates, rebase on `d85b69e`, ready + `ci:full`.
+- 2026-09-28: `/break 107` round 1 holes 1–6 fixed with red-by-mutation cases (see the TASK-151 brief and the PR comment); `guarded_paths.py` casefolds relative paths and worktree containment.
 
 ## Result
 

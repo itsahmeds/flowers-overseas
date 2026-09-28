@@ -51,6 +51,12 @@ run_guard "$PROJECT" Edit "tests/unit/x.test.ts"
 assert_eq "deny" "$GUARD_DECISION" "Edit tests/unit/x.test.ts with no active task is denied"
 assert_contains "$GUARD_REASON" "no task is active" "tests/ deny reason contains 'no task is active'"
 
+# --- this disk ignores case: SRC/ is src/ (PR 107 breaker, hole 6) --------------------------------
+run_guard "$PROJECT" Write "SRC/x.ts"
+assert_eq "deny" "$GUARD_DECISION" "Write SRC/x.ts with no active task is denied (case-insensitive disk)"
+run_guard "$PROJECT" Edit "Tests/unit/x.test.ts"
+assert_eq "deny" "$GUARD_DECISION" "Edit Tests/unit/x.test.ts with no active task is denied"
+
 # --- tools the guard does not police ------------------------------------------------------------
 run_guard "$PROJECT" Read "src/x.ts"
 assert_empty "$GUARD_STDOUT" "Read src/x.ts is allowed (the guard polices Edit/Write/NotebookEdit)"

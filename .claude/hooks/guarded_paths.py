@@ -34,8 +34,13 @@ TASK_BRANCH = re.compile(r"^task/(TASK-\d{3,})(?:-|$)")
 
 
 def is_guarded_rel(rel):
-    """True when a path relative to a worktree top names a guarded root or something under it."""
-    rel = rel.replace(os.sep, "/")
+    """True when a path relative to a worktree top names a guarded root or something under it.
+
+    Casefolded on every platform: this Mac's disk ignores case, so `SRC/a.ts` *is* `src/a.ts`
+    (the PR 107 breaker's hole 6). On a case-sensitive disk it over-guards a `SRC/` that nothing
+    here uses, which is the safe side.
+    """
+    rel = rel.replace(os.sep, "/").casefold()
     if rel.startswith("./"):
         rel = rel[2:]
     return any(rel == root.rstrip("/") or rel.startswith(root) for root in GUARDED_ROOTS)
@@ -105,12 +110,22 @@ def main_root(anchor):
     return worktrees(anchor)[0].path
 
 
+def _inside(target, top):
+    """`target` relative to `top` when it lies inside it (compared casefolded, like the disk), else None."""
+    t, w = target.casefold(), top.rstrip("/").casefold()
+    if t == w:
+        return "."
+    if t.startswith(w + "/"):
+        return target[len(w) + 1:]
+    return None
+
+
 def containing_worktree(path, anchor):
     """The deepest worktree whose top contains `path`, or None."""
     target = _real(path)
     best = None
     for wt in worktrees(anchor):
-        if target == wt.path or target.startswith(wt.path.rstrip("/") + "/"):
+        if _inside(target, wt.path) is not None:
             if best is None or len(wt.path) > len(best.path):
                 best = wt
     return best
@@ -174,8 +189,8 @@ def classify(path, anchor):
     wt = containing_worktree(path, anchor)
     if wt is None or (not wt.main and (wt.detached or not wt.branch)):
         return None
-    rel = os.path.relpath(_real(path), wt.path)
-    if not is_guarded_rel(rel):
+    rel = _inside(_real(path), wt.path)
+    if rel is None or not is_guarded_rel(rel):
         return None
     main = main_root(anchor)
     if wt.main:

@@ -59,6 +59,15 @@ expect_deny "until ! pgrep -f build; do sleep 5; done" "W-9" "$LOOP_ALT"
 expect_deny 'while ps aux | grep -q "next build"; do sleep 5; done' "W-9" "$LOOP_ALT" "a ps | grep wait loop"
 expect_deny 'while [ -n "$(pgrep -f playwright)" ]; do sleep 10; done' "W-9" "$LOOP_ALT" "pgrep inside the loop condition's substitution"
 
+# eval strings are split one level, like bash -c (PR 107 breaker, hole 2)
+expect_deny 'eval "git stash"' "W-12" "$STASH_ALT" "eval of git stash"
+expect_deny 'eval "pkill -f next"' "W-10" "$KILL_ALT" "eval of pkill"
+
+# the command word comes after the prefix commands (hole 3)
+expect_deny "sudo pkill node" "W-10" "$KILL_ALT"
+expect_deny "nohup pkill -f next" "W-10" "$KILL_ALT"
+expect_deny "time pkill -f next" "W-10" "$KILL_ALT"
+
 expect_deny "gh workflow run ci.yml" "W-4" "$CI_ALT"
 expect_deny "gh workflow run ci --ref task/TASK-150-x" "W-4" "$CI_ALT"
 expect_deny "gh workflow run .github/workflows/ci.yml" "W-4" "$CI_ALT"
@@ -83,6 +92,7 @@ expect_allow "cat src/lib/env.ts > /dev/null"
 expect_allow "echo x > docs/notes.md"
 expect_allow "cp src/lib/a.ts /tmp/a.ts" "guarded source, unguarded destination"
 expect_allow "sed -n 1,5p src/lib/env.ts"
+expect_allow "while pgrep -f x; do echo waiting; done" "a pgrep loop with no sleep is not the W-9 wait loop"
 HEREDOC_COMMIT="git commit -F - <<'EOF'
 docs(framework): the rules
 
@@ -119,6 +129,18 @@ WRITES=(
   "touch src/new.ts"
   "cd src && echo > a.ts"
   "bash -c 'echo x > supabase/seed.sql'"
+  # the other write forms of AC-38 (PR 107 breaker, hole 4), one row each
+  "echo x >| src/a.ts"
+  "echo x &> src/a.ts"
+  "install -m 644 /tmp/a src/a.ts"
+  "ln -s /tmp/a src/a.ts"
+  "truncate -s 0 src/a.ts"
+  "cp -t src/ x"
+  "mv src/x docs/"
+  "sed --in-place s/a/b/ src/a.ts"
+  # this disk ignores case: SRC/ is src/ (hole 6)
+  "echo x > SRC/a.ts"
+  "echo x > Tests/unit/b.ts"
 )
 for cmd in "${WRITES[@]}"; do
   run_bash_guard "$PROJECT" "$cmd"
@@ -152,6 +174,8 @@ clear_active_task "$PROJECT"
 run_bash_guard "$PROJECT" ".claude/bin/build-slot.sh release --force" "$PROJECT" "agent-1234"
 assert_eq "deny" "$GUARD_DECISION" "release --force from a subagent (agent_id present) is denied"
 assert_contains "$GUARD_REASON" "ask the orchestrator; it forces a dead owner's lock" "the release --force reason says who forces"
+run_bash_guard "$PROJECT" "bash .claude/bin/build-slot.sh release --force" "$PROJECT" "agent-1234"
+assert_eq "deny" "$GUARD_DECISION" "bash build-slot.sh release --force from a subagent is denied (hole 5)"
 run_bash_guard "$PROJECT" ".claude/bin/build-slot.sh release --force"
 assert_empty "$GUARD_STDOUT" "release --force without agent_id (the orchestrator) is allowed"
 run_bash_guard "$PROJECT" ".claude/bin/build-slot.sh release 0123abcd" "$PROJECT" "agent-1234"

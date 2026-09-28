@@ -23,6 +23,7 @@ import {
   readFileSync,
   realpathSync,
   rmSync,
+  statSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -368,6 +369,10 @@ describe("the shared guarded-path classifier (T-41)", () => {
     [join(main, "emails/welcome.tsx"), true],
     [join(main, "seed/catalog.ts"), true],
     [join(main, "tests/unit/a.test.ts"), true],
+    // this Mac's disk ignores case, so the classifier casefolds (PR 107 breaker, hole 6)
+    [join(main, "SRC/a.ts"), true],
+    [join(main, "Db/migrations/0003.sql"), true],
+    [join(main.toUpperCase(), "src/a.ts"), true],
     [join(main, "docs/notes.md"), false],
     [join(main, "specs/001.md"), false],
     [join(main, ".claude/state/note"), false],
@@ -431,7 +436,7 @@ describe("the shared guarded-path classifier (T-41)", () => {
     writeFileSync(shared, source.replace('"db/", ', ""));
 
     for (const [path, guarded] of table) {
-      const isDbRow = path.includes("/db/");
+      const isDbRow = path.toLowerCase().includes("/db/");
       const expected = guarded && !isDbRow ? "deny" : "allow";
       expect({ path, ...verdicts(copy, path) }).toEqual({
         path,
@@ -445,4 +450,51 @@ describe("the shared guarded-path classifier (T-41)", () => {
       shell: "deny",
     });
   });
+});
+
+/**
+ * PR 107 breaker, hole 1: the shell guard only works if Claude Code runs it. `.claude/settings.json`
+ * must register `bash-guard.sh` as a `PreToolUse` hook on the `Bash` tool (AC-37), beside
+ * `task-guard.sh` on the edit tools, and both scripts must be executable, since the command runs
+ * them directly.
+ */
+describe("hook registration in .claude/settings.json (AC-37)", () => {
+  interface HookEntry {
+    readonly matcher?: string;
+    readonly hooks?: readonly {
+      readonly type?: string;
+      readonly command?: string;
+    }[];
+  }
+  const settings = JSON.parse(
+    readFileSync(join(repoRoot, ".claude/settings.json"), "utf8"),
+  ) as { hooks?: { PreToolUse?: readonly HookEntry[] } };
+  const preToolUse = settings.hooks?.PreToolUse ?? [];
+
+  function commandsFor(matcher: string): string[] {
+    return preToolUse
+      .filter((entry) => entry.matcher === matcher)
+      .flatMap((entry) => entry.hooks ?? [])
+      .filter((hook) => hook.type === "command")
+      .map((hook) => hook.command ?? "");
+  }
+
+  it("runs bash-guard.sh on the Bash tool", () => {
+    expect(commandsFor("Bash")).toEqual([
+      '"$CLAUDE_PROJECT_DIR"/.claude/hooks/bash-guard.sh',
+    ]);
+  });
+
+  it("still runs task-guard.sh on Edit|Write|NotebookEdit", () => {
+    expect(commandsFor("Edit|Write|NotebookEdit")).toEqual([
+      '"$CLAUDE_PROJECT_DIR"/.claude/hooks/task-guard.sh',
+    ]);
+  });
+
+  it.each([".claude/hooks/bash-guard.sh", ".claude/hooks/task-guard.sh"])(
+    "%s is executable",
+    (path) => {
+      expect(statSync(join(repoRoot, path)).mode & 0o111).not.toBe(0);
+    },
+  );
 });
