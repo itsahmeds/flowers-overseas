@@ -1482,6 +1482,62 @@ describe("every A20 check runs on every PR (spec 001 AC-61, T-65)", () => {
     ]);
   });
 
+  /**
+   * The lint job's summary step, run under the flags GitHub gives `shell: bash`
+   * (`--noprofile --norc -e -o pipefail`). With `|| true` banned from the job, a counting command
+   * that exits 1 on no match (as `grep -c` does) fails the step on every green run: that is how
+   * round 1 of this PR went red in CI (run 36466493420).
+   */
+  const runLintSummary = (
+    log: string,
+  ): { status: number | null; summary: string } => {
+    const step = ci.jobs["lint"]?.steps.find(
+      (candidate) => candidate.name === "Summarise the lint gate",
+    );
+    expect(step?.run).toBeDefined();
+    const dir = mkdtempSync(join(tmpdir(), "fo-lint-summary-"));
+    try {
+      writeFileSync(join(dir, "lint.log"), log);
+      const summaryFile = join(dir, "summary.md");
+      writeFileSync(summaryFile, "");
+      const script = (step?.run ?? "").replace(/\$\{\{[^}]*\}\}/g, "success");
+      const result = spawnSync(
+        "bash",
+        ["--noprofile", "--norc", "-e", "-o", "pipefail", "-c", script],
+        {
+          cwd: dir,
+          encoding: "utf8",
+          env: { ...process.env, GITHUB_STEP_SUMMARY: summaryFile },
+        },
+      );
+      return {
+        status: result.status,
+        summary: readFileSync(summaryFile, "utf8"),
+      };
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  };
+  const SCAN_LINE =
+    "check:no-literal-disable: 612 files, no bare or fo/ eslint directive and no stylelint-disable comment (spec 001 AC-51)";
+
+  it("the lint summary step exits 0 on a clean log under CI's shell flags", () => {
+    const { status, summary } = runLintSummary(
+      `$ eslint . --max-warnings 0\n${SCAN_LINE}\n`,
+    );
+    expect(status).toBe(0);
+    expect(summary).toContain("| `pnpm lint` | success, 0 problem(s) |");
+    expect(summary).toContain(SCAN_LINE);
+  });
+
+  it("the lint summary step counts each problem line", () => {
+    const { status, summary } = runLintSummary(
+      "/x/src/a.ts\n  2:14  error  Money must be integer minor units  fo/no-float-money\n  1:1  warning  has no effect\n",
+    );
+    expect(status).toBe(0);
+    expect(summary).toContain("success, 2 problem(s)");
+  });
+
   it("goes red when the unit suite is narrowed", () => {
     expect(
       ac61Violations(

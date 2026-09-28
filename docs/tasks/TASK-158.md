@@ -55,7 +55,8 @@ here.
   - H1: no other ESLint or Stylelint config name anywhere (root or tracked tree), no `eslintConfig` or `stylelint` key in `package.json`, and `new ESLint({ cwd }).findConfigFile()` is `eslint.config.mjs`.
   - H2: any `processor` outside `PROCESSORS_TODAY` (empty) is red.
   - H3: `lint`, `lint:js`, `lint:css` and `check:no-literal-disable` are pinned exactly.
-  - H4: no step of the `lint` job may have `continue-on-error` or run `|| true` / `|| :`, and the `pnpm lint` step's run is pinned. The summary step's no-op `|| true` is removed: it runs `set -uo pipefail` without `-e`.
+  - H4: no step of the `lint` job may have `continue-on-error` or run `|| true` / `|| :`, and the `pnpm lint` step's run is pinned. The summary step's `|| true` is removed.
+- 2026-09-28: CI run 36466493420 on ba129ea failed in `lint` → "Summarise the lint gate". GitHub runs `shell: bash` with `-e`, so `grep -c` with no match exited 1; my local check had run without `-e`. The count now uses `awk`, which exits 0. A new T-65 pair runs the real step under `bash --noprofile --norc -e -o pipefail`; putting `grep -c` back turns the clean-log case red.
 
 ## Result
 
