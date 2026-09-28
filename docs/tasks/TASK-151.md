@@ -19,6 +19,11 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 ## Carry-forwards
 
+- **From `/review 104` and `/break 104` round 2 (2026-09-28):**
+  - T-53 needs **both**: drop `task.sh set`/`clear` from the implementer files and `/implement`, **and** make `set` refuse while a `task/TASK-NNN-*` worktree exists. The spec wins over the "or" above.
+  - You also own `CLAUDE.md`'s AC-42 edits: the guard line `/status` reads, "(`/implement` does this)", and DoD §7.
+  - ~18 stale `task/*` worktrees from merged tasks exist on this Mac, so `set` would refuse until they are pruned. List them with their uncommitted state in `## Result`. **Delete none**; the orchestrator prunes them with the founder's OK.
+
 - **From `/break 104` and `/review 104` (2026-09-28):**
 - Same agent and PR as TASK-150.
 - Remove `task.sh set` and `clear` from `.claude/agents/backend-implementer.md`, `frontend-implementer.md` and `/implement`, because the task now comes from the branch; or make `set` refuse while a `task/TASK-NNN-*` worktree exists. Add a framework-text case either way. A shell whose working directory resets into the main checkout would otherwise recreate the TASK-143 stale pointer.

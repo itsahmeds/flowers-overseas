@@ -19,7 +19,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 ## Carry-forwards
 
-- **From `/review 104` (2026-09-28):** your test rows are **T-41** and **T-44** (spec 040's new AC-42 row, added in round 3). You depend on TASK-152 (`framework-text.test.ts`) and TASK-153 (`work-order.md`) as well as TASK-156. T-42, the first release, is a `/launch`, not this task.
+- **From `/review 104` (2026-09-28):** your test rows are **T-41** and **T-44** (spec 040's new AC-42 row, added after `/break 104` round 1). You depend on TASK-152 (`framework-text.test.ts`) and TASK-153 (`work-order.md`) as well as TASK-156. T-42, the first release, is a `/launch`, not this task.
 
 One dated bullet per `/review`, newest last.
 

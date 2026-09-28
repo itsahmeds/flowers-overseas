@@ -18,6 +18,8 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 ## Carry-forwards
 
+- **From `/review 104` round 2 (2026-09-28):** the spec chose the path→test **map** (`PATH_TESTS`), not `forceRerunTriggers`; the spec wins over the "or" above. Build TASK-152 **before** TASK-153 in your shared run. TASK-154 later adds T-47's test to your map.
+
 - **From `/break 104` (2026-09-28):** `vitest --changed` finds no tests for a non-code change. So when only `CLAUDE.md` or `.claude/hooks/*.sh` changes, `gates:cheap` must still run the framework-text, dev-os and ci-workflow tests (use `forceRerunTriggers` or a path→test map), with a T-45 row. Name exactly which DoD §2 sentence the drift test reads, because that section also backticks the expensive gates. Make the `CLAUDE.md` edit A19 owes for AC-43.
 
 One dated bullet per `/review`, newest last.
