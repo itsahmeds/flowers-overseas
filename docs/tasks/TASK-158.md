@@ -33,6 +33,11 @@ One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
 - **From `/break 108` and `/review 108` (2026-09-28):** AC-52's lint-coverage table checks only the locks that exist when you merge; TASK-160, 162 and 163 add their rows as they land (landed in A20, round 3). You run before TASK-156, because both edit `package.json`.
+- **From `/review 113` round 2 (2026-09-29):** HOLE 3 ACCEPTABLE (a tracked `.stylelintignore`): it hides no CSS file that exists today, because `src/app/globals.css` is the only tracked CSS and ignoring it makes Stylelint fail with AllFilesIgnoredError. Leftover: the first task that adds tracked CSS outside `globals.css` adds `.stylelintignore` to the config-name set in `tests/unit/lint-coverage.test.ts`.
+- **From `/review 113` round 2 (2026-09-29):** leftovers, logged and not required:
+  - `continue-on-error: ${{ true }}` at job level passes the `=== true` check in `ci-workflow.test.ts`;
+  - an `.npmrc` `script-shell` pointing at `true` would stop every pnpm script;
+  - `|| exit 0` or `|| echo` on lint-job steps that are not pinned is not matched by `SWALLOWED`.
 
 ## Escalations
 
@@ -57,6 +62,10 @@ here.
   - H3: `lint`, `lint:js`, `lint:css` and `check:no-literal-disable` are pinned exactly.
   - H4: no step of the `lint` job may have `continue-on-error` or run `|| true` / `|| :`, and the `pnpm lint` step's run is pinned. The summary step's `|| true` is removed.
 - 2026-09-28: CI run 36466493420 on ba129ea failed in `lint` → "Summarise the lint gate". GitHub runs `shell: bash` with `-e`, so `grep -c` with no match exited 1; my local check had run without `-e`. The count now uses `awk`, which exits 0. A new T-65 pair runs the real step under `bash --noprofile --norc -e -o pipefail`; putting `grep -c` back turns the clean-log case red.
+- 2026-09-29, round 2 (`/review 113` PASS on 75e754c, `/break` HOLES; test-only fixes):
+  - `ac61Violations` flags a `shell` on any `lint`-job step and any `defaults` on the `lint` job (break hole 1).
+  - `lint-coverage` pins the ordered list of objects that set `languageOptions.parser` (`next`, `next/typescript`, `typescript-eslint/base`) and those that set `language` (none) (break hole 2).
+  - New red cases: step `shell: sh`, job `defaults.run.shell: sh`, a no-op parser block, a second block named `next` that sets a parser, and a `language` block. Each was seen red before the check existed, and again with the real files mutated.
 
 ## Result
 

@@ -118,6 +118,21 @@ const IGNORE_PROBES = [
  */
 const PROCESSORS_TODAY: readonly string[] = [];
 
+/**
+ * The objects that set `languageOptions.parser`, in config order, exactly as today (/break 113
+ * round 2, hole 2). A parser that returns an empty Program leaves no node for any rule to visit,
+ * so it silences a path as a processor does. `eslint-config-next` supplies these three; a new
+ * one, or a second object reusing one of these names, changes the list.
+ */
+const PARSERS_TODAY: readonly string[] = [
+  "next",
+  "next/typescript",
+  "typescript-eslint/base",
+];
+
+/** The objects that set `language`, exactly as today: none (it silences the same way). */
+const LANGUAGES_TODAY: readonly string[] = [];
+
 const LINTABLE = /\.(?:[cm]?[jt]s|[jt]sx)$/;
 const TRACKED = execFileSync("git", ["ls-files"], {
   cwd: repoRoot,
@@ -185,8 +200,28 @@ async function coverageViolations(configFile: string): Promise<string[]> {
       "noInlineConfig: no config object without a `files` key sets `linterOptions.noInlineConfig: true` (AC-50)",
     );
   }
+  const labelOf = (config: Linter.Config, index: number): string =>
+    config.name ?? `#${String(index)}`;
+  const setting = (has: (config: Linter.Config) => boolean): string[] =>
+    configs.flatMap((config, index) =>
+      has(config) ? [labelOf(config, index)] : [],
+    );
+  const parsers = setting(
+    (config) => config.languageOptions?.["parser"] !== undefined,
+  );
+  if (JSON.stringify(parsers) !== JSON.stringify(PARSERS_TODAY)) {
+    violations.push(
+      `parser: config objects setting languageOptions.parser are ${JSON.stringify(parsers)}; only PARSERS_TODAY may (${JSON.stringify(PARSERS_TODAY)})`,
+    );
+  }
+  const languages = setting((config) => config.language !== undefined);
+  if (JSON.stringify(languages) !== JSON.stringify(LANGUAGES_TODAY)) {
+    violations.push(
+      `language: config objects setting language are ${JSON.stringify(languages)}; only LANGUAGES_TODAY may (${JSON.stringify(LANGUAGES_TODAY)})`,
+    );
+  }
   configs.forEach((config, index) => {
-    const label = config.name ?? `#${String(index)}`;
+    const label = labelOf(config, index);
     if (config.processor !== undefined && !PROCESSORS_TODAY.includes(label)) {
       violations.push(
         `processor: config object ${label} sets a processor for ${describeFiles(config.files)}; only PROCESSORS_TODAY may (${JSON.stringify(PROCESSORS_TODAY)})`,
@@ -521,6 +556,49 @@ describe("a one-line edit to eslint.config.mjs goes red and names the lock (T-56
           v.endsWith(
             'sets a processor for ["src/modules/partners/**"]; only PROCESSORS_TODAY may ([])',
           ),
+      ),
+    ).toBe(true);
+  });
+  // /break 113 round 2, hole 2: a parser that returns an empty Program leaves no node for any
+  // rule to visit, and `language` can do the same, while the resolved config still reads `error`.
+  it("a no-op parser block for src/modules/partners/**", async () => {
+    const violations = await redFor(
+      addBlock(
+        '{ files: ["src/modules/partners/**"], languageOptions: { parser: { parseForESLint: (code) => ({ ast: { type: "Program", body: [], sourceType: "module", range: [0, code.length], loc: { start: { line: 1, column: 0 }, end: { line: 1, column: 0 } }, tokens: [], comments: [] } }) } } }',
+      ),
+    );
+    expect(
+      violations.some(
+        (v) =>
+          v.startsWith(
+            "parser: config objects setting languageOptions.parser are [",
+          ) && v.includes('"#'),
+      ),
+    ).toBe(true);
+  });
+
+  it("a second object reusing the name next to set a parser", async () => {
+    const violations = await redFor(
+      addBlock(
+        '{ name: "next", files: ["src/modules/partners/**"], languageOptions: { parser: { parse: () => ({ type: "Program", body: [], sourceType: "module", range: [0, 0], loc: { start: { line: 1, column: 0 }, end: { line: 1, column: 0 } }, tokens: [], comments: [] }) } } }',
+      ),
+    );
+    expect(
+      violations.some((v) =>
+        v.startsWith(
+          "parser: config objects setting languageOptions.parser are [",
+        ),
+      ),
+    ).toBe(true);
+  });
+
+  it("a language block for src/modules/partners/**", async () => {
+    const violations = await redFor(
+      addBlock('{ files: ["src/modules/partners/**"], language: "@/js" }'),
+    );
+    expect(
+      violations.some((v) =>
+        v.startsWith("language: config objects setting language are ["),
       ),
     ).toBe(true);
   });

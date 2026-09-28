@@ -36,6 +36,7 @@ interface Step {
   run?: string;
   if?: string;
   "continue-on-error"?: boolean;
+  shell?: string;
   env?: Record<string, string>;
   with?: Record<string, string>;
 }
@@ -50,6 +51,7 @@ interface Job {
   "timeout-minutes"?: number;
   "continue-on-error"?: boolean;
   permissions?: Record<string, string>;
+  defaults?: { run?: { shell?: string } };
   steps: Step[];
 }
 
@@ -1275,8 +1277,16 @@ function ac61Violations(workflow: Workflow, pkg: PackageScripts): string[] {
         `lint: the pnpm lint step runs ${JSON.stringify(step.run?.trim())}, not ${JSON.stringify(LINT_STEP_RUN)}`,
       );
   }
+  // `pipefail` comes from the workflow's `defaults.run.shell: bash`; a job `defaults` or a step
+  // `shell` (`sh`, `bash {0}`) replaces it, and `pnpm lint | tee` then exits with tee's status.
+  if (lint?.defaults !== undefined)
+    violations.push(
+      `lint: the job sets defaults ${JSON.stringify(lint.defaults)}; the top-level bash with pipefail must apply`,
+    );
   for (const step of lint?.steps ?? []) {
     const label = step.name ?? step.uses ?? step.id ?? "(unnamed)";
+    if (step.shell !== undefined)
+      violations.push(`lint: step ${label} sets shell: ${step.shell}`);
     if (step["continue-on-error"] !== undefined)
       violations.push(`lint: step ${label} has continue-on-error`);
     if (SWALLOWED.test(step.run ?? ""))
@@ -1464,6 +1474,27 @@ describe("every A20 check runs on every PR (spec 001 AC-61, T-65)", () => {
     expect(ac61Violations(workflow, pkg)).toEqual([
       'lint: the pnpm lint step runs "pnpm lint 2>&1 | tee lint.log || true", not "pnpm lint 2>&1 | tee lint.log"',
       "lint: step ESLint, Stylelint and the comment scan (AC-50, AC-51) swallows a failure with || true or || :",
+    ]);
+  });
+
+  // /break 113 round 2, hole 1: `shell: sh` or `bash {0}` drops pipefail, so
+  // `pnpm lint 2>&1 | tee lint.log` exits with tee's status.
+  it("goes red when the pnpm lint step sets its own shell", () => {
+    const workflow = lintJobWith((steps) => {
+      lintStepOf(steps).shell = "sh";
+    });
+    expect(ac61Violations(workflow, pkg)).toEqual([
+      "lint: step ESLint, Stylelint and the comment scan (AC-50, AC-51) sets shell: sh",
+    ]);
+  });
+
+  it("goes red when the lint job sets defaults", () => {
+    const workflow = parse(ciText) as Workflow;
+    const job = workflow.jobs["lint"];
+    expect(job).toBeDefined();
+    if (job) job.defaults = { run: { shell: "sh" } };
+    expect(ac61Violations(workflow, pkg)).toEqual([
+      'lint: the job sets defaults {"run":{"shell":"sh"}}; the top-level bash with pipefail must apply',
     ]);
   });
 
