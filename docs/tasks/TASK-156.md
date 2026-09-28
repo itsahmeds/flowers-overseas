@@ -21,7 +21,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 - **From `/break 104` and `/review 104` (2026-09-28):**
 - Your test rows are **T-36, T-37, T-38, T-40, T-43**.
 - `release:rollback --to` must be a commit production has already run successfully, or the previous release note's SHA, never just any ancestor; add that case to T-37.
-- T-40 needs allowed branch names that contain `release` (e.g. `task/TASK-156-release-promote`) and deny rows for `--mirror`, `--delete release` and `+sha:release` — spec text follows in A3.
+- T-40 needs allowed branch names that contain `release` (e.g. `task/TASK-156-release-promote`) and deny rows for `--mirror`, `--delete release` and `+sha:release` (landed in A3 via PR 104).
 - T-43 is the rollback rehearsal with the founder, recorded in `TASKS.md`.
 - Make the `CLAUDE.md` edits A3 owes.
 

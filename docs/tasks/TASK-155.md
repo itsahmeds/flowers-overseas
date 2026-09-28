@@ -22,7 +22,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 - **From `/break 104` and `/review 104` (2026-09-28):**
 - Your test rows are **T-34, T-35, T-39**, not T-38.
-- On a push, `github.event.pull_request` is null, so every label-guarded job **skips** and the run still reports `success`. T-39 must evaluate each job's `if:` for a push event, and gate 1 must require each named job to be `success`, not `skipped` — spec text follows in A3.
+- On a push, `github.event.pull_request` is null, so every label-guarded job **skips** and the run still reports `success`. T-39 must evaluate each job's `if:` for a push event, and gate 1 must require each named job to be `success`, not `skipped` (landed in A3 via PR 104).
 - Say what `cancel-in-progress` does to two push runs on `main` close together.
 - Starts after TASK-153 merges.
 
