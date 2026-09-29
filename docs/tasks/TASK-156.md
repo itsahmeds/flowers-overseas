@@ -27,7 +27,9 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per `/review`, newest last.
 
-- **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From `/review 115` (FAIL) and `/break 115` (HOLES), round 1, 2026-09-29, on `c6a5f67`:** close
+  holes 1-7 and review change 2 in one round, each with a row seen red; reword of `42e153e` waits
+  on the founder (no history rewrite); log the suggested items in `## Result` as not done.
 - **From `/break 108` (2026-09-28):** you wait for TASK-158, because both edit `package.json` (your `release:*` scripts, its lint flags).
 - **From the founder (2026-09-29):** spec 040 A3's owed `CLAUDE.md` line and its W-n are dropped (`docs/decisions-log.md`, 2026-09-29); do not edit `CLAUDE.md` or `docs/framework/why.md`. The release mechanism is unchanged.
 
@@ -74,6 +76,11 @@ here.
   `commitlint`, which rejects `42e153e` (`wip(release): …`, from the earlier agent; `wip` is not
   an allowed type). Rewording it means a history rewrite and a force-push, which the permission
   classifier refused here. Left for the orchestrator (see Escalations).
+- 2026-09-29 — round 1 fixes: guard holes 1-4 (`heads/`, `--git-dir`/`--work-tree`/`GIT_DIR`
+  deny, `-c alias.*=push`, the two commands under `pnpm -C`/`--dir`/`--filter`/`exec`/`npx`/
+  `corepack`/`node --import`), 597/597; release holes 5-7 (rebuild of another commit, promoting
+  note marked HALTED, staging note with READY), 40/40; runbook writes a new note. Merged
+  `origin/main` (ed8c359), map regenerated. Next: gates, `ci:full`.
 
 ## Result
 

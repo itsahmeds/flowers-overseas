@@ -37,7 +37,8 @@ strings assembled at run time still write into `src/`; a PID passed through a va
 variable or a substitution is not resolved; `cd` inside a subshell is treated as if it leaked;
 a push destination held in a variable or a substitution, a `push.default`/`remote.*.push`
 setting that maps the current branch elsewhere, an alias from a config file or from
-GIT_CONFIG_PARAMETERS/GIT_CONFIG_COUNT, `xargs git push`, a push run by a script, and a branch
+GIT_CONFIG_PARAMETERS/GIT_CONFIG_COUNT, refspecs that `xargs` feeds to git push, a push run by a
+script, and a branch
 moved without git push (`gh api -X PATCH …/git/refs/heads/release`) are not read.
 
 Fails open: a command it cannot split (an unbalanced quote, a heredoc with no delimiter), a
