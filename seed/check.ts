@@ -2432,9 +2432,9 @@ export function seedHealthReport(tree: SeedTree): string {
   );
 
   lines.push("#### committed imagery", "");
-  const total = tree.mediaFiles.reduce((sum, file) => sum + file.bytes, 0);
+  const mediaBytes = tree.mediaFiles.reduce((sum, file) => sum + file.bytes, 0);
   lines.push(
-    `${String(tree.mediaFiles.length)} files, ${String(total)} B of ${String(COMMITTED_MEDIA_BYTE_CAP)} B (${percent(total / COMMITTED_MEDIA_BYTE_CAP)} of the spec 006 §13 Q4 cap).`,
+    `${String(tree.mediaFiles.length)} files, ${String(mediaBytes)} B of ${String(COMMITTED_MEDIA_BYTE_CAP)} B (${percent(mediaBytes / COMMITTED_MEDIA_BYTE_CAP)} of the spec 006 §13 Q4 cap).`,
     "",
     "| slot | cap (B) | largest committed (B) | files |",
     "|---|---|---|---|",

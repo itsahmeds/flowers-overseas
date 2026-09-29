@@ -1115,7 +1115,11 @@ function byPrice(
   return [...cards].sort(
     (left, right) =>
       direction *
-      (Number(left.price.amountMinor) - Number(right.price.amountMinor)),
+      (left.price.amountMinor < right.price.amountMinor
+        ? -1
+        : left.price.amountMinor > right.price.amountMinor
+          ? 1
+          : 0),
   );
 }
 
