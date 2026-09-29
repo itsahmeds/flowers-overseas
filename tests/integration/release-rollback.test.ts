@@ -44,8 +44,10 @@ const NOTE_FILES: Record<string, (r: ReleaseRepo) => string> = {
     `2026-09-20-production-${(r.sha["c4"] ?? "").slice(0, 7)}.md`,
   "production-halted-later.md": (r) =>
     `2026-09-25-production-${(r.sha["c5"] ?? "").slice(0, 7)}.md`,
+  // Dated after the production note that promoted c4 and carrying a READY line, so only the
+  // environment filter keeps it out: the newest-note sort cannot hide it (break 115 hole 7).
   "staging-verified-bad.md": (r) =>
-    `2026-09-19-staging-${(r.sha["c4"] ?? "").slice(0, 7)}.md`,
+    `2026-09-21-staging-${(r.sha["c4"] ?? "").slice(0, 7)}.md`,
 };
 
 async function history(notes: readonly string[]): Promise<void> {
@@ -265,7 +267,7 @@ describe("release:rollback (T-37, AC-39)", () => {
     );
   });
 
-  it("ignores a staging note, which names no previous release", async () => {
+  it("ignores a staging note, even a newer one with a READY line for <bad-sha>", async () => {
     await history(["production-promoted-bad.md", "staging-verified-bad.md"]);
     const result = await rollbackTo("c1");
     expect(result.code).toBe(1);
