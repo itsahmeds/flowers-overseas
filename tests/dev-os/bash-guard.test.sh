@@ -438,6 +438,9 @@ MOVED_DENIED=(
   "git branch --force release && git push"
   "git update-ref --no-deref HEAD $SHA40 && git push origin HEAD"
   "git symbolic-ref HEAD refs/heads/release && git push"
+  "git rebase origin/main release && git push origin HEAD"
+  "git rebase --onto main main~1 release; git push"
+  "git rebase --root release && git push"
   "env -C $ON_RELEASE git push origin HEAD"
   "env --chdir=$ON_RELEASE git push"
 )
@@ -480,6 +483,8 @@ MOVED_ALLOWED=(
   "git push origin HEAD && git checkout main"
   "git checkout -- README.md"
   "git clone ../r r"
+  "git rebase origin/main && git push"
+  "git rebase --onto origin/main main~1 && git push origin HEAD"
   "git branch -f task/TASK-1-x HEAD && git push origin task/TASK-1-x"
   "pnpm release:status"
 )

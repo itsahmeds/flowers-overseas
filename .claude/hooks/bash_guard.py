@@ -17,7 +17,8 @@ alternative:
     removed; `HEAD`, `@` or no refspec is the current branch of the command's directory (`cd`,
     `git -C` followed), and is denied outright when that branch cannot be read before the line
     runs: `--git-dir`, `--work-tree`, a `GIT_DIR=`/`GIT_WORK_TREE=` prefix or earlier `export`;
-    an earlier checkout/switch/clone/worktree add/branch -f -m -M/update-ref/symbolic-ref;
+    an earlier checkout/switch/clone/worktree add/branch -f -m -M/update-ref/symbolic-ref, or a
+    rebase given a branch;
     `env -C`; a directory that does not exist yet; or no current branch; a delete of
     `release`; `--all`, `--branches` and `--mirror` always; and any `git -c alias.<x>=…push…`.
     Inside a subagent, the same reading for `main`, and `release:promote`/`release:rollback`
@@ -39,7 +40,8 @@ strings assembled at run time still write into `src/`; a PID passed through a va
 variable or a substitution is not resolved; `cd` inside a subshell is treated as if it leaked;
 a push destination held in a variable or a substitution, a `push.default`/`remote.*.push`
 setting that maps the current branch elsewhere, an alias from a config file or from
-GIT_CONFIG_PARAMETERS/GIT_CONFIG_COUNT or `--config-env=alias.<x>=<var>`, refspecs that `xargs` feeds to git push, a push run by a
+GIT_CONFIG_PARAMETERS/GIT_CONFIG_COUNT or `--config-env=alias.<x>=<var>`, a branch switched by
+writing `.git/HEAD` directly, refspecs that `xargs` feeds to git push, a push run by a
 script, and a branch
 moved without git push (`gh api -X PATCH …/git/refs/heads/release`) are not read.
 
@@ -787,6 +789,23 @@ def repo_env_prefix(cmd):
 
 BRANCH_MOVERS = {"checkout", "switch", "clone", "update-ref", "symbolic-ref"}
 BRANCH_MOVE_FLAGS = {"-f", "--force", "-m", "-M", "--move"}
+REBASE_ARG_OPTS = {"--onto", "-s", "--strategy", "-X", "--strategy-option", "-x", "--exec"}
+
+
+def rebase_names_branch(texts):
+    """True when `git rebase` is given a branch to check out first: `rebase <upstream> <branch>`
+    or `rebase --root <branch>` (`--onto <x>` and the other valued options skipped)."""
+    positional = []
+    k = 0
+    while k < len(texts):
+        t = texts[k]
+        if t in REBASE_ARG_OPTS:
+            k += 2
+            continue
+        if not t.startswith("-"):
+            positional.append(t)
+        k += 1
+    return len(positional) >= (1 if "--root" in texts else 2)
 
 
 def moves_branch(cmd):
@@ -799,6 +818,8 @@ def moves_branch(cmd):
         return True
     if sub == "worktree":
         return texts[:1] == ["add"]
+    if sub == "rebase":
+        return rebase_names_branch(texts)
     return sub == "branch" and any(t in BRANCH_MOVE_FLAGS for t in texts)
 
 
