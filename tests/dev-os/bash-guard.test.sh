@@ -448,6 +448,19 @@ for cmd in "${MOVED_DENIED[@]}"; do
     assert_contains "$GUARD_REASON" "$UNKNOWN_ALT" "the reason asks for the destination: $cmd"
   done
 done
+# an empty directory inside a checkout reads that checkout's branch until a clone or a worktree
+# fills it, so only the clone / worktree add clause catches these two
+mkdir -p "$ON_SPEC/fill-clone" "$ON_SPEC/fill-wt"
+for cmd in "git clone -b release ../r $ON_SPEC/fill-clone && git -C $ON_SPEC/fill-clone push origin HEAD" \
+  "git worktree add $ON_SPEC/fill-wt release && git -C $ON_SPEC/fill-wt push"; do
+  for agent in "" "agent-1234"; do
+    run_bash_guard "$PROJECT" "$cmd" "$ON_SPEC" "$agent"
+    assert_eq "deny" "$GUARD_DECISION" "a directory a clone or worktree fills (agent '${agent}'): $cmd"
+    assert_contains "$GUARD_REASON" "$UNKNOWN_ALT" "the reason asks for the destination: $cmd"
+  done
+done
+run_bash_guard "$PROJECT" "git -C $ON_SPEC/fill-clone push origin HEAD" "$ON_SPEC" "agent-1234"
+assert_empty "$GUARD_STDOUT" "the same push with no clone before it reads the checkout's branch: allowed"
 UNREADABLE_DENIED=(
   "git -C $PROJECT/not-yet push origin HEAD"
   "cd $PROJECT/not-yet && git push"

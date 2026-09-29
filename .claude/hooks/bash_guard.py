@@ -15,8 +15,10 @@ alternative:
   * from anyone, a `git push` whose destination is `release` (spec 040 AC-40): per refspec after
     the remote, the part after its last `:` with a leading `+`, then `refs/heads/` or `heads/`,
     removed; `HEAD`, `@` or no refspec is the current branch of the command's directory (`cd`,
-    `git -C` followed), and is denied outright when `--git-dir`, `--work-tree`, or a `GIT_DIR=`/
-    `GIT_WORK_TREE=` prefix or earlier `export` points at another repository; a delete of
+    `git -C` followed), and is denied outright when that branch cannot be read before the line
+    runs: `--git-dir`, `--work-tree`, a `GIT_DIR=`/`GIT_WORK_TREE=` prefix or earlier `export`;
+    an earlier checkout/switch/clone/worktree add/branch -f -m -M/update-ref/symbolic-ref;
+    `env -C`; a directory that does not exist yet; or no current branch; a delete of
     `release`; `--all`, `--branches` and `--mirror` always; and any `git -c alias.<x>=…push…`.
     Inside a subagent, the same reading for `main`, and `release:promote`/`release:rollback`
     (the script named anywhere in a pnpm/npm/yarn/bun/corepack/npx call, or
@@ -37,7 +39,7 @@ strings assembled at run time still write into `src/`; a PID passed through a va
 variable or a substitution is not resolved; `cd` inside a subshell is treated as if it leaked;
 a push destination held in a variable or a substitution, a `push.default`/`remote.*.push`
 setting that maps the current branch elsewhere, an alias from a config file or from
-GIT_CONFIG_PARAMETERS/GIT_CONFIG_COUNT, refspecs that `xargs` feeds to git push, a push run by a
+GIT_CONFIG_PARAMETERS/GIT_CONFIG_COUNT or `--config-env=alias.<x>=<var>`, refspecs that `xargs` feeds to git push, a push run by a
 script, and a branch
 moved without git push (`gh api -X PATCH …/git/refs/heads/release`) are not read.
 
@@ -633,9 +635,12 @@ RELEASE_CMD = ("release:promote and release:rollback are refused inside a subage
                "handback; `pnpm release:status` is read-only and allowed.")
 MAIN_PUSH = ("A push whose destination is main is refused inside a subagent (spec 040 AC-40: main "
              "moves only by a reviewed merge). Instead: push your task branch and open or update its PR.")
-BRANCH_UNKNOWN = ("A push to HEAD, or with no refspec, from another repository (`--git-dir`, `--work-tree`, "
-                  "GIT_DIR, GIT_WORK_TREE) is refused, from anyone (spec 040 AC-40: the guard cannot tell "
-                  "whether that branch is release). Instead: name the destination branch, "
+BRANCH_UNKNOWN = ("A push to HEAD, or with no refspec, is refused, from anyone, when the guard cannot "
+                  "read the branch it pushes (spec 040 AC-40: that branch may be release): another "
+                  "repository (`--git-dir`, `--work-tree`, GIT_DIR, GIT_WORK_TREE), a branch switched "
+                  "earlier in the line (checkout, switch, clone, worktree add, branch -f/-m/-M, "
+                  "update-ref, symbolic-ref), `env -C`, a directory that does not exist yet, or no "
+                  "current branch. Instead: name the destination branch, "
                   "git push origin HEAD:refs/heads/<your-branch>.")
 PUSH_ALIAS = ("A git alias defined on the command line that runs push (`git -c alias.<x>=push …`) is "
               "refused, from anyone (spec 040 AC-40: the guard reads the destination of git push). "
@@ -759,6 +764,8 @@ def push_destinations(args, directory):
             if directory is None:
                 return dests, False, True
             dest = current_branch(directory)
+            if dest is None:
+                return dests, False, True
         if dest:
             dests.append(dest)
     return dests, False, False
@@ -778,6 +785,37 @@ def repo_env_prefix(cmd):
     return False
 
 
+BRANCH_MOVERS = {"checkout", "switch", "clone", "update-ref", "symbolic-ref"}
+BRANCH_MOVE_FLAGS = {"-f", "--force", "-m", "-M", "--move"}
+
+
+def moves_branch(cmd):
+    """True for a git command after which HEAD may name another branch than the guard read."""
+    if cmd.name != "git":
+        return False
+    sub, rest = git_subcommand(cmd.args)
+    texts = [a.text for a in rest]
+    if sub in BRANCH_MOVERS:
+        return True
+    if sub == "worktree":
+        return texts[:1] == ["add"]
+    return sub == "branch" and any(t in BRANCH_MOVE_FLAGS for t in texts)
+
+
+def env_chdir(cmd):
+    """True when an `env -C <dir>`/`--chdir` prefix runs the command in another directory."""
+    seen_env = False
+    for w in cmd.words:
+        base = os.path.basename(w.text)
+        if base == "env":
+            seen_env = True
+        elif base == cmd.name:
+            return False
+        elif seen_env and (w.text in ("-C", "--chdir") or w.text.startswith("--chdir=")):
+            return True
+    return False
+
+
 def push_denial(cmd, cwd, agent_id, repo_env=False):
     if cmd.name != "git":
         return None
@@ -786,7 +824,7 @@ def push_denial(cmd, cwd, agent_id, repo_env=False):
         return PUSH_ALIAS
     if not rest or rest[0].text != "push":
         return None
-    if other_repo or repo_env or repo_env_prefix(cmd):
+    if other_repo or repo_env or repo_env_prefix(cmd) or env_chdir(cmd):
         directory = None
     dests, everything, unknown = push_destinations(rest[1:], directory)
     if everything or matches(dests, "release"):
@@ -799,8 +837,9 @@ def push_denial(cmd, cwd, agent_id, repo_env=False):
 
 
 def analyse_pushes(commands, cwd, agent_id, repo_env=None):
-    """(reason or None, cwd after the commands) — `cd` moves the directory HEAD is read in, and a
-    GIT_DIR/GIT_WORK_TREE set by an earlier command (`export GIT_DIR=…`) makes it unknowable."""
+    """(reason or None, cwd after the commands) — `cd` moves the directory HEAD is read in; a
+    GIT_DIR/GIT_WORK_TREE set by an earlier command (`export GIT_DIR=…`), or an earlier command
+    that may switch the branch (`moves_branch`), makes HEAD unknowable for the rest of the line."""
     repo_env = repo_env if repo_env is not None else [False]
     for cmd in commands:
         for nested in cmd.nested:
@@ -810,6 +849,9 @@ def analyse_pushes(commands, cwd, agent_id, repo_env=None):
         if (cmd.name in ("export", "declare", "typeset", "readonly")
                 and any(REPO_ENV.match(a.text) for a in cmd.args)) or (
                 not cmd.name and any(REPO_ENV.match(w.text) for w in cmd.words)):
+            repo_env[0] = True
+            continue
+        if moves_branch(cmd):
             repo_env[0] = True
             continue
         if cmd.name in ("cd", "pushd") and not any(a.has_sub for a in cmd.args):
