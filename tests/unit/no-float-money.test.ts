@@ -393,3 +393,65 @@ describe("T-62: the money shapes lint can see (AC-58)", () => {
     });
   });
 });
+
+/**
+ * `/break 118` round 1 (TASK-161): one row per branch of the rule that no case above pinned. Each
+ * goes red when its branch is deleted; the comment names the branch.
+ */
+describe("fo/no-float-money branches pinned by /break 118", () => {
+  it.each([
+    // TRANSPARENT: an `as` cast is still the whole argument of Math.round
+    ["TRANSPARENT", "Math.round((priceMinor / 100) as number);"],
+    // OPAQUE: a name inside a callback is not mentioned by the division
+    ["OPAQUE", "xs.reduce((a, x) => a + x.priceMinor, 0) / n;"],
+    // type arguments are skipped: `Price` is a type, not a value
+    ["type keys", "pick<Price>(n) / 2;"],
+  ])("%s: %s is valid", (_branch, code) => {
+    expect(() => {
+      ruleTester.run("no-float-money", rule, {
+        valid: [{ code }],
+        invalid: [],
+      });
+    }).not.toThrow();
+  });
+
+  it.each([
+    // isRoundingCall: only `Math.round` and friends exempt a division
+    ["Math check", "_.round(priceMinor / 100, 2);", "division"],
+    // isDecimalLiteral: `1.0` is an integer value written as a decimal
+    ["raw decimal point", "const price = 1.0;", "decimal"],
+    // isNumberAnnotation: a union with `number`
+    [
+      "TSUnionType",
+      "function f(price: number | undefined) { return price; }",
+      "annotation",
+    ],
+    // nameOf: through `await`
+    [
+      "nameOf await",
+      "async function f() { return Number(await priceText); }",
+      "coerce",
+    ],
+    // mentionedMoneyName: a private field
+    [
+      "PrivateIdentifier",
+      "class C { #priceMinor = 0; f() { return this.#priceMinor / 100; } }",
+      "division",
+    ],
+    // assignedName: a default parameter value
+    [
+      "AssignmentPattern",
+      "function f(priceMinor = Number(s)) { return priceMinor; }",
+      "coerce",
+    ],
+    // assignedName: a class field value
+    ["PropertyDefinition", "class C { priceMinor = Number(s); }", "coerce"],
+  ])("%s: %s reports %s", (_branch, code, messageId) => {
+    expect(() => {
+      ruleTester.run("no-float-money", rule, {
+        valid: [],
+        invalid: [{ code, errors: [{ messageId }] }],
+      });
+    }).not.toThrow();
+  });
+});
