@@ -52,8 +52,12 @@ const READY_LINE =
 /** AC-37's halt: `RELEASE: HALTED <sha>: <gate>`. */
 const HALTED_LINE = /RELEASE: HALTED ([0-9a-f]{7,40})/g;
 
-/** AC-37's visit-2 report: `RELEASE: PROMOTED <sha>`. */
-const PROMOTED_LINE = /RELEASE: PROMOTED ([0-9a-f]{7,40})/g;
+/**
+ * AC-37's visit-2 reports that follow a promotion: `RELEASE: PROMOTED <sha>`, or
+ * `RELEASE: ROLLED BACK <sha>` when the watch caught it (a commit is rolled back only once it
+ * was promoted).
+ */
+const PROMOTED_LINE = /RELEASE: (?:PROMOTED|ROLLED BACK) ([0-9a-f]{7,40})/g;
 
 export interface ReleaseNote {
   readonly file: string;
@@ -62,7 +66,7 @@ export interface ReleaseNote {
   readonly ready: readonly { sha: string; previous: string }[];
   /** Every commit a HALTED report names. */
   readonly halted: readonly string[];
-  /** Every commit a PROMOTED report names. */
+  /** Every commit a PROMOTED or ROLLED BACK report names: each was promoted. */
   readonly promoted: readonly string[];
 }
 
@@ -88,7 +92,7 @@ export interface PromotingNote {
 
 /**
  * Route (b)'s source: the **production** note that reported `READY <bad>` and did not halt on
- * it before promoting it. A note that reports `PROMOTED <bad>` still counts when it later marks
+ * it before promoting it. A note that reports `PROMOTED <bad>` or `ROLLED BACK <bad>` still counts when it later marks
  * `<bad>` HALTED (the watch halting a promoted release is exactly when a rollback runs); a note
  * that halted on `<bad>` without promoting it promoted nothing and never counts, and neither does
  * an older note's previous release. When several notes promoted the same commit (it was rolled

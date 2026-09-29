@@ -44,6 +44,8 @@ const NOTE_FILES: Record<string, (r: ReleaseRepo) => string> = {
     `2026-09-20-production-${(r.sha["c4"] ?? "").slice(0, 7)}.md`,
   "production-promoted-bad-halted.md": (r) =>
     `2026-09-20-production-${(r.sha["c4"] ?? "").slice(0, 7)}.md`,
+  "production-rolled-back-halted.md": (r) =>
+    `2026-09-20-production-${(r.sha["c4"] ?? "").slice(0, 7)}.md`,
   "production-halted-before-promote.md": (r) =>
     `2026-09-26-production-${(r.sha["c4"] ?? "").slice(0, 7)}.md`,
   "production-halted-later.md": (r) =>
@@ -265,6 +267,17 @@ describe("release:rollback (T-37, AC-39)", () => {
     await history([
       "production-promoted-c2.md",
       "production-promoted-bad-halted.md",
+    ]);
+    const result = await rollbackTo("c2");
+    expect(result.code, result.output).toBe(0);
+    expect(await repo.remote("release")).toBe(sha("c2"));
+    expect(result.stdout).toContain("accepted by route (b)");
+  });
+
+  it("keeps route (b) from a note whose watch reads ROLLED BACK <bad-sha>, then HALTED (break 115 round 2 hole 6)", async () => {
+    await history([
+      "production-promoted-c2.md",
+      "production-rolled-back-halted.md",
     ]);
     const result = await rollbackTo("c2");
     expect(result.code, result.output).toBe(0);
