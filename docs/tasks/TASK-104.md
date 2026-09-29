@@ -26,6 +26,8 @@ One dated bullet per `/review`, newest last.
 - **From `/review 80` (2026-09-18, TASK-098):** at the Vercel unlink (spec 040 §13 Q5) delete `VERCEL_ENV`, `VERCEL_GIT_COMMIT_SHA` and their two `NEXT_PUBLIC_` mirrors from the Railway contract so declared == required == 24 and the platform-injected special case disappears.
 - **From `/break 104` round 3 (2026-09-28):** once production `web` exists with its trigger on `release`, paste the exit-0 output of `pnpm railway:check` into this brief's `## Result`. Spec 040 T-44 moved that proof here from TASK-157.
 
+- **From `/review 115` (2026-09-29):** T-43, the rollback rehearsal with the founder (spec 040 AC-39), is owed once production `web` exists: after this task creates `web` on `release`, the founder does step 1 as a dashboard redeploy (image redeploy under five minutes) and runs `pnpm release:rollback` from their own terminal; `release:status` clean; production `commit` = `release`. Record it in `TASKS.md`.
+
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
