@@ -61,10 +61,36 @@ here.
   to `package.json` (missing from `06219c0`). Next: runbook, plan/08, gates, rebase.
 - 2026-09-29 — runbook hosting section (2 a.m. version (a)(b)(c), steps 1 and 2) and the plan/08 §6
   pointer to A3. Next: `codebase:map`, gates:cheap, rebase, ready, `ci:full`.
+- 2026-09-29 — rebased on `origin/main` (TASKS.md: main's TASK-154/155 rows kept, this row kept);
+  map regenerated; prettier on the release files and README rows for the three scripts (both
+  forced by gates). gates:cheap PASS at `f848d93`. Next: ready, `ci:full`, CI.
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
+PR https://github.com/itsahmeds/flowers-overseas/pull/115. `pnpm release:status`,
+`release:promote` and `release:rollback` (`scripts/release.ts`, `src/lib/release.ts`, the
+deployments query in `src/lib/railway.ts`, three `package.json` scripts with README rows); the shell
+guard's AC-40 rules in `.claude/hooks/bash_guard.py` (`analyse_pushes`, `release_command_denial`);
+the hosting section of `docs/runbooks/rollback.md` (the 2 a.m. version (a)(b)(c), then steps 1 and
+2); one A3 pointer in `plan/08` §6. Tests: integration T-36/T-37/T-38 in
+`tests/integration/release-{status,promote,rollback}.test.ts` (temporary bare repos), shell T-40 in
+`tests/dev-os/bash-guard.test.sh` (477/477). Each AC-40 rule was removed in turn and its rows went
+red; removing the destination parse turned 64 deny rows red and no allow row. **T-43**, the
+rollback rehearsal with the founder, is owed until production `web` exists (TASK-104). It has not
+been run. No expensive gate was run locally.
 
-_Pending._
+`pnpm gates:cheap` at `f848d93`. It ran with a private `TMPDIR`: TASK-159's gates were running in
+`fo-wt-159` at the same time, and its dev-os check wrote `fo-dev-os.*` into the shared `$TMPDIR`,
+which made `dev-os.test.ts` "leaves no temp project behind" fail twice on this tree:
+
+```
+gates:cheap · f848d93a29a2a905c9af2123004fcc097220d0f9 · tree clean · base origin/main · 2026-09-29T14:42:15.278Z
+typecheck             exit 0 · 2.2 s
+lint                  exit 0 · 9.6 s
+format:check          exit 0 · 8.1 s
+i18n:check            exit 0 · 0.4 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 145.0 s · changed 204 + map 0
+RESULT: PASS
+```
