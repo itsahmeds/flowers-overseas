@@ -59,6 +59,8 @@ here.
   16, whole-refspec parse 64 with 0 allow rows red, substring match 20 allow rows red, HEAD 24,
   main 13, commands 16, refs/heads 32, `+` 14, glob 8, `cd` 1, `-C` 2). `release:*` scripts added
   to `package.json` (missing from `06219c0`). Next: runbook, plan/08, gates, rebase.
+- 2026-09-29 — runbook hosting section (2 a.m. version (a)(b)(c), steps 1 and 2) and the plan/08 §6
+  pointer to A3. Next: `codebase:map`, gates:cheap, rebase, ready, `ci:full`.
 
 ## Result
 
