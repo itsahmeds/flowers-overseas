@@ -50,6 +50,7 @@
  */
 import { type CountryIso2, isCountryIso2 } from "@/config/countries";
 import { type LocaleCode, isLocaleCode } from "@/config/locales";
+import { writeStepSummaryStdout } from "@/lib/step-summary";
 import { corridorSlug } from "@/modules/geo";
 import { productPath } from "@/modules/i18n";
 
@@ -365,7 +366,7 @@ export function productExistenceSummaryMarkdown(
  */
 export async function writeProductExistenceSummary(
   env: Readonly<Record<string, string | undefined>> = process.env,
-  write: (text: string) => void = (text) => process.stdout.write(text),
+  write: (text: string) => void = writeStepSummaryStdout,
 ): Promise<string> {
   const summary = productExistenceSummaryMarkdown(
     await productExistenceCounts(),

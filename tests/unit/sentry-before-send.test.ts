@@ -460,3 +460,81 @@ describe("Sentry environment and release on Railway (spec 040 AC-32, T-32)", () 
     });
   });
 });
+
+/**
+ * T-58, the Sentry half (spec 001 §14 A20, AC-54; TASK-160): the value scan runs everywhere
+ * `beforeSend` already calls `redact()`, and on `request.url`, which it used to keep verbatim.
+ */
+describe("Sentry beforeSend value scan (T-58, AC-54)", () => {
+  it("scrubs an email in request.url, written %40 as a form puts it in a query string", () => {
+    const scrubbed = beforeSend({
+      request: { url: "https://flowersoverseas.com/x?e=jane%40example.com" },
+    });
+    expect(scrubbed.request?.url).toBe(
+      "https://flowersoverseas.com/x?e=[REDACTED:email]",
+    );
+  });
+
+  it("scrubs a phone in request.url", () => {
+    const scrubbed = beforeSend({
+      request: { url: "https://flowersoverseas.com/x?t=0048600123456" },
+    });
+    expect(scrubbed.request?.url).toBe(
+      "https://flowersoverseas.com/x?t=[REDACTED:phone]",
+    );
+  });
+
+  it("keeps a URL with no PII verbatim", () => {
+    const url = "https://flowersoverseas.com/en-gb/send-flowers-to/poland";
+    expect(beforeSend({ request: { url } }).request?.url).toBe(url);
+  });
+
+  it("scrubs an email in a breadcrumb's data.url", () => {
+    const scrubbed = beforeSend({
+      breadcrumbs: [
+        { category: "fetch", data: { url: "/api/x?to=jane@example.com" } },
+      ],
+    });
+    const [crumb] = scrubbed.breadcrumbs as { data: { url: string } }[];
+    expect(crumb?.data.url).toBe("/api/x?to=[REDACTED:email]");
+  });
+
+  it("scrubs values in extra, tags, contexts and headers", () => {
+    const scrubbed = beforeSend({
+      request: { headers: { referer: "https://x.test/?m=jane@example.com" } },
+      extra: { note: "call +48 600 123 456" },
+      tags: { hint: "600-123-456" },
+      contexts: { job: { detail: { text: "to jane@example.com" } } },
+    });
+    expect(scrubbed.request?.headers?.["referer"]).toBe(
+      "https://x.test/?m=[REDACTED:email]",
+    );
+    expect(scrubbed.extra?.["note"]).toBe("call [REDACTED:phone]");
+    expect(scrubbed.tags?.["hint"]).toBe("[REDACTED:phone]");
+    expect(scrubbed.contexts?.["job"]).toEqual({
+      detail: { text: "to [REDACTED:email]" },
+    });
+  });
+
+  it("scrubs email and phone patterns in keys of extra and contexts (/break 117 hole 8)", () => {
+    const scrubbed = beforeSend({
+      extra: { "jane@example.com": "x" },
+      contexts: { job: { "0048600123456": 1 } },
+    });
+    expect(scrubbed.extra).toEqual({ "[REDACTED:email]": "x" });
+    expect(scrubbed.contexts?.["job"]).toEqual({ "[REDACTED:phone]": 1 });
+  });
+
+  it("leaves the order-reference-shaped request_id and payment reference untouched", () => {
+    const scrubbed = beforeSend({
+      tags: { request_id: "3f2b9c1e-0012-4345-8123-456789012345" },
+      extra: { payment_ref: "pi_3Pq7Xb2eZvKYlo2C0012345678" },
+    });
+    expect(scrubbed.tags?.["request_id"]).toBe(
+      "3f2b9c1e-0012-4345-8123-456789012345",
+    );
+    expect(scrubbed.extra?.["payment_ref"]).toBe(
+      "pi_3Pq7Xb2eZvKYlo2C0012345678",
+    );
+  });
+});

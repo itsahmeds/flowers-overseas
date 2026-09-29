@@ -43,6 +43,9 @@ One dated bullet per `/review`, newest last.
 - **From `/break 108` (2026-09-28):** AC-55(c) must identify a `URLSearchParams` receiver through the type checker (or by the definition A20 gives), never by method name alone. `src/` has 13 string-keyed `.get`/`.has`/`.set` calls today, none on a `URLSearchParams` (e.g. `consent.ts` L196, `address-formats.ts` L108). This landed in A20, round 3.
 - **From A20 round 3 (2026-09-28):** `url-pii` joins `gates:cheap`'s always-run list here, not in TASK-159. You wait for TASK-159, and TASK-154 before it, because all three write `scripts/gates-cheap.ts`.
 
+- **From `/review 117` (2026-09-29):** PASS on 08e80c1. Nits: the fence missed `tests/unit/gates-cheap.test.ts`; `globalThis.process.stdout` and the bracket phone forms go to the follow-up list.
+- **From `/break 117` (2026-09-29):** HOLES (8) on 08e80c1, fixed in round 1: phone digit edges and `-`/`/` boundaries pinned; non-ASCII email; SDK patterns pinned both ways; `tests/fixtures/` locked; template and type `import()`; wrapped side doors; URL key pairs, const and computed keys; PII in object keys.
+
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
@@ -55,11 +58,30 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-09-29: AC-54 done (value/msg/stack scan in `logger.ts`, `request.url` in `sentry.ts`; T-58 cases in `logger.test.ts`, `sentry-before-send.test.ts`; boundary, Polish-gap, msg and stack mutations each go red). Next: AC-55.
+- 2026-09-29: AC-55 done (`src/config/url-keys.ts`, listing schema reads it, `tests/unit/url-pii.test.ts` with the checker-based receiver). Next: AC-56/57 lint locks.
+- 2026-09-29: AC-56/57 done (`eslint/sdk-adapters.js` `restrictedRules()`, one object per disjoint file group, real config and fixture mirror; `src/lib/step-summary.ts`; T-60/T-61 fixtures; AC-52 rows and the options check in `lint-coverage.test.ts`). `url-pii` on the always-run list; plan/12 PII and Adapters rows. `gates:cheap` PASS. Next: ready + CI.
+- 2026-09-29: round 1 of `/break 117` (8 holes) fixed in 23605e7, dbc69b9, 4893353 and 833d446; each new case seen red with its fix removed. Next: CI on the new head.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR #117. AC-54: `redact()` scans every string value, `msg` and error stacks (`EMAIL_PATTERN`, `PHONE_PATTERN`, `scrubText` in `src/lib/logger.ts`); `beforeSend` scans `request.url` too. AC-55: `src/config/url-keys.ts` (`QUERY_KEYS`), the listing schema reads it, `tests/unit/url-pii.test.ts` with `EXTERNAL_QUERY_KEYS = [src/modules/analytics/ga4.ts#id]` and a type-checker receiver test (name-only mode goes red on the real tree, 8 `Headers`/`Set` calls). AC-56/57: `eslint/sdk-adapters.js`, `src/lib/step-summary.ts`; the two stdout writers moved. Tests added (all unit): logger +31 (T-58), sentry +6 (T-58), url-pii 15 (T-59), lint-fixtures +9 (T-60, T-61), lint-coverage +7 (AC-52 rows, T-56 red cases), gates-cheap updated (always 3). Mutations run and red: each phone boundary, the Polish gap, the `msg` and stack scans, a dropped side-door entry, a broken SDK regex, the dropped `import()` selectors. One existing expectation changed: TASK-158's AC-50 case in `lint-fixtures.test.ts` now also sees `no-restricted-globals` on `console.log` in `src/` (the new lock, not a loosening). TASK-156 (`../fo-wt-156` at 644e83e): `src/lib/release.ts`, `scripts/release.ts`, `src/lib/railway.ts` raise no `no-restricted-*` or `no-console` error under the new rules. No expensive gate run locally.
+
+```
+gates:cheap · 833d4469f2b95a53cefe4df055146f0706a72e5f · tree clean · base origin/main  (the last code commit; later commits touch only this brief)
+typecheck             exit 0 · 2.0 s
+lint                  exit 0 · 9.7 s
+format:check          exit 0 · 8.0 s
+i18n:check            exit 0 · 0.3 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 97.0 s · changed 80 + map 0 + always 1 · always run: zod-boundaries, lint-coverage, url-pii
+RESULT: PASS
+```
+
+**Round 1 (`/break 117`, 8 holes), all closed with a case seen red with the fix removed:** (1) phone edges `+`/`00` with 6/7 and 15/16 digits, UK 9/10/11/12, and `-` and `/` on each side; (2) `zoë@exämple.de`, `józef.müller@przykład.pl`; (3) each SDK pattern pinned both ways: subpath specimens (`stripe/lib/stripe.js`, `@mollie/other-sdk`, `resend/build/src/index`, `postgres/cjs/…`, `drizzle-orm/postgres-js/driver`) must be banned, and `NOT_SDK` (`stripe-mock`, `resendable`, `@sentryx/node`, `drizzle-orm/postgres-jsx`, …) must not; (4) `tests/fixtures/**` locked (`!tests/fixtures/**` after `tests/**`); (5) ``import(`stripe`)``, ``require(`resend`)``, `import("resend").Resend`, `typeof import(…)`; (6) `(globalThis as X).console`, `(process as X).stdout`, `process!.stdout`, `(<X>process).stderr`, `(window satisfies Window)["console"]`; (7) `new URLSearchParams([["email", x]])`, `const K = "email"; sp.set(K, x)`, `{ ["phone"]: x }`; (8) email/phone in object keys, in the logger and Sentry.
+
+**Follow-ups, not done (said in `plan/12` §2's PII row):** bracket phone forms beside a space (`+44 (20) 7946-0958`, `+48 (22) …`) and `456x`-style trailing letters (need a spec amendment to Q21/O1); `fs.writeSync(1, …)` and `process.emitWarning`; Sentry `transaction` and `logentry.message`; `globalThis.process.stdout.write`; a query string with no `?`/`&` before its first key (`"email=" + x`, `` u.search = `email=…` ``).

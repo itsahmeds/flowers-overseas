@@ -5,6 +5,7 @@ import prettier from "eslint-config-prettier/flat";
 
 import fo from "./eslint/fo/index.js";
 import { moduleBoundaryZones } from "./eslint/modules.js";
+import { FIXTURE_MIRROR_ROOT, restrictedRules } from "./eslint/sdk-adapters.js";
 
 // Base config (TASK-001), the local `fo/` plugin (TASK-003, TASK-004) and the module-boundary
 // zones of plan/01 §5 (TASK-004).
@@ -95,6 +96,12 @@ const eslintConfig = defineConfig([
     plugins: { fo },
     rules: { "fo/no-float-money": "error" },
   },
+  // spec 001 §14 A20, AC-56 and AC-57 (TASK-160): the logger's side doors in `src/`, and SDKs
+  // only in their adapters, everywhere `eslint .` lints. The four `no-restricted-*` rules are
+  // configured here and nowhere else, one object per disjoint file group, from one function:
+  // a later object's options replace an earlier one's, so a second object setting one of them
+  // would silently drop a list (AC-52, `tests/unit/lint-coverage.test.ts`).
+  ...restrictedRules(),
   {
     // plan/01 §5: `app/` imports from `modules/`, never the reverse; `modules/*` import each
     // other's public `index.ts` barrel only. Zones generated from the module manifest in
@@ -195,6 +202,8 @@ const eslintConfig = defineConfig([
       ],
     },
   },
+  // AC-56 and AC-57 over the fixture mirror, from the same function (T-60, T-61).
+  ...restrictedRules({ root: FIXTURE_MIRROR_ROOT }),
   globalIgnores([
     ".next/**",
     "out/**",

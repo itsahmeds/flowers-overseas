@@ -404,8 +404,8 @@ describe("T-45: the path map runs the tests that read changed text", () => {
 });
 
 describe("T-66: the always-run list runs whatever the diff", () => {
-  /** The names AC-61's local clause lists today. TASK-160 adds `url-pii` here and to the list. */
-  const EXPECTED_ALWAYS = ["zod-boundaries", "lint-coverage"];
+  /** The names AC-61's local clause lists today; TASK-160 added `url-pii`. */
+  const EXPECTED_ALWAYS = ["zod-boundaries", "lint-coverage", "url-pii"];
   const testLine = (block: string): string =>
     block.split("\n").find((line) => line.startsWith(`${TEST_GATE} `)) ?? "";
   const withAlways = (
@@ -424,7 +424,7 @@ describe("T-66: the always-run list runs whatever the diff", () => {
     ]);
     expect(testLine(result.block)).toMatch(
       new RegExp(
-        `exit 0 · [\\d.]+ s · changed 0 \\+ map 0 \\+ always 2 · always run: ${EXPECTED_ALWAYS.join(", ")}$`,
+        `exit 0 · [\\d.]+ s · changed 0 \\+ map 0 \\+ always 3 · always run: ${EXPECTED_ALWAYS.join(", ")}$`,
       ),
     );
     expect(result.exitCode).toBe(0);
@@ -452,9 +452,13 @@ describe("T-66: the always-run list runs whatever the diff", () => {
     });
     const result = runGatesCheap(deps);
     expect(testFiles).toEqual([
-      ["tests/unit/zod-boundaries.test.ts", "tests/unit/lint-coverage.test.ts"],
+      [
+        "tests/unit/zod-boundaries.test.ts",
+        "tests/unit/lint-coverage.test.ts",
+        "tests/unit/url-pii.test.ts",
+      ],
     ]);
-    expect(testLine(result.block)).toContain("changed 1 + map 0 + always 1");
+    expect(testLine(result.block)).toContain("changed 1 + map 0 + always 2");
   });
 
   it("an always-run entry naming a missing file → the test gate red, naming it", () => {

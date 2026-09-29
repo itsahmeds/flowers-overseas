@@ -70,6 +70,7 @@ import {
 } from "@/config/countries";
 import { type LocaleCode, LOCALES, isLocaleCode } from "@/config/locales";
 import { isPublished } from "@/config/site-links";
+import { writeStepSummaryStdout } from "@/lib/step-summary";
 import {
   type CorridorState,
   committedOccasionCalendar,
@@ -1888,7 +1889,7 @@ export async function existenceCounts(): Promise<
  */
 export async function writeExistenceSummary(
   env: Readonly<Record<string, string | undefined>> = process.env,
-  write: (text: string) => void = (text) => process.stdout.write(text),
+  write: (text: string) => void = writeStepSummaryStdout,
 ): Promise<string> {
   const summary = existenceSummaryMarkdown(await existenceCounts());
   const stepSummary = env["GITHUB_STEP_SUMMARY"];

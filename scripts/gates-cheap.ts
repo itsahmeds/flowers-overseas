@@ -107,11 +107,13 @@ export const PATH_TESTS: readonly PathTestEntry[] = [
  * Tests that run on every diff (spec 001 §14 A20, AC-61's local clause; TASK-159). Each reads
  * files it never imports (`src/**` as source text, `eslint.config.mjs` through ESLint's API), so
  * `--changed` never selects it, and a new route file on its own would skip it. The list names only
- * tests that exist: `url-pii` joins it in the PR that creates `url-pii.test.ts` (TASK-160).
+ * tests that exist: `url-pii` joined it in the PR that created `url-pii.test.ts` (TASK-160); it
+ * reads every file under `src/` through the type checker.
  */
 export const ALWAYS_TESTS: readonly string[] = [
   "tests/unit/zod-boundaries.test.ts",
   "tests/unit/lint-coverage.test.ts",
+  "tests/unit/url-pii.test.ts",
 ];
 
 /** `tests/unit/zod-boundaries.test.ts` → `zod-boundaries`, for the test gate's line. */

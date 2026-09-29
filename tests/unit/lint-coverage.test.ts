@@ -15,12 +15,17 @@
  * - an `fo/exception/<path>` object is not exactly one path turning off one rule that is not ours;
  * - `globalIgnores` differs from today's list.
  *
- * **The table grows with the locks and never names one that is not built yet** (AC-52). It is
- * written as the config stands when TASK-158 merges. TASK-160 adds AC-56's locks to the
- * `no-console` row, `src/lib/step-summary.ts` to its "allowed off" cell, the AC-57 row and both
- * ACs' option entries; TASK-162 widens `fo/no-direct-order-status-write` to `scripts/`, `seed/`
- * and `db/`; TASK-163 adds the `as Minor` row. None of AC-56, AC-57 or AC-59's option entries
- * exists yet, so no "missing from the options" case is asserted here.
+ * **The table grows with the locks and never names one that is not built yet** (AC-52). TASK-158
+ * wrote it as the config stood then. TASK-160 added AC-56's locks to the `no-console` row,
+ * `src/lib/step-summary.ts` to its "allowed off" cell, the AC-57 row, and both ACs' entries to the
+ * "missing from the options" check (`ENTRY_CHECKS`): in flat config a later object's options
+ * replace an earlier one's, so a second object setting `no-restricted-imports` would silently
+ * drop the SDK list while the rule still reads `error`. TASK-162 widens
+ * `fo/no-direct-order-status-write` to `scripts/`, `seed/` and `db/`; TASK-163 adds the
+ * `as Minor` row and its entry.
+ *
+ * The entries are written out here, not read from `eslint/sdk-adapters.js`: a test that took its
+ * expectation from the function it checks would follow that function anywhere.
  *
  * T-56's red cases are scratch copies of `eslint.config.mjs` with one edit each, passed to ESLint
  * as `overrideConfigFile`. They live under `node_modules/.cache/`, which git, ESLint, Prettier and
@@ -43,6 +48,10 @@ import { pathToFileURL } from "node:url";
 import { afterAll, describe, expect, it } from "vitest";
 
 import fo from "../../eslint/fo/index.js";
+import {
+  SDK_ADAPTERS,
+  SIDE_DOOR_FILES as SIDE_DOOR_FILES_CONFIG,
+} from "../../eslint/sdk-adapters.js";
 
 const repoRoot = resolve(__dirname, "../..");
 const REAL_CONFIG = resolve(repoRoot, "eslint.config.mjs");
@@ -54,13 +63,321 @@ interface LockRow {
   readonly rules: readonly string[];
   /** Roots (a trailing `/`) on which every rule of the row must be `error`. */
   readonly errorOn: readonly string[];
-  /** Exact file paths where the row may be off; everywhere else it may not. */
+  /** Roots (a trailing `/`) inside `errorOn` that the row does not cover. */
+  readonly exceptUnder?: readonly string[];
+  /**
+   * File paths, or `dir/**` globs, where the row may be off; everywhere else it may not. A
+   * config object may turn a rule of the row off only when its `files` are exactly such entries.
+   */
   readonly allowedOff: readonly string[];
 }
 
 const FO_RULES = Object.keys(fo.rules ?? {}).map((name) => `fo/${name}`);
 const FLOAT_MONEY = "fo/no-float-money";
 const ORDER_STATUS = "fo/no-direct-order-status-write";
+
+/** AC-56: the only files in `src/` where the side doors are open. */
+const SIDE_DOOR_FILES = ["src/lib/logger.ts", "src/lib/step-summary.ts"];
+
+/** AC-57's table: each package (by specimen specifiers) and the only files that may import it. */
+const SDK_TABLE: readonly {
+  readonly lock: string;
+  readonly specimens: readonly string[];
+  readonly allowedIn: readonly string[];
+}[] = [
+  {
+    lock: "@sentry/*",
+    specimens: ["@sentry/nextjs", "@sentry/node"],
+    allowedIn: [
+      "src/lib/sentry.ts",
+      "sentry.server.config.ts",
+      "sentry.edge.config.ts",
+      "instrumentation.ts",
+      "instrumentation-client.ts",
+      "next.config.ts",
+    ],
+  },
+  {
+    lock: "postgres",
+    specimens: [
+      "postgres",
+      "postgres/cjs/src/index.js",
+      "drizzle-orm/postgres-js",
+      "drizzle-orm/postgres-js/driver",
+    ],
+    allowedIn: ["src/lib/db.ts", "scripts/db-migrate.ts"],
+  },
+  {
+    lock: "stripe",
+    specimens: ["stripe", "stripe/lib/stripe.js"],
+    allowedIn: ["src/modules/payments/stripe/**"],
+  },
+  {
+    lock: "@mollie/*",
+    specimens: ["@mollie/api-client", "@mollie/other-sdk"],
+    allowedIn: ["src/modules/payments/mollie/**"],
+  },
+  {
+    lock: "resend",
+    specimens: ["resend", "resend/build/src/index"],
+    allowedIn: ["src/modules/notifications/resend/**"],
+  },
+];
+
+/**
+ * Specifiers that are none of the table's packages (/break 117 hole 3): a pattern loosened to a
+ * bare prefix (`^stripe`, `^@mollie`) or to a substring goes red on one of these.
+ */
+const NOT_SDK = [
+  "stripe-mock",
+  "stripes",
+  "@stripe/stripe-js",
+  "resend-otp",
+  "resendable",
+  "postgres-array",
+  "postgresql",
+  "drizzle-orm",
+  "drizzle-orm/pg-core",
+  "drizzle-orm/postgres-jsx",
+  "@sentryx/node",
+  "sentry",
+  "@mollie2/api-client",
+  "mollie",
+];
+
+/** A path matches an entry that is the path itself, or `dir/**` above it. */
+const matchesEntry = (file: string, entry: string): boolean =>
+  entry.endsWith("/**") ? file.startsWith(entry.slice(0, -2)) : file === entry;
+
+/** The options of a resolved rule entry, without its severity. */
+function optionsOf(entry: Linter.RuleEntry | undefined): unknown[] {
+  return Array.isArray(entry) ? entry.slice(1) : [];
+}
+
+type Rec = Readonly<Record<string, unknown>>;
+const isRec = (value: unknown): value is Rec =>
+  typeof value === "object" && value !== null;
+
+/** `no-restricted-imports`' `paths` and `patterns`, from any of the rule's option shapes. */
+function importsOf(options: unknown[]): { paths: Rec[]; patterns: Rec[] } {
+  const paths: Rec[] = [];
+  const patterns: Rec[] = [];
+  for (const option of options) {
+    if (typeof option === "string") paths.push({ name: option });
+    else if (isRec(option) && ("paths" in option || "patterns" in option)) {
+      for (const path of (option["paths"] as unknown[] | undefined) ?? []) {
+        paths.push(typeof path === "string" ? { name: path } : (path as Rec));
+      }
+      for (const pattern of (option["patterns"] as unknown[] | undefined) ??
+        []) {
+        patterns.push(
+          typeof pattern === "string" ? { group: [pattern] } : (pattern as Rec),
+        );
+      }
+    } else if (isRec(option)) paths.push(option);
+  }
+  return { paths, patterns };
+}
+
+/** `no-restricted-syntax`'s selectors. */
+const selectorsOf = (options: unknown[]): string[] =>
+  options.flatMap((option) =>
+    typeof option === "string"
+      ? [option]
+      : isRec(option) && typeof option["selector"] === "string"
+        ? [option["selector"]]
+        : [],
+  );
+
+/** The regexes of a selector's `[attr=/…/]` parts, with esquery's `\u002F` read back as `/`. */
+const selectorRegexes = (selector: string): RegExp[] =>
+  [...selector.matchAll(/=\/((?:[^/\\]|\\.)+)\//g)].flatMap((match) =>
+    match[1] === undefined ? [] : [new RegExp(match[1])],
+  );
+
+const importBanned = (patterns: Rec[], specimen: string): boolean =>
+  patterns.some(
+    (pattern) =>
+      typeof pattern["regex"] === "string" &&
+      new RegExp(pattern["regex"]).test(specimen),
+  );
+
+type SyntaxForm =
+  "import()" | "require()" | "import(``)" | "require(``)" | "import type";
+
+/** Whether a selector is the form's: a literal or a no-substitution template specifier. */
+const isForm = (selector: string, form: SyntaxForm): boolean => {
+  const template = selector.includes("TemplateLiteral");
+  switch (form) {
+    case "import()":
+      return selector.startsWith("ImportExpression[source.value=");
+    case "import(``)":
+      return selector.startsWith("ImportExpression") && template;
+    case "require()":
+      return /callee\.name=["']require["']\]\[arguments\.0\.value=/.test(
+        selector,
+      );
+    case "require(``)":
+      return /callee\.name=["']require["']/.test(selector) && template;
+    case "import type":
+      return selector.startsWith("TSImportType");
+  }
+};
+
+const syntaxBanned = (
+  selectors: string[],
+  form: SyntaxForm,
+  specimen: string,
+): boolean =>
+  selectors.some(
+    (selector) =>
+      isForm(selector, form) &&
+      selectorRegexes(selector).some((regex) => regex.test(specimen)),
+  );
+
+/**
+ * AC-52's "an entry of AC-56, AC-57 or AC-59 is missing from the options of its `no-restricted-*`
+ * rule for that file". Each check names its lock, the rule, the entry and the files it covers.
+ */
+interface EntryCheck {
+  readonly lock: string;
+  readonly rule: string;
+  readonly entry: string;
+  readonly applies: (file: string) => boolean;
+  readonly present: (options: unknown[]) => boolean;
+}
+
+const inSrcOutsideSideDoors = (file: string): boolean =>
+  file.startsWith("src/") && !SIDE_DOOR_FILES.includes(file);
+const AC56 = "no-console and AC-56's locks";
+const AC57 = "AC-57's SDK locks";
+
+const ENTRY_CHECKS: readonly EntryCheck[] = [
+  {
+    lock: AC56,
+    rule: "no-restricted-globals",
+    entry: "console",
+    applies: inSrcOutsideSideDoors,
+    present: (options) =>
+      options.some(
+        (o) => o === "console" || (isRec(o) && o["name"] === "console"),
+      ),
+  },
+  ...[
+    ["globalThis", "console"],
+    ["window", "console"],
+    ["self", "console"],
+    ["global", "console"],
+    ["process", "stdout"],
+    ["process", "stderr"],
+  ].map(([object, property]): EntryCheck => ({
+    lock: AC56,
+    rule: "no-restricted-properties",
+    entry: `${String(object)}.${String(property)}`,
+    applies: inSrcOutsideSideDoors,
+    present: (options) =>
+      options.some(
+        (o) => isRec(o) && o["object"] === object && o["property"] === property,
+      ),
+  })),
+  ...[
+    ["globalThis", "console", "console"],
+    ["process", "stdout", "stdout"],
+    ["process", "stderr", "stderr"],
+  ].map(([object, property]): EntryCheck => ({
+    lock: AC56,
+    rule: "no-restricted-syntax",
+    entry: `${String(object)}["${String(property)}"]`,
+    applies: inSrcOutsideSideDoors,
+    present: (options) =>
+      selectorsOf(options).some(
+        (selector) =>
+          selector.startsWith("MemberExpression[computed=true]") &&
+          selector.includes(String(object)) &&
+          selector.includes(String(property)),
+      ),
+  })),
+  // /break 117 hole 6: the same behind `as`, `<T>`, `!` or `satisfies`.
+  ...[
+    ["globalThis", "console"],
+    ["process", "stdout"],
+  ].map(([object, property]): EntryCheck => ({
+    lock: AC56,
+    rule: "no-restricted-syntax",
+    entry: `(${String(object)} as T).${String(property)}`,
+    applies: inSrcOutsideSideDoors,
+    present: (options) =>
+      selectorsOf(options).some(
+        (selector) =>
+          selector.startsWith("MemberExpression[object.type=") &&
+          ["TSAsExpression", "TSNonNullExpression", "TSTypeAssertion"].every(
+            (wrapper) =>
+              selectorRegexes(selector).some((regex) => regex.test(wrapper)),
+          ) &&
+          selector.includes(String(object)) &&
+          selector.includes(String(property)),
+      ),
+  })),
+  ...["console", "node:console"].map((name): EntryCheck => ({
+    lock: AC56,
+    rule: "no-restricted-imports",
+    entry: `import ${name}`,
+    applies: inSrcOutsideSideDoors,
+    present: (options) =>
+      importsOf(options).paths.some(
+        (path) => path["name"] === name && path["importNames"] === undefined,
+      ),
+  })),
+  ...["process", "node:process"].map((name): EntryCheck => ({
+    lock: AC56,
+    rule: "no-restricted-imports",
+    entry: `import { stdout, stderr } from ${name}`,
+    applies: inSrcOutsideSideDoors,
+    present: (options) =>
+      importsOf(options).paths.some((path) => {
+        const names = path["importNames"];
+        return (
+          path["name"] === name &&
+          Array.isArray(names) &&
+          names.includes("stdout") &&
+          names.includes("stderr")
+        );
+      }),
+  })),
+  ...SDK_TABLE.flatMap((row) =>
+    row.specimens.flatMap((specimen): EntryCheck[] => {
+      const applies = (file: string): boolean =>
+        !file.startsWith("tests/") &&
+        !row.allowedIn.some((entry) => matchesEntry(file, entry));
+      return [
+        {
+          lock: AC57,
+          rule: "no-restricted-imports",
+          entry: `import "${specimen}"`,
+          applies,
+          present: (options) =>
+            importBanned(importsOf(options).patterns, specimen),
+        },
+        ...(
+          [
+            "import()",
+            "require()",
+            "import(``)",
+            "require(``)",
+            "import type",
+          ] as const
+        ).map((form): EntryCheck => ({
+          lock: AC57,
+          rule: "no-restricted-syntax",
+          entry: `${form} "${specimen}"`,
+          applies,
+          present: (options) =>
+            syntaxBanned(selectorsOf(options), form, specimen),
+        })),
+      ];
+    }),
+  ),
+];
 
 const TABLE: readonly LockRow[] = [
   {
@@ -84,10 +401,20 @@ const TABLE: readonly LockRow[] = [
     allowedOff: [],
   },
   {
-    lock: "no-console",
-    rules: ["no-console"],
+    lock: "no-console and AC-56's locks",
+    // AC-56's entries in `no-restricted-imports` and `no-restricted-syntax` share those two rules
+    // with AC-57, so they are held by `ENTRY_CHECKS` below; these two rules carry AC-56 alone.
+    rules: ["no-console", "no-restricted-globals", "no-restricted-properties"],
     errorOn: ["src/"],
-    allowedOff: ["src/lib/logger.ts"],
+    allowedOff: [...SIDE_DOOR_FILES],
+  },
+  {
+    lock: "AC-57's SDK locks",
+    rules: ["no-restricted-imports", "no-restricted-syntax"],
+    // "every root": every file `eslint .` lints, `tests/` apart (AC-57's last row).
+    errorOn: [""],
+    exceptUnder: ["tests/"],
+    allowedOff: [...SDK_TABLE.flatMap((row) => row.allowedIn), "tests/**"],
   },
 ];
 
@@ -314,7 +641,11 @@ async function coverageViolations(configFile: string): Promise<string[]> {
   }
   for (const row of TABLE) {
     for (const root of row.errorOn) {
-      const files = TRACKED.filter((file) => file.startsWith(root));
+      const files = TRACKED.filter(
+        (file) =>
+          file.startsWith(root) &&
+          !(row.exceptUnder ?? []).some((except) => file.startsWith(except)),
+      );
       if (files.length === 0) {
         violations.push(
           `root: ${root} has no tracked file to ask ESLint about (${row.lock})`,
@@ -329,7 +660,7 @@ async function coverageViolations(configFile: string): Promise<string[]> {
           );
           continue;
         }
-        if (row.allowedOff.includes(file)) continue;
+        if (row.allowedOff.some((entry) => matchesEntry(file, entry))) continue;
         for (const rule of row.rules) {
           const severity = severityOf(config.rules?.[rule]);
           if (severity !== 2) {
@@ -338,6 +669,20 @@ async function coverageViolations(configFile: string): Promise<string[]> {
             );
           }
         }
+      }
+    }
+  }
+  for (const file of TRACKED) {
+    const checks = ENTRY_CHECKS.filter((check) => check.applies(file));
+    if (checks.length === 0) continue;
+    const config = await configFor(file);
+    if (config === undefined) continue;
+    for (const check of checks) {
+      const entry = config.rules?.[check.rule];
+      if (severityOf(entry) !== 2 || !check.present(optionsOf(entry))) {
+        violations.push(
+          `${check.rule}: entry ${check.entry} missing from the options for ${file} (${check.lock})`,
+        );
       }
     }
   }
@@ -392,6 +737,69 @@ describe("the lock table (AC-52) over the real config", () => {
         rule,
       ).toBe(true);
     }
+  });
+
+  it("applies AC-56 and AC-57's entries by file, as their tables say", () => {
+    const count = (file: string): number =>
+      ENTRY_CHECKS.filter((check) => check.applies(file)).length;
+    // 16 AC-56 entries; 12 specimens × 6 import forms for AC-57.
+    expect(count("src/modules/geo/corridor.ts")).toBe(16 + 72);
+    expect(count("src/lib/logger.ts")).toBe(72);
+    expect(count("src/lib/step-summary.ts")).toBe(72);
+    expect(count("src/lib/sentry.ts")).toBe(16 + 60);
+    expect(count("src/lib/db.ts")).toBe(16 + 48);
+    expect(count("next.config.ts")).toBe(60);
+    expect(count("scripts/db-migrate.ts")).toBe(48);
+    expect(count("scripts/env-check.ts")).toBe(72);
+    expect(count("src/modules/payments/stripe/client.ts")).toBe(16 + 60);
+    expect(count("tests/unit/sentry-before-send.test.ts")).toBe(0);
+  });
+
+  it("bans no package outside the table: each pattern is the package, not a prefix (/break 117 hole 3)", async () => {
+    const eslint = new ESLint({
+      cwd: repoRoot,
+      overrideConfigFile: REAL_CONFIG,
+    });
+    for (const file of [
+      "src/modules/geo/corridor.ts",
+      "scripts/env-check.ts",
+    ]) {
+      const config = (await eslint.calculateConfigForFile(
+        resolve(repoRoot, file),
+      )) as Linter.Config;
+      const { patterns } = importsOf(
+        optionsOf(config.rules?.["no-restricted-imports"]),
+      );
+      const selectors = selectorsOf(
+        optionsOf(config.rules?.["no-restricted-syntax"]),
+      );
+      for (const specimen of NOT_SDK) {
+        expect(importBanned(patterns, specimen), `${file}: ${specimen}`).toBe(
+          false,
+        );
+        for (const form of [
+          "import()",
+          "require()",
+          "import(``)",
+          "require(``)",
+          "import type",
+        ] as const) {
+          expect(
+            syntaxBanned(selectors, form, specimen),
+            `${file}: ${form} ${specimen}`,
+          ).toBe(false);
+        }
+      }
+    }
+  });
+
+  it("keeps AC-57's table in step with eslint/sdk-adapters.js", () => {
+    expect(
+      SDK_ADAPTERS.map((row) => ({ lock: row.name, allowedIn: row.files })),
+    ).toEqual(
+      SDK_TABLE.map((row) => ({ lock: row.lock, allowedIn: row.allowedIn })),
+    );
+    expect([...SIDE_DOOR_FILES_CONFIG]).toEqual(SIDE_DOOR_FILES);
   });
 
   it("finds a tracked file in every root the table names", () => {
@@ -496,8 +904,83 @@ describe("a one-line edit to eslint.config.mjs goes red and names the lock (T-56
       ),
     ).toBe(true);
     expect(violations).toContain(
-      "no-console: off on src/modules/geo/corridor.ts; must be error on src/ (no-console)",
+      "no-console: off on src/modules/geo/corridor.ts; must be error on src/ (no-console and AC-56's locks)",
     );
+  });
+
+  // TASK-160 (AC-56, AC-57): the options check. A later object's options replace an earlier
+  // one's, so these edits leave every rule at `error` and still drop a list.
+  it("a second block setting no-restricted-imports for src/** without the SDK list", async () => {
+    const violations = await redFor(
+      addBlock(
+        '{ files: ["src/**"], rules: { "no-restricted-imports": ["error", { paths: ["lodash"] }] } }',
+      ),
+    );
+    expect(violations).toContain(
+      'no-restricted-imports: entry import "postgres" missing from the options for src/modules/geo/corridor.ts (AC-57\'s SDK locks)',
+    );
+    expect(violations).toContain(
+      "no-restricted-imports: entry import node:console missing from the options for src/modules/geo/corridor.ts (no-console and AC-56's locks)",
+    );
+  });
+
+  it("a second block setting no-restricted-syntax for src/** with one selector of its own", async () => {
+    const violations = await redFor(
+      addBlock(
+        '{ files: ["src/**"], rules: { "no-restricted-syntax": ["error", "WithStatement"] } }',
+      ),
+    );
+    expect(violations).toContain(
+      'no-restricted-syntax: entry import() "stripe" missing from the options for src/modules/geo/corridor.ts (AC-57\'s SDK locks)',
+    );
+    expect(violations).toContain(
+      'no-restricted-syntax: entry process["stdout"] missing from the options for src/modules/geo/corridor.ts (no-console and AC-56\'s locks)',
+    );
+  });
+
+  it("a block turning no-restricted-imports off for scripts/**", async () => {
+    const violations = await redFor(
+      addBlock(
+        '{ files: ["scripts/**"], rules: { "no-restricted-imports": "off" } }',
+      ),
+    );
+    expect(
+      violations.some(
+        (v) =>
+          v.startsWith(
+            "no-restricted-imports: turned off by config object #",
+          ) && v.endsWith("(AC-57's SDK locks)"),
+      ),
+    ).toBe(true);
+    expect(violations).toContain(
+      "no-restricted-imports: off on scripts/env-check.ts; must be error on  (AC-57's SDK locks)",
+    );
+  });
+
+  it("a block turning no-restricted-globals off for src/modules/geo/**", async () => {
+    const violations = await redFor(
+      addBlock(
+        '{ files: ["src/modules/geo/**"], rules: { "no-restricted-globals": "off" } }',
+      ),
+    );
+    expect(violations).toContain(
+      "no-restricted-globals: off on src/modules/geo/corridor.ts; must be error on src/ (no-console and AC-56's locks)",
+    );
+    expect(violations).toContain(
+      "no-restricted-globals: entry console missing from the options for src/modules/geo/corridor.ts (no-console and AC-56's locks)",
+    );
+  });
+
+  it("a block for an adapter's folder that sets no restricted-* rule leaves the lists whole", async () => {
+    expect(
+      await coverageViolations(
+        scratchConfig(
+          addBlock(
+            '{ files: ["src/modules/payments/stripe/**"], rules: { "no-console": "error" } }',
+          ),
+        ),
+      ),
+    ).toEqual([]);
   });
 
   it("a lock turned down to warn is red too", async () => {
