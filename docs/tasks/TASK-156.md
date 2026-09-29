@@ -91,23 +91,43 @@ guard's AC-40 rules in `.claude/hooks/bash_guard.py` (`analyse_pushes`, `release
 the hosting section of `docs/runbooks/rollback.md` (the 2 a.m. version (a)(b)(c), then steps 1 and
 2); one A3 pointer in `plan/08` §6. Tests: integration T-36/T-37/T-38 in
 `tests/integration/release-{status,promote,rollback}.test.ts` (temporary bare repos), shell T-40 in
-`tests/dev-os/bash-guard.test.sh` (477/477). Each AC-40 rule was removed in turn and its rows went
+`tests/dev-os/bash-guard.test.sh` (597/597 after round 1). Each AC-40 rule was removed in turn and its rows went
 red; removing the destination parse turned 64 deny rows red and no allow row. **T-43**, the
 rollback rehearsal with the founder, is owed until production `web` exists (TASK-104). It has not
 been run. No expensive gate was run locally.
 
-`pnpm gates:cheap` at `f848d93`. It ran with a private `TMPDIR`: TASK-159's gates were running in
-`fo-wt-159` at the same time, and its dev-os check wrote `fo-dev-os.*` into the shared `$TMPDIR`,
-which made `dev-os.test.ts` "leaves no temp project behind" fail twice on this tree:
+**Round 1 (`/review 115` FAIL, `/break 115` HOLES on `c6a5f67`).** Holes 1-7 and review
+change 2 are closed, each with rows seen red with the fix removed:
+- guard (597/597): `heads/` strip 22 red; `--git-dir`/`--work-tree` 12; `GIT_DIR=` prefix 12;
+  `export GIT_DIR` 8; unknown-branch deny 32; `-c alias.*=push` 20; script named anywhere 12;
+  runners widened 6.
+- release (40/40): the rebuild-of-another-commit case, red with `fact.commit === sha` removed;
+  the staging case (READY line, dated after the production note), red with the environment
+  filter removed; the promoting note marked HALTED, red with the PROMOTED exception removed; a
+  note that halted before promoting, red with the halted filter removed.
+- `docs/runbooks/rollback.md`: a rollback writes a new note and never edits the promoting one;
+  (a)1 accepts `PROMOTED` or `ROLLED BACK`; step 2 names `cd ~/dev/flowers-overseas`.
+
+**Logged, not done (suggested by `/break 115`, outside this round):** the newest-note sort in
+`findPromotingNote` has no test; neither does the `--to` = `<bad-sha>` refusal; the guard's
+`-o`/`--push-option`/`--repo` skipping is unpinned; `gh api -X PATCH …/git/refs/heads/release`
+and refspecs fed by `xargs git push` move the branch, outside AC-40's "git push" wording (now
+in the guard's header).
+
+**Open:** `commitlint` fails on `42e153e` (`wip(release): …`) until the founder decides on the
+reword.
+
+`pnpm gates:cheap` at `2bdc17f`, with a private `TMPDIR` (a concurrent agent's dev-os temp dirs
+in the shared `$TMPDIR` fail `dev-os.test.ts`'s leftover check):
 
 ```
-gates:cheap · f848d93a29a2a905c9af2123004fcc097220d0f9 · tree clean · base origin/main · 2026-09-29T14:42:15.278Z
-typecheck             exit 0 · 2.2 s
+gates:cheap · 2bdc17f81089d5a163ef4d135651c4711030f701 · tree clean · base origin/main · 2026-09-29T15:27:41.792Z
+typecheck             exit 0 · 1.9 s
 lint                  exit 0 · 9.6 s
-format:check          exit 0 · 8.1 s
+format:check          exit 0 · 7.9 s
 i18n:check            exit 0 · 0.4 s
 check:no-db           exit 0 · 0.2 s
 codebase:map --check  exit 0 · 0.2 s
-tests                 exit 0 · 145.0 s · changed 204 + map 0
+tests                 exit 0 · 147.9 s · changed 205 + map 0 + always 0 · always run: zod-boundaries, lint-coverage
 RESULT: PASS
 ```
