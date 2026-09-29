@@ -20,7 +20,13 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per `/review`, newest last.
 
-- **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From `/review 121` round 2 (2026-09-29), binding on `docs/runbooks/railway-cloudflare-setup.md`:**
+  (1) the F5 bullet "No `EXPECTED RED` line on stderr … Make a new token" (~L284) must not mislead
+  while staging has no `worker`: it says what a missing label means now; (2) F5's "exactly" (~L275)
+  and (3) "What the checks print today"'s "no other line" (~L391) allow the
+  `staging · worker · triggers on none, declared main` line; (4) "a follow-up task" (~L413) becomes
+  TASK-164, now shipped. Also: §6's expected-red line and the "What the checks print today" section
+  quote AC-44's stderr.
 
 ## Escalations
 
@@ -36,7 +42,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-09-30: row `in_progress`, carry-forwards from `/review 121` round 2 recorded. Next: T-45 tests and fixtures (red).
 
 ## Result
 
