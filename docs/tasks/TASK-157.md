@@ -53,7 +53,4 @@ here.
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
-
-_Pending._
+PR [#121](https://github.com/itsahmeds/flowers-overseas/pull/121). The three launch texts (`.claude/agents/launch.md`, `.claude/skills/launch/SKILL.md`, the work order's Role: launch) now carry AC-41 and AC-37: gate 1 by `head_sha` read job by job, four `preview`-chain jobs `skipped` and `lighthouse` `success`; gates 4–6 on staging at the named SHA; staging `RELEASE: VERIFIED | HALTED`; step 4 `release:promote` with the READY SHAs; the note committed after every visit, `HALTED` included; the agent redeploys the previous image but never moves `release`; `main` held from dispatch until visit 1 reports. `maxTurns: 200` kept. Tests (unit, `tests/unit/framework-text.test.ts`, T-41): 7 cases on the tree plus 15 one-sentence revert cases on scratch copies, 45/45 green; one `FRAMEWORK_ROOT` scratch run shown red. `docs/runbooks/railway-cloudflare-setup.md` gains "Release branch" (F1–F6, each with its check; §6's token corrected to a workspace token). T-44's live run is owed to the founder (see `## Escalations`); the exit-0 run is TASK-104's. No expensive gate run locally. `gates:cheap` PASS.
