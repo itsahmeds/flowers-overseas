@@ -41,6 +41,12 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   **Answered 2026-09-29: dropped.** No kernel line and no `W-n` are written; `CLAUDE.md` and
   `docs/framework/why.md` are not touched by this task. The mechanism (the three commands and the
   guard rules) stays.
+- **2026-09-29 — `commitlint` red on `42e153e` (`wip(release): …`).** To: the orchestrator.
+  Fix: reword that one commit, for example to `feat(release): release commands and their
+  integration tests (TASK-156)`, force-push with a lease, then toggle `ci:full`. The finisher's
+  reword was refused by the permission classifier (history rewrite), and the branch was restored
+  to `c6a5f67`. The reword leaves the tree unchanged; husky's `tsc` fails on that intermediate
+  commit, so the amend needs `--no-verify`. **Open.**
 
 ## Progress
 
@@ -64,6 +70,10 @@ here.
 - 2026-09-29 — rebased on `origin/main` (TASKS.md: main's TASK-154/155 rows kept, this row kept);
   map regenerated; prettier on the release files and README rows for the three scripts (both
   forced by gates). gates:cheap PASS at `f848d93`. Next: ready, `ci:full`, CI.
+- 2026-09-29 — ready, `ci:full`. CI run 36585126207 on `c6a5f67`: every job green except
+  `commitlint`, which rejects `42e153e` (`wip(release): …`, from the earlier agent; `wip` is not
+  an allowed type). Rewording it means a history rewrite and a force-push, which the permission
+  classifier refused here. Left for the orchestrator (see Escalations).
 
 ## Result
 
