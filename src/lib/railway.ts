@@ -404,15 +404,28 @@ export interface TriggerReport {
    */
   readonly lines: readonly string[];
   /**
-   * True only for the expected red of spec 040 AC-42, until TASK-104 creates production `web` on
-   * `release`. All of these must hold: the check failed, the production environment is in the
-   * response, its `web` row is absent, and every failure is a declared production service that
-   * does not exist and has no live trigger. A service that exists with no trigger, a wrong branch,
-   * or any staging failure is never this. The CLI also withholds the label when another check
-   * failed (`failureVerdict`).
+   * The expected cases of spec 040 AC-44 present on a red run, production's first; empty when the
+   * run is not an expected red. It is non-empty only when the check failed and **every** failing
+   * row is one of these:
+   *  - `production-services` (AC-42, until TASK-104): a declared production service with status
+   *    `absent`, while the production environment is in the response and its `web` row is
+   *    `absent` too;
+   *  - `staging-worker` (AC-44, until TASK-103): staging's `worker` with status `absent`, no
+   *    instance and no live trigger. Staging's `web` is never this, so a response without the
+   *    staging environment (both of its rows absent) is never labelled.
+   * A service that exists with no trigger, a wrong branch, or a missing production `worker` while
+   * production `web` exists is never expected. The CLI also withholds the label when another
+   * check failed (`failureVerdict`). TASK-103's PR deletes `staging-worker`.
    */
-  readonly onlyAbsentProductionServices: boolean;
+  readonly expectedAbsences: readonly ExpectedAbsence[];
 }
+
+/** AC-44's two expected cases, in the order the label names them. */
+export const EXPECTED_ABSENCES = [
+  "production-services",
+  "staging-worker",
+] as const;
+export type ExpectedAbsence = (typeof EXPECTED_ABSENCES)[number];
 
 /** `<environment> · <service> · triggers on <live>, declared <declared>` (AC-34's line). */
 export function formatTriggerRow(row: TriggerRow): string {
@@ -421,6 +434,39 @@ export function formatTriggerRow(row: TriggerRow): string {
   }
   const live = row.live.length === 0 ? "none" : row.live.join(", ");
   return `${row.environment} · ${row.service} · triggers on ${live}, declared ${row.declared}`;
+}
+
+/** Which AC-44 case a failing row is, or `undefined` when it is a real failure. */
+function expectedAbsenceOf(
+  row: TriggerRow,
+  productionWebAbsent: boolean,
+): ExpectedAbsence | undefined {
+  if (row.status !== "absent") return undefined;
+  if (row.environment === "production" && productionWebAbsent)
+    return "production-services";
+  if (row.environment === "staging" && row.service === "worker")
+    return "staging-worker";
+  return undefined;
+}
+
+function expectedAbsencesOf(
+  failing: readonly TriggerRow[],
+  rows: readonly TriggerRow[],
+  environments: readonly { readonly name: string }[],
+): readonly ExpectedAbsence[] {
+  const productionWebAbsent =
+    environments.some((env) => env.name === "production") &&
+    rows.some(
+      (row) =>
+        row.environment === "production" &&
+        row.service === WEB_SERVICE_NAME &&
+        row.status === "absent",
+    );
+  const cases = failing.map((row) =>
+    expectedAbsenceOf(row, productionWebAbsent),
+  );
+  if (cases.some((c) => c === undefined)) return [];
+  return EXPECTED_ABSENCES.filter((c) => cases.includes(c));
 }
 
 /**
@@ -542,18 +588,7 @@ export function compareDeployTriggers(
     ok,
     rows,
     lines: (ok ? rows : failing).map(formatTriggerRow),
-    onlyAbsentProductionServices:
-      !ok &&
-      environments.some((env) => env.name === "production") &&
-      rows.some(
-        (row) =>
-          row.environment === "production" &&
-          row.service === WEB_SERVICE_NAME &&
-          row.status === "absent",
-      ) &&
-      failing.every(
-        (row) => row.environment === "production" && row.status === "absent",
-      ),
+    expectedAbsences: ok ? [] : expectedAbsencesOf(failing, rows, environments),
   };
 }
 

@@ -20,9 +20,10 @@
  * Output: the report lines go to **stdout**, and on a red run the verdict goes to **stderr**. A
  * red trigger check prints only its failing rows, so with `RAILWAY_ENVIRONMENT_ID` unset the run
  * AC-42 records while production has no `web` (TASK-104 creates it) is exactly its
- * `production · <service> · triggers on none, declared release` lines on stdout, exit 1, and a
- * stderr verdict that labels it `EXPECTED RED until TASK-104`. Any other failure carries no such
- * label.
+ * `production · <service> · triggers on none, declared release` lines on stdout, plus, while
+ * staging has no `worker` (TASK-103 creates it), `staging · worker · triggers on none, declared
+ * main`; exit 1, and a stderr verdict that labels it `EXPECTED RED until …` with AC-44's line for
+ * the cases present. Any other failure carries no such label.
  *
  * Credentials: `RAILWAY_API_TOKEN` (a token the founder pastes into their shell or the CI secret
  * store) and `RAILWAY_PROJECT_ID`. Neither is in the repository, and with either absent the
@@ -135,22 +136,43 @@ export function loadDeclaredTriggers(repoRoot: string): DeployTriggers {
 }
 
 /**
- * The stderr verdict of a red run. Only the expected red of AC-42 is labelled, and only when the
- * trigger check is its sole failure: a service drift or key-set failure on the same run is a real
- * failure, and the label would hide it.
+ * AC-44's three stderr lines, one per set of expected cases present. Case (b), staging's
+ * `worker`, retires with TASK-103: its PR deletes the `staging-worker` and
+ * `production-services+staging-worker` lines here, and the case in `src/lib/railway.ts`.
+ */
+const EXPECTED_RED_LABELS: Readonly<Record<string, string>> = {
+  "production-services":
+    "railway:check: EXPECTED RED until TASK-104 creates production `web` on `release` " +
+    "(spec 040 AC-42, T-44): every failure above is a declared production service that does " +
+    "not exist yet. Once production `web` exists, this output is a real failure.\n",
+  "staging-worker":
+    "railway:check: EXPECTED RED until TASK-103 creates staging `worker` " +
+    "(spec 040 AC-44, T-45): every failure above is staging's `worker`, which does not exist " +
+    "yet. Once staging `worker` exists, this output is a real failure.\n",
+  "production-services+staging-worker":
+    "railway:check: EXPECTED RED until TASK-104 creates production `web` on `release` and " +
+    "TASK-103 creates staging `worker` (spec 040 AC-42, AC-44, T-44, T-45): every failure " +
+    "above is a declared production service or staging's `worker`, none of which exists yet. " +
+    "Once both exist, this output is a real failure.\n",
+};
+
+/**
+ * The stderr verdict of a red run. Only the expected red of AC-42 and AC-44 is labelled, chosen
+ * by the cases present (`TriggerReport.expectedAbsences`, production's first), and only when the
+ * trigger check is the sole failure: a service drift or key-set failure on the same run is a
+ * real failure, and the label would hide it.
  */
 export function failureVerdict(
   triggers: TriggerReport | undefined,
   otherChecksOk: boolean,
 ): string {
-  if (otherChecksOk && triggers?.onlyAbsentProductionServices === true) {
-    return (
-      "railway:check: EXPECTED RED until TASK-104 creates production `web` on `release` " +
-      "(spec 040 AC-42, T-44): every failure above is a declared production service that does " +
-      "not exist yet. Once production `web` exists, this output is a real failure.\n"
-    );
-  }
-  return "railway:check failed: the lines above name each difference.\n";
+  const label =
+    otherChecksOk && triggers !== undefined
+      ? EXPECTED_RED_LABELS[triggers.expectedAbsences.join("+")]
+      : undefined;
+  return (
+    label ?? "railway:check failed: the lines above name each difference.\n"
+  );
 }
 
 function flagValue(argv: readonly string[], flag: string): string | undefined {
