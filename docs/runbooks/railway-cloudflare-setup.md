@@ -160,11 +160,13 @@ rather than anything in the code — unset is *meant* to fail closed to `noindex
 
 ## 6. Run the drift gate
 
-From a clean checkout of `main`, with a Railway **project token** (Railway → project → Settings →
-Tokens) exported in your shell only:
+From a clean checkout of `main`, with a Railway **workspace token** for Grovant's workspace
+exported in your shell only. A project token does not work here: it is scoped to one environment
+and Railway expects it in a different header from the one the scripts send. "Release branch" → F5
+below says how to create the right one.
 
 ```bash
-export RAILWAY_API_TOKEN='<project token>'
+export RAILWAY_API_TOKEN='<workspace token>'
 export RAILWAY_PROJECT_ID='<project id>'
 
 pnpm railway:check                 # trigger branches only (spec 040 AC-34)
@@ -217,6 +219,199 @@ run has happened.
 - **No lifting of `noindex`.** The indexing flip is spec 007 §12 / TASK-096, on the founder's word,
   and must not be bundled with a hosting change.
 - **No `STAGING_BASIC_AUTH` on `production`** — AC-25: the public site has no auth wall.
+
+## Release branch (spec 040 §14 A3: F1–F6)
+
+**Why.** Production no longer deploys on every merge. It deploys only from a branch called
+`release`, which only `pnpm release:promote` moves, after `/launch production` has passed every
+gate on that exact commit. `main` deploys to `staging`. Six settings make that true, and only you
+can change them: you are Admin in Grovant's Railway workspace and the only writer on GitHub.
+**Owner:** founder (F1–F6); the orchestrator only pushes `release` in F1 and runs the checks.
+**When:** now. F4 needs CI to run on every push to `main`, which is on `main` already (TASK-155).
+**Time:** about 20 minutes.
+
+| # | What | Who | The command that proves it |
+|---|---|---|---|
+| F1 | `release` exists; production `web` (and `worker`, if it has a source) deploys from it | orchestrator (branch), founder (trigger) | `git ls-remote origin refs/heads/release`, `pnpm release:status`, `pnpm railway:check` |
+| F2 | staging `web` and `worker` deploy from `main` | founder | `pnpm railway:check` |
+| F3 | PR environments still fork from `staging`, and none follows `release` | founder | `pnpm railway:check` (plus a look at the screen) |
+| F4 | staging `web` waits for CI | founder | `gh run list --workflow ci --branch main --event push --limit 1`, staging `/api/health`, `pnpm railway:check` |
+| F5 | the token `railway:check` uses can read every environment's triggers | founder | `pnpm railway:check` prints exactly what "What the checks print today" shows |
+| F6 | a ruleset stops `release` being deleted, and nothing else | founder | `gh api repos/itsahmeds/flowers-overseas/rules/branches/release --jq '[.[].type]'` |
+
+Do them in the order below: F5 first, because every other check needs its token.
+
+Railway's dashboard is renamed from time to time. If a label below does not match your screen,
+the setting is the one Railway's docs call by the name in _italics_, and the check after each step
+tells you whether it took. Every check prints names and branches, never a secret.
+
+Before you start, in a terminal in your checkout (`cd ~/dev/flowers-overseas`, then `git pull`):
+
+```bash
+export RAILWAY_API_TOKEN='<the workspace token from F5>'   # F5 first if you have none
+export RAILWAY_PROJECT_ID='<project id: Railway → the project → Settings → General → Project ID>'
+unset RAILWAY_ENVIRONMENT_ID    # these checks read triggers only
+```
+
+### F5 — the token `railway:check` uses can read deployment triggers
+
+Do this one first: every other check needs it.
+
+1. In Railway, click your avatar (top right) → **Account Settings** → **Tokens**.
+2. Under _workspace token_, give it the name `railway-check` and choose **Grovant's workspace**
+   as its workspace. Click **Create**. Copy the token once; Railway shows it only now.
+3. Paste it into your shell as `RAILWAY_API_TOKEN` (above), and into your password manager. Never
+   into a file in this repository, an issue, or a PR.
+
+A project token (Project → Settings → Tokens) is **not** the right one: it can see only one
+environment, so it cannot read `production` and `staging` together.
+
+**Proof:**
+
+```bash
+pnpm railway:check; echo "exit $?"
+```
+
+Today, while production has no `web` service, you should see **exactly** the output under "What
+the checks print today" at the end of this section, and `exit 1`. A red run prints only the lines
+that fail, so seeing no `staging · web` line is right. How to read anything else:
+
+- `exit 2`: the token or the project id is not set in this shell.
+- An error that says not authorised: Railway refused the token. Make a new one in step 2 and
+  check the workspace you chose.
+- A `staging · web · …` line: the token cannot see `staging`. Railway reports an environment it
+  hides as having no services. Make a new token in step 2.
+- No `EXPECTED RED` line on stderr: the token may not see `production`, because the check gives
+  that label only when production is in Railway's answer. Make a new token in step 2.
+
+Once TASK-104 has created production `web`, the same command prints every row, `production ·`
+and `staging ·` lines alike, and `exit 0`.
+
+### F1 — `release` exists, and production follows it
+
+**Part 1, the branch (the orchestrator's).** If production is already running a commit, the
+orchestrator creates `release` once at that commit, read from production's `/api/health`
+`commit`. If production has never deployed, nothing is created now: the first
+`/launch production` creates `release` with `pnpm release:promote --create` at the commit it
+gates. (The shell guard now refuses every direct push to `release`, so `release:promote` is the
+only way in either case.)
+
+**Part 2, the trigger (yours).**
+
+1. Railway → the `flowers-overseas` project. In the environment switcher at the top, choose
+   **production**.
+2. Click the **web** service → **Settings**.
+3. Find **Source**, near the top. It shows the GitHub repository and the branch this environment
+   deploys from (Railway's docs: _trigger branch_).
+4. Change the branch to `release` and save. Type the name exactly: `release`, lower case.
+5. You should now see `release` as the branch. Nothing deploys yet if `release` has not moved.
+6. Click the **worker** service and do the same, **only if** its Source section shows a
+   repository. A `worker` with no repository has no branch to set; leave it.
+
+**If production has no `web` service yet** (the state today, until TASK-104): part 2 does not
+apply now. TASK-104 creates `web` with `release` as its branch from the start, never with `main`,
+and only once `release` exists, so production never follows a missing branch.
+
+**Proof:**
+
+```bash
+git ls-remote origin refs/heads/release     # one line, <sha>  refs/heads/release (nothing yet if production never deployed)
+pnpm release:status; echo "exit $?"         # once release exists: invariant: ok
+pnpm railway:check; echo "exit $?"          # once TASK-104 has created web: production · web · triggers on release, declared release
+```
+
+### F2 — staging follows `main`
+
+1. Environment switcher → **staging**.
+2. **web** → **Settings** → **Source**: the branch reads `main`. If it reads anything else,
+   change it to `main` and save.
+3. **worker** (if it exists and its Source section shows a repository): the same, `main`.
+
+**Proof:** `pnpm railway:check` prints `staging · web · triggers on main, declared main` on a
+green run, and no `staging · web` line on a red one.
+
+### F3 — PR environments still fork from `staging`
+
+1. Railway → the project → **Settings** (the project's, not a service's) → **Environments**.
+2. _PR environments_ stay on. Where the screen names the environment they are copied from (the
+   _base environment_), it reads `staging`. Change nothing else.
+3. If the screen shows no base-environment choice, tell the orchestrator what it does show.
+
+**Proof:** `pnpm railway:check` prints no `triggers on release` line for any environment other
+than `production`: AC-34 fails the run if a PR environment follows `release`. The base
+environment itself has no command that reads it; your look at the screen in step 2 is the record.
+
+### F4 — staging waits for CI
+
+1. Environment switcher → **staging** → **web** → **Settings** → **Source**.
+2. Turn on **Wait for CI**. Railway then waits for the GitHub Actions run of each commit on `main`
+   before it deploys it, so a red `main` never reaches staging or the florist demos.
+
+**Proof:** after the next merge to `main`:
+
+```bash
+gh run list --workflow ci --branch main --event push --limit 1 --json headSha,status,conclusion
+curl -s -u "$CRED" "https://$DOMAIN/api/health"    # DOMAIN and CRED as in step 5 above
+```
+
+While the run's `status` is not `completed`, staging's `commit` is still the previous one, and
+Railway shows the new deployment as waiting. Once the run concludes `success`, staging's
+`commit` becomes the run's `headSha`. Then run `pnpm railway:check` again: the same result as
+after F1–F3.
+
+### F6 — `release` cannot be deleted
+
+On GitHub, in the repository:
+
+1. **Settings** → **Rules** → **Rulesets** → **New ruleset** → **New branch ruleset**.
+2. **Ruleset name:** `release`. **Enforcement status:** **Active**. **Bypass list:** leave empty.
+3. **Target branches** → **Add target** → **Include by pattern** → type `release` → **Add
+   Inclusion pattern**.
+4. **Branch rules:** tick **Restrict deletions** only. **Untick Block force pushes**, which GitHub
+   ticks by default: a rollback moves `release` backwards, and that rule would stop it. Leave
+   every other rule unticked.
+5. **Create**.
+
+Rulesets apply only while the repository is public on GitHub Free. If it goes private, this
+protection silently stops.
+
+**Proof:**
+
+```bash
+gh api repos/itsahmeds/flowers-overseas/rules/branches/release --jq '[.[].type]'
+```
+
+It prints exactly `["deletion"]`. `[]` means the ruleset is not active or does not match
+`release`; anything with `non_fast_forward` in it means **Block force pushes** is still ticked.
+
+### What the checks print today
+
+While production has no `web` service (until TASK-104), `pnpm railway:check` after F1–F3, with
+`RAILWAY_ENVIRONMENT_ID` unset, exits
+**1**, and that is the expected result. Its output is one line per production service that does
+not exist, and no other line:
+
+```text
+production · web · triggers on none, declared release
+production · worker · triggers on none, declared release
+```
+
+and on stderr, a line starting `railway:check: EXPECTED RED until TASK-104`. (The `worker` line
+is there only while production has no `worker` service at all.) Paste the output into
+`docs/tasks/TASK-157.md`. Once TASK-104 has created `web` on `release`, the same command must
+exit 0; that run is recorded in TASK-104's brief, before the DNS change.
+
+**Also expected: a missing staging `worker`.** If staging has no `worker` service yet (TASK-103
+creates it), the run also prints this line, and that is expected until TASK-103 has run:
+
+```text
+staging · worker · triggers on none, declared main
+```
+
+For now stderr then says `railway:check failed` and shows **no** EXPECTED RED label. That is
+because the label does not cover this case yet: a spec 040 amendment makes it an expected red,
+and a follow-up task teaches the check to label it. Your clicks are not wrong. Paste the output
+as it is.
 
 ## Rollback
 

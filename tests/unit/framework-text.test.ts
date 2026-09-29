@@ -277,6 +277,362 @@ function gatesLineProblems(root: string): string[] {
   return problems;
 }
 
+// ---------------------------------------------------------------------------------------------
+// T-41 (spec 040 AC-41, AC-37; TASK-157): the launch texts say what the process is under §14 A3.
+// Production deploys from `release`, which only the orchestrator's `pnpm release:promote` moves;
+// `main` deploys to staging.
+
+const LAUNCH_AGENT = ".claude/agents/launch.md";
+const LAUNCH_SKILL = ".claude/skills/launch/SKILL.md";
+const PREVIEW_CHAIN = ["preview", "e2e", "visual", "a11y"] as const;
+
+/** Reads `path` under `root`, or "" when it is missing (the check then reports what it lacks). */
+const readIfAny = (root: string, path: string): string =>
+  existsSync(join(root, path)) ? read(root, path) : "";
+
+/** `**bold**` markers removed, so a phrase check does not depend on emphasis. */
+const plain = (text: string): string => text.replace(/\*\*/g, "");
+
+/**
+ * `text` as sentences: split into blocks at a blank line, a list item or a heading, each block's
+ * wrapped lines joined, then split after a full stop.
+ */
+function sentences(text: string): string[] {
+  return plain(text)
+    .split(/\n\s*\n|\n(?=\s*(?:[-*]|\d+\.|#+) )/)
+    .map((block) => block.replace(/\s+/g, " ").trim())
+    .flatMap((block) => block.split(/(?<=\.)\s+/));
+}
+
+/** The three launch texts, each by the name a problem reports it under. */
+function launchTexts(root: string): [string, string][] {
+  return [
+    [LAUNCH_AGENT, readIfAny(root, LAUNCH_AGENT)],
+    [LAUNCH_SKILL, readIfAny(root, LAUNCH_SKILL)],
+    [
+      `${WORK_ORDER} Role: launch`,
+      section(readIfAny(root, WORK_ORDER), "Role: launch"),
+    ],
+  ];
+}
+
+/** A sentence that says a merge to `main` deploys production, in any phrasing, and does not deny it. */
+const saysMergeDeploysProduction = (s: string): boolean =>
+  /merg/i.test(s) &&
+  s.includes("`main`") &&
+  /deploy/i.test(s) &&
+  /production|Railway/.test(s) &&
+  !/\bnever\b|\bnot\b|only to staging/.test(s);
+
+/** AC-37 / AC-41: gate 1 names the SHA and reads the run job by job. */
+function gate1Problems(root: string): string[] {
+  const gates = section(readIfAny(root, LAUNCH_AGENT), "Pre-deploy gates");
+  const gate1 = numbered(gates, 1);
+  if (gate1 === "")
+    return [`${LAUNCH_AGENT}: "Pre-deploy gates" has no gate 1`];
+  const said = sentences(gate1);
+  const problems: string[] = [];
+  if (!gate1.includes("`head_sha`"))
+    problems.push(
+      `${LAUNCH_AGENT} gate 1: does not match the run on its \`head_sha\``,
+    );
+  if (!gate1.includes("gh run view <id> --json jobs"))
+    problems.push(
+      `${LAUNCH_AGENT} gate 1: does not read the run's jobs (\`gh run view <id> --json jobs\`)`,
+    );
+  if (!plain(gate1).includes("job by job"))
+    problems.push(
+      `${LAUNCH_AGENT} gate 1: does not say green is read job by job`,
+    );
+  const skippedFour = said.some(
+    (s) =>
+      PREVIEW_CHAIN.every((job) => s.includes(`\`${job}\``)) &&
+      s.includes("`skipped`"),
+  );
+  if (!skippedFour)
+    problems.push(
+      `${LAUNCH_AGENT} gate 1: no sentence names \`preview\`, \`e2e\`, \`visual\` and \`a11y\` as \`skipped\``,
+    );
+  const lighthouse = said.some((s) =>
+    /`lighthouse`[^.]*must conclude `success`/.test(s),
+  );
+  if (!lighthouse)
+    problems.push(
+      `${LAUNCH_AGENT} gate 1: does not say \`lighthouse\` must conclude \`success\``,
+    );
+  if (!gate1.includes("RELEASE: HALTED <sha>: gate 1 (<job> <conclusion>)"))
+    problems.push(
+      `${LAUNCH_AGENT} gate 1: does not name its halt, \`RELEASE: HALTED <sha>: gate 1 (<job> <conclusion>)\``,
+    );
+  if (!gate1.includes("--commit <sha>"))
+    problems.push(
+      `${LAUNCH_AGENT} gate 1: does not find the run by \`--commit <sha>\``,
+    );
+  if (!plain(gate1).includes("the run's own conclusion is not evidence"))
+    problems.push(
+      `${LAUNCH_AGENT} gate 1: does not say the run's own conclusion is not evidence`,
+    );
+  const halt =
+    said.find((s) =>
+      s.includes("RELEASE: HALTED <sha>: gate 1 (<job> <conclusion>)"),
+    ) ?? "";
+  for (const [pattern, what] of [
+    [/any other `skipped`/i, "any other `skipped`"],
+    [/`cancelled`/, "`cancelled`"],
+    [/unfinished/, "an unfinished job"],
+    [/no run for the SHA/, "no run for the SHA"],
+  ] as const) {
+    if (!pattern.test(halt))
+      problems.push(`${LAUNCH_AGENT} gate 1: the halt does not name ${what}`);
+  }
+  if (said.some((s) => /`success` or `skipped`|`skipped` or `success`/.test(s)))
+    problems.push(
+      `${LAUNCH_AGENT} gate 1: lets a job conclude \`success\` or \`skipped\``,
+    );
+  return problems;
+}
+
+/** AC-37 / AC-41: gates 4–6 run against staging at the named SHA, not a preview. */
+function stagingGatesProblems(root: string): string[] {
+  const gates = section(readIfAny(root, LAUNCH_AGENT), "Pre-deploy gates");
+  const problems: string[] = [];
+  for (const n of [4, 5, 6]) {
+    const gate = plain(numbered(gates, n)).replace(/\s+/g, " ");
+    if (!gate.includes("staging at the named SHA"))
+      problems.push(
+        `${LAUNCH_AGENT} gate ${String(n)}: does not run against staging at the named SHA`,
+      );
+    if (/\bpreview\b/i.test(gate))
+      problems.push(`${LAUNCH_AGENT} gate ${String(n)}: still names a preview`);
+  }
+  return problems;
+}
+
+/** The passages that say what a staging launch does, each by the name a problem reports. */
+function stagingPassages(root: string): [string, string][] {
+  const agent = plain(readIfAny(root, LAUNCH_AGENT));
+  const skill = plain(readIfAny(root, LAUNCH_SKILL));
+  const role = plain(section(readIfAny(root, WORK_ORDER), "Role: launch"));
+  const grab = (text: string, re: RegExp): string => re.exec(text)?.[0] ?? "";
+  return [
+    [
+      `${LAUNCH_AGENT} "Promotion", staging`,
+      grab(section(agent, "Promotion"), /^- `staging`:[^\n]*/m),
+    ],
+    [
+      `${LAUNCH_AGENT} "Output contract", staging`,
+      grab(section(agent, "Output contract"), /Print [^()]*\(staging\)/),
+    ],
+    [
+      `${LAUNCH_SKILL} Outputs, staging`,
+      grab(skill, /\bstaging `RELEASE:[^;\n]*/),
+    ],
+    [
+      `${LAUNCH_SKILL} step 3, staging`,
+      grab(section(skill, "Steps"), /Staging ends here[^\n]*/),
+    ],
+    [
+      `${WORK_ORDER} Role: launch, staging`,
+      grab(role, /Staging is one visit[\s\S]*?(?=\n- |\n\n|$)/),
+    ],
+  ];
+}
+
+/** AC-41: staging's result is `RELEASE: VERIFIED | HALTED`, and no staging passage says "promote". */
+function stagingResultProblems(root: string): string[] {
+  const problems: string[] = [];
+  for (const [name, text] of launchTexts(root)) {
+    if (!text.includes("`RELEASE: VERIFIED | HALTED`"))
+      problems.push(
+        `${name}: staging's result is not \`RELEASE: VERIFIED | HALTED\``,
+      );
+  }
+  for (const [name, passage] of stagingPassages(root)) {
+    // The two denials that say why staging is not "promoted" are the only allowed mentions.
+    const rest = passage
+      .replace("nothing to promote", "")
+      .replace('"Promoted" would be untrue', "");
+    if (passage === "") problems.push(`${name}: not found`);
+    else if (/promot/i.test(rest))
+      problems.push(`${name}: says staging is promoted`);
+  }
+  return problems;
+}
+
+/** AC-37 / AC-41: promotion is `release:promote` on the READY SHA; a merge deploys only staging. */
+function promotionProblems(root: string): string[] {
+  const agent = readIfAny(root, LAUNCH_AGENT);
+  const flat = plain(agent).replace(/\s+/g, " ");
+  const promotion = plain(section(agent, "Promotion")).replace(/\s+/g, " ");
+  const output = plain(section(agent, "Output contract")).replace(/\s+/g, " ");
+  const problems: string[] = [];
+  if (
+    !promotion.includes("`pnpm release:promote --sha <sha> --expect <old-sha>`")
+  )
+    problems.push(
+      `${LAUNCH_AGENT} "Promotion": does not name \`pnpm release:promote\``,
+    );
+  for (const [name, text] of launchTexts(root)) {
+    if (sentences(text).some(saysMergeDeploysProduction))
+      problems.push(
+        `${name}: still says a merge to \`main\` deploys production`,
+      );
+  }
+  if (!promotion.includes("A merge to `main` deploys only to staging"))
+    problems.push(
+      `${LAUNCH_AGENT} "Promotion": does not say a merge to \`main\` deploys only to staging`,
+    );
+  if (!agent.includes("`RELEASE: READY <40-char sha> (release at <old-sha>)`"))
+    problems.push(
+      `${LAUNCH_AGENT}: READY does not name its SHA and the release it moves from`,
+    );
+  if (
+    !flat.includes(
+      "read at the start of visit 1 and again at the end; a difference halts",
+    )
+  )
+    problems.push(
+      `${LAUNCH_AGENT}: does not re-read staging's commit at the end of visit 1`,
+    );
+  if (!output.includes("written on every outcome, `HALTED` included"))
+    problems.push(
+      `${LAUNCH_AGENT} "Output contract": the release note is not written on every outcome`,
+    );
+  return problems;
+}
+
+/** AC-41: SKILL step 4 runs `release:promote` with the READY SHA; the note is committed after every visit. */
+function skillPromoteProblems(root: string): string[] {
+  const skill = readIfAny(root, LAUNCH_SKILL);
+  const flat = plain(skill).replace(/\s+/g, " ");
+  const step4 = plain(numbered(section(skill, "Steps"), 4)).replace(
+    /\s+/g,
+    " ",
+  );
+  const problems: string[] = [];
+  if (!step4.includes("`pnpm release:promote --sha <sha> --expect <old-sha>`"))
+    problems.push(
+      `${LAUNCH_SKILL} step 4: does not run \`pnpm release:promote --sha <sha> --expect <old-sha>\``,
+    );
+  if (!step4.includes("with exactly the SHAs of the READY line"))
+    problems.push(`${LAUNCH_SKILL} step 4: does not take the SHA from READY`);
+  if (/--match-head-commit|\(the promotion\)/.test(step4))
+    problems.push(`${LAUNCH_SKILL} step 4: still promotes by merging`);
+  if (
+    !flat.includes(
+      "commits the release note (and the audit report) after every visit, `HALTED` included",
+    )
+  )
+    problems.push(
+      `${LAUNCH_SKILL}: does not commit the release note after every visit, \`HALTED\` included`,
+    );
+  return problems;
+}
+
+/** AC-41: the launch agent may redeploy the previous image but never moves `release`. */
+function neverMovesReleaseProblems(root: string): string[] {
+  const role = plain(
+    section(readIfAny(root, WORK_ORDER), "Role: launch"),
+  ).replace(/\s+/g, " ");
+  const agent = plain(readIfAny(root, LAUNCH_AGENT)).replace(/\s+/g, " ");
+  const where = `${WORK_ORDER} Role: launch`;
+  const problems: string[] = [];
+  if (role.includes("promote to the target"))
+    problems.push(`${where}: still says the agent may promote to the target`);
+  if (
+    !role.includes("the promotion is the orchestrator's `pnpm release:promote`")
+  )
+    problems.push(
+      `${where}: does not say the promotion is the orchestrator's \`pnpm release:promote\``,
+    );
+  if (!role.includes("roll production back by redeploying the previous image"))
+    problems.push(
+      `${where}: does not let the agent roll back by redeploying the previous image`,
+    );
+  if (!/never moves `release`/i.test(role))
+    problems.push(
+      `${where}: does not say the launch agent never moves \`release\``,
+    );
+  if (!/never move `release`/i.test(agent))
+    problems.push(
+      `${LAUNCH_AGENT}: does not say the launch agent never moves \`release\``,
+    );
+  for (const s of sentences(readIfAny(root, LAUNCH_AGENT))) {
+    if (
+      /release:(promote|rollback)/.test(s) &&
+      !/orchestrator|founder|\bno `(pnpm )?release:/.test(s)
+    )
+      problems.push(
+        `${LAUNCH_AGENT}: gives the launch agent release:promote or release:rollback: "${s}"`,
+      );
+  }
+  if (
+    !/^- Move `release`: [^\n]*no `release:promote`, no `release:rollback`/m.test(
+      section(readIfAny(root, LAUNCH_AGENT), "Never"),
+    )
+  )
+    problems.push(
+      `${LAUNCH_AGENT} "Never": does not forbid \`release:promote\` and \`release:rollback\``,
+    );
+  return problems;
+}
+
+/** Break H2: `release` moves to the READY SHA, never to `main`'s tip. */
+function mainTipProblems(root: string): string[] {
+  const agent = plain(section(readIfAny(root, LAUNCH_AGENT), "Promotion"));
+  const step4 = plain(
+    numbered(section(readIfAny(root, LAUNCH_SKILL), "Steps"), 4),
+  );
+  const problems: string[] = [];
+  if (!agent.replace(/\s+/g, " ").includes("never to `main`'s tip"))
+    problems.push(
+      `${LAUNCH_AGENT} "Promotion": does not say \`release\` never moves to \`main\`'s tip`,
+    );
+  if (!step4.replace(/\s+/g, " ").includes("never `main`'s tip"))
+    problems.push(`${LAUNCH_SKILL} step 4: does not say never \`main\`'s tip`);
+  for (const [name, text] of launchTexts(root)) {
+    const flat = plain(text).replace(/\s+/g, " ");
+    for (const match of flat.matchAll(/`main`'s tip/g)) {
+      const before = flat.slice(Math.max(0, match.index - 9), match.index);
+      if (!/never (to )?$/.test(before))
+        problems.push(
+          `${name}: names \`main\`'s tip as a target for \`release\``,
+        );
+    }
+  }
+  return problems;
+}
+
+/** Break H5: the work order's release note is written on every outcome and committed after every visit. */
+function workOrderNoteProblems(root: string): string[] {
+  const role = plain(
+    section(readIfAny(root, WORK_ORDER), "Role: launch"),
+  ).replace(/\s+/g, " ");
+  const where = `${WORK_ORDER} Role: launch`;
+  const problems: string[] = [];
+  if (!role.includes("on every outcome, `HALTED` included"))
+    problems.push(
+      `${where}: the release note is not written on every outcome, \`HALTED\` included`,
+    );
+  if (!role.includes("after every visit"))
+    problems.push(
+      `${where}: the orchestrator does not commit the note after every visit`,
+    );
+  return problems;
+}
+
+/** AC-37: the orchestrator holds merges and pushes to `main` from dispatch until visit 1 reports. */
+function holdMainProblems(root: string): string[] {
+  const skill = plain(readIfAny(root, LAUNCH_SKILL)).replace(/\s+/g, " ");
+  return skill.includes(
+    "holds every merge and push to `main` from dispatch until visit 1 reports",
+  )
+    ? []
+    : [
+        `${LAUNCH_SKILL}: the orchestrator does not hold merges to \`main\` from dispatch until visit 1 reports`,
+      ];
+}
+
 const CHECKS = {
   "1 · skills that dispatch point at the work order": skillPointerProblems,
   "2 · the brief template has ## Progress above ## Result": templateProblems,
@@ -285,6 +641,21 @@ const CHECKS = {
   "5 · every (why: W-n) resolves": whyProblems,
   "AC-43 · DoD §2 names gates:cheap and its gates match the script":
     gatesLineProblems,
+  "T-41 · gate 1 reads the run job by job, four skipped and lighthouse success":
+    gate1Problems,
+  "T-41 · gates 4–6 run against staging at the named SHA": stagingGatesProblems,
+  "T-41 · staging reports RELEASE: VERIFIED | HALTED": stagingResultProblems,
+  "T-41 · promotion is release:promote on the READY SHA, the note on every outcome":
+    promotionProblems,
+  "T-41 · /launch step 4 runs release:promote, the note committed after every visit":
+    skillPromoteProblems,
+  "T-41 · the launch agent may redeploy the previous image, never moves release":
+    neverMovesReleaseProblems,
+  "T-41 · the orchestrator holds main from dispatch until visit 1 reports":
+    holdMainProblems,
+  "T-41 · release moves to the READY SHA, never to main's tip": mainTipProblems,
+  "T-41 · the work order's note on every outcome, committed after every visit":
+    workOrderNoteProblems,
 } as const;
 
 describe(`the framework text (AC-44) under ${ROOT === REPO_ROOT ? "the repository" : `FRAMEWORK_ROOT=${ROOT}`}`, () => {
@@ -455,6 +826,398 @@ describe("each case goes red when its subject is deleted in a scratch copy (T-46
     expect(problems.length).toBeGreaterThan(0);
     for (const problem of problems)
       expect(problem).toMatch(/\(why: W-12\) has no "## W-12 ·" heading/);
+  });
+});
+
+describe("T-41: each launch-text case goes red when one sentence is reverted in a scratch copy (spec 040 AC-41, W-13)", () => {
+  const WHERE = `${WORK_ORDER} Role: launch`;
+
+  it("gate 1 · the `lighthouse` sentence deleted → red", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      LAUNCH_AGENT,
+      "`lighthouse` is not one of them and must conclude `success`: it is `needs: build` with no `if:`, so it runs on the push, and every release carries its budgets. ",
+    );
+    expect(gate1Problems(copy)).toEqual([
+      `${LAUNCH_AGENT} gate 1: does not say \`lighthouse\` must conclude \`success\``,
+    ]);
+  });
+
+  it("gate 1 · the four skipped jobs reverted to 'every job success' → red", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      LAUNCH_AGENT,
+      "Every job must conclude `success`, except the four `preview`-chain jobs `preview`, `e2e`, `visual` and `a11y`, which must conclude `skipped`, because a push to `main` has no PR environment.",
+      "Every job must conclude `success`.",
+    );
+    expect(gate1Problems(copy)).toEqual([
+      `${LAUNCH_AGENT} gate 1: no sentence names \`preview\`, \`e2e\`, \`visual\` and \`a11y\` as \`skipped\``,
+    ]);
+  });
+
+  it("gate 1 · the jobs read reverted to the run list → red", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      LAUNCH_AGENT,
+      "Then read that run's jobs with `gh run view <id> --json jobs`:",
+      "Then read that run with `gh run list`:",
+    );
+    expect(gate1Problems(copy)).toEqual([
+      `${LAUNCH_AGENT} gate 1: does not read the run's jobs (\`gh run view <id> --json jobs\`)`,
+    ]);
+  });
+
+  it("gate 1 · the run found by `head_sha` reverted to `main` CI green → red", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      LAUNCH_AGENT,
+      /Find the push run of the `ci` workflow whose `head_sha` is the SHA: [^\n]*?\.(?= `gh run list` on)/,
+      "`main` CI green (`gh run list`).",
+    );
+    expect(gate1Problems(copy)).toEqual([
+      `${LAUNCH_AGENT} gate 1: does not match the run on its \`head_sha\``,
+      `${LAUNCH_AGENT} gate 1: does not find the run by \`--commit <sha>\``,
+    ]);
+  });
+
+  it("gates 4–6 · gate 5 reverted to the preview → red, naming gate 5", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      LAUNCH_AGENT,
+      "`seo-auditor` run against staging at the named SHA:",
+      "`seo-auditor` run on the preview:",
+    );
+    expect(stagingGatesProblems(copy)).toEqual([
+      `${LAUNCH_AGENT} gate 5: does not run against staging at the named SHA`,
+      `${LAUNCH_AGENT} gate 5: still names a preview`,
+    ]);
+  });
+
+  it("staging · the work order's VERIFIED reverted to PROMOTED → red", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      WORK_ORDER,
+      "`RELEASE: VERIFIED | HALTED`",
+      "`RELEASE: PROMOTED | HALTED`",
+    );
+    expect(stagingResultProblems(copy)).toEqual([
+      `${WHERE}: staging's result is not \`RELEASE: VERIFIED | HALTED\``,
+      `${WHERE}, staging: says staging is promoted`,
+    ]);
+  });
+
+  it("promotion · 'a merge deploys only to staging' reverted to the merge promotion → red", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      LAUNCH_AGENT,
+      "A merge to `main` deploys only to staging.",
+      "The promotion is the orchestrator's merge to `main`, which deploys to Railway.",
+    );
+    expect(promotionProblems(copy)).toEqual([
+      `${LAUNCH_AGENT}: still says a merge to \`main\` deploys production`,
+      `${LAUNCH_AGENT} "Promotion": does not say a merge to \`main\` deploys only to staging`,
+    ]);
+  });
+
+  it("promotion · READY reverted to the bare `READY | HALTED` → red", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      LAUNCH_AGENT,
+      /`RELEASE: READY <40-char sha> \(release at <old-sha>\)`/g,
+      "`RELEASE: READY | HALTED`",
+    );
+    expect(promotionProblems(copy)).toEqual([
+      `${LAUNCH_AGENT}: READY does not name its SHA and the release it moves from`,
+    ]);
+  });
+
+  it("promotion · the end-of-visit re-read of staging deleted → red", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      LAUNCH_AGENT,
+      "It is read at the start of visit 1 and again at the end; a difference halts (`RELEASE: HALTED <sha>: staging moved to <other-sha>`). ",
+    );
+    expect(promotionProblems(copy)).toEqual([
+      `${LAUNCH_AGENT}: does not re-read staging's commit at the end of visit 1`,
+    ]);
+  });
+
+  it("promotion · 'on every outcome' deleted from the output contract → red", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      LAUNCH_AGENT,
+      "is written on every outcome, `HALTED` included, with",
+      "is written with",
+    );
+    expect(promotionProblems(copy)).toEqual([
+      `${LAUNCH_AGENT} "Output contract": the release note is not written on every outcome`,
+    ]);
+  });
+
+  it("/launch · step 4 reverted to the merge → red", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      LAUNCH_SKILL,
+      /^4\. [\s\S]*$/m,
+      "4. **Production only**, on `RELEASE: READY`: merge with `--match-head-commit` (the promotion), then dispatch `launch` again with the **watch** visit. Relay `PROMOTED | ROLLED BACK`, and commit the release note and the audit report.\n",
+    );
+    expect(skillPromoteProblems(copy)).toEqual([
+      `${LAUNCH_SKILL} step 4: does not run \`pnpm release:promote --sha <sha> --expect <old-sha>\``,
+      `${LAUNCH_SKILL} step 4: does not take the SHA from READY`,
+      `${LAUNCH_SKILL} step 4: still promotes by merging`,
+    ]);
+  });
+
+  it("/launch · the commit after every visit deleted → red", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      LAUNCH_SKILL,
+      "The orchestrator commits the release note (and the audit report) after **every** visit, `HALTED` included. ",
+    );
+    expect(skillPromoteProblems(copy)).toEqual([
+      `${LAUNCH_SKILL}: does not commit the release note after every visit, \`HALTED\` included`,
+    ]);
+  });
+
+  it("work order · the May bullet reverted to 'promote to the target' → red", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      WORK_ORDER,
+      /^- \*\*May\*\*[\s\S]*?halt instead\.$/m,
+      "- **May**, and only as `.claude/agents/launch.md` sets out, gate by gate: promote to the target,\n  and roll back on a failed post-deploy check. Never skip or reorder a gate; halt instead.",
+    );
+    expect(neverMovesReleaseProblems(copy)).toEqual([
+      `${WHERE}: still says the agent may promote to the target`,
+      `${WHERE}: does not let the agent roll back by redeploying the previous image`,
+      `${WHERE}: does not say the launch agent never moves \`release\``,
+    ]);
+  });
+
+  it("launch.md · 'you never move `release`' deleted → red", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      LAUNCH_AGENT,
+      /You never move `release`: [^\n]*?\(spec 040 AC-40\)\./,
+    );
+    expect(neverMovesReleaseProblems(copy)).toEqual([
+      `${LAUNCH_AGENT}: does not say the launch agent never moves \`release\``,
+    ]);
+  });
+
+  it("/launch · the hold on `main` deleted → red", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      LAUNCH_SKILL,
+      "The orchestrator holds every merge and push to `main` from dispatch until visit 1 reports, docs commits included: any new commit would redeploy staging under the gates. ",
+    );
+    expect(holdMainProblems(copy)).toEqual([
+      `${LAUNCH_SKILL}: the orchestrator does not hold merges to \`main\` from dispatch until visit 1 reports`,
+    ]);
+  });
+});
+
+describe("T-41 round 2: the /break 121 mutations, each red on a scratch copy (spec 040 AC-37, AC-41)", () => {
+  const WHERE = `${WORK_ORDER} Role: launch`;
+
+  it("M1 · every job may be `success` or `skipped` → red", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      LAUNCH_AGENT,
+      "Every job must conclude `success`, except",
+      "Every job must conclude `success` or `skipped`, and",
+    );
+    expect(gate1Problems(copy)).toEqual([
+      `${LAUNCH_AGENT} gate 1: lets a job conclude \`success\` or \`skipped\``,
+    ]);
+  });
+
+  it("M2 · the halt narrowed to a `failure` job → red, naming each lost condition", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      LAUNCH_AGENT,
+      "Any other `skipped`, any `cancelled`, `failure` or unfinished job, or no run for the SHA, halts",
+      "A `failure` job halts",
+    );
+    expect(gate1Problems(copy)).toEqual([
+      `${LAUNCH_AGENT} gate 1: the halt does not name any other \`skipped\``,
+      `${LAUNCH_AGENT} gate 1: the halt does not name \`cancelled\``,
+      `${LAUNCH_AGENT} gate 1: the halt does not name an unfinished job`,
+      `${LAUNCH_AGENT} gate 1: the halt does not name no run for the SHA`,
+    ]);
+  });
+
+  it("M3 · `lighthouse` may conclude `success` or `skipped` → red", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      LAUNCH_AGENT,
+      "`lighthouse` is not one of them and must conclude `success`:",
+      "`lighthouse` is not one of them and must conclude `success` or `skipped`:",
+    );
+    expect(gate1Problems(copy)).toEqual([
+      `${LAUNCH_AGENT} gate 1: lets a job conclude \`success\` or \`skipped\``,
+    ]);
+  });
+
+  it("M4 · the run found by `--limit 1` instead of `--commit <sha>` → red", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      LAUNCH_AGENT,
+      "--event push --commit <sha>",
+      "--event push --limit 1",
+    );
+    expect(gate1Problems(copy)).toEqual([
+      `${LAUNCH_AGENT} gate 1: does not find the run by \`--commit <sha>\``,
+    ]);
+  });
+
+  it("M5 · 'the run's own conclusion is not evidence' deleted → red", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      LAUNCH_AGENT,
+      ": the run's own conclusion is not evidence, because a run whose jobs were all skipped still concludes `success`.",
+      ".",
+    );
+    expect(gate1Problems(copy)).toEqual([
+      `${LAUNCH_AGENT} gate 1: does not say the run's own conclusion is not evidence`,
+    ]);
+  });
+
+  it("M6 · launch.md moves `release` to `main`'s tip → red", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      LAUNCH_AGENT,
+      "which moves `release` to exactly the named SHA, never to `main`'s tip,",
+      "which moves `release` to `main`'s tip,",
+    );
+    expect(mainTipProblems(copy)).toEqual([
+      `${LAUNCH_AGENT} "Promotion": does not say \`release\` never moves to \`main\`'s tip`,
+      `${LAUNCH_AGENT}: names \`main\`'s tip as a target for \`release\``,
+    ]);
+  });
+
+  it("M17 · /launch step 4 promotes `main`'s tip if it is newer → red", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      LAUNCH_SKILL,
+      "never `main`'s tip; commits merged after READY stay on staging",
+      "or `main`'s tip if it is newer",
+    );
+    expect(mainTipProblems(copy)).toEqual([
+      `${LAUNCH_SKILL} step 4: does not say never \`main\`'s tip`,
+      `${LAUNCH_SKILL}: names \`main\`'s tip as a target for \`release\``,
+    ]);
+  });
+
+  it("M7 · launch.md's staging bullet reports PROMOTED → red", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      LAUNCH_AGENT,
+      'report `RELEASE: VERIFIED <sha>` or `RELEASE: HALTED <sha>: <gate>`. "Promoted" would be untrue.',
+      "report `RELEASE: PROMOTED <sha>` or `RELEASE: HALTED <sha>: <gate>`.",
+    );
+    expect(stagingResultProblems(copy)).toEqual([
+      `${LAUNCH_AGENT} "Promotion", staging: says staging is promoted`,
+    ]);
+  });
+
+  it("M8 · /launch Outputs: staging `RELEASE: PROMOTED` → red", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      LAUNCH_SKILL,
+      "staging `RELEASE: VERIFIED | HALTED`;",
+      "staging `RELEASE: PROMOTED`;",
+    );
+    expect(stagingResultProblems(copy)).toEqual([
+      `${LAUNCH_SKILL} Outputs, staging: says staging is promoted`,
+    ]);
+  });
+
+  it("M19 · work order: 'Staging is one visit: gates, promote, verify' → red", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      WORK_ORDER,
+      "Staging is one visit, because `main` already deployed it: gates, verify, and report",
+      "Staging is one visit: gates, promote, verify, and report",
+    );
+    expect(stagingResultProblems(copy)).toEqual([
+      `${WHERE}, staging: says staging is promoted`,
+    ]);
+  });
+
+  it("M10 · visit 2 tells the agent to run `release:rollback` → red", () => {
+    const copy = scratchCopy();
+    const inserted =
+      "Then run rollback step 2 yourself, `pnpm release:rollback --to <previous-release-sha> --expect <sha>`.";
+    mutate(
+      copy,
+      LAUNCH_AGENT,
+      "and report `RELEASE: ROLLED BACK <sha>`.",
+      `and report \`RELEASE: ROLLED BACK <sha>\`. ${inserted}`,
+    );
+    expect(neverMovesReleaseProblems(copy)).toEqual([
+      `${LAUNCH_AGENT}: gives the launch agent release:promote or release:rollback: "${inserted}"`,
+    ]);
+  });
+
+  it("M11 · the Never bullet 'Move `release`' deleted → red", () => {
+    const copy = scratchCopy();
+    mutate(copy, LAUNCH_AGENT, /^- Move `release`: [^\n]*\n/m);
+    expect(neverMovesReleaseProblems(copy)).toEqual([
+      `${LAUNCH_AGENT} "Never": does not forbid \`release:promote\` and \`release:rollback\``,
+    ]);
+  });
+
+  it("M9 · work order: the note only on PROMOTED, 'after every visit' deleted → red", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      WORK_ORDER,
+      "on every\n  outcome, `HALTED` included;",
+      "on\n  `PROMOTED`;",
+    );
+    mutate(copy, WORK_ORDER, " after\n  every visit.", ".");
+    expect(workOrderNoteProblems(copy)).toEqual([
+      `${WHERE}: the release note is not written on every outcome, \`HALTED\` included`,
+      `${WHERE}: the orchestrator does not commit the note after every visit`,
+    ]);
+  });
+
+  it("nit · 'Merging to `main` still deploys production.' added → red", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      LAUNCH_AGENT,
+      "A merge to `main` deploys only to staging.",
+      "A merge to `main` deploys only to staging. Merging to `main` still deploys production.",
+    );
+    expect(promotionProblems(copy)).toEqual([
+      `${LAUNCH_AGENT}: still says a merge to \`main\` deploys production`,
+    ]);
   });
 });
 
