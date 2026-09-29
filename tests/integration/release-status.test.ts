@@ -97,6 +97,23 @@ describe("release:status (T-38, AC-35)", () => {
     expect(result.output).not.toContain("production runs");
   });
 
+  it("exits 1 when the deployment in progress rebuilds another commit, not <b> (break 115 hole 5)", async () => {
+    // Step 1 of a rollback: Railway rebuilding the old image is not a deploy of `release`.
+    health.setCommit(sha("m0"));
+    const result = await repo.release([
+      "status",
+      "--health-url",
+      health.url,
+      "--fixture-deployments",
+      renderFixture(repo, "railway/deployments-status-rebuilding-old.json"),
+    ]);
+    expect(result.code, result.output).toBe(1);
+    expect(result.stdout).not.toContain("deploying");
+    expect(result.output).toContain(
+      `production runs ${sha("m0")}, release is ${sha("m1")}`,
+    );
+  });
+
   it("exits 1 when production differs and Railway cannot be asked", async () => {
     health.setCommit(sha("m0"));
     const result = await repo.release(["status", "--health-url", health.url]);
