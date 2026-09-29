@@ -6,6 +6,7 @@
  * `origin/main`): the files Vitest's `--changed` finds **plus** the files `PATH_TESTS` names for
  * the changed paths. `--changed` follows the import graph, so a diff that touches only text some
  * test reads (`CLAUDE.md`, `.claude/**`, `.github/workflows/**`) would otherwise run no test at all.
+ * The tests `ALWAYS_TESTS` names run on every diff, whatever it touches (AC-61's local clause).
  * Every gate runs even after one fails; every exit code is read; the process exits non-zero when
  * any gate did. It starts no server and takes no build slot.
  *
@@ -101,6 +102,23 @@ export const PATH_TESTS: readonly PathTestEntry[] = [
     tests: ["tests/unit/dev-os.test.ts"],
   },
 ];
+
+/**
+ * Tests that run on every diff (spec 001 §14 A20, AC-61's local clause; TASK-159). Each reads
+ * files it never imports (`src/**` as source text, `eslint.config.mjs` through ESLint's API), so
+ * `--changed` never selects it, and a new route file on its own would skip it. The list names only
+ * tests that exist: `url-pii` joins it in the PR that creates `url-pii.test.ts` (TASK-160).
+ */
+export const ALWAYS_TESTS: readonly string[] = [
+  "tests/unit/zod-boundaries.test.ts",
+  "tests/unit/lint-coverage.test.ts",
+];
+
+/** `tests/unit/zod-boundaries.test.ts` → `zod-boundaries`, for the test gate's line. */
+function shortTestName(test: string): string {
+  const base = test.slice(test.lastIndexOf("/") + 1);
+  return base.replace(/\.test\.tsx?$/, "");
+}
 
 function pathMatches(pattern: string, path: string): boolean {
   return pattern.endsWith("/") ? path.startsWith(pattern) : path === pattern;
@@ -231,6 +249,8 @@ export interface Deps {
   readonly base: string;
   readonly gates: readonly Gate[];
   readonly map: readonly PathTestEntry[];
+  /** Tests run on every diff (`ALWAYS_TESTS`). */
+  readonly always: readonly string[];
   readonly stdio: StdioOptions;
   /** Runs one gate's command; returns its exit status (`null` = killed by a signal). */
   readonly runCommand: (
@@ -351,6 +371,7 @@ export function defaultDeps(root: string, base: string): Deps {
     base,
     gates: CHEAP_GATES,
     map: PATH_TESTS,
+    always: ALWAYS_TESTS,
     stdio: "inherit",
     runCommand: realRunCommand,
     listChangedTests: realListChangedTests,
@@ -365,7 +386,7 @@ function statusOf(code: number | null): number {
 }
 
 function runTestGate(deps: Deps): Omit<GateOutcome, "ms"> {
-  const { root, base, map, stdio } = deps;
+  const { root, base, map, always, stdio } = deps;
   const mergeBase = git(root, ["merge-base", base, "HEAD"]);
   if (!mergeBase.ok || mergeBase.out === "") {
     return {
@@ -389,15 +410,32 @@ function runTestGate(deps: Deps): Omit<GateOutcome, "ms"> {
   const fromMap = mappedTests(changedPaths(root, mergeBase.out), map).filter(
     (test) => !changed.includes(test) && !missing.includes(test),
   );
-  const files = [...changed, ...fromMap];
-  const counts = `changed ${String(changed.length)} + map ${String(fromMap.length)}`;
+  const missingAlways = always.filter((test) => !existsSync(join(root, test)));
+  const present = always.filter((test) => !missingAlways.includes(test));
+  const fromAlways = present.filter(
+    (test) => !changed.includes(test) && !fromMap.includes(test),
+  );
+  const files = [...changed, ...fromMap, ...fromAlways];
+  const counts =
+    `changed ${String(changed.length)} + map ${String(fromMap.length)}` +
+    (always.length === 0
+      ? ""
+      : ` + always ${String(fromAlways.length)} · always run: ${present.map(shortTestName).join(", ")}`);
   const status =
     files.length === 0 ? 0 : statusOf(deps.runTests(files, root, stdio));
-  if (missing.length > 0) {
+  const complaints = [
+    ...(missing.length > 0
+      ? [`PATH_TESTS names missing file(s): ${missing.join(", ")}`]
+      : []),
+    ...(missingAlways.length > 0
+      ? [`ALWAYS_TESTS names missing file(s): ${missingAlways.join(", ")}`]
+      : []),
+  ];
+  if (complaints.length > 0) {
     return {
       name: TEST_GATE,
       status: status === 0 ? 1 : status,
-      detail: `${counts} · PATH_TESTS names missing file(s): ${missing.join(", ")}`,
+      detail: [counts, ...complaints].join(" · "),
     };
   }
   return { name: TEST_GATE, status, detail: counts };
