@@ -9,10 +9,13 @@
  *    arguments (a request body, or a third-party `fetch` response), and every call of a `READERS`
  *    function;
  * 2. `searchParams` received by the default export of a `page`/`layout` file, or by an exported
- *    `generateMetadata`/`generateViewport`, under `src/app/`; and `.searchParams` read from
- *    `….nextUrl` or from a `new URL(…)` anywhere under `src/`;
+ *    `generateMetadata`/`generateViewport`, under `src/app/`, as a destructured parameter,
+ *    `props.searchParams` or `const { searchParams } = props`; and `.searchParams` read from
+ *    `….nextUrl` or from a `new URL(…)` anywhere under `src/`, directly or destructured;
  * 3. each parameter of a server action: a function exported from a file that starts with
- *    `"use server"`, or a function whose body starts with it.
+ *    `"use server"` (`export function`, `export const`, `export { name }`, `export default`, or
+ *    the function argument of the call an export wraps it in), or a function whose body starts
+ *    with it.
  *
  * A raw input is **parsed** when, in the same function, it reaches the first argument of `.parse`,
  * `.safeParse`, `.parseAsync` or `.safeParseAsync`, directly or through these steps only: `await`,

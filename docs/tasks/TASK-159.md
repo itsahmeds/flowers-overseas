@@ -45,6 +45,9 @@ here.
 - 2026-09-29: T-57 written — `tests/unit/zod-boundaries.test.ts` (scanner and the `READERS`/`PARSERS` lists inside it) and 14 fixture trees under `tests/fixtures/zod-boundaries/`. The real tree is green with the spec's two entries (6 raw inputs, all parsed or exempt), so `reminders.ts` and `consentCookie.ts` need no fix. Draft PR #116.
 - 2026-09-29: T-66 — `ALWAYS_TESTS` in `scripts/gates-cheap.ts` (zod-boundaries, lint-coverage), named on the test gate's line; five cases in `gates-cheap.test.ts`; deleting `lint-coverage` from the list turns 4 cases red (checked).
 - 2026-09-29: `plan/12` §2 Validation row names the test and its limits (AC-62); codebase map regenerated. Next: `gates:cheap`, rebase, ready, `ci:full`.
+- 2026-09-29 (round-1 fixes, item 1): `const { searchParams } = props` in a page/`generateMetadata`, and `const { searchParams } = new URL(…)`/`= req.nextUrl`, are now raw inputs; fixtures `page-props`, `url-search`. Deleting either detector turns its case red (checked).
+- 2026-09-29 (item 2): a `"use server"` file's `export { act }`, `export default <arrow>` and `export const x = wrap(async (fd) => …)` are server actions; fixture `server-action-exports`. Deleting each of the three turns the case red (checked).
+- 2026-09-29 (item 3): pinned `isURLValue` (and its `nextUrl` branch), a method's first argument, `JSON.parse` alone, the `JSON` exclusion in `callsSink`, the one-binding limit, inline `"use server"`, the `generateMetadata` and `generateViewport` matches, `props.searchParams`, and `arrayBuffer`/`blob`; fixtures `rule-limits`, `parsers-json`, `inline-server`. Each mutation turns exactly one case red (checked). Next: gates, rebase, CI.
 
 ## Result
 
