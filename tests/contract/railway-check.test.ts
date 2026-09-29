@@ -375,7 +375,7 @@ describe("the trigger-branch check (AC-34, T-34)", () => {
     expect(report.lines).toEqual([
       "production · web · triggers on none, declared release",
     ]);
-    expect(report.onlyAbsentProductionServices).toBe(true);
+    expect(report.expectedAbsences).toEqual(["production-services"]);
   });
 
   it("fails when production `web` exists with no trigger, and does not call that the expected red", () => {
@@ -384,7 +384,7 @@ describe("the trigger-branch check (AC-34, T-34)", () => {
     expect(report.lines).toEqual([
       "production · web · triggers on none, declared release",
     ]);
-    expect(report.onlyAbsentProductionServices).toBe(false);
+    expect(report.expectedAbsences).toEqual([]);
   });
 
   it("prints only the two `none` lines while production has no service at all (AC-42)", () => {
@@ -394,14 +394,13 @@ describe("the trigger-branch check (AC-34, T-34)", () => {
       "production · web · triggers on none, declared release",
       "production · worker · triggers on none, declared release",
     ]);
-    expect(report.onlyAbsentProductionServices).toBe(true);
+    expect(report.expectedAbsences).toEqual(["production-services"]);
   });
 
   it("does not call a wrong branch the expected red", () => {
     expect(
-      checkTriggers("triggers-production-web-on-main.json")
-        .onlyAbsentProductionServices,
-    ).toBe(false);
+      checkTriggers("triggers-production-web-on-main.json").expectedAbsences,
+    ).toEqual([]);
   });
 
   it("does not check a `worker` with no repository source: it can follow no branch", () => {
@@ -425,13 +424,13 @@ describe("the trigger-branch check, round 2 (AC-34, T-34; /break 110, /review 11
     ]);
   });
 
-  it("fails a missing staging service and does not call it the expected red", () => {
+  it("fails a missing staging `worker`, and calls it the expected red of AC-44 (supersedes T-34's case)", () => {
     const report = checkTriggers("triggers-staging-no-worker.json");
     expect(report.ok).toBe(false);
     expect(report.lines).toEqual([
       "staging · worker · triggers on none, declared main",
     ]);
-    expect(report.onlyAbsentProductionServices).toBe(false);
+    expect(report.expectedAbsences).toEqual(["staging-worker"]);
   });
 
   it("fails a `worker` that has a repository but no trigger", () => {
@@ -440,7 +439,7 @@ describe("the trigger-branch check, round 2 (AC-34, T-34; /break 110, /review 11
     expect(report.lines).toEqual([
       "production · worker · triggers on none, declared release",
     ]);
-    expect(report.onlyAbsentProductionServices).toBe(false);
+    expect(report.expectedAbsences).toEqual([]);
   });
 
   it("fails a `web` with no source and no trigger: only `worker` is exempt", () => {
@@ -449,7 +448,7 @@ describe("the trigger-branch check, round 2 (AC-34, T-34; /break 110, /review 11
     expect(report.lines).toEqual([
       "production · web · triggers on none, declared release",
     ]);
-    expect(report.onlyAbsentProductionServices).toBe(false);
+    expect(report.expectedAbsences).toEqual([]);
   });
 
   it("fails an undeclared staging service on `release`", () => {
@@ -479,7 +478,7 @@ describe("the trigger-branch check, round 2 (AC-34, T-34; /break 110, /review 11
       "production · web · triggers on main, declared release",
       "production · worker · triggers on none, declared release",
     ]);
-    expect(report.onlyAbsentProductionServices).toBe(false);
+    expect(report.expectedAbsences).toEqual([]);
   });
 
   it("does not call a missing production `worker` alone the expected red: the label needs `web` absent", () => {
@@ -488,7 +487,7 @@ describe("the trigger-branch check, round 2 (AC-34, T-34; /break 110, /review 11
     expect(report.lines).toEqual([
       "production · worker · triggers on none, declared release",
     ]);
-    expect(report.onlyAbsentProductionServices).toBe(false);
+    expect(report.expectedAbsences).toEqual([]);
   });
 
   it("does not call a response with no production environment the expected red", () => {
@@ -498,12 +497,12 @@ describe("the trigger-branch check, round 2 (AC-34, T-34; /break 110, /review 11
       "production · web · triggers on none, declared release",
       "production · worker · triggers on none, declared release",
     ]);
-    expect(report.onlyAbsentProductionServices).toBe(false);
+    expect(report.expectedAbsences).toEqual([]);
   });
 });
 
 describe("the trigger-branch check, round 3 (AC-34, T-34; /break 110, /review 110 round 2)", () => {
-  it("does not call production `web` absent plus staging `worker` absent the expected red", () => {
+  it("calls production `web` absent plus staging `worker` absent both expected cases, production's first (AC-44, supersedes T-34's case)", () => {
     const report = checkTriggers(
       "triggers-production-no-web-staging-no-worker.json",
     );
@@ -512,7 +511,10 @@ describe("the trigger-branch check, round 3 (AC-34, T-34; /break 110, /review 11
       "production · web · triggers on none, declared release",
       "staging · worker · triggers on none, declared main",
     ]);
-    expect(report.onlyAbsentProductionServices).toBe(false);
+    expect(report.expectedAbsences).toEqual([
+      "production-services",
+      "staging-worker",
+    ]);
   });
 
   it("does not call production `web` absent plus `worker` on `main` the expected red", () => {
@@ -524,7 +526,7 @@ describe("the trigger-branch check, round 3 (AC-34, T-34; /break 110, /review 11
       "production · web · triggers on none, declared release",
       "production · worker · triggers on main, declared release",
     ]);
-    expect(report.onlyAbsentProductionServices).toBe(false);
+    expect(report.expectedAbsences).toEqual([]);
   });
 
   it("fails an undeclared staging service on both `main` and `release`", () => {
@@ -541,7 +543,7 @@ describe("the trigger-branch check, round 3 (AC-34, T-34; /break 110, /review 11
     expect(report.lines).toEqual([
       "production · cron · triggers on main, declared release",
     ]);
-    expect(report.onlyAbsentProductionServices).toBe(false);
+    expect(report.expectedAbsences).toEqual([]);
   });
 
   it("fails a production trigger with no service on `main`", () => {
@@ -552,7 +554,7 @@ describe("the trigger-branch check, round 3 (AC-34, T-34; /break 110, /review 11
     expect(report.lines).toEqual([
       "production · (no service) · triggers on main, declared release",
     ]);
-    expect(report.onlyAbsentProductionServices).toBe(false);
+    expect(report.expectedAbsences).toEqual([]);
   });
 });
 
@@ -662,5 +664,178 @@ describe("`railway:check` on the command line (AC-34, AC-42)", () => {
     expect(run.status).toBe(2);
     expect(run.stderr).toContain("RAILWAY_API_TOKEN");
     expect(run.stderr).toContain("RAILWAY_PROJECT_ID");
+  });
+});
+
+/*
+ * T-45 (spec 040 §14 A4, AC-44): staging's missing `worker` is an expected red too, until TASK-103
+ * creates it. The three stderr lines are AC-44's, copied here as literals rather than imported, so
+ * a change to the script's wording turns these cases red. TASK-103's PR deletes case (b) and turns
+ * the labelled staging cases below into unlabelled ones.
+ */
+const LABEL_PRODUCTION =
+  "railway:check: EXPECTED RED until TASK-104 creates production `web` on `release` (spec 040 AC-42, T-44): every failure above is a declared production service that does not exist yet. Once production `web` exists, this output is a real failure.\n";
+const LABEL_STAGING_WORKER =
+  "railway:check: EXPECTED RED until TASK-103 creates staging `worker` (spec 040 AC-44, T-45): every failure above is staging's `worker`, which does not exist yet. Once staging `worker` exists, this output is a real failure.\n";
+const LABEL_BOTH =
+  "railway:check: EXPECTED RED until TASK-104 creates production `web` on `release` and TASK-103 creates staging `worker` (spec 040 AC-42, AC-44, T-44, T-45): every failure above is a declared production service or staging's `worker`, none of which exists yet. Once both exist, this output is a real failure.\n";
+const UNLABELLED =
+  "railway:check failed: the lines above name each difference.\n";
+
+describe("staging's missing `worker` is an expected red (AC-44, T-45)", () => {
+  const cli = (...args: string[]) =>
+    spawnSync(process.execPath, ["scripts/railway-check.ts", ...args], {
+      cwd: repoRoot,
+      encoding: "utf8",
+      env: { PATH: process.env["PATH"] ?? "", NODE_ENV: "test" },
+    });
+  const withTriggers = (name: string, environment?: string) => [
+    "--fixture-triggers",
+    `tests/fixtures/railway/${name}`,
+    ...(environment === undefined
+      ? []
+      : ["--fixture-environment", `tests/fixtures/railway/${environment}`]),
+  ];
+
+  describe("labelled, exit 1, stderr exactly AC-44's line for the cases present", () => {
+    it("staging `worker` absent, all else as declared → the `staging · worker` line, line (b)", () => {
+      const run = cli(...withTriggers("triggers-staging-no-worker.json"));
+      expect(run.status).toBe(1);
+      expect(run.stdout).toBe(
+        "staging · worker · triggers on none, declared main\n",
+      );
+      expect(run.stderr).toBe(LABEL_STAGING_WORKER);
+    });
+
+    it("staging `worker` absent with a passing service check → still line (b)", () => {
+      const run = cli(
+        ...withTriggers(
+          "triggers-staging-no-worker.json",
+          "environment-staging.json",
+        ),
+      );
+      expect(run.status).toBe(1);
+      expect(run.stdout).toContain(
+        "staging · worker · triggers on none, declared main",
+      );
+      expect(run.stdout).toContain("match config/railway.json");
+      expect(run.stderr).toBe(LABEL_STAGING_WORKER);
+    });
+
+    it("production `web` absent and staging `worker` absent → both lines, line (a)+(b)", () => {
+      const run = cli(
+        ...withTriggers("triggers-production-no-web-staging-no-worker.json"),
+      );
+      expect(run.status).toBe(1);
+      expect(run.stdout).toBe(
+        "production · web · triggers on none, declared release\n" +
+          "staging · worker · triggers on none, declared main\n",
+      );
+      expect(run.stderr).toBe(LABEL_BOTH);
+    });
+
+    it("the F1–F3 shape: production empty and staging `worker` absent → the three `none` lines, line (a)+(b)", () => {
+      const run = cli(
+        ...withTriggers("triggers-production-empty-staging-no-worker.json"),
+      );
+      expect(run.status).toBe(1);
+      expect(run.stdout).toBe(
+        "production · web · triggers on none, declared release\n" +
+          "production · worker · triggers on none, declared release\n" +
+          "staging · worker · triggers on none, declared main\n",
+      );
+      expect(run.stderr).toBe(LABEL_BOTH);
+    });
+
+    it("production empty, staging as declared → line (a), unchanged", () => {
+      const run = cli(...withTriggers("triggers-production-empty.json"));
+      expect(run.status).toBe(1);
+      expect(run.stdout).toBe(
+        "production · web · triggers on none, declared release\n" +
+          "production · worker · triggers on none, declared release\n",
+      );
+      expect(run.stderr).toBe(LABEL_PRODUCTION);
+    });
+  });
+
+  describe("unlabelled, exit 1, no EXPECTED RED", () => {
+    it("production `web` on `release`, production `worker` absent, staging `worker` absent → the mixed case is a real failure", () => {
+      const run = cli(
+        ...withTriggers("triggers-production-no-worker-staging-no-worker.json"),
+      );
+      expect(run.status).toBe(1);
+      expect(run.stdout).toBe(
+        "production · worker · triggers on none, declared release\n" +
+          "staging · worker · triggers on none, declared main\n",
+      );
+      expect(run.stderr).toBe(UNLABELLED);
+      expect(run.stderr).not.toContain("EXPECTED RED");
+    });
+
+    it("staging `worker` present with its one trigger on `release` → `wrong-branch`", () => {
+      const run = cli(
+        ...withTriggers("triggers-staging-worker-on-release.json"),
+      );
+      expect(run.status).toBe(1);
+      expect(run.stdout).toBe(
+        "staging · worker · triggers on release, declared main\n",
+      );
+      expect(run.stderr).toBe(UNLABELLED);
+      expect(run.stderr).not.toContain("EXPECTED RED");
+    });
+
+    it("staging `worker` present with a repository and no trigger → `no-trigger`", () => {
+      const run = cli(
+        ...withTriggers("triggers-staging-worker-no-trigger.json"),
+      );
+      expect(run.status).toBe(1);
+      expect(run.stdout).toBe(
+        "staging · worker · triggers on none, declared main\n",
+      );
+      expect(run.stderr).toBe(UNLABELLED);
+      expect(run.stderr).not.toContain("EXPECTED RED");
+    });
+
+    it("staging `web` absent, `worker` as declared → a real fault", () => {
+      const run = cli(...withTriggers("triggers-staging-no-web.json"));
+      expect(run.status).toBe(1);
+      expect(run.stdout).toBe(
+        "staging · web · triggers on none, declared main\n",
+      );
+      expect(run.stderr).toBe(UNLABELLED);
+      expect(run.stderr).not.toContain("EXPECTED RED");
+    });
+
+    it("staging `worker` absent while another check failed on the same run → no label", () => {
+      const run = cli(
+        ...withTriggers(
+          "triggers-staging-no-worker.json",
+          "environment-drifted.json",
+        ),
+      );
+      expect(run.status).toBe(1);
+      expect(run.stdout).toContain(
+        "staging · worker · triggers on none, declared main",
+      );
+      expect(run.stdout).toContain("numReplicas is 2");
+      expect(run.stderr).toBe(UNLABELLED);
+      expect(run.stderr).not.toContain("EXPECTED RED");
+    });
+  });
+
+  describe("the report behind the label (`expectedAbsences`)", () => {
+    it.each([
+      [
+        "triggers-production-empty-staging-no-worker.json",
+        ["production-services", "staging-worker"],
+      ],
+      ["triggers-production-no-worker-staging-no-worker.json", []],
+      ["triggers-staging-worker-on-release.json", []],
+      ["triggers-staging-worker-no-trigger.json", []],
+      ["triggers-staging-no-web.json", []],
+      ["triggers-as-declared.json", []],
+    ])("%s → %j", (name, cases) => {
+      expect(checkTriggers(name).expectedAbsences).toEqual(cases);
+    });
   });
 });
