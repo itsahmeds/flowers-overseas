@@ -29,6 +29,7 @@ One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
 - **From `/break 108` (2026-09-28):** AC-53's `PARSERS` check follows one call inside the same file (e.g. `listingRequest` → `parseSearch()` → the `.parse` at `params.ts` L141), as the input rule does (landed in A20, round 3). You run after TASK-154, because both write `scripts/gates-cheap.ts`.
+- **From `/review 116` round 2 (2026-09-29):** `/break 116` round-2 HOLE 1 ACCEPTABLE (a phrasing variant outside the spec's named cases), and closed anyway by the `= await props` case in `page-props`. Open: `export { Page as default }` is not treated as a page; `tests/fixtures/README.md` has no `zod-boundaries/` row. Follow-ups: `req["json"]()` and `.call`; any `.parse` counts as a schema; no `.entries()` fixture.
 
 ## Escalations
 

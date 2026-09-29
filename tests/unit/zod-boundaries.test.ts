@@ -1040,6 +1040,7 @@ describe("T-57: red, naming the file and line", () => {
       "src/app/a/page.tsx:13 page searchParams: line 14: read as `.q`",
       "src/app/b/page.tsx:7 page searchParams: line 8: read as `.page`",
       "src/app/b/page.tsx:11 page searchParams: line 12: passed to `String()`",
+      "src/app/c/page.tsx:7 page searchParams: line 9: read as `.page`",
     ]);
   });
 
