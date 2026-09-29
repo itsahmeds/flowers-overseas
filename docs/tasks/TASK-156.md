@@ -54,6 +54,11 @@ here.
   `src/lib/railway.ts`; T-36/T-37/T-38 green (37 cases), each brief mutation seen red (ancestor
   check, lease, `--expect` check, any-ancestor). T-40 rows written in `bash-guard.test.sh`, red
   (140 failing) — next: the push/command rules in `bash_guard.py`, then runbook, plan/08, rebase.
+- 2026-09-29 — finisher: AC-40 rules in `bash_guard.py` (`analyse_pushes`, `release_command_denial`);
+  `bash-guard.test.sh` 477/477 green; each rule seen red with it removed (release rule 109, `--all`
+  16, whole-refspec parse 64 with 0 allow rows red, substring match 20 allow rows red, HEAD 24,
+  main 13, commands 16, refs/heads 32, `+` 14, glob 8, `cd` 1, `-C` 2). `release:*` scripts added
+  to `package.json` (missing from `06219c0`). Next: runbook, plan/08, gates, rebase.
 
 ## Result
 
