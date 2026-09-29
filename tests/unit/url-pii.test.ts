@@ -189,6 +189,18 @@ function namedQueryKeys(root: string, receiver: Receiver): NamedKey[] {
     },
   });
   const checker = program.getTypeChecker();
+  /**
+   * The keys an expression names: a string literal, or any expression whose type the checker
+   * knows as a string literal or a union of them (`const K = "email"`, /break 117 hole 7).
+   */
+  const keysOf = (expression: ts.Expression): string[] => {
+    if (ts.isStringLiteralLike(expression)) return [expression.text];
+    const type = checker.getTypeAtLocation(expression);
+    const members = type.isUnion() ? type.types : [type];
+    return members.every((member) => member.isStringLiteral())
+      ? members.map((member) => (member as ts.StringLiteralType).value)
+      : [];
+  };
   const roots = new Set(rootNames.map((file) => resolve(file)));
   const found: NamedKey[] = [];
 
@@ -208,7 +220,8 @@ function namedQueryKeys(root: string, receiver: Receiver): NamedKey[] {
         METHODS.has(node.expression.name.text)
       ) {
         const [first] = node.arguments;
-        if (first !== undefined && ts.isStringLiteralLike(first)) {
+        const keys = first === undefined ? [] : keysOf(first);
+        if (keys.length > 0) {
           const counts =
             receiver === "name" ||
             (
@@ -217,12 +230,10 @@ function namedQueryKeys(root: string, receiver: Receiver): NamedKey[] {
             ).some((declaration) =>
               ownerIsUrlSearchParams(checker, declaration),
             );
-          if (counts) {
-            push(
-              first,
-              first.text,
-              `URLSearchParams.${node.expression.name.text}`,
-            );
+          if (counts && first !== undefined) {
+            for (const key of keys) {
+              push(first, key, `URLSearchParams.${node.expression.name.text}`);
+            }
           }
         }
       }
@@ -232,18 +243,32 @@ function namedQueryKeys(root: string, receiver: Receiver): NamedKey[] {
           receiver === "name"
             ? node.expression.getText(source) === "URLSearchParams"
             : isUrlSearchParamsType(checker, checker.getTypeAtLocation(node));
-        if (
-          isParams &&
-          first !== undefined &&
-          ts.isObjectLiteralExpression(first)
-        ) {
-          for (const property of first.properties) {
-            const name = property.name;
-            if (
-              name !== undefined &&
-              (ts.isIdentifier(name) || ts.isStringLiteralLike(name))
-            ) {
-              push(name, name.text, "new URLSearchParams({…})");
+        if (isParams && first !== undefined) {
+          if (ts.isObjectLiteralExpression(first)) {
+            for (const property of first.properties) {
+              const name = property.name;
+              const keys =
+                name === undefined
+                  ? []
+                  : ts.isIdentifier(name) || ts.isStringLiteralLike(name)
+                    ? [name.text]
+                    : ts.isComputedPropertyName(name)
+                      ? keysOf(name.expression)
+                      : [];
+              for (const key of keys) {
+                push(name ?? property, key, "new URLSearchParams({…})");
+              }
+            }
+          }
+          // `new URLSearchParams([["email", x]])` (/break 117 hole 7).
+          if (ts.isArrayLiteralExpression(first)) {
+            for (const pair of first.elements) {
+              const [key] = ts.isArrayLiteralExpression(pair)
+                ? pair.elements
+                : [];
+              for (const name of key === undefined ? [] : keysOf(key)) {
+                push(key ?? pair, name, "new URLSearchParams([[…]])");
+              }
             }
           }
         }
@@ -569,6 +594,18 @@ describe("scratch trees (T-59)", () => {
       ].join("\n"),
       "src/j-ours.ts":
         "export const ours = (base: string, n: number) => `${base}?page=${String(n)}&sort=price`;\n",
+      // /break 117 hole 7: pairs, a const key, a computed key.
+      "src/k-pairs.ts":
+        'export const k = (x: string) => new URLSearchParams([["email", x]]);\n',
+      "src/l-const.ts": [
+        'const K = "email";',
+        "export const l = (u: URL, x: string) => u.searchParams.set(K, x);",
+        "",
+      ].join("\n"),
+      "src/m-computed.ts":
+        'export const n = (x: string) => new URLSearchParams({ ["phone"]: x });\n',
+      "src/n-string.ts":
+        "export const w = (sp: URLSearchParams, key: string) => sp.getAll(key);\n",
       "src/modules/analytics/ga4.ts": GA4_LIKE,
     };
     const violations = (): string[] =>
@@ -584,6 +621,9 @@ describe("scratch trees (T-59)", () => {
         'src/f-object.ts:1: query key "phone" (new URLSearchParams({…})) is in neither QUERY_KEYS nor EXTERNAL_QUERY_KEYS (AC-55 (c))',
         'src/g-next.ts:2: query key "email" (URLSearchParams.get) is in neither QUERY_KEYS nor EXTERNAL_QUERY_KEYS (AC-55 (c))',
         'src/h-node.ts:2: query key "phone" (URLSearchParams.append) is in neither QUERY_KEYS nor EXTERNAL_QUERY_KEYS (AC-55 (c))',
+        'src/k-pairs.ts:1: query key "email" (new URLSearchParams([[…]])) is in neither QUERY_KEYS nor EXTERNAL_QUERY_KEYS (AC-55 (c))',
+        'src/l-const.ts:2: query key "email" (URLSearchParams.set) is in neither QUERY_KEYS nor EXTERNAL_QUERY_KEYS (AC-55 (c))',
+        'src/m-computed.ts:1: query key "phone" (new URLSearchParams({…})) is in neither QUERY_KEYS nor EXTERNAL_QUERY_KEYS (AC-55 (c))',
       ]);
     });
 
