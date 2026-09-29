@@ -154,7 +154,8 @@ describe("vatBreakdown on AC-13's mixed basket", () => {
       { rateBp: FLOWERS_BP, grossMinor: 16_092, currency: "PLN", extra: 1 },
     ]) {
       expect(
-        () => vatBreakdown([invalid as unknown as VatLine]),
+        // @ts-expect-error -- each is not a `VatLine`; this checks the runtime guard.
+        () => vatBreakdown([invalid]),
         JSON.stringify(invalid),
       ).toThrow();
     }

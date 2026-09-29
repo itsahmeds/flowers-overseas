@@ -26,12 +26,24 @@
  * `process`/`node:process`. They are off in `SIDE_DOOR_FILES` only. Still passing, said plainly:
  * `const p = process; p.stdout.write(…)`, and a name assembled at run time.
  *
- * `MINOR_CASTS` are AC-59's entries (§13 Q19): `as Minor` and `<Minor>x`, anywhere in the cast's
- * type (`as unknown as Minor`, `as Minor | null`, `as { amountMinor: Minor }`, `as catalog.Minor`),
- * and a hand-made brand (`as number & z.$brand<"Minor">`). They apply on every root, `tests/`
- * included, and are off in `MINOR_CAST_FILES` only: `toMinor()` is the one cast. Still passing,
- * said plainly: a type alias of `Minor` (`type M = Minor; x as M`), a generic that casts for its
- * caller, and an `any`.
+ * `MINOR_CASTS` and `MINOR_BRANDS` are AC-59's entries (§13 Q19). They apply on every root, `tests/`
+ * included. `MINOR_CASTS` reject an `as` or `<T>` cast whose type is, or contains:
+ *  - a type of `src/modules/catalog/types.ts` that holds a `Minor` (`MINOR_TYPES`: `Minor`,
+ *    `IntegerMoney`, `PricePoint`, `Quote` …), bare or qualified, so also `as unknown as PricePoint`,
+ *    `as Minor | null`, `as IntegerMoney["amountMinor"]` and `as { amountMinor: Minor }`;
+ *  - `typeof` of `toMinor` or of a schema of `src/modules/catalog/schemas.ts` whose output holds a
+ *    `Minor` (`MINOR_VALUES`), so `as ReturnType<typeof toMinor>` and
+ *    `as z.infer<typeof MinorUnitsSchema>`;
+ *  - zod's `$brand`.
+ * They are off in `MINOR_CAST_FILES` only: `toMinor()` is the one cast. `MINOR_BRANDS` reject making
+ * the brand a second time: `.brand("Minor")` or `.brand<"Minor">()`, `custom<T>()` with a `T` as
+ * above, and the name `$brand` at all (an import from `zod` or `zod/v4/core`, `z.$brand`, a
+ * computed `[$brand]` key). They are off in `MINOR_BRAND_FILES` only, where `MinorUnitsSchema` is.
+ * Both lists are pinned to the two files by `tests/unit/catalog-pricing-minor.test.ts`, which
+ * asks the compiler which exports hold a `Minor`. Still passing, said plainly: a type alias
+ * (`type M = Minor; x as M`), a type outside `types.ts` that holds a `Minor`, `typeof` of any other
+ * value (`typeof someMinor`, `ReturnType<typeof addMoney>`), `as never`, a generic that casts for
+ * its caller, and an `any` (`JSON.parse`).
  *
  * `root` is repo-relative, with a trailing `/` when set: the real config passes `""`, the fixture
  * config `"tests/fixtures/lint/"`, the way `moduleBoundaryZones()` takes its `srcRoot`.
@@ -110,6 +122,46 @@ export const SIDE_DOOR_FILES = ["src/lib/logger.ts", "src/lib/step-summary.ts"];
 /** The only file where `as Minor` is allowed (AC-52's "allowed off" cell for AC-59). */
 export const MINOR_CAST_FILES = ["src/modules/catalog/pricing/money.ts"];
 
+/** The only file where the `Minor` brand is made: `MinorUnitsSchema` (AC-59). */
+export const MINOR_BRAND_FILES = ["src/modules/catalog/schemas.ts"];
+
+/** The exported types of `src/modules/catalog/types.ts` that hold a `Minor` (pinned by test). */
+export const MINOR_TYPES = [
+  "Minor",
+  "Surcharge",
+  "PricePoint",
+  "IntegerMoney",
+  "DatedSurcharge",
+  "TierPrice",
+  "VatLine",
+  "VatSplit",
+  "DisplayConversion",
+  "PriceProjection",
+  "OfferProjection",
+  "QuoteLine",
+  "Quote",
+];
+
+/**
+ * The values whose `typeof` gives a `Minor`-holding type: `toMinor`, and the schemas of
+ * `src/modules/catalog/schemas.ts` whose output holds a `Minor` (pinned by test).
+ */
+export const MINOR_VALUES = [
+  "toMinor",
+  "MinorUnitsSchema",
+  "IntegerMoneySchema",
+  "SurchargeSchema",
+  "PricePointSchema",
+  "GrossAtRateSchema",
+  "VatLineSchema",
+  "VatSplitSchema",
+  "PriceProjectionSchema",
+  "PriceTableSchema",
+  "OfferProjectionSchema",
+  "QuoteLineSchema",
+  "QuoteSchema",
+];
+
 const LINTED = ["js", "jsx", "mjs", "cjs", "ts", "tsx", "mts", "cts"];
 
 const SIDE_DOOR_MESSAGE =
@@ -127,9 +179,20 @@ const selectorRegex = (regex) => regex.replaceAll("/", "\\u002F");
 const MINOR_CAST_MESSAGE =
   "`as Minor` is allowed only in src/modules/catalog/pricing/money.ts: make a `Minor` with `toMinor()` or `MinorUnitsSchema`, which refuse a non-integer (spec 001 AC-59).";
 
-/** A type reference to `name`, bare or qualified (`Minor`, `catalog.Minor`). */
-const typeRef = (/** @type {string} */ name) =>
-  `TSTypeReference:matches([typeName.name='${name}'], [typeName.right.name='${name}'])`;
+const MINOR_BRAND_MESSAGE =
+  'The `Minor` brand is made only by `MinorUnitsSchema` in src/modules/catalog/schemas.ts: no second `.brand("Minor")`, `custom<Minor>()` or `$brand` (spec 001 AC-59).';
+
+/** `^(?:a|b)$` for esquery. */
+const anyOf = (/** @type {readonly string[]} */ names) =>
+  `/^(?:${names.map((name) => name.replaceAll("$", "\\$")).join("|")})$/`;
+
+/** A type reference to one of `names`, bare or qualified (`Minor`, `catalog.Minor`). */
+const typeRef = (/** @type {readonly string[]} */ names) =>
+  `TSTypeReference:matches([typeName.name=${anyOf(names)}], [typeName.right.name=${anyOf(names)}])`;
+
+/** `typeof` one of `names`, bare or qualified. */
+const typeQuery = (/** @type {readonly string[]} */ names) =>
+  `TSTypeQuery:matches([exprName.name=${anyOf(names)}], [exprName.right.name=${anyOf(names)}])`;
 
 /** The type of an `as` or `<T>` cast, when it is `ref` or contains it. */
 const castTo = (/** @type {string} */ ref) =>
@@ -139,13 +202,38 @@ const castTo = (/** @type {string} */ ref) =>
 export const MINOR_CASTS = [
   {
     id: "AC-59 as Minor",
-    selector: castTo(typeRef("Minor")),
+    selector: castTo(typeRef(MINOR_TYPES)),
+    message: MINOR_CAST_MESSAGE,
+  },
+  {
+    id: "AC-59 as typeof",
+    selector: castTo(typeQuery(MINOR_VALUES)),
     message: MINOR_CAST_MESSAGE,
   },
   {
     id: "AC-59 as $brand",
-    selector: castTo(typeRef("$brand")),
+    selector: castTo(typeRef(["$brand"])),
     message: MINOR_CAST_MESSAGE,
+  },
+];
+
+/** AC-59's entries for `no-restricted-syntax` that keep the brand in its one schema. */
+export const MINOR_BRANDS = [
+  {
+    id: "AC-59 .brand(Minor)",
+    selector:
+      "CallExpression[callee.property.name='brand']:matches([arguments.0.value='Minor'], :has(TSLiteralType[literal.value='Minor']))",
+    message: MINOR_BRAND_MESSAGE,
+  },
+  {
+    id: "AC-59 custom<Minor>()",
+    selector: `CallExpression:matches([callee.property.name='custom'], [callee.name='custom']):matches(:has(${typeRef(MINOR_TYPES)}), :has(${typeQuery(MINOR_VALUES)}))`,
+    message: MINOR_BRAND_MESSAGE,
+  },
+  {
+    id: "AC-59 $brand",
+    selector: "Identifier[name='$brand']",
+    message: MINOR_BRAND_MESSAGE,
   },
 ];
 
@@ -263,8 +351,8 @@ function sdkEntries(/** @type {readonly SdkAdapter[]} */ rows) {
 /**
  * The merged entries for one file group, with each entry's `id`. `sideDoors` says whether AC-56
  * applies; `sdks` are the adapter rows whose packages the group may not import; `minorCasts`
- * whether AC-59 does.
- * @param {{ sideDoors: boolean, sdks: readonly SdkAdapter[], minorCasts: boolean }} group
+ * whether AC-59's cast ban does; `minorBrands` whether its brand ban does.
+ * @param {{ sideDoors: boolean, sdks: readonly SdkAdapter[], minorCasts: boolean, minorBrands: boolean }} group
  */
 export function restrictedEntries(group) {
   const sdk = sdkEntries(group.sdks);
@@ -276,6 +364,7 @@ export function restrictedEntries(group) {
       ...(doors?.["no-restricted-syntax"] ?? []),
       ...sdk.syntax,
       ...(group.minorCasts ? MINOR_CASTS : []),
+      ...(group.minorBrands ? MINOR_BRANDS : []),
     ],
     "no-restricted-imports": {
       paths: doors?.["no-restricted-imports"].paths ?? [],
@@ -322,7 +411,8 @@ const globsUnder = (/** @type {string} */ dir) =>
 
 /**
  * The file groups of the linted tree, most general first, each disjoint from the others:
- * everything; `src/`; the side-door files; `money.ts`, where AC-59's cast is allowed; each
+ * everything; `src/`; the side-door files; `money.ts`, where AC-59's cast is allowed;
+ * `schemas.ts`, where its brand is made; each
  * adapter's files, split into their `src/` and other halves; and `tests/**`, where every package
  * is allowed and AC-56 does not apply, but AC-59 does.
  * @param {{ root?: string }} [options]
@@ -345,6 +435,7 @@ export function restrictedGroups(options = {}) {
         sideDoors: half.sideDoors,
         sdks: others,
         minorCasts: true,
+        minorBrands: true,
       }));
   });
   const srcAdapterFiles = SDK_ADAPTERS.flatMap((row) =>
@@ -369,6 +460,7 @@ export function restrictedGroups(options = {}) {
       sideDoors: false,
       sdks: SDK_ADAPTERS,
       minorCasts: true,
+      minorBrands: true,
     },
     {
       name: "fo/restricted/src",
@@ -376,11 +468,13 @@ export function restrictedGroups(options = {}) {
       ignores: [
         ...SIDE_DOOR_FILES,
         ...MINOR_CAST_FILES,
+        ...MINOR_BRAND_FILES,
         ...srcAdapterFiles,
       ].map(at),
       sideDoors: true,
       sdks: SDK_ADAPTERS,
       minorCasts: true,
+      minorBrands: true,
     },
     {
       name: "fo/restricted/side-door-files",
@@ -389,6 +483,7 @@ export function restrictedGroups(options = {}) {
       sideDoors: false,
       sdks: SDK_ADAPTERS,
       minorCasts: true,
+      minorBrands: true,
     },
     {
       name: "fo/restricted/minor-cast-files",
@@ -397,6 +492,16 @@ export function restrictedGroups(options = {}) {
       sideDoors: true,
       sdks: SDK_ADAPTERS,
       minorCasts: false,
+      minorBrands: true,
+    },
+    {
+      name: "fo/restricted/minor-brand-files",
+      files: MINOR_BRAND_FILES.map(at),
+      ignores: [],
+      sideDoors: true,
+      sdks: SDK_ADAPTERS,
+      minorCasts: true,
+      minorBrands: false,
     },
     ...adapterGroups,
     {
@@ -406,6 +511,7 @@ export function restrictedGroups(options = {}) {
       sideDoors: false,
       sdks: [],
       minorCasts: true,
+      minorBrands: true,
     },
   ];
 }

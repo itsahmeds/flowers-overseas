@@ -90,7 +90,8 @@ describe("assertSameCurrency (spec 005 §5.2)", () => {
       { amountMinor: 4590, currency: "XXX" },
     ]) {
       expect(
-        () => assertSameCurrency([invalid as unknown as IntegerMoney]),
+        // @ts-expect-error -- each is not an `IntegerMoney`; this checks the runtime guard.
+        () => assertSameCurrency([invalid]),
         JSON.stringify(invalid),
       ).toThrow();
     }

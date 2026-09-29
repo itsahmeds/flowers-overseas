@@ -43,6 +43,8 @@ import type { CurrencyCode } from "@/config/currencies";
 import type { LocaleCode } from "@/config/locales";
 import type { z } from "zod";
 
+import type { MinorUnitsSchema } from "./schemas";
+
 /**
  * A whole number of minor units the compiler keeps track of (spec 001 §14 A20, AC-59; §13 Q19).
  *
@@ -51,14 +53,15 @@ import type { z } from "zod";
  * `toMinor()` in `pricing/money.ts` and `MinorUnitsSchema` in `./schemas`, and both refuse
  * anything that is not a whole number. Arithmetic on a `Minor` gives a plain `number`, so
  * `const shown: Minor = priceMinor / 100` and `{ amountMinor: amountMinor * rate }` are type
- * errors until the result goes through one of the two again. `as Minor` is a lint error outside
- * `money.ts` (`no-restricted-syntax`, `eslint/sdk-adapters.js`).
+ * errors until the result goes through one of the two again. Lint keeps it that way
+ * (`eslint/sdk-adapters.js`, AC-59): no cast to a type that holds a `Minor` outside `money.ts`, and
+ * no second brand, `z.custom<Minor>()` or `$brand` outside `./schemas`.
  *
- * The brand is zod's own, so `z.infer<typeof MinorUnitsSchema>` is this type exactly. Only the
- * module's schema carries it: `src/config/catalogue/schemas.ts`' dataset schema stays an
+ * It is defined as the schema's own output, so the two cannot drift and no file but `./schemas`
+ * names zod's brand. Only the module's schema carries it: `src/config/catalogue/schemas.ts`' dataset schema stays an
  * unbranded integer, and an authored amount becomes `Minor` where the pricing module takes it in.
  */
-export type Minor = number & z.$brand<"Minor">;
+export type Minor = z.output<typeof MinorUnitsSchema>;
 
 /**
  * The `country_price.surcharge_kind` CHECK values of spec 002 §5.1, verbatim. Surcharges are

@@ -91,6 +91,23 @@ const MINOR_CASTS = [
   "x as unknown as Minor",
   "x as catalog.Minor",
   'x as number & z.$brand<"Minor">',
+  // /break 120 hole 2: a type that holds a `Minor` under another name, and `typeof` the one parse.
+  "x as IntegerMoney",
+  "x as unknown as PricePoint",
+  'x as IntegerMoney["amountMinor"]',
+  "x as ReturnType<typeof toMinor>",
+  "x as z.infer<typeof MinorUnitsSchema>",
+];
+
+/** AC-59: the only file where the `Minor` brand is made (`MinorUnitsSchema`). */
+const MINOR_BRAND_FILES = ["src/modules/catalog/schemas.ts"];
+
+/** AC-59's brand specimens (/break 120 holes 1 and 3), off only in `MINOR_BRAND_FILES`. */
+const MINOR_BRANDS = [
+  'z.number().brand<"Minor">()',
+  'z.number().brand("Minor")',
+  "z.custom<Minor>()",
+  "core.$brand",
 ];
 
 /** AC-57's table: each package (by specimen specifiers) and the only files that may import it. */
@@ -424,6 +441,13 @@ const ENTRY_CHECKS: readonly EntryCheck[] = [
     rule: "no-restricted-syntax",
     entry: specimen,
     applies: (file) => !MINOR_CAST_FILES.includes(file),
+    present: (options) => castBanned(options, specimen),
+  })),
+  ...MINOR_BRANDS.map((specimen): EntryCheck => ({
+    lock: AC59,
+    rule: "no-restricted-syntax",
+    entry: specimen,
+    applies: (file) => !MINOR_BRAND_FILES.includes(file),
     present: (options) => castBanned(options, specimen),
   })),
 ];
@@ -800,18 +824,19 @@ describe("the lock table (AC-52) over the real config", () => {
   it("applies AC-56, AC-57 and AC-59's entries by file, as their tables say", () => {
     const count = (file: string): number =>
       ENTRY_CHECKS.filter((check) => check.applies(file)).length;
-    // 16 AC-56 entries; 12 specimens × 6 import forms for AC-57; 5 AC-59 casts.
-    expect(count("src/modules/geo/corridor.ts")).toBe(16 + 72 + 5);
-    expect(count("src/lib/logger.ts")).toBe(72 + 5);
-    expect(count("src/lib/step-summary.ts")).toBe(72 + 5);
-    expect(count("src/lib/sentry.ts")).toBe(16 + 60 + 5);
-    expect(count("src/lib/db.ts")).toBe(16 + 48 + 5);
-    expect(count("next.config.ts")).toBe(60 + 5);
-    expect(count("scripts/db-migrate.ts")).toBe(48 + 5);
-    expect(count("scripts/env-check.ts")).toBe(72 + 5);
-    expect(count("src/modules/payments/stripe/client.ts")).toBe(16 + 60 + 5);
-    expect(count("tests/unit/sentry-before-send.test.ts")).toBe(5);
-    expect(count("src/modules/catalog/pricing/money.ts")).toBe(16 + 72);
+    // 16 AC-56 entries; 12 specimens × 6 import forms for AC-57; 10 AC-59 casts + 4 brands.
+    expect(count("src/modules/geo/corridor.ts")).toBe(16 + 72 + 14);
+    expect(count("src/lib/logger.ts")).toBe(72 + 14);
+    expect(count("src/lib/step-summary.ts")).toBe(72 + 14);
+    expect(count("src/lib/sentry.ts")).toBe(16 + 60 + 14);
+    expect(count("src/lib/db.ts")).toBe(16 + 48 + 14);
+    expect(count("next.config.ts")).toBe(60 + 14);
+    expect(count("scripts/db-migrate.ts")).toBe(48 + 14);
+    expect(count("scripts/env-check.ts")).toBe(72 + 14);
+    expect(count("src/modules/payments/stripe/client.ts")).toBe(16 + 60 + 14);
+    expect(count("tests/unit/sentry-before-send.test.ts")).toBe(14);
+    expect(count("src/modules/catalog/pricing/money.ts")).toBe(16 + 72 + 4);
+    expect(count("src/modules/catalog/schemas.ts")).toBe(16 + 72 + 10);
   });
 
   it("bans no package outside the table: each pattern is the package, not a prefix (/break 117 hole 3)", async () => {
