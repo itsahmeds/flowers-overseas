@@ -55,7 +55,8 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-09-29: AC-54 done (value/msg/stack scan in `logger.ts`, `request.url` in `sentry.ts`; T-58 cases in `logger.test.ts`, `sentry-before-send.test.ts`; boundary, Polish-gap, msg and stack mutations each go red). Next: AC-55.
+- 2026-09-29: AC-55 done (`src/config/url-keys.ts`, listing schema reads it, `tests/unit/url-pii.test.ts` with the checker-based receiver). Next: AC-56/57 lint locks.
 
 ## Result
 
