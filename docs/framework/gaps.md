@@ -72,6 +72,18 @@ gap closes, mark it ✅ with the PR, and don't delete the row.
 - `/break 113` round 3: a parser replaced in place under the same name silences every TS file; candidate fix: an identity check (`parser === tseslint.parser`). HOLE 3 (`.stylelintignore`) was accepted; its leftovers are in `docs/tasks/TASK-158.md`.
 - Orchestrator (step G, gap 14): it quoted a `pr-policy` run as CI twice; always read `gh run list --workflow ci`.
 
+**Found in wave 3 (PRs 115–122):**
+- Shell guard, still not caught (named in `bash_guard.py`'s header): `--config-env=alias.*`, `xargs`-fed refspecs, writing `.git/HEAD` directly; `gh api …/git/refs/heads/release` sits outside AC-40's "git push" wording.
+- `/review 117`: phone numbers written with a bracket next to a space (`+44 (0)20 …`, `+48 (22) …`) are not scrubbed, because the pattern allows one separator; a spec amendment is needed. `fs.writeSync(1, …)`, `process.emitWarning`, and Sentry's `transaction` / `logentry.message` fields are not scanned.
+- `/break 119`: a `let` reassigned to `"orders"` before a `sql` template (SQL built at run time) lints clean; the rule's header states the limit.
+- `/break 118` / TASK-161: an average of money through a callback (`xs.reduce(… priceMinor …) / n`) lints clean; the `Minor` type is the backstop.
+- `/review 120` HOLE N1–N3 accepted: zod's `z.BRAND<"Minor">` alias, `.brand` through a template literal type or `["brand"]`, and `z.any()` behind a `z.ZodType<Minor>` annotation. The next docs PR names them in `plan/12`'s Money row, and the next task that touches `eslint/sdk-adapters.js` adds `BRAND` to the `$brand` entry.
+- `/break 121` holes 1–5 accepted as prose-scanner variants; the visit-2 step "production runs the READY SHA" has no text test.
+- `/break 122` / `/break 104`: `tasks:check` does not check that a row's dependency and AC ids exist (step E tooling).
+- Parallel agents: dev-OS tests collide in a shared `$TMPDIR` (seen again on TASK-156 and TASK-159); every agent now uses a private `TMPDIR`.
+- Agents stalled on the stream watchdog four times on 2026-09-29; short commands and a push after every step kept the work, and a fresh finisher recovered each one (W-8).
+- Orchestrator (step G): a paused `git rebase -i` was found in a worktree with no process behind it; it was aborted, and the reword was done with `git filter-branch --msg-filter`, which leaves every tree unchanged.
+
 **Found by `/break 104`:**
 - `tasks:check` and `specs:index --check` don't validate a task row's AC/T ids against its spec: a row changed to `AC-99, T-99` stays green. The orchestrator guessed spec 040's T-ids, and only the reviewer caught it. Candidate for step E tooling.
 

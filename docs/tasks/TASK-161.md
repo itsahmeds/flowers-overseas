@@ -30,6 +30,8 @@ One dated bullet per `/review`, newest last.
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
 - **From `/break 108` (2026-09-28):** `seed/check.ts` L2437 divides a byte count, and AC-58 clause 3 would block it. A20 lists it as known code: **rename `total` to `mediaBytes`**. No exemption is possible, because AC-50 and AC-52 forbid switching `fo/no-float-money` off.
 
+- **From `/break 118` and `/review 118` (2026-09-29):** round 1 closed ten unpinned rule branches with test rows only (PR 118, `fa46327`). Logged: an average of money through a callback lints clean (the `Minor` type is the backstop); `globalThis.Number(x)` is inside the stated limit; the negative-amount fixture string is wrong but only a fixture.
+
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.

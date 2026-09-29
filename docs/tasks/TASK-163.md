@@ -31,6 +31,8 @@ One dated bullet per `/review`, newest last.
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
 - **From `/break 108` and `/review 108` (2026-09-28):** there are two exported `MinorUnitsSchema`s (`src/modules/catalog/schemas.ts` L55 and `src/config/catalogue/schemas.ts` L314); A20 now names which one gets the brand.
 
+- **From `/review 120` round 2 (2026-09-29):** HOLE N1–N3 accepted. (1) The next docs PR names in `plan/12`'s Money-row limit: `z.BRAND<"Minor">`, `.brand` through a template literal type or `["brand"]`, and `z.any()` behind `z.ZodType<Minor>`; `eslint/sdk-adapters.js` gets the same wording when next touched. (2) The next task that touches `sdk-adapters.js` adds `BRAND` to the `$brand` entry, with specimens. (3) Nits: `netFromGross` returns `number`; `Minor` and `toMinor` are not in the catalog barrel; `PriceTable.entries` is `number`.
+
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.

@@ -26,6 +26,8 @@ One dated bullet per `/review`, newest last.
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
 - **From `/break 108` round 3 (2026-09-28):** you wait for TASK-154 too, because it adds `maxTurns` to every `.claude/agents/*.md` frontmatter, `launch.md` included, and you edit `launch.md`. Rebase on it and keep its frontmatter.
 
+- **From `/review 121` round 2 (2026-09-29):** holes 1–5 and V1/V2 accepted as prose-scanner variants. HOLE 6 (the runbook) accepted on one condition: **TASK-164 merges before the founder runs F5 or F1–F3 for the T-44 paste**, because until then the F5 bullet would tell the founder to replace a good token. The four runbook items are binding clauses in `docs/tasks/TASK-164.md`. Logged only: no text test for visit 2 confirming production runs the READY SHA.
+
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
