@@ -1,4 +1,4 @@
-# TASK-164 — `railway:check` labels staging's missing `worker` as an expected red (`expectedAbsences`), T-45 and its four fixtures, the runbook §6 line
+# TASK-164 — `railway:check` labels staging's missing `worker` as an expected red (`expectedAbsences`), T-45 and its five fixtures, the runbook §6 line
 
 Row: `TASKS.md` → TASK-164. This brief is the task's long form: the row keeps a link and one
 sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it with
@@ -14,7 +14,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 - `docs/tasks/TASK-155.md` `## Result`: how the label is decided today
 - `docs/codebase-map.md`
 
-**Fence:** `src/lib/railway.ts`, `scripts/railway-check.ts`, `tests/contract/railway-check.test.ts`, `tests/fixtures/railway/` (the four new fixtures), `docs/runbooks/railway-cloudflare-setup.md` (the §6 expected-red line and the "Release branch → What the checks print today" section), `docs/tasks/TASK-157.md` (one note: T-44's run may carry the staging line), this brief, the row and the map.
+**Fence:** `src/lib/railway.ts`, `scripts/railway-check.ts`, `tests/contract/railway-check.test.ts`, `tests/fixtures/railway/` (the five new fixtures T-45 names), `docs/runbooks/railway-cloudflare-setup.md` (the §6 expected-red line and the "Release branch → What the checks print today" section), `docs/tasks/TASK-157.md` (one note: T-44's run may carry the staging line), this brief, the row and the map.
 
 ## Carry-forwards
 
