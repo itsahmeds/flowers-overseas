@@ -99,24 +99,50 @@ const SDK_TABLE: readonly {
   },
   {
     lock: "postgres",
-    specimens: ["postgres", "drizzle-orm/postgres-js"],
+    specimens: [
+      "postgres",
+      "postgres/cjs/src/index.js",
+      "drizzle-orm/postgres-js",
+      "drizzle-orm/postgres-js/driver",
+    ],
     allowedIn: ["src/lib/db.ts", "scripts/db-migrate.ts"],
   },
   {
     lock: "stripe",
-    specimens: ["stripe"],
+    specimens: ["stripe", "stripe/lib/stripe.js"],
     allowedIn: ["src/modules/payments/stripe/**"],
   },
   {
     lock: "@mollie/*",
-    specimens: ["@mollie/api-client"],
+    specimens: ["@mollie/api-client", "@mollie/other-sdk"],
     allowedIn: ["src/modules/payments/mollie/**"],
   },
   {
     lock: "resend",
-    specimens: ["resend"],
+    specimens: ["resend", "resend/build/src/index"],
     allowedIn: ["src/modules/notifications/resend/**"],
   },
+];
+
+/**
+ * Specifiers that are none of the table's packages (/break 117 hole 3): a pattern loosened to a
+ * bare prefix (`^stripe`, `^@mollie`) or to a substring goes red on one of these.
+ */
+const NOT_SDK = [
+  "stripe-mock",
+  "stripes",
+  "@stripe/stripe-js",
+  "resend-otp",
+  "resendable",
+  "postgres-array",
+  "postgresql",
+  "drizzle-orm",
+  "drizzle-orm/pg-core",
+  "drizzle-orm/postgres-jsx",
+  "@sentryx/node",
+  "sentry",
+  "@mollie2/api-client",
+  "mollie",
 ];
 
 /** A path matches an entry that is the path itself, or `dir/**` above it. */
@@ -176,16 +202,36 @@ const importBanned = (patterns: Rec[], specimen: string): boolean =>
       new RegExp(pattern["regex"]).test(specimen),
   );
 
+type SyntaxForm =
+  "import()" | "require()" | "import(``)" | "require(``)" | "import type";
+
+/** Whether a selector is the form's: a literal or a no-substitution template specifier. */
+const isForm = (selector: string, form: SyntaxForm): boolean => {
+  const template = selector.includes("TemplateLiteral");
+  switch (form) {
+    case "import()":
+      return selector.startsWith("ImportExpression[source.value=");
+    case "import(``)":
+      return selector.startsWith("ImportExpression") && template;
+    case "require()":
+      return /callee\.name=["']require["']\]\[arguments\.0\.value=/.test(
+        selector,
+      );
+    case "require(``)":
+      return /callee\.name=["']require["']/.test(selector) && template;
+    case "import type":
+      return selector.startsWith("TSImportType");
+  }
+};
+
 const syntaxBanned = (
   selectors: string[],
-  node: "ImportExpression" | "require",
+  form: SyntaxForm,
   specimen: string,
 ): boolean =>
   selectors.some(
     (selector) =>
-      (node === "ImportExpression"
-        ? selector.startsWith("ImportExpression")
-        : /callee\.name=["']require["']/.test(selector)) &&
+      isForm(selector, form) &&
       selectorRegexes(selector).some((regex) => regex.test(specimen)),
   );
 
@@ -251,6 +297,27 @@ const ENTRY_CHECKS: readonly EntryCheck[] = [
           selector.includes(String(property)),
       ),
   })),
+  // /break 117 hole 6: the same behind `as`, `<T>`, `!` or `satisfies`.
+  ...[
+    ["globalThis", "console"],
+    ["process", "stdout"],
+  ].map(([object, property]): EntryCheck => ({
+    lock: AC56,
+    rule: "no-restricted-syntax",
+    entry: `(${String(object)} as T).${String(property)}`,
+    applies: inSrcOutsideSideDoors,
+    present: (options) =>
+      selectorsOf(options).some(
+        (selector) =>
+          selector.startsWith("MemberExpression[object.type=") &&
+          ["TSAsExpression", "TSNonNullExpression", "TSTypeAssertion"].every(
+            (wrapper) =>
+              selectorRegexes(selector).some((regex) => regex.test(wrapper)),
+          ) &&
+          selector.includes(String(object)) &&
+          selector.includes(String(property)),
+      ),
+  })),
   ...["console", "node:console"].map((name): EntryCheck => ({
     lock: AC56,
     rule: "no-restricted-imports",
@@ -291,22 +358,22 @@ const ENTRY_CHECKS: readonly EntryCheck[] = [
           present: (options) =>
             importBanned(importsOf(options).patterns, specimen),
         },
-        {
+        ...(
+          [
+            "import()",
+            "require()",
+            "import(``)",
+            "require(``)",
+            "import type",
+          ] as const
+        ).map((form): EntryCheck => ({
           lock: AC57,
           rule: "no-restricted-syntax",
-          entry: `import("${specimen}")`,
+          entry: `${form} "${specimen}"`,
           applies,
           present: (options) =>
-            syntaxBanned(selectorsOf(options), "ImportExpression", specimen),
-        },
-        {
-          lock: AC57,
-          rule: "no-restricted-syntax",
-          entry: `require("${specimen}")`,
-          applies,
-          present: (options) =>
-            syntaxBanned(selectorsOf(options), "require", specimen),
-        },
+            syntaxBanned(selectorsOf(options), form, specimen),
+        })),
       ];
     }),
   ),
@@ -675,17 +742,55 @@ describe("the lock table (AC-52) over the real config", () => {
   it("applies AC-56 and AC-57's entries by file, as their tables say", () => {
     const count = (file: string): number =>
       ENTRY_CHECKS.filter((check) => check.applies(file)).length;
-    // 14 AC-56 entries; 7 specimens × 3 import forms for AC-57.
-    expect(count("src/modules/geo/corridor.ts")).toBe(14 + 21);
-    expect(count("src/lib/logger.ts")).toBe(21);
-    expect(count("src/lib/step-summary.ts")).toBe(21);
-    expect(count("src/lib/sentry.ts")).toBe(14 + 15);
-    expect(count("src/lib/db.ts")).toBe(14 + 15);
-    expect(count("next.config.ts")).toBe(15);
-    expect(count("scripts/db-migrate.ts")).toBe(15);
-    expect(count("scripts/env-check.ts")).toBe(21);
-    expect(count("src/modules/payments/stripe/client.ts")).toBe(14 + 18);
+    // 16 AC-56 entries; 12 specimens × 6 import forms for AC-57.
+    expect(count("src/modules/geo/corridor.ts")).toBe(16 + 72);
+    expect(count("src/lib/logger.ts")).toBe(72);
+    expect(count("src/lib/step-summary.ts")).toBe(72);
+    expect(count("src/lib/sentry.ts")).toBe(16 + 60);
+    expect(count("src/lib/db.ts")).toBe(16 + 48);
+    expect(count("next.config.ts")).toBe(60);
+    expect(count("scripts/db-migrate.ts")).toBe(48);
+    expect(count("scripts/env-check.ts")).toBe(72);
+    expect(count("src/modules/payments/stripe/client.ts")).toBe(16 + 60);
     expect(count("tests/unit/sentry-before-send.test.ts")).toBe(0);
+  });
+
+  it("bans no package outside the table: each pattern is the package, not a prefix (/break 117 hole 3)", async () => {
+    const eslint = new ESLint({
+      cwd: repoRoot,
+      overrideConfigFile: REAL_CONFIG,
+    });
+    for (const file of [
+      "src/modules/geo/corridor.ts",
+      "scripts/env-check.ts",
+    ]) {
+      const config = (await eslint.calculateConfigForFile(
+        resolve(repoRoot, file),
+      )) as Linter.Config;
+      const { patterns } = importsOf(
+        optionsOf(config.rules?.["no-restricted-imports"]),
+      );
+      const selectors = selectorsOf(
+        optionsOf(config.rules?.["no-restricted-syntax"]),
+      );
+      for (const specimen of NOT_SDK) {
+        expect(importBanned(patterns, specimen), `${file}: ${specimen}`).toBe(
+          false,
+        );
+        for (const form of [
+          "import()",
+          "require()",
+          "import(``)",
+          "require(``)",
+          "import type",
+        ] as const) {
+          expect(
+            syntaxBanned(selectors, form, specimen),
+            `${file}: ${form} ${specimen}`,
+          ).toBe(false);
+        }
+      }
+    }
   });
 
   it("keeps AC-57's table in step with eslint/sdk-adapters.js", () => {
@@ -826,7 +931,7 @@ describe("a one-line edit to eslint.config.mjs goes red and names the lock (T-56
       ),
     );
     expect(violations).toContain(
-      'no-restricted-syntax: entry import("stripe") missing from the options for src/modules/geo/corridor.ts (AC-57\'s SDK locks)',
+      'no-restricted-syntax: entry import() "stripe" missing from the options for src/modules/geo/corridor.ts (AC-57\'s SDK locks)',
     );
     expect(violations).toContain(
       'no-restricted-syntax: entry process["stdout"] missing from the options for src/modules/geo/corridor.ts (no-console and AC-56\'s locks)',

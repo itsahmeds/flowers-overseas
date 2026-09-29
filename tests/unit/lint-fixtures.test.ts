@@ -316,6 +316,13 @@ describe("pnpm lint:fixtures over the real configs", () => {
         // the computed one
         "12:no-restricted-properties",
         "12:no-restricted-syntax",
+        // /break 117 hole 6, behind a wrapper: (globalThis as …).console, (process as …).stdout,
+        // process!.stdout, (<…>process).stderr, (window satisfies Window)["console"]
+        "18:no-restricted-syntax",
+        "19:no-restricted-syntax",
+        "20:no-restricted-syntax",
+        "21:no-restricted-syntax",
+        "22:no-restricted-syntax",
       ]);
     });
 
@@ -406,6 +413,10 @@ describe("pnpm lint:fixtures over the real configs", () => {
         "4:no-restricted-imports",
         // import("drizzle-orm/postgres-js") (§13 Q22)
         "6:no-restricted-syntax",
+        // /break 117 hole 5: import(`stripe`), import("resend").Resend, typeof import("@sentry/nextjs")
+        "8:no-restricted-syntax",
+        "9:no-restricted-syntax",
+        "10:no-restricted-syntax",
       ]);
       const restricted = found.filter((m) =>
         m.ruleId?.startsWith("no-restricted-"),
@@ -418,7 +429,29 @@ describe("pnpm lint:fixtures over the real configs", () => {
         "src/modules/notifications/resend/",
         "src/modules/payments/mollie/",
         "src/lib/db.ts",
+        "src/modules/payments/stripe/",
+        "src/modules/notifications/resend/",
+        "src/lib/sentry.ts",
       ]);
+    });
+
+    // /break 117 hole 4: AC-57's last row is "`tests/**` except `tests/fixtures/`".
+    it.each([
+      ["tests/fixtures/zz.ts", 1],
+      ["tests/fixtures/seo/zz.ts", 1],
+      ["tests/fixtures/lint/zz.ts", 1],
+      ["tests/unit/zz.ts", 0],
+      ["tests/e2e/zz.ts", 0],
+    ])("locks SDK imports in %s: %i error(s)", async (file, errors) => {
+      const [result] = await fixtureLint().lintText(
+        'import Stripe from "stripe";\nexport { Stripe };\n',
+        { filePath: resolve(repoRoot, file) },
+      );
+      expect(
+        (result?.messages ?? []).map(
+          (m) => `${String(m.line)}:${m.ruleId ?? ""}`,
+        ),
+      ).toEqual(errors === 1 ? ["1:no-restricted-imports"] : []);
     });
 
     it("leaves each adapter's own package clean at its mirror path, and every package in tests/", async () => {

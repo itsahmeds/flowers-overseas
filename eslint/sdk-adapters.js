@@ -87,8 +87,15 @@ export const SDK_ADAPTERS = [
   },
 ];
 
-/** Where every package of `SDK_ADAPTERS` may be imported: the tests (AC-57's last row). */
+/**
+ * Where every package of `SDK_ADAPTERS` may be imported: the tests, except `tests/fixtures/`
+ * (AC-57's last row). The fixture mirror `tests/fixtures/lint/` gets its own groups.
+ */
 export const SDK_ALLOWED_EVERYWHERE_IN = ["tests/**"];
+export const SDK_LOCKED_AGAIN_IN = ["tests/fixtures/**"];
+
+/** The mirror tree `lint:fixtures` lints; the real config leaves it to the mirror's groups. */
+export const FIXTURE_MIRROR_ROOT = "tests/fixtures/lint/";
 
 /** The only files in `src/` where AC-56's side doors are open (AC-52's "allowed off" cell). */
 export const SIDE_DOOR_FILES = ["src/lib/logger.ts", "src/lib/step-summary.ts"];
@@ -106,6 +113,10 @@ const sdkMessage = (/** @type {SdkAdapter} */ row) =>
  * @param {string} regex
  */
 const selectorRegex = (regex) => regex.replaceAll("/", "\\u002F");
+
+/** `x as T`, `<T>x`, `x!` and `x satisfies T`: the wrappers that hide an identifier from a rule. */
+const TS_WRAPPER =
+  "/^TS(?:AsExpression|TypeAssertion|NonNullExpression|SatisfiesExpression)$/";
 
 /**
  * AC-56's entries, one list per rule. Each entry carries an `id` so the coverage test can name the
@@ -141,6 +152,18 @@ export const SIDE_DOORS = {
       id: "AC-56 computed process stream",
       selector:
         "MemberExpression[computed=true][object.name='process'][property.value=/^(?:stdout|stderr)$/]",
+      message: SIDE_DOOR_MESSAGE,
+    },
+    // Behind a TypeScript wrapper, `(globalThis as X).console` or `process!.stdout`, the object
+    // is not an identifier and `no-restricted-properties` does not see it (/break 117 hole 6).
+    {
+      id: "AC-56 wrapped console",
+      selector: `MemberExpression[object.type=${TS_WRAPPER}][object.expression.name=/^(?:globalThis|window|self|global)$/]:matches([computed=false][property.name='console'], [computed=true][property.value='console'])`,
+      message: SIDE_DOOR_MESSAGE,
+    },
+    {
+      id: "AC-56 wrapped process stream",
+      selector: `MemberExpression[object.type=${TS_WRAPPER}][object.expression.name='process']:matches([computed=false][property.name=/^(?:stdout|stderr)$/], [computed=true][property.value=/^(?:stdout|stderr)$/])`,
       message: SIDE_DOOR_MESSAGE,
     },
   ],
@@ -179,6 +202,23 @@ function sdkEntries(/** @type {readonly SdkAdapter[]} */ rows) {
       {
         id: `AC-57 require() ${row.name}`,
         selector: `CallExpression[callee.name='require'][arguments.0.value=/${selectorRegex(row.regex)}/]`,
+        message: sdkMessage(row),
+      },
+      // A template literal with no substitution is a literal specifier too (/break 117 hole 5).
+      {
+        id: `AC-57 import(\`\`) ${row.name}`,
+        selector: `ImportExpression[source.type='TemplateLiteral'][source.expressions.length=0][source.quasis.0.value.cooked=/${selectorRegex(row.regex)}/]`,
+        message: sdkMessage(row),
+      },
+      {
+        id: `AC-57 require(\`\`) ${row.name}`,
+        selector: `CallExpression[callee.name='require'][arguments.0.type='TemplateLiteral'][arguments.0.expressions.length=0][arguments.0.quasis.0.value.cooked=/${selectorRegex(row.regex)}/]`,
+        message: sdkMessage(row),
+      },
+      // The type `import("stripe").Stripe` is a type-only import (AC-57, /break 117 hole 5).
+      {
+        id: `AC-57 import("…") type ${row.name}`,
+        selector: `TSImportType[argument.literal.value=/${selectorRegex(row.regex)}/]`,
         message: sdkMessage(row),
       },
     ]),
@@ -252,7 +292,8 @@ const globsUnder = (/** @type {string} */ dir) =>
  */
 export function restrictedGroups(options = {}) {
   const root = options.root ?? "";
-  const at = (/** @type {string} */ path) => `${root}${path}`;
+  const at = (/** @type {string} */ path) =>
+    path.startsWith("!") ? `!${root}${path.slice(1)}` : `${root}${path}`;
   const adapterGroups = SDK_ADAPTERS.flatMap((row) => {
     const others = SDK_ADAPTERS.filter((other) => other !== row);
     return [
@@ -278,8 +319,12 @@ export function restrictedGroups(options = {}) {
     {
       name: "fo/restricted/everywhere",
       files: globsUnder(root),
+      // Order matters: `ignores` read as gitignore lines, so `!tests/fixtures/**` takes the
+      // fixtures back after `tests/**` let them go.
       ignores: [
         ...SDK_ALLOWED_EVERYWHERE_IN,
+        ...SDK_LOCKED_AGAIN_IN.map((pattern) => `!${pattern}`),
+        ...(root === "" ? [`${FIXTURE_MIRROR_ROOT}**`] : []),
         "src/**",
         ...otherAdapterFiles,
       ].map(at),

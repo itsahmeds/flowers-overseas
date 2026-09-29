@@ -13,3 +13,11 @@ export function f(x: string): void {
   stdout.write(x);
   new Console(stdout).log(x);
 }
+// /break 117 hole 6: the same behind a TypeScript wrapper.
+export function g(x: string): void {
+  (globalThis as { console: Console }).console.log(x);
+  (process as NodeJS.Process).stdout.write(x);
+  process!.stdout.write(x);
+  (<NodeJS.Process>process).stderr.write(x);
+  (window satisfies Window)["console"].log(x);
+}

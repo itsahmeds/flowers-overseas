@@ -5,7 +5,7 @@ import prettier from "eslint-config-prettier/flat";
 
 import fo from "./eslint/fo/index.js";
 import { moduleBoundaryZones } from "./eslint/modules.js";
-import { restrictedRules } from "./eslint/sdk-adapters.js";
+import { FIXTURE_MIRROR_ROOT, restrictedRules } from "./eslint/sdk-adapters.js";
 
 // Base config (TASK-001), the local `fo/` plugin (TASK-003, TASK-004) and the module-boundary
 // zones of plan/01 §5 (TASK-004).
@@ -203,7 +203,7 @@ const eslintConfig = defineConfig([
     },
   },
   // AC-56 and AC-57 over the fixture mirror, from the same function (T-60, T-61).
-  ...restrictedRules({ root: "tests/fixtures/lint/" }),
+  ...restrictedRules({ root: FIXTURE_MIRROR_ROOT }),
   globalIgnores([
     ".next/**",
     "out/**",
