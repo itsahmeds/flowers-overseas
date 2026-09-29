@@ -326,6 +326,105 @@ done
 run_bash_guard "$PROJECT" "git push origin HEAD" "$PROJECT" "agent-1234"
 assert_empty "$GUARD_STDOUT" "outside any checkout, git push origin HEAD is not guessed at: allowed"
 
+# /break 115 holes 1-4: `heads/<name>`, another repository, a command-line alias, other runners
+ALIAS_ALT="run git push itself"
+UNKNOWN_ALT="name the destination branch"
+HEADS_DENIED=(
+  "git push origin HEAD:heads/release"
+  "git push origin +heads/release"
+  "git push origin --delete heads/release"
+  "git push origin :heads/release"
+)
+for cmd in "${HEADS_DENIED[@]}"; do
+  for agent in "" "agent-1234"; do
+    run_bash_guard "$PROJECT" "$cmd" "$PROJECT" "$agent"
+    assert_eq "deny" "$GUARD_DECISION" "heads/release is release (agent '${agent}'): $cmd"
+    assert_contains "$GUARD_REASON" "$RELEASE_ALT" "heads/release, the release reason: $cmd"
+  done
+done
+for cmd in "git push origin HEAD:heads/main" "git push origin heads/main" "git push origin --delete heads/main"; do
+  run_bash_guard "$PROJECT" "$cmd" "$PROJECT" "agent-1234"
+  assert_eq "deny" "$GUARD_DECISION" "with agent_id, heads/main is main: $cmd"
+  assert_contains "$GUARD_REASON" "$MAIN_ALT" "heads/main, the main reason: $cmd"
+  run_bash_guard "$PROJECT" "$cmd"
+  assert_empty "$GUARD_STDOUT" "without agent_id, heads/main allowed: $cmd"
+done
+
+# the branch of another repository is not guessed at: a HEAD or refspec-less push is denied
+UNKNOWN_DENIED=(
+  "git --git-dir=$ON_SPEC/.git push origin HEAD"
+  "git --git-dir $ON_SPEC/.git push"
+  "git --work-tree=$ON_SPEC push origin HEAD"
+  "GIT_DIR=$ON_SPEC/.git git push origin HEAD"
+  "env GIT_DIR=$ON_SPEC/.git git push"
+  "GIT_WORK_TREE=$ON_SPEC git push -u origin HEAD"
+  "export GIT_DIR=$ON_SPEC/.git; git push origin HEAD"
+  "export GIT_DIR=$ON_SPEC/.git && git push origin @"
+)
+for cmd in "${UNKNOWN_DENIED[@]}"; do
+  for agent in "" "agent-1234"; do
+    run_bash_guard "$PROJECT" "$cmd" "$PROJECT" "$agent"
+    assert_eq "deny" "$GUARD_DECISION" "another repository's HEAD is not guessed (agent '${agent}'): $cmd"
+    assert_contains "$GUARD_REASON" "$UNKNOWN_ALT" "the reason asks for the destination: $cmd"
+  done
+done
+run_bash_guard "$PROJECT" "git --git-dir=$ON_RELEASE/.git push origin HEAD:release" "$PROJECT" "agent-1234"
+assert_contains "$GUARD_REASON" "$RELEASE_ALT" "--git-dir with an explicit release destination: the release reason"
+
+# a git alias defined on the command line that runs push
+ALIAS_DENIED=(
+  "git -c alias.p=push p origin HEAD:release"
+  "git -c alias.p=push p origin task/TASK-1-x"
+  'git -c "alias.p=!git push" p origin HEAD:release'
+  "git -c alias.p='push origin HEAD:release' p"
+  "git -C ../x -c alias.up=push up"
+)
+for cmd in "${ALIAS_DENIED[@]}"; do
+  for agent in "" "agent-1234"; do
+    run_bash_guard "$PROJECT" "$cmd" "$PROJECT" "$agent"
+    assert_eq "deny" "$GUARD_DECISION" "a command-line alias for push (agent '${agent}'): $cmd"
+    assert_contains "$GUARD_REASON" "$ALIAS_ALT" "the alias reason: $cmd"
+  done
+done
+
+# release:promote / release:rollback through other runners, inside a subagent
+RELEASE_COMMANDS_MORE=(
+  "pnpm -C /abs/path release:promote --sha $SHA40 --expect $SHA40"
+  "pnpm --dir . release:rollback --to $SHA40 --expect $SHA40"
+  "pnpm --filter web release:promote --sha $SHA40 --expect $SHA40"
+  "pnpm exec node scripts/release.ts promote --sha $SHA40 --expect $SHA40"
+  "pnpm exec tsx scripts/release.ts rollback --to $SHA40 --expect $SHA40"
+  "npx tsx scripts/release.ts promote --sha $SHA40 --expect $SHA40"
+  "corepack pnpm release:promote --sha $SHA40 --expect $SHA40"
+  "node --import tsx /abs/scripts/release.ts rollback --to $SHA40 --expect $SHA40"
+)
+for cmd in "${RELEASE_COMMANDS_MORE[@]}"; do
+  run_bash_guard "$PROJECT" "$cmd" "$PROJECT" "agent-1234"
+  assert_eq "deny" "$GUARD_DECISION" "with agent_id, denied: $cmd"
+  assert_contains "$GUARD_REASON" "$RELEASE_CMD_ALT" "the command reason: $cmd"
+  run_bash_guard "$PROJECT" "$cmd"
+  assert_empty "$GUARD_STDOUT" "without agent_id (the orchestrator), allowed: $cmd"
+done
+
+# look-alikes for holes 1-4, allowed from anyone
+ALLOWED_MORE=(
+  "git push origin HEAD:heads/release-notes"
+  "git --git-dir=$ON_RELEASE/.git push origin task/TASK-1-x"
+  "GIT_DIR=$ON_RELEASE/.git git push origin HEAD:refs/heads/task/TASK-1-x"
+  "git -c user.name=x push origin task/TASK-1-x"
+  "git -c alias.st=status st"
+  "pnpm -C /abs/path release:status"
+  "pnpm exec node scripts/release.ts status"
+  "grep -n release:promote README.md"
+  'git commit -m "pnpm -C . release:promote is the orchestrator'"'"'s"'
+)
+for cmd in "${ALLOWED_MORE[@]}"; do
+  run_bash_guard "$PROJECT" "$cmd" "$PROJECT" "agent-1234"
+  assert_empty "$GUARD_STDOUT" "with agent_id, allowed: $cmd"
+  run_bash_guard "$PROJECT" "$cmd"
+  assert_empty "$GUARD_STDOUT" "without agent_id, allowed: $cmd"
+done
+
 # --- T-53 (guard half) / AC-38, AC-42: the task belongs to each worktree ----------------------------
 make_worktree_repo
 TASK_SH_CWD="$WT_201" run_task_sh "$WT_MAIN" clear
