@@ -217,6 +217,8 @@ RELEASE_DENIED=(
   "git push -f origin main:release"
   "git push --force-with-lease=release:$SHA40 origin $SHA40:refs/heads/release"
   "git push origin task/x:release"
+  "git push origin +release"
+  "git push origin +refs/heads/release"
   "git push origin 'refs/heads/*:refs/heads/*'"
   "git push --prune origin 'refs/heads/*:refs/heads/*'"
   "git push --branches origin"
@@ -233,7 +235,7 @@ for cmd in "${RELEASE_DENIED[@]}"; do
 done
 
 # HEAD, or no refspec at all, is the current branch of the command's working directory
-for cmd in "git push" "git push origin" "git push origin HEAD" "git push -u origin HEAD" "git push origin @"; do
+for cmd in "git push" "git push origin" "git push origin HEAD" "git push -u origin HEAD" "git push origin @" "git push origin +HEAD"; do
   for agent in "" "agent-1234"; do
     run_bash_guard "$PROJECT" "$cmd" "$ON_RELEASE" "$agent"
     assert_eq "deny" "$GUARD_DECISION" "on branch release, denied (agent '${agent}'): $cmd"
@@ -278,6 +280,7 @@ MAIN_DENIED=(
   "git push origin :main"
   "git push origin --delete main"
   "git -C ../x push origin HEAD:refs/heads/main"
+  "git push origin +main"
 )
 for cmd in "${MAIN_DENIED[@]}"; do
   run_bash_guard "$PROJECT" "$cmd" "$PROJECT" "agent-1234"
@@ -302,6 +305,7 @@ ALLOWED_PUSHES=(
   "git push origin release/2026-09"
   "git push origin HEAD:mainline"
   "git push --force-with-lease origin task/TASK-156-release-promote"
+  "git push origin +task/TASK-156-release-promote"
   "git push origin v1.0:refs/tags/release"
   "git push --tags origin"
   "git log origin/release..origin/main"

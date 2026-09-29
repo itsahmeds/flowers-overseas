@@ -722,7 +722,8 @@ def push_destinations(args, directory):
     if not refspecs and not deleting and not flags & {"--tags"}:
         refspecs = ["HEAD"]
     for spec in refspecs:
-        dest = spec if deleting else spec.rsplit(":", 1)[-1] if ":" in spec else spec
+        # a delete names its ref the same way: `--delete release`, `-d refs/heads/release`, `:release`
+        dest = spec.rsplit(":", 1)[-1] if ":" in spec else spec
         dest = branch_name(dest)
         if dest in ("HEAD", "@"):
             dest = current_branch(directory)
