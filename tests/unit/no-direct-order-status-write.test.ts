@@ -406,6 +406,26 @@ describe("fo/no-direct-order-status-write further shapes (AC-60)", () => {
       messageId: "unreadable",
     },
     {
+      name: "a same-file literal stored in a Map and written through it",
+      code: 'const patch = { notes };\nconst held = new Map<string, Record<string, string>>();\nheld.set("k", patch);\nheld.get("k")!.status = "paid";\ndb.update(orders).set(patch);',
+      messageId: "unreadable",
+    },
+    {
+      name: "a same-file literal used as a Map key and written through it",
+      code: 'const patch = { notes };\nconst held = new Map<Record<string, string>, number>();\nheld.set(patch, 1);\n[...held.keys()][0]!.status = "paid";\ndb.update(orders).set(patch);',
+      messageId: "unreadable",
+    },
+    {
+      name: "a same-file literal given status by ++",
+      code: 'const patch: Record<string, number> = { count: 1 };\npatch["status"]++;\ndb.update(orders).set(patch);',
+      messageId: "unreadable",
+    },
+    {
+      name: "a same-file literal whose own method is called",
+      code: 'const patch = {\n  notes,\n  mark() {\n    Object.assign(this, { status: "paid" });\n  },\n};\npatch.mark();\ndb.update(orders).set(patch);',
+      messageId: "unreadable",
+    },
+    {
       name: "a let patch assigned again",
       code: "let patch = { notes };\npatch = next;\ndb.update(orders).set(patch);",
       messageId: "unreadable",

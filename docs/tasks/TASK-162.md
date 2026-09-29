@@ -40,7 +40,8 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-09-29: rule, T-64 RuleTester rows (per-row `it.each`), further shapes, config block `fo/order-status` on `src/ scripts/ seed/ db/` + root files, AC-52 row widened with two red-case families; 27 mutations of the rule each turn a case red. PR #119 draft. Next: `plan/12` row, gates, ready + `ci:full`.
+- 2026-09-29: `plan/12` §2 "Order integrity" row rewritten (AC-62). Next: `gates:cheap`, rebase, ready, CI.
 
 ## Result
 

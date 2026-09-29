@@ -379,9 +379,6 @@ const rule = {
           return false;
         }
         if (use?.type === "UpdateExpression") return false;
-        if (use?.type === "UnaryExpression" && use.operator === "delete") {
-          return false;
-        }
         return !(use?.type === "CallExpression" && use.callee === parent);
       }
       return false;
@@ -422,7 +419,6 @@ const rule = {
       if (
         variable.defs.length !== 1 ||
         def === undefined ||
-        def.type !== "Variable" ||
         def.node.id !== def.name ||
         def.node.init === null ||
         def.node.init === undefined
