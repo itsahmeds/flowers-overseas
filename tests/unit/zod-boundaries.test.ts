@@ -1051,6 +1051,29 @@ describe("T-57: red, naming the file and line", () => {
     ]);
   });
 
+  it("the rule's limits: a method's first argument, `JSON.parse` alone, two bindings, `.arrayBuffer()`/`.blob()`", () => {
+    expect(
+      problems(scan(fixture("rule-limits"), { readers: none, parsers: none })),
+    ).toEqual([
+      "src/lib/limits.ts:11 body .json(): line 11: passed to `db.save()`",
+      "src/lib/limits.ts:16 body .text(): line 17: reaches a ReturnStatement",
+      "src/lib/limits.ts:22 body .json(): line 23: reaches a VariableDeclaration",
+      "src/lib/limits.ts:29 body .arrayBuffer(): line 30: read as `.byteLength`",
+      "src/lib/limits.ts:34 body .blob(): line 35: read as `.size`",
+    ]);
+  });
+
+  it("a PARSERS entry whose only `.parse` is `JSON.parse`", () => {
+    expect(
+      scan(fixture("parsers-json"), {
+        readers: none,
+        parsers: [entry("src/lib/params.ts#request")],
+      }).listProblems,
+    ).toEqual([
+      `PARSERS src/lib/params.ts#request: calls none of ${SINK_LIST}, itself or through a same-file function`,
+    ]);
+  });
+
   it("a READERS entry naming a deleted function", () => {
     const result = scan(fixture("readers"), {
       readers: [
