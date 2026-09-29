@@ -69,7 +69,7 @@ import type {
   TierPrice,
 } from "../types";
 
-import { sumMoney } from "./money";
+import { sumMoney, toMinor } from "./money";
 import { netFromGross } from "./vat";
 
 /**
@@ -279,7 +279,7 @@ function pricePointFrom(
     }
   }
   const gross = sumMoney([
-    { amountMinor: retail.retailMinor, currency: retail.currency },
+    { amountMinor: toMinor(retail.retailMinor), currency: retail.currency },
     ...surcharges.map((surcharge) => ({
       amountMinor: surcharge.amountMinor,
       currency: surcharge.currency,

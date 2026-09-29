@@ -23,6 +23,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { FX_SNAPSHOT_AS_OF } from "../../src/config/catalogue/fx.data.ts";
 import { priceProjection } from "../../src/modules/catalog/pricing/project.ts";
 import { quote, verifyQuote } from "../../src/modules/catalog/pricing/quote.ts";
+import { toMinor } from "../../src/modules/catalog/pricing/money.ts";
 import type { Quote } from "../../src/modules/catalog/types.ts";
 
 const STATIC_MODULE = "../../src/modules/catalog/static/index.ts";
@@ -233,8 +234,8 @@ describe("verifyQuote refuses what it must (AC-17, T-15)", () => {
 
     const cheaper: Quote = {
       ...built,
-      lines: [{ ...line, amountMinor: line.amountMinor - 100 }],
-      totalMinor: built.totalMinor - 100,
+      lines: [{ ...line, amountMinor: toMinor(line.amountMinor - 100) }],
+      totalMinor: toMinor(built.totalMinor - 100),
     };
     await expect(verifyQuote(cheaper, INSIDE)).resolves.toBe("tampered");
   });

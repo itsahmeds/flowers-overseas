@@ -48,7 +48,11 @@ import {
   resolvePrice,
   tierPrices,
 } from "../../src/modules/catalog/pricing/resolve.ts";
-import { addMoney, sumMoney } from "../../src/modules/catalog/pricing/money.ts";
+import {
+  addMoney,
+  sumMoney,
+  toMinor,
+} from "../../src/modules/catalog/pricing/money.ts";
 import { netFromGross } from "../../src/modules/catalog/pricing/vat.ts";
 import { MAX_SURCHARGE_RANGE_DAYS } from "../../src/modules/catalog/schemas.ts";
 import type {
@@ -556,8 +560,8 @@ describe("resolvePrice includes the date's surcharges in the amount (AC-16)", ()
     const step = deLadder[1];
     if (step === undefined) throw new Error("no authored DE ladder");
     const gross = addMoney(
-      { amountMinor: step, currency: de.currency },
-      { amountMinor: de.sundaySurchargeMinor, currency: de.currency },
+      { amountMinor: toMinor(step), currency: de.currency },
+      { amountMinor: toMinor(de.sundaySurchargeMinor), currency: de.currency },
     );
     const { netMinor, vatMinor } = netFromGross(
       gross.amountMinor,
@@ -598,9 +602,15 @@ describe("resolvePrice includes the date's surcharges in the amount (AC-16)", ()
 
     expect(both.amountMinor).toBe(
       sumMoney([
-        { amountMinor: step, currency: de.currency },
-        { amountMinor: de.sundaySurchargeMinor, currency: de.currency },
-        { amountMinor: de.peakDaySurchargeMinor, currency: de.currency },
+        { amountMinor: toMinor(step), currency: de.currency },
+        {
+          amountMinor: toMinor(de.sundaySurchargeMinor),
+          currency: de.currency,
+        },
+        {
+          amountMinor: toMinor(de.peakDaySurchargeMinor),
+          currency: de.currency,
+        },
       ]).amountMinor,
     );
     expect(plain.amountMinor).toBe(step);

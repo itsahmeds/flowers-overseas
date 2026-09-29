@@ -30,6 +30,7 @@ import { priceBandFor } from "../../src/config/catalogue/prices.data.ts";
 import type { CurrencyCode } from "../../src/config/currencies.ts";
 import type { PriceBandKey } from "../../src/config/catalogue/schemas.ts";
 import { vatBreakdown } from "../../src/modules/catalog/pricing/vat.ts";
+import { toMinor } from "../../src/modules/catalog/pricing/money.ts";
 import { mixedVatBaskets, priceBands } from "../fixtures/index.ts";
 
 const repoRoot = resolve(__dirname, "../..");
@@ -147,7 +148,7 @@ describe("the shared catalogue corpus (AC-26, T-24)", () => {
     for (const basket of mixedVatBaskets) {
       const produced = vatBreakdown(
         basket.lines.map((line) => ({
-          grossMinor: line.grossMinor,
+          grossMinor: toMinor(line.grossMinor),
           rateBp: line.rateBp,
           currency: basket.currency as CurrencyCode,
         })),

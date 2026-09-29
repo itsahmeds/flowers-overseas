@@ -38,6 +38,7 @@ import {
   roundMinorToStyle,
   roundToStyle,
 } from "../../src/modules/catalog/pricing/round.ts";
+import { toMinor } from "../../src/modules/catalog/pricing/money.ts";
 
 /** Every amount from 0 to `count - 1`: the generated range AC-12 asks for. */
 function range(count: number): readonly number[] {
@@ -47,16 +48,22 @@ function range(count: number): readonly number[] {
 describe("the worked endings of §13 Q1", () => {
   it("lifts a converted amount onto the EUR and GBP `x90` ending", () => {
     // €30.29 (the buffered PLN 149 conversion of AC-12's table) reads as €30.90 on a page.
-    expect(roundToStyle({ amountMinor: 3030, currency: "EUR" })).toEqual({
+    expect(
+      roundToStyle({ amountMinor: toMinor(3030), currency: "EUR" }),
+    ).toEqual({
       amountMinor: 3090,
       currency: "EUR",
     });
-    expect(roundToStyle({ amountMinor: 3090, currency: "GBP" })).toEqual({
+    expect(
+      roundToStyle({ amountMinor: toMinor(3090), currency: "GBP" }),
+    ).toEqual({
       amountMinor: 3090,
       currency: "GBP",
     });
     // One minor unit past the ending crosses into the next major unit, never back down to 3 090.
-    expect(roundToStyle({ amountMinor: 3091, currency: "GBP" })).toEqual({
+    expect(
+      roundToStyle({ amountMinor: toMinor(3091), currency: "GBP" }),
+    ).toEqual({
       amountMinor: 3190,
       currency: "GBP",
     });
@@ -66,28 +73,34 @@ describe("the worked endings of §13 Q1", () => {
     // The band table itself: 149 / 199 / 269 / 359 zł are already on the ending.
     for (const amountMinor of [14_900, 19_900, 26_900, 35_900]) {
       expect(
-        roundToStyle({ amountMinor, currency: "PLN" }).amountMinor,
+        roundToStyle({ amountMinor: toMinor(amountMinor), currency: "PLN" })
+          .amountMinor,
       ).toEqual(amountMinor);
     }
     // 200,80 zł -> 209 zł. The `x9` lattice is ten złoty wide, and up is the only direction
     // allowed: 199 zł would be below the converted cost (spec 005 §2 "FX and rounding").
-    expect(roundToStyle({ amountMinor: 20_080, currency: "PLN" })).toEqual({
+    expect(
+      roundToStyle({ amountMinor: toMinor(20_080), currency: "PLN" }),
+    ).toEqual({
       amountMinor: 20_900,
       currency: "PLN",
     });
     expect(
-      roundToStyle({ amountMinor: 14_901, currency: "PLN" }).amountMinor,
+      roundToStyle({ amountMinor: toMinor(14_901), currency: "PLN" })
+        .amountMinor,
     ).toBe(15_900);
   });
 
   it("reads the ending off the amount itself for a zero-exponent currency (HUF `x90`)", () => {
     // 990 Ft endings, the Hungarian convention (§13 Q1, carried forward from `/review 14`).
-    expect(roundToStyle({ amountMinor: 12_345, currency: "HUF" })).toEqual({
+    expect(
+      roundToStyle({ amountMinor: toMinor(12_345), currency: "HUF" }),
+    ).toEqual({
       amountMinor: 12_390,
       currency: "HUF",
     });
     expect(
-      roundToStyle({ amountMinor: 990, currency: "HUF" }).amountMinor,
+      roundToStyle({ amountMinor: toMinor(990), currency: "HUF" }).amountMinor,
     ).toBe(990);
   });
 
@@ -95,7 +108,7 @@ describe("the worked endings of §13 Q1", () => {
     for (const currency of CURRENCIES) {
       expect(
         roundToStyle({
-          amountMinor: 0,
+          amountMinor: toMinor(0),
           currency: currency.code as CurrencyCode,
         }).amountMinor,
         currency.code,
@@ -105,7 +118,7 @@ describe("the worked endings of §13 Q1", () => {
 
   it("refuses a negative amount rather than guessing which way `up` goes", () => {
     expect(() =>
-      roundToStyle({ amountMinor: -100, currency: "EUR" }),
+      roundToStyle({ amountMinor: toMinor(-100), currency: "EUR" }),
     ).toThrowError(/not negative/);
     expect(() => roundMinorToStyle(-1, "x90", 2)).toThrowError(/not negative/);
     expect(() => roundMinorToStyle(10.5, "x90", 2)).toThrowError(
@@ -194,7 +207,10 @@ describe("it agrees with `endsInRoundingStyle()` rather than restating it (§13 
       // units) twice and to include the zero case, and it is the predicate `catalogue:check` uses
       // that judges the result — not a second table of endings written here.
       for (const amountMinor of range(2003)) {
-        const rounded = roundToStyle({ amountMinor, currency: code });
+        const rounded = roundToStyle({
+          amountMinor: toMinor(amountMinor),
+          currency: code,
+        });
 
         expect(rounded.currency).toBe(code);
         expect(
@@ -211,7 +227,9 @@ describe("it agrees with `endsInRoundingStyle()` rather than restating it (§13 
     // would be under `x90` — which is the disagreement TASK-062 corrected in
     // `src/config/currencies.ts`, and the one this suite would catch if it came back.
     expect(endsInRoundingStyle(14_990, "PLN")).toBe(false);
-    expect(roundToStyle({ amountMinor: 14_990, currency: "PLN" })).toEqual({
+    expect(
+      roundToStyle({ amountMinor: toMinor(14_990), currency: "PLN" }),
+    ).toEqual({
       amountMinor: 15_900,
       currency: "PLN",
     });

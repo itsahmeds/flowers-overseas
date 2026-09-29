@@ -53,7 +53,7 @@ import {
  * unwritable. A retail flower price is six orders of magnitude below `Number.MAX_SAFE_INTEGER`,
  * and `.int()` rejects a float, a numeric string and `NaN` (`fo/no-float-money`, `plan/12` §2).
  */
-export const MinorUnitsSchema = z.number().int();
+export const MinorUnitsSchema = z.number().int().brand<"Minor">();
 
 /** A `date` column of spec 002 §5.1: a calendar day, never a timestamp, never a locale string. */
 export const IsoDateSchema = z.iso.date();
@@ -746,7 +746,7 @@ export const OfferProjectionSchema = z
     ]),
     eligibleRegion: DestinationIsoSchema,
     shippingRate: IntegerMoneySchema.extend({
-      amountMinor: z.literal(0),
+      amountMinor: MinorUnitsSchema.min(0).max(0),
     }).strict(),
     hasMerchantReturnPolicy: z.literal(
       "https://schema.org/MerchantReturnNotPermitted",

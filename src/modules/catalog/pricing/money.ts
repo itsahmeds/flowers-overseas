@@ -36,7 +36,21 @@
 import type { CurrencyCode } from "@/config/currencies";
 
 import { IntegerMoneySchema } from "../schemas";
-import type { IntegerMoney } from "../types";
+import type { IntegerMoney, Minor } from "../types";
+
+/**
+ * A whole number of minor units, branded, or a throw (spec 001 §14 A20, AC-59; §13 Q19).
+ *
+ * The one place a plain `number` becomes a `Minor` in code: `MinorUnitsSchema` is the other way
+ * in, for a value arriving at a boundary. Arithmetic on a `Minor` gives a plain `number`, so a
+ * computed amount comes back through here before it can sit in a money field, and a fraction, a
+ * `NaN` or an amount past `Number.MAX_SAFE_INTEGER` throws instead. This file is the only one
+ * where lint allows `as Minor` (`eslint/sdk-adapters.js`, AC-52's table).
+ */
+export function toMinor(n: number): Minor {
+  assertSafeInteger(n, "an amount");
+  return n as Minor;
+}
 
 /**
  * The currency every amount shares, or a throw.
@@ -107,7 +121,7 @@ export function sumMoney(amounts: readonly IntegerMoney[]): IntegerMoney {
 export function divideMinorHalfUp(
   numeratorMinor: number,
   divisor: number,
-): number {
+): Minor {
   assertSafeInteger(numeratorMinor, "numeratorMinor");
   assertSafeInteger(divisor, "divisor");
   if (divisor <= 0) {
@@ -149,7 +163,7 @@ export function divideMinorHalfUp(
 export function divideMinorCeil(
   factorsMinor: readonly number[],
   divisor: number,
-): number {
+): Minor {
   factorsMinor.forEach((factor, index) =>
     assertSafeInteger(factor, `factorsMinor[${String(index)}]`),
   );
@@ -198,7 +212,7 @@ function assertSafeInteger(value: number, name: string): void {
  * only fire on a defect — and a silently imprecise total is the one outcome the money rule cannot
  * tolerate, so it fires loudly.
  */
-function safeSum(amountsMinor: readonly number[]): number {
+function safeSum(amountsMinor: readonly number[]): Minor {
   const total = amountsMinor.reduce(
     (running, amountMinor) => running + BigInt(amountMinor),
     0n,
@@ -206,7 +220,7 @@ function safeSum(amountsMinor: readonly number[]): number {
   return asSafeNumber(total);
 }
 
-function asSafeNumber(value: bigint): number {
+function asSafeNumber(value: bigint): Minor {
   if (
     value > BigInt(Number.MAX_SAFE_INTEGER) ||
     value < BigInt(Number.MIN_SAFE_INTEGER)
@@ -215,5 +229,5 @@ function asSafeNumber(value: bigint): number {
       `${String(value)} minor units is outside the safe-integer range; a total this size is a defect, not a price (spec 005 §5.2)`,
     );
   }
-  return Number(value);
+  return toMinor(Number(value));
 }

@@ -38,6 +38,7 @@ import {
   isFxSnapshotStale,
 } from "../../src/config/catalogue/fx.data.ts";
 import type { FxRateData } from "../../src/config/catalogue/schemas.ts";
+import { toMinor } from "../../src/modules/catalog/pricing/money.ts";
 import type { CurrencyCode } from "../../src/config/currencies.ts";
 import {
   FX_RATE_PPM_EUR_PLN,
@@ -145,7 +146,7 @@ describe("the hand-computed FX table, exact to the minor unit (AC-12, T-10)", ()
       };
 
       const buffered = convert(
-        { amountMinor: row.amountMinor, currency: from },
+        { amountMinor: toMinor(row.amountMinor), currency: from },
         to,
         rate,
       );
@@ -174,7 +175,8 @@ describe("the hand-computed FX table, exact to the minor unit (AC-12, T-10)", ()
     // €35.90 at the raw ECB rate is 153,2212 zł; buffered it is 157,0517 zł, and the ceiling of
     // that is the 15 706 the fixture states. The buffer is 2.5% and nothing else.
     expect(
-      convert({ amountMinor: 3590, currency: "EUR" }, "PLN", rate).amountMinor,
+      convert({ amountMinor: toMinor(3590), currency: "EUR" }, "PLN", rate)
+        .amountMinor,
     ).toBe(15_706);
     expect(15_706 - 15_323).toBe(383);
   });
@@ -192,7 +194,7 @@ describe("the hand-computed FX table, exact to the minor unit (AC-12, T-10)", ()
       source: "ecb-reference",
     };
     expect(
-      convert({ amountMinor: 1_000_000, currency: "EUR" }, "HUF", rate)
+      convert({ amountMinor: toMinor(1_000_000), currency: "EUR" }, "HUF", rate)
         .amountMinor,
       // 1 000 000 x 393 200 000 x 10 250 / 10 000 000 000 = 403 030 000 exactly.
     ).toBe(403_030_000);
@@ -208,11 +210,13 @@ describe("the hand-computed FX table, exact to the minor unit (AC-12, T-10)", ()
     };
     // At a rate of exactly 1.0, 1 minor unit buffered is 1.025 minor units: up to 2, not to 1.
     expect(
-      convert({ amountMinor: 1, currency: "EUR" }, "GBP", rate).amountMinor,
+      convert({ amountMinor: toMinor(1), currency: "EUR" }, "GBP", rate)
+        .amountMinor,
     ).toBe(2);
     // And an amount whose buffered value is exact stays exact — the ceiling is not a `+1`.
     expect(
-      convert({ amountMinor: 400, currency: "EUR" }, "GBP", rate).amountMinor,
+      convert({ amountMinor: toMinor(400), currency: "EUR" }, "GBP", rate)
+        .amountMinor,
     ).toBe(410);
   });
 
@@ -226,13 +230,15 @@ describe("the hand-computed FX table, exact to the minor unit (AC-12, T-10)", ()
     };
 
     expect(() =>
-      convert({ amountMinor: 1000, currency: "GBP" }, "PLN", plnRate),
+      convert({ amountMinor: toMinor(1000), currency: "GBP" }, "PLN", plnRate),
     ).toThrowError(/rate based on EUR/);
     expect(() =>
-      convert({ amountMinor: 1000, currency: "EUR" }, "GBP", plnRate),
+      convert({ amountMinor: toMinor(1000), currency: "EUR" }, "GBP", plnRate),
     ).toThrowError(/rate quoting PLN/);
-    // A float amount never reaches the arithmetic: it is a parse error at the boundary.
+    // A float amount never reaches the arithmetic: it is a type error (spec 001 AC-59), and a
+    // parse error at the boundary for a caller that got round the compiler.
     expect(() =>
+      // @ts-expect-error -- 10.5 is not a `Minor`; this asserts the runtime guard behind the type.
       convert({ amountMinor: 10.5, currency: "EUR" }, "PLN", plnRate),
     ).toThrowError();
   });
@@ -282,7 +288,7 @@ describe("fail-closed staleness (AC-15, T-13)", () => {
   });
 
   it("returns no converted amount anywhere in the output when the rate is stale", async () => {
-    const price = { amountMinor: 14_900, currency: "PLN" as const };
+    const price = { amountMinor: toMinor(14_900), currency: "PLN" as const };
 
     const fresh = await convertForDisplay(price, "GBP", FRESH);
     const stale = await convertForDisplay(price, "GBP", STALE);
@@ -347,7 +353,7 @@ describe("fail-closed staleness (AC-15, T-13)", () => {
     // The display currency *is* the destination currency: there is nothing to convert, no rate to
     // state and no second price row — which is the case a projection must not route through FX.
     const native = await convertForDisplay(
-      { amountMinor: 14_900, currency: "PLN" },
+      { amountMinor: toMinor(14_900), currency: "PLN" },
       "PLN",
       STALE,
     );

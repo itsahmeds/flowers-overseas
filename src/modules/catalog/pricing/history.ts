@@ -36,6 +36,8 @@ import {
 } from "../schemas";
 import type { IntegerMoney, IsoDate } from "../types";
 
+import { toMinor } from "./money";
+
 /**
  * The length of the Art. 6a window in days (`plan/07` §2.1).
  *
@@ -135,5 +137,8 @@ export async function lowestPriceInLast30Days(
       `no \`country_price\` row for \`${sku}\` tier \`${tier}\` in \`${destination}\` was in force between ${from} and ${to}: the Omnibus Art. 6a figure has no rows behind it, which is a data error rather than a lower price (spec 005 §2, plan/07 §2.1)`,
     );
   }
-  return { amountMinor: lowest.retailMinor, currency: lowest.currency };
+  return {
+    amountMinor: toMinor(lowest.retailMinor),
+    currency: lowest.currency,
+  };
 }

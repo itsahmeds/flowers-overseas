@@ -41,6 +41,24 @@ import type {
 import type { CountryIso2 } from "@/config/countries";
 import type { CurrencyCode } from "@/config/currencies";
 import type { LocaleCode } from "@/config/locales";
+import type { z } from "zod";
+
+/**
+ * A whole number of minor units the compiler keeps track of (spec 001 §14 A20, AC-59; §13 Q19).
+ *
+ * Lint sees names, not values: `const rate = 0.23; amountMinor * rate` passes every lint rule.
+ * The brand is what the compiler checks instead. A `Minor` comes from exactly two places,
+ * `toMinor()` in `pricing/money.ts` and `MinorUnitsSchema` in `./schemas`, and both refuse
+ * anything that is not a whole number. Arithmetic on a `Minor` gives a plain `number`, so
+ * `const shown: Minor = priceMinor / 100` and `{ amountMinor: amountMinor * rate }` are type
+ * errors until the result goes through one of the two again. `as Minor` is a lint error outside
+ * `money.ts` (`no-restricted-syntax`, `eslint/sdk-adapters.js`).
+ *
+ * The brand is zod's own, so `z.infer<typeof MinorUnitsSchema>` is this type exactly. Only the
+ * module's schema carries it: `src/config/catalogue/schemas.ts`' dataset schema stays an
+ * unbranded integer, and an authored amount becomes `Minor` where the pricing module takes it in.
+ */
+export type Minor = number & z.$brand<"Minor">;
 
 /**
  * The `country_price.surcharge_kind` CHECK values of spec 002 §5.1, verbatim. Surcharges are
@@ -60,7 +78,7 @@ export type IsoDate = string;
  */
 export interface Surcharge {
   readonly kind: SurchargeKind;
-  readonly amountMinor: number;
+  readonly amountMinor: Minor;
   readonly currency: CurrencyCode;
   readonly appliesFrom: IsoDate;
   readonly appliesTo: IsoDate;
@@ -76,12 +94,12 @@ export interface Surcharge {
  */
 export interface PricePoint {
   /** Gross, VAT- and delivery-inclusive, surcharges included. The price shown and charged. */
-  readonly amountMinor: number;
+  readonly amountMinor: Minor;
   readonly currency: CurrencyCode;
   /** VAT rate in basis points (PL flowers 800, PL chocolates 2300 — spec 005 §2 "Pricing"). */
   readonly vatRateBp: number;
-  readonly vatAmountMinor: number;
-  readonly netAmountMinor: number;
+  readonly vatAmountMinor: Minor;
+  readonly netAmountMinor: Minor;
   /** Always `true`: delivery is inside `amountMinor` by definition (`CLAUDE.md`, `plan/07` §4). */
   readonly deliveryIncluded: true;
   readonly surcharges: readonly Surcharge[];
@@ -319,7 +337,7 @@ export interface Addon {
  * function returns an amount where a page would render a price.
  */
 export interface IntegerMoney {
-  readonly amountMinor: number;
+  readonly amountMinor: Minor;
   readonly currency: CurrencyCode;
 }
 
@@ -359,7 +377,7 @@ export interface TierPrice {
  */
 export interface VatLine {
   readonly rateBp: number;
-  readonly grossMinor: number;
+  readonly grossMinor: Minor;
   readonly currency: CurrencyCode;
 }
 
@@ -374,9 +392,9 @@ export interface VatLine {
  */
 export interface VatSplit {
   readonly rateBp: number;
-  readonly netMinor: number;
-  readonly vatMinor: number;
-  readonly grossMinor: number;
+  readonly netMinor: Minor;
+  readonly vatMinor: Minor;
+  readonly grossMinor: Minor;
 }
 
 /**
@@ -630,7 +648,7 @@ export interface QuoteLine {
   readonly productId: string;
   readonly tierKey: string;
   /** The display amount of that line, integer minor units of the quote's own currency. */
-  readonly amountMinor: number;
+  readonly amountMinor: Minor;
 }
 
 /**
@@ -650,7 +668,7 @@ export interface Quote {
   readonly quoteId: string;
   readonly lines: readonly QuoteLine[];
   /** The sum of the line amounts, in `currency` — refined, not assumed (`QuoteSchema`). */
-  readonly totalMinor: number;
+  readonly totalMinor: Minor;
   readonly currency: CurrencyCode;
   /** The rate's publication date when the amounts were converted, `null` when they were not. */
   readonly fxAsOf: IsoDate | null;
