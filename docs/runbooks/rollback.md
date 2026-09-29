@@ -21,14 +21,16 @@ naming the bad commit, and the next build from it brings the bad code back.
 **(a) Step 1 is a click in Railway's dashboard. It takes under five minutes and needs nothing else.**
 
 1. Find the previous deployment. On GitHub, open `docs/releases/` on `main` and the newest
-   `production` note, the one whose "Visit 2" line reads `RELEASE: PROMOTED <bad-sha>`. Its
+   `production` note, the one whose "Visit 2" line reads `RELEASE: PROMOTED <bad-sha>` (the watch
+   may have added `RELEASE: HALTED <bad-sha>` below it; it is still the right note). Its
    `## Rollback plan` section has two lines: `Previous release: <sha>` and
    `Previous deployment id: <id>`. Keep that page open, because step 2 needs both SHAs.
 2. In Railway, open the Flowers Overseas project and pick the **production** environment in the
    environment switcher at the top.
 3. Click the **web** service, then its **Deployments** tab.
-4. Find the deployment with the id from the note. Its commit is the note's `Previous release`
-   SHA, so the short SHA in the list is a second check.
+4. Find the deployment with the id from the note. Railway shows a deployment's id when you open
+   the deployment (T-43 records exactly where). Its commit is the note's `Previous release` SHA,
+   so the short SHA in the list is a second check.
 5. Click the three dots (**⋮**) at the end of that deployment's row and choose **Rollback**, then
    confirm. Railway restores that deployment's image and its variables, without a build.
 6. Wait until that deployment shows **Active**. Then open `https://flowersoverseas.com/api/health`
@@ -51,7 +53,8 @@ note's `Previous deployment id` (written by `/launch` gate 8) says which deploym
 
 ### Step 2 — move `release` back
 
-From a checkout of this repository, on any branch, with no Railway token needed:
+From your checkout of this repository (`cd ~/dev/flowers-overseas`), on any branch, with no
+Railway token needed:
 
 ```sh
 git fetch origin
@@ -65,15 +68,19 @@ pnpm release:status
 - It refuses, and pushes nothing, when `release` on the remote is not `<bad-sha>`, when `--to` is
   not an ancestor of `release`, or when `--to` is neither (a) a past production `web` deployment
   from `release` that succeeded (read from Railway's API when a token is set) nor (b) the
-  previous release named in the production note that promoted `<bad-sha>`. A later `HALTED` note
-  does not count. The refusal names both routes. Without a token, or when the API cannot be
+  previous release named in the production note that promoted `<bad-sha>`. That note still
+  counts when it also says `HALTED <bad-sha>` after the promotion. A note that halted on
+  `<bad-sha>` without promoting it does not count, and neither does a later note's rollback
+  plan. The refusal names both routes. Without a token, or when the API cannot be
   reached, only (b) is checked, and the output says so.
 - The move is a lease push (`--force-with-lease=release:<bad-sha>`), so if `release` moved since
   the check, git refuses too.
 - Done when `release:status` prints `invariant: ok` and production (`/api/health`, `commit`) equals
   `release`.
 
-Afterwards, mark the release note `ROLLED BACK` (see Fix / recovery) and open a fix task. The
+Afterwards, write a **new** production note under `docs/releases/` recording the rollback (see
+Fix / recovery), and open a fix task. Never edit the note that promoted `<bad-sha>`: it is the
+record route (b) reads. The
 fix reaches production through the normal path: merge to `main`, staging, `/launch production`,
 `release:promote`.
 
@@ -85,7 +92,9 @@ fix reaches production through the normal path: merge to `main`, staging, `/laun
 Read the release note's rollback plan.
 
 ## Fix / recovery
-Verify health endpoints, a test order, sitemap. Mark the release note HALTED/ROLLED BACK. Open a fix task.
+Verify health endpoints, a test order, sitemap. Write a new production note under `docs/releases/`
+that records the rollback (`RELEASE: ROLLED BACK <bad-sha> to <previous-release-sha>`, the time,
+and the reason); leave the note that promoted `<bad-sha>` as it is. Open a fix task.
 
 ## Communication
 Status page/email only if buyers were affected >15 min.
