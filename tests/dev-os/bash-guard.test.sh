@@ -323,8 +323,6 @@ for cmd in "git push origin HEAD" "git push" "git push -u origin HEAD"; do
   run_bash_guard "$PROJECT" "$cmd" "$ON_SPEC" "agent-1234"
   assert_empty "$GUARD_STDOUT" "on branch spec/step-c-enforcement-and-release, with agent_id, allowed: $cmd"
 done
-run_bash_guard "$PROJECT" "git push origin HEAD" "$PROJECT" "agent-1234"
-assert_empty "$GUARD_STDOUT" "outside any checkout, git push origin HEAD is not guessed at: allowed"
 
 # /break 115 holes 1-4: `heads/<name>`, another repository, a command-line alias, other runners
 ALIAS_ALT="run git push itself"
@@ -423,6 +421,60 @@ for cmd in "${ALLOWED_MORE[@]}"; do
   assert_empty "$GUARD_STDOUT" "with agent_id, allowed: $cmd"
   run_bash_guard "$PROJECT" "$cmd"
   assert_empty "$GUARD_STDOUT" "without agent_id, allowed: $cmd"
+done
+
+# /break 115 round 2 hole 8: the branch a HEAD push names is read before the command runs, so a
+# branch switched earlier in the line, `env -C`, a directory not there yet, or no readable branch
+# is not guessed at: the push is denied (cwd is a checkout on an allowed branch throughout)
+MOVED_DENIED=(
+  "git checkout -B release main && git push origin HEAD"
+  "git checkout release && git push -u origin HEAD"
+  "git switch release; git push"
+  "git switch -c release && git push origin @"
+  "git clone -b release ../r r && git -C r push origin HEAD"
+  "git worktree add ../w release && git -C ../w push"
+  "git branch -M release && git push origin HEAD"
+  "git branch -f release HEAD && git switch release && git push"
+  "git branch --force release && git push"
+  "git update-ref --no-deref HEAD $SHA40 && git push origin HEAD"
+  "git symbolic-ref HEAD refs/heads/release && git push"
+  "env -C $ON_RELEASE git push origin HEAD"
+  "env --chdir=$ON_RELEASE git push"
+)
+for cmd in "${MOVED_DENIED[@]}"; do
+  for agent in "" "agent-1234"; do
+    run_bash_guard "$PROJECT" "$cmd" "$ON_SPEC" "$agent"
+    assert_eq "deny" "$GUARD_DECISION" "the branch is not read before the line runs (agent '${agent}'): $cmd"
+    assert_contains "$GUARD_REASON" "$UNKNOWN_ALT" "the reason asks for the destination: $cmd"
+  done
+done
+UNREADABLE_DENIED=(
+  "git -C $PROJECT/not-yet push origin HEAD"
+  "cd $PROJECT/not-yet && git push"
+  "git push origin HEAD"
+  "git push"
+)
+for cmd in "${UNREADABLE_DENIED[@]}"; do
+  for agent in "" "agent-1234"; do
+    run_bash_guard "$PROJECT" "$cmd" "$PROJECT" "$agent"
+    assert_eq "deny" "$GUARD_DECISION" "no readable branch, denied (agent '${agent}'): $cmd"
+    assert_contains "$GUARD_REASON" "$UNKNOWN_ALT" "no readable branch, the reason: $cmd"
+  done
+done
+MOVED_ALLOWED=(
+  "git checkout -B task/TASK-1-x && git push origin task/TASK-1-x"
+  "git switch main && git push origin HEAD:refs/heads/task/TASK-1-x"
+  "git push origin HEAD && git checkout main"
+  "git checkout -- README.md"
+  "git clone ../r r"
+  "git branch -f task/TASK-1-x HEAD && git push origin task/TASK-1-x"
+  "pnpm release:status"
+)
+for cmd in "${MOVED_ALLOWED[@]}"; do
+  for agent in "" "agent-1234"; do
+    run_bash_guard "$PROJECT" "$cmd" "$ON_SPEC" "$agent"
+    assert_empty "$GUARD_STDOUT" "a named destination, or no push after the switch, allowed (agent '${agent}'): $cmd"
+  done
 done
 
 # --- T-53 (guard half) / AC-38, AC-42: the task belongs to each worktree ----------------------------
