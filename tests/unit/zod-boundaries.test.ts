@@ -601,6 +601,35 @@ class Scanner {
     return out;
   }
 
+  /** The function a value is, or the functions passed to the call that wraps it (`withAuth(async (fd) => …)`). */
+  private actionFns(expr: ts.Expression | undefined, depth = 3): Fn[] {
+    if (expr === undefined || depth === 0) return [];
+    let e = expr;
+    while (
+      ts.isParenthesizedExpression(e) ||
+      ts.isAsExpression(e) ||
+      ts.isSatisfiesExpression(e)
+    )
+      e = e.expression;
+    if (isFn(e)) return [e];
+    if (ts.isCallExpression(e))
+      return e.arguments.flatMap((arg) => this.actionFns(arg, depth - 1));
+    return [];
+  }
+
+  /** The functions a top-level name of `file` is bound to. */
+  private localValue(file: FileInfo, name: string): Fn[] {
+    for (const statement of file.sf.statements) {
+      if (ts.isFunctionDeclaration(statement) && statement.name?.text === name)
+        return [statement];
+      if (ts.isVariableStatement(statement))
+        for (const d of statement.declarationList.declarations)
+          if (ts.isIdentifier(d.name) && d.name.text === name)
+            return this.actionFns(d.initializer);
+    }
+    return [];
+  }
+
   /** Exported functions of a `"use server"` file, and functions whose body starts with it. */
   private serverActions(file: FileInfo): Fn[] {
     const out = new Set<Fn>();
@@ -616,7 +645,28 @@ class Scanner {
           hasModifier(statement, ts.SyntaxKind.ExportKeyword)
         )
           for (const d of statement.declarationList.declarations)
-            if (d.initializer && isFn(d.initializer)) out.add(d.initializer);
+            for (const fn of this.actionFns(d.initializer)) out.add(fn);
+        // `export default async (fd) => …`, `export default act`
+        if (ts.isExportAssignment(statement) && !statement.isExportEquals) {
+          const expr = statement.expression;
+          const fns = ts.isIdentifier(expr)
+            ? this.localValue(file, expr.text)
+            : this.actionFns(expr);
+          for (const fn of fns) out.add(fn);
+        }
+        // `export { act }`, `export { act as default }`
+        if (
+          ts.isExportDeclaration(statement) &&
+          statement.moduleSpecifier === undefined &&
+          statement.exportClause !== undefined &&
+          ts.isNamedExports(statement.exportClause)
+        )
+          for (const element of statement.exportClause.elements)
+            for (const fn of this.localValue(
+              file,
+              (element.propertyName ?? element.name).text,
+            ))
+              out.add(fn);
       }
     }
     const visit = (node: ts.Node): void => {
@@ -943,6 +993,31 @@ describe("T-57: red, naming the file and line", () => {
       ),
     ).toEqual([
       "src/app/actions.ts:4 server action parameter formData: line 6: read as `.get`",
+    ]);
+  });
+
+  it('a "use server" file exporting through `export { act }`, a wrapping call, and `export default` an arrow', () => {
+    expect(
+      problems(
+        scan(fixture("server-action-exports"), {
+          readers: none,
+          parsers: none,
+        }),
+      ),
+    ).toEqual([
+      "src/app/actions.ts:8 server action parameter fd: line 10: read as `.get`",
+      "src/app/actions.ts:14 server action parameter fd: line 16: read as `.get`",
+      "src/app/actions.ts:19 server action parameter fd: line 21: read as `.get`",
+    ]);
+  });
+
+  it('an inline "use server" function in a file that does not start with it', () => {
+    expect(
+      problems(
+        scan(fixture("inline-server"), { readers: none, parsers: none }),
+      ),
+    ).toEqual([
+      "src/lib/inline.ts:3 server action parameter fd: line 6: read as `.get`",
     ]);
   });
 
