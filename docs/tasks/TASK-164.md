@@ -43,10 +43,32 @@ the commit: what is done, what is next, anything a replacement agent must know. 
 here.
 
 - 2026-09-30: row `in_progress`, carry-forwards from `/review 121` round 2 recorded. Next: T-45 tests and fixtures (red).
+- 2026-09-30: T-45 cases and five fixtures committed red (24 failing); `expectedAbsences` and AC-44's three stderr lines green (68/68); ten mutations each turn a case red.
+- 2026-09-30: runbook §6, F5 and "What the checks print today" rewritten to AC-44; map regenerated; `pnpm gates:cheap` PASS. Next: CI on the head, `/break` + `/review`.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR [#124](https://github.com/itsahmeds/flowers-overseas/pull/124). `TriggerReport.onlyAbsentProductionServices`
+(a boolean) became `expectedAbsences: readonly ExpectedAbsence[]` in `src/lib/railway.ts`: the AC-44
+cases present, `production-services` then `staging-worker`, empty unless every failing row is one of
+them. `failureVerdict` in `scripts/railway-check.ts` picks AC-44's exact stderr line for (a), (b) or
+(a)+(b) from a three-entry table, and prints `railway:check failed` otherwise. Contract tests in
+`tests/contract/railway-check.test.ts`: 68 (was 52): T-45's five labelled CLI cases (stderr asserted
+equal to AC-44's literal line, one extra with `environment-staging.json`), its five unlabelled ones
+(including the mixed production `worker` / staging `worker` case and `environment-drifted.json`), six
+report-level `expectedAbsences` cases; T-34's two staging-`worker`-absent expectations replaced
+(now `["staging-worker"]` and `["production-services", "staging-worker"]`). Five new fixtures under
+`tests/fixtures/railway/`. Mutations run on purpose, each red: dropping the `absent` guard (5 red),
+the production-`web`-absent condition (4), the `worker` service filter (2) or the staging filter (3),
+the every-failure rule (3), the production-present check (1), swapping the case order (4), ignoring
+other checks (2), and changing line (b)'s text, line (a)+(b)'s text or its key (2 each). The staging
+environment's presence has no separate check: without it staging `web` is absent, a real fault, so
+the run is never labelled (pinned by `triggers-staging-no-web.json`). Runbook: §6's expected-red
+paragraph quotes all three lines; F5's "exactly", its no-label bullet and "What the checks print
+today" allow the `staging · worker` line, and "a follow-up task" is now TASK-164. No expensive gate
+run locally. Handed on: TASK-103's PR deletes case (b) and the two (b) lines (AC-44); the
+orchestrator's note in `docs/tasks/TASK-157.md` (T-44's run may carry the staging line) was left to
+its bookkeeping PR, per the work order.
