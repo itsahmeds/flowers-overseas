@@ -147,6 +147,8 @@ Nightly    → `pg_dump` → R2 (encrypted); Playwright smoke on production (rea
 Weekly     → dependency update PR (Renovate), seo-auditor crawl report
 ```
 
+Deploys to production are now as `specs/040-hosting-railway-cloudflare.md` §14 A3 says, which overrides the "Merge main" line above: `main` deploys to staging; production deploys only from the `release` branch, which only `pnpm release:promote` (after `/launch production` reports `READY` on that commit) and `pnpm release:rollback` move; rollback is `docs/runbooks/rollback.md`'s two steps.
+
 Environments: `local` (Supabase CLI local or a dev project), `preview` (per PR, shared staging DB), `staging` (own Supabase project, password-protected via Vercel Deployment Protection; used for florist demos), `production`. Secrets in Vercel env store (+ `vercel env pull` locally); `.env.example` validated against `lib/env.ts` zod schema in CI. Feature flags in DB (`feature_flag`) with a 60 s cache, not in env, so rollouts do not need deploys.
 
 ## 7. Monitoring and observability
