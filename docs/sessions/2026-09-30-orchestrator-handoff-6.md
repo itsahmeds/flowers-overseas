@@ -11,7 +11,7 @@ Carries on from `2026-09-28-orchestrator-handoff-5.md`.
 ## Order from here
 
 1. TASK-164: `/break` + `/review`, then merge.
-2. Tell the founder it is safe to do F1–F4 and paste T-44's output. **Not before TASK-164 merges:** until then the runbook's F5 bullet would tell them to replace a good token (`/review 121` HOLE 6).
+2. Tell the founder it is safe to do F1–F6, F5 included, and paste T-44's output. **Not before TASK-164 merges:** until then the runbook's F5 bullet would tell them to replace a good token (`/review 121` HOLE 6).
 3. The first `/launch production` (spec 040 AC-43). TASK-104 creates production `web`, and TASK-103 creates staging `worker`. TASK-103 now waits for TASK-164, because its PR removes AC-44's case (b).
 4. Steps E, F and G of the framework overhaul, planned with the founder (`docs/framework/gaps.md`).
 5. The parked product PRs 98, 99, 101, 94, 92 and 86, when the founder asks.

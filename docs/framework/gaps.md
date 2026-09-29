@@ -74,7 +74,7 @@ gap closes, mark it ✅ with the PR, and don't delete the row.
 
 **Found in wave 3 (PRs 115–122):**
 - Shell guard, still not caught (named in `bash_guard.py`'s header): `--config-env=alias.*`, `xargs`-fed refspecs, writing `.git/HEAD` directly; `gh api …/git/refs/heads/release` sits outside AC-40's "git push" wording.
-- `/review 117`: phone numbers written with a bracket next to a space (`+44 (0)20 …`, `+48 (22) …`) are not scrubbed, because the pattern allows one separator; a spec amendment is needed. `fs.writeSync(1, …)`, `process.emitWarning`, and Sentry's `transaction` / `logentry.message` fields are not scanned.
+- `/review 117` and `/break 117`: phone numbers written with a bracket next to a space (`+44 (0)20 …`, `+48 (22) …`) are not scrubbed, because the pattern allows one separator; a spec amendment is needed. `fs.writeSync(1, …)`, `process.emitWarning`, and Sentry's `transaction` / `logentry.message` fields are not scanned.
 - `/break 119`: a `let` reassigned to `"orders"` before a `sql` template (SQL built at run time) lints clean; the rule's header states the limit.
 - `/break 118` / TASK-161: an average of money through a callback (`xs.reduce(… priceMinor …) / n`) lints clean; the `Minor` type is the backstop.
 - `/review 120` HOLE N1–N3 accepted: zod's `z.BRAND<"Minor">` alias, `.brand` through a template literal type or `["brand"]`, and `z.any()` behind a `z.ZodType<Minor>` annotation. The next docs PR names them in `plan/12`'s Money row, and the next task that touches `eslint/sdk-adapters.js` adds `BRAND` to the `$brand` entry.
