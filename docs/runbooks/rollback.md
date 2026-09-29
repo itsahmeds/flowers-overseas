@@ -21,8 +21,9 @@ naming the bad commit, and the next build from it brings the bad code back.
 **(a) Step 1 is a click in Railway's dashboard. It takes under five minutes and needs nothing else.**
 
 1. Find the previous deployment. On GitHub, open `docs/releases/` on `main` and the newest
-   `production` note, the one whose "Visit 2" line reads `RELEASE: PROMOTED <bad-sha>` (the watch
-   may have added `RELEASE: HALTED <bad-sha>` below it; it is still the right note). Its
+   `production` note whose "Visit 1" line reads `RELEASE: READY <bad-sha>`. Its "Visit 2" line
+   reads `RELEASE: PROMOTED <bad-sha>`, or `RELEASE: ROLLED BACK <bad-sha>` if the watch already
+   caught it; a `RELEASE: HALTED <bad-sha>` added later does not change which note it is. Its
    `## Rollback plan` section has two lines: `Previous release: <sha>` and
    `Previous deployment id: <id>`. Keep that page open, because step 2 needs both SHAs.
 2. In Railway, open the Flowers Overseas project and pick the **production** environment in the
@@ -93,8 +94,8 @@ Read the release note's rollback plan.
 
 ## Fix / recovery
 Verify health endpoints, a test order, sitemap. Write a new production note under `docs/releases/`
-that records the rollback (`RELEASE: ROLLED BACK <bad-sha> to <previous-release-sha>`, the time,
-and the reason); leave the note that promoted `<bad-sha>` as it is. Open a fix task.
+that records the rollback (`RELEASE: ROLLED BACK <bad-sha>`, the previous release SHA it went back
+to, the time and the reason); leave the note that promoted `<bad-sha>` as it is. Open a fix task.
 
 ## Communication
 Status page/email only if buyers were affected >15 min.
