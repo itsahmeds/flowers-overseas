@@ -76,3 +76,9 @@ It exists for two reasons:
 | `float-money.ts` | `fo/no-float-money` — **unit tests only**; the rule is not enabled in `eslint.config.mjs` until spec 005 (spec 001 §2), so `pnpm lint:fixtures` does not report this file |
 | `float-money-valid.ts` | clean (integer minor units, `Intl.NumberFormat`) |
 | `stubs.ts`, `src/app/page.ts`, `src/modules/*/index.ts`, `src/modules/catalog/internal/pricing.ts` | clean — stand-ins and mirror targets |
+| `src/modules/geo/side-doors.ts` | `no-restricted-imports`, `no-restricted-properties`, `no-restricted-globals`, `no-restricted-syntax` — one line per way past the logger (spec 001 AC-56, T-60) |
+| `src/lib/logger.ts`, `src/lib/step-summary.ts` | clean — the same bytes as `side-doors.ts`, at the two paths where the side doors are open |
+| `src/modules/geo/sdk-imports.ts` | `no-restricted-imports` twice — the standards audit's plant, `@sentry/nextjs` and `postgres` outside their adapters (spec 001 AC-57, T-61) |
+| `src/modules/geo/sdk-other-forms.ts` | `no-restricted-syntax` (`import()`, `require()`), `no-restricted-imports` (`export *`, `import type`), for packages installed or not |
+| `src/lib/sentry.ts`, `sentry.server.config.ts`, `sentry.edge.config.ts`, `instrumentation.ts`, `instrumentation-client.ts`, `next.config.ts`, `src/lib/db.ts`, `scripts/db-migrate.ts`, `src/modules/payments/{stripe,mollie}/client.ts`, `src/modules/notifications/resend/client.ts` | clean — each adapter's own package at its mirror path |
+| `tests/unit/adapters.test.ts` | clean — `tests/**` may import every package |

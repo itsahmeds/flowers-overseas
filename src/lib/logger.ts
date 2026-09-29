@@ -16,6 +16,8 @@
  * ## Contract
  * - one JSON object per line on stdout: `{ level, time, msg, ...fields }`
  * - `request_id`, `order_id`, `locale`, `partner_id` are first-class context fields (§5.2)
+ * - every string value, the message and an error's stack pass the email/phone scan (`scrubText`,
+ *   spec 001 §14 A20, AC-54): a match becomes `[REDACTED:email]` or `[REDACTED:phone]`
  * - every key on the redaction list becomes `"[REDACTED]"`, at any depth, in objects and arrays
  *   (spec 001 §8 plus the spec 002 §8 widening: `*name`, `card_message`, `phone_e164`,
  *   `postal_code`, `session_token`, `public_token`, `object_key`)
@@ -100,18 +102,70 @@ export function isRedactedKey(key: string): boolean {
   return isNameKey(key);
 }
 
-/** Deep copy of `value` with every PII key replaced by `"[REDACTED]"`. Cycles are cut. */
+export const REDACTED_EMAIL = "[REDACTED:email]" as const;
+export const REDACTED_PHONE = "[REDACTED:phone]" as const;
+
+/**
+ * An email in free text (spec 001 §14 A20, AC-54): `local@domain.tld`, with `%40` accepted for
+ * `@`, which is how a form puts an address into a query string.
+ */
+export const EMAIL_PATTERN =
+  /[\p{L}\p{N}._%+-]+(?:@|%40)[\p{L}\p{N}-]+(?:\.[\p{L}\p{N}-]+)*\.\p{L}{2,}/giu;
+
+/**
+ * The boundary on both sides of a phone (AC-54, advisor fix 2): the character before and the
+ * character after a match is not a letter, a digit, `-` or `/`. So the `00` inside
+ * `1700000000123`, inside a payment reference or after a UUID group's dash starts nothing, and no
+ * match ends part-way through a longer run of digits.
+ */
+const PHONE_BEFORE = String.raw`(?<![\p{L}\p{N}\-/])`;
+const PHONE_AFTER = String.raw`(?![\p{L}\p{N}\-/])`;
+/** International: `+` or `00`, then 7–15 digits with single spaces, dots, dashes or brackets. */
+const PHONE_INTERNATIONAL = String.raw`(?:\+|00)\d(?:[ .\-()]?\d){6,14}`;
+/** UK national: 10 or 11 digits, the first `0`, single spaces allowed between them. */
+const PHONE_UK = String.raw`0(?: ?\d){9,10}`;
+/** Polish national: three groups of three digits, each gap one space or one dash. */
+const PHONE_PL = String.raw`\d{3}[ \-]\d{3}[ \-]\d{3}`;
+
+/**
+ * A phone in free text: one of §13 Q21's three shapes, with the boundary on both sides. What it
+ * misses, said plainly (AC-54): a national number in any other shape (`600123456`, a German
+ * `0151 23456789`), a `+` written `%2B`, and a number split by other characters. Under a PII key
+ * the key list still catches those; in free text they pass (§13 Q21, open item O1).
+ */
+export const PHONE_PATTERN = new RegExp(
+  `${PHONE_BEFORE}(?:${PHONE_INTERNATIONAL}|${PHONE_UK}|${PHONE_PL})${PHONE_AFTER}`,
+  "gu",
+);
+
+/** `text` with every email and phone match replaced by its marker (AC-54). */
+export function scrubText(text: string): string {
+  return text
+    .replace(EMAIL_PATTERN, REDACTED_EMAIL)
+    .replace(PHONE_PATTERN, REDACTED_PHONE);
+}
+
+/**
+ * Deep copy of `value` with every PII key replaced by `"[REDACTED]"` and every string value and
+ * every key, at any depth, passed through `scrubText` (AC-54). Cycles are cut.
+ */
 export function redact(
   value: unknown,
   seen: WeakSet<object> = new WeakSet(),
 ): unknown {
+  if (typeof value === "string") return scrubText(value);
   if (value === null || typeof value !== "object") return value;
   if (seen.has(value)) return "[CIRCULAR]";
   seen.add(value);
 
   if (Array.isArray(value)) return value.map((item) => redact(item, seen));
   if (value instanceof Error) {
-    return { name: value.name, message: REDACTED, stack: value.stack };
+    // The stack's first line repeats the message hidden above, so it gets the value scan.
+    return {
+      name: value.name,
+      message: REDACTED,
+      stack: value.stack === undefined ? undefined : scrubText(value.stack),
+    };
   }
   if (value instanceof Date) return value.toISOString();
   if (value instanceof Map || value instanceof Set) {
@@ -120,7 +174,8 @@ export function redact(
 
   const out: Record<string, unknown> = {};
   for (const [key, item] of Object.entries(value)) {
-    out[key] = isRedactedKey(key) ? REDACTED : redact(item, seen);
+    // A key can be personal data too (a record keyed by an email), so it gets the value scan.
+    out[scrubText(key)] = isRedactedKey(key) ? REDACTED : redact(item, seen);
   }
   return out;
 }
@@ -188,7 +243,7 @@ export function createLogger(options: LoggerOptions = {}): Logger {
       ...(redact({ ...bindings, ...fields }) as Record<string, unknown>),
       level: lineLevel,
       time: now(),
-      ...(msg === undefined ? {} : { msg }),
+      ...(msg === undefined ? {} : { msg: scrubText(msg) }),
     };
     write(JSON.stringify(payload, null, pretty ? 2 : undefined));
   }

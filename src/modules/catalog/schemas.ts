@@ -30,6 +30,7 @@ import {
 } from "@/config/catalogue/schemas";
 import { type CountryIso2, isCountryIso2 } from "@/config/countries";
 import { type LocaleCode, isLocaleCode } from "@/config/locales";
+import { QUERY_KEY, type QueryKey } from "@/config/url-keys";
 import { MoneySchema } from "@/modules/i18n";
 
 import type { ListingSearchParams } from "./types";
@@ -990,23 +991,25 @@ export const ListingSearchParamsSchema = FacetSearchParamsSchema.transform(
     ): string | undefined =>
       Array.isArray(value) ? value[0] : (value as string | undefined);
 
-    const honoured: ("page" | "sort")[] = [];
+    // The keys come from `QUERY_KEYS` (spec 001 §14 A20, AC-55 (d)), so the list is this
+    // schema's own and `tests/unit/url-pii.test.ts` can hold the two to each other.
+    const honoured: QueryKey[] = [];
 
-    const rawPage = first(raw["page"]);
+    const rawPage = first(raw[QUERY_KEY.page]);
     const pageValid =
       rawPage !== undefined && PAGE_PARAMETER_PATTERN.test(rawPage);
-    if (pageValid) honoured.push("page");
+    if (pageValid) honoured.push(QUERY_KEY.page);
 
-    const rawSort = first(raw["sort"]);
+    const rawSort = first(raw[QUERY_KEY.sort]);
     const sort = ListingSortSchema.safeParse(rawSort);
-    if (sort.success) honoured.push("sort");
+    if (sort.success) honoured.push(QUERY_KEY.sort);
 
     const ignored = Object.entries(raw)
       .filter(
         ([name, value]) =>
           value !== undefined &&
-          !(name === "page" && pageValid) &&
-          !(name === "sort" && sort.success),
+          !(name === QUERY_KEY.page && pageValid) &&
+          !(name === QUERY_KEY.sort && sort.success),
       )
       .map(([name]) => name)
       .sort();

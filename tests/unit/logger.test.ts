@@ -6,8 +6,12 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  EMAIL_PATTERN,
   LogContext,
+  PHONE_PATTERN,
   REDACTED,
+  REDACTED_EMAIL,
+  REDACTED_PHONE,
   createLogger,
   isRedactedKey,
   logger,
@@ -299,5 +303,153 @@ describe("logger (T-13)", () => {
   it("exports a ready-made process logger", () => {
     expect(typeof logger.info).toBe("function");
     expect(typeof logger.child).toBe("function");
+  });
+});
+
+/**
+ * T-58 (spec 001 §14 A20, AC-54; TASK-160): PII in values, not only under PII keys. Every string
+ * value at any depth, the message and an error's stack pass the email and phone scan. Each case
+ * asserts the one scrubbed output, so deleting the `msg` scan, either boundary, or a gap of the
+ * Polish shape turns a named case red.
+ */
+describe("the value scan (T-58, AC-54)", () => {
+  function lineOf(fields: Record<string, unknown>, msg?: string) {
+    const { lines, log } = loggerUnderTest();
+    log.info(fields, msg);
+    expect(lines).toHaveLength(1);
+    return parse(lines[0] ?? "");
+  }
+
+  it("scrubs an email in a field and in msg", () => {
+    const line = lineOf(
+      { note: "call jane@example.com" },
+      "sent to jane@example.com",
+    );
+    expect(line["note"]).toBe("call [REDACTED:email]");
+    expect(line["msg"]).toBe("sent to [REDACTED:email]");
+  });
+
+  it("scrubs a URL-encoded email (%40 for @)", () => {
+    expect(lineOf({ url: "/x?e=jane%40example.com" })["url"]).toBe(
+      "/x?e=[REDACTED:email]",
+    );
+  });
+
+  it("scrubs a value at any depth, in objects and arrays", () => {
+    const line = lineOf({
+      outer: { list: [{ text: "reach jane@example.com" }, "+48 600 123 456"] },
+    });
+    expect(line["outer"]).toEqual({
+      list: [{ text: "reach [REDACTED:email]" }, "[REDACTED:phone]"],
+    });
+  });
+
+  it.each([
+    ["+48 600 123 456", "[REDACTED:phone]"],
+    ["0048600123456", "[REDACTED:phone]"],
+    ["+48600123456", "[REDACTED:phone]"],
+    ["+48(600)123-456", "[REDACTED:phone]"],
+    ["call 07700 900123.", "call [REDACTED:phone]."],
+    ["020 7946 0958", "[REDACTED:phone]"],
+    ["600 123 456", "[REDACTED:phone]"],
+    ["600-123-456", "[REDACTED:phone]"],
+    ["tel:+48600123456, then", "tel:[REDACTED:phone], then"],
+    ["(600 123 456)", "([REDACTED:phone])"],
+    ["phone=0048600123456", "phone=[REDACTED:phone]"],
+  ])("scrubs the phone in %j", (value, expected) => {
+    expect(lineOf({ line: value })["line"]).toBe(expected);
+  });
+
+  it("scrubs a phone in msg", () => {
+    expect(lineOf({}, "texted +48 600 123 456 ok")["msg"]).toBe(
+      "texted [REDACTED:phone] ok",
+    );
+  });
+
+  it("scrubs the address out of an error's stack", () => {
+    const { lines, log } = loggerUnderTest();
+    log.error({ err: new Error("bad jane@example.com") });
+    const err = parse(lines[0] ?? "")["err"] as Record<string, unknown>;
+    expect(lines[0]).not.toContain("jane@example.com");
+    expect(err["message"]).toBe(REDACTED);
+    expect(String(err["stack"]).split("\n")[0]).toBe(
+      "Error: bad [REDACTED:email]",
+    );
+  });
+
+  // AC-54's ten values that stay untouched, one case each, plus three that pin the right-hand
+  // boundary: a match never ends part-way through a longer run of digits.
+  it.each([
+    ["request_id", "3f2b9c1e-0012-4345-8123-456789012345"],
+    ["created_at", "2026-09-29T10:15:30.123Z"],
+    ["order_ref", "FO-2026-000123"],
+    ["amount", "4590"],
+    ["postcode", "00-950"],
+    ["price", "€45,90"],
+    ["path", "/en-gb/send-flowers-to/poland"],
+    ["ms", "1700000000123"],
+    ["payment_ref", "pi_3Pq7Xb2eZvKYlo2C0012345678"],
+    ["digits", "600123456"],
+    ["long_intl", "+4860012345678901234"],
+    ["long_uk", "07700900123456"],
+    ["long_pl", "600 123 4567"],
+  ])("leaves %s %j untouched", (key, value) => {
+    expect(lineOf({ [key]: value })[key]).toBe(value);
+  });
+
+  // /break 117 hole 1: each digit count of §13 Q21 at its edge, and the `-` and `/` of each
+  // side's boundary on its own, so moving a bound by one digit or dropping one character goes red.
+  it.each([
+    ["intl 6 digits", "+486001", "+486001"],
+    ["intl 7 digits", "+4860012", "[REDACTED:phone]"],
+    ["00 + 6 digits", "00486001", "00486001"],
+    ["00 + 7 digits", "004860012", "[REDACTED:phone]"],
+    ["intl 15 digits", "+486001234567890", "[REDACTED:phone]"],
+    ["intl 16 digits", "+4860012345678901", "+4860012345678901"],
+    ["UK 9 digits", "077009001", "077009001"],
+    ["UK 10 digits", "0770090012", "[REDACTED:phone]"],
+    ["UK 11 digits", "07700900123", "[REDACTED:phone]"],
+    ["UK 12 digits", "077009001234", "077009001234"],
+    ["- before", "ref-07700900123", "ref-07700900123"],
+    ["/ before", "/p/07700900123", "/p/07700900123"],
+    ["- after", "07700900123-x", "07700900123-x"],
+    ["/ after", "07700900123/x", "07700900123/x"],
+  ])("pins the edge: %s", (_name, value, expected) => {
+    expect(lineOf({ line: value })["line"]).toBe(expected);
+  });
+
+  // /break 117 hole 2: an address is not ASCII-only.
+  it.each([
+    ["zoë@exämple.de", "[REDACTED:email]"],
+    ["write to józef.müller@przykład.pl.", "write to [REDACTED:email]."],
+  ])("scrubs the non-ASCII email in %j", (value, expected) => {
+    expect(lineOf({ line: value })["line"]).toBe(expected);
+  });
+
+  // /break 117 hole 8: a record keyed by an email or a phone.
+  it("scrubs email and phone patterns in object keys, at any depth", () => {
+    const line = lineOf({
+      "jane@example.com": 1,
+      by_phone: { "+48 600 123 456": "ok" },
+    });
+    expect(line["[REDACTED:email]"]).toBe(1);
+    expect(line["by_phone"]).toEqual({ "[REDACTED:phone]": "ok" });
+    expect(JSON.stringify(line)).not.toMatch(/jane@|600 123/);
+  });
+
+  it("exports the patterns and the two markers", () => {
+    expect("x jane@example.com y".replace(EMAIL_PATTERN, REDACTED_EMAIL)).toBe(
+      "x [REDACTED:email] y",
+    );
+    expect("x 600 123 456 y".replace(PHONE_PATTERN, REDACTED_PHONE)).toBe(
+      "x [REDACTED:phone] y",
+    );
+  });
+
+  it("leaves the key list unchanged (AC-12 still holds)", () => {
+    expect(lineOf({ email: "a@b.c", phone: "+48123456789" })).toMatchObject({
+      email: REDACTED,
+      phone: REDACTED,
+    });
   });
 });
