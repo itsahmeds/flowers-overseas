@@ -77,7 +77,7 @@ gap closes, mark it ✅ with the PR, and don't delete the row.
 - `/review 117` and `/break 117`: phone numbers written with a bracket next to a space (`+44 (0)20 …`, `+48 (22) …`) are not scrubbed, because the pattern allows one separator; a spec amendment is needed. `fs.writeSync(1, …)`, `process.emitWarning`, and Sentry's `transaction` / `logentry.message` fields are not scanned.
 - `/break 119`: a `let` reassigned to `"orders"` before a `sql` template (SQL built at run time) lints clean; the rule's header states the limit.
 - `/break 118` / TASK-161: an average of money through a callback (`xs.reduce(… priceMinor …) / n`) lints clean; the `Minor` type is the backstop.
-- `/review 120` HOLE N1–N3 accepted: zod's `z.BRAND<"Minor">` alias, `.brand` through a template literal type or `["brand"]`, and `z.any()` behind a `z.ZodType<Minor>` annotation. The next docs PR names them in `plan/12`'s Money row, and the next task that touches `eslint/sdk-adapters.js` adds `BRAND` to the `$brand` entry.
+- `/review 120` HOLE N1–N3 accepted: zod's `z.BRAND<"Minor">` alias, `.brand` through a template literal type or `["brand"]`, and `z.any()` behind a `z.ZodType<Minor>` annotation. `plan/12`'s Money row names them (PR 123), and the next task that touches `eslint/sdk-adapters.js` adds `BRAND` to the `$brand` entry.
 - `/break 121` holes 1–5 accepted as prose-scanner variants; the visit-2 step "production runs the READY SHA" has no text test.
 - `/break 122` / `/break 104`: `tasks:check` does not check that a row's dependency and AC ids exist (step E tooling).
 - Parallel agents: dev-OS tests collide in a shared `$TMPDIR` (seen again on TASK-156 and TASK-159); every agent now uses a private `TMPDIR`.

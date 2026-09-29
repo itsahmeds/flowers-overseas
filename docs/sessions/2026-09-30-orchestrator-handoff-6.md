@@ -4,7 +4,7 @@ Carries on from `2026-09-28-orchestrator-handoff-5.md`.
 
 ## Where things stand
 
-- **Merged:** TASK-150 to TASK-163, via PRs 107 and 109–121. Also the spec 040 A4 amendment (PR 122) and the bookkeeping PRs 111, 114 and this one.
+- **Merged:** TASK-150 and TASK-151 (PR 107), TASK-152 and TASK-153 (PR 106), TASK-154 (112), TASK-155 (110), TASK-156 (115), TASK-157 (121, texts only), TASK-158 (113), TASK-159 (116), TASK-160 (117), TASK-161 (118), TASK-162 (119), TASK-163 (120). Specs: spec 001 A20 (PR 108), spec 040 A4 (PR 122). Bookkeeping: PRs 109, 111, 114 and this one.
 - **TASK-157** stays `in_review`. It closes when the founder pastes T-44's live `railway:check` output (`docs/tasks/TASK-157.md` `## Escalations`).
 - **TASK-164** (spec 040 A4: staging's missing `worker` is an expected red, and the runbook's F5 fix) is in flight, in `../fo-wt-164`.
 
