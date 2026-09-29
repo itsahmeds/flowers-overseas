@@ -236,7 +236,7 @@ can change them: you are Admin in Grovant's Railway workspace and the only write
 | F2 | staging `web` and `worker` deploy from `main` | founder | `pnpm railway:check` |
 | F3 | PR environments still fork from `staging`, and none follows `release` | founder | `pnpm railway:check` (plus a look at the screen) |
 | F4 | staging `web` waits for CI | founder | `gh run list --workflow ci --branch main --event push --limit 1`, staging `/api/health`, `pnpm railway:check` |
-| F5 | the token `railway:check` uses can read every environment's triggers | founder | `pnpm railway:check` prints `production ·` and `staging ·` lines |
+| F5 | the token `railway:check` uses can read every environment's triggers | founder | `pnpm railway:check` prints exactly what "What the checks print today" shows |
 | F6 | a ruleset stops `release` being deleted, and nothing else | founder | `gh api repos/itsahmeds/flowers-overseas/rules/branches/release --jq '[.[].type]'` |
 
 Do them in the order below: F5 first, because every other check needs its token.
@@ -272,10 +272,20 @@ environment, so it cannot read `production` and `staging` together.
 pnpm railway:check; echo "exit $?"
 ```
 
-You should see lines that start `production ·` **and** lines that start `staging ·`, and `exit 0`
-or `exit 1`. `exit 2` means the token or the project id is not set in this shell. An error that
-says not authorised, or no `production` line, means the token cannot read the whole project:
-make a new one in step 2 and check the workspace you chose.
+Today, while production has no `web` service, you should see **exactly** the output under "What
+the checks print today" at the end of this section, and `exit 1`. A red run prints only the lines
+that fail, so seeing no `staging ·` line is right. How to read anything else:
+
+- `exit 2`: the token or the project id is not set in this shell.
+- An error that says not authorised: Railway refused the token. Make a new one in step 2 and
+  check the workspace you chose.
+- A `staging · web · …` line: the token cannot see `staging`. Railway reports an environment it
+  hides as having no services. Make a new token in step 2.
+- No `EXPECTED RED` line on stderr: the token may not see `production`, because the check gives
+  that label only when production is in Railway's answer. Make a new token in step 2.
+
+Once TASK-104 has created production `web`, the same command prints every row, `production ·`
+and `staging ·` lines alike, and `exit 0`.
 
 ### F1 — `release` exists, and production follows it
 
@@ -307,7 +317,7 @@ and only once `release` exists, so production never follows a missing branch.
 ```bash
 git ls-remote origin refs/heads/release     # one line, <sha>  refs/heads/release (nothing yet if production never deployed)
 pnpm release:status; echo "exit $?"         # once release exists: invariant: ok
-pnpm railway:check; echo "exit $?"          # production · web · triggers on release, declared release
+pnpm railway:check; echo "exit $?"          # once TASK-104 has created web: production · web · triggers on release, declared release
 ```
 
 ### F2 — staging follows `main`
@@ -325,7 +335,7 @@ green run, and no `staging · web` line on a red one.
 1. Railway → the project → **Settings** (the project's, not a service's) → **Environments**.
 2. _PR environments_ stay on. Where the screen names the environment they are copied from (the
    _base environment_), it reads `staging`. Change nothing else.
-3. If the screen shows no base-environment choice, write what it does show in the TASK-157 brief.
+3. If the screen shows no base-environment choice, tell the orchestrator what it does show.
 
 **Proof:** `pnpm railway:check` prints no `triggers on release` line for any environment other
 than `production`: AC-34 fails the run if a PR environment follows `release`. The base
