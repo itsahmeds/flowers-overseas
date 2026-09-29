@@ -81,6 +81,9 @@ here.
   `corepack`/`node --import`), 597/597; release holes 5-7 (rebuild of another commit, promoting
   note marked HALTED, staging note with READY), 40/40; runbook writes a new note. Merged
   `origin/main` (ed8c359), map regenerated. Next: gates, `ci:full`.
+- 2026-09-29 — round 2 (`/break 115` HOLES on `644e83e`): hole 8, a HEAD/no-refspec push is denied
+  when its branch cannot be read before the line runs; hole 6, `ROLLED BACK <sha>` counts as
+  promoted; the rollback note takes a `-rollback` suffix. Guard 687/687, release 41/41.
 
 ## Result
 
@@ -107,6 +110,16 @@ change 2 are closed, each with rows seen red with the fix removed:
   note that halted before promoting, red with the halted filter removed.
 - `docs/runbooks/rollback.md`: a rollback writes a new note and never edits the promoting one;
   (a)1 accepts `PROMOTED` or `ROLLED BACK`; step 2 names `cd ~/dev/flowers-overseas`.
+
+**Round 2 (`/break 115` HOLES on `644e83e`).** Hole 8: a push to HEAD or with no refspec is
+denied from anyone when its branch cannot be read before the line runs. Rows went red with each
+clause removed: any earlier branch mover 36; `checkout` 8, `switch` 8, `clone` 4, `worktree add`
+4, `branch -f/-m/-M` 8, `update-ref` 4, `symbolic-ref` 4; `env -C` 8; no readable branch
+(including a directory not there yet) 16. The old row "outside any checkout … allowed" is now a
+deny row, as the fix asks. Named-branch pushes and `release:status` stay allowed. Hole 6: a
+`ROLLED BACK <sha>` visit-2 line counts as a promotion; the new case goes red with that clause
+removed. The runbook's rollback note takes a `-rollback` file-name suffix. `--config-env=alias.*`
+is named in the guard header as not caught.
 
 **Logged, not done (suggested by `/break 115`, outside this round):** the newest-note sort in
 `findPromotingNote` has no test; neither does the `--to` = `<bad-sha>` refusal; the guard's
