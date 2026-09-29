@@ -38,7 +38,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-09-29: T-41's seven framework-text cases written in `tests/unit/framework-text.test.ts`, red on the current texts (8 failed / 22 passed, the eighth being the unmodified-scratch case). Next: rewrite `launch.md`, `/launch` and the work order's Role: launch.
 
 ## Result
 
