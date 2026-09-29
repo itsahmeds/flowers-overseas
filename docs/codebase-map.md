@@ -14,7 +14,7 @@ task actually touches.
 |---|---|---|---|
 | `admin` | Public barrel for `admin` (admin queries and actions) | spec 012 | — |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2 + the gated GA4 tag; GA4 event… | spec 004, 023 | `unit/consent-bootstrap.test.tsx` |
-| `catalog` | The only import path into the catalogue and pricing module (spec 005 §2, §5.2;… | spec 005 | `contract/catalog-static-providers.test.ts`, `contract/support/catalog-provider-contract.ts`, `unit/catalog-availability.test.ts` +33 |
+| `catalog` | The only import path into the catalogue and pricing module (spec 005 §2, §5.2;… | spec 005 | `contract/catalog-static-providers.test.ts`, `contract/support/catalog-provider-contract.ts`, `unit/catalog-availability.test.ts` +34 |
 | `customers` | Public barrel for `customers` (customers, recipients, consent) | spec 019 | — |
 | `geo` | The only import path into the geo module (spec 007 §5.2; TASK-087) | spec 007, 002, 009 | `contract/seo-schema-fixtures.test.ts`, `unit/catalog-country-occasion.test.ts`, `unit/catalog-listing.test.ts` +17 |
 | `i18n` | The only import path for the i18n module (spec 003 §5.2, AC-3; TASK-034) | spec 003 | `contract/seo-schema-fixtures.test.ts`, `fixtures/ts/format-time-in-zone-no-zone.ts`, `integration/sitemap.test.ts` +52 |
@@ -51,6 +51,7 @@ task actually touches.
 | `payment-methods.ts` | Payment-method registry (spec 004 §2 "Everything data-gated is config", §8… | spec 004 |
 | `site-links.ts` | Site-link registry (spec 004 §2 "Everything data-gated is config", §5.1, §12;… | spec 004 |
 | `trending.ts` | The florists' picks the "Most sent this week" row shows until real orders rank… | spec 004 |
+| `url-keys.ts` | The query keys our own URLs carry (spec 001 §14 A20, AC-55; TASK-160) | spec 001 |
 | `voice.ts` | The voice register (spec 004 §14 A5; spec 007 AC-2; TASK-087) | spec 004 |
 
 ## Routes (`src/app/`)
@@ -131,14 +132,14 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 208 |
+| `tests/unit/` | 209 |
 | `tests/integration/` | 6 |
 | `tests/contract/` | 6 |
 | `tests/e2e/` | 32 |
 | `tests/a11y/` | 14 |
 | `tests/visual/` | 15 |
 | `tests/dev-os/` | 1 |
-| `tests/fixtures/` | 218 |
+| `tests/fixtures/` | 235 |
 | `tests/msw/` | 3 |
 
 ## Where does X live?
