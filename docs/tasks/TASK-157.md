@@ -30,7 +30,16 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- **2026-09-29: T-44's live part is owed to the founder** (to: orchestrator → founder; answer: `open`). It needs the founder's clicks (F1–F4, F6) and a Railway workspace token (F5); no agent has either. The founder follows `docs/runbooks/railway-cloudflare-setup.md` "Release branch" and pastes the output of `pnpm railway:check; echo "exit $?"` (with `RAILWAY_ENVIRONMENT_ID` unset) here, after F1–F3 and again after F4. **Expected while production has no `web`** (TASK-104 creates it): F1's trigger step not applicable, and exit 1 with exactly this on stdout, and no other line:
+  ```text
+  production · web · triggers on none, declared release
+  production · worker · triggers on none, declared release
+  ```
+  (the `worker` line only if production has no `worker` service at all; a sourceless `worker` is "not checked" and not printed on a red run), and stderr beginning `railway:check: EXPECTED RED until TASK-104`. The exit-0 run moves to TASK-104's brief, after `web` exists on `release` and before the DNS change (AC-43).
+- **2026-09-29: TASK-155's open escalation, the staging-`worker` line** (to: orchestrator → spec writer; answer: `open`, proposal below). If staging has no `worker` when the founder runs the check (TASK-103 creates it), the run also prints `staging · worker · triggers on none, declared main` and stderr says `railway:check failed` with no label, so T-44 fails ("output that exits non-zero for any other reason"). **Proposed: an AC-42 amendment**, because F1 is due now and TASK-103 is not near: AC-42 and T-44 also accept `staging · <service> · triggers on none, declared main` for a declared staging service that does not exist yet (until TASK-103), and a follow-up code change widens `onlyAbsentProductionServices` in `src/lib/railway.ts` to label it (a new T-34 case). **Fallback, no spec change:** a runbook note that the live T-44 run waits until TASK-103 has created the staging `worker` (a sourceless seat is "not checked" and prints nothing on a red run). The runbook today states the case plainly and tells the founder to paste the output as it is. I did not amend the spec.
+- **2026-09-29: `(release at none)`** (to: orchestrator → spec writer; answer: `open`, text shipped). AC-37 fixes READY as `(release at <sha>)` but is silent for the first launch, when `release` does not exist and AC-36's `--create` applies. The texts write `(release at none)` and `/launch` step 4 then runs `release:promote --create --sha <sha>`. `src/lib/release.ts`'s `READY_LINE` does not match `none`, which is harmless: there is no previous release to roll back to. Confirm, or amend AC-37.
+- **2026-09-29: the §6 token type** (to: orchestrator; answer: `open`, text corrected). Runbook §6 told the founder to use a **project** token. Railway's public-API guide says a project token covers one environment and goes in a `Project-Access-Token` header, while `railway:check` and `release:*` send `Authorization: Bearer`. §6 and F5 now say a **workspace** token for Grovant's workspace. F5's check shows whether it works.
+- **2026-09-29: spec text that AC-41 reads as corrected** (to: orchestrator; answer: `open`, spec not edited). §4's founder story ("I deploy by merging to `main`") and §5.3 "Deploys and rollback" (`main` → `production`) still read the old way. AC-41 says they "read as corrected here", so nothing is owed unless the spec writer wants the text itself changed.
 
 ## Progress
 
@@ -40,6 +49,7 @@ here.
 
 - 2026-09-29: T-41's seven framework-text cases written in `tests/unit/framework-text.test.ts`, red on the current texts (8 failed / 22 passed, the eighth being the unmodified-scratch case). Next: rewrite `launch.md`, `/launch` and the work order's Role: launch.
 - 2026-09-29: the three launch texts rewritten (84af863); the seven cases green, and 15 revert cases added, each reverting one sentence in a scratch copy and asserting the one problem it causes (45/45). A `FRAMEWORK_ROOT` scratch run with the `lighthouse` sentence deleted turns the gate-1 case red. Next: the runbook's "Release branch" section.
+- 2026-09-29: runbook "Release branch" section (23763f8): the F1–F6 table with a check for each, click-by-click steps for F1–F5, and GitHub clicks for F6. What the check prints today, and the staging-`worker` case. §6's token corrected to a workspace token. Escalations recorded. Next: `gates:cheap`, rebase, ready, `ci:full`.
 
 ## Result
 
