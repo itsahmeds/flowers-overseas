@@ -21,8 +21,9 @@
  * "missing from the options" check (`ENTRY_CHECKS`): in flat config a later object's options
  * replace an earlier one's, so a second object setting `no-restricted-imports` would silently
  * drop the SDK list while the rule still reads `error`. TASK-162 widens
- * `fo/no-direct-order-status-write` to `scripts/`, `seed/` and `db/`; TASK-163 adds the
- * `as Minor` row and its entry.
+ * `fo/no-direct-order-status-write` to `scripts/`, `seed/` and `db/`; TASK-163 added the
+ * `as Minor` row and its entries, which are checked by what they do: the options ESLint resolves
+ * for a file are run over each cast specimen, and must report it.
  *
  * The entries are written out here, not read from `eslint/sdk-adapters.js`: a test that took its
  * expectation from the function it checks would follow that function anywhere.
@@ -33,7 +34,7 @@
  * resolve from the repository's own `node_modules`; its two relative imports and
  * `import.meta.dirname` are rewritten to absolute paths.
  */
-import { ESLint, type Linter } from "eslint";
+import { ESLint, Linter } from "eslint";
 import { execFileSync } from "node:child_process";
 import {
   mkdirSync,
@@ -52,6 +53,7 @@ import {
   SDK_ADAPTERS,
   SIDE_DOOR_FILES as SIDE_DOOR_FILES_CONFIG,
 } from "../../eslint/sdk-adapters.js";
+import { tsParser } from "./support/ts-parser";
 
 const repoRoot = resolve(__dirname, "../..");
 const REAL_CONFIG = resolve(repoRoot, "eslint.config.mjs");
@@ -78,6 +80,18 @@ const ORDER_STATUS = "fo/no-direct-order-status-write";
 
 /** AC-56: the only files in `src/` where the side doors are open. */
 const SIDE_DOOR_FILES = ["src/lib/logger.ts", "src/lib/step-summary.ts"];
+
+/** AC-59: the only file where `as Minor` is allowed (`toMinor()` in the pricing module). */
+const MINOR_CAST_FILES = ["src/modules/catalog/pricing/money.ts"];
+
+/** AC-59's specimens: each must be reported by the options ESLint resolves for a file. */
+const MINOR_CASTS = [
+  "x as Minor",
+  "<Minor>x",
+  "x as unknown as Minor",
+  "x as catalog.Minor",
+  'x as number & z.$brand<"Minor">',
+];
 
 /** AC-57's table: each package (by specimen specifiers) and the only files that may import it. */
 const SDK_TABLE: readonly {
@@ -251,6 +265,34 @@ const inSrcOutsideSideDoors = (file: string): boolean =>
   file.startsWith("src/") && !SIDE_DOOR_FILES.includes(file);
 const AC56 = "no-console and AC-56's locks";
 const AC57 = "AC-57's SDK locks";
+const AC59 = "AC-59's as Minor ban";
+
+const castLinter = new Linter({ configType: "flat" });
+const castReported = new Map<string, boolean>();
+
+/** Whether `no-restricted-syntax` with these options reports `specimen` (AC-59). */
+function castBanned(options: unknown[], specimen: string): boolean {
+  const key = JSON.stringify([options, specimen]);
+  const known = castReported.get(key);
+  if (known !== undefined) return known;
+  const messages = castLinter.verify(
+    `declare const x: number;\nexport const m = ${specimen};\n`,
+    {
+      files: ["**/*.ts"],
+      languageOptions: { parser: tsParser },
+      rules: {
+        "no-restricted-syntax": ["error", ...options] as Linter.RuleEntry,
+      },
+    },
+    "specimen.ts",
+  );
+  const reported = messages.some(
+    (message) =>
+      message.ruleId === "no-restricted-syntax" && message.line === 2,
+  );
+  castReported.set(key, reported);
+  return reported;
+}
 
 const ENTRY_CHECKS: readonly EntryCheck[] = [
   {
@@ -377,6 +419,13 @@ const ENTRY_CHECKS: readonly EntryCheck[] = [
       ];
     }),
   ),
+  ...MINOR_CASTS.map((specimen): EntryCheck => ({
+    lock: AC59,
+    rule: "no-restricted-syntax",
+    entry: specimen,
+    applies: (file) => !MINOR_CAST_FILES.includes(file),
+    present: (options) => castBanned(options, specimen),
+  })),
 ];
 
 const TABLE: readonly LockRow[] = [
@@ -416,6 +465,14 @@ const TABLE: readonly LockRow[] = [
     errorOn: [""],
     exceptUnder: ["tests/"],
     allowedOff: [...SDK_TABLE.flatMap((row) => row.allowedIn), "tests/**"],
+  },
+  {
+    lock: AC59,
+    rules: ["no-restricted-syntax"],
+    // "every root", `tests/` included; `tests/fixtures/` is in `globalIgnores`.
+    errorOn: [""],
+    exceptUnder: ["tests/fixtures/"],
+    allowedOff: [...MINOR_CAST_FILES],
   },
 ];
 
@@ -740,20 +797,21 @@ describe("the lock table (AC-52) over the real config", () => {
     }
   });
 
-  it("applies AC-56 and AC-57's entries by file, as their tables say", () => {
+  it("applies AC-56, AC-57 and AC-59's entries by file, as their tables say", () => {
     const count = (file: string): number =>
       ENTRY_CHECKS.filter((check) => check.applies(file)).length;
-    // 16 AC-56 entries; 12 specimens × 6 import forms for AC-57.
-    expect(count("src/modules/geo/corridor.ts")).toBe(16 + 72);
-    expect(count("src/lib/logger.ts")).toBe(72);
-    expect(count("src/lib/step-summary.ts")).toBe(72);
-    expect(count("src/lib/sentry.ts")).toBe(16 + 60);
-    expect(count("src/lib/db.ts")).toBe(16 + 48);
-    expect(count("next.config.ts")).toBe(60);
-    expect(count("scripts/db-migrate.ts")).toBe(48);
-    expect(count("scripts/env-check.ts")).toBe(72);
-    expect(count("src/modules/payments/stripe/client.ts")).toBe(16 + 60);
-    expect(count("tests/unit/sentry-before-send.test.ts")).toBe(0);
+    // 16 AC-56 entries; 12 specimens × 6 import forms for AC-57; 5 AC-59 casts.
+    expect(count("src/modules/geo/corridor.ts")).toBe(16 + 72 + 5);
+    expect(count("src/lib/logger.ts")).toBe(72 + 5);
+    expect(count("src/lib/step-summary.ts")).toBe(72 + 5);
+    expect(count("src/lib/sentry.ts")).toBe(16 + 60 + 5);
+    expect(count("src/lib/db.ts")).toBe(16 + 48 + 5);
+    expect(count("next.config.ts")).toBe(60 + 5);
+    expect(count("scripts/db-migrate.ts")).toBe(48 + 5);
+    expect(count("scripts/env-check.ts")).toBe(72 + 5);
+    expect(count("src/modules/payments/stripe/client.ts")).toBe(16 + 60 + 5);
+    expect(count("tests/unit/sentry-before-send.test.ts")).toBe(5);
+    expect(count("src/modules/catalog/pricing/money.ts")).toBe(16 + 72);
   });
 
   it("bans no package outside the table: each pattern is the package, not a prefix (/break 117 hole 3)", async () => {
@@ -984,6 +1042,44 @@ describe("a one-line edit to eslint.config.mjs goes red and names the lock (T-56
     );
     expect(violations).toContain(
       'no-restricted-syntax: entry process["stdout"] missing from the options for src/modules/geo/corridor.ts (no-console and AC-56\'s locks)',
+    );
+  });
+
+  // TASK-163 (AC-59): every other entry kept, only the cast ban dropped, and the rule still `error`.
+  it("a second block setting no-restricted-syntax for src/** without the as Minor entry", async () => {
+    const violations = await redFor(
+      addBlock(
+        '{ files: ["src/**"], rules: { "no-restricted-syntax": restrictedRules().find((c) => c.name === "fo/restricted/src").rules["no-restricted-syntax"].filter((e) => !String(e?.message).includes("AC-59")) } }',
+      ),
+    );
+    expect(violations).toContain(
+      "no-restricted-syntax: entry x as Minor missing from the options for src/modules/geo/corridor.ts (AC-59's as Minor ban)",
+    );
+    expect(violations).toContain(
+      'no-restricted-syntax: entry x as number & z.$brand<"Minor"> missing from the options for src/lib/logger.ts (AC-59\'s as Minor ban)',
+    );
+    expect(
+      violations.filter((v) => !v.endsWith("(AC-59's as Minor ban)")),
+    ).toEqual([]);
+  });
+
+  it("a block turning no-restricted-syntax off for tests/**", async () => {
+    const violations = await redFor(
+      addBlock(
+        '{ files: ["tests/**"], rules: { "no-restricted-syntax": "off" } }',
+      ),
+    );
+    expect(
+      violations.some(
+        (v) =>
+          v.startsWith("no-restricted-syntax: turned off by config object #") &&
+          v.endsWith(
+            'for ["tests/**"]; allowed off only in src/modules/catalog/pricing/money.ts (AC-59\'s as Minor ban)',
+          ),
+      ),
+    ).toBe(true);
+    expect(violations).toContain(
+      "no-restricted-syntax: off on tests/unit/lint-coverage.test.ts; must be error on  (AC-59's as Minor ban)",
     );
   });
 
