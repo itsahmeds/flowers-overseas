@@ -275,6 +275,31 @@ describe("fo/no-direct-order-status-write T-64 (AC-60)", () => {
  * hand `.set()` something it cannot read, the SQL a looser or tighter pattern gets wrong). Each
  * row names the message it must carry, or `0` when it must stay clean.
  */
+describe("the allowed path is anchored at the repository root (/review 119 change 1)", () => {
+  const [row] = T64_INVALID;
+  it.each([
+    "scripts/src/modules/orders/service/x.ts",
+    "src/modules/catalog/src/modules/orders/service/x.ts",
+    "tests/fixtures/lint/scripts/src/modules/orders/service/x.ts",
+    "/elsewhere/src/modules/orders/service/x.ts",
+  ])("%s is not the service: red", (filename) => {
+    expect(row).toBeDefined();
+    if (row !== undefined) {
+      expect(() => reportsOnce(row, filename)).not.toThrow();
+    }
+  });
+
+  it.each([
+    INSIDE,
+    `${process.cwd()}/${INSIDE}`,
+    "./src/modules/orders/service/nested/guards.ts",
+    "tests/fixtures/lint/src/modules/orders/service/transition.ts",
+  ])("%s is the service: clean", (filename) => {
+    expect(row).toBeDefined();
+    if (row !== undefined) expect(() => passes(row, filename)).not.toThrow();
+  });
+});
+
 describe("fo/no-direct-order-status-write further shapes (AC-60)", () => {
   const FURTHER_INVALID: readonly Case[] = [
     // 1. Aliases.
@@ -435,6 +460,110 @@ describe("fo/no-direct-order-status-write further shapes (AC-60)", () => {
       code: 'db.update(orders).set(done ? { status: "paid" } : { notes });',
       messageId: "drizzle",
     },
+    // /review 119 change 2 and /break 119 hole 9: a table picked by a branch, a chain returned
+    // by a same-file function.
+    {
+      name: "db.update(flag ? orders : t)",
+      code: "db.update(flag ? orders : t).set({ status });",
+      messageId: "drizzle",
+    },
+    {
+      name: "db.update(t ?? orders)",
+      code: "db.update(t ?? orders).set({ status });",
+      messageId: "drizzle",
+    },
+    {
+      name: "db.update((0, orders))",
+      code: "db.update((0, orders)).set({ status });",
+      messageId: "drizzle",
+    },
+    {
+      name: "const t = done ? orders : partners",
+      code: "const t = done ? orders : partners;\ndb.update(t).set({ status });",
+      messageId: "drizzle",
+    },
+    {
+      name: "a function declaration returning the chain",
+      code: "function u() {\n  return db.update(orders);\n}\nu().set({ status });",
+      messageId: "drizzle",
+    },
+    {
+      name: "an arrow returning the chain",
+      code: "const u = () => db.update(orders);\nu().set({ status });",
+      messageId: "drizzle",
+    },
+    {
+      name: "a branch picking the chain",
+      code: "(flag ? db.update(orders) : q).set({ status });",
+      messageId: "drizzle",
+    },
+    // /break 119 holes 1–7.
+    {
+      name: "hole 1: a same-file literal passed to another one-argument call",
+      code: "const patch = { notes };\nmutate(patch);\ndb.update(orders).set(patch);",
+      messageId: "unreadable",
+    },
+    {
+      name: "hole 2: a same-file literal held under another key and written through it",
+      code: 'const patch: Record<string, string> = { notes };\nconst h = { p: patch };\nh.p.status = "paid";\ndb.update(orders).set(patch);',
+      messageId: "unreadable",
+    },
+    {
+      name: "hole 3: a patch destructured from a literal holding status",
+      code: 'const { patch } = { patch: { status: "paid" } };\ndb.update(orders).set(patch);',
+      messageId: "unreadable",
+    },
+    {
+      name: "hole 4: a computed key in the upsert config",
+      code: "db.insert(orders).values(v).onConflictDoUpdate({ target: orders.id, [key]: patch });",
+      messageId: "unreadable",
+    },
+    {
+      name: "hole 5: schema?.orders",
+      code: "db.update(schema?.orders).set({ status });",
+      messageId: "drizzle",
+    },
+    {
+      name: "hole 6: const { orders: t = fallback } = schema",
+      code: "const { orders: t = fallback } = schema;\ndb.update(t).set({ status });",
+      messageId: "drizzle",
+    },
+    {
+      name: "hole 7: a same-file literal spread into a call",
+      code: "const patch = { notes };\nfn(...patch);\ndb.update(orders).set(patch);",
+      messageId: "unreadable",
+    },
+    // /break 119 hole 8: the guards that a valid row cannot hold.
+    {
+      name: "onConflictDoUpdate() with no argument",
+      code: "db.insert(orders).values(v).onConflictDoUpdate();",
+      messageId: "unreadable",
+    },
+    {
+      name: "(await chain).set({ status })",
+      code: "export async function f() {\n  (await db.update(orders)).set({ status });\n}",
+      messageId: "drizzle",
+    },
+    {
+      name: "a patch that spreads itself (the seen guard)",
+      code: "const p = { ...p };\ndb.update(orders).set(p);",
+      messageId: "unreadable",
+    },
+    {
+      name: "a string + suffix, reported once",
+      code: "const q = \"UPDATE orders SET status = 'paid'\" + suffix;",
+      messageId: "sql",
+    },
+    {
+      name: "a template + suffix, reported once",
+      code: "const q = `UPDATE orders SET status = 'paid'` + suffix;",
+      messageId: "sql",
+    },
+    {
+      name: "a statement interpolated whole, reported once where it is written",
+      code: "const q = \"UPDATE orders SET status = 'paid'\";\nsql`${q}`;",
+      messageId: "sql",
+    },
     // 2. SQL.
     {
       name: 'UPDATE ONLY "public"."order" AS o SET "status"',
@@ -469,6 +598,36 @@ describe("fo/no-direct-order-status-write further shapes (AC-60)", () => {
     {
       name: "an aliased table interpolated into sql``",
       code: "import { orders as o } from \"@/db/schema\";\nsql`UPDATE ${o} SET ${o.status} = 'paid'`;",
+      messageId: "sql",
+    },
+    {
+      name: '${sql.raw("orders")}',
+      code: 'sql`UPDATE ${sql.raw("orders")} SET status = 1`;',
+      messageId: "sql",
+    },
+    {
+      name: '${sql.identifier("orders")}',
+      code: 'sql`UPDATE ${sql.identifier("orders")} SET status = 1`;',
+      messageId: "sql",
+    },
+    {
+      name: '${sql.raw("status")}',
+      code: 'sql`UPDATE orders SET ${sql.raw("status")} = 1`;',
+      messageId: "sql",
+    },
+    {
+      name: "const c = orders.status, interpolated",
+      code: "const c = orders.status;\nsql`UPDATE ${orders} SET ${c} = 1`;",
+      messageId: "sql",
+    },
+    {
+      name: "a let that may hold orders.status, interpolated",
+      code: "let c = orders.status;\nif (flag) c = orders.notes;\nsql`UPDATE ${orders} SET ${c} = 1`;",
+      messageId: "sql",
+    },
+    {
+      name: 'const T = "orders", interpolated',
+      code: 'const T = "orders";\nsql`UPDATE ${T} SET status = 1`;',
       messageId: "sql",
     },
     {
@@ -565,6 +724,47 @@ describe("fo/no-direct-order-status-write further shapes (AC-60)", () => {
       name: "UPDATE orders SET order_status_note",
       code: "const q = `UPDATE orders SET order_status_note = $1`;",
     },
+    // /break 119 hole 8: one row per false-positive guard.
+    {
+      name: "a column destructured from the table (the destructuring skip)",
+      code: "const { notes: n } = orders;\ndb.update(n).set({ status });",
+    },
+    {
+      name: "status only in a block comment",
+      code: "const q = `UPDATE orders SET notes = 1 /* not status */`;",
+    },
+    {
+      name: "status only in a line comment",
+      code: "const q = `UPDATE orders SET notes = 1 -- not status\nWHERE id = $1`;",
+    },
+    {
+      name: "status only after FROM",
+      code: "const q = `UPDATE orders SET notes = s.note FROM status s WHERE s.id = orders.id`;",
+    },
+    {
+      name: "status only after the bracket that closes the UPDATE",
+      code: "const q = `WITH u AS (UPDATE orders SET notes = 1) SELECT status FROM u`;",
+    },
+    {
+      name: "a table alias cycle (the seen guard)",
+      code: "let t = partners;\nlet u = t;\nt = u;\ndb.update(t).set({ status });",
+    },
+    {
+      name: "a chain variable cycle (the seen guard)",
+      code: "let q = db.select();\nq = q.where(x);\nq.set({ status });",
+    },
+    {
+      name: "an interpolation cycle (the seen guard)",
+      code: 'let a = "x";\nlet b = a;\na = b;\nsql`UPDATE ${a} SET status = 1`;',
+    },
+    {
+      name: "a branch between two other tables",
+      code: "db.update(flag ? partners : payouts).set({ status });",
+    },
+    {
+      name: '${sql.raw("partners")}',
+      code: 'sql`UPDATE ${sql.raw("partners")} SET status = 1`;',
+    },
     {
       name: "an unknown table interpolated",
       code: "sql`UPDATE ${partners} SET ${partners.status} = 'live'`;",
@@ -607,16 +807,28 @@ describe("the rule's files in the real config (AC-60 item 5)", () => {
 });
 
 describe("exported predicates", () => {
-  it("recognises the order-service path on posix and windows separators", () => {
-    expect(isOrderServiceFile("/repo/src/modules/orders/service/x.ts")).toBe(
-      true,
-    );
+  it("recognises the order-service path from the repository root, on posix and windows separators", () => {
     expect(
-      isOrderServiceFile("C:\\repo\\src\\modules\\orders\\service\\x.ts"),
+      isOrderServiceFile("/repo/src/modules/orders/service/x.ts", "/repo"),
     ).toBe(true);
-    expect(isOrderServiceFile("/repo/src/modules/orders/queries.ts")).toBe(
-      false,
-    );
+    expect(
+      isOrderServiceFile(
+        "C:\\repo\\src\\modules\\orders\\service\\x.ts",
+        "C:\\repo",
+      ),
+    ).toBe(true);
+    expect(
+      isOrderServiceFile("/repo/src/modules/orders/queries.ts", "/repo"),
+    ).toBe(false);
+    expect(
+      isOrderServiceFile(
+        "/repo/scripts/src/modules/orders/service/x.ts",
+        "/repo",
+      ),
+    ).toBe(false);
+    expect(
+      isOrderServiceFile("/other/src/modules/orders/service/x.ts", "/repo"),
+    ).toBe(false);
   });
 
   it("matches the spec's SQL pattern", () => {

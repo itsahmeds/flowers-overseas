@@ -6,12 +6,16 @@
  * `orderService.transition`, which appends an immutable `order_events` row and an outbox row in
  * the same transaction. A direct `UPDATE "order" SET status = …` skips the guard, the event and
  * the outbox, so it is banned everywhere except inside the service that owns the machine
- * (`src/modules/orders/service/`).
+ * (`src/modules/orders/service/`, from the repository root, or the same path in the lint fixture
+ * mirror).
  *
- * The table is `orders` or `order` (spec 002 names it `"order"`), and it counts under any name
- * this file gives it (AC-60 item 1): imported under another name (`import { orders as o }`),
- * bound again (`const t = orders`, `let t = …; t = orders`, `const { orders: t } = schema`), or
- * read as `schema["orders"]`.
+ * The table is `orders` or `order` (spec 002 names it `"order"`), and it counts in these forms
+ * (AC-60 item 1): the name itself, or a member of that name (`schema.orders`, `schema["orders"]`,
+ * `schema?.orders`); imported under another name (`import { orders as o }`); a variable ever
+ * assigned one (`const t = orders`, `let t = …; t = orders`); an object-pattern binding of it
+ * (`const { orders: t = x } = schema`); and either arm of a branch that picks it (`a ? orders : b`,
+ * `a ?? orders`, `(0, orders)`). An update chain also counts when a same-file variable or function
+ * (declaration or arrow) returns it.
  *
  * Shapes flagged outside the service:
  *   1. Drizzle: a `.set(…)` on a chain headed by `.update(<orders>)`, and the `set` of an
@@ -22,31 +26,58 @@
  *      `status`. A parameter, a call, a member, a spread of any of those, a computed key, or a
  *      literal that is later assigned to, `Object.assign`ed or passed on is red with "cannot prove
  *      this does not write `status`".
- *   3. SQL (item 2), in a string, a template (a `sql` template's interpolation of the table or of
- *      `<table>.status` reads as the name) or a `+` chain of them: `UPDATE`, `INSERT … ON
+ *   3. SQL (item 2), in a string, a template or a `+` chain of them (an interpolation of the
+ *      table, of `<table>.status`, of `sql.raw("…")` / `sql.identifier("…")`, or of a same-file
+ *      variable holding one of those or a name reads as that name): `UPDATE`, `INSERT … ON
  *      CONFLICT … DO UPDATE SET` or `MERGE INTO … UPDATE SET` on `order`/`orders` — quoted,
  *      schema-qualified, `ONLY`, aliased, over line breaks — whose SET clause names `status`.
  *      String literals and comments are blanked first, so `'status'` as a value is not a write
  *      and a `;` inside a string does not end the statement; the SET clause ends at a top-level
  *      `WHERE`, `FROM`, `RETURNING`, a `)` closing an outer bracket, or `;`.
  *
- * What lint cannot see (AC-60): a table re-exported under another name from another file, SQL
- * assembled at run time, and SQL in `.sql` migration files. The database trigger of spec 002
- * AC-13 (TASK-020) is the lock for those.
+ * What lint cannot see (AC-60): a table re-exported under another name from another file; any
+ * form not listed above (a table that is a parameter or a function's return value, array or
+ * assignment destructuring such as `const [t] = [orders]` and `({ orders: t } = schema)`, a table
+ * built by `pgTable("order")` under another name); SQL assembled at run time (`q += …`,
+ * `[…].join(" ")`), a `status` hidden behind an `E'…\''` escape; and SQL in `.sql` migration
+ * files. The database trigger of spec 002 AC-13 (TASK-020) is the lock for those.
  */
 
-/** Path fragment (posix) whose files own the state machine and may write the status column. */
+import { FIXTURE_MIRROR_ROOT } from "../sdk-adapters.js";
+
+/**
+ * The folder (posix, from the repository root) whose files own the state machine and may write
+ * the status column. Anchored at the root: `scripts/src/modules/orders/service/x.ts` is not it.
+ */
 export const ALLOWED_PATH = "src/modules/orders/service/";
 
 /** The order table's names: today's `orders`, and spec 002's `"order"`. */
 export const TABLE_NAMES = new Set(["orders", "order"]);
 
 /**
- * @param {string} filename ESLint's `context.filename`
+ * @param {string} path
+ * @returns {string} the path with `/` separators and no trailing `/`
+ */
+const posix = (path) => path.split("\\").join("/").replace(/\/+$/, "");
+
+/**
+ * True when the file is under `src/modules/orders/service/` from the repository root, or under
+ * the same path in the lint fixture mirror (`tests/fixtures/lint/`, which `pnpm lint` never
+ * reaches: it is in `globalIgnores`, and `pnpm lint:fixtures` checks the mirror's service file
+ * stays clean). A path that merely contains the folder deeper down is not exempt.
+ * @param {string} filename ESLint's `context.filename`: absolute from the CLI, as given in tests
+ * @param {string} cwd ESLint's `context.cwd`, the repository root
  * @returns {boolean} true when the file owns order transitions and may write the column
  */
-export function isOrderServiceFile(filename) {
-  return filename.split("\\").join("/").includes(ALLOWED_PATH);
+export function isOrderServiceFile(filename, cwd) {
+  const root = `${posix(cwd)}/`;
+  let file = posix(filename);
+  if (file.startsWith(root)) file = file.slice(root.length);
+  if (file.startsWith("./")) file = file.slice(2);
+  return (
+    file.startsWith(ALLOWED_PATH) ||
+    file.startsWith(`${FIXTURE_MIRROR_ROOT}${ALLOWED_PATH}`)
+  );
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -213,6 +244,62 @@ function worst(verdicts) {
   return "clean";
 }
 
+/**
+ * The values an expression may be, when it picks between several: both arms of `a ? b : c`,
+ * both sides of `a ?? b` / `a || b` / `a && b`, and the last of `(a, b)`. Null otherwise.
+ * @param {any} node an unwrapped expression
+ * @returns {any[] | null}
+ */
+function branches(node) {
+  if (node.type === "ConditionalExpression") {
+    return [node.consequent, node.alternate];
+  }
+  if (node.type === "LogicalExpression") return [node.left, node.right];
+  if (node.type === "SequenceExpression") return [node.expressions.at(-1)];
+  return null;
+}
+
+const FUNCTIONS = new Set([
+  "FunctionDeclaration",
+  "FunctionExpression",
+  "ArrowFunctionExpression",
+]);
+
+/**
+ * What a function returns: an arrow's expression body, or the argument of every `return` in
+ * its body (not in functions nested inside it).
+ * @param {any} fn
+ * @returns {any[]}
+ */
+function returnsOf(fn) {
+  if (fn.body.type !== "BlockStatement") return [fn.body];
+  /** @type {any[]} */
+  const found = [];
+  /** @param {any} node */
+  const visit = (node) => {
+    if (node === null || typeof node !== "object") return;
+    if (Array.isArray(node)) {
+      for (const item of node) visit(item);
+      return;
+    }
+    if (typeof node.type !== "string" || FUNCTIONS.has(node.type)) return;
+    if (node.type === "ReturnStatement" && node.argument !== null) {
+      found.push(node.argument);
+    }
+    for (const [key, value] of Object.entries(node)) {
+      if (key !== "parent") visit(value);
+    }
+  };
+  for (const statement of fn.body.body) visit(statement);
+  return found;
+}
+
+/** An interpolation that spells nothing SQL can read. */
+const PLACEHOLDER = " $0 ";
+
+/** A bare SQL name, possibly quoted or qualified: the only thing an interpolation inlines. */
+const SQL_NAME = /^[\w".]+$/;
+
 /** @param {any} node */
 const isPlus = (node) =>
   node?.type === "BinaryExpression" && node.operator === "+";
@@ -238,7 +325,7 @@ const rule = {
     },
   },
   create(context) {
-    if (isOrderServiceFile(context.filename)) return {};
+    if (isOrderServiceFile(context.filename, context.cwd)) return {};
 
     /**
      * @param {any} identifier
@@ -280,6 +367,10 @@ const rule = {
     function isOrdersTable(input, seen = new Set()) {
       const node = unwrap(input);
       if (node === null || node === undefined) return false;
+      const picks = branches(node);
+      if (picks !== null) {
+        return picks.some((pick) => isOrdersTable(pick, seen));
+      }
       if (node.type === "MemberExpression") {
         const name = propName(node);
         return name !== null && TABLE_NAMES.has(name);
@@ -309,7 +400,8 @@ const rule = {
 
     /**
      * True when the chain below `input` is headed by `.<method>(<orders>)`. Intermediate calls
-     * (`.where(…)`, `.values(…)`) and a variable holding part of the chain do not hide it.
+     * (`.where(…)`, `.values(…)`), a variable holding part of the chain, a branch picking it
+     * (`a ? b : c`, `a ?? b`, `(a, b)`) and a same-file function returning it do not hide it.
      * @param {any} input
      * @param {string} method
      * @param {Set<unknown>} [seen]
@@ -318,6 +410,15 @@ const rule = {
     function chainOn(input, method, seen = new Set()) {
       let current = unwrap(input);
       while (current !== null && current !== undefined) {
+        const picks = branches(current);
+        if (picks !== null) {
+          return picks.some((pick) => chainOn(pick, method, seen));
+        }
+        if (FUNCTIONS.has(current.type)) {
+          return returnsOf(current).some((value) =>
+            chainOn(value, method, seen),
+          );
+        }
         if (current.type === "CallExpression") {
           const args = current.arguments;
           if (
@@ -333,7 +434,10 @@ const rule = {
           const variable = findVariable(current);
           if (variable === null || seen.has(variable)) return false;
           seen.add(variable);
-          return assignedValues(variable).some((value) =>
+          const functions = variable.defs.flatMap((def) =>
+            def.type === "FunctionName" ? [def.node] : [],
+          );
+          return [...functions, ...assignedValues(variable)].some((value) =>
             chainOn(value, method, seen),
           );
         } else {
@@ -469,12 +573,16 @@ const rule = {
     }
 
     /**
-     * An interpolation in SQL: the table reads as `orders`, `<table>.status` as `status`, a string
-     * literal as itself; anything else is a placeholder that matches nothing.
+     * An interpolation in SQL: the table reads as `orders`, `<table>.status` as `status`, and a
+     * string literal, `sql.raw(x)`, `sql.identifier(x)` or a same-file variable as the name it
+     * holds. Only a bare name is inlined, never a whole statement, so SQL that is already
+     * reported where it is written is not reported again where it is interpolated. Anything else
+     * is a placeholder that matches nothing.
      * @param {any} node
+     * @param {Set<unknown>} [seen]
      * @returns {string}
      */
-    function interpolated(node) {
+    function interpolated(node, seen = new Set()) {
       const expression = unwrap(node);
       if (isOrdersTable(expression)) return "orders";
       if (
@@ -484,22 +592,46 @@ const rule = {
       ) {
         return "status";
       }
+      /** @type {string | null} */
+      let name = null;
+      if (
+        expression.type === "Literal" &&
+        typeof expression.value === "string"
+      ) {
+        name = expression.value;
+      } else if (
+        expression.type === "CallExpression" &&
+        ["raw", "identifier"].includes(calleeName(expression) ?? "") &&
+        expression.arguments[0] !== undefined
+      ) {
+        name = interpolated(expression.arguments[0], seen);
+      } else if (expression.type === "Identifier") {
+        const variable = findVariable(expression);
+        if (variable !== null && !seen.has(variable)) {
+          seen.add(variable);
+          const held = assignedValues(variable).map((value) =>
+            interpolated(value, seen),
+          );
+          if (held.includes("status")) return "status";
+          if (held.length === 1) name = held[0] ?? null;
+        }
+      }
+      return name !== null && SQL_NAME.test(name) ? name : PLACEHOLDER;
+    }
+
+    /**
+     * The SQL an operand spells: a string in full, a template with its interpolations read.
+     * @param {any} node
+     * @returns {string}
+     */
+    function sqlText(node) {
+      const expression = unwrap(node);
       if (
         expression.type === "Literal" &&
         typeof expression.value === "string"
       ) {
         return expression.value;
       }
-      return " $0 ";
-    }
-
-    /**
-     * The SQL an operand spells.
-     * @param {any} node
-     * @returns {string}
-     */
-    function sqlText(node) {
-      const expression = unwrap(node);
       if (expression.type === "TemplateLiteral") {
         return expression.quasis
           .map((/** @type {any} */ quasi, /** @type {number} */ index) => {
