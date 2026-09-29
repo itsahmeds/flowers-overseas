@@ -39,6 +39,7 @@ the commit: what is done, what is next, anything a replacement agent must know. 
 here.
 
 - 2026-09-29: T-41's seven framework-text cases written in `tests/unit/framework-text.test.ts`, red on the current texts (8 failed / 22 passed, the eighth being the unmodified-scratch case). Next: rewrite `launch.md`, `/launch` and the work order's Role: launch.
+- 2026-09-29: the three launch texts rewritten (84af863); the seven cases green, and 15 revert cases added, each reverting one sentence in a scratch copy and asserting the one problem it causes (45/45). A `FRAMEWORK_ROOT` scratch run with the `lighthouse` sentence deleted turns the gate-1 case red. Next: the runbook's "Release branch" section.
 
 ## Result
 
