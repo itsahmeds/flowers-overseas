@@ -94,7 +94,7 @@ guard's AC-40 rules in `.claude/hooks/bash_guard.py` (`analyse_pushes`, `release
 the hosting section of `docs/runbooks/rollback.md` (the 2 a.m. version (a)(b)(c), then steps 1 and
 2); one A3 pointer in `plan/08` §6. Tests: integration T-36/T-37/T-38 in
 `tests/integration/release-{status,promote,rollback}.test.ts` (temporary bare repos), shell T-40 in
-`tests/dev-os/bash-guard.test.sh` (597/597 after round 1). Each AC-40 rule was removed in turn and its rows went
+`tests/dev-os/bash-guard.test.sh` (687/687 after round 2). Each AC-40 rule was removed in turn and its rows went
 red; removing the destination parse turned 64 deny rows red and no allow row. **T-43**, the
 rollback rehearsal with the founder, is owed until production `web` exists (TASK-104). It has not
 been run. No expensive gate was run locally.
@@ -130,17 +130,17 @@ in the guard's header).
 **Open:** `commitlint` fails on `42e153e` (`wip(release): …`) until the founder decides on the
 reword.
 
-`pnpm gates:cheap` at `2bdc17f`, with a private `TMPDIR` (a concurrent agent's dev-os temp dirs
-in the shared `$TMPDIR` fail `dev-os.test.ts`'s leftover check):
+`pnpm gates:cheap` at `aa7503f` (after round 2), with a private `TMPDIR` (a concurrent agent's
+dev-os temp dirs in the shared `$TMPDIR` fail `dev-os.test.ts`'s leftover check):
 
 ```
-gates:cheap · 2bdc17f81089d5a163ef4d135651c4711030f701 · tree clean · base origin/main · 2026-09-29T15:27:41.792Z
+gates:cheap · aa7503f988c462f4edafbb49bbdac763e8f70b17 · tree clean · base origin/main · 2026-09-29T16:23:41.824Z
 typecheck             exit 0 · 1.9 s
-lint                  exit 0 · 9.6 s
-format:check          exit 0 · 7.9 s
-i18n:check            exit 0 · 0.4 s
+lint                  exit 0 · 9.2 s
+format:check          exit 0 · 7.7 s
+i18n:check            exit 0 · 0.3 s
 check:no-db           exit 0 · 0.2 s
 codebase:map --check  exit 0 · 0.2 s
-tests                 exit 0 · 147.9 s · changed 205 + map 0 + always 0 · always run: zod-boundaries, lint-coverage
+tests                 exit 0 · 156.0 s · changed 205 + map 0 + always 0 · always run: zod-boundaries, lint-coverage
 RESULT: PASS
 ```
