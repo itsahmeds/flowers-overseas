@@ -195,3 +195,36 @@ describe("lint rejects `as Minor` outside money.ts (AC-59, AC-52's row)", () => 
     );
   });
 });
+
+describe("lint rejects @ts-expect-error outside tests/ (AC-59)", () => {
+  const code = [
+    "export const n: number = 1;",
+    "// @ts-expect-error -- a reason long enough for the default option",
+    'export const s: number = "x";',
+    "",
+  ].join("\n");
+  const banned = async (file: string): Promise<number[]> => {
+    const [result] = await eslint.lintText(code, {
+      filePath: resolve(repoRoot, file),
+    });
+    return (result?.messages ?? [])
+      .filter(
+        (message) => message.ruleId === "@typescript-eslint/ban-ts-comment",
+      )
+      .map((message) => message.line);
+  };
+
+  it.each(LINT_ROOTS.filter((file) => !file.startsWith("tests/")))(
+    "red at %s",
+    async (file) => {
+      expect(await banned(file)).toEqual([2]);
+    },
+  );
+
+  it.each(["tests/unit/x.test.ts", "tests/integration/x.test.ts"])(
+    "allowed at %s, where five type tests use it on purpose",
+    async (file) => {
+      expect(await banned(file)).toEqual([]);
+    },
+  );
+});
