@@ -176,22 +176,32 @@ Keep the report under about 400 words. Detail belongs in the brief and the PR, n
 
 ## Role: launch
 
-- Target: `staging` | `production`. Scope: <the tasks since the last release>.
+- Target: `staging` | `production`. Scope: <the tasks merged to `main` since the last release>.
+  Every gate runs against one named SHA: staging's `/api/health` `commit`, read at the start and
+  again at the end. The orchestrator pushes nothing to `main` until visit 1 reports.
 - Visit: **gates** | **watch** (production only). Production takes two dispatches, because the
-  promotion is the orchestrator's merge to `main` and cannot happen while you are running:
-  1. **gates:** run every pre-deploy gate and report `RELEASE: READY | HALTED`;
-  2. the orchestrator merges with `--match-head-commit`;
-  3. **watch:** the orchestrator sends you back. Watch for 15 minutes, run post-deploy
-     verification, roll back on a failure, and report `RELEASE: PROMOTED | ROLLED BACK`.
+  promotion is the orchestrator's `pnpm release:promote` and cannot happen while you are running:
+  1. **gates:** run every pre-deploy gate against the named SHA and report
+     `RELEASE: READY <40-char sha> (release at <old-sha>)` or `RELEASE: HALTED <sha>: <gate>`;
+  2. the orchestrator runs `pnpm release:promote --sha <sha> --expect <old-sha>` with the SHAs of
+     your READY line, which moves `release` to exactly that commit;
+  3. **watch:** the orchestrator sends you back. Confirm production runs the SHA, watch for 15
+     minutes, run post-deploy verification, roll back on a failure, and report
+     `RELEASE: PROMOTED | ROLLED BACK`.
 
-  Staging is one visit: gates, promote, verify, `RELEASE: PROMOTED | HALTED`.
-- **May**, and only as `.claude/agents/launch.md` sets out, gate by gate: promote to the target,
-  and roll back on a failed post-deploy check. Never skip or reorder a gate; halt instead.
+  Staging is one visit, because `main` already deployed it: gates, verify, and report
+  `RELEASE: VERIFIED | HALTED`.
+- **May**, and only as `.claude/agents/launch.md` sets out, gate by gate: halt, and roll
+  production back by redeploying the previous image on a failed post-deploy check. The launch
+  agent never moves `release`: the promotion is the orchestrator's `pnpm release:promote`, and
+  rollback step 2, `pnpm release:rollback`, is the orchestrator's or the founder's (the guard
+  denies both, and every push to `release`, inside a subagent). Never skip or reorder a gate;
+  halt instead.
 - Gate 5 (the SEO audit): dispatch `seo-auditor` with this work order's **SEO auditor** role filled
   in, writing into your checkout. List its report path next to the release note.
-- Write the release note at <absolute path of the checkout to write in>/`docs/releases/…`; the
-  orchestrator commits it together with the audit report. You commit, push, label and merge
-  nothing.
+- Write the release note at <absolute path of the checkout to write in>/`docs/releases/…` on every
+  outcome, `HALTED` included; the orchestrator commits it together with the audit report after
+  every visit. You commit, push, label and merge nothing.
 
 ## Role: breaker
 
