@@ -34,7 +34,23 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- **2026-09-29, to the orchestrator: a file outside the fence goes red. `open`.** Clause 3 turns
+  `tests/fixtures/lint/float-money-valid.ts` L9, `.format(totalMinor / 100)`, red: it is T-62's
+  own `priceMinor / 100` shape. Two tests pin that fixture clean: `tests/unit/no-float-money.test.ts`
+  L47 (in the fence) and `tests/unit/lint-fixtures.test.ts` L104 (outside it), so CI cannot go
+  green without touching the fixture. `pnpm lint` on the real tree reports nothing else. Proposed
+  fix, tried locally and reverted (153/153 green across both tests, `lint:fixtures` clean): add
+  the fixture to the fence and change that one call so it formats a decimal string, the way
+  `src/modules/i18n/format.ts` does:
+  `` .format(`${String(Math.trunc(totalMinor / 100))}.${String(totalMinor % 100).padStart(2, "0")}`) ``.
+  The fixture README (L77) and the `eslint.config.mjs` comments stay accurate.
+- **2026-09-29, to the reviewer: the `listing.ts` fix differs from the spec text. `open`.** AC-58
+  clause 5 says to delete the `Number(` calls because both values are whole numbers. They are,
+  but their type is `Money.amountMinor: number | bigint` (`src/modules/i18n/format.ts` L91), so
+  `left - right` fails `tsc` (TS2365). The comparator now uses `<` / `>`, which accept
+  `number | bigint`, with no `Number(` left. It is still one expression at L1117. Flipping `-1`
+  to `1` turns 4 tests in `catalog-listing`/`catalog-shop-page` red. Please accept this, or name
+  the fix you want.
 
 ## Progress
 
@@ -42,7 +58,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-09-29: the rule, T-62 and the per-clause tests, the `listing.ts`/`seed/check.ts` fixes and the `plan/12` Money row are in `ed259f7`. I broke all 12 new branches one at a time and each turned the T-62 case red. `pnpm lint` on the real tree finds only the two known sites, both fixed. **Blocked**: `float-money-valid.ts` is outside the fence (see Escalations). Next: once the fence is widened, apply the one-line fixture fix, run `gates:cheap`, rebase, mark ready, add `ci:full`.
 
 ## Result
 
