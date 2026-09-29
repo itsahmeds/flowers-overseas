@@ -123,6 +123,21 @@ const eslintConfig = defineConfig([
   // would silently drop a list (AC-52, `tests/unit/lint-coverage.test.ts`).
   ...restrictedRules(),
   {
+    // spec 001 §14 A20, AC-59 (TASK-163): `@ts-ignore` and `@ts-nocheck` are already errors
+    // (`@typescript-eslint/ban-ts-comment`'s defaults); `@ts-expect-error` becomes one too, outside
+    // `tests/`, where type tests use it on purpose. Without it a `// @ts-expect-error` would be one
+    // line round the branded `Minor` type that the `as Minor` ban does not see.
+    name: "fo/ts-expect-error",
+    files: ["**/*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}"],
+    ignores: ["tests/**"],
+    rules: {
+      "@typescript-eslint/ban-ts-comment": [
+        "error",
+        { "ts-expect-error": true },
+      ],
+    },
+  },
+  {
     // plan/01 §5: `app/` imports from `modules/`, never the reverse; `modules/*` import each
     // other's public `index.ts` barrel only. Zones generated from the module manifest in
     // `scripts/check-layout.ts`, so adding a module updates one list.

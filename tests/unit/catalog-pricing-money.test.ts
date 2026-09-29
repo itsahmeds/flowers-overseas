@@ -29,6 +29,7 @@ import {
   divideMinorCeil,
   divideMinorHalfUp,
   sumMoney,
+  toMinor,
 } from "../../src/modules/catalog/pricing/money.ts";
 import type { IntegerMoney } from "../../src/modules/catalog/types.ts";
 import type { Money } from "../../src/modules/i18n";
@@ -57,7 +58,7 @@ const amountIsNotAPrice: WithoutFields<
 > = true;
 
 const eur = (amountMinor: number): IntegerMoney => ({
-  amountMinor,
+  amountMinor: toMinor(amountMinor),
   currency: "EUR",
 });
 
@@ -70,7 +71,10 @@ describe("assertSameCurrency (spec 005 §5.2)", () => {
 
   it("throws on a mixed basket rather than converting silently", () => {
     expect(() =>
-      assertSameCurrency([eur(4590), { amountMinor: 14_900, currency: "PLN" }]),
+      assertSameCurrency([
+        eur(4590),
+        { amountMinor: toMinor(14_900), currency: "PLN" },
+      ]),
     ).toThrow(/cannot mix EUR and PLN/);
   });
 
@@ -86,7 +90,8 @@ describe("assertSameCurrency (spec 005 §5.2)", () => {
       { amountMinor: 4590, currency: "XXX" },
     ]) {
       expect(
-        () => assertSameCurrency([invalid as unknown as IntegerMoney]),
+        // @ts-expect-error -- each is not an `IntegerMoney`; this checks the runtime guard.
+        () => assertSameCurrency([invalid]),
         JSON.stringify(invalid),
       ).toThrow();
     }
@@ -114,7 +119,7 @@ describe("addMoney / sumMoney", () => {
 
   it("throws on a mixed-currency sum and on an empty one", () => {
     expect(() =>
-      addMoney(eur(4590), { amountMinor: 4590, currency: "GBP" }),
+      addMoney(eur(4590), { amountMinor: toMinor(4590), currency: "GBP" }),
     ).toThrow(/cannot mix EUR and GBP/);
     expect(() => sumMoney([])).toThrow(/at least one amount/);
   });
@@ -124,8 +129,8 @@ describe("addMoney / sumMoney", () => {
 
     expect(() =>
       sumMoney([
-        { amountMinor: huge, currency: "EUR" },
-        { amountMinor: huge, currency: "EUR" },
+        { amountMinor: toMinor(huge), currency: "EUR" },
+        { amountMinor: toMinor(huge), currency: "EUR" },
       ]),
     ).toThrow(/safe-integer range/);
   });

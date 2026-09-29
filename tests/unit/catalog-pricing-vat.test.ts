@@ -23,6 +23,7 @@ import {
   vatBreakdown,
 } from "../../src/modules/catalog/pricing/vat.ts";
 import type { VatLine } from "../../src/modules/catalog/types.ts";
+import { toMinor } from "../../src/modules/catalog/pricing/money.ts";
 
 /** PL's two authored rates: flowers 8 %, everything else 23 % (`plan/06` §4 item 4). */
 const FLOWERS_BP = 800;
@@ -92,11 +93,11 @@ describe("netFromGross (spec 005 §5.2)", () => {
 describe("vatBreakdown on AC-13's mixed basket", () => {
   const basket: readonly VatLine[] = [
     // A PL bouquet, gross, VAT and delivery included.
-    { rateBp: FLOWERS_BP, grossMinor: 16_092, currency: "PLN" },
+    { rateBp: FLOWERS_BP, grossMinor: toMinor(16_092), currency: "PLN" },
     // Chocolates at the standard rate.
-    { rateBp: STANDARD_BP, grossMinor: 2500, currency: "PLN" },
+    { rateBp: STANDARD_BP, grossMinor: toMinor(2500), currency: "PLN" },
     // The free card: priced 0 and still a line, so the summary and the invoice agree.
-    { rateBp: STANDARD_BP, grossMinor: 0, currency: "PLN" },
+    { rateBp: STANDARD_BP, grossMinor: toMinor(0), currency: "PLN" },
   ];
 
   it("returns one entry per rate, ascending, each adding up", () => {
@@ -129,8 +130,8 @@ describe("vatBreakdown on AC-13's mixed basket", () => {
     expect(vatBreakdown([...basket].reverse())).toEqual(vatBreakdown(basket));
     expect(
       vatBreakdown([
-        { rateBp: FLOWERS_BP, grossMinor: 100, currency: "PLN" },
-        { rateBp: FLOWERS_BP, grossMinor: 200, currency: "PLN" },
+        { rateBp: FLOWERS_BP, grossMinor: toMinor(100), currency: "PLN" },
+        { rateBp: FLOWERS_BP, grossMinor: toMinor(200), currency: "PLN" },
       ]),
     ).toEqual([{ rateBp: 800, netMinor: 278, vatMinor: 22, grossMinor: 300 }]);
   });
@@ -139,8 +140,8 @@ describe("vatBreakdown on AC-13's mixed basket", () => {
     expect(vatBreakdown([])).toEqual([]);
     expect(() =>
       vatBreakdown([
-        { rateBp: FLOWERS_BP, grossMinor: 4590, currency: "EUR" },
-        { rateBp: FLOWERS_BP, grossMinor: 16_092, currency: "PLN" },
+        { rateBp: FLOWERS_BP, grossMinor: toMinor(4590), currency: "EUR" },
+        { rateBp: FLOWERS_BP, grossMinor: toMinor(16_092), currency: "PLN" },
       ]),
     ).toThrow(/cannot mix/);
   });
@@ -153,7 +154,8 @@ describe("vatBreakdown on AC-13's mixed basket", () => {
       { rateBp: FLOWERS_BP, grossMinor: 16_092, currency: "PLN", extra: 1 },
     ]) {
       expect(
-        () => vatBreakdown([invalid as unknown as VatLine]),
+        // @ts-expect-error -- each is not a `VatLine`; this checks the runtime guard.
+        () => vatBreakdown([invalid]),
         JSON.stringify(invalid),
       ).toThrow();
     }
@@ -188,7 +190,11 @@ describe("vatBreakdown property test (AC-13, T-11)", () => {
           const rateBp = RATES[Math.floor(random() * RATES.length)] ?? 0;
           const magnitude = 10 ** Math.floor(random() * 5);
           const grossMinor = Math.floor(random() * magnitude);
-          lines.push({ rateBp, grossMinor, currency: "PLN" });
+          lines.push({
+            rateBp,
+            grossMinor: toMinor(grossMinor),
+            currency: "PLN",
+          });
         }
 
         const total = lines.reduce((sum, line) => sum + line.grossMinor, 0);

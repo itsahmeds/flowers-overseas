@@ -46,6 +46,7 @@ import {
 } from "../schemas";
 import type {
   IsoDate,
+  Minor,
   PriceProjection,
   Quote,
   QuoteLine,
@@ -53,6 +54,7 @@ import type {
 } from "../types";
 
 import { convert, isRateStale } from "./fx";
+import { toMinor } from "./money";
 import { resolveByPriceVersion } from "./resolve";
 import { roundToStyle } from "./round";
 
@@ -200,7 +202,9 @@ export function quote(lines: readonly QuoteLineInput[], now: Date): Quote {
 
   const unsigned = {
     lines: quoteLines,
-    totalMinor: quoteLines.reduce((sum, line) => sum + line.amountMinor, 0),
+    totalMinor: toMinor(
+      quoteLines.reduce((sum, line) => sum + line.amountMinor, 0),
+    ),
     currency,
     fxAsOf,
     ratePpm,
@@ -281,10 +285,10 @@ export async function verifyQuote(
  * — and the caller treats that as "re-derive".
  */
 function displayAmountOf(
-  amountMinor: number,
+  amountMinor: Minor,
   currency: CurrencyCode,
   value: Quote,
-): number | null {
+): Minor | null {
   if (currency === value.currency) return amountMinor;
   if (value.ratePpm === null || value.fxAsOf === null) return null;
   return roundToStyle(
