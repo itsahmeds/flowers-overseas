@@ -293,12 +293,36 @@ const readIfAny = (root: string, path: string): string =>
 /** `**bold**` markers removed, so a phrase check does not depend on emphasis. */
 const plain = (text: string): string => text.replace(/\*\*/g, "");
 
-/** `text` as sentences: wrapped lines joined, split after a full stop or at a blank line. */
+/**
+ * `text` as sentences: split into blocks at a blank line, a list item or a heading, each block's
+ * wrapped lines joined, then split after a full stop.
+ */
 function sentences(text: string): string[] {
   return plain(text)
-    .replace(/\n(?!\n)/g, " ")
-    .split(/(?<=\.)\s+|\n\n/);
+    .split(/\n\s*\n|\n(?=\s*(?:[-*]|\d+\.|#+) )/)
+    .map((block) => block.replace(/\s+/g, " ").trim())
+    .flatMap((block) => block.split(/(?<=\.)\s+/));
 }
+
+/** The three launch texts, each by the name a problem reports it under. */
+function launchTexts(root: string): [string, string][] {
+  return [
+    [LAUNCH_AGENT, readIfAny(root, LAUNCH_AGENT)],
+    [LAUNCH_SKILL, readIfAny(root, LAUNCH_SKILL)],
+    [
+      `${WORK_ORDER} Role: launch`,
+      section(readIfAny(root, WORK_ORDER), "Role: launch"),
+    ],
+  ];
+}
+
+/** A sentence that says a merge to `main` deploys production, in any phrasing, and does not deny it. */
+const saysMergeDeploysProduction = (s: string): boolean =>
+  /merg/i.test(s) &&
+  s.includes("`main`") &&
+  /deploy/i.test(s) &&
+  /production|Railway/.test(s) &&
+  !/\bnever\b|\bnot\b|only to staging/.test(s);
 
 /** AC-37 / AC-41: gate 1 names the SHA and reads the run job by job. */
 function gate1Problems(root: string): string[] {
@@ -340,6 +364,31 @@ function gate1Problems(root: string): string[] {
     problems.push(
       `${LAUNCH_AGENT} gate 1: does not name its halt, \`RELEASE: HALTED <sha>: gate 1 (<job> <conclusion>)\``,
     );
+  if (!gate1.includes("--commit <sha>"))
+    problems.push(
+      `${LAUNCH_AGENT} gate 1: does not find the run by \`--commit <sha>\``,
+    );
+  if (!plain(gate1).includes("the run's own conclusion is not evidence"))
+    problems.push(
+      `${LAUNCH_AGENT} gate 1: does not say the run's own conclusion is not evidence`,
+    );
+  const halt =
+    said.find((s) =>
+      s.includes("RELEASE: HALTED <sha>: gate 1 (<job> <conclusion>)"),
+    ) ?? "";
+  for (const [pattern, what] of [
+    [/any other `skipped`/i, "any other `skipped`"],
+    [/`cancelled`/, "`cancelled`"],
+    [/unfinished/, "an unfinished job"],
+    [/no run for the SHA/, "no run for the SHA"],
+  ] as const) {
+    if (!pattern.test(halt))
+      problems.push(`${LAUNCH_AGENT} gate 1: the halt does not name ${what}`);
+  }
+  if (said.some((s) => /`success` or `skipped`|`skipped` or `success`/.test(s)))
+    problems.push(
+      `${LAUNCH_AGENT} gate 1: lets a job conclude \`success\` or \`skipped\``,
+    );
   return problems;
 }
 
@@ -359,24 +408,53 @@ function stagingGatesProblems(root: string): string[] {
   return problems;
 }
 
-/** AC-41: staging's result is `RELEASE: VERIFIED | HALTED`, in all three texts. */
-function stagingResultProblems(root: string): string[] {
-  const texts: [string, string][] = [
-    [LAUNCH_AGENT, readIfAny(root, LAUNCH_AGENT)],
-    [LAUNCH_SKILL, readIfAny(root, LAUNCH_SKILL)],
+/** The passages that say what a staging launch does, each by the name a problem reports. */
+function stagingPassages(root: string): [string, string][] {
+  const agent = plain(readIfAny(root, LAUNCH_AGENT));
+  const skill = plain(readIfAny(root, LAUNCH_SKILL));
+  const role = plain(section(readIfAny(root, WORK_ORDER), "Role: launch"));
+  const grab = (text: string, re: RegExp): string => re.exec(text)?.[0] ?? "";
+  return [
     [
-      `${WORK_ORDER} Role: launch`,
-      section(readIfAny(root, WORK_ORDER), "Role: launch"),
+      `${LAUNCH_AGENT} "Promotion", staging`,
+      grab(section(agent, "Promotion"), /^- `staging`:[^\n]*/m),
+    ],
+    [
+      `${LAUNCH_AGENT} "Output contract", staging`,
+      grab(section(agent, "Output contract"), /Print [^()]*\(staging\)/),
+    ],
+    [
+      `${LAUNCH_SKILL} Outputs, staging`,
+      grab(skill, /\bstaging `RELEASE:[^;\n]*/),
+    ],
+    [
+      `${LAUNCH_SKILL} step 3, staging`,
+      grab(section(skill, "Steps"), /Staging ends here[^\n]*/),
+    ],
+    [
+      `${WORK_ORDER} Role: launch, staging`,
+      grab(role, /Staging is one visit[\s\S]*?(?=\n- |\n\n|$)/),
     ],
   ];
+}
+
+/** AC-41: staging's result is `RELEASE: VERIFIED | HALTED`, and no staging passage says "promote". */
+function stagingResultProblems(root: string): string[] {
   const problems: string[] = [];
-  for (const [name, text] of texts) {
+  for (const [name, text] of launchTexts(root)) {
     if (!text.includes("`RELEASE: VERIFIED | HALTED`"))
       problems.push(
         `${name}: staging's result is not \`RELEASE: VERIFIED | HALTED\``,
       );
-    if (text.includes("PROMOTED | HALTED"))
-      problems.push(`${name}: still reports \`PROMOTED | HALTED\``);
+  }
+  for (const [name, passage] of stagingPassages(root)) {
+    // The two denials that say why staging is not "promoted" are the only allowed mentions.
+    const rest = passage
+      .replace("nothing to promote", "")
+      .replace('"Promoted" would be untrue', "");
+    if (passage === "") problems.push(`${name}: not found`);
+    else if (/promot/i.test(rest))
+      problems.push(`${name}: says staging is promoted`);
   }
   return problems;
 }
@@ -394,14 +472,12 @@ function promotionProblems(root: string): string[] {
     problems.push(
       `${LAUNCH_AGENT} "Promotion": does not name \`pnpm release:promote\``,
     );
-  if (
-    /merge to `main`[^.]*deploys to Railway|promotion is the orchestrator's merge/.test(
-      flat,
-    )
-  )
-    problems.push(
-      `${LAUNCH_AGENT}: still says a merge to \`main\` deploys production`,
-    );
+  for (const [name, text] of launchTexts(root)) {
+    if (sentences(text).some(saysMergeDeploysProduction))
+      problems.push(
+        `${name}: still says a merge to \`main\` deploys production`,
+      );
+  }
   if (!promotion.includes("A merge to `main` deploys only to staging"))
     problems.push(
       `${LAUNCH_AGENT} "Promotion": does not say a merge to \`main\` deploys only to staging`,
@@ -481,6 +557,67 @@ function neverMovesReleaseProblems(root: string): string[] {
     problems.push(
       `${LAUNCH_AGENT}: does not say the launch agent never moves \`release\``,
     );
+  for (const s of sentences(readIfAny(root, LAUNCH_AGENT))) {
+    if (
+      /release:(promote|rollback)/.test(s) &&
+      !/orchestrator|founder|\bno `(pnpm )?release:/.test(s)
+    )
+      problems.push(
+        `${LAUNCH_AGENT}: gives the launch agent release:promote or release:rollback: "${s}"`,
+      );
+  }
+  if (
+    !/^- Move `release`: [^\n]*no `release:promote`, no `release:rollback`/m.test(
+      section(readIfAny(root, LAUNCH_AGENT), "Never"),
+    )
+  )
+    problems.push(
+      `${LAUNCH_AGENT} "Never": does not forbid \`release:promote\` and \`release:rollback\``,
+    );
+  return problems;
+}
+
+/** Break H2: `release` moves to the READY SHA, never to `main`'s tip. */
+function mainTipProblems(root: string): string[] {
+  const agent = plain(section(readIfAny(root, LAUNCH_AGENT), "Promotion"));
+  const step4 = plain(
+    numbered(section(readIfAny(root, LAUNCH_SKILL), "Steps"), 4),
+  );
+  const problems: string[] = [];
+  if (!agent.replace(/\s+/g, " ").includes("never to `main`'s tip"))
+    problems.push(
+      `${LAUNCH_AGENT} "Promotion": does not say \`release\` never moves to \`main\`'s tip`,
+    );
+  if (!step4.replace(/\s+/g, " ").includes("never `main`'s tip"))
+    problems.push(`${LAUNCH_SKILL} step 4: does not say never \`main\`'s tip`);
+  for (const [name, text] of launchTexts(root)) {
+    const flat = plain(text).replace(/\s+/g, " ");
+    for (const match of flat.matchAll(/`main`'s tip/g)) {
+      const before = flat.slice(Math.max(0, match.index - 9), match.index);
+      if (!/never (to )?$/.test(before))
+        problems.push(
+          `${name}: names \`main\`'s tip as a target for \`release\``,
+        );
+    }
+  }
+  return problems;
+}
+
+/** Break H5: the work order's release note is written on every outcome and committed after every visit. */
+function workOrderNoteProblems(root: string): string[] {
+  const role = plain(
+    section(readIfAny(root, WORK_ORDER), "Role: launch"),
+  ).replace(/\s+/g, " ");
+  const where = `${WORK_ORDER} Role: launch`;
+  const problems: string[] = [];
+  if (!role.includes("on every outcome, `HALTED` included"))
+    problems.push(
+      `${where}: the release note is not written on every outcome, \`HALTED\` included`,
+    );
+  if (!role.includes("after every visit"))
+    problems.push(
+      `${where}: the orchestrator does not commit the note after every visit`,
+    );
   return problems;
 }
 
@@ -516,6 +653,9 @@ const CHECKS = {
     neverMovesReleaseProblems,
   "T-41 · the orchestrator holds main from dispatch until visit 1 reports":
     holdMainProblems,
+  "T-41 · release moves to the READY SHA, never to main's tip": mainTipProblems,
+  "T-41 · the work order's note on every outcome, committed after every visit":
+    workOrderNoteProblems,
 } as const;
 
 describe(`the framework text (AC-44) under ${ROOT === REPO_ROOT ? "the repository" : `FRAMEWORK_ROOT=${ROOT}`}`, () => {
@@ -740,6 +880,7 @@ describe("T-41: each launch-text case goes red when one sentence is reverted in 
     );
     expect(gate1Problems(copy)).toEqual([
       `${LAUNCH_AGENT} gate 1: does not match the run on its \`head_sha\``,
+      `${LAUNCH_AGENT} gate 1: does not find the run by \`--commit <sha>\``,
     ]);
   });
 
@@ -767,7 +908,7 @@ describe("T-41: each launch-text case goes red when one sentence is reverted in 
     );
     expect(stagingResultProblems(copy)).toEqual([
       `${WHERE}: staging's result is not \`RELEASE: VERIFIED | HALTED\``,
-      `${WHERE}: still reports \`PROMOTED | HALTED\``,
+      `${WHERE}, staging: says staging is promoted`,
     ]);
   });
 
@@ -886,6 +1027,196 @@ describe("T-41: each launch-text case goes red when one sentence is reverted in 
     );
     expect(holdMainProblems(copy)).toEqual([
       `${LAUNCH_SKILL}: the orchestrator does not hold merges to \`main\` from dispatch until visit 1 reports`,
+    ]);
+  });
+});
+
+describe("T-41 round 2: the /break 121 mutations, each red on a scratch copy (spec 040 AC-37, AC-41)", () => {
+  const WHERE = `${WORK_ORDER} Role: launch`;
+
+  it("M1 · every job may be `success` or `skipped` → red", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      LAUNCH_AGENT,
+      "Every job must conclude `success`, except",
+      "Every job must conclude `success` or `skipped`, and",
+    );
+    expect(gate1Problems(copy)).toEqual([
+      `${LAUNCH_AGENT} gate 1: lets a job conclude \`success\` or \`skipped\``,
+    ]);
+  });
+
+  it("M2 · the halt narrowed to a `failure` job → red, naming each lost condition", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      LAUNCH_AGENT,
+      "Any other `skipped`, any `cancelled`, `failure` or unfinished job, or no run for the SHA, halts",
+      "A `failure` job halts",
+    );
+    expect(gate1Problems(copy)).toEqual([
+      `${LAUNCH_AGENT} gate 1: the halt does not name any other \`skipped\``,
+      `${LAUNCH_AGENT} gate 1: the halt does not name \`cancelled\``,
+      `${LAUNCH_AGENT} gate 1: the halt does not name an unfinished job`,
+      `${LAUNCH_AGENT} gate 1: the halt does not name no run for the SHA`,
+    ]);
+  });
+
+  it("M3 · `lighthouse` may conclude `success` or `skipped` → red", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      LAUNCH_AGENT,
+      "`lighthouse` is not one of them and must conclude `success`:",
+      "`lighthouse` is not one of them and must conclude `success` or `skipped`:",
+    );
+    expect(gate1Problems(copy)).toEqual([
+      `${LAUNCH_AGENT} gate 1: lets a job conclude \`success\` or \`skipped\``,
+    ]);
+  });
+
+  it("M4 · the run found by `--limit 1` instead of `--commit <sha>` → red", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      LAUNCH_AGENT,
+      "--event push --commit <sha>",
+      "--event push --limit 1",
+    );
+    expect(gate1Problems(copy)).toEqual([
+      `${LAUNCH_AGENT} gate 1: does not find the run by \`--commit <sha>\``,
+    ]);
+  });
+
+  it("M5 · 'the run's own conclusion is not evidence' deleted → red", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      LAUNCH_AGENT,
+      ": the run's own conclusion is not evidence, because a run whose jobs were all skipped still concludes `success`.",
+      ".",
+    );
+    expect(gate1Problems(copy)).toEqual([
+      `${LAUNCH_AGENT} gate 1: does not say the run's own conclusion is not evidence`,
+    ]);
+  });
+
+  it("M6 · launch.md moves `release` to `main`'s tip → red", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      LAUNCH_AGENT,
+      "which moves `release` to exactly the named SHA, never to `main`'s tip,",
+      "which moves `release` to `main`'s tip,",
+    );
+    expect(mainTipProblems(copy)).toEqual([
+      `${LAUNCH_AGENT} "Promotion": does not say \`release\` never moves to \`main\`'s tip`,
+      `${LAUNCH_AGENT}: names \`main\`'s tip as a target for \`release\``,
+    ]);
+  });
+
+  it("M17 · /launch step 4 promotes `main`'s tip if it is newer → red", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      LAUNCH_SKILL,
+      "never `main`'s tip; commits merged after READY stay on staging",
+      "or `main`'s tip if it is newer",
+    );
+    expect(mainTipProblems(copy)).toEqual([
+      `${LAUNCH_SKILL} step 4: does not say never \`main\`'s tip`,
+      `${LAUNCH_SKILL}: names \`main\`'s tip as a target for \`release\``,
+    ]);
+  });
+
+  it("M7 · launch.md's staging bullet reports PROMOTED → red", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      LAUNCH_AGENT,
+      'report `RELEASE: VERIFIED <sha>` or `RELEASE: HALTED <sha>: <gate>`. "Promoted" would be untrue.',
+      "report `RELEASE: PROMOTED <sha>` or `RELEASE: HALTED <sha>: <gate>`.",
+    );
+    expect(stagingResultProblems(copy)).toEqual([
+      `${LAUNCH_AGENT} "Promotion", staging: says staging is promoted`,
+    ]);
+  });
+
+  it("M8 · /launch Outputs: staging `RELEASE: PROMOTED` → red", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      LAUNCH_SKILL,
+      "staging `RELEASE: VERIFIED | HALTED`;",
+      "staging `RELEASE: PROMOTED`;",
+    );
+    expect(stagingResultProblems(copy)).toEqual([
+      `${LAUNCH_SKILL} Outputs, staging: says staging is promoted`,
+    ]);
+  });
+
+  it("M19 · work order: 'Staging is one visit: gates, promote, verify' → red", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      WORK_ORDER,
+      "Staging is one visit, because `main` already deployed it: gates, verify, and report",
+      "Staging is one visit: gates, promote, verify, and report",
+    );
+    expect(stagingResultProblems(copy)).toEqual([
+      `${WHERE}, staging: says staging is promoted`,
+    ]);
+  });
+
+  it("M10 · visit 2 tells the agent to run `release:rollback` → red", () => {
+    const copy = scratchCopy();
+    const inserted =
+      "Then run rollback step 2 yourself, `pnpm release:rollback --to <previous-release-sha> --expect <sha>`.";
+    mutate(
+      copy,
+      LAUNCH_AGENT,
+      "and report `RELEASE: ROLLED BACK <sha>`.",
+      `and report \`RELEASE: ROLLED BACK <sha>\`. ${inserted}`,
+    );
+    expect(neverMovesReleaseProblems(copy)).toEqual([
+      `${LAUNCH_AGENT}: gives the launch agent release:promote or release:rollback: "${inserted}"`,
+    ]);
+  });
+
+  it("M11 · the Never bullet 'Move `release`' deleted → red", () => {
+    const copy = scratchCopy();
+    mutate(copy, LAUNCH_AGENT, /^- Move `release`: [^\n]*\n/m);
+    expect(neverMovesReleaseProblems(copy)).toEqual([
+      `${LAUNCH_AGENT} "Never": does not forbid \`release:promote\` and \`release:rollback\``,
+    ]);
+  });
+
+  it("M9 · work order: the note only on PROMOTED, 'after every visit' deleted → red", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      WORK_ORDER,
+      "on every\n  outcome, `HALTED` included;",
+      "on\n  `PROMOTED`;",
+    );
+    mutate(copy, WORK_ORDER, " after\n  every visit.", ".");
+    expect(workOrderNoteProblems(copy)).toEqual([
+      `${WHERE}: the release note is not written on every outcome, \`HALTED\` included`,
+      `${WHERE}: the orchestrator does not commit the note after every visit`,
+    ]);
+  });
+
+  it("nit · 'Merging to `main` still deploys production.' added → red", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      LAUNCH_AGENT,
+      "A merge to `main` deploys only to staging.",
+      "A merge to `main` deploys only to staging. Merging to `main` still deploys production.",
+    );
+    expect(promotionProblems(copy)).toEqual([
+      `${LAUNCH_AGENT}: still says a merge to \`main\` deploys production`,
     ]);
   });
 });

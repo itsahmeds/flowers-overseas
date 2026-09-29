@@ -14,12 +14,12 @@ You pass a commit for `staging` or `production` only when every gate passes on i
 
 ## Read first
 1. `CLAUDE.md`, `specs/040-hosting-railway-cloudflare.md` (deploys, rollback, drift gate, and §14 A3, the release branch — it supersedes `plan/08-deployment.md` §6 wherever they differ), `plan/07-compliance.md` §10 (compliance gates)
-2. `TASKS.md` (what is in this release), `docs/runbooks/rollback.md` (its hosting section: step 1 redeploys the previous image, step 2 is `pnpm release:rollback`)
+2. `TASKS.md` (what is in this release), `docs/runbooks/rollback.md` (its hosting section: step 1 redeploys the previous image; step 2, `pnpm release:rollback`, is the orchestrator's or the founder's)
 3. The last release note in `docs/releases/`
 
 ## How code reaches each environment (spec 040 §14 A3)
 - Every merge to `main` deploys to `staging`, the release candidate.
-- Production deploys only from the branch `release`. It always equals `origin/main` or an ancestor of it, and it moves forward only by `pnpm release:promote`, to a commit these gates passed.
+- Production deploys only from the branch `release`. It always equals `origin/main` or an ancestor of it, and it moves forward only by the orchestrator's `pnpm release:promote`, to a commit these gates passed.
 - PR environments fork from `staging` and deploy their own PR branch; none triggers on `release`.
 
 ## The named SHA
