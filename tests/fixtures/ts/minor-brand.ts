@@ -9,7 +9,16 @@ import type { z } from "zod";
 import type { MinorUnitsSchema as DatasetMinorUnitsSchema } from "@/config/catalogue/schemas";
 import { toMinor } from "@/modules/catalog/pricing/money";
 import { MinorUnitsSchema } from "@/modules/catalog/schemas";
-import type { IntegerMoney, Minor, PricePoint } from "@/modules/catalog/types";
+import type {
+  IntegerMoney,
+  Minor,
+  PricePoint,
+  Quote,
+  QuoteLine,
+  Surcharge,
+  VatLine,
+  VatSplit,
+} from "@/modules/catalog/types";
 
 declare const priceMinor: Minor;
 declare const amountMinor: Minor;
@@ -33,6 +42,31 @@ export const surcharge: IntegerMoney = {
   amountMinor: price.amountMinor + rate,
   currency: "EUR",
 };
+
+// Every `*Minor` field of the pricing types is a `Minor`: widening any one back to `number` makes
+// its line compile. `catalog-pricing-minor.test.ts` also asks the compiler for every such field.
+// red: TS2322
+export const integerMoneyAmountMinor: IntegerMoney["amountMinor"] = rate;
+// red: TS2322
+export const surchargeAmountMinor: Surcharge["amountMinor"] = rate;
+// red: TS2322
+export const pricePointAmountMinor: PricePoint["amountMinor"] = rate;
+// red: TS2322
+export const pricePointVatAmountMinor: PricePoint["vatAmountMinor"] = rate;
+// red: TS2322
+export const pricePointNetAmountMinor: PricePoint["netAmountMinor"] = rate;
+// red: TS2322
+export const vatLineGrossMinor: VatLine["grossMinor"] = rate;
+// red: TS2322
+export const vatSplitNetMinor: VatSplit["netMinor"] = rate;
+// red: TS2322
+export const vatSplitVatMinor: VatSplit["vatMinor"] = rate;
+// red: TS2322
+export const vatSplitGrossMinor: VatSplit["grossMinor"] = rate;
+// red: TS2322
+export const quoteLineAmountMinor: QuoteLine["amountMinor"] = rate;
+// red: TS2322
+export const quoteTotalMinor: Quote["totalMinor"] = rate;
 
 // The brand is on the module's schema only (A20): the dataset's schema stays unbranded.
 // red: TS2322
