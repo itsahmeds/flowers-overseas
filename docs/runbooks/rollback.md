@@ -95,7 +95,10 @@ Read the release note's rollback plan.
 ## Fix / recovery
 Verify health endpoints, a test order, sitemap. Write a new production note under `docs/releases/`
 that records the rollback (`RELEASE: ROLLED BACK <bad-sha>`, the previous release SHA it went back
-to, the time and the reason); leave the note that promoted `<bad-sha>` as it is. Open a fix task.
+to, the time and the reason); leave the note that promoted `<bad-sha>` as it is. Name it
+`YYYY-MM-DD-production-<bad-short-sha>-rollback.md`: the `-rollback` suffix means a rollback on the
+day of the promotion never overwrites the promoting note, which has the same name without it.
+Open a fix task.
 
 ## Communication
 Status page/email only if buyers were affected >15 min.
