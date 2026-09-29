@@ -52,6 +52,9 @@ const READY_LINE =
 /** AC-37's halt: `RELEASE: HALTED <sha>: <gate>`. */
 const HALTED_LINE = /RELEASE: HALTED ([0-9a-f]{7,40})/g;
 
+/** AC-37's visit-2 report: `RELEASE: PROMOTED <sha>`. */
+const PROMOTED_LINE = /RELEASE: PROMOTED ([0-9a-f]{7,40})/g;
+
 export interface ReleaseNote {
   readonly file: string;
   readonly environment: string | undefined;
@@ -59,6 +62,8 @@ export interface ReleaseNote {
   readonly ready: readonly { sha: string; previous: string }[];
   /** Every commit a HALTED report names. */
   readonly halted: readonly string[];
+  /** Every commit a PROMOTED report names. */
+  readonly promoted: readonly string[];
 }
 
 export function parseReleaseNote(file: string, text: string): ReleaseNote {
@@ -71,6 +76,7 @@ export function parseReleaseNote(file: string, text: string): ReleaseNote {
       previous: match[2] ?? "",
     })),
     halted: [...text.matchAll(HALTED_LINE)].map((match) => match[1] ?? ""),
+    promoted: [...text.matchAll(PROMOTED_LINE)].map((match) => match[1] ?? ""),
   };
 }
 
@@ -82,9 +88,11 @@ export interface PromotingNote {
 
 /**
  * Route (b)'s source: the **production** note that reported `READY <bad>` and did not halt on
- * it. A note that only halts promoted nothing, so a later `HALTED` note never counts, and neither
- * does an older note's previous release. When several notes promoted the same commit (it was
- * rolled back and promoted again), the newest by file name wins.
+ * it before promoting it. A note that reports `PROMOTED <bad>` still counts when it later marks
+ * `<bad>` HALTED (the watch halting a promoted release is exactly when a rollback runs); a note
+ * that halted on `<bad>` without promoting it promoted nothing and never counts, and neither does
+ * an older note's previous release. When several notes promoted the same commit (it was rolled
+ * back and promoted again), the newest by file name wins.
  */
 export function findPromotingNote(
   notes: readonly ReleaseNote[],
@@ -92,7 +100,7 @@ export function findPromotingNote(
 ): PromotingNote | undefined {
   const candidates = notes
     .filter((note) => note.environment === "production")
-    .filter((note) => !note.halted.some((halted) => badSha.startsWith(halted)))
+    .filter((note) => !haltedBeforePromoting(note, badSha))
     .flatMap((note) =>
       note.ready
         .filter((ready) => ready.sha === badSha)
@@ -100,6 +108,11 @@ export function findPromotingNote(
     )
     .sort((a, b) => b.file.localeCompare(a.file));
   return candidates[0];
+}
+
+function haltedBeforePromoting(note: ReleaseNote, badSha: string): boolean {
+  const names = (sha: string) => sha.length > 0 && badSha.startsWith(sha);
+  return note.halted.some(names) && !note.promoted.some(names);
 }
 
 /** What route (a) found for one commit among production `web`'s deployments. */

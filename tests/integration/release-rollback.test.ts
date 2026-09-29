@@ -42,6 +42,10 @@ const NOTE_FILES: Record<string, (r: ReleaseRepo) => string> = {
     `2026-09-20-production-${(r.sha["c4"] ?? "").slice(0, 7)}.md`,
   "production-promoted-bad-first.md": (r) =>
     `2026-09-20-production-${(r.sha["c4"] ?? "").slice(0, 7)}.md`,
+  "production-promoted-bad-halted.md": (r) =>
+    `2026-09-20-production-${(r.sha["c4"] ?? "").slice(0, 7)}.md`,
+  "production-halted-before-promote.md": (r) =>
+    `2026-09-26-production-${(r.sha["c4"] ?? "").slice(0, 7)}.md`,
   "production-halted-later.md": (r) =>
     `2026-09-25-production-${(r.sha["c5"] ?? "").slice(0, 7)}.md`,
   // Dated after the production note that promoted c4 and carrying a READY line, so only the
@@ -255,6 +259,27 @@ describe("release:rollback (T-37, AC-39)", () => {
     const result = await rollbackTo("c3");
     expect(result.code).toBe(1);
     expect(await repo.remote("release")).toBe(sha("c4"));
+  });
+
+  it("keeps route (b) from the note that promoted <bad-sha> when that note later marks it HALTED (break 115 hole 6)", async () => {
+    await history([
+      "production-promoted-c2.md",
+      "production-promoted-bad-halted.md",
+    ]);
+    const result = await rollbackTo("c2");
+    expect(result.code, result.output).toBe(0);
+    expect(await repo.remote("release")).toBe(sha("c2"));
+    expect(result.stdout).toContain("accepted by route (b)");
+  });
+
+  it("ignores a later note that reported READY <bad-sha> and halted before promoting it", async () => {
+    await history([...NOTES, "production-halted-before-promote.md"]);
+    const refused = await rollbackTo("c3");
+    expect(refused.code, refused.output).toBe(1);
+    expect(await repo.remote("release")).toBe(sha("c4"));
+    const accepted = await rollbackTo("c2");
+    expect(accepted.code, accepted.output).toBe(0);
+    expect(await repo.remote("release")).toBe(sha("c2"));
   });
 
   it("refuses a SHA named only in an older note, API unreachable", async () => {
