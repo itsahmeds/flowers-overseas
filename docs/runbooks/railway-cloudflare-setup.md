@@ -295,14 +295,22 @@ so seeing no `staging · web` line is right. How to read anything else:
   check the workspace you chose.
 - A `staging · web · …` line: the token cannot see `staging`. Railway reports an environment it
   hides as having no services. Make a new token in step 2.
-- No `EXPECTED RED` line on stderr: look at stdout first. If it has any line other than the
-  `production · … · triggers on none` lines and the `staging · worker · triggers on none` line of
-  "What the checks print today", that other line is the problem, and a new token will not fix it
-  (except a `staging · web · …` line, above). Stop and paste the output as it is. The missing
-  staging `worker` alone never removes the label: the check labels it (spec 040 AC-44). Only if
-  stdout shows nothing but those lines and stderr still has no label can the token not see
-  `production`, because the check gives that label only when production is in Railway's answer.
-  Then make a new token in step 2.
+- No `EXPECTED RED` line on stderr. Only **this** output means the token cannot see
+  `production` (Railway left production out of its answer, so the check cannot label it), with or
+  without the third line, which is there while staging has no `worker`:
+
+  ```text
+  production · web · triggers on none, declared release
+  production · worker · triggers on none, declared release
+  staging · worker · triggers on none, declared main
+  ```
+
+  and on stderr exactly `railway:check failed: the lines above name each difference.` For that
+  output, and only that one, make a new token in step 2 and run the proof again. Any other
+  unlabelled output, such as a single `production · web` line, or `production · worker` with
+  `staging · worker` but no `production · web` line, is a fault a token cannot fix. Stop, do not
+  change the token, and paste the output as it is to the orchestrator. Do the same if a new token
+  prints the output above again.
 
 Once TASK-104 has created production `web`, the same command prints every row, `production ·`
 and `staging ·` lines alike, and `exit 0`.

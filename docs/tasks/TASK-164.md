@@ -45,6 +45,7 @@ here.
 - 2026-09-30: row `in_progress`, carry-forwards from `/review 121` round 2 recorded. Next: T-45 tests and fixtures (red).
 - 2026-09-30: T-45 cases and five fixtures committed red (24 failing); `expectedAbsences` and AC-44's three stderr lines green (68/68); ten mutations each turn a case red.
 - 2026-09-30: runbook §6, F5 and "What the checks print today" rewritten to AC-44; map regenerated; `pnpm gates:cheap` PASS. Next: CI on the head, `/break` + `/review`.
+- 2026-09-30: `/break 124` hole closed in the runbook: F5's no-label bullet names the one output (replayed byte-exact from `triggers-no-production-environment.json`) that means "make a new token"; anything else unlabelled means stop and paste.
 
 ## Result
 
@@ -72,3 +73,6 @@ today" allow the `staging · worker` line, and "a follow-up task" is now TASK-16
 run locally. Handed on: TASK-103's PR deletes case (b) and the two (b) lines (AC-44); the
 orchestrator's note in `docs/tasks/TASK-157.md` (T-44's run may carry the staging line) was left to
 its bookkeeping PR, per the work order.
+For TASK-103 (a `/review 124` nit): a staging `worker` that exists with no trigger prints the same
+line as a missing one, `staging · worker · triggers on none, declared main`, and gets no label
+(`triggers-staging-worker-no-trigger.json`); only its absence is case (b).
