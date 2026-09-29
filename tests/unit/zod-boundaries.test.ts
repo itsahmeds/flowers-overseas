@@ -1017,7 +1017,7 @@ describe("T-57: red, naming the file and line", () => {
         scan(fixture("inline-server"), { readers: none, parsers: none }),
       ),
     ).toEqual([
-      "src/lib/inline.ts:3 server action parameter fd: line 6: read as `.get`",
+      "src/lib/inline.ts:5 server action parameter fd: line 8: read as `.get`",
     ]);
   });
 
