@@ -34,7 +34,7 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-- **2026-09-29, to the orchestrator: a file outside the fence goes red. `open`.** Clause 3 turns
+- **2026-09-29, to the orchestrator: a file outside the fence goes red. Answered 2026-09-29: fence widened to the L9 call in `float-money-valid.ts` only, with the proposed fix; `lint-fixtures.test.ts` unchanged. Applied.** Clause 3 turns
   `tests/fixtures/lint/float-money-valid.ts` L9, `.format(totalMinor / 100)`, red: it is T-62's
   own `priceMinor / 100` shape. Two tests pin that fixture clean: `tests/unit/no-float-money.test.ts`
   L47 (in the fence) and `tests/unit/lint-fixtures.test.ts` L104 (outside it), so CI cannot go
@@ -44,7 +44,7 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   `src/modules/i18n/format.ts` does:
   `` .format(`${String(Math.trunc(totalMinor / 100))}.${String(totalMinor % 100).padStart(2, "0")}`) ``.
   The fixture README (L77) and the `eslint.config.mjs` comments stay accurate.
-- **2026-09-29, to the reviewer: the `listing.ts` fix differs from the spec text. `open`.** AC-58
+- **2026-09-29, to the reviewer: the `listing.ts` fix differs from the spec text. Orchestrator 2026-09-29: keep the `<`/`>` comparison; the reviewer rules on it.** AC-58
   clause 5 says to delete the `Number(` calls because both values are whole numbers. They are,
   but their type is `Money.amountMinor: number | bigint` (`src/modules/i18n/format.ts` L91), so
   `left - right` fails `tsc` (TS2365). The comparator now uses `<` / `>`, which accept
@@ -59,10 +59,9 @@ the commit: what is done, what is next, anything a replacement agent must know. 
 here.
 
 - 2026-09-29: the rule, T-62 and the per-clause tests, the `listing.ts`/`seed/check.ts` fixes and the `plan/12` Money row are in `ed259f7`. I broke all 12 new branches one at a time and each turned the T-62 case red. `pnpm lint` on the real tree finds only the two known sites, both fixed. **Blocked**: `float-money-valid.ts` is outside the fence (see Escalations). Next: once the fence is widened, apply the one-line fixture fix, run `gates:cheap`, rebase, mark ready, add `ci:full`.
+- 2026-09-29: I applied the approved one-line fix at the `float-money-valid.ts` L9 call and set the row back to `in_review`. Next: run `gates:cheap`, rebase, mark ready, add `ci:full`.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
-
-_Pending._

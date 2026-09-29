@@ -6,5 +6,7 @@ export function quote(delivery_fee_minor: number, locale: string): string {
   return new Intl.NumberFormat(locale, {
     style: "currency",
     currency: "EUR",
-  }).format(totalMinor / 100);
+  }).format(
+    `${String(Math.trunc(totalMinor / 100))}.${String(totalMinor % 100).padStart(2, "0")}`,
+  );
 }
