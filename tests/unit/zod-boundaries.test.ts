@@ -513,6 +513,18 @@ class Scanner {
     );
   }
 
+  /** The local name of each `searchParams` key in `{ searchParams }`/`{ searchParams: sp }`. */
+  private searchParamsNames(name: ts.BindingName): ts.Identifier[] {
+    if (!ts.isObjectBindingPattern(name)) return [];
+    const out: ts.Identifier[] = [];
+    for (const element of name.elements) {
+      const key = (element.propertyName ?? element.name).getText();
+      if (key === "searchParams" && ts.isIdentifier(element.name))
+        out.push(element.name);
+    }
+    return out;
+  }
+
   private isURLValue(file: FileInfo, node: ts.Expression): boolean {
     let expr = node;
     while (ts.isParenthesizedExpression(expr)) expr = expr.expression;
@@ -667,6 +679,21 @@ class Scanner {
             this.climb(node, ctx),
           ),
         );
+      // `const { searchParams } = new URL(…)` / `= req.nextUrl` / `= url`.
+      if (
+        ts.isVariableDeclaration(node) &&
+        node.initializer !== undefined &&
+        this.isURLValue(file, node.initializer)
+      ) {
+        let scope: ts.Node = node;
+        while (!isFn(scope) && !ts.isSourceFile(scope)) scope = scope.parent;
+        for (const name of this.searchParamsNames(node.name))
+          findings.push(
+            this.verdictOf(name, "URL .searchParams", file, (ctx) =>
+              this.binding(scope, name, ctx),
+            ),
+          );
+      }
       ts.forEachChild(node, visit);
     };
     visit(file.sf);
@@ -675,11 +702,7 @@ class Scanner {
       const first = fn.parameters[0];
       if (first === undefined || fn.body === undefined) continue;
       if (ts.isObjectBindingPattern(first.name)) {
-        for (const element of first.name.elements) {
-          const key = (element.propertyName ?? element.name).getText();
-          if (key !== "searchParams" || !ts.isIdentifier(element.name))
-            continue;
-          const name = element.name;
+        for (const name of this.searchParamsNames(first.name)) {
           findings.push(
             this.verdictOf(name, "page searchParams", file, (ctx) =>
               this.binding(fn.body ?? fn, name, ctx),
@@ -688,7 +711,8 @@ class Scanner {
         }
       } else if (ts.isIdentifier(first.name)) {
         const props = first.name;
-        for (const use of this.uses(fn.body, props)) {
+        const body = fn.body;
+        for (const use of this.uses(body, props)) {
           const access = use.parent;
           if (
             ts.isPropertyAccessExpression(access) &&
@@ -699,6 +723,24 @@ class Scanner {
                 this.climb(access, ctx),
               ),
             );
+          // `const { searchParams } = props` (or `= await props`) in the body.
+          let value: ts.Node = use;
+          while (
+            ts.isParenthesizedExpression(value.parent) ||
+            ts.isAwaitExpression(value.parent)
+          )
+            value = value.parent;
+          const declaration = value.parent;
+          if (
+            ts.isVariableDeclaration(declaration) &&
+            declaration.initializer === value
+          )
+            for (const name of this.searchParamsNames(declaration.name))
+              findings.push(
+                this.verdictOf(name, "page searchParams", file, (ctx) =>
+                  this.binding(body, name, ctx),
+                ),
+              );
         }
       }
     }
@@ -909,6 +951,28 @@ describe("T-57: red, naming the file and line", () => {
       problems(scan(fixture("page-reads"), { readers: none, parsers: none })),
     ).toEqual([
       "src/app/page.tsx:6 page searchParams: line 7: read as `.page`",
+    ]);
+  });
+
+  it("`const { searchParams } = props` in a page and in generateMetadata; `props.searchParams`; generateViewport", () => {
+    expect(
+      problems(scan(fixture("page-props"), { readers: none, parsers: none })),
+    ).toEqual([
+      "src/app/a/page.tsx:7 page searchParams: line 9: read as `.page`",
+      "src/app/a/page.tsx:13 page searchParams: line 14: read as `.q`",
+      "src/app/b/page.tsx:7 page searchParams: line 8: read as `.page`",
+      "src/app/b/page.tsx:11 page searchParams: line 12: passed to `String()`",
+    ]);
+  });
+
+  it("URL `.searchParams`: `req.nextUrl`, `new URL(…)` through a binding, and both destructured", () => {
+    expect(
+      problems(scan(fixture("url-search"), { readers: none, parsers: none })),
+    ).toEqual([
+      "src/lib/query.ts:5 URL .searchParams: line 5: read as `.get`",
+      "src/lib/query.ts:10 URL .searchParams: line 10: read as `.get`",
+      "src/lib/query.ts:14 URL .searchParams: line 15: read as `.get`",
+      "src/lib/query.ts:19 URL .searchParams: line 20: read as `.get`",
     ]);
   });
 
