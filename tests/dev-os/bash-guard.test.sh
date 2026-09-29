@@ -181,6 +181,147 @@ assert_empty "$GUARD_STDOUT" "release --force without agent_id (the orchestrator
 run_bash_guard "$PROJECT" ".claude/bin/build-slot.sh release 0123abcd" "$PROJECT" "agent-1234"
 assert_empty "$GUARD_STDOUT" "release <token> from a subagent is allowed"
 
+# --- spec 040 T-40 / AC-40: the release branch is moved only by release:promote / release:rollback ---
+# Destination = the part of each refspec after its last `:` (the whole refspec when there is none),
+# a leading `+` and `refs/heads/` removed; HEAD or no refspec = the current branch of the command's
+# working directory; a delete (`--delete`/`-d`, `:<ref>`) of release; and --all / --mirror always.
+RELEASE_ALT="only \`pnpm release:promote\` or \`release:rollback\` moves \`release\`"
+RELEASE_CMD_ALT="promotion and rollback of the branch are the orchestrator's"
+MAIN_ALT="push your task branch and open or update its PR"
+SHA40="0123456789abcdef0123456789abcdef01234567"
+
+# checkouts whose current branch the rules must read (unborn branches are enough for symbolic-ref)
+ON_RELEASE="$PROJECT/on-release"
+ON_SPEC="$PROJECT/on-spec"
+ON_MAIN="$PROJECT/on-main"
+git init -q -b release "$ON_RELEASE"
+git init -q -b spec/step-c-enforcement-and-release "$ON_SPEC"
+git init -q -b main "$ON_MAIN"
+
+RELEASE_DENIED=(
+  "git push origin HEAD:release"
+  "git push origin :release"
+  "git push --all"
+  "git push --all origin"
+  "git push --mirror origin"
+  "git push origin --delete release"
+  "git push origin +$SHA40:release"
+  "git push origin $SHA40:refs/heads/release"
+  "git push origin +HEAD:refs/heads/release"
+  "git -C ../x push origin HEAD:release"
+  # beyond the T-row: the same rule, other spellings
+  "git push -d origin release"
+  "git push origin --delete refs/heads/release"
+  "git push origin :refs/heads/release"
+  "git push origin release"
+  "git push -f origin main:release"
+  "git push --force-with-lease=release:$SHA40 origin $SHA40:refs/heads/release"
+  "git push origin task/x:release"
+  "git push origin 'refs/heads/*:refs/heads/*'"
+  "git push --prune origin 'refs/heads/*:refs/heads/*'"
+  "git push --branches origin"
+  'bash -c "git push origin HEAD:release"'
+  "cd /tmp && git push origin :release"
+)
+for cmd in "${RELEASE_DENIED[@]}"; do
+  run_bash_guard "$PROJECT" "$cmd"
+  assert_eq "deny" "$GUARD_DECISION" "push to release denied (no agent_id): $cmd"
+  assert_contains "$GUARD_REASON" "$RELEASE_ALT" "the release reason names the two commands: $cmd"
+  run_bash_guard "$PROJECT" "$cmd" "$PROJECT" "agent-1234"
+  assert_eq "deny" "$GUARD_DECISION" "push to release denied (agent_id): $cmd"
+  assert_contains "$GUARD_REASON" "$RELEASE_ALT" "the release reason names the two commands (agent_id): $cmd"
+done
+
+# HEAD, or no refspec at all, is the current branch of the command's working directory
+for cmd in "git push" "git push origin" "git push origin HEAD" "git push -u origin HEAD" "git push origin @"; do
+  for agent in "" "agent-1234"; do
+    run_bash_guard "$PROJECT" "$cmd" "$ON_RELEASE" "$agent"
+    assert_eq "deny" "$GUARD_DECISION" "on branch release, denied (agent '${agent}'): $cmd"
+    assert_contains "$GUARD_REASON" "$RELEASE_ALT" "on branch release, the reason is the release rule: $cmd"
+  done
+done
+run_bash_guard "$PROJECT" "git -C $ON_RELEASE push"
+assert_eq "deny" "$GUARD_DECISION" "git -C <a checkout on release> push is denied"
+run_bash_guard "$PROJECT" "cd $ON_RELEASE && git push origin HEAD"
+assert_eq "deny" "$GUARD_DECISION" "cd into a checkout on release, then git push origin HEAD, is denied"
+run_bash_guard "$PROJECT" "git -C on-release push origin HEAD"
+assert_eq "deny" "$GUARD_DECISION" "git -C <relative dir on release> push origin HEAD is denied"
+
+# the two commands: denied inside a subagent, the orchestrator's own session is unaffected
+RELEASE_COMMANDS=(
+  "pnpm release:promote --sha $SHA40 --expect $SHA40"
+  "pnpm release:promote --create --sha $SHA40"
+  "pnpm release:rollback --to $SHA40 --expect $SHA40"
+  "pnpm run release:promote --sha $SHA40 --expect $SHA40"
+  "npm run release:rollback -- --to $SHA40 --expect $SHA40"
+  "node scripts/release.ts promote --sha $SHA40 --expect $SHA40"
+  "node ./scripts/release.ts rollback --to $SHA40 --expect $SHA40"
+  "cd /tmp && pnpm release:promote --sha $SHA40 --expect $SHA40"
+)
+for cmd in "${RELEASE_COMMANDS[@]}"; do
+  run_bash_guard "$PROJECT" "$cmd" "$PROJECT" "agent-1234"
+  assert_eq "deny" "$GUARD_DECISION" "with agent_id, denied: $cmd"
+  assert_contains "$GUARD_REASON" "$RELEASE_CMD_ALT" "the command reason says whose it is: $cmd"
+  run_bash_guard "$PROJECT" "$cmd"
+  assert_empty "$GUARD_STDOUT" "without agent_id (the orchestrator), allowed: $cmd"
+done
+run_bash_guard "$PROJECT" "pnpm release:status" "$PROJECT" "agent-1234"
+assert_empty "$GUARD_STDOUT" "release:status is read-only: allowed with agent_id"
+run_bash_guard "$PROJECT" "node scripts/release.ts status" "$PROJECT" "agent-1234"
+assert_empty "$GUARD_STDOUT" "node scripts/release.ts status: allowed with agent_id"
+
+# main: denied inside a subagent, by the same reading of the destination
+MAIN_DENIED=(
+  "git push origin HEAD:main"
+  "git push origin +$SHA40:refs/heads/main"
+  "git push origin main"
+  "git push origin :main"
+  "git push origin --delete main"
+  "git -C ../x push origin HEAD:refs/heads/main"
+)
+for cmd in "${MAIN_DENIED[@]}"; do
+  run_bash_guard "$PROJECT" "$cmd" "$PROJECT" "agent-1234"
+  assert_eq "deny" "$GUARD_DECISION" "with agent_id, push to main denied: $cmd"
+  assert_contains "$GUARD_REASON" "$MAIN_ALT" "the main reason gives the alternative: $cmd"
+  run_bash_guard "$PROJECT" "$cmd"
+  assert_empty "$GUARD_STDOUT" "without agent_id (the orchestrator), push to main allowed: $cmd"
+done
+run_bash_guard "$PROJECT" "git push" "$ON_MAIN" "agent-1234"
+assert_eq "deny" "$GUARD_DECISION" "with agent_id, git push on branch main is denied"
+run_bash_guard "$PROJECT" "git push origin HEAD" "$ON_MAIN"
+assert_empty "$GUARD_STDOUT" "without agent_id, git push origin HEAD on branch main is allowed"
+
+# allowed from anyone: branch names that merely contain release (or main)
+ALLOWED_PUSHES=(
+  "git push origin task/TASK-1-x"
+  "git push -u origin task/TASK-156-release-promote"
+  "git push origin docs/release-notes"
+  "git push origin HEAD:refs/heads/task/TASK-156-release-promote"
+  "git push origin spec/step-c-enforcement-and-release"
+  "git push origin release-notes"
+  "git push origin release/2026-09"
+  "git push origin HEAD:mainline"
+  "git push --force-with-lease origin task/TASK-156-release-promote"
+  "git push origin v1.0:refs/tags/release"
+  "git push --tags origin"
+  "git log origin/release..origin/main"
+  "git fetch origin release"
+  'git commit -m "never git push origin HEAD:release"'
+  "grep -rn 'git push origin :release' docs/"
+)
+for cmd in "${ALLOWED_PUSHES[@]}"; do
+  run_bash_guard "$PROJECT" "$cmd" "$PROJECT" "agent-1234"
+  assert_empty "$GUARD_STDOUT" "with agent_id, allowed: $cmd"
+  run_bash_guard "$PROJECT" "$cmd"
+  assert_empty "$GUARD_STDOUT" "without agent_id, allowed: $cmd"
+done
+for cmd in "git push origin HEAD" "git push" "git push -u origin HEAD"; do
+  run_bash_guard "$PROJECT" "$cmd" "$ON_SPEC" "agent-1234"
+  assert_empty "$GUARD_STDOUT" "on branch spec/step-c-enforcement-and-release, with agent_id, allowed: $cmd"
+done
+run_bash_guard "$PROJECT" "git push origin HEAD" "$PROJECT" "agent-1234"
+assert_empty "$GUARD_STDOUT" "outside any checkout, git push origin HEAD is not guessed at: allowed"
+
 # --- T-53 (guard half) / AC-38, AC-42: the task belongs to each worktree ----------------------------
 make_worktree_repo
 TASK_SH_CWD="$WT_201" run_task_sh "$WT_MAIN" clear

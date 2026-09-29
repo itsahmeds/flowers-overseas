@@ -50,6 +50,10 @@ here.
 
 - 2026-09-29 — started: row `in_progress`, kernel-line drop recorded under Escalations. Next: the
   T-36/T-37/T-38 integration tests (temporary bare repo) and T-40 guard rows, red first.
+- 2026-09-29 — `scripts/release.ts` + `src/lib/release.ts` + the deployments query in
+  `src/lib/railway.ts`; T-36/T-37/T-38 green (37 cases), each brief mutation seen red (ancestor
+  check, lease, `--expect` check, any-ancestor). T-40 rows written in `bash-guard.test.sh`, red
+  (140 failing) — next: the push/command rules in `bash_guard.py`, then runbook, plan/08, rebase.
 
 ## Result
 

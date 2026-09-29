@@ -96,6 +96,7 @@ export async function makeReleaseRepo(): Promise<ReleaseRepo> {
   writeFileSync(emptyConfig, "");
   const env: NodeJS.ProcessEnv = {
     PATH: process.env["PATH"] ?? "",
+    NODE_ENV: "test",
     HOME: root,
     TMPDIR: root,
     GIT_CONFIG_NOSYSTEM: "1",
@@ -133,7 +134,10 @@ export async function makeReleaseRepo(): Promise<ReleaseRepo> {
     git,
     async commit(name, files = {}) {
       counter += 1;
-      const content = { [`history/${name}.txt`]: `${name} ${String(counter)}\n`, ...files };
+      const content = {
+        [`history/${name}.txt`]: `${name} ${String(counter)}\n`,
+        ...files,
+      };
       for (const [path, text] of Object.entries(content)) {
         mkdirSync(dirname(join(work, path)), { recursive: true });
         writeFileSync(join(work, path), text);
@@ -157,12 +161,10 @@ export async function makeReleaseRepo(): Promise<ReleaseRepo> {
       return result.code === 0 ? result.stdout.trim() : undefined;
     },
     release(args, extra = {}) {
-      return run(
-        process.execPath,
-        [RELEASE_CLI, ...args],
-        work,
-        { ...env, ...extra },
-      );
+      return run(process.execPath, [RELEASE_CLI, ...args], work, {
+        ...env,
+        ...extra,
+      });
     },
     cleanup() {
       rmSync(root, { recursive: true, force: true });
@@ -175,10 +177,7 @@ export async function makeReleaseRepo(): Promise<ReleaseRepo> {
  * `tests/fixtures/<relative>` with every `{{name}}` replaced by `sha[name]` (and `{{name:7}}` by
  * its first seven characters), written into the repository's scratch directory. Returns the path.
  */
-export function renderFixture(
-  repo: ReleaseRepo,
-  relative: string,
-): string {
+export function renderFixture(repo: ReleaseRepo, relative: string): string {
   const text = readFileSync(join(FIXTURES, relative), "utf8").replace(
     /\{\{([A-Za-z0-9_-]+)(?::(\d+))?\}\}/g,
     (_match, name: string, length: string | undefined) => {
