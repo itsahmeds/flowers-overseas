@@ -516,6 +516,15 @@ describe("Sentry beforeSend value scan (T-58, AC-54)", () => {
     });
   });
 
+  it("scrubs email and phone patterns in keys of extra and contexts (/break 117 hole 8)", () => {
+    const scrubbed = beforeSend({
+      extra: { "jane@example.com": "x" },
+      contexts: { job: { "0048600123456": 1 } },
+    });
+    expect(scrubbed.extra).toEqual({ "[REDACTED:email]": "x" });
+    expect(scrubbed.contexts?.["job"]).toEqual({ "[REDACTED:phone]": 1 });
+  });
+
   it("leaves the order-reference-shaped request_id and payment reference untouched", () => {
     const scrubbed = beforeSend({
       tags: { request_id: "3f2b9c1e-0012-4345-8123-456789012345" },

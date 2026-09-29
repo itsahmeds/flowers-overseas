@@ -397,6 +397,46 @@ describe("the value scan (T-58, AC-54)", () => {
     expect(lineOf({ [key]: value })[key]).toBe(value);
   });
 
+  // /break 117 hole 1: each digit count of §13 Q21 at its edge, and the `-` and `/` of each
+  // side's boundary on its own, so moving a bound by one digit or dropping one character goes red.
+  it.each([
+    ["intl 6 digits", "+486001", "+486001"],
+    ["intl 7 digits", "+4860012", "[REDACTED:phone]"],
+    ["00 + 6 digits", "00486001", "00486001"],
+    ["00 + 7 digits", "004860012", "[REDACTED:phone]"],
+    ["intl 15 digits", "+486001234567890", "[REDACTED:phone]"],
+    ["intl 16 digits", "+4860012345678901", "+4860012345678901"],
+    ["UK 9 digits", "077009001", "077009001"],
+    ["UK 10 digits", "0770090012", "[REDACTED:phone]"],
+    ["UK 11 digits", "07700900123", "[REDACTED:phone]"],
+    ["UK 12 digits", "077009001234", "077009001234"],
+    ["- before", "ref-07700900123", "ref-07700900123"],
+    ["/ before", "/p/07700900123", "/p/07700900123"],
+    ["- after", "07700900123-x", "07700900123-x"],
+    ["/ after", "07700900123/x", "07700900123/x"],
+  ])("pins the edge: %s", (_name, value, expected) => {
+    expect(lineOf({ line: value })["line"]).toBe(expected);
+  });
+
+  // /break 117 hole 2: an address is not ASCII-only.
+  it.each([
+    ["zoë@exämple.de", "[REDACTED:email]"],
+    ["write to józef.müller@przykład.pl.", "write to [REDACTED:email]."],
+  ])("scrubs the non-ASCII email in %j", (value, expected) => {
+    expect(lineOf({ line: value })["line"]).toBe(expected);
+  });
+
+  // /break 117 hole 8: a record keyed by an email or a phone.
+  it("scrubs email and phone patterns in object keys, at any depth", () => {
+    const line = lineOf({
+      "jane@example.com": 1,
+      by_phone: { "+48 600 123 456": "ok" },
+    });
+    expect(line["[REDACTED:email]"]).toBe(1);
+    expect(line["by_phone"]).toEqual({ "[REDACTED:phone]": "ok" });
+    expect(JSON.stringify(line)).not.toMatch(/jane@|600 123/);
+  });
+
   it("exports the patterns and the two markers", () => {
     expect("x jane@example.com y".replace(EMAIL_PATTERN, REDACTED_EMAIL)).toBe(
       "x [REDACTED:email] y",

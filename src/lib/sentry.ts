@@ -129,7 +129,7 @@ function omit(value: object, keys: readonly string[]): Record<string, unknown> {
 function scrubRecord(record: Record<string, unknown>): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(record)) {
-    out[key] = isRedactedKey(key) ? REDACTED : redact(value);
+    out[scrubText(key)] = isRedactedKey(key) ? REDACTED : redact(value);
   }
   return out;
 }

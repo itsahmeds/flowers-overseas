@@ -146,8 +146,8 @@ export function scrubText(text: string): string {
 }
 
 /**
- * Deep copy of `value` with every PII key replaced by `"[REDACTED]"` and every string value, at
- * any depth, passed through `scrubText` (AC-54). Cycles are cut.
+ * Deep copy of `value` with every PII key replaced by `"[REDACTED]"` and every string value and
+ * every key, at any depth, passed through `scrubText` (AC-54). Cycles are cut.
  */
 export function redact(
   value: unknown,
@@ -174,7 +174,8 @@ export function redact(
 
   const out: Record<string, unknown> = {};
   for (const [key, item] of Object.entries(value)) {
-    out[key] = isRedactedKey(key) ? REDACTED : redact(item, seen);
+    // A key can be personal data too (a record keyed by an email), so it gets the value scan.
+    out[scrubText(key)] = isRedactedKey(key) ? REDACTED : redact(item, seen);
   }
   return out;
 }
