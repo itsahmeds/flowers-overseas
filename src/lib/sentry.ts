@@ -21,6 +21,9 @@
  *   entrypoint scoped to the checkout routes without touching the scrubber. `setLocaleTag` is
  *   called from a Server Component (`src/app/[locale]/layout.tsx`), so importing this module
  *   there adds nothing to the client bundle.
+ * - Every string value `redact()` reaches, and `request.url`, passes the logger's email/phone
+ *   scan (`scrubText`, spec 001 §14 A20, AC-54): a match becomes `[REDACTED:email]` or
+ *   `[REDACTED:phone]`. The key list is unchanged.
  * - `beforeSend` drops request cookies, request bodies and IPs, and redacts every key on the
  *   logger's PII list — the same list, imported, never re-typed (spec 001 §8) — **at any depth**
  *   in `extra`, `tags`, `user`, `contexts`, `breadcrumbs[].data` and the request headers
@@ -37,7 +40,7 @@
 import { captureMessage, getCurrentScope } from "@sentry/nextjs";
 import type { ErrorEvent, EventHint } from "@sentry/nextjs";
 
-import { REDACTED, isRedactedKey, redact } from "./logger";
+import { REDACTED, isRedactedKey, redact, scrubText } from "./logger";
 
 /**
  * Tags that may be attached to an event, with the reason each is not PII (spec 003 §11).
@@ -168,11 +171,13 @@ export function beforeSend<T extends ScrubbableEvent>(event: T): T {
   const scrubbed: T = { ...event };
 
   if (scrubbed.request) {
-    const { headers } = scrubbed.request;
-    // Cookies, bodies and query strings can carry anything; drop rather than parse.
+    const { headers, url } = scrubbed.request;
+    // Cookies, bodies and query strings can carry anything; drop rather than parse. The URL is
+    // kept for diagnosis, through the email/phone scan (spec 001 §14 A20, AC-54).
     scrubbed.request = {
       ...omit(scrubbed.request, ["cookies", "data", "query_string", "headers"]),
       ...(headers === undefined ? {} : { headers: scrubRecord(headers) }),
+      ...(typeof url === "string" ? { url: scrubText(url) } : {}),
     };
   }
 
