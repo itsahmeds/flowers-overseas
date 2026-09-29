@@ -274,7 +274,7 @@ pnpm railway:check; echo "exit $?"
 
 Today, while production has no `web` service, you should see **exactly** the output under "What
 the checks print today" at the end of this section, and `exit 1`. A red run prints only the lines
-that fail, so seeing no `staging ·` line is right. How to read anything else:
+that fail, so seeing no `staging · web` line is right. How to read anything else:
 
 - `exit 2`: the token or the project id is not set in this shell.
 - An error that says not authorised: Railway refused the token. Make a new one in step 2 and
@@ -401,10 +401,17 @@ is there only while production has no `worker` service at all.) Paste the output
 `docs/tasks/TASK-157.md`. Once TASK-104 has created `web` on `release`, the same command must
 exit 0; that run is recorded in TASK-104's brief, before the DNS change.
 
-**One case that is not the expected red yet:** if staging has no `worker` service (TASK-103 adds
-it), the run also prints `staging · worker · triggers on none, declared main`, and stderr says
-`railway:check failed` with no EXPECTED RED label. That is a known open question (TASK-157
-`## Escalations`), not a mistake in your clicks. Paste the output as it is.
+**Also expected: a missing staging `worker`.** If staging has no `worker` service yet (TASK-103
+creates it), the run also prints this line, and that is expected until TASK-103 has run:
+
+```text
+staging · worker · triggers on none, declared main
+```
+
+For now stderr then says `railway:check failed` and shows **no** EXPECTED RED label. That is
+because the label does not cover this case yet: a spec 040 amendment makes it an expected red,
+and a follow-up task teaches the check to label it. Your clicks are not wrong. Paste the output
+as it is.
 
 ## Rollback
 
