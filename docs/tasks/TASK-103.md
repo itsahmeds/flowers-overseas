@@ -22,6 +22,8 @@ One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
 
+- **From spec 040 A4 (2026-09-29):** once this task has created staging's `worker`, remove AC-44's case (b) (staging `worker` absent → expected red) from `src/lib/railway.ts` and `scripts/railway-check.ts`, and make T-45's staging-`worker` cases unlabelled, in this task's PR. After that, a missing staging `worker` is a real fault.
+
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.

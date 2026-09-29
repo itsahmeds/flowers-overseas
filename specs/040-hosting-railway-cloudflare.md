@@ -16,7 +16,7 @@
 
 **Acceptance criteria** — `AC-1` §9 L538 · `AC-2` §9 L541 · `AC-3` §9 L544 · `AC-4` §9 L546 · `AC-5` §9 L548 · `AC-6` §9 L552 · `AC-7` §9 L555 · `AC-8` §9 L561 · `AC-9` §9 L564 · `AC-10` §9 L567 · `AC-11` §9 L570 · `AC-12` §9 L573 · `AC-13` §9 L576 · `AC-14` §9 L582 · `AC-15` §9 L585 · `AC-16` §9 L588 · `AC-17` §9 L592 · `AC-18` §9 L594 · `AC-19` §9 L597 · `AC-20` §9 L599 · `AC-21` §9 L602 · `AC-22` §9 L605 · `AC-23` §9 L609 · `AC-24` §9 L611 · `AC-25` §9 L614 · `AC-26` §9 L620 · `AC-27` §9 L624 · `AC-28` §9 L627 · `AC-29` §9 L629 · `AC-30` §9 L632 · `AC-31` §9 L639 · `AC-32` §9 L642 · `AC-33` §9 L644 · `AC-34` §14 L1036 · `AC-35` §14 L1044 · `AC-36` §14 L1051 · `AC-37` §14 L1060 · `AC-38` §14 L1074 · `AC-39` §14 L1100 · `AC-40` §14 L1127 · `AC-41` §14 L1144 · `AC-42` §14 L1161 · `AC-43` §14 L1170 · `AC-44` §14 L1218
 
-**Test cases** — `T-01` §10 L652 · `T-02` §10 L653 · `T-03` §10 L654 · `T-04` §10 L655 · `T-05` §10 L656 · `T-06` §10 L657 · `T-07` §10 L658 · `T-08` §10 L659 · `T-09` §10 L660 · `T-10` §10 L661 · `T-11` §10 L662 · `T-12` §10 L663 · `T-13` §10 L664 · `T-14` §10 L665 · `T-15` §10 L666 · `T-16` §10 L667 · `T-17` §10 L668 · `T-18` §10 L669 · `T-19` §10 L670 · `T-20` §10 L671 · `T-21` §10 L672 · `T-22` §10 L673 · `T-23` §10 L674 · `T-24` §10 L675 · `T-25` §10 L676 · `T-26` §10 L677 · `T-27` §10 L678 · `T-28` §10 L679 · `T-29` §10 L680 · `T-30` §10 L681 · `T-31` §10 L682 · `T-32` §10 L683 · `T-33` §10 L684 · `T-34` §14 L1179 · `T-35` §14 L1180 · `T-36` §14 L1181 · `T-37` §14 L1182 · `T-38` §14 L1183 · `T-39` §14 L1184 · `T-40` §14 L1185 · `T-41` §14 L1186 · `T-42` §14 L1187 · `T-43` §14 L1188 · `T-44` §14 L1189 · `T-45` §14 L1237
+**Test cases** — `T-01` §10 L652 · `T-02` §10 L653 · `T-03` §10 L654 · `T-04` §10 L655 · `T-05` §10 L656 · `T-06` §10 L657 · `T-07` §10 L658 · `T-08` §10 L659 · `T-09` §10 L660 · `T-10` §10 L661 · `T-11` §10 L662 · `T-12` §10 L663 · `T-13` §10 L664 · `T-14` §10 L665 · `T-15` §10 L666 · `T-16` §10 L667 · `T-17` §10 L668 · `T-18` §10 L669 · `T-19` §10 L670 · `T-20` §10 L671 · `T-21` §10 L672 · `T-22` §10 L673 · `T-23` §10 L674 · `T-24` §10 L675 · `T-25` §10 L676 · `T-26` §10 L677 · `T-27` §10 L678 · `T-28` §10 L679 · `T-29` §10 L680 · `T-30` §10 L681 · `T-31` §10 L682 · `T-32` §10 L683 · `T-33` §10 L684 · `T-34` §14 L1179 · `T-35` §14 L1180 · `T-36` §14 L1181 · `T-37` §14 L1182 · `T-38` §14 L1183 · `T-39` §14 L1184 · `T-40` §14 L1185 · `T-41` §14 L1186 · `T-42` §14 L1187 · `T-43` §14 L1188 · `T-44` §14 L1189 · `T-45` §14 L1250
 
 <!-- /index -->
 
@@ -837,7 +837,7 @@ Also recorded: the founder is **Admin** in Grovant's Railway workspace and does 
   creates it, so the F1–F3 run prints `staging · worker · triggers on none, declared main`, and
   under AC-34 as written that is a plain failure with no label, which T-44 then fails
   (TASK-155 `## Escalations`, 2026-09-28). **Answer (founder, 2026-09-29: "small spec fix"):**
-  yes. A declared staging service that does not exist yet is labelled the way a missing
+  yes. Staging's `worker`, while it does not exist yet, is labelled the way a missing
   production service already is, until TASK-103. Written as AC-44 and T-45 in §14 A4.
 
 ## 14. Amendments (post-approval corrections)
@@ -1204,14 +1204,14 @@ Known risk (the advisor's; accepted, not an AC): AC-40's guard binds only agent 
 Raised by: the founder's decision of 2026-09-28 on gap 16, and the PR 103 breaker's round 5;
 written for PR 104.
 
-**A4 (2026-09-29) — Staging's missing `worker` is an expected red too (§14 A3 AC-34, AC-42, T-34, T-44; new AC-44, T-45).**
+**A4 — Staging's missing `worker` is an expected red too (§14 A3 AC-34, AC-42, T-34, T-44; new AC-44, T-45; TASK-164, 2026-09-29).**
 Original: AC-34 fails any staging service not on `main`; AC-42 and T-44 accept, while production's
 `web` does not exist, only the `production · <service> · triggers on none, declared release` lines.
 The label TASK-155 built (`onlyAbsentProductionServices`, `src/lib/railway.ts`) covers only those.
 Trigger: staging has no `worker` until TASK-103 creates it, so the founder's F1–F3 run also prints
 `staging · worker · triggers on none, declared main`, carries no label, and fails T-44 (§13 Q13).
-Corrected: the founder decided on 2026-09-29 that a declared staging service that does not exist
-yet is an expected red. Only staging's `worker` qualifies: staging's `web` exists today, so its
+Corrected: the founder decided on 2026-09-29 that staging's `worker`, while it does not exist yet,
+is an expected red. Only staging's `worker` qualifies: staging's `web` exists today, so its
 absence is a real fault. AC-43 is unchanged: TASK-104 depends on TASK-103, so its exit-0 run
 before the DNS change still holds.
 
@@ -1220,28 +1220,42 @@ before the DNS change still holds.
   `web` row is `absent` too (A3's rule, unchanged), or (b) staging's `worker` with status `absent`
   (no instance and no live trigger). `railway:check` prints the label only when every failing row is
   expected, the environment of each such row is in the response, and every other check on the run
-  passed (as TASK-155 built it). The stderr line is `railway:check: EXPECTED RED until ` followed
-  by the cases present, production's first, joined by ` and `: ``TASK-104 creates production
-  `web` on `release` `` when a row of type (a) exists, ``TASK-103 creates staging `worker` `` when
-  (b) does. Unlabelled, as before: staging `worker` present with a trigger on any branch but
-  `main` (`wrong-branch`), or present with a repository and no trigger (`no-trigger`); staging
-  `web` absent (so a response without the staging environment is never labelled); any other row.
+  passed (as TASK-155 built it). The stderr is exactly one of these lines, chosen by the cases
+  present:
+  - (a) only, unchanged: ``railway:check: EXPECTED RED until TASK-104 creates production `web` on `release` (spec 040 AC-42, T-44): every failure above is a declared production service that does not exist yet. Once production `web` exists, this output is a real failure.``
+  - (b) only: ``railway:check: EXPECTED RED until TASK-103 creates staging `worker` (spec 040 AC-44, T-45): every failure above is staging's `worker`, which does not exist yet. Once staging `worker` exists, this output is a real failure.``
+  - (a) and (b): ``railway:check: EXPECTED RED until TASK-104 creates production `web` on `release` and TASK-103 creates staging `worker` (spec 040 AC-42, AC-44, T-44, T-45): every failure above is a declared production service or staging's `worker`, none of which exists yet. Once both exist, this output is a real failure.``
+
+  Unlabelled, as before: staging `worker` present with a trigger on any branch but `main`
+  (`wrong-branch`), or present with a repository and no trigger (`no-trigger`); staging `web`
+  absent (so a response without the staging environment is never labelled); a missing production
+  `worker` while production `web` exists, with or without (b); any other row.
+  **Case (b) retires with TASK-103.** The check cannot tell whether TASK-103 has run, so TASK-103's
+  PR deletes case (b) and the two (b) lines from `src/lib/railway.ts` and
+  `scripts/railway-check.ts`, and turns T-45's labelled staging cases into unlabelled ones. From
+  then on a missing staging `worker` is a plain failure. The orchestrator writes this into TASK-103's
+  brief.
 - **AC-42 and T-44, amended.** While staging has no `worker`, the pasted run after F1–F3 may also
   contain `staging · worker · triggers on none, declared main`, and still no other line; stderr
-  carries AC-44's label naming each case present. T-34's staging-`worker`-absent expectations
+  is AC-44's line for the cases present. T-34's staging-`worker`-absent expectations
   (the cases on `triggers-staging-no-worker.json` and
   `triggers-production-no-web-staging-no-worker.json`) are superseded by T-45.
+- **Sequencing.** TASK-164 (this amendment's task) needs TASK-157's PR 121 **merged**, not
+  TASK-157 `done`: TASK-157 cannot be `done` before T-44's paste, and the paste waits for TASK-164.
+  The founder's F1–F3 run for T-44 is pasted only after TASK-164 has merged, so its stderr carries
+  AC-44's label. TASK-157 stays open until that paste is in its brief.
 
 | ID | Layer | Given / When / Then | Covers AC |
 |---|---|---|---|
-| T-45 | contract (`tests/contract/railway-check.test.ts`, fixtures `tests/fixtures/railway/`; the CLI cases pass `--fixture-triggers`, alone or with `--fixture-environment environment-staging.json` or `environment-drifted.json`) | Labelled, exit 1: `triggers-staging-no-worker.json` (staging `worker` absent, all else as declared) → stdout exactly the `staging · worker` line, stderr contains `until TASK-103` and not `TASK-104`; `triggers-production-no-web-staging-no-worker.json` → both lines, stderr contains `until TASK-104` and `and TASK-103`; new `triggers-production-empty-staging-no-worker.json` (the F1–F3 shape) → the three `none` lines, both ids. Unlabelled, exit 1, no `EXPECTED RED`: new `triggers-staging-worker-on-release.json` (instance with a repository, one trigger on `release`) → `staging · worker · triggers on release, declared main`; new `triggers-staging-worker-no-trigger.json` (instance with a repository, no trigger); new `triggers-staging-no-web.json` (staging `web` absent, `worker` as declared) → `staging · web · triggers on none, declared main`; `triggers-staging-no-worker.json` with `environment-drifted.json`. `triggers-production-empty.json` → still `until TASK-104`, not `TASK-103` | AC-44, AC-42 |
+| T-45 | contract (`tests/contract/railway-check.test.ts`, fixtures `tests/fixtures/railway/`; the CLI cases pass `--fixture-triggers`, alone or with `--fixture-environment environment-staging.json` or `environment-drifted.json`) | Labelled, exit 1, stderr **equal to** AC-44's line for the case: `triggers-staging-no-worker.json` (staging `worker` absent, all else as declared) → stdout exactly the `staging · worker` line, stderr line (b); `triggers-production-no-web-staging-no-worker.json` → both lines, stderr line (a)+(b); new `triggers-production-empty-staging-no-worker.json` (the F1–F3 shape) → the three `none` lines, stderr line (a)+(b); `triggers-production-empty.json` → stderr line (a), unchanged. Unlabelled, exit 1, no `EXPECTED RED`: new `triggers-production-no-worker-staging-no-worker.json` (production `web` on `release`, production `worker` absent, staging `worker` absent) → `production · worker · triggers on none, declared release` and `staging · worker · triggers on none, declared main`; new `triggers-staging-worker-on-release.json` (instance with a repository, one trigger on `release`) → `staging · worker · triggers on release, declared main`; new `triggers-staging-worker-no-trigger.json` (instance with a repository, no trigger); new `triggers-staging-no-web.json` (staging `web` absent, `worker` as declared) → `staging · web · triggers on none, declared main`; `triggers-staging-no-worker.json` with `environment-drifted.json` | AC-44, AC-42 |
 
 Suggested task (one, at most a day): widen `onlyAbsentProductionServices` in `src/lib/railway.ts`
 into a list of the expected cases present (empty when the run is not an expected red; suggested
 name `expectedAbsences`), and build the label from it in `scripts/railway-check.ts`
-`failureVerdict`; T-45's cases in `tests/contract/railway-check.test.ts` and its four new fixtures;
-the expected-red line of `docs/runbooks/railway-cloudflare-setup.md` §6; a note in
-`docs/tasks/TASK-157.md` that T-44's pasted run may carry the staging line (after PR 121 merges).
+`failureVerdict`; T-45's cases in `tests/contract/railway-check.test.ts` and its five new fixtures;
+in `docs/runbooks/railway-cloudflare-setup.md`, the expected-red line of §6 and PR 121's
+"Release branch → What the checks print today" section; a note in `docs/tasks/TASK-157.md` that
+T-44's pasted run may carry the staging line. It starts after PR 121 merges.
 Raised by: TASK-155 `## Escalations` (2026-09-28); the founder's decision of 2026-09-29.
 
 ## 15. Task estimate (input to `/plan-tasks`)

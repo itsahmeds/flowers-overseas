@@ -14,7 +14,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 - `docs/tasks/TASK-155.md` `## Result`: how the label is decided today
 - `docs/codebase-map.md`
 
-**Fence:** `src/lib/railway.ts`, `scripts/railway-check.ts`, `tests/contract/railway-check.test.ts`, `tests/fixtures/railway/` (the four new fixtures), `docs/runbooks/railway-cloudflare-setup.md` (the §6 expected-red line only), `docs/tasks/TASK-157.md` (one note: T-44's run may carry the staging line), this brief, the row and the map.
+**Fence:** `src/lib/railway.ts`, `scripts/railway-check.ts`, `tests/contract/railway-check.test.ts`, `tests/fixtures/railway/` (the four new fixtures), `docs/runbooks/railway-cloudflare-setup.md` (the §6 expected-red line and the "Release branch → What the checks print today" section), `docs/tasks/TASK-157.md` (one note: T-44's run may carry the staging line), this brief, the row and the map.
 
 ## Carry-forwards
 
@@ -27,6 +27,8 @@ One dated bullet per `/review`, newest last.
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
 _None recorded._
+
+**Order:** starts once PR 121 (TASK-157's texts and runbook) has merged, not once TASK-157 is `done`: TASK-157 closes only on the founder's T-44 paste, and that paste waits for this task to merge so its stderr carries AC-44's label.
 
 ## Progress
 
