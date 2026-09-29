@@ -866,7 +866,7 @@ describe("a one-line edit to eslint.config.mjs goes red and names the lock (T-56
     );
   });
 
-  it("a block re-adding postgres to the adapter's own list is green: the lock is the ban elsewhere", async () => {
+  it("a block for an adapter's folder that sets no restricted-* rule leaves the lists whole", async () => {
     expect(
       await coverageViolations(
         scratchConfig(
