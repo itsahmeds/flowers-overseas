@@ -63,5 +63,25 @@ here.
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
+PR [#118](https://github.com/itsahmeds/flowers-overseas/pull/118).
+- **The rule:** `fo/no-float-money` has AC-58's five clauses: money words, whole-number endings, division, decimal factors, and text-to-number.
+- **Unit tests:** `tests/unit/no-float-money.test.ts` has 122 cases. They include every T-62 Invalid and Valid row exactly as listed, plus one block per clause.
+- **Mutation check:** I broke each of the 12 new branches, and each time the T-62 case went red.
+- **Real code:** `pnpm lint` on the real tree flagged only `listing.ts` L1117 and `seed/check.ts` L2437, and both are fixed. The `listing.ts` fix is a `<`/`>` comparison rather than a deletion; see Escalations (TS2365, `number | bigint`).
+- **Fixture:** `float-money-valid.ts` L9 now formats a decimal string, under the widened fence.
+- **What lint cannot see:** values — a rate in a variable, money under a name that is not a money word, and plural names. These are handed to TASK-163's `Minor` type.
+- **Gates:** no expensive gate was run locally.
+
+`pnpm gates:cheap` (private `TMPDIR`) on `7bf3318`, which is also the rebased head. "Tree DIRTY" is the untracked `node_modules` symlink:
+
+```
+gates:cheap · 7bf3318d7ecff445911f1dd139f548b07874d950 · tree DIRTY · base origin/main · 2026-09-29T16:47:17.361Z
+typecheck             exit 0 · 2.1 s
+lint                  exit 0 · 10.7 s
+format:check          exit 0 · 8.3 s
+i18n:check            exit 0 · 0.4 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 21.0 s · changed 27 + map 0 + always 2 · always run: zod-boundaries, lint-coverage, url-pii
+RESULT: PASS
+```
