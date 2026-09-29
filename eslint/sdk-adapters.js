@@ -8,7 +8,7 @@
  * the SDK list. So `restrictedRules()` is the only place the four `no-restricted-*` rules are
  * configured: it cuts the linted tree into disjoint file groups (each object's `ignores` are the
  * groups more specific than it) and gives each group the merged entries of AC-56 and AC-57.
- * AC-59 (TASK-163) adds its `as Minor` entry here. `tests/unit/lint-coverage.test.ts` fails when
+ * AC-59 (TASK-163) adds its `as Minor` entries here. `tests/unit/lint-coverage.test.ts` fails when
  * an entry is missing from the options ESLint resolves for a file of its group.
  *
  * ## The two tables
@@ -25,6 +25,13 @@
  * (also by a computed name), and importing `console`/`node:console` or `stdout`/`stderr` from
  * `process`/`node:process`. They are off in `SIDE_DOOR_FILES` only. Still passing, said plainly:
  * `const p = process; p.stdout.write(…)`, and a name assembled at run time.
+ *
+ * `MINOR_CASTS` are AC-59's entries (§13 Q19): `as Minor` and `<Minor>x`, anywhere in the cast's
+ * type (`as unknown as Minor`, `as Minor | null`, `as { amountMinor: Minor }`, `as catalog.Minor`),
+ * and a hand-made brand (`as number & z.$brand<"Minor">`). They apply on every root, `tests/`
+ * included, and are off in `MINOR_CAST_FILES` only: `toMinor()` is the one cast. Still passing,
+ * said plainly: a type alias of `Minor` (`type M = Minor; x as M`), a generic that casts for its
+ * caller, and an `any`.
  *
  * `root` is repo-relative, with a trailing `/` when set: the real config passes `""`, the fixture
  * config `"tests/fixtures/lint/"`, the way `moduleBoundaryZones()` takes its `srcRoot`.
@@ -100,6 +107,9 @@ export const FIXTURE_MIRROR_ROOT = "tests/fixtures/lint/";
 /** The only files in `src/` where AC-56's side doors are open (AC-52's "allowed off" cell). */
 export const SIDE_DOOR_FILES = ["src/lib/logger.ts", "src/lib/step-summary.ts"];
 
+/** The only file where `as Minor` is allowed (AC-52's "allowed off" cell for AC-59). */
+export const MINOR_CAST_FILES = ["src/modules/catalog/pricing/money.ts"];
+
 const LINTED = ["js", "jsx", "mjs", "cjs", "ts", "tsx", "mts", "cts"];
 
 const SIDE_DOOR_MESSAGE =
@@ -113,6 +123,31 @@ const sdkMessage = (/** @type {SdkAdapter} */ row) =>
  * @param {string} regex
  */
 const selectorRegex = (regex) => regex.replaceAll("/", "\\u002F");
+
+const MINOR_CAST_MESSAGE =
+  "`as Minor` is allowed only in src/modules/catalog/pricing/money.ts: make a `Minor` with `toMinor()` or `MinorUnitsSchema`, which refuse a non-integer (spec 001 AC-59).";
+
+/** A type reference to `name`, bare or qualified (`Minor`, `catalog.Minor`). */
+const typeRef = (/** @type {string} */ name) =>
+  `TSTypeReference:matches([typeName.name='${name}'], [typeName.right.name='${name}'])`;
+
+/** The type of an `as` or `<T>` cast, when it is `ref` or contains it. */
+const castTo = (/** @type {string} */ ref) =>
+  `:matches(TSAsExpression, TSTypeAssertion) > .typeAnnotation:matches(${ref}, :has(${ref}))`;
+
+/** AC-59's entries for `no-restricted-syntax`. */
+export const MINOR_CASTS = [
+  {
+    id: "AC-59 as Minor",
+    selector: castTo(typeRef("Minor")),
+    message: MINOR_CAST_MESSAGE,
+  },
+  {
+    id: "AC-59 as $brand",
+    selector: castTo(typeRef("$brand")),
+    message: MINOR_CAST_MESSAGE,
+  },
+];
 
 /** `x as T`, `<T>x`, `x!` and `x satisfies T`: the wrappers that hide an identifier from a rule. */
 const TS_WRAPPER =
@@ -227,8 +262,9 @@ function sdkEntries(/** @type {readonly SdkAdapter[]} */ rows) {
 
 /**
  * The merged entries for one file group, with each entry's `id`. `sideDoors` says whether AC-56
- * applies; `sdks` are the adapter rows whose packages the group may not import.
- * @param {{ sideDoors: boolean, sdks: readonly SdkAdapter[] }} group
+ * applies; `sdks` are the adapter rows whose packages the group may not import; `minorCasts`
+ * whether AC-59 does.
+ * @param {{ sideDoors: boolean, sdks: readonly SdkAdapter[], minorCasts: boolean }} group
  */
 export function restrictedEntries(group) {
   const sdk = sdkEntries(group.sdks);
@@ -239,6 +275,7 @@ export function restrictedEntries(group) {
     "no-restricted-syntax": [
       ...(doors?.["no-restricted-syntax"] ?? []),
       ...sdk.syntax,
+      ...(group.minorCasts ? MINOR_CASTS : []),
     ],
     "no-restricted-imports": {
       paths: doors?.["no-restricted-imports"].paths ?? [],
@@ -285,9 +322,9 @@ const globsUnder = (/** @type {string} */ dir) =>
 
 /**
  * The file groups of the linted tree, most general first, each disjoint from the others:
- * everything; `src/`; the side-door files; each adapter's files, split into their `src/` and
- * other halves; and `tests/**`, which gets no group because every package is allowed there and
- * AC-56 is a `src/` rule.
+ * everything; `src/`; the side-door files; `money.ts`, where AC-59's cast is allowed; each
+ * adapter's files, split into their `src/` and other halves; and `tests/**`, where every package
+ * is allowed and AC-56 does not apply, but AC-59 does.
  * @param {{ root?: string }} [options]
  */
 export function restrictedGroups(options = {}) {
@@ -307,6 +344,7 @@ export function restrictedGroups(options = {}) {
         ignores: [],
         sideDoors: half.sideDoors,
         sdks: others,
+        minorCasts: true,
       }));
   });
   const srcAdapterFiles = SDK_ADAPTERS.flatMap((row) =>
@@ -330,13 +368,19 @@ export function restrictedGroups(options = {}) {
       ].map(at),
       sideDoors: false,
       sdks: SDK_ADAPTERS,
+      minorCasts: true,
     },
     {
       name: "fo/restricted/src",
       files: globsUnder(at("src/")),
-      ignores: [...SIDE_DOOR_FILES, ...srcAdapterFiles].map(at),
+      ignores: [
+        ...SIDE_DOOR_FILES,
+        ...MINOR_CAST_FILES,
+        ...srcAdapterFiles,
+      ].map(at),
       sideDoors: true,
       sdks: SDK_ADAPTERS,
+      minorCasts: true,
     },
     {
       name: "fo/restricted/side-door-files",
@@ -344,8 +388,25 @@ export function restrictedGroups(options = {}) {
       ignores: [],
       sideDoors: false,
       sdks: SDK_ADAPTERS,
+      minorCasts: true,
+    },
+    {
+      name: "fo/restricted/minor-cast-files",
+      files: MINOR_CAST_FILES.map(at),
+      ignores: [],
+      sideDoors: true,
+      sdks: SDK_ADAPTERS,
+      minorCasts: false,
     },
     ...adapterGroups,
+    {
+      name: "fo/restricted/tests",
+      files: globsUnder(at("tests/")),
+      ignores: SDK_LOCKED_AGAIN_IN.map(at),
+      sideDoors: false,
+      sdks: [],
+      minorCasts: true,
+    },
   ];
 }
 

@@ -15,6 +15,7 @@
  *  3. The real `eslint.config.mjs` rejects `as Minor` (and `<Minor>x`, and a forged brand) on every
  *     root but `money.ts`, and `@ts-expect-error` everywhere but `tests/`.
  */
+import { ESLint } from "eslint";
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -104,4 +105,93 @@ describe("the brand, through the compiler (T-63)", () => {
       Object.fromEntries([...reds].map(([line, code]) => [line, [code]])),
     );
   }, 120_000);
+});
+
+const LINT_ROOTS = [
+  "src/modules/geo/x.ts",
+  "src/modules/catalog/pricing/resolve.ts",
+  "src/config/catalogue/x.ts",
+  "scripts/x.ts",
+  "seed/x.ts",
+  "db/x.ts",
+  "tests/unit/x.test.ts",
+  "x.config.ts",
+];
+const MONEY_TS = "src/modules/catalog/pricing/money.ts";
+
+const eslint = new ESLint({ cwd: repoRoot });
+
+/** The lines ESLint reports the `as Minor` ban on, for `code` at `file`. */
+async function minorCastLines(code: string, file: string): Promise<number[]> {
+  const [result] = await eslint.lintText(code, {
+    filePath: resolve(repoRoot, file),
+  });
+  return (result?.messages ?? [])
+    .filter(
+      (message) =>
+        message.ruleId === "no-restricted-syntax" &&
+        message.message.includes("AC-59"),
+    )
+    .map((message) => message.line);
+}
+
+const PRELUDE = [
+  'import type { z } from "zod";',
+  'import type * as catalog from "@/modules/catalog/types";',
+  'import type { Minor } from "@/modules/catalog/types";',
+  "declare const x: number;",
+  "",
+].join("\n");
+const AT = PRELUDE.split("\n").length;
+
+describe("lint rejects `as Minor` outside money.ts (AC-59, AC-52's row)", () => {
+  it.each([
+    ["x as Minor", "export const m = x as Minor;"],
+    ["<Minor>x", "export const m = <Minor>x;"],
+    ["x as unknown as Minor", "export const m = x as unknown as Minor;"],
+    ["x as catalog.Minor", "export const m = x as catalog.Minor;"],
+    ["x as Minor | null", "export const m = x as Minor | null;"],
+    [
+      "an object cast to a Minor field",
+      "export const m = { amountMinor: x } as { amountMinor: Minor };",
+    ],
+    ["a forged brand", 'export const m = x as number & z.$brand<"Minor">;'],
+    [
+      "a forged brand, qualified",
+      'export const m = x as number & z.core.$brand<"Minor">;',
+    ],
+  ])("%s is red on every root", async (_label, line) => {
+    for (const file of LINT_ROOTS) {
+      expect(await minorCastLines(PRELUDE + line, file), file).toEqual([AT]);
+    }
+  });
+
+  it.each([
+    ["x as number", "export const m = x as number;"],
+    ["a type named like it", "export const m = x as MinorThing;"],
+    ["an annotation", "export const m: Minor | null = null;"],
+    ["a parameter", "export const f = (m: Minor): number => m;"],
+  ])("%s is not", async (_label, line) => {
+    expect(
+      await minorCastLines(
+        `${PRELUDE}type MinorThing = number;\n${line}`,
+        "src/modules/geo/x.ts",
+      ),
+    ).toEqual([]);
+  });
+
+  it("is allowed in money.ts, where toMinor() makes the one Minor", async () => {
+    expect(
+      await minorCastLines(`${PRELUDE}export const m = x as Minor;`, MONEY_TS),
+    ).toEqual([]);
+  });
+
+  it("the real money.ts casts once, in toMinor(), which the ban would catch anywhere else", async () => {
+    const source = readFileSync(resolve(repoRoot, MONEY_TS), "utf8");
+    const lines = await minorCastLines(source, "src/modules/geo/money.ts");
+    expect(lines).toHaveLength(1);
+    expect(source.split("\n")[(lines[0] ?? 0) - 1]?.trim()).toBe(
+      "return n as Minor;",
+    );
+  });
 });
