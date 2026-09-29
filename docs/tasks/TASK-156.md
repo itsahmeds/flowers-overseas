@@ -23,18 +23,32 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 - `release:rollback --to` must be a commit production has already run successfully, or the previous release note's SHA, never just any ancestor; add that case to T-37.
 - T-40 needs allowed branch names that contain `release` (e.g. `task/TASK-156-release-promote`) and deny rows for `--mirror`, `--delete release` and `+sha:release` (landed in A3 via PR 104).
 - T-43 is the rollback rehearsal with the founder, recorded in `TASKS.md`.
-- Make the `CLAUDE.md` edits A3 owes.
+- ~~Make the `CLAUDE.md` edits A3 owes.~~ Dropped by the founder, 2026-09-29 (see below).
 
 One dated bullet per `/review`, newest last.
 
-- **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From `/review 115` (FAIL) and `/break 115` (HOLES), round 1, 2026-09-29, on `c6a5f67`:** close
+  holes 1-7 and review change 2 in one round, each with a row seen red; reword of `42e153e` waits
+  on the founder (no history rewrite); log the suggested items in `## Result` as not done.
 - **From `/break 108` (2026-09-28):** you wait for TASK-158, because both edit `package.json` (your `release:*` scripts, its lint flags).
+- **From the founder (2026-09-29):** spec 040 A3's owed `CLAUDE.md` line and its W-n are dropped (`docs/decisions-log.md`, 2026-09-29); do not edit `CLAUDE.md` or `docs/framework/why.md`. The release mechanism is unchanged.
 
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- **2026-09-29 — A3's owed `CLAUDE.md` line and its `W-n`** ("Production deploys only from
+  `release`, which only `pnpm release:promote` moves…", spec 040 §14 A3, last paragraph; and the
+  carry-forward "Make the `CLAUDE.md` edits A3 owes"). To: the founder, via the orchestrator.
+  **Answered 2026-09-29: dropped.** No kernel line and no `W-n` are written; `CLAUDE.md` and
+  `docs/framework/why.md` are not touched by this task. The mechanism (the three commands and the
+  guard rules) stays.
+- **2026-09-29 — `commitlint` red on `42e153e` (`wip(release): …`).** To: the orchestrator.
+  Fix: reword that one commit, for example to `feat(release): release commands and their
+  integration tests (TASK-156)`, force-push with a lease, then toggle `ci:full`. The finisher's
+  reword was refused by the permission classifier (history rewrite), and the branch was restored
+  to `c6a5f67`. The reword leaves the tree unchanged; husky's `tsc` fails on that intermediate
+  commit, so the amend needs `--no-verify`. **Open.**
 
 ## Progress
 
@@ -42,11 +56,91 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-09-29 — started: row `in_progress`, kernel-line drop recorded under Escalations. Next: the
+  T-36/T-37/T-38 integration tests (temporary bare repo) and T-40 guard rows, red first.
+- 2026-09-29 — `scripts/release.ts` + `src/lib/release.ts` + the deployments query in
+  `src/lib/railway.ts`; T-36/T-37/T-38 green (37 cases), each brief mutation seen red (ancestor
+  check, lease, `--expect` check, any-ancestor). T-40 rows written in `bash-guard.test.sh`, red
+  (140 failing) — next: the push/command rules in `bash_guard.py`, then runbook, plan/08, rebase.
+- 2026-09-29 — finisher: AC-40 rules in `bash_guard.py` (`analyse_pushes`, `release_command_denial`);
+  `bash-guard.test.sh` 477/477 green; each rule seen red with it removed (release rule 109, `--all`
+  16, whole-refspec parse 64 with 0 allow rows red, substring match 20 allow rows red, HEAD 24,
+  main 13, commands 16, refs/heads 32, `+` 14, glob 8, `cd` 1, `-C` 2). `release:*` scripts added
+  to `package.json` (missing from `06219c0`). Next: runbook, plan/08, gates, rebase.
+- 2026-09-29 — runbook hosting section (2 a.m. version (a)(b)(c), steps 1 and 2) and the plan/08 §6
+  pointer to A3. Next: `codebase:map`, gates:cheap, rebase, ready, `ci:full`.
+- 2026-09-29 — rebased on `origin/main` (TASKS.md: main's TASK-154/155 rows kept, this row kept);
+  map regenerated; prettier on the release files and README rows for the three scripts (both
+  forced by gates). gates:cheap PASS at `f848d93`. Next: ready, `ci:full`, CI.
+- 2026-09-29 — ready, `ci:full`. CI run 36585126207 on `c6a5f67`: every job green except
+  `commitlint`, which rejects `42e153e` (`wip(release): …`, from the earlier agent; `wip` is not
+  an allowed type). Rewording it means a history rewrite and a force-push, which the permission
+  classifier refused here. Left for the orchestrator (see Escalations).
+- 2026-09-29 — round 1 fixes: guard holes 1-4 (`heads/`, `--git-dir`/`--work-tree`/`GIT_DIR`
+  deny, `-c alias.*=push`, the two commands under `pnpm -C`/`--dir`/`--filter`/`exec`/`npx`/
+  `corepack`/`node --import`), 597/597; release holes 5-7 (rebuild of another commit, promoting
+  note marked HALTED, staging note with READY), 40/40; runbook writes a new note. Merged
+  `origin/main` (ed8c359), map regenerated. Next: gates, `ci:full`.
+- 2026-09-29 — round 2 (`/break 115` HOLES on `644e83e`): hole 8, a HEAD/no-refspec push is denied
+  when its branch cannot be read before the line runs; hole 6, `ROLLED BACK <sha>` counts as
+  promoted; the rollback note takes a `-rollback` suffix. Guard 687/687, release 41/41.
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
+PR https://github.com/itsahmeds/flowers-overseas/pull/115. `pnpm release:status`,
+`release:promote` and `release:rollback` (`scripts/release.ts`, `src/lib/release.ts`, the
+deployments query in `src/lib/railway.ts`, three `package.json` scripts with README rows); the shell
+guard's AC-40 rules in `.claude/hooks/bash_guard.py` (`analyse_pushes`, `release_command_denial`);
+the hosting section of `docs/runbooks/rollback.md` (the 2 a.m. version (a)(b)(c), then steps 1 and
+2); one A3 pointer in `plan/08` §6. Tests: integration T-36/T-37/T-38 in
+`tests/integration/release-{status,promote,rollback}.test.ts` (temporary bare repos), shell T-40 in
+`tests/dev-os/bash-guard.test.sh` (687/687 after round 2). Each AC-40 rule was removed in turn and its rows went
+red; removing the destination parse turned 64 deny rows red and no allow row. **T-43**, the
+rollback rehearsal with the founder, is owed until production `web` exists (TASK-104). It has not
+been run. No expensive gate was run locally.
 
-_Pending._
+**Round 1 (`/review 115` FAIL, `/break 115` HOLES on `c6a5f67`).** Holes 1-7 and review
+change 2 are closed, each with rows seen red with the fix removed:
+- guard (597/597): `heads/` strip 22 red; `--git-dir`/`--work-tree` 12; `GIT_DIR=` prefix 12;
+  `export GIT_DIR` 8; unknown-branch deny 32; `-c alias.*=push` 20; script named anywhere 12;
+  runners widened 6.
+- release (40/40): the rebuild-of-another-commit case, red with `fact.commit === sha` removed;
+  the staging case (READY line, dated after the production note), red with the environment
+  filter removed; the promoting note marked HALTED, red with the PROMOTED exception removed; a
+  note that halted before promoting, red with the halted filter removed.
+- `docs/runbooks/rollback.md`: a rollback writes a new note and never edits the promoting one;
+  (a)1 accepts `PROMOTED` or `ROLLED BACK`; step 2 names `cd ~/dev/flowers-overseas`.
+
+**Round 2 (`/break 115` HOLES on `644e83e`).** Hole 8: a push to HEAD or with no refspec is
+denied from anyone when its branch cannot be read before the line runs. Rows went red with each
+clause removed: any earlier branch mover 36; `checkout` 8, `switch` 8, `clone` 4, `worktree add`
+4, `branch -f/-m/-M` 8, `update-ref` 4, `symbolic-ref` 4; `env -C` 8; no readable branch
+(including a directory not there yet) 16. The old row "outside any checkout … allowed" is now a
+deny row, as the fix asks. Named-branch pushes and `release:status` stay allowed. Hole 6: a
+`ROLLED BACK <sha>` visit-2 line counts as a promotion; the new case goes red with that clause
+removed. The runbook's rollback note takes a `-rollback` file-name suffix. `--config-env=alias.*`
+is named in the guard header as not caught.
+
+**Logged, not done (suggested by `/break 115`, outside this round):** the newest-note sort in
+`findPromotingNote` has no test; neither does the `--to` = `<bad-sha>` refusal; the guard's
+`-o`/`--push-option`/`--repo` skipping is unpinned; `gh api -X PATCH …/git/refs/heads/release`
+and refspecs fed by `xargs git push` move the branch, outside AC-40's "git push" wording (now
+in the guard's header).
+
+**Open:** `commitlint` fails on `42e153e` (`wip(release): …`) until the founder decides on the
+reword.
+
+`pnpm gates:cheap` at `aa7503f` (after round 2), with a private `TMPDIR` (a concurrent agent's
+dev-os temp dirs in the shared `$TMPDIR` fail `dev-os.test.ts`'s leftover check):
+
+```
+gates:cheap · aa7503f988c462f4edafbb49bbdac763e8f70b17 · tree clean · base origin/main · 2026-09-29T16:23:41.824Z
+typecheck             exit 0 · 1.9 s
+lint                  exit 0 · 9.2 s
+format:check          exit 0 · 7.7 s
+i18n:check            exit 0 · 0.3 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 156.0 s · changed 205 + map 0 + always 0 · always run: zod-boundaries, lint-coverage
+RESULT: PASS
+```

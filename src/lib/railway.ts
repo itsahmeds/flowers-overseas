@@ -556,3 +556,175 @@ export function compareDeployTriggers(
       ),
   };
 }
+
+/*
+ * ---------------------------------------------------------------------------------------------
+ * Production deployments (spec 040 §14 A3, AC-35, AC-39, T-37 / T-38; TASK-156).
+ *
+ * `release:status` asks whether a production deployment of the `release` commit is in progress,
+ * and `release:rollback` route (a) whether a commit ran in production, successfully and from
+ * `release`. Both read the `deployments` query of the public API, whose list fields Railway
+ * documents as `id`, `status`, `createdAt`, `url`, `staticUrl`, with `meta` on a deployment and
+ * the status values listed below (docs.railway.com, *Manage deployments*).
+ *
+ * **What is not documented, and is therefore never guessed:** the contents of `meta`. The commit
+ * is read from `meta.commitHash` and the source branch from `meta.branch`; when either is absent
+ * or not a string the fact is `undefined`. A deployment with no commit matches no commit, and one
+ * with no branch is never accepted as "made from `release`" (AC-39: "a missing value refuses
+ * rather than guesses").
+ * ---------------------------------------------------------------------------------------------
+ */
+
+/** The public API's endpoint. */
+export const RAILWAY_API_URL = "https://backboard.railway.com/graphql/v2";
+
+/** The environment and service whose deployments AC-35 and AC-39 read. */
+export const PRODUCTION_ENVIRONMENT_NAME = "production";
+
+/** The one status that says a deployment ran successfully. */
+export const DEPLOYMENT_SUCCESS = "SUCCESS";
+
+/**
+ * Statuses of a deployment that has not finished yet: queued, waiting for approval (or for CI),
+ * building, deploying. While one of these names the `release` commit, `release:status` prints
+ * `deploying <sha>` instead of failing (AC-35). An undocumented status is not in this list.
+ */
+export const DEPLOYMENT_IN_PROGRESS: readonly string[] = [
+  "QUEUED",
+  "WAITING",
+  "BUILDING",
+  "DEPLOYING",
+];
+
+/** Resolves the production environment's id and its services' ids by name. */
+export const RAILWAY_SERVICES_QUERY = `query ProductionServices($projectId: String!) {
+  project(id: $projectId) {
+    environments {
+      edges {
+        node {
+          id
+          name
+          serviceInstances {
+            edges {
+              node {
+                serviceId
+                serviceName
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}`;
+
+export const railwayServicesResponseSchema = z.object({
+  data: z.object({
+    project: z.object({
+      environments: z.object({
+        edges: z.array(
+          z.object({
+            node: z.object({
+              id: z.string(),
+              name: z.string(),
+              serviceInstances: z.object({
+                edges: z.array(
+                  z.object({
+                    node: z.object({
+                      serviceId: z.string(),
+                      serviceName: z.string(),
+                    }),
+                  }),
+                ),
+              }),
+            }),
+          }),
+        ),
+      }),
+    }),
+  }),
+});
+export type RailwayServicesResponse = z.infer<
+  typeof railwayServicesResponseSchema
+>;
+
+/** The ids the deployments query needs, or `undefined` when production has no such service. */
+export function findProductionService(
+  response: RailwayServicesResponse,
+  serviceName: string,
+): { environmentId: string; serviceId: string } | undefined {
+  const environment = response.data.project.environments.edges
+    .map((edge) => edge.node)
+    .find((node) => node.name === PRODUCTION_ENVIRONMENT_NAME);
+  const service = environment?.serviceInstances.edges
+    .map((edge) => edge.node)
+    .find((node) => node.serviceName === serviceName);
+  return environment === undefined || service === undefined
+    ? undefined
+    : { environmentId: environment.id, serviceId: service.serviceId };
+}
+
+/** How many deployments one call reads; the newest come first. */
+export const DEPLOYMENTS_PAGE = 100;
+
+export const RAILWAY_DEPLOYMENTS_QUERY = `query Deployments($input: DeploymentListInput!, $first: Int) {
+  deployments(input: $input, first: $first) {
+    edges {
+      node {
+        id
+        status
+        createdAt
+        meta
+      }
+    }
+  }
+}`;
+
+/** `status` is a plain string, so an unknown value is carried (and never counted), not rejected. */
+export const railwayDeploymentsResponseSchema = z.object({
+  data: z.object({
+    deployments: z.object({
+      edges: z.array(
+        z.object({
+          node: z.object({
+            id: z.string(),
+            status: z.string(),
+            createdAt: z.string().nullable().optional(),
+            meta: z.record(z.string(), z.unknown()).nullable().optional(),
+          }),
+        }),
+      ),
+    }),
+  }),
+});
+export type RailwayDeploymentsResponse = z.infer<
+  typeof railwayDeploymentsResponseSchema
+>;
+
+/** What the release commands read off one deployment. `undefined` means Railway did not say. */
+export interface DeploymentFact {
+  readonly id: string;
+  readonly status: string;
+  readonly commit: string | undefined;
+  readonly branch: string | undefined;
+}
+
+const metaString = (
+  meta: Record<string, unknown> | null | undefined,
+  key: string,
+): string | undefined => {
+  const value = meta?.[key];
+  return typeof value === "string" && value !== "" ? value : undefined;
+};
+
+/** The facts of every listed deployment, in the order Railway returned them. */
+export function deploymentFacts(
+  response: RailwayDeploymentsResponse,
+): DeploymentFact[] {
+  return response.data.deployments.edges.map(({ node }) => ({
+    id: node.id,
+    status: node.status,
+    commit: metaString(node.meta, "commitHash")?.toLowerCase(),
+    branch: metaString(node.meta, "branch"),
+  }));
+}

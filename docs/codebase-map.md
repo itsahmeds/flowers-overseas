@@ -115,6 +115,7 @@ task actually touches.
 | `lint-fixtures.ts` | `lint:fixtures` | `pnpm lint:fixtures` (spec 001 AC-4 / AC-5, TASK-003) |
 | `pr-policy.ts` | `pr-policy` | PR policy (spec 001 §2 "CI", AC-19 / T-20, TASK-002) |
 | `railway-check.ts` | `railway:check` | `pnpm railway:check [--env <name>]` — the Railway drift gate (spec 040 §5.3,… |
+| `release.ts` | `release:status` | `pnpm release:status`, `pnpm release:promote` and `pnpm release:rollback` — the… |
 | `seo/brotli-origin.ts` | `lighthouse:origin` | `pnpm lighthouse:origin` — a Brotli reverse proxy in front of `next start`… |
 | `seo/generate-hreflang-fixtures.ts` | — | `node scripts/seo/generate-hreflang-fixtures.ts [--write]` (spec 003 §6… |
 | `seo/generate-sitemap-fixtures.ts` | — | The committed sitemap fixtures, generated from the real builders (spec 007 §2… |
@@ -133,13 +134,13 @@ task actually touches.
 | Layer | Files |
 |---|---|
 | `tests/unit/` | 209 |
-| `tests/integration/` | 6 |
+| `tests/integration/` | 9 |
 | `tests/contract/` | 6 |
 | `tests/e2e/` | 32 |
 | `tests/a11y/` | 14 |
 | `tests/visual/` | 15 |
 | `tests/dev-os/` | 1 |
-| `tests/fixtures/` | 235 |
+| `tests/fixtures/` | 255 |
 | `tests/msw/` | 3 |
 
 ## Where does X live?

@@ -1,4 +1,5 @@
-"""PreToolUse guard for the Bash tool (spec 001 §14 A19 AC-37, AC-38, AC-39, AC-41; TASK-150/151).
+"""PreToolUse guard for the Bash tool (spec 001 §14 A19 AC-37, AC-38, AC-39, AC-41; TASK-150/151;
+spec 040 §14 A3 AC-40, TASK-156).
 
 Run by `.claude/hooks/bash-guard.sh` with the hook payload on stdin. It splits
 `tool_input.command` into simple commands and denies, with the rule, its W-n and the
@@ -11,6 +12,18 @@ alternative:
   * `gh workflow run` naming ci / ci.yml / .github/workflows/ci.yml, and `gh api` on
     `…/workflows/ci.yml/dispatches` (W-4);
   * `build-slot.sh release --force` from inside a subagent (the payload carries `agent_id`);
+  * from anyone, a `git push` whose destination is `release` (spec 040 AC-40): per refspec after
+    the remote, the part after its last `:` with a leading `+`, then `refs/heads/` or `heads/`,
+    removed; `HEAD`, `@` or no refspec is the current branch of the command's directory (`cd`,
+    `git -C` followed), and is denied outright when that branch cannot be read before the line
+    runs: `--git-dir`, `--work-tree`, a `GIT_DIR=`/`GIT_WORK_TREE=` prefix or earlier `export`;
+    an earlier checkout/switch/clone/worktree add/branch -f -m -M/update-ref/symbolic-ref, or a
+    rebase given a branch;
+    `env -C`; a directory that does not exist yet; or no current branch; a delete of
+    `release`; `--all`, `--branches` and `--mirror` always; and any `git -c alias.<x>=…push…`.
+    Inside a subagent, the same reading for `main`, and `release:promote`/`release:rollback`
+    (the script named anywhere in a pnpm/npm/yarn/bun/corepack/npx call, or
+    `scripts/release.ts promote|rollback` under any runner); `release:status` is allowed;
   * with no active task for the target's worktree, a shell write into application code:
     redirections, `tee`, `sed -i`, `perl -i`, the destination of `cp`/`mv`/`install`/`ln`, the
     source of `mv`, and `rm`/`touch`/`truncate` — classified by `guarded_paths.write_denial`,
@@ -24,12 +37,19 @@ What it does not catch (the hooks are a guardrail against habit, not a sandbox):
 `python -c`, `node -e`, `git apply`, `git checkout -- <path>`, `dd of=`, `mkdir`, and command
 strings assembled at run time still write into `src/`; a PID passed through a variable
 (`p=$(pgrep -f next); kill $p`) still reaches `kill`; a redirection target built from an unset
-variable or a substitution is not resolved; `cd` inside a subshell is treated as if it leaked.
+variable or a substitution is not resolved; `cd` inside a subshell is treated as if it leaked;
+a push destination held in a variable or a substitution, a `push.default`/`remote.*.push`
+setting that maps the current branch elsewhere, an alias from a config file or from
+GIT_CONFIG_PARAMETERS/GIT_CONFIG_COUNT or `--config-env=alias.<x>=<var>`, a branch switched by
+writing `.git/HEAD` directly, refspecs that `xargs` feeds to git push, a push run by a
+script, and a branch
+moved without git push (`gh api -X PATCH …/git/refs/heads/release`) are not read.
 
 Fails open: a command it cannot split (an unbalanced quote, a heredoc with no delimiter), a
 payload that is not JSON, or any internal error is allowed with no output.
 """
 
+import fnmatch
 import json
 import os
 import re
@@ -540,6 +560,10 @@ def rule_denial(cmd, agent_id):
         if "api" in plain:
             if any(re.search(r"workflows/ci\.yml/dispatches", a.text) for a in cmd.args):
                 return W4
+    if agent_id:
+        reason = release_command_denial(cmd)
+        if reason:
+            return reason
     target = None
     if name == "build-slot.sh":
         target = cmd.args
@@ -601,6 +625,266 @@ def analyse_rules(commands, agent_id):
             if reason:
                 return reason
     return None
+
+
+# --- the release branch and main (spec 040 §14 A3, AC-40) ----------------------------------------
+
+RELEASE_PUSH = ("A push whose destination is release is refused, from anyone (spec 040 AC-40: production "
+                "deploys from release, and a hand push skips the READY and lease checks). Instead: "
+                "only `pnpm release:promote` or `release:rollback` moves `release`, run by the orchestrator.")
+RELEASE_CMD = ("release:promote and release:rollback are refused inside a subagent (spec 040 AC-40): "
+               "promotion and rollback of the branch are the orchestrator's. Report the sha in your "
+               "handback; `pnpm release:status` is read-only and allowed.")
+MAIN_PUSH = ("A push whose destination is main is refused inside a subagent (spec 040 AC-40: main "
+             "moves only by a reviewed merge). Instead: push your task branch and open or update its PR.")
+BRANCH_UNKNOWN = ("A push to HEAD, or with no refspec, is refused, from anyone, when the guard cannot "
+                  "read the branch it pushes (spec 040 AC-40: that branch may be release): another "
+                  "repository (`--git-dir`, `--work-tree`, GIT_DIR, GIT_WORK_TREE), a branch switched "
+                  "earlier in the line (checkout, switch, clone, worktree add, branch -f/-m/-M, "
+                  "update-ref, symbolic-ref), `env -C`, a directory that does not exist yet, or no "
+                  "current branch. Instead: name the destination branch, "
+                  "git push origin HEAD:refs/heads/<your-branch>.")
+PUSH_ALIAS = ("A git alias defined on the command line that runs push (`git -c alias.<x>=push …`) is "
+              "refused, from anyone (spec 040 AC-40: the guard reads the destination of git push). "
+              "Instead: run git push itself, with the destination named.")
+
+RELEASE_SCRIPTS = {"release:promote", "release:rollback"}
+PACKAGE_RUNNERS = {"pnpm", "npm", "yarn", "bun", "corepack", "npx", "pnpx", "bunx"}
+SCRIPT_RUNNERS = PACKAGE_RUNNERS | {"node", "tsx", "ts-node", "deno"}
+REPO_ENV = re.compile(r"^GIT_(DIR|WORK_TREE)=")
+PUSH_ARG_OPTS = {"-o", "--push-option", "--repo", "--receive-pack", "--exec"}
+GIT_DIR_ENV = ("GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE", "GIT_COMMON_DIR")
+
+
+def release_command_denial(cmd):
+    """RELEASE_CMD when cmd runs `release:promote`/`release:rollback`: the package script named
+    anywhere in a package runner's arguments (`pnpm -C <dir>`, `--filter`, `corepack pnpm` …), or
+    `scripts/release.ts promote|rollback` under any runner (`node`, `tsx`, `pnpm exec`, `npx` …)."""
+    name = cmd.name
+    texts = [a.text for a in cmd.args]
+    if name in PACKAGE_RUNNERS and any(t in RELEASE_SCRIPTS for t in texts):
+        return RELEASE_CMD
+    if name == "release.ts":
+        return RELEASE_CMD if release_ts_action(texts) else None
+    if name in SCRIPT_RUNNERS:
+        for k, text in enumerate(texts):
+            if os.path.basename(text) == "release.ts":
+                return RELEASE_CMD if release_ts_action(texts[k + 1:]) else None
+    return None
+
+
+def release_ts_action(texts):
+    """True when the first non-option after `release.ts` is promote or rollback."""
+    plain = [t for t in texts if not t.startswith("-")]
+    return bool(plain) and plain[0] in ("promote", "rollback")
+
+
+def git_dirs(args, cwd):
+    """(directory after every -C, the args after the global options, whether --git-dir or
+    --work-tree names another repository, the values of every `-c alias.<x>=<value>`)."""
+    k = 0
+    takes_arg = {"-c", "--git-dir", "--work-tree", "--namespace", "--exec-path", "--super-prefix",
+                 "--config-env"}
+    other_repo = False
+    aliases = []
+    while k < len(args):
+        t = args[k].text
+        if t == "-C" and k + 1 < len(args):
+            cwd = os.path.normpath(os.path.join(cwd, expand(args[k + 1].text)))
+            k += 2
+            continue
+        if t.split("=", 1)[0] in ("--git-dir", "--work-tree"):
+            other_repo = True
+        if t == "-c" and k + 1 < len(args):
+            m = re.match(r"^alias\.[^=]+=(.*)$", args[k + 1].text, re.S)
+            if m:
+                aliases.append(m.group(1))
+        if t in takes_arg:
+            k += 2
+        elif t.startswith("-"):
+            k += 1
+        else:
+            return cwd, args[k:], other_repo, aliases
+    return cwd, [], other_repo, aliases
+
+
+def current_branch(directory):
+    """The branch checked out in directory (unborn included), or None — never a guess."""
+    import subprocess
+    env = {k: v for k, v in os.environ.items() if k not in GIT_DIR_ENV}
+    try:
+        out = subprocess.run(["git", "-C", directory, "symbolic-ref", "--short", "-q", "HEAD"],
+                             capture_output=True, text=True, timeout=3, env=env)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    branch = out.stdout.strip()
+    return branch if out.returncode == 0 and branch else None
+
+
+def branch_name(ref):
+    """A refspec side as git reads a branch: a leading `+`, then `refs/heads/` or `heads/`, removed."""
+    if ref.startswith("+"):
+        ref = ref[1:]
+    for prefix in ("refs/heads/", "heads/"):
+        if ref.startswith(prefix):
+            return ref[len(prefix):]
+    return ref
+
+
+def push_destinations(args, directory):
+    """(destinations, everything, unknown): the branch each refspec writes or deletes; everything
+    for --all/--branches/--mirror. HEAD, `@` or no refspec is the current branch of directory;
+    unknown when directory is None (another repository) and one of them is pushed."""
+    flags = set()
+    positional = []
+    k = 0
+    options_done = False
+    while k < len(args):
+        t = args[k].text
+        if not options_done and t == "--":
+            options_done = True
+        elif not options_done and t.startswith("-") and t != "-":
+            flags.add(t.split("=", 1)[0])
+            if t in PUSH_ARG_OPTS:
+                k += 1
+        else:
+            positional.append(t)
+        k += 1
+    if flags & {"--all", "--branches", "--mirror"}:
+        return [], True, False
+    has_repo = "--repo" in flags
+    refspecs = positional if has_repo else positional[1:]
+    deleting = bool(flags & {"--delete", "-d"})
+    dests = []
+    if not refspecs and not deleting and not flags & {"--tags"}:
+        refspecs = ["HEAD"]
+    for spec in refspecs:
+        # a delete names its ref the same way: `--delete release`, `-d refs/heads/release`, `:release`
+        dest = spec.rsplit(":", 1)[-1] if ":" in spec else spec
+        dest = branch_name(dest)
+        if dest in ("HEAD", "@"):
+            if directory is None:
+                return dests, False, True
+            dest = current_branch(directory)
+            if dest is None:
+                return dests, False, True
+        if dest:
+            dests.append(dest)
+    return dests, False, False
+
+
+def matches(dests, branch):
+    return any(d == branch or ("*" in d and fnmatch.fnmatchcase(branch, d)) for d in dests)
+
+
+def repo_env_prefix(cmd):
+    """True when a GIT_DIR=/GIT_WORK_TREE= assignment precedes the command word."""
+    for w in cmd.words:
+        if os.path.basename(w.text) == cmd.name and not REPO_ENV.match(w.text):
+            return False
+        if REPO_ENV.match(w.text):
+            return True
+    return False
+
+
+BRANCH_MOVERS = {"checkout", "switch", "clone", "update-ref", "symbolic-ref"}
+BRANCH_MOVE_FLAGS = {"-f", "--force", "-m", "-M", "--move"}
+REBASE_ARG_OPTS = {"--onto", "-s", "--strategy", "-X", "--strategy-option", "-x", "--exec"}
+
+
+def rebase_names_branch(texts):
+    """True when `git rebase` is given a branch to check out first: `rebase <upstream> <branch>`
+    or `rebase --root <branch>` (`--onto <x>` and the other valued options skipped)."""
+    positional = []
+    k = 0
+    while k < len(texts):
+        t = texts[k]
+        if t in REBASE_ARG_OPTS:
+            k += 2
+            continue
+        if not t.startswith("-"):
+            positional.append(t)
+        k += 1
+    return len(positional) >= (1 if "--root" in texts else 2)
+
+
+def moves_branch(cmd):
+    """True for a git command after which HEAD may name another branch than the guard read."""
+    if cmd.name != "git":
+        return False
+    sub, rest = git_subcommand(cmd.args)
+    texts = [a.text for a in rest]
+    if sub in BRANCH_MOVERS:
+        return True
+    if sub == "worktree":
+        return texts[:1] == ["add"]
+    if sub == "rebase":
+        return rebase_names_branch(texts)
+    return sub == "branch" and any(t in BRANCH_MOVE_FLAGS for t in texts)
+
+
+def env_chdir(cmd):
+    """True when an `env -C <dir>`/`--chdir` prefix runs the command in another directory."""
+    seen_env = False
+    for w in cmd.words:
+        base = os.path.basename(w.text)
+        if base == "env":
+            seen_env = True
+        elif base == cmd.name:
+            return False
+        elif seen_env and (w.text in ("-C", "--chdir") or w.text.startswith("--chdir=")):
+            return True
+    return False
+
+
+def push_denial(cmd, cwd, agent_id, repo_env=False):
+    if cmd.name != "git":
+        return None
+    directory, rest, other_repo, aliases = git_dirs(cmd.args, cwd)
+    if any(re.search(r"\bpush\b", value) for value in aliases):
+        return PUSH_ALIAS
+    if not rest or rest[0].text != "push":
+        return None
+    if other_repo or repo_env or repo_env_prefix(cmd) or env_chdir(cmd):
+        directory = None
+    dests, everything, unknown = push_destinations(rest[1:], directory)
+    if everything or matches(dests, "release"):
+        return RELEASE_PUSH
+    if unknown:
+        return BRANCH_UNKNOWN
+    if agent_id and matches(dests, "main"):
+        return MAIN_PUSH
+    return None
+
+
+def analyse_pushes(commands, cwd, agent_id, repo_env=None):
+    """(reason or None, cwd after the commands) — `cd` moves the directory HEAD is read in; a
+    GIT_DIR/GIT_WORK_TREE set by an earlier command (`export GIT_DIR=…`), or an earlier command
+    that may switch the branch (`moves_branch`), makes HEAD unknowable for the rest of the line."""
+    repo_env = repo_env if repo_env is not None else [False]
+    for cmd in commands:
+        for nested in cmd.nested:
+            reason, cwd = analyse_pushes(nested, cwd, agent_id, repo_env)
+            if reason:
+                return reason, cwd
+        if (cmd.name in ("export", "declare", "typeset", "readonly")
+                and any(REPO_ENV.match(a.text) for a in cmd.args)) or (
+                not cmd.name and any(REPO_ENV.match(w.text) for w in cmd.words)):
+            repo_env[0] = True
+            continue
+        if moves_branch(cmd):
+            repo_env[0] = True
+            continue
+        if cmd.name in ("cd", "pushd") and not any(a.has_sub for a in cmd.args):
+            ops = operands(cmd.args)
+            dest = expand(ops[0].text) if ops else os.path.expanduser("~")
+            if dest != "-":
+                cwd = os.path.normpath(os.path.join(cwd, dest))
+            continue
+        reason = push_denial(cmd, cwd, agent_id, repo_env[0])
+        if reason:
+            return reason, cwd
+    return None, cwd
 
 
 # --- shell writes (AC-38) -------------------------------------------------------------------------
@@ -746,6 +1030,9 @@ def decide(payload):
     if reason:
         return reason
     cwd = payload.get("cwd") or os.getcwd()
+    reason, _ = analyse_pushes(commands, cwd, payload.get("agent_id"))
+    if reason:
+        return reason
     reason, _ = analyse_writes(commands, cwd, guarded_paths.anchor_dir(cwd))
     return reason
 
