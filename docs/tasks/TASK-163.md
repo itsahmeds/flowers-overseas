@@ -43,7 +43,8 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-09-29: measured first (stop rule): branding the pricing types surfaced 51 type errors, 8 in `src/modules/catalog/pricing/` and 43 in 7 test files, so it fits one PR; no split.
+- 2026-09-29: `Minor`, `toMinor()`, the brand on `src/modules/catalog/schemas.ts`' `MinorUnitsSchema` and the call sites (546a9d7); the `as Minor` ban in the builder (6c7f943); `@ts-expect-error` outside `tests/` (ff21db2); the AC-52 row (6c42373). Next: docs rows, gates, rebase, ready.
 
 ## Result
 
