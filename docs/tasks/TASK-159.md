@@ -56,15 +56,19 @@ What shipped, in one paragraph: the PR, the tests added per layer, the numbers a
 
 PR [#116](https://github.com/itsahmeds/flowers-overseas/pull/116). **AC-53 / T-57:** `tests/unit/zod-boundaries.test.ts` parses every `.ts`/`.tsx` under `src/` with the compiler API and finds the three kinds of raw input; `READERS = [src/lib/consent.ts#readBoundedBody]` and `PARSERS = [src/modules/catalog/params.ts#listingRequest]` live in the test, each with a reason, and a comment exempts nothing. Unit: 22 cases over 14 fixture trees in `tests/fixtures/zod-boundaries/` (T-57's nine red and five green cases, the empty tree, plus the flips: the plant's function added to `READERS`, the escaping `use()` added to `PARSERS`, and the one-call follow switched off, each flipping its case). The real tree is green with 6 raw inputs (2 page `searchParams`, 2 `readBoundedBody` calls, 1 `.json()`, 1 exempt `.text()` inside the reader), so `reminders.ts` and `consentCookie.ts` were not touched. `useSearchParams()` in client components is listed as not covered in the test header and the `plan/12` row. **AC-61 local clause / T-66:** `ALWAYS_TESTS` in `scripts/gates-cheap.ts` runs `zod-boundaries` and `lint-coverage` on every diff and names them on the test gate's line; a missing entry turns the gate red. `gates-cheap.test.ts` has 5 new cases (26 total); removing `lint-coverage` from the list turned 4 red. TASK-160 adds `url-pii` to `ALWAYS_TESTS` and to `EXPECTED_ALWAYS`. **AC-62:** the `plan/12` §2 Validation row. No expensive gate was run locally. Left for someone else: `tests/fixtures/README.md` has no row for `zod-boundaries/` because it is outside this fence.
 
+**Round-1 fixes (`/review` FAIL, `/break` HOLES on `74f6cbf`).** The scan now finds `const { searchParams } = props` in a page or `generateMetadata`, `const { searchParams } = new URL(…)` / `= req.nextUrl` (each followed by an unparsed `searchParams.get`), and, in a `"use server"` file, actions exported as `export { act }`, `export default <arrow>` and `export const x = wrap(async (fd) => …)`. New cases pin `isURLValue` (with its `nextUrl` branch), a method's first argument (`db.save(body)`), `JSON.parse` alone and the `JSON` exclusion in `callsSink`, the one-binding limit, inline `"use server"`, the `generateMetadata`/`generateViewport` matches, `props.searchParams`, and `arrayBuffer`/`blob`. Unit is now 28 cases over 21 fixture trees (new: `page-props`, `url-search`, `server-action-exports`, `inline-server`, `rule-limits`, `parsers-json`). I ran 17 mutations, one at a time, each deleting a detector or loosening a rule. Each one turned exactly one case red. The real tree is unchanged: 6 raw inputs, all parsed or exempt. No `src/` file failed the new rules. The block below is from `69a4e3d`; the only later commit changes this brief.
+
+**Follow-ups, logged and not done:** `export { Page as default }` is not treated as a page default export. `.parse` on any object, `Date.parse` included, counts as a schema parse (a gap in the spec's wording). `req["json"]()` and `.call` are not caught. The `.entries()` step has no fixture. `tests/fixtures/README.md` has no `zod-boundaries/` row (outside this fence).
+
 ```
-gates:cheap · 967ee1f7d231f6b275761ccf9930c82a5bba5a3e · tree clean · base origin/main · 2026-09-28T19:42:30.529Z
-typecheck             exit 0 · 1.8 s
-lint                  exit 0 · 9.3 s
-format:check          exit 0 · 7.4 s
-i18n:check            exit 0 · 0.3 s
+gates:cheap · 69a4e3d6e943964f4893dfec78308e5096c87608 · tree clean · base origin/main · 2026-09-29T14:24:23.628Z
+typecheck             exit 0 · 2.0 s
+lint                  exit 0 · 9.6 s
+format:check          exit 0 · 7.7 s
+i18n:check            exit 0 · 0.4 s
 check:no-db           exit 0 · 0.2 s
 codebase:map --check  exit 0 · 0.2 s
-tests                 exit 0 · 85.6 s · changed 4 + map 0 + always 1 · always run: zod-boundaries, lint-coverage
+tests                 exit 0 · 97.1 s · changed 4 + map 0 + always 1 · always run: zod-boundaries, lint-coverage
 format:check covers: every path except node_modules/ .next/ out/ coverage/ playwright-report/ test-results/ pnpm-lock.yaml next-env.d.ts .claude/ plan/ specs/ docs/ README.md TASKS.md CLAUDE.md /tests/fixtures/lint/ /tests/fixtures/seo/_cases/ /tests/fixtures/i18n/_cases/ /src/modules/geo/content/corpus.generated.ts
 RESULT: PASS
 ```
