@@ -78,16 +78,16 @@ that list anyway: `${sql.raw("status")}`, `${sql.identifier("orders")}`, and `${
 `const T = "orders"`. Logged from `/review 119`: a subquery in SET that names `status` is flagged
 (a false positive on the safe side).
 
-`gates:cheap` at 6e42579 (private `TMPDIR`):
+`gates:cheap` at 7230d2b, after round 1 (private `TMPDIR`):
 
 ```
-gates:cheap · 6e425792c283395a31af140116dbb9086b783d77 · tree clean · base origin/main
-typecheck             exit 0 · 2.1 s
-lint                  exit 0 · 11.1 s
-format:check          exit 0 · 8.5 s
+gates:cheap · 7230d2bce22bfe46da4a024992906212be67c4ed · tree clean · base origin/main
+typecheck             exit 0 · 2.0 s
+lint                  exit 0 · 10.0 s
+format:check          exit 0 · 8.3 s
 i18n:check            exit 0 · 0.4 s
 check:no-db           exit 0 · 0.2 s
 codebase:map --check  exit 0 · 0.2 s
-tests                 exit 0 · 11.7 s · changed 8 + map 0 + always 2 · always run: zod-boundaries, lint-coverage, url-pii
+tests                 exit 0 · 10.5 s · changed 8 + map 0 + always 2 · always run: zod-boundaries, lint-coverage, url-pii
 RESULT: PASS
 ```
