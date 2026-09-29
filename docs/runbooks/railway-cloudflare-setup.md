@@ -183,13 +183,25 @@ repository source is not checked. `RAILWAY_ENVIRONMENT_ID` is **optional**: it e
 check (AC-9), and `--env` needs it. A red run prints one line per difference, such as
 `production · web · triggers on main, declared release`, on stdout, and a verdict on stderr.
 
-**The expected red, until TASK-104.** While production has no `web` service (TASK-104 creates it,
-on `release`), a run with `RAILWAY_ENVIRONMENT_ID` unset exits **1**. Its stdout is exactly the
-`production · <service> · triggers on none, declared release` lines for the production services
-that do not exist. Its stderr starts `railway:check: EXPECTED RED until TASK-104`. That label
-appears only when every failure is a missing production service, production's `web` is one of
-them, and every other check on the run passed. Any other red carries no label, and is a real
-failure. Once TASK-104 has created `web`, every run must exit 0.
+**The expected red, until TASK-104 and TASK-103.** While production has no `web` service
+(TASK-104 creates it, on `release`), or staging has no `worker` service (TASK-103 creates it), a
+run with `RAILWAY_ENVIRONMENT_ID` unset exits **1** (spec 040 AC-42, AC-44). Its stdout is exactly
+the `production · <service> · triggers on none, declared release` lines for the production services
+that do not exist, and `staging · worker · triggers on none, declared main` while staging has no
+`worker`. Its stderr is exactly one of these three lines, depending on which of the two is missing:
+
+```text
+railway:check: EXPECTED RED until TASK-104 creates production `web` on `release` (spec 040 AC-42, T-44): every failure above is a declared production service that does not exist yet. Once production `web` exists, this output is a real failure.
+railway:check: EXPECTED RED until TASK-103 creates staging `worker` (spec 040 AC-44, T-45): every failure above is staging's `worker`, which does not exist yet. Once staging `worker` exists, this output is a real failure.
+railway:check: EXPECTED RED until TASK-104 creates production `web` on `release` and TASK-103 creates staging `worker` (spec 040 AC-42, AC-44, T-44, T-45): every failure above is a declared production service or staging's `worker`, none of which exists yet. Once both exist, this output is a real failure.
+```
+
+The first is for production missing, the second for staging's `worker` missing, and the third for
+both. A missing production service counts only while production's `web` is missing too. A label
+appears only when every failure is one of those cases and every other check on the run passed. Any
+other red carries no label and is a real failure, including a missing staging `web`, a staging
+`worker` that exists with no trigger or on another branch, and a missing production `worker` while
+production `web` exists. Once TASK-104 and TASK-103 have both run, every run must exit 0.
 
 Otherwise every run must exit 0. `railway:check` prints key names and configuration values only; it
 never reads a variable value, which is why it is safe to paste its output into a PR.
@@ -273,16 +285,24 @@ pnpm railway:check; echo "exit $?"
 ```
 
 Today, while production has no `web` service, you should see **exactly** the output under "What
-the checks print today" at the end of this section, and `exit 1`. A red run prints only the lines
-that fail, so seeing no `staging · web` line is right. How to read anything else:
+the checks print today" at the end of this section, and `exit 1`. That output may or may not
+include the `staging · worker · triggers on none, declared main` line: it is there while staging has
+no `worker` (until TASK-103), and either way is right. A red run prints only the lines that fail,
+so seeing no `staging · web` line is right. How to read anything else:
 
 - `exit 2`: the token or the project id is not set in this shell.
 - An error that says not authorised: Railway refused the token. Make a new one in step 2 and
   check the workspace you chose.
 - A `staging · web · …` line: the token cannot see `staging`. Railway reports an environment it
   hides as having no services. Make a new token in step 2.
-- No `EXPECTED RED` line on stderr: the token may not see `production`, because the check gives
-  that label only when production is in Railway's answer. Make a new token in step 2.
+- No `EXPECTED RED` line on stderr: look at stdout first. If it has any line other than the
+  `production · … · triggers on none` lines and the `staging · worker · triggers on none` line of
+  "What the checks print today", that other line is the problem, and a new token will not fix it
+  (except a `staging · web · …` line, above). Stop and paste the output as it is. The missing
+  staging `worker` alone never removes the label: the check labels it (spec 040 AC-44). Only if
+  stdout shows nothing but those lines and stderr still has no label can the token not see
+  `production`, because the check gives that label only when production is in Railway's answer.
+  Then make a new token in step 2.
 
 Once TASK-104 has created production `web`, the same command prints every row, `production ·`
 and `staging ·` lines alike, and `exit 0`.
@@ -387,31 +407,35 @@ It prints exactly `["deletion"]`. `[]` means the ruleset is not active or does n
 ### What the checks print today
 
 While production has no `web` service (until TASK-104), `pnpm railway:check` after F1–F3, with
-`RAILWAY_ENVIRONMENT_ID` unset, exits
-**1**, and that is the expected result. Its output is one line per production service that does
-not exist, and no other line:
+`RAILWAY_ENVIRONMENT_ID` unset, exits **1**, and that is the expected result. Its stdout has one
+line per production service that does not exist, the staging `worker` line while staging has no
+`worker` service (until TASK-103), and no other line:
 
 ```text
 production · web · triggers on none, declared release
 production · worker · triggers on none, declared release
-```
-
-and on stderr, a line starting `railway:check: EXPECTED RED until TASK-104`. (The `worker` line
-is there only while production has no `worker` service at all.) Paste the output into
-`docs/tasks/TASK-157.md`. Once TASK-104 has created `web` on `release`, the same command must
-exit 0; that run is recorded in TASK-104's brief, before the DNS change.
-
-**Also expected: a missing staging `worker`.** If staging has no `worker` service yet (TASK-103
-creates it), the run also prints this line, and that is expected until TASK-103 has run:
-
-```text
 staging · worker · triggers on none, declared main
 ```
 
-For now stderr then says `railway:check failed` and shows **no** EXPECTED RED label. That is
-because the label does not cover this case yet: a spec 040 amendment makes it an expected red,
-and a follow-up task teaches the check to label it. Your clicks are not wrong. Paste the output
-as it is.
+(The production `worker` line is there only while production has no `worker` service at all, and
+the `staging · worker` line only while staging has none.) Its stderr is exactly one line. With the
+`staging · worker` line on stdout, it is:
+
+```text
+railway:check: EXPECTED RED until TASK-104 creates production `web` on `release` and TASK-103 creates staging `worker` (spec 040 AC-42, AC-44, T-44, T-45): every failure above is a declared production service or staging's `worker`, none of which exists yet. Once both exist, this output is a real failure.
+```
+
+Without the `staging · worker` line, it is:
+
+```text
+railway:check: EXPECTED RED until TASK-104 creates production `web` on `release` (spec 040 AC-42, T-44): every failure above is a declared production service that does not exist yet. Once production `web` exists, this output is a real failure.
+```
+
+TASK-164 taught the check to label the missing staging `worker` (spec 040 AC-44), so this run is
+labelled whether or not staging has a `worker` yet. Paste the output into `docs/tasks/TASK-157.md`.
+Once TASK-104 has created `web` on `release`, the same command must exit 0 (TASK-104 runs after
+TASK-103, so staging has its `worker` by then); that run is recorded in TASK-104's brief, before
+the DNS change.
 
 ## Rollback
 
