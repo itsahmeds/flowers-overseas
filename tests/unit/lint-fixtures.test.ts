@@ -249,6 +249,14 @@ describe("pnpm lint:fixtures over the real configs", () => {
       expect(brief(result)).toEqual([
         { ruleId: null, line: 1, severity: 1, noEffect: true },
         { ruleId: null, line: 3, severity: 1, noEffect: true },
+        // AC-56 (TASK-160): `console` is a restricted global in `src/`, so the reference that
+        // `no-console` reports as a call is reported as a use of the global too.
+        {
+          ruleId: "no-restricted-globals",
+          line: 4,
+          severity: 2,
+          noEffect: false,
+        },
         { ruleId: "no-console", line: 4, severity: 2, noEffect: false },
       ]);
     });
@@ -265,6 +273,201 @@ describe("pnpm lint:fixtures over the real configs", () => {
         ),
       ).toEqual(["property-disallowed-list"]);
     });
+  });
+
+  /**
+   * T-60 (spec 001 §14 A20, AC-56; TASK-160): no way to write output that skips the logger. Each
+   * line of `side-doors.ts` is one side door, at a `src/modules/geo/` mirror path; the same bytes
+   * at the `src/lib/logger.ts` and `src/lib/step-summary.ts` mirror paths are clean.
+   */
+  describe("T-60: the logger's side doors are locked in src/", () => {
+    const fixtureLint = (): ESLint =>
+      new ESLint({
+        cwd: repoRoot,
+        ignore: false,
+        overrideConfigFile: resolve(repoRoot, "eslint.config.mjs"),
+      });
+    const lines = async (file: string): Promise<string[]> => {
+      const [result] = await fixtureLint().lintFiles([
+        `tests/fixtures/lint/${file}`,
+      ]);
+      return (result?.messages ?? []).map(
+        (message) => `${String(message.line)}:${message.ruleId ?? "(fatal)"}`,
+      );
+    };
+
+    it("reports each side door on its own line", async () => {
+      expect(await lines("src/modules/geo/side-doors.ts")).toEqual([
+        // import { stdout } from "node:process"
+        "2:no-restricted-imports",
+        // import { Console } from "node:console"
+        "3:no-restricted-imports",
+        // globalThis.console.log(x)
+        "5:no-restricted-properties",
+        // window.console.log(x)
+        "6:no-restricted-properties",
+        // const c = console; c.log(x)
+        "7:no-restricted-globals",
+        // const { log } = console
+        "9:no-restricted-globals",
+        // process.stdout.write(x)
+        "11:no-restricted-properties",
+        // process["stderr"].write(x): the property rule reads the static name, the syntax rule
+        // the computed one
+        "12:no-restricted-properties",
+        "12:no-restricted-syntax",
+      ]);
+    });
+
+    it("leaves the same bytes clean at the logger and step-summary mirror paths", async () => {
+      const text = readFileSync(
+        resolve(repoRoot, "tests/fixtures/lint/src/modules/geo/side-doors.ts"),
+        "utf8",
+      );
+      for (const file of ["src/lib/logger.ts", "src/lib/step-summary.ts"]) {
+        expect(
+          readFileSync(
+            resolve(repoRoot, `tests/fixtures/lint/${file}`),
+            "utf8",
+          ),
+          file,
+        ).toBe(text);
+        expect(await lines(file), file).toEqual([]);
+        expect(rulesFor(file), file).toEqual([]);
+      }
+    });
+
+    it("says where to write instead", async () => {
+      const [result] = await fixtureLint().lintFiles([
+        "tests/fixtures/lint/src/modules/geo/side-doors.ts",
+      ]);
+      for (const message of result?.messages ?? []) {
+        expect(message.message).toContain("src/lib/logger.ts");
+      }
+    });
+
+    it("has no step-summary writer left in the catalogue modules", () => {
+      for (const file of [
+        "src/modules/catalog/listing.ts",
+        "src/modules/catalog/product.ts",
+      ]) {
+        expect(readFileSync(resolve(repoRoot, file), "utf8"), file).not.toMatch(
+          /process\.std(?:out|err)/,
+        );
+      }
+    });
+  });
+
+  /**
+   * T-61 (spec 001 §14 A20, AC-57; TASK-160): SDKs only in their adapters. The audit's plant and
+   * the other import forms go red in the `src/modules/geo/` mirror, naming the adapter; the same
+   * package's lines at each adapter mirror path, and every package in the `tests/` mirror, are
+   * clean.
+   */
+  describe("T-61: SDKs only in their adapters", () => {
+    const fixtureLint = (): ESLint =>
+      new ESLint({
+        cwd: repoRoot,
+        ignore: false,
+        overrideConfigFile: resolve(repoRoot, "eslint.config.mjs"),
+      });
+    const messages = async (file: string) => {
+      const [result] = await fixtureLint().lintFiles([
+        `tests/fixtures/lint/${file}`,
+      ]);
+      return (result?.messages ?? []).map((message) => ({
+        line: message.line,
+        ruleId: message.ruleId,
+        message: message.message,
+      }));
+    };
+
+    it("reports the audit's plant twice, each naming the adapter", async () => {
+      const found = await messages("src/modules/geo/sdk-imports.ts");
+      expect(found.map((m) => `${String(m.line)}:${m.ruleId ?? ""}`)).toEqual([
+        "1:no-restricted-imports",
+        "2:no-restricted-imports",
+      ]);
+      expect(found[0]?.message).toContain("use src/lib/sentry.ts");
+      expect(found[1]?.message).toContain("use src/lib/db.ts");
+    });
+
+    it("reports import(), require(), export * and import type, installed or not", async () => {
+      const found = await messages("src/modules/geo/sdk-other-forms.ts");
+      expect(found.map((m) => `${String(m.line)}:${m.ruleId ?? ""}`)).toEqual([
+        // await import("postgres")
+        "1:no-restricted-syntax",
+        // require("stripe"): Next's own rule reports the require as well
+        "2:@typescript-eslint/no-require-imports",
+        "2:no-restricted-syntax",
+        // export * from "resend"
+        "3:no-restricted-imports",
+        // import type { X } from "@mollie/api-client"
+        "4:no-restricted-imports",
+        // import("drizzle-orm/postgres-js") (§13 Q22)
+        "6:no-restricted-syntax",
+      ]);
+      const restricted = found.filter((m) =>
+        m.ruleId?.startsWith("no-restricted-"),
+      );
+      expect(
+        restricted.map((m) => /use (\S+) \(spec/.exec(m.message)?.[1]),
+      ).toEqual([
+        "src/lib/db.ts",
+        "src/modules/payments/stripe/",
+        "src/modules/notifications/resend/",
+        "src/modules/payments/mollie/",
+        "src/lib/db.ts",
+      ]);
+    });
+
+    it("leaves each adapter's own package clean at its mirror path, and every package in tests/", async () => {
+      for (const file of [
+        "src/lib/sentry.ts",
+        "sentry.server.config.ts",
+        "sentry.edge.config.ts",
+        "instrumentation.ts",
+        "instrumentation-client.ts",
+        "next.config.ts",
+        "src/lib/db.ts",
+        "scripts/db-migrate.ts",
+        "src/modules/payments/stripe/client.ts",
+        "src/modules/payments/mollie/client.ts",
+        "src/modules/notifications/resend/client.ts",
+        "tests/unit/adapters.test.ts",
+      ]) {
+        expect(await messages(file), file).toEqual([]);
+        expect(rulesFor(file), file).toEqual([]);
+      }
+    });
+
+    it("still reports a require() at an adapter path only through Next's own rule", async () => {
+      const [result] = await fixtureLint().lintText(
+        'export const stripe = require("stripe");\n',
+        {
+          filePath: resolve(
+            repoRoot,
+            "tests/fixtures/lint/src/modules/payments/stripe/require.ts",
+          ),
+        },
+      );
+      expect((result?.messages ?? []).map((m) => m.ruleId)).toEqual([
+        "@typescript-eslint/no-require-imports",
+      ]);
+    });
+
+    it("leaves pnpm lint on the real tree clean of every no-restricted-* rule", async () => {
+      const results = await new ESLint({
+        cwd: repoRoot,
+        overrideConfigFile: resolve(repoRoot, "eslint.config.mjs"),
+      }).lintFiles(["."]);
+      const restricted = results.flatMap((result) =>
+        result.messages
+          .filter((m) => m.ruleId?.startsWith("no-restricted-") === true)
+          .map((m) => `${result.filePath}:${String(m.line)}:${m.ruleId ?? ""}`),
+      );
+      expect(restricted).toEqual([]);
+    }, 120_000);
   });
 
   it("keeps the fixture directory out of the main lint run", async () => {
