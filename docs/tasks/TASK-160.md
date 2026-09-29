@@ -57,10 +57,23 @@ here.
 
 - 2026-09-29: AC-54 done (value/msg/stack scan in `logger.ts`, `request.url` in `sentry.ts`; T-58 cases in `logger.test.ts`, `sentry-before-send.test.ts`; boundary, Polish-gap, msg and stack mutations each go red). Next: AC-55.
 - 2026-09-29: AC-55 done (`src/config/url-keys.ts`, listing schema reads it, `tests/unit/url-pii.test.ts` with the checker-based receiver). Next: AC-56/57 lint locks.
+- 2026-09-29: AC-56/57 done (`eslint/sdk-adapters.js` `restrictedRules()`, one object per disjoint file group, real config and fixture mirror; `src/lib/step-summary.ts`; T-60/T-61 fixtures; AC-52 rows and the options check in `lint-coverage.test.ts`). `url-pii` on the always-run list; plan/12 PII and Adapters rows. `gates:cheap` PASS. Next: ready + CI.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR #117. AC-54: `redact()` scans every string value, `msg` and error stacks (`EMAIL_PATTERN`, `PHONE_PATTERN`, `scrubText` in `src/lib/logger.ts`); `beforeSend` scans `request.url` too. AC-55: `src/config/url-keys.ts` (`QUERY_KEYS`), the listing schema reads it, `tests/unit/url-pii.test.ts` with `EXTERNAL_QUERY_KEYS = [src/modules/analytics/ga4.ts#id]` and a type-checker receiver test (name-only mode goes red on the real tree, 8 `Headers`/`Set` calls). AC-56/57: `eslint/sdk-adapters.js`, `src/lib/step-summary.ts`; the two stdout writers moved. Tests added (all unit): logger +31 (T-58), sentry +6 (T-58), url-pii 15 (T-59), lint-fixtures +9 (T-60, T-61), lint-coverage +7 (AC-52 rows, T-56 red cases), gates-cheap updated (always 3). Mutations run and red: each phone boundary, the Polish gap, the `msg` and stack scans, a dropped side-door entry, a broken SDK regex, the dropped `import()` selectors. One existing expectation changed: TASK-158's AC-50 case in `lint-fixtures.test.ts` now also sees `no-restricted-globals` on `console.log` in `src/` (the new lock, not a loosening). TASK-156 (`../fo-wt-156` at 644e83e): `src/lib/release.ts`, `scripts/release.ts`, `src/lib/railway.ts` raise no `no-restricted-*` or `no-console` error under the new rules. No expensive gate run locally.
+
+```
+gates:cheap · e7c6909532771a46aa258b375b16d578fe8272af · tree clean · base origin/main  (the last code commit; later commits touch only this brief and TASKS.md)
+typecheck             exit 0 · 1.9 s
+lint                  exit 0 · 9.9 s
+format:check          exit 0 · 7.7 s
+i18n:check            exit 0 · 0.3 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 91.4 s · changed 80 + map 0 + always 1 · always run: zod-boundaries, lint-coverage, url-pii
+RESULT: PASS
+```
