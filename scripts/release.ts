@@ -106,14 +106,21 @@ function git(ctx: ReleaseContext, args: readonly string[]): Promise<GitResult> {
       { cwd: ctx.cwd, env: ctx.env, maxBuffer: 64 * 1024 * 1024 },
       (error, stdout, stderr) => {
         const code =
-          error === null ? 0 : typeof error.code === "number" ? error.code : 128;
+          error === null
+            ? 0
+            : typeof error.code === "number"
+              ? error.code
+              : 128;
         done({ code, stdout, stderr });
       },
     );
   });
 }
 
-async function gitOk(ctx: ReleaseContext, args: readonly string[]): Promise<string> {
+async function gitOk(
+  ctx: ReleaseContext,
+  args: readonly string[],
+): Promise<string> {
   const result = await git(ctx, args);
   if (result.code !== 0) {
     throw new Error(`git ${args[0] ?? ""} failed: ${firstLine(result.stderr)}`);
@@ -133,7 +140,10 @@ interface RemoteRefs {
 }
 
 /** The remote's own values of `main` and `release`, read now, and their objects fetched. */
-async function readRemote(ctx: ReleaseContext, remote: string): Promise<RemoteRefs> {
+async function readRemote(
+  ctx: ReleaseContext,
+  remote: string,
+): Promise<RemoteRefs> {
   const listing = await gitOk(ctx, [
     "ls-remote",
     remote,
@@ -151,9 +161,13 @@ async function readRemote(ctx: ReleaseContext, remote: string): Promise<RemoteRe
   );
   const main = refs.get(`refs/heads/${MAIN_BRANCH}`);
   const release = refs.get(`refs/heads/${RELEASE_BRANCH}`);
-  const refspecs = [`+refs/heads/${MAIN_BRANCH}:refs/remotes/${remote}/${MAIN_BRANCH}`];
+  const refspecs = [
+    `+refs/heads/${MAIN_BRANCH}:refs/remotes/${remote}/${MAIN_BRANCH}`,
+  ];
   if (release !== undefined) {
-    refspecs.push(`+refs/heads/${RELEASE_BRANCH}:refs/remotes/${remote}/${RELEASE_BRANCH}`);
+    refspecs.push(
+      `+refs/heads/${RELEASE_BRANCH}:refs/remotes/${remote}/${RELEASE_BRANCH}`,
+    );
   }
   if (main !== undefined) {
     await gitOk(ctx, ["fetch", "--quiet", "--no-tags", remote, ...refspecs]);
@@ -174,14 +188,25 @@ async function resolveCommit(
   if (!SHA_ARGUMENT.test(lowered)) {
     return refuse(`${flag} ${value} is not a commit SHA (7 to 40 hex digits)`);
   }
-  const result = await git(ctx, ["rev-parse", "--verify", "--quiet", `${lowered}^{commit}`]);
+  const result = await git(ctx, [
+    "rev-parse",
+    "--verify",
+    "--quiet",
+    `${lowered}^{commit}`,
+  ]);
   if (result.code !== 0) {
-    return refuse(`${flag} ${value} is not a commit this repository knows (after a fetch)`);
+    return refuse(
+      `${flag} ${value} is not a commit this repository knows (after a fetch)`,
+    );
   }
   return result.stdout.trim();
 }
 
-async function isAncestor(ctx: ReleaseContext, ancestor: string, of: string): Promise<boolean> {
+async function isAncestor(
+  ctx: ReleaseContext,
+  ancestor: string,
+  of: string,
+): Promise<boolean> {
   const result = await git(ctx, ["merge-base", "--is-ancestor", ancestor, of]);
   if (result.code === 0) return true;
   if (result.code === 1) return false;
@@ -229,23 +254,33 @@ type ProductionCommit =
 
 async function readProductionCommit(url: string): Promise<ProductionCommit> {
   try {
-    const response = await fetch(url, { signal: AbortSignal.timeout(HTTP_TIMEOUT_MS) });
+    const response = await fetch(url, {
+      signal: AbortSignal.timeout(HTTP_TIMEOUT_MS),
+    });
     if (!response.ok) {
-      return { kind: "unknown", reason: `${url} answered ${String(response.status)}` };
+      return {
+        kind: "unknown",
+        reason: `${url} answered ${String(response.status)}`,
+      };
     }
     const parsed = healthCommitSchema.safeParse(await response.json());
     return parsed.success
       ? { kind: "known", commit: parsed.data.commit.toLowerCase() }
       : { kind: "unknown", reason: `${url} returned no commit` };
   } catch (error) {
-    return { kind: "unknown", reason: `${url} not reachable (${errorText(error)})` };
+    return {
+      kind: "unknown",
+      reason: `${url} not reachable (${errorText(error)})`,
+    };
   }
 }
 
 const errorText = (error: unknown): string => {
   if (error instanceof Error) {
     const cause = (error as Error & { cause?: unknown }).cause;
-    return cause instanceof Error ? `${error.message}: ${cause.message}` : error.message;
+    return cause instanceof Error
+      ? `${error.message}: ${cause.message}`
+      : error.message;
   }
   return String(error);
 };
@@ -262,7 +297,10 @@ async function railwayPost(
 ): Promise<unknown> {
   const response = await fetch(url, {
     method: "POST",
-    headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
+    headers: {
+      authorization: `Bearer ${token}`,
+      "content-type": "application/json",
+    },
     body: JSON.stringify({ query, variables }),
     signal: AbortSignal.timeout(HTTP_TIMEOUT_MS),
   });
@@ -277,32 +315,52 @@ async function loadDeployments(ctx: ReleaseContext): Promise<Deployments> {
   try {
     if (ctx.fixtureDeployments !== undefined) {
       const recorded = railwayDeploymentsResponseSchema.parse(
-        JSON.parse(readFileSync(resolve(ctx.cwd, ctx.fixtureDeployments), "utf8")),
+        JSON.parse(
+          readFileSync(resolve(ctx.cwd, ctx.fixtureDeployments), "utf8"),
+        ),
       );
       return { kind: "facts", facts: deploymentFacts(recorded) };
     }
     const token = ctx.env["RAILWAY_API_TOKEN"];
     const projectId = ctx.env["RAILWAY_PROJECT_ID"];
-    if (token === undefined || token === "" || projectId === undefined || projectId === "") {
-      return { kind: "unreachable", reason: "RAILWAY_API_TOKEN and RAILWAY_PROJECT_ID are not set" };
+    if (
+      token === undefined ||
+      token === "" ||
+      projectId === undefined ||
+      projectId === ""
+    ) {
+      return {
+        kind: "unreachable",
+        reason: "RAILWAY_API_TOKEN and RAILWAY_PROJECT_ID are not set",
+      };
     }
     const url = ctx.railwayUrl ?? RAILWAY_API_URL;
     const services = railwayServicesResponseSchema.safeParse(
       await railwayPost(url, token, RAILWAY_SERVICES_QUERY, { projectId }),
     );
     if (!services.success) {
-      return { kind: "unreachable", reason: "the Railway API's answer was not understood" };
+      return {
+        kind: "unreachable",
+        reason: "the Railway API's answer was not understood",
+      };
     }
     const ids = findProductionService(services.data, WEB_SERVICE_NAME);
     if (ids === undefined) return { kind: "facts", facts: [] };
     const deployments = railwayDeploymentsResponseSchema.safeParse(
       await railwayPost(url, token, RAILWAY_DEPLOYMENTS_QUERY, {
-        input: { projectId, environmentId: ids.environmentId, serviceId: ids.serviceId },
+        input: {
+          projectId,
+          environmentId: ids.environmentId,
+          serviceId: ids.serviceId,
+        },
         first: DEPLOYMENTS_PAGE,
       }),
     );
     if (!deployments.success) {
-      return { kind: "unreachable", reason: "the Railway API's answer was not understood" };
+      return {
+        kind: "unreachable",
+        reason: "the Railway API's answer was not understood",
+      };
     }
     return { kind: "facts", facts: deploymentFacts(deployments.data) };
   } catch (error) {
@@ -312,14 +370,20 @@ async function loadDeployments(ctx: ReleaseContext): Promise<Deployments> {
 
 // --- commands --------------------------------------------------------------------------------------
 
-async function guarded(body: (lines: string[]) => Promise<number>): Promise<CommandResult> {
+async function guarded(
+  body: (lines: string[]) => Promise<number>,
+): Promise<CommandResult> {
   const lines: string[] = [];
   try {
     const code = await body(lines);
     return { code, lines, errors: [] };
   } catch (error) {
     if (error instanceof Refusal) {
-      return { code: 1, lines, errors: [`refused: ${error.message}`, "nothing was pushed"] };
+      return {
+        code: 1,
+        lines,
+        errors: [`refused: ${error.message}`, "nothing was pushed"],
+      };
     }
     return { code: 1, lines, errors: [`failed: ${errorText(error)}`] };
   }
@@ -328,12 +392,18 @@ async function guarded(body: (lines: string[]) => Promise<number>): Promise<Comm
 const NO_RELEASE = `the remote has no ${RELEASE_BRANCH} branch yet`;
 
 /** AC-35. */
-export function status(remote: string, ctx: ReleaseContext): Promise<CommandResult> {
+export function status(
+  remote: string,
+  ctx: ReleaseContext,
+): Promise<CommandResult> {
   return guarded(async (lines) => {
     const refs = await readRemote(ctx, remote);
-    if (refs.main === undefined) return refuse(`the remote has no ${MAIN_BRANCH} branch`);
+    if (refs.main === undefined)
+      return refuse(`the remote has no ${MAIN_BRANCH} branch`);
     if (refs.release === undefined) {
-      lines.push(`release      none: ${NO_RELEASE} (spec 040 F1, or release:promote --create)`);
+      lines.push(
+        `release      none: ${NO_RELEASE} (spec 040 F1, or release:promote --create)`,
+      );
       return 1;
     }
     let code = 0;
@@ -343,19 +413,28 @@ export function status(remote: string, ctx: ReleaseContext): Promise<CommandResu
     if (await isAncestor(ctx, refs.release, refs.main)) {
       const range = `${refs.release}..${refs.main}`;
       const count = Number(await gitOk(ctx, ["rev-list", "--count", range]));
-      lines.push(`unreleased   ${String(count)} commits on ${MAIN_BRANCH} not yet released`);
+      lines.push(
+        `unreleased   ${String(count)} commits on ${MAIN_BRANCH} not yet released`,
+      );
       const subjects = await gitOk(ctx, ["log", "--format=  %h %s", range]);
-      if (subjects !== "") lines.push(...subjects.split("\n").map((line) => `  ${line.trim()}`));
+      if (subjects !== "")
+        lines.push(...subjects.split("\n").map((line) => `  ${line.trim()}`));
       invariant = "invariant: ok";
     } else {
       const count = Number(
-        await gitOk(ctx, ["rev-list", "--count", `${refs.main}..${refs.release}`]),
+        await gitOk(ctx, [
+          "rev-list",
+          "--count",
+          `${refs.main}..${refs.release}`,
+        ]),
       );
       invariant = brokenInvariantLine(count);
       code = 1;
     }
 
-    const production = await readProductionCommit(ctx.healthUrl ?? PRODUCTION_HEALTH_URL);
+    const production = await readProductionCommit(
+      ctx.healthUrl ?? PRODUCTION_HEALTH_URL,
+    );
     if (production.kind === "unknown") {
       lines.push(`production   unknown (${production.reason})`);
       lines.push(invariant);
@@ -370,7 +449,9 @@ export function status(remote: string, ctx: ReleaseContext): Promise<CommandResu
           ? deploymentInProgress(deployments.facts, refs.release)
           : undefined;
       if (building !== undefined) {
-        lines.push(`deploying ${refs.release} (deployment ${building.id}, ${building.status})`);
+        lines.push(
+          `deploying ${refs.release} (deployment ${building.id}, ${building.status})`,
+        );
       } else {
         lines.push(productionMismatchLine(production.commit, refs.release));
         if (deployments.kind === "unreachable") {
@@ -391,16 +472,24 @@ export interface PromoteOptions {
 }
 
 /** AC-36. */
-export function promote(options: PromoteOptions, ctx: ReleaseContext): Promise<CommandResult> {
+export function promote(
+  options: PromoteOptions,
+  ctx: ReleaseContext,
+): Promise<CommandResult> {
   return guarded(async (lines) => {
     if (options.create && options.expect !== undefined) {
-      refuse("--create takes no --expect: it is only for a release branch that does not exist");
+      refuse(
+        "--create takes no --expect: it is only for a release branch that does not exist",
+      );
     }
     if (!options.create && options.expect === undefined) {
-      refuse("--expect <old-sha> is required: the release RELEASE: READY names");
+      refuse(
+        "--expect <old-sha> is required: the release RELEASE: READY names",
+      );
     }
     const refs = await readRemote(ctx, options.remote);
-    if (refs.main === undefined) return refuse(`the remote has no ${MAIN_BRANCH} branch`);
+    if (refs.main === undefined)
+      return refuse(`the remote has no ${MAIN_BRANCH} branch`);
     const target = await resolveCommit(ctx, "--sha", options.sha);
     if (!(await isAncestor(ctx, target, refs.main))) {
       refuse(`${target} is not on ${options.remote}/${MAIN_BRANCH}`);
@@ -408,7 +497,9 @@ export function promote(options: PromoteOptions, ctx: ReleaseContext): Promise<C
 
     if (options.create) {
       if (refs.release !== undefined) {
-        refuse(`--create, but the remote ${RELEASE_BRANCH} already exists at ${refs.release}`);
+        refuse(
+          `--create, but the remote ${RELEASE_BRANCH} already exists at ${refs.release}`,
+        );
       }
       await pushRelease(ctx, options.remote, target, undefined);
       lines.push(`release created at ${target}`);
@@ -426,14 +517,18 @@ export function promote(options: PromoteOptions, ctx: ReleaseContext): Promise<C
       );
     }
     if (!(await isAncestor(ctx, expected, target))) {
-      refuse(`not a fast-forward: --expect ${expected} is not an ancestor of ${target}`);
+      refuse(
+        `not a fast-forward: --expect ${expected} is not an ancestor of ${target}`,
+      );
     }
     if (expected === target) {
       lines.push(`release is already ${target}: nothing to push`);
       return 0;
     }
     await pushRelease(ctx, options.remote, target, expected);
-    lines.push(`release moved ${expected} → ${target} (fast-forward, lease on ${expected})`);
+    lines.push(
+      `release moved ${expected} → ${target} (fast-forward, lease on ${expected})`,
+    );
     lines.push(`release is now ${target}`);
     return 0;
   });
@@ -447,7 +542,12 @@ export interface RollbackOptions {
 
 /** The production release notes on the remote's `main`, read from the fetched commit. */
 async function notesOnMain(ctx: ReleaseContext, mainTip: string) {
-  const listing = await gitOk(ctx, ["ls-tree", "--name-only", `${mainTip}`, `${RELEASE_NOTES_DIR}/`]);
+  const listing = await gitOk(ctx, [
+    "ls-tree",
+    "--name-only",
+    `${mainTip}`,
+    `${RELEASE_NOTES_DIR}/`,
+  ]);
   const files = listing.split("\n").filter((file) => file.endsWith(".md"));
   return Promise.all(
     files.map(async (file) =>
@@ -457,15 +557,21 @@ async function notesOnMain(ctx: ReleaseContext, mainTip: string) {
 }
 
 /** AC-39. */
-export function rollback(options: RollbackOptions, ctx: ReleaseContext): Promise<CommandResult> {
+export function rollback(
+  options: RollbackOptions,
+  ctx: ReleaseContext,
+): Promise<CommandResult> {
   return guarded(async (lines) => {
     const refs = await readRemote(ctx, options.remote);
-    if (refs.main === undefined) return refuse(`the remote has no ${MAIN_BRANCH} branch`);
+    if (refs.main === undefined)
+      return refuse(`the remote has no ${MAIN_BRANCH} branch`);
     if (refs.release === undefined) return refuse(NO_RELEASE);
     const to = await resolveCommit(ctx, "--to", options.to);
     const bad = await resolveCommit(ctx, "--expect", options.expect);
     if (refs.release !== bad) {
-      refuse(`the remote ${RELEASE_BRANCH} is ${refs.release}, not --expect ${bad}`);
+      refuse(
+        `the remote ${RELEASE_BRANCH} is ${refs.release}, not --expect ${bad}`,
+      );
     }
     if (to === bad) refuse(`--to ${to} is the current release`);
     if (!(await isAncestor(ctx, to, bad))) {
@@ -485,7 +591,8 @@ export function rollback(options: RollbackOptions, ctx: ReleaseContext): Promise
         "--quiet",
         `${note.previous}^{commit}`,
       ]);
-      const previousSha = previous.code === 0 ? previous.stdout.trim() : note.previous;
+      const previousSha =
+        previous.code === 0 ? previous.stdout.trim() : note.previous;
       acceptedB = previousSha === to;
       routeB = acceptedB
         ? `route (b): ${note.file} on ${options.remote}/${MAIN_BRANCH} promoted ${bad} and names ${to} as the previous release`
@@ -568,13 +675,18 @@ export async function main(argv: readonly string[]): Promise<number> {
       ctx,
     );
   } else if (command === "rollback") {
-    result = await rollback({ to: values.to, expect: values.expect, remote }, ctx);
+    result = await rollback(
+      { to: values.to, expect: values.expect, remote },
+      ctx,
+    );
   } else {
     process.stderr.write(USAGE);
     return 2;
   }
-  if (result.lines.length > 0) process.stdout.write(`${result.lines.join("\n")}\n`);
-  if (result.errors.length > 0) process.stderr.write(`${result.errors.join("\n")}\n`);
+  if (result.lines.length > 0)
+    process.stdout.write(`${result.lines.join("\n")}\n`);
+  if (result.errors.length > 0)
+    process.stderr.write(`${result.errors.join("\n")}\n`);
   return result.code;
 }
 

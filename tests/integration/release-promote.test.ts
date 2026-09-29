@@ -141,7 +141,12 @@ describe("release:promote (T-36, AC-36)", () => {
 
   it("refuses --create when release already exists", async () => {
     await standardHistory();
-    const result = await repo.release(["promote", "--create", "--sha", sha("m2")]);
+    const result = await repo.release([
+      "promote",
+      "--create",
+      "--sha",
+      sha("m2"),
+    ]);
     expect(result.code).toBe(1);
     expect(await repo.remote("release")).toBe(sha("m1"));
     expect(result.stderr).toContain(
@@ -152,7 +157,12 @@ describe("release:promote (T-36, AC-36)", () => {
   it("creates release with --create when it does not exist yet", async () => {
     for (const name of ["m0", "m1"]) await repo.commit(name);
     await repo.git(["push", "-q", "origin", "main"]);
-    const result = await repo.release(["promote", "--create", "--sha", sha("m0")]);
+    const result = await repo.release([
+      "promote",
+      "--create",
+      "--sha",
+      sha("m0"),
+    ]);
     expect(result.code, result.output).toBe(0);
     expect(await repo.remote("release")).toBe(sha("m0"));
   });
@@ -163,7 +173,12 @@ describe("release:promote (T-36, AC-36)", () => {
     await repo.git(["checkout", "-q", "-b", "side"]);
     await repo.commit("s1");
     await repo.git(["push", "-q", "origin", "side"]);
-    const result = await repo.release(["promote", "--create", "--sha", sha("s1")]);
+    const result = await repo.release([
+      "promote",
+      "--create",
+      "--sha",
+      sha("s1"),
+    ]);
     expect(result.code).toBe(1);
     expect(await repo.remote("release")).toBeUndefined();
     expect(result.stderr).toContain("is not on origin/main");

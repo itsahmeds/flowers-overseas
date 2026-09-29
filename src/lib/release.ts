@@ -42,10 +42,12 @@ export const healthCommitSchema = z.object({ commit: z.string().min(1) });
  * `docs/releases/YYYY-MM-DD-<env>-<short-sha>.md`. The environment is read from the name, so a
  * staging note is never taken for a production one.
  */
-const NOTE_NAME = /^(\d{4}-\d{2}-\d{2})-([a-z][a-z0-9-]*?)-([0-9a-f]{7,40})\.md$/;
+const NOTE_NAME =
+  /^(\d{4}-\d{2}-\d{2})-([a-z][a-z0-9-]*?)-([0-9a-f]{7,40})\.md$/;
 
 /** AC-37's visit-1 report: `RELEASE: READY <40-char sha> (release at <sha>)`. */
-const READY_LINE = /RELEASE: READY ([0-9a-f]{40}) \(release at ([0-9a-f]{7,40})\)/g;
+const READY_LINE =
+  /RELEASE: READY ([0-9a-f]{40}) \(release at ([0-9a-f]{7,40})\)/g;
 
 /** AC-37's halt: `RELEASE: HALTED <sha>: <gate>`. */
 const HALTED_LINE = /RELEASE: HALTED ([0-9a-f]{7,40})/g;
@@ -135,14 +137,15 @@ export function judgeDeployments(
   }
   return {
     kind: "other-branch",
-    branches: [
-      ...new Set(succeeded.map((fact) => fact.branch ?? "")),
-    ].sort(),
+    branches: [...new Set(succeeded.map((fact) => fact.branch ?? ""))].sort(),
   };
 }
 
 /** Route (a)'s finding in words, for the refusal that names both routes. */
-export function describeFinding(finding: DeploymentFinding, sha: string): string {
+export function describeFinding(
+  finding: DeploymentFinding,
+  sha: string,
+): string {
   switch (finding.kind) {
     case "released":
       return `Railway lists a successful production web deployment of ${sha} made from ${RELEASE_BRANCH} (deployment ${finding.id})`;
@@ -163,7 +166,8 @@ export function deploymentInProgress(
   sha: string,
 ): DeploymentFact | undefined {
   return facts.find(
-    (fact) => fact.commit === sha && DEPLOYMENT_IN_PROGRESS.includes(fact.status),
+    (fact) =>
+      fact.commit === sha && DEPLOYMENT_IN_PROGRESS.includes(fact.status),
   );
 }
 
@@ -173,6 +177,9 @@ export function brokenInvariantLine(commitsNotOnMain: number): string {
 }
 
 /** AC-35's mismatch line. */
-export function productionMismatchLine(production: string, release: string): string {
+export function productionMismatchLine(
+  production: string,
+  release: string,
+): string {
   return `production runs ${production}, release is ${release}`;
 }

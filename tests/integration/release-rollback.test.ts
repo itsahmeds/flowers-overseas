@@ -68,14 +68,7 @@ async function history(notes: readonly string[]): Promise<void> {
 const NOTES = ["production-promoted-c2.md", "production-promoted-bad.md"];
 
 const rollbackTo = (to: string, extra: readonly string[] = []) =>
-  repo.release([
-    "rollback",
-    "--to",
-    sha(to),
-    "--expect",
-    sha("c4"),
-    ...extra,
-  ]);
+  repo.release(["rollback", "--to", sha(to), "--expect", sha("c4"), ...extra]);
 
 const deployments = (name: string): string[] => [
   "--fixture-deployments",
@@ -92,7 +85,10 @@ afterEach(() => {
 describe("release:rollback (T-37, AC-39)", () => {
   it("moves release back to the previous release with a lease; release:status then says invariant: ok", async () => {
     await history(NOTES);
-    const result = await rollbackTo("c2", deployments("deployments-rollback-none.json"));
+    const result = await rollbackTo(
+      "c2",
+      deployments("deployments-rollback-none.json"),
+    );
     expect(result.code, result.output).toBe(0);
     expect(await repo.remote("release")).toBe(sha("c2"));
     expect(result.stdout).toContain(`release is now ${sha("c2")}`);
@@ -133,7 +129,10 @@ describe("release:rollback (T-37, AC-39)", () => {
 
   it("refuses an ancestor that no production deployment ran and no release note names, naming both routes", async () => {
     await history(NOTES);
-    const result = await rollbackTo("c1", deployments("deployments-rollback-none.json"));
+    const result = await rollbackTo(
+      "c1",
+      deployments("deployments-rollback-none.json"),
+    );
     expect(result.code).toBe(1);
     expect(await repo.remote("release")).toBe(sha("c4"));
     expect(result.stderr).toContain(
@@ -141,13 +140,18 @@ describe("release:rollback (T-37, AC-39)", () => {
     );
     expect(result.stderr).toContain("route (a)");
     expect(result.stderr).toContain("route (b)");
-    expect(result.stderr).toContain(`names ${sha("c2")} as the previous release`);
+    expect(result.stderr).toContain(
+      `names ${sha("c2")} as the previous release`,
+    );
     expect(result.stderr).toContain("nothing was pushed");
   });
 
   it("refuses a --to whose only production deployment failed", async () => {
     await history(NOTES);
-    const result = await rollbackTo("c3", deployments("deployments-rollback-failed.json"));
+    const result = await rollbackTo(
+      "c3",
+      deployments("deployments-rollback-failed.json"),
+    );
     expect(result.code).toBe(1);
     expect(await repo.remote("release")).toBe(sha("c4"));
     expect(result.stderr).toContain("no successful production web deployment");
@@ -156,7 +160,10 @@ describe("release:rollback (T-37, AC-39)", () => {
 
   it("refuses a --to whose only production deployment Railway marks REMOVED (success not stated)", async () => {
     await history(NOTES);
-    const result = await rollbackTo("c3", deployments("deployments-rollback-removed.json"));
+    const result = await rollbackTo(
+      "c3",
+      deployments("deployments-rollback-removed.json"),
+    );
     expect(result.code).toBe(1);
     expect(await repo.remote("release")).toBe(sha("c4"));
     expect(result.stderr).toContain("REMOVED");
@@ -176,7 +183,10 @@ describe("release:rollback (T-37, AC-39)", () => {
 
   it("refuses a --to whose only successful deployment was made from main (before A3), no note naming it", async () => {
     await history(NOTES);
-    const result = await rollbackTo("c1", deployments("deployments-rollback-from-main.json"));
+    const result = await rollbackTo(
+      "c1",
+      deployments("deployments-rollback-from-main.json"),
+    );
     expect(result.code).toBe(1);
     expect(await repo.remote("release")).toBe(sha("c4"));
     expect(result.stderr).toContain("made from main, not release");
@@ -184,7 +194,10 @@ describe("release:rollback (T-37, AC-39)", () => {
 
   it("refuses a --to whose successful deployment names no source branch, saying the branch is unknown", async () => {
     await history(NOTES);
-    const result = await rollbackTo("c1", deployments("deployments-rollback-no-branch.json"));
+    const result = await rollbackTo(
+      "c1",
+      deployments("deployments-rollback-no-branch.json"),
+    );
     expect(result.code).toBe(1);
     expect(await repo.remote("release")).toBe(sha("c4"));
     expect(result.stderr).toContain("source branch unknown");
@@ -192,7 +205,10 @@ describe("release:rollback (T-37, AC-39)", () => {
 
   it("moves to the F1 commit, recorded only as a main deployment, through the note that promoted <bad-sha> (route b)", async () => {
     await history(["production-promoted-bad-first.md"]);
-    const result = await rollbackTo("c0", deployments("deployments-rollback-f1-main.json"));
+    const result = await rollbackTo(
+      "c0",
+      deployments("deployments-rollback-f1-main.json"),
+    );
     expect(result.code, result.output).toBe(0);
     expect(await repo.remote("release")).toBe(sha("c0"));
     expect(result.stdout).toContain("accepted by route (b)");
@@ -220,7 +236,10 @@ describe("release:rollback (T-37, AC-39)", () => {
         "--railway-url",
         "http://127.0.0.1:1/graphql",
       ],
-      { RAILWAY_API_TOKEN: "fixture-token", RAILWAY_PROJECT_ID: "fixture-project" },
+      {
+        RAILWAY_API_TOKEN: "fixture-token",
+        RAILWAY_PROJECT_ID: "fixture-project",
+      },
     );
     expect(result.code, result.output).toBe(0);
     expect(result.stdout).toContain("Railway API not reachable");
@@ -275,7 +294,9 @@ describe("release:rollback (T-37, AC-39)", () => {
     );
     expect(result.code).toBe(1);
     expect(await repo.remote("release")).toBe(sha("c5"));
-    expect(result.errors.join("\n")).toContain("refused: the push was rejected");
+    expect(result.errors.join("\n")).toContain(
+      "refused: the push was rejected",
+    );
   });
 
   it("a local checkout behind origin/main does not matter: notes are read from origin/main", async () => {
