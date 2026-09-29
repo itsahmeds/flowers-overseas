@@ -42,10 +42,40 @@ here.
 
 - 2026-09-29: rule, T-64 RuleTester rows (per-row `it.each`), further shapes, config block `fo/order-status` on `src/ scripts/ seed/ db/` + root files, AC-52 row widened with two red-case families; 27 mutations of the rule each turn a case red. PR #119 draft. Next: `plan/12` row, gates, ready + `ci:full`.
 - 2026-09-29: `plan/12` §2 "Order integrity" row rewritten (AC-62). Next: `gates:cheap`, rebase, ready, CI.
+- 2026-09-29: `gates:cheap` PASS at 6e42579; rebased (already on `origin/main` 1bd65b6); row `in_review`; PR ready with `ci:full`.
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
+PR #119. `fo/no-direct-order-status-write` (AC-60) now counts the table `orders` or `order` under
+any name the file gives it (import alias, `const`/`let` rebinding, destructuring, `schema["orders"]`,
+a variable holding the chain), checks `.set()` on `update` chains and `onConflictDoUpdate`'s `set` on
+`insert` chains, and refuses a patch it cannot read ("cannot prove this does not write `status`"):
+only an object literal, or a same-file `const` bound to one and never written or handed on, with no
+`status` key and only static keys, passes. SQL: `UPDATE`, `INSERT … ON CONFLICT … DO UPDATE SET` and
+`MERGE … UPDATE SET` on `order`/`orders`, quoted, schema-qualified, `ONLY`, aliased, multi-line, in
+strings, `sql` templates (table and `<table>.status` interpolations read as names) and `+` chains;
+string literals and comments are blanked first and the SET clause ends at a top-level
+`WHERE`/`FROM`/`RETURNING`, so `WHERE status = 'closed'` on a notes update passes. The rule moved to
+its own block `fo/order-status` in `eslint.config.mjs` on `src/`, `scripts/`, `seed/`, `db/`, `*.ts`
+and `*.mjs` at the root; `pnpm lint` on the real tree flags nothing. Tests (unit):
+`no-direct-order-status-write.test.ts` 20 → 152 tests — T-64's 10 invalid and 2 valid rows exactly as
+listed, each invalid row also valid at `src/modules/orders/service/transition.ts`, 42 further invalid
+and 19 further valid shapes, the spec's message, and the rule `error` on 7 real files across the
+roots; `lint-coverage.test.ts` +4 (AC-52 row widened to four roots; a block turning the rule off for
+`scripts/**`, and the block's `files` narrowed to drop `scripts/`, `seed/` or `db/`, each red naming
+the root). 27 mutations of the rule (one per branch) each turned at least one case red. No expensive
+gate run locally. `plan/12` §2 "Order integrity" row names the check and its limit (AC-62).
 
-_Pending._
+`gates:cheap` at 6e42579 (private `TMPDIR`):
+
+```
+gates:cheap · 6e425792c283395a31af140116dbb9086b783d77 · tree clean · base origin/main
+typecheck             exit 0 · 2.1 s
+lint                  exit 0 · 11.1 s
+format:check          exit 0 · 8.5 s
+i18n:check            exit 0 · 0.4 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 11.7 s · changed 8 + map 0 + always 2 · always run: zod-boundaries, lint-coverage, url-pii
+RESULT: PASS
+```
