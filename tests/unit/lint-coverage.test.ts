@@ -397,7 +397,8 @@ const TABLE: readonly LockRow[] = [
   {
     lock: ORDER_STATUS,
     rules: [ORDER_STATUS],
-    errorOn: ["src/"],
+    // TASK-162 (AC-60): every root that can reach the database.
+    errorOn: ["src/", "scripts/", "seed/", "db/"],
     allowedOff: [],
   },
   {
@@ -907,6 +908,54 @@ describe("a one-line edit to eslint.config.mjs goes red and names the lock (T-56
       "no-console: off on src/modules/geo/corridor.ts; must be error on src/ (no-console and AC-56's locks)",
     );
   });
+
+  // TASK-162 (AC-60): the order-status lock on its four roots.
+  it("a block turning fo/no-direct-order-status-write off for scripts/**", async () => {
+    const violations = await redFor(
+      addBlock(
+        '{ files: ["scripts/**"], rules: { "fo/no-direct-order-status-write": "off" } }',
+      ),
+    );
+    expect(
+      violations.some(
+        (v) =>
+          v.startsWith(
+            "fo/no-direct-order-status-write: turned off by config object #",
+          ) && v.includes('for ["scripts/**"]'),
+      ),
+    ).toBe(true);
+    expect(violations).toContain(
+      "fo/no-direct-order-status-write: off on scripts/db-migrate.ts; must be error on scripts/ (fo/no-direct-order-status-write)",
+    );
+  });
+
+  it.each([
+    [
+      "scripts/",
+      '      "scripts/**/*.ts",\n      "seed/**/*.ts",\n      "db/**/*.ts",\n      "*.ts",',
+    ],
+    ["seed/", '      "seed/**/*.ts",\n      "db/**/*.ts",\n      "*.ts",'],
+    ["db/", '      "db/**/*.ts",\n      "*.ts",'],
+  ])(
+    "the order-status block's files narrowed to drop %s",
+    async (root, from) => {
+      const violations = await redFor({
+        from,
+        to: from.replace(`      "${root}**/*.ts",\n`, ""),
+      });
+      expect(
+        violations.some(
+          (v) =>
+            v.startsWith(
+              `fo/no-direct-order-status-write: not configured on ${root}`,
+            ) &&
+            v.endsWith(
+              `must be error on ${root} (fo/no-direct-order-status-write)`,
+            ),
+        ),
+      ).toBe(true);
+    },
+  );
 
   // TASK-160 (AC-56, AC-57): the options check. A later object's options replace an earlier
   // one's, so these edits leave every rule at `error` and still drop a list.

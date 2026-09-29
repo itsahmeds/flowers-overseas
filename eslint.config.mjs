@@ -37,8 +37,9 @@ const eslintConfig = defineConfig([
     linterOptions: { noInlineConfig: true },
   },
   {
-    // spec 001 §7: logical CSS and no literal user-facing strings; §5 + ADR-0009 + ADR-0006:
-    // no direct order-status writes and no geo redirects. Enforced on application code.
+    // spec 001 §7: logical CSS and no literal user-facing strings; ADR-0006: no geo redirects.
+    // Enforced on application code. `fo/no-direct-order-status-write` has its own block below,
+    // because it covers more roots than `src/`.
     // `fo/no-float-money` is switched on for four roots by the `fo/float-money` block below,
     // which is where spec 001 §2's "lint fixture only in 001; enforced on real code from 005"
     // promise is discharged (spec 005 AC-4, TASK-060).
@@ -48,7 +49,6 @@ const eslintConfig = defineConfig([
     rules: {
       "fo/no-physical-css": "error",
       "fo/no-literal-strings": "error",
-      "fo/no-direct-order-status-write": "error",
       "fo/no-geo-redirect": "error",
       // spec 003 §2, AC-21 (TASK-037): exactly one way to render a price, a date, a list or an
       // address block. The rule allowlists `src/modules/i18n/format.ts` and `collate.ts` by path
@@ -95,6 +95,26 @@ const eslintConfig = defineConfig([
     ],
     plugins: { fo },
     rules: { "fo/no-float-money": "error" },
+  },
+  {
+    // spec 001 §5 + ADR-0009, §14 A20 AC-60 (TASK-162): order status changes only via
+    // `orderService.transition`. Every root that can reach the database: application code, the
+    // repository scripts, the seed scripts, the Drizzle schema, and the root config files. The
+    // one allowed path, `src/modules/orders/service/`, is held inside the rule, never here;
+    // `tests/` is not policed by lint (spec 002's trigger polices it). The roots are held by
+    // `tests/unit/lint-coverage.test.ts` (AC-52's table) and the rule's own test.
+    name: "fo/order-status",
+    files: [
+      "src/**/*.ts",
+      "src/**/*.tsx",
+      "scripts/**/*.ts",
+      "seed/**/*.ts",
+      "db/**/*.ts",
+      "*.ts",
+      "*.mjs",
+    ],
+    plugins: { fo },
+    rules: { "fo/no-direct-order-status-write": "error" },
   },
   // spec 001 §14 A20, AC-56 and AC-57 (TASK-160): the logger's side doors in `src/`, and SDKs
   // only in their adapters, everywhere `eslint .` lints. The four `no-restricted-*` rules are
