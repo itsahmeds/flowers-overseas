@@ -87,6 +87,23 @@ gap closes, mark it ✅ with the PR, and don't delete the row.
 **Found by `/break 104`:**
 - `tasks:check` and `specs:index --check` don't validate a task row's AC/T ids against its spec: a row changed to `AC-99, T-99` stays green. The orchestrator guessed spec 040's T-ids, and only the reviewer caught it. Candidate for step E tooling.
 
+**Found on 2026-09-30 (PRs 125–130):**
+- **Read-only agents share one scratch folder.** Every subagent in a session writes to the same
+  session scratchpad. On PR 127 a breaker and a reviewer both saved a runner as `mut.sh`, so the
+  breaker's first ten mutations ran in the reviewer's worktree and one stray line was left there.
+  Stopgap in every work order since: every script and temp file stays inside the agent's own
+  worktree, with a name unique to it. The work-order template does not say so yet (step E).
+- **The safety check refused a breaker's mutation runs** once it had touched another worktree
+  (PR 127 round 1); later breakers ran theirs. Same founder decision as "breaker auto-mode
+  mutations" above.
+- **`tasks:check` does not check that a row's AC id exists in its spec** (`AC-99` passes;
+  `/break 130`).
+- **`pr-policy` refuses `no-task` for `package.json` and the lockfile**, correctly, but nothing
+  says so before the PR is opened: PR 128 had to be moved to a task branch (PR 130, TASK-165).
+- Nits from `/break 125` round 2: TASK-099's Order line cites a loose rule and sits under
+  "_None recorded._"; TASK-157's closed escalation still names `onlyAbsentProductionServices`,
+  which no longer exists in `src/lib/railway.ts`.
+
 **Nits from the PR 103 rounds, still open:**
 - W-18 says every field has a `TASKS.md` line but cites lines for only some of the eleven. ✅ PR 106
   (W-18 now says a line is cited where the Log has one).
