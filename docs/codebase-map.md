@@ -14,16 +14,16 @@ task actually touches.
 |---|---|---|---|
 | `admin` | Public barrel for `admin` (admin queries and actions) | spec 012 | — |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2 + the gated GA4 tag; GA4 event… | spec 004, 023 | `unit/consent-bootstrap.test.tsx` |
-| `catalog` | The only import path into the catalogue and pricing module (spec 005 §2, §5.2;… | spec 005 | `contract/catalog-static-providers.test.ts`, `contract/support/catalog-provider-contract.ts`, `unit/catalog-availability.test.ts` +48 |
+| `catalog` | The only import path into the catalogue and pricing module (spec 005 §2, §5.2;… | spec 005 | `contract/catalog-static-providers.test.ts`, `contract/support/catalog-provider-contract.ts`, `unit/catalog-availability.test.ts` +34 |
 | `customers` | Public barrel for `customers` (customers, recipients, consent) | spec 019 | — |
-| `geo` | The only import path into the geo module (spec 007 §5.2; TASK-087) | spec 007, 002, 009 | `contract/seo-schema-fixtures.test.ts`, `unit/cache-cloudflare.test.ts`, `unit/catalog-country-occasion.test.ts` +23 |
-| `i18n` | The only import path for the i18n module (spec 003 §5.2, AC-3; TASK-034) | spec 003 | `contract/seo-schema-fixtures.test.ts`, `e2e/dev-components.spec.ts`, `e2e/shop-reachability.spec.ts` +59 |
+| `geo` | The only import path into the geo module (spec 007 §5.2; TASK-087) | spec 007, 002, 009 | `contract/seo-schema-fixtures.test.ts`, `unit/catalog-country-occasion.test.ts`, `unit/catalog-listing.test.ts` +17 |
+| `i18n` | The only import path for the i18n module (spec 003 §5.2, AC-3; TASK-034) | spec 003 | `contract/seo-schema-fixtures.test.ts`, `fixtures/ts/format-time-in-zone-no-zone.ts`, `integration/sitemap.test.ts` +52 |
 | `notifications` | Public barrel for `notifications` (email + WhatsApp senders, templates, outbox… | spec 017 | — |
 | `orders` | Public barrel for `orders` (state machine, order service, assignment/routing… | spec 015, 016 | — |
 | `partners` | Public barrel for `partners` (fulfilment partners, coverage, payouts) | spec 011, 026 | — |
 | `payments` | Public barrel for `payments` (PaymentProvider interface; stripe/, mollie/… | spec 013, 014 | — |
-| `seo` | Indexability rule engine, canonical builder, robots policy, page metadata,… | spec 007 | `contract/seo-schema-fixtures.test.ts`, `integration/sitemap.test.ts`, `unit/cache-cloudflare.test.ts` +16 |
-| `ui` | The only import path for the design system (spec 004 §2 "Where the design… | spec 004 | `unit/catalog-occasion-page.test.tsx`, `unit/chrome-honesty.test.tsx`, `unit/consent-cookie.test.ts` +27 |
+| `seo` | Indexability rule engine, canonical builder, robots policy, page metadata,… | spec 007 | `contract/seo-schema-fixtures.test.ts`, `integration/sitemap.test.ts`, `unit/catalog-listing.test.ts` +12 |
+| `ui` | The only import path for the design system (spec 004 §2 "Where the design… | spec 004 | `unit/catalog-occasion-page.test.tsx`, `unit/chrome-honesty.test.tsx`, `unit/consent-cookie.test.ts` +24 |
 
 ## Config (`src/config/`)
 
@@ -64,15 +64,12 @@ task actually touches.
 | `(dev)/dev/components/catalog.ts` | The gallery's own copy (spec 004 §2 "Component gallery"; TASK-045) | spec 004 |
 | `(dev)/dev/components/gated.ts` | The fake providers `/dev/components` renders the three data-gated sections'… | spec 004 |
 | `(dev)/dev/components/page.tsx` | `/dev/components` — the component gallery (spec 004 §2 "Component gallery —… | spec 004 |
-| `(dev)/dev/components/product.ts` | The gallery's fixtures for spec 009's six product-page primitives (TASK-126),… | spec 009 |
 | `(dev)/layout.tsx` | Document layout for the `(dev)` route group — today only `/dev/components`… | spec 004 |
-| `[locale]/%5Fquery/[segment]/[child]/page.tsx` | `/{locale}/_query/{segment}/{child}` — the **parameter route**: the one route… | spec 008 |
 | `[locale]/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/{segment}/{child}/{grandchild}` — **one route file for one URL… | spec 008 |
 | `[locale]/[segment]/[child]/page.tsx` | `/{locale}/{segment}/{child}` — **one route file for one URL depth** (spec 008… | spec 008 |
 | `[locale]/[segment]/page.tsx` | `/{locale}/{segment}` — **one route file for one URL depth** (spec 008 §14… | spec 008 |
 | `[locale]/boom/BoomIsland.tsx` | The throw that reaches `src/app/[locale]/error.tsx` (spec 004 AC-26, AC-27;… | spec 004 |
 | `[locale]/boom/page.tsx` | A route that throws on purpose: the localised 500 boundary, as an auditable… | spec 004 |
-| `[locale]/country-shop-root.tsx` | The country shop root's head and body, **once**, for the two route files that… | spec 007 |
 | `[locale]/error.tsx` | Localised 500 boundary (spec 003 §5.3; TASK-034, rewired by TASK-085) | spec 003 |
 | `[locale]/layout.tsx` | The document layout for every localised URL (spec 003 §2, §5.3, §5.4, AC-6,… | spec 003 |
 | `[locale]/page.tsx` | `/{locale}` placeholder home (spec 003 §5.3, §5.4; TASK-034, extended by… | spec 003 |
@@ -99,6 +96,7 @@ task actually touches.
 | `check-no-literal-disable.ts` | `check:no-literal-disable` | `pnpm check:no-literal-disable` (spec 001 §14 A20, AC-51 / T-55, TASK-158; AC-6… |
 | `check-no-vercel-env.ts` | `check:no-vercel-env` | Host-agnostic env gate (spec 040 AC-2) |
 | `client-js-budget.ts` | `budget:client-js` | `pnpm budget:client-js` — the AC-27 measurement (spec 003 §6 "CWV budget… |
+| `cloudflare/apply-zone-settings.ts` | `cloudflare:check` | `pnpm cloudflare:apply` and `pnpm cloudflare:check` — the Cloudflare zone as… |
 | `codebase-map.ts` | `codebase:map` | The codebase map — AC-33 / T-34 (spec 001 §14 A15, TASK-086) |
 | `cookie-register.ts` | `cookies:check` | `pnpm cookies:check [--write]` — renders `docs/compliance/cookie-register.md`'s… |
 | `corridor-check-cases.ts` | — | One deliberately failing fixture per `corridor:check` rule (spec 007 AC-2 /… |
@@ -116,7 +114,6 @@ task actually touches.
 | `i18n-pseudo.ts` | `i18n:pseudo` | `pnpm i18n:pseudo [--check] [--messages-dir messages]` (spec 003 §2… |
 | `imagery-prompts-remaining.ts` | — | Generate the prompt records for every product that has no imagery yet |
 | `lint-fixtures.ts` | `lint:fixtures` | `pnpm lint:fixtures` (spec 001 AC-4 / AC-5, TASK-003) |
-| `media-upload.ts` | `media:upload` | `pnpm media:upload [--dry-run] [--only <assetId>] [--force] [--verify]` — put… |
 | `pr-policy.ts` | `pr-policy` | PR policy (spec 001 §2 "CI", AC-19 / T-20, TASK-002) |
 | `railway-check.ts` | `railway:check` | `pnpm railway:check [--env <name>]` — the Railway drift gate (spec 040 §5.3,… |
 | `release.ts` | `release:status` | `pnpm release:status`, `pnpm release:promote` and `pnpm release:rollback` — the… |
@@ -128,7 +125,6 @@ task actually touches.
 | `seo/validate-hreflang.ts` | `seo:validate` | `validate-hreflang` (spec 001 §2 "CI", §6, AC-22 / T-23, TASK-009) |
 | `seo/validate-schema.ts` | `seo:validate` | `validate-schema` (spec 001 §2 "CI", §6, §8, AC-22 / T-23, TASK-009) |
 | `seo/validate-sitemap.ts` | `seo:validate` | `validate-sitemap` (spec 001 §2 "CI", §6, AC-22 / T-23, TASK-009) |
-| `shop/generate-listing-url-fixture.ts` | — | The committed **listing URL set**, generated from the real existence predicate… |
 | `specs-index.ts` | `specs:index` | Section-anchored spec indexes — AC-35 / T-36 (spec 001 §14 A15, TASK-086) |
 | `tasks-brief.ts` | `tasks:brief` | Per-task brief files — AC-34 / T-35 (spec 001 §14 A15, TASK-086) |
 | `tasks-open-decisions.ts` | `tasks:check` | `TASKS.md` ledger parser — AC-31 / T-32 (spec 001 §2 "Documentation and… |
@@ -138,15 +134,15 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 227 |
-| `tests/integration/` | 10 |
-| `tests/contract/` | 6 |
-| `tests/e2e/` | 36 |
-| `tests/a11y/` | 15 |
-| `tests/visual/` | 17 |
+| `tests/unit/` | 211 |
+| `tests/integration/` | 9 |
+| `tests/contract/` | 7 |
+| `tests/e2e/` | 32 |
+| `tests/a11y/` | 14 |
+| `tests/visual/` | 15 |
 | `tests/dev-os/` | 1 |
-| `tests/fixtures/` | 307 |
-| `tests/msw/` | 4 |
+| `tests/fixtures/` | 263 |
+| `tests/msw/` | 3 |
 
 ## Where does X live?
 
