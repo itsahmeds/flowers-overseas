@@ -147,8 +147,10 @@ describe("invalidate() with 71 URLs (T-23)", () => {
   it("keeps at most PURGE_CONCURRENCY calls in flight", async () => {
     let inFlight = 0;
     let peak = 0;
+    const recorded: RecordedPurge[] = [];
     server.use(
       cloudflarePurgeHandler({
+        recorded,
         delayMs: 20,
         onEnter: () => {
           inFlight += 1;
@@ -176,6 +178,11 @@ describe("invalidate() with 71 URLs (T-23)", () => {
 
     expect(PURGE_CONCURRENCY).toBeGreaterThan(1);
     expect(peak).toBe(PURGE_CONCURRENCY);
+    // Every lane keeps draining the queue: all 8 chunks go out, and the 240 URLs with them.
+    expect(recorded).toHaveLength(8);
+    const sent = recorded.flatMap((call) => call.files);
+    expect(sent).toHaveLength(240);
+    expect(new Set(sent)).toEqual(new Set(Object.values(many).flat()));
   });
 });
 
@@ -461,5 +468,27 @@ describe("the breaker's cases (review 127)", () => {
       unresolved_tags: ["corridor:PL:en", "sitemap"],
       failed_calls: 2,
     });
+  });
+});
+
+describe("each purge request carries a timeout signal (break 127 round 2)", () => {
+  it("passes an AbortSignal that has not fired when the request starts", async () => {
+    const signals: (AbortSignal | null | undefined)[] = [];
+    const adapter = createCloudflareCacheAdapter({
+      token: TOKEN,
+      zoneId: ZONE_ID,
+      resolve: (tag) => TAG_URLS[tag] ?? [],
+      logger: createLogger({ write: () => undefined }),
+      fetch: (_input, init) => {
+        signals.push(init.signal);
+        return Promise.resolve(Response.json({ success: true }));
+      },
+    });
+
+    await adapter.invalidate(["home:en"]);
+
+    expect(signals).toHaveLength(1);
+    expect(signals[0]).toBeInstanceOf(AbortSignal);
+    expect(signals[0]?.aborted).toBe(false);
   });
 });

@@ -21,7 +21,11 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per `/review`, newest last.
 
-- **From `/review 127` round 1 (2026-09-30):** (1) the `sitemap` tag stays unresolved (`[]` + `warn`); AC-22 passes with it open because nothing calls `invalidate` in Phase 0. It becomes a gate on the first task that calls `invalidate` with `sitemap` (the hourly sitemap job, spec 012 admin). (2) `src/lib/railway.ts` `OPTIONAL_VARIABLE_KEYS` must list `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ZONE_ID` before either is set on Railway, or `railway:check` fails AC-11; owner: TASK-104 (orchestrator records it there). (3) `catalog:*`, `product:*`, `country:*` resolve to `[]` until the first task that caches those pages extends the resolver. (4) `audit` must be green after the rebase on PR 128.
+- **From `/review 127` round 1 (2026-09-30):**
+  1. The `sitemap` escalation stays open. It gates the first task that calls `invalidate` with a list containing `sitemap` (hourly `sitemap.regenerate`, spec 012 admin), not this PR. That task must not be dispatched until the escalation is answered.
+  2. `src/lib/railway.ts` `OPTIONAL_VARIABLE_KEYS` must list `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ZONE_ID` (on the environments behind the zone) before either is set on Railway. Otherwise `railway:check` fails AC-11. This needs an owner: TASK-104's pre-cutover list, or a small task.
+  3. `urlsForTag` resolves only the `src/lib/cache.ts` vocabulary. `catalog:*`, `product:*` and `country:*` (from `src/modules/catalog/cache.ts`) resolve to `[]` and are logged unresolved. The first task that caches a page carrying them, or calls `invalidate` with them (spec 008 listings, spec 012 admin), extends `taggedDocuments()` and T-22.
+  4. `audit` must be green on this PR's head after it is rebased onto PR 128.
 
 ## Escalations
 
@@ -39,6 +43,13 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   - **Breaker (2), the 4xx behaviour:** a 4xx is retried like any failure, since §5.4 says failures are retried twice. That makes 3 attempts and then one `error` line. M21 (4xx not retried) was red.
   - **Breaker (3):** a resolver that throws still resolves, makes no request, and writes one `error` line with tag names only. M18 (rethrow) was red.
   - **Breaker (4):** a failed chunk next to unresolved `corridor:PL:en` and `sitemap` is logged at `error`. M19 (warn checked first) was red.
+- 2026-09-30 — `/break 127` round 2 holes closed with tests only; no source change. Each mutation below turned its case red, and the code was restored after each:
+  - **Hole 1:** the 240-URL concurrency case now also asserts 8 calls and the full URL union. M22 (`while` → `if` in `mapBounded`) was red.
+  - **Hole 2:** `cache` is re-imported under `vi.stubEnv` plus `vi.resetModules`. It is the Cloudflare adapter with both keys and the no-op without them. M23 (`cache = noopCache`) was red.
+  - **Hole 3:** zone ids of 31 characters, 33 characters and upper-case hex are refused, because Cloudflare zone ids are exactly 32 lower-case hex. M24 (`{32}` → `+`) was red in 2 cases and M25 (`A-F` accepted) in 1.
+  - **Hole 4:** every request carries a live `AbortSignal`. M26 (timeout removed) was red.
+  - **Hole 5:** a site URL with a trailing `/` gives `https://flowersoverseas.com/en`. M27 (plain concatenation) was red.
+  - Case counts are now 46 unit and 18 integration.
 
 ## Result
 
@@ -49,7 +60,7 @@ PR [#127](https://github.com/itsahmeds/flowers-overseas/pull/127). New `src/lib/
 
 The keys are not zod schema keys. They follow `STAGING_BASIC_AUTH`, because `ENV_KEYS` is AC-11's 28-key contract. They are documented, commented, in `.env.example`.
 
-Tests: unit T-22 `tests/unit/cache-cloudflare.test.ts`, 40 cases. Integration T-23 `tests/integration/cache-cloudflare-purge.test.ts`, 17 cases, against the new MSW handler `tests/msw/handlers/cloudflare.ts`. Eight mutations were each seen red: a locale dropped, a corridor URL dropped, chunk size 31, one retry, a URL in the log, unbounded concurrency, no de-duplication, and `&&` in the absent check. No expensive gate was run locally.
+Tests: unit T-22 `tests/unit/cache-cloudflare.test.ts`, 46 cases. Integration T-23 `tests/integration/cache-cloudflare-purge.test.ts`, 18 cases, against the new MSW handler `tests/msw/handlers/cloudflare.ts`. Eight mutations were each seen red: a locale dropped, a corridor URL dropped, chunk size 31, one retry, a URL in the log, unbounded concurrency, no de-duplication, and `&&` in the absent check. No expensive gate was run locally.
 
 Handed on: the `sitemap` escalation above, and `src/lib/railway.ts` `OPTIONAL_VARIABLE_KEYS`, which needs the Cloudflare pair before the pair is set on Railway.
 

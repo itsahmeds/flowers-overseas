@@ -12,7 +12,7 @@
  * The HTTP half (3 calls for 71 URLs, two retries, one `error` line with no URL) is T-23 in
  * `tests/integration/cache-cloudflare-purge.test.ts`.
  */
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   SITEMAP_CACHE_TAG,
@@ -182,6 +182,14 @@ describe("urlsForTag — hub:{locale} and the rest of the vocabulary", () => {
     }
   });
 
+  it("does not double the slash when the site URL ends in one", () => {
+    expect(
+      urlsForTag(homeCacheTag("en"), {
+        baseUrl: "https://flowersoverseas.com/",
+      }),
+    ).toEqual(["https://flowersoverseas.com/en"]);
+  });
+
   it("builds absolute URLs on the deployment's own origin", () => {
     expect(
       urlsForTag(homeCacheTag("de"), {
@@ -292,6 +300,20 @@ describe("parseCloudflarePurgeConfig — absent means off, present must be well-
     expect(JSON.stringify(state)).not.toContain(TOKEN);
   });
 
+  // Cloudflare zone ids are exactly 32 lower-case hex characters (the zone Overview's "Zone ID").
+  it.each([
+    ["31 characters", ZONE_ID.slice(1)],
+    ["33 characters", `${ZONE_ID}0`],
+    ["upper-case hex", ZONE_ID.toUpperCase()],
+  ])("refuses a zone id of %s", (_label, zoneId) => {
+    expect(
+      parseCloudflarePurgeConfig({
+        [CLOUDFLARE_API_TOKEN_KEY]: TOKEN,
+        [CLOUDFLARE_ZONE_ID_KEY]: zoneId,
+      }),
+    ).toEqual({ kind: "invalid", keys: [CLOUDFLARE_ZONE_ID_KEY] });
+  });
+
   it("refuses a token with whitespace inside it", () => {
     expect(
       parseCloudflarePurgeConfig({
@@ -339,5 +361,35 @@ describe("createCloudflareCacheAdapter — the resolver is injected", () => {
     });
     await adapter.invalidate(["a", "b", "a"]);
     expect(asked).toEqual(["a", "b"]);
+  });
+});
+
+describe("`cache` as exported: chosen from process.env at import (break 127 round 2)", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.resetModules();
+  });
+
+  it("is the Cloudflare adapter when both keys are in the environment", async () => {
+    vi.stubEnv(CLOUDFLARE_API_TOKEN_KEY, TOKEN);
+    vi.stubEnv(CLOUDFLARE_ZONE_ID_KEY, ZONE_ID);
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", BASE_URL);
+    vi.resetModules();
+    const fresh = await import("../../src/lib/cache");
+    const adapters = await import("../../src/lib/cache-cloudflare");
+
+    expect(adapters.isCloudflareCacheAdapter(fresh.cache)).toBe(true);
+    expect(fresh.cache).not.toBe(fresh.noopCache);
+  });
+
+  it("is the no-op when neither key is in the environment", async () => {
+    vi.stubEnv(CLOUDFLARE_API_TOKEN_KEY, "");
+    vi.stubEnv(CLOUDFLARE_ZONE_ID_KEY, "");
+    vi.resetModules();
+    const fresh = await import("../../src/lib/cache");
+    const adapters = await import("../../src/lib/cache-cloudflare");
+
+    expect(fresh.cache).toBe(fresh.noopCache);
+    expect(adapters.isCloudflareCacheAdapter(fresh.cache)).toBe(false);
   });
 });
