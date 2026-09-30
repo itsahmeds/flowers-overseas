@@ -27,7 +27,11 @@ _None yet._
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-09-30 — **What does `sitemap` purge?** Spec 040 §5.4 maps a tag to "the set of absolute URLs carrying it" but never says which responses carry `sitemap`. By the code and specs it is declared by the corridor pages (`corridorCacheTags`, spec 007 §5.4), the hubs (`hubCacheTags`), spec 008's listing pages (spec 008 §5.4, `catalog:*` + `sitemap`), and, per the sitemap route headers, the sitemap XML documents (`plan/01` §8's hourly `sitemap.regenerate` purges it). Resolving it to all of these makes the hourly job purge every corridor, hub and listing page every hour. Resolving it to the sitemap documents alone contradicts the page tag builders. The choice was not made here: `urlsForTag("sitemap")` returns `[]` (`UNRESOLVED_TAGS` in `src/lib/cache.ts`) and the adapter names it in `unresolved_tags` at `warn`. Once answered, it is a one-line change plus a test. Nothing calls `invalidate` in Phase 0, so no behaviour ships wrong in the meantime. To: orchestrator / founder. **Open.**
+
+## Progress
+
+- 2026-09-30 — T-22/T-23 written and seen red, adapter + resolver + wiring implemented, 8 mutations each red, commit `6457fc8b` pushed.
 
 ## Result
 
