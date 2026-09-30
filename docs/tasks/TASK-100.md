@@ -44,4 +44,18 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR [#126](https://github.com/itsahmeds/flowers-overseas/pull/126). `config/cloudflare/zone-settings.json` declares §5.4's ten protocol/TLS rows (AC-15's nine, plus Automatic HTTPS Rewrites off) and its fourteen do-not-enable rows, each with its reason: 26 declared values across 18 settings and 8 `bot_management` fields, and four rows as `checkedElsewhere` (E-1). `src/lib/cloudflare-zone.ts` holds the zod schema, a client bound to one zone with a four-entry allow-list (no `/accounts`), a check mode that refuses every verb but `GET` before the transport, a 403 → named scope map, `checkZone`, `applyZone` and the recorded-response mock. `scripts/cloudflare/apply-zone-settings.ts` is the CLI behind `pnpm cloudflare:check` / `cloudflare:apply`: exit 0 match or `skipped: no token`, 1 drift, 2 missing credentials (always with `--require-token`), 3 refused call. The `cloudflare-check` job has `needs: typecheck` and no `if:`. Its scope step checks the zone on push, dispatch and the new nightly `schedule`, and on a pull request with `ci:full` or a change under `config/cloudflare/`. Tests: **contract** 46 (`tests/contract/cloudflare-zone-check.test.ts`: T-15 ×9, T-17 ×16 plus coverage and row pins, T-24 ×6, CLI ×8); **unit** 17 (`tests/unit/cloudflare-zone.test.ts`: T-25) and 11 new or changed in `tests/unit/ci-workflow.test.ts` (T-27 half: job, triggers, `needs`, the nightly set, the step and its secrets, empty secrets fail, and the scope step run under bash for five cases), plus one entry in `tests/unit/branch-protection.test.ts`. Mutations, each red: dropping `brotli` or the Rocket Loader row, a comparator that skips one setting or all of `bot_management`, `--check` issuing one PATCH, the check-mode guard removed, the allow-list admitting `/accounts`, a renamed or unmapped 403 scope, a non-idempotent apply, the retired-setting tolerance applied to every setting, and seven CI-job mutations. No expensive gate run locally; no build slot taken. Owed: the founder's Z1–Z4 paste and the rulings on E-1 to E-3.
+
+```text
+gates:cheap · 3054b55eaa3982e57b973812e29d0e1d567552ea · tree clean · base origin/main · 2026-09-30T16:19:16.804Z
+typecheck             exit 0 · 2.0 s
+lint                  exit 0 · 12.9 s
+format:check          exit 0 · 8.4 s
+i18n:check            exit 0 · 0.4 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 185.4 s · changed 209 + map 0 + always 0 · always run: zod-boundaries, lint-coverage, url-pii
+RESULT: PASS
+```
+
+`pnpm test:contract`: 5 files, 130 tests passed.
