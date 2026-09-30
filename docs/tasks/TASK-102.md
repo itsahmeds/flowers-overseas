@@ -38,4 +38,22 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR [#127](https://github.com/itsahmeds/flowers-overseas/pull/127). New `src/lib/cache-cloudflare.ts` holds the adapter. It resolves tags through an injected resolver, de-duplicates tags and URLs, and sends chunks of `PURGE_CHUNK_SIZE` = 30 with `PURGE_CONCURRENCY` = 3. It retries `PURGE_RETRIES` = 2 times with 250/500 ms backoff and a 10 s per-request timeout, writes one log line per call (`tags`, `url_count`, `api_calls`, plus `failed_calls` or `unresolved_tags`; never a URL, never the token) and never rejects. The same file holds `parseCloudflarePurgeConfig()`, which `src/lib/env.ts` re-exports. `src/lib/cache.ts` gains `urlsForTag(tag, { baseUrl })`, built from the tag builders over `routableLocaleCodes()`, `listCorridorPages()`, `hubView()`, `localePath()` and `absoluteUrl()`. It also gains `selectCacheAdapter(env)`: `cache` is the Cloudflare adapter when both keys are well-formed, the no-op when either is absent or blank, and a warn-only adapter when either is malformed.
+
+The keys are not zod schema keys. They follow `STAGING_BASIC_AUTH`, because `ENV_KEYS` is AC-11's 28-key contract. They are documented, commented, in `.env.example`.
+
+Tests: unit T-22 `tests/unit/cache-cloudflare.test.ts`, 40 cases. Integration T-23 `tests/integration/cache-cloudflare-purge.test.ts`, 11 cases, against the new MSW handler `tests/msw/handlers/cloudflare.ts`. Eight mutations were each seen red: a locale dropped, a corridor URL dropped, chunk size 31, one retry, a URL in the log, unbounded concurrency, no de-duplication, and `&&` in the absent check. No expensive gate was run locally.
+
+Handed on: the `sitemap` escalation above, and `src/lib/railway.ts` `OPTIONAL_VARIABLE_KEYS`, which needs the Cloudflare pair before the pair is set on Railway.
+
+```
+gates:cheap · 8aceb6c89e74d927457887ac6ab8b3be3b719d6d · tree clean · base origin/main
+typecheck             exit 0 · 2.0 s
+lint                  exit 0 · 13.5 s
+format:check          exit 0 · 8.4 s
+i18n:check            exit 0 · 0.4 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 16.6 s · changed 3 + map 0 + always 3 · always run: zod-boundaries, lint-coverage, url-pii
+RESULT: PASS
+```
