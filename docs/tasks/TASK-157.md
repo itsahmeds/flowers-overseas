@@ -32,7 +32,7 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-- **Gate (2026-09-30, `/review 121` HOLE 6):** the founder does **not** start F5 or F1–F4, and does not paste T-44's output, **until TASK-164 has merged**; before that, the runbook's F5 bullet would send them to replace a good token.
+- **Gate (2026-09-30, `/review 121` HOLE 6):** the founder does **not** start F5 or F1–F4, and does not paste T-44's output, **until TASK-164 has merged**; before that, the runbook's F5 bullet would send them to replace a good token. **Lifted 2026-09-30:** TASK-164 merged as PR 124 (`8221a14`); the founder may do F1–F6 now.
 - **2026-09-29: T-44's live part is owed to the founder** (to: orchestrator → founder; answer: **Founder, 2026-09-29: merge the texts and runbook now; T-44's paste is owed by the founder; the task closes on the paste.** TASK-157 stays `in_review`, not `done`, until the output after F1–F3, and again after F4, is pasted here). It needs the founder's clicks (F1–F4, F6) and a Railway workspace token (F5); no agent has either. The founder follows `docs/runbooks/railway-cloudflare-setup.md` "Release branch" and pastes the output of `pnpm railway:check; echo "exit $?"` (with `RAILWAY_ENVIRONMENT_ID` unset) here, after F1–F3 and again after F4. **Expected while production has no `web`** (TASK-104 creates it): F1's trigger step not applicable, and exit 1 with exactly this on stdout, and no other line:
   ```text
   production · web · triggers on none, declared release
