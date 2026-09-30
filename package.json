@@ -35,6 +35,8 @@
     "tasks:migrate": "node scripts/tasks-brief.ts --migrate",
     "env:check": "node scripts/env-check.ts",
     "railway:check": "node scripts/railway-check.ts",
+    "cloudflare:check": "node scripts/cloudflare/apply-zone-settings.ts --check",
+    "cloudflare:apply": "node scripts/cloudflare/apply-zone-settings.ts",
     "release:status": "node scripts/release.ts status",
     "release:promote": "node scripts/release.ts promote",
     "release:rollback": "node scripts/release.ts rollback",

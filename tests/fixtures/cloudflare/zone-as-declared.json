@@ -1,0 +1,305 @@
+{
+  "$comment": "The zone as config/cloudflare/zone-settings.json declares it, on the Free plan (TASK-100). Shaped after Cloudflare's documented v4 envelopes, because no agent holds a token: the founder's first live `cloudflare:check` is the recording that confirms them (TASK-100 escalation E-1). `mirage` answers 404: Cloudflare sunset it in January 2026. `http2` and `polish` are read-only on the Free plan.",
+  "zoneId": "0f1e2d3c4b5a69788796a5b4c3d2e1f0",
+  "responses": {
+    "GET /zones/{zone_id}": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "errors": [],
+        "messages": [],
+        "result": {
+          "id": "0f1e2d3c4b5a69788796a5b4c3d2e1f0",
+          "name": "flowersoverseas.com",
+          "status": "active",
+          "paused": false,
+          "type": "full",
+          "name_servers": ["ada.ns.cloudflare.com", "bob.ns.cloudflare.com"],
+          "plan": {
+            "id": "0feeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+            "name": "Free Website",
+            "legacy_id": "free"
+          }
+        }
+      }
+    },
+    "GET /zones/{zone_id}/settings/ssl": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "errors": [],
+        "messages": [],
+        "result": {
+          "id": "ssl",
+          "value": "strict",
+          "editable": true,
+          "modified_on": "2026-09-16T09:12:44.000000Z"
+        }
+      }
+    },
+    "GET /zones/{zone_id}/settings/always_use_https": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "errors": [],
+        "messages": [],
+        "result": {
+          "id": "always_use_https",
+          "value": "on",
+          "editable": true,
+          "modified_on": "2026-09-16T09:12:44.000000Z"
+        }
+      }
+    },
+    "GET /zones/{zone_id}/settings/min_tls_version": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "errors": [],
+        "messages": [],
+        "result": {
+          "id": "min_tls_version",
+          "value": "1.2",
+          "editable": true,
+          "modified_on": "2026-09-16T09:12:44.000000Z"
+        }
+      }
+    },
+    "GET /zones/{zone_id}/settings/tls_1_3": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "errors": [],
+        "messages": [],
+        "result": {
+          "id": "tls_1_3",
+          "value": "on",
+          "editable": true,
+          "modified_on": "2026-09-16T09:12:44.000000Z"
+        }
+      }
+    },
+    "GET /zones/{zone_id}/settings/0rtt": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "errors": [],
+        "messages": [],
+        "result": {
+          "id": "0rtt",
+          "value": "on",
+          "editable": true,
+          "modified_on": "2026-09-16T09:12:44.000000Z"
+        }
+      }
+    },
+    "GET /zones/{zone_id}/settings/http2": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "errors": [],
+        "messages": [],
+        "result": {
+          "id": "http2",
+          "value": "on",
+          "editable": false,
+          "modified_on": "2026-09-16T09:12:44.000000Z"
+        }
+      }
+    },
+    "GET /zones/{zone_id}/settings/http3": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "errors": [],
+        "messages": [],
+        "result": {
+          "id": "http3",
+          "value": "on",
+          "editable": true,
+          "modified_on": "2026-09-16T09:12:44.000000Z"
+        }
+      }
+    },
+    "GET /zones/{zone_id}/settings/brotli": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "errors": [],
+        "messages": [],
+        "result": {
+          "id": "brotli",
+          "value": "on",
+          "editable": true,
+          "modified_on": "2026-09-16T09:12:44.000000Z"
+        }
+      }
+    },
+    "GET /zones/{zone_id}/settings/early_hints": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "errors": [],
+        "messages": [],
+        "result": {
+          "id": "early_hints",
+          "value": "on",
+          "editable": true,
+          "modified_on": "2026-09-16T09:12:44.000000Z"
+        }
+      }
+    },
+    "GET /zones/{zone_id}/settings/automatic_https_rewrites": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "errors": [],
+        "messages": [],
+        "result": {
+          "id": "automatic_https_rewrites",
+          "value": "off",
+          "editable": true,
+          "modified_on": "2026-09-16T09:12:44.000000Z"
+        }
+      }
+    },
+    "GET /zones/{zone_id}/settings/rocket_loader": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "errors": [],
+        "messages": [],
+        "result": {
+          "id": "rocket_loader",
+          "value": "off",
+          "editable": true,
+          "modified_on": "2026-09-16T09:12:44.000000Z"
+        }
+      }
+    },
+    "GET /zones/{zone_id}/settings/minify": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "errors": [],
+        "messages": [],
+        "result": {
+          "id": "minify",
+          "value": {
+            "css": "off",
+            "html": "off",
+            "js": "off"
+          },
+          "editable": true,
+          "modified_on": "2026-09-16T09:12:44.000000Z"
+        }
+      }
+    },
+    "GET /zones/{zone_id}/settings/email_obfuscation": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "errors": [],
+        "messages": [],
+        "result": {
+          "id": "email_obfuscation",
+          "value": "off",
+          "editable": true,
+          "modified_on": "2026-09-16T09:12:44.000000Z"
+        }
+      }
+    },
+    "GET /zones/{zone_id}/settings/server_side_exclude": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "errors": [],
+        "messages": [],
+        "result": {
+          "id": "server_side_exclude",
+          "value": "off",
+          "editable": true,
+          "modified_on": "2026-09-16T09:12:44.000000Z"
+        }
+      }
+    },
+    "GET /zones/{zone_id}/settings/polish": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "errors": [],
+        "messages": [],
+        "result": {
+          "id": "polish",
+          "value": "off",
+          "editable": false,
+          "modified_on": "2026-09-16T09:12:44.000000Z"
+        }
+      }
+    },
+    "GET /zones/{zone_id}/settings/hotlink_protection": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "errors": [],
+        "messages": [],
+        "result": {
+          "id": "hotlink_protection",
+          "value": "off",
+          "editable": true,
+          "modified_on": "2026-09-16T09:12:44.000000Z"
+        }
+      }
+    },
+    "GET /zones/{zone_id}/settings/security_level": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "errors": [],
+        "messages": [],
+        "result": {
+          "id": "security_level",
+          "value": "medium",
+          "editable": true,
+          "modified_on": "2026-09-16T09:12:44.000000Z"
+        }
+      }
+    },
+    "GET /zones/{zone_id}/settings/mirage": {
+      "status": 404,
+      "body": {
+        "success": false,
+        "errors": [
+          {
+            "code": 1003,
+            "message": "Invalid or missing zone setting id"
+          }
+        ],
+        "messages": [],
+        "result": null
+      }
+    },
+    "GET /zones/{zone_id}/bot_management": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "errors": [],
+        "messages": [],
+        "result": {
+          "fight_mode": false,
+          "enable_js": false,
+          "using_latest_model": true,
+          "ai_bots_protection": "disabled",
+          "crawler_protection": "disabled",
+          "ai_search": "disabled",
+          "ai_user": "disabled",
+          "ai_training": "disabled",
+          "content_bots_protection": "disabled",
+          "is_robots_txt_managed": false,
+          "cf_robots_variant": "off",
+          "bot_preference_sync_enabled": false
+        }
+      }
+    }
+  }
+}
