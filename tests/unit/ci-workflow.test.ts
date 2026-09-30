@@ -101,6 +101,10 @@ const EXPECTED_JOBS = [
   // reason — it reads `seed/data/**` and writes the §11 catalogue-health report.
   "seed-check",
   "dev-os-check",
+  // spec 040 AC-29 (TASK-100): the Cloudflare zone against `config/cloudflare/zone-settings.json`,
+  // on the `needs: typecheck` fan-out, with no `if:` so an unlabelled pull request that touches the
+  // declaration is still checked; nightly as well.
+  "cloudflare-check",
   "preview",
   "e2e",
   "visual",
@@ -1138,10 +1142,12 @@ describe("the evaluator T-39 relies on", () => {
 
 describe("CI on every push to main (spec 040 AC-38, T-39)", () => {
   it("adds `push: branches: [main]` and leaves the other triggers as they were", () => {
+    // `schedule` is spec 040 AC-29's nightly `cloudflare-check` (TASK-100).
     expect(ci.on).toEqual({
       pull_request: { types: ["ready_for_review", "labeled"] },
       push: { branches: ["main"] },
       workflow_dispatch: null,
+      schedule: [{ cron: "17 3 * * *" }],
     });
   });
 
@@ -1183,6 +1189,9 @@ describe("CI on every push to main (spec 040 AC-38, T-39)", () => {
       "test-unit",
       "build",
       "container",
+      // spec 040 AC-29 (TASK-100): starts on every pull request; its `scope` step checks the
+      // zone only when `config/cloudflare/**` changed or the label is present.
+      "cloudflare-check",
       "lighthouse",
     ]);
     // e2e, visual and a11y have no `if:` either, but `needs: preview` keeps them out.
@@ -1578,5 +1587,218 @@ describe("every A20 check runs on every PR (spec 001 AC-61, T-65)", () => {
     ).toEqual([
       "package.json: test:coverage is not the whole unit suite (vitest run --project unit --changed)",
     ]);
+  });
+});
+
+/**
+ * Spec 040 AC-29, T-27's `cloudflare-check` half (TASK-100): the job exists, `needs: typecheck`,
+ * runs nightly as well as on pull requests and pushes, checks the zone on a pull request only
+ * when `config/cloudflare/**` changed or `ci:full` is present, and fails rather than passes when
+ * the two secrets are absent.
+ */
+describe("the cloudflare-check job (spec 040 AC-29, T-27)", () => {
+  const job = ci.jobs["cloudflare-check"];
+  const steps = job?.steps ?? [];
+  const scheduleContext = githubContext({
+    event_name: "schedule",
+    ref: "refs/heads/main",
+    event: {},
+  });
+
+  it("exists, `needs: typecheck`, and carries no job-level `if:`", () => {
+    expect(job?.name).toBe("cloudflare-check");
+    expect(job?.needs).toBe("typecheck");
+    expect(job?.if).toBeUndefined();
+  });
+
+  it("runs nightly: the one `schedule` trigger starts it on main", () => {
+    expect(ci.on?.["schedule"]).toEqual([{ cron: "17 3 * * *" }]);
+    expect(jobSet(scheduleContext)).toContain("cloudflare-check");
+  });
+
+  it("starts on every other event too: push, dispatch, and pull requests with and without the label", () => {
+    for (const context of [
+      pushContext,
+      dispatchContext,
+      pullRequestContext([]),
+      pullRequestContext(["ci:full"]),
+    ]) {
+      expect(jobSet(context)).toContain("cloudflare-check");
+    }
+  });
+
+  it("puts the spine, the jobs with no `if:` and nothing else on the nightly run", () => {
+    expect(jobSet(scheduleContext)).toEqual([
+      "lint",
+      "typecheck",
+      "test-unit",
+      "build",
+      "container",
+      "cloudflare-check",
+      "lighthouse",
+    ]);
+  });
+
+  it("runs `pnpm cloudflare:check --require-token` with the two secrets, gated on the scope step", () => {
+    const check = steps.find((step) => step.id === "zone");
+    expect(check?.run).toBe(
+      "pnpm cloudflare:check --require-token 2>&1 | tee cloudflare-check.log",
+    );
+    expect(check?.if).toBe("steps.scope.outputs.run == 'true'");
+    expect(check?.env).toEqual({
+      CLOUDFLARE_API_TOKEN: "${{ secrets.CLOUDFLARE_API_TOKEN }}",
+      CLOUDFLARE_ZONE_ID: "${{ secrets.CLOUDFLARE_ZONE_ID }}",
+    });
+    const pkg = JSON.parse(read("package.json")) as PackageScripts;
+    expect(pkg.scripts["cloudflare:check"]).toBe(
+      "node scripts/cloudflare/apply-zone-settings.ts --check",
+    );
+    expect(pkg.scripts["cloudflare:apply"]).toBe(
+      "node scripts/cloudflare/apply-zone-settings.ts",
+    );
+  });
+
+  it("fails, naming both secrets, when GitHub hands it empty ones: it never passes on `skipped`", () => {
+    // An absent repository secret interpolates to the empty string, not to an unset variable.
+    const result = spawnSync(
+      process.execPath,
+      [
+        "scripts/cloudflare/apply-zone-settings.ts",
+        "--check",
+        "--require-token",
+      ],
+      {
+        cwd: repoRoot,
+        encoding: "utf8",
+        env: {
+          PATH: process.env["PATH"] ?? "",
+          NODE_ENV: "test",
+          CLOUDFLARE_API_TOKEN: "",
+          CLOUDFLARE_ZONE_ID: "",
+        },
+      },
+    );
+    expect(result.status).toBe(2);
+    expect(result.stdout).not.toContain("skipped");
+    expect(result.stderr).toContain(
+      "cloudflare:check needs CLOUDFLARE_API_TOKEN and CLOUDFLARE_ZONE_ID, and neither is set.",
+    );
+  });
+
+  describe("the scope step, run as the runner runs it", () => {
+    const scope = steps.find((step) => step.id === "scope");
+    const roots: string[] = [];
+    afterAll(() => {
+      for (const root of roots) rmSync(root, { recursive: true, force: true });
+    });
+    const git = (cwd: string, ...args: string[]): string =>
+      execFileSync(
+        "git",
+        [
+          "-c",
+          "user.name=ci-test",
+          "-c",
+          "user.email=ci-test@example.invalid",
+          "-c",
+          "commit.gpgsign=false",
+          ...args,
+        ],
+        { cwd, encoding: "utf8" },
+      ).trim();
+
+    /** A clone whose `topic` branch changes one file off `main`. */
+    const pullRequest = (changed: string): string => {
+      const root = mkdtempSync(join(tmpdir(), "fo-cloudflare-scope-"));
+      roots.push(root);
+      const origin = join(root, "origin");
+      mkdirSync(origin);
+      git(origin, "init", "--quiet", "--initial-branch=main");
+      writeFileSync(join(origin, "README.md"), "base\n");
+      git(origin, "add", "-A");
+      git(origin, "commit", "--quiet", "-m", "chore: base");
+      git(root, "clone", "--quiet", origin, "clone");
+      const clone = join(root, "clone");
+      git(clone, "checkout", "--quiet", "-b", "topic");
+      mkdirSync(join(clone, changed, ".."), { recursive: true });
+      writeFileSync(join(clone, changed), "{}\n");
+      git(clone, "add", "-A");
+      git(clone, "commit", "--quiet", "-m", "feat: change");
+      return clone;
+    };
+
+    const runScope = (cwd: string, env: Record<string, string>): string => {
+      const output = join(cwd, "step-output.txt");
+      writeFileSync(output, "");
+      const script = join(cwd, "scope.sh");
+      writeFileSync(script, scope?.run ?? "exit 1");
+      const result = spawnSync(
+        "bash",
+        ["--noprofile", "--norc", "-eo", "pipefail", script],
+        {
+          cwd,
+          encoding: "utf8",
+          env: {
+            PATH: process.env["PATH"] ?? "",
+            NODE_ENV: "test",
+            GITHUB_OUTPUT: output,
+            ...env,
+          },
+        },
+      );
+      expect(result.status, result.stderr).toBe(0);
+      return readFileSync(output, "utf8").trim();
+    };
+
+    const scratch = (): string => {
+      const root = mkdtempSync(join(tmpdir(), "fo-cloudflare-scope-"));
+      roots.push(root);
+      return root;
+    };
+
+    it("checks on a push, a dispatch and the nightly schedule", () => {
+      for (const event of ["push", "workflow_dispatch", "schedule"]) {
+        expect(
+          runScope(scratch(), {
+            EVENT_NAME: event,
+            BASE_REF: "",
+            FULL_LABEL: "false",
+          }),
+          event,
+        ).toBe("run=true");
+      }
+    });
+
+    it("checks a pull request labelled `ci:full` whatever it changed", () => {
+      expect(
+        runScope(pullRequest("docs/note.md"), {
+          EVENT_NAME: "pull_request",
+          BASE_REF: "main",
+          FULL_LABEL: "true",
+        }),
+      ).toBe("run=true");
+    });
+
+    it("checks an unlabelled pull request that changes config/cloudflare/", () => {
+      expect(
+        runScope(pullRequest("config/cloudflare/zone-settings.json"), {
+          EVENT_NAME: "pull_request",
+          BASE_REF: "main",
+          FULL_LABEL: "false",
+        }),
+      ).toBe("run=true");
+    });
+
+    it("skips an unlabelled pull request that changes anything else, a look-alike path included", () => {
+      for (const changed of ["docs/note.md", "config/cloudflare-notes.json"]) {
+        expect(
+          runScope(pullRequest(changed), {
+            EVENT_NAME: "pull_request",
+            BASE_REF: "main",
+            FULL_LABEL: "false",
+          }),
+          changed,
+        ).toBe("run=false");
+      }
+    });
   });
 });

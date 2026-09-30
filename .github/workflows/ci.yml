@@ -3,9 +3,10 @@
 # the job names straight out of it, so a job added here is part of the branch-protection contract
 # without anybody editing a list (`pnpm branch-protection --verify`).
 #
-# Jobs (22): lint · typecheck · test-unit · test-integration · test-contract · build · container ·
+# Jobs (23): lint · typecheck · test-unit · test-integration · test-contract · build · container ·
 # db-check · env-build-failure · commitlint · seo-validate · i18n-check · catalogue-check ·
-# corridor-check · seed-check · dev-os-check · audit · preview · e2e · visual · a11y · lighthouse.
+# corridor-check · seed-check · dev-os-check · cloudflare-check · audit · preview · e2e · visual ·
+# a11y · lighthouse.
 # The lint job also runs the three orientation gates of §14 A15: `codebase:map --check`,
 # `specs:index --check`, `tasks:check`.
 #
@@ -85,12 +86,17 @@ name: ci
 #    `preview` stays pull-request-only, so `preview`, `e2e`, `visual` and `a11y` are the only jobs
 #    a push skips. `lighthouse` has no `if:` and must keep none: every release carries its budgets.
 #    `tests/unit/ci-workflow.test.ts` (T-39) evaluates every `if:` for a push to hold this.
+#  - a nightly `schedule` on `main` (spec 040 §5.5, AC-29; TASK-100), for `cloudflare-check`: zone
+#    drift is usually somebody clicking in the dashboard, not a pull request. The spine and the
+#    jobs with no `if:` run with it; every fan-out job's `if:` skips a scheduled run.
 on:
   pull_request:
     types: [ready_for_review, labeled]
   push:
     branches: [main]
   workflow_dispatch:
+  schedule:
+    - cron: "17 3 * * *"
 
 # One group per PR, and one for each pushed ref. Two pushes to `main` close together share
 # `refs/heads/main`'s group, so the second cancels the first's run: that earlier commit gets no
@@ -1286,6 +1292,91 @@ jobs:
           python3 --version
       - name: Run the dev-OS checks
         run: pnpm dev-os:check
+
+  # spec 040 §5.4, §5.5, AC-15, AC-17, AC-29 (TASK-100): the Cloudflare zone against
+  # `config/cloudflare/zone-settings.json` — the nine protocol/TLS settings and the do-not-enable
+  # list (Rocket Loader, Auto Minify, Bot Fight Mode, AI-crawler blocking, …), any one of which
+  # silently breaks the ADR-0016 inline-script hash, `robots.txt` or crawling. `pnpm
+  # cloudflare:check` only reads: it prints one line per differing setting and exits non-zero.
+  #
+  # When it checks: on a pull request only when a file under `config/cloudflare/` changed or the
+  # `ci:full` label is present, and on every push to `main`, dispatch and nightly `schedule`. The
+  # job has no `if:`, like `container`, so an unlabelled pull request that touches the declaration
+  # is still checked; the `scope` step decides and the summary says why.
+  #
+  # Credentials: the repository secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ZONE_ID`
+  # (`docs/runbooks/railway-cloudflare-setup.md` §7). `--require-token` makes a run that owes the
+  # check fail, naming both, when they are absent: it never passes on `skipped: no token`.
+  #
+  # `needs: typecheck`: the placement rule of spec 001 §14 A9 — one API read, no build, no browser.
+  cloudflare-check:
+    name: cloudflare-check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: typecheck
+    steps:
+      - uses: actions/checkout@v4
+      - name: Decide whether this run owes the zone check
+        id: scope
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
+          FULL_LABEL: ${{ contains(github.event.pull_request.labels.*.name, 'ci:full') }}
+        run: |
+          set -uo pipefail
+          if [ "$EVENT_NAME" != "pull_request" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "A \`$EVENT_NAME\` run checks the zone unconditionally." > scope.txt
+            exit 0
+          fi
+          if [ "$FULL_LABEL" = "true" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "The \`ci:full\` label is present, so the zone is checked." > scope.txt
+            exit 0
+          fi
+          git fetch --no-tags --depth=200 origin "$BASE_REF" || true
+          base=$(git merge-base FETCH_HEAD HEAD 2>/dev/null || true)
+          if [ -z "$base" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "No merge base with \`$BASE_REF\` was found, so the zone is checked anyway." > scope.txt
+            exit 0
+          fi
+          files=$(git diff --name-only "$base" HEAD -- config/cloudflare)
+          if [ -n "$files" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            printf 'The zone declaration changed:\n\n```\n%s\n```\n' "$files" > scope.txt
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "No file under \`config/cloudflare/\` changed and the \`ci:full\` label is absent; the zone was not checked." > scope.txt
+          fi
+      - uses: ./.github/actions/setup
+        if: steps.scope.outputs.run == 'true'
+      - name: cloudflare:check — the live zone against config/cloudflare/zone-settings.json (AC-15, AC-17)
+        id: zone
+        if: steps.scope.outputs.run == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+        run: pnpm cloudflare:check --require-token 2>&1 | tee cloudflare-check.log
+      - name: Summarise the verdict
+        if: always()
+        run: |
+          set -uo pipefail
+          {
+            echo "#### cloudflare-check"
+            echo ""
+            cat scope.txt 2>/dev/null || echo "The scope step did not run."
+            echo ""
+            echo "| check | command | result |"
+            echo "|---|---|---|"
+            echo "| zone settings and the do-not-enable list (AC-15, AC-17) | \`pnpm cloudflare:check --require-token\` | ${{ steps.zone.outcome }} |"
+            if [ -f cloudflare-check.log ]; then
+              echo ""
+              echo '```'
+              cat cloudflare-check.log
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
 
   # **The origin the browser suites run against is CI's own (TASK-137).**
   #
