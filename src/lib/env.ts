@@ -10,6 +10,11 @@
  * bundle is therefore a build error rather than a leak. Schemas and pure helpers live in
  * `env.schema.ts` (no Next, no `server-only`) so `next.config.ts` and `scripts/env-check.ts` can
  * use them.
+ *
+ * The Cloudflare purge switches (`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ZONE_ID`; spec 040 §5.4,
+ * §12, TASK-102) are validated by `parseCloudflarePurgeConfig()`, re-exported here. They are not
+ * schema keys, for `STAGING_BASIC_AUTH`'s reason: absent means off, so no environment may be
+ * *required* to carry them, and AC-11's contract stays the 28 keys of `ENV_KEYS`.
  */
 export { clientEnv } from "./env.client";
 export { env, environment, serverEnv } from "./env.server";
@@ -40,3 +45,9 @@ export {
   validateEnv,
   validateRuntimeEnv,
 } from "./env.schema";
+export {
+  CLOUDFLARE_API_TOKEN_KEY,
+  CLOUDFLARE_ZONE_ID_KEY,
+  type CloudflarePurgeConfig,
+  parseCloudflarePurgeConfig,
+} from "./cache-cloudflare";
