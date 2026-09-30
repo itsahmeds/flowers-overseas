@@ -37,7 +37,16 @@ export type Json =
   | null
   | readonly Json[]
   | { readonly [key: string]: Json };
-const jsonSchema: z.ZodType<Json> = z.json();
+const jsonSchema: z.ZodType<Json> = z.lazy(() =>
+  z.union([
+    z.string(),
+    z.number(),
+    z.boolean(),
+    z.null(),
+    z.array(jsonSchema),
+    z.record(z.string(), jsonSchema),
+  ]),
+);
 
 const identifier = z.string().regex(/^[a-z0-9_]+$/);
 const prose = z.string().min(1);
