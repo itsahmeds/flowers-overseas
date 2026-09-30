@@ -366,6 +366,8 @@ export interface ZoneClient {
   ): Promise<SettingResult | RetiredSetting>;
   patchSetting(id: string, value: Json): Promise<SettingResult>;
   getBotManagement(): Promise<Record<string, Json>>;
+  /** Any call, through the same guards: the allow-list, the check-mode refusal, the 403 map. */
+  request(call: ApiRequest): Promise<unknown>;
 }
 
 export interface ZoneClientOptions {
@@ -457,6 +459,7 @@ export function createZoneClient(options: ZoneClientOptions): ZoneClient {
 
   return {
     mode,
+    request: (call) => request(call),
     async getZone() {
       const result = await request({ method: "GET", path: zonePath });
       return parse(zoneResultSchema, result, "GET /zones/{zone_id}");
