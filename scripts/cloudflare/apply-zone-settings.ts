@@ -13,7 +13,7 @@
  *    `manual:` and exits 1.
  *
  * Credentials: `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ZONE_ID`, from the environment only (the
- * founder's shell or the CI secret store; `docs/runbooks/railway-cloudflare-setup.md` §7). With
+ * founder's shell or the CI secret store; `docs/runbooks/railway-cloudflare-setup.md` "Cloudflare zone settings"). With
  * both absent the run prints `skipped: no token` and exits 0, so a contributor's local run is never
  * a failure (§5.4); with `--require-token`, as the `cloudflare-check` CI job runs it, it exits 2
  * naming them instead. With one of the two absent it always exits 2 naming the missing one. The
@@ -123,7 +123,8 @@ function resolveTransport(
   }
   const token = env[TOKEN_KEY];
   const zoneId = env[ZONE_ID_KEY];
-  const runbook = "docs/runbooks/railway-cloudflare-setup.md §7";
+  const runbook =
+    "docs/runbooks/railway-cloudflare-setup.md, section Cloudflare zone settings";
   if (!present(token) && !present(zoneId)) {
     if (options.requireToken) {
       return {

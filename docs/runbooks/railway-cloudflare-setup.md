@@ -445,6 +445,101 @@ Once TASK-104 has created `web` on `release`, the same command must exit 0 (TASK
 TASK-103, so staging has its `worker` by then); that run is recorded in TASK-104's brief, before
 the DNS change.
 
+## Cloudflare zone settings (spec 040 §5.4, §12 step 4; TASK-100)
+
+**Why.** Cloudflare sits in front of the whole site. A zone feature switched on by mistake —
+Rocket Loader, Auto Minify, Email Obfuscation, Bot Fight Mode, AI-crawler blocking — silently
+breaks the inline-script hash (ADR-0016), `robots.txt` or crawling. `config/cloudflare/zone-settings.json`
+declares every setting spec 040 §5.4 pins, each with its reason. Two commands read it:
+
+- `pnpm cloudflare:check` only reads. It prints one line per setting that differs, as
+  `setting · declared · live · feature`, and exits 1 if there is any.
+- `pnpm cloudflare:apply` writes the differences it can, and prints `cloudflare:apply: N changes`.
+  Run it twice: the second run must print `cloudflare:apply: 0 changes`.
+
+The zone settings are applied while the zone still points at nothing (§12 step 4). DNS records,
+cache rules and the rate limit are TASK-101's and are not in this file.
+
+### Z1 — create the token (Cloudflare dashboard, 3 minutes)
+
+1. Log in at `dash.cloudflare.com`. Click the person icon (top right) → **My Profile** →
+   **API Tokens** → **Create Token**. Next to _Create Custom Token_, click **Get started**.
+2. **Token name:** `flowersoverseas-zone`.
+3. **Permissions.** Add one row for each line below: choose the three values from the dropdowns,
+   then click **+ Add more** for the next row.
+
+   | first dropdown | second dropdown | third dropdown |
+   |---|---|---|
+   | Zone | Zone Settings | Edit |
+   | Zone | DNS | Edit |
+   | Zone | Cache Purge | Purge |
+   | Zone | Zone | Read |
+   | Zone | Bot Management | Read |
+
+   The last row is read-only. Only with it can the check see Bot Fight Mode, the managed
+   `robots.txt` and the AI-crawler switches. Spec 040 AC-24 lists only the first four, so the
+   fifth waits on a ruling (TASK-100 escalation E-1). Without it, the check stops with
+   `the token is missing scope Zone → Bot Management → Read`.
+4. **Zone Resources:** `Include` · `Specific zone` · `flowersoverseas.com`. Choose nothing else:
+   no "All zones", and **no Account row of any kind**.
+5. Leave _Client IP Address Filtering_ and _TTL_ empty. Click **Continue to summary**, check that
+   the summary shows only `flowersoverseas.com`, then click **Create Token**.
+6. Copy the token now: Cloudflare shows it only once. Put it in your password manager. Never
+   paste it into a file in the repository, a PR or a chat.
+
+### Z2 — find the zone id
+
+In the dashboard, click **flowersoverseas.com** → **Overview**. In the right-hand column, under
+**API**, click the copy button next to **Zone ID**. It is 32 letters and digits. It is not a
+secret, but it goes where the token goes.
+
+### Z3 — the first apply, from your shell
+
+From a clean checkout of `main`:
+
+```bash
+export CLOUDFLARE_API_TOKEN='<the token from Z1>'
+export CLOUDFLARE_ZONE_ID='<the zone id from Z2>'
+pnpm cloudflare:check; echo "exit $?"     # read-only: lists what differs today
+pnpm cloudflare:apply; echo "exit $?"     # writes it: ends with "cloudflare:apply: N changes"
+pnpm cloudflare:apply; echo "exit $?"     # must end with "cloudflare:apply: 0 changes" and exit 0
+pnpm cloudflare:check; echo "exit $?"     # must print "… declared values match …" and exit 0
+unset CLOUDFLARE_API_TOKEN CLOUDFLARE_ZONE_ID
+```
+
+Paste the output of all four commands, as they are, into `docs/tasks/TASK-100.md` `## Escalations`
+(or send it to the orchestrator). The token never appears in it: the scripts print setting names
+and values only.
+
+**What the output can say, and what to do:**
+
+- `skipped: no token`: one of the two `export` lines did not run in this shell. Run them again.
+- `exit 2` naming a variable: that variable is empty in this shell.
+- `exit 3`, `the token is missing scope X`: the token lacks row X of the Z1 table. Edit the token
+  (My Profile → API Tokens → the `…` menu → **Edit**), add the row, and run again.
+- `exit 3`, `answered 401`: Cloudflare refused the token. Make a new one (Z1).
+- `zone · declared flowersoverseas.com · live …`: the zone id belongs to another zone. Copy it
+  again (Z2).
+- A line starting `manual:`: the script does not switch this on or off itself. Search the
+  dashboard for the name after the last `·` (for example `Bot Fight Mode`), and switch it to the
+  declared value. **Under Attack mode** is only ever switched on by you, during an incident;
+  switch it off when the incident is over. Then run `pnpm cloudflare:check` again.
+- `mirage · retired by Cloudflare … · counts as off`: expected. Cloudflare has removed Mirage.
+
+### Z4 — the two repository secrets, for the `cloudflare-check` CI job
+
+The CI job `cloudflare-check` runs the same check on every push to `main`, every night at 03:17
+UTC, and on pull requests that change `config/cloudflare/` or carry `ci:full`. It reads two
+repository secrets. **Without them it fails** and names them. It never passes on `skipped`.
+
+1. GitHub → `itsahmeds/flowers-overseas` → **Settings** → **Secrets and variables** →
+   **Actions** → **New repository secret**.
+2. Name `CLOUDFLARE_API_TOKEN`, value: the token from Z1. Click **Add secret**.
+3. Again: name `CLOUDFLARE_ZONE_ID`, value: the zone id from Z2. Click **Add secret**.
+
+Do Z3 before Z4: once the secrets exist, the job checks the live zone, and it stays red until Z3's
+apply has run.
+
 ## Rollback
 
 Deleting the `staging` service or environment has no user impact (§12's per-step rollback). A bad

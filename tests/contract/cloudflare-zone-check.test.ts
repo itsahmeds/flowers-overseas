@@ -520,7 +520,7 @@ describe("the CLI (AC-23, AC-24): exit codes, credentials, and nothing secret pr
     expect(result.status).toBe(2);
     expect(result.stdout).toBe("");
     expect(result.stderr).toBe(
-      "cloudflare:check needs CLOUDFLARE_API_TOKEN and CLOUDFLARE_ZONE_ID, and neither is set. In CI they are the repository secrets of the same names (docs/runbooks/railway-cloudflare-setup.md §7); this run must not pass without them.\n",
+      "cloudflare:check needs CLOUDFLARE_API_TOKEN and CLOUDFLARE_ZONE_ID, and neither is set. In CI they are the repository secrets of the same names (docs/runbooks/railway-cloudflare-setup.md, section Cloudflare zone settings); this run must not pass without them.\n",
     );
   });
 
@@ -532,7 +532,7 @@ describe("the CLI (AC-23, AC-24): exit codes, credentials, and nothing secret pr
     );
     expect(result.code).toBe(2);
     expect(result.stderr).toBe(
-      "cloudflare:check needs CLOUDFLARE_ZONE_ID: CLOUDFLARE_API_TOKEN is set and CLOUDFLARE_ZONE_ID is not (docs/runbooks/railway-cloudflare-setup.md §7)\n",
+      "cloudflare:check needs CLOUDFLARE_ZONE_ID: CLOUDFLARE_API_TOKEN is set and CLOUDFLARE_ZONE_ID is not (docs/runbooks/railway-cloudflare-setup.md, section Cloudflare zone settings)\n",
     );
     expect(result.stdout + result.stderr).not.toContain(SENTINEL);
   });

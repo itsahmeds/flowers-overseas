@@ -1305,8 +1305,9 @@ jobs:
   # is still checked; the `scope` step decides and the summary says why.
   #
   # Credentials: the repository secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ZONE_ID`
-  # (`docs/runbooks/railway-cloudflare-setup.md` §7). `--require-token` makes a run that owes the
-  # check fail, naming both, when they are absent: it never passes on `skipped: no token`.
+  # (`docs/runbooks/railway-cloudflare-setup.md`, "Cloudflare zone settings", Z4).
+  # `--require-token` makes a run that owes the check fail, naming both, when they are absent: it
+  # never passes on `skipped: no token`.
   #
   # `needs: typecheck`: the placement rule of spec 001 §14 A9 — one API read, no build, no browser.
   cloudflare-check:
