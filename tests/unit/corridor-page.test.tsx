@@ -204,12 +204,19 @@ const pages = await Promise.all(
         from: FROM,
         liveSlots: await corridorShopEntry(locale, iso2),
       });
-      if (view === undefined)
+      // The same page with no shop link: what the route renders while `country-shop-root` is
+      // unpublished, which is the guide page spec 007 shipped and §14 A9 cleared.
+      const bare = corridorView(iso2, locale, { from: FROM });
+      if (view === undefined || bare === undefined)
         throw new Error(`the ${locale} ${iso2} guide must exist`);
-      return { locale, iso2, name, view };
+      return { locale, iso2, name, view, bare };
     }),
   ),
 );
+
+/** The shop entry's `<section>`, whole, wherever it is on the page. */
+const SHOP_SECTION =
+  /<section[^>]*data-fo-corridor-shop[^>]*>.*?<\/section>/gsu;
 
 describe("the shop entry in the guide state (AC-19, spec 008 AC-20, spec 007 §14 A9)", () => {
   it("covers all fourteen guide pages", () => {
@@ -233,6 +240,30 @@ describe("the shop entry in the guide state (AC-19, spec 008 AC-20, spec 007 §1
         new RegExp(`^/${locale}/[a-z-]+/flowers$`, "u"),
       );
       expect(text(section ?? "")).toBe(`See flowers for ${name}`);
+    });
+  }
+
+  // **The shop link adds its section and nothing else** (`/break 98` round 1, hole 4). The pin
+  // above reads inside the `<section>` only, so a florist claim placed just outside it, on every
+  // guide page, passed. Here each page is rendered twice, with the link and without it: the first,
+  // with its one shop section cut out, must be the second byte for byte. Whatever the link brings
+  // with it, wherever it lands, makes the two differ.
+  for (const { locale, iso2, view, bare } of pages) {
+    it(`${locale}/${iso2}: with its one shop section removed, equals the same page with no shop link`, () => {
+      const withLink = render(<CorridorPage view={view} />, locale);
+      const withoutLink = render(<CorridorPage view={bare} />, locale);
+      expect(
+        view.liveSlots.shopEntryHref,
+        "the link is supplied",
+      ).toBeDefined();
+      expect(
+        bare.liveSlots.shopEntryHref,
+        "and here it is not",
+      ).toBeUndefined();
+      const sections = withLink.match(SHOP_SECTION) ?? [];
+      expect(sections, "exactly one shop section").toHaveLength(1);
+      expect(withoutLink).not.toContain("data-fo-corridor-shop");
+      expect(withLink.replace(sections[0] ?? "!", "")).toBe(withoutLink);
     });
   }
 
