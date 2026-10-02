@@ -252,6 +252,8 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
   kept both sides; map regenerated; pushed `bdc8da58`.
 - 2026-10-02 — `pnpm install --frozen-lockfile` (next 16.3.6) and `pnpm gates:cheap` → `RESULT:
   PASS`; round-2 changes 1 and 2 confirmed from the diff; PR body brought up to date.
+- 2026-10-02 — `main` moved to `19cb001b` (TASK-102, #127) while CI ran on `3450fb48`: rebased
+  again, map regenerated, gates re-run, CI re-fired on the new head.
 
 ## Result
 
@@ -508,3 +510,13 @@ Unit run inside the block: 103 files, 2820 passed, 0 skipped. Load average at th
    (`src/modules/catalog/shop-entry.ts:44-62`), and the slot is a single `shopEntryHref`
    (`src/modules/geo/corridor.ts:336`). The ruling is recorded under `## Escalations` above and in
    this section's first line.
+
+**Second rebase (2026-10-02)**, onto `origin/main` at `19cb001b` (TASK-102 merged as #127, plus
+`00b652da`), which `main` reached while CI run 37023646213 was on `3450fb48`. Only
+`docs/codebase-map.md` conflicted, at five steps. It was regenerated with `pnpm codebase:map` at
+each one, never hand-merged, and `--check` is current on the head. `git range-diff` shows only
+the five map-carrying commits changed. Every file the PR changes, apart from the map, is
+byte-identical to `3450fb48`. Every file it does not change is identical to `main`. The history
+adds no conflict-marker line. `pnpm gates:cheap` on the head that adds this paragraph printed
+`RESULT: PASS`. Its block, and CI on that head, are in the PR body, because a commit cannot quote
+its own SHA.
