@@ -321,14 +321,14 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
   production-build e2e, `## Result`, the PR body, and the `ci:full` toggle. One untracked
   throwaway file, `tests/unit/zz-scratch-product-dump.test.ts`, must be deleted first: the
   time-limit guard refused `rm`.
+- 2026-10-03 — finisher: the scratch test and its dump dir deleted; the `pl` crumb pin and
+  `product.ts`'s `corridorPath` condition, each with a unit case and a mutation (`bd850d83`);
+  `gates:cheap` PASS; crawl + corridor e2e on a production build, 76 passed, 2 skipped. Unblocked.
 
 ## Result
 
 **AC-20 met as written (spec 008); state-B chips deferred to TASK-147 per spec 007 §14 A10.**
-**AC-21 is not yet met on `c19aba09`:** `gates:cheap` is red on TASK-125's
-`catalog-product-view.test.ts:276`, which pins the `pl` product crumb's old 404, and that pin
-is still to be updated (`## Progress`, 2026-10-03). Once it is updated, the line below holds.
-**AC-21 is met (2026-10-02), with the two waivers still `open`** (category hubs; `de`/`pl` shop
+**AC-21 is met (2026-10-03, on `bd850d83`), with the two waivers still `open`** (category hubs; `de`/`pl` shop
 roots). The waivers excuse only the missing inbound link. Since `/break 98` hole 1 was fixed, the
 crawl reads the links on every page it fetches and on every waived page: all six page types in
 all four locales. It finds zero links to a non-200 URL, zero into an unpublished id and zero
@@ -700,3 +700,38 @@ rule, and in `de`/`pl` the crumb is plain text. Nothing else in `src/` changed.
   Only the crumb condition reverted, `shop-reachability` on both projects: **red, exactly the 4
   cases** (`non-200 links from /de` and `/pl`, the same 14 URLs), 8 passed. Restored; `.next`
   deleted.
+
+**Escalation 4, the product half (2026-10-03, fence widened by the orchestrator).** After the
+rebase onto `8cb36e99` (TASK-125, #101), `productView()` had the same old rule and TASK-125's test
+pinned the old 404. Both now follow the one corridor rule (`bd850d83`):
+- `src/modules/catalog/product.ts`: `country.corridorPath` also requires
+  `corridorPageExists(iso2, locale)`, imported from `@/modules/geo` as `listing.ts` does. No
+  `en`/`en-gb` value changes: `corridorPageExists` is true for all 7 destinations there.
+- `tests/unit/catalog-product-view.test.ts`: the `pl` country crumb's `href` is now exactly
+  `undefined` in the href list. The crumb object is pinned with `toStrictEqual` (`labelKey`
+  `destinations.pl.name`, no `href` key) and `.href` with `toBe(undefined)`. A one-line comment
+  says it was a 404 (`/pl/wyslij-kwiaty/polska`) until this rule, and that the category crumb the
+  case is about is unchanged. A new case: the `pl` view has no `corridorPath` key, and the `en`
+  view keeps `/en/send-flowers-to/poland`.
+- **Mutations.** The crumb condition at `listing.ts:1736` reverted → the crumb case goes **red**
+  (`+ "/pl/wyslij-kwiaty/polska"`), 1 failed and 5 passed. The `product.ts` condition reverted →
+  the new case goes **red** (`expected true to be false` on `"corridorPath" in pl.country`), 1
+  failed and 5 passed. Both restored with `git checkout` from the commit → 102/102 green in the file.
+- **e2e on a production build** (`rm -rf .next && pnpm build`, `next start -p 3113` stopped by
+  PID, build slot held and released, load average 7.1 before the build, 14.6 at the start of the
+  run and 11.5 at its end, from other agents). `shop-reachability` + `corridor` on `e2e-desktop`
+  and `e2e-mobile`: **76 passed, 2 skipped, exit 0**, the same 2 skips as before. `.next` deleted.
+- **`pnpm gates:cheap`** on `bd850d83` (the commit after it changes only this brief):
+
+```
+gates:cheap · bd850d83cc68a67e1fb733c2461810fc30b1e5c6 · tree clean · base origin/main · 2026-10-02T20:16:59.544Z
+typecheck             exit 0 · 2.2 s
+lint                  exit 0 · 12.8 s
+format:check          exit 0 · 8.1 s
+i18n:check            exit 0 · 0.3 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 28.8 s · changed 107 + map 0 + always 2 · always run: zod-boundaries, lint-coverage, url-pii
+format:check covers: every path except node_modules/ .next/ out/ coverage/ playwright-report/ test-results/ pnpm-lock.yaml next-env.d.ts .claude/ plan/ specs/ docs/ README.md TASKS.md CLAUDE.md /tests/fixtures/lint/ /tests/fixtures/seo/_cases/ /tests/fixtures/i18n/_cases/ /src/modules/geo/content/corpus.generated.ts
+RESULT: PASS
+```
