@@ -14,7 +14,7 @@ task actually touches.
 |---|---|---|---|
 | `admin` | Public barrel for `admin` (admin queries and actions) | spec 012 | — |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2 + the gated GA4 tag; GA4 event… | spec 004, 023 | `unit/consent-bootstrap.test.tsx` |
-| `catalog` | The only import path into the catalogue and pricing module (spec 005 §2, §5.2;… | spec 005 | `contract/catalog-static-providers.test.ts`, `contract/support/catalog-provider-contract.ts`, `unit/catalog-availability.test.ts` +33 |
+| `catalog` | The only import path into the catalogue and pricing module (spec 005 §2, §5.2;… | spec 005 | `contract/catalog-static-providers.test.ts`, `contract/support/catalog-provider-contract.ts`, `unit/catalog-availability.test.ts` +34 |
 | `customers` | Public barrel for `customers` (customers, recipients, consent) | spec 019 | — |
 | `geo` | The only import path into the geo module (spec 007 §5.2; TASK-087) | spec 007, 002, 009 | `contract/seo-schema-fixtures.test.ts`, `unit/catalog-country-occasion.test.ts`, `unit/catalog-listing.test.ts` +17 |
 | `i18n` | The only import path for the i18n module (spec 003 §5.2, AC-3; TASK-034) | spec 003 | `contract/seo-schema-fixtures.test.ts`, `fixtures/ts/format-time-in-zone-no-zone.ts`, `integration/sitemap.test.ts` +52 |
@@ -51,6 +51,7 @@ task actually touches.
 | `payment-methods.ts` | Payment-method registry (spec 004 §2 "Everything data-gated is config", §8… | spec 004 |
 | `site-links.ts` | Site-link registry (spec 004 §2 "Everything data-gated is config", §5.1, §12;… | spec 004 |
 | `trending.ts` | The florists' picks the "Most sent this week" row shows until real orders rank… | spec 004 |
+| `url-keys.ts` | The query keys our own URLs carry (spec 001 §14 A20, AC-55; TASK-160) | spec 001 |
 | `voice.ts` | The voice register (spec 004 §14 A5; spec 007 AC-2; TASK-087) | spec 004 |
 
 ## Routes (`src/app/`)
@@ -92,7 +93,7 @@ task actually touches.
 | `catalogue-check.ts` | `catalogue:check` | `pnpm catalogue:check` (spec 005 §2 "Docs, fixtures, gates", §6 "Crawl… |
 | `check-layout.ts` | `check-layout` | Layout manifest for `plan/01-architecture.md` §5 (spec 001 AC-3 / T-03) |
 | `check-no-db-imports.ts` | `check:no-db` | `pnpm check:no-db` (spec 003 AC-2 / T-02, TASK-033) |
-| `check-no-literal-disable.ts` | `check:no-literal-disable` | `pnpm check:no-literal-disable` (spec 001 AC-6 / T-07, TASK-003) |
+| `check-no-literal-disable.ts` | `check:no-literal-disable` | `pnpm check:no-literal-disable` (spec 001 §14 A20, AC-51 / T-55, TASK-158; AC-6… |
 | `check-no-vercel-env.ts` | `check:no-vercel-env` | Host-agnostic env gate (spec 040 AC-2) |
 | `client-js-budget.ts` | `budget:client-js` | `pnpm budget:client-js` — the AC-27 measurement (spec 003 §6 "CWV budget… |
 | `codebase-map.ts` | `codebase:map` | The codebase map — AC-33 / T-34 (spec 001 §14 A15, TASK-086) |
@@ -106,6 +107,7 @@ task actually touches.
 | `dev-os-check.ts` | `dev-os:check` | `pnpm dev-os:check` (spec 001 §2 "Scripts", §11 "Dev OS", AC-24/AC-25/AC-26 ·… |
 | `env-check.ts` | `env:check` | `pnpm env:check` (spec 001 AC-11 / T-12, TASK-005) |
 | `fonts/build-fonts.ts` | `fonts:build` | `pnpm fonts:build` — regenerates the committed WOFF2 subsets under… |
+| `gates-cheap.ts` | `gates:cheap` | `pnpm gates:cheap` — every cheap gate of `CLAUDE.md` DoD §2, one pasteable… |
 | `i18n-check.ts` | `i18n:check` | `pnpm i18n:check` (spec 003 §2 "Lint, checks, CI", §6 "URL pattern", §11,… |
 | `i18n-draft.ts` | `i18n:draft` | `pnpm i18n:draft --locale <code> [--dry-run]` (spec 003 §2 "Messages", §13 Q7,… |
 | `i18n-pseudo.ts` | `i18n:pseudo` | `pnpm i18n:pseudo [--check] [--messages-dir messages]` (spec 003 §2… |
@@ -113,6 +115,7 @@ task actually touches.
 | `lint-fixtures.ts` | `lint:fixtures` | `pnpm lint:fixtures` (spec 001 AC-4 / AC-5, TASK-003) |
 | `pr-policy.ts` | `pr-policy` | PR policy (spec 001 §2 "CI", AC-19 / T-20, TASK-002) |
 | `railway-check.ts` | `railway:check` | `pnpm railway:check [--env <name>]` — the Railway drift gate (spec 040 §5.3,… |
+| `release.ts` | `release:status` | `pnpm release:status`, `pnpm release:promote` and `pnpm release:rollback` — the… |
 | `seo/brotli-origin.ts` | `lighthouse:origin` | `pnpm lighthouse:origin` — a Brotli reverse proxy in front of `next start`… |
 | `seo/generate-hreflang-fixtures.ts` | — | `node scripts/seo/generate-hreflang-fixtures.ts [--write]` (spec 003 §6… |
 | `seo/generate-sitemap-fixtures.ts` | — | The committed sitemap fixtures, generated from the real builders (spec 007 §2… |
@@ -130,14 +133,14 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 204 |
-| `tests/integration/` | 6 |
+| `tests/unit/` | 211 |
+| `tests/integration/` | 9 |
 | `tests/contract/` | 6 |
 | `tests/e2e/` | 32 |
 | `tests/a11y/` | 14 |
 | `tests/visual/` | 15 |
 | `tests/dev-os/` | 1 |
-| `tests/fixtures/` | 200 |
+| `tests/fixtures/` | 295 |
 | `tests/msw/` | 3 |
 
 ## Where does X live?
