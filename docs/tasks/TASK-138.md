@@ -85,6 +85,21 @@ One dated bullet per `/review`, newest last.
 - **From `/review 94` (2026-09-21):** `listing-mobile-card-image` still flakes 2 runs in 9 (origin
   max 5.34 s vs the helper's 5 s bound); `## Result` must not present the flake as resolved.
 
+- **From `/review 94` round 2 (2026-10-03), required:** boundary cases for the seed slot cap
+  (`seed/check.ts` `slot-bytes`: a row at exactly `cap + 1` red, at `cap` green), the
+  committed-total cap (`total-bytes`: `COMMITTED_MEDIA_BYTE_CAP + 1` red, exactly the cap green) and
+  the uploader cap (`loadUploadSet()`: `cap + 1` refused, `cap` accepted); extract `main()`'s gate
+  sequence `readR2Config → assertOriginAgrees → loadUploadSet` into one exported function that
+  `main()` calls, and assert that an origin mismatch and a dirty tree each throw before the
+  injected fetcher is called; pin the literal `MEDIA_ORIGIN === "https://media.flowersoverseas.com"`
+  per A8's AC-27 and update `media-origin.test.ts`'s header; mark the 2026-10-03 "no TASK-138
+  amendment" escalation answered (A8); record CI run 37072236769 in `## Result`; fix the PR body's
+  "Deviation to flag".
+- **From `/review 94` round 2 (2026-10-03), accepted:** HOLE 3 ACCEPTABLE (a wrongly counted
+  `.local/media/` total can only fail loudly), HOLE 6 ACCEPTABLE (strict equality today; add the two
+  look-alike-host cases with the extraction), HOLE 7 ACCEPTABLE (a non-200 PUT throws today; add a
+  403 case with the extraction), HOLE 8 ACCEPTABLE (signing proven against live R2; a bad signature
+  is a loud 403).
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
