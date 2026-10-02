@@ -6,7 +6,7 @@
     "visual/all-destinations-desktop-region.png": "8e65e1da4000a0b28cb3048f5856efeb2472950a4ed21106f74f36ae25bd790b",
     "visual/all-destinations-mobile-head.png": "477acd8a0373218b56753b147a04eb82cfa227e93c8e5b2fe04145c21d6a3ff6",
     "visual/all-destinations-mobile-region.png": "70712503fa2f746a5d70c309b3202ecd5563ebc4c4fba38bda4651e5bcfde209",
-    "visual/category-hub-desktop.png": "2238c3679ab45592b46d8cc0bbbcc07937e99aaa1307579284f2c4faca664ad4",
+    "visual/category-hub-desktop.png": "55986c276b7669fad7c24d76d4860c0609b1422d15ef0aeafb0de95742b4e0d5",
     "visual/category-hub-mobile.png": "0c96bddbfd19cb80de1c2579a15e7a20fa35426ef69e2674e3648161010b29cc",
     "visual/chooser-desktop.png": "48cd951cad5064eebdd708683ba69f1b26a0f561bfe508a3fddefd42450b5b95",
     "visual/chooser-mobile.png": "d74e9e22bf61fd0620a156832e086e3d8e7fa0c8b51ec6f499bb12de258c3ed8",
@@ -90,8 +90,8 @@
     "visual/listing-mobile-toolbar.png": "7f982294f15e08190ec7129ea3016cb97a5faf4d5076505a3029cbfe18c7fc7e",
     "visual/not-found-desktop.png": "72833209c6bc1ebaf66d33016099c44000d62eb6b7cb077e25a3baf5647b212d",
     "visual/not-found-mobile.png": "5a980d46640eb7d8de4b892a3742effb66f7b5a652b192ec1b7a686cc1ccaeb3",
-    "visual/occasion-hub-desktop.png": "e7b4b24b79a9f1f82307f0029796c51a42053e11f96afda901a6810c5e14495e",
-    "visual/occasion-hub-mobile.png": "f634578d20459154f31b17156f38ed6ef41af4dff9a590905716e5dbecc15dba",
+    "visual/occasion-hub-desktop.png": "1648c1fdb829898efd64a12d0f2bbc15207b3e95dad8c70115b48a660697590e",
+    "visual/occasion-hub-mobile.png": "873c342e375e9cb579922a9321819d7cd1d0d443a5cb0ef3625e684ebec466e6",
     "visual/suggestion-banner-desktop.png": "5dbbf1942a212c9d67e2e8e6eed9e1233e372916ef2e74820bb860a6eca17cef",
     "visual/suggestion-banner-mobile.png": "41f419d82fc89b47c4121318f30d173ac1a4d7bd7a408e4718d7d98f0c3967eb"
   }
