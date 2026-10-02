@@ -193,19 +193,33 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   docks there (four bars would cover the listing blocks' mobile baselines). `tests/visual/
   product.spec.ts` adds seven PDP baselines (three states × two widths, plus the docked bar).
 
+- **2026-10-03 — stage 3c, the production build.** In the build slot (load 4.7 at acquire, 10.1
+  at release), `pnpm build` from `.env.example` and `next start -p 3126`: e2e `product-page` +
+  `dev-components` on both projects 68 passed / 2 skipped (the case-insensitive-host skips),
+  a11y `product-page` + `dev-components` 11 passed with zero serious/critical, visual
+  `product` + `listing` + `notices` green after the darwin refresh. The build printed the product
+  existence table once. The first PDP visual draft shot all of `main`; it was dropped because the
+  date grid moves with the build date (`corridor.spec.ts`'s precedent), and the PDP is now shot by
+  date-free block.
+
 ## Result
 
-**Partial — the page ships and every owned AC has unit evidence. Three stage-3 items remain.**
-[PR #135](https://github.com/itsahmeds/flowers-overseas/pull/135) (draft, with TASK-127). The six
-primitives and `ProductPage` are in `src/modules/ui/product/`, and the PDP route serves
-`/{locale}/{country}/{product}/{slug}` from `productView()` alone. AC-7 (render half), AC-9,
-AC-23 and AC-25 (slot half): `tests/unit/product-page.test.tsx` (19 cases). Each AC was broken once
-and seen red (see `## Progress`). The e2e half is `tests/e2e/product-page.spec.ts` (22 passed
-against `next dev` on port 3126 inside the build slot), and axe is `tests/a11y/product-page.spec.ts`
-(8 passed, zero serious/critical after one `link-in-text-block` fix). `components.dc.html` is in
-step, and its delivery-facts rows are redrawn to spec 007's.
-**New `en` keys: 30**, 27 attested and 3 waiting (E-3). `pnpm gates:cheap`: typecheck, lint,
-format, i18n, no-db and map are green. Tests are red only from E-3's 5.18 %.
-**Remaining:** `/dev/components` entries for the six primitives; the sticky ≤390 px summary;
-visual baselines (`darwin` locally, `linux` from CI); and the production-build run of
-e2e/a11y/visual in the build slot.
+**Done, in review — [PR #135](https://github.com/itsahmeds/flowers-overseas/pull/135) (with
+TASK-127).** The six primitives and `ProductPage` are in `src/modules/ui/product/` and on
+`/dev/components` ("Product and date-picker blocks", every drawn state); `components.dc.html` is
+in step.
+- **AC-9:** `tests/unit/product-page.test.tsx` (chip fee = two projections' difference; one total
+  moves by exactly the chip; the docked bar is the summary's own total row, one
+  `data-fo-price-total`, one live region), the gallery and PDP e2e at 390 px.
+- **AC-23:** unit (no input element, card a zero line) and gallery e2e.
+- **AC-7 render half:** unit (reason in the label), e2e (reason in the computed accessible name).
+- **AC-25 slot half:** the hero is the page's one `priority` image (unit).
+- **E-5:** the vase sentence renders only beside a photograph; three unit cases, both conditions
+  seen red when broken.
+- **Copy:** 30 new `en` keys, all attested by the founder on 2026-10-03 (27 + 3, E-3); `en` is
+  25/541 = 4.62 % unreviewed. "See all {count}" stays unbuilt (E-3).
+- **Tests:** unit `product-page` 24, `product-route` 5; e2e +2 gallery cases, +1 PDP sticky case;
+  visual +11 PDP baselines (`darwin` here, `linux` from `visual-baselines.yml`), and the gallery's
+  `dev-components-desktop` and seven 1 px-shifted listing parts refreshed.
+- **Expensive gates run locally**, because the change adds baselines and a docked element whose
+  position only a browser computes; CI is the gate of record.
