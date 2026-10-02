@@ -46,6 +46,29 @@ One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
 
+- **From `/review 132` round 1 and `/break 132` round 1 (2026-10-02): PASS on the shipped code; FAIL
+  on three contract holes (`3648df41`).** All are in `tests/contract/support/catalog-provider-contract.ts`.
+  No source change is expected; if one is needed, escalate.
+  1. Hole 1: on every row, empty every array or object field, then re-read. Pin the nested fields
+     per read: products have exactly `colours`, `flowerTypes` and `occasions`, and every other
+     read has none. Red under H1, a products freeze that covers `occasions` only.
+  2. Hole 2: for each read, through `attempt()`, replace a row
+     (`handed[0] = { ...handed[0], [field]: changed }`) and `reverse()` the returned array in place.
+     Re-read and assert the exact count and `toStrictEqual(before)`. Red under H2a (arrays sealed)
+     and H2b (`length` made non-writable).
+  3. Hole 3: write the field on every row, and hole 1's nested writes on every row, each through
+     `attempt()`, then re-read with `toStrictEqual(before)`. Red under H3, where the last
+     `countryPrices` row is left writable.
+
+  Add H1, H2a, H2b and H3 with their red cases to `## Result`'s mutation table. The shipped
+  providers stay green. Nits, optional while the file is open: exact counts in place of the
+  `> 0` / `> 10` checks at contract lines 226, 246, 404 and 412; `amountMinor` → `retailMinor` in
+  the brief; drop the row's stale sentence "The contract case mutates a copy and can never fail
+  today". Carried to TASK-070: run `describeCatalogProviderContract("db", …, rowCounts)` with exact
+  seeded counts of at least 2 per read. Carried to a later task: `ui/home/trending-provider.ts` and
+  `geo/corridor.ts` read dataset rows directly; route them through the catalog module, or freeze
+  the dataset at its source.
+
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
