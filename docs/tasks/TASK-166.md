@@ -1,0 +1,126 @@
+# TASK-166 — Soften the florist claim in the seed copy: "Every order is made by hand and delivered in person by our florist in the recipient's city." becomes the future tense "Every order will be made by hand and delivered in person by our florist in the recipient's city." in every product, category and occasion description, FO-BQ-001's and FO-BQ-003's search descriptions soften the same way, and the seed snapshot is regenerated
+
+Row: `TASKS.md` → TASK-166. This brief is the task's long form: the row keeps a link and one
+sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it with
+`pnpm tasks:brief TASK-166`; keep it current by editing this file, not the row.
+
+## Binding
+
+- **The change (founder, 2026-10-03).** We have no florist yet, and every description ends "Every
+  order is made by hand and delivered in person by our florist in the recipient's city." The
+  founder chose the future tense, one word longer, so no intro falls under the 60-word floor: **"Every order
+  will be made by hand and delivered in person by our florist in the recipient's city."**
+- **Where (E1, answered by the orchestrator, 2026-10-03).** The sentence is the
+  `catalog.floristSentence` key in `messages/{en,de,pl}.json` (`en-gb` falls back to `en`). Set
+  it to the founder's sentence in all three files (`de` and `pl` hold the English text today, as
+  machine drafts, and keep it). The `en` key is founder-approved: in `messages/en.meta.json`,
+  `reviewed: true`, `reviewedBy: "founder (chat, 2026-10-03: future-tense florist sentence)"`;
+  `de`/`pl` meta stay as they are (unreviewed). Then run `pnpm i18n:draft --sync-copy`
+  (`seed/README.md:219`, `seed/copy.ts:333`) to re-flow every description's closing sentence in
+  `seed/data/copy/**`. Regenerate the snapshot last, after E4's edits and drafts
+  (`pnpm seed:diff --write`).
+- **E2 (answered).** The future tense adds one word, so the 60-word floor holds; the 90-word
+  ceiling must hold too. If `copy/wordCount` fails anywhere, stop and report.
+- **E4 (answered by the orchestrator under the founder's future-tense decision, 2026-10-03):
+  the same claim in other words.** Edit these two `en` `seoDescription` values exactly, nothing
+  else in the rows (`en-gb` has no `seoDescription` override for either, so `en` only):
+  - FO-BQ-001: "Eighteen orange roses with eucalyptus, hand-tied by our florist in the
+    recipient's city. …" becomes "Eighteen orange roses with eucalyptus, to be hand-tied by our
+    florist in the recipient's city. …" (only "hand-tied" → "to be hand-tied"; the rest of the
+    value is unchanged).
+  - FO-BQ-003: "Made and delivered by our florist in the recipient's city." becomes "Will be made
+    and delivered by our florist in the recipient's city." (the rest of the value unchanged).
+  - Then `pnpm i18n:draft --locale de` and `pnpm i18n:draft --locale pl`, which refill the
+    machine-draft rows from `copy/en/` with the new `sourceHash` (`seed/README.md:211`). Check the
+    resulting diff touches only the closing sentences and these two rows' `seoDescription` and
+    `sourceHash`; if it touches anything else, stop and report.
+  - Leave Sant Jordi's "where we have a florist in the city" alone; it is conditional, so it is
+    already true. Leave the related claims listed under E4 below (FO-FN-003, FO-GS-004, FO-BQ-008,
+    FO-BQ-036) alone: they are not in this task.
+- **Class: full (breaker + reviewer).** The copy feeds the product JSON-LD `description`
+  (`src/modules/catalog/product.ts`, `listing.ts`), which is an SEO gate (`CLAUDE.md` DoD §4).
+- **E3.** The edit guard needs this task's row on `main`. The orchestrator lands it first.
+- **Fixtures.** The three fixtures in `tests/fixtures/seed/_cases/copy/` (`bad-word-count`,
+  `bad-duplicate-description`, `bad-delivery-timing`) carry the old sentence. Update each one only
+  if its test fails for the sentence rather than for the fault it is built to show, and say which
+  in `## Result`.
+- **Gates.** `pnpm seed:check`, `pnpm catalogue:check`, `pnpm i18n:check`, and the snapshot
+  check, then `pnpm gates:cheap`.
+
+## Read
+
+- `specs/006-seed-catalogue-import-imagery-pipeline.md`: `## 0. Index`, then §2.2 (copy rules).
+- `docs/codebase-map.md`: the `seed/` rows.
+- `seed/data/copy/en/products.json` (the row shape and its review fields), `seed/schema/` for the
+  copy schema, and `seed/check.ts` for the rules that read copy.
+
+## Carry-forwards
+
+One dated bullet per `/review`, newest last.
+
+- **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+
+## Escalations
+
+One dated bullet per escalation: the question, who it went to, the answer or `open`.
+
+- **2026-10-03, E1, to the orchestrator and founder: the sentence is not authored in the rows.**
+  `pnpm seed:check` (rule `copy/floristSentence`, `seed/copy.ts:333`) requires every description
+  to end with its locale's `catalog.floristSentence` from `messages/{en,de,pl}.json` (`en-gb` falls
+  back to `en`). The designed way to reword it is one edit there plus
+  `pnpm i18n:draft --sync-copy` (`seed/README.md:219-222`, `seed/copy.ts:14-21`). This task's
+  fence forbids `messages/`. Probe in a scratch copy of HEAD: 421 replacements (0 old left), then
+  `seed:check` exits 1 with 421 `copy/floristSentence` problems. **Question:** may TASK-166 change
+  `catalog.floristSentence` in `messages/en.json`, `de.json` and `pl.json` (with the review fields
+  in their `.meta.json`) and run `pnpm i18n:draft --sync-copy`, instead of a hand replacement?
+  **Answered (orchestrator, 2026-10-03): yes** — see `## Binding`, Where.
+- **2026-10-03, E2, to the founder: 23 `en` intros fall under the 60-word floor.** The new
+  sentence is 10 words shorter (17 words to 7). Rule `copy/wordCount` (60-90 words, `plan/10`
+  §2.2) then fails on 6 categories (sympathy 56, thank_you 57, apology 58, orchids 59,
+  sunflowers 54, gerberas 58) and 17 occasions (anniversary 58, romance 59, get_well 59,
+  thank_you 58, just_because 56, valentines 57, womens_day 54, fathers_day 55,
+  grandparents_day 50, easter 58, new_year 53, sant_jordi 59, fete_des_grands_meres 52,
+  muguet 58, konfirmation 55, student 57, omatag 53). All 84 products stay in the band.
+  "Nothing else changes" forbids padding them. **Question:** does the founder write 1-10 more
+  words for each of these 23 intros, or approve a longer replacement sentence? **Answered (founder, 2026-10-03):** the future-tense
+  sentence (one word longer), so no intro moves under the floor; see `## Binding`.
+- **2026-10-03, E3, to the orchestrator: the edit guard is closed here.** The TASK-166 row is only
+  on this branch (`c0d02799`), not in the main checkout's `TASKS.md`, so the guard counts the task
+  as none and refuses shell writes under `seed/` in this worktree. The row must reach `main`
+  (for example with PR 134) before any copy edit can be made. **Answered (orchestrator, 2026-10-03):** the row lands on
+  `main` in its own PR before the implementer resumes.
+- **2026-10-03, E4, listed as asked and left unchanged: the same claim in other words** (**answered**, 2026-10-03: FO-BQ-001 and FO-BQ-003 soften, the rest stay; see `## Binding`).
+  - `seed/data/copy/{en,de,pl}/products.json` FO-BQ-003 `seoDescription`: "Made and delivered by
+    our florist in the recipient's city."
+  - `seed/data/copy/{en,de,pl}/products.json` FO-BQ-001 `seoDescription`: "Eighteen orange roses
+    with eucalyptus, hand-tied by our florist in the recipient's city."
+  - `seed/data/copy/en/occasions.json` sant_jordi `descriptionMd` and `seoDescription`: "where we
+    have a florist in the city".
+  - Related claims of a local florist (not of delivery): FO-FN-003 "our florist will call the
+    funeral home to check dimensions"; FO-GS-004 "come from our florist's own shop"; FO-BQ-008
+    and FO-BQ-036 "cut locally".
+  - The source itself: `messages/{en,de,pl}.json` `catalog.floristSentence`.
+
+## Progress
+
+One line per coherent step, newest last, written by the agent doing the work and pushed with
+the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
+here.
+
+- 2026-10-03: probed the replacement in a scratch copy of HEAD; two `seed:check` rules refuse it
+  (E1, E2) and the guard is closed (E3). No copy, snapshot or test file changed. Next: answers to
+  E1-E3. If E1 is approved, the change is `catalog.floristSentence` in `messages/` plus
+  `pnpm i18n:draft --sync-copy`, then `pnpm seed:diff --write`; the three fixtures in
+  `tests/fixtures/seed/_cases/copy/` (`bad-word-count`, `bad-duplicate-description`,
+  `bad-delivery-timing`) carry the old sentence and must follow it.
+
+## Result
+
+What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
+(budgets, counts), and anything handed to a later task.
+
+**Blocked, nothing shipped.** The draft PR carries only this brief and the `TASKS.md` row. Gates
+before the probe, on HEAD: `seed:check` exit 0, `catalogue:check` exit 0. Probe (scratch copy,
+421 replacements): `seed:check` exit 1, 444 problems (421 `copy/floristSentence`, 23
+`copy/wordCount`). No test pins the sentence as a literal: `tests/unit/seed-copy.test.ts` reads it
+from `messages/en.json`; the three fixtures named in `## Progress` carry it.
