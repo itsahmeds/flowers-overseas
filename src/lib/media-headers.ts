@@ -24,8 +24,8 @@
  * images it evaluates for Core Web Vitals. That requirement moved to the bucket's public host
  * along with the bytes (`src/lib/media-origin.ts`, `docs/runbooks/imagery.md`, spec 006 §6).
  */
-import { MEDIA_ORIGIN } from "./media-origin";
-import { ALL_PATHS, type HeaderRule } from "./robots-headers";
+import { MEDIA_ORIGIN } from "./media-origin.ts";
+import { ALL_PATHS, type HeaderRule } from "./robots-headers.ts";
 
 /** The value every derived variant is stored with and served with. */
 export const MEDIA_CACHE_CONTROL = "public, max-age=31536000, immutable";

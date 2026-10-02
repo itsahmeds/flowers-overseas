@@ -11,6 +11,7 @@
  * that put these 118 objects into `flowersoverseas-media` is recorded in the PR and in
  * `docs/tasks/TASK-138.md`.
  */
+import { spawnSync } from "node:child_process";
 import { copyFileSync, cpSync, mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
@@ -609,4 +610,23 @@ describe("the uploader's own refusals (AC-15, AC-16)", () => {
       /does not match the manifest/u,
     );
   }, 60_000);
+});
+
+describe("the CLI loads under plain `node`, the way `pnpm media:upload` runs it", () => {
+  it("reaches its own argument parser rather than failing to resolve a module", () => {
+    // Vitest resolves an extensionless relative import; `node` with type stripping does not. An
+    // import of `./media-origin` instead of `./media-origin.ts` anywhere in the script's graph
+    // passes every case above and leaves the operator command dead on arrival — which is how
+    // round 3 left it (TASK-138 round 5). An unknown flag is the cheapest way to prove the whole
+    // graph loaded: it is refused by `parseArgs()`, before any env, network or file is read.
+    const result = spawnSync(
+      process.execPath,
+      ["scripts/media-upload.ts", "--not-a-flag"],
+      { cwd: repoRoot, encoding: "utf8" },
+    );
+
+    expect(result.stderr).not.toContain("ERR_MODULE_NOT_FOUND");
+    expect(result.stderr).toContain("unknown flag `--not-a-flag`");
+    expect(result.status).toBe(1);
+  });
 });
