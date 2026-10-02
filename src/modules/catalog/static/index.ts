@@ -17,6 +17,11 @@
  * decides nothing: which row is active on a date, what the VAT split is, whether a rate is too old
  * to convert with, and the 2.5% buffer are all `pricing/*`'s (TASK-065…TASK-067).
  *
+ * Every read hands out a **deep-frozen** value, rows and their nested arrays included (TASK-148):
+ * a provider's rows are shared by every request in the process, so a caller that could write to
+ * them could reprice a product for every later buyer. The shared provider contract mutates each
+ * read's returned value and holds the database implementation to the same promise.
+ *
  * This module imports no database client (`pnpm check:no-db`), carries no `"use client"`, and is
  * not reachable from the barrel (AC-2, AC-3).
  */
@@ -56,38 +61,101 @@ import type {
   ProductTierRecord,
 } from "../providers";
 
+/* -------------------------------------------------------------------------- */
+/* Immutability (TASK-148).                                                   */
+/* -------------------------------------------------------------------------- */
+
 /**
- * The authored catalogue, handed over as-is. Every method is `async` because the interface is
+ * A deep-frozen copy of an authored value: the array, every row, and every array or object inside
+ * a row.
+ *
+ * Each read below hands out the same module-level value on every call, which keeps a read free
+ * (spec 005 §5.4). Left writable, that sharing had two effects. One caller's `.length = 1` cut the
+ * price table to one row for every later request in the process, and one caller's write to a row's
+ * `retailMinor` silently repriced that row for every later buyer (TASK-148). `Object.freeze` is
+ * shallow, so this walks the whole value: a frozen array of writable rows is the same defect with a
+ * lid on it.
+ *
+ * It copies **once, at module load**, rather than freezing the dataset's exports in place. Those
+ * arrays are `src/config/catalogue/*.data.ts`'s and are read directly by `scripts/` and `seed/`.
+ * Freezing them from here would make their mutability depend on whether this module happened to be
+ * imported first. After the copy, every call returns the same frozen reference, so a read costs
+ * nothing per call.
+ *
+ * Only plain data is accepted. A `Date`, `Map` or class instance keeps its internal state writable
+ * inside a frozen row, so one throws here at load rather than shipping a value that only looks
+ * immutable.
+ */
+function deepFrozenCopy<T>(value: T): T {
+  return frozenCopyOf(value) as T;
+}
+
+function frozenCopyOf(value: unknown): unknown {
+  if (typeof value === "function") {
+    throw new TypeError(
+      "a provider row holds a function; only plain data can be deep-frozen (TASK-148)",
+    );
+  }
+  if (value === null || typeof value !== "object") return value;
+  if (Array.isArray(value)) {
+    return Object.freeze(value.map((item: unknown) => frozenCopyOf(item)));
+  }
+  const prototype: unknown = Object.getPrototypeOf(value);
+  if (prototype !== Object.prototype && prototype !== null) {
+    throw new TypeError(
+      "a provider row holds a non-plain object; a frozen `Date`, `Map` or class instance stays writable inside, so only plain data can be deep-frozen (TASK-148)",
+    );
+  }
+  return Object.freeze(
+    Object.fromEntries(
+      Object.entries(value).map(([key, nested]) => [key, frozenCopyOf(nested)]),
+    ),
+  );
+}
+
+const PRODUCT_ROWS = deepFrozenCopy(PRODUCTS);
+const PRODUCT_TIER_ROWS = deepFrozenCopy(PRODUCT_TIERS);
+const CATEGORY_ROWS = deepFrozenCopy(CATEGORIES);
+const OCCASION_ROWS = deepFrozenCopy(OCCASIONS);
+const ADDON_ROWS = deepFrozenCopy(ADDONS);
+const COUNTRY_PRICE_ROWS = deepFrozenCopy(COUNTRY_PRICES);
+const ADDON_COUNTRY_PRICE_ROWS = deepFrozenCopy(ADDON_COUNTRY_PRICES);
+const FX_RATE_ROWS = deepFrozenCopy(FX_SNAPSHOT);
+
+/**
+ * The authored catalogue, handed over deep-frozen. Every method is `async` because the interface is
  * shaped for the database implementation; the static one performs no I/O at all, which is what
  * keeps a cached page's read cost zero (spec 005 §5.4).
  */
 export const staticCatalogueProvider: CatalogueProvider = {
-  products: (): Promise<readonly ProductRecord[]> => Promise.resolve(PRODUCTS),
+  products: (): Promise<readonly ProductRecord[]> =>
+    Promise.resolve(PRODUCT_ROWS),
   tiers: (): Promise<readonly ProductTierRecord[]> =>
-    Promise.resolve(PRODUCT_TIERS),
+    Promise.resolve(PRODUCT_TIER_ROWS),
   categories: (): Promise<readonly CategoryRecord[]> =>
-    Promise.resolve(CATEGORIES),
+    Promise.resolve(CATEGORY_ROWS),
   occasions: (): Promise<readonly OccasionRecord[]> =>
-    Promise.resolve(OCCASIONS),
-  addons: (): Promise<readonly AddonRecord[]> => Promise.resolve(ADDONS),
+    Promise.resolve(OCCASION_ROWS),
+  addons: (): Promise<readonly AddonRecord[]> => Promise.resolve(ADDON_ROWS),
 };
 
 /**
- * The authored price rows, active and superseded, handed over as-is. A provider does not filter
- * for the active row: `resolvePrice()` (TASK-065) does, and it throws on ambiguity rather than
- * picking silently — which is only checkable if the provider hands over the whole history
+ * The authored price rows, active and superseded, handed over deep-frozen. A provider does not
+ * filter for the active row: `resolvePrice()` (TASK-065) does, and it throws on ambiguity rather
+ * than picking silently — which is only checkable if the provider hands over the whole history
  * (`plan/07` §2.1's 30-day-lowest figure reads the same rows).
  */
 export const staticPriceProvider: PriceProvider = {
   countryPrices: (): Promise<readonly CountryPriceRecord[]> =>
-    Promise.resolve(COUNTRY_PRICES),
+    Promise.resolve(COUNTRY_PRICE_ROWS),
   addonCountryPrices: (): Promise<readonly AddonCountryPriceRecord[]> =>
-    Promise.resolve(ADDON_COUNTRY_PRICES),
+    Promise.resolve(ADDON_COUNTRY_PRICE_ROWS),
 };
 
-/** The one committed ECB snapshot. Whether it is too old to convert with is `pricing/fx.ts`'s. */
+/** The one committed ECB snapshot, deep-frozen. Whether it is too old is `pricing/fx.ts`'s. */
 export const staticFxRateProvider: FxRateProvider = {
-  fxRates: (): Promise<readonly FxRateRecord[]> => Promise.resolve(FX_SNAPSHOT),
+  fxRates: (): Promise<readonly FxRateRecord[]> =>
+    Promise.resolve(FX_RATE_ROWS),
 };
 
 /**
@@ -144,18 +212,20 @@ export const PHASE_0_DISPLAY_CURRENCIES: readonly string[] = [
   "PLN",
 ];
 
-export const PHASE_0_FLAGS: readonly FeatureFlagRecord[] = [
-  ...COUNTRIES.flatMap((country) => {
-    const key = addonFlagKey("wine", country.iso2);
-    return key === null ? [] : [{ key, enabled: false }];
-  }),
-  ...CURRENCIES.map((currency) => ({
-    key: currencyFlagKey(currency.code),
-    enabled: PHASE_0_DISPLAY_CURRENCIES.includes(currency.code),
-  })),
-].sort((left, right) => (left.key < right.key ? -1 : 1));
+export const PHASE_0_FLAGS: readonly FeatureFlagRecord[] = deepFrozenCopy(
+  [
+    ...COUNTRIES.flatMap((country) => {
+      const key = addonFlagKey("wine", country.iso2);
+      return key === null ? [] : [{ key, enabled: false }];
+    }),
+    ...CURRENCIES.map((currency) => ({
+      key: currencyFlagKey(currency.code),
+      enabled: PHASE_0_DISPLAY_CURRENCIES.includes(currency.code),
+    })),
+  ].sort((left, right) => (left.key < right.key ? -1 : 1)),
+);
 
-/** The authored flag rows, handed over as-is. A provider decides nothing (`flags.ts` does). */
+/** The authored flag rows, handed over deep-frozen. A provider decides nothing (`flags.ts` does). */
 export const staticFlagProvider: FlagProvider = {
   flags: (): Promise<readonly FeatureFlagRecord[]> =>
     Promise.resolve(PHASE_0_FLAGS),
