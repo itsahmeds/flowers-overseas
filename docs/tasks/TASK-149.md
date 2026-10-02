@@ -22,9 +22,16 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 ## Read
 
-- `specs/NNN-*.md` — read `## 0. Index` first, then only the sections the ACs name
-- `docs/codebase-map.md` — where everything lives
-- (the two or three files the deliverable actually touches)
+- `specs/009-product-page-date-picker.md`: `## 0. Index`, then AC-2 (the holiday coverage the picker
+  relies on). `specs/006-seed-catalogue-import-imagery-pipeline.md` AC-10 and AC-30 for `seed:check`.
+- `docs/codebase-map.md`: the `seed/` rows.
+- `seed/data/holidays.json` (the 2026–2027 Poland rows TASK-124 authored), `seed/schema/holidays.ts`,
+  and `seed/check.ts`: the `calendar/holiday-coverage` rule at about L1957–2010 and the `--report`
+  output at about L2260.
+- Tests: `tests/unit/seed-check.test.ts` (the `PL/2027` case at about L816) and
+  `tests/unit/geo-delivery.test.ts` (the per-year date pin; TASK-124's header at L25).
+- CI: `.github/workflows/ci.yml` job `seed-check` (about L1215–1245). It already runs
+  `pnpm seed:check --report` and writes a step summary; the early warning goes there.
 
 ## Carry-forwards
 
