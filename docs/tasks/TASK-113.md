@@ -169,6 +169,36 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
   intro "Each one has a page with what we make for it" is a make-claim on a site that delivers
   nowhere. Put it to the founder with the two drafts.
 
+- **From `/review 98` round 3 and `/break 98` round 1 (2026-10-02): PASS on round 2's fixes and the
+  rebase; FAIL on holes 1 and 4 (`0651c096`).** Required, one fix round:
+  1. Hole 1 (AC-21, SEO). The crawl reads no links on its deepest pages
+     (`shop-reachability.spec.ts:200`) and never fetches the 23 category hubs, so links are read on
+     only 3 of AC-21's 6 page types. The fix:
+     - (a) Read the links of every page the crawl fetches, the deepest included; their targets get a
+       status check only. Keep the ≤3-click bound.
+     - (b) Also fetch every listing page the crawl does not reach (the waived category hubs, the
+       `de`/`pl` shop roots) and run the same three checks on their links.
+     - (c) Prove it by mutation. `listing.ts:1814` `…? "rosesx" : slug` goes red, naming the 404, and
+       so does a broken link placed only on a category hub.
+     - (d) Correct the comment at `:198-199` and the AC-21 lines and crawl table in the brief and
+       the PR body. Note the e2e time with the wider crawl.
+     - (e) A real broken link found today is fixed or escalated, never waived.
+     - Cheap to do at the same time: pin the waived set per locale and page type (23 category hubs
+       per English locale, 7 shop roots each for `de` and `pl`).
+  2. Hole 4 (A9 honesty). In `tests/unit/corridor-page.test.tsx`, render each of the 14 guide pages
+     with and without the shop link. The first render, with its one shop section removed, must equal
+     the second exactly. Prove it with the breaker's sentence at `CorridorPage.tsx:216`: red on 14.
+     No copy change.
+  3. Rebase onto `origin/main` (`b56c59f7` or later), regenerate the map, and re-fire CI.
+
+  **HOLE 2 ACCEPTABLE** (rendered order is presentation; the data order is tested). Carried to
+  TASK-117: make "renders … in collator order" read the rendered link order. **HOLE 3 ACCEPTABLE**
+  (the no-live state needs a `countries.ts` change, and that change turns 5 index tests red).
+  Carried to whichever task takes a destination off `live`: test that state
+  (`OccasionsIndexPage.tsx:124`, `:198`). Carried to the founder: in that state Christmas and New
+  Year sit under "Kept on a date we cannot compute here". Nits: the unit pin checks the href by
+  pattern, not exact value (pin it when TASK-147 touches the section), and the `TASKS.md` cell is stale.
+
 ## Escalations
 
 - **2026-09-22 — the category hub has no publisher. `open`.** Spec 008 §2 "Links" reserves
