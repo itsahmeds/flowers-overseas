@@ -65,7 +65,10 @@ list it reads is `SITE_ORIGIN_MEDIA_SLOTS` in `src/lib/media-origin.ts` — the 
 `seed/budgets.ts` uses to decide what must be committed. Why: with the hero on the bucket, CI
 measured the four locale homes at 2 029–2 144 ms LCP against the 2 000 ms budget, after both the
 `preconnect` hint and edge caching (`docs/tasks/TASK-138.md`). The hero's variants are uploaded
-to the bucket as well, so moving the slot back is a one-line change to that list.
+to the bucket as well, so moving the slot to the bucket needs no upload and no code path: remove
+`hero` from that list **and** delete the committed `public/media/home-hero/` files, which
+`seed:check`'s `committed-slot` rule then requires (spec 006 §14 A8 clause 5). It is measured
+against the same 2 000 ms budget.
 
 **WebP `effort` is 6, not the libwebp default 4.** It is not a quality lever — the pinned quality is
 still §13 Q5's 72 — it is how hard the encoder searches, and it buys the 3–6 % that keeps the two

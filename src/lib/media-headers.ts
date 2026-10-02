@@ -21,8 +21,9 @@
  *
  * **Crawlability, recorded here because this is where the cache promise is written:** when spec
  * 007 lifts `Disallow: /`, the image origin must stay crawlable, or Google cannot fetch the
- * images it evaluates for Core Web Vitals. That requirement moved to the bucket's public host
- * along with the bytes (`src/lib/media-origin.ts`, `docs/runbooks/imagery.md`, spec 006 §6).
+ * images it evaluates for Core Web Vitals. That requirement now covers both hosts: the site's own
+ * origin, which serves the `hero` slot, and the bucket's public host, which serves every other
+ * slot (`src/lib/media-origin.ts`, `docs/runbooks/imagery.md` §6, spec 006 §6 and §14 A8).
  */
 import { MEDIA_ORIGIN } from "./media-origin.ts";
 import { ALL_PATHS, type HeaderRule } from "./robots-headers.ts";
