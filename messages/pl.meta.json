@@ -612,7 +612,7 @@
   "catalog.floristSentence": {
     "source": "machine",
     "reviewed": false,
-    "sourceHash": "2178186602ab9e7a09a03808bf787f1f7def44b1a7bcb4e2a63be00c2093fa28"
+    "sourceHash": "51e5aa3405f3475b39a814927b7dcd159a33408ebabad373134dd54b4d654508"
   },
   "catalog.price.from": {
     "source": "machine",
