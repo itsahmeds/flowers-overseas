@@ -52,6 +52,29 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 - **To TASK-127 / TASK-132 (T-16 e2e half):** the rendered meta, sitemap membership and
   `X-Robots-Tag` agreeing per case is browser-level and not in this PR.
 
+- **From `/review 101` round 1 and `/break 101` round 1 (2026-10-02): FAIL / HOLES on `ad3f00ea`.**
+  AC-16 is met. E-1 is accepted (a spec 009 §14 amendment is the orchestrator's to record). E-2 stays
+  open with the founder, and must be ruled before TASK-127 renders the trust block. Required, one
+  fix round:
+  1. RC-1 + hole 4: `productCardView()` takes `now`, and `relatedFor()` passes it. One
+     `ProductViewSchema` check: every chip is in the page's currency, is `> 0`, and equals that
+     date's total minus the tier price. The same currency check covers `related[].price`. Assert
+     GBP at the live-FX clock and PLN at the stale one. The breaker's planted views H1–H8 must fail
+     to parse.
+  2. RC-2 + hole 6: `priceProjection` joins the source scan's `OWNED` list, allowlisted for
+     `listing.ts` and `product.ts`. Namespace and alias calls are acceptable.
+  3. Hole 1: pin the `en` EUR tier figures 4 790 / 5 590 / 6 290 and one `en` totals row.
+  4. Hole 5: the indexability terms fail closed (`=== true`, `parameterised === false`). The
+     breaker's two cast cases go in the wiring tests.
+  5. Hole 7: the add-on VAT text is asserted, so 8 % beside a 23 % add-on goes red.
+  6. Hole 10: the robots-text scan covers all of `src/modules/` except `modules/seo` (0 hits today).
+
+  **HOLE 2, 3, 8, 9 ACCEPTABLE** (reviewer): the grid guards are unreachable or covered by item 1's
+  check; the "+0" chip is refused by `> 0`; the FX branches are proved by R6/E4; nothing may call
+  `tierOptions()`. Nits: the robots scan missing `geo/delivery/state.ts`; the PL `operations` prose;
+  the breadcrumb date in UTC; stale SHAs in the brief and row; T-32's sitemap row; the `priceGrid()`
+  throw signal.
+
 ## Escalations
 
 - **E-1 (2026-09-23) — `care` is not a field. Deviation, applied; reviewer may reverse.** §5.2 lists
