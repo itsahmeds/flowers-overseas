@@ -39,6 +39,22 @@ One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
 
+- **From `/review 133` round 1 and `/break 133` round 1 (2026-10-03): FAIL / HOLES on `56d65c77`.**
+  The data, the statute and the unchanged rule all hold. Required, one fix round, tests only:
+  1. Hole 1: a case run a day or more past the red day (e.g. `--as-of=2028-01-05` with the 2028
+     rows removed) asserts the "already red" correction: 0 days and red from today, never
+     negative. It must go red under `const redOn = edge;` at `seed/check.ts:2009`.
+  2. Hole 2: one assertion that the `seed-check` CI step writes the log the alert reads
+     (`| tee seed-check.log` at `ci.yml:1226`, stdout and stderr). It must go red when the `tee` is
+     dropped or only stderr is logged (`tests/unit/ci-workflow.test.ts` or `seed-check.test.ts`).
+  3. Hole 3: a case with two countries' rows (PL without 2028, plus one DE 2028 row) asserts PL's
+     own count (59 days, warning). It must go red when the count pools every country's years
+     (`check.ts:2002`).
+  4. Rebase onto `origin/main`, then toggle `ci:full`.
+
+  Nits (not required): `seed/README.md` has no runway line; consider a `::warning::` annotation or
+  a scheduled run. Poland's 2029 rows are due before 2027-12-31 23:00 UTC.
+
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
