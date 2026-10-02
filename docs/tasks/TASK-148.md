@@ -17,7 +17,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
   and the case goes red on each. Assert exact row counts, not `> 0`.
 - **Widened by `/review 99` (2026-09-23): all nine static reads.** Catalogue, price, add-on
   price, FX and flags all hand out module arrays unfrozen, **with unfrozen rows**. Mutating one
-  row's `amountMinor` changes the price every later caller reads, which is worse than truncation
+  row's `retailMinor` changes the price every later caller reads, which is worse than truncation
   because it is silent. Freeze deeply, rows included, or copy per call, across all nine. The
   contract mutates both the returned array (`.length`) and a row field, then re-reads. Run it
   against **TASK-070's DB providers** as well as the static ones, so both implementations are
@@ -77,12 +77,14 @@ _None recorded._
 
 ## Progress
 
-- 2026-10-02 `bc53a5d5`: the shared contract mutates the **returned** value of all nine reads. It
-  is red on `main`'s providers, 19 of 19 mutation cases.
-- 2026-10-02 `a5847916`: the fix in `src/modules/catalog/static/index.ts`. The contract has 27 of
-  27 green, and the full unit and contract layers pass (208 files, 5,932 tests).
-- 2026-10-02: 12 provider mutants and 2 type-level contract mutants run, each red where expected
-  (below).
+- 2026-10-02 `b39a8bb7` (was `bc53a5d5` before the rebase): the shared contract mutates the
+  **returned** value of all nine reads. It is red on `main`'s providers, 19 of 19 mutation cases.
+- 2026-10-02 `f03aa2ff` (was `a5847916`): the fix in `src/modules/catalog/static/index.ts`. The
+  contract has 27 of 27 green, and the full unit and contract layers pass (208 files, 5,932 tests).
+- 2026-10-02: 12 provider mutants and 2 type-level contract mutants run, each red where expected.
+- 2026-10-02 `ff07308d`, round 2 (on `origin/main` `b56c59f7`): `/break 132`'s three holes closed
+  in the contract, with no source change. The contract has 54 of 54 green. H1, H2a, H2b and H3 each
+  pass the round-1 contract and fail this one.
 
 ## Result
 
@@ -115,54 +117,76 @@ agents running:
 | Shallow row copy per call (rejected) | 0.09 ms, but leaves `occasions` and other nested arrays shared |
 
 **Tests (contract layer).** `tests/contract/support/catalog-provider-contract.ts` replaces the old
-case, which truncated a copy, with 19 mutation cases plus one coverage case:
-- per read, a row-field write (`name`, `isDefault`, `sort`, `sort`, `partnerOnly`, `retailMinor`,
-  `retailMinor`, `ratePpm`, `enabled`) and a `.length = 1` truncation, both on the **returned**
-  value;
-- for products, emptying the row's nested `occasions` array as well.
+case, which truncated a copy, with 46 mutation cases and one coverage case. Each read gets these
+cases, all on the **returned** value:
+- **nested-field pin:** every row carries exactly the read's pinned nested fields. Products have
+  `colours`, `flowerTypes` and `occasions`; every other read has none. (Round 2, hole 1.)
+- **field on every row:** one scalar field written on **every** row (`name`, `isDefault`, `sort`,
+  `sort`, `partnerOnly`, `retailMinor`, `retailMinor`, `ratePpm`, `enabled`). (Round 2, hole 3.)
+- **nested on every row:** for products, every array or object field emptied on every row. (Round 2,
+  holes 1 and 3.)
+- **replace a row:** `handed[0] = { ...handed[0], [field]: changed }`. (Round 2, hole 2.)
+- **reverse in place:** `reverse()` on the returned array. (Round 2, hole 2.)
+- **truncate:** `.length = 1`.
 
-Each case re-reads through the same provider and asserts the result `toStrictEqual`s a
-`structuredClone` snapshot of the first read, at the exact row count the run states. A throw
+Every single write goes through its own `attempt()`, so a refused write cannot hide a later row
+that would have accepted one. Each case re-reads through the same provider and asserts the exact
+row count plus `toStrictEqual` against a `structuredClone` snapshot of the first read. A throw
 (`TypeError` from a frozen value) and an absorbed write (a fresh copy per call) both pass, and the
-re-read is asserted either way. The read table is typed from `CatalogProviders`, so a read missing
-from it, or a field its row lacks, fails `typecheck`. `describeCatalogProviderContract()` now takes
-`rowCounts`, and the static run passes 84 / 236 / 23 / 32 / 6 / 3332 / 42 / 9 / countries +
-currencies (17), the same counts `tests/unit/catalog-barrel.test.ts` pins. Unit and contract
-totals: 208 files, 5,932 passed, 5 skipped. The skips are pre-existing; none is in this diff.
+re-read is asserted either way.
+
+The read table is typed from `CatalogProviders`, so a read missing from it, or a field its row
+lacks, fails `typecheck`. `describeCatalogProviderContract()` takes `rowCounts`, and the static run
+passes 84 / 236 / 23 / 32 / 6 / 3332 / 42 / 9 / 17 (countries + currencies), the same counts
+`tests/unit/catalog-barrel.test.ts` pins. Round 2 also replaced the contract's four `> 0` / `> 10`
+checks:
+- the parse, price and flag cases now assert those exact counts;
+- the buyer-dimension case asserts that the walked key set is exactly the dataset schemas' own
+  columns.
+
+The contract runs 54 cases, all green. The round-1 unit and contract totals were 208 files, 5,932
+passed and 5 skipped; the skips are pre-existing and none is in this diff.
 
 **Mutation proof.** Each mutant was applied alone to `static/index.ts` and run against the static
-contract (27 cases).
+contract (54 cases, round 2). "Its cases" means that read's field-on-every-row, replace, reverse and
+truncate cases.
 
-| Mutant | Red cases |
-|---|---|
-| M1 `products` hands out `PRODUCTS` | products `name`, products `occasions`, products truncation (+ cross-provider refs, collateral) |
-| M2 `tiers` hands out `PRODUCT_TIERS` | tiers `isDefault`, tiers truncation (+ cross-provider refs) |
-| M3 `categories` hands out `CATEGORIES` | categories `sort`, categories truncation |
-| M4 `occasions` hands out `OCCASIONS` | occasions `sort`, occasions truncation |
-| M5 `addons` hands out `ADDONS` | addons `partnerOnly`, addons truncation (+ cross-provider refs) |
-| M6 `countryPrices` hands out `COUNTRY_PRICES` | countryPrices `retailMinor` (19901 ≠ 19900), countryPrices truncation (1 ≠ 3332) |
-| M7 `addonCountryPrices` hands out `ADDON_COUNTRY_PRICES` | addonCountryPrices `retailMinor`, addonCountryPrices truncation |
-| M8 `fxRates` hands out `FX_SNAPSHOT` | fxRates `ratePpm`, fxRates truncation |
-| M9 `PHASE_0_FLAGS` left unfrozen | flags `enabled`, flags truncation |
-| M10 rows writable, arrays frozen (the shallow-freeze trap) | all 9 row-field cases (+ one-default-tier, collateral) |
-| M11 arrays writable at every depth, rows frozen | all 9 truncations + products `occasions` (+ one-default-tier) |
-| M12 only nested arrays writable | products `occasions` only |
-| C1 contract: `fx` target dropped from the table | `typecheck` TS1360 |
-| C2 contract: `amountMinor` named for `addonCountryPrices` | `typecheck` TS2322 (the price field is `retailMinor`) |
+| Mutant | Round-1 contract | Round-2 contract: red cases |
+|---|---|---|
+| M1 `products` hands out `PRODUCTS` | red | its cases + products nested (+ cross-provider refs, collateral) |
+| M2 `tiers` hands out `PRODUCT_TIERS` | red | its cases (+ cross-provider refs) |
+| M3 `categories` hands out `CATEGORIES` | red | its cases |
+| M4 `occasions` hands out `OCCASIONS` | red | its cases |
+| M5 `addons` hands out `ADDONS` | red | its cases (+ cross-provider refs) |
+| M6 `countryPrices` hands out `COUNTRY_PRICES` | red | its cases |
+| M7 `addonCountryPrices` hands out `ADDON_COUNTRY_PRICES` | red | its cases |
+| M8 `fxRates` hands out `FX_SNAPSHOT` | red | its cases |
+| M9 `PHASE_0_FLAGS` left unfrozen | red | its cases (+ flag scopes, collateral) |
+| M10 rows writable, arrays frozen (shallow freeze) | red | all 9 field-on-every-row cases (+ one-default-tier) |
+| M11 arrays writable at every depth, rows frozen | red | all 9 replace, all 9 reverse, all 9 truncate, products nested (+ 2 collateral) |
+| M12 only nested arrays writable | red | products nested only |
+| **H1** products freeze covers `occasions` only | **green, 27/27** | products nested only |
+| **H2a** arrays `Object.seal`ed, not frozen | **green, 27/27** | all 9 replace + all 9 reverse (+ one-default-tier) |
+| **H2b** array `length` non-writable, elements writable | **green, 27/27** | all 9 replace + all 9 reverse (+ one-default-tier) |
+| **H3** last `countryPrices` row left writable | **green, 27/27** | `price.countryPrices()` field on every row only |
+| C1 contract: `fx` target dropped from the table | `typecheck` TS1360 | `typecheck` TS1360 |
+| C2 contract: `amountMinor` named for `addonCountryPrices` | `typecheck` TS2322 | `typecheck` TS2322 |
+| C3 contract: `colours` dropped from the products pin | n/a | products nested-field pin only |
+
+"(+ …)" marks collateral reds: a write that landed corrupted the shared data a later case reads.
 
 **Carry-forward to TASK-070.** The mutation cases sit in the shared contract. When TASK-070 adds
 `tests/contract/catalog-db-providers.test.ts`, it calls `describeCatalogProviderContract("db",
 …, rowCounts)` with the exact counts of its seeded data, at least 2 per read. A DB provider passes
 by returning fresh rows per query, or a frozen cache; a cached array it hands out unfrozen goes red.
 
-**Observations, outside this fence.**
+**Observation, outside this fence.**
 - `src/modules/ui/home/trending-provider.ts` (`productBySku`) and `src/modules/geo/corridor.ts`
   (`occasionByKey`) read dataset rows directly, not through a provider, so those rows are still
   writable.
-- The contract's other cases still assert `> 0` / `> 10` at lines 226, 246, 404 and 412 of
-  `catalog-provider-contract.ts`.
 
-Neither was changed here.
+This was not changed here. `/review 132` carried it to a later task: route those reads through the
+catalog module, or freeze the dataset at its source.
 
 **Gates.** `pnpm gates:cheap` on the clean, rebased tree (`643113f4`; the only later commit is
 this docs edit). No expensive gate was run locally, and the build slot was not taken.
