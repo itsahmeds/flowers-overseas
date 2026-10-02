@@ -1,6 +1,6 @@
 ---
 name: break
-description: Adversarial test of a PR — the breaker agent mutates the code each acceptance criterion rests on and throws the awkward cases at it, then reports which breaks the tests caught. Runs on every PR beside /review; a surviving break (HOLES) blocks merge until a test catches it or the reviewer records why it is acceptable. Never edits code.
+description: Adversarial test of a PR — the breaker agent mutates the code each acceptance criterion rests on and throws the awkward cases at it, then reports which breaks the tests caught. Runs beside /review on every PR that is not review-only (CLAUDE.md DoD §4); a surviving break (HOLES) blocks merge until a test catches it or the reviewer records why it is acceptable. Never edits code.
 argument-hint: "<PR number or TASK-NNN>"
 disable-model-invocation: true
 ---
