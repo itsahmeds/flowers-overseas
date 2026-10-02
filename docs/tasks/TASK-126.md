@@ -202,6 +202,11 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   date grid moves with the build date (`corridor.spec.ts`'s precedent), and the PDP is now shot by
   date-free block.
 
+- **2026-10-03 — TASK-127 E-1 fixed by spec 009 §14 A6 (finisher run, shared PR).** Every
+  product page is prebuilt (2 352 in four locales); the listing cards' 420-per-locale dead links
+  are gone. The six E-1 e2e cases pass on a local production build. Evidence and build times are
+  in TASK-127's `## Progress` and `## Result`. No TASK-126 file changed.
+
 ## Result
 
 **Done, in review — [PR #135](https://github.com/itsahmeds/flowers-overseas/pull/135) (with

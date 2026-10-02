@@ -80,13 +80,25 @@ One dated bullet per `/review`, newest last.
   (planted in the route and in `product.ts`, both red); the robots scan takes the PDP route file,
   matches any casing and the `{ robots: { index: … } }` object form, and has its own control
   (planted object form and `"NoIndex"`, both red).
+- **2026-10-03 — E-1 fixed by A6 (finisher run).** `productPrebuildPages()` is the existence set,
+  so the route's `generateStaticParams` emits all 84 products per (locale, published country):
+  2 352 product pages in production's four locales, 3 528 in a local build with the two
+  pseudo-locales. The step summary prints one table, "Prebuilt" equal to "PDPs" (588 per
+  locale). AC-3/T-03: `tests/unit/product-route.test.tsx` holds the real `generateStaticParams`
+  equal to `productPageExists()` over every triple, and `tests/unit/catalog-product-routes.test.ts`
+  per (locale, country) pair; trimming the set back to 24 per pair turned 5 cases red. A new e2e
+  case in `tests/e2e/product-page.spec.ts`: `glass-morning` (en, de) and `mantelpiece` 200, an
+  unknown product slug (en, de) 404s with `<html lang="en">` and no `__next_error__`; with the
+  layout at `dynamicParams = true` in a scratch build it went red on the `lang` line (`Received:
+  undefined`). The layout was restored and the mutated build deleted.
 
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
 - **E-1 (2026-10-03, implementer → orchestrator): a PDP outside the 24 prebuilt answers 404, so
-  420 of 588 card links per locale are dead. `open`.** CI on `a1fca3e1` (`country-category`
+  420 of 588 card links per locale are dead. Answered (orchestrator, 2026-10-03): spec 009 §14
+  A6, option B — prebuild every product page; option A broke spec 003 AC-8.** CI on `a1fca3e1` (`country-category`
   "every link … exists", `shop-reachability` AC-21) and a local `pnpm build` + `next start` agree:
   `/en/poland/product/amber-hour` (prebuilt) 200, `/en/poland/product/glass-morning` and
   `/de/polen/produkt/glass-morning` 404, server log `NoFallbackError`. The depth-4 page sets
@@ -105,13 +117,26 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
 
 ## Result
 
-**Blocked on E-1 — built in [PR #135](https://github.com/itsahmeds/flowers-overseas/pull/135)
-with TASK-126.** The depth-4 route has the product branch (`dynamicParams = true`) and mounts
+**In review — built in [PR #135](https://github.com/itsahmeds/flowers-overseas/pull/135)
+with TASK-126; E-1 fixed by spec 009 §14 A6.** The depth-4 route has the product branch and mounts
 `ProductPage` with spec 008's breadcrumb and spec 007's facts block (TASK-126 E-1 (a); its
 "Prices" row is left out on the PDP, TASK-126 E-4, accepted). `site-links.ts` publishes `product`,
 so the listing cards link to it. The page reads `productView()` only.
 - **AC-1:** `tests/unit/product-route.test.tsx` (the 404 shapes through the route function) and
   the e2e 200/404 matrix.
+- **AC-3 as A6 words it:** `generateStaticParams` emits every product per (locale, published
+  country), 2 352 in production's four locales. The route's `dynamicParams = true` is inert under
+  the layout's `false`, and the layout is unchanged. Unit: the route's params equal
+  `productPageExists()` (trim to 24 → 5 red). E2E: a formerly on-demand PDP 200s and a product
+  404 keeps `<html lang="en">` (layout `true` in a scratch build → red). **Local build, in the
+  build slot, once, with two builds** (the fix needs a production build to show, and the layout
+  mutation needs a second one): with the fix, `pnpm build` took 130 s (load average 2.51 at
+  start, 18.92 at end; 6 locales with pseudo-locales on), 3 528 product routes in
+  `prerender-manifest.json` (588 per locale), `.next/server/app` 1.2 GB; then `next start`: the
+  six E-1 cases (`country-category` "every link … exists", `shop-reachability` `/en` and
+  `/en-gb`, on both projects) plus the rest of `product-page`, `country-category` and
+  `shop-reachability`: 82 passed, 4 skipped (the case-insensitive-host skips). The scratch build
+  took 106 s (load 18.17 at end). CI is the gate of record.
 - **AC-3's summary half (carry-forward 2):** the product table prints once per build, seen once in
   a real `pnpm build`, and proved once by two mutations.
 - **AC-8, AC-10, AC-21, AC-22, AC-25:** `tests/unit/product-page.test.tsx`, plus their e2e halves.
