@@ -11,7 +11,7 @@ assets whose original was made with Grok Imagine.
 | Owner | Ahmed (founder) |
 | Required by | ADR-0014, spec 006 §8, AC-29, and the amendment that admits a second generator (spec 006 §14 A7) |
 | Terms read | SpaceXAI Terms of Service — Consumer, "Last Updated: September 11, 2026" (https://x.ai/legal/terms-of-service); Brand Guidelines, dated February 14, 2025 (https://x.ai/legal/brand-guidelines); Consumer FAQs (https://x.ai/legal/faq). Read 2026-09-30. |
-| Evidence copy | **Owed by the founder:** a PDF print of each of the three pages above as they stood on 2026-09-30, saved beside the originals in the Drive "Flower Images" folder. A link is not evidence; the pages change. |
+| Evidence copy | None filed. The founder decided on 2026-10-03 that the Grok assets are demo imagery, published without PDF prints of these pages, and that the founder decides when they are replaced (spec 006 §14 A7 clause 5). |
 
 ## Answers
 
@@ -53,11 +53,10 @@ Short quotations only; the PDF prints are the full text.
 12. **Governing law.** For European consumers the Terms choose Irish law and Irish courts. We use
     Grok as a business, so these consumer protections may not apply to us; noted, not relied on.
 
-## Open, owed by the founder
+## Answered by the founder, 2026-10-03
 
-- The three PDF prints (Evidence copy above).
-- Whether the images were made on grok.com / the Grok app or inside X. If inside X, X's own terms
-  apply too and this record must add them.
+- The PDF prints are not needed: the Grok assets are demo imagery (Evidence copy above).
+- The images were made on grok.com, so X's own terms do not apply and nothing more is filed.
 
 **Read by** the orchestrator (Claude), 2026-09-30. **Decision on clause 5 by** Ahmed (founder),
 2026-09-30.

@@ -421,9 +421,9 @@ Corrected (founder decision 2026-09-30, recorded in the Grok record):
 
    **No agent signs the founder's name.** An asset is `approved` only on the founder's own recorded word.
 
-   **Evidence gate (orchestrator ruling, 2026-09-30).** The intake task may start before the PDF prints of the three x.ai pages exist. Two things wait until the founder has filed them: the intake PR may not merge, and no Grok asset may be `approved`. The prints count as filed when the "Evidence copy" row of `docs/compliance/imagery-generator-terms-grok.md` changes from "Owed" to a filed entry naming where the prints are saved.
+   The founder decided on 2026-10-03 that the Grok assets are **demo imagery**, published without PDF prints of the x.ai pages, and that the founder decides when they are replaced.
 
 Tests: T-31 (unit, `tests/unit/imagery-prompts.test.ts` generalised: the map covers every prompt record and every `ai` row; an unmapped generator, an unlisted model, and a deleted or unfiled terms file each go red) → AC-31, AC-29. T-32 (unit, same file: a Grok row on an SKU outside the Grok record's Assets row goes red; the SKU set is parsed from the record) → AC-32.
-Open for the founder: (a) Were the 62 made on grok.com or the Grok app, or inside X? If inside X, X's terms also need filing in the Grok record. Does the intake wait for that filing? (Former questions (b) and (c) are settled: the PDF prints by the evidence gate in clause 5, and the ChatGPT model value by clause 1.)
+Open for the founder: none. (a) The 62 were made on grok.com (founder, 2026-10-03), so X's terms need no filing. (b) The PDF prints are settled by the founder's decision in clause 5, and (c) the ChatGPT model value by clause 1.
 Raised by: founder, 2026-09-30 (delivery of the 144 and the decision on Grok record answer 5).
 
