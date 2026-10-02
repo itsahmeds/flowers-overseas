@@ -275,6 +275,22 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
   shop-root link alone ("See flowers for {country}"). The state-B heading and body never render
   in state A, and any florist, delivery or price claim is refused on every guide page. Round 2's
   fix pins that text on all 14 guide pages (see `## Result`).
+- **2026-10-02 — escalation 4: 14 links to a 404 on the `de`/`pl` shop roots, not introduced by
+  this PR. `answered (orchestrator, 2026-10-02): fixed in TASK-113, one condition`, and
+  reopened on one point.** The `/break 98` hole 1 crawl read the links on the waived `de`/`pl`
+  shop roots and found that each links to `/de/blumen-verschicken/{land}` or
+  `/pl/wyslij-kwiaty/{kraj}`, which 404s because a draft locale has no corridor page. The ruling
+  widened the fence to the `ListingLinks.corridor` condition (`listing.ts:1879`). That condition
+  now also asks `corridorPageExists(iso2, locale)` (`8839e417`), and `en`/`en-gb` are unchanged.
+  **It is not enough.** On a production build the crawl still finds the same 14 URLs, because
+  the shop root's **breadcrumb** links the same path. That is the country crumb in
+  `breadcrumbFor()` (`listing.ts:1730`), on `isGuidePublished(iso2)` alone:
+  `<nav aria-label="Breadcrumb">…<a href="/de/blumen-verschicken/polen">Polen</a>`.
+  `ListingLinks.corridor` renders only in the shop root's empty state.
+  **Question:** may the fence widen to that crumb's condition too (the same
+  `corridorPageExists(iso2, locale)`, so the crumb is plain text in `de`/`pl`, which is what the
+  crumb already does where no guide is published)? `country.corridorPath` (`:1443`) is built on
+  the same rule but is rendered nowhere, so the crawl cannot see it.
 
 ## Progress
 
@@ -289,6 +305,9 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
 - 2026-10-02 — hole 4 (`a32d954d`) and hole 1 (`64b61d05`) committed and pushed.
 - 2026-10-02 — production build: the wider crawl finds 14 pre-existing `de`/`pl` corridor-link
   404s; escalated, **blocked**; mutation runs done; `eb7cb2fc`.
+- 2026-10-02 — escalation 4 answered (fix here, one condition): `ListingLinks.corridor` gated on
+  `corridorPageExists()` plus a unit case (`8839e417`). The crawl is still red on the same 14 URLs
+  through the breadcrumb crumb at `listing.ts:1730`, which is outside the fence. **Blocked again.**
 
 ## Result
 
@@ -297,9 +316,10 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
 on every page it fetches, the 23 waived category hubs and the 14 waived `de`/`pl` shop roots
 included. It finds 14 links to a 404, and this PR did not introduce them: each `de`/`pl` shop
 root links to its corridor page (`/de/blumen-verschicken/polen`, `/pl/wyslij-kwiaty/polska`, …),
-which does not exist in a draft locale. The link is built at `listing.ts:1879`
-(`isGuidePublished(iso2)`, TASK-107 `cb1b7c68`, on `main`). It is escalated (see the 2026-10-02
-round at the end of this section), not waived. `en` and `en-gb` are clean on all six page types.
+which does not exist in a draft locale. Two links per root carry it: `ListingLinks.corridor`
+(`listing.ts:1879`, fixed here in `8839e417` on the orchestrator's ruling) and the breadcrumb's
+country crumb (`listing.ts:1730`, outside the fence, so escalation 4 is open on that point). Both
+come from TASK-107 (`cb1b7c68`, on `main`). Neither is waived. `en` and `en-gb` are clean on all six page types.
 The two waivers (category hubs; `de`/`pl` shop roots) and the two founder strings are still
 `open`.
 
@@ -628,3 +648,21 @@ held and released, load average 3.3 to 4.7). `shop-reachability` + `corridor` on
 72 passed, 2 skipped, 4 failed (the 4 `de`/`pl` cases above, with no other finding). The crawl
 takes about 4.5 s per English locale locally. *e2e job time:* 6 min 38 s on `0651c096` (run
 37025742729). The new head's time is in the PR body, because a commit cannot quote its own run.
+
+**Escalation 4, the ruled fix (2026-10-02).** `ListingLinks.corridor` (`listing.ts:1879`) now
+also requires `corridorPageExists(iso2, locale)`, the rule the corridor route answers with
+(`routes.ts:218`). One import line and one condition, away from `productCardView()`.
+`tests/unit/catalog-listing-link-gates.test.ts` has a new case: every shop root in every listing
+locale, by exact value. `de` and `pl` have 7 roots each and no corridor link. `en` and `en-gb`
+have all seven, `/en/send-flowers-to/poland` first, unchanged. **Mutation** (the condition
+reverted) → **red**, `expected '/de/blumen-verschicken/polen' to be null`. Restored → 6/6 green.
+**The crawl is still red.** On a clean production build (build slot held and released, server
+stopped by PID, load average 5.2 to 6.6), `shop-reachability` + `corridor` on both projects gave
+72 passed, 2 skipped, 4 failed: the same 4 cases and the same 14 URLs. The remaining link is the
+shop root's breadcrumb: the country crumb in `breadcrumbFor()` (`listing.ts:1730`), on
+`isGuidePublished(iso2)` alone, renders on every shop root and links to the same corridor path.
+`ListingLinks.corridor` renders only in a shop root's empty state (`CountryShopRootPage.tsx:314`).
+So the fix removed one link of two, and the e2e half of the requested mutation (the 4 cases going
+red when the condition is reverted) cannot be shown: they are red either way until the crumb is
+fixed. The crumb is outside the widened fence, so it was not touched. See escalation 4's
+question.
