@@ -74,6 +74,7 @@ import {
 } from "../../seed/check-cases.ts";
 import {
   COMMITTED_MEDIA_BYTE_CAP,
+  COMMITTED_MEDIA_DIR,
   SLOT_BYTE_CAPS,
   SLOTS_WITHOUT_A_CAP,
 } from "../../seed/budgets.ts";
@@ -518,6 +519,92 @@ describe("seed:check rules no fixture reached (TASK-143)", () => {
       );
       expect(found).toHaveLength(1);
       expect(found[0]).toContain(`the committed file \`${victim}\``);
+    },
+    TREE_TIMEOUT,
+  );
+});
+
+/**
+ * Family 9 at its two edges (`/review 94` round 2, HOLES 1 and 2).
+ *
+ * The fixture cases above prove that a 900 KB tile and a 7 MB committed ladder fail; neither can
+ * tell `> cap` from `> cap + 1`, or from `> cap * 40`. These pin the comparison itself: one byte
+ * over is red, exactly the cap is green. Each case moves one real row of the real tree, so the
+ * subject is the rule and not a fixture shaped to pass it.
+ */
+describe("family 9 at the boundary: one byte over fails, exactly the cap passes", () => {
+  const VARIANTS = "media-variants.json";
+
+  const ruleKeys = (mutated: SeedTree, rule: string): readonly string[] =>
+    checkSeedDataset(mutated)
+      .filter((problem) => problem.rule === rule)
+      .map((problem) => problem.key);
+
+  /** The real tree with one variant row's `bytes` set to `bytes`. */
+  function withVariantBytes(objectKey: string, bytes: number): SeedTree {
+    const file = structuredClone(tree.raw.get(VARIANTS)) as {
+      rows: { objectKey: string; bytes: number }[];
+    };
+    const row = file.rows.find(
+      (candidate) => candidate.objectKey === objectKey,
+    );
+    if (row === undefined) throw new Error(`${VARIANTS} has no ${objectKey}`);
+    row.bytes = bytes;
+    return { ...tree, raw: new Map([...tree.raw, [VARIANTS, file]]) };
+  }
+
+  // `occasionTile` is the tightest cap any Phase-0 row is served under, from the bucket; `hero` is
+  // the LCP image, from this origin. Both caps are read from `seed/budgets.ts`, never restated.
+  it.each([
+    ["occasionTile", "media/home-occasion-birthday/384.avif"],
+    ["hero", "media/home-hero/384.avif"],
+  ] as const)(
+    "slot-bytes: a `%s` row at cap + 1 is red and at exactly the cap is green",
+    (slot, objectKey) => {
+      const cap = SLOT_BYTE_CAPS[slot];
+      const leaf = objectKey.slice("media/".length);
+
+      expect(
+        ruleKeys(withVariantBytes(objectKey, cap + 1), "slot-bytes"),
+      ).toEqual([leaf]);
+      expect(ruleKeys(withVariantBytes(objectKey, cap), "slot-bytes")).toEqual(
+        [],
+      );
+    },
+    TREE_TIMEOUT,
+  );
+
+  /** The real committed listing, with its first file grown so the total is exactly `total`. */
+  function withCommittedTotal(total: number): SeedTree {
+    const committed = tree.mediaFiles.filter((file) =>
+      file.path.startsWith(`${COMMITTED_MEDIA_DIR}/`),
+    );
+    const current = committed.reduce((sum, file) => sum + file.bytes, 0);
+    const grown = committed[0]?.path;
+    if (grown === undefined)
+      throw new Error("nothing is committed under public/media/");
+    return {
+      ...tree,
+      mediaFiles: tree.mediaFiles.map((file) =>
+        file.path === grown
+          ? { ...file, bytes: file.bytes + total - current }
+          : file,
+      ),
+    };
+  }
+
+  it(
+    "total-bytes: a committed listing at COMMITTED_MEDIA_BYTE_CAP + 1 is red and at exactly the cap is green",
+    () => {
+      expect(
+        ruleKeys(
+          withCommittedTotal(COMMITTED_MEDIA_BYTE_CAP + 1),
+          "total-bytes",
+        ),
+      ).toEqual(["total"]);
+      expect(
+        ruleKeys(withCommittedTotal(COMMITTED_MEDIA_BYTE_CAP), "total-bytes"),
+      ).toEqual([]);
     },
     TREE_TIMEOUT,
   );
