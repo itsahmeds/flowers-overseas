@@ -29,7 +29,7 @@ vi.mock("../../src/config/site-links.ts", async (importOriginal) => {
   return { ...actual, isPublished: vi.fn(actual.isPublished) };
 });
 
-const { listingPages, listingView } =
+const { listingLocales, listingPages, listingView } =
   await import("../../src/modules/catalog/listing.ts");
 const actual = await vi.importActual<
   typeof import("../../src/config/site-links.ts")
@@ -149,4 +149,50 @@ describe("listingView() draws a listing link only while its family is published 
       }
     });
   }
+});
+
+/**
+ * **The shop root's corridor link exists only where the corridor page does** (`/break 98` round 1,
+ * hole 1, escalation 4; TASK-113). Every `de` and `pl` shop root linked to
+ * `/{locale}/{destinations}/{slug}`, which 404s because a draft locale has no corridor page: 14
+ * links to a 404, found once the crawl read the links on the waived pages. `en` and `en-gb` carry
+ * all seven, unchanged. Asked of every shop root in every listing locale, by exact value.
+ */
+describe("the shop root links its corridor page only where that page exists (AC-21)", () => {
+  it("de and pl: no corridor link on any shop root; en and en-gb: all seven, unchanged", async () => {
+    const corridorDestinations = {
+      en: "send-flowers-to",
+      "en-gb": "send-flowers-to",
+    } as const;
+    const seen: Record<string, (string | null)[]> = {};
+    const expected: Record<string, (string | null)[]> = {};
+    for (const locale of listingLocales()) {
+      const roots = (await listingPages(locale)).filter(
+        (page) => page.pageType === "countryShopRoot",
+      );
+      expect(roots, `${locale} shop roots`).toHaveLength(7);
+      for (const root of roots) {
+        const view = await listingView(
+          {
+            locale,
+            pageType: "countryShopRoot",
+            country: root.countrySlug ?? "",
+          },
+          { from: FROM },
+        );
+        if (view === undefined) throw new Error(`no view for ${root.path}`);
+        (seen[locale] ??= []).push(view.links.corridor ?? null);
+        const segment =
+          corridorDestinations[locale as keyof typeof corridorDestinations];
+        (expected[locale] ??= []).push(
+          segment === undefined
+            ? null
+            : `/${locale}/${segment}/${root.countrySlug ?? "!"}`,
+        );
+      }
+    }
+    expect(seen.en?.[0]).toBe("/en/send-flowers-to/poland");
+    expect(seen.de?.[0]).toBeNull();
+    expect(seen).toEqual(expected);
+  });
 });

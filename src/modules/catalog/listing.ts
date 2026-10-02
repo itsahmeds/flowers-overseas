@@ -79,6 +79,7 @@ import {
   type CorridorState,
   committedOccasionCalendar,
   corridorIso2ForSlug,
+  corridorPageExists,
   corridorSlug,
   corridorState,
   destinationsHubHref,
@@ -1877,7 +1878,12 @@ async function linksFor(
             corridorSlug(iso2, locale),
           ),
         }),
-    ...(iso2 !== undefined && isGuidePublished(iso2)
+    // The corridor link needs the corridor page **in this locale**, by the rule its route answers
+    // with (`corridorPageExists()`): a draft locale has no corridor page, so `/de/{land}/blumen`
+    // linked to a 404 (`/break 98` hole 1, TASK-113).
+    ...(iso2 !== undefined &&
+    isGuidePublished(iso2) &&
+    corridorPageExists(iso2, locale)
       ? {
           corridor: localePath(
             locale,
