@@ -672,12 +672,12 @@ describe("the uploader's own refusals (AC-15, AC-16)", () => {
  */
 describe("the upload's gates run before the first request (runUpload)", () => {
   const ASSET = "home-occasion-birthday";
-  const ARGS = parseArgs([]);
   const ENV = { ...CONFIG };
 
-  async function cleanTree(recordAs?: Buffer): Promise<string> {
-    const box = variantBox(ASSET, 384);
-    const data = await sharp({
+  /** A flat in-cap 384 px `occasionTile` frame for one asset. */
+  async function cleanFrame(assetId: string): Promise<Buffer> {
+    const box = variantBox(assetId, 384);
+    return await sharp({
       create: {
         width: box.width,
         height: box.height,
@@ -687,6 +687,10 @@ describe("the upload's gates run before the first request (runUpload)", () => {
     })
       .avif(AVIF_OPTIONS)
       .toBuffer();
+  }
+
+  async function cleanTree(recordAs?: Buffer): Promise<string> {
+    const data = await cleanFrame(ASSET);
     return writeDerivedTree([
       {
         assetId: ASSET,
@@ -698,18 +702,23 @@ describe("the upload's gates run before the first request (runUpload)", () => {
     ]);
   }
 
-  /** Start a run; the caller awaits `outcome`, then reads what the fetcher and stdout saw. */
+  /**
+   * Start a run; the caller awaits `outcome`, then reads what the fetcher and stdout saw. `argv`
+   * goes through `parseArgs()` exactly as `main()` hands `process.argv.slice(2)` to it, so a flag
+   * that `runUpload()` stops forwarding is caught here and not only one level down.
+   */
   function run(
     root: string,
     env: Record<string, string>,
     responses: Parameters<typeof fakeFetcher>[0],
+    argv: readonly string[] = [],
   ): { outcome: Promise<unknown>; calls: Call[]; written: string[] } {
     const { fetcher, calls } = fakeFetcher(responses);
     const written: string[] = [];
     const outcome = runUpload({
       root,
       env,
-      args: ARGS,
+      args: parseArgs(argv),
       fetcher,
       write: (text) => {
         written.push(text);
@@ -785,6 +794,101 @@ describe("the upload's gates run before the first request (runUpload)", () => {
     );
     expect(calls.map((call) => call.method)).toEqual(["HEAD", "PUT"]);
     expect(written).toEqual([]);
+  }, 60_000);
+
+  /** The bucket path a signed request names: `/{bucket}/{objectKey}`, path-style. */
+  const putPaths = (calls: readonly Call[]): string[] =>
+    calls
+      .filter((call) => call.method === "PUT")
+      .map((call) => new URL(call.url).pathname);
+  const bucketPath = (assetId: string): string =>
+    `/${CONFIG.R2_BUCKET}/media/${assetId}/384.avif`;
+
+  // HOLE 10 (`/break 94` round 2): `--dry-run` is how an operator previews what `--only` selects,
+  // so a run that forwards `dryRun: false` would publish to the production bucket while saying
+  // "would upload". It HEADs (to know what is current) and never writes.
+  it("`--dry-run` sends no PUT, and still reports what it would upload (HOLE 10)", async () => {
+    const root = await cleanTree();
+    const { outcome, calls, written } = run(
+      root,
+      ENV,
+      [{ status: 404 }, { status: 200 }],
+      ["--dry-run"],
+    );
+
+    await expect(outcome).resolves.toMatchObject({ variants: 1, uploaded: 1 });
+    expect(calls.map((call) => call.method)).toEqual(["HEAD"]);
+    expect(putPaths(calls)).toEqual([]);
+    expect(written[0]).toMatch(
+      new RegExp(
+        `^would upload media/${ASSET}/384\\.avif \\(\\d+ B\\)\\n$`,
+        "u",
+      ),
+    );
+    expect(written[1]).toMatch(
+      /^1 variant\(s\): 1 to upload, 0 already current/u,
+    );
+  }, 60_000);
+
+  // HOLE 11: TASK-168 keeps unapproved photographs out of the public bucket with `--only`; a run
+  // that dropped the filter would publish the whole tree, cached `immutable` for a year.
+  const THREE = [
+    "home-occasion-birthday",
+    "home-occasion-name-day",
+    "home-occasion-anniversary",
+  ] as const;
+
+  async function threeAssetTree(): Promise<string> {
+    return writeDerivedTree(
+      await Promise.all(
+        THREE.map(async (assetId) => ({
+          assetId,
+          width: 384,
+          format: "avif" as const,
+          data: await cleanFrame(assetId),
+        })),
+      ),
+    );
+  }
+
+  it("`--only <id>` over a three-asset tree uploads that asset's objects and no other (HOLE 11)", async () => {
+    const root = await threeAssetTree();
+    const { outcome, calls, written } = run(
+      root,
+      ENV,
+      [{ status: 404 }, { status: 200 }],
+      ["--only", "home-occasion-name-day"],
+    );
+
+    await expect(outcome).resolves.toMatchObject({ variants: 1, uploaded: 1 });
+    expect(calls.map((call) => call.method)).toEqual(["HEAD", "PUT"]);
+    expect(putPaths(calls)).toEqual([bucketPath("home-occasion-name-day")]);
+    expect(written.at(-1)).toMatch(/^1 variant\(s\): 1 uploaded/u);
+  }, 60_000);
+
+  it("`--only` given twice uploads exactly those two assets (HOLE 11)", async () => {
+    const root = await threeAssetTree();
+    const { outcome, calls, written } = run(
+      root,
+      ENV,
+      [{ status: 404 }, { status: 200 }, { status: 404 }, { status: 200 }],
+      ["--only", "home-occasion-birthday", "--only=home-occasion-anniversary"],
+    );
+
+    await expect(outcome).resolves.toMatchObject({ variants: 2, uploaded: 2 });
+    expect(calls.map((call) => call.method)).toEqual([
+      "HEAD",
+      "PUT",
+      "HEAD",
+      "PUT",
+    ]);
+    expect([...putPaths(calls)].sort()).toEqual(
+      [
+        bucketPath("home-occasion-anniversary"),
+        bucketPath("home-occasion-birthday"),
+      ].sort(),
+    );
+    expect(written.at(-1)).toMatch(/^2 variant\(s\): 2 uploaded/u);
   }, 60_000);
 });
 
