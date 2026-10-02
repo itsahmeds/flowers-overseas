@@ -134,7 +134,11 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   Per the stop condition ("any other baseline changes"), nothing was committed. **Question:**
   commit `occasion-hub-mobile` alone (the PNG plus its manifest entry: the runbook's `--verify`
   needs the manifest to move with the PNG), or all 15 with the manifest (this PR, or a separate
-  refresh)? **Open.**
+  refresh)?
+  **Answered (orchestrator, 2026-10-03):** commit the three baselines this diff causes
+  (`occasion-hub-mobile`, `category-hub-desktop`, `occasion-hub-desktop`) from run 37073763032,
+  with their manifest entries; leave the 12 footer-colour baselines (TASK-113, #98) for a separate
+  refresh.
 
 ## Progress
 
@@ -158,6 +162,8 @@ here.
   re-fire after 00:00 UTC for (a); the orchestrator rules on (b).
 - 2026-10-03: E5 answered. Ran the `visual:baselines` flow; 15 PNGs moved, so I stopped (E6) and
   committed no baseline. Next: the orchestrator's ruling on E6.
+- 2026-10-03: E6 answered; committed the three baselines, `--verify` green, row `in_review`, CI
+  re-fired.
 
 ## Result
 
@@ -193,6 +199,15 @@ old-sentence grep finds. `bad-delivery-timing` does not carry the sentence.
 stale-FX note), `i18n:check` 0, `seed:project --check` 0; unit `seed-copy`, `seed-diff`,
 `seed-check`, `home-honesty`, `i18n-check`, `i18n-draft`, `sitemap-fixtures` green;
 `gates:cheap` PASS (7/7). No build slot used.
+
+**Visual baselines:** three linux PNGs from `visual-baselines` run 37073763032, committed with
+their manifest entries: `occasion-hub-mobile` (2567 -> 2591 px, the intro wraps one more line),
+`category-hub-desktop` and `occasion-hub-desktop` (the same sentence rewraps, same height). I
+opened and compared 3 images, plus crops of the 12 below. `pnpm visual:baselines --verify` passes
+("93 committed linux baseline(s) match the manifest byte for byte"). **Left for a separate
+refresh:** the 12 footer-colour baselines (`ar-XB`, `en`, `dev-components-desktop`,
+`error-locale-{desktop,mobile}`, `footer-en-{desktop,mobile}`, `home-{en,en-gb}-{desktop,mobile}`),
+which TASK-113 (#98) moved and which pass the gate.
 
 **Suggested follow-up (not changed here):** `syncCopyLocale` in `seed/copy-draft.ts` should
 refresh the en and en-gb `sourceHash` when it re-flows the closing sentence, so a future rewording
