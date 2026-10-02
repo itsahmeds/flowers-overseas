@@ -125,6 +125,16 @@ gap closes, mark it ✅ with the PR, and don't delete the row.
   (the machine slept) and wrote no code; TASK-113's fourth finisher spent its limit on one long
   dump. Work orders now ask for the first visible stage to be pushed early, and for long
   enumerations to be avoided.
+- **Two of TASK-113's escalations were never answered** (`docs/tasks/TASK-113.md`, 2026-09-22,
+  both `open` at PR 98's merge). (1) Spec 008 §2 gives the country-less **category hub** no
+  publisher and no inbound link; is it a sixth `site-links.ts` family, or the header's category
+  rows through `categoryHref()` in `src/config/categories.ts`? (2) The country **shop root** has no
+  inbound link in `de` and `pl`, because its one publisher, the corridor page, does not exist in a
+  draft locale; does the German and Polish shop wait for reviewed corridor copy, or does a draft
+  locale get another inbound edge? Both are guarded meanwhile by
+  `tests/e2e/shop-reachability.spec.ts`'s `EXCLUDED`, asserted to hold exactly these. Neither costs
+  ranking today (the pages are `noindex`), but both must be answered by a spec 008 amendment
+  before TASK-096 indexes them.
 - **`next dev` writes into `CLAUDE.md`.** Next.js 16 adds a `<!-- BEGIN:nextjs-agent-rules -->`
   block to `CLAUDE.md` whenever the dev server starts. Nothing stops an agent from staging it;
   today the work order tells agents not to, and `git checkout -- CLAUDE.md` drops it. A check (the
