@@ -199,6 +199,7 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
 - 2026-10-03: `pnpm media:upload` loads under `node` again (round 3's extensionless imports); pushed `050adbbb`.
 - 2026-10-03: R2 verified (118/118), one local Lighthouse run under the build slot; docs and this brief.
 - 2026-10-03 (round 6, `/review 94` round 2 + `/break 94` round 1): family 9 byte boundaries; `runUpload()` extracted with gate-order, look-alike-host, 403 and uploader-cap boundary cases; the origin literal pinned; two nits; pushed `6581c380` and this brief.
+- 2026-10-03 (round 7, `/review 94` round 3): HOLES 10 and 11 as three `runUpload()` cases through `parseArgs()`, each watched red; PR body origin line corrected; pushed `e5fcd8d0`.
 
 ## Result
 
@@ -759,3 +760,17 @@ No build slot taken: nothing renders differently.
 
 **Gates and CI:** the PR's round-6 comment carries the `pnpm gates:cheap` block and CI's verdict on
 the head SHA.
+
+### Round 7 (2026-10-03) — `--dry-run` and `--only` forwarded (`/review 94` round 3, `/break 94` round 2)
+
+Tests only; no production change. Three `runUpload()` cases in `tests/unit/media-upload.test.ts`,
+each driven by `parseArgs(argv)` the way `main()` passes `process.argv.slice(2)`:
+
+| Hole | Test | Broken on purpose → red |
+|---|---|---|
+| 10 | "`--dry-run` sends no PUT, and still reports what it would upload" — calls are `["HEAD"]`, output `would upload …` and `1 variant(s): 1 to upload` | `dryRun: args.dryRun` → `dryRun: false` (1 red) |
+| 11 | "`--only <id>` over a three-asset tree uploads that asset's objects and no other" and "`--only` given twice uploads exactly those two assets" (`--only a --only=b`) — the PUT paths are exactly the named assets' keys, summary `1` / `2 variant(s)` | the `only: args.only` spread dropped (2 red) |
+
+`media-upload.test.ts`: 35 passed. The PR body's older line calling the origin a `pub-*.r2.dev`
+host now says it was one and is answered (A8). The brief's carry-forwards already end in a blank
+line before `## Escalations`, so nothing changed there. No build slot taken.
