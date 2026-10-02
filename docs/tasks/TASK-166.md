@@ -124,9 +124,11 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
     by hand and / delivered…city." onto one more line). Below it, with a 24 px shift, the only
     differences are 6 809 pixels of max channel delta 1 (gradient dithering on the placeholder
     cards from the shift; not visible). Matches the expected change.
-  - `category-hub-desktop` (0.149 %) and `occasion-hub-desktop` (0.176 %): the same sentence
-    rewraps inside the intro, same height. This diff, but under the `visual` gate (green on CI).
-  - 12 others (`ar-XB`, `en`, `dev-components-desktop`, `error-locale-{desktop,mobile}`,
+  - `category-hub-desktop` (0.149 %), `occasion-hub-desktop` (0.176 %) and `category-hub-mobile`
+    (0.162 %, rows 321-334; missed in this first count, found by `/review 136` round 1): the same
+    sentence rewraps inside the intro, same height. This diff, but under the `visual` gate (green
+    on CI).
+  - 11 others (corrected from "12"; the list always held 11 names: `ar-XB`, `en`, `dev-components-desktop`, `error-locale-{desktop,mobile}`,
     `footer-en-{desktop,mobile}`, `home-{en,en-gb}-{desktop,mobile}`): one ~374 px band where the
     footer "Occasions" link now renders in the active-link colour. **Not this diff**: TASK-113
     (#98, `src/config/site-links.ts`) changed it after the linux set was last cut (#95), and no
@@ -135,10 +137,10 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   commit `occasion-hub-mobile` alone (the PNG plus its manifest entry: the runbook's `--verify`
   needs the manifest to move with the PNG), or all 15 with the manifest (this PR, or a separate
   refresh)?
-  **Answered (orchestrator, 2026-10-03):** commit the three baselines this diff causes
-  (`occasion-hub-mobile`, `category-hub-desktop`, `occasion-hub-desktop`) from run 37073763032,
-  with their manifest entries; leave the 12 footer-colour baselines (TASK-113, #98) for a separate
-  refresh.
+  **Answered (orchestrator, 2026-10-03):** commit the baselines this diff causes from run
+  37073763032, with their manifest entries; leave the footer-colour baselines (TASK-113, #98) for a
+  separate refresh. That came to four after `/review 136` round 1 (`occasion-hub-mobile`,
+  `category-hub-desktop`, `occasion-hub-desktop`, `category-hub-mobile`) and 11 footer ones.
 
 ## Progress
 
@@ -164,6 +166,8 @@ here.
   committed no baseline. Next: the orchestrator's ruling on E6.
 - 2026-10-03: E6 answered; committed the three baselines, `--verify` green, row `in_review`, CI
   re-fired.
+- 2026-10-03: `/review 136` round 1 FAIL (breaker HOLDS): committed `category-hub-mobile` from the
+  same run (sha256 `8d47f7c44af5…`), `--verify` green; brief and PR body now say four baselines.
 
 ## Result
 
@@ -200,12 +204,13 @@ stale-FX note), `i18n:check` 0, `seed:project --check` 0; unit `seed-copy`, `see
 `seed-check`, `home-honesty`, `i18n-check`, `i18n-draft`, `sitemap-fixtures` green;
 `gates:cheap` PASS (7/7). No build slot used.
 
-**Visual baselines:** three linux PNGs from `visual-baselines` run 37073763032, committed with
+**Visual baselines:** four linux PNGs from `visual-baselines` run 37073763032, committed with
 their manifest entries: `occasion-hub-mobile` (2567 -> 2591 px, the intro wraps one more line),
-`category-hub-desktop` and `occasion-hub-desktop` (the same sentence rewraps, same height). I
-opened and compared 3 images, plus crops of the 12 below. `pnpm visual:baselines --verify` passes
+`category-hub-desktop`, `occasion-hub-desktop` and `category-hub-mobile` (the same sentence
+rewraps, same height; the last one added after `/review 136` round 1). I opened and compared the
+4 images, plus crops of the 11 below. `pnpm visual:baselines --verify` passes
 ("93 committed linux baseline(s) match the manifest byte for byte"). **Left for a separate
-refresh:** the 12 footer-colour baselines (`ar-XB`, `en`, `dev-components-desktop`,
+refresh:** the 11 footer-colour baselines (`ar-XB`, `en`, `dev-components-desktop`,
 `error-locale-{desktop,mobile}`, `footer-en-{desktop,mobile}`, `home-{en,en-gb}-{desktop,mobile}`),
 which TASK-113 (#98) moved and which pass the gate.
 
