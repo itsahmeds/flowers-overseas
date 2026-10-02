@@ -2,13 +2,19 @@
  * T-23 / AC-22 (TASK-009): `validate-sitemap` over a temp copy of the deliberately-bad cases in
  * `tests/fixtures/seo/_cases/`, plus the committed `no fixtures` state and the pure helpers.
  */
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
 import { describe, expect, it } from "vitest";
 
 import {
   collectLocs,
   locProblem,
+  NOINDEX_FILE,
   noindexFixtureSchema,
   noindexUrls,
+  validateSitemapFile,
 } from "../../scripts/seo/validate-sitemap";
 import { runSeoCli, withEmptyDir, withFixtureDir } from "./support/seo-cli";
 
@@ -136,6 +142,84 @@ describe("validate-sitemap helpers", () => {
     ]);
     expect(noindexFixtureSchema.safeParse({ noindex: "x" }).success).toBe(
       false,
+    );
+  });
+});
+
+/**
+ * Two rules of `validateSitemapFile` that no case reached (TASK-143): with either `problems.push`
+ * neutered, every case in this file and in `tests/contract/sitemap-validator.test.ts` stayed
+ * green. The first is PR 87's class exactly — a validator that passes a document with nothing in
+ * it — and the second is a `noindex.json` the gate cannot read, which would otherwise silently
+ * exempt every URL it was meant to exclude.
+ */
+describe("validateSitemapFile rules no fixture reached", () => {
+  const URLSET =
+    '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
+  const inDir = (
+    files: Readonly<Record<string, string>>,
+    run: (dir: string) => void,
+  ): void => {
+    const dir = mkdtempSync(join(tmpdir(), "fo-sitemap-"));
+    try {
+      for (const [name, body] of Object.entries(files)) {
+        writeFileSync(join(dir, name), body);
+      }
+      run(dir);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  };
+
+  it("fails a sitemap that lists no <loc> at all", () => {
+    inDir({ "empty.xml": `${URLSET}</urlset>\n` }, (dir) => {
+      expect(validateSitemapFile(join(dir, "empty.xml"), "empty.xml")).toEqual([
+        { file: "empty.xml", reason: "contains no <loc> element" },
+      ]);
+    });
+  });
+
+  it("fails when the directory's noindex.json cannot be read as a noindex list", () => {
+    inDir(
+      {
+        "one.xml": `${URLSET}<url><loc>https://a.test/en/</loc></url></urlset>\n`,
+        [NOINDEX_FILE]: JSON.stringify({ urls: ["https://a.test/en/"] }),
+      },
+      (dir) => {
+        const reasons = validateSitemapFile(
+          join(dir, "one.xml"),
+          "one.xml",
+        ).map(({ reason }) => reason);
+        expect(reasons).toHaveLength(1);
+        expect(reasons[0]).toContain(
+          "does not match the noindex fixture shape",
+        );
+      },
+    );
+  });
+
+  // The parse-error branch of `noindexFor` reports by returning `error`, not by `problems.push`,
+  // so the round-1 sweep never neutered it: with `error: null` there, a `noindex.json` of `{`
+  // was read as an empty list and the CLI exited 0 (`/break 99` round 1).
+  it("fails, in process and through the CLI, when noindex.json is not JSON at all", () => {
+    inDir(
+      {
+        "one.xml": `${URLSET}<url><loc>https://a.test/en/</loc></url></urlset>\n`,
+        [NOINDEX_FILE]: "{",
+      },
+      (dir) => {
+        const reasons = validateSitemapFile(
+          join(dir, "one.xml"),
+          "one.xml",
+        ).map(({ reason }) => reason);
+        expect(reasons).toHaveLength(1);
+        expect(reasons[0]).toContain(`${NOINDEX_FILE} is not valid JSON (`);
+
+        const result = runSeoCli(CLI, dir);
+        expect(result.status).toBe(1);
+        expect(result.stderr).toContain("one.xml");
+        expect(result.stderr).toContain(`${NOINDEX_FILE} is not valid JSON (`);
+      },
     );
   });
 });

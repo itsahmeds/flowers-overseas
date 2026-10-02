@@ -263,18 +263,17 @@ describe("the category hub (§5.3 row 3, §13 Q4)", () => {
   });
 
   it("names every published destination, in `collator(locale)` order", () => {
-    const names = [...html.matchAll(/data-fo-hub-destination="([A-Z]{2})"/gu)];
-    expect(names).toHaveLength(roses.links.destinations.length);
-    // France before Germany in English collation — the order is the renderer's, because only it
-    // can resolve a country's `nameKey` into the word a reader sorts by (§7).
-    const rendered = [
-      ...text.matchAll(
-        /\b(France|Germany|Italy|Netherlands|Poland|Romania|Spain)\b/gu,
-      ),
-    ]
-      .map((match) => match[1])
-      .filter((name, index, all) => all.indexOf(name) === index);
-    expect(rendered).toEqual([...rendered].sort());
+    // **The stated list, read off the destination elements themselves** (TASK-143). This case
+    // used to compare the count of rendered destinations to `roses.links.destinations.length` —
+    // the view against its own page, so a view that named no destination (or only Poland) passed
+    // as zero-vs-zero, and the "sorted" check ran over country names scraped from the whole page
+    // text, which "See them with prices for Poland" satisfies on its own. Pinned to the committed
+    // corpus: all seven published destinations, in English collation. A destination published or
+    // withdrawn turns this red, and the new list is written here deliberately.
+    const order = [
+      ...html.matchAll(/data-fo-hub-destination="([A-Z]{2})"/gu),
+    ].map((match) => match[1]);
+    expect(order).toEqual(["FR", "DE", "IT", "NL", "PL", "RO", "ES"]);
   });
 
   it("links a destination only where its country page exists (spec 004 AC-14)", () => {

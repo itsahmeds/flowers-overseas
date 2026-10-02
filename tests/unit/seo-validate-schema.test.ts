@@ -6,6 +6,10 @@
  * the table names and the three it forbids by name, so widening the list is a deliberate edit
  * with a failing test in front of it.
  */
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
 import { describe, expect, it } from "vitest";
 
 import {
@@ -20,6 +24,7 @@ import {
   schemaFixtureSchema,
   shapeProblems,
   typeProblem,
+  validateSchemaFile,
 } from "../../scripts/seo/validate-schema";
 import { runSeoCli, withEmptyDir, withFixtureDir } from "./support/seo-cli";
 
@@ -111,6 +116,26 @@ describe("validate-schema CLI (T-23)", () => {
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain("bad-schema-malformed.json");
     expect(result.stderr).toContain("JSON-LD cannot parse");
+  });
+});
+
+describe("validateSchemaFile over a graph with nothing in it (TASK-143)", () => {
+  it("fails a fixture whose JSON-LD carries no node with an @type", () => {
+    // PR 87's class: a validator that passes a document by finding nothing to check. The rule
+    // exists; with its `problems.push` neutered, all 65 schema cases stayed green.
+    const dir = mkdtempSync(join(tmpdir(), "fo-schema-"));
+    const path = join(dir, "untyped.json");
+    writeFileSync(
+      path,
+      JSON.stringify({ jsonld: { name: "Flowers Overseas" } }),
+    );
+    try {
+      expect(validateSchemaFile(path, "untyped.json")).toEqual([
+        { file: "untyped.json", reason: "contains no node with an @type" },
+      ]);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });
 
@@ -215,6 +240,26 @@ describe("Offer.price == visiblePrice", () => {
     );
     expect(offerProblems(fixture, nodes)[0]).toContain(
       "must be a JSON string, not number",
+    );
+  });
+
+  it("rejects a price on either side that is not a plain decimal string (TASK-143)", () => {
+    // Two rules no case reached: a fixture's own `visiblePrice` that is not money, and an
+    // `Offer.price` string that is not money. Both are needed before any comparison can mean
+    // anything, and either could be neutered with every schema case green.
+    const visible = nodesOf(
+      { "@type": "Offer", price: "49.00" },
+      { visiblePrice: "forty-nine" },
+    );
+    expect(offerProblems(visible.fixture, visible.nodes)[0]).toBe(
+      'visiblePrice "forty-nine" is not a plain decimal string (expected e.g. "49" or "49.00")',
+    );
+    const offered = nodesOf(
+      { "@type": "Offer", price: "forty-nine" },
+      { visiblePrice: "49.00" },
+    );
+    expect(offerProblems(offered.fixture, offered.nodes)[0]).toBe(
+      'jsonld: Offer.price "forty-nine" is not a plain decimal string',
     );
   });
 
@@ -387,6 +432,20 @@ describe("required shape, not just allowed types (AC-15)", () => {
         ],
       }).join(" "),
     ).toContain("name");
+  });
+
+  it("rejects a crumb that is not a ListItem object, or carries no @type ListItem (TASK-143)", () => {
+    // Neither rule was reached by any case: with either `problems.push` neutered, all 65 cases of
+    // the schema suites stayed green.
+    expect(
+      shapeOf({
+        "@type": "BreadcrumbList",
+        itemListElement: ["Home", { position: 2, name: "Poland" }],
+      }),
+    ).toStrictEqual([
+      "BreadcrumbList.itemListElement[0] is not a ListItem object",
+      "BreadcrumbList.itemListElement[1] has no @type ListItem",
+    ]);
   });
 
   it("rejects an empty or single-item BreadcrumbList", () => {

@@ -32,6 +32,7 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { launchLocales } from "../../src/config/locales.ts";
+import { branchDeletions } from "./support/regex-branches.ts";
 
 const repoRoot = resolve(import.meta.dirname, "../..");
 
@@ -153,6 +154,100 @@ describe("AC-15: the message catalogues carry no claim we cannot support", () =>
         claim,
       ).toBe(true);
     }
+  });
+
+  /**
+   * The case above asks only that *some* pattern fires on each claim, so a pattern — or one
+   * branch of one — that another pattern shadows can be deleted with every case green: "Rated
+   * 4.8 out of 5" is caught by `rating` whether or not `out-of-five score` exists, and no claim
+   * above exercises `review count`, `feefo` or `fleurop` at all (TASK-143). So every pattern is
+   * mutated — each `|` branch at every depth deleted in turn — and some sample of **that** pattern
+   * must be caught by it and missed by the mutant.
+   *
+   * The generator covers `|` branches only; class members and `?` atoms are covered by the
+   * samples, which is why each plural has its singular (`One star`, `Leave a review`, `1 review`,
+   * `1 florist`…) and `4 out of 5` sits beside `4.8 out of 5` (`/break 99` round 1). Fifteen such
+   * mutants have no sample because no count a page could print tells them apart: every
+   * `[.,]` / `(?:[.,]\d)?` deletion in the out-of-five score (the match starts at the decimal
+   * digit), and each member of `[\d\s,.]` in the three counts (the match starts at the last digit,
+   * and a separator is followed by a digit, not by the noun).
+   */
+  it("needs every branch of every pattern: each single-branch deletion is caught by a sample", () => {
+    const SAMPLES: ReadonlyMap<string, readonly string[]> = new Map([
+      ["review", ["Read the reviews", "Leave a review"]],
+      ["rating", ["Our rating", "Our ratings", "Rated highly"]],
+      ["star", ["Five stars", "One star", "★★★★★", "⭐"]],
+      ["testimonial", ["A testimonial from Berlin", "Testimonials"]],
+      ["review count", ["112 reviews", "1 review", "112 ratings", "1 rating"]],
+      ["out-of-five score", ["4.8 out of 5", "4.8/5", "4 out of 5"]],
+      ["Trustpilot mark", ["Trustpilot", "Feefo", "reviews.io"]],
+      ["florist count", ["47 florists", "1 florist"]],
+      [
+        "customer count",
+        [
+          "1,240 customers",
+          "1 customer",
+          "900 orders delivered",
+          "1 order delivered",
+          "900 deliveries",
+        ],
+      ],
+      [
+        "partner name",
+        [
+          "Kwiaciarnia Rosa",
+          "Blumen Schmidt",
+          "Fleurs de Paris",
+          "Interflora",
+          "Euroflorist",
+          "Fleurop",
+        ],
+      ],
+      [
+        "delivery-photo gallery claim",
+        [
+          "photo gallery",
+          "picture below",
+          "photo of our deliveries",
+          "photo of recent deliveries",
+        ],
+      ],
+    ]);
+    expect([...SAMPLES.keys()]).toStrictEqual(
+      FORBIDDEN.map(({ name }) => name),
+    );
+    const survivors: string[] = [];
+    const mutants: Record<string, number> = {};
+    for (const { name, pattern } of FORBIDDEN) {
+      const samples = SAMPLES.get(name) ?? [];
+      expect(samples.length, name).toBeGreaterThan(0);
+      for (const sample of samples)
+        expect(pattern.test(sample), sample).toBe(true);
+      mutants[name] = 0;
+      for (const { branch, mutant } of branchDeletions(pattern)) {
+        mutants[name] += 1;
+        if (!samples.some((sample) => !mutant.test(sample))) {
+          survivors.push(`${name}: ${branch}`);
+        }
+      }
+    }
+    // Stated per pattern (`/review 99` round 1), so a generator that found no alternation cannot
+    // pass as zero-vs-zero, and one claim losing a branch cannot hide behind another gaining one.
+    // They sum to 28; a single-branch pattern yields none.
+    expect(mutants).toStrictEqual({
+      review: 0,
+      rating: 2,
+      star: 3,
+      testimonial: 0,
+      "review count": 2,
+      "out-of-five score": 2,
+      "Trustpilot mark": 3,
+      "florist count": 0,
+      "customer count": 3,
+      "partner name": 6,
+      "delivery-photo gallery claim": 7,
+    });
+    expect(survivors).toStrictEqual([]);
   });
 
   it("leaves the shipped copy's innocent prose alone", () => {

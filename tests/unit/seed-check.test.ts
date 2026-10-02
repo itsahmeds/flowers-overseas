@@ -279,6 +279,205 @@ describe.each(
 /* AC-7: slugs.                                                               */
 /* -------------------------------------------------------------------------- */
 
+/* -------------------------------------------------------------------------- */
+/* Rules no fixture reached (TASK-143).                                        */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * AC-10 asks for "a fixture per family", and the families are covered — but a family is several
+ * rules, and neutering each `problems.push` of `seed/check.ts` in turn left 11 of its 23 with all
+ * 113 cases green. These are tree-level facts (a stray file, a missing one, a stale projection, a
+ * committed image with no asset) or one-field edits, so each is written here as the smallest
+ * mutation of the committed tree rather than as a case file, and each must be reported under its
+ * own rule and key.
+ */
+describe("seed:check rules no fixture reached (TASK-143)", () => {
+  const COPY = "copy/en/products.json";
+  const copyFile = (): { rows: Record<string, unknown>[] } & Record<
+    string,
+    unknown
+  > => structuredClone(tree.raw.get(COPY)) as never;
+  const withRaw = (path: string, value: unknown): SeedTree => ({
+    ...tree,
+    raw: new Map([...tree.raw, [path, value]]),
+  });
+  const reported = (mutated: SeedTree, rule: string): readonly string[] =>
+    checkSeedDataset(mutated)
+      .filter((problem) => problem.rule === rule)
+      .map((problem) => `${problem.key} ${problem.message}`);
+
+  it(
+    "unknown-file: a file the layout does not declare",
+    () => {
+      const found = reported(withRaw("stray.json", {}), "unknown-file");
+      expect(found).toHaveLength(1);
+      expect(found[0]).toMatch(
+        /^stray\.json is not part of the dataset layout/u,
+      );
+    },
+    TREE_TIMEOUT,
+  );
+
+  it(
+    "missing-file: a file the layout requires and the disk lacks",
+    () => {
+      const found = reported(
+        { ...tree, missing: ["products.json"] },
+        "missing-file",
+      );
+      expect(found).toEqual([
+        "products.json is required by the `seed/data/` layout of spec 006 §2.2 and is not on disk",
+      ]);
+    },
+    TREE_TIMEOUT,
+  );
+
+  it(
+    "origin: an authored file that claims to be projected",
+    () => {
+      const file = copyFile();
+      // A projected header must name its module, or the header schema objects first and the
+      // layout rule is never reached; with `projectedFrom` it is a well-formed lie.
+      const found = reported(
+        withRaw(COPY, {
+          ...file,
+          origin: "projected",
+          projectedFrom: "src/config/catalogue/products.data.ts",
+        }),
+        "origin",
+      );
+      expect(found).toHaveLength(1);
+      expect(found[0]).toContain(`${COPY} claims \`origin: "projected"\``);
+    },
+    TREE_TIMEOUT,
+  );
+
+  it(
+    "stale-projection: a projected file that differs from a fresh projection",
+    () => {
+      const found = reported(
+        { ...tree, stale: [`${SEED_DATA_DIR}/products.json`] },
+        "stale-projection",
+      );
+      expect(found).toHaveLength(1);
+      expect(found[0]).toMatch(
+        /^products\.json differs from a fresh projection/u,
+      );
+    },
+    TREE_TIMEOUT,
+  );
+
+  it(
+    "prompt-file: an imagery prompt file that does not parse",
+    () => {
+      const found = reported(
+        {
+          ...tree,
+          prompts: new Map([...tree.prompts, ["zz-broken", { records: "x" }]]),
+        },
+        "prompt-file",
+      );
+      expect(found).toHaveLength(1);
+      expect(found[0]).toMatch(/^zz-broken does not parse as a prompt file/u);
+    },
+    TREE_TIMEOUT,
+  );
+
+  it(
+    "copy-owner: copy for a product the dataset does not have",
+    () => {
+      const file = copyFile();
+      const [first] = file.rows;
+      if (first === undefined) throw new Error(`${COPY} has no rows`);
+      const found = reported(
+        withRaw(COPY, {
+          ...file,
+          rows: [
+            ...file.rows,
+            { ...first, key: "FO-XX-999", slug: "no-such-bouquet" },
+          ],
+        }),
+        "copy-owner",
+      );
+      expect(found).toEqual([
+        "product:FO-XX-999 is copy for an entity the dataset does not have",
+      ]);
+    },
+    TREE_TIMEOUT,
+  );
+
+  it(
+    "source-locale: no `en` copy at all",
+    () => {
+      const found = reported(
+        {
+          ...tree,
+          copyLocales: tree.copyLocales.filter((locale) => locale !== "en"),
+        },
+        "source-locale",
+      );
+      expect(found).toHaveLength(1);
+      expect(found[0]).toMatch(/^en has no copy files/u);
+    },
+    TREE_TIMEOUT,
+  );
+
+  it(
+    "florist-sentence-key: a copy locale with no florist sentence to verify against",
+    () => {
+      const sentences = new Map(tree.floristSentences);
+      sentences.delete("en");
+      const found = reported(
+        { ...tree, floristSentences: sentences },
+        "florist-sentence-key",
+      );
+      expect(found.length).toBeGreaterThan(0);
+      expect(
+        found.every((line) =>
+          line.startsWith("en has no `catalog.floristSentence`"),
+        ),
+      ).toBe(true);
+    },
+    TREE_TIMEOUT,
+  );
+
+  it(
+    "person-allowlist: a person's name where only a role may appear",
+    () => {
+      const file = copyFile();
+      const [first, ...rest] = file.rows;
+      if (first === undefined) throw new Error(`${COPY} has no rows`);
+      const found = reported(
+        withRaw(COPY, {
+          ...file,
+          rows: [{ ...first, reviewedBy: "Jan Kowalski" }, ...rest],
+        }),
+        "person-allowlist",
+      );
+      expect(found).toHaveLength(1);
+      expect(found[0]).toContain("`reviewedBy` is `Jan Kowalski`");
+    },
+    TREE_TIMEOUT,
+  );
+
+  it(
+    "unknown-slot: a committed image whose asset id is not in media.json",
+    () => {
+      const stray = "public/media/not-an-asset/640.avif";
+      const found = reported(
+        {
+          ...tree,
+          mediaFiles: [...tree.mediaFiles, { path: stray, bytes: 10 }],
+        },
+        "unknown-slot",
+      );
+      expect(found).toHaveLength(1);
+      expect(found[0]).toMatch(new RegExp(`^${stray} is committed under`, "u"));
+    },
+    TREE_TIMEOUT,
+  );
+});
+
 describe("spec 006 AC-7: slug rules", () => {
   it("folds Polish diacritics: `Kraków Spring` → `krakow-spring`", () => {
     expect(asciiFoldSlug("Kraków Spring")).toBe("krakow-spring");
