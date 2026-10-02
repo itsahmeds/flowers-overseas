@@ -488,8 +488,8 @@ describe("nothing reaches the bucket that the gates have not seen", () => {
  *
  * Each case builds a real tree with `writeDerivedTree()` — the repository's own `media.json`, so
  * the slot and therefore the cap are the shipped ones — and drives `loadUploadSet()`, the
- * function `runUpload()` (and so `main()`) calls before it opens a socket. A clean tree of the same shape is asserted to
- * load, so a refusal cannot be passing for some unrelated reason.
+ * function `runUpload()` (and so `main()`) calls before it opens a socket. A clean tree of the
+ * same shape is asserted to load, so a refusal cannot be passing for some unrelated reason.
  */
 describe("the uploader's own refusals (AC-15, AC-16)", () => {
   // `occasionTile` is the tightest cap of any slot the Phase-0 dataset uses: 18 000 B at a single

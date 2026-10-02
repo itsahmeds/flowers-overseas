@@ -2,13 +2,16 @@
  * The media origin — one configuration point for every image URL and for the CSP that has to
  * allow it (spec 006 §2.6, ADR-0015, ADR-0016; TASK-138).
  *
- * The value itself is deliberately **not** asserted here. It is a public host that the founder
- * can move to a custom domain in one edit, and a test that pinned the literal would fail on the
- * day of that edit for no reason anybody cares about. What is asserted is everything that must
- * stay true whatever the value is: the shape of the origin, the composition of a URL from a
- * manifest `objectKey` (never from a path invented here), and the fact that the policy which
- * allows the images and the loader which addresses them read the **same constant** — a build
- * where those two disagree serves a page whose every photograph is blocked.
+ * The value itself **is** pinned, once: spec 006 §14 A8 rewords AC-27 to name the origin,
+ * `https://media.flowersoverseas.com`, and the CSP's `img-src` allowance with it, so a change
+ * to the constant is a change to an acceptance criterion and turns one named case red
+ * (`/review 94` round 2, HOLE 9). Moving the host is still one edit to `src/lib/media-origin.ts`
+ * — plus this one line and the spec, which is the point. Everything else is asserted against
+ * the constant rather than the literal, because it must stay true whatever the value is: the
+ * shape of the origin, the composition of a URL from a manifest `objectKey` (never from a path
+ * invented here), and the fact that the policy which allows the images and the loader which
+ * addresses them read the **same constant** — a build where those two disagree serves a page
+ * whose every photograph is blocked.
  *
  * **The split (founder, 2026-10-03, option (a)).** The home page's LCP image — the `hero` crop
  * slot, which is `home-hero` — stays on the site's own origin, committed under `public/media/`;
@@ -53,6 +56,21 @@ const EXPECTED_ORIGIN: Readonly<Record<MediaSlot, string>> = {
 };
 
 describe("MEDIA_ORIGIN", () => {
+  it("is the origin spec 006 AC-27 names, and the one every `img-src` allows (A8)", () => {
+    expect(MEDIA_ORIGIN).toBe("https://media.flowersoverseas.com");
+    for (const environment of [
+      "development",
+      "test",
+      "preview",
+      "staging",
+      "production",
+    ] as const) {
+      expect(cspValue(environment)).toContain(
+        "img-src 'self' data: blob: https://media.flowersoverseas.com;",
+      );
+    }
+  });
+
   it("is an https origin with no path and no trailing slash", () => {
     const url = new URL(MEDIA_ORIGIN);
 
