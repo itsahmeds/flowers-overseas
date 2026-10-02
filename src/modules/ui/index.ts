@@ -451,3 +451,33 @@ export type {
   ProductCardView,
   ProductProvenance,
 } from "./shop/viewModel.ts";
+
+// The product page and its six primitives (spec 009 §5.2, §5.3, AC-7's render half, AC-9, AC-21,
+// AC-23, AC-25's slot half; TASK-126, TASK-127). Server Components, all of them: the grid, the
+// chips, the tier radios, the add-on rows and the summary render with JavaScript disabled, and
+// none of them computes money — every figure is `productView()`'s, formatted by `formatMoney`.
+// They take `catalog`'s types and nothing else from it, because `catalog` and `geo` import this
+// barrel at runtime; the two blocks they cannot import (008's breadcrumb, 007's delivery facts)
+// reach `ProductPage` as slots from the route.
+export { ProductPage } from "./product/ProductPage.tsx";
+export type { ProductPageProps } from "./product/ProductPage.tsx";
+export { Gallery } from "./product/Gallery.tsx";
+export type { GalleryProps } from "./product/Gallery.tsx";
+export { TierSelector, tierLabel } from "./product/TierSelector.tsx";
+export type { TierSelectorProps } from "./product/TierSelector.tsx";
+export {
+  DateChip,
+  SHARED_REASON_KEY,
+  dateChipState,
+} from "./product/DateChip.tsx";
+export type {
+  DateChipProps,
+  DateChipState,
+  ProductDeliveryDate,
+} from "./product/DateChip.tsx";
+export { DeliveryDatePicker } from "./product/DeliveryDatePicker.tsx";
+export type { DeliveryDatePickerProps } from "./product/DeliveryDatePicker.tsx";
+export { AddonPriceList } from "./product/AddonPriceList.tsx";
+export type { AddonPriceListProps } from "./product/AddonPriceList.tsx";
+export { PriceSummary } from "./product/PriceSummary.tsx";
+export type { PriceSummaryProps } from "./product/PriceSummary.tsx";

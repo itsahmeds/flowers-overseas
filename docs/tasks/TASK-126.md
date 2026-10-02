@@ -37,7 +37,18 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
   exist (`catalog.tier.*`, `catalog.surcharge.*`, `catalog.addon.*`, `a11y.*`). Every new `en`
   key is the implementer's draft, `reviewed: false`, listed in `AWAITING_FOUNDER_REVIEW` and in
   `## Escalations` with its exact text, for the founder to attest. Keep the count of new keys
-  as small as the drawings allow, and say the number in `## Result`. `de`/`pl` are drafted by
+  as small as the drawings allow, and say the number in `- **2026-10-03 — stage 1, the page renders (combined dispatch with TASK-127).** The six primitives
+  are in `src/modules/ui/product/` (`Gallery`, `TierSelector`, `DateChip`, `DeliveryDatePicker`,
+  `AddonPriceList`, `PriceSummary`) with `ProductPage` assembling them in block order; the depth-4
+  route gains the product branch with `dynamicParams = true`; `site-links.ts` publishes `product`,
+  so the Poland listing cards are links; spec 007's facts block is reused through a narrowed
+  `DeliveryFacts` export from `geo`. Copy: the founder's 27 approved strings (of 28; "See all
+  {count}" is not built, see `## Escalations`) are `reviewed: true`, three new keys wait.
+  Screenshots on `pnpm dev`: `docs/tasks/assets/TASK-126/listing-en-poland-roses-desktop.png`,
+  `docs/tasks/assets/TASK-126/pdp-en-poland-amber-hour-desktop.png`,
+  `docs/tasks/assets/TASK-126/pdp-en-poland-amber-hour-mobile.png`.
+
+## Result`. `de`/`pl` are drafted by
   `pnpm i18n:draft`.
 
 ## Read

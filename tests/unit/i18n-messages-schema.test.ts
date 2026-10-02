@@ -282,6 +282,13 @@ describe("the shipped catalogues and manifests", () => {
     // out-links block "Out of this page", which is architecture, not copy. Recorded in
     // `docs/design/README.md`'s TASK-112 row, clauses (c), (d) and (e).
     "categoryHub.destinationLink",
+    // TASK-126/127, the product page. The founder attested the 28 drawn strings in chat on
+    // 2026-10-03; these three are not on his list and wait here: the two calendar reasons no
+    // drawing shows (`beforeEarliest`, `notDeliveryDay` — the calendar can produce both, so
+    // the page must be able to say them) and the trust block's substitution sentence, which the
+    // artboard draws beside a `[slot]` rather than as approved copy.
+    "delivery.reason.beforeEarliest",
+    "delivery.reason.notDeliveryDay",
     "faq.whoDelivers.answer",
     "faq.whoDelivers.answerCutoff",
     "finder.cutoff",
@@ -312,6 +319,7 @@ describe("the shipped catalogues and manifests", () => {
     "occasionsIndex.datedCaption",
     "occasionsIndex.undatedHeading",
     "occasionsIndex.undatedNote",
+    "product.trust.substitution.body",
     // TASK-111, the country occasion page. Five of its eleven strings are transcribed from the
     // founder-approved artboards (`wireframes/country-occasion-{desktop,mobile}.dc.html`,
     // `country-shop-{desktop,mobile}.dc.html`) and carry his attestation; these six are wording
@@ -434,6 +442,11 @@ describe("the shipped catalogues and manifests", () => {
       // cannot compute. No `seoTitle`/`seoDescription` pair — the page's `<head>` is its own
       // heading and its own intro.
       "occasionsIndex",
+      // Spec 009 §7's two namespaces (TASK-126/127): the product page's tier, summary, add-on,
+      // trust and related headings, and the date picker's legend, three state sentences, cutoff
+      // lines and the calendar's reason strings. Server Components only, so no client provider.
+      "product",
+      "delivery",
     ];
     const provenanceLabel: Messages["media"]["provenance"]["aiExample"] =
       enSource.media.provenance.aiExample;

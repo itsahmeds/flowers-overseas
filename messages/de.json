@@ -389,6 +389,25 @@
       "wednesday": "Wednesday"
     }
   },
+  "delivery": {
+    "corridorLink": "What we can tell you about sending flowers to {country}",
+    "cutoffPreview": "When we open, you will order by {time} in {city} — the recipient's time, not yours",
+    "legend": "When should it arrive?",
+    "picker": {
+      "live": "Order by {time} in {city} — the recipient's time, not yours",
+      "preview": "This is how delivery dates will work in {country}. We are not taking orders yet.",
+      "unavailable": "We are still choosing florists in {country}, so we cannot offer delivery dates yet."
+    },
+    "reason": {
+      "beforeEarliest": "This date has passed",
+      "notDeliveryDay": "We do not deliver on this day in {country}",
+      "notOrderable": "Not taking orders yet",
+      "pastCutoff": "Ordering closed at {time} in {city}",
+      "publicHoliday": "Public holiday in {country}",
+      "sundayClosed": "We do not deliver on Sundays in {country}"
+    },
+    "submit": "Use this date"
+  },
   "destinations": {
     "de": {
       "name": "Deutschland"
@@ -747,6 +766,41 @@
     "occasionColumn": "Occasion",
     "undatedHeading": "Kept on a date we cannot compute here",
     "undatedNote": "These fall on a date, but not one we can work out from {country}'s calendar — the day belongs to another country, or the rule names no day at all. Each page says so in full. We would rather print nothing than a date we guessed."
+  },
+  "product": {
+    "addons": {
+      "label": "Add something"
+    },
+    "demo": {
+      "body": "We are still choosing florists in {country}. When we have one, this is the price you will pay — nothing is added at a later step.",
+      "heading": "Ordering is not open yet"
+    },
+    "destination": {
+      "change": "change destination",
+      "label": "Where is it going?"
+    },
+    "excludes": "What the price does not include: a vase. The photograph is styled with one and the bouquet is delivered wrapped, so we say it here rather than let the picture imply it.",
+    "included": "included",
+    "related": {
+      "heading": "Six more, in our order",
+      "label": "More we make for {country}"
+    },
+    "selected": "selected",
+    "summary": {
+      "delivery": "Delivery",
+      "total": "You pay"
+    },
+    "tier": {
+      "legend": "Which size?"
+    },
+    "trust": {
+      "label": "What we promise",
+      "substitution": {
+        "body": "We substitute to the same value, style and colour, and we tell you what changed.",
+        "title": "If something is unavailable"
+      }
+    },
+    "vat": "VAT {rate}"
   },
   "shop": {
     "card": {
