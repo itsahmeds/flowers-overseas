@@ -1,0 +1,25 @@
+{
+  "family": "budgets",
+  "rule": "total-bytes",
+  "replaces": "media-variants.json",
+  "expect": "above the 6291456 B cap",
+  "why": "Rule family 9 and spec 006 §13 Q4: derived image bytes committed to the repository stay under a 6 MB cap. Since TASK-138's split (founder, 2026-10-03, option (a)) only the site-origin `hero` slot is committed — every other slot is served from the media bucket — so the cap measures that ladder alone, and it still has to fire. The fixture replaces the committed-file listing, the tree-level fact the gate measures, with two oversized `home-hero` files, and empties the variants manifest with it so the case tests the byte cap and nothing else.",
+  "ops": [
+    {
+      "op": "clearRows"
+    },
+    {
+      "op": "setMediaFiles",
+      "files": [
+        {
+          "path": "public/media/home-hero/1200.avif",
+          "bytes": 4000000
+        },
+        {
+          "path": "public/media/home-hero/1080.avif",
+          "bytes": 3000000
+        }
+      ]
+    }
+  ]
+}

@@ -72,7 +72,11 @@ import {
   type SeedCheckCase,
   applySeedCheckCase,
 } from "../../seed/check-cases.ts";
-import { SLOT_BYTE_CAPS, SLOTS_WITHOUT_A_CAP } from "../../seed/budgets.ts";
+import {
+  COMMITTED_MEDIA_BYTE_CAP,
+  SLOT_BYTE_CAPS,
+  SLOTS_WITHOUT_A_CAP,
+} from "../../seed/budgets.ts";
 import { asciiFoldSlug } from "../../seed/copy.ts";
 import { SEED_DATA_DIR } from "../../seed/schema/files.ts";
 import { COUNTRIES } from "../../src/config/countries.ts";
@@ -201,10 +205,10 @@ describe("spec 006 AC-10: the merged tree passes every rule family", () => {
     expect(SEED_CHECK_FAMILIES).toHaveLength(10);
   });
 
-  it("declares its cases from a table of 25 fixtures, and spec 009 AC-2's four rules have one each (T-02)", () => {
+  it("declares its cases from a table of 26 fixtures, and spec 009 AC-2's four rules have one each (T-02)", () => {
     // The `describe.each` below declares its cases from this directory; an emptied or thinned
     // directory would otherwise just declare fewer cases and stay green.
-    expect(cases).toHaveLength(25);
+    expect(cases).toHaveLength(26);
     for (const rule of SPEC_009_RULES) {
       expect(
         cases.filter(
@@ -477,6 +481,46 @@ describe("seed:check rules no fixture reached (TASK-143)", () => {
     },
     TREE_TIMEOUT,
   );
+
+  // TASK-138's split (founder, 2026-10-03, option (a)): the `hero` slot is committed and served
+  // from this origin, so the committed half runs on the real tree on every runner.
+  it(
+    "variant-file: a committed `hero` variant missing from public/media/",
+    () => {
+      const victim = "public/media/home-hero/828.avif";
+      expect(tree.mediaFiles.map((file) => file.path)).toContain(victim);
+      const found = reported(
+        {
+          ...tree,
+          mediaFiles: tree.mediaFiles.filter((file) => file.path !== victim),
+        },
+        "variant-file",
+      );
+      expect(found).toEqual([
+        `home-hero/828.avif is in the manifest with no file at \`${victim}\`: the \`hero\` slot is served from the site's own origin, so a missing committed file is a 404 on the page's LCP image (TASK-138)`,
+      ]);
+    },
+    TREE_TIMEOUT,
+  );
+
+  it(
+    "variant-bytes: a committed `hero` file whose size disagrees with its row",
+    () => {
+      const victim = "public/media/home-hero/384.webp";
+      const found = reported(
+        {
+          ...tree,
+          mediaFiles: tree.mediaFiles.map((file) =>
+            file.path === victim ? { ...file, bytes: file.bytes + 1 } : file,
+          ),
+        },
+        "variant-bytes",
+      );
+      expect(found).toHaveLength(1);
+      expect(found[0]).toContain(`the committed file \`${victim}\``);
+    },
+    TREE_TIMEOUT,
+  );
 });
 
 describe("spec 006 AC-7: slug rules", () => {
@@ -689,10 +733,17 @@ describe("spec 006 §11 / AC-30: the catalogue-health report", () => {
     }
   });
 
-  it("prints the stored image bytes, the per-slot maxima and the placeholder count", () => {
-    // No total cap since TASK-138 — the bytes are in the media bucket, not the repository — so
-    // the report states the total it measures and the caps it enforces, which are per variant.
+  it("prints the stored image bytes, the committed total against its cap, the per-slot maxima and the placeholder count", () => {
+    // Since TASK-138 the manifest total is reported, not capped — most bytes are in the media
+    // bucket — while what is still committed (the site-origin `hero` ladder) is shown against the
+    // 6 MB cap that still governs it.
     expect(report).toContain("reported, not capped");
+    expect(report).toMatch(
+      new RegExp(
+        `Committed under \`public/media/\` \\(site origin: hero\\): 10 files, \\d+ B of ${String(COMMITTED_MEDIA_BYTE_CAP)} B`,
+        "u",
+      ),
+    );
     for (const [slot, cap] of Object.entries(SLOT_BYTE_CAPS)) {
       expect(report).toContain(`| ${slot} | ${String(cap)} |`);
     }

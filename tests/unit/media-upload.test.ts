@@ -11,7 +11,7 @@
  * that put these 118 objects into `flowersoverseas-media` is recorded in the PR and in
  * `docs/tasks/TASK-138.md`.
  */
-import { mkdtempSync, copyFileSync, mkdirSync, rmSync } from "node:fs";
+import { copyFileSync, cpSync, mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
@@ -458,9 +458,15 @@ describe("nothing reaches the bucket that the gates have not seen", () => {
         join(root, "seed/data", file),
       );
     }
+    // A clean clone, exactly: the committed site-origin copies (the `hero` slot) are in the
+    // repository, the derived tree is not.
+    cpSync(join(repoRoot, "public/media"), join(root, "public/media"), {
+      recursive: true,
+    });
 
-    // The manifest is clean — that half of `checkVariants()` runs everywhere — but there are no
-    // bytes, and uploading nothing while reporting success is how a bucket ends up half full.
+    // The manifest and the committed copies are clean — those halves of `checkVariants()` run
+    // everywhere — but nothing is derived, and uploading nothing while reporting success is how a
+    // bucket ends up half full.
     await expect(loadUploadSet({ root })).rejects.toThrow(/no derived tree/u);
   });
 });

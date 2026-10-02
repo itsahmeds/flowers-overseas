@@ -144,7 +144,7 @@ export const r2VariantLoader: VariantLoader = ({ objectKey }) =>
  * `src/lib/media-headers.ts` (`public, max-age=31536000, immutable`).
  *
  * Phase 0's original loader (spec 006 §13 Q4), kept for the slots `SITE_ORIGIN_MEDIA_SLOTS` names
- * and no others. The path is the one `seed/media-variants.ts` writes the committed copy to, and
+ * and no others. The path is the one `pnpm media:variants` writes the committed copy to, and
  * `pnpm media:variants --check` ties every such file to its manifest row by byte count and
  * SHA-256 on every runner — the committed tree is in the repository, so that half never skips.
  * Content-addressed by asset version and width, exactly like the object key, so `immutable` is
