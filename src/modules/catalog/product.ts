@@ -682,9 +682,11 @@ const ProductCountrySchema = z
  * rules are enforced by the type, not by review (AC-21, AC-22).
  *
  * Its refinements are the price identity (§8 "Price display — the core"): the page quotes one
- * currency, the selected tier and date name one configuration, and `price` **is** that
- * configuration's total — the tier option's when no date is chosen, the totals table's entry when
- * one is.
+ * currency — every tier, every chip and every related card in it — the selected tier and date name
+ * one configuration, and `price` **is** that configuration's total — the tier option's when no
+ * date is chosen, the totals table's entry when one is. Every tier price and every chip is
+ * positive, and on each selectable date the chip is that date's total minus the selected tier's
+ * price, or absent where the two are equal (design round Q3).
  */
 export const ProductViewSchema = z
   .object({
@@ -767,6 +769,22 @@ export const ProductViewSchema = z
           message: `tier \`${tier.tierKey}\` quotes ${tier.price.currency} on a page quoting ${currency}: one page, one currency (spec 009 §8)`,
         });
       }
+      if (tier.price.amountMinor <= 0) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["tiers", index, "price", "amountMinor"],
+          message: `tier \`${tier.tierKey}\` is priced at ${String(tier.price.amountMinor)}: every tier is a payable configuration`,
+        });
+      }
+    });
+    view.related.forEach((card, index) => {
+      if (card.price.currency !== currency) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["related", index, "price", "currency"],
+          message: `related card \`${card.productId}\` quotes ${card.price.currency} on a page quoting ${currency}: one page, one clock, one currency (spec 009 §8, spec 005 §14 A3)`,
+        });
+      }
     });
 
     // The totals table covers exactly the product's tiers and exactly the selectable dates.
@@ -794,6 +812,40 @@ export const ProductViewSchema = z
         });
       }
     }
+
+    // The chip is "price shown = price charged" before selection (§8, design round Q3, `plan/07`
+    // §4): it is in the page's currency, it is a real fee, and on a date the buyer can choose it is
+    // exactly what choosing that date adds to the selected tier — no chip where the total does not
+    // move, and no total that moves without one. A closed date has no total to check against.
+    const selectedTotals = view.totals[view.selectedTierKey] ?? {};
+    view.delivery.dates.forEach((date, index) => {
+      const chip = date.surcharge;
+      if (chip !== undefined && chip.currency !== currency) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["delivery", "dates", index, "surcharge", "currency"],
+          message: `the ${date.date} chip quotes ${chip.currency} on a page quoting ${currency}: one page, one currency (spec 009 §8)`,
+        });
+      }
+      if (chip !== undefined && chip.amountMinor <= 0) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["delivery", "dates", index, "surcharge", "amountMinor"],
+          message: `the ${date.date} chip is ${String(chip.amountMinor)}: a chip is a fee, and a date with none says "included"`,
+        });
+      }
+      const total = selectedTotals[date.date];
+      if (!date.selectable || total === undefined) return;
+      const added = total - selected.price.amountMinor;
+      const fee = chip?.amountMinor ?? 0;
+      if (added !== fee) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["delivery", "dates", index, "surcharge"],
+          message: `choosing ${date.date} adds ${String(added)} to \`${view.selectedTierKey}\` but its chip says ${String(fee)}: the chip is the difference of two totals (design round Q3)`,
+        });
+      }
+    });
 
     // One price: the configuration the selection names, and nothing else.
     const expected =
@@ -886,6 +938,10 @@ export interface ProductIndexabilityTerms {
  * non-null description in this locale" lives for a product, together with the active price —
  * which is the content-review gate `plan/02` §12 names, answered by the one function spec 005
  * says both the robots decision and the sitemap membership must call.
+ *
+ * **Fail closed at runtime too.** The type requires every term, but a cast or a JavaScript caller
+ * can still omit one, and an `undefined` term would leave spec 007's conjunction. So a term holds
+ * only when it is `true`; anything else — `undefined` included — is `false` (`/break 101` F1).
  */
 export function productDescriptor(
   locale: string,
@@ -894,10 +950,10 @@ export function productDescriptor(
   return {
     pageType: "product",
     locale,
-    exists: terms.exists,
-    reviewed: terms.productIndexable,
-    operational: terms.countryLive,
-    unparameterised: terms.unparameterised,
+    exists: terms.exists === true,
+    reviewed: terms.productIndexable === true,
+    operational: terms.countryLive === true,
+    unparameterised: terms.unparameterised === true,
   };
 }
 
@@ -1225,13 +1281,15 @@ async function breadcrumbFor(
 /**
  * The related row (§5.3, §8 "Ranking transparency"): spec 005's deterministic founder-set order
  * for this destination and locale, this product excluded, **pages that exist only**, at most six.
- * Nothing about the visitor enters it.
+ * Nothing about the visitor enters it. Each card is priced on the page's clock, so the row converts
+ * or falls back with the summary beside it (§14 A3; `/review 101` RC-1).
  */
 async function relatedFor(
   sku: string,
   iso2: CountryIso2,
   locale: LocaleCode,
   productLinks: boolean,
+  now: Date,
 ): Promise<ProductView["related"]> {
   const memo = newMemo();
   const deliverable = await listProducts({ countryIso: iso2 });
@@ -1249,7 +1307,7 @@ async function relatedFor(
   }
   return Promise.all(
     picked.map((candidate) =>
-      productCardView(candidate, locale, iso2, { productLinks }),
+      productCardView(candidate, locale, iso2, { productLinks, now }),
     ),
   );
 }
@@ -1402,7 +1460,8 @@ export async function productView(
       exists: true,
       countryLive: state === "live",
       productIndexable: await isProductIndexable(sku, locale, iso2),
-      unparameterised: !options.parameterised,
+      // Only an explicit `false` is a bare URL: an omitted option fails closed (`/break 101` F2).
+      unparameterised: options.parameterised === false,
     },
     options.deployment ?? deploymentDescriptor(process.env),
   );
@@ -1472,7 +1531,13 @@ export async function productView(
       record.path,
       now,
     ),
-    related: await relatedFor(sku, iso2, locale, options.productLinks ?? false),
+    related: await relatedFor(
+      sku,
+      iso2,
+      locale,
+      options.productLinks ?? false,
+      now,
+    ),
     trust: [
       "substitution",
       "freshnessGuarantee",

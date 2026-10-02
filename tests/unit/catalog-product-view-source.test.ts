@@ -11,9 +11,9 @@
  *     by exactly that amount, and nothing else moves. A consumer holding its own copy of the price
  *     would stay at 229 zł and fail here.
  *  2. **No second derivation exists in `src/`.** The derivations only `productView()` may make —
- *     the date surcharges, the delivery grid, the PDP's indexability verdict, the totals table and
- *     the tier ladder — are called from `catalog/product.ts` and from their own definitions, and
- *     from nowhere else. The PDP route (TASK-127), the schema builder (TASK-130) and the products
+ *     the price projection, the date surcharges, the delivery grid, the PDP's indexability
+ *     verdict, the totals table and the tier ladder — are called from `catalog/product.ts` (and,
+ *     for the projection, from the listings' `catalog/listing.ts`) and from nowhere else. The PDP route (TASK-127), the schema builder (TASK-130) and the products
  *     sitemap (TASK-131) are not written yet; the day one of them computes a chip, a grid or a
  *     verdict of its own instead of reading the view, this goes red and names the file.
  */
@@ -131,9 +131,14 @@ function codeOf(path: string): string {
     .replace(/^\s*\/\/.*$/gm, "");
 }
 
-/** Files under `src/` that **call** `name(…)` — a definition (`function name(`) is not a call. */
+/**
+ * Files under `src/` that **call** `name(…)` — a definition (`function name(`) is not a call. A
+ * namespace call (`geo.deliveryWindow(`) counts; an aliased import (`import { deliveryWindow as
+ * grid }`) does not, and is left to review — modules here import named symbols from barrels
+ * (`/review 101`, hole 6).
+ */
 function callersOf(name: string, files: readonly string[]): string[] {
-  const call = new RegExp(`(?<![\\w.$])${name}\\s*\\(`, "g");
+  const call = new RegExp(`(?<![\\w$])${name}\\s*\\(`, "g");
   const definition = new RegExp(`function\\s+${name}\\s*\\(`, "g");
   return files
     .filter((file) => {
@@ -151,6 +156,12 @@ function callersOf(name: string, files: readonly string[]): string[] {
  * own files appear where the function calls itself or a sibling does (none today).
  */
 const OWNED: Readonly<Record<string, readonly string[]>> = {
+  // The listings price their own cards (spec 008); every PDP figure is the view's. The TASK-127
+  // route calling it to print a price of its own goes red here, naming the route file.
+  priceProjection: [
+    "src/modules/catalog/listing.ts",
+    "src/modules/catalog/product.ts",
+  ],
   dateSurcharges: ["src/modules/catalog/product.ts"],
   deliveryWindow: ["src/modules/catalog/product.ts"],
   productPageIndexability: ["src/modules/catalog/product.ts"],

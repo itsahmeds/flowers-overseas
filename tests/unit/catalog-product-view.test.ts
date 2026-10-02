@@ -15,7 +15,9 @@
  * own module graph; the term-by-term wiring of the descriptor is in
  * `tests/unit/catalog-product-view-wiring.test.ts`.
  */
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync, statSync } from "node:fs";
+import { join, relative } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
@@ -31,6 +33,7 @@ import {
   productView,
 } from "../../src/modules/catalog/product.ts";
 import { toMinor } from "../../src/modules/catalog/pricing/money.ts";
+import { formatPercentFromBasisPoints } from "../../src/modules/i18n/format.ts";
 import { isProductIndexable } from "../../src/modules/catalog/read.ts";
 import { corridorState } from "../../src/modules/geo/index.ts";
 import { DeliveryWindowSchema } from "../../src/modules/geo/delivery/schemas.ts";
@@ -92,6 +95,36 @@ describe("one price, VAT and delivery included (§8, AC-21 model half)", () => {
       { amountMinor: 25_900, currency: "PLN" },
     ]);
     expect(view.fx).toEqual({ state: "native" });
+  });
+
+  it("prints the x-default locale's own figures (en → EUR), each tier projected on its own", async () => {
+    const view = await amber("en", "PL");
+    expect(view.tiers.map((tier) => [tier.tierKey, tier.price])).toEqual([
+      ["stems_12", { amountMinor: 4790, currency: "EUR" }],
+      ["stems_18", { amountMinor: 5590, currency: "EUR" }],
+      ["stems_24", { amountMinor: 6290, currency: "EUR" }],
+    ]);
+    expect(view.price.displayPrice).toEqual({
+      amountMinor: 5590,
+      currency: "EUR",
+    });
+    expect(view.fx).toEqual({ state: "converted" });
+  });
+
+  it("prices the related row on the page's clock: GBP beside a GBP summary, PLN beside a PLN one", async () => {
+    // The wall clock is not the page's: priced on it, the cards would quote whatever today's FX
+    // state is, whatever the summary beside them says (`/review 101` RC-1).
+    const converted = await amber("en-gb", "PL", { now: FX_LIVE });
+    expect(converted.price.displayPrice.currency).toBe("GBP");
+    expect(converted.related.map((card) => card.price.currency)).toEqual(
+      Array.from({ length: 6 }, () => "GBP"),
+    );
+
+    const stale = await amber("en-gb", "PL", { now: FX_STALE });
+    expect(stale.price.displayPrice.currency).toBe("PLN");
+    expect(stale.related.map((card) => card.price.currency)).toEqual(
+      Array.from({ length: 6 }, () => "PLN"),
+    );
   });
 
   it("preselects the default tier, and its price is the one price the page quotes", async () => {
@@ -159,6 +192,21 @@ describe("add-on rows in the destination's currency at their own VAT rate (desig
     // Wine is absent because `addon.wine.PL` is off, and the add-on rate is not the flowers' 8 %.
     expect(view.addons.map((line) => line.key)).not.toContain("wine");
     expect(view.addons.every((line) => line.vatRateBp !== 800)).toBe(true);
+  });
+
+  it("states each add-on's own VAT rate in words — 23 %, never the flowers' 8 % beside it", async () => {
+    const view = await amber("en-gb", "PL");
+    // The expected text is pinned as well as derived, so a formatter that printed nothing would
+    // not pass by agreeing with itself.
+    const twentyThree = formatPercentFromBasisPoints(2300, "en-gb");
+    expect(twentyThree).toBe("23%");
+    expect(view.addons.map((line) => [line.key, line.vatRateText])).toEqual([
+      ["chocolates", twentyThree],
+      ["vase", twentyThree],
+      ["balloon", twentyThree],
+      ["plush", twentyThree],
+      ["card", twentyThree],
+    ]);
   });
 
   it("carries no selection state of any kind on a row — nothing can arrive pre-ticked", async () => {
@@ -604,22 +652,31 @@ describe("the PDP descriptor resolves through spec 007's `indexability()` (§6, 
     }
   });
 
-  it("writes no robots directive outside `modules/seo` in any file spec 009 adds (AC-16's grep)", () => {
-    const files = [
-      "src/modules/catalog/product.ts",
-      "src/modules/geo/delivery/calendar.ts",
-      "src/modules/geo/delivery/index.ts",
-      "src/modules/geo/delivery/types.ts",
-      "src/modules/geo/delivery/schemas.ts",
-      "src/modules/geo/delivery/holidays.ts",
-      "src/modules/geo/delivery/zone.ts",
-      "src/modules/geo/delivery/projections.ts",
-    ];
-    for (const file of files) {
-      const source = readFileSync(
-        new URL(`../../${file}`, import.meta.url),
-        "utf8",
-      );
+  it("writes no robots directive anywhere in `src/modules/` outside `modules/seo` (AC-16's grep)", () => {
+    // A walk, not a list: a literal planted in any module — `pricing/resolve.ts`, which this task
+    // touches, or a file nobody thought to name — is a second `noindex` branch (`/break 101` G4).
+    // `src/app/` and `src/lib/` carry robots literals that predate spec 009 (layouts, health,
+    // basic auth, the robots headers); TASK-127 extends the walk to the PDP route file it adds.
+    const modules = fileURLToPath(
+      new URL("../../src/modules/", import.meta.url),
+    );
+    const seo = join(modules, "seo");
+    const walk = (dir: string): string[] =>
+      readdirSync(dir).flatMap((name) => {
+        const path = join(dir, name);
+        if (statSync(path).isDirectory()) return path === seo ? [] : walk(path);
+        return /\.(?:ts|tsx)$/.test(name) ? [path] : [];
+      });
+    const files = walk(modules);
+    // The walk reaches the files the AC names, and steps over the one module allowed to spell it.
+    expect(files).toContain(join(modules, "catalog/product.ts"));
+    expect(files).toContain(join(modules, "catalog/pricing/resolve.ts"));
+    expect(files).toContain(join(modules, "geo/delivery/calendar.ts"));
+    expect(files.some((file) => file.startsWith(`${seo}/`))).toBe(false);
+    expect(files.length).toBeGreaterThan(100);
+    for (const path of files) {
+      const file = relative(modules, path);
+      const source = readFileSync(path, "utf8");
       // Comments explain the rule and have to say the word; **code** may not.
       const code = source
         .replace(/\/\*[\s\S]*?\*\//g, "")

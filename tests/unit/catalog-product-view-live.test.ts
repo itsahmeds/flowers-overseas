@@ -121,6 +121,16 @@ describe("`dateTotals`: the all-in total of every tier on every selectable date 
     });
   });
 
+  it("prices the same days in EUR for en, the x-default locale's own figures", async () => {
+    const view = await live("en");
+    expect(view.fx.state).toBe("converted");
+    expect(view.totals).toEqual({
+      stems_12: row(4790, 5290),
+      stems_18: row(5590, 5990),
+      stems_24: row(6290, 6690),
+    });
+  });
+
   it("is exactly what `dateTotals()` returns for the same window and clock — one derivation", async () => {
     const view = await live("en");
     const window = withActivePartnersProvider(partnered, () =>
@@ -296,6 +306,133 @@ describe("the selected configuration is the one price (§8, AC-9's model half)",
     expect(ProductViewSchema.safeParse(view).success).toBe(true);
     expect(ProductViewSchema.safeParse(unselected).success).toBe(false);
   });
+});
+
+/**
+ * `ProductViewSchema` holds the chip to its totals (§8, design round Q3; `/break 101` hole 4). Each
+ * case plants one lie into the real `en-gb` live view — selected tier `stems_18` at £46.90, its
+ * Sunday 13 September total £50.90, its chip £4.00 — and the view must stop parsing. The real view
+ * is the control: without it a refusal below could be the fixture's doing.
+ */
+describe("`ProductViewSchema` refuses a chip, a tier or a card that contradicts the page (hole 4)", () => {
+  const SUNDAY = "2026-09-13";
+  type View = Awaited<ReturnType<typeof live>>;
+  type Chip = { amountMinor: number; currency: string } | undefined;
+
+  /** The view with the 13 September chip replaced (or deleted, for `undefined`). */
+  function withChip(view: View, chip: Chip): unknown {
+    const copy = structuredClone(view) as {
+      delivery: { dates: readonly { date: string; surcharge?: Chip }[] };
+    };
+    const date = copy.delivery.dates.find((entry) => entry.date === SUNDAY);
+    if (date === undefined) throw new Error("no Sunday in the grid");
+    if (chip === undefined) delete date.surcharge;
+    else date.surcharge = chip;
+    return copy;
+  }
+
+  /** The view with one tier's undated price replaced. */
+  function withTierPrice(view: View, tierKey: string, amount: number): unknown {
+    const copy = structuredClone(view) as {
+      tiers: readonly { tierKey: string; price: { amountMinor: number } }[];
+    };
+    const tier = copy.tiers.find((entry) => entry.tierKey === tierKey);
+    if (tier === undefined) throw new Error(`no ${tierKey}`);
+    tier.price.amountMinor = amount;
+    return copy;
+  }
+
+  it("accepts the real view, whose Sunday chip is its total minus its tier price", async () => {
+    const view = await live("en-gb");
+    expect(view.selectedTierKey).toBe("stems_18");
+    expect(view.totals["stems_18"]?.[SUNDAY]).toBe(5090);
+    expect(
+      view.delivery.dates.find((date) => date.date === SUNDAY)?.surcharge,
+    ).toEqual({ amountMinor: 400, currency: "GBP" });
+    expect(ProductViewSchema.safeParse(view).success).toBe(true);
+  });
+
+  /** Where the chip of 13 September sits in the grid that opens on 9 September. */
+  const AT = ["delivery", "dates", 4, "surcharge"] as const;
+
+  /** Each lie, and the path of the refinement that must refuse it. */
+  const PLANTED: readonly (readonly [
+    string,
+    (view: View) => unknown,
+    readonly (string | number)[],
+  ])[] = [
+    [
+      "H1: the chip in the destination's currency on a GBP page",
+      (view) => withChip(view, { amountMinor: 1800, currency: "PLN" }),
+      [...AT, "currency"],
+    ],
+    [
+      "H2: a negative chip",
+      (view) => withChip(view, { amountMinor: -400, currency: "GBP" }),
+      [...AT, "amountMinor"],
+    ],
+    [
+      "H3: a zero chip",
+      (view) => withChip(view, { amountMinor: 0, currency: "GBP" }),
+      [...AT, "amountMinor"],
+    ],
+    [
+      "H4: a chip that is not the move of the total (500 against 400)",
+      (view) => withChip(view, { amountMinor: 500, currency: "GBP" }),
+      [...AT],
+    ],
+    [
+      "H5: the chip deleted while the total still moves",
+      (view) => withChip(view, undefined),
+      [...AT],
+    ],
+    [
+      "H6: the Sunday total at the undated 4 690 beside its 400 chip",
+      (view) => {
+        const copy = structuredClone(view);
+        const row = copy.totals["stems_18"];
+        if (row === undefined) throw new Error("no stems_18 row");
+        row[SUNDAY] = 4690;
+        return copy;
+      },
+      [...AT],
+    ],
+    [
+      "H7: the selected tier at −1",
+      (view) => withTierPrice(view, "stems_18", -1),
+      ["tiers", 1, "price", "amountMinor"],
+    ],
+    [
+      "H8: another tier at −1",
+      (view) => withTierPrice(view, "stems_12", -1),
+      ["tiers", 0, "price", "amountMinor"],
+    ],
+    [
+      "a related card quoting PLN beside a GBP summary",
+      (view) => {
+        const copy = structuredClone(view) as {
+          related: readonly {
+            price: { amountMinor: number; currency: string };
+          }[];
+        };
+        const card = copy.related[0];
+        if (card === undefined) throw new Error("no related card");
+        card.price = { amountMinor: 19_900, currency: "PLN" };
+        return copy;
+      },
+      ["related", 0, "price", "currency"],
+    ],
+  ];
+
+  for (const [name, plant, path] of PLANTED) {
+    it(`refuses ${name}`, async () => {
+      const result = ProductViewSchema.safeParse(plant(await live("en-gb")));
+      expect(result.success).toBe(false);
+      expect(result.error?.issues.map((issue) => issue.path)).toContainEqual(
+        path,
+      );
+    });
+  }
 });
 
 describe("the calendar's own honesty rules hold over every view (AC-8's model half)", () => {

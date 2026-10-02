@@ -36,7 +36,8 @@ vi.mock("../../src/modules/catalog/read.ts", async (importOriginal) => {
   };
 });
 
-const { productView } = await import("../../src/modules/catalog/product.ts");
+const { productPageIndexability, productView } =
+  await import("../../src/modules/catalog/product.ts");
 const { INDEX_FOLLOW, NOINDEX_FOLLOW, deploymentDescriptor } =
   await import("../../src/modules/seo/index.ts");
 
@@ -104,5 +105,47 @@ describe("every term reaches the verdict through `productView()` (§6, AC-16)", 
     await expect(directive({ deployment: PREVIEW })).resolves.toBe(
       NOINDEX_FOLLOW,
     );
+  });
+});
+
+/**
+ * The type requires every term, but a cast or a JavaScript caller can still leave one out — and an
+ * `undefined` term leaves spec 007's conjunction. Each case below omits one, everything else holds
+ * (the mocks above, the indexing deployment), and the answer must still be `noindex,follow`
+ * (`/break 101` F1, F2). The all-hold control at the top of this file is what makes them bite.
+ */
+describe("an omitted term fails closed at runtime, not only in the type (hole 5)", () => {
+  it("`productPageIndexability()` with `countryLive` cast away → `noindex,follow` (F1)", () => {
+    const verdict = productPageIndexability(
+      "en",
+      {
+        exists: true,
+        productIndexable: true,
+        unparameterised: true,
+      } as never,
+      INDEXING,
+    );
+    expect(verdict.directive).toBe(NOINDEX_FOLLOW);
+    // The control: the same call with the term stated is the one index case.
+    expect(
+      productPageIndexability(
+        "en",
+        {
+          exists: true,
+          countryLive: true,
+          productIndexable: true,
+          unparameterised: true,
+        },
+        INDEXING,
+      ).directive,
+    ).toBe(INDEX_FOLLOW);
+  });
+
+  it("`productView()` with `parameterised` cast away → `noindex,follow` (F2)", async () => {
+    const view = await productView(
+      { locale: "en", countryIso: "PL", sku: "FO-BQ-001" },
+      { now: NOW, deployment: INDEXING } as never,
+    );
+    expect(view?.indexability.directive).toBe(NOINDEX_FOLLOW);
   });
 });
