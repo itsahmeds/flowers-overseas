@@ -81,6 +81,11 @@
  * gates on (`isLocaleIndexable()`, `country.status`), because **a locale or a country must not be
  * able to look ready in CI while it is gated in code** (§11) — there is no second rule here to
  * drift from the first.
+ *
+ * It also prints the **holiday-coverage runway** (TASK-149): for each published destination, the
+ * whole days before family 10's `holiday-coverage` goes red, and under
+ * `HOLIDAY_COVERAGE_WARNING_DAYS` a warning line CI's step summary repeats. `--as-of=` replays
+ * any day, so the warning is tested at 59, 60 and 61 days rather than waited for.
  */
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, posix, relative, resolve } from "node:path";
@@ -1949,6 +1954,125 @@ function rawHolidayRows(tree: SeedTree): readonly Record<string, unknown>[] {
   );
 }
 
+/** Under this many days left, `--report` warns that `holiday-coverage` is about to go red. */
+export const HOLIDAY_COVERAGE_WARNING_DAYS = 60;
+
+/** The prefix of every warning line; CI's `seed-check` summary step greps the log for it. */
+export const HOLIDAY_COVERAGE_WARNING_MARKER =
+  "holiday coverage early warning:";
+
+/** How long one destination's committed holiday rows keep `holiday-coverage` green. */
+export interface HolidayCoverageRunway {
+  readonly iso2: string;
+  readonly timeZone: string;
+  /** Today in the destination, at `SeedTree.asOf`. */
+  readonly from: string;
+  /** The earliest year from `from`'s on that has no holiday row for this destination. */
+  readonly firstUncoveredYear: number;
+  /** The first destination day on which the rule is red: `from` itself when it already is. */
+  readonly redOn: string;
+  /** Whole calendar days from `from` to `redOn`; 0 means the rule is red today. */
+  readonly daysLeft: number;
+}
+
+/**
+ * TASK-149: **how many days until `holiday-coverage` goes red**, per destination that renders a
+ * calendar. Read-only, like the rest of `--report`: it never changes the verdict, and it reads
+ * the same rows the same way as family 10 (raw rows, a `YYYY-` date prefix, the row's `iso2`)
+ * over the same `calendarHorizons()`, so "0 days left" and a red rule are the same instant.
+ *
+ * The horizon from day D covers the years of D through D + `NEXT_AVAILABLE_HORIZON_DAYS`. Every
+ * year from today's up to the first uncovered one is covered, so the rule first goes red on the
+ * day the horizon's far end reaches 1 January of that year — or today, if it already has.
+ */
+export function holidayCoverageRunway(
+  tree: SeedTree,
+): readonly HolidayCoverageRunway[] {
+  const covered = new Map<string, Set<number>>();
+  for (const row of rawHolidayRows(tree)) {
+    const iso2 = row["iso2"];
+    const date = row["date"];
+    if (typeof iso2 !== "string") continue;
+    if (typeof date !== "string" || !/^\d{4}-/u.test(date)) continue;
+    const years = covered.get(iso2) ?? new Set<number>();
+    years.add(Number(date.slice(0, 4)));
+    covered.set(iso2, years);
+  }
+  return calendarHorizons(tree).map((horizon) => {
+    const years = covered.get(horizon.iso2) ?? new Set<number>();
+    let firstUncoveredYear = Number(horizon.from.slice(0, 4));
+    while (years.has(firstUncoveredYear)) firstUncoveredYear += 1;
+    const edge = addCalendarDays(
+      `${String(firstUncoveredYear)}-01-01`,
+      -NEXT_AVAILABLE_HORIZON_DAYS,
+    );
+    const redOn = edge > horizon.from ? edge : horizon.from;
+    return {
+      iso2: horizon.iso2,
+      timeZone: horizon.timeZone,
+      from: horizon.from,
+      firstUncoveredYear,
+      redOn,
+      daysLeft:
+        (Date.parse(`${redOn}T00:00:00.000Z`) -
+          Date.parse(`${horizon.from}T00:00:00.000Z`)) /
+        MS_PER_DAY,
+    };
+  });
+}
+
+/** One warning line; it starts with `HOLIDAY_COVERAGE_WARNING_MARKER`, which CI greps for. */
+function holidayCoverageWarning(runway: HolidayCoverageRunway): string {
+  const year = String(runway.firstUncoveredYear);
+  const horizon = `${String(NEXT_AVAILABLE_HORIZON_DAYS)}-day picker horizon`;
+  // Red today may be the first red day or any day after it, so it names today, not "the first".
+  const when =
+    runway.daysLeft === 0
+      ? `is red today, ${runway.redOn} (${runway.timeZone}): its ${horizon} reaches ${year}, which has no holiday row`
+      : `goes red in ${String(runway.daysLeft)} ${runway.daysLeft === 1 ? "day" : "days"}, on ${runway.redOn} (${runway.timeZone}), the first day its ${horizon} reaches ${year} with no holiday row`;
+  return `${HOLIDAY_COVERAGE_WARNING_MARKER} ${runway.iso2} ${when}; author ${runway.iso2}'s ${year} rows in ${dataFile(HOLIDAYS_FILE)} (spec 009 AC-2).`;
+}
+
+/**
+ * The runway as a section of the step summary: one row per **published** destination (one with
+ * no calendar says so rather than vanishing), then either the all-clear line or one warning per
+ * destination under `HOLIDAY_COVERAGE_WARNING_DAYS`.
+ */
+export function holidayCoverageReport(tree: SeedTree): readonly string[] {
+  const runways = holidayCoverageRunway(tree);
+  const byIso2 = new Map(runways.map((runway) => [runway.iso2, runway]));
+  const lines: string[] = [
+    "#### holiday coverage runway (spec 009 AC-2)",
+    "",
+    `Whole days, counted from today in each destination, before \`calendar/holiday-coverage\` goes red: the first day the picker's ${String(NEXT_AVAILABLE_HORIZON_DAYS)}-day horizon reaches a year with no holiday row. Under ${String(HOLIDAY_COVERAGE_WARNING_DAYS)} days the line below the table is a warning, and CI's \`seed-check\` step summary repeats it. Judged at ${tree.asOf.toISOString()}.`,
+    "",
+    "| destination | today | first year with no rows | goes red on | days left |",
+    "|---|---|---|---|---|",
+  ];
+  for (const country of COUNTRIES) {
+    if (!isPublishedDestination(country)) continue;
+    const runway = byIso2.get(country.iso2);
+    lines.push(
+      runway === undefined
+        ? `| ${country.iso2} | — | — | — | no calendar |`
+        : `| ${runway.iso2} | ${runway.from} | ${String(runway.firstUncoveredYear)} | ${runway.redOn} (${runway.timeZone}) | ${String(runway.daysLeft)} |`,
+    );
+  }
+  const warnings = runways
+    .filter((runway) => runway.daysLeft < HOLIDAY_COVERAGE_WARNING_DAYS)
+    .map(holidayCoverageWarning);
+  lines.push("");
+  if (warnings.length === 0) {
+    lines.push(
+      `No destination is within ${String(HOLIDAY_COVERAGE_WARNING_DAYS)} days of going red.`,
+      "",
+    );
+  } else {
+    for (const warning of warnings) lines.push(warning, "");
+  }
+  return lines;
+}
+
 /**
  * Family 10. Three rules, each reading **raw** rows so that a fault the file schema also rejects
  * (a missing `nameKey`, an unknown `rule_type`) is still named by the rule that owns it rather
@@ -2318,6 +2442,7 @@ export function seedHealthReport(tree: SeedTree): string {
   const coverage = coverageRows(tree);
 
   lines.push(...pickerStateReport(tree));
+  lines.push(...holidayCoverageReport(tree));
 
   lines.push("#### products by type", "");
   lines.push("| product type | products | expected |", "|---|---|---|");

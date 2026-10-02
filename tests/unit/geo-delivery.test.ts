@@ -1639,7 +1639,7 @@ underEachProcessZone(
 /* -------------------------------------------------------------------------- */
 
 underEachProcessZone("the holiday provider and its committed file", () => {
-  it("`seed/data/holidays.json` parses, and carries Poland's 2026–2027 holidays and nobody else's", () => {
+  it("`seed/data/holidays.json` parses, and carries Poland's 2026–2028 holidays and nobody else's", () => {
     const file = JSON.parse(
       readFileSync(resolve(__dirname, "../../seed/data/holidays.json"), "utf8"),
     ) as { rows: unknown };
@@ -1656,7 +1656,9 @@ underEachProcessZone("the holiday provider and its committed file", () => {
       ).toEqual([]);
     }
     // The fourteen statutory days of each year, pinned by date so a moved row is a red case.
-    // Easter 5 Apr 2026 / 28 Mar 2027: Easter Monday +1, Pentecost +49, Corpus Christi +60.
+    // Easter 5 Apr 2026 / 28 Mar 2027 / 16 Apr 2028: Easter Monday +1, Pentecost +49, Corpus
+    // Christi +60. 2028 (TASK-149) was computed by hand, Meeus/Jones/Butcher and Gauss, not read
+    // from `easterSunday()`: a = 14, h = 20, l = 5, m = 0, so (h + l + 114) = 139 = 4 × 31 + 15.
     const byYear = (year: string): string[] =>
       committedHolidayProvider
         .holidays("PL")
@@ -1698,7 +1700,23 @@ underEachProcessZone("the holiday provider and its committed file", () => {
       "2027-12-25 christmasDay",
       "2027-12-26 secondDayOfChristmas",
     ]);
-    expect(committedHolidayProvider.holidays("PL")).toHaveLength(28);
+    expect(byYear("2028")).toEqual([
+      "2028-01-01 newYear",
+      "2028-01-06 epiphany",
+      "2028-04-16 easterSunday",
+      "2028-04-17 easterMonday",
+      "2028-05-01 labourDay",
+      "2028-05-03 constitutionDay",
+      "2028-06-04 pentecost",
+      "2028-06-15 corpusChristi",
+      "2028-08-15 assumption",
+      "2028-11-01 allSaints",
+      "2028-11-11 independenceDay",
+      "2028-12-24 christmasEve",
+      "2028-12-25 christmasDay",
+      "2028-12-26 secondDayOfChristmas",
+    ]);
+    expect(committedHolidayProvider.holidays("PL")).toHaveLength(42);
     // Every one of them shuts the florists: none is an observance that still delivers.
     expect(
       committedHolidayProvider
