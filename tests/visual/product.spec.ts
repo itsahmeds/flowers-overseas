@@ -2,19 +2,19 @@
  * The product page's visual baselines (spec 009 AC-27, T-27; `docs/design/wireframes/
  * product-desktop.dc.html` and `-mobile.dc.html`; TASK-126, TASK-127).
  *
- * Seven PNGs: the three states a served build can reach — Poland's `preview` with a photograph,
- * the no-photo placeholder, and a destination with no `operations` block (`unavailable`) — at the
- * two artboard widths, plus the **sticky summary**: the viewport at 390 px, scrolled to the top,
- * with the summary's own total row docked at its bottom edge. `live` needs a florist, which no
- * served build has; it is the same template, asserted in `tests/unit/product-page.test.tsx`.
+ * **Blocks, not the whole of `main`.** The date grid is computed from the clock the page was
+ * rendered at (a fourteen-day window from today, in Warsaw's zone), so which chip is a Sunday,
+ * which row carries a reason and therefore how tall the picker is all move with the build date. A
+ * baseline containing the grid would fail the next day — `corridor.spec.ts`'s reason for leaving
+ * the corridor calendar out. The grid is asserted as text and as computed accessible names in
+ * `tests/e2e/product-page.spec.ts` and over a fixed clock in `tests/unit/product-page.test.tsx`.
  *
- * The **geometry** is the assertion: a gallery that stopped being 1∶1, a date grid that stopped
- * being 7-up at 1440 and 4-up at 390, a block order that moved the price above the picker, or a
- * docked bar that grew into a second summary would all pass the text assertions in
- * `tests/e2e/product-page.spec.ts` and fail here.
- *
- * `main` rather than the whole document, for `country-shop.spec.ts`'s reason: the header and the
- * footer have their own baselines, and a shared-chrome change should fail one file.
+ * What is photographed is what does not move: the gallery in both states (the 1∶1 box, the empty
+ * thumbnails, the honesty label), the add-on rows, the price summary, the `unavailable` picker
+ * (no dates at all) — each at both artboard widths — and the **sticky summary**: the first screen
+ * of a phone at 390 px, with the summary's own total row docked at its bottom edge. In `preview`
+ * the bar names the size and no date. `live` needs a florist, which no served build has; it is the
+ * same template, asserted in the unit suite.
  */
 import type { BrowserContext, Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
@@ -51,10 +51,33 @@ async function withoutLanguageHint(page: Page): Promise<void> {
   });
 }
 
-const STATES = [
-  { state: "preview", url: "/en/poland/product/amber-hour" },
-  { state: "no-photo", url: "/en/poland/product/anthurium" },
-  { state: "unavailable", url: "/en/germany/product/amber-hour" },
+/** Each block on the page that carries no computed date, and the URL whose state shows it. */
+const BLOCKS = [
+  {
+    block: "gallery-photos",
+    url: "/en/poland/product/amber-hour",
+    selector: '[data-fo-gallery="photos"]',
+  },
+  {
+    block: "gallery-placeholder",
+    url: "/en/poland/product/anthurium",
+    selector: '[data-fo-gallery="placeholder"]',
+  },
+  {
+    block: "addons",
+    url: "/en/poland/product/amber-hour",
+    selector: "[data-fo-pdp-addons]",
+  },
+  {
+    block: "summary",
+    url: "/en/poland/product/amber-hour",
+    selector: "[data-fo-price-summary]",
+  },
+  {
+    block: "picker-unavailable",
+    url: "/en/germany/product/amber-hour",
+    selector: '[data-fo-picker-state="unavailable"]',
+  },
 ] as const;
 
 const WIDTHS = [
@@ -62,23 +85,23 @@ const WIDTHS = [
   { width: "mobile", viewport: { width: 390, height: 844 } },
 ] as const;
 
-for (const { state, url } of STATES) {
-  for (const { width, viewport } of WIDTHS) {
-    const name = `product-${width}-${state}`;
-    test(`the product page (${state}) at ${String(viewport.width)}px matches ${name}`, async ({
-      page,
-      context,
-      baseURL,
-    }) => {
-      await recordConsentRefusal(context, baseURL);
-      await withoutLanguageHint(page);
-      await page.setViewportSize(viewport);
+for (const { width, viewport } of WIDTHS) {
+  test(`the product page's date-free blocks at ${String(viewport.width)}px match product-${width}-*`, async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await recordConsentRefusal(context, baseURL);
+    await withoutLanguageHint(page);
+    await page.setViewportSize(viewport);
+    for (const { block, url, selector } of BLOCKS) {
       const response = await page.goto(url);
       expect(response?.status(), url).toBe(200);
-      await expect(page.locator("[data-fo-price-summary]")).toBeVisible();
-      await expect(page.locator("main")).toHaveScreenshot(`${name}.png`);
-    });
-  }
+      await expect(page.locator(selector)).toHaveScreenshot(
+        `product-${width}-${block}.png`,
+      );
+    }
+  });
 }
 
 test("the sticky summary at 390px matches product-mobile-sticky", async ({
@@ -89,7 +112,7 @@ test("the sticky summary at 390px matches product-mobile-sticky", async ({
   await recordConsentRefusal(context, baseURL);
   await withoutLanguageHint(page);
   await page.setViewportSize({ width: 390, height: 844 });
-  const url = STATES[0].url;
+  const url = BLOCKS[0].url;
   const response = await page.goto(url);
   expect(response?.status(), url).toBe(200);
   // The first screen a phone sees: the gallery, and the bar docked over its bottom edge.

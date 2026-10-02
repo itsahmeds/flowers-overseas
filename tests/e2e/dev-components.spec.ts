@@ -11,6 +11,7 @@
  */
 import { expect, test } from "@playwright/test";
 
+import { formatMoney } from "../../src/modules/i18n/format.ts";
 import { listingHonestyViolations } from "../support/listing-honesty.ts";
 
 const GALLERY = "/dev/components";
@@ -401,6 +402,20 @@ test.describe("/dev/components", () => {
     await page.goto(GALLERY);
     const state = (name: string) =>
       page.locator(`[data-fo-product-state="${name}"]`);
+    // The amounts are `src/app/(dev)/dev/components/product.ts`'s (Women's Day +500 on an 18-stem
+    // tier of 4 690, in pence), through the one formatter in the gallery's locale. That module is
+    // not imported here: it reaches `@/modules/catalog`, whose graph needs Next's runtime.
+    const money = (
+      amountMinor: number,
+      currency: "GBP" | "PLN",
+      signDisplay?: "always",
+    ): string =>
+      formatMoney(
+        { amountMinor, currency },
+        "en",
+        signDisplay === undefined ? {} : { signDisplay },
+      );
+    const fee = money(500, "GBP", "always");
 
     // Gallery: photographed (a named list, the honesty label) and the placeholder (no `<img>`).
     await expect(
@@ -426,7 +441,7 @@ test.describe("/dev/components", () => {
     ).toHaveText("included");
     await expect(
       state("chipSurcharge").locator('[data-fo-date-fee="surcharge"]'),
-    ).toHaveText("+£5.00");
+    ).toHaveText(fee);
     const closed = state("chipClosed").locator("label");
     await expect(closed).toHaveCount(4);
     for (const label of await closed.all()) {
@@ -436,9 +451,21 @@ test.describe("/dev/components", () => {
           .length,
       ).toBeGreaterThan(0);
     }
+    // The reason is in each closed radio's *computed* accessible name, not only beside it: two
+    // of the four are Sundays (one also All Saints' Day), one a holiday, one past the cutoff.
+    const sundays = state("chipClosed").getByRole("radio", {
+      name: /We do not deliver on Sundays in Poland/u,
+    });
+    await expect(sundays).toHaveCount(2);
+    for (const radio of await sundays.all()) await expect(radio).toBeDisabled();
     await expect(
-      page.getByRole("radio", {
-        name: /Sun 4 Apr.*We do not deliver on Sundays in Poland/u,
+      state("chipClosed").getByRole("radio", {
+        name: /Public holiday in Poland/u,
+      }),
+    ).toBeDisabled();
+    await expect(
+      state("chipClosed").getByRole("radio", {
+        name: /Ordering closed at 14:00 in Warsaw/u,
       }),
     ).toBeDisabled();
 
@@ -455,7 +482,10 @@ test.describe("/dev/components", () => {
     ).toHaveCount(0);
     await expect(state("pickerPreview").locator("button")).toHaveCount(0);
     await expect(state("pickerUnavailable").locator("input")).toHaveCount(0);
-    await expect(state("pickerUnavailable").locator("fieldset")).toBeDisabled();
+    // `toBeDisabled()` reads native controls only, and a fieldset is not one.
+    await expect(
+      state("pickerUnavailable").locator("fieldset"),
+    ).toHaveAttribute("disabled", "");
 
     // AC-23: read-only add-on rows, the free card a visible zero line.
     await expect(
@@ -463,7 +493,7 @@ test.describe("/dev/components", () => {
     ).toHaveCount(0);
     await expect(
       state("addons").locator('[data-fo-addon="card"]'),
-    ).toContainText("0.00");
+    ).toContainText(money(0, "PLN"));
 
     // Each summary has exactly one total; the surcharge is a line; stale FX says so.
     for (const name of [
@@ -480,10 +510,10 @@ test.describe("/dev/components", () => {
     }
     await expect(
       state("summarySurcharge").locator('[data-fo-summary-row="surcharge"]'),
-    ).toContainText("+£5.00");
+    ).toContainText(fee);
     await expect(
       state("summarySurcharge").locator("[data-fo-price-total]"),
-    ).toHaveText("£51.90");
+    ).toHaveText(money(5190, "GBP"));
     await expect(
       state("summaryStaleFx").locator("[data-fo-fx-notice]"),
     ).toHaveCount(1);
