@@ -51,6 +51,7 @@ _None recorded._
 - 2026-10-03: red commit — the warning cases in `seed-check.test.ts` (runway values, the minute the rule flips, 59/60/61, wording, 2 Oct 2026 with and without 2028, CLI `--as-of` on a temp tree without 2028, the CI summary step end to end) plus typed stubs in `seed/check.ts` so `tsc` passes; 14 cases red. Next: the 2028 rows.
 - 2026-10-03: the 14 Poland 2028 rows in `seed/data/holidays.json`, plus a 2028 note (statute citation, both Easter computations) and the coverage note moved to the new edge (2027-12-31 23:00 UTC). The pin is green (330/330 in `geo-delivery.test.ts`); Easter 2028 shifted to 15 Apr turns it red under all three zones (3 failed), restored. Draft PR #133. Next: `holidayCoverageRunway`/`holidayCoverageReport` in `seed/check.ts`.
 - 2026-10-03: `holidayCoverageRunway()` and `holidayCoverageReport()` in `seed/check.ts`, wired into `seedHealthReport()` after the picker-state table; `--as-of=` already existed (TASK-124), so no new flag. `seed-check.test.ts` 130/131: only the CI summary-step case is red, waiting on `ci.yml`. Next: `ci.yml`.
+- 2026-10-03: `ci.yml` `seed-check` summary step repeats each `holiday coverage early warning:` line as a `> [!WARNING]` alert beside the verdict. `seed-check`, `ci-workflow`, `geo-delivery`: 567/567 green. Next: mutation checks, `gates:cheap`, map, PR ready.
 
 ## Result
 

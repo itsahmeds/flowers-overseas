@@ -1236,6 +1236,13 @@ jobs:
             echo "|---|---|---|"
             echo "| seed dataset gate (AC-10, AC-30) | \`pnpm seed:check --report\` | ${{ steps.seed.outcome }} |"
             echo ""
+            # TASK-149: under 60 days before `holiday-coverage` goes red, the report prints one
+            # warning line per destination; repeat it here, beside the verdict, as an alert.
+            if [ -f seed-check.log ] && grep -q '^holiday coverage early warning:' seed-check.log; then
+              echo "> [!WARNING]"
+              grep '^holiday coverage early warning:' seed-check.log | sed 's/^/> - /'
+              echo ""
+            fi
             if [ -f seed-check.log ] && grep -q 'seed:check failed' seed-check.log; then
               echo "<details><summary>problems</summary>"
               echo ""
