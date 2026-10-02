@@ -54,9 +54,9 @@ import { ProductPage } from "@/modules/ui";
  * **Existence is the resolver's** (AC-1, **AC-5**). `generateStaticParams` emits exactly the
  * depth-4 listing existence set, and every other slug, every below-floor category, every occasion
  * not observed in that destination, every other locale's segment, every casing variant and every
- * unknown locale is a hard **404 from `resolveLocalePath()`** — never a redirect, a soft-404 or an
- * empty grid. (It was the static router's answer until the product page below needed
- * `dynamicParams = true`; the 200 set did not move.) A **trailing slash** is the one shape that is not a 404:
+ * unknown locale is a hard **404** — refused by the router, because the `[locale]` layout's
+ * `dynamicParams = false` binds this whole subtree, and by `resolveLocalePath()` behind it — never
+ * a redirect, a soft-404 or an empty grid. A **trailing slash** is the one shape that is not a 404:
  * `trailingSlash: false` answers it with a permanent redirect to the bare URL (§14 **A7**).
  * Nothing in this file names a country, a category, an occasion or a floor, which is why lifting
  * a category over `PRODUCT_COUNT_FLOOR` adds its URL with `git diff --stat src/app` empty.
@@ -65,7 +65,8 @@ import { ProductPage } from "@/modules/ui";
  * file's `generateStaticParams`, where `/review 76` ruling 4 put it; counting the same set twice
  * would print two tables into one CI step summary. The **product** table (spec 009 AC-3, §11) is
  * written here, by the `generateStaticParams` that emits the prebuilt product params it counts,
- * behind the same once-per-process guard (`/review 96`'s carry-forward to TASK-127).
+ * behind the same once-per-process guard (`/review 96`'s carry-forward to TASK-127); its
+ * "Prebuilt" column equals its "PDPs" column since A6.
  *
  * **Rendering: ISR, `revalidate` 3600 s** with §5.4's tags, through `src/lib/cache.ts` as the only
  * invalidation seam. Nothing here reads a cookie or a request header, so no response carries a
@@ -85,16 +86,16 @@ import { ProductPage } from "@/modules/ui";
  * /{locale}/{countrySlug}/{product}/{productSlug}        spec 009's product detail page
  * ```
  *
- * It is the one page type in the site whose prebuild is **not** its existence set: `plan/01` §3
- * prebuilds the top 24 products per (locale, published destination) and generates the rest on
- * first hit, so this depth sets **`dynamicParams = true`** (spec 009 AC-3; `/review 96`'s
- * carry-forward). That is a one-way decision and its consequence is recorded here: a URL outside
- * the params set is no longer refused by the static router but resolved by `resolveLocalePath()`
- * on its first request, and every shape that is not a page — for the two listings exactly as for
- * the product — is still a hard `notFound()` from that resolver, never a redirect or a soft-404
- * (`tests/unit/catalog-routes-depth4.test.ts` asserts every listing 404 against the resolver, so
- * the 200 set is unchanged). A 404 rendered on demand is now cacheable under `revalidate`, which
- * is a Cloudflare note rather than a change to which URLs answer 200.
+ * **Its params are its existence set** (spec 009 §14 **A6**, AC-3; TASK-127 E-1): every product
+ * page per (locale, published destination), 2 352 in production's four locales. The
+ * `[locale]` layout exports `dynamicParams = false` (spec 003's locale gate) and Next computes a
+ * route's `dynamicParams` as `every` segment's, so a URL this build did not emit is a router 404
+ * whatever this file says — rendered as the x-default `not-found.tsx` document with its `lang`,
+ * which is why the gate stays where spec 003 put it. A top-24 prebuild under that gate left 420
+ * of 588 product pages per locale answering 404. `dynamicParams = true` below is therefore
+ * **inert** while the layout's is `false`; it is kept so that, if the gate ever moves (spec 003
+ * §14 A3's Cache Components tripwire), the route already resolves on demand through
+ * `productPageExists()` rather than silently refusing.
  *
  * The product branch mounts one module page component, `ProductPage`, over one `productView()`;
  * the two blocks that page cannot import — spec 008's breadcrumb and spec 007's delivery facts —

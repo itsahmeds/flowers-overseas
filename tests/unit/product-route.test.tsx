@@ -41,8 +41,15 @@ vi.mock("next-intl/server", () => ({
 const route =
   await import("../../src/app/[locale]/[segment]/[child]/[grandchild]/page.tsx");
 const { ProductPage } = await import("../../src/modules/ui");
-const { listProductPages, productPrebuildPages } =
+const { listProductPages, productPageExists } =
   await import("../../src/modules/catalog");
+const { listingLocales, publishedCountries } =
+  await import("../../src/modules/catalog/listing.ts");
+const { listProducts } = await import("../../src/modules/catalog/read.ts");
+const { slugFor } = await import("../../src/modules/catalog/slugs.ts");
+const { corridorSlug } = await import("../../src/modules/geo/index.ts");
+const { localePath, productPath } =
+  await import("../../src/modules/i18n/index.ts");
 
 type Params = {
   locale: string;
@@ -74,22 +81,52 @@ const AMBER = {
 } as const;
 
 describe("AC-1: the product route answers the existence set and 404s everything else", () => {
-  it("is the one depth with on-demand params, and prebuilds the top-24 product pages", async () => {
+  it("emits every page `productPageExists()` admits, per (locale, published destination) — §14 A6", async () => {
+    // `dynamicParams = true` is inert under the `[locale]` layout's `false` (spec 003's gate), so
+    // the params this function returns are the build's whole 200 set for the product branch.
     expect(route.dynamicParams).toBe(true);
     expect(route.revalidate).toBe(3600);
-    const params = await route.generateStaticParams();
-    const prebuilt = await productPrebuildPages();
-    for (const page of prebuilt) {
-      expect(
-        params.some(
+
+    const segmentOf = (locale: string) =>
+      localePath(locale as never, "product").split("/")[2] ?? "";
+    const emitted = new Set(
+      (await route.generateStaticParams())
+        .filter((entry) => entry.child === segmentOf(entry.locale))
+        .map(
           (entry) =>
-            entry.locale === page.locale &&
-            entry.segment === page.countrySlug &&
-            entry.grandchild === page.slug,
+            `/${entry.locale}/${entry.segment}/${entry.child}/${entry.grandchild}`,
         ),
-        page.path,
-      ).toBe(true);
+    );
+
+    const perPair = new Map<string, number>();
+    let admitted = 0;
+    for (const locale of listingLocales()) {
+      for (const countryIso of publishedCountries()) {
+        for (const product of await listProducts({})) {
+          const exists = await productPageExists({
+            locale,
+            countryIso,
+            sku: product.sku,
+          });
+          const path = productPath(
+            locale,
+            corridorSlug(countryIso, locale),
+            slugFor("product", product.sku, locale) ?? "",
+          );
+          expect(emitted.has(path), path).toBe(exists);
+          if (!exists) continue;
+          admitted += 1;
+          const pair = `${locale}|${countryIso}`;
+          perPair.set(pair, (perPair.get(pair) ?? 0) + 1);
+        }
+      }
     }
+
+    // Spec 009 §2's arithmetic: 84 products × 7 published destinations × 4 launch locales.
+    expect(admitted).toBe(2352);
+    expect(emitted.size).toBe(2352);
+    expect(perPair.size).toBe(28);
+    for (const [pair, count] of perPair) expect(count, pair).toBe(84);
   });
 
   it("renders `ProductPage` over the resolved product, in every launch locale", async () => {

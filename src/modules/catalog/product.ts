@@ -27,17 +27,16 @@
  * exists on day one while `/de/blumen/roses` does not. A bouquet name is a proper noun that must
  * not be translated; a category name is a common noun that must be.
  *
- * ## Prebuild is a performance choice, not an existence choice (AC-3)
+ * ## Prebuild is the existence set (AC-3, §14 A6)
  *
- * 84 products × 7 published destinations × the routed locales is more URLs than `plan/01` §3's
- * three-minute build budget allows, and `plan/01` §3 already answers it: prebuild the top N per
- * (locale, destination) and generate the rest on demand. `productPrebuildPages()` is that list —
- * the **first `PRODUCT_PREBUILD_COUNT` pages that exist**, in spec 005's deterministic
- * `topProductsForPrebuild()` order (the locale's collation of the product name, tie-broken by
- * SKU; never a popularity claim we have no data for, §8). The PDP is therefore the one route in
- * the Phase 0 site with `dynamicParams = true`, and the 404 guarantee is preserved **inside** the
- * route by `productPageExists()` rather than by the params set — which is why this file, not the
- * params list, is the existence answer.
+ * `plan/01` §3's budget once made the prebuild a top-N slice with the rest generated on demand.
+ * Spec 009 §14 **A6** (TASK-127 E-1) ended that: `src/app/[locale]/layout.tsx` exports
+ * `dynamicParams = false` (spec 003's routing-layer locale gate), Next computes a route's
+ * `dynamicParams` as every segment's, so a URL the build did not emit is a router 404 whatever the
+ * product route says. `productPrebuildPages()` is therefore **the existence set itself** —
+ * 84 products × 7 published destinations × 4 locales, 2 352 pages — and a URL outside it is the
+ * x-default `not-found.tsx` document with its `lang`. `productPageExists()` still runs inside the
+ * route, so this file, not the params list, stays the existence answer.
  *
  * ## Shape of the reads
  *
@@ -137,17 +136,6 @@ import type {
   Product,
   Tier,
 } from "./types";
-
-/**
- * How many PDPs a build prebuilds per (locale, published destination) — `plan/01` §3's budget,
- * spec 009 §2's default of **24**.
- *
- * It is a *prebuild* count and nothing else: no page exists or stops existing because of it, and
- * raising it costs build minutes rather than URLs. It stays internal to the module for the reason
- * `PRODUCT_COUNT_FLOOR` does (spec 008 AC-2): a caller that could read it would be one line from
- * applying it instead of asking `productPrebuildPages()`.
- */
-export const PRODUCT_PREBUILD_COUNT = 24;
 
 /** One PDP, named the way the existence rule thinks about it: locale, destination, SKU. */
 export interface ProductPageIdentity {
@@ -286,49 +274,19 @@ export async function listProductPages(
 }
 
 /**
- * The pages a build prebuilds: the first `PRODUCT_PREBUILD_COUNT` **existing** pages per (locale,
- * published destination), in spec 005's deterministic `topProductsForPrebuild()` order (AC-3).
+ * The pages a build prebuilds: **every** page of the existence set, for one locale or for all of
+ * them (AC-3 as spec 009 §14 **A6** words it).
  *
- * Read as "the top 24 of the existence set", not "whichever of the top 24 products happen to have
- * a page": a product priced for a destination but missing a slug in one locale would otherwise
- * silently shrink that locale's prebuild by one and push a page that does exist out to the first
- * request. Which of the two is prebuilt changes nothing about **which URLs answer 200** —
- * `dynamicParams = true` and `productPageExists()` inside the route keep that set exactly
- * `listProductPages()` (AC-3's union clause).
+ * Under the locale gate a page the build does not emit is a 404, so prebuilding a slice would
+ * turn every page outside it into a dead link (TASK-127 E-1: 420 of 588 per locale). Kept as its
+ * own name, rather than callers reading `listProductPages()`, because "what the build emits" and
+ * "what exists" are two questions whose answers A6 made equal; the step summary prints both, and
+ * `tests/unit/catalog-product-routes.test.ts` holds them equal pair for pair.
  */
 export async function productPrebuildPages(
   locale?: LocaleCode,
 ): Promise<readonly ProductPageRecord[]> {
-  const locales = locale === undefined ? listingLocales() : [locale];
-  const memo = newMemo();
-  const pages: ProductPageRecord[] = [];
-
-  for (const code of locales) {
-    for (const iso2 of publishedCountries()) {
-      // The whole deliverable list in prebuild order, sliced by existence rather than by count:
-      // `topProductsForPrebuild()` filters on price, and the slug and status terms are this
-      // module's.
-      const deliverable = await listProducts({ countryIso: iso2 });
-      if (deliverable.length === 0) continue;
-      const ordered = await topProductsForPrebuild(
-        iso2,
-        code,
-        deliverable.length,
-      );
-
-      let kept = 0;
-      for (const product of ordered) {
-        if (kept === PRODUCT_PREBUILD_COUNT) break;
-        if (!(await pageExists(product.sku, iso2, code, memo))) continue;
-        const record = recordFor(product.sku, iso2, code);
-        if (record === undefined) continue;
-        pages.push(record);
-        kept += 1;
-      }
-    }
-  }
-
-  return pages;
+  return listProductPages(locale);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -340,7 +298,7 @@ export interface LocaleProductCounts {
   readonly locale: LocaleCode;
   /** How many PDPs exist in this locale (AC-3's existence set). */
   readonly exists: number;
-  /** How many of them a build prebuilds; the rest are generated on first request. */
+  /** How many of them a build prebuilds — all of them since spec 009 §14 A6. */
   readonly prebuilt: number;
   /**
    * How many are indexable — `isProductIndexable()`, never a second reading of its six terms.
@@ -402,9 +360,7 @@ export function productExistenceSummaryMarkdown(
   counts: readonly LocaleProductCounts[],
 ): string {
   const header = [
-    "### Product page existence set (spec 009 §2, §11; prebuild " +
-      String(PRODUCT_PREBUILD_COUNT) +
-      " per locale and destination)",
+    "### Product page existence set (spec 009 §2, §11; every page prebuilt, §14 A6)",
     "",
     "| Locale | PDPs | Prebuilt | Indexable | Products with no reviewed description |",
     "| --- | ---: | ---: | ---: | ---: |",
