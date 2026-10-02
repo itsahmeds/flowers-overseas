@@ -101,6 +101,17 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
     and FO-BQ-036 "cut locally".
   - The source itself: `messages/{en,de,pl}.json` `catalog.floristSentence`.
 
+- **2026-10-03, E5, to the orchestrator: CI on `1a77d2df` has two reds, both caused by this diff.**
+  (a) `test-integration` `tests/integration/sitemap.test.ts` "carries a real <lastmod> … never the
+  clock" asserts `lastmod <= today (UTC)`. The en `reviewedAt` is now 2026-10-03, and CI ran at
+  22:18 UTC on 2026-10-02, so `/en/send-flowers-to` reads as being in the future. It clears itself
+  after 00:00 UTC on 2026-10-03: toggle `ci:full` then. The other fix, `reviewedAt` 2026-10-02,
+  would misdate the founder's approval. (b) `visual` `occasion-hub-mobile` (tests/visual/hubs.spec.ts:67)
+  is 2567px -> 2591px tall: the extra word wraps one occasion intro onto one more line. The linux
+  baseline needs a refresh (`visual:baselines` label, then inspect and commit, per
+  `docs/runbooks/visual-baselines.md`). That is outside this task's fence ("other tests").
+  **Question:** may TASK-166 commit the refreshed `occasion-hub-mobile` linux baseline? **Open.**
+
 ## Progress
 
 One line per coherent step, newest last, written by the agent doing the work and pushed with
@@ -118,6 +129,9 @@ here.
   fields, ran `--sync-copy`, the two E4 edits, `--locale de`/`pl`, `seed:diff --write`. Two things
   the brief did not foresee, both mechanical (see `## Result`): every row's `sourceHash` moves, and
   the en/en-gb sitemap fixtures' `lastmod` moves. Gates green on `8082a3a1`. Next: review + break.
+
+- 2026-10-03: ready and labelled `ci:full`; CI on `1a77d2df` has 23 jobs green and 2 red (E5). Next:
+  re-fire after 00:00 UTC for (a); the orchestrator rules on (b).
 
 ## Result
 
