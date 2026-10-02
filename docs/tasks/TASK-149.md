@@ -69,6 +69,7 @@ _None recorded._
 - 2026-10-03: `holidayCoverageRunway()` and `holidayCoverageReport()` in `seed/check.ts`, wired into `seedHealthReport()` after the picker-state table; `--as-of=` already existed (TASK-124), so no new flag. `seed-check.test.ts` 130/131: only the CI summary-step case is red, waiting on `ci.yml`. Next: `ci.yml`.
 - 2026-10-03: `ci.yml` `seed-check` summary step repeats each `holiday coverage early warning:` line as a `> [!WARNING]` alert beside the verdict. `seed-check`, `ci-workflow`, `geo-delivery`: 567/567 green. Next: mutation checks, `gates:cheap`, map, PR ready.
 - 2026-10-03: mutations red and restored; `gates:cheap` PASS on `f807b253` (clean); no rebase needed (`main` unmoved); row `in_review`; `## Result` filled. Next: PR ready, `ci:full`, CI on head.
+- 2026-10-03 (round 2): holes 1 and 3 tested (past the red day, 2028-01-05 without 2028, gives 0 and `red today`; a DE 2028 row leaves PL at 59 days). The 0-day warning wording now says `is red today, …: its horizon reaches YYYY`, because "the first day" was false on any later red day. `seed-check.test.ts` 133/133. `const redOn = edge;` turns hole 1 red. Next: hole 2, then the pooled mutation, then rebase.
 
 ## Result
 

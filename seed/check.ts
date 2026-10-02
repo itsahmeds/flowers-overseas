@@ -2023,12 +2023,14 @@ export function holidayCoverageRunway(
 
 /** One warning line; it starts with `HOLIDAY_COVERAGE_WARNING_MARKER`, which CI greps for. */
 function holidayCoverageWarning(runway: HolidayCoverageRunway): string {
+  const year = String(runway.firstUncoveredYear);
+  const horizon = `${String(NEXT_AVAILABLE_HORIZON_DAYS)}-day picker horizon`;
+  // Red today may be the first red day or any day after it, so it names today, not "the first".
   const when =
     runway.daysLeft === 0
-      ? `is red from today, ${runway.redOn}`
-      : `goes red in ${String(runway.daysLeft)} ${runway.daysLeft === 1 ? "day" : "days"}, on ${runway.redOn}`;
-  const year = String(runway.firstUncoveredYear);
-  return `${HOLIDAY_COVERAGE_WARNING_MARKER} ${runway.iso2} ${when} (${runway.timeZone}), the first day its ${String(NEXT_AVAILABLE_HORIZON_DAYS)}-day picker horizon reaches ${year} with no holiday row; author ${runway.iso2}'s ${year} rows in ${dataFile(HOLIDAYS_FILE)} (spec 009 AC-2).`;
+      ? `is red today, ${runway.redOn} (${runway.timeZone}): its ${horizon} reaches ${year}, which has no holiday row`
+      : `goes red in ${String(runway.daysLeft)} ${runway.daysLeft === 1 ? "day" : "days"}, on ${runway.redOn} (${runway.timeZone}), the first day its ${horizon} reaches ${year} with no holiday row`;
+  return `${HOLIDAY_COVERAGE_WARNING_MARKER} ${runway.iso2} ${when}; author ${runway.iso2}'s ${year} rows in ${dataFile(HOLIDAYS_FILE)} (spec 009 AC-2).`;
 }
 
 /**

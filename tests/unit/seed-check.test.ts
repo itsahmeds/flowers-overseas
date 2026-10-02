@@ -1004,7 +1004,7 @@ describe("TASK-149: the holiday-coverage runway and its 60-day warning", () => {
     }
   });
 
-  it("says `1 day` and `red from today` at the last two counts", () => {
+  it("says `1 day` and `red today` at the last two counts", () => {
     expect(
       holidayCoverageReport(atInstant(tree, "2027-12-31T22:59:00Z")).join("\n"),
     ).toContain(
@@ -1013,7 +1013,84 @@ describe("TASK-149: the holiday-coverage runway and its 60-day warning", () => {
     expect(
       holidayCoverageReport(atInstant(tree, "2027-12-31T23:00:00Z")).join("\n"),
     ).toContain(
-      "holiday coverage early warning: PL is red from today, 2028-01-01 (Europe/Warsaw), the first day its 366-day picker horizon reaches 2029 with no holiday row; author PL's 2029 rows in seed/data/holidays.json (spec 009 AC-2).",
+      "holiday coverage early warning: PL is red today, 2028-01-01 (Europe/Warsaw): its 366-day picker horizon reaches 2029, which has no holiday row; author PL's 2029 rows in seed/data/holidays.json (spec 009 AC-2).",
+    );
+  });
+
+  it(
+    "days past the red day: 0 left and red today, never negative (/break 133 hole 1)",
+    () => {
+      // 5 Jan 2028 without the 2028 rows: the horizon first reached 2028 on 31 Dec 2026, 370 days
+      // ago. The runway is clamped to today; unclamped it would read 2026-12-31 and -370.
+      const late = atInstant(
+        withoutHolidayYear(tree, 2028),
+        "2028-01-05T12:00:00Z",
+      );
+      expect(holidayCoverageRunway(late)).toEqual([
+        {
+          iso2: "PL",
+          timeZone: "Europe/Warsaw",
+          from: "2028-01-05",
+          firstUncoveredYear: 2028,
+          redOn: "2028-01-05",
+          daysLeft: 0,
+        },
+      ]);
+      const report = holidayCoverageReport(late).join("\n");
+      expect(report).toContain(
+        "| PL | 2028-01-05 | 2028 | 2028-01-05 (Europe/Warsaw) | 0 |",
+      );
+      expect(report).toContain(
+        "\nholiday coverage early warning: PL is red today, 2028-01-05 (Europe/Warsaw): its 366-day picker horizon reaches 2028, which has no holiday row; author PL's 2028 rows in seed/data/holidays.json (spec 009 AC-2).\n",
+      );
+      // And the rule agrees: red, on both years the horizon now spans.
+      expect(
+        checkSeedDataset(late)
+          .filter((problem) => problem.rule === "holiday-coverage")
+          .map((problem) => problem.key),
+      ).toEqual(["PL/2028", "PL/2029"]);
+    },
+    TREE_TIMEOUT,
+  );
+
+  it("counts each destination's own years, not every country's (/break 133 hole 3)", () => {
+    // PL has no 2028 rows; a DE row for 2028 must not lend PL a year it does not have.
+    const pooled = applySeedCheckCase(
+      withoutHolidayYear(tree, 2028),
+      {
+        family: "calendar",
+        rule: "holiday-coverage",
+        replaces: "holidays.json",
+        expect: "PL/2028",
+        alsoFamilies: [],
+        why: "/break 133 hole 3: another country's 2028 row beside Poland's missing year.",
+        ops: [
+          {
+            op: "addRow",
+            row: {
+              iso2: "DE",
+              date: "2028-01-01",
+              nameKey: "delivery.holiday.de.newYear",
+              closed: true,
+            },
+          },
+        ],
+      },
+      () => ({}),
+    );
+    const at = atInstant(pooled, "2026-11-02T12:00:00Z");
+    expect(holidayCoverageRunway(at)).toEqual([
+      {
+        iso2: "PL",
+        timeZone: "Europe/Warsaw",
+        from: "2026-11-02",
+        firstUncoveredYear: 2028,
+        redOn: "2026-12-31",
+        daysLeft: 59,
+      },
+    ]);
+    expect(holidayCoverageReport(at).join("\n")).toContain(
+      "\nholiday coverage early warning: PL goes red in 59 days, on 2026-12-31 (Europe/Warsaw), the first day its 366-day picker horizon reaches 2028 with no holiday row; author PL's 2028 rows in seed/data/holidays.json (spec 009 AC-2).\n",
     );
   });
 
