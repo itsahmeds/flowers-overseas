@@ -120,7 +120,7 @@ on long-running agents makes the same point: agents grade work leniently, and a 
 catches more (https://www.anthropic.com/engineering/harness-design-long-running-apps, 2026-03-24:
 a generator agent paired with a separate evaluator agent). So the breaker is its own agent, it only wins by finding a hole, and it runs on every
 PR, including docs-only ones, where it breaks whatever check reads the changed files. The founder
-chose every PR over risky-only PRs.
+chose every PR over risky-only PRs (narrowed on 2026-10-03: W-21).
 
 ## W-16 · An advisor before the founder approves
 
@@ -196,9 +196,11 @@ mostly spent on the framework and on 3–4 review rounds per PR, the founder cou
 progress on the live site: no product page, menu items that were not links, and photos on only 12
 of 84 products. The founder chose to ship clickable features first. Money, order status,
 payments and webhooks, the SEO gates, security and the dev-OS guards keep the full `/break` +
-`/review`, because a hole there costs a buyer money, costs a ranking, or weakens a guard. A
-plain-UI or docs PR gets one `/review`. The reviewer may still ask for a breaker, and the 5 %
-reviewed-copy gate is unchanged.
+`/review`, because a hole there costs a buyer money, costs a ranking, or weakens a guard. A PR
+that changes only docs or only presentation gets one `/review`. The orchestrator names the class,
+the reviewer checks it, a reviewer's call for a breaker binds the merge, and when in doubt a PR is
+not review-only, so a PR in neither class (dates, i18n tooling, migrations, data flows) keeps its
+breaker. The 5 % reviewed-copy gate is unchanged.
 
 ## Retired
 

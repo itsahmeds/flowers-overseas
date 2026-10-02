@@ -117,7 +117,7 @@ agents running:
 | Shallow row copy per call (rejected) | 0.09 ms, but leaves `occasions` and other nested arrays shared |
 
 **Tests (contract layer).** `tests/contract/support/catalog-provider-contract.ts` replaces the old
-case, which truncated a copy, with 46 mutation cases and one coverage case. Each read gets these
+case, which truncated a copy, with 37 mutation cases, 9 pin cases and one coverage case. Each read gets these
 cases, all on the **returned** value:
 - **nested-field pin:** every row carries exactly the read's pinned nested fields. Products have
   `colours`, `flowerTypes` and `occasions`; every other read has none. (Round 2, hole 1.)

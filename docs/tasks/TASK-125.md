@@ -75,6 +75,14 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
   the breadcrumb date in UTC; stale SHAs in the brief and row; T-32's sitemap row; the `priceGrid()`
   throw signal.
 
+- **From `/review 101` round 2 and `/break 101` round 2 (2026-10-02, PASS on `ae798646`; reviews
+  5394462796 and 5394508409):** HOLE 11 ACCEPTABLE (no zero-priced tier can be produced today; the
+  test is carried to TASK-129). HOLE 12 ACCEPTABLE (only `product.ts` may call the indexability
+  seam; the F1-per-term case, the scan refusing a hand-built product descriptor, and a robots scan
+  that is case-insensitive and catches the object form are carried to TASK-127's brief).
+  Residual A: a hand-built `pageType: "product"` descriptor passed to `seo.pageIndexability()`
+  still gets `index,follow`. No caller does that today, and TASK-127's scan closes it.
+
 ## Escalations
 
 - **E-1 (2026-09-23) — `care` is not a field. Deviation, applied; reviewer may reverse.** §5.2 lists
