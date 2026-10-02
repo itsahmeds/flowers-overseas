@@ -36,28 +36,7 @@ second idiom.
 **The rule that makes this task safe, and it is not optional.** A weak assertion is a **finding**.
 Do not widen a gate, loosen a threshold, or delete a case to turn red green. If a sweep turns up
 something that is red for a real reason, that is a defect in the code, and it stops being this
-task's business the moment you have identified whose it is — record it in `- **From `/review 99` round 2 and `/break 99` round 1 (2026-10-02), FAIL / HOLES on `bd9d4d35`.**
-  Round 1's four required changes are closed. Required, tests only:
-  1. Hole 1: add samples that the class-member and `?` mutants miss. In the listing scan:
-     `was €59.90`, `bis 14.00 Uhr` (or `Order by 14.00`), `Wish list`, `five-star`. In
-     `home-honesty`: a singular `star` and a singular `review`. Prove each mutant red. `## Result`
-     says the generator covers `|` branches only, and samples cover class members and `?` atoms.
-  2. Hole 2: `toStrictEqual` the full reason list of `bad-urls.json` in
-     `seo-validate-hreflang.test.ts`, including the `en` alternate's `http://` reason. Prove it
-     with the `/^https?:\/\//` mutant at `validate-hreflang.ts:157`.
-  3. Hole 3: add a case where `noindex.json` is `{`, expecting `is not valid JSON` and a non-zero
-     exit. Prove it with the `error: null` mutant at `validate-sitemap.ts:120`, and note this
-     non-`push` site in `## Result`'s `validate-sitemap` row.
-  4. CI green on the new head. `e2e` `banner.spec.ts:669` / `consent-banner.spec.ts:666` failed on
-     `bd9d4d35`: a known load flake (TASK-114, TASK-121), outside this diff, and needing no change.
-
-  **HOLE 4 ACCEPTABLE** (reviewer): the `[locale]` home metadata case reads its strings from
-  `loadMessages(locale)`, so it becomes locale-sensitive once `de`/`pl` `meta.home` are
-  translated. It is logged in `docs/framework/gaps.md`. Nits still open: `(?i:…)` groups in
-  `regex-branches.ts`, and the `seed-copy` `?? []` guard. Round 3 is a scoped confirmation: the
-  diff since `bd9d4d35`, the three mutants, and CI on the new head.
-
-## Escalations` with
+task's business the moment you have identified whose it is — record it in `## Escalations` with
 the owning task and move on.
 
 **Prove every fix.** Mutate the subject, watch the case go red, restore, and say so. A
@@ -137,6 +116,27 @@ deleted it — see item 1.)
   findings are all confirmed real: the occasions-index case stays green with the order reversed
   and with every `kind` set to `evergreen`, and `hubs.spec.ts:108` / `country-occasion.spec.ts:115`
   accept a self-redirect.
+
+- **From `/review 99` round 2 and `/break 99` round 1 (2026-10-02), FAIL / HOLES on `bd9d4d35`.**
+  Round 1's four required changes are closed. Required, tests only:
+  1. Hole 1: add samples that the class-member and `?` mutants miss. In the listing scan:
+     `was €59.90`, `bis 14.00 Uhr` (or `Order by 14.00`), `Wish list`, `five-star`. In
+     `home-honesty`: a singular `star` and a singular `review`. Prove each mutant red. `## Result`
+     says the generator covers `|` branches only, and samples cover class members and `?` atoms.
+  2. Hole 2: `toStrictEqual` the full reason list of `bad-urls.json` in
+     `seo-validate-hreflang.test.ts`, including the `en` alternate's `http://` reason. Prove it
+     with the `/^https?:\/\//` mutant at `validate-hreflang.ts:157`.
+  3. Hole 3: add a case where `noindex.json` is `{`, expecting `is not valid JSON` and a non-zero
+     exit. Prove it with the `error: null` mutant at `validate-sitemap.ts:120`, and note this
+     non-`push` site in `## Result`'s `validate-sitemap` row.
+  4. CI green on the new head. `e2e` `banner.spec.ts:669` / `consent-banner.spec.ts:666` failed on
+     `bd9d4d35`: a known load flake (TASK-114, TASK-121), outside this diff, and needing no change.
+
+  **HOLE 4 ACCEPTABLE** (reviewer): the `[locale]` home metadata case reads its strings from
+  `loadMessages(locale)`, so it becomes locale-sensitive once `de`/`pl` `meta.home` are
+  translated. It is logged in `docs/framework/gaps.md`. Nits still open: `(?i:…)` groups in
+  `regex-branches.ts`, and the `seed-copy` `?? []` guard. Round 3 is a scoped confirmation: the
+  diff since `bd9d4d35`, the three mutants, and CI on the new head.
 
 ## Escalations
 
