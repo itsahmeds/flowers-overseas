@@ -530,6 +530,69 @@ export function parseArgs(argv: readonly string[]): UploadArgs {
   return { dryRun, force, verify, ...(only.length > 0 ? { only } : {}) };
 }
 
+export interface UploadRunSummary {
+  readonly variants: number;
+  readonly uploaded: number;
+  readonly skipped: number;
+  readonly bytes: number;
+}
+
+/**
+ * The upload, gate by gate, in the one order that is safe: the R2 half of the environment, then
+ * the public origin against `MEDIA_ORIGIN`, then every file through `loadUploadSet()` — and only
+ * then the first request. `main()` is this plus `@next/env` and a real `fetch`; it is exported so
+ * that the order is a property a test can break (`/review 94` round 2, HOLE 5): an origin
+ * mismatch or a dirty tree must throw before the injected fetcher is called once.
+ *
+ * An object is counted as uploaded only after `syncObject()` returns, so a refused `PUT` throws
+ * out of the loop with nothing printed for it and no summary line.
+ */
+export async function runUpload(options: {
+  readonly root: string;
+  readonly env: EnvSource;
+  readonly args: UploadArgs;
+  readonly fetcher: Fetcher;
+  readonly write: (text: string) => void;
+  readonly now?: () => Date;
+}): Promise<UploadRunSummary> {
+  const { root, args, fetcher, write } = options;
+  const config = readR2Config(options.env);
+  assertOriginAgrees(config.R2_PUBLIC_BASE_URL);
+
+  const items = await loadUploadSet({
+    root,
+    ...(args.only === undefined ? {} : { only: args.only }),
+  });
+
+  let uploaded = 0;
+  let skipped = 0;
+  let bytes = 0;
+  for (const item of items) {
+    const outcome = await syncObject({
+      item,
+      config,
+      fetcher,
+      force: args.force,
+      dryRun: args.dryRun,
+      ...(options.now === undefined ? {} : { now: options.now }),
+    });
+    if (outcome.action === "uploaded") {
+      uploaded += 1;
+      bytes += outcome.bytes;
+      write(
+        `${args.dryRun ? "would upload" : "uploaded"} ${outcome.objectKey} (${String(outcome.bytes)} B)\n`,
+      );
+    } else {
+      skipped += 1;
+    }
+  }
+
+  write(
+    `${String(items.length)} variant(s): ${String(uploaded)} ${args.dryRun ? "to upload" : "uploaded"}, ${String(skipped)} already current, ${String(bytes)} B transferred. Served from ${MEDIA_ORIGIN}/.\n`,
+  );
+  return { variants: items.length, uploaded, skipped, bytes };
+}
+
 /* c8 ignore start -- the connected half: proved by a real run against the bucket, not in CI */
 
 async function main(): Promise<void> {
@@ -570,39 +633,15 @@ async function main(): Promise<void> {
     return;
   }
 
-  const config = readR2Config(process.env);
-  assertOriginAgrees(config.R2_PUBLIC_BASE_URL);
-
-  const items = await loadUploadSet({
+  await runUpload({
     root,
-    ...(args.only === undefined ? {} : { only: args.only }),
+    env: process.env,
+    args,
+    fetcher,
+    write: (text) => {
+      process.stdout.write(text);
+    },
   });
-
-  let uploaded = 0;
-  let skipped = 0;
-  let bytes = 0;
-  for (const item of items) {
-    const outcome = await syncObject({
-      item,
-      config,
-      fetcher,
-      force: args.force,
-      dryRun: args.dryRun,
-    });
-    if (outcome.action === "uploaded") {
-      uploaded += 1;
-      bytes += outcome.bytes;
-      process.stdout.write(
-        `${args.dryRun ? "would upload" : "uploaded"} ${outcome.objectKey} (${String(outcome.bytes)} B)\n`,
-      );
-    } else {
-      skipped += 1;
-    }
-  }
-
-  process.stdout.write(
-    `${String(items.length)} variant(s): ${String(uploaded)} ${args.dryRun ? "to upload" : "uploaded"}, ${String(skipped)} already current, ${String(bytes)} B transferred. Served from ${MEDIA_ORIGIN}/.\n`,
-  );
 }
 
 const isMain =

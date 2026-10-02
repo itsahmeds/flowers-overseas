@@ -39,6 +39,7 @@ import {
   loadUploadSet,
   parseArgs,
   readR2Config,
+  runUpload,
   signRequest,
   verifyPublished,
 } from "../../scripts/media-upload.ts";
@@ -487,7 +488,7 @@ describe("nothing reaches the bucket that the gates have not seen", () => {
  *
  * Each case builds a real tree with `writeDerivedTree()` — the repository's own `media.json`, so
  * the slot and therefore the cap are the shipped ones — and drives `loadUploadSet()`, the
- * function `main()` calls before it opens a socket. A clean tree of the same shape is asserted to
+ * function `runUpload()` (and so `main()`) calls before it opens a socket. A clean tree of the same shape is asserted to
  * load, so a refusal cannot be passing for some unrelated reason.
  */
 describe("the uploader's own refusals (AC-15, AC-16)", () => {
@@ -574,6 +575,51 @@ describe("the uploader's own refusals (AC-15, AC-16)", () => {
     );
   }, 60_000);
 
+  /**
+   * A decodable AVIF of exactly `total` bytes: the clean frame followed by one top-level ISOBMFF
+   * `free` box, which every HEIF reader skips by definition. That is how a test reaches the cap
+   * to the byte with a real image rather than a byte count it made up (`/review 94` round 2,
+   * HOLE 4: the cases above cannot tell `> cap` from `> cap * 2`).
+   */
+  function paddedTo(image: Buffer, total: number): Buffer {
+    const size = total - image.byteLength;
+    if (size < 8)
+      throw new Error(
+        `cannot pad ${String(image.byteLength)} B to ${String(total)} B`,
+      );
+    const box = Buffer.alloc(size);
+    box.writeUInt32BE(size, 0);
+    box.write("free", 4, "ascii");
+    return Buffer.concat([image, box]);
+  }
+
+  it("accepts a file of exactly its slot's cap, and refuses one byte more (AC-15)", async () => {
+    const cap = SLOT_BYTE_CAPS["occasionTile"];
+    const clean = await cleanFrame();
+
+    const atCap = paddedTo(clean, cap);
+    expect(atCap.byteLength).toBe(cap);
+    // Still a picture, and still not watermarked, so the only gate it can meet is the cap.
+    expect(await isWatermarked(atCap)).toBe(false);
+    const accepted = await loadUploadSet({
+      root: writeDerivedTree([
+        { assetId: ASSET, width: WIDTH, format: "avif", data: atCap },
+      ]),
+    });
+    expect(accepted.map((loaded) => loaded.bytes.byteLength)).toEqual([cap]);
+
+    const overCap = paddedTo(clean, cap + 1);
+    await expect(
+      loadUploadSet({
+        root: writeDerivedTree([
+          { assetId: ASSET, width: WIDTH, format: "avif", data: overCap },
+        ]),
+      }),
+    ).rejects.toThrow(
+      `${String(cap + 1)} B is above the ${String(cap)} B cap for the \`occasionTile\` slot`,
+    );
+  }, 60_000);
+
   it("refuses a file carrying the demo watermark (AC-16)", async () => {
     const marked = await encodeAvif(await applyWatermark(await cleanFrame()));
     // Under the cap, so the refusal below can only be the watermark one: the cap is checked first.
@@ -609,6 +655,136 @@ describe("the uploader's own refusals (AC-15, AC-16)", () => {
     await expect(loadUploadSet({ root })).rejects.toThrow(
       /does not match the manifest/u,
     );
+  }, 60_000);
+});
+
+/* -------------------------------------------------------------------------- */
+/* The order `main()` runs the gates in, as behaviour (HOLES 5, 6, 7).         */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * `runUpload()` is `main()` minus `@next/env` and the real `fetch`: the R2 environment, then
+ * `assertOriginAgrees()`, then `loadUploadSet()`, then the first request. `/review 94` round 2
+ * deleted the origin call from `main()` and every case still passed, because nothing drove the
+ * sequence. Each refusal below is asserted together with **zero calls** to the injected fetcher —
+ * a gate that throws after a request has gone out is not a gate — and a clean run of the same tree
+ * is the control that shows the fetcher is reachable at all.
+ */
+describe("the upload's gates run before the first request (runUpload)", () => {
+  const ASSET = "home-occasion-birthday";
+  const ARGS = parseArgs([]);
+  const ENV = { ...CONFIG };
+
+  async function cleanTree(recordAs?: Buffer): Promise<string> {
+    const box = variantBox(ASSET, 384);
+    const data = await sharp({
+      create: {
+        width: box.width,
+        height: box.height,
+        channels: 3,
+        background: { r: 214, g: 209, b: 201 },
+      },
+    })
+      .avif(AVIF_OPTIONS)
+      .toBuffer();
+    return writeDerivedTree([
+      {
+        assetId: ASSET,
+        width: 384,
+        format: "avif",
+        data,
+        ...(recordAs === undefined ? {} : { recordAs }),
+      },
+    ]);
+  }
+
+  /** Start a run; the caller awaits `outcome`, then reads what the fetcher and stdout saw. */
+  function run(
+    root: string,
+    env: Record<string, string>,
+    responses: Parameters<typeof fakeFetcher>[0],
+  ): { outcome: Promise<unknown>; calls: Call[]; written: string[] } {
+    const { fetcher, calls } = fakeFetcher(responses);
+    const written: string[] = [];
+    const outcome = runUpload({
+      root,
+      env,
+      args: ARGS,
+      fetcher,
+      write: (text) => {
+        written.push(text);
+      },
+      now: () => NOW,
+    });
+    return { outcome, calls, written };
+  }
+
+  it("uploads a clean tree to the agreed origin: the control the refusals below are measured against", async () => {
+    const root = await cleanTree();
+    const { outcome, calls, written } = run(root, ENV, [
+      { status: 404 },
+      { status: 200 },
+    ]);
+
+    await expect(outcome).resolves.toMatchObject({ variants: 1, uploaded: 1 });
+    expect(calls.map((call) => call.method)).toEqual(["HEAD", "PUT"]);
+    expect(written[0]).toMatch(
+      new RegExp(`^uploaded media/${ASSET}/384\\.avif \\(\\d+ B\\)\\n$`, "u"),
+    );
+    expect(written[1]).toMatch(
+      /^1 variant\(s\): 1 uploaded, 0 already current/u,
+    );
+  }, 60_000);
+
+  it.each([
+    ["a different host", "https://pub-somewhere-else.r2.dev"],
+    // HOLE 6: the two look-alikes a prefix test would let through, one in each direction.
+    ["the origin with a suffix host", `${MEDIA_ORIGIN}.evil.example`],
+    ["a prefix of the origin", "https://media.flowersoverseas.co"],
+  ])(
+    "refuses %s before a single request",
+    async (_label, publicBaseUrl) => {
+      const root = await cleanTree();
+      const { outcome, calls, written } = run(
+        root,
+        { ...ENV, R2_PUBLIC_BASE_URL: publicBaseUrl },
+        [{ status: 404 }, { status: 200 }],
+      );
+
+      await expect(outcome).rejects.toThrow(
+        /R2_PUBLIC_BASE_URL does not match MEDIA_ORIGIN/u,
+      );
+      expect(calls).toEqual([]);
+      expect(written).toEqual([]);
+    },
+    60_000,
+  );
+
+  it("refuses a tree whose files disagree with the manifest before a single request", async () => {
+    const root = await cleanTree(Buffer.from("not the bytes on disk"));
+    const { outcome, calls, written } = run(root, ENV, [
+      { status: 404 },
+      { status: 200 },
+    ]);
+
+    await expect(outcome).rejects.toThrow(/does not match the manifest/u);
+    expect(calls).toEqual([]);
+    expect(written).toEqual([]);
+  }, 60_000);
+
+  // HOLE 7: a refused PUT is an error, not an upload — nothing printed for it, no summary line.
+  it("does not count a 403 PUT as uploaded", async () => {
+    const root = await cleanTree();
+    const { outcome, calls, written } = run(root, ENV, [
+      { status: 404 },
+      { status: 403, body: "AccessDenied" },
+    ]);
+
+    await expect(outcome).rejects.toThrow(
+      /^PUT media\/home-occasion-birthday\/384\.avif: status 403/u,
+    );
+    expect(calls.map((call) => call.method)).toEqual(["HEAD", "PUT"]);
+    expect(written).toEqual([]);
   }, 60_000);
 });
 
