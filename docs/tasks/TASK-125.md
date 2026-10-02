@@ -97,15 +97,15 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
   publishing reaches the PDP with no edit here. Cost: `listingView()` has no `now` option, so the
   discarded parent cards are projected on the wall clock (its `catalog.fx_stale` warnings appear in
   test output). Harmless to the view; worth a `now` option on `listingView()` in a later task.
-- **E-4 (2026-10-02) — main's new `PAGE_TYPE_POLICY` pin does not know `product`. Open, to
-  orchestrator. Blocks CI.** PR 99 (TASK-143, `b56c59f7`) added a `toStrictEqual` pin of
+- **E-4 (2026-10-02) — main's new `PAGE_TYPE_POLICY` pin does not know `product`. Answered —
+  orchestrator, 2026-10-02: authorised, one entry.** PR 99 (TASK-143, `b56c59f7`) added a `toStrictEqual` pin of
   `PAGE_TYPE_POLICY` to `tests/unit/seo-indexability.test.ts`, written before this branch registers
   `product: "byRule"` (spec 009 §6, AC-16). The rebase was textually clean, but on the rebased
   head that one case is red: it receives 12 page types and expects 11. The fix is one entry in the
   expected map, `product: "byRule"`, cited to spec 009 §6 ("`index,follow` iff exists ∧
   `corridorState(iso2) === 'live'` ∧ `isProductIndexable()` ∧ `isLocaleIndexable()` ∧
-  `isIndexingEnvironment()`"). That file is outside the round-1 fence, so it is not edited here.
-  Nothing in `src/` changes.
+  `isIndexingEnvironment()`"). Applied in `a4b51b16`: that one entry and its comment, nothing
+  else. Nothing in `src/` changes.
 
 ## Progress
 
@@ -120,6 +120,8 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 - 2026-10-02 — PR 99 merged and PR 101 conflicted (no CI can fire). Rebased on `origin/main`
   `b56c59f7`; map-only conflict, regenerated; range-diff unchanged but for the map's file count.
   On `11780542` one test outside the fence is red (E-4). Stopped there: blocked.
+- 2026-10-02 — E-4 authorised. `a4b51b16` adds `product: "byRule"` to the pin. Two mutants on
+  `PAGE_TYPE_POLICY` are each red; `pnpm gates:cheap` PASS on `a4b51b16`; pushed, CI toggled.
 
 ## Result
 
@@ -321,20 +323,29 @@ Load average 4.6–5.4 during the run.
 **Third rebase, on `origin/main` `b56c59f7` (PR 99, TASK-143).** It was forced, because PR 101
 conflicted. The only conflict was `docs/codebase-map.md`, which was regenerated. `git range-diff
 19cb001b..34f3c339 origin/main..HEAD` shows all ten commits `=` except `2cb01cde`, whose only change
-is the map's `tests/unit/` count. The lockfile did not change. On the rebased head:
+is the map's `tests/unit/` count. The lockfile did not change.
+
+On the rebased head `11780542`, one test was red: `seo-indexability.test.ts` › "states the
+specified policy for every page type it knows, and no other (TASK-143)". It received
+`product: "byRule"`, because PR 99's strict pin predates this page type (E-4). With the
+orchestrator's authorisation, `a4b51b16` adds that one entry to the expected map, citing spec 009 §6.
+
+**The pin still bites.** Each mutant was applied to `src/modules/seo/indexability.ts` alone, with
+`seo-indexability.test.ts` run and the file restored from git:
+- `product` deleted from `PAGE_TYPE_POLICY`: 1 red, the TASK-143 case.
+- `product: "never"`: 1 red, the same case.
 
 ```
-gates:cheap · 11780542cf6efa574d1afe832b41afb3d18ca4cb · tree clean · base origin/main · 2026-10-02T16:07:23.236Z
-typecheck             exit 0 · 2.4 s
-lint                  exit 0 · 11.8 s
-format:check          exit 0 · 7.7 s
+gates:cheap · a4b51b166e18f1e139c088fb07661ea5acdb9afb · tree clean · base origin/main · 2026-10-02T16:22:20.094Z
+typecheck             exit 0 · 2.1 s
+lint                  exit 0 · 20.0 s
+format:check          exit 0 · 10.8 s
 i18n:check            exit 0 · 0.3 s
 check:no-db           exit 0 · 0.2 s
 codebase:map --check  exit 0 · 0.2 s
-tests                 exit 1 · 17.2 s · changed 44 + map 0 + always 3 · always run: zod-boundaries, lint-coverage, url-pii
-RESULT: FAIL (1 of 7 red: tests)
+tests                 exit 0 · 17.5 s · changed 44 + map 0 + always 3 · always run: zod-boundaries, lint-coverage, url-pii
+RESULT: PASS
 ```
 
-The one red test is `seo-indexability.test.ts` › "states the specified policy for every page type
-it knows, and no other (TASK-143)", which receives `product: "byRule"`. It is outside the fence, so
-this round stops at E-4.
+Load average 1.8–5.6 during the run. Tests: 47 files, 1 022 passed, 0 failed. No figure in this
+`## Result` moved.
