@@ -5,7 +5,9 @@
  * For every asset in `seed/data/media.json` whose original is present under
  * `.local/imagery/originals/{assetId}.{ext}` it strips the metadata, crops to the slot's declared
  * aspect ratio, encodes the AVIF + WebP ladder plus the single OG/email JPEG, writes
- * `public/media/{assetId}/{width}.{fmt}` and rewrites `seed/data/media-variants.json` with the
+ * `.local/media/{assetId}/{width}.{fmt}` — and, for the slots served from the site's own origin
+ * (`COMMITTED_MEDIA_SLOTS`: the home `hero`), the same bytes to the committed
+ * `public/media/{assetId}/{width}.{fmt}` — and rewrites `seed/data/media-variants.json` with the
  * width, height, byte count and SHA-256 of every file. Nothing else: the loader and `Photo` are
  * TASK-079's, the committed demo bytes are TASK-080's, R2 and the equivalent worker are TASK-082's.
  *
@@ -19,7 +21,8 @@
  *     that would otherwise make "byte-identical" true only on the machine that ran it
  *     (`seed/schema/variants.ts` `ENCODER_CONCURRENCY`).
  *  2. **`--check` is the CI mode** (AC-14). Generation never runs in CI: there are no originals
- *     there and no generator. `--check` reads only committed bytes — every manifest row has a file,
+ *     there and no generator. `--check` reads the manifest, the committed site-origin copies under
+ *     `public/media/` (always) and the derived tree (where it exists) — every manifest row has a file,
  *     every file has a row, every checksum matches, every declared box matches the slot's ratio,
  *     and the header still equals the pinned pipeline — so a deleted file, an extra file, a
  *     one-byte edit or an un-regenerated option change each fail with the path named.
@@ -51,6 +54,11 @@ import { fileURLToPath } from "node:url";
 import { format as formatWithPrettier, resolveConfig } from "prettier";
 import sharp from "sharp";
 
+import {
+  COMMITTED_MEDIA_DIR,
+  COMMITTED_MEDIA_SLOTS,
+  DERIVED_MEDIA_DIR,
+} from "./budgets.ts";
 import {
   MediaFileSchema,
   MediaVariantsFileSchema,
@@ -84,8 +92,13 @@ export const MEDIA_MANIFEST_PATH = `${SEED_DATA_DIR}/media.json`;
 /** The variant manifest this CLI writes, relative to the repository root. */
 export const VARIANT_MANIFEST_PATH = `${SEED_DATA_DIR}/media-variants.json`;
 
-/** Where the derived bytes go in Phase 0 (deleted in TASK-082's R2 flip, spec 006 AC-27). */
-export const MEDIA_OUTPUT_DIR = "public/media";
+/**
+ * Where the derived bytes go. `.local/media/` since TASK-138: git-ignored, like the originals,
+ * because the bytes now live in `flowersoverseas-media` and `scripts/media-upload.ts` puts them
+ * there from this directory. It is `seed/budgets.ts`'s constant so that the gate over these
+ * files and the CLI that writes them cannot name two different directories.
+ */
+export const MEDIA_OUTPUT_DIR = DERIVED_MEDIA_DIR;
 
 /** Where the git-ignored originals live for the generation loop (spec 006 §13 Q6). */
 export const ORIGINALS_DIR = ".local/imagery/originals";
@@ -129,6 +142,23 @@ export function variantFilePath(
   format: MediaFormat,
 ): string {
   return `${MEDIA_OUTPUT_DIR}/${variantLeaf(assetId, width, format)}`;
+}
+
+/**
+ * The repository-relative path of a variant's **committed** copy, for an asset in one of
+ * `COMMITTED_MEDIA_SLOTS` — the file `staticVariantLoader` addresses as `/media/{leaf}`.
+ */
+export function committedVariantFilePath(
+  assetId: string,
+  width: number,
+  format: MediaFormat,
+): string {
+  return `${COMMITTED_MEDIA_DIR}/${variantLeaf(assetId, width, format)}`;
+}
+
+/** Whether an asset's variants are committed and served from the site's own origin (TASK-138). */
+export function isCommittedSlot(slot: MediaSlot | undefined): boolean {
+  return slot !== undefined && COMMITTED_MEDIA_SLOTS.includes(slot);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -487,6 +517,7 @@ export async function generateVariants(options: {
 
     const variants = await deriveVariants(asset, bytes, pipeline);
     const written = new Set<string>();
+    const committed = isCommittedSlot(asset.slot);
     for (const variant of variants) {
       const path = variantFilePath(
         asset.id,
@@ -496,9 +527,28 @@ export async function generateVariants(options: {
       mkdirSync(join(root, MEDIA_OUTPUT_DIR, asset.id), { recursive: true });
       writeFileSync(join(root, path), variant.data);
       written.add(path);
+      if (committed) {
+        // The site-origin copy (TASK-138's split): the same bytes, so the committed file, the
+        // derived file and the object in the bucket can never be three different photographs.
+        const copy = committedVariantFilePath(
+          asset.id,
+          variant.row.width,
+          variant.row.format,
+        );
+        mkdirSync(join(root, COMMITTED_MEDIA_DIR, asset.id), {
+          recursive: true,
+        });
+        writeFileSync(join(root, copy), variant.data);
+        written.add(copy);
+      }
       derivedRows.push(variant.row);
     }
-    report.removed.push(...removeOrphans(root, asset.id, written));
+    report.removed.push(
+      ...removeOrphans(root, MEDIA_OUTPUT_DIR, asset.id, written),
+      ...(committed
+        ? removeOrphans(root, COMMITTED_MEDIA_DIR, asset.id, written)
+        : []),
+    );
     report.derived.push({
       assetId: asset.id,
       files: variants.length,
@@ -539,14 +589,15 @@ function sortRows(
  */
 function removeOrphans(
   root: string,
+  base: string,
   assetId: string,
   written: ReadonlySet<string>,
 ): string[] {
-  const directory = join(root, MEDIA_OUTPUT_DIR, assetId);
+  const directory = join(root, base, assetId);
   if (!existsSync(directory)) return [];
   const removed: string[] = [];
   for (const leaf of readdirSync(directory).sort()) {
-    const path = `${MEDIA_OUTPUT_DIR}/${assetId}/${leaf}`;
+    const path = `${base}/${assetId}/${leaf}`;
     if (written.has(path)) continue;
     rmSync(join(root, path), { recursive: true });
     removed.push(path);
@@ -574,6 +625,19 @@ export interface CheckReport {
   readonly rows: number;
   readonly files: number;
   /**
+   * Whether a derived tree was there to check at all. `false` on a clean clone and on every CI
+   * runner since TASK-138 — the bytes are git-ignored — and the flag is reported rather than
+   * inferred from `files === 0` so that "no tree" and "an empty tree" cannot be confused, and so
+   * that a reader of the CI log can see which half of the check ran.
+   */
+  readonly derivedTreePresent: boolean;
+  /**
+   * Files under `public/media/` — the committed site-origin copies (`COMMITTED_MEDIA_SLOTS`).
+   * Checked on **every** runner, CI included, because they are in the repository: a missing one
+   * is a 404 on the home page's LCP image, and an extra one is committed bytes no page requests.
+   */
+  readonly committedFiles: number;
+  /**
    * The bytes of every file the manifest lists — the input to spec 006 AC-15's 6 MB cap, printed
    * rather than enforced: the cap is `pnpm seed:check`'s rule 9 (TASK-075) and the committed set
    * is TASK-080's. (The field is not called `total…` because `fo/no-float-money` reads that word
@@ -583,13 +647,24 @@ export interface CheckReport {
 }
 
 /**
- * Verify the committed tree: manifest ↔ files ↔ checksums, plus the two invariants a hand edit
- * would break — the header still equals the pinned pipeline, and every row's box is the one the
- * slot's declared aspect ratio gives at that width.
+ * Verify the manifest, and the files wherever they exist: manifest ↔ files ↔ checksums, plus the
+ * invariants a hand edit would break — the header still equals the pinned pipeline, every row's
+ * box is the one the slot's declared aspect ratio gives at that width, every `objectKey` and
+ * `variant` is the canonical one.
+ *
+ * **Two halves since TASK-138, and the split is deliberate.** The derived bytes are no longer
+ * committed, so a clean clone and every CI runner have no files to read. The manifest half —
+ * which is every rule above — runs *always*, because the manifest is committed, is what both the
+ * loader and the uploader read, and is therefore the artefact a review can actually catch a fault
+ * in. The file half runs wherever `.local/media/` exists (the founder's machine, immediately
+ * after a derivation, and before every upload), and there it is exact: byte count and SHA-256 per
+ * file, plus an orphan check in the other direction. What CI loses by not holding the bytes it
+ * gets back at the only moment it matters — `scripts/media-upload.ts` runs this same check and
+ * refuses to put a single object into the bucket while it reports a problem.
  *
  * No `sharp` call and no image decode: the checksum already ties the recorded width, height and
- * byte count to those exact bytes, so re-decoding would only add a dependency to the one mode that
- * runs in CI.
+ * byte count to those exact bytes, so re-decoding would only add a dependency to the mode that
+ * runs most often.
  */
 export function checkVariants(options: {
   readonly root: string;
@@ -607,6 +682,8 @@ export function checkVariants(options: {
       ],
       rows: 0,
       files: 0,
+      derivedTreePresent: false,
+      committedFiles: 0,
       manifestBytes: 0,
     };
   }
@@ -626,12 +703,21 @@ export function checkVariants(options: {
     readMediaAssets(root).map((asset) => [asset.id, asset.slot]),
   );
   const expectedFiles = new Set<string>();
+  const expectedCommitted = new Set<string>();
+  const derivedTreePresent = existsSync(join(root, MEDIA_OUTPUT_DIR));
 
   for (const row of manifest.rows) {
     const path = variantFilePath(row.assetId, row.width, row.format);
     expectedFiles.add(path);
 
     const slot = slots.get(row.assetId);
+    // The committed half (TASK-138's split) runs on **every** runner: these bytes are in the
+    // repository, and `staticVariantLoader` sends the home page's LCP request straight at them.
+    if (isCommittedSlot(slot)) {
+      const copy = committedVariantFilePath(row.assetId, row.width, row.format);
+      expectedCommitted.add(copy);
+      problems.push(...fileProblems(root, copy, row));
+    }
     if (slot === undefined) {
       problems.push(
         `${VARIANT_MANIFEST_PATH}: row \`${path}\` names \`${row.assetId}\`, which is not an asset in ${MEDIA_MANIFEST_PATH}`,
@@ -657,31 +743,28 @@ export function checkVariants(options: {
       );
     }
 
-    const absolute = join(root, path);
-    if (!existsSync(absolute)) {
+    // No derived tree: the manifest is checked on its own terms and the byte-level half is
+    // reported as not run (see the header). Reporting 118 "missing file" problems for a tree
+    // nobody is expected to hold would turn the gate into noise, and noise is how a real missing
+    // file gets scrolled past.
+    if (!derivedTreePresent) continue;
+
+    problems.push(...fileProblems(root, path, row));
+  }
+
+  for (const path of derivedVariantFiles(root)) {
+    if (!expectedFiles.has(path)) {
       problems.push(
-        `${path}: listed in ${VARIANT_MANIFEST_PATH} but the file is missing — a manifest entry without a file renders a 404 (spec 006 AC-14)`,
-      );
-      continue;
-    }
-    const data = readFileSync(absolute);
-    if (data.byteLength !== row.bytes) {
-      problems.push(
-        `${path}: ${String(data.byteLength)} bytes on disk, ${String(row.bytes)} in ${VARIANT_MANIFEST_PATH}`,
-      );
-    }
-    const digest = sha256(data);
-    if (digest !== row.checksumSha256) {
-      problems.push(
-        `${path}: sha256 ${digest} on disk, ${row.checksumSha256} in ${VARIANT_MANIFEST_PATH} — the file was edited without re-deriving (spec 006 AC-14)`,
+        `${path}: no entry in ${VARIANT_MANIFEST_PATH} — every derived byte under ${MEDIA_OUTPUT_DIR}/ is listed with its checksum or it is not uploaded (spec 006 AC-14)`,
       );
     }
   }
 
-  for (const path of committedVariantFiles(root)) {
-    if (!expectedFiles.has(path)) {
+  const committedFiles = committedVariantFiles(root);
+  for (const path of committedFiles) {
+    if (!expectedCommitted.has(path)) {
       problems.push(
-        `${path}: no entry in ${VARIANT_MANIFEST_PATH} — every committed byte under ${MEDIA_OUTPUT_DIR}/ is listed with its checksum or it is not shipped (spec 006 AC-14)`,
+        `${path}: committed under ${COMMITTED_MEDIA_DIR}/ but not a variant of a site-origin slot (${COMMITTED_MEDIA_SLOTS.join(", ")}) in ${VARIANT_MANIFEST_PATH} — only those slots are served from this origin, so any other committed byte is weight under the repository cap that no page requests (TASK-138)`,
       );
     }
   }
@@ -689,13 +772,52 @@ export function checkVariants(options: {
   return {
     problems,
     rows: manifest.rows.length,
-    files: committedVariantFiles(root).length,
+    files: derivedVariantFiles(root).length,
+    derivedTreePresent,
+    committedFiles: committedFiles.length,
     manifestBytes: manifest.rows.reduce((sum, row) => sum + row.bytes, 0),
   };
 }
 
-/** Every file under `public/media/`, repository-relative, sorted — the "every file" of AC-14. */
+/** One file against its manifest row: present, the recorded byte count, the recorded SHA-256. */
+function fileProblems(
+  root: string,
+  path: string,
+  row: { readonly bytes: number; readonly checksumSha256: string },
+): string[] {
+  const absolute = join(root, path);
+  if (!existsSync(absolute)) {
+    return [
+      `${path}: listed in ${VARIANT_MANIFEST_PATH} but the file is missing — a manifest entry without a file renders a 404 (spec 006 AC-14)`,
+    ];
+  }
+  const problems: string[] = [];
+  const data = readFileSync(absolute);
+  if (data.byteLength !== row.bytes) {
+    problems.push(
+      `${path}: ${String(data.byteLength)} bytes on disk, ${String(row.bytes)} in ${VARIANT_MANIFEST_PATH}`,
+    );
+  }
+  const digest = sha256(data);
+  if (digest !== row.checksumSha256) {
+    problems.push(
+      `${path}: sha256 ${digest} on disk, ${row.checksumSha256} in ${VARIANT_MANIFEST_PATH} — the file was edited without re-deriving (spec 006 AC-14)`,
+    );
+  }
+  return problems;
+}
+
+/** Every derived file, repository-relative, sorted — the "every file" of AC-14. */
+export function derivedVariantFiles(root: string): readonly string[] {
+  return filesUnder(root, MEDIA_OUTPUT_DIR);
+}
+
+/** Every committed site-origin file under `public/media/`, repository-relative, sorted. */
 export function committedVariantFiles(root: string): readonly string[] {
+  return filesUnder(root, COMMITTED_MEDIA_DIR);
+}
+
+function filesUnder(root: string, base: string): readonly string[] {
   const walk = (relativeDirectory: string): string[] => {
     const absolute = join(root, relativeDirectory);
     if (!existsSync(absolute)) return [];
@@ -708,7 +830,7 @@ export function committedVariantFiles(root: string): readonly string[] {
           : [path.split(sep).join("/")];
       });
   };
-  return walk(MEDIA_OUTPUT_DIR);
+  return walk(base);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -762,8 +884,11 @@ if (isMain) {
       process.stderr.write(`${problem}\n`);
     }
     if (report.problems.length > 0) process.exit(1);
+    const committed = `${String(report.committedFiles)} committed file(s) under ${COMMITTED_MEDIA_DIR}/ matched (${COMMITTED_MEDIA_SLOTS.join(", ")})`;
     process.stdout.write(
-      `${VARIANT_MANIFEST_PATH}: ${String(report.rows)} variant(s), ${String(report.files)} file(s) under ${MEDIA_OUTPUT_DIR}/, ${String(report.manifestBytes)} byte(s), every checksum matched (sharp ${PINNED_SHARP_VERSION}, ${String(ENCODER_CONCURRENCY)} thread)\n`,
+      report.derivedTreePresent
+        ? `${VARIANT_MANIFEST_PATH}: ${String(report.rows)} variant(s), ${String(report.files)} file(s) under ${MEDIA_OUTPUT_DIR}/, ${String(report.manifestBytes)} byte(s), every checksum matched; ${committed} (sharp ${PINNED_SHARP_VERSION}, ${String(ENCODER_CONCURRENCY)} thread)\n`
+        : `${VARIANT_MANIFEST_PATH}: ${String(report.rows)} variant(s), ${String(report.manifestBytes)} byte(s), manifest clean; ${committed} — no derived tree under ${MEDIA_OUTPUT_DIR}/, so the derived checksum half did not run (every other slot lives in the media bucket since TASK-138; run \`pnpm media:variants\` to derive them locally)\n`,
     );
   } else {
     const report = await generateVariants({

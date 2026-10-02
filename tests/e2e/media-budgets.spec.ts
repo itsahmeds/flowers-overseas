@@ -2,8 +2,10 @@
  * Image transfer per page, measured in a real browser (spec 006 §2.5 "Budgets", **AC-15**; T-15;
  * TASK-080).
  *
- * `tests/unit/media-budgets.test.tsx` asserts the *committed* bytes against the 6 MB cap and the
- * per-slot caps, which is the gate that fires before anything is served. This file asserts the
+ * `tests/unit/media-budgets.test.tsx` asserts the *manifest's* byte column against the per-slot
+ * caps, which is the gate that fires before anything is served. (The 6 MB cap on what is still
+ * committed — since TASK-138's split, the home hero's ladder alone, served from this origin — is
+ * `pnpm seed:check` family 9's.) This file asserts the
  * other half of AC-15 — **≤ 204 800 B of image transfer per page at a mobile viewport** — which
  * only a browser can answer, because it is the browser that picks a step out of the `srcset` at
  * its own viewport and device-pixel ratio, and it is the browser that declines to fetch anything

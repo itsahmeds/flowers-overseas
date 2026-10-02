@@ -17,20 +17,18 @@
  * through the manifest seam, the absence of any asset id under `src/app/`, and the reserved box
  * being identical in both states (which is the CLS delta of 0).
  */
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { readdir, readFile, stat } from "node:fs/promises";
 import { join, relative, resolve } from "node:path";
 
 import { renderToStaticMarkup } from "react-dom/server";
 import { NextIntlClientProvider } from "next-intl";
-import { describe, expect, it } from "vitest";
+import { afterAll, describe, expect, it } from "vitest";
 
-import {
-  COMMITTED_MEDIA_BYTE_CAP,
-  COMMITTED_MEDIA_DIR,
-  SLOT_BYTE_CAPS,
-} from "../../seed/budgets.ts";
+import { DERIVED_MEDIA_DIR, SLOT_BYTE_CAPS } from "../../seed/budgets.ts";
+import { checkVariants } from "../../seed/media-variants.ts";
 import type { MediaSlot } from "../../seed/schema/media.ts";
+import { MEDIA_ORIGIN } from "../../src/lib/media-origin.ts";
 import { loadMessages } from "../../src/modules/i18n";
 import { OccasionTiles } from "../../src/modules/ui/home/OccasionTiles.tsx";
 import {
@@ -38,8 +36,14 @@ import {
   setMediaManifest,
 } from "../../src/modules/ui/media/manifest.ts";
 import { isDisplayable } from "../../src/modules/ui/media/resolve.ts";
+import {
+  removeDerivedTrees,
+  writeDerivedTree,
+} from "./support/derived-tree.ts";
 
 const repoRoot = resolve(import.meta.dirname, "../..");
+
+afterAll(removeDerivedTrees);
 
 interface AssetRow {
   readonly id: string;
@@ -72,16 +76,7 @@ const slotOf = new Map(assets.map((asset) => [asset.id, asset.slot]));
 /* T-15 — the committed byte total and the per-slot maxima (AC-15).           */
 /* -------------------------------------------------------------------------- */
 
-describe("T-15: the committed imagery is inside every byte cap (AC-15)", () => {
-  it("is under the 6 MB total the founder accepted until R2 exists (§13 Q4)", () => {
-    const total = variants.reduce((sum, variant) => sum + variant.bytes, 0);
-    expect(total).toBeGreaterThan(0);
-    expect(
-      total,
-      `${String(total)} B committed under ${COMMITTED_MEDIA_DIR}/ against a ${String(COMMITTED_MEDIA_BYTE_CAP)} B cap`,
-    ).toBeLessThanOrEqual(COMMITTED_MEDIA_BYTE_CAP);
-  });
-
+describe("T-15: the imagery in the manifest is inside every byte cap (AC-15)", () => {
   it("keeps every single variant inside its slot's cap, in both formats", () => {
     for (const variant of variants) {
       const slot = slotOf.get(variant.assetId);
@@ -94,8 +89,34 @@ describe("T-15: the committed imagery is inside every byte cap (AC-15)", () => {
     }
   });
 
-  it("commits a file for every manifest row and a row for every file (AC-14's tree half)", async () => {
-    const root = join(repoRoot, COMMITTED_MEDIA_DIR);
+  it("catches a row that disagrees with its file, and agrees with every real file this machine holds (AC-14's tree half)", async () => {
+    // TASK-138 git-ignored the derived bytes (`.local/media/`) because they live in the media
+    // bucket, so on a clean clone and on every CI runner there is no tree for this half to read.
+    // `/review 94` round 2: the stand-in for that case was `expect(variants.length)
+    // .toBeGreaterThan(0)` — a tautology, reported as AC-14 coverage. What it should assert is
+    // that the comparison *works*, and that needs a tree, so it builds one: a file, and a row
+    // that claims different bytes. `checkVariants()` is the same function `pnpm media:variants
+    // --check` and `scripts/media-upload.ts` both run, so this fires on every machine.
+    const tampered = Buffer.from("not the bytes the row describes");
+    const report = checkVariants({
+      root: writeDerivedTree([
+        {
+          assetId: "home-occasion-birthday",
+          width: 384,
+          format: "avif",
+          data: tampered,
+          recordAs: Buffer.concat([tampered, Buffer.from("!")]),
+        },
+      ]),
+    });
+    expect(report.derivedTreePresent).toBe(true);
+    expect(report.problems.join("\n")).toMatch(
+      /home-occasion-birthday\/384\.avif: \d+ bytes on disk/u,
+    );
+
+    // And, where this machine has just derived the real ladder, every row against its real file.
+    const root = join(repoRoot, DERIVED_MEDIA_DIR);
+    if (!existsSync(root)) return;
     const onDisk = new Map<string, number>();
     for (const assetDir of await readdir(root)) {
       for (const leaf of await readdir(join(root, assetDir))) {
@@ -197,7 +218,7 @@ describe("T-20: landing one asset flips a homepage slot, and nothing else moves 
 
     const after = renderTiles("en");
     expect(isDisplayable(FLIPPED, "en")).toBe(true);
-    expect(after).toContain(`/media/${FLIPPED}/384.avif`);
+    expect(after).toContain(`${MEDIA_ORIGIN}/media/${FLIPPED}/384.avif`);
     expect([...after.matchAll(/<img/g)].length).toBe(
       [...before.matchAll(/<img/g)].length + 1,
     );

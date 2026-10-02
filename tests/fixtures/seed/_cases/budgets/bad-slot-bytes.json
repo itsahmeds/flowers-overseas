@@ -3,19 +3,40 @@
   "rule": "slot-bytes",
   "replaces": "media-variants.json",
   "expect": "above the 18000 B cap for the `occasionTile` slot",
-  "why": "The per-slot half: a 900 KB tile must fail a gate rather than a Lighthouse run (spec 006 §6). The slot comes from the asset's row in `media.json`, so the cap that applies is the one for the place the image is actually rendered. The variants manifest is emptied with the listing so the case tests the cap and nothing else.",
+  "why": "Rule family 9, read from the manifest since TASK-138: a 900 KB tile must fail a gate rather than a Lighthouse run (spec 006 §6). The derived bytes are no longer committed — they are objects in `flowersoverseas-media` — so the cap is enforced against `media-variants.json`'s own `bytes` column, which is the row the loader builds a URL from and the row the uploader uploads. The slot comes from the asset's row in `media.json`, so the cap that applies is the one for the place the image is actually rendered. The case clears the real rows and adds one oversized tile in both formats (an AVIF-only asset would trip the media family too, and a case that tripped two families could pass for the wrong reason), and empties the derived-file listing so the file half of family 7 stays out of it.",
   "ops": [
     {
       "op": "clearRows"
     },
     {
+      "op": "addRow",
+      "row": {
+        "assetId": "home-occasion-birthday",
+        "variant": "384",
+        "width": 384,
+        "height": 384,
+        "format": "avif",
+        "bytes": 900000,
+        "checksumSha256": "1c4a0f4e6f2b8d3a5c7e9b1d3f5a7c9e1b3d5f7a9c1e3b5d7f9a1c3e5b7d9f11",
+        "objectKey": "media/home-occasion-birthday/384.avif"
+      }
+    },
+    {
+      "op": "addRow",
+      "row": {
+        "assetId": "home-occasion-birthday",
+        "variant": "384",
+        "width": 384,
+        "height": 384,
+        "format": "webp",
+        "bytes": 940000,
+        "checksumSha256": "2d5b1a5f7a3c9e4b6d8f0c2e4a6c8e0b2d4f6a8c0e2b4d6f8a0c2e4b6d8f0a22",
+        "objectKey": "media/home-occasion-birthday/384.webp"
+      }
+    },
+    {
       "op": "setMediaFiles",
-      "files": [
-        {
-          "path": "public/media/home-occasion-birthday/828.webp",
-          "bytes": 900000
-        }
-      ]
+      "files": []
     }
   ]
 }

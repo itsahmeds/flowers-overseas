@@ -34,8 +34,10 @@
  *  8. **privacy** — no `@`-shaped, E.164-shaped or postcode-shaped string, no person outside the
  *     allowlist in a person field, no competitor mark, reported with the file **and the JSON
  *     path** (AC-9);
- *  9. **budgets** — committed derived bytes under the 6 MB cap and every variant inside its
- *     slot's cap (`seed/budgets.ts`);
+ *  9. **budgets** — every variant in the manifest inside its slot's byte cap, and the bytes
+ *     still committed under `public/media/` (since TASK-138, only the site-origin `hero` slot)
+ *     under the 6 MB cap (`seed/budgets.ts`). The per-variant caps are read from the manifest
+ *     rows, so they fire on a runner that holds no derived image at all.
  * 10. **calendar** (spec 009 AC-2, §5.1 amendment 2) — a published destination whose picker
  *     renders a calendar carries holiday rows for every calendar year its full 366-day horizon
  *     reaches; every holiday row has a `nameKey`; every dated occasion rule is one the evaluator
@@ -124,6 +126,8 @@ import {
 import {
   COMMITTED_MEDIA_BYTE_CAP,
   COMMITTED_MEDIA_DIR,
+  COMMITTED_MEDIA_SLOTS,
+  DERIVED_MEDIA_DIR,
   SLOT_BYTE_CAPS,
 } from "./budgets.ts";
 import {
@@ -237,9 +241,12 @@ export function seedCheckExitCode(problems: readonly SeedProblem[]): number {
 /* The tree.                                                                  */
 /* -------------------------------------------------------------------------- */
 
-/** A committed derived image file and its size, for family 9. */
-export interface CommittedMediaFile {
-  /** Repo-relative, POSIX-separated: `public/media/home-hero/1920.avif`. */
+/**
+ * An image file on disk and its size: a committed site-origin copy under `public/media/`, or a
+ * derived file under `.local/media/` where that tree exists (families 7 and 9).
+ */
+export interface MediaFile {
+  /** Repo-relative, POSIX-separated: `public/media/home-hero/1200.avif`. */
   readonly path: string;
   readonly bytes: number;
 }
@@ -274,7 +281,13 @@ export interface SeedTree {
   readonly floristSentences: ReadonlyMap<string, string>;
   /** Raw `content/imagery/prompts/{key}.json`, keyed by file stem. */
   readonly prompts: ReadonlyMap<string, unknown>;
-  readonly mediaFiles: readonly CommittedMediaFile[];
+  /**
+   * Image files under `public/media/` (committed: the site-origin `hero` slot since TASK-138's
+   * split, present on every runner) and under `.local/media/` (derived: **empty on a clean clone
+   * and in CI**, since every other slot lives in the bucket). One listing, told apart by prefix;
+   * the manifest — committed — carries the byte count each file is checked against.
+   */
+  readonly mediaFiles: readonly MediaFile[];
   /**
    * The instant family 10 judges the holiday horizon from (spec 009 AC-2). Read once by
    * `readSeedTree()`, as the rest of the I/O is; a case or a test pins it, and `--as-of=` replays
@@ -371,12 +384,13 @@ export async function readSeedTree(
     prompts.set(stem, readJsonIfPresent(join(promptsDir, `${stem}.json`)));
   }
 
-  const mediaFiles = listFilesRecursively(join(root, COMMITTED_MEDIA_DIR)).map(
-    (path) => ({
-      path: relative(root, path).split(/[\\/]/u).join(posix.sep),
-      bytes: statSync(path).size,
-    }),
-  );
+  const mediaFiles = [
+    ...listFilesRecursively(join(root, COMMITTED_MEDIA_DIR)),
+    ...listFilesRecursively(join(root, DERIVED_MEDIA_DIR)),
+  ].map((path) => ({
+    path: relative(root, path).split(/[\\/]/u).join(posix.sep),
+    bytes: statSync(path).size,
+  }));
 
   const floristSentences = new Map<string, string>();
   for (const locale of copyLocales) {
@@ -1539,18 +1553,30 @@ function checkMedia(tree: SeedTree, parsed: Parsed): SeedProblem[] {
   // gate that failed on its absence would block the dataset on a task that reads it.
   const variants = parsed.variants ?? [];
   if (variants.length > 0) {
-    const committed = new Map(
-      tree.mediaFiles.map((file) => [file.path, file.bytes]),
+    const derivedFiles = tree.mediaFiles.filter((file) =>
+      file.path.startsWith(`${DERIVED_MEDIA_DIR}/`),
     );
-    for (const variant of variants) {
-      const path = `${COMMITTED_MEDIA_DIR}/${variant.assetId}/${String(variant.width)}.${variant.format}`;
-      const bytes = committed.get(path);
+    const committedFiles = tree.mediaFiles.filter((file) =>
+      file.path.startsWith(`${COMMITTED_MEDIA_DIR}/`),
+    );
+    const derived = new Map(
+      derivedFiles.map((file) => [file.path, file.bytes]),
+    );
+    // The file half runs **where the files are** (TASK-138). The derived bytes are git-ignored
+    // now that they live in the media bucket, so a clean clone and every CI runner hold none of
+    // them, and a rule that reported 118 missing files there would be noise that hides the one
+    // real miss. Where a derived tree does exist — the founder's machine, and every upload,
+    // because `scripts/media-upload.ts` runs the same check before it writes a single object —
+    // the rule is exactly as strict as it was.
+    for (const variant of derived.size === 0 ? [] : variants) {
+      const path = `${DERIVED_MEDIA_DIR}/${variant.assetId}/${String(variant.width)}.${variant.format}`;
+      const bytes = derived.get(path);
       if (bytes === undefined) {
         at(
           VARIANTS_FILE,
           `${variant.assetId}/${String(variant.width)}.${variant.format}`,
           "variant-file",
-          `is in the manifest with no file at \`${path}\`: a 404 on a variant degrades to the placeholder, and \`pnpm media:variants --check\` is what makes that impossible for committed assets (AC-14)`,
+          `is in the manifest with no file at \`${path}\`: a 404 on a variant degrades to the placeholder, and \`pnpm media:variants --check\` is what makes that impossible before an upload (AC-14)`,
         );
         continue;
       }
@@ -1566,18 +1592,65 @@ function checkMedia(tree: SeedTree, parsed: Parsed): SeedProblem[] {
     const inManifest = new Set(
       variants.map(
         (variant) =>
-          `${COMMITTED_MEDIA_DIR}/${variant.assetId}/${String(variant.width)}.${variant.format}`,
+          `${DERIVED_MEDIA_DIR}/${variant.assetId}/${String(variant.width)}.${variant.format}`,
       ),
     );
-    for (const file of tree.mediaFiles) {
+    for (const file of derivedFiles) {
       if (!inManifest.has(file.path)) {
         at(
           VARIANTS_FILE,
           file.path,
           "variant-orphan",
-          "is committed under `public/media/` with no manifest entry: every file has an entry and every entry has a file (AC-14)",
+          "is derived under `.local/media/` with no manifest entry: every file has an entry and every entry has a file, or an unlisted byte reaches the bucket (AC-14)",
         );
       }
+    }
+
+    // The committed half (TASK-138's split, founder 2026-10-03): the `hero` slot is served from
+    // this origin by `staticVariantLoader`, so its variants must be committed under
+    // `public/media/` — on **every** runner, because they are in the repository — and nothing
+    // else may be. A missing file is a 404 on the home page's LCP image; an extra one is bytes
+    // under the repository cap that no page requests.
+    const committed = new Map(
+      committedFiles.map((file) => [file.path, file.bytes]),
+    );
+    const committedSlots = new Set<string>(COMMITTED_MEDIA_SLOTS);
+    const expectedCommitted = new Set<string>();
+    for (const variant of variants) {
+      const slot = slotOfAsset(variant.assetId, parsed.media);
+      if (slot === undefined || !committedSlots.has(slot)) continue;
+      const leaf = `${variant.assetId}/${String(variant.width)}.${variant.format}`;
+      const path = `${COMMITTED_MEDIA_DIR}/${leaf}`;
+      expectedCommitted.add(path);
+      const bytes = committed.get(path);
+      if (bytes === undefined) {
+        at(
+          VARIANTS_FILE,
+          leaf,
+          "variant-file",
+          `is in the manifest with no file at \`${path}\`: the \`${slot}\` slot is served from the site's own origin, so a missing committed file is a 404 on the page's LCP image (TASK-138)`,
+        );
+      } else if (bytes !== variant.bytes) {
+        at(
+          VARIANTS_FILE,
+          leaf,
+          "variant-bytes",
+          `records ${String(variant.bytes)} B but the committed file \`${path}\` is ${String(bytes)} B: the manifest is the only source of widths, bytes and checksums for both loaders (AC-14)`,
+        );
+      }
+    }
+    for (const file of committedFiles) {
+      if (expectedCommitted.has(file.path)) continue;
+      // An asset `media.json` does not know is family 9's `unknown-slot`; reporting it here as
+      // well would make one stray file two problems.
+      const assetId = file.path.split("/").at(-2) ?? "";
+      if (slotOfAsset(assetId, parsed.media) === undefined) continue;
+      at(
+        VARIANTS_FILE,
+        file.path,
+        "committed-slot",
+        `is committed under \`${COMMITTED_MEDIA_DIR}/\` but is not a manifest variant of a site-origin slot (${[...committedSlots].join(", ")}): every other slot is served from the media bucket, so a committed copy is weight under the repository cap that no page requests (TASK-138)`,
+      );
     }
 
     // **No asset ships AVIF only** (TASK-080, closing the `/review 49` carry-forward).
@@ -1824,30 +1897,49 @@ function checkPrivacy(tree: SeedTree): SeedProblem[] {
 /* Family 9: byte budgets.                                                    */
 /* -------------------------------------------------------------------------- */
 
-/** The slot a committed variant belongs to, via its asset in `media.json`. */
-function slotOfPath(
-  path: string,
+/** The slot an asset renders in, from its row in `media.json`. */
+function slotOfAsset(
+  assetId: string,
   media: readonly MediaAssetManifest[],
 ): MediaSlot | undefined {
-  const assetId = path.split("/").at(-2);
   return media.find((asset) => asset.id === assetId)?.slot;
 }
 
+/**
+ * Family 9: the per-slot caps **read from the manifest**, and the committed total (TASK-138).
+ *
+ * The rule the founder cares about is unchanged and is the one spec 006 §6 states: *a 900 KB hero
+ * fails a gate rather than a Lighthouse run*. The per-slot caps read the byte count from
+ * `media-variants.json`'s `bytes` column — the same row the loader builds the URL from, the same
+ * row the uploader uploads, and a committed, reviewable line in a diff — because most of those
+ * bytes are objects in `flowersoverseas-media` and no runner holds them. Nothing can be served
+ * that has no row (both loaders address files by the manifest's own rows), and the committed
+ * copies are tied to their rows by family 7 here and by `pnpm media:variants --check`.
+ *
+ * The 6 MB total still caps what is committed to the repository: since the split (founder,
+ * 2026-10-03, option (a)) that is the `hero` slot's ladder alone, so the cap stopped governing
+ * the catalogue — which is what lets all 84 products be photographed — without going away. Page
+ * weight is still bounded per *page* in a real browser by `tests/e2e/media-budgets.spec.ts`,
+ * which counts every image response whatever origin serves it.
+ */
 function checkBudgets(tree: SeedTree, parsed: Parsed): SeedProblem[] {
   const problems: SeedProblem[] = [];
-  const total = tree.mediaFiles.reduce((sum, file) => sum + file.bytes, 0);
+  const committedFiles = tree.mediaFiles.filter((file) =>
+    file.path.startsWith(`${COMMITTED_MEDIA_DIR}/`),
+  );
+  const total = committedFiles.reduce((sum, file) => sum + file.bytes, 0);
   if (total > COMMITTED_MEDIA_BYTE_CAP) {
     problems.push({
       family: "budgets",
       file: COMMITTED_MEDIA_DIR,
       key: "total",
       rule: "total-bytes",
-      message: `holds ${String(total)} B of derived imagery, above the ${String(COMMITTED_MEDIA_BYTE_CAP)} B cap (spec 006 §13 Q4: derived bytes are committed only until R2 exists, and only capped)`,
+      message: `holds ${String(total)} B of committed imagery, above the ${String(COMMITTED_MEDIA_BYTE_CAP)} B cap (spec 006 §13 Q4; since TASK-138 only the site-origin slots are committed, and only capped)`,
     });
   }
-  for (const file of tree.mediaFiles) {
-    const slot = slotOfPath(file.path, parsed.media);
-    if (slot === undefined) {
+  for (const file of committedFiles) {
+    const assetId = file.path.split("/").at(-2) ?? "";
+    if (slotOfAsset(assetId, parsed.media) === undefined) {
       problems.push({
         family: "budgets",
         file: file.path,
@@ -1856,16 +1948,30 @@ function checkBudgets(tree: SeedTree, parsed: Parsed): SeedProblem[] {
         message:
           "is committed under `public/media/` but its asset id is not in `media.json`, so no per-slot cap applies to it",
       });
+    }
+  }
+  for (const variant of parsed.variants ?? []) {
+    const leaf = `${variant.assetId}/${String(variant.width)}.${variant.format}`;
+    const slot = slotOfAsset(variant.assetId, parsed.media);
+    if (slot === undefined) {
+      problems.push({
+        family: "budgets",
+        file: VARIANTS_FILE,
+        key: leaf,
+        rule: "unknown-slot",
+        message:
+          "is a variant of an asset that is not in `media.json`, so no per-slot cap applies to it",
+      });
       continue;
     }
     const cap = SLOT_BYTE_CAPS[slot];
-    if (file.bytes > cap) {
+    if (variant.bytes > cap) {
       problems.push({
         family: "budgets",
-        file: file.path,
-        key: slot,
+        file: VARIANTS_FILE,
+        key: leaf,
         rule: "slot-bytes",
-        message: `is ${String(file.bytes)} B, above the ${String(cap)} B cap for the \`${slot}\` slot: an oversized image must fail a gate before the bytes are committed, not a Lighthouse run after they are served (spec 006 §2.5, §6)`,
+        message: `is ${String(variant.bytes)} B, above the ${String(cap)} B cap for the \`${slot}\` slot: an oversized image must fail a gate before the bytes are uploaded, not a Lighthouse run after they are served (spec 006 §2.5, §6)`,
       });
     }
   }
@@ -2556,21 +2662,37 @@ export function seedHealthReport(tree: SeedTree): string {
     "",
   );
 
-  lines.push("#### committed imagery", "");
-  const mediaBytes = tree.mediaFiles.reduce((sum, file) => sum + file.bytes, 0);
+  lines.push("#### imagery in the manifest", "");
+  const rows = parsed.variants ?? [];
+  const storedBytes = rows.reduce((sum, variant) => sum + variant.bytes, 0);
+  const committedFiles = tree.mediaFiles.filter((file) =>
+    file.path.startsWith(`${COMMITTED_MEDIA_DIR}/`),
+  );
+  const committedBytes = committedFiles.reduce(
+    (sum, file) => sum + file.bytes,
+    0,
+  );
   lines.push(
-    `${String(tree.mediaFiles.length)} files, ${String(mediaBytes)} B of ${String(COMMITTED_MEDIA_BYTE_CAP)} B (${percent(mediaBytes / COMMITTED_MEDIA_BYTE_CAP)} of the spec 006 §13 Q4 cap).`,
+    // The manifest total is the bucket's growth curve and the reviewer's sense of scale: reported,
+    // not capped, since the per-slot cap in each row is what is enforced. The committed total is
+    // capped: since TASK-138 it is the site-origin `hero` ladder alone.
+    `${String(rows.length)} variant(s), ${String(storedBytes)} B in all (reported, not capped: the per-slot caps below are enforced per variant).`,
     "",
-    "| slot | cap (B) | largest committed (B) | files |",
+    `Committed under \`${COMMITTED_MEDIA_DIR}/\` (site origin: ${COMMITTED_MEDIA_SLOTS.join(", ")}): ${String(committedFiles.length)} files, ${String(committedBytes)} B of ${String(COMMITTED_MEDIA_BYTE_CAP)} B (${percent(committedBytes / COMMITTED_MEDIA_BYTE_CAP)} of the spec 006 §13 Q4 cap).`,
+    "",
+    "| slot | cap (B) | largest variant (B) | variants |",
     "|---|---|---|---|",
   );
   for (const slot of mediaSlots) {
-    const files = tree.mediaFiles.filter(
-      (file) => slotOfPath(file.path, parsed.media) === slot,
+    const ofSlot = rows.filter(
+      (variant) => slotOfAsset(variant.assetId, parsed.media) === slot,
     );
-    const largest = files.reduce((max, file) => Math.max(max, file.bytes), 0);
+    const largest = ofSlot.reduce(
+      (max, variant) => Math.max(max, variant.bytes),
+      0,
+    );
     lines.push(
-      `| ${slot} | ${String(SLOT_BYTE_CAPS[slot])} | ${files.length === 0 ? "—" : String(largest)} | ${String(files.length)} |`,
+      `| ${slot} | ${String(SLOT_BYTE_CAPS[slot])} | ${ofSlot.length === 0 ? "—" : String(largest)} | ${String(ofSlot.length)} |`,
     );
   }
   const withVariants = new Set(

@@ -68,17 +68,23 @@ const OpSchema = z.discriminatedUnion("op", [
    * family 7 — collateral that says nothing about the byte budget the fixture is there to test.
    */
   z.object({ op: z.literal("clearRows") }).strict(),
-  /** Tree-level: the committed derived-image listing family 9 measures. */
+  /**
+   * Tree-level: the derived-image listing family 7's file half reads.
+   *
+   * **An empty listing is legal and load-bearing since TASK-138.** The derived bytes are
+   * git-ignored now that they live in `flowersoverseas-media`, so "no derived tree" is the state
+   * of every CI runner and of a clean clone — and a case that must not be disturbed by whatever
+   * happens to sit in a founder's `.local/media/` says so by setting the listing to empty,
+   * rather than passing on a runner and failing on the machine that derived the images.
+   */
   z
     .object({
       op: z.literal("setMediaFiles"),
-      files: z
-        .array(
-          z
-            .object({ path: z.string().min(3), bytes: z.number().int().min(0) })
-            .strict(),
-        )
-        .min(1),
+      files: z.array(
+        z
+          .object({ path: z.string().min(3), bytes: z.number().int().min(0) })
+          .strict(),
+      ),
     })
     .strict(),
 ]);

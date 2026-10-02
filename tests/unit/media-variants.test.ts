@@ -19,10 +19,12 @@
  */
 import { createHash } from "node:crypto";
 import {
+  cpSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  renameSync,
   rmSync,
   writeFileSync,
 } from "node:fs";
@@ -32,12 +34,15 @@ import { join, resolve } from "node:path";
 import sharp from "sharp";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
+import { COMMITTED_MEDIA_DIR } from "../../seed/budgets.ts";
 import {
   MEDIA_OUTPUT_DIR,
   VARIANT_MANIFEST_PATH,
   assertPinnedEncoder,
   checkVariants,
+  committedVariantFilePath,
   committedVariantFiles,
+  derivedVariantFiles,
   deriveVariants,
   findOriginal,
   generateVariants,
@@ -594,9 +599,9 @@ describe("T-13: two runs are byte-identical; one changed option is a whole-manif
   }, ENCODE_TIMEOUT);
 
   it("produces byte-identical files across two runs", () => {
-    const files = committedVariantFiles(first);
+    const files = derivedVariantFiles(first);
     expect(files).toHaveLength(FIXTURES.length * 3);
-    expect(committedVariantFiles(second)).toEqual(files);
+    expect(derivedVariantFiles(second)).toEqual(files);
     for (const path of files) {
       expect(
         Buffer.compare(
@@ -618,7 +623,7 @@ describe("T-13: two runs are byte-identical; one changed option is a whole-manif
     "re-running in the same tree rewrites the same bytes",
     async () => {
       const before = readFileSync(join(first, VARIANT_MANIFEST_PATH), "utf8");
-      const files = committedVariantFiles(first).map(
+      const files = derivedVariantFiles(first).map(
         (path) => [path, readFileSync(join(first, path))] as const,
       );
       await generateVariants({ root: first, pipeline });
@@ -867,17 +872,175 @@ describe("T-14: --check fails on a deleted, an added and a one-byte-edited file 
     expect(report.problems[0]).toContain(VARIANT_MANIFEST_PATH);
   });
 
-  it("passes on the committed tree, which now carries the demo bytes (TASK-080)", () => {
-    // The Phase-0 state since TASK-080: the founder's 31 approved assets derived into the ladder
-    // `PHASE0_SLOT_WIDTHS` chose, committed under `public/media/`, with the manifest as the only
-    // source of widths, bytes and checksums for them. `--check` is what makes a deleted file, an
-    // extra file or a one-byte edit fail in CI, where nothing can be re-derived (AC-14).
+  it("passes on this repository, whose derived bytes now live in the bucket (TASK-138)", () => {
+    // Since TASK-138 the derived tree is git-ignored: the 31 approved assets are objects in
+    // `flowersoverseas-media` and the manifest is the committed record of them. So `--check`
+    // here verifies the manifest — pinned pipeline, canonical object keys, declared boxes — and
+    // reports that the checksum half did not run, which is exactly what it should say on a
+    // runner that holds no image. Where the tree *does* exist (the tests above, a founder's
+    // machine, every upload) the byte-level half is unchanged and as strict as ever.
     const report = checkVariants({ root: repoRoot });
     expect(report.problems).toEqual([]);
     expect(report.rows).toBeGreaterThan(0);
-    expect(committedVariantFiles(repoRoot)).toHaveLength(report.rows);
+    // The committed half always runs here, CI included: `home-hero`'s ten variants are the only
+    // bytes under `public/media/` since the split (founder, 2026-10-03, option (a)).
+    expect(report.committedFiles).toBe(10);
+    expect(
+      committedVariantFiles(repoRoot).every((path) =>
+        path.startsWith(`${COMMITTED_MEDIA_DIR}/home-hero/`),
+      ),
+    ).toBe(true);
+    expect(report.derivedTreePresent).toBe(
+      existsSync(join(repoRoot, MEDIA_OUTPUT_DIR)),
+    );
+    if (!report.derivedTreePresent) {
+      expect(derivedVariantFiles(repoRoot)).toHaveLength(0);
+    }
     expect(
       existsSync(join(repoRoot, SEED_DATA_DIR, "media-variants.json")),
     ).toBe(true);
+  });
+
+  it("checks the manifest even with no derived tree, and says the checksum half did not run", async () => {
+    // The CI shape of the gate (TASK-138). A manifest fault must still fail here, because this
+    // is the only place it can: a row whose `objectKey` is not the canonical one would upload
+    // to one key and be addressed at another.
+    const bare = trackedRoot(await makeRoot({ withOriginals: false }));
+    // A CI runner holds the committed site-origin copies (they are in the repository) and no
+    // derived tree; the bare root mirrors exactly that.
+    cpSync(join(root, COMMITTED_MEDIA_DIR), join(bare, COMMITTED_MEDIA_DIR), {
+      recursive: true,
+    });
+    const rows = readVariantManifest(root)?.rows ?? [];
+    expect(rows.length).toBeGreaterThan(0);
+    writeFileSync(
+      join(bare, VARIANT_MANIFEST_PATH),
+      await serialiseVariantManifest(
+        bare,
+        rows.map((row, index) =>
+          index === 0 ? { ...row, objectKey: "media/elsewhere/1.avif" } : row,
+        ),
+        pipeline,
+      ),
+    );
+
+    const report = checkVariants({ root: bare, pipeline });
+
+    expect(report.derivedTreePresent).toBe(false);
+    expect(report.files).toBe(0);
+    expect(report.problems).toHaveLength(1);
+    expect(report.problems[0]).toContain("objectKey");
+  });
+});
+
+describe("TASK-138's split: the `hero` slot is committed too, and checked on every runner", () => {
+  const pipeline = reducedPipeline({ widths: [384], ogJpegWidth: 384 });
+  const HERO = FIXTURES[2].id;
+  const BUCKET = FIXTURES[0].id;
+  let root: string;
+
+  beforeAll(async () => {
+    root = trackedRoot(await makeRoot());
+    await generateVariants({ root, pipeline });
+  }, ENCODE_TIMEOUT);
+
+  /** Run `check` with the derived tree moved away: the shape of every CI runner. */
+  function withoutDerivedTree<T>(check: () => T): T {
+    const away = join(root, ".local/media-away");
+    renameSync(join(root, MEDIA_OUTPUT_DIR), away);
+    try {
+      return check();
+    } finally {
+      renameSync(away, join(root, MEDIA_OUTPUT_DIR));
+    }
+  }
+
+  it("writes the `hero` ladder to public/media/ byte for byte, and no other slot", () => {
+    expect(FIXTURES[2].slot).toBe("hero");
+    const committed = committedVariantFiles(root);
+
+    expect(committed).toEqual([
+      `${COMMITTED_MEDIA_DIR}/${HERO}/384.avif`,
+      `${COMMITTED_MEDIA_DIR}/${HERO}/384.jpeg`,
+      `${COMMITTED_MEDIA_DIR}/${HERO}/384.webp`,
+    ]);
+    for (const path of committed) {
+      const twin = path.replace(
+        `${COMMITTED_MEDIA_DIR}/`,
+        `${MEDIA_OUTPUT_DIR}/`,
+      );
+      expect(
+        Buffer.compare(
+          readFileSync(join(root, path)),
+          readFileSync(join(root, twin)),
+        ),
+        path,
+      ).toBe(0);
+    }
+  });
+
+  it("passes with the committed copies in place, with or without a derived tree", () => {
+    const report = checkVariants({ root, pipeline });
+    expect(report.problems).toEqual([]);
+    expect(report.committedFiles).toBe(3);
+
+    const bare = withoutDerivedTree(() => checkVariants({ root, pipeline }));
+    expect(bare.derivedTreePresent).toBe(false);
+    expect(bare.problems).toEqual([]);
+    expect(bare.committedFiles).toBe(3);
+  });
+
+  it("fails on a deleted committed copy with no derived tree — the CI condition", () => {
+    const victim = committedVariantFilePath(HERO, 384, "avif");
+    const data = readFileSync(join(root, victim));
+    rmSync(join(root, victim));
+    try {
+      const report = withoutDerivedTree(() =>
+        checkVariants({ root, pipeline }),
+      );
+      expect(report.derivedTreePresent).toBe(false);
+      expect(report.problems).toHaveLength(1);
+      expect(report.problems[0]).toContain(victim);
+      expect(report.problems[0]).toMatch(/the file is missing/u);
+    } finally {
+      writeFileSync(join(root, victim), data);
+    }
+  });
+
+  it("fails on a one-byte edit of a committed copy, naming the file and the checksum", () => {
+    const victim = committedVariantFilePath(HERO, 384, "webp");
+    const data = readFileSync(join(root, victim));
+    const edited = Buffer.from(data);
+    edited[edited.length - 1] = (edited[edited.length - 1] ?? 0) ^ 0xff;
+    writeFileSync(join(root, victim), edited);
+    try {
+      const report = withoutDerivedTree(() =>
+        checkVariants({ root, pipeline }),
+      );
+      expect(report.problems).toHaveLength(1);
+      expect(report.problems[0]).toContain(victim);
+      expect(report.problems[0]).toMatch(/sha256/u);
+    } finally {
+      writeFileSync(join(root, victim), data);
+    }
+  });
+
+  it("fails on a committed copy of a slot the bucket serves, naming the file", () => {
+    const stray = committedVariantFilePath(BUCKET, 384, "avif");
+    mkdirSync(join(root, COMMITTED_MEDIA_DIR, BUCKET), { recursive: true });
+    writeFileSync(
+      join(root, stray),
+      readFileSync(join(root, variantFilePath(BUCKET, 384, "avif"))),
+    );
+    try {
+      const report = checkVariants({ root, pipeline });
+      expect(report.problems).toHaveLength(1);
+      expect(report.problems[0]).toContain(stray);
+      expect(report.problems[0]).toMatch(
+        /not a variant of a site-origin slot \(hero\)/u,
+      );
+    } finally {
+      rmSync(join(root, COMMITTED_MEDIA_DIR, BUCKET), { recursive: true });
+    }
   });
 });

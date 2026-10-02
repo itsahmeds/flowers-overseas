@@ -1,0 +1,47 @@
+{
+  "family": "media",
+  "rule": "committed-slot",
+  "replaces": "media-variants.json",
+  "expect": "is not a manifest variant of a site-origin slot (hero)",
+  "why": "Spec 006 §2.5 and TASK-138's split (founder, 2026-10-03, option (a)): only the `hero` slot is served from the site's own origin, so only its variants are committed under `public/media/`. A committed copy of a `productHero` variant is served by nobody — the loader sends that slot to the media bucket — and is weight under the repository cap for nothing (AC-14: every committed byte is a listed variant a page can request). The case supplies one real `productHero` asset's two rows, an empty derived tree and a committed listing holding that asset's AVIF, so the committed-slot rule is the only one that can fire.",
+  "ops": [
+    {
+      "op": "clearRows"
+    },
+    {
+      "op": "addRow",
+      "row": {
+        "assetId": "fo-bq-001-hero",
+        "variant": "384",
+        "width": 384,
+        "height": 480,
+        "format": "avif",
+        "bytes": 9911,
+        "checksumSha256": "d503305eaac7460afa57900ca2b8b2e678dd5e8c51c435f0d6429f6fb1d2e9f4",
+        "objectKey": "media/fo-bq-001-hero/384.avif"
+      }
+    },
+    {
+      "op": "addRow",
+      "row": {
+        "assetId": "fo-bq-001-hero",
+        "variant": "384",
+        "width": 384,
+        "height": 480,
+        "format": "webp",
+        "bytes": 13068,
+        "checksumSha256": "b5cd7c32ac04482db98b4e6e21ae3338f39de251637a315410ab57f96b82f185",
+        "objectKey": "media/fo-bq-001-hero/384.webp"
+      }
+    },
+    {
+      "op": "setMediaFiles",
+      "files": [
+        {
+          "path": "public/media/fo-bq-001-hero/384.avif",
+          "bytes": 9911
+        }
+      ]
+    }
+  ]
+}

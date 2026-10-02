@@ -6,13 +6,16 @@ import { consentBootstrapHash } from "./src/lib/consent-bootstrap";
 import { securityHeaderRules } from "./src/lib/csp";
 import { assertBuildEnv } from "./src/lib/env.assert";
 import { listingCacheHeaderRules } from "./src/lib/listing-cache-headers";
-import { mediaCacheHeaderRules } from "./src/lib/media-headers";
 import {
   appEnvironment,
   cspReportOnly,
   ga4MeasurementId,
   hostPlatform,
 } from "./src/lib/env.schema";
+import {
+  mediaCacheHeaderRules,
+  mediaHeaderRules,
+} from "./src/lib/media-headers";
 import { noindexHeaderRules } from "./src/lib/robots-headers";
 
 // Fail the build before compiling anything when a variable **the build consumes** is missing or
@@ -67,11 +70,15 @@ const platform = hostPlatform(process.env);
 // an environment that loads no tag.
 const headerRules = [
   ...noindexHeaderRules(environment),
-  // `/media/*` for a year, `immutable` (spec 006 §2.5, §5.4; TASK-079): a variant URL is
-  // content-addressed by asset version and width, so a changed image is a new URL and a stale
-  // cache entry is impossible. `src/lib/media-headers.ts` carries the reasoning and the
-  // crawlability requirement this path puts on spec 007.
+  // `/media/*` for a year, `immutable` (spec 006 §2.5, §5.4; TASK-079): since TASK-138 this
+  // origin serves only the `hero` slot's committed variants (founder, 2026-10-03, option (a)),
+  // and every other photograph carries the same value as metadata on its object in the bucket.
   ...mediaCacheHeaderRules(),
+  // The connection hint for the media origin that serves every other photograph — same
+  // `MEDIA_ORIGIN` constant as the `img-src` below and as every bucket URL, and a response header
+  // rather than a `<link>` because nothing rendered into `<head>` can be emitted ahead of an image
+  // preload (`src/lib/media-headers.ts` has the measurements).
+  ...mediaHeaderRules(),
   // The country shop root is rendered per request (it reads `?page=`/`?sort=`) and cached at the
   // edge by full URL for an hour, stale-while-revalidate for a day — spec 008 §5.4 and §13 Q2 as
   // the founder resolved them, under ADR-0018's single replica behind Cloudflare. The sources

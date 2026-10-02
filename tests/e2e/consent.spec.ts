@@ -24,6 +24,7 @@ import { type Page, expect, test } from "@playwright/test";
 
 import { COOKIE_REGISTRY, isRegisteredCookie } from "../../src/config/cookies";
 import { CONSENT_BOOTSTRAP_ID } from "../../src/lib/consent-bootstrap";
+import { MEDIA_ORIGIN } from "../../src/lib/media-origin";
 
 /** The four launch locales; the bootstrap is on every localised document. */
 const LOCALE_PATHS = ["/en", "/en-gb", "/de", "/pl"] as const;
@@ -159,12 +160,16 @@ test.describe("the GA4 loader is dark until configured (AC-21)", () => {
         0,
       );
 
-      // And no third-party origin at all (AC-18). `vercel.live` on a non-local target is the
-      // platform's preview-feedback script, allowed by exact origin like in `shell.spec.ts`.
+      // And no third-party origin at all (AC-18), with two exact-origin exceptions: the media
+      // bucket, which is our own storage serving the page's photographs since TASK-138 — no
+      // cookie, no identifier, named in `img-src` — and, on a non-local target, `vercel.live`,
+      // the platform's preview-feedback script. Anything else, and in particular anything that
+      // could profile a visitor, still fails.
       const base = new URL(baseURL ?? "http://localhost:3000");
-      const allowed = new Set(
-        LOCAL_HOSTNAMES.has(base.hostname) ? [] : ["https://vercel.live"],
-      );
+      const allowed = new Set([
+        MEDIA_ORIGIN,
+        ...(LOCAL_HOSTNAMES.has(base.hostname) ? [] : ["https://vercel.live"]),
+      ]);
       const thirdParty = requested
         .map((url) => new URL(url).origin)
         .filter((origin) => origin !== base.origin && !allowed.has(origin));
