@@ -35,7 +35,7 @@ not sent:
 **Task:** TASK-NNN — <title> (or the spec / PR / decision for a role with no task) · **Role:**
 implementer | breaker (round N) | reviewer (round N) | finisher | spec writer | advisor | designer |
 SEO auditor | launch ·
-**Size:** S | M | L
+**Size:** S | M | L · **Class:** full (breaker + reviewer) | review-only (`CLAUDE.md` DoD §4; when in doubt, full)
 **Brief:** `docs/tasks/TASK-NNN.md` (on branch `task/TASK-NNN-<slug>`)
 **Spec:** `specs/NNN-<slug>.md` — read `## 0. Index`, then only: <§ anchors for the AC ids owned>
 **Map:** `docs/codebase-map.md`
@@ -141,6 +141,8 @@ Keep the report under about 400 words. Detail belongs in the brief and the PR, n
 
 ## Role: reviewer
 
+- Confirm the work order's **Class** against the diff and state it in your verdict. If a review-only
+  PR is not review-only (`CLAUDE.md` DoD §4), ask for a breaker; that binds the merge.
 - Read-only. Work in your **own** detached worktree: `git fetch origin` then
   `git worktree add ../fo-review-<PR> <head-sha>` (remove a leftover from an interrupted round
   first). Your only writes are temporary mutations there, restored before you finish; remove the

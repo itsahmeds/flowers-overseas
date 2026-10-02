@@ -7,7 +7,7 @@ disable-model-invocation: true
 
 # /break <pr-or-task-id>
 
-**When:** every PR, dispatched with `/review` (they run in parallel, in separate worktrees).
+**When:** every PR that is not review-only (`CLAUDE.md` DoD §4), dispatched with `/review` (they run in parallel, in separate worktrees).
 **Inputs:** PR number (or task ID → resolve the PR from `TASKS.md`).
 **Agent:** `breaker`.
 **Outputs:** `BREAKER: HOLDS | HOLES on <head-sha>`, a table of breaks tried (`CAUGHT` / `SURVIVED`), posted on the PR.

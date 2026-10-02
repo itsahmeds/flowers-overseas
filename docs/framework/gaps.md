@@ -12,7 +12,7 @@ gap closes, mark it ✅ with the PR, and don't delete the row.
 | 4 | Safety rules only on paper | Stop your processes, push early, one build at a time: nothing enforces them; anyone can release another agent's build lock | C | ✅ PR 107 (the shell guard refuses `pkill`, `killall`, `git stash`, wait loops and a `ci.yml` dispatch; the build slot is released only with its owner's token); push early (W-8) and the agent cap (W-11) stay unenforced, step G |
 | 5 | Edit guard has a back door | It watches the Edit/Write tools only; a shell command can write into `src/`; the Stop hook forgets `db/` | C | ✅ PR 107 (the shell guard denies shell writes into application code with no task, in every branch worktree; the Stop hook reads `db/` from the shared `guarded_paths.py`); `python -c`, `node -e`, `git apply` and run-time command strings stay open, as the hook's header says |
 | 6 | The CI label dance | Browser jobs run only with `ci:full`; a later push fires nothing; re-running means toggling the label | E | open |
-| 7 | No breaker | "Break it on purpose" was one buried sentence | D | ✅ PR 103 (breaker on every PR) |
+| 7 | No breaker | "Break it on purpose" was one buried sentence | D | ✅ PR 103 (breaker on every PR; narrowed by W-21) |
 | 8 | No advisors | Nobody gave the founder a second opinion on specs and decisions | D | ✅ PR 103 (one advisor, four angles) |
 | 9 | Every agent runs on the most expensive model | Including the ones writing status reports | F | open |
 | 10 | One generated file conflicts on every merge | `docs/codebase-map.md`: four rebases in one day | E | open |
@@ -113,3 +113,15 @@ gap closes, mark it ✅ with the PR, and don't delete the row.
   (`tests/unit/ci-workflow.test.ts` T-51).
 - The guard test does not check that every `(why: W-n)` resolves. ✅ PR 106
   (`tests/unit/framework-text.test.ts` case 5).
+
+**Found on 2026-10-02/03 (PRs 98–134):**
+- **No check reads the new breaker-scope rule** (`/break 134` HOLE 1, accepted). `framework-text`
+  case 3 pins `/break`, `HOLDS` and the reviewer-only wording, so the scope sentence in DoD §4 can
+  be deleted or widened with every check green. When a spec 001 AC-44/T-46 task next opens (paused
+  under "visible first"), case 3 should pin: the review-only definition, "every other PR keeps the
+  breaker", the reviewer's binding call, the reviewer-confirmed class, and "The orchestrator never
+  accepts a hole." as a whole sentence. It must be red under `/break 134`'s M2–M5, M7 and M8.
+- **Agents ran out their time limit while reading.** TASK-126's first agent used its 180 minutes
+  (the machine slept) and wrote no code; TASK-113's fourth finisher spent its limit on one long
+  dump. Work orders now ask for the first visible stage to be pushed early, and for long
+  enumerations to be avoided.

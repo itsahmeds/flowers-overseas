@@ -18,5 +18,5 @@ disable-model-invocation: true
    say so; `/plan-tasks` can proceed.
 2. Fill in `.claude/templates/work-order.md` with the designer role section and dispatch `designer`.
 3. Show the founder the canvas (`docs/design/canvas.json`). The founder's look is the approval.
-   Then run `/break` and `/review` on the PR like any other, and merge on the usual rule.
+   Then run `/review` on the PR (a design PR is docs, so review-only under `CLAUDE.md` DoD §4 unless the reviewer asks for a breaker), and merge on the usual rule.
 4. Suggest `/plan-tasks specs/NNN-<slug>.md`.

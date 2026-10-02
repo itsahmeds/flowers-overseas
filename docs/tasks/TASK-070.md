@@ -20,6 +20,18 @@ Branch `task/TASK-070-db-catalogue-providers`. **Blocked on TASK-013** (spec 002
 
 - **From `/review 56` (TASK-069):** fix `tests/contract/support/catalog-provider-contract.ts` ~L139 (`mutable.length = 1` truncates a copy, so the not-shared assertion cannot fail) before the Drizzle half reuses the suite; add an emit test for `catalog.price_ambiguous`; `checkSurchargeVatRates` baseline is last-wins over superseded retail rows.
 
+- **From `/review 132` and `/break 132` (2026-10-02, TASK-148), binding:** run
+  `describeCatalogProviderContract("db", …, rowCounts)` with exact seeded counts of at least 2 per
+  read. Before that run lands, `emptyInPlace` (`tests/contract/support/catalog-provider-contract.ts`)
+  overwrites one element of each nested array and calls `reverse()` on it, each through its own
+  `attempt()` (skip the reverse where the first element equals the last), **before** `length = 0`.
+  It must go red under H4a (nested arrays sealed) and H4b (only nested `length` non-writable).
+  A follow-up rides with this task: `ui/home/trending-provider.ts` and `geo/corridor.ts` read
+  dataset rows directly. Route both through the catalog barrel, or freeze the dataset at its own
+  source, and check spec 005's AC-2 graph rule against them. It rides here because TASK-070 is
+  the next task to touch the catalog's data-source seam, and under "visible first" (2026-10-03) no
+  hardening task opens before then.
+
 ## Escalations
 
 _None recorded._

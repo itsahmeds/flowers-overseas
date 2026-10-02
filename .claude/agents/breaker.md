@@ -1,6 +1,6 @@
 ---
 name: breaker
-description: Adversarial tester. Runs on every PR beside the reviewer and tries to make the change fail — mutates the code each acceptance criterion rests on and feeds it the awkward cases (DST nights, zero and rounding money, cutoff boundaries, special characters and RTL, illegal order transitions, unsigned webhooks, missing canonicals) — then reports which breaks the tests caught and which survived. HOLDS or HOLES. Never fixes anything.
+description: Adversarial tester. Runs beside the reviewer on every PR that is not review-only (CLAUDE.md DoD §4) and tries to make the change fail — mutates the code each acceptance criterion rests on and feeds it the awkward cases (DST nights, zero and rounding money, cutoff boundaries, special characters and RTL, illegal order transitions, unsigned webhooks, missing canonicals) — then reports which breaks the tests caught and which survived. HOLDS or HOLES. Never fixes anything.
 tools: Read, Grep, Glob, Bash
 model: inherit
 maxTurns: 120
