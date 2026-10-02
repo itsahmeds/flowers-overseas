@@ -163,20 +163,34 @@ describe("AC-15: the message catalogues carry no claim we cannot support", () =>
    * above exercises `review count`, `feefo` or `fleurop` at all (TASK-143). So every pattern is
    * mutated — each `|` branch at every depth deleted in turn — and some sample of **that** pattern
    * must be caught by it and missed by the mutant.
+   *
+   * The generator covers `|` branches only; class members and `?` atoms are covered by the
+   * samples, which is why each plural has its singular (`One star`, `Leave a review`, `1 review`,
+   * `1 florist`…) and `4 out of 5` sits beside `4.8 out of 5` (`/break 99` round 1). Fifteen such
+   * mutants have no sample because no count a page could print tells them apart: every
+   * `[.,]` / `(?:[.,]\d)?` deletion in the out-of-five score (the match starts at the decimal
+   * digit), and each member of `[\d\s,.]` in the three counts (the match starts at the last digit,
+   * and a separator is followed by a digit, not by the noun).
    */
   it("needs every branch of every pattern: each single-branch deletion is caught by a sample", () => {
     const SAMPLES: ReadonlyMap<string, readonly string[]> = new Map([
-      ["review", ["Read the reviews"]],
-      ["rating", ["Our rating", "Rated highly"]],
-      ["star", ["Five stars", "★★★★★", "⭐"]],
-      ["testimonial", ["A testimonial from Berlin"]],
-      ["review count", ["112 reviews", "112 ratings"]],
-      ["out-of-five score", ["4.8 out of 5", "4.8/5"]],
+      ["review", ["Read the reviews", "Leave a review"]],
+      ["rating", ["Our rating", "Our ratings", "Rated highly"]],
+      ["star", ["Five stars", "One star", "★★★★★", "⭐"]],
+      ["testimonial", ["A testimonial from Berlin", "Testimonials"]],
+      ["review count", ["112 reviews", "1 review", "112 ratings", "1 rating"]],
+      ["out-of-five score", ["4.8 out of 5", "4.8/5", "4 out of 5"]],
       ["Trustpilot mark", ["Trustpilot", "Feefo", "reviews.io"]],
-      ["florist count", ["47 florists"]],
+      ["florist count", ["47 florists", "1 florist"]],
       [
         "customer count",
-        ["1,240 customers", "900 orders delivered", "900 deliveries"],
+        [
+          "1,240 customers",
+          "1 customer",
+          "900 orders delivered",
+          "1 order delivered",
+          "900 deliveries",
+        ],
       ],
       [
         "partner name",

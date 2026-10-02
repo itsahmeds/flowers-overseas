@@ -145,21 +145,41 @@ describe("listingHonestyViolations reports what AC-6 forbids", () => {
  * `branchDeletions` — and some sample below must be caught by the pattern and **missed by the
  * mutant**. A branch no sample can kill is either untested or redundant; the one redundant branch
  * the helper carries is named in `SUBSUMED_BRANCHES` with the branch that already covers it.
+ *
+ * `branchDeletions` generates `|` branches only. Character-class members and `?` atoms are
+ * covered by the samples alone (`/break 99` round 1): `was €59.90` beside `was £59.90`,
+ * `bis 14.00 Uhr` beside `bis 14:00 Uhr`, `Wish list` beside `Wishlist`, `five-star` beside
+ * `Four stars`, and so on, so dropping `€` from `[€£$]`, `.` from `[:.]`, ` ?` from `wish ?list`
+ * or the `?` from `stars?` turns "every sample is reported under that name" red. Six such
+ * mutants have no sample because no string tells them apart under `test`: `[.,]` and its group
+ * in the out-of-five score (the match can start at the decimal digit), the space in
+ * `best ?sellers?` (`\bbestseller` takes every unspaced form), `(?:dostawa )?` (the rest matches
+ * on its own), and `stars?` in the aria-label (no `\b` follows it).
  */
 const BRANCH_SAMPLES: ReadonlyMap<string, readonly string[]> = new Map([
-  ["rating", ["Customer rating", "Highly rated", "Bewertungen"]],
-  ["star", ["Four stars", "5 Sterne", "★", "⭐"]],
-  ["review", ["112 reviews", "Rezensionen", "Opinie klientów"]],
+  [
+    "rating",
+    ["Customer rating", "Customer ratings", "Highly rated", "Bewertungen"],
+  ],
+  ["star", ["Four stars", "five-star", "5 Sterne", "★", "⭐"]],
+  [
+    "review",
+    ["112 reviews", "Write a review", "Rezensionen", "Opinie klientów"],
+  ],
   ["out-of-five score", ["4.6 / 5", "4 out of 5"]],
   [
     "ranking claim",
     [
       "Best sellers",
+      "Best seller",
       "Bestsellerliste",
       "Most popular",
       "Recommended for you",
       "Meistverkaufte Sträuße",
       "Die beliebteste Wahl",
+      "Die beliebtesten Sträuße",
+      "Beliebtester Strauß",
+      "Unser beliebtestes Geschenk",
       "Empfohlen für dich",
       "Empfohlen fuer dich",
       "Najczęściej kupowane",
@@ -172,7 +192,10 @@ const BRANCH_SAMPLES: ReadonlyMap<string, readonly string[]> = new Map([
     "delivery-timing claim",
     [
       "Same-day",
+      "Same day delivery",
       "Next-day",
+      "Next day delivery",
+      "We deliver today",
       "Delivered today",
       "Delivery today",
       "Delivers tomorrow",
@@ -190,16 +213,29 @@ const BRANCH_SAMPLES: ReadonlyMap<string, readonly string[]> = new Map([
     "order-by cutoff promise",
     [
       "Order by 14:00",
+      "Order by 14.00",
+      "Order by, 14:00",
       "Order by {date}",
       "Order by {time}",
       "Bestellen Sie bis morgen",
       "Zamów do piątku",
       "Zamow do piatku",
       "bis 14:00 Uhr",
+      "bis 14.00 Uhr",
     ],
   ],
   ["countdown", ["Countdown", "Offer ends in two days", "Hurry", "2 h 15 m"]],
-  ["old price", ["was £59.90", "RRP £59.90", "save 20%", "20% off"]],
+  [
+    "old price",
+    [
+      "was £59.90",
+      "was €59.90",
+      "was $59.90",
+      "RRP £59.90",
+      "save 20%",
+      "20% off",
+    ],
+  ],
   [
     "add to basket",
     [
@@ -210,14 +246,23 @@ const BRANCH_SAMPLES: ReadonlyMap<string, readonly string[]> = new Map([
       "In den Warenkorb",
     ],
   ],
-  ["wishlist", ["Wishlist", "Quick view"]],
-  ["<del>/<s> strike-through", ["<del>£59.90</del>", "<s>£59.90</s>"]],
+  ["wishlist", ["Wishlist", "Wish list", "Quick view"]],
+  [
+    "<del>/<s> strike-through",
+    [
+      "<del>£59.90</del>",
+      "<s>£59.90</s>",
+      '<del class="was">£59.90',
+      "£59.90</s>",
+    ],
+  ],
   ["line-through styling", ['<span class="line-through">£59.90</span>']],
   [
     "rating markup",
     [
       '<span aria-label="rating 4.6"></span>',
       '<span aria-label="5 stars"></span>',
+      '<span aria-label="one star"></span>',
       '<span aria-label="review summary"></span>',
     ],
   ],
