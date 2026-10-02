@@ -29,10 +29,21 @@
  *     one path it would occupy, and for a `listing` **family** every member of that family in the
  *     existence set. That is spec 004 AC-14 asked of a set of URLs rather than of one.
  *
- * **What it fetches.** Pages at depth 0, 1 and 2 are fetched and their links read; a link found on
- * a depth-2 page is recorded at depth 3 and its *status* is checked, but its own links are not
- * followed — depth 3 is the bound, so what lies beyond it is not part of the criterion. Every URL
- * is fetched at most once per locale.
+ * **What it fetches, and whose links it reads** (`/break 98` round 1, hole 1). Criteria 2 and 3
+ * are about every `<a href>` on all six page types, so they are asked of **every page the crawl
+ * fetches**:
+ *
+ *  - **The walk.** Pages at depth 0 to 3 are fetched and their links read, the deepest included.
+ *    A link found on a depth-3 page is a fourth click: its target gets a status check, and nothing
+ *    more. It is not walked and it does not count as reached, so criterion 1's bound stays ≤3.
+ *  - **The pages the walk cannot reach.** Every listing page in the locale's existence set that
+ *    the walk did not reach within 3 clicks (today exactly the `EXCLUDED` waivers: the category
+ *    hubs, and the `de`/`pl` shop roots) is fetched afterwards, and its links get the same three
+ *    checks. A waiver excuses a missing inbound link, never a broken outbound one.
+ *
+ * Every page those links point to gets a status check, with `maxRedirects: 0`. No URL is fetched
+ * twice for its status, and the test asserts that every listing page in the existence set had its
+ * links read, which is what makes "all six page types" a checked claim and not a description.
  *
  * **One documented exclusion, and it is an escalation and not a waiver.** The **category hub**
  * (`/{locale}/{shopCategory}/{slug}`, §2 row 10) has no publisher: spec 008 §2's link plan names
@@ -42,7 +53,9 @@
  * registry, and no task in spec 008 owns it. Recorded as an open question in
  * `docs/tasks/TASK-113.md` rather than resolved by inventing a link id. `EXCLUDED` (`tests/support/shop-crawl-targets.ts`) holds it
  * and the second escalation (the draft locales' shop roots), and is asserted to be exactly those
- * three rules, so it cannot quietly grow.
+ * three rules, so it cannot quietly grow. The pages it covers are pinned too (`WAIVED`: 23
+ * category hubs per English locale, 7 shop roots each in `de` and `pl`), so a rule cannot grow
+ * by matching more pages either.
  */
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -60,6 +73,7 @@ import { localePath } from "../../src/modules/i18n/routing.ts";
 import {
   EXCLUDED,
   TARGETS,
+  WAIVED,
   isExcluded,
 } from "../support/shop-crawl-targets.ts";
 
@@ -157,9 +171,11 @@ async function get(request: APIRequestContext, path: string): Promise<Fetched> {
 }
 
 interface CrawlResult {
-  /** Every internal path the crawl saw, with the shallowest depth it was seen at. */
+  /** Every internal path the walk reached, with the shallowest depth it was reached at (≤3). */
   readonly depthOf: ReadonlyMap<string, number>;
-  /** Every non-200 internal path, with the status it answered and the page that linked it. */
+  /** Every page whose `<a href>`s were read: the walk's, then the listing pages it missed. */
+  readonly read: ReadonlySet<string>;
+  /** Every non-200 internal path, with the page that linked it and the status it answered. */
   readonly broken: readonly string[];
   /** Every link into an unpublished id's URL space, with the page that drew it. */
   readonly unpublished: readonly string[];
@@ -168,10 +184,10 @@ interface CrawlResult {
 }
 
 /**
- * Breadth-first from one locale home, to `MAX_DEPTH`.
+ * Breadth-first from one locale home, to `MAX_DEPTH`, then the listing pages it did not reach.
  *
- * Only this locale's own URL space is followed: a link to `/de/...` from `/en` is a language
- * switch, is status-checked, and is not crawled — the criterion is "depth from **every** locale
+ * Only this locale's own URL space is walked: a link to `/de/...` from `/en` is a language
+ * switch, is status-checked, and is not walked — the criterion is "depth from **every** locale
  * home", which is four separate crawls and not one crawl through the switcher.
  */
 async function crawl(
@@ -179,66 +195,114 @@ async function crawl(
   locale: string,
 ): Promise<CrawlResult> {
   const forbidden = forbiddenPaths(locale);
-  const depthOf = new Map<string, number>([[`/${locale}`, 0]]);
+  const home = `/${locale}`;
+  const inLocale = (path: string): boolean =>
+    path === home || path.startsWith(`${home}/`);
+  const depthOf = new Map<string, number>([[home, 0]]);
+  /** The first page that linked each walked path, so a 404 names where it was drawn. */
+  const linkedFrom = new Map<string, string>();
   const status = new Map<string, number>();
+  const read = new Set<string>();
   const broken: string[] = [];
   const unpublished: string[] = [];
   const malformed: string[] = [];
 
-  let frontier: string[] = [`/${locale}`];
+  /**
+   * One page's `<a href>`s, through criteria 2 and 3's shape checks: the same-origin paths it
+   * links, fragment removed. Everything else is recorded as a finding or skipped here.
+   */
+  function linksOn(path: string, html: string): string[] {
+    read.add(path);
+    const targets: string[] = [];
+    for (const href of hrefsIn(html)) {
+      if (href === "" || href === "#") {
+        malformed.push(`${path} → ${JSON.stringify(href)}`);
+        continue;
+      }
+      // An in-page anchor resolves to the document it is on, which is already fetched.
+      if (href.startsWith("#")) continue;
+      if (!href.startsWith("/")) {
+        // A contact channel or an outbound link: checked for shape, never fetched. `http:` is
+        // refused as well as malformed — an insecure outbound link is a finding of its own.
+        if (!/^(?:mailto:|tel:|https:\/\/)\S+$/u.test(href)) {
+          malformed.push(`${path} → ${href}`);
+        }
+        continue;
+      }
+      const target = href.split("#")[0] ?? href;
+      if (forbidden.has(target)) {
+        unpublished.push(`${path} → ${target}`);
+      }
+      targets.push(target);
+    }
+    return targets;
+  }
+
+  /**
+   * A status check and nothing more: for another locale's page, for a fourth click, and for the
+   * targets of a page the walk did not reach. A path the walk has queued is skipped, because the
+   * walk fetches it and records its status itself; anything else is fetched once.
+   */
+  async function checkStatus(from: string, target: string): Promise<void> {
+    if (inLocale(target) && depthOf.has(target)) return;
+    if (status.has(target)) return;
+    const page = await get(request, target);
+    status.set(target, page.status);
+    if (page.status !== 200) {
+      broken.push(`${from} → ${target} → ${String(page.status)}`);
+    }
+  }
+
+  // 1. The walk: depth 0 to `MAX_DEPTH`, and the links of every page in it are read.
+  let frontier: string[] = [home];
   for (let depth = 0; depth <= MAX_DEPTH; depth += 1) {
     const next: string[] = [];
     for (const path of frontier) {
       const page = await get(request, path);
       status.set(path, page.status);
       if (page.status !== 200) {
-        broken.push(`${path} → ${String(page.status)}`);
+        const from = linkedFrom.get(path);
+        broken.push(
+          `${from === undefined ? "" : `${from} → `}${path} → ${String(page.status)}`,
+        );
         continue;
       }
-      // Depth `MAX_DEPTH` is the bound: its own links are outside the criterion, so the page is
-      // fetched for its status and not read for its links.
-      if (depth === MAX_DEPTH) continue;
-
-      for (const href of hrefsIn(page.html)) {
-        if (href === "" || href === "#") {
-          malformed.push(`${path} → ${JSON.stringify(href)}`);
-          continue;
-        }
-        // An in-page anchor resolves to the document it is on, which is already fetched.
-        if (href.startsWith("#")) continue;
-        if (!href.startsWith("/")) {
-          // A contact channel or an outbound link: checked for shape, never fetched. `http:` is
-          // refused as well as malformed — an insecure outbound link is a finding of its own.
-          if (!/^(?:mailto:|tel:|https:\/\/)\S+$/u.test(href)) {
-            malformed.push(`${path} → ${href}`);
-          }
-          continue;
-        }
-        const target = href.split("#")[0] ?? href;
-        if (forbidden.has(target)) {
-          unpublished.push(`${path} → ${target}`);
-        }
-        const seen = depthOf.get(target);
-        if (seen !== undefined && seen <= depth + 1) continue;
-        depthOf.set(target, depth + 1);
-        // Another locale's document is status-checked but not walked: a language switch is not a
-        // step on the path from *this* home.
-        if (target === `/${locale}` || target.startsWith(`/${locale}/`)) {
+      for (const target of linksOn(path, page.html)) {
+        // A step on the path from this home, while the bound allows another one.
+        if (depth < MAX_DEPTH && inLocale(target)) {
+          if (depthOf.has(target)) continue;
+          depthOf.set(target, depth + 1);
+          linkedFrom.set(target, path);
           next.push(target);
-        } else if (status.get(target) === undefined) {
-          const other = await get(request, target);
-          status.set(target, other.status);
-          if (other.status !== 200) {
-            broken.push(`${path} → ${target} → ${String(other.status)}`);
-          }
+          continue;
         }
+        // Another locale's page, or a link on a depth-`MAX_DEPTH` page: one click past the bound.
+        // Its status is part of criterion 2; its depth is not part of criterion 1.
+        await checkStatus(path, target);
       }
     }
     frontier = next;
     if (frontier.length === 0) break;
   }
 
-  return { depthOf, broken, unpublished, malformed };
+  // 2. Every listing page the walk did not reach: fetched for its own status, and its links read
+  //    and checked exactly as the walk's are. Their targets get a status check only.
+  for (const page of EXISTENCE_SET[locale] ?? []) {
+    if (depthOf.has(page.path)) continue;
+    const fetched = await get(request, page.path);
+    status.set(page.path, fetched.status);
+    if (fetched.status !== 200) {
+      broken.push(
+        `${page.pageType} ${page.path} (unreached) → ${String(fetched.status)}`,
+      );
+      continue;
+    }
+    for (const target of linksOn(page.path, fetched.html)) {
+      await checkStatus(page.path, target);
+    }
+  }
+
+  return { depthOf, read, broken, unpublished, malformed };
 }
 
 test.describe("AC-21: the shop is reachable, and links at nothing that is not", () => {
@@ -264,6 +328,15 @@ test.describe("AC-21: the shop is reachable, and links at nothing that is not", 
       expect(pinned, `${locale} has a pinned target set`).toBeDefined();
       expect(countByType(expected), `${locale} crawl targets by type`).toEqual(
         pinned,
+      );
+      // The waived side is pinned the same way (`/break 98` round 1, hole 1): 23 category hubs
+      // in each English locale, 7 shop roots each in `de` and `pl`, and not one page more.
+      const waived = (EXISTENCE_SET[locale] ?? []).filter((page) =>
+        isExcluded(locale, page.pageType),
+      );
+      expect(WAIVED[locale], `${locale} has a pinned waived set`).toBeDefined();
+      expect(countByType(waived), `${locale} waived pages by type`).toEqual(
+        WAIVED[locale],
       );
 
       const result = await crawl(request, locale);
@@ -292,6 +365,18 @@ test.describe("AC-21: the shop is reachable, and links at nothing that is not", 
         .toEqual([]);
       expect
         .soft(result.malformed, `malformed hrefs from /${locale}`)
+        .toEqual([]);
+
+      // The three lists above are about the pages whose links were **read**, so the set of those
+      // pages is the criterion's real scope (`/break 98` round 1, hole 1: the depth-3 pages and
+      // the category hubs were fetched or skipped, never read, and 114 country-category pages
+      // linking to a 404 passed).
+      // Every listing page in the existence set, reached or waived, all six page types, is in it.
+      const unread = (EXISTENCE_SET[locale] ?? [])
+        .filter((page) => !result.read.has(page.path))
+        .map((page) => `${page.pageType} ${page.path}`);
+      expect
+        .soft(unread, `listing pages whose links were not read, /${locale}`)
         .toEqual([]);
 
       // **A waiver expires** (`/review 98` round 1, required change 6). Every page `EXCLUDED`

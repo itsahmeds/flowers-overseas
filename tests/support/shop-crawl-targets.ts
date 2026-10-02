@@ -93,3 +93,27 @@ export const TARGETS: Readonly<
   de: {},
   pl: {},
 };
+
+/**
+ * The pages `EXCLUDED` waives, **exactly**, per locale and per page type (`/break 98` round 1,
+ * hole 1).
+ *
+ * `EXCLUDED` is a rule, and a rule covers whatever matches it: a twenty-fourth category, or an
+ * eighth published destination, would join the waiver with no diff anywhere. So the set it covers
+ * is pinned here as the literal it is today, and a waiver that grows is red until someone types
+ * the new number. Unlike `TARGETS`' shop roots, nothing is derived from the registry: a target set
+ * that grows with the registry is the criterion keeping up, and a waiver that grows with it is the
+ * criterion shrinking unseen.
+ *
+ * The crawl still reads the links **on** every one of these pages (they are fetched after the
+ * walk), so a waiver excuses only the missing inbound edge, never a broken outbound one.
+ * `tests/unit/shop-crawl-targets.test.ts` derives the same counts from `listingExists()`.
+ */
+export const WAIVED: Readonly<
+  Record<string, Readonly<Record<string, number>>>
+> = {
+  en: { categoryHub: 23 },
+  "en-gb": { categoryHub: 23 },
+  de: { countryShopRoot: 7 },
+  pl: { countryShopRoot: 7 },
+};

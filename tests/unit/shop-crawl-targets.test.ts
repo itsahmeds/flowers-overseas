@@ -11,9 +11,10 @@
  *   every catalogue category and occasion (`staticCatalogueProvider`) × every country in the
  *   registry, published or not, each asked of `listingExists()` one identity at a time.
  *
- * The result, with `EXCLUDED` applied the way the crawl applies it, must equal `TARGETS`. A pin
- * typed wrong is red here and red in the crawl. A catalogue change that moves a count is red here
- * first, and the fixture and the pin move in the same commit.
+ * The result, with `EXCLUDED` applied the way the crawl applies it, must equal `TARGETS`, and the
+ * part `EXCLUDED` removes must equal `WAIVED` (`/break 98` round 1, hole 1). A pin typed wrong is
+ * red here and red in the crawl. A catalogue change that moves a count is red here first, and the
+ * fixture and the pin move in the same commit.
  */
 import { describe, expect, it } from "vitest";
 
@@ -27,6 +28,7 @@ import { staticCatalogueProvider } from "../../src/modules/catalog/static/index.
 import {
   EXCLUDED,
   TARGETS,
+  WAIVED,
   isExcluded,
 } from "../support/shop-crawl-targets.ts";
 
@@ -64,13 +66,17 @@ function candidates(locale: ListingIdentity["locale"]): ListingIdentity[] {
   return out;
 }
 
-/** The crawl's target counts for one locale, by page type, as `listingExists()` answers them. */
-async function derivedTargets(
+/**
+ * The crawl's counts for one locale, by page type, as `listingExists()` answers them: its targets
+ * (`waived: false`) or the pages `EXCLUDED` covers (`waived: true`).
+ */
+async function derivedCounts(
   locale: ListingIdentity["locale"],
+  waived: boolean,
 ): Promise<Record<string, number>> {
   const counts: Record<string, number> = {};
   for (const identity of candidates(locale)) {
-    if (isExcluded(locale, identity.pageType)) continue;
+    if (isExcluded(locale, identity.pageType) !== waived) continue;
     if (!(await listingExists(identity))) continue;
     counts[identity.pageType] = (counts[identity.pageType] ?? 0) + 1;
   }
@@ -88,11 +94,16 @@ describe("the crawl's pinned targets equal an independent count (AC-21)", () => 
 
   it("pins exactly the listing locales", () => {
     expect(Object.keys(TARGETS).sort()).toEqual([...listingLocales()].sort());
+    expect(Object.keys(WAIVED).sort()).toEqual([...listingLocales()].sort());
   });
 
   for (const locale of listingLocales()) {
     it(`${locale}: TARGETS equals listingExists() over catalogue × registry`, async () => {
-      expect(await derivedTargets(locale)).toEqual(TARGETS[locale]);
+      expect(await derivedCounts(locale, false)).toEqual(TARGETS[locale]);
+    });
+
+    it(`${locale}: WAIVED equals the pages EXCLUDED covers, by listingExists()`, async () => {
+      expect(await derivedCounts(locale, true)).toEqual(WAIVED[locale]);
     });
   }
 });
