@@ -489,13 +489,45 @@ describe("AC-21: one all-in price with its formula, VAT and delivery rows, and t
     expect(render(fresh)).not.toContain("data-fo-fx-notice");
   });
 
-  it("names the vase as excluded only where it is not in the price", async () => {
+  // The vase sentence ("…The photograph is styled with one…") is about a photograph, so it renders
+  // only beside one (TASK-126 E-5, ruled 2026-10-03); the vase itself stays a priced add-on row.
+  // Each case below differs from the rendering branch by exactly one input.
+  const EXCLUDES = (
+    loadMessages("en", ["product"]) as { product: { excludes: string } }
+  ).product.excludes;
+
+  it("prints the vase sentence beside a photograph of a product sold without one", async () => {
+    const view = await viewOf("en", "PL", AMBER, { now: IN_WINDOW });
+    expect(view.gallery.kind).toBe("photos");
+    expect(view.product.vaseIncluded).toBe(false);
+    const excludes = block(render(view), "data-fo-price-excludes");
+    expect(readable(excludes)).toBe(EXCLUDES);
+  });
+
+  it("omits the vase sentence on the no-photo placeholder, and keeps the vase in the add-on list", async () => {
+    const view = await viewOf("en", "PL", ANTHURIUM, { now: IN_WINDOW });
+    expect(view.gallery.kind).toBe("placeholder");
+    expect(view.product.vaseIncluded).toBe(false);
+    const html = render(view);
+    expect(html).not.toContain("data-fo-price-excludes");
+    expect(readable(html)).not.toContain(EXCLUDES);
+    expect(block(html, "data-fo-addon-list")).toContain('data-fo-addon="vase"');
+  });
+
+  it("omits the vase sentence for a product that ships in a vase, photograph or not", async () => {
+    // No committed vased product is photographed yet (all eight are placeholders), so the
+    // photographed case sets the one field on a real view; the placeholder case is real data.
     const vased = await viewOf("en", "PL", VASED, { now: IN_WINDOW });
     expect(vased.product.vaseIncluded).toBe(true);
     expect(render(vased)).not.toContain("data-fo-price-excludes");
+    const photographed = await viewOf("en", "PL", AMBER, { now: IN_WINDOW });
+    expect(photographed.gallery.kind).toBe("photos");
     expect(
-      render(await viewOf("en", "PL", AMBER, { now: IN_WINDOW })),
-    ).toContain("data-fo-price-excludes");
+      render({
+        ...photographed,
+        product: { ...photographed.product, vaseIncluded: true },
+      }),
+    ).not.toContain("data-fo-price-excludes");
   });
 
   it("prints a single tier as text, not as a one-radio control", async () => {

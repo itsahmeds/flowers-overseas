@@ -45,6 +45,7 @@ export interface PriceSummaryProps {
     | "fx"
     | "delivery"
     | "product"
+    | "gallery"
   >;
   /** The destination's name in this locale. */
   readonly country: string;
@@ -146,8 +147,11 @@ export function PriceSummary({
       </div>
       {/* "What the price does not include" names the vase, so it renders only where the vase is
           not in the price — the 76 of 84 products `vaseIncluded: false` marks. A product that
-          ships in a vase has nothing this sentence could truthfully exclude. */}
-      {view.product.vaseIncluded ? null : (
+          ships in a vase has nothing this sentence could truthfully exclude. And its reason is
+          the photograph ("styled with one"), so it renders only beside a photograph: on the
+          no-photo placeholder there is no picture to imply a vase, and the vase stays a priced
+          add-on row (TASK-126 E-5, ruled 2026-10-03). */}
+      {view.product.vaseIncluded || view.gallery.kind !== "photos" ? null : (
         <p className="text-ink-subtle m-0 text-xs" data-fo-price-excludes>
           {product("excludes")}
         </p>

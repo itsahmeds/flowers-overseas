@@ -282,13 +282,10 @@ describe("the shipped catalogues and manifests", () => {
     // out-links block "Out of this page", which is architecture, not copy. Recorded in
     // `docs/design/README.md`'s TASK-112 row, clauses (c), (d) and (e).
     "categoryHub.destinationLink",
-    // TASK-126/127, the product page. The founder attested the 28 drawn strings in chat on
-    // 2026-10-03; these three are not on his list and wait here: the two calendar reasons no
-    // drawing shows (`beforeEarliest`, `notDeliveryDay` — the calendar can produce both, so
-    // the page must be able to say them) and the trust block's substitution sentence, which the
-    // artboard draws beside a `[slot]` rather than as approved copy.
-    "delivery.reason.beforeEarliest",
-    "delivery.reason.notDeliveryDay",
+    // TASK-126/127, the product page: the founder attested the 28 drawn strings in chat on
+    // 2026-10-03, and the three the page needed beyond them (the calendar reasons
+    // `beforeEarliest` and `notDeliveryDay`, and the trust block's substitution sentence) the
+    // same day ("approve 3"), so none of the page's keys waits here.
     "faq.whoDelivers.answer",
     "faq.whoDelivers.answerCutoff",
     "finder.cutoff",
@@ -319,7 +316,6 @@ describe("the shipped catalogues and manifests", () => {
     "occasionsIndex.datedCaption",
     "occasionsIndex.undatedHeading",
     "occasionsIndex.undatedNote",
-    "product.trust.substitution.body",
     // TASK-111, the country occasion page. Five of its eleven strings are transcribed from the
     // founder-approved artboards (`wireframes/country-occasion-{desktop,mobile}.dc.html`,
     // `country-shop-{desktop,mobile}.dc.html`) and carry his attestation; these six are wording

@@ -37,7 +37,122 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
   exist (`catalog.tier.*`, `catalog.surcharge.*`, `catalog.addon.*`, `a11y.*`). Every new `en`
   key is the implementer's draft, `reviewed: false`, listed in `AWAITING_FOUNDER_REVIEW` and in
   `## Escalations` with its exact text, for the founder to attest. Keep the count of new keys
-  as small as the drawings allow, and say the number in `- **2026-10-03 — stage 1, the page renders (combined dispatch with TASK-127).** The six primitives
+  as small as the drawings allow, and say the number in `## Result`. `de`/`pl` are drafted by
+  `pnpm i18n:draft`.
+
+## Read
+
+- `specs/009-product-page-date-picker.md`: `## 0. Index`, then §5 (the tier selector, the date picker,
+  add-ons, the summary), §7's i18n bullets (L227–233), §9 AC-7, AC-9, AC-23, AC-25, §10 T-07, T-09, T-23,
+  §12 task 6, and §13 Q6/Q7.
+- `docs/codebase-map.md`: `src/modules/ui` and the `catalog` module (`productView()`'s types).
+- The drawings: `docs/design/system/components.dc.html` and `docs/design/wireframes/product-{desktop,mobile}.dc.html`.
+- TASK-108 (`66800190`) is the pattern: the UI primitives under `src/modules/ui/shop/`, the
+  `/dev/components` entries, the components-file sync, and the a11y spec.
+
+## Carry-forwards
+
+One dated bullet per `/review`, newest last.
+
+- **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+
+## Escalations
+
+One dated bullet per escalation: the question, who it went to, the answer or `open`.
+
+- **E-1 (2026-10-03, implementer → orchestrator → founder): `DeliveryFacts` — the drawing and the
+  spec disagree, and the fence allows neither reading.** Spec 009 §5.3 and the drawing's own note
+  say "Spec 007's block reused unchanged, not re-implemented". The drawing
+  (`system/components.dc.html`, "Delivery-facts summary") instead draws **different rows**:
+  Delivering / Order-by time / Soonest date / What the price covers, plus a new sentence
+  ("Nothing is added at a later step."). Spec 007's block (`src/modules/geo/ui/CorridorFacts.tsx`)
+  prints Order by / Delivery days / Sundays / Cities we reach / Prices from. Reusing it is not
+  possible inside this task's fence. It lives in `geo/ui`, the geo barrel does not export it, it
+  takes a whole `CorridorView`, and `geo/ui` imports the `ui` barrel, so a `ui/product` import of
+  it would be a runtime cycle. Choose one: **(a)** reuse unchanged. `geo` exports `CorridorFacts`
+  with a narrowed prop (`{ facts, nameKey, locale }`), TASK-127 mounts it, and the drawing is
+  redrawn to 007's rows. This edits `geo`, which is outside TASK-126's fence. **(b)** a new
+  `ui/product/DeliveryFacts.tsx` with the drawn rows. That is a re-implementation and needs about
+  4–5 new `en` strings. Recommendation: (a). It adds no new copy, and §5.3 says "reused". **Answered (orchestrator, 2026-10-03): (a).** The fence includes the `geo` export.
+- **E-2 (2026-10-03, implementer → orchestrator → founder): the copy gate will go red, by about
+  20 keys.** There are no `delivery.*` or `product.*` keys on `main` (counted). Counted from the
+  drawings, the six primitives need at least these new `en` keys, about **19–21** in total. The
+  date picker needs 15: its legend ("When should it arrive?"), "included", "selected", the submit
+  button ("Use this date"), the five calendar reasons (`beforeEarliest`, `pastCutoff`,
+  `publicHoliday`, `sundayClosed`, `notDeliveryDay`), the three picker notices `unavailable` /
+  `preview` / `live` (the live one is the cutoff line), and possibly `notOrderable` (see the
+  proposal in ``). The tier selector needs 1: its legend ("Which size?"). The add-on
+  rows need 1: "VAT {rate}", which the summary's VAT row shares. The price summary needs 2–4:
+  "Delivery", "You pay", the demo heading ("Ordering is not open yet"), the demo line ("We are
+  still choosing florists in {country}.") unless `catalog.availability.noPartner` is reused, and
+  possibly a "{occasion}, {date}" surcharge-line label. Keys that can be reused: `catalog.tier.*`,
+  `catalog.price.inclusive`, `catalog.availability.fxUnavailable`, `catalog.facet.occasion.*`,
+  `a11y.media.gallery`, `media.placeholder.product`, `media.provenance.aiExample`, and perhaps
+  `shop.empty.corridorLink` for the picker's corridor link. That puts `en` at about 42/518 = 8 %
+  unreviewed, against the 5 % gate (`home-honesty.test.ts:285`). The founder needs to attest the
+  list in one batch, or rule which drawn strings to drop. **Answered (founder, 2026-10-03): approve as we go.** Use the drawn texts verbatim, unreviewed; the batch went to the founder the same day.
+- **E-3 (2026-10-03, implementer → orchestrator → founder): three `en` keys beyond the approved
+  28, and one approved string not built.** The page needs three strings no drawing carries as
+  approved copy: `delivery.reason.beforeEarliest` ("This date has passed") and
+  `delivery.reason.notDeliveryDay` ("We do not deliver on this day in {country}"), the two calendar
+  reasons no drawing shows but the calendar can produce, and `product.trust.substitution.body`
+  ("We substitute to the same value, style and colour, and we tell you what changed."), which the
+  artboard draws beside a `[slot]`. With them `en` was 28/541 = 5.18 % unreviewed, over the 5 %
+  gate. Separately, the related row's "See all {count}" link stays **unbuilt**: `ProductView`
+  carries no count, and a number the view model cannot back is not printed. So the approved 28
+  are used 27. **Answered (founder, chat, 2026-10-03, "approve 3"):** the three keys are attested
+  byte-for-byte (`reviewedBy: "founder (chat, 2026-10-03; PDP keys 29–31)"`), and `en` is
+  25/541 = 4.62 %. "See all {count}" stays unbuilt until a view model carries the count.
+- **E-4 (2026-10-03, implementer → orchestrator): spec 007's "Prices" row on the PDP.** Spec 007's
+  facts block prints a "Prices" row, which in the guide state says there is no price on the page.
+  The PDP prints its own all-in price two blocks further down, so that row would be false there,
+  and a "from" price is the one thing a PDP may never show (AC-21). The narrowed `DeliveryFacts`
+  export takes `prices: "omit"` and the PDP passes it; every other row is 007's, unchanged.
+  **Accepted (orchestrator, 2026-10-03):** leaving the row out is right, because the PDP does show
+  a price.
+- **E-5 (2026-10-03, implementer → orchestrator): the vase sentence on a product with no
+  photograph.** The approved exclusion sentence (`product.excludes`, "What the price does not
+  include: a vase. The photograph is styled with one…") gives the photograph as its reason. On
+  the no-photo placeholder (72 of 84 products) there is no photograph, so the sentence's reason is
+  false there. **Ruled (orchestrator, 2026-10-03):** the sentence renders **only when the product
+  shows a photograph**; with the placeholder it is omitted. The vase stays in the add-on list. No
+  new string.
+
+## Progress
+
+- **2026-10-03 — stopped at the role's time limit, before any code was written (partial).** I read
+  the brief, the spec 009 sections it names, `productView()`'s types (`src/modules/catalog/product.ts`),
+  `modules/geo/delivery` (`types.ts`, `calendar.ts`, `schemas.ts`), the `ui` barrel, TASK-108's
+  `ui/shop` pattern, the drawings' spec 009 group, and the existing `en` keys. Nothing is
+  implemented and no tests are written. `TASKS.md` was not edited, because the guard closed it
+  before the status flip. The findings below are for whoever picks this up:
+  - **Import direction.** `ui` imports only `i18n` and `config`, and `catalog` imports `ui` at runtime
+    (`ProductCardViewSchema`, `altFor`, `assetsForProduct`). So `ui/product/*` may take
+    `ProductView`, `TierOption`, `AddonLine`, `DateTotals`, `DeliveryReasonKey` and similar as
+    **`import type` only**. Importing a value from `@/modules/catalog` or `@/modules/geo` is a
+    runtime cycle.
+  - **`notOrderable` and Q6.** The `preview` chips share one sentence. Proposal: closed `preview`
+    chips print no text of their own, and each radio's `aria-labelledby` lists its date label and
+    the preview notice's id. Both halves of AC-7 then hold (the reason is visible, once, and it is
+    in every chip's accessible name) without breaking Q6.
+  - **The submit button** ("Use this date") is drawn inside the picker, but the form is TASK-128's.
+    Proposal: render it only in `live`, and only when a date is selectable. A button that
+    submits nothing selectable would be the same lie as a checkbox that does nothing.
+  - **The drawn "peak day" text on a chip** cannot be rendered from data: `DeliveryDate` has a
+    surcharge `Money` but no surcharge kind. Proposal: print the occasion name and the fee, and
+    redraw the sheet to match.
+  - **The sticky summary and AC-9.** "No second money element" means the ≤390 px sticky bar must be
+    the **same** summary element restyled, not a second bar that repeats the total.
+  - **T-09 on `/dev/components`.** There is no island (TASK-129) and no form (TASK-128) yet, so
+    "selecting" needs a GET form on the gallery that reads `?date=`. Its fixture `ProductView`
+    must pass `ProductViewSchema` in a unit test. For the "hard-coded fee → red" check to bite,
+    the expected fee has to come from `dateSurcharges()` and `priceProjection()`, never from the
+    fixture's own literal.
+  - **The sheet.** Shipping the six drawings also deletes the "None of the seven exists in
+    `src/modules/ui` today" paragraph (`components.dc.html` L320) and the spec 009 clause of the
+    "Specified, not yet shipped" note (L116).
+
+- **2026-10-03 — stage 1, the page renders (combined dispatch with TASK-127).** The six primitives
   are in `src/modules/ui/product/` (`Gallery`, `TierSelector`, `DateChip`, `DeliveryDatePicker`,
   `AddonPriceList`, `PriceSummary`) with `ProductPage` assembling them in block order; the depth-4
   route gains the product branch with `dynamicParams = true`; `site-links.ts` publishes `product`,
@@ -57,6 +172,14 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
   `data-fo-price-total`, "basket" in the demo box, `dynamicParams = false`, the product branch
   dropped. One mutant survives by construction: the route's `notFound()` on an `undefined` view
   after the resolver said yes cannot be reached without moving data under a running page.
+
+- **2026-10-03 — stage 3a, copy gate and E-5.** The founder's "approve 3" is applied to the three
+  keys whose `en` text is byte-identical to his list; `AWAITING_FOUNDER_REVIEW` loses them and `en`
+  is 25/541 = 4.62 % (`home-honesty.test.ts` green). E-5: `PriceSummary` prints the vase sentence
+  only beside a photograph; three unit cases, one per branch, and both conditions were broken on
+  purpose and seen red (sentence shown on the no-photo product; vase clause dropped). This brief's
+  Read, Carry-forwards, Escalations and first Progress bullet, lost from the stage-2 commit, are
+  restored from `fbad137c`.
 
 ## Result
 

@@ -1905,12 +1905,16 @@
   },
   "delivery.reason.beforeEarliest": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (chat, 2026-10-03; PDP keys 29–31)",
+    "reviewedAt": "2026-10-03T00:00:00Z",
     "sourceHash": "efed0dfec73b710b78d5cc1ee83451341d5a73bfbbe4352bdc00bfd989dd0894"
   },
   "delivery.reason.notDeliveryDay": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (chat, 2026-10-03; PDP keys 29–31)",
+    "reviewedAt": "2026-10-03T00:00:00Z",
     "sourceHash": "c68c11bfe28ce84f87cb515601d3b1e5dde54c0d45cb80a3be164e75e4263056"
   },
   "delivery.reason.notOrderable": {
@@ -3426,7 +3430,9 @@
   },
   "product.trust.substitution.body": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (chat, 2026-10-03; PDP keys 29–31)",
+    "reviewedAt": "2026-10-03T00:00:00Z",
     "sourceHash": "7d43c9276a9e60362ec09d7e25f84c8cba16d36b43aa0cd13ee7f099d15d8b1a"
   },
   "product.trust.substitution.title": {
