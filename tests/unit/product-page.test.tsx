@@ -383,6 +383,36 @@ describe("AC-9: the fee is on the chip before selection, and selecting moves exa
         .filter((text) => text !== fee);
     expect(amounts(after)).toEqual(amounts(before));
   });
+
+  it("docks the summary's own total row at ≤390 px — the sticky bar is not a second money element", async () => {
+    for (const view of [
+      await viewOf("en", "PL", AMBER, { now: WOMENS_DAY_WEEK }),
+      await liveViewOf("en", AMBER, { now: WOMENS_DAY_WEEK }),
+    ]) {
+      const html = render(view);
+      const where = view.delivery.state;
+      // One element is docked, and it is the row inside the summary that holds the one total.
+      const docked = [...html.matchAll(/class="[^"]*max-\[390px\]:fixed/gu)];
+      expect(docked, where).toHaveLength(1);
+      const row = block(html, "data-fo-summary-total");
+      expect(row, where).toMatch(/^<div[^>]*max-\[390px\]:fixed/u);
+      expect(block(html, "data-fo-price-summary"), where).toContain(row);
+      expect([...html.matchAll(/data-fo-price-total/gu)], where).toHaveLength(
+        1,
+      );
+      expect(row, where).toContain("data-fo-price-total");
+      expect([...html.matchAll(/aria-live=/gu)], where).toHaveLength(1);
+      expect(row, where).toContain('aria-live="polite"');
+      // The bar names the size and the inclusive formula beside the amount; those words repeat
+      // the summary's, so they are out of the accessibility tree, and they carry no money.
+      const selection = block(row, 'data-fo-summary-docked="selection"');
+      expect(selection, where).toContain('aria-hidden="true"');
+      expect(readable(selection), where).toContain(
+        loadMessages("en", ["catalog"]).catalog.price.inclusive,
+      );
+      expect(selection, where).not.toMatch(/\d[\d,.]*\s*zł|zł\s*\d|PLN|£/u);
+    }
+  });
 });
 
 /* -------------------------------------------------------------------------- */
@@ -579,11 +609,21 @@ describe("AC-22: no claim without backing, in every locale and picker state", ()
         // The picker's cutoff line is the one place the PDP may print it — the artboards draw it
         // in `preview` (future tense) and `live` — so it is lifted out by its own element, and
         // the `unavailable` page, which has no cutoff at all, is scanned whole.
-        const cutoff = block(html, "data-fo-cutoff");
-        expect(cutoff === "", where).toBe(
-          view.delivery.state === "unavailable",
+        // The docked summary repeats it in `live` (the mobile artboard's "the last line becomes
+        // the cutoff sentence"), marked the same way, so every marked line is lifted and counted.
+        let scanned = html;
+        let cutoffs = 0;
+        for (
+          let cutoff = block(scanned, "data-fo-cutoff");
+          cutoff !== "";
+          cutoff = block(scanned, "data-fo-cutoff")
+        ) {
+          scanned = scanned.replace(cutoff, "");
+          cutoffs += 1;
+        }
+        expect(cutoffs, where).toBe(
+          { unavailable: 0, preview: 1, live: 2 }[view.delivery.state],
         );
-        const scanned = cutoff === "" ? html : html.replace(cutoff, "");
         expect(
           listingHonestyViolations({
             text: withoutFactsHeading(readable(scanned), locale),
