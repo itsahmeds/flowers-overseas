@@ -197,4 +197,29 @@ describe("validateSitemapFile rules no fixture reached", () => {
       },
     );
   });
+
+  // The parse-error branch of `noindexFor` reports by returning `error`, not by `problems.push`,
+  // so the round-1 sweep never neutered it: with `error: null` there, a `noindex.json` of `{`
+  // was read as an empty list and the CLI exited 0 (`/break 99` round 1).
+  it("fails, in process and through the CLI, when noindex.json is not JSON at all", () => {
+    inDir(
+      {
+        "one.xml": `${URLSET}<url><loc>https://a.test/en/</loc></url></urlset>\n`,
+        [NOINDEX_FILE]: "{",
+      },
+      (dir) => {
+        const reasons = validateSitemapFile(
+          join(dir, "one.xml"),
+          "one.xml",
+        ).map(({ reason }) => reason);
+        expect(reasons).toHaveLength(1);
+        expect(reasons[0]).toContain(`${NOINDEX_FILE} is not valid JSON (`);
+
+        const result = runSeoCli(CLI, dir);
+        expect(result.status).toBe(1);
+        expect(result.stderr).toContain("one.xml");
+        expect(result.stderr).toContain(`${NOINDEX_FILE} is not valid JSON (`);
+      },
+    );
+  });
 });

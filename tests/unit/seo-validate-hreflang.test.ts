@@ -20,10 +20,17 @@ import { runSeoCli, withEmptyDir, withFixtureDir } from "./support/seo-cli";
 
 const CLI = "validate-hreflang.ts";
 
-/** The two URL reasons `validateHreflangFile` gives for a non-https page and a relative href. */
-const URL_REASONS = [
+/**
+ * Every reason `validateHreflangFile` gives for `bad-urls.json`, in order: the non-https page, its
+ * `http://` `en` alternate, its relative `x-default`, and the graph check's unreachable target.
+ * Stated whole (`/break 99` round 1): `arrayContaining` over the first and third left the `en`
+ * alternate's `http://` reason free to vanish, so a scheme check that accepted `http://` passed.
+ */
+const BAD_URLS_REASONS = [
   "http://a.test/en/: url is not an absolute https:// URL",
+  "http://a.test/en/: alternate en href is not an absolute https:// URL: http://a.test/en/",
   "http://a.test/en/: alternate x-default href is not an absolute https:// URL: /en/",
+  "http://a.test/en/: alternate x-default -> /en/ has no page entry in this fixture, so reciprocity cannot hold",
 ];
 
 describe("validate-hreflang CLI (T-23)", () => {
@@ -132,7 +139,8 @@ describe("validate-hreflang helpers", () => {
   it("applies that rule to a page's url and to every alternate's href", () => {
     // The helper above is exercised on its own; this is the file validator *using* it (TASK-143).
     // Neutering either call left every case in this file green, because no fixture carried a
-    // non-https URL: a page at `http://` and a relative alternate are each reported, by name.
+    // non-https URL: a page at `http://`, an `http://` alternate and a relative one are each
+    // reported, by name.
     const dir = mkdtempSync(join(tmpdir(), "fo-hreflang-"));
     const path = join(dir, "bad-urls.json");
     writeFileSync(
@@ -152,7 +160,7 @@ describe("validate-hreflang helpers", () => {
     try {
       expect(
         validateHreflangFile(path, "bad-urls.json").map(({ reason }) => reason),
-      ).toEqual(expect.arrayContaining(URL_REASONS));
+      ).toStrictEqual(BAD_URLS_REASONS);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
