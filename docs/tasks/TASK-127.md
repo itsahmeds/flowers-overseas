@@ -6,9 +6,29 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 ## Binding
 
-What the spec binds this task to, in the spec's own words: the resolution notes that override
-defaults, the AC ids owned, the rulings from earlier reviews that apply here, the gates that must
-be green. One paragraph or a short list — no restatement of the spec.
+- **Built with TASK-126 by one agent in one PR** (founder, 2026-10-03, "visible first"). The visible
+  outcome: the product cards on the listing pages become links (the `product` id is published in
+  `site-links.ts`), and clicking one opens the bouquet's page.
+- **Scope, from spec 009 §12 task 7.** Assembly in the artboards' block order (breadcrumb, then the
+  destination line, gallery, `<h1>`, description, tier selector, date picker, delivery facts,
+  add-on list, price summary, trust, related products), which is the DOM order and the mobile
+  order. Desktop re-flows with CSS only. The page covers the three picker states through
+  `ActivePartnersProvider` and `pickerState()` with zero template branches, plus no-photo,
+  stale-FX, the demo summary, the LCP preload, the breadcrumb and related products. The page
+  renders from `productView()` alone (TASK-125's carry-forward: it may not call `priceProjection`,
+  `dateSurcharges`, `deliveryWindow` or `productPageIndexability` itself).
+- **ACs owned:** AC-1, AC-8, AC-10, AC-21, AC-22, AC-25 (spec 009 §9).
+- **Rulings that apply.**
+  - **Trust block:** render only what the drawing shows, the substitution claim ("If something
+    is unavailable"). The freshness guarantee (TASK-125 E-2) is not drawn and is not rendered
+    until the founder rules.
+  - **Delivery facts:** spec 007's block, reused unchanged (TASK-126 E-1, option a). Export it
+    from `geo` with a narrowed prop, and redraw the sheet's rows to 007's.
+  - No purchase affordance. In its place goes the demo sentence (§13 Q6, Q7).
+  - Phase 0 is `noindex,follow` everywhere, through spec 007's engine.
+- **Copy:** the drawn texts are used verbatim, `reviewed: false`, in `AWAITING_FOUNDER_REVIEW`.
+  The founder approves them as one batch (2026-10-03, "approve as we go"). Their approval is
+  recorded as `reviewedBy: "founder (chat, <date>)"`, as on 2026-09-18.
 
 ## Read
 
@@ -34,6 +54,12 @@ One dated bullet per `/review`, newest last.
      the spec 009 §11 per-locale counts. Follow the `writeExistenceSummary()` precedent: the depth-3
      `generateStaticParams` calls it exactly once per build. The failure mode to avoid is two
      tables in one `$GITHUB_STEP_SUMMARY`. Prove the call happens once by mutation.
+
+- **From `/review 101` round 2 (2026-10-02, TASK-125, HOLE 12 ACCEPTABLE):** run the F1 cast case
+  once per optional term (`countryLive` and `unparameterised`). Make the source scan refuse a
+  hand-built `pageType: "product"` descriptor passed straight to `seo.pageIndexability()`. Extend
+  the robots-text scan (AC-16's grep) to the new route file, make it case-insensitive, and make it
+  catch the `{ robots: { index: false } }` object form.
 
 ## Escalations
 

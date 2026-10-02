@@ -73,7 +73,7 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   with a narrowed prop (`{ facts, nameKey, locale }`), TASK-127 mounts it, and the drawing is
   redrawn to 007's rows. This edits `geo`, which is outside TASK-126's fence. **(b)** a new
   `ui/product/DeliveryFacts.tsx` with the drawn rows. That is a re-implementation and needs about
-  4–5 new `en` strings. Recommendation: (a). It adds no new copy, and §5.3 says "reused". `open`.
+  4–5 new `en` strings. Recommendation: (a). It adds no new copy, and §5.3 says "reused". **Answered (orchestrator, 2026-10-03): (a).** The fence includes the `geo` export.
 - **E-2 (2026-10-03, implementer → orchestrator → founder): the copy gate will go red, by about
   20 keys.** There are no `delivery.*` or `product.*` keys on `main` (counted). Counted from the
   drawings, the six primitives need at least these new `en` keys, about **19–21** in total. The
@@ -90,7 +90,7 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   `a11y.media.gallery`, `media.placeholder.product`, `media.provenance.aiExample`, and perhaps
   `shop.empty.corridorLink` for the picker's corridor link. That puts `en` at about 42/518 = 8 %
   unreviewed, against the 5 % gate (`home-honesty.test.ts:285`). The founder needs to attest the
-  list in one batch, or rule which drawn strings to drop. `open`.
+  list in one batch, or rule which drawn strings to drop. **Answered (founder, 2026-10-03): approve as we go.** Use the drawn texts verbatim, unreviewed; the batch went to the founder the same day.
 
 ## Progress
 
