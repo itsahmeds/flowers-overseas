@@ -273,10 +273,25 @@ describe("the page's other blocks come from the one model (§5.2, §5.3)", () =>
     expect(view.breadcrumb.map((crumb) => crumb.href)).toEqual([
       "/pl",
       "/pl/wyslij-kwiaty",
-      "/pl/wyslij-kwiaty/polska",
+      undefined,
       "/pl/polska/kwiaty",
       "/pl/polska/produkt/amber-hour",
     ]);
+    // The country crumb was a 404 (`/pl/wyslij-kwiaty/polska`) until TASK-113's corridor rule; the category crumb this case is about is unchanged.
+    expect(view.breadcrumb[2]).toStrictEqual({
+      labelKey: "destinations.pl.name",
+      current: false,
+    });
+    expect(view.breadcrumb[2]?.href).toBe(undefined);
+  });
+
+  it("links the country to its corridor guide only where that guide has a page in the view's locale (TASK-113)", async () => {
+    // `pl` has no corridor page, so no `corridorPath`; `en` keeps the published guide.
+    const pl = await amber("pl", "PL");
+    expect("corridorPath" in pl.country).toBe(false);
+    expect(pl.country.corridorPath).toBe(undefined);
+    const en = await amber("en", "PL");
+    expect(en.country.corridorPath).toBe("/en/send-flowers-to/poland");
   });
 
   it("shows at most six related products, never itself, in spec 005's deterministic order", async () => {

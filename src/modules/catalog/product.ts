@@ -69,6 +69,7 @@ import { writeStepSummaryStdout } from "@/lib/step-summary";
 import {
   type DeliveryWindow,
   CountryOperationsSchema,
+  corridorPageExists,
   corridorSlug,
   corridorState,
   corridorStates,
@@ -1473,7 +1474,9 @@ export async function productView(
       iso2,
       slug: record.countrySlug,
       nameKey: countryConfig(iso2).nameKey,
-      ...(isGuidePublished(iso2)
+      // Only where the guide has a page in this locale (`corridorPageExists()`): one rule with the
+      // listing's country crumb (`/break 98` escalation 4, TASK-113).
+      ...(isGuidePublished(iso2) && corridorPageExists(iso2, locale)
         ? {
             corridorPath: localePath(
               locale,
