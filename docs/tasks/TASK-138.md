@@ -100,6 +100,13 @@ One dated bullet per `/review`, newest last.
   look-alike-host cases with the extraction), HOLE 7 ACCEPTABLE (a non-200 PUT throws today; add a
   403 case with the extraction), HOLE 8 ACCEPTABLE (signing proven against live R2; a bad signature
   is a loud 403).
+- **From `/review 94` round 3 (2026-10-03), required:** `/break 94` round 2's HOLE 10 (`--dry-run`
+  must never PUT: `dryRun: args.dryRun` replaced by `false` leaves every test green) and HOLE 11
+  (`--only` must upload only the named ids: dropping the `only` spread leaves every test green;
+  TASK-168 relies on it). Two `runUpload()` cases, each watched red under its break. Accepted as a
+  nit: the summary's "already current" count is never above 0 in a test (skip-if-unchanged is
+  tested one level down).
+
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
