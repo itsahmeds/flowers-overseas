@@ -23,13 +23,14 @@
  * already hit once by `tests/unit/seed-prices.test.ts`'s byte-for-byte projection test on a loaded
  * runner (TASK-075's row).
  */
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import {
   cpSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
   readdirSync,
+  rmSync,
   symlinkSync,
   writeFileSync,
 } from "node:fs";
@@ -43,7 +44,11 @@ import {
   COMPETITOR_MARKS,
   PII_PATTERNS,
   ROUTED_SLUG_TRANSLATION_STATUS,
+  HOLIDAY_COVERAGE_WARNING_DAYS,
+  HOLIDAY_COVERAGE_WARNING_MARKER,
   calendarHorizons,
+  holidayCoverageReport,
+  holidayCoverageRunway,
   pickerStateReport,
   PRODUCT_COUNT,
   PRODUCT_TYPE_SPLIT,
@@ -762,6 +767,45 @@ describe("§11: a locale or a country cannot look ready in CI while it is gated 
 /* Spec 009 AC-2 / T-02: the delivery-calendar rules and the picker summary.  */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * The tree with one year of Poland's holiday rows removed, through the case overlay every other
+ * fixture uses. It asserts that it removed all fourteen, because a removal that matched nothing
+ * would leave each case below quietly asserting the committed tree (TASK-149).
+ */
+function withoutHolidayYear(base: SeedTree, year: number): SeedTree {
+  const file = base.raw.get("holidays.json") as {
+    rows: { iso2: string; date: string }[];
+  };
+  const ops = file.rows
+    .filter(
+      (row) => row.iso2 === "PL" && row.date.startsWith(`${String(year)}-`),
+    )
+    .map((row) => ({
+      op: "removeRow" as const,
+      match: { iso2: "PL", date: row.date },
+    }));
+  expect(ops).toHaveLength(14);
+  return applySeedCheckCase(
+    base,
+    {
+      family: "calendar",
+      rule: "holiday-coverage",
+      replaces: "holidays.json",
+      expect: `PL/${String(year)}`,
+      alsoFamilies: [],
+      why: `TASK-149: Poland's ${String(year)} rows removed, to replay the edge they close.`,
+      ops,
+    },
+    () => ({}),
+  );
+}
+
+/** The tree judged at another instant: what `--as-of=` does to the CLI. */
+const atInstant = (base: SeedTree, instant: string): SeedTree => ({
+  ...base,
+  asOf: new Date(instant),
+});
+
 describe("spec 009 AC-2: the calendar family and the product-slug rule", () => {
   it("routes a product slug by the same translation status the catalogue does", () => {
     expect(ROUTED_SLUG_TRANSLATION_STATUS).toBe(AUTHORED_TRANSLATION_STATUS);
@@ -786,12 +830,15 @@ describe("spec 009 AC-2: the calendar family and the product-slug rule", () => {
       const late = { ...tree, asOf: new Date("2026-12-30T23:30:00Z") };
       expect(calendarHorizons(late)[0]?.from).toBe("2026-12-31");
       expect(calendarHorizons(late)[0]?.years).toEqual([2026, 2027, 2028]);
-      const problems = checkSeedDataset(late).filter(
-        (problem) => problem.family === "calendar",
-      );
-      expect(
-        problems.map((problem) => `${problem.rule} ${problem.key}`),
-      ).toEqual(["holiday-coverage PL/2028"]);
+      const calendarProblems = (subject: SeedTree): string[] =>
+        checkSeedDataset(subject)
+          .filter((problem) => problem.family === "calendar")
+          .map((problem) => `${problem.rule} ${problem.key}`);
+      // TASK-149's rows close the gap the horizon opens that night; without them it is red.
+      expect(calendarProblems(late)).toEqual([]);
+      expect(calendarProblems(withoutHolidayYear(late, 2028))).toEqual([
+        "holiday-coverage PL/2028",
+      ]);
     },
     TREE_TIMEOUT,
   );
@@ -826,7 +873,7 @@ describe("spec 009 AC-2: the calendar family and the product-slug rule", () => {
   it("prints the picker state of every destination as the step summary's second line (spec 009 §11)", async () => {
     const report = pickerStateReport(tree).join("\n");
     expect(report).toContain(
-      "| PL | yes | Europe/Warsaw · 14:00 · days 1,2,3,4,5,6 · Sunday none | no | **preview** | 2026, 2027 | 2026-09-23 → 2027-09-24 | yes |",
+      "| PL | yes | Europe/Warsaw · 14:00 · days 1,2,3,4,5,6 · Sunday none | no | **preview** | 2026, 2027, 2028 | 2026-09-23 → 2027-09-24 | yes |",
     );
     for (const iso2 of ["DE", "FR", "ES", "IT", "RO", "NL"]) {
       expect(report).toContain(
@@ -855,8 +902,194 @@ describe("spec 009 AC-2: the calendar family and the product-slug rule", () => {
 });
 
 /* -------------------------------------------------------------------------- */
+/* TASK-149: the holiday-coverage early warning.                              */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * `holiday-coverage` is right to go red the day the horizon reaches a year with no rows; what it
+ * must not be is a surprise. `--report` prints the days left for every published destination,
+ * and under 60 the report carries a warning line CI's step summary repeats. Every count below was
+ * worked by hand from the calendar (2028 is a leap year), not read back from the code.
+ */
+describe("TASK-149: the holiday-coverage runway and its 60-day warning", () => {
+  const WARNING_59_DAYS_2028 =
+    "holiday coverage early warning: PL goes red in 59 days, on 2028-01-01 (Europe/Warsaw), the first day its 366-day picker horizon reaches 2029 with no holiday row; author PL's 2029 rows in seed/data/holidays.json (spec 009 AC-2).";
+
+  it("warns under 60 days, and not at 60", () => {
+    expect(HOLIDAY_COVERAGE_WARNING_DAYS).toBe(60);
+    expect(HOLIDAY_COVERAGE_WARNING_MARKER).toBe(
+      "holiday coverage early warning:",
+    );
+  });
+
+  it(
+    "counts the days to the first red day, from today in Warsaw",
+    () => {
+      // 23 Sep 2026 → 1 Jan 2028 is 99 + 1 + 365 days; without 2028's rows, 99 to 31 Dec 2026.
+      expect(holidayCoverageRunway(tree)).toEqual([
+        {
+          iso2: "PL",
+          timeZone: "Europe/Warsaw",
+          from: "2026-09-23",
+          firstUncoveredYear: 2029,
+          redOn: "2028-01-01",
+          daysLeft: 465,
+        },
+      ]);
+      expect(holidayCoverageRunway(withoutHolidayYear(tree, 2028))).toEqual([
+        {
+          iso2: "PL",
+          timeZone: "Europe/Warsaw",
+          from: "2026-09-23",
+          firstUncoveredYear: 2028,
+          redOn: "2026-12-31",
+          daysLeft: 99,
+        },
+      ]);
+    },
+    TREE_TIMEOUT,
+  );
+
+  it(
+    "reaches 0 the minute the rule goes red, and is 1 the minute before",
+    () => {
+      const coverage = (subject: SeedTree): string[] =>
+        checkSeedDataset(subject)
+          .filter((problem) => problem.rule === "holiday-coverage")
+          .map((problem) => problem.key);
+      // With 2028: 23:59 on 31 Dec 2027 in Warsaw is green, 00:00 on 1 Jan 2028 is red on 2029.
+      const lastGreen = atInstant(tree, "2027-12-31T22:59:00Z");
+      const firstRed = atInstant(tree, "2027-12-31T23:00:00Z");
+      expect(holidayCoverageRunway(lastGreen)[0]?.daysLeft).toBe(1);
+      expect(coverage(lastGreen)).toEqual([]);
+      expect(holidayCoverageRunway(firstRed)[0]?.daysLeft).toBe(0);
+      expect(coverage(firstRed)).toEqual(["PL/2029"]);
+      // Without 2028: the edge TASK-149 was opened for, 2026-12-30 23:00 UTC.
+      const bare = withoutHolidayYear(tree, 2028);
+      expect(
+        holidayCoverageRunway(atInstant(bare, "2026-12-30T22:59:00Z"))[0]
+          ?.daysLeft,
+      ).toBe(1);
+      expect(coverage(atInstant(bare, "2026-12-30T22:59:00Z"))).toEqual([]);
+      expect(
+        holidayCoverageRunway(atInstant(bare, "2026-12-30T23:00:00Z"))[0]
+          ?.daysLeft,
+      ).toBe(0);
+      expect(coverage(atInstant(bare, "2026-12-30T23:00:00Z"))).toEqual([
+        "PL/2028",
+      ]);
+    },
+    TREE_TIMEOUT,
+  );
+
+  it("prints the warning at 59 days left, and not at 60 or 61", () => {
+    // 00:00 on 3 Nov 2027 in Warsaw is 59 days before 1 Jan 2028; one minute earlier is 60.
+    const at59 = holidayCoverageReport(
+      atInstant(tree, "2027-11-02T23:00:00Z"),
+    ).join("\n");
+    expect(at59).toContain(
+      "| PL | 2027-11-03 | 2029 | 2028-01-01 (Europe/Warsaw) | 59 |",
+    );
+    expect(at59).toContain(`\n${WARNING_59_DAYS_2028}\n`);
+    for (const [instant, today, days] of [
+      ["2027-11-02T22:59:00Z", "2027-11-02", "60"],
+      ["2027-11-01T12:00:00Z", "2027-11-01", "61"],
+    ] as const) {
+      const quiet = holidayCoverageReport(atInstant(tree, instant)).join("\n");
+      expect(quiet).toContain(
+        `| PL | ${today} | 2029 | 2028-01-01 (Europe/Warsaw) | ${days} |`,
+      );
+      expect(quiet).not.toContain(HOLIDAY_COVERAGE_WARNING_MARKER);
+      expect(quiet).toContain("No destination is within 60 days of going red.");
+    }
+  });
+
+  it("says `1 day` and `red from today` at the last two counts", () => {
+    expect(
+      holidayCoverageReport(atInstant(tree, "2027-12-31T22:59:00Z")).join("\n"),
+    ).toContain(
+      "holiday coverage early warning: PL goes red in 1 day, on 2028-01-01 (Europe/Warsaw), the first day its 366-day picker horizon reaches 2029 with no holiday row; author PL's 2029 rows in seed/data/holidays.json (spec 009 AC-2).",
+    );
+    expect(
+      holidayCoverageReport(atInstant(tree, "2027-12-31T23:00:00Z")).join("\n"),
+    ).toContain(
+      "holiday coverage early warning: PL is red from today, 2028-01-01 (Europe/Warsaw), the first day its 366-day picker horizon reaches 2029 with no holiday row; author PL's 2029 rows in seed/data/holidays.json (spec 009 AC-2).",
+    );
+  });
+
+  it("is quiet on the day it was written, with or without the 2028 rows", () => {
+    // 2 Oct 2026: 456 days with the rows; 90 without them (the red day is 31 Dec 2026, so the
+    // last green day, 30 Dec, is 89 days out). Neither is under 60.
+    const today = "2026-10-02T12:00:00Z";
+    const withRows = holidayCoverageReport(atInstant(tree, today)).join("\n");
+    expect(withRows).toContain(
+      "| PL | 2026-10-02 | 2029 | 2028-01-01 (Europe/Warsaw) | 456 |",
+    );
+    expect(withRows).not.toContain(HOLIDAY_COVERAGE_WARNING_MARKER);
+    const bare = holidayCoverageReport(
+      atInstant(withoutHolidayYear(tree, 2028), today),
+    ).join("\n");
+    expect(bare).toContain(
+      "| PL | 2026-10-02 | 2028 | 2026-12-31 (Europe/Warsaw) | 90 |",
+    );
+    expect(bare).not.toContain(HOLIDAY_COVERAGE_WARNING_MARKER);
+  });
+
+  it("lists every published destination, and says which render no calendar", () => {
+    const report = holidayCoverageReport(tree).join("\n");
+    expect(report).toContain("#### holiday coverage runway (spec 009 AC-2)");
+    for (const iso2 of ["DE", "FR", "ES", "IT", "RO", "NL"]) {
+      expect(report).toContain(`| ${iso2} | — | — | — | no calendar |`);
+    }
+    expect(seedHealthReport(tree)).toContain(
+      "#### holiday coverage runway (spec 009 AC-2)",
+    );
+  });
+});
+
+/* -------------------------------------------------------------------------- */
 /* The CLI (AC-10's exit codes).                                              */
 /* -------------------------------------------------------------------------- */
+
+/**
+ * `pnpm seed:check` as CI runs it, with `$GITHUB_STEP_SUMMARY` pointed at `summary` (or nowhere),
+ * so a test never appends to the summary of the CI run executing it.
+ */
+function runSeedCheck(
+  args: readonly string[],
+  summary = "",
+): { status: number | null; stdout: string; stderr: string } {
+  const result = spawnSync("node", ["seed/check.ts", ...args], {
+    cwd: repoRoot,
+    encoding: "utf8",
+    env: { ...process.env, GITHUB_STEP_SUMMARY: summary },
+  });
+  return {
+    status: result.status,
+    stdout: result.stdout,
+    stderr: result.stderr,
+  };
+}
+
+/** A private copy of the dataset under `$TMPDIR` with one year of Poland's rows removed. */
+function writeTreeWithoutHolidayYear(year: number): string {
+  const root = mkdtempSync(join(tmpdir(), "fo-seed-runway-"));
+  cpSync(join(repoRoot, SEED_DATA_DIR), join(root, SEED_DATA_DIR), {
+    recursive: true,
+  });
+  for (const directory of ["messages", "content", "public"]) {
+    symlinkSync(join(repoRoot, directory), join(root, directory));
+  }
+  writeFileSync(
+    join(root, SEED_DATA_DIR, "holidays.json"),
+    JSON.stringify(
+      withoutHolidayYear(tree, year).raw.get("holidays.json"),
+      null,
+      2,
+    ),
+  );
+  return root;
+}
 
 describe("the `pnpm seed:check` CLI", () => {
   it(
@@ -875,38 +1108,63 @@ describe("the `pnpm seed:check` CLI", () => {
   it(
     "goes red the Warsaw day Poland's committed holidays stop covering the horizon, and not a minute before (spec 009 AC-2)",
     () => {
-      // 30 Dec 2026 23:59 in Warsaw: the horizon ends 31 Dec 2027, inside the committed rows.
-      const before = execFileSync(
-        "node",
-        ["seed/check.ts", "--as-of=2026-12-30T22:59:00Z"],
-        { cwd: repoRoot, encoding: "utf8" },
-      );
-      expect(before).toContain("all ten rule families clean");
+      // 31 Dec 2027 23:59 in Warsaw: the horizon ends 31 Dec 2028, inside the committed rows.
+      const before = runSeedCheck(["--as-of=2027-12-31T22:59:00Z"]);
+      expect(before.status).toBe(0);
+      expect(before.stdout).toContain("all ten rule families clean");
 
-      // 31 Dec 2026 00:00 in Warsaw: the horizon reaches 1 Jan 2028, and there is no 2028 row.
-      let status = 0;
-      let output = "";
-      try {
-        execFileSync(
-          "node",
-          ["seed/check.ts", "--as-of=2026-12-30T23:00:00Z"],
-          {
-            cwd: repoRoot,
-            encoding: "utf8",
-            stdio: ["ignore", "pipe", "pipe"],
-          },
-        );
-      } catch (error) {
-        const failure = error as { status?: number; stderr?: string };
-        status = failure.status ?? 0;
-        output = failure.stderr ?? "";
-      }
-      expect(status).toBe(1);
-      expect(output).toContain(
-        "seed/data/holidays.json: [calendar/holiday-coverage] `PL/2028`",
+      // 1 Jan 2028 00:00 in Warsaw: the horizon reaches 1 Jan 2029, and there is no 2029 row.
+      const after = runSeedCheck(["--as-of=2027-12-31T23:00:00Z"]);
+      expect(after.status).toBe(1);
+      expect(after.stderr).toContain(
+        "seed/data/holidays.json: [calendar/holiday-coverage] `PL/2029`",
       );
-      expect(output).toContain("the first uncovered date is 2028-01-01");
-      expect(output).toContain("1 problem(s) in 1 rule family/families");
+      expect(after.stderr).toContain("the first uncovered date is 2029-01-01");
+      expect(after.stderr).toContain("1 problem(s) in 1 rule family/families");
+    },
+    TREE_TIMEOUT,
+  );
+
+  it(
+    "without the 2028 rows: warns at 59 days, is quiet at 61, and fails on `PL/2028` past the edge (TASK-149)",
+    () => {
+      const root = writeTreeWithoutHolidayYear(2028);
+      try {
+        // 2 Nov 2026 is 59 days before 31 Dec 2026, the first red day.
+        const at59 = runSeedCheck([
+          root,
+          "--report",
+          "--as-of=2026-11-02T12:00:00Z",
+        ]);
+        expect(at59.status).toBe(0);
+        expect(at59.stdout).toContain(
+          "\nholiday coverage early warning: PL goes red in 59 days, on 2026-12-31 (Europe/Warsaw), the first day its 366-day picker horizon reaches 2028 with no holiday row; author PL's 2028 rows in seed/data/holidays.json (spec 009 AC-2).\n",
+        );
+        expect(at59.stdout).toContain(
+          "| PL | 2026-11-02 | 2028 | 2026-12-31 (Europe/Warsaw) | 59 |",
+        );
+
+        const at61 = runSeedCheck([
+          root,
+          "--report",
+          "--as-of=2026-10-31T12:00:00Z",
+        ]);
+        expect(at61.status).toBe(0);
+        expect(at61.stdout).toContain(
+          "| PL | 2026-10-31 | 2028 | 2026-12-31 (Europe/Warsaw) | 61 |",
+        );
+        expect(at61.stdout).not.toContain(HOLIDAY_COVERAGE_WARNING_MARKER);
+
+        const past = runSeedCheck([root, "--as-of=2026-12-30T23:00:00Z"]);
+        expect(past.status).toBe(1);
+        expect(past.stderr).toContain(
+          "seed/data/holidays.json: [calendar/holiday-coverage] `PL/2028`",
+        );
+        expect(past.stderr).toContain("the first uncovered date is 2028-01-01");
+        expect(past.stderr).toContain("1 problem(s) in 1 rule family/families");
+      } finally {
+        rmSync(root, { recursive: true, force: true });
+      }
     },
     TREE_TIMEOUT,
   );
@@ -1012,6 +1270,62 @@ describe("spec 006 AC-30 / T-30: the `seed-check` CI job", () => {
     );
     expect(summary?.if).toBe("always()");
   });
+
+  it(
+    "repeats the holiday-coverage warning in the step summary at 59 days, and not at 61 (TASK-149)",
+    () => {
+      const step = (job?.steps ?? []).find((candidate) =>
+        (candidate.run ?? "").includes("GITHUB_STEP_SUMMARY"),
+      );
+      expect(step?.run).toContain(HOLIDAY_COVERAGE_WARNING_MARKER);
+      // The job, end to end: the gate tees its log, then the summary step reads that log.
+      const runJob = (instant: string): string => {
+        const dir = mkdtempSync(join(tmpdir(), "fo-seed-summary-"));
+        try {
+          const summaryFile = join(dir, "summary.md");
+          writeFileSync(summaryFile, "");
+          const gate = runSeedCheck(
+            ["--report", `--as-of=${instant}`],
+            summaryFile,
+          );
+          expect(gate.status).toBe(0);
+          writeFileSync(
+            join(dir, "seed-check.log"),
+            `${gate.stdout}${gate.stderr}`,
+          );
+          const script = (step?.run ?? "").replace(
+            /\$\{\{[^}]*\}\}/g,
+            "success",
+          );
+          const result = spawnSync(
+            "bash",
+            ["--noprofile", "--norc", "-e", "-o", "pipefail", "-c", script],
+            {
+              cwd: dir,
+              encoding: "utf8",
+              env: { ...process.env, GITHUB_STEP_SUMMARY: summaryFile },
+            },
+          );
+          expect(result.status).toBe(0);
+          return readFileSync(summaryFile, "utf8");
+        } finally {
+          rmSync(dir, { recursive: true, force: true });
+        }
+      };
+      // 3 Nov 2027 in Warsaw is 59 days before 1 Jan 2028, the committed rows' first red day.
+      const at59 = runJob("2027-11-03T12:00:00Z");
+      expect(at59).toContain(
+        "> [!WARNING]\n> - holiday coverage early warning: PL goes red in 59 days, on 2028-01-01 (Europe/Warsaw), the first day its 366-day picker horizon reaches 2029 with no holiday row; author PL's 2029 rows in seed/data/holidays.json (spec 009 AC-2).\n",
+      );
+      const at61 = runJob("2027-11-01T12:00:00Z");
+      expect(at61).toContain(
+        "| PL | 2027-11-01 | 2029 | 2028-01-01 (Europe/Warsaw) | 61 |",
+      );
+      expect(at61).not.toContain("[!WARNING]");
+      expect(at61).not.toContain(HOLIDAY_COVERAGE_WARNING_MARKER);
+    },
+    TREE_TIMEOUT,
+  );
 
   it("is a required check, so a broken dataset cannot be merged past it", () => {
     expect(job?.["continue-on-error"]).toBeUndefined();

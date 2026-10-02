@@ -1949,6 +1949,39 @@ function rawHolidayRows(tree: SeedTree): readonly Record<string, unknown>[] {
   );
 }
 
+/** Under this many days left, `--report` warns that `holiday-coverage` is about to go red. */
+export const HOLIDAY_COVERAGE_WARNING_DAYS = 60;
+
+/** The prefix of every warning line; CI's `seed-check` summary step greps the log for it. */
+export const HOLIDAY_COVERAGE_WARNING_MARKER =
+  "holiday coverage early warning:";
+
+/** How long one destination's committed holiday rows keep `holiday-coverage` green. */
+export interface HolidayCoverageRunway {
+  readonly iso2: string;
+  readonly timeZone: string;
+  /** Today in the destination, at `SeedTree.asOf`. */
+  readonly from: string;
+  /** The earliest year from `from`'s on that has no holiday row for this destination. */
+  readonly firstUncoveredYear: number;
+  /** The first destination day on which the rule is red: `from` itself when it already is. */
+  readonly redOn: string;
+  /** Whole calendar days from `from` to `redOn`; 0 means the rule is red today. */
+  readonly daysLeft: number;
+}
+
+/** TASK-149 stub: replaced by the implementation in the next commit. */
+export function holidayCoverageRunway(
+  tree: SeedTree,
+): readonly HolidayCoverageRunway[] {
+  return tree.asOf.getTime() < 0 ? [] : [];
+}
+
+/** TASK-149 stub: replaced by the implementation in the next commit. */
+export function holidayCoverageReport(tree: SeedTree): readonly string[] {
+  return tree.asOf.getTime() < 0 ? [] : [];
+}
+
 /**
  * Family 10. Three rules, each reading **raw** rows so that a fault the file schema also rejects
  * (a missing `nameKey`, an unknown `rule_type`) is still named by the rule that owns it rather

@@ -45,6 +45,11 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
 
 _None recorded._
 
+## Progress
+
+- 2026-10-03: row `in_progress`; 2028 dates computed by hand (Easter 16 Apr 2028, Meeus/Jones/Butcher and Gauss) and the 14-day list checked against the statute text (Dz.U. 2020 poz. 1920 art. 1 pkt 1 a–m, plus lit. ka from Dz.U. 2024 poz. 1965, in force 2025-02-01). WIP test commit: the 2028 pin in `geo-delivery.test.ts` (red until the rows land) and the new imports in `seed-check.test.ts`. Next: the warning cases, then the rows, then `seed/check.ts`, then `ci.yml`.
+- 2026-10-03: red commit — the warning cases in `seed-check.test.ts` (runway values, the minute the rule flips, 59/60/61, wording, 2 Oct 2026 with and without 2028, CLI `--as-of` on a temp tree without 2028, the CI summary step end to end) plus typed stubs in `seed/check.ts` so `tsc` passes; 14 cases red. Next: the 2028 rows.
+
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
