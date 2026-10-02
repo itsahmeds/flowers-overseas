@@ -306,7 +306,7 @@ async function crawl(
 }
 
 test.describe("AC-21: the shop is reachable, and links at nothing that is not", () => {
-  // Generous: a locale home's depth-3 neighbourhood is ~150 documents in `en`, each one GET.
+  // Generous: `en` reads the links of 257 documents and status-checks 260, each one GET.
   test.describe.configure({ timeout: 300_000 });
 
   for (const locale of locales) {
@@ -399,8 +399,10 @@ test.describe("AC-21: the shop is reachable, and links at nothing that is not", 
 
       // Last, and about the crawl rather than about the site: it walked a neighbourhood, not an
       // empty frontier. Every list above is `[]` when nothing was fetched, so this is the line
-      // that makes a silent `[]` a failure. Measured on a production build (2026-09-22, after the
-      // rebase onto TASK-114): 237 documents from `/en` and from `/en-gb`, 5 from `/de` and `/pl`.
+      // that makes a silent `[]` a failure. Measured on a production build (2026-10-02, after the
+      // rebase onto TASK-143): the walk reaches 234 of this locale's documents from `/en` and from
+      // `/en-gb`, and 2 from `/de` and `/pl`; links are read on 257 and 9 (the walk plus the
+      // waived pages).
       expect(
         result.depthOf.size,
         `documents reached from /${locale}`,
