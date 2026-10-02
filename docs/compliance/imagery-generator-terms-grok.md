@@ -7,7 +7,7 @@ assets whose original was made with Grok Imagine.
 | Field | Value |
 | --- | --- |
 | Status | **Filed 2026-09-30.** Generator: **xAI Grok Imagine** (the C2PA manifest of every such original names `softwareAgent: Grok Imagine`, digital source type `trainedAlgorithmicMedia`). |
-| Assets | 62 of the 144 in `content/imagery/remaining-images.csv`: hero and detail of 31 products — FO-BQ-005, 006, 008, 010, 011, 013, 014, 016, 017, 021, 022, 024, 025, 026, 027, 035, 036, 038, 039; FO-FN-006…010; FO-GS-002…008. The other 82 are ChatGPT and fall under `imagery-generator-terms.md`. |
+| Assets | 62 of the 144 in `content/imagery/remaining-images.csv`: hero and detail of 31 products — `FO-BQ-005`, `FO-BQ-006`, `FO-BQ-008`, `FO-BQ-010`, `FO-BQ-011`, `FO-BQ-013`, `FO-BQ-014`, `FO-BQ-016`, `FO-BQ-017`, `FO-BQ-021`, `FO-BQ-022`, `FO-BQ-024`, `FO-BQ-025`, `FO-BQ-026`, `FO-BQ-027`, `FO-BQ-035`, `FO-BQ-036`, `FO-BQ-038`, `FO-BQ-039`, `FO-FN-006`, `FO-FN-007`, `FO-FN-008`, `FO-FN-009`, `FO-FN-010`, `FO-GS-002`, `FO-GS-003`, `FO-GS-004`, `FO-GS-005`, `FO-GS-006`, `FO-GS-007`, `FO-GS-008`. Every SKU is written in full, in backticks, separated by commas; this row uses no ranges. The other 82 are ChatGPT and fall under `imagery-generator-terms.md`. |
 | Owner | Ahmed (founder) |
 | Required by | ADR-0014, spec 006 §8, AC-29, and the amendment that admits a second generator (spec 006 §14 A7) |
 | Terms read | SpaceXAI Terms of Service — Consumer, "Last Updated: September 11, 2026" (https://x.ai/legal/terms-of-service); Brand Guidelines, dated February 14, 2025 (https://x.ai/legal/brand-guidelines); Consumer FAQs (https://x.ai/legal/faq). Read 2026-09-30. |
@@ -15,7 +15,7 @@ assets whose original was made with Grok Imagine.
 
 ## Answers
 
-Short quotations only; the PDF prints are the full text.
+This record quotes short passages only. The full text is at the x.ai URLs in the Terms read row, as read on 2026-09-30.
 
 1. **Generator and model.** `generator: "xAI Grok Imagine"`. The manifest names no model version,
    so `generatorModel` is `Grok Imagine` as well, until xAI publishes one.
