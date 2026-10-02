@@ -276,21 +276,16 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
   in state A, and any florist, delivery or price claim is refused on every guide page. Round 2's
   fix pins that text on all 14 guide pages (see `## Result`).
 - **2026-10-02 — escalation 4: 14 links to a 404 on the `de`/`pl` shop roots, not introduced by
-  this PR. `answered (orchestrator, 2026-10-02): fixed in TASK-113, one condition`, and
-  reopened on one point.** The `/break 98` hole 1 crawl read the links on the waived `de`/`pl`
-  shop roots and found that each links to `/de/blumen-verschicken/{land}` or
-  `/pl/wyslij-kwiaty/{kraj}`, which 404s because a draft locale has no corridor page. The ruling
-  widened the fence to the `ListingLinks.corridor` condition (`listing.ts:1879`). That condition
-  now also asks `corridorPageExists(iso2, locale)` (`8839e417`), and `en`/`en-gb` are unchanged.
-  **It is not enough.** On a production build the crawl still finds the same 14 URLs, because
-  the shop root's **breadcrumb** links the same path. That is the country crumb in
-  `breadcrumbFor()` (`listing.ts:1730`), on `isGuidePublished(iso2)` alone:
-  `<nav aria-label="Breadcrumb">…<a href="/de/blumen-verschicken/polen">Polen</a>`.
-  `ListingLinks.corridor` renders only in the shop root's empty state.
-  **Question:** may the fence widen to that crumb's condition too (the same
-  `corridorPageExists(iso2, locale)`, so the crumb is plain text in `de`/`pl`, which is what the
-  crumb already does where no guide is published)? `country.corridorPath` (`:1443`) is built on
-  the same rule but is rendered nowhere, so the crawl cannot see it.
+  this PR. `answered (orchestrator, 2026-10-02): fixed in TASK-113: corridor link, crumb and
+  corridorPath, one rule`.** The `/break 98` hole 1 crawl read the links on the waived `de`/`pl`
+  shop roots. Each linked to `/de/blumen-verschicken/{land}` or `/pl/wyslij-kwiaty/{kraj}`,
+  which 404s because a draft locale has no corridor page. Two rendered links carried it, the
+  empty state's `ListingLinks.corridor` (`listing.ts:1879`) and the breadcrumb's country crumb
+  (`breadcrumbFor()`, `:1730`), plus the unrendered `country.corridorPath` (`:1443`). All three
+  came from TASK-107 (`cb1b7c68`). The orchestrator ruled that TASK-113 owns AC-21's "every link
+  resolves", and widened the fence to those three conditions. Each one now also asks
+  `corridorPageExists(iso2, locale)`, the corridor route's own rule (`8839e417`, `5a7e45d8`). No
+  `en`/`en-gb` value changed.
 
 ## Progress
 
@@ -308,20 +303,20 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
 - 2026-10-02 — escalation 4 answered (fix here, one condition): `ListingLinks.corridor` gated on
   `corridorPageExists()` plus a unit case (`8839e417`). The crawl is still red on the same 14 URLs
   through the breadcrumb crumb at `listing.ts:1730`, which is outside the fence. **Blocked again.**
+- 2026-10-02 — fence widened to the crumb and `country.corridorPath`: both gated (`5a7e45d8`), and
+  the unit cases split one per value. Crawl and corridor e2e green on a production build; red on
+  the 4 cases with the crumb condition reverted. Unblocked.
 
 ## Result
 
 **AC-20 met as written (spec 008); state-B chips deferred to TASK-147 per spec 007 §14 A10.**
-**AC-21 is not met (2026-10-02).** Since `/break 98` hole 1 was fixed, the crawl reads the links
-on every page it fetches, the 23 waived category hubs and the 14 waived `de`/`pl` shop roots
-included. It finds 14 links to a 404, and this PR did not introduce them: each `de`/`pl` shop
-root links to its corridor page (`/de/blumen-verschicken/polen`, `/pl/wyslij-kwiaty/polska`, …),
-which does not exist in a draft locale. Two links per root carry it: `ListingLinks.corridor`
-(`listing.ts:1879`, fixed here in `8839e417` on the orchestrator's ruling) and the breadcrumb's
-country crumb (`listing.ts:1730`, outside the fence, so escalation 4 is open on that point). Both
-come from TASK-107 (`cb1b7c68`, on `main`). Neither is waived. `en` and `en-gb` are clean on all six page types.
-The two waivers (category hubs; `de`/`pl` shop roots) and the two founder strings are still
-`open`.
+**AC-21 is met (2026-10-02), with the two waivers still `open`** (category hubs; `de`/`pl` shop
+roots). The waivers excuse only the missing inbound link. Since `/break 98` hole 1 was fixed, the
+crawl reads the links on every page it fetches and on every waived page: all six page types in
+all four locales. It finds zero links to a non-200 URL, zero into an unpublished id and zero
+malformed. That needed one fix: escalation 4, the `de`/`pl` shop roots' corridor links to a 404.
+They came from TASK-107, and were fixed here on the orchestrator's ruling (`8839e417`,
+`5a7e45d8`). The two founder strings are still `open`.
 
 **Rebase (2026-09-22).** Rebased onto `origin/main` at `d1c0537` (TASK-114 merged as #93), then
 again onto `46db59b` (TASK-139's Linux baselines, #95), where only the generated map conflicted. The
@@ -347,14 +342,14 @@ target gets a status check.
 |---|---|---|---|---|---|
 | `/en` | 183 / 206 | 257 (234 walked + 23 category hubs) | 260 | shop root 7/7, country category 140/140, country occasion 7/7, occasion hub 28/28, occasions index 1/1, **category hub 0/23 (waived; links read)** | 0 |
 | `/en-gb` | 183 / 206 | 257 | 260 | identical to `en` | 0 |
-| `/de` | 0 / 7 | 9 (2 walked + 7 shop roots) | 61 | **shop root 0/7 (waived; links read)** | **7**: `/de/{land}/blumen → /de/blumen-verschicken/{land} → 404` |
-| `/pl` | 0 / 7 | 9 | 61 | **shop root 0/7 (waived; links read)** | **7**: `/pl/{kraj}/kwiaty → /pl/wyslij-kwiaty/{kraj} → 404` |
+| `/de` | 0 / 7 | 9 (2 walked + 7 shop roots) | 61 (before escalation 4's fix) | **shop root 0/7 (waived; links read)** | 0 since `5a7e45d8`; 7 before: `/de/{land}/blumen → /de/blumen-verschicken/{land} → 404` |
+| `/pl` | 0 / 7 | 9 | 61 (before the fix) | **shop root 0/7 (waived; links read)** | 0 since `5a7e45d8`; 7 before: `/pl/{kraj}/kwiaty → /pl/wyslij-kwiaty/{kraj} → 404` |
 | `/` | every locale home at depth 1 | — | 5 | — | 0 |
 
 The table this replaces (2026-09-22) said "zero non-200 links in every crawl". That was true only
 of the links it read, which were on depth 0 to 2 and never on a category hub or a `de`/`pl` shop
-root: 3 of the 6 page types. The corridor link behind the 14 `de`/`pl` 404s has been in
-`listing.ts` since TASK-107.
+root: 3 of the 6 page types. The corridor links behind the 14 `de`/`pl` 404s had been in
+`listing.ts` since TASK-107, and are fixed (escalation 4).
 
 **What changed in the crawl.** There is a new case for `/`: it links exactly the four locale
 homes, each answering 200, so ≤3 from every home means ≤4 from the root. The four finding lists
@@ -666,3 +661,24 @@ So the fix removed one link of two, and the e2e half of the requested mutation (
 red when the condition is reverted) cannot be shown: they are red either way until the crumb is
 fixed. The crumb is outside the widened fence, so it was not touched. See escalation 4's
 question.
+
+**Escalation 4, completed (2026-10-02, fence widened by the orchestrator).** The breadcrumb's
+country crumb (`breadcrumbFor()`, `listing.ts:1730`) and `country.corridorPath` (`:1443`) now ask
+`corridorPageExists(iso2, locale)` as well. Every corridor link in `listing.ts` follows that one
+rule, and in `de`/`pl` the crumb is plain text. Nothing else in `src/` changed.
+- **No `en`/`en-gb` value changed.** A throwaway dump of `links.corridor`, `country.corridorPath`
+  and every crumb href, for all 426 listing views, was taken before and after the change and then
+  deleted. Exactly 14 entries differ, the 7 `de` and 7 `pl` shop roots. All 412 `en`/`en-gb`
+  entries are identical.
+- **Unit, `tests/unit/catalog-listing-link-gates.test.ts`.** One case per value, over every shop
+  root in the four listing locales (7 each), by exact value: the corridor link, the country
+  crumb's href (`/en/send-flowers-to/poland` first; `null` in `de` and `pl`, and the crumb still
+  present), and `corridorPath`. **Mutations**, each condition reverted in turn: each is **red on
+  exactly its own case**, `expected '/de/blumen-verschicken/polen' to be null`, 1 failed and 8
+  passed. Restored → 9/9 green.
+- **e2e on a production build** (clean `.next`, `next start -p 3113`, server stopped by PID, build
+  slot held and released, load average 3.9 to 4.0). Both conditions in, `shop-reachability` +
+  `corridor` on both projects: **76 passed, 2 skipped, exit 0**, the 4 `de`/`pl` cases green.
+  Only the crumb condition reverted, `shop-reachability` on both projects: **red, exactly the 4
+  cases** (`non-200 links from /de` and `/pl`, the same 14 URLs), 8 passed. Restored; `.next`
+  deleted.
