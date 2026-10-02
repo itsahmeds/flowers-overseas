@@ -29,10 +29,21 @@
  *    `resolveLoader()` at render time rather than capturing it at import time, so the swap could
  *    not be defeated by module evaluation order — and, as promised, the flip to R2 changed **zero
  *    call sites** outside this module (AC-2).
+ *
+ * **Two origins, one rule (founder, 2026-10-03, option (a)).** The home page's LCP image — the
+ * `hero` crop slot — stays on the site's own origin through `staticVariantLoader`; every other
+ * photograph is served from the bucket through `r2VariantLoader`. The rule is
+ * `variantLoaderForSlot()`, the list it reads is `SITE_ORIGIN_MEDIA_SLOTS` beside the origin it
+ * is the exception to, and `splitVariantLoader` is the loader in force. `next/image`'s half of
+ * the seam stays `r2Loader`: it receives a bare `src` with no asset to look a slot up from, and
+ * nothing renders through it (see `r2Loader`).
  */
 import type { ImageLoaderProps } from "next/image";
 
-import { mediaUrl } from "@/lib/media-origin";
+import { SITE_ORIGIN_MEDIA_SLOTS, mediaUrl } from "@/lib/media-origin";
+
+import { assetById } from "./manifest.ts";
+import type { SeedMediaSlot } from "./slots.ts";
 
 /** What `next/image` calls with `{ src, width, quality }` and expects a URL back. */
 export type MediaLoader = (props: ImageLoaderProps) => string;
@@ -107,28 +118,69 @@ export interface VariantRef {
 export type VariantLoader = (ref: VariantRef) => string;
 
 /**
- * §2.6, in force since TASK-138: `${MEDIA_ORIGIN}/{objectKey}`.
+ * §2.6, in force since TASK-138 for every slot but `hero`: `${MEDIA_ORIGIN}/{objectKey}`.
  *
- * The bytes are no longer committed under `public/media/` — the 6 MB repository cap that bought
- * twelve demo assets is gone with them, which is what lets all 84 products carry photographs —
- * and they are not served by the application at all. They are objects in `flowersoverseas-media`,
- * uploaded by `scripts/media-upload.ts` from the same manifest rows this loader reads, with
- * `Cache-Control: public, max-age=31536000, immutable` set **on the object** (the header rule
- * that used to do that for `/media/*` left `next.config.ts` with the files).
+ * These bytes are not committed under `public/media/` — which is what lets all 84 products carry
+ * photographs inside the repository's committed-bytes cap — and the application does not serve
+ * them. They are objects in `flowersoverseas-media`, uploaded by `scripts/media-upload.ts` from
+ * the same manifest rows this loader reads, with
+ * `Cache-Control: public, max-age=31536000, immutable` set **on the object**.
  *
  * `immutable` stays safe for the same reason it always was: the key is content-addressed by asset
  * version and width, so a changed photograph is a new asset id (`…-v2`) and never the same key
  * with new bytes.
  *
  * The origin must also stay **crawlable** when spec 007 lifts `Disallow: /` — Google cannot fetch
- * the images it evaluates for Core Web Vitals otherwise. With the images now on a third-party
- * host that requirement moved with them: it is the bucket's `robots.txt` that matters, not ours
+ * the images it evaluates for Core Web Vitals otherwise. With two origins that requirement is on
+ * both: the bucket host's `robots.txt` for these, and ours for `/media/*`
  * (`docs/runbooks/imagery.md`, spec 006 §6).
  */
 export const r2VariantLoader: VariantLoader = ({ objectKey }) =>
   mediaUrl(objectKey);
 
-let variantLoader: VariantLoader = r2VariantLoader;
+/**
+ * The site-origin half: `/media/{assetId}/{width}.{fmt}`, the path of a file committed under
+ * `public/media/` and served by this application with the `/media/*` rule of
+ * `src/lib/media-headers.ts` (`public, max-age=31536000, immutable`).
+ *
+ * Phase 0's original loader (spec 006 §13 Q4), kept for the slots `SITE_ORIGIN_MEDIA_SLOTS` names
+ * and no others. The path is the one `seed/media-variants.ts` writes the committed copy to, and
+ * `pnpm media:variants --check` ties every such file to its manifest row by byte count and
+ * SHA-256 on every runner — the committed tree is in the repository, so that half never skips.
+ * Content-addressed by asset version and width, exactly like the object key, so `immutable` is
+ * as safe here as on the bucket.
+ */
+export const staticVariantLoader: VariantLoader = ({
+  assetId,
+  width,
+  format,
+}) => `/media/${assetId}/${String(width)}.${format}`;
+
+/**
+ * **The one rule:** which loader serves a variant, from the seed crop slot of its asset.
+ * `SITE_ORIGIN_MEDIA_SLOTS` (`hero`) → the site's own origin; every other slot, and an asset the
+ * manifest does not know, → the bucket. An unknown asset goes to the bucket because that is the
+ * only origin that can hold a file the repository did not commit; `./resolve.ts` refuses unknown
+ * assets before any URL is asked for in any case.
+ */
+export function variantLoaderForSlot(
+  slot: SeedMediaSlot | undefined,
+): VariantLoader {
+  const onSite =
+    slot !== undefined &&
+    (SITE_ORIGIN_MEDIA_SLOTS as readonly string[]).includes(slot);
+  return onSite ? staticVariantLoader : r2VariantLoader;
+}
+
+/**
+ * The loader in force: the rule above, applied to the asset of each variant. The slot is read
+ * from the manifest **in force** (`getMediaManifest()`), so a fixture installed with
+ * `setMediaManifest()` is routed by its own slots.
+ */
+export const splitVariantLoader: VariantLoader = (ref) =>
+  variantLoaderForSlot(assetById(ref.assetId)?.slot)(ref);
+
+let variantLoader: VariantLoader = splitVariantLoader;
 
 /**
  * The composition root of §2.1: **one** function the whole module reads its URLs through, read at
@@ -140,7 +192,7 @@ export function resolveLoader(): VariantLoader {
   return variantLoader;
 }
 
-/** Install a variant loader (the R2 implementation, or a fake). Returns the previous one. */
+/** Install a variant loader (the split, one half of it, or a fake). Returns the previous one. */
 export function setVariantLoader(next: VariantLoader): VariantLoader {
   const previous = variantLoader;
   variantLoader = next;

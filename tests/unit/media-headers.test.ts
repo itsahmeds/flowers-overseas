@@ -6,12 +6,11 @@
  * facts are one decision, and drifting either half silently would serve a stale photograph for
  * twelve months.
  *
- * Since TASK-138 the header is no longer a `next.config.ts` rule over `/media/*` — the
- * application serves no image at all — it is metadata written onto each object at upload. So the
- * third assertion here is that the rule really is gone from the config, and
- * `tests/e2e/media-delivery.spec.ts` asserts the header on a real response from the bucket,
- * which the old rule could never be tested for: a 404 in that space correctly answered
- * `no-store`.
+ * Since TASK-138 the same value is written in two places, one per origin. On the bucket it is
+ * metadata on each object, set at upload; on this origin it is the `next.config.ts` rule over
+ * `/media/*`, which still serves the one slot the founder kept here (the home `hero`, 2026-10-03,
+ * option (a)). `tests/e2e/media-delivery.spec.ts` asserts the header on a real response from
+ * each.
  */
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -21,12 +20,17 @@ import { describe, expect, it } from "vitest";
 import { cspValue } from "../../src/lib/csp.ts";
 import {
   MEDIA_CACHE_CONTROL,
+  MEDIA_PATHS,
   MEDIA_PRECONNECT_LINK,
+  mediaCacheHeaderRules,
   mediaHeaderRules,
 } from "../../src/lib/media-headers.ts";
 import { MEDIA_ORIGIN } from "../../src/lib/media-origin.ts";
 import { ALL_PATHS } from "../../src/lib/robots-headers.ts";
-import { r2VariantLoader } from "../../src/modules/ui/media/loader.ts";
+import {
+  r2VariantLoader,
+  staticVariantLoader,
+} from "../../src/modules/ui/media/loader.ts";
 
 const repoRoot = resolve(import.meta.dirname, "../..");
 
@@ -49,12 +53,43 @@ describe("MEDIA_CACHE_CONTROL", () => {
     expect(url).toContain("/fo-bq-001-hero/");
     expect(url).toContain("640.avif");
   });
+});
 
-  it("is no longer a header rule on this origin, because this origin serves no image", () => {
+describe("mediaCacheHeaderRules() — the site-origin half", () => {
+  it("caches this origin's image space for a year, immutably", () => {
+    expect(mediaCacheHeaderRules()).toEqual([
+      {
+        source: "/media/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+    ]);
+  });
+
+  it("returns fresh objects on every call", () => {
+    expect(mediaCacheHeaderRules()[0]).not.toBe(mediaCacheHeaderRules()[0]);
+  });
+
+  it("covers the URLs the static loader produces, and they are content-addressed", () => {
+    const url = staticVariantLoader({
+      assetId: "home-hero",
+      width: 828,
+      format: "avif",
+      objectKey: "media/home-hero/828.avif",
+    });
+
+    expect(url).toBe("/media/home-hero/828.avif");
+    expect(url.startsWith(MEDIA_PATHS.replace(":path*", ""))).toBe(true);
+  });
+
+  it("is wired into the config, because the home hero is still served from here", () => {
     const config = readFileSync(resolve(repoRoot, "next.config.ts"), "utf8");
 
-    expect(config).not.toContain("mediaCacheHeaderRules");
-    expect(config).not.toContain("/media/:path*");
+    expect(config).toContain("...mediaCacheHeaderRules()");
   });
 });
 

@@ -279,6 +279,8 @@ export {
   r2VariantLoader,
   resolveLoader,
   setVariantLoader,
+  splitVariantLoader,
+  staticVariantLoader,
 } from "./media/loader.ts";
 export type { VariantLoader, VariantRef } from "./media/loader.ts";
 

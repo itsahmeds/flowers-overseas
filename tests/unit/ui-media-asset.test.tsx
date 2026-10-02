@@ -22,8 +22,8 @@ import { MEDIA_ORIGIN } from "../../src/lib/media-origin.ts";
 import { MediaAsset } from "../../src/modules/ui/media/MediaAsset.tsx";
 import {
   type VariantLoader,
-  r2VariantLoader,
   setVariantLoader,
+  splitVariantLoader,
 } from "../../src/modules/ui/media/loader.ts";
 import {
   committedMediaManifest,
@@ -112,7 +112,7 @@ beforeEach(() => {
 
 afterEach(() => {
   setMediaManifest(committedMediaManifest);
-  setVariantLoader(r2VariantLoader);
+  setVariantLoader(splitVariantLoader);
 });
 
 describe("AC-18: an `<img>` only when approved, with variants and with alt (T-18)", () => {
@@ -270,8 +270,22 @@ describe("AC-2: the loader is the only thing that knows a URL (T-02)", () => {
     expect(urls(html)).toContain(
       `${MEDIA_ORIGIN}/derived/${PRODUCT_ASSET}/640.avif`,
     );
-    // Not one URL is same-origin any more: the application serves no image byte.
+    // Not one product URL is same-origin: only the `hero` slot stays on this origin.
     expect(urls(html).some((url) => url.startsWith("/"))).toBe(false);
+  });
+
+  it("keeps a `hero`-slot asset on this origin, picture and preload alike (founder, 2026-10-03)", () => {
+    const html = withManifest(
+      <MediaAsset assetId={BAND_ASSET} locale="en" priority />,
+    );
+
+    const { href, options } = onlyPreloadCall();
+    expect(urls(html).length).toBeGreaterThan(0);
+    for (const url of urls(html)) {
+      expect(url.startsWith(`/media/${BAND_ASSET}/`), url).toBe(true);
+    }
+    expect(href.startsWith(`/media/${BAND_ASSET}/`)).toBe(true);
+    expect(String(options["imageSrcSet"])).not.toContain(MEDIA_ORIGIN);
   });
 
   it("changes **every** rendered URL when a fake loader is installed, with no call-site change", () => {
@@ -314,7 +328,7 @@ describe("AC-2: the loader is the only thing that knows a URL (T-02)", () => {
 
   it("returns the loader it replaced, so a caller can restore it", () => {
     const previous = setVariantLoader(() => "x");
-    expect(previous).toBe(r2VariantLoader);
+    expect(previous).toBe(splitVariantLoader);
   });
 });
 

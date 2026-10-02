@@ -66,6 +66,26 @@
 export const MEDIA_ORIGIN = "https://media.flowersoverseas.com";
 
 /**
+ * The seed crop slots (`seed/schema/media.ts`'s `mediaSlots`) whose variants are **not** served
+ * from `MEDIA_ORIGIN` but from the site's own origin, committed under `public/media/`.
+ *
+ * One slot, and it is a founder decision rather than a tuning knob (2026-10-03, option (a), on
+ * `docs/tasks/TASK-138.md`'s LCP escalation): `hero` is the home page's LCP image on every locale
+ * home, and with it on the bucket CI measured LCP at 2 029–2 144 ms against the 2 000 ms budget —
+ * the connection to a second origin sits on the LCP critical path, and neither the `preconnect`
+ * hint nor edge caching closed the gap. Every other photograph stays on the bucket, which is what
+ * keeps the committed bytes at one asset's ladder and lets the rest of the catalogue be
+ * photographed at all.
+ *
+ * It lives here, beside the origin, because two very different readers need the same list and
+ * this file imports nothing: `src/modules/ui/media/loader.ts` routes URLs by it, and the seed
+ * gates (`seed/budgets.ts` → `seed:check`, `pnpm media:variants --check`) use it to decide which
+ * variants must be committed and what the committed-bytes cap measures. A second copy of the list
+ * in either place is how the page would ask this origin for a file nobody committed.
+ */
+export const SITE_ORIGIN_MEDIA_SLOTS = ["hero"] as const;
+
+/**
  * The URL of one stored object, from the **manifest's own** `objectKey`
  * (`seed/data/media-variants.json`). The key is passed in and never derived here: a second key
  * convention in the loader is how a URL and the object it addresses drift apart, and a 404 on a

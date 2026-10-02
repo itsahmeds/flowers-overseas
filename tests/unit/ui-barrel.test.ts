@@ -130,7 +130,9 @@ describe("src/modules/ui barrel", () => {
         "resolveMedia",
         "setMediaManifest",
         "setVariantLoader",
+        "splitVariantLoader",
         "srcSetFor",
+        "staticVariantLoader",
         "uiSlotForSeedSlot",
         "variantsFor",
         // the locale home's above-the-fold surfaces and the finder's projection (TASK-052)

@@ -5,15 +5,14 @@
  * > `/media/*` is served `public, max-age=31536000, immutable`. Variant URLs never mutate; a new
  * > image is a new asset version.
  *
- * **Where the header comes from changed; the header did not.** Until TASK-138 the derived bytes
- * were committed under `public/media/` and Next sent this value from a `headers()` rule in
- * `next.config.ts`. The bytes are now objects in `flowersoverseas-media` and the application
- * serves no image at all, so the rule went with the files and the value is written **onto each
- * object** by `scripts/media-upload.ts` (`Cache-Control` is stored metadata in R2 and is returned
- * on every GET of the object). One constant, one place, still asserted as a whole string by
- * `tests/unit/media-headers.test.ts` — and now checkable against a real response, which the old
- * rule never was, because a 404 in that space correctly answered `no-store` and there were no
- * bytes to ask for.
+ * **One value, two origins since TASK-138.** Every photograph but the home hero is an object in
+ * `flowersoverseas-media`, and for those the value is written **onto each object** by
+ * `scripts/media-upload.ts` (`Cache-Control` is stored metadata in R2 and is returned on every
+ * GET of the object). The `hero` slot stays committed under `public/media/` and served by this
+ * application (founder, 2026-10-03, option (a) — `src/lib/media-origin.ts`), so the `/media/*`
+ * rule below still sends the same value for it from `next.config.ts`. One constant for both,
+ * asserted as a whole string by `tests/unit/media-headers.test.ts`, and checked against a real
+ * response from each origin by `tests/e2e/media-delivery.spec.ts`.
  *
  * `immutable` is a promise, and the thing that makes it keepable is the object key:
  * `media/{assetId}/{width}.{fmt}`, content-addressed by asset **version** and width. A changed
@@ -31,6 +30,24 @@ import { ALL_PATHS, type HeaderRule } from "./robots-headers";
 /** The value every derived variant is stored with and served with. */
 export const MEDIA_CACHE_CONTROL = "public, max-age=31536000, immutable";
 
+/** This origin's image space, in Next's header-source syntax (`staticVariantLoader`'s URLs). */
+export const MEDIA_PATHS = "/media/:path*";
+
+/**
+ * `/media/*` for a year, `immutable` — the site-origin half of the promise, for the committed
+ * `hero` variants (spec 006 §2.5, §5.4; TASK-079, kept by TASK-138's split). A 404 in this space
+ * still answers Next's own `private, no-cache, no-store`, correctly: a missing file must not be
+ * cached for a year. Fresh objects on every call, like `noindexHeaderRules()`.
+ */
+export function mediaCacheHeaderRules(): HeaderRule[] {
+  return [
+    {
+      source: MEDIA_PATHS,
+      headers: [{ key: "Cache-Control", value: MEDIA_CACHE_CONTROL }],
+    },
+  ];
+}
+
 /**
  * The connection hint for the media origin, as a `Link` **response header** (spec 006 §2.5 "LCP",
  * AC-19; `plan/01` §7; TASK-138 round 3).
@@ -44,6 +61,11 @@ export const MEDIA_CACHE_CONTROL = "public, max-age=31536000, immutable";
  * same order on `/de` and `/en-gb`, where the locale documents had been reported at 1 430-1 649 ms
  * while the bytes were same-origin. The hint starts that handshake before the document is parsed,
  * so the connection is already open when the hero preload asks for bytes over it.
+ *
+ * **Since the split (founder, 2026-10-03, option (a)).** The hint took ~200 ms off and edge
+ * caching nothing more, so the hero went back to this origin (`SITE_ORIGIN_MEDIA_SLOTS`). The
+ * hint stays for the photographs that remain on the bucket — the occasion tiles on the home, the
+ * product images on every shop page — and no longer has the LCP image waiting on it.
  *
  * ## Why a response header and not `<link rel="preconnect">` in `<head>`
  *
