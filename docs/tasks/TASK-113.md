@@ -306,6 +306,11 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
 - 2026-10-02 — fence widened to the crumb and `country.corridorPath`: both gated (`5a7e45d8`), and
   the unit cases split one per value. Crawl and corridor e2e green on a production build; red on
   the 4 cases with the crumb condition reverted. Unblocked.
+- 2026-10-02 — rebased onto `8cb36e99` (TASK-125, #101). `listing.ts` merged cleanly, the
+  `catalog-barrel` export list kept both sides, and the map was regenerated. **Blocked:**
+  TASK-125's `catalog-product-view.test.ts:276` pins the `pl` product crumb
+  `/pl/wyslij-kwiaty/polska`, a 404 that the crumb fix now drops, and `product.ts:1476` builds
+  `corridorPath` on the old rule. Both are outside the fence.
 
 ## Result
 
