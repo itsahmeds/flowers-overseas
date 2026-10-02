@@ -115,7 +115,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
   `Minor`; `pnpm gates:cheap` PASS; pushed, CI toggled.
 - 2026-10-02 — rebased again on `origin/main` `19cb001b` (PR 127); conflict in
   `docs/codebase-map.md` only, regenerated; `pnpm gates:cheap` PASS on `f3975dbf`; pushed, CI toggled.
-- 2026-10-02 — round-1 fixes `83fb1491` (items 1–6) and map `34f3c339`; 15 mutants red;
+- 2026-10-02 — round-1 fixes `83fb1491` (items 1–6) and map `34f3c339`; 14 mutants red;
   `pnpm gates:cheap` PASS on `34f3c339`; pushed.
 - 2026-10-02 — PR 99 merged and PR 101 conflicted (no CI can fire). Rebased on `origin/main`
   `b56c59f7`; map-only conflict, regenerated; range-diff unchanged but for the map's file count.
