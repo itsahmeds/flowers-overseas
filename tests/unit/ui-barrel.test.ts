@@ -218,6 +218,19 @@ describe("src/modules/ui barrel", () => {
         "SORT_LABEL_KEYS",
         "hasCardPrice",
         "pageHref",
+        // the product page and its six primitives (spec 009 §5.2; TASK-126, TASK-127): Server
+        // Components and two pure label readers. `PriceSummary` is the "real money" this file's
+        // non-goal case below names as 009's: it formats `productView()`'s amounts and computes
+        // none, so it is not the generic `Price` block the case bans.
+        "AddonPriceList",
+        "DateChip",
+        "DeliveryDatePicker",
+        "Gallery",
+        "PriceSummary",
+        "ProductPage",
+        "TierSelector",
+        "dateChipState",
+        "tierLabel",
       ].sort(),
     );
   });

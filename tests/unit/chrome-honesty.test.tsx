@@ -111,6 +111,14 @@ const GATED_PROMISE_KEYS: readonly string[] = [
   // no `live` file exists (TASK-142) and no florist is signed, so no corridor is `live`.
   "corridor.facts.orderBy.value",
   "corridor.steps.live.threeBody",
+  // Product page date picker (spec 009 §2's states table; TASK-126). `delivery.picker.live` is the
+  // `live` notice, rendered by `DeliveryDatePicker` only when `delivery.state === "live"` — which
+  // `pickerState()` allows only behind an active partner. `delivery.cutoffPreview` is the
+  // `preview` grid's **future-tense** line ("When we open, you will order by…"), rendered only in
+  // `preview`, drawn on the founder's product artboards and approved in the 2026-10-03 batch:
+  // it describes how the calendar will work, under the heading that says no order is taken.
+  "delivery.cutoffPreview",
+  "delivery.picker.live",
 ];
 
 describe("the message catalogues carry no claim we cannot make (AC-9, A19)", () => {

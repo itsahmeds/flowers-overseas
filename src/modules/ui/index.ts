@@ -465,11 +465,7 @@ export { Gallery } from "./product/Gallery.tsx";
 export type { GalleryProps } from "./product/Gallery.tsx";
 export { TierSelector, tierLabel } from "./product/TierSelector.tsx";
 export type { TierSelectorProps } from "./product/TierSelector.tsx";
-export {
-  DateChip,
-  SHARED_REASON_KEY,
-  dateChipState,
-} from "./product/DateChip.tsx";
+export { DateChip, dateChipState } from "./product/DateChip.tsx";
 export type {
   DateChipProps,
   DateChipState,

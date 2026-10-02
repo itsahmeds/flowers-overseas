@@ -147,7 +147,18 @@ describe("§7: every registry key resolves in every launch locale", () => {
     expect(referencedKeys.length).toBeGreaterThan(30);
     expect(
       new Set(referencedKeys.map((entry) => entry.key.split(".")[0])),
-    ).toEqual(new Set(["destinations", "nav", "footer", "company", "common"]));
+    ).toEqual(
+      // `breadcrumb` is spec 009's `product` site link (TASK-127): its label is the product's own
+      // name through `breadcrumb.entity`, the key the product page's breadcrumb leaf already uses.
+      new Set([
+        "destinations",
+        "nav",
+        "footer",
+        "company",
+        "common",
+        "breadcrumb",
+      ]),
+    );
   });
 
   it("resolves every key in `en`", () => {
