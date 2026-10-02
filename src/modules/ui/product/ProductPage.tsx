@@ -98,7 +98,10 @@ export function ProductPage({
               {destinations === undefined ? null : (
                 <>
                   {" · "}
-                  <a className="text-accent" href={destinations}>
+                  <a
+                    className="text-accent underline underline-offset-[3px]"
+                    href={destinations}
+                  >
                     {product("destination.change")}
                   </a>
                 </>
