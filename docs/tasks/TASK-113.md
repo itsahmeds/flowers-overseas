@@ -284,12 +284,24 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
   PASS`; round-2 changes 1 and 2 confirmed from the diff; PR body brought up to date.
 - 2026-10-02 — `main` moved to `19cb001b` (TASK-102, #127) while CI ran on `3450fb48`: rebased
   again, map regenerated, gates re-run, CI re-fired on the new head.
+- 2026-10-02 — finisher, `/break 98` fix round: rebased onto `b56c59f7` (TASK-143, #99), map
+  regenerated; pushed `9683a607`.
+- 2026-10-02 — hole 4 (`a32d954d`) and hole 1 (`64b61d05`) committed and pushed.
+- 2026-10-02 — production build: the wider crawl finds 14 pre-existing `de`/`pl` corridor-link
+  404s; escalated, **blocked**; mutation runs done; `eb7cb2fc`.
 
 ## Result
 
 **AC-20 met as written (spec 008); state-B chips deferred to TASK-147 per spec 007 §14 A10.**
-AC-21 is met with the two escalated waivers above still `open` (category hubs; `de`/`pl` shop
-roots). The two founder strings are still `open`.
+**AC-21 is not met (2026-10-02).** Since `/break 98` hole 1 was fixed, the crawl reads the links
+on every page it fetches, the 23 waived category hubs and the 14 waived `de`/`pl` shop roots
+included. It finds 14 links to a 404, and this PR did not introduce them: each `de`/`pl` shop
+root links to its corridor page (`/de/blumen-verschicken/polen`, `/pl/wyslij-kwiaty/polska`, …),
+which does not exist in a draft locale. The link is built at `listing.ts:1879`
+(`isGuidePublished(iso2)`, TASK-107 `cb1b7c68`, on `main`). It is escalated (see the 2026-10-02
+round at the end of this section), not waived. `en` and `en-gb` are clean on all six page types.
+The two waivers (category hubs; `de`/`pl` shop roots) and the two founder strings are still
+`open`.
 
 **Rebase (2026-09-22).** Rebased onto `origin/main` at `d1c0537` (TASK-114 merged as #93), then
 again onto `46db59b` (TASK-139's Linux baselines, #95), where only the generated map conflicted. The
@@ -305,23 +317,24 @@ four occasions-index URLs (`/en/occasions`, `/en-gb/occasions`, `/de/anlaesse`, 
 turned up no other stale entry. The `de`/`pl` ones are still correctly listed as 404s, because
 neither locale has an occasion slug.
 
-**The crawl, against a production build** (`pnpm build` + `pnpm start` on :3000, build slot
-held; load average 6.8/6.1/6.6 on 8 cores; BFS over rendered `<a href>` only, `redirect:
-manual`):
+**The crawl, against a production build, as it is now** (2026-10-02, after the `/break 98` hole 1
+fix; `next start -p 3113`, build slot held, load average 3.3 to 4.7 on 8 cores; BFS over rendered
+`<a href>` only, `maxRedirects: 0`). The walk reads the links of every page it fetches, depth 3
+included. Then every listing page it did not reach is fetched and its links are read too. Every
+target gets a status check.
 
-| Start | Locale | Shop URLs reached (of existence set) | Max depth | Per type |
-|---|---|---|---|---|
-| `/en` | en | 183 / 206 | 3 | shop root 7/7 (d2), country category 140/140 (d3), country occasion 7/7 (d3), occasion hub 28/28 (d2), occasions index 1/1 (d1), **category hub 0/23** |
-| `/en-gb` | en-gb | 183 / 206 | 3 | identical to `en` |
-| `/de` | de | 0 / 7 | — | shop root 0/7 (escalated: no corridor page in a draft locale) |
-| `/pl` | pl | 0 / 7 | — | shop root 0/7 (same escalation) |
-| `/` | all | en 183, en-gb 183, de 0, pl 0 | 4 | every locale home at depth 1; broken links 0 across 473 documents |
+| Start | Shop URLs reached ≤3 (of existence set) | Links read on | Documents status-checked | Per type (reached) | Non-200 links |
+|---|---|---|---|---|---|
+| `/en` | 183 / 206 | 257 (234 walked + 23 category hubs) | 260 | shop root 7/7, country category 140/140, country occasion 7/7, occasion hub 28/28, occasions index 1/1, **category hub 0/23 (waived; links read)** | 0 |
+| `/en-gb` | 183 / 206 | 257 | 260 | identical to `en` | 0 |
+| `/de` | 0 / 7 | 9 (2 walked + 7 shop roots) | 61 | **shop root 0/7 (waived; links read)** | **7**: `/de/{land}/blumen → /de/blumen-verschicken/{land} → 404` |
+| `/pl` | 0 / 7 | 9 | 61 | **shop root 0/7 (waived; links read)** | **7**: `/pl/{kraj}/kwiaty → /pl/wyslij-kwiaty/{kraj} → 404` |
+| `/` | every locale home at depth 1 | — | 5 | — | 0 |
 
-Zero non-200 links in every crawl. The 23 unreached URLs per English locale are exactly the
-category hubs, which are the open escalation above. `tests/e2e/shop-reachability.spec.ts` is
-green on both projects, as are `occasions-index`, `country-occasion`, `hubs`, `corridor`,
-`destinations-hub`, `listing-params`, `country-shop` and `country-category` (236 passed, 14
-skipped, which are the mis-cased-URL guards that skip on a local macOS target by design).
+The table this replaces (2026-09-22) said "zero non-200 links in every crawl". That was true only
+of the links it read, which were on depth 0 to 2 and never on a category hub or a `de`/`pl` shop
+root: 3 of the 6 page types. The corridor link behind the 14 `de`/`pl` 404s has been in
+`listing.ts` since TASK-107.
 
 **What changed in the crawl.** There is a new case for `/`: it links exactly the four locale
 homes, each answering 200, so ≤3 from every home means ≤4 from the root. The four finding lists
@@ -550,3 +563,68 @@ byte-identical to `3450fb48`. Every file it does not change is identical to `mai
 adds no conflict-marker line. `pnpm gates:cheap` on the head that adds this paragraph printed
 `RESULT: PASS`. Its block, and CI on that head, are in the PR body, because a commit cannot quote
 its own SHA.
+
+**`/break 98` round 1 fix round (2026-10-02). Blocked on one escalation, below.**
+
+*Rebase* onto `origin/main` at `b56c59f7` (TASK-143, #99). Only `docs/codebase-map.md`
+conflicted, at one step. It was regenerated with `pnpm codebase:map`, never hand-merged, and once
+more on the head (`9683a607`). `git range-diff 19cb001b..60961ac4 b56c59f7..b1453c5d` changes only
+map hunks and one hunk-offset line. The tree delta, map aside, is exactly `main`'s change set. The
+history adds no conflict-marker line. `tests/unit/listing-params.test.ts` is byte-identical to
+`main`'s.
+
+*Hole 1 (AC-21).* `tests/e2e/shop-reachability.spec.ts` `crawl()`:
+- (a) The walk reads the links of every page it fetches, depth 3 included. A link on a depth-3
+  page gets a status check only. It is not walked and does not count as reached, so the ≤3 bound
+  is unchanged.
+- (b) After the walk, every existence-set page the walk did not reach is fetched, and its links get
+  the same three checks (status, unpublished id, malformed). Today those are the 23 category hubs
+  per English locale and the 7 shop roots each in `de` and `pl`.
+- New assertion: every listing page in the existence set had its links read (all six page types).
+- `WAIVED` pins the waived set per locale and page type (`en`/`en-gb` `categoryHub: 23`, `de`/`pl`
+  `countryShopRoot: 7`). The crawl checks it, and `tests/unit/shop-crawl-targets.test.ts` derives
+  it a second time from `listingExists()`.
+- (d) The `:198-199` comment ("its own links are outside the criterion") is deleted, and the header's
+  "What it fetches" is rewritten to match.
+
+*(c) Mutations*, each built from a clean `.next`, run, restored, rebuilt:
+- `listing.ts:1814` `row.key === "roses" ? "rosesx" : slug` → **red** on `/en` and `/en-gb`,
+  `non-200 links`, 7 entries each, e.g. `"/en/poland/flowers/anniversary-flowers →
+  /en/poland/flowers/rosesx → 404"`.
+- A broken link on a category hub only (`listing.ts:1853`, the hub picker,
+  `kind === "category" && entityKey === "roses" && country === "PL" ? "rosesx" : slug`) →
+  **red**, `"/en/flowers/roses → /en/poland/flowers/rosesx → 404"` and the `en-gb` twin.
+- Test side, against the clean build: the old `if (depth === MAX_DEPTH) continue` put back → **red**,
+  `listing pages whose links were not read, /en`, 147 entries (140 country categories plus 7
+  country occasions). The unreached-page pass skipped → **red** on `/en` (the 23 hubs) and `/de`
+  (the 7 shop roots).
+- `WAIVED` `de: { countryShopRoot: 6 }` → unit **red** on `de: WAIVED equals the pages EXCLUDED
+  covers`.
+
+*(e) A real broken link the PR did not introduce. Escalated, not waived, not fixed.* Every `de`
+and `pl` shop root (`/de/polen/blumen`, …, `/pl/polska/kwiaty`, …) links to
+`/de/blumen-verschicken/{land}` or `/pl/wyslij-kwiaty/{kraj}`. That is 14 links, and each target
+404s, because no corridor page exists in a draft locale (`corridorPageExists()`). The link is
+`ListingLinks.corridor`, built at `src/modules/catalog/listing.ts:1879` on
+`isGuidePublished(iso2)` alone, with no per-locale check, in TASK-107 (`cb1b7c68`). This PR changes
+neither that line nor corridor existence. The pages are `noindex,follow` and unreachable, so the
+cost today is crawl budget and a 404 for anyone who lands on one. The fence allows a production
+edit only for a broken link the PR itself introduced, and `listing.ts` is PR 101's file right now.
+So the crawl stays **red** on 4 cases (`/de` and `/pl` × `e2e-desktop`/`e2e-mobile`), and nothing
+else is red. **Question for the orchestrator:** (1) gate `ListingLinks.corridor` on the corridor
+page existing in that locale (one condition at `listing.ts:1879`, after PR 101 lands, in this PR
+or a new task), or (2) another ruling. A waiver would hide a 404, so it is not offered.
+
+*Hole 4 (A9).* `tests/unit/corridor-page.test.tsx` renders each of the 14 guide pages twice: with
+the `corridorShopEntry()` link, and with no `liveSlots`. It asserts exactly one shop `<section>`
+in the first and none in the second. The first, with that section removed, must equal the second
+byte for byte. **Mutation** (`<Text>Bouquets made by florists in {country}.</Text>` just outside
+the `<section>` at `CorridorPage.tsx:216`, inside a fragment) → **red on exactly these 14** (`en/PL`
+… `en-gb/NL`, `expected '<main class="mx-auto w-full max-w-[13…' to be '<main class=…'`). The 29
+older cases stayed green, which is the hole. Restored → 43/43 green. No copy changed.
+
+*Production build* (`rm -rf .next && pnpm build`, `next start -p 3113` stopped by PID, build slot
+held and released, load average 3.3 to 4.7). `shop-reachability` + `corridor` on both projects:
+72 passed, 2 skipped, 4 failed (the 4 `de`/`pl` cases above, with no other finding). The crawl
+takes about 4.5 s per English locale locally. *e2e job time:* 6 min 38 s on `0651c096` (run
+37025742729). The new head's time is in the PR body, because a commit cannot quote its own run.
