@@ -1348,6 +1348,55 @@ describe("spec 006 AC-30 / T-30: the `seed-check` CI job", () => {
     expect(summary?.if).toBe("always()");
   });
 
+  it("tees the gate's stdout and stderr into the log the summary step reads (/break 133 hole 2)", () => {
+    // The warning is on stdout (the report) and the failure on stderr; the summary step greps
+    // `seed-check.log` for both. Run the gate step's own script with a `pnpm` that prints one of
+    // each, and the log must hold both — a dropped `tee`, or `2>` alone, leaves one out.
+    const gate = (job?.steps ?? []).filter(
+      (step) =>
+        (step.run ?? "").includes("pnpm seed:check --report") &&
+        !(step.run ?? "").includes("GITHUB_STEP_SUMMARY"),
+    );
+    expect(gate).toHaveLength(1);
+    const dir = mkdtempSync(join(tmpdir(), "fo-seed-gate-"));
+    try {
+      const bin = join(dir, "stub-bin");
+      mkdirSync(bin);
+      writeFileSync(
+        join(bin, "pnpm"),
+        [
+          "#!/bin/sh",
+          'echo "argv: $*"',
+          'echo "holiday coverage early warning: stdout line"',
+          'echo "seed:check failed with 1 problem(s): stderr line" >&2',
+          "exit 0",
+          "",
+        ].join("\n"),
+        { mode: 0o755 },
+      );
+      const result = spawnSync(
+        "bash",
+        ["--noprofile", "--norc", "-eo", "pipefail", "-c", gate[0]?.run ?? ""],
+        {
+          cwd: dir,
+          encoding: "utf8",
+          env: { ...process.env, PATH: `${bin}:${process.env["PATH"] ?? ""}` },
+        },
+      );
+      expect(result.status).toBe(0);
+      expect(readFileSync(join(dir, "seed-check.log"), "utf8")).toBe(
+        [
+          "argv: seed:check --report",
+          "holiday coverage early warning: stdout line",
+          "seed:check failed with 1 problem(s): stderr line",
+          "",
+        ].join("\n"),
+      );
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   it(
     "repeats the holiday-coverage warning in the step summary at 59 days, and not at 61 (TASK-149)",
     () => {
