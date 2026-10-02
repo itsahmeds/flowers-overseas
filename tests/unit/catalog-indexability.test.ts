@@ -212,7 +212,12 @@ describe("the sitemap query and the robots decision call one function (AC-21, T-
         ).toEqual(["verdict.indexable"]);
         continue;
       }
-      if (path.endsWith(join("modules", "catalog", "listing.ts"))) {
+      // TASK-125: spec 009's `productView()` carries spec 007's verdict for the PDP onto its view
+      // model, `listing.ts`'s exact shape one page type down — one read, deciding nothing.
+      if (
+        path.endsWith(join("modules", "catalog", "listing.ts")) ||
+        path.endsWith(join("modules", "catalog", "product.ts"))
+      ) {
         expect(
           [...code.matchAll(/[\w$.]*\.indexable\b/gu)].map((match) => match[0]),
           path,

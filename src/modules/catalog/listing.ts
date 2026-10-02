@@ -969,13 +969,14 @@ export async function productCardView(
   product: Product,
   locale: LocaleCode,
   iso2: CountryIso2,
-  options: { readonly productLinks?: boolean } = {},
+  options: { readonly productLinks?: boolean; readonly now?: Date } = {},
 ): Promise<ProductCardView> {
   const tier = await defaultTier(product.sku);
   const projection = await priceProjection(locale, {
     productId: product.sku,
     tierKey: tier.tierKey,
     countryIso: iso2,
+    ...(options.now === undefined ? {} : { now: options.now }),
   });
   const { photo, provenance } = photoFor(product.sku, locale);
   const slug = slugFor("product", product.sku, locale);

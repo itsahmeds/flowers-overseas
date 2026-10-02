@@ -195,6 +195,9 @@ describe("page-type policy (plan/02 §7, spec 004 AC-28)", () => {
       categoryHub: "byRule",
       occasionHub: "byRule",
       occasionsIndex: "byRule",
+      // spec 009 §6: the PDP is `index,follow` iff exists ∧ `corridorState(iso2) === 'live'` ∧
+      // `isProductIndexable()` ∧ `isLocaleIndexable()` ∧ `isIndexingEnvironment()` (TASK-125).
+      product: "byRule",
     });
   });
 });

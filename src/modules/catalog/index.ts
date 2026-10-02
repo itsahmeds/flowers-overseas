@@ -427,6 +427,47 @@ export {
   writeProductExistenceSummary,
 } from "./product";
 
+// The product view model (spec 009 §5.2, §6, §8, **AC-16**, AC-21's model half, T-16, T-32;
+// TASK-125). `productView()` is the **single** input to the PDP, its JSON-LD builders and its
+// sitemap row: the tier ladder (`tierOptions`), the totals table the island reads (`dateTotals`,
+// ≤ 5 tiers × ≤ 21 dates, ≤ 4 096 B), the chip fees as the delta of two projected totals (§13
+// design round Q3), the add-on rows in the destination's currency (Q4), the stale-FX state and the
+// PDP's verdict from spec 007's `indexability()` through `productDescriptor()` — whose every term
+// is **required**, so no caller can leave the country or the parameter gate out of the
+// conjunction. `ProductViewSchema` is strict at every level: it has no field for a "from" price,
+// a reference price, a rating, a badge, a countdown or an add-to-basket control.
+//
+// What stays internal: the price grid and the chip-fee arithmetic (one derivation, reached only
+// through `productView()` / `dateTotals()`), `resolveAddonPrice` (an unprojected amount — spec 010
+// exports the projection), and the numeric bounds, for `PRODUCT_COUNT_FLOOR`'s reason (AC-2).
+// `trustClaims` and `fxStates` are value sets: a caller iterating them cannot invent a claim.
+export type {
+  AddonLine,
+  DateTotals,
+  FxState,
+  ProductGallery,
+  ProductIndexabilityTerms,
+  ProductPriceQuery,
+  ProductView,
+  ProductViewOptions,
+  TierOption,
+  TrustClaim,
+} from "./product";
+export {
+  AddonLineSchema,
+  DateTotalsSchema,
+  ProductGallerySchema,
+  ProductViewSchema,
+  TierOptionSchema,
+  dateTotals,
+  fxStates,
+  productDescriptor,
+  productPageIndexability,
+  productView,
+  tierOptions,
+  trustClaims,
+} from "./product";
+
 // The country shop root's page component and its breadcrumb (spec 008 §5.3, AC-1/AC-8/AC-24;
 // TASK-109). The page component lives in the module that owns its view model — spec 007's
 // `CorridorPage` precedent — so `app/` holds one resolve and one mount, and every decision about
