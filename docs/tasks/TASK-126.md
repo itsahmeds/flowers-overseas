@@ -48,6 +48,16 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
   `docs/tasks/assets/TASK-126/pdp-en-poland-amber-hour-desktop.png`,
   `docs/tasks/assets/TASK-126/pdp-en-poland-amber-hour-mobile.png`.
 
+- **2026-10-03 — stage 2, unit layer.** `tests/unit/product-page.test.tsx` (19 cases: AC-7, AC-8,
+  AC-9, AC-10, AC-21, AC-22, AC-23, AC-25) and `tests/unit/product-route.test.tsx` (4 cases: AC-1)
+  render the real `productView()` in all three picker states (Poland `preview` from its authored
+  block, `live` through `withActivePartnersProvider`, the six others `unavailable`). Each AC was
+  broken once on purpose and seen red: fee +1 on the chip, reason dropped, `preview` chips
+  enabled, a checkbox in an add-on row, the VAT row renamed, `priority={false}`, a second
+  `data-fo-price-total`, "basket" in the demo box, `dynamicParams = false`, the product branch
+  dropped. One mutant survives by construction: the route's `notFound()` on an `undefined` view
+  after the resolver said yes cannot be reached without moving data under a running page.
+
 ## Result`. `de`/`pl` are drafted by
   `pnpm i18n:draft`.
 
