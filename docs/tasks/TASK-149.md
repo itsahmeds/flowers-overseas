@@ -70,6 +70,7 @@ _None recorded._
 - 2026-10-03: `ci.yml` `seed-check` summary step repeats each `holiday coverage early warning:` line as a `> [!WARNING]` alert beside the verdict. `seed-check`, `ci-workflow`, `geo-delivery`: 567/567 green. Next: mutation checks, `gates:cheap`, map, PR ready.
 - 2026-10-03: mutations red and restored; `gates:cheap` PASS on `f807b253` (clean); no rebase needed (`main` unmoved); row `in_review`; `## Result` filled. Next: PR ready, `ci:full`, CI on head.
 - 2026-10-03 (round 2): holes 1 and 3 tested (past the red day, 2028-01-05 without 2028, gives 0 and `red today`; a DE 2028 row leaves PL at 59 days). The 0-day warning wording now says `is red today, …: its horizon reaches YYYY`, because "the first day" was false on any later red day. `seed-check.test.ts` 133/133. `const redOn = edge;` turns hole 1 red. Next: hole 2, then the pooled mutation, then rebase.
+- 2026-10-03 (round 2): hole 2 tested. The gate step's own script, run with a stub `pnpm`, must put both stdout and stderr into `seed-check.log`. Mutations, each red then restored: no `tee`, stderr only, stdout only, pooled years, `redOn = edge`. Rebased onto `origin/main` (`8767f9de`). `TASKS.md` kept both sides: main's TASK-148 line byte for byte, and this row at `in_review`. `gates:cheap` PASS on `88db8022`. Next: `ci:full` toggle, then CI on head.
 
 ## Result
 
@@ -100,6 +101,27 @@ i18n:check            exit 0 · 0.4 s
 check:no-db           exit 0 · 0.2 s
 codebase:map --check  exit 0 · 0.2 s
 tests                 exit 0 · 23.1 s · changed 56 + map 1 + always 3 · always run: zod-boundaries, lint-coverage, url-pii
+RESULT: PASS
+```
+
+**Round 2 (`/review 133` and `/break 133` round 1, on `56d65c77`).** Three tests were added to `seed-check.test.ts`, which now has 134 cases.
+- **Hole 1, past the red day:** `2028-01-05` without the 2028 rows gives 0 days and `redOn` 2028-01-05, and the rule fails on `PL/2028` and `PL/2029`. It goes red under `const redOn = edge;`.
+- **Hole 2, the gate step's log:** the gate step's own script, with a stub `pnpm`, writes both streams to `seed-check.log`. It goes red with no `tee`, with stderr only, and with stdout only.
+- **Hole 3, two countries:** with PL's 2028 rows removed and a DE 2028 row added, PL still has 59 days and the warning. It goes red when years are pooled across countries.
+
+One wording change in `seed/check.ts`. The 0-day warning used to say "is red from today, D …, the first day its horizon reaches Y". That is false on any day after the first red day. It now reads "is red today, D (zone): its 366-day picker horizon reaches Y, which has no holiday row". The `red today` case asserts the new text.
+
+Rebased onto `origin/main` at `8767f9de`.
+
+```
+gates:cheap · 88db802213522ae1ee3c70d6faed319e906eb0b8 · tree clean · base origin/main · 2026-10-02T21:06:53.914Z
+typecheck             exit 0 · 5.8 s
+lint                  exit 0 · 13.7 s
+format:check          exit 0 · 9.1 s
+i18n:check            exit 0 · 0.4 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 29.4 s · changed 61 + map 1 + always 3 · always run: zod-boundaries, lint-coverage, url-pii
 RESULT: PASS
 ```
 
