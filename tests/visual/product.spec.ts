@@ -17,6 +17,8 @@
  * same template, asserted in the unit suite.
  */
 import type { BrowserContext, Page } from "@playwright/test";
+import { fileURLToPath } from "node:url";
+
 import { expect, test } from "@playwright/test";
 
 /** A recorded refusal, so the consent banner is not in the photograph (`corridor.spec.ts`). */
@@ -80,6 +82,11 @@ const BLOCKS = [
   },
 ] as const;
 
+/** Hides the docked total row in the block shots (see the file's own comment). */
+const BLOCK_STYLE = fileURLToPath(
+  new URL("./product-blocks.css", import.meta.url),
+);
+
 const WIDTHS = [
   { width: "desktop", viewport: { width: 1440, height: 900 } },
   { width: "mobile", viewport: { width: 390, height: 844 } },
@@ -99,6 +106,8 @@ for (const { width, viewport } of WIDTHS) {
       expect(response?.status(), url).toBe(200);
       await expect(page.locator(selector)).toHaveScreenshot(
         `product-${width}-${block}.png`,
+        // The docked total row would otherwise sit over a block at a scroll-dependent offset.
+        { stylePath: BLOCK_STYLE },
       );
     }
   });

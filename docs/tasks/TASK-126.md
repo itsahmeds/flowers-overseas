@@ -218,6 +218,15 @@ in step.
   seen red when broken.
 - **Copy:** 30 new `en` keys, all attested by the founder on 2026-10-03 (27 + 3, E-3); `en` is
   25/541 = 4.62 % unreviewed. "See all {count}" stays unbuilt (E-3).
+- **The founder's 28, accounted for (orchestrator check, 2026-10-03).** Strings 1–27 each sit on
+  exactly one key, byte-identical, marked `founder (chat, 2026-10-03; PDP batch of 28)`
+  (`delivery.legend`, `.picker.unavailable`, `.corridorLink`, `.picker.preview`,
+  `.reason.notOrderable`, `.reason.sundayClosed`, `.reason.publicHoliday`, `.reason.pastCutoff`,
+  `.cutoffPreview`, `.picker.live`, `.submit`; `product.included`, `.selected`, `.tier.legend`,
+  `.addons.label`, `.vat`, `.summary.delivery`, `.summary.total`, `.demo.heading`, `.demo.body`,
+  `.excludes`, `.destination.label`, `.destination.change`, `.trust.label`,
+  `.trust.substitution.title`, `.related.label`, `.related.heading`). No marked key carries
+  unapproved text. #28, "See all {count}", is in no catalogue because the page does not render it.
 - **Tests:** unit `product-page` 24, `product-route` 5; e2e +2 gallery cases, +1 PDP sticky case;
   visual +11 PDP baselines (`darwin` here, `linux` from `visual-baselines.yml`), and the gallery's
   `dev-components-desktop` and seven 1 px-shifted listing parts refreshed.
