@@ -55,7 +55,11 @@ gap closes, mark it ✅ with the PR, and don't delete the row.
 
 **Found in wave 1 (PRs 106–108):**
 - Shell-guard evasions outside A19 AC-37's list (`/break 107`): `timeout N` as a prefix; kills via `ps|grep`, `pgrep|while read`, `xargs sh -c`, `fuser -k`; writes via `rsync`, `curl -o`, `tar -C`, `patch`, `git restore`, and `rm -rf` from the repo root; `gh workflow run ./path` or a numeric id; `echo … | bash`, `bash <<< …`. Candidates for an A19 amendment.
-- Agents sharing the session scratchpad deleted each other's files mid-run. The `/break 107` round-1 agent reported this to the orchestrator; it is not in its PR comment. The work order should tell every agent to use a private `mktemp -d` under `$TMPDIR`.
+- Agents sharing the session scratchpad deleted each other's files mid-run. The `/break 107` round-1 agent reported this to the orchestrator; it is not in its PR comment. The work order should tell every agent to use a private `mktemp -d` under `$TMPDIR`. Seen again on
+  2026-09-30 (PR 127, reported to the orchestrator): a breaker and a reviewer both saved a runner as
+  `mut.sh` in the session scratchpad, so the breaker's first ten mutations ran in the reviewer's
+  worktree and left one stray line there. Stopgap in every work order since: every script and temp
+  file stays inside the agent's own worktree. The work-order template does not say so yet (step E).
 - Reviewers found the sandbox refusing `tasks:check`, `codebase:map --check` and `specs:index --check` locally in some runs (`/review 106` round 3). CI covered them. Watch for a repeat.
 - Tests that scan English prose (T-50) can be chased indefinitely. Rule of thumb for step G: such a test catches a class of mistake, not every phrasing, and the breaker and reviewer reading each change are the backstop (`/review 106` HOLE 8(b) and HOLE 11).
 - `gates:cheap` maps only framework paths to their tests. A docs-only diff touching `README.md`, `docs/runbooks/`, `docs/architecture.md` or `specs/_template.md` can print `RESULT: PASS` while `docs.test.ts`, `architecture-doc.test.ts` or `specs-index.test.ts` is red (`/break 106` hole 4). Widening A19 AC-43's path list needs a spec amendment.
@@ -79,7 +83,7 @@ gap closes, mark it ✅ with the PR, and don't delete the row.
 - `/break 118` / TASK-161: an average of money through a callback (`xs.reduce(… priceMinor …) / n`) lints clean; the `Minor` type is the backstop.
 - `/review 120` HOLE N1–N3 accepted: zod's `z.BRAND<"Minor">` alias, `.brand` through a template literal type or `["brand"]`, and `z.any()` behind a `z.ZodType<Minor>` annotation. `plan/12`'s Money row names them (PR 123), and the next task that touches `eslint/sdk-adapters.js` adds `BRAND` to the `$brand` entry.
 - `/break 121` holes 1–5 accepted as prose-scanner variants; the visit-2 step "production runs the READY SHA" has no text test.
-- `/break 122` / `/break 104`: `tasks:check` does not check that a row's dependency and AC ids exist (step E tooling).
+- `/break 122` / `/break 104`: `tasks:check` does not check that a row's dependency and AC ids exist (step E tooling). Seen again on `/break 130` (`AC-99` passes).
 - Parallel agents: dev-OS tests collide in a shared `$TMPDIR` (seen again on TASK-156 and TASK-159); every agent now uses a private `TMPDIR`.
 - Agents stalled on the stream watchdog four times on 2026-09-29; short commands and a push after every step kept the work, and a fresh finisher recovered each one (W-8).
 - Orchestrator (step G): a paused `git rebase -i` was found in a worktree with no process behind it; it was aborted, and the reword was done with `git filter-branch --msg-filter`, which leaves every tree unchanged.
@@ -88,18 +92,14 @@ gap closes, mark it ✅ with the PR, and don't delete the row.
 - `tasks:check` and `specs:index --check` don't validate a task row's AC/T ids against its spec: a row changed to `AC-99, T-99` stays green. The orchestrator guessed spec 040's T-ids, and only the reviewer caught it. Candidate for step E tooling.
 
 **Found on 2026-09-30 (PRs 125–130):**
-- **Read-only agents share one scratch folder.** Every subagent in a session writes to the same
-  session scratchpad. On PR 127 a breaker and a reviewer both saved a runner as `mut.sh`, so the
-  breaker's first ten mutations ran in the reviewer's worktree and one stray line was left there.
-  Stopgap in every work order since: every script and temp file stays inside the agent's own
-  worktree, with a name unique to it. The work-order template does not say so yet (step E).
 - **The safety check refused a breaker's mutation runs** once it had touched another worktree
-  (PR 127 round 1); later breakers ran theirs. Same founder decision as "breaker auto-mode
-  mutations" above.
-- **`tasks:check` does not check that a row's AC id exists in its spec** (`AC-99` passes;
-  `/break 130`).
-- **`pr-policy` refuses `no-task` for `package.json` and the lockfile**, correctly, but nothing
-  says so before the PR is opened: PR 128 had to be moved to a task branch (PR 130, TASK-165).
+  (PR 127 round 1); later breakers, each in its own worktree, ran theirs. This is not the
+  `.claude/`-files block above: it followed a breach of the own-worktree rule, and keeping to that
+  rule avoided it. No founder decision is needed unless it recurs.
+- **`pr-policy` refuses `no-task` for `package.json` and the lockfile**, correctly. The
+  `NO_TASK_ALLOWED` list is spelled out only in the work order's Role: designer; the writing-roles
+  paragraph (`work-order.md` §4) and the orchestrator's texts do not mention it, so PR 128 had to be
+  moved to a task branch (PR 130, TASK-165).
 - Nits from `/break 125` round 2: TASK-099's Order line cites a loose rule and sits under
   "_None recorded._"; TASK-157's closed escalation still names `onlyAbsentProductionServices`,
   which no longer exists in `src/lib/railway.ts`.
