@@ -188,18 +188,19 @@ by returning fresh rows per query, or a frozen cache; a cached array it hands ou
 This was not changed here. `/review 132` carried it to a later task: route those reads through the
 catalog module, or freeze the dataset at its source.
 
-**Gates.** `pnpm gates:cheap` on the clean, rebased tree (`643113f4`; the only later commit is
-this docs edit). No expensive gate was run locally, and the build slot was not taken.
+**Gates.** `pnpm gates:cheap` on the clean tree after the round-2 rebase onto `origin/main`
+`b56c59f7` (`ab282d2d`; the only later commit is this docs edit). No expensive gate was run
+locally, and the build slot was not taken.
 
 ```text
-gates:cheap · 643113f404a08f5b731311dfd9f363742e40fa2e · tree clean · base origin/main · 2026-10-02T15:57:29.332Z
-typecheck             exit 0 · 1.9 s
-lint                  exit 0 · 12.0 s
-format:check          exit 0 · 7.7 s
+gates:cheap · ab282d2d7682b523fceb159f06eb6be2a31adba5 · tree clean · base origin/main · 2026-10-02T16:42:04.664Z
+typecheck             exit 0 · 1.8 s
+lint                  exit 0 · 11.7 s
+format:check          exit 0 · 7.8 s
 i18n:check            exit 0 · 0.3 s
 check:no-db           exit 0 · 0.2 s
 codebase:map --check  exit 0 · 0.2 s
-tests                 exit 0 · 18.4 s · changed 28 + map 0 + always 3 · always run: zod-boundaries, lint-coverage, url-pii
+tests                 exit 0 · 16.8 s · changed 28 + map 0 + always 3 · always run: zod-boundaries, lint-coverage, url-pii
 format:check covers: every path except node_modules/ .next/ out/ coverage/ playwright-report/ test-results/ pnpm-lock.yaml next-env.d.ts .claude/ plan/ specs/ docs/ README.md TASKS.md CLAUDE.md /tests/fixtures/lint/ /tests/fixtures/seo/_cases/ /tests/fixtures/i18n/_cases/ /src/modules/geo/content/corpus.generated.ts
 RESULT: PASS
 ```
