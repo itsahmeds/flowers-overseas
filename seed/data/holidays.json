@@ -7,7 +7,8 @@
     "plan/13 D6: every row below is a public holiday transcribed from the destination's official calendar for that exact year and verified by a human before it is committed. There is no recurrence rule and no derived date in this file on purpose — Corpus Christi and Whit Monday move with Easter, and several fixed holidays gain a substitute day when they fall on a weekend, so 'the usual date' is how a florist gets closed on a day they are open.",
     "`closed: true` means the destination's florists do not deliver that day; src/modules/geo/delivery renders it as spec 009 AC-7's `publicHoliday` reason, in words, beside the date. `closed: false` is the shape for a holiday a country observes and still delivers on.",
     "Poland, 2026 and 2027 (TASK-124, spec 009 §5.1 and §13 Q3): the fourteen statutory non-working days of the Act of 18 January 1951 on public holidays (ustawa o dniach wolnych od pracy), as amended with effect from 2025 to add 24 December (Wigilia). Two of them are always Sundays (Easter Sunday, Pentecost / Zielone Świątki) and are listed anyway, because a holiday is a fact about the day and `publicHoliday` outranks `sundayClosed` in the calendar's reason order. Poland has no substitute day for a holiday that falls on a weekend, so no row is shifted. The four movable dates hang off Western Easter (5 April 2026, 28 March 2027): Easter Monday +1, Pentecost +49, Corpus Christi (Boże Ciało) +60. They were checked against the statute's list and against the Meeus/Jones/Butcher computus `easterSunday()` in src/modules/geo/occasions/evaluate.ts, itself pinned to an independent table in tests/unit/geo-occasions.test.ts; a founder read of the fourteen dates against gov.pl's calendar before PL goes live is still plan/13 D6's rule.",
-    "Poland is the only destination with rows because it is the only one with an `operations` block (spec 009 §13 Q3): a destination with no block renders no calendar, so it has no window for a holiday to fall in. `pnpm seed:check`'s `calendar/holiday-coverage` rule (spec 009 AC-2) requires a destination that renders a calendar to carry at least one row for **every calendar year the picker's full 366-day horizon reaches** (NEXT_AVAILABLE_HORIZON_DAYS, from today in the destination's zone). These rows cover that horizon until 30 December 2026 (Warsaw); from 31 December 2026 the horizon reaches 1 January 2028 and the gate goes red until Poland's 2028 rows are authored. That is the rule working, not a flaky gate: without it the grid would offer New Year's Day 2028 as open."
+    "Poland, 2028 (TASK-149): the same fourteen days. The statute's list was re-read for this year from the consolidated text (Dz.U. 2020 poz. 1920, art. 1 pkt 1 lit. a–m) and the amending act that adds lit. ka, 24 December (Dz.U. 2024 poz. 1965, in force 1 February 2025). Easter 2028 is 16 April, computed by hand twice and not read from `easterSunday()`: Meeus/Jones/Butcher (a = 14, h = 20, l = 5, m = 0, so h + l + 114 = 139 = 4 × 31 + 15, 16 April) and Gauss (d = 20, e = 5, so 22 March + 25 = 16 April). Easter Monday 17 April, Pentecost 4 June (+49), Corpus Christi 15 June (+60, a Thursday). Two fixed days fall on a Saturday (1 January, 11 November) and one on a Sunday (24 December); Poland has no substitute day, so none is shifted.",
+    "Poland is the only destination with rows because it is the only one with an `operations` block (spec 009 §13 Q3): a destination with no block renders no calendar, so it has no window for a holiday to fall in. `pnpm seed:check`'s `calendar/holiday-coverage` rule (spec 009 AC-2) requires a destination that renders a calendar to carry at least one row for **every calendar year the picker's full 366-day horizon reaches** (NEXT_AVAILABLE_HORIZON_DAYS, from today in the destination's zone). These rows cover that horizon until 31 December 2027 (Warsaw), i.e. until 2027-12-31 23:00 UTC; from 1 January 2028 the horizon reaches 1 January 2029 and the gate goes red until Poland's 2029 rows are authored. That is the rule working, not a flaky gate: without it the grid would offer New Year's Day 2029 as open. It is not a surprise either: `pnpm seed:check --report` prints the days left for every published destination, and from 59 days out (3 November 2027 in Warsaw) the report and CI's `seed-check` step summary carry a `holiday coverage early warning:` line (TASK-149)."
   ],
   "rows": [
     {
@@ -175,6 +176,90 @@
     {
       "iso2": "PL",
       "date": "2027-12-26",
+      "nameKey": "delivery.holiday.pl.secondDayOfChristmas",
+      "closed": true
+    },
+    {
+      "iso2": "PL",
+      "date": "2028-01-01",
+      "nameKey": "delivery.holiday.pl.newYear",
+      "closed": true
+    },
+    {
+      "iso2": "PL",
+      "date": "2028-01-06",
+      "nameKey": "delivery.holiday.pl.epiphany",
+      "closed": true
+    },
+    {
+      "iso2": "PL",
+      "date": "2028-04-16",
+      "nameKey": "delivery.holiday.pl.easterSunday",
+      "closed": true
+    },
+    {
+      "iso2": "PL",
+      "date": "2028-04-17",
+      "nameKey": "delivery.holiday.pl.easterMonday",
+      "closed": true
+    },
+    {
+      "iso2": "PL",
+      "date": "2028-05-01",
+      "nameKey": "delivery.holiday.pl.labourDay",
+      "closed": true
+    },
+    {
+      "iso2": "PL",
+      "date": "2028-05-03",
+      "nameKey": "delivery.holiday.pl.constitutionDay",
+      "closed": true
+    },
+    {
+      "iso2": "PL",
+      "date": "2028-06-04",
+      "nameKey": "delivery.holiday.pl.pentecost",
+      "closed": true
+    },
+    {
+      "iso2": "PL",
+      "date": "2028-06-15",
+      "nameKey": "delivery.holiday.pl.corpusChristi",
+      "closed": true
+    },
+    {
+      "iso2": "PL",
+      "date": "2028-08-15",
+      "nameKey": "delivery.holiday.pl.assumption",
+      "closed": true
+    },
+    {
+      "iso2": "PL",
+      "date": "2028-11-01",
+      "nameKey": "delivery.holiday.pl.allSaints",
+      "closed": true
+    },
+    {
+      "iso2": "PL",
+      "date": "2028-11-11",
+      "nameKey": "delivery.holiday.pl.independenceDay",
+      "closed": true
+    },
+    {
+      "iso2": "PL",
+      "date": "2028-12-24",
+      "nameKey": "delivery.holiday.pl.christmasEve",
+      "closed": true
+    },
+    {
+      "iso2": "PL",
+      "date": "2028-12-25",
+      "nameKey": "delivery.holiday.pl.christmasDay",
+      "closed": true
+    },
+    {
+      "iso2": "PL",
+      "date": "2028-12-26",
       "nameKey": "delivery.holiday.pl.secondDayOfChristmas",
       "closed": true
     }
