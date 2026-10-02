@@ -246,6 +246,13 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
   in state A, and any florist, delivery or price claim is refused on every guide page. Round 2's
   fix pins that text on all 14 guide pages (see `## Result`).
 
+## Progress
+
+- 2026-10-02 — finisher: rebased onto `origin/main` `15de1ac5`; one `listing.ts` import conflict
+  kept both sides; map regenerated; pushed `bdc8da58`.
+- 2026-10-02 — `pnpm install --frozen-lockfile` (next 16.3.6) and `pnpm gates:cheap` → `RESULT:
+  PASS`; round-2 changes 1 and 2 confirmed from the diff; PR body brought up to date.
+
 ## Result
 
 **AC-20 met as written (spec 008); state-B chips deferred to TASK-147 per spec 007 §14 A10.**
@@ -453,3 +460,51 @@ the rebased head: `typecheck` 0, `lint` 0, `format:check` 0, `i18n:check` 0 (`en
 25/511 = 4.9 %), `check:no-db` 0, `codebase:map --check` 0, 12 unit files (the ten above plus
 `corridor-route` and `corridor-projections`) 156 passed. The browser suites were not re-run
 locally for this rebase. CI's `e2e` on the new head is the evidence.
+
+**Rebase (2026-10-02)**, onto `origin/main` at `15de1ac5` (24 commits: the framework work, the
+money lint TASK-161, the order-status lint TASK-162, the branded `Minor` TASK-163, next 16.3.6
+in TASK-165). All 22 branch commits were kept. One source file conflicted:
+`src/modules/catalog/listing.ts`, at commit `43f297d8`. The conflict was only in the import block,
+and both sides were kept: this branch's `ListingLinkPageType`/`isPublished`/`listingLinkId`
+import from `@/config/site-links`, and `main`'s `writeStepSummaryStdout` import. `main`'s other two
+`listing.ts` hunks auto-merged unchanged: `byPrice()` compares `amountMinor` with `<`/`>` instead of
+`Number()` (TASK-163), and `writeExistenceSummary()` defaults to `writeStepSummaryStdout`. Compared
+with the pre-rebase head `43a13794`, `listing.ts` differs by exactly those three hunks of `main`'s.
+Every other file the PR changes is byte-identical to `43a13794`, apart from the map. Every file the
+PR does not change is identical to `main`. The tree delta excluding the map equals `main`'s own
+change set (242 files). `docs/codebase-map.md` conflicted at six steps. It was regenerated with
+`pnpm codebase:map` at each one, never hand-merged, and `--check` is current on the head. The
+branch history adds no conflict-marker line (0 across all 22 commits).
+`tests/unit/listing-params.test.ts` and the depth-3 route are untouched by `main`, and the test is
+byte-identical to `main`'s. `messages/` is untouched by `main`, so `en`/`en-gb` unreviewed is still
+25/511 = 4.9 %. The new lints flag nothing in the diff. No unit case `gates:cheap` ran failed
+because a date passed. `pnpm install --frozen-lockfile` was run (next 16.3.6 installed). The build
+slot was not taken, and the browser suites are CI's.
+
+```
+gates:cheap · bdc8da58b1d56e15c621bf5823ce5d3b08f88039 · tree clean · base origin/main · 2026-10-02T14:52:47.471Z
+typecheck             exit 0 · 8.4 s
+lint                  exit 0 · 13.6 s
+format:check          exit 0 · 8.6 s
+i18n:check            exit 0 · 0.4 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 25.7 s · changed 101 + map 0 + always 2 · always run: zod-boundaries, lint-coverage, url-pii
+format:check covers: every path except node_modules/ .next/ out/ coverage/ playwright-report/ test-results/ pnpm-lock.yaml next-env.d.ts .claude/ plan/ specs/ docs/ README.md TASKS.md CLAUDE.md /tests/fixtures/lint/ /tests/fixtures/seo/_cases/ /tests/fixtures/i18n/_cases/ /src/modules/geo/content/corpus.generated.ts
+RESULT: PASS
+```
+
+Unit run inside the block: 103 files, 2820 passed, 0 skipped. Load average at the start was
+3.78/9.52/14.12. The commit after `bdc8da58` touches only this brief.
+
+**Round-2 required changes, confirmed from the diff:**
+1. *The shop section pinned to "See flowers for {country}" on all 14 guide pages, and the phrase
+   list retitled.* e2e `tests/e2e/corridor.spec.ts:177-197` (`en`/`en-gb` × the seven `SLUGS` at
+   `:37-45`, exact text at `:192-194`), retitled phrase list at `:199`. Unit
+   `tests/unit/corridor-page.test.tsx:207-230` (count 14 at `:208-210`, exact text at `:228`),
+   retitled at `:232`. Source: heading and body only when `live`, at
+   `src/modules/geo/ui/CorridorPage.tsx:223-230`.
+2. *AC-20 per spec 007 §14 A10.* No chip row: `corridorShopEntry()` returns the one href
+   (`src/modules/catalog/shop-entry.ts:44-62`), and the slot is a single `shopEntryHref`
+   (`src/modules/geo/corridor.ts:336`). The ruling is recorded under `## Escalations` above and in
+   this section's first line.
