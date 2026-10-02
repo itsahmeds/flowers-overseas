@@ -189,6 +189,17 @@ It also found that this session's auto-mode permission classifier refused the br
 temporary mutations of `CLAUDE.md` and agent files even inside its own worktree, so on framework
 PRs the breaker replays scenarios rather than mutating text (`docs/framework/gaps.md`, step C).
 
+## W-21 · A breaker where a defect costs money, ranking or safety
+
+**2026-10-03, founder's decision ("visible first").** It narrows W-15's "every PR". After two weeks
+mostly spent on the framework and on 3–4 review rounds per PR, the founder could see no product
+progress on the live site: no product page, menu items that were not links, and photos on only 12
+of 84 products. The founder chose to ship clickable features first. Money, order status,
+payments and webhooks, the SEO gates, security and the dev-OS guards keep the full `/break` +
+`/review`, because a hole there costs a buyer money, costs a ranking, or weakens a guard. A
+plain-UI or docs PR gets one `/review`. The reviewer may still ask for a breaker, and the 5 %
+reviewed-copy gate is unchanged.
+
 ## Retired
 
 - **"The `preview` job waits on a Vercel preview deployment, so under Vercel's build rate limit the

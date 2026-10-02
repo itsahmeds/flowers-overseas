@@ -22,6 +22,11 @@ One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
 
+- **From `/review 101` round 2 (2026-10-02, TASK-125, HOLE 11 ACCEPTABLE):** add
+  `withTierPrice(view, "stems_12", 0)` to the planted cases in `catalog-product-view-live.test.ts`,
+  so that the `ProductViewSchema` tier check (`<= 0`, `product.ts:772`) goes red when it is
+  weakened to `< 0`.
+
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
