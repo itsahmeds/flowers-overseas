@@ -81,6 +81,11 @@
  * gates on (`isLocaleIndexable()`, `country.status`), because **a locale or a country must not be
  * able to look ready in CI while it is gated in code** (§11) — there is no second rule here to
  * drift from the first.
+ *
+ * It also prints the **holiday-coverage runway** (TASK-149): for each published destination, the
+ * whole days before family 10's `holiday-coverage` goes red, and under
+ * `HOLIDAY_COVERAGE_WARNING_DAYS` a warning line CI's step summary repeats. `--as-of=` replays
+ * any day, so the warning is tested at 59, 60 and 61 days rather than waited for.
  */
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, posix, relative, resolve } from "node:path";
