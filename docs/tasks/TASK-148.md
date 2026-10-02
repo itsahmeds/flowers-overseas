@@ -29,9 +29,16 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 ## Read
 
-- `specs/NNN-*.md` — read `## 0. Index` first, then only the sections the ACs name
-- `docs/codebase-map.md` — where everything lives
-- (the two or three files the deliverable actually touches)
+- `specs/005-catalogue-pricing-module.md`: `## 0. Index` first, then §2 (the providers and the
+  static dataset) and the providers' contract in §5. Money rules: `CLAUDE.md` "Non-negotiable rules".
+- `docs/codebase-map.md`: the `catalog` module row.
+- `src/modules/catalog/static/index.ts` (the static providers), `src/modules/catalog/providers.ts`
+  (the interfaces), `src/config/catalogue/prices.data.ts`.
+- `tests/contract/support/catalog-provider-contract.ts` and
+  `tests/contract/catalog-static-providers.test.ts` (the shared contract and its static run).
+- TASK-070's DB providers do not exist yet: TASK-070 is `blocked` on TASK-013's provisioning. The
+  case goes in the shared contract so that it runs against them the day TASK-070 adds its run.
+  Record that in `## Result` as a carry-forward to TASK-070. Do not build a DB provider here.
 
 ## Carry-forwards
 
