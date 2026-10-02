@@ -169,6 +169,12 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   `toContain(bare)`, which a 308 to the slash form itself (a loop) satisfies — proved on the two
   siblings fixed below. Make them `toBe(bare)`.
 
+## Progress
+
+- 2026-10-02, round 3 (finisher, from `c65d11a0`): hole 1 samples `51295f6a`; holes 2 and 3
+  `6880b8f2`; the round-2 carry-forwards bullet moved out of `## Binding` `5f7ca430`; this
+  `## Result` paragraph next. Pushed after each.
+
 ## Result
 
 **PR [#99](https://github.com/itsahmeds/flowers-overseas/pull/99)** — tests and test helpers only;
@@ -210,8 +216,8 @@ survivors):
 
 | Checker | sites | survived before → after | added |
 |---|---|---|---|
-| `scripts/seo/validate-hreflang.ts` | 7 | 2 → 0 | file-level case: non-https page URL and relative alternate |
-| `scripts/seo/validate-sitemap.ts` | 4 | 2 → 0 | a sitemap with **no `<loc>`** (PR 87's class), an unreadable `noindex.json` |
+| `scripts/seo/validate-hreflang.ts` | 7 | 2 → 0 | file-level case: non-https page URL and relative alternate (round 3: the whole reason list, the `en` alternate's `http://` included) |
+| `scripts/seo/validate-sitemap.ts` | 4 + 1 | 2 → 0 | a sitemap with **no `<loc>`** (PR 87's class), an unreadable `noindex.json`; round 3: `noindexFor`'s parse-error branch (`:120`) is a **non-`push` site** — it reports by returning `error`, so the `push` sweep never neutered it — killed by a `noindex.json` of `{` |
 | `scripts/seo/validate-schema.ts` | 20 | 5 → 0 | a graph with **no typed node**, a crumb that is not an object / has no `@type ListItem`, non-money `visiblePrice` and `Offer.price` |
 | `scripts/i18n-check.ts` | 23 | 11 → 1 | seven single-fault copies of `_cases/clean/` + two registry fixtures |
 | `scripts/catalogue-check.ts` | 38 | 4 → 0 | funeral ladder start, overlapping sub-bands, no surcharge transcription, FX self-rate |
@@ -261,3 +267,70 @@ with `git checkout` and the tree checked clean. No build slot taken (no rebuild:
 `typecheck` 0, `lint` 0, `format:check` 0, `codebase:map --check` 0, and the 19 unit files the PR
 touches plus every caller of a changed helper — 24 files, 790 tests — 0. CI run and per-job
 result on the head SHA: see the PR.
+
+**Round 3 fixes (2026-10-02)** (after `/review 99` round 2 and `/break 99` round 1 on
+`bd9d4d35`; started from `c65d11a0`, the rebase onto `19cb001b`). Tests and this brief only. Every
+mutant below was applied to the real file, run against the round-2 test file (`c65d11a0`) and the
+new one, then restored with `git checkout`, and the tree was checked clean. No build slot.
+
+*Hole 1.* `branchDeletions` generates **`|` branches only**. Character-class members and `?`
+atoms are covered by the **samples**, not by the generator. Samples added — listing scan:
+`was €59.90`, `was $59.90`, `Order by 14.00`, `Order by, 14:00`, `bis 14.00 Uhr`, `Wish list`,
+`five-star`, `Write a review`, `Customer ratings`, `Best seller`, `beliebtesten` / `beliebtester` /
+`beliebtestes`, `Same day` / `Next day delivery`, `We deliver today`, `<del class="was">`, a bare
+`</s>`, `aria-label="one star"`; home: `Leave a review`, `1 review`, `1 rating`, `One star`,
+`Our ratings`, `Testimonials`, `4 out of 5`, `1 florist`, `1 customer`, `1 order delivered`.
+
+| Mutant (actual line) | old → new |
+|---|---|
+| `listing-honesty.ts:91` `[€£$]` → `[£$]` | 43 pass → `was €59.90: expected [] to include 'old price'` |
+| `:91` `[€£$]` → `[€£]` | 43 pass → `was $59.90: …` |
+| `:70` `[:.]` → `[:]`, order-by site | 43 pass → `Order by 14.00: expected [] to include 'order-by cutoff promise'` |
+| `:70` `[:.]` → `[:]`, `bis … Uhr` site | 43 pass → `bis 14.00 Uhr: …` |
+| `:98` `wish ?list` → `wishlist` | 43 pass → `Wish list: expected [] to include 'wishlist'` |
+| `:77` `stars?` → `stars` | 43 pass → `five-star: expected [] to include 'star'` |
+| `:78` `reviews?` → `reviews` | 43 pass → `Write a review: …` |
+| `home-honesty.test.ts:50` `stars?` → `stars` | 14 pass → `One star: expected false to be true` |
+| `:48` `reviews?` → `reviews` (`review`) | 14 pass → `Leave a review: …` |
+| `:52` `(reviews?\|…)` → `(reviews\|…)` (`review count`) | 14 pass → `1 review: …` |
+
+A scratch survey (not committed) generated every class-member deletion and every `?` made
+mandatory or deleted. Listing: 44 mutants, 27 survived before, 6 now. Home: 34, 25 → 15. The 21
+left are named in the two files' comments: no string tells them apart under `test` (the
+out-of-five `[.,]` group, `best ?sellers?` beside `\bbestseller`, `(?:dostawa )?`, the aria-label
+`stars?`, `[\d\s,.]`'s `\d`), or only a separator straight before the noun would (`5, reviews`).
+`*` / `+` quantifier mutants (listing 24, home 18; 9 and 14 survive) are covered by neither and
+were not part of hole 1 — a follow-up for the orchestrator, not done here.
+
+*Hole 2.* `seo-validate-hreflang.test.ts` states `bad-urls.json`'s four reasons with
+`toStrictEqual`, in order, the `en` alternate's `http://` reason included. `validate-hreflang.ts:157`
+`isAbsoluteHttpsUrl(alternate.href)` → `/^https?:\/\//.test(alternate.href)`: old **14 pass**,
+new `expected [ …(3) ] to strictly equal [ …(4) ]`.
+
+*Hole 3.* `seo-validate-sitemap.test.ts` adds a `noindex.json` of `{`: one reason containing
+`noindex.json is not valid JSON (`, and the CLI exits `1` naming `one.xml` and the same reason.
+`validate-sitemap.ts:120` → `error: null`: old **13 pass**, new
+`expected [] to have a length of 1 but got +0`; the CLI alone under the same mutant prints
+`1 fixture(s) ok` and exits 0, so its half fails too. The site is non-`push` (row above).
+
+*Brief.* `dd16a09e` had put the round-2 bullet at the first `## Escalations`, the one in
+backticks inside `## Binding`, splitting that sentence again (round 1's item 1). `5f7ca430` moves
+it verbatim to the end of `## Carry-forwards`; `## Binding` is byte-identical to `9daa1f8e`.
+
+Gates on `6880b8f2` (the last code commit; the commits after it touch this brief only), load
+average 1.6 on 8 cores:
+
+```
+gates:cheap · 6880b8f2c710e0ca22577108061cd156b0bbd968 · tree clean · base origin/main · 2026-10-02T15:25:15.380Z
+typecheck             exit 0 · 1.8 s
+lint                  exit 0 · 12.3 s
+format:check          exit 0 · 8.1 s
+i18n:check            exit 0 · 0.3 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 59.0 s · changed 19 + map 0 + always 3 · always run: zod-boundaries, lint-coverage, url-pii
+format:check covers: every path except node_modules/ .next/ out/ coverage/ playwright-report/ test-results/ pnpm-lock.yaml next-env.d.ts .claude/ plan/ specs/ docs/ README.md TASKS.md CLAUDE.md /tests/fixtures/lint/ /tests/fixtures/seo/_cases/ /tests/fixtures/i18n/_cases/ /src/modules/geo/content/corpus.generated.ts
+RESULT: PASS
+```
+
+CI run and per-job result on the head SHA: see the PR.
