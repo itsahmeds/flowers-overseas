@@ -61,6 +61,12 @@ One dated bullet per `/review`, newest last.
   the robots-text scan (AC-16's grep) to the new route file, make it case-insensitive, and make it
   catch the `{ robots: { index: false } }` object form.
 
+- **From `/review 98` round 4 (2026-10-03, TASK-113 merged as `8767f9de`, HOLE 5 ACCEPTABLE):** pin
+  `en-gb`'s corridor link in `tests/unit/catalog-product-view.test.ts` ("links the country to its
+  corridor guide only where…") and show it bites with `&& locale !== "en-gb"` at `product.ts:1479`.
+  **Done (2026-10-03):** the assertion was added, went red under the mutation (1 failed of the
+  case), and the line was restored before the page read `country.corridorPath`.
+
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.

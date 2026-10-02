@@ -292,6 +292,11 @@ describe("the page's other blocks come from the one model (§5.2, §5.3)", () =>
     expect(pl.country.corridorPath).toBe(undefined);
     const en = await amber("en", "PL");
     expect(en.country.corridorPath).toBe("/en/send-flowers-to/poland");
+    // `/review 98` round 4, HOLE 5 ACCEPTABLE (TASK-127's carry-forward): `en-gb` has its own
+    // published guide, so a gate that dropped every locale but `en` must go red here too.
+    expect((await amber("en-gb", "PL")).country.corridorPath).toBe(
+      "/en-gb/send-flowers-to/poland",
+    );
   });
 
   it("shows at most six related products, never itself, in spec 005's deterministic order", async () => {
