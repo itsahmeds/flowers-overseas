@@ -161,7 +161,9 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   Implemented in round 5 below.
 
 - **2026-10-03 — spec 006 has no TASK-138 amendment, and AC-27 / §2.6 now contradict the
-  founder's ruling (spec-writer, `open`).** The work order cites "spec 006 §14 (the TASK-138
+  founder's ruling (spec-writer, answered: spec 006 §14 A8, commit `9dd8bd1f` — the hero on the
+  site origin, everything else on R2, AC-27 reworded to name `https://media.flowersoverseas.com`
+  and no database or jobs queue for Phase 0 delivery).** The work order cites "spec 006 §14 (the TASK-138
   amendment)"; `origin/main`'s §14 holds A1–A6 and nothing for this task, and no spec mentions
   TASK-138. AC-27 still reads "every image URL is served from `R2_PUBLIC_BASE_URL`, `public/media/`
   and `staticVariantLoader` are deleted", and §2.6 "so there is never more than one image origin".
@@ -189,6 +191,7 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
 - 2026-10-03: seed gates over the committed half (cap, `--check`, families 7 and 9, two cases); pushed `611fdb6d`.
 - 2026-10-03: `pnpm media:upload` loads under `node` again (round 3's extensionless imports); pushed `050adbbb`.
 - 2026-10-03: R2 verified (118/118), one local Lighthouse run under the build slot; docs and this brief.
+- 2026-10-03 (round 6, `/review 94` round 2 + `/break 94` round 1): family 9 byte boundaries; `runUpload()` extracted with gate-order, look-alike-host, 403 and uploader-cap boundary cases; the origin literal pinned; two nits; pushed `6581c380` and this brief.
 
 ## Result
 
@@ -721,3 +724,31 @@ mid-sentence; it is back under `## Escalations`, in date order.
 
 **Gates and CI:** see the PR's round-5 section, which carries the `pnpm gates:cheap` block and
 CI's verdict on the head SHA.
+
+### Round 6 (2026-10-03) — proof at the edges (`/review 94` round 2 FAIL, `/break 94` HOLES)
+
+**CI before this round:** run 37072236769 on `9dd8bd1f` (A8), every job green including the
+browser chain. Lighthouse's representative-run LCP: `/en` 1 784 ms, `/en-gb` 1 766, `/de` 1 846,
+`/pl` 1 862 against 2 000; script 128 212 B of 131 072 on every locale document; CLS 0.
+
+**What this round adds — tests only, plus one extraction with no behaviour change.** Each case was
+watched going red with its subject broken on purpose, then the subject restored:
+
+| Hole | Test | Broken on purpose → red |
+|---|---|---|
+| 1 | `seed-check.test.ts` "slot-bytes: a `occasionTile` / `hero` row at cap + 1 is red and at exactly the cap is green" (real rows) | `variant.bytes > cap + 1`, and `>= cap` |
+| 2 | `seed-check.test.ts` "total-bytes: a committed listing at COMMITTED_MEDIA_BYTE_CAP + 1 is red and at exactly the cap is green" | `total > COMMITTED_MEDIA_BYTE_CAP + 1`, and `>=` |
+| 4 | `media-upload.test.ts` "accepts a file of exactly its slot's cap, and refuses one byte more" — a real AVIF padded to the byte with an ISOBMFF `free` box, still decodable and checked for the watermark | `bytes.byteLength > cap * 2`, and `>= cap` |
+| 5 | `runUpload()` (`main()` minus `@next/env` and `fetch`): "refuses … before a single request" ×3 and "refuses a tree whose files disagree with the manifest before a single request", each asserting **zero** fetcher calls; a clean-run control proves the fetcher is reachable | the `assertOriginAgrees` call deleted; the `checkVariants` refusal disabled |
+| 6 | `https://media.flowersoverseas.com.evil.example` and `https://media.flowersoverseas.co` refused | `publicBaseUrl.startsWith(MEDIA_ORIGIN)`, and `MEDIA_ORIGIN.startsWith(publicBaseUrl)` |
+| 7 | "does not count a 403 PUT as uploaded" — rejects, nothing printed, no summary | the PUT check loosened to `>= 500` |
+| 9 | `media-origin.test.ts` "is the origin spec 006 AC-27 names…" — the literal, and the whole `img-src` in all five environments | the constant changed to another host |
+
+The extraction: `main()`'s gate sequence and upload loop now live in the exported `runUpload()`,
+which writes through an injected `write` (stdout in `main()`); the messages, the order and the
+`--verify` branch are unchanged. Nits: runbook §2 now says moving the hero also deletes the
+committed files (A8 clause 5, `committed-slot`); the `media-headers.ts` header names both hosts.
+No build slot taken: nothing renders differently.
+
+**Gates and CI:** the PR's round-6 comment carries the `pnpm gates:cheap` block and CI's verdict on
+the head SHA.
