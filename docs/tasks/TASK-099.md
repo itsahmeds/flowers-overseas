@@ -32,6 +32,8 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
 
 _None recorded._
 
+**Order (2026-09-30):** starts once TASK-100's PR has merged: both edit `.github/workflows/ci.yml` and `tests/unit/ci-workflow.test.ts` (`CLAUDE.md` "Working on this machine").
+
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
