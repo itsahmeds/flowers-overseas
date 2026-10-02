@@ -141,4 +141,18 @@ by returning fresh rows per query, or a frozen cache; a cached array it hands ou
 
 Neither was changed here.
 
-**Gates.** `pnpm gates:cheap` block below.
+**Gates.** `pnpm gates:cheap` on the clean, rebased tree (`643113f4`; the only later commit is
+this docs edit). No expensive gate was run locally, and the build slot was not taken.
+
+```text
+gates:cheap · 643113f404a08f5b731311dfd9f363742e40fa2e · tree clean · base origin/main · 2026-10-02T15:57:29.332Z
+typecheck             exit 0 · 1.9 s
+lint                  exit 0 · 12.0 s
+format:check          exit 0 · 7.7 s
+i18n:check            exit 0 · 0.3 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 18.4 s · changed 28 + map 0 + always 3 · always run: zod-boundaries, lint-coverage, url-pii
+format:check covers: every path except node_modules/ .next/ out/ coverage/ playwright-report/ test-results/ pnpm-lock.yaml next-env.d.ts .claude/ plan/ specs/ docs/ README.md TASKS.md CLAUDE.md /tests/fixtures/lint/ /tests/fixtures/seo/_cases/ /tests/fixtures/i18n/_cases/ /src/modules/geo/content/corpus.generated.ts
+RESULT: PASS
+```
