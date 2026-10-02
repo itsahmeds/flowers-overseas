@@ -319,7 +319,7 @@ export const PRODUCT_STATES = {
   chipIncluded:
     "DateChip \u00b7 included \u2014 a selectable date with no fee says so before it is chosen.",
   chipSurcharge:
-    "DateChip \u00b7 surcharge \u2014 the fee from dateSurcharges() on the chip before selection, with the occasion's own name and its accent rule.",
+    "DateChip \u00b7 surcharge \u2014 the fee from spec 005's date-surcharge rows, on the chip before selection, with the occasion's own name and its accent rule.",
   chipClosed:
     "DateChip \u00b7 closed \u2014 disabled, with its reason in words beside the date and inside the radio's label: never colour or opacity alone (WCAG 1.4.1). Sunday, public holiday, past the cutoff, and an occasion marked on a closed day.",
   pickerLive:
