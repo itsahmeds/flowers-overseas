@@ -75,6 +75,13 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
   discarded parent cards are projected on the wall clock (its `catalog.fx_stale` warnings appear in
   test output). Harmless to the view; worth a `now` option on `listingView()` in a later task.
 
+## Progress
+
+- 2026-10-02 — rebased on `origin/main` `15de1ac5`; the one `product.ts` conflict (imports) resolved
+  with both sides; `docs/codebase-map.md` regenerated; `pnpm install --frozen-lockfile` run.
+- 2026-10-02 — `9e7881cd`: the chip fee and the echoed calendar surcharge become main's branded
+  `Minor`; `pnpm gates:cheap` PASS; pushed, CI toggled.
+
 ## Result
 
 **PR [#101](https://github.com/itsahmeds/flowers-overseas/pull/101)**, branch
@@ -138,3 +145,42 @@ Full unit project: **200 files, 5 109 passed, 5 skipped, 0 failed**.
 **Gates (exit codes):** `typecheck` 0 · `lint` 0 · `format:check` 0 · `i18n:check` 0 ·
 `check:no-db` 0 · `seed:check` 0 · `codebase:map --check` 0. No build slot taken: nothing here
 needs a build, and no route is mounted. Load average 2.5–3.6 during the runs.
+
+**Rebase (2026-10-02).** Rebased on `origin/main` `15de1ac5` (TASK-161 money lint, TASK-162
+order-status lint, TASK-163 branded `Minor`, TASK-165 next 16.3.6). One conflict, the import block
+of `src/modules/catalog/product.ts`: kept the branch's imports plus main's
+`writeStepSummaryStdout`, which `writeProductExistenceSummary()` already uses after the auto-merge.
+`pricing/resolve.ts` auto-merged; against `origin/main` its diff is still only the added
+`resolveAddonPrice()` (+56, no line removed), and it type-checks unchanged because
+`PricePointSchema.parse` already returns the branded amounts. Under the brand, `tsc` failed in two
+places and the money lint in one. All three were fixed mechanically in `9e7881cd`: (1) `chipFees()`
+puts `toMinor(total − undated)` in its field; (2) `deliveryOf()` brought the calendar's echoed
+surcharge (`Money`, typed `number | bigint`) in with `Number(…)`, which `fo/no-float-money` now
+refuses. It now goes through `MinorUnitsSchema.parse(…)`. The value is always the
+`chipFees()` number the view injected, so nothing reachable changes; a bigint would now throw
+rather than be narrowed. (3) Two schema-refusal cases build their planted amounts (4 691,
+19 900) with `toMinor()`. No test, assertion or date moved.
+
+```
+gates:cheap · 9e7881cdea67b83aa6cb4d694cd30559fe71aede · tree clean · base origin/main · 2026-10-02T14:54:56.818Z
+typecheck             exit 0 · 1.8 s
+lint                  exit 0 · 12.0 s
+format:check          exit 0 · 7.9 s
+i18n:check            exit 0 · 0.3 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 18.1 s · changed 42 + map 0 + always 3 · always run: zod-boundaries, lint-coverage, url-pii
+RESULT: PASS
+```
+
+Load average 6.4–7.2 during the run. The four `catalog-product-view*` files plus
+`catalog-indexability` and `catalog-barrel`: **6 files, 173 passed, 0 failed**
+(98 + 17 + 6 + 10 = 131 new, as above, + 10 + 32). Every test injects `now`, so none depends on
+the wall clock passing 2026-10-01 or the 9–22 Sep window. **Figures unchanged:** Amber Hour / PL
+`en-gb` 4 090 / 4 690 / 5 290 GBP and `pl` 19 900 / 22 900 / 25 900 PLN (asserted); stale FX →
+22 900 PLN with `catalog.availability.fxUnavailable` (asserted); add-ons 2 500 / 3 500 / 1 800 /
+3 900 / 0 PLN at 2 300 bp (asserted); Sunday chips 1 800 PLN, 400 GBP, 500 EUR on 12 stems and
+400 EUR on 18 (asserted); 10 Sep preselected past the cutoff (asserted). One figure is not a test
+literal: `en` 4 790 / 5 590 / 6 290 EUR. A scratch run of `productView()` outside the repo, at the
+same clock, still prints exactly those amounts. Mutations were not re-run, since no assertion
+changed. No build slot taken.
