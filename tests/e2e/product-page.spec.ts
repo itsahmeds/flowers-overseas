@@ -68,6 +68,34 @@ test.describe("existence and the 404 shapes (AC-1, T-01)", () => {
     expect(response.status()).toBe(404);
   });
 
+  test("a formerly on-demand product is served, and an unknown slug is the x-default 404 document with its lang (AC-3, T-03, §14 A6)", async ({
+    request,
+  }) => {
+    // Outside the old top-24 prebuild: router 404s on a production build until A6 (TASK-127 E-1).
+    for (const url of [
+      "/en/poland/product/glass-morning",
+      "/de/polen/produkt/glass-morning",
+      "/en/poland/product/mantelpiece",
+    ]) {
+      const response = await request.get(url, { maxRedirects: 0 });
+      expect(response.status(), url).toBe(200);
+    }
+    // The locale gate keeps a product 404 a real document: `not-found.tsx` in the x-default
+    // locale, never the framework's bare `<html id="__next_error__">` with no language (spec 003
+    // AC-8, WCAG 3.1.1) — which is what `dynamicParams = true` on the layout renders instead.
+    for (const url of [
+      "/en/poland/product/no-such-bouquet",
+      "/de/polen/produkt/no-such-bouquet",
+    ]) {
+      const response = await request.get(url, { maxRedirects: 0 });
+      expect(response.status(), url).toBe(404);
+      const html = await response.text();
+      const tag = /<html\b[^>]*>/iu.exec(html)?.[0] ?? "";
+      expect(/\blang="([^"]*)"/u.exec(tag)?.[1], url).toBe("en");
+      expect(tag, url).not.toContain("__next_error__");
+    }
+  });
+
   test("a listing card links to a product page that answers 200 (AC-20)", async ({
     page,
     request,
