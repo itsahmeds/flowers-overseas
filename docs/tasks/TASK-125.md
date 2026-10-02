@@ -97,6 +97,15 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
   publishing reaches the PDP with no edit here. Cost: `listingView()` has no `now` option, so the
   discarded parent cards are projected on the wall clock (its `catalog.fx_stale` warnings appear in
   test output). Harmless to the view; worth a `now` option on `listingView()` in a later task.
+- **E-4 (2026-10-02) — main's new `PAGE_TYPE_POLICY` pin does not know `product`. Open, to
+  orchestrator. Blocks CI.** PR 99 (TASK-143, `b56c59f7`) added a `toStrictEqual` pin of
+  `PAGE_TYPE_POLICY` to `tests/unit/seo-indexability.test.ts`, written before this branch registers
+  `product: "byRule"` (spec 009 §6, AC-16). The rebase was textually clean, but on the rebased
+  head that one case is red: it receives 12 page types and expects 11. The fix is one entry in the
+  expected map, `product: "byRule"`, cited to spec 009 §6 ("`index,follow` iff exists ∧
+  `corridorState(iso2) === 'live'` ∧ `isProductIndexable()` ∧ `isLocaleIndexable()` ∧
+  `isIndexingEnvironment()`"). That file is outside the round-1 fence, so it is not edited here.
+  Nothing in `src/` changes.
 
 ## Progress
 
@@ -106,6 +115,11 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
   `Minor`; `pnpm gates:cheap` PASS; pushed, CI toggled.
 - 2026-10-02 — rebased again on `origin/main` `19cb001b` (PR 127); conflict in
   `docs/codebase-map.md` only, regenerated; `pnpm gates:cheap` PASS on `f3975dbf`; pushed, CI toggled.
+- 2026-10-02 — round-1 fixes `83fb1491` (items 1–6) and map `34f3c339`; 15 mutants red;
+  `pnpm gates:cheap` PASS on `34f3c339`; pushed.
+- 2026-10-02 — PR 99 merged and PR 101 conflicted (no CI can fire). Rebased on `origin/main`
+  `b56c59f7`; map-only conflict, regenerated; range-diff unchanged but for the map's file count.
+  On `11780542` one test outside the fence is red (E-4). Stopped there: blocked.
 
 ## Result
 
@@ -228,3 +242,99 @@ RESULT: PASS
 ```
 
 Load average 2.8–4.6 during the run. Tests: 47 files, 1 005 passed, 0 failed.
+
+**Round 1 fixes (2026-10-02)**, for `/review 101` and `/break 101` on `ad3f00ea`. Code is in
+`83fb1491`, the map in `34f3c339`, and both were rebased to `ae3078ce` / `11780542`.
+
+1. **RC-1 + hole 4.** `productCardView()` takes an optional `now`. Its one new line spreads `now`
+   into `priceProjection()` only when it is given, and the listing call site passes none, so listing
+   cards are unchanged. `relatedFor()` passes the page's clock. In `ProductViewSchema`'s one
+   refinement:
+   - every chip is in the page currency and `> 0`;
+   - on each selectable date, the chip equals the selected tier's total minus its tier price, or is
+     absent where they are equal;
+   - every tier price is `> 0`;
+   - every related card is in the page currency.
+
+   The related row is GBP for `en-gb`/PL at `FX_LIVE` and PLN at `FX_STALE`. H1–H8 and a PLN card
+   each fail to parse, at a named issue path. The real view is the control.
+2. **RC-2 + hole 6.** `priceProjection` is in `OWNED`, allowlisted for `listing.ts` and `product.ts`.
+   The lookbehind no longer exempts `.`, so a namespace call counts. Alias calls are named as the
+   limit.
+3. **Hole 1.** `en` tiers 4 790 / 5 590 / 6 290 EUR (main file), and the `en` totals table
+   `row(4790, 5290)` / `row(5590, 5990)` / `row(6290, 6690)` (live file).
+4. **Hole 5.** `productDescriptor()` holds a term only when it is `=== true`. `productView()` takes
+   `unparameterised: options.parameterised === false`. The F1 and F2 cast cases are in the wiring
+   file. `seo/indexability.ts` is unchanged.
+5. **Hole 7.** `vatRateText` is asserted for all five PL rows, as `formatPercentFromBasisPoints(2300,
+   "en-gb")`, which is pinned to `"23%"`.
+6. **Hole 10.** AC-16's grep walks every `.ts`/`.tsx` under `src/modules/` except `modules/seo`
+   (156 files). It asserts that it reaches `pricing/resolve.ts`, and it finds 0 hits.
+
+**Mutants** (each applied alone, the five touched unit files run, the file restored from git, and
+`git status` clean after each):
+
+| Mutant | Red |
+|---|---|
+| `relatedFor()` drops `now` | 57 (the view no longer parses at `FX_LIVE`) |
+| `productCardView()` ignores `now` | 57 |
+| `relatedFor()` drops `now` **and** the related check is off | 2: "prices the related row on the page's clock", "refuses a related card quoting PLN" |
+| chip-currency check off | 1: H1 |
+| chip `> 0` check off | 2: H2, H3 |
+| chip = total − tier check off | 3: H4, H5, H6 |
+| tier `> 0` check off | 2: H7, H8 |
+| related-currency check off | 1: the PLN card |
+| F1: `operational: terms.countryLive` | 1: wiring F1 |
+| F2: `unparameterised: !options.parameterised` | 1: wiring F2 |
+| I1: every `en` figure +100 (in `tierProjection`) | 2: `en` EUR tiers, `en` totals |
+| D1: `vatRateText` from 800 bp | 1: the add-on VAT text |
+| G4: `"noindex,follow"` planted in `pricing/resolve.ts` | 1: AC-16's grep |
+| G1: scratch `src/modules/catalog/ui/ProductPage.tsx` calls `priceProjection(` | 1, naming `src/modules/catalog/ui/ProductPage.tsx` |
+
+**Tests.** `catalog-product-view.test.ts` 101, `-live` 28, `-wiring` 8, `-source` 11, which is 148
+new (131 + 17). With `catalog-indexability` 10, `catalog-listing` 43 and `catalog-barrel` 32:
+**7 files, 233 passed, 0 failed.**
+
+**Figures unchanged.** Every figure above is still asserted and green at the same clocks:
+- Amber Hour / PL `en-gb` 4 090 / 4 690 / 5 290 GBP, and `pl` 19 900 / 22 900 / 25 900 PLN;
+- stale FX → 22 900 PLN with `catalog.availability.fxUnavailable`;
+- add-ons 2 500 / 3 500 / 1 800 / 3 900 / 0 PLN at 2 300 bp;
+- Sunday chips 1 800 PLN, 400 GBP, and 500 EUR on 12 stems vs 400 EUR on 18;
+- 10 Sep preselected past the cutoff.
+
+`en` 4 790 / 5 590 / 6 290 EUR is now a test literal. No build slot was taken.
+
+```
+gates:cheap · 34f3c339999afea0b18de819182ecd178564cbc4 · tree clean · base origin/main · 2026-10-02T16:05:52.360Z
+typecheck             exit 0 · 1.9 s
+lint                  exit 0 · 11.8 s
+format:check          exit 0 · 7.7 s
+i18n:check            exit 0 · 0.3 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 17.3 s · changed 44 + map 0 + always 3 · always run: zod-boundaries, lint-coverage, url-pii
+RESULT: PASS
+```
+
+Load average 4.6–5.4 during the run.
+
+**Third rebase, on `origin/main` `b56c59f7` (PR 99, TASK-143).** It was forced, because PR 101
+conflicted. The only conflict was `docs/codebase-map.md`, which was regenerated. `git range-diff
+19cb001b..34f3c339 origin/main..HEAD` shows all ten commits `=` except `2cb01cde`, whose only change
+is the map's `tests/unit/` count. The lockfile did not change. On the rebased head:
+
+```
+gates:cheap · 11780542cf6efa574d1afe832b41afb3d18ca4cb · tree clean · base origin/main · 2026-10-02T16:07:23.236Z
+typecheck             exit 0 · 2.4 s
+lint                  exit 0 · 11.8 s
+format:check          exit 0 · 7.7 s
+i18n:check            exit 0 · 0.3 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 1 · 17.2 s · changed 44 + map 0 + always 3 · always run: zod-boundaries, lint-coverage, url-pii
+RESULT: FAIL (1 of 7 red: tests)
+```
+
+The one red test is `seo-indexability.test.ts` › "states the specified policy for every page type
+it knows, and no other (TASK-143)", which receives `product: "byRule"`. It is outside the fence, so
+this round stops at E-4.
