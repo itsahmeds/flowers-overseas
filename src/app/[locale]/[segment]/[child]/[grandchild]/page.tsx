@@ -16,6 +16,7 @@ import {
   localeProductParams,
   productView,
   resolveLocalePath,
+  writeProductExistenceSummary,
 } from "@/modules/catalog";
 import { DeliveryFacts } from "@/modules/geo";
 import { alternatesFor } from "@/modules/i18n";
@@ -60,9 +61,11 @@ import { ProductPage } from "@/modules/ui";
  * Nothing in this file names a country, a category, an occasion or a floor, which is why lifting
  * a category over `PRODUCT_COUNT_FLOOR` adds its URL with `git diff --stat src/app` empty.
  *
- * **The existence summary** (AC-3) is written once per build by the depth-3 file's
- * `generateStaticParams`, where `/review 76` ruling 4 put it; counting the same set twice would
- * print two tables into one CI step summary.
+ * **The existence summaries** (AC-3). The listings' table is written once per build by the depth-3
+ * file's `generateStaticParams`, where `/review 76` ruling 4 put it; counting the same set twice
+ * would print two tables into one CI step summary. The **product** table (spec 009 AC-3, §11) is
+ * written here, by the `generateStaticParams` that emits the prebuilt product params it counts,
+ * behind the same once-per-process guard (`/review 96`'s carry-forward to TASK-127).
  *
  * **Rendering: ISR, `revalidate` 3600 s** with §5.4's tags, through `src/lib/cache.ts` as the only
  * invalidation seam. Nothing here reads a cookie or a request header, so no response carries a
@@ -107,13 +110,25 @@ function windowStart(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+/**
+ * Next calls `generateStaticParams` more than once per build (the collection pass and the render
+ * pass), and the counts describe the build rather than the call: one process, one table.
+ */
+let productSummaryWritten = false;
+
 export async function generateStaticParams(): Promise<
   { locale: string; segment: string; child: string; grandchild: string }[]
 > {
-  return [
+  const params = [
     ...(await localeGrandchildParams()),
     ...(await localeProductParams()),
   ];
+  // The product counts of the set just emitted, where CI reads them (spec 009 AC-3).
+  if (!productSummaryWritten) {
+    productSummaryWritten = true;
+    await writeProductExistenceSummary();
+  }
+  return params;
 }
 
 interface GrandchildParams {

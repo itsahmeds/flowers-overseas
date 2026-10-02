@@ -137,3 +137,37 @@ describe("AC-1: the product route answers the existence set and 404s everything 
     expect(await notFoundFor(AMBER)).toBe(false);
   });
 });
+
+/**
+ * `/review 96`'s second carry-forward (spec 009 AC-3, §11): `writeProductExistenceSummary()` is
+ * called by **this** route's `generateStaticParams` — the function whose output the counts describe
+ * — and once per build. Next calls `generateStaticParams` more than once (collection, then render),
+ * so the guard is what keeps one table, not two, in one `$GITHUB_STEP_SUMMARY`. Both halves are
+ * asserted on the file a runner would read: dropping the call leaves zero tables, dropping the
+ * guard leaves two.
+ */
+describe("AC-3: the product existence counts reach the CI step summary once per build", () => {
+  it("appends exactly one product table across repeated `generateStaticParams` calls", async () => {
+    const { mkdtempSync, readFileSync, existsSync } = await import("node:fs");
+    const { tmpdir } = await import("node:os");
+    const { join } = await import("node:path");
+    const file = join(mkdtempSync(join(tmpdir(), "fo-pdp-sum-")), "summary.md");
+    vi.stubEnv("GITHUB_STEP_SUMMARY", file);
+    // A fresh module instance is a fresh build: the cases above already called the shared one.
+    vi.resetModules();
+    const build =
+      await import("../../src/app/[locale]/[segment]/[child]/[grandchild]/page.tsx");
+    try {
+      const first = await build.generateStaticParams();
+      const second = await build.generateStaticParams();
+      expect(second).toEqual(first);
+      expect(existsSync(file)).toBe(true);
+      const tables = readFileSync(file, "utf8").match(
+        /^### Product page existence set /gmu,
+      );
+      expect(tables).toHaveLength(1);
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+});
