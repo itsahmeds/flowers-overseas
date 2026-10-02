@@ -21,6 +21,9 @@ be green. One paragraph or a short list — no restatement of the spec.
 One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From `/review 98` (2026-10-02; carried 2026-10-03), HOLE 2 ACCEPTABLE:** the occasions-index case
+  "renders … in collator order" checks the data order, not the rendered order. Make it read the
+  rendered link order from the page, and prove it red by swapping two rendered links.
 
 ## Escalations
 

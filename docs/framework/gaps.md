@@ -125,3 +125,32 @@ gap closes, mark it ✅ with the PR, and don't delete the row.
   (the machine slept) and wrote no code; TASK-113's fourth finisher spent its limit on one long
   dump. Work orders now ask for the first visible stage to be pushed early, and for long
   enumerations to be avoided.
+- **Two of TASK-113's escalations were never answered** (`docs/tasks/TASK-113.md`, 2026-09-22,
+  both `open` at PR 98's merge). (1) Spec 008 §2 gives the country-less **category hub** no
+  publisher and no inbound link; is it a sixth `site-links.ts` family, or the header's category
+  rows through `categoryHref()` (`src/modules/ui/layout/header-model.ts`)? (2) The country **shop
+  root** has no inbound link in `de` and `pl`, because its one publisher, the corridor page, does
+  not exist in a draft locale; does the German and Polish shop wait for reviewed corridor copy, or
+  does a draft locale get another inbound edge? Both are listed in `EXCLUDED`
+  (`tests/support/shop-crawl-targets.ts`), which `tests/e2e/shop-reachability.spec.ts` asserts holds
+  exactly these. A spec 008 amendment answers both. (1) must be answered before TASK-096 indexes
+  the category hubs, and TASK-096's brief carries that. (2) costs reachability, not ranking: the
+  `de`/`pl` shop roots stay `noindex` until their locale is reviewed, so it must be answered before
+  either locale becomes indexable.
+- **`next dev` writes into `CLAUDE.md`.** Next.js 16 adds a `<!-- BEGIN:nextjs-agent-rules -->`
+  block to `CLAUDE.md` whenever the dev server starts. Nothing stops an agent from staging it;
+  today the work order tells agents not to, and `git checkout -- CLAUDE.md` drops it. A check (the
+  framework-text test, or a pre-commit refusal of that marker) would make it impossible.
+- **Is a page's `<title>` or meta description copy, or an SEO gate?** DoD §4's review-only class
+  names "copy keys" as presentation and "an SEO gate" as not. Copy that feeds `<title>`, meta
+  description or JSON-LD (`seoTitle`, `seoDescription`, product descriptions) sits in both. The
+  orchestrator classes it full (TASK-166); DoD §4 should say so. To decide with the founder.
+- **Merging's first condition reads ambiguously** (`/review 134` round 2, nit 2): "a `/review`
+  **pass** is recorded on it, unless DoD item 4 makes it review-only (…), its `/break` verdict…"
+  can be read as "unless" waiving the review pass. The Never list prevents that reading in
+  practice. Number the three conditions. To decide with the founder (framework text).
+- Nits carried from the overnight rounds: `/break 133` round 2 — on a day after the first red day,
+  `seed:check --report`'s "goes red on" column shows today, and the `redOn` comment in
+  `seed/check.ts` says "the first destination day on which the rule is red" (code unchanged since
+  `89e749bb`). `/review 129` round 2 — `.jpeg` originals, a `sku: null` row, the T-31/T-32 index
+  line, and naming TASK-138 in A7; for the photo-intake task to pick up.

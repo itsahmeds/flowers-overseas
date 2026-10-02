@@ -22,6 +22,11 @@ be green. One paragraph or a short list — no restatement of the spec.
 
 One dated bullet per `/review`, newest last.
 
+- **From PR 98 / TASK-113 (2026-10-03), carried by the orchestrator:** the country-less category
+  hubs have no publisher and no inbound link (TASK-113 escalation of 2026-09-22, still `open`;
+  `docs/framework/gaps.md`). Do not index them until a spec 008 amendment gives them one and
+  `tests/support/shop-crawl-targets.ts`'s `EXCLUDED` no longer lists `categoryHub`.
+
 - **From `/review 65` (2026-09-16, TASK-090):** (1) orchestrator ruling spec 007 §14 A5 — `robots.txt` disallows **sort parameters only** (`sort=`), not "the facet parameter shapes"; tighten `/*?*sort=` (matches `?resort=`, `?assortment=`) or pin a `?colour=red&sort=price-asc` and a `?resort=` case in `tests/fixtures/seo/robots/plan-02-disallow.json`; pin a `/search-results` near-miss for `Disallow: /search`. (2) Key `noindexHeaderRules()` on `isIndexingEnvironment()` instead of `deploymentEnvironment() !== "production"` so header and rule engine read one predicate and a production `*.vercel.app` alias is not left with `Disallow: /` and no header (spec 040 TASK-097 changes the input; the predicate unification lands here).
 
 ## Escalations
