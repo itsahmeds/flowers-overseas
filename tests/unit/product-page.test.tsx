@@ -392,10 +392,13 @@ describe("AC-9: the fee is on the chip before selection, and selecting moves exa
       const html = render(view);
       const where = view.delivery.state;
       // One element is docked, and it is the row inside the summary that holds the one total.
-      const docked = [...html.matchAll(/class="[^"]*max-\[390px\]:fixed/gu)];
+      // A named breakpoint: an arbitrary media variant once emptied this project's stylesheet
+      // with no error raised (`ui-site-header.test.tsx`).
+      expect(html, where).not.toMatch(/(?:min|max)-\[\d+px\]:/u);
+      const docked = [...html.matchAll(/class="[^"]*max-sm:fixed/gu)];
       expect(docked, where).toHaveLength(1);
       const row = block(html, "data-fo-summary-total");
-      expect(row, where).toMatch(/^<div[^>]*max-\[390px\]:fixed/u);
+      expect(row, where).toMatch(/^<div[^>]*max-sm:fixed/u);
       expect(block(html, "data-fo-price-summary"), where).toContain(row);
       expect([...html.matchAll(/data-fo-price-total/gu)], where).toHaveLength(
         1,
@@ -702,5 +705,65 @@ describe("AC-25: one `priority` image with a matching preload, and none without 
     expect(gallery).not.toContain("<img");
     expect(gallery).not.toContain("Example arrangement");
     expect(gallery).toContain("Photography to supply");
+  });
+});
+
+/* -------------------------------------------------------------------------- */
+/* `/dev/components` — the gallery's fixtures are values the page could get.  */
+/* -------------------------------------------------------------------------- */
+
+describe("the gallery's product fixtures are shapes `productView()` could produce (T-09, T-23 via /dev/components)", () => {
+  it("parses every picker state and every chip with the calendar's own schema", async () => {
+    const { DeliveryWindowSchema } =
+      await import("../../src/modules/geo/delivery/schemas.ts");
+    const gallery =
+      await import("../../src/app/(dev)/dev/components/product.ts");
+    for (const delivery of [
+      gallery.PRODUCT_DELIVERY_LIVE,
+      gallery.PRODUCT_DELIVERY_PREVIEW,
+      gallery.PRODUCT_DELIVERY_UNAVAILABLE,
+    ]) {
+      expect(
+        DeliveryWindowSchema.safeParse(delivery).error,
+        delivery.state,
+      ).toBe(undefined);
+    }
+    for (const [name, chip] of Object.entries(gallery.PRODUCT_CHIPS)) {
+      const window = {
+        state: "live",
+        timeZone: gallery.PRODUCT_CHIP_ZONE,
+        cutoffLocal: gallery.PRODUCT_CHIP_CUTOFF,
+        noticeKey: "delivery.picker.live",
+        dates: [chip],
+      };
+      expect(DeliveryWindowSchema.safeParse(window).error, name).toBe(
+        undefined,
+      );
+    }
+  });
+
+  it("prices each summary as the configuration it names — the tier, plus the chosen date's chip", async () => {
+    const gallery =
+      await import("../../src/app/(dev)/dev/components/product.ts");
+    for (const [name, view] of Object.entries(gallery.PRODUCT_SUMMARIES)) {
+      const tier = view.tiers.find(
+        (option) => option.tierKey === view.selectedTierKey,
+      );
+      const fee =
+        view.selectedDate === undefined
+          ? undefined
+          : view.delivery.dates.find((date) => date.date === view.selectedDate)
+              ?.surcharge;
+      expect(view.price.displayPrice.currency, name).toBe(tier?.price.currency);
+      expect(view.price.displayPrice.amountMinor, name).toBe(
+        (tier?.price.amountMinor ?? Number.NaN) + (fee?.amountMinor ?? 0),
+      );
+      expect(view.fx.state === "fallback", name).toBe(
+        view.fx.noticeKey !== undefined,
+      );
+    }
+    expect(gallery.PRODUCT_SUMMARIES["surcharge"]?.selectedDate).toBe(
+      gallery.PRODUCT_SURCHARGE_DATE,
+    );
   });
 });

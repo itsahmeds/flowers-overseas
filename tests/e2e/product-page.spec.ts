@@ -206,3 +206,40 @@ test.describe("one priority image with its preload, and none without a photograp
     ).toHaveCount(0);
   });
 });
+
+test.describe("the sticky summary is the summary's own total, docked (AC-9, the 390 px artboard)", () => {
+  test("at 390 px the one total row docks at the bottom edge and the page keeps room for it", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(POLAND_PDPS[0]);
+    const row = page.locator("[data-fo-summary-total]");
+    await expect(row).toHaveCount(1);
+    await expect(page.locator("[data-fo-price-total]")).toHaveCount(1);
+    await expect(row.locator("[data-fo-price-total]")).toHaveCount(1);
+    expect(await row.evaluate((node) => getComputedStyle(node).position)).toBe(
+      "fixed",
+    );
+    const box = await row.boundingBox();
+    expect(Math.round((box?.y ?? 0) + (box?.height ?? 0))).toBe(844);
+    // The bar names the size beside the amount, and the document's own padding clears it, so
+    // the footer's last line is reachable above the bar.
+    await expect(
+      row.locator('[data-fo-summary-docked="selection"]'),
+    ).toBeVisible();
+    const reserved = await page.evaluate(() =>
+      Number.parseFloat(getComputedStyle(document.body).paddingBottom),
+    );
+    expect(reserved).toBeGreaterThanOrEqual(
+      box?.height ?? Number.POSITIVE_INFINITY,
+    );
+    // Above the artboard width it is back in the summary's flow, and the selection line is gone.
+    await page.setViewportSize({ width: 1440, height: 900 });
+    expect(await row.evaluate((node) => getComputedStyle(node).position)).toBe(
+      "static",
+    );
+    await expect(
+      row.locator('[data-fo-summary-docked="selection"]'),
+    ).toBeHidden();
+  });
+});

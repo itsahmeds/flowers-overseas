@@ -64,6 +64,7 @@ task actually touches.
 | `(dev)/dev/components/catalog.ts` | The gallery's own copy (spec 004 §2 "Component gallery"; TASK-045) | spec 004 |
 | `(dev)/dev/components/gated.ts` | The fake providers `/dev/components` renders the three data-gated sections'… | spec 004 |
 | `(dev)/dev/components/page.tsx` | `/dev/components` — the component gallery (spec 004 §2 "Component gallery —… | spec 004 |
+| `(dev)/dev/components/product.ts` | The gallery's fixtures for spec 009's six product-page primitives (TASK-126),… | spec 009 |
 | `(dev)/layout.tsx` | Document layout for the `(dev)` route group — today only `/dev/components`… | spec 004 |
 | `[locale]/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/{segment}/{child}/{grandchild}` — **one route file for one URL… | spec 008 |
 | `[locale]/[segment]/[child]/page.tsx` | `/{locale}/{segment}/{child}` — **one route file for one URL depth** (spec 008… | spec 008 |
@@ -140,7 +141,7 @@ task actually touches.
 | `tests/contract/` | 6 |
 | `tests/e2e/` | 36 |
 | `tests/a11y/` | 15 |
-| `tests/visual/` | 15 |
+| `tests/visual/` | 16 |
 | `tests/dev-os/` | 1 |
 | `tests/fixtures/` | 297 |
 | `tests/msw/` | 4 |

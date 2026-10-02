@@ -9,8 +9,14 @@ import { devUiEnabled } from "@/lib/env.schema";
 import { isLocaleCode } from "@/config/locales";
 import { documentFallbackLocale, localePath } from "@/modules/i18n";
 import {
+  AddonPriceList,
   Button,
   BUTTON_VARIANTS,
+  DateChip,
+  DeliveryDatePicker,
+  Gallery,
+  PriceSummary,
+  TierSelector,
   consentView,
   type ConsentTranslate,
   Chip,
@@ -114,6 +120,7 @@ import {
   MOTION_TOKENS,
   PHOTO_CAPTIONS,
   PRIMITIVE_CAPTIONS,
+  PRODUCT_STATES,
   RADIUS_STEPS,
   SECTIONS,
   SHADOW_STEPS,
@@ -121,6 +128,23 @@ import {
   SPACE_STEPS,
   TYPE_SAMPLES,
 } from "./catalog";
+import {
+  PRODUCT_ADDONS,
+  PRODUCT_CHIP_CUTOFF,
+  PRODUCT_CHIP_ZONE,
+  PRODUCT_CHIPS,
+  PRODUCT_COUNTRY,
+  PRODUCT_DELIVERY_LIVE,
+  PRODUCT_DELIVERY_PREVIEW,
+  PRODUCT_DELIVERY_UNAVAILABLE,
+  PRODUCT_GALLERY_PHOTOS,
+  PRODUCT_GALLERY_PLACEHOLDER,
+  PRODUCT_LIVE_DATE,
+  PRODUCT_NAME,
+  PRODUCT_SINGLE_TIER,
+  PRODUCT_SUMMARIES,
+  PRODUCT_TIERS,
+} from "./product";
 
 /**
  * `/dev/components` — the component gallery (spec 004 §2 "Component gallery — decided, not asked",
@@ -1140,6 +1164,173 @@ export default function DevComponentsPage(): ReactElement {
                 <div
                   className="border-rule p-md border"
                   data-fo-listing-state={state}
+                >
+                  {element}
+                </div>
+              </Stack>
+            ))}
+          </Stack>
+        </Section>
+
+        <Section title={SECTIONS[20]}>
+          <Stack gap="lg">
+            {(
+              [
+                [
+                  "galleryPhotos",
+                  <div className="max-w-[420px]" key="gallery-photos">
+                    <Gallery
+                      gallery={PRODUCT_GALLERY_PHOTOS}
+                      locale={galleryLocale}
+                      manifest={GALLERY_MEDIA_MANIFEST}
+                      productName={PRODUCT_NAME}
+                    />
+                  </div>,
+                ],
+                [
+                  "galleryPlaceholder",
+                  <div className="max-w-[420px]" key="gallery-placeholder">
+                    <Gallery
+                      gallery={PRODUCT_GALLERY_PLACEHOLDER}
+                      locale={galleryLocale}
+                      productName={PRODUCT_NAME}
+                    />
+                  </div>,
+                ],
+                [
+                  "tiers",
+                  <TierSelector
+                    key="tiers"
+                    locale={galleryLocale}
+                    name="gallery-tier"
+                    selectedTierKey="stems_18"
+                    tiers={PRODUCT_TIERS}
+                  />,
+                ],
+                [
+                  "tierSingle",
+                  <TierSelector
+                    key="tier-single"
+                    locale={galleryLocale}
+                    name="gallery-tier-single"
+                    selectedTierKey="single"
+                    tiers={PRODUCT_SINGLE_TIER}
+                  />,
+                ],
+                ...(
+                  [
+                    ["chipIncluded", ["included"]],
+                    ["chipSurcharge", ["surcharge"]],
+                    [
+                      "chipClosed",
+                      [
+                        "closedSunday",
+                        "closedHoliday",
+                        "closedCutoff",
+                        "closedOccasion",
+                      ],
+                    ],
+                  ] as const
+                ).map(
+                  ([state, chips]) =>
+                    [
+                      state,
+                      <div
+                        className="gap-sm grid max-w-[560px] grid-cols-4"
+                        key={state}
+                        role="radiogroup"
+                        aria-label={PRODUCT_STATES[state]}
+                      >
+                        {chips.map((chip) => (
+                          <DateChip
+                            country={PRODUCT_COUNTRY}
+                            cutoffLocal={PRODUCT_CHIP_CUTOFF}
+                            date={
+                              PRODUCT_CHIPS[chip] ?? PRODUCT_CHIPS["included"]!
+                            }
+                            key={chip}
+                            locale={galleryLocale}
+                            name={`gallery-${state}`}
+                            sharedReasonId={`gallery-${state}`}
+                            timeZone={PRODUCT_CHIP_ZONE}
+                          />
+                        ))}
+                      </div>,
+                    ] as const,
+                ),
+                [
+                  "pickerLive",
+                  <DeliveryDatePicker
+                    country={PRODUCT_COUNTRY}
+                    delivery={PRODUCT_DELIVERY_LIVE}
+                    idPrefix="gallery-live"
+                    key="picker-live"
+                    locale={galleryLocale}
+                    selectedDate={PRODUCT_LIVE_DATE}
+                  />,
+                ],
+                [
+                  "pickerPreview",
+                  <DeliveryDatePicker
+                    country={PRODUCT_COUNTRY}
+                    delivery={PRODUCT_DELIVERY_PREVIEW}
+                    idPrefix="gallery-preview"
+                    key="picker-preview"
+                    locale={galleryLocale}
+                  />,
+                ],
+                [
+                  "pickerUnavailable",
+                  <DeliveryDatePicker
+                    corridorPath="#product-and-date-picker-blocks"
+                    country={PRODUCT_COUNTRY}
+                    delivery={PRODUCT_DELIVERY_UNAVAILABLE}
+                    idPrefix="gallery-unavailable"
+                    key="picker-unavailable"
+                    locale={galleryLocale}
+                  />,
+                ],
+                [
+                  "addons",
+                  <AddonPriceList
+                    addons={PRODUCT_ADDONS}
+                    key="addons"
+                    locale={galleryLocale}
+                  />,
+                ],
+                ...(
+                  [
+                    ["summaryNormal", "normal"],
+                    ["summarySurcharge", "surcharge"],
+                    ["summaryStaleFx", "staleFx"],
+                    ["summaryDemo", "demo"],
+                  ] as const
+                ).map(
+                  ([state, summary]) =>
+                    [
+                      state,
+                      <div className="max-w-[420px]" key={state}>
+                        <PriceSummary
+                          country={PRODUCT_COUNTRY}
+                          dock={false}
+                          totalId={`gallery-${state}`}
+                          view={
+                            PRODUCT_SUMMARIES[summary] ??
+                            PRODUCT_SUMMARIES["normal"]!
+                          }
+                        />
+                      </div>,
+                    ] as const,
+                ),
+              ] as const
+            ).map(([state, element]) => (
+              <Stack gap="sm" key={state}>
+                <Text measure size="sm" tone="muted">
+                  {PRODUCT_STATES[state]}
+                </Text>
+                <div
+                  className="border-rule p-md border"
+                  data-fo-product-state={state}
                 >
                   {element}
                 </div>

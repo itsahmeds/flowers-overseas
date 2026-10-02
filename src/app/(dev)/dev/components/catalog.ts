@@ -67,6 +67,11 @@ export const SECTIONS = [
   // Phase-0 page until TASK-109 builds the shop root, so this is their only visual and axe
   // surface.
   "Listing and card blocks",
+  // TASK-126: spec 009's six product-page primitives, in every state the sheet draws
+  // (`system/components.dc.html`, "Product and date-picker blocks"). Two of the three picker
+  // states and the stale-FX summary are reachable on no Phase-0 page, so this is their visual and
+  // axe surface; `ProductPage`, and the summary's docked state, are reviewed on the product route.
+  "Product and date-picker blocks",
 ] as const;
 
 /** The colour ramps, in the order `globals.css` declares them. */
@@ -297,6 +302,42 @@ export const LISTING_STATES = {
     "CategoryChipRow \u2014 the sibling row: the other categories that clear the six-product floor for this destination, in collator(locale) order. Every chip is a link to a page that exists; the current category is text with aria-current. No filters ship in Phase 0 (\u00a713 Q6).",
   chipRowEmpty:
     "CategoryChipRow \u00b7 empty \u2014 nothing renders when no sibling clears the floor.",
+} as const;
+
+/**
+ * Spec 009's product-page states, in the order `system/components.dc.html` draws them (TASK-126).
+ */
+export const PRODUCT_STATES = {
+  galleryPhotos:
+    "Gallery \u00b7 photos \u2014 a list named Product images, hero first, in a fixed 1\u22361 box; the honesty label under it because the asset is generated. On the page the hero is the single priority image with its preload; here it is not, because the gallery nominates its own LCP image above.",
+  galleryPlaceholder:
+    "Gallery \u00b7 placeholder \u2014 72 of the 84 products: the captioned box, four empty thumbnail boxes, no <img> and therefore no honesty label. The same box, so the swap costs zero layout shift.",
+  tiers:
+    "TierSelector \u2014 a fieldset of radios in the page's one GET form, one per tier by stem count, each with its own all-in price. The preselected tier is data (isDefault), never a constant.",
+  tierSingle:
+    "TierSelector \u00b7 single \u2014 a product sold in one size prints its size and price as text: a one-radio control is a choice that is not one.",
+  chipIncluded:
+    "DateChip \u00b7 included \u2014 a selectable date with no fee says so before it is chosen.",
+  chipSurcharge:
+    "DateChip \u00b7 surcharge \u2014 the fee from dateSurcharges() on the chip before selection, with the occasion's own name and its accent rule.",
+  chipClosed:
+    "DateChip \u00b7 closed \u2014 disabled, with its reason in words beside the date and inside the radio's label: never colour or opacity alone (WCAG 1.4.1). Sunday, public holiday, past the cutoff, and an occasion marked on a closed day.",
+  pickerLive:
+    "DeliveryDatePicker \u00b7 live \u2014 selectable dates, the earliest preselected from data, the submit button, and the absolute cutoff with its zone named. No relative day label, no countdown.",
+  pickerPreview:
+    "DeliveryDatePicker \u00b7 preview \u2014 the full computed week with every chip off under one shared sentence (\u00a713 Q6); a holiday and a Sunday keep their own reason.",
+  pickerUnavailable:
+    "DeliveryDatePicker \u00b7 unavailable \u2014 no operations block: no dates, one honest sentence and the way out, the whole fieldset disabled.",
+  addons:
+    "AddonPriceList \u2014 read-only rows: name, the destination's price and its own VAT rate. No input element, and the free card is a visible zero line (AC-23).",
+  summaryNormal:
+    "PriceSummary \u00b7 normal \u2014 the tier's row, delivery and VAT as included rows, one You pay, the inclusive formula, and the demo box where a button would be.",
+  summarySurcharge:
+    "PriceSummary \u00b7 surcharge \u2014 the chosen date's fee is a line, because it was on the chip first; the one total moves by exactly it.",
+  summaryStaleFx:
+    "PriceSummary \u00b7 stale FX \u2014 the projection falls back to the destination's currency and the summary says which currency it quotes.",
+  summaryDemo:
+    "PriceSummary \u00b7 demo \u2014 Phase 0's default: \u201cOrdering is not open yet\u201d with the reason, and no button, disabled or otherwise. The sticky state is the product page's own: at 390 px the page's one summary docks its total row at the bottom of the viewport, so no summary here docks (four bars would stack over the blocks above).",
 } as const;
 
 /**

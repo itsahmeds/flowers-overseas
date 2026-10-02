@@ -20,9 +20,9 @@
  *  - **demo** — no purchase affordance at all (§13 Q6, Q7): "Ordering is not open yet" stands where
  *    a button would, with the reason beside it while the destination has no florist. No disabled
  *    button: a greyed-out button is a promise with an excuse attached.
- *  - **sticky** — at ≤390 px the total row docks at the bottom of the viewport. It is the same
- *    element restyled, not a second bar repeating the total (AC-9), so the page still has one
- *    `data-fo-price-total` and one live region.
+ *  - **sticky** — below `sm` (the 390 px artboard) the total row docks at the bottom of the
+ *    viewport. It is the same element restyled, not a second bar repeating the total (AC-9), so the
+ *    page still has one `data-fo-price-total` and one live region.
  *
  * The total sits in an `aria-live="polite"` region, which announces only on change — the one
  * island (TASK-129) swaps it from numbers already in the HTML.
@@ -38,17 +38,19 @@ import { instantOf, localeOf, messageFor, zoneCity } from "./labels.ts";
 import { tierLabel } from "./TierSelector.tsx";
 
 /**
- * The total row's docked style at the mobile artboard's width (`product-mobile.dc.html`, "Sticky ·
- * docked at the bottom of the viewport"): fixed to the bottom edge, full width, one column, under
- * the language and consent banners' layers. The two arbitrary variants keep room for it on the
+ * The total row's docked style below the `sm` breakpoint (640 px), which holds the 390 px mobile
+ * artboard (`product-mobile.dc.html`, "Sticky · docked at the bottom of the viewport") and every
+ * phone: fixed to the bottom edge, full width, one column, under the language and consent banners'
+ * layers. A named breakpoint, not `max-[390px]:` — an arbitrary media variant once compiled this
+ * project's stylesheet down to its base layer (`SiteHeader.tsx`, TASK-048). The two arbitrary variants keep room for it on the
  * document itself — `body` padding, so the footer's last line is never under the bar, and `html`
  * scroll padding, so a focused element scrolls clear of it — and apply only while the bar exists.
  */
 const DOCKED = [
-  "max-[390px]:fixed max-[390px]:start-0 max-[390px]:end-0 max-[390px]:bottom-0",
-  "max-[390px]:layer-header max-[390px]:grid-cols-1 max-[390px]:gap-y-[2px]",
-  "max-[390px]:border-t-2 max-[390px]:bg-surface-raised max-[390px]:p-md max-[390px]:shadow-md",
-  "max-[390px]:[body:has(&)]:pb-[8rem] max-[390px]:[html:has(&)]:scroll-pb-[8rem]",
+  "max-sm:fixed max-sm:start-0 max-sm:end-0 max-sm:bottom-0",
+  "max-sm:layer-header max-sm:grid-cols-1 max-sm:gap-y-[2px]",
+  "max-sm:border-t-2 max-sm:bg-surface-raised max-sm:p-md max-sm:shadow-md",
+  "max-sm:[body:has(&)]:pb-[8rem] max-sm:[html:has(&)]:scroll-pb-[8rem]",
 ].join(" ");
 
 export interface PriceSummaryProps {
@@ -68,12 +70,19 @@ export interface PriceSummaryProps {
   readonly country: string;
   /** The id of the live region, so a page can point the island at it. */
   readonly totalId?: string;
+  /**
+   * Whether the total row docks below `sm` (the 390 px artboard). A page has one summary and
+   * docks it; a surface that renders several side by side (`/dev/components`) passes `false`, or
+   * its bars would stack.
+   */
+  readonly dock?: boolean;
 }
 
 export function PriceSummary({
   view,
   country,
   totalId = "price-total",
+  dock = true,
 }: PriceSummaryProps): ReactElement {
   const t = useTranslations();
   const product = useTranslations("product");
@@ -135,7 +144,7 @@ export function PriceSummary({
           <dd className={`${muted} m-0 text-end`}>{product("included")}</dd>
         </div>
       </dl>
-      {/* The total row **is** the sticky summary (AC-9: no second money element). At ≤390 px it
+      {/* The total row **is** the sticky summary (AC-9: no second money element). On a phone it
           leaves the flow and docks at the bottom of the viewport, restyled, with the size and the
           date beside the amount and the demo sentence (or, live, the cutoff) under it — the two
           lines a buyer would otherwise scroll back for. Those two lines repeat words the summary
@@ -143,18 +152,15 @@ export function PriceSummary({
           is the one `aria-live` region, announced once. The document keeps room for the bar, so
           it never covers the last line of the page or a focused element (WCAG 2.4.11). */}
       <div
-        className={`border-border-emphasis gap-x-md pt-sm grid grid-cols-[minmax(0,1fr)_auto] border-t text-lg ${DOCKED}`}
+        className={`border-border-emphasis gap-x-md pt-sm grid grid-cols-[minmax(0,1fr)_auto] border-t text-lg ${dock ? DOCKED : ""}`}
         data-fo-summary-total
       >
-        <span
-          className="font-semibold max-[390px]:sr-only"
-          id={`${totalId}-label`}
-        >
+        <span className="font-semibold max-sm:sr-only" id={`${totalId}-label`}>
           {product("summary.total")}
         </span>
         <span
           aria-live="polite"
-          className="text-end max-[390px]:text-start"
+          className="text-end max-sm:text-start"
           id={totalId}
         >
           <bdi className="font-semibold tabular-nums" data-fo-price-total>
@@ -163,7 +169,7 @@ export function PriceSummary({
         </span>
         <span
           aria-hidden="true"
-          className="text-ink-muted hidden text-xs max-[390px]:block"
+          className="text-ink-muted hidden text-xs max-sm:block"
           data-fo-summary-docked="selection"
         >
           {[
@@ -178,7 +184,7 @@ export function PriceSummary({
         </span>
         <span
           aria-hidden="true"
-          className="text-ink-muted hidden text-xs max-[390px]:block"
+          className="text-ink-muted hidden text-xs max-sm:block"
           data-fo-summary-docked="status"
           {...(live ? { "data-fo-cutoff": "docked" } : {})}
         >
