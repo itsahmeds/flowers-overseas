@@ -1970,16 +1970,100 @@ export interface HolidayCoverageRunway {
   readonly daysLeft: number;
 }
 
-/** TASK-149 stub: replaced by the implementation in the next commit. */
+/**
+ * TASK-149: **how many days until `holiday-coverage` goes red**, per destination that renders a
+ * calendar. Read-only, like the rest of `--report`: it never changes the verdict, and it reads
+ * the same rows the same way as family 10 (raw rows, a `YYYY-` date prefix, the row's `iso2`)
+ * over the same `calendarHorizons()`, so "0 days left" and a red rule are the same instant.
+ *
+ * The horizon from day D covers the years of D through D + `NEXT_AVAILABLE_HORIZON_DAYS`. Every
+ * year from today's up to the first uncovered one is covered, so the rule first goes red on the
+ * day the horizon's far end reaches 1 January of that year — or today, if it already has.
+ */
 export function holidayCoverageRunway(
   tree: SeedTree,
 ): readonly HolidayCoverageRunway[] {
-  return tree.asOf.getTime() < 0 ? [] : [];
+  const covered = new Map<string, Set<number>>();
+  for (const row of rawHolidayRows(tree)) {
+    const iso2 = row["iso2"];
+    const date = row["date"];
+    if (typeof iso2 !== "string") continue;
+    if (typeof date !== "string" || !/^\d{4}-/u.test(date)) continue;
+    const years = covered.get(iso2) ?? new Set<number>();
+    years.add(Number(date.slice(0, 4)));
+    covered.set(iso2, years);
+  }
+  return calendarHorizons(tree).map((horizon) => {
+    const years = covered.get(horizon.iso2) ?? new Set<number>();
+    let firstUncoveredYear = Number(horizon.from.slice(0, 4));
+    while (years.has(firstUncoveredYear)) firstUncoveredYear += 1;
+    const edge = addCalendarDays(
+      `${String(firstUncoveredYear)}-01-01`,
+      -NEXT_AVAILABLE_HORIZON_DAYS,
+    );
+    const redOn = edge > horizon.from ? edge : horizon.from;
+    return {
+      iso2: horizon.iso2,
+      timeZone: horizon.timeZone,
+      from: horizon.from,
+      firstUncoveredYear,
+      redOn,
+      daysLeft:
+        (Date.parse(`${redOn}T00:00:00.000Z`) -
+          Date.parse(`${horizon.from}T00:00:00.000Z`)) /
+        MS_PER_DAY,
+    };
+  });
 }
 
-/** TASK-149 stub: replaced by the implementation in the next commit. */
+/** One warning line; it starts with `HOLIDAY_COVERAGE_WARNING_MARKER`, which CI greps for. */
+function holidayCoverageWarning(runway: HolidayCoverageRunway): string {
+  const when =
+    runway.daysLeft === 0
+      ? `is red from today, ${runway.redOn}`
+      : `goes red in ${String(runway.daysLeft)} ${runway.daysLeft === 1 ? "day" : "days"}, on ${runway.redOn}`;
+  const year = String(runway.firstUncoveredYear);
+  return `${HOLIDAY_COVERAGE_WARNING_MARKER} ${runway.iso2} ${when} (${runway.timeZone}), the first day its ${String(NEXT_AVAILABLE_HORIZON_DAYS)}-day picker horizon reaches ${year} with no holiday row; author ${runway.iso2}'s ${year} rows in ${dataFile(HOLIDAYS_FILE)} (spec 009 AC-2).`;
+}
+
+/**
+ * The runway as a section of the step summary: one row per **published** destination (one with
+ * no calendar says so rather than vanishing), then either the all-clear line or one warning per
+ * destination under `HOLIDAY_COVERAGE_WARNING_DAYS`.
+ */
 export function holidayCoverageReport(tree: SeedTree): readonly string[] {
-  return tree.asOf.getTime() < 0 ? [] : [];
+  const runways = holidayCoverageRunway(tree);
+  const byIso2 = new Map(runways.map((runway) => [runway.iso2, runway]));
+  const lines: string[] = [
+    "#### holiday coverage runway (spec 009 AC-2)",
+    "",
+    `Whole days, counted from today in each destination, before \`calendar/holiday-coverage\` goes red: the first day the picker's ${String(NEXT_AVAILABLE_HORIZON_DAYS)}-day horizon reaches a year with no holiday row. Under ${String(HOLIDAY_COVERAGE_WARNING_DAYS)} days the line below the table is a warning, and CI's \`seed-check\` step summary repeats it. Judged at ${tree.asOf.toISOString()}.`,
+    "",
+    "| destination | today | first year with no rows | goes red on | days left |",
+    "|---|---|---|---|---|",
+  ];
+  for (const country of COUNTRIES) {
+    if (!isPublishedDestination(country)) continue;
+    const runway = byIso2.get(country.iso2);
+    lines.push(
+      runway === undefined
+        ? `| ${country.iso2} | — | — | — | no calendar |`
+        : `| ${runway.iso2} | ${runway.from} | ${String(runway.firstUncoveredYear)} | ${runway.redOn} (${runway.timeZone}) | ${String(runway.daysLeft)} |`,
+    );
+  }
+  const warnings = runways
+    .filter((runway) => runway.daysLeft < HOLIDAY_COVERAGE_WARNING_DAYS)
+    .map(holidayCoverageWarning);
+  lines.push("");
+  if (warnings.length === 0) {
+    lines.push(
+      `No destination is within ${String(HOLIDAY_COVERAGE_WARNING_DAYS)} days of going red.`,
+      "",
+    );
+  } else {
+    for (const warning of warnings) lines.push(warning, "");
+  }
+  return lines;
 }
 
 /**
@@ -2351,6 +2435,7 @@ export function seedHealthReport(tree: SeedTree): string {
   const coverage = coverageRows(tree);
 
   lines.push(...pickerStateReport(tree));
+  lines.push(...holidayCoverageReport(tree));
 
   lines.push("#### products by type", "");
   lines.push("| product type | products | expected |", "|---|---|---|");
