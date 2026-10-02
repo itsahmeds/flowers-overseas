@@ -114,13 +114,45 @@ here.
   `tests/fixtures/seed/_cases/copy/` (`bad-word-count`, `bad-duplicate-description`,
   `bad-delivery-timing`) carry the old sentence and must follow it.
 
+- 2026-10-03: E1-E3 answered. Changed `catalog.floristSentence` (en/de/pl) and the en meta review
+  fields, ran `--sync-copy`, the two E4 edits, `--locale de`/`pl`, `seed:diff --write`. Two things
+  the brief did not foresee, both mechanical (see `## Result`): every row's `sourceHash` moves, and
+  the en/en-gb sitemap fixtures' `lastmod` moves. Gates green on `8082a3a1`. Next: review + break.
+
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
+**Shipped in PR #136** (`fix(copy): soften the florist claim in the seed copy (TASK-166)`).
+`catalog.floristSentence` is the founder's future-tense sentence in `messages/{en,de,pl}.json`;
+`en.meta.json` records `reviewed: true`, `reviewedBy: "founder (chat, 2026-10-03: future-tense
+florist sentence)"`, `reviewedAt: 2026-10-03` and the new `sourceHash`; de/pl meta keep
+`machine`/`reviewed: false`, and only their `sourceHash` follows the en value (`i18n:draft`
+writes it; `i18n:check` fails a stale one). 421 descriptions re-flowed (139 rows x en/de/pl + 4
+en-gb); FO-BQ-001 and FO-BQ-003 `seoDescription` edited exactly as E4 says (en, then drafted to
+de/pl). A script compared every copy row with HEAD: 421 rows, 0 differences beyond the closing
+sentence, the two `seoDescription`s and `sourceHash`. No new tests (data-only change).
 
-**Blocked, nothing shipped.** The draft PR carries only this brief and the `TASKS.md` row. Gates
-before the probe, on HEAD: `seed:check` exit 0, `catalogue:check` exit 0. Probe (scratch copy,
-421 replacements): `seed:check` exit 1, 444 problems (421 `copy/floristSentence`, 23
-`copy/wordCount`). No test pins the sentence as a literal: `tests/unit/seed-copy.test.ts` reads it
-from `messages/en.json`; the three fixtures named in `## Progress` carry it.
+**Beyond the brief (mechanical, flagged for the reviewer):**
+1. *Every* row's `sourceHash` moved, not only FO-BQ-001/003's: the hash covers `descriptionMd`
+   (`seed/copy.ts` `copySourceHash`), so a new closing sentence changes it on all 139 en rows.
+   `--sync-copy` re-flows the text but leaves the en and en-gb hashes stale, which
+   `tests/unit/seed-copy.test.ts` refuses ("records a reviewer and a date on every authored
+   row", "`en-gb` ships only as differing overrides"). I refreshed the 139 en + 4 en-gb hashes to
+   `copySourceHash` (data only). The tool gap in `seed/copy-draft.ts` `syncCopyLocale` is outside
+   this fence; suggested follow-up task. de/pl got the new hashes from `--locale de`/`pl`.
+2. `tests/fixtures/seo/sitemap/{sitemap,en-*,en-gb-*}.xml`: 22 `lastmod` lines 2026-09-22 ->
+   2026-10-03, because `catalogueUpdatedAt()` (`src/modules/i18n/review.ts`) takes the newest
+   en `reviewedAt`. Regenerated with `UPDATE_SEO_FIXTURES=1` (the test's own writer); nothing
+   else moved.
+
+**Fixtures.** `bad-duplicate-description` updated: it failed on `copy/floristSentence` instead
+of `copy/duplicate-description`. `bad-word-count` kept with the old sentence: its test still
+fails for its own fault (`copy/wordCount`), so the Binding says leave it; it is the only file the
+old-sentence grep finds. `bad-delivery-timing` does not carry the sentence.
+
+**Gates on `8082a3a1`:** `seed:check` 0 (ten families clean), `catalogue:check` 0 (pre-existing
+stale-FX note), `i18n:check` 0, `seed:project --check` 0; unit `seed-copy`, `seed-diff`,
+`seed-check`, `home-honesty`, `i18n-check`, `i18n-draft`, `sitemap-fixtures` green;
+`gates:cheap` PASS (7/7). No build slot used.
+
+**Broken on purpose:** the en key alone reverted (descriptions left new) -> `seed:check` exit 1,
+143 `copy/floristSentence` problems (139 en + 4 en-gb); restored -> clean.
