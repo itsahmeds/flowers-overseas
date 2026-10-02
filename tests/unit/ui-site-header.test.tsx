@@ -25,6 +25,7 @@ import {
   MASTHEAD_LINK_IDS,
   SEARCH_LINK_ID,
   type SiteLinkId,
+  linkLabelKey,
   siteLink,
 } from "../../src/config/site-links.ts";
 import { loadMessages, localePath } from "../../src/modules/i18n";
@@ -193,6 +194,7 @@ describe("a published registry entry becomes a link with no template edit (AC-14
       MASTHEAD_LINK_IDS: [],
       SEARCH_LINK_ID: "search",
       isPublished: () => true,
+      linkLabelKey: (link: { labelKey: string }) => link.labelKey,
       siteLink: () => ({
         id: "for-florists",
         labelKey: "nav.forFlorists",
@@ -522,7 +524,9 @@ describe("every registry label the header renders resolves in the catalogue", ()
           (key): key is string => key !== undefined,
         ),
       ),
-      ...headerLinkIds.map((id) => siteLink(id).labelKey),
+      // Every header link is a drawn link and therefore has a label; `linkLabelKey()` is the
+      // accessor that says so (spec 008 AC-20; TASK-113).
+      ...headerLinkIds.map((id) => linkLabelKey(siteLink(id))),
       siteLink(SEARCH_LINK_ID).descriptionKey ?? "",
       COMPANY.contact.labelKey,
       COMPANY.contact.hoursKey,

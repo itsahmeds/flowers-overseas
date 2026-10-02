@@ -297,6 +297,21 @@ describe("the shipped catalogues and manifests", () => {
     "occasionHub.dateUnknown",
     "occasionHub.datesCaption",
     "occasionHub.destinationsHeading",
+    // TASK-113, the occasions index. Eleven of its thirteen strings are transcribed from
+    // `wireframes/occasions-index-{desktop,mobile}.dc.html` and carry the founder's attestation;
+    // these two are the implementer's generalisation of the artboard's name-day-specific prose
+    // into a heading and a sentence that hold for every occasion whose date we cannot compute
+    // (Sant Jordi, Grandmothers' Day in France, the May Day lily of the valley). No `<head>` pair
+    // waits here, because the page has none: its `<title>` is its own `h1` and its description is
+    // its own intro, both of them artboard copy.
+    // `/review 98` round 1 moved `occasionsIndex.datedCaption` back here: its transcribed
+    // "— the one destination we have published" stopped being true when TASK-091 published all
+    // seven guides, so the implementer cut the count and the string waits for the founder again.
+    // `undatedNote` was reworded in the same round ("a country we have not published yet" →
+    // "another country") and was already waiting.
+    "occasionsIndex.datedCaption",
+    "occasionsIndex.undatedHeading",
+    "occasionsIndex.undatedNote",
     // TASK-111, the country occasion page. Five of its eleven strings are transcribed from the
     // founder-approved artboards (`wireframes/country-occasion-{desktop,mobile}.dc.html`,
     // `country-shop-{desktop,mobile}.dc.html`) and carry his attestation; these six are wording
@@ -414,6 +429,11 @@ describe("the shipped catalogues and manifests", () => {
       // artboards draw the same sentence and one sentence is one thing to review.
       "categoryHub",
       "occasionHub",
+      // Spec 008 §7's occasions-index namespace (TASK-113): the `h1`, the intro, the two group
+      // headings, the dated table's caption and columns, and the two sentences about a date we
+      // cannot compute. No `seoTitle`/`seoDescription` pair — the page's `<head>` is its own
+      // heading and its own intro.
+      "occasionsIndex",
     ];
     const provenanceLabel: Messages["media"]["provenance"]["aiExample"] =
       enSource.media.provenance.aiExample;

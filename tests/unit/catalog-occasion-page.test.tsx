@@ -167,9 +167,11 @@ describe("the country occasion page (§5.3 row 2)", () => {
       "breadcrumb.entity",
     ]);
     expect(html).toContain('aria-current="page"');
-    // The occasions crumb is **text** while TASK-113 has not published its link id: a crumb is
-    // never a link to a 404 (spec 004 AC-14).
-    expect(html).not.toContain('href="/en/occasions"');
+    // The occasions crumb became a **link** the day TASK-113 built `/en/occasions` and published
+    // its id, with no edit to this page or its component: the crumb's href is
+    // `occasionsIndexHref()`'s, which is `undefined` until the page exists *and* may be linked
+    // (spec 004 AC-14). Asserted as a link now, for the same reason it was asserted as text then.
+    expect(html).toContain('href="/en/occasions"');
     expect(readable(html.slice(0, html.indexOf("</nav>")))).toContain(
       "Mother's Day",
     );

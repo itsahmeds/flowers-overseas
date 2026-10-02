@@ -59,14 +59,14 @@ test.describe("existence and the 404 shapes (AC-1, T-01)", () => {
       "/pl/polska/okazje/dzien-matki",
       // an unknown locale
       "/fr/poland/occasions/mothers-day",
-      // The occasions index is still TASK-113's URL and does not exist yet.
-      //
-      // `/en/occasions/mothers-day` used to sit here on the same reasoning — "TASK-112's URL, not
-      // this depth's" — and TASK-112 then shipped it (PR 88). Two merged PRs contradicted each
-      // other on `main` for an hour: this case asserted a 404 on a page the hub task had made
-      // answer 200. A 404 list is a claim about what the site does *not* serve, so an entry must
-      // be retired the moment another task starts serving it.
-      "/en/occasions",
+      // Nothing about the depth-2 URLs `/en/occasions/{slug}` or `/en/occasions` belongs here any
+      // more. Both used to sit in this list on the reasoning "that is TASK-112/113's URL, not this
+      // depth's", and both tasks then shipped their page — the hub in PR 88, the index in
+      // TASK-113 — so for an hour on 2026-09-22 two merged PRs contradicted each other and this
+      // case asserted a 404 on a page that answered 200. **A 404 list is a claim about what the
+      // site does *not* serve, so an entry must be retired the moment another task starts serving
+      // it.** Their 200s are asserted in `tests/e2e/hubs.spec.ts` and
+      // `tests/e2e/occasions-index.spec.ts`; this file asserts only its own depth.
     ]) {
       const response = await request.get(url, { maxRedirects: 0 });
       expect(response.status(), url).toBe(404);

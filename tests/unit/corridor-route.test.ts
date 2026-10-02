@@ -141,6 +141,29 @@ describe("the state rule (AC-8; T-09)", () => {
   });
 });
 
+describe("the two live slots have two conditions (spec 008 AC-20; TASK-113)", () => {
+  // The defect this pins: `liveSlots` was gated as a **block** on `corridorState() === "live"`,
+  // and no country is live in Phase 0, so spec 008 AC-20's "the corridor page renders them as
+  // links" was unsatisfiable and `/en/poland/flowers` — 200 with 84 priced products since PR #89
+  // — was reachable from nowhere. The gate is now per slot, which is what each field's own rule
+  // always said.
+  it("drops a price on a guide destination and keeps the shop entry", () => {
+    expect(corridorState("PL", "en")).toBe("guide");
+    const view = corridorView("PL", "en", {
+      from: FROM,
+      liveSlots: { fromPrice: "€39.00", shopEntryHref: "/en/poland/flowers" },
+    });
+    // A price beside "we are still choosing florists" is the Phase 1 claim `plan/07` §4 forbids.
+    expect(view?.liveSlots.fromPrice).toBeUndefined();
+    // A link to a page that exists is not a claim at all.
+    expect(view?.liveSlots.shopEntryHref).toBe("/en/poland/flowers");
+  });
+
+  it("supplies neither when the caller supplies neither", () => {
+    expect(corridorView("PL", "en", { from: FROM })?.liveSlots).toEqual({});
+  });
+});
+
 describe("the view model (AC-8, AC-19, AC-22; T-09, T-23)", () => {
   const view = corridorView("PL", "en", { from: FROM });
 

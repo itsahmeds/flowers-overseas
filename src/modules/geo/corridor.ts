@@ -307,13 +307,32 @@ export interface CorridorRelatedView {
 }
 
 /**
- * Phase 1 data this spec does not own. Absent in Phase 0 on every page; supplied by spec 005/008
- * when there is a price to show and a shop to enter, and by the AC-8 fixtures meanwhile.
+ * Data this spec does not own, supplied by spec 005/008 "when there is a price to show **and a
+ * shop to enter**" and by the AC-8 fixtures meanwhile.
+ *
+ * **The two slots have two different conditions, and they always did** (spec 008 AC-20;
+ * TASK-113). Each field's own rule is written on it below, and neither is `corridorState()`:
+ *
+ *  - `fromPrice` is a **price**, and a price on a guide page is a Phase 1 claim: it is absent
+ *    until the destination is operationally live, because quoting a price beside "we are still
+ *    choosing florists" is the unfair-practice risk `plan/07` §4 names;
+ *  - `shopEntryHref` is a **link to a page that already exists**. `/en/poland/flowers` has served
+ *    200 with 84 priced products since PR #89, and the section it opens says "See what can
+ *    arrive in Poland" — no delivery date, no cutoff, no basket. Suppressing it while the country
+ *    is `guide` does not make the page more honest; it makes 294 URLs unreachable, which is what
+ *    it did until this task (see `src/modules/catalog/shop-entry.ts` for the measurement).
  */
 export interface CorridorLiveSlots {
-  /** Visible "from" text, already formatted by `formatMoney` — never an `Offer` (§6). */
+  /**
+   * Visible "from" text, already formatted by `formatMoney` — never an `Offer` (§6). **Live
+   * destinations only**, applied in `corridorView()` below.
+   */
   readonly fromPrice?: string | undefined;
-  /** The shop entry's target, when its link id is published **and** the target exists. */
+  /**
+   * The shop entry's target, when its link id is published **and** the target exists — the two
+   * conditions this field has always stated, and the only two. Answered once, for both, by
+   * `corridorShopEntry()` in `src/modules/catalog`, which is where the catalogue may be read.
+   */
   readonly shopEntryHref?: string | undefined;
 }
 
@@ -482,6 +501,17 @@ export function corridorView(
     occasions: occasions.length === 0 ? undefined : occasions,
     undatedOccasions: undated.length === 0 ? undefined : undated,
     related: related.length === 0 ? undefined : related,
-    liveSlots: state === "live" ? (options.liveSlots ?? {}) : {},
+    // Per-slot, not per-state (see `CorridorLiveSlots`): the **price** waits for an operationally
+    // live destination, the **shop entry** waits only for a shop root that exists and a link id
+    // that is published — which is spec 008 AC-20's "the corridor page renders them as links",
+    // unsatisfiable in Phase 0 by any live-only gate because no country is live in Phase 0.
+    liveSlots: {
+      ...(state === "live" && options.liveSlots?.fromPrice !== undefined
+        ? { fromPrice: options.liveSlots.fromPrice }
+        : {}),
+      ...(options.liveSlots?.shopEntryHref === undefined
+        ? {}
+        : { shopEntryHref: options.liveSlots.shopEntryHref }),
+    },
   };
 }
