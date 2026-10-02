@@ -60,11 +60,76 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- **E-1 (2026-10-03, implementer → orchestrator → founder): `DeliveryFacts` — the drawing and the
+  spec disagree, and the fence allows neither reading.** Spec 009 §5.3 and the drawing's own note
+  say "Spec 007's block reused unchanged, not re-implemented". The drawing
+  (`system/components.dc.html`, "Delivery-facts summary") instead draws **different rows**:
+  Delivering / Order-by time / Soonest date / What the price covers, plus a new sentence
+  ("Nothing is added at a later step."). Spec 007's block (`src/modules/geo/ui/CorridorFacts.tsx`)
+  prints Order by / Delivery days / Sundays / Cities we reach / Prices from. Reusing it is not
+  possible inside this task's fence. It lives in `geo/ui`, the geo barrel does not export it, it
+  takes a whole `CorridorView`, and `geo/ui` imports the `ui` barrel, so a `ui/product` import of
+  it would be a runtime cycle. Choose one: **(a)** reuse unchanged. `geo` exports `CorridorFacts`
+  with a narrowed prop (`{ facts, nameKey, locale }`), TASK-127 mounts it, and the drawing is
+  redrawn to 007's rows. This edits `geo`, which is outside TASK-126's fence. **(b)** a new
+  `ui/product/DeliveryFacts.tsx` with the drawn rows. That is a re-implementation and needs about
+  4–5 new `en` strings. Recommendation: (a). It adds no new copy, and §5.3 says "reused". `open`.
+- **E-2 (2026-10-03, implementer → orchestrator → founder): the copy gate will go red, by about
+  20 keys.** There are no `delivery.*` or `product.*` keys on `main` (counted). Counted from the
+  drawings, the six primitives need at least these new `en` keys, about **19–21** in total. The
+  date picker needs 15: its legend ("When should it arrive?"), "included", "selected", the submit
+  button ("Use this date"), the five calendar reasons (`beforeEarliest`, `pastCutoff`,
+  `publicHoliday`, `sundayClosed`, `notDeliveryDay`), the three picker notices `unavailable` /
+  `preview` / `live` (the live one is the cutoff line), and possibly `notOrderable` (see the
+  proposal in `## Progress`). The tier selector needs 1: its legend ("Which size?"). The add-on
+  rows need 1: "VAT {rate}", which the summary's VAT row shares. The price summary needs 2–4:
+  "Delivery", "You pay", the demo heading ("Ordering is not open yet"), the demo line ("We are
+  still choosing florists in {country}.") unless `catalog.availability.noPartner` is reused, and
+  possibly a "{occasion}, {date}" surcharge-line label. Keys that can be reused: `catalog.tier.*`,
+  `catalog.price.inclusive`, `catalog.availability.fxUnavailable`, `catalog.facet.occasion.*`,
+  `a11y.media.gallery`, `media.placeholder.product`, `media.provenance.aiExample`, and perhaps
+  `shop.empty.corridorLink` for the picker's corridor link. That puts `en` at about 42/518 = 8 %
+  unreviewed, against the 5 % gate (`home-honesty.test.ts:285`). The founder needs to attest the
+  list in one batch, or rule which drawn strings to drop. `open`.
+
+## Progress
+
+- **2026-10-03 — stopped at the role's time limit, before any code was written (partial).** I read
+  the brief, the spec 009 sections it names, `productView()`'s types (`src/modules/catalog/product.ts`),
+  `modules/geo/delivery` (`types.ts`, `calendar.ts`, `schemas.ts`), the `ui` barrel, TASK-108's
+  `ui/shop` pattern, the drawings' spec 009 group, and the existing `en` keys. Nothing is
+  implemented and no tests are written. `TASKS.md` was not edited, because the guard closed it
+  before the status flip. The findings below are for whoever picks this up:
+  - **Import direction.** `ui` imports only `i18n` and `config`, and `catalog` imports `ui` at runtime
+    (`ProductCardViewSchema`, `altFor`, `assetsForProduct`). So `ui/product/*` may take
+    `ProductView`, `TierOption`, `AddonLine`, `DateTotals`, `DeliveryReasonKey` and similar as
+    **`import type` only**. Importing a value from `@/modules/catalog` or `@/modules/geo` is a
+    runtime cycle.
+  - **`notOrderable` and Q6.** The `preview` chips share one sentence. Proposal: closed `preview`
+    chips print no text of their own, and each radio's `aria-labelledby` lists its date label and
+    the preview notice's id. Both halves of AC-7 then hold (the reason is visible, once, and it is
+    in every chip's accessible name) without breaking Q6.
+  - **The submit button** ("Use this date") is drawn inside the picker, but the form is TASK-128's.
+    Proposal: render it only in `live`, and only when a date is selectable. A button that
+    submits nothing selectable would be the same lie as a checkbox that does nothing.
+  - **The drawn "peak day" text on a chip** cannot be rendered from data: `DeliveryDate` has a
+    surcharge `Money` but no surcharge kind. Proposal: print the occasion name and the fee, and
+    redraw the sheet to match.
+  - **The sticky summary and AC-9.** "No second money element" means the ≤390 px sticky bar must be
+    the **same** summary element restyled, not a second bar that repeats the total.
+  - **T-09 on `/dev/components`.** There is no island (TASK-129) and no form (TASK-128) yet, so
+    "selecting" needs a GET form on the gallery that reads `?date=`. Its fixture `ProductView`
+    must pass `ProductViewSchema` in a unit test. For the "hard-coded fee → red" check to bite,
+    the expected fee has to come from `dateSurcharges()` and `priceProjection()`, never from the
+    fixture's own literal.
+  - **The sheet.** Shipping the six drawings also deletes the "None of the seven exists in
+    `src/modules/ui` today" paragraph (`components.dc.html` L320) and the spec 009 clause of the
+    "Specified, not yet shipped" note (L116).
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
-
-_Pending._
+**Partial: nothing shipped.** The role's 180-minute limit ran out during the reading phase, so
+there is no code, no test and no PR. What was found is in `## Progress`, and two decisions are
+`open` in `## Escalations`: E-1 (the facts block: the drawing and the spec disagree, and the fence
+blocks reuse) and E-2 (about 19–21 new `en` keys against a gate with about 3 left). Re-dispatch
+once E-1 is ruled, with the time limit re-armed.
