@@ -81,6 +81,8 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
   with both sides; `docs/codebase-map.md` regenerated; `pnpm install --frozen-lockfile` run.
 - 2026-10-02 — `9e7881cd`: the chip fee and the echoed calendar surcharge become main's branded
   `Minor`; `pnpm gates:cheap` PASS; pushed, CI toggled.
+- 2026-10-02 — rebased again on `origin/main` `19cb001b` (PR 127); conflict in
+  `docs/codebase-map.md` only, regenerated; `pnpm gates:cheap` PASS on `f3975dbf`; pushed, CI toggled.
 
 ## Result
 
@@ -184,3 +186,22 @@ the wall clock passing 2026-10-01 or the 9–22 Sep window. **Figures unchanged:
 literal: `en` 4 790 / 5 590 / 6 290 EUR. A scratch run of `productView()` outside the repo, at the
 same clock, still prints exactly those amounts. Mutations were not re-run, since no assertion
 changed. No build slot taken.
+
+**Second rebase (2026-10-02), on `origin/main` `19cb001b` (PR 127, TASK-102).** The only conflict
+was `docs/codebase-map.md`. It was regenerated, not hand-merged. `git range-diff` shows every
+commit identical except the map's file counts. Main touched no catalog file, and the lockfile did
+not change.
+
+```
+gates:cheap · f3975dbf0379443cbadf8f38432797851cb6f948 · tree clean · base origin/main · 2026-10-02T15:17:36.917Z
+typecheck             exit 0 · 2.6 s
+lint                  exit 0 · 12.4 s
+format:check          exit 0 · 7.9 s
+i18n:check            exit 0 · 0.4 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 17.2 s · changed 44 + map 0 + always 3 · always run: zod-boundaries, lint-coverage, url-pii
+RESULT: PASS
+```
+
+Load average 2.8–4.6 during the run. Tests: 47 files, 1 005 passed, 0 failed.
