@@ -85,11 +85,27 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- **E-1 (2026-10-03, implementer → orchestrator): a PDP outside the 24 prebuilt answers 404, so
+  420 of 588 card links per locale are dead. `open`.** CI on `a1fca3e1` (`country-category`
+  "every link … exists", `shop-reachability` AC-21) and a local `pnpm build` + `next start` agree:
+  `/en/poland/product/amber-hour` (prebuilt) 200, `/en/poland/product/glass-morning` and
+  `/de/polen/produkt/glass-morning` 404, server log `NoFallbackError`. The depth-4 page sets
+  `dynamicParams = true`, but `src/app/[locale]/layout.tsx` sets `dynamicParams = false` (spec 003's
+  routing-layer locale gate, TASK-035), and Next applies a layout's `false` to the whole subtree.
+  **Probe, reverted:** with the layout at `true`, the same build answers 200 for both on-demand PDPs
+  and still 404 for `/en/poland/product/no-such`, `/fr/poland/product/amber-hour` and `/xx`. Options:
+  **(a)** flip the layout to `true`, with the unknown-locale 404 held by the resolver and
+  `notFound()` it already reaches. That is spec 003's surface (its AC-8 and
+  `app-shell.test.tsx`'s pin) and needs a spec 003 §14 amendment. **(b)** Prebuild the whole PDP
+  existence set (588 per locale; spec 009 AC-3's "top 24" becomes "all" in Phase 0, a spec 009
+  amendment, at a build-time cost to measure). **(c)** Link a card only where its PDP is prebuilt.
+  That breaks AC-20 ("every 008 product card becomes an `<a>`"). Recommendation: (a), because the
+  probe shows the 404 set unchanged. It is not built here, because the fence excludes
+  `[locale]/layout.tsx`.
 
 ## Result
 
-**Done, in review — built in [PR #135](https://github.com/itsahmeds/flowers-overseas/pull/135)
+**Blocked on E-1 — built in [PR #135](https://github.com/itsahmeds/flowers-overseas/pull/135)
 with TASK-126.** The depth-4 route has the product branch (`dynamicParams = true`) and mounts
 `ProductPage` with spec 008's breadcrumb and spec 007's facts block (TASK-126 E-1 (a); its
 "Prices" row is left out on the PDP, TASK-126 E-4, accepted). `site-links.ts` publishes `product`,

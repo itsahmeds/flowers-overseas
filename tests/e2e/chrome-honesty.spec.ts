@@ -89,6 +89,20 @@ test.describe("A19: no same-day, cutoff or ranking promise renders while no dest
     }) => {
       const response = await page.goto(path);
       expect(response?.status()).toBe(200);
+      if (type === "gallery") {
+        // Spec 009's `live` picker and summary fixtures (TASK-126) print the cutoff line the
+        // product page may print and the chrome may not; each is marked `data-fo-cutoff`, as on
+        // the page, and lifted here by that mark alone, the unit honesty scan's rule. Every other
+        // word of the gallery is still swept.
+        const lifted = await page.evaluate(() => {
+          const marked = document.querySelectorAll(
+            "[data-fo-product-state] [data-fo-cutoff]",
+          );
+          for (const node of marked) node.remove();
+          return marked.length;
+        });
+        expect(lifted).toBeGreaterThan(0);
+      }
 
       // `body`, not `main`: the header's utility strip, the category row and the footer are the
       // three places this task's promises lived.
