@@ -311,10 +311,23 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
   TASK-125's `catalog-product-view.test.ts:276` pins the `pl` product crumb
   `/pl/wyslij-kwiaty/polska`, a 404 that the crumb fix now drops, and `product.ts:1476` builds
   `corridorPath` on the old rule. Both are outside the fence.
+- 2026-10-03 — fence widened to those two (orchestrator, 2026-10-02). **Partial: the 180-minute
+  limit was reached before either edit was made.** Only a baseline was taken: every product view
+  (2352, 588 per locale) dumped with `listing.ts`'s corridor conditions reverted, for a
+  before/after comparison. That needs more than 600 s, so it should not be redone that way.
+  `listing.ts` is restored and the tracked tree is clean on `c19aba09`. Left to do: the
+  `catalog-product-view.test.ts:276` pin (crumb object, `href` exactly `undefined`, a one-line
+  comment), the `product.ts:1476` condition with its unit case, both mutations, `gates:cheap`, the
+  production-build e2e, `## Result`, the PR body, and the `ci:full` toggle. One untracked
+  throwaway file, `tests/unit/zz-scratch-product-dump.test.ts`, must be deleted first: the
+  time-limit guard refused `rm`.
 
 ## Result
 
 **AC-20 met as written (spec 008); state-B chips deferred to TASK-147 per spec 007 §14 A10.**
+**AC-21 is not yet met on `c19aba09`:** `gates:cheap` is red on TASK-125's
+`catalog-product-view.test.ts:276`, which pins the `pl` product crumb's old 404, and that pin
+is still to be updated (`## Progress`, 2026-10-03). Once it is updated, the line below holds.
 **AC-21 is met (2026-10-02), with the two waivers still `open`** (category hubs; `de`/`pl` shop
 roots). The waivers excuse only the missing inbound link. Since `/break 98` hole 1 was fixed, the
 crawl reads the links on every page it fetches and on every waived page: all six page types in
