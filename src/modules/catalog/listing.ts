@@ -1442,7 +1442,9 @@ export async function listingView(
             iso2,
             slug: countrySlug,
             nameKey: countryConfig(iso2).nameKey,
-            ...(isGuidePublished(iso2)
+            // The same rule as every corridor link in this file: published, and the page exists
+            // in this locale (`corridorPageExists()`; `/break 98` escalation 4, TASK-113).
+            ...(isGuidePublished(iso2) && corridorPageExists(iso2, locale)
               ? {
                   corridorPath: localePath(locale, "destinations", countrySlug),
                 }
@@ -1725,11 +1727,13 @@ async function breadcrumbFor(
       crumb("breadcrumb.destinations", destinationsHubHref(locale), false),
     );
     // The country crumb links to the corridor guide where one is published and is plain text
-    // where it is not (§13 Q1, §14 design round Q7: `guidePublished` is the data flip).
+    // where it is not (§13 Q1, §14 design round Q7: `guidePublished` is the data flip). It also
+    // needs the corridor page **in this locale**: a draft locale has none, and the `de`/`pl`
+    // crumb linked to a 404 (`/break 98` escalation 4, TASK-113).
     crumbs.push(
       crumb(
         countryConfig(iso2).nameKey,
-        isGuidePublished(iso2)
+        isGuidePublished(iso2) && corridorPageExists(iso2, locale)
           ? localePath(locale, "destinations", countrySlug)
           : undefined,
         false,

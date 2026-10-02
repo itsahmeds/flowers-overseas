@@ -152,26 +152,26 @@ describe("listingView() draws a listing link only while its family is published 
 });
 
 /**
- * **The shop root's corridor link exists only where the corridor page does** (`/break 98` round 1,
- * hole 1, escalation 4; TASK-113). Every `de` and `pl` shop root linked to
+ * **A shop root links its corridor page only where that page exists** (`/break 98` round 1, hole 1,
+ * escalation 4; TASK-113). Three values carry the corridor path, and all three follow one rule,
+ * `corridorPageExists(iso2, locale)`: `links.corridor` (the empty state's link), the breadcrumb's
+ * country crumb, and `country.corridorPath`. Every `de` and `pl` shop root linked to
  * `/{locale}/{destinations}/{slug}`, which 404s because a draft locale has no corridor page: 14
  * links to a 404, found once the crawl read the links on the waived pages. `en` and `en-gb` carry
- * all seven, unchanged. Asked of every shop root in every listing locale, by exact value.
+ * all seven, unchanged. Asked of every shop root in every listing locale, by exact value, one case
+ * per value, so reverting one condition turns exactly its own case red.
  */
-describe("the shop root links its corridor page only where that page exists (AC-21)", () => {
-  it("de and pl: no corridor link on any shop root; en and en-gb: all seven, unchanged", async () => {
-    const corridorDestinations = {
-      en: "send-flowers-to",
-      "en-gb": "send-flowers-to",
-    } as const;
-    const seen: Record<string, (string | null)[]> = {};
-    const expected: Record<string, (string | null)[]> = {};
-    for (const locale of listingLocales()) {
-      const roots = (await listingPages(locale)).filter(
-        (page) => page.pageType === "countryShopRoot",
-      );
-      expect(roots, `${locale} shop roots`).toHaveLength(7);
-      for (const root of roots) {
+const CORRIDOR_SEGMENT: Readonly<Record<string, string>> = {
+  en: "send-flowers-to",
+  "en-gb": "send-flowers-to",
+};
+const shopRoots = await Promise.all(
+  listingLocales().map(async (locale) => {
+    const roots = (await listingPages(locale)).filter(
+      (page) => page.pageType === "countryShopRoot",
+    );
+    return Promise.all(
+      roots.map(async (root) => {
         const view = await listingView(
           {
             locale,
@@ -181,16 +181,68 @@ describe("the shop root links its corridor page only where that page exists (AC-
           { from: FROM },
         );
         if (view === undefined) throw new Error(`no view for ${root.path}`);
-        (seen[locale] ??= []).push(view.links.corridor ?? null);
-        const segment =
-          corridorDestinations[locale as keyof typeof corridorDestinations];
-        (expected[locale] ??= []).push(
-          segment === undefined
-            ? null
-            : `/${locale}/${segment}/${root.countrySlug ?? "!"}`,
-        );
-      }
+        const segment = CORRIDOR_SEGMENT[locale];
+        return {
+          locale,
+          corridor: view.links.corridor ?? null,
+          crumb: view.breadcrumb.find(
+            (entry) => entry.labelKey === view.country?.nameKey,
+          ),
+          corridorPath: view.country?.corridorPath ?? null,
+          expected:
+            segment === undefined
+              ? null
+              : `/${locale}/${segment}/${root.countrySlug ?? "!"}`,
+        };
+      }),
+    );
+  }),
+).then((perLocale) => perLocale.flat());
+
+/** One value of every shop root, keyed by locale, beside what it should be. */
+function byLocale(pick: (root: (typeof shopRoots)[number]) => string | null): {
+  seen: Record<string, (string | null)[]>;
+  expected: Record<string, (string | null)[]>;
+} {
+  const seen: Record<string, (string | null)[]> = {};
+  const expected: Record<string, (string | null)[]> = {};
+  for (const root of shopRoots) {
+    (seen[root.locale] ??= []).push(pick(root));
+    (expected[root.locale] ??= []).push(root.expected);
+  }
+  return { seen, expected };
+}
+
+describe("a shop root links its corridor page only where that page exists (AC-21)", () => {
+  it("asks seven shop roots in each of the four listing locales", () => {
+    expect(listingLocales()).toHaveLength(4);
+    for (const locale of listingLocales()) {
+      expect(
+        shopRoots.filter((root) => root.locale === locale),
+        `${locale} shop roots`,
+      ).toHaveLength(7);
     }
+  });
+
+  it("the corridor link: none in de and pl; all seven in en and en-gb, unchanged", () => {
+    const { seen, expected } = byLocale((root) => root.corridor);
+    expect(seen.en?.[0]).toBe("/en/send-flowers-to/poland");
+    expect(seen.de?.[0]).toBeNull();
+    expect(seen).toEqual(expected);
+  });
+
+  it("the country crumb: plain text in de and pl; a link in en and en-gb, unchanged", () => {
+    // The crumb is there in every locale: only its href depends on the corridor page.
+    expect(shopRoots.every((root) => root.crumb !== undefined)).toBe(true);
+    const { seen, expected } = byLocale((root) => root.crumb?.href ?? null);
+    expect(seen.en?.[0]).toBe("/en/send-flowers-to/poland");
+    expect(seen.de?.[0]).toBeNull();
+    expect(seen.pl?.[0]).toBeNull();
+    expect(seen).toEqual(expected);
+  });
+
+  it("country.corridorPath: none in de and pl; all seven in en and en-gb, unchanged", () => {
+    const { seen, expected } = byLocale((root) => root.corridorPath);
     expect(seen.en?.[0]).toBe("/en/send-flowers-to/poland");
     expect(seen.de?.[0]).toBeNull();
     expect(seen).toEqual(expected);
