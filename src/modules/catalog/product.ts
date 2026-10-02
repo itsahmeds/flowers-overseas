@@ -106,6 +106,7 @@ import {
   productCardView,
   publishedCountries,
 } from "./listing";
+import { toMinor } from "./pricing/money";
 import { priceProjection } from "./pricing/project";
 import { dateSurcharges, resolveAddonPrice } from "./pricing/resolve";
 import {
@@ -122,6 +123,7 @@ import {
   IntegerMoneySchema,
   IsoDateSchema,
   MessageKeySchema,
+  MinorUnitsSchema,
   PriceProjectionSchema,
   ProductPageIdentitySchema,
   TierKeySchema,
@@ -1091,7 +1093,10 @@ function chipFees(
     if (amount === undefined) continue;
     const fee = amount - undated.displayPrice.amountMinor;
     if (fee <= 0) continue;
-    fees[date] = { amountMinor: fee, currency: undated.displayPrice.currency };
+    fees[date] = {
+      amountMinor: toMinor(fee),
+      currency: undated.displayPrice.currency,
+    };
   }
   return fees;
 }
@@ -1265,7 +1270,7 @@ function deliveryOf(window: DeliveryWindow): ProductView["delivery"] {
         ? {}
         : {
             surcharge: {
-              amountMinor: Number(date.surcharge.amountMinor),
+              amountMinor: MinorUnitsSchema.parse(date.surcharge.amountMinor),
               currency: date.surcharge.currency,
             },
           }),

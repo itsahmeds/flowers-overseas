@@ -30,6 +30,7 @@ import {
   productPageIndexability,
   productView,
 } from "../../src/modules/catalog/product.ts";
+import { toMinor } from "../../src/modules/catalog/pricing/money.ts";
 import { isProductIndexable } from "../../src/modules/catalog/read.ts";
 import { corridorState } from "../../src/modules/geo/index.ts";
 import { DeliveryWindowSchema } from "../../src/modules/geo/delivery/schemas.ts";
@@ -370,7 +371,7 @@ describe("`ProductViewSchema` refuses every field it has no business carrying (T
     const off = structuredClone(view);
     off.price = {
       ...off.price,
-      displayPrice: { ...off.price.displayPrice, amountMinor: 4691 },
+      displayPrice: { ...off.price.displayPrice, amountMinor: toMinor(4691) },
     };
     const result = ProductViewSchema.safeParse(off);
     expect(result.success).toBe(false);
@@ -387,7 +388,7 @@ describe("`ProductViewSchema` refuses every field it has no business carrying (T
     const [first, ...rest] = mixed.tiers;
     if (first === undefined) throw new Error("no tier");
     mixed.tiers = [
-      { ...first, price: { amountMinor: 19_900, currency: "PLN" } },
+      { ...first, price: { amountMinor: toMinor(19_900), currency: "PLN" } },
       ...rest,
     ];
     const result = ProductViewSchema.safeParse(mixed);
