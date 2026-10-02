@@ -67,6 +67,20 @@ One dated bullet per `/review`, newest last.
   **Done (2026-10-03):** the assertion was added, went red under the mutation (1 failed of the
   case), and the line was restored before the page read `country.corridorPath`.
 
+## Progress
+
+- **2026-10-03 — the two carry-forwards (finisher run).** `/review 96`'s second: the depth-4
+  `generateStaticParams` now calls `writeProductExistenceSummary()` behind a once-per-process
+  guard; `tests/unit/product-route.test.tsx` calls it twice on a fresh module with
+  `GITHUB_STEP_SUMMARY` stubbed and finds one table. Dropping the guard (two tables) and dropping
+  the call (none) were both seen red. `/review 101` HOLE 12: the F1 cast case runs once per
+  optional term (`countryLive`, `unparameterised`; each term's fail-open mutant in
+  `productDescriptor()` turns its own case red); a source scan refuses a hand-built
+  `pageType: "product"` descriptor reaching `pageIndexability()`, aliased imports included
+  (planted in the route and in `product.ts`, both red); the robots scan takes the PDP route file,
+  matches any casing and the `{ robots: { index: … } }` object form, and has its own control
+  (planted object form and `"NoIndex"`, both red).
+
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.

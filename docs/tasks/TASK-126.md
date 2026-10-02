@@ -181,6 +181,18 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   Read, Carry-forwards, Escalations and first Progress bullet, lost from the stage-2 commit, are
   restored from `fbad137c`.
 
+- **2026-10-03 — stage 3b, the sticky summary and `/dev/components`.** The summary's own total
+  row docks below `sm` (640 px, so the 390 px artboard and every phone): the same element
+  restyled, one `data-fo-price-total`, one live region; the bar's size/date line and its status
+  line (demo sentence, or live the cutoff) are `aria-hidden` repeats. A named breakpoint, because
+  an arbitrary `min-[…]:` once emptied the stylesheet (TASK-048); pinned. The document reserves
+  room through `body:has()` padding and `html:has()` scroll padding. Unit case (moving the docked
+  style onto the section went red) and an e2e case at 390 px. `/dev/components` gains "Product and
+  date-picker blocks": every drawn state of the six primitives from fixtures built through
+  `productView()`'s own schemas and parsed against the calendar's in a unit case; no summary
+  docks there (four bars would cover the listing blocks' mobile baselines). `tests/visual/
+  product.spec.ts` adds seven PDP baselines (three states × two widths, plus the docked bar).
+
 ## Result
 
 **Partial — the page ships and every owned AC has unit evidence. Three stage-3 items remain.**
