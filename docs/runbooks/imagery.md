@@ -17,7 +17,7 @@ the §2.4 review checklist. This file is the *procedure*, not the rules.
 | 3. Review | the founder, against `content/imagery/style-guide.md` §7's checklist | accept, or **regenerate from the same prompt with a new seed — never retouch** |
 | 4. Land the original | `.local/imagery/originals/{assetId}.{png,jpg,…}` (git-ignored) **and** the founder's Drive folder "Flower Images" (the store of record) | an original this repository can read and will never commit |
 | 5. Record it | `seed/data/media.json` | `reviewState: "approved"`, `reviewedBy`, `reviewedAt`, `originalSha256`, `derivativeC2pa` |
-| 6. Derive | `pnpm media:variants` (or `--only <assetId>`) | `.local/media/{assetId}/{width}.{fmt}` (git-ignored) + `seed/data/media-variants.json` |
+| 6. Derive | `pnpm media:variants` (or `--only <assetId>`) | `.local/media/{assetId}/{width}.{fmt}` (git-ignored) + `seed/data/media-variants.json`; for the `hero` slot also the committed `public/media/{assetId}/{width}.{fmt}` (see §2) |
 | 7. Write alt text | `seed/data/alt/{locale}.json`, **all four launch locales** | the only thing that lets `MediaAsset` render an `<img>` at all |
 | 8. Gate | `pnpm seed:check` then `pnpm media:variants --check` | byte caps, provenance, alt coverage, manifest ↔ file ↔ checksum |
 | 9. Upload | `pnpm media:upload` (`--dry-run` first if you like) | the objects in `flowersoverseas-media`, idempotent by checksum, `Cache-Control: public, max-age=31536000, immutable` on each |
@@ -54,9 +54,18 @@ That is what makes the command safe to run in any worktree.
 | `productDetail` | 384 | 60 000 B | 38 398 B |
 
 Widening a ladder is an edit to `PHASE0_SLOT_WIDTHS` plus `pnpm media:variants`; the manifest header
-records the ladder, so `--check` fails if the two ever disagree. The whole arrangement disappears at
-the R2 flip (TASK-083, spec 006 AC-27), which deletes `public/media/` and `staticVariantLoader` in
-one PR.
+records the ladder, so `--check` fails if the two ever disagree.
+
+**Two origins since TASK-138 (founder, 2026-10-03, option (a)).** The `hero` slot — `home-hero`,
+the LCP image on every locale home — is served from the site's own origin: its ten variants stay
+committed under `public/media/home-hero/`, `staticVariantLoader` addresses them, and the `/media/*`
+rule sends them `immutable` for a year. Every other slot is served from `flowersoverseas-media`.
+The rule is one function, `variantLoaderForSlot()` in `src/modules/ui/media/loader.ts`, and the
+list it reads is `SITE_ORIGIN_MEDIA_SLOTS` in `src/lib/media-origin.ts` — the same list
+`seed/budgets.ts` uses to decide what must be committed. Why: with the hero on the bucket, CI
+measured the four locale homes at 2 029–2 144 ms LCP against the 2 000 ms budget, after both the
+`preconnect` hint and edge caching (`docs/tasks/TASK-138.md`). The hero's variants are uploaded
+to the bucket as well, so moving the slot back is a one-line change to that list.
 
 **WebP `effort` is 6, not the libwebp default 4.** It is not a quality lever — the pinned quality is
 still §13 Q5's 72 — it is how hard the encoder searches, and it buys the 3–6 % that keeps the two
@@ -98,7 +107,8 @@ from the Drive store of record or `.local/imagery/originals/`, check its manifes
 | Budget | Number | Enforced by |
 |---|---|---|
 | Any single variant | its slot's cap (table in §2), read from the manifest's `bytes` column | `pnpm seed:check` family 9, and again in `pnpm media:upload` before the object is sent |
-| Manifest ↔ file ↔ checksum | exact | `pnpm media:variants --check` (files where they exist, manifest always) |
+| Manifest ↔ file ↔ checksum | exact | `pnpm media:variants --check` (manifest and committed `hero` copies always, derived files where they exist); `pnpm seed:check` family 7 for the committed copies' byte counts |
+| Bytes committed under `public/media/` | ≤ 6 MB (spec 006 §13 Q4) — the `hero` ladder alone, 336 690 B today | `pnpm seed:check` family 9; a committed copy of any other slot fails family 7 (`committed-slot`) and `--check` |
 | Image transfer per page at mobile width | ≤ 204 800 B | `tests/e2e/media-budgets.spec.ts`, counting every image response whatever origin serves it |
 | Hero LCP candidate | ≤ 90 000 B | the same spec |
 | LCP / CLS | < 2.0 s / < 0.05 | `pnpm lighthouse` |
@@ -108,10 +118,11 @@ from the Drive store of record or `.local/imagery/originals/`, check its manifes
 The order matters and is the point: **the per-variant caps fail in `seed:check`, before the bytes
 are ever uploaded.** A 900 KB hero must fail a gate, not a Lighthouse run (spec 006 §6).
 
-**The 6 MB repository total is gone (TASK-138).** It capped derived bytes *committed to the
-repository*, which spec 006 §13 Q4 accepted "only until R2 exists". R2 exists, the bytes are
-objects, and keeping that cap would have held the catalogue at twelve photographed products out of
-84. What guards against unbounded media now: the per-slot caps above, enforced against committed
+**The 6 MB repository cap governs only what is still committed (TASK-138).** It capped derived
+bytes *committed to the repository*, which spec 006 §13 Q4 accepted "only until R2 exists". R2
+exists and every slot but `hero` is an object there, so the cap now measures one asset's ladder;
+holding the catalogue to it would have kept twelve of 84 products photographed. What guards against
+unbounded media now: the per-slot caps above, enforced against committed
 manifest rows that a reviewer reads in a diff; the manifest↔file↔checksum tie, which means nothing
 can be uploaded that no row describes; the upload's own refusals (cap, checksum, watermark, origin
 agreement), each of which now has a test that fails when the refusal is made unreachable rather
@@ -136,10 +147,10 @@ pays.
 
 ## 6. Five standing notes
 
-- **The image origin must stay crawlable.** When spec 007 lifts `Disallow: /`, the media host must
-  not be blocked, or Google cannot fetch the images it evaluates for Core Web Vitals. Since
-  TASK-138 that host is the bucket's public origin rather than `/media/*` on our own domain, so it
-  is the bucket's `robots.txt` that matters.
+- **The image origins must stay crawlable.** When spec 007 lifts `Disallow: /`, neither media
+  host may be blocked, or Google cannot fetch the images it evaluates for Core Web Vitals. Since
+  TASK-138 there are two: `/media/*` on our own domain (the home hero) and the bucket's public
+  origin (everything else), so both our `robots.txt` and the bucket host's matter.
 - **The origin is one constant, and since 2026-09-22 it is `media.flowersoverseas.com`.**
   `src/lib/media-origin.ts` holds it; the loader builds every URL from it, `src/lib/csp.ts` names
   it in `img-src` and `src/lib/media-headers.ts` builds the `preconnect` hint from it, so the

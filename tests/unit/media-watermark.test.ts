@@ -36,7 +36,7 @@ import sharp from "sharp";
 import { afterAll, describe, expect, it } from "vitest";
 
 import { loadUploadSet } from "../../scripts/media-upload.ts";
-import { DERIVED_MEDIA_DIR } from "../../seed/budgets.ts";
+import { COMMITTED_MEDIA_DIR, DERIVED_MEDIA_DIR } from "../../seed/budgets.ts";
 import { AVIF_OPTIONS, WEBP_OPTIONS } from "../../seed/schema/variants.ts";
 import {
   WATERMARK_MARKER_RGB,
@@ -185,6 +185,31 @@ describe("T-16: no watermarked asset ships in Phase 0 (§13 Q12)", () => {
       }
     },
     5 * ENCODE_TIMEOUT,
+  );
+
+  it(
+    "marks none of the committed site-origin files, on every runner (TASK-138's split)",
+    async () => {
+      // The `hero` slot is committed under `public/media/` again (founder, 2026-10-03, option
+      // (a)), so for those ten files AC-16 can be asserted over the bytes themselves wherever the
+      // repository is checked out, CI included. The count is pinned so an emptied tree cannot
+      // pass this by having nothing to look at.
+      const root = join(repoRoot, COMMITTED_MEDIA_DIR);
+      const files: string[] = [];
+      for (const assetDir of await readdir(root)) {
+        for (const leaf of await readdir(join(root, assetDir))) {
+          files.push(join(assetDir, leaf));
+        }
+      }
+      expect(files).toHaveLength(10);
+      for (const file of files) {
+        expect(
+          await isWatermarked(await readFile(join(root, file))),
+          file,
+        ).toBe(false);
+      }
+    },
+    ENCODE_TIMEOUT,
   );
 
   it("has no `context` asset, so the marking branch is unreachable as well as unused", async () => {

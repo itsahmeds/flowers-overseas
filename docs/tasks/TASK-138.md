@@ -29,28 +29,9 @@ visitor nothing today.
 2. A plain upload of the already-derived files to the `flowersoverseas-media` bucket, idempotent
    by checksum. A script, not a worker. No queue, no database.
 3. Deletion of `public/media/` and `staticVariantLoader`, and the CSP `img-src` change.
-4. `COMMITTED_MEDIA_BYTE_CAP` stops governing shipped imagery. Say in `- **2026-09-21 (round 2) — Lighthouse's LCP budget fails on all four locale homepages, and this
-  is the first time it has been measured (founder / orchestrator, `open`).** CI run
-  `35630208213`: `largest-contentful-paint` ≤ 2 000 ms asserted, medians of three runs found at
-  **2 248 ms (`/en`), 2 238 ms (`/pl`)** and the same order on `/de` and `/en-gb` (individual
-  values 2 238–2 559). It had never run on this branch before: in run `35621421001` the
-  `lighthouse`, `build` and `container` jobs were all **skipped** because `test-unit` failed, so
-  the brief's earlier "not measured here: Lighthouse" is now measured — by the gate of record —
-  and it is red. Every other job is green.
-
-  **Why this is not absorbed here.** The likely cause is the thing escalation 2 above already
-  names: the LCP element on each homepage is the hero photograph, and it now comes from a
-  third-party `pub-*.r2.dev` origin, so a DNS lookup, a TCP handshake and a TLS handshake sit on
-  the LCP critical path that were not there when the bytes were served from our own origin. The
-  two candidate mitigations are a `<link rel="preconnect">` to the media origin in the root
-  layout — a change to a page-shell file this task's brief does not list, whose effect is a guess
-  until CI measures it — and **the custom domain (`media.flowersoverseas.com`), which is the
-  founder action already open in escalation 2** and which would remove the third-party origin
-  rather than paper over it. Choosing between them, and deciding whether the R2 flip may land
-  while the budget is red, is not an implementer's call: lowering the budget is forbidden
-  (CLAUDE.md), and CWV is priority 1. Reported with the numbers; not improvised.
-
-## Result` what now
+   **Narrowed by the founder, 2026-10-03 (option (a)):** the `hero` slot keeps both —
+   `public/media/home-hero/` and `staticVariantLoader` — and every other slot is served from R2.
+4. `COMMITTED_MEDIA_BYTE_CAP` stops governing shipped imagery. Say in `## Result` what now
    guards against unbounded media, because "nothing" is not an acceptable answer — per-asset
    caps and the manifest check must still hold.
 
@@ -122,8 +103,30 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   (`src/lib/media-origin.ts`, checked against `R2_PUBLIC_BASE_URL` by the upload script), so
   moving to `media.flowersoverseas.com` is one line here plus the Cloudflare custom-domain
   setup — **a founder action**.
+- **2026-09-21 (round 2) — Lighthouse's LCP budget fails on all four locale homepages, and this
+  is the first time it has been measured (founder / orchestrator, answered (founder, 2026-10-03):
+  option (a), the hero on the site origin — see the 2026-09-22 entry).** CI run
+  `35630208213`: `largest-contentful-paint` ≤ 2 000 ms asserted, medians of three runs found at
+  **2 248 ms (`/en`), 2 238 ms (`/pl`)** and the same order on `/de` and `/en-gb` (individual
+  values 2 238–2 559). It had never run on this branch before: in run `35621421001` the
+  `lighthouse`, `build` and `container` jobs were all **skipped** because `test-unit` failed, so
+  the brief's earlier "not measured here: Lighthouse" is now measured — by the gate of record —
+  and it is red. Every other job is green.
+
+  **Why this is not absorbed here.** The likely cause is the thing escalation 2 above already
+  names: the LCP element on each homepage is the hero photograph, and it now comes from a
+  third-party `pub-*.r2.dev` origin, so a DNS lookup, a TCP handshake and a TLS handshake sit on
+  the LCP critical path that were not there when the bytes were served from our own origin. The
+  two candidate mitigations are a `<link rel="preconnect">` to the media origin in the root
+  layout — a change to a page-shell file this task's brief does not list, whose effect is a guess
+  until CI measures it — and **the custom domain (`media.flowersoverseas.com`), which is the
+  founder action already open in escalation 2** and which would remove the third-party origin
+  rather than paper over it. Choosing between them, and deciding whether the R2 flip may land
+  while the budget is red, is not an implementer's call: lowering the budget is forbidden
+  (CLAUDE.md), and CWV is priority 1. Reported with the numbers; not improvised.
 - **2026-09-22 — Lighthouse LCP is 29-48 ms over budget on the four locale documents, after both
-  available fixes (orchestrator/founder, `open`).** `/en` 2 048 ms, `/en-gb` 2 039, `/de` 2 039,
+  available fixes (orchestrator/founder, answered (founder, 2026-10-03): option (a), the hero on
+  the site origin).** `/en` 2 048 ms, `/en-gb` 2 039, `/de` 2 039,
   `/pl` 2 029 against `lighthouserc.json`'s 2 000 ms, measured by CI on run `35701725761` with the
   `preconnect` hint in place and the origin on `media.flowersoverseas.com`. Both fixes worked —
   roughly 200 ms came off — and neither was enough. **This PR's merge is gated on it and nothing
@@ -137,7 +140,20 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   **Update, round 4 (2026-09-22, still `open`):** the edge now caches — every `home-hero` AVIF
   answers `HIT` — and CI on `d40e4cd` (run `35766301997`) measured the four documents **worse**,
   not better: 2 118-2 144 ms asserted, medians 2 136-2 738 ms. Edge caching did not close the gap.
+  **Answered (founder, 2026-10-03, chat: "yes to 1"): option (a), the hero on the site origin.**
+  The `hero` slot (`home-hero`) stays committed under `public/media/` and served by
+  `staticVariantLoader`; every other photograph is served from R2. The 2 000 ms budget stays.
+  Implemented in round 5 below.
 
+- **2026-10-03 — spec 006 has no TASK-138 amendment, and AC-27 / §2.6 now contradict the
+  founder's ruling (spec-writer, `open`).** The work order cites "spec 006 §14 (the TASK-138
+  amendment)"; `origin/main`'s §14 holds A1–A6 and nothing for this task, and no spec mentions
+  TASK-138. AC-27 still reads "every image URL is served from `R2_PUBLIC_BASE_URL`, `public/media/`
+  and `staticVariantLoader` are deleted", and §2.6 "so there is never more than one image origin".
+  Option (a) keeps one slot on the site origin on purpose, so both sentences are now false of the
+  shipped design. Implemented as the founder ruled, since the ruling outranks the text; the
+  amendment (and this brief's "Phase 0 R2 delivery requires neither the database nor the jobs
+  queue" ruling, which is also unrecorded in §14) is the spec-writer's, outside this task's fence.
 - **2026-09-21 — the origin is a committed constant, not an env read (decided here, recorded for
   review).** Both consumers are build-time: every indexable page is prerendered, so image URLs
   are written into HTML by `next build`, and the CSP is baked into the same artefact. That build
@@ -151,9 +167,24 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   Dockerfile `ARG`, a CI build arg and a Railway variable, and `tests/unit/container.test.ts`
   pins the set.
 
+## Progress
+
+- 2026-10-03 (round 5): rebased on `origin/main` `8767f9de` (`seed/check.ts` both sides kept, `docs/codebase-map.md` regenerated); pushed `1d0501e9`.
+- 2026-10-03: the split — `variantLoaderForSlot()` / `splitVariantLoader`, `home-hero` back under `public/media/`, `/media/*` rule restored; pushed `54ff7ea2`.
+- 2026-10-03: seed gates over the committed half (cap, `--check`, families 7 and 9, two cases); pushed `611fdb6d`.
+- 2026-10-03: `pnpm media:upload` loads under `node` again (round 3's extensionless imports); pushed `050adbbb`.
+- 2026-10-03: R2 verified (118/118), one local Lighthouse run under the build slot; docs and this brief.
+
 ## Result
 
 **PR:** [#94](https://github.com/itsahmeds/flowers-overseas/pull/94) · **branch** `task/TASK-138-r2-media-delivery`.
+
+**Current state (round 5, 2026-10-03):** the home hero (`hero` slot, `home-hero`) is served from the
+site's own origin, committed under `public/media/home-hero/`; every other photograph is served from
+`flowersoverseas-media`. Round 1's text below describes the all-R2 design that preceded the
+founder's option (a), and is kept as the record; **Round 5** at the end is what ships.
+
+### Round 1 (2026-09-21)
 
 All 118 derived variants are objects in `flowersoverseas-media` and every photograph on the site
 is served from the bucket. The flip is `r2VariantLoader` and `r2Loader` installed through the
@@ -576,3 +607,102 @@ The merge stays gated on LCP.
 `seed-media-manifest`, `media-upload`, `ui-media`). The build slot was taken only to serve CI's
 own build and read the preload off the page; no local build and no local Lighthouse.
 `.env.local` untouched; `media:upload` not run.
+
+### Round 5 (2026-10-03) — the split: the home hero on the site origin, everything else on R2
+
+**The founder's answer (2026-10-03, chat: "yes to 1"): option (a).** The `hero` crop slot
+(`home-hero`) stays committed under `public/media/` and is served by `staticVariantLoader`; every
+other photograph is served from R2. The 2 000 ms budget stays.
+
+**Rebased onto `origin/main` `8767f9de`** (42 commits). Two conflicts: `seed/check.ts` (both sides kept —
+main's family 10 and `asOf`, this branch's family 9 wording and derived-file type, this branch's
+manifest report) and `docs/codebase-map.md` (main's copy, then `pnpm codebase:map`). After the
+rebase, main's TASK-143 sweep had two cases that assumed a committed tree (`unknown-slot` over a
+`public/media/` file, and 25 seed cases). The split makes both true again, and both pass on their
+own terms.
+
+**1. One rule, behind the existing seam.** `variantLoaderForSlot(slot)` in
+`src/modules/ui/media/loader.ts`: `SITE_ORIGIN_MEDIA_SLOTS` (`["hero"]`, beside `MEDIA_ORIGIN` in
+`src/lib/media-origin.ts`) → `staticVariantLoader`, restored byte-for-byte from main; every other
+slot, and an asset the manifest does not know → `r2VariantLoader`. `splitVariantLoader` applies it
+to each variant's asset (its slot comes from the manifest in force) and is the default behind
+`setVariantLoader()` / `resolveLoader()`. **Zero call-site changes**, and `resolve.ts` is
+untouched. The work order says "behind the existing `setMediaLoader()` seam". The URL-producing
+seam is `setVariantLoader()`, the one `resolve.ts` reads. `setMediaLoader()`'s `next/image` half
+stays `r2Loader`: it receives a bare `src` with no asset to look a slot up from, and nothing renders
+through it. Recorded as an interpretation, not a deviation.
+
+**2. What is committed.** `public/media/home-hero/` — 10 files, 336 690 B, restored from main and
+each matching its manifest row by byte count and SHA-256. Nothing else is under `public/media/`. The
+`/media/*` `immutable` rule (`mediaCacheHeaderRules()`) is back in `next.config.ts`. The rendered
+`/en` preloads `/media/home-hero/{384,640,828,1080,1200}.avif` and carries 10 site-origin image URLs
+(all `home-hero`) and 24 bucket URLs (two product heroes, six occasion tiles), with no third origin.
+
+**3. CSP.** Unchanged: `img-src 'self' data: blob: https://media.flowersoverseas.com` in every
+environment; `'self'` already allows the hero. Only the comment changed.
+
+**4. The cap applies to what is still committed.** `COMMITTED_MEDIA_BYTE_CAP` (6 MB) and
+`COMMITTED_MEDIA_DIR` are back in `seed/budgets.ts`. `COMMITTED_MEDIA_SLOTS` is
+`SITE_ORIGIN_MEDIA_SLOTS` itself, so the list the loader routes by and the list the gates commit by
+are one constant. `pnpm media:variants` writes the hero ladder to `public/media/` as well. `--check`
+ties each committed copy to its row on **every** runner (the CI condition included) and refuses a
+committed copy of a bucket slot. `seed:check` family 7 checks the committed copies' byte counts (new
+rule `committed-slot`), and family 9 caps the committed total and flags a committed file of an
+unknown asset. Cases: `budgets/bad-total-bytes` restored, `media/bad-committed-bucket-slot` added
+(26 in all). `pnpm media:variants --check` and `pnpm seed:check` both exit 0 here.
+
+**5. A fault from round 3, fixed in its own commit.** `src/lib/media-headers.ts` got extensionless
+runtime imports in `3f0dfa09`. Next and Vitest resolve them, `node` does not, so `pnpm media:upload`
+(and `--verify`) had failed with `ERR_MODULE_NOT_FOUND` since round 3, and no test noticed. The
+imports now name their `.ts` files, and a new unit case runs the CLI under `node` with an unknown
+flag: red before the fix, green after. `next build` loads the config fine with them.
+
+**Mutation proof** (each reverted, and the revert confirmed):
+
+| Mutation | Result |
+|---|---|
+| `SITE_ORIGIN_MEDIA_SLOTS = []` (the hero routed to R2) | 4 red: the `hero` slot case, the committed `home-hero` case, "every site-origin URL is a committed file", the rendered picture + preload case |
+| `["hero", "occasionTile"]` | 2 red: the `occasionTile` slot case, the committed `home-occasion-birthday` case |
+| `seed:check` committed half skipped | 26 red |
+| `committed-slot` neutered | `media/bad-committed-bucket-slot` red |
+| committed total cap neutered | `budgets/bad-total-bytes` red |
+| `--check` committed half skipped | 11 red |
+| `--check` committed orphan rule neutered | "a committed copy of a slot the bucket serves" red |
+
+**R2.** `pnpm media:upload --verify`: **118 rows verified** against
+`https://media.flowersoverseas.com/`, each published with its row's byte count and content type, so
+nothing was missing and nothing was uploaded. One public `GET` per slot: `home-hero/828.avif` 200
+`image/avif` (31 593 B); `fo-bq-001-hero/828.avif` 200 `image/avif`; `fo-bq-001-detail/384.webp`
+200 `image/webp`; `home-occasion-birthday/384.avif` 200 `image/avif`. The hero from the measured
+origin: `GET http://127.0.0.1:3001/media/home-hero/828.avif` 200 `image/avif`,
+`cache-control: public, max-age=31536000, immutable`. No value from `.env.local` was printed or copied anywhere.
+
+**Lighthouse, local — the build slot taken once, because this round's whole question is a
+performance number.** CI's procedure exactly: `.env.example` as `.env.local` (the real file moved
+into a private `mktemp -d` and restored by a trap), `next build`, `next start` on :3000,
+`scripts/seo/brotli-origin.ts` on :3001, every URL warmed once, then `lhci autorun` 0.15.1 with
+`lighthouserc.json` (mobile, simulated throttling, 3 runs × 15 URLs). **`lhci` exit 0: every
+assertion held, LCP included.** Both servers were stopped by their own PIDs, and the slot was
+released.
+
+| URL | run 1 | run 2 | run 3 | median | asserted (fastest) | round 4 asserted (CI) | budget |
+|---|---|---|---|---|---|---|---|
+| `/en` | 2 642 | 1 767 | 1 773 | 1 773 | **1 767** | 2 118 | 2 000 |
+| `/en-gb` | 1 757 | 1 741 | 1 763 | 1 757 | **1 741** | 2 133 | 2 000 |
+| `/de` | 2 193 | 1 744 | 1 746 | 1 746 | **1 744** | 2 136 | 2 000 |
+| `/pl` | 1 738 | 1 739 | 1 766 | 1 739 | **1 738** | 2 144 | 2 000 |
+
+The other eleven URLs asserted 1 284–1 484 ms. Performance was 1.0 on every representative run. On
+all four locale homes the LCP element is the hero `<img>`, loaded from the measured origin.
+**Load average beside it (8 cores):** 7.75 / 6.36 / 6.30 before the build, 8.17 / 6.68 / 6.42 at
+the start of `lhci`, a spike to 22.22 (1-min) from another agent's work mid-run, and
+5.29 / 9.67 / 8.55 at the end. The two slow first runs (`/en` 2 642, `/de` 2 193) fall in that
+spike; they are not the asserted values. **This is a local number on a loaded machine; CI on the
+head SHA is the gate of record**, reported below.
+
+
+**Also corrected in this brief:** the round-2 LCP escalation had been spliced into Binding item 4
+mid-sentence; it is back under `## Escalations`, in date order.
+
+**Gates and CI:** see the PR's round-5 section, which carries the `pnpm gates:cheap` block and
+CI's verdict on the head SHA.

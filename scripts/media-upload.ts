@@ -30,11 +30,11 @@
  *    which ties every file to its manifest row by byte count and SHA-256 and rejects an orphan
  *    file or a row with no file;
  *  - every file must be inside its slot's `SLOT_BYTE_CAPS` entry (`seed/budgets.ts`). The 6 MB
- *    repository total is gone with the committed bytes — that is the point of this task — and
- *    this is one of the guards that replaced it;
- *  - no file may carry the demo watermark (spec 006 §13 Q12, AC-16). The repository no longer
- *    holds the bytes, so the "nothing watermarked ships" invariant is enforced here, at the last
- *    moment before they are published, rather than over a committed tree that no longer exists;
+ *    repository cap now governs only the `hero` slot's committed copies (TASK-138's split), so for
+ *    every other slot this is one of the guards that replaced it;
+ *  - no file may carry the demo watermark (spec 006 §13 Q12, AC-16). The repository holds only
+ *    the `hero` slot's bytes, so for everything else the "nothing watermarked ships" invariant is
+ *    enforced here, at the last moment before the bytes are published;
  *  - `R2_PUBLIC_BASE_URL` must equal `MEDIA_ORIGIN`, the constant the application builds every
  *    image URL and the CSP `img-src` allowance from. Uploading to a bucket the site does not
  *    read from is the one failure this whole path cannot detect afterwards.
