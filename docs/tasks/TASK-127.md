@@ -75,7 +75,21 @@ _None recorded._
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
+**Partial — built in [PR #135](https://github.com/itsahmeds/flowers-overseas/pull/135) with
+TASK-126 (draft).** The depth-4 route gains the product branch (`dynamicParams = true`, the first
+carry-forward) and mounts `ProductPage` with spec 008's breadcrumb and spec 007's facts block as
+slots. `site-links.ts` publishes `product`, so the listing cards link to it. The page reads
+`productView()` only, with `parameterised: false`: the bare URL, and TASK-128 owns the form.
+Evidence:
+- AC-1: `tests/unit/product-route.test.tsx` (4 cases; the 404 shapes, through the route function
+  itself) and the e2e 200/404 matrix.
+- AC-8, AC-10, AC-21, AC-22, AC-25: `tests/unit/product-page.test.tsx`, plus their e2e halves.
+- `/review 98`'s HOLE 5 pin is in and was seen to bite.
 
-_Pending._
+**Remaining:**
+- the second carry-forward (`writeProductExistenceSummary()`'s call site in the depth-3
+  `generateStaticParams`, proved once by mutation);
+- `/review 101` HOLE 12 (the robots-literal scan extended to this route file);
+- the production-build e2e/a11y/visual run.
+
+`en` stays over the 5 % gate until the founder attests TASK-126 E-3's three keys.
