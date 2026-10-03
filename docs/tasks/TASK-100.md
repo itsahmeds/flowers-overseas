@@ -76,3 +76,17 @@ RESULT: PASS
 ```
 
 `pnpm test:contract`: 5 files, 130 tests passed.
+
+**2026-10-03, the finisher round.** The founder's live run showed the declaration did not settle (`tls_1_3` and `0rtt` are one switch at Cloudflare; see `## Escalations`). `tls_1_3` is now declared `"zrt"`, TLS 1.3 with 0-RTT. That is the smaller fix: one value, no change to how check and apply compare. With both rows declaring the same state, the writes agree in any order. `zoneSettingsSchema` refuses a pair that disagrees, so the declaration cannot drift back. `createRecordedTransport` couples the two writes as the live zone did. Tests: **contract** 49 (+3: the 2026-10-03 sequence replayed on the old declaration, 1 change / 1 change / `0rtt` drift; the fixed declaration, 2 changes / `0 changes` / clean check; settling from TLS 1.3 off; T-15's `tls_1_3` case is now `zrt` vs live `on`). **Unit** `cloudflare-zone.test.ts` 19 (+2: the pair rule; A5's write verbs on `bot_management` refused before the transport). `ci-workflow.test.ts` (+1, one changed: A6's group pinned verbatim, and evaluated to `ci-ci-nightly`, `ci-ci-refs/heads/main` and `ci-ci-107`, three distinct groups). Mutations, each red: the mock without the coupling (the replay case); the old `"on"` declaration with the pair rule removed (3 contract cases and the unit case); the group without its `schedule` branch (the A6 case). Runbook: Z1 states A5's fifth scope as ruled, Z5 is the by-eye check of the four `checks: []` rows and pay-per-crawl, and Z3 explains a one-off `tls_1_3 · declared "zrt"` line. No expensive gate run locally; no build slot taken. Owed after merge: one founder `pnpm cloudflare:apply` to put 0-RTT back on (expected `2 changes`, then `0 changes`).
+
+```text
+gates:cheap · 439f23684d8a16bf7e14a1e57ae80dc592f83aa3 · tree clean · base origin/main · 2026-10-03T11:08:08.192Z
+typecheck             exit 0 · 2.1 s
+lint                  exit 0 · 14.0 s
+format:check          exit 0 · 9.5 s
+i18n:check            exit 0 · 0.4 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 250.8 s · changed 223 + map 0 + always 0 · always run: zod-boundaries, lint-coverage, url-pii
+RESULT: PASS
+```
