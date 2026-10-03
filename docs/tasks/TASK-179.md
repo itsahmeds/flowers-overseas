@@ -32,7 +32,23 @@ _None._
 
 ## Escalations
 
-_None recorded._
+- **E-1 (add-on currency).** The work order says the add-on prices are "converted into the page's
+  display currency, not left in złoty". Spec 009's design round (decisions log 2026-09-16: "add-ons
+  in destination currency with a sentence"), `AddonLineSchema` ("its price **in the destination's
+  currency**") and both product artboards say the opposite, and converting needs a change to
+  `productView()` in `catalog` (money logic, not a UI task). Shipped as the spec says (destination
+  currency). Question for the orchestrator/founder: convert (a spec 009 amendment and a catalog
+  task), or keep? Nothing blocks on it.
+- **E-2 (the 5 % unreviewed-copy budget is shared by TASK-176 to TASK-179).** `en` sat at 23
+  unreviewed of 540 keys (4.26 %) on TASK-175's head; `isLocaleIndexable("en")` turns false above
+  5 %, which `tests/unit/corridor-route.test.ts` catches. This task therefore ships only three
+  unreviewed `en` strings and holds back the rest (listed under Result). With TASK-176, 177 and 178
+  adding copy too, the four PRs cannot all merge before the founder approves a batch. Needs: the
+  founder's copy review (or an orchestrator order of merge).
+- **E-3 (T-17's catalogue half).** "handwritten card" is still in `seed/data/copy/en{,-gb}/
+  categories.json` and `occasions.json` (descriptions and `seoDescription`s of listing pages).
+  Those feed listing pages and their meta descriptions (TASK-178's pages, an SEO surface), so this
+  task did not touch them. Needs an owner.
 
 ## Progress
 
