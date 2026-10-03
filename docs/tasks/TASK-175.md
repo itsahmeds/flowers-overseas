@@ -58,10 +58,36 @@ _None._
   files; `pnpm budget:client-js` green (fonts 62.5 KB worst case per page, Caveat 24.2 KB,
   preloaded 18.9 KB); `tests/e2e/fonts.spec.ts` 10/10 against it. Pages sampled at the fold:
   `/en`, `/pl` (390), `/en/poland/flowers`, `/en/nope` (404), `/`.
-- **Next (finisher):** the `visual:baselines` label run → download the artifact, open a sample
-  per page type, commit the `linux` PNGs, `pnpm visual:baselines --verify <manifest>`, push,
-  toggle `ci:full`, report CI on the head SHA.
+- 2026-10-03 — Linux baselines from `visual-baselines` run 37145376733 (on 8611be64): all 104
+  changed (font and token swap), committed with the manifest; `--verify` 104/104 byte for byte,
+  `--check` green. Opened: `home-en-desktop`, `country-shop-desktop`, `country-category-mobile`,
+  `country-occasion-desktop`, `occasion-hub-desktop`, `product-desktop-summary`,
+  `product-mobile-sticky`, `corridor-country-desktop-facts`, `not-found-mobile`,
+  `consent-settings-en-mobile`. Escalations 1 and 2 accepted by the orchestrator, 2026-10-03.
 
 ## Result
 
-_Pending — see Progress._
+PR #168 (https://github.com/itsahmeds/flowers-overseas/pull/168). Code at 8611be64; the head after
+it adds only baselines, their manifest, this brief and the `TASKS.md` row.
+
+- **A21 clause 2 (tokens):** `src/app/globals.css` `@theme` = `docs/design/system/tokens.css` name
+  for name and value for value (T-01, `tests/unit/tokens.test.ts`); utilities `airmail-edge`,
+  `airmail-edge-footer`, `display`/`display-em`, `label`, `eyebrow`, `num`, `link`, `link-inline`,
+  `surface-inverse`. Contrast manifest covers every v2 pair (T-04, `tests/unit/contrast.test.ts`).
+- **A21 clause 3 (fonts):** Fraunces 400 + 300 italic (`opsz` 144, `SOFT` 100), Alegreya Sans
+  400/700, Caveat 500 (product page only, `ui/fonts/hand.ts`), Latin / Latin-Ext `unicode-range`
+  files through `next/font/local`; Newsreader and Plex removed; wordmark outlined (`Wordmark`,
+  `public/brand/wordmark.svg`, `pnpm fonts:wordmark`). Measured: page faces 64,004 B worst case
+  (≤ 90 / 120 KB), Caveat 24,760 B (≤ 30 KB), 2 preloads 19,320 B (≤ 50 KB). T-05:
+  `tests/unit/fonts.test.ts`, `tests/unit/client-js-budget.test.ts`, `tests/e2e/fonts.spec.ts`
+  (10/10 against a local build in the build slot, load average 1.99).
+- **Primitives:** Button (pills, `send`), Chip, Photo (radii, `arch`), type (v2 ramp, `Eyebrow`,
+  `TextLink`), `Price` (equivalents slot, rendered only with data), `FactsList`, `Breadcrumbs`,
+  `NoticeBar`; product card, from-price, both breadcrumbs, corridor facts, consent and notice skins
+  follow. `/dev/components` gains a v2 section. `tests/unit/ui-primitives.test.tsx` and siblings.
+- **Gates:** `pnpm gates:cheap` PASS on 8611be64 (7/7, unit 224 files). Visual baselines re-taken
+  through the label flow (above).
+- **For TASK-176 to TASK-179:** the header and footer still set the wordmark as text (Fraunces
+  now) — swap to `Wordmark`; `text-md` is v2's 23 px step, so call sites in SiteHeader,
+  ProductPage, TierSelector, DeliveryDatePicker, HomeFaq, FinderCard, FinderTypeahead and
+  LocaleSuggestionBannerIsland render 23 px until restyled.
