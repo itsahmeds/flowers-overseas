@@ -89,6 +89,10 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   pass, but 3 others now fail: `home-desktop-destinations`, `home-mobile-how-it-works`, `listing-mobile-card-link` (583 ->
   582 px). These three passed on run 37141374143 and are among the 13 the baselines runs changed but this task did not take.
   Which pictures fail changes from run to run, so the Linux render is not stable between runners. Stopped as instructed.
+  **Answered — orchestrator, 2026-10-04:** not runner noise. The shorter basis line moves everything below the row
+  up by a fraction of a pixel; each spec stops at its first failing screenshot, so each run showed a different subset.
+  Take every changed file. Done: run 37150450888 on `de59509a` (after merging `origin/main`, which brought TASK-173 and
+  its baselines), all 35 changed entries taken (`b2fc4727`).
 
 ## Progress
 
@@ -97,6 +101,7 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
 - 2026-10-03 — PR ready, `ci:full` run 37141374143 on `d5f0dacd`: everything green except `visual` (9 cases, none touched by this diff); escalated, row `blocked`. Next: the orchestrator's answer in `## Escalations`.
 - 2026-10-04 — `origin/main` merged (`25c3a747`, TASK-100 + design docs); fresh baselines run 37147054906; the 9 failing pictures taken and opened (`6a52ceaf`), `--verify` 104 matched; row back to `in_review`. Next: `ci:full` on the new head.
 - 2026-10-04 — `ci:full` 37147766896 on `ec2210f7`: all green except `visual` (3 other pictures); stopped and escalated, row `blocked`.
+- 2026-10-04 — the cause was this diff's own shift, not the runner. Merged `origin/main` (`de59509a`, TASK-173; the visual baseline conflicts were resolved to main's set before re-rendering). Took every changed picture from run 37150450888 (`b2fc4727`); `--verify` 104 matched. Row `in_review`. Next: `ci:full`.
 
 ## Result
 
@@ -107,5 +112,5 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   - de heading "Beliebte Auswahl"; de basis "Von uns ausgewählt, bis die ersten echten Bestellungen eingehen."
   - pl heading "Popularne wybory"; pl basis "Nasz wybór, dopóki nie pojawią się prawdziwe zamówienia."
 - **Tests.** Unit (`tests/unit/ui-home-gated.test.tsx`): one exact heading and one exact basis value per locale (en, en-gb, de, pl), read from the rendered `<h2>` and basis `<p>`; the ranked-row case asserts no basis line. Mutations: en heading "Popular choice", basis without its full stop, pl heading back to "Most sent this week" -> each red. E2e (`tests/e2e/home.spec.ts`): the row's `h2` text and basis line per locale path. `pnpm gates:cheap` PASS (3233 unit tests).
-- **Visual.** 14 Linux baselines from `visual-baselines` run 37140653882, each looked at: `home-{en,en-gb,de,pl}-{desktop,mobile}`, `home-{desktop,mobile}-trending`, `en`, `de` (consent), `pseudo-rtl/ar-XB`, `dev-components-desktop`. Every one shows the new heading and basis line and the row 16 px (desktop) / 32 px (mobile) shorter. The run changed 22 more files (footer, listing, product, other home crops) that this diff does not touch. No local build or browser run. Of those 22, the 9 that CI's `visual` job fails (`footer-{en,de}-{desktop,mobile}`, `home-desktop-how-it-works`, `home-mobile-dates`, `listing-desktop-toolbar`, `listing-mobile-card-placeholder`, `product-mobile-gallery-placeholder`) were taken from run 37147054906 after the merge with `origin/main`, on the orchestrator's instruction. I opened each one alongside its diff: same words, same layout, text drawn a sub-pixel differently. Each is byte-identical to the actual image the failing CI job recorded. The other 13 pass at the 0.1 % threshold and keep their committed bytes. The manifest moves only the 23 entries this task took.
+- **Visual.** Linux baselines from `visual-baselines` run 37150450888 on `de59509a`, every changed file taken: 33 PNGs and the manifest, whose 35 changed entries include two pictures whose bytes were already right after the merge. Each was opened next to its predecessor. The trending row shows the new heading and basis line and is 16 px (desktop) / 32 px (mobile) shorter. Everything below it (the dates, occasions, how-it-works, FAQ and destinations sections, the footer, and the listing and product primitives further down `/dev/components`) has the same content, moved up by that amount or by a fraction of a pixel. My earlier reading of those pictures as runner noise was wrong, and the earlier partial refreshes are superseded. `pnpm visual:baselines --verify` matched 104. No local build or browser run.
 - **Not changed (outside the fence):** code comments in `src/modules/ui/home/*`, `src/config/trending.ts`, `src/modules/ui/media/slots.ts`, `scripts/check-layout.ts`, and the dev gallery's caption still name the old heading or "the florists' picks"; TASK-177 rebuilds the home.
