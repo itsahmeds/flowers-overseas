@@ -29,6 +29,9 @@
   --color-paper: oklch(99.8% 0.002 85);
   --color-paper-2: oklch(98.9% 0.006 85);
   --color-paper-3: oklch(96.6% 0.01 85);
+  /* White, as warm-c/home.html renders it. warm-c's README table says 99.6 %; that would sit
+     darker than the 99.8 % page and lose the letter's lift, so the rendered value is kept (README,
+     "A21 name → tokens.css"). */
   --color-card: oklch(100% 0 0);
 
   /* Ink. Plum-navy, three steps. 16.1, 8.5 and 6.0 : 1 on paper. */
@@ -52,10 +55,12 @@
   /* Leaf: "included". 7.4 : 1 on paper. */
   --color-stem: oklch(44% 0.1 155);
 
-  /* The four stamp tints. ink-3 clears 4.9 : 1 on every one; ink-2 clears 6.9. */
+  /* The four stamp tints. ink-3 clears 4.9 : 1 on every one; ink-2 clears 6.9. Names follow spec 004
+     §14 A21 clause 2 (warm-c's table): `sage-wash` is warm-c's name for the cornflower wash, hue 250,
+     exactly as the approved pages render it. */
   --color-blush: oklch(93.5% 0.04 30);
   --color-butter: oklch(96.5% 0.055 95);
-  --color-sky-wash: oklch(94% 0.03 250);
+  --color-sage-wash: oklch(94% 0.03 250);
   --color-leaf-wash: oklch(94.5% 0.04 155);
 
   /* The logo, exactly as it ships (content/brand/mark.svg). Not re-coloured by v2. */
