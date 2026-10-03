@@ -688,3 +688,34 @@ Raised by: `/review 61`; measured, decided and escalated at TASK-056.
 
 - **A19 (2026-09-16, spec 009 design round PR #69 Q1; TASK-120).** The four strings `nav.utility.cutoff`, `nav.utility.cutoffShort`, `finder.cutoff` and `faq.whoDelivers.answer` state a 14:00 Warsaw cutoff and a same-day promise for a destination whose product page (spec 009 §2) says no delivery date can yet be offered. They are **gated on spec 009's `pickerState('PL') === 'live'`**: until then the utility bar and finder render their honest forms ("Delivery dates open when our first Polish florist is confirmed" or the copy key's final wording) and the FAQ answer drops the cutoff sentence. Same predicate as the picker, so the two surfaces can never disagree; the promise returns automatically with the data flip.
 
+**A20 — A chrome control with no page is not rendered at all (§2 L229; §14 A4 L436; AC-14,
+T-16; TASK-173; orchestrator ruling 2026-10-03).**
+Original: §14 A4 (L436) renders the search band "as text", "following the same 'unpublished target
+renders as text' rule as every other header entry", so an unpublished header, footer or home target
+was rendered as text, never a link.
+Measured: the founder clicked the live site on 2026-10-03 ("i say 1 or 2 subpar static pages nothing
+else?"). The header category row, Search, Sign in, My orders, Basket, Help & WhatsApp, most footer
+items and the home trending cards were plain text that looked like controls, while the Poland shop,
+its categories, occasions and products answered 200 (TASK-173 brief, Binding).
+Corrected (orchestrator, 2026-10-03):
+
+1. **Nothing on a page may look clickable and do nothing.** A header, footer or home target whose
+   page exists is a link, published through `site-links.ts` (spec 008 §14 A14 names them). A target
+   with no page yet is **not rendered at all**: no text, no label, no disabled control. This
+   supersedes A4's "as text" rule for the search band and for every header, footer and home entry.
+   §2 L229's "render **nothing** for an unpublished target" now holds without exception.
+2. **Omitted until their specs ship:** Search, Sign in, My orders, Basket, the mobile menu icon (it opens nothing), and the Add-ons entry (no hub page). Footer items with no
+   page (How it works, The guarantee, Help and contact, Company, the legal pages) are omitted until
+   TASK-174 builds them. They return by a data flip with no markup change.
+3. **Unchanged:** the picker's unpublished-destination state (§2 L80) and `Continue`'s "no
+   navigation" (A11) are state messages, not controls. AC-7's reserved height is still identical
+   before and after hydration (A7); only its value shrinks.
+4. **Design.** TASK-173 records a dated row in `docs/design/README.md` under "Where the sheet and
+   the code currently differ", naming each omitted control and this amendment.
+
+Tests: AC-14's wording is unchanged. T-16 gains one case: for every unpublished link id, the header,
+footer and home render no element for it, neither link nor text, in four locales plus `/`.
+Watched red by re-rendering one unpublished id as text. → AC-14.
+Open for the founder: none.
+Raised by: the founder in chat, 2026-10-03; ruled by the orchestrator; implemented by TASK-173.
+

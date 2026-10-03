@@ -486,3 +486,17 @@ Tests: none added or changed. AC-27 and T-27 stand as A8 rewords them.
 Open for the founder: whether a preview environment gets its own image bucket. The default, if unanswered, is clause 3: no.
 Raised by: TASK-138's escalation of 2026-09-21, carried to TASK-169; drafted by the spec writer on 2026-10-03.
 
+**A11 — The `productHero` ladder gains a 480 w rung (§2.4 L82, §2.5, §13 Q5 L374, §14 A7 clause 3 L411; AC-15 and T-15 unchanged; TASK-168; orchestrator ruling 2026-10-03).**
+Original: §14 A7 clause 3 (L411) fixes the `productHero` ladder at `PHASE0_SLOT_WIDTHS` 384 / 640 / 828. §13 Q5 (L374) lists seven widths with no 480.
+Measured (TASK-168): on a Pixel 7 (DPR 2.625) a trending card is 178 CSS px wide, so it needs 467 device px. Chromium 153 picks the smallest rung whose density is at least the DPR. At 384 the density is 2.16, so it skipped to 640 w. The four locale homes then transferred 215,876 B against AC-15's 204,800 B.
+Corrected (orchestrator, 2026-10-03):
+
+1. **The ladder.** `productHero` is 384 / 480 / 640 / 828. At 480 the density is 480 / 178 = 2.70, which is at least the DPR, so the browser makes an honest pick. Q5's width list gains 480 for this slot only. Every other slot's ladder is unchanged.
+2. **No quality or budget change.** AVIF quality 50 / effort 4 and WebP quality 72 stay. AC-15's 204,800 B, the per-slot caps and the 6 MB committed cap stay. `productHero` is served from R2 (A8), so committed bytes do not change.
+3. **Approved assets only.** `pnpm media:variants` derives the 480 rung and `pnpm media:upload` uploads it for `approved` assets only (A10 clause 3). 480 is narrower than every original (784 Grok, 1122 ChatGPT), so it is never an enlargement. A7 clause 3's 828-rung exception stands.
+4. **Docs.** TASK-168 updates `docs/runbooks/imagery.md` and `docs/architecture.md`, where they state the ladder.
+
+Tests: T-15 is the proof. CI measures the four locale homes at or under 204,800 B. AC-13, AC-14 and AC-25 hold over the larger manifest. → AC-15.
+Open for the founder: none.
+Raised by: TASK-168's measurement, 2026-10-03; ruled by the orchestrator.
+
