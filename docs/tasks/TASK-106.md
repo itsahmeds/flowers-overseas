@@ -44,9 +44,85 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   be added unreviewed: English unreviewed copy sits at the 5 % gate (decisions log); if the task
   needs new `en` copy, stop and list it for the founder's batch approval instead.
 
+- **2026-10-03 — carry-forward handed back: the Andrzejki (30 Nov) and Wigilia (24 Dec) PL occasions. Open, to the founder (copy batch) and the orchestrator.**
+  Adding two occasion keys needs **new English strings**, which the founder's rule above forbids adding unreviewed: two facet labels (`catalog.facet.occasion.andrzejki`, `catalog.facet.occasion.wigilia` in `messages/en.json`) and two `copy/en/occasions.json` rows (name, slug, a 60–90-word intro, `seoTitle`, `seoDescription`) — `seed:check`'s new `slug-missing` rule requires a human `en` slug for every occasion, and the `en` row is the source every locale hashes. It also edits `src/config/catalogue/occasions.data.ts` and the projections, outside this task's fence. Proposed for the batch: labels "St Andrew's Eve (Andrzejki)" and "Christmas Eve (Wigilia)"; slugs `st-andrews-eve-in-poland` / `christmas-eve-in-poland`; `de` `andreasnacht-in-polen` / `heiligabend-in-polen`; `pl` `andrzejki` / `wigilia`. Once the `en` copy is approved, a follow-up task adds the rows, the `fixed` rows in `occasion-country.json` (PL 11-30, PL 12-24) and the 32 → 34 pins.
+- **2026-10-03 — curation index handed back. Open, to the orchestrator.**
+  Spec 008 §2 says only "a founder-set `sortIndex`, tie-broken by SKU". It does not say where the index lives or what shape it has, and the founder's delegation covers the *order*, not a schema. Wiring it means changing `topProductsForPrebuild()` (`src/modules/catalog/read.ts`, spec 005's documented collation order) and `inDefaultOrder()` (`src/modules/catalog/listing.ts`). Both are outside this task's fence. Doing that also moves the first card on every listing, so the `en` visual baselines and spec 008 §14 A11's LCP-nomination pins move too, and TASK-168 owns the baselines now. Proposal: `src/config/catalogue/curation.data.ts` as one ordered SKU list, with a `catalogue:check` rule that every active SKU appears exactly once. `topProductsForPrebuild()` would rank by it and tie-break by SKU. That belongs in its own task, sequenced after TASK-168.
+- **2026-10-03 — reading recorded for the reviewer: "token-distinct" is measured as 5-gram shingle distinctness.** AC-2 does not define the metric. The literal token-set reading refuses the committed, reviewed `en` corpus: `category:sympathy` against `occasion:sympathy` scores 0.34, and spec 008 AC-2 says the gate "passes on the committed corpus". So the rule composes `scripts/corridor-check.ts`'s `shingleDistinctness()`, the metric spec 007 §14 A4 adopted for the same words in AC-2 of spec 007, with the 0.60 floor. The weakest committed pair is 0.71 in `en`. The reviewer may overrule this by amendment.
+
+## Progress
+
+- 2026-10-03 — brief filled, draft PR #150 opened.
+- 2026-10-03 — `seed:check` gains the AC-2 rules; 110 `de`/`pl` rows authored by hand; `catalog.floristSentence` authored in `de`/`pl`; product drafts re-flowed.
+- 2026-10-03 — eight T-02 fixtures, native-language timing/superlative/price scan, unit cases; 36 pins re-pinned; fixtures, snapshot, map regenerated; `gates:cheap` PASS.
+
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
+PR #150. **AC-2 / T-02 covered.** `seed:check` (`seed/check.ts`) gains spec 008 AC-2's rules:
+`slugs/slug-missing` (a category or occasion with no routed slug in a launch locale; `en-gb` takes `en`'s, `de`/`pl` take nothing — pinned to `hasSlug()`/`inheritsCopyFrom()`), `slugs/path-segment`, `slugs/country-slug`, `copy/intro-word-range` (40–120), `copy/intro-distinct` (< 0.60 5-gram shingle distinctness, see Escalations), `copy/intro-banned-word` (voice words + English and native superlatives), `copy/intro-price-literal` (the corridor gate's `PRICE_LITERAL_PATTERN`, now exported, plus the number-first `49,90 €` form), and `copy/delivery-timing` extended with German and Polish phrases for hub rows. Shape and uniqueness were already family 4's (spec 006 AC-7) and are not restated.
 
-_Pending._
+**Tests:** 8 new fixtures in `tests/fixtures/seed/_cases/` (34 total, each mutated to red by its own rule); 7 new unit cases in `tests/unit/seed-check.test.ts` (corpus-wide parity with `hasSlug()` over 220 key×locale pairs, inheritance both ways, word band at 39/40/120/121, the weakest committed pair per locale, native-language matchers including "Bestellung" not matching "beste"). 36 existing pins re-pinned from "`de`/`pl` have no slugs" to "`de`/`pl` have `en`'s page set under their own slugs, never an English one". Unit suite 6,323 passed; `gates:cheap` PASS.
+
+**Copy:** 23 categories + 32 occasions = 55 entities × `de`, `pl` = **110 rows**, each written by hand: name, slug (= `asciiFoldSlug(name)`, so `ä`→`a`, `ß`→`ss`, `ż`→`z`: spec 003 is silent on umlauts and spec 006 AC-7's fold, which `seed:check` enforces, drops the diacritic. That gives `maiglockchen`, `grossmuttertag` and `blumenstrausse`, not the `ae`/`oe`/`ue` forms. Changing that is a spec 006 fold decision for the founder, not a slug edit), intro (51–83 words), `seoTitle`, `seoDescription`; `translationStatus: human`, `reviewed: false`, `sourceHash` of the `en` row. No new English string. The spec's "~31" is the count the spec guessed; the dataset has 55, and AC-2's `slug-missing` requires all of them. Six occasion slugs match the home tiles in `src/config/occasions.ts` exactly (`trauer`, `narodziny` among them). `catalog.floristSentence` is authored in `de` and `pl` (human, unreviewed) so intros close in their own language; `pnpm i18n:draft --sync-copy` reflowed the 168 machine product rows and nothing else. Weakest intro pair: `en` 0.71, `de` 0.69, `pl` 0.74 (all `apology` category vs occasion).
+
+**Pins this diff moved:** `tests/fixtures/shop/listing-urls.json` (de/pl 7 → 206 pages each), `seed/snapshot/product_translation.json`, AC-21 `TARGETS` de/pl `{}` → `{countryCategory 140, countryOccasion 7, occasionHub 28, occasionsIndex 1}`, `WAIVED` de/pl `{countryShopRoot 7}` → `{categoryHub 23, countryShopRoot 7}` (the existing all-locale `categoryHub` rule). Whether the e2e crawl reaches `de`/`pl` country categories in ≤ 3 clicks with no corridor page in those locales is CI's `e2e` verdict on the head SHA.
+
+**Handed back:** the curation index and the Andrzejki/Wigilia carry-forward (see Escalations). Native-language superlatives and timing phrases are a minimal list, not a thesaurus; the B12 native reviewers should extend them.
+
+| entity · key | `de` slug | `pl` slug |
+|---|---|---|
+| category · `bouquet` | `blumenstrausse` | `bukiety` |
+| category · `arrangement` | `blumengestecke` | `kompozycje-kwiatowe` |
+| category · `plant` | `pflanzen` | `rosliny` |
+| category · `funeral` | `trauerfloristik` | `kwiaty-pogrzebowe` |
+| category · `gift_set` | `blumen-mit-geschenk` | `kwiaty-z-prezentem` |
+| category · `birthday` | `geburtstagsblumen` | `kwiaty-na-urodziny` |
+| category · `anniversary` | `blumen-zum-jahrestag` | `kwiaty-na-rocznice` |
+| category · `romance` | `romantische-blumen` | `romantyczne-kwiaty` |
+| category · `congratulations` | `blumen-zur-gratulation` | `kwiaty-z-gratulacjami` |
+| category · `new_baby` | `blumen-zur-geburt` | `kwiaty-na-narodziny` |
+| category · `get_well` | `blumen-zur-genesung` | `kwiaty-na-powrot-do-zdrowia` |
+| category · `sympathy` | `blumen-zum-beileid` | `kwiaty-kondolencyjne` |
+| category · `thank_you` | `blumen-zum-dank` | `kwiaty-na-podziekowanie` |
+| category · `apology` | `blumen-zur-entschuldigung` | `kwiaty-na-przeprosiny` |
+| category · `just_because` | `blumen-einfach-so` | `kwiaty-bez-okazji` |
+| category · `roses` | `rosen` | `roze` |
+| category · `tulips` | `tulpen` | `tulipany` |
+| category · `lilies` | `lilien` | `lilie` |
+| category · `orchids` | `orchideen` | `storczyki` |
+| category · `sunflowers` | `sonnenblumen` | `sloneczniki` |
+| category · `peonies` | `pfingstrosen` | `piwonie` |
+| category · `gerberas` | `gerbera` | `gerbery` |
+| category · `mixed` | `gemischte-blumen` | `bukiety-mieszane` |
+| occasion · `birthday` | `geburtstag` | `urodziny` |
+| occasion · `anniversary` | `jahrestag` | `rocznica` |
+| occasion · `romance` | `liebe-und-romantik` | `milosc-i-romantyzm` |
+| occasion · `congratulations` | `gratulation` | `gratulacje` |
+| occasion · `new_baby` | `geburt` | `narodziny` |
+| occasion · `get_well` | `gute-besserung` | `powrot-do-zdrowia` |
+| occasion · `sympathy` | `trauer` | `kondolencje` |
+| occasion · `thank_you` | `danke` | `podziekowania` |
+| occasion · `apology` | `entschuldigung` | `przeprosiny` |
+| occasion · `just_because` | `einfach-so` | `bez-okazji` |
+| occasion · `wedding` | `hochzeit` | `slub` |
+| occasion · `graduation` | `abschluss` | `ukonczenie-studiow` |
+| occasion · `housewarming` | `einzug` | `parapetowka` |
+| occasion · `retirement` | `ruhestand` | `emerytura` |
+| occasion · `valentines` | `valentinstag` | `walentynki` |
+| occasion · `womens_day` | `frauentag` | `dzien-kobiet` |
+| occasion · `mothers_day` | `muttertag` | `dzien-matki` |
+| occasion · `fathers_day` | `vatertag` | `dzien-ojca` |
+| occasion · `grandparents_day` | `grosselterntag` | `dzien-babci-i-dziadka` |
+| occasion · `easter` | `ostern` | `wielkanoc` |
+| occasion · `all_saints` | `allerheiligen` | `wszystkich-swietych` |
+| occasion · `christmas` | `weihnachten` | `boze-narodzenie` |
+| occasion · `new_year` | `neujahr` | `nowy-rok` |
+| occasion · `name_day` | `namenstag` | `imieniny` |
+| occasion · `teachers_day` | `lehrertag` | `dzien-nauczyciela` |
+| occasion · `sant_jordi` | `sant-jordi` | `sant-jordi` |
+| occasion · `fete_des_grands_meres` | `grossmuttertag-in-frankreich` | `dzien-babci-we-francji` |
+| occasion · `muguet` | `maiglockchen-zum-1-mai` | `konwalie-na-1-maja` |
+| occasion · `konfirmation` | `konfirmation` | `konfirmacja` |
+| occasion · `student` | `schulabschluss` | `zakonczenie-szkoly` |
+| occasion · `omatag` | `grossmuttertag-in-estland` | `dzien-babci-w-estonii` |
+| occasion · `17_mai` | `17-mai-in-norwegen` | `swieto-konstytucji-norwegii` |
