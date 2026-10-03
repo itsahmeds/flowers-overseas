@@ -1703,6 +1703,115 @@ describe("the cloudflare-check job (spec 040 AC-29, T-27)", () => {
     );
   });
 
+  /**
+   * /break 126 holes 1 and 2: the zone step fails the job on drift only while nothing turns its
+   * failure into a pass. `continue-on-error` (step or job) makes a failed step a green job, and a
+   * `shell:` on the step or a job `defaults` replaces the workflow's `bash` (with `pipefail`), so
+   * `pnpm cloudflare:check … | tee` would exit with `tee`'s 0.
+   */
+  describe("fails the job when the zone check fails", () => {
+    const zoneStepOf = (workflow: Workflow): Step => {
+      const step = workflow.jobs["cloudflare-check"]?.steps.find(
+        (candidate) => candidate.id === "zone",
+      );
+      expect(step?.run).toBe(
+        "pnpm cloudflare:check --require-token 2>&1 | tee cloudflare-check.log",
+      );
+      return step ?? {};
+    };
+    const mutated = (change: (workflow: Workflow) => void): Workflow => {
+      const workflow = parse(read(".github/workflows/ci.yml")) as Workflow;
+      change(workflow);
+      return workflow;
+    };
+
+    it("has no continue-on-error, no step shell and no job defaults, under the workflow's bash", () => {
+      expect(cloudflareCheckViolations(ci)).toEqual([]);
+    });
+
+    it("goes red when the zone step gets continue-on-error", () => {
+      const workflow = mutated((w) => {
+        zoneStepOf(w)["continue-on-error"] = true;
+      });
+      expect(cloudflareCheckViolations(workflow)).toEqual([
+        "cloudflare-check: step zone has continue-on-error",
+      ]);
+    });
+
+    it("goes red when the job gets continue-on-error", () => {
+      const workflow = mutated((w) => {
+        const job = w.jobs["cloudflare-check"];
+        if (job) job["continue-on-error"] = true;
+      });
+      expect(cloudflareCheckViolations(workflow)).toEqual([
+        "cloudflare-check: the job has continue-on-error",
+      ]);
+    });
+
+    it("goes red when the zone step sets its own shell", () => {
+      const workflow = mutated((w) => {
+        zoneStepOf(w).shell = "bash {0}";
+      });
+      expect(cloudflareCheckViolations(workflow)).toEqual([
+        "cloudflare-check: step zone sets shell: bash {0}",
+      ]);
+    });
+
+    it("goes red when the job sets defaults", () => {
+      const workflow = mutated((w) => {
+        const job = w.jobs["cloudflare-check"];
+        if (job) job.defaults = { run: { shell: "sh" } };
+      });
+      expect(cloudflareCheckViolations(workflow)).toEqual([
+        'cloudflare-check: the job sets defaults {"run":{"shell":"sh"}}; the top-level bash with pipefail must apply',
+      ]);
+    });
+
+    it("exits non-zero when `pnpm cloudflare:check` does, run under the step's effective shell", () => {
+      const root = mkdtempSync(join(tmpdir(), "fo-cloudflare-zone-step-"));
+      try {
+        const bin = join(root, "bin");
+        mkdirSync(bin);
+        const pnpm = join(bin, "pnpm");
+        writeFileSync(
+          pnpm,
+          '#!/bin/sh\necho "cloudflare:check: ssl differs"\nexit 1\n',
+        );
+        chmodSync(pnpm, 0o755);
+        const step = zoneStepOf(ci);
+        const script = join(root, "zone.sh");
+        writeFileSync(script, step.run ?? "exit 0");
+        const job = ci.jobs["cloudflare-check"];
+        const [command, ...args] = shellArgv(
+          step.shell ?? job?.defaults?.run?.shell ?? ci.defaults?.run?.shell,
+          script,
+        );
+        const result = spawnSync(command ?? "false", args, {
+          cwd: root,
+          encoding: "utf8",
+          env: {
+            PATH: `${bin}:${process.env["PATH"] ?? ""}`,
+            NODE_ENV: "test",
+          },
+        });
+        expect(result.status).toBe(1);
+        expect(readFileSync(join(root, "cloudflare-check.log"), "utf8")).toBe(
+          "cloudflare:check: ssl differs\n",
+        );
+      } finally {
+        rmSync(root, { recursive: true, force: true });
+      }
+    });
+  });
+
+  /**
+   * /break 126 holes 4 and 8: every case runs in a checkout shaped like `actions/checkout@v4`'s —
+   * a fresh repository that fetched one commit at depth 1 from its origin — never in a full clone
+   * or outside a repository. On a pull request that commit is GitHub's merge commit
+   * (`refs/pull/1/merge`, first parent the base branch); on a push it is `main`'s tip. In every
+   * pull request below, `main` also moved after the branch point and changed a file under
+   * `config/cloudflare/`, which must not count as the pull request's change.
+   */
   describe("the scope step, run as the runner runs it", () => {
     const scope = steps.find((step) => step.id === "scope");
     const roots: string[] = [];
@@ -1724,30 +1833,104 @@ describe("the cloudflare-check job (spec 040 AC-29, T-27)", () => {
         { cwd, encoding: "utf8" },
       ).trim();
 
-    /** A clone whose `topic` branch changes one file off `main`. */
-    const pullRequest = (changed: string): string => {
-      const root = mkdtempSync(join(tmpdir(), "fo-cloudflare-scope-"));
-      roots.push(root);
-      const origin = join(root, "origin");
-      mkdirSync(origin);
-      git(origin, "init", "--quiet", "--initial-branch=main");
-      writeFileSync(join(origin, "README.md"), "base\n");
-      git(origin, "add", "-A");
-      git(origin, "commit", "--quiet", "-m", "chore: base");
-      git(root, "clone", "--quiet", origin, "clone");
-      const clone = join(root, "clone");
-      git(clone, "checkout", "--quiet", "-b", "topic");
-      mkdirSync(join(clone, changed, ".."), { recursive: true });
-      writeFileSync(join(clone, changed), "{}\n");
-      git(clone, "add", "-A");
-      git(clone, "commit", "--quiet", "-m", "feat: change");
-      return clone;
+    const commit = (
+      repo: string,
+      files: readonly string[],
+      message: string,
+    ): void => {
+      for (const file of files) {
+        mkdirSync(join(repo, file, ".."), { recursive: true });
+        writeFileSync(join(repo, file), `${message}\n`);
+      }
+      git(repo, "add", "-A");
+      git(repo, "commit", "--quiet", "-m", message);
     };
 
-    const runScope = (cwd: string, env: Record<string, string>): string => {
-      const output = join(cwd, "step-output.txt");
+    /** An origin whose `main` holds the declaration, serving reachable SHAs as GitHub does. */
+    const origin = (): { root: string; origin: string } => {
+      const root = mkdtempSync(join(tmpdir(), "fo-cloudflare-scope-"));
+      roots.push(root);
+      const repo = join(root, "origin");
+      mkdirSync(repo);
+      git(repo, "init", "--quiet", "--initial-branch=main");
+      git(repo, "config", "uploadpack.allowReachableSHA1InWant", "true");
+      commit(
+        repo,
+        ["README.md", "config/cloudflare/zone-settings.json"],
+        "chore: base",
+      );
+      return { root, origin: repo };
+    };
+
+    /** `git merge --no-ff topic` onto `main`, kept only as `ref` (GitHub's merge ref) or as `main`. */
+    const mergeTopic = (repo: string, ref: string): void => {
+      git(repo, "checkout", "--quiet", "-b", "merge-tmp", "main");
+      git(repo, "merge", "--quiet", "--no-ff", "--no-edit", "topic");
+      git(repo, "update-ref", ref, "HEAD");
+      git(repo, "checkout", "--quiet", "main");
+      git(repo, "branch", "--quiet", "-D", "merge-tmp");
+    };
+
+    /** What `actions/checkout@v4` does: a new repository, one commit fetched at depth 1. */
+    const ciCheckout = (root: string, repo: string, ref: string): string => {
+      const sha = git(repo, "rev-parse", ref);
+      const checkout = join(root, "checkout");
+      mkdirSync(checkout);
+      git(checkout, "init", "--quiet");
+      git(checkout, "remote", "add", "origin", `file://${repo}`);
+      git(
+        checkout,
+        "fetch",
+        "--quiet",
+        "--no-tags",
+        "--depth=1",
+        "origin",
+        `+${sha}:refs/remotes/pull/1/merge`,
+      );
+      git(checkout, "checkout", "--quiet", "--detach", sha);
+      expect(git(checkout, "rev-parse", "--is-shallow-repository")).toBe(
+        "true",
+      );
+      return checkout;
+    };
+
+    /** A pull request changing `changed` off `main`, checked out as its merge commit (or `as`). */
+    const pullRequest = (
+      changed: readonly string[],
+      as: "merge" | "head" = "merge",
+    ): { root: string; origin: string; checkout: string } => {
+      const { root, origin: repo } = origin();
+      git(repo, "checkout", "--quiet", "-b", "topic");
+      commit(repo, changed, "feat: change");
+      git(repo, "checkout", "--quiet", "main");
+      commit(
+        repo,
+        ["config/cloudflare/main-only.json"],
+        "chore: main moves on",
+      );
+      mergeTopic(repo, "refs/pull/1/merge");
+      const ref = as === "merge" ? "refs/pull/1/merge" : "refs/heads/topic";
+      return { root, origin: repo, checkout: ciCheckout(root, repo, ref) };
+    };
+
+    /** `main` whose tip merged a docs-only branch: the commit a push run checks out. */
+    const pushToMain = (): string => {
+      const { root, origin: repo } = origin();
+      git(repo, "checkout", "--quiet", "-b", "topic");
+      commit(repo, ["docs/note.md"], "docs: note");
+      git(repo, "checkout", "--quiet", "main");
+      mergeTopic(repo, "refs/heads/main");
+      git(repo, "reset", "--quiet", "--hard", "main");
+      return ciCheckout(root, repo, "refs/heads/main");
+    };
+
+    const runScope = (
+      cwd: string,
+      env: Record<string, string>,
+    ): { output: string; reason: string } => {
+      const output = join(cwd, "..", "step-output.txt");
       writeFileSync(output, "");
-      const script = join(cwd, "scope.sh");
+      const script = join(cwd, "..", "scope.sh");
       writeFileSync(script, scope?.run ?? "exit 1");
       const result = spawnSync(
         "bash",
@@ -1764,59 +1947,133 @@ describe("the cloudflare-check job (spec 040 AC-29, T-27)", () => {
         },
       );
       expect(result.status, result.stderr).toBe(0);
-      return readFileSync(output, "utf8").trim();
+      return {
+        output: readFileSync(output, "utf8").trim(),
+        reason: readFileSync(join(cwd, "scope.txt"), "utf8").trim(),
+      };
     };
+    const unlabelled = { EVENT_NAME: "pull_request", FULL_LABEL: "false" };
 
-    const scratch = (): string => {
-      const root = mkdtempSync(join(tmpdir(), "fo-cloudflare-scope-"));
-      roots.push(root);
-      return root;
-    };
+    it("passes no base ref to the step: it reads the merge commit, not a merge base", () => {
+      expect(scope?.env).toEqual({
+        EVENT_NAME: "${{ github.event_name }}",
+        FULL_LABEL:
+          "${{ contains(github.event.pull_request.labels.*.name, 'ci:full') }}",
+      });
+    });
 
-    it("checks on a push, a dispatch and the nightly schedule", () => {
+    it("checks on a push, a dispatch and the nightly schedule, on main's merge-commit tip", () => {
       for (const event of ["push", "workflow_dispatch", "schedule"]) {
         expect(
-          runScope(scratch(), {
-            EVENT_NAME: event,
-            BASE_REF: "",
-            FULL_LABEL: "false",
-          }),
+          runScope(pushToMain(), { EVENT_NAME: event, FULL_LABEL: "false" }),
           event,
-        ).toBe("run=true");
+        ).toEqual({
+          output: "run=true",
+          reason: `A \`${event}\` run checks the zone unconditionally.`,
+        });
       }
     });
 
     it("checks a pull request labelled `ci:full` whatever it changed", () => {
       expect(
-        runScope(pullRequest("docs/note.md"), {
+        runScope(pullRequest(["docs/note.md"]).checkout, {
           EVENT_NAME: "pull_request",
-          BASE_REF: "main",
           FULL_LABEL: "true",
         }),
-      ).toBe("run=true");
+      ).toEqual({
+        output: "run=true",
+        reason: "The `ci:full` label is present, so the zone is checked.",
+      });
     });
 
-    it("checks an unlabelled pull request that changes config/cloudflare/", () => {
-      expect(
-        runScope(pullRequest("config/cloudflare/zone-settings.json"), {
-          EVENT_NAME: "pull_request",
-          BASE_REF: "main",
-          FULL_LABEL: "false",
-        }),
-      ).toBe("run=true");
+    it("checks an unlabelled pull request that changes any file under config/cloudflare/", () => {
+      for (const changed of [
+        "config/cloudflare/zone-settings.json",
+        "config/cloudflare/README.md",
+        "config/cloudflare/rules/redirects.json",
+      ]) {
+        expect(
+          runScope(pullRequest([changed, "docs/note.md"]).checkout, unlabelled),
+          changed,
+        ).toEqual({
+          output: "run=true",
+          reason: `The zone declaration changed:\n\n\`\`\`\n${changed}\n\`\`\``,
+        });
+      }
     });
 
     it("skips an unlabelled pull request that changes anything else, a look-alike path included", () => {
       for (const changed of ["docs/note.md", "config/cloudflare-notes.json"]) {
         expect(
-          runScope(pullRequest(changed), {
-            EVENT_NAME: "pull_request",
-            BASE_REF: "main",
-            FULL_LABEL: "false",
-          }),
+          runScope(pullRequest([changed]).checkout, unlabelled),
           changed,
-        ).toBe("run=false");
+        ).toEqual({
+          output: "run=false",
+          reason:
+            "No file under `config/cloudflare/` changed and the `ci:full` label is absent; the zone was not checked.",
+        });
+      }
+    });
+
+    it("checks anyway when the checkout is not a merge commit, or its parents cannot be fetched", () => {
+      const notMerge = pullRequest(["docs/note.md"], "head");
+      const unreachable = pullRequest(["docs/note.md"]);
+      rmSync(unreachable.origin, { recursive: true, force: true });
+      for (const checkout of [notMerge.checkout, unreachable.checkout]) {
+        expect(runScope(checkout, unlabelled)).toEqual({
+          output: "run=true",
+          reason:
+            "The checkout is not the pull request's merge commit, so what it changes is unknown and the zone is checked anyway.",
+        });
       }
     });
   });
 });
+
+/**
+ * /break 126 holes 1 and 2: what would let `cloudflare-check` pass while its zone step failed.
+ * The same rules `ac61Violations` applies to the `lint` job, for this job.
+ */
+function cloudflareCheckViolations(workflow: Workflow): string[] {
+  const violations: string[] = [];
+  const job = workflow.jobs["cloudflare-check"];
+  if (job === undefined) return ["cloudflare-check: no such job"];
+  if (workflow.defaults?.run?.shell !== "bash")
+    violations.push(
+      `workflow: defaults.run.shell is ${JSON.stringify(workflow.defaults?.run?.shell)}, not bash`,
+    );
+  if (job["continue-on-error"] !== undefined)
+    violations.push("cloudflare-check: the job has continue-on-error");
+  if (job.defaults !== undefined)
+    violations.push(
+      `cloudflare-check: the job sets defaults ${JSON.stringify(job.defaults)}; the top-level bash with pipefail must apply`,
+    );
+  for (const step of job.steps) {
+    const label = step.id ?? step.name ?? step.uses ?? "(unnamed)";
+    if (step["continue-on-error"] !== undefined)
+      violations.push(`cloudflare-check: step ${label} has continue-on-error`);
+    if (step.shell !== undefined)
+      violations.push(
+        `cloudflare-check: step ${label} sets shell: ${step.shell}`,
+      );
+  }
+  return violations;
+}
+
+/** The argv GitHub's Linux runner uses for a `shell:` value (docs: "Using a specific shell"). */
+function shellArgv(shell: string | undefined, script: string): string[] {
+  switch (shell) {
+    case undefined:
+      return ["bash", "-e", script];
+    case "bash":
+      return ["bash", "--noprofile", "--norc", "-eo", "pipefail", script];
+    case "sh":
+      return ["sh", "-e", script];
+    default:
+      if (shell.includes("{0}"))
+        return shell
+          .split(/\s+/)
+          .map((part) => (part === "{0}" ? script : part));
+      throw new Error(`unknown shell ${shell}`);
+  }
+}
