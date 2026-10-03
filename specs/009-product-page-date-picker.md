@@ -466,3 +466,19 @@ pages, ≈ 630 MB. **Catalogue growth re-checks two numbers:** `next build` wall
 product needs a build, as the listing pages already do, which matches Phase 0's committed seed
 data. **Tripwire:** spec 003 §14 A3's Cache Components tripwire applies here too; whoever enables
 `cacheComponents` replaces the locale gate and revisits this ruling in the same PR.
+
+**A7 (2026-10-03, TASK-127, orchestrator ruling on `/review 135` round 1, required change 2).** A
+product URL with a trailing slash answers a **permanent redirect (308) to the bare URL**, as on the
+corridor pages (spec 007 §14 A6) and the listing pages (spec 008 §14 A7). That is Next's default
+`trailingSlash: false` behaviour, which is platform-wide; Cloudflare's 301 may replace the 308 once
+spec 040 fronts the origin. The canonical stays the bare URL (§6, AC-17). Two clauses now read:
+
+- **AC-1**, "and **404** for every other: unknown slug, product with no active price in that
+  country, unpublished country, another locale's `product` segment, uppercase variant, trailing
+  slash, unknown locale. No redirect, no soft-404, no substitute page": "trailing slash" leaves
+  the 404 list. A trailing-slash variant answers 308 with a `Location` equal to the bare path and
+  never a 200 body or a soft-404. The other six shapes still 404 with no `Location` header, and
+  "No redirect" applies to them.
+- **T-01** (e2e, AC-1) gains one case: `/{locale}/{country}/{product}/{slug}/` (route params
+  `/{locale}/{segment}/{child}/{product}/`) → 308, `Location` equal to the bare path. The other
+  six shapes still assert 404 with no `Location` header.
