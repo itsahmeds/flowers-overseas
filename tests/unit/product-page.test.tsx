@@ -645,6 +645,31 @@ describe("HOLE 3: each tier radio prints its own price, its own stem count, and 
     }
   });
 
+  it("prints a one-tier product's own price and its own label, in `en` and `pl` (HOLE 8)", async () => {
+    for (const locale of ["en", "pl"] as const) {
+      const view = await viewOf(locale, "PL", ANTHURIUM, { now: IN_WINDOW });
+      const [only] = view.tiers;
+      expect(view.tiers, locale).toHaveLength(1);
+      if (only === undefined) throw new Error("one tier");
+      const translate = createTranslator({
+        locale,
+        messages: loadMessages(locale, ["catalog"]),
+      }) as unknown as (key: string, values?: Record<string, number>) => string;
+      // The committed one-tier products are the eight plants: `catalog.tier.single`, no stem
+      // count. The label is still the tier's own key, through the same plural rule if it had one.
+      const label =
+        only.stems === null
+          ? translate(only.labelKey)
+          : translate(only.labelKey, { count: only.stems });
+      const single = block(render(view), 'data-fo-tier-selector="single"');
+      expect(single, locale).not.toBe("");
+      expect(firstText(single, /<b>([^<]*)<\/b>/u), locale).toBe(label);
+      expect(firstText(single, /<bdi[^>]*>([^<]*)<\/bdi>/u), locale).toBe(
+        formatMoney(only.price, locale),
+      );
+    }
+  });
+
   it("checks exactly the selected tier — the `is_default` one, or the one the visitor chose", async () => {
     const byDefault = await viewOf("en", "PL", AMBER, { now: IN_WINDOW });
     const chosen = await viewOf("en", "PL", AMBER, {
