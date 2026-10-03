@@ -1102,6 +1102,31 @@ describe("A21 / AC-21 (v2, TASK-179): the price under the H1 is the price charge
   });
 });
 
+describe("no N-day freshness promise on the product page (founder, 2026-10-04)", () => {
+  // "cant promise staying fresh": the guarantee is fresh-on-arrival, and its remedy wording waits
+  // for the founder, so the page renders no freshness promise of any length (TASK-179).
+  const N_DAY_FRESHNESS =
+    /\b(?:\d+|seven)[-\s]days?\b[^.]{0,40}\bfresh|\bfresh[^.]{0,40}\b(?:\d+|seven)[-\s]days?\b|\b7-day\b/iu;
+
+  it("renders none in any locale or picker state, though the view model carries the claim", async () => {
+    expect(N_DAY_FRESHNESS.test("a 7-day freshness guarantee")).toBe(true);
+    for (const locale of LOCALES) {
+      for (const view of [
+        await viewOf(locale, "DE", AMBER),
+        await viewOf(locale, "PL", AMBER, { now: IN_WINDOW }),
+        await liveViewOf(locale, AMBER, { now: WOMENS_DAY_WEEK }),
+      ]) {
+        expect(view.trust).toContain("freshnessGuarantee");
+        const body = readable(render(view));
+        expect(
+          N_DAY_FRESHNESS.exec(body)?.[0],
+          `${locale} ${view.delivery.state}`,
+        ).toBe(undefined);
+      }
+    }
+  });
+});
+
 describe("AC-23: the add-ons are a priced, read-only list", () => {
   it("prints name, per-country price and own VAT rate per row, with no input element", async () => {
     const view = await viewOf("en", "PL", AMBER, { now: IN_WINDOW });

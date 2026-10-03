@@ -55,7 +55,7 @@ _None._
 - 2026-10-04 00:45 — PDP v2 layout, `PrintedCardPreview`, the `CardMessageField` island, unit tests; draft PR #170.
 - 2026-10-04 00:50 — country guide v2 (`CorridorSection`), printed-card wording in five authored guides; copy cut to the 5 % budget.
 - 2026-10-04 00:55 — 404/500 letter (`NoticeDocument letter`, `noticeShell` letter constants), price tests, e2e spec, design README row, contrast pairs.
-- **Left:** (1) rebase onto `main` once PR #168 merges (`git rebase --onto origin/main d8fffadb`), then `gh pr ready` + `ci:full`; the PR conflicts with `main` until then, so no CI has run. (2) The visual baselines this task moves (product, product blocks, corridor, 404/500, `/dev/components` product cells) through the `visual:baselines` label flow — commit every file in the run's change list. (3) Wire TASK-178's equivalents helper into `ProductPage`'s `equivalents` prop (the route passes it; `Price` and `PriceSummary` render it) once 178 merges.
+- **Left:** (1) rebase onto `main` once PR #168 merges (`git rebase --onto origin/main d8fffadb`), then `gh pr ready` + `ci:full`; the PR conflicts with `main` until then, so no CI has run. (2) The visual baselines this task moves (product, product blocks, corridor, 404/500, `/dev/components` product cells) through the `visual:baselines` label flow — commit every file in the run's change list. (3) Once TASK-178 merges, wire `priceEquivalents()` (`@/modules/catalog`) and `equivalentsMessageValues()` (`@/modules/ui`) into the PDP route and pass the finished line as `ProductPage`'s `equivalents` (`Price` and `PriceSummary` already render it). (4) Render the fresh-on-arrival guarantee once its remedy wording is approved.
 
 ## Result
 
@@ -66,7 +66,19 @@ _None._
 - `product.card.printed` "Printed on our card · included" (A21 clause 5).
 - The card-language FAQ answers in `content/corridors/en/{pl,fr,de,it}-guide.md` and `en-gb/pl-guide.md` now say "We will print it on our card in whatever language you write it, exactly as you type it." (the artboard's wording); their `reviewed: true` front matter is unchanged — the founder should re-read the five sentences.
 
-**Held back (artboard copy not shipped, to keep `en` ≤ 5 % unreviewed; ship when approved):** the eyebrow tail "· for {country}"; the card step's legend "What should the card say?" (the legend reads "Printed card" today), help line, placeholder "Dear Mum, …" and preview pill "Your card, printed"; "We are showing these prices in the currency of the delivery country." under the add-ons; "Good to know"; the "Freshness guarantee · We redeliver or refund, your choice." promise (reusable from `trust.guarantee.*` once TASK-176 drops "7-day"); the guide eyebrow "A guide, written by us"; the guide steps 2–3 in the future tense ("Our florist will make it…", "They will see…", "The florist will photograph… we will email…").
+**Freshness (founder, 2026-10-04: "cant promise staying fresh").** The product page and the
+guides render **no** freshness promise of any length; nothing turns `freshnessDays` into one.
+Pinned by `product-page.test.tsx` and `corridor-page.test.tsx` ("no N-day freshness promise"),
+each watched red by planting "7-day freshness" / "Seven days fresh" in a rendered string. The
+artboard's "What we promise" item is **not rendered** yet: its title will be "Fresh-on-arrival
+guarantee" (`reviewed: false` for de/pl), but a guarantee shown without its terms is a claim with
+no remedy, and the remedy wording waits for the founder. Strings needed before it renders:
+- title "Fresh-on-arrival guarantee";
+- **remedy sentence — not written, awaiting the founder.**
+`src/modules/catalog/product.ts` still documents `freshnessGuarantee` as "the 7-day freshness
+guarantee" (catalog's comment, not rendered; for the TASK-172 / spec 009 §14 A9 amendment).
+
+**Held back (artboard copy not shipped, to keep `en` ≤ 5 % unreviewed; ship when approved):** the eyebrow tail "· for {country}"; the card step's legend "What should the card say?" (the legend reads "Printed card" today), help line, placeholder "Dear Mum, …" and preview pill "Your card, printed"; "We are showing these prices in the currency of the delivery country." under the add-ons; "Good to know"; the guarantee promise (see Freshness above); the guide eyebrow "A guide, written by us"; the guide steps 2–3 in the future tense ("Our florist will make it…", "They will see…", "The florist will photograph… we will email…").
 
 **Primitive changes (additive):** `registryLabel` takes optional values; `NoticeDocument` takes `letter`; `noticeShell` gains the letter constants; `contrast.ts` gains accent-strong on card and on butter; `TierSelector`/`DeliveryDatePicker` take an optional `step`; `PriceSummary` takes `equivalents`.
 
