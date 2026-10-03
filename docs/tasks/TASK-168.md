@@ -201,6 +201,19 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   its two new baselines through `visual:baselines`. Needs the fence to include that file; TASK-171
   also refreshes `product-*` baselines, so expect a rebase.
 
+- **2026-10-03 — the trending pick is the browser's correct pick; no honest markup change brings
+  the mobile homes under AC-15 (orchestrator, `open`; stop-and-report, nothing tuned).** Measured
+  on a local `next build` (table in `## Progress`): `/en`, `/en-gb`, `/de`, `/pl` 215 876 B each
+  against 204 800 B. Served `sizes` is the honest `trending` string; Chromium 153 takes the
+  smallest rung with density ≥ DPR (probed), so a 178 px card at DPR 2.625 needs 467 device px and
+  the ladder's next rung above 384 is 640. The trending five are 108 099 B at 640 w and would be
+  50 852 B at 384 w (−57 247 B → 158 629 B in all); the hero's 1080 w rung (34 819 B) misses its
+  412 px box by 1.5 device px, and would save only 6 316 B (still 209 560 B). Options, none taken:
+  **(i)** a 480 w rung in the `productHero` ladder (480/178 = 2.70 ≥ 2.625, so the browser would
+  take it honestly; new variants, so a spec 006 §2.5 change, a `media:variants` run and an upload
+  of one AVIF and one WebP per photographed asset in that crop); **(ii)** the budget stated per DPR or measured at a lower-DPR profile (a
+  spec change); **(iii)** fewer photographed trending cards (ruled out). Recommendation: (i).
+
 ## Progress
 
 One line per coherent step, newest last, written by the agent doing the work and pushed with
@@ -269,6 +282,39 @@ here.
   cards, ±1 px heights, toolbar 4.7 %), which passed CI's `visual` on `97b7a934` after the photo
   flip and are not this diff's; their PNGs and manifest entries stay as committed, so
   `pnpm visual:baselines --verify` on the committed manifest reports 104 of 104 matched.
+
+- 2026-10-03 (finisher, measured on `8b576dfb`, build slot, load 3.3): `next build` from
+  `.env.example` + `next start`, Playwright's own `Pixel 7` (412 × 839, DPR 2.625, Chromium
+  153.0.8010.12), the budget case's method (networkidle, scroll to bottom, networkidle). **Every
+  image response on `/en`** (all twelve fetched before the scroll; all twelve displayed):
+
+  | bytes | URL | `<img>`/`<source>` `sizes` served | rendered box | srcset rungs |
+  |---:|---|---|---:|---|
+  | 41 135 | `/media/home-hero/1200.avif` | `100vw` | 412 px | 384/640/828/1080/1200 |
+  | 27 685 | `media.flowersoverseas.com/media/fo-bq-003-hero/640.avif` | `(min-width: 768px) calc(20vw - 41.6px), calc(50vw - 28px)` | 178 px | 384/640/828 |
+  | 21 843 | `…/fo-bq-002-hero/640.avif` | same | 178 px | same |
+  | 20 752 | `…/fo-bq-001-hero/640.avif` | same | 178 px | same |
+  | 20 730 | `…/fo-bq-004-hero/640.avif` | same | 178 px | same |
+  | 17 089 | `…/fo-bq-005-hero/640.avif` | same | 178 px | same |
+  | 12 629 | `…/home-occasion-birthday/384.avif` | `(min-width: 768px) 17vw, 50vw` | 178 px | 384 only |
+  | 12 409 | `…/home-occasion-sympathy/384.avif` | same | 178 px | 384 only |
+  | 11 291 | `…/home-occasion-name-day/384.avif` | same | 178 px | 384 only |
+  | 10 476 | `…/home-occasion-anniversary/384.avif` | same | 178 px | 384 only |
+  | 10 199 | `…/home-occasion-just-because/384.avif` | same | 178 px | 384 only |
+  |  9 638 | `…/home-occasion-new-baby/384.avif` | same | 178 px | 384 only |
+  | **215 876** | total (`/en-gb`, `/de`, `/pl`: 215 876 each) | | | |
+
+  The served `sizes` is the new `trending` string on both the `<source>` and the `<img>`, and the
+  trending images are lazy but inside Chromium's load-in margin, so they load before any scroll.
+  **The cause is the pick rule, not the markup:** probed in the same Chromium with a 384/640/828
+  ladder, it takes the **smallest rung whose density ≥ DPR** — 384 w at `sizes` ≤ 146 px, 640 w
+  from 147 px to 243 px, 828 w from 244 px; no geometric-mean step. So the honest 178 px and the
+  old 206 px both need ≥ 467 device px and both get 640 w, which is why the bytes did not move;
+  the hero at 412 px needs 1 081.5 device px, 1.5 more than the 1080 rung, so it takes 1200 w.
+  No honest `sizes` fixes this (384 w needs a 146 px claim for a 178 px card). Stopped, escalated.
+- 2026-10-03: `tests/visual/product.spec.ts`'s `gallery-placeholder` block now reads
+  `/dev/components`'s PDP `Gallery` with `PRODUCT_GALLERY_PLACEHOLDER` (the e2e ruling); its two
+  linux baselines through `visual:baselines`.
 
 ## Result
 
