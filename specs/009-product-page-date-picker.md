@@ -486,8 +486,8 @@ spec 040 fronts the origin. The canonical stays the bare URL (§6, AC-17). Two c
 **A8 (2026-10-03, orchestrator ruling on the founder's "whatever makes sense"; implemented by
 TASK-171).** **The `preview` state shows no cutoff time.** In `preview`, the picker draws "When we
 open, you will order by {time} in {city} — the recipient's time, not yours" (key
-`delivery.cutoffPreview`, artboards `docs/design/product-desktop.dc.html` and
-`product-mobile.dc.html`). The delivery-facts row on the same page says "Order by — no cutoff,
+`delivery.cutoffPreview`, artboards `docs/design/wireframes/product-desktop.dc.html` and
+`docs/design/wireframes/product-mobile.dc.html`). The delivery-facts row on the same page says "Order by — no cutoff,
 because no florist has agreed to one". The two contradict each other. Ruled: the `cutoffPreview`
 line and its key are removed, and the facts row keeps its honest `none` text. A cutoff time renders
 only when `pickerState() === 'live'`, the same gate design-round Q1 (L389) puts on the four shipped
@@ -510,6 +510,8 @@ guarantee", but 10 of the 84 seed products carry `freshnessDays: 5`, so a fixed 
 false on those. Ruled: when the guarantee renders, it states **the product's own `freshnessDays`**
 and the remedy (we redeliver or refund). It never states a fixed number. A product with no
 `freshnessDays` renders no number. The number is an ICU plural parameter `{days}`, never a literal
-in the message. The guarantee is still not rendered in Phase 0 (TASK-127 records it as not drawn).
-This amendment binds whichever task renders it first. That task adds its AC and T rows here, with
-one case each for 5, 7 and absent. No current AC or T row changes.
+in the message. Design-round Q5 stands: the guarantee renders on the PDP, beside the substitution
+sentence. It is not drawn yet (TASK-127 records that), so **TASK-172** carries it: first the
+design, then the rendering. This amendment binds TASK-172. TASK-172 adds its AC and T rows here,
+with one case each for 5, 7 and absent. Its English copy goes to the founder for batch approval.
+No current AC or T row changes.

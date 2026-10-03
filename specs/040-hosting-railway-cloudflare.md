@@ -1265,15 +1265,26 @@ Trigger: three of AC-17's do-not-enable rows (Bot Fight Mode, the managed `robot
 Preference Sync, and AI-crawler blocking) live in `GET /zones/{zone_id}/bot_management`.
 Cloudflare serves that endpoint only to a token holding Bot Management Read or Write, so a token
 with the four listed scopes cannot check those rows (TASK-100 E-1).
-Corrected (orchestrator ruling, 2026-10-03, the founder delegated): AC-24's list is **exactly**
-Zone Settings Edit, DNS Edit, Cache Purge, Zone Read and **Zone → Bot Management → Read**, on the
-single zone. The fifth scope is read-only. The endpoint allow-list may admit one more entry,
+Corrected (orchestrator ruling, 2026-10-03, the founder delegated): AC-24's list, and §5's
+"**Token scopes, exactly**" list of four (L360–362), which this amendment supersedes, are
+**exactly** Zone Settings Edit, DNS Edit, Cache Purge, Zone Read and **Zone → Bot Management →
+Read**, on the single zone. The fifth scope is read-only. The endpoint allow-list may admit one more entry,
 `GET /zones/{zone_id}/bot_management`, and nothing else under `bot_management`. AC-17's three rows
 stay checked at the zone, so E-1's option (b) is rejected. A 403 on that endpoint is reported as
 `the token is missing scope Zone → Bot Management → Read`. **T-25** gains three cases: the
 allow-list contains that GET, a write verb on the same path fails the test, and the recorded 403
 maps to that scope name. The runbook's Z1 lists five scopes. Account scopes and Bot Management
 Write stay out.
+E-1's second question (orchestrator ruling, 2026-10-03): no zone token can read four of AC-17's
+rows, so each stays declared `checks: []` with its `checkedElsewhere` gate:
+- Cloudflare Access on production, and Access or basic auth on staging and PR environments:
+  checked by AC-25 / T-26 and the `preview` job's 401.
+- Workers and Snippets: checked by AC-18 / T-18's body byte-identity.
+- IP-geo redirects: checked by the `fo/no-geo-redirect` lint and TASK-101's rules.
+- Pay-per-crawl: an account-level setting, and account scopes stay banned.
+
+These rows meet AC-17's "any row" this way. In addition, the founder checks all four by eye in the
+Cloudflare dashboard at runbook step Z3, and the runbook records the result.
 Raised by: TASK-100 `## Escalations` E-1 (2026-09-30).
 
 **A6 — The nightly CI run gets its own concurrency group (§14 A3 AC-38, T-39; TASK-100, 2026-10-03).**

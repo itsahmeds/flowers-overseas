@@ -16,7 +16,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
   string changes. English unreviewed copy is at the 5 % gate: this task adds no English string.
 - Tests: the picker's `preview` case asserts the line is absent (mutate by putting it back → red);
   the `live` case still renders the cutoff; refresh only the visual baselines this diff changes.
-- Class: review-only (presentation and copy keys; no cutoff logic changes).
+- Class: full (breaker + reviewer): it changes how a cutoff renders, which is AC-8's honesty gate.
 
 ## Read
 
