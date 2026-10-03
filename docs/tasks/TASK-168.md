@@ -44,6 +44,16 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 One dated bullet per `/review`, newest last.
 
 _None recorded._
+- **From TASK-167 and its reviews (2026-10-03), carried by the orchestrator:** (1) spec 006 §14 A9:
+  alt text is required for every `approved` product asset in all four launch locales, so this task
+  writes `seed/data/alt/{en,en-gb,de,pl}.json` rows for each asset it approves, in the same change
+  (en is English site text: draft it from the prompt record's facets and list it for the founder
+  with the approval); (2) `pnpm media:upload` and `--verify` now act only on `approved` assets'
+  variants (PR 142), so after the approval flip, `--only <ids>` narrows to the batch; (3) the batch
+  split in `tests/unit/seed-media-manifest.test.ts` reads `content/imagery/remaining-images.csv`:
+  approving a row and regenerating the sheet moves it into batch 1 and turns the 2026-09-18
+  sign-off case red — handle that split; (4) the derived variants for batch 2 are in
+  `/Users/ahmed/dev/fo-wt-167/.local/media/` (or re-derive with `pnpm media:variants`).
 
 ## Escalations
 

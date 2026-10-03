@@ -183,3 +183,12 @@ gap closes, mark it ✅ with the PR, and don't delete the row.
   console error (13 per page on `/en`); on macOS, `/EN` first answered 200 from the prerendered
   file (case-insensitive filesystem) before 404, so the uppercase cases should be watched on Linux
   CI; `test-integration` skips three files "until spec 002".
+- **The shell guard misses file writes made through a Python heredoc.** TASK-167's implementer
+  reported that its `python3 - <<'EOF'` writes under `tests/` and `seed/` went through while the
+  main checkout's `TASKS.md` had no TASK-167 row (so the guard counted no active task). The header
+  of `.claude/hooks/bash_guard.py` lists what it does not catch; this case should be added there or
+  caught. A dev-OS guard change, to decide with the founder.
+- **A build-time warning per page floods the build log.** `catalog.fx_stale` is logged once per
+  rendered page; with every product page prebuilt (spec 009 §14 A6), PR 135's production build hit
+  Vercel's 4 MB build-log cap. Log it once per build. The stale FX snapshot (2026-09-08) is why
+  `en`/`de` product pages quote PLN.

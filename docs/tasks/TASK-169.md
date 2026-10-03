@@ -12,7 +12,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
   A8) and `flowersoverseas-backups`, with **no preview bucket**. Nothing is broken today: preview
   deploys read production's public images, and nothing on a preview writes to the bucket
   (uploads are the operator's `pnpm media:upload`, run by hand).
-- **What this task does:** a spec 006 §14 amendment (the next one, A9) that records the two real names as the
+- **What this task does:** a spec 006 §14 amendment (the next free one: A9 went to the alt-text ruling, so A10) that records the two real names as the
   binding ones (renaming the live media bucket would break `media.flowersoverseas.com`, and
   the backup bucket is already named in `src/lib/env.schema.ts`, for no gain), and states the preview position: either "previews read production's public
   images and never write" as the Phase 0 rule, or a `flowersoverseas-media-preview` bucket. The

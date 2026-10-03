@@ -94,6 +94,10 @@ One dated bullet per `/review`, newest last.
   (and `main()`'s catch exits 1). HOLE 8: `--verify --only` HEADs only the named approved objects.
   HOLE 9: the whole `runVerify()` success line is pinned, and the skipped count is taken over the
   `--only` selection, for upload and verify.
+- **From `/review 142` round 2 (2026-10-03), HOLE 10 ACCEPTABLE (copied by the orchestrator after
+  merge):** the explanatory end of the upload summary line ("only an approved asset is published")
+  is not asserted; the counts, the skipped count and the published set are. Nit for the next task
+  that touches `tests/unit/media-upload.test.ts`: assert the whole upload line once.
 
 ## Escalations
 
