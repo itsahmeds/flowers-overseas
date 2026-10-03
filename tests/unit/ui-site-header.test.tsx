@@ -6,12 +6,15 @@
  * rather than assumed.
  *
  * What is here and not in `tests/e2e/header.spec.ts`: every property that is a fact about the
- * markup — the currency projection, the "unpublished target is text, never a link" rule of AC-14
- * in **both** directions (the second one through a mocked registry, because the committed one has
- * nothing published and a rule only tested in its false branch is not tested), the search band
- * being text rather than a control (spec §14 A4), the reserved-height numbers, logical CSS and no
- * raw colour. Layout, stickiness, the
- * pre/post-hydration box, CLS and the four locales in a browser are the e2e file's.
+ * markup — the currency projection, AC-14 as spec 004 §14 A20 amends it in **both** directions
+ * (every target with a page is a link to it; every target without one has **no element at all**,
+ * not text that looks like a control; TASK-173), the reserved-height numbers, logical CSS and no
+ * raw colour. Layout, stickiness, the pre/post-hydration box, CLS and the four locales in a
+ * browser are the e2e file's.
+ *
+ * The category row's URLs come from the catalogue exactly as the document layout gets them:
+ * `headerListingTargets()` asked of `listingAlternatePaths()` (`listingHrefsFor()` below), so the
+ * unit render and the served header resolve the same pages.
  */
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -21,22 +24,30 @@ import { NextIntlClientProvider } from "next-intl";
 import { CATEGORIES } from "../../src/config/categories.ts";
 import { COMPANY } from "../../src/config/company.ts";
 import {
+  CATEGORY_ROW_ENTRY_LINKS,
   CATEGORY_ROW_LINK_IDS,
   MASTHEAD_LINK_IDS,
   SEARCH_LINK_ID,
+  SITE_LINKS,
   type SiteLinkId,
+  categoryRowLinkId,
+  isPublished,
   linkLabelKey,
   siteLink,
 } from "../../src/config/site-links.ts";
+import { listingAlternatePaths } from "../../src/modules/catalog";
 import { loadMessages, localePath } from "../../src/modules/i18n";
 import {
   HEADER_BAND_HEIGHTS,
   HEADER_HEIGHTS,
   HEADER_STICKY_HEIGHTS,
+  type HeaderListingHrefs,
   headerAccountItems,
   headerCategoryItems,
   headerCurrencyCode,
   headerEndClusterItems,
+  headerListingTargets,
+  headerSearchHref,
 } from "../../src/modules/ui/layout/header-model.ts";
 import { SiteHeader } from "../../src/modules/ui/layout/SiteHeader.tsx";
 
@@ -49,7 +60,36 @@ const headerLinkIds: readonly SiteLinkId[] = [
   SEARCH_LINK_ID,
 ];
 
-function render(locale: string, basketCount?: number): string {
+/** The layout's `headerListingHrefs()`, restated: the catalogue's answer per header target. */
+async function listingHrefsFor(
+  locale: (typeof LOCALES)[number],
+): Promise<HeaderListingHrefs> {
+  const entries = await Promise.all(
+    headerListingTargets().map(
+      async ({ id, identity }) =>
+        [
+          id,
+          (await listingAlternatePaths({ ...identity, locale }))[locale],
+        ] as const,
+    ),
+  );
+  return Object.fromEntries(entries.filter(([, path]) => path !== undefined));
+}
+
+/** Each launch locale's resolved listing URLs, computed once for the whole file. */
+const HREFS: Record<string, HeaderListingHrefs> = Object.fromEntries(
+  await Promise.all(
+    LOCALES.map(
+      async (locale) => [locale, await listingHrefsFor(locale)] as const,
+    ),
+  ),
+);
+
+function render(
+  locale: string,
+  basketCount?: number,
+  listingHrefs: HeaderListingHrefs = HREFS[locale] ?? {},
+): string {
   return renderToStaticMarkup(
     <NextIntlClientProvider
       locale={locale}
@@ -58,11 +98,72 @@ function render(locale: string, basketCount?: number): string {
     >
       <SiteHeader
         locale={locale}
+        listingHrefs={listingHrefs}
         {...(basketCount === undefined ? {} : { basketCount })}
       />
     </NextIntlClientProvider>,
   );
 }
+
+/** The opening tag of every element carrying `data-fo-header-item`, with its id. */
+function headerItems(html: string): { id: string; tag: string }[] {
+  return [
+    ...html.matchAll(/<(\w+)\s[^>]*data-fo-header-item="([^"]*)"[^>]*>/g),
+  ].map((match) => ({ id: match[2] ?? "", tag: match[0] }));
+}
+
+/**
+ * The exact header the founder's ruling draws, per locale (spec 008 §14 A14): the category row's
+ * eight entries with a page, each to its own page, in the canvas's order. Restated as data rather
+ * than derived, so a target that silently stops resolving is a diff here.
+ */
+const EXPECTED_ROW: Record<string, readonly (readonly [string, string])[]> = {
+  en: [
+    ["our-selection", "/en/poland/flowers"],
+    ["birthday", "/en/occasions/birthday"],
+    ["sympathy", "/en/occasions/sympathy"],
+    ["occasions", "/en/occasions"],
+    ["bouquets", "/en/flowers/hand-tied-bouquets"],
+    ["roses", "/en/flowers/roses"],
+    ["plants", "/en/flowers/plants"],
+    ["destinations", "/en/send-flowers-to"],
+  ],
+  "en-gb": [
+    ["our-selection", "/en-gb/poland/flowers"],
+    ["birthday", "/en-gb/occasions/birthday"],
+    ["sympathy", "/en-gb/occasions/sympathy"],
+    ["occasions", "/en-gb/occasions"],
+    ["bouquets", "/en-gb/flowers/hand-tied-bouquets"],
+    ["roses", "/en-gb/flowers/roses"],
+    ["plants", "/en-gb/flowers/plants"],
+    ["destinations", "/en-gb/send-flowers-to"],
+  ],
+  de: [
+    ["our-selection", "/de/polen/blumen"],
+    ["birthday", "/de/anlaesse/geburtstag"],
+    ["sympathy", "/de/anlaesse/trauer"],
+    ["occasions", "/de/anlaesse"],
+    ["bouquets", "/de/blumen/blumenstraeusse"],
+    ["roses", "/de/blumen/rosen"],
+    ["plants", "/de/blumen/pflanzen"],
+    ["destinations", "/de/blumen-verschicken"],
+  ],
+  pl: [
+    ["our-selection", "/pl/polska/kwiaty"],
+    ["birthday", "/pl/okazje/urodziny"],
+    ["sympathy", "/pl/okazje/kondolencje"],
+    ["occasions", "/pl/okazje"],
+    ["bouquets", "/pl/kwiaty/bukiety"],
+    ["roses", "/pl/kwiaty/roze"],
+    ["plants", "/pl/kwiaty/rosliny"],
+    ["destinations", "/pl/wyslij-kwiaty"],
+  ],
+};
+
+/** Every header link id that has no page today, so the header may draw nothing for it. */
+const UNPUBLISHED_HEADER_IDS: readonly SiteLinkId[] = SITE_LINKS.filter(
+  (link) => link.surfaces.includes("header") && !isPublished(link.id),
+).map((link) => link.id);
 
 /**
  * The whole opening tag that surrounds `index` — the element an attribute belongs to, so an
@@ -96,119 +197,99 @@ describe("headerCurrencyCode (AC-8)", () => {
   });
 });
 
-describe("the header's registry projections (AC-14)", () => {
-  it("projects every category row entry, in the canvas's order, with no target", () => {
-    const items = headerCategoryItems("en");
-    // Minus the rows gated on `anyDeliveryDatesOpen()` (spec 004 §14 A19; TASK-120): "Same-day
-    // delivery" is a delivery-timing claim, and no destination has an agreed cutoff, so the row
-    // is absent from the projection rather than reworded.
-    expect(items.map((item) => item.id)).toEqual(
-      CATEGORIES.filter((category) => !category.requiresDeliveryDates).map(
-        (category) => category.id,
-      ),
-    );
+describe("the header's registry projections (AC-14, spec 004 §14 A20)", () => {
+  it("projects the category row entries that have a page, each to its page, in the canvas's order", () => {
+    for (const locale of LOCALES) {
+      expect(
+        headerCategoryItems(locale, HREFS[locale]).map((item) => [
+          item.id,
+          item.href,
+        ]),
+        locale,
+      ).toEqual(EXPECTED_ROW[locale]);
+    }
+    const items = headerCategoryItems("en", HREFS.en);
+    // "Same-day delivery" is gated on `anyDeliveryDatesOpen()` (spec 004 §14 A19; TASK-120) and
+    // has no page either; "Add-ons" has no page. Neither is an item at all.
     expect(items.map((item) => item.id)).not.toContain("same-day-delivery");
-    // Phase 0: no shop, so not one entry may be a link.
-    expect(items.filter((item) => item.href !== undefined)).toEqual([]);
+    expect(items.map((item) => item.id)).not.toContain("add-ons");
     // The one accented entry is the gated one, so nothing in the rendered row is accented today.
     expect(items.filter((item) => item.accent)).toHaveLength(0);
   });
 
-  it("projects the account cluster and the end cluster with no target either", () => {
-    expect(headerAccountItems("en").map((item) => item.id)).toEqual([
-      ...MASTHEAD_LINK_IDS,
+  it("drops a published entry whose page does not exist in this locale", () => {
+    // The layout hands over only the pages the catalogue says exist. Withhold one — as `/de`
+    // would be withheld a hub that has no German slug — and the entry is gone, not text.
+    const withoutRoses = Object.fromEntries(
+      Object.entries(HREFS.de ?? {}).filter(
+        ([id]) => id !== "category-row-roses",
+      ),
+    );
+    const ids = headerCategoryItems("de", withoutRoses).map((item) => item.id);
+    expect(ids).not.toContain("roses");
+    expect(ids).toContain("bouquets");
+    // And with no catalogue answer at all, only the `route` entry is left.
+    expect(headerCategoryItems("de").map((item) => item.id)).toEqual([
+      "destinations",
     ]);
-    expect(headerEndClusterItems("en").map((item) => item.id)).toEqual([
-      ...CATEGORY_ROW_LINK_IDS,
-    ]);
-    for (const item of [
-      ...headerAccountItems("en"),
-      ...headerEndClusterItems("en"),
-    ]) {
-      expect(item.href, item.id).toBeUndefined();
+  });
+
+  it("asks the layout about exactly the published listing pages of the category row", () => {
+    expect(headerListingTargets().map((target) => target.id)).toEqual(
+      CATEGORY_ROW_ENTRY_LINKS.filter(
+        (link) => isPublished(link.id) && link.target.kind === "listingPage",
+      ).map((link) => link.id),
+    );
+    // Every one exists in every launch locale today: a target that stopped resolving would
+    // silently leave the row, so the set is pinned.
+    for (const locale of LOCALES) {
+      expect(Object.keys(HREFS[locale] ?? {}).sort(), locale).toEqual(
+        headerListingTargets()
+          .map((target) => target.id)
+          .sort(),
+      );
     }
   });
 
-  it("hides `My orders` below the `md` breakpoint, as the mobile artboard draws it", () => {
-    const mobile = headerAccountItems("en")
-      .filter((item) => item.showOnMobile)
-      .map((item) => item.id);
-    expect(mobile).toEqual(["sign-in", "basket"]);
+  it("projects no account item, no end-cluster item and no search while none has a page", () => {
+    for (const locale of LOCALES) {
+      expect(headerAccountItems(locale), locale).toEqual([]);
+      expect(headerEndClusterItems(locale), locale).toEqual([]);
+      expect(headerSearchHref(locale), locale).toBeUndefined();
+    }
   });
 });
 
 /**
- * AC-14's *other* direction: flipping a registry flag turns text into navigation **with no
- * template edit**. The committed registries publish nothing, so the flag is flipped in a mocked
- * module rather than in the repository, and the assertion is on the URL the header would emit.
+ * AC-14's *other* direction: flipping a registry flag turns an absent entry into navigation **with
+ * no template edit**. The committed registry publishes no account or for-florists page, so the
+ * flag is flipped in a mocked module, and the assertion is on the URL the header would emit.
  */
 describe("a published registry entry becomes a link with no template edit (AC-14)", () => {
   beforeEach(() => {
-    // The model is statically imported at the top of this file, so the cache has to go before a
-    // mocked registry can reach it.
     vi.resetModules();
   });
 
   afterEach(() => {
-    vi.doUnmock("../../src/config/categories.ts");
     vi.doUnmock("../../src/config/site-links.ts");
     vi.resetModules();
   });
 
-  it("resolves a published category under the locale's own shop segment", async () => {
-    vi.doMock("../../src/config/categories.ts", () => ({
-      CATEGORY_NAV_LABEL_KEY: "nav.categories.label",
-      CATEGORIES: [
-        {
-          id: "roses",
-          labelKey: "nav.category.roses",
-          published: true,
-          owningSpec: "008",
-          showOnMobile: true,
-          accent: false,
-        },
-        {
-          id: "occasions",
-          labelKey: "nav.category.occasions",
-          published: true,
-          owningSpec: "008",
-          showOnMobile: true,
-          accent: false,
-        },
-      ],
-      isCategoryPublished: () => true,
-    }));
-    const model = await import("../../src/modules/ui/layout/header-model.ts");
-
-    // `de`, deliberately: the localised segment comes from `src/config/locales.ts`, so a German
-    // category URL is German without this file knowing a single segment.
-    expect(model.headerCategoryItems("de").map((item) => item.href)).toEqual([
-      localePath("de", "shopCategory", "roses"),
-      localePath("de", "occasions"),
-    ]);
-  });
-
   it("resolves a published site link through `localePath` and never through a template", async () => {
+    const actual = await vi.importActual<
+      typeof import("../../src/config/site-links.ts")
+    >("../../src/config/site-links.ts");
     vi.doMock("../../src/config/site-links.ts", () => ({
-      CATEGORY_ROW_LINK_IDS: ["for-florists"],
-      MASTHEAD_LINK_IDS: [],
-      SEARCH_LINK_ID: "search",
-      isPublished: () => true,
-      linkLabelKey: (link: { labelKey: string }) => link.labelKey,
-      siteLink: () => ({
-        id: "for-florists",
-        labelKey: "nav.forFlorists",
-        target: { kind: "route", pageType: "forFlorists" },
-        published: true,
-        owningSpec: "011",
-        surfaces: ["header", "footer"],
-      }),
+      ...actual,
+      isPublished: (id: SiteLinkId) =>
+        id === "for-florists" || actual.isPublished(id),
     }));
     const model = await import("../../src/modules/ui/layout/header-model.ts");
 
     expect(model.headerEndClusterItems("pl").map((item) => item.href)).toEqual([
       localePath("pl", "forFlorists"),
     ]);
+    expect(headerEndClusterItems("pl")).toEqual([]);
   });
 });
 
@@ -228,20 +309,21 @@ describe("the rendered header (AC-7, AC-14)", () => {
     }
   });
 
-  it("renders every unpublished target as text and links nothing but the home, the phone, WhatsApp and the switcher", () => {
+  it("links every category row entry with a page, and draws no element for any target without one", () => {
     for (const locale of LOCALES) {
       const html = render(locale);
       const internal = hrefs(html).filter((href) => href.startsWith("/"));
       const external = hrefs(html).filter((href) => !href.startsWith("/"));
 
-      // Internal: the lockup plus the switcher's three sibling locales. Nothing else — no
-      // category, no account item, no `For florists` (AC-14).
-      expect(internal.toSorted()).toEqual(
+      // Internal: the lockup, the switcher's three sibling locales and the category row — and
+      // nothing else: no account item, no `For florists`, no search (AC-14, §14 A20).
+      expect(internal.toSorted(), locale).toEqual(
         [
           localePath(locale, "home"),
           ...LOCALES.filter((other) => other !== locale).map((other) =>
             localePath(other, "home"),
           ),
+          ...(EXPECTED_ROW[locale] ?? []).map(([, href]) => href),
         ].toSorted(),
       );
       // External: the help channel, both built from the one E.164 number in `company.ts`.
@@ -250,16 +332,67 @@ describe("the rendered header (AC-7, AC-14)", () => {
         `tel:${COMPANY.contact.phoneE164}`,
       ]);
 
-      // And each unpublished entry is present as *text*, keyed by its registry id.
-      for (const item of [
-        ...headerCategoryItems(locale),
-        ...headerAccountItems(locale),
-        ...headerEndClusterItems(locale),
-      ]) {
-        expect(html, `${locale}/${item.id}`).toContain(
-          `data-fo-header-item="${item.id}"`,
+      // Every keyed item is an `<a>` to its page — not one `<span>` dressed as an entry.
+      const items = headerItems(html);
+      expect(
+        items.map(({ id }) => id),
+        locale,
+      ).toEqual((EXPECTED_ROW[locale] ?? []).map(([id]) => id));
+      for (const { id, tag } of items) {
+        expect(tag, `${locale}/${id}`).toMatch(/^<a\s/);
+      }
+    }
+  });
+
+  it("draws nothing — no link, no text, no label — for a header target with no page", () => {
+    const en = loadMessages("en", ["nav"]) as {
+      nav: Record<string, unknown>;
+    };
+    const unpublishedCategories = CATEGORIES.filter(
+      (category) => !isPublished(categoryRowLinkId(category.id)),
+    );
+    expect(unpublishedCategories.map((category) => category.id)).toEqual([
+      "add-ons",
+      "same-day-delivery",
+    ]);
+    expect(UNPUBLISHED_HEADER_IDS).toEqual(
+      expect.arrayContaining([
+        "search",
+        "sign-in",
+        "my-orders",
+        "basket",
+        "for-florists",
+      ]),
+    );
+    for (const locale of LOCALES) {
+      const html = render(locale);
+      for (const id of UNPUBLISHED_HEADER_IDS) {
+        expect(html, `${locale}/${id}`).not.toContain(
+          `data-fo-header-item="${id}"`,
         );
       }
+      for (const category of unpublishedCategories) {
+        expect(html, `${locale}/${category.id}`).not.toContain(
+          `data-fo-header-item="${category.id}"`,
+        );
+      }
+    }
+    // The words the founder read as dead controls are not in the document at all.
+    const html = render("en");
+    const account = en.nav.account as Record<string, string>;
+    const category = en.nav.category as Record<string, string>;
+    const search = en.nav.search as Record<string, string>;
+    for (const word of [
+      account.signIn,
+      account.orders,
+      "Basket (",
+      en.nav.forFlorists as string,
+      category.addOns,
+      search.label,
+      search.help,
+    ]) {
+      expect(word, "a message the check reads").toBeTruthy();
+      expect(html, String(word)).not.toContain(String(word));
     }
   });
 
@@ -273,58 +406,26 @@ describe("the rendered header (AC-7, AC-14)", () => {
     }
   });
 
-  it("renders the search band as the artboards draw it: text, and not one form control (§14 A4)", () => {
+  it("draws no search band and no menu glyph: nothing that looks like a control and is not (§14 A20)", () => {
     const html = render("en");
-
-    // No control at all — the amendment's whole point. A `<form>` with no `action` navigates to
-    // the current URL at zero JavaScript, and a `disabled` submit is pixel-identical to an
-    // enabled one, so the band renders what the artboards literally draw instead.
+    // No search band while search has no page — not even the text shaped like a field that §14
+    // A4 drew — and no form control of any kind.
+    expect(html).not.toContain("data-fo-header-search");
     for (const control of [
       "<form",
       "<input",
-      '<button type="submit"',
+      "<button",
       "<select",
       "<textarea",
       "placeholder=",
       "<label",
+      'role="search"',
     ]) {
       expect(html, control).not.toContain(control);
     }
-
-    // What it does render: the placeholder sentence in the field-shaped box, `Search` in the
-    // button-shaped box, and the honest explanation for a screen reader.
-    const band = html.slice(html.indexOf("data-fo-header-search"));
-    expect(band).toContain("Search flowers, occasions, a city or a country");
-    expect(band).toContain(">Search<");
-    expect(band).toContain("Search opens when the shop does.");
-    expect(siteLink(SEARCH_LINK_ID).descriptionKey).toBe("nav.search.help");
-  });
-
-  it("renders the menu glyph as decoration, not as a control (`/review 31`, TASK-055)", () => {
-    const html = render("en");
-    // It shipped as `<button disabled>`: pixel-identical to an enabled button and doing nothing
-    // when pressed. There is nothing to disclose until spec 008 publishes a nav target, so there
-    // is no button at all — the same answer §14 A4 gave the search band.
-    const menu = html.slice(html.indexOf("data-fo-header-menu"));
-    const openTag = html.slice(
-      html.lastIndexOf("<", html.indexOf("data-fo-header-menu")),
-      html.indexOf(">", html.indexOf("data-fo-header-menu")) + 1,
-    );
-    expect(openTag).toContain("<span");
-    expect(openTag).toContain('aria-hidden="true"');
-    expect(openTag).toContain('data-fo-header-menu="unpublished"');
-    // The 44 px box the artboard reserves stays, so publishing the menu moves no pixel.
-    expect(openTag).toContain("min-h-[44px]");
-    expect(menu).toContain("<svg");
-    // And no button anywhere in the header: the whole component is zero client JavaScript and
-    // has no control left that does nothing.
-    expect(html).not.toContain("<button");
+    // No menu glyph: it opened nothing (`/review 31` made it decoration; §14 A20 removes it).
+    expect(html).not.toContain("data-fo-header-menu");
     expect(html).not.toContain('aria-label="Menu"');
-  });
-
-  it("prints the basket count through the catalogue's `{count, number}` argument", () => {
-    expect(render("en")).toContain("Basket (0)");
-    expect(render("en", 3)).toContain("Basket (3)");
   });
 
   it("hosts spec 003's `LocaleSwitcher` unchanged: four entries, the current one not a link", () => {
@@ -351,7 +452,7 @@ describe("the rendered header (AC-7, AC-14)", () => {
     );
     expect(categories).not.toContain("data-fo-header-switcher");
     expect(categories).not.toContain("data-fo-header-currency");
-    expect(categories).toContain('data-fo-header-item="for-florists"');
+    expect(categories).toContain('data-fo-header-item="roses"');
   });
 
   it("styles the switcher from the wrapper: 44 px targets, no underline, `src/modules/i18n` untouched", () => {
@@ -389,34 +490,47 @@ describe("the rendered header (AC-7, AC-14)", () => {
     const { utility, mastheadMobile, mastheadDesktop, searchMobile } =
       HEADER_BAND_HEIGHTS;
     // The drift guard: the numbers in the class names are the numbers in the model, which is
-    // what `tests/e2e/header.spec.ts` measures the served header against.
+    // what `tests/e2e/header.spec.ts` measures the served header against. With no search band
+    // (§14 A20) the mobile masthead is one row.
     expect(html).toContain(`min-h-[${String(utility)}px]`);
-    expect(html).toContain(
+    expect(html).toContain(`grid-rows-[${String(mastheadMobile)}px]`);
+    expect(html).not.toContain(
       `grid-rows-[${String(mastheadMobile)}px_${String(searchMobile)}px]`,
     );
     expect(html).toContain(`md:grid-rows-[${String(mastheadDesktop)}px]`);
-    expect(html).toContain(
+    // On the category band's **own** element (`/break 162` hole 2): a class matched anywhere in
+    // the header passed with the band reverted to 28 px, because every link carries 44 px too.
+    const band = tagAt(html, html.indexOf('data-fo-header-band="categories"'))
+      .split(/\s+/u)
+      .flatMap((part) => part.replace(/^class="|"$/gu, "").split(" "));
+    expect(band).toContain(
       `min-h-[${String(HEADER_BAND_HEIGHTS.categoryMobile)}px]`,
     );
-    expect(html).toContain(
+    expect(band).toContain(
       `md:min-h-[${String(HEADER_BAND_HEIGHTS.categoryDesktop)}px]`,
     );
-    expect(HEADER_HEIGHTS).toEqual({ mobile: 245, desktop: 183 });
-    // The sum above is now two boxes (§14 A4's addendum): 113 + 132 and 45 + 138.
-    expect(HEADER_STICKY_HEIGHTS).toEqual({ mobile: 132, desktop: 138 });
+    expect(band.filter((name) => /^min-h-\[/u.test(name))).toEqual([
+      `min-h-[${String(HEADER_BAND_HEIGHTS.categoryMobile)}px]`,
+    ]);
+    // TASK-173: 113 + 50 + 44 + 2 on mobile, the search band gone and the row at 44 px.
+    expect(HEADER_BAND_HEIGHTS.categoryMobile).toBe(44);
+    expect(HEADER_HEIGHTS).toEqual({ mobile: 209, desktop: 183 });
+    // The sum above is two boxes (§14 A4's addendum): 113 + 96 and 45 + 138.
+    expect(HEADER_STICKY_HEIGHTS).toEqual({ mobile: 96, desktop: 138 });
   });
 
   it("gives every rendered link the 44 px target from the header's own wrapper (§14 A4)", () => {
     const html = render("en");
     // Every `<a>` the header renders itself: the WhatsApp icon-link (44 × 44, it has no text),
-    // the `tel:` link and the masthead lockup. The switcher's three links are covered by the
-    // `[&_a]:min-h-[44px]` wrapper asserted above; `tests/e2e/header.spec.ts` measures all of
-    // them in a browser at 390 px and 1440 px, which is the assertion that cannot be faked.
+    // the `tel:` link, the masthead lockup and the eight category row links. The switcher's three
+    // links are covered by the `[&_a]:min-h-[44px]` wrapper asserted above;
+    // `tests/e2e/header.spec.ts` measures all of them in a browser at 390 px and 1440 px, which is
+    // the assertion that cannot be faked.
     const anchors = [...html.matchAll(/<a\s[^>]*>/g)].map((match) => match[0]);
     const own = anchors.filter(
       (anchor) => !anchor.includes('class="underline"'),
     );
-    expect(own).toHaveLength(3);
+    expect(own).toHaveLength(3 + (EXPECTED_ROW.en ?? []).length);
     for (const anchor of own) {
       expect(anchor, anchor).toContain("min-h-[44px]");
     }

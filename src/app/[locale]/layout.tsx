@@ -11,11 +11,14 @@ import {
   routableLocale,
   routableLocaleCodes,
 } from "@/modules/i18n";
-import { occasionsIndexHref } from "@/modules/catalog";
+import { isLocaleCode } from "@/config/locales";
+import { listingAlternatePaths, occasionsIndexHref } from "@/modules/catalog";
 import {
   ConsentBanner,
   fontVariables,
   footerView,
+  type HeaderListingHrefs,
+  headerListingTargets,
   SiteFooter,
   SiteHeader,
   SkipLink,
@@ -99,6 +102,28 @@ export async function generateMetadata({
   };
 }
 
+/**
+ * The header's listing-page links that **exist** in this locale (spec 008 §14 A14, spec 004 §14
+ * A20; TASK-173): each identity the header names, asked of the catalogue's one existence rule
+ * through `listingAlternatePaths()`, and kept only where it answers with a path here. The footer's
+ * `occasionsIndexHref()` seam, applied to the header's category row — composed here because this
+ * file is the one place both modules are in scope. A pseudo-locale has no listing page, so it gets
+ * none.
+ */
+async function headerListingHrefs(locale: string): Promise<HeaderListingHrefs> {
+  if (!isLocaleCode(locale)) return {};
+  const resolved = await Promise.all(
+    headerListingTargets().map(
+      async ({ id, identity }) =>
+        [
+          id,
+          (await listingAlternatePaths({ ...identity, locale }))[locale],
+        ] as const,
+    ),
+  );
+  return Object.fromEntries(resolved.filter(([, path]) => path !== undefined));
+}
+
 export default async function LocaleLayout({
   children,
   params,
@@ -146,9 +171,14 @@ export default async function LocaleLayout({
             card with the focus ring above every other layer. Same target, same message key. */}
         <SkipLink>{t("skipToContent")}</SkipLink>
         {/* The commerce header of spec 004 §13's resolution note (TASK-048): one Server
-            Component, no client JavaScript, a reserved height per breakpoint, and every
-            unpublished registry target rendered as text (AC-7, AC-8, AC-14). */}
-        <SiteHeader locale={locale.code} />
+            Component, no client JavaScript, a reserved height per breakpoint, and no element at
+            all for a target with no page (AC-7, AC-8, AC-14; spec 004 §14 A20). Which category
+            hubs, occasion hubs and shop root exist here is the catalogue's answer, resolved
+            above and handed in (TASK-173). */}
+        <SiteHeader
+          locale={locale.code}
+          listingHrefs={await headerListingHrefs(locale.code)}
+        />
         {children}
         {/* The colophon of spec 004 §5.3, on every localised document (AC-9): a Server
             Component with zero client JavaScript, whose links, company identity and payment

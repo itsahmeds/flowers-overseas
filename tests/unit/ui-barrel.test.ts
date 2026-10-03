@@ -30,8 +30,9 @@ describe("src/modules/ui barrel", () => {
         "Icon",
         "MIRRORED_IN_RTL",
         "Mark",
-        // chrome (TASK-048)
+        // chrome (TASK-048), and the header's listing targets the layout resolves (TASK-173)
         "SiteHeader",
+        "headerListingTargets",
         // layout primitives
         "CONTAINER_WIDTHS",
         "Cluster",

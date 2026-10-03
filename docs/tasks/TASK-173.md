@@ -58,7 +58,19 @@ Raised by the implementer, 2026-10-03, before any code was written. Nothing unde
 
 - 2026-10-03: read the brief, `site-links.ts`, `categories.ts`, `SiteHeader`/`header-model`, `footerView`, `TrendingRow`, the catalog route resolver and the layout. Blocked by Escalations 1 and 2 before the first test; plan recorded above.
 - 2026-10-03: rulings received and recorded; waiting for PR 163 to merge before the first code change.
+- 2026-10-03: PR 163 merged; `origin/main` merged in. `7fc7ff89`: `site-links.ts` gains the `listingPage` target kind, `DEMO_DESTINATION_ISO2` and ten `category-row-*` rows; the header draws only entries that resolve (layout passes `listingHrefs` from `listingAlternatePaths()`), no search band, account cluster or menu glyph; the footer drops unlinked entries and empty columns; trending cards link via `listProductPages()` from the home page. Unit tests rewritten; mutations (account as text, footer as text, unpublish roses, demo country DE) each went red.
+- 2026-10-03: `f0a00646`: e2e — exact header heights 209/96 (measured), the chrome crawl in `links.spec.ts`, trending links in `home.spec.ts`, footer/a11y nav counts; AC-21 crawl re-pinned: TARGETS grew in every locale (+3 category hubs; `de`/`pl` +7 shop roots, +140 country categories), WAIVED shrank to 20 category hubs per locale, escalations 2 and 3 closed. Local build + full e2e/a11y green except the port-bound `seo-canonical` cases (site URL 3000 vs the local 3173). Next: visual baselines via the label flow.
+- 2026-10-03: `61be2308`: 55 Linux baselines from run 37135761767 (`--verify` 104/104, `--check` clean). PR marked ready with `ci:full`.
 
 ## Result
 
-_Pending._
+PR #162. Every header, footer and home control is a link to a page answering 200, or is not drawn.
+
+- **Header category row** (all four launch locales): Our selection → Poland shop root; Birthday, Sympathy → occasion hubs; Occasions → occasions index; Bouquets, Roses, Plants → category hubs (`bouquet`, `roses`, `plant`); Destinations → destinations hub. Add-ons and Same-day: not drawn.
+- **Not drawn:** search band, Sign in, My orders, Basket, For florists, mobile menu glyph; footer The guarantee, Delivery times, the Company column, the legal row's four links.
+- **Footer:** Sending → Destinations, Occasions. **Home:** five trending cards → their Poland product pages.
+- **AC-21 crawl:** TARGETS grew (+3 category hubs everywhere; `de`/`pl` +7 shop roots, +140 country categories); WAIVED shrank to 20 category hubs per locale; TASK-113 escalations 2 and 3 closed.
+- **Expensive gate run locally, once, in the build slot** (load ~6–8, 17 at release): `next build` + `next start` + e2e/a11y, to measure the exact new header heights (mobile 209/96, desktop 183/138) and the crawl's new reach for the pins. Only the port-bound `seo-canonical` cases failed (site URL 3000, server on 3173).
+- **Visual:** the committed set is 36 Linux baselines from run 37141887382 (`284aa50c`), re-rendered after TASK-168's photos merged in, because both PRs had changed the same screenshots; `--verify` 104/104. The first refresh (run 37135761767, 55 images, `61be2308`) is superseded where they overlap. Opened: 14 from the first run, 3 from the second (home trending, listing grid, product sticky); every change traced by pixel diff.
+- **`/break 162` round 1 holes closed:** trending with `product` unpublished renders no `<a>` (`ui-home-gated`); the category band's own element carries `min-h-[44px]` (`ui-site-header`); both red under mutation. The footer absence check is now built from the registry in four locales (it had missed Cookies).
+- **Follow-ups for the orchestrator:** `src/config/categories.ts`'s `published` flags and `isCategoryPublished()` are now dead (outside the fence); the home's occasion tiles are still not links (outside the fence).

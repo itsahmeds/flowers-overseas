@@ -8,8 +8,9 @@
  *  - **`isPublished()` and `isCompanyRegistered()` stay the only consumer paths for their flags**
  *    (§5.1). The component never reads `link.published` or `company.registered`: it reads a
  *    `href` that is either present (published, so a real URL from `localePath()`) or absent
- *    (unpublished, so the label renders as text — AC-14, "never a dead link, never a
- *    disabled-looking one"), and an `identity` block that is either present or absent.
+ *    (unpublished, so the entry is not drawn — AC-14 as spec 004 §14 A20 amends it: "never a
+ *    dead link, never a disabled-looking one", and no text either), and an `identity` block that
+ *    is either present or absent.
  *  - the five footer states of §5.3 are reachable **without** editing the registries: the gallery
  *    and the unit tests build a `FooterView` and hand it in, so `links-populated` and
  *    `company-registered` are testable a year before 007 publishes a page or the OÜ exists.
@@ -41,7 +42,7 @@ import { localePath } from "@/modules/i18n";
 export interface FooterLinkView {
   readonly id: string;
   readonly labelKey: string;
-  /** Present iff `isPublished(id)`; absent means "render the label as text" (AC-14). */
+  /** Present iff `isPublished(id)`; absent means "do not draw it" (AC-14, 004 §14 A20). */
   readonly href?: string;
 }
 
@@ -97,7 +98,7 @@ function footerGroups(): readonly SiteLinkGroup[] {
 }
 
 /**
- * A link's URL, or `undefined`. Unpublished → `undefined`, so the label renders as text; a
+ * A link's URL, or `undefined`. Unpublished → `undefined`, so the entry is not drawn; a
  * published link's `target.kind` is `"route"` by `SiteLinkSchema`'s refinement, which is what
  * makes "published implies a real page type" a schema fact rather than a hope here.
  */
@@ -112,7 +113,7 @@ function hrefFor(
   // link at this page type; whether the page is *there in this locale* is a fact only the owning
   // module knows, and `src/modules/ui` may not import it (`plan/01` §5 — the catalogue depends on
   // the UI, not the other way round). So the caller hands in the ids whose page is missing here,
-  // and the row renders as text exactly as an unpublished one does. `/de/anlaesse` and
+  // and the entry is not drawn, exactly as an unpublished one is not. `/de/anlaesse` and
   // `/pl/okazje` are 404s while no occasion carries a German or Polish slug.
   if (unavailable.has(link.id)) return undefined;
   return localePath(locale, link.target.pageType);
@@ -207,7 +208,7 @@ export interface FooterViewOptions {
   readonly paymentMethods?: readonly PaymentMethod[];
   /**
    * Link ids whose target is **published but does not exist in this locale** (spec 008 AC-20,
-   * spec 004 AC-14; TASK-113). Their labels render as text, exactly as an unpublished row's do.
+   * spec 004 AC-14; TASK-113). They are not drawn, exactly as an unpublished row is not.
    *
    * The layout supplies it, because only a module that may read the catalogue can answer "is
    * there an occasions index in German" — see `hrefFor()`. Empty by default, so every existing
