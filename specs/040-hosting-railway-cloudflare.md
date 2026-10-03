@@ -1258,6 +1258,60 @@ in `docs/runbooks/railway-cloudflare-setup.md`, the expected-red line of §6 and
 T-44's pasted run may carry the staging line. It starts after PR 121 merges.
 Raised by: TASK-155 `## Escalations` (2026-09-28); the founder's decision of 2026-09-29.
 
+**A5 — The Cloudflare token gets a fifth, read-only scope (§9 AC-24, AC-17; §10 T-25; TASK-100, 2026-10-03).**
+Original: AC-24 (L611) says the script works with "a token holding exactly Zone Settings Edit, DNS
+Edit, Cache Purge and Zone Read on the single zone".
+Trigger: three of AC-17's do-not-enable rows (Bot Fight Mode, the managed `robots.txt` / Bot
+Preference Sync, and AI-crawler blocking) live in `GET /zones/{zone_id}/bot_management`.
+Cloudflare serves that endpoint only to a token holding Bot Management Read or Write, so a token
+with the four listed scopes cannot check those rows (TASK-100 E-1).
+Corrected (orchestrator ruling, 2026-10-03, the founder delegated): AC-24's list, and §5's
+"**Token scopes, exactly**" list of four (L360–362), which this amendment supersedes, are
+**exactly** Zone Settings Edit, DNS Edit, Cache Purge, Zone Read and **Zone → Bot Management →
+Read**, on the single zone. The fifth scope is read-only. The endpoint allow-list may admit one more entry,
+`GET /zones/{zone_id}/bot_management`, and nothing else under `bot_management`. AC-17's three rows
+stay checked at the zone, so E-1's option (b) is rejected. A 403 on that endpoint is reported as
+`the token is missing scope Zone → Bot Management → Read`. **T-25** gains three cases: the
+allow-list contains that GET, a write verb on the same path fails the test, and the recorded 403
+maps to that scope name. The runbook's Z1 lists five scopes. Account scopes and Bot Management
+Write stay out.
+E-1's second question (orchestrator ruling, 2026-10-03): no zone token can read four of AC-17's
+rows. Each stays declared `checks: []` with its `checkedElsewhere` gate (row names as in
+`config/cloudflare/zone-settings.json`):
+- "Cloudflare Access on production": checked by AC-25 / T-26.
+- "Cloudflare Access / basic-auth on staging and PR": checked by AC-25 / T-26 and the `preview`
+  job's 401 (AC-26).
+- "Workers / Snippets injecting HTML": checked by AC-18 / T-18's body byte-identity.
+- "IP-geolocation redirect rules; any use of `cf-ipcountry` to route": checked by the
+  `fo/no-geo-redirect` lint and TASK-101's rules.
+
+Pay-per-crawl is not a row of its own. It is part of the AI-crawler row ("AI Scrapers & Crawlers
+blocking / AI Labyrinth / pay-per-crawl …"), whose `bot_management` checks read the zone. This is
+how the four rows meet AC-17's "any row". In addition, TASK-100 adds a runbook step in which the
+founder checks the four rows by eye in the Cloudflare dashboard and records the result in
+TASK-100's brief.
+Raised by: TASK-100 `## Escalations` E-1 (2026-09-30).
+
+**A6 — The nightly CI run gets its own concurrency group (§14 A3 AC-38, T-39; TASK-100, 2026-10-03).**
+Original: A3's AC-38 (L1087–1096) says `ci.yml`'s group is `ci-<workflow>-<PR number or ref>` with
+`cancel-in-progress: true`, and that "the setting is unchanged". T-39 (L1184) pins "the group
+expression of AC-38".
+Trigger: TASK-100 adds a nightly `schedule`. A scheduled run's ref is `refs/heads/main`, so it
+lands in the same group as the push runs. A nightly run that starts during a push run cancels it,
+and AC-37's gate 1 then finds no green run on that SHA until `gh run rerun`. A push during a
+nightly run cancels the nightly run (TASK-100 E-2).
+Corrected (orchestrator ruling, 2026-10-03): the group is
+`group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || (github.event_name == 'schedule' && 'nightly') || github.ref }}`,
+and `cancel-in-progress: true` is unchanged. Pull requests and pushes resolve to the same groups as
+before, and two pushes to `main` still cancel each other as AC-38 accepts. A nightly run can cancel
+only an earlier nightly run. AC-38's "the setting is unchanged" now reads "unchanged except for
+A6's `schedule` branch". **T-39** pins the new expression verbatim and evaluates it in three
+contexts: `schedule` gives `ci-<workflow>-nightly`, a push to `main` gives
+`ci-<workflow>-refs/heads/main`, and a pull request gives `ci-<workflow>-<number>`. The three are
+distinct, and removing the `schedule` branch turns the case red. The PR that adds the `schedule`
+trigger (TASK-100) carries the change.
+Raised by: TASK-100 `## Escalations` E-2 (2026-09-30).
+
 ## 15. Task estimate (input to `/plan-tasks`)
 
 Eight one-day tasks. Dependencies in brackets; tasks 3 and 4 are independent of each other, and 6
