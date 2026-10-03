@@ -680,10 +680,13 @@ export function forbiddenModuleHits(
  * Bytes alone would not have caught it: 4.6 KB is inside the noise of a framework upgrade. So the
  * assertion is about *content*, and it is taken from the catalogue at run time rather than
  * hard-coded, so a copy edit cannot make it quietly vacuous.
+ *
+ * `finder` left the list with TASK-177: the v1 finder and its island are gone, and what remains
+ * of the namespace is two short labels the server-rendered sentence picker reads ("Country",
+ * "Continue"), none of them long enough to be a credible probe. `home.*` still covers the picker.
  */
 export const CLIENT_FORBIDDEN_NAMESPACES = [
   "home",
-  "finder",
   "catalog",
   "media",
 ] as const;

@@ -581,8 +581,6 @@ export const GATED_STATES = {
 
 export const HOME_STATES = {
   hero: "HomeHero \u00b7 default \u2014 the reserved full-bleed photo slot with its caption and no `<img>` (plan/10 \u00a73), the paper card at the inline start on the desktop artboard and overlapping the slot by 56 px on the mobile one, the eyebrow, the one `<h1>` (the text LCP element) and the proposition.",
-  finder:
-    "FinderCard \u00b7 default \u2014 a `get` form: the country field is a native `<input list>` over a `<datalist>` of the seven destinations until the island hydrates, then a filtered list with a polite live region; town/postcode is optional; the date field carries no default, because this document is ISR-cached and a prefilled date goes stale. `Continue` is neutral and targets the destination list while no corridor page is published.",
   proof:
     "ProofRow \u00b7 default \u2014 the four claims of the round-2 artboard, in the first person, 2-up on the mobile artboard and 4-up on the desktop one. The delivery-photo fact renders no photo.",
 } as const;

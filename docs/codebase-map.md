@@ -80,6 +80,7 @@ task actually touches.
 | `api/csp-report/route.ts` | `POST /api/csp-report` (spec 004 §5.2, AC-23, ADR-0016; TASK-046) | spec 004 |
 | `api/health/route.ts` | `GET /api/health` (spec 001 §5.2, §5.4, AC-14, TASK-006) | spec 001 |
 | `api/reminders/route.ts` | `POST /api/reminders` — the occasion-reminder signup stub (spec 004 design… | spec 004 |
+| `api/send/[locale]/route.ts` | `GET /api/send/{locale}` — the home sentence picker's action (spec 004 §14… | spec 004 |
 | `global-error.tsx` | The last-resort 500 document (spec 003 §5.3 "and `src/app/global-error.tsx`… | spec 003 |
 | `layout.tsx` | App-root layout (spec 003 §5.3 "Recommended file layout"; TASK-034) | spec 003 |
 | `not-found.tsx` | The `.label` metadata line: the status code this document is served with, and… | spec 003 |
@@ -140,7 +141,7 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 228 |
+| `tests/unit/` | 229 |
 | `tests/integration/` | 10 |
 | `tests/contract/` | 7 |
 | `tests/e2e/` | 36 |

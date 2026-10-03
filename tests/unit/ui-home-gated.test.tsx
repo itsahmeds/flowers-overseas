@@ -51,6 +51,8 @@ const NAMESPACES = [
   "home",
   "finder",
   "destinations",
+  "destinationsHub",
+  "nav",
   "media",
   "a11y",
   "common",
@@ -120,7 +122,10 @@ function trendingHeading(html: string): string | undefined {
 
 /** The basis line after the picks' list, or `undefined` when the row renders none. */
 function trendingBasis(html: string): string | undefined {
-  const inner = /<\/ul><p[^>]*>([^<]*)<\/p><\/section>$/u.exec(html)?.[1];
+  // v2 (TASK-177): the basis line sits under the heading, as the artboard draws it.
+  const inner = /<p[^>]*data-fo-trending-basis-line[^>]*>([^<]*)<\/p>/u.exec(
+    html,
+  )?.[1];
   return inner === undefined ? undefined : text(inner).trim();
 }
 
@@ -130,7 +135,8 @@ describe("the trending row is gated on real orders", () => {
     const rendered = text(html);
 
     expect([...html.matchAll(/<li/g)]).toHaveLength(TRENDING_PICKS.length);
-    expect(rendered).toContain("Trending now");
+    // v2 (TASK-177): the eyebrow is the destination, in the catalogue's own word ("For Poland").
+    expect(html).toMatch(/<p class="eyebrow[^"]*">Poland<\/p>/);
     // Spec §3/§8: nothing here knows what a product is and no price is rendered — not a figure,
     // not a "starting at", not a currency symbol, not the canvas's grey price bar.
     expect(rendered).not.toMatch(/starting at|from\s*€|€|zł|£|\bfrom \d/iu);
@@ -254,7 +260,7 @@ describe("the trending row is gated on real orders", () => {
           html.indexOf(`data-fo-trending-pick="${pick.id}"`),
         );
         expect(card.slice(0, card.indexOf("</li>")), pick.id).toMatch(
-          /<a class="gap-sm flex flex-col" href="[^"]+">[\s\S]*data-fo-media-slot[\s\S]*<\/a>/u,
+          /<a class="block no-underline[^"]*" href="[^"]+">[\s\S]*data-fo-media-slot[\s\S]*<\/a>/u,
         );
       }
     }
@@ -439,16 +445,10 @@ describe("the destinations grid", () => {
     }
   });
 
-  it("names Poland's five cities and no city anywhere else (plan/10 §3)", () => {
+  it("names no city at all: the v2 chips claim no coverage (plan/10 §3)", () => {
     const rendered = text(grid("en"));
 
-    expect(rendered).toContain("Warszawa · Kraków · Wrocław · Gdańsk · Poznań");
-    // A city line exists exactly once, because exactly one destination is `live`.
-    expect(
-      [...grid("en").matchAll(/Warszawa/g)],
-      "one city line only",
-    ).toHaveLength(1);
-    for (const city of ["Berlin", "Paris", "Madrid", "Rome", "Amsterdam"]) {
+    for (const city of ["Warszawa", "Kraków", "Berlin", "Paris", "Madrid"]) {
       expect(rendered, city).not.toContain(city);
     }
   });
@@ -466,19 +466,26 @@ describe("the destinations grid", () => {
     expect(order("en")).toHaveLength(COUNTRIES.length);
   });
 
-  it("ships the artboard's copy-only 'Somewhere else?' cell with no input at all", () => {
-    const html = grid("en");
+  it("links the delivering destination's poppy chip to its shop root when the page hands one in", () => {
+    const html = render(
+      <DestinationsGrid locale="en" shopHref="/en/poland/flowers" />,
+      "en",
+    );
+    const poland = html.slice(html.indexOf('data-fo-destination="PL"'));
 
-    expect(html).toContain("data-fo-destinations-elsewhere");
-    expect(text(html)).toContain("Somewhere else?");
-    // A waiting-list capture is a new personal-data flow (010/016 own it); an inert field would
-    // be a dark pattern, so there is no field, no button and nothing to submit.
+    expect(poland.slice(0, poland.indexOf("</li>"))).toMatch(
+      /<a class="[^"]*bg-accent[^"]*" href="\/en\/poland\/flowers">Poland/u,
+    );
+    // The six others still go to their guides, and nothing on the section asks for input.
+    expect(
+      hrefs(html).filter((href) => href.includes("send-flowers-to")),
+    ).toHaveLength(6);
     for (const tag of ["<input", "<form", "<button", "<select", "<textarea"]) {
       expect(html, tag).not.toContain(tag);
     }
   });
 
-  it("inherits the finder's `destinations` id, so `Continue` still lands somewhere", () => {
+  it('keeps the `destinations` id, the home\'s anchor for every "where" question', () => {
     expect(grid("en")).toContain('id="destinations"');
   });
 

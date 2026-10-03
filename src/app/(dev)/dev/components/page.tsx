@@ -37,7 +37,6 @@ import {
   Grid,
   Icon,
   ICON_NAMES,
-  FinderCard,
   FromPriceChip,
   HomeFaq,
   HomeHero,
@@ -795,8 +794,7 @@ export default function DevComponentsPage(): ReactElement {
                     priority={false}
                   />,
                 ],
-                ["finder", <FinderCard key="finder" locale={galleryLocale} />],
-                ["proof", <ProofRow key="proof" />],
+                ["proof", <ProofRow headingLevel="h3" key="proof" />],
               ] as const
             ).map(([state, element]) => (
               <Stack gap="sm" key={state}>

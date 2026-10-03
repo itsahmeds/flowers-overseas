@@ -3,9 +3,21 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { COMPANY } from "@/config/company.ts";
+import { COUNTRY_CODES } from "@/config/countries";
 import { isLocaleCode } from "@/config/locales";
-import { listProductPages } from "@/modules/catalog";
-import { routableLocale } from "@/modules/i18n";
+import { OCCASION_TILES } from "@/config/occasions";
+import {
+  DEMO_DESTINATION_ISO2,
+  isPublished,
+  listingLinkId,
+} from "@/config/site-links";
+import {
+  corridorShopEntry,
+  listProductPages,
+  listingExists,
+  slugFor,
+} from "@/modules/catalog";
+import { listingPath, routableLocale } from "@/modules/i18n";
 import {
   JsonLd,
   deploymentDescriptor,
@@ -14,8 +26,8 @@ import {
   webSite,
 } from "@/modules/seo";
 import {
+  DATE_OCCASION_KEYS,
   DestinationsGrid,
-  HOME_BLEED,
   HomeFaq,
   HomeHero,
   HomeProvenanceNote,
@@ -25,7 +37,6 @@ import {
   ProofRow,
   ReviewsSection,
   TrendingRow,
-  TrustStrip,
 } from "@/modules/ui";
 
 /**
@@ -80,6 +91,51 @@ import {
  */
 export const revalidate = 3600;
 
+/**
+ * The catalogue's answers the home's sections need and `src/modules/ui` may not ask for itself
+ * (`plan/01` §5; TASK-173's precedent, extended by TASK-177): which destinations have a shop root
+ * here, the demo destination's shop root, and the occasion hubs that exist and may be linked.
+ * Each is the same predicate the router and the AC-21 crawl read, so no link can point at a 404.
+ */
+async function homeCatalogueLinks(locale: string): Promise<{
+  readonly shopCountries: readonly string[];
+  readonly shopHref: string | undefined;
+  readonly hubHrefs: Readonly<Record<string, string>>;
+}> {
+  const shops = await Promise.all(
+    COUNTRY_CODES.map(async (iso2) => {
+      const entry = await corridorShopEntry(locale, iso2);
+      return { iso2, href: entry.shopEntryHref };
+    }),
+  );
+  const hubHrefs: Record<string, string> = {};
+  if (isLocaleCode(locale) && isPublished(listingLinkId("occasionHub"))) {
+    const keys = new Set([
+      ...OCCASION_TILES.map((tile) => tile.catalogueKey as string),
+      ...Object.values(DATE_OCCASION_KEYS),
+    ]);
+    for (const key of keys) {
+      const slug = slugFor("occasion", key, locale);
+      if (slug === undefined) continue;
+      const exists = await listingExists({
+        pageType: "occasionHub",
+        locale,
+        entityKey: key,
+      });
+      if (exists) {
+        hubHrefs[key] = listingPath(locale, { pageType: "occasionHub", slug });
+      }
+    }
+  }
+  return {
+    shopCountries: shops
+      .filter((shop) => shop.href !== undefined)
+      .map((shop) => shop.iso2),
+    shopHref: shops.find((shop) => shop.iso2 === DEMO_DESTINATION_ISO2)?.href,
+    hubHrefs,
+  };
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -105,55 +161,42 @@ export default async function LocaleHomePage({
 
   const options = schemaOptions(deploymentDescriptor(process.env).siteUrl);
 
+  const links = await homeCatalogueLinks(locale.code);
+
   return (
     <>
       <main id="main">
-        {/* The above-the-fold band of the founder-approved artboards: the reserved full-bleed photo
-          slot, the paper card with the eyebrow, the one `<h1>` (the text LCP element) and the
-          proposition, and the finder — type-ahead country, town/postcode, delivery date, neutral
-          `Continue` (TASK-052). */}
-        <HomeHero locale={locale.code} />
-        {/* The four-fact proof strip. */}
-        <ProofRow />
-        {/*
-        The rest of the page, in the round-2 artboards' order (TASK-053, TASK-054).
-
-        Three of these sections are **gated on data that does not exist**, and each decides for
-        itself whether it renders at all: `TrendingRow` and `ReviewsSection` ask a provider in
-        `src/modules/ui/home` and render nothing when it answers with nothing, and
-        `DestinationsGrid` asks one for each destination's status. That is why this file has no
-        conditional in it — the page mounts the sections and the module owns the gate, so spec
-        008/016 swapping a provider for one backed by real orders or real reviews changes nothing
-        here (TASK-054).
-
-        The artboards' priced row — "Bouquets we can deliver in Poland today" — is **not** here:
-        it is spec 005/008/009's, and nothing on this page approximates a product or a price.
-      */}
-        {/* Each card links to its product page where that page exists (spec 008 §14 A14 (e);
-            TASK-173): the catalogue's existence set, handed in because `src/modules/ui` may not
-            read the catalogue. */}
+        {/* The v2 letter home (spec 004 §14 A21; TASK-177), in the artboards' order. The page
+            mounts the sections and hands in the catalogue's answers; every gate is the module's.
+            The hero is the copy, the photograph and the sentence picker (A21 clause 4). */}
+        <HomeHero locale={locale.code} shopCountries={links.shopCountries} />
+        {/* Popular choices: each card links to its product page where that page exists (spec 008
+            §14 A14 (e); TASK-173). */}
         <TrendingRow
           locale={locale.code}
           productPages={
             isLocaleCode(locale.code) ? await listProductPages(locale.code) : []
           }
+          {...(links.shopHref === undefined
+            ? {}
+            : { shopHref: links.shopHref })}
         />
-        <OccasionDates locale={locale.code} />
-        <OccasionTiles locale={locale.code} />
-        {/* The honesty label (spec 006 AC-17, ADR-0014): one line, server-rendered, under the last
-            image-bearing section, rendered whenever this page actually displays a generated
-            photograph and absent when it displays none. The page mounts it; which assets it covers
-            is the module's list, so landing or withdrawing imagery changes nothing here. */}
+        <OccasionDates locale={locale.code} hubHrefs={links.hubHrefs} />
+        <OccasionTiles locale={locale.code} hubHrefs={links.hubHrefs} />
+        {/* The honesty label (spec 006 AC-17, ADR-0014), under the last image-bearing section. */}
         <HomeProvenanceNote locale={locale.code} />
         {/* Renders nothing until a completed order produces a real review (AC-15). */}
         <ReviewsSection locale={locale.code} />
         <HowItWorks />
+        {/* The promise band: v2's form of AC-10's trust strip. */}
+        <ProofRow />
         <HomeFaq />
-        <TrustStrip className={HOME_BLEED} />
-        {/* AC-11's destination states and where the finder's `Continue` lands while no corridor
-          page is published: the artboards' grid, carrying the `destinations` id TASK-052's
-          stand-in list used to own. */}
-        <DestinationsGrid locale={locale.code} />
+        <DestinationsGrid
+          locale={locale.code}
+          {...(links.shopHref === undefined
+            ? {}
+            : { shopHref: links.shopHref })}
+        />
       </main>
       <JsonLd
         nodes={

@@ -317,17 +317,15 @@ export {
 } from "./media/loader.ts";
 export type { VariantLoader, VariantRef } from "./media/loader.ts";
 
-// The locale home's above-the-fold band and the four-fact proof strip (§13's resolution note,
-// AC-10, AC-11; TASK-052). All four are Server Components; the only client JavaScript on the page
-// is `FinderTypeahead`, 499 B Brotli measured, and it is an enhancement — the country field is the
-// platform's `<input list>` + `<datalist>`, so the finder works with JavaScript disabled.
-// `DESTINATIONS_ANCHOR` is exported because TASK-054's destinations grid inherits the id the
-// finder's `Continue` points at, and `finderTarget`/`finderDestinations` because AC-11's two
-// branches are unit-tested against them.
+// The locale home's first band and the sentence picker (spec 004 §14 A21 clause 4, AC-10,
+// AC-11; TASK-177, superseding TASK-052's finder card and its island). All are Server Components:
+// the home ships no island of its own, and the picker is a `GET` form to `/api/send/{locale}`,
+// whose landing rule (`sentenceTarget`) and option rule (`sentenceDestinations`) are exported
+// because the route and AC-11's tests read them from here.
 export {
-  HERO_HEIGHTS,
   HOME_BLEED,
   HOME_HERO_ASSET,
+  HOME_SECTION,
   HomeHero,
 } from "./home/HomeHero.tsx";
 export type { HomeHeroProps } from "./home/HomeHero.tsx";
@@ -339,16 +337,26 @@ export {
   homeMediaAssetIds,
 } from "./home/HomeProvenanceNote.tsx";
 export type { HomeProvenanceNoteProps } from "./home/HomeProvenanceNote.tsx";
-export { FinderCard } from "./home/FinderCard.tsx";
-export type { FinderCardProps } from "./home/FinderCard.tsx";
+export { SentencePicker } from "./home/SentencePicker.tsx";
+export type { SentencePickerProps } from "./home/SentencePicker.tsx";
 export {
-  DESTINATIONS_ANCHOR,
-  FINDER_IDS,
-  finderDestinations,
-  finderTarget,
-} from "./home/finder-model.ts";
-export type { FinderDestination } from "./home/finder-model.ts";
+  SENTENCE_FIELDS,
+  SENTENCE_IDS,
+  SentenceQuerySchema,
+  isSentenceDestination,
+  sentenceAction,
+  sentenceDestinations,
+  sentenceOccasions,
+  sentenceTarget,
+} from "./home/sentence-model.ts";
+export type {
+  SentenceDestination,
+  SentenceLookups,
+  SentenceOccasion,
+  SentenceQuery,
+} from "./home/sentence-model.ts";
 export { PROOF_FACTS, ProofRow } from "./home/ProofRow.tsx";
+export type { ProofRowProps } from "./home/ProofRow.tsx";
 
 // The three data-gated sections and their provider seams (§13's resolution note, AC-11, AC-14,
 // AC-15; TASK-054). Each section reads a provider inside this module and decides for itself
@@ -389,7 +397,10 @@ export type {
   ReviewsProvider,
   VerifiedReview,
 } from "./home/reviews-provider.ts";
-export { DestinationsGrid } from "./home/DestinationsGrid.tsx";
+export {
+  DESTINATIONS_ANCHOR,
+  DestinationsGrid,
+} from "./home/DestinationsGrid.tsx";
 export type { DestinationsGridProps } from "./home/DestinationsGrid.tsx";
 export {
   destinationStatusProviderOf,
@@ -400,10 +411,6 @@ export type {
   DestinationStatus,
   DestinationStatusProvider,
 } from "./home/destination-status-provider.ts";
-export {
-  type FinderDestinationGroups,
-  finderDestinationGroups,
-} from "./home/finder-model.ts";
 
 // The rest of the locale home, in the round-2 artboards' order (§13's resolution note, design
 // round 6, AC-10, AC-14, AC-15; TASK-053). All five are synchronous Server Components and add no
@@ -421,6 +428,7 @@ export type { HowItWorksProps } from "./home/HowItWorks.tsx";
 export { FAQ_ENTRIES, HomeFaq } from "./home/HomeFaq.tsx";
 export type { HomeFaqProps } from "./home/HomeFaq.tsx";
 export {
+  DATE_OCCASION_KEYS,
   OCCASIONS_ANCHOR,
   occasionDateViews,
   occasionTiles,

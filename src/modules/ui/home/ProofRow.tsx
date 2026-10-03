@@ -1,4 +1,8 @@
 /**
+ * **v2: the promise band** (spec 004 §14 A21; TASK-177; `home-*.dc.html` `.promise`). The four
+ * facts on the inverse (ink) surface with sunflower icons, under the reviewed "Our promise"
+ * heading — the v2 form of AC-10's trust strip, which the artboards fold into this band.
+ *
  * `ProofRow` — the four-fact strip directly under the hero (spec 004 §13's 2026-09-08 resolution
  * note "four-fact proof row", §14 **A5**, §8's honesty rules, AC-15; TASK-052;
  * `docs/design/homepage-v1/README.md` round 2).
@@ -29,10 +33,9 @@ import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
 import { Icon, type IconName } from "../icons/Icon.tsx";
-import { Grid, Row, Stack } from "../primitives/layout.tsx";
-import { Text } from "../primitives/typography.tsx";
+import { Display } from "../primitives/typography.tsx";
 
-import { HOME_BLEED } from "./HomeHero.tsx";
+import { HOME_BLEED, HOME_SECTION } from "./HomeHero.tsx";
 
 /**
  * The four facts, in the artboards' order, each with the canvas's icon. Keys, not strings — the
@@ -73,36 +76,54 @@ export const PROOF_FACTS = [
   bodyKey: string;
 }[];
 
-export function ProofRow(): ReactElement {
+const HEADING_ID = "promise-heading";
+
+export interface ProofRowProps {
+  readonly headingLevel?: "h2" | "h3";
+}
+
+export function ProofRow({
+  headingLevel = "h2",
+}: ProofRowProps = {}): ReactElement {
   const t = useTranslations("home");
+  const trust = useTranslations("trust");
+  const FactHeading = headingLevel === "h2" ? "h3" : "h4";
 
   return (
-    <Grid
-      as="ul"
-      columns="2-4"
-      gap="lg"
-      className={`border-rule py-lg border-b ${HOME_BLEED}`}
+    <section
+      className={`surface-inverse ${HOME_SECTION} ${HOME_BLEED}`}
+      aria-labelledby={HEADING_ID}
       data-fo-proof-row
+      data-fo-trust-strip
     >
-      {PROOF_FACTS.map((fact) => (
-        <Row as="li" key={fact.id} gap="sm" align="start">
-          {/* Decorative: the title beside it carries the meaning (§5.3, no colour-only meaning
-              and no icon-only claim). */}
-          <Icon
-            name={fact.icon}
-            size={20}
-            className="text-accent mt-[2px] shrink-0"
-          />
-          <Stack gap="none">
-            <Text as="span" size="sm" className="font-medium">
+      <Display
+        as={headingLevel}
+        id={HEADING_ID}
+        size="display-s"
+        className="mb-[28px] md:mb-[48px]"
+      >
+        {trust("heading")}
+      </Display>
+      <ul className="rounded-photo bg-ink-muted grid grid-cols-1 gap-px overflow-hidden md:grid-cols-4">
+        {PROOF_FACTS.map((fact) => (
+          <li
+            key={fact.id}
+            className="bg-surface-inverse px-[26px] pt-[28px] pb-[32px]"
+            data-fo-trust-claim={fact.id}
+          >
+            {/* Decorative: the fact's title carries the claim (no icon-only meaning). */}
+            <Icon
+              name={fact.icon}
+              size={24}
+              className="text-on-inverse-accent size-[34px]"
+            />
+            <FactHeading className="display text-md mt-[18px]">
               {t(fact.titleKey)}
-            </Text>
-            <Text as="span" size="sm" tone="subtle">
-              {t(fact.bodyKey)}
-            </Text>
-          </Stack>
-        </Row>
-      ))}
-    </Grid>
+            </FactHeading>
+            <p className="text-on-inverse mt-[8px]">{t(fact.bodyKey)}</p>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }

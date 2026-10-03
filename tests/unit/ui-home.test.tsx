@@ -1,42 +1,44 @@
 /**
- * The locale home's hero, finder and proof row (spec 004 §2 "Locale-home skeleton", §5.3, §13's
- * 2026-09-08 resolution note, §14 A1/A5, **AC-11**, AC-14, AC-15; TASK-052).
+ * The locale home's hero, sentence picker and promise band — v2 "the letter home" (spec 004 §14
+ * **A21** clause 4, AC-10, **AC-11**, AC-14, AC-15; TASK-177, superseding TASK-052's finder).
  *
- * Rendered with `react-dom/server` against the **real** `messages/*.json` through the same
- * provider the document layout uses — the pattern `tests/unit/ui-site-header.test.tsx`
- * established — so the asserted copy is the shipped copy in all four locales.
- *
- * What is here rather than in `tests/e2e/home.spec.ts`: every property that is a fact about the
- * markup. **AC-11 in both directions** above all — the committed registry publishes no corridor
- * page, so the "renders a link" half is exercised through a mocked `countries.ts`, and a rule
- * tested only in its false branch is not tested. Layout, stickiness, the type-ahead in a browser,
- * the zero-JavaScript fallback and the four locales at two viewports are the e2e file's.
+ * Rendered with `react-dom/server` against the **real** `messages/*.json`, so the asserted copy is
+ * the shipped copy in all four locales. AC-11 is asserted in both directions: the "open" branch
+ * is the committed registry (Poland), and the flip is a mocked `countries.ts` — data, with no
+ * file under `src/app/` involved (T-13). The route's own 303/no-store/noindex contract is
+ * `tests/unit/api-send-route.test.ts`; the JavaScript-off submission is `tests/e2e/home.spec.ts`.
  */
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { NextIntlClientProvider } from "next-intl";
 
-import { COUNTRIES } from "../../src/config/countries.ts";
-import { loadMessages, localePath } from "../../src/modules/i18n";
-import {
-  FINDER_IDS,
-  finderDestinationGroups,
-  finderDestinations,
-  finderTarget,
-} from "../../src/modules/ui/home/finder-model.ts";
-import { DestinationsGrid } from "../../src/modules/ui/home/DestinationsGrid.tsx";
-import { HOME_BLEED, HomeHero } from "../../src/modules/ui/home/HomeHero.tsx";
-import { setMediaManifest } from "../../src/modules/ui/media/manifest.ts";
+import { loadMessages } from "../../src/modules/i18n";
+import { HomeHero } from "../../src/modules/ui/home/HomeHero.tsx";
 import { PROOF_FACTS, ProofRow } from "../../src/modules/ui/home/ProofRow.tsx";
+import { SentencePicker } from "../../src/modules/ui/home/SentencePicker.tsx";
+import {
+  SENTENCE_FIELDS,
+  type SentenceLookups,
+  SentenceQuerySchema,
+  sentenceAction,
+  sentenceTarget,
+} from "../../src/modules/ui/home/sentence-model.ts";
+import { setMediaManifest } from "../../src/modules/ui/media/manifest.ts";
 
 const LOCALES = ["en", "en-gb", "de", "pl"] as const;
 
-/** The namespaces the home reads. `finder` and `home` are new with this task. */
+/** The namespaces the hero, the picker and the promise band read. */
 const NAMESPACES = [
   "home",
   "finder",
   "destinations",
+  "destinationsHub",
+  "corridor",
+  "occasions",
+  "nav",
+  "trust",
+  "media",
   "a11y",
   "common",
 ] as const;
@@ -53,17 +55,14 @@ function render(node: React.ReactElement, locale: string): string {
   );
 }
 
-const hero = (locale: string): string =>
-  render(<HomeHero locale={locale} />, locale);
+/** Poland's shop root exists in every launch locale (the committed catalogue). */
+const SHOPS = ["PL"] as const;
 
-/**
- * TASK-054 replaced TASK-052's `DestinationList` stand-in with the artboards' grid, which carries
- * the same `destinations` id and the same AC-11/AC-14 obligations; these assertions moved onto it
- * unchanged, minus the stand-in's onboarding line (the grid says the same thing in the section's
- * own copy, asserted in `tests/unit/ui-home-gated.test.tsx`).
- */
-const destinationList = (locale: string): string =>
-  render(<DestinationsGrid locale={locale} />, locale);
+const hero = (locale: string): string =>
+  render(<HomeHero locale={locale} shopCountries={SHOPS} />, locale);
+
+const picker = (locale: string, shops: readonly string[] = SHOPS): string =>
+  render(<SentencePicker locale={locale} shopCountries={shops} />, locale);
 
 /** The visible text of the rendered markup: tags stripped, entities decoded. */
 function text(html: string): string {
@@ -75,9 +74,22 @@ function text(html: string): string {
     .replaceAll(/\s+/g, " ");
 }
 
-/** Every `href` in document order. */
-function hrefs(html: string): string[] {
-  return [...html.matchAll(/href="([^"]*)"/g)].map((match) => match[1] ?? "");
+/** Every submitted control name in the markup, in document order. */
+function names(html: string): string[] {
+  return [...html.matchAll(/\sname="([^"]*)"/g)].map((match) => match[1] ?? "");
+}
+
+/** The country `<option>`s as `[iso, label, disabled]`, in document order. */
+function countryOptions(html: string): [string, string, boolean][] {
+  return [
+    ...html.matchAll(
+      /<option([^>]*data-fo-sentence-destination="([A-Z]{2})"[^>]*)>([^<]*)<\/option>/g,
+    ),
+  ].map((match) => [
+    match[2] ?? "",
+    (match[3] ?? "").replaceAll("&#x27;", "'"),
+    / disabled=""/.test(match[1] ?? ""),
+  ]);
 }
 
 afterEach(() => {
@@ -85,350 +97,344 @@ afterEach(() => {
   vi.doUnmock("../../src/config/countries.ts");
 });
 
-describe("the hero band", () => {
-  it("renders exactly one `<h1>`, and it is the artboards' headline", () => {
+describe("the hero band (AC-10)", () => {
+  it("renders exactly one `<h1>`, and it is the reviewed headline", () => {
     const html = hero("en");
 
     expect([...html.matchAll(/<h1/g)]).toHaveLength(1);
-    expect(html).toContain("Flowers for someone far away.");
+    expect(html).toMatch(/<h1[^>]*>Flowers for someone far away\.<\/h1>/);
   });
 
   it("renders the eyebrow and the first-person proposition (§14 A5)", () => {
-    const html = text(hero("en"));
+    const rendered = text(hero("en"));
 
-    expect(html).toContain("International flower delivery");
-    expect(html).toContain("Our florist in your recipient's town");
-    expect(html).toContain("We never ship a box.");
+    expect(rendered).toContain("International flower delivery");
+    expect(rendered).toContain(
+      "Our florist in your recipient's town makes it and hands it over in person. We never ship a box.",
+    );
   });
 
-  it("fills the hero slot with the founder's photograph, eagerly and at high priority", () => {
-    // TASK-080: the band holds `home-hero`, approved by the founder, derived into the Phase-0
-    // ladder and alt-texted in this locale, so it is the page's single LCP candidate. The caption
-    // that used to say "Photography to supply" is gone because the photograph is here.
+  it("fills the photo slot eagerly, at high priority, with one preload (spec 006 AC-19)", () => {
     const html = hero("en");
 
-    expect(html).toContain('data-fo-media-slot="hero"');
     expect(html).toContain('data-fo-media-asset="home-hero"');
-    expect(html).toContain('data-fo-media-source="ai"');
-    expect(html).toContain('type="image/avif"');
     expect(html).toContain('loading="eager"');
     expect(html).toContain('fetchPriority="high"');
-    // AC-19: the preload is built from the same manifest lookup as the `srcset`, so the two
-    // cannot disagree — asserted here as the identical ladder string in both places.
-    expect(html).toContain('rel="preload"');
-    expect(html).toContain('imageSizes="100vw"');
-    expect(html).toContain('sizes="100vw"');
+    expect([...html.matchAll(/rel="preload"/g)]).toHaveLength(1);
     expect([...html.matchAll(/<img/g)]).toHaveLength(1);
-    // The alt is the dataset's, word for word, and is never built at render (`plan/01` §6).
-    expect(html).toContain(
-      "Loose seasonal flower stems, a sheet of kraft paper and a ball of twine",
-    );
-    expect(html).not.toContain("Photography to supply");
+  });
+
+  it("is the artboards' 4∶5 photograph on desktop and 4∶3 full-bleed on mobile", () => {
+    const html = hero("en");
+
+    expect(html).toContain("aspect-[4/5]");
+    expect(html).toContain("max-md:aspect-[4/3]");
+    expect(html).toContain("max-md:rounded-none");
   });
 
   it("falls back to the captioned box and no `<img>` when the dataset has no photograph", () => {
-    // The honest arm, reached the day an asset is withdrawn, its bytes are not derived or a locale
-    // has no alt text: the same reserved box at the same two artboard heights, the artboards' two
-    // shooting captions back, and **no `<img>`** (`plan/10` §3, spec 006 AC-18). The manifest seam
-    // is what reaches it without editing the dataset.
     const previous = setMediaManifest({ assets: [], variants: [], alt: {} });
     try {
       const html = hero("en");
 
       expect(html).not.toContain("<img");
       expect(html).toContain('data-fo-media-slot="hero"');
-      expect(html).toContain('data-fo-media-sizes="100vw"');
-      expect(html).toContain("Photography to supply");
-      expect(html).toContain("h-[300px]");
+      expect(html).toContain("aspect-[4/5]");
     } finally {
       setMediaManifest(previous);
     }
   });
 
-  it("reserves a height at both artboard geometries, so nothing shifts", () => {
+  it("draws the postmark as decoration, with no words in it", () => {
     const html = hero("en");
-    // The mobile photo band and the desktop hero band, per `HERO_HEIGHTS`.
-    expect(html).toContain("h-[300px]");
-    expect(html).toContain("md:h-[820px]");
+    const start = html.indexOf("data-fo-postmark");
+    const postmark = html.slice(start, html.indexOf("</figure>", start));
+
+    expect(html).toMatch(/<svg[^>]*aria-hidden="true"[^>]*data-fo-postmark/);
+    expect(postmark).not.toContain("<text");
   });
 
-  it("uses the header's inline gutter, so the card lines up with the wordmark", async () => {
-    const header = await import("../../src/modules/ui/layout/SiteHeader.tsx");
-    const source = await import("node:fs/promises").then((fs) =>
-      fs.readFile("src/modules/ui/layout/SiteHeader.tsx", "utf8"),
-    );
-    // `BLEED` is private to the header, so the pin is on its source line rather than an import.
-    expect(source).toContain(`const BLEED = "${HOME_BLEED}"`);
-    expect(header.SiteHeader).toBeTypeOf("function");
-  });
-
-  it("renders in every launch locale with its own copy", () => {
+  it("holds the sentence picker, in every launch locale", () => {
     for (const locale of LOCALES) {
       const html = hero(locale);
       expect([...html.matchAll(/<h1/g)], locale).toHaveLength(1);
-      expect(text(html).length, locale).toBeGreaterThan(200);
+      expect(html, locale).toContain("data-fo-sentence");
     }
   });
 });
 
-describe("the finder card (AC-11)", () => {
-  it("labels all three fields and binds each label to its control", () => {
-    const html = hero("en");
+describe("the sentence picker (A21 clause 4, AC-11, T-12, T-13)", () => {
+  it("is a server-rendered GET form to the `/api/send/{locale}` route, named by its heading", () => {
+    const html = picker("pl");
 
-    for (const [id, label] of [
-      [FINDER_IDS.country, "Country"],
-      [FINDER_IDS.town, "Town, city or postcode"],
-      [FINDER_IDS.date, "Delivery date"],
-    ] as const) {
-      expect(html, id).toContain(`for="${id}"`);
-      expect(html, id).toContain(`id="${id}"`);
-      expect(text(html), id).toContain(label);
-    }
+    const form = /<form [^>]*>/.exec(html)?.[0] ?? "";
+    expect(form).toContain('id="send"');
+    expect(form).toContain('method="get"');
+    expect(form).toContain('action="/api/send/pl"');
+    expect(form).toContain('aria-labelledby="send-heading"');
+    expect(html).toMatch(
+      /<h2 id="send-heading"[^>]*>Where we can send flowers<\/h2>/,
+    );
+    expect(sentenceAction("en-gb")).toBe("/api/send/en-gb");
   });
 
-  it("offers the seven destinations as a native `<datalist>`, so it works without JavaScript", () => {
-    const html = hero("en");
-    const options = [...html.matchAll(/<option value="([^"]*)"/g)].map(
-      (match) => match[1] ?? "",
-    );
+  it("submits exactly two fields, `country` and `occasion`, and nothing that names a person", () => {
+    const html = picker("en");
 
-    expect(html).toContain(`<datalist id="${FINDER_IDS.countryList}"`);
-    expect(html).toContain(`list="${FINDER_IDS.countryList}"`);
-    expect(options).toHaveLength(COUNTRIES.length);
-    expect(options).toEqual([
-      "France",
-      "Germany",
-      "Italy",
-      "Netherlands",
-      "Poland",
-      "Romania",
-      "Spain",
+    expect(names(html)).toEqual([
+      SENTENCE_FIELDS.country,
+      SENTENCE_FIELDS.occasion,
+    ]);
+    expect(names(html)).toEqual(["country", "occasion"]);
+  });
+
+  it("labels each select with a real `<label for>`", () => {
+    const html = picker("en");
+
+    expect(html).toMatch(/<label for="send-country"[^>]*>Country<\/label>/);
+    expect(html).toMatch(/<label for="send-occasion"[^>]*>Occasion<\/label>/);
+    expect(html).toContain('<select id="send-country" name="country"');
+    expect(html).toContain('<select id="send-occasion" name="occasion"');
+  });
+
+  it("lists the seven destinations in `collator(locale)` order (pl and en)", () => {
+    expect(countryOptions(picker("pl")).map(([iso]) => iso)).toEqual([
+      "FR",
+      "ES",
+      "NL",
+      "DE",
+      "PL",
+      "RO",
+      "IT",
+    ]);
+    expect(countryOptions(picker("en")).map(([iso]) => iso)).toEqual([
+      "FR",
+      "DE",
+      "IT",
+      "NL",
+      "PL",
+      "RO",
+      "ES",
     ]);
   });
 
-  it("orders the destinations by `collator(locale)`, which is what `pl` needs", () => {
-    const polish = [...hero("pl").matchAll(/<option value="([^"]*)"/g)].map(
-      (match) => match[1] ?? "",
+  it('opens Poland, selected, and says "not yet" in words for the six others', () => {
+    const html = picker("en");
+    const options = countryOptions(html);
+
+    expect(options.find(([iso]) => iso === "PL")).toEqual([
+      "PL",
+      "Poland",
+      false,
+    ]);
+    expect(options.filter(([, , disabled]) => disabled)).toHaveLength(6);
+    expect(options.find(([iso]) => iso === "DE")).toEqual([
+      "DE",
+      "Germany (not yet)",
+      true,
+    ]);
+    expect(html).toMatch(/<option value="PL"[^>]* selected=""/);
+  });
+
+  it("closes Poland too when its shop root does not exist here", () => {
+    const options = countryOptions(picker("en", []));
+
+    expect(options.filter(([, , disabled]) => disabled)).toHaveLength(7);
+  });
+
+  it("lists the six home occasions in registry order, by id, worded by their names", () => {
+    const html = picker("en");
+    const occasions = [
+      ...html.matchAll(/<option value="([a-zA-Z]+)">([^<]*)<\/option>/g),
+    ].map((match) => [match[1], match[2]]);
+
+    expect(occasions).toEqual([
+      ["birthday", "Birthday"],
+      ["nameDay", "Name day"],
+      ["anniversary", "Anniversary"],
+      ["sympathy", "Sympathy"],
+      ["justBecause", "Just because"],
+      ["newBaby", "New baby"],
+    ]);
+  });
+
+  it("opens a destination when the registry makes it live, with no change under `src/app/` (T-13)", async () => {
+    vi.doMock("../../src/config/countries.ts", async () => {
+      const actual = await vi.importActual<
+        typeof import("../../src/config/countries.ts")
+      >("../../src/config/countries.ts");
+      return {
+        ...actual,
+        countryConfig: (iso2: Parameters<typeof actual.countryConfig>[0]) =>
+          iso2 === "DE"
+            ? { ...actual.countryConfig(iso2), status: "live" as const }
+            : actual.countryConfig(iso2),
+      };
+    });
+    const { SentencePicker: Flipped } =
+      await import("../../src/modules/ui/home/SentencePicker.tsx");
+    const html = render(
+      <Flipped locale="en" shopCountries={["PL", "DE"]} />,
+      "en",
     );
 
-    // The `pl` catalogue is a machine draft today, so the *names* are still English while the
-    // order is Polish collation's. What this pins is that the order is computed per locale and
-    // not copied from the registry, whose order is Poland-first.
-    expect(polish[0]).not.toBe("Poland");
-    expect(polish).toHaveLength(COUNTRIES.length);
+    expect(countryOptions(html).find(([iso]) => iso === "DE")).toEqual([
+      "DE",
+      "Germany",
+      false,
+    ]);
   });
 
-  it("names every destination with its state, and links the ones with a guide", () => {
-    const html = destinationList("en");
-    const rendered = text(html);
+  it("closes Poland when its corridor page is unpublished, from the same flag", async () => {
+    vi.doMock("../../src/config/countries.ts", async () => {
+      const actual = await vi.importActual<
+        typeof import("../../src/config/countries.ts")
+      >("../../src/config/countries.ts");
+      return {
+        ...actual,
+        isCorridorPagePublished: (iso2: string) => iso2 !== "PL",
+      };
+    });
+    const { SentencePicker: Flipped } =
+      await import("../../src/modules/ui/home/SentencePicker.tsx");
+    const html = render(<Flipped locale="en" shopCountries={["PL"]} />, "en");
 
-    for (const country of COUNTRIES) {
-      expect(html, country.iso2).toContain(
-        `data-fo-destination="${country.iso2}"`,
-      );
-    }
-    expect(rendered).toContain("Delivering now");
-    expect(rendered).toContain("Guide · not delivering yet");
-    // Spec 007 AC-20: every destination whose guide exists in this locale is a link now, from
-    // the same loop; `/de` and `/pl` have no guide, so they keep linking nowhere (AC-17).
-    expect(hrefs(html).length).toBe(COUNTRIES.length);
-    expect(hrefs(destinationList("de"))).toEqual([]);
+    expect(countryOptions(html).find(([iso]) => iso === "PL")).toEqual([
+      "PL",
+      "Poland (not yet)",
+      true,
+    ]);
   });
 
-  it("submits to a document that exists, with no `action` to a non-200 URL", () => {
-    const html = hero("en");
-
-    expect(html).toContain('method="get"');
-    expect(html).toContain(`action="/en#${FINDER_IDS.destinations}"`);
-    expect(html).toContain('type="submit"');
-    expect(text(html)).toContain("Continue");
-  });
-
-  it("keeps the status list out of the card, as design round 7 requires", () => {
-    const html = hero("en");
-
-    // No status column, no footnote and no pills next to the field: the states are rendered by
-    // `DestinationsGrid`, after the finder, where round 7 puts them.
-    expect(html).not.toContain("data-fo-destination=");
-    expect(text(html)).not.toContain("Delivering now");
-  });
-
-  it("prints no cutoff at all while no destination takes delivery dates", () => {
-    // Spec 004 §14 A19 (`/review 70`; TASK-120): the finder's cutoff sentence is gated on
-    // `anyDeliveryDatesOpen()`, false for every destination in Phase 0, and prints the honest
-    // form instead. The promise returns with the data flip and with no edit to the component.
-    const rendered = text(hero("en"));
-
-    expect(rendered).not.toContain(
-      "Order by 14:00 in Warsaw for delivery today",
-    );
-    expect(rendered).toContain(
-      "Delivery dates open when we confirm our first florist",
-    );
-  });
-
-  /**
-   * `/review 40` found the same cutoff phrased two ways one screen apart — the utility strip's
-   * and this one. TASK-084 made them one sentence (the FAQ artboard's wording, which is the
-   * founder's), and this is the pin that keeps them one: a reworded strip that forgets the finder
-   * fails here rather than shipping a second version of the only hard promise on the page.
-   */
-  it("states the cutoff in the same words as the header's utility strip (`/review 40`)", () => {
-    const messages = loadMessages("en", ["finder", "nav"]) as {
-      finder: { cutoff: string; datesPending: string };
-      nav: { utility: { cutoff: string; datesPending: string } };
-    };
-
-    expect(messages.finder.cutoff).toBe(messages.nav.utility.cutoff);
-    // The pin holds for the gated pair too (TASK-120): the two surfaces cannot phrase the
-    // *absence* of a cutoff differently either.
-    expect(messages.finder.datesPending).toBe(
-      messages.nav.utility.datesPending,
-    );
-  });
-
-  it("describes the country field with one sentence, not the whole section (`/review 40`)", () => {
-    const html = hero("en");
-
-    // The description used to be `destinations` — the section — so focusing the field read seven
-    // names, seven state words and the onboarding line on every focus.
-    expect(html).toContain(
-      `aria-describedby="${FINDER_IDS.destinationsSummary}"`,
-    );
-    expect(html).not.toContain(`aria-describedby="${FINDER_IDS.destinations}"`);
-    expect(html).toContain(`id="${FINDER_IDS.destinationsSummary}"`);
-    // The sentence is built from the same registry the section renders, so it cannot drift.
-    expect(text(html)).toContain(
-      "We deliver in Poland today. In France, Germany, Italy, Netherlands, Romania and Spain we are still choosing florists.",
-    );
-  });
-
-  it("keeps both destination groups non-empty, which the summary sentence assumes", () => {
-    const groups = finderDestinationGroups(
-      finderDestinations("en", (key) => key),
-      (key) => key,
-    );
-    expect(groups.delivering.length).toBeGreaterThan(0);
-    expect(groups.onboarding.length).toBeGreaterThan(0);
-  });
-
-  it("ships the type-ahead as an enhancement whose input is server-rendered", () => {
-    const html = hero("en");
-    // The island's own input, rendered on the server with `list` set: the field is a native
-    // type-ahead before hydration and forever without JavaScript.
-    expect(html).toContain(`id="${FINDER_IDS.country}"`);
-    expect(html).toContain("data-fo-finder-announce");
-    expect(html).toContain('aria-live="polite"');
-  });
-});
-
-describe("`finderTarget()` — where `Continue` goes", () => {
-  it("answers the corridor page where one exists, and the on-page anchor where none does", () => {
-    // `en` and `en-gb` have authored guides; `de` and `pl` do not (§13 Q1), so the honest answer
-    // there is still the destination list on the page the reader is already on.
-    expect(finderTarget("en", "PL")).toBe("/en/send-flowers-to/poland");
-    expect(finderTarget("en-gb", "PL")).toBe("/en-gb/send-flowers-to/poland");
-    for (const locale of ["de", "pl"]) {
-      expect(finderTarget(locale, "PL"), locale).toBe(
-        `${localePath(locale, "home")}#destinations`,
-      );
-    }
-    // With no destination chosen the answer is the anchor in every locale.
+  it("renders in every launch locale", () => {
     for (const locale of LOCALES) {
-      expect(finderTarget(locale), locale).toBe(
-        `${localePath(locale, "home")}#destinations`,
-      );
+      expect(countryOptions(picker(locale)), locale).toHaveLength(7);
     }
-  });
-
-  it("stops linking a destination the moment its guide is unpublished, with no code change", async () => {
-    // AC-7's flip, in reverse and as data: `guidePublished` is `plan/02` §5.1's existence rule,
-    // so turning it off for Germany removes its URL and its link from every surface at once.
-    // (Poland cannot be unpublished this way: its registry `status` is `live`, which is the
-    // other half of the existence rule.)
-    vi.doMock("../../src/config/countries.ts", async () => {
-      const actual = await vi.importActual<
-        typeof import("../../src/config/countries.ts")
-      >("../../src/config/countries.ts");
-      return {
-        ...actual,
-        isGuidePublished: (iso2: string) => iso2 !== "DE",
-      };
-    });
-
-    const { finderTarget: withoutDe } =
-      await import("../../src/modules/ui/home/finder-model.ts");
-
-    expect(withoutDe("en", "DE")).toBe("/en#destinations");
-    expect(withoutDe("en", "FR")).toBe("/en/send-flowers-to/france");
-  });
-
-  it("renders the unpublished destination as text, from the same template", async () => {
-    vi.doMock("../../src/config/countries.ts", async () => {
-      const actual = await vi.importActual<
-        typeof import("../../src/config/countries.ts")
-      >("../../src/config/countries.ts");
-      return {
-        ...actual,
-        isGuidePublished: (iso2: string) => iso2 === "PL",
-      };
-    });
-
-    const { DestinationsGrid: List } =
-      await import("../../src/modules/ui/home/DestinationsGrid.tsx");
-    const html = render(<List locale="en" />, "en");
-
-    // The one destination with a guide is a link; the six others are text — same loop, same DOM
-    // shape, one element different (spec 007 AC-20).
-    expect(hrefs(html)).toEqual(["/en/send-flowers-to/poland"]);
-    expect(html).toContain('data-fo-destination="DE"');
   });
 });
 
-describe("the four-fact proof row", () => {
-  const row = (locale: string): string => render(<ProofRow />, locale);
+describe("`sentenceTarget()` — where a submission lands (A21 clause 4, T-12)", () => {
+  const calls: string[] = [];
+  const lookups: SentenceLookups = {
+    shopRoot: (iso2) => {
+      calls.push(`shop:${iso2}`);
+      return Promise.resolve(
+        iso2 === "PL" ? "/pl/polska/kwiaty" : `/pl/${iso2}/kwiaty`,
+      );
+    },
+    occasionPage: (iso2, key) => {
+      calls.push(`occasion:${iso2}:${key}`);
+      return Promise.resolve(
+        iso2 === "PL" && key === "birthday"
+          ? "/pl/polska/kwiaty/kwiaty-na-urodziny"
+          : undefined,
+      );
+    },
+  };
+  const target = (search: string): Promise<string> =>
+    sentenceTarget(
+      "pl",
+      SentenceQuerySchema.parse(
+        Object.fromEntries(new URLSearchParams(search)),
+      ),
+      lookups,
+    );
 
-  it("renders the artboards' four facts, in the first person (§14 A5)", () => {
-    const rendered = text(row("en"));
+  it("lands Poland + birthday on Poland's birthday page, with no query string", async () => {
+    calls.length = 0;
+    await expect(target("country=PL&occasion=birthday")).resolves.toBe(
+      "/pl/polska/kwiaty/kwiaty-na-urodziny",
+    );
+    expect(calls).toEqual(["shop:PL", "occasion:PL:birthday"]);
+  });
+
+  it("asks the catalogue by catalogue key, not by tile id", async () => {
+    calls.length = 0;
+    await target("country=PL&occasion=nameDay");
+    expect(calls).toEqual(["shop:PL", "occasion:PL:name_day"]);
+  });
+
+  it("falls back to the shop root when the occasion has no page, or none was chosen", async () => {
+    await expect(target("country=PL&occasion=nameDay")).resolves.toBe(
+      "/pl/polska/kwiaty",
+    );
+    await expect(target("country=PL")).resolves.toBe("/pl/polska/kwiaty");
+    await expect(target("country=PL&occasion=wedding")).resolves.toBe(
+      "/pl/polska/kwiaty",
+    );
+  });
+
+  it("sends an unknown, malformed, missing or not-yet country to the destinations hub", async () => {
+    for (const search of [
+      "country=XX&occasion=birthday",
+      "country=pl&occasion=birthday",
+      "country=POL",
+      "occasion=birthday",
+      "",
+      "country=DE&occasion=birthday",
+    ]) {
+      await expect(target(search), search).resolves.toBe("/pl/wyslij-kwiaty");
+    }
+  });
+
+  it("sends an open country with no shop root to the hub", async () => {
+    await expect(
+      sentenceTarget(
+        "en",
+        { country: "PL", occasion: "birthday" },
+        {
+          shopRoot: () => Promise.resolve(undefined),
+          occasionPage: () =>
+            Promise.resolve("/en/poland/flowers/birthday-flowers"),
+        },
+      ),
+    ).resolves.toBe("/en/send-flowers-to");
+  });
+
+  it("parses only the two fields, so a relationship never reaches the answer", () => {
+    expect(
+      SentenceQuerySchema.parse(
+        Object.fromEntries(
+          new URLSearchParams("country=PL&occasion=birthday&who=mum&name=Ola"),
+        ),
+      ),
+    ).toEqual({ country: "PL", occasion: "birthday" });
+  });
+});
+
+describe("the promise band (AC-10's trust strip in v2, AC-15)", () => {
+  const band = (locale: string): string => render(<ProofRow />, locale);
+
+  it('renders the four facts under the reviewed "Our promise" heading', () => {
+    const rendered = text(band("en"));
 
     expect(PROOF_FACTS).toHaveLength(4);
+    expect(band("en")).toMatch(
+      /<h2 id="promise-heading"[^>]*>Our promise<\/h2>/,
+    );
     for (const fragment of [
-      "7-day freshness guarantee",
+      "Freshness guarantee",
       "We redeliver or refund, your choice",
-      "We make it in their own town",
-      "Independent shops we chose ourselves",
       "The price you see is what we charge",
       "Delivery and VAT already in it",
-      "We photograph it at the door",
-      "We email you the picture of what was handed over",
     ]) {
       expect(rendered, fragment).toContain(fragment);
     }
   });
 
-  it("renders four list items and four decorative icons", () => {
-    const html = row("en");
+  it("claims no seven-day term and invents no number", () => {
+    const rendered = text(band("en"));
 
+    expect(rendered).not.toMatch(/\d/);
+    expect(rendered.toLowerCase()).not.toContain("7-day");
+  });
+
+  it("is the inverse surface with four facts and no photo", () => {
+    const html = band("en");
+
+    expect(html).toContain("surface-inverse");
     expect([...html.matchAll(/<li/g)]).toHaveLength(4);
-    expect([...html.matchAll(/aria-hidden="true"/g)]).toHaveLength(4);
-  });
-
-  it("renders no photo for the delivery-photo promise (AC-15, the TASK-052 row)", () => {
-    const html = row("en");
-
     expect(html).not.toContain("<img");
-    expect(html).not.toContain("photo aspect-");
-    expect(html).not.toContain("data-fo-media-slot");
-  });
-
-  it("invents no number: no count, rating or review anywhere in the row", () => {
-    const rendered = text(row("en"));
-
-    // "7-day" is a term of the guarantee, not a measurement; nothing else numeric may appear.
-    expect(rendered.replaceAll("7-day", "")).not.toMatch(/\d/);
-    for (const forbidden of ["review", "rating", "star", "florists", "★"]) {
-      expect(rendered.toLowerCase(), forbidden).not.toContain(forbidden);
-    }
   });
 });
 
@@ -442,17 +448,11 @@ describe("the copy obeys the brand voice (§14 A5)", () => {
     "vendor",
     "anywhere in the world",
     "super fresh",
-    // A5's list names five model words; "network" is the sixth shape of the same claim ("our
-    // network of florists" is a marketplace sentence) and the founder's brand-voice note bans it
-    // alongside them. It is the ninth entry, which is what this test's name has always claimed.
     "network",
   ];
 
   it("uses none of the nine banned words in any locale's home-page copy", () => {
     for (const locale of LOCALES) {
-      // TASK-053 extended the page with four namespaces, and the explainer is exactly where a
-      // model word ("relay", "our partner network") would land: it is the section that explains
-      // the model.
       const messages = loadMessages(locale, [
         "home",
         "finder",
@@ -467,12 +467,9 @@ describe("the copy obeys the brand voice (§14 A5)", () => {
     }
   });
 
-  it("caps the geography at live coverage: Poland today, no country count", () => {
-    // TASK-054 moved the sentence out of the finder's onboarding line and into the destinations
-    // grid's heading, where the artboard puts it; both namespaces are read so the claim is
-    // pinned wherever it lives.
+  it("claims no delivery in Poland today and no country count", () => {
     const messages = JSON.stringify(loadMessages("en", ["finder", "home"]));
-    expect(messages).toContain("Poland today");
+    expect(messages).not.toContain("Poland today");
     expect(messages).not.toMatch(/\b(seven|7) countries\b/i);
   });
 });

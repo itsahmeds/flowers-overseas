@@ -288,12 +288,13 @@ describe("the shipped catalogues and manifests", () => {
     // same day ("approve 3"), so none of the page's keys waits here.
     "faq.whoDelivers.answer",
     "faq.whoDelivers.answerCutoff",
-    "finder.cutoff",
-    "finder.help",
     "footer.payment.methods",
-    "home.destinations.elsewhere.body",
     "home.howItWorks.choose.body",
+    // TASK-177 (v2 home): the promise band's guarantee drops "7-day" (the work order's honesty
+    // rule) and the sentence picker's "not yet" option label; both in the brief's copy list.
+    "home.proof.guarantee.title",
     "home.proof.photo.body",
+    "home.sentence.notYet",
     "meta.chooser.description",
     "meta.home.description",
     "nav.utility.cutoff",

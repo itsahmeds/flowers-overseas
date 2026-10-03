@@ -1,4 +1,9 @@
 /**
+ * **v2** (spec 004 §14 A21; TASK-177; `home-*.dc.html` `#how`): the paper-2 band, the intro
+ * beside a numbered route — cornflower rings joined by a dashed rule. No photograph and no
+ * guarantee control: the artboard draws neither, and the guarantee has no page yet (A20). The
+ * artboard's margin note is new copy and waits for the founder's batch.
+ *
  * `HowItWorks` — the artboards' explainer band (spec 004 §2 "Locale-home skeleton", §13's
  * 2026-09-08 resolution note, §14 **A5**, AC-10, AC-15; TASK-053; `docs/design/homepage-v1/`
  * README "Round 2, founder direction").
@@ -33,47 +38,42 @@
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
-import { Media } from "../media/Media.tsx";
-import { Grid, Row, Stack } from "../primitives/layout.tsx";
-import { Display, Label, Text } from "../primitives/typography.tsx";
+import { Display, Eyebrow } from "../primitives/typography.tsx";
 
-import { HOME_BLEED } from "./HomeHero.tsx";
+import { HOME_BLEED, HOME_SECTION } from "./HomeHero.tsx";
 
-/**
- * The three steps, in the artboards' order. Keys, not strings, and both keys written out per step
- * rather than built from `id`: `pnpm i18n:check`'s usage scan is a text scan, and a key assembled
- * at runtime reads to it as an unused key (the note `ProofRow` carries).
- */
 export const HOW_IT_WORKS_STEPS = [
   {
     id: "choose",
-    ordinal: "01",
     titleKey: "howItWorks.choose.title",
     bodyKey: "howItWorks.choose.body",
   },
   {
     id: "make",
-    ordinal: "02",
     titleKey: "howItWorks.make.title",
     bodyKey: "howItWorks.make.body",
   },
   {
     id: "deliver",
-    ordinal: "03",
     titleKey: "howItWorks.deliver.title",
     bodyKey: "howItWorks.deliver.body",
   },
 ] as const satisfies readonly {
   id: string;
-  ordinal: string;
   titleKey: string;
   bodyKey: string;
 }[];
 
 const HEADING_ID = "how-it-works-heading";
 
+/**
+ * One step of the route. The numeral is a CSS counter in a cornflower ring (decorative: the
+ * `<ol>` already says "1 of 3"), and every step but the last hangs a dashed rule to the next.
+ */
+const STEP =
+  "relative ps-[76px] pb-[36px] [counter-increment:step] before:absolute before:start-0 before:top-[-4px] before:grid before:size-[52px] before:place-items-center before:rounded-full before:bg-surface-card before:font-display before:text-md before:text-mark before:shadow-[inset_0_0_0_1.5px_var(--color-mark),0_0_0_5px_var(--color-paper-2)] before:content-[counter(step)] [&:not(:last-child)]:after:absolute [&:not(:last-child)]:after:start-[25px] [&:not(:last-child)]:after:top-[56px] [&:not(:last-child)]:after:bottom-[4px] [&:not(:last-child)]:after:border-s-2 [&:not(:last-child)]:after:border-dashed [&:not(:last-child)]:after:border-rule [&:not(:last-child)]:after:content-['']";
+
 export interface HowItWorksProps {
-  /** `h2` on the locale home; `h3` in `/dev/components`, where the section is nested. */
   readonly headingLevel?: "h2" | "h3";
 }
 
@@ -81,64 +81,42 @@ export function HowItWorks({
   headingLevel = "h2",
 }: HowItWorksProps = {}): ReactElement {
   const home = useTranslations("home");
-  const media = useTranslations("media");
+  const StepHeading = headingLevel === "h2" ? "h3" : "h4";
 
   return (
-    <Grid
-      as="section"
-      columns="1-2"
-      gap="2xl"
-      className={`border-rule py-3xl items-center border-t ${HOME_BLEED}`}
+    <section
+      className={`bg-surface-raised ${HOME_SECTION} ${HOME_BLEED}`}
       aria-labelledby={HEADING_ID}
       data-fo-how-it-works
+      id="how"
     >
-      <Media slot="band" alt="" caption={media("placeholder.delivery")} />
-      <Stack gap="lg">
-        <Label>{home("howItWorks.eyebrow")}</Label>
-        <Display as={headingLevel} id={HEADING_ID} size="2xl">
-          {home("howItWorks.heading")}
-        </Display>
-        <Text measure size="md" tone="muted">
-          {home("howItWorks.intro")}
-        </Text>
-        <Stack as="ol" gap="lg" className="border-rule pt-lg border-t">
+      <div className="md:gap-2xl grid grid-cols-1 items-start gap-[40px] md:grid-cols-[4fr_7fr]">
+        <div>
+          <Eyebrow className="mb-[14px]">{home("howItWorks.eyebrow")}</Eyebrow>
+          <Display as={headingLevel} id={HEADING_ID} size="display-s">
+            {home("howItWorks.heading")}
+          </Display>
+          <p className="text-ink-muted mt-[18px] max-w-[44ch]">
+            {home("howItWorks.intro")}
+          </p>
+        </div>
+        <ol className="grid [counter-reset:step]">
           {HOW_IT_WORKS_STEPS.map((step) => (
-            <Row
-              as="li"
+            <li
               key={step.id}
-              gap="md"
-              align="start"
+              className={STEP}
               data-fo-how-it-works-step={step.id}
             >
-              {/* The ordinal is decorative: the list is an `<ol>`, so a screen reader already
-                  says "1 of 3", and reading "01" as well would say it twice. */}
-              <span aria-hidden="true" className="w-[40px] shrink-0">
-                <Display as="span" size="xl" className="text-accent">
-                  {step.ordinal}
-                </Display>
-              </span>
-              <Stack gap="none">
-                <Text as="span" size="md" className="font-medium">
-                  {home(step.titleKey)}
-                </Text>
-                <Text as="span" size="sm" tone="muted">
-                  {home(step.bodyKey)}
-                </Text>
-              </Stack>
-            </Row>
+              <StepHeading className="display text-h3 leading-(--line-height-title) md:text-[25px]">
+                {home(step.titleKey)}
+              </StepHeading>
+              <p className="text-ink-muted mt-[8px] max-w-[48ch]">
+                {home(step.bodyKey)}
+              </p>
+            </li>
           ))}
-        </Stack>
-        {/* The unpublished guarantee page: its label as text, plus the line that says where the
-            terms are today. Never a dead link (AC-14). */}
-        <Stack gap="xs">
-          <Text as="span" size="sm" className="font-medium">
-            {home("howItWorks.guarantee")}
-          </Text>
-          <Text as="span" size="sm" tone="subtle">
-            {home("howItWorks.guaranteePending")}
-          </Text>
-        </Stack>
-      </Stack>
-    </Grid>
+        </ol>
+      </div>
+    </section>
   );
 }

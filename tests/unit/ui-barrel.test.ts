@@ -151,12 +151,20 @@ describe("src/modules/ui barrel", () => {
         "staticVariantLoader",
         "uiSlotForSeedSlot",
         "variantsFor",
-        // the locale home's above-the-fold surfaces and the finder's projection (TASK-052)
+        // the locale home's first band and the sentence picker (TASK-052, v2 by TASK-177)
         "DESTINATIONS_ANCHOR",
-        "FINDER_IDS",
-        "FinderCard",
-        "HERO_HEIGHTS",
         "HOME_BLEED",
+        "HOME_SECTION",
+        "SENTENCE_FIELDS",
+        "SENTENCE_IDS",
+        "SentencePicker",
+        "SentenceQuerySchema",
+        "isSentenceDestination",
+        "sentenceAction",
+        "sentenceDestinations",
+        "sentenceOccasions",
+        "sentenceTarget",
+        "DATE_OCCASION_KEYS",
         // TASK-080: the hero band's asset id, the locale home's one honesty label and the list of
         // asset ids it covers, and the occasion tile's asset-id derivation. All four exist so that
         // landing a photograph is a data change with no edit under `src/app/` (spec 006 AC-20).
@@ -166,9 +174,6 @@ describe("src/modules/ui barrel", () => {
         "homeMediaAssetIds",
         "PROOF_FACTS",
         "ProofRow",
-        "finderDestinations",
-        "finderDestinationGroups",
-        "finderTarget",
         // the locale home's lower sections and the trust strip (TASK-053)
         "FAQ_ENTRIES",
         "HOW_IT_WORKS_STEPS",
@@ -307,6 +312,12 @@ describe("src/modules/ui barrel", () => {
       // and the header can be pinned to the same inline gutter by a test.
       "DESTINATIONS_ANCHOR",
       "HOME_BLEED",
+      // TASK-177: the section rhythm (a utility list, like `HOME_BLEED`), the picker's DOM ids and
+      // field names (DOM contracts) and the date → occasion-key map (data keys).
+      "HOME_SECTION",
+      "SENTENCE_FIELDS",
+      "SENTENCE_IDS",
+      "DATE_OCCASION_KEYS",
       // TASK-080: the id of the hero band's asset in `seed/data/media.json` — a *data* key, like
       // the anchors above are DOM keys, and nothing a token could ever be.
       "HOME_HERO_ASSET",

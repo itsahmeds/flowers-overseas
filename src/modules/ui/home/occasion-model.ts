@@ -33,7 +33,13 @@ import {
   occasionDates,
   occasionSlug,
 } from "../../../config/occasions.ts";
-import { formatDate, formatTimeInZone, localePath } from "../../i18n";
+import {
+  formatDate,
+  formatNumber,
+  formatTimeInZone,
+  localePath,
+  zonedClock,
+} from "../../i18n";
 
 /**
  * The one cast in this file, and the same one `finder-model.ts` documents at length: the locale
@@ -85,14 +91,22 @@ export function occasionAssetId(id: OccasionId): string {
  * The six tiles in the artboards' order (which is the founder's, not the collator's: this is a
  * merchandising row, and "Birthday" leads it in every locale).
  */
-export function occasionTiles(locale: string): readonly OccasionTileView[] {
+export function occasionTiles(
+  locale: string,
+  hubHrefs: Readonly<Record<string, string>> = {},
+): readonly OccasionTileView[] {
   return OCCASION_TILES.map((tile: OccasionTile): OccasionTileView => ({
     id: tile.id,
     nameKey: tile.nameKey,
     subtitleKey: tile.subtitleKey,
-    href: isOccasionPagePublished(tile.id)
-      ? localePath(locale, "occasions", occasionSlug(tile.id, locale))
-      : undefined,
+    // The occasion hub where the catalogue says it exists and its link id is published (spec 004
+    // §14 A20, spec 008 §14 A14; TASK-177), handed in by the page because `src/modules/ui` may
+    // not read the catalogue; else the registry's own `published` flag, the TASK-053 seam.
+    href:
+      hubHrefs[tile.catalogueKey] ??
+      (isOccasionPagePublished(tile.id)
+        ? localePath(locale, "occasions", occasionSlug(tile.id, locale))
+        : undefined),
     assetId: occasionAssetId(tile.id),
   }));
 }
@@ -108,7 +122,22 @@ export interface OccasionDateView {
     { readonly date: string; readonly time: string } | undefined;
   /** The alternative third line (`occasions.date.{id}.note`). */
   readonly noteKey: string | undefined;
+  /** The stamp's big numeral: the day of the month in the recipient's zone, in the reader's digits. */
+  readonly day: string;
+  /** The catalogue occasion whose hub the stamp links to, or `undefined` (no hub: a text stamp). */
+  readonly occasionKey: string | undefined;
 }
+
+/**
+ * Which catalogue occasion each dated stamp stands for (v2 stamps, TASK-177): the stamp links to
+ * that occasion's hub where the page exists. Andrzejki has no catalogue occasion, so it stays
+ * information — a stamp with no link, no arrow and no hover (spec 004 §14 A20).
+ */
+export const DATE_OCCASION_KEYS: Readonly<Record<string, string>> = {
+  allSaints: "all_saints",
+  wigilia: "christmas",
+  womensDay: "womens_day",
+};
 
 /** Midday UTC — see the header: the hour that is the same calendar date in every European zone. */
 function instantOf(date: string): Date {
@@ -147,6 +176,8 @@ export function occasionDateViews(
         date: formatDate(instantOf(row.date), code, "deliveryDate", row.zone),
         orderBy,
         noteKey: row.noteKey,
+        day: formatNumber(zonedClock(instantOf(row.date), row.zone).day, code),
+        occasionKey: DATE_OCCASION_KEYS[row.id],
       };
     },
   );

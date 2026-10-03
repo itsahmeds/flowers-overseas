@@ -27,9 +27,9 @@ import type { ReactElement } from "react";
 
 import { anyDeliveryDatesOpen } from "../../../config/countries.ts";
 import { Grid, Stack } from "../primitives/layout.tsx";
-import { Display, Label, Text } from "../primitives/typography.tsx";
+import { Display, Eyebrow, Text } from "../primitives/typography.tsx";
 
-import { HOME_BLEED } from "./HomeHero.tsx";
+import { HOME_BLEED, HOME_SECTION } from "./HomeHero.tsx";
 
 /**
  * The five questions, in the artboards' order. Both keys are written out per question rather than
@@ -84,13 +84,13 @@ export function HomeFaq({
       as="section"
       columns="1-3"
       gap="2xl"
-      className={`py-3xl items-start ${HOME_BLEED}`}
+      className={`items-start ${HOME_SECTION} ${HOME_BLEED}`}
       aria-labelledby={HEADING_ID}
       data-fo-faq
     >
       <Stack gap="sm">
-        <Label>{t("eyebrow")}</Label>
-        <Display as={headingLevel} id={HEADING_ID} size="2xl">
+        <Eyebrow>{t("eyebrow")}</Eyebrow>
+        <Display as={headingLevel} id={HEADING_ID} size="display-s">
           {t("heading")}
         </Display>
         {/* The unpublished help centre: its label as text, and what to do until 007 publishes it. */}
@@ -108,11 +108,11 @@ export function HomeFaq({
       <Stack gap="none" className="border-rule border-b md:col-span-2">
         {FAQ_ENTRIES.map((entry) => (
           <details
-            className="border-rule py-md group border-t"
+            className="border-rule group border-t py-[18px]"
             key={entry.id}
             data-fo-faq-entry={entry.id}
           >
-            <summary className="text-md gap-md flex min-h-[44px] cursor-pointer list-none items-center justify-between font-medium [&::-webkit-details-marker]:hidden">
+            <summary className="display text-h3-s md:text-h3 gap-md flex min-h-[44px] cursor-pointer list-none items-center justify-between [&::-webkit-details-marker]:hidden">
               {t(entry.questionKey)}
               {/* The artboards' `+` at the inline end of every summary — the whole of the expand
                   affordance, because `display: flex` suppresses the native disclosure marker and
@@ -123,7 +123,7 @@ export function HomeFaq({
                   focus ring is `globals.css`'s token-coloured `:focus-visible` on the summary. */}
               <span
                 aria-hidden="true"
-                className="text-ink-subtle motion-fast ease-standard shrink-0 leading-none transition-transform group-open:rotate-45"
+                className="text-link motion-fast ease-standard shrink-0 leading-none font-bold transition-transform group-open:rotate-45"
               >
                 +
               </span>
