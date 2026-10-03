@@ -22,7 +22,7 @@
  * two `priceProjection()` calls, an add-on's is its `AddonLine.price`, the total is the view's own
  * `displayPrice`. A component that printed a hard-coded fee, or computed one, goes red here.
  */
-import { NextIntlClientProvider } from "next-intl";
+import { NextIntlClientProvider, createTranslator } from "next-intl";
 import type { ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
@@ -37,7 +37,7 @@ import {
 import { dateSurcharges } from "../../src/modules/catalog/pricing/resolve.ts";
 import { DeliveryFacts } from "../../src/modules/geo";
 import { withActivePartnersProvider } from "../../src/modules/geo/partners.ts";
-import { formatMoney, loadMessages } from "../../src/modules/i18n";
+import { formatDate, formatMoney, loadMessages } from "../../src/modules/i18n";
 import { ProductPage } from "../../src/modules/ui";
 import { lcpNominations } from "../support/lcp-nomination.ts";
 import { listingHonestyViolations, textOf } from "../support/listing-honesty";
@@ -569,6 +569,173 @@ describe("AC-21: one all-in price with its formula, VAT and delivery rows, and t
     const html = render(view);
     expect(html).toContain('data-fo-tier-selector="single"');
     expect(html).not.toContain('name="tier"');
+  });
+});
+
+/* -------------------------------------------------------------------------- */
+/* `/break 135` round 1 HOLES 3, 4 and 5 — the values a buyer reads.          */
+/* -------------------------------------------------------------------------- */
+
+/** One tier radio's markup: from its `<label data-fo-tier=…>` to its closing `</label>`. */
+function tierLabels(html: string): ReadonlyMap<string, string> {
+  const found = new Map<string, string>();
+  for (const match of html.matchAll(
+    /<label[^>]*data-fo-tier="([^"]+)"[\s\S]*?<\/label>/gu,
+  )) {
+    found.set(match[1] ?? "", match[0]);
+  }
+  return found;
+}
+
+/** The text of the first element `pattern` opens in `markup`, entity-decoded. */
+function firstText(markup: string, pattern: RegExp): string {
+  return decode(pattern.exec(markup)?.[1] ?? "");
+}
+
+/**
+ * A calendar date as a buyer must read it, built **without** the component's `instantOf()`: its
+ * own midday-UTC instant, formatted in UTC. A component that shifted the printed day — a different
+ * instant, a different zone — disagrees with this by a whole day.
+ */
+function printedDate(date: string, locale: Locale): string {
+  return formatDate(
+    new Date(`${date}T12:00:00Z`),
+    locale,
+    "deliveryDate",
+    "UTC",
+  );
+}
+
+describe("HOLE 3: each tier radio prints its own price, its own stem count, and the selected size is the checked one", () => {
+  it("prints every tier's own `formatMoney(price)` and stem-count label, in three locales", async () => {
+    for (const locale of ["en", "de", "pl"] as const) {
+      const view = await viewOf(locale, "PL", AMBER, { now: IN_WINDOW });
+      expect(view.tiers.length, locale).toBe(3);
+      const translate = createTranslator({
+        locale,
+        messages: loadMessages(locale, ["catalog"]),
+      }) as unknown as (key: string, values?: Record<string, number>) => string;
+      const radios = tierLabels(render(view));
+      expect([...radios.keys()], locale).toEqual(
+        view.tiers.map((tier) => tier.tierKey),
+      );
+      const prices = new Set<string>();
+      for (const tier of view.tiers) {
+        const radio = radios.get(tier.tierKey) ?? "";
+        const where = `${locale} ${tier.tierKey}`;
+        const price = formatMoney(tier.price, locale);
+        prices.add(price);
+        expect(firstText(radio, /<bdi[^>]*>([^<]*)<\/bdi>/u), where).toBe(
+          price,
+        );
+        // The stem count is the tier's own, through the catalogue's ICU plural.
+        expect(tier.stems, where).not.toBeNull();
+        const label = translate(tier.labelKey, { count: tier.stems ?? 0 });
+        expect(label, where).toContain(String(tier.stems));
+        expect(
+          firstText(
+            radio,
+            /<span class="text-md font-semibold">([^<]*)<\/span>/u,
+          ),
+          where,
+        ).toBe(label);
+      }
+      // Three tiers, three different amounts: one price on every radio cannot pass.
+      expect(prices.size, locale).toBe(3);
+    }
+  });
+
+  it("checks exactly the selected tier — the `is_default` one, or the one the visitor chose", async () => {
+    const byDefault = await viewOf("en", "PL", AMBER, { now: IN_WINDOW });
+    const chosen = await viewOf("en", "PL", AMBER, {
+      now: IN_WINDOW,
+      selection: { tierKey: "stems_12" },
+    });
+    // The default is the middle tier, so neither "the first" nor "the last" is it by accident.
+    expect(byDefault.selectedTierKey).toBe("stems_18");
+    expect(chosen.selectedTierKey).toBe("stems_12");
+    for (const view of [byDefault, chosen]) {
+      const checked = [...tierLabels(render(view))]
+        .filter(([, radio]) => /<input[^>]*checked/u.test(radio))
+        .map(([key]) => key);
+      expect(checked).toEqual([view.selectedTierKey]);
+    }
+  });
+});
+
+describe("HOLE 4: a chip prints the date it carries, and the summary's surcharge line the chosen one", () => {
+  it("prints each chip's own `data-fo-date` as its date, in `en` and `pl`, `preview` and `live`", async () => {
+    for (const locale of ["en", "pl"] as const) {
+      for (const view of [
+        await viewOf(locale, "PL", AMBER, { now: WOMENS_DAY_WEEK }),
+        await liveViewOf(locale, AMBER, { now: WOMENS_DAY_WEEK }),
+      ]) {
+        const grid = chips(render(view));
+        expect(grid.size, locale).toBe(view.delivery.dates.length);
+        for (const [date, chip] of grid) {
+          const where = `${locale} ${view.delivery.state} ${date}`;
+          const printed = firstText(chip, /<b[^>]*>([^<]*)<\/b>/u);
+          expect(printed, where).toBe(printedDate(date, locale));
+          // And independently of any formatter: the day of the month is the value's.
+          expect(printed, where).toMatch(
+            new RegExp(`(?<!\\d)${String(Number(date.slice(8)))}(?!\\d)`, "u"),
+          );
+        }
+      }
+    }
+  });
+
+  it("dates the summary's surcharge line, and the docked bar, with the chosen chip's date", async () => {
+    for (const locale of ["en", "pl"] as const) {
+      const plain = await liveViewOf(locale, AMBER, { now: WOMENS_DAY_WEEK });
+      const surcharged = plain.delivery.dates.find(
+        (date) => date.selectable && date.surcharge !== undefined,
+      );
+      expect(surcharged, locale).toBeDefined();
+      const day = surcharged?.date ?? "";
+      const chosen = await liveViewOf(locale, AMBER, {
+        now: WOMENS_DAY_WEEK,
+        selection: { date: day },
+      });
+      expect(chosen.selectedDate, locale).toBe(day);
+      const html = render(chosen);
+      const expected = printedDate(day, locale);
+      const line = firstText(
+        block(html, 'data-fo-summary-row="surcharge"'),
+        /<dt>([^<]*)<\/dt>/u,
+      );
+      expect(line.split(" · ").at(-1), locale).toBe(expected);
+      const docked = firstText(
+        block(html, 'data-fo-summary-docked="selection"'),
+        /<span[^>]*>([^<]*)<\/span>/u,
+      );
+      expect(docked.split(" · "), locale).toContain(expected);
+    }
+  });
+});
+
+describe("HOLE 5: a closed date never says “included”", () => {
+  it("prints no `included` fee on any closed chip, in `preview` and `live`, in every locale", async () => {
+    for (const locale of LOCALES) {
+      for (const view of [
+        await viewOf(locale, "PL", AMBER, { now: WOMENS_DAY_WEEK }),
+        await liveViewOf(locale, AMBER, { now: WOMENS_DAY_WEEK }),
+      ]) {
+        const where = `${locale} ${view.delivery.state}`;
+        const included = loadMessages(locale, ["product"]).product.included;
+        const closed = [...chips(render(view))].filter(([, chip]) =>
+          chip.includes('data-fo-date-state="closed"'),
+        );
+        // Both states have closed dates (every `preview` date; Sundays and the past cutoff live).
+        expect(closed.length, where).toBeGreaterThan(0);
+        for (const [date, chip] of closed) {
+          expect(chip, `${where} ${date}`).not.toContain(
+            'data-fo-date-fee="included"',
+          );
+          expect(readable(chip), `${where} ${date}`).not.toContain(included);
+        }
+      }
+    }
   });
 });
 
