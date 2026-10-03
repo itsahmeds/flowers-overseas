@@ -314,7 +314,10 @@ here.
   No honest `sizes` fixes this (384 w needs a 146 px claim for a 178 px card). Stopped, escalated.
 - 2026-10-03: `tests/visual/product.spec.ts`'s `gallery-placeholder` block now reads
   `/dev/components`'s PDP `Gallery` with `PRODUCT_GALLERY_PLACEHOLDER` (the e2e ruling); its two
-  linux baselines through `visual:baselines`.
+  linux baselines from run 37123143990 (`38cb1093`): of 104 rendered, exactly those two differ;
+  each viewed beside the committed one — the same caption, gradient box and four empty
+  thumbnails, narrower in the `/dev/components` column (desktop 420 px wide, mobile 324 px).
+  `visual:baselines --verify` on that run's manifest: 104 of 104. `gates:cheap` PASS on `38cb1093`.
 
 ## Result
 
