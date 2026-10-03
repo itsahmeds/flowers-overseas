@@ -132,21 +132,38 @@ describe("the trending row is gated on real orders", () => {
     ).toBe("");
   });
 
-  it("links nothing, and gives every pick one `grid` box whatever the dataset holds (AC-14)", () => {
+  it("links nothing, and gives every pick one `trending` box whatever the dataset holds (AC-14)", () => {
     const html = render(<TrendingRow locale="en" />, "en");
 
     expect(hrefs(html)).toEqual([]);
-    expect([...html.matchAll(/data-fo-media-slot="grid"/g)]).toHaveLength(
+    expect([...html.matchAll(/data-fo-media-slot="trending"/g)]).toHaveLength(
       TRENDING_PICKS.length,
     );
-    // TASK-080: twelve of the eighty-four products have approved, derived, alt-texted imagery, so
-    // a pick either shows its photograph or shows the captioned placeholder and **no `<img>`** —
-    // never a broken image and never a picture of something else (`plan/10` §3, spec 006 AC-18).
+    expect(html).not.toContain('data-fo-media-slot="grid"');
+    // A pick shows its photograph or the captioned placeholder and **no `<img>`** — never a
+    // broken image and never a picture of something else (`plan/10` §3, spec 006 AC-18). Since
+    // TASK-168 approved photo batch 2 every pick has its photograph: five of five.
     const images = [...html.matchAll(/<img/g)].length;
     const placeholders = [...html.matchAll(/data-fo-media-placeholder="/g)]
       .length;
-    expect(images + placeholders).toBe(TRENDING_PICKS.length);
-    expect(images).toBeGreaterThan(0);
+    expect(TRENDING_PICKS).toHaveLength(5);
+    expect(images).toBe(5);
+    expect(placeholders).toBe(0);
+  });
+
+  it("tells the browser the card's rendered width, not the listing grid's (TASK-168, AC-15)", () => {
+    // `MEDIA_SLOT_SPECS.trending`, written out: the row is 2-up below `md` and 5-up from it,
+    // inside `HOME_BLEED`, so the browser picks the rung that fits a ~178 px phone card rather
+    // than the 640 w one the listing grid's 50vw asked for.
+    const TRENDING_SIZES =
+      "(min-width: 768px) calc(20vw - 41.6px), calc(50vw - 28px)";
+    const html = render(<TrendingRow locale="en" />, "en");
+    const sizes = [...html.matchAll(/\bsizes="([^"]*)"/g)].map(
+      (match) => match[1],
+    );
+    // Every `<source>` and the `<img>` of each of the five pictures carry it, and nothing else.
+    expect(sizes.length).toBeGreaterThanOrEqual(5);
+    expect(new Set(sizes)).toEqual(new Set([TRENDING_SIZES]));
   });
 
   it("takes its names from the committed catalogue, so none of them is invented", () => {

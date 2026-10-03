@@ -143,6 +143,13 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   moves every listing page's picks and baselines too. Recommendation: **(a)**. Needs the fence to
   include `src/modules/ui/media/slots.ts` (+ its seed↔UI mapping and `tests/unit/ui-media.test.ts`,
   which pins the slot table) and `TrendingRow.tsx`.
+  **Answered 2026-10-03 (orchestrator ruling): (a).** A new `trending` UI slot in `slots.ts` whose
+  `sizes` states the row's rendered width, derived from the layout; same variant ladder as `grid`,
+  no new variants, no quality change; `grid` and the listing pages unchanged. Fence widened to
+  `slots.ts` (and its seed↔UI mapping only if the slot needs a row), `tests/unit/ui-media.test.ts`,
+  `TrendingRow.tsx` and its test. A case pins the exact `trending` string and one asserts the row
+  uses the slot, each watched red; then baselines through `visual:baselines`, `ci:full`, report
+  mobile image bytes and LCP; a mobile home still over 204 800 B → stop and report.
 - **2026-10-03 — every `.env.local` on this machine holds the old `*.r2.dev` value of
   `R2_PUBLIC_BASE_URL` (founder action, not blocking).** `pnpm media:upload` refuses to run unless
   it equals `MEDIA_ORIGIN` (spec 006 §14 A8 clause 7). The bucket is the same one behind

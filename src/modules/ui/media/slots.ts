@@ -21,7 +21,14 @@
  */
 
 /** The four places this design puts a photograph. Named, so a call site cannot invent a fifth. */
-export const MEDIA_SLOTS = ["hero", "band", "grid", "tile", "thumb"] as const;
+export const MEDIA_SLOTS = [
+  "hero",
+  "band",
+  "grid",
+  "tile",
+  "thumb",
+  "trending",
+] as const;
 export type MediaSlot = (typeof MEDIA_SLOTS)[number];
 
 export interface MediaSlotSpec {
@@ -65,6 +72,19 @@ export const MEDIA_SLOT_SPECS: Readonly<Record<MediaSlot, MediaSlotSpec>> = {
     aboveFold: false,
   },
   thumb: { sizes: "96px", ratio: "square", aboveFold: false },
+  // The home's "Most sent this week" row (`../home/TrendingRow.tsx`): `Grid columns="2-5"
+  // gap="lg"` inside `HOME_BLEED` (`px-md md:px-[56px]`) with no max-width above it, so a card is
+  // (100vw − 2·16 − 24) / 2 below `md` and (100vw − 2·56 − 4·24) / 5 from `md` (768 px). It is not
+  // `grid` because that box is 2-up/4-up at 50vw/25vw: on a 412 px phone at DPR 2.625 the
+  // overstated 50vw made the browser fetch the 640 w rung for a 178 px card and put the locale
+  // homes over AC-15's image budget (TASK-168). Same crops and the same variant ladder as `grid`
+  // — the ladder is the asset's, not the box's — so only the browser's pick changes. Below the
+  // hero and the finder on both artboards, so never the page's `priority` candidate.
+  trending: {
+    sizes: "(min-width: 768px) calc(20vw - 41.6px), calc(50vw - 28px)",
+    ratio: "portrait",
+    aboveFold: false,
+  },
 };
 
 /** The spec for a slot. Total over `MediaSlot`, so there is no failure mode to handle. */
