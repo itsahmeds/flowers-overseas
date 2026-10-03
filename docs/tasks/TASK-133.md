@@ -26,6 +26,12 @@ One dated bullet per `/review`, newest last.
   merges, lines 140, 179 and 201: price
   summary after the tiers, the "Six more" heading condition) has no test; moving the summary above
   the tiers passed every unit case the breaker ran. AC-28's artboard check must catch it.
+- **From `/review 135` round 2 (2026-10-03), HOLE 10 ACCEPTABLE, carried here:** the next task that
+  touches `tests/e2e/chrome-honesty.spec.ts` or adds a `data-fo-cutoff` mark closes it: plant a
+  marked cutoff line in `header` and one in `body` on `/dev/components` and assert the sweep still
+  reports both (red under a widened lift), and add a static guard that `data-fo-cutoff` appears
+  only under `src/modules/ui/product/`. Also from round 2: a promise nested inside a marked node is
+  lifted with it — check that every `[data-fo-cutoff]` node's text is exactly its catalogue line.
 
 ## Escalations
 

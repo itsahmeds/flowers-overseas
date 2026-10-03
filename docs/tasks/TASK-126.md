@@ -83,6 +83,10 @@ One dated bullet per `/review`, newest last.
   TASK-133: check every `[data-fo-cutoff]` node's text is exactly its catalogue line; and
   "Arrives tomorrow" matches no pattern in `tests/support/listing-honesty.ts:65` — a nit for the
   next task that touches that file.
+- **From `/review 135` round 2 (2026-10-03), HOLE 10 ACCEPTABLE (copied by the orchestrator after
+  merge):** widening the sweep's lift from the product state boxes to every `[data-fo-cutoff]` on
+  a page leaves all 58 `chrome-honesty` cases green. Accepted because hiding a real promise takes
+  two visible changes and no line outside the product page is marked today; carried to TASK-133.
 
 ## Escalations
 
@@ -315,3 +319,5 @@ in step.
   `[child]/page.tsx:424`) → TASK-131's AC-20 crawl must include the country shop roots.
 - **Expensive gates run locally**, because the change adds baselines and a docked element whose
   position only a browser computes; CI is the gate of record.
+
+**Merged with TASK-127 as PR 135 (`966c2e87`) on 2026-10-03; live on production.**

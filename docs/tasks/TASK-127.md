@@ -187,3 +187,5 @@ so the listing cards link to it. The page reads `productView()` only.
 - **Accepted, not built here:** HOLE 2 (the canonical, `page.tsx:253`) → TASK-132 (AC-17).
 - **`/review 101` HOLE 12:** done, see `## Progress`. **`/review 98` HOLE 5:** pinned and seen to
   bite.
+
+**Merged with TASK-126 as PR 135 (`966c2e87`) on 2026-10-03; live on production.**
