@@ -53,6 +53,20 @@ test.describe("existence and the 404 shapes (AC-1, T-01)", () => {
     }
   });
 
+  test("the trailing-slash form answers 308 to the bare product URL (§14 A7)", async ({
+    request,
+  }) => {
+    // Spec 009 §14 A7: "trailing slash" left AC-1's 404 list. It is Next's platform-wide
+    // `trailingSlash: false` redirect, as on the corridor (007 §14 A6) and listing (008 §14 A7)
+    // pages: a permanent redirect whose `Location` is the bare path — never a 200 at both forms,
+    // never a redirect to a guessed form. The six shapes above still 404 with no `Location`.
+    for (const bare of [POLAND_PDPS[0], POLAND_PDPS[2]]) {
+      const response = await request.get(`${bare}/`, { maxRedirects: 0 });
+      expect(response.status(), `${bare}/`).toBe(308);
+      expect(response.headers()["location"], `${bare}/`).toBe(bare);
+    }
+  });
+
   test("an uppercase variant is not a page (ADR-0006: no case-fixing rewrite)", async ({
     request,
     baseURL,
