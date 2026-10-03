@@ -11,8 +11,9 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
   does the rest once the founder answers: the approval data edit, the sign-off instant(s), the
   upload, and FO-BQ-004. This task: `` `gpt-image` `` added as an exact token to
   `docs/compliance/imagery-generator-terms.md` answer 1, citing the manifests measured on
-  2026-09-30; the 82 new ChatGPT prompt
-  records with `generatorModel` `gpt-image`, re-hashed; the 142 new `seed/data/media.json` rows (every CSV row but FO-BQ-004's two);
+  2026-09-30; the 80 new ChatGPT prompt
+  records with `generatorModel` `gpt-image`, re-hashed (82 less FO-BQ-004's two, which are
+  TASK-168's with the pair the founder chooses); the 142 new `seed/data/media.json` rows (every CSV row but FO-BQ-004's two);
   the generator fields of the 31 Grok SKUs' prompt records, re-hashed; variants from
   `pnpm media:variants`; `.jpg`/`.jpeg` originals accepted wherever the CLI or the runbook
   assumes `.png`; `content/imagery/requirements-remaining.md` regenerated; and the sign-off case in
@@ -93,7 +94,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-03: C2PA manifests of all 148 zip files read (86 PNG `ChatGPT`/`gpt-image`, 62 JPEG `Grok Imagine`, split exactly on the Grok record's 31 SKUs); 142 originals staged in the main checkout's `.local/imagery/originals/` (173 files), worktree reads them through `.local/imagery` → main's `.local/imagery`; T-31/T-32 generalised and each failing case watched red; `` `gpt-image` `` filed in answer 1. Next: prompt records.
 
 ## Result
 
