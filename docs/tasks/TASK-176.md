@@ -33,7 +33,15 @@ Row: `TASKS.md` → TASK-176. This brief is the task's long form (spec 001 §14 
 
 ## Escalations
 
-_None recorded._
+- **E1 — spec 004 §14 A4 vs the `chrome-mobile` artboard (not blocking).** A4 puts the language switcher and the currency
+  "in the utility strip on every breakpoint, where they are visible without scrolling" (AC-8's chip at 390 px). The v2
+  mobile artboard drops both from the notice bar ("the languages move to the footer"; the currency "desktop only"), and
+  TASK-175's `NoticeBar` hides its utilities below `md`. I followed the artboard: below `lg` the notice bar is one sentence,
+  the currency still renders in the HTML with its localised `aria-label` (AC-8's text, cookie and byte-identity clauses
+  hold), and the four languages are in the footer. **Question for the orchestrator/founder:** confirm the artboard, or rule
+  A4 still binds, in which case the fix is to show the notice bar's utility row on mobile as a second 44 px line (+44 px).
+- **E2 — copy held back for the 5 % gate.** "A note from us:" (notice lead-in) and "With love, from wherever you are."
+  (footer sign-off) are drawn on the artboards and not rendered until the founder approves them (see Result).
 
 ## Progress
 
@@ -41,4 +49,32 @@ _None recorded._
 
 ## Result
 
-_Pending._
+**PR:** https://github.com/itsahmeds/flowers-overseas/pull/172 (draft until PR 168 merges; its diff includes TASK-175).
+
+**What shipped** (spec 004 §14 A20, A21; AC-7, AC-8, AC-9, AC-14):
+- `SiteHeader`: `NoticeBar` (dates line gated by A19, "Prices include delivery and VAT", the guarantee; from `lg` the `tel:`
+  help line, spec 003's switcher and the currency as text) + sticky banner (Mark + outlined `Wordmark` named by the trading
+  name, the eight category links, the "Send flowers" pill → `/{locale}#send`). Mobile (< `xl`): 64 px row + scrolling
+  44 px chip row. No search, account, basket, menu or WhatsApp icon-link.
+- `SiteFooter`: paper-2, `airmail-edge-footer`, four columns (about, Sending, Help & WhatsApp, Payment), fine row
+  (languages, Cookie settings). The reminder form is gone (A20, A21 clause 1; route and constants kept). The Stripe
+  sentence renders only once a payment method is available (A10).
+- `NoticeDocument` (chooser, 404): outlined wordmark. The two 500 boundaries keep live type (client chunks; 11 KB of
+  paths would ride on every document).
+- **Heights, deliberately re-pinned** (A21 clause 7): notice bar 36 mobile / 62 desktop, banner 121 mobile / 83 desktop
+  (was 113 + 96 / 45 + 138). Measured on a production build at 390, 412, 768, 1 023, 1 024, 1 280, 1 440, 1 920 px in
+  en/de/pl: identical across locales, no horizontal overflow at any width, CLS 0 (no island). This owns TASK-175's
+  390 px overflow fix for the header and footer markup it replaces, and the footer label sizes (13 px headings, 14 px
+  fine row).
+- The local build was taken inside the build slot to measure those heights (the e2e pins needed real numbers; load
+  average 33–78 at the time, so no timing number is claimed). `pnpm budget:client-js`: every URL within budget.
+
+**Copy for the founder's batch (en, `reviewed: false`):**
+- `nav.send` — "Send flowers" (new)
+- `nav.utility.guarantee` — "Fresh-on-arrival guarantee" (founder, 2026-10-04; was "7-day freshness guarantee")
+- `company.description` — "We send flowers across Europe. You order from us; a local florist in the recipient's town will
+  make the bouquet and hand it over in person." (future tense)
+- Not rendered yet, awaiting approval: "A note from us:" (notice lead-in), "With love, from wherever you are." (sign-off).
+- de/pl drafts (`reviewed: false`): every `footer.*` label, `company.support.*`, the three keys above.
+
+`en` unreviewed share after this task: 26 / 541 = 4.8 %.
