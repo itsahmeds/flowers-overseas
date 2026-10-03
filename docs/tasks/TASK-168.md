@@ -213,6 +213,12 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   take it honestly; new variants, so a spec 006 §2.5 change, a `media:variants` run and an upload
   of one AVIF and one WebP per photographed asset in that crop); **(ii)** the budget stated per DPR or measured at a lower-DPR profile (a
   spec change); **(iii)** fewer photographed trending cards (ruled out). Recommendation: (i).
+  **Answered 2026-10-03 (orchestrator ruling): (i).** A 480 w rung in the `productHero` ladder,
+  honest by the measured table in `## Progress` (480 / 178 = 2.70 ≥ DPR 2.625); no quality change,
+  no budget change; a spec 006 §2.5 amendment follows on a docs branch. Fence widened to the ladder
+  definition, `media:variants` for every approved asset, `seed/data/media-variants.json`, and
+  `media:upload --only <approved ids>` plus `--verify` in groups of 16; a unit case pins the
+  rungs, watched red; re-measure the four homes on Pixel 7, stop if any is over 204 800 B.
 
 ## Progress
 
@@ -323,6 +329,16 @@ here.
   the escalation); `visual` green with the two new baselines; the consent flake did not recur.
   Lighthouse LCP `/en` 1 870 ms, `/en-gb` 1 933, `/de` 1 866, `/pl` 1 799 (budget 2 000; `/en-gb`'s
   margin is 67 ms). Stopped on the budget; row `blocked`.
+- 2026-10-03 (ruling (i)): `origin/main` merged in (`e49cdb19`; the baselines manifest
+  regenerated from the merged PNGs, `dev-components-desktop.png` kept as ours, to be re-taken).
+  `PHASE0_SLOT_WIDTHS.productHero` = 384/480/640/828 (`seed/schema/variants.ts`); `VARIANT_WIDTHS`
+  (§13 Q5's vocabulary, pinned verbatim) left for the spec amendment. `pnpm media:variants` on all
+  175: 862 rows (+168: 84 heroes × AVIF/WebP at 480; 0 existing rows changed, 0 removed),
+  `--check` and `seed:check` exit 0. New case in `tests/unit/media-variants.test.ts` pins the
+  ladder and every approved hero's rungs in both formats; red with 480 dropped from the ladder (2
+  cases) and with one 480 row dropped from the manifest. Upload `--only` the 84 hero ids
+  (`--dry-run` first): 168 uploaded, 504 already current, 3 253 119 B; `--verify` in six groups
+  of 16 ids: 672 rows, every exit 0.
 
 ## Result
 
