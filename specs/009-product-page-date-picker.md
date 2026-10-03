@@ -515,3 +515,64 @@ sentence. It is not drawn yet (TASK-127 records that), so **TASK-172** carries i
 design, then the rendering. This amendment binds TASK-172. TASK-172 adds its AC and T rows here,
 with one case each for 5, 7 and absent. Its English copy goes to the founder for batch approval.
 No current AC or T row changes.
+
+**A10 (2026-10-03, orchestrator ruling, the founder delegated; implemented by TASK-128).** **The
+product route never reads the query string.** Sources: the advisor memo
+`docs/advice/2026-10-03-route-rendering-404-and-pdp-form.md` (TASK-128, E-1 to E-4) and the
+`docs/decisions-log.md` row "TASK-170 and TASK-128: option (a), after a spike". This is the same rule
+as spec 008 §14 A13. A route file that reads `searchParams` renders per request, and that would undo
+A6's prebuilt existence gate for products (memo, Building 3).
+
+- **The bare product page stays prebuilt, and A6 holds** (memo E-1). The route file reads no
+  `searchParams`. It renders the default selection, ISR as §5.4 states.
+- **The form** (memo E-1). The JS-off form stays `method="get"` and submits to the bare product
+  URL. A `next.config` `beforeFiles` rewrite of spec 008 §14 A13's kind sends that request to an
+  internal parameter route under the same `_query` segment. It has one rule per (launch locale, key),
+  the keys `tier` and `date`, sources built from the locale registry's `product` segment, and a
+  `has: query` condition. It holds parameter names only. The parameter route is the only reader of
+  `?tier=`/`?date=`. It parses `ProductSearchParamsSchema` and renders the selection through the
+  same `productView()` and page module as the bare route: `noindex,follow`, with a canonical to the
+  bare URL and spec 008 §5.4's shared-cache header. It is never linked, never in a sitemap and never
+  canonical, and a direct request with neither key answers 404. There is no new public URL shape,
+  no redirect and no client-only content.
+- **Unknown parameters** (memo E-1; spec 007 §14 A5's canonical stripping). A product URL that
+  carries only unknown parameters (`utm_*`, `gclid`, `fbclid`) matches no rule. It gets the prebuilt
+  page, with its canonical on the bare URL and the bare page's own robots directive, not `noindex`.
+  This supersedes §5.2's "an unknown parameter is dropped and contributes only `indexable: false`"
+  (L167). An unknown parameter that arrives beside `tier` or `date` is dropped by the strict schema
+  on the parameter route.
+- **Phase 0 tier change** (memo E-3). In `unavailable` and `preview`, changing the tier is
+  JavaScript-only: every tier's all-in price is already printed beside it (§5.3), nothing can be
+  bought, and no new copy is needed. AC-13's JS-off clause binds the `live` state, and T-13's JS-off
+  half runs on the `live` fixture.
+- **Cache policy per picker state** (memo E-2). Phase 0 ships a pure policy keyed on
+  `pickerState()`. `unavailable` and `preview` get `revalidate` 3600 with §5.4's tags; `live` gets
+  300 plus `cutoff:{iso2}`. Phase 0 also extends `urlsForTag()` in `src/lib/cache.ts` to the product
+  tags. T-24 asserts the policy and the registry, and AC-24's "(300 when live)" is read as that
+  policy's output. The route's live 300 s revalidation, and the purge of a country's pages at its
+  cutoff time, belong to the task that makes the first country live.
+- **Checkout re-checks** (memo, Law and compliance 2). Once a country is live, a cached PDP can show
+  a date that can no longer be met. Spec 010's checkout must re-check the date, the cutoff and the
+  price on the server before it takes money. This is recorded here as a requirement on spec 010,
+  because this page takes no money.
+- **Order of work** (memo E-4): TASK-170, then TASK-146 (still before TASK-096), then TASK-128,
+  all with one agent.
+
+Three clauses now read:
+
+- **§5.4, the "Parameterised requests" bullet (L206):** a request that carries `tier` or `date` is
+  rewritten to the internal parameter route. That route renders it per request, and the edge
+  caches it by full URL (`public, s-maxage=3600, stale-while-revalidate=86400`). The product route
+  reads no query string and stays prebuilt (A6).
+- **AC-15:** the internal parameter route alone parses `?tier=` / `?date=`, strictly. A valid value
+  re-renders the selection. An unknown tier, a malformed date, an out-of-window date or an
+  unselectable date falls back to the default rendering with a 200 and no error. Every URL that
+  carries `tier` or `date` is `noindex,follow` with a canonical to the bare URL. A URL that carries
+  only unknown parameters is served the prebuilt bare page, whose canonical is the bare URL. No
+  parameterised URL appears in a sitemap or as an `<a href>` anywhere on the site. The product
+  route file reads no `searchParams`, and the build lists the product route as prebuilt.
+- **T-15** (e2e + integration, AC-15): the five value cases as before, now on the rewritten URL.
+  `?gclid=x` gets the prebuilt page, with a canonical to the bare URL and no `noindex`. A direct
+  request for the internal path with no key answers 404. A source check finds no `searchParams` in
+  the product route. Putting `searchParams` back makes the build list the product route as
+  per-request, and the case goes red.
