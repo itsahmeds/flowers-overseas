@@ -9,6 +9,16 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 `specs/040-hosting-railway-cloudflare.md` §5.4 and §9 AC-15, AC-17, AC-23, AC-24, AC-29 (tests T-15, T-17, T-24, T-25, and T-27's `cloudflare-check` half). §12 step 4: the settings are applied by the script to the zone while it still points at nothing. `config/cloudflare/zone-settings.json` is the declared state: the nine protocol/TLS settings of AC-15 and the §5.4 do-not-enable table, each row with its reason. `pnpm cloudflare:check` makes no write, prints one line per differing setting and exits non-zero on drift; `pnpm cloudflare:apply` is idempotent (`0 changes` on a second run). The token holds exactly Zone Settings Edit, DNS Edit, Cache Purge and Zone Read on the single zone; a unit test pins the endpoints the script may call and fails on any `/accounts/` path; a 403 is reported as the named missing scope. Cache rules, the rate limit and DNS records are TASK-101's, not this task's.
 
 **The live half is owed to the founder.** No agent holds a Cloudflare token. The contract tests against recorded zone responses are this task's gate. AC-17's "it passes on the current zone" and a first live `cloudflare:apply` are one founder paste, recorded under `## Escalations` exactly as TASK-157 records T-44: the runbook gains the click-by-click token steps (scopes above, one zone) and the commands to paste. The `cloudflare-check` CI job reads the token and zone id from repository secrets the founder adds; say in the runbook which two secret names, and make the job fail with a named message, never pass, when they are absent under a trigger that runs it.
+- **2026-10-03 — the eye-check of the rows no zone token can read (spec 040 §14 A5, CF-1). Done by the
+  orchestrator in the founder's signed-in Cloudflare dashboard, at the founder's instruction.** Zone
+  `flowersoverseas.com`, free plan. (1) **IP-geo redirects:** Rules → Overview shows no URL Rewrite, Redirect,
+  Configuration, Origin, Transform or Compression rule; the only rule is the cache rule for
+  `media.flowersoverseas.com/*`. (2) **Access on production:** Access shows its "Get started" page: no
+  application exists. (3) **Access / basic-auth on staging and PR:** no Access application, so the declared
+  default holds: the basic-auth check in `src/proxy.ts`. (4) **Workers / Snippets:** Workers Routes lists
+  none; Snippets are not available on the free plan. (5) **Pay-per-crawl:** AI Crawl Control → Security lists
+  each crawler with Block off and no Charge option, so pay-per-crawl is not enabled; Bot Preference Sync
+  (managed `robots.txt`) is off on the Overview. The token-gated checks (Z1–Z4) are still the founder's.
 
 ## Read
 
