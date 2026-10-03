@@ -88,6 +88,10 @@ _None._
   `consent-shown-en-mobile`, `product-mobile-sticky`, `footer-en-desktop`. Found: the footer's
   occasion-reminder field is squeezed by the wider v2 pill (TASK-176 removes that form, A21
   clause 1).
+- 2026-10-04 — origin/main merged twice more (PR 171 bookkeeping as a95cc2b3; TASK-140 "Popular
+  choices" as 772fcd2c, messages from main). Baselines re-taken from `visual-baselines` run
+  37153486650 on 772fcd2c: its whole change list (41 PNGs plus the manifest), `--verify` 104/104.
+  Opened `home-desktop-trending` (Popular choices) and `listing-desktop-grid`.
 
 ## Result
 
