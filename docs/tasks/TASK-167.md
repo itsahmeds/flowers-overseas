@@ -96,6 +96,7 @@ here.
 
 - 2026-10-03: C2PA manifests of all 148 zip files read (86 PNG `ChatGPT`/`gpt-image`, 62 JPEG `Grok Imagine`, split exactly on the Grok record's 31 SKUs); 142 originals staged in the main checkout's `.local/imagery/originals/` (173 files), worktree reads them through `.local/imagery` → main's `.local/imagery`; T-31/T-32 generalised and each failing case watched red; `` `gpt-image` `` filed in answer 1. Next: prompt records.
 - 2026-10-03: prompt records (80 ChatGPT → `gpt-image`, 62 Grok → `xAI Grok Imagine` / `Grok Imagine`, FO-BQ-004 untouched); 142 `media.json` rows `pending` with `promptHash` from `promptHash()` and `originalSha256` of the staged original; sign-off case split, each split case watched red by mutating `media.json`. Next: `pnpm media:variants`.
+- 2026-10-03: `pnpm media:variants` once (3 min 46 s, load 1.6): 686 rows (118 batch-1 rows byte-identical + 568), nothing under `public/media/` changed, every file inside its slot cap; `--check` and `catalogue:check` green. Rule-2 comment restated; sheet regenerated (script keeps each record's generator fields and lists products with no *approved* row, so the CSV is unchanged); runbook names `.jpeg`. **`seed:check` red: 568 × `media/alt-missing`** (142 new product assets × 4 locales) — escalated, see `## Escalations`.
 
 ## Result
 

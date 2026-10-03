@@ -15,7 +15,7 @@ the §2.4 review checklist. This file is the *procedure*, not the rules.
 | 1. Author the prompt | `content/imagery/prompts/{SKU}.json` (or `homepage.json`) | one record per asset: prompt, negative prompt, generator, model, seed, parameters |
 | 2. Generate | the generator named in the record, with that record's seed | a ≥ 2000 px original per asset |
 | 3. Review | the founder, against `content/imagery/style-guide.md` §7's checklist | accept, or **regenerate from the same prompt with a new seed — never retouch** |
-| 4. Land the original | `.local/imagery/originals/{assetId}.{png,jpg,…}` (git-ignored) **and** the founder's Drive folder "Flower Images" (the store of record) | an original this repository can read and will never commit |
+| 4. Land the original | `.local/imagery/originals/{assetId}.{png,jpg,jpeg,…}` (git-ignored), in the format the generator delivered — a Grok original stays the JPEG xAI delivered, because converting it drops its C2PA manifest (spec 006 §14 A7 clause 1); exactly one file per asset id (`ORIGINAL_EXTENSIONS` in `seed/media-variants.ts`) — **and** the founder's Drive folder "Flower Images" (the store of record) | an original this repository can read and will never commit |
 | 5. Record it | `seed/data/media.json` | `reviewState: "approved"`, `reviewedBy`, `reviewedAt`, `originalSha256`, `derivativeC2pa` |
 | 6. Derive | `pnpm media:variants` (or `--only <assetId>`) | `.local/media/{assetId}/{width}.{fmt}` (git-ignored) + `seed/data/media-variants.json`; for the `hero` slot also the committed `public/media/{assetId}/{width}.{fmt}` (see §2) |
 | 7. Write alt text | `seed/data/alt/{locale}.json`, **all four launch locales** | the only thing that lets `MediaAsset` render an `<img>` at all |
