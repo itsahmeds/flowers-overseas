@@ -333,6 +333,14 @@ const RESIDUAL_404S = [
   // A page past the last (spec 008 AC-10's "404, never an empty grid"): the country exists, but
   // `listingView()` answers `undefined` inside the per-request render. Accepted by `/review 143`.
   "/en/poland/flowers?page=99",
+  // An uppercase locale or shop segment **with** a listing key (`/break 143` hole 1). Next matches
+  // the rewrite case-insensitively, so these reach the parameter route — with the visitor's own
+  // spelling, which its strict resolver refuses: 404, never the page 2 they once rendered (spec
+  // 008 AC-1). Same render, same error shell as the rows above; the bare uppercase addresses are
+  // the router's localised 404 (spec 003 AC-8's `/EN`).
+  "/EN/poland/flowers?page=2",
+  "/en/poland/FLOWERS?page=2",
+  "/DE/polen/BLUMEN?page=2",
 ] as const;
 
 test.describe("the accepted residual: 404 inside the error shell (TASK-170 E-1)", () => {

@@ -228,16 +228,16 @@ test.describe("the parameter policy (AC-15, T-15)", () => {
     // visitor gets the prebuilt document of the bare URL — its robots, its canonical, its bytes.
     const bare = await body(request, SHOP);
     expect(bare.status).toBe(200);
-    // The parameter route's render names its own segment in the RSC payload; the prebuilt
-    // document never does. This is what tells "served the bare page" from "rendered it again".
-    expect(bare.html).not.toContain("_query");
     for (const query of ["utm_source=newsletter", "gclid=abc123"]) {
       const { status, html } = await body(request, `${SHOP}?${query}`);
       expect(status, query).toBe(200);
       expect(robotsOf(html), query).toBe(robotsOf(bare.html));
       expect(canonicalOf(html), query).toBe(canonicalOf(bare.html));
       expect(canonicalOf(html), query).toMatch(/\/en\/poland\/flowers$/u);
-      expect(html, query).not.toContain("_query");
+      // What tells "served the prebuilt page" from "rendered it again": a per-request render's
+      // RSC payload carries the request's query and its own route tree, so its bytes differ
+      // (measured on the TASK-170 build: `?colour=red` differs from the bare document, `?utm_source`
+      // and `?gclid` do not).
       expect(html === bare.html, `${query}: the bare URL's own bytes`).toBe(
         true,
       );
@@ -310,6 +310,41 @@ test.describe("the parameter route is never indexable at its own address (TASK-1
         "nofollow",
       );
     }
+  });
+});
+
+/**
+ * The pseudo-locales' parameters (`/break 143` hole 2; spec 008 AC-10, T-26). Where a deployment
+ * routes `ar-XB` (CI, previews), its shop root is prebuilt like a launch locale's, so its query
+ * must reach the parameter route too — the rewrite is built from the same locale set as the
+ * prebuilt pages (`src/lib/listing-rewrites.ts`). Skipped where the pseudo-locales are not routed.
+ */
+test.describe("a routed pseudo-locale honours the listing parameters (AC-10, TASK-170)", () => {
+  const PSEUDO_SHOP = "/ar-XB/poland/flowers";
+
+  test("`?page=2` is page 2, `?page=99` is a 404 and `?page=1` redirects to the bare URL", async ({
+    request,
+  }) => {
+    const bare = await request.get(PSEUDO_SHOP, { maxRedirects: 0 });
+    test.skip(bare.status() === 404, "pseudo-locales are not routed here");
+    expect(bare.status()).toBe(200);
+
+    const second = await body(request, `${PSEUDO_SHOP}?page=2`);
+    expect(second.status).toBe(200);
+    expect(canonicalOf(second.html)).toMatch(
+      /\/ar-XB\/poland\/flowers\?page=2$/u,
+    );
+
+    const past = await request.get(`${PSEUDO_SHOP}?page=99`, {
+      maxRedirects: 0,
+    });
+    expect(past.status()).toBe(404);
+
+    const first = await request.get(`${PSEUDO_SHOP}?page=1`, {
+      maxRedirects: 0,
+    });
+    expect([301, 308]).toContain(first.status());
+    expect(first.headers()["location"]).toBe(PSEUDO_SHOP);
   });
 });
 

@@ -24,8 +24,9 @@
  *
  * ## What the sources match
  *
- * The same shape as `listing-cache-headers.ts`, from the same registry: one source per launch
- * locale naming that locale's own `shopCategory` segment, the country slug as the one wildcard.
+ * The same shape as `listing-cache-headers.ts`, from the same registry: one source per locale the
+ * shop root is prebuilt in (launch locales, plus pseudo-locales where routed), naming that locale's
+ * own `shopCategory` segment, the country slug as the one wildcard.
  * It cannot match the corridor (`/en/send-flowers-to/poland`), a hub (`/en/flowers/roses`) or a
  * depth-4 URL, so those page types never leave their prebuilt route.
  *
@@ -39,7 +40,7 @@
  * One rule per (locale, key), because a `has` key is matched literally.
  */
 import { FACET_PARAMETERS } from "../config/catalogue/schemas.ts";
-import { launchLocales, localeConfig } from "../config/locales";
+import { LOCALES } from "../config/locales";
 import { QUERY_KEYS } from "../config/url-keys.ts";
 
 import { type HeaderRule, NOINDEX_HEADER_NAME } from "./robots-headers.ts";
@@ -64,13 +65,44 @@ export const LISTING_REWRITE_KEYS: readonly string[] = [
   ...Object.values(FACET_PARAMETERS),
 ];
 
-/** Fresh objects on every call, matching `listingCacheHeaderRules()`. */
+/**
+ * The locales the country shop root is prebuilt in, and so the locales whose parameters must be
+ * honoured (`/break 143` hole 2): the launch locales **plus the pseudo-locales wherever the
+ * deployment routes them** — `listingLocales()`'s filter (`src/modules/catalog/listing.ts`) over
+ * the same registry, which already holds `en-XA`/`ar-XB` exactly when `ENABLE_PSEUDO_LOCALES` is
+ * on (CI and previews; the production env schema refuses the flag). Read from `LOCALES` here
+ * because `next.config.ts` cannot import a module; `tests/unit/listing-rewrites.test.ts` ties the
+ * two lists together.
+ */
+export const LISTING_REWRITE_LOCALES: readonly string[] = LOCALES.filter(
+  (locale) => locale.isLaunch || locale.isPseudo,
+).map((locale) => locale.code);
+
+/** A literal for a path-to-regexp parameter group (`en-gb`, `ar-XB`, `flowers` need none today). */
+function literal(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+}
+
+/**
+ * Fresh objects on every call, matching `listingCacheHeaderRules()`.
+ *
+ * **The locale and the shop segment are captured, not written** (`/break 143` hole 1). Next
+ * matches custom-route sources case-insensitively (`sensitive: false` unless
+ * `caseSensitiveRoutes`), so a literal `/en/:country/flowers` also matched `/EN/poland/FLOWERS`
+ * and rewrote it to the lowercase destination, where it rendered page 2 of a page whose bare
+ * address is a 404 (spec 008 AC-1, spec 003 AC-8). As named groups — `/:locale(en)/:country/
+ * :shop(flowers)` — the match is the same, but the destination carries the visitor's own spelling,
+ * and the parameter route's `resolveLocalePath()` (exact registry lookup, exact segment compare)
+ * answers it 404 exactly as the router answers the bare uppercase address.
+ */
 export function listingRewriteRules(): RewriteRule[] {
-  return launchLocales.flatMap((locale): RewriteRule[] => {
-    const shopCategory = localeConfig(locale).pathSegments.shopCategory;
+  return LOCALES.filter((locale) =>
+    LISTING_REWRITE_LOCALES.includes(locale.code),
+  ).flatMap((locale): RewriteRule[] => {
+    const shopCategory = locale.pathSegments.shopCategory;
     return LISTING_REWRITE_KEYS.map((key) => ({
-      source: `/${locale}/:country/${shopCategory}`,
-      destination: `/${locale}/${PARAMETER_ROUTE_SEGMENT}/:country/${shopCategory}`,
+      source: `/:locale(${literal(locale.code)})/:country/:shop(${literal(shopCategory)})`,
+      destination: `/:locale/${PARAMETER_ROUTE_SEGMENT}/:country/:shop`,
       has: [{ type: "query", key }],
     }));
   });
