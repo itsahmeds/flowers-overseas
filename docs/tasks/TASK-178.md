@@ -36,7 +36,11 @@ _None recorded._
 
 ## Progress
 
-_Not started._
+- 2026-10-04 00:40 — **Equivalents helper published** (for TASK-179): `src/modules/catalog/pricing/equivalents.ts`
+  (`priceEquivalents(charged, now)` → `{ asOf, amounts } | null`, exported from `@/modules/catalog` with
+  `EQUIVALENT_CURRENCIES`); USD equivalent-only row in `src/config/currencies.ts`; ECB USD 1.1614 for 2026-09-08 in
+  `src/config/catalogue/fx.data.ts`; tests `tests/unit/catalog-pricing-equivalents.test.ts`. Next: the formatter and
+  message key, the card wiring, then the listing pages to the artboards.
 
 ## Result
 
