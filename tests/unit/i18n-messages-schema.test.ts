@@ -282,11 +282,8 @@ describe("the shipped catalogues and manifests", () => {
     // out-links block "Out of this page", which is architecture, not copy. Recorded in
     // `docs/design/README.md`'s TASK-112 row, clauses (c), (d) and (e).
     // TASK-178 (spec 004 §14 A21 clause 6 (b)): the approximate-equivalents line under a
-    // destination-specific price, "about {amounts} at the rate of {date}"; then the listing copy
-    // of the founder's 2026-10-04 batch (item 14: eyebrow, P.S. note, card band, "Narrow it
-    // down", "all in") and the future-tense ledes and meta descriptions. They wait here until the
-    // orchestrator records the founder's attestation.
-    "catalog.price.allIn",
+    // destination-specific price, "about {amounts} at the rate of {date}". It waits here until
+    // the founder's attestation is recorded.
     "catalog.price.equivalents",
     "categoryHub.destinationLink",
     // TASK-176's chrome strings (`company.description`, `company.support.hours`, `nav.send`,
@@ -334,23 +331,12 @@ describe("the shipped catalogues and manifests", () => {
     // Poland-specific sentence, the honest blank for an occasion with no computable rule
     // (§14 design round Q6), the lede, the two `<head>` strings and the third column's link
     // label — so they wait here until he ticks them. No `reviewedBy`, by the rule above.
-    // TASK-178 adds the listing keys named at `catalog.price.allIn` above.
-    "shop.cardNote.heading",
-    "shop.category.lede",
-    "shop.category.seoDescription",
-    "shop.listing.eyebrow",
-    "shop.note.label",
-    "shop.note.mark",
     "shop.occasion.dateNote",
     "shop.occasion.lede",
     "shop.occasion.seoDescription",
     "shop.occasion.seoTitle",
     "shop.occasion.undatedLine",
-    "shop.root.introBody",
-    "shop.root.lede",
     "shop.root.occasionPageLink",
-    "shop.root.seoDescription",
-    "shop.root.tilesSubheading",
   ];
 
   it("reviews the authored English and leaves the machine drafts unreviewed (§13 Q7, Q10)", () => {
