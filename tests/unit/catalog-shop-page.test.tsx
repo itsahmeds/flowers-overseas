@@ -107,7 +107,7 @@ describe("the populated shop root (§5.3 row 1)", () => {
     // sort with JavaScript off. Counted exactly, so a second form — a basket, an email capture —
     // fails here.
     expect(html.match(/<form/giu) ?? []).toHaveLength(1);
-    expect(html).toContain('<form class="gap-sm flex items-end" method="get"');
+    expect(html).toMatch(/<form class="[^"]*" method="get"/u);
     expect(html.match(/<button/giu) ?? []).toHaveLength(1);
     expect(html).toContain('type="submit"');
     expect(html).not.toMatch(/basket|cart|buy now|add to/iu);
@@ -116,7 +116,7 @@ describe("the populated shop root (§5.3 row 1)", () => {
   it("renders the sort form and its disclosure, and offers three orders (AC-9)", () => {
     // A visible `<label>` bound to the `<select>`, three options and a submit button — no island,
     // no `onchange`, nothing that needs JavaScript to work.
-    expect(html).toContain('<label class="text-ink-muted self-center text-sm"');
+    expect(html).toMatch(/<label class="[^"]*" for="listing-sort"/u);
     expect(html).toContain('for="listing-sort"');
     expect(html).toContain('id="listing-sort"');
     expect(html).toContain('name="sort"');

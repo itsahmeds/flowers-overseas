@@ -81,15 +81,17 @@ describe("the populated country category (§5.3 row 2)", () => {
     expect(text).toContain("Roses we make for Poland");
   });
 
-  it("follows the artboard's block order: crumbs, hero, siblings, grid, intro", () => {
+  // v2 (spec 004 §14 A21; `country-category-desktop.dc.html`): the grid comes straight after the
+  // hero, and "Also for Poland" moves under it.
+  it("follows the v2 artboard's block order: crumbs, hero, grid, siblings, intro", () => {
     const crumbs = html.indexOf("data-fo-breadcrumb");
     const siblings = html.indexOf("sibling-categories");
     const grid = html.indexOf("data-fo-listing-grid");
     const intro = html.indexOf("data-fo-shop-intro");
     expect(crumbs).toBeGreaterThan(-1);
-    expect(crumbs).toBeLessThan(siblings);
-    expect(siblings).toBeLessThan(grid);
-    expect(grid).toBeLessThan(intro);
+    expect(crumbs).toBeLessThan(grid);
+    expect(grid).toBeLessThan(siblings);
+    expect(siblings).toBeLessThan(intro);
   });
 
   it("carries the counted lede and the demo sentence", () => {

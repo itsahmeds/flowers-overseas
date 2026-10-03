@@ -61,12 +61,14 @@ export function ListingGrid({
   if (cards.length === 0) return null;
 
   return (
+    // v2 `.grid4` (spec 004 §14 A21): two columns 32/14 apart on a phone, four columns 52/28
+    // apart from `md` up.
     <Grid
       as="ul"
       columns="2-4"
-      gap="lg"
+      gap="none"
       aria-label={t("grid.label", { count: cards.length })}
-      className="list-none"
+      className="list-none gap-x-[14px] gap-y-[32px] md:gap-x-[28px] md:gap-y-[52px]"
       data-fo-listing-grid={cards.length}
     >
       {cards.map((card, index) => (
