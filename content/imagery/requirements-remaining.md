@@ -58,9 +58,11 @@ pnpm seed:check              # per-slot byte caps, nine rule families
 
 Approving an asset is a data edit, not a code change, and only on the founder's own recorded word:
 set `reviewState: "approved"`, `reviewedBy` and `reviewedAt` on its row in
-`seed/data/media.json`. Then upload **only the approved ids**: `pnpm media:upload --only
-<assetId>` per asset, and `pnpm media:upload --verify`. A bare `pnpm media:upload` puts every
-manifest row, which would publish photographs nobody approved.
+`seed/data/media.json`, with the asset's alt text in all four launch locales in the same change
+(spec 006 §14 A9). Then upload the batch by id: `pnpm media:upload --only <assetId> --only
+<assetId> …` and `pnpm media:upload --verify --only <the same ids>`. Both commands act on
+**approved assets only** — a `pending` or `rejected` asset is skipped and counted in the summary,
+because it renders the placeholder and its bytes never belong in the public bucket.
 
 ## The 144 images
 

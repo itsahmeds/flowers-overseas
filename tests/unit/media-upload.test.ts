@@ -12,7 +12,14 @@
  * `docs/tasks/TASK-138.md`.
  */
 import { spawnSync } from "node:child_process";
-import { copyFileSync, cpSync, mkdirSync, mkdtempSync, rmSync } from "node:fs";
+import {
+  copyFileSync,
+  cpSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
@@ -40,6 +47,7 @@ import {
   parseArgs,
   readR2Config,
   runUpload,
+  runVerify,
   signRequest,
   verifyPublished,
 } from "../../scripts/media-upload.ts";
@@ -889,6 +897,149 @@ describe("the upload's gates run before the first request (runUpload)", () => {
       ].sort(),
     );
     expect(written.at(-1)).toMatch(/^2 variant\(s\): 2 uploaded/u);
+  }, 60_000);
+});
+
+/**
+ * `/break 142` HOLE 5 (TASK-167): the manifest now carries the variants of 142 `pending`
+ * photographs. Only an `approved` asset is ever published, with or without `--only`, and
+ * `--verify` does not count an unpublished pending object as missing (`publishableRows()`).
+ */
+describe("only approved assets reach the bucket, and `--verify` checks only those", () => {
+  const APPROVED = "home-occasion-birthday";
+  const PENDING = "fo-bq-005-detail";
+  const ENV = { ...CONFIG };
+
+  async function frame(assetId: string): Promise<Buffer> {
+    const box = variantBox(assetId, 384);
+    return await sharp({
+      create: {
+        width: box.width,
+        height: box.height,
+        channels: 3,
+        background: { r: 214, g: 209, b: 201 },
+      },
+    })
+      .avif(AVIF_OPTIONS)
+      .toBuffer();
+  }
+
+  async function mixedTree(): Promise<string> {
+    return writeDerivedTree(
+      await Promise.all(
+        [APPROVED, PENDING].map(async (assetId) => ({
+          assetId,
+          width: 384,
+          format: "avif" as const,
+          data: await frame(assetId),
+        })),
+      ),
+    );
+  }
+
+  it("the fixture's subjects are what they claim: one approved asset and one pending", () => {
+    const states = new Map(
+      (
+        JSON.parse(
+          readFileSync(join(repoRoot, "seed/data/media.json"), "utf8"),
+        ) as { rows: { id: string; reviewState: string }[] }
+      ).rows.map((row) => [row.id, row.reviewState]),
+    );
+    expect(states.get(APPROVED)).toBe("approved");
+    expect(states.get(PENDING)).toBe("pending");
+  });
+
+  async function upload(
+    root: string,
+    argv: readonly string[],
+  ): Promise<{ summary: unknown; calls: Call[]; written: string[] }> {
+    const { fetcher, calls } = fakeFetcher([
+      { status: 404 },
+      { status: 200 },
+      { status: 404 },
+      { status: 200 },
+    ]);
+    const written: string[] = [];
+    const summary = await runUpload({
+      root,
+      env: ENV,
+      args: parseArgs(argv),
+      fetcher,
+      write: (text) => {
+        written.push(text);
+      },
+      now: () => NOW,
+    });
+    return { summary, calls, written };
+  }
+
+  it("never PUTs a pending asset's variants, even with no `--only`, and says how many it skipped", async () => {
+    const { summary, calls, written } = await upload(await mixedTree(), []);
+
+    expect(summary).toMatchObject({ variants: 1, uploaded: 1, unapproved: 1 });
+    expect(
+      calls
+        .filter((call) => call.method === "PUT")
+        .map((call) => new URL(call.url).pathname),
+    ).toEqual([`/${CONFIG.R2_BUCKET}/media/${APPROVED}/384.avif`]);
+    expect(calls.some((call) => call.url.includes(PENDING))).toBe(false);
+    expect(written.at(-1)).toContain(
+      "1 variant(s) of unapproved assets skipped",
+    );
+  }, 60_000);
+
+  it("publishes nothing for `--only <pending id>`", async () => {
+    const { summary, calls } = await upload(await mixedTree(), [
+      "--only",
+      PENDING,
+    ]);
+
+    expect(summary).toMatchObject({ variants: 0, uploaded: 0, unapproved: 1 });
+    expect(calls).toEqual([]);
+  }, 60_000);
+
+  it("`--verify` does not report a pending asset's unpublished objects as missing", async () => {
+    const root = await mixedTree();
+    const rows = (
+      JSON.parse(
+        readFileSync(join(root, "seed/data/media-variants.json"), "utf8"),
+      ) as { rows: MediaVariantManifest[] }
+    ).rows;
+    const published = rows.find((row) => row.assetId === APPROVED);
+    if (published === undefined) throw new Error("fixture has no approved row");
+    // The bucket as it should be: the approved object published, the pending one absent.
+    const heads: string[] = [];
+    const fetcher: Fetcher = async (url) => {
+      heads.push(url);
+      const isPublished = url === `${MEDIA_ORIGIN}/${published.objectKey}`;
+      return await Promise.resolve({
+        status: isPublished ? 200 : 404,
+        headers: {
+          get: (name: string): string | null =>
+            !isPublished
+              ? null
+              : name.toLowerCase() === "content-length"
+                ? String(published.bytes)
+                : name.toLowerCase() === "content-type"
+                  ? contentTypeFor(published.format)
+                  : null,
+        },
+        text: async (): Promise<string> => await Promise.resolve(""),
+      });
+    };
+    const written: string[] = [];
+
+    await expect(
+      runVerify({
+        root,
+        fetcher,
+        write: (text) => {
+          written.push(text);
+        },
+      }),
+    ).resolves.toEqual({ verified: 1, unapproved: 1 });
+    expect(heads).toEqual([`${MEDIA_ORIGIN}/${published.objectKey}`]);
+    expect(written[0]).toContain("1 row(s) of unapproved assets not checked");
   }, 60_000);
 });
 

@@ -20,8 +20,8 @@ the §2.4 review checklist. This file is the *procedure*, not the rules.
 | 6. Derive | `pnpm media:variants` (or `--only <assetId>`) | `.local/media/{assetId}/{width}.{fmt}` (git-ignored) + `seed/data/media-variants.json`; for the `hero` slot also the committed `public/media/{assetId}/{width}.{fmt}` (see §2) |
 | 7. Write alt text | `seed/data/alt/{locale}.json`, **all four launch locales** | the only thing that lets `MediaAsset` render an `<img>` at all |
 | 8. Gate | `pnpm seed:check` then `pnpm media:variants --check` | byte caps, provenance, alt coverage, manifest ↔ file ↔ checksum |
-| 9. Upload | `pnpm media:upload` (`--dry-run` first if you like) | the objects in `flowersoverseas-media`, idempotent by checksum, `Cache-Control: public, max-age=31536000, immutable` on each |
-| 10. Verify | `pnpm media:upload --verify` | every manifest row `HEAD`ed on the public origin: the published `content-length` and `content-type` must equal the row's. No credential and no derived tree needed |
+| 9. Upload | `pnpm media:upload --only <assetId> --only <assetId> …` for the batch just approved (`--dry-run` first if you like) | the objects of **approved assets only** in `flowersoverseas-media`, idempotent by checksum, `Cache-Control: public, max-age=31536000, immutable` on each. A `pending` or `rejected` asset is skipped and counted in the summary, with or without `--only`: it renders the placeholder, and an object in the bucket is public and cached for a year (TASK-167) |
+| 10. Verify | `pnpm media:upload --verify --only <the same ids>` | every row of an **approved** asset `HEAD`ed on the public origin: the published `content-length` and `content-type` must equal the row's. Rows of `pending` or `rejected` assets are not checked, because they are never published. No credential and no derived tree needed |
 | 11. Snapshot | `pnpm seed:diff --write` | `seed/snapshot/**` back in step with the dataset |
 
 **Step 7 is all-or-nothing across locales, deliberately.** The first alt row anywhere obliges every
@@ -116,7 +116,7 @@ from the Drive store of record or `.local/imagery/originals/`, check its manifes
 | Hero LCP candidate | ≤ 90 000 B | the same spec |
 | LCP / CLS | < 2.0 s / < 0.05 | `pnpm lighthouse` |
 | Total bytes in the bucket | **reported, not capped** — 118 variants, 3 012 746 B today | printed by `pnpm seed:check`'s §11 report and by `pnpm media:upload` |
-| Manifest row ↔ **published object** | exact, on demand | `pnpm media:upload --verify` — the only check that reads the bucket. See the note in §6 |
+| Manifest row of an approved asset ↔ **published object** | exact, on demand | `pnpm media:upload --verify` — the only check that reads the bucket. See the note in §6 |
 
 The order matters and is the point: **the per-variant caps fail in `seed:check`, before the bytes
 are ever uploaded.** A 900 KB hero must fail a gate, not a Lighthouse run (spec 006 §6).
@@ -141,7 +141,8 @@ pays.
   `pnpm media:variants --only <assetId>`, re-run the two gates and `pnpm seed:diff --write`. The URL
   does not change, so remember that every object is served `immutable` for a year: if the image is
   already public, mint a **new asset id** instead. A changed image is a new asset version, never a
-  mutated URL. Finish with `pnpm media:upload`, which sends only what changed.
+  mutated URL. Finish with `pnpm media:upload --only <assetId>`, which sends only what changed, and
+  only if the asset is `approved`.
 - **A real photograph replacing an AI image.** Same steps, with `source: "photo"`, `credit` and
   `licence` instead of the generator fields — the schema requires the pair — and the honesty label
   stops rendering on pages whose displayed assets are all photographs, with no code change.
