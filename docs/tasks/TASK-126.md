@@ -71,6 +71,18 @@ One dated bullet per `/review`, newest last.
 - **Accepted (`/review 135` round 1):** HOLE 2 ACCEPTABLE (PDP canonical; owned by TASK-132,
   AC-17); HOLE 6 ACCEPTABLE (page layout order; owned by TASK-133, AC-28); HOLE 7 ACCEPTABLE
   (country shop-root card links; TASK-131's crawl must cover the shop roots).
+- **From `/review 135` round 2 and `/break 135` round 2 (2026-10-03), required:** HOLE 8, a
+  one-tier product's price and label (`TierSelector.tsx:67/69`) — `tests/unit/product-page.test.tsx`
+  "prints a one-tier product's own price and its own label, in `en` and `pl` (HOLE 8)", red under
+  a wrong price at :69, `en` formatting at :69 and a wrong label at :67. HOLE 9, the A19 controls
+  must read through the sweep's own read — `tests/e2e/chrome-honesty.spec.ts` `sweptText()` is the
+  one hide/read/restore function for the sweep and the planted-promise case, and "on
+  /dev/components the lift takes a marked cutoff line and leaves an unmarked one beside it"; with
+  the read returning `""` both controls went red on both projects (local production build).
+  **Ruled out of this PR:** a promise nested inside a marked node is lifted with it — carried to
+  TASK-133: check every `[data-fo-cutoff]` node's text is exactly its catalogue line; and
+  "Arrives tomorrow" matches no pattern in `tests/support/listing-honesty.ts:65` — a nit for the
+  next task that touches that file.
 
 ## Escalations
 
@@ -236,6 +248,11 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
 - **2026-10-03 — CI on `06b48066`:** e2e green on both projects (1 198 passed, 6 skipped, no
   flaky), including the mobile `/dev/components` A19 case and the new 308 case; `visual` red only on
   the sub-pixel shift above, fixed by the re-shot baselines.
+
+- **2026-10-03 — `/review 135` round 2 fix round (finisher).** HOLES 8 and 9 closed, see
+  `## Carry-forwards`. HOLE 9's red was watched on a local production build in the build slot
+  (load 1.60 at acquire, 6.83 at release; `pnpm build` 101 s; `chrome-honesty` 58/58 green on
+  both projects, 4 red under the empty-read mutant, the server stopped by its PID).
 
 ## Result
 
