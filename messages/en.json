@@ -152,7 +152,7 @@
       "cutoff": "Order by 14:00 in Warsaw for delivery today",
       "cutoffShort": "Order by 14:00 in Warsaw · today",
       "pricesInclude": "Prices include delivery and VAT",
-      "guarantee": "7-day freshness guarantee",
+      "guarantee": "Freshness guarantee",
       "datesPending": "Delivery dates open when we confirm our first florist",
       "datesPendingShort": "Delivery dates are not open yet"
     },
@@ -161,7 +161,8 @@
     },
     "currency": {
       "label": "Prices shown in {currency}"
-    }
+    },
+    "send": "Send flowers"
   },
   "footer": {
     "group": {
@@ -197,7 +198,7 @@
     "cookieSettings": "Cookie settings"
   },
   "company": {
-    "description": "We send flowers across Europe. You order from us; our florist in the recipient's town makes the bouquet and hands it over in person.",
+    "description": "We send flowers across Europe. You order from us; a local florist in the recipient's town will make the bouquet and hand it over in person.",
     "operatedBy": "Operated by {legalName}, {address}, {registrationNumber}.",
     "support": {
       "label": "Help & WhatsApp",

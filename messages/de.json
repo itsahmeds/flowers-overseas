@@ -205,11 +205,11 @@
     "homeLink": "Home"
   },
   "company": {
-    "description": "We send flowers across Europe. You order from us; our florist in the recipient's town makes the bouquet and hands it over in person.",
+    "description": "Wir verschicken Blumen in ganz Europa. Sie bestellen bei uns; ein Florist am Wohnort der empfangenden Person wird den Strauß binden und persönlich übergeben.",
     "operatedBy": "Operated by {legalName}, {address}, {registrationNumber}.",
     "support": {
-      "hours": "Mon–Sat 8–20 CET",
-      "label": "Help & WhatsApp",
+      "hours": "Mo–Sa 8–20 Uhr MEZ",
+      "label": "Hilfe & WhatsApp",
       "whatsapp": "WhatsApp"
     }
   },
@@ -509,29 +509,29 @@
     }
   },
   "footer": {
-    "cookieSettings": "Cookie settings",
+    "cookieSettings": "Cookie-Einstellungen",
     "group": {
-      "company": "Company",
-      "legal": "Legal",
-      "sending": "Sending"
+      "company": "Unternehmen",
+      "legal": "Rechtliches",
+      "sending": "Versand"
     },
     "link": {
       "cookies": "Cookies",
-      "deliveryTimes": "Delivery times and cutoffs",
-      "destinations": "Destinations",
-      "guarantee": "The guarantee",
-      "helpAndContact": "Help and contact",
-      "howItWorks": "How it works",
-      "imprint": "Imprint",
-      "occasions": "Occasions",
-      "privacy": "Privacy",
-      "terms": "Terms",
-      "withdrawal": "Withdrawal and refunds"
+      "deliveryTimes": "Lieferzeiten und Bestellschluss",
+      "destinations": "Zielländer",
+      "guarantee": "Die Garantie",
+      "helpAndContact": "Hilfe und Kontakt",
+      "howItWorks": "So funktioniert es",
+      "imprint": "Impressum",
+      "occasions": "Anlässe",
+      "privacy": "Datenschutz",
+      "terms": "AGB",
+      "withdrawal": "Widerruf und Erstattung"
     },
     "payment": {
-      "heading": "Payment",
-      "methods": "We show the payment methods you can use at checkout.",
-      "processor": "Card payments are processed by Stripe. We never store card numbers."
+      "heading": "Zahlung",
+      "methods": "Die Zahlungsarten, die Sie nutzen können, zeigen wir an der Kasse.",
+      "processor": "Kartenzahlungen werden von Stripe abgewickelt. Wir speichern keine Kartennummern."
     },
     "reminders": {
       "body": "Name days, All Saints, Women's Day: one email a few days before each, in your language. Unsubscribe in one click.",
@@ -688,12 +688,13 @@
       "label": "Search flowers, occasions, a city or a country",
       "submit": "Search"
     },
+    "send": "Blumen senden",
     "utility": {
       "cutoff": "Order by 14:00 in Warsaw for delivery today",
       "cutoffShort": "Order by 14:00 in Warsaw · today",
       "datesPending": "Delivery dates open when we confirm our first florist",
       "datesPendingShort": "Delivery dates are not open yet",
-      "guarantee": "7-day freshness guarantee",
+      "guarantee": "Frische-Garantie",
       "pricesInclude": "Prices include delivery and VAT"
     }
   },

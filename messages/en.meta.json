@@ -1128,10 +1128,8 @@
   },
   "company.description": {
     "source": "human",
-    "reviewed": true,
-    "sourceHash": "acf173871d9db47e3b1276d4ed7727b80055493a15e8874b974ceb1b183462b5",
-    "reviewedBy": "orchestrator (founder direction, spec 004 §14 A5)",
-    "reviewedAt": "2026-09-09T00:00:00Z"
+    "reviewed": false,
+    "sourceHash": "7d889073dcf5ca9eed6305a8bbd9a034763386f838454217d50e5573726e63bd"
   },
   "company.operatedBy": {
     "source": "human",
@@ -1159,7 +1157,8 @@
     "reviewed": true,
     "reviewedBy": "founder",
     "reviewedAt": "2026-09-09T00:00:00Z",
-    "sourceHash": "6a40edf1fc87a29f243a7eefdbed57d19bfe16ab2e039d7ae1a44c097297e2f3"
+    "sourceHash": "6a40edf1fc87a29f243a7eefdbed57d19bfe16ab2e039d7ae1a44c097297e2f3",
+    "retained": true
   },
   "consent.accept": {
     "source": "human",
@@ -2423,35 +2422,40 @@
     "reviewed": true,
     "reviewedBy": "founder",
     "reviewedAt": "2026-09-09T00:00:00Z",
-    "sourceHash": "a684235e967c10532b074300402777fc5c9bce84a4ceb0e08fe9ccd81fc52334"
+    "sourceHash": "a684235e967c10532b074300402777fc5c9bce84a4ceb0e08fe9ccd81fc52334",
+    "retained": true
   },
   "footer.reminders.consent": {
     "source": "human",
     "reviewed": true,
     "reviewedBy": "founder",
     "reviewedAt": "2026-09-09T00:00:00Z",
-    "sourceHash": "33c1900513edcb62db2b211154695906b8bdbfbe504d77d74df8007ee44a174d"
+    "sourceHash": "33c1900513edcb62db2b211154695906b8bdbfbe504d77d74df8007ee44a174d",
+    "retained": true
   },
   "footer.reminders.emailLabel": {
     "source": "human",
     "reviewed": true,
     "reviewedBy": "founder",
     "reviewedAt": "2026-09-09T00:00:00Z",
-    "sourceHash": "f2488fd4ef4adbc6ac61300083f2c33980e48bb4bbf3c540ad760d61fc36f420"
+    "sourceHash": "f2488fd4ef4adbc6ac61300083f2c33980e48bb4bbf3c540ad760d61fc36f420",
+    "retained": true
   },
   "footer.reminders.heading": {
     "source": "human",
     "reviewed": true,
     "reviewedBy": "founder",
     "reviewedAt": "2026-09-09T00:00:00Z",
-    "sourceHash": "5201ef0514325883e8c515631a78371e6bbaf35e80b4d8735e895eeac92e2a56"
+    "sourceHash": "5201ef0514325883e8c515631a78371e6bbaf35e80b4d8735e895eeac92e2a56",
+    "retained": true
   },
   "footer.reminders.submit": {
     "source": "human",
     "reviewed": true,
     "reviewedBy": "founder",
     "reviewedAt": "2026-09-09T00:00:00Z",
-    "sourceHash": "4e679adbfcc8b3fc5d92f8b8b1fa3c43fb840a626f2d64b599df8d096163a631"
+    "sourceHash": "4e679adbfcc8b3fc5d92f8b8b1fa3c43fb840a626f2d64b599df8d096163a631",
+    "retained": true
   },
   "home.dates.eyebrow": {
     "source": "human",
@@ -3008,7 +3012,13 @@
     "reviewed": true,
     "reviewedBy": "founder",
     "reviewedAt": "2026-09-09T00:00:00Z",
-    "sourceHash": "49c266baaaa70981ea188fa714d5c40cf13830d786a861c9943ae0d26a7f3fe9"
+    "sourceHash": "49c266baaaa70981ea188fa714d5c40cf13830d786a861c9943ae0d26a7f3fe9",
+    "retained": true
+  },
+  "nav.send": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e3be5078f2ccbc19c3787792fca859fba0ab68e95b0030b11ff3f21e28222e52"
   },
   "nav.utility.cutoff": {
     "source": "human",
@@ -3036,10 +3046,8 @@
   },
   "nav.utility.guarantee": {
     "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder",
-    "reviewedAt": "2026-09-09T00:00:00Z",
-    "sourceHash": "3ea34d78889432f220b6f0fdd3df749ff3e0add9b46a8b0faffc509362e77f27"
+    "reviewed": false,
+    "sourceHash": "e4d520106675c99a6b932ac6bba5122df5566783cc047eb7ef4f79bf958915a2"
   },
   "nav.utility.pricesInclude": {
     "source": "human",

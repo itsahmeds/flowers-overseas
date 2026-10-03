@@ -39,8 +39,8 @@ import { listingAlternatePaths } from "../../src/modules/catalog";
 import { loadMessages, localePath } from "../../src/modules/i18n";
 import {
   HEADER_BAND_HEIGHTS,
-  HEADER_HEIGHTS,
   HEADER_STICKY_HEIGHTS,
+  SEND_ANCHOR,
   type HeaderListingHrefs,
   headerAccountItems,
   headerCategoryItems,
@@ -48,6 +48,7 @@ import {
   headerEndClusterItems,
   headerListingTargets,
   headerSearchHref,
+  headerSendHref,
 } from "../../src/modules/ui/layout/header-model.ts";
 import { SiteHeader } from "../../src/modules/ui/layout/SiteHeader.tsx";
 
@@ -87,7 +88,6 @@ const HREFS: Record<string, HeaderListingHrefs> = Object.fromEntries(
 
 function render(
   locale: string,
-  basketCount?: number,
   listingHrefs: HeaderListingHrefs = HREFS[locale] ?? {},
 ): string {
   return renderToStaticMarkup(
@@ -96,11 +96,7 @@ function render(
       messages={loadMessages(locale, ["nav", "company", "a11y", "common"])}
       timeZone="UTC"
     >
-      <SiteHeader
-        locale={locale}
-        listingHrefs={listingHrefs}
-        {...(basketCount === undefined ? {} : { basketCount })}
-      />
+      <SiteHeader locale={locale} listingHrefs={listingHrefs} />
     </NextIntlClientProvider>,
   );
 }
@@ -315,22 +311,22 @@ describe("the rendered header (AC-7, AC-14)", () => {
       const internal = hrefs(html).filter((href) => href.startsWith("/"));
       const external = hrefs(html).filter((href) => !href.startsWith("/"));
 
-      // Internal: the lockup, the switcher's three sibling locales and the category row — and
-      // nothing else: no account item, no `For florists`, no search (AC-14, §14 A20).
+      // Internal: the lockup, the Send pill, the switcher's three sibling locales and the
+      // category row — and nothing else: no account item, no `For florists`, no search (AC-14,
+      // §14 A20).
       expect(internal.toSorted(), locale).toEqual(
         [
           localePath(locale, "home"),
+          `${localePath(locale, "home")}#${SEND_ANCHOR}`,
           ...LOCALES.filter((other) => other !== locale).map((other) =>
             localePath(other, "home"),
           ),
           ...(EXPECTED_ROW[locale] ?? []).map(([, href]) => href),
         ].toSorted(),
       );
-      // External: the help channel, both built from the one E.164 number in `company.ts`.
-      expect(external).toEqual([
-        `https://wa.me/${COMPANY.contact.phoneE164.slice(1)}`,
-        `tel:${COMPANY.contact.phoneE164}`,
-      ]);
+      // External: the help line, dialled from the one E.164 number in `company.ts` (the v2
+      // artboards draw the `tel:` link only).
+      expect(external).toEqual([`tel:${COMPANY.contact.phoneE164}`]);
 
       // Every keyed item is an `<a>` to its page — not one `<span>` dressed as an entry.
       const items = headerItems(html);
@@ -435,108 +431,115 @@ describe("the rendered header (AC-7, AC-14)", () => {
     expect([...html.matchAll(/<li>/g)]).toHaveLength(4);
   });
 
-  it("puts the switcher and the currency chip in the utility strip, not the category row (§14 A4)", () => {
+  it("puts the switcher and the currency in the notice bar, not in the banner (§14 A4)", () => {
     const html = render("en");
     const strip = html.slice(
       html.indexOf('data-fo-header-band="utility"'),
-      html.indexOf('data-fo-header-band="masthead"'),
+      html.indexOf("data-fo-header="),
     );
-
-    // Both controls are inside the utility band …
-    expect(strip).toContain("data-fo-header-controls");
     expect(strip).toContain("data-fo-header-switcher");
     expect(strip).toContain("data-fo-header-currency");
-    // … and the category row's end cluster holds `For florists` and nothing else.
-    const categories = html.slice(
-      html.indexOf('data-fo-header-band="categories"'),
-    );
-    expect(categories).not.toContain("data-fo-header-switcher");
-    expect(categories).not.toContain("data-fo-header-currency");
-    expect(categories).toContain('data-fo-header-item="roses"');
+    const banner = html.slice(html.indexOf("data-fo-header="));
+    expect(banner).not.toContain("data-fo-header-switcher");
+    expect(banner).not.toContain("data-fo-header-currency");
+    expect(banner).toContain('data-fo-header-item="roses"');
   });
 
-  it("styles the switcher from the wrapper: 44 px targets, no underline, `src/modules/i18n` untouched", () => {
+  it("styles the switcher from the wrapper, `src/modules/i18n` untouched", () => {
     const html = render("en");
     const wrapper = html.slice(html.indexOf("data-fo-header-switcher"));
-
-    // The wrapper carries the treatment (`&` arrives HTML-escaped in the serialised markup).
-    expect(html).toContain("[&amp;_a]:min-h-[44px]");
-    expect(html).toContain("[&amp;_a]:no-underline");
-    // Spec 003 still renders its own `underline` class and its own `<nav><ul><li>` — this file
-    // suppresses and lays them out rather than editing the component (AC-7, spec 003 AC-3).
+    // The row, the bold current entry and the small "Beta" come from the wrapper (`&` arrives
+    // HTML-escaped); the 44 px target from `NoticeBar`'s utilities slot.
+    expect(html).toContain("[&amp;_ul]:flex");
+    expect(html).toContain("[&amp;_[aria-current]]:font-bold");
+    expect(html).toContain("[&amp;_a]:min-h-(--target-min)");
+    // Spec 003 still renders its own markup (AC-7, spec 003 AC-3).
     expect(wrapper).toContain('class="underline"');
     expect(wrapper).toContain('<nav aria-label="Change language">');
   });
 
-  it("re-orders the mobile category row from `mobileOrder`, one DOM list, no arbitrary variant", () => {
+  it("draws one category list in one order for both artboards, with no `order` utility", () => {
     const html = render("en");
-    // The mobile artboard's order (Our selection · Bouquets · Roses · Plants · Occasions ·
-    // Same-day) as flex `order` utilities that `md` clears, so the row is one list. Position 6 is
-    // the gated `same-day-delivery` row, absent while no destination takes delivery dates
-    // (spec 004 §14 A19; TASK-120) — the surviving positions keep their registry numbers, which
-    // is what puts the row back in its drawn place the day a florist's operations land.
-    for (const position of [1, 2, 3, 4, 5]) {
-      expect(html).toContain(`order-${String(position)} md:order-none`);
-    }
-    expect(html).not.toContain("order-6 md:order-none");
+    // The v2 mobile artboard draws the same eight links in the desktop order (a scrolling chip
+    // row), so there is one DOM list and no per-breakpoint re-ordering.
+    expect(html).not.toMatch(/\border-\d+\b/u);
+    expect([...html.matchAll(/data-fo-header-item=/g)]).toHaveLength(8);
     // Tailwind's arbitrary `min-[…]:` variant compiles this project's stylesheet down to its base
-    // layer with no error raised (measured twice on a clean `.next`), which would ship a header
-    // with no styling at all. Named breakpoints only.
+    // layer with no error raised (measured twice on a clean `.next`). Named breakpoints only.
     expect(html).not.toMatch(/min-\[\d+px\]:/);
   });
 
-  it("reserves the artboards' band heights as fixed utilities (AC-7)", () => {
-    const html = render("en");
-    const { utility, mastheadMobile, mastheadDesktop, searchMobile } =
-      HEADER_BAND_HEIGHTS;
-    // The drift guard: the numbers in the class names are the numbers in the model, which is
-    // what `tests/e2e/header.spec.ts` measures the served header against. With no search band
-    // (§14 A20) the mobile masthead is one row.
-    expect(html).toContain(`min-h-[${String(utility)}px]`);
-    expect(html).toContain(`grid-rows-[${String(mastheadMobile)}px]`);
-    expect(html).not.toContain(
-      `grid-rows-[${String(mastheadMobile)}px_${String(searchMobile)}px]`,
-    );
-    expect(html).toContain(`md:grid-rows-[${String(mastheadDesktop)}px]`);
-    // On the category band's **own** element (`/break 162` hole 2): a class matched anywhere in
-    // the header passed with the band reverted to 28 px, because every link carries 44 px too.
-    const band = tagAt(html, html.indexOf('data-fo-header-band="categories"'))
-      .split(/\s+/u)
-      .flatMap((part) => part.replace(/^class="|"$/gu, "").split(" "));
-    expect(band).toContain(
-      `min-h-[${String(HEADER_BAND_HEIGHTS.categoryMobile)}px]`,
-    );
-    expect(band).toContain(
-      `md:min-h-[${String(HEADER_BAND_HEIGHTS.categoryDesktop)}px]`,
-    );
-    expect(band.filter((name) => /^min-h-\[/u.test(name))).toEqual([
-      `min-h-[${String(HEADER_BAND_HEIGHTS.categoryMobile)}px]`,
-    ]);
-    // TASK-173: 113 + 50 + 44 + 2 on mobile, the search band gone and the row at 44 px.
-    expect(HEADER_BAND_HEIGHTS.categoryMobile).toBe(44);
-    expect(HEADER_HEIGHTS).toEqual({ mobile: 209, desktop: 183 });
-    // The sum above is two boxes (§14 A4's addendum): 113 + 96 and 45 + 138.
-    expect(HEADER_STICKY_HEIGHTS).toEqual({ mobile: 96, desktop: 138 });
+  it("links the Send pill to the home's sentence, and draws it as the one pill", () => {
+    for (const locale of LOCALES) {
+      const html = render(locale);
+      expect(headerSendHref(locale)).toBe(`${localePath(locale, "home")}#send`);
+      const send = [...html.matchAll(/<a\s[^>]*>/g)]
+        .map((match) => match[0])
+        .filter((tag) => tag.includes(`href="${headerSendHref(locale)}"`));
+      expect(send, locale).toHaveLength(1);
+      expect(send[0], locale).toContain("rounded-full");
+    }
+    expect(render("en")).toContain(">Send flowers<");
   });
 
-  it("gives every rendered link the 44 px target from the header's own wrapper (§14 A4)", () => {
+  it("sets the logo as the mark and the outlined wordmark, named by the trading name (A21 clause 3)", () => {
     const html = render("en");
-    // Every `<a>` the header renders itself: the WhatsApp icon-link (44 × 44, it has no text),
-    // the `tel:` link, the masthead lockup and the eight category row links. The switcher's three
-    // links are covered by the `[&_a]:min-h-[44px]` wrapper asserted above;
-    // `tests/e2e/header.spec.ts` measures all of them in a browser at 390 px and 1440 px, which is
-    // the assertion that cannot be faked.
-    const anchors = [...html.matchAll(/<a\s[^>]*>/g)].map((match) => match[0]);
-    const own = anchors.filter(
-      (anchor) => !anchor.includes('class="underline"'),
+    const logo = html.slice(
+      html.indexOf("data-fo-header-logo"),
+      html.indexOf("</a>", html.indexOf("data-fo-header-logo")),
     );
-    expect(own).toHaveLength(3 + (EXPECTED_ROW.en ?? []).length);
-    for (const anchor of own) {
-      expect(anchor, anchor).toContain("min-h-[44px]");
+    expect(logo).toContain("data-fo-wordmark");
+    expect(logo).toContain(`role="img" aria-label="${COMPANY.tradingName}"`);
+    // No live-type wordmark: the letters are paths, so no Newsreader file loads.
+    expect(html).not.toContain(`>${COMPANY.tradingName}<`);
+  });
+
+  it('prints the honest notice: the dates line, the price claim and "Freshness guarantee"', () => {
+    const html = render("en");
+    const strip = html.slice(0, html.indexOf("data-fo-header="));
+    expect(strip).toContain(
+      "Delivery dates open when we confirm our first florist",
+    );
+    expect(strip).toContain("Delivery dates are not open yet");
+    expect(strip).toContain("Prices include delivery and VAT");
+    expect(strip).toContain("Freshness guarantee");
+    expect(html).not.toMatch(/7-day/u);
+    expect(html).not.toContain("Order by 14:00");
+  });
+
+  it("reserves the v2 artboards' band heights as fixed grid rows (AC-7)", () => {
+    const html = render("en");
+    const { mastheadMobile, mastheadDesktop, categoryMobile } =
+      HEADER_BAND_HEIGHTS;
+    // The drift guard, on the masthead band's **own** element: the numbers in its class list are
+    // the numbers in the model, which is what `tests/e2e/header.spec.ts` measures.
+    const band = tagAt(html, html.indexOf('data-fo-header-band="masthead"'));
+    expect(band).toContain(`grid-rows-[${String(mastheadMobile)}px_auto]`);
+    expect(band).toContain(`xl:grid-rows-[${String(mastheadDesktop)}px]`);
+    // The mobile chip row: 44 px chips plus the artboard's 12 px below them.
+    expect(categoryMobile).toBe(44 + 12);
+    const row = html.slice(html.indexOf('data-fo-header-band="categories"'));
+    expect(row).toContain("pb-(--space-sm2)");
+    expect(HEADER_BAND_HEIGHTS).toEqual({
+      mastheadMobile: 64,
+      mastheadDesktop: 82,
+      categoryMobile: 56,
+    });
+    // The sticky part: 64 + 56 + 1 rule on mobile, 82 + 1 rule on desktop.
+    expect(HEADER_STICKY_HEIGHTS).toEqual({ mobile: 121, desktop: 83 });
+  });
+
+  it("gives every link the header draws itself the 44 px target", () => {
+    const html = render("en");
+    const banner = html.slice(html.indexOf("data-fo-header="));
+    const anchors = [...banner.matchAll(/<a\s[^>]*>/g)].map(
+      (match) => match[0],
+    );
+    // The logo, the eight category links and the Send pill.
+    expect(anchors).toHaveLength(1 + (EXPECTED_ROW.en ?? []).length + 1);
+    for (const anchor of anchors) {
+      expect(anchor, anchor).toMatch(/min-h-\(--(?:target-min|control-sm)\)/u);
     }
-    expect(
-      own.filter((anchor) => anchor.includes("min-w-[44px]")),
-    ).toHaveLength(1);
   });
 
   it("sticks the banner and lets the utility strip scroll away (§14 A4's addendum)", () => {
@@ -556,12 +559,12 @@ describe("the rendered header (AC-7, AC-14)", () => {
     expect(bannerTag).toContain("sticky");
     expect(bannerTag).toContain("top-0");
     expect(bannerTag).toContain("layer-header");
-    // … and the strip is an ordinary in-flow box with no landmark role of its own (the addendum
-    // rules the strip out of the landmark tree: same copy, no new label key).
+    // … and the strip is an ordinary in-flow box with no landmark role of its own: `note`, as
+    // the v2 artboards mark it, is not a landmark.
     const stripTag = tagAt(html, strip);
     expect(stripTag).not.toContain("sticky");
     expect(stripTag).not.toContain("layer-header");
-    expect(stripTag).not.toContain("role=");
+    expect(stripTag).toContain('role="note"');
   });
 
   it("declares the `banner` landmark on the sticky element only", () => {

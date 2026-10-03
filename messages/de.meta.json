@@ -725,9 +725,9 @@
     "sourceHash": "3a78695388b38b5cceefaf6796b0137877514593543b91af2752d5a17e3d736c"
   },
   "company.description": {
-    "source": "machine",
+    "source": "human",
     "reviewed": false,
-    "sourceHash": "acf173871d9db47e3b1276d4ed7727b80055493a15e8874b974ceb1b183462b5"
+    "sourceHash": "7d889073dcf5ca9eed6305a8bbd9a034763386f838454217d50e5573726e63bd"
   },
   "company.operatedBy": {
     "source": "machine",
@@ -735,12 +735,12 @@
     "sourceHash": "68f7f2ac014d6c23801cbb1fcd6c25950b940fc57b543b20b4609c61dbb5bfd7"
   },
   "company.support.hours": {
-    "source": "machine",
+    "source": "human",
     "reviewed": false,
     "sourceHash": "e6e784d29f6af42787197eb5ad81fe938d6d64673d9e832f0138f08d2bbacd52"
   },
   "company.support.label": {
-    "source": "machine",
+    "source": "human",
     "reviewed": false,
     "sourceHash": "3d66ec5910add3e0f6a88caad084a6322becfd21e626a1d5b43faebcad55b9a0"
   },
@@ -1565,92 +1565,92 @@
     "sourceHash": "833817fdc5ea86f092d6129e30f13d0865952d6142ffc9a2df3382695e562958"
   },
   "footer.cookieSettings": {
-    "source": "machine",
+    "source": "human",
     "reviewed": false,
     "sourceHash": "df9b9219f0e5a623971726c9fb6edd720eebf5a55fe3698cefc7c01f5cc2efe4"
   },
   "footer.group.company": {
-    "source": "machine",
+    "source": "human",
     "reviewed": false,
     "sourceHash": "de4743c879734dc38cb3e270ecefcae077c3c2e626f9298115d5a03c8613f89b"
   },
   "footer.group.legal": {
-    "source": "machine",
+    "source": "human",
     "reviewed": false,
     "sourceHash": "4787eaf7c938045fd5285fe6a2cd72558caf7bd5faeb93fd1ad490a502e0e37b"
   },
   "footer.group.sending": {
-    "source": "machine",
+    "source": "human",
     "reviewed": false,
     "sourceHash": "e595f17fac1d8384c7287aa20ab48ec05476a9a557a524091c03727732582e76"
   },
   "footer.link.cookies": {
-    "source": "machine",
+    "source": "human",
     "reviewed": false,
     "sourceHash": "141395eb35564fe50baa1839eb43315ec1880ae19f53b926611a483029a5a603"
   },
   "footer.link.deliveryTimes": {
-    "source": "machine",
+    "source": "human",
     "reviewed": false,
     "sourceHash": "dd7d9806fe3ab4786a271bcbf2bf3071066a8a7b111c0cec12c57c61d14caff5"
   },
   "footer.link.destinations": {
-    "source": "machine",
+    "source": "human",
     "reviewed": false,
     "sourceHash": "72eb63f032e47e349e8901353e08ba91cfb9d1f78d08d070c60bae0e9b4e038d"
   },
   "footer.link.guarantee": {
-    "source": "machine",
+    "source": "human",
     "reviewed": false,
     "sourceHash": "5a8612717ecbe7ecda2651f11361536f0eec923b571ae69206b2d1f2e8acffd9"
   },
   "footer.link.helpAndContact": {
-    "source": "machine",
+    "source": "human",
     "reviewed": false,
     "sourceHash": "34b92f180169cf2f4745f53fb1eb533e492178501362a1196832b3b7bcf4fa3c"
   },
   "footer.link.howItWorks": {
-    "source": "machine",
+    "source": "human",
     "reviewed": false,
     "sourceHash": "9c870aa6e5e93270170d5a81277ad3e623afe8d4efd186d3e28f3d2b646d52e6"
   },
   "footer.link.imprint": {
-    "source": "machine",
+    "source": "human",
     "reviewed": false,
     "sourceHash": "d198ed30d09ba8c6b43f736a65dd4e3b7649cd120e0fe1d83f52c60ea6d02ad5"
   },
   "footer.link.occasions": {
-    "source": "machine",
+    "source": "human",
     "reviewed": false,
     "sourceHash": "e5b8470758e19d1615b82228a3ab96d0fce4c772d8a45bb3fbd4c968ab88eb39"
   },
   "footer.link.privacy": {
-    "source": "machine",
+    "source": "human",
     "reviewed": false,
     "sourceHash": "54a57c3147c49f33de5898b87084ad2b14c4ab308f762454bf92aca907478ad5"
   },
   "footer.link.terms": {
-    "source": "machine",
+    "source": "human",
     "reviewed": false,
     "sourceHash": "ede5489964834a514b61c7a4a8370be2452dd4a7d807180f14991ccc11ad2430"
   },
   "footer.link.withdrawal": {
-    "source": "machine",
+    "source": "human",
     "reviewed": false,
     "sourceHash": "4a64674ddfe0cabd288716392cdb8436a85cf9c4a3a105a68b38edd169af1fe7"
   },
   "footer.payment.heading": {
-    "source": "machine",
+    "source": "human",
     "reviewed": false,
     "sourceHash": "7048f38b33f135df36b3d9d382f167d45cfdda857b616899c9d8c9acd2751f64"
   },
   "footer.payment.methods": {
-    "source": "machine",
+    "source": "human",
     "reviewed": false,
     "sourceHash": "3f97e4c1d4f328bc4d4697b63f2b14234c5d6f15915a60f17fb812af7a9ae2e3"
   },
   "footer.payment.processor": {
-    "source": "machine",
+    "source": "human",
     "reviewed": false,
     "sourceHash": "08b776f3a884bbb200a7a182b4b714e88a2fe6b4a5fb3fd5bf3d962c89da39b2"
   },
@@ -2079,6 +2079,11 @@
     "reviewed": false,
     "sourceHash": "49c266baaaa70981ea188fa714d5c40cf13830d786a861c9943ae0d26a7f3fe9"
   },
+  "nav.send": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e3be5078f2ccbc19c3787792fca859fba0ab68e95b0030b11ff3f21e28222e52"
+  },
   "nav.utility.cutoff": {
     "source": "machine",
     "reviewed": false,
@@ -2100,9 +2105,9 @@
     "sourceHash": "70abcb4a801e65818911a6b064d13bf6a5f2a5b5d4ea17c3166abb9f2ef5351d"
   },
   "nav.utility.guarantee": {
-    "source": "machine",
+    "source": "human",
     "reviewed": false,
-    "sourceHash": "3ea34d78889432f220b6f0fdd3df749ff3e0add9b46a8b0faffc509362e77f27"
+    "sourceHash": "e4d520106675c99a6b932ac6bba5122df5566783cc047eb7ef4f79bf958915a2"
   },
   "nav.utility.pricesInclude": {
     "source": "machine",
