@@ -96,6 +96,23 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   subject is mutated and watched red. The e2e and visual spec files that fail in CI on the same
   assumption are inside the fence under the same rule; baselines change only through the
   `visual:baselines` label flow, each inspected.
+- **2026-10-03 — the mobile locale homes miss AC-15's image-transfer budget (orchestrator,
+  `open`; stop-and-report, nothing tuned).** CI run 37115494615 on `97b7a934`, `e2e-mobile`,
+  `tests/e2e/media-budgets.spec.ts:87`: `/en`, `/de` and `/pl` each transfer **215 876 B** of
+  images against `PAGE_IMAGE_BUDGET_BYTES` 204 800 B (11 076 B, 5.4 % over; desktop passes).
+  Top five: `home-hero/1200.avif` 41 135 B (site origin), then the trending row's product heroes
+  at the 640 rung — `fo-bq-003-hero` 27 685, `fo-bq-002-hero` 21 843, `fo-bq-001-hero` 20 752,
+  `fo-bq-004-hero` 20 730. Batch 2 put photographs on trending cards that were placeholders
+  before. **LCP is inside budget** on the same head (Lighthouse job, `lighthouserc.json` 2 000 ms):
+  `/en` 1 749 ms, `/en-gb` 1 756, `/de` 1 747, `/pl` 1 892. Options, none taken: fewer photographed
+  trending cards on the home; a smaller rung for the trending tile at mobile (`sizes`/slot);
+  raising the budget (a spec change). The rest of CI on that head: `visual` 25 baselines differ
+  (pages that now show photos; not refreshed, since the answer may change the home), and `e2e`
+  has four photo-coverage pins red, now inside the fence — `country-category.spec.ts:184`,
+  `country-shop.spec.ts:126` (shipped nomination counts), `country-occasion.spec.ts:168` (expects
+  no photograph on Mother's Day, now 7 of 7), `product-page.spec.ts:238` (`NO_PHOTO_PDP`
+  anthurium is photographed; the browser has no seam to remove a product's media, so its subject
+  needs a choice: a `/dev/components` placeholder gallery, or the case pinned on the real page).
 - **2026-10-03 — every `.env.local` on this machine holds the old `*.r2.dev` value of
   `R2_PUBLIC_BASE_URL` (founder action, not blocking).** `pnpm media:upload` refuses to run unless
   it equals `MEDIA_ORIGIN` (spec 006 §14 A8 clause 7). The bucket is the same one behind
@@ -136,6 +153,10 @@ here.
   under a temporary, reverted mutation of `PriceSummary.tsx`'s condition). Full unit run 217 files
   green; `gates:cheap` PASS on `0debf680`. Branch already on `origin/main`. Next: ready, `ci:full`;
   `tests/e2e/product-page.spec.ts`'s `NO_PHOTO_PDP` (anthurium, now photographed) is expected red.
+- 2026-10-03: rebased on `origin/main` `8c2d4d0b` (docs only), `gates:cheap` PASS on
+  `97b7a934`, ready, `ci:full` (toggled after the rebase). CI run 37115494615: every spine job,
+  `build`, `container`, `a11y`, `preview` and `lighthouse` green; `e2e` red (four photo pins and
+  the mobile image budget), `visual` red (25 baselines). Budget miss escalated; stopped there.
 
 ## Result
 
