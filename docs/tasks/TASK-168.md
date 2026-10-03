@@ -349,6 +349,12 @@ here.
   is now a link: main's TASK-106 de/pl slugs plus this branch's photographs; 63 × 10 px each);
   `dev-components-desktop` (this branch's +111 px `trending` sample and TASK-171's dropped cutoff
   sentence).
+- 2026-10-03: `seed/snapshot/media_variant.json` regenerated (`seed:diff --write`; the 168 rows),
+  `gates:cheap` PASS on `8d44eb5c`. CI run 37131605427 on `8d44eb5c`: every job green, the
+  **mobile budget cases included**, `visual` green, Lighthouse green; `e2e` red on one case only,
+  `banner.spec.ts:669` (`e2e-desktop`, both attempts: `[data-fo-consent]` not yet in the DOM when
+  the z-index is read; it passed on 37123660543 and nothing in this diff touches consent). CI
+  re-fired on the head to tell a flake from a cause.
 
 ## Result
 
