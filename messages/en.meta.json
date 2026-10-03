@@ -968,8 +968,10 @@
   },
   "catalog.price.allIn": {
     "source": "human",
-    "reviewed": false,
-    "sourceHash": "059a68d7eeccef41b446c3dfece06b34baced9e8d2fa37a6cc2a47b859acd852"
+    "reviewed": true,
+    "sourceHash": "059a68d7eeccef41b446c3dfece06b34baced9e8d2fa37a6cc2a47b859acd852",
+    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179); recorded by the orchestrator on the founder's authorisation (2026-10-04: 'I authorise you to record my approval of the 14-item wording batch as reviewed by me.')",
+    "reviewedAt": "2026-10-03T21:49:22Z"
   },
   "catalog.price.equivalents": {
     "source": "human",
@@ -3493,8 +3495,10 @@
   },
   "shop.cardNote.heading": {
     "source": "human",
-    "reviewed": false,
-    "sourceHash": "47d732fd584be06e8364c1c4d25c93acc355478d5fdaf276f17a5c60ad40cb2a"
+    "reviewed": true,
+    "sourceHash": "47d732fd584be06e8364c1c4d25c93acc355478d5fdaf276f17a5c60ad40cb2a",
+    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179); recorded by the orchestrator on the founder's authorisation (2026-10-04: 'I authorise you to record my approval of the 14-item wording batch as reviewed by me.')",
+    "reviewedAt": "2026-10-03T21:49:22Z"
   },
   "shop.category.lede": {
     "source": "human",
@@ -3592,18 +3596,24 @@
   },
   "shop.listing.eyebrow": {
     "source": "human",
-    "reviewed": false,
-    "sourceHash": "844dfdbfa5062ebcb259c3dec9d053f55ab027a296724468cd7310a13659d89f"
+    "reviewed": true,
+    "sourceHash": "844dfdbfa5062ebcb259c3dec9d053f55ab027a296724468cd7310a13659d89f",
+    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179); recorded by the orchestrator on the founder's authorisation (2026-10-04: 'I authorise you to record my approval of the 14-item wording batch as reviewed by me.')",
+    "reviewedAt": "2026-10-03T21:49:22Z"
   },
   "shop.note.label": {
     "source": "human",
-    "reviewed": false,
-    "sourceHash": "c4eea6824149d50fa3efe20da911e3396308effc1996bba539b3f46f63250315"
+    "reviewed": true,
+    "sourceHash": "c4eea6824149d50fa3efe20da911e3396308effc1996bba539b3f46f63250315",
+    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179); recorded by the orchestrator on the founder's authorisation (2026-10-04: 'I authorise you to record my approval of the 14-item wording batch as reviewed by me.')",
+    "reviewedAt": "2026-10-03T21:49:22Z"
   },
   "shop.note.mark": {
     "source": "human",
-    "reviewed": false,
-    "sourceHash": "073f4407e1c072ce2f793b3994691ddef81b1f31090225bf71aa144a76df99ba"
+    "reviewed": true,
+    "sourceHash": "073f4407e1c072ce2f793b3994691ddef81b1f31090225bf71aa144a76df99ba",
+    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179); recorded by the orchestrator on the founder's authorisation (2026-10-04: 'I authorise you to record my approval of the 14-item wording batch as reviewed by me.')",
+    "reviewedAt": "2026-10-03T21:49:22Z"
   },
   "shop.occasion.dateNote": {
     "source": "human",
@@ -3792,8 +3802,10 @@
   },
   "shop.root.tilesSubheading": {
     "source": "human",
-    "reviewed": false,
-    "sourceHash": "28c6eb010087608ec5c11c85135cbd1fe0c988442effa0f96650c65e5a34fd6f"
+    "reviewed": true,
+    "sourceHash": "28c6eb010087608ec5c11c85135cbd1fe0c988442effa0f96650c65e5a34fd6f",
+    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179); recorded by the orchestrator on the founder's authorisation (2026-10-04: 'I authorise you to record my approval of the 14-item wording batch as reviewed by me.')",
+    "reviewedAt": "2026-10-03T21:49:22Z"
   },
   "shop.sort.default": {
     "source": "human",
