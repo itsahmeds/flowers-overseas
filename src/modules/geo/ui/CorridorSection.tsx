@@ -44,7 +44,7 @@ export function CorridorSection({
       <div className="grid items-start gap-[24px] md:grid-cols-[4fr_7fr] md:gap-[72px]">
         <div>
           {eyebrow === undefined ? null : (
-            <p className="eyebrow m-0 mb-[14px]">{eyebrow}</p>
+            <span className="eyebrow mb-[14px] block">{eyebrow}</span>
           )}
           <h2 className={CORRIDOR_H2} id={id}>
             {heading}

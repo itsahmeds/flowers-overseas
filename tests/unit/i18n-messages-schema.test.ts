@@ -283,6 +283,11 @@ describe("the shipped catalogues and manifests", () => {
     // `docs/design/README.md`'s TASK-112 row, clauses (c), (d) and (e).
     // TASK-178's `catalog.price.equivalents` left this queue when the founder's attestation was
     // recorded (2026-10-04).
+    // TASK-179, spec 004 §14 A21 clause 5 (cards are printed, never handwritten): the card add-on's
+    // two strings, reworded to the clause's own words, and the preview's label. Drawn on the v2
+    // product artboards, but the artboards are not the founder's attestation of a string.
+    "catalog.addon.card.description",
+    "catalog.addon.card.name",
     "categoryHub.destinationLink",
     // TASK-176's chrome strings (`company.description`, `company.support.hours`, `nav.send`,
     // `nav.utility.guarantee`, `nav.notice.lead`, `footer.signoff`) were attested by the founder
@@ -324,6 +329,8 @@ describe("the shipped catalogues and manifests", () => {
     // ahead whatever u feel is good"; TASK-171), so they left this queue; `undatedHeading` was
     // not in that sign-off and still waits.
     "occasionsIndex.undatedHeading",
+    // TASK-179: "Printed on our card · included", the printed-card preview's label (A21 clause 5).
+    "product.card.printed",
     // TASK-111, the country occasion page. Five of its eleven strings are transcribed from the
     // founder-approved artboards (`wireframes/country-occasion-{desktop,mobile}.dc.html`,
     // `country-shop-{desktop,mobile}.dc.html`) and carry his attestation; these six are wording
