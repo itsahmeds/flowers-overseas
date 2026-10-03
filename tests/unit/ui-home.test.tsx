@@ -14,9 +14,15 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { NextIntlClientProvider } from "next-intl";
 
 import { loadMessages } from "../../src/modules/i18n";
+import { DestinationsGrid } from "../../src/modules/ui/home/DestinationsGrid.tsx";
+import { HomeFaq } from "../../src/modules/ui/home/HomeFaq.tsx";
 import { HomeHero } from "../../src/modules/ui/home/HomeHero.tsx";
+import { HowItWorks } from "../../src/modules/ui/home/HowItWorks.tsx";
+import { OccasionDates } from "../../src/modules/ui/home/OccasionDates.tsx";
+import { OccasionTiles } from "../../src/modules/ui/home/OccasionTiles.tsx";
 import { PROOF_FACTS, ProofRow } from "../../src/modules/ui/home/ProofRow.tsx";
 import { SentencePicker } from "../../src/modules/ui/home/SentencePicker.tsx";
+import { TrendingRow } from "../../src/modules/ui/home/TrendingRow.tsx";
 import {
   SENTENCE_FIELDS,
   type SentenceLookups,
@@ -38,6 +44,7 @@ const NAMESPACES = [
   "occasions",
   "nav",
   "trust",
+  "faq",
   "media",
   "a11y",
   "common",
@@ -72,6 +79,19 @@ function text(html: string): string {
     .replaceAll("&quot;", '"')
     .replaceAll("&amp;", "&")
     .replaceAll(/\s+/g, " ");
+}
+
+/** The `<option>`s of one select, as `[value, text, attributes]`, in document order. */
+function optionsOf(html: string, selectId: string): [string, string, string][] {
+  const start = html.indexOf(`<select id="${selectId}"`);
+  const select = html.slice(start, html.indexOf("</select>", start));
+  return [
+    ...select.matchAll(/<option value="([^"]*)"([^>]*)>([^<]*)<\/option>/g),
+  ].map((match) => [
+    match[1] ?? "",
+    (match[3] ?? "").replaceAll("&#x27;", "'"),
+    match[2] ?? "",
+  ]);
 }
 
 /** Every submitted control name in the markup, in document order. */
@@ -180,8 +200,9 @@ describe("the sentence picker (A21 clause 4, AC-11, T-12, T-13)", () => {
     expect(form).toContain('method="get"');
     expect(form).toContain('action="/api/send/pl"');
     expect(form).toContain('aria-labelledby="send-heading"');
-    expect(html).toMatch(
-      /<h2 id="send-heading"[^>]*>Where we can send flowers<\/h2>/,
+    // The founder's heading (copy batch, 2026-10-04).
+    expect(picker("en")).toMatch(
+      /<h2 id="send-heading"[^>]*>Start with who it(?:&#x27;|')s for<\/h2>/,
     );
     expect(sentenceAction("en-gb")).toBe("/api/send/en-gb");
   });
@@ -250,20 +271,98 @@ describe("the sentence picker (A21 clause 4, AC-11, T-12, T-13)", () => {
     expect(options.filter(([, , disabled]) => disabled)).toHaveLength(7);
   });
 
-  it("lists the six home occasions in registry order, by id, worded by their names", () => {
+  it("reads as the founder's sentence: Send flowers to [who] in [country] for [occasion].", () => {
     const html = picker("en");
-    const occasions = [
-      ...html.matchAll(/<option value="([a-zA-Z]+)">([^<]*)<\/option>/g),
-    ].map((match) => [match[1], match[2]]);
 
-    expect(occasions).toEqual([
-      ["birthday", "Birthday"],
-      ["nameDay", "Name day"],
-      ["anniversary", "Anniversary"],
-      ["sympathy", "Sympathy"],
-      ["justBecause", "Just because"],
-      ["newBaby", "New baby"],
+    expect(html).toMatch(
+      /<p[^>]*>Send flowers to <span[^>]*>(?:(?!<\/p>)[\s\S])*?<select id="send-who"[\s\S]*?<\/select><\/span> in <span[^>]*>[\s\S]*?<select id="send-country"[\s\S]*?<\/select><\/span> for <span[^>]*>[\s\S]*?<select id="send-occasion"[\s\S]*?<\/select><\/span>\.<\/p>/,
+    );
+  });
+
+  it("offers the founder's people, unnamed and never submitted, labelled by the heading", () => {
+    const html = picker("en");
+    const select = /<select id="send-who"[^>]*>/.exec(html)?.[0] ?? "";
+
+    expect(select).not.toContain(" name=");
+    expect(select).toContain('aria-labelledby="send-heading"');
+    expect(
+      optionsOf(html, "send-who").map(([value, label]) => [value, label]),
+    ).toEqual([
+      ["mum", "my mum"],
+      ["dad", "my dad"],
+      ["grandma", "my grandma"],
+      ["grandad", "my grandad"],
+      ["friend", "a friend"],
+      ["someoneILove", "someone I love"],
     ]);
+    expect(html).toMatch(/<option value="mum"[^>]* selected=""/);
+  });
+
+  it("labels the occasions for the default person, so the sentence reads right with JavaScript off", () => {
+    expect(
+      optionsOf(picker("en"), "send-occasion").map(([value, label]) => [
+        value,
+        label,
+      ]),
+    ).toEqual([
+      ["birthday", "her birthday"],
+      ["nameDay", "her name day"],
+      ["anniversary", "her anniversary"],
+      ["sympathy", "a loss"],
+      ["justBecause", "no reason at all"],
+      ["newBaby", "a new baby"],
+    ]);
+  });
+
+  it("carries every possessive form for the island to swap, from one ICU select", () => {
+    const birthday = optionsOf(picker("en"), "send-occasion")[0]?.[2] ?? "";
+
+    expect(birthday).toContain('data-label-her="her birthday"');
+    expect(birthday).toContain('data-label-his="his birthday"');
+    expect(birthday).toContain('data-label-their="their birthday"');
+    // Each person names the form their occasions take.
+    expect(
+      optionsOf(picker("en"), "send-who").map(([value, , attributes]) => [
+        value,
+        /data-pronoun="([a-z]+)"/.exec(attributes)?.[1],
+      ]),
+    ).toEqual([
+      ["mum", "her"],
+      ["dad", "his"],
+      ["grandma", "her"],
+      ["grandad", "his"],
+      ["friend", "their"],
+      ["someoneILove", "their"],
+    ]);
+  });
+
+  it("orders the selects the way each language reads (pl: who, occasion, country)", () => {
+    const html = picker("pl");
+    const order = [...html.matchAll(/<select id="(send-[a-z]+)"/g)].map(
+      (match) => match[1],
+    );
+
+    expect(order).toEqual(["send-who", "send-occasion", "send-country"]);
+    expect(optionsOf(html, "send-occasion")[0]?.[1]).toBe("na jej urodziny");
+  });
+
+  it("mounts one island that reads only the DOM: no copy, no storage, no network", async () => {
+    const source = await import("node:fs/promises").then((fs) =>
+      fs.readFile("src/modules/ui/home/SentenceIsland.tsx", "utf8"),
+    );
+
+    expect(source.trimStart().startsWith('"use client";')).toBe(true);
+    for (const forbidden of [
+      "next-intl",
+      "fetch(",
+      "sessionStorage",
+      "localStorage",
+      "document.cookie",
+      "XMLHttpRequest",
+    ]) {
+      expect(source, forbidden).not.toContain(forbidden);
+    }
+    expect(source).toMatch(/import \{ useEffect \} from "react";/);
   });
 
   it("opens a destination when the registry makes it live, with no change under `src/app/` (T-13)", async () => {
@@ -413,36 +512,63 @@ describe("`sentenceTarget()` — where a submission lands (A21 clause 4, T-12)",
 describe("the promise band (AC-10's trust strip in v2, AC-15)", () => {
   const band = (locale: string): string => render(<ProofRow />, locale);
 
-  it('renders the four facts under the reviewed "Our promise" heading', () => {
+  it('renders three facts under the reviewed "Our promise" heading, the guarantee as the founder worded it', () => {
     const rendered = text(band("en"));
 
-    expect(PROOF_FACTS).toHaveLength(4);
+    expect(PROOF_FACTS).toHaveLength(3);
     expect(band("en")).toMatch(
       /<h2 id="promise-heading"[^>]*>Our promise<\/h2>/,
     );
-    for (const fragment of [
-      "Fresh-on-arrival guarantee",
-      "We redeliver or refund, your choice",
-      "The price you see is what we charge",
-      "Delivery and VAT already in it",
-    ]) {
-      expect(rendered, fragment).toContain(fragment);
-    }
+    expect(rendered).toContain("Fresh-flower promise");
+    expect(rendered).toContain(
+      "If your flowers don't arrive fresh and in good condition, send us a photo within 72 hours of delivery and we'll replace them or refund you in full.",
+    );
   });
 
-  it("claims no seven-day term and invents no number", () => {
+  it("promises no day count and invents no number beyond the guarantee's 72 hours", () => {
     const rendered = text(band("en"));
 
-    expect(rendered).not.toMatch(/\d/);
-    expect(rendered.toLowerCase()).not.toContain("7-day");
+    expect(rendered.replace("72 hours", "")).not.toMatch(/\d/);
+    expect(rendered.toLowerCase()).not.toMatch(/\b(7|seven)[ -]days?\b/u);
   });
 
-  it("is the inverse surface with four facts and no photo", () => {
+  it("is the inverse surface with three facts and no photo", () => {
     const html = band("en");
 
     expect(html).toContain("surface-inverse");
-    expect([...html.matchAll(/<li/g)]).toHaveLength(4);
+    expect([...html.matchAll(/<li/g)]).toHaveLength(3);
     expect(html).not.toContain("<img");
+  });
+});
+
+describe("the home says nothing about VAT or delivery being included (founder, 2026-10-04)", () => {
+  // "Every price includes VAT and delivery. dont write this on home": the home shows no price,
+  // so no section of it may carry the inclusion sentence, in any locale. The header's utility
+  // strip is the chrome's (TASK-176) and is not rendered here.
+  const home = (locale: string): string =>
+    render(
+      <>
+        <HomeHero locale={locale} shopCountries={SHOPS} />
+        <TrendingRow locale={locale} />
+        <OccasionDates locale={locale} />
+        <OccasionTiles locale={locale} />
+        <HowItWorks />
+        <ProofRow />
+        <HomeFaq />
+        <DestinationsGrid locale={locale} />
+      </>,
+      locale,
+    );
+
+  it("renders no VAT/delivery inclusion sentence in any of the four locales", () => {
+    for (const locale of LOCALES) {
+      const rendered = text(home(locale));
+      expect(rendered, locale).not.toMatch(
+        /\bVAT\b|MwSt|Mehrwertsteuer|inkl\.|w tym VAT|including delivery|delivery included|delivery and VAT|VAT and delivery/iu,
+      );
+      // The sections are really there, so the absence is not an empty render.
+      expect(rendered.length, locale).toBeGreaterThan(1500);
+    }
   });
 });
 

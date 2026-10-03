@@ -111,6 +111,7 @@ describe("the client entry list this file walks", () => {
       "src/modules/i18n/ui/LocaleSuggestionBannerIsland.tsx",
       "src/modules/i18n/ui/LocaleSuggestionBannerLoader.tsx",
       "src/modules/ui/consent/ConsentBannerIsland.tsx",
+      "src/modules/ui/home/SentenceIsland.tsx",
     ]) {
       expect(clientEntries.map(show)).toContain(expected);
     }

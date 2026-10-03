@@ -474,10 +474,6 @@
       "answer": "Close, not identical. Our florists work with what is fresh that morning and substitute like for like in colour and value. Every change is noted on your delivery photo.",
       "question": "Will the bouquet look like the photo?"
     },
-    "price": {
-      "answer": "Yes. Delivery and VAT are inside the price you see. Your card is charged in your currency for exactly that amount.",
-      "question": "Is the price really final?"
-    },
     "whoDelivers": {
       "answer": "Our own florist in the recipient's town, by hand, on the day you choose.",
       "answerCutoff": "Order by 14:00 in Warsaw, the recipient's own time, for delivery today.",
@@ -561,8 +557,8 @@
     },
     "proof": {
       "guarantee": {
-        "body": "We redeliver or refund, your choice",
-        "title": "Fresh-on-arrival guarantee"
+        "body": "If your flowers don't arrive fresh and in good condition, send us a photo within 72 hours of delivery and we'll replace them or refund you in full.",
+        "title": "Fresh-flower promise"
       },
       "local": {
         "body": "Independent shops we chose ourselves",
@@ -571,10 +567,6 @@
       "photo": {
         "body": "We email you the picture of what was handed over",
         "title": "We photograph it at the door"
-      },
-      "price": {
-        "body": "Delivery and VAT already in it",
-        "title": "The price you see is what we charge"
       }
     },
     "reviews": {
@@ -590,7 +582,11 @@
       }
     },
     "sentence": {
-      "notYet": "{country} (not yet)"
+      "frame": "Kwiaty dla <who></who> <occasion></occasion>, wysyłka do kraju: <country></country>.",
+      "heading": "Zacznij od tego, dla kogo są kwiaty",
+      "notYet": "{country} (not yet)",
+      "occasion": "{occasion, select, birthday {{pronoun, select, her {na jej urodziny} his {na jego urodziny} other {na urodziny}}} nameDay {{pronoun, select, her {na jej imieniny} his {na jego imieniny} other {na imieniny}}} anniversary {na rocznicę} sympathy {z wyrazami współczucia} justBecause {bez okazji} newBaby {z okazji narodzin} other {z okazji}}",
+      "who": "{who, select, mum {mojej mamy} dad {mojego taty} grandma {mojej babci} grandad {mojego dziadka} friend {przyjaciela lub przyjaciółki} other {ukochanej osoby}}"
     },
     "trending": {
       "basis": "Nasz wybór, dopóki nie pojawią się prawdziwe zamówienia.",

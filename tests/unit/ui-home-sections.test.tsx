@@ -330,19 +330,21 @@ describe("the how-it-works explainer", () => {
 });
 
 describe("the FAQ", () => {
-  it("renders four native disclosures, all closed, and no JSON-LD (AC-16)", () => {
+  it("renders three native disclosures, all closed, and no JSON-LD (AC-16)", () => {
     const html = faq("en");
 
-    // Four since TASK-177: "What if the flowers do not last?" answered "Seven days from
-    // delivery", a day-count freshness promise the founder withdrew on 2026-10-04.
-    expect(FAQ_ENTRIES).toHaveLength(4);
-    expect([...html.matchAll(/<details/g)]).toHaveLength(4);
-    expect([...html.matchAll(/<summary/g)]).toHaveLength(4);
+    // Three since TASK-177, two founder rulings of 2026-10-04: "What if the flowers do not
+    // last?" answered "Seven days from delivery" (a day-count freshness promise, withdrawn), and
+    // "Is the price really final?" answered with the VAT-and-delivery sentence the founder ruled
+    // off the home ("dont write this on home").
+    expect(FAQ_ENTRIES).toHaveLength(3);
+    expect([...html.matchAll(/<details/g)]).toHaveLength(3);
+    expect([...html.matchAll(/<summary/g)]).toHaveLength(3);
     expect(html).not.toContain(" open");
     expect(html).not.toContain("application/ld+json");
   });
 
-  it("asks four questions and answers them, and promises no day count", () => {
+  it("asks three questions and answers them, promising no day count and naming no VAT", () => {
     const rendered = text(faq("en"));
 
     for (const fragment of [
@@ -351,13 +353,12 @@ describe("the FAQ", () => {
       "Will the bouquet look like the photo?",
       "substitute like for like in colour and value",
       "What if nobody is home?",
-      "Is the price really final?",
-      "Delivery and VAT are inside the price you see.",
       "Who delivers, and when?",
     ]) {
       expect(rendered, fragment).toContain(fragment);
     }
     expect(rendered).not.toMatch(/\b(seven|7)[ -]days?\b/iu);
+    expect(rendered).not.toMatch(/\bVAT\b/u);
   });
 
   it("draws the artboards' `+` affordance on every summary, decorative and CSS-only", () => {

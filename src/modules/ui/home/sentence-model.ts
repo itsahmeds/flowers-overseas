@@ -64,9 +64,31 @@ export const SENTENCE_FIELDS = {
 export const SENTENCE_IDS = {
   form: "send",
   heading: "send-heading",
+  who: "send-who",
   country: "send-country",
   occasion: "send-occasion",
 } as const;
+
+/**
+ * "Who it's for" (founder, 2026-10-04), in the founder's order, each with the pronoun its
+ * occasion label takes ("her birthday"). The founder's "my partner" waits for a ruling: spec 004
+ * §14 A5 bans the word "partner" from customer copy (`src/config/voice.ts`), so it is not offered
+ * until the spec allows the relationship sense (brief, `## Escalations`). The select has **no `name`**: it is never submitted, so
+ * a relationship never reaches a URL, a log or the server (plan/07). The first is the default.
+ */
+export const SENTENCE_WHO = [
+  { id: "mum", pronoun: "her" },
+  { id: "dad", pronoun: "his" },
+  { id: "grandma", pronoun: "her" },
+  { id: "grandad", pronoun: "his" },
+  { id: "friend", pronoun: "their" },
+  { id: "someoneILove", pronoun: "their" },
+] as const;
+
+export type SentencePronoun = (typeof SENTENCE_WHO)[number]["pronoun"];
+
+/** The three forms every occasion label is rendered in, for the island to swap between. */
+export const SENTENCE_PRONOUNS = ["her", "his", "their"] as const;
 
 /** The route the form submits to: `/api/send/{locale}`. GET forms drop an action's query string. */
 export function sentenceAction(locale: string): string {

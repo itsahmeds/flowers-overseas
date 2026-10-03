@@ -33,27 +33,40 @@ Row: `TASKS.md` → TASK-177. This brief is the task's long form (spec 001 §14 
 
 1. **Which destinations the sentence opens (A21 clause 4).** The clause says that an unpublished destination is a disabled "not yet" option and that flipping `corridorPagePublished` enables it. TASK-092 already set `corridorPagePublished: true` on all seven countries, and all seven have a shop root, while the artboards (and "Poland first") draw six as "not yet". Implemented default: open = `corridorPagePublished` **and** `status: "live"` **and** the shop root exists (`isSentenceDestination()`, one predicate in `src/modules/ui/home/sentence-model.ts`). The route uses the same rule, so `?country=DE` → destinations hub. **Question for the orchestrator/founder:** keep this, or open all seven, sending Germany and the rest to their demo shops?
 2. **"The occasion page" for evergreen occasions.** Spec 008's `countryOccasion` exists only for seasonal occasions (Poland: Mother's Day). Birthday, anniversary, sympathy, new baby and just because are country *categories* with the same key. The route tries `countryOccasion`, then `countryCategory` with the same key, then the shop root. That is what makes T-12's "PL + birthday → the PL occasion page" true (`/pl/polska/kwiaty/kwiaty-na-urodziny`).
-3. **The 5 % copy gate decides how the sentence looks.** The artboard's prose sentence and its "who it's for" select are new English (about 20 strings), and `en` was at 4.26 %. The letter ships as labelled selects in reviewed words ("Where we can send flowers", "Country", "Occasion", "Continue", "Prices include delivery and VAT"). There is no "who" select, so there is no `fo-who` island and no `cookies.ts` row. The prose and the select come back when the founder approves the batch below.
-4. **FAQ.** Spec 004 A9 keeps it on the home; the v2 artboards don't draw it. It stays, in v2 type, between the promise band and the destinations. **For the designer:** add it to the artboards, or record the difference in `docs/design/README.md`.
-5. **No prices on Popular choices.** The artboard draws prices with equivalents, but spec 004 §3/§8 render no price on the home, and A21 says behaviour stays the owning spec's. **For the designer:** record this in the README.
+3. ~~The 5 % copy gate decides how the sentence looks.~~ **Resolved 2026-10-04.** The founder chose the sentence ("go ahead with it. 2") and approved the copy batch ("ok from my end"), so the letter now ships as the sentence with its "who it's for" select. See `## Result
 
-## Progress
+**Partial.** The code and the unit/route tests are done. Visual baselines and a browser CI run wait for PR 168.
 
-- 2026-10-04: v2 home, `SentencePicker` + `sentence-model.ts`, `GET /api/send/{locale}` and the finder retired (eeff9154). Fresh-on-arrival wording and v2 e2e/a11y/visual specs (2f6fdce7). Draft PR 174 against main, stacked on PR 168.
-- 2026-10-04: honesty fixes. The proposition is in the future tense, the destinations line is stated as our rule, and a test pins the `#send` id the header links to.
-- Next: re-take the home visual baselines through the `visual:baselines` label flow (every `home-*` shot changes: hero, sentence, proof, dates, occasions, how-it-works, faq, trending, destinations; `home-*-finder` and `home-*-trust` are retired), then run `ci:full`. After PR 168 merges: `git rebase --onto origin/main 2a1d1489`. For PR 167, resolve its message and test hunks to identical text.
+**The sentence (founder, 2026-10-04, option 2).** "Send flowers to [who] in [country] for [occasion].", headed "Start with who it's for". It is one ICU message with three tags (`home.sentence.frame`), so each locale orders the selects itself. "Who" (`home.sentence.who`, an ICU select over mum, dad, grandma, grandad, friend, someone I love; "my partner" waits for escalation 6) has **no `name`** and takes its accessible name from the heading. Each occasion label is an ICU select on the person's pronoun (`home.sentence.occasion`: "her birthday", "his birthday", "their birthday"; "a loss", "no reason at all" and "a new baby" stay neutral).
+- **JavaScript off:** the server renders the default person's form (my mum → "her birthday"), so the sentence reads right with no script.
+- **The island:** `SentenceIsland.tsx`, the home's only island. It reads the `data-label-her|his|their` and `data-pronoun` attributes the server wrote and relabels the occasions when "who" changes. It renders nothing and imports only `react`: no copy, no storage, no network. I have not measured it in Brotli yet; CI's `budget:client-js` will report it. No `fo-who` storage and no `cookies.ts` row: A21 says "may", so it is left out.
 
-## Result
+**Copy approved by the founder and marked `reviewed: true` in `en.meta.json`** (cited "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179)"):
+- item 2: `home.proof.guarantee.title` "Fresh-flower promise"
+- item 3: `home.proof.guarantee.body` "If your flowers don't arrive fresh and in good condition, send us a photo within 72 hours of delivery and we'll replace them or refund you in full."
+- item 6: `home.hero.proposition`
+- item 7: `home.destinations.body`
+- item 8: `home.sentence.notYet` (plus `finder.submit` "Continue", already reviewed)
+- item 13: `home.sentence.frame`, `home.sentence.heading`, `home.sentence.who` (six of the seven options; see escalation 6)
+- Item 14: none of its strings appear on the home. "all in" sits beside card prices, and the home shows none.
 
-**Partial.** The code and the unit/route tests are done. Visual baselines and a browser CI run are still to do.
+**Still unreviewed, for the founder:** `home.sentence.occasion`, i.e. the possessive labels "her/his/their birthday", "her/his/their name day", "her/his/their anniversary", "a loss", "no reason at all", "a new baby". Only "her birthday" is in the approved sentence. `en` is at 523 keys, 21 unreviewed (4.02 %).
 
-Copy for the founder's batch (en; de/pl are machine echoes, `reviewed: false`):
-- **Ships now, unreviewed:**
-  - `home.proof.guarantee.title`: "Fresh-on-arrival guarantee" (founder ruling 2026-10-04, replacing "7-day freshness guarantee").
-  - `home.sentence.notYet`: "{country} (not yet)".
-  - `home.hero.proposition`: "A local florist in your recipient's town will make it and hand it over in person. We never ship a box." (coordinator honesty fix, 2026-10-04: we have no florists yet, so the future tense).
-  - `home.destinations.body`: "We open each country only once we have local florists there we can stand behind." (replaces "We open a country only when we have met enough florists there to stand behind every order — across Europe, and only where we really are.", which Poland, open as a demo, does not meet).
-- **Drawn but not shipped (waiting for approval):** the sentence "I'd like to send flowers to {who} in {country} for {occasion}."; its heading "Start with who it's for"; the "who" options (my mum, my dad, my grandma, my grandad, my sister, my brother, a friend, someone I love); the occasion wordings (a birthday, a name day, an anniversary, a loss, no reason at all, a new baby); "Show me the flowers"; "Every price includes VAT and delivery."; the postmark ring "FROM WHERE YOU ARE · TO WHERE THEY ARE ·"; how-it-works "A florist a few streets away will make it." / "A picture will arrive when the flowers do…"; the margin note "Nothing crosses a border, so no customs and no box."; the dates lede "Poland keeps its own days…"; the name-day stamp ("Every day of the year", "Name days", "Every day is somebody's…"); the stamp links ("What we make for it", "Christmas flowers", …); the promise heading "Four things you will never have to ask for"; the destinations heading "Poland first. Six more countries as we choose florists." (today the home shows the reviewed "Where we can send flowers"); the eyebrow "For Poland" (today: "Poland"); the "See every bouquet for Poland" link (today: "Our selection"); "Made in their own town" / "By independent shops we are choosing ourselves, one by one."; "A photo from the door" / "We will email you the picture…".
-- **Keys removed** (no longer rendered): `home.hero.photoCaption*`, `home.trending.eyebrow`, `home.howItWorks.guarantee*`, `home.destinations.heading`, `home.destinations.elsewhere.*`, `faq.lasting.*` (the seven-day answer), and every `finder.*` key except `country.label` and `submit`. `en`: 523 keys, 24 unreviewed (4.59 %).
+**de/pl** are written as natural sentences and stay `reviewed: false`:
+- de: "Einen Strauß an [meine Mama] in [Polen] [zum Geburtstag] schicken.", heading "Für wen ist der Strauß?". "Blumen" trips AC-15's partner-name pattern, so the German says "Strauß".
+- pl: "Kwiaty dla [mojej mamy] [na jej urodziny], wysyłka do kraju: [Polska].", heading "Zacznij od tego, dla kogo są kwiaty".
 
-**Found, not fixed (outside this task):** `trust.guarantee.name` and `nav.utility.guarantee` still read "7-day freshness guarantee" (TrustStrip on shop pages; the header belongs to TASK-176). The URL-key registry (`src/config/url-keys.ts`) is listing-shaped, so the new `/api/send` query keys (`country`, `occasion`, neither PII) are not registered in it. Registering them would also route them as listing parameters.
+**No VAT/delivery sentence on the home** (founder, 2026-10-04: "dont write this on home"):
+- removed: the picker's price line, the promise band's price fact (now three facts), and the FAQ's "Is the price really final?";
+- keys deleted: `home.proof.price.*`, `faq.price.*`, `home.sentence.whoLabel`;
+- tests: a unit test renders every home section in four locales, and an e2e test reads `main` in four locales.
+
+**Other changes this round:**
+- `src/modules/i18n/pseudo.ts` now copies rich-text tags byte for byte. The frame's `<who></who>` had its tag names accented in `en-XA`/`ar-XB`, which broke ICU parsing (`UNMATCHED_CLOSING_TAG`). A test is added in `i18n-pseudo.test.ts`.
+- `tests/fixtures/seo/sitemap/*.xml` were regenerated (`UPDATE_SEO_FIXTURES=1`). Only `<lastmod>` moved, 2026-10-03 → 2026-10-04, because it is the newest `reviewedAt` in the catalogue, and the founder's approvals are dated 2026-10-04.
+
+**Still not shipped (not on the approved list):** the postmark ring lettering, the margin note, the dates lede, the name-day stamp and the stamp link labels, the promise heading "Four things you will never have to ask for", "Poland first. Six more countries as we choose florists.", the "For Poland" eyebrow, "See every bouquet for Poland", "Show me the flowers", the reworded promise facts ("Made in their own town", "A photo from the door"), and the future-tense how-it-works steps 2 and 3.
+
+**Keys removed** (no longer rendered): `home.hero.photoCaption*`, `home.trending.eyebrow`, `home.howItWorks.guarantee*`, `home.destinations.heading`, `home.destinations.elsewhere.*`, `home.proof.price.*`, `faq.lasting.*`, `faq.price.*`, and every `finder.*` key except `country.label` and `submit`.
+
+**Found, not fixed (outside this task):** `trust.guarantee.name` and `nav.utility.guarantee` still read "7-day freshness guarantee" (TrustStrip on shop pages; the header belongs to TASK-176). The header's utility strip ("Prices include delivery and VAT", `nav.utility.pricesInclude`) still renders on the home, and the founder's ruling may want TASK-176 to hide it there. The URL-key registry (`src/config/url-keys.ts`) is listing-shaped, so the new `/api/send` query keys (`country`, `occasion`, neither PII) are not registered in it. Registering them would also route them as listing parameters.

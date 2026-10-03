@@ -209,7 +209,7 @@ test.describe("the locale home, above the fold", () => {
 
       await expect(page.locator(`${OCCASION_DATES} li`)).toHaveCount(4);
       await expect(page.locator("[data-fo-how-it-works-step]")).toHaveCount(3);
-      await expect(page.locator("[data-fo-trust-claim]")).toHaveCount(4);
+      await expect(page.locator("[data-fo-trust-claim]")).toHaveCount(3);
       // Neither the explainer nor the promise band links anywhere (no page for the guarantee).
       for (const selector of [HOW_IT_WORKS, TRUST]) {
         await expect(page.locator(`${selector} a[href]`), selector).toHaveCount(
@@ -314,7 +314,7 @@ test.describe("the locale home, above the fold", () => {
       await page.goto(path);
 
       const entries = page.locator(`${FAQ} details`);
-      await expect(entries).toHaveCount(4);
+      await expect(entries).toHaveCount(3);
       // All closed on arrival: an answer visible in the served HTML would be five paragraphs of
       // copy above the fold of the section.
       await expect(page.locator(`${FAQ} details[open]`)).toHaveCount(0);
@@ -382,6 +382,43 @@ test.describe("the sentence picker (A21 clause 4, T-12, T-13)", () => {
   });
 });
 
+test.describe("the home names no VAT or delivery inclusion (founder, 2026-10-04)", () => {
+  for (const path of LOCALES) {
+    test(`${path} carries no inclusion sentence anywhere in main`, async ({
+      page,
+    }) => {
+      await page.goto(path);
+      // "Every price includes VAT and delivery. dont write this on home." The header strip is
+      // the chrome's (TASK-176), so the assertion is over the page's own content.
+      const main = await page.locator("main#main").innerText();
+      expect(main).not.toMatch(
+        /\bVAT\b|MwSt|Mehrwertsteuer|delivery and VAT|VAT and delivery/iu,
+      );
+    });
+  }
+});
+
+test.describe("the sentence keeps its possessive in step (the home's one island)", () => {
+  test("choosing my dad relabels the occasions his …; choosing a friend, their …", async ({
+    page,
+  }) => {
+    await page.goto("/en");
+    const birthday = page.locator('#send-occasion option[value="birthday"]');
+    await expect(birthday).toHaveText("her birthday");
+
+    await page.locator("#send-who").selectOption("dad");
+    await expect(birthday).toHaveText("his birthday");
+    await page.locator("#send-who").selectOption("friend");
+    await expect(birthday).toHaveText("their birthday");
+    // A neutral occasion has one form for everybody.
+    await expect(
+      page.locator('#send-occasion option[value="newBaby"]'),
+    ).toHaveText("a new baby");
+    // Nothing the reader chose about the person is submitted.
+    await expect(page.locator("#send-who")).not.toHaveAttribute("name");
+  });
+});
+
 test.describe("the sentence picker with JavaScript disabled (AC-11, T-12)", () => {
   test.use({ javaScriptEnabled: false });
 
@@ -389,6 +426,10 @@ test.describe("the sentence picker with JavaScript disabled (AC-11, T-12)", () =
     page,
   }) => {
     await page.goto("/pl");
+    // With no script the default person's possessive is the server's (moja mama → "jej").
+    await expect(
+      page.locator('#send-occasion option[value="birthday"]'),
+    ).toHaveText("na jej urodziny");
     await page.locator('select[name="country"]').selectOption("PL");
     await page.locator('select[name="occasion"]').selectOption("birthday");
     await page.locator(`${SENTENCE} button[type="submit"]`).click();

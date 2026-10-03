@@ -289,16 +289,11 @@ describe("the shipped catalogues and manifests", () => {
     "faq.whoDelivers.answer",
     "faq.whoDelivers.answerCutoff",
     "footer.payment.methods",
-    // TASK-177, honesty fixes 2026-10-04: the destinations line stated as our rule rather than
-    // as a fact about Poland, and the hero proposition with florists in the future tense.
-    "home.destinations.body",
-    "home.hero.proposition",
     "home.howItWorks.choose.body",
-    // TASK-177 (v2 home): the promise band's guarantee drops "7-day" (the work order's honesty
-    // rule) and the sentence picker's "not yet" option label; both in the brief's copy list.
-    "home.proof.guarantee.title",
     "home.proof.photo.body",
-    "home.sentence.notYet",
+    // TASK-177 (v2 home): the occasion labels' possessive forms ("her birthday", "a loss"). The
+    // founder approved the sentence frame and the who options (copy batch, 2026-10-04), not these.
+    "home.sentence.occasion",
     "meta.chooser.description",
     "meta.home.description",
     "nav.utility.cutoff",
@@ -474,8 +469,8 @@ describe("the shipped catalogues and manifests", () => {
       enSource.trust.guarantee.name;
     const occasionSubtitle: Messages["occasions"]["nameDay"]["subtitle"] =
       enSource.occasions.nameDay.subtitle;
-    const faqQuestion: Messages["faq"]["price"]["question"] =
-      enSource.faq.price.question;
+    const faqQuestion: Messages["faq"]["photo"]["question"] =
+      enSource.faq.photo.question;
 
     expect([...namespaces].sort()).toEqual(Object.keys(enSource).sort());
     expect(destinationName).toBe("Poland");
@@ -484,7 +479,7 @@ describe("the shipped catalogues and manifests", () => {
     expect(finderSubmit).toBe("Continue");
     expect(guaranteeName).toBe("7-day freshness guarantee");
     expect(occasionSubtitle).toContain("Imieniny");
-    expect(faqQuestion).toBe("Is the price really final?");
+    expect(faqQuestion).toBe("Will the bouquet look like the photo?");
     expect(headline).toContain("{language}");
     expect(floristCount).toContain("plural");
     expect(tierLabel).toContain("plural");

@@ -51,6 +51,7 @@ test("every sentence-picker control clears the 44 px tap-target floor (§5.3)", 
   await page.goto("/en");
 
   for (const selector of [
+    "#send-who",
     "#send-country",
     "#send-occasion",
     '[data-fo-sentence] button[type="submit"]',

@@ -1,4 +1,7 @@
 /**
+ * **Three facts, not four** (founder, 2026-10-04: "Every price includes VAT and delivery. dont
+ * write this on home"): the price fact is gone, because the home shows no price.
+ *
  * **v2: the promise band** (spec 004 §14 A21; TASK-177; `home-*.dc.html` `.promise`). The four
  * facts on the inverse (ink) surface with sunflower icons, under the reviewed "Our promise"
  * heading — the v2 form of AC-10's trust strip, which the artboards fold into this band.
@@ -57,12 +60,6 @@ export const PROOF_FACTS = [
     icon: "florist",
     titleKey: "proof.local.title",
     bodyKey: "proof.local.body",
-  },
-  {
-    id: "price",
-    icon: "card",
-    titleKey: "proof.price.title",
-    bodyKey: "proof.price.body",
   },
   {
     id: "photo",

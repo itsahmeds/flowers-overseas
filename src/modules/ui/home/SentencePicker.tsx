@@ -3,38 +3,48 @@
  * buyer to the right flowers (spec 004 §14 **A21 clause 4**, AC-10, AC-11; TASK-177;
  * `docs/design/wireframes/home-{desktop,mobile}.dc.html`, "the sentence").
  *
- * It replaces the v1 finder card and its `FinderTypeahead` island, so the home now ships **no**
- * island of its own: the form works with JavaScript off, and the only JavaScript on the page is
- * the shared chrome's. Every decision about data — which destinations are open, their collation,
- * where a submission lands — is `sentence-model.ts`'s.
+ * The sentence is the founder's (2026-10-04, option 2, approved in the copy batch): **"Send
+ * flowers to [my mum] in [Poland] for [her birthday]."**, headed "Start with who it's for". It is
+ * one ICU message with three tags (`home.sentence.frame`), so each locale orders the selects its
+ * own way; nothing is concatenated.
  *
- * **What is drawn, and what waits for the founder's copy batch.** The artboard writes the form
- * as one sentence ("I'd like to send flowers to … in … for …") with a "who it's for" select. Its
- * words are new English, and the `en` catalogue sits at the 5 % unreviewed ceiling (spec 003
- * §6, shared with TASK-176 to TASK-179), so this ships the letter's look and behaviour with the
- * **reviewed** words that already exist: the hub's heading, the finder's "Country" label and
- * `Continue`, the occasions' own names and the price line. The sentence and the relationship
- * select (which has no `name` and is never submitted) arrive with the batch, listed in the
- * brief's `## Result`. One new string ships: the "not yet" option label.
+ * - **Who** (`home.sentence.who`, an ICU select) has **no `name`** and is never submitted. Its
+ *   accessible name is the letter's heading, "Start with who it's for".
+ * - **Country** and **occasion** are the two submitted fields (`sentence-model.ts`).
+ * - **The possessive.** Each occasion label is an ICU select on the chosen person's pronoun
+ *   (`home.sentence.occasion`). The server renders the default person's form (my mum → "her
+ *   birthday"), so the form reads right with JavaScript off, and writes all three forms into
+ *   `data-label-*` for `SentenceIsland`, which swaps them when the reader picks someone else.
+ *   That island is the home's only one and carries no copy of its own.
  *
- * Look: the letter is `--color-card` on `--letter-lines`, tilted by `--tilt-letter`, with the
- * airmail edge on top (one of A21 clause 2's three places); each choice is a native `<select>`
- * in Fraunces italic poppy with a dashed underline and a drawn chevron, `field-sizing: content`.
+ * The letter is `--color-card` on `--letter-lines`, tilted, with the airmail edge on top (one of
+ * A21 clause 2's three places). No "prices include VAT and delivery" line: the founder ruled it off
+ * the home on 2026-10-04 ("dont write this on home"); the home shows no price. Each choice is Fraunces italic poppy with a dashed underline and
+ * a drawn chevron.
  */
 import { useTranslations } from "next-intl";
 import type { ReactElement, ReactNode } from "react";
 
 import { Button } from "../primitives/Button.tsx";
 
+import { SentenceIsland } from "./SentenceIsland.tsx";
 import {
   SENTENCE_FIELDS,
   SENTENCE_IDS,
+  SENTENCE_PRONOUNS,
+  SENTENCE_WHO,
   sentenceAction,
   sentenceDestinations,
   sentenceOccasions,
 } from "./sentence-model.ts";
 
-type LabelTranslator = (key: string, values?: Record<string, string>) => string;
+interface LabelTranslator {
+  (key: string, values?: Record<string, string>): string;
+  rich: (
+    key: string,
+    values: Record<string, (chunks: ReactNode) => ReactNode>,
+  ) => ReactNode;
+}
 
 export interface SentencePickerProps {
   readonly locale: string;
@@ -53,21 +63,24 @@ const SELECT =
 const PICK =
   "relative inline-block after:pointer-events-none after:absolute after:end-[6px] after:top-[14px] after:size-[8px] after:rotate-45 after:border-e-2 after:border-b-2 after:border-accent after:content-['']";
 
+/** One choice: the select inside its drawn chevron, with a visually hidden label if it has one. */
 function Pick({
   id,
   label,
   children,
 }: {
   readonly id: string;
-  readonly label: string;
+  readonly label?: string;
   readonly children: ReactNode;
 }): ReactElement {
   return (
-    <span className="gap-x-sm inline-flex flex-wrap items-baseline">
-      <label htmlFor={id} className="text-ink">
-        {label}
-      </label>
-      <span className={PICK}>{children}</span>
+    <span className={PICK}>
+      {label === undefined ? null : (
+        <label htmlFor={id} className="sr-only">
+          {label}
+        </label>
+      )}
+      {children}
     </span>
   );
 }
@@ -83,6 +96,9 @@ export function SentencePicker({
   const destinations = sentenceDestinations(locale, (key) => t(key), shops);
   const occasions = sentenceOccasions();
   const firstOpen = destinations.find((destination) => destination.open);
+  const defaultWho = SENTENCE_WHO[0];
+  const occasionLabel = (occasion: string, pronoun: string): string =>
+    t("home.sentence.occasion", { occasion, pronoun });
   const Heading = headingLevel;
 
   return (
@@ -104,51 +120,89 @@ export function SentencePicker({
         id={SENTENCE_IDS.heading}
         className="label text-sm leading-[48px]"
       >
-        {t("destinationsHub.h1")}
+        {t("home.sentence.heading")}
       </Heading>
-      <p className="display text-lg-s gap-x-lg flex flex-wrap leading-[48px] md:text-lg">
-        <Pick id={SENTENCE_IDS.country} label={t("finder.country.label")}>
-          <select
-            id={SENTENCE_IDS.country}
-            name={SENTENCE_FIELDS.country}
-            className={SELECT}
-            defaultValue={firstOpen?.iso2}
-            data-fo-sentence-country
-          >
-            {destinations.map((destination) => (
-              <option
-                key={destination.iso2}
-                value={destination.iso2}
-                disabled={!destination.open}
-                data-fo-sentence-destination={destination.iso2}
+      <p className="display text-lg-s leading-[48px] md:text-lg">
+        {t.rich("home.sentence.frame", {
+          who: () => (
+            <Pick id={SENTENCE_IDS.who}>
+              {/* No `name`: who it is for is never submitted (plan/07). */}
+              <select
+                id={SENTENCE_IDS.who}
+                aria-labelledby={SENTENCE_IDS.heading}
+                className={SELECT}
+                defaultValue={defaultWho.id}
+                data-fo-sentence-who
               >
-                {destination.open
-                  ? t(destination.nameKey)
-                  : t("home.sentence.notYet", {
-                      country: t(destination.nameKey),
-                    })}
-              </option>
-            ))}
-          </select>
-        </Pick>
-        <Pick
-          id={SENTENCE_IDS.occasion}
-          label={t("corridor.calendar.occasion")}
-        >
-          <select
-            id={SENTENCE_IDS.occasion}
-            name={SENTENCE_FIELDS.occasion}
-            className={SELECT}
-            data-fo-sentence-occasion
-          >
-            {occasions.map((occasion) => (
-              <option key={occasion.id} value={occasion.id}>
-                {t(occasion.nameKey)}
-              </option>
-            ))}
-          </select>
-        </Pick>
+                {SENTENCE_WHO.map((who) => (
+                  <option
+                    key={who.id}
+                    value={who.id}
+                    data-pronoun={who.pronoun}
+                  >
+                    {t("home.sentence.who", { who: who.id })}
+                  </option>
+                ))}
+              </select>
+            </Pick>
+          ),
+          country: () => (
+            <Pick id={SENTENCE_IDS.country} label={t("finder.country.label")}>
+              <select
+                id={SENTENCE_IDS.country}
+                name={SENTENCE_FIELDS.country}
+                className={SELECT}
+                defaultValue={firstOpen?.iso2}
+                data-fo-sentence-country
+              >
+                {destinations.map((destination) => (
+                  <option
+                    key={destination.iso2}
+                    value={destination.iso2}
+                    disabled={!destination.open}
+                    data-fo-sentence-destination={destination.iso2}
+                  >
+                    {destination.open
+                      ? t(destination.nameKey)
+                      : t("home.sentence.notYet", {
+                          country: t(destination.nameKey),
+                        })}
+                  </option>
+                ))}
+              </select>
+            </Pick>
+          ),
+          occasion: () => (
+            <Pick
+              id={SENTENCE_IDS.occasion}
+              label={t("corridor.calendar.occasion")}
+            >
+              <select
+                id={SENTENCE_IDS.occasion}
+                name={SENTENCE_FIELDS.occasion}
+                className={SELECT}
+                data-fo-sentence-occasion
+              >
+                {occasions.map((occasion) => (
+                  <option
+                    key={occasion.id}
+                    value={occasion.id}
+                    {...Object.fromEntries(
+                      SENTENCE_PRONOUNS.map((pronoun) => [
+                        `data-label-${pronoun}`,
+                        occasionLabel(occasion.id, pronoun),
+                      ]),
+                    )}
+                  >
+                    {occasionLabel(occasion.id, defaultWho.pronoun)}
+                  </option>
+                ))}
+              </select>
+            </Pick>
+          ),
+        })}
       </p>
+      <SentenceIsland formId={SENTENCE_IDS.form} />
       <div className="mt-[22px] flex flex-wrap items-center gap-x-[20px] gap-y-[12px]">
         <Button
           type="submit"
@@ -157,9 +211,6 @@ export function SentencePicker({
         >
           {t("finder.submit")}
         </Button>
-        <p className="text-ink-muted text-sm leading-(--line-height-tight)">
-          {t("nav.utility.pricesInclude")}
-        </p>
       </div>
     </form>
   );

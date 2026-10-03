@@ -434,16 +434,12 @@
     },
     "proof": {
       "guarantee": {
-        "title": "Fresh-on-arrival guarantee",
-        "body": "We redeliver or refund, your choice"
+        "title": "Fresh-flower promise",
+        "body": "If your flowers don't arrive fresh and in good condition, send us a photo within 72 hours of delivery and we'll replace them or refund you in full."
       },
       "local": {
         "title": "We make it in their own town",
         "body": "Independent shops we chose ourselves"
-      },
-      "price": {
-        "title": "The price you see is what we charge",
-        "body": "Delivery and VAT already in it"
       },
       "photo": {
         "title": "We photograph it at the door",
@@ -497,7 +493,11 @@
       "body": "We open each country only once we have local florists there we can stand behind."
     },
     "sentence": {
-      "notYet": "{country} (not yet)"
+      "notYet": "{country} (not yet)",
+      "frame": "Send flowers to <who></who> in <country></country> for <occasion></occasion>.",
+      "who": "{who, select, mum {my mum} dad {my dad} grandma {my grandma} grandad {my grandad} friend {a friend} other {someone I love}}",
+      "occasion": "{occasion, select, birthday {{pronoun, select, her {her birthday} his {his birthday} other {their birthday}}} nameDay {{pronoun, select, her {her name day} his {his name day} other {their name day}}} anniversary {{pronoun, select, her {her anniversary} his {his anniversary} other {their anniversary}}} sympathy {a loss} justBecause {no reason at all} newBaby {a new baby} other {an occasion}}",
+      "heading": "Start with who it's for"
     }
   },
   "finder": {
@@ -574,10 +574,6 @@
     "nobodyHome": {
       "question": "What if nobody is home?",
       "answer": "Our florist calls the recipient first. If they cannot be reached, we agree a redelivery with you, at no charge."
-    },
-    "price": {
-      "question": "Is the price really final?",
-      "answer": "Yes. Delivery and VAT are inside the price you see. Your card is charged in your currency for exactly that amount."
     },
     "whoDelivers": {
       "question": "Who delivers, and when?",

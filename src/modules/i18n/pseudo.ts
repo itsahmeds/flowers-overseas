@@ -26,8 +26,8 @@
  *
  * **The transforms are ICU-aware.** A pseudo-locale that broke `{count, plural, …}` would replace
  * a layout bug with a render crash, so the walker below transforms *literal text only*: argument
- * names, argument types, plural/select keywords, `offset:`, `#` and quoted runs are copied byte
- * for byte, and every submessage inside a plural or select branch is transformed recursively.
+ * names, argument types, plural/select keywords, `offset:`, `#`, quoted runs and rich-text tags
+ * (`<who></who>`, TASK-177) are copied byte for byte, and every submessage inside a plural or select branch is transformed recursively.
  * `tests/unit/i18n-pseudo.test.ts` parses every generated value with
  * `@formatjs/icu-messageformat-parser` — the parser next-intl formats with — so "still valid ICU"
  * is measured, not asserted (T-29).
@@ -194,6 +194,18 @@ export function mapIcuText(message: string, transform: TextTransform): string {
       out += message.slice(index, end);
       index = end;
       continue;
+    }
+    // A rich-text tag (`<who>`, `</who>`, `<b/>`) is syntax, like an argument: next-intl pairs
+    // the open and close tag by name, so an accented name would no longer match its partner
+    // (`UNMATCHED_CLOSING_TAG`). Copied byte for byte; the text between the tags is still text.
+    if (character === "<") {
+      const tag = /^<\/?[A-Za-z][\w-]*\s*\/?>/u.exec(message.slice(index));
+      if (tag !== null) {
+        flush();
+        out += tag[0];
+        index += tag[0].length;
+        continue;
+      }
     }
     if (character === "{") {
       const end = matchingBrace(message, index);

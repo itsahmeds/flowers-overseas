@@ -43,7 +43,6 @@ export const FAQ_ENTRIES = [
     questionKey: "nobodyHome.question",
     answerKey: "nobodyHome.answer",
   },
-  { id: "price", questionKey: "price.question", answerKey: "price.answer" },
   {
     id: "whoDelivers",
     questionKey: "whoDelivers.question",
