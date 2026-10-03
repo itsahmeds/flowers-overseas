@@ -41,6 +41,12 @@ _None recorded._
   `EQUIVALENT_CURRENCIES`); USD equivalent-only row in `src/config/currencies.ts`; ECB USD 1.1614 for 2026-09-08 in
   `src/config/catalogue/fx.data.ts`; tests `tests/unit/catalog-pricing-equivalents.test.ts`. Next: the formatter and
   message key, the card wiring, then the listing pages to the artboards.
+- 2026-10-04 00:55 — Card wired: `catalog.price.equivalents` ("about {amounts} at the rate of {date}"), formatter
+  `equivalentsMessageValues()` in `src/modules/ui/shop/equivalents.ts` (exported from `@/modules/ui` for TASK-179),
+  `formatDate` style `dayMonth` added in `src/modules/i18n/format.ts`. `listingView()` takes `now`.
+- 2026-10-04 01:15 — v2 chrome on all seven listing page types (`src/modules/catalog/ui/ListingChrome.tsx`), e2e
+  `tests/e2e/listing-v2.spec.ts`. Visual baselines run requested on PR 169 for inspection; the committed refresh waits
+  for the rebase onto main after PR 168 merges (TASK-175's own baselines would otherwise be mixed in).
 
 ## Result
 
