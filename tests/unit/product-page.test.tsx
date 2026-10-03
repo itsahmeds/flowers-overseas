@@ -484,7 +484,52 @@ describe("AC-10: absolute dates and an absolute cutoff, in every state and local
 /* AC-8 / §14 A8 — `preview` states no cutoff time; only `live` does.         */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * Any clock time, in any of the shapes a locale writes one: `H:MM`, `HH:MM`, `H.MM`, `HH.MM` and
+ * `HH h MM` (`/break 151` round 1, hole 2). Run over the **raw markup**, attributes included,
+ * so a time in a `title`, an `aria-*` or a `data-*` value is found as well as one in the text
+ * (hole 1).
+ */
+const ANY_TIME = /(?<![\d.,])\d{1,2}(?:[:.]|\s?h\s?)\d{2}(?![\d.,])/gu;
+
+/**
+ * The clock times in a picker's raw markup. Two kinds of number are not times and are removed
+ * first, each by its known value: the `class` tokens (`leading-[1.35]`), which are styling, and
+ * the chips' printed fees, which are the view's own money through `formatMoney` in both sign
+ * forms `DateChip` uses. Nothing else is stripped.
+ */
+function timesInPicker(markup: string, view: ProductView): readonly string[] {
+  let scanned = markup.replaceAll(/\sclass="[^"]*"/gu, "");
+  const locale = view.locale as Locale;
+  for (const date of view.delivery.dates) {
+    if (date.surcharge === undefined) continue;
+    for (const signDisplay of ["always", "auto"] as const) {
+      scanned = scanned.replaceAll(
+        formatMoney(date.surcharge, locale, { signDisplay }),
+        "",
+      );
+    }
+  }
+  return [...decode(scanned).matchAll(ANY_TIME)].map((match) => match[0]);
+}
+
 describe("A8: the `preview` picker states no cutoff time, in every locale", () => {
+  it("finds a time in every shape it claims, in text and in an attribute", () => {
+    for (const time of ["9:30", "14:00", "9.30", "14.00", "14 h 00", "14h00"]) {
+      expect([...`<p>${time}</p>`.matchAll(ANY_TIME)], time).toHaveLength(1);
+      expect(
+        [...`<i title="at ${time}"></i>`.matchAll(ANY_TIME)],
+        time,
+      ).toHaveLength(1);
+    }
+    for (const notTime of ["25.00", "1 234,50", "2027-03-01", "18 zł"]) {
+      expect(
+        [...`${notTime}`.matchAll(ANY_TIME)].map((match) => match[0]),
+        notTime,
+      ).toEqual(notTime === "25.00" ? ["25.00"] : []);
+    }
+  });
+
   it("renders no cutoff line and no cutoff time in the `preview` picker, and the facts row's `none`", async () => {
     for (const locale of LOCALES) {
       const view = await viewOf(locale, "PL", AMBER, { now: WOMENS_DAY_WEEK });
@@ -500,6 +545,7 @@ describe("A8: the `preview` picker states no cutoff time, in every locale", () =
         "data-fo-cutoff",
       );
       expect(readable(picker), `${locale}: cutoff time`).not.toContain(time);
+      expect(timesInPicker(picker, view), `${locale}: raw markup`).toEqual([]);
       expect(html, `${locale}: anywhere on the page`).not.toContain(
         "data-fo-cutoff",
       );
@@ -552,6 +598,7 @@ describe("A8: the `preview` picker states no cutoff time, in every locale", () =
       const html = render(view);
       const picker = block(html, 'data-fo-picker-state="preview"');
       expect(readable(picker), `${locale}: cutoff time`).not.toContain(time);
+      expect(timesInPicker(picker, view), `${locale}: raw markup`).toEqual([]);
       const chip = chips(html).get("2027-03-01") ?? "";
       expect(chip, locale).toMatch(/<input[^>]*disabled/u);
       expect(chip, `${locale}: per-chip reason`).not.toContain(

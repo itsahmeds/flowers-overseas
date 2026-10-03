@@ -64,6 +64,10 @@ _None._
 - 2026-10-03 — Linux baseline taken from run 37115814804 (`fa9145ca`); Result written; ready, `ci:full`.
 - 2026-10-03 — E-1 ruled; `DateChip` takes `pickerState`, past-cutoff `preview` chip shares the
   notice; 15:30 cases added and mutated red.
+- 2026-10-03 — `/break 151` round 1 holes 1–2: the preview cases also scan the raw picker markup
+  (attributes included) for any time shape (`H:MM`, `HH:MM`, `H.MM`, `HH.MM`, `HH h MM`), fees
+  and `class` tokens stripped by known value, in unit and e2e. Red under a planted `title="…14:00…"`
+  on preview chips, a printed `14.00`, and an `aria-label="14 h 00"`.
 - 2026-10-03 — CI `visual` red on the four product block shots (sub-pixel shift below the picker);
   taken from the same run, re-fired CI.
 
