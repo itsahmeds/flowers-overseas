@@ -25,6 +25,11 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 One dated bullet per `/review`, newest last.
 
 _None yet._
+- **From `/review 149` round 3 (2026-10-03), CF-1, and spec 040 §14 A5/A6:** E-1 and E-2 are ruled. Apply A6's
+  concurrency group (`'nightly'` for `schedule`) with its T-39 case. Add a runbook step where the founder checks
+  by eye, in the Cloudflare dashboard, the four `checks: []` rows (Access production, Access/basic-auth staging
+  and PR, Workers/Snippets, IP-geo redirects) **and pay-per-crawl**, the one setting no check reads, and record
+  the result in this brief. E-3 (the founder's Z1–Z4) stays open.
 
 ## Escalations
 
