@@ -107,4 +107,5 @@ and their meta files (`en-gb` never carried it), and from both product artboards
   the past-cutoff chip, and the notice is in its name. In `live` the chip still reads "Ordering
   closed at 14:00 in Warsaw". The e2e preview case asserts no `h:mm` in the picker at any clock.
   Mutations, all red: the reason printed again in `preview` (fails the preview case); the picker
-  passing no state (same); `live` sharing too (fails the live case).
+  passing no state (same); `live` sharing too (fails the live case). `visual:baselines` run
+  37118943287 on `c9facd26` gives bytes identical to the committed set, so no baseline moves.
