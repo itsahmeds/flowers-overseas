@@ -197,3 +197,14 @@ gap closes, mark it ✅ with the PR, and don't delete the row.
   copy will read "w Warsaw" until a localised city key exists; `localeOf()` narrows with a bare `as`
   cast; `listing-honesty.ts:65` has no pattern for a bare "Arrives tomorrow" (no page prints a
   relative day today, and the product page's AC-10 test guards against one).
+
+- **`railway:check` hides Railway's GraphQL errors (2026-10-03).** A rejected token answers HTTP 200 with
+  `data: null` and an `errors` array; `scripts/railway-check.ts` passes `data` straight to zod, so the founder saw
+  a `ZodError` stack instead of "Not Authorized". Fix: when `errors` is present, print each `message` (never
+  `data`) and exit 3, with a fixture case. Needs a task (scripts are application code).
+- **`media:upload --verify` has no retry (2026-10-03, TASK-168).** One `fetch failed` aborts the whole run; at 144
+  ids it failed twice and passed in nine batches of 16. Fix: bounded retry per object, or batching inside the
+  script. Needs a task.
+- **Chat is not a place for keys (2026-10-03).** The founder pasted a Railway key into chat; it was revoked and
+  replaced. The runbooks already say "never into a chat"; the orchestrator's key steps now always use a
+  `read -s` prompt and print only the key's length.

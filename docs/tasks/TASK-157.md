@@ -45,6 +45,24 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
 - **2026-09-29: the §6 token type** (to: orchestrator; answer: `open`, text corrected). Runbook §6 told the founder to use a **project** token. Railway's public-API guide says a project token covers one environment and goes in a `Project-Access-Token` header, while `railway:check` and `release:*` send `Authorization: Bearer`. §6 and F5 now say a **workspace** token for Grovant's workspace. F5's check shows whether it works.
 - **2026-09-29: spec text that AC-41 reads as corrected** (to: orchestrator; answer: `open`, spec not edited). §4's founder story ("I deploy by merging to `main`") and §5.3 "Deploys and rollback" (`main` → `production`) still read the old way. AC-41 says they "read as corrected here", so nothing is owed unless the spec writer wants the text itself changed.
 
+- **2026-10-03: T-44's paste, received. Answered; the task closes.** F2 and F4 done by the orchestrator in
+  the founder's signed-in Railway (staging `web` on `main` with auto-deploy, Wait for CI on); F3: PR
+  environments not yet enabled (TASK-099 enables them), so none follows `release`; F1 part 2 n/a (production
+  has no `web`; three staged, unapplied changes that would have added a production service on `main` were
+  discarded on the founder's word); F5 by the founder (workspace token); F6 by the orchestrator (ruleset
+  `release`, `["deletion"]`). The founder's run of `pnpm railway:check` after F1–F3, `RAILWAY_ENVIRONMENT_ID`
+  unset, printed exactly:
+
+  ```text
+  production · web · triggers on none, declared release
+  production · worker · triggers on none, declared release
+  staging · worker · triggers on none, declared main
+  ```
+
+  then on stderr the one `railway:check: EXPECTED RED until TASK-104 creates production \`web\` on \`release\`
+  and TASK-103 creates staging \`worker\` …` line, and `exit 1` — the runbook's "What the checks print today"
+  output. No `staging · web` line: staging `web` triggers on `main`. The exit-0 run belongs to TASK-104.
+
 ## Progress
 
 One line per coherent step, newest last, written by the agent doing the work and pushed with
