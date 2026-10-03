@@ -154,3 +154,32 @@ gap closes, mark it ✅ with the PR, and don't delete the row.
   `seed/check.ts` says "the first destination day on which the rule is red" (code unchanged since
   `89e749bb`). `/review 129` round 2 — `.jpeg` originals, a `sku: null` row, the T-31/T-32 index
   line, and naming TASK-138 in A7; for the photo-intake task to pick up.
+
+**Found on 2026-10-03, overnight (PRs 94, 135, 136, 138–140):**
+- **Agents share one scratchpad, and a scratch name collided.** `/break 94` round 1's `mut.sh` was
+  overwritten by the reviewer's script of the same name, which `cd`s into the reviewer's worktree,
+  so six breaker runs ran (and `git checkout`-restored) inside the reviewer's worktree, as the
+  breaker reported. The
+  orchestrator now tells every read-only agent to name scratch files `<role><PR>-<name>` and to use
+  absolute paths in scripts. The work-order template does not say so yet; adding it is a framework
+  change to decide with the founder. The same applies to the `next dev` line in the entry above:
+  the template does not yet carry it either.
+- **Servers stopped by a `ps | grep` match.** Two PR 135 finishers reported stopping their own
+  `next-server` by matching its name (both checked the PIDs were theirs). `pnpm exec` wraps the server, so the
+  PID noted at start is the wrapper's, and killing it leaves the child listening. The kernel's
+  "stop it by that PID" needs a recipe: start `node` directly, or note the child's PID.
+- **Vercel's daily build limit.** Every push to a PR builds a Vercel preview, and the Hobby plan's
+  limit was reached around 23:00 UTC on 2026-10-02 ("retry in 24 hours"); production stayed on
+  `4ea52972` while PR 136 merged behind it. Whether to stop preview builds, or move plans, is the
+  founder's account decision.
+- **A flaky e2e case.** The same `consent-banner` forged-cookie case (`consent-banner.spec.ts`
+  ~666–667) failed in three PR 135 runs (37070734831, 37073827670, 37080265401) and passed on
+  retry and locally. Not this night's code; it needs a look
+  before it hides a real failure.
+- **Smaller nits, for whichever task next touches them:** `syncCopyLocale` (`seed/copy-draft.ts`)
+  leaves `en`/`en-gb` `sourceHash` stale after `--sync-copy` (TASK-166 refreshed 143 by hand);
+  `tests/fixtures/seed/_cases/copy/bad-word-count.json`'s `why` text predates the new sentence;
+  the report-only CSP header carries `upgrade-insecure-requests`, which browsers ignore there with a
+  console error (13 per page on `/en`); on macOS, `/EN` first answered 200 from the prerendered
+  file (case-insensitive filesystem) before 404, so the uppercase cases should be watched on Linux
+  CI; `test-integration` skips three files "until spec 002".

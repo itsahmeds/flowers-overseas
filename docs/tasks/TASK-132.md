@@ -21,6 +21,10 @@ be green. One paragraph or a short list — no restatement of the spec.
 One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From `/review 135` round 1 (2026-10-03), HOLE 2 ACCEPTABLE, carried here:** the product
+  page's canonical (`src/app/[locale]/[segment]/[child]/[grandchild]/page.tsx:253`, on PR 135's
+  branch until it merges) has no test; the breaker's mutation passed every unit case it ran. AC-17's gate
+  must go red when it changes. Hreflang on product pages (not emitted yet) is also this task's.
 
 ## Escalations
 
