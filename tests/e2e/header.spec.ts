@@ -52,8 +52,9 @@ const inChrome = (selector: string): string =>
  * agrees with the component by construction. Measured on a production build at 390, 412, 768,
  * 1 023, 1 024, 1 280 and 1 440 px in `en`, `de` and `pl`, identical in all three:
  *
- * notice bar mobile  = 36 (8 + one 14 px line at 1.4 + 8; 35.6 rounded) — below `lg` it carries no
- *                      links, so it is one sentence
+ * notice bar mobile  = 80 (8 + one 14 px line at 1.4 + the 44 px row of the language switcher and
+ *                      the currency + 8; 79.6 rounded). Spec 004 §14 A4 binds over the mobile
+ *                      artboard (coordinator ruling, 2026-10-04): both are reachable at 390 px
  * notice bar desktop = 62 (9 + the 44 px utility links + 9) from `lg` (1 024 px)
  * sticky mobile      = 64 masthead + 56 chip row (44 px chips + 12) + 1 rule = 121, below `xl`
  * sticky desktop     = 82 masthead (logo, the eight links, the pill) + 1 rule = 83, from `xl`
@@ -61,7 +62,7 @@ const inChrome = (selector: string): string =>
  * v1 was 113 + 96 = 209 on mobile and 45 + 138 = 183 on desktop (TASK-173). Both boxes are
  * server-rendered with no island, so they are the same before and after hydration (AC-7).
  */
-const UTILITY_HEIGHTS = { mobile: 36, desktop: 62 } as const;
+const UTILITY_HEIGHTS = { mobile: 80, desktop: 62 } as const;
 const STICKY_HEIGHTS = { mobile: 121, desktop: 83 } as const;
 const HEADER_HEIGHTS = {
   mobile: UTILITY_HEIGHTS.mobile + STICKY_HEIGHTS.mobile,
@@ -348,7 +349,7 @@ test.describe("the site header (AC-7)", () => {
       await page.setViewportSize(viewport);
       await page.goto("/en");
 
-      // Only **rendered** links: below `lg` the notice bar's links have no box at all.
+      // Only **rendered** links: below `lg` the help line has no box (it is the footer's there).
       const measured = (
         await page.locator(inChrome("a")).evaluateAll((nodes) =>
           nodes.map((node) => {
@@ -362,9 +363,9 @@ test.describe("the site header (AC-7)", () => {
         )
       ).filter((link) => link.width > 0);
 
-      // The logo, the eight category links and the Send pill at both widths; at 1 440 px also the
-      // help line and the switcher's three siblings in the notice bar.
-      const notice = viewport.width >= XL_BREAKPOINT ? 4 : 0;
+      // The logo, the eight category links, the Send pill and the switcher's three siblings at
+      // both widths (§14 A4); at 1 440 px also the help line.
+      const notice = viewport.width >= XL_BREAKPOINT ? 4 : 3;
       expect(measured.length, String(viewport.width)).toBe(10 + notice);
       for (const link of measured) {
         expect(
@@ -415,21 +416,42 @@ test.describe("the site header (AC-7)", () => {
     });
   });
 
-  test("the switcher and the currency sit in the notice bar at 1 440 px, visible (AC-8)", async ({
+  test("the currency and the switcher are visible at 390 px without scrolling (AC-8, §14 A4)", async ({
     page,
   }) => {
-    await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto("/en");
-    await expect(page.locator("[data-fo-header-switcher]")).toBeVisible();
-    await expect(page.locator("[data-fo-header-currency]")).toBeVisible();
-    // On the mobile artboard the languages move to the footer (chrome-mobile.dc.html).
-    await page.setViewportSize({ width: 390, height: 844 });
-    await expect(page.locator("[data-fo-header-switcher]")).toBeHidden();
-    await expect(
-      page
-        .getByRole("contentinfo")
-        .locator('nav[aria-label="Change language"]'),
-    ).toHaveCount(1);
+    for (const viewport of ARTBOARDS) {
+      await page.setViewportSize(viewport);
+      await page.goto("/en");
+      await expect(page.locator("[data-fo-header-switcher]")).toBeVisible();
+      await expect(page.locator("[data-fo-header-currency]")).toBeVisible();
+
+      const boxes = await page.evaluate(() => {
+        const round = (selector: string) => {
+          const box = document.querySelector(selector)?.getBoundingClientRect();
+          return {
+            x: Math.round(box?.x ?? Number.NaN),
+            y: Math.round(box?.y ?? Number.NaN),
+            right: Math.round(box?.right ?? Number.NaN),
+            bottom: Math.round(box?.bottom ?? Number.NaN),
+          };
+        };
+        return {
+          strip: round("[data-fo-utility]"),
+          switcher: round("[data-fo-header-switcher]"),
+          currency: round("[data-fo-header-currency]"),
+          viewport: window.innerWidth,
+        };
+      });
+      // Inside the notice bar's own box and inside the viewport: nothing to scroll to.
+      for (const box of [boxes.switcher, boxes.currency]) {
+        expect(box.x, String(viewport.width)).toBeGreaterThanOrEqual(0);
+        expect(box.right, String(viewport.width)).toBeLessThanOrEqual(
+          boxes.viewport,
+        );
+        expect(box.y).toBeGreaterThanOrEqual(boxes.strip.y);
+        expect(box.bottom).toBeLessThanOrEqual(boxes.strip.bottom);
+      }
+    }
   });
 
   test("draws no menu glyph, because it opened nothing (§14 A20)", async ({

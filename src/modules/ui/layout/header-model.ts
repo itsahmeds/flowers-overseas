@@ -73,9 +73,10 @@ export const HEADER_BAND_HEIGHTS = {
  *  - **desktop 83** = 82 masthead (the links and the pill share it) + 1 rule.
  *
  * TASK-176 (v2) changed both, deliberately: v1 was 96 / 138 with the search band gone (TASK-173).
- * The notice bar above it is a sibling that scrolls away; its height is content-driven (one or two
- * lines of claims, the 44 px utility links) and is asserted per breakpoint in the e2e suite, not
- * reserved here, because nothing below it moves after the first paint either way.
+ * The notice bar above it is a sibling that scrolls away; its height is content-driven and asserted
+ * per breakpoint in the e2e suite: 80 px on a phone (the sentence plus the 44 px row of languages
+ * and currency that spec 004 §14 A4 keeps reachable at 390 px), 62 px from `lg`. It is server-
+ * rendered with no island, so nothing below it moves after the first paint.
  */
 export const HEADER_STICKY_HEIGHTS = { mobile: 121, desktop: 83 } as const;
 

@@ -445,6 +445,26 @@ describe("the rendered header (AC-7, AC-14)", () => {
     expect(banner).toContain('data-fo-header-item="roses"');
   });
 
+  it("keeps the switcher and the currency on the phone as a second notice row (§14 A4)", () => {
+    const html = render("en");
+    const bar = tagAt(html, html.indexOf("data-fo-notice-bar"));
+    // Below `lg` the primitive's hidden utilities slot is shown as its own centred, wrapping row
+    // (coordinator ruling 2026-10-04: A4 binds over the mobile artboard) …
+    expect(bar).toContain("max-lg:[&amp;&gt;div&gt;div]:flex");
+    expect(bar).toContain("max-lg:[&amp;&gt;div]:flex-col");
+    expect(bar).not.toContain("max-lg:[&amp;&gt;div&gt;div]:hidden");
+    // … and only the help line steps out of it there (the footer carries the number).
+    const tel = html.indexOf(`href="tel:${COMPANY.contact.phoneE164}"`);
+    expect(tagAt(html, html.lastIndexOf("<span", tel))).toContain(
+      "max-lg:hidden",
+    );
+    const switcher = html.indexOf("data-fo-header-switcher");
+    expect(tagAt(html, switcher)).not.toContain("hidden");
+    expect(tagAt(html, html.indexOf("data-fo-header-currency"))).not.toContain(
+      "hidden",
+    );
+  });
+
   it("styles the switcher from the wrapper, `src/modules/i18n` untouched", () => {
     const html = render("en");
     const wrapper = html.slice(html.indexOf("data-fo-header-switcher"));

@@ -163,23 +163,33 @@ export function SiteHeader({
              `role="note"` is the artboards' semantics for it. */}
       <div data-fo-header-band="utility" data-fo-utility role="note">
         {/* Two adjustments from the wrapper, so the primitive stays TASK-175's: the frame is the
-            chrome's (content 56 px in at 1 440 px, like the header below it), and the utilities
-            start at `lg` rather than `md` — at 768 px their 650 px of links left the claims
-            ~100 px and the bar ran to 233 px (measured). */}
+            chrome's (content 56 px in at 1 440 px, like the header below it), and below `lg` the
+            utilities are a **second centred row** instead of hidden. Spec 004 §14 A4 binds over
+            the mobile artboard (coordinator ruling, 2026-10-04): the language switcher and the
+            currency must be reachable at 390 px. Side by side at 768 px their links left the
+            claims ~100 px and the bar ran to 233 px (measured), hence a row of their own. */}
         <NoticeBar
-          className="[&>div]:max-w-[calc(var(--container-page)+2*var(--gutter))] max-lg:[&>div>div]:hidden"
+          className="[&>div]:max-w-[calc(var(--container-page)+2*var(--gutter))] max-lg:[&>div]:flex-col max-lg:[&>div]:gap-0 max-lg:[&>div>div]:flex max-lg:[&>div>div]:flex-wrap max-lg:[&>div>div]:justify-center max-lg:[&>div>div]:gap-x-[12px] max-lg:[&>div>div]:gap-y-0"
           utilities={
             <>
-              {/* The help channel: one number, dialled from the E.164 form in `company.ts`. */}
-              <a href={`tel:${contact.phoneE164}`}>
-                {t("company.support.label")} {contact.phoneDisplay}
-              </a>
-              <Separator glyph="|" />
+              {/* The help channel: one number, dialled from the E.164 form in `company.ts`. From
+                  `lg` only: on a phone the row holds the languages and the currency, and the
+                  number is the footer's Help & WhatsApp column. */}
+              {/* The span carries the breakpoint: `NoticeBar` sets `inline-flex` on every link
+                  from its own wrapper, which outranks a class on the link. */}
+              <span className="max-lg:hidden">
+                <a href={`tel:${contact.phoneE164}`}>
+                  {t("company.support.label")} {contact.phoneDisplay}
+                </a>
+              </span>
+              <span className="max-lg:hidden">
+                <Separator glyph="|" />
+              </span>
               {/* Spec 003's switcher, mounted rather than restyled (AC-7, spec 003 AC-3): its
                   row layout, the 44 px target, the bold current entry and the small "Beta" are
                   applied from this wrapper. */}
               <div
-                className="[&_[aria-current]]:font-bold [&_[data-beta]]:ms-0 [&_[data-beta]]:text-[11px] [&_[data-beta]]:tracking-[0.08em] [&_[data-beta]]:uppercase [&_[data-beta]]:opacity-80 [&_li]:inline-flex [&_li]:items-center [&_li]:gap-[6px] [&_ul]:m-0 [&_ul]:flex [&_ul]:list-none [&_ul]:items-center [&_ul]:gap-[14px] [&_ul]:p-0"
+                className="[&_[aria-current]]:font-bold [&_[data-beta]]:ms-0 [&_[data-beta]]:text-[11px] [&_[data-beta]]:tracking-[0.08em] [&_[data-beta]]:uppercase [&_[data-beta]]:opacity-80 [&_li]:inline-flex [&_li]:items-center [&_li]:gap-[4px] lg:[&_li]:gap-[6px] [&_ul]:m-0 [&_ul]:flex [&_ul]:list-none [&_ul]:items-center [&_ul]:gap-[10px] [&_ul]:p-0 lg:[&_ul]:gap-[14px]"
                 data-fo-header-switcher
               >
                 <LocaleSwitcher locale={locale} />
