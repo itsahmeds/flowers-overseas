@@ -235,6 +235,7 @@ gap closes, mark it ✅ with the PR, and don't delete the row.
   uses ' · ' too. TASK-178 should say which separator the formatter emits." (2) "In the fresh-rate PDP, the add-on rows
   stay in złoty and carry the currency sentence, while the bouquet and total are in euro. This matches the shipped
   `AddonPriceList`, but TASK-178/179 should decide whether add-ons follow the display currency." Orchestrator ruling
-  2026-10-04: TASK-179 shows add-on prices in the page's display currency (price shown = price charged); TASK-178 joins
-  equivalents with the `format.ts` list formatter (spec 004 A21 clause 6(b) says so). Both briefs are on open branches
-  (PRs 169, 170), so their work orders carry the ruling.
+  2026-10-04: TASK-178 joins equivalents with the `format.ts` list formatter (spec 004 A21 clause 6(b) says so). Add-on
+  prices stay in the destination's currency, as the shipped `AddonPriceList` and TASK-179 (E-1) keep them; showing them
+  in the display currency needs add-on FX pricing and belongs to the checkout spec (010), not Phase 0. The briefs are on
+  open branches (PRs 169, 170), so their work orders carry the ruling.
