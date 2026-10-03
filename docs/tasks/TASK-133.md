@@ -22,7 +22,8 @@ One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
 - **From `/review 135` round 1 (2026-10-03), HOLE 6 ACCEPTABLE, carried here:** the product
-  page's section order (`src/modules/ui/product/ProductPage.tsx`: price summary after the tiers,
+  page's section order (`src/modules/ui/product/ProductPage.tsx`, on PR 135's branch until it
+  merges: price summary after the tiers,
   the "Six more" heading condition) has no test; moving the summary above the tiers passed every
   case. AC-28's artboard check must catch it.
 

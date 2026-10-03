@@ -12,8 +12,9 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
   404 shape under `/{locale}/`, not only the depth-1 examples it names.
 - **Measured on production `4ea52972`, 2026-10-03:** `/en/send-flowers-to/nowhere` and
   `/xx/send-flowers-to/poland` → 404 inside `<html id="__next_error__">` with **no `lang`**;
-  `/en/nope-segment` and `/fr` → 404 with `lang="en"` (correct). The TASK-127 E-1 spike saw the
-  same on PR 135's build.
+  `/en/nope-segment` and `/fr` → 404 with `lang="en"` (correct). The orchestrator's TASK-127 E-1
+  spike reported the same two shapes on PR 135's build (in its report to the orchestrator; the
+  written E-1 record in TASK-127 and spec 009 §14 A6 covers only the layout-flip option).
 - **Cause to confirm, not assume:** spec 003 §14 A3 records that a `notFound()` from a *matching*
   route renders inside the framework's error document with no `lang`, while a routing-layer
   refusal (`dynamicParams = false`) reaches `src/app/not-found.tsx`. `src/app/[locale]/[segment]/[child]/page.tsx`
