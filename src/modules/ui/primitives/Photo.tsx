@@ -3,7 +3,7 @@
  * conventions", `plan/10` §3's honesty rule, AC-10; TASK-045).
  *
  * Every photo box on the approved canvas renders through this component, and in Phase 0 it renders
- * the `--color-photo` token gradient with its uppercase caption and **no `<img>`**: the founder has
+ * the `--color-photo` token gradient (v2: warm paper) with its caption and **no `<img>`**: the founder has
  * supplied no imagery, spec 006 generates it, and a demo that shows a photograph it does not have
  * is the one thing `plan/10` §3 forbids outright. The caption is not decoration either — it says
  * what the slot will hold, which is what makes the placeholder honest rather than empty.
@@ -25,6 +25,7 @@ export const PHOTO_RATIOS = [
   "portrait",
   "card",
   "square",
+  "arch",
 ] as const;
 export type PhotoRatio = (typeof PHOTO_RATIOS)[number];
 
@@ -40,11 +41,27 @@ const RATIO_CLASS: Readonly<Record<PhotoRatio, string>> = {
   // difference is cropped rather than letterboxed").
   card: "aspect-[4/5]",
   square: "aspect-square",
+  // v2's occasion arch: the card box with a round top (`--radius-arch`).
+  arch: "aspect-[4/5]",
+};
+
+/**
+ * v2 rounds every photograph (components sheet "Photo"): 14 px on the 390 artboard and 18 px
+ * from `md` up, 28 px for the hero, the arch for the arch. `overflow-hidden` so the `<picture>`
+ * inside is clipped to the same corners.
+ */
+const RADIUS_CLASS: Readonly<Record<PhotoRatio, string>> = {
+  hero: "rounded-hero",
+  landscape: "rounded-photo-s md:rounded-photo",
+  portrait: "rounded-photo-s md:rounded-photo",
+  card: "rounded-photo-s md:rounded-photo",
+  square: "rounded-photo-s md:rounded-photo",
+  arch: "rounded-arch",
 };
 
 export interface PhotoProps {
   /**
-   * What the slot will hold, from the message catalogue. Rendered as the canvas's uppercase
+   * What the slot will hold, from the message catalogue. Rendered as the sheet's small
    * caption. Omitted only where the surrounding copy already says it.
    */
   readonly caption?: ReactNode;
@@ -72,13 +89,21 @@ export function Photo({
 }: PhotoProps): ReactElement {
   return (
     <div
-      className={["photo", RATIO_CLASS[ratio], "w-full", className]
+      className={[
+        "photo overflow-hidden",
+        RATIO_CLASS[ratio],
+        RADIUS_CLASS[ratio],
+        "w-full",
+        className,
+      ]
         .filter(Boolean)
         .join(" ")}
       {...dataset}
     >
       {children}
-      {caption === undefined ? null : <span>{caption}</span>}
+      {caption === undefined ? null : (
+        <span className="max-w-[30ch]">{caption}</span>
+      )}
     </div>
   );
 }

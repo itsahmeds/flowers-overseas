@@ -262,6 +262,8 @@ export const PHOTO_CAPTIONS = {
   // TASK-108: the product card's box, 4∶5 in all four card states (spec 008 §2, §5.3).
   card: "Photo slot · bouquet · product card",
   square: "Photo slot · bouquet",
+  // TASK-175: v2's occasion arch (`--radius-arch`).
+  arch: "Photo slot · occasion arch",
 } as const;
 
 /**

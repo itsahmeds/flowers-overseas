@@ -21,6 +21,8 @@
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
+import { Breadcrumbs } from "@/modules/ui";
+
 import type { ListingCrumb } from "../listing";
 
 import { registryLabel } from "./labels";
@@ -35,43 +37,20 @@ export function ListingBreadcrumb({
   const t = useTranslations();
 
   return (
-    <nav aria-label={registryLabel(t, "a11y.breadcrumb")} data-fo-breadcrumb>
-      <ol className="gap-sm text-ink-subtle flex list-none flex-wrap items-center p-0 text-sm">
-        {crumbs.map((crumb, index) => {
-          const label = registryLabel(
-            t,
-            crumb.labelKey,
-            crumb.labelValue === undefined
-              ? undefined
-              : { name: crumb.labelValue },
-          );
-          return (
-            <li className="gap-sm flex items-center" key={crumb.labelKey}>
-              {index === 0 ? null : (
-                <span aria-hidden="true" className="text-rule">
-                  {"/"}
-                </span>
-              )}
-              {crumb.current || crumb.href === undefined ? (
-                <span
-                  {...(crumb.current
-                    ? { "aria-current": "page" as const }
-                    : {})}
-                  className={
-                    crumb.current ? "text-ink font-semibold" : undefined
-                  }
-                >
-                  {label}
-                </span>
-              ) : (
-                <a className="hover:text-accent" href={crumb.href}>
-                  {label}
-                </a>
-              )}
-            </li>
-          );
-        })}
-      </ol>
-    </nav>
+    <Breadcrumbs
+      label={registryLabel(t, "a11y.breadcrumb")}
+      crumbs={crumbs.map((crumb) => ({
+        key: crumb.labelKey,
+        label: registryLabel(
+          t,
+          crumb.labelKey,
+          crumb.labelValue === undefined
+            ? undefined
+            : { name: crumb.labelValue },
+        ),
+        href: crumb.href,
+        current: crumb.current,
+      }))}
+    />
   );
 }

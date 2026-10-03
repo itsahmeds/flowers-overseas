@@ -1,5 +1,6 @@
 /**
- * The declared contrast manifest (spec 004 §2 "Tokens", AC-3; TASK-045).
+ * The declared contrast manifest (spec 004 §2 "Tokens", AC-3, §14 A21 clause 2; TASK-045,
+ * TASK-175).
  *
  * §2 asks for "every foreground/background pair a component is allowed to use" plus a unit test
  * that computes the WCAG 2.1 relative-contrast ratio for each and fails below its threshold. This
@@ -15,9 +16,9 @@
  *    which is exactly AC-3's wording, and no colour literal is duplicated into TypeScript (which
  *    `fo/no-raw-color` would reject anyway).
  *  - **A `decorative` kind exists and must carry a reason.** `--color-rule` is a 1 px section
- *    separator at 1.32:1; WCAG 1.4.11 governs boundaries needed to *identify* a component, and the
- *    canvas identifies fields and buttons with `--color-border-strong`/`--color-border-emphasis`
- *    instead. Declaring the hairline as decorative-with-a-reason keeps the manifest complete
+ *    separator at about 1.4:1; WCAG 1.4.11 governs boundaries needed to *identify* a component,
+ *    and the design identifies fields with `--color-field-edge` and buttons by their fill or ink
+ *    outline instead. Declaring the hairline as decorative-with-a-reason keeps the manifest complete
  *    (every colour token appears in it — asserted) without shipping a silent exception.
  */
 
@@ -51,108 +52,284 @@ export interface ContrastPair {
 }
 
 /**
- * Every pair a component may use. Ordered by surface so a palette change is read top to bottom.
+ * Every pair a component may use (design system v2, `docs/design/system/colour.dc.html`). Ordered
+ * by surface so a palette change is read top to bottom.
  */
 export const CONTRAST_PAIRS: readonly ContrastPair[] = [
-  // Ink on the three paper surfaces.
+  // Ink on the grounds: milk paper, the cream band, the muted band and the white card or field.
   {
     foreground: "--color-ink",
     background: "--color-paper",
     kind: "body-text",
-    usage: "body copy, headings and links on paper",
-  },
-  {
-    foreground: "--color-ink",
-    background: "--color-paper-2",
-    kind: "body-text",
-    usage: "body copy on a raised surface (cards, the utility strip)",
-  },
-  {
-    foreground: "--color-ink",
-    background: "--color-paper-3",
-    kind: "body-text",
-    usage: "body copy on a muted surface (placeholder chips, table zebra)",
+    usage: "body copy, headings and names on the page",
   },
   {
     foreground: "--color-ink-2",
     background: "--color-paper",
     kind: "body-text",
-    usage: "secondary copy and the utility strip on paper",
-  },
-  {
-    foreground: "--color-ink-2",
-    background: "--color-paper-2",
-    kind: "body-text",
-    usage: "secondary copy on a raised surface",
-  },
-  {
-    foreground: "--color-ink-2",
-    background: "--color-paper-3",
-    kind: "body-text",
-    usage: "secondary copy on a muted surface",
+    usage: "secondary copy, breadcrumb links and none-values on the page",
   },
   {
     foreground: "--color-ink-3",
     background: "--color-paper",
     kind: "body-text",
-    usage: "the `label` voice, captions and field placeholders on paper",
+    usage:
+      "the label voice, the equivalents line, small print and the honesty label on the page",
+  },
+  {
+    foreground: "--color-ink",
+    background: "--color-paper-2",
+    kind: "body-text",
+    usage: "body copy, headings and names on a cream band",
+  },
+  {
+    foreground: "--color-ink-2",
+    background: "--color-paper-2",
+    kind: "body-text",
+    usage: "secondary copy, breadcrumb links and none-values on a cream band",
   },
   {
     foreground: "--color-ink-3",
     background: "--color-paper-2",
     kind: "body-text",
-    usage: "the `label` voice on a raised surface",
+    usage:
+      "the label voice, the equivalents line, small print and the honesty label on a cream band",
+  },
+  {
+    foreground: "--color-ink",
+    background: "--color-paper-3",
+    kind: "body-text",
+    usage:
+      "body copy, headings and names on a muted band (the summary's sticky dock, a disabled control)",
+  },
+  {
+    foreground: "--color-ink-2",
+    background: "--color-paper-3",
+    kind: "body-text",
+    usage:
+      "secondary copy, breadcrumb links and none-values on a muted band (the summary's sticky dock, a disabled control)",
   },
   {
     foreground: "--color-ink-3",
     background: "--color-paper-3",
     kind: "body-text",
-    usage: "the `label` voice on a muted surface",
+    usage:
+      "the label voice, the equivalents line, small print and the honesty label on a muted band (the summary's sticky dock, a disabled control)",
   },
-  // The accent as text, and the two inked fills.
+  {
+    foreground: "--color-ink",
+    background: "--color-card",
+    kind: "body-text",
+    usage: "body copy, headings and names on a white card, letter or field",
+  },
+  {
+    foreground: "--color-ink-2",
+    background: "--color-card",
+    kind: "body-text",
+    usage:
+      "secondary copy, breadcrumb links and none-values on a white card, letter or field",
+  },
+  {
+    foreground: "--color-ink-3",
+    background: "--color-card",
+    kind: "body-text",
+    usage:
+      "the label voice, the equivalents line, small print and the honesty label on a white card, letter or field",
+  },
+  // Ink on the four stamp tints (stamps, the note card, the price summary, the picker note).
+  {
+    foreground: "--color-ink",
+    background: "--color-blush",
+    kind: "body-text",
+    usage: "a stamp's day and name, a summary's rows on blush",
+  },
+  {
+    foreground: "--color-ink-2",
+    background: "--color-blush",
+    kind: "body-text",
+    usage: "a stamp's month and note on blush",
+  },
+  {
+    foreground: "--color-ink-3",
+    background: "--color-blush",
+    kind: "body-text",
+    usage: "the label voice on blush",
+  },
+  {
+    foreground: "--color-ink",
+    background: "--color-butter",
+    kind: "body-text",
+    usage: "a stamp's day and name, a summary's rows on butter",
+  },
+  {
+    foreground: "--color-ink-2",
+    background: "--color-butter",
+    kind: "body-text",
+    usage: "a stamp's month and note on butter",
+  },
+  {
+    foreground: "--color-ink-3",
+    background: "--color-butter",
+    kind: "body-text",
+    usage: "the label voice on butter",
+  },
+  {
+    foreground: "--color-ink",
+    background: "--color-sage-wash",
+    kind: "body-text",
+    usage: "a stamp's day and name, a summary's rows on sage-wash",
+  },
+  {
+    foreground: "--color-ink-2",
+    background: "--color-sage-wash",
+    kind: "body-text",
+    usage: "a stamp's month and note on sage-wash",
+  },
+  {
+    foreground: "--color-ink-3",
+    background: "--color-sage-wash",
+    kind: "body-text",
+    usage: "the label voice on sage-wash",
+  },
+  {
+    foreground: "--color-ink",
+    background: "--color-leaf-wash",
+    kind: "body-text",
+    usage: "a stamp's day and name, a summary's rows on leaf-wash",
+  },
+  {
+    foreground: "--color-ink-2",
+    background: "--color-leaf-wash",
+    kind: "body-text",
+    usage: "a stamp's month and note on leaf-wash",
+  },
+  {
+    foreground: "--color-ink-3",
+    background: "--color-leaf-wash",
+    kind: "body-text",
+    usage: "the label voice on leaf-wash",
+  },
+  // Poppy: prices, Send and the one emotional phrase per page.
   {
     foreground: "--color-accent",
     background: "--color-paper",
     kind: "body-text",
-    usage: "link hover, accent icons and the accent link voice on paper",
+    usage: "a price, a from-price and the italic phrase on paper",
   },
   {
     foreground: "--color-accent",
     background: "--color-paper-2",
     kind: "body-text",
-    usage: "accent text on a raised surface",
+    usage: "a price, a from-price and the italic phrase on paper-2",
+  },
+  {
+    foreground: "--color-accent",
+    background: "--color-card",
+    kind: "body-text",
+    usage: "a price, a from-price and the italic phrase on card",
+  },
+  {
+    foreground: "--color-accent",
+    background: "--color-blush",
+    kind: "body-text",
+    usage: "a sentence choice in its hover state (blush behind poppy italic)",
   },
   {
     foreground: "--color-accent-ink",
     background: "--color-accent",
     kind: "body-text",
-    usage: "the label of an accent (primary) button",
-  },
-  {
-    foreground: "--color-accent-ink",
-    background: "--color-ink",
-    kind: "body-text",
-    usage: "the label of an inked (default) button and the inverse surface",
+    usage: "the label of a primary or send button and of the poppy chip",
   },
   {
     foreground: "--color-on-accent",
     background: "--color-accent-strong",
     kind: "body-text",
-    usage: "the label of an accent button in its hover and active state",
+    usage: "a primary button's label in its hover, active and busy states",
   },
+  // Cornflower: links, eyebrows, the selected chip, day and tier.
+  {
+    foreground: "--color-sky",
+    background: "--color-paper",
+    kind: "body-text",
+    usage: "a link, an eyebrow and a quiet button on paper",
+  },
+  {
+    foreground: "--color-sky-strong",
+    background: "--color-paper",
+    kind: "body-text",
+    usage: "a link's hover state on paper",
+  },
+  {
+    foreground: "--color-sky",
+    background: "--color-paper-2",
+    kind: "body-text",
+    usage: "a link, an eyebrow and a quiet button on paper-2",
+  },
+  {
+    foreground: "--color-sky-strong",
+    background: "--color-paper-2",
+    kind: "body-text",
+    usage: "a link's hover state on paper-2",
+  },
+  {
+    foreground: "--color-sky",
+    background: "--color-card",
+    kind: "body-text",
+    usage: "a link, an eyebrow and a quiet button on card",
+  },
+  {
+    foreground: "--color-sky-strong",
+    background: "--color-card",
+    kind: "body-text",
+    usage: "a link's hover state on card",
+  },
+  {
+    foreground: "--color-on-selected",
+    background: "--color-selected",
+    kind: "body-text",
+    usage: "the label of the current chip and the selected day or tier",
+  },
+  // Leaf: "included".
+  {
+    foreground: "--color-stem",
+    background: "--color-paper",
+    kind: "body-text",
+    usage: "the word “included” on paper (the add-on list, the summary panel)",
+  },
+  {
+    foreground: "--color-stem",
+    background: "--color-card",
+    kind: "body-text",
+    usage: "the word “included” on card (the add-on list, the summary panel)",
+  },
+  {
+    foreground: "--color-stem",
+    background: "--color-butter",
+    kind: "body-text",
+    usage: "the word “included” on butter (the add-on list, the summary panel)",
+  },
+  // The inverse surface: the notice bar and the promise band.
   {
     foreground: "--color-on-inverse",
-    background: "--color-ink-muted",
+    background: "--color-surface-inverse",
     kind: "body-text",
-    usage: "the label of an inked button in its hover state",
+    usage: "the notice bar's sentence and links, the promise band's copy",
   },
   {
-    foreground: "--color-on-danger",
-    background: "--color-danger-strong",
+    foreground: "--color-on-inverse-accent",
+    background: "--color-surface-inverse",
     kind: "body-text",
-    usage: "the label of a danger button in its hover and active state",
+    usage:
+      "the notice bar's strong phrase and the promise band's eyebrow and icons",
   },
-  // Photography placeholder: the caption sits on a gradient, so both ends are pairs.
+  {
+    foreground: "--color-on-inverse-accent",
+    background: "--color-surface-inverse",
+    kind: "focus",
+    usage:
+      "the focus ring on the inverse surface (`surface-inverse` swaps the poppy ring, which is 2.90:1 on ink, for sunflower)",
+  },
+  // The photo slot's caption sits on a gradient, so both ends are pairs.
   {
     foreground: "--color-photo-ink",
     background: "--color-photo-stop-1",
@@ -165,19 +342,49 @@ export const CONTRAST_PAIRS: readonly ContrastPair[] = [
     kind: "body-text",
     usage: "the `photo` placeholder caption over the gradient's darkest stop",
   },
-  // Component boundaries and the focus ring.
+  // Component boundaries, the logo and the focus ring.
+  {
+    foreground: "--color-field-edge",
+    background: "--color-card",
+    kind: "boundary",
+    usage: "a field's 1.5 px edge on its white fill (WCAG 1.4.11)",
+  },
+  {
+    foreground: "--color-field-edge",
+    background: "--color-paper",
+    kind: "boundary",
+    usage: "a field's edge against the page",
+  },
   {
     foreground: "--color-border-strong",
     background: "--color-paper",
     kind: "boundary",
-    usage:
-      "the boundary of a field, a chip and a secondary button (WCAG 1.4.11)",
+    usage: "a chip's hover edge and a secondary control's boundary",
   },
   {
     foreground: "--color-border-emphasis",
     background: "--color-paper",
     kind: "boundary",
-    usage: "the underline of an active field (the canvas's field treatment)",
+    usage: "the secondary button's 1.5 px ink outline",
+  },
+  {
+    foreground: "--color-surface-inverse",
+    background: "--color-paper",
+    kind: "boundary",
+    usage:
+      "the edge of the notice bar, the current page number and the inverse band against paper",
+  },
+  {
+    foreground: "--color-logo-ink",
+    background: "--color-paper",
+    kind: "boundary",
+    usage: "the logo mark's stem and petals (a graphical object, WCAG 1.4.11)",
+  },
+  {
+    foreground: "--color-logo-accent",
+    background: "--color-paper",
+    kind: "boundary",
+    usage: "the logo mark's origin and heart",
   },
   {
     foreground: "--color-focus",
@@ -189,13 +396,19 @@ export const CONTRAST_PAIRS: readonly ContrastPair[] = [
     foreground: "--color-focus",
     background: "--color-paper-2",
     kind: "focus",
-    usage: "the `:focus-visible` ring on a raised surface",
+    usage: "the `:focus-visible` ring on paper-2",
   },
   {
     foreground: "--color-focus",
     background: "--color-paper-3",
     kind: "focus",
-    usage: "the `:focus-visible` ring on a muted surface",
+    usage: "the `:focus-visible` ring on paper-3",
+  },
+  {
+    foreground: "--color-focus",
+    background: "--color-card",
+    kind: "focus",
+    usage: "the `:focus-visible` ring on card",
   },
   // Status colours, both directions.
   {
@@ -232,16 +445,23 @@ export const CONTRAST_PAIRS: readonly ContrastPair[] = [
     foreground: "--color-on-danger",
     background: "--color-danger",
     kind: "body-text",
-    usage: "text on a danger fill",
+    usage: "the label of a danger button",
+  },
+  {
+    foreground: "--color-on-danger",
+    background: "--color-danger-strong",
+    kind: "body-text",
+    usage: "a danger button's label in its hover and active state",
   },
   // Declared, deliberately not threshold-tested.
   {
     foreground: "--color-rule",
     background: "--color-paper",
     kind: "decorative",
-    usage: "the 1 px hairline between sections, and a table's row separator",
+    usage:
+      "the 1 px hairline between sections, a card chip's inset edge and the facts list's row separators",
     reason:
-      "a separator, not a component boundary: nothing has to be identified by it, and the design identifies fields, chips and buttons with --color-border-strong / --color-border-emphasis, which are boundary pairs above (WCAG 1.4.11 applies to the latter, not the former)",
+      "a separator, not a component boundary: nothing has to be identified by it alone \u2014 a chip is identified by its white fill and its text, a field by --color-field-edge, a button by its fill or its ink outline, which are the boundary pairs above (WCAG 1.4.11 applies to those, not to the hairline)",
   },
   {
     foreground: "--color-photo-stop-2",
@@ -252,12 +472,30 @@ export const CONTRAST_PAIRS: readonly ContrastPair[] = [
       "a gradient stop behind a caption whose own contrast is tested against the lightest and darkest stops; no text or boundary uses this colour directly",
   },
   {
-    foreground: "--color-surface-inverse",
+    foreground: "--color-sun",
     background: "--color-paper",
-    kind: "boundary",
-    usage: "the edge of an inked button or the inverse footer against paper",
+    kind: "decorative",
+    usage:
+      "the sunflower tape on the P.S. and the sunflower rule under the demo sentence",
+    reason:
+      "a highlight that is never text on paper and never the only carrier of a meaning (the typography and colour sheets' rule); as text it appears only on ink, which is the body-text pair above",
   },
 ];
+
+/**
+ * Colour tokens that are not one opaque colour, so no ratio can be computed for them, each with
+ * the reason it needs none. Every other `--color-*` token must appear in a pair (AC-3's "absent
+ * from the manifest" clause); these are the only exemptions, and the test reads this list rather
+ * than a hard-coded name.
+ */
+export const NON_SINGLE_COLOUR_TOKENS: Readonly<Record<string, string>> = {
+  "--color-photo":
+    "the placeholder gradient; its three stops are declared separately and the caption is paired against the lightest and darkest",
+  "--color-shade":
+    "plum-navy at 12 % alpha, used only inside box-shadow and drop-shadow values; no text or boundary is drawn in it",
+  "--color-scrim":
+    "plum-navy at 45 % alpha behind an open overlay; the overlay's own surface carries the text, so the scrim is never a text background",
+};
 
 /** An OKLCH colour, as written in the `@theme` block. */
 export interface Oklch {
