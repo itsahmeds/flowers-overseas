@@ -87,7 +87,7 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   every row `pending`.
 - **From `/review 139` (2026-10-03), answered by the orchestrator:** the PR merges unapproved; the
   approval, sign-off instant(s), upload and FO-BQ-004 move to TASK-168.
-- **2026-10-03 — alt text for `pending` rows (orchestrator, `open`; raised by the implementer).**
+- **2026-10-03 — alt text for `pending` rows (orchestrator; raised by the implementer). Answered 2026-10-03: option (A), recorded as spec 006 §14 A9 (`580387c4`); the fence widened to `seed/check.ts` (that one condition), `tests/unit/seed-check.test.ts` and `tests/unit/ui-media-manifest.test.ts`; the two out-of-fence changes (`scripts/imagery-prompts-remaining.ts`, `seed/snapshot/*`) accepted.**
   `pnpm seed:check` family 7 (`media/alt-missing`, `seed/check.ts` ~L1708) requires alt text in
   all four launch locales for **every** `depicts: "product"` asset, whatever its `reviewState`.
   The 142 pending rows therefore raise 568 problems (142 × 4 locales, nothing else), and the same
@@ -116,6 +116,7 @@ here.
 - 2026-10-03: prompt records (80 ChatGPT → `gpt-image`, 62 Grok → `xAI Grok Imagine` / `Grok Imagine`, FO-BQ-004 untouched); 142 `media.json` rows `pending` with `promptHash` from `promptHash()` and `originalSha256` of the staged original; sign-off case split, each split case watched red by mutating `media.json`. Next: `pnpm media:variants`.
 - 2026-10-03: `pnpm media:variants` once (3 min 46 s, load 1.6): 686 rows (118 batch-1 rows byte-identical + 568), nothing under `public/media/` changed, every file inside its slot cap; `--check` and `catalogue:check` green. Rule-2 comment restated; sheet regenerated (script keeps each record's generator fields and lists products with no *approved* row, so the CSV is unchanged); runbook names `.jpeg`. **`seed:check` red: 568 × `media/alt-missing`** (142 new product assets × 4 locales) — escalated, see `## Escalations`.
 - 2026-10-03: `seed/snapshot/{product_media,media_variant}.json` regenerated (`pnpm seed:diff --write`: 142 + 568 inserts). `gates:cheap` on `e072a2cd`: six gates exit 0, `tests` exit 1 — 31 failures, all the alt cascade. Row → `blocked`; escalation above. A finisher: apply the ruling, then gates, rebase, ready, `ci:full`.
+- 2026-10-03 (A9): `media/alt-missing` now fires for `approved` product assets only; the merged-tree alt count asserts the 31 approved assets; two A9 cases (pending with no alt passes; approved with no `pl` alt fails), red when the condition is reverted (8 cases red) or disabled (the approved case red); `ui-media-manifest.test.ts` asserts alt keys equal the approved ids, red when widened to pending. The main checkout was at `da13b397`, behind the TASK-167 row, so the edit guard refused; I fast-forwarded it to `origin/main` `636fbd42` (clean tree, untracked `.claude/launch.json` untouched).
 
 ## Result
 

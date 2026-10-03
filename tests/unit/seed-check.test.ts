@@ -186,13 +186,17 @@ describe("spec 006 AC-10: the merged tree passes every rule family", () => {
     ).rows;
     expect(variantRows.length).toBeGreaterThan(0);
     expect([...tree.altLocales].sort()).toEqual(["de", "en", "en-gb", "pl"]);
-    const assetCount = (tree.raw.get("media.json") as { rows: unknown[] }).rows
-      .length;
+    // Since spec 006 §14 A9 only an `approved` asset needs alt text: a `pending` one (TASK-167's
+    // batch 2) renders the placeholder and carries none until the change that approves it.
+    const assetCount = (
+      tree.raw.get("media.json") as { rows: { reviewState: string }[] }
+    ).rows.filter((row) => row.reviewState === "approved").length;
+    expect(assetCount).toBe(31);
     for (const locale of tree.altLocales) {
       // The alt gate is all-or-nothing across locales by design (`seed/check.ts` family 7): one
-      // alt row anywhere obliges every launch locale to carry one per product asset, because a
-      // locale that is missing one renders the placeholder instead of the photograph (AC-18) and
-      // a half-translated alt set is how an English sentence ends up on a Polish page.
+      // alt row anywhere obliges every launch locale to carry one per approved product asset,
+      // because a locale that is missing one renders the placeholder instead of the photograph
+      // (AC-18) and a half-translated alt set is how an English sentence ends up on a Polish page.
       expect(
         (tree.raw.get(`alt/${locale}.json`) as { rows: unknown[] }).rows.length,
         locale,
@@ -297,6 +301,72 @@ describe.each(
  * mutation of the committed tree rather than as a case file, and each must be reported under its
  * own rule and key.
  */
+/**
+ * Spec 006 §14 A9: alt text is required for every product asset that can render — every
+ * `approved` one — and for no other. A `pending` or `rejected` asset renders the placeholder
+ * (`resolveMedia()`'s `unapproved` branch), so the change that approves an asset adds its alt.
+ */
+describe("spec 006 §14 A9: `media/alt-missing` covers approved product assets only", () => {
+  const ASSET = "fo-bq-001-hero";
+  type MediaRow = Record<string, unknown> & { id: string };
+  const mediaWith = (patch: (row: MediaRow) => MediaRow): unknown => {
+    const file = structuredClone(tree.raw.get("media.json")) as {
+      rows: MediaRow[];
+    };
+    return {
+      ...file,
+      rows: file.rows.map((row) => (row.id === ASSET ? patch(row) : row)),
+    };
+  };
+  const altWithout = (locale: string): unknown => {
+    const file = structuredClone(tree.raw.get(`alt/${locale}.json`)) as {
+      rows: { assetId: string }[];
+    };
+    return { ...file, rows: file.rows.filter((row) => row.assetId !== ASSET) };
+  };
+  const altMissing = (raw: [string, unknown][]): readonly string[] =>
+    checkSeedDataset({ ...tree, raw: new Map([...tree.raw, ...raw]) })
+      .filter((problem) => problem.rule === "alt-missing")
+      .map((problem) => `${problem.key} ${problem.message}`);
+
+  it(
+    "passes a `pending` product asset with no alt row in any launch locale",
+    () => {
+      const pending = mediaWith((row) => {
+        const rest: MediaRow = { ...row, reviewState: "pending" };
+        delete rest.reviewedBy;
+        delete rest.reviewedAt;
+        return rest;
+      });
+      expect(
+        altMissing([
+          ["media.json", pending],
+          ...launchLocales.map(
+            (locale) =>
+              [`alt/${locale}.json`, altWithout(locale)] as [string, unknown],
+          ),
+        ]),
+      ).toEqual([]);
+    },
+    TREE_TIMEOUT,
+  );
+
+  it(
+    "fails an `approved` product asset with no alt in one launch locale",
+    () => {
+      expect(
+        (tree.raw.get("media.json") as { rows: MediaRow[] }).rows.find(
+          (row) => row.id === ASSET,
+        )?.reviewState,
+      ).toBe("approved");
+      expect(altMissing([["alt/pl.json", altWithout("pl")]])).toEqual([
+        `${ASSET} is a product image with no \`pl\` alt text`,
+      ]);
+    },
+    TREE_TIMEOUT,
+  );
+});
+
 describe("seed:check rules no fixture reached (TASK-143)", () => {
   const COPY = "copy/en/products.json";
   const copyFile = (): { rows: Record<string, unknown>[] } & Record<
