@@ -105,13 +105,21 @@ describe("the hero band (AC-10)", () => {
     expect(html).toMatch(/<h1[^>]*>Flowers for someone far away\.<\/h1>/);
   });
 
-  it("renders the eyebrow and the first-person proposition (§14 A5)", () => {
+  it("renders the eyebrow and the proposition, florists in the future tense (A21 clause 7)", () => {
     const rendered = text(hero("en"));
 
     expect(rendered).toContain("International flower delivery");
     expect(rendered).toContain(
-      "Our florist in your recipient's town makes it and hands it over in person. We never ship a box.",
+      "A local florist in your recipient's town will make it and hand it over in person. We never ship a box.",
     );
+    expect(rendered).not.toMatch(/florist[^.]* (makes|hands) it/u);
+  });
+
+  it('carries the `#send` target the header\'s "Send flowers" link points at (TASK-176)', () => {
+    const html = hero("en");
+
+    expect([...html.matchAll(/ id="send"/g)]).toHaveLength(1);
+    expect(html).toMatch(/<form id="send"[^>]* method="get"/);
   });
 
   it("fills the photo slot eagerly, at high priority, with one preload (spec 006 AC-19)", () => {

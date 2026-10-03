@@ -2410,10 +2410,8 @@
   },
   "home.destinations.body": {
     "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 — the mobile artboard’s shorter body; the desktop artboard’s trailing \"read the guide and join the waiting list\" is cut because neither exists yet; TASK-054)",
-    "reviewedAt": "2026-09-11T00:00:00Z",
-    "sourceHash": "e560a5d80b5733c023d0d0a3013025995086bf7768efa10912d3e170df68a289"
+    "reviewed": false,
+    "sourceHash": "18caa7bb0f6e2efe5927fade6ab683292d8faec856548c3f03263d1e0963c408"
   },
   "home.destinations.eyebrow": {
     "source": "human",
@@ -2437,11 +2435,9 @@
     "sourceHash": "73a20c92dbe3d09ab0cedb63cdcbfd4df9cc14912da0c9498fc0df7094a20e63"
   },
   "home.hero.proposition": {
-    "reviewed": true,
-    "reviewedAt": "2026-09-09T00:00:00Z",
-    "reviewedBy": "founder",
     "source": "human",
-    "sourceHash": "0b5e39078b129e8273e80bf5a87eaafa42c6f0671fa5e28b278496b73fcc8881"
+    "reviewed": false,
+    "sourceHash": "a813ced8689cd324891d7c6e130921462f5d78e31033ac357ccbfce520088419"
   },
   "home.howItWorks.choose.body": {
     "source": "human",

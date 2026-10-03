@@ -448,6 +448,12 @@ describe("the destinations grid", () => {
   it("names no city at all: the v2 chips claim no coverage (plan/10 §3)", () => {
     const rendered = text(grid("en"));
 
+    // The opening rule is stated as a rule, not as a fact Poland already meets (2026-10-04).
+    expect(rendered).toContain(
+      "We open each country only once we have local florists there we can stand behind.",
+    );
+    expect(rendered).not.toContain("met enough florists");
+
     for (const city of ["Warszawa", "Kraków", "Berlin", "Paris", "Madrid"]) {
       expect(rendered, city).not.toContain(city);
     }

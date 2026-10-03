@@ -1647,7 +1647,7 @@
   "home.destinations.body": {
     "source": "machine",
     "reviewed": false,
-    "sourceHash": "e560a5d80b5733c023d0d0a3013025995086bf7768efa10912d3e170df68a289"
+    "sourceHash": "18caa7bb0f6e2efe5927fade6ab683292d8faec856548c3f03263d1e0963c408"
   },
   "home.destinations.eyebrow": {
     "source": "machine",
@@ -1665,9 +1665,9 @@
     "sourceHash": "73a20c92dbe3d09ab0cedb63cdcbfd4df9cc14912da0c9498fc0df7094a20e63"
   },
   "home.hero.proposition": {
-    "reviewed": false,
     "source": "machine",
-    "sourceHash": "0b5e39078b129e8273e80bf5a87eaafa42c6f0671fa5e28b278496b73fcc8881"
+    "reviewed": false,
+    "sourceHash": "a813ced8689cd324891d7c6e130921462f5d78e31033ac357ccbfce520088419"
   },
   "home.howItWorks.choose.body": {
     "source": "machine",

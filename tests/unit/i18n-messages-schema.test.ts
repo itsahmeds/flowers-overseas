@@ -289,6 +289,10 @@ describe("the shipped catalogues and manifests", () => {
     "faq.whoDelivers.answer",
     "faq.whoDelivers.answerCutoff",
     "footer.payment.methods",
+    // TASK-177, honesty fixes 2026-10-04: the destinations line stated as our rule rather than
+    // as a fact about Poland, and the hero proposition with florists in the future tense.
+    "home.destinations.body",
+    "home.hero.proposition",
     "home.howItWorks.choose.body",
     // TASK-177 (v2 home): the promise band's guarantee drops "7-day" (the work order's honesty
     // rule) and the sentence picker's "not yet" option label; both in the brief's copy list.
