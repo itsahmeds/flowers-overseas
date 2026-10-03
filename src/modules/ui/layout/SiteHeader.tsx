@@ -45,9 +45,16 @@
  * publishes the first nav target and it becomes a real disclosure — the same rule as the search
  * band above, and for the same reason.
  *
- * **Every registry entry is text until its `published` flag flips** (AC-14) — resolved in
- * `./header-model.ts` and never here, so this file holds no `published` branch, and a category,
- * account or for-florists go-live is a data flip with no template edit.
+ * **Every entry with no page is absent** (AC-14 as spec 004 §14 A20 amends it; TASK-173). The
+ * founder clicked the live site on 2026-10-03 and found a header of words that looked like
+ * controls and did nothing — the category row, the search band, `Sign in`, `My orders`,
+ * `Basket (0)`, the menu glyph — while the pages behind most of them answered 200. So the rule is
+ * now binary: an entry the model resolves to a URL is a link, and an entry it does not resolve is
+ * not drawn. Resolved in `./header-model.ts` and never here, so this file holds no `published`
+ * branch, and a category, account or for-florists go-live is a data flip with no template edit.
+ * The search band (and the 52 px mobile row it occupies) and the menu glyph are gone with it;
+ * the search band's markup stays behind `headerSearchHref()` for spec 008 to replace with the
+ * real control.
  *
  * **The currency chip is server-rendered text** (AC-8): the locale's `currencyDefault` with a
  * localised `aria-label`, identical for every visitor of the URL. It reads no cookie and writes
@@ -107,10 +114,12 @@ import { Mark } from "../icons/Mark.tsx";
 import { Chip } from "../primitives/Chip.tsx";
 import {
   type HeaderItem,
+  type HeaderListingHrefs,
   headerAccountItems,
   headerCategoryItems,
   headerCurrencyCode,
   headerEndClusterItems,
+  headerSearchHref,
 } from "./header-model.ts";
 
 /**
@@ -262,8 +271,8 @@ function Punctuation({
 }
 
 /**
- * One category row entry. A link when the registry publishes it, otherwise its label as plain
- * text — never a dead link and never a disabled-looking one (AC-14).
+ * One category row entry: always a link, because the model hands over only the entries that have
+ * a page (AC-14, spec 004 §14 A20) — never a dead link, never text dressed as one.
  */
 function CategoryEntry({
   item,
@@ -298,23 +307,14 @@ function CategoryEntry({
     item.mobileOrder === undefined
       ? ""
       : (MOBILE_ORDER[item.mobileOrder] ?? ""),
-    // The 44 px tap target applies to a **link**. While the entry is text (Phase 0, AC-14) there
-    // is nothing to hit, and forcing 44 px would inflate the mobile category row from the
-    // artboard's 28 px to 44 px for a row nobody can press. The task that publishes the first
-    // category therefore also grows the row, which is the honest order.
-    item.href === undefined ? "" : "min-h-[44px]",
+    // The 44 px tap target of §5.3/§8. Every entry is a link since TASK-173, so the mobile row
+    // grew from the artboard's 28 px to 44 px with it — the order TASK-048 recorded.
+    "min-h-[44px]",
     item.accent ? "text-accent" : "",
   ]
     .filter(Boolean)
     .join(" ");
 
-  if (item.href === undefined) {
-    return (
-      <span className={className} data-fo-header-item={item.id}>
-        {content}
-      </span>
-    );
-  }
   return (
     <a className={className} data-fo-header-item={item.id} href={item.href}>
       {content}
@@ -340,10 +340,8 @@ function AccountEntry({
   const className = [
     item.showOnMobile ? "inline-flex" : "hidden md:inline-flex",
     "gap-xs flex-col items-center justify-center text-sm md:min-w-[72px]",
-    // As in the category row: the 44 px target is a property of a **link**. In Phase 0 these are
-    // text, and reserving 44 px of width each for three of them would push the 390 px artboard's
-    // lockup into the cluster.
-    item.href === undefined ? "" : "min-h-[44px] min-w-[44px]",
+    // The 44 px target in both dimensions: the mobile entry is an icon with no visible text.
+    "min-h-[44px] min-w-[44px]",
   ]
     .filter(Boolean)
     .join(" ");
@@ -354,14 +352,6 @@ function AccountEntry({
     </>
   );
 
-  if (item.href === undefined) {
-    // Unpublished (010/019 own these pages): the label with its icon, not a link, not a control.
-    return (
-      <span className={className} data-fo-header-item={item.id}>
-        {content}
-      </span>
-    );
-  }
   return (
     <a className={className} data-fo-header-item={item.id} href={item.href}>
       {content}
@@ -373,6 +363,13 @@ export interface SiteHeaderProps {
   /** The locale of the document the header is rendered on; it drives every URL and the chip. */
   readonly locale: string;
   /**
+   * The URLs of the listing pages the category row may link to **that exist in this locale**, by
+   * link id (`./header-model.ts` `headerListingTargets()`; spec 008 §14 A14; TASK-173). The
+   * document layout resolves them, because only the catalogue knows which hub exists in German
+   * and `src/modules/ui` may not import it. Absent → those entries are not drawn.
+   */
+  readonly listingHrefs?: HeaderListingHrefs;
+  /**
    * The basket count the canvas prints as `Basket (0)`. Zero in Phase 0 and on every cached
    * document: a per-visitor number would make the header vary, and spec 010 owns the basket, so
    * the prop exists to be *passed* by that spec rather than to be read from a cookie here.
@@ -382,6 +379,7 @@ export interface SiteHeaderProps {
 
 export function SiteHeader({
   locale,
+  listingHrefs = {},
   basketCount = 0,
 }: SiteHeaderProps): ReactElement {
   const t = useTranslations();
@@ -391,10 +389,12 @@ export function SiteHeader({
 
   const home = localePath(locale, "home");
   const currency = headerCurrencyCode(locale);
-  const categories = headerCategoryItems(locale);
+  const categories = headerCategoryItems(locale, listingHrefs);
   const account = headerAccountItems(locale);
   const endCluster = headerEndClusterItems(locale);
   const search = siteLink(SEARCH_LINK_ID);
+  /** Search is drawn only once it has a page (spec 008); until then the band is absent. */
+  const searchDrawn = headerSearchHref(locale) !== undefined;
   /** The basket carries a count; the other two are plain registry labels. */
   const accountLabel = (item: HeaderItem): string =>
     item.id === "basket"
@@ -519,26 +519,14 @@ export function SiteHeader({
         <div
           // `gap-x-*` only: a row gap would be added to the two declared rows and the band would be
           // 16 px taller than the artboard.
-          className={`gap-x-md md:gap-x-xl grid grid-cols-[auto_minmax(0,1fr)_auto] grid-rows-[50px_52px] items-center md:grid-cols-[300px_minmax(0,1fr)_300px] md:grid-rows-[84px] ${BLEED}`}
+          className={`gap-x-md md:gap-x-xl grid grid-cols-[auto_minmax(0,1fr)_auto] ${searchDrawn ? "grid-rows-[50px_52px]" : "grid-rows-[50px]"} items-center md:grid-cols-[300px_minmax(0,1fr)_300px] md:grid-rows-[84px] ${BLEED}`}
           data-fo-header-band="masthead"
         >
           <div className="gap-sm md:gap-md flex items-center">
-            {/* The canvas's menu glyph, rendered as **decoration, not a control** (`/review 31`
-              round 2, closed by TASK-055). It shipped as `<button disabled>`: pixel-identical to
-              an enabled button, in the tab order's blind spot, and doing nothing when pressed —
-              the same dead affordance §14 A4 removed from the search band, and answered the same
-              way. There is nothing to disclose while every category and account target is
-              unpublished (AC-14), so there is no button: no accessible name, no focus stop, no
-              `disabled` state to explain. Spec 008 publishes the first target and turns this
-              `<span>` back into a disclosure button with a panel behind it; the box keeps the
-              44 px the artboard reserves so that swap moves no pixel. */}
-            <span
-              aria-hidden="true"
-              className="text-ink-subtle inline-flex min-h-[44px] min-w-[44px] items-center justify-center md:hidden"
-              data-fo-header-menu="unpublished"
-            >
-              <Icon name="menu" size={22} />
-            </span>
+            {/* No menu glyph (spec 004 §14 A20; TASK-173): it opened nothing, and a control that
+              does nothing is the defect A20 removes. The mobile category row scrolls and carries
+              every entry, so there is nothing for a menu to disclose; spec 008 brings it back as
+              a real disclosure if one is ever needed. */}
             <a className={`gap-sm md:gap-md ${TARGET}`} href={home}>
               <Mark className="h-[26px] w-[26px] md:h-[40px] md:w-[40px]" />
               <span className="display text-[19px] tracking-[0.04em] md:text-[26px]">
@@ -547,31 +535,32 @@ export function SiteHeader({
             </a>
           </div>
 
-          {/* The search band, exactly as the artboards draw it (§14 A4): a field-shaped box holding
-            the placeholder sentence and, from `md` up, a button-shaped box holding the word
-            `Search`. Text — not an `<input>`, not a `<button>`, not a `<form>` — because there is
-            no search route until spec 008 and this header does not render affordances that do
-            nothing. `nav.search.help` is the screen-reader sentence that says so; it is inside
-            the box rather than attached to a control, because there is no control. */}
-          <div
-            className="col-span-3 row-start-2 flex md:col-span-1 md:col-start-2 md:row-start-1"
-            data-fo-header-search
-          >
-            <span className="border-rule ps-md pe-md text-ink-subtle md:border-border-strong md:text-md flex min-h-[42px] flex-1 items-center rounded-full border text-sm md:min-h-[48px] md:rounded-s-sm md:rounded-e-none md:border-e-0">
-              {/* The mobile artboard puts a search glyph inside the pill; the desktop artboard has
-                the dark `Search` box instead and no glyph. */}
-              <Icon className="me-sm md:hidden" name="search" size={16} />
-              <span className="truncate">
-                {registryLabel(t, linkLabelKey(search))}
+          {/* The search band — **only once search has a page** (spec 004 §14 A20; TASK-173). §14
+            A4 drew it as text shaped like a field and a button; the founder read that as a broken
+            search, which is what it looked like. With no search route there is no band at all,
+            and the mobile masthead is one 50 px row. Spec 008 replaces this markup with the real
+            control when it publishes the target. */}
+          {searchDrawn ? (
+            <div
+              className="col-span-3 row-start-2 flex md:col-span-1 md:col-start-2 md:row-start-1"
+              data-fo-header-search
+            >
+              <span className="border-rule ps-md pe-md text-ink-subtle md:border-border-strong md:text-md flex min-h-[42px] flex-1 items-center rounded-full border text-sm md:min-h-[48px] md:rounded-s-sm md:rounded-e-none md:border-e-0">
+                {/* The mobile artboard puts a search glyph inside the pill; the desktop artboard has
+                  the dark `Search` box instead and no glyph. */}
+                <Icon className="me-sm md:hidden" name="search" size={16} />
+                <span className="truncate">
+                  {registryLabel(t, linkLabelKey(search))}
+                </span>
+                <span className="sr-only">
+                  {registryLabel(t, search.descriptionKey ?? "nav.search.help")}
+                </span>
               </span>
-              <span className="sr-only">
-                {registryLabel(t, search.descriptionKey ?? "nav.search.help")}
+              <span className="bg-surface-inverse text-on-inverse md:text-md hidden min-h-[48px] items-center justify-center rounded-e-sm px-[26px] font-medium tracking-[0.02em] md:inline-flex">
+                {t("nav.search.submit")}
               </span>
-            </span>
-            <span className="bg-surface-inverse text-on-inverse md:text-md hidden min-h-[48px] items-center justify-center rounded-e-sm px-[26px] font-medium tracking-[0.02em] md:inline-flex">
-              {t("nav.search.submit")}
-            </span>
-          </div>
+            </div>
+          ) : null}
 
           <div className="gap-md flex items-center justify-end">
             {account.map((item) => (
@@ -593,7 +582,7 @@ export function SiteHeader({
           className="border-rule border-t"
         >
           <div
-            className={`gap-md flex min-h-[28px] items-center justify-between overflow-x-auto md:min-h-[52px] md:flex-wrap md:overflow-x-visible ${BLEED}`}
+            className={`gap-md flex min-h-[44px] items-center justify-between overflow-x-auto md:min-h-[52px] md:flex-wrap md:overflow-x-visible ${BLEED}`}
             data-fo-header-band="categories"
           >
             {/* The mobile artboard prints the row in the canvas's label voice (11 px, 600, tracked,

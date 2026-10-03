@@ -11,21 +11,51 @@
 import { COUNTRIES } from "../../src/config/countries.ts";
 
 /**
- * The **two** orphans this crawl found and could not close inside AC-20's "exactly the five link
- * ids". Each is an open question in `docs/tasks/TASK-113.md` §Escalations with a reason, and each
- * is asserted by the crawl to be a non-empty set — a waiver that covered nothing would be a way of
- * making the gate pass by describing it.
+ * The three category hubs the header's category row links in each listing locale (spec 008 §14
+ * A14 (a); TASK-173), as literal paths: the hubs the crawl now **must** reach. Literal rather than
+ * derived from `site-links.ts`, so a header that stops linking one is red here, not absorbed.
+ */
+export const HEADER_CATEGORY_HUBS: Readonly<Record<string, readonly string[]>> =
+  {
+    en: [
+      "/en/flowers/hand-tied-bouquets",
+      "/en/flowers/roses",
+      "/en/flowers/plants",
+    ],
+    "en-gb": [
+      "/en-gb/flowers/hand-tied-bouquets",
+      "/en-gb/flowers/roses",
+      "/en-gb/flowers/plants",
+    ],
+    de: [
+      "/de/blumen/blumenstraeusse",
+      "/de/blumen/rosen",
+      "/de/blumen/pflanzen",
+    ],
+    pl: ["/pl/kwiaty/bukiety", "/pl/kwiaty/roze", "/pl/kwiaty/rosliny"],
+  };
+
+/**
+ * The orphans this crawl found and could not close inside AC-20's "exactly the five link ids".
+ * Each was an open question in `docs/tasks/TASK-113.md` §Escalations with a reason, and each is
+ * asserted by the crawl to be a non-empty set — a waiver that covered nothing would be a way of
+ * making the gate pass by describing it. **TASK-173 (spec 008 §14 A14) closed two and narrowed the
+ * third:** the header's category row now links the demo destination's shop root and three
+ * category hubs from every document, so the crawl's reach grew and the waiver shrank.
  *
- *  1. **`categoryHub`, every locale.** Spec 008 §2 reserves five link ids and none publishes a
- *     country-less category hub; no page type in the spec links to one either. The rows that
- *     could are the header's category row in `src/config/categories.ts` — spec 004's registry,
- *     owned by no task in spec 008.
- *  2. **`countryShopRoot` in `de` and `pl`.** The shop root's only inbound link in §2's plan is
+ *  1. **`categoryHub`, every locale, minus the three the header links** (Bouquets, Roses, Plants
+ *     — `HEADER_CATEGORY_HUBS`). Spec 008 §2 reserves five link ids and none publishes a
+ *     country-less category hub; TASK-173's category row is the first publisher, for three of
+ *     the twenty-three. The other twenty still have no inbound edge.
+ *  2. **Closed by TASK-173.** `countryShopRoot` in `de` and `pl`. The shop root's only inbound link in §2's plan is
  *     the **corridor page**, and neither locale has one: their guides are machine drafts, so
  *     `corridorPageExists()` is false for every destination there. Seven URLs each, all
  *     `noindex,follow` and in no sitemap (the locale is not indexable), so the cost today is
  *     reachability and not ranking — but it is a hole, and it is named rather than hidden.
- *  3. **`countryCategory` in `de` and `pl`** (TASK-106, the same hole one level down). Once
+ *     The header's "Our selection" now links `/de/polen/blumen` and `/pl/polska/kwiaty` from
+ *     every document, and the shop root's destination picker reaches the other six.
+ *  3. **Closed by TASK-173.** `countryCategory` in `de` and `pl` (TASK-106, the same hole one
+ *     level down; reached through the shop roots of escalation 2). Once
  *     TASK-106 authored their category slugs, 140 country categories per locale exist, and their
  *     inbound links are the shop root (escalation 2) and sibling-category chips on other country
  *     categories. The crawl of PR #150 (run 37115230193) reached 38 documents from `/de` and none
@@ -39,19 +69,20 @@ import { COUNTRIES } from "../../src/config/countries.ts";
 export const EXCLUDED: readonly {
   readonly locale?: string;
   readonly pageType: string;
-}[] = [
-  { pageType: "categoryHub" },
-  { locale: "de", pageType: "countryShopRoot" },
-  { locale: "pl", pageType: "countryShopRoot" },
-  { locale: "de", pageType: "countryCategory" },
-  { locale: "pl", pageType: "countryCategory" },
-];
+  /** Pages of this type the rule does **not** cover, per locale: they must be reached. */
+  readonly exceptPaths?: Readonly<Record<string, readonly string[]>>;
+}[] = [{ pageType: "categoryHub", exceptPaths: HEADER_CATEGORY_HUBS }];
 
-export function isExcluded(locale: string, pageType: string): boolean {
+export function isExcluded(
+  locale: string,
+  pageType: string,
+  path: string,
+): boolean {
   return EXCLUDED.some(
     (rule) =>
       rule.pageType === pageType &&
-      (rule.locale === undefined || rule.locale === locale),
+      (rule.locale === undefined || rule.locale === locale) &&
+      !(rule.exceptPaths?.[locale] ?? []).includes(path),
   );
 }
 
@@ -81,16 +112,18 @@ export const PUBLISHED_DESTINATIONS = COUNTRIES.filter(
  * re-pinned in the same commit, which is the diff a reviewer should see.
  *
  * `de` and `pl` carry `en`'s set since TASK-106 authored their category and occasion slugs
- * (spec 008 §13 Q10). What the crawl must reach there is the occasions index, the occasion hubs
- * and the country occasions; their shop roots and country categories are escalations 2 and 3.
+ * (spec 008 §13 Q10), and since TASK-173 the crawl must reach all of it there too: the header's
+ * "Our selection" gave their shop roots and country categories an inbound edge.
  */
 export const TARGETS: Readonly<
   Record<string, Readonly<Record<string, number>>>
 > = {
+  // TASK-173: every locale carries the whole shop now, plus the header's three category hubs.
   en: {
     countryShopRoot: PUBLISHED_DESTINATIONS,
     countryCategory: 140,
     countryOccasion: 7,
+    categoryHub: 3,
     occasionHub: 28,
     occasionsIndex: 1,
   },
@@ -98,11 +131,26 @@ export const TARGETS: Readonly<
     countryShopRoot: PUBLISHED_DESTINATIONS,
     countryCategory: 140,
     countryOccasion: 7,
+    categoryHub: 3,
     occasionHub: 28,
     occasionsIndex: 1,
   },
-  de: { countryOccasion: 7, occasionHub: 28, occasionsIndex: 1 },
-  pl: { countryOccasion: 7, occasionHub: 28, occasionsIndex: 1 },
+  de: {
+    countryShopRoot: PUBLISHED_DESTINATIONS,
+    countryCategory: 140,
+    countryOccasion: 7,
+    categoryHub: 3,
+    occasionHub: 28,
+    occasionsIndex: 1,
+  },
+  pl: {
+    countryShopRoot: PUBLISHED_DESTINATIONS,
+    countryCategory: 140,
+    countryOccasion: 7,
+    categoryHub: 3,
+    occasionHub: 28,
+    occasionsIndex: 1,
+  },
 };
 
 /**
@@ -123,10 +171,11 @@ export const TARGETS: Readonly<
 export const WAIVED: Readonly<
   Record<string, Readonly<Record<string, number>>>
 > = {
-  en: { categoryHub: 23 },
-  "en-gb": { categoryHub: 23 },
-  // `de`/`pl` gained 23 category hubs (the all-locale rule 1) and 140 country categories (rule 3)
-  // with TASK-106's slugs; the waiver grew by exactly those, and this literal says so.
-  de: { categoryHub: 23, countryCategory: 140, countryShopRoot: 7 },
-  pl: { categoryHub: 23, countryCategory: 140, countryShopRoot: 7 },
+  // TASK-173 shrank every locale's waiver to the twenty category hubs nothing links yet: the
+  // `de`/`pl` shop roots and country categories are reached through the header's "Our
+  // selection", and three hubs per locale through its category row.
+  en: { categoryHub: 20 },
+  "en-gb": { categoryHub: 20 },
+  de: { categoryHub: 20 },
+  pl: { categoryHub: 20 },
 };
