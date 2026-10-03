@@ -61,24 +61,29 @@ _None._
 
 **Status: partial** — pages built; CI, baselines and the equivalents wiring wait on #168 and TASK-178.
 
-**New or changed English copy for the founder** (`reviewed: false`, `de`/`pl` drafted as echoes):
-- `catalog.addon.card.name` "Printed card"; `catalog.addon.card.description` "Your message, printed on our card and tucked into the bouquet." (A21 clause 5).
-- `product.card.printed` "Printed on our card · included" (A21 clause 5).
-- The card-language FAQ answers in `content/corridors/en/{pl,fr,de,it}-guide.md` and `en-gb/pl-guide.md` now say "We will print it on our card in whatever language you write it, exactly as you type it." (the artboard's wording); their `reviewed: true` front matter is unchanged — the founder should re-read the five sentences.
+**Copy (founder, 2026-10-04, in chat: "ok from my end", copy batch for TASK-176–179; transcribed
+as `reviewed: true` in `messages/en.meta.json`; de/pl drafted and `reviewed: false`):**
+- items 2 and 3: `product.trust.freshness.title` "Fresh-flower promise" and `.body` (the 72-hour
+  photo terms), rendered under "What we promise" wherever the view model carries
+  `freshnessGuarantee`. The page never states a number of days of freshness (founder, 2026-10-04:
+  "cant promise staying fresh"; spec 009 §14 A11 in PR 164). `product-page.test.tsx` and
+  `corridor-page.test.tsx` pin "no N-day freshness promise", and each was confirmed red by putting
+  "7-day freshness" or "Seven days fresh" into a rendered string. The promise case went red when
+  the promise was switched off.
+- item 10: `catalog.addon.card.name` "Printed card", `.description`, `product.card.printed`
+  ("VAT {rate}" was already reviewed).
+- item 11: the guide card answer, in five authored guides (their front matter was already
+  `reviewed: true`).
+- item 14: `product.card.legend` "What should the card say?" and `product.eyebrow`
+  "{descriptor} · for {country}".
+- `en` unreviewed share after the batch: 23 of 545 (4.2 %).
+- `src/modules/catalog/product.ts` still calls `freshnessGuarantee` "the 7-day freshness guarantee"
+  in a comment. Nothing renders it; it is left for the TASK-172 / spec 009 change.
 
-**Freshness (founder, 2026-10-04: "cant promise staying fresh").** The product page and the
-guides render **no** freshness promise of any length; nothing turns `freshnessDays` into one.
-Pinned by `product-page.test.tsx` and `corridor-page.test.tsx` ("no N-day freshness promise"),
-each watched red by planting "7-day freshness" / "Seven days fresh" in a rendered string. The
-artboard's "What we promise" item is **not rendered** yet: its title will be "Fresh-on-arrival
-guarantee" (`reviewed: false` for de/pl), but a guarantee shown without its terms is a claim with
-no remedy, and the remedy wording waits for the founder. Strings needed before it renders:
-- title "Fresh-on-arrival guarantee";
-- **remedy sentence — not written, awaiting the founder.**
-`src/modules/catalog/product.ts` still documents `freshnessGuarantee` as "the 7-day freshness
-guarantee" (catalog's comment, not rendered; for the TASK-172 / spec 009 §14 A9 amendment).
-
-**Held back (artboard copy not shipped, to keep `en` ≤ 5 % unreviewed; ship when approved):** the eyebrow tail "· for {country}"; the card step's legend "What should the card say?" (the legend reads "Printed card" today), help line, placeholder "Dear Mum, …" and preview pill "Your card, printed"; "We are showing these prices in the currency of the delivery country." under the add-ons; "Good to know"; the guarantee promise (see Freshness above); the guide eyebrow "A guide, written by us"; the guide steps 2–3 in the future tense ("Our florist will make it…", "They will see…", "The florist will photograph… we will email…").
+**Artboard copy still not shipped (not in the approved list):** the card help line, the
+placeholder "Dear Mum, …", the preview pill "Your card, printed", "We are showing these prices in
+the currency of the delivery country." under the add-ons, "Good to know", the guide eyebrow "A
+guide, written by us", and the guide steps 2–3 in the future tense.
 
 **Primitive changes (additive):** `registryLabel` takes optional values; `NoticeDocument` takes `letter`; `noticeShell` gains the letter constants; `contrast.ts` gains accent-strong on card and on butter; `TierSelector`/`DeliveryDatePicker` take an optional `step`; `PriceSummary` takes `equivalents`.
 

@@ -877,11 +877,17 @@
       "substitution": {
         "title": "If something is unavailable",
         "body": "We substitute to the same value, style and colour, and we tell you what changed."
+      },
+      "freshness": {
+        "title": "Fresh-flower promise",
+        "body": "If your flowers don't arrive fresh and in good condition, send us a photo within 72 hours of delivery and we'll replace them or refund you in full."
       }
     },
     "vat": "VAT {rate}",
     "card": {
-      "printed": "Printed on our card · included"
-    }
+      "printed": "Printed on our card · included",
+      "legend": "What should the card say?"
+    },
+    "eyebrow": "{descriptor} · for {country}"
   }
 }

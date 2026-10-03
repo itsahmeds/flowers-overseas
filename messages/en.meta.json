@@ -125,13 +125,17 @@
   },
   "catalog.addon.card.description": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179)",
+    "reviewedAt": "2026-10-04T00:00:00Z",
     "sourceHash": "805243227f8658986a11e1ad950c991cd433f7af8e269a6c035ef5a1177b20fb",
     "retained": true
   },
   "catalog.addon.card.name": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179)",
+    "reviewedAt": "2026-10-04T00:00:00Z",
     "sourceHash": "bc460e9df9118cbde6cf7ce1230252f19870e8f60c0fefaebc167ab0b9156ef7",
     "retained": true
   },
@@ -3257,9 +3261,18 @@
     "reviewedAt": "2026-10-03T00:00:00Z",
     "sourceHash": "97f0721e40460a7780783f462c14fb9a6166c8e142690ea0f3aa179e82f4b641"
   },
+  "product.card.legend": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179)",
+    "reviewedAt": "2026-10-04T00:00:00Z",
+    "sourceHash": "5381e6f74a42ea052ea636af7b380e338989851cbc55bfb4ffd119bb35e87514"
+  },
   "product.card.printed": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179)",
+    "reviewedAt": "2026-10-04T00:00:00Z",
     "sourceHash": "20fb0ab7db7322eb34e36499a9d3c329ace23a20f095ecf2ad8a063f72281b0a"
   },
   "product.demo.body": {
@@ -3296,6 +3309,13 @@
     "reviewedBy": "founder (chat, 2026-10-03; PDP batch of 28)",
     "reviewedAt": "2026-10-03T00:00:00Z",
     "sourceHash": "196d76ef0bfd4185d8b00bcbd6c0b0b2cc57cd12b69200b3c968453d0ca97841"
+  },
+  "product.eyebrow": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179)",
+    "reviewedAt": "2026-10-04T00:00:00Z",
+    "sourceHash": "08cb5e418a89588652633f7cbe19a198f9a93e4a6c6a2004dbd53ea49eb85675"
   },
   "product.included": {
     "source": "human",
@@ -3345,6 +3365,20 @@
     "reviewedBy": "founder (chat, 2026-10-03; PDP batch of 28)",
     "reviewedAt": "2026-10-03T00:00:00Z",
     "sourceHash": "696803bd1796ab66fe297c5172427c40c403b736ee8ad677de1c39f66a880642"
+  },
+  "product.trust.freshness.body": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179)",
+    "reviewedAt": "2026-10-04T00:00:00Z",
+    "sourceHash": "6bbe0a4f46e1092adfefce555fdb06464f4b20b42e0c3c13cfaf27a417ad518b"
+  },
+  "product.trust.freshness.title": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179)",
+    "reviewedAt": "2026-10-04T00:00:00Z",
+    "sourceHash": "829f4dad5b0879d5ea569ec0bc92579518c8ac53fbe8fffadac2a4d20b982b2a"
   },
   "product.trust.label": {
     "source": "human",

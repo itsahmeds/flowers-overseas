@@ -1022,12 +1022,24 @@ describe("AC-22: no claim without backing, in every locale and picker state", ()
     }
   });
 
-  it("renders the substitution claim only — the trust claims the drawing does not show stay off", async () => {
+  // TASK-127 rendered the substitution claim alone until the founder ruled on the freshness claim.
+  // He did on 2026-10-04: the "Fresh-flower promise" with its 72-hour photo terms, and never a
+  // number of days of freshness. The florist claim stays off (TASK-179).
+  it("renders substitution and the fresh-flower promise with its terms, and nothing else", async () => {
     const view = await liveViewOf("en", AMBER, { now: WOMENS_DAY_WEEK });
     expect(view.trust).toContain("freshnessGuarantee");
     const trust = readable(block(render(view), "data-fo-pdp-trust"));
+    const en = loadMessages("en", ["product"]) as {
+      product: { trust: { freshness: { title: string; body: string } } };
+    };
     expect(trust).toContain("If something is unavailable");
-    expect(trust).not.toMatch(/freshness|7-day|hand-made in the recipient/iu);
+    expect(trust).toContain(en.product.trust.freshness.title);
+    expect(trust).toContain(en.product.trust.freshness.body);
+    expect(trust).not.toMatch(/\d+[-\s]day|hand-made in the recipient/iu);
+    const without = readable(
+      block(render({ ...view, trust: ["substitution"] }), "data-fo-pdp-trust"),
+    );
+    expect(without).not.toContain(en.product.trust.freshness.title);
   });
 });
 

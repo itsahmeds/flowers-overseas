@@ -2259,6 +2259,11 @@
     "reviewed": false,
     "sourceHash": "97f0721e40460a7780783f462c14fb9a6166c8e142690ea0f3aa179e82f4b641"
   },
+  "product.card.legend": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "5381e6f74a42ea052ea636af7b380e338989851cbc55bfb4ffd119bb35e87514"
+  },
   "product.card.printed": {
     "source": "machine",
     "reviewed": false,
@@ -2288,6 +2293,11 @@
     "source": "machine",
     "reviewed": false,
     "sourceHash": "196d76ef0bfd4185d8b00bcbd6c0b0b2cc57cd12b69200b3c968453d0ca97841"
+  },
+  "product.eyebrow": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "08cb5e418a89588652633f7cbe19a198f9a93e4a6c6a2004dbd53ea49eb85675"
   },
   "product.included": {
     "source": "machine",
@@ -2323,6 +2333,16 @@
     "source": "machine",
     "reviewed": false,
     "sourceHash": "696803bd1796ab66fe297c5172427c40c403b736ee8ad677de1c39f66a880642"
+  },
+  "product.trust.freshness.body": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "6bbe0a4f46e1092adfefce555fdb06464f4b20b42e0c3c13cfaf27a417ad518b"
+  },
+  "product.trust.freshness.title": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "829f4dad5b0879d5ea569ec0bc92579518c8ac53fbe8fffadac2a4d20b982b2a"
   },
   "product.trust.label": {
     "source": "machine",

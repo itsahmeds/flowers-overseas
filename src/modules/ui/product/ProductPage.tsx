@@ -109,6 +109,7 @@ export function ProductPage({
 
   // The preview's sample line is the card add-on's own description ("Your message, printed on our
   // card and tucked into the bouquet."), so the field and the add-on row say one thing.
+  const freshness = view.trust.includes("freshnessGuarantee");
   const preview = (
     <PrintedCardPreview
       printed={product("card.printed")}
@@ -156,11 +157,12 @@ export function ProductPage({
               </>
             )}
           </p>
-          {/* The eyebrow is the product's catalogue descriptor ("hand-tied rose bouquet"), set in
-              the uppercase eyebrow voice; the artboard's "· for Poland" tail waits for the
-              founder's copy batch (TASK-179 Result) rather than shipping as unreviewed copy. */}
+          {/* The eyebrow: the product's catalogue descriptor and its destination ("Hand-tied rose
+              bouquet · for Poland"), in the uppercase eyebrow voice. */}
           {descriptor === undefined ? null : (
-            <Eyebrow className="mb-[14px]">{descriptor}</Eyebrow>
+            <Eyebrow className="mb-[14px]">
+              {product("eyebrow", { descriptor, country })}
+            </Eyebrow>
           )}
           <Display as="h1" size="title">
             <bdi>{view.h1.name}</bdi>
@@ -233,7 +235,7 @@ export function ProductPage({
             data-fo-pdp-card
           >
             <StepLegend id="pdp-card-legend" step={3}>
-              {catalog("addon.card.name")}
+              {product("card.legend")}
             </StepLegend>
             <CardMessageField
               labelledBy="pdp-card-legend"
@@ -295,6 +297,14 @@ export function ProductPage({
                 body={product("trust.substitution.body")}
                 title={product("trust.substitution.title")}
               />
+              {/* The founder's fresh-flower promise with its terms (2026-10-04), where the view model
+                  carries the claim. Never a number of days: "cant promise staying fresh". */}
+              {freshness ? (
+                <Promise
+                  body={product("trust.freshness.body")}
+                  title={product("trust.freshness.title")}
+                />
+              ) : null}
             </ul>
           </section>
         ) : null}
