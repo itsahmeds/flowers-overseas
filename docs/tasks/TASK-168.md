@@ -127,6 +127,15 @@ here.
   same 144 ids died twice on `fetch failed` (a thrown network error aborts the whole run;
   `verifyPublished()` has no retry, out of fence, not changed); run as nine chunks of 16 ids, the
   same set: 9 × 64 = 576 rows verified, every exit 0. Next: the escalation's answer.
+- 2026-10-03 (fence widened): `seed-check` pins 175; `media-upload`'s two suites stage their
+  `pending`/`rejected` subject in the fixture tree's own `media.json` (`setReviewState`; helper
+  made a no-op → 9 cases red); AC-24 shipped pins exact (category and hub roses 12 of 12, shop
+  12 of 12, Mother's Day 7 of 7) and each placeholder case withdraws photographs from a real view
+  (withdrawal disabled → 2 hub, 1 category, 2 occasion cases red); `product-page` builds its
+  no-photo subject with `withoutMedia()` (no-op → 2 red; the vased case's new placeholder half red
+  under a temporary, reverted mutation of `PriceSummary.tsx`'s condition). Full unit run 217 files
+  green; `gates:cheap` PASS on `0debf680`. Branch already on `origin/main`. Next: ready, `ci:full`;
+  `tests/e2e/product-page.spec.ts`'s `NO_PHOTO_PDP` (anthurium, now photographed) is expected red.
 
 ## Result
 
