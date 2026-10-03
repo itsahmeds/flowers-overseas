@@ -14,7 +14,25 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
   is not dispatched before that entry exists. No agent approves anything the founder did not.
 - **The data edit** (spec 006 §14 A7 clause 5, the parts TASK-167 left): for each approved row,
   `reviewState: "approved"`, `reviewedBy: "founder"`, `reviewedAt` = the instant of the founder's
-  message; a row the founder asks to redo stays `pending` and is listed in `## Result`.
+  message; a row the founder asks to redo stays `pending` and is listed in `- 2026-10-03 (finisher, from `ffaf761f`, CI run 37118872307): `home.spec.ts:187` pinned to the
+  new truth on all four homes — five `[data-fo-media-slot="trending"]` boxes, five `<img>` (five
+  inside the slot boxes), zero `[data-fo-media-placeholder]`; the run itself is the red for the slot
+  half (the old `grid` locator received 0 against this head). The `<img>`/placeholder halves are
+  not watched red locally (Playwright needs the build slot, held by another agent at load 22) — left
+  for the breaker. **Listing baselines:** 9 `listing-*` PNGs (desktop card-image, card-link,
+  card-placeholder, card-tile, grid, toolbar; mobile card-link, card-placeholder, grid) taken from
+  baselines run 37118133249 (`9ee86f75`, whose `src`/`app`/`seed` equal this head's). They are this
+  diff's: they passed on `97b7a934` and moved when the `trending` sample box (+111 px) landed above
+  them on `/dev/components` — ±1 px heights from the sub-pixel offset; each viewed side by side
+  with the committed one: same cards, same text, same photographs. `visual:baselines --verify`
+  reports 104 of 104 against both the committed manifest and that run's own. **Measured on
+  `ffaf761f`:** mobile image bytes `/en` 215 876, `/de` 215 876, `/pl` 215 876 (budget 204 800 B,
+  over → escalated, not tuned); Lighthouse LCP `/en` 1 758 ms, `/en-gb` 1 746, `/de` 1 738,
+  `/pl` 1 739 (budget 2 000 ms). `product.spec.ts:96` escalated (no subject, outside the fence).
+  `consent-banner.spec.ts:667` failed again on `e2e-desktop` (the known flake, both forged-cookie
+  cases).
+
+## Result`.
 - **FO-BQ-004:** stage only the chosen pair into the main checkout's
   `.local/imagery/originals/` under the canonical names, give it its two `media.json` rows and prompt
   records as TASK-167 did for the others, derive its variants; the other pair is neither staged nor
@@ -156,6 +174,27 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   `media.flowersoverseas.com`, so I passed `R2_PUBLIC_BASE_URL=https://media.flowersoverseas.com`
   inline for the upload and verify runs and edited no env file. The founder should change that one
   line in `.env.local` (`docs/runbooks/imagery.md` §6, second note).
+
+- **2026-10-03 — the honest `trending` sizes did not move the mobile pick; the homes are still
+  over AC-15's image budget (orchestrator, `open`; stop-and-report, nothing tuned).** CI run
+  37118872307 on `ffaf761f`, `e2e-mobile`, `media-budgets.spec.ts:87`: `/en`, `/de`, `/pl` each
+  **215 876 B** against 204 800 B, byte-identical to `97b7a934` before the slot: `home-hero/1200.avif`
+  41 135, then `fo-bq-003-hero/640.avif` 27 685, `-002` 21 843, `-001` 20 752, `-004` 20 730 — still
+  the 640 rung. Desktop passes. Arithmetic, not measured: the ladder is 384/640/828 w; on Pixel 7
+  (412 px, DPR 2.625) Chromium returns 640 only when the source size it evaluates is between about
+  189 and 244 CSS px — the old `50vw` (206), not the new `calc(50vw - 28px)` (178, which selects
+  384). So either the browser is not reading the `trending` string the unit suite pins (worth a look
+  at the served `<source sizes>` on a real build), or the pick rule differs from that arithmetic.
+  No other home component renders those assets. LCP on the same head is inside 2 000 ms.
+- **2026-10-03 — `tests/visual/product.spec.ts`'s `gallery-placeholder` block has no subject
+  (orchestrator, `open`; outside this work order's fence).** CI run 37118872307, `product.spec.ts:96`
+  at 1440 and 390: `[data-fo-gallery="placeholder"]` times out on `/en/poland/product/anthurium`,
+  which batch 2 photographed — not a pixel difference, so no baseline refresh can fix it. The
+  committed `product-*-gallery-placeholder.png` are the old ones (the baselines run on `9ee86f75`
+  reproduced every `product-*` byte for byte). Fix, same as the e2e ruling: point that block at
+  `/dev/components`, which renders the PDP `Gallery` with `PRODUCT_GALLERY_PLACEHOLDER`, then take
+  its two new baselines through `visual:baselines`. Needs the fence to include that file; TASK-171
+  also refreshes `product-*` baselines, so expect a rebase.
 
 ## Progress
 
