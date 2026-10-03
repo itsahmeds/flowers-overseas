@@ -22,6 +22,7 @@ import type { TierOption } from "@/modules/catalog";
 import { formatMoney } from "@/modules/i18n";
 
 import { localeOf, messageFor } from "./labels.ts";
+import { StepLegend } from "./StepLegend.tsx";
 
 export interface TierSelectorProps {
   readonly tiers: readonly TierOption[];
@@ -29,6 +30,8 @@ export interface TierSelectorProps {
   readonly locale: string;
   /** The form field name; `tier` is `ProductSearchParamsSchema`'s (TASK-128). */
   readonly name?: string;
+  /** The step number the v2 page draws in a cornflower ring beside the legend (decorative). */
+  readonly step?: number;
 }
 
 /** A tier's own label: the ICU plural takes the stem count, the size and single keys take none. */
@@ -43,30 +46,40 @@ export function tierLabel(
   );
 }
 
+/** v2's tier chip: a card-white field with a hairline inset; checked is a 2 px cornflower inset. */
+const TIER =
+  "relative grid gap-[2px] rounded-field bg-card px-[14px] pt-[14px] pb-[12px] shadow-[inset_0_0_0_1.5px_var(--color-rule)]";
+const TIER_CHECKED =
+  "bg-surface shadow-[inset_0_0_0_2px_var(--color-selected)] after:absolute after:end-[12px] after:top-[12px] after:size-[10px] after:rounded-full after:bg-accent after:content-['']";
+
 export function TierSelector({
   tiers,
   selectedTierKey,
   locale,
   name = "tier",
+  step,
 }: TierSelectorProps): ReactElement {
   const t = useTranslations();
   const product = useTranslations("product");
   const code = localeOf(locale);
   const [only] = tiers;
+  const legend = <StepLegend step={step}>{product("tier.legend")}</StepLegend>;
 
   if (tiers.length === 1 && only !== undefined) {
     return (
       <fieldset
-        className="border-border p-md gap-md flex flex-col rounded-sm border"
+        className="m-0 min-w-0 border-0 p-0"
         data-fo-tier-selector="single"
       >
-        <legend className="px-sm text-sm font-semibold">
-          {product("tier.legend")}
-        </legend>
-        <p className="text-md m-0" data-fo-tier={only.tierKey}>
-          <b>{tierLabel(t, only)}</b>
-          {" · "}
-          <bdi className="tabular-nums">{formatMoney(only.price, code)}</bdi>
+        {legend}
+        <p
+          className={`${TIER} ${TIER_CHECKED} m-0 max-w-[180px]`}
+          data-fo-tier={only.tierKey}
+        >
+          <b data-fo-tier-label>{tierLabel(t, only)}</b>
+          <bdi className="text-ink-muted text-sm tabular-nums">
+            {formatMoney(only.price, code)}
+          </bdi>
         </p>
       </fieldset>
     );
@@ -74,17 +87,15 @@ export function TierSelector({
 
   return (
     <fieldset
-      className="border-border p-md gap-md flex flex-col rounded-sm border"
+      className="m-0 min-w-0 border-0 p-0"
       data-fo-tier-selector="radios"
     >
-      <legend className="px-sm text-sm font-semibold">
-        {product("tier.legend")}
-      </legend>
-      <div className="gap-sm flex flex-wrap">
+      {legend}
+      <div className="grid grid-cols-3 gap-[10px]">
         {tiers.map((tier) => (
           <label
             key={tier.tierKey}
-            className="border-border p-md has-[:checked]:border-border-emphasis has-[:checked]:bg-surface-raised has-[:focus-visible]:outline-focus flex min-w-[120px] flex-1 cursor-pointer flex-col gap-[2px] border has-[:checked]:border-2 has-[:focus-visible]:outline-2"
+            className={`${TIER} has-[:checked]:bg-surface has-[:focus-visible]:outline-focus after:bg-accent cursor-pointer after:absolute after:end-[12px] after:top-[12px] after:hidden after:size-[10px] after:rounded-full after:content-[''] hover:shadow-[inset_0_0_0_1.5px_var(--color-ink-3)] has-[:checked]:shadow-[inset_0_0_0_2px_var(--color-selected)] has-[:checked]:after:block has-[:focus-visible]:outline-[2.5px] has-[:focus-visible]:outline-offset-2`}
             data-fo-tier={tier.tierKey}
           >
             <input
@@ -94,16 +105,12 @@ export function TierSelector({
               type="radio"
               value={tier.tierKey}
             />
-            <span className="text-md font-semibold">{tierLabel(t, tier)}</span>
-            <bdi className="text-sm tabular-nums">
+            <span className="font-bold" data-fo-tier-label>
+              {tierLabel(t, tier)}
+            </span>
+            <bdi className="text-ink-muted text-sm tabular-nums">
               {formatMoney(tier.price, code)}
             </bdi>
-            <span
-              aria-hidden="true"
-              className="text-accent hidden text-xs [label:has(:checked)>&]:inline"
-            >
-              {product("selected")}
-            </span>
           </label>
         ))}
       </div>

@@ -670,7 +670,9 @@ describe("AC-21: one all-in price with its formula, VAT and delivery rows, and t
         catalog: { price: { inclusive: string; from: string } };
       };
       expect(decode(summary)).toContain(messages.catalog.price.inclusive);
-      expect(summary).toContain("data-fo-price-excludes");
+      // v2 moves the sentence out of the summary into the "Good to know" band (TASK-179); the
+      // page still prints it, once.
+      expect([...html.matchAll(/data-fo-price-excludes/gu)]).toHaveLength(1);
       // No "from", no strike-through, no reference price.
       const fromWord = messages.catalog.price.from
         .replace("{price}", "")
@@ -814,7 +816,7 @@ describe("HOLE 3: each tier radio prints its own price, its own stem count, and 
         expect(
           firstText(
             radio,
-            /<span class="text-md font-semibold">([^<]*)<\/span>/u,
+            /<span[^>]*data-fo-tier-label[^>]*>([^<]*)<\/span>/u,
           ),
           where,
         ).toBe(label);
@@ -842,7 +844,10 @@ describe("HOLE 3: each tier radio prints its own price, its own stem count, and 
           : translate(only.labelKey, { count: only.stems });
       const single = block(render(view), 'data-fo-tier-selector="single"');
       expect(single, locale).not.toBe("");
-      expect(firstText(single, /<b>([^<]*)<\/b>/u), locale).toBe(label);
+      expect(
+        firstText(single, /<b[^>]*data-fo-tier-label[^>]*>([^<]*)<\/b>/u),
+        locale,
+      ).toBe(label);
       expect(firstText(single, /<bdi[^>]*>([^<]*)<\/bdi>/u), locale).toBe(
         formatMoney(only.price, locale),
       );
@@ -906,7 +911,7 @@ describe("HOLE 4: a chip prints the date it carries, and the summary's surcharge
       const expected = printedDate(day, locale);
       const line = firstText(
         block(html, 'data-fo-summary-row="surcharge"'),
-        /<dt>([^<]*)<\/dt>/u,
+        /<dt[^>]*>([^<]*)<\/dt>/u,
       );
       expect(line.split(" · ").at(-1), locale).toBe(expected);
       const docked = firstText(
@@ -1017,12 +1022,21 @@ describe("AC-22: no claim without backing, in every locale and picker state", ()
     }
   });
 
-  it("renders the substitution claim only — the trust claims the drawing does not show stay off", async () => {
+  // TASK-127 rendered the substitution claim alone because the v1 drawing showed only it. The v2
+  // artboards draw both claims (`product-*.dc.html`, "What we promise": substitution and the
+  // founder's "Freshness guarantee", never "7-day"), so the freshness claim renders where the
+  // view model carries it, and the florist claim still stays off (TASK-179).
+  it("renders the substitution and freshness claims the drawing shows, and no other", async () => {
     const view = await liveViewOf("en", AMBER, { now: WOMENS_DAY_WEEK });
     expect(view.trust).toContain("freshnessGuarantee");
     const trust = readable(block(render(view), "data-fo-pdp-trust"));
     expect(trust).toContain("If something is unavailable");
-    expect(trust).not.toMatch(/freshness|7-day|hand-made in the recipient/iu);
+    expect(trust).toContain("Freshness guarantee");
+    expect(trust).not.toMatch(/7-day|hand-made in the recipient/iu);
+    const without = readable(
+      block(render({ ...view, trust: ["substitution"] }), "data-fo-pdp-trust"),
+    );
+    expect(without).not.toMatch(/freshness/iu);
   });
 });
 

@@ -31,8 +31,11 @@ import type { ReactElement } from "react";
 
 import type { ProductView } from "@/modules/catalog";
 
+import { Button } from "../primitives/Button.tsx";
+
 import { DateChip } from "./DateChip.tsx";
 import { messageFor, zoneCity } from "./labels.ts";
+import { StepLegend } from "./StepLegend.tsx";
 
 export interface DeliveryDatePickerProps {
   readonly delivery: ProductView["delivery"];
@@ -44,7 +47,13 @@ export interface DeliveryDatePickerProps {
   readonly corridorPath?: string;
   /** A page-unique id prefix, so two pickers on `/dev/components` do not share ids. */
   readonly idPrefix?: string;
+  /** The step number the v2 page draws beside the legend (decorative; `StepLegend`). */
+  readonly step?: number;
 }
+
+/** v2's picker note: the cornflower wash, 16 px inline padding, the field radius (TASK-179). */
+const NOTE =
+  "bg-sage-wash text-ink rounded-field text-ui m-0 px-[16px] py-[12px] leading-[1.4]";
 
 export function DeliveryDatePicker({
   delivery,
@@ -53,6 +62,7 @@ export function DeliveryDatePicker({
   country,
   corridorPath,
   idPrefix = "delivery",
+  step,
 }: DeliveryDatePickerProps): ReactElement {
   const t = useTranslations();
   const d = useTranslations("delivery");
@@ -64,27 +74,24 @@ export function DeliveryDatePicker({
     time: delivery.cutoffLocal ?? "",
     city,
   });
-  const fieldset =
-    "border-border p-md gap-md m-0 flex min-w-0 flex-col rounded-sm border";
-  const legend = (
-    <legend className="px-sm text-sm font-semibold">{d("legend")}</legend>
-  );
+  const fieldset = "m-0 flex min-w-0 flex-col gap-[10px] border-0 p-0";
+  const legend = <StepLegend step={step}>{d("legend")}</StepLegend>;
 
   if (delivery.state === "unavailable") {
     return (
       <fieldset
-        className={`${fieldset} border-border-strong bg-surface-raised`}
+        className={fieldset}
         data-fo-picker-state="unavailable"
         disabled
       >
         {legend}
-        <p className="text-md m-0 leading-[1.55]" id={noticeId}>
+        <p className={NOTE} id={noticeId}>
           {notice}
         </p>
         {corridorPath === undefined ? null : (
-          <p className="m-0 text-sm">
+          <p className="text-ui m-0">
             <a
-              className="text-accent underline underline-offset-[3px]"
+              className="text-link hover:text-link-strong font-bold underline underline-offset-4"
               href={corridorPath}
             >
               {d("corridorLink", { country })}
@@ -111,13 +118,22 @@ export function DeliveryDatePicker({
     >
       {legend}
       {live ? null : (
-        <div className="border-warning p-md flex flex-col gap-[2px] border">
-          <p className="text-md m-0 font-semibold" id={noticeId}>
-            {notice}
-          </p>
-        </div>
+        <p className={`${NOTE} self-start`} id={noticeId}>
+          {notice}
+        </p>
       )}
-      <div className="gap-sm grid grid-cols-4 sm:grid-cols-7" data-fo-date-grid>
+      {showCutoff ? (
+        <div className={`${NOTE} self-start`} data-fo-cutoff id={noticeId}>
+          <p className="m-0 font-bold">{notice}</p>
+        </div>
+      ) : null}
+      {/* Seven columns from `md`; below it the 390 artboard's rail of 66 px chips, which scrolls
+          rather than wraps so a fortnight reads as one line. The block padding leaves room for an
+          occasion tag that sits on a chip's top edge. */}
+      <div
+        className="grid auto-cols-[66px] grid-flow-col gap-[8px] overflow-x-auto pt-[10px] max-md:-mx-(--gutter-s) max-md:px-(--gutter-s) md:grid-flow-row md:grid-cols-7 md:overflow-visible"
+        data-fo-date-grid
+      >
         {delivery.dates.map((date) => (
           <DateChip
             key={date.date}
@@ -137,21 +153,14 @@ export function DeliveryDatePicker({
         ))}
       </div>
       {live && anySelectable ? (
-        <button
-          className="border-border-strong bg-surface text-ink px-md inline-flex min-h-[44px] items-center justify-center self-start rounded-sm border text-sm font-semibold"
+        <Button
+          className="self-start"
+          size="sm"
           type="submit"
+          variant="secondary"
         >
           {d("submit")}
-        </button>
-      ) : null}
-      {showCutoff ? (
-        <div
-          className="border-accent bg-surface-raised p-md flex flex-col gap-[2px] border"
-          data-fo-cutoff
-          id={noticeId}
-        >
-          <p className="m-0 text-sm font-semibold">{notice}</p>
-        </div>
+        </Button>
       ) : null}
     </fieldset>
   );

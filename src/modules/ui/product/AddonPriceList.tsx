@@ -4,7 +4,8 @@
  *
  * Each row is the add-on's name (`catalog.addon.*`), its price in the destination's currency
  * (`AddonLine.price`, design round Q4) and **its own** VAT rate (`AddonLine.vatRateText`). The free
- * handwritten card is a row like the others, at a visible zero.
+ * printed card is a row like the others, at a visible zero, set in leaf (`--color-included`) as v2
+ * draws the included row (TASK-179). Each row also prints the add-on's catalogue description.
  *
  * **There is no input of any kind** — no checkbox, no toggle, no button. There is no basket in
  * Phase 0 to add one to, and a tick that changes a total nobody can be charged is a worse lie than
@@ -34,22 +35,43 @@ export function AddonPriceList({
   if (addons.length === 0) return null;
 
   return (
-    <ul className="m-0 flex list-none flex-col p-0" data-fo-addon-list>
-      {addons.map((addon) => (
-        <li
-          key={addon.key}
-          className="border-border gap-md py-sm flex items-baseline border-b text-sm last:border-b-0"
-          data-fo-addon={addon.key}
-        >
-          <span className="flex-1">{messageFor(t, addon.nameKey)}</span>
-          <bdi className="tabular-nums" data-fo-addon-price>
-            {formatMoney(addon.price, code)}
-          </bdi>
-          <span className="text-ink-subtle min-w-[90px] text-end text-xs">
-            {product("vat", { rate: addon.vatRateText })}
-          </span>
-        </li>
-      ))}
+    <ul className="m-0 grid list-none gap-[8px] p-0" data-fo-addon-list>
+      {addons.map((addon) => {
+        const free = addon.price.amountMinor === 0;
+        return (
+          <li
+            key={addon.key}
+            className="bg-card rounded-field grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-[14px] gap-y-[4px] px-[16px] py-[14px] shadow-[inset_0_0_0_1px_var(--color-rule)]"
+            data-fo-addon={addon.key}
+          >
+            <span className="grid">
+              <span className="font-bold">{messageFor(t, addon.nameKey)}</span>
+              <span className="text-ink-muted text-sm leading-[1.4]">
+                {messageFor(t, descriptionKey(addon.nameKey))}
+              </span>
+            </span>
+            <span
+              className={`grid text-end whitespace-nowrap ${free ? "text-included font-bold" : ""}`}
+            >
+              <bdi className="tabular-nums" data-fo-addon-price>
+                {formatMoney(addon.price, code)}
+              </bdi>
+              <small className="text-ink-subtle text-xs font-normal">
+                {product("vat", { rate: addon.vatRateText })}
+              </small>
+            </span>
+          </li>
+        );
+      })}
     </ul>
   );
+}
+
+/**
+ * The add-on's one-line description, which the catalogue keeps beside its name
+ * (`catalog.addon.<key>.name` → `catalog.addon.<key>.description`). `pnpm i18n:check` proves both
+ * exist for every add-on; the derivation is a key reading, not copy.
+ */
+export function descriptionKey(nameKey: string): string {
+  return nameKey.replace(/\.name$/u, ".description");
 }

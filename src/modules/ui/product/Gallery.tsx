@@ -3,15 +3,15 @@
  * (spec 009 §2 "Gallery", §5.3, AC-25's slot half; `docs/design/system/components.dc.html`
  * "Gallery"; TASK-126).
  *
- * Two states, one fixed 1∶1 box, so the placeholder → photograph swap costs zero layout shift:
+ * Two states, one fixed 4∶5 box (v2, TASK-179), so the placeholder → photograph swap costs zero layout shift:
  *
  *  - **photos** — a list named "Product images" (`a11y.media.gallery`), hero first, then up to four
  *    thumbnails. The hero is the page's **single** `priority` image when the page says so: spec
  *    006's `MediaAsset` builds its `<link rel="preload">` from the same manifest lookup that
  *    produced its `srcset`, and every thumbnail is lazy. The honesty label renders beneath,
  *    through `MediaProvenanceNote`, which has no prop that could switch it off.
- *  - **placeholder** — 72 of the 84 products. `media.placeholder.product` verbatim in the hero box,
- *    four empty boxes where the thumbnails go, **no `<img>`** and therefore **no honesty label**:
+ *  - **placeholder** — `media.placeholder.product` verbatim in the hero box and nothing else (v2
+ *    drops v1's four empty thumbnail boxes), **no `<img>`** and therefore **no honesty label**:
  *    there is no generated image to be honest about.
  *
  * No carousel: every image is in the DOM, in order, at both widths. Alt text is per-locale data
@@ -39,9 +39,6 @@ export interface GalleryProps {
   readonly manifest?: MediaManifest;
 }
 
-/** The thumbnail row's length in the placeholder state — the drawing's four empty boxes. */
-const EMPTY_THUMBS = ["a", "b", "c", "d"] as const;
-
 export function Gallery({
   gallery,
   locale,
@@ -54,25 +51,20 @@ export function Gallery({
   const code = localeOf(locale);
   const withManifest = manifest === undefined ? {} : { manifest };
 
+  // v2 (product artboards, "Gallery · no photograph"): one fixed 4∶5 box, no thumbnails, no
+  // honesty label — there is no generated image to be honest about.
   if (gallery.kind === "placeholder") {
     return (
-      <div className="gap-sm flex flex-col" data-fo-gallery="placeholder">
+      <div className="flex flex-col" data-fo-gallery="placeholder">
         <Photo
           caption={media("placeholder.product")}
-          ratio="square"
+          className="lg:rounded-[24px]"
+          ratio="card"
           dataset={{
             "data-fo-media-slot": "hero",
             "data-fo-media-placeholder": "no-asset",
           }}
         />
-        <div aria-hidden="true" className="gap-sm grid grid-cols-4">
-          {EMPTY_THUMBS.map((key) => (
-            <div
-              key={key}
-              className="border-border-strong bg-surface-raised aspect-square border border-dashed"
-            />
-          ))}
-        </div>
       </div>
     );
   }
@@ -82,41 +74,52 @@ export function Gallery({
     ...gallery.thumbs.map((image) => image.assetId),
   ];
 
+  // The hero at 4∶5 with the honesty label laid over its corner as real text (the artboards'
+  // `g-prov` pill), then the other photographs as 76 × 92 thumbnails. Every image is in the DOM,
+  // in order; the thumbnails are pictures, not buttons, because nothing on this page swaps the
+  // hero without the island spec 009 has not built (spec 004 §14 A20: no dead controls).
   return (
-    <div className="gap-sm flex flex-col" data-fo-gallery="photos">
+    <div className="flex flex-col" data-fo-gallery="photos">
       <ul
         aria-label={a11y("media.gallery")}
-        className="gap-sm m-0 grid list-none grid-cols-4 p-0"
+        className="m-0 flex list-none flex-wrap gap-[12px] p-0"
       >
-        <li className="col-span-4">
+        <li className="relative w-full">
           <MediaAsset
             assetId={gallery.hero.assetId}
+            className="lg:rounded-[24px]"
             locale={code}
             priority={priority}
             productName={productName}
-            ratio="square"
+            ratio="card"
             slot="hero"
             {...withManifest}
           />
+          <div className="[&_p]:bg-card [&_p]:text-ink-muted absolute start-[12px] bottom-[12px] max-w-[calc(100%-24px)] [&_p]:m-0 [&_p]:rounded-full [&_p]:px-[12px] [&_p]:py-[4px] [&_p]:text-xs">
+            <MediaProvenanceNote
+              assetIds={assetIds}
+              locale={code}
+              {...withManifest}
+            />
+          </div>
         </li>
         {gallery.thumbs.map((image) => (
-          <li key={image.assetId}>
+          <li
+            key={image.assetId}
+            className="mt-[2px] w-[76px] overflow-hidden rounded-[12px] shadow-[inset_0_0_0_1.5px_var(--color-rule)]"
+          >
             <MediaAsset
               assetId={image.assetId}
+              className="rounded-[12px]! md:rounded-[12px]!"
               locale={code}
               productName={productName}
-              ratio="square"
+              ratio="card"
               slot="thumb"
               {...withManifest}
             />
           </li>
         ))}
       </ul>
-      <MediaProvenanceNote
-        assetIds={assetIds}
-        locale={code}
-        {...withManifest}
-      />
     </div>
   );
 }
