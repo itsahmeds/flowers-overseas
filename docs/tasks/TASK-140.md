@@ -64,7 +64,13 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- **2026-10-03 — (a) the trending row's wording. Answered — founder.** The orchestrator proposed, in chat: heading
+  "Popular choices" (replacing `home.trending.heading` "Most sent this week") and the basis line "Our picks until
+  real orders start." (replacing `home.trending.basis`, which claimed "our florists' own picks" with no florist
+  yet). Founder, 2026-10-03, in chat: "ok go with popular choices". Both strings are founder-reviewed `en`;
+  `en-gb` follows `en`; `de`/`pl` get `reviewed: false` drafts. No other wording changes.
+- **2026-10-03 — (b) the US phone number. Answered — founder: keep `+1 (213) 592-5150` for now** (decisions log).
+  (b) is closed with no code change.
 
 ## Result
 
