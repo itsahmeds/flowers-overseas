@@ -1,10 +1,42 @@
 {
   "artboards": [
     {
+      "file": "home-desktop.dc.html",
+      "title": "Home · v2 · desktop 1440",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 7855
+    },
+    {
+      "file": "home-mobile.dc.html",
+      "title": "Home · v2 · mobile 390",
+      "x": 1520,
+      "y": 0,
+      "w": 390,
+      "h": 11670
+    },
+    {
+      "file": "chrome-desktop.dc.html",
+      "title": "Chrome · header and footer · v2 · desktop 1440",
+      "x": 0,
+      "y": 11870,
+      "w": 1440,
+      "h": 2660
+    },
+    {
+      "file": "chrome-mobile.dc.html",
+      "title": "Chrome · header and footer · v2 · mobile 390",
+      "x": 1520,
+      "y": 11870,
+      "w": 390,
+      "h": 4647
+    },
+    {
       "file": "locale-chooser-desktop.dc.html",
       "title": "Locale chooser · desktop",
       "x": 0,
-      "y": 0,
+      "y": 16717,
       "w": 1440,
       "h": 1460
     },
@@ -12,111 +44,111 @@
       "file": "locale-chooser-mobile.dc.html",
       "title": "Locale chooser · mobile",
       "x": 1520,
-      "y": 0,
+      "y": 16717,
       "w": 390,
       "h": 2460
     },
     {
       "file": "all-destinations-desktop.dc.html",
-      "title": "All destinations hub · desktop",
+      "title": "All destinations hub · desktop · v2",
       "x": 0,
-      "y": 2580,
+      "y": 19377,
       "w": 1440,
-      "h": 3400
+      "h": 3823
     },
     {
       "file": "all-destinations-mobile.dc.html",
-      "title": "All destinations hub · mobile",
+      "title": "All destinations hub · mobile · v2",
       "x": 1520,
-      "y": 2580,
+      "y": 19377,
       "w": 390,
-      "h": 7200
+      "h": 5823
     },
     {
       "file": "corridor-country-desktop.dc.html",
-      "title": "Country page · live and guide · desktop",
+      "title": "Country page · live and guide · desktop · v2",
       "x": 0,
-      "y": 9900,
+      "y": 26691,
       "w": 1440,
-      "h": 9900
+      "h": 8260
     },
     {
       "file": "corridor-country-mobile.dc.html",
-      "title": "Country page · live and guide · mobile",
+      "title": "Country page · live and guide · mobile · v2",
       "x": 1520,
-      "y": 9900,
+      "y": 26691,
       "w": 390,
-      "h": 19100
+      "h": 13547
     },
     {
       "file": "country-shop-desktop.dc.html",
-      "title": "Country shop root · desktop",
+      "title": "Country shop root · desktop · v2",
       "x": 0,
-      "y": 29120,
+      "y": 45906,
       "w": 1440,
-      "h": 8460
+      "h": 7164
     },
     {
       "file": "country-shop-mobile.dc.html",
-      "title": "Country shop root · mobile",
+      "title": "Country shop root · mobile · v2",
       "x": 1520,
-      "y": 29120,
+      "y": 45906,
       "w": 390,
-      "h": 15200
+      "h": 12568
     },
     {
       "file": "country-category-desktop.dc.html",
-      "title": "Country category · desktop",
+      "title": "Country category · desktop · v2",
       "x": 0,
-      "y": 44440,
+      "y": 61238,
       "w": 1440,
-      "h": 6000
+      "h": 4785
     },
     {
       "file": "country-category-mobile.dc.html",
-      "title": "Country category · mobile",
+      "title": "Country category · mobile · v2",
       "x": 1520,
-      "y": 44440,
+      "y": 61238,
       "w": 390,
-      "h": 11000
+      "h": 7819
     },
     {
       "file": "country-occasion-desktop.dc.html",
-      "title": "Country occasion · desktop",
+      "title": "Country occasion · desktop · v2",
       "x": 0,
-      "y": 55560,
+      "y": 72370,
       "w": 1440,
-      "h": 5300
+      "h": 4233
     },
     {
       "file": "country-occasion-mobile.dc.html",
-      "title": "Country occasion · mobile",
+      "title": "Country occasion · mobile · v2",
       "x": 1520,
-      "y": 55560,
+      "y": 72370,
       "w": 390,
-      "h": 9800
+      "h": 6881
     },
     {
       "file": "product-desktop.dc.html",
-      "title": "Product page · desktop",
+      "title": "Product page · desktop · v2",
       "x": 0,
-      "y": 65480,
+      "y": 82302,
       "w": 1440,
-      "h": 11800
+      "h": 9602
     },
     {
       "file": "product-mobile.dc.html",
-      "title": "Product page · mobile",
+      "title": "Product page · mobile · v2",
       "x": 1520,
-      "y": 65480,
+      "y": 82302,
       "w": 390,
-      "h": 13400
+      "h": 16177
     },
     {
       "file": "checkout-desktop.dc.html",
       "title": "Checkout · three steps · desktop",
       "x": 0,
-      "y": 79000,
+      "y": 98679,
       "w": 1440,
       "h": 4220
     },
@@ -124,7 +156,7 @@
       "file": "checkout-mobile.dc.html",
       "title": "Checkout · three steps · mobile",
       "x": 1520,
-      "y": 79000,
+      "y": 98679,
       "w": 390,
       "h": 7580
     },
@@ -132,7 +164,7 @@
       "file": "confirmation-desktop.dc.html",
       "title": "Order confirmation · desktop",
       "x": 0,
-      "y": 86700,
+      "y": 106459,
       "w": 1440,
       "h": 2500
     },
@@ -140,7 +172,7 @@
       "file": "confirmation-mobile.dc.html",
       "title": "Order confirmation · mobile",
       "x": 1520,
-      "y": 86700,
+      "y": 106459,
       "w": 390,
       "h": 5560
     },
@@ -148,7 +180,7 @@
       "file": "track-order-desktop.dc.html",
       "title": "Track order · desktop",
       "x": 0,
-      "y": 92380,
+      "y": 112219,
       "w": 1440,
       "h": 2440
     },
@@ -156,63 +188,63 @@
       "file": "track-order-mobile.dc.html",
       "title": "Track order · mobile",
       "x": 1520,
-      "y": 92380,
+      "y": 112219,
       "w": 390,
       "h": 4360
     },
     {
       "file": "category-hub-desktop.dc.html",
-      "title": "Category hub · no destination · desktop",
+      "title": "Category hub · no destination · desktop · v2",
       "x": 0,
-      "y": 96860,
+      "y": 116779,
       "w": 1440,
-      "h": 4900
+      "h": 4857
     },
     {
       "file": "category-hub-mobile.dc.html",
-      "title": "Category hub · no destination · mobile",
+      "title": "Category hub · no destination · mobile · v2",
       "x": 1520,
-      "y": 96860,
+      "y": 116779,
       "w": 390,
-      "h": 9100
+      "h": 7478
     },
     {
       "file": "occasion-hub-desktop.dc.html",
-      "title": "Occasion hub · desktop",
+      "title": "Occasion hub · desktop · v2",
       "x": 0,
-      "y": 106080,
+      "y": 125994,
       "w": 1440,
-      "h": 4200
+      "h": 4219
     },
     {
       "file": "occasion-hub-mobile.dc.html",
-      "title": "Occasion hub · mobile",
+      "title": "Occasion hub · mobile · v2",
       "x": 1520,
-      "y": 106080,
+      "y": 125994,
       "w": 390,
-      "h": 7700
+      "h": 6256
     },
     {
       "file": "occasions-index-desktop.dc.html",
-      "title": "Occasions index · desktop",
+      "title": "Occasions index · desktop · v2",
       "x": 0,
-      "y": 113900,
+      "y": 133808,
       "w": 1440,
-      "h": 3600
+      "h": 2670
     },
     {
       "file": "occasions-index-mobile.dc.html",
-      "title": "Occasions index · mobile",
+      "title": "Occasions index · mobile · v2",
       "x": 1520,
-      "y": 113900,
+      "y": 133808,
       "w": 390,
-      "h": 5500
+      "h": 4233
     },
     {
       "file": "how-it-works-desktop.dc.html",
       "title": "How it works · desktop",
       "x": 0,
-      "y": 119520,
+      "y": 139423,
       "w": 1440,
       "h": 2500
     },
@@ -220,7 +252,7 @@
       "file": "how-it-works-mobile.dc.html",
       "title": "How it works · mobile",
       "x": 1520,
-      "y": 119520,
+      "y": 139423,
       "w": 390,
       "h": 5060
     },
@@ -228,7 +260,7 @@
       "file": "guarantee-and-delivery-desktop.dc.html",
       "title": "Guarantee and delivery · desktop",
       "x": 0,
-      "y": 124700,
+      "y": 144683,
       "w": 1440,
       "h": 2620
     },
@@ -236,7 +268,7 @@
       "file": "guarantee-and-delivery-mobile.dc.html",
       "title": "Guarantee and delivery · mobile",
       "x": 1520,
-      "y": 124700,
+      "y": 144683,
       "w": 390,
       "h": 5400
     },
@@ -244,7 +276,7 @@
       "file": "about-contact-help-desktop.dc.html",
       "title": "About · contact · help · desktop",
       "x": 0,
-      "y": 130220,
+      "y": 150283,
       "w": 1440,
       "h": 2760
     },
@@ -252,7 +284,7 @@
       "file": "about-contact-help-mobile.dc.html",
       "title": "About · contact · help · mobile",
       "x": 1520,
-      "y": 130220,
+      "y": 150283,
       "w": 390,
       "h": 5620
     },
@@ -260,7 +292,7 @@
       "file": "for-florists-desktop.dc.html",
       "title": "For florists · desktop",
       "x": 0,
-      "y": 135960,
+      "y": 156103,
       "w": 1440,
       "h": 3500
     },
@@ -268,7 +300,7 @@
       "file": "for-florists-mobile.dc.html",
       "title": "For florists · mobile",
       "x": 1520,
-      "y": 135960,
+      "y": 156103,
       "w": 390,
       "h": 7760
     },
@@ -276,7 +308,7 @@
       "file": "blog-desktop.dc.html",
       "title": "Blog index and post · desktop",
       "x": 0,
-      "y": 143840,
+      "y": 164063,
       "w": 1440,
       "h": 2740
     },
@@ -284,7 +316,7 @@
       "file": "blog-mobile.dc.html",
       "title": "Blog index and post · mobile",
       "x": 1520,
-      "y": 143840,
+      "y": 164063,
       "w": 390,
       "h": 5560
     },
@@ -292,7 +324,7 @@
       "file": "legal-template-desktop.dc.html",
       "title": "Legal page template · desktop",
       "x": 0,
-      "y": 149520,
+      "y": 169823,
       "w": 1440,
       "h": 2840
     },
@@ -300,25 +332,25 @@
       "file": "legal-template-mobile.dc.html",
       "title": "Legal page template · mobile",
       "x": 1520,
-      "y": 149520,
+      "y": 169823,
       "w": 390,
       "h": 5380
     },
     {
       "file": "errors-desktop.dc.html",
-      "title": "404 · 410 · 500 · desktop",
+      "title": "404 · 410 · 500 · desktop · v2",
       "x": 0,
-      "y": 155020,
+      "y": 175403,
       "w": 1440,
-      "h": 1460
+      "h": 2348
     },
     {
       "file": "errors-mobile.dc.html",
-      "title": "404 · 410 · 500 · mobile",
+      "title": "404 · 410 · 500 · mobile · v2",
       "x": 1520,
-      "y": 155020,
+      "y": 175403,
       "w": 390,
-      "h": 3280
+      "h": 2541
     }
   ],
   "annotations": [
@@ -327,147 +359,161 @@
       "x": 0,
       "y": -140,
       "w": 1400,
-      "text": "wireframes — one desktop (1440) and one mobile (390) artboard per Phase 0 page type, in buyer-journey order. Round 2 (TASK-059, 2026-09-09): every page reworked against docs/design/benchmarks/. Spec 008 added the six listing and hub artboards; spec 009's round rebuilds product-desktop and product-mobile around the three date-picker states — unavailable, preview and live — and takes the countdown, the relative “today” chip, the Continue button, the add-on checkboxes, the withdrawal notice and the photo-on-delivery promise out of them. benchmarks/README.md records what each page type took and dropped, and the questions left for the founder."
+      "text": "v2 (2026-10-03, founder-locked): redrawn in the letter-home look — home, the country shop root, country category, country occasion, the two hubs, the occasions index, the destinations hub, the country guide, the product page, not-found and the chrome. The rest (locale chooser, checkout, confirmation, track, for florists, legal, how it works, guarantee, about, blog) are still drawn in v1 and are redrawn by the task that next builds them. wireframes — one desktop (1440) and one mobile (390) artboard per Phase 0 page type, in buyer-journey order. Round 2 (TASK-059, 2026-09-09): every page reworked against docs/design/benchmarks/. Spec 008 added the six listing and hub artboards; spec 009's round rebuilds product-desktop and product-mobile around the three date-picker states — unavailable, preview and live — and takes the countdown, the relative “today” chip, the Continue button, the add-on checkboxes, the withdrawal notice and the photo-on-delivery promise out of them. benchmarks/README.md records what each page type took and dropped, and the questions left for the founder."
+    },
+    {
+      "id": "wf-home-v2",
+      "x": 0,
+      "y": -46,
+      "w": 1200,
+      "text": "Home · v2 (the letter home) — desktop 1440 and mobile 390. Direction A's layout in direction C's colours, locked by the founder 2026-10-03. Supersedes homepage-v1/homepage-{desktop,mobile}, which stay as the 2026-09-08 record."
+    },
+    {
+      "id": "wf-chrome-v2",
+      "x": 0,
+      "y": 11824,
+      "w": 1200,
+      "text": "Chrome · v2 — notice bar, header and footer, every control a link to a real page or absent (spec 004 §14 A20, spec 008 §14 A14)."
     },
     {
       "id": "wf-locale-chooser",
       "x": 0,
-      "y": -46,
+      "y": 16671,
       "w": 1200,
       "text": "Locale chooser — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
     },
     {
       "id": "wf-all-destinations",
       "x": 0,
-      "y": 2534,
+      "y": 19331,
       "w": 1200,
-      "text": "All destinations hub — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
+      "text": "v2 (2026-10-03): redrawn in the letter-home look, real photographs, every state annotated. All destinations hub — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
     },
     {
       "id": "wf-corridor-country",
       "x": 0,
-      "y": 9854,
+      "y": 26645,
       "w": 1200,
-      "text": "Country page · live and guide — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
+      "text": "v2 (2026-10-03): redrawn in the letter-home look, real photographs, every state annotated. Country page · live and guide — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
     },
     {
       "id": "wf-country-shop",
       "x": 0,
-      "y": 29074,
+      "y": 45860,
       "w": 1200,
-      "text": "Country shop root — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
+      "text": "v2 (2026-10-03): redrawn in the letter-home look, real photographs, every state annotated. Country shop root — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
     },
     {
       "id": "wf-country-category",
       "x": 0,
-      "y": 44394,
+      "y": 61192,
       "w": 1200,
-      "text": "Country category — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
+      "text": "v2 (2026-10-03): redrawn in the letter-home look, real photographs, every state annotated. Country category — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
     },
     {
       "id": "wf-country-occasion",
       "x": 0,
-      "y": 55514,
+      "y": 72324,
       "w": 1200,
-      "text": "Country occasion — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
+      "text": "v2 (2026-10-03): redrawn in the letter-home look, real photographs, every state annotated. Country occasion — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
     },
     {
       "id": "wf-product",
       "x": 0,
-      "y": 65434,
+      "y": 82256,
       "w": 1200,
-      "text": "Product page — desktop 1440 and mobile 390. Spec 009's design round: the three data-driven picker states (unavailable everywhere today, preview for the 16 October demo, live from Phase 1), the fee on every date chip before it is chosen, the absolute cutoff in the recipient's own zone, the holiday and occasion markers, no-photo as the common case, stale FX, the single-tier selector, the sticky mobile summary, and the honest sentence where a CTA would be."
+      "text": "v2 (2026-10-03): redrawn in the letter-home look, real photographs, every state annotated. Product page — desktop 1440 and mobile 390. Spec 009's design round: the three data-driven picker states (unavailable everywhere today, preview for the 16 October demo, live from Phase 1), the fee on every date chip before it is chosen, the absolute cutoff in the recipient's own zone, the holiday and occasion markers, no-photo as the common case, stale FX, the single-tier selector, the sticky mobile summary, and the honest sentence where a CTA would be."
     },
     {
       "id": "wf-checkout",
       "x": 0,
-      "y": 78954,
+      "y": 98633,
       "w": 1200,
       "text": "Checkout · three steps — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
     },
     {
       "id": "wf-confirmation",
       "x": 0,
-      "y": 86654,
+      "y": 106413,
       "w": 1200,
       "text": "Order confirmation — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
     },
     {
       "id": "wf-track-order",
       "x": 0,
-      "y": 92334,
+      "y": 112173,
       "w": 1200,
       "text": "Track order — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
     },
     {
       "id": "wf-category-hub",
       "x": 0,
-      "y": 96814,
+      "y": 116733,
       "w": 1200,
-      "text": "Category hub · no destination — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
+      "text": "v2 (2026-10-03): redrawn in the letter-home look, real photographs, every state annotated. Category hub · no destination — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
     },
     {
       "id": "wf-occasion-hub",
       "x": 0,
-      "y": 106034,
+      "y": 125948,
       "w": 1200,
-      "text": "Occasion hub — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
+      "text": "v2 (2026-10-03): redrawn in the letter-home look, real photographs, every state annotated. Occasion hub — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
     },
     {
       "id": "wf-occasions-index",
       "x": 0,
-      "y": 113854,
+      "y": 133762,
       "w": 1200,
-      "text": "Occasions index — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
+      "text": "v2 (2026-10-03): redrawn in the letter-home look, real photographs, every state annotated. Occasions index — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
     },
     {
       "id": "wf-how-it-works",
       "x": 0,
-      "y": 119474,
+      "y": 139377,
       "w": 1200,
       "text": "How it works — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
     },
     {
       "id": "wf-guarantee-and-delivery",
       "x": 0,
-      "y": 124654,
+      "y": 144637,
       "w": 1200,
       "text": "Guarantee and delivery — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
     },
     {
       "id": "wf-about-contact-help",
       "x": 0,
-      "y": 130174,
+      "y": 150237,
       "w": 1200,
       "text": "About · contact · help — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
     },
     {
       "id": "wf-for-florists",
       "x": 0,
-      "y": 135914,
+      "y": 156057,
       "w": 1200,
       "text": "For florists — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
     },
     {
       "id": "wf-blog",
       "x": 0,
-      "y": 143794,
+      "y": 164017,
       "w": 1200,
       "text": "Blog index and post — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
     },
     {
       "id": "wf-legal-template",
       "x": 0,
-      "y": 149474,
+      "y": 169777,
       "w": 1200,
       "text": "Legal page template — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
     },
     {
       "id": "wf-errors",
       "x": 0,
-      "y": 154974,
+      "y": 175357,
       "w": 1200,
-      "text": "404 · 410 · 500 — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
+      "text": "v2 (2026-10-03): redrawn in the letter-home look, real photographs, every state annotated. 404 · 410 · 500 — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
     }
   ],
   "launch": {
