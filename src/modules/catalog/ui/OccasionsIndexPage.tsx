@@ -76,8 +76,11 @@ function EntryChips({
   return (
     <ul className="gap-sm flex list-none flex-wrap p-0">
       {entries.map((entry) => (
-        <li data-fo-occasion={entry.key} key={entry.key}>
-          <Chip href={entry.href}>{entry.name}</Chip>
+        <li key={entry.key}>
+          {/* A hyphenated attribute passes through `Chip`'s rest props onto its `<a>`. */}
+          <Chip data-fo-occasion={entry.key} href={entry.href}>
+            {entry.name}
+          </Chip>
         </li>
       ))}
     </ul>
