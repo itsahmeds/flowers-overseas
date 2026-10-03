@@ -52,8 +52,22 @@ _None._
 
 ## Progress
 
-- 2026-10-04 00:45 — PDP v2 layout, `PrintedCardPreview`, the `CardMessageField` island, new `product.*` keys, unit tests (`product-card-preview.test.tsx`); draft PR #170. Next: corridor page, not-found/error letters, e2e.
+- 2026-10-04 00:45 — PDP v2 layout, `PrintedCardPreview`, the `CardMessageField` island, unit tests; draft PR #170.
+- 2026-10-04 00:50 — country guide v2 (`CorridorSection`), printed-card wording in five authored guides; copy cut to the 5 % budget.
+- 2026-10-04 00:55 — 404/500 letter (`NoticeDocument letter`, `noticeShell` letter constants), price tests, e2e spec, design README row, contrast pairs.
+- **Left:** (1) rebase onto `main` once PR #168 merges (`git rebase --onto origin/main d8fffadb`), then `gh pr ready` + `ci:full`; the PR conflicts with `main` until then, so no CI has run. (2) The visual baselines this task moves (product, product blocks, corridor, 404/500, `/dev/components` product cells) through the `visual:baselines` label flow — commit every file in the run's change list. (3) Wire TASK-178's equivalents helper into `ProductPage`'s `equivalents` prop (the route passes it; `Price` and `PriceSummary` render it) once 178 merges.
 
 ## Result
 
-_Pending._
+**Status: partial** — pages built; CI, baselines and the equivalents wiring wait on #168 and TASK-178.
+
+**New or changed English copy for the founder** (`reviewed: false`, `de`/`pl` drafted as echoes):
+- `catalog.addon.card.name` "Printed card"; `catalog.addon.card.description` "Your message, printed on our card and tucked into the bouquet." (A21 clause 5).
+- `product.card.printed` "Printed on our card · included" (A21 clause 5).
+- The card-language FAQ answers in `content/corridors/en/{pl,fr,de,it}-guide.md` and `en-gb/pl-guide.md` now say "We will print it on our card in whatever language you write it, exactly as you type it." (the artboard's wording); their `reviewed: true` front matter is unchanged — the founder should re-read the five sentences.
+
+**Held back (artboard copy not shipped, to keep `en` ≤ 5 % unreviewed; ship when approved):** the eyebrow tail "· for {country}"; the card step's legend "What should the card say?" (the legend reads "Printed card" today), help line, placeholder "Dear Mum, …" and preview pill "Your card, printed"; "We are showing these prices in the currency of the delivery country." under the add-ons; "Good to know"; the "Freshness guarantee · We redeliver or refund, your choice." promise (reusable from `trust.guarantee.*` once TASK-176 drops "7-day"); the guide eyebrow "A guide, written by us"; the guide steps 2–3 in the future tense ("Our florist will make it…", "They will see…", "The florist will photograph… we will email…").
+
+**Primitive changes (additive):** `registryLabel` takes optional values; `NoticeDocument` takes `letter`; `noticeShell` gains the letter constants; `contrast.ts` gains accent-strong on card and on butter; `TierSelector`/`DeliveryDatePicker` take an optional `step`; `PriceSummary` takes `equivalents`.
+
+**Island bytes:** `CardMessageField` minified with React external: 752 B raw, **415 B Brotli** (esbuild 0.28, quality 11) against the 2,048 B budget. Not measured from a Next build (no build slot taken: load average 23–158 during this run).
