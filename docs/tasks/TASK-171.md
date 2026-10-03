@@ -55,6 +55,8 @@ _None._
 - 2026-10-03 — picker, catalogues, meta, artboards and tests done; mutations red; pushed
   `9ece7dd2`, draft PR #151; `visual:baselines` label added for `dev-components-desktop`.
 - 2026-10-03 — Linux baseline taken from run 37115814804 (`fa9145ca`); Result written; ready, `ci:full`.
+- 2026-10-03 — CI `visual` red on the four product block shots (sub-pixel shift below the picker);
+  taken from the same run, re-fired CI.
 
 ## Result
 
@@ -80,11 +82,13 @@ and their meta files (`en-gb` never carried it), and from both product artboards
 - **Mutations, all red:** the marked line put back, the unmarked line put back, the `live` gate
   dropped (each fails the preview case and AC-22); the `live` line removed (fails the live case);
   a `cutoffPreview` key planted in `pl.json` (fails the grep case).
-- **Visual:** the `visual:baselines` run 37115814804 moved five Linux PNGs. One comes from this diff:
-  `dev-components-desktop.png`, 36 px shorter. I compared the crop against the old one and the
-  only change is the missing preview line. The other four (`product-{desktop,mobile}-{addons,summary}`)
-  have the same content with sub-pixel text shifts, so they are not taken. The manifest takes the
-  runner's hash for the one file, and `--verify` matches all 104. The `darwin` copy of
-  `dev-components-desktop.png` was not refreshed (no local build).
+- **Visual:** The `visual:baselines` run 37115814804 moved five Linux PNGs, and all five come from this diff.
+  `dev-components-desktop.png` is 36 px shorter: I compared the crop against the old one, and the
+  only change is the missing preview line. The four `product-{desktop,mobile}-{addons,summary}`
+  block shots have the same content, but the text sits at a new sub-pixel offset, and desktop
+  addons is 1 px taller. Those blocks sit below the picker, so removing the line moves them up by a
+  fraction of a pixel. CI `visual` on `92fc7ba1` failed on exactly those (1 831 and 772 px), while
+  #149 on main passed. I looked at all 5 images. The committed manifest is the runner's, and
+  `--verify` matches all 104. The `darwin` copies were not refreshed (no local build).
 - `pnpm gates:cheap`: PASS, all 7 exit 0.
 - Open: escalation E-1 (a past-cutoff `preview` chip still names 14:00).
