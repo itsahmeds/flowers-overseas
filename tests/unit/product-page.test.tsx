@@ -22,6 +22,9 @@
  * two `priceProjection()` calls, an add-on's is its `AddonLine.price`, the total is the view's own
  * `displayPrice`. A component that printed a hard-coded fee, or computed one, goes red here.
  */
+import { readFileSync, readdirSync } from "node:fs";
+import { join } from "node:path";
+
 import { NextIntlClientProvider, createTranslator } from "next-intl";
 import type { ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -39,6 +42,7 @@ import { DeliveryFacts } from "../../src/modules/geo";
 import { withActivePartnersProvider } from "../../src/modules/geo/partners.ts";
 import { formatDate, formatMoney, loadMessages } from "../../src/modules/i18n";
 import { ProductPage } from "../../src/modules/ui";
+import { zoneCity } from "../../src/modules/ui/product/labels.ts";
 import { lcpNominations } from "../support/lcp-nomination.ts";
 import { listingHonestyViolations, textOf } from "../support/listing-honesty";
 
@@ -464,13 +468,80 @@ describe("AC-10: absolute dates and an absolute cutoff, in every state and local
     }
   });
 
-  it("names the cutoff's time and its zone's city in `preview` and `live`", async () => {
-    const preview = readable(
-      render(await viewOf("en", "PL", AMBER, { now: WOMENS_DAY_WEEK })),
+  it("names the cutoff's time and its zone's city in `live`", async () => {
+    const live = readable(
+      render(await liveViewOf("en", AMBER, { now: WOMENS_DAY_WEEK })),
     );
-    expect(preview).toContain(
-      "When we open, you will order by 14:00 in Warsaw — the recipient's time, not yours",
+    expect(live).toContain(
+      "Order by 14:00 in Warsaw — the recipient's time, not yours",
     );
+  });
+});
+
+/* -------------------------------------------------------------------------- */
+/* AC-8 / §14 A8 — `preview` states no cutoff time; only `live` does.         */
+/* -------------------------------------------------------------------------- */
+
+describe("A8: the `preview` picker states no cutoff time, in every locale", () => {
+  it("renders no cutoff line and no cutoff time in the `preview` picker, and the facts row's `none`", async () => {
+    for (const locale of LOCALES) {
+      const view = await viewOf(locale, "PL", AMBER, { now: WOMENS_DAY_WEEK });
+      expect(view.delivery.state, locale).toBe("preview");
+      // The data still carries Poland's authored cutoff: its absence below is the template's
+      // choice, not a missing input.
+      const time = view.delivery.cutoffLocal ?? "";
+      expect(time, locale).toMatch(/^\d{2}:\d{2}$/u);
+      const html = render(view);
+      const picker = block(html, 'data-fo-picker-state="preview"');
+      expect(picker, locale).not.toBe("");
+      expect(picker, `${locale}: cutoff element`).not.toContain(
+        "data-fo-cutoff",
+      );
+      expect(readable(picker), `${locale}: cutoff time`).not.toContain(time);
+      expect(html, `${locale}: anywhere on the page`).not.toContain(
+        "data-fo-cutoff",
+      );
+      // The facts row keeps its honest `none` text.
+      const corridor = loadMessages(locale as Locale, ["corridor"]) as {
+        corridor: { facts: { orderBy: { none: string } } };
+      };
+      expect(readable(html), `${locale}: facts row`).toContain(
+        corridor.corridor.facts.orderBy.none,
+      );
+    }
+  });
+
+  it("still renders the `live` cutoff line (`delivery.picker.live`) on the same route, in every locale", async () => {
+    for (const locale of LOCALES) {
+      const view = await liveViewOf(locale, AMBER, { now: WOMENS_DAY_WEEK });
+      expect(view.delivery.state, locale).toBe("live");
+      const picker = block(render(view), 'data-fo-picker-state="live"');
+      const cutoff = block(picker, "data-fo-cutoff");
+      expect(cutoff, locale).not.toBe("");
+      const t = createTranslator({
+        locale,
+        messages: loadMessages(locale as Locale, ["delivery"]),
+      });
+      const time = view.delivery.cutoffLocal ?? "";
+      expect(time, locale).toMatch(/^\d{2}:\d{2}$/u);
+      expect(readable(cutoff).trim(), locale).toBe(
+        t("delivery.picker.live", {
+          time,
+          city: zoneCity(view.delivery.timeZone ?? ""),
+        }),
+      );
+    }
+  });
+
+  it("leaves no `delivery.cutoffPreview` key in any message or meta file", () => {
+    const dir = join(process.cwd(), "messages");
+    const files = readdirSync(dir).filter((file) => file.endsWith(".json"));
+    // Four catalogues and their four meta files.
+    expect(files).toHaveLength(8);
+    for (const file of files) {
+      const text = readFileSync(join(dir, file), "utf8");
+      expect(text, file).not.toMatch(/cutoffPreview/u);
+    }
   });
 });
 
@@ -801,9 +872,9 @@ describe("AC-22: no claim without backing, in every locale and picker state", ()
         const text = withoutFactsHeading(readable(html), locale);
         const where = `${locale} ${view.delivery.state}`;
         // The listing scan forbids any "order by 14:00": a listing has no calendar to back one.
-        // The picker's cutoff line is the one place the PDP may print it — the artboards draw it
-        // in `preview` (future tense) and `live` — so it is lifted out by its own element, and
-        // the `unavailable` page, which has no cutoff at all, is scanned whole.
+        // The picker's cutoff line is the one place the PDP may print it — in `live` only, since
+        // spec 009 §14 A8 took it out of `preview` — so it is lifted out by its own element, and
+        // the `unavailable` and `preview` pages, which have no cutoff at all, are scanned whole.
         // The docked summary repeats it in `live` (the mobile artboard's "the last line becomes
         // the cutoff sentence"), marked the same way, so every marked line is lifted and counted.
         let scanned = html;
@@ -817,7 +888,7 @@ describe("AC-22: no claim without backing, in every locale and picker state", ()
           cutoffs += 1;
         }
         expect(cutoffs, where).toBe(
-          { unavailable: 0, preview: 1, live: 2 }[view.delivery.state],
+          { unavailable: 0, preview: 0, live: 2 }[view.delivery.state],
         );
         expect(
           listingHonestyViolations({

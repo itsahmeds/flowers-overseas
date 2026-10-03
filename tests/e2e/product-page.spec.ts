@@ -135,6 +135,8 @@ test.describe("the picker is the data's state, in one template (AC-8, T-08)", ()
       expect(await dates.count()).toBeGreaterThan(0);
       await expect(picker.locator('input[name="date"]:enabled')).toHaveCount(0);
       await expect(page.getByRole("button", { name: /date/iu })).toHaveCount(0);
+      // Spec 009 §14 A8: `preview` states no cutoff time — only `live` does.
+      await expect(page.locator("[data-fo-cutoff]")).toHaveCount(0);
     });
   }
 
