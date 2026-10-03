@@ -51,6 +51,8 @@ type Locale = (typeof LOCALES)[number];
 
 /** 09:00 Europe/Warsaw, Monday 1 March 2027 — Women's Day (8 March) is in the window. */
 const WOMENS_DAY_WEEK = new Date("2027-03-01T08:00:00Z");
+/** 15:30 Europe/Warsaw, the same Monday: past the 14:00 cutoff, so today closes as `pastCutoff`. */
+const PAST_CUTOFF = new Date("2027-03-01T14:30:00Z");
 /** Wednesday 9 September 2026, 09:00 Warsaw — inside the committed FX snapshot's window. */
 const IN_WINDOW = new Date("2026-09-09T07:00:00Z");
 
@@ -531,6 +533,49 @@ describe("A8: the `preview` picker states no cutoff time, in every locale", () =
         }),
       );
     }
+  });
+
+  it("prints no cutoff time on a past-cutoff `preview` chip: the shared sentence covers it (E-1)", async () => {
+    for (const locale of LOCALES) {
+      const view = await viewOf(locale, "PL", AMBER, { now: PAST_CUTOFF });
+      expect(view.delivery.state, locale).toBe("preview");
+      // The calendar still computes the reason; only the `preview` render withholds its text.
+      const past = view.delivery.dates.filter(
+        (date) => date.reasonKey === "delivery.reason.pastCutoff",
+      );
+      expect(
+        past.map((date) => date.date),
+        locale,
+      ).toEqual(["2027-03-01"]);
+      const time = view.delivery.cutoffLocal ?? "";
+      expect(time, locale).toMatch(/^\d{2}:\d{2}$/u);
+      const html = render(view);
+      const picker = block(html, 'data-fo-picker-state="preview"');
+      expect(readable(picker), `${locale}: cutoff time`).not.toContain(time);
+      const chip = chips(html).get("2027-03-01") ?? "";
+      expect(chip, locale).toMatch(/<input[^>]*disabled/u);
+      expect(chip, `${locale}: per-chip reason`).not.toContain(
+        "data-fo-date-why",
+      );
+      // Its accessible name carries the shared `preview` sentence instead (§13 Q6).
+      const noticeId = /<p[^>]*id="([^"]+)"/u.exec(picker)?.[1] ?? "";
+      expect(noticeId, locale).not.toBe("");
+      expect(chip, locale).toContain(
+        `aria-labelledby="date-2027-03-01 ${noticeId}"`,
+      );
+    }
+  });
+
+  it("keeps the `live` past-cutoff chip's own reason with its time", async () => {
+    const view = await liveViewOf("en", AMBER, { now: PAST_CUTOFF });
+    expect(view.delivery.state).toBe("live");
+    const chip = chips(render(view)).get("2027-03-01") ?? "";
+    expect(chip).toMatch(/<input[^>]*disabled/u);
+    expect(chip).toContain('data-fo-date-reason="delivery.reason.pastCutoff"');
+    expect(
+      readable(/data-fo-date-why[^>]*>([^<]+)</u.exec(chip)?.[1] ?? ""),
+    ).toBe("Ordering closed at 14:00 in Warsaw");
+    expect(chip).not.toContain("aria-labelledby");
   });
 
   it("leaves no `delivery.cutoffPreview` key in any message or meta file", () => {

@@ -49,12 +49,21 @@ _None._
   depend on the clock. **Question:** in `preview`, should a past-cutoff day read the shared
   `notOrderable` sentence (a `geo` change: `pastCutoff` becomes `live`-only), or keep its
   calendar reason with the time? Either way it is a new task or an amendment to this one.
+  **Ruled 2026-10-03 (orchestrator):** in `preview` no chip prints a cutoff time. Design-round Q6
+  already gives the preview grid's closed chips one shared sentence under the labelled heading, so
+  a past-cutoff day renders as a closed chip with no reason text of its own, and the shared
+  `preview` sentence covers it (its accessible name too). `live` is unchanged: "Ordering closed at
+  14:00 in Warsaw" stays. `geo/delivery/calendar.ts` is not touched: the computed `pastCutoff`
+  reason stays (`data-fo-date-reason`), only the `preview` render changes. The fence widened to
+  `DateChip` and the picker that passes it the state. **Closed** in this PR: see `## Result`.
 
 ## Progress
 
 - 2026-10-03 — picker, catalogues, meta, artboards and tests done; mutations red; pushed
   `9ece7dd2`, draft PR #151; `visual:baselines` label added for `dev-components-desktop`.
 - 2026-10-03 — Linux baseline taken from run 37115814804 (`fa9145ca`); Result written; ready, `ci:full`.
+- 2026-10-03 — E-1 ruled; `DateChip` takes `pickerState`, past-cutoff `preview` chip shares the
+  notice; 15:30 cases added and mutated red.
 - 2026-10-03 — CI `visual` red on the four product block shots (sub-pixel shift below the picker);
   taken from the same run, re-fired CI.
 
@@ -91,4 +100,11 @@ and their meta files (`en-gb` never carried it), and from both product artboards
   #149 on main passed. I looked at all 5 images. The committed manifest is the runner's, and
   `--verify` matches all 104. The `darwin` copies were not refreshed (no local build).
 - `pnpm gates:cheap`: PASS, all 7 exit 0.
-- Open: escalation E-1 (a past-cutoff `preview` chip still names 14:00).
+- **E-1 closed:** `DateChip` takes `pickerState` from `DeliveryDatePicker`. In `preview` a
+  `pastCutoff` chip prints no reason of its own and its radio is named by the shared notice
+  (`aria-labelledby`), like a `notOrderable` chip. New unit cases at 15:30 Warsaw on 1 March 2027:
+  in `preview`, in four locales, no cutoff time anywhere in the picker, no `data-fo-date-why` on
+  the past-cutoff chip, and the notice is in its name. In `live` the chip still reads "Ordering
+  closed at 14:00 in Warsaw". The e2e preview case asserts no `h:mm` in the picker at any clock.
+  Mutations, all red: the reason printed again in `preview` (fails the preview case); the picker
+  passing no state (same); `live` sharing too (fails the live case).

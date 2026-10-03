@@ -12,7 +12,8 @@
  *    published. No cutoff, no calendar, no "next available".
  *  - **`preview`** — the full computed grid with **every date disabled**, under the sentence that
  *    says what it is (`delivery.picker.preview`), which is also the shared reason of every chip
- *    closed only because we are not taking orders (§13 design round Q6). **No cutoff time**
+ *    closed only because we are not taking orders (§13 design round Q6), and of a day past the
+ *    cutoff, whose own sentence would name a time (TASK-171 ruling E-1). **No cutoff time**
  *    (spec 009 §14 A8): no florist has agreed to one, and the delivery-facts row on the same page
  *    says exactly that, so a time here would contradict it.
  *  - **`live`** — selectable dates, the earliest preselected by the view model, the cutoff line in
@@ -124,6 +125,7 @@ export function DeliveryDatePicker({
             country={country}
             date={date}
             locale={locale}
+            pickerState={live ? "live" : "preview"}
             sharedReasonId={noticeId}
             {...(delivery.cutoffLocal === undefined
               ? {}

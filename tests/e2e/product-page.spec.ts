@@ -135,8 +135,10 @@ test.describe("the picker is the data's state, in one template (AC-8, T-08)", ()
       expect(await dates.count()).toBeGreaterThan(0);
       await expect(picker.locator('input[name="date"]:enabled')).toHaveCount(0);
       await expect(page.getByRole("button", { name: /date/iu })).toHaveCount(0);
-      // Spec 009 §14 A8: `preview` states no cutoff time — only `live` does.
+      // Spec 009 §14 A8: `preview` states no cutoff time — only `live` does. Not as a line, and
+      // not on a chip past the cutoff either (ruling E-1), whatever the clock says.
       await expect(page.locator("[data-fo-cutoff]")).toHaveCount(0);
+      expect(await picker.innerText()).not.toMatch(/\d{1,2}:\d{2}/u);
     });
   }
 
