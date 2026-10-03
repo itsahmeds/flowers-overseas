@@ -8,7 +8,7 @@ Row: `TASKS.md` → TASK-179. This brief is the task's long form (spec 001 §14 
 - **Design source of truth:** `docs/design/directions/warm-c/` (home, shop, product) and design system v2 in
   `docs/design/system/` plus `docs/design/wireframes/` (every page type, desktop 1440 and mobile 390, with an
   annotation block). Match the artboards.
-- Founder, 2026-10-03, in chat: "A is good", "I like A with C colors better not the researched one... main background
+- Founder, 2026-10-03, in chat: "A is good", "I like A with C colors better not the researched one... but i just think main background
   color could just be a little lighter", "a bit more light", "Good. Now lets lock in the design and start building".
 - Cards are printed, never claimed as handwritten. The trending heading is "Popular choices" (TASK-140). Honest copy,
   future tense for florists. No new English string ships unreviewed (5 % gate): list any you need for the founder.
@@ -20,7 +20,7 @@ Row: `TASKS.md` → TASK-179. This brief is the task's long form (spec 001 §14 
 - **Multi-currency equivalents (founder, 2026-10-03: "also do this too.. like showing prices this way too in usd eur and gpt at the bottom too").**
   The charged price in the buyer's currency stays the one prominent price; under it, smaller, approximate equivalents in
   up to three of GBP/EUR/USD/PLN, labelled approximate, from the same FX rate and timestamp, never in JSON-LD, hidden
-  when FX is stale (spec 004 §14 A21 / spec 005 amendment). A money display change: this task keeps the breaker.
+  when FX is stale (spec 004 §14 A21 clause 6). A money display change: this task keeps the breaker.
 
 ## Read
 

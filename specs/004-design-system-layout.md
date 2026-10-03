@@ -722,15 +722,17 @@ Raised by: the founder in chat, 2026-10-03; ruled by the orchestrator; implement
 **A21 — Visual identity v2 (§2 L51, L53, L57–L60, L77–L81; §3 L122; §5.3 L199–L212; §11 L339–L342;
 §13 L376, L379; §14 A6 L454, A7 L467, A9 L492, A11 L518; AC-1, AC-3, AC-4, AC-10, AC-11, AC-15,
 AC-25, AC-27; T-01, T-04, T-05, T-06, T-12, T-13, T-17, T-27, T-29; spec 005 §2 L65–L67; spec 008
-AC-6, AC-23; spec 009 AC-14, AC-21; `plan/01` §7 L222; founder ruling 2026-10-03).**
+§5 L240, AC-6, AC-23; spec 009 AC-14, AC-21; TASK-129; `plan/01` §7 L222; founder ruling
+2026-10-03).**
 Original: §13's resolution note (L376) and A6 bind the v1 identity — white paper, cool-grey inks, one
 forest-green accent, Newsreader display with IBM Plex Sans body, ≤45 KB of fonts — and the v1 home
 (full-bleed photograph with the type-ahead finder card, A11).
-Ruling: the founder rejected v1 on 2026-10-03 ("i see shit ui ux that a junior designer would
-make"), reviewed three directions and their variants, and chose direction A in direction C's
-colours: "A is good", "I like A with C colors better not the researched one... main background
-color could just be a little lighter", "a bit more light", "Good. Now lets lock in the design and
-start building".
+Ruling: the founder rejected v1 on 2026-10-03, in chat: "i dont understand you bro you are saying
+website is almost done... i say 1 or 2 subpar static pages nothing else? wtf. i see shit ui ux that
+a junior designer would make". The founder then reviewed three directions and their variants and
+chose direction A in direction C's colours: "A is good", "I like A with C colors better not the
+researched one... but i just think main background color could just be a little lighter", "a bit
+more light", "Good. Now lets lock in the design and start building".
 Corrected (founder ruling, written as binding by the spec-writer, 2026-10-03):
 
 1. **Design source of truth.** `docs/design/directions/warm-c/` (`home.html`, `shop.html`,
@@ -746,6 +748,10 @@ Corrected (founder ruling, written as binding by the spec-writer, 2026-10-03):
    checkboxes that change a total and its dated chips (spec 009 §13 Q6 and §14 A19: a priced
    read-only list, dates only when `pickerState` is `live`); and the artboards' Google Fonts
    `<link>`s, which never ship (clause 3).
+   **Order.** `docs/design/directions/warm-c/` and design system v2 (`docs/design/system/`,
+   `docs/design/wireframes/`) land in their own docs PR, on branch `docs/design-directions`. That
+   PR merges **before** any of TASK-175 to TASK-179 is dispatched. No task is dispatched against
+   artboards that are not on `main`.
 2. **Palette.** Supersedes §2 L51's palette intent and L376's colours. The token values are the
    table in `docs/design/directions/warm-c/README.md` §"Palette": `--paper` `oklch(99.8% 0.002
    85)`, `--paper-2` `oklch(98.9% 0.006 85)`, `--card`, the plum-navy `--ink`/`-2`/`-3`, poppy
@@ -813,9 +819,10 @@ Corrected (founder ruling, written as binding by the spec-writer, 2026-10-03):
        choice, for the function they asked for.
 5. **The printed-card preview** is the product page's one client island. It is ≤2,048 B Brotli,
    makes no network access and adds no inline script (spec 009 AC-14's limits, unchanged).
-   - It takes spec 009 AC-14's "only client island the PDP adds" slot. `DateAndTierEnhancer` is
-     not built (spec 009 §12 task 9). If it is ever built, it shares this island and its 2,048 B,
-     or it comes back as a spec 009 amendment.
+   - It takes spec 009 AC-14's "only client island the PDP adds" slot. TASK-129 builds spec 009's
+     `DateAndTierEnhancer` as a second PDP island; A21 overrules that. `DateAndTierEnhancer` and
+     the printed-card preview are **one island** with **one 2,048 B Brotli budget** between them.
+     TASK-129's row is amended to match. A second PDP island needs a spec 009 amendment.
    - The card-message `<textarea>` has no `name` and is never stored or submitted in Phase 0.
      Without JavaScript the preview shows its labelled sample text.
    - **Cards are printed, never claimed as handwritten** (founder, 2026-10-03). The add-on is
@@ -836,10 +843,16 @@ Corrected (founder ruling, written as binding by the spec-writer, 2026-10-03):
      the same embedded table.
    - **(b) The equivalents line.** Under the price, in smaller text that still meets 4.5:1, the
      page shows the *other* currencies of {EUR, GBP, PLN, USD}: up to three, never the charged one.
-     - Each is the charged amount converted at the **same FX snapshot and `fxAsOf`** as the
-       charged price (`fxRateFor`), at the mid rate. No `FX_BUFFER_BP` and no psychological
-       rounding apply, because this describes what the buyer pays, not what we would charge in
-       that currency.
+     - **Converted price.** When the charged price was converted from the catalogue currency,
+       each equivalent is the charged amount converted at the **same FX snapshot and `fxAsOf`** as
+       the charged price (`fxRateFor`).
+     - **Native price.** When the charged currency equals the catalogue currency (e.g. `/pl` to
+       Poland, PLN), no conversion took place. The equivalents then use the latest FX snapshot
+       available to the same render, and that snapshot's `as_of` is the date in the label. If no
+       snapshot is current (`fxRateFor` returns `null`), the line is hidden, as in (d).
+     - **Rate.** Either way the conversion is at the mid rate. No `FX_BUFFER_BP` and no
+       psychological rounding apply, because the line describes what the buyer pays, not what we
+       would charge in that currency.
      - Integer minor units are rounded to the nearest unit and formatted by `formatMoney` (Intl).
        The list is joined by the `format.ts` list formatter.
      - The line is labelled as approximate and names the rate's date, not "today", because the
@@ -860,11 +873,15 @@ Corrected (founder ruling, written as binding by the spec-writer, 2026-10-03):
    - **(e) Review class.** A money-display change: TASK-178 and TASK-179 keep the breaker (DoD 4).
 7. **Unchanged.** Server rendering of every indexable page, logical CSS only, no literal strings,
    `Intl` for all formatting, the honesty rules (AC-15, A5 and A10, the future tense for florists),
-   WCAG 2.2 AA, the logo, A20 (no dead controls), A19, the trending heading "Popular choices"
-   (founder-approved, TASK-140), the consent sheet and every SEO gate (AC-14, AC-16, the spec 007
+   WCAG 2.2 AA, the logo, A20 (no dead controls), A19, the consent sheet and every SEO gate (AC-14, AC-16, the spec 007
    AC-21 crawl). A7's reserved header height takes v2's values; the property it gates (identical
    before and after hydration, CLS 0) holds. A9's sections remain data-gated, each rendered in v2's
    look or not at all.
+   **"Popular choices".** The home's trending row is headed "Popular choices". This supersedes
+   spec 008 §5 L240 ("not described as … 'popular'") and TASK-140's brief, for this heading only.
+   Founder approval, 2026-10-03, in chat: "ok go with popular choices". The row's disclaimer
+   stays: it is our own selection, not a ranking by sales. Spec 008 AC-9's ban stays for listing
+   pages and navigation.
 8. **Rollout: five feature-sized tasks, in this order.**
    - **TASK-175.** Tokens, the contrast manifest, the fonts (clause 3), the wordmark SVG, the
      airmail utility and the shared UI primitives (button, link, price with the equivalents slot
@@ -906,7 +923,10 @@ Tests (each watched red by mutating its subject):
     equal to the mid-rate conversion at the charged price's `fxAsOf`. Red if the buffer is
     applied, or the charged currency appears in the line.
   - JSON-LD carries one price, equal to the prominent one.
-  - The stale-FX fixture renders no equivalents line.
+  - A native-currency fixture (`/pl`, Poland, PLN) labels the line with the latest snapshot's
+    `as_of`. Red if the label uses another date.
+  - The stale-FX fixture and a native fixture with no current snapshot render no equivalents
+    line.
   - Hubs keep spec 008 T-07's no-money assertion. → spec 008 AC-6, AC-7; spec 009 AC-21.
 - **Spec 009 T-14.** The preview island is ≤2,048 B, makes no network access and is the PDP's
   only island. The card message never appears in a URL or a request. → spec 009 AC-14.
