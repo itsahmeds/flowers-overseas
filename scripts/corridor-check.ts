@@ -530,7 +530,7 @@ const SCALE_CLAIM_PATTERN =
  * (`/review 63`). `złotych` survived only because it ends in an ASCII `h`. Any currency word added
  * here that ends in a non-ASCII letter falls into the same trap, which the lookahead closes.
  */
-const PRICE_LITERAL_PATTERN =
+export const PRICE_LITERAL_PATTERN =
   /(?:[£€$]\s?\d|\b\d[\d,.]*\s?(?:zł|złotych|pln|eur|gbp|euros?|pounds?|lei|ron)(?![\p{L}\p{N}]))/iu;
 
 /* -------------------------------------------------------------------------- */

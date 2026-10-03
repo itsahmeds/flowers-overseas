@@ -610,7 +610,7 @@
     "sourceHash": "db444de1592587156de904ae5d7012916581b1015dfd001b922764a2bd43a73c"
   },
   "catalog.floristSentence": {
-    "source": "machine",
+    "source": "human",
     "reviewed": false,
     "sourceHash": "51e5aa3405f3475b39a814927b7dcd159a33408ebabad373134dd54b4d654508"
   },
