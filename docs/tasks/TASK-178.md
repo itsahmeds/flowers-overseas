@@ -47,7 +47,112 @@ _None recorded._
 - 2026-10-04 01:15 — v2 chrome on all seven listing page types (`src/modules/catalog/ui/ListingChrome.tsx`), e2e
   `tests/e2e/listing-v2.spec.ts`. Visual baselines run requested on PR 169 for inspection; the committed refresh waits
   for the rebase onto main after PR 168 merges (TASK-175's own baselines would otherwise be mixed in).
+- 2026-10-04 01:40 — Seed copy: every handwritten-card claim (en, en-gb, de, pl; categories and occasions) reworded
+  to a printed card, scan test added. Local build (slot held 01:23–01:40, load 13–23) used only to eyeball the seven
+  pages at 1440 and 390; server stopped, slot released. **Left:** after PR 168 merges, `git rebase --onto origin/main
+  d8fffadb`, push `--force-with-lease`, `visual:baselines` label, commit every file of the run's change list, then
+  ready + `ci:full` and read CI on the head SHA. PR 169 conflicts with main until then (TASK-175's baselines vs
+  TASK-173), so no workflow fires on it yet.
 
 ## Result
 
-_Pending._
+**PR:** https://github.com/itsahmeds/flowers-overseas/pull/169 (draft; base includes TASK-175's commits until the rebase).
+
+**Equivalents (A21 clause 6) — the helper for the whole site (TASK-179 uses the same two calls):**
+- `priceEquivalents(projection, now)` in `src/modules/catalog/pricing/equivalents.ts`, exported from
+  `@/modules/catalog`: the other currencies of {EUR, GBP, PLN, USD} at the charged price's own `fxAsOf` (native price:
+  the latest snapshot, every leg the same `as_of`), mid rate via `fxRateFor`, no `FX_BUFFER_BP`, no rounding style,
+  half-up at the minor unit; `null` for the stale fallback, any `null` leg, a snapshot mismatch, or an unstamped
+  conversion. Never read by `offerProjection`, `priceTable` or the from-price.
+- `equivalentsMessageValues(view, locale)` in `src/modules/ui/shop/equivalents.ts`, exported from `@/modules/ui`:
+  `formatMoney` per amount, joined by `formatList(…, "disjunction")` (the coordinator's ruling: the `format.ts` list
+  formatter), date by `formatDate(…, "dayMonth", "UTC")`. Printed through `Price`'s `equivalents` slot.
+- USD: equivalent-only row in `src/config/currencies.ts` (`currency.USD` flag stays off); ECB reference rate for
+  2026-09-08, 1.1614 → `ratePpm 1_161_400`, source in the comment in `fx.data.ts`.
+
+**Additive changes outside "Owns", for the orchestrator to reconcile:**
+- `src/modules/i18n/format.ts`: a fourth `DateStyle`, `dayMonth` ("8 September" / "8. September" / "8 września"),
+  with a case in `tests/unit/i18n-format.test.ts`. No other change to the formatter.
+- `src/modules/catalog/listing.ts`: `productCardView()` adds `equivalents` (one clock for price and line);
+  `ListingViewOptions.now`.
+- `src/modules/ui/shop/viewModel.ts`: `PriceEquivalentsViewSchema`, `ProductCardViewSchema.equivalents` (refuses the
+  charged currency), `HubCardViewSchema` omits it. No TASK-175 primitive was changed.
+- `seed/data/copy/**` (coordinator, update 2): the printed-card rewording below.
+- Message key `shop.root.listingEyebrow` ("The listing") deleted: the v2 artboards draw no eyebrow there.
+
+**New English copy for the founder (one string ships, unreviewed):** `catalog.price.equivalents` = "about {amounts} at
+the rate of {date}" (de "etwa {amounts} zum Kurs vom {date}", pl "ok. {amounts} po kursie z {date}", both
+`reviewed: false`). It is in the `AWAITING_FOUNDER_REVIEW` queue of `tests/unit/i18n-messages-schema.test.ts`.
+
+**Artboard copy NOT shipped (5 % gate), for one founder batch:**
+- the eyebrow "Sending to {country}" over each country-scoped `<h1>`;
+- the note card's "P.S." mark and its label "A note before you choose" (the card ships with the existing demo sentence);
+- the printed-card band in the grid: "Every one of these comes with a card, at no cost." / "You write the words. We
+  print them on our card, and it is tucked into the bouquet.";
+- "Narrow it down" under the eyebrow "By what it is" (the tiles keep "By what it is" as their heading);
+- "all in" beside each card price (the card keeps `catalog.price.inclusive`);
+- the future tense in `shop.root.lede` and `shop.root.introBody` ("will make … and hand it over"), both founder-reviewed
+  in the present tense today.
+
+**Printed-card rewording in seed copy (for the founder; no slug changed, `seed:check` green):**
+- en categories/birthday.descriptionMd: "Three sizes on most, and a handwritten card can be added." → "Three sizes on most, and a printed card can be added."
+- en categories/birthday.seoDescription: "Pick the date; a handwritten card can be added." → "Pick the date; a printed card can be added."
+- de categories/birthday.descriptionMd: "und eine handgeschriebene Karte kann dazukommen." → "und eine gedruckte Karte kann dazukommen."
+- pl categories/birthday.descriptionMd: "można dodać odręcznie napisany bilecik." → "można dodać drukowany bilecik."
+- en categories/thank_you.descriptionMd: "and a handwritten card is included at no cost so the reason" → "and a printed card is included at no cost so the reason"
+- en categories/thank_you.seoDescription: "A handwritten card is included at no cost." → "A printed card is included at no cost."
+- de categories/thank_you.descriptionMd: "und eine handgeschriebene Karte ist kostenlos dabei, damit" → "und eine gedruckte Karte ist kostenlos dabei, damit"
+- de categories/thank_you.seoDescription: "Eine handgeschriebene Karte ist kostenlos dabei." → "Eine gedruckte Karte ist kostenlos dabei."
+- pl categories/thank_you.descriptionMd: "a odręcznie napisany bilecik jest gratis, więc" → "a drukowany bilecik jest gratis, więc"
+- pl categories/thank_you.seoDescription: "Odręcznie napisany bilecik gratis." → "Drukowany bilecik gratis."
+- en categories/apology.descriptionMd: "A handwritten card is free and worth using here." → "A printed card is free and worth using here."
+- en categories/apology.seoDescription: "A free handwritten card, and it arrives on the date you pick." → "A free printed card, and it arrives on the date you pick."
+- en-gb categories/apology.descriptionMd: "A handwritten card is free and worth using here." → "A printed card is free and worth using here."
+- en-gb categories/apology.seoDescription: "A free handwritten card, and it arrives on the date you pick." → "A free printed card, and it arrives on the date you pick."
+- de categories/apology.descriptionMd: "Eine handgeschriebene Karte ist kostenlos und lohnt sich hier." → "Eine gedruckte Karte ist kostenlos und lohnt sich hier."
+- de categories/apology.seoDescription: "Mit kostenloser handgeschriebener Karte," → "Mit kostenloser gedruckter Karte,"
+- pl categories/apology.descriptionMd: "Odręcznie napisany bilecik jest bezpłatny i warto go tu użyć." → "Drukowany bilecik jest bezpłatny i warto go tu użyć."
+- en occasions/thank_you.descriptionMd: "the card is free and handwritten by our florist." → "the card is free and printed with your words."
+- en occasions/thank_you.seoDescription: "with a free handwritten card." → "with a free printed card."
+- de occasions/thank_you.descriptionMd: "Die Karte ist kostenlos und wird von unserem Floristen von Hand geschrieben." → "Die Karte ist kostenlos und wird mit Ihren Worten gedruckt."
+- de occasions/thank_you.seoDescription: "mit kostenloser handgeschriebener Karte." → "mit kostenloser gedruckter Karte."
+- pl occasions/thank_you.descriptionMd: "bilecik jest bezpłatny i nasz florysta pisze go odręcznie." → "bilecik jest bezpłatny i drukujemy na nim Twoje słowa."
+- pl occasions/thank_you.seoDescription: "z bezpłatnym odręcznym bilecikiem." → "z bezpłatnym drukowanym bilecikiem."
+- en occasions/apology.descriptionMd: "write it yourself and we will have it written out by hand." → "write it yourself and we will print it on our card."
+- en occasions/apology.seoDescription: "with a card written out by hand." → "with your own words on a printed card."
+- en-gb occasions/apology.descriptionMd: "write it yourself and we will have it written out by hand." → "write it yourself and we will print it on our card."
+- en-gb occasions/apology.seoDescription: "with a card written out by hand." → "with your own words on a printed card."
+- de occasions/apology.descriptionMd: "Schreiben Sie sie selbst, und wir lassen sie von Hand abschreiben." → "Schreiben Sie sie selbst, und wir drucken sie auf unsere Karte."
+- de occasions/apology.seoDescription: "mit einer von Hand geschriebenen Karte." → "mit Ihren eigenen Worten auf einer gedruckten Karte."
+- pl occasions/apology.descriptionMd: "napisz go sam, a my przepiszemy go odręcznie." → "napisz go sam, a my wydrukujemy go na naszym bileciku."
+- pl occasions/apology.seoDescription: "z odręcznie przepisanym bilecikiem." → "z Twoimi słowami na drukowanym bileciku."
+- en occasions/retirement.descriptionMd: "send us the text and our florist writes it out." → "send us the text and we print it on our card."
+- en occasions/retirement.seoDescription: "One card can carry many names, written out by hand." → "One printed card can carry many names."
+- de occasions/retirement.descriptionMd: "schicken Sie uns den Text, und unser Florist schreibt ihn ab." → "schicken Sie uns den Text, und wir drucken ihn auf unsere Karte."
+- de occasions/retirement.seoDescription: "Eine Karte trägt viele Namen, von Hand geschrieben." → "Eine gedruckte Karte trägt viele Namen."
+- pl occasions/retirement.descriptionMd: "przyślij nam tekst, a nasz florysta przepisze go odręcznie." → "przyślij nam tekst, a my wydrukujemy go na naszym bileciku."
+- pl occasions/retirement.seoDescription: "Jeden bilecik z wieloma podpisami, przepisany odręcznie." → "Jeden drukowany bilecik z wieloma podpisami."
+
+**Where the build differs from the artboards (behaviour the specs or data decide):**
+- The shop root has no "What it is" chip row in the toolbar: `listingView()` carries no product-type chip data for a
+  shop root; the same links are the tiles further down.
+- Country category and country occasion pages show the count and the ranking disclosure but no sort form or
+  pagination: they have no parameter route (only the depth-3 shop root does), and a sort control that cannot sort is
+  a dead control (A20).
+- The country occasion page's date stamp (day numeral, month · weekday, local name) is not drawn: `formatDate` has no
+  day-only style and the local name is not in the view; the dated line renders in the display face instead.
+- The note card is a `<div>`, not an `<aside>`: an `aside` inside `<main>` fails axe
+  `landmark-complementary-is-top-level`.
+- The equivalents line is joined "£38.85, PLN 195.90 or US$53.31" (the list formatter), not with " · " as drawn.
+
+**Tests:** unit `catalog-pricing-equivalents` (11), `catalog-listing-equivalents` (10), `ui-shop-equivalents` (11),
+`seed-copy-printed-cards` (9), plus updated `catalog-barrel`, `catalogue-fx`, `currencies-config`,
+`catalog-static-providers`, `i18n-format`, `i18n-messages-schema`, `ui-barrel`, `catalog-shop-page`,
+`catalog-category-page`; e2e `tests/e2e/listing-v2.spec.ts` (four locales + three hubs). Mutations watched red: buffer
+applied (5 red), charged currency not skipped (6 red), snapshot check removed (1 red), equivalents dropped from the
+card view (5 red), one de seed string restored to "handgeschriebener" (1 red).
+
+**Found (not mine to fix):** the committed snapshot's GBP and PLN rates are not the ECB's for 2026-09-08 (ECB:
+GBP 0.8574, PLN 4.3178; committed 0.8465, 4.268); USD here is the real ECB figure. The snapshot is stale today, so
+production shows no equivalents line anywhere until the snapshot is refreshed (spec 005 / TASK-071). On `/pl`, each
+card now asks `fxRateFor` three times, so a stale snapshot emits three `catalog.fx_stale` warnings per card render.
