@@ -42,7 +42,7 @@ Row: `TASKS.md` → TASK-176. This brief is the task's long form (spec 001 §14 
 ## Progress
 
 - 2026-10-04 · Header, notice bar and footer rebuilt from `chrome-{desktop,mobile}.dc.html` (commit 1390b313); unit contracts moved (c66d27f0); e2e/a11y header and footer specs moved to the v2 heights (measured on a production build: notice 36/62, banner 121/83, identical in en/de/pl at 390–1 920 px, no horizontal overflow anywhere). Next: visual baselines through the `visual:baselines` label, then `ci:full` once PR 168 merges and this branch is rebased.
-- 2026-10-04 · Baselines committed from visual-baselines run 37153534704 (whole change list, verified). A4 ruling applied (notice bar second row on mobile, 80 px; baselines need re-taking). Left: when PR 168 merges, `git rebase --onto origin/main 2a1d1489` (expect conflicts in `SiteHeader`/`SiteFooter` with the TASK-175 finisher's header/footer fixes: keep this branch's markup), re-take baselines, ready, `ci:full`.
+- 2026-10-04 · Baselines committed from visual-baselines run 37153534704 (whole change list, verified). A4 ruling applied (notice bar second row on mobile, 80 px); founder copy batch and the home-less price claim (`@notice` slot) applied; baselines from run 37156816415. Left: when PR 168 merges, `git rebase --onto origin/main 2a1d1489` (expect conflicts in `SiteHeader`/`SiteFooter` with the TASK-175 finisher's header/footer fixes: keep this branch's markup), re-take baselines, ready, `ci:full`.
 
 ## Result
 
