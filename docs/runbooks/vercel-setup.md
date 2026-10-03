@@ -18,8 +18,8 @@
 **When:** once, before the `preview` CI job can pass on any PR.
 **Time:** ~20 minutes.
 **Outcome:** the GitHub repo `flowers-overseas` deploys production from `main` (preview
-deployments are turned off since 2026-10-03, decisions log: the Hobby plan's daily build limit), functions run in `fra1`, previews require authentication, and CI can bypass that
-authentication with a secret. After step 7, re-run CI on the open TASK-007 PR: the `preview` job
+deployments are turned off since 2026-10-03, decisions log: the Hobby plan's daily build limit), and functions run in `fra1`. While previews were on, they required authentication and CI
+could bypass it with a secret; the steps below that set this up stay for the day previews return. After step 7, re-run CI on the open TASK-007 PR: the `preview` job
 turns green and the reviewer records T-30.
 
 Facts this runbook assumes (spec 001 §5 "Hosting", §13 Q1/Q9, ADR-0012):

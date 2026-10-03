@@ -1276,15 +1276,20 @@ allow-list contains that GET, a write verb on the same path fails the test, and 
 maps to that scope name. The runbook's Z1 lists five scopes. Account scopes and Bot Management
 Write stay out.
 E-1's second question (orchestrator ruling, 2026-10-03): no zone token can read four of AC-17's
-rows, so each stays declared `checks: []` with its `checkedElsewhere` gate:
-- Cloudflare Access on production, and Access or basic auth on staging and PR environments:
-  checked by AC-25 / T-26 and the `preview` job's 401.
-- Workers and Snippets: checked by AC-18 / T-18's body byte-identity.
-- IP-geo redirects: checked by the `fo/no-geo-redirect` lint and TASK-101's rules.
-- Pay-per-crawl: an account-level setting, and account scopes stay banned.
+rows. Each stays declared `checks: []` with its `checkedElsewhere` gate (row names as in
+`config/cloudflare/zone-settings.json`):
+- "Cloudflare Access on production": checked by AC-25 / T-26.
+- "Cloudflare Access / basic-auth on staging and PR": checked by AC-25 / T-26 and the `preview`
+  job's 401 (AC-26).
+- "Workers / Snippets injecting HTML": checked by AC-18 / T-18's body byte-identity.
+- "IP-geolocation redirect rules; any use of `cf-ipcountry` to route": checked by the
+  `fo/no-geo-redirect` lint and TASK-101's rules.
 
-These rows meet AC-17's "any row" this way. In addition, the founder checks all four by eye in the
-Cloudflare dashboard at runbook step Z3, and the runbook records the result.
+Pay-per-crawl is not a row of its own. It is part of the AI-crawler row ("AI Scrapers & Crawlers
+blocking / AI Labyrinth / pay-per-crawl …"), whose `bot_management` checks read the zone. This is
+how the four rows meet AC-17's "any row". In addition, TASK-100 adds a runbook step in which the
+founder checks the four rows by eye in the Cloudflare dashboard and records the result in
+TASK-100's brief.
 Raised by: TASK-100 `## Escalations` E-1 (2026-09-30).
 
 **A6 — The nightly CI run gets its own concurrency group (§14 A3 AC-38, T-39; TASK-100, 2026-10-03).**
