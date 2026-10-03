@@ -582,3 +582,51 @@ Three clauses now read:
   request for the internal path with no key answers 404. A source check finds no `searchParams` in
   the product route. Putting `searchParams` back makes the build list the product route as
   per-request, and the case goes red.
+
+
+**A11 — The PDP states the fresh-flower promise, never a number of days (supersedes A9's
+freshness line; design-round Q5; binds TASK-172).**
+Original: A9 ruled that the PDP's guarantee states "the product's own `freshnessDays`" as an ICU
+plural `{days}`, with TASK-172 adding one case each for 5, 7 and absent. Design-round Q5 (L389)
+calls it "the 7-day freshness guarantee". Three shipped strings say "7-day freshness guarantee"
+on every page: `nav.utility.guarantee`, `home.proof.guarantee.title` and `trust.guarantee.name`.
+Measured: how long cut flowers last after delivery depends on the room, the water and the care,
+none of which we or the florist control. The founder, ruling on spec 041 §13 Q4 (2026-10-04, in
+chat), said: "flowers arrive fresh cant promise staying fressh it on conditions bro everone knows
+that" and "idk abt frehness use what others say". The market standard promises the flowers'
+condition on arrival, with a photo sent inside a window: Bloom & Wild's terms, 5.2, a photo
+within 72 hours, as cited by the orchestrator. It was not re-fetched here because the site
+answered 403. Separately, 10 of the 84 seed products carry `freshnessDays: 5`, so any fixed
+number was already false for some products.
+Corrected (founder ruling, worded by the orchestrator):
+- The PDP's guarantee line is the **fresh-flower promise**, in spec 041 Appendix A.3's words and
+  from one message key shared with the guarantee page: "**Fresh-flower promise.** If your flowers
+  don't arrive fresh and in good condition, send us a photo within 72 hours of delivery and we'll
+  replace them or refund you in full." Design-round Q5's placement stands: it renders beside the
+  substitution sentence. Where `infoPageExists("guarantee", locale)` is true, it links to the
+  guarantee page (spec 041).
+- **No number of days of freshness** appears in any guarantee text on the PDP or elsewhere, in
+  any locale. A9's `{days}` parameter, its ICU plural and its 5 / 7 / absent cases are withdrawn.
+- `freshnessDays` **stays as catalogue data** (specs 005/006). No approved spec allows care copy
+  to state it ("typically lasts …"), so the PDP renders it nowhere. A later spec that wants a care
+  line must allow it explicitly and keep it out of every guarantee text.
+- The three "7-day freshness guarantee" strings are **retired** and become "Fresh-flower promise"
+  in every locale. Spec 041 AC-16 asserts this; it does not make the change.
+- **TASK-172 is re-scoped** to the fresh-flower promise. It first draws the PDP line in
+  `docs/design/` and then renders it. It retires the three strings in `en`, `en-gb`, `de` and
+  `pl`. It adds its AC and T rows here in place of A9's three cases. Its English copy goes to the
+  founder for batch approval.
+Tests (TASK-172 writes them; each must go red with its subject restored):
+- unit: the PDP guarantee node renders the same text for a product with `freshnessDays` 5, one
+  with 7 and one with none.
+- unit (message and content scan, all four locales): no guarantee-related value, meaning the three
+  keys above, the PDP guarantee key and every `infoPages.*` / `content/pages/*/guarantee.md` value,
+  contains "7-day" or matches a number-of-days pattern
+  (`\d+\s*-?\s*(day|days|Tag|Tage|Tagen|dzień|dni)`, case-insensitive).
+- e2e (built HTML, four locales, a 5-day and a 7-day product): no number token in the guarantee
+  node equals the product's `freshnessDays`. "72" passes; "5" or "7" fails.
+- Mutation: restoring "7-day", `{days}` or a `freshnessDays` interpolation in any locale turns the
+  matching case red.
+Open: the founder confirms the promise's exact wording in the copy batch. Until then, TASK-172
+ships it as that batch's pending copy.
+Raised by: the founder, 2026-10-04 in chat (spec 041 §13 Q4), relayed by the orchestrator.
