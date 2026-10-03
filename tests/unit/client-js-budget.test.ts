@@ -834,14 +834,18 @@ describe("the AC-25 clauses TASK-056 added", () => {
       expect(fontBreaches(fonts)).toEqual([]);
     });
 
-    it("charges a /pl URL the Latin-Ext figure and every other URL the Latin one", () => {
+    it("charges every page the worst case, because /en names Polish places too", () => {
       const fonts = fontTransfer(repoRoot);
       const [latin, latinExt] = fonts.lines;
+      // Both lines count the Latin and the Latin-Ext files of the four page faces.
+      expect(latin?.bytes).toBe(latinExt?.bytes);
+      expect(latin?.bytes).toBe(
+        fonts.faces
+          .filter((face) => !face.file.startsWith("caveat"))
+          .reduce((sum, face) => sum + face.bytes, 0),
+      );
       expect(fontBytesFor("/en", fonts)).toBe(latin?.bytes);
-      expect(fontBytesFor("/de/blumen", fonts)).toBe(latin?.bytes);
-      expect(fontBytesFor("/pl", fonts)).toBe(latinExt?.bytes);
       expect(fontBytesFor("/pl/kwiaty", fonts)).toBe(latinExt?.bytes);
-      expect(fontBytesFor("/plants", fonts)).toBe(latin?.bytes);
     });
 
     it("names the budget a line breaks, and a third preload", () => {

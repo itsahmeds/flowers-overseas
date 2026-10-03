@@ -1,28 +1,50 @@
 /**
- * T-05 / AC-4 (TASK-045): the two families are self-hosted, preloaded, `swap`-ed, and no page
- * asks Google for a font.
+ * T-05 / AC-4 as amended by spec 004 §14 A21 clause 3 (TASK-045, TASK-175): the page faces are
+ * self-hosted, `swap`-ed with fallback metrics, split into Latin and Latin-Ext `unicode-range`
+ * files, preloaded at most two at a time, inside A21's per-locale budgets — and no page asks
+ * Google for a font.
  *
- * The unit half (`tests/unit/fonts.test.ts`) proves the committed subsets fit the ≤45 KB budget
- * and cover Latin-Ext. What only a browser can prove is on this side: that the served document
- * preloads them from our own origin, that the emitted `@font-face` carries `font-display: swap`
- * and the `size-adjust` fallback metrics, and that **zero** requests leave for
- * `fonts.googleapis.com` or `fonts.gstatic.com` — the CWV and German-court decision of `plan/07`
- * §1.4, which a single `next/font/google` import would silently undo.
+ * The unit half (`tests/unit/fonts.test.ts`) proves the committed files, the manifest and the
+ * `localFont()` declarations. What only a served page can prove is here: the preload links Next
+ * writes, the `@font-face` rules it emits, which files a real `en` and `pl` page fetch, how many
+ * bytes they come to, and that the Polish letters come from the webfont.
  */
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 const PAGES = ["/", "/en", "/de", "/pl"];
 
-/** The committed faces (`src/modules/ui/fonts/subset.json`). */
-const FACE_COUNT = 3;
-/** AC-4's budget, in bytes. */
-const FONT_BUDGET_BYTES = 45 * 1024;
+const KB = 1024;
+/** A21 clause 3's budgets (`scripts/fonts/build-fonts.ts` `FONT_BUDGETS`). */
+const LATIN_PAGE_BUDGET = 90 * KB;
+const LATIN_EXT_PAGE_BUDGET = 120 * KB;
+const PRELOAD_BUDGET = 50 * KB;
+const MAX_PRELOADS = 2;
+
+/** Next keeps the source file's stem in the emitted name (`alegreya_sans_400_latin-s.p.<hash>`). */
+const PRELOADABLE = /alegreya_sans_(?:400|700)_latin[-.]/;
+
+/** Every font response a page makes until the network is quiet, with its byte length. */
+async function fontsFetched(
+  page: Page,
+  path: string,
+): Promise<Map<string, number>> {
+  const sizes = new Map<string, number>();
+  page.on("response", async (response) => {
+    if (response.request().resourceType() !== "font") return;
+    const body = await response.body().catch(() => null);
+    if (body !== null) sizes.set(response.url(), body.length);
+  });
+  const response = await page.goto(path);
+  expect(response?.status()).toBe(200);
+  await page.waitForLoadState("networkidle");
+  await page.evaluate(async () => {
+    await document.fonts.ready;
+  });
+  return sizes;
+}
 
 for (const path of PAGES) {
-  test(`${path} loads both families from our own origin only`, async ({
-    page,
-  }) => {
-    const fontRequests: string[] = [];
+  test(`${path} loads its fonts from our own origin only`, async ({ page }) => {
     const googleRequests: string[] = [];
     page.on("request", (request) => {
       const url = request.url();
@@ -32,48 +54,43 @@ for (const path of PAGES) {
       ) {
         googleRequests.push(url);
       }
-      if (request.resourceType() === "font") fontRequests.push(url);
     });
-
-    const response = await page.goto(path);
-    expect(response?.status()).toBe(200);
-    // Fonts are fetched by the preload, so they are in flight by `load`; wait for quiet.
-    await page.waitForLoadState("networkidle");
+    const fetched = await fontsFetched(page, path);
 
     expect(googleRequests, "a page requested a Google font").toEqual([]);
-    expect(fontRequests.length).toBeGreaterThan(0);
-    for (const url of fontRequests) {
+    expect(fetched.size).toBeGreaterThan(0);
+    for (const url of fetched.keys()) {
       // Vercel serves Next's fingerprinted assets from `/_next/static/immutable/media/` while a
-      // local `next start` uses `/_next/static/media/`; both are our own origin, which is the
-      // property under test.
+      // local `next start` uses `/_next/static/media/`; both are our own origin.
       expect(url, url).toMatch(/\/_next\/static\/(?:immutable\/)?media\//);
       expect(url, url).toMatch(/\.woff2(\?|$)/);
+      // Caveat is the product page's alone, and Newsreader and Plex ship nowhere.
+      expect(url, url).not.toMatch(/caveat|newsreader|plex/i);
     }
   });
 
-  test(`${path} preloads the subsets and declares swap with fallback metrics`, async ({
+  test(`${path} preloads at most two files, the Alegreya Sans Latin ones, and declares swap, metrics and ranges`, async ({
     page,
   }) => {
     await page.goto(path);
 
     const preloads = page.locator('link[rel="preload"][as="font"]');
-    expect(await preloads.count()).toBe(FACE_COUNT);
-    // `crossorigin` is present and empty (which is `anonymous`), so it is asserted as an attribute
-    // rather than by value; without it the browser would fetch each subset twice.
-    const attributes = await preloads.evaluateAll((links) =>
-      links.map((link) => ({
+    const links = await preloads.evaluateAll((elements) =>
+      elements.map((link) => ({
         crossorigin: link.hasAttribute("crossorigin"),
         type: link.getAttribute("type"),
-        href: link.getAttribute("href"),
+        href: link.getAttribute("href") ?? "",
       })),
     );
-    for (const link of attributes) {
-      expect(link.crossorigin, link.href ?? "").toBe(true);
+    expect(links.length).toBeGreaterThan(0);
+    expect(links.length).toBeLessThanOrEqual(MAX_PRELOADS);
+    for (const link of links) {
+      // `crossorigin` present (empty is `anonymous`); without it the file is fetched twice.
+      expect(link.crossorigin, link.href).toBe(true);
       expect(link.type).toBe("font/woff2");
-      expect(link.href).toMatch(/\/_next\/static\/(?:immutable\/)?media\//);
+      expect(link.href, link.href).toMatch(PRELOADABLE);
     }
 
-    // The generated `@font-face` rules, read from the document's own stylesheets.
     const faces = await page.evaluate(() =>
       [...document.styleSheets]
         .flatMap((sheet) => {
@@ -86,63 +103,61 @@ for (const path of PAGES) {
         .filter((rule) => rule.constructor.name === "CSSFontFaceRule")
         .map((rule) => rule.cssText),
     );
-    expect(faces.length).toBeGreaterThanOrEqual(FACE_COUNT);
     const declared = faces.join("\n");
     expect(declared).toContain("swap");
-    // `adjustFontFallback` produces a metrics-overridden fallback face per family, which is what
-    // makes the swap cost no layout shift.
+    // `adjustFontFallback` writes a metrics-overridden fallback face, so the swap costs no CLS.
     expect(declared).toContain("size-adjust");
+    // Latin and Latin-Ext are separate files with separate ranges (A21 clause 3).
+    expect(declared).toMatch(
+      /unicode-range:\s*U\+(?:0-FF|0000-00FF|\?\?)[,\s]/i,
+    );
+    expect(declared).toMatch(
+      /unicode-range:\s*U\+100-130|unicode-range:\s*U\+0100-0130/i,
+    );
   });
 }
 
-test("the whole font transfer of a page stays inside the 45 KB budget", async ({
+test("an en page stays inside the 90 KB budget, Poland's own names included, and preloads inside 50 KB", async ({
   page,
 }) => {
-  const sizes = new Map<string, number>();
-  page.on("response", async (response) => {
-    if (response.request().resourceType() !== "font") return;
-    const body = await response.body().catch(() => null);
-    if (body !== null) sizes.set(response.url(), body.length);
-  });
-
-  await page.goto("/pl");
-  await page.waitForLoadState("networkidle");
-
-  const total = [...sizes.values()].reduce((sum, size) => sum + size, 0);
-  expect(sizes.size).toBe(FACE_COUNT);
-  expect(
-    total,
-    `font transfer is ${String(total)} B across ${String(sizes.size)} files, budget ${String(FONT_BUDGET_BYTES)} B`,
-  ).toBeLessThanOrEqual(FONT_BUDGET_BYTES);
+  // `/en` names Wrocław, Gdańsk and Dzień Kobiet, so it may fetch Latin-Ext files; the budget is
+  // charged on everything it fetches.
+  const fetched = await fontsFetched(page, "/en");
+  const total = [...fetched.values()].reduce((sum, size) => sum + size, 0);
+  expect(total, `font transfer is ${String(total)} B`).toBeLessThanOrEqual(
+    LATIN_PAGE_BUDGET,
+  );
+  const preloaded = [...fetched.entries()]
+    .filter(([url]) => PRELOADABLE.test(url))
+    .reduce((sum, [, size]) => sum + size, 0);
+  expect(preloaded).toBeLessThanOrEqual(PRELOAD_BUDGET);
 });
 
-test("Polish diacritics are rendered by the webfont, not by a fallback (AC-4)", async ({
+test("a pl page stays inside the 120 KB budget and renders ą ć ę ł ń ś ź ż from the webfont (AC-4)", async ({
   page,
 }) => {
-  await page.goto("/pl");
-  await page.waitForLoadState("networkidle");
+  const fetched = await fontsFetched(page, "/pl");
+  const total = [...fetched.values()].reduce((sum, size) => sum + size, 0);
+  expect(total, `font transfer is ${String(total)} B`).toBeLessThanOrEqual(
+    LATIN_EXT_PAGE_BUDGET,
+  );
+  // The page's Polish text pulls the Alegreya Sans Latin-Ext file.
+  expect(
+    [...fetched.keys()].some((url) => /alegreya_sans_400_latin_ext/.test(url)),
+  ).toBe(true);
 
-  const result = await page.evaluate(async () => {
-    await document.fonts.ready;
-    const faces = [...document.fonts];
-    const body = getComputedStyle(document.body);
-    // The generated family name of the body face, taken from the document rather than guessed.
-    const family = body.fontFamily.split(",")[0]?.trim() ?? "";
+  const result = await page.evaluate(() => {
+    const family = getComputedStyle(document.body).fontFamily;
     return {
-      faceCount: faces.length,
-      // A face is only fetched when the page actually renders a glyph in it, and the
-      // metric-adjusted fallbacks never are; what matters is that the *body* face loaded.
-      loaded: faces.filter((face) => face.status === "loaded").length,
       family,
-      // If the subset were missing the Latin-Ext block, the browser would substitute and this
-      // would answer false.
-      covers: document.fonts.check(`400 15px ${family}`, "ąćęłńóśźż"),
-      selfHosted: !family.includes("Helvetica") && !family.includes("Arial"),
+      covers: document.fonts.check(`400 17px ${family}`, "ąćęłńśźż"),
+      loaded: [...document.fonts].filter((face) => face.status === "loaded")
+        .length,
     };
   });
-
-  expect(result.faceCount).toBeGreaterThanOrEqual(FACE_COUNT);
   expect(result.loaded).toBeGreaterThan(0);
-  expect(result.selfHosted, `body renders in ${result.family}`).toBe(true);
-  expect(result.covers, `${result.family} does not cover ąćęłńóśźż`).toBe(true);
+  expect(result.family, result.family).not.toMatch(
+    /^\s*["']?(Arial|Helvetica)/,
+  );
+  expect(result.covers, `${result.family} does not cover ąćęłńśźż`).toBe(true);
 });

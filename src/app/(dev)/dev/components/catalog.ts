@@ -72,7 +72,35 @@ export const SECTIONS = [
   // states and the stale-FX summary are reachable on no Phase-0 page, so this is their visual and
   // axe surface; `ProductPage`, and the summary's docked state, are reviewed on the product route.
   "Product and date-picker blocks",
+  // TASK-175: design system v2's new primitives (`system/components.dc.html`): the price with
+  // and without its equivalents line, the facts list, the breadcrumb trail, the notice bar's look,
+  // the outlined wordmark, the two link voices, the eyebrow and the send button. The header and
+  // pages adopt them in TASK-176 to TASK-179, so this is their visual and axe surface until then.
+  "Design system v2 primitives",
 ] as const;
+
+/** TASK-175's gallery samples. Developer copy, never shipped on a public page. */
+export const V2_SAMPLES = {
+  price: "€55.90",
+  priceQualifier: "all in",
+  pageQualifier: "Includes VAT and delivery",
+  equivalents: "about £47.32 · 238.58 PLN at the rate of 8 September",
+  fromPrice: "from €35.90",
+  factOrderBy: "Order by",
+  factOrderByValue: "— no cutoff, because no florist has agreed to one",
+  factDays: "Delivery days",
+  factDaysValue: "Monday to Saturday",
+  crumbs: ["Home", "Send flowers to", "Poland", "Flowers"],
+  crumbLabel: "Breadcrumb (gallery)",
+  notice: "A note from us:",
+  noticeStrong: "Delivery dates open when we confirm our first florist.",
+  noticeLink: "Help & WhatsApp",
+  eyebrow: "Coming up in Poland",
+  link: "See every bouquet for Poland",
+  inlineLink: "Read the Poland guide first.",
+  send: "Send these flowers",
+  wordmark: "Flowers Overseas",
+} as const;
 
 /** The colour ramps, in the order `globals.css` declares them. */
 export const COLOUR_RAMPS: readonly {

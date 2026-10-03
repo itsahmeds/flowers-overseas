@@ -245,7 +245,10 @@ export function fontFile(
 export const FONT_BUDGETS = {
   /** Bytes preloaded on any page. */
   preloadBytes: 50 * 1024,
-  /** Font transfer on an `en`, `en-gb` or `de` page (Latin files of the four page faces). */
+  /**
+   * Font transfer on an `en`, `en-gb` or `de` page: the four page faces' Latin files, plus their
+   * Latin-Ext files where the page names a Polish place or date (the home does), so the worst case.
+   */
   latinPageBytes: 90 * 1024,
   /** Font transfer on a `pl` page (Latin and Latin-Ext files of the four page faces). */
   latinExtPageBytes: 120 * 1024,
@@ -400,8 +403,9 @@ async function main(root: string, sourcesDir: string | undefined) {
   for (const face of faces) {
     process.stdout.write(`${face.file}  ${String(face.bytes)} B\n`);
   }
-  const latin = pageFontBytes(manifest, ["latin"]);
-  const ext = pageFontBytes(manifest, ["latin", "latin-ext"]);
+  // An `en` page can name Polish places too, so both lines are charged the worst case.
+  const latin = pageFontBytes(manifest, ["latin", "latin-ext"]);
+  const ext = latin;
   const hand = handFontBytes(manifest, ["latin", "latin-ext"]);
   process.stdout.write(
     `en/en-gb/de page ${String(latin)} B of ${String(FONT_BUDGETS.latinPageBytes)}; pl page ${String(ext)} B of ${String(FONT_BUDGETS.latinExtPageBytes)}; Caveat ${String(hand)} B of ${String(FONT_BUDGETS.handBytes)}\n`,

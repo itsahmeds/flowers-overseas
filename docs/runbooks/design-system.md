@@ -75,8 +75,13 @@ first-load JS, the `next/dynamic` chunks the route actually fetches, the delta a
   *contents* for `data-fo-*` markup, because a module name in a loader stub proves nothing.
 - **No `zod` and no `@sentry/`** in any public route's client bundle, and no `home.*`/`finder.*`/
   `catalog.*`/`media.*` catalogue copy in any fetched chunk.
-- **≤45 KB of fonts** per page, from `src/modules/ui/fonts/subset.json`. Changing the repertoire or
-  a face is `pnpm fonts:build` (network, by hand, never in CI) plus a committed diff.
+- **Fonts (spec 004 §14 A21 clause 3)**, from `src/modules/ui/fonts/subset.json`: ≤90 KB on an
+  `en`, `en-gb` or `de` page and ≤120 KB on `pl` (both charged the worst case, Latin and Latin-Ext,
+  because `/en` names Wrocław and Dzień Kobiet), ≤30 KB of Caveat on the product page only, and
+  ≤50 KB preloaded in at most two files (the Alegreya Sans Latin 400 and 700). Changing the
+  repertoire or a face is `pnpm fonts:build` (network, by hand, never in CI) plus a committed
+  diff; the wordmark's outlines are `pnpm fonts:wordmark`. Caveat (`src/modules/ui/fonts/hand.ts`)
+  may be imported only under `src/modules/ui/product/` — the unit suite fails anywhere else.
 
 If a number moved and you do not know why, read the per-chunk breakdown the same command prints
 below the table: it names every chunk, its encoding sizes, and the Client Components the document

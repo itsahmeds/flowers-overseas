@@ -839,8 +839,10 @@ export interface FontTransfer {
  * Read from `src/modules/ui/fonts/subset.json`, the manifest `pnpm fonts:build` writes and
  * `tests/unit/fonts.test.ts` pins byte-for-byte against the committed `.woff2` files. Each face is
  * a Latin and a Latin-Ext `unicode-range` file, so what a page transfers depends on its text: an
- * `en`, `en-gb` or `de` page loads the Latin files of the four page faces (≤90 KB), a `pl` page
- * adds their Latin-Ext files (≤120 KB), the product page adds Caveat (≤30 KB), and the preloaded
+ * `en`, `en-gb` or `de` page loads the Latin files of the four page faces and, where it names a
+ * Polish place or date (the home does), their Latin-Ext files — so its line is charged the worst
+ * case against ≤90 KB; a `pl` page the same against ≤120 KB; the product page adds Caveat (≤30 KB);
+ * the preloaded
  * files are ≤50 KB in at most two files. WOFF2 is Brotli inside, so file bytes are transfer bytes.
  */
 export function fontTransfer(root: string): FontTransfer {
@@ -850,8 +852,10 @@ export function fontTransfer(root: string): FontTransfer {
   );
   const lines: FontBudgetLine[] = [
     {
+      // Worst case, not the Latin files alone: an `en` page names Poland's cities and dates in
+      // Polish (Wrocław, Dzień Kobiet), so its text can reach every Latin-Ext file too.
       label: "en/en-gb/de page",
-      bytes: pageFontBytes(manifest, ["latin"]),
+      bytes: pageFontBytes(manifest, ["latin", "latin-ext"]),
       budgetBytes: FONT_BUDGETS.latinPageBytes,
     },
     {
@@ -884,7 +888,7 @@ export function fontTransfer(root: string): FontTransfer {
   };
 }
 
-/** The page-face transfer of one measured URL: the `pl` figure under `/pl`, the Latin one elsewhere. */
+/** The page-face transfer of one measured URL (the worst case; the same figure for every locale). */
 export function fontBytesFor(url: string, fonts: FontTransfer): number {
   const [latin, latinExt] = fonts.lines;
   return (

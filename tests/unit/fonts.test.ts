@@ -95,7 +95,8 @@ describe("the committed font subsets (A21 clause 3)", () => {
   });
 
   it("fits every budget", () => {
-    const latin = pageFontBytes(manifest, ["latin"]);
+    // The en/en-gb/de line is charged the worst case too: `/en` names Wrocław and Dzień Kobiet.
+    const latin = pageFontBytes(manifest, ["latin", "latin-ext"]);
     const ext = pageFontBytes(manifest, ["latin", "latin-ext"]);
     const hand = handFontBytes(manifest, ["latin", "latin-ext"]);
     const preloaded = manifest.faces
@@ -177,7 +178,7 @@ describe("the Latin / Latin-Ext split", () => {
     ).toBe(REPERTOIRE.length);
   });
 
-  it("keeps English and German in the Latin file, so en, en-gb and de never load Latin-Ext", () => {
+  it("keeps English and German in the Latin file, so text without Polish, Romanian or Turkish letters never loads Latin-Ext", () => {
     for (const character of "AZaz09€£„“”–—…·äöüßÄÖÜ ") {
       expect(subsetOf(character), character).toBe("latin");
     }

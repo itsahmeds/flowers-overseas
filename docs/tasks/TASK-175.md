@@ -27,12 +27,41 @@ _None._
 
 ## Escalations
 
-_None recorded._
+1. **The second preload is Alegreya Sans 700 Latin, not Fraunces roman Latin (A21 clause 3,
+   "Loading").** A21 names the two files a page may preload: the Alegreya Sans 400 Latin file
+   always, and the Fraunces roman Latin file only where the LCP is display text. `next/font/local`
+   preloads **every file of a call or none** (Next 16.3.6, Turbopack: the `preload` flag is per
+   call), and the 400 and 700 cannot sit in different calls without breaking font matching (each
+   call is its own CSS family, and a family holding only a 400 face renders bold text as a
+   synthesised 400). Turbopack also ignores a `font-family` override in `declarations`, which
+   would otherwise let two calls share one family. So the one preloaded call is Alegreya Sans
+   Latin 400 **and 700**: two files, 19,320 B against the 50 KB preload budget, never the italic,
+   a Latin-Ext file or Caveat; Fraunces is preloaded nowhere. Shipped this way because it keeps
+   every number in the clause (≤ 2 preloads, ≤ 50 KB, the 400 always) and A21 permits Fraunces's
+   preload rather than requiring it. **Question for the orchestrator/founder:** accept this, or
+   rule that the 400 must be the only Alegreya preload — which means leaving `next/font/local` for
+   hand-written `@font-face` rules plus a manual `<link rel="preload">`, contrary to A21's "through
+   `next/font/local`". Not blocking; the PR is otherwise complete.
 
 ## Progress
 
-_Not started._
+- 2026-10-03 — Tokens: `@theme` = `docs/design/system/tokens.css` name for name (T-01 reads it);
+  contrast manifest rewritten for v2 (T-04), with a sunflower focus ring on the inverse surface
+  (poppy is 2.90:1 on ink). Fonts: Fraunces 400 + 300 italic (`opsz` 144, `SOFT` 100), Alegreya
+  Sans 400/700, Caveat 500 (kern only; `calt` doubled it to 42 KB), Latin and Latin-Ext files,
+  Newsreader and Plex removed, wordmark outlined (`pnpm fonts:wordmark`). Primitives: Button
+  (pills, `send` size), Chip, Photo (radii, `arch`), type (v2 ramp, `Eyebrow`, `TextLink`),
+  `Price` (equivalents slot), `FactsList`, `Breadcrumbs`, `NoticeBar`, `Wordmark`; product card,
+  from-price, both breadcrumbs, the corridor facts, consent and notice skins follow.
+- 2026-10-03 — Local `next build` (build slot, load average 1.99 at start): Turbopack emits the
+  `unicode-range` descriptors; the font manifest preloads exactly the two Alegreya Sans Latin
+  files; `pnpm budget:client-js` green (fonts 62.5 KB worst case per page, Caveat 24.2 KB,
+  preloaded 18.9 KB); `tests/e2e/fonts.spec.ts` 10/10 against it. Pages sampled at the fold:
+  `/en`, `/pl` (390), `/en/poland/flowers`, `/en/nope` (404), `/`.
+- **Next (finisher):** the `visual:baselines` label run → download the artifact, open a sample
+  per page type, commit the `linux` PNGs, `pnpm visual:baselines --verify <manifest>`, push,
+  toggle `ci:full`, report CI on the head SHA.
 
 ## Result
 
-_Pending._
+_Pending — see Progress._
