@@ -1,0 +1,224 @@
+{
+  "$comment": "The declared state of the Cloudflare zone (spec 040 §5.4, §12 step 4; TASK-100). `pnpm cloudflare:check` diffs the live zone against this file and never writes; `pnpm cloudflare:apply` writes the differences it can and reports `0 changes` on a second run. Parsed by `src/lib/cloudflare-zone.ts` (zod). Cache rules, the rate limit and DNS records are TASK-101's and are not in this file.",
+  "zone": "flowersoverseas.com",
+  "protocol": [
+    {
+      "setting": "ssl",
+      "feature": "SSL/TLS mode",
+      "value": "strict",
+      "reason": "Full (strict): Railway presents a valid certificate; anything less lets a MITM between Cloudflare and the origin"
+    },
+    {
+      "setting": "always_use_https",
+      "feature": "Always Use HTTPS",
+      "value": "on",
+      "reason": "every http request is answered with a redirect to https, with HSTS from the origin in production only"
+    },
+    {
+      "setting": "min_tls_version",
+      "feature": "Minimum TLS",
+      "value": "1.2",
+      "reason": "TLS 1.0 and 1.1 are deprecated and no buyer needs them"
+    },
+    {
+      "setting": "tls_1_3",
+      "feature": "TLS 1.3 (with 0-RTT)",
+      "value": "zrt",
+      "reason": "the fastest handshake every current browser speaks. Cloudflare's values are `on`, `zrt` and `off`, and `zrt` is TLS 1.3 with 0-RTT (developers.cloudflare.com/ssl/edge-certificates/additional-options/tls-13/). The two settings are one switch: writing `0rtt: on` turns this into `zrt`, and writing `on` here turns 0-RTT off, so `on` beside `0rtt: on` never settles (the founder's live apply, 2026-10-03). The schema refuses a pair that disagrees"
+    },
+    {
+      "setting": "0rtt",
+      "feature": "0-RTT",
+      "value": "on",
+      "reason": "0-RTT is applied to idempotent GETs only; POSTs (checkout, forms) are never replayed. It is the same switch as `tls_1_3: zrt` above"
+    },
+    {
+      "setting": "http2",
+      "feature": "HTTP/2",
+      "value": "on",
+      "reason": "HTTP/2 is what lets LHCI move from `optimistic` to `median` (spec 040 §5.5)"
+    },
+    {
+      "setting": "http3",
+      "feature": "HTTP/3 (QUIC)",
+      "value": "on",
+      "reason": "faster connection setup on lossy mobile networks"
+    },
+    {
+      "setting": "brotli",
+      "feature": "Brotli",
+      "value": "on",
+      "reason": "spec 004 §14 A1's budget is measured in Brotli"
+    },
+    {
+      "setting": "early_hints",
+      "feature": "Early Hints",
+      "value": "on",
+      "reason": "costs nothing; it has no effect until the origin emits `Link` preload headers, which no task in spec 040 adds"
+    },
+    {
+      "setting": "automatic_https_rewrites",
+      "feature": "Automatic HTTPS Rewrites",
+      "value": "off",
+      "reason": "it rewrites HTML, which breaks the ADR-0016 inline-script hash"
+    }
+  ],
+  "doNotEnable": [
+    {
+      "feature": "Rocket Loader",
+      "state": "off",
+      "reason": "rewrites and defers `<script>` elements: breaks the ADR-0016 inline hash and reorders the consent bootstrap",
+      "checks": [
+        { "source": "setting", "setting": "rocket_loader", "value": "off" }
+      ]
+    },
+    {
+      "feature": "Auto Minify (HTML/CSS/JS)",
+      "state": "off",
+      "reason": "mutates the inline script's bytes, so the build-time sha256 no longer matches; Cloudflare deprecated it on 2024-08-05",
+      "checks": [
+        {
+          "source": "setting",
+          "setting": "minify",
+          "value": { "css": "off", "html": "off", "js": "off" },
+          "retired": "Cloudflare deprecated Auto Minify on 2024-08-05 with no replacement"
+        }
+      ]
+    },
+    {
+      "feature": "Email Address Obfuscation",
+      "state": "off",
+      "reason": "injects JavaScript into HTML (the same hash breakage) and mangles `mailto:` in the Impressum",
+      "checks": [
+        { "source": "setting", "setting": "email_obfuscation", "value": "off" }
+      ]
+    },
+    {
+      "feature": "Server-Side Excludes",
+      "state": "off",
+      "reason": "conditional HTML rewriting",
+      "checks": [
+        {
+          "source": "setting",
+          "setting": "server_side_exclude",
+          "value": "off"
+        }
+      ]
+    },
+    {
+      "feature": "Mirage / Polish (on HTML documents)",
+      "state": "off",
+      "reason": "image rewriting in the document; spec 006 owns the image pipeline and the LCP element must stay predictable",
+      "checks": [
+        {
+          "source": "setting",
+          "setting": "mirage",
+          "value": "off",
+          "retired": "Cloudflare sunset Mirage in January 2026 with no replacement"
+        },
+        { "source": "setting", "setting": "polish", "value": "off" }
+      ]
+    },
+    {
+      "feature": "Hotlink Protection / Scrape Shield changes",
+      "state": "off",
+      "reason": "blocks legitimate image fetches, including Googlebot Images; the other two Scrape Shield switches are the Email Address Obfuscation and Server-Side Excludes rows",
+      "checks": [
+        { "source": "setting", "setting": "hotlink_protection", "value": "off" }
+      ]
+    },
+    {
+      "feature": "Managed robots.txt / Bot Preference Sync",
+      "state": "off",
+      "reason": "spec 007 AC-12 requires `robots.txt` to be byte-exact and application-owned, with exactly one `Sitemap:` line",
+      "checks": [
+        {
+          "source": "bot_management",
+          "field": "is_robots_txt_managed",
+          "value": false
+        },
+        {
+          "source": "bot_management",
+          "field": "bot_preference_sync_enabled",
+          "value": false
+        }
+      ]
+    },
+    {
+      "feature": "Bot Fight Mode / Super Bot Fight Mode",
+      "state": "off",
+      "reason": "challenges Lighthouse, headless Playwright, legitimate crawlers and AI agents: the single most likely way to silently lose indexing. Super Bot Fight Mode is a paid-plan feature and cannot be on a free zone",
+      "checks": [
+        { "source": "bot_management", "field": "fight_mode", "value": false }
+      ]
+    },
+    {
+      "feature": "AI Scrapers & Crawlers blocking / AI Labyrinth / pay-per-crawl; Search, Agent and Training set to Allow",
+      "state": "off",
+      "reason": "founder direction 2026-09-16: AI agents may crawl this site. Pay-per-crawl is an account-level feature the zone token cannot read (TASK-100 escalation E-1)",
+      "checks": [
+        {
+          "source": "bot_management",
+          "field": "ai_bots_protection",
+          "value": "disabled"
+        },
+        {
+          "source": "bot_management",
+          "field": "crawler_protection",
+          "value": "disabled"
+        },
+        {
+          "source": "bot_management",
+          "field": "ai_search",
+          "value": "disabled"
+        },
+        { "source": "bot_management", "field": "ai_user", "value": "disabled" },
+        {
+          "source": "bot_management",
+          "field": "ai_training",
+          "value": "disabled"
+        }
+      ]
+    },
+    {
+      "feature": "Under Attack mode",
+      "state": "off (manual, incident only)",
+      "reason": "interstitial HTML for every visitor; switched on by hand during an incident only, so `cloudflare:apply` reports it and never switches it off itself",
+      "checks": [
+        {
+          "source": "setting",
+          "setting": "security_level",
+          "notValue": "under_attack"
+        }
+      ]
+    },
+    {
+      "feature": "IP-geolocation redirect rules; any use of `cf-ipcountry` to route",
+      "state": "never",
+      "reason": "ADR-0006: no IP redirects, ever",
+      "checks": [],
+      "checkedElsewhere": "`fo/no-geo-redirect` fails the lint on any use in the code; the zone's rules are TASK-101's to declare and check"
+    },
+    {
+      "feature": "Cloudflare Access on production",
+      "state": "never",
+      "reason": "it would put an auth wall in front of the indexable site",
+      "checks": [],
+      "checkedElsewhere": "spec 040 AC-25 / T-26 (a production document answers 200 with no auth header); Access policies are not readable with the zone token's scopes"
+    },
+    {
+      "feature": "Cloudflare Access / basic-auth on staging and PR",
+      "state": "required",
+      "reason": "replaces Vercel Deployment Protection; plan/01 §10 keeps non-production password-protected. The default is the basic-auth check in `src/proxy.ts` (spec 040 §5.4)",
+      "checks": [],
+      "checkedElsewhere": "spec 040 AC-25 / T-26 and the `preview` job's unauthenticated-401 assertion (AC-26)"
+    },
+    {
+      "feature": "Workers / Snippets injecting HTML",
+      "state": "not used",
+      "reason": "the same hash argument; if one is ever needed it must not touch the document body",
+      "checks": [],
+      "checkedElsewhere": "spec 040 AC-18 / T-18 (the body through Cloudflare is byte-identical to the origin's); Workers routes and Snippets are not readable with the zone token's scopes"
+    }
+  ]
+}

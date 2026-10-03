@@ -197,3 +197,8 @@ gap closes, mark it ✅ with the PR, and don't delete the row.
   copy will read "w Warsaw" until a localised city key exists; `localeOf()` narrows with a bare `as`
   cast; `listing-honesty.ts:65` has no pattern for a bare "Arrives tomorrow" (no page prints a
   relative day today, and the product page's AC-10 test guards against one).
+- **`railway-check` is not yet a step of `cloudflare-check`** (`/review 126` round 1 nit). Spec 040
+  §5.5 and AC-34 say the nightly `cloudflare-check` job runs `pnpm railway:check`, so a trigger
+  changed in the Railway dashboard shows up the next morning; `scripts/railway-check.ts` exists,
+  but no CI step runs it, and TASK-100 did not build that step. It needs a task row (and a
+  repository secret for the Railway token) before the nightly run covers AC-34.
