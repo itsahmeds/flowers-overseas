@@ -1,0 +1,19 @@
+{
+  "family": "slugs",
+  "rule": "path-segment",
+  "replaces": "copy/de/categories.json",
+  "expect": "slug `blumen` equals the `shopCategory` path segment of `de`",
+  "why": "spec 008 AC-2: a listing slug may not equal a `PATH_SEGMENT_KEYS` value in its locale. The mixed-flowers category renamed `Blumen` folds to `blumen`, which is the German shop segment, so `/de/blumen` would mean both the segment and a category hub (§2 'Segment collision is impossible by test').",
+  "ops": [
+    {
+      "op": "setRow",
+      "match": {
+        "key": "mixed"
+      },
+      "set": {
+        "name": "Blumen",
+        "slug": "blumen"
+      }
+    }
+  ]
+}

@@ -1657,28 +1657,824 @@
       "path": "/de/polen/blumen"
     },
     {
+      "pageType": "countryCategory",
+      "path": "/de/polen/blumen/blumenstraeusse"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/polen/blumen/blumengestecke"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/polen/blumen/pflanzen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/polen/blumen/trauerfloristik"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/polen/blumen/blumen-mit-geschenk"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/polen/blumen/geburtstagsblumen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/polen/blumen/blumen-zum-jahrestag"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/polen/blumen/romantische-blumen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/polen/blumen/blumen-zur-gratulation"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/polen/blumen/blumen-zur-geburt"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/polen/blumen/blumen-zur-genesung"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/polen/blumen/blumen-zum-beileid"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/polen/blumen/blumen-zum-dank"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/polen/blumen/blumen-zur-entschuldigung"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/polen/blumen/blumen-einfach-so"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/polen/blumen/rosen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/polen/blumen/tulpen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/polen/blumen/lilien"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/polen/blumen/pfingstrosen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/polen/blumen/gemischte-blumen"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/polen/anlaesse/muttertag"
+    },
+    {
       "pageType": "countryShopRoot",
       "path": "/de/deutschland/blumen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/deutschland/blumen/blumenstraeusse"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/deutschland/blumen/blumengestecke"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/deutschland/blumen/pflanzen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/deutschland/blumen/trauerfloristik"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/deutschland/blumen/blumen-mit-geschenk"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/deutschland/blumen/geburtstagsblumen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/deutschland/blumen/blumen-zum-jahrestag"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/deutschland/blumen/romantische-blumen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/deutschland/blumen/blumen-zur-gratulation"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/deutschland/blumen/blumen-zur-geburt"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/deutschland/blumen/blumen-zur-genesung"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/deutschland/blumen/blumen-zum-beileid"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/deutschland/blumen/blumen-zum-dank"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/deutschland/blumen/blumen-zur-entschuldigung"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/deutschland/blumen/blumen-einfach-so"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/deutschland/blumen/rosen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/deutschland/blumen/tulpen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/deutschland/blumen/lilien"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/deutschland/blumen/pfingstrosen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/deutschland/blumen/gemischte-blumen"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/deutschland/anlaesse/muttertag"
     },
     {
       "pageType": "countryShopRoot",
       "path": "/de/frankreich/blumen"
     },
     {
+      "pageType": "countryCategory",
+      "path": "/de/frankreich/blumen/blumenstraeusse"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/frankreich/blumen/blumengestecke"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/frankreich/blumen/pflanzen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/frankreich/blumen/trauerfloristik"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/frankreich/blumen/blumen-mit-geschenk"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/frankreich/blumen/geburtstagsblumen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/frankreich/blumen/blumen-zum-jahrestag"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/frankreich/blumen/romantische-blumen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/frankreich/blumen/blumen-zur-gratulation"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/frankreich/blumen/blumen-zur-geburt"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/frankreich/blumen/blumen-zur-genesung"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/frankreich/blumen/blumen-zum-beileid"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/frankreich/blumen/blumen-zum-dank"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/frankreich/blumen/blumen-zur-entschuldigung"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/frankreich/blumen/blumen-einfach-so"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/frankreich/blumen/rosen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/frankreich/blumen/tulpen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/frankreich/blumen/lilien"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/frankreich/blumen/pfingstrosen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/frankreich/blumen/gemischte-blumen"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/frankreich/anlaesse/muttertag"
+    },
+    {
       "pageType": "countryShopRoot",
       "path": "/de/spanien/blumen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/spanien/blumen/blumenstraeusse"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/spanien/blumen/blumengestecke"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/spanien/blumen/pflanzen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/spanien/blumen/trauerfloristik"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/spanien/blumen/blumen-mit-geschenk"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/spanien/blumen/geburtstagsblumen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/spanien/blumen/blumen-zum-jahrestag"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/spanien/blumen/romantische-blumen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/spanien/blumen/blumen-zur-gratulation"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/spanien/blumen/blumen-zur-geburt"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/spanien/blumen/blumen-zur-genesung"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/spanien/blumen/blumen-zum-beileid"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/spanien/blumen/blumen-zum-dank"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/spanien/blumen/blumen-zur-entschuldigung"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/spanien/blumen/blumen-einfach-so"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/spanien/blumen/rosen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/spanien/blumen/tulpen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/spanien/blumen/lilien"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/spanien/blumen/pfingstrosen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/spanien/blumen/gemischte-blumen"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/spanien/anlaesse/muttertag"
     },
     {
       "pageType": "countryShopRoot",
       "path": "/de/italien/blumen"
     },
     {
+      "pageType": "countryCategory",
+      "path": "/de/italien/blumen/blumenstraeusse"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/italien/blumen/blumengestecke"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/italien/blumen/pflanzen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/italien/blumen/trauerfloristik"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/italien/blumen/blumen-mit-geschenk"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/italien/blumen/geburtstagsblumen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/italien/blumen/blumen-zum-jahrestag"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/italien/blumen/romantische-blumen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/italien/blumen/blumen-zur-gratulation"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/italien/blumen/blumen-zur-geburt"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/italien/blumen/blumen-zur-genesung"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/italien/blumen/blumen-zum-beileid"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/italien/blumen/blumen-zum-dank"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/italien/blumen/blumen-zur-entschuldigung"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/italien/blumen/blumen-einfach-so"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/italien/blumen/rosen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/italien/blumen/tulpen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/italien/blumen/lilien"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/italien/blumen/pfingstrosen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/italien/blumen/gemischte-blumen"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/italien/anlaesse/muttertag"
+    },
+    {
       "pageType": "countryShopRoot",
       "path": "/de/rumaenien/blumen"
     },
     {
+      "pageType": "countryCategory",
+      "path": "/de/rumaenien/blumen/blumenstraeusse"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/rumaenien/blumen/blumengestecke"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/rumaenien/blumen/pflanzen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/rumaenien/blumen/trauerfloristik"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/rumaenien/blumen/blumen-mit-geschenk"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/rumaenien/blumen/geburtstagsblumen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/rumaenien/blumen/blumen-zum-jahrestag"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/rumaenien/blumen/romantische-blumen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/rumaenien/blumen/blumen-zur-gratulation"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/rumaenien/blumen/blumen-zur-geburt"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/rumaenien/blumen/blumen-zur-genesung"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/rumaenien/blumen/blumen-zum-beileid"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/rumaenien/blumen/blumen-zum-dank"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/rumaenien/blumen/blumen-zur-entschuldigung"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/rumaenien/blumen/blumen-einfach-so"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/rumaenien/blumen/rosen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/rumaenien/blumen/tulpen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/rumaenien/blumen/lilien"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/rumaenien/blumen/pfingstrosen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/rumaenien/blumen/gemischte-blumen"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/rumaenien/anlaesse/muttertag"
+    },
+    {
       "pageType": "countryShopRoot",
       "path": "/de/niederlande/blumen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/niederlande/blumen/blumenstraeusse"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/niederlande/blumen/blumengestecke"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/niederlande/blumen/pflanzen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/niederlande/blumen/trauerfloristik"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/niederlande/blumen/blumen-mit-geschenk"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/niederlande/blumen/geburtstagsblumen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/niederlande/blumen/blumen-zum-jahrestag"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/niederlande/blumen/romantische-blumen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/niederlande/blumen/blumen-zur-gratulation"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/niederlande/blumen/blumen-zur-geburt"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/niederlande/blumen/blumen-zur-genesung"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/niederlande/blumen/blumen-zum-beileid"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/niederlande/blumen/blumen-zum-dank"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/niederlande/blumen/blumen-zur-entschuldigung"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/niederlande/blumen/blumen-einfach-so"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/niederlande/blumen/rosen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/niederlande/blumen/tulpen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/niederlande/blumen/lilien"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/niederlande/blumen/pfingstrosen"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/de/niederlande/blumen/gemischte-blumen"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/niederlande/anlaesse/muttertag"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/de/blumen/blumenstraeusse"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/de/blumen/blumengestecke"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/de/blumen/pflanzen"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/de/blumen/trauerfloristik"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/de/blumen/blumen-mit-geschenk"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/de/blumen/geburtstagsblumen"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/de/blumen/blumen-zum-jahrestag"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/de/blumen/romantische-blumen"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/de/blumen/blumen-zur-gratulation"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/de/blumen/blumen-zur-geburt"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/de/blumen/blumen-zur-genesung"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/de/blumen/blumen-zum-beileid"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/de/blumen/blumen-zum-dank"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/de/blumen/blumen-zur-entschuldigung"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/de/blumen/blumen-einfach-so"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/de/blumen/rosen"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/de/blumen/tulpen"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/de/blumen/lilien"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/de/blumen/orchideen"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/de/blumen/sonnenblumen"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/de/blumen/pfingstrosen"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/de/blumen/gerbera"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/de/blumen/gemischte-blumen"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/de/anlaesse/geburtstag"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/de/anlaesse/jahrestag"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/de/anlaesse/liebe-und-romantik"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/de/anlaesse/gratulation"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/de/anlaesse/geburt"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/de/anlaesse/gute-besserung"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/de/anlaesse/trauer"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/de/anlaesse/danke"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/de/anlaesse/entschuldigung"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/de/anlaesse/einfach-so"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/de/anlaesse/hochzeit"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/de/anlaesse/abschluss"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/de/anlaesse/einzug"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/de/anlaesse/ruhestand"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/de/anlaesse/valentinstag"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/de/anlaesse/frauentag"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/de/anlaesse/muttertag"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/de/anlaesse/vatertag"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/de/anlaesse/grosselterntag"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/de/anlaesse/ostern"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/de/anlaesse/allerheiligen"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/de/anlaesse/weihnachten"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/de/anlaesse/neujahr"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/de/anlaesse/namenstag"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/de/anlaesse/lehrertag"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/de/anlaesse/sant-jordi"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/de/anlaesse/grossmuttertag-in-frankreich"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/de/anlaesse/maigloeckchen-zum-1-mai"
+    },
+    {
+      "pageType": "occasionsIndex",
+      "path": "/de/anlaesse"
     }
   ],
   "pl": [
@@ -1687,28 +2483,824 @@
       "path": "/pl/polska/kwiaty"
     },
     {
+      "pageType": "countryCategory",
+      "path": "/pl/polska/kwiaty/bukiety"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/polska/kwiaty/kompozycje-kwiatowe"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/polska/kwiaty/rosliny"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/polska/kwiaty/kwiaty-pogrzebowe"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/polska/kwiaty/kwiaty-z-prezentem"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/polska/kwiaty/kwiaty-na-urodziny"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/polska/kwiaty/kwiaty-na-rocznice"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/polska/kwiaty/romantyczne-kwiaty"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/polska/kwiaty/kwiaty-z-gratulacjami"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/polska/kwiaty/kwiaty-na-narodziny"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/polska/kwiaty/kwiaty-na-powrot-do-zdrowia"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/polska/kwiaty/kwiaty-kondolencyjne"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/polska/kwiaty/kwiaty-na-podziekowanie"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/polska/kwiaty/kwiaty-na-przeprosiny"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/polska/kwiaty/kwiaty-bez-okazji"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/polska/kwiaty/roze"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/polska/kwiaty/tulipany"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/polska/kwiaty/lilie"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/polska/kwiaty/piwonie"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/polska/kwiaty/bukiety-mieszane"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/polska/okazje/dzien-matki"
+    },
+    {
       "pageType": "countryShopRoot",
       "path": "/pl/niemcy/kwiaty"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/niemcy/kwiaty/bukiety"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/niemcy/kwiaty/kompozycje-kwiatowe"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/niemcy/kwiaty/rosliny"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/niemcy/kwiaty/kwiaty-pogrzebowe"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/niemcy/kwiaty/kwiaty-z-prezentem"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/niemcy/kwiaty/kwiaty-na-urodziny"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/niemcy/kwiaty/kwiaty-na-rocznice"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/niemcy/kwiaty/romantyczne-kwiaty"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/niemcy/kwiaty/kwiaty-z-gratulacjami"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/niemcy/kwiaty/kwiaty-na-narodziny"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/niemcy/kwiaty/kwiaty-na-powrot-do-zdrowia"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/niemcy/kwiaty/kwiaty-kondolencyjne"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/niemcy/kwiaty/kwiaty-na-podziekowanie"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/niemcy/kwiaty/kwiaty-na-przeprosiny"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/niemcy/kwiaty/kwiaty-bez-okazji"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/niemcy/kwiaty/roze"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/niemcy/kwiaty/tulipany"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/niemcy/kwiaty/lilie"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/niemcy/kwiaty/piwonie"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/niemcy/kwiaty/bukiety-mieszane"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/niemcy/okazje/dzien-matki"
     },
     {
       "pageType": "countryShopRoot",
       "path": "/pl/francja/kwiaty"
     },
     {
+      "pageType": "countryCategory",
+      "path": "/pl/francja/kwiaty/bukiety"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/francja/kwiaty/kompozycje-kwiatowe"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/francja/kwiaty/rosliny"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/francja/kwiaty/kwiaty-pogrzebowe"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/francja/kwiaty/kwiaty-z-prezentem"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/francja/kwiaty/kwiaty-na-urodziny"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/francja/kwiaty/kwiaty-na-rocznice"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/francja/kwiaty/romantyczne-kwiaty"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/francja/kwiaty/kwiaty-z-gratulacjami"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/francja/kwiaty/kwiaty-na-narodziny"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/francja/kwiaty/kwiaty-na-powrot-do-zdrowia"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/francja/kwiaty/kwiaty-kondolencyjne"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/francja/kwiaty/kwiaty-na-podziekowanie"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/francja/kwiaty/kwiaty-na-przeprosiny"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/francja/kwiaty/kwiaty-bez-okazji"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/francja/kwiaty/roze"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/francja/kwiaty/tulipany"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/francja/kwiaty/lilie"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/francja/kwiaty/piwonie"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/francja/kwiaty/bukiety-mieszane"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/francja/okazje/dzien-matki"
+    },
+    {
       "pageType": "countryShopRoot",
       "path": "/pl/hiszpania/kwiaty"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/hiszpania/kwiaty/bukiety"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/hiszpania/kwiaty/kompozycje-kwiatowe"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/hiszpania/kwiaty/rosliny"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/hiszpania/kwiaty/kwiaty-pogrzebowe"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/hiszpania/kwiaty/kwiaty-z-prezentem"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/hiszpania/kwiaty/kwiaty-na-urodziny"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/hiszpania/kwiaty/kwiaty-na-rocznice"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/hiszpania/kwiaty/romantyczne-kwiaty"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/hiszpania/kwiaty/kwiaty-z-gratulacjami"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/hiszpania/kwiaty/kwiaty-na-narodziny"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/hiszpania/kwiaty/kwiaty-na-powrot-do-zdrowia"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/hiszpania/kwiaty/kwiaty-kondolencyjne"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/hiszpania/kwiaty/kwiaty-na-podziekowanie"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/hiszpania/kwiaty/kwiaty-na-przeprosiny"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/hiszpania/kwiaty/kwiaty-bez-okazji"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/hiszpania/kwiaty/roze"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/hiszpania/kwiaty/tulipany"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/hiszpania/kwiaty/lilie"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/hiszpania/kwiaty/piwonie"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/hiszpania/kwiaty/bukiety-mieszane"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/hiszpania/okazje/dzien-matki"
     },
     {
       "pageType": "countryShopRoot",
       "path": "/pl/wlochy/kwiaty"
     },
     {
+      "pageType": "countryCategory",
+      "path": "/pl/wlochy/kwiaty/bukiety"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/wlochy/kwiaty/kompozycje-kwiatowe"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/wlochy/kwiaty/rosliny"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/wlochy/kwiaty/kwiaty-pogrzebowe"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/wlochy/kwiaty/kwiaty-z-prezentem"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/wlochy/kwiaty/kwiaty-na-urodziny"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/wlochy/kwiaty/kwiaty-na-rocznice"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/wlochy/kwiaty/romantyczne-kwiaty"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/wlochy/kwiaty/kwiaty-z-gratulacjami"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/wlochy/kwiaty/kwiaty-na-narodziny"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/wlochy/kwiaty/kwiaty-na-powrot-do-zdrowia"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/wlochy/kwiaty/kwiaty-kondolencyjne"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/wlochy/kwiaty/kwiaty-na-podziekowanie"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/wlochy/kwiaty/kwiaty-na-przeprosiny"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/wlochy/kwiaty/kwiaty-bez-okazji"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/wlochy/kwiaty/roze"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/wlochy/kwiaty/tulipany"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/wlochy/kwiaty/lilie"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/wlochy/kwiaty/piwonie"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/wlochy/kwiaty/bukiety-mieszane"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/wlochy/okazje/dzien-matki"
+    },
+    {
       "pageType": "countryShopRoot",
       "path": "/pl/rumunia/kwiaty"
     },
     {
+      "pageType": "countryCategory",
+      "path": "/pl/rumunia/kwiaty/bukiety"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/rumunia/kwiaty/kompozycje-kwiatowe"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/rumunia/kwiaty/rosliny"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/rumunia/kwiaty/kwiaty-pogrzebowe"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/rumunia/kwiaty/kwiaty-z-prezentem"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/rumunia/kwiaty/kwiaty-na-urodziny"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/rumunia/kwiaty/kwiaty-na-rocznice"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/rumunia/kwiaty/romantyczne-kwiaty"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/rumunia/kwiaty/kwiaty-z-gratulacjami"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/rumunia/kwiaty/kwiaty-na-narodziny"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/rumunia/kwiaty/kwiaty-na-powrot-do-zdrowia"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/rumunia/kwiaty/kwiaty-kondolencyjne"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/rumunia/kwiaty/kwiaty-na-podziekowanie"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/rumunia/kwiaty/kwiaty-na-przeprosiny"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/rumunia/kwiaty/kwiaty-bez-okazji"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/rumunia/kwiaty/roze"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/rumunia/kwiaty/tulipany"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/rumunia/kwiaty/lilie"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/rumunia/kwiaty/piwonie"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/rumunia/kwiaty/bukiety-mieszane"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/rumunia/okazje/dzien-matki"
+    },
+    {
       "pageType": "countryShopRoot",
       "path": "/pl/holandia/kwiaty"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/holandia/kwiaty/bukiety"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/holandia/kwiaty/kompozycje-kwiatowe"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/holandia/kwiaty/rosliny"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/holandia/kwiaty/kwiaty-pogrzebowe"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/holandia/kwiaty/kwiaty-z-prezentem"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/holandia/kwiaty/kwiaty-na-urodziny"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/holandia/kwiaty/kwiaty-na-rocznice"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/holandia/kwiaty/romantyczne-kwiaty"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/holandia/kwiaty/kwiaty-z-gratulacjami"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/holandia/kwiaty/kwiaty-na-narodziny"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/holandia/kwiaty/kwiaty-na-powrot-do-zdrowia"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/holandia/kwiaty/kwiaty-kondolencyjne"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/holandia/kwiaty/kwiaty-na-podziekowanie"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/holandia/kwiaty/kwiaty-na-przeprosiny"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/holandia/kwiaty/kwiaty-bez-okazji"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/holandia/kwiaty/roze"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/holandia/kwiaty/tulipany"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/holandia/kwiaty/lilie"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/holandia/kwiaty/piwonie"
+    },
+    {
+      "pageType": "countryCategory",
+      "path": "/pl/holandia/kwiaty/bukiety-mieszane"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/holandia/okazje/dzien-matki"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/pl/kwiaty/bukiety"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/pl/kwiaty/kompozycje-kwiatowe"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/pl/kwiaty/rosliny"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/pl/kwiaty/kwiaty-pogrzebowe"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/pl/kwiaty/kwiaty-z-prezentem"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/pl/kwiaty/kwiaty-na-urodziny"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/pl/kwiaty/kwiaty-na-rocznice"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/pl/kwiaty/romantyczne-kwiaty"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/pl/kwiaty/kwiaty-z-gratulacjami"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/pl/kwiaty/kwiaty-na-narodziny"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/pl/kwiaty/kwiaty-na-powrot-do-zdrowia"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/pl/kwiaty/kwiaty-kondolencyjne"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/pl/kwiaty/kwiaty-na-podziekowanie"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/pl/kwiaty/kwiaty-na-przeprosiny"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/pl/kwiaty/kwiaty-bez-okazji"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/pl/kwiaty/roze"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/pl/kwiaty/tulipany"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/pl/kwiaty/lilie"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/pl/kwiaty/storczyki"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/pl/kwiaty/sloneczniki"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/pl/kwiaty/piwonie"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/pl/kwiaty/gerbery"
+    },
+    {
+      "pageType": "categoryHub",
+      "path": "/pl/kwiaty/bukiety-mieszane"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/pl/okazje/urodziny"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/pl/okazje/rocznica"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/pl/okazje/milosc-i-romantyzm"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/pl/okazje/gratulacje"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/pl/okazje/narodziny"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/pl/okazje/powrot-do-zdrowia"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/pl/okazje/kondolencje"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/pl/okazje/podziekowania"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/pl/okazje/przeprosiny"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/pl/okazje/bez-okazji"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/pl/okazje/slub"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/pl/okazje/ukonczenie-studiow"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/pl/okazje/parapetowka"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/pl/okazje/emerytura"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/pl/okazje/walentynki"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/pl/okazje/dzien-kobiet"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/pl/okazje/dzien-matki"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/pl/okazje/dzien-ojca"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/pl/okazje/dzien-babci-i-dziadka"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/pl/okazje/wielkanoc"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/pl/okazje/wszystkich-swietych"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/pl/okazje/boze-narodzenie"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/pl/okazje/nowy-rok"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/pl/okazje/imieniny"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/pl/okazje/dzien-nauczyciela"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/pl/okazje/sant-jordi"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/pl/okazje/dzien-babci-we-francji"
+    },
+    {
+      "pageType": "occasionHub",
+      "path": "/pl/okazje/konwalie-na-1-maja"
+    },
+    {
+      "pageType": "occasionsIndex",
+      "path": "/pl/okazje"
     }
   ]
 }

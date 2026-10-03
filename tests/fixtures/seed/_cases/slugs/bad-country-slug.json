@@ -1,0 +1,19 @@
+{
+  "family": "slugs",
+  "rule": "country-slug",
+  "replaces": "copy/pl/occasions.json",
+  "expect": "slug `polska` equals the country slug of PL in `pl`",
+  "why": "spec 008 AC-2: a listing slug may not equal a country slug in its locale. An occasion named `Polska` folds to `polska`, the Polish slug of Poland, so `/pl/okazje/polska` and the country would share a first-level meaning and a link builder could not tell them apart (§2).",
+  "ops": [
+    {
+      "op": "setRow",
+      "match": {
+        "key": "name_day"
+      },
+      "set": {
+        "name": "Polska",
+        "slug": "polska"
+      }
+    }
+  ]
+}

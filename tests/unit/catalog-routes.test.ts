@@ -174,16 +174,19 @@ describe("resolveLocalePath: everything else is `notFound` (AC-1)", () => {
     ["en", ["rumaenien", "flowers"]],
     ["en", ["belgium", "flowers"]],
     // the bare `/en/flowers` is a 404 by §13 Q4: no country-less categories index ships. The
-    // bare `/en/occasions` **is** a page now (TASK-113) and is asserted as one below; `/pl/okazje`
-    // is the 404, because no occasion carries a Polish slug and so no hub exists there to list.
+    // bare `/en/occasions` **is** a page now (TASK-113) and is asserted as one below; so is
+    // `/pl/okazje` since TASK-106 authored the Polish occasion slugs.
     ["en", ["flowers"]],
-    ["pl", ["okazje"]],
-    // a hub slug this locale has never authored: `de` and `pl` carry machine drafts, so they have
-    // no category or occasion slugs and therefore no hubs at all until TASK-106 (§13 Q10)
-    ["de", ["blumen", "rosen"]],
+    ["pl", ["kwiaty"]],
+    // an English slug under a German or Polish segment: TASK-106 authored `rosen`, `roze`,
+    // `muttertag` and `dzien-matki`, and the half-translated URL is never served (§13 Q10)
     ["de", ["blumen", "roses"]],
-    ["pl", ["kwiaty", "roze"]],
-    ["pl", ["okazje", "dzien-matki"]],
+    ["pl", ["kwiaty", "roses"]],
+    ["de", ["anlaesse", "mothers-day"]],
+    ["pl", ["okazje", "mothers-day"]],
+    // one locale's authored slug under another locale's segment
+    ["de", ["blumen", "roze"]],
+    ["pl", ["okazje", "muttertag"]],
     // an unknown hub slug, and a slug from the *other* namespace under a hub's segment: an
     // occasion is not a category and the two URL spaces never bleed into each other (AC-4)
     ["en", ["flowers", "atlantis"]],
@@ -207,6 +210,23 @@ describe("resolveLocalePath: everything else is `notFound` (AC-1)", () => {
     it(`404s /${locale}/${segments.join("/")}`, async () => {
       const match = await resolveLocalePath(locale, segments);
       expect(match.kind).toBe("notFound");
+    });
+  }
+});
+
+describe("`de` and `pl` resolve their own authored hub slugs (TASK-106, §13 Q10)", () => {
+  const hits: readonly (readonly [string, readonly string[], string])[] = [
+    ["de", ["blumen", "rosen"], "categoryHub"],
+    ["pl", ["kwiaty", "roze"], "categoryHub"],
+    ["de", ["anlaesse", "muttertag"], "occasionHub"],
+    ["pl", ["okazje", "dzien-matki"], "occasionHub"],
+    ["de", ["anlaesse"], "occasionsIndex"],
+    ["pl", ["okazje"], "occasionsIndex"],
+  ];
+  for (const [locale, segments, kind] of hits) {
+    it(`serves /${locale}/${segments.join("/")} as ${kind}`, async () => {
+      const match = await resolveLocalePath(locale, segments);
+      expect(match.kind).toBe(kind);
     });
   }
 });
@@ -297,13 +317,23 @@ describe("generateStaticParams is the union of both existence sets (AC-3)", () =
       segment: "occasions",
       child: "mothers-day",
     });
-    // `de` and `pl` have no authored category or occasion slugs, so they prebuild no hub at all
-    // (§13 Q10) — the honest answer, and the one that keeps `/de/blumen/roses` from being served.
+    // `de` and `pl` prebuild their hubs under their own authored slugs (TASK-106, §13 Q10)…
+    expect(params).toContainEqual({
+      locale: "de",
+      segment: "blumen",
+      child: "rosen",
+    });
+    expect(params).toContainEqual({
+      locale: "pl",
+      segment: "okazje",
+      child: "dzien-matki",
+    });
+    // …and never under an English one: `/de/blumen/roses` is not served.
     expect(
       params.filter(
         (param) =>
-          ["blumen", "kwiaty", "anlaesse", "okazje"].includes(param.segment) &&
-          (param.locale === "de" || param.locale === "pl"),
+          (param.locale === "de" || param.locale === "pl") &&
+          ["roses", "mothers-day", "birthday"].includes(param.child),
       ),
     ).toEqual([]);
   });

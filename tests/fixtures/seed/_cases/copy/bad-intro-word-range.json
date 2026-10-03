@@ -1,0 +1,18 @@
+{
+  "family": "copy",
+  "rule": "intro-word-range",
+  "replaces": "copy/de/occasions.json",
+  "expect": "hub intro is 23 words, outside 40–120",
+  "why": "spec 008 AC-2: a hub intro is 40–120 words. The German Sant Jordi intro cut to one sentence and the closing florist sentence is a page whose only authored content is a line, the thin hub `plan/02` §1 warns about. The closing sentence is kept so only the length rule fires.",
+  "ops": [
+    {
+      "op": "setRow",
+      "match": {
+        "key": "sant_jordi"
+      },
+      "set": {
+        "descriptionMd": "Einzelne rote Rosen zum dreiundzwanzigsten April. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt."
+      }
+    }
+  ]
+}

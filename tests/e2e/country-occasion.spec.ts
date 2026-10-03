@@ -54,9 +54,9 @@ test.describe("existence and the 404 shapes (AC-1, T-01)", () => {
       // another locale's segment, and another locale's country slug
       "/en/poland/anlaesse/mothers-day",
       "/en/polska/occasions/mothers-day",
-      // a locale with no authored occasion slug (TASK-106), in its own segments
-      "/de/polen/anlaesse/muttertag",
-      "/pl/polska/okazje/dzien-matki",
+      // the English slug under a locale that authored its own (`muttertag`, `dzien-matki`; TASK-106)
+      "/de/polen/anlaesse/mothers-day",
+      "/pl/polska/okazje/mothers-day",
       // an unknown locale
       "/fr/poland/occasions/mothers-day",
       // Nothing about the depth-2 URLs `/en/occasions/{slug}` or `/en/occasions` belongs here any

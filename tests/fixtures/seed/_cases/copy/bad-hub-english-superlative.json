@@ -1,0 +1,18 @@
+{
+  "family": "copy",
+  "rule": "intro-banned-word",
+  "replaces": "copy/de/categories.json",
+  "expect": "hub intro uses `stunning`",
+  "why": "spec 008 AC-2 (`/break 150` hole 4): the intro scan reads `plan/10` §2.2's English superlatives in every locale, not only in `en`, where `copyProblems()` already reads them. An English loanword in German marketing copy is the realistic case: `stunning` in the German roses intro is refused even though no German word in it is banned.",
+  "ops": [
+    {
+      "op": "setRow",
+      "match": {
+        "key": "roses"
+      },
+      "set": {
+        "descriptionMd": "Rosen in Rot, Rosa, Weiß, Orange und Pastell, von Hand gebunden mit zwölf, achtzehn oder vierundzwanzig Stielen, ein stunning Klassiker für jeden Anlass. Rote Rosen für die Liebe, weiße für Hochzeiten und Beileid, rosa und orange für Geburtstage und Dank. Die Rose selbst steht bei jedem Strauß fest. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt."
+      }
+    }
+  ]
+}

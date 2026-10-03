@@ -49,13 +49,11 @@ test.describe("existence and the 404 shapes (AC-1, T-01)", () => {
     });
   }
 
-  test("a locale with no authored occasion slug has no index at all", async ({
+  test("another locale's segment or an unknown locale has no index", async ({
     request,
   }) => {
     for (const url of [
-      // the index's own segment in the two draft locales (§13 Q10)
-      "/de/anlaesse",
-      "/pl/okazje",
+      // `/de/anlaesse` and `/pl/okazje` are pages since TASK-106 authored their occasion slugs;
       // another locale's segment under an authored locale, and an unknown locale
       "/en/anlaesse",
       "/en/okazje",
@@ -173,15 +171,19 @@ test.describe("the colophon links here, and only where the page exists (AC-20)",
     ).toBeVisible();
   });
 
-  test("German: the same row as text, pointing nowhere", async ({ page }) => {
-    await page.goto("/de");
-    await expect(page.locator('footer a[href="/de/anlaesse"]')).toHaveCount(0);
-    // And the row has not silently vanished either: an unavailable target renders as its
-    // **label**, which is spec 004 AC-14's rule and not "hide it". The German chrome copy is
-    // still the English draft, so the word is the same one — the assertion is about the element,
-    // not the translation.
-    await expect(
-      page.locator("footer span", { hasText: /^Occasions$/u }),
-    ).toHaveCount(1);
+  test("German and Polish: the row links to the locale's own index (TASK-106)", async ({
+    page,
+  }) => {
+    // Until TASK-106 `de` and `pl` had no occasion hub, so the row rendered as its label (spec
+    // 004 AC-14). With the authored slugs the index exists, and the row is a link to it.
+    for (const [home, index] of [
+      ["/de", "/de/anlaesse"],
+      ["/pl", "/pl/okazje"],
+    ] as const) {
+      await page.goto(home);
+      await expect(
+        page.locator(`footer a[href="${index}"]`).first(),
+      ).toBeVisible();
+    }
   });
 });

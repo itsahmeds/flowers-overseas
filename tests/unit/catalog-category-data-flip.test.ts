@@ -161,9 +161,10 @@ describe("after the flip: the URL, the links and the alternates appear (AC-5)", 
     });
     expect(alternates["en"]).toBe(`/en/poland/flowers/${SLUG}`);
     expect(alternates["en-gb"]).toBe(`/en-gb/poland/flowers/${SLUG}`);
-    // A locale with no authored slug contributes no alternate, before or after (AC-16).
-    expect(alternates["de"]).toBeUndefined();
-    expect(alternates["pl"]).toBeUndefined();
+    // `de` and `pl` join under their own authored slugs since TASK-106 (§13 Q10): the flip moves
+    // the whole cluster, and no locale carries the English slug.
+    expect(alternates["de"]).toBe("/de/polen/blumen/orchideen");
+    expect(alternates["pl"]).toBe("/pl/polska/kwiaty/storczyki");
   });
 
   it("the route resolver and the prebuilt set answer for it", async () => {

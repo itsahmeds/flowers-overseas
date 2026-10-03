@@ -166,7 +166,7 @@
         "rustic": "Rustic"
       }
     },
-    "floristSentence": "Every order will be made by hand and delivered in person by our florist in the recipient's city.",
+    "floristSentence": "Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
     "price": {
       "from": "from {price}",
       "inclusive": "inkl. MwSt. und Versand"
