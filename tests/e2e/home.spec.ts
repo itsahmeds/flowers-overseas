@@ -47,6 +47,32 @@ const MATCHES = "[data-fo-finder-matches]";
 const ANNOUNCE = "[data-fo-finder-announce]";
 
 /** The seven Phase-0 destinations of `src/config/countries.ts`, restated (AC-11). */
+/**
+ * The trending row's heading and basis line per locale path (TASK-140): the founder's `en`
+ * wording of 2026-10-03, inherited by `en-gb`, and the unreviewed `de` and `pl` drafts.
+ */
+const TRENDING_COPY = {
+  "/en": {
+    heading: "Popular choices",
+    basis: "Our picks until real orders start.",
+  },
+  "/en-gb": {
+    heading: "Popular choices",
+    basis: "Our picks until real orders start.",
+  },
+  "/de": {
+    heading: "Beliebte Auswahl",
+    basis: "Von uns ausgewählt, bis die ersten echten Bestellungen eingehen.",
+  },
+  "/pl": {
+    heading: "Popularne wybory",
+    basis: "Nasz wybór, dopóki nie pojawią się prawdziwe zamówienia.",
+  },
+} as const satisfies Record<
+  (typeof LOCALES)[number],
+  { heading: string; basis: string }
+>;
+
 const DESTINATION_CODES = ["PL", "DE", "FR", "ES", "IT", "RO", "NL"] as const;
 const DESTINATIONS_COUNT = DESTINATION_CODES.length;
 
@@ -216,11 +242,11 @@ test.describe("the locale home, above the fold", () => {
         /\s+/g,
         " ",
       );
-      // The row's copy is authored in `en` only; the German and Polish catalogues are machine
-      // echoes of it today, so the sentence is asserted wherever it is served.
-      expect(row).toContain(
-        "Ranking is by real orders in the last 7 days and switches on once we have them",
+      // The row's heading and basis line, the one value each locale serves (TASK-140).
+      await expect(page.locator(`${TRENDING} h2`)).toHaveText(
+        TRENDING_COPY[path].heading,
       );
+      expect(row).toContain(TRENDING_COPY[path].basis);
       expect(row).not.toMatch(/starting at|€|z\u0142|£/iu);
     });
 

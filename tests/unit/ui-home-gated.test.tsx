@@ -80,13 +80,45 @@ function hrefs(html: string): string[] {
 }
 
 /**
- * The founder's sentence, verbatim from `docs/design/homepage-v1/homepage-desktop.dc.html` — the
- * design source of truth, and first person as spec 004 §14 A5 requires ("our florists' own
- * picks"). The shipped key adds the closing full stop the artboard's sentence carries into the
- * paragraph, so the assertion is `toContain` (`/review 58` required change 1).
+ * The row's two honesty lines, one exact value per locale (TASK-140). The founder chose the `en`
+ * wording on 2026-10-03 (`docs/decisions-log.md`, "The trending row reads Popular choices"): the
+ * heading no longer claims a sales ranking on a site with no orders ("Most sent this week"), and
+ * the basis line no longer claims picks by florists who have picked nothing yet. `en-gb` inherits
+ * `en` through the fallback chain; `de` and `pl` are unreviewed drafts (`reviewed: false`).
  */
-const VERBATIM_BASIS =
-  "Ranking is by real orders in the last 7 days and switches on once we have them; until then this row shows our florists' own picks and says so";
+const TRENDING_COPY = {
+  en: {
+    heading: "Popular choices",
+    basis: "Our picks until real orders start.",
+  },
+  "en-gb": {
+    heading: "Popular choices",
+    basis: "Our picks until real orders start.",
+  },
+  de: {
+    heading: "Beliebte Auswahl",
+    basis: "Von uns ausgewählt, bis die ersten echten Bestellungen eingehen.",
+  },
+  pl: {
+    heading: "Popularne wybory",
+    basis: "Nasz wybór, dopóki nie pojawią się prawdziwe zamówienia.",
+  },
+} as const satisfies Record<
+  (typeof LOCALES)[number],
+  { heading: string; basis: string }
+>;
+
+/** The row's `<h2 id="trending-heading">` text, exactly as rendered. */
+function trendingHeading(html: string): string | undefined {
+  const inner = /id="trending-heading"[^>]*>([^<]*)</u.exec(html)?.[1];
+  return inner === undefined ? undefined : text(inner).trim();
+}
+
+/** The basis line after the picks' list, or `undefined` when the row renders none. */
+function trendingBasis(html: string): string | undefined {
+  const inner = /<\/ul><p[^>]*>([^<]*)<\/p><\/section>$/u.exec(html)?.[1];
+  return inner === undefined ? undefined : text(inner).trim();
+}
 
 describe("the trending row is gated on real orders", () => {
   it("renders the five florists' picks by name, with no price element of any kind", () => {
@@ -94,20 +126,21 @@ describe("the trending row is gated on real orders", () => {
     const rendered = text(html);
 
     expect([...html.matchAll(/<li/g)]).toHaveLength(TRENDING_PICKS.length);
-    for (const fragment of ["Trending now", "Most sent this week"]) {
-      expect(rendered, fragment).toContain(fragment);
-    }
+    expect(rendered).toContain("Trending now");
     // Spec §3/§8: nothing here knows what a product is and no price is rendered — not a figure,
     // not a "starting at", not a currency symbol, not the canvas's grey price bar.
     expect(rendered).not.toMatch(/starting at|from\s*€|€|zł|£|\bfrom \d/iu);
     expect(html).not.toContain("data-fo-price");
   });
 
-  it("carries the founder's verbatim label while the basis is the florists' picks", () => {
-    const html = render(<TrendingRow locale="en" />, "en");
+  it("heads the row with its own locale's heading and basis line while the basis is picks (TASK-140)", () => {
+    for (const locale of LOCALES) {
+      const html = render(<TrendingRow locale={locale} />, locale);
 
-    expect(html).toContain('data-fo-trending-basis="picks"');
-    expect(text(html)).toContain(VERBATIM_BASIS);
+      expect(html, locale).toContain('data-fo-trending-basis="picks"');
+      expect(trendingHeading(html), locale).toBe(TRENDING_COPY[locale].heading);
+      expect(trendingBasis(html), locale).toBe(TRENDING_COPY[locale].basis);
+    }
   });
 
   it("drops the label the moment the ranking is real, with no call-site change", () => {
@@ -119,7 +152,8 @@ describe("the trending row is gated on real orders", () => {
 
     expect(html).toContain('data-fo-trending-basis="orders"');
     // The sentence is only true while the row is picks; a ranked row must not keep claiming it.
-    expect(text(html)).not.toContain(VERBATIM_BASIS);
+    expect(trendingBasis(html)).toBeUndefined();
+    expect(text(html)).not.toContain(TRENDING_COPY.en.basis);
     expect(text(html)).toContain("Amber Hour");
   });
 
