@@ -16,14 +16,19 @@ This is direction A ("Warm and personal", `../warm/`) with direction C's palette
 |---|---|---|---|
 | `--paper` | `oklch(99.8% 0.002 85)` (lighter milk, founder 2026-10-03) | page ground | |
 | `--paper-2` | `oklch(98.9% 0.006 85)` (lighter cream) | bands, footer | |
-| `--card` | `oklch(99.6% 0.004 85)` | letter, card, fields | |
-| `--ink` / `-2` / `-3` | `oklch(25% 0.06 285)` / `42%` / `50%` | plum-navy text | 15.6, 8.2 and 5.8:1 on milk |
-| `--accent` | `oklch(54% 0.2 30)` poppy | Send, prices, italic phrase | 5.4:1; card text on it 5.5:1 |
-| `--sky` | `oklch(48% 0.16 262)` cornflower | eyebrows, links, postmark, selected chip and day | 6.5:1 |
+| `--card` | `oklch(100% 0 0)` (corrected 2026-10-03 to the rendered value: 99.6% sat below the 99.8% paper and lost the lift) | letter, card, fields | |
+| `--rule` | `oklch(89% 0.02 285)` | hairlines | |
+| `--ink` / `-2` / `-3` | `oklch(25% 0.06 285)` / `oklch(42% 0.05 285)` / `oklch(50% 0.04 285)` | plum-navy text | 16.1, 8.5 and 6.0:1 on milk |
+| `--accent` / `--accent-strong` | `oklch(54% 0.2 30)` poppy / `oklch(47% 0.19 30)` | Send, prices, italic phrase / hover | 5.6:1; card text on it 5.6:1 |
+| `--sky` / `--sky-strong` | `oklch(48% 0.16 262)` cornflower / `oklch(40% 0.15 262)` | eyebrows, links, postmark, selected chip and day / hover | 6.7:1 |
 | `--sun` | `oklch(87% 0.15 92)` sunflower | underline under "far away", P.S. tape, text on the dark band | 10.9:1 on ink |
-| `--blush` / `--butter` / `--sage-wash` / `--leaf-wash` | poppy, sun, sky and leaf at about 94–96% L | stamp tints, card backdrop, summary | ink-3 is at least 4.9:1 on each |
-| `--stem` | `oklch(44% 0.1 155)` leaf | "included" | 7.1:1 |
+| `--blush` / `--butter` / `--sage-wash` / `--leaf-wash` | `oklch(93.5% 0.04 30)` / `oklch(96.5% 0.055 95)` / `oklch(94% 0.03 250)` / `oklch(94.5% 0.04 155)` (poppy, sun, sky and leaf washes; `--sage-wash` is the cornflower one) | stamp tints, card backdrop, summary | ink-3 is at least 4.9:1 on each |
+| `--stem` | `oklch(44% 0.1 155)` leaf | "included" | 7.4:1 |
 | `--logo-ink` / `--logo-accent` | `oklch(19% 0.01 250)` / `oklch(42% 0.1 155)` | the logo, exactly as it ships | |
+
+Every value above is what the three pages render and what `docs/design/system/tokens.css` declares
+(as `--color-*`). Contrast ratios are recomputed against the lightened milk ground (2026-10-03); the
+earlier figures were measured before the founder's two lightening passes.
 
 ## Borrowed from C, sparingly
 - **The airmail edge** (poppy, white and cornflower stripes) appears in three places only: the top of the sentence letter, the top of the "Here is what will arrive" recap, and the top of the footer.
