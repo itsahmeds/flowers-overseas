@@ -40,6 +40,8 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
   as small as the drawings allow, and say the number in `## Result`. `de`/`pl` are drafted by
   `pnpm i18n:draft`.
 
+**Merged with TASK-127 as PR 135 (`966c2e87`) on 2026-10-03; live on production.**
+
 ## Read
 
 - `specs/009-product-page-date-picker.md`: `## 0. Index`, then §5 (the tier selector, the date picker,

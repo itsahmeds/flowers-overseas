@@ -98,6 +98,8 @@ One dated bullet per `/review`, newest last.
   "Arrives tomorrow" matches no pattern in `tests/support/listing-honesty.ts:65` — a nit for the
   next task that touches that file.
 
+**Merged with TASK-126 as PR 135 (`966c2e87`) on 2026-10-03; live on production.**
+
 ## Progress
 
 - **2026-10-03 — the two carry-forwards (finisher run).** `/review 96`'s second: the depth-4

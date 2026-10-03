@@ -62,6 +62,8 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
   where a page this task changes renders a photo it did not before; take the build slot only for
   that, and say so in `## Result`.
 
+**Merged as PR 142 (`f057d09b`) on 2026-10-03; every new row `pending`, nothing uploaded.**
+
 ## Read
 
 - `specs/006-seed-catalogue-import-imagery-pipeline.md` — `## 0. Index`, then §14 A6, A7 and A8.

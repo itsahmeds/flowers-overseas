@@ -43,7 +43,6 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per `/review`, newest last.
 
-_None recorded._
 - **From TASK-167 and its reviews (2026-10-03), carried by the orchestrator:** (1) spec 006 §14 A9:
   alt text is required for every `approved` product asset in all four launch locales, so this task
   writes `seed/data/alt/{en,en-gb,de,pl}.json` rows for each asset it approves, in the same change
