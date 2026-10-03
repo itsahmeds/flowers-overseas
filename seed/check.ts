@@ -1579,6 +1579,63 @@ export const HUB_INTRO_WORD_MAX = 120;
  */
 export const HUB_INTRO_DISTINCTNESS_MIN = 0.6;
 
+/**
+ * The delivery-timing claims of spec 006 §14 A4, **in German and Polish**.
+ *
+ * `DELIVERY_TIMING_PATTERN` (`seed/copy.ts`) names English phrases, which was enough while every
+ * `de`/`pl` row was a machine draft of English text. Authored German and Polish intros (TASK-106)
+ * would pass it with "Lieferung am nächsten Tag" or "dostawa tego samego dnia", so the intro scan
+ * adds the same classes in both languages: next day, same day, today/tomorrow, within N hours or
+ * days, working days, delivery time, punctuality, express, and a clock time. The permitted
+ * pointer — "vor dem Bestellschluss, der für das Zielland angezeigt wird", "przed terminem
+ * podanym dla kraju docelowego" — names no time and passes, exactly as it does in English.
+ */
+export const NATIVE_DELIVERY_TIMING_PATTERN =
+  /(?<![\p{L}\p{N}])(?:am (?:nächsten|selben|gleichen) tag|noch heute|heute (?:geliefert|zugestellt)|morgen (?:geliefert|zugestellt)|innerhalb von \d+ (?:stunden|tagen)|werktag(?:e|en)?|lieferzeit(?:en)?|pünktlich|expresslieferung|bis \d{1,2}(?:[:.]\d{2})? uhr|następnego dnia|tego samego dnia|jeszcze dziś|dostawa (?:dziś|dzisiaj|jutro)|w ciągu \d+ (?:godzin|godziny|dni)|dni robocz|czas dostawy|punktualn|ekspres|do godziny \d{1,2})/iu;
+
+/**
+ * `plan/10` §2.2's unbacked superlatives, **in German and Polish** — the heads of
+ * `BANNED_SUPERLATIVES`, as whole-word patterns with their inflections spelled out, because both
+ * languages inflect them ("die besten Rosen", "najlepsze kwiaty") and a bare stem would fire
+ * inside an innocent word ("Bestellung" begins with "beste").
+ */
+export const NATIVE_BANNED_SUPERLATIVES: readonly string[] = [
+  "beste[mnrs]?",
+  "günstigste[mnrs]?",
+  "schnellste[mnrs]?",
+  "schönste[mnrs]?",
+  "frischeste[mnrs]?",
+  "perfekte?[mnrs]?",
+  "unschlagbare?[mnrs]?",
+  "garantiert frisch",
+  "najlepsz\\p{L}*",
+  "najtańsz\\p{L}*",
+  "najszybsz\\p{L}*",
+  "najpiękniejsz\\p{L}*",
+  "najświeższ\\p{L}*",
+  "idealn\\p{L}*",
+  "niezrównan\\p{L}*",
+  "gwarantowan\\p{L}* świeżoś\\p{L}*",
+];
+
+/** The native superlatives an intro contains, as written, lowercased. */
+export function nativeSuperlativesIn(text: string): readonly string[] {
+  const haystack = text.toLowerCase();
+  return NATIVE_BANNED_SUPERLATIVES.flatMap((term) => {
+    const match = new RegExp(
+      `(?<![\\p{L}\\p{N}])${term}(?![\\p{L}\\p{N}])`,
+      "u",
+    ).exec(haystack);
+    return match === null ? [] : [match[0]];
+  });
+}
+
+/** The native-language delivery-timing phrases a piece of copy contains, lowercased. */
+export function nativeDeliveryTimingPhrasesIn(text: string): readonly string[] {
+  const pattern = new RegExp(NATIVE_DELIVERY_TIMING_PATTERN.source, "giu");
+  return [...text.matchAll(pattern)].map((match) => match[0].toLowerCase());
+}
+
 /** A delivery-currency price written as `49 €` or `49,90 £` — the order German and Polish use. */
 const TRAILING_SYMBOL_PRICE_PATTERN = /\d[\d,.]*\s?[£€$]/u;
 
@@ -1620,13 +1677,15 @@ function hubIntroRows(
  *    hub intro in the locale, categories and occasions together, because they share one URL
  *    namespace and one reader;
  *  - `intro-banned-word` — a voice-register word (`src/config/voice.ts`) or an unbacked
- *    superlative (`seed/copy.ts`);
+ *    superlative (`seed/copy.ts`'s English list, `NATIVE_BANNED_SUPERLATIVES` in German and
+ *    Polish);
  *  - `intro-price-literal` — a price written into prose; prices are data, formatted by
  *    `formatMoney`, and a hub shows no money at all (§2).
  *
  * The fourth honesty clause, a delivery-timing claim, is the copy family's `delivery-timing`
- * rule, which already reads every row's `descriptionMd` in every locale (spec 006 §14 A4); it is
- * not run twice.
+ * rule: its English half already reads every row in every locale (spec 006 §14 A4) and is not
+ * run twice; this function adds the German and Polish half (`NATIVE_DELIVERY_TIMING_PATTERN`)
+ * over every hub row's intro, name and SEO pair, under the same rule id.
  */
 function checkHubIntros(tree: SeedTree, parsed: Parsed): SeedProblem[] {
   const problems: SeedProblem[] = [];
@@ -1653,11 +1712,26 @@ function checkHubIntros(tree: SeedTree, parsed: Parsed): SeedProblem[] {
       const banned = [
         ...bannedVoiceWordsIn(intro),
         ...bannedSuperlativesIn(intro),
+        ...nativeSuperlativesIn(intro),
       ];
       if (banned.length > 0) {
         at(
           "intro-banned-word",
           `hub intro uses ${banned.map((word) => `\`${word}\``).join(", ")}: a banned voice word or an unbacked superlative (spec 008 AC-2; spec 004 §14 A5; \`plan/10\` §2.2)`,
+        );
+      }
+      for (const [field, value] of [
+        ["descriptionMd", row.descriptionMd],
+        ["seoTitle", row.seoTitle],
+        ["seoDescription", row.seoDescription],
+        ["name", row.name],
+      ] as const) {
+        if (typeof value !== "string") continue;
+        const phrases = nativeDeliveryTimingPhrasesIn(value);
+        if (phrases.length === 0) continue;
+        at(
+          "delivery-timing",
+          `\`${field}\` states delivery timing (${phrases.map((phrase) => `\`${phrase}\``).join(", ")}): the cutoff and next-available-date sentence is spec 009's per-country block, and copy may only point at it (spec 006 §14 A4; spec 008 AC-2)`,
         );
       }
       const prices = priceLiteralsIn(intro);

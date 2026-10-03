@@ -1,0 +1,18 @@
+{
+  "family": "slugs",
+  "rule": "slug-missing",
+  "replaces": "copy/de/categories.json",
+  "expect": "category:roses (de) has no human-authored slug in launch locale `de`",
+  "why": "spec 008 AC-2's first rule: a category with no routed slug in a launch locale has no category page, no country category page and no hub there, silently, because `slugFor()` answering `undefined` is routine in the route. The German roses row is turned back into a machine draft, whose slug never routes (§13 Q10; `src/modules/catalog/slugs.ts`).",
+  "ops": [
+    {
+      "op": "setRow",
+      "match": {
+        "key": "roses"
+      },
+      "set": {
+        "translationStatus": "machine"
+      }
+    }
+  ]
+}

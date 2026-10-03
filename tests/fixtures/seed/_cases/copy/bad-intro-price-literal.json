@@ -1,0 +1,18 @@
+{
+  "family": "copy",
+  "rule": "intro-price-literal",
+  "replaces": "copy/de/categories.json",
+  "expect": "hub intro contains a price literal (`49,90 €`)",
+  "why": "spec 008 AC-2: no price literal in an intro. A hub shows no money at all (§2, 005 §13 Q10) and every price is data formatted by formatMoney, so `ab 49,90 €` in the German roses intro is refused. The figure is written the German way, number first, which the corridor gate's pattern alone does not catch.",
+  "ops": [
+    {
+      "op": "setRow",
+      "match": {
+        "key": "roses"
+      },
+      "set": {
+        "descriptionMd": "Rosen in Rot, Rosa, Weiß, Orange und Pastell, von Hand gebunden mit zwölf, achtzehn oder vierundzwanzig Stielen, schon ab 49,90 € inklusive Lieferung. Rote Rosen für die Liebe, weiße für Hochzeiten und Beileid, rosa und orange für Geburtstage und Dank. Die Rose selbst steht bei jedem Strauß fest. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt."
+      }
+    }
+  ]
+}

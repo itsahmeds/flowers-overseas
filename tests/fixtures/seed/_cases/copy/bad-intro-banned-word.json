@@ -1,0 +1,18 @@
+{
+  "family": "copy",
+  "rule": "intro-banned-word",
+  "replaces": "copy/de/categories.json",
+  "expect": "hub intro uses `partner`, `besten`",
+  "why": "spec 008 AC-2: no banned word in an intro. The German bouquet intro gains `unser Partner` (spec 004 §14 A5's voice ban, matched in German because the word is the same) and `die besten Rosen`, an unbacked superlative in German (`plan/10` §2.2), which the English list alone could never see.",
+  "ops": [
+    {
+      "op": "setRow",
+      "match": {
+        "key": "bouquet"
+      },
+      "set": {
+        "descriptionMd": "Unser Partner bindet die besten Rosen, Tulpen, Lilien und Pfingstrosen von Hand, verpackt und bereit für das Wasser. Hier liegt der größte Teil unseres Sortiments, jeweils in drei Stielgrößen, und die Größe, die Sie wählen, ist die Größe, die gebunden wird. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt."
+      }
+    }
+  ]
+}
