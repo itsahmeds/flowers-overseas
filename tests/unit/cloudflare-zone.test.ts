@@ -142,6 +142,20 @@ describe("the endpoint allow-list (AC-24, T-25)", () => {
     expect(received).toEqual([]);
   });
 
+  it("refuses `PATCH …/settings/..` before it reaches the transport (/break 126 hole 3)", async () => {
+    const { client, received } = clientAnswering({ status: 200, body: {} });
+    await expect(
+      client.request({
+        method: "PATCH",
+        path: `/zones/${ZONE_ID}/settings/..`,
+        body: { value: "off" },
+      }),
+    ).rejects.toThrow(
+      "PATCH /zones/{zone_id}/settings/.. is not on the endpoint allow-list (src/lib/cloudflare-zone.ts ALLOWED_ENDPOINTS)",
+    );
+    expect(received).toEqual([]);
+  });
+
   it("binds `{zone_id}` to the configured zone and `{setting_id}` to one identifier", () => {
     expect(
       matchEndpoint("GET", `/zones/${ZONE_ID}/settings/ssl`, ZONE_ID)?.pattern,
@@ -160,6 +174,29 @@ describe("the endpoint allow-list (AC-24, T-25)", () => {
         ZONE_ID,
       ),
     ).toBeUndefined();
+    // /break 126 hole 3: `{setting_id}` is one lower-case identifier, so a dot segment (which a URL
+    // resolver turns into `/zones/{id}`, the zone-edit endpoint) and anything else is refused.
+    for (const settingId of [
+      "..",
+      ".",
+      "%2e%2e",
+      "%2E%2E",
+      "Min_TLS_Version",
+      "min-tls-version",
+      "ssl%2f..",
+      "",
+    ]) {
+      for (const method of ["GET", "PATCH"]) {
+        expect(
+          matchEndpoint(
+            method,
+            `/zones/${ZONE_ID}/settings/${settingId}`,
+            ZONE_ID,
+          ),
+          `${method} settings/${settingId}`,
+        ).toBeUndefined();
+      }
+    }
     expect(
       matchEndpoint("DELETE", `/zones/${ZONE_ID}`, ZONE_ID),
     ).toBeUndefined();

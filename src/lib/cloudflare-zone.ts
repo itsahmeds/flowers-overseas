@@ -257,14 +257,15 @@ export interface AllowedEndpoint {
 
 /**
  * Every endpoint `cloudflare:check` and `cloudflare:apply` may call. Pinned by
- * `tests/unit/cloudflare-zone-endpoints.test.ts`: adding one fails that test until it is pinned
+ * `tests/unit/cloudflare-zone.test.ts` (T-25): adding one fails that test until it is pinned
  * there too, and nothing under `/accounts/` can be added at all ({@link validateAllowList}).
  *
  * The runbook's token holds Zone Read, Zone Settings Edit, DNS Edit and Cache Purge on the one
  * zone (spec 040 AC-24). The fourth entry needs a fifth, read-only scope: the do-not-enable rows
  * for Bot Fight Mode, managed `robots.txt` and AI-crawler blocking live in the zone's
  * `bot_management` object, which Cloudflare serves only to a token holding Bot Management Read.
- * TASK-100 escalation E-1 asks for that scope; without it the check fails on a named 403.
+ * Spec 040 §14 A5 (TASK-100 escalation E-1) adds that scope to the runbook's token; without it
+ * the check fails on a named 403.
  */
 export const ALLOWED_ENDPOINTS: readonly AllowedEndpoint[] = [
   { method: "GET", pattern: "/zones/{zone_id}", scope: "Zone → Zone → Read" },
