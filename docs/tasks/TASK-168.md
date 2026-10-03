@@ -32,6 +32,11 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
   `consent-banner.spec.ts:667` failed again on `e2e-desktop` (the known flake, both forged-cookie
   cases).
 
+- 2026-10-03: CI run 37120922778 on `a4166b9f`: `home.spec.ts:187` and every `listing-*` baseline
+  green; red only on the two escalations (mobile homes 215 876 B each, `product.spec.ts:96`) and
+  the known `consent-banner.spec.ts:667` flake (`e2e-mobile`, the `hello` case). `build`, `a11y`,
+  `lighthouse` green. Stopped on the budget, as ordered.
+
 ## Result`.
 - **FO-BQ-004:** stage only the chosen pair into the main checkout's
   `.local/imagery/originals/` under the canonical names, give it its two `media.json` rows and prompt
