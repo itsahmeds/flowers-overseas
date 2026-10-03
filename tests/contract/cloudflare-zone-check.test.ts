@@ -123,7 +123,7 @@ const PROTOCOL_CASES: readonly [string, string, string, string][] = [
   ["ssl", "strict", "full", "SSL/TLS mode"],
   ["always_use_https", "on", "off", "Always Use HTTPS"],
   ["min_tls_version", "1.2", "1.0", "Minimum TLS"],
-  ["tls_1_3", "on", "off", "TLS 1.3"],
+  ["tls_1_3", "zrt", "on", "TLS 1.3 (with 0-RTT)"],
   ["0rtt", "on", "off", "0-RTT"],
   ["http2", "on", "off", "HTTP/2"],
   ["http3", "on", "off", "HTTP/3 (QUIC)"],
@@ -364,6 +364,87 @@ const drifted = withSetting(
     withSetting("brotli", "off", withSetting("ssl", "full")),
   ),
 );
+
+/**
+ * Cloudflare's `tls_1_3` takes `"on"`, `"zrt"` or `"off"`, and `zrt` is TLS 1.3 with 0-RTT
+ * (developers.cloudflare.com/ssl/edge-certificates/additional-options/tls-13/). `0rtt` is the same
+ * switch seen from the other side: writing `0rtt: "on"` turns `tls_1_3` into `"zrt"`, and writing
+ * `tls_1_3: "on"` turns 0-RTT off. The founder's live run of 2026-10-03 found it: apply, apply,
+ * check gave 8 changes, then `changed tls_1_3 · "zrt" → "on"`, then `0rtt · declared "on" · live
+ * "off"`. The recorded transport models the coupling, so that sequence is replayed here.
+ */
+describe("TLS 1.3 and 0-RTT are one switch at Cloudflare (AC-15, AC-23, T-24)", () => {
+  /** The zone before the founder's first apply, as far as these two settings go. */
+  const beforeFirstApply = withSetting(
+    "0rtt",
+    "off",
+    withSetting("tls_1_3", "on"),
+  );
+  const clientOver = (recorded: RecordedZone) => {
+    const { transport, calls } = createRecordedTransport(recorded);
+    return {
+      client: createZoneClient({
+        zoneId: recorded.zoneId,
+        mode: "apply",
+        transport,
+      }),
+      calls,
+    };
+  };
+
+  it('replays the 2026-10-03 live run on the old declaration (tls_1_3 "on"): it never settles', async () => {
+    const old = structuredClone(declared);
+    const tls = old.protocol.find((row) => row.setting === "tls_1_3");
+    if (tls === undefined) throw new Error("no tls_1_3 row");
+    tls.value = "on";
+    const { client } = clientOver(beforeFirstApply);
+
+    const first = await applyZone(old, client);
+    expect(first.lines).toEqual([
+      'changed 0rtt · "off" → "on" · 0-RTT',
+      "cloudflare:apply: 1 change",
+    ]);
+    const second = await applyZone(old, client);
+    expect(second.lines).toEqual([
+      'changed tls_1_3 · "zrt" → "on" · TLS 1.3 (with 0-RTT)',
+      "cloudflare:apply: 1 change",
+    ]);
+    const check = await checkZone(old, client);
+    expect(check.lines[0]).toBe('0rtt · declared "on" · live "off" · 0-RTT');
+    expect(check.ok).toBe(false);
+  });
+
+  it('the declaration (tls_1_3 "zrt"): apply, then 0 changes, then a clean check', async () => {
+    const { client, calls } = clientOver(beforeFirstApply);
+
+    const first = await applyZone(declared, client);
+    expect(first.lines).toEqual([
+      'changed tls_1_3 · "on" → "zrt" · TLS 1.3 (with 0-RTT)',
+      'changed 0rtt · "off" → "on" · 0-RTT',
+      "cloudflare:apply: 2 changes",
+    ]);
+    const before = calls.length;
+    const second = await applyZone(declared, client);
+    expect(second.lines).toEqual(["cloudflare:apply: 0 changes"]);
+    expect(calls.slice(before).every((call) => call.startsWith("GET "))).toBe(
+      true,
+    );
+    const check = await checkZone(declared, client);
+    expect(check.ok).toBe(true);
+    expect(check.lines.at(-1)).toBe(
+      "cloudflare:check: 26 declared values match config/cloudflare/zone-settings.json",
+    );
+  });
+
+  it("settles from TLS 1.3 switched off as well: one write of `zrt` brings 0-RTT with it", async () => {
+    const off = withSetting("tls_1_3", "off", withSetting("0rtt", "off"));
+    const { client } = clientOver(off);
+    const first = await applyZone(declared, client);
+    expect(first.lines.at(-1)).toBe("cloudflare:apply: 2 changes");
+    expect((await applyZone(declared, client)).changes).toBe(0);
+    expect((await checkZone(declared, client)).ok).toBe(true);
+  });
+});
 
 describe("apply is idempotent and --check never writes (AC-23, T-24)", () => {
   it("writes the four differences, then reports 0 changes on the second run", async () => {

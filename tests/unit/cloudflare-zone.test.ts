@@ -115,6 +115,23 @@ describe("the endpoint allow-list (AC-24, T-25)", () => {
     }).toThrow(EndpointNotAllowedError);
   });
 
+  it("admits `bot_management` for reading only: a write to it is refused before the transport (spec 040 §14 A5)", async () => {
+    const path = `/zones/${ZONE_ID}/bot_management`;
+    expect(matchEndpoint("GET", path, ZONE_ID)?.scope).toBe(
+      "Zone → Bot Management → Read",
+    );
+    for (const verb of ["PATCH", "PUT", "POST", "DELETE"]) {
+      expect(matchEndpoint(verb, path, ZONE_ID), verb).toBeUndefined();
+    }
+    const { client, received } = clientAnswering({ status: 200, body: {} });
+    await expect(
+      client.request({ method: "PATCH", path, body: { fight_mode: false } }),
+    ).rejects.toThrow(
+      "PATCH /zones/{zone_id}/bot_management is not on the endpoint allow-list (src/lib/cloudflare-zone.ts ALLOWED_ENDPOINTS)",
+    );
+    expect(received).toEqual([]);
+  });
+
   it("refuses a planted `/accounts/…` call before it reaches the transport", async () => {
     const { client, received } = clientAnswering({ status: 200, body: {} });
     await expect(
@@ -309,6 +326,26 @@ describe("config/cloudflare/zone-settings.json parses, and a broken one does not
     ];
     const result = zoneSettingsSchema.safeParse(broken);
     expect(result.error?.issues[0]?.message).toBe("ssl is declared twice");
+  });
+
+  it("refuses tls_1_3 and 0rtt that disagree: at Cloudflare they are one switch", () => {
+    // `tls_1_3: "zrt"` is TLS 1.3 with 0-RTT; writing `"on"` turns 0-RTT off, and writing
+    // `0rtt: "on"` turns `tls_1_3` into `"zrt"`. A pair that disagrees never settles (2026-10-03).
+    const withPair = (tls: string, zeroRtt: string) => {
+      const edited = file();
+      const rows = edited["protocol"] as { setting: string; value: unknown }[];
+      for (const row of rows) {
+        if (row.setting === "tls_1_3") row.value = tls;
+        if (row.setting === "0rtt") row.value = zeroRtt;
+      }
+      return zoneSettingsSchema.safeParse(edited);
+    };
+    const message =
+      'tls_1_3 and 0rtt disagree: Cloudflare couples them, so 0rtt "on" needs tls_1_3 "zrt" and tls_1_3 "zrt" needs 0rtt "on"';
+    expect(withPair("on", "on").error?.issues[0]?.message).toBe(message);
+    expect(withPair("zrt", "off").error?.issues[0]?.message).toBe(message);
+    expect(withPair("zrt", "on").success).toBe(true);
+    expect(withPair("on", "off").success).toBe(true);
   });
 
   it("refuses a row without its reason, and an unknown field", () => {

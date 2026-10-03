@@ -111,6 +111,19 @@ export const zoneSettingsSchema = z
     doNotEnable: z.array(doNotEnableRowSchema).min(1),
   })
   .superRefine((file, context) => {
+    const tls = file.protocol.find((row) => row.setting === "tls_1_3");
+    const zeroRtt = file.protocol.find((row) => row.setting === "0rtt");
+    if (
+      tls !== undefined &&
+      zeroRtt !== undefined &&
+      (tls.value === "zrt") !== (zeroRtt.value === "on")
+    ) {
+      context.addIssue({
+        code: "custom",
+        message:
+          'tls_1_3 and 0rtt disagree: Cloudflare couples them, so 0rtt "on" needs tls_1_3 "zrt" and tls_1_3 "zrt" needs 0rtt "on"',
+      });
+    }
     const seen = new Set<string>();
     const keys = [
       ...file.protocol.map((row) => row.setting),
@@ -723,10 +736,31 @@ const recordedSettingSchema = z.object({
 });
 
 /**
+ * The other setting a write moves, as Cloudflare does it. `tls_1_3` takes `"on"`, `"zrt"` or
+ * `"off"`, and `"zrt"` is TLS 1.3 with 0-RTT
+ * (developers.cloudflare.com/ssl/edge-certificates/additional-options/tls-13/); `0rtt` takes `"on"`
+ * or `"off"`. They are one switch: on the live zone (2026-10-03) writing `0rtt: "on"` turned
+ * `tls_1_3` into `"zrt"`, and writing `tls_1_3: "on"` turned 0-RTT off.
+ */
+function coupledWrite(
+  id: string,
+  value: Json,
+  current: (id: string) => Json | undefined,
+): [string, Json] | undefined {
+  if (id === "tls_1_3") return ["0rtt", value === "zrt" ? "on" : "off"];
+  if (id !== "0rtt") return undefined;
+  const tls = current("tls_1_3");
+  if (value === "on" && tls === "on") return ["tls_1_3", "zrt"];
+  if (value === "off" && tls === "zrt") return ["tls_1_3", "on"];
+  return undefined;
+}
+
+/**
  * Answers from the recorded responses, and behaves like the API on a write: a `PATCH` to a
- * setting replaces the recorded `value`, so a later `GET` sees it (T-24's second run). A setting
- * recorded `editable: false` refuses the write with 400, as Cloudflare does. A request with no
- * recording answers 404.
+ * setting replaces the recorded `value`, so a later `GET` sees it (T-24's second run), and moves
+ * the setting Cloudflare couples to it ({@link coupledWrite}). A setting recorded
+ * `editable: false` refuses the write with 400, as Cloudflare does. A request with no recording
+ * answers 404.
  */
 export function createRecordedTransport(
   recorded: RecordedZone,
@@ -771,12 +805,34 @@ export function createRecordedTransport(
       });
     }
     const value = z.object({ value: jsonSchema }).parse(request.body).value;
-    const updated = {
-      status: 200,
-      body: { ...setting, result: { ...setting.result, value } },
-    };
-    responses.set(getKey, updated);
+    const updated = record(getKey, value);
+    const settingId = getKey.slice(getKey.lastIndexOf("/") + 1);
+    const coupled = coupledWrite(settingId, value, recordedValue);
+    if (coupled !== undefined) {
+      const [otherId, otherValue] = coupled;
+      if (recordedValue(otherId) !== undefined) {
+        record(`GET /zones/{zone_id}/settings/${otherId}`, otherValue);
+      }
+    }
     return Promise.resolve(updated);
   };
+
+  /** The recorded `value` of a setting answering 200, or `undefined`. */
+  function recordedValue(id: string): Json | undefined {
+    const entry = responses.get(`GET /zones/{zone_id}/settings/${id}`);
+    if (entry?.status !== 200) return undefined;
+    return recordedSettingSchema.parse(entry.body).result.value;
+  }
+
+  /** Replace a recorded setting's `value`, as a successful write does. */
+  function record(getKey: string, value: Json): ApiResponse {
+    const current = recordedSettingSchema.parse(responses.get(getKey)?.body);
+    const updated = {
+      status: 200,
+      body: { ...current, result: { ...current.result, value } },
+    };
+    responses.set(getKey, updated);
+    return updated;
+  }
   return { transport, calls };
 }

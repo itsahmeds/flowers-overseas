@@ -1,5 +1,5 @@
 {
-  "$comment": "The zone as config/cloudflare/zone-settings.json declares it, on the Free plan (TASK-100). Shaped after Cloudflare's documented v4 envelopes, because no agent holds a token: the founder's first live `cloudflare:check` is the recording that confirms them (TASK-100 escalation E-1). `mirage` answers 404: Cloudflare sunset it in January 2026. `http2` and `polish` are read-only on the Free plan.",
+  "$comment": "The zone as config/cloudflare/zone-settings.json declares it, on the Free plan (TASK-100). Shaped after Cloudflare's documented v4 envelopes, because no agent holds a token: the founder's first live `cloudflare:check` is the recording that confirms them (TASK-100 escalation E-1). `mirage` answers 404: Cloudflare sunset it in January 2026. `http2` and `polish` are read-only on the Free plan. `tls_1_3` answers `zrt` (TLS 1.3 with 0-RTT) whenever `0rtt` is on, as the founder's live apply of 2026-10-03 showed.",
   "zoneId": "0f1e2d3c4b5a69788796a5b4c3d2e1f0",
   "responses": {
     "GET /zones/{zone_id}": {
@@ -73,7 +73,7 @@
         "messages": [],
         "result": {
           "id": "tls_1_3",
-          "value": "on",
+          "value": "zrt",
           "editable": true,
           "modified_on": "2026-09-16T09:12:44.000000Z"
         }
