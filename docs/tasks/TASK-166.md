@@ -101,6 +101,47 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
     and FO-BQ-036 "cut locally".
   - The source itself: `messages/{en,de,pl}.json` `catalog.floristSentence`.
 
+- **2026-10-03, E5, to the orchestrator: CI on `1a77d2df` has two reds, both caused by this diff.**
+  (a) `test-integration` `tests/integration/sitemap.test.ts` "carries a real <lastmod> … never the
+  clock" asserts `lastmod <= today (UTC)`. The en `reviewedAt` is now 2026-10-03, and CI ran at
+  22:18 UTC on 2026-10-02, so `/en/send-flowers-to` reads as being in the future. It clears itself
+  after 00:00 UTC on 2026-10-03: toggle `ci:full` then. The other fix, `reviewedAt` 2026-10-02,
+  would misdate the founder's approval. (b) `visual` `occasion-hub-mobile` (tests/visual/hubs.spec.ts:67)
+  is 2567px -> 2591px tall: the extra word wraps one occasion intro onto one more line. The linux
+  baseline needs a refresh (`visual:baselines` label, then inspect and commit, per
+  `docs/runbooks/visual-baselines.md`). That is outside this task's fence ("other tests").
+  **Question:** may TASK-166 commit the refreshed `occasion-hub-mobile` linux baseline?
+  **Answered (orchestrator, 2026-10-03):** (a) keep `reviewedAt` 2026-10-03, which matches every
+  other record of the founder's 2026-10-03 approvals; change neither the date nor the test; the
+  orchestrator re-fires CI after 00:00 UTC. (b) yes: refresh and commit the linux baseline for
+  `occasion-hub-mobile` only, through the `visual:baselines` label flow, after checking that the
+  only change is the intro wrapping one more line.
+
+- **2026-10-03, E6, to the orchestrator: the baseline run moved 15 linux PNGs, not one.** Run
+  37073763032 (`visual:baselines`, head `ef4e7803`). Measured old vs new pixel by pixel; the crops
+  were opened and looked at:
+  - `occasion-hub-mobile`: 2567 -> 2591 px. Rows 328-365 are the intro rewrapping ("…will be made
+    by hand and / delivered…city." onto one more line). Below it, with a 24 px shift, the only
+    differences are 6 809 pixels of max channel delta 1 (gradient dithering on the placeholder
+    cards from the shift; not visible). Matches the expected change.
+  - `category-hub-desktop` (0.149 %), `occasion-hub-desktop` (0.176 %) and `category-hub-mobile`
+    (0.162 %, rows 321-334; missed in this first count, found by `/review 136` round 1): the same
+    sentence rewraps inside the intro, same height. This diff, but under the `visual` gate (green
+    on CI).
+  - 11 others (corrected from "12"; the list always held 11 names: `ar-XB`, `en`, `dev-components-desktop`, `error-locale-{desktop,mobile}`,
+    `footer-en-{desktop,mobile}`, `home-{en,en-gb}-{desktop,mobile}`): one ~374 px band where the
+    footer "Occasions" link now renders in the active-link colour. **Not this diff**: TASK-113
+    (#98, `src/config/site-links.ts`) changed it after the linux set was last cut (#95), and no
+    refresh followed. Under the gate.
+  Per the stop condition ("any other baseline changes"), nothing was committed. **Question:**
+  commit `occasion-hub-mobile` alone (the PNG plus its manifest entry: the runbook's `--verify`
+  needs the manifest to move with the PNG), or all 15 with the manifest (this PR, or a separate
+  refresh)?
+  **Answered (orchestrator, 2026-10-03):** commit the baselines this diff causes from run
+  37073763032, with their manifest entries; leave the footer-colour baselines (TASK-113, #98) for a
+  separate refresh. That came to four after `/review 136` round 1 (`occasion-hub-mobile`,
+  `category-hub-desktop`, `occasion-hub-desktop`, `category-hub-mobile`) and 11 footer ones.
+
 ## Progress
 
 One line per coherent step, newest last, written by the agent doing the work and pushed with
@@ -114,13 +155,68 @@ here.
   `tests/fixtures/seed/_cases/copy/` (`bad-word-count`, `bad-duplicate-description`,
   `bad-delivery-timing`) carry the old sentence and must follow it.
 
+- 2026-10-03: E1-E3 answered. Changed `catalog.floristSentence` (en/de/pl) and the en meta review
+  fields, ran `--sync-copy`, the two E4 edits, `--locale de`/`pl`, `seed:diff --write`. Two things
+  the brief did not foresee, both mechanical (see `## Result`): every row's `sourceHash` moves, and
+  the en/en-gb sitemap fixtures' `lastmod` moves. Gates green on `8082a3a1`. Next: review + break.
+
+- 2026-10-03: ready and labelled `ci:full`; CI on `1a77d2df` has 23 jobs green and 2 red (E5). Next:
+  re-fire after 00:00 UTC for (a); the orchestrator rules on (b).
+- 2026-10-03: E5 answered. Ran the `visual:baselines` flow; 15 PNGs moved, so I stopped (E6) and
+  committed no baseline. Next: the orchestrator's ruling on E6.
+- 2026-10-03: E6 answered; committed the three baselines, `--verify` green, row `in_review`, CI
+  re-fired.
+- 2026-10-03: `/review 136` round 1 FAIL (breaker HOLDS): committed `category-hub-mobile` from the
+  same run (sha256 `8d47f7c44af5…`), `--verify` green; brief and PR body now say four baselines.
+
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
+**Shipped in PR #136** (`fix(copy): soften the florist claim in the seed copy (TASK-166)`).
+`catalog.floristSentence` is the founder's future-tense sentence in `messages/{en,de,pl}.json`;
+`en.meta.json` records `reviewed: true`, `reviewedBy: "founder (chat, 2026-10-03: future-tense
+florist sentence)"`, `reviewedAt: 2026-10-03` and the new `sourceHash`; de/pl meta keep
+`machine`/`reviewed: false`, and only their `sourceHash` follows the en value (`i18n:draft`
+writes it; `i18n:check` fails a stale one). 421 descriptions re-flowed (139 rows x en/de/pl + 4
+en-gb); FO-BQ-001 and FO-BQ-003 `seoDescription` edited exactly as E4 says (en, then drafted to
+de/pl). A script compared every copy row with HEAD: 421 rows, 0 differences beyond the closing
+sentence, the two `seoDescription`s and `sourceHash`. No new tests (data-only change).
 
-**Blocked, nothing shipped.** The draft PR carries only this brief and the `TASKS.md` row. Gates
-before the probe, on HEAD: `seed:check` exit 0, `catalogue:check` exit 0. Probe (scratch copy,
-421 replacements): `seed:check` exit 1, 444 problems (421 `copy/floristSentence`, 23
-`copy/wordCount`). No test pins the sentence as a literal: `tests/unit/seed-copy.test.ts` reads it
-from `messages/en.json`; the three fixtures named in `## Progress` carry it.
+**Beyond the brief (mechanical, flagged for the reviewer):**
+1. *Every* row's `sourceHash` moved, not only FO-BQ-001/003's: the hash covers `descriptionMd`
+   (`seed/copy.ts` `copySourceHash`), so a new closing sentence changes it on all 139 en rows.
+   `--sync-copy` re-flows the text but leaves the en and en-gb hashes stale, which
+   `tests/unit/seed-copy.test.ts` refuses ("records a reviewer and a date on every authored
+   row", "`en-gb` ships only as differing overrides"). I refreshed the 139 en + 4 en-gb hashes to
+   `copySourceHash` (data only). The tool gap in `seed/copy-draft.ts` `syncCopyLocale` is outside
+   this fence; suggested follow-up task. de/pl got the new hashes from `--locale de`/`pl`.
+2. `tests/fixtures/seo/sitemap/{sitemap,en-*,en-gb-*}.xml`: 22 `lastmod` lines 2026-09-22 ->
+   2026-10-03, because `catalogueUpdatedAt()` (`src/modules/i18n/review.ts`) takes the newest
+   en `reviewedAt`. Regenerated with `UPDATE_SEO_FIXTURES=1` (the test's own writer); nothing
+   else moved.
+
+**Fixtures.** `bad-duplicate-description` updated: it failed on `copy/floristSentence` instead
+of `copy/duplicate-description`. `bad-word-count` kept with the old sentence: its test still
+fails for its own fault (`copy/wordCount`), so the Binding says leave it; it is the only file the
+old-sentence grep finds. `bad-delivery-timing` does not carry the sentence.
+
+**Gates on `8082a3a1`:** `seed:check` 0 (ten families clean), `catalogue:check` 0 (pre-existing
+stale-FX note), `i18n:check` 0, `seed:project --check` 0; unit `seed-copy`, `seed-diff`,
+`seed-check`, `home-honesty`, `i18n-check`, `i18n-draft`, `sitemap-fixtures` green;
+`gates:cheap` PASS (7/7). No build slot used.
+
+**Visual baselines:** four linux PNGs from `visual-baselines` run 37073763032, committed with
+their manifest entries: `occasion-hub-mobile` (2567 -> 2591 px, the intro wraps one more line),
+`category-hub-desktop`, `occasion-hub-desktop` and `category-hub-mobile` (the same sentence
+rewraps, same height; the last one added after `/review 136` round 1). I opened and compared the
+4 images, plus crops of the 11 below. `pnpm visual:baselines --verify` passes
+("93 committed linux baseline(s) match the manifest byte for byte"). **Left for a separate
+refresh:** the 11 footer-colour baselines (`ar-XB`, `en`, `dev-components-desktop`,
+`error-locale-{desktop,mobile}`, `footer-en-{desktop,mobile}`, `home-{en,en-gb}-{desktop,mobile}`),
+which TASK-113 (#98) moved and which pass the gate.
+
+**Suggested follow-up (not changed here):** `syncCopyLocale` in `seed/copy-draft.ts` should
+refresh the en and en-gb `sourceHash` when it re-flows the closing sentence, so a future rewording
+is one edit plus one command, without a manual re-hash.
+
+**Broken on purpose:** the en key alone reverted (descriptions left new) -> `seed:check` exit 1,
+143 `copy/floristSentence` problems (139 en + 4 en-gb); restored -> clean.
