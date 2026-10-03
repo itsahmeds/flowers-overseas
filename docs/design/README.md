@@ -90,7 +90,7 @@ One answer for TASK-175's T-01: the name on the right, with the value on the rig
 | A21 / warm-c name | `tokens.css` | Value | Note |
 |---|---|---|---|
 | `--paper` · `--paper-2` | `--color-paper` · `--color-paper-2` | `oklch(99.8% 0.002 85)` · `oklch(98.9% 0.006 85)` | as A21 |
-| `--card` | `--color-card` | **`oklch(100% 0 0)`** | **Kept at the rendered value.** warm-c's README table says `oklch(99.6% 0.004 85)`, but `warm-c/home.html` (the page the founder approved) renders 100 %; 99.6 % would sit darker than the 99.8 % page and the letter, cards and fields would lose their lift. A21's table should read 100 %. |
+| `--card` | `--color-card` | **`oklch(100% 0 0)`** | The rendered value. warm-c's README table said `oklch(99.6% 0.004 85)` until 2026-10-03, when it was corrected to the 100 % the pages render: 99.6 % sat below the 99.8 % page and the letter, cards and fields lost their lift. |
 | `--ink` · `--ink-2` · `--ink-3` | `--color-ink` · `-2` · `-3` | `oklch(25% 0.06 285)` · `42% 0.05` · `50% 0.04` | as A21 |
 | `--accent` · `--accent-strong` | `--color-accent` · `--color-accent-strong` | `oklch(54% 0.2 30)` · `oklch(47% 0.19 30)` | as A21 |
 | `--sky` · `--sky-strong` | `--color-sky` · `--color-sky-strong` | `oklch(48% 0.16 262)` · `oklch(40% 0.15 262)` | as A21 |

@@ -29,9 +29,8 @@
   --color-paper: oklch(99.8% 0.002 85);
   --color-paper-2: oklch(98.9% 0.006 85);
   --color-paper-3: oklch(96.6% 0.01 85);
-  /* White, as warm-c/home.html renders it. warm-c's README table says 99.6 %; that would sit
-     darker than the 99.8 % page and lose the letter's lift, so the rendered value is kept (README,
-     "A21 name → tokens.css"). */
+  /* White, as the warm-c pages render it and as warm-c's README table reads since its 2026-10-03
+     correction (99.6 % sat below the 99.8 % paper and lost the letter's lift). */
   --color-card: oklch(100% 0 0);
 
   /* Ink. Plum-navy, three steps. 16.1, 8.5 and 6.0 : 1 on paper. */
