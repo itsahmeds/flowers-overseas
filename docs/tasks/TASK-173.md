@@ -47,9 +47,17 @@ Raised by the implementer, 2026-10-03, before any code was written. Nothing unde
 3. **Birthday and Sympathy are both a category key and an occasion key** (`categories.data.ts`, `occasions.data.ts`), so "the hub that matches the label" names two pages each. Proposed default, applied unless the orchestrator rules otherwise: the **occasion hub** (`/{locale}/{occasions}/birthday`), because the row's own "Occasions" entry is their parent and the occasion hub carries the dates. Bouquets → category hub `bouquet`, Roses → `roses`, Plants → `plant`; Add-ons has no hub page → not rendered.
 4. **Layout consequences of "not rendered", for the record (no question):** removing the search band and the account cluster drops the mobile search row (52 px), and publishing the category row grows it to the 44 px target, so `HEADER_HEIGHTS.mobile` 245 → ~209 and `HEADER_STICKY_HEIGHTS.mobile` 132 → ~96 (desktop unchanged at 183/138); the decorative mobile menu glyph looks like a button and does nothing, so it goes too. Header/home visual baselines and `tests/e2e/header.spec.ts`'s height pins change with it. An empty footer column (Company, the legal row) renders no heading.
 
+**Rulings (orchestrator, 2026-10-03, recorded in PR 163):**
+
+- (1) Fence widened: one prop in `src/app/[locale]/layout.tsx` (the locale's existing pages to `SiteHeader`, the footer's `unavailable` widened) and one in `src/app/[locale]/page.tsx` (the product URL map for `TrendingRow`). No new catalogue export.
+- (2) Birthday and Sympathy → their occasion hubs; Bouquets, Roses, Plants → their category hubs; Add-ons not shown.
+- (3) Removing the mobile menu glyph, the mobile header height change (245 → ~209 px) and dropping a footer column heading when all its links are hidden are accepted; `tests/e2e/header.spec.ts` takes the exact new values and the baselines this causes are refreshed.
+- Escalation 1 is closed by PR 163 putting the row and brief on `main`; work resumes after it merges and `origin/main` is merged into this branch.
+
 ## Progress
 
 - 2026-10-03: read the brief, `site-links.ts`, `categories.ts`, `SiteHeader`/`header-model`, `footerView`, `TrendingRow`, the catalog route resolver and the layout. Blocked by Escalations 1 and 2 before the first test; plan recorded above.
+- 2026-10-03: rulings received and recorded; waiting for PR 163 to merge before the first code change.
 
 ## Result
 
