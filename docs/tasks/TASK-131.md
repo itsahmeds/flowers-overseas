@@ -21,6 +21,10 @@ be green. One paragraph or a short list — no restatement of the spec.
 One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From `/review 135` round 1 (2026-10-03), HOLE 7 ACCEPTABLE, carried here:** the country shop
+  root's product cards can stay unlinked (`productLinks: false` in
+  `src/app/[locale]/[segment]/[child]/page.tsx` passed every unit test; the only card-link e2e is
+  on the depth-4 listing). This task's crawl must cover the shop roots' card links.
 
 ## Escalations
 
