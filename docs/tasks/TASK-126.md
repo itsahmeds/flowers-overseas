@@ -223,6 +223,14 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   are gone. The six E-1 e2e cases pass on a local production build. Evidence and build times are
   in TASK-127's `## Progress` and `## Result`. No TASK-126 file changed.
 
+- **2026-10-03 — `/review 135` round 1 fix round (finisher).** Rebased on `origin/main` (PR 136):
+  one conflict, the visual manifest, resolved to main's two `occasion-hub` hashes plus this PR's
+  eleven `product-*` entries; `messages/*` and the codebase map merged clean. No PNG this PR owns
+  renders the florist sentence (the PDP baselines are date-free blocks with no description; the
+  gallery's fixtures are not seed copy), so nothing was re-shot. The mobile A19 red was a race in
+  the sweep, not a missing mark (below). HOLES 3, 4 and 5 closed in `tests/unit/product-page.test.tsx`,
+  each seen red under the breaker's mutant and green once restored.
+
 ## Result
 
 **Done, in review — [PR #135](https://github.com/itsahmeds/flowers-overseas/pull/135) (with
@@ -251,5 +259,36 @@ in step.
 - **Tests:** unit `product-page` 24, `product-route` 5; e2e +2 gallery cases, +1 PDP sticky case;
   visual +11 PDP baselines (`darwin` here, `linux` from `visual-baselines.yml`), and the gallery's
   `dev-components-desktop` and seven 1 px-shifted listing parts refreshed.
+- **Declared deviation, the cutoff's formatting (`/review 135` round 1, required change 3).** The
+  binding clause says times go through `formatTimeInZone`. The page does not: the picker, the
+  chips' `pastCutoff` reason and the docked bar print the destination's **authored**
+  `sameDayCutoffLocal` ("14:00") **raw**, and the city comes from `zoneCity()` (`labels.ts`), which
+  reads the IANA zone the view carries (`Europe/Warsaw` → "Warsaw"). That matches the approved copy
+  ("Order by {time} in {city}") and spec 007's facts row, which prints the same authored value;
+  there is no instant to format, only a wall-clock time already in the recipient's zone. The cost,
+  carried as `/review 135` nit 1: `zoneCity()` is the zone database's English exemplar, so once
+  `de`/`pl` are translated "Warsaw" would sit inside German and Polish sentences. That belongs to
+  the de/pl PDP translation task, as a per-destination city key.
+- **`/review 135` round 1 required change 4, the mobile `/dev/components` A19 red.** The marking
+  was right: the trace of CI run 37080265401 shows the lift removed all four marked nodes
+  (`{"n":4}`: the live and preview picker lines, the two live summaries' docked lines), then a
+  React #418 hydration error, after which React re-rendered the tree on the client and the lines
+  were back before `innerText` read the body. Only the slower `e2e-mobile` project lost that race.
+  `tests/e2e/chrome-honesty.spec.ts` now hides the same `[data-fo-product-state] [data-fo-cutoff]`
+  set, reads `body.innerText` and restores, all in one synchronous `evaluate`: same lift list,
+  same whole-document sweep, no DOM left changed for React to undo.
+- **HOLES 3, 4, 5 (`/break 135` round 1).** `tests/unit/product-page.test.tsx`:
+  "prints every tier's own `formatMoney(price)` and stem-count label, in three locales" (red under
+  `TierSelector.tsx:99` every radio at the selected tier's price, and `:42` count 1); "checks
+  exactly the selected tier" (red under `:92` last tier preselected); "prints each chip's own
+  `data-fo-date` as its date" (en, pl; preview, live; red under `labels.ts:33` one day early and
+  under the breaker's `T02:00Z` + `DateChip.tsx:112` `America/New_York`); "dates the summary's
+  surcharge line, and the docked bar, with the chosen chip's date" (red under `PriceSummary.tsx:128`
+  one day late, and under `labels.ts:33`); "prints no `included` fee on any closed chip" (four
+  locales, preview and live; red under `DateChip.tsx:115` `true`). The expected date is built
+  without `instantOf()`, so a shift there cannot move both sides. Unit `product-page` is 29.
+- **Accepted holes:** HOLE 2 (canonical, `page.tsx:253`) → TASK-132, AC-17; HOLE 6 (block order,
+  `ProductPage.tsx:140/179/201`) → TASK-133, AC-28; HOLE 7 (shop-root card links,
+  `[child]/page.tsx:424`) → TASK-131's AC-20 crawl must include the country shop roots.
 - **Expensive gates run locally**, because the change adds baselines and a docked element whose
   position only a browser computes; CI is the gate of record.

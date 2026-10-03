@@ -32,9 +32,12 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 ## Read
 
-- `specs/NNN-*.md` — read `## 0. Index` first, then only the sections the ACs name
+- `specs/009-product-page-date-picker.md` — `## 0. Index`, AC-1, AC-3, AC-16, AC-20, §5.4, §14 A6
+  and A7
 - `docs/codebase-map.md` — where everything lives
-- (the two or three files the deliverable actually touches)
+- `src/app/[locale]/[segment]/[child]/[grandchild]/page.tsx` (the product branch),
+  `src/modules/catalog/product.ts` (`productView()`, `productPrebuildPages()`),
+  `src/config/site-links.ts`
 
 ## Carry-forwards
 
@@ -108,6 +111,15 @@ One dated bullet per `/review`, newest last.
   layout at `dynamicParams = true` in a scratch build it went red on the `lang` line (`Received:
   undefined`). The layout was restored and the mutated build deleted.
 
+- **2026-10-03 — `/review 135` round 1 fix round (finisher).** AC-1 / T-01 under §14 A7: one e2e
+  case in `tests/e2e/product-page.spec.ts`, "the trailing-slash form answers 308 to the bare
+  product URL" (`en` and `de`), exact 308 and `Location` equal to the bare path; the six other
+  shapes keep their 404-with-no-`Location` case. HOLE 1: `tests/unit/product-route.test.tsx`
+  "emits exactly `noindex,follow` for preview, unavailable and live PDPs on the indexable
+  deployment" calls the route's `generateMetadata` with `APP_ENV=production` on the canonical
+  host; with `page.tsx:252` set to `"index,follow"` it went red (`Received: "index,follow"`), and
+  green once restored.
+
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
@@ -156,5 +168,10 @@ so the listing cards link to it. The page reads `productView()` only.
 - **AC-3's summary half (carry-forward 2):** the product table prints once per build, seen once in
   a real `pnpm build`, and proved once by two mutations.
 - **AC-8, AC-10, AC-21, AC-22, AC-25:** `tests/unit/product-page.test.tsx`, plus their e2e halves.
+- **AC-1 trailing slash (§14 A7):** e2e, 308 with `Location` = the bare path (`en`, `de`).
+- **AC-16, the PDP robots tag (`/break 135` HOLE 1):** unit, the route's own `generateMetadata`
+  is `noindex,follow` in `preview`, `unavailable` and `live`, on the indexable deployment; the
+  `INDEX_FOLLOW` mutant at `page.tsx:252` went red. Unit `product-route` is 6.
+- **Accepted, not built here:** HOLE 2 (the canonical, `page.tsx:253`) → TASK-132 (AC-17).
 - **`/review 101` HOLE 12:** done, see `## Progress`. **`/review 98` HOLE 5:** pinned and seen to
   bite.
