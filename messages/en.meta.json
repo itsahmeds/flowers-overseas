@@ -975,8 +975,10 @@
   },
   "catalog.price.equivalents": {
     "source": "human",
-    "reviewed": false,
-    "sourceHash": "b29a7a4b683a371a1395c78e3e8f6d8408a850dccbf04b63f5e15ae49a685c70"
+    "reviewed": true,
+    "sourceHash": "b29a7a4b683a371a1395c78e3e8f6d8408a850dccbf04b63f5e15ae49a685c70",
+    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179); recorded by the orchestrator on the founder's authorisation (2026-10-04: 'I authorise you to record my approval of the 14-item wording batch as reviewed by me.')",
+    "reviewedAt": "2026-10-03T22:10:00Z"
   },
   "catalog.price.from": {
     "source": "human",
