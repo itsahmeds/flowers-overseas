@@ -18,13 +18,14 @@
  *  - **the wordmark navigates to the locale home** (AC-7's one link);
  *  - **the currency chip** per locale, and the body being byte-identical with and without an
  *    `fo_currency` cookie, with no `Set-Cookie` on the response (AC-8);
- *  - **the search band holds no form control at all** (spec §14 A4): the artboards draw text, and
- *    text is what ships until spec 008 publishes search — so there is nothing to submit, nothing
- *    to focus and nothing that can navigate to a route that does not exist;
+ *  - **nothing is drawn for a target with no page** (spec 004 §14 A20; TASK-173): no search band,
+ *    no account cluster, no menu glyph and no category entry without a hub — and every entry the
+ *    category row does draw is a link that answers 200;
  *  - **every rendered link measures at least 44 px tall** at both artboard widths (§5.3, §8), and
  *    the currency chip sits inside the header's visible box at 390 px (§14 A4's AC-8 fix);
  *  - **no header link points at an unpublished target** (AC-14's header half, verified in full by
- *    TASK-054's crawl): every internal `href` in the header answers 200.
+ *    TASK-054's crawl and TASK-173's chrome crawl in `tests/e2e/links.spec.ts`): every internal
+ *    `href` in the header answers 200.
  */
 import { createHash } from "node:crypto";
 
@@ -51,8 +52,9 @@ const inChrome = (selector: string): string =>
  * renders agrees with the component by construction.
  *
  * mobile  = 113 utility (three lines at 390 px: the cutoff line, the help channel, and the
- *           switcher with the chip) + 1 rule + 102 masthead and search band + 1 rule
- *           + 28 category row + 1 rule (rounded: 245)
+ *           switcher with the chip) + 1 rule + 50 masthead + 1 rule + 44 category row + 1 rule
+ *           (rounded: 209). TASK-173 (spec 004 §14 A20) removed the 52 px search band, which has
+ *           no page, and grew the row from 28 px to the 44 px its links owe; it was 245.
  * desktop = 44 utility (the strip carries links now, and a link owes 44 px) + 1 rule
  *           + 84 masthead + 1 rule + 52 category row (one line again, the artboard's) + 1 rule
  *
@@ -60,7 +62,7 @@ const inChrome = (selector: string): string =>
  * property: one deterministic box, nothing measured after paint. `header-model.ts` records why
  * each differs from the artboards' band sum (167 / 173).
  */
-const HEADER_HEIGHTS = { mobile: 245, desktop: 183 } as const;
+const HEADER_HEIGHTS = { mobile: 209, desktop: 183 } as const;
 
 /**
  * The two boxes that sum to it: the strip that scrolls, and the banner that sticks (§14 A4's
@@ -69,11 +71,11 @@ const HEADER_HEIGHTS = { mobile: 245, desktop: 183 } as const;
  *
  * utility mobile  = 113 (three lines at 390 px) + 1 rule
  * utility desktop = 44 (the strip carries links, and a link owes 44 px) + 1 rule
- * sticky  mobile  = 50 masthead + 52 search band + 28 category row + 2 rules
+ * sticky  mobile  = 50 masthead + 44 category row + 2 rules (TASK-173; 132 with the search band)
  * sticky  desktop = 84 masthead + 52 category row + 2 rules
  */
 const UTILITY_HEIGHTS = { mobile: 113, desktop: 45 } as const;
-const STICKY_HEIGHTS = { mobile: 132, desktop: 138 } as const;
+const STICKY_HEIGHTS = { mobile: 96, desktop: 138 } as const;
 
 /** The two artboard widths, for the assertions that must hold at both (§14 A4). */
 const ARTBOARDS = [
@@ -278,17 +280,40 @@ test.describe("the site header (AC-7)", () => {
     await expect(switcher.locator('[aria-current="page"]')).toHaveCount(1);
   });
 
-  test("renders every unpublished target as text, and every header link answers 200", async ({
+  test("draws no element for a target with no page, and every header link answers 200", async ({
     page,
     request,
   }) => {
     await page.goto("/en");
 
-    // Not one category, account item or `For florists` entry is a link (AC-14).
+    // Every keyed entry is a link (spec 004 §14 A20; TASK-173): not one `<span>` dressed as one.
     const items = page.locator("[data-fo-header-item]");
-    await expect(items).not.toHaveCount(0);
+    await expect(items).toHaveCount(8);
     for (const handle of await items.all()) {
-      expect(await handle.evaluate((node) => node.tagName)).toBe("SPAN");
+      expect(await handle.evaluate((node) => node.tagName)).toBe("A");
+    }
+    // And the targets with no page are absent, not text.
+    for (const id of [
+      "sign-in",
+      "my-orders",
+      "basket",
+      "for-florists",
+      "add-ons",
+      "same-day-delivery",
+    ]) {
+      await expect(
+        page.locator(`[data-fo-header-item="${id}"]`),
+        id,
+      ).toHaveCount(0);
+    }
+    for (const word of [
+      "Sign in",
+      "My orders",
+      "Basket",
+      "For florists",
+      "Add-ons",
+    ]) {
+      await expect(page.locator(HEADER), word).not.toContainText(word);
     }
 
     const internal = await page
@@ -298,31 +323,27 @@ test.describe("the site header (AC-7)", () => {
       );
     expect(internal.length).toBeGreaterThan(0);
     for (const href of internal) {
-      const response = await request.get(href);
+      const response = await request.get(href, { maxRedirects: 0 });
       expect(response.status(), href).toBe(200);
     }
   });
 
-  test("the search band holds no form control at all (§14 A4)", async ({
+  test("draws no search band and no form control at all (§14 A20)", async ({
     page,
   }) => {
     await page.goto("/en");
 
-    // Nothing to submit, nothing to focus: the band is the two boxes the artboards draw, as text.
+    // Search has no page, so there is no band: not a field, not the text shaped like one.
+    await expect(page.locator("[data-fo-header-search]")).toHaveCount(0);
     await expect(
       page.locator(
         [inChrome("form"), inChrome("input"), inChrome("select")].join(", "),
       ),
     ).toHaveCount(0);
-    await expect(page.locator(inChrome('button[type="submit"]'))).toHaveCount(
-      0,
-    );
-    const band = page.locator("[data-fo-header-search]");
-    await expect(band).toContainText(
+    await expect(page.locator(inChrome("button"))).toHaveCount(0);
+    await expect(page.locator(HEADER)).not.toContainText(
       "Search flowers, occasions, a city or a country",
     );
-    // …and it is not in the tab order, because a focus stop that does nothing is a failure.
-    await expect(band.locator("a, button, input, [tabindex]")).toHaveCount(0);
   });
 
   test("every rendered link clears 44 px at both artboard widths (§5.3, §8, §14 A4)", async ({
@@ -332,20 +353,27 @@ test.describe("the site header (AC-7)", () => {
       await page.setViewportSize(viewport);
       await page.goto("/en");
 
-      // Both elements: the strip holds four of the six links (§14 A4's addendum re-scoped this).
-      const measured = await page.locator(inChrome("a")).evaluateAll((nodes) =>
-        nodes.map((node) => {
-          const box = node.getBoundingClientRect();
-          return {
-            href: node.getAttribute("href") ?? "",
-            height: Math.round(box.height),
-            width: Math.round(box.width),
-          };
-        }),
-      );
+      // Both elements: the strip holds the help channel and the switcher, the banner the lockup
+      // and the category row. Only **rendered** links are measured: below `md` the row draws its
+      // mobile subset, and the desktop-only entries have no box at all.
+      const measured = (
+        await page.locator(inChrome("a")).evaluateAll((nodes) =>
+          nodes.map((node) => {
+            const box = node.getBoundingClientRect();
+            return {
+              href: node.getAttribute("href") ?? "",
+              height: Math.round(box.height),
+              width: Math.round(box.width),
+            };
+          }),
+        )
+      ).filter((link) => link.width > 0);
 
-      // The help channel's two links, the masthead lockup and the switcher's three siblings.
-      expect(measured.length, String(viewport.width)).toBe(6);
+      // The help channel's two links, the masthead lockup, the switcher's three siblings and the
+      // category row: all eight entries on the desktop artboard, the mobile artboard's five
+      // (Our selection, Bouquets, Roses, Plants, Occasions — Same-day has no page) below it.
+      const row = viewport.width >= MD_BREAKPOINT ? 8 : 5;
+      expect(measured.length, String(viewport.width)).toBe(6 + row);
       for (const link of measured) {
         expect(
           link.height,
@@ -406,19 +434,13 @@ test.describe("the site header (AC-7)", () => {
     ).toEqual([true, true]);
   });
 
-  test("the menu glyph is decoration, not a control (`/review 31`, TASK-055)", async ({
+  test("draws no menu glyph, because it opened nothing (§14 A20)", async ({
     page,
   }) => {
     await page.goto("/en");
-    // Not `getByRole`: the glyph is `md:hidden` *and* `aria-hidden`, so it is out of the
-    // accessibility tree entirely — which is the correct answer for an affordance that does
-    // nothing, and is exactly why the assertion reads the DOM.
-    await expect(
-      page.locator('[data-fo-header-menu="unpublished"]'),
-    ).toHaveCount(1);
-    await expect(
-      page.locator('[data-fo-header-menu="unpublished"]'),
-    ).toHaveAttribute("aria-hidden", "true");
+    // `/review 31` turned a dead button into decoration; spec 004 §14 A20 removes the decoration
+    // too, because a glyph that looks like a menu and opens nothing is the defect itself.
+    await expect(page.locator("[data-fo-header-menu]")).toHaveCount(0);
     // No button in the header at all: nothing that looks pressable and is not.
     await expect(page.locator("[data-fo-header] button")).toHaveCount(0);
   });

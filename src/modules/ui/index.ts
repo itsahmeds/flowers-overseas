@@ -60,6 +60,14 @@ export type { MarkProps } from "./icons/Mark";
 // locale is set and adds no client JavaScript (§14 A1).
 export { SiteHeader } from "./layout/SiteHeader.tsx";
 export type { SiteHeaderProps } from "./layout/SiteHeader.tsx";
+// The listing pages the header's category row may link to (spec 008 §14 A14; TASK-173): the
+// document layout asks the catalogue which of them exist in its locale and hands the URLs back as
+// `SiteHeader`'s `listingHrefs`, because this module may not read the catalogue (`plan/01` §5).
+export { headerListingTargets } from "./layout/header-model.ts";
+export type {
+  HeaderListingHrefs,
+  HeaderListingTarget,
+} from "./layout/header-model.ts";
 
 // Layout primitives.
 export {
@@ -327,7 +335,10 @@ export { PROOF_FACTS, ProofRow } from "./home/ProofRow.tsx";
 // provider at runtime would turn the seam into global mutable configuration); the populated
 // branch reaches the gallery through each section's optional `provider` prop.
 export { TRENDING_ANCHOR, TrendingRow } from "./home/TrendingRow.tsx";
-export type { TrendingRowProps } from "./home/TrendingRow.tsx";
+export type {
+  TrendingProductPage,
+  TrendingRowProps,
+} from "./home/TrendingRow.tsx";
 export {
   TRENDING_BASES,
   emptyTrendingProvider,

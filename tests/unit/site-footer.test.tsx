@@ -14,7 +14,8 @@
  *  2. `CompanySchema` refuses `registered: true` with a missing field, so the flag cannot be set
  *     without the data (AC-9's schema half; the fixture is rendered too, to prove the *other*
  *     direction: with all five fields the clauses appear);
- *  3. an unpublished link is text and never an `<a>` (AC-14);
+ *  3. an unpublished link is **not drawn at all** — no `<a>`, no text, no heading over an empty
+ *     column (AC-14 as spec 004 §14 A20 amends it; TASK-173);
  *  4. no payment method is named while none is `available`, and no logo image ships at all (§8).
  *
  * The parts that need a browser — the control re-opening the banner after TASK-051 wires it, the
@@ -30,7 +31,12 @@ import {
   availablePaymentMethods,
   PAYMENT_METHODS,
 } from "../../src/config/payment-methods.ts";
-import { SITE_LINKS } from "../../src/config/site-links.ts";
+import {
+  SITE_LINKS,
+  SITE_LINK_GROUPS,
+  type SiteLinkId,
+  isPublished,
+} from "../../src/config/site-links.ts";
 import {
   loadMessages,
   MESSAGE_NAMESPACES,
@@ -86,35 +92,67 @@ describe("SiteFooter: the Phase-0 colophon", () => {
     expect(phase0).not.toContain("<main");
   });
 
-  it("renders the canvas's two link columns and the legal row, each a named nav", () => {
-    // Two visible headings plus the legal row's accessible name: three navigation landmarks.
-    expect(phase0.match(/<nav/g)?.length).toBeGreaterThanOrEqual(3);
+  it("renders the one link column with a page behind it, as a named nav, and no empty one", () => {
+    // `Sending` keeps Destinations and Occasions. `Company` and the legal row have no entry with
+    // a page (TASK-174 builds them), so neither is drawn: no heading over nothing, and no empty
+    // `navigation` landmark (spec 004 §14 A20; TASK-173). The language list is spec 003's nav.
     expect(phase0).toContain('aria-labelledby="footer-group-sending"');
-    expect(phase0).toContain('aria-labelledby="footer-group-company"');
-    expect(phase0).toContain('aria-label="Legal"');
+    expect(phase0).not.toContain('aria-labelledby="footer-group-company"');
+    expect(phase0).not.toContain('aria-label="Legal"');
+    expect(phase0.match(/<nav/g)).toHaveLength(2);
   });
 
-  it("prints every footer label the canvas draws", () => {
-    for (const label of [
-      "Sending",
-      "Company",
-      "Destinations",
-      "Occasions",
-      // "Delivery times and cutoffs" is gated on `anyDeliveryDatesOpen()` (spec 004 §14 A19;
-      // TASK-120) and absent while no florist has agreed a cutoff — asserted below.
-      "The guarantee",
-      "How it works",
-      "For florists",
-      "Help and contact",
-      "Imprint",
-      "Terms",
-      "Privacy",
-      "Cookies",
-      "Withdrawal and refunds",
-    ]) {
+  it("prints the labels whose page exists, and none of the ones whose page does not", () => {
+    for (const label of ["Sending", ">Destinations<", ">Occasions<"]) {
       expect(phase0, label).toContain(label);
     }
-    expect(phase0).not.toContain("Delivery times and cutoffs");
+    // Built from the registry, not typed: every footer link with no page, and the heading of
+    // every group left with none, must be absent from the colophon in every launch locale. Each
+    // one looked like a link on the live site and went nowhere (2026-10-03; spec 004 §14 A20).
+    const unpublished = SITE_LINKS.filter(
+      (link) => link.surfaces.includes("footer") && !isPublished(link.id),
+    );
+    const emptyGroups = SITE_LINK_GROUPS.filter(
+      (group) =>
+        group.surface === "footer" &&
+        group.linkIds.every((id) => !isPublished(id as SiteLinkId)),
+    );
+    // The set is not vacuous: the guarantee, the Company column and the legal row are in it.
+    expect(unpublished.map((link) => link.id)).toEqual(
+      expect.arrayContaining([
+        "guarantee",
+        "for-florists",
+        "imprint",
+        "cookies",
+      ]),
+    );
+    expect(emptyGroups.map((group) => group.id)).toEqual(["company", "legal"]);
+    for (const locale of ["en", "en-gb", "de", "pl"]) {
+      const html = render(<SiteFooter locale={locale} />, locale);
+      const messages = loadMessages(locale, MESSAGE_NAMESPACES) as Record<
+        string,
+        unknown
+      >;
+      const keys = [
+        ...unpublished.map((link) => link.labelKey ?? ""),
+        ...emptyGroups.map((group) => group.headingKey),
+      ];
+      for (const key of keys) {
+        const label = key
+          .split(".")
+          .reduce<unknown>(
+            (node, part) =>
+              typeof node === "object" && node !== null
+                ? (node as Record<string, unknown>)[part]
+                : undefined,
+            messages,
+          );
+        expect(typeof label, `${locale} ${key}`).toBe("string");
+        const escaped = String(label).replaceAll("&", "&amp;");
+        expect(html, `${locale} ${key}`).not.toContain(`>${escaped}<`);
+        expect(html, `${locale} ${key}`).not.toContain(`"${escaped}"`);
+      }
+    }
   });
 
   it("renders the language list and the cookie-settings control (AC-9)", () => {
@@ -126,7 +164,7 @@ describe("SiteFooter: the Phase-0 colophon", () => {
   });
 });
 
-describe("AC-14: an unpublished target is text, never a link", () => {
+describe("AC-14 (spec 004 §14 A20): an unpublished target is not drawn at all", () => {
   it("renders an `<a>` for each published footer target and for nothing else (007 AC-20, 008 AC-20)", () => {
     const hrefs = [...phase0.matchAll(/href="([^"]*)"/g)].map(
       (match) => match[1],
@@ -164,12 +202,10 @@ describe("AC-14: an unpublished target is text, never a link", () => {
     ).toEqual(["destinations", "occasions"]);
   });
 
-  it("renders a published row as text where its page does not exist in this locale", () => {
+  it("draws nothing for a published row whose page does not exist in this locale", () => {
     // **Permission is not existence** (spec 008 AC-20, spec 004 AC-14; TASK-113). `occasions` is
-    // published, and `/en/occasions` is a page — but `/de/anlaesse` and `/pl/okazje` are 404s
-    // while no occasion carries a German or Polish slug, so the German colophon prints the word
-    // and no href. Publishing the row without this produced exactly that broken link, measured
-    // against a local `pnpm start` before it was fixed.
+    // published, but a locale with no occasion hub has no occasions index, so the layout marks
+    // it `unavailable` — and since TASK-173 the colophon prints neither the href nor the word.
     const german = render(
       <SiteFooter
         locale="de"
@@ -177,8 +213,21 @@ describe("AC-14: an unpublished target is text, never a link", () => {
       />,
       "de",
     );
-    expect(german).toContain(">Occasions<");
+    expect(german).not.toContain(">Occasions<");
     expect(german).not.toContain(`href="${localePath("de", "occasions")}"`);
+    expect(german).toContain(`href="${localePath("de", "destinations")}"`);
+    // And a column left with no entry at all is gone, heading included.
+    const empty = render(
+      <SiteFooter
+        locale="de"
+        view={footerView("de", {
+          unavailable: ["occasions", "destinations"],
+        })}
+      />,
+      "de",
+    );
+    expect(empty).not.toContain('aria-labelledby="footer-group-sending"');
+    expect(empty).not.toContain(">Sending<");
 
     // And the same registry row, in a locale where the page exists, is a link — one option, two
     // outcomes, so neither branch is dead.
@@ -194,14 +243,14 @@ describe("AC-14: an unpublished target is text, never a link", () => {
       columns: view.columns.map((group) => ({
         ...group,
         links: group.links.map((link) =>
-          link.id === "destinations"
-            ? { ...link, href: "/en/destinations" }
-            : link,
+          link.id === "guarantee" ? { ...link, href: "/en/guarantee" } : link,
         ),
       })),
     };
     const markup = render(<SiteFooter locale="en" view={populated} />);
-    expect(markup).toContain('href="/en/destinations"');
+    expect(markup).toContain('href="/en/guarantee"');
+    expect(markup).toContain(">The guarantee<");
+    expect(phase0).not.toContain(">The guarantee<");
   });
 });
 

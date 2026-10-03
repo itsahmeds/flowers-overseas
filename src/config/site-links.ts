@@ -5,9 +5,11 @@
  * category row's end cluster, the four footer link columns and the legal row of
  * `docs/design/homepage-v1/homepage-desktop.dc.html` — with **the spec that publishes it** and a
  * `published` flag. It is the answer to spec 004 AC-14: a target whose page does not exist yet is
- * a row here with `published: false`, and `SiteHeader`/`SiteFooter` (TASK-048/TASK-049) render an
- * unpublished target as **text, never as a link**. So Phase 0 ships zero internal links to a
- * non-200 URL, and 007/008/010/011/019 turn text into navigation by flipping data.
+ * a row here with `published: false`, and `SiteHeader`/`SiteFooter` (TASK-048/TASK-049) **do not
+ * render an unpublished target at all** — no link, no text, no disabled control (spec 004 §14 A20,
+ * TASK-173, superseding the first rule, which drew it as text that looked like a control and did
+ * nothing). So the site ships zero internal links to a non-200 URL and nothing that looks
+ * clickable and is not, and 007/008/010/011/019 add navigation by flipping data.
  *
  * `isPublished(linkId)` is the only consumer path for the flag (spec 004 §5.1's contract: one
  * predicate). As in spec 003 §12 and in `countries.ts`, the config-file flag is a bounded, stated
@@ -20,7 +22,8 @@
  * resolved through the catalogue (`CLAUDE.md`, spec 004 §7).
  *
  * **How a target resolves.** Three honest shapes and nothing else (four with `listing`, added by
- * spec 008 AC-20 for the URL families whose members carry a slug):
+ * spec 008 AC-20 for the URL families whose members carry a slug, and five with `listingPage`,
+ * added by spec 008 §14 A14 for the one listing page a chrome entry names):
  *
  *  - `{ kind: "route", pageType }` — the URL exists as a *route shape* today: `pageType` is one of
  *    `localePath()`'s page types, so `src/config/locales.ts` already fixes the localised segment
@@ -68,6 +71,27 @@ export const listingLinkPageTypes = [
 ] as const;
 export type ListingLinkPageType = (typeof listingLinkPageTypes)[number];
 
+/**
+ * The listing page types a **single** chrome entry may name (spec 008 §14 A14; TASK-173): the
+ * header's category row points at one hub, one destination's shop root or the occasions index,
+ * not at a family. Restated from `ListingPageType` for `linkPageTypes`' reason, and asserted to be
+ * a subset of it by `tests/unit/site-links-config.test.ts`.
+ */
+export const listingPageLinkTypes = [
+  "countryShopRoot",
+  "categoryHub",
+  "occasionHub",
+  "occasionsIndex",
+] as const;
+export type ListingPageLinkType = (typeof listingPageLinkTypes)[number];
+
+/**
+ * The one demo destination the chrome sends a buyer into (spec 008 §14 A14 (d), (e)): "Our
+ * selection" is its shop root and the home's trending cards are its product pages. One constant,
+ * so the category row and the trending row cannot name two different countries.
+ */
+export const DEMO_DESTINATION_ISO2 = "PL";
+
 /** A dotted message key (`nav.search.label`, `footer.link.terms`, `common.homeLink`). */
 const MessageKeySchema = z
   .string()
@@ -93,6 +117,14 @@ const CorridorIso2Schema = z
   .string()
   .regex(/^[A-Z]{2}$/, "must be an ISO 3166-1 alpha-2 code such as `PL`");
 
+/** A catalogue key (`roses`, `mothers_day`): the entity a hub is about, never its slug. */
+const EntityKeySchema = z
+  .string()
+  .regex(
+    /^[a-z0-9]+(?:_[a-z0-9]+)*$/,
+    "must be a catalogue key such as `roses`",
+  );
+
 export const SiteLinkTargetSchema = z.discriminatedUnion("kind", [
   z
     .object({ kind: z.literal("route"), pageType: z.enum(linkPageTypes) })
@@ -117,6 +149,24 @@ export const SiteLinkTargetSchema = z.discriminatedUnion("kind", [
     .object({
       kind: z.literal("listing"),
       pageType: z.enum(listingLinkPageTypes),
+    })
+    .strict(),
+  /**
+   * **One listing page** — a hub, one destination's shop root or the occasions index (spec 008
+   * §14 A14; TASK-173). Its own kind because, unlike a `route`, its URL carries a per-locale slug
+   * the catalogue owns (`/de/blumen/rosen`), and unlike a `listing` family it names exactly one
+   * page, which a chrome entry can print a label for. **Permission, not existence**: whether the
+   * page is there in a given locale is `listingExists()`'s answer, which the document layout asks
+   * and hands to the header — `src/modules/ui` may not read the catalogue (`plan/01` §5).
+   * `SiteLinkSchema` refines the identity: a hub names an `entityKey`, a shop root a
+   * `countryIso`, the index neither.
+   */
+  z
+    .object({
+      kind: z.literal("listingPage"),
+      pageType: z.enum(listingPageLinkTypes),
+      entityKey: EntityKeySchema.optional(),
+      countryIso: CorridorIso2Schema.optional(),
     })
     .strict(),
   z.object({ kind: z.literal("pending") }).strict(),
@@ -167,7 +217,7 @@ export const SiteLinkSchema = z
     /** Optional help/description copy (the search field's `aria-describedby` sentence). */
     descriptionKey: MessageKeySchema.optional(),
     target: SiteLinkTargetSchema,
-    /** May this be rendered as a link? `false` → the chrome renders its label as text (AC-14). */
+    /** May this be rendered as a link? `false` → the chrome renders nothing for it (004 §14 A20). */
     published: z.boolean(),
     owningSpec: OwningSpecSchema,
     surfaces: z.array(z.enum(siteLinkSurfaces)).min(1),
@@ -196,6 +246,26 @@ export const SiteLinkSchema = z
         path: ["labelKey"],
         message: `link \`${link.id}\` is drawn on ${link.surfaces.join(", ")} and has no \`labelKey\`: every drawn link carries the message key its surface prints (spec 004 §7)`,
       });
+    }
+    if (link.target.kind === "listingPage") {
+      const { pageType, entityKey, countryIso } = link.target;
+      const wantsEntity =
+        pageType === "categoryHub" || pageType === "occasionHub";
+      const wantsCountry = pageType === "countryShopRoot";
+      if (wantsEntity !== (entityKey !== undefined)) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["target", "entityKey"],
+          message: `link \`${link.id}\`: a \`${pageType}\` ${wantsEntity ? "names" : "names no"} \`entityKey\` (spec 008 §14 A14)`,
+        });
+      }
+      if (wantsCountry !== (countryIso !== undefined)) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["target", "countryIso"],
+          message: `link \`${link.id}\`: a \`${pageType}\` ${wantsCountry ? "names" : "names no"} \`countryIso\` (spec 008 §14 A14)`,
+        });
+      }
     }
     if (link.published && link.target.kind === "pending") {
       ctx.addIssue({
@@ -238,8 +308,8 @@ export const SiteLinkRegistrySchema = z
  *
  * Owning specs follow `plan/09`'s numbering: `007` corridor + info pages (including the legal
  * documents, which are lawyer-gated per `plan/13` B4), `008` shop and search, `010` checkout and
- * the basket, `011` the for-florists landing, `019` the customer account. The locale home is the
- * only published entry, because it is the only page that exists.
+ * the basket, `011` the for-florists landing, `019` the customer account. An entry is published
+ * once its page answers 200, and never before.
  */
 const siteLinks = [
   {
@@ -281,6 +351,120 @@ const siteLinks = [
     target: { kind: "pending" },
     published: false,
     owningSpec: "010",
+    surfaces: ["header"],
+  },
+  // The header's category row (spec 008 §14 A14 (a)–(c); spec 004 §14 A20; TASK-173), one row per
+  // `src/config/categories.ts` entry, named `category-row-{category id}` so the header asks
+  // `categoryRowLinkId()` and never composes a string. `categories.ts` keeps the row's *drawing*
+  // (order, mobile subset, accent, short label); whether and where an entry links is this
+  // registry's, like every other chrome target. The founder found the row dead on 2026-10-03 while
+  // every page below answered 200; Birthday and Sympathy go to their **occasion** hubs (the row's
+  // own "Occasions" is their parent, and the occasion hub carries the dates), the three product
+  // types to their category hubs, "Our selection" to the demo destination's shop root. Add-ons and
+  // Same-day delivery have no page, so they are not rendered at all.
+  {
+    id: "category-row-our-selection",
+    labelKey: "nav.category.ourSelection",
+    target: {
+      kind: "listingPage",
+      pageType: "countryShopRoot",
+      countryIso: DEMO_DESTINATION_ISO2,
+    },
+    published: true,
+    owningSpec: "008",
+    surfaces: ["header"],
+  },
+  {
+    id: "category-row-birthday",
+    labelKey: "nav.category.birthday",
+    target: {
+      kind: "listingPage",
+      pageType: "occasionHub",
+      entityKey: "birthday",
+    },
+    published: true,
+    owningSpec: "008",
+    surfaces: ["header"],
+  },
+  {
+    id: "category-row-sympathy",
+    labelKey: "nav.category.sympathy",
+    target: {
+      kind: "listingPage",
+      pageType: "occasionHub",
+      entityKey: "sympathy",
+    },
+    published: true,
+    owningSpec: "008",
+    surfaces: ["header"],
+  },
+  {
+    id: "category-row-occasions",
+    labelKey: "nav.category.occasions",
+    target: { kind: "listingPage", pageType: "occasionsIndex" },
+    published: true,
+    owningSpec: "008",
+    surfaces: ["header"],
+  },
+  {
+    id: "category-row-bouquets",
+    labelKey: "nav.category.bouquets",
+    target: {
+      kind: "listingPage",
+      pageType: "categoryHub",
+      entityKey: "bouquet",
+    },
+    published: true,
+    owningSpec: "008",
+    surfaces: ["header"],
+  },
+  {
+    id: "category-row-roses",
+    labelKey: "nav.category.roses",
+    target: {
+      kind: "listingPage",
+      pageType: "categoryHub",
+      entityKey: "roses",
+    },
+    published: true,
+    owningSpec: "008",
+    surfaces: ["header"],
+  },
+  {
+    id: "category-row-plants",
+    labelKey: "nav.category.plants",
+    target: {
+      kind: "listingPage",
+      pageType: "categoryHub",
+      entityKey: "plant",
+    },
+    published: true,
+    owningSpec: "008",
+    surfaces: ["header"],
+  },
+  {
+    id: "category-row-add-ons",
+    labelKey: "nav.category.addOns",
+    target: { kind: "pending" },
+    published: false,
+    owningSpec: "005",
+    surfaces: ["header"],
+  },
+  {
+    id: "category-row-same-day-delivery",
+    labelKey: "nav.category.sameDayDelivery",
+    target: { kind: "pending" },
+    published: false,
+    requiresDeliveryDates: true,
+    owningSpec: "009",
+    surfaces: ["header"],
+  },
+  {
+    id: "category-row-destinations",
+    labelKey: "nav.category.destinations",
+    target: { kind: "route", pageType: "destinations" },
+    published: true,
+    owningSpec: "007",
     surfaces: ["header"],
   },
   {
@@ -504,14 +688,15 @@ const siteLinks = [
   // card on a country-scoped listing becomes an `<a>` with no markup change other than the
   // element (008 §13 Q8). Whether a given card links is still `productPageExists()`'s answer —
   // the card carries an `href` only for a page that exists — and the label is the product's own
-  // name (`breadcrumb.entity` is `{name}`), so no surface invents one.
+  // name (`breadcrumb.entity` is `{name}`), so no surface invents one. The `home` surface is the
+  // locale home's trending cards (spec 008 §14 A14 (e); TASK-173), on the same rule.
   {
     id: "product",
     labelKey: "breadcrumb.entity",
     target: { kind: "route", pageType: "product" },
     published: true,
     owningSpec: "009",
-    surfaces: ["listing"],
+    surfaces: ["listing", "home"],
   },
 ] as const;
 
@@ -745,8 +930,30 @@ export const CATEGORY_ROW_LINK_IDS = [
   "for-florists",
 ] as const satisfies readonly SiteLinkId[];
 
-/** The search form's target (spec 008 wires the backend; in Phase 0 the form is inert). */
+/** The search form's target (spec 008 wires the backend; until then the header draws no search). */
 export const SEARCH_LINK_ID = "search" satisfies SiteLinkId;
+
+/** The product page link id: the trending cards' permission (spec 008 §14 A14 (e)). */
+export const PRODUCT_LINK_ID = "product" satisfies SiteLinkId;
+
+/**
+ * The link id of one header category-row entry (spec 008 §14 A14; TASK-173): `category-row-{id}`
+ * for a `src/config/categories.ts` id. A caller asks for a category and gets the id, as
+ * `corridorLinkId()` does for a country. Throws for a category with no row, which
+ * `tests/unit/site-links-config.test.ts` makes unreachable by pinning the two sets equal.
+ */
+export function categoryRowLinkId(categoryId: string): SiteLinkId {
+  const id = `category-row-${categoryId}`;
+  if (!isSiteLinkId(id)) {
+    throw new Error(`no category-row link id for category: ${categoryId}`);
+  }
+  return id;
+}
+
+/** Every category-row entry link in registry order — the set the config test pins to `CATEGORIES`. */
+export const CATEGORY_ROW_ENTRY_LINKS: readonly SiteLink[] = SITE_LINKS.filter(
+  (link) => link.id.startsWith("category-row-"),
+);
 
 /** The links of a group, in the canvas's order. Filtering by `isPublished()` is the caller's. */
 export function groupLinks(id: SiteLinkGroupId): readonly SiteLink[] {
