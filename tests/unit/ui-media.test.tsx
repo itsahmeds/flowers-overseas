@@ -58,6 +58,16 @@ describe("the media slot table", () => {
     }
   });
 
+  it("states the trending row's rendered width, and leaves the listing grid's alone (TASK-168)", () => {
+    // Derived from `TrendingRow`'s layout (`Grid columns="2-5" gap="lg"` in `HOME_BLEED`):
+    // (100vw − 2·16 − 24) / 2 below `md`, (100vw − 2·56 − 4·24) / 5 from 768 px.
+    expect(mediaSlot("trending").sizes).toBe(
+      "(min-width: 768px) calc(20vw - 41.6px), calc(50vw - 28px)",
+    );
+    expect(mediaSlot("trending").ratio).toBe(mediaSlot("grid").ratio);
+    expect(mediaSlot("grid").sizes).toBe("(min-width: 768px) 25vw, 50vw");
+  });
+
   it("marks exactly the two above-the-fold slots as `priority` candidates", () => {
     const eligible = MEDIA_SLOTS.filter((slot) => mediaSlot(slot).aboveFold);
     expect([...eligible]).toEqual(["hero", "grid"]);

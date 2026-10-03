@@ -91,16 +91,17 @@ export function TrendingRow({
           <Stack as="li" gap="sm" key={pick.id} data-fo-trending-pick={pick.id}>
             {/*
               The pick's photograph, or the captioned placeholder — whichever the dataset earns.
-              Twelve of the eighty-four products have approved, derived, alt-texted imagery
-              (TASK-080); the rest render the `--color-photo` box with `media.placeholder.product`
-              and no `<img>`, which is `plan/10` §3's honesty rule and not a gap. The pick's name
+              Since TASK-168 every product has approved, derived, alt-texted imagery; one that
+              loses it renders the `--color-photo` box with `media.placeholder.product` and no
+              `<img>`, which is `plan/10` §3's honesty rule and not a gap. The box is the
+              `trending` slot, whose `sizes` states this row's own card width (`../media/slots.ts`). The pick's name
               is the heading the screen reader already announces, so it is handed to `MediaAsset`:
               an alt that merely repeats it is refused and degrades to the box (AC-18).
             */}
             <MediaAsset
               assetId={pick.assetId}
               locale={locale}
-              slot="grid"
+              slot="trending"
               productName={pick.name}
             />
             <Text as="span" size="sm" className="font-medium">

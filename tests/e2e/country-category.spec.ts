@@ -184,9 +184,9 @@ test.describe("what the page renders (AC-6, §14 A8 (c))", () => {
   test("nominates exactly one LCP image — the first card's photograph — and preloads that one (AC-24)", async ({
     page,
   }) => {
-    // **The stated number, and why it is 1.** Three of the twelve cards of
-    // `/en/poland/flowers/roses` carry an approved photograph (TASK-080's bytes) and the first is
-    // one of them, so AC-24's "exactly one image per page carries `priority`" has three
+    // **The stated number, and why it is 1.** All twelve of the twelve cards of
+    // `/en/poland/flowers/roses` carry an approved photograph since TASK-168 (three since
+    // TASK-080), so AC-24's "exactly one image per page carries `priority`" has twelve
     // candidates and must pick the first. `EXPECTED_NOMINATIONS` is pinned to that corpus rather
     // than recomputed from the page: if the first card's photograph is ever withdrawn this goes
     // red and the new number is written here deliberately.
@@ -223,9 +223,9 @@ test.describe("what the page renders (AC-6, §14 A8 (c))", () => {
     await expect(page.locator('img[loading="eager"]')).toHaveCount(
       EXPECTED_NOMINATIONS,
     );
-    // The other two photographs on the page are lazy, which is the "and nothing else" half.
-    await expect(page.locator("[data-fo-product-card] img")).toHaveCount(3);
-    await expect(page.locator('img[loading="lazy"]')).toHaveCount(2);
+    // The other eleven photographs on the page are lazy, which is the "and nothing else" half.
+    await expect(page.locator("[data-fo-product-card] img")).toHaveCount(12);
+    await expect(page.locator('img[loading="lazy"]')).toHaveCount(11);
   });
 
   test("renders with JavaScript disabled (AC-23)", async ({ browser }) => {

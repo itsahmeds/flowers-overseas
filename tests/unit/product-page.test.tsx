@@ -57,8 +57,8 @@ const PAST_CUTOFF = new Date("2027-03-01T14:30:00Z");
 const IN_WINDOW = new Date("2026-09-09T07:00:00Z");
 
 const AMBER = "FO-BQ-001"; // three tiers, photographed
-const ANTHURIUM = "FO-PT-005"; // one tier, no photograph
-const VASED = "FO-AR-002"; // ships in a vase
+const ANTHURIUM = "FO-PT-005"; // one tier, photographed since TASK-168
+const VASED = "FO-AR-002"; // ships in a vase, photographed since TASK-168
 
 const NAMESPACES = [
   "product",
@@ -92,6 +92,17 @@ async function viewOf(
     throw new Error(`${locale}/${countryIso}/${sku} must be a page`);
   }
   return view;
+}
+
+/**
+ * A real view with the product's media removed: the gallery as `productView()` builds it for a
+ * product with no approved, alt-texted asset. Since TASK-168 approved photo batch 2 every
+ * committed product has a photograph, so a no-photograph case builds its subject here and asserts
+ * it started from a photographed view, so the removal is what the case measures.
+ */
+function withoutMedia(view: ProductView): ProductView {
+  expect(view.gallery.kind).toBe("photos");
+  return { ...view, gallery: { kind: "placeholder" } };
 }
 
 function liveViewOf(
@@ -701,7 +712,9 @@ describe("AC-21: one all-in price with its formula, VAT and delivery rows, and t
   });
 
   it("omits the vase sentence on the no-photo placeholder, and keeps the vase in the add-on list", async () => {
-    const view = await viewOf("en", "PL", ANTHURIUM, { now: IN_WINDOW });
+    const view = withoutMedia(
+      await viewOf("en", "PL", ANTHURIUM, { now: IN_WINDOW }),
+    );
     expect(view.gallery.kind).toBe("placeholder");
     expect(view.product.vaseIncluded).toBe(false);
     const html = render(view);
@@ -711,11 +724,14 @@ describe("AC-21: one all-in price with its formula, VAT and delivery rows, and t
   });
 
   it("omits the vase sentence for a product that ships in a vase, photograph or not", async () => {
-    // No committed vased product is photographed yet (all eight are placeholders), so the
-    // photographed case sets the one field on a real view; the placeholder case is real data.
+    // Since TASK-168 every committed vased product is photographed, so the real vased view is the
+    // photographed half and the placeholder half is the same view with its media removed. The
+    // older half (a photographed non-vase product with the one field set) is kept beside them.
     const vased = await viewOf("en", "PL", VASED, { now: IN_WINDOW });
     expect(vased.product.vaseIncluded).toBe(true);
+    expect(vased.gallery.kind).toBe("photos");
     expect(render(vased)).not.toContain("data-fo-price-excludes");
+    expect(render(withoutMedia(vased))).not.toContain("data-fo-price-excludes");
     const photographed = await viewOf("en", "PL", AMBER, { now: IN_WINDOW });
     expect(photographed.gallery.kind).toBe("photos");
     expect(
@@ -1054,7 +1070,9 @@ describe("AC-25: one `priority` image with a matching preload, and none without 
   });
 
   it("renders no `<img>` and no honesty label in the gallery of a product with no photograph", async () => {
-    const view = await viewOf("en", "PL", ANTHURIUM, { now: IN_WINDOW });
+    const view = withoutMedia(
+      await viewOf("en", "PL", ANTHURIUM, { now: IN_WINDOW }),
+    );
     expect(view.gallery.kind).toBe("placeholder");
     const gallery = block(render(view), 'data-fo-gallery="placeholder"');
     expect(gallery).not.toContain("<img");

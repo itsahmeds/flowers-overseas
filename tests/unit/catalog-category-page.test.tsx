@@ -170,8 +170,8 @@ describe("the populated country category (§5.3 row 2)", () => {
 /**
  * **AC-24: one nomination, and it is the first card's photograph** (§5.4, **AC-24**, T-24).
  *
- * `/en/poland/flowers/roses` is the one page type in the corpus whose first card does carry a
- * photograph — three of its twelve cards do (TASK-080's bytes) — so the count it ships with is
+ * `/en/poland/flowers/roses` carries a photograph on its first card — since TASK-168 approved photo
+ * batch 2, all twelve of its twelve cards do (three since TASK-080) — so the count it ships with is
  * pinned as a stated number rather than recomputed from the page's own output, and the two
  * fabricated views below prove that the nomination follows the *first card's* photograph rather
  * than the page having one anywhere. The occasion twin is
@@ -194,16 +194,17 @@ describe("the one LCP nomination (§5.4, AC-24, T-24)", () => {
     };
   }
 
-  it("nominates exactly one on the page as it ships: three of twelve cards are photographs, and the first is one", () => {
+  it("nominates exactly one on the page as it ships: twelve of twelve cards are photographs, and the first is one", () => {
     // The pin. Stated numbers, read from the view model: if the corpus changes, this line goes
     // red and the new numbers are written here deliberately.
+    expect(roses.items).toHaveLength(12);
     expect(
       roses.items.filter((card) => card.photo.kind === "asset"),
-    ).toHaveLength(3);
+    ).toHaveLength(12);
     expect(roses.items[0]?.photo.kind).toBe("asset");
     const nominated = lcpNominations(shipped);
-    expect(nominated.images).toBe(3);
-    // One of the three, never two: the preload's `imagesrcset`/`imagesizes` are the first card's
+    expect(nominated.images).toBe(12);
+    // One of the twelve, never two: the preload's `imagesrcset`/`imagesizes` are the first card's
     // own `<source>`, which is AC-24's "built from the same manifest lookup as its `srcset`".
     expect(nominated.eager).toBe(1);
     expect(nominated.high).toBe(1);
@@ -211,20 +212,20 @@ describe("the one LCP nomination (§5.4, AC-24, T-24)", () => {
     expect(nominated.preloaded).toEqual(
       expectedPreloads(firstCardPhotograph(shipped)),
     );
-    // And it is the **first card's** image, not merely one of the three.
+    // And it is the **first card's** image, not merely one of the twelve.
     expect(nominatedImageCard(shipped)).toBe(0);
   });
 
   it("withdraws the nomination with the first card's photograph, and promotes nothing in its place", () => {
     // The data flip AC-20 promises, in the direction nobody tests: withdraw the first card's
     // image and the page must nominate **nothing** — not the next photograph down the grid,
-    // whose box is not the LCP element. Two photographs remain, both lazy.
+    // whose box is not the LCP element. Eleven photographs remain, all lazy.
     const markup = render(
       <CountryCategoryPage view={withoutPhotographAt(0)} />,
       "en",
     );
     const nominated = lcpNominations(markup);
-    expect(nominated.images).toBe(2);
+    expect(nominated.images).toBe(11);
     expect(firstCardPhotograph(markup)).toBeUndefined();
     expect(nominated.preloaded).toEqual(expectedPreloads(undefined));
     expect(nominated.eager).toBe(0);

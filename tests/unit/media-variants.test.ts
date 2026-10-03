@@ -71,6 +71,7 @@ import {
   aspectStepsFor,
   variantDimensions,
   variantPipeline,
+  widthsForSlot,
 } from "../../seed/schema/variants.ts";
 
 const repoRoot = resolve(__dirname, "../..");
@@ -261,9 +262,9 @@ describe("spec 006 AC-13: the encoder is pinned and recorded, not defaulted", ()
     }).not.toThrow();
   });
 
-  it("records spec 006 §13 Q5's ladder and qualities verbatim", () => {
+  it("records spec 006 §13 Q5's ladder (with §14 A11's 480) and qualities verbatim", () => {
     expect([...VARIANT_WIDTHS]).toEqual([
-      384, 640, 828, 1080, 1200, 1600, 1920,
+      384, 480, 640, 828, 1080, 1200, 1600, 1920,
     ]);
     expect(OG_JPEG_WIDTH).toBe(1200);
     expect(AVIF_OPTIONS.quality).toBe(50);
@@ -287,6 +288,35 @@ describe("spec 006 AC-13: the encoder is pinned and recorded, not defaulted", ()
     expect(aspectFor("hero", 828).ratio).toBe("4:3");
     expect(aspectFor("hero", 1080).ratio).toBe("16:9");
     expect(aspectFor("hero", 1920).ratio).toBe("16:9");
+  });
+
+  it("ships the productHero ladder 384/480/640/828, and every product hero has each rung in both page formats (TASK-168)", () => {
+    // 480 w is the honest rung for the home's 178 px trending card at DPR 2.625: Chromium takes
+    // the smallest rung whose density is ≥ the DPR, and 384 → 640 had nothing in between, which
+    // put the mobile locale homes over AC-15's image budget.
+    const ladder = [384, 480, 640, 828];
+    expect(widthsForSlot("productHero")).toEqual(ladder);
+    expect(variantPipeline().aspects.productHero).toEqual([
+      { ratio: "4:5", widths: ladder },
+    ]);
+
+    const committed = readVariantManifest(repoRoot);
+    const media = JSON.parse(
+      readFileSync(join(repoRoot, SEED_DATA_DIR, "media.json"), "utf8"),
+    ) as { rows: { id: string; slot: string; reviewState: string }[] };
+    const heroes = media.rows.filter(
+      (asset) =>
+        asset.slot === "productHero" && asset.reviewState === "approved",
+    );
+    expect(heroes).toHaveLength(84);
+    for (const hero of heroes) {
+      for (const format of ["avif", "webp"] as const) {
+        const widths = (committed?.rows ?? [])
+          .filter((row) => row.assetId === hero.id && row.format === format)
+          .map((row) => row.width);
+        expect(widths, `${hero.id} ${format}`).toEqual(ladder);
+      }
+    }
   });
 
   it("keeps the committed manifest's header equal to the pinned pipeline", () => {
@@ -362,6 +392,8 @@ describe("T-12: the ladder over three fixture originals (AC-12)", () => {
       ).toEqual([
         "384.avif",
         "384.webp",
+        "480.avif",
+        "480.webp",
         "640.avif",
         "640.webp",
         "828.avif",

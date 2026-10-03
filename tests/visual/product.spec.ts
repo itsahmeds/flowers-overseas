@@ -61,8 +61,11 @@ const BLOCKS = [
     selector: '[data-fo-gallery="photos"]',
   },
   {
+    // Since TASK-168 every committed product is photographed, so no PDP reaches this state; the
+    // PDP's own `Gallery` with `PRODUCT_GALLERY_PLACEHOLDER` on `/dev/components` does (the
+    // orchestrator's ruling for `tests/e2e/product-page.spec.ts`'s no-photo case, applied here).
     block: "gallery-placeholder",
-    url: "/en/poland/product/anthurium",
+    url: "/dev/components",
     selector: '[data-fo-gallery="placeholder"]',
   },
   {

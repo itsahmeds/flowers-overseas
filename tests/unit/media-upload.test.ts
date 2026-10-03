@@ -902,6 +902,33 @@ describe("the upload's gates run before the first request (runUpload)", () => {
 });
 
 /**
+ * Set one asset's review state inside a fixture tree's own `media.json` copy — never the
+ * repository's. Since TASK-168 every committed asset is `approved`, so a case that needs a
+ * `pending` or `rejected` subject builds it here rather than borrowing one from the dataset.
+ */
+function setReviewState(
+  root: string,
+  assetId: string,
+  state: "pending" | "rejected",
+): void {
+  const path = join(root, "seed/data/media.json");
+  const media = JSON.parse(readFileSync(path, "utf8")) as {
+    rows: Record<string, unknown>[];
+  };
+  const row = media.rows.find((candidate) => candidate.id === assetId);
+  if (row === undefined) throw new Error(`no row ${assetId} in the fixture`);
+  row.reviewState = state;
+  if (state === "pending") {
+    delete row.reviewedBy;
+    delete row.reviewedAt;
+  } else {
+    row.reviewedBy = "founder";
+    row.reviewedAt = "2026-10-03T10:00:00.000Z";
+  }
+  writeFileSync(path, `${JSON.stringify(media, null, 2)}\n`);
+}
+
+/**
  * `/break 142` HOLE 5 (TASK-167): the manifest now carries the variants of 142 `pending`
  * photographs. Only an `approved` asset is ever published, with or without `--only`, and
  * `--verify` does not count an unpublished pending object as missing (`publishableRows()`).
@@ -925,8 +952,9 @@ describe("only approved assets reach the bucket, and `--verify` checks only thos
       .toBuffer();
   }
 
+  /** `PENDING` is approved in the dataset since TASK-168; the fixture tree stages it `pending`. */
   async function mixedTree(): Promise<string> {
-    return writeDerivedTree(
+    const root = writeDerivedTree(
       await Promise.all(
         [APPROVED, PENDING].map(async (assetId) => ({
           assetId,
@@ -936,19 +964,24 @@ describe("only approved assets reach the bucket, and `--verify` checks only thos
         })),
       ),
     );
+    setReviewState(root, PENDING, "pending");
+    return root;
   }
 
-  it("the fixture's subjects are what they claim: one approved asset and one pending", () => {
+  it("the fixture's subjects are what they claim: one approved asset and one pending", async () => {
+    const root = await mixedTree();
     const states = new Map(
       (
         JSON.parse(
-          readFileSync(join(repoRoot, "seed/data/media.json"), "utf8"),
-        ) as { rows: { id: string; reviewState: string }[] }
+          readFileSync(join(root, "seed/data/media.json"), "utf8"),
+        ) as {
+          rows: { id: string; reviewState: string }[];
+        }
       ).rows.map((row) => [row.id, row.reviewState]),
     );
     expect(states.get(APPROVED)).toBe("approved");
     expect(states.get(PENDING)).toBe("pending");
-  });
+  }, 60_000);
 
   async function upload(
     root: string,
@@ -1069,7 +1102,7 @@ describe("the approval filter's edges: rejected, `--force`, and `runVerify()`", 
       .toBuffer();
   }
 
-  /** Two approved assets and one more whose state the case chooses (`pending` as shipped). */
+  /** Two approved assets and one more whose state the case chooses (`pending` by default). */
   async function tree(
     otherState: "pending" | "rejected" = "pending",
   ): Promise<string> {
@@ -1083,19 +1116,8 @@ describe("the approval filter's edges: rejected, `--force`, and `runVerify()`", 
         })),
       ),
     );
-    if (otherState === "rejected") {
-      const path = join(root, "seed/data/media.json");
-      const media = JSON.parse(readFileSync(path, "utf8")) as {
-        rows: Record<string, unknown>[];
-      };
-      for (const row of media.rows) {
-        if (row.id !== OTHER) continue;
-        row.reviewState = "rejected";
-        row.reviewedBy = "founder";
-        row.reviewedAt = "2026-10-03T10:00:00.000Z";
-      }
-      writeFileSync(path, `${JSON.stringify(media, null, 2)}\n`);
-    }
+    // `OTHER` is approved in the dataset since TASK-168; the case gives it the state it tests.
+    setReviewState(root, OTHER, otherState);
     return root;
   }
 

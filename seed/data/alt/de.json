@@ -128,6 +128,582 @@
     {
       "assetId": "home-occasion-new-baby",
       "alt": "Ein zarter Strauß aus rosa und weißen Saisonblumen, in weißes Papier gewickelt und mit Bindfaden gebunden"
+    },
+    {
+      "assetId": "fo-bq-007-hero",
+      "alt": "Ein handgebundener Strauß zartrosa Rosen mit Eukalyptus, in Kraftpapier gewickelt und mit Schnur gebunden"
+    },
+    {
+      "assetId": "fo-bq-007-detail",
+      "alt": "Nahaufnahme von drei geöffneten zartrosa Rosenblüten mit Eukalyptusblättern ringsum"
+    },
+    {
+      "assetId": "fo-bq-012-hero",
+      "alt": "Ein handgebundener Strauß zartrosa Tulpen, in Kraftpapier gewickelt und mit Schnur gebunden"
+    },
+    {
+      "assetId": "fo-bq-012-detail",
+      "alt": "Nahaufnahme zartrosa Tulpenblüten mit grünen Blättern über dem Rand des Kraftpapiers"
+    },
+    {
+      "assetId": "fo-bq-018-hero",
+      "alt": "Ein handgebundener Strauß rosafarbener Lilien mit Knospen und grünem Blattwerk, in weißes Papier gewickelt und mit Schnur gebunden"
+    },
+    {
+      "assetId": "fo-bq-018-detail",
+      "alt": "Nahaufnahme geöffneter rosafarbener Lilien mit dunkelroten Staubblättern über weißem Papier"
+    },
+    {
+      "assetId": "fo-bq-020-hero",
+      "alt": "Ein handgebundener Strauß runder blassrosa und cremeweißer Pfingstrosen, in weißes Papier gewickelt und mit Schnur gebunden"
+    },
+    {
+      "assetId": "fo-bq-020-detail",
+      "alt": "Nahaufnahme voller blassrosa und cremeweißer Pfingstrosenblüten mit ihren geschichteten Blütenblättern"
+    },
+    {
+      "assetId": "fo-bq-037-hero",
+      "alt": "Ein handgebundener Strauß gelber Sonnenblumen, Rosen und Gerbera zwischen kleinen gelben Blüten, in Kraftpapier gewickelt"
+    },
+    {
+      "assetId": "fo-bq-037-detail",
+      "alt": "Nahaufnahme gelber Sonnenblumen, gelber Rosen und Tulpenknospen zwischen kleinen gelben Blüten"
+    },
+    {
+      "assetId": "fo-pt-002-hero",
+      "alt": "Eine rosafarbene Schmetterlingsorchidee mit überhängenden Blütentrieben in einem schlichten weißen Keramiktopf"
+    },
+    {
+      "assetId": "fo-pt-002-detail",
+      "alt": "Nahaufnahme geöffneter rosafarbener Orchideenblüten mit magentafarbener Mitte und zwei geschlossenen Knospen"
+    },
+    {
+      "assetId": "fo-pt-008-hero",
+      "alt": "Eine buschige Azalee voller rosafarbener Blüten in einem schlichten weißen Keramiktopf"
+    },
+    {
+      "assetId": "fo-pt-008-detail",
+      "alt": "Nahaufnahme gerüschter rosafarbener Azaleenblüten und Knospen über dem Rand des weißen Topfes"
+    },
+    {
+      "assetId": "fo-ar-002-hero",
+      "alt": "Ein flaches Arrangement aus dunkelroten Rosen mit Eukalyptus in einer schlichten Geschenkbox aus Kraftpapier"
+    },
+    {
+      "assetId": "fo-ar-002-detail",
+      "alt": "Nahaufnahme von drei dunkelroten Rosenblüten mit Eukalyptus über dem Rand der Kraftpapierbox"
+    },
+    {
+      "assetId": "fo-ar-004-hero",
+      "alt": "Ein flaches Arrangement aus roten, orangefarbenen, pinken und gelben Gerbera in einer schlichten Geschenkbox aus Kraftpapier"
+    },
+    {
+      "assetId": "fo-ar-004-detail",
+      "alt": "Nahaufnahme einer roten, einer pinken und einer gelben Gerberablüte mit dunkler Mitte"
+    },
+    {
+      "assetId": "fo-ar-005-hero",
+      "alt": "Ein flaches Arrangement aus zartrosa Tulpen mit Eukalyptus und kleinen weißen Blüten in einer schlichten Geschenkbox aus Kraftpapier"
+    },
+    {
+      "assetId": "fo-ar-005-detail",
+      "alt": "Nahaufnahme zartrosa Tulpenblüten zwischen Eukalyptusblättern und kleinen weißen Blüten"
+    },
+    {
+      "assetId": "fo-ar-006-hero",
+      "alt": "Ein flaches Arrangement aus weißen Lilien und Knospen mit grünem Blattwerk in einer schlichten Geschenkbox aus Kraftpapier"
+    },
+    {
+      "assetId": "fo-ar-006-detail",
+      "alt": "Nahaufnahme geöffneter weißer Lilien mit rostroten Staubblättern und geschlossenen grünen Knospen"
+    },
+    {
+      "assetId": "fo-ar-007-hero",
+      "alt": "Ein flaches gemischtes Arrangement aus pfirsichfarbenen und rosa Rosen, weißen Margeriten, gelben Inkalilien und lila Strandflieder in einer schlichten Kraftpapierbox"
+    },
+    {
+      "assetId": "fo-ar-007-detail",
+      "alt": "Nahaufnahme einer pfirsichfarbenen Rose, einer rosa Rose, einer weißen Margerite und gelber Inkalilien mit lila Strandflieder"
+    },
+    {
+      "assetId": "fo-ar-008-hero",
+      "alt": "Ein flaches ganz weißes Arrangement aus Rosen, Lilien, Eustoma und kleinen weißen Blüten in einer schlichten Geschenkbox aus Kraftpapier"
+    },
+    {
+      "assetId": "fo-ar-008-detail",
+      "alt": "Nahaufnahme weißer Rosen, einer geöffneten weißen Lilie und weißer Eustoma mit kleinen weißen Blüten"
+    },
+    {
+      "assetId": "fo-ar-009-hero",
+      "alt": "Ein flaches Arrangement aus tiefvioletten Freesien in einer schlichten Geschenkbox aus Kraftpapier"
+    },
+    {
+      "assetId": "fo-ar-009-detail",
+      "alt": "Nahaufnahme geöffneter tiefvioletter Freesienblüten und ihrer Knospen über der Kraftpapierbox"
+    },
+    {
+      "assetId": "fo-ar-010-hero",
+      "alt": "Ein flaches Arrangement aus zartrosa Pfingstrosen und Knospen in einer schlichten Geschenkbox aus Kraftpapier"
+    },
+    {
+      "assetId": "fo-ar-010-detail",
+      "alt": "Nahaufnahme voller zartrosa Pfingstrosenblüten und einer runden Knospe über der Kraftpapierbox"
+    },
+    {
+      "assetId": "fo-ar-011-hero",
+      "alt": "Ein flaches gemischtes Arrangement aus orangefarbenen Gerbera, rosa Rosen, lila Chrysanthemen und weißen Margeriten in einer schlichten Kraftpapierbox"
+    },
+    {
+      "assetId": "fo-ar-011-detail",
+      "alt": "Nahaufnahme einer orangefarbenen Gerbera, pfirsichfarbener und rosa Rosen, lila Chrysanthemen und weißer Margeriten"
+    },
+    {
+      "assetId": "fo-ar-012-hero",
+      "alt": "Ein flaches Arrangement aus weißen Rosen mit Eukalyptus in einer schlichten Geschenkbox aus Kraftpapier"
+    },
+    {
+      "assetId": "fo-ar-012-detail",
+      "alt": "Nahaufnahme von drei geöffneten weißen Rosenblüten zwischen Eukalyptusblättern"
+    },
+    {
+      "assetId": "fo-ar-013-hero",
+      "alt": "Ein flaches Arrangement aus orangefarbenen Chrysanthemen mit dunkelgrünem Blattwerk in einer schlichten Geschenkbox aus Kraftpapier"
+    },
+    {
+      "assetId": "fo-ar-013-detail",
+      "alt": "Nahaufnahme von drei orangefarbenen Chrysanthemenblüten mit dichten, spitzen Blütenblättern"
+    },
+    {
+      "assetId": "fo-ar-014-hero",
+      "alt": "Ein flaches Arrangement aus rosa und weißen Inkalilien mit grünem Blattwerk in einer schlichten Geschenkbox aus Kraftpapier"
+    },
+    {
+      "assetId": "fo-ar-014-detail",
+      "alt": "Nahaufnahme rosa und weißer Inkalilienblüten mit gesprenkelten inneren Blütenblättern"
+    },
+    {
+      "assetId": "fo-bq-003-hero",
+      "alt": "Ein handgebundener Strauß blassrosa Rosen zwischen Eukalyptus, in Kraftpapier gewickelt und mit Schnur gebunden"
+    },
+    {
+      "assetId": "fo-bq-003-detail",
+      "alt": "Nahaufnahme blassrosa Rosenblüten mit Eukalyptusblättern über dem Kraftpapier"
+    },
+    {
+      "assetId": "fo-bq-004-hero",
+      "alt": "Ein handgebundener Strauß blassrosa, cremeweißer und pfirsichfarbener Rosen mit Eukalyptus, in Kraftpapier gewickelt und mit Schnur gebunden"
+    },
+    {
+      "assetId": "fo-bq-004-detail",
+      "alt": "Nahaufnahme einer cremeweißen, einer rosa und einer pfirsichfarbenen Rosenblüte mit Eukalyptusblättern"
+    },
+    {
+      "assetId": "fo-bq-005-hero",
+      "alt": "Ein handgebundener Strauß weißer Rosen mit Eukalyptus, in weißes Papier gewickelt und mit Schnur gebunden"
+    },
+    {
+      "assetId": "fo-bq-005-detail",
+      "alt": "Nahaufnahme von drei weißen Rosenblüten mit Eukalyptus vor weißem Papier"
+    },
+    {
+      "assetId": "fo-bq-006-hero",
+      "alt": "Ein handgebundener Strauß dunkelroter Rosen mit Eukalyptus, in weißes Papier gewickelt und mit Schnur gebunden"
+    },
+    {
+      "assetId": "fo-bq-006-detail",
+      "alt": "Nahaufnahme von drei dunkelroten Rosenblüten mit Eukalyptus über weißem Papier"
+    },
+    {
+      "assetId": "fo-bq-008-hero",
+      "alt": "Ein runder handgebundener Strauß weißer Rosen zwischen Eukalyptus, in weißes Papier gewickelt, mit Schnurschleife"
+    },
+    {
+      "assetId": "fo-bq-008-detail",
+      "alt": "Nahaufnahme von drei geöffneten weißen Rosen, umrahmt von Eukalyptusblättern"
+    },
+    {
+      "assetId": "fo-bq-010-hero",
+      "alt": "Ein handgebundener Strauß leuchtend gelber Tulpen, in Kraftpapier gewickelt und mit Schnur gebunden"
+    },
+    {
+      "assetId": "fo-bq-010-detail",
+      "alt": "Nahaufnahme von zwei leuchtend gelben Tulpenblüten mit langen grünen Blättern über dem Kraftpapier"
+    },
+    {
+      "assetId": "fo-bq-011-hero",
+      "alt": "Ein handgebundener Strauß weißer Tulpen mit grünen Blättern, in Kraftpapier gewickelt und mit Schnur gebunden"
+    },
+    {
+      "assetId": "fo-bq-011-detail",
+      "alt": "Nahaufnahme von drei weißen Tulpenblüten mit grünen Blättern über dem Kraftpapier"
+    },
+    {
+      "assetId": "fo-bq-013-hero",
+      "alt": "Ein handgebundener Strauß tiefvioletter Tulpen, in Kraftpapier gewickelt und mit Schnur gebunden"
+    },
+    {
+      "assetId": "fo-bq-013-detail",
+      "alt": "Nahaufnahme von drei tiefvioletten Tulpenblüten mit grünen Blättern über dem Kraftpapier"
+    },
+    {
+      "assetId": "fo-bq-014-hero",
+      "alt": "Ein handgebundener Strauß Tulpen in Pink, Orange, Gelb, Violett, Rot und Weiß, in Kraftpapier gewickelt und mit Schnur gebunden"
+    },
+    {
+      "assetId": "fo-bq-014-detail",
+      "alt": "Nahaufnahme einer pinken, einer weißen, einer cremefarbenen und einer violetten Tulpenblüte"
+    },
+    {
+      "assetId": "fo-bq-016-hero",
+      "alt": "Ein handgebundener Strauß weißer Lilien und grüner Knospen mit dunkelgrünem Blattwerk, in weißes Papier gewickelt und mit Schnur gebunden"
+    },
+    {
+      "assetId": "fo-bq-016-detail",
+      "alt": "Nahaufnahme geöffneter weißer Lilien mit rostroten Staubblättern über weißem Papier"
+    },
+    {
+      "assetId": "fo-bq-017-hero",
+      "alt": "Ein handgebundener Strauß weißer Lilien und grüner Knospen mit dunkelgrünem Blattwerk, in Kraftpapier gewickelt und mit Schnur gebunden"
+    },
+    {
+      "assetId": "fo-bq-017-detail",
+      "alt": "Nahaufnahme geöffneter weißer Lilien mit rostroten Staubblättern über dem Kraftpapier"
+    },
+    {
+      "assetId": "fo-bq-021-hero",
+      "alt": "Ein handgebundener Strauß zartrosa Pfingstrosen, in weißes Papier gewickelt und mit Schnur gebunden"
+    },
+    {
+      "assetId": "fo-bq-021-detail",
+      "alt": "Nahaufnahme von vier vollen zartrosa Pfingstrosenblüten mit gerüschten Blütenblättern"
+    },
+    {
+      "assetId": "fo-bq-022-hero",
+      "alt": "Ein handgebundener Strauß weißer Pfingstrosen, in weißes Papier gewickelt und mit Schnur gebunden"
+    },
+    {
+      "assetId": "fo-bq-022-detail",
+      "alt": "Nahaufnahme voller weißer Pfingstrosenblüten mit geschichteten Blütenblättern über weißem Papier"
+    },
+    {
+      "assetId": "fo-bq-024-hero",
+      "alt": "Ein handgebundener Strauß leuchtend gelber Sonnenblumen mit Weizenähren und grünem Blattwerk, in Kraftpapier gewickelt und mit Schnur gebunden"
+    },
+    {
+      "assetId": "fo-bq-024-detail",
+      "alt": "Nahaufnahme von drei leuchtend gelben Sonnenblumenblüten mit braunem Samenboden"
+    },
+    {
+      "assetId": "fo-bq-025-hero",
+      "alt": "Ein handgebundener Strauß orangefarbener Sonnenblumen mit Weizenähren und grünem Blattwerk, in Kraftpapier gewickelt und mit Schnur gebunden"
+    },
+    {
+      "assetId": "fo-bq-025-detail",
+      "alt": "Nahaufnahme von drei orangefarbenen Sonnenblumenblüten mit dunkelbraunem Samenboden"
+    },
+    {
+      "assetId": "fo-bq-026-hero",
+      "alt": "Ein handgebundener Strauß Gerbera in Orange, Pink, Gelb und Rot, in Kraftpapier gewickelt und mit Schnur gebunden"
+    },
+    {
+      "assetId": "fo-bq-026-detail",
+      "alt": "Nahaufnahme einer orangefarbenen, einer pinken und einer gelben Gerberablüte über dem Kraftpapier"
+    },
+    {
+      "assetId": "fo-bq-027-hero",
+      "alt": "Ein handgebundener Strauß Gerbera in Rosa, Rot, Orange, Gelb, Weiß und Violett, in Kraftpapier gewickelt und mit Schnur gebunden"
+    },
+    {
+      "assetId": "fo-bq-027-detail",
+      "alt": "Nahaufnahme einer rosa, einer gelben und einer korallenroten Gerberablüte über dem Kraftpapier"
+    },
+    {
+      "assetId": "fo-bq-029-hero",
+      "alt": "Ein handgebundener Pastellstrauß aus pfirsichfarbenen und rosa Rosen, rosa Nelken, lila Levkojen und kleinen weißen Margeriten, in Kraftpapier gewickelt"
+    },
+    {
+      "assetId": "fo-bq-029-detail",
+      "alt": "Nahaufnahme einer pfirsichfarbenen Rose, einer rosa Rose und einer rosa Nelke zwischen kleinen weißen Margeriten und Eukalyptus"
+    },
+    {
+      "assetId": "fo-bq-030-hero",
+      "alt": "Ein handgebundener Strauß orangefarbener Rosen, orangefarbener Chrysanthemen und pfirsichfarbener Nelken mit Eukalyptus, in Kraftpapier gewickelt"
+    },
+    {
+      "assetId": "fo-bq-030-detail",
+      "alt": "Nahaufnahme orangefarbener Rosen und spitzblättriger orangefarbener Chrysanthemen mit kleinen weißen Margeriten"
+    },
+    {
+      "assetId": "fo-bq-031-hero",
+      "alt": "Ein handgebundener Pastellstrauß aus pfirsichfarbenen und rosa Rosen, lila Eustoma, rosa Nelken und weißen Margeriten, in Kraftpapier gewickelt"
+    },
+    {
+      "assetId": "fo-bq-031-detail",
+      "alt": "Nahaufnahme einer pfirsichfarbenen Rose, einer rosa Rose, einer lila Eustoma und einer rosa Nelke mit weißen Margeriten"
+    },
+    {
+      "assetId": "fo-bq-032-hero",
+      "alt": "Ein handgebundener farbenfroher Strauß aus Sonnenblumen, orangefarbenen Rosen, rosa Nelken und lila Astern zwischen gelben Füllblüten, in weißes Papier gewickelt"
+    },
+    {
+      "assetId": "fo-bq-032-detail",
+      "alt": "Nahaufnahme einer Sonnenblume, einer orangefarbenen Rose, einer lila Chrysantheme, einer rosa Nelke und weißer Eustoma"
+    },
+    {
+      "assetId": "fo-bq-033-hero",
+      "alt": "Ein handgebundener gemischter Strauß aus Sonnenblumen, roten und rosa Rosen, Inkalilien und weißen Margeriten zwischen gelben Füllblüten, in Kraftpapier gewickelt"
+    },
+    {
+      "assetId": "fo-bq-033-detail",
+      "alt": "Nahaufnahme einer Sonnenblume, roter, rosa, orangefarbener und lila Rosen, einer rosa Nelke und weißer Margeriten"
+    },
+    {
+      "assetId": "fo-bq-034-hero",
+      "alt": "Ein handgebundener gemischter Strauß aus Sonnenblumen, rosa und roten Rosen, rosa Lilien und lila Füllblüten, in Kraftpapier gewickelt"
+    },
+    {
+      "assetId": "fo-bq-034-detail",
+      "alt": "Nahaufnahme einer Sonnenblume, einer tiefrosa Rose, einer lila Chrysantheme und einer orangefarbenen Nelke"
+    },
+    {
+      "assetId": "fo-bq-035-hero",
+      "alt": "Ein handgebundener Strauß orangefarbener Chrysanthemen mit feinen orangefarbenen Zweigen, in Kraftpapier gewickelt und mit Schnur gebunden"
+    },
+    {
+      "assetId": "fo-bq-035-detail",
+      "alt": "Nahaufnahme von drei gerüschten orangefarbenen Blüten über dem Kraftpapier"
+    },
+    {
+      "assetId": "fo-bq-036-hero",
+      "alt": "Ein handgebundener ganz weißer Strauß aus Löwenmäulchen, Ranunkeln, Eustoma und weißen Doldenblüten, in weißes Papier gewickelt"
+    },
+    {
+      "assetId": "fo-bq-036-detail",
+      "alt": "Nahaufnahme von drei weißen Anemonen mit dunkler Mitte über weißem Papier"
+    },
+    {
+      "assetId": "fo-bq-038-hero",
+      "alt": "Ein handgebundener Strauß dunkelroter Nelken, in Kraftpapier gewickelt und mit Schnur gebunden"
+    },
+    {
+      "assetId": "fo-bq-038-detail",
+      "alt": "Nahaufnahme von drei dunkelroten Nelkenblüten mit gefransten Blütenblättern über dem Kraftpapier"
+    },
+    {
+      "assetId": "fo-bq-039-hero",
+      "alt": "Ein handgebundener Strauß blauer Hortensien mit dunkelgrünen Blättern, in weißes Papier gewickelt und mit Schnur gebunden"
+    },
+    {
+      "assetId": "fo-bq-039-detail",
+      "alt": "Nahaufnahme von drei blauen Hortensienblüten aus vielen kleinen Einzelblüten"
+    },
+    {
+      "assetId": "fo-bq-040-hero",
+      "alt": "Ein handgebundener Strauß weißer Freesien mit grünen Knospen, in Kraftpapier gewickelt und mit Schnur gebunden"
+    },
+    {
+      "assetId": "fo-bq-040-detail",
+      "alt": "Nahaufnahme geöffneter weißer Freesienblüten und grüner Knospen über dem Kraftpapier"
+    },
+    {
+      "assetId": "fo-fn-002-hero",
+      "alt": "Ein hohes Trauergesteck aus weißen Lilien und Knospen mit dunkelgrünem Blattwerk auf einem neutralen Steinsockel"
+    },
+    {
+      "assetId": "fo-fn-002-detail",
+      "alt": "Nahaufnahme geöffneter weißer Lilien und einer grünen Knospe zwischen dunkelgrünen Blättern"
+    },
+    {
+      "assetId": "fo-fn-003-hero",
+      "alt": "Ein hohes, spitz zulaufendes Trauergesteck aus weißen Lilien und grünen Knospen in dunklem Blattwerk auf neutralem Stein"
+    },
+    {
+      "assetId": "fo-fn-003-detail",
+      "alt": "Nahaufnahme von drei geöffneten weißen Lilien mit blassgrünem Schlund und geschlossenen Knospen"
+    },
+    {
+      "assetId": "fo-fn-004-hero",
+      "alt": "Ein hohes Trauergesteck aus weißen Rosen mit Eukalyptus auf einem neutralen Steinsockel"
+    },
+    {
+      "assetId": "fo-fn-004-detail",
+      "alt": "Nahaufnahme von drei weißen Rosenblüten mit Eukalyptusblättern"
+    },
+    {
+      "assetId": "fo-fn-005-hero",
+      "alt": "Ein hohes ganz weißes Trauergesteck aus Rosen, Lilien, Eustoma und kleinen weißen Blüten auf neutralem Stein"
+    },
+    {
+      "assetId": "fo-fn-005-detail",
+      "alt": "Nahaufnahme einer weißen Lilie, weißer Rosen, einer weißen Nelke und weißer Eustoma"
+    },
+    {
+      "assetId": "fo-fn-006-hero",
+      "alt": "Ein rundes Trauergesteck aus Chrysanthemen in Creme, Rosa, Bordeaux und Gelb auf neutralem Stein"
+    },
+    {
+      "assetId": "fo-fn-006-detail",
+      "alt": "Nahaufnahme von vier Chrysanthemenblüten in Creme, Bordeaux und Altrosa auf Stein"
+    },
+    {
+      "assetId": "fo-fn-007-hero",
+      "alt": "Ein rundes Trauergesteck aus weißen Chrysanthemen mit dunkelgrünem Blattwerk auf neutralem Stein"
+    },
+    {
+      "assetId": "fo-fn-007-detail",
+      "alt": "Nahaufnahme von drei vollen weißen Chrysanthemenblüten mit dichten Blütenblättern"
+    },
+    {
+      "assetId": "fo-fn-008-hero",
+      "alt": "Ein Trauergesteck aus pastellfarbenen Chrysanthemen in Blassrosa, Flieder und Creme auf neutralem Stein"
+    },
+    {
+      "assetId": "fo-fn-008-detail",
+      "alt": "Nahaufnahme von drei Chrysanthemenblüten in Blassrosa und Flieder"
+    },
+    {
+      "assetId": "fo-fn-009-hero",
+      "alt": "Ein rundes Trauergesteck aus weißen Rosen mit Eukalyptus, aufrecht auf neutralem Stein"
+    },
+    {
+      "assetId": "fo-fn-009-detail",
+      "alt": "Nahaufnahme von zwei weißen Rosenblüten nebeneinander auf Stein"
+    },
+    {
+      "assetId": "fo-fn-010-hero",
+      "alt": "Ein ganz weißes Trauergesteck aus Rosen, Hortensien, Levkojen und Schleierkraut auf neutralem Stein"
+    },
+    {
+      "assetId": "fo-fn-010-detail",
+      "alt": "Nahaufnahme einer weißen Rose zwischen weißen Hortensiendolden"
+    },
+    {
+      "assetId": "fo-gs-002-hero",
+      "alt": "Ein Strauß rosa Rosen mit Eukalyptus in Kraftpapier neben einer schlichten geschlossenen Pralinenschachtel"
+    },
+    {
+      "assetId": "fo-gs-002-detail",
+      "alt": "Nahaufnahme von drei zartrosa Rosenblüten über dem Kraftpapier"
+    },
+    {
+      "assetId": "fo-gs-003-hero",
+      "alt": "Ein Strauß blauer Ranunkeln, Kornblumen und Hortensien in Kraftpapier neben einer schlichten geschlossenen Pralinenschachtel"
+    },
+    {
+      "assetId": "fo-gs-003-detail",
+      "alt": "Nahaufnahme blauer Ranunkeln, zackiger blauer Kornblumen und hellblauer Hortensienblüten"
+    },
+    {
+      "assetId": "fo-gs-004-hero",
+      "alt": "Ein Strauß rosa Rosen und Nelken mit winzigen rosa Blüten in Kraftpapier neben einer schlichten geschlossenen Pralinenschachtel"
+    },
+    {
+      "assetId": "fo-gs-004-detail",
+      "alt": "Nahaufnahme von zwei rosa Nelken mit gefransten Blütenblättern und einer geöffneten rosa Rose"
+    },
+    {
+      "assetId": "fo-gs-005-hero",
+      "alt": "Ein Strauß rosa, violetter, gelber und weißer Tulpen in Kraftpapier neben einer schlichten geschlossenen Pralinenschachtel"
+    },
+    {
+      "assetId": "fo-gs-005-detail",
+      "alt": "Nahaufnahme rosa, gelber, weißer und violetter Tulpenblüten über dem Kraftpapier"
+    },
+    {
+      "assetId": "fo-gs-006-hero",
+      "alt": "Ein Strauß blassrosa und cremeweißer Rosen mit Eukalyptus in Kraftpapier neben einer schlichten geschlossenen Pralinenschachtel"
+    },
+    {
+      "assetId": "fo-gs-006-detail",
+      "alt": "Nahaufnahme cremeweißer und blassrosa Rosenblüten über dem Kraftpapier"
+    },
+    {
+      "assetId": "fo-gs-007-hero",
+      "alt": "Ein Strauß leuchtend gelber Sonnenblumen mit Weizenähren in Kraftpapier neben einer schlichten geschlossenen Pralinenschachtel"
+    },
+    {
+      "assetId": "fo-gs-007-detail",
+      "alt": "Nahaufnahme leuchtend gelber Sonnenblumenblüten mit dunkelbraunem Samenboden"
+    },
+    {
+      "assetId": "fo-gs-008-hero",
+      "alt": "Ein Strauß zartrosa Pfingstrosen in Kraftpapier mit rosa Schleife neben einer schlichten geschlossenen Pralinenschachtel"
+    },
+    {
+      "assetId": "fo-gs-008-detail",
+      "alt": "Nahaufnahme von drei zartrosa Pfingstrosenblüten mit goldgelber Mitte"
+    },
+    {
+      "assetId": "fo-gs-009-hero",
+      "alt": "Ein gemischter Strauß aus roten Rosen, rosa und gelben Gerbera, lila Chrysanthemen und weißen Margeriten in Kraftpapier neben einer schlichten Pralinenschachtel"
+    },
+    {
+      "assetId": "fo-gs-009-detail",
+      "alt": "Nahaufnahme einer gelben Gerbera, einer rosa Rose, einer lila Chrysantheme, rosa Inkalilien und weißer Margeriten"
+    },
+    {
+      "assetId": "fo-gs-010-hero",
+      "alt": "Ein Strauß Gerbera in Rot, Orange, Pink, Gelb und Weiß in Kraftpapier neben einer schlichten geschlossenen Pralinenschachtel"
+    },
+    {
+      "assetId": "fo-gs-010-detail",
+      "alt": "Nahaufnahme gelber, roter, pinker und orangefarbener Gerberablüten über dem Kraftpapier"
+    },
+    {
+      "assetId": "fo-gs-011-hero",
+      "alt": "Ein Strauß weißer Lilien mit dunkelgrünem Blattwerk in Kraftpapier neben einer schlichten geschlossenen Pralinenschachtel"
+    },
+    {
+      "assetId": "fo-gs-011-detail",
+      "alt": "Nahaufnahme von drei geöffneten weißen Lilien mit dunklen Staubblättern und einer grünen Knospe"
+    },
+    {
+      "assetId": "fo-gs-012-hero",
+      "alt": "Ein Pastellstrauß aus rosa Rosen, rosa und weißen Gerbera, lila Rosen und Schleierkraut in Kraftpapier neben einer schlichten Pralinenschachtel"
+    },
+    {
+      "assetId": "fo-gs-012-detail",
+      "alt": "Nahaufnahme einer rosa Gerbera, einer weißen Gerbera, einer rosa Rose und einer rosa Nelke mit Schleierkraut"
+    },
+    {
+      "assetId": "fo-pt-003-hero",
+      "alt": "Eine weiße Schmetterlingsorchidee mit überhängenden Blütentrieben in einem schlichten weißen Keramiktopf"
+    },
+    {
+      "assetId": "fo-pt-003-detail",
+      "alt": "Nahaufnahme geöffneter weißer Orchideenblüten mit gelber Mitte und grünen Knospen"
+    },
+    {
+      "assetId": "fo-pt-004-hero",
+      "alt": "Eine blühende weiße Lilienpflanze mit Knospen und aufrechten Blättern in einem schlichten weißen Keramiktopf"
+    },
+    {
+      "assetId": "fo-pt-004-detail",
+      "alt": "Nahaufnahme geöffneter weißer Lilien mit dunkelroten Staubblättern über dem Topfrand"
+    },
+    {
+      "assetId": "fo-pt-005-hero",
+      "alt": "Eine blühende rote Amaryllis mit langen grünen Blättern in einem schlichten weißen Keramiktopf"
+    },
+    {
+      "assetId": "fo-pt-005-detail",
+      "alt": "Nahaufnahme geöffneter dunkelroter Amaryllisblüten mit hellen Staubblättern und einer geschlossenen Knospe"
+    },
+    {
+      "assetId": "fo-pt-006-hero",
+      "alt": "Eine Hortensie mit rosa, blauen, violetten, cremefarbenen und hellgrünen Blütenköpfen in einem schlichten weißen Keramiktopf"
+    },
+    {
+      "assetId": "fo-pt-006-detail",
+      "alt": "Nahaufnahme eines pinken, eines blauen und eines cremefarbenen Hortensienblütenkopfs über dem Topf"
+    },
+    {
+      "assetId": "fo-pt-007-hero",
+      "alt": "Ein Einblatt mit weißen Blüten und glänzenden dunklen Blättern in einem schlichten weißen Keramiktopf"
+    },
+    {
+      "assetId": "fo-pt-007-detail",
+      "alt": "Nahaufnahme von drei weißen Einblattblüten, jede mit einem cremefarbenen Blütenkolben"
     }
   ]
 }

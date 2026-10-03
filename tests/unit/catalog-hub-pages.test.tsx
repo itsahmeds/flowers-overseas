@@ -182,8 +182,11 @@ describe("AC-24's nomination on a hub (spec 008 §14 **A11**)", () => {
   /**
    * A11, applied to the two page types it names: **on a page whose first card carries no
    * photograph the page nominates nothing, and zero is asserted as a positive claim.** The three
-   * shapes below are all real views of the committed corpus rather than fabrications, which is
-   * what keeps the zero falsifiable — `expectedPreloads(firstCardPhotograph(html))` fails on a
+   * shapes below are real views of the committed corpus. Since TASK-168 approved photo batch 2,
+   * every card in the corpus carries a photograph, so the two placeholder shapes are those real
+   * views with the named cards' photographs withdrawn (`withPlaceholderAt`), the state the corpus
+   * was in before; what keeps the zero falsifiable is unchanged —
+   * `expectedPreloads(firstCardPhotograph(html))` fails on a
    * preload of a placeholder, of an unrendered asset, or of a photograph further down the grid,
    * because it is compared against the **first card's own** `<source>` and nothing else.
    *
@@ -191,14 +194,34 @@ describe("AC-24's nomination on a hub (spec 008 §14 **A11**)", () => {
    * idiom for this assertion across every listing page type is the point of A11's implementation
    * note.
    */
+  /** A real hub view with the named cards' photographs withdrawn to the captioned placeholder. */
+  function withPlaceholderAt(
+    view: ListingView,
+    ...indices: readonly number[]
+  ): ListingView {
+    return {
+      ...view,
+      hubItems: view.hubItems.map((card, index) =>
+        indices.includes(index)
+          ? { ...card, photo: { kind: "placeholder", slot: "grid" } as const }
+          : card,
+      ),
+    };
+  }
+
   it("nominates the first card's photograph, exactly once, when it has one", () => {
-    // `/en/flowers/roses`: twelve cards, three of them photographs, the first of them the first
-    // card. The numbers are the corpus's and are written here deliberately — a media flip that
-    // changes them makes this case red rather than silently moving the nomination.
+    // `/en/flowers/roses`: twelve cards, all twelve photographs since TASK-168 (three before), the
+    // first of them the first card. The numbers are the corpus's and are written here deliberately
+    // — a media flip that changes them makes this case red rather than silently moving the
+    // nomination.
+    expect(roses.hubItems).toHaveLength(12);
+    expect(
+      roses.hubItems.filter((card) => card.photo.kind === "asset"),
+    ).toHaveLength(12);
     expect(roses.hubItems[0]?.photo.kind).toBe("asset");
     const html = render(<CategoryHubPage view={roses} />, "en");
     const nominated = lcpNominations(html);
-    expect(nominated.images).toBe(3);
+    expect(nominated.images).toBe(12);
     expect(nominated.eager).toBe(1);
     expect(nominated.high).toBe(1);
     expect(nominated.preloaded).toEqual(
@@ -208,14 +231,19 @@ describe("AC-24's nomination on a hub (spec 008 §14 **A11**)", () => {
   });
 
   it("nominates nothing at all on a hub whose cards are all placeholders", () => {
-    // `/en/occasions/mothers-day`: A11's founding case. No Mother's Day SKU has an approved
-    // asset, so the grid renders seven captioned boxes and **no `<img>`** — the quantifier of
-    // AC-24 has no subject, and the honest answer is zero. Asserted as four positive numbers,
-    // not as the absence of an assertion.
+    // `/en/occasions/mothers-day`: A11's founding case. Until TASK-168 no Mother's Day SKU had an
+    // approved asset; the case now withdraws all seven cards' photographs, so the grid renders
+    // seven captioned boxes and **no `<img>`** — the quantifier of AC-24 has no subject, and the
+    // honest answer is zero. Asserted as four positive numbers, not as the absence of one.
+    const allPlaceholders = withPlaceholderAt(
+      mothersDay,
+      ...mothersDay.hubItems.map((_card, index) => index),
+    );
+    expect(allPlaceholders.hubItems).toHaveLength(7);
     expect(
-      mothersDay.hubItems.every((card) => card.photo.kind !== "asset"),
+      allPlaceholders.hubItems.every((card) => card.photo.kind !== "asset"),
     ).toBe(true);
-    const html = render(<OccasionHubPage view={mothersDay} />, "en");
+    const html = render(<OccasionHubPage view={allPlaceholders} />, "en");
     const nominated = lcpNominations(html);
     expect(nominated.images).toBe(0);
     expect(nominated.eager).toBe(0);
@@ -225,16 +253,28 @@ describe("AC-24's nomination on a hub (spec 008 §14 **A11**)", () => {
   });
 
   it("promotes no lower photograph when the first card is a placeholder", () => {
-    // `/en/flowers/orchids` and `/en/occasions/all-saints-day` both render a photograph on their
-    // **second** card. Preloading it would spend the LCP budget on a resource the LCP element —
-    // the first card's fixed 4∶5 box — never uses, which is the half of A11 a 0-vs-0 comparison
-    // cannot see: the page renders an image and still must nominate none.
-    for (const [name, html] of [
-      ["orchids", render(<CategoryHubPage view={orchids} />, "en")],
-      ["all-saints-day", render(<OccasionHubPage view={allSaints} />, "en")],
+    // `/en/flowers/orchids` and `/en/occasions/all-saints-day`, each with its first card's
+    // photograph withdrawn, render photographs from their **second** card on. Preloading one would
+    // spend the LCP budget on a resource the LCP element — the first card's fixed 4∶5 box — never
+    // uses, which is the half of A11 a 0-vs-0 comparison cannot see: the page renders images and
+    // still must nominate none.
+    for (const [name, html, images] of [
+      [
+        "orchids",
+        render(<CategoryHubPage view={withPlaceholderAt(orchids, 0)} />, "en"),
+        2,
+      ],
+      [
+        "all-saints-day",
+        render(
+          <OccasionHubPage view={withPlaceholderAt(allSaints, 0)} />,
+          "en",
+        ),
+        4,
+      ],
     ] as const) {
       const nominated = lcpNominations(html);
-      expect(nominated.images, name).toBe(1);
+      expect(nominated.images, name).toBe(images);
       expect(firstCardPhotograph(html), name).toBeUndefined();
       expect(nominated.preloaded, name).toEqual(expectedPreloads(undefined));
       expect(nominated.eager, name).toBe(0);
