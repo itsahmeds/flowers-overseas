@@ -45,8 +45,14 @@ export const PINNED_LIBVIPS_VERSION = "8.18.6";
 /* The width ladder (spec 006 §13 Q5).                                        */
 /* -------------------------------------------------------------------------- */
 
-/** The seven page widths of spec 006 §13 Q5, ascending; both page formats exist at each. */
-export const VARIANT_WIDTHS = [384, 640, 828, 1080, 1200, 1600, 1920] as const;
+/**
+ * The eight page widths, ascending; both page formats exist at each. Spec 006 §13 Q5 lists seven;
+ * §14 A11 clause 1 adds 480 "for this slot only" (`productHero`, below), so every Phase-0 ladder
+ * stays a subset of this list.
+ */
+export const VARIANT_WIDTHS = [
+  384, 480, 640, 828, 1080, 1200, 1600, 1920,
+] as const;
 
 /**
  * The one JPEG per asset, for OG/email/social where AVIF and WebP are still unreliable
@@ -71,7 +77,7 @@ export const HERO_DESKTOP_MIN_WIDTH = 1080;
 /* -------------------------------------------------------------------------- */
 
 /**
- * **Which of the seven widths each slot actually ships in Phase 0**, and the single decision in
+ * **Which of the eight widths each slot actually ships in Phase 0**, and the single decision in
  * this file that is a *choice* rather than a transcription.
  *
  * TASK-078 measured the arithmetic and recorded it: the full 15-file ladder cannot fit 31 assets
@@ -123,7 +129,7 @@ export const PHASE0_SLOT_WIDTHS: Readonly<
 > = {
   hero: [384, 640, 828, 1080, 1200],
   occasionTile: [384],
-  // 480 since TASK-168 (orchestrator ruling, 2026-10-03; spec 006 §2.5 amendment to follow):
+  // 480 since TASK-168 (spec 006 §14 A11, the orchestrator's ruling of 2026-10-03):
   // Chromium takes the smallest rung whose density is ≥ the device pixel ratio, so the home's
   // 178 px trending card on a 412 px, DPR 2.625 phone needs 467 device px and, with 384 → 640 as
   // the only step, fetched 640 w and put the locale homes over AC-15's 204 800 B. 480 w is the
@@ -250,7 +256,7 @@ export function variantDimensions(
  * The widths are `PHASE0_SLOT_WIDTHS[slot]`, not the whole of `VARIANT_WIDTHS`: the header's job
  * is to describe the bytes that exist, so a header listing a width the CLI never derives would
  * make `--check` compare a manifest against a pipeline that did not write it. `VARIANT_WIDTHS`
- * stays the Q5 vocabulary every Phase-0 ladder is a subset of, and widening a ladder is an edit to
+ * stays the vocabulary (Q5's seven plus §14 A11's 480) every Phase-0 ladder is a subset of, and widening a ladder is an edit to
  * one table plus a re-derive.
  *
  * A step with no widths is omitted rather than written empty — the hero band's 4:3 crop would

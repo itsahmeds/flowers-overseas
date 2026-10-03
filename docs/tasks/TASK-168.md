@@ -14,30 +14,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
   is not dispatched before that entry exists. No agent approves anything the founder did not.
 - **The data edit** (spec 006 §14 A7 clause 5, the parts TASK-167 left): for each approved row,
   `reviewState: "approved"`, `reviewedBy: "founder"`, `reviewedAt` = the instant of the founder's
-  message; a row the founder asks to redo stays `pending` and is listed in `- 2026-10-03 (finisher, from `ffaf761f`, CI run 37118872307): `home.spec.ts:187` pinned to the
-  new truth on all four homes — five `[data-fo-media-slot="trending"]` boxes, five `<img>` (five
-  inside the slot boxes), zero `[data-fo-media-placeholder]`; the run itself is the red for the slot
-  half (the old `grid` locator received 0 against this head). The `<img>`/placeholder halves are
-  not watched red locally (Playwright needs the build slot, held by another agent at load 22) — left
-  for the breaker. **Listing baselines:** 9 `listing-*` PNGs (desktop card-image, card-link,
-  card-placeholder, card-tile, grid, toolbar; mobile card-link, card-placeholder, grid) taken from
-  baselines run 37118133249 (`9ee86f75`, whose `src`/`app`/`seed` equal this head's). They are this
-  diff's: they passed on `97b7a934` and moved when the `trending` sample box (+111 px) landed above
-  them on `/dev/components` — ±1 px heights from the sub-pixel offset; each viewed side by side
-  with the committed one: same cards, same text, same photographs. `visual:baselines --verify`
-  reports 104 of 104 against both the committed manifest and that run's own. **Measured on
-  `ffaf761f`:** mobile image bytes `/en` 215 876, `/de` 215 876, `/pl` 215 876 (budget 204 800 B,
-  over → escalated, not tuned); Lighthouse LCP `/en` 1 758 ms, `/en-gb` 1 746, `/de` 1 738,
-  `/pl` 1 739 (budget 2 000 ms). `product.spec.ts:96` escalated (no subject, outside the fence).
-  `consent-banner.spec.ts:667` failed again on `e2e-desktop` (the known flake, both forged-cookie
-  cases).
-
-- 2026-10-03: CI run 37120922778 on `a4166b9f`: `home.spec.ts:187` and every `listing-*` baseline
-  green; red only on the two escalations (mobile homes 215 876 B each, `product.spec.ts:96`) and
-  the known `consent-banner.spec.ts:667` flake (`e2e-mobile`, the `hello` case). `build`, `a11y`,
-  `lighthouse` green. Stopped on the budget, as ordered.
-
-## Result`.
+  message; a row the founder asks to redo stays `pending` and is listed in `## Result`.
 - **FO-BQ-004:** stage only the chosen pair into the main checkout's
   `.local/imagery/originals/` under the canonical names, give it its two `media.json` rows and prompt
   records as TASK-167 did for the others, derive its variants; the other pair is neither staged nor
@@ -90,7 +67,7 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   the morning report proposed; the founder may swap to A later, which is a data edit. Stage B
   only; A gets no rows.
 - **2026-10-03 — 20 unit cases in six files outside the fence pin the photo coverage of the
-  committed data (orchestrator, `open`).** With all 175 assets approved there is no `pending`
+  committed data (orchestrator). Answered: fence widened, see below; done in `## Progress`.** With all 175 assets approved there is no `pending`
   asset and no product without a photograph left in `seed/data/media.json`, and these cases took
   their subjects from it. No production code is involved; each is a test edit:
   - `tests/unit/media-upload.test.ts` (10 cases, the `/break 142` HOLE 5–9 suite): `PENDING =
@@ -119,8 +96,8 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   subject is mutated and watched red. The e2e and visual spec files that fail in CI on the same
   assumption are inside the fence under the same rule; baselines change only through the
   `visual:baselines` label flow, each inspected.
-- **2026-10-03 — the mobile locale homes miss AC-15's image-transfer budget (orchestrator,
-  `open`; stop-and-report, nothing tuned).** CI run 37115494615 on `97b7a934`, `e2e-mobile`,
+- **2026-10-03 — the mobile locale homes miss AC-15's image-transfer budget (orchestrator).
+  Answered (rulings below); the budget half superseded by the 480 w ruling, spec 006 §14 A11 (PR 163).** CI run 37115494615 on `97b7a934`, `e2e-mobile`,
   `tests/e2e/media-budgets.spec.ts:87`: `/en`, `/de` and `/pl` each transfer **215 876 B** of
   images against `PAGE_IMAGE_BUDGET_BYTES` 204 800 B (11 076 B, 5.4 % over; desktop passes).
   Top five: `home-hero/1200.avif` 41 135 B (site origin), then the trending row's product heroes
@@ -148,7 +125,7 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   renders the PDP no-photo state, otherwise asserts the real page's photo and the no-photo branch
   is recorded as covered by `product-page.test.tsx`'s `withoutMedia()` cases; no new dev page.
   (3) Then refresh only this diff's baselines through `visual:baselines`, each inspected.
-- **2026-10-03 — where the trending card's honest `sizes` lives (orchestrator, `open`).** The
+- **2026-10-03 — where the trending card's honest `sizes` lives (orchestrator). Answered: (a), below.** The
   row renders `MediaAsset slot="grid"`, and `sizes` is the slot's: `MEDIA_SLOT_SPECS.grid` =
   `(min-width: 768px) 25vw, 50vw`, shared with every listing card (`CARD_MEDIA_SLOT = "grid"`,
   `src/modules/catalog/listing.ts`). `slots.ts` states the rule "decided here, once, per slot
@@ -181,7 +158,8 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   line in `.env.local` (`docs/runbooks/imagery.md` §6, second note).
 
 - **2026-10-03 — the honest `trending` sizes did not move the mobile pick; the homes are still
-  over AC-15's image budget (orchestrator, `open`; stop-and-report, nothing tuned).** CI run
+  over AC-15's image budget (orchestrator). Answered: the 480 w `productHero` rung, spec 006 §14 A11
+  (PR 163); the cause is measured in the next entry.** CI run
   37118872307 on `ffaf761f`, `e2e-mobile`, `media-budgets.spec.ts:87`: `/en`, `/de`, `/pl` each
   **215 876 B** against 204 800 B, byte-identical to `97b7a934` before the slot: `home-hero/1200.avif`
   41 135, then `fo-bq-003-hero/640.avif` 27 685, `-002` 21 843, `-001` 20 752, `-004` 20 730 — still
@@ -192,7 +170,8 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   at the served `<source sizes>` on a real build), or the pick rule differs from that arithmetic.
   No other home component renders those assets. LCP on the same head is inside 2 000 ms.
 - **2026-10-03 — `tests/visual/product.spec.ts`'s `gallery-placeholder` block has no subject
-  (orchestrator, `open`; outside this work order's fence).** CI run 37118872307, `product.spec.ts:96`
+  (orchestrator). Answered: fence widened in the finisher's work order; the block reads
+  `/dev/components`, two baselines from run 37123143990 (`## Progress`).** CI run 37118872307, `product.spec.ts:96`
   at 1440 and 390: `[data-fo-gallery="placeholder"]` times out on `/en/poland/product/anthurium`,
   which batch 2 photographed — not a pixel difference, so no baseline refresh can fix it. The
   committed `product-*-gallery-placeholder.png` are the old ones (the baselines run on `9ee86f75`
@@ -202,7 +181,8 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   also refreshes `product-*` baselines, so expect a rebase.
 
 - **2026-10-03 — the trending pick is the browser's correct pick; no honest markup change brings
-  the mobile homes under AC-15 (orchestrator, `open`; stop-and-report, nothing tuned).** Measured
+  the mobile homes under AC-15 (orchestrator). Answered: (i), the 480 w rung, below; spec 006 §14
+  A11 (PR 163).** Measured
   on a local `next build` (table in `## Progress`): `/en`, `/en-gb`, `/de`, `/pl` 215 876 B each
   against 204 800 B. Served `sizes` is the honest `trending` string; Chromium 153 takes the
   smallest rung with density ≥ DPR (probed), so a 178 px card at DPR 2.625 needs 467 device px and
@@ -289,6 +269,27 @@ here.
   flip and are not this diff's; their PNGs and manifest entries stay as committed, so
   `pnpm visual:baselines --verify` on the committed manifest reports 104 of 104 matched.
 
+- 2026-10-03 (finisher, from `ffaf761f`, CI run 37118872307): `home.spec.ts:187` pinned to the
+  new truth on all four homes — five `[data-fo-media-slot="trending"]` boxes, five `<img>` (five
+  inside the slot boxes), zero `[data-fo-media-placeholder]`; the run itself is the red for the slot
+  half (the old `grid` locator received 0 against this head). The `<img>`/placeholder halves are
+  not watched red locally (Playwright needs the build slot, held by another agent at load 22) — left
+  for the breaker. **Listing baselines:** 9 `listing-*` PNGs (desktop card-image, card-link,
+  card-placeholder, card-tile, grid, toolbar; mobile card-link, card-placeholder, grid) taken from
+  baselines run 37118133249 (`9ee86f75`, whose `src`/`app`/`seed` equal this head's). They are this
+  diff's: they passed on `97b7a934` and moved when the `trending` sample box (+111 px) landed above
+  them on `/dev/components` — ±1 px heights from the sub-pixel offset; each viewed side by side
+  with the committed one: same cards, same text, same photographs. `visual:baselines --verify`
+  reports 104 of 104 against both the committed manifest and that run's own. **Measured on
+  `ffaf761f`:** mobile image bytes `/en` 215 876, `/de` 215 876, `/pl` 215 876 (budget 204 800 B,
+  over → escalated, not tuned); Lighthouse LCP `/en` 1 758 ms, `/en-gb` 1 746, `/de` 1 738,
+  `/pl` 1 739 (budget 2 000 ms). `product.spec.ts:96` escalated (no subject, outside the fence).
+  `consent-banner.spec.ts:667` failed again on `e2e-desktop` (the known flake, both forged-cookie
+  cases).
+- 2026-10-03: CI run 37120922778 on `a4166b9f`: `home.spec.ts:187` and every `listing-*` baseline
+  green; red only on the two escalations (mobile homes 215 876 B each, `product.spec.ts:96`) and
+  the known `consent-banner.spec.ts:667` flake (`e2e-mobile`, the `hello` case). `build`, `a11y`,
+  `lighthouse` green. Stopped on the budget, as ordered.
 - 2026-10-03 (finisher, measured on `8b576dfb`, build slot, load 3.3): `next build` from
   `.env.example` + `next start`, Playwright's own `Pixel 7` (412 × 839, DPR 2.625, Chromium
   153.0.8010.12), the budget case's method (networkidle, scroll to bottom, networkidle). **Every
@@ -346,7 +347,8 @@ here.
   of 104 differ, each inspected and taken with the run's manifest (`--verify` 104 of 104):
   `product-mobile-{gallery-photos,sticky}` (the same photograph, now downsampled from 480 w);
   `de`, `home-{de,pl}-{desktop,mobile}`, `footer-de-{desktop,mobile}` (the footer's "Occasions"
-  is now a link: main's TASK-106 de/pl slugs plus this branch's photographs; 63 × 10 px each);
+  is now a link, from main's TASK-106 de/pl slugs alone: `occasionsIndexExists()` reads no media,
+  so main's own `footer-de-*` are stale; 63 × 10 px each);
   `dev-components-desktop` (this branch's +111 px `trending` sample and TASK-171's dropped cutoff
   sentence).
 - 2026-10-03: `seed/snapshot/media_variant.json` regenerated (`seed:diff --write`; the 168 rows),
@@ -355,17 +357,39 @@ here.
   `banner.spec.ts:669` (`e2e-desktop`, both attempts: `[data-fo-consent]` not yet in the DOM when
   the z-index is read; it passed on 37123660543 and nothing in this diff touches consent). CI
   re-fired on the head to tell a flake from a cause.
+- 2026-10-03 (round 1 fixes, from `32159a4d`; `origin/main` merged in at `0c8e2856`): the
+  breaker's H2 — `VARIANT_WIDTHS` gains 480 (eight widths, citing §14 A11 clause 1), so every
+  Phase-0 ladder is a subset of it again; `pnpm media:variants` re-run: all 862 rows identical,
+  the manifest header changes only in `pipeline.widths`; `--check`, `seed:check`, `seed:diff` clean;
+  the verbatim pin and the full-ladder fixture case updated; 480 dropped from `VARIANT_WIDTHS` →
+  2 red. H1 — `ui-home-gated.test.tsx` gains a pick with no photograph (an asset id the manifest
+  does not hold): product caption, `trending` box, `unknownAsset`, no `<img>`; `trending` mapped to
+  `placeholder.occasion` → red. Reviewer's docs: `docs/runbooks/imagery.md` ladder row and the
+  480 rung's reason (A11 clause 4), `docs/architecture.md` slot list (`band`, `trending`) and
+  ladder, `slots.ts` "six places", the A11 citation in `variants.ts`; this brief's Binding clause
+  repaired, the escalations marked answered, `## Result` rewritten.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-**Partial, blocked (2026-10-03).** Draft PR [#148](https://github.com/itsahmeds/flowers-overseas/pull/148).
-Data: 144 batch-2 rows approved at `2026-10-03T09:21:10Z`; FO-BQ-004 pair B (2 rows, 8 variants,
-694 variant rows in all); 576 alt strings (144 × en, en-gb, de, pl); `seed/snapshot` regenerated.
-Unit: the sign-off case and two new cases in `tests/unit/seed-media-manifest.test.ts` (20 cases
-green, three mutations each red). Bucket: 576 objects uploaded and verified. Gates:
-`seed:check` 0, `media:variants --check` 0, `gates:cheap` six of seven exit 0, `tests` exit 1
-(the 20 escalated cases). Not yet: the six out-of-fence test files, CI, Lighthouse on the four
-locale homes, visual baselines. No build slot taken.
+**Done (2026-10-03).** PR [#148](https://github.com/itsahmeds/flowers-overseas/pull/148), spec 006
+§14 A7 clause 5, A8 clause 4, A9 clause 4 and A11. **Data:** 175 assets approved (the 144 of batch
+2 at the founder's `2026-10-03T09:21:10Z`); FO-BQ-004 pair B; 576 alt strings (144 × en, en-gb, de,
+pl); 862 variant rows (+168 at the new 480 w `productHero` rung, no existing row changed);
+`seed/snapshot` regenerated. **Bucket:** 576 batch-2 objects and then 168 480 w objects uploaded,
+every one verified (`--verify` in groups of 16). **UI:** the home's trending row renders in its own
+`trending` slot, whose `sizes` states the card's width; with the 480 rung the browser makes an
+honest pick. **Measured:** mobile (Pixel 7) image bytes on `/en`, `/en-gb`, `/de`, `/pl` 178 813 B
+each (was 215 876; budget 204 800); CI run 37133900235 on `32159a4d`, 24 of 24 green, Lighthouse
+LCP `/en` 1 870 ms, `/en-gb` 1 814, `/de` 1 952, `/pl` 1 799 (budget 2 000). **Tests:** unit — the
+sign-off case, the ladder case, the `trending` sizes and slot cases, the no-photo trending caption,
+and six widened files whose placeholder subjects are built in-test (`media-upload`, `seed-check`,
+`catalog-{category,hub,occasion,shop}-page`, `product-page`); e2e — `home.spec.ts` trending pins,
+three listing pins, `product-page.spec.ts`'s no-photo case on `/dev/components`; visual —
+baselines from runs 37118133249 (23), 37123143990 (2) and 37130468759 (10), each inspected.
+**Build slot** taken for the two Pixel 7 measurements (a byte budget). **Carry-forwards:** `/de`
+LCP has a 48 ms margin, so anything new above the fold on a locale home is measured first;
+`verifyPublished()` has no retry (one `fetch failed` aborts a run); main's `footer-de-*` baselines
+are stale from TASK-106; every `.env.local` still holds the old `R2_PUBLIC_BASE_URL` (founder).

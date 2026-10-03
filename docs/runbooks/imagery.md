@@ -39,7 +39,7 @@ That is what makes the command safe to run in any worktree.
 
 `seed/schema/variants.ts` holds two tables that decide it:
 
-- **`PHASE0_SLOT_WIDTHS`** — which of spec 006 §13 Q5's seven widths each slot derives. The full
+- **`PHASE0_SLOT_WIDTHS`** — which of the eight widths (spec 006 §13 Q5's seven, plus §14 A11's 480) each slot derives. The full
   15-file ladder cannot fit 31 assets inside the 6 MB committed-bytes cap, so each slot stops at the
   last width whose largest file (always the WebP fallback, on the busiest asset) is still inside
   `seed/budgets.ts`'s per-slot cap, and never above its own original's width.
@@ -50,8 +50,16 @@ That is what makes the command safe to run in any worktree.
 |---|---|---|---|
 | `hero` | 384, 640, 828 (4:3) · 1080, 1200 (16:9) | 90 000 B | 59 878 B |
 | `occasionTile` | 384 | 18 000 B | 17 830 B |
-| `productHero` | 384, 640, 828 | 90 000 B | 81 486 B |
+| `productHero` | 384, 480, 640, 828 | 90 000 B | 81 486 B |
 | `productDetail` | 384 | 60 000 B | 38 398 B |
+
+**The `productHero` 480 rung (spec 006 §14 A11, TASK-168)** exists for the home's "Most sent this
+week" row, whose card is the `trending` slot (`src/modules/ui/media/slots.ts`): 178 CSS px on a
+412 px phone. Chromium picks the smallest rung whose density is at least the device pixel ratio,
+so at DPR 2.625 a 384 → 640 ladder fetched 640 w and the locale homes went over AC-15's
+204 800 B. 480 w (density 2.70) is the honest pick, and the homes measure 178 813 B. It is
+derived and uploaded for `approved` assets only, and is never an enlargement (every original
+is at least 784 px wide).
 
 Widening a ladder is an edit to `PHASE0_SLOT_WIDTHS` plus `pnpm media:variants`; the manifest header
 records the ladder, so `--check` fails if the two ever disagree.

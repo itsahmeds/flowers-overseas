@@ -262,9 +262,9 @@ describe("spec 006 AC-13: the encoder is pinned and recorded, not defaulted", ()
     }).not.toThrow();
   });
 
-  it("records spec 006 §13 Q5's ladder and qualities verbatim", () => {
+  it("records spec 006 §13 Q5's ladder (with §14 A11's 480) and qualities verbatim", () => {
     expect([...VARIANT_WIDTHS]).toEqual([
-      384, 640, 828, 1080, 1200, 1600, 1920,
+      384, 480, 640, 828, 1080, 1200, 1600, 1920,
     ]);
     expect(OG_JPEG_WIDTH).toBe(1200);
     expect(AVIF_OPTIONS.quality).toBe(50);
@@ -392,6 +392,8 @@ describe("T-12: the ladder over three fixture originals (AC-12)", () => {
       ).toEqual([
         "384.avif",
         "384.webp",
+        "480.avif",
+        "480.webp",
         "640.avif",
         "640.webp",
         "828.avif",

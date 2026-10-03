@@ -151,6 +151,29 @@ describe("the trending row is gated on real orders", () => {
     expect(placeholders).toBe(0);
   });
 
+  it("captions a pick with no photograph as a product, in its `trending` box, with no <img> (TASK-168)", () => {
+    // Every shipped pick is photographed since batch 2, so the placeholder branch needs its own
+    // subject: a pick whose asset the manifest does not hold. Its caption is the product one —
+    // the box holds a bouquet, not an occasion or a hero band (`MediaAsset`'s `PLACEHOLDER_KEY`).
+    const unphotographed = trendingProviderOf([
+      { id: "missing", name: "Quiet Blush", assetId: "fo-no-such-asset-hero" },
+    ]);
+    const html = render(
+      <TrendingRow locale="en" provider={unphotographed} />,
+      "en",
+    );
+
+    expect(html).not.toContain("<img");
+    expect(html).toContain('data-fo-media-slot="trending"');
+    expect(html).toContain('data-fo-media-placeholder="unknownAsset"');
+    expect(text(html)).toContain(
+      "Photography to supply · this bouquet as our florist makes it",
+    );
+    expect(text(html)).not.toContain(
+      "Photography to supply · flowers sent for this occasion",
+    );
+  });
+
   it("tells the browser the card's rendered width, not the listing grid's (TASK-168, AC-15)", () => {
     // `MEDIA_SLOT_SPECS.trending`, written out: the row is 2-up below `md` and 5-up from it,
     // inside `HOME_BLEED`, so the browser picks the rung that fits a ~178 px phone card rather

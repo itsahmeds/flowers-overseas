@@ -20,7 +20,7 @@
  * change of one branch inside `./Media.tsx` and not a survey of every call site.
  */
 
-/** The four places this design puts a photograph. Named, so a call site cannot invent a fifth. */
+/** The six places this design puts a photograph. Named, so a call site cannot invent a seventh. */
 export const MEDIA_SLOTS = [
   "hero",
   "band",
