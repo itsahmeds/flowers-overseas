@@ -500,6 +500,19 @@ const siteLinks = [
     owningSpec: "008",
     surfaces: ["listing", "hub"],
   },
+  // Spec 009's product detail page (§2, AC-20; TASK-127). Published, so every spec 008 product
+  // card on a country-scoped listing becomes an `<a>` with no markup change other than the
+  // element (008 §13 Q8). Whether a given card links is still `productPageExists()`'s answer —
+  // the card carries an `href` only for a page that exists — and the label is the product's own
+  // name (`breadcrumb.entity` is `{name}`), so no surface invents one.
+  {
+    id: "product",
+    labelKey: "breadcrumb.entity",
+    target: { kind: "route", pageType: "product" },
+    published: true,
+    owningSpec: "009",
+    surfaces: ["listing"],
+  },
 ] as const;
 
 /** Parsed at module load: a malformed registry throws on first import, never at request time. */

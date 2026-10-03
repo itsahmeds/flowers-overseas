@@ -11,6 +11,7 @@
  */
 import { expect, test } from "@playwright/test";
 
+import { formatMoney } from "../../src/modules/i18n/format.ts";
 import { listingHonestyViolations } from "../support/listing-honesty.ts";
 
 const GALLERY = "/dev/components";
@@ -34,6 +35,8 @@ const SECTIONS = [
   "Contrast manifest",
   // TASK-108: spec 008's seven listing primitives (the section `LISTING_STATES` names).
   "Listing and card blocks",
+  // TASK-126: spec 009's six product-page primitives (the section `PRODUCT_STATES` names).
+  "Product and date-picker blocks",
 ];
 
 /** The anchor `sectionId("Media asset states")` builds — the section this file's media case scopes to. */
@@ -144,7 +147,13 @@ test.describe("/dev/components", () => {
               // listing itself (spec 008 §2) — and not a reusable form layer. The non-goal it
               // must not violate is still asserted on the barrel: no exported `Field`, `Input`,
               // `Select`, `Textarea` or `Price`.
-              node.closest("[data-fo-listing-toolbar]") === null,
+              node.closest("[data-fo-listing-toolbar]") === null &&
+              // TASK-126 narrows it by the product page's radio groups, for the same reason: the
+              // tier selector and the date picker are *components' own* controls — radios in a
+              // fieldset of the page's one `GET` form (spec 009 §2), never a checkbox, never an
+              // add-on input — and not a reusable form layer. AC-23's "no input in an add-on row"
+              // is asserted on its own below.
+              node.closest("[data-fo-product-state]") === null,
           ).length,
       );
     expect(controlsOutsideKnownForms).toBe(0);
@@ -380,6 +389,151 @@ test.describe("/dev/components", () => {
     await expect(
       page.locator('[data-fo-listing-state="chipRowEmpty"] nav'),
     ).toHaveCount(0);
+  });
+
+  /**
+   * Spec 009's six primitives in every state the sheet draws (TASK-126; T-07, T-09 and T-23's
+   * served halves). Each state is a `[data-fo-product-state]` box, rendered from fixtures the unit
+   * suite parses with the schemas `productView()` is held to.
+   */
+  test("renders the product-page primitives in every drawn state", async ({
+    page,
+  }) => {
+    await page.goto(GALLERY);
+    const state = (name: string) =>
+      page.locator(`[data-fo-product-state="${name}"]`);
+    // The amounts are `src/app/(dev)/dev/components/product.ts`'s (Women's Day +500 on an 18-stem
+    // tier of 4 690, in pence), through the one formatter in the gallery's locale. That module is
+    // not imported here: it reaches `@/modules/catalog`, whose graph needs Next's runtime.
+    const money = (
+      amountMinor: number,
+      currency: "GBP" | "PLN",
+      signDisplay?: "always",
+    ): string =>
+      formatMoney(
+        { amountMinor, currency },
+        "en",
+        signDisplay === undefined ? {} : { signDisplay },
+      );
+    const fee = money(500, "GBP", "always");
+
+    // Gallery: photographed (a named list, the honesty label) and the placeholder (no `<img>`).
+    await expect(
+      state("galleryPhotos").getByRole("list", { name: "Product images" }),
+    ).toHaveCount(1);
+    await expect(
+      state("galleryPhotos").locator('[data-fo-media-provenance="ai"]'),
+    ).toHaveCount(1);
+    await expect(state("galleryPlaceholder").locator("img")).toHaveCount(0);
+    await expect(
+      state("galleryPlaceholder").locator("[data-fo-media-provenance]"),
+    ).toHaveCount(0);
+
+    // Tiers: three radios, the data default checked; a single tier is text, not a control.
+    const tiers = state("tiers").locator('input[type="radio"]');
+    await expect(tiers).toHaveCount(3);
+    await expect(state("tiers").locator("input:checked")).toHaveCount(1);
+    await expect(state("tierSingle").locator("input")).toHaveCount(0);
+
+    // AC-9: the fee on the chip before selection; AC-7: a closed chip says why, in its own label.
+    await expect(
+      state("chipIncluded").locator('[data-fo-date-fee="included"]'),
+    ).toHaveText("included");
+    await expect(
+      state("chipSurcharge").locator('[data-fo-date-fee="surcharge"]'),
+    ).toHaveText(fee);
+    const closed = state("chipClosed").locator("label");
+    await expect(closed).toHaveCount(4);
+    for (const label of await closed.all()) {
+      await expect(label.locator("input")).toBeDisabled();
+      expect(
+        ((await label.locator("[data-fo-date-why]").textContent()) ?? "")
+          .length,
+      ).toBeGreaterThan(0);
+    }
+    // The reason is in each closed radio's *computed* accessible name, not only beside it: two
+    // of the four are Sundays (one also All Saints' Day), one a holiday, one past the cutoff.
+    const sundays = state("chipClosed").getByRole("radio", {
+      name: /We do not deliver on Sundays in Poland/u,
+    });
+    await expect(sundays).toHaveCount(2);
+    for (const radio of await sundays.all()) await expect(radio).toBeDisabled();
+    await expect(
+      state("chipClosed").getByRole("radio", {
+        name: /Public holiday in Poland/u,
+      }),
+    ).toBeDisabled();
+    await expect(
+      state("chipClosed").getByRole("radio", {
+        name: /Ordering closed at 14:00 in Warsaw/u,
+      }),
+    ).toBeDisabled();
+
+    // The three picker states: live selectable with a cutoff; preview all off; unavailable empty.
+    const live = state("pickerLive");
+    await expect(live.locator("input:not([disabled])")).toHaveCount(7);
+    await expect(live.locator("input:checked")).toHaveCount(1);
+    await expect(live.locator("[data-fo-cutoff]")).toContainText(
+      "Order by 14:00 in Warsaw",
+    );
+    await expect(live.locator('button[type="submit"]')).toHaveCount(1);
+    await expect(
+      state("pickerPreview").locator("input:not([disabled])"),
+    ).toHaveCount(0);
+    await expect(state("pickerPreview").locator("button")).toHaveCount(0);
+    await expect(state("pickerUnavailable").locator("input")).toHaveCount(0);
+    // `toBeDisabled()` reads native controls only, and a fieldset is not one.
+    await expect(
+      state("pickerUnavailable").locator("fieldset"),
+    ).toHaveAttribute("disabled", "");
+
+    // AC-23: read-only add-on rows, the free card a visible zero line.
+    await expect(
+      state("addons").locator("input, button, select, textarea"),
+    ).toHaveCount(0);
+    await expect(
+      state("addons").locator('[data-fo-addon="card"]'),
+    ).toContainText(money(0, "PLN"));
+
+    // Each summary has exactly one total; the surcharge is a line; stale FX says so.
+    for (const name of [
+      "summaryNormal",
+      "summarySurcharge",
+      "summaryStaleFx",
+      "summaryDemo",
+    ]) {
+      await expect(
+        state(name).locator("[data-fo-price-total]"),
+        name,
+      ).toHaveCount(1);
+      await expect(state(name).locator("button"), name).toHaveCount(0);
+    }
+    await expect(
+      state("summarySurcharge").locator('[data-fo-summary-row="surcharge"]'),
+    ).toContainText(fee);
+    await expect(
+      state("summarySurcharge").locator("[data-fo-price-total]"),
+    ).toHaveText(money(5190, "GBP"));
+    await expect(
+      state("summaryStaleFx").locator("[data-fo-fx-notice]"),
+    ).toHaveCount(1);
+  });
+
+  test("docks no summary at the 390 px artboard width: the sticky bar is the product page's (AC-9)", async ({
+    page,
+  }) => {
+    // Four summaries side by side would dock four bars over the listing blocks' mobile baselines;
+    // the gallery passes `dock={false}` and the page's own summary is asserted docked in
+    // `tests/e2e/product-page.spec.ts`.
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(GALLERY);
+    const positions = await page
+      .locator("[data-fo-summary-total]")
+      .evaluateAll((nodes) =>
+        nodes.map((node) => getComputedStyle(node).position),
+      );
+    expect(positions).toHaveLength(4);
+    expect(positions.filter((position) => position === "fixed")).toEqual([]);
   });
 
   test("the sort form works with JavaScript disabled and submits from the keyboard alone", async ({

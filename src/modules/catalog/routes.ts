@@ -34,10 +34,10 @@
  *
  * **Spec 009's product page is the third page type at depth 4** (TASK-121):
  * `/{locale}/{countrySlug}/{product}/{productSlug}` is the same three dynamic positions under a
- * third set of names, so it resolves here too, through `productPageExists()`. It is the one
- * branch whose route sets `dynamicParams = true` — the prebuild is the top 24 products per
- * (locale, destination) rather than the whole existence set (spec 009 §2, AC-3) — which is why
- * its existence rule is read on every request instead of once at build time.
+ * third set of names, so it resolves here too, through `productPageExists()`. Its params are
+ * its whole existence set (spec 009 §14 **A6**, AC-3): under the `[locale]` layout's
+ * `dynamicParams = false` a URL the build did not emit is a router 404, so the existence rule is
+ * read once per page at build time, like every other Phase 0 route's.
  *
  * **Four page types now share depth 3** (TASK-112): the corridor page, the country shop root, the
  * category hub `/{locale}/{shopCategory}/{categorySlug}` and the occasion hub
@@ -318,11 +318,9 @@ export async function resolveLocalePath(
     }
 
     // `/{locale}/{countrySlug}/{product}/{productSlug}` — spec 009's product detail page (§2;
-    // TASK-121), the third page type sharing this depth. Two things make it the only route in the
-    // site that reads its existence rule at **request** time as well as at build time: the PDP
-    // route sets `dynamicParams = true` (the prebuild is the top 24 per locale and destination,
-    // not the 200 set — spec 009 AC-3), and `productPageExists()` is what keeps the two equal.
-    // Every 404 shape of AC-1 arrives here as a miss: an unknown slug (`resolveSlug`), a product
+    // TASK-121), the third page type sharing this depth. Its params are its existence set (spec
+    // 009 §14 A6, AC-3), and `productPageExists()` here is what keeps the rendered page and that
+    // set equal. Every 404 shape of AC-1 arrives here as a miss: an unknown slug (`resolveSlug`), a product
     // with no active price in that destination, an unpublished destination and a locale with no
     // slug for the product (`productPageExists`), another locale's `product` segment
     // (`isOwnSegment`), and an uppercase or otherwise non-canonical segment (the schema).
@@ -515,12 +513,11 @@ export async function localeGrandchildParams(): Promise<
  * (spec 009 **AC-3**; TASK-121).
  *
  * Separate from `localeGrandchildParams()` and unioned with it by the route file, because the two
- * halves of that depth answer a different question. The listing half **is** the 200 set:
- * `dynamicParams = false` makes every URL outside it a 404 answered by the router. The product
- * half is a *prebuild*: `plan/01` §3's budget says prebuild the top 24 per (locale, destination)
- * and generate the rest on demand, so the PDP route sets `dynamicParams = true` and the 404
- * guarantee moves into `productPageExists()`, which this resolver calls on every request. Mixing
- * the two lists into one function would hide exactly that difference.
+ * halves come from two existence rules (`listingExists()` and `productPageExists()`). Both halves
+ * **are** the 200 set: spec 009 §14 **A6** prebuilds **every** product page per (locale,
+ * published destination), because the `[locale]` layout's `dynamicParams = false` (spec 003's
+ * locale gate) makes every URL outside the params a router 404 — a top-24 slice left 420 of 588
+ * product pages per locale dead (TASK-127 E-1).
  *
  * Every field is read from `productPrebuildPages()` rather than restated: the destination's slug
  * and the product's slug are the ones the existence set already carries, and the page-type

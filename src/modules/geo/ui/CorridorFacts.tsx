@@ -80,16 +80,61 @@ export interface CorridorFactsProps {
   readonly view: CorridorView;
 }
 
+/** The corridor guide's block: its own view, its own "Prices" row (spec 007 §5.3). */
 export function CorridorFacts({ view }: CorridorFactsProps): ReactElement {
+  return (
+    <DeliveryFacts
+      facts={view.facts}
+      locale={view.locale}
+      nameKey={view.nameKey}
+      prices={
+        view.liveSlots.fromPrice === undefined
+          ? {}
+          : { fromPrice: view.liveSlots.fromPrice }
+      }
+    />
+  );
+}
+
+/**
+ * **The same block, narrowed to what it reads** (spec 009 §5.3 "007's block reused unchanged, not
+ * re-implemented"; TASK-126 E-1 (a)). The product page has no `CorridorView`, so it hands in the
+ * three things the block actually renders from — the facts, the destination's name key and the
+ * locale — and gets the identical markup.
+ *
+ * One row is the caller's to state: **Prices**. The corridor guide prints it (the "from" price when
+ * live, the honest blank when not). The product page passes `"omit"`: it prints its own all-in
+ * price two blocks further down, so the guide's "no price on this page" would be false there, and
+ * a "from" price is the one thing a PDP may never show (spec 009 AC-21).
+ */
+export interface DeliveryFactsProps {
+  /** `CorridorView["facts"]`, or the same three fields as `ProductView.facts` carries them. */
+  readonly facts: {
+    readonly known: boolean;
+    readonly operations?: CorridorView["facts"]["operations"];
+    readonly citiesKey?: string | undefined;
+  };
+  readonly nameKey: string;
+  readonly locale: string;
+  readonly prices: { readonly fromPrice?: string } | "omit";
+}
+
+export function DeliveryFacts({
+  facts,
+  nameKey,
+  locale,
+  prices,
+}: DeliveryFactsProps): ReactElement {
   const t = useTranslations();
   const c = useTranslations("corridor");
-  const country = countryName(t, view.nameKey);
-  const { operations, citiesKey } = view.facts;
+  const country = countryName(t, nameKey);
+  const { operations, citiesKey } = facts;
+  const fromPrice = prices === "omit" ? undefined : prices.fromPrice;
 
   return (
     <div className="border-rule bg-surface p-lg gap-md grid max-w-[720px] grid-cols-[minmax(0,160px)_minmax(0,1fr)] border">
       <dl className="gap-sm gap-x-md col-span-2 grid grid-cols-subgrid">
-        {view.facts.known && operations !== undefined ? (
+        {facts.known && operations !== undefined ? (
           <>
             <Fact label={c("facts.orderBy.label")}>
               {c("facts.orderBy.value", {
@@ -102,7 +147,7 @@ export function CorridorFacts({ view }: CorridorFactsProps): ReactElement {
                 operations.deliveryDays.map((day) =>
                   registryLabel(t, WEEKDAY_KEYS[day] ?? ""),
                 ),
-                localeCode(view.locale),
+                localeCode(locale),
               )}
             </Fact>
             <Fact label={c("facts.sunday.label")}>
@@ -117,10 +162,10 @@ export function CorridorFacts({ view }: CorridorFactsProps): ReactElement {
                 {registryLabel(t, citiesKey)}
               </Fact>
             )}
-            {view.liveSlots.fromPrice === undefined ? null : (
+            {fromPrice === undefined ? null : (
               <Fact label={c("facts.prices.fromLabel")}>
                 {c("facts.prices.fromValue", {
-                  price: view.liveSlots.fromPrice,
+                  price: fromPrice,
                 })}
               </Fact>
             )}
@@ -142,9 +187,11 @@ export function CorridorFacts({ view }: CorridorFactsProps): ReactElement {
             <Fact label={c("facts.cities.label")} unknown>
               {c("facts.cities.none")}
             </Fact>
-            <Fact label={c("facts.prices.label")} unknown>
-              {c("facts.prices.none")}
-            </Fact>
+            {prices === "omit" ? null : (
+              <Fact label={c("facts.prices.label")} unknown>
+                {c("facts.prices.none")}
+              </Fact>
+            )}
           </>
         )}
       </dl>

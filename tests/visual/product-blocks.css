@@ -1,0 +1,9 @@
+/*
+ * Applied to the product page's block screenshots only (`product.spec.ts`). Below `sm` the
+ * summary's total row is docked at the bottom of the viewport, so it lands over whichever block
+ * the screenshot scrolled into view, at a scroll offset Playwright chooses; hiding it makes each
+ * block's picture its own. The docked bar has its own baseline, `product-mobile-sticky.png`.
+ */
+[data-fo-summary-total] {
+  visibility: hidden !important;
+}

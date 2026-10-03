@@ -421,8 +421,8 @@ export {
 // **AC-4**; TASK-121). `productPageExists()` is the single answer to "is this URL a page", on the
 // same footing as `listingExists()` one level up: the route, `generateStaticParams`, the sitemap
 // builder, spec 008's card-link renderer and the e2e crawl all read it, so they cannot disagree.
-// `PRODUCT_PREBUILD_COUNT` stays internal for `PRODUCT_COUNT_FLOOR`'s reason (AC-2) — a caller
-// that could read it would be one line from applying it instead of asking for the list.
+// The prebuild list is the existence set itself (spec 009 §14 A6), so there is no prebuild count
+// for a caller to apply.
 export type {
   LocaleProductCounts,
   ProductPageIdentity,

@@ -63,6 +63,11 @@ describe("the shell catalogue", () => {
       // human-authored markdown under `content/corridors/`, where a machine draft is forbidden
       // (`plan/02` §12).
       "corridor",
+      // `delivery` and `product` are spec 009 §7's namespaces (TASK-126/127): the date picker's
+      // legend, state sentences, cutoff lines and calendar reasons, and the product page's tier,
+      // summary, add-on, trust and related headings. Server Components only, so no
+      // `ROUTE_NAMESPACES` entry and no client bytes.
+      "delivery",
       "destinations",
       // `destinationsHub` is spec 007 §7's second namespace (TASK-092): the all-destinations
       // hub's `h1`, intro, region headings and the one state line a destination without a page
@@ -91,6 +96,7 @@ describe("the shell catalogue", () => {
       // columns, and the two sentences an occasion with no computable date carries. A Server
       // Component again, so it is in no `ROUTE_NAMESPACES` entry and costs no client bytes.
       "occasionsIndex",
+      "product",
       // `shop` is spec 008 §7's namespace (TASK-108): the listing grid's accessible name, the
       // toolbar's count, its three sort labels and the ranking disclosure, the pagination labels
       // and the empty state's two sentences. Like `catalog` and `media` it is in no

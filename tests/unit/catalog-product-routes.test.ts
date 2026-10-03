@@ -15,10 +15,11 @@
  *     product's status and to the locale's slug each removes the page from the predicate, from
  *     the existence set, from the prebuild list **and** from `resolveLocalePath()` in the same
  *     assertion — which is what AC-4 means by "a fixture change moves all five together".
- *  3. **Prebuild is a performance choice, not an existence choice** (AC-3). The params list is
- *     exactly 24 per (locale, published destination) in spec 005's deterministic order, it is a
- *     subset of the existence set, and every URL *outside* it still resolves to the page — which
- *     is the property `dynamicParams = true` needs to be safe.
+ *  3. **Prebuild is the existence set** (AC-3 as spec 009 §14 **A6** words it). Under the
+ *     `[locale]` layout's `dynamicParams = false` a URL the build does not emit is a 404, so the
+ *     params list is asserted **equal** to the existence set for every (locale, published
+ *     destination) — 84 each, 2 352 in all — and not merely a subset of it; trimming it back to
+ *     the old top 24 turns this red (TASK-127 E-1).
  *  4. **§13 Q1's shared ASCII slug is load-bearing**: `/de/polen/produkt/amber-hour` is a page on
  *     day one, with the German segment and the German country slug around the English product
  *     slug, and the round trip `resolveSlug(slugFor(sku))` holds for every product in every
@@ -111,8 +112,8 @@ const PRODUCTS = await listProducts({});
 const COUNTRIES = publishedCountries();
 /** Spec 009 §2's own arithmetic: "84 products × 7 published countries × 4 locales is 2 352". */
 const EXPECTED_PAGES = 84 * 7 * 4;
-/** §2's prebuild default, N = 24, per (locale, published destination). */
-const EXPECTED_PREBUILT = 24 * 7 * 4;
+/** Every product, per (locale, published destination): spec 009 §14 A6. */
+const PER_PAIR = 84;
 
 /** The URL of one record, as the three path segments a route file hands the resolver. */
 const segmentsOf = (path: string): [string, string, string] => {
@@ -283,33 +284,67 @@ describe("a fixture change moves the predicate, the set, the prebuild and the ro
   });
 });
 
-describe("the prebuild list (AC-3, T-03)", () => {
-  it("is 24 per (locale, published destination) and nothing else", async () => {
-    const params = await localeProductParams();
-    expect(params.length).toBe(EXPECTED_PREBUILT);
-
-    const perPair = new Map<string, number>();
-    for (const page of await productPrebuildPages()) {
-      const key = `${page.locale}|${page.countryIso}`;
-      perPair.set(key, (perPair.get(key) ?? 0) + 1);
+describe("the prebuild list is the existence set (AC-3, T-03, §14 A6)", () => {
+  /** One `locale|countryIso` → the sorted URLs, from records or from params rows. */
+  const byPair = (rows: readonly { pair: string; url: string }[]) => {
+    const map = new Map<string, string[]>();
+    for (const row of rows) {
+      map.set(row.pair, [...(map.get(row.pair) ?? []), row.url]);
     }
-    expect(perPair.size).toBe(LOCALES.length * COUNTRIES.length);
-    for (const [pair, count] of perPair) {
-      expect(count, pair).toBe(24);
-    }
-  });
+    for (const urls of map.values()) urls.sort();
+    return map;
+  };
 
-  it("is spec 005's deterministic order, product for product", async () => {
+  it("emits exactly the `productPageExists()` set for every (locale, published destination)", async () => {
+    // The params rows carry slugs, not ISO codes: map each destination slug back per locale.
+    const isoOf = new Map<string, string>();
     for (const locale of LOCALES) {
       for (const countryIso of COUNTRIES) {
-        const expected = (
-          await topProductsForPrebuild(countryIso, locale, 24)
-        ).map((product) => product.sku);
-        const actual = (await productPrebuildPages(locale))
-          .filter((page) => page.countryIso === countryIso)
-          .map((page) => page.sku);
-        expect(actual, `${locale}/${countryIso}`).toEqual(expected);
+        isoOf.set(`${locale}|${corridorSlug(countryIso, locale)}`, countryIso);
       }
+    }
+    const params = byPair(
+      (await localeProductParams()).map((row) => ({
+        pair: `${row.locale}|${isoOf.get(`${row.locale}|${row.segment}`) ?? row.segment}`,
+        url: `/${row.locale}/${row.segment}/${row.child}/${row.grandchild}`,
+      })),
+    );
+
+    // The expected side is the predicate itself, asked of every triple — not the enumeration the
+    // params are built from, so a params list and an enumeration that drifted together still fail.
+    const admitted: { pair: string; url: string }[] = [];
+    for (const locale of LOCALES) {
+      for (const countryIso of COUNTRIES) {
+        for (const product of PRODUCTS) {
+          if (
+            !(await productPageExists({ locale, countryIso, sku: product.sku }))
+          ) {
+            continue;
+          }
+          const slug = slugFor("product", product.sku, locale) ?? "";
+          admitted.push({
+            pair: `${locale}|${countryIso}`,
+            url: productPath(locale, corridorSlug(countryIso, locale), slug),
+          });
+        }
+      }
+    }
+    const expected = byPair(admitted);
+
+    expect(expected.size).toBe(LOCALES.length * COUNTRIES.length);
+    expect([...params.keys()].sort()).toEqual([...expected.keys()].sort());
+    for (const [pair, urls] of expected) {
+      expect(urls, pair).toHaveLength(PER_PAIR);
+      expect(params.get(pair), pair).toEqual(urls);
+    }
+    expect([...params.values()].flat()).toHaveLength(EXPECTED_PAGES);
+  });
+
+  it("is `listProductPages()` record for record, so the summary's two columns are one fact", async () => {
+    for (const locale of LOCALES) {
+      expect((await productPrebuildPages(locale)).map(urlOf), locale).toEqual(
+        (await listProductPages(locale)).map(urlOf),
+      );
     }
   });
 
@@ -333,25 +368,31 @@ describe("the prebuild list (AC-3, T-03)", () => {
     expect(
       params.filter((row) => row.locale === "de" && row.segment === "polen")
         .length,
-    ).toBe(24);
+    ).toBe(PER_PAIR);
   });
 
-  it("is a strict subset of the existence set, and the rest are served on demand", async () => {
-    const pages = await listProductPages();
-    const existing = new Set(pages.map(urlOf));
-    const prebuilt = await productPrebuildPages();
-    for (const page of prebuilt) {
-      expect(existing.has(urlOf(page)), urlOf(page)).toBe(true);
+  it("includes a product past the old top-24 cut in every launch locale (TASK-127 E-1)", async () => {
+    // `glass-morning` was one of the 420-per-locale pages the 24-slice left to a router 404.
+    for (const locale of LOCALES) {
+      const cut = (await topProductsForPrebuild(PL, locale, 24)).map(
+        (product) => product.sku,
+      );
+      const glass = PRODUCTS.find(
+        (product) =>
+          slugFor("product", product.sku, locale) === "glass-morning",
+      );
+      expect(glass, locale).toBeDefined();
+      expect(cut, locale).not.toContain(glass?.sku);
+      expect(
+        (await localeProductParams()).some(
+          (row) =>
+            row.locale === locale &&
+            row.segment === corridorSlug(PL, locale) &&
+            row.grandchild === "glass-morning",
+        ),
+        locale,
+      ).toBe(true);
     }
-    // `dynamicParams = true` is only safe because the 1 680 URLs the build does **not** emit are
-    // still pages: the union of prebuilt and on-demand is the existence set exactly (AC-3).
-    expect(pages.length - prebuilt.length).toBe(
-      EXPECTED_PAGES - EXPECTED_PREBUILT,
-    );
-    const onDemand = pages.filter(
-      (page) => !new Set(prebuilt.map(urlOf)).has(urlOf(page)),
-    );
-    expect(onDemand.length).toBe(EXPECTED_PAGES - EXPECTED_PREBUILT);
   });
 });
 
@@ -521,33 +562,33 @@ describe("`ProductParamsSchema` is the boundary a path segment arrives at (§5.2
 });
 
 describe("the per-locale counts CI prints (§11)", () => {
-  it("counts the pages that exist, the ones prebuilt and the honest zero", async () => {
+  it("counts the pages that exist, the ones prebuilt (all of them, §14 A6) and the honest zero", async () => {
     expect(await productExistenceCounts()).toEqual([
       {
         locale: "en",
         exists: 588,
-        prebuilt: 168,
+        prebuilt: 588,
         indexablePages: 0,
         withoutDescription: 0,
       },
       {
         locale: "en-gb",
         exists: 588,
-        prebuilt: 168,
+        prebuilt: 588,
         indexablePages: 0,
         withoutDescription: 0,
       },
       {
         locale: "de",
         exists: 588,
-        prebuilt: 168,
+        prebuilt: 588,
         indexablePages: 0,
         withoutDescription: 84,
       },
       {
         locale: "pl",
         exists: 588,
-        prebuilt: 168,
+        prebuilt: 588,
         indexablePages: 0,
         withoutDescription: 84,
       },
@@ -559,13 +600,13 @@ describe("the per-locale counts CI prints (§11)", () => {
       {
         locale: "en",
         exists: 588,
-        prebuilt: 168,
+        prebuilt: 588,
         indexablePages: 0,
         withoutDescription: 0,
       },
     ]);
     expect(markdown).toContain("| Locale | PDPs | Prebuilt | Indexable |");
-    expect(markdown).toContain("| en | 588 | 168 | 0 | 0 |");
+    expect(markdown).toContain("| en | 588 | 588 | 0 | 0 |");
     expect(markdown).not.toContain("<");
   });
 

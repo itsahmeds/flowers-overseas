@@ -60,8 +60,8 @@ describe("an unpublished destination has no product page (§2, AC-4)", () => {
 
     const prebuilt = await productPrebuildPages();
     expect(prebuilt.filter((page) => page.countryIso === OFF)).toHaveLength(0);
-    expect(prebuilt.length).toBe(24 * 6 * 4);
-    expect(await localeProductParams()).toHaveLength(24 * 6 * 4);
+    expect(prebuilt.length).toBe(84 * 6 * 4);
+    expect(await localeProductParams()).toHaveLength(84 * 6 * 4);
   });
 
   it("404s its URL rather than serving a page a florist cannot reach (AC-1)", async () => {

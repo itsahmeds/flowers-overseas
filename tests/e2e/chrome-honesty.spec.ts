@@ -17,7 +17,7 @@
  * The assertion is an absence, so it is only worth making if it can fail: the last test plants a
  * promise into the served DOM and requires the same scan to catch it.
  */
-import { expect, test } from "@playwright/test";
+import { type Page, expect, test } from "@playwright/test";
 
 import {
   FORBIDDEN_DELIVERY_PROMISE_TEXT,
@@ -82,6 +82,64 @@ function offences(rendered: string): readonly string[] {
   );
 }
 
+/**
+ * What the gallery may lift: spec 009's `live` picker and summary fixtures (TASK-126) print the
+ * cutoff line the product page may print and the chrome may not. Each is marked `data-fo-cutoff`,
+ * as on the page, and lifted by that mark alone, the unit honesty scan's rule.
+ */
+const GALLERY_LIFT = "[data-fo-product-state] [data-fo-cutoff]";
+
+/** A line planted for the sweep's own controls: its text, its host, and whether it is marked. */
+interface Plant {
+  readonly into: string;
+  readonly text: string;
+  readonly marked: boolean;
+}
+
+/**
+ * **The one read every case here makes** — the sweep and its controls alike, so a control cannot
+ * pass on a read the sweep does not make. In one synchronous `evaluate`: plant the control lines,
+ * hide the `lift` set, read `body.innerText`, restore, remove the plants. Never a removal that
+ * outlives the call: removing a server-rendered node before React has hydrated it is a hydration
+ * mismatch (React #418), and React then re-renders the tree and puts the lifted lines back before
+ * a later read — the race that went red on the slower `e2e-mobile` project only (`/review 135`
+ * round 1, required change 4). Nothing can interleave with this function, and the DOM it leaves
+ * is the one the server sent.
+ *
+ * `body`, not `main`: the header's utility strip, the category row and the footer are the three
+ * places TASK-120's promises lived.
+ */
+async function sweptText(
+  page: Page,
+  { lift, plant = [] }: { lift: string | null; plant?: readonly Plant[] },
+): Promise<{ lifted: number; text: string }> {
+  const read = await page.evaluate(
+    ({ lift, plant }) => {
+      const added = plant.map(({ into, text, marked }) => {
+        const host = document.querySelector(into);
+        if (host === null) throw new Error(`no ${into} to plant into`);
+        const line = document.createElement("p");
+        line.textContent = text;
+        if (marked) line.setAttribute("data-fo-cutoff", "");
+        host.append(line);
+        return line;
+      });
+      const hidden =
+        lift === null ? [] : [...document.querySelectorAll<HTMLElement>(lift)];
+      const display = hidden.map((node) => node.style.display);
+      for (const node of hidden) node.style.display = "none";
+      const body = document.body.innerText;
+      hidden.forEach((node, index) => {
+        node.style.display = display[index] ?? "";
+      });
+      for (const line of added) line.remove();
+      return { lifted: hidden.length, text: body };
+    },
+    { lift, plant },
+  );
+  return { lifted: read.lifted, text: read.text.replaceAll(/\s+/g, " ") };
+}
+
 test.describe("A19: no same-day, cutoff or ranking promise renders while no destination is live", () => {
   for (const { type, path } of PAGES) {
     test(`${type} ${path} — whole document, chrome included`, async ({
@@ -89,13 +147,10 @@ test.describe("A19: no same-day, cutoff or ranking promise renders while no dest
     }) => {
       const response = await page.goto(path);
       expect(response?.status()).toBe(200);
-
-      // `body`, not `main`: the header's utility strip, the category row and the footer are the
-      // three places this task's promises lived.
-      const rendered = (await page.locator("body").innerText()).replaceAll(
-        /\s+/g,
-        " ",
-      );
+      const { lifted, text: rendered } = await sweptText(page, {
+        lift: type === "gallery" ? GALLERY_LIFT : null,
+      });
+      if (type === "gallery") expect(lifted).toBeGreaterThan(0);
 
       expect(offences(rendered), rendered.slice(0, 600)).toEqual([]);
     });
@@ -123,21 +178,58 @@ test.describe("A19: no same-day, cutoff or ranking promise renders while no dest
     page,
   }) => {
     await page.goto("/en");
-    await page.evaluate(() => {
-      const planted = document.createElement("p");
-      planted.textContent =
-        "Best sellers · Order by 14:00 in Warsaw for same-day delivery";
-      document.body.append(planted);
+    const { text: rendered } = await sweptText(page, {
+      lift: null,
+      plant: [
+        {
+          into: "body",
+          text: "Best sellers · Order by 14:00 in Warsaw for same-day delivery",
+          marked: false,
+        },
+      ],
     });
-
-    const rendered = (await page.locator("body").innerText()).replaceAll(
-      /\s+/g,
-      " ",
-    );
 
     expect(offences(rendered).toSorted()).toEqual(
       ["delivery-timing claim", "order-by cutoff promise", "ranking claim"] //
         .toSorted(),
     );
+  });
+
+  test("on /dev/components the lift takes a marked cutoff line and leaves an unmarked one beside it", async ({
+    page,
+  }) => {
+    // `/break 135` round 2 HOLE 9: the gallery's own controls, through the sweep's own read. Both
+    // lines sit in the same product-state box; only the mark tells them apart.
+    const response = await page.goto("/dev/components");
+    expect(response?.status()).toBe(200);
+    const host = "[data-fo-product-state]";
+    const markedLine: Plant = {
+      into: host,
+      text: "Order by 14:00 in Warsaw for delivery today",
+      marked: true,
+    };
+    const unmarkedLine: Plant = {
+      into: host,
+      text: "Order by 14:00 in Warsaw",
+      marked: false,
+    };
+
+    const served = await sweptText(page, { lift: GALLERY_LIFT });
+    expect(served.lifted).toBeGreaterThan(0);
+    expect(offences(served.text)).toEqual([]);
+
+    const marked = await sweptText(page, {
+      lift: GALLERY_LIFT,
+      plant: [markedLine],
+    });
+    expect(marked.lifted).toBe(served.lifted + 1);
+    expect(offences(marked.text)).toEqual([]);
+
+    const both = await sweptText(page, {
+      lift: GALLERY_LIFT,
+      plant: [markedLine, unmarkedLine],
+    });
+    expect(both.lifted).toBe(served.lifted + 1);
+    expect(offences(both.text)).toEqual(["order-by cutoff promise"]);
   });
 });

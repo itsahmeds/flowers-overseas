@@ -147,6 +147,8 @@ describe("src/config/site-links.ts", () => {
       "country-category",
       "country-occasion",
       "occasion-hub",
+      // Spec 009 AC-20 (TASK-127): the `product` link id is published, so spec 008's cards link.
+      "product",
     ]);
     expect(isPublished("locale-home")).toBe(true);
     expect(isPublished("terms")).toBe(false);
@@ -395,6 +397,9 @@ describe("src/config/site-links.ts", () => {
       // A `listing` **family** is not drawn on the homepage canvas at all, and carries no label
       // to look for (spec 008 AC-20, AC-27).
       if (link.labelKey === undefined) continue;
+      // The product link is drawn on no chrome canvas: its label is the product's own name, which
+      // the listing cards print (spec 009 AC-20), not a phrase the homepage artboard could carry.
+      if (link.id === "product") continue;
       const label = messageAt(link.labelKey) as string;
       // A row gated on `anyDeliveryDatesOpen()` is not drawn (spec 004 §14 A19; TASK-120): the
       // artboard carries a TASK-120 comment in its place, so the drawing states the absence.

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
+import { isPublished } from "@/config/site-links";
+
 import {
   CategoryHubPage,
   CountryShopRootPage,
@@ -418,6 +420,8 @@ export default async function LocaleChildRoute({
         page: request.page,
         sort: request.sort,
         parameterised: request.parameterised,
+        // Spec 009 publishes the `product` link id, so each card becomes a link (AC-20).
+        productLinks: isPublished("product"),
       },
     );
     // A page past the last is `undefined` here and therefore a **404**, never an empty grid

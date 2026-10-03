@@ -292,6 +292,11 @@ describe("the page's other blocks come from the one model (§5.2, §5.3)", () =>
     expect(pl.country.corridorPath).toBe(undefined);
     const en = await amber("en", "PL");
     expect(en.country.corridorPath).toBe("/en/send-flowers-to/poland");
+    // `/review 98` round 4, HOLE 5 ACCEPTABLE (TASK-127's carry-forward): `en-gb` has its own
+    // published guide, so a gate that dropped every locale but `en` must go red here too.
+    expect((await amber("en-gb", "PL")).country.corridorPath).toBe(
+      "/en-gb/send-flowers-to/poland",
+    );
   });
 
   it("shows at most six related products, never itself, in spec 005's deterministic order", async () => {
@@ -667,13 +672,20 @@ describe("the PDP descriptor resolves through spec 007's `indexability()` (§6, 
     }
   });
 
-  it("writes no robots directive anywhere in `src/modules/` outside `modules/seo` (AC-16's grep)", () => {
+  it("writes no robots directive anywhere in `src/modules/` outside `modules/seo`, nor in the PDP route (AC-16's grep)", () => {
     // A walk, not a list: a literal planted in any module — `pricing/resolve.ts`, which this task
     // touches, or a file nobody thought to name — is a second `noindex` branch (`/break 101` G4).
     // `src/app/` and `src/lib/` carry robots literals that predate spec 009 (layouts, health,
-    // basic auth, the robots headers); TASK-127 extends the walk to the PDP route file it adds.
+    // basic auth, the robots headers), so of `src/app/` the walk takes the one file spec 009 adds
+    // a page to: the depth-4 route that serves the PDP (`/review 101` HOLE 12, TASK-127).
     const modules = fileURLToPath(
       new URL("../../src/modules/", import.meta.url),
+    );
+    const route = fileURLToPath(
+      new URL(
+        "../../src/app/[locale]/[segment]/[child]/[grandchild]/page.tsx",
+        import.meta.url,
+      ),
     );
     const seo = join(modules, "seo");
     const walk = (dir: string): string[] =>
@@ -682,7 +694,7 @@ describe("the PDP descriptor resolves through spec 007's `indexability()` (§6, 
         if (statSync(path).isDirectory()) return path === seo ? [] : walk(path);
         return /\.(?:ts|tsx)$/.test(name) ? [path] : [];
       });
-    const files = walk(modules);
+    const files = [...walk(modules), route];
     // The walk reaches the files the AC names, and steps over the one module allowed to spell it.
     expect(files).toContain(join(modules, "catalog/product.ts"));
     expect(files).toContain(join(modules, "catalog/pricing/resolve.ts"));
@@ -691,17 +703,123 @@ describe("the PDP descriptor resolves through spec 007's `indexability()` (§6, 
     expect(files.length).toBeGreaterThan(100);
     for (const path of files) {
       const file = relative(modules, path);
-      const source = readFileSync(path, "utf8");
-      // Comments explain the rule and have to say the word; **code** may not.
-      const code = source
-        .replace(/\/\*[\s\S]*?\*\//g, "")
-        .replace(/^\s*\/\/.*$/gm, "");
-      // Case-sensitive: a directive is spelled in lower case, and the engine's own imported
-      // constants (`NOINDEX_FOLLOW`) are the sanctioned way to name one.
-      expect(code, file).not.toMatch(/noindex/);
-      expect(code, file).not.toMatch(/index,\s*follow/);
-      expect(code, file).not.toMatch(/nofollow/);
-      expect(code, file).not.toMatch(/["']robots["']/);
+      expect(robotsDirectivesIn(readFileSync(path, "utf8")), file).toEqual([]);
     }
   });
+
+  it("the robots scan catches every spelling it claims to (its own control)", () => {
+    // The scan above passes on a clean tree, so it is proved here on the shapes it must refuse:
+    // any casing of a directive, and the object form Next's `Metadata` takes.
+    for (const planted of [
+      'const robots = "noindex,follow";',
+      'return { robots: "NoIndex, Follow" };',
+      "export const metadata = { robots: { index: false } };",
+      "meta({ robots: { index: true, follow: true } });",
+      'headers.set("X-Robots-Tag", "NOFOLLOW");',
+      'const directive = "Index, Follow";',
+    ]) {
+      expect(robotsDirectivesIn(planted), planted).not.toEqual([]);
+    }
+    // …and lets through what it must: comments, and the engine's imported constants.
+    expect(
+      robotsDirectivesIn(
+        "// a noindex page\n/* robots: { index: false } */\nconst d = NOINDEX_FOLLOW ?? INDEX_FOLLOW;",
+      ),
+    ).toEqual([]);
+  });
+
+  it('builds the PDP\'s descriptor in one place: no hand-built `pageType: "product"` reaches `pageIndexability()` (`/review 101` HOLE 12)', () => {
+    // `productDescriptor()` is the one builder, and it fails closed on an omitted term (F1). A
+    // second `{ pageType: "product", … }` object handed straight to spec 007's engine would skip
+    // that, so outside `modules/seo` no file may both spell the product page type and call the
+    // engine — and `product.ts` spells it exactly once, inside `productDescriptor()`.
+    const src = fileURLToPath(new URL("../../src/", import.meta.url));
+    const seo = join(src, "modules/seo");
+    const walk = (dir: string): string[] =>
+      readdirSync(dir).flatMap((name) => {
+        const path = join(dir, name);
+        if (statSync(path).isDirectory()) return path === seo ? [] : walk(path);
+        return /\.(?:ts|tsx)$/.test(name) ? [path] : [];
+      });
+    const files = walk(src);
+    const builder = join(src, "modules/catalog/product.ts");
+    expect(files).toContain(builder);
+    expect(files).toContain(
+      join(src, "app/[locale]/[segment]/[child]/[grandchild]/page.tsx"),
+    );
+    for (const path of files) {
+      const code = codeOf(readFileSync(path, "utf8"));
+      const spelled = code.match(PRODUCT_PAGE_TYPE) ?? [];
+      if (path === builder) {
+        expect(spelled, relative(src, path)).toHaveLength(1);
+        const inBuilder =
+          /export function productDescriptor\([\s\S]*?\n\}\n/u.exec(
+            code,
+          )?.[0] ?? "";
+        expect(inBuilder.match(PRODUCT_PAGE_TYPE) ?? []).toHaveLength(1);
+        continue;
+      }
+      if (spelled.length === 0) continue;
+      // The engine's *name*, not only a call to it: an aliased import (`pageIndexability as x`)
+      // or a namespace read (`seo["pageIndexability"]`) still has to spell it once.
+      expect(code, relative(src, path)).not.toMatch(/\bpageIndexability\b/u);
+    }
+    // Its control: the shape it refuses, planted.
+    expect(
+      handBuiltProductDescriptor(
+        'pageIndexability({ pageType: "product", locale, exists: true }, deployment);',
+      ),
+    ).toBe(true);
+    expect(
+      handBuiltProductDescriptor(
+        "const d = { pageType: 'product' };\nreturn seo.pageIndexability(d, env);",
+      ),
+    ).toBe(true);
+    expect(
+      handBuiltProductDescriptor(
+        'import { pageIndexability as judge } from "@/modules/seo";\njudge({ pageType: "product" }, env);',
+      ),
+    ).toBe(true);
+    expect(
+      handBuiltProductDescriptor(
+        "pageIndexability(productDescriptor(locale, terms), deployment);",
+      ),
+    ).toBe(false);
+  });
 });
+
+/** Source with its comments removed: comments explain the rules and have to say the words. */
+function codeOf(source: string): string {
+  return source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+}
+
+/**
+ * Every robots directive spelled in `source`'s code, in any casing, and in the object form Next's
+ * `Metadata` takes (`robots: { index: false }`). The engine's imported constants (`NOINDEX_FOLLOW`,
+ * `INDEX_FOLLOW`) are the sanctioned way to name one, so they are removed before the
+ * case-insensitive match rather than excused by a case-sensitive one.
+ */
+function robotsDirectivesIn(source: string): string[] {
+  const code = codeOf(source).replace(/\b(?:NO)?INDEX_FOLLOW\b/g, "");
+  return [
+    /noindex/giu,
+    /\bindex\s*,\s*follow/giu,
+    /nofollow/giu,
+    /["']robots["']/giu,
+    /x-robots-tag/giu,
+    /\brobots\s*:/giu,
+    /\bindex\s*:\s*(?:true|false)\b/giu,
+  ].flatMap((pattern) => code.match(pattern) ?? []);
+}
+
+/** `pageType: "product"` in any quoting or spacing. */
+const PRODUCT_PAGE_TYPE = /\bpageType\s*:\s*["'`]product["'`]/gu;
+
+/** A file that spells the product page type and calls spec 007's engine itself. */
+function handBuiltProductDescriptor(source: string): boolean {
+  const code = codeOf(source);
+  return (
+    (code.match(PRODUCT_PAGE_TYPE) ?? []).length > 0 &&
+    /\bpageIndexability\b/u.test(code)
+  );
+}

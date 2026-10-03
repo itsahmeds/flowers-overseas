@@ -145,6 +145,10 @@ export {
 // site claim to deliver somewhere (spec 007 §13 Q3, AC-8).
 export type { ActivePartnersProvider } from "./partners.ts";
 export { CorridorPage, type CorridorPageProps } from "./ui/CorridorPage.tsx";
+// Spec 007's delivery-facts block, narrowed to the three values it renders from, so spec 009's
+// product page reuses it unchanged rather than re-implementing it (TASK-126 E-1 (a)). The route
+// mounts it; `ui/product` cannot import it, because `geo/ui` imports the `ui` barrel.
+export { DeliveryFacts, type DeliveryFactsProps } from "./ui/CorridorFacts.tsx";
 // The all-destinations hub: the one link predicate, the hub's view model and its page (TASK-092).
 export {
   type HubDestinationView,

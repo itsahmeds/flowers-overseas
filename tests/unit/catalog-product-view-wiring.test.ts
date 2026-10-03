@@ -115,31 +115,31 @@ describe("every term reaches the verdict through `productView()` (§6, AC-16)", 
  * (`/break 101` F1, F2). The all-hold control at the top of this file is what makes them bite.
  */
 describe("an omitted term fails closed at runtime, not only in the type (hole 5)", () => {
-  it("`productPageIndexability()` with `countryLive` cast away → `noindex,follow` (F1)", () => {
-    const verdict = productPageIndexability(
-      "en",
-      {
-        exists: true,
-        productIndexable: true,
-        unparameterised: true,
-      } as never,
-      INDEXING,
-    );
-    expect(verdict.directive).toBe(NOINDEX_FOLLOW);
-    // The control: the same call with the term stated is the one index case.
-    expect(
-      productPageIndexability(
-        "en",
-        {
-          exists: true,
-          countryLive: true,
-          productIndexable: true,
-          unparameterised: true,
-        },
-        INDEXING,
-      ).directive,
-    ).toBe(INDEX_FOLLOW);
-  });
+  // Once per optional term (`/review 101` HOLE 12): each case drops exactly one of the two terms a
+  // caller states, so a fail-open default on either one turns its own named case red.
+  const STATED = {
+    exists: true,
+    countryLive: true,
+    productIndexable: true,
+    unparameterised: true,
+  } as const;
+
+  it.each(["countryLive", "unparameterised"] as const)(
+    "`productPageIndexability()` with `%s` cast away → `noindex,follow` (F1)",
+    (term) => {
+      const rest = Object.fromEntries(
+        Object.entries(STATED).filter(([key]) => key !== term),
+      );
+      expect(Object.keys(rest)).not.toContain(term);
+      expect(
+        productPageIndexability("en", rest as never, INDEXING).directive,
+      ).toBe(NOINDEX_FOLLOW);
+      // The control: the same call with the term stated is the one index case.
+      expect(productPageIndexability("en", STATED, INDEXING).directive).toBe(
+        INDEX_FOLLOW,
+      );
+    },
+  );
 
   it("`productView()` with `parameterised` cast away → `noindex,follow` (F2)", async () => {
     const view = await productView(

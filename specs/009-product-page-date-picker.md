@@ -427,3 +427,58 @@ ruling that the two occasions are homepage-strip-only and §5.2's sentence is wi
 **Note on §0.** The index block above was written by hand because this environment had no shell in which to run `pnpm specs:index`. Run `pnpm specs:index` before merge and let the generated block replace it.
 - **A4 (2026-09-18, orchestrator ruling, TASK-122 escalation 3).** AC-12's "the Andrzejki and Wigilia PL rows date correctly" is **not** satisfiable inside `modules/geo/occasions` alone: `seed:check` requires each `occasionKey` to be an `occasions.json` row and a `taxonomy.json` facet value, so the two rows need two catalogue occasion keys, `seasonalOccasions`/`occasions.data.ts` entries, four-locale `catalog.facet.occasion.*` copy and the 32 → 34 / 126 → … dataset pins — spec 005/006 dataset and content scope under ADR-0017. Ruled: TASK-122 ships the evaluator and the RO rows; the Andrzejki/Wigilia rows move to **TASK-106** (the de/pl occasion copy task) as a carry-forward, where the keys, facet values and copy are authored together; the homepage strip already renders both from `src/config/occasions.ts` and is unaffected. AC-12 is read as satisfied by TASK-122 + TASK-106 together.
 - **A5 (2026-09-18, orchestrator ruling, TASK-122 escalation 2).** `toOccasionCountryRow()` now projects `rule_type = 'orthodox_easter_offset'` while migration `0002`'s `occasion_country_rule_type_check` lists six values. No migration is written in TASK-122 (outside §5.2); **TASK-016** (migration `0003`) carries the `ALTER … DROP CONSTRAINT / ADD CONSTRAINT` widening the check to seven values, with rollback, recorded as spec 002 §14 A5. Nothing runs the importer in Phase 0, so nothing is broken meanwhile.
+
+**A6 (2026-10-03, TASK-127 E-1, orchestrator ruling — the founder may reverse it).** Prebuild is
+the **existence set** for Phase 0. `src/app/[locale]/layout.tsx` exports `dynamicParams = false`
+(spec 003 §14 A3, the locale gate), and Next 16 computes a route's `dynamicParams` as
+`segments.every(s => s.config?.dynamicParams !== false)` (`next/dist/build/static-paths/app.js`),
+so a child segment cannot re-enable it. Measured on PR 135 head `cf1664e2` (Next 16.3.6, build
+slot): every non-prebuilt product URL answered 404 on a production build, 420 of 588 per locale.
+The alternative, `dynamicParams = true` on the layout, was measured and rejected: `/fr`, `/xx`,
+`/nope` and every on-demand product 404 then render inside `<html id="__next_error__">` with no
+`lang`, which breaks spec 003 AC-8 and WCAG 3.1.1, the reason A3 put the gate at the routing
+layer. Ruled: the product route's `generateStaticParams` emits **every** product per (locale,
+published country), and product 404s and unknown locales stay real x-default `not-found.tsx`
+documents with `lang`. Four clauses now read:
+
+- **§2, "Prebuild is a performance choice, not an existence choice":** prebuild is the existence
+  set. `generateStaticParams` emits every (locale, published country, product) that
+  `productPageExists()` admits, and the locale gate makes every other URL a routing-layer 404;
+  `topProductsForPrebuild(…, N = 24)` no longer bounds this route.
+- **§5.4, the `generateStaticParams` bullet:** `generateStaticParams` emits every product per
+  (locale, published country) that `productPageExists()` admits; the route's own
+  `dynamicParams` is inert under the layout's `false`; `productPageExists()` still runs in the
+  route (§2, AC-3). Like every other Phase 0 route, its params are its existence set.
+- **AC-3:** `generateStaticParams` emits every product per (locale, published country); the
+  product route's own `dynamicParams` is inert under the locale gate; a URL outside that set
+  404s as the x-default not-found document with `lang`; the per-locale counts print to the CI
+  step summary.
+- **T-03** (integration (build output) + e2e, AC-3): `generateStaticParams` equals the
+  `productPageExists()` set for every (locale, published country); on a production build a
+  product outside the former top-24 set (formerly on-demand) 200s, and an unknown product slug
+  404s as the x-default not-found document with `<html lang>` set; step-summary counts match.
+
+**Cost.** At 6 locales (pseudo-locales on), `next build` takes 99 s against 53 s before (load
+average 2.08 before and 5.30 after the 99 s build), and 3 528 product pages take ≈ 944 MB
+(~268 KB each) of a 1 148 MB `.next/server/app`. In production (4 locales) that is 2 352 product
+pages, ≈ 630 MB. **Catalogue growth re-checks two numbers:** `next build` wall-clock time against
+`plan/01` §3's 3-minute budget, and the size of `.next/server/app`. A newly published country or
+product needs a build, as the listing pages already do, which matches Phase 0's committed seed
+data. **Tripwire:** spec 003 §14 A3's Cache Components tripwire applies here too; whoever enables
+`cacheComponents` replaces the locale gate and revisits this ruling in the same PR.
+
+**A7 (2026-10-03, TASK-127, orchestrator ruling on `/review 135` round 1, required change 2).** A
+product URL with a trailing slash answers a **permanent redirect (308) to the bare URL**, as on the
+corridor pages (spec 007 §14 A6) and the listing pages (spec 008 §14 A7). That is Next's default
+`trailingSlash: false` behaviour, which is platform-wide; Cloudflare's 301 may replace the 308 once
+spec 040 fronts the origin. The canonical stays the bare URL (§6, AC-17). Two clauses now read:
+
+- **AC-1**, "and **404** for every other: unknown slug, product with no active price in that
+  country, unpublished country, another locale's `product` segment, uppercase variant, trailing
+  slash, unknown locale. No redirect, no soft-404, no substitute page": "trailing slash" leaves
+  the 404 list. A trailing-slash variant answers 308 with a `Location` equal to the bare path and
+  never a 200 body or a soft-404. The other six shapes still 404 with no `Location` header, and
+  "No redirect" applies to them.
+- **T-01** (e2e, AC-1) gains one case: `/{locale}/{country}/{product}/{slug}/` (route params
+  `/{locale}/{segment}/{child}/{product}/`) → 308, `Location` equal to the bare path. The other
+  six shapes still assert 404 with no `Location` header.
