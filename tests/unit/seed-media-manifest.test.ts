@@ -9,8 +9,11 @@
  * approval with no reviewer surviving into a whole manifest — are asserted here, once, at the
  * level that would let them through.
  *
- * There are **no image bytes in this dataset yet**: every asset is `pending`, which means nothing
- * renders (spec 006 AC-18). The variants are TASK-078's and the committed bytes are TASK-080's.
+ * The manifest holds two batches. **Batch 1** is the demo set of §13 Q3 (31 assets), approved by
+ * the founder on 2026-09-18. **Batch 2** is the intake of spec 006 §14 A7 clause 5 (TASK-167): one
+ * row per image of `content/imagery/remaining-images.csv` except FO-BQ-004's pair, which the
+ * founder chooses at approval (TASK-168). Every batch-2 row is `pending` until the founder's own
+ * recorded word, so nothing in it renders (`src/modules/ui/media/resolve.ts`, AC-18).
  */
 import { readFileSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
@@ -45,8 +48,28 @@ const promptRecords = new Map<string, ImageryPromptRecord>(
   ),
 );
 
+/** Batch 2's asset ids: every image of the generation sheet, read from the sheet, not copied. */
+const sheetAssetIds = readFileSync(
+  join(repoRoot, "content/imagery/remaining-images.csv"),
+  "utf8",
+)
+  .trim()
+  .split("\n")
+  .slice(1)
+  .map((line) => /^"\d+","([a-z0-9-]+)"/u.exec(line)?.[1] ?? "");
+const sheetIds = new Set(sheetAssetIds);
+
+/** FO-BQ-004 has two candidate pairs; the founder picks one at approval (A7 clause 1, TASK-168). */
+const DEFERRED_SKU = "FO-BQ-004";
+
+const batch1 = assets.filter((asset) => !sheetIds.has(asset.id));
+const batch2 = assets.filter((asset) => sheetIds.has(asset.id));
+
 const productAssets = assets.filter((asset) => asset.productSku !== undefined);
 const homepageAssets = assets.filter((asset) => asset.productSku === undefined);
+const batch1ProductAssets = batch1.filter(
+  (asset) => asset.productSku !== undefined,
+);
 
 describe("seed/data/media.json is part of the dataset and authored by a human", () => {
   it("is registered in SEED_DATA_FILES with the authored origin", () => {
@@ -63,20 +86,35 @@ describe("seed/data/media.json is part of the dataset and authored by a human", 
   });
 });
 
-describe("spec 006 §13 Q3: exactly the demo set, and nothing more", () => {
-  it("covers 12 products × 2 assets plus the 7 homepage slots", () => {
-    expect(productAssets).toHaveLength(24);
+describe("spec 006 §13 Q3 and §14 A7: the demo set plus the batch-2 intake, and nothing more", () => {
+  it("covers 12 products × 2 assets plus the 7 homepage slots in batch 1", () => {
+    expect(batch1ProductAssets).toHaveLength(24);
     expect(homepageAssets).toHaveLength(7);
-    expect(assets).toHaveLength(31);
+    expect(batch1).toHaveLength(31);
   });
 
-  it("gives each of the 12 demo products one hero and one detail", () => {
+  it("covers every sheet image but FO-BQ-004's pair in batch 2: 71 products × 2 = 142", () => {
+    expect(sheetAssetIds).toHaveLength(144);
+    expect(batch2.map((asset) => asset.id).toSorted()).toEqual(
+      sheetAssetIds
+        .filter((id) => !id.startsWith(`${DEFERRED_SKU.toLowerCase()}-`))
+        .toSorted(),
+    );
+    expect(batch2).toHaveLength(142);
+    expect(assets).toHaveLength(173);
+    expect(
+      assets.filter((asset) => asset.productSku === DEFERRED_SKU),
+      "FO-BQ-004's rows land with the founder's choice of pair (TASK-168)",
+    ).toEqual([]);
+  });
+
+  it("gives each of the 83 products with imagery one hero and one detail", () => {
     const bySku = new Map<string, MediaAssetManifest[]>();
     for (const asset of productAssets) {
       const sku = asset.productSku as string;
       bySku.set(sku, [...(bySku.get(sku) ?? []), asset]);
     }
-    expect(bySku.size).toBe(12);
+    expect(bySku.size).toBe(83);
     for (const [sku, group] of bySku) {
       expect(group.map((asset) => asset.slot).sort(), sku).toEqual([
         "productDetail",
@@ -97,7 +135,7 @@ describe("spec 006 §13 Q3: exactly the demo set, and nothing more", () => {
   it("covers one product of every seeded product type (the archetypes of `plan/10` §2.2)", () => {
     const bySku = new Map(PRODUCTS.map((product) => [product.sku, product]));
     const types = new Set(
-      productAssets.map(
+      batch1ProductAssets.map(
         (asset) => bySku.get(asset.productSku as string)?.productType,
       ),
     );
@@ -150,7 +188,7 @@ describe("spec 006 §13 Q3: exactly the demo set, and nothing more", () => {
 });
 
 describe("spec 006 AC-8: provenance is complete on every committed asset", () => {
-  it("records a source and a depiction on all 31", () => {
+  it("records a source and a depiction on every asset", () => {
     for (const asset of assets) {
       expect(["ai", "photo", "partner"], asset.id).toContain(asset.source);
       expect(["product", "brand", "context"], asset.id).toContain(
@@ -192,16 +230,25 @@ describe("spec 006 AC-8: provenance is complete on every committed asset", () =>
     }
   });
 
-  it("records the founder's 2026-09-18 sign-off: every asset is approved, by the founder role, at one of the two sign-off instants (§13 Q9)", () => {
+  it("records the founder's 2026-09-18 sign-off: every batch-1 asset is approved, by the founder role, at one of the two sign-off instants (§13 Q9)", () => {
     const instants = new Set([
       "2026-09-18T07:30:00.000Z",
       "2026-09-18T07:45:00.000Z",
     ]);
-    expect(assets.length).toBe(31);
-    for (const asset of assets) {
+    expect(batch1.length).toBe(31);
+    for (const asset of batch1) {
       expect(asset.reviewState, asset.id).toBe("approved");
       expect(asset.reviewedBy, asset.id).toBe("founder");
       expect(instants.has(asset.reviewedAt ?? ""), asset.id).toBe(true);
+    }
+  });
+
+  it("stages every batch-2 asset `pending` with no reviewer and no date: no agent signs the founder's name (§14 A7 clause 5)", () => {
+    expect(batch2.length).toBe(142);
+    for (const asset of batch2) {
+      expect(asset.reviewState, asset.id).toBe("pending");
+      expect(asset.reviewedBy, asset.id).toBeUndefined();
+      expect(asset.reviewedAt, asset.id).toBeUndefined();
     }
   });
 

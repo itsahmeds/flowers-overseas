@@ -291,7 +291,37 @@ export type Fetcher = (
 }>;
 
 /**
- * Read, verify and load every file the manifest lists. Throws on the first refusal, before a
+ * The variant rows `pnpm media:upload` and `--verify` act on: the rows of **`approved`** assets,
+ * narrowed by `--only` where it is given (spec 006 §14 A7 clause 5; TASK-167, `/break 142` HOLE 5).
+ *
+ * A `pending` or `rejected` asset renders the placeholder and never an `<img>` (spec 006 AC-18),
+ * so its bytes have no business in a public bucket that caches them `immutable` for a year. Since
+ * TASK-167 the manifest carries the variants of 142 pending photographs; without this filter a
+ * bare upload would publish every one of them, and a bare `--verify` would report each missing.
+ * Approval is the data edit that makes an asset publishable; `--only` still narrows a batch.
+ * `unapproved` is how many selected rows were left out, so the summary can say so.
+ */
+export function publishableRows(options: {
+  readonly root: string;
+  readonly only?: readonly string[];
+}): {
+  readonly rows: readonly MediaVariantManifest[];
+  readonly unapproved: number;
+} {
+  const approved = new Set(
+    readMediaAssets(options.root)
+      .filter((asset) => asset.reviewState === "approved")
+      .map((asset) => asset.id),
+  );
+  const selected = (readVariantManifest(options.root)?.rows ?? []).filter(
+    (row) => options.only === undefined || options.only.includes(row.assetId),
+  );
+  const rows = selected.filter((row) => approved.has(row.assetId));
+  return { rows, unapproved: selected.length - rows.length };
+}
+
+/**
+ * Read, verify and load every file the manifest lists for an approved asset. Throws on the first refusal, before a
  * single byte is sent: a partial upload of a set that failed a gate is worse than none.
  */
 export async function loadUploadSet(options: {
@@ -314,9 +344,10 @@ export async function loadUploadSet(options: {
   const slots = new Map(
     readMediaAssets(root).map((asset) => [asset.id, asset.slot]),
   );
-  const rows = (readVariantManifest(root)?.rows ?? []).filter(
-    (row) => options.only === undefined || options.only.includes(row.assetId),
-  );
+  const { rows } = publishableRows({
+    root,
+    ...(options.only === undefined ? {} : { only: options.only }),
+  });
 
   const items: UploadItem[] = [];
   for (const row of rows) {
@@ -535,6 +566,8 @@ export interface UploadRunSummary {
   readonly uploaded: number;
   readonly skipped: number;
   readonly bytes: number;
+  /** Selected rows of `pending` or `rejected` assets, never sent (`publishableRows()`). */
+  readonly unapproved: number;
 }
 
 /**
@@ -559,10 +592,9 @@ export async function runUpload(options: {
   const config = readR2Config(options.env);
   assertOriginAgrees(config.R2_PUBLIC_BASE_URL);
 
-  const items = await loadUploadSet({
-    root,
-    ...(args.only === undefined ? {} : { only: args.only }),
-  });
+  const only = args.only === undefined ? {} : { only: args.only };
+  const items = await loadUploadSet({ root, ...only });
+  const { unapproved } = publishableRows({ root, ...only });
 
   let uploaded = 0;
   let skipped = 0;
@@ -588,9 +620,36 @@ export async function runUpload(options: {
   }
 
   write(
-    `${String(items.length)} variant(s): ${String(uploaded)} ${args.dryRun ? "to upload" : "uploaded"}, ${String(skipped)} already current, ${String(bytes)} B transferred. Served from ${MEDIA_ORIGIN}/.\n`,
+    `${String(items.length)} variant(s): ${String(uploaded)} ${args.dryRun ? "to upload" : "uploaded"}, ${String(skipped)} already current, ${String(bytes)} B transferred. Served from ${MEDIA_ORIGIN}/. ${String(unapproved)} variant(s) of unapproved assets skipped: only an approved asset is published.\n`,
   );
-  return { variants: items.length, uploaded, skipped, bytes };
+  return { variants: items.length, uploaded, skipped, bytes, unapproved };
+}
+
+/**
+ * `--verify`: every published row of an approved asset `HEAD`ed on the public origin. Rows of
+ * `pending` or `rejected` assets are not checked — they are never published, so a 404 for them is
+ * the correct state, not a fault (`publishableRows()`). Throws with every disagreement at once.
+ */
+export async function runVerify(options: {
+  readonly root: string;
+  readonly only?: readonly string[];
+  readonly fetcher: Fetcher;
+  readonly write: (text: string) => void;
+}): Promise<{ readonly verified: number; readonly unapproved: number }> {
+  const { rows, unapproved } = publishableRows({
+    root: options.root,
+    ...(options.only === undefined ? {} : { only: options.only }),
+  });
+  const problems = await verifyPublished({ rows, fetcher: options.fetcher });
+  if (problems.length > 0) {
+    throw new Error(
+      `${String(problems.length)} published object(s) disagree with ${VARIANT_MANIFEST_PATH}:\n${problems.join("\n")}`,
+    );
+  }
+  options.write(
+    `${String(rows.length)} row(s) verified against ${MEDIA_ORIGIN}/: every object is published with the byte count and content type its row records. ${String(unapproved)} row(s) of unapproved assets not checked: they are never published.\n`,
+  );
+  return { verified: rows.length, unapproved };
 }
 
 /* c8 ignore start -- the connected half: proved by a real run against the bucket, not in CI */
@@ -618,18 +677,14 @@ async function main(): Promise<void> {
   // `--verify` reads the public origin only, so it runs before any credential is asked for: a
   // command that needs no secret must not fail because a secret is absent.
   if (args.verify) {
-    const rows = (readVariantManifest(root)?.rows ?? []).filter(
-      (row) => args.only === undefined || args.only.includes(row.assetId),
-    );
-    const problems = await verifyPublished({ rows, fetcher });
-    if (problems.length > 0) {
-      throw new Error(
-        `${String(problems.length)} published object(s) disagree with ${VARIANT_MANIFEST_PATH}:\n${problems.join("\n")}`,
-      );
-    }
-    process.stdout.write(
-      `${String(rows.length)} row(s) verified against ${MEDIA_ORIGIN}/: every object is published with the byte count and content type its row records.\n`,
-    );
+    await runVerify({
+      root,
+      ...(args.only === undefined ? {} : { only: args.only }),
+      fetcher,
+      write: (text) => {
+        process.stdout.write(text);
+      },
+    });
     return;
   }
 

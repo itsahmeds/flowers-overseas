@@ -95,12 +95,18 @@ export const HERO_DESKTOP_MIN_WIDTH = 1080;
  *     | `productHero` | 90 000 B | 828 (WebP 81 486 B) | 1080 → WebP 116 940 B |
  *     | `productDetail` | 60 000 B | 384 (WebP 38 398 B) | 640 → WebP 82 275 B |
  *
- *  2. **No committed file is an enlargement.** The approved intake originals are 1024–1672 px on
- *     the long edge, not the ≥ 2000 px `plan/01` §6 asks for (recorded in the PR body and in
- *     `docs/runbooks/imagery.md` as an intake finding, not papered over). `RESIZE_OPTIONS` allows
- *     enlargement so that a ladder is never *incomplete*; shipping an upscaled 1920 px file would
- *     make the ladder complete and the pixels invented. Every width below is inside the narrowest
- *     original of its slot.
+ *  2. **No derived file is an enlargement, with one named exception.** The batch-1 originals are
+ *     1024–1672 px on the long edge, not the ≥ 2000 px `plan/01` §6 asks for (recorded in the PR
+ *     body and in `docs/runbooks/imagery.md` as an intake finding, not papered over).
+ *     `RESIZE_OPTIONS` allows enlargement so that a ladder is never *incomplete*; shipping an
+ *     upscaled 1920 px file would make the ladder complete and the pixels invented. Every width
+ *     below is inside the narrowest original of its slot **except the `productHero` 828 rung for
+ *     the 31 xAI Grok Imagine heroes** (spec 006 §14 A7 clause 3; TASK-167): their originals are
+ *     784×1168 (2:3), centre-cropped to 4:5 at 784×980 under A6 (3), so the 828 file is enlarged
+ *     by about 6 %. That is accepted on A6's terms and the ladder is not cut for them. The 12 Grok
+ *     details at 784×1168 take the same crop, but `productDetail` ships only 384, so no detail is
+ *     enlarged; the batch-2 ChatGPT originals are 1122×1402, 4:5 and wider than every
+ *     `productHero` rung, so they need neither. No test pins this rule.
  *
  * **What this costs, stated rather than hidden.** An occasion tile is 195 CSS px at the mobile
  * artboard and ~245 px at the desktop one, so 384 is the 1× file at both and a 2× phone upscales
@@ -119,8 +125,8 @@ export const PHASE0_SLOT_WIDTHS: Readonly<
   occasionTile: [384],
   productHero: [384, 640, 828],
   productDetail: [384],
-  // No Phase-0 asset uses either slot (`seed/data/media.json` is 12 × productHero, 12 ×
-  // productDetail, 6 × occasionTile and 1 × hero), so their ladders are the widths they would
+  // No Phase-0 asset uses either slot (`seed/data/media.json` holds productHero, productDetail,
+  // occasionTile and hero assets only), so their ladders are the widths they would
   // ship rather than a measurement. Stated, not empty: an empty ladder would read as "this slot
   // ships nothing", which is a different and wrong claim.
   productThumb: [384],

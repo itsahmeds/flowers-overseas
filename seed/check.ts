@@ -1708,14 +1708,16 @@ function checkMedia(tree: SeedTree, parsed: Parsed): SeedProblem[] {
       for (const asset of parsed.media) {
         if (asset.depicts !== "product") continue;
         const alt = byAsset.get(asset.id);
-        if (alt === undefined) {
+        // Only an `approved` asset can render an `<img>`; a `pending` or `rejected` one renders the
+        // placeholder, so it needs no alt text (spec 006 §14 A9). Approval adds the alt with it.
+        if (alt === undefined && asset.reviewState === "approved") {
           at(
             `${ALT_DIR}/${locale}.json`,
             asset.id,
             "alt-missing",
             `is a product image with no \`${locale}\` alt text`,
           );
-        } else if (alt.trim() === "") {
+        } else if (alt !== undefined && alt.trim() === "") {
           at(
             `${ALT_DIR}/${locale}.json`,
             asset.id,

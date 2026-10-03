@@ -127,6 +127,10 @@ describe("the seed ↔ UI slot mapping (`/review 42`)", () => {
 });
 
 describe("Phase 0 since TASK-080: the committed dataset has assets, bytes and alt text", () => {
+  const approvedAssets = committedMediaManifest.assets.filter(
+    (asset) => asset.reviewState === "approved",
+  );
+
   it("commits asset rows, variant rows and alt text in all four launch locales", () => {
     expect(committedMediaManifest.assets.length).toBeGreaterThan(0);
     expect(committedMediaManifest.variants.length).toBeGreaterThan(0);
@@ -136,15 +140,18 @@ describe("Phase 0 since TASK-080: the committed dataset has assets, bytes and al
       "en-gb",
       "pl",
     ]);
+    // Spec 006 §14 A9: one alt row per launch locale for every `approved` asset, and none
+    // required of a `pending` or `rejected` one, which renders the placeholder (AC-18).
     for (const [locale, index] of Object.entries(committedMediaManifest.alt)) {
-      expect(Object.keys(index).length, locale).toBe(
-        committedMediaManifest.assets.length,
+      expect(Object.keys(index).sort(), locale).toEqual(
+        approvedAssets.map((asset) => asset.id).sort(),
       );
     }
   });
 
   it("therefore displays every approved asset in every launch locale", () => {
-    for (const asset of committedMediaManifest.assets) {
+    expect(approvedAssets.length).toBeGreaterThan(0);
+    for (const asset of approvedAssets) {
       for (const locale of ["en", "en-gb", "de", "pl"]) {
         expect(isDisplayable(asset.id, locale), `${asset.id}/${locale}`).toBe(
           true,

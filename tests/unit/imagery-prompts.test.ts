@@ -13,7 +13,7 @@
  * The manifest side of the link — every asset's `promptHash` equals the hash of its record — is
  * `tests/unit/seed-media-manifest.test.ts`, where the dataset lives.
  */
-import { readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 import { describe, expect, it } from "vitest";
@@ -363,25 +363,414 @@ describe("the style guide is enforced in the prompt text, not merely written dow
 });
 
 /**
- * The generator's identity, filed and then written into the data (TASK-080).
+ * Each generator's identity, filed and then written into the data (TASK-080; spec 006 §14 A7
+ * clause 2, AC-29, AC-31, AC-32; T-31, T-32; TASK-167).
  *
- * `docs/compliance/imagery-generator-terms.md` was filed on 2026-09-18 with the two literals
- * below, so the `to-be-confirmed` placeholder TASK-077 shipped is gone from every prompt record
- * and every `seed/data/media.json` row. Pinning the filed values here rather than merely asserting
- * "not the placeholder" is the point: the compliance record and the data must name the **same**
- * generator, or the record documents terms that were never the ones we generated under.
+ * TASK-080 pinned one generator against one terms file. A7 admits a second, so the pin becomes a
+ * map: every generator the data may name, the compliance record that files its terms, and the
+ * models that record lists. The compliance record and the data must name the **same** generator
+ * and model, or the record documents terms that were never the ones we generated under — which is
+ * why a name only counts in a terms file as an **exact token** (`` `name` `` or `"name"`, one
+ * delimiter on each side, the same one): `gpt-image 2.0` does not file `gpt-image`, and
+ * `"xAI Grok Imagine"` does not file `Grok Imagine`.
+ *
+ * The rules are pure functions over plain values so that every failure case below runs the exact
+ * code the real-data assertions run, on a fixture that differs from the real input in one place.
  */
-export const FILED_GENERATOR = "OpenAI ChatGPT";
-export const FILED_GENERATOR_MODEL = "gpt-image 2.0";
+export interface GeneratorTerms {
+  readonly termsFile: string;
+  readonly models: readonly string[];
+}
 
-describe("the generator is the one whose terms the founder filed", () => {
-  it("records the filed generator and model on every prompt record", () => {
-    for (const record of records) {
-      expect(record.generator, record.assetId).toBe(FILED_GENERATOR);
-      expect(record.generatorModel, record.assetId).toBe(FILED_GENERATOR_MODEL);
+export const GENERATOR_TERMS: ReadonlyMap<string, GeneratorTerms> = new Map([
+  [
+    "OpenAI ChatGPT",
+    {
+      termsFile: "docs/compliance/imagery-generator-terms.md",
+      models: ["gpt-image 2.0", "gpt-image"],
+    },
+  ],
+  [
+    "xAI Grok Imagine",
+    {
+      termsFile: "docs/compliance/imagery-generator-terms-grok.md",
+      models: ["Grok Imagine"],
+    },
+  ],
+]);
+
+/** The generator whose record bounds its assets to a listed SKU set (AC-32). */
+const BOUNDED_GENERATOR = "xAI Grok Imagine";
+const BOUNDED_TERMS_FILE = "docs/compliance/imagery-generator-terms-grok.md";
+
+/** What AC-31/AC-32 read off a prompt record or an `ai` row of `seed/data/media.json`. */
+export interface ProvenanceClaim {
+  readonly id: string;
+  readonly sku: string | null;
+  readonly generator: string | undefined;
+  readonly model: string | undefined;
+}
+
+/** `` `name` `` or `"name"`: the name with matching delimiters, never a substring of a longer name. */
+export function hasExactToken(text: string, name: string): boolean {
+  return text.includes(`\`${name}\``) || text.includes(`"${name}"`);
+}
+
+/** AC-31's terms-file half. `read` returns `null` for a file that does not exist. */
+export function termsProblems(
+  terms: ReadonlyMap<string, GeneratorTerms>,
+  read: (path: string) => string | null,
+): string[] {
+  const problems: string[] = [];
+  for (const [generator, { termsFile, models }] of terms) {
+    const text = read(termsFile);
+    if (text === null) {
+      problems.push(
+        `${termsFile}: missing, so \`${generator}\` has no filed terms record`,
+      );
+      continue;
     }
+    if (!/\*\*Filed \d{4}-\d{2}-\d{2}\.\*\*/u.test(text)) {
+      problems.push(`${termsFile}: not filed (no **Filed YYYY-MM-DD.**)`);
+    }
+    if (!text.includes("ADR-0014")) {
+      problems.push(`${termsFile}: does not name ADR-0014`);
+    }
+    if (!text.toLowerCase().includes("commercial")) {
+      problems.push(`${termsFile}: does not answer commercial use`);
+    }
+    for (const name of [generator, ...models]) {
+      if (!hasExactToken(text, name)) {
+        problems.push(
+          `${termsFile}: does not name \`${name}\` as an exact token`,
+        );
+      }
+    }
+  }
+  return problems;
+}
+
+/** The Grok record's Assets row: its backticked SKUs and the product count it states (AC-32). */
+export function parseAssetsRow(text: string): {
+  readonly skus: ReadonlySet<string>;
+  readonly stated: number | null;
+} {
+  const row = text.split("\n").find((line) => line.startsWith("| Assets |"));
+  if (row === undefined) return { skus: new Set(), stated: null };
+  const skus = new Set(
+    [...row.matchAll(/`(FO-[A-Z]{2}-\d{3})`/gu)].map((match) => match[1] ?? ""),
+  );
+  const stated = /hero and detail of (\d+) products/u.exec(row)?.[1];
+  return { skus, stated: stated === undefined ? null : Number(stated) };
+}
+
+export function assetsRowProblems(text: string): string[] {
+  const { skus, stated } = parseAssetsRow(text);
+  if (stated === null) return ["the Assets row states no product count"];
+  return skus.size === stated
+    ? []
+    : [
+        `the Assets row lists ${String(skus.size)} SKUs but states ${String(stated)} products`,
+      ];
+}
+
+/** AC-31's data half and AC-32: a mapped generator, a listed model, a listed SKU for Grok. */
+export function claimProblems(
+  claims: readonly ProvenanceClaim[],
+  terms: ReadonlyMap<string, GeneratorTerms>,
+  boundedSkus: ReadonlySet<string>,
+): string[] {
+  const problems: string[] = [];
+  for (const claim of claims) {
+    const entry =
+      claim.generator === undefined ? undefined : terms.get(claim.generator);
+    if (entry === undefined) {
+      problems.push(
+        `${claim.id}: names generator \`${String(claim.generator)}\`, which has no filed terms record`,
+      );
+    } else if (
+      claim.model === undefined ||
+      !entry.models.includes(claim.model)
+    ) {
+      problems.push(
+        `${claim.id}: names model \`${String(claim.model)}\`, which ${entry.termsFile} does not list for \`${String(claim.generator)}\``,
+      );
+    }
+    if (
+      claim.generator === BOUNDED_GENERATOR &&
+      (claim.sku === null || !boundedSkus.has(claim.sku))
+    ) {
+      problems.push(
+        `${claim.id}: names \`${BOUNDED_GENERATOR}\` on \`${String(claim.sku)}\`, which is not in the Assets row of ${BOUNDED_TERMS_FILE}`,
+      );
+    }
+  }
+  return problems;
+}
+
+function readRepoFile(path: string): string | null {
+  const absolute = join(repoRoot, path);
+  return existsSync(absolute) ? readFileSync(absolute, "utf8") : null;
+}
+
+const mediaRows = (
+  JSON.parse(readFileSync(join(repoRoot, "seed/data/media.json"), "utf8")) as {
+    rows: {
+      id: string;
+      source: string;
+      productSku?: string;
+      generator?: string;
+      generatorModel?: string;
+    }[];
+  }
+).rows;
+
+const claims: ProvenanceClaim[] = [
+  ...records.map((record) => ({
+    id: `prompt ${record.assetId}`,
+    sku: record.sku,
+    generator: record.generator,
+    model: record.generatorModel,
+  })),
+  ...mediaRows
+    .filter((row) => row.source === "ai")
+    .map((row) => ({
+      id: `media ${row.id}`,
+      sku: row.productSku ?? null,
+      generator: row.generator,
+      model: row.generatorModel,
+    })),
+];
+
+const grokText = readRepoFile(BOUNDED_TERMS_FILE) ?? "";
+const grokSkus = parseAssetsRow(grokText).skus;
+
+/** A filed terms text naming exactly the given tokens, for the exact-token cases. */
+function filedTerms(...tokens: string[]): string {
+  return `| Status | **Filed 2026-09-30.** |\nADR-0014. Commercial use: allowed.\n${tokens.join("\n")}\n`;
+}
+
+/** A reader that serves the repository's files, with `overrides` replacing (or deleting) some. */
+function readerWith(
+  overrides: Record<string, string | null>,
+): (path: string) => string | null {
+  return (path) =>
+    path in overrides ? (overrides[path] ?? null) : readRepoFile(path);
+}
+
+const chatgptClaim: ProvenanceClaim = {
+  id: "fixture fo-bq-001-hero",
+  sku: "FO-BQ-001",
+  generator: "OpenAI ChatGPT",
+  model: "gpt-image",
+};
+const grokClaim = (sku: string | null): ProvenanceClaim => ({
+  id: `fixture ${String(sku)}`,
+  sku,
+  generator: BOUNDED_GENERATOR,
+  model: "Grok Imagine",
+});
+
+describe("AC-29 / AC-31: every generator the data names has a filed terms record (T-31)", () => {
+  it("every prompt record and every `ai` row names a mapped generator and a model listed for it", () => {
+    expect(claims.length).toBe(
+      records.length + mediaRows.filter((row) => row.source === "ai").length,
+    );
+    expect(claims.length).toBeGreaterThan(0);
+    expect(claimProblems(claims, GENERATOR_TERMS, grokSkus)).toEqual([]);
   });
 
+  it("every mapped terms file is filed, names ADR-0014, answers commercial use and names each of its names as an exact token", () => {
+    expect(termsProblems(GENERATOR_TERMS, readRepoFile)).toEqual([]);
+  });
+
+  it("goes red for a row naming an unmapped generator", () => {
+    expect(
+      claimProblems(
+        [{ ...chatgptClaim, generator: "Midjourney" }],
+        GENERATOR_TERMS,
+        grokSkus,
+      ),
+    ).toEqual([
+      "fixture fo-bq-001-hero: names generator `Midjourney`, which has no filed terms record",
+    ]);
+  });
+
+  it("goes red for a row naming a model its generator's record does not list", () => {
+    expect(
+      claimProblems(
+        [{ ...chatgptClaim, model: "Grok Imagine" }],
+        GENERATOR_TERMS,
+        grokSkus,
+      ),
+    ).toEqual([
+      "fixture fo-bq-001-hero: names model `Grok Imagine`, which docs/compliance/imagery-generator-terms.md does not list for `OpenAI ChatGPT`",
+    ]);
+  });
+
+  it("goes red when a mapped terms file is deleted", () => {
+    expect(
+      termsProblems(
+        GENERATOR_TERMS,
+        readerWith({ [BOUNDED_TERMS_FILE]: null }),
+      ),
+    ).toEqual([
+      "docs/compliance/imagery-generator-terms-grok.md: missing, so `xAI Grok Imagine` has no filed terms record",
+    ]);
+  });
+
+  it("goes red when a mapped terms file is unfiled", () => {
+    expect(
+      termsProblems(
+        GENERATOR_TERMS,
+        readerWith({
+          [BOUNDED_TERMS_FILE]: grokText.replaceAll(
+            "**Filed 2026-09-30.**",
+            "**Draft.**",
+          ),
+        }),
+      ),
+    ).toEqual([
+      "docs/compliance/imagery-generator-terms-grok.md: not filed (no **Filed YYYY-MM-DD.**)",
+    ]);
+  });
+
+  it("goes red when a terms file is missing its generator as an exact token", () => {
+    expect(
+      termsProblems(
+        GENERATOR_TERMS,
+        readerWith({
+          [BOUNDED_TERMS_FILE]: grokText.replaceAll(
+            '"xAI Grok Imagine"',
+            "xAI Grok Imagine",
+          ),
+        }),
+      ),
+    ).toEqual([
+      "docs/compliance/imagery-generator-terms-grok.md: does not name `xAI Grok Imagine` as an exact token",
+    ]);
+  });
+
+  it("goes red when a terms file is missing a model as an exact token", () => {
+    const chatgptFile = "docs/compliance/imagery-generator-terms.md";
+    expect(
+      termsProblems(
+        GENERATOR_TERMS,
+        readerWith({
+          [chatgptFile]: filedTerms('"OpenAI ChatGPT"', "`gpt-image`"),
+        }),
+      ),
+    ).toEqual([
+      "docs/compliance/imagery-generator-terms.md: does not name `gpt-image 2.0` as an exact token",
+    ]);
+  });
+
+  it("goes red for mismatched delimiters: an opening backtick closes with a backtick", () => {
+    expect(hasExactToken('`gpt-image"', "gpt-image")).toBe(false);
+    expect(hasExactToken('"gpt-image`', "gpt-image")).toBe(false);
+    expect(hasExactToken("`gpt-image`", "gpt-image")).toBe(true);
+    expect(hasExactToken('"gpt-image"', "gpt-image")).toBe(true);
+    expect(
+      termsProblems(
+        GENERATOR_TERMS,
+        readerWith({
+          "docs/compliance/imagery-generator-terms.md": filedTerms(
+            '"OpenAI ChatGPT"',
+            "`gpt-image 2.0`",
+            '`gpt-image"',
+          ),
+        }),
+      ),
+    ).toEqual([
+      "docs/compliance/imagery-generator-terms.md: does not name `gpt-image` as an exact token",
+    ]);
+  });
+
+  it("goes red for `gpt-image` when the terms file names only `gpt-image 2.0`", () => {
+    expect(
+      termsProblems(
+        GENERATOR_TERMS,
+        readerWith({
+          "docs/compliance/imagery-generator-terms.md": filedTerms(
+            '"OpenAI ChatGPT"',
+            "`gpt-image 2.0`",
+          ),
+        }),
+      ),
+    ).toEqual([
+      "docs/compliance/imagery-generator-terms.md: does not name `gpt-image` as an exact token",
+    ]);
+  });
+
+  it("goes red for `Grok Imagine` when the terms file names only `xAI Grok Imagine`", () => {
+    expect(
+      termsProblems(
+        GENERATOR_TERMS,
+        readerWith({ [BOUNDED_TERMS_FILE]: filedTerms('"xAI Grok Imagine"') }),
+      ),
+    ).toEqual([
+      "docs/compliance/imagery-generator-terms-grok.md: does not name `Grok Imagine` as an exact token",
+    ]);
+  });
+});
+
+describe("AC-32: a generator's record bounds its assets (T-32)", () => {
+  it("reads the SKU set from the Assets row, and its size equals the product count the row states", () => {
+    const { skus, stated } = parseAssetsRow(grokText);
+    expect(stated).not.toBeNull();
+    expect(skus.size).toBe(stated);
+    expect(assetsRowProblems(grokText)).toEqual([]);
+  });
+
+  it("counts only backticked SKUs: a SKU the row names without backticks is not in the set (`/break 142` HOLE 4)", () => {
+    const sentence = "this row uses no ranges.";
+    expect(grokText).toContain(sentence);
+    const mentioning = grokText.replace(
+      sentence,
+      "this row uses no ranges, and FO-BQ-007 and FO-FN-011 are not in it.",
+    );
+    const real = parseAssetsRow(grokText);
+    const parsed = parseAssetsRow(mentioning);
+    expect(parsed.skus.has("FO-BQ-007")).toBe(false);
+    expect(parsed.skus.has("FO-FN-011")).toBe(false);
+    expect([...parsed.skus].sort()).toEqual([...real.skus].sort());
+    expect(assetsRowProblems(mentioning)).toEqual([]);
+  });
+
+  it("goes red when the parsed SKU count differs from the row's stated count", () => {
+    const shortRow = grokText.replace("`FO-BQ-008`, ", "");
+    expect(shortRow).not.toBe(grokText);
+    const { stated } = parseAssetsRow(grokText);
+    expect(assetsRowProblems(shortRow)).toEqual([
+      `the Assets row lists ${String((stated ?? 0) - 1)} SKUs but states ${String(stated)} products`,
+    ]);
+  });
+
+  it("accepts a Grok row on a listed SKU, so the red cases below are about the SKU alone", () => {
+    expect(
+      claimProblems([grokClaim("FO-BQ-005")], GENERATOR_TERMS, grokSkus),
+    ).toEqual([]);
+  });
+
+  it.each([
+    ["FO-BQ-007", "falls between two listed SKUs"],
+    ["FO-FN-011", "follows the last listed FO-FN SKU"],
+  ])("goes red for a Grok row on %s, which %s", (sku) => {
+    expect(claimProblems([grokClaim(sku)], GENERATOR_TERMS, grokSkus)).toEqual([
+      `fixture ${sku}: names \`xAI Grok Imagine\` on \`${sku}\`, which is not in the Assets row of docs/compliance/imagery-generator-terms-grok.md`,
+    ]);
+  });
+
+  it("goes red for a Grok row with no SKU (a homepage slot)", () => {
+    expect(claimProblems([grokClaim(null)], GENERATOR_TERMS, grokSkus)).toEqual(
+      [
+        "fixture null: names `xAI Grok Imagine` on `null`, which is not in the Assets row of docs/compliance/imagery-generator-terms-grok.md",
+      ],
+    );
+  });
+});
+
+describe("the generator fields carry no placeholder and invent no setting", () => {
   it("leaves the placeholder nowhere in the prompt records or the media manifest", () => {
     for (const record of records) {
       expect(
@@ -391,20 +780,6 @@ describe("the generator is the one whose terms the founder filed", () => {
     }
     const media = readFileSync(join(repoRoot, "seed/data/media.json"), "utf8");
     expect(media).not.toContain("to-be-confirmed");
-    expect(media).toContain(FILED_GENERATOR);
-    expect(media).toContain(FILED_GENERATOR_MODEL);
-  });
-
-  it("has a filed compliance record naming that generator and its commercial-use answer (ADR-0014's condition)", () => {
-    const terms = readFileSync(
-      join(repoRoot, "docs/compliance/imagery-generator-terms.md"),
-      "utf8",
-    );
-    expect(terms).toMatch(/\*\*Filed \d{4}-\d{2}-\d{2}\.\*\*/);
-    expect(terms).toContain("ADR-0014");
-    expect(terms).toContain(FILED_GENERATOR);
-    expect(terms).toContain(FILED_GENERATOR_MODEL);
-    expect(terms.toLowerCase()).toContain("commercial");
   });
 
   it("keeps the parameter bag generator-neutral, so no setting is invented for it", () => {
