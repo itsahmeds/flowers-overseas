@@ -1035,6 +1035,73 @@ describe("AC-22: no claim without backing, in every locale and picker state", ()
 /* AC-23 — add-ons are read-only rows; the free card is a zero line.          */
 /* -------------------------------------------------------------------------- */
 
+describe("A21 / AC-21 (v2, TASK-179): the price under the H1 is the price charged", () => {
+  it("prints the selected tier's `formatMoney` under the H1, equal to the one total, with no JSON-LD price", async () => {
+    for (const locale of LOCALES) {
+      for (const view of [
+        await viewOf(locale, "PL", AMBER, { now: IN_WINDOW }),
+        await viewOf(locale, "PL", AMBER, { now: WOMENS_DAY_WEEK }),
+        await viewOf(locale, "PL", AMBER, {
+          now: IN_WINDOW,
+          selection: { tierKey: "stems_12" },
+        }),
+      ]) {
+        const html = render(view);
+        const where = `${locale} ${view.fx.state} ${view.selectedTierKey}`;
+        const tier = view.tiers.find(
+          (option) => option.tierKey === view.selectedTierKey,
+        );
+        const shown = firstText(
+          block(html, "data-fo-pdp-price"),
+          /<bdi>([^<]*)<\/bdi>/u,
+        );
+        const total = firstText(
+          block(html, "data-fo-summary-total"),
+          /<bdi[^>]*data-fo-price-total[^>]*>([^<]*)<\/bdi>/u,
+        );
+        expect(decode(shown), where).toBe(
+          formatMoney(view.price.displayPrice, view.locale as Locale),
+        );
+        expect(tier, where).toBeDefined();
+        expect(decode(shown), where).toBe(
+          formatMoney(
+            tier?.price ?? view.price.displayPrice,
+            view.locale as Locale,
+          ),
+        );
+        expect(shown, where).toBe(total);
+        // No structured-data price on a Phase 0 PDP (BreadcrumbList only), so nothing can differ.
+        expect(html, where).not.toMatch(/"price"\s*:/u);
+        // No equivalents line until the helper is wired (A21 clause 6: absent renders nothing).
+        expect(html, where).not.toContain("data-fo-price-equivalents");
+      }
+    }
+  });
+
+  it("renders a finished equivalents line under the price and the total, and never a second amount in it", async () => {
+    const view = await viewOf("en", "PL", AMBER, { now: IN_WINDOW });
+    const line = "about 47.32 £ · 238.58 PLN at the rate of 8 September";
+    const html = renderToStaticMarkup(
+      <NextIntlClientProvider
+        locale={view.locale}
+        messages={loadMessages("en", [...NAMESPACES])}
+        timeZone="UTC"
+      >
+        <ProductPage
+          breadcrumb={null}
+          equivalents={line}
+          facts={null}
+          view={view}
+        />
+      </NextIntlClientProvider>,
+    );
+    expect([...html.matchAll(/data-fo-price-equivalents/gu)]).toHaveLength(2);
+    expect(block(html, "data-fo-pdp-price")).toContain(line);
+    expect(block(html, "data-fo-price-summary")).toContain(line);
+    expect([...html.matchAll(/data-fo-price-total/gu)]).toHaveLength(1);
+  });
+});
+
 describe("AC-23: the add-ons are a priced, read-only list", () => {
   it("prints name, per-country price and own VAT rate per row, with no input element", async () => {
     const view = await viewOf("en", "PL", AMBER, { now: IN_WINDOW });

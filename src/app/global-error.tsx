@@ -59,15 +59,15 @@ import {
 // other three without importing the design system into the chunk Next attaches to *every*
 // document (`noticeShell.ts`'s header; spec 004 §14 A1).
 import {
-  NOTICE_ACTIONS,
   NOTICE_ACTION_PRIMARY,
   NOTICE_ACTION_SECONDARY,
-  NOTICE_BLOCK,
-  NOTICE_BODY,
-  NOTICE_HEADING,
+  NOTICE_LETTER,
+  NOTICE_LETTER_ACTIONS,
+  NOTICE_LETTER_BODY,
+  NOTICE_LETTER_HEADING,
+  NOTICE_LETTER_MAIN,
+  NOTICE_LETTER_META,
   NOTICE_LOCKUP,
-  NOTICE_MAIN,
-  NOTICE_META,
   NOTICE_WORDMARK,
 } from "@/modules/ui/layout/noticeShell";
 
@@ -97,27 +97,27 @@ export default function GlobalError({ reset }: { reset: () => void }) {
       <body className="min-h-dvh">
         <title>{copy.title}</title>
         <meta name="robots" content="noindex,nofollow" />
-        <main className={NOTICE_MAIN} id="main">
+        <main className={NOTICE_LETTER_MAIN} id="main">
           {/* The wordmark, not the `Mark` component: see the import block. */}
           <a className={NOTICE_LOCKUP} href={home}>
             <span className={NOTICE_WORDMARK}>{TRADING_NAME}</span>
           </a>
-          <div className={NOTICE_BLOCK}>
-            <p className={NOTICE_META}>{SERVER_ERROR_STATUS}</p>
-            <h1 className={NOTICE_HEADING}>{copy.heading}</h1>
-            <p className={NOTICE_BODY}>{copy.body}</p>
-          </div>
-          <div className={NOTICE_ACTIONS}>
-            <button
-              className={NOTICE_ACTION_PRIMARY}
-              onClick={reset}
-              type="button"
-            >
-              {copy.retry}
-            </button>
-            <a className={NOTICE_ACTION_SECONDARY} href={home}>
-              {copy.home}
-            </a>
+          <div className={NOTICE_LETTER} data-fo-notice-letter>
+            <p className={NOTICE_LETTER_META}>{SERVER_ERROR_STATUS}</p>
+            <h1 className={NOTICE_LETTER_HEADING}>{copy.heading}</h1>
+            <p className={NOTICE_LETTER_BODY}>{copy.body}</p>
+            <div className={NOTICE_LETTER_ACTIONS}>
+              <button
+                className={NOTICE_ACTION_PRIMARY}
+                onClick={reset}
+                type="button"
+              >
+                {copy.retry}
+              </button>
+              <a className={NOTICE_ACTION_SECONDARY} href={home}>
+                {copy.home}
+              </a>
+            </div>
           </div>
         </main>
       </body>

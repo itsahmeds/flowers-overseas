@@ -134,8 +134,9 @@ describe("every notice document reads its skin from the shell", () => {
       expect(text).toMatch(
         /from "(?:@\/modules\/ui\/layout\/noticeShell|\.\/noticeShell\.ts)"/,
       );
-      expect(text).toContain("NOTICE_MAIN");
-      expect(text).toContain("NOTICE_HEADING");
+      // The column (the chooser) or the v2 letter (the 404 and the 500s, TASK-179).
+      expect(text).toMatch(/NOTICE_(?:LETTER_)?MAIN/);
+      expect(text).toMatch(/NOTICE_(?:LETTER_)?HEADING/);
 
       if (boundary) {
         // The reason the shell is strings: an error boundary may import no component from the
