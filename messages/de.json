@@ -169,7 +169,8 @@
     "floristSentence": "Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
     "price": {
       "from": "from {price}",
-      "inclusive": "inkl. MwSt. und Versand"
+      "inclusive": "inkl. MwSt. und Versand",
+      "equivalents": "etwa {amounts} zum Kurs vom {date}"
     },
     "surcharge": {
       "peakDay": "Peak day delivery",

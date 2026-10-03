@@ -614,6 +614,11 @@
     "reviewed": false,
     "sourceHash": "51e5aa3405f3475b39a814927b7dcd159a33408ebabad373134dd54b4d654508"
   },
+  "catalog.price.equivalents": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b29a7a4b683a371a1395c78e3e8f6d8408a850dccbf04b63f5e15ae49a685c70"
+  },
   "catalog.price.from": {
     "source": "machine",
     "reviewed": false,

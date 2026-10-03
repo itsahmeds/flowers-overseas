@@ -116,6 +116,7 @@ import {
 } from "@/modules/ui";
 
 import { copyRow, copyRows } from "./copy";
+import { priceEquivalents } from "./pricing/equivalents";
 import { fromPriceProjection, priceProjection } from "./pricing/project";
 import {
   countProductsFor,
@@ -976,7 +977,8 @@ function photoFor(
  * One product card for a country-scoped listing (§2 "The product card contract"): the photo or
  * the placeholder, the name in this locale, and **one** all-in price — the default tier's
  * `priceProjection().displayPrice`, a payable configuration, with the `catalog.price.inclusive`
- * wording beside it.
+ * wording beside it — and, under it, the approximate equivalents of spec 004 §14 A21 clause 6
+ * (`priceEquivalents()`, same clock, same snapshot), or no line when the rate is stale.
  *
  * `href` is present only when spec 009's `product` link id is published (§13 Q8, AC-12). It is
  * not in `site-links.ts` yet, so the caller passes `productLinks: false` — its default — and
@@ -990,12 +992,16 @@ export async function productCardView(
   options: { readonly productLinks?: boolean; readonly now?: Date } = {},
 ): Promise<ProductCardView> {
   const tier = await defaultTier(product.sku);
+  // One clock for the price and its equivalents: the equivalents line must use the charged
+  // price's own FX snapshot (spec 004 §14 A21 clause 6 (b)), so both reads share one instant.
+  const now = options.now ?? new Date();
   const projection = await priceProjection(locale, {
     productId: product.sku,
     tierKey: tier.tierKey,
     countryIso: iso2,
-    ...(options.now === undefined ? {} : { now: options.now }),
+    now,
   });
+  const equivalents = await priceEquivalents(projection, now);
   const { photo, provenance } = photoFor(product.sku, locale);
   const slug = slugFor("product", product.sku, locale);
   const href =
@@ -1010,6 +1016,7 @@ export async function productCardView(
     photo,
     price: projection.displayPrice,
     priceLabelKey: PRICE_LABEL_KEY,
+    ...(equivalents === null ? {} : { equivalents }),
     provenance,
   });
 }
@@ -1162,6 +1169,12 @@ export interface ListingViewOptions {
    */
   readonly parameterised?: boolean;
   readonly deployment?: DeploymentDescriptor;
+  /**
+   * The one instant every card's price and its equivalents line are evaluated at (spec 004 §14
+   * A21 clause 6 (b); TASK-178). A test passes a fixed one, because the committed FX snapshot
+   * ages; the route passes none and the render's own clock is read once.
+   */
+  readonly now?: Date;
 }
 
 /** The message keys the six headings use. Named here; authored in `messages/*.json` by the routes. */
@@ -1384,12 +1397,13 @@ export async function listingView(
     );
   } else {
     const productLinks = options.productLinks ?? false;
+    const now = options.now ?? new Date();
     const cards = async (
       list: readonly Product[],
     ): Promise<readonly ProductCardView[]> =>
       Promise.all(
         list.map((product) =>
-          productCardView(product, locale, iso2, { productLinks }),
+          productCardView(product, locale, iso2, { productLinks, now }),
         ),
       );
     items =

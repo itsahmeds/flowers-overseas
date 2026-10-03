@@ -407,7 +407,8 @@
     },
     "price": {
       "inclusive": "Includes VAT and delivery",
-      "from": "from {price}"
+      "from": "from {price}",
+      "equivalents": "about {amounts} at the rate of {date}"
     },
     "availability": {
       "inStock": "Available to order",

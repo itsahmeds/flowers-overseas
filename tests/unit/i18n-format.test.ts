@@ -430,6 +430,14 @@ describe("formatDate, formatRange and formatList (AC-16 / T-16)", () => {
     );
   });
 
+  it("renders the rate date as day and full month name (TASK-178, spec 004 §14 A21 clause 6)", () => {
+    const asOf = new Date("2026-09-08T00:00:00Z");
+    expect(formatDate(asOf, "en", "dayMonth", "UTC")).toBe("8 September");
+    expect(formatDate(asOf, "en-gb", "dayMonth", "UTC")).toBe("8 September");
+    expect(formatDate(asOf, "de", "dayMonth", "UTC")).toBe("8. September");
+    expect(formatDate(asOf, "pl", "dayMonth", "UTC")).toBe("8 września");
+  });
+
   it("resolves the calendar date in the given zone, not the server's", () => {
     // 22:30 UTC is already the next day in Warsaw and still the same day in London.
     const lateEvening = new Date("2027-02-14T23:30:00Z");

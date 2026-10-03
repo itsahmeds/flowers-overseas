@@ -24,6 +24,12 @@
  * are wrapped in `<bdi>` so a Latin product name inside an RTL run — `/ar-XB`, and Arabic when it
  * ships — cannot reorder the digits of the price beside it (T-30).
  *
+ * **Approximate equivalents** (spec 004 §14 A21 clause 6; TASK-178): when the view model carries
+ * `equivalents`, the price primitive's slot prints "about … at the rate of …" under the amount —
+ * the other currencies of {EUR, GBP, PLN, USD}, never the charged one. Absent (a stale rate, the
+ * destination-currency fallback), nothing is printed. The line is never in JSON-LD: the `ItemList`
+ * builder reads `price` only.
+ *
  * **Or no price at all** (spec 008 §14 **A3**, **AC-7**; TASK-112). A destination-less hub shows
  * the same card with the money removed: it takes a `HubCardView`, which is this schema without
  * `price` and `priceLabelKey`, and prints the one line that says why there is none instead of an
@@ -49,6 +55,7 @@ import { Price } from "../primitives/Price.tsx";
 import { Stack } from "../primitives/layout.tsx";
 import { Display, Text } from "../primitives/typography.tsx";
 
+import { equivalentsMessageValues } from "./equivalents.ts";
 import { type ListingCardView, hasCardPrice } from "./viewModel.ts";
 
 export interface ProductCardProps {
@@ -126,6 +133,14 @@ export function ProductCard({
           className="mt-[6px]"
           amount={formatMoney(card.price, locale)}
           qualifier={catalog("price.inclusive")}
+          equivalents={
+            card.equivalents === undefined
+              ? undefined
+              : catalog(
+                  "price.equivalents",
+                  equivalentsMessageValues(card.equivalents, locale),
+                )
+          }
         />
       ) : (
         /* The hub card's one line, in the place the price would be and drawn there on both hub

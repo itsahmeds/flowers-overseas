@@ -169,7 +169,8 @@
     "floristSentence": "Każde zamówienie zostanie wykonane ręcznie i doręczone osobiście przez naszego florystę w mieście odbiorcy.",
     "price": {
       "from": "from {price}",
-      "inclusive": "w tym VAT i dostawa"
+      "inclusive": "w tym VAT i dostawa",
+      "equivalents": "ok. {amounts} po kursie z {date}"
     },
     "surcharge": {
       "peakDay": "Peak day delivery",
