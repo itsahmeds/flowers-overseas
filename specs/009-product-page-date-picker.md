@@ -482,3 +482,34 @@ spec 040 fronts the origin. The canonical stays the bare URL (§6, AC-17). Two c
 - **T-01** (e2e, AC-1) gains one case: `/{locale}/{country}/{product}/{slug}/` (route params
   `/{locale}/{segment}/{child}/{product}/`) → 308, `Location` equal to the bare path. The other
   six shapes still assert 404 with no `Location` header.
+
+**A8 (2026-10-03, orchestrator ruling on the founder's "whatever makes sense"; implemented by
+TASK-171).** **The `preview` state shows no cutoff time.** In `preview`, the picker draws "When we
+open, you will order by {time} in {city} — the recipient's time, not yours" (key
+`delivery.cutoffPreview`, artboards `docs/design/product-desktop.dc.html` and
+`product-mobile.dc.html`). The delivery-facts row on the same page says "Order by — no cutoff,
+because no florist has agreed to one". The two contradict each other. Ruled: the `cutoffPreview`
+line and its key are removed, and the facts row keeps its honest `none` text. A cutoff time renders
+only when `pickerState() === 'live'`, the same gate design-round Q1 (L389) puts on the four shipped
+cutoff strings (spec 004 §14 A19). §2's `preview` row (L64) gains "no cutoff time". Two clauses now
+read:
+
+- **AC-8**: the `preview` case also renders **no cutoff time**. No `{time}` value appears in the
+  picker, and the facts row shows its `none` text. The `unavailable` and `live` cases are
+  unchanged.
+- **T-08** (e2e, AC-8): the `operations` + no-partners fixture asserts that no cutoff time is
+  rendered in any of the four locales, and a repo grep asserts that no message file has a
+  `delivery.cutoffPreview` key. Putting the line back turns the case red.
+
+TASK-171 removes the key from every message file and the line from the template. The two artboards
+lose the line in the same PR, so the page ↔ artboard parity holds.
+
+**A9 (2026-10-03, TASK-125 E-2, orchestrator ruling, the founder delegated).** **The freshness
+guarantee states the product's own number.** Design-round Q5 (L389) says "the 7-day freshness
+guarantee", but 10 of the 84 seed products carry `freshnessDays: 5`, so a fixed "7 days" would be
+false on those. Ruled: when the guarantee renders, it states **the product's own `freshnessDays`**
+and the remedy (we redeliver or refund). It never states a fixed number. A product with no
+`freshnessDays` renders no number. The number is an ICU plural parameter `{days}`, never a literal
+in the message. The guarantee is still not rendered in Phase 0 (TASK-127 records it as not drawn).
+This amendment binds whichever task renders it first. That task adds its AC and T rows here, with
+one case each for 5, 7 and absent. No current AC or T row changes.

@@ -93,8 +93,8 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
   beyond §5.2's list because a consumer needs them and none can express a dishonest claim:
   `path`, `selectedDate` (the `live` state's preselected earliest date), `fx` (the stale-FX state)
   and `product.vaseIncluded` (the "what the price does not include" sentence).
-- **E-2 (2026-09-23) — the freshness guarantee on short-lived products. Open, to orchestrator →
-  founder.** Q5 rules the 7-day freshness guarantee onto the PDP "beside substitution (two claims,
+- **E-2 (2026-09-23) — the freshness guarantee on short-lived products. Answered — orchestrator,
+  founder delegated, 2026-10-03: spec 009 §14 A9, the guarantee states the product's own `freshnessDays`.** Q5 rules the 7-day freshness guarantee onto the PDP "beside substitution (two claims,
   both true)", and the view emits `freshnessGuarantee` for every product. But the dataset gives 10
   of 84 products `freshnessDays: 5`. If the guarantee promises seven days of freshness, it is
   contradicted by our own data on those ten pages; if it promises a redelivery or refund, it is
