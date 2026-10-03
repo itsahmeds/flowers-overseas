@@ -34,6 +34,11 @@ const canvas = readFileSync(
   resolve(__dirname, "../../docs/design/homepage-v1/homepage-desktop.dc.html"),
   "utf8",
 );
+/** The v2 chrome artboard (spec 004 §14 A21; TASK-176), which rewords the footer's about line. */
+const chrome = readFileSync(
+  resolve(__dirname, "../../docs/design/wireframes/chrome-desktop.dc.html"),
+  "utf8",
+);
 
 /** A fully registered identity — the shape the founder fills in after 1 Nov 2026. */
 const registered = {
@@ -76,11 +81,12 @@ describe("src/config/company.ts", () => {
     expect(COMPANY.operatedByKey).toBe("company.operatedBy");
     expect(COMPANY.contact.labelKey).toBe("company.support.label");
     expect(COMPANY.contact.hoursKey).toBe("company.support.hours");
+    // Future tense: no florist makes or delivers today (the v2 chrome artboard's Copy row).
     expect(messages.company.description).toBe(
-      "We send flowers across Europe. You order from us; our florist in the recipient's town makes the bouquet and hands it over in person.",
+      "We send flowers across Europe. You order from us; a local florist in the recipient's town will make the bouquet and hand it over in person.",
     );
-    expect(canvas).toContain(messages.company.description);
-    expect(canvas).toContain(messages.company.support.hours);
+    expect(chrome).toContain(messages.company.description);
+    expect(chrome).toContain(messages.company.support.hours);
     // The identity sentence is the registered-state clause and takes all three facts.
     expect(messages.company.operatedBy).toContain("{legalName}");
     expect(messages.company.operatedBy).toContain("{address}");

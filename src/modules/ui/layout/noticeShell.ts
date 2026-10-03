@@ -34,13 +34,20 @@ export const NOTICE_MAIN =
   "mx-auto flex min-h-dvh w-full max-w-prose flex-col gap-xl px-md py-2xl md:px-2xl";
 
 /**
- * The masthead's lockup, at the masthead's own metrics (`SiteHeader`: 26/40 px mark, 19/26 px
- * wordmark, 0.04em tracking) so the chooser, the 404 and the 500 read as the same site as `/en`.
+ * The header's lockup, at the v2 header's own metrics (`SiteHeader`: 28/38 px mark, the wordmark
+ * 19/25 px tall), so the chooser, the 404 and the 500 read as the same site as `/en`.
  */
-export const NOTICE_LOCKUP = "gap-sm md:gap-md flex items-center";
-export const NOTICE_MARK = "h-[26px] w-[26px] md:h-[40px] md:w-[40px]";
+export const NOTICE_LOCKUP =
+  "gap-[10px] text-logo-ink flex min-h-(--target-min) items-center";
+export const NOTICE_MARK = "h-[28px] w-[28px] md:h-[38px] md:w-[38px]";
+/** The outlined `Wordmark`'s block size: the chooser and the 404 (server documents). */
+export const NOTICE_WORDMARK_OUTLINED = "h-[19px] md:h-[25px]";
+/**
+ * The wordmark in live type, for the two 500 boundaries only: they are Client Components, and the
+ * outlined wordmark's 11 KB of paths would ride into a client chunk on every document (§14 A1).
+ */
 export const NOTICE_WORDMARK =
-  "display text-[19px] tracking-[0.04em] md:text-[26px]";
+  "display text-[19px] tracking-[0.04em] md:text-[25px]";
 
 /** The `.label` voice — 11 px, 600, tracked, uppercase, subtle ink — as the document's metadata. */
 export const NOTICE_META = "label";

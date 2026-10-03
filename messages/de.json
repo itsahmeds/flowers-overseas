@@ -205,7 +205,7 @@
     "homeLink": "Home"
   },
   "company": {
-    "description": "Wir verschicken Blumen in ganz Europa. Sie bestellen bei uns; ein Florist am Wohnort der empfangenden Person wird den Strauß binden und persönlich übergeben.",
+    "description": "Wir verschicken Blumengrüße in ganz Europa. Sie bestellen bei uns; ein Florist am Wohnort der empfangenden Person wird den Strauß binden und persönlich übergeben.",
     "operatedBy": "Operated by {legalName}, {address}, {registrationNumber}.",
     "support": {
       "hours": "Mo–Sa 8–20 Uhr MEZ",
@@ -688,7 +688,7 @@
       "label": "Search flowers, occasions, a city or a country",
       "submit": "Search"
     },
-    "send": "Blumen senden",
+    "send": "Blumengruß senden",
     "utility": {
       "cutoff": "Order by 14:00 in Warsaw for delivery today",
       "cutoffShort": "Order by 14:00 in Warsaw · today",

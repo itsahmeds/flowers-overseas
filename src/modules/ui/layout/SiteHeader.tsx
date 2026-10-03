@@ -8,7 +8,7 @@
  *     the honest dates line, "Prices include delivery and VAT" and "Freshness guarantee" on the
  *     desktop artboard, one short sentence centred on the mobile one. At its inline end, desktop
  *     only: the help line as a `tel:` link, spec 003's language switcher and the currency as text;
- *  2. **the header** — sticky, paper at 94 % over the page, a rule below: the logo (the `Mark` and
+ *  2. **the header** — sticky, on paper (opaque: Tailwind inlines a literal colour into the 94 % mix, which AC-1 forbids), a rule below: the logo (the `Mark` and
  *     the outlined `Wordmark`, A21 clause 3) linked to the locale home, the eight category links
  *     (spec 008 §14 A14) and the "Send flowers" pill to the home's sentence (`#send`). Desktop
  *     draws them in one 82 px row; mobile draws the logo and the pill in a 64 px row and the same
@@ -210,7 +210,7 @@ export function SiteHeader({
 
       {/* 2. The sticky part and the `banner` landmark. */}
       <header
-        className="border-rule bg-surface/94 layer-header sticky top-0 border-b"
+        className="border-rule bg-surface layer-header sticky top-0 border-b"
         data-fo-header
         role="banner"
       >

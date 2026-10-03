@@ -334,17 +334,20 @@ describe("§8: the payment colophon claims nothing", () => {
     }
   });
 
-  it("prints the two sentences that are true today", () => {
-    expect(phase0).toContain("Card payments are processed by Stripe");
+  it("prints the one sentence that is true today, and no processor sentence (§14 A10)", () => {
     // First person, as §14 A5 asks of every sentence a buyer reads (TASK-084): *we* show them.
     expect(phase0).toContain(
       "We show the payment methods you can use at checkout.",
     );
+    // A10: "processed by Stripe" renders only once a payment integration ships. Phase 0
+    // processes no payment, so the sentence would claim a capability that does not exist.
+    expect(phase0).not.toContain("Stripe");
   });
 
-  it("ships no image at all — no logo, no badge, no mark but our own inline wordmark", () => {
+  it("ships no image at all — no logo, no badge; only our own mark and outlined wordmark", () => {
     expect(phase0).not.toContain("<img");
-    expect(phase0.match(/<svg/g)).toHaveLength(1);
+    expect(phase0.match(/<svg/g)).toHaveLength(2);
+    expect(phase0).toContain("data-fo-wordmark");
   });
 
   it("names the methods the moment one becomes available, with no template edit", () => {
@@ -363,6 +366,8 @@ describe("§8: the payment colophon claims nothing", () => {
     });
     const flipped = render(<SiteFooter locale="en" view={view} />);
     expect(flipped).toContain("Visa");
+    // With a method available the integration has shipped, so the processor sentence appears.
+    expect(flipped).toContain("Card payments are processed by Stripe");
     // The names *or* the placeholder, never both: with a method flipped, "shown at checkout"
     // would hedge a list that is right there (`/review 30` nit 1, the canvas's payment column).
     expect(flipped).not.toContain("shown at checkout");
@@ -401,19 +406,68 @@ describe("Phase 0 AC 6: nothing fabricated", () => {
   });
 });
 
-describe("the occasion-reminder signup is a plain form (§14 A1)", () => {
-  it("posts to the stub with a labelled email field and no client JavaScript", () => {
-    expect(phase0).toContain(`action="${REMINDERS_ENDPOINT}"`);
-    expect(phase0).toContain('method="post"');
-    expect(phase0).toContain(`id="${REMINDERS_ANCHOR}"`);
-    expect(phase0).toContain('type="email"');
-    expect(phase0).toContain('for="footer-reminder-email"');
-    expect(phase0).toContain('name="locale" value="en"');
-    expect(phase0).not.toContain("onSubmit");
+describe("no control that does nothing (spec 004 §14 A20, A21 clause 1)", () => {
+  it("renders no occasion-reminder form: its endpoint stores and sends nothing", () => {
+    for (const control of [
+      "<form",
+      "<input",
+      REMINDERS_ENDPOINT,
+      REMINDERS_ANCHOR,
+    ]) {
+      expect(phase0, control).not.toContain(control);
+    }
+    expect(phase0).not.toContain("Occasion reminders");
+    expect(phase0).not.toContain("Remind me");
+    // The one control left is the consent re-open button, which does something.
+    expect([...phase0.matchAll(/<button/g)]).toHaveLength(1);
+  });
+});
+
+describe("the v2 colophon's look (chrome artboards, A21)", () => {
+  it("carries the footer's airmail edge on paper-2", () => {
+    const footer = phase0.slice(0, phase0.indexOf(">") + 1);
+    expect(footer).toContain("airmail-edge-footer");
+    expect(footer).toContain("bg-surface-raised");
   });
 
-  it("states the double opt-in before anything is submitted", () => {
-    expect(phase0).toContain("nothing is stored until you confirm");
+  it("links the logo home, named by the outlined wordmark (A21 clause 3)", () => {
+    for (const locale of ["en", "de"] as const) {
+      const html = render(<SiteFooter locale={locale} />, locale);
+      const logo = html.slice(
+        html.indexOf(`href="${localePath(locale, "home")}"`),
+      );
+      expect(logo.slice(0, logo.indexOf("</a>"))).toContain(
+        `role="img" aria-label="${COMPANY.tradingName}"`,
+      );
+    }
+    expect(phase0).not.toContain(`>${COMPANY.tradingName}<`);
+  });
+
+  it("gives every footer link the 44 px target", () => {
+    const own = [...phase0.matchAll(/<a\s[^>]*>/g)]
+      .map((match) => match[0])
+      .filter((tag) => !tag.includes('class="underline"'));
+    expect(own.length).toBeGreaterThan(0);
+    for (const tag of own) {
+      expect(tag, tag).toContain("min-h-(--target-min)");
+    }
+    // The language list's links get it from their wrapper.
+    expect(phase0).toContain("[&amp;_a]:min-h-(--target-min)");
+  });
+
+  it("prints the German footer in German (reviewed: false drafts)", () => {
+    const de = render(<SiteFooter locale="de" />, "de");
+    for (const word of [
+      "Versand",
+      "Zielländer",
+      "Cookie-Einstellungen",
+      "Zahlung",
+    ]) {
+      expect(de, word).toContain(word);
+    }
+    for (const word of ["Sending", "Cookie settings", "Payment"]) {
+      expect(de, word).not.toContain(`>${word}<`);
+    }
   });
 });
 
