@@ -71,11 +71,23 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   `en-gb` follows `en`; `de`/`pl` get `reviewed: false` drafts. No other wording changes.
 - **2026-10-03 — (b) the US phone number. Answered — founder: keep `+1 (213) 592-5150` for now** (decisions log).
   (b) is closed with no code change.
+- **2026-10-03 — `visual` red on head `d5f0dacd` for files this diff does not touch. Open — orchestrator.** `ci:full`
+  run 37141374143: 21 of 22 jobs green; `visual` fails 9 cases: `footer-{en,de}-{desktop,mobile}`, the home crops
+  `home-desktop-how-it-works` and `home-mobile-dates`, `listing-desktop-toolbar`, `listing-mobile-card-placeholder`,
+  `product-mobile-gallery-placeholder` (about 1 % of pixels each). The diff images show certain text lines in the footer,
+  dates band and listing rasterised a fraction of a pixel differently. They do not show content changes. PR 148's
+  `visual` passed the same baselines at 16:35 (run 37137399567) on code identical to `origin/main` outside docs, with
+  the same runner image (ubuntu-24.04 20260927.320.1) and the same Chromium (v1243). The 14 baselines this task took
+  from run 37140653882 pass on the failing runner. So the Linux render is not byte-stable from one runner to the next,
+  and the work order fences me to the baselines my text causes. The question: take the remaining 22 files from run
+  37140653882 here (they are runner bytes, and `--verify` would pass), refresh them in a separate PR, or look into the
+  runner first?
 
 ## Progress
 
 - 2026-10-03 — copy, review records and the unit/e2e pins committed (`ab7bd362`), draft PR #167 open, `pnpm gates:cheap` PASS. Next: Linux visual baselines via the `visual:baselines` label, then ready + `ci:full`.
 - 2026-10-03 — 14 Linux baselines from run 37140653882 committed (`bb18fe12`), each opened and looked at; the run's other 22 changed files were sub-pixel noise from outside this diff and are not taken. Next: ready + `ci:full`.
+- 2026-10-03 — PR ready, `ci:full` run 37141374143 on `d5f0dacd`: everything green except `visual` (9 cases, none touched by this diff); escalated, row `blocked`. Next: the orchestrator's answer in `## Escalations`.
 
 ## Result
 
