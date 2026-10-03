@@ -123,17 +123,21 @@ here.
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-**Partial — blocked on the alt-text escalation (2026-10-03).** PR
-[#142](https://github.com/itsahmeds/flowers-overseas/pull/142), draft, head `e072a2cd` + this
-brief. Landed: T-31/T-32 in `tests/unit/imagery-prompts.test.ts` (generator → terms map, 14 new
-cases, every failing case watched red by mutation); `` `gpt-image` `` filed in
-`imagery-generator-terms.md` answer 1; 142 prompt records re-fielded (80 ChatGPT `gpt-image`, 62
-Grok `xAI Grok Imagine` / `Grok Imagine`, each read from its original's C2PA manifest); 142
-`media.json` rows `pending`, re-hashed; the sign-off case split (batch 1: 31 approved at the two
-2026-09-18 instants; batch 2: 142 `pending`, no reviewer), each watched red by mutating
-`media.json`; 686 variant rows (118 unchanged + 568), nothing committed under `public/media/`
-beyond the 10 hero files, nothing uploaded; rule-2 comment restated; the sheet regenerated;
-`.jpeg` named in the runbook. Out of the listed fence, flagged in the PR:
-`scripts/imagery-prompts-remaining.ts` (the sheet's text lives there; it now lists products with
-no *approved* row, so the CSV is byte-identical) and `seed/snapshot/*` (generated). No build slot
-taken; no visual baseline can move (pending rows resolve to the same placeholder box).
+**In review (2026-10-03).** PR [#142](https://github.com/itsahmeds/flowers-overseas/pull/142),
+ready, `ci:full`. Unit layer: T-31/T-32 in `tests/unit/imagery-prompts.test.ts` (generator → terms
+map; 14 new cases, every failing case watched red by mutation); the sign-off split in
+`tests/unit/seed-media-manifest.test.ts` (batch 1: 31 approved at the two 2026-09-18 instants;
+batch 2: 142 `pending`, no reviewer; each half watched red by mutating `media.json`); two A9
+cases in `tests/unit/seed-check.test.ts` and the approved-only alt assertion in
+`tests/unit/ui-media-manifest.test.ts`, each watched red. Data: `` `gpt-image` `` filed in
+`imagery-generator-terms.md` answer 1; 142 prompt records (80 ChatGPT `gpt-image`, 62 Grok
+`xAI Grok Imagine` / `Grok Imagine`, each from its original's C2PA manifest); 142 `media.json`
+rows `pending`, re-hashed; 686 variant rows (118 unchanged + 568), all inside their slot caps,
+nothing new under `public/media/`, nothing uploaded; rule-2 comment restated; the sheet
+regenerated; `.jpeg` in the runbook; `seed/snapshot/*` regenerated. `seed:check`,
+`media:variants --check`, `catalogue:check` and `gates:cheap` green. No build slot taken; no
+visual baseline can move (pending rows render the same placeholder box; the two home trending
+tiles' `data-fo-media-placeholder` reads `unapproved` instead of `unknownAsset`). Handed to
+TASK-168: the approval data edit with four-locale alt text per approved asset (A9 clause 4), the
+FO-BQ-004 pair, the sign-off instant(s), `media:upload --only` for approved ids. The derived tree
+is in `/Users/ahmed/dev/fo-wt-167/.local/media/` (git-ignored).
