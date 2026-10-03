@@ -58,7 +58,14 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-- **2026-10-03 — the founder's approval of batch 2 and FO-BQ-004's pair (founder, `open`).**
+- **2026-10-03 — the founder's approval of batch 2 and FO-BQ-004's pair (founder). Answered.**
+  Founder, in chat, exact words: "approve all the batch 2 photos." Instant: the orchestrator
+  recorded the message at `2026-10-03T09:21:10Z` (the chat carries no timestamp; use this
+  instant as `reviewedAt` for every batch-2 row). **Every** batch-2 row is approved; none is to
+  be redone. **FO-BQ-004's pair:** the founder approved both versions and named neither, so the
+  orchestrator chose **B** (the `(1)` files), the version that matches the product's brief, as
+  the morning report proposed; the founder may swap to A later, which is a data edit. Stage B
+  only; A gets no rows.
 
 ## Progress
 
