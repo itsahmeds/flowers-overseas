@@ -87,6 +87,24 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   every row `pending`.
 - **From `/review 139` (2026-10-03), answered by the orchestrator:** the PR merges unapproved; the
   approval, sign-off instant(s), upload and FO-BQ-004 move to TASK-168.
+- **2026-10-03 — alt text for `pending` rows (orchestrator, `open`; raised by the implementer).**
+  `pnpm seed:check` family 7 (`media/alt-missing`, `seed/check.ts` ~L1708) requires alt text in
+  all four launch locales for **every** `depicts: "product"` asset, whatever its `reviewState`.
+  The 142 pending rows therefore raise 568 problems (142 × 4 locales, nothing else), and the same
+  rule turns 29 cases of `tests/unit/seed-check.test.ts` red (every case built on the committed
+  tree) plus 2 of `tests/unit/ui-media-manifest.test.ts` (it asserts one alt row per asset and that
+  *every* asset, not only approved ones, is displayable). Spec 006 is split: §2.3 rule 7 reads "a
+  **rendered** asset lacking alt text in a launch locale"; §6 reads "four locales × every committed
+  asset … the gate refuses a missing or empty alt for a product image". None of `seed/check.ts`,
+  `seed/data/alt/*` or `ui-media-manifest.test.ts` is in this task's fence. **(A)** the alt rule
+  covers approved product assets only — rule 7's "rendered", and AC-18 renders only approved ones:
+  one condition in `seed/check.ts`, a `seed:check` case pair (a pending product asset with no alt
+  passes; an approved one fails), each watched red, and `ui-media-manifest.test.ts` scoped to
+  approved assets. TASK-168 then writes four-locale alt for each asset the founder approves, and
+  the gate bites at that moment. **(B)** author the 568 alt strings now in
+  `seed/data/alt/{en,en-gb,de,pl}.json`, each describing its own photograph (flower and colour,
+  never the product name), `de`/`pl` included — copy for photographs the founder may still reject.
+  Recommendation: **A**. Everything else in Binding is done and pushed; the PR stays draft.
 
 ## Progress
 
@@ -97,10 +115,24 @@ here.
 - 2026-10-03: C2PA manifests of all 148 zip files read (86 PNG `ChatGPT`/`gpt-image`, 62 JPEG `Grok Imagine`, split exactly on the Grok record's 31 SKUs); 142 originals staged in the main checkout's `.local/imagery/originals/` (173 files), worktree reads them through `.local/imagery` → main's `.local/imagery`; T-31/T-32 generalised and each failing case watched red; `` `gpt-image` `` filed in answer 1. Next: prompt records.
 - 2026-10-03: prompt records (80 ChatGPT → `gpt-image`, 62 Grok → `xAI Grok Imagine` / `Grok Imagine`, FO-BQ-004 untouched); 142 `media.json` rows `pending` with `promptHash` from `promptHash()` and `originalSha256` of the staged original; sign-off case split, each split case watched red by mutating `media.json`. Next: `pnpm media:variants`.
 - 2026-10-03: `pnpm media:variants` once (3 min 46 s, load 1.6): 686 rows (118 batch-1 rows byte-identical + 568), nothing under `public/media/` changed, every file inside its slot cap; `--check` and `catalogue:check` green. Rule-2 comment restated; sheet regenerated (script keeps each record's generator fields and lists products with no *approved* row, so the CSV is unchanged); runbook names `.jpeg`. **`seed:check` red: 568 × `media/alt-missing`** (142 new product assets × 4 locales) — escalated, see `## Escalations`.
+- 2026-10-03: `seed/snapshot/{product_media,media_variant}.json` regenerated (`pnpm seed:diff --write`: 142 + 568 inserts). `gates:cheap` on `e072a2cd`: six gates exit 0, `tests` exit 1 — 31 failures, all the alt cascade. Row → `blocked`; escalation above. A finisher: apply the ruling, then gates, rebase, ready, `ci:full`.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+**Partial — blocked on the alt-text escalation (2026-10-03).** PR
+[#142](https://github.com/itsahmeds/flowers-overseas/pull/142), draft, head `e072a2cd` + this
+brief. Landed: T-31/T-32 in `tests/unit/imagery-prompts.test.ts` (generator → terms map, 14 new
+cases, every failing case watched red by mutation); `` `gpt-image` `` filed in
+`imagery-generator-terms.md` answer 1; 142 prompt records re-fielded (80 ChatGPT `gpt-image`, 62
+Grok `xAI Grok Imagine` / `Grok Imagine`, each read from its original's C2PA manifest); 142
+`media.json` rows `pending`, re-hashed; the sign-off case split (batch 1: 31 approved at the two
+2026-09-18 instants; batch 2: 142 `pending`, no reviewer), each watched red by mutating
+`media.json`; 686 variant rows (118 unchanged + 568), nothing committed under `public/media/`
+beyond the 10 hero files, nothing uploaded; rule-2 comment restated; the sheet regenerated;
+`.jpeg` named in the runbook. Out of the listed fence, flagged in the PR:
+`scripts/imagery-prompts-remaining.ts` (the sheet's text lives there; it now lists products with
+no *approved* row, so the CSV is byte-identical) and `seed/snapshot/*` (generated). No build slot
+taken; no visual baseline can move (pending rows resolve to the same placeholder box).
