@@ -360,6 +360,15 @@ describe("Price (§14 A21 clause 6's slot; TASK-175)", () => {
     expect(from).not.toContain("data-fo-price-equivalents");
   });
 
+  it("refuses equivalents on a from-price, by type and at runtime (A21 clause 6 (b); breaker hole 3)", () => {
+    const fromWithEquivalents = renderToStaticMarkup(
+      // @ts-expect-error — a from-price never carries equivalents (A21 clause 6 (b)).
+      <Price variant="from" amount="from €35.90" equivalents="about £30.00" />,
+    );
+    expect(fromWithEquivalents).not.toContain("data-fo-price-equivalents");
+    expect(fromWithEquivalents).not.toContain("about £30.00");
+  });
+
   it("is phrasing content only, so it nests inside a paragraph or a link", () => {
     const html = renderToStaticMarkup(
       <Price amount="€55.90" qualifier="all in" equivalents="about £47.32" />,

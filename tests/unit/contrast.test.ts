@@ -187,6 +187,121 @@ describe("the declared contrast manifest (T-04 / AC-3)", () => {
     );
   });
 
+  /**
+   * The manifest, pinned pair for pair with its class (breaker hole 7, PR 168). The every-token-
+   * is-paired check alone lets a pair be dropped or downgraded as long as both tokens still appear
+   * elsewhere (`ink-3 on butter` deleted, or reclassified as `large-text` at 3:1, passed). Adding
+   * a pair means adding its line here; removing or reclassifying one goes red.
+   */
+  const PINNED_PAIRS = [
+    "--color-ink on --color-paper: body-text",
+    "--color-ink-2 on --color-paper: body-text",
+    "--color-ink-3 on --color-paper: body-text",
+    "--color-ink on --color-paper-2: body-text",
+    "--color-ink-2 on --color-paper-2: body-text",
+    "--color-ink-3 on --color-paper-2: body-text",
+    "--color-ink on --color-paper-3: body-text",
+    "--color-ink-2 on --color-paper-3: body-text",
+    "--color-ink-3 on --color-paper-3: body-text",
+    "--color-ink on --color-card: body-text",
+    "--color-ink-2 on --color-card: body-text",
+    "--color-ink-3 on --color-card: body-text",
+    "--color-ink on --color-blush: body-text",
+    "--color-ink-2 on --color-blush: body-text",
+    "--color-ink-3 on --color-blush: body-text",
+    "--color-ink on --color-butter: body-text",
+    "--color-ink-2 on --color-butter: body-text",
+    "--color-ink-3 on --color-butter: body-text",
+    "--color-ink on --color-sage-wash: body-text",
+    "--color-ink-2 on --color-sage-wash: body-text",
+    "--color-ink-3 on --color-sage-wash: body-text",
+    "--color-ink on --color-leaf-wash: body-text",
+    "--color-ink-2 on --color-leaf-wash: body-text",
+    "--color-ink-3 on --color-leaf-wash: body-text",
+    "--color-accent on --color-paper: body-text",
+    "--color-accent on --color-paper-2: body-text",
+    "--color-accent on --color-card: body-text",
+    "--color-accent on --color-blush: body-text",
+    "--color-accent-ink on --color-accent: body-text",
+    "--color-on-accent on --color-accent-strong: body-text",
+    "--color-sky on --color-paper: body-text",
+    "--color-sky-strong on --color-paper: body-text",
+    "--color-sky on --color-paper-2: body-text",
+    "--color-sky-strong on --color-paper-2: body-text",
+    "--color-sky on --color-card: body-text",
+    "--color-sky-strong on --color-card: body-text",
+    "--color-on-selected on --color-selected: body-text",
+    "--color-stem on --color-paper: body-text",
+    "--color-stem on --color-card: body-text",
+    "--color-stem on --color-butter: body-text",
+    "--color-on-inverse on --color-surface-inverse: body-text",
+    "--color-on-inverse-accent on --color-surface-inverse: body-text",
+    "--color-on-inverse-accent on --color-surface-inverse: focus",
+    "--color-photo-ink on --color-photo-stop-1: body-text",
+    "--color-photo-ink on --color-photo-stop-3: body-text",
+    "--color-field-edge on --color-card: boundary",
+    "--color-field-edge on --color-paper: boundary",
+    "--color-border-strong on --color-paper: boundary",
+    "--color-border-emphasis on --color-paper: boundary",
+    "--color-surface-inverse on --color-paper: boundary",
+    "--color-logo-ink on --color-paper: boundary",
+    "--color-logo-accent on --color-paper: boundary",
+    "--color-focus on --color-paper: focus",
+    "--color-focus on --color-paper-2: focus",
+    "--color-focus on --color-paper-3: focus",
+    "--color-focus on --color-card: focus",
+    "--color-success on --color-paper: body-text",
+    "--color-warning on --color-paper: body-text",
+    "--color-danger on --color-paper: body-text",
+    "--color-on-success on --color-success: body-text",
+    "--color-on-warning on --color-warning: body-text",
+    "--color-on-danger on --color-danger: body-text",
+    "--color-on-danger on --color-danger-strong: body-text",
+    "--color-rule on --color-paper: decorative",
+    "--color-photo-stop-2 on --color-paper: decorative",
+    "--color-sun on --color-paper: decorative",
+  ];
+
+  it("declares exactly the pinned pairs, each with its pinned class", () => {
+    expect(
+      CONTRAST_PAIRS.map(
+        (pair) => `${pair.foreground} on ${pair.background}: ${pair.kind}`,
+      ),
+    ).toEqual(PINNED_PAIRS);
+  });
+
+  it("holds the colour sheet's body-text set: every ink on every ground and tint, and the four voices", () => {
+    const declared = new Set(
+      CONTRAST_PAIRS.filter((pair) => pair.kind === "body-text").map(
+        (pair) => `${pair.foreground} on ${pair.background}`,
+      ),
+    );
+    const grounds = [
+      "--color-paper",
+      "--color-paper-2",
+      "--color-paper-3",
+      "--color-card",
+      "--color-blush",
+      "--color-butter",
+      "--color-sage-wash",
+      "--color-leaf-wash",
+    ];
+    const required = [
+      ...["--color-ink", "--color-ink-2", "--color-ink-3"].flatMap((ink) =>
+        grounds.map((ground) => `${ink} on ${ground}`),
+      ),
+      "--color-accent on --color-paper",
+      "--color-accent on --color-card",
+      "--color-sky on --color-paper",
+      "--color-sky on --color-card",
+      "--color-stem on --color-paper",
+      "--color-stem on --color-card",
+      "--color-photo-ink on --color-photo-stop-1",
+      "--color-photo-ink on --color-photo-stop-3",
+    ];
+    expect(required.filter((pair) => !declared.has(pair))).toEqual([]);
+  });
+
   it("requires a written reason for every decorative pair", () => {
     for (const pair of CONTRAST_PAIRS) {
       if (pair.kind !== "decorative") continue;

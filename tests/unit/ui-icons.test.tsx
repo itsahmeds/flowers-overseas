@@ -14,6 +14,17 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
 import {
+  WORDMARK_AXES,
+  WORDMARK_TRACKING_EM,
+} from "../../scripts/fonts/build-wordmark.ts";
+import { TRADING_NAME } from "../../src/config/company.data.ts";
+import {
+  WORDMARK_PATH,
+  WORDMARK_VIEW_BOX,
+} from "../../src/modules/ui/icons/wordmark-paths.ts";
+import { Wordmark } from "../../src/modules/ui/icons/Wordmark.tsx";
+
+import {
   Icon,
   ICON_NAMES,
   MIRRORED_IN_RTL,
@@ -128,5 +139,31 @@ describe("the brand mark (§13 Q1)", () => {
     expect(renderToStaticMarkup(<Mark label="Flowers Overseas" />)).toContain(
       'aria-label="Flowers Overseas"',
     );
+  });
+});
+
+describe("the outlined wordmark (§14 A21 clause 3; breaker hole 2, PR 168)", () => {
+  const svg = readFileSync(
+    resolve(__dirname, "../../public/brand/wordmark.svg"),
+    "utf8",
+  );
+
+  it("renders exactly the committed SVG's outlines and view box", () => {
+    expect(/viewBox="([^"]+)"/.exec(svg)?.[1]).toBe(WORDMARK_VIEW_BOX);
+    expect(/ d="([^"]+)"/.exec(svg)?.[1]).toBe(WORDMARK_PATH);
+    const html = renderToStaticMarkup(<Wordmark />);
+    expect(html).toContain(`viewBox="${WORDMARK_VIEW_BOX}"`);
+    expect(html).toContain(`d="${WORDMARK_PATH}"`);
+  });
+
+  it("is the trading name in Newsreader 500, opsz 32, tracked 0.04em, at the shipped proportions", () => {
+    // The source text and the instance the logo shipped in (`subset.json` before TASK-175).
+    expect(svg).toContain(`aria-label="${TRADING_NAME}"`);
+    expect(WORDMARK_AXES).toEqual({ opsz: 32, wght: 500 });
+    expect(WORDMARK_TRACKING_EM).toBe(0.04);
+    // 16 glyphs ("Flowers Overseas" less the space has 15 outlines, each a closed path) at a
+    // 15972 × 2000 unit box: a width change of a single unit is a different logo.
+    expect(WORDMARK_VIEW_BOX).toBe("0 -1470 15972 2000");
+    expect(TRADING_NAME).toBe("Flowers Overseas");
   });
 });

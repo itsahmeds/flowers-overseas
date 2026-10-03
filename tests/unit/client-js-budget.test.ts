@@ -67,7 +67,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { gzipSync } from "node:zlib";
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -846,6 +846,69 @@ describe("the AC-25 clauses TASK-056 added", () => {
       );
       expect(fontBytesFor("/en", fonts)).toBe(latin?.bytes);
       expect(fontBytesFor("/pl/kwiaty", fonts)).toBe(latinExt?.bytes);
+    });
+
+    it("charges the Caveat line both Caveat files (breaker hole 4)", () => {
+      const fonts = fontTransfer(repoRoot);
+      const caveat = fonts.faces.filter((face) =>
+        face.file.startsWith("caveat-"),
+      );
+      expect(caveat.map((face) => face.file).sort()).toEqual([
+        "caveat-500-latin-ext.woff2",
+        "caveat-500-latin.woff2",
+      ]);
+      expect(fonts.lines[2]?.label).toBe("Caveat (product page only)");
+      expect(fonts.lines[2]?.bytes).toBe(
+        caveat.reduce((sum, face) => sum + face.bytes, 0),
+      );
+    });
+
+    it("picks the pl line for a /pl URL and the en line elsewhere, when the two differ (breaker hole 5)", () => {
+      const fixture = {
+        lines: [
+          { label: "en/en-gb/de page", bytes: 1000, budgetBytes: 90 * 1024 },
+          { label: "pl page", bytes: 2000, budgetBytes: 120 * 1024 },
+          {
+            label: "Caveat (product page only)",
+            bytes: 3,
+            budgetBytes: 30 * 1024,
+          },
+          { label: "preloaded", bytes: 4, budgetBytes: 50 * 1024 },
+        ],
+        preloadCount: 2,
+        withinBudget: true,
+        faces: [],
+      };
+      expect(fontBytesFor("/en", fixture)).toBe(1000);
+      expect(fontBytesFor("/de/blumen", fixture)).toBe(1000);
+      expect(fontBytesFor("/plants", fixture)).toBe(1000);
+      expect(fontBytesFor("/pl", fixture)).toBe(2000);
+      expect(fontBytesFor("/pl/kwiaty", fixture)).toBe(2000);
+    });
+
+    it("is not within budget when a listed preload file is missing from the manifest (breaker hole 6)", () => {
+      const root = mkdtempSync(join(tmpdir(), "fo-fonts-"));
+      const manifestPath = join(root, "src/modules/ui/fonts/subset.json");
+      mkdirSync(dirname(manifestPath), { recursive: true });
+      const manifest = JSON.parse(
+        readFileSync(
+          resolve(repoRoot, "src/modules/ui/fonts/subset.json"),
+          "utf8",
+        ),
+      ) as { faces: { file: string }[] };
+      writeFileSync(
+        manifestPath,
+        JSON.stringify({
+          ...manifest,
+          faces: manifest.faces.filter(
+            (face) => face.file !== "alegreya-sans-700-latin.woff2",
+          ),
+        }),
+      );
+      const fonts = fontTransfer(root);
+      expect(fonts.preloadCount).toBe(1);
+      expect(fonts.withinBudget).toBe(false);
+      rmSync(root, { recursive: true, force: true });
     });
 
     it("names the budget a line breaks, and a third preload", () => {

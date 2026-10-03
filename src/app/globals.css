@@ -363,6 +363,36 @@
 }
 
 /*
+ * Metric-matched fallbacks for machines without Arial or Times New Roman (spec 004 §14 A21 clause 3
+ * "matched fallback metrics on every face"; AC-7, AC-28's CLS 0; TASK-175).
+ *
+ * `next/font/local`'s `adjustFontFallback` matches its fallback face to `local("Arial")` and
+ * `local("Times New Roman")` only. Linux (the CI runners, a share of real visitors) has neither, so
+ * there the swap fell back to an unmatched system face and a late font moved boxes. These two faces
+ * are the first named fallbacks of the Latin calls (`src/modules/ui/fonts/index.ts`) and carry the
+ * same overrides over the metric-compatible clones — Liberation and the ChromeOS Croscore fonts.
+ * The numbers are Next's own computation for the committed 400 Latin files, and
+ * `tests/unit/fonts.test.ts` recomputes them, so a re-subset that moves them fails a test.
+ */
+@font-face {
+  font-family: "Alegreya Sans Fallback Liberation";
+  src: local("Liberation Sans"), local("Arimo");
+  ascent-override: 103.05%;
+  descent-override: 34.35%;
+  line-gap-override: 0%;
+  size-adjust: 87.34%;
+}
+
+@font-face {
+  font-family: "Fraunces Fallback Liberation";
+  src: local("Liberation Serif"), local("Tinos");
+  ascent-override: 102.74%;
+  descent-override: 26.79%;
+  line-gap-override: 0%;
+  size-adjust: 95.19%;
+}
+
+/*
  * Base reset (spec 004 §2 "Logical CSS and RTL readiness", §5.3 accessibility rules, AC-5, AC-6).
  *
  * Tailwind's preflight already normalises margins, borders and headings; this layer adds only what

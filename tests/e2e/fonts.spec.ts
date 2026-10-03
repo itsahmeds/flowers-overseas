@@ -146,18 +146,36 @@ test("a pl page stays inside the 120 KB budget and renders ą ć ę ł ń ś ź 
     [...fetched.keys()].some((url) => /alegreya_sans_400_latin_ext/.test(url)),
   ).toBe(true);
 
-  const result = await page.evaluate(() => {
-    const family = getComputedStyle(document.body).fontFamily;
+  // The webfont, not the stack: `document.fonts.check()` over the whole computed stack also
+  // weighs its `local()` fallback faces, and on Linux `local("Arial")` is an `error` face, so
+  // the stack answers false however loaded the webfont is. The first family is the Latin-Ext
+  // webfont itself, whose range is exactly these letters; its face must be loaded.
+  const result = await page.evaluate(async () => {
+    await document.fonts.ready;
+    const stack = getComputedStyle(document.body).fontFamily;
+    const family = stack.split(",")[0]?.trim() ?? "";
+    const faces = [...document.fonts].filter(
+      (face) =>
+        face.family.replaceAll(/["']/g, "") === family.replaceAll(/["']/g, ""),
+    );
     return {
       family,
+      statuses: faces.map((face) => `${face.weight} ${face.status}`),
+      regularLoaded: faces.some(
+        (face) => face.weight === "400" && face.status === "loaded",
+      ),
       covers: document.fonts.check(`400 17px ${family}`, "ąćęłńśźż"),
-      loaded: [...document.fonts].filter((face) => face.status === "loaded")
-        .length,
     };
   });
-  expect(result.loaded).toBeGreaterThan(0);
   expect(result.family, result.family).not.toMatch(
-    /^\s*["']?(Arial|Helvetica)/,
+    /arial|helvetica|serif|sans-serif/i,
   );
-  expect(result.covers, `${result.family} does not cover ąćęłńśźż`).toBe(true);
+  expect(
+    result.regularLoaded,
+    `${result.family}: ${result.statuses.join(", ")}`,
+  ).toBe(true);
+  expect(
+    result.covers,
+    `${result.family} does not cover ąćęłńśźż (${result.statuses.join(", ")})`,
+  ).toBe(true);
 });

@@ -42,6 +42,10 @@ _None._
    rule that the 400 must be the only Alegreya preload — which means leaving `next/font/local` for
    hand-written `@font-face` rules plus a manual `<link rel="preload">`, contrary to A21's "through
    `next/font/local`". Not blocking; the PR is otherwise complete.
+   **Ruled (orchestrator, 2026-10-03): accepted** — Alegreya Sans 700 Latin is the second preload.
+2. **No Alegreya Sans italic.** The work order listed "the italic the design needs"; A21 clause 3
+   ships Alegreya Sans 400 and 700 only ("No other axis, weight or style"), so none ships.
+   **Ruled (orchestrator, 2026-10-03): accepted**, per A21.
 
 ## Progress
 
@@ -63,7 +67,19 @@ _None._
   `--check` green. Opened: `home-en-desktop`, `country-shop-desktop`, `country-category-mobile`,
   `country-occasion-desktop`, `occasion-hub-desktop`, `product-desktop-summary`,
   `product-mobile-sticky`, `corridor-country-desktop-facts`, `not-found-mobile`,
-  `consent-settings-en-mobile`. Escalations 1 and 2 accepted by the orchestrator, 2026-10-03.
+  `consent-settings-en-mobile`. Both escalations (1: the 700 preload; 2: no Alegreya italic)
+  accepted by the orchestrator, 2026-10-03.
+- 2026-10-04 — origin/main (TASK-173, 018f8b9a) merged as 2a1d1489. Review round 1 FAIL (CI e2e
+  19 red on d8fffadb) and breaker HOLES 1–7. Fixes: utility strip `leading-4` (113 / 45 px
+  reserved heights hold); the strip's currency chip at 12 px padding and the controls wrapping
+  below 390 px (no overflow at 390 or 320, which also fixed the PDP docked row: 857 = 844 ×
+  396/390 was the zoom-out); a second metric-matched fallback face per Latin call over Liberation
+  Sans / Arimo and Liberation Serif / Tinos (Linux has no Arial or Times, so a late Fraunces moved
+  the masthead and the hero: 0.0077 in a simulation, 0 with the face); consent controls on a
+  paper fill (AC-20 reads ink on paper, 16.1:1); footer legal row 13 px per `tokens.css`
+  `--text-xs`; the pl font check reads the first family (the Latin-Ext webfont) and its face
+  status, as the v1 test did, instead of the whole stack whose `local()` faces error on Linux.
+  Holes 1–7 each have a test that goes red with its subject broken (mutations run locally).
 
 ## Result
 

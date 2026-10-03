@@ -18,6 +18,15 @@
  * Latin family's variable carries the metric-matched fallback (`adjustFontFallback`) and the named
  * fallbacks, so the stack ends in the right order.
  *
+ * **Matched fallback metrics on Linux too.** `adjustFontFallback` writes one metric-matched face
+ * over `local("Arial")` / `local("Times New Roman")`, which a Linux machine (the CI runners
+ * included) does not have; there the swap fell back to an unmatched system face and a late
+ * Fraunces moved the masthead and the hero card (CLS 0.000156 in CI, where AC-7 and AC-28 require
+ * 0). The first named fallback of each Latin call is therefore a second metric-matched face,
+ * declared in `src/app/globals.css` over the metric-compatible clones Liberation Sans / Arimo and
+ * Liberation Serif / Tinos, with the overrides Next computes for the first; `tests/unit/fonts.test.ts`
+ * recomputes them from the committed files, so the two cannot drift.
+ *
  * **Preloads (A21 clause 3: at most two, never the italic, the Latin-Ext files or Caveat).**
  * `next/font` preloads every file of a call or none of them, and a weight cannot move to a second
  * family without breaking font matching (a family holding only a 400 face renders bold text as a
@@ -46,7 +55,12 @@ export const displayFont = localFont({
   variable: "--font-fraunces",
   display: "swap",
   preload: false,
-  fallback: ["Iowan Old Style", "Georgia", "serif"],
+  fallback: [
+    "Fraunces Fallback Liberation",
+    "Iowan Old Style",
+    "Georgia",
+    "serif",
+  ],
   adjustFontFallback: "Times New Roman",
   declarations: [
     {
@@ -89,7 +103,13 @@ export const bodyFont = localFont({
   variable: "--font-alegreya",
   display: "swap",
   preload: true,
-  fallback: ["Gill Sans", "Segoe UI", "system-ui", "sans-serif"],
+  fallback: [
+    "Alegreya Sans Fallback Liberation",
+    "Gill Sans",
+    "Segoe UI",
+    "system-ui",
+    "sans-serif",
+  ],
   adjustFontFallback: "Arial",
   declarations: [
     {

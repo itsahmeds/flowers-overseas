@@ -209,9 +209,9 @@ describe("the sheet's control skin matches the design system's `Button`", () => 
     ),
   )[0];
 
-  // v2's secondary pill (TASK-175).
+  // v2's secondary pill (TASK-175). The fill is the one difference: `Button` is transparent, the
+  // sheet's controls are paper (`bg-surface`), so AC-20 measures a real pair; asserted below.
   const SKIN = [
-    "bg-transparent",
     "text-ink",
     "shadow-[inset_0_0_0_1.5px_var(--color-ink)]",
     "rounded-full",
@@ -231,6 +231,12 @@ describe("the sheet's control skin matches the design system's `Button`", () => 
       expect(secondary, utility).toContain(utility);
       expect(control, utility).toContain(utility);
     }
+  });
+
+  it("fills the sheet's controls with paper, so AC-20 computes ink on paper", () => {
+    expect(control).toMatch(/(?:^| )bg-surface(?: |$)/);
+    expect(small).toMatch(/(?:^| )bg-surface(?: |$)/);
+    expect(control).not.toContain("bg-transparent");
   });
 
   it("shares them at the small size too, which the `saved` state uses", () => {

@@ -415,7 +415,7 @@ export function SiteHeader({
              centred in the space the controls leave rather than across the full width, printed as
              far as that space reaches (`CLAIM_FROM`). */}
       <div
-        className={`border-rule bg-surface text-ink-muted gap-x-md gap-y-xs flex min-h-[44px] flex-wrap items-center justify-between border-b text-xs tracking-[0.06em] ${BLEED}`}
+        className={`border-rule bg-surface text-ink-muted gap-x-md gap-y-xs flex min-h-[44px] flex-wrap items-center justify-between border-b text-xs leading-4 tracking-[0.06em] ${BLEED}`}
         data-fo-header-band="utility"
         data-fo-utility
       >
@@ -485,13 +485,18 @@ export function SiteHeader({
             of its `underline` (a utility strip is not prose; the row treatment carries the
             affordance) are applied from this wrapper through descendant variants. */}
         <div
-          className="gap-md flex shrink-0 items-center"
+          // Below the 390 px artboard (320 px phones) the switcher and the chip wrap instead of
+          // widening the page: v2's 13 px strip type makes the row 384 px, which fits 390 and
+          // nothing narrower (WCAG 1.4.10). At 390 and up the row is one line, as reserved.
+          className="gap-md flex shrink-0 items-center max-[389px]:min-w-0 max-[389px]:shrink max-[389px]:flex-wrap max-[389px]:justify-end"
           data-fo-header-controls
         >
           <div className={SWITCHER_WRAPPER} data-fo-header-switcher>
             <LocaleSwitcher locale={locale} />
           </div>
-          <span data-fo-header-currency>
+          {/* v2's chip is an 18 px-padded pill; in the strip it takes 12 px so the 390 px artboard
+              fits (AC-8, §14 A4). TASK-176 restyles the strip as the notice bar. */}
+          <span className="[&>*]:px-[12px]" data-fo-header-currency>
             <Chip
               aria-label={nav("currency.label", { currency })}
               tone="neutral"

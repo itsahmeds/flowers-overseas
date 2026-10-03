@@ -9,7 +9,7 @@
  * real `en` and `pl` page transfer, and zero requests to Google Fonts.
  */
 import { readdirSync, readFileSync, statSync } from "node:fs";
-import { resolve } from "node:path";
+import { dirname, relative, resolve } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
@@ -320,33 +320,71 @@ describe("the next/font/local declarations", () => {
   });
 
   it("keeps Caveat out of every module graph but the product page's", () => {
-    const barrel = readFileSync(
-      resolve(repoRoot, "src/modules/ui/index.ts"),
-      "utf8",
-    );
-    expect(barrel).not.toMatch(/from "\.\/fonts\/hand/);
+    // Every import or re-export specifier in `src/`, resolved (relative, or `@/` = `src/`), that
+    // lands on `ui/fonts/hand`. Only the product module may hold one: `ui/fonts/index.ts` and the
+    // `ui` barrel are imported by every document layout, so a single `import "./hand"` or
+    // `export … from "./hand"` there would put Caveat's `@font-face` on every page (breaker hole
+    // 1, PR 168). Exempt: `hand.ts` itself.
+    const HAND = "src/modules/ui/fonts/hand";
+    const SPECIFIER =
+      /(?:^|\n)\s*(?:import|export)\b[^;]*?(?:from\s*)?["']([^"']+)["']/g;
+    const resolveSpecifier = (from: string, specifier: string) => {
+      const target = specifier.startsWith("@/")
+        ? `src/${specifier.slice(2)}`
+        : specifier.startsWith(".")
+          ? relative(repoRoot, resolve(repoRoot, dirname(from), specifier))
+          : specifier;
+      return target.replace(/\.(?:ts|tsx|js)$/, "").replace(/\/index$/, "");
+    };
     const offenders: string[] = [];
     const walk = (dir: string): void => {
       for (const entry of readdirSync(resolve(repoRoot, dir), {
         withFileTypes: true,
       })) {
         const path = `${dir}/${entry.name}`;
-        if (entry.isDirectory()) walk(path);
-        else if (
-          /\.tsx?$/.test(entry.name) &&
-          !path.startsWith("src/modules/ui/fonts/") &&
-          !path.startsWith("src/modules/ui/product/") &&
-          /fonts\/hand/.test(
-            readFileSync(resolve(repoRoot, path), "utf8")
-              .replaceAll(/\/\*[\s\S]*?\*\//g, "")
-              .replaceAll(/\/\/.*$/gm, ""),
-          )
+        if (entry.isDirectory()) {
+          walk(path);
+          continue;
+        }
+        if (
+          !/\.tsx?$/.test(entry.name) ||
+          path === `${HAND}.ts` ||
+          path.startsWith("src/modules/ui/product/")
         ) {
-          offenders.push(path);
+          continue;
+        }
+        const code = readFileSync(resolve(repoRoot, path), "utf8")
+          .replaceAll(/\/\*[\s\S]*?\*\//g, "")
+          .replaceAll(/^\s*\/\/.*$/gm, "");
+        for (const match of code.matchAll(SPECIFIER)) {
+          if (resolveSpecifier(path, match[1] ?? "") === HAND) {
+            offenders.push(`${path} -> ${match[1] ?? ""}`);
+          }
         }
       }
     };
     walk("src");
     expect(offenders).toEqual([]);
+  });
+
+  it("finds a Caveat import however it is written (the walk's own check)", () => {
+    // The resolver above, against the three shapes the breaker used.
+    const shapes = [
+      'import "./hand";',
+      'export { handFontVariables } from "./hand";',
+      'import { handFont } from "@/modules/ui/fonts/hand";',
+    ];
+    const SPECIFIER =
+      /(?:^|\n)\s*(?:import|export)\b[^;]*?(?:from\s*)?["']([^"']+)["']/g;
+    for (const shape of shapes) {
+      const specifier = [...shape.matchAll(SPECIFIER)][0]?.[1] ?? "";
+      const target = specifier.startsWith("@/")
+        ? `src/${specifier.slice(2)}`
+        : relative(
+            repoRoot,
+            resolve(repoRoot, "src/modules/ui/fonts", specifier),
+          );
+      expect(target, shape).toBe("src/modules/ui/fonts/hand");
+    }
   });
 });
