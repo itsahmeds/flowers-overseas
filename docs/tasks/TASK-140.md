@@ -84,6 +84,11 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   runner first? **Answered — orchestrator, 2026-10-04:** the re-run on `b330a868` (run 37144277592) failed the same
   pictures, so refresh the failing ones here after merging `origin/main`. Done: run 37147054906 on `25c3a747`
   reproduced the first run byte for byte, and only the 9 failing pictures were taken (`6a52ceaf`).
+- **2026-10-04 — `visual` still red after the refresh. Open — orchestrator.** `ci:full` run 37147766896 on `ec2210f7`
+  (job https://github.com/itsahmeds/flowers-overseas/actions/runs/37147766896/job/111276860362): the 9 refreshed pictures
+  pass, but 3 others now fail: `home-desktop-destinations`, `home-mobile-how-it-works`, `listing-mobile-card-link` (583 ->
+  582 px). These three passed on run 37141374143 and are among the 13 the baselines runs changed but this task did not take.
+  Which pictures fail changes from run to run, so the Linux render is not stable between runners. Stopped as instructed.
 
 ## Progress
 
@@ -91,6 +96,7 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
 - 2026-10-03 — 14 Linux baselines from run 37140653882 committed (`bb18fe12`), each opened and looked at; the run's other 22 changed files were sub-pixel noise from outside this diff and are not taken. Next: ready + `ci:full`.
 - 2026-10-03 — PR ready, `ci:full` run 37141374143 on `d5f0dacd`: everything green except `visual` (9 cases, none touched by this diff); escalated, row `blocked`. Next: the orchestrator's answer in `## Escalations`.
 - 2026-10-04 — `origin/main` merged (`25c3a747`, TASK-100 + design docs); fresh baselines run 37147054906; the 9 failing pictures taken and opened (`6a52ceaf`), `--verify` 104 matched; row back to `in_review`. Next: `ci:full` on the new head.
+- 2026-10-04 — `ci:full` 37147766896 on `ec2210f7`: all green except `visual` (3 other pictures); stopped and escalated, row `blocked`.
 
 ## Result
 
