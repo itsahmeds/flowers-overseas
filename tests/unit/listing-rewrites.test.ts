@@ -21,8 +21,11 @@ import { QUERY_KEYS } from "../../src/config/url-keys";
 import { LISTING_CACHE_PATHS } from "../../src/lib/listing-cache-headers";
 import {
   LISTING_REWRITE_KEYS,
+  PARAMETER_ROUTE_HEADER_SOURCE,
+  PARAMETER_ROUTE_ROBOTS,
   PARAMETER_ROUTE_SEGMENT,
   listingRewriteRules,
+  parameterRouteHeaderRules,
 } from "../../src/lib/listing-rewrites";
 import { listingRequest } from "../../src/modules/catalog";
 
@@ -128,10 +131,63 @@ describe("the listing rewrite (TASK-170)", () => {
       resolve(import.meta.dirname, "../../next.config.ts"),
       "utf8",
     );
-    expect(source).toContain(
-      'import { listingRewriteRules } from "./src/lib/listing-rewrites"',
+    expect(source).toMatch(
+      /import \{[^}]*\blistingRewriteRules\b[^}]*\} from "\.\/src\/lib\/listing-rewrites"/u,
     );
     expect(source).toMatch(/beforeFiles:\s*listingRewriteRules\(\)/u);
+  });
+});
+
+describe("the parameter route's own robots header (`/review 143`, TASK-170)", () => {
+  /** Next's header-source syntax, enough for `:name` and `:name*`. */
+  const headerMatches = (source: string, path: string): boolean =>
+    new RegExp(
+      `^${source.replace(/\/:[a-z]+\*/giu, "(?:/.*)?").replace(/:[a-z]+/giu, "[^/]+")}$`,
+      "u",
+    ).test(path);
+
+  it("matches a direct request to the internal path, and no address a visitor uses", () => {
+    expect(PARAMETER_ROUTE_HEADER_SOURCE).toBe("/:locale/_query/:path*");
+    expect(
+      headerMatches(PARAMETER_ROUTE_HEADER_SOURCE, "/en/_query/poland/flowers"),
+    ).toBe(true);
+    expect(
+      headerMatches(PARAMETER_ROUTE_HEADER_SOURCE, "/de/_query/polen/blumen"),
+    ).toBe(true);
+    // The addresses the rewrite serves from the parameter route keep their own path, which is
+    // what the header source is matched against — so they never get this header.
+    for (const rule of listingRewriteRules()) {
+      const visitor = rule.source.replace(":country", "poland");
+      expect(
+        headerMatches(PARAMETER_ROUTE_HEADER_SOURCE, visitor),
+        visitor,
+      ).toBe(false);
+    }
+  });
+
+  it("says `noindex, nofollow`, distinguishable from the environment's bare `noindex`", () => {
+    expect(PARAMETER_ROUTE_ROBOTS).toBe("noindex, nofollow");
+    expect(parameterRouteHeaderRules()).toStrictEqual([
+      {
+        source: PARAMETER_ROUTE_HEADER_SOURCE,
+        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
+      },
+    ]);
+    expect(parameterRouteHeaderRules()[0]).not.toBe(
+      parameterRouteHeaderRules()[0],
+    );
+  });
+
+  it("is mounted by `next.config.ts` after the environment's noindex rule (asserted from source)", () => {
+    const source = readFileSync(
+      resolve(import.meta.dirname, "../../next.config.ts"),
+      "utf8",
+    );
+    const environment = source.indexOf("...noindexHeaderRules(environment)");
+    const mine = source.indexOf("...parameterRouteHeaderRules()");
+    expect(environment).toBeGreaterThan(-1);
+    // Later rules win for the same key, so this order is what makes a direct hit's value ours.
+    expect(mine).toBeGreaterThan(environment);
   });
 });
 

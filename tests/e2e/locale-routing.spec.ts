@@ -321,7 +321,8 @@ test.describe("every 404 shape is the localised not-found document (AC-8, TASK-1
  * key** is rewritten to the parameter route, which reads the query and so renders per request;
  * there the router's `dynamicParams = false` gate does not run, `resolveLocalePath()` finds nothing,
  * and a request-time `notFound()` is Next's error shell: the status is right, the document has no
- * `lang`. Nothing links to such an address. Pinned **as it is today**, so that a fix — or a
+ * `lang`. Nothing links to such an address; a page past the last one is the same render and the
+ * same answer. Pinned **as it is today**, so that a fix — or a
  * regression that widens it — shows up here as a deliberate change rather than silently. The
  * internal path itself, requested directly without a listing key, is a 404 of the same kind.
  */
@@ -329,6 +330,9 @@ const RESIDUAL_404S = [
   "/en/atlantis/flowers?page=2",
   "/de/atlantis/blumen?sort=price-asc",
   "/en/_query/poland/flowers",
+  // A page past the last (spec 008 AC-10's "404, never an empty grid"): the country exists, but
+  // `listingView()` answers `undefined` inside the per-request render. Accepted by `/review 143`.
+  "/en/poland/flowers?page=99",
 ] as const;
 
 test.describe("the accepted residual: 404 inside the error shell (TASK-170 E-1)", () => {

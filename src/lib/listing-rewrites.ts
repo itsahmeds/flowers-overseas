@@ -42,6 +42,8 @@ import { FACET_PARAMETERS } from "../config/catalogue/schemas.ts";
 import { launchLocales, localeConfig } from "../config/locales";
 import { QUERY_KEYS } from "../config/url-keys.ts";
 
+import { type HeaderRule, NOINDEX_HEADER_NAME } from "./robots-headers.ts";
+
 /** One `beforeFiles` rewrite, in the shape `next.config`'s `rewrites()` takes. */
 export interface RewriteRule {
   source: string;
@@ -72,4 +74,36 @@ export function listingRewriteRules(): RewriteRule[] {
       has: [{ type: "query", key }],
     }));
   });
+}
+
+/**
+ * The robots header on a **direct** request to the parameter route (`/review 143`, TASK-170).
+ *
+ * Nobody links to `/{locale}/_query/…`, but a request typed straight at it with a listing key
+ * (`/en/_query/poland/flowers?page=2`) renders the listing with a 200 — and after the indexing
+ * flip that page's own meta would say `index,follow`. This header keeps it out of every index in
+ * every environment.
+ *
+ * Header sources are matched against the address the visitor asked for, **before** rewrites, so
+ * a request rewritten here from `/en/poland/flowers?page=2` never matches this rule: only a
+ * direct hit does. The value is `noindex, nofollow` rather than the environment rule's bare
+ * `noindex` so the two are distinguishable outside production, where every response already
+ * carries `X-Robots-Tag: noindex` (`noindexHeaderRules()`). Mounted after that rule, so on a
+ * direct hit this value is the one served. `nofollow` costs nothing: no page links here, and every
+ * link on the page is reachable from the real address. `tests/e2e/listing-params.spec.ts` proves
+ * both halves on a served response.
+ */
+export const PARAMETER_ROUTE_ROBOTS = "noindex, nofollow";
+
+/** Next's header-source syntax for every path under the parameter route, in any locale. */
+export const PARAMETER_ROUTE_HEADER_SOURCE = `/:locale/${PARAMETER_ROUTE_SEGMENT}/:path*`;
+
+/** Fresh objects on every call, matching `listingCacheHeaderRules()`. */
+export function parameterRouteHeaderRules(): HeaderRule[] {
+  return [
+    {
+      source: PARAMETER_ROUTE_HEADER_SOURCE,
+      headers: [{ key: NOINDEX_HEADER_NAME, value: PARAMETER_ROUTE_ROBOTS }],
+    },
+  ];
 }

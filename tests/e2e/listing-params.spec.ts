@@ -209,7 +209,6 @@ test.describe("the parameter policy (AC-15, T-15)", () => {
       "sort=default",
       "sort=banana",
       "colour=red",
-      "utm_source=newsletter",
       "page=2&sort=price-desc",
     ]) {
       const { status, html } = await body(request, `${SHOP}?${query}`);
@@ -217,6 +216,31 @@ test.describe("the parameter policy (AC-15, T-15)", () => {
       expect(robotsOf(html), query).toBe("noindex,follow");
       expect(canonicalOf(html), query).toMatch(/\/en\/poland\/flowers$/u);
       expect(canonicalOf(html), query).not.toContain("sort=");
+    }
+  });
+
+  test("a campaign or click-id parameter gets the prebuilt bare document, byte for byte (TASK-170)", async ({
+    request,
+  }) => {
+    // Not `noindex,follow` because "parameterised": in Phase 0 the bare URL is `noindex,follow`
+    // too, so that assertion could not tell the two answers apart. The ruled behaviour (spec 007
+    // §14 A5's canonical stripping, TASK-170) is that no listing key means **no rewrite**: the
+    // visitor gets the prebuilt document of the bare URL — its robots, its canonical, its bytes.
+    const bare = await body(request, SHOP);
+    expect(bare.status).toBe(200);
+    // The parameter route's render names its own segment in the RSC payload; the prebuilt
+    // document never does. This is what tells "served the bare page" from "rendered it again".
+    expect(bare.html).not.toContain("_query");
+    for (const query of ["utm_source=newsletter", "gclid=abc123"]) {
+      const { status, html } = await body(request, `${SHOP}?${query}`);
+      expect(status, query).toBe(200);
+      expect(robotsOf(html), query).toBe(robotsOf(bare.html));
+      expect(canonicalOf(html), query).toBe(canonicalOf(bare.html));
+      expect(canonicalOf(html), query).toMatch(/\/en\/poland\/flowers$/u);
+      expect(html, query).not.toContain("_query");
+      expect(html === bare.html, `${query}: the bare URL's own bytes`).toBe(
+        true,
+      );
     }
   });
 
@@ -251,6 +275,40 @@ test.describe("the parameter policy (AC-15, T-15)", () => {
         .locator("nav[data-fo-pagination] a[href*='?']")
         .evaluateAll((links) => links.length);
       expect(paged, url).toBe(inNav);
+    }
+  });
+});
+
+/**
+ * The internal parameter route's robots header (`/review 143`, TASK-170;
+ * `src/lib/listing-rewrites.ts`). A request typed straight at `/{locale}/_query/…` with a listing
+ * key renders the listing with a 200, so it carries `X-Robots-Tag: noindex, nofollow`; a request
+ * rewritten there from the real address keeps that address, which the header source does not
+ * match. `nofollow` is the marker: outside production every response already carries the
+ * environment's bare `noindex`, so `noindex` alone could not show which rule answered.
+ */
+test.describe("the parameter route is never indexable at its own address (TASK-170)", () => {
+  test("a direct hit on `/_query/…` carries `X-Robots-Tag: noindex, nofollow`", async ({
+    request,
+  }) => {
+    const response = await request.get("/en/_query/poland/flowers?page=2", {
+      maxRedirects: 0,
+    });
+    expect(response.status()).toBe(200);
+    expect(response.headers()["x-robots-tag"] ?? "").toMatch(
+      /\bnoindex\b.*\bnofollow\b/u,
+    );
+  });
+
+  test("the same page reached through the rewrite does not", async ({
+    request,
+  }) => {
+    for (const url of [`${SHOP}?page=2`, `${SHOP}?sort=price-asc`, SHOP]) {
+      const response = await request.get(url, { maxRedirects: 0 });
+      expect(response.status(), url).toBe(200);
+      expect(response.headers()["x-robots-tag"] ?? "", url).not.toContain(
+        "nofollow",
+      );
     }
   });
 });

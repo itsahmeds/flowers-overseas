@@ -20,7 +20,8 @@
  * | `?page=N`, `N > pageCount` | **404** (`listingView()` answers `undefined`; never an empty grid) |
  * | `?page=0`, `?page=1.5`, `?page=abc` | 200 page 1, and a **neutralised** parameter: `noindex,follow`, canonical to the base |
  * | `?sort=price-asc` (or any valid sort, `default` included) | 200 sorted, `noindex,follow`, canonical to the base |
- * | `?sort=banana`, `?colour=red`, `?utm_source=x` | 200 base content, `noindex,follow`, canonical to the base |
+ * | `?sort=banana`, `?colour=red` (any facet name) | 200 base content, `noindex,follow`, canonical to the base |
+ * | `?utm_source=x`, `?gclid=…` (no listing key) | **the prebuilt bare document**, byte for byte: the bare URL's own directive and its canonical to the base. This function is never asked — the request is not rewritten to the parameter route (TASK-170, `src/lib/listing-rewrites.ts`; spec 007 §14 A5's canonical stripping) |
  *
  * **Why a malformed `page` is neutralised rather than redirected** (`/review 72`'s carry-forward,
  * ruled here): `ListingSearchParamsSchema` reads an invalid value as absent, and an absent `page`

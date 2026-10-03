@@ -6,7 +6,10 @@ import { consentBootstrapHash } from "./src/lib/consent-bootstrap";
 import { securityHeaderRules } from "./src/lib/csp";
 import { assertBuildEnv } from "./src/lib/env.assert";
 import { listingCacheHeaderRules } from "./src/lib/listing-cache-headers";
-import { listingRewriteRules } from "./src/lib/listing-rewrites";
+import {
+  listingRewriteRules,
+  parameterRouteHeaderRules,
+} from "./src/lib/listing-rewrites";
 import {
   appEnvironment,
   cspReportOnly,
@@ -87,6 +90,11 @@ const headerRules = [
   // name each locale's own shop segment, so no other page type's caching changes
   // (`src/lib/listing-cache-headers.ts` carries the reasoning; TASK-114).
   ...listingCacheHeaderRules(),
+  // `X-Robots-Tag: noindex, nofollow` on a **direct** request to the internal parameter route
+  // (`/{locale}/_query/…`); a request rewritten there keeps the address it was asked for, which
+  // this source does not match. After `noindexHeaderRules()`, so its value is the one served on a
+  // direct hit (`src/lib/listing-rewrites.ts`; TASK-170, `/review 143`).
+  ...parameterRouteHeaderRules(),
   ...securityHeaderRules(environment, {
     reportOnly: cspReportOnly(process.env),
     inlineHashes: [consentBootstrapHash()],
