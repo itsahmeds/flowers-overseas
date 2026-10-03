@@ -49,7 +49,11 @@ _None recorded._
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-10-03 — **E-1, to the orchestrator (for the founder): the depth-3 404s cannot be fixed inside this task's fence.** Open.
+  - **Cause (measured on a local production build of `844afd10`, Next 16.3.6).** `/[locale]/[segment]/[child]` is a `ƒ` route: spec 008 §13 Q2 makes the country shop root's listing paths read `searchParams`, so those paths prerender with `revalidate: 0`, and Next then writes **no `dynamicRoutes` entry** for the route (`node_modules/next/dist/build/index.js`: the entry is added only `if (!hasRevalidateZero && isDynamicRoute(page))`). The router enforces `dynamicParams = false` only through that entry (`build/templates/app-page-runtime.js`: `NoFallbackError` needs `isSSG` and `fallbackMode === NOT_FOUND`), so on this route — and only this one — **both** the page's and the layout's `dynamicParams = false` are inert. An unknown depth-3 path, under a real or an unknown locale, renders the page; `resolveLocalePath()` finds nothing; the page calls `notFound()`; and a request-time `notFound()` reaches the Fizz shell, which Next answers with `<html id="__next_error__">` and status 404 (`server/app-render/app-render.js`, `getErrorRSCPayload`). `prerender-manifest.json` lists `/[locale]`, `/[locale]/[segment]` and `/[locale]/[segment]/[child]/[grandchild]` with `fallback: false`, and not the depth-3 route.
+  - **Nested `not-found.tsx` measured and rejected.** `src/app/[locale]/not-found.tsx` (rendering inside the locale layout's `<html lang>`) was built twice — once with next-intl copy, once as a static `<h1>` — plus once with the depth-3 `generateMetadata` no longer calling `notFound()`: all three still served `__next_error__`; the boundary's markup appears only in the RSC payload. Spec 003 §14 A3's finding holds on 16.3.6, for pages as well as layouts.
+  - **What would fix it, each outside the fence:** (a) spec 008 §13 Q2 — the country shop root's bare URL prebuilt (ISR) and its `?page=`/`?sort=` variants served another way, so the depth-3 route is SSG again and the router refuses unknown params with the x-default document; (b) spec 003 §2 — let `src/proxy.ts` *rewrite* (never redirect) a depth-3 path outside the existence set to an unmatched path, which needs the existence set in the proxy; (c) spec 003 §14 A3's tripwire, Cache Components, which replaces the gate altogether; (d) accept the hole until Next renders a request-time `notFound()` as a document, with the seven red cases kept as the tracker.
+  - **Not affected:** depth 2, depth 4 (product and listing) and every unknown-locale shape at depth 2 or 4 are already the x-default document — pinned green in the same block.
 
 ## Progress
 
@@ -58,10 +62,12 @@ the commit: what is done, what is next, anything a replacement agent must know. 
 here.
 
 - 2026-10-03 — e2e first: `tests/e2e/locale-routing.spec.ts` gains "every 404 shape is the localised not-found document" (15 shapes, depths 2–4, known and unknown locale); each asserts 404, no `Location`, `<html lang="en">`, no `__next_error__`, the rendered `<h1>`. Next: build, watch it red, diagnose.
+- 2026-10-03 — red, on a production build of `844afd10` (`next start`, port 3170): 7 of 15 cases fail, exactly the depth-3 shapes (`/en/send-flowers-to/nowhere`, `/de/blumen-verschicken/nirgendwo`, `/en/atlantis/flowers`, `/en/poland/nope`, `/en/flowers/no-such-kind`, `/xx/send-flowers-to/poland`, `/fr/poland/flowers`), each `lang` undefined inside `<html id="__next_error__">`; the 8 depth-2, depth-4 and unknown-locale depth-2/4 shapes pass.
+- 2026-10-03 — diagnosed (the cause is in E-1): the depth-3 route is `ƒ`, so it has no `dynamicRoutes` entry and `dynamicParams = false` is not enforced there; its `notFound()` at request time is Next's error shell. Three builds measured a nested `[locale]/not-found.tsx` and a metadata-free `notFound()`: still the error shell. Every remaining lever is another spec's decision → `blocked`, E-1 open. Experiments reverted; the PR carries only the tests.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+**Partial, blocked on E-1.** PR #143 (draft) carries the e2e block only: 15 shapes in `tests/e2e/locale-routing.spec.ts`, "every 404 shape is the localised not-found document" — 8 green, 7 red (the depth-3 shapes) on a local production build, which is the hole this task found. No application file changed. One build slot taken, for the reason DoD §2 gives (404 rendering is only observable on a production build): four builds (~1 min 40 s each; load average 2.4 at the start), red run plus three measured experiments, all reverted. `pnpm gates:cheap` PASS on `844afd10`.
