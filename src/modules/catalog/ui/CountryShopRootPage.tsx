@@ -148,9 +148,11 @@ export function CountryShopRootPage({
                   destination's own authored price, so the page says which currency it is
                   quoting. One sentence for the page, because one rate priced all of it. */}
               {view.fxFallback ? (
-                <Text measure size="sm" tone="muted" className="mt-[32px]">
-                  {catalog("availability.fxUnavailable")}
-                </Text>
+                <div className="mt-[32px]" data-fo-fx-fallback>
+                  <Text measure size="sm" tone="muted">
+                    {catalog("availability.fxUnavailable")}
+                  </Text>
+                </div>
               ) : null}
               {/* Real `<a>`s in a labelled `<nav>`, page 1 linking to the bare URL, nothing at
                   all on a single-page listing (AC-10). The sort is deliberately **not** carried

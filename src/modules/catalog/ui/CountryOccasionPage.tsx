@@ -178,9 +178,11 @@ export function CountryOccasionPage({
               authored price, so the page says which currency it is quoting. Once for the page,
               because one rate priced all of it. */}
           {view.fxFallback ? (
-            <Text measure size="sm" tone="muted" className="mt-[32px]">
-              {catalog("availability.fxUnavailable")}
-            </Text>
+            <div className="mt-[32px]" data-fo-fx-fallback>
+              <Text measure size="sm" tone="muted">
+                {catalog("availability.fxUnavailable")}
+              </Text>
+            </div>
           ) : null}
         </section>
 
