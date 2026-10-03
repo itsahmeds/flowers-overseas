@@ -5,6 +5,15 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
 
 ## Binding
 
+- **Added 2026-10-03 — the two occasions-index strings from PR 98 (TASK-113's escalation 3).**
+  `occasionsIndex.datedCaption` and `occasionsIndex.undatedNote` in `messages/en.json` are approved as they
+  stand: the founder, asked to sign them off, answered in chat "go ahead whatever u feel is good", and the
+  orchestrator read both and found them accurate and in the house voice. Mark both `en` entries reviewed in
+  `messages/en.meta.json` the way earlier founder approvals were recorded there (`reviewedBy` the founder,
+  with this date), change no wording, and record the new English unreviewed share (it was 25/511 = 4.9 %).
+  `en-gb` follows `en` as the meta file's rules say. Removing `delivery.cutoffPreview` also changes the count:
+  report both numbers.
+
 - `specs/009-product-page-date-picker.md` §14 **A8** (2026-10-03): in the `preview` picker state the
   line "When we open, you will order by {time} in {city} — the recipient's time, not yours"
   (`delivery.cutoffPreview`, rendered in `src/modules/ui/product/DeliveryDatePicker.tsx`) is removed.
