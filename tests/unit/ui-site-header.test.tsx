@@ -494,7 +494,7 @@ describe("the rendered header (AC-7, AC-14)", () => {
     expect(html).not.toContain(`>${COMPANY.tradingName}<`);
   });
 
-  it('prints the honest notice: the dates line, the price claim and "Freshness guarantee"', () => {
+  it('prints the honest notice: the dates line, the price claim and "Fresh-on-arrival guarantee"', () => {
     const html = render("en");
     const strip = html.slice(0, html.indexOf("data-fo-header="));
     expect(strip).toContain(
@@ -502,7 +502,9 @@ describe("the rendered header (AC-7, AC-14)", () => {
     );
     expect(strip).toContain("Delivery dates are not open yet");
     expect(strip).toContain("Prices include delivery and VAT");
-    expect(strip).toContain("Freshness guarantee");
+    expect(strip).toContain("Fresh-on-arrival guarantee");
+    // Founder, 2026-10-04: "cant promise staying fresh" — no N-day freshness promise at all.
+    expect(html).not.toMatch(/\d+-day/u);
     expect(html).not.toMatch(/7-day/u);
     expect(html).not.toContain("Order by 14:00");
   });

@@ -5,7 +5,7 @@
  * It reproduces `docs/design/wireframes/chrome-desktop.dc.html` and `chrome-mobile.dc.html`:
  *
  *  1. **the notice bar** — `NoticeBar` (TASK-175's primitive): "A note from us:" in sunflower, then
- *     the honest dates line, "Prices include delivery and VAT" and "Freshness guarantee" on the
+ *     the honest dates line, "Prices include delivery and VAT" and "Fresh-on-arrival guarantee" on the
  *     desktop artboard, one short sentence centred on the mobile one. At its inline end, desktop
  *     only: the help line as a `tel:` link, spec 003's language switcher and the currency as text;
  *  2. **the header** — sticky, on paper (opaque: Tailwind inlines a literal colour into the 94 % mix, which AC-1 forbids), a rule below: the logo (the `Mark` and
@@ -162,8 +162,12 @@ export function SiteHeader({
       {/* 1. The notice bar: a plain, non-landmark sibling that scrolls away (§14 A4's addendum).
              `role="note"` is the artboards' semantics for it. */}
       <div data-fo-header-band="utility" data-fo-utility role="note">
+        {/* Two adjustments from the wrapper, so the primitive stays TASK-175's: the frame is the
+            chrome's (content 56 px in at 1 440 px, like the header below it), and the utilities
+            start at `lg` rather than `md` — at 768 px their 650 px of links left the claims
+            ~100 px and the bar ran to 233 px (measured). */}
         <NoticeBar
-          className="[&>div]:max-w-[calc(var(--container-page)+2*var(--gutter))]"
+          className="[&>div]:max-w-[calc(var(--container-page)+2*var(--gutter))] max-lg:[&>div>div]:hidden"
           utilities={
             <>
               {/* The help channel: one number, dialled from the E.164 form in `company.ts`. */}

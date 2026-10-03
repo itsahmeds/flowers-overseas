@@ -283,7 +283,7 @@ describe("the shipped catalogues and manifests", () => {
     // `docs/design/README.md`'s TASK-112 row, clauses (c), (d) and (e).
     "categoryHub.destinationLink",
     // TASK-176, the v2 chrome: the artboard's future-tense about line (`company.description`) and
-    // "Freshness guarantee" (`nav.utility.guarantee`) reword two attested strings, and "Send
+    // "Fresh-on-arrival guarantee" (`nav.utility.guarantee`, founder 2026-10-04) reword two attested strings, and "Send
     // flowers" (`nav.send`) is the header's one action. Listed for the founder's batch in the
     // TASK-176 brief's Result.
     "company.description",

@@ -88,17 +88,16 @@ test("the header's keyboard order follows the document order and stops at nothin
     );
   }
 
-  // Skip link, the help channel's WhatsApp and `tel:` links, the switcher's three sibling
-  // locales, the masthead lockup. The search band is text, the menu glyph is decoration
-  // (TASK-055) and every unpublished registry entry is a `<span>`, so none of them is a stop
-  // (§14 A4).
+  // Skip link, then the notice bar (desktop: the help line's `tel:` link and the switcher's three
+  // sibling locales), then the banner: the logo and the first category link (v2 chrome,
+  // TASK-176). Nothing unpublished is drawn, so nothing inert is a stop (§14 A20).
   expect(stops).toEqual([
     "A[#main]",
-    "A[https://wa.me/12135925150]",
     "A[tel:+12135925150]",
     "A[/en-gb]",
     "A[/de]",
     "A[/pl]",
     "A[/en]",
+    "A[/en/poland/flowers]",
   ]);
 });

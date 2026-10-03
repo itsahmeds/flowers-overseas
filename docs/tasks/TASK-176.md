@@ -37,7 +37,7 @@ _None recorded._
 
 ## Progress
 
-_Not started._
+- 2026-10-04 · Header, notice bar and footer rebuilt from `chrome-{desktop,mobile}.dc.html` (commit 1390b313); unit contracts moved (c66d27f0); e2e/a11y header and footer specs moved to the v2 heights (measured on a production build: notice 36/62, banner 121/83, identical in en/de/pl at 390–1 920 px, no horizontal overflow anywhere). Next: visual baselines through the `visual:baselines` label, then `ci:full` once PR 168 merges and this branch is rebased.
 
 ## Result
 

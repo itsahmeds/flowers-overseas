@@ -46,36 +46,27 @@ const inChrome = (selector: string): string =>
   `${UTILITY} ${selector}, ${HEADER} ${selector}`;
 
 /**
- * The reserved header height per breakpoint, **restated** rather than imported from
- * `src/modules/ui/layout/header-model.ts` (which the Playwright loader cannot resolve through the
- * `ui` barrel's `next/dynamic` chain in any case): a test that imports the number the component
- * renders agrees with the component by construction.
+ * The v2 chrome's heights per breakpoint (TASK-176, spec 004 §14 A21 clause 7: "A7's reserved
+ * header height takes v2's values"), **restated** rather than imported from
+ * `src/modules/ui/layout/header-model.ts`: a test that imports the number the component renders
+ * agrees with the component by construction. Measured on a production build at 390, 412, 768,
+ * 1 023, 1 024, 1 280 and 1 440 px in `en`, `de` and `pl`, identical in all three:
  *
- * mobile  = 113 utility (three lines at 390 px: the cutoff line, the help channel, and the
- *           switcher with the chip) + 1 rule + 50 masthead + 1 rule + 44 category row + 1 rule
- *           (rounded: 209). TASK-173 (spec 004 §14 A20) removed the 52 px search band, which has
- *           no page, and grew the row from 28 px to the 44 px its links owe; it was 245.
- * desktop = 44 utility (the strip carries links now, and a link owes 44 px) + 1 rule
- *           + 84 masthead + 1 rule + 52 category row (one line again, the artboard's) + 1 rule
+ * notice bar mobile  = 36 (8 + one 14 px line at 1.4 + 8; 35.6 rounded) — below `lg` it carries no
+ *                      links, so it is one sentence
+ * notice bar desktop = 62 (9 + the 44 px utility links + 9) from `lg` (1 024 px)
+ * sticky mobile      = 64 masthead + 56 chip row (44 px chips + 12) + 1 rule = 121, below `xl`
+ * sticky desktop     = 82 masthead (logo, the eight links, the pill) + 1 rule = 83, from `xl`
  *
- * Both numbers are identical in all four locales and at both artboard widths, which is the AC-7
- * property: one deterministic box, nothing measured after paint. `header-model.ts` records why
- * each differs from the artboards' band sum (167 / 173).
+ * v1 was 113 + 96 = 209 on mobile and 45 + 138 = 183 on desktop (TASK-173). Both boxes are
+ * server-rendered with no island, so they are the same before and after hydration (AC-7).
  */
-const HEADER_HEIGHTS = { mobile: 209, desktop: 183 } as const;
-
-/**
- * The two boxes that sum to it: the strip that scrolls, and the banner that sticks (§14 A4's
- * addendum, mechanism iii — `header-model.ts` records why an inner sticky wrapper and a negative
- * sticky offset were both measured and rejected).
- *
- * utility mobile  = 113 (three lines at 390 px) + 1 rule
- * utility desktop = 44 (the strip carries links, and a link owes 44 px) + 1 rule
- * sticky  mobile  = 50 masthead + 44 category row + 2 rules (TASK-173; 132 with the search band)
- * sticky  desktop = 84 masthead + 52 category row + 2 rules
- */
-const UTILITY_HEIGHTS = { mobile: 113, desktop: 45 } as const;
-const STICKY_HEIGHTS = { mobile: 96, desktop: 138 } as const;
+const UTILITY_HEIGHTS = { mobile: 36, desktop: 62 } as const;
+const STICKY_HEIGHTS = { mobile: 121, desktop: 83 } as const;
+const HEADER_HEIGHTS = {
+  mobile: UTILITY_HEIGHTS.mobile + STICKY_HEIGHTS.mobile,
+  desktop: UTILITY_HEIGHTS.desktop + STICKY_HEIGHTS.desktop,
+} as const;
 
 /** The two artboard widths, for the assertions that must hold at both (§14 A4). */
 const ARTBOARDS = [
@@ -94,8 +85,12 @@ const LOCALES = [
   { path: "/pl", currency: "PLN", home: "/pl" },
 ] as const;
 
-/** Tailwind's `md` breakpoint is 48rem; below it the mobile artboard's bands apply. */
-const MD_BREAKPOINT = 768;
+/**
+ * Tailwind's `xl` breakpoint (80rem): from it the desktop artboard's one-row header applies, and
+ * the notice bar carries its links (they start at `lg`). The two e2e projects sit either side of
+ * it: `e2e-mobile` (412 px) and `e2e-desktop` (1 280 px).
+ */
+const XL_BREAKPOINT = 1280;
 
 /** Sum of every layout-shift entry the page reported (the banner suite's measurement, locally). */
 async function cumulativeLayoutShift(page: import("@playwright/test").Page) {
@@ -141,7 +136,7 @@ test.describe("the site header (AC-7)", () => {
       await expect(utility).toBeVisible();
 
       const viewport = page.viewportSize();
-      const wide = (viewport?.width ?? 0) >= MD_BREAKPOINT;
+      const wide = (viewport?.width ?? 0) >= XL_BREAKPOINT;
       const height = async (locator: import("@playwright/test").Locator) =>
         Math.round((await locator.boundingBox())?.height ?? 0);
 
@@ -197,8 +192,8 @@ test.describe("the site header (AC-7)", () => {
     await expect(banner).toHaveCount(1);
     await expect(banner).toHaveAttribute("data-fo-header", "true");
 
-    // The strip is a sibling before it, not a descendant: it is neither a landmark nor sticky, so
-    // its claims and help channel cost a first screen rather than 113 px of every screen.
+    // The notice bar is a sibling before it, not a descendant: it is `role="note"` (not a
+    // landmark) and not sticky, so its claims cost a first screen rather than every screen.
     expect(
       await page.evaluate(() => {
         const utility = document.querySelector("[data-fo-utility]");
@@ -214,7 +209,7 @@ test.describe("the site header (AC-7)", () => {
           role: utility?.getAttribute("role"),
         };
       }),
-    ).toEqual({ nested: false, precedes: true, role: null });
+    ).toEqual({ nested: false, precedes: true, role: "note" });
   });
 
   /**
@@ -346,16 +341,14 @@ test.describe("the site header (AC-7)", () => {
     );
   });
 
-  test("every rendered link clears 44 px at both artboard widths (§5.3, §8, §14 A4)", async ({
+  test("every rendered link clears 44 px at both artboard widths (§5.3, §8)", async ({
     page,
   }) => {
     for (const viewport of ARTBOARDS) {
       await page.setViewportSize(viewport);
       await page.goto("/en");
 
-      // Both elements: the strip holds the help channel and the switcher, the banner the lockup
-      // and the category row. Only **rendered** links are measured: below `md` the row draws its
-      // mobile subset, and the desktop-only entries have no box at all.
+      // Only **rendered** links: below `lg` the notice bar's links have no box at all.
       const measured = (
         await page.locator(inChrome("a")).evaluateAll((nodes) =>
           nodes.map((node) => {
@@ -369,69 +362,74 @@ test.describe("the site header (AC-7)", () => {
         )
       ).filter((link) => link.width > 0);
 
-      // The help channel's two links, the masthead lockup, the switcher's three siblings and the
-      // category row: all eight entries on the desktop artboard, the mobile artboard's five
-      // (Our selection, Bouquets, Roses, Plants, Occasions — Same-day has no page) below it.
-      const row = viewport.width >= MD_BREAKPOINT ? 8 : 5;
-      expect(measured.length, String(viewport.width)).toBe(6 + row);
+      // The logo, the eight category links and the Send pill at both widths; at 1 440 px also the
+      // help line and the switcher's three siblings in the notice bar.
+      const notice = viewport.width >= XL_BREAKPOINT ? 4 : 0;
+      expect(measured.length, String(viewport.width)).toBe(10 + notice);
       for (const link of measured) {
         expect(
           link.height,
           `${String(viewport.width)}px ${link.href}`,
         ).toBeGreaterThanOrEqual(MIN_TARGET);
-        // A link with no text of its own owes the target in both dimensions.
-        if (link.href.startsWith("https://wa.me/")) {
-          expect(link.width, link.href).toBeGreaterThanOrEqual(MIN_TARGET);
-        }
       }
     }
   });
 
-  test("the currency chip and the switcher are visible at 390 px without scrolling (AC-8, §14 A4)", async ({
+  test("nothing in the chrome overflows the viewport at 390 px; only the chip row scrolls", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/en");
 
     const boxes = await page.evaluate(() => {
-      // Measured inside the **utility strip's** box: §14 A4's addendum moved the strip out of the
-      // banner, and both controls live in the strip.
-      const header = document.querySelector("[data-fo-utility]");
-      const chip = document.querySelector("[data-fo-header-currency]");
-      const switcher = document.querySelector("[data-fo-header-switcher]");
-      const round = (box: DOMRect) => ({
-        x: Math.round(box.x),
-        y: Math.round(box.y),
-        right: Math.round(box.right),
-        bottom: Math.round(box.bottom),
-      });
+      const fits = (selector: string) => {
+        const node = document.querySelector(selector);
+        return node !== null && node.scrollWidth <= node.clientWidth;
+      };
+      const row = document.querySelector(
+        '[data-fo-header-band="categories"] ul',
+      );
+      const send = document
+        .querySelector('[data-fo-header] a[href$="#send"]')
+        ?.getBoundingClientRect();
       return {
-        header: round(header?.getBoundingClientRect() as DOMRect),
-        chip: round(chip?.getBoundingClientRect() as DOMRect),
-        switcher: round(switcher?.getBoundingClientRect() as DOMRect),
-        viewport: window.innerWidth,
+        document: document.documentElement.scrollWidth <= window.innerWidth,
+        utility: fits("[data-fo-utility]"),
+        header: fits("[data-fo-header]"),
+        footer: fits("footer"),
+        // The eight chips are one horizontally scrolling row (the artboard's), inside the banner.
+        rowScrolls:
+          row !== null &&
+          row.scrollWidth > row.clientWidth &&
+          getComputedStyle(row).overflowX === "auto",
+        sendInside: send !== undefined && send.right <= window.innerWidth,
       };
     });
+    expect(boxes).toEqual({
+      document: true,
+      utility: true,
+      header: true,
+      footer: true,
+      rowScrolls: true,
+      sendInside: true,
+    });
+  });
 
-    // Inside the strip's own box — the failure of round 1 was a chip 120–570 px outside it,
-    // inside the category row's horizontal scroll.
-    for (const box of [boxes.chip, boxes.switcher]) {
-      expect(box.x).toBeGreaterThanOrEqual(boxes.header.x);
-      expect(box.right).toBeLessThanOrEqual(boxes.header.right);
-      expect(box.y).toBeGreaterThanOrEqual(boxes.header.y);
-      expect(box.bottom).toBeLessThanOrEqual(boxes.header.bottom);
-      // And inside the viewport, with no horizontal scroll to reach it.
-      expect(box.right).toBeLessThanOrEqual(boxes.viewport);
-    }
-    // Neither box scrolls horizontally, so there is nothing to scroll *to* in order to see them.
-    expect(
-      await page.evaluate(() =>
-        ["[data-fo-utility]", "[data-fo-header]"].map((selector) => {
-          const node = document.querySelector(selector);
-          return node?.scrollWidth === node?.clientWidth;
-        }),
-      ),
-    ).toEqual([true, true]);
+  test("the switcher and the currency sit in the notice bar at 1 440 px, visible (AC-8)", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/en");
+    await expect(page.locator("[data-fo-header-switcher]")).toBeVisible();
+    await expect(page.locator("[data-fo-header-currency]")).toBeVisible();
+    // On the mobile artboard the languages move to the footer (chrome-mobile.dc.html).
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect(page.locator("[data-fo-header-switcher]")).toBeHidden();
+    await expect(
+      page
+        .getByRole("contentinfo")
+        .locator('nav[aria-label="Change language"]'),
+    ).toHaveCount(1);
   });
 
   test("draws no menu glyph, because it opened nothing (§14 A20)", async ({
@@ -453,7 +451,7 @@ test.describe("the currency chip (AC-8)", () => {
     }) => {
       await page.goto(path);
 
-      const chip = page.locator("[data-fo-header-currency] > *");
+      const chip = page.locator("[data-fo-header-currency]");
       await expect(chip).toHaveText(currency);
       await expect(chip).toHaveAttribute(
         "aria-label",
