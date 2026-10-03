@@ -39,6 +39,30 @@ One dated bullet per `/review`, newest last.
   - **Hole 5:** the intro price scan now also refuses `49,– €`, `EUR 49`, `PLN 149`, `RON 99` and `99 lei`.
 
   Hole 6 (the native word lists are minimal) is left to the reviewer. Hole 7 (umlauts) was closed on `15365638`.
+- **From `/review 150` rounds 1 and 2 and the reviewer's rulings on `/break 150` (2026-10-03, head `857bdc5d`), copied
+  by the orchestrator.** Holes 1–5 and 7 closed by the breaker; three holes accepted by the reviewer, each with a condition
+  due **before `de` or `pl` is flipped indexable**. Verbatim:
+  - **HOLE E1 ACCEPTABLE: the AC-21 waiver gains `{de,pl} countryCategory` (140 pages each).** This is the TASK-113
+    shop-root hole one level down, with the same cause: neither locale has a corridor page. All 280 pages are
+    `noindex,follow` and in no sitemap, so today the cost is reachability, not ranking. The waiver is pinned by count and
+    expires through `waivedButReached`. **Condition:** the orchestrator files the `de`/`pl` shop-root inbound-link task,
+    and it must land before either locale is flipped indexable.
+  - **HOLE 6 ACCEPTABLE:** the native German and Polish word lists miss some forms. They include "am Folgetag", "in 24
+    Stunden", "doręczymy jutro", "allerbesten", "luksusowe", "Netzwerk", and "schönste" written in NFD. The reasons: No
+    committed intro uses any of them. The gate passes on the corpus, and I read samples in round 1. Every `de`/`pl` row is
+    `reviewed: false`, so these hubs stay `noindex` and in no sitemap until a `plan/13` B12 native reviewer signs each
+    row. That human review is the gate of record for native copy, and the lists are only a backstop. So there is no
+    correctness, compliance or ranking defect on this head. **Condition (carry-forward):** before either locale is flipped
+    indexable: The lists are extended to cover at least these seven forms, each with a failing case. The intro scan runs
+    on NFC-normalised text, so the NFD form cannot slip through. The orchestrator files this with the B12 review task.
+  - **HOLE 5′ ACCEPTABLE:** the code is correct, but nothing pins it. `TRAILING_CURRENCY_PRICE_PATTERN` does catch
+    `49,– zł`, `149 zl`, `49,- EUR` and `99,– lei`. However, no test fails if the pattern is narrowed to `€£$`. Accepting
+    is safe for three reasons: No committed intro contains a price, so the gate already passes on the corpus. Every
+    `de`/`pl` row is `reviewed: false`, so those hubs stay `noindex` and out of the sitemap until a `plan/13` B12 native
+    reviewer signs them. A hub renders no money at all. Nothing on this head is a correctness, money, compliance or
+    ranking defect. **Condition (carry-forward, the same as hole 6):** before either locale is flipped indexable, add one
+    unit case to `tests/unit/seed-check.test.ts` covering `49,– zł`, `149 zl`, `49,- EUR` and `99,– lei`. Narrowing the
+    pattern to `€£$` must turn that case red. The orchestrator files this with the B12 review task.
 
 ## Escalations
 
@@ -141,3 +165,5 @@ PR #150. **AC-2 / T-02 covered.** `seed:check` (`seed/check.ts`) gains spec 008 
 | occasion · `student` | `schulabschluss` | `zakonczenie-szkoly` |
 | occasion · `omatag` | `grossmuttertag-in-estland` | `dzien-babci-w-estonii` |
 | occasion · `17_mai` | `17-mai-in-norwegen` | `swieto-konstytucji-norwegii` |
+
+**Merged 2026-10-03 as `f39722e9`** (PR [#150](https://github.com/itsahmeds/flowers-overseas/pull/150), head `857bdc5d`): `/review 150` round 2 PASS, `/break 150` holes 1–5 and 7 closed, E1, 6 and 5′ accepted by the reviewer (Carry-forwards), CI run 37122237287 green on the head.
