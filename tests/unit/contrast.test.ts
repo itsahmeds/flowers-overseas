@@ -25,6 +25,7 @@ import {
   evaluateContrastPairs,
   formatContrastTable,
   formatRatio,
+  NON_SINGLE_COLOUR_TOKENS,
   parseOklch,
   parseThemeTokens,
   relativeLuminance,
@@ -103,9 +104,8 @@ describe("the declared contrast manifest (T-04 / AC-3)", () => {
         resolveColorToken(foreground, tokens),
         resolveColorToken(background, tokens),
       );
-    // The `label` voice on paper: 11 px text, so the 4.5:1 body threshold applies. It passes at
-    // 5.39:1, which is why no token was darkened (TASK-045 row: "if a canvas pair fails AC-3,
-    // darken the token and record the delta").
+    // The `label` voice on paper: 13 px text, so the 4.5:1 body threshold applies. v2's plum-navy
+    // ink-3 passes at 6.0:1 (the colour sheet's figure), so no token was darkened.
     expect(ratioOf("--color-ink-3", "--color-paper")).toBeGreaterThanOrEqual(
       4.5,
     );
@@ -113,7 +113,7 @@ describe("the declared contrast manifest (T-04 / AC-3)", () => {
     expect(
       ratioOf("--color-photo-ink", "--color-photo-stop-1"),
     ).toBeGreaterThanOrEqual(4.5);
-    // A button label on the accent fill.
+    // A button label on the poppy fill (5.6:1).
     expect(
       ratioOf("--color-accent-ink", "--color-accent"),
     ).toBeGreaterThanOrEqual(4.5);
@@ -121,8 +121,8 @@ describe("the declared contrast manifest (T-04 / AC-3)", () => {
 
   it("fails with the pair named when a token is darkened past its threshold", () => {
     const broken = css.replace(
-      "--color-ink-3: oklch(52% 0.008 250);",
-      "--color-ink-3: oklch(78% 0.008 250);",
+      "--color-ink-3: oklch(50% 0.04 285);",
+      "--color-ink-3: oklch(78% 0.04 285);",
     );
     expect(broken).not.toBe(css);
     const brokenResults = evaluateContrastPairs(broken);
@@ -148,10 +148,43 @@ describe("the declared contrast manifest (T-04 / AC-3)", () => {
       // A pure alias of a token that is itself paired is covered by that pair.
       const alias = /^var\(\s*(--[\w-]+)\s*\)$/.exec(colour)?.[1];
       if (alias !== undefined && used.has(alias)) return false;
-      // The gradient composite is not a colour a pair can name; its stops are paired.
-      return token !== "--color-photo";
+      // A gradient or a translucent shade is not a colour a pair can name; each such token is
+      // declared, with its reason, in `NON_SINGLE_COLOUR_TOKENS`.
+      return !(token in NON_SINGLE_COLOUR_TOKENS);
     });
     expect(unpaired).toEqual([]);
+  });
+
+  it("exempts only tokens that really are not one opaque colour, each with a reason", () => {
+    for (const [token, reason] of Object.entries(NON_SINGLE_COLOUR_TOKENS)) {
+      expect(tokens.get(token), token).toBeDefined();
+      expect(() => resolveColorToken(token, tokens), token).toThrow(
+        /not a single OKLCH colour/,
+      );
+      expect(reason.length, token).toBeGreaterThan(40);
+    }
+  });
+
+  it("gives the inverse surface a focus ring that clears 3:1 where poppy does not (v2)", () => {
+    const ratioOf = (foreground: string, background: string): number =>
+      contrastRatio(
+        resolveColorToken(foreground, tokens),
+        resolveColorToken(background, tokens),
+      );
+    // Why `surface-inverse` swaps the ring: poppy on ink is under the focus threshold…
+    expect(ratioOf("--color-focus", "--color-surface-inverse")).toBeLessThan(3);
+    // …and the sunflower that replaces it is a declared focus pair.
+    expect(
+      CONTRAST_PAIRS.some(
+        (pair) =>
+          pair.kind === "focus" &&
+          pair.foreground === "--color-on-inverse-accent" &&
+          pair.background === "--color-surface-inverse",
+      ),
+    ).toBe(true);
+    expect(css).toMatch(
+      /@utility surface-inverse \{[\s\S]*?outline-color: var\(--color-on-inverse-accent\)/,
+    );
   });
 
   it("requires a written reason for every decorative pair", () => {

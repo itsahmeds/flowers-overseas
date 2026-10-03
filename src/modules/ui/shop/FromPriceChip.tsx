@@ -22,6 +22,7 @@ import type { ReactElement } from "react";
 import { type LocaleCode } from "@/config/locales";
 import { type Money, formatMoney } from "@/modules/i18n";
 
+import { Price } from "../primitives/Price.tsx";
 import { Text } from "../primitives/typography.tsx";
 
 export interface FromPriceChipProps {
@@ -43,10 +44,13 @@ export function FromPriceChip({
   const catalog = useTranslations("catalog");
   if (price === undefined) return null;
 
+  // The tile's from-price: poppy 700 (components sheet v2 "Price"). Never equivalents (§14 A21
+  // clause 6 (b)), which `Price`'s `from` variant refuses by type.
   const amount = (
-    <Text as="span" size="md" className="font-semibold tabular-nums">
-      <bdi>{catalog("price.from", { price: formatMoney(price, locale) })}</bdi>
-    </Text>
+    <Price
+      variant="from"
+      amount={catalog("price.from", { price: formatMoney(price, locale) })}
+    />
   );
 
   if (!fxFallback) return <span data-fo-from-price>{amount}</span>;

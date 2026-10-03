@@ -17,6 +17,8 @@
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
+import { Breadcrumbs } from "../../ui/index.ts";
+
 import type { CorridorCrumb } from "../corridor.ts";
 
 import { registryLabel } from "./labels.ts";
@@ -32,30 +34,14 @@ export function CorridorBreadcrumb({
   const a11y = useTranslations("a11y");
 
   return (
-    <nav aria-label={a11y("breadcrumb")} data-fo-breadcrumb>
-      <ol className="gap-sm text-ink-subtle flex list-none flex-wrap items-center p-0 text-sm">
-        {crumbs.map((crumb, index) => (
-          <li className="gap-sm flex items-center" key={crumb.labelKey}>
-            {index === 0 ? null : (
-              <span aria-hidden="true" className="text-rule">
-                {"/"}
-              </span>
-            )}
-            {crumb.current || crumb.href === undefined ? (
-              <span
-                {...(crumb.current ? { "aria-current": "page" as const } : {})}
-                className={crumb.current ? "text-ink font-semibold" : undefined}
-              >
-                {registryLabel(t, crumb.labelKey)}
-              </span>
-            ) : (
-              <a className="hover:text-accent" href={crumb.href}>
-                {registryLabel(t, crumb.labelKey)}
-              </a>
-            )}
-          </li>
-        ))}
-      </ol>
-    </nav>
+    <Breadcrumbs
+      label={a11y("breadcrumb")}
+      crumbs={crumbs.map((crumb) => ({
+        key: crumb.labelKey,
+        label: registryLabel(t, crumb.labelKey),
+        href: crumb.href,
+        current: crumb.current,
+      }))}
+    />
   );
 }
