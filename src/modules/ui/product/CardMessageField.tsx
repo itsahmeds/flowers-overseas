@@ -17,7 +17,7 @@
  * preview.test.tsx` reads this file and its import graph for each). It adds no inline script.
  *
  * **Strings arrive as props** (spec 004 §13 Q13 option (b)): no `next-intl`, no `Intl`, no zod in
- * the browser. The counter's limit half (`/ 400`) is formatted on the server; only the typed
+ * the browser. The counter's limit (`400`) is formatted on the server; only the typed
  * length is printed here, and it is a count of UTF-16 code units, the same unit `maxLength`
  * limits, so the two never disagree.
  */
@@ -26,9 +26,10 @@ import type { ReactElement } from "react";
 
 export interface CardMessageFieldProps {
   readonly id: string;
-  readonly placeholder: string;
+  /** The id of the visible text that names the field (the step's legend). */
+  readonly labelledBy: string;
   readonly maxLength: number;
-  /** The server-formatted limit half of the counter, e.g. "/ 400". */
+  /** The limit, formatted on the server (`formatNumber`), e.g. "400". */
   readonly limit: string;
   readonly className?: string;
 }
@@ -38,7 +39,7 @@ export const CARD_TEXT_SELECTOR = "[data-fo-card-text]";
 
 export function CardMessageField({
   id,
-  placeholder,
+  labelledBy,
   maxLength,
   limit,
   className,
@@ -61,13 +62,13 @@ export function CardMessageField({
     <>
       <textarea
         aria-describedby={`${id}-count`}
+        aria-labelledby={labelledBy}
         className={className}
         id={id}
         maxLength={maxLength}
         onChange={(event) => {
           setText(event.target.value);
         }}
-        placeholder={placeholder}
         rows={5}
         value={text}
       />
@@ -75,7 +76,9 @@ export function CardMessageField({
         className="text-ink-subtle num mt-[6px] text-end text-xs"
         id={`${id}-count`}
       >
-        {text.length} {limit}
+        {text.length}
+        {" / "}
+        {limit}
       </p>
     </>
   );

@@ -746,18 +746,10 @@
   },
   "product": {
     "addons": {
-      "currency": "We are showing these prices in the currency of the delivery country.",
       "label": "Add something"
     },
     "card": {
-      "caption": "Your card, printed",
-      "help": "Printed on our card and tucked into the bouquet. Write it in their language if that is how you talk to them; every letter prints exactly as you type it.",
-      "label": "Card message",
-      "legend": "What should the card say?",
-      "limit": "/ {max}",
-      "placeholder": "Dear Mum, …",
-      "printed": "Printed on our card · included",
-      "sample": "Your words will appear here, as they will be printed."
+      "printed": "Printed on our card · included"
     },
     "demo": {
       "body": "We are still choosing florists in {country}. When we have one, this is the price you will pay — nothing is added at a later step.",
@@ -768,8 +760,6 @@
       "label": "Where is it going?"
     },
     "excludes": "What the price does not include: a vase. The photograph is styled with one and the bouquet is delivered wrapped, so we say it here rather than let the picture imply it.",
-    "eyebrow": "{descriptor} · for {country}",
-    "goodToKnow": "Good to know",
     "included": "included",
     "related": {
       "heading": "Six more, in our order",
@@ -784,10 +774,6 @@
       "legend": "Which size?"
     },
     "trust": {
-      "freshness": {
-        "body": "We redeliver or refund, your choice.",
-        "title": "Freshness guarantee"
-      },
       "label": "What we promise",
       "substitution": {
         "body": "We substitute to the same value, style and colour, and we tell you what changed.",

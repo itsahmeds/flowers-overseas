@@ -22,12 +22,12 @@ import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
 import { formatDate, formatList } from "../../i18n/index.ts";
-import { Display, Label, Stack, Text } from "../../ui/index.ts";
 import type {
   CorridorOccasionView,
   CorridorUndatedOccasionView,
 } from "../corridor.ts";
 
+import { CorridorSection } from "./CorridorSection.tsx";
 import { localeCode, registryLabel } from "./labels.ts";
 
 /** Midday UTC: the hour that is the same calendar date in every European zone. */
@@ -52,49 +52,47 @@ export function CorridorCalendar({
   const c = useTranslations("corridor");
   const code = localeCode(locale);
 
+  const cell =
+    "border-rule border-b py-[14px] pe-[12px] text-start align-baseline";
   return (
-    <Stack as="section" gap="md" data-fo-corridor-calendar>
-      <Stack gap="xs">
-        <Label>{c("calendar.eyebrow", { country })}</Label>
-        <Display size="2xl">{c("calendar.heading", { country })}</Display>
-      </Stack>
-      <Text measure>{c("calendar.intro", { country })}</Text>
-      <table className="w-full border-collapse text-sm">
-        <caption className="label text-ink-subtle pb-sm text-start">
+    <CorridorSection
+      eyebrow={c("calendar.eyebrow", { country })}
+      heading={c("calendar.heading", { country })}
+      id="corridor-calendar"
+      marker="data-fo-corridor-calendar"
+      note={c("calendar.intro", { country })}
+    >
+      <table className="text-ui w-full border-collapse">
+        <caption className="text-ink-subtle pb-[12px] text-start text-sm">
           {c("calendar.caption", { country })}
         </caption>
         <thead>
           <tr>
-            <th
-              className="border-rule py-sm pe-md text-ink-subtle border-b text-start text-xs font-semibold uppercase"
-              scope="col"
-            >
-              {c("calendar.occasion")}
-            </th>
-            <th
-              className="border-rule py-sm pe-md text-ink-subtle border-b text-start text-xs font-semibold uppercase"
-              scope="col"
-            >
-              {c("calendar.date")}
-            </th>
-            <th
-              className="border-rule py-sm text-ink-subtle border-b text-start text-xs font-semibold uppercase"
-              scope="col"
-            >
-              {c("calendar.rule")}
-            </th>
+            {[
+              c("calendar.occasion"),
+              c("calendar.date"),
+              c("calendar.rule"),
+            ].map((label) => (
+              <th
+                className={`${cell} text-ink-subtle text-xs font-bold tracking-[0.12em] uppercase`}
+                key={label}
+                scope="col"
+              >
+                {label}
+              </th>
+            ))}
           </tr>
         </thead>
         <tbody>
           {occasions.map((occasion) => (
             <tr key={`${occasion.occasionKey}-${occasion.date}`}>
               <th
-                className="border-rule py-sm pe-md border-b text-start font-semibold"
+                className={`${cell} display text-[19px] font-normal`}
                 scope="row"
               >
                 {registryLabel(t, occasion.labelKey)}
               </th>
-              <td className="border-rule py-sm pe-md border-b">
+              <td className={`${cell} num text-ink-muted`}>
                 {formatDate(
                   instantOf(occasion.date),
                   code,
@@ -102,23 +100,23 @@ export function CorridorCalendar({
                   "UTC",
                 )}
               </td>
-              <td className="border-rule py-sm text-ink-muted border-b">
-                <code>{occasion.ruleKind}</code>
+              <td className={`${cell} text-ink-subtle text-sm`}>
+                <code className="font-body">{occasion.ruleKind}</code>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
       {undated === undefined ? null : (
-        <Text measure size="sm">
+        <p className="text-fine text-ink-subtle m-0 mt-[12px]">
           {c("calendar.undated", {
             occasions: formatList(
               undated.map((occasion) => registryLabel(t, occasion.labelKey)),
               code,
             ),
           })}
-        </Text>
+        </p>
       )}
-    </Stack>
+    </CorridorSection>
   );
 }

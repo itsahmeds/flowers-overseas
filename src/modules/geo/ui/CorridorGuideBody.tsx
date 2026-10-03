@@ -12,40 +12,73 @@
  * raw-HTML injection of any kind — the application still has exactly one inline script and no
  * second source of un-escaped markup, which is what keeps the hash-based `script-src` of ADR-0016
  * true on a cached document.
+ *
+ * **v2 (TASK-179):** each `##` heading opens its own section in the guide's 4∶7 pair — the heading
+ * on the left, its paragraphs on the right — as `corridor-country-desktop.dc.html` draws "Why we
+ * started here", "What flowers mean there" and the rest. Paragraphs before the first heading (none
+ * in the committed corpus) form a section of their own with no heading column text.
  */
 import type { ReactElement } from "react";
 
-import { Display, Stack, Text } from "../../ui/index.ts";
 import { markdownBlocks } from "../content/markdown.ts";
+import type { MarkdownBlock } from "../content/markdown.ts";
+
+import { CORRIDOR_PROSE, CorridorSection } from "./CorridorSection.tsx";
 
 export interface CorridorGuideBodyProps {
   readonly body: string;
 }
 
+type Paragraph = Extract<MarkdownBlock, { kind: "paragraph" }>;
+
+interface GuideSection {
+  readonly heading: string;
+  readonly paragraphs: Paragraph[];
+}
+
+/** The blocks, grouped under the heading that opens each section. */
+export function guideSections(body: string): readonly GuideSection[] {
+  const sections: { heading: string; paragraphs: Paragraph[] }[] = [];
+  for (const block of markdownBlocks(body)) {
+    if (block.kind === "heading") {
+      sections.push({ heading: block.text, paragraphs: [] });
+      continue;
+    }
+    const current = sections.at(-1);
+    if (current === undefined)
+      sections.push({ heading: "", paragraphs: [block] });
+    else current.paragraphs.push(block);
+  }
+  return sections;
+}
+
 export function CorridorGuideBody({
   body,
 }: CorridorGuideBodyProps): ReactElement {
-  const blocks = markdownBlocks(body);
-
   return (
-    <Stack as="section" gap="md" className="max-w-prose" data-fo-corridor-guide>
-      {blocks.map((block, index) =>
-        block.kind === "heading" ? (
-          <Display key={`${String(index)}-${block.text}`} size="xl">
-            {block.text}
-          </Display>
-        ) : (
-          <Text key={`${String(index)}-p`}>
-            {block.spans.map((span, spanIndex) =>
-              span.bold ? (
-                <strong key={`${String(spanIndex)}-b`}>{span.text}</strong>
-              ) : (
-                <span key={`${String(spanIndex)}-t`}>{span.text}</span>
-              ),
-            )}
-          </Text>
-        ),
-      )}
-    </Stack>
+    <div data-fo-corridor-guide>
+      {guideSections(body).map((section, index) => (
+        <CorridorSection
+          heading={section.heading}
+          id={`corridor-guide-${String(index)}`}
+          key={`${String(index)}-${section.heading}`}
+          marker="data-fo-corridor-guide-section"
+        >
+          <div className={CORRIDOR_PROSE}>
+            {section.paragraphs.map((paragraph, paragraphIndex) => (
+              <p className="m-0" key={`${String(paragraphIndex)}-p`}>
+                {paragraph.spans.map((span, spanIndex) =>
+                  span.bold ? (
+                    <strong key={`${String(spanIndex)}-b`}>{span.text}</strong>
+                  ) : (
+                    <span key={`${String(spanIndex)}-t`}>{span.text}</span>
+                  ),
+                )}
+              </p>
+            ))}
+          </div>
+        </CorridorSection>
+      ))}
+    </div>
   );
 }

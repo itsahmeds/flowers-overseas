@@ -106,13 +106,13 @@ export function ProductPage({
   // the price — and its reason is the photograph ("styled with one"), so only beside a photograph
   // (TASK-126 E-5, ruled 2026-10-03). On the no-photo placeholder the vase stays a priced add-on.
   const excludes = !view.product.vaseIncluded && view.gallery.kind === "photos";
-  const freshness = view.trust.includes("freshnessGuarantee");
 
+  // The preview's sample line is the card add-on's own description ("Your message, printed on our
+  // card and tucked into the bouquet."), so the field and the add-on row say one thing.
   const preview = (
     <PrintedCardPreview
-      caption={product("card.caption")}
       printed={product("card.printed")}
-      sample={product("card.sample")}
+      sample={catalog("addon.card.description")}
     />
   );
 
@@ -156,10 +156,11 @@ export function ProductPage({
               </>
             )}
           </p>
+          {/* The eyebrow is the product's catalogue descriptor ("hand-tied rose bouquet"), set in
+              the uppercase eyebrow voice; the artboard's "· for Poland" tail waits for the
+              founder's copy batch (TASK-179 Result) rather than shipping as unreviewed copy. */}
           {descriptor === undefined ? null : (
-            <Eyebrow className="mb-[14px]">
-              {product("eyebrow", { descriptor, country })}
-            </Eyebrow>
+            <Eyebrow className="mb-[14px]">{descriptor}</Eyebrow>
           )}
           <Display as="h1" size="title">
             <bdi>{view.h1.name}</bdi>
@@ -231,21 +232,15 @@ export function ProductPage({
             className={`${STEP} m-0 min-w-0 border-0 p-0`}
             data-fo-pdp-card
           >
-            <StepLegend step={3}>{product("card.legend")}</StepLegend>
-            <p className="text-ink-muted m-0 text-sm leading-[1.4]">
-              {product("card.help")}
-            </p>
-            <label className="sr-only" htmlFor="pdp-card-message">
-              {product("card.label")}
-            </label>
+            <StepLegend id="pdp-card-legend" step={3}>
+              {catalog("addon.card.name")}
+            </StepLegend>
             <CardMessageField
+              labelledBy="pdp-card-legend"
               className="bg-card text-ink text-body rounded-letter mt-[12px] block min-h-[190px] w-full resize-y border-0 bg-[0_17px] bg-(image:--card-lines) px-[22px] py-[18px] leading-[38px] shadow-[inset_0_0_0_1.5px_var(--color-field-edge),0_14px_30px_-18px_var(--color-shade)]"
               id="pdp-card-message"
-              limit={product("card.limit", {
-                max: formatNumber(CARD_MESSAGE_MAX, code),
-              })}
+              limit={formatNumber(CARD_MESSAGE_MAX, code)}
               maxLength={CARD_MESSAGE_MAX}
-              placeholder={product("card.placeholder")}
             />
             <div className="mt-[16px] max-w-[440px] lg:hidden">{preview}</div>
           </fieldset>
@@ -264,9 +259,6 @@ export function ProductPage({
                 {product("addons.label")}
               </p>
               <AddonPriceList addons={view.addons} locale={code} />
-              <p className="text-fine text-ink-subtle m-0 mt-[10px]">
-                {product("addons.currency")}
-              </p>
             </section>
           )}
 
@@ -281,21 +273,18 @@ export function ProductPage({
       </div>
 
       <div className="border-rule mt-[32px] grid gap-[40px] border-t py-[48px] lg:grid-cols-[7fr_5fr] lg:gap-[64px] lg:py-[96px]">
-        {excludes ? (
-          <section aria-labelledby="pdp-good-to-know" data-fo-pdp-good-to-know>
-            <h2 className={H2S} id="pdp-good-to-know">
-              {product("goodToKnow")}
-            </h2>
+        {/* The artboard heads this "Good to know"; the heading waits for the founder's copy
+            batch, and the sentence stands on its own (TASK-179 Result). */}
+        <div>
+          {excludes ? (
             <p
-              className="bg-surface-raised rounded-field text-ui text-ink-muted m-0 mt-[18px] px-[18px] py-[14px]"
+              className="bg-surface-raised rounded-field text-ui text-ink-muted m-0 px-[18px] py-[14px]"
               data-fo-price-excludes
             >
               {product("excludes")}
             </p>
-          </section>
-        ) : (
-          <div />
-        )}
+          ) : null}
+        </div>
         {view.trust.includes("substitution") ? (
           <section aria-labelledby="pdp-promise" data-fo-pdp-trust>
             <h2 className={H2S} id="pdp-promise">
@@ -306,12 +295,6 @@ export function ProductPage({
                 body={product("trust.substitution.body")}
                 title={product("trust.substitution.title")}
               />
-              {freshness ? (
-                <Promise
-                  body={product("trust.freshness.body")}
-                  title={product("trust.freshness.title")}
-                />
-              ) : null}
             </ul>
           </section>
         ) : null}

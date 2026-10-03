@@ -22,19 +22,16 @@ import { handFontVariables } from "../fonts/hand.ts";
 import { Mark } from "../icons/Mark.tsx";
 
 export interface PrintedCardPreviewProps {
-  /** The sample sentence shown until the buyer types (`product.card.sample`). */
+  /** The sample sentence shown until the buyer types (`catalog.addon.card.description`). */
   readonly sample: string;
   /** "Printed on our card · included" (`product.card.printed`). */
   readonly printed: string;
-  /** "Your card, printed" (`product.card.caption`). */
-  readonly caption: string;
   readonly className?: string;
 }
 
 export function PrintedCardPreview({
   sample,
   printed,
-  caption,
   className,
 }: PrintedCardPreviewProps): ReactElement {
   return (
@@ -60,9 +57,6 @@ export function PrintedCardPreview({
           {printed}
         </p>
       </div>
-      <figcaption className="bg-card text-ink-muted absolute start-[12px] bottom-[12px] rounded-full px-[12px] py-[4px] text-xs">
-        {caption}
-      </figcaption>
     </figure>
   );
 }

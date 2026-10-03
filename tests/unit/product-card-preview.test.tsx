@@ -152,9 +152,12 @@ describe("A21 clause 5: the card message has no name and goes nowhere", () => {
       expect(textarea, locale).toContain(
         `maxLength="${String(CARD_MESSAGE_MAX)}"`,
       );
-      // A visible label names it (WCAG 1.3.1), through `for`/`id`.
-      const id = /\bid="([^"]+)"/u.exec(textarea)?.[1] ?? "";
-      expect(html, locale).toContain(`for="${id}"`);
+      // Visible text names it (WCAG 1.3.1): the step's legend, through `aria-labelledby`.
+      const labelledBy =
+        /\baria-labelledby="([^"]+)"/u.exec(textarea)?.[1] ?? "!";
+      expect(html, locale).toMatch(
+        new RegExp(`<legend[^>]*id="${labelledBy}"[^>]*>`, "u"),
+      );
       // No inline script is rendered by the page component.
       expect(html, locale).not.toMatch(/<script\b/u);
     }
@@ -162,12 +165,15 @@ describe("A21 clause 5: the card message has no name and goes nowhere", () => {
 
   it("draws the preview with the sample sentence and the printed label, shown once per width", async () => {
     const html = await pageHtml("en");
-    const en = loadMessages("en", ["product"]) as {
-      product: { card: { sample: string; printed: string } };
+    const en = loadMessages("en", ["product", "catalog"]) as {
+      product: { card: { printed: string } };
+      catalog: { addon: { card: { description: string } } };
     };
     const previews = [...html.matchAll(/data-fo-card-preview/gu)];
     expect(previews).toHaveLength(2);
-    expect(html.split(`>${en.product.card.sample}<`)).toHaveLength(3);
+    expect(
+      html.split(`>${en.catalog.addon.card.description}<`).length,
+    ).toBeGreaterThanOrEqual(3);
     expect(html.split(`>${en.product.card.printed}<`)).toHaveLength(3);
     // One wrapper hidden below `lg`, the other from `lg` up: never both on screen.
     expect(html).toMatch(

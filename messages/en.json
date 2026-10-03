@@ -848,8 +848,7 @@
   },
   "product": {
     "addons": {
-      "label": "Add something",
-      "currency": "We are showing these prices in the currency of the delivery country."
+      "label": "Add something"
     },
     "demo": {
       "body": "We are still choosing florists in {country}. When we have one, this is the price you will pay — nothing is added at a later step.",
@@ -878,24 +877,11 @@
       "substitution": {
         "title": "If something is unavailable",
         "body": "We substitute to the same value, style and colour, and we tell you what changed."
-      },
-      "freshness": {
-        "title": "Freshness guarantee",
-        "body": "We redeliver or refund, your choice."
       }
     },
     "vat": "VAT {rate}",
-    "eyebrow": "{descriptor} · for {country}",
     "card": {
-      "legend": "What should the card say?",
-      "help": "Printed on our card and tucked into the bouquet. Write it in their language if that is how you talk to them; every letter prints exactly as you type it.",
-      "label": "Card message",
-      "placeholder": "Dear Mum, …",
-      "sample": "Your words will appear here, as they will be printed.",
-      "printed": "Printed on our card · included",
-      "caption": "Your card, printed",
-      "limit": "/ {max}"
-    },
-    "goodToKnow": "Good to know"
+      "printed": "Printed on our card · included"
+    }
   }
 }

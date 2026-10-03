@@ -150,7 +150,13 @@ describe("the guide state (AC-8, AC-19)", () => {
       expect(body).toContain(item.q);
       expect(body).toContain(item.a.slice(0, 40));
     }
-    expect(html.match(/<h3/g) ?? []).toHaveLength(GUIDE_FAQ_ITEMS);
+    // v2 (TASK-179) gives the route steps and the two flower boxes their own `<h3>`s, as the
+    // artboard draws them, so the FAQ's headings are counted inside the FAQ section.
+    const faqSection =
+      /<section[^>]*data-fo-corridor-faq[^>]*>(.*?)<\/section>/su.exec(
+        html,
+      )?.[1] ?? "";
+    expect(faqSection.match(/<h3/g) ?? []).toHaveLength(GUIDE_FAQ_ITEMS);
   });
 
   it("renders the calendar as a captioned table with formatted dates and the rule", () => {

@@ -2254,55 +2254,15 @@
     "reviewed": false,
     "sourceHash": "290d56a719db44fd4dbae562a1a7b6ca6384e2d6f8ad45a46f4cfd5cc44a7115"
   },
-  "product.addons.currency": {
-    "source": "machine",
-    "reviewed": false,
-    "sourceHash": "47721b7d3cefa914020b611150110847dc553435080082874b987cca8c3fe8be"
-  },
   "product.addons.label": {
     "source": "machine",
     "reviewed": false,
     "sourceHash": "97f0721e40460a7780783f462c14fb9a6166c8e142690ea0f3aa179e82f4b641"
   },
-  "product.card.caption": {
-    "source": "machine",
-    "reviewed": false,
-    "sourceHash": "495083727966dfc340204b31c65f5f20714bbbe981905fea6c7d3815c76895c8"
-  },
-  "product.card.help": {
-    "source": "machine",
-    "reviewed": false,
-    "sourceHash": "99bde2aca696c791de53c3e71ea2b1cce7250f7a1c2457edde80c077cde82f74"
-  },
-  "product.card.label": {
-    "source": "machine",
-    "reviewed": false,
-    "sourceHash": "c0d6c80a4413b3c2e3ebd6ece9ea56d85d3898afacfbff5f9e152b5bc3ab9f14"
-  },
-  "product.card.legend": {
-    "source": "machine",
-    "reviewed": false,
-    "sourceHash": "5381e6f74a42ea052ea636af7b380e338989851cbc55bfb4ffd119bb35e87514"
-  },
-  "product.card.limit": {
-    "source": "machine",
-    "reviewed": false,
-    "sourceHash": "ee1c766f2be76a2e73a95cfa9f781da3a371da56a7a0de7873a8c3d2fef910a8"
-  },
-  "product.card.placeholder": {
-    "source": "machine",
-    "reviewed": false,
-    "sourceHash": "3214651f892c76c5542d5a71043f07ad728d4519fe58012a0fb23b8f2e82f499"
-  },
   "product.card.printed": {
     "source": "machine",
     "reviewed": false,
     "sourceHash": "20fb0ab7db7322eb34e36499a9d3c329ace23a20f095ecf2ad8a063f72281b0a"
-  },
-  "product.card.sample": {
-    "source": "machine",
-    "reviewed": false,
-    "sourceHash": "1aa32866cef2fb3e9e918d265dd7c77bc839244b8a4c1c401405b5f355dc4925"
   },
   "product.demo.body": {
     "source": "machine",
@@ -2328,16 +2288,6 @@
     "source": "machine",
     "reviewed": false,
     "sourceHash": "196d76ef0bfd4185d8b00bcbd6c0b0b2cc57cd12b69200b3c968453d0ca97841"
-  },
-  "product.eyebrow": {
-    "source": "machine",
-    "reviewed": false,
-    "sourceHash": "08cb5e418a89588652633f7cbe19a198f9a93e4a6c6a2004dbd53ea49eb85675"
-  },
-  "product.goodToKnow": {
-    "source": "machine",
-    "reviewed": false,
-    "sourceHash": "aab7685123cf4b021c62a41c905fdc381aaa3ae8e944299e4cdf58955258f445"
   },
   "product.included": {
     "source": "machine",
@@ -2373,16 +2323,6 @@
     "source": "machine",
     "reviewed": false,
     "sourceHash": "696803bd1796ab66fe297c5172427c40c403b736ee8ad677de1c39f66a880642"
-  },
-  "product.trust.freshness.body": {
-    "source": "machine",
-    "reviewed": false,
-    "sourceHash": "454c7930fd562e567d7efe0c177f9b0dcb4268ac76b0875e1174923e65acbd76"
-  },
-  "product.trust.freshness.title": {
-    "source": "machine",
-    "reviewed": false,
-    "sourceHash": "e4d520106675c99a6b932ac6bba5122df5566783cc047eb7ef4f79bf958915a2"
   },
   "product.trust.label": {
     "source": "machine",

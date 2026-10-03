@@ -16,8 +16,9 @@
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
-import { Display, Label, Stack, Text } from "../../ui/index.ts";
 import type { FaqItem } from "../content/schemas.ts";
+
+import { CorridorSection } from "./CorridorSection.tsx";
 
 export interface CorridorFaqProps {
   readonly country: string;
@@ -28,23 +29,28 @@ export function CorridorFaq({ country, faq }: CorridorFaqProps): ReactElement {
   const c = useTranslations("corridor");
 
   return (
-    <Stack as="section" gap="md" data-fo-corridor-faq>
-      <Stack gap="xs">
-        <Label>{c("faq.eyebrow", { country })}</Label>
-        <Display size="2xl">
-          {c("faq.heading", { count: faq.length, country })}
-        </Display>
-      </Stack>
-      <Stack gap="md" className="max-w-prose">
+    <CorridorSection
+      eyebrow={c("faq.eyebrow", { country })}
+      heading={c("faq.heading", { count: faq.length, country })}
+      id="corridor-faq"
+      marker="data-fo-corridor-faq"
+    >
+      {/* Visible questions and answers, never an accordion: spec 007 §2 and §5.3 ("server-rendered
+          `<h3>`+`<p>`, no accordion, no JS, never hidden") outrank the v2 artboard's
+          `<details>`, which the artboard's own rule — the spec wins on behaviour — sets aside.
+          The look is the artboard's: hairline-ruled items, the question in the display voice. */}
+      <div className="border-rule border-t">
         {faq.map((item) => (
-          <Stack gap="xs" key={item.q}>
-            <Display as="h3" size="lg">
+          <div className="border-rule border-b py-[18px]" key={item.q}>
+            <h3 className="display text-h3-s md:text-h3 m-0 font-normal">
               {item.q}
-            </Display>
-            <Text>{item.a}</Text>
-          </Stack>
+            </h3>
+            <p className="text-ink-muted m-0 mt-[10px] max-w-[64ch]">
+              {item.a}
+            </p>
+          </div>
         ))}
-      </Stack>
-    </Stack>
+      </div>
+    </CorridorSection>
   );
 }

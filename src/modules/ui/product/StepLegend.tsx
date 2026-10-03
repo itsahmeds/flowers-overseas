@@ -28,11 +28,17 @@ export const STEP_HEADING =
 export interface StepLegendProps {
   readonly children: ReactNode;
   readonly step?: number | undefined;
+  /** For a control inside the group that is named by the legend (`aria-labelledby`). */
+  readonly id?: string;
 }
 
-export function StepLegend({ children, step }: StepLegendProps): ReactElement {
+export function StepLegend({
+  children,
+  step,
+  id,
+}: StepLegendProps): ReactElement {
   return (
-    <legend className={STEP_HEADING}>
+    <legend className={STEP_HEADING} id={id}>
       {step === undefined ? null : <StepNumber step={step} />}
       {children}
     </legend>

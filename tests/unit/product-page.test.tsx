@@ -1022,21 +1022,12 @@ describe("AC-22: no claim without backing, in every locale and picker state", ()
     }
   });
 
-  // TASK-127 rendered the substitution claim alone because the v1 drawing showed only it. The v2
-  // artboards draw both claims (`product-*.dc.html`, "What we promise": substitution and the
-  // founder's "Freshness guarantee", never "7-day"), so the freshness claim renders where the
-  // view model carries it, and the florist claim still stays off (TASK-179).
-  it("renders the substitution and freshness claims the drawing shows, and no other", async () => {
+  it("renders the substitution claim only — the trust claims the drawing does not show stay off", async () => {
     const view = await liveViewOf("en", AMBER, { now: WOMENS_DAY_WEEK });
     expect(view.trust).toContain("freshnessGuarantee");
     const trust = readable(block(render(view), "data-fo-pdp-trust"));
     expect(trust).toContain("If something is unavailable");
-    expect(trust).toContain("Freshness guarantee");
-    expect(trust).not.toMatch(/7-day|hand-made in the recipient/iu);
-    const without = readable(
-      block(render({ ...view, trust: ["substitution"] }), "data-fo-pdp-trust"),
-    );
-    expect(without).not.toMatch(/freshness/iu);
+    expect(trust).not.toMatch(/freshness|7-day|hand-made in the recipient/iu);
   });
 });
 

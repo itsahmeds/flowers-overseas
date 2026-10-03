@@ -36,7 +36,7 @@ _None recorded._
 
 ## Progress
 
-_Not started._
+- 2026-10-04 00:45 — PDP v2 layout, `PrintedCardPreview`, the `CardMessageField` island, new `product.*` keys, unit tests (`product-card-preview.test.tsx`); draft PR #170. Next: corridor page, not-found/error letters, e2e.
 
 ## Result
 
