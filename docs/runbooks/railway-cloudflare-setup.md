@@ -515,6 +515,10 @@ and values only.
 
 - `skipped: no token`: one of the two `export` lines did not run in this shell. Run them again.
 - `exit 2` naming a variable: that variable is empty in this shell.
+- `exit 2`, `… holds a line break, a space or another invisible character (N lines)`: the value
+  was saved with more than the token or zone id, often a second line or a trailing return. In
+  the shell, `export` it again with the value alone; in CI, save the repository secret again
+  (Z4). The value is never printed.
 - `exit 3`, `the token is missing scope X`: the token lacks row X of the Z1 table. Edit the token
   (My Profile → API Tokens → the `…` menu → **Edit**), add the row, and run again.
 - `exit 3`, `answered 401`: Cloudflare refused the token. Make a new one (Z1).
@@ -537,7 +541,9 @@ repository secrets. **Without them it fails** and names them. It never passes on
 
 1. GitHub → `itsahmeds/flowers-overseas` → **Settings** → **Secrets and variables** →
    **Actions** → **New repository secret**.
-2. Name `CLOUDFLARE_API_TOKEN`, value: the token from Z1. Click **Add secret**.
+2. Name `CLOUDFLARE_API_TOKEN`, value: the token from Z1, on one line, with nothing before or
+   after it (no second line, no trailing return). Click **Add secret**. To replace a secret,
+   click its name, then **Update secret**.
 3. Again: name `CLOUDFLARE_ZONE_ID`, value: the zone id from Z2. Click **Add secret**.
 
 Do Z3 before Z4: once the secrets exist, the job checks the live zone, and it stays red until Z3's

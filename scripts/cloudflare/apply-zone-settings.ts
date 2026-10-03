@@ -67,7 +67,18 @@ export function fetchTransport(token: string): Transport {
       },
     };
     if (request.body !== undefined) init.body = JSON.stringify(request.body);
-    const response = await fetch(`${CLOUDFLARE_API_BASE}${request.path}`, init);
+    let response: Response;
+    try {
+      response = await fetch(`${CLOUDFLARE_API_BASE}${request.path}`, init);
+    } catch (error) {
+      // The error's message can quote the request's headers, the token among them: only its
+      // name is kept (the 2026-10-03 run printed the masked token this way).
+      throw new CloudflareApiError(
+        0,
+        `${request.method} ${request.path.replace(/^\/zones\/[^/]+/, "/zones/{zone_id}")}`,
+        `the request failed before Cloudflare answered (${error instanceof Error ? error.name : "unknown error"})`,
+      );
+    }
     let body: unknown = null;
     try {
       body = await response.json();
@@ -101,6 +112,15 @@ export interface CliResult {
 
 const present = (value: string | undefined): value is string =>
   value !== undefined && value !== "";
+
+/**
+ * Whitespace or a control character. Neither a Cloudflare token nor a zone id holds one, and a
+ * header value with a line break makes `fetch` throw a message that quotes it (the token).
+ */
+const INVISIBLE = /[\s\p{Cc}]/u;
+
+const plural = (count: number, word: string): string =>
+  `${String(count)} ${word}${count === 1 ? "" : "s"}`;
 
 function command(options: CliOptions): string {
   return options.check ? "cloudflare:check" : "cloudflare:apply";
@@ -142,6 +162,19 @@ function resolveTransport(
       stdout: "",
       stderr: `${command(options)} needs ${missing}: ${present(token) ? TOKEN_KEY : ZONE_ID_KEY} is set and ${missing} is not (${runbook})\n`,
     };
+  }
+  for (const [key, value] of [
+    [TOKEN_KEY, token],
+    [ZONE_ID_KEY, zoneId],
+  ] as const) {
+    if (INVISIBLE.test(value)) {
+      const lines = value.split("\n").length;
+      return {
+        code: 2,
+        stdout: "",
+        stderr: `${command(options)}: ${key} holds a line break, a space or another invisible character (${plural(lines, "line")}): it was saved with more than the ${key === TOKEN_KEY ? "token" : "zone id"}. Save the ${key === TOKEN_KEY ? "token" : "zone id"} alone again (${runbook}). Its value is not printed.\n`,
+      };
+    }
   }
   return { transport: fetchTransport(token), zoneId };
 }

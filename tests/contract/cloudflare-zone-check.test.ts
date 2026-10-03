@@ -15,9 +15,10 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
-import { afterAll, describe, expect, it } from "vitest";
+import { afterAll, describe, expect, it, vi } from "vitest";
 
 import {
+  fetchTransport,
   loadDeclaredZone,
   run,
 } from "../../scripts/cloudflare/apply-zone-settings.ts";
@@ -616,6 +617,82 @@ describe("the CLI (AC-23, AC-24): exit codes, credentials, and nothing secret pr
       "cloudflare:check needs CLOUDFLARE_ZONE_ID: CLOUDFLARE_API_TOKEN is set and CLOUDFLARE_ZONE_ID is not (docs/runbooks/railway-cloudflare-setup.md, section Cloudflare zone settings)\n",
     );
     expect(result.stdout + result.stderr).not.toContain(SENTINEL);
+  });
+
+  // The `cloudflare-check` run of 2026-10-03 (PR 126, run 37118980312) crashed with
+  // `TypeError: Headers.append: "***\n***" is an invalid header value`: the repository secret held
+  // two lines. Outside CI nothing masks that message, so it would have printed the token.
+  for (const [what, token] of [
+    ["two lines", `${SENTINEL}\n${SENTINEL}`],
+    ["a trailing line break", `${SENTINEL}\n`],
+    ["a space", ` ${SENTINEL}`],
+  ] as const) {
+    it(`a token holding ${what}: exit 2 naming the fault, the token never printed, nothing sent`, async () => {
+      const fetchSpy = vi.fn();
+      vi.stubGlobal("fetch", fetchSpy);
+      try {
+        const result = await run(
+          ["--check", "--require-token"],
+          {
+            CLOUDFLARE_API_TOKEN: token,
+            CLOUDFLARE_ZONE_ID: "0f1e2d3c4b5a69788796a5b4c3d2e1f0",
+          },
+          repoRoot,
+        );
+        expect(result.code).toBe(2);
+        expect(result.stderr).toBe(
+          `cloudflare:check: CLOUDFLARE_API_TOKEN holds a line break, a space or another invisible character (${String(token.split("\n").length)} line${token.includes("\n") ? "s" : ""}): it was saved with more than the token. Save the token alone again (docs/runbooks/railway-cloudflare-setup.md, section Cloudflare zone settings). Its value is not printed.\n`,
+        );
+        expect(result.stdout + result.stderr).not.toContain(SENTINEL);
+        expect(fetchSpy).not.toHaveBeenCalled();
+      } finally {
+        vi.unstubAllGlobals();
+      }
+    });
+  }
+
+  it("a zone id holding a line break: exit 2 naming it, before any call", async () => {
+    const result = await run(
+      ["--check"],
+      {
+        CLOUDFLARE_API_TOKEN: SENTINEL,
+        CLOUDFLARE_ZONE_ID: "0f1e2d3c4b5a69788796a5b4c3d2e1f0\n",
+      },
+      repoRoot,
+    );
+    expect(result.code).toBe(2);
+    expect(result.stderr).toContain(
+      "cloudflare:check: CLOUDFLARE_ZONE_ID holds a line break, a space or another invisible character",
+    );
+    expect(result.stdout + result.stderr).not.toContain(SENTINEL);
+  });
+
+  it("a request that fails before Cloudflare answers: a named error that never carries the token", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.reject(
+          new TypeError(`Headers.append: "Bearer ${SENTINEL}" is invalid`),
+        ),
+      ),
+    );
+    try {
+      const transport = fetchTransport(SENTINEL);
+      const failure = await transport({
+        method: "GET",
+        path: "/zones/0f1e2d3c4b5a69788796a5b4c3d2e1f0",
+      }).then(
+        () => undefined,
+        (error: unknown) => error,
+      );
+      expect(failure).toBeInstanceOf(CloudflareApiError);
+      expect((failure as Error).message).toBe(
+        "GET /zones/{zone_id} answered 0: the request failed before Cloudflare answered (TypeError)",
+      );
+      expect(String((failure as Error).message)).not.toContain(SENTINEL);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
   it("with the zone id only: exit 2 naming the token", async () => {
