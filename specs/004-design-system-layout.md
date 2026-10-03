@@ -704,7 +704,7 @@ Corrected (orchestrator, 2026-10-03):
    with no page yet is **not rendered at all**: no text, no label, no disabled control. This
    supersedes A4's "as text" rule for the search band and for every header, footer and home entry.
    §2 L229's "render **nothing** for an unpublished target" now holds without exception.
-2. **Omitted until their specs ship:** Search, Sign in, My orders and Basket. Footer items with no
+2. **Omitted until their specs ship:** Search, Sign in, My orders, Basket, the mobile menu icon (it opens nothing), and the Add-ons entry (no hub page). Footer items with no
    page (How it works, The guarantee, Help and contact, Company, the legal pages) are omitted until
    TASK-174 builds them. They return by a data flip with no markup change.
 3. **Unchanged:** the picker's unpublished-destination state (§2 L80) and `Continue`'s "no
