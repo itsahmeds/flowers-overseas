@@ -308,43 +308,79 @@ describe.each(
  */
 describe("spec 006 §14 A9: `media/alt-missing` covers approved product assets only", () => {
   const ASSET = "fo-bq-001-hero";
+  const BRAND = "home-occasion-birthday";
   type MediaRow = Record<string, unknown> & { id: string };
-  const mediaWith = (patch: (row: MediaRow) => MediaRow): unknown => {
+  type AltRow = { assetId: string; alt: string };
+  const mediaWith = (
+    patch: (row: MediaRow) => MediaRow,
+    id: string = ASSET,
+  ): [string, unknown] => {
     const file = structuredClone(tree.raw.get("media.json")) as {
       rows: MediaRow[];
     };
-    return {
-      ...file,
-      rows: file.rows.map((row) => (row.id === ASSET ? patch(row) : row)),
-    };
+    return [
+      "media.json",
+      {
+        ...file,
+        rows: file.rows.map((row) => (row.id === id ? patch(row) : row)),
+      },
+    ];
   };
-  const altWithout = (locale: string): unknown => {
+  const asState =
+    (state: "pending" | "rejected") =>
+    (row: MediaRow): MediaRow => {
+      const next: MediaRow = { ...row, reviewState: state };
+      if (state === "pending") {
+        delete next.reviewedBy;
+        delete next.reviewedAt;
+      }
+      return next;
+    };
+  const altEdited = (
+    locale: string,
+    edit: (rows: AltRow[]) => AltRow[],
+  ): [string, unknown] => {
     const file = structuredClone(tree.raw.get(`alt/${locale}.json`)) as {
-      rows: { assetId: string }[];
+      rows: AltRow[];
     };
-    return { ...file, rows: file.rows.filter((row) => row.assetId !== ASSET) };
+    return [`alt/${locale}.json`, { ...file, rows: edit(file.rows) }];
   };
-  const altMissing = (raw: [string, unknown][]): readonly string[] =>
+  const altWithout = (locale: string, ...ids: string[]): [string, unknown] =>
+    altEdited(locale, (rows) =>
+      rows.filter((row) => !ids.includes(row.assetId)),
+    );
+  const altEmptied = (locale: string, id: string = ASSET): [string, unknown] =>
+    altEdited(locale, (rows) =>
+      rows.map((row) => (row.assetId === id ? { ...row, alt: "" } : row)),
+    );
+  const reportedUnder = (
+    rule: string,
+    raw: [string, unknown][],
+  ): readonly string[] =>
     checkSeedDataset({ ...tree, raw: new Map([...tree.raw, ...raw]) })
-      .filter((problem) => problem.rule === "alt-missing")
+      .filter((problem) => problem.rule === rule)
       .map((problem) => `${problem.key} ${problem.message}`);
+  const altMissing = (raw: [string, unknown][]): readonly string[] =>
+    reportedUnder("alt-missing", raw);
+  const EMPTY_ALT = `${ASSET} is a product image with an empty alt: an informative image announced as nothing fails WCAG 1.1.1, and the honest fallback is the placeholder (AC-8, AC-18)`;
 
-  it(
-    "passes a `pending` product asset with no alt row in any launch locale",
-    () => {
-      const pending = mediaWith((row) => {
-        const rest: MediaRow = { ...row, reviewState: "pending" };
-        delete rest.reviewedBy;
-        delete rest.reviewedAt;
-        return rest;
-      });
+  it("the subjects are what the cases say: an approved product asset and an approved brand asset", () => {
+    const rows = (tree.raw.get("media.json") as { rows: MediaRow[] }).rows;
+    const find = (id: string): MediaRow | undefined =>
+      rows.find((row) => row.id === id);
+    expect(find(ASSET)?.reviewState).toBe("approved");
+    expect(find(ASSET)?.depicts).toBe("product");
+    expect(find(BRAND)?.reviewState).toBe("approved");
+    expect(find(BRAND)?.depicts).toBe("brand");
+  });
+
+  it.each(["pending", "rejected"] as const)(
+    "passes a `%s` product asset with no alt row in any launch locale",
+    (state) => {
       expect(
         altMissing([
-          ["media.json", pending],
-          ...launchLocales.map(
-            (locale) =>
-              [`alt/${locale}.json`, altWithout(locale)] as [string, unknown],
-          ),
+          mediaWith(asState(state)),
+          ...launchLocales.map((locale) => altWithout(locale, ASSET)),
         ]),
       ).toEqual([]);
     },
@@ -354,13 +390,41 @@ describe("spec 006 §14 A9: `media/alt-missing` covers approved product assets o
   it(
     "fails an `approved` product asset with no alt in one launch locale",
     () => {
-      expect(
-        (tree.raw.get("media.json") as { rows: MediaRow[] }).rows.find(
-          (row) => row.id === ASSET,
-        )?.reviewState,
-      ).toBe("approved");
-      expect(altMissing([["alt/pl.json", altWithout("pl")]])).toEqual([
+      expect(altMissing([altWithout("pl", ASSET)])).toEqual([
         `${ASSET} is a product image with no \`pl\` alt text`,
+      ]);
+    },
+    TREE_TIMEOUT,
+  );
+
+  it(
+    'keeps the `depicts: "product"` filter: an approved brand asset with no alt passes, the product asset beside it fails',
+    () => {
+      expect(altMissing([altWithout("pl", ASSET, BRAND)])).toEqual([
+        `${ASSET} is a product image with no \`pl\` alt text`,
+      ]);
+    },
+    TREE_TIMEOUT,
+  );
+
+  it(
+    "refuses an empty alt on a `pending` product asset (`media/alt-empty`, whatever the state)",
+    () => {
+      expect(
+        reportedUnder("alt-empty", [
+          mediaWith(asState("pending")),
+          altEmptied("pl"),
+        ]),
+      ).toEqual([EMPTY_ALT]);
+    },
+    TREE_TIMEOUT,
+  );
+
+  it(
+    "refuses an empty alt on an `approved` product asset (`media/alt-empty`)",
+    () => {
+      expect(reportedUnder("alt-empty", [altEmptied("pl")])).toEqual([
+        EMPTY_ALT,
       ]);
     },
     TREE_TIMEOUT,

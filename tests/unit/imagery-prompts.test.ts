@@ -722,6 +722,21 @@ describe("AC-32: a generator's record bounds its assets (T-32)", () => {
     expect(assetsRowProblems(grokText)).toEqual([]);
   });
 
+  it("counts only backticked SKUs: a SKU the row names without backticks is not in the set (`/break 142` HOLE 4)", () => {
+    const sentence = "this row uses no ranges.";
+    expect(grokText).toContain(sentence);
+    const mentioning = grokText.replace(
+      sentence,
+      "this row uses no ranges, and FO-BQ-007 and FO-FN-011 are not in it.",
+    );
+    const real = parseAssetsRow(grokText);
+    const parsed = parseAssetsRow(mentioning);
+    expect(parsed.skus.has("FO-BQ-007")).toBe(false);
+    expect(parsed.skus.has("FO-FN-011")).toBe(false);
+    expect([...parsed.skus].sort()).toEqual([...real.skus].sort());
+    expect(assetsRowProblems(mentioning)).toEqual([]);
+  });
+
   it("goes red when the parsed SKU count differs from the row's stated count", () => {
     const shortRow = grokText.replace("`FO-BQ-008`, ", "");
     expect(shortRow).not.toBe(grokText);

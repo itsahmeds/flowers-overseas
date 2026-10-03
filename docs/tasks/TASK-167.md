@@ -77,6 +77,16 @@ One dated bullet per `/review`, newest last.
 
 - **From `/review 129` round 2 (2026-10-03), nits for the intake:** `.jpeg` as well as `.jpg`; a
   `sku: null` row; the T-31/T-32 index line; TASK-138 named as the dependency.
+- **From `/review 142` and `/break 142` round 1 (2026-10-03, head `dfe307ac`):** review required
+  1 / break HOLE 5 — `pnpm media:upload` and `--verify` act only on variants of `approved` assets
+  (`publishableRows()` in `scripts/media-upload.ts`), with the skipped count in the summary, and
+  the runbook rows 9–10, L144 and the sheet name `--only <ids>` for a batch; review required 2 /
+  HOLE 1 — `media/alt-empty` refused on a `pending` and on an `approved` product asset; HOLE 2 — an
+  approved `brand` asset with no alt passes `alt-missing` beside a product asset that fails;
+  HOLE 3 — a `rejected` product asset with no alt passes; HOLE 4 — an Assets-row SKU written
+  without backticks is not counted. Nits logged, not done: `existingGenerators()` parsing through
+  `ImageryPromptFileSchema` and catching only `ENOENT`; the spec index still points T-31/T-32 at
+  the A7 heading (a `specs:index` fix).
 
 ## Escalations
 
@@ -87,7 +97,7 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   every row `pending`.
 - **From `/review 139` (2026-10-03), answered by the orchestrator:** the PR merges unapproved; the
   approval, sign-off instant(s), upload and FO-BQ-004 move to TASK-168.
-- **2026-10-03 — alt text for `pending` rows (orchestrator; raised by the implementer). Answered 2026-10-03: option (A), recorded as spec 006 §14 A9 (`580387c4`); the fence widened to `seed/check.ts` (that one condition), `tests/unit/seed-check.test.ts` and `tests/unit/ui-media-manifest.test.ts`; the two out-of-fence changes (`scripts/imagery-prompts-remaining.ts`, `seed/snapshot/*`) accepted.**
+- **2026-10-03 — alt text for `pending` rows (orchestrator; raised by the implementer). Answered 2026-10-03: option (A), recorded as spec 006 §14 A9 (`dc204224` after the orchestrator's rebase; was `580387c4`); the fence widened to `seed/check.ts` (that one condition), `tests/unit/seed-check.test.ts` and `tests/unit/ui-media-manifest.test.ts`; the two out-of-fence changes (`scripts/imagery-prompts-remaining.ts`, `seed/snapshot/*`) accepted.**
   `pnpm seed:check` family 7 (`media/alt-missing`, `seed/check.ts` ~L1708) requires alt text in
   all four launch locales for **every** `depicts: "product"` asset, whatever its `reviewState`.
   The 142 pending rows therefore raise 568 problems (142 × 4 locales, nothing else), and the same
@@ -115,16 +125,25 @@ here.
 - 2026-10-03: C2PA manifests of all 148 zip files read (86 PNG `ChatGPT`/`gpt-image`, 62 JPEG `Grok Imagine`, split exactly on the Grok record's 31 SKUs); 142 originals staged in the main checkout's `.local/imagery/originals/` (173 files), worktree reads them through `.local/imagery` → main's `.local/imagery`; T-31/T-32 generalised and each failing case watched red; `` `gpt-image` `` filed in answer 1. Next: prompt records.
 - 2026-10-03: prompt records (80 ChatGPT → `gpt-image`, 62 Grok → `xAI Grok Imagine` / `Grok Imagine`, FO-BQ-004 untouched); 142 `media.json` rows `pending` with `promptHash` from `promptHash()` and `originalSha256` of the staged original; sign-off case split, each split case watched red by mutating `media.json`. Next: `pnpm media:variants`.
 - 2026-10-03: `pnpm media:variants` once (3 min 46 s, load 1.6): 686 rows (118 batch-1 rows byte-identical + 568), nothing under `public/media/` changed, every file inside its slot cap; `--check` and `catalogue:check` green. Rule-2 comment restated; sheet regenerated (script keeps each record's generator fields and lists products with no *approved* row, so the CSV is unchanged); runbook names `.jpeg`. **`seed:check` red: 568 × `media/alt-missing`** (142 new product assets × 4 locales) — escalated, see `## Escalations`.
-- 2026-10-03: `seed/snapshot/{product_media,media_variant}.json` regenerated (`pnpm seed:diff --write`: 142 + 568 inserts). `gates:cheap` on `e072a2cd`: six gates exit 0, `tests` exit 1 — 31 failures, all the alt cascade. Row → `blocked`; escalation above. A finisher: apply the ruling, then gates, rebase, ready, `ci:full`.
+- 2026-10-03: `seed/snapshot/{product_media,media_variant}.json` regenerated (`pnpm seed:diff --write`: 142 + 568 inserts). `gates:cheap` on `e072a2cd` (pre-rebase SHA): six gates exit 0, `tests` exit 1 — 31 failures, all the alt cascade. Row → `blocked`; escalation above. A finisher: apply the ruling, then gates, rebase, ready, `ci:full`.
 - 2026-10-03 (A9): `media/alt-missing` now fires for `approved` product assets only; the merged-tree alt count asserts the 31 approved assets; two A9 cases (pending with no alt passes; approved with no `pl` alt fails), red when the condition is reverted (8 cases red) or disabled (the approved case red); `ui-media-manifest.test.ts` asserts alt keys equal the approved ids, red when widened to pending. The main checkout was at `da13b397`, behind the TASK-167 row, so the edit guard refused; I fast-forwarded it to `origin/main` `636fbd42` (clean tree, untracked `.claude/launch.json` untouched).
+- 2026-10-03 (round 2, on the orchestrator's rebase `dfe307ac`): upload/verify approved-only with three `media-upload` cases (red with the filter removed; two red with only `loadUploadSet` unfiltered, one with only `runVerify` unfiltered); runbook and sheet; five A9 cases (`rejected`, brand filter, two `alt-empty`), red under the breaker's A4–A7; the unbackticked-SKU case, red under M16.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-**In review (2026-10-03).** PR [#142](https://github.com/itsahmeds/flowers-overseas/pull/142),
-ready, `ci:full`. Unit layer: T-31/T-32 in `tests/unit/imagery-prompts.test.ts` (generator → terms
+**For TASK-168 (from `/break 142` round 1).** The batch split in
+`tests/unit/seed-media-manifest.test.ts` reads `content/imagery/remaining-images.csv`, and
+`scripts/imagery-prompts-remaining.ts` regenerates that CSV from approval state. Approving a
+batch-2 row and regenerating the sheet therefore moves the row into "batch 1", and the 2026-09-18
+sign-off case goes red. TASK-168 must handle that: either do not regenerate the CSV in the
+approval change, or change the case to key the batches on something stable (e.g. the sign-off
+instant).
+
+**In review (2026-10-03, round 2).** PR [#142](https://github.com/itsahmeds/flowers-overseas/pull/142),
+ready, `ci:full`. Round 2 adds the approved-only upload and verify (`scripts/media-upload.ts`, three cases) and six cases closing the round-1 holes. Unit layer: T-31/T-32 in `tests/unit/imagery-prompts.test.ts` (generator → terms
 map; 14 new cases, every failing case watched red by mutation); the sign-off split in
 `tests/unit/seed-media-manifest.test.ts` (batch 1: 31 approved at the two 2026-09-18 instants;
 batch 2: 142 `pending`, no reviewer; each half watched red by mutating `media.json`); two A9
