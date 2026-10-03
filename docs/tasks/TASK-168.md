@@ -318,6 +318,11 @@ here.
   each viewed beside the committed one — the same caption, gradient box and four empty
   thumbnails, narrower in the `/dev/components` column (desktop 420 px wide, mobile 324 px).
   `visual:baselines --verify` on that run's manifest: 104 of 104. `gates:cheap` PASS on `38cb1093`.
+- 2026-10-03: CI run 37123660543 on `81818052` (`origin/main` merged in, no force-push): every job
+  green but `e2e`, red only on `media-budgets.spec.ts:87` × `/en`, `/de`, `/pl` (215 876 B each,
+  the escalation); `visual` green with the two new baselines; the consent flake did not recur.
+  Lighthouse LCP `/en` 1 870 ms, `/en-gb` 1 933, `/de` 1 866, `/pl` 1 799 (budget 2 000; `/en-gb`'s
+  margin is 67 ms). Stopped on the budget; row `blocked`.
 
 ## Result
 
