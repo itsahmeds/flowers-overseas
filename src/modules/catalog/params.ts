@@ -20,7 +20,8 @@
  * | `?page=N`, `N > pageCount` | **404** (`listingView()` answers `undefined`; never an empty grid) |
  * | `?page=0`, `?page=1.5`, `?page=abc` | 200 page 1, and a **neutralised** parameter: `noindex,follow`, canonical to the base |
  * | `?sort=price-asc` (or any valid sort, `default` included) | 200 sorted, `noindex,follow`, canonical to the base |
- * | `?sort=banana`, `?colour=red`, `?utm_source=x` | 200 base content, `noindex,follow`, canonical to the base |
+ * | `?sort=banana`, `?colour=red` (any facet name) | 200 base content, `noindex,follow`, canonical to the base |
+ * | `?utm_source=x`, `?gclid=…` (no listing key) | **the prebuilt bare document**, byte for byte: the bare URL's own directive and its canonical to the base. This function is never asked — the request is not rewritten to the parameter route (TASK-170, `src/lib/listing-rewrites.ts`; spec 007 §14 A5's canonical stripping) |
  *
  * **Why a malformed `page` is neutralised rather than redirected** (`/review 72`'s carry-forward,
  * ruled here): `ListingSearchParamsSchema` reads an invalid value as absent, and an absent `page`
@@ -84,6 +85,13 @@ export interface ListingRequest {
    * with a **permanent redirect** to it (AC-10). The only redirect a listing URL produces.
    */
   readonly redirectToBare: boolean;
+  /**
+   * Every parameter name the request carried, honoured or neutralised, sorted (TASK-170). The
+   * parameter route reads it to answer 404 to a request that carries none of the keys the
+   * listing rewrite is keyed on — one that did not come through the rewrite — so the internal
+   * path never serves a second copy of the bare page. Parsed names, never the raw query.
+   */
+  readonly keys: readonly string[];
 }
 
 /**
@@ -111,6 +119,7 @@ export function listingRequest(
     canonicalPage: !parameterised && search.page >= 2 ? search.page : undefined,
     titlePage: search.page >= 2 ? search.page : undefined,
     redirectToBare,
+    keys: [...search.honoured, ...search.ignored].sort(),
   };
 }
 
