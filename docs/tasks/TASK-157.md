@@ -45,8 +45,8 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
 - **2026-09-29: the §6 token type** (to: orchestrator; answer: `open`, text corrected). Runbook §6 told the founder to use a **project** token. Railway's public-API guide says a project token covers one environment and goes in a `Project-Access-Token` header, while `railway:check` and `release:*` send `Authorization: Bearer`. §6 and F5 now say a **workspace** token for Grovant's workspace. F5's check shows whether it works.
 - **2026-09-29: spec text that AC-41 reads as corrected** (to: orchestrator; answer: `open`, spec not edited). §4's founder story ("I deploy by merging to `main`") and §5.3 "Deploys and rollback" (`main` → `production`) still read the old way. AC-41 says they "read as corrected here", so nothing is owed unless the spec writer wants the text itself changed.
 
-- **2026-10-03: T-44's paste, received. Answered; the task closes, subject to `/review 153`'s ruling on the
-  run's timing.** F2 and F4 were done by the orchestrator in the founder's signed-in Railway at about 10:20Z
+- **2026-10-03: T-44's paste, received. Answered; the task closes. `/review 153` round 2 ruled that one run after F1–F4
+  satisfies AC-42 (`railway:check` never reads Wait for CI; the exit-0 run belongs to TASK-104).** F2 and F4 were done by the orchestrator in the founder's signed-in Railway at about 10:20Z
   (staging `web` on `main` with auto-deploy; Wait for CI turned on and applied). F3: PR environments are not
   enabled yet (TASK-099 enables them), so none follows `release`. F1 part 2 is n/a, because production has no
   `web`. Three staged, unapplied changes that would have added a production service on `main` were discarded
