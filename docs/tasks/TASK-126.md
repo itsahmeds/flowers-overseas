@@ -226,10 +226,16 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
 - **2026-10-03 — `/review 135` round 1 fix round (finisher).** Rebased on `origin/main` (PR 136):
   one conflict, the visual manifest, resolved to main's two `occasion-hub` hashes plus this PR's
   eleven `product-*` entries; `messages/*` and the codebase map merged clean. No PNG this PR owns
-  renders the florist sentence (the PDP baselines are date-free blocks with no description; the
-  gallery's fixtures are not seed copy), so nothing was re-shot. The mobile A19 red was a race in
+  prints the florist sentence (the PDP baselines are date-free blocks; the gallery's fixtures are
+  not seed copy), but the longer sentence in the description above moved three desktop blocks by a
+  fraction of a pixel (`product-desktop-addons` 212 → 211 px, CI run 37083501768). Those three
+  (`-addons`, `-summary`, `-picker-unavailable`) were re-shot by `visual-baselines` run
+  37084269614, all three opened (content unchanged), committed with the manifest: 104/104. The mobile A19 red was a race in
   the sweep, not a missing mark (below). HOLES 3, 4 and 5 closed in `tests/unit/product-page.test.tsx`,
   each seen red under the breaker's mutant and green once restored.
+- **2026-10-03 — CI on `06b48066`:** e2e green on both projects (1 198 passed, 6 skipped, no
+  flaky), including the mobile `/dev/components` A19 case and the new 308 case; `visual` red only on
+  the sub-pixel shift above, fixed by the re-shot baselines.
 
 ## Result
 
