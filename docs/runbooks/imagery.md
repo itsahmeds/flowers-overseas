@@ -177,11 +177,11 @@ pays.
   anything but `pnpm media:variants`. It is not a CI job because 118 public `HEAD`s on
   every pull request would be a worse trade than the drift it catches — that was true when the
   origin was rate-limited and it stays true now that it is not.
-- **The bucket names deviate from spec 002 §13 Q7.** That section binds `fo-media` /
-  `fo-media-preview` / `fo-backups`; what exists is `flowersoverseas-media` and
-  `flowersoverseas-backups`, and **there is no preview bucket at all**. Names are configuration, so
-  nothing is broken today — but preview environments have no separate image store, and §13 Q7 needs
-  amending or the buckets renaming (recorded in `docs/tasks/TASK-138.md`).
+- **The bucket names are `flowersoverseas-media` and `flowersoverseas-backups`** (spec 006 §14 A10,
+  which supersedes §13 Q7's recommended `fo-media` / `fo-media-preview` / `fo-backups`). There is no
+  preview bucket: previews read production's public images through `MEDIA_ORIGIN` and never write,
+  and `pnpm media:upload` publishes approved assets only. A separate preview bucket waits on the
+  founder (TASK-169).
 - **Image sitemaps are Phase 4** (`plan/02` §10). The data that makes one a query (asset ↔ entity ↔
   locale ↔ variant) exists now; when it arrives it must obey "nothing `noindex` ever appears in a
   sitemap".
