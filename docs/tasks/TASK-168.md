@@ -113,10 +113,22 @@ here.
   each mutation watched red; `seed/snapshot` regenerated. The sheet CSV is **not** regenerated (the
   batch split reads it; see the test's header). Full unit run: 20 red in six files outside the
   fence → escalated. Upload of the 144 ids running.
+- 2026-10-03: `pnpm media:upload --only <the 144 ids>` (`--dry-run` first): 576 variants, 576
+  uploaded, 0 already current, 15 229 911 B, 0 unapproved skipped, exit 0. `--verify` with the
+  same 144 ids died twice on `fetch failed` (a thrown network error aborts the whole run;
+  `verifyPublished()` has no retry, out of fence, not changed); run as nine chunks of 16 ids, the
+  same set: 9 × 64 = 576 rows verified, every exit 0. Next: the escalation's answer.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+**Partial, blocked (2026-10-03).** Draft PR [#148](https://github.com/itsahmeds/flowers-overseas/pull/148).
+Data: 144 batch-2 rows approved at `2026-10-03T09:21:10Z`; FO-BQ-004 pair B (2 rows, 8 variants,
+694 variant rows in all); 576 alt strings (144 × en, en-gb, de, pl); `seed/snapshot` regenerated.
+Unit: the sign-off case and two new cases in `tests/unit/seed-media-manifest.test.ts` (20 cases
+green, three mutations each red). Bucket: 576 objects uploaded and verified. Gates:
+`seed:check` 0, `media:variants --check` 0, `gates:cheap` six of seven exit 0, `tests` exit 1
+(the 20 escalated cases). Not yet: the six out-of-fence test files, CI, Lighthouse on the four
+locale homes, visual baselines. No build slot taken.
