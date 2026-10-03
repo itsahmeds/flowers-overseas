@@ -50,6 +50,11 @@ const { slugFor } = await import("../../src/modules/catalog/slugs.ts");
 const { corridorSlug } = await import("../../src/modules/geo/index.ts");
 const { localePath, productPath } =
   await import("../../src/modules/i18n/index.ts");
+const { productView } = await import("../../src/modules/catalog");
+const { withActivePartnersProvider } =
+  await import("../../src/modules/geo/partners.ts");
+const { CANONICAL_HOST, deploymentDescriptor, isIndexingEnvironment } =
+  await import("../../src/modules/seo/environment.ts");
 
 type Params = {
   locale: string;
@@ -172,6 +177,64 @@ describe("AC-1: the product route answers the existence set and 404s everything 
       delete reads.unpriced;
     }
     expect(await notFoundFor(AMBER)).toBe(false);
+  });
+});
+
+/**
+ * `/break 135` round 1 HOLE 1 (spec 009 §6, AC-16; ADR-0007): the PDP's `<head>` robots tag is the
+ * route's own `generateMetadata` output, so it is asserted there — not only on the view model the
+ * route reads it from. Phase 0's rule is that every product page is `noindex,follow`, whatever its
+ * picker says, and it is asked in the **indexing environment** (`production` on the canonical
+ * host), the one place the environment gate does not already close the page: a route that wrote
+ * `INDEX_FOLLOW` would be indexable exactly there.
+ */
+describe("AC-16: the product page's robots tag is `noindex,follow` in every picker state", () => {
+  const partnered = { hasActivePartners: (iso2: string) => iso2 === "PL" };
+  const metadataFor = (params: Params) =>
+    route.generateMetadata({ params: Promise.resolve(params) });
+
+  it("emits exactly `noindex,follow` for preview, unavailable and live PDPs on the indexable deployment", async () => {
+    vi.stubEnv("APP_ENV", "production");
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", `https://${CANONICAL_HOST}`);
+    try {
+      const deployment = deploymentDescriptor(process.env);
+      expect(isIndexingEnvironment(deployment)).toBe(true);
+
+      const GERMANY = { ...AMBER, segment: "germany" } as const;
+      const DE = {
+        locale: "de",
+        segment: "polen",
+        child: "produkt",
+        grandchild: "amber-hour",
+      } as const;
+      const cases = [
+        { name: "preview", iso2: "PL", params: AMBER, live: false },
+        { name: "preview (de)", iso2: "PL", params: DE, live: false },
+        { name: "unavailable", iso2: "DE", params: GERMANY, live: false },
+        { name: "live", iso2: "PL", params: AMBER, live: true },
+      ] as const;
+      const states = new Set<string>();
+      for (const { name, iso2, params, live } of cases) {
+        const ask = async () => ({
+          metadata: await metadataFor(params),
+          view: await productView(
+            { locale: params.locale, countryIso: iso2, sku: "FO-BQ-001" },
+            { parameterised: false, deployment },
+          ),
+        });
+        const { metadata, view } = live
+          ? await withActivePartnersProvider(partnered, ask)
+          : await ask();
+        // The state is the one the case names, so no state passes by being absent.
+        expect(view?.delivery.state, name).toBe(name.split(" ")[0]);
+        states.add(view?.delivery.state ?? "");
+        expect(metadata.robots, name).toBe("noindex,follow");
+        expect(metadata.robots, name).toBe(view?.indexability.directive);
+      }
+      expect([...states].sort()).toEqual(["live", "preview", "unavailable"]);
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 });
 
