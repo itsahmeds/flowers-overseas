@@ -22,6 +22,16 @@ const POLAND_PDPS = [
   "/pl/polska/produkt/amber-hour",
 ] as const;
 
+/**
+ * Any clock time: `H:MM`, `HH:MM`, `H.MM`, `HH.MM`, `HH h MM` (`/break 151` round 1, hole 2) —
+ * the unit suite's `ANY_TIME`, which proves each shape.
+ */
+const ANY_TIME = /(?<![\d.,])\d{1,2}(?:[:.]|\s?h\s?)\d{2}(?![\d.,])/gu;
+
+/** A printed fee: an amount with its currency symbol or code before or after it. */
+const MONEY =
+  /[+\-\u2212]?(?:[£€]|PLN|EUR|GBP)\s?\d[\d.,\s\u00a0\u202f]*|[+\-\u2212]?\d[\d.,\u00a0\u202f]*[\s\u00a0\u202f]?(?:zł|PLN|EUR|GBP|€|£)/gu;
+
 /** The same bouquet to a destination with no `operations` block. */
 const UNAVAILABLE_PDP = "/en/germany/product/amber-hour";
 
@@ -135,6 +145,28 @@ test.describe("the picker is the data's state, in one template (AC-8, T-08)", ()
       expect(await dates.count()).toBeGreaterThan(0);
       await expect(picker.locator('input[name="date"]:enabled')).toHaveCount(0);
       await expect(page.getByRole("button", { name: /date/iu })).toHaveCount(0);
+      // Spec 009 §14 A8: `preview` states no cutoff time — only `live` does. Not as a line, and
+      // not on a chip past the cutoff either (ruling E-1), whatever the clock says.
+      await expect(page.locator("[data-fo-cutoff]")).toHaveCount(0);
+      expect(
+        (await picker.innerText()).replaceAll(MONEY, "").match(ANY_TIME),
+      ).toBeNull();
+      // The raw markup too, attributes included (`/break 151` round 1, hole 1): styling classes
+      // are dropped and the chips' printed fees removed by their money shape, nothing else.
+      const markup = await picker.evaluate((node) => {
+        const copy = node.cloneNode(true) as Element;
+        for (const styled of [copy, ...copy.querySelectorAll("[class]")]) {
+          styled.removeAttribute("class");
+        }
+        return copy.outerHTML;
+      });
+      // `outerHTML` serialises a no-break space as an entity; the fee shape reads the character.
+      expect(
+        markup
+          .replaceAll("&nbsp;", "\u00a0")
+          .replaceAll(MONEY, "")
+          .match(ANY_TIME),
+      ).toBeNull();
     });
   }
 

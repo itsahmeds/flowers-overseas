@@ -17,6 +17,10 @@
  *    none of their own and their radio's `aria-labelledby` names the chip **and** the picker's
  *    notice, which is visible above the grid. The reason is then visible once and in every
  *    chip's accessible name.
+ *    In `preview` a **past-cutoff** chip shares it too (spec 009 §14 A8, TASK-171 ruling E-1): its
+ *    own sentence names a cutoff time, and `preview` states none because no florist has agreed to
+ *    one. The calendar's `pastCutoff` reason is unchanged and stays on `data-fo-date-reason`; in
+ *    `live` the chip still prints "Ordering closed at 14:00 in Warsaw".
  *
  * An occasion observed on the day is marked with its own name (`catalog.facet.occasion.*`), on a
  * closed date too: an occasion is a fact about the destination's calendar, the closure is a fact
@@ -35,6 +39,21 @@ export type ProductDeliveryDate = ProductView["delivery"]["dates"][number];
 
 /** The shared `preview` reason (spec 009 §13 design round Q6). Mirrors `geo`'s constant. */
 export const SHARED_REASON_KEY = "delivery.reason.notOrderable";
+
+/** The one calendar reason whose sentence names the cutoff time (`{time}`). */
+const CUTOFF_REASON_KEY = "delivery.reason.pastCutoff";
+
+/**
+ * Whether a chip prints no reason of its own and is named by the picker's notice instead: the
+ * shared `notOrderable` reason in any state, and a past-cutoff day in `preview` (§14 A8, E-1).
+ */
+function sharesNotice(
+  reasonKey: string | undefined,
+  pickerState: "preview" | "live",
+): boolean {
+  if (reasonKey === SHARED_REASON_KEY) return true;
+  return pickerState === "preview" && reasonKey === CUTOFF_REASON_KEY;
+}
 
 export type DateChipState = "included" | "surcharge" | "closed";
 
@@ -56,6 +75,11 @@ export interface DateChipProps {
   readonly timeZone?: string;
   /** The picker notice's id: the shared reason of a `notOrderable` chip (Q6). */
   readonly sharedReasonId: string;
+  /**
+   * The picker's state. In `preview` a past-cutoff chip prints no time and shares the notice
+   * (§14 A8). Defaults to `live`, the state in which a chip's own reason is always printed.
+   */
+  readonly pickerState?: "preview" | "live";
   /** The form field name; `date` is `ProductSearchParamsSchema`'s (TASK-128). */
   readonly name?: string;
 }
@@ -68,6 +92,7 @@ export function DateChip({
   cutoffLocal,
   timeZone,
   sharedReasonId,
+  pickerState = "live",
   name = "date",
 }: DateChipProps): ReactElement {
   const t = useTranslations();
@@ -75,7 +100,7 @@ export function DateChip({
   const code = localeOf(locale);
   const state = dateChipState(date);
   const chipId = `date-${date.date}`;
-  const shared = date.reasonKey === SHARED_REASON_KEY;
+  const shared = sharesNotice(date.reasonKey, pickerState);
   const occasions = date.occasionKeys.map((key) =>
     messageFor(t, occasionByKey(key).labelKey),
   );

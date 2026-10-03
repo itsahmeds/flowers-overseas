@@ -113,11 +113,8 @@ const GATED_PROMISE_KEYS: readonly string[] = [
   "corridor.steps.live.threeBody",
   // Product page date picker (spec 009 §2's states table; TASK-126). `delivery.picker.live` is the
   // `live` notice, rendered by `DeliveryDatePicker` only when `delivery.state === "live"` — which
-  // `pickerState()` allows only behind an active partner. `delivery.cutoffPreview` is the
-  // `preview` grid's **future-tense** line ("When we open, you will order by…"), rendered only in
-  // `preview`, drawn on the founder's product artboards and approved in the 2026-10-03 batch:
-  // it describes how the calendar will work, under the heading that says no order is taken.
-  "delivery.cutoffPreview",
+  // `pickerState()` allows only behind an active partner. The `preview` grid states no cutoff
+  // time at all (spec 009 §14 A8), so it has no key here.
   "delivery.picker.live",
 ];
 

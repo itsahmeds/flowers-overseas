@@ -1254,11 +1254,6 @@
     "reviewed": false,
     "sourceHash": "f8ec403b833e326c5f4ae96da3e708ccb190a6e064bfea067e347dd9fffdef66"
   },
-  "delivery.cutoffPreview": {
-    "source": "machine",
-    "reviewed": false,
-    "sourceHash": "757b421b6517d93d77c3430751c23a8ab277d1b6c8ccfd9e934eced7b1581219"
-  },
   "delivery.legend": {
     "source": "machine",
     "reviewed": false,

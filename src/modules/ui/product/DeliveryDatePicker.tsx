@@ -12,8 +12,10 @@
  *    published. No cutoff, no calendar, no "next available".
  *  - **`preview`** — the full computed grid with **every date disabled**, under the sentence that
  *    says what it is (`delivery.picker.preview`), which is also the shared reason of every chip
- *    closed only because we are not taking orders (§13 design round Q6). The cutoff is phrased in
- *    the future tense, because it describes how the calendar will work.
+ *    closed only because we are not taking orders (§13 design round Q6), and of a day past the
+ *    cutoff, whose own sentence would name a time (TASK-171 ruling E-1). **No cutoff time**
+ *    (spec 009 §14 A8): no florist has agreed to one, and the delivery-facts row on the same page
+ *    says exactly that, so a time here would contradict it.
  *  - **`live`** — selectable dates, the earliest preselected by the view model, the cutoff line in
  *    the present tense, and the "Use this date" submit — rendered **only** when a date can be
  *    chosen, because a button that submits nothing selectable is the same lie as a checkbox that
@@ -95,8 +97,11 @@ export function DeliveryDatePicker({
 
   const live = delivery.state === "live";
   const anySelectable = delivery.dates.some((date) => date.selectable);
-  const hasCutoff =
-    delivery.cutoffLocal !== undefined && delivery.timeZone !== undefined;
+  // A cutoff renders only in `live` (spec 009 §14 A8): in `preview` no florist has agreed to one.
+  const showCutoff =
+    live &&
+    delivery.cutoffLocal !== undefined &&
+    delivery.timeZone !== undefined;
 
   return (
     <fieldset
@@ -120,6 +125,7 @@ export function DeliveryDatePicker({
             country={country}
             date={date}
             locale={locale}
+            pickerState={live ? "live" : "preview"}
             sharedReasonId={noticeId}
             {...(delivery.cutoffLocal === undefined
               ? {}
@@ -138,20 +144,14 @@ export function DeliveryDatePicker({
           {d("submit")}
         </button>
       ) : null}
-      {hasCutoff ? (
-        live ? (
-          <div
-            className="border-accent bg-surface-raised p-md flex flex-col gap-[2px] border"
-            data-fo-cutoff
-            id={noticeId}
-          >
-            <p className="m-0 text-sm font-semibold">{notice}</p>
-          </div>
-        ) : (
-          <p className="m-0 text-sm font-semibold" data-fo-cutoff>
-            {d("cutoffPreview", { time: delivery.cutoffLocal ?? "", city })}
-          </p>
-        )
+      {showCutoff ? (
+        <div
+          className="border-accent bg-surface-raised p-md flex flex-col gap-[2px] border"
+          data-fo-cutoff
+          id={noticeId}
+        >
+          <p className="m-0 text-sm font-semibold">{notice}</p>
+        </div>
       ) : null}
     </fieldset>
   );

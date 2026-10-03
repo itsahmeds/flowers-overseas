@@ -22,6 +22,9 @@
  * two `priceProjection()` calls, an add-on's is its `AddonLine.price`, the total is the view's own
  * `displayPrice`. A component that printed a hard-coded fee, or computed one, goes red here.
  */
+import { readFileSync, readdirSync } from "node:fs";
+import { join } from "node:path";
+
 import { NextIntlClientProvider, createTranslator } from "next-intl";
 import type { ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -39,6 +42,7 @@ import { DeliveryFacts } from "../../src/modules/geo";
 import { withActivePartnersProvider } from "../../src/modules/geo/partners.ts";
 import { formatDate, formatMoney, loadMessages } from "../../src/modules/i18n";
 import { ProductPage } from "../../src/modules/ui";
+import { zoneCity } from "../../src/modules/ui/product/labels.ts";
 import { lcpNominations } from "../support/lcp-nomination.ts";
 import { listingHonestyViolations, textOf } from "../support/listing-honesty";
 
@@ -47,6 +51,8 @@ type Locale = (typeof LOCALES)[number];
 
 /** 09:00 Europe/Warsaw, Monday 1 March 2027 — Women's Day (8 March) is in the window. */
 const WOMENS_DAY_WEEK = new Date("2027-03-01T08:00:00Z");
+/** 15:30 Europe/Warsaw, the same Monday: past the 14:00 cutoff, so today closes as `pastCutoff`. */
+const PAST_CUTOFF = new Date("2027-03-01T14:30:00Z");
 /** Wednesday 9 September 2026, 09:00 Warsaw — inside the committed FX snapshot's window. */
 const IN_WINDOW = new Date("2026-09-09T07:00:00Z");
 
@@ -464,13 +470,170 @@ describe("AC-10: absolute dates and an absolute cutoff, in every state and local
     }
   });
 
-  it("names the cutoff's time and its zone's city in `preview` and `live`", async () => {
-    const preview = readable(
-      render(await viewOf("en", "PL", AMBER, { now: WOMENS_DAY_WEEK })),
+  it("names the cutoff's time and its zone's city in `live`", async () => {
+    const live = readable(
+      render(await liveViewOf("en", AMBER, { now: WOMENS_DAY_WEEK })),
     );
-    expect(preview).toContain(
-      "When we open, you will order by 14:00 in Warsaw — the recipient's time, not yours",
+    expect(live).toContain(
+      "Order by 14:00 in Warsaw — the recipient's time, not yours",
     );
+  });
+});
+
+/* -------------------------------------------------------------------------- */
+/* AC-8 / §14 A8 — `preview` states no cutoff time; only `live` does.         */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Any clock time, in any of the shapes a locale writes one: `H:MM`, `HH:MM`, `H.MM`, `HH.MM` and
+ * `HH h MM` (`/break 151` round 1, hole 2). Run over the **raw markup**, attributes included,
+ * so a time in a `title`, an `aria-*` or a `data-*` value is found as well as one in the text
+ * (hole 1).
+ */
+const ANY_TIME = /(?<![\d.,])\d{1,2}(?:[:.]|\s?h\s?)\d{2}(?![\d.,])/gu;
+
+/**
+ * The clock times in a picker's raw markup. Two kinds of number are not times and are removed
+ * first, each by its known value: the `class` tokens (`leading-[1.35]`), which are styling, and
+ * the chips' printed fees, which are the view's own money through `formatMoney` in both sign
+ * forms `DateChip` uses. Nothing else is stripped.
+ */
+function timesInPicker(markup: string, view: ProductView): readonly string[] {
+  let scanned = markup.replaceAll(/\sclass="[^"]*"/gu, "");
+  const locale = view.locale as Locale;
+  for (const date of view.delivery.dates) {
+    if (date.surcharge === undefined) continue;
+    for (const signDisplay of ["always", "auto"] as const) {
+      scanned = scanned.replaceAll(
+        formatMoney(date.surcharge, locale, { signDisplay }),
+        "",
+      );
+    }
+  }
+  return [...decode(scanned).matchAll(ANY_TIME)].map((match) => match[0]);
+}
+
+describe("A8: the `preview` picker states no cutoff time, in every locale", () => {
+  it("finds a time in every shape it claims, in text and in an attribute", () => {
+    for (const time of ["9:30", "14:00", "9.30", "14.00", "14 h 00", "14h00"]) {
+      expect([...`<p>${time}</p>`.matchAll(ANY_TIME)], time).toHaveLength(1);
+      expect(
+        [...`<i title="at ${time}"></i>`.matchAll(ANY_TIME)],
+        time,
+      ).toHaveLength(1);
+    }
+    for (const notTime of ["25.00", "1 234,50", "2027-03-01", "18 zł"]) {
+      expect(
+        [...`${notTime}`.matchAll(ANY_TIME)].map((match) => match[0]),
+        notTime,
+      ).toEqual(notTime === "25.00" ? ["25.00"] : []);
+    }
+  });
+
+  it("renders no cutoff line and no cutoff time in the `preview` picker, and the facts row's `none`", async () => {
+    for (const locale of LOCALES) {
+      const view = await viewOf(locale, "PL", AMBER, { now: WOMENS_DAY_WEEK });
+      expect(view.delivery.state, locale).toBe("preview");
+      // The data still carries Poland's authored cutoff: its absence below is the template's
+      // choice, not a missing input.
+      const time = view.delivery.cutoffLocal ?? "";
+      expect(time, locale).toMatch(/^\d{2}:\d{2}$/u);
+      const html = render(view);
+      const picker = block(html, 'data-fo-picker-state="preview"');
+      expect(picker, locale).not.toBe("");
+      expect(picker, `${locale}: cutoff element`).not.toContain(
+        "data-fo-cutoff",
+      );
+      expect(readable(picker), `${locale}: cutoff time`).not.toContain(time);
+      expect(timesInPicker(picker, view), `${locale}: raw markup`).toEqual([]);
+      expect(html, `${locale}: anywhere on the page`).not.toContain(
+        "data-fo-cutoff",
+      );
+      // The facts row keeps its honest `none` text.
+      const corridor = loadMessages(locale as Locale, ["corridor"]) as {
+        corridor: { facts: { orderBy: { none: string } } };
+      };
+      expect(readable(html), `${locale}: facts row`).toContain(
+        corridor.corridor.facts.orderBy.none,
+      );
+    }
+  });
+
+  it("still renders the `live` cutoff line (`delivery.picker.live`) on the same route, in every locale", async () => {
+    for (const locale of LOCALES) {
+      const view = await liveViewOf(locale, AMBER, { now: WOMENS_DAY_WEEK });
+      expect(view.delivery.state, locale).toBe("live");
+      const picker = block(render(view), 'data-fo-picker-state="live"');
+      const cutoff = block(picker, "data-fo-cutoff");
+      expect(cutoff, locale).not.toBe("");
+      const t = createTranslator({
+        locale,
+        messages: loadMessages(locale as Locale, ["delivery"]),
+      });
+      const time = view.delivery.cutoffLocal ?? "";
+      expect(time, locale).toMatch(/^\d{2}:\d{2}$/u);
+      expect(readable(cutoff).trim(), locale).toBe(
+        t("delivery.picker.live", {
+          time,
+          city: zoneCity(view.delivery.timeZone ?? ""),
+        }),
+      );
+    }
+  });
+
+  it("prints no cutoff time on a past-cutoff `preview` chip: the shared sentence covers it (E-1)", async () => {
+    for (const locale of LOCALES) {
+      const view = await viewOf(locale, "PL", AMBER, { now: PAST_CUTOFF });
+      expect(view.delivery.state, locale).toBe("preview");
+      // The calendar still computes the reason; only the `preview` render withholds its text.
+      const past = view.delivery.dates.filter(
+        (date) => date.reasonKey === "delivery.reason.pastCutoff",
+      );
+      expect(
+        past.map((date) => date.date),
+        locale,
+      ).toEqual(["2027-03-01"]);
+      const time = view.delivery.cutoffLocal ?? "";
+      expect(time, locale).toMatch(/^\d{2}:\d{2}$/u);
+      const html = render(view);
+      const picker = block(html, 'data-fo-picker-state="preview"');
+      expect(readable(picker), `${locale}: cutoff time`).not.toContain(time);
+      expect(timesInPicker(picker, view), `${locale}: raw markup`).toEqual([]);
+      const chip = chips(html).get("2027-03-01") ?? "";
+      expect(chip, locale).toMatch(/<input[^>]*disabled/u);
+      expect(chip, `${locale}: per-chip reason`).not.toContain(
+        "data-fo-date-why",
+      );
+      // Its accessible name carries the shared `preview` sentence instead (§13 Q6).
+      const noticeId = /<p[^>]*id="([^"]+)"/u.exec(picker)?.[1] ?? "";
+      expect(noticeId, locale).not.toBe("");
+      expect(chip, locale).toContain(
+        `aria-labelledby="date-2027-03-01 ${noticeId}"`,
+      );
+    }
+  });
+
+  it("keeps the `live` past-cutoff chip's own reason with its time", async () => {
+    const view = await liveViewOf("en", AMBER, { now: PAST_CUTOFF });
+    expect(view.delivery.state).toBe("live");
+    const chip = chips(render(view)).get("2027-03-01") ?? "";
+    expect(chip).toMatch(/<input[^>]*disabled/u);
+    expect(chip).toContain('data-fo-date-reason="delivery.reason.pastCutoff"');
+    expect(
+      readable(/data-fo-date-why[^>]*>([^<]+)</u.exec(chip)?.[1] ?? ""),
+    ).toBe("Ordering closed at 14:00 in Warsaw");
+    expect(chip).not.toContain("aria-labelledby");
+  });
+
+  it("leaves no `delivery.cutoffPreview` key in any message or meta file", () => {
+    const dir = join(process.cwd(), "messages");
+    const files = readdirSync(dir).filter((file) => file.endsWith(".json"));
+    // Four catalogues and their four meta files.
+    expect(files).toHaveLength(8);
+    for (const file of files) {
+      const text = readFileSync(join(dir, file), "utf8");
+      expect(text, file).not.toMatch(/cutoffPreview/u);
+    }
   });
 });
 
@@ -801,9 +964,9 @@ describe("AC-22: no claim without backing, in every locale and picker state", ()
         const text = withoutFactsHeading(readable(html), locale);
         const where = `${locale} ${view.delivery.state}`;
         // The listing scan forbids any "order by 14:00": a listing has no calendar to back one.
-        // The picker's cutoff line is the one place the PDP may print it — the artboards draw it
-        // in `preview` (future tense) and `live` — so it is lifted out by its own element, and
-        // the `unavailable` page, which has no cutoff at all, is scanned whole.
+        // The picker's cutoff line is the one place the PDP may print it — in `live` only, since
+        // spec 009 §14 A8 took it out of `preview` — so it is lifted out by its own element, and
+        // the `unavailable` and `preview` pages, which have no cutoff at all, are scanned whole.
         // The docked summary repeats it in `live` (the mobile artboard's "the last line becomes
         // the cutoff sentence"), marked the same way, so every marked line is lifted and counted.
         let scanned = html;
@@ -817,7 +980,7 @@ describe("AC-22: no claim without backing, in every locale and picker state", ()
           cutoffs += 1;
         }
         expect(cutoffs, where).toBe(
-          { unavailable: 0, preview: 1, live: 2 }[view.delivery.state],
+          { unavailable: 0, preview: 0, live: 2 }[view.delivery.state],
         );
         expect(
           listingHonestyViolations({
