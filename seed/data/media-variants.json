@@ -2877,6 +2877,86 @@
       "objectKey": "media/fo-bq-003-detail/384.webp"
     },
     {
+      "assetId": "fo-bq-004-hero",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "avif",
+      "bytes": 9577,
+      "checksumSha256": "398091c1e5e1ec3f1e0c1f1464deade372296bd0bcb434c106f2a8135a75c957",
+      "objectKey": "media/fo-bq-004-hero/384.avif"
+    },
+    {
+      "assetId": "fo-bq-004-hero",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "webp",
+      "bytes": 12698,
+      "checksumSha256": "a2c57f556bc2174f1e5df0b9f8e6e17572fd8508ec22bf07a4145d324c6bce55",
+      "objectKey": "media/fo-bq-004-hero/384.webp"
+    },
+    {
+      "assetId": "fo-bq-004-hero",
+      "variant": "640",
+      "width": 640,
+      "height": 800,
+      "format": "avif",
+      "bytes": 20730,
+      "checksumSha256": "9f59ff359be320011cf6955fa3337b0bb5121a048aeb4bb00238baaa1af30381",
+      "objectKey": "media/fo-bq-004-hero/640.avif"
+    },
+    {
+      "assetId": "fo-bq-004-hero",
+      "variant": "640",
+      "width": 640,
+      "height": 800,
+      "format": "webp",
+      "bytes": 26754,
+      "checksumSha256": "ce6598356e035972a89be582e8795d788d942a7bebe17fbde4ef278f22031508",
+      "objectKey": "media/fo-bq-004-hero/640.webp"
+    },
+    {
+      "assetId": "fo-bq-004-hero",
+      "variant": "828",
+      "width": 828,
+      "height": 1035,
+      "format": "avif",
+      "bytes": 30500,
+      "checksumSha256": "2e9826654b4d1d3e8d5cce34c4ebd2754f9c71894402af365fb03bbc932703e7",
+      "objectKey": "media/fo-bq-004-hero/828.avif"
+    },
+    {
+      "assetId": "fo-bq-004-hero",
+      "variant": "828",
+      "width": 828,
+      "height": 1035,
+      "format": "webp",
+      "bytes": 39550,
+      "checksumSha256": "568a79de90475ecc6cd25ae7440a8b72d4b769c2f20c54805842c7d76ea31000",
+      "objectKey": "media/fo-bq-004-hero/828.webp"
+    },
+    {
+      "assetId": "fo-bq-004-detail",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "avif",
+      "bytes": 14220,
+      "checksumSha256": "df62d5314c657cd8a4cf37a903a574bf2621f4297686d57ea9626752a4393f11",
+      "objectKey": "media/fo-bq-004-detail/384.avif"
+    },
+    {
+      "assetId": "fo-bq-004-detail",
+      "variant": "384",
+      "width": 384,
+      "height": 480,
+      "format": "webp",
+      "bytes": 18024,
+      "checksumSha256": "bfc27e3d61f22f702a14e332c831b94f757499423064a69a8bfb8410020c3455",
+      "objectKey": "media/fo-bq-004-detail/384.webp"
+    },
+    {
       "assetId": "fo-bq-005-hero",
       "variant": "384",
       "width": 384,
