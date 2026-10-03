@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { COMPANY } from "@/config/company.ts";
+import { isLocaleCode } from "@/config/locales";
+import { listProductPages } from "@/modules/catalog";
 import { routableLocale } from "@/modules/i18n";
 import {
   JsonLd,
@@ -127,7 +129,15 @@ export default async function LocaleHomePage({
         The artboards' priced row — "Bouquets we can deliver in Poland today" — is **not** here:
         it is spec 005/008/009's, and nothing on this page approximates a product or a price.
       */}
-        <TrendingRow locale={locale.code} />
+        {/* Each card links to its product page where that page exists (spec 008 §14 A14 (e);
+            TASK-173): the catalogue's existence set, handed in because `src/modules/ui` may not
+            read the catalogue. */}
+        <TrendingRow
+          locale={locale.code}
+          productPages={
+            isLocaleCode(locale.code) ? await listProductPages(locale.code) : []
+          }
+        />
         <OccasionDates locale={locale.code} />
         <OccasionTiles locale={locale.code} />
         {/* The honesty label (spec 006 AC-17, ADR-0014): one line, server-rendered, under the last

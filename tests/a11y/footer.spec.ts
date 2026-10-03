@@ -54,7 +54,10 @@ for (const path of AUDITED) {
 
     const navs = page.getByRole("contentinfo").locator("nav");
     const count = await navs.count();
-    expect(count).toBeGreaterThanOrEqual(3);
+    // Two since TASK-173 (spec 004 §14 A20): the `Sending` column, the one with pages behind it,
+    // and the language list. `Company` and the legal row have no entry with a page, so they are
+    // not drawn — and an empty, named `navigation` landmark is exactly what this test forbids.
+    expect(count).toBe(2);
     for (let index = 0; index < count; index += 1) {
       const nav = navs.nth(index);
       const named =

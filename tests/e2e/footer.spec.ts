@@ -21,8 +21,8 @@ const LOCALES = ["en", "en-gb", "de", "pl"] as const;
 
 /** Copy that must appear in the footer of every locale, from `messages/<locale>.json`. */
 const REQUIRED_TEXT: Record<(typeof LOCALES)[number], readonly string[]> = {
-  en: ["Sending", "Company", "Cookie settings", "Stripe"],
-  "en-gb": ["Sending", "Company", "Cookie settings", "Stripe"],
+  en: ["Sending", "Destinations", "Cookie settings", "Stripe"],
+  "en-gb": ["Sending", "Destinations", "Cookie settings", "Stripe"],
   // `de`/`pl` are `pnpm i18n:draft` echoes of the English source today (§7), so the brand name is
   // the locale-independent anchor; the per-locale copy is asserted by the visual baselines.
   de: ["Stripe"],
@@ -40,13 +40,18 @@ for (const locale of LOCALES) {
       for (const text of REQUIRED_TEXT[locale]) {
         await expect(footer).toContainText(text);
       }
-      // The link columns and the legal row are named navigation landmarks.
-      expect(
-        await footer.locator("nav[aria-labelledby], nav[aria-label]").count(),
-      ).toBeGreaterThanOrEqual(3);
+      // The one link column with a page behind it (`Sending`) and the language list are named
+      // navigation landmarks; `Company` and the legal row have no entry with a page, so they are
+      // not drawn at all (spec 004 §14 A20; TASK-173).
+      await expect(
+        footer.locator('nav[aria-labelledby$="-group-sending"]'),
+      ).toHaveCount(1);
+      await expect(
+        footer.locator('nav[aria-labelledby$="-group-company"]'),
+      ).toHaveCount(0);
     });
 
-    test("renders every unpublished target as text and links to no non-200 URL (AC-14)", async ({
+    test("draws no unpublished target and links to no non-200 URL (AC-14, §14 A20)", async ({
       page,
       request,
     }) => {

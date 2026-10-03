@@ -7,9 +7,10 @@
  *  - which currency code the chip prints for a locale (AC-8) — read from the locale registry's
  *    `currencyDefault`, never from a cookie, a header or a visitor preference, which is what
  *    keeps the document one cache entry with no `Vary` and no `Set-Cookie`;
- *  - whether a registry entry may be a link at all (AC-14) — one predicate per registry, asked
- *    here so the template carries no `published` branch of its own and a go-live is a data flip
- *    in `src/config/*` with no edit under `src/app/` or `src/modules/ui/layout/`;
+ *  - whether a registry entry is drawn at all (AC-14, spec 004 §14 A20; TASK-173) — an entry is
+ *    drawn **exactly when it resolves to a URL**, and an entry with no page is absent: no link,
+ *    no text, nothing that looks clickable and does nothing. Asked here so the template carries
+ *    no `published` branch of its own and a go-live is a data flip in `src/config/site-links.ts`;
  *  - the header's reserved heights (AC-7), taken from the two approved artboards and exported as
  *    data so the CSS, the gallery and the e2e assertion all read the same numbers — as **two**
  *    numbers since §14 A4's addendum: the chrome the document reserves, and the part of it that is
@@ -17,18 +18,21 @@
  *
  * No database, no `Intl` call, no clock (`pnpm check:no-db`, `fo/no-adhoc-intl`).
  */
+import { CATEGORIES, type CategoryConfig } from "../../../config/categories.ts";
 import {
-  CATEGORIES,
-  type CategoryConfig,
-  type CategoryId,
-  isCategoryPublished,
-} from "../../../config/categories.ts";
-import { anyDeliveryDatesOpen } from "../../../config/countries.ts";
+  type CountryIso2,
+  anyDeliveryDatesOpen,
+  isCountryIso2,
+} from "../../../config/countries.ts";
 import {
   CATEGORY_ROW_LINK_IDS,
+  type ListingPageLinkType,
   MASTHEAD_LINK_IDS,
+  SEARCH_LINK_ID,
+  SITE_LINKS,
   type SiteLink,
   type SiteLinkId,
+  categoryRowLinkId,
   isPublished,
   linkLabelKey,
   siteLink,
@@ -58,11 +62,18 @@ export const HEADER_BAND_HEIGHTS = {
   /** Masthead: 12 px + 26 px lockup + 12 px on mobile; 18 px + 48 px + 18 px on desktop. */
   mastheadMobile: 50,
   mastheadDesktop: 84,
-  /** The mobile-only search band: a 42 px pill plus the artboard's 10 px separation. */
+  /**
+   * The mobile-only search band: a 42 px pill plus the artboard's 10 px separation. **Not drawn**
+   * while search is unpublished (spec 004 §14 A20; TASK-173), so the mobile masthead grid is one
+   * 50 px row; the number stays as the band spec 008 brings back with the real control.
+   */
   searchMobile: 52,
-  /** Category row: the label row on mobile, 14 px + 24 px + 14 px on desktop (one line again,
-   * now that the switcher and the chip have left it for the utility strip — §14 A4). */
-  categoryMobile: 28,
+  /**
+   * Category row: 44 px on mobile — the artboard's 28 px label row grown to the §5.3/§8 tap target
+   * the day its entries became links (TASK-173, as TASK-048 recorded it would) — and 14 px + 24 px
+   * + 14 px on desktop (one line, now that the switcher and the chip have left it, §14 A4).
+   */
+  categoryMobile: 44,
   categoryDesktop: 52,
 } as const;
 
@@ -89,28 +100,34 @@ export const HEADER_BAND_HEIGHTS = {
  * `/en-XA` (the +40 % pseudo-locale) grows the desktop category row to three lines and the header
  * to 263 px, which is the wrap behaviour §7 asks for rather than a regression.
  *
+ * **TASK-173 (spec 004 §14 A20) shrank the mobile number to 209** = 113 utility + 50 masthead +
+ * 44 category row + 2 hairlines: the search band is not drawn while search has no page, and the
+ * category row grew from 28 px to the 44 px target its links owe. Desktop is unchanged at 183,
+ * because the 52 px row already holds a 44 px link and the masthead keeps its 84 px.
+ *
  * `tests/e2e/header.spec.ts` asserts the served box against these numbers at both breakpoints,
  * and `tests/unit/ui-site-header.test.tsx` asserts the band minimums against the class names, so
  * neither the design source nor the rendered outcome can drift unnoticed.
  */
-export const HEADER_HEIGHTS = { mobile: 245, desktop: 183 } as const;
+export const HEADER_HEIGHTS = { mobile: 209, desktop: 183 } as const;
 
 /**
  * The height of the **sticky** part of the chrome — the `<header role="banner" data-fo-header>` the
  * component renders as a sibling of the utility strip (§14 A4's addendum, 2026-09-09, mechanism
  * iii): masthead + category row + their two hairlines.
  *
- *  - **mobile 132** = 50 masthead + 52 search band + 28 category row + 2 rules
+ *  - **mobile 96** = 50 masthead + 44 category row + 2 rules (TASK-173: no search band, and the
+ *    row at the 44 px target its links owe; it was 132 with both)
  *  - **desktop 138** = 84 masthead + 52 category row + 2 rules
  *
  * `HEADER_HEIGHTS` above stays the number AC-7 reserves, and it is now the **sum of two boxes**:
- * 113 + 132 = 245 at 390 px, 45 + 138 = 183 at 1440 px (the strip's own box carries its border, so
+ * 113 + 96 = 209 at 390 px, 45 + 138 = 183 at 1440 px (the strip's own box carries its border, so
  * the arithmetic is the measured 245 / 183 and not a rounding of it). `tests/e2e/header.spec.ts`
  * measures `[data-fo-utility]` and `[data-fo-header]` and asserts both the parts and the sum, plus
  * the property the split exists for: after a 600 px scroll the masthead is at the top of the
  * viewport and the strip is above it.
  */
-export const HEADER_STICKY_HEIGHTS = { mobile: 132, desktop: 138 } as const;
+export const HEADER_STICKY_HEIGHTS = { mobile: 96, desktop: 138 } as const;
 
 /**
  * The currency code the chip prints for a locale (AC-8): `en`→EUR, `en-gb`→GBP, `de`→EUR,
@@ -125,46 +142,72 @@ export function headerCurrencyCode(locale: string): string {
 }
 
 /**
- * The URL of a site-link entry, or `undefined` when the header must render its label as text.
+ * The URLs of the header's **listing-page** targets in one locale, by link id (spec 008 §14 A14;
+ * TASK-173). A link id with no entry has no page in this locale.
  *
- * Two reasons for `undefined`, and they are the whole of AC-14: the entry is not published, or
- * its target is `pending` (no route shape exists yet). `SiteLinkSchema` already refuses
- * `published: true` on a pending target, so the second branch is unreachable through the
- * committed registry and is kept as the honest total function anyway — a header may not be the
- * place where a malformed registry becomes a link to a 404.
+ * Supplied by the document layout, because whether `/de/blumen/rosen` exists is
+ * `listingExists()`'s answer and `src/modules/ui` may not import `src/modules/catalog` (`plan/01`
+ * §5) — the footer's `unavailable` seam, applied to the header. The layout resolves exactly the
+ * identities `headerListingTargets()` lists, so the two cannot name different pages.
+ */
+export type HeaderListingHrefs = Readonly<Partial<Record<string, string>>>;
+
+/** One listing page the header may link to, as the catalogue's existence rule names it. */
+export interface HeaderListingTarget {
+  readonly id: SiteLinkId;
+  readonly identity: {
+    readonly pageType: ListingPageLinkType;
+    readonly entityKey?: string;
+    readonly countryIso?: CountryIso2;
+  };
+}
+
+/**
+ * Every **published** header link whose target is one listing page — the identities the layout
+ * asks the catalogue about. An unpublished one is not asked about at all: it is not drawn.
+ */
+export function headerListingTargets(): readonly HeaderListingTarget[] {
+  const targets: HeaderListingTarget[] = [];
+  for (const link of SITE_LINKS) {
+    if (!link.surfaces.includes("header") || !isPublished(link.id)) continue;
+    if (link.target.kind !== "listingPage") continue;
+    const { pageType, entityKey, countryIso } = link.target;
+    // The registry's code is shape-checked there and narrowed to a known destination here: a code
+    // the country registry does not hold names no page, so it is not asked about.
+    if (countryIso !== undefined && !isCountryIso2(countryIso)) continue;
+    targets.push({
+      id: link.id,
+      identity: {
+        pageType,
+        ...(entityKey === undefined ? {} : { entityKey }),
+        ...(countryIso === undefined ? {} : { countryIso }),
+      },
+    });
+  }
+  return targets;
+}
+
+/**
+ * The URL of a site-link entry, or `undefined` when the header must **not draw it** (spec 004
+ * AC-14 as §14 A20 amends it).
+ *
+ * Three reasons for `undefined`, and they are the whole rule: the entry is not published; its
+ * target is `pending` (no route shape exists yet, which `SiteLinkSchema` already refuses to
+ * publish); or it is one listing page that does not exist in this locale (`listingHrefs` has no
+ * entry for it). A `route` target exists wherever `localePath()` builds it.
  */
 export function siteLinkHref(
   locale: string,
   id: SiteLinkId,
+  listingHrefs: HeaderListingHrefs = {},
 ): string | undefined {
   const link = siteLink(id);
   if (!isPublished(id)) return undefined;
-  if (link.target.kind !== "route") return undefined;
-  return localePath(locale, link.target.pageType);
-}
-
-/**
- * The URL of a category row entry, or `undefined` while it is unpublished — which every entry is
- * in Phase 0, so the row renders as text (AC-14).
- *
- * **This function is the seam spec 008 replaces**, and it is deliberately the only place in the
- * header that knows how a category becomes a path. `src/config/categories.ts` carries no target,
- * because the shop's per-locale category slugs are 008's data (`plan/02` §4.1) and inventing them
- * in Phase 0 would put seventy URLs nobody has designed into the repository. So the Phase-0
- * resolution is structural: the three entries that map onto a page type the locale registry
- * already has a segment for use it (`occasions`, `destinations`), and every other entry resolves
- * under the `shopCategory` segment with its registry id as the leaf. Flipping `published: true`
- * on a row therefore produces a link with **no template edit** (the AC-14/`plan/09` promise), and
- * 008 swaps the leaf for its localised slug inside this function with no call-site change.
- */
-export function categoryHref(
-  locale: string,
-  id: CategoryId,
-): string | undefined {
-  if (!isCategoryPublished(id)) return undefined;
-  if (id === "occasions") return localePath(locale, "occasions");
-  if (id === "destinations") return localePath(locale, "destinations");
-  return localePath(locale, "shopCategory", id);
+  if (link.target.kind === "route") {
+    return localePath(locale, link.target.pageType);
+  }
+  if (link.target.kind === "listingPage") return listingHrefs[id];
+  return undefined;
 }
 
 /** An entry of the header as the template renders it: a label key, and whether it may be a link. */
@@ -183,19 +226,28 @@ export interface HeaderItem {
    */
   readonly mobileOrder?: number;
   /**
-   * The resolved target, or `undefined` → the template renders the label as **text** (AC-14).
-   * The template never reads a `published` flag itself: an item is a link exactly when it has an
-   * `href`, which is the one branch a reviewer has to check.
+   * The resolved target. **Required**: an entry with no page is not an item at all (spec 004
+   * §14 A20; TASK-173), so the template has no text branch and no `published` branch to get
+   * wrong — every item it receives is a link.
    */
-  readonly href?: string;
+  readonly href: string;
   /** The canvas prints exactly one category row entry in the accent colour. */
   readonly accent: boolean;
   /** Present in the mobile artboard's scrollable row. */
   readonly showOnMobile: boolean;
 }
 
-function fromCategory(locale: string, category: CategoryConfig): HeaderItem {
-  const href = categoryHref(locale, category.id);
+function fromCategory(
+  locale: string,
+  category: CategoryConfig,
+  listingHrefs: HeaderListingHrefs,
+): HeaderItem | undefined {
+  const href = siteLinkHref(
+    locale,
+    categoryRowLinkId(category.id),
+    listingHrefs,
+  );
+  if (href === undefined) return undefined;
   return {
     id: category.id,
     labelKey: category.labelKey,
@@ -205,7 +257,7 @@ function fromCategory(locale: string, category: CategoryConfig): HeaderItem {
     ...(category.mobileOrder === undefined
       ? {}
       : { mobileOrder: category.mobileOrder }),
-    ...(href === undefined ? {} : { href }),
+    href,
     accent: category.accent,
     showOnMobile: category.showOnMobile,
   };
@@ -215,20 +267,26 @@ function fromSiteLink(
   locale: string,
   link: SiteLink,
   showOnMobile: boolean,
-): HeaderItem {
+): HeaderItem | undefined {
   const href = siteLinkHref(locale, link.id);
+  if (href === undefined) return undefined;
   return {
     id: link.id,
     labelKey: linkLabelKey(link),
-    ...(href === undefined ? {} : { href }),
+    href,
     accent: false,
     showOnMobile,
   };
 }
 
+function drawn(item: HeaderItem | undefined): item is HeaderItem {
+  return item !== undefined;
+}
+
 /**
- * The category row, in the canvas's order, with each entry's link/text state resolved — minus
- * every row that asserts a delivery date nobody has agreed to (spec 004 §14 A19; TASK-120).
+ * The category row, in the canvas's order, **only the entries with a page in this locale** (spec
+ * 004 §14 A20, spec 008 §14 A14; TASK-173) — and minus every row that asserts a delivery date
+ * nobody has agreed to (spec 004 §14 A19; TASK-120).
  *
  * The filter is the registry's `requiresDeliveryDates` flag against `anyDeliveryDatesOpen()`, the
  * single chrome predicate, so "Same-day delivery" is *absent* rather than reworded: a category
@@ -236,26 +294,41 @@ function fromSiteLink(
  * surviving rows keep their `mobileOrder` values, which are registry positions and not render
  * indices, so the row re-appears in its drawn place the day a florist's operations land.
  */
-export function headerCategoryItems(locale: string): readonly HeaderItem[] {
+export function headerCategoryItems(
+  locale: string,
+  listingHrefs: HeaderListingHrefs = {},
+): readonly HeaderItem[] {
   const datesOpen = anyDeliveryDatesOpen();
   return CATEGORIES.filter(
     (category) => datesOpen || !category.requiresDeliveryDates,
-  ).map((category) => fromCategory(locale, category));
+  )
+    .map((category) => fromCategory(locale, category, listingHrefs))
+    .filter(drawn);
 }
 
 /**
- * The masthead's account cluster (`Sign in` · `My orders` · `Basket (0)`). The mobile artboard
+ * The masthead's account cluster (`Sign in` · `My orders` · `Basket (0)`), **only the entries
+ * whose page exists** — none today (010/019 own them), so the cluster is empty. The mobile artboard
  * draws two of the three icons, so `My orders` is the one entry hidden below the `md` breakpoint.
  */
 export function headerAccountItems(locale: string): readonly HeaderItem[] {
   return MASTHEAD_LINK_IDS.map((id) =>
     fromSiteLink(locale, siteLink(id), id !== "my-orders"),
-  );
+  ).filter(drawn);
 }
 
-/** The category row's end cluster (`For florists`; the switcher and the chip sit beside it). */
+/** The category row's end cluster (`For florists`, spec 011's), only once its page exists. */
 export function headerEndClusterItems(locale: string): readonly HeaderItem[] {
   return CATEGORY_ROW_LINK_IDS.map((id) =>
     fromSiteLink(locale, siteLink(id), false),
-  );
+  ).filter(drawn);
+}
+
+/**
+ * Whether the header draws its search band: only once search has a page (spec 008 owns it).
+ * Until then there is no band at all — not the field-shaped text §14 A4 drew, which looked like a
+ * control and did nothing (spec 004 §14 A20).
+ */
+export function headerSearchHref(locale: string): string | undefined {
+  return siteLinkHref(locale, SEARCH_LINK_ID);
 }

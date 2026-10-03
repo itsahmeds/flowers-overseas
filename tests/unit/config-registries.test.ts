@@ -193,13 +193,29 @@ describe("§7: every registry key resolves in every launch locale", () => {
         // A corridor link's label **is** the country's name (spec 007 AC-20): `site-links.ts`
         // says which destination may be linked, `countries.ts` owns what it is called, and
         // pointing both at one key is what stops a second exonym from being authored.
-        !sources.some((source) => /^siteLinks\[corridor-/u.test(source)),
+        !sources.some((source) => /^siteLinks\[corridor-/u.test(source)) &&
+        // A category-row link's label **is** its category's label (spec 008 §14 A14; TASK-173):
+        // `categories.ts` owns what the entry is called and how the row draws it, `site-links.ts`
+        // where it goes. Exactly the pair, and nothing third: one key, one entry, two facts.
+        !isCategoryRowPair(sources),
     );
     // `for-florists` is the one entry the canvas draws twice (header cluster and footer column),
     // and it is one link id with one label — not two rows that could drift.
     expect(shared).toEqual([]);
   });
 });
+
+/** `siteLinks[category-row-X].labelKey` + `categories[X].labelKey`, and nothing else. */
+function isCategoryRowPair(sources: readonly string[]): boolean {
+  if (sources.length !== 2) return false;
+  const link = sources
+    .map((source) =>
+      /^siteLinks\[category-row-([a-z0-9-]+)\]\.labelKey$/u.exec(source),
+    )
+    .find((match) => match !== null);
+  if (link === undefined || link === null) return false;
+  return sources.includes(`categories[${link[1] ?? ""}].labelKey`);
+}
 
 describe("the layout manifest", () => {
   it("lists the four registries as required config modules", () => {
