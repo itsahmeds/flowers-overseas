@@ -527,9 +527,15 @@ A6's prebuilt existence gate for products (memo, Building 3).
   `searchParams`. It renders the default selection, ISR as §5.4 states.
 - **The form** (memo E-1). The JS-off form stays `method="get"` and submits to the bare product
   URL. A `next.config` `beforeFiles` rewrite of spec 008 §14 A13's kind sends that request to an
-  internal parameter route under the same `_query` segment. It has one rule per (launch locale, key),
-  the keys `tier` and `date`, sources built from the locale registry's `product` segment, and a
-  `has: query` condition. It holds parameter names only. The parameter route is the only reader of
+  internal parameter route under the same `_query` segment. It has one rule per (locale, key), over
+  the locales the product route is routed and prebuilt in: the launch locales, plus the
+  pseudo-locales wherever they are routed (the same set as spec 008 §14 A13's). The keys are `tier`
+  and `date`, the sources are built from the locale registry's `product` segment, and each rule has
+  a `has: query` condition. It holds parameter names only. Next matches rewrite sources
+  case-insensitively, so the rule captures the locale and `product` segments as the visitor wrote
+  them. The parameter route answers 404 unless the original path is exactly the canonical lowercase
+  one, so `/EN/poland/product/{slug}?tier=x` and `/en/poland/PRODUCT/{slug}?tier=x` answer 404.
+  The parameter route is the only reader of
   `?tier=`/`?date=`. It parses `ProductSearchParamsSchema` and renders the selection through the
   same `productView()` and page module as the bare route: `noindex,follow`, with a canonical to the
   bare URL and spec 008 §5.4's shared-cache header. It is never linked, never in a sitemap and never
