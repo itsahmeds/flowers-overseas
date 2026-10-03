@@ -477,9 +477,9 @@ cache rules and the rate limit are TASK-101's and are not in this file.
    | Zone | Bot Management | Read |
 
    The last row is read-only. Only with it can the check see Bot Fight Mode, the managed
-   `robots.txt` and the AI-crawler switches. Spec 040 AC-24 lists only the first four, so the
-   fifth waits on a ruling (TASK-100 escalation E-1). Without it, the check stops with
-   `the token is missing scope Zone → Bot Management → Read`.
+   `robots.txt` and the AI-crawler switches (spec 040 §14 A5 adds it to AC-24's list). Without
+   it, the check stops with `the token is missing scope Zone → Bot Management → Read`. Never
+   choose Bot Management **Edit**: the scripts only read it.
 4. **Zone Resources:** `Include` · `Specific zone` · `flowersoverseas.com`. Choose nothing else:
    no "All zones", and **no Account row of any kind**.
 5. Leave _Client IP Address Filtering_ and _TTL_ empty. Click **Continue to summary**, check that
@@ -525,6 +525,9 @@ and values only.
   declared value. **Under Attack mode** is only ever switched on by you, during an incident;
   switch it off when the incident is over. Then run `pnpm cloudflare:check` again.
 - `mirage · retired by Cloudflare … · counts as off`: expected. Cloudflare has removed Mirage.
+- `tls_1_3 · declared "zrt"`: expected once, on a zone where 0-RTT is off. `zrt` is Cloudflare's
+  value for TLS 1.3 **with** 0-RTT; `tls_1_3` and `0rtt` are one switch, so the apply writes both
+  and the second apply prints `0 changes`.
 
 ### Z4 — the two repository secrets, for the `cloudflare-check` CI job
 
@@ -539,6 +542,25 @@ repository secrets. **Without them it fails** and names them. It never passes on
 
 Do Z3 before Z4: once the secrets exist, the job checks the live zone, and it stays red until Z3's
 apply has run.
+
+### Z5 — check by eye what no token can read (Cloudflare dashboard, 5 minutes)
+
+Four rows of the do-not-enable table, and pay-per-crawl, cannot be read with the zone token: the
+check declares them `checks: []` and names the gate that covers each (spec 040 §14 A5). Look at
+them yourself after Z3, and again whenever you change anything in the dashboard by hand. In the
+dashboard, click **flowersoverseas.com**, then:
+
+| # | Where to click | What you must see |
+|---|---|---|
+| 1 | **Rules** → **Overview** | No Redirect, URL Rewrite, Configuration, Origin, Transform or Compression rule that uses the country (IP geolocation, `ip.src.country`, `cf-ipcountry`). Cache rules are TASK-101's and are fine. |
+| 2 | **Zero Trust** → **Access** → **Applications** | No application on `flowersoverseas.com` or `www.flowersoverseas.com`: production is never behind Access. |
+| 3 | Same page | Staging and PR environments: either an Access application on their host names, or none. With none, the basic-auth check in `src/proxy.ts` is the wall, and the `preview` job's 401 proves it. |
+| 4 | **Workers Routes**, and **Rules** → **Snippets** | No Worker route and no Snippet on the zone. (Snippets are not offered on the free plan.) |
+| 5 | **AI Crawl Control** | No crawler set to **Block** and no **Charge** (pay-per-crawl) on any crawler; **Bot Preference Sync** / managed `robots.txt` off on the overview. |
+
+Record the result as one dated bullet in `docs/tasks/TASK-100.md` (or tell the orchestrator): for
+each of the five, what you saw. Anything other than the right-hand column: switch it off (or delete
+the rule), then record what you changed.
 
 ## Rollback
 
