@@ -58,6 +58,8 @@ Raised by the implementer, 2026-10-03, before any code was written. Nothing unde
 
 - 2026-10-03: read the brief, `site-links.ts`, `categories.ts`, `SiteHeader`/`header-model`, `footerView`, `TrendingRow`, the catalog route resolver and the layout. Blocked by Escalations 1 and 2 before the first test; plan recorded above.
 - 2026-10-03: rulings received and recorded; waiting for PR 163 to merge before the first code change.
+- 2026-10-03: PR 163 merged; `origin/main` merged in. `7fc7ff89`: `site-links.ts` gains the `listingPage` target kind, `DEMO_DESTINATION_ISO2` and ten `category-row-*` rows; the header draws only entries that resolve (layout passes `listingHrefs` from `listingAlternatePaths()`), no search band, account cluster or menu glyph; the footer drops unlinked entries and empty columns; trending cards link via `listProductPages()` from the home page. Unit tests rewritten; mutations (account as text, footer as text, unpublish roses, demo country DE) each went red.
+- 2026-10-03: `f0a00646`: e2e — exact header heights 209/96 (measured), the chrome crawl in `links.spec.ts`, trending links in `home.spec.ts`, footer/a11y nav counts; AC-21 crawl re-pinned: TARGETS grew in every locale (+3 category hubs; `de`/`pl` +7 shop roots, +140 country categories), WAIVED shrank to 20 category hubs per locale, escalations 2 and 3 closed. Local build + full e2e/a11y green except the port-bound `seo-canonical` cases (site URL 3000 vs the local 3173). Next: visual baselines via the label flow.
 
 ## Result
 
