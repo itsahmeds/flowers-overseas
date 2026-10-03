@@ -71,7 +71,10 @@ export const PUBLISHED_DESTINATIONS = COUNTRIES.filter(
  * crawl. When the catalogue grows, both go red, the fixture is regenerated, and this table is
  * re-pinned in the same commit, which is the diff a reviewer should see.
  *
- * `de` and `pl` are empty: every URL they have is a shop root, and both are escalated.
+ * `de` and `pl` carry `en`'s set since TASK-106 authored their category and occasion slugs
+ * (spec 008 §13 Q10): every entity page exists there under its own slug. Their shop roots stay
+ * escalated (`EXCLUDED`), so the crawl must reach their country categories by another path — the
+ * occasion hubs' destination links and the occasions index — or go red, which is the point.
  */
 export const TARGETS: Readonly<
   Record<string, Readonly<Record<string, number>>>
@@ -90,8 +93,18 @@ export const TARGETS: Readonly<
     occasionHub: 28,
     occasionsIndex: 1,
   },
-  de: {},
-  pl: {},
+  de: {
+    countryCategory: 140,
+    countryOccasion: 7,
+    occasionHub: 28,
+    occasionsIndex: 1,
+  },
+  pl: {
+    countryCategory: 140,
+    countryOccasion: 7,
+    occasionHub: 28,
+    occasionsIndex: 1,
+  },
 };
 
 /**
@@ -114,6 +127,8 @@ export const WAIVED: Readonly<
 > = {
   en: { categoryHub: 23 },
   "en-gb": { categoryHub: 23 },
-  de: { countryShopRoot: 7 },
-  pl: { countryShopRoot: 7 },
+  // `de`/`pl` gained their 23 category hubs with TASK-106's slugs; the `categoryHub` rule covers
+  // every locale, so the waiver grew by exactly those and this literal says so.
+  de: { categoryHub: 23, countryShopRoot: 7 },
+  pl: { categoryHub: 23, countryShopRoot: 7 },
 };

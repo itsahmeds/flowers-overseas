@@ -227,18 +227,41 @@ describe("evergreen and seasonal hubs (§2 row 13, §14 A1)", () => {
   });
 });
 
-describe("`de` and `pl` have no authored entity slugs yet (§13 Q10, TASK-106)", () => {
+describe("`de` and `pl` have their own authored entity slugs (§13 Q10, TASK-106)", () => {
+  const countsOf = (
+    pages: readonly { pageType: string }[],
+  ): Record<string, number> => {
+    const counts: Record<string, number> = {};
+    for (const page of pages) {
+      counts[page.pageType] = (counts[page.pageType] ?? 0) + 1;
+    }
+    return counts;
+  };
   for (const locale of ["de", "pl"] as const) {
-    it(`gives ${locale} shop roots but no category, occasion or hub page`, async () => {
+    it(`gives ${locale} exactly the page set en has, under ${locale}'s own slugs`, async () => {
       const pages = await listingPages(locale);
-      const of = (pageType: string): number =>
-        pages.filter((page) => page.pageType === pageType).length;
-      expect(of("countryShopRoot")).toBe(publishedCountries().length);
-      expect(of("countryCategory")).toBe(0);
-      expect(of("countryOccasion")).toBe(0);
-      expect(of("categoryHub")).toBe(0);
-      expect(of("occasionHub")).toBe(0);
-      expect(of("occasionsIndex")).toBe(0);
+      const english = await listingPages("en");
+      // The existence rule reads products, prices and observance, none of which is per-locale;
+      // with every slug and intro authored, the only per-locale term is satisfied everywhere.
+      expect(countsOf(pages)).toEqual(countsOf(english));
+      expect(
+        pages.filter((page) => page.pageType === "countryShopRoot").length,
+      ).toBe(publishedCountries().length);
+      // …and not one of them is an English URL with the locale swapped: `/de/blumen/roses` is the
+      // half-translated page `plan/02` §12 forbids. Sant Jordi is a proper noun in every language.
+      const englishLeaves = new Set(
+        english
+          .filter((page) => page.pageType !== "countryShopRoot")
+          .map((page) => page.path.split("/").at(-1))
+          .filter((leaf) => leaf !== "sant-jordi"),
+      );
+      for (const page of pages) {
+        if (page.pageType === "countryShopRoot") continue;
+        if (page.pageType === "occasionsIndex") continue;
+        expect(englishLeaves.has(page.path.split("/").at(-1)), page.path).toBe(
+          false,
+        );
+      }
     });
   }
 
@@ -537,12 +560,14 @@ describe("the existence-set summary (§11, AC-3)", () => {
       expect(of(locale)?.belowFloor, locale).toBe(21);
     }
     for (const locale of ["de", "pl"]) {
-      expect(of(locale)?.urlCount, locale).toBe(7);
-      // Nothing is *below* the floor here because nothing is measured: the count walks the
-      // categories that have an authored slug in the locale, and `de`/`pl` have none yet.
-      expect(of(locale)?.belowFloor, locale).toBe(0);
-      expect(of(locale)?.countryCategory, locale).toBe(0);
-      expect(of(locale)?.occasionHub, locale).toBe(0);
+      // Every category and occasion has an authored slug and intro here since TASK-106, so the
+      // set is `en`'s, measured under the same floor.
+      expect(of(locale)?.urlCount, locale).toBe(206);
+      expect(of(locale)?.belowFloor, locale).toBe(21);
+      expect(of(locale)?.countryCategory, locale).toBe(
+        of("en")?.countryCategory,
+      );
+      expect(of(locale)?.occasionHub, locale).toBe(of("en")?.occasionHub);
     }
   });
 
@@ -670,15 +695,19 @@ describe("the category tile's money is one projection's (§2, §8, `/review 76`)
     ).resolves.toBeUndefined();
   });
 
-  it("answers `undefined` for a locale with no authored slug (`de`/`pl`, TASK-106)", async () => {
+  it("answers a tile under the locale's own authored slug in `de` and `pl` (TASK-106)", async () => {
     const category = await getCategory(CATEGORY);
     expect(category).not.toBeNull();
+    if (category === null) return;
+    const expected = {
+      de: "/de/polen/blumen/blumenstrausse",
+      pl: "/pl/polska/kwiaty/bukiety",
+    };
     for (const locale of ["de", "pl"] as const) {
-      await expect(
-        category === null
-          ? Promise.resolve(undefined)
-          : categoryTileView(category, locale, PL, { now: FX_LIVE }),
-      ).resolves.toBeUndefined();
+      const tile = await categoryTileView(category, locale, PL, {
+        now: FX_LIVE,
+      });
+      expect(tile?.href, locale).toBe(expected[locale]);
     }
   });
 });

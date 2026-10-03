@@ -65,7 +65,13 @@ describe("the prebuilt set (AC-3)", () => {
       expect(
         match.kind,
         `/${row.locale}/${row.segment}/${row.child}/${row.grandchild}`,
-      ).toBe(row.child === "flowers" ? "countryCategory" : "countryOccasion");
+      ).toBe(
+        // Each locale's own `shopCategory` segment (`plan/02` §4.1): since TASK-106 the set
+        // carries `de` and `pl` rows, whose segment is `blumen` / `kwiaty`.
+        ["flowers", "blumen", "kwiaty"].includes(row.child)
+          ? "countryCategory"
+          : "countryOccasion",
+      );
     }
   });
 
@@ -200,21 +206,30 @@ describe("every shape AC-1 requires to be a miss", () => {
     });
   }
 
-  it("has no authored category or occasion slug in `de` or `pl`, so those URLs do not exist (§13 Q10)", async () => {
-    // Not a defect: the ~31 category and occasion slugs are human-authored per locale and never
-    // machine-drafted (TASK-106 authors them). A locale with no slug has no page there and
-    // contributes no `hreflang` alternate — which is why the set below is empty rather than an
-    // English echo.
-    expect(params.filter((row) => row.locale === "de")).toEqual([]);
-    expect(params.filter((row) => row.locale === "pl")).toEqual([]);
+  it("serves `de` and `pl` under their own authored slugs and never under an English one (§13 Q10, TASK-106)", async () => {
+    // The category and occasion slugs are human-authored per locale (TASK-106), never machine-
+    // drafted: the German and Polish pages exist at their own URLs, and the English echo of each
+    // is a miss, which is what keeps `/de/polen/blumen/roses` from ever being served.
+    expect(params.filter((row) => row.locale === "de").length).toBe(
+      params.filter((row) => row.locale === "en").length,
+    );
+    expect(params.filter((row) => row.locale === "pl").length).toBe(
+      params.filter((row) => row.locale === "en").length,
+    );
     expect(
       (await resolveLocalePath("de", ["polen", "blumen", "rosen"])).kind,
-    ).toBe("notFound");
+    ).toBe("countryCategory");
     expect(
-      (await resolveLocalePath("de", ["polen", "anlaesse", "muttertag"])).kind,
-    ).toBe("notFound");
+      (await resolveLocalePath("pl", ["polska", "kwiaty", "roze"])).kind,
+    ).toBe("countryCategory");
     expect(
       (await resolveLocalePath("pl", ["polska", "okazje", "dzien-matki"])).kind,
+    ).toBe("countryOccasion");
+    expect(
+      (await resolveLocalePath("de", ["polen", "blumen", "roses"])).kind,
+    ).toBe("notFound");
+    expect(
+      (await resolveLocalePath("pl", ["polska", "okazje", "mothers-day"])).kind,
     ).toBe("notFound");
   });
 });

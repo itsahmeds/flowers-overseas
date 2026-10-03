@@ -108,8 +108,25 @@ describe("the existence set (AC-1, T-01)", () => {
       "/en/romania/occasions/mothers-day",
       "/en/netherlands/occasions/mothers-day",
     ]);
-    expect(await occasionPages("de")).toEqual([]);
-    expect(await occasionPages("pl")).toEqual([]);
+    // `de` and `pl` have the same seven pages under their own authored slugs (TASK-106).
+    expect((await occasionPages("de")).map((page) => page.path)).toEqual([
+      "/de/polen/anlaesse/muttertag",
+      "/de/deutschland/anlaesse/muttertag",
+      "/de/frankreich/anlaesse/muttertag",
+      "/de/spanien/anlaesse/muttertag",
+      "/de/italien/anlaesse/muttertag",
+      "/de/rumaenien/anlaesse/muttertag",
+      "/de/niederlande/anlaesse/muttertag",
+    ]);
+    expect((await occasionPages("pl")).map((page) => page.path)).toEqual([
+      "/pl/polska/okazje/dzien-matki",
+      "/pl/niemcy/okazje/dzien-matki",
+      "/pl/francja/okazje/dzien-matki",
+      "/pl/hiszpania/okazje/dzien-matki",
+      "/pl/wlochy/okazje/dzien-matki",
+      "/pl/rumunia/okazje/dzien-matki",
+      "/pl/holandia/okazje/dzien-matki",
+    ]);
   });
 
   it("is exactly the occasion half of what `generateStaticParams` emits (AC-3)", async () => {
@@ -229,12 +246,15 @@ describe("the shop root's third column (§14 A10)", () => {
     }
     // The view the loop walked, pinned: four shop roots answer (one per locale, each under its
     // own authored country segment — `polen` and `polska` are not `en` URLs), ten observed
-    // occasions each, and two of those forty rows carry a link today. Without these the loop
-    // could be satisfied by iterating nothing at all.
+    // occasions each, and four of those forty rows carry a link today — one per locale, since
+    // TASK-106 gave `de` and `pl` their own occasion slugs. Without these the loop could be
+    // satisfied by iterating nothing at all.
     expect(rows).toBe(40);
     expect(linked).toEqual([
       "en /en/poland/occasions/mothers-day",
       "en-gb /en-gb/poland/occasions/mothers-day",
+      "de /de/polen/anlaesse/muttertag",
+      "pl /pl/polska/okazje/dzien-matki",
     ]);
   });
 });

@@ -268,13 +268,14 @@ describe("the page's other blocks come from the one model (§5.2, §5.3)", () =>
     expect(view.path).toBe("/en-gb/poland/product/amber-hour");
   });
 
-  it("drops the category crumb where the category has no page in that locale (pl has no category slugs yet)", async () => {
+  it("links the category crumb under the locale's own slug (pl authored `roze` in TASK-106)", async () => {
     const view = await amber("pl", "PL");
     expect(view.breadcrumb.map((crumb) => crumb.href)).toEqual([
       "/pl",
       "/pl/wyslij-kwiaty",
       undefined,
       "/pl/polska/kwiaty",
+      "/pl/polska/kwiaty/roze",
       "/pl/polska/produkt/amber-hour",
     ]);
     // The country crumb was a 404 (`/pl/wyslij-kwiaty/polska`) until TASK-113's corridor rule; the category crumb this case is about is unchanged.
