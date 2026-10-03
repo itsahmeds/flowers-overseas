@@ -112,6 +112,7 @@ One dated bullet per `/review`, newest last.
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
 - **2026-09-21 — bucket names deviate from spec 002 §13 Q7 (spec-writer / founder, `open`).**
+  (Correction, 2026-10-03: the clause is spec 006 §13 Q7, not spec 002's. Carried to TASK-169.)
   §13 Q7 binds `fo-media` / `fo-media-preview` / `fo-backups`; all three 404. What exists is
   `flowersoverseas-media` and `flowersoverseas-backups`, with **no preview bucket at all**. Names
   are configuration and nothing is broken today, but §13 Q7 must be amended or the buckets
