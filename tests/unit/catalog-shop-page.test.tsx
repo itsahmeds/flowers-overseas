@@ -73,10 +73,11 @@ async function viewFor(locale: string, country: string): Promise<ListingView> {
 const en = await viewFor("en", "poland");
 
 /**
- * How many of the twelve cards on `/en/poland/flowers` carry an approved photograph (TASK-080's
- * bytes). Pinned, not recomputed, so AC-24's case cannot drift with the corpus unnoticed.
+ * How many of the twelve cards on `/en/poland/flowers` carry an approved photograph: all twelve
+ * since TASK-168 approved photo batch 2 (two from TASK-080's bytes before). Pinned, not
+ * recomputed, so AC-24's case cannot drift with the corpus unnoticed.
  */
-const PHOTOGRAPHED_CARDS = 2;
+const PHOTOGRAPHED_CARDS = 12;
 
 describe("the populated shop root (§5.3 row 1)", () => {
   const html = render(<CountryShopRootPage view={en} />, "en");
@@ -218,6 +219,7 @@ describe("the populated shop root (§5.3 row 1)", () => {
     // bytes for the first Polish card are ever withdrawn this goes red and the new numbers are
     // written here deliberately. `tests/support/lcp-nomination.ts` is PR 89 round 3's reading of
     // AC-24, reused rather than restated; the browser-side half is `tests/e2e/country-shop.spec.ts`.
+    expect(en.items).toHaveLength(12);
     expect(en.items.filter((card) => card.photo.kind === "asset")).toHaveLength(
       PHOTOGRAPHED_CARDS,
     );
