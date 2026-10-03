@@ -7,6 +7,10 @@ import { securityHeaderRules } from "./src/lib/csp";
 import { assertBuildEnv } from "./src/lib/env.assert";
 import { listingCacheHeaderRules } from "./src/lib/listing-cache-headers";
 import {
+  listingRewriteRules,
+  parameterRouteHeaderRules,
+} from "./src/lib/listing-rewrites";
+import {
   appEnvironment,
   cspReportOnly,
   ga4MeasurementId,
@@ -79,12 +83,18 @@ const headerRules = [
   // rather than a `<link>` because nothing rendered into `<head>` can be emitted ahead of an image
   // preload (`src/lib/media-headers.ts` has the measurements).
   ...mediaHeaderRules(),
-  // The country shop root is rendered per request (it reads `?page=`/`?sort=`) and cached at the
-  // edge by full URL for an hour, stale-while-revalidate for a day — spec 008 §5.4 and §13 Q2 as
+  // The country shop root's parameterised requests are rendered per request (the rewrite below
+  // sends `?page=`/`?sort=`/a facet to the parameter route; its bare URL is prebuilt) and every
+  // response at that address is cached at the edge by full URL for an hour, stale-while-revalidate for a day — spec 008 §5.4 and §13 Q2 as
   // the founder resolved them, under ADR-0018's single replica behind Cloudflare. The sources
   // name each locale's own shop segment, so no other page type's caching changes
   // (`src/lib/listing-cache-headers.ts` carries the reasoning; TASK-114).
   ...listingCacheHeaderRules(),
+  // `X-Robots-Tag: noindex, nofollow` on a **direct** request to the internal parameter route
+  // (`/{locale}/_query/…`); a request rewritten there keeps the address it was asked for, which
+  // this source does not match. After `noindexHeaderRules()`, so its value is the one served on a
+  // direct hit (`src/lib/listing-rewrites.ts`; TASK-170, `/review 143`).
+  ...parameterRouteHeaderRules(),
   ...securityHeaderRules(environment, {
     reportOnly: cspReportOnly(process.env),
     inlineHashes: [consentBootstrapHash()],
@@ -108,6 +118,18 @@ const nextConfig: NextConfig = {
   // build-output shape, recorded as spec 040 §14 A2. Pinned by `tests/unit/container.test.ts`.
   ...(platform === "vercel" ? {} : { output: "standalone" as const }),
   headers: () => Promise.resolve(headerRules),
+  // A country shop root request carrying a parameter the listing honours is answered by the
+  // internal parameter route, so no route file reads the query string and the depth-3 route stays
+  // prebuilt — which is what keeps the router's `dynamicParams = false` gate, and so the localised
+  // `lang` 404, at that depth (spec 003 AC-8, spec 008 §5.4; TASK-170 E-1, option (a)).
+  // `beforeFiles`: before the filesystem routes match, after `src/proxy.ts`. No redirect, and the
+  // address in the browser does not change (`src/lib/listing-rewrites.ts`).
+  rewrites: () =>
+    Promise.resolve({
+      beforeFiles: listingRewriteRules(),
+      afterFiles: [],
+      fallback: [],
+    }),
 };
 
 // next-intl's *rendering* layer only: the plugin points the library at the request config in
