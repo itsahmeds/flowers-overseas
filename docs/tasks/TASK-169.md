@@ -45,11 +45,16 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-03: spec 006 §14 A10 drafted by the spec writer (L475–487), committed by the orchestrator;
+  `docs/runbooks/imagery.md`'s stale "spec 002 §13 Q7" bullet now points to A10.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+Spec 006 §14 A10 records `flowersoverseas-media` and `flowersoverseas-backups` as the binding
+names, with the preview default (no preview bucket; previews read and never write) pending the
+founder. Correction to `## Binding`: `src/lib/env.schema.ts` names only the variables
+(`R2_BUCKET` L210, `R2_BACKUPS_BUCKET` L215), not the bucket values; the real names are in the
+runbooks and `tests/unit/env.test.ts`. The founder's preview question stays open.

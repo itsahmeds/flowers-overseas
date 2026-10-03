@@ -472,3 +472,17 @@ Spec 002 §8 (quoted in §6): a `pending` primary image has no alt, so once the 
 Open for the founder: none.
 Raised by: TASK-167's implementer, 2026-10-03 (`docs/tasks/TASK-167.md`, Escalations, option A), answered by the orchestrator on 2026-10-03.
 
+**A10 — The R2 bucket names are `flowersoverseas-media` and `flowersoverseas-backups`; previews have no bucket of their own (§13 Q7; §14 A8; no AC or test changes; TASK-169; the preview position is the founder's open question, with a default).**
+Original: §13 Q7, resolved 2026-09-09 ("accept defaults"), binds the buckets `fo-media` (public, EU jurisdiction), `fo-media-preview` and `fo-backups` (private), with the public origin `https://media.flowersoverseas.com`.
+Measured: none of the three buckets exists; each name returns 404 (`docs/tasks/TASK-138.md`, Escalations, 2026-09-21, which cites "spec 002 §13 Q7" in error; the clause is this spec's). The buckets that exist are `flowersoverseas-media` and `flowersoverseas-backups`, and there is no preview bucket. The public origin is as §13 Q7 says.
+Corrected:
+
+1. **The binding names.** The public media bucket is `flowersoverseas-media`, EU jurisdiction, served at `https://media.flowersoverseas.com` as a Cloudflare custom domain (A8; `MEDIA_ORIGIN` in `src/lib/media-origin.ts`). The private backups bucket is `flowersoverseas-backups`. The names stand because renaming the live media bucket breaks `media.flowersoverseas.com` and every image URL built from it, and gains nothing.
+2. **Where each name is written.** `src/lib/env.schema.ts` names the variables, `R2_BUCKET` (the media bucket) and `R2_BACKUPS_BUCKET` (the backups bucket), and checks only the shape of their values. It holds no bucket name. `.env.example` sets both to placeholders (`placeholder-bucket`, `placeholder-backups-bucket`). The real values are written in the setup runbooks (`docs/runbooks/local-setup.md`, `vercel-setup.md`, `railway-cloudflare-setup.md`) and in the test fixtures of `tests/unit/env.test.ts`. The `fo-media` value in `tests/unit/seed-projections.test.ts` is an arbitrary fixture, not a bucket name.
+3. **The preview position (Phase 0 default, pending the founder's answer).** A preview deployment reads production's public images from `MEDIA_ORIGIN`, a committed constant, and never writes to a bucket. No request path in `src/` writes to R2. The only writer is the operator's `pnpm media:upload`, run by hand, which publishes the variants of `approved` assets only and skips `pending` and `rejected` ones (TASK-167, PR 142). No `flowersoverseas-media-preview` bucket is created unless the founder asks for one (TASK-169, Escalations, `open`).
+4. **What a preview bucket would cost.** A second bucket. A second public host, because the bucket needs its own custom domain. A per-environment media origin: `MEDIA_ORIGIN` is one constant baked in at `next build`, and the container build has no `R2_*` variable (A8 clause 7), so a preview origin needs a build-time mechanism that does not exist today. `pnpm media:upload`'s check that `R2_PUBLIC_BASE_URL` equals `MEDIA_ORIGIN` would need the same change. CSP `img-src` gains the second host, and AC-27's whole-string CSP assertion changes with it.
+
+Tests: none added or changed. AC-27 and T-27 stand as A8 rewords them.
+Open for the founder: whether a preview environment gets its own image bucket. The default, if unanswered, is clause 3: no.
+Raised by: TASK-138's escalation of 2026-09-21, carried to TASK-169; drafted by the spec writer on 2026-10-03.
+
