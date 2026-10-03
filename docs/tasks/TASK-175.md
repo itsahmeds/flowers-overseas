@@ -80,6 +80,14 @@ _None._
   `--text-xs`; the pl font check reads the first family (the Latin-Ext webfont) and its face
   status, as the v1 test did, instead of the whole stack whose `local()` faces error on Linux.
   Holes 1–7 each have a test that goes red with its subject broken (mutations run locally).
+  Local e2e on the fixed build: 1,192 passed; the 28 `seo-canonical` cases that failed are the
+  local port (canonical built for :3000, served on :3175), green in CI.
+- 2026-10-04 — Linux baselines re-taken from `visual-baselines` run 37152125925 on 26a5dbb2:
+  every file of its change list committed (70 PNGs plus the manifest), `--verify` 104/104.
+  Opened: `home-pl-mobile` (PLN chip inside 390), `header-mobile-utility`, `header-desktop-banner`,
+  `consent-shown-en-mobile`, `product-mobile-sticky`, `footer-en-desktop`. Found: the footer's
+  occasion-reminder field is squeezed by the wider v2 pill (TASK-176 removes that form, A21
+  clause 1).
 
 ## Result
 
