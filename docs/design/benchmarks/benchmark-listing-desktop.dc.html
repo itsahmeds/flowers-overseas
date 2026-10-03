@@ -1,0 +1,193 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+  <style>
+:root{
+  --color-paper: oklch(99.3% 0.002 90);
+  --color-paper-2: oklch(97.2% 0.004 90);
+  --color-paper-3: oklch(94.5% 0.005 90);
+  --color-ink: oklch(19% 0.01 250);
+  --color-ink-2: oklch(36% 0.01 250);
+  --color-ink-3: oklch(52% 0.008 250);
+  --color-rule: oklch(90% 0.004 250);
+  --color-accent: oklch(42% 0.10 155);
+  --color-accent-strong: oklch(34% 0.09 155);
+  --color-accent-ink: oklch(99% 0.002 90);
+  --color-success: oklch(42% 0.10 150);
+  --color-warning: oklch(45% 0.12 75);
+  --color-danger: oklch(45% 0.17 25);
+  --color-danger-strong: oklch(38% 0.15 25);
+  --color-photo-stop-1: oklch(93% 0.02 120);
+  --color-photo-stop-2: oklch(88% 0.03 140);
+  --color-photo-stop-3: oklch(80% 0.04 150);
+  --color-photo-ink: oklch(40% 0.03 150);
+  --color-photo: linear-gradient(160deg, var(--color-photo-stop-1) 0%, var(--color-photo-stop-2) 45%, var(--color-photo-stop-3) 100%);
+  --font-display: "Newsreader", "Iowan Old Style", Georgia, "Times New Roman", serif;
+  --font-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --text-display: 68px; --text-display-s: 42px; --text-2xl: 34px; --text-xl: 24px; --text-lg: 18px; --text-md: 15px; --text-sm: 13px; --text-xs: 11px;
+  --space-xs: 4px; --space-sm: 8px; --space-md: 16px; --space-lg: 24px; --space-xl: 40px; --space-2xl: 72px; --space-3xl: 128px;
+  --radius-sm: 2px; --radius-md: 4px; --radius-full: 9999px;
+  --measure: 68ch;
+  --rule: 1px solid var(--color-rule);
+}
+    body { margin: 0; font-family: var(--font-body); color: var(--color-ink); background: var(--color-paper); -webkit-font-smoothing: antialiased; }
+    a { color: var(--color-ink); text-decoration: none; } a:hover { color: var(--color-accent); }
+    .display { font-family: var(--font-display); font-weight: 500; letter-spacing: -0.015em; }
+    .label { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-ink-3); }
+    .photo { background: var(--color-photo); display: flex; align-items: flex-end; padding: var(--space-md); color: var(--color-photo-ink); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field span.v { min-height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-bottom: 1px solid var(--color-ink); font-size: var(--text-md); color: var(--color-ink); }
+    .btn { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
+    .btn.accent { background: var(--color-accent); }
+    .btn.secondary { background: var(--color-paper); color: var(--color-ink); border: 1px solid var(--color-ink-3); }
+    .btn.sm { min-height: 44px; padding: 0 16px; font-size: var(--text-sm); }
+    .price { font-variant-numeric: tabular-nums; }
+    .ph { display: inline-block; min-width: 56px; height: 14px; background: var(--color-paper-3); border-radius: 2px; vertical-align: middle; }
+    .chip { display: inline-flex; align-items: center; gap: var(--space-xs); border: 1px solid var(--color-ink-3); border-radius: var(--radius-sm); padding: var(--space-sm) var(--space-sm); font-size: var(--text-sm); }
+    .chip.accent { border-color: var(--color-accent); color: var(--color-accent); }
+    .chip.muted { border-color: transparent; background: var(--color-paper-3); color: var(--color-ink-2); }
+    .note { border: 1px solid var(--color-ink-3); border-radius: var(--radius-sm); background: var(--color-paper-2); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; font-size: var(--text-sm); line-height: 1.55; }
+    .note dl { margin: 0; display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 4px var(--space-md); font-size: var(--text-sm); }
+    .note dt { color: var(--color-ink-3); font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding-block-start: 2px; }
+    .note dd { margin: 0; color: var(--color-ink-2); }
+    .slot { color: var(--color-ink-3); font-style: italic; }
+    .stub { border: 1px dashed var(--color-ink-3); border-radius: var(--radius-sm); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; color: var(--color-ink-2); font-size: var(--text-sm); }
+    .stub b { font-weight: 600; color: var(--color-ink); font-size: var(--text-sm); }
+    .sec { display: flex; flex-direction: column; gap: var(--space-md); }
+    table.spec { border-collapse: collapse; width: 100%; font-size: var(--text-sm); }
+    table.spec th, table.spec td { text-align: start; border-block-end: var(--rule); padding: 8px 12px; vertical-align: top; }
+    table.spec th { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-3); }
+    .grid { display: grid; gap: var(--space-lg); }
+    .card { display: flex; flex-direction: column; gap: var(--space-sm); }
+    .card .nm { font-family: var(--font-display); font-weight: 500; font-size: var(--text-lg); }
+    .tile { border: var(--rule); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; }
+    .kv { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px var(--space-md); font-size: var(--text-sm); }
+    .kv > span:nth-child(even) { text-align: end; font-variant-numeric: tabular-nums; }
+    .faq { border-block-start: var(--rule); padding-block: var(--space-md); display: flex; flex-direction: column; gap: 6px; }
+    .faq b { font-weight: 600; font-size: var(--text-md); }
+    .faq span { font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.6; }
+    .steprow { display: flex; gap: var(--space-md); font-size: var(--text-sm); }
+    .steprow > span { flex: 1; border-block-start: 2px solid var(--color-rule); padding-block-start: var(--space-sm); color: var(--color-ink-3); }
+    .steprow > span.on { border-block-start-color: var(--color-ink); color: var(--color-ink); font-weight: 600; }
+    code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: var(--text-xs); color: var(--color-ink-2); }
+    .prose { max-width: var(--measure); font-size: var(--text-md); line-height: 1.6; color: var(--color-ink-2); }
+
+    /* ---- benchmark-artboard helpers (this study only) ---- */
+    .frame { position: relative; box-sizing: border-box; border: 1px solid var(--color-ink-3); background: var(--color-paper); overflow: hidden; }
+    .frame .foldline { position: absolute; inset-inline: 0; border-block-start: 2px dashed var(--color-danger); }
+    .frame .foldtag { position: absolute; inset-inline-end: 6px; font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-danger); background: var(--color-paper); padding: 0 4px; }
+    .band { box-sizing: border-box; display: flex; align-items: center; gap: var(--space-sm); padding: 0 16px; font-size: var(--text-xs); color: var(--color-ink-2); border-block-end: var(--rule); }
+    .band.util { background: var(--color-paper-3); }
+    .band.hdr { background: var(--color-paper-2); }
+    .band.nav { background: var(--color-paper-2); letter-spacing: 0.08em; text-transform: uppercase; }
+    .body { box-sizing: border-box; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+    .measure-tick { font-size: var(--text-xs); font-variant-numeric: tabular-nums; color: var(--color-ink-3); letter-spacing: 0.06em; }
+    .kind { display: inline-block; font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 6px; border-radius: var(--radius-sm); }
+    .kind.rearr { background: var(--color-paper-3); color: var(--color-ink-2); }
+    .kind.rem { background: var(--color-danger); color: var(--color-accent-ink); }
+    .kind.keep { border: 1px solid var(--color-accent); color: var(--color-accent); }
+    .pair { display: flex; gap: var(--space-xl); align-items: flex-start; }
+    .col { display: flex; flex-direction: column; gap: var(--space-sm); }
+    .barrow { display: grid; grid-template-columns: 210px minmax(0,1fr) 92px; gap: var(--space-sm) var(--space-md); align-items: center; font-size: var(--text-sm); }
+    .bar { height: 18px; background: var(--color-paper-3); position: relative; }
+    .bar > i { position: absolute; inset-block: 0; inset-inline-start: 0; background: var(--color-ink-3); display: block; }
+    .bar > i.ours { background: var(--color-danger); }
+    .lock { border-inline-start: 3px solid var(--color-accent); padding-inline-start: var(--space-md); font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.6; }
+  </style>
+</helmet>
+<div style="box-sizing: border-box; width: 1440px; min-height: 3320px; background: var(--color-paper); display: flex; flex-direction: column; gap: var(--space-xl); padding: var(--space-xl) 56px var(--space-3xl);">
+
+  <section class="note">
+    <span class="label">Country shop root · current and proposed · desktop · [internal]</span>
+    <dl>
+      <dt>Purpose</dt><dd>The listing page is where the complaint is most testable, because every one of the four sites measured has the same page and sells the same thing on it. A <b>decision artefact</b>: approval sends the change to <code>wireframes/country-shop-desktop.dc.html</code>, which is what an implementer builds from.</dd>
+      <dt>URL</dt><dd><code>/en/poland/flowers</code>. Measured on production, <b>2026-09-21</b>, at 1280&times;900.</dd>
+      <dt>Measured</dt><dd>chrome 183; breadcrumb 223; <code>&lt;h1&gt;</code> 283; intro paragraph 343 (72&nbsp;px, two lines); the ordering-is-not-open notice 431 (48&nbsp;px); <code>&lt;h2&gt;</code> 540; the ordering sentence 593 (40&nbsp;px); <b>grid 649</b>; first price 1026. Card 266&times;475 with a 266&times;333 photograph &mdash; 70.1%.</dd>
+      <dt>The field, same measurement</dt><dd>preamble between chrome and the first photograph: FloraQueen 222 &middot; Bloom &amp; Wild 276 &middot; Interflora UK 435 &middot; <b>ours 466</b>. Card photograph share: Bloom &amp; Wild 66.4% &middot; <b>ours 70.1%</b> &middot; FloraQueen 72.5% &middot; Interflora 74.4%.</dd>
+      <dt>Honesty</dt><dd>Nothing below removes the ordering-is-not-open notice, the all-in price line, the ordering sentence or the "Example arrangement" label. The first three move; none is deleted. The twelve cards stay unlinked while no product page exists.</dd>
+      <dt>Owning spec</dt><dd>008. <code>id="our-selection"</code> is fixed by AC-9 and survives every change here.</dd>
+    </dl>
+  </section>
+
+  <div class="sec">
+    <span class="label">Current · 1280&times;900, drawn 1:1</span>
+    <div class="frame" style="width: 1280px; height: 900px;">
+      <div class="band util" style="height: 45px;"><span>Delivery dates open when we confirm our first florist</span><span style="margin-inline-start: auto;">English &middot; English (UK) &middot; Deutsch &middot; Polski</span><span class="chip" style="padding: 2px 6px;">EUR</span></div>
+      <div class="band hdr" style="height: 84px;"><span class="display" style="font-size: 26px; letter-spacing: 0.04em;">Flowers Overseas</span><span style="flex: 1; display: flex; align-items: center; min-height: 48px; border: var(--rule); padding-inline: 12px; color: var(--color-ink-3); margin-inline: var(--space-xl);">Search flowers, occasions, a city or a country</span><span>Sign in</span><span>My orders</span><span>Basket (0)</span></div>
+      <div class="band nav" style="height: 53px;"><span>Our selection</span><span>Birthday</span><span>Sympathy</span><span>Occasions</span><span>Bouquets</span><span>Roses</span><span>Plants</span><span>Add-ons</span><span>Destinations</span></div>
+      <div style="box-sizing: border-box; padding: 40px 72px 0; display: flex; flex-direction: column;">
+        <nav style="font-size: var(--text-sm); color: var(--color-ink-3);">Home / Send flowers to / Poland / Flowers</nav>
+        <h1 class="display" style="margin: 40px 0 0; font-size: var(--text-2xl); line-height: 1.15;">Flowers we make for Poland</h1>
+        <p class="prose" style="margin: 16px 0 0; max-width: 585px;">Our florist in the recipient's town makes the bouquet the morning it is delivered and hands it over in person. Every price below is one number with VAT and delivery already inside it.</p>
+        <p class="prose" style="margin: 16px 0 0; max-width: 585px;">You cannot order yet. We are still choosing our florists in Poland, so every price on this page is the price we would charge and nothing on it can be bought today.</p>
+        <h2 class="display" style="margin: 61px 0 0; font-size: var(--text-xl);">Everything we can make for Poland</h2>
+        <p style="margin: 17px 0 0; max-width: 507px; font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.6;">Our order is the order we chose ourselves. It is not a ranking by sales, by popularity or by payment, and it does not change with who you are.</p>
+        <div class="grid" style="grid-template-columns: repeat(4, 266px); gap: var(--space-lg); margin-block-start: 34px;">
+          <span class="photo" style="height: 251px; align-items: flex-start;">Photo slot</span>
+          <span class="photo" style="height: 251px; align-items: flex-start;">Photo slot</span>
+          <span class="photo" style="height: 251px; align-items: flex-start;">Photography to supply</span>
+          <span class="photo" style="height: 251px; align-items: flex-start;">Photography to supply</span>
+        </div>
+      </div>
+      <span class="measure-tick" style="position: absolute; inset-inline-start: 6px; top: 190px;">183 &mdash; chrome ends</span>
+      <span class="measure-tick" style="position: absolute; inset-inline-start: 6px; top: 630px;">649 &mdash; first photograph. 466 px of preamble; the price is at 1026.</span>
+    </div>
+  </div>
+
+  <div class="sec">
+    <span class="label">Proposed · 1280&times;900, drawn 1:1</span>
+    <div class="frame" style="width: 1280px; height: 900px;">
+      <div class="band util" style="height: 45px;"><span>Delivery dates open when we confirm our first florist</span><span style="margin-inline-start: auto;">English &middot; English (UK) &middot; Deutsch &middot; Polski</span><span class="chip" style="padding: 2px 6px;">EUR</span></div>
+      <div class="band hdr" style="height: 84px;"><span class="display" style="font-size: 26px; letter-spacing: 0.04em;">Flowers Overseas</span><span style="flex: 1; display: flex; align-items: center; min-height: 48px; border: var(--rule); padding-inline: 12px; color: var(--color-ink-3); margin-inline: var(--space-xl);">Search flowers, occasions, a city or a country <span style="margin-inline-start: auto; font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.1em;">Opens with the shop</span></span><span style="color: var(--color-ink-3);">Sign in</span><span style="color: var(--color-ink-3);">My orders</span><span style="color: var(--color-ink-3);">Basket (0)</span></div>
+      <div class="band nav" style="height: 53px;"><a href="/en/poland/flowers" style="text-decoration: underline;">Our selection</a><a href="/en/poland/flowers/birthday-flowers" style="text-decoration: underline;">Birthday</a><a href="/en/poland/flowers/sympathy-flowers" style="text-decoration: underline;">Sympathy</a><span style="color: var(--color-ink-3);">Occasions</span><a href="/en/poland/flowers/hand-tied-bouquets" style="text-decoration: underline;">Bouquets</a><a href="/en/poland/flowers/roses" style="text-decoration: underline;">Roses</a><a href="/en/poland/flowers/plants" style="text-decoration: underline;">Plants</a><span style="color: var(--color-ink-3);">Add-ons</span><a href="/en/send-flowers-to" style="text-decoration: underline;">Destinations</a></div>
+      <div style="box-sizing: border-box; padding: 24px 72px 0; display: flex; flex-direction: column;">
+        <nav style="font-size: var(--text-sm); color: var(--color-ink-3);">Home / Send flowers to / Poland / Flowers</nav>
+        <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-xl); margin-block-start: 20px;">
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <h1 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;" id="our-selection">Flowers we make for Poland</h1>
+            <p style="margin: 0; font-size: var(--text-sm); color: var(--color-ink-2);">84 bouquets &middot; every price is one number with VAT and delivery already inside it &middot; our own order, not a ranking by sales, popularity or payment</p>
+          </div>
+          <span class="chip accent" style="flex: none;">You cannot order yet &mdash; we are still choosing our florists in Poland</span>
+        </div>
+        <div class="grid" style="grid-template-columns: repeat(4, 266px); gap: var(--space-lg); margin-block-start: 20px;">
+          <span class="photo" style="height: 333px; align-items: flex-start;">Photo slot</span>
+          <span class="photo" style="height: 333px; align-items: flex-start;">Photo slot</span>
+          <span class="photo" style="height: 333px; align-items: flex-start;">Photography to supply</span>
+          <span class="photo" style="height: 333px; align-items: flex-start;">Photography to supply</span>
+        </div>
+        <div class="grid" style="grid-template-columns: repeat(4, 266px); gap: var(--space-lg); margin-block-start: 8px;">
+          <span class="card"><span class="nm">Amber Hour</span><span class="price" style="font-size: var(--text-lg);">229.00 PLN</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Includes VAT and delivery</span><span class="label" style="font-size: var(--text-xs);">Example arrangement · our florist hand-makes each one</span></span>
+          <span class="card"><span class="nm">Amber Hour + Chocolates</span><span class="price" style="font-size: var(--text-lg);">309.00 PLN</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Includes VAT and delivery</span><span class="label" style="font-size: var(--text-xs);">Example arrangement · our florist hand-makes each one</span></span>
+          <span class="card"><span class="nm">Anthurium</span><span class="price" style="font-size: var(--text-lg);">199.00 PLN</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Includes VAT and delivery</span></span>
+          <span class="card"><span class="nm">April Window</span><span class="price" style="font-size: var(--text-lg);">229.00 PLN</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Includes VAT and delivery</span></span>
+        </div>
+      </div>
+      <span class="measure-tick" style="position: absolute; inset-inline-start: 6px; top: 190px;">183 &mdash; chrome ends, unchanged</span>
+      <span class="measure-tick" style="position: absolute; inset-inline-end: 6px; top: 320px;">~343 &mdash; first photograph. 160 px of preamble; the price lands at ~700.</span>
+    </div>
+    <div class="lock">The cards without the honesty label are the ones carrying a real photograph: spec 008 &sect;14 A2 puts the label on every card that shows an <code>ai</code> asset and on no other, one per card. Nothing on this frame is a new component: the notice is <code>Chip</code>, the card is the shipped card, the ordering sentence is the shipped sentence with its line breaks removed.</div>
+  </div>
+
+  <div class="sec">
+    <span class="label">The changes, argued</span>
+    <table class="spec">
+      <thead><tr><th style="width: 46px;">#</th><th style="width: 210px;">Change</th><th style="width: 120px;">Kind</th><th>The argument</th></tr></thead>
+      <tbody>
+        <tr><td>L1</td><td>The intro paragraph's first sentence &mdash; "Our florist in the recipient's town makes the bouquet the morning it is delivered and hands it over in person." &mdash; is deleted from the top of the page.</td><td><span class="kind rem">Removal</span></td><td>The stronger argument: it is not lost, because it is already printed <b>verbatim, word for word</b>, 2,700&nbsp;px lower on the same page, as the second sentence of the "How it reaches Poland" block. We were saying the same sentence twice on one document and charging the buyer 72&nbsp;px of the first screen for the first copy. Its companion sentence, "every price is one number with VAT and delivery already inside it", is unique and is kept &mdash; it moves into the line under the heading, where it is read by everyone who reads the count.</td></tr>
+        <tr><td>L2</td><td>The ordering-is-not-open notice moves from a 48&nbsp;px paragraph below the intro to a <code>Chip</code> on the heading's own line, and loses its second clause.</td><td><span class="kind rearr">Rearrangement</span></td><td>Every fact survives: that ordering is not open, that we are still choosing florists in Poland, and &mdash; in the heading line beside it &mdash; that the prices shown are the prices we would charge. It gains prominence rather than losing it: at the heading's baseline it is inside the first thing anyone reads, where at 431 it was the fourth paragraph of a stack. The chip is the shipped <code>Chip</code> primitive in its accent tone. <b>This notice may never disappear and does not.</b></td></tr>
+        <tr><td>L3</td><td>The <code>&lt;h2&gt;</code> "Everything we can make for Poland" and the ordering sentence merge into the <code>&lt;h1&gt;</code> block as one 20&nbsp;px line carrying the count, the all-in-price fact and the ordering fact.</td><td><span class="kind rearr">Rearrangement</span></td><td>Two headings 257&nbsp;px apart say nearly the same thing; the second exists to carry <code>id="our-selection"</code>, which spec 008 AC-9 fixes and which moves to the <code>&lt;h1&gt;</code> unchanged. Every word of the ordering sentence is kept: "our own order, not a ranking by sales, popularity or payment". Saves 137&nbsp;px, adds a number (84) the page already computes and did not show at the top.</td></tr>
+        <tr><td>L4</td><td>Net effect: the first photograph moves from 649 to about 343, and the first price from 1026 to about 700.</td><td><span class="kind rearr">Rearrangement</span></td><td>The preamble goes from 466&nbsp;px to 160, which puts us between FloraQueen (222) and Bloom &amp; Wild (276) rather than behind Interflora (435). A full row of photographs and the first row of prices are then inside the fold, which is true of FloraQueen and of nobody else in the set.</td></tr>
+        <tr><td>L5</td><td>The card, the 4:5 photograph, the "Includes VAT and delivery" line and the "Example arrangement" label: unchanged on desktop.</td><td><span class="kind keep">Kept</span></td><td>Measured at 70.1% photograph, inside the field's range of 66.4&ndash;74.4 and above Bloom &amp; Wild's. There is no evidence for a change and the label is a founder ruling and a spec 006 requirement.</td></tr>
+        <tr><td>L6</td><td>The breadcrumb: unchanged.</td><td><span class="kind keep">Kept</span></td><td>It costs 20&nbsp;px and none of the four comparators prints one on a listing page. It stays because it is the <code>BreadcrumbList</code> source and ranking is priority&nbsp;1. Recorded here so the founder can see it was measured and kept on purpose.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>

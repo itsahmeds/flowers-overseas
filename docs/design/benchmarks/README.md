@@ -169,6 +169,37 @@ names it here.
     work rather than a promise about a florist we do not have, so it is arguably in the same class
     as substitution. **Confirm one claim or two.** (`01` §2.5, spec 009 §13 Q7)
 
+## The 2026-09-21 measurement pass — a second study in this folder
+
+The nine `.md` files above are the **content** study: what competitors say and show, read on
+2026-09-09. They measured no pixels. On 2026-09-21 the founder said the site looks worse than the
+competition and called it cluttered, and a second pass was run to test that sentence with numbers
+instead of taste. It measures **space**: chrome height, how far down the first product photograph
+starts, the photograph's share of a card, and how many live links a page carries — for us and for
+four competitors, at 1280×900 and 375×812, read from the live DOM with `getBoundingClientRect()`.
+
+Its output is seven artboards in this folder and one argued change list:
+
+| Artboard | What it holds |
+|---|---|
+| `benchmark-measurements.dc.html` | Every figure, drawn to scale: the two chrome comparisons, the listing table, the home-page table, and the list of things this study measured and decided **not** to change. |
+| `benchmark-home-desktop.dc.html` · `benchmark-home-mobile.dc.html` | The locale home, current and proposed, 1:1 at each width, with the change list beneath. |
+| `benchmark-listing-desktop.dc.html` · `benchmark-listing-mobile.dc.html` | The country shop root, same treatment. The mobile one carries the study's worst measurement and its clearest case for change. |
+| `benchmark-product-desktop.dc.html` · `benchmark-product-mobile.dc.html` | The product page. **Not shipped and not measured** — our side is `wireframes/product-*.dc.html` redrawn at the two widths, and the comparison is of block order. |
+
+The argued change list, with each change marked a fact-preserving rearrangement or a removal, is
+`../competitor-benchmark-2026-09.md`.
+
+**These seven are decision artefacts, not build targets.** When the founder approves a change it is
+redrawn on the owning page wireframe — `homepage-v1/homepage-*.dc.html`,
+`wireframes/country-shop-*.dc.html`, `wireframes/product-*.dc.html` — and *that* is what an
+implementer matches. Nothing under `wireframes/` is changed by this study until that happens.
+
+Four sites were measured: FloraQueen, Interflora UK, Euroflorist NL and Bloom & Wild. The first
+three are `plan/02` §1's own set. Bloom & Wild is a deliberate addition rather than a substitution:
+it is not cross-border, and it is the visual standard a European buyer's eye is calibrated by,
+which is the comparison the founder's complaint is actually running.
+
 ## Related
 
 - `docs/design/README.md` — the design rules these wireframes obey, the Voice section quoting spec
