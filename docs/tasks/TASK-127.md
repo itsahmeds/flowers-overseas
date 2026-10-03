@@ -98,8 +98,6 @@ One dated bullet per `/review`, newest last.
   "Arrives tomorrow" matches no pattern in `tests/support/listing-honesty.ts:65` — a nit for the
   next task that touches that file.
 
-**Merged with TASK-126 as PR 135 (`966c2e87`) on 2026-10-03; live on production.**
-
 ## Progress
 
 - **2026-10-03 — the two carry-forwards (finisher run).** `/review 96`'s second: the depth-4
@@ -189,3 +187,5 @@ so the listing cards link to it. The page reads `productView()` only.
 - **Accepted, not built here:** HOLE 2 (the canonical, `page.tsx:253`) → TASK-132 (AC-17).
 - **`/review 101` HOLE 12:** done, see `## Progress`. **`/review 98` HOLE 5:** pinned and seen to
   bite.
+
+**Merged with TASK-126 as PR 135 (`966c2e87`) on 2026-10-03; live on production.**

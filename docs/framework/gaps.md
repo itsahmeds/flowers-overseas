@@ -184,7 +184,7 @@ gap closes, mark it ✅ with the PR, and don't delete the row.
   file (case-insensitive filesystem) before 404, so the uppercase cases should be watched on Linux
   CI; `test-integration` skips three files "until spec 002".
 - **The shell guard misses file writes made through a Python heredoc.** TASK-167's implementer
-  reported (to the orchestrator) and `/break 144` replayed that its `python3 - <<'EOF'` writes under `tests/` and `seed/` went through while the
+  reported (to the orchestrator), and `/break 144` reproduced the miss, that its `python3 - <<'EOF'` writes under `tests/` and `seed/` went through while the
   main checkout's `TASKS.md` had no TASK-167 row (so the guard counted no active task). The header
   of `.claude/hooks/bash_guard.py` lists what it does not catch; this case should be added there or
   caught. A dev-OS guard change, to decide with the founder.

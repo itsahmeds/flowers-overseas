@@ -62,8 +62,6 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
   where a page this task changes renders a photo it did not before; take the build slot only for
   that, and say so in `## Result`.
 
-**Merged as PR 142 (`f057d09b`) on 2026-10-03; every new row `pending`, nothing uploaded.**
-
 ## Read
 
 - `specs/006-seed-catalogue-import-imagery-pipeline.md` — `## 0. Index`, then §14 A6, A7 and A8.
@@ -174,3 +172,5 @@ tiles' `data-fo-media-placeholder` reads `unapproved` instead of `unknownAsset`)
 TASK-168: the approval data edit with four-locale alt text per approved asset (A9 clause 4), the
 FO-BQ-004 pair, the sign-off instant(s), `media:upload --only` for approved ids. The derived tree
 is in `/Users/ahmed/dev/fo-wt-167/.local/media/` (git-ignored).
+
+**Merged as PR 142 (`f057d09b`) on 2026-10-03; every new row `pending`, nothing uploaded.**
