@@ -14,7 +14,7 @@
  * thing a later spec has to touch.
  */
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { NextIntlClientProvider } from "next-intl";
 
@@ -243,6 +243,42 @@ describe("the trending row is gated on real orders", () => {
     expect(trendingPickHref(undefined, pages)).toBeUndefined();
     const html = render(<TrendingRow locale="en" productPages={pages} />, "en");
     expect(hrefs(html)).toEqual(["/en/poland/product/a"]);
+  });
+
+  it("links no card while the `product` link id is unpublished, whatever pages exist (`/break 162` hole 1)", async () => {
+    // Permission and existence are both required: a full product existence set must not turn
+    // a card into a link if the registry withdraws the product page. The registry is flipped in
+    // a mocked module, and the row re-imported so it reads the mock.
+    const pages = await listProductPages("en");
+    vi.resetModules();
+    const actual = await vi.importActual<
+      typeof import("../../src/config/site-links.ts")
+    >("../../src/config/site-links.ts");
+    vi.doMock("../../src/config/site-links.ts", () => ({
+      ...actual,
+      isPublished: (id: Parameters<typeof actual.isPublished>[0]) =>
+        id !== "product" && actual.isPublished(id),
+    }));
+    try {
+      const row = await import("../../src/modules/ui/home/TrendingRow.tsx");
+      const html = render(
+        <row.TrendingRow locale="en" productPages={pages} />,
+        "en",
+      );
+      expect(html).toContain("data-fo-trending-pick");
+      expect([...html.matchAll(/<a\s/g)]).toHaveLength(0);
+      expect(row.trendingPickHref("FO-BQ-001", pages)).toBeUndefined();
+    } finally {
+      vi.doUnmock("../../src/config/site-links.ts");
+      vi.resetModules();
+    }
+    // …and the same pages with the committed registry link all five, so the case above is not
+    // vacuous.
+    const linked = render(
+      <TrendingRow locale="en" productPages={pages} />,
+      "en",
+    );
+    expect([...linked.matchAll(/<a\s/g)]).toHaveLength(5);
   });
 
   it("takes its names from the committed catalogue, so none of them is invented", () => {

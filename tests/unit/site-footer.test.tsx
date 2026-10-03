@@ -31,7 +31,12 @@ import {
   availablePaymentMethods,
   PAYMENT_METHODS,
 } from "../../src/config/payment-methods.ts";
-import { SITE_LINKS } from "../../src/config/site-links.ts";
+import {
+  SITE_LINKS,
+  SITE_LINK_GROUPS,
+  type SiteLinkId,
+  isPublished,
+} from "../../src/config/site-links.ts";
 import {
   loadMessages,
   MESSAGE_NAMESPACES,
@@ -101,21 +106,52 @@ describe("SiteFooter: the Phase-0 colophon", () => {
     for (const label of ["Sending", ">Destinations<", ">Occasions<"]) {
       expect(phase0, label).toContain(label);
     }
-    // Every one of these looked like a link on the live site and went nowhere (2026-10-03).
-    // "Delivery times and cutoffs" is also gated on `anyDeliveryDatesOpen()` (§14 A19).
-    for (const label of [
-      ">Company<",
-      "Delivery times and cutoffs",
-      "The guarantee",
-      "How it works",
-      "For florists",
-      "Help and contact",
-      "Imprint",
-      "Terms",
-      "Privacy",
-      "Withdrawal and refunds",
-    ]) {
-      expect(phase0, label).not.toContain(label);
+    // Built from the registry, not typed: every footer link with no page, and the heading of
+    // every group left with none, must be absent from the colophon in every launch locale. Each
+    // one looked like a link on the live site and went nowhere (2026-10-03; spec 004 §14 A20).
+    const unpublished = SITE_LINKS.filter(
+      (link) => link.surfaces.includes("footer") && !isPublished(link.id),
+    );
+    const emptyGroups = SITE_LINK_GROUPS.filter(
+      (group) =>
+        group.surface === "footer" &&
+        group.linkIds.every((id) => !isPublished(id as SiteLinkId)),
+    );
+    // The set is not vacuous: the guarantee, the Company column and the legal row are in it.
+    expect(unpublished.map((link) => link.id)).toEqual(
+      expect.arrayContaining([
+        "guarantee",
+        "for-florists",
+        "imprint",
+        "cookies",
+      ]),
+    );
+    expect(emptyGroups.map((group) => group.id)).toEqual(["company", "legal"]);
+    for (const locale of ["en", "en-gb", "de", "pl"]) {
+      const html = render(<SiteFooter locale={locale} />, locale);
+      const messages = loadMessages(locale, MESSAGE_NAMESPACES) as Record<
+        string,
+        unknown
+      >;
+      const keys = [
+        ...unpublished.map((link) => link.labelKey ?? ""),
+        ...emptyGroups.map((group) => group.headingKey),
+      ];
+      for (const key of keys) {
+        const label = key
+          .split(".")
+          .reduce<unknown>(
+            (node, part) =>
+              typeof node === "object" && node !== null
+                ? (node as Record<string, unknown>)[part]
+                : undefined,
+            messages,
+          );
+        expect(typeof label, `${locale} ${key}`).toBe("string");
+        const escaped = String(label).replaceAll("&", "&amp;");
+        expect(html, `${locale} ${key}`).not.toContain(`>${escaped}<`);
+        expect(html, `${locale} ${key}`).not.toContain(`"${escaped}"`);
+      }
     }
   });
 

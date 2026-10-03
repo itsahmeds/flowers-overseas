@@ -498,12 +498,20 @@ describe("the rendered header (AC-7, AC-14)", () => {
       `grid-rows-[${String(mastheadMobile)}px_${String(searchMobile)}px]`,
     );
     expect(html).toContain(`md:grid-rows-[${String(mastheadDesktop)}px]`);
-    expect(html).toContain(
+    // On the category band's **own** element (`/break 162` hole 2): a class matched anywhere in
+    // the header passed with the band reverted to 28 px, because every link carries 44 px too.
+    const band = tagAt(html, html.indexOf('data-fo-header-band="categories"'))
+      .split(/\s+/u)
+      .flatMap((part) => part.replace(/^class="|"$/gu, "").split(" "));
+    expect(band).toContain(
       `min-h-[${String(HEADER_BAND_HEIGHTS.categoryMobile)}px]`,
     );
-    expect(html).toContain(
+    expect(band).toContain(
       `md:min-h-[${String(HEADER_BAND_HEIGHTS.categoryDesktop)}px]`,
     );
+    expect(band.filter((name) => /^min-h-\[/u.test(name))).toEqual([
+      `min-h-[${String(HEADER_BAND_HEIGHTS.categoryMobile)}px]`,
+    ]);
     // TASK-173: 113 + 50 + 44 + 2 on mobile, the search band gone and the row at 44 px.
     expect(HEADER_BAND_HEIGHTS.categoryMobile).toBe(44);
     expect(HEADER_HEIGHTS).toEqual({ mobile: 209, desktop: 183 });
