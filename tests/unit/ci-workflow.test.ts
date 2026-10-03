@@ -1216,9 +1216,27 @@ describe("CI on every push to main (spec 040 AC-38, T-39)", () => {
   it("pins the concurrency group and cancel-in-progress", () => {
     expect(ci.concurrency).toEqual({
       group:
-        "ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}",
+        "ci-${{ github.workflow }}-${{ github.event.pull_request.number || (github.event_name == 'schedule' && 'nightly') || github.ref }}",
       "cancel-in-progress": true,
     });
+  });
+
+  it("gives the nightly run its own group, so it cancels no push run and no push cancels it (spec 040 §14 A6)", () => {
+    const group = ci.concurrency?.group ?? "";
+    const nightly = interpolate(
+      group,
+      githubContext({
+        event_name: "schedule",
+        ref: "refs/heads/main",
+        event: {},
+      }),
+    );
+    const push = interpolate(group, pushContext);
+    const pullRequest = interpolate(group, pullRequestContext([]));
+    expect(nightly).toBe("ci-ci-nightly");
+    expect(push).toBe("ci-ci-refs/heads/main");
+    expect(pullRequest).toBe("ci-ci-107");
+    expect(new Set([nightly, push, pullRequest]).size).toBe(3);
   });
 
   it("puts two pushes to main in one group, so the later one cancels the earlier run", () => {

@@ -103,9 +103,11 @@ on:
 # green run, and gate 1 never accepts a cancelled one. Accepted in spec 040 AC-38, because staging
 # deploys the later commit and that commit's run is the one that survives. If the SHA a release
 # names had its run cancelled anyway, `gh run rerun <id>` repeats that same push run on the same
-# SHA; it is not a dispatch, so W-4 does not bar it.
+# SHA; it is not a dispatch, so W-4 does not bar it. The nightly `schedule` run also has ref
+# `refs/heads/main`, so it gets a group of its own, `nightly` (spec 040 §14 A6): it cancels only an
+# earlier nightly run, and no push run cancels it or is cancelled by it.
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || (github.event_name == 'schedule' && 'nightly') || github.ref }}
   cancel-in-progress: true
 
 permissions:
