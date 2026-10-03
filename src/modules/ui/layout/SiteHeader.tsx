@@ -183,7 +183,7 @@ const TARGET = "inline-flex min-h-[44px] items-center";
  * source and a built-up string produces no CSS at all.
  */
 const SWITCHER_WRAPPER =
-  "[&_ul]:gap-md [&_ul]:m-0 [&_ul]:flex [&_ul]:list-none [&_ul]:flex-wrap [&_ul]:items-center [&_ul]:p-0 [&_li]:inline-flex [&_li]:items-center [&_a]:inline-flex [&_a]:min-h-[44px] [&_a]:items-center [&_a]:no-underline";
+  "[&_ul]:gap-md max-md:[&_ul]:gap-x-[10px] [&_ul]:m-0 [&_ul]:flex [&_ul]:list-none [&_ul]:flex-wrap [&_ul]:items-center [&_ul]:p-0 [&_li]:inline-flex [&_li]:items-center [&_a]:inline-flex [&_a]:min-h-[44px] [&_a]:items-center [&_a]:no-underline";
 
 /**
  * The mobile artboard's position for a category row entry, as a literal `order-*` utility per
@@ -486,9 +486,11 @@ export function SiteHeader({
             affordance) are applied from this wrapper through descendant variants. */}
         <div
           // Below the 390 px artboard (320 px phones) the switcher and the chip wrap instead of
-          // widening the page: v2's 13 px strip type makes the row 384 px, which fits 390 and
-          // nothing narrower (WCAG 1.4.10). At 390 and up the row is one line, as reserved.
-          className="gap-md flex shrink-0 items-center max-[389px]:min-w-0 max-[389px]:shrink max-[389px]:flex-wrap max-[389px]:justify-end"
+          // widening the page (WCAG 1.4.10). Below `md` the switcher's and this row's gaps are
+          // 10 px, not 16: with v2's 13 px strip type the row otherwise ran into the strip's
+          // inline padding (chip at 384–389 px of 390, past 390 on Linux's wider rendering and
+          // before the webfont arrives). At 390 and up the row is one line, as reserved.
+          className="gap-md flex shrink-0 items-center max-[389px]:min-w-0 max-[389px]:shrink max-[389px]:flex-wrap max-[389px]:justify-end max-md:gap-x-[10px]"
           data-fo-header-controls
         >
           <div className={SWITCHER_WRAPPER} data-fo-header-switcher>

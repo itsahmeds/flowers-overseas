@@ -92,6 +92,10 @@ _None._
   choices" as 772fcd2c, messages from main). Baselines re-taken from `visual-baselines` run
   37153486650 on 772fcd2c: its whole change list (41 PNGs plus the manifest), `--verify` 104/104.
   Opened `home-desktop-trending` (Popular choices) and `listing-desktop-grid`.
+- 2026-10-04 — CI 37154287604 on 185d7a36: e2e 3 red (390 px chip; PDP docked row, the same
+  overflow's zoom-out). Locally the chip ended at 384 px (webfont) / 389 px (fallback) of 390, so
+  Linux's wider rendering crossed 390. Below `md` the switcher and controls gaps are now 10 px:
+  chip at 360–365 px in every locale with the webfont blocked, strip still 113 px.
 
 ## Result
 
