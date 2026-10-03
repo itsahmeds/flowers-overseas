@@ -331,9 +331,11 @@ test.describe("a routed pseudo-locale honours the listing parameters (AC-10, TAS
 
     const second = await body(request, `${PSEUDO_SHOP}?page=2`);
     expect(second.status).toBe(200);
-    expect(canonicalOf(second.html)).toMatch(
-      /\/ar-XB\/poland\/flowers\?page=2$/u,
-    );
+    // Page 2 is self-canonical: the bare page's own canonical with `?page=2` (the canonical rule
+    // writes the locale prefix in lowercase, `/ar-xb/…`, so it is compared, not retyped).
+    const bareCanonical = canonicalOf(await bare.text());
+    expect(bareCanonical).toBeDefined();
+    expect(canonicalOf(second.html)).toBe(`${bareCanonical ?? ""}?page=2`);
 
     const past = await request.get(`${PSEUDO_SHOP}?page=99`, {
       maxRedirects: 0,
