@@ -1,0 +1,18 @@
+{
+  "family": "copy",
+  "rule": "delivery-timing",
+  "replaces": "copy/pl/occasions.json",
+  "expect": "`descriptionMd` states delivery timing (`następnego dnia`)",
+  "why": "spec 008 AC-2 with spec 006 §14 A4: no delivery-timing claim in an intro. The Polish Christmas intro promises next-day delivery in Polish, which the English pattern cannot read; the cutoff and next-available-date sentence is spec 009's per-country block, and copy may only point at it.",
+  "ops": [
+    {
+      "op": "setRow",
+      "match": {
+        "key": "christmas"
+      },
+      "set": {
+        "descriptionMd": "Białe i czerwone bukiety z sosną i eukaliptusem, zimowa kompozycja na stół i storczyk do biura, z dostawą następnego dnia w każdym mieście. Strona kraju docelowego pokazuje, które grudniowe dni są tam dostępne, a terminy zamówień są wcześniejsze niż zwykle. Każde zamówienie zostanie wykonane ręcznie i doręczone osobiście przez naszego florystę w mieście odbiorcy."
+      }
+    }
+  ]
+}

@@ -322,15 +322,16 @@ test.describe("AC-21: the shop is reachable, and links at nothing that is not", 
       ).toBeGreaterThan(0);
       const expected = expectedPages(locale);
       // And the **crawl's own** target set is exactly the one this locale is supposed to have,
-      // type by type. `de` and `pl` are pinned empty by their escalation, so their green is an
-      // honest zero and not an undetected emptying of the corpus; `en` and `en-gb` carry the shop.
+      // type by type. `de` and `pl` are pinned to their occasions index, hubs and country
+      // occasions (TASK-106; the rest is escalated); `en` and `en-gb` carry the whole shop.
       const pinned = TARGETS[locale];
       expect(pinned, `${locale} has a pinned target set`).toBeDefined();
       expect(countByType(expected), `${locale} crawl targets by type`).toEqual(
         pinned,
       );
       // The waived side is pinned the same way (`/break 98` round 1, hole 1): 23 category hubs
-      // in each English locale, 7 shop roots each in `de` and `pl`, and not one page more.
+      // in every locale, plus 7 shop roots and 140 country categories each in `de` and `pl`
+      // (TASK-106), and not one page more.
       const waived = (EXISTENCE_SET[locale] ?? []).filter((page) =>
         isExcluded(locale, page.pageType),
       );
@@ -432,13 +433,15 @@ test.describe("AC-21: the shop is reachable, and links at nothing that is not", 
     }
   });
 
-  test("the escalated exclusions are exactly the two named, and each covers real URLs", () => {
+  test("the escalated exclusions are exactly the three named, and each covers real URLs", () => {
     // A test over the *waiver*, so widening it is a diff a reviewer sees, and a waiver that
     // covered nothing would fail here rather than quietly soften the criterion.
     expect(EXCLUDED).toEqual([
       { pageType: "categoryHub" },
       { locale: "de", pageType: "countryShopRoot" },
       { locale: "pl", pageType: "countryShopRoot" },
+      { locale: "de", pageType: "countryCategory" },
+      { locale: "pl", pageType: "countryCategory" },
     ]);
     for (const rule of EXCLUDED) {
       const covered = Object.entries(EXISTENCE_SET)

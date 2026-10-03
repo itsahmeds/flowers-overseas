@@ -58,14 +58,14 @@ test.describe("existence and the 404 shapes (AC-1, T-01)", () => {
       // the other namespace's slug under a hub segment — an occasion is not a category
       "/en/flowers/mothers-day",
       "/en/occasions/roses",
-      // a category below the floor everywhere still has a hub; one that has no authored slug in
-      // this locale has none — `de` and `pl` have neither, in either namespace (§13 Q10)
-      "/de/blumen/rosen",
+      // `de` and `pl` serve their hubs under their own authored slugs (TASK-106, §13 Q10); the
+      // English slug, or the other locale's, under their segments is no page
       "/de/blumen/roses",
-      "/de/anlaesse/muttertag",
-      "/pl/kwiaty/roze",
+      "/de/anlaesse/mothers-day",
+      "/de/blumen/roze",
       "/pl/kwiaty/roses",
-      "/pl/okazje/dzien-matki",
+      "/pl/okazje/mothers-day",
+      "/pl/kwiaty/rosen",
       // another locale's page segment, and an unknown locale
       "/en/blumen/roses",
       "/en/okazje/mothers-day",

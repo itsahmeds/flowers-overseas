@@ -1,0 +1,18 @@
+{
+  "family": "copy",
+  "rule": "intro-distinct",
+  "replaces": "copy/pl/categories.json",
+  "expect": "category:thank_you, category:apology (pl) hub intros are 4 % distinct",
+  "why": "spec 008 AC-2: a hub intro is at least 60 % distinct from every other hub intro in its locale (5-gram shingles, spec 007 §14 A4's metric). The Polish thank-you intro replaced by the apology intro with its first word changed is a templated copy, the thin-content failure `plan/02` §1 names; a whole-text duplicate would be caught by `duplicate-description` instead.",
+  "ops": [
+    {
+      "op": "setRow",
+      "match": {
+        "key": "thank_you"
+      },
+      "set": {
+        "descriptionMd": "Delikatne róże, białe tulipany, frezje i małe pudełko pastelowych kwiatów: raczej ciche niż okazałe, co zwykle jest właściwym tonem, gdy przepraszasz. Odręcznie napisany bilecik jest bezpłatny i warto go tu użyć. Zamów przed terminem podanym dla kraju docelowego, a kwiaty dotrą w wybranym dniu. Każde zamówienie zostanie wykonane ręcznie i doręczone osobiście przez naszego florystę w mieście odbiorcy."
+      }
+    }
+  ]
+}

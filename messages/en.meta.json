@@ -1868,13 +1868,6 @@
     "reviewedAt": "2026-10-03T00:00:00Z",
     "sourceHash": "f8ec403b833e326c5f4ae96da3e708ccb190a6e064bfea067e347dd9fffdef66"
   },
-  "delivery.cutoffPreview": {
-    "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder (chat, 2026-10-03; PDP batch of 28)",
-    "reviewedAt": "2026-10-03T00:00:00Z",
-    "sourceHash": "757b421b6517d93d77c3430751c23a8ab277d1b6c8ccfd9e934eced7b1581219"
-  },
   "delivery.legend": {
     "source": "human",
     "reviewed": true,
@@ -3261,7 +3254,9 @@
   },
   "occasionsIndex.datedCaption": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (chat, 2026-10-03: PR 98 occasions-index strings, approved as written; TASK-171)",
+    "reviewedAt": "2026-10-03T00:00:00Z",
     "sourceHash": "316fd52443951b0c5bb1eabe49ffb1f97d3f100ddbfad3a54b19560ee266193f"
   },
   "occasionsIndex.datedEyebrow": {
@@ -3327,7 +3322,9 @@
   },
   "occasionsIndex.undatedNote": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (chat, 2026-10-03: PR 98 occasions-index strings, approved as written; TASK-171)",
+    "reviewedAt": "2026-10-03T00:00:00Z",
     "sourceHash": "290d56a719db44fd4dbae562a1a7b6ca6384e2d6f8ad45a46f4cfd5cc44a7115"
   },
   "product.addons.label": {

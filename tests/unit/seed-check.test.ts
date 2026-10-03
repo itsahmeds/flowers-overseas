@@ -42,6 +42,9 @@ import { parse } from "yaml";
 
 import {
   COMPETITOR_MARKS,
+  HUB_INTRO_DISTINCTNESS_MIN,
+  HUB_INTRO_WORD_MAX,
+  HUB_INTRO_WORD_MIN,
   PII_PATTERNS,
   ROUTED_SLUG_TRANSLATION_STATUS,
   HOLIDAY_COVERAGE_WARNING_DAYS,
@@ -60,7 +63,11 @@ import {
   coverageRows,
   familiesOf,
   formatSeedProblems,
+  listingSlugSourceLocale,
   localeReadiness,
+  nativeDeliveryTimingPhrasesIn,
+  nativeSuperlativesIn,
+  priceLiteralsIn,
   readSeedTree,
   seedCheckExitCode,
   seedHealthReport,
@@ -83,7 +90,12 @@ import { SEED_DATA_DIR } from "../../seed/schema/files.ts";
 import { COUNTRIES } from "../../src/config/countries.ts";
 import { launchLocales } from "../../src/config/locales.ts";
 import { isLocaleIndexable } from "../../src/modules/i18n/review.ts";
-import { AUTHORED_TRANSLATION_STATUS } from "../../src/modules/catalog/copy.ts";
+import {
+  AUTHORED_TRANSLATION_STATUS,
+  inheritsCopyFrom,
+} from "../../src/modules/catalog/copy.ts";
+import { hasSlug } from "../../src/modules/catalog/slugs.ts";
+import { shingleDistinctness } from "../../scripts/corridor-check.ts";
 import { withActivePartnersProvider } from "../../src/modules/geo/partners.ts";
 
 const repoRoot = resolve(__dirname, "../..");
@@ -105,6 +117,18 @@ const SPEC_009_RULES = [
   "calendar/holiday-name-key",
   "calendar/undatable-rule",
   "slugs/product-slug-required",
+] as const;
+
+/** The new rules of spec 008 AC-2 and the fixture each must have (T-02, TASK-106). */
+const SPEC_008_RULES = [
+  "slugs/slug-missing",
+  "slugs/path-segment",
+  "slugs/country-slug",
+  "copy/intro-word-range",
+  "copy/intro-distinct",
+  "copy/intro-banned-word",
+  "copy/intro-price-literal",
+  "copy/delivery-timing",
 ] as const;
 
 let tree: SeedTree;
@@ -212,10 +236,26 @@ describe("spec 006 AC-10: the merged tree passes every rule family", () => {
     expect(SEED_CHECK_FAMILIES).toHaveLength(10);
   });
 
-  it("declares its cases from a table of 26 fixtures, and spec 009 AC-2's four rules have one each (T-02)", () => {
+  it("declares its cases from a table of 36 fixtures, and spec 009 AC-2's and spec 008 AC-2's rules have theirs (T-02)", () => {
     // The `describe.each` below declares its cases from this directory; an emptied or thinned
     // directory would otherwise just declare fewer cases and stay green.
-    expect(cases).toHaveLength(26);
+    expect(cases).toHaveLength(36);
+    // Spec 008 AC-2's eight cases are the `copy/bad-intro-*` and the three listing-slug files;
+    // `copy/delivery-timing` also has spec 006's English product case, so it is counted by file.
+    const spec008 = cases.filter(
+      (testCase) =>
+        testCase.name.startsWith("bad-intro-") ||
+        [
+          "bad-missing-listing-slug.json",
+          "bad-path-segment-slug.json",
+          "bad-country-slug.json",
+        ].includes(testCase.name),
+    );
+    expect(
+      spec008
+        .map((testCase) => `${testCase.value.family}/${testCase.value.rule}`)
+        .sort(),
+    ).toEqual([...SPEC_008_RULES].sort());
     for (const rule of SPEC_009_RULES) {
       expect(
         cases.filter(
@@ -746,6 +786,345 @@ describe("family 9 at the boundary: one byte over fails, exactly the cap passes"
   );
 });
 
+/* -------------------------------------------------------------------------- */
+/* Spec 008 AC-2: listing slugs and hub intros (TASK-106).                    */
+/* -------------------------------------------------------------------------- */
+
+describe("spec 008 AC-2: listing slugs and hub intros (TASK-106)", () => {
+  const LISTING_KINDS = [
+    ["category", "categories.json"],
+    ["occasion", "occasions.json"],
+  ] as const;
+  const keysOf = (file: string): readonly string[] =>
+    (tree.raw.get(file) as { rows: { key: string }[] }).rows.map(
+      (row) => row.key,
+    );
+  const copyFile = (
+    path: string,
+  ): { rows: Record<string, unknown>[] } & Record<string, unknown> =>
+    structuredClone(tree.raw.get(path)) as never;
+  const withRaw = (path: string, value: unknown): SeedTree => ({
+    ...tree,
+    raw: new Map([...tree.raw, [path, value]]),
+  });
+  const keysFor = (mutated: SeedTree, rule: string): readonly string[] =>
+    checkSeedDataset(mutated)
+      .filter((problem) => problem.rule === rule)
+      .map((problem) => problem.key)
+      .sort();
+  /** A copy file with one row's fields replaced. */
+  const editRow = (
+    path: string,
+    key: string,
+    set: Record<string, unknown>,
+  ): SeedTree => {
+    const file = copyFile(path);
+    const row = file.rows.find((candidate) => candidate["key"] === key);
+    if (row === undefined) throw new Error(`no ${key} in ${path}`);
+    Object.assign(row, set);
+    return withRaw(path, file);
+  };
+
+  it("routes a slug for every category and occasion in all four launch locales, as `hasSlug()` reads it", () => {
+    let asked = 0;
+    for (const locale of launchLocales) {
+      for (const [kind, file] of LISTING_KINDS) {
+        for (const key of keysOf(file)) {
+          expect(hasSlug(kind, key, locale), `${locale} ${kind}:${key}`).toBe(
+            true,
+          );
+          asked += 1;
+        }
+      }
+    }
+    // 23 categories + 32 occasions, four locales: the subject is the whole corpus.
+    expect(asked).toBe(4 * (23 + 32));
+  });
+
+  it("restates the route's inheritance exactly: `en-gb` takes `en`'s slugs, `de` and `pl` take nothing", () => {
+    for (const locale of launchLocales) {
+      for (const [kind] of LISTING_KINDS) {
+        expect(listingSlugSourceLocale(locale), `${locale} ${kind}`).toBe(
+          inheritsCopyFrom(kind, locale),
+        );
+      }
+    }
+    expect(
+      launchLocales.map((locale) => listingSlugSourceLocale(locale)),
+    ).toEqual(
+      launchLocales.map((locale) => (locale === "en-gb" ? "en" : undefined)),
+    );
+  });
+
+  it(
+    "reports a missing `en` slug in `en` and in `en-gb`, which inherits it, and nowhere else",
+    () => {
+      const mutated = editRow("copy/en/categories.json", "roses", {
+        translationStatus: "machine",
+      });
+      expect(keysFor(mutated, "slug-missing")).toEqual([
+        "category:roses (en)",
+        "category:roses (en-gb)",
+      ]);
+    },
+    TREE_TIMEOUT,
+  );
+
+  it(
+    "reports a German row turned machine draft in `de` alone: `de` inherits nothing",
+    () => {
+      const mutated = editRow("copy/de/occasions.json", "mothers_day", {
+        translationStatus: "machine",
+      });
+      expect(keysFor(mutated, "slug-missing")).toEqual([
+        "occasion:mothers_day (de)",
+      ]);
+    },
+    TREE_TIMEOUT,
+  );
+
+  it(
+    "holds the word band inclusive: 40 and 120 pass, 39 and 121 fail",
+    () => {
+      const sentence = tree.floristSentences.get("de");
+      expect(sentence).toBeDefined();
+      const closing = sentence ?? "";
+      const closingWords = closing.split(/\s+/u).length;
+      const intro = (words: number): string =>
+        `${Array.from({ length: words - closingWords }, (_, index) => `wort${String(index)}`).join(" ")}. ${closing}`;
+      const verdict = (words: number): readonly string[] =>
+        keysFor(
+          editRow("copy/de/categories.json", "roses", {
+            descriptionMd: intro(words),
+          }),
+          "intro-word-range",
+        );
+      expect(HUB_INTRO_WORD_MIN).toBe(40);
+      expect(HUB_INTRO_WORD_MAX).toBe(120);
+      expect(verdict(39)).toEqual(["category:roses (de)"]);
+      expect(verdict(40)).toEqual([]);
+      expect(verdict(120)).toEqual([]);
+      expect(verdict(121)).toEqual(["category:roses (de)"]);
+    },
+    TREE_TIMEOUT,
+  );
+
+  it("measures distinctness as 5-gram shingles and every committed pair clears 0.60", () => {
+    expect(HUB_INTRO_DISTINCTNESS_MIN).toBe(0.6);
+    for (const locale of ["en", "de", "pl"]) {
+      const intros = LISTING_KINDS.flatMap(
+        ([, file]) =>
+          (
+            tree.raw.get(`copy/${locale}/${file}`) as {
+              rows: { descriptionMd: string }[];
+            }
+          ).rows,
+      ).map((row) => row.descriptionMd);
+      expect(intros).toHaveLength(55);
+      let weakest = 1;
+      for (let left = 0; left < intros.length; left += 1) {
+        for (let right = left + 1; right < intros.length; right += 1) {
+          weakest = Math.min(
+            weakest,
+            shingleDistinctness(intros[left] ?? "", intros[right] ?? ""),
+          );
+        }
+      }
+      expect(weakest, locale).toBeGreaterThanOrEqual(
+        HUB_INTRO_DISTINCTNESS_MIN,
+      );
+    }
+  });
+
+  it(
+    "compares a category intro with an occasion intro, not only within one namespace (`/break 150` hole 1)",
+    () => {
+      const category = (
+        tree.raw.get("copy/de/categories.json") as {
+          rows: { key: string; descriptionMd: string }[];
+        }
+      ).rows.find((row) => row.key === "birthday");
+      expect(category).toBeDefined();
+      const copied = `Bunte${(category?.descriptionMd ?? "").slice("Sträuße".length)}`;
+      const mutated = editRow("copy/de/occasions.json", "birthday", {
+        descriptionMd: copied,
+      });
+      expect(keysFor(mutated, "intro-distinct")).toEqual([
+        "category:birthday, occasion:birthday (de)",
+      ]);
+    },
+    TREE_TIMEOUT,
+  );
+
+  it(
+    "passes a pair at exactly 0.60 and fails one just under it (`/break 150` hole 2)",
+    () => {
+      // Eleven tokens give seven 5-gram shingles. Sharing the first eight tokens shares four
+      // shingles and leaves three of each side's own: 4 / (7 + 7 − 4) = 0.4 shared, 0.60 distinct.
+      // Sharing nine shares five: 5 / 9 shared, 0.44 distinct. `en-gb` authors exactly one
+      // category and one occasion intro, so the pair is the whole locale.
+      const words = (prefix: string, count: number): string[] =>
+        Array.from(
+          { length: count },
+          (_, index) => `${prefix}${String(index)}`,
+        );
+      const base = words("w", 11);
+      const pair = (shared: number): readonly [string, string] => [
+        base.join(" "),
+        [...base.slice(0, shared), ...words("x", 11 - shared)].join(" "),
+      ];
+      const verdict = ([left, right]: readonly [
+        string,
+        string,
+      ]): readonly string[] => {
+        const categories = copyFile("copy/en-gb/categories.json");
+        const occasions = copyFile("copy/en-gb/occasions.json");
+        expect(categories.rows).toHaveLength(1);
+        expect(occasions.rows).toHaveLength(1);
+        Object.assign(categories.rows[0] ?? {}, { descriptionMd: left });
+        Object.assign(occasions.rows[0] ?? {}, { descriptionMd: right });
+        return keysFor(
+          {
+            ...tree,
+            raw: new Map([
+              ...tree.raw,
+              ["copy/en-gb/categories.json", categories],
+              ["copy/en-gb/occasions.json", occasions],
+            ]),
+          },
+          "intro-distinct",
+        );
+      };
+      expect(shingleDistinctness(...pair(8))).toBe(HUB_INTRO_DISTINCTNESS_MIN);
+      expect(verdict(pair(8))).toEqual([]);
+      expect(shingleDistinctness(...pair(9))).toBeLessThan(
+        HUB_INTRO_DISTINCTNESS_MIN,
+      );
+      expect(verdict(pair(9))).toEqual([
+        "category:apology, occasion:apology (en-gb)",
+      ]);
+    },
+    TREE_TIMEOUT,
+  );
+
+  it(
+    "reports the slug rules in every listing namespace and locale (`/break 150` hole 3)",
+    () => {
+      // `slug-missing` in `pl`, `path-segment` on an occasion, `country-slug` on a category —
+      // the three combinations the fixtures do not reach.
+      expect(
+        keysFor(
+          editRow("copy/pl/categories.json", "tulips", {
+            translationStatus: "machine",
+          }),
+          "slug-missing",
+        ),
+      ).toEqual(["category:tulips (pl)"]);
+      expect(
+        keysFor(
+          editRow("copy/de/occasions.json", "name_day", {
+            name: "Anlässe",
+            slug: "anlaesse",
+          }),
+          "path-segment",
+        ),
+      ).toEqual(["occasion:name_day (de)"]);
+      expect(
+        keysFor(
+          editRow("copy/de/categories.json", "mixed", {
+            name: "Polen",
+            slug: "polen",
+          }),
+          "country-slug",
+        ),
+      ).toEqual(["category:mixed (de)"]);
+    },
+    TREE_TIMEOUT,
+  );
+
+  it.each([
+    [
+      "seoDescription",
+      "Walentynki z dostawą tego samego dnia w całej Europie.",
+    ],
+    ["name", "Walentynki następnego dnia"],
+  ] as const)(
+    "reads native delivery timing in a hub row's `%s` (`/break 150` hole 4)",
+    (field, value) => {
+      const found = checkSeedDataset(
+        editRow("copy/pl/occasions.json", "valentines", { [field]: value }),
+      ).filter(
+        (problem) =>
+          problem.rule === "delivery-timing" &&
+          problem.message.startsWith(`\`${field}\``),
+      );
+      expect(found.map((problem) => problem.key)).toEqual([
+        "occasion:valentines (pl)",
+      ]);
+    },
+    TREE_TIMEOUT,
+  );
+
+  it.each([
+    ["de", "copy/de/categories.json", "roses", "ab 49,– €"],
+    ["de", "copy/de/categories.json", "roses", "ab EUR 49"],
+    ["pl", "copy/pl/categories.json", "roses", "od PLN 149"],
+    ["pl", "copy/pl/categories.json", "roses", "od RON 99"],
+  ] as const)(
+    "refuses a price literal in a hub intro (%s, %s, %s: `%s`; `/break 150` hole 5)",
+    (_locale, path, key, price) => {
+      const row = copyFile(path).rows.find(
+        (candidate) => candidate["key"] === key,
+      );
+      const intro = String(row?.["descriptionMd"] ?? "");
+      const mutated = editRow(path, key, {
+        descriptionMd: `${price}. ${intro}`,
+      });
+      expect(keysFor(mutated, "intro-price-literal")).toEqual([
+        `category:${key} (${_locale})`,
+      ]);
+    },
+    TREE_TIMEOUT,
+  );
+
+  it("reads German and Polish timing claims, superlatives and prices, and passes the permitted pointer", () => {
+    expect(nativeDeliveryTimingPhrasesIn("Lieferung am nächsten Tag")).toEqual([
+      "am nächsten tag",
+    ]);
+    expect(nativeDeliveryTimingPhrasesIn("dostawa tego samego dnia")).toEqual([
+      "tego samego dnia",
+    ]);
+    expect(nativeDeliveryTimingPhrasesIn("bis 14 Uhr bestellt")).toEqual([
+      "bis 14 uhr",
+    ]);
+    expect(
+      nativeDeliveryTimingPhrasesIn(
+        "Bestellen Sie vor dem Bestellschluss, der für das Zielland angezeigt wird.",
+      ),
+    ).toEqual([]);
+    expect(
+      nativeDeliveryTimingPhrasesIn(
+        "Zamów przed terminem podanym dla kraju docelowego.",
+      ),
+    ).toEqual([]);
+    expect(
+      nativeSuperlativesIn("Jede Bestellung wird von Hand gefertigt"),
+    ).toEqual([]);
+    expect(nativeSuperlativesIn("die besten Rosen")).toEqual(["besten"]);
+    expect(nativeSuperlativesIn("najlepsze kwiaty")).toEqual(["najlepsze"]);
+    expect(priceLiteralsIn("ab 49,90 € inklusive")).toEqual(["49,90 €"]);
+    expect(priceLiteralsIn("od 149 zł")).toEqual(["149 zł"]);
+    expect(priceLiteralsIn("from €49")).toEqual(["€4"]);
+    expect(priceLiteralsIn("am 14. Februar, 17. Mai, 1 maja")).toEqual([]);
+    expect(priceLiteralsIn("ab 49,– €")).toEqual(["49,– €"]);
+    expect(priceLiteralsIn("ab EUR 49")).toEqual(["EUR 49"]);
+    expect(priceLiteralsIn("od PLN 149")).toEqual(["PLN 149"]);
+    expect(priceLiteralsIn("RON 99")).toEqual(["RON 99"]);
+    expect(priceLiteralsIn("99 lei")).toEqual(["99 lei"]);
+    expect(priceLiteralsIn("Europa, Rumänien, 23 kwietnia")).toEqual([]);
+  });
+});
+
 describe("spec 006 AC-7: slug rules", () => {
   it("folds Polish diacritics: `Kraków Spring` → `krakow-spring`", () => {
     expect(asciiFoldSlug("Kraków Spring")).toBe("krakow-spring");
@@ -1006,7 +1385,13 @@ describe("§11: a locale or a country cannot look ready in CI while it is gated 
       localeReadiness(tree).map((locale) => [locale.locale, locale]),
     );
     for (const locale of ["de", "pl"]) {
-      expect(byLocale.get(locale)?.machineShare, locale).toBe(1);
+      // Since TASK-106 the 55 category and occasion rows are human-authored and unreviewed; the
+      // 84 product rows are still machine drafts. Neither half is reviewed, so the locale is not
+      // ready either way, and the share says which half is which.
+      expect(byLocale.get(locale)?.machineShare, locale).toBeCloseTo(
+        84 / (84 + 23 + 32),
+        10,
+      );
       expect(byLocale.get(locale)?.ready, locale).toBe(false);
     }
     expect(byLocale.get("en")?.ready).toBe(true);

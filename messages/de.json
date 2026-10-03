@@ -166,7 +166,7 @@
         "rustic": "Rustic"
       }
     },
-    "floristSentence": "Every order will be made by hand and delivered in person by our florist in the recipient's city.",
+    "floristSentence": "Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
     "price": {
       "from": "from {price}",
       "inclusive": "inkl. MwSt. und Versand"
@@ -391,7 +391,6 @@
   },
   "delivery": {
     "corridorLink": "What we can tell you about sending flowers to {country}",
-    "cutoffPreview": "When we open, you will order by {time} in {city} — the recipient's time, not yours",
     "legend": "When should it arrive?",
     "picker": {
       "live": "Order by {time} in {city} — the recipient's time, not yours",

@@ -389,8 +389,20 @@ export function duplicateDescriptions(rows: readonly SeedCopy[]): readonly {
  * Letters Unicode NFD does not decompose, and the ASCII they fold to. Polish `ł` is the one that
  * matters today (`Wrocław`); the rest are the launch-adjacent locales' letters, so the fold does
  * not have to be revisited when the fifth locale arrives.
+ *
+ * **German umlauts fold to `ae`/`oe`/`ue`, not to the bare vowel** (spec 008 §14 A12; `/review
+ * 150`): the shipped German URLs already spell them that way (`anlaesse`, `rumaenien`), and one
+ * locale cannot carry two conventions. They are mapped here, before NFD, because NFD would strip
+ * the diaeresis and leave `a`. The uppercase forms are listed too, although the input is
+ * lowercased first, so the table does not depend on that order.
  */
 const TRANSLITERATIONS: Readonly<Record<string, string>> = {
+  ä: "ae",
+  ö: "oe",
+  ü: "ue",
+  Ä: "ae",
+  Ö: "oe",
+  Ü: "ue",
   ł: "l",
   ø: "o",
   đ: "d",

@@ -99,6 +99,10 @@ import {
   catalogueCheckInput,
   checkCatalogue,
 } from "../scripts/catalogue-check.ts";
+import {
+  PRICE_LITERAL_PATTERN,
+  shingleDistinctness,
+} from "../scripts/corridor-check.ts";
 import { floristSentenceFor } from "../scripts/i18n-draft.ts";
 import { COUNTRIES, COUNTRY_CODES } from "../src/config/countries.ts";
 import {
@@ -118,7 +122,9 @@ import type {
   ProductData,
   ProductTierGroup,
 } from "../src/config/catalogue/schemas.ts";
+import { LAUNCH_LOCALE_DATA } from "../src/config/locales.data.ts";
 import { launchLocales } from "../src/config/locales.ts";
+import { bannedVoiceWordsIn } from "../src/config/voice.ts";
 import {
   isLocaleIndexable,
   unreviewedShare,
@@ -137,6 +143,7 @@ import {
   SEED_COPY_DIR,
   type SeedCopyFileEntity,
   asciiFoldSlug,
+  bannedSuperlativesIn,
   copyProblems,
   deliveryTimingPhrasesIn,
   duplicateDescriptions,
@@ -1239,8 +1246,152 @@ function checkRequiredProductSlugs(
   return problems;
 }
 
+/** The two listing namespaces spec 008 AC-2's slug rules are about, and their copy file entity. */
+const LISTING_SLUG_ENTITIES = [
+  ["category", "category"],
+  ["occasion", "occasion"],
+] as const satisfies readonly (readonly [string, SeedCopyFileEntity])[];
+
+/** The primary language subtag of a locale code: `en-gb` → `en`. */
+function primaryLanguage(code: string): string {
+  return (code.split("-")[0] ?? code).toLowerCase();
+}
+
+/**
+ * The locale a launch locale takes its category and occasion slugs from when it authors none, or
+ * `undefined`. **The same rule `src/modules/catalog/copy.ts`'s `inheritsCopyFrom()` applies**: a
+ * launch locale inherits only along a same-language fallback (`en-gb` → `en`), and `de`/`pl`
+ * inherit nothing, because `/de/blumen/roses` is the half-translated URL `plan/02` §12 forbids.
+ * Restated rather than imported because plain `node` cannot resolve that module's `@/` aliases;
+ * `tests/unit/seed-check.test.ts` pins this rule's verdict to `hasSlug()` over the whole corpus,
+ * so the two cannot disagree about a single key.
+ */
+export function listingSlugSourceLocale(locale: string): string | undefined {
+  const config = LAUNCH_LOCALE_DATA.find((row) => row.code === locale);
+  const fallback = config?.fallbackCode ?? null;
+  if (fallback === null) return undefined;
+  return primaryLanguage(fallback) === primaryLanguage(locale)
+    ? fallback
+    : undefined;
+}
+
+/** The keys a locale's own copy file routes a slug for: `human` rows with a non-empty slug. */
+function routedSlugKeys(
+  tree: SeedTree,
+  locale: string,
+  entity: SeedCopyFileEntity,
+): ReadonlySet<string> {
+  const rows = (
+    tree.raw.get(seedCopyPath(locale, entity)) as { rows?: unknown } | undefined
+  )?.rows;
+  const keys = new Set<string>();
+  for (const row of Array.isArray(rows)
+    ? (rows as readonly Record<string, unknown>[])
+    : []) {
+    if (
+      typeof row["key"] === "string" &&
+      typeof row["slug"] === "string" &&
+      row["slug"] !== "" &&
+      row["translationStatus"] === ROUTED_SLUG_TRANSLATION_STATUS
+    ) {
+      keys.add(row["key"]);
+    }
+  }
+  return keys;
+}
+
+/**
+ * Spec 008 AC-2's first rule, `slug-missing`: **every category and every occasion has a routed
+ * slug in every launch locale** (§13 Q10).
+ *
+ * A listing page exists only where its entity has an authored slug in the locale (§2), so a key
+ * with none has no category page, no occasion page and no hub there — silently, because
+ * `slugFor()` answering `undefined` is a routine state in the route. A machine draft does not
+ * count: its slug never routes (`src/modules/catalog/slugs.ts`). An `en-gb` key is satisfied by
+ * `en`'s slug, exactly as the route reads it.
+ */
+function checkRequiredListingSlugs(
+  tree: SeedTree,
+  parsed: Parsed,
+): SeedProblem[] {
+  const problems: SeedProblem[] = [];
+  const keysOf: Readonly<Record<string, readonly string[]>> = {
+    category: parsed.categories.map((category) => category.key),
+    occasion: parsed.occasions.map((occasion) => occasion.key),
+  };
+  for (const locale of launchLocales) {
+    const source = listingSlugSourceLocale(locale);
+    for (const [entity, file] of LISTING_SLUG_ENTITIES) {
+      const own = routedSlugKeys(tree, locale, file);
+      const inherited =
+        source === undefined
+          ? new Set<string>()
+          : routedSlugKeys(tree, source, file);
+      for (const key of keysOf[entity] ?? []) {
+        if (own.has(key) || inherited.has(key)) continue;
+        problems.push({
+          family: "slugs",
+          file: dataFile(seedCopyPath(locale, file)),
+          key: `${entity}:${key} (${locale})`,
+          rule: "slug-missing",
+          message: `has no human-authored slug in launch locale \`${locale}\`${source === undefined ? "" : ` nor in \`${source}\`, which it inherits from`}: without one the ${entity} has no page in that locale (spec 008 AC-2, §13 Q10); a machine draft's slug never routes`,
+        });
+      }
+    }
+  }
+  return problems;
+}
+
+/**
+ * Spec 008 AC-2's reserved-word half: a category or occasion slug may not equal a
+ * `PATH_SEGMENT_KEYS` value (`path-segment`) or a country slug (`country-slug`) **in its own
+ * locale**. The first segment after the locale is a country slug, a page-type segment or a
+ * listing slug (§2 "Segment collision is impossible by test"), so `/de/blumen` as a category hub
+ * and `/de/blumen` as the shop segment, or `/pl/polska` as an occasion and as the country, would
+ * be one URL meaning two pages.
+ */
+function checkReservedListingSlugs(tree: SeedTree): SeedProblem[] {
+  const problems: SeedProblem[] = [];
+  for (const slug of rawSlugs(tree)) {
+    if (slug.entity !== "category" && slug.entity !== "occasion") continue;
+    const config = LAUNCH_LOCALE_DATA.find((row) => row.code === slug.locale);
+    if (config === undefined) continue;
+    const at = (rule: string, message: string): void => {
+      problems.push({
+        family: "slugs",
+        file: dataFile(slug.file),
+        key: `${slug.entity}:${slug.key} (${slug.locale})`,
+        rule,
+        message,
+      });
+    };
+    for (const [segmentKey, segment] of Object.entries(config.pathSegments)) {
+      if (segment !== slug.slug) continue;
+      at(
+        "path-segment",
+        `slug \`${slug.slug}\` equals the \`${segmentKey}\` path segment of \`${slug.locale}\`: a listing slug and a page-type segment cannot share one URL (spec 008 AC-2, §2)`,
+      );
+    }
+    for (const country of COUNTRIES) {
+      const countrySlug = (country.slugs as Readonly<Record<string, string>>)[
+        slug.locale
+      ];
+      if (countrySlug !== slug.slug) continue;
+      at(
+        "country-slug",
+        `slug \`${slug.slug}\` equals the country slug of ${country.iso2} in \`${slug.locale}\`: a listing slug and a country cannot share one URL (spec 008 AC-2, §2)`,
+      );
+    }
+  }
+  return problems;
+}
+
 function checkSlugs(tree: SeedTree, parsed: Parsed): SeedProblem[] {
-  const problems: SeedProblem[] = [...checkRequiredProductSlugs(tree, parsed)];
+  const problems: SeedProblem[] = [
+    ...checkRequiredProductSlugs(tree, parsed),
+    ...checkRequiredListingSlugs(tree, parsed),
+    ...checkReservedListingSlugs(tree),
+  ];
   const slugs = rawSlugs(tree);
   const at = (slug: RawSlug, rule: string, message: string): void => {
     problems.push({
@@ -1408,6 +1559,234 @@ function checkPrices(parsed: Parsed): SeedProblem[] {
 /* Family 6: copy.                                                            */
 /* -------------------------------------------------------------------------- */
 
+/** Spec 008 AC-2: a hub intro is 40–120 words, inclusive on both ends. */
+export const HUB_INTRO_WORD_MIN = 40;
+export const HUB_INTRO_WORD_MAX = 120;
+
+/**
+ * Spec 008 AC-2: a hub intro is at least 60 % token-distinct from every other hub intro in its
+ * locale.
+ *
+ * **Measured as spec 007 §14 A4 measures a corridor guide**: the Jaccard distance between the two
+ * texts' sets of contiguous five-token shingles, through `scripts/corridor-check.ts`'s
+ * `shingleDistinctness()` — composed, not restated. The literal token-set reading was measured
+ * against the committed `en` corpus first and refuses it: `category:sympathy` and
+ * `occasion:sympathy` share their vocabulary (white lilies, white roses, a peace lily, a home or an
+ * office) and score 0.34 while saying different things, and two unrelated intros sharing the
+ * closing florist sentence and English stop-words score near 0.5. A set of shared words measures
+ * the language; shared five-word runs measure copying, which is the thin-content failure
+ * `plan/02` §1 names. The weakest committed pair under this metric is 0.71.
+ */
+export const HUB_INTRO_DISTINCTNESS_MIN = 0.6;
+
+/**
+ * The delivery-timing claims of spec 006 §14 A4, **in German and Polish**.
+ *
+ * `DELIVERY_TIMING_PATTERN` (`seed/copy.ts`) names English phrases, which was enough while every
+ * `de`/`pl` row was a machine draft of English text. Authored German and Polish intros (TASK-106)
+ * would pass it with "Lieferung am nächsten Tag" or "dostawa tego samego dnia", so the intro scan
+ * adds the same classes in both languages: next day, same day, today/tomorrow, within N hours or
+ * days, working days, delivery time, punctuality, express, and a clock time. The permitted
+ * pointer — "vor dem Bestellschluss, der für das Zielland angezeigt wird", "przed terminem
+ * podanym dla kraju docelowego" — names no time and passes, exactly as it does in English.
+ */
+export const NATIVE_DELIVERY_TIMING_PATTERN =
+  /(?<![\p{L}\p{N}])(?:am (?:nächsten|selben|gleichen) tag|noch heute|heute (?:geliefert|zugestellt)|morgen (?:geliefert|zugestellt)|innerhalb von \d+ (?:stunden|tagen)|werktag(?:e|en)?|lieferzeit(?:en)?|pünktlich|expresslieferung|bis \d{1,2}(?:[:.]\d{2})? uhr|następnego dnia|tego samego dnia|jeszcze dziś|dostawa (?:dziś|dzisiaj|jutro)|w ciągu \d+ (?:godzin|godziny|dni)|dni robocz|czas dostawy|punktualn|ekspres|do godziny \d{1,2})/iu;
+
+/**
+ * `plan/10` §2.2's unbacked superlatives, **in German and Polish** — the heads of
+ * `BANNED_SUPERLATIVES`, as whole-word patterns with their inflections spelled out, because both
+ * languages inflect them ("die besten Rosen", "najlepsze kwiaty") and a bare stem would fire
+ * inside an innocent word ("Bestellung" begins with "beste").
+ */
+export const NATIVE_BANNED_SUPERLATIVES: readonly string[] = [
+  "beste[mnrs]?",
+  "günstigste[mnrs]?",
+  "schnellste[mnrs]?",
+  "schönste[mnrs]?",
+  "frischeste[mnrs]?",
+  "perfekte?[mnrs]?",
+  "unschlagbare?[mnrs]?",
+  "garantiert frisch",
+  "najlepsz\\p{L}*",
+  "najtańsz\\p{L}*",
+  "najszybsz\\p{L}*",
+  "najpiękniejsz\\p{L}*",
+  "najświeższ\\p{L}*",
+  "idealn\\p{L}*",
+  "niezrównan\\p{L}*",
+  "gwarantowan\\p{L}* świeżoś\\p{L}*",
+];
+
+/** The native superlatives an intro contains, as written, lowercased. */
+export function nativeSuperlativesIn(text: string): readonly string[] {
+  const haystack = text.toLowerCase();
+  return NATIVE_BANNED_SUPERLATIVES.flatMap((term) => {
+    const match = new RegExp(
+      `(?<![\\p{L}\\p{N}])${term}(?![\\p{L}\\p{N}])`,
+      "u",
+    ).exec(haystack);
+    return match === null ? [] : [match[0]];
+  });
+}
+
+/** The native-language delivery-timing phrases a piece of copy contains, lowercased. */
+export function nativeDeliveryTimingPhrasesIn(text: string): readonly string[] {
+  const pattern = new RegExp(NATIVE_DELIVERY_TIMING_PATTERN.source, "giu");
+  return [...text.matchAll(pattern)].map((match) => match[0].toLowerCase());
+}
+
+/**
+ * A price written number-first, the way German and Polish write it: `49 €`, `49,90 €`, `49,– €`,
+ * `149 zł`, `99 lei`. The number may end in a dash for "no cents" (`49,–`), and the currency may
+ * be a symbol, an ISO code or the local word (`/break 150` hole 5).
+ */
+const TRAILING_CURRENCY_PRICE_PATTERN =
+  /\d[\d.,]*(?:[.,]?[-–—]+)?\s?(?:[£€$]|(?:zł|zl|złotych|pln|eur|euro|euros|gbp|ron|lei)(?![\p{L}\p{N}]))/iu;
+
+/**
+ * A price written currency-first with an ISO code or a currency word: `EUR 49`, `PLN 149`,
+ * `RON 99`, `zł 149` (`/break 150` hole 5). The symbol-first form (`€49`) is the corridor gate's.
+ */
+const LEADING_CODE_PRICE_PATTERN =
+  /(?<![\p{L}\p{N}])(?:eur|euro|gbp|pln|ron|lei|zł|zl)\s?\d[\d.,]*/iu;
+
+/**
+ * The price literals a piece of copy contains: the corridor gate's pattern, plus the number-first
+ * and code-first forms German and Polish copy use.
+ */
+export function priceLiteralsIn(text: string): readonly string[] {
+  return [
+    PRICE_LITERAL_PATTERN,
+    TRAILING_CURRENCY_PRICE_PATTERN,
+    LEADING_CODE_PRICE_PATTERN,
+  ]
+    .map((pattern) => pattern.exec(text)?.[0].trim())
+    .filter(
+      (match, index, all): match is string =>
+        match !== undefined && all.indexOf(match) === index,
+    );
+}
+
+/** The intros of one locale's hub pages: `human` category and occasion rows with a description. */
+function hubIntroRows(
+  parsed: Parsed,
+  locale: string,
+): readonly { path: string; row: SeedCopy }[] {
+  return LISTING_SLUG_ENTITIES.flatMap(([, file]) => {
+    const path = seedCopyPath(locale, file);
+    return (parsed.copy.get(path) ?? [])
+      .filter(
+        (row) =>
+          row.translationStatus === ROUTED_SLUG_TRANSLATION_STATUS &&
+          typeof row.descriptionMd === "string" &&
+          typeof row.key === "string",
+      )
+      .map((row) => ({ path, row }));
+  });
+}
+
+/**
+ * Spec 008 AC-2's three intro rules over every hub intro in every copy locale.
+ *
+ * A **hub intro** is the `descriptionMd` of a category or occasion row whose slug routes — a
+ * `human` row (`listing.ts`'s `authoredIntro()` reads that field for §2 rows 10 and 13). A machine
+ * draft is excluded on purpose: its slug never routes, so it is no page's intro; the day a
+ * reviewer flips it to `human` it is checked like every other.
+ *
+ *  - `intro-word-range` — 40–120 words, counted by `wordCount()`, the copy family's own counter;
+ *  - `intro-distinct` — at least `HUB_INTRO_DISTINCTNESS_MIN` shingle-distinct from every other
+ *    hub intro in the locale, categories and occasions together, because they share one URL
+ *    namespace and one reader;
+ *  - `intro-banned-word` — a voice-register word (`src/config/voice.ts`) or an unbacked
+ *    superlative (`seed/copy.ts`'s English list, `NATIVE_BANNED_SUPERLATIVES` in German and
+ *    Polish);
+ *  - `intro-price-literal` — a price written into prose; prices are data, formatted by
+ *    `formatMoney`, and a hub shows no money at all (§2).
+ *
+ * The fourth honesty clause, a delivery-timing claim, is the copy family's `delivery-timing`
+ * rule: its English half already reads every row in every locale (spec 006 §14 A4) and is not
+ * run twice; this function adds the German and Polish half (`NATIVE_DELIVERY_TIMING_PATTERN`)
+ * over every hub row's intro, name and SEO pair, under the same rule id.
+ */
+function checkHubIntros(tree: SeedTree, parsed: Parsed): SeedProblem[] {
+  const problems: SeedProblem[] = [];
+  for (const locale of tree.copyLocales) {
+    const intros = hubIntroRows(parsed, locale);
+    for (const { path, row } of intros) {
+      const intro = row.descriptionMd ?? "";
+      const at = (rule: string, message: string): void => {
+        problems.push({
+          family: "copy",
+          file: dataFile(path),
+          key: `${row.entity}:${row.key} (${locale})`,
+          rule,
+          message,
+        });
+      };
+      const words = wordCount(intro);
+      if (words < HUB_INTRO_WORD_MIN || words > HUB_INTRO_WORD_MAX) {
+        at(
+          "intro-word-range",
+          `hub intro is ${String(words)} words, outside ${String(HUB_INTRO_WORD_MIN)}–${String(HUB_INTRO_WORD_MAX)} (spec 008 AC-2)`,
+        );
+      }
+      const banned = [
+        ...bannedVoiceWordsIn(intro),
+        ...bannedSuperlativesIn(intro),
+        ...nativeSuperlativesIn(intro),
+      ];
+      if (banned.length > 0) {
+        at(
+          "intro-banned-word",
+          `hub intro uses ${banned.map((word) => `\`${word}\``).join(", ")}: a banned voice word or an unbacked superlative (spec 008 AC-2; spec 004 §14 A5; \`plan/10\` §2.2)`,
+        );
+      }
+      for (const [field, value] of [
+        ["descriptionMd", row.descriptionMd],
+        ["seoTitle", row.seoTitle],
+        ["seoDescription", row.seoDescription],
+        ["name", row.name],
+      ] as const) {
+        if (typeof value !== "string") continue;
+        const phrases = nativeDeliveryTimingPhrasesIn(value);
+        if (phrases.length === 0) continue;
+        at(
+          "delivery-timing",
+          `\`${field}\` states delivery timing (${phrases.map((phrase) => `\`${phrase}\``).join(", ")}): the cutoff and next-available-date sentence is spec 009's per-country block, and copy may only point at it (spec 006 §14 A4; spec 008 AC-2)`,
+        );
+      }
+      const prices = priceLiteralsIn(intro);
+      if (prices.length > 0) {
+        at(
+          "intro-price-literal",
+          `hub intro contains a price literal (${prices.map((price) => `\`${price}\``).join(", ")}): prices are data formatted by formatMoney, and a hub shows no money (spec 008 AC-2, §2)`,
+        );
+      }
+    }
+    for (let index = 0; index < intros.length; index += 1) {
+      for (let other = index + 1; other < intros.length; other += 1) {
+        const left = intros[index];
+        const right = intros[other];
+        if (left === undefined || right === undefined) continue;
+        const distinctness = shingleDistinctness(
+          left.row.descriptionMd ?? "",
+          right.row.descriptionMd ?? "",
+        );
+        if (distinctness >= HUB_INTRO_DISTINCTNESS_MIN) continue;
+        problems.push({
+          family: "copy",
+          file: dataFile(left.path),
+          key: `${left.row.entity}:${left.row.key}, ${right.row.entity}:${right.row.key} (${locale})`,
+          rule: "intro-distinct",
+          message: `hub intros are ${(distinctness * 100).toFixed(0)} % distinct, under ${String(HUB_INTRO_DISTINCTNESS_MIN * 100)} % (5-gram shingles, spec 008 AC-2; the metric of spec 007 §14 A4): one reads as a copy of the other`,
+        });
+      }
+    }
+  }
+  return problems;
+}
+
 function checkCopy(tree: SeedTree, parsed: Parsed): SeedProblem[] {
   const problems: SeedProblem[] = [];
 
@@ -1477,6 +1856,8 @@ function checkCopy(tree: SeedTree, parsed: Parsed): SeedProblem[] {
       }
     }
   }
+
+  problems.push(...checkHubIntros(tree, parsed));
 
   // The thin-content guard of §6, across the whole locale: two products sharing a description is
   // the failure `plan/02` §4.2 names as the real ranking risk of a programmatic catalogue.

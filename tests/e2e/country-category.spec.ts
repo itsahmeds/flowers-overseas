@@ -75,11 +75,11 @@ test.describe("existence and the 404 shapes (AC-1, T-01)", () => {
       "/en/poland/blumen/roses",
       "/en/polska/flowers/roses",
       "/pl/poland/flowers/roses",
-      // `de` and `pl` have no authored category slug yet (§13 Q10): no page, no redirect,
-      // no English body under a German URL
-      "/de/polen/blumen/rosen",
-      "/pl/polska/kwiaty/roze",
+      // an English or another locale's slug under a German or Polish URL: TASK-106 authored
+      // `rosen` and `roze` (§13 Q10), and no half-translated URL is served or redirected
       "/de/polen/blumen/roses",
+      "/pl/polska/kwiaty/roses",
+      "/de/polen/blumen/roze",
       // TASK-111's occasion URL, which does not exist yet
       "/en/poland/occasions/womens-day",
       // an unknown locale

@@ -313,9 +313,10 @@ describe("the shipped catalogues and manifests", () => {
     // seven guides, so the implementer cut the count and the string waits for the founder again.
     // `undatedNote` was reworded in the same round ("a country we have not published yet" →
     // "another country") and was already waiting.
-    "occasionsIndex.datedCaption",
+    // On 2026-10-03 the founder signed off `datedCaption` and `undatedNote` as written (chat, "go
+    // ahead whatever u feel is good"; TASK-171), so they left this queue; `undatedHeading` was
+    // not in that sign-off and still waits.
     "occasionsIndex.undatedHeading",
-    "occasionsIndex.undatedNote",
     // TASK-111, the country occasion page. Five of its eleven strings are transcribed from the
     // founder-approved artboards (`wireframes/country-occasion-{desktop,mobile}.dc.html`,
     // `country-shop-{desktop,mobile}.dc.html`) and carry his attestation; these six are wording

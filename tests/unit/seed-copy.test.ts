@@ -9,9 +9,11 @@
  *
  * The assertions that matter most are the ones nobody would think to write:
  *
- *  - **every `de` and `pl` row is `translationStatus: "machine", reviewed: false` with the `en`
- *    row's `sourceHash`**, which is AC-5's "never present, unreviewed and unflagged" and the
- *    reason those locales' product pages stay non-indexable (`plan/03` §6 gate 4);
+ *  - **every `de` and `pl` product row is `translationStatus: "machine", reviewed: false` with the
+ *    `en` row's `sourceHash`**, which is AC-5's "never present, unreviewed and unflagged" and the
+ *    reason those locales' product pages stay non-indexable (`plan/03` §6 gate 4); their category
+ *    and occasion rows are **human-authored and unreviewed** since TASK-106 (spec 008 §13 Q10:
+ *    a slug is never machine-drafted), with their own name and the fold of it as the slug;
  *  - **`en-gb` exists only where the British wording differs**, row by row, so a future
  *    "complete the translation" commit that copies all 139 rows fails here rather than in review;
  *  - **no two rows in the dataset share a description**, the thin-content guard of §6 that
@@ -64,6 +66,12 @@ const meta = JSON.parse(
   readFileSync(join(repoRoot, "messages/en.meta.json"), "utf8"),
 ) as Record<string, { retained?: boolean; reviewed?: boolean }>;
 const SENTENCE = messages.catalog.floristSentence;
+/** `de`'s own closing sentence, authored by TASK-106 (human, unreviewed) so German intros close in German. */
+const DE_SENTENCE = (
+  JSON.parse(readFileSync(join(repoRoot, "messages/de.json"), "utf8")) as {
+    catalog: { floristSentence: string };
+  }
+).catalog.floristSentence;
 
 const products = JSON.parse(
   readFileSync(join(repoRoot, "seed/data/products.json"), "utf8"),
@@ -224,6 +232,13 @@ describe("T-05: the copy rules fail on the cases spec 006 §2.3 rule 6 names", (
   it("folds names to slugs the way `plan/02` §4 requires", () => {
     expect(asciiFoldSlug("Kraków Spring")).toBe("krakow-spring");
     expect(asciiFoldSlug("Wrocław Light")).toBe("wroclaw-light");
+    // German umlauts fold to ae/oe/ue (spec 008 §14 A12), ß to ss — the shipped `anlaesse`.
+    expect(asciiFoldSlug("Blumensträuße")).toBe("blumenstraeusse");
+    expect(asciiFoldSlug("Maiglöckchen zum 1. Mai")).toBe(
+      "maigloeckchen-zum-1-mai",
+    );
+    expect(asciiFoldSlug("Grüße")).toBe("gruesse");
+    expect(asciiFoldSlug("ÄÖÜ")).toBe("aeoeue");
     expect(asciiFoldSlug("Valentine's Day")).toBe("valentines-day");
     expect(asciiFoldSlug("All Saints' Day")).toBe("all-saints-day");
     expect(asciiFoldSlug("Amber Hour + Chocolates")).toBe(
@@ -403,7 +418,7 @@ describe("AC-5: `en-gb` ships only as differing overrides", () => {
   });
 });
 
-describe("AC-5: `de` and `pl` are machine drafts, flagged and unreviewed", () => {
+describe("AC-5: `de` and `pl` are flagged and unreviewed — product rows drafted, listing rows authored", () => {
   it.each(COPY_DRAFT_LOCALES.map((locale) => [locale]))(
     "%s carries the review triple on every row",
     (locale) => {
@@ -415,16 +430,28 @@ describe("AC-5: `de` and `pl` are machine drafts, flagged and unreviewed", () =>
         expect(rows.map((row) => row.key)).toEqual([...source.keys()]);
         for (const row of rows) {
           const en = source.get(row.key);
-          expect(row.translationStatus).toBe("machine");
           expect(row.reviewed).toBe(false);
           expect(row.reviewedBy).toBeUndefined();
           expect(row.reviewedAt).toBeUndefined();
           expect(row.sourceHash).toBe(
             en === undefined ? "" : copySourceHash(en),
           );
-          // Names and slugs are never machine-written (§13 Q2, `plan/03` §5).
-          expect(row.name).toBe(en?.name);
-          expect(row.slug).toBe(en?.slug);
+          if (entity === "product") {
+            expect(row.translationStatus).toBe("machine");
+            // Names and slugs are never machine-written (§13 Q2, `plan/03` §5).
+            expect(row.name).toBe(en?.name);
+            expect(row.slug).toBe(en?.slug);
+          } else {
+            // Spec 008 §13 Q10 (TASK-106): a category or occasion URL is authored by hand in the
+            // locale's own words and is the fold of its own name, never the English one.
+            expect(row.translationStatus).toBe("human");
+            expect(row.slug).toBe(asciiFoldSlug(row.name));
+            // Sant Jordi is a Catalan proper noun and keeps its name in every language.
+            if (row.key !== "sant_jordi") {
+              expect(row.name, `${locale} ${row.key}`).not.toBe(en?.name);
+              expect(row.slug, `${locale} ${row.key}`).not.toBe(en?.slug);
+            }
+          }
         }
       }
     },
@@ -441,10 +468,11 @@ describe("AC-5: the drafter is deterministic, protective and refuses the source 
   }
 
   it("produces the committed bytes again — a re-run is a no-op", () => {
+    expect(DE_SENTENCE).not.toBe(SENTENCE);
     const report = draftCopyLocale({
       root: repoRoot,
       locale: "de",
-      floristSentence: SENTENCE,
+      floristSentence: DE_SENTENCE,
       sourceFloristSentence: SENTENCE,
       dryRun: true,
     });
