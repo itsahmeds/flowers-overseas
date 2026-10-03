@@ -202,6 +202,10 @@ the reviewer checks it, a reviewer's call for a breaker binds the merge, and whe
 not review-only, so a PR in neither class (dates, i18n tooling, migrations, data flows) keeps its
 breaker. The 5 % reviewed-copy gate is unchanged.
 
+## W-22 · Speed: feature PRs, two full review rounds, light agents beside heavy ones
+
+On 2026-10-03 the founder asked for the whole build in two weeks and approved four changes: more agents at once, lighter checks, Phase 1 specs in parallel, and feature-sized tasks. Docs PRs that day spent three review rounds on wording. What this narrows, and what it keeps: the breaker stays the default (W-21), and review-only is still the named exception — docs and pure presentation; what changes is that framework docs and agent/template text joined the review-only list while `CLAUDE.md` and the dev-OS guards did not, review is capped at two full rounds (round 2 fails only on real defects; nits are logged), and one PR may close a feature's sibling tasks. The four-or-five cap of W-11 was about machine load from builds and browsers; spec writers, advisors and reviewers barely load it, so they run beside the heavy agents while the load average stays under 16. ("Cloud" agents were tried the same day: on this account they run as local worktrees, so the cap is set by load, not by location.)
+
 ## Retired
 
 - **"The `preview` job waits on a Vercel preview deployment, so under Vercel's build rate limit the
@@ -218,7 +222,3 @@ breaker. The 5 % reviewed-copy gate is unchanged.
   into the definition of done (W-1), and the three orchestrator-only rules (one gates task per
   spec, scoped round-2 reviews, docs-only failures fixed on the branch) into
   `.claude/agents/orchestrator.md`. The file stays as a record.
-
-## W-22 · Speed: two rounds, a breaker only where a defect costs money, ranking or safety
-
-On 2026-10-03 the founder asked for the whole build in two weeks and approved four changes: cloud agents, lighter checks, Phase 1 specs in parallel, and feature-sized tasks. Docs PRs that day spent three review rounds on wording, and every presentation and framework PR carried a breaker. The breaker stays where W-21 put it, on defects that cost money, ranking or safety; everything else gets one review, and a third round is never needed because round 2 fails only on real defects. Feature-sized PRs cut the per-PR cost (brief, review, CI, rebase) that dominated small tasks. Cloud agents remove the one-Mac ceiling of W-11 for work whose heavy gates run in CI.
