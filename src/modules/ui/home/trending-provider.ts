@@ -46,6 +46,12 @@ export interface TrendingPick {
    * variants and alt text, with no edit here (AC-20).
    */
   readonly assetId: string;
+  /**
+   * The catalogue SKU, when the pick is a catalogue product: what `TrendingRow` looks the product
+   * page up by (spec 008 §14 A14 (e); TASK-173). Optional, so a fake pick in the gallery or a test
+   * is simply a card with no page.
+   */
+  readonly sku?: string;
 }
 
 /** `FO-BQ-001` → `fo-bq-001-hero` — `seed/data/media.json`'s id convention for a product hero. */
@@ -71,6 +77,7 @@ export const staticTrendingProvider: TrendingProvider = (() => {
     id: pick.id,
     name: productBySku(pick.sku).name,
     assetId: productHeroAssetId(pick.sku),
+    sku: pick.sku,
   }));
   return {
     basis: () => "picks",

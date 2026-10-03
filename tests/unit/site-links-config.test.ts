@@ -29,9 +29,14 @@ import { describe, expect, it } from "vitest";
 
 import { launchLocales } from "../../src/config/locales.ts";
 import { COUNTRY_CODES } from "../../src/config/countries.ts";
+import { CATEGORIES } from "../../src/config/categories.ts";
+import { categoryByKey } from "../../src/config/catalogue/categories.data.ts";
+import { occasionByKey } from "../../src/config/catalogue/occasions.data.ts";
 import {
+  CATEGORY_ROW_ENTRY_LINKS,
   CATEGORY_ROW_LINK_IDS,
   CORRIDOR_LINKS,
+  DEMO_DESTINATION_ISO2,
   MASTHEAD_LINK_IDS,
   SEARCH_LINK_ID,
   SHOP_LINK_IDS,
@@ -40,6 +45,7 @@ import {
   SiteLinkGroupRegistrySchema,
   SiteLinkRegistrySchema,
   SiteLinkSchema,
+  categoryRowLinkId,
   corridorLinkId,
   groupLinks,
   isPublished,
@@ -48,6 +54,7 @@ import {
   linkPageTypes,
   listingLinkId,
   listingLinkPageTypes,
+  listingPageLinkTypes,
   siteLink,
 } from "../../src/config/site-links.ts";
 import { PAGE_TYPES, localePath } from "../../src/modules/i18n/routing.ts";
@@ -109,6 +116,26 @@ describe("src/config/site-links.ts", () => {
         expect(link.owningSpec, link.id).toBe("008");
         continue;
       }
+      if (link.target.kind === "listingPage") {
+        // One listing page, named by the catalogue's own identity (spec 008 §14 A14): its page
+        // type is one the catalogue knows, and the entity or destination it names exists.
+        expect(listingPageTypes, link.id).toContain(link.target.pageType);
+        if (link.target.entityKey !== undefined) {
+          const key = link.target.entityKey;
+          expect(
+            () =>
+              link.target.kind === "listingPage" &&
+              link.target.pageType === "occasionHub"
+                ? occasionByKey(key)
+                : categoryByKey(key),
+            link.id,
+          ).not.toThrow();
+        }
+        if (link.target.countryIso !== undefined) {
+          expect(COUNTRY_CODES, link.id).toContain(link.target.countryIso);
+        }
+        continue;
+      }
       if (link.target.kind === "corridor") {
         // A corridor target names a destination the country registry knows; the URL itself is
         // built per locale from that registry's slug, never from this one (spec 007 AC-20).
@@ -124,9 +151,9 @@ describe("src/config/site-links.ts", () => {
   });
 
   it("publishes the hub, the corridor targets and spec 008's five ids, and nothing else (AC-20)", () => {
-    const published = SITE_LINKS.filter((link) => link.published).map(
-      (link) => link.id,
-    );
+    const published = SITE_LINKS.filter(
+      (link) => link.published && !link.id.startsWith("category-row-"),
+    ).map((link) => link.id);
     // Spec 007 AC-20 plus spec 008 **AC-20**: the locale home, `destinationsHub` (the
     // `destinations` row — ids are hyphen-case), the seven corridor targets and the five ids spec
     // 007 §2 reserved. Every other id is still text on every surface, which is what keeps spec
@@ -149,6 +176,23 @@ describe("src/config/site-links.ts", () => {
       "occasion-hub",
       // Spec 009 AC-20 (TASK-127): the `product` link id is published, so spec 008's cards link.
       "product",
+    ]);
+    // …and, after the founder found the chrome dead (spec 008 §14 A14, spec 004 §14 A20;
+    // TASK-173), the header's category row, entry by entry. Add-ons and Same-day delivery have
+    // no page, so they are absent from both lists and from every rendered header.
+    expect(
+      SITE_LINKS.filter(
+        (link) => link.published && link.id.startsWith("category-row-"),
+      ).map((link) => link.id),
+    ).toEqual([
+      "category-row-our-selection",
+      "category-row-birthday",
+      "category-row-sympathy",
+      "category-row-occasions",
+      "category-row-bouquets",
+      "category-row-roses",
+      "category-row-plants",
+      "category-row-destinations",
     ]);
     expect(isPublished("locale-home")).toBe(true);
     expect(isPublished("terms")).toBe(false);
@@ -179,6 +223,7 @@ describe("src/config/site-links.ts", () => {
     // production 500 (spec 008 AC-20; TASK-113).
     const drawn = new Set<string>([
       ...SITE_LINK_GROUPS.flatMap((group) => [...group.linkIds]),
+      ...CATEGORY_ROW_ENTRY_LINKS.map((link) => link.id),
       ...MASTHEAD_LINK_IDS,
       ...CATEGORY_ROW_LINK_IDS,
       SEARCH_LINK_ID,
@@ -360,6 +405,114 @@ describe("src/config/site-links.ts", () => {
     expect(
       SiteLinkGroupRegistrySchema.safeParse([base, { ...base, id: "again" }])
         .success,
+    ).toBe(false);
+  });
+
+  it("gives every category-row entry its one target, as spec 008 §14 A14 rules (TASK-173)", () => {
+    // One row per `categories.ts` entry, in its order, and nothing else.
+    expect(CATEGORY_ROW_ENTRY_LINKS.map((link) => link.id)).toEqual(
+      CATEGORIES.map((category) => `category-row-${category.id}`),
+    );
+    for (const category of CATEGORIES) {
+      const link = siteLink(categoryRowLinkId(category.id));
+      // The label is the category's own key, so the row and the link cannot name it twice.
+      expect(link.labelKey, category.id).toBe(category.labelKey);
+      expect(link.surfaces, category.id).toEqual(["header"]);
+    }
+    expect(() => categoryRowLinkId("tulips")).toThrow(/tulips/u);
+    // The ruling, entry by entry: the occasions for the two occasion words, the category hubs for
+    // the three product types, the demo destination's shop for "Our selection", the two indexes
+    // for "Occasions" and "Destinations", and no target at all for the two with no page.
+    const targets = Object.fromEntries(
+      CATEGORIES.map((category) => [
+        category.id,
+        siteLink(categoryRowLinkId(category.id)).target,
+      ]),
+    );
+    expect(targets).toEqual({
+      "our-selection": {
+        kind: "listingPage",
+        pageType: "countryShopRoot",
+        countryIso: "PL",
+      },
+      birthday: {
+        kind: "listingPage",
+        pageType: "occasionHub",
+        entityKey: "birthday",
+      },
+      sympathy: {
+        kind: "listingPage",
+        pageType: "occasionHub",
+        entityKey: "sympathy",
+      },
+      occasions: { kind: "listingPage", pageType: "occasionsIndex" },
+      bouquets: {
+        kind: "listingPage",
+        pageType: "categoryHub",
+        entityKey: "bouquet",
+      },
+      roses: {
+        kind: "listingPage",
+        pageType: "categoryHub",
+        entityKey: "roses",
+      },
+      plants: {
+        kind: "listingPage",
+        pageType: "categoryHub",
+        entityKey: "plant",
+      },
+      "add-ons": { kind: "pending" },
+      "same-day-delivery": { kind: "pending" },
+      destinations: { kind: "route", pageType: "destinations" },
+    });
+    expect(DEMO_DESTINATION_ISO2).toBe("PL");
+    expect(isPublished("category-row-add-ons")).toBe(false);
+    expect(isPublished("category-row-same-day-delivery")).toBe(false);
+  });
+
+  it("restates the catalogue's listing page types for a single listing page", () => {
+    expect(
+      [...listingPageLinkTypes].every((type) =>
+        listingPageTypes.includes(type),
+      ),
+    ).toBe(true);
+  });
+
+  it("refuses a listing page whose identity does not fit its page type", () => {
+    const page = {
+      id: "example-page",
+      labelKey: "nav.category.roses",
+      published: true,
+      owningSpec: "008",
+      surfaces: ["header" as const],
+    };
+    const accepts = (target: Record<string, unknown>): boolean =>
+      SiteLinkSchema.safeParse({
+        ...page,
+        target: { kind: "listingPage", ...target },
+      }).success;
+    expect(accepts({ pageType: "categoryHub", entityKey: "roses" })).toBe(true);
+    expect(accepts({ pageType: "countryShopRoot", countryIso: "PL" })).toBe(
+      true,
+    );
+    expect(accepts({ pageType: "occasionsIndex" })).toBe(true);
+    // A hub names its entity, a shop root its destination, the index neither.
+    expect(accepts({ pageType: "categoryHub" })).toBe(false);
+    expect(accepts({ pageType: "occasionHub", countryIso: "PL" })).toBe(false);
+    expect(accepts({ pageType: "countryShopRoot" })).toBe(false);
+    expect(
+      accepts({
+        pageType: "countryShopRoot",
+        countryIso: "PL",
+        entityKey: "roses",
+      }),
+    ).toBe(false);
+    expect(accepts({ pageType: "occasionsIndex", entityKey: "roses" })).toBe(
+      false,
+    );
+    // A slug is not a key: the catalogue key is what the existence rule is asked about.
+    expect(
+      accepts({ pageType: "categoryHub", entityKey: "hand-tied-bouquets" }),
     ).toBe(false);
   });
 

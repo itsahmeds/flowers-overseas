@@ -18,10 +18,11 @@
  * **What it is allowed to say.** Three honesty rules, each enforced by data rather than by this
  * file:
  *
- *  - a label renders as a **link** only when `site-links.ts` publishes its target, and as plain
- *    text otherwise — never a dead href, never a disabled-looking control (AC-14). In Phase 0
- *    that means both columns and the legal row render their labels as text, and 007/008/011 turn
- *    them into navigation by flipping `published`;
+ *  - a label renders as a **link** when `site-links.ts` publishes its target and the page
+ *    exists in this locale, and **not at all** otherwise — no text, no dead href, no
+ *    disabled-looking control (AC-14 as spec 004 §14 A20 amends it; TASK-173). A column with no
+ *    linked entry left is absent with its heading. Today that leaves `Destinations` and
+ *    `Occasions`; 007/011/TASK-174 bring the rest back by flipping `published`;
  *  - the company block prints the trading name and the contact channel, and **no** registry code,
  *    VAT id or registered address while `company.registered` is false (AC-9, `plan/07` §6). The
  *    canvas's `[COMPANY LEGAL NAME], [REGISTERED ADDRESS], [REGISTRATION NO]` placeholders do not
@@ -107,8 +108,8 @@ export interface SiteFooterProps {
 }
 
 /**
- * One link column. A published entry is an `<a>`; an unpublished one is the same label as plain
- * text, with no `aria-disabled` and no styling that suggests a broken control (AC-14).
+ * One link column: its published entries as `<a>`s, and nothing for an unpublished one (AC-14,
+ * spec 004 §14 A20). `null` when no entry is left, so no heading stands over an empty list.
  *
  * The column is a `<nav>` named from its own heading — by `aria-labelledby` when the heading is
  * visible, by `aria-label` for the legal row, which the canvas draws without one — so a footer's
@@ -129,28 +130,27 @@ function LinkColumn({
    * list with no visible heading, so its accessible name is an `aria-label` instead.
    */
   readonly layout?: "column" | "inline";
-}): ReactElement {
+}): ReactElement | null {
+  // Only the entries with a page are drawn (spec 004 AC-14 as §14 A20 amends it; TASK-173): an
+  // unpublished target is not text that looks like a link, it is absent. A group left with no
+  // entry is absent too — no heading over nothing, and no empty `navigation` landmark.
+  const linked = group.links.filter(
+    (link): link is typeof link & { readonly href: string } =>
+      link.href !== undefined,
+  );
+  if (linked.length === 0) return null;
   const headingId = `${idPrefix}-group-${group.id}`;
   const heading = label(group.headingKey);
   // The canvas sets the whole legal row at `--text-xs` (11 px) and the link columns at
   // `--text-sm` (13 px); the row's size travels with the layout so no caller can get it wrong.
-  const size = layout === "inline" ? "xs" : "sm";
   // Both class names are written out: Tailwind scans source text, so `text-${size}` would
   // generate no rule at all.
   const linkClass = layout === "inline" ? "text-xs" : "text-sm";
-  const entries = group.links.map((link) =>
-    link.href === undefined ? (
-      // Unpublished: the label, as text. A reader sees what is coming; a crawler sees no URL, so
-      // there is no internal link to a non-200 page (AC-14).
-      <Text key={link.id} as="span" size={size} tone="subtle">
-        {label(link.labelKey)}
-      </Text>
-    ) : (
-      <a key={link.id} href={link.href} className={linkClass}>
-        {label(link.labelKey)}
-      </a>
-    ),
-  );
+  const entries = linked.map((link) => (
+    <a key={link.id} href={link.href} className={linkClass}>
+      {label(link.labelKey)}
+    </a>
+  ));
 
   if (layout === "inline") {
     return (

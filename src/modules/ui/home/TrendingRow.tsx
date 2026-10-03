@@ -17,13 +17,24 @@
  * reader to guess the missing number, and §3 does not permit a price block here in either form.
  * The reasoning is in the PR body for the reviewer's ruling, as the row asks.
  *
- * Nothing here is a link: the shop is spec 008's, so the home keeps zero internal links to a
- * non-200 URL (AC-14). The canvas's filter chips above the row ("Best sellers", "New this
+ * **Each card links to its product page** (spec 008 §14 A14 (e); TASK-173): the founder clicked
+ * the home on 2026-10-03 and found five bouquets that went nowhere while their pages answered 200.
+ * The page is the demo destination's (`DEMO_DESTINATION_ISO2`), and a card links only when the
+ * `product` link id is published **and** that page exists in this locale — the home passes the
+ * catalogue's product existence set as `productPages`, because `src/modules/ui` may not read the
+ * catalogue (`plan/01` §5). A card with no page stays a photograph and a name: content, not a
+ * control, so it looks like nothing that can be pressed. The canvas's filter chips above the row ("Best sellers", "New this
  * season", "Under …", "Same-day") are shop filters — 008's — and one of them is a delivery-timing
  * claim spec 006 §14 A4 forbids in copy, so none of them ships here.
  */
 import { useTranslations } from "next-intl";
-import type { ReactElement } from "react";
+import type { ReactElement, ReactNode } from "react";
+
+import {
+  DEMO_DESTINATION_ISO2,
+  PRODUCT_LINK_ID,
+  isPublished,
+} from "../../../config/site-links.ts";
 
 import { MediaAsset } from "../media/MediaAsset.tsx";
 import { Grid, Stack } from "../primitives/layout.tsx";
@@ -50,6 +61,52 @@ export interface TrendingRowProps {
    * gets the composition root's provider.
    */
   readonly provider?: TrendingProvider;
+  /**
+   * The product pages that exist in this locale — `listProductPages(locale)` from the catalogue,
+   * passed by the home page (spec 008 §14 A14 (e); TASK-173). Structural, so this module needs no
+   * runtime import of `src/modules/catalog`. Absent → no card links.
+   */
+  readonly productPages?: readonly TrendingProductPage[];
+}
+
+/** The three fields of a catalogue `ProductPageRecord` a card needs to link to its page. */
+export interface TrendingProductPage {
+  readonly sku: string;
+  readonly countryIso: string;
+  readonly path: string;
+}
+
+/**
+ * The card's product page in the demo destination, or `undefined` → the card is not a link.
+ * Permission (`isPublished("product")`) and existence (the record) are both required.
+ */
+export function trendingPickHref(
+  sku: string | undefined,
+  productPages: readonly TrendingProductPage[],
+): string | undefined {
+  if (sku === undefined || !isPublished(PRODUCT_LINK_ID)) return undefined;
+  return productPages.find(
+    (page) => page.sku === sku && page.countryIso === DEMO_DESTINATION_ISO2,
+  )?.path;
+}
+
+/**
+ * The card's content inside its `<li>`: an `<a>` laid out exactly as the `<li>`'s own column was
+ * (the same `flex-col` and gap), so linking a card moves no pixel; or the content itself.
+ */
+function CardLink({
+  href,
+  children,
+}: {
+  readonly href: string | undefined;
+  readonly children: ReactNode;
+}): ReactNode {
+  if (href === undefined) return children;
+  return (
+    <a className="gap-sm flex flex-col" href={href}>
+      {children}
+    </a>
+  );
 }
 
 /** The id, so the section can be pointed at, screenshotted and skipped over. */
@@ -61,6 +118,7 @@ export function TrendingRow({
   locale,
   headingLevel = "h2",
   provider,
+  productPages = [],
 }: TrendingRowProps): ReactElement | null {
   const home = useTranslations("home");
   const source = provider ?? getTrendingProvider();
@@ -89,7 +147,8 @@ export function TrendingRow({
       <Grid as="ul" columns="2-5" gap="lg">
         {picks.map((pick) => (
           <Stack as="li" gap="sm" key={pick.id} data-fo-trending-pick={pick.id}>
-            {/*
+            <CardLink href={trendingPickHref(pick.sku, productPages)}>
+              {/*
               The pick's photograph, or the captioned placeholder — whichever the dataset earns.
               Twelve of the eighty-four products have approved, derived, alt-texted imagery
               (TASK-080); the rest render the `--color-photo` box with `media.placeholder.product`
@@ -97,15 +156,16 @@ export function TrendingRow({
               is the heading the screen reader already announces, so it is handed to `MediaAsset`:
               an alt that merely repeats it is refused and degrades to the box (AC-18).
             */}
-            <MediaAsset
-              assetId={pick.assetId}
-              locale={locale}
-              slot="grid"
-              productName={pick.name}
-            />
-            <Text as="span" size="sm" className="font-medium">
-              {pick.name}
-            </Text>
+              <MediaAsset
+                assetId={pick.assetId}
+                locale={locale}
+                slot="grid"
+                productName={pick.name}
+              />
+              <Text as="span" size="sm" className="font-medium">
+                {pick.name}
+              </Text>
+            </CardLink>
           </Stack>
         ))}
       </Grid>

@@ -23,7 +23,11 @@ import { TRENDING_PICKS } from "../../src/config/trending.ts";
 import { loadMessages } from "../../src/modules/i18n";
 import { DestinationsGrid } from "../../src/modules/ui/home/DestinationsGrid.tsx";
 import { ReviewsSection } from "../../src/modules/ui/home/ReviewsSection.tsx";
-import { TrendingRow } from "../../src/modules/ui/home/TrendingRow.tsx";
+import {
+  TrendingRow,
+  trendingPickHref,
+} from "../../src/modules/ui/home/TrendingRow.tsx";
+import { listProductPages } from "../../src/modules/catalog";
 import {
   destinationStatusProviderOf,
   staticDestinationStatusProvider,
@@ -132,7 +136,7 @@ describe("the trending row is gated on real orders", () => {
     ).toBe("");
   });
 
-  it("links nothing, and gives every pick one `grid` box whatever the dataset holds (AC-14)", () => {
+  it("links nothing without the product existence set, and gives every pick one `grid` box (AC-14)", () => {
     const html = render(<TrendingRow locale="en" />, "en");
 
     expect(hrefs(html)).toEqual([]);
@@ -147,6 +151,58 @@ describe("the trending row is gated on real orders", () => {
       .length;
     expect(images + placeholders).toBe(TRENDING_PICKS.length);
     expect(images).toBeGreaterThan(0);
+  });
+
+  it("links every card to its product page in the demo destination, in every locale (TASK-173)", async () => {
+    // Spec 008 §14 A14 (e): the founder clicked five bouquets on the live home and none went
+    // anywhere while their pages answered 200. The home hands the row the catalogue's product
+    // existence set; each card is then an `<a>` to the **Polish** page of its own SKU.
+    for (const locale of LOCALES) {
+      const pages = await listProductPages(locale);
+      const html = render(
+        <TrendingRow locale={locale} productPages={pages} />,
+        locale,
+      );
+      const expected = TRENDING_PICKS.map(
+        (pick) =>
+          pages.find(
+            (page) => page.sku === pick.sku && page.countryIso === "PL",
+          )?.path,
+      );
+      expect(
+        expected.every((path) => path !== undefined),
+        locale,
+      ).toBe(true);
+      expect(hrefs(html), locale).toEqual(expected);
+      // Exactly one link per card, and the card's name and photo box are inside it.
+      for (const pick of TRENDING_PICKS) {
+        const card = html.slice(
+          html.indexOf(`data-fo-trending-pick="${pick.id}"`),
+        );
+        expect(card.slice(0, card.indexOf("</li>")), pick.id).toMatch(
+          /<a class="gap-sm flex flex-col" href="[^"]+">[\s\S]*data-fo-media-slot[\s\S]*<\/a>/u,
+        );
+      }
+    }
+    // The one value, pinned: the first pick's English page, in Poland.
+    const english = render(
+      <TrendingRow locale="en" productPages={await listProductPages("en")} />,
+      "en",
+    );
+    expect(hrefs(english)[0]).toMatch(/^\/en\/poland\/product\/[a-z0-9-]+$/u);
+  });
+
+  it("does not link a card whose page does not exist, nor one in another destination", () => {
+    const pages = [
+      { sku: "FO-BQ-001", countryIso: "PL", path: "/en/poland/product/a" },
+      { sku: "FO-BQ-002", countryIso: "DE", path: "/en/germany/product/b" },
+    ];
+    expect(trendingPickHref("FO-BQ-001", pages)).toBe("/en/poland/product/a");
+    expect(trendingPickHref("FO-BQ-002", pages)).toBeUndefined();
+    expect(trendingPickHref("FO-BQ-003", pages)).toBeUndefined();
+    expect(trendingPickHref(undefined, pages)).toBeUndefined();
+    const html = render(<TrendingRow locale="en" productPages={pages} />, "en");
+    expect(hrefs(html)).toEqual(["/en/poland/product/a"]);
   });
 
   it("takes its names from the committed catalogue, so none of them is invented", () => {
