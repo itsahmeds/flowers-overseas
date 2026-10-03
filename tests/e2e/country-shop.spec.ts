@@ -126,9 +126,9 @@ test.describe("what the page renders (AC-6, AC-24)", () => {
   test("nominates exactly one LCP image — the first card's photograph — and preloads that one (AC-24)", async ({
     page,
   }) => {
-    // **The stated number, and why it is 1** (TASK-143). Two of the twelve cards on
-    // `/en/poland/flowers` carry an approved photograph (TASK-080's bytes) and the first is one
-    // of them, so AC-24's "exactly one image per page carries `priority`" must pick the first.
+    // **The stated number, and why it is 1** (TASK-143). All twelve cards on
+    // `/en/poland/flowers` carry an approved photograph since TASK-168 (two since TASK-080), so
+    // AC-24's "exactly one image per page carries `priority`" must pick the first.
     // This case used to assert `preloads === priority` with `priority <= 1`: the page read
     // against itself, which a page nominating nothing passes as zero-vs-zero. The expectation is
     // now the **first card's own `<source>`** — PR 89 round 3's idiom from
@@ -173,9 +173,9 @@ test.describe("what the page renders (AC-6, AC-24)", () => {
     await expect(page.locator('img[loading="eager"]')).toHaveCount(
       EXPECTED_NOMINATIONS,
     );
-    // The other photograph on the page is lazy, which is the "and nothing else" half.
-    await expect(page.locator("[data-fo-product-card] img")).toHaveCount(2);
-    await expect(page.locator('img[loading="lazy"]')).toHaveCount(1);
+    // The other eleven photographs on the page are lazy, which is the "and nothing else" half.
+    await expect(page.locator("[data-fo-product-card] img")).toHaveCount(12);
+    await expect(page.locator('img[loading="lazy"]')).toHaveCount(11);
   });
 
   test("renders with JavaScript disabled (AC-23)", async ({ browser }) => {

@@ -25,11 +25,19 @@ const POLAND_PDPS = [
 /** The same bouquet to a destination with no `operations` block. */
 const UNAVAILABLE_PDP = "/en/germany/product/amber-hour";
 
-/** One tier, no photograph: the common Phase 0 case. */
-const NO_PHOTO_PDP = "/en/poland/product/anthurium";
+/** One tier; photographed since TASK-168 approved photo batch 2 (it had none before). */
+const ONE_TIER_PDP = "/en/poland/product/anthurium";
+
+/**
+ * The no-photograph gallery. Since TASK-168 no committed product lacks a photograph, so the
+ * browser half of that state is `/dev/components`' product gallery, which renders the PDP's own
+ * `Gallery` with `PRODUCT_GALLERY_PLACEHOLDER` (orchestrator ruling, 2026-10-03, TASK-168 brief);
+ * the page-level branch is `tests/unit/product-page.test.tsx`'s `withoutMedia()` cases.
+ */
+const GALLERY_PAGE = "/dev/components";
 
 test.describe("existence and the 404 shapes (AC-1, T-01)", () => {
-  for (const url of [...POLAND_PDPS, UNAVAILABLE_PDP, NO_PHOTO_PDP]) {
+  for (const url of [...POLAND_PDPS, UNAVAILABLE_PDP, ONE_TIER_PDP]) {
     test(`${url} is served`, async ({ request }) => {
       const response = await request.get(url, { maxRedirects: 0 });
       expect(response.status()).toBe(200);
@@ -238,14 +246,17 @@ test.describe("one priority image with its preload, and none without a photograp
   test("the no-photo gallery renders no <img> and no honesty label", async ({
     page,
   }) => {
-    await page.goto(NO_PHOTO_PDP);
+    // The PDP's own `Gallery` in its placeholder state, on the gallery page. That page carries
+    // one deliberate `priority` image elsewhere (`MediaAsset · priority`), so the "no preload"
+    // half is asserted on the gallery itself: nothing in it can be fetched, so nothing in it can
+    // be nominated. The PDP's `<head>` with a photographed hero is the case above.
+    await page.goto(GALLERY_PAGE);
     const gallery = page.locator('[data-fo-gallery="placeholder"]');
     await expect(gallery).toHaveCount(1);
     await expect(gallery.locator("img")).toHaveCount(0);
+    await expect(gallery.locator("picture, source")).toHaveCount(0);
     await expect(gallery).not.toContainText("Example arrangement");
-    await expect(
-      page.locator('head link[rel="preload"][as="image"]'),
-    ).toHaveCount(0);
+    await expect(gallery).toContainText("Photography to supply");
   });
 });
 

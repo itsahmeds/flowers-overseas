@@ -113,6 +113,36 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   no photograph on Mother's Day, now 7 of 7), `product-page.spec.ts:238` (`NO_PHOTO_PDP`
   anthurium is photographed; the browser has no seam to remove a product's media, so its subject
   needs a choice: a `/dev/components` placeholder gallery, or the case pinned on the real page).
+  **Answered 2026-10-03 (orchestrator rulings, relayed by the coordinator).** (1) Budget stays
+  204 800 B and no card is removed; first check the trending card's `sizes`: at Lighthouse mobile
+  (~412 CSS px, DPR 1.75) a ~160–200 CSS px card should pick ~320 w, so a 640 w pick means `sizes`
+  overstates the width. Fence widened to the component that sets the trending card's `sizes` and
+  its unit test: make `sizes` state the rendered width at each breakpoint, no quality change, no new
+  variants, a unit case pinning the string and red under mutation. If the honest `sizes` still
+  leaves a home over 204 800 B, stop and report the bytes. (2) e2e: pin
+  `country-category.spec.ts:184`, `country-shop.spec.ts:126`, `country-occasion.spec.ts:168` to
+  the exact new real values; `product-page.spec.ts:238` points at `/dev/components` if it already
+  renders the PDP no-photo state, otherwise asserts the real page's photo and the no-photo branch
+  is recorded as covered by `product-page.test.tsx`'s `withoutMedia()` cases; no new dev page.
+  (3) Then refresh only this diff's baselines through `visual:baselines`, each inspected.
+- **2026-10-03 — where the trending card's honest `sizes` lives (orchestrator, `open`).** The
+  row renders `MediaAsset slot="grid"`, and `sizes` is the slot's: `MEDIA_SLOT_SPECS.grid` =
+  `(min-width: 768px) 25vw, 50vw`, shared with every listing card (`CARD_MEDIA_SLOT = "grid"`,
+  `src/modules/catalog/listing.ts`). `slots.ts` states the rule "decided here, once, per slot
+  rather than at a call site", and `MediaAsset` has no `sizes` prop. The row's real geometry
+  (`HOME_BLEED` `px-md md:px-[56px]`, `Grid columns="2-5" gap="lg"`, no max-width on `<main>`):
+  `calc(50vw - 28px)` below 768 px, `calc(20vw - 41.6px)` from 768 px. Arithmetic, not measured:
+  on `e2e-mobile` (Pixel 7, 412 px, DPR 2.625) today's 50vw = 206 px gives candidate densities
+  1.86 (384 w) and 3.11 (640 w); Chromium picks by their geometric mean (2.41 < 2.625 → 640 w,
+  which is what CI fetched). The honest 178 px gives 2.16 and 3.60, mean 2.79 > 2.625 → 384 w, so
+  the honest string should bring the four trending heroes from ~21–28 KB to their 384 w files
+  (about half). Lighthouse (DPR 1.75) already picks 384 w today. Options: **(a)** a `trending`
+  (or `rowCard`) UI slot in `slots.ts` with the honest string and the `grid` crop mapping —
+  keeps "per slot, never per call site"; **(b)** an optional `sizes` override on `MediaAsset`
+  passed by `TrendingRow` — smallest diff, breaks that rule; **(c)** make `grid` itself honest —
+  moves every listing page's picks and baselines too. Recommendation: **(a)**. Needs the fence to
+  include `src/modules/ui/media/slots.ts` (+ its seed↔UI mapping and `tests/unit/ui-media.test.ts`,
+  which pins the slot table) and `TrendingRow.tsx`.
 - **2026-10-03 — every `.env.local` on this machine holds the old `*.r2.dev` value of
   `R2_PUBLIC_BASE_URL` (founder action, not blocking).** `pnpm media:upload` refuses to run unless
   it equals `MEDIA_ORIGIN` (spec 006 §14 A8 clause 7). The bucket is the same one behind
@@ -157,6 +187,16 @@ here.
   `97b7a934`, ready, `ci:full` (toggled after the rebase). CI run 37115494615: every spine job,
   `build`, `container`, `a11y`, `preview` and `lighthouse` green; `e2e` red (four photo pins and
   the mobile image budget), `visual` red (25 baselines). Budget miss escalated; stopped there.
+- 2026-10-03 (rulings round): e2e pins set to the real values — `country-category.spec.ts` 12
+  card images / 11 lazy, `country-shop.spec.ts` 12 / 11, `country-occasion.spec.ts` 1 nomination
+  of 7 / 6 lazy (case renamed, kept); `product-page.spec.ts`'s no-photo case now reads
+  `/dev/components`, which already renders the PDP `Gallery` with `PRODUCT_GALLERY_PLACEHOLDER`
+  (gallery-scoped: no `<img>`, no `<picture>`/`<source>`, no honesty label, the caption present;
+  the page's one deliberate `priority` image elsewhere makes a whole-`<head>` zero untrue there).
+  Not run locally (browser suite, CI's). **`sizes` not changed — see Escalations:** the trending
+  card's `sizes` is the shared `grid` slot's (`src/modules/ui/media/slots.ts`), also the listing
+  cards' (`CARD_MEDIA_SLOT`), and `MediaAsset` takes no per-call `sizes`, so an honest trending
+  string needs a mechanism outside the fence. Visual baselines and `ci:full` wait on it.
 
 ## Result
 
