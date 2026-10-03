@@ -123,7 +123,13 @@ export const PHASE0_SLOT_WIDTHS: Readonly<
 > = {
   hero: [384, 640, 828, 1080, 1200],
   occasionTile: [384],
-  productHero: [384, 640, 828],
+  // 480 since TASK-168 (orchestrator ruling, 2026-10-03; spec 006 §2.5 amendment to follow):
+  // Chromium takes the smallest rung whose density is ≥ the device pixel ratio, so the home's
+  // 178 px trending card on a 412 px, DPR 2.625 phone needs 467 device px and, with 384 → 640 as
+  // the only step, fetched 640 w and put the locale homes over AC-15's 204 800 B. 480 w is the
+  // honest rung for that box (480 / 178 = 2.70 ≥ 2.625). Same crop, same encoders, inside the
+  // 1122 px and 784 px originals, so nothing is enlarged.
+  productHero: [384, 480, 640, 828],
   productDetail: [384],
   // No Phase-0 asset uses either slot (`seed/data/media.json` holds productHero, productDetail,
   // occasionTile and hero assets only), so their ladders are the widths they would
