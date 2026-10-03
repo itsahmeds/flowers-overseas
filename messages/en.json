@@ -454,8 +454,8 @@
     },
     "trending": {
       "eyebrow": "Trending now",
-      "heading": "Most sent this week",
-      "basis": "Ranking is by real orders in the last 7 days and switches on once we have them; until then this row shows our florists' own picks and says so."
+      "heading": "Popular choices",
+      "basis": "Our picks until real orders start."
     },
     "dates": {
       "eyebrow": "Coming up in Poland",
