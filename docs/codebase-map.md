@@ -14,7 +14,7 @@ task actually touches.
 |---|---|---|---|
 | `admin` | Public barrel for `admin` (admin queries and actions) | spec 012 | — |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2 + the gated GA4 tag; GA4 event… | spec 004, 023 | `unit/consent-bootstrap.test.tsx` |
-| `catalog` | The only import path into the catalogue and pricing module (spec 005 §2, §5.2;… | spec 005 | `contract/catalog-static-providers.test.ts`, `contract/support/catalog-provider-contract.ts`, `unit/catalog-availability.test.ts` +47 |
+| `catalog` | The only import path into the catalogue and pricing module (spec 005 §2, §5.2;… | spec 005 | `contract/catalog-static-providers.test.ts`, `contract/support/catalog-provider-contract.ts`, `unit/catalog-availability.test.ts` +48 |
 | `customers` | Public barrel for `customers` (customers, recipients, consent) | spec 019 | — |
 | `geo` | The only import path into the geo module (spec 007 §5.2; TASK-087) | spec 007, 002, 009 | `contract/seo-schema-fixtures.test.ts`, `unit/cache-cloudflare.test.ts`, `unit/catalog-country-occasion.test.ts` +23 |
 | `i18n` | The only import path for the i18n module (spec 003 §5.2, AC-3; TASK-034) | spec 003 | `contract/seo-schema-fixtures.test.ts`, `e2e/dev-components.spec.ts`, `e2e/shop-reachability.spec.ts` +59 |
@@ -66,11 +66,13 @@ task actually touches.
 | `(dev)/dev/components/page.tsx` | `/dev/components` — the component gallery (spec 004 §2 "Component gallery —… | spec 004 |
 | `(dev)/dev/components/product.ts` | The gallery's fixtures for spec 009's six product-page primitives (TASK-126),… | spec 009 |
 | `(dev)/layout.tsx` | Document layout for the `(dev)` route group — today only `/dev/components`… | spec 004 |
+| `[locale]/%5Fquery/[segment]/[child]/page.tsx` | `/{locale}/_query/{segment}/{child}` — the **parameter route**: the one route… | spec 008 |
 | `[locale]/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/{segment}/{child}/{grandchild}` — **one route file for one URL… | spec 008 |
 | `[locale]/[segment]/[child]/page.tsx` | `/{locale}/{segment}/{child}` — **one route file for one URL depth** (spec 008… | spec 008 |
 | `[locale]/[segment]/page.tsx` | `/{locale}/{segment}` — **one route file for one URL depth** (spec 008 §14… | spec 008 |
 | `[locale]/boom/BoomIsland.tsx` | The throw that reaches `src/app/[locale]/error.tsx` (spec 004 AC-26, AC-27;… | spec 004 |
 | `[locale]/boom/page.tsx` | A route that throws on purpose: the localised 500 boundary, as an auditable… | spec 004 |
+| `[locale]/country-shop-root.tsx` | The country shop root's head and body, **once**, for the two route files that… | spec 007 |
 | `[locale]/error.tsx` | Localised 500 boundary (spec 003 §5.3; TASK-034, rewired by TASK-085) | spec 003 |
 | `[locale]/layout.tsx` | The document layout for every localised URL (spec 003 §2, §5.3, §5.4, AC-6,… | spec 003 |
 | `[locale]/page.tsx` | `/{locale}` placeholder home (spec 003 §5.3, §5.4; TASK-034, extended by… | spec 003 |
@@ -136,7 +138,7 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 226 |
+| `tests/unit/` | 227 |
 | `tests/integration/` | 10 |
 | `tests/contract/` | 6 |
 | `tests/e2e/` | 36 |

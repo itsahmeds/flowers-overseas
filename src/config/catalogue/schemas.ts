@@ -206,6 +206,23 @@ export const facetValues: Readonly<Record<FacetName, readonly string[]>> = {
   style: styles,
 };
 
+/**
+ * The query-parameter name of each facet: `plan/10` §1.1's key, kebab-cased, which is the form
+ * `plan/02` §7's own example uses (`?colour=red`). One map, so no caller string-builds a facet
+ * parameter and the URL vocabulary cannot drift from the taxonomy. It lives here, beside
+ * `facetNames`, and not in `src/modules/catalog/read.ts` (its reader) because `next.config.ts`
+ * reads it too: the listing rewrite sends a request carrying any of these names to the parameter
+ * route (`src/lib/listing-rewrites.ts`; TASK-170), and config cannot import a module.
+ */
+export const FACET_PARAMETERS: Readonly<Record<FacetName, string>> = {
+  productType: "product-type",
+  occasion: "occasion",
+  flowerType: "flower-type",
+  colour: "colour",
+  priceTier: "price-tier",
+  style: "style",
+};
+
 /* -------------------------------------------------------------------------- */
 /* Message keys: a facet value is a key, and this is the only builder.        */
 /* -------------------------------------------------------------------------- */

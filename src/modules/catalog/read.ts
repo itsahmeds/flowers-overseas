@@ -40,6 +40,7 @@ import {
   type CategoryData,
   type FacetName,
   type OccasionData,
+  FACET_PARAMETERS,
   facetNames,
   facetValues,
   scopedFlagKey,
@@ -358,20 +359,6 @@ export async function countProductsFor(
 /* -------------------------------------------------------------------------- */
 /* Facets (plan/02 §7).                                                       */
 /* -------------------------------------------------------------------------- */
-
-/**
- * The query-parameter name of each facet: `plan/10` §1.1's key, kebab-cased, which is the form
- * `plan/02` §7's own example uses (`?colour=red`). One map, so no caller string-builds a facet
- * parameter and the URL vocabulary cannot drift from the taxonomy.
- */
-const FACET_PARAMETERS: Readonly<Record<FacetName, string>> = {
-  productType: "product-type",
-  occasion: "occasion",
-  flowerType: "flower-type",
-  colour: "colour",
-  priceTier: "price-tier",
-  style: "style",
-};
 
 const PARAMETER_FACETS: ReadonlyMap<string, FacetName> = new Map(
   facetNames.map((facet) => [FACET_PARAMETERS[facet], facet]),

@@ -22,6 +22,13 @@
  * day while the origin re-renders, and the invalidation path is unchanged — `revalidateTag` plus
  * the URL purge that `src/lib/cache.ts` already owns (§5.4's "the only invalidation seam").
  *
+ * **Since TASK-170** the per-request render is the parameter route's alone: `next.config.ts`
+ * rewrites a shop-root request carrying `?page=`, `?sort=` or a facet to
+ * `src/app/[locale]/%5Fquery/[segment]/[child]/page.tsx` (`src/lib/listing-rewrites.ts`), and the
+ * bare URL is prebuilt ISR again. Header sources match the address the visitor asked for, before
+ * the rewrite, so this rule still covers both; on the bare URL it replaces Next's ISR header with
+ * the same hour, which is §5.4's value for the page type.
+ *
  * ## What the sources match, and what they must not
  *
  * One rule per launch locale, naming that locale's **own** `shopCategory` segment

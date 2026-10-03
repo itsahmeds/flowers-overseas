@@ -209,7 +209,6 @@ test.describe("the parameter policy (AC-15, T-15)", () => {
       "sort=default",
       "sort=banana",
       "colour=red",
-      "utm_source=newsletter",
       "page=2&sort=price-desc",
     ]) {
       const { status, html } = await body(request, `${SHOP}?${query}`);
@@ -217,6 +216,31 @@ test.describe("the parameter policy (AC-15, T-15)", () => {
       expect(robotsOf(html), query).toBe("noindex,follow");
       expect(canonicalOf(html), query).toMatch(/\/en\/poland\/flowers$/u);
       expect(canonicalOf(html), query).not.toContain("sort=");
+    }
+  });
+
+  test("a campaign or click-id parameter gets the prebuilt bare document, byte for byte (TASK-170)", async ({
+    request,
+  }) => {
+    // Not `noindex,follow` because "parameterised": in Phase 0 the bare URL is `noindex,follow`
+    // too, so that assertion could not tell the two answers apart. The ruled behaviour (spec 007
+    // §14 A5's canonical stripping, TASK-170) is that no listing key means **no rewrite**: the
+    // visitor gets the prebuilt document of the bare URL — its robots, its canonical, its bytes.
+    const bare = await body(request, SHOP);
+    expect(bare.status).toBe(200);
+    for (const query of ["utm_source=newsletter", "gclid=abc123"]) {
+      const { status, html } = await body(request, `${SHOP}?${query}`);
+      expect(status, query).toBe(200);
+      expect(robotsOf(html), query).toBe(robotsOf(bare.html));
+      expect(canonicalOf(html), query).toBe(canonicalOf(bare.html));
+      expect(canonicalOf(html), query).toMatch(/\/en\/poland\/flowers$/u);
+      // What tells "served the prebuilt page" from "rendered it again": a per-request render's
+      // RSC payload carries the request's query and its own route tree, so its bytes differ
+      // (measured on the TASK-170 build: `?colour=red` differs from the bare document, `?utm_source`
+      // and `?gclid` do not).
+      expect(html === bare.html, `${query}: the bare URL's own bytes`).toBe(
+        true,
+      );
     }
   });
 
@@ -252,6 +276,77 @@ test.describe("the parameter policy (AC-15, T-15)", () => {
         .evaluateAll((links) => links.length);
       expect(paged, url).toBe(inNav);
     }
+  });
+});
+
+/**
+ * The internal parameter route's robots header (`/review 143`, TASK-170;
+ * `src/lib/listing-rewrites.ts`). A request typed straight at `/{locale}/_query/…` with a listing
+ * key renders the listing with a 200, so it carries `X-Robots-Tag: noindex, nofollow`; a request
+ * rewritten there from the real address keeps that address, which the header source does not
+ * match. `nofollow` is the marker: outside production every response already carries the
+ * environment's bare `noindex`, so `noindex` alone could not show which rule answered.
+ */
+test.describe("the parameter route is never indexable at its own address (TASK-170)", () => {
+  test("a direct hit on `/_query/…` carries `X-Robots-Tag: noindex, nofollow`", async ({
+    request,
+  }) => {
+    const response = await request.get("/en/_query/poland/flowers?page=2", {
+      maxRedirects: 0,
+    });
+    expect(response.status()).toBe(200);
+    expect(response.headers()["x-robots-tag"] ?? "").toMatch(
+      /\bnoindex\b.*\bnofollow\b/u,
+    );
+  });
+
+  test("the same page reached through the rewrite does not", async ({
+    request,
+  }) => {
+    for (const url of [`${SHOP}?page=2`, `${SHOP}?sort=price-asc`, SHOP]) {
+      const response = await request.get(url, { maxRedirects: 0 });
+      expect(response.status(), url).toBe(200);
+      expect(response.headers()["x-robots-tag"] ?? "", url).not.toContain(
+        "nofollow",
+      );
+    }
+  });
+});
+
+/**
+ * The pseudo-locales' parameters (`/break 143` hole 2; spec 008 AC-10, T-26). Where a deployment
+ * routes `ar-XB` (CI, previews), its shop root is prebuilt like a launch locale's, so its query
+ * must reach the parameter route too — the rewrite is built from the same locale set as the
+ * prebuilt pages (`src/lib/listing-rewrites.ts`). Skipped where the pseudo-locales are not routed.
+ */
+test.describe("a routed pseudo-locale honours the listing parameters (AC-10, TASK-170)", () => {
+  const PSEUDO_SHOP = "/ar-XB/poland/flowers";
+
+  test("`?page=2` is page 2, `?page=99` is a 404 and `?page=1` redirects to the bare URL", async ({
+    request,
+  }) => {
+    const bare = await request.get(PSEUDO_SHOP, { maxRedirects: 0 });
+    test.skip(bare.status() === 404, "pseudo-locales are not routed here");
+    expect(bare.status()).toBe(200);
+
+    const second = await body(request, `${PSEUDO_SHOP}?page=2`);
+    expect(second.status).toBe(200);
+    // Page 2 is self-canonical: the bare page's own canonical with `?page=2` (the canonical rule
+    // writes the locale prefix in lowercase, `/ar-xb/…`, so it is compared, not retyped).
+    const bareCanonical = canonicalOf(await bare.text());
+    expect(bareCanonical).toBeDefined();
+    expect(canonicalOf(second.html)).toBe(`${bareCanonical ?? ""}?page=2`);
+
+    const past = await request.get(`${PSEUDO_SHOP}?page=99`, {
+      maxRedirects: 0,
+    });
+    expect(past.status()).toBe(404);
+
+    const first = await request.get(`${PSEUDO_SHOP}?page=1`, {
+      maxRedirects: 0,
+    });
+    expect([301, 308]).toContain(first.status());
+    expect(first.headers()["location"]).toBe(PSEUDO_SHOP);
   });
 });
 
