@@ -38,11 +38,22 @@ _None._
 
 ## Escalations
 
-_None recorded._
+- **E-1 (2026-10-03, implementer): a `preview` chip still prints the cutoff time after 14:00 Warsaw.**
+  `src/modules/geo/delivery/calendar.ts` `reasonFor()` gives today's date
+  `delivery.reason.pastCutoff` once the authored cutoff has passed, in `preview` as in `live`, and
+  `DateChip` prints it as "Ordering closed at 14:00 in Warsaw". Probed with `productView()` for
+  PL / FO-BQ-001 at 15:30 Warsaw on 1 March 2027: state `preview`, first date `2027-03-01`
+  `pastCutoff`, second `notOrderable`. Amended AC-8 says "No `{time}` value appears in the
+  picker". The work order fences off the cutoff logic and `DateChip`, so this PR does not change
+  it. The time-free assertions here (unit at 09:00, e2e on the `data-fo-cutoff` marker) do not
+  depend on the clock. **Question:** in `preview`, should a past-cutoff day read the shared
+  `notOrderable` sentence (a `geo` change: `pastCutoff` becomes `live`-only), or keep its
+  calendar reason with the time? Either way it is a new task or an amendment to this one.
 
 ## Progress
 
-_Not started._
+- 2026-10-03 — picker, catalogues, meta, artboards and tests done; mutations red; pushed
+  `9ece7dd2`, draft PR #151; `visual:baselines` label added for `dev-components-desktop`.
 
 ## Result
 
