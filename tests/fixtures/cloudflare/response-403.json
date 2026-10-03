@@ -1,0 +1,15 @@
+{
+  "$comment": "Cloudflare's answer to a token without the endpoint's scope (TASK-100, T-25).",
+  "status": 403,
+  "body": {
+    "success": false,
+    "errors": [
+      {
+        "code": 10000,
+        "message": "Authentication error"
+      }
+    ],
+    "messages": [],
+    "result": null
+  }
+}

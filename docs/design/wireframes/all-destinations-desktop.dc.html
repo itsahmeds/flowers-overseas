@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <script src="./support.js"></script>
@@ -7,163 +7,723 @@
 <body>
 <x-dc>
 <helmet>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,400,100;1,9..144,300,100&family=Alegreya+Sans:wght@400;700&family=Caveat:wght@500&family=Newsreader:opsz,wght@6..72,500&display=swap">
   <style>
 :root{
-  --color-paper: oklch(99.3% 0.002 90);
-  --color-paper-2: oklch(97.2% 0.004 90);
-  --color-paper-3: oklch(94.5% 0.005 90);
-  --color-ink: oklch(19% 0.01 250);
-  --color-ink-2: oklch(36% 0.01 250);
-  --color-ink-3: oklch(52% 0.008 250);
-  --color-rule: oklch(90% 0.004 250);
-  --color-accent: oklch(42% 0.10 155);
-  --color-accent-strong: oklch(34% 0.09 155);
-  --color-accent-ink: oklch(99% 0.002 90);
-  --color-success: oklch(42% 0.10 150);
-  --color-warning: oklch(45% 0.12 75);
-  --color-danger: oklch(45% 0.17 25);
-  --color-danger-strong: oklch(38% 0.15 25);
-  --color-photo-stop-1: oklch(93% 0.02 120);
-  --color-photo-stop-2: oklch(88% 0.03 140);
-  --color-photo-stop-3: oklch(80% 0.04 150);
-  --color-photo-ink: oklch(40% 0.03 150);
-  --color-photo: linear-gradient(160deg, var(--color-photo-stop-1) 0%, var(--color-photo-stop-2) 45%, var(--color-photo-stop-3) 100%);
-  --font-display: "Newsreader", "Iowan Old Style", Georgia, "Times New Roman", serif;
-  --font-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
-  --text-display: 68px; --text-display-s: 42px; --text-2xl: 34px; --text-xl: 24px; --text-lg: 18px; --text-md: 15px; --text-sm: 13px; --text-xs: 11px;
-  --space-xs: 4px; --space-sm: 8px; --space-md: 16px; --space-lg: 24px; --space-xl: 40px; --space-2xl: 72px; --space-3xl: 128px;
-  --radius-sm: 2px; --radius-md: 4px; --radius-full: 9999px;
-  --measure: 68ch;
+  --color-paper: oklch(99.8% 0.002 85);
+  --color-paper-2: oklch(98.9% 0.006 85);
+  --color-paper-3: oklch(96.6% 0.01 85);
+  --color-card: oklch(100% 0 0);
+  --color-ink: oklch(25% 0.06 285);
+  --color-ink-2: oklch(42% 0.05 285);
+  --color-ink-3: oklch(50% 0.04 285);
+  --color-rule: oklch(89% 0.02 285);
+  --color-accent: oklch(54% 0.2 30);
+  --color-accent-strong: oklch(47% 0.19 30);
+  --color-accent-ink: oklch(100% 0 0);
+  --color-sky: oklch(48% 0.16 262);
+  --color-sky-strong: oklch(40% 0.15 262);
+  --color-sun: oklch(87% 0.15 92);
+  --color-stem: oklch(44% 0.1 155);
+  --color-blush: oklch(93.5% 0.04 30);
+  --color-butter: oklch(96.5% 0.055 95);
+  --color-sage-wash: oklch(94% 0.03 250);
+  --color-leaf-wash: oklch(94.5% 0.04 155);
+  --color-logo-ink: oklch(19% 0.01 250);
+  --color-logo-accent: oklch(42% 0.1 155);
+  --color-shade: oklch(25% 0.06 285 / 0.12);
+  --color-scrim: oklch(25% 0.06 285 / 0.45);
+  --color-field-edge: oklch(62% 0.035 285);
+  --color-success: oklch(44% 0.1 155);
+  --color-warning: oklch(48% 0.11 75);
+  --color-danger: oklch(47% 0.19 30);
+  --color-danger-strong: oklch(40% 0.17 30);
+  --color-on-success: var(--color-accent-ink);
+  --color-on-warning: var(--color-accent-ink);
+  --color-on-danger: var(--color-accent-ink);
+  --color-photo-stop-1: oklch(97% 0.012 85);
+  --color-photo-stop-2: oklch(94.5% 0.02 60);
+  --color-photo-stop-3: oklch(91.5% 0.03 40);
+  --color-photo-ink: oklch(42% 0.05 285);
+  --color-photo: linear-gradient(160deg, var(--color-photo-stop-1) 0%, var(--color-photo-stop-2) 50%, var(--color-photo-stop-3) 100%);
+  --color-surface: var(--color-paper);
+  --color-surface-raised: var(--color-paper-2);
+  --color-surface-muted: var(--color-paper-3);
+  --color-surface-card: var(--color-card);
+  --color-surface-inverse: var(--color-ink);
+  --color-ink-muted: var(--color-ink-2);
+  --color-ink-subtle: var(--color-ink-3);
+  --color-on-inverse: var(--color-paper);
+  --color-on-inverse-accent: var(--color-sun);
+  --color-brand: var(--color-accent);
+  --color-on-brand: var(--color-accent-ink);
+  --color-on-accent: var(--color-accent-ink);
+  --color-link: var(--color-sky);
+  --color-link-strong: var(--color-sky-strong);
+  --color-eyebrow: var(--color-sky);
+  --color-mark: var(--color-sky);
+  --color-selected: var(--color-sky);
+  --color-on-selected: var(--color-card);
+  --color-included: var(--color-stem);
+  --color-border: var(--color-rule);
+  --color-border-strong: var(--color-ink-3);
+  --color-border-emphasis: var(--color-ink);
+  --color-focus: var(--color-accent);
+  --airmail-edge: repeating-linear-gradient(135deg, var(--color-accent) 0 12px, var(--color-card) 12px 18px, var(--color-sky) 18px 30px, var(--color-card) 30px 36px);
+  --airmail-edge-size: 7px;
+  --airmail-edge-size-footer: 9px;
+  --letter-lines: repeating-linear-gradient(to bottom, transparent 0 47px, var(--color-rule) 47px 48px);
+  --card-lines: repeating-linear-gradient(to bottom, transparent 0 37px, var(--color-rule) 37px 38px);
+  --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --font-body: "Alegreya Sans", "Gill Sans", "Segoe UI", system-ui, sans-serif;
+  --font-hand: "Caveat", "Bradley Hand", "Segoe Print", cursive;
+  --font-logo: "Newsreader", Georgia, serif;
+  --font-weight-display-hero: 400;
+  --font-weight-display: 400;
+  --font-weight-display-em: 300;
+  --font-weight-body: 400;
+  --font-weight-medium: 400;
+  --font-weight-bold: 700;
+  --font-weight-hand: 500;
+  --font-variation-display: "SOFT" 100;
+  --font-variation-display-hero: "SOFT" 100, "opsz" 144;
+  --text-hero: 90px;
+  --text-hero-s: 50px;
+  --text-display: 84px;
+  --text-display-s: 42px;
+  --text-title: 68px;
+  --text-title-s: 44px;
+  --text-3xl: 54px;
+  --text-3xl-s: 32px;
+  --text-2xl: 44px;
+  --text-2xl-s: 30px;
+  --text-stamp: 72px;
+  --text-xl: 34px;
+  --text-lg: 27px;
+  --text-lg-s: 23px;
+  --text-hand: 31px;
+  --text-md: 23px;
+  --text-h3: 21px;
+  --text-h3-s: 18px;
+  --text-body: 18px;
+  --text-body-s: 17px;
+  --text-ui: 16px;
+  --text-sm: 15px;
+  --text-fine: 14px;
+  --text-xs: 13px;
+  --line-height-hero: 0.96;
+  --line-height-display: 0.98;
+  --line-height-heading: 1.04;
+  --line-height-title: 1.2;
+  --line-height-body: 1.55;
+  --line-height-tight: 1.4;
+  --tracking-hero: -0.03em;
+  --tracking-display: -0.015em;
+  --tracking-label: 0.14em;
+  --tracking-wordmark: 0.04em;
+  --measure: 58ch;
+  --measure-lede: 46ch;
+  --text-hero-fluid: clamp(50px, 6.2vw, 90px);
+  --text-display-fluid: clamp(42px, 6vw, 84px);
+  --text-title-fluid: clamp(44px, 5vw, 68px);
+  --text-3xl-fluid: clamp(32px, 4.2vw, 54px);
+  --text-2xl-fluid: clamp(30px, 3.4vw, 44px);
+  --text-lede-fluid: clamp(18px, 1.5vw, 21px);
+  --section-fluid: clamp(64px, 9vw, 128px);
+  --gutter-fluid: clamp(20px, 4vw, 56px);
+  --space-2xs: 2px;
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-sm2: 12px;
+  --space-md: 16px;
+  --space-md2: 20px;
+  --space-lg: 24px;
+  --space-lg2: 32px;
+  --space-xl: 40px;
+  --space-xl2: 56px;
+  --space-section-s: 64px;
+  --space-2xl: 72px;
+  --space-3xl: 128px;
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 40px;
+  --spacing-2xl: 72px;
+  --spacing-3xl: 128px;
+  --page-max: 1328px;
+  --gutter: 56px;
+  --gutter-s: 20px;
+  --target-min: 44px;
+  --control-md: 54px;
+  --control-sm: 44px;
+  --control-send: 60px;
+  --field-height: 46px;
+  --radius-none: 0px;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-letter: 6px;
+  --radius-field: 10px;
+  --radius-chip: 12px;
+  --radius-photo-s: 14px;
+  --radius-photo: 18px;
+  --radius-hero: 28px;
+  --radius-full: 9999px;
+  --radius-arch: 999px 999px 14px 14px;
+  --shadow-xs: 0 1px 2px var(--color-shade);
+  --shadow-sm: 0 1px 2px var(--color-shade), 0 2px 8px var(--color-shade);
+  --shadow-md: 0 2px 4px var(--color-shade), 0 8px 24px var(--color-shade);
+  --shadow-letter: 0 1px 1px var(--color-shade), 0 22px 44px -12px var(--color-shade);
+  --shadow-paper: 0 2px 2px var(--color-shade), 0 22px 40px -16px var(--color-shade);
+  --shadow-stamp: 0 8px 14px var(--color-shade);
+  --shadow-sticky: 0 -10px 24px -14px var(--color-shade);
   --rule: 1px solid var(--color-rule);
+  --rule-field: 1.5px solid var(--color-field-edge);
+  --focus-ring: 2.5px solid var(--color-focus);
+  --focus-offset: 3px;
+  --tilt-letter: -0.8deg;
+  --tilt-letter-s: -0.6deg;
+  --tilt-ps: 0.8deg;
+  --tilt-card: -2.5deg;
+  --tilt-postmark: -9deg;
+  --tilt-signoff: -1.5deg;
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+  --duration-photo: 700ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0.13, 1);
+  --ease-emphasised: cubic-bezier(0.3, 0, 0, 1);
+  --ease-photo: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --layer-header: 100;
+  --layer-banner: 200;
+  --layer-overlay: 300;
 }
-    body { margin: 0; font-family: var(--font-body); color: var(--color-ink); background: var(--color-paper); -webkit-font-smoothing: antialiased; }
-    a { color: var(--color-ink); text-decoration: none; } a:hover { color: var(--color-accent); }
-    .display { font-family: var(--font-display); font-weight: 500; letter-spacing: -0.015em; }
-    .label { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-ink-3); }
-    .photo { background: var(--color-photo); display: flex; align-items: flex-end; padding: var(--space-md); color: var(--color-photo-ink); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; }
-    .field { display: flex; flex-direction: column; gap: 6px; }
-    .field span.v { min-height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-bottom: 1px solid var(--color-ink); font-size: var(--text-md); color: var(--color-ink); }
-    .btn { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 26px; background: var(--color-ink); color: var(--color-accent-ink); font-weight: 500; font-size: var(--text-md); letter-spacing: 0.02em; border-radius: var(--radius-sm); }
-    .btn.accent { background: var(--color-accent); }
-    .btn.secondary { background: var(--color-paper); color: var(--color-ink); border: 1px solid var(--color-ink-3); }
-    .btn.sm { min-height: 44px; padding: 0 16px; font-size: var(--text-sm); }
-    .price { font-variant-numeric: tabular-nums; }
-    .ph { display: inline-block; min-width: 56px; height: 14px; background: var(--color-paper-3); border-radius: 2px; vertical-align: middle; }
-    .chip { display: inline-flex; align-items: center; gap: var(--space-xs); border: 1px solid var(--color-ink-3); border-radius: var(--radius-sm); padding: var(--space-sm) var(--space-sm); font-size: var(--text-sm); }
-    .chip.accent { border-color: var(--color-accent); color: var(--color-accent); }
-    .chip.muted { border-color: transparent; background: var(--color-paper-3); color: var(--color-ink-2); }
-    .note { border: 1px solid var(--color-ink-3); border-radius: var(--radius-sm); background: var(--color-paper-2); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; font-size: var(--text-sm); line-height: 1.55; }
-    .note dl { margin: 0; display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 4px var(--space-md); font-size: var(--text-sm); }
-    .note dt { color: var(--color-ink-3); font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding-block-start: 2px; }
-    .note dd { margin: 0; color: var(--color-ink-2); }
-    .slot { color: var(--color-ink-3); font-style: italic; }
-    .stub { border: 1px dashed var(--color-ink-3); border-radius: var(--radius-sm); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; color: var(--color-ink-2); font-size: var(--text-sm); }
-    .stub b { font-weight: 600; color: var(--color-ink); font-size: var(--text-sm); }
-    .sec { display: flex; flex-direction: column; gap: var(--space-md); }
-    table.spec { border-collapse: collapse; width: 100%; font-size: var(--text-sm); }
-    table.spec th, table.spec td { text-align: start; border-block-end: var(--rule); padding: 8px 12px; vertical-align: top; }
-    table.spec th { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-3); }
-    .grid { display: grid; gap: var(--space-lg); }
-    .card { display: flex; flex-direction: column; gap: var(--space-sm); }
-    .card .nm { font-family: var(--font-display); font-weight: 500; font-size: var(--text-lg); }
-    .tile { border: var(--rule); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; }
-    .kv { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px var(--space-md); font-size: var(--text-sm); }
-    .kv > span:nth-child(even) { text-align: end; font-variant-numeric: tabular-nums; }
-    .faq { border-block-start: var(--rule); padding-block: var(--space-md); display: flex; flex-direction: column; gap: 6px; }
-    .faq b { font-weight: 600; font-size: var(--text-md); }
-    .faq span { font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.6; }
-    .steprow { display: flex; gap: var(--space-md); font-size: var(--text-sm); }
-    .steprow > span { flex: 1; border-block-start: 2px solid var(--color-rule); padding-block-start: var(--space-sm); color: var(--color-ink-3); }
-    .steprow > span.on { border-block-start-color: var(--color-ink); color: var(--color-ink); font-weight: 600; }
-    code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: var(--text-xs); color: var(--color-ink-2); }
-    .prose { max-width: var(--measure); font-size: var(--text-md); line-height: 1.6; color: var(--color-ink-2); }
-    .facts { margin: 0; display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 8px var(--space-md); font-size: var(--text-sm); }
-    .facts dt { color: var(--color-ink-3); font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding-block-start: 3px; }
-    .facts dd { margin: 0; color: var(--color-ink); line-height: 1.5; }
-    .facts dd.none { color: var(--color-ink-3); }
-    table.cal { border-collapse: collapse; width: 100%; font-size: var(--text-sm); }
-    table.cal caption { text-align: start; font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-3); padding-block-end: var(--space-sm); }
-    table.cal th, table.cal td { text-align: start; border-block-end: var(--rule); padding: 8px 10px; vertical-align: top; }
-    table.cal thead th { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-3); }
-    .faq h3 { margin: 0; font-weight: 600; font-size: var(--text-md); }
-    .faq p { margin: 0; font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.6; }
+
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--color-paper-3); }
+.fo { font-family: var(--font-body); font-size: var(--text-body); line-height: var(--line-height-body); color: var(--color-ink); background: var(--color-paper); -webkit-font-smoothing: antialiased; }
+.fo.M { font-size: var(--text-body-s); }
+:where(.fo) :where(p, ul, ol, dl, dd, figure, blockquote) { margin: 0; }
+:where(.fo) :where(ul, ol) { padding: 0; list-style: none; }
+:where(.fo) a { color: inherit; }
+.fo h1, .fo h2, .fo h3 { margin: 0; font-family: var(--font-display); font-weight: var(--font-weight-display); font-variation-settings: var(--font-variation-display); text-wrap: balance; }
+.fo h1 em, .fo h2 em { font-style: italic; font-weight: var(--font-weight-display-em); color: var(--color-accent); }
+:where(.fo) :where(button, select, input, textarea) { font: inherit; color: inherit; }
+.vh { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.wrap { padding-inline: var(--gutter); }
+.M .wrap { padding-inline: var(--gutter-s); }
+.num { font-variant-numeric: lining-nums tabular-nums; }
+
+/* ---------- annotation: the specification block (not page) ---------- */
+.note { margin: var(--space-lg) var(--gutter) var(--space-lg); padding: var(--space-lg); background: var(--color-paper-3); border: 1px dashed var(--color-ink-3); border-radius: var(--radius-letter); font-family: var(--font-body); font-size: var(--text-fine); line-height: 1.5; color: var(--color-ink-2); }
+.M .note { margin-inline: var(--space-sm2); padding: var(--space-md); font-size: var(--text-xs); }
+.note .nl { display: block; font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink); margin-block-end: var(--space-sm2); }
+.note dl { display: grid; grid-template-columns: 168px minmax(0, 1fr); gap: var(--space-sm) var(--space-md); }
+.M .note dl { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+.M .note dd { margin-block-end: var(--space-sm); }
+.note dt { font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-3); padding-block-start: 2px; }
+.note dd { margin: 0; }
+.note b { color: var(--color-ink); font-weight: var(--font-weight-bold); }
+.note code, .stub code, .slot code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.92em; color: var(--color-ink); background: var(--color-card); border-radius: var(--radius-md); padding-inline: 3px; }
+.note ul { display: grid; gap: 2px; }
+.note li::before { content: "· "; color: var(--color-ink-3); }
+
+/* the band that separates the page from its drawn states */
+.state-band { margin-block-start: var(--space-xl); padding: var(--space-xl) var(--gutter) var(--space-2xl); background: var(--color-paper-3); border-block-start: 1px dashed var(--color-ink-3); }
+.M .state-band { padding: var(--space-lg) var(--gutter-s) var(--space-xl); }
+.state-band > .nl { display: block; font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink-2); margin-block-end: var(--space-lg); }
+.states { display: grid; gap: var(--space-lg); }
+.D .states.c2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.D .states.c3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.state { background: var(--color-paper); border-radius: var(--radius-field); box-shadow: inset 0 0 0 1px var(--color-rule); padding: var(--space-lg); display: grid; gap: var(--space-md); align-content: start; }
+.M .state { padding: var(--space-md); }
+.state-tag { justify-self: start; font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink); background: var(--color-sage-wash); border-radius: var(--radius-full); padding: 3px 12px; }
+.stub { font-size: var(--text-fine); color: var(--color-ink-2); line-height: 1.5; }
+.stub b { color: var(--color-ink); }
+.slot { display: inline; font-style: italic; color: var(--color-ink-2); background: var(--color-butter); box-shadow: inset 0 -1.5px 0 var(--color-warning); padding-inline: 3px; border-radius: var(--radius-sm); }
+
+/* ---------- text ---------- */
+.eyebrow { font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-eyebrow); margin-block-end: 14px; }
+.lede { font-size: 21px; line-height: 1.5; color: var(--color-ink-2); max-inline-size: 40ch; }
+.M .lede { font-size: var(--text-body); }
+.hand { font-family: var(--font-display); font-style: italic; font-weight: var(--font-weight-display-em); font-variation-settings: var(--font-variation-display); color: var(--color-accent); line-height: 1.15; }
+.small { font-size: var(--text-sm); color: var(--color-ink-2); line-height: var(--line-height-tight); }
+.fine { font-size: var(--text-fine); color: var(--color-ink-3); }
+.prose { font-size: 19px; color: var(--color-ink-2); max-inline-size: var(--measure); display: grid; gap: var(--space-md); }
+.M .prose { font-size: var(--text-body-s); }
+.h2 { font-size: var(--text-3xl); line-height: var(--line-height-heading); letter-spacing: var(--tracking-display); }
+.M .h2 { font-size: var(--text-3xl-s); }
+.h2s { font-size: var(--text-2xl); line-height: 1.08; letter-spacing: var(--tracking-display); }
+.M .h2s { font-size: var(--text-2xl-s); }
+.h1d { font-size: var(--text-display); line-height: var(--line-height-display); letter-spacing: var(--tracking-hero); font-weight: var(--font-weight-display-hero) !important; font-variation-settings: var(--font-variation-display-hero) !important; }
+.M .h1d { font-size: var(--text-display-s); }
+.h1t { font-size: var(--text-title); line-height: var(--line-height-display); letter-spacing: -0.025em; font-weight: var(--font-weight-display-hero) !important; font-variation-settings: var(--font-variation-display-hero) !important; }
+.M .h1t { font-size: var(--text-title-s); }
+.h3 { font-size: var(--text-md); line-height: var(--line-height-title); }
+
+/* ---------- actions ---------- */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-block-size: var(--control-md); padding-inline: 28px; border-radius: var(--radius-full); background: var(--color-accent); color: var(--color-accent-ink); font-family: var(--font-body); font-weight: var(--font-weight-bold); font-size: var(--text-body-s); line-height: 1.1; text-decoration: none; border: 0; white-space: nowrap; }
+.btn.hover { background: var(--color-accent-strong); }
+.btn.focus { outline: var(--focus-ring); outline-offset: var(--focus-offset); }
+.btn.sm { min-block-size: var(--control-sm); padding-inline: 20px; font-size: var(--text-ui); }
+.btn.send { inline-size: 100%; min-block-size: var(--control-send); font-size: 19px; }
+.btn.ghost { background: transparent; color: var(--color-ink); box-shadow: inset 0 0 0 1.5px var(--color-ink); }
+.btn.ghost.hover { background: var(--color-paper-2); }
+.btn.quiet { background: transparent; color: var(--color-link); padding-inline: 0; min-block-size: var(--target-min); text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 5px; }
+.btn.danger { background: var(--color-danger); }
+.btn.disabled { background: var(--color-paper-3); color: var(--color-ink-3); box-shadow: inset 0 0 0 1.5px var(--color-rule); }
+.btn.busy { background: var(--color-accent-strong); }
+.link { color: var(--color-link); font-weight: var(--font-weight-bold); text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 5px; }
+.link.hover { color: var(--color-link-strong); }
+.arrow::after { content: " →"; }
+.ilink { color: var(--color-link); text-decoration: underline; text-underline-offset: 4px; }
+
+/* ---------- the note bar ---------- */
+.notice { background: var(--color-ink); color: var(--color-on-inverse); font-size: var(--text-fine); line-height: var(--line-height-tight); padding-block: 9px; display: flex; align-items: center; justify-content: space-between; gap: var(--space-lg); }
+.notice strong { color: var(--color-on-inverse-accent); font-weight: var(--font-weight-bold); }
+.notice .util { display: flex; align-items: center; gap: var(--space-md2); white-space: nowrap; }
+.notice .util a { color: var(--color-on-inverse); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: color-mix(in oklab, var(--color-paper) 45%, transparent); }
+.notice .util a[aria-current] { text-decoration: none; font-weight: var(--font-weight-bold); }
+.notice .beta { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.8; }
+.notice .sep { opacity: 0.45; }
+.M .notice { justify-content: center; text-align: center; padding-block: 8px; }
+
+/* ---------- header ---------- */
+.hdr { background: color-mix(in oklab, var(--color-paper) 94%, transparent); border-block-end: var(--rule); }
+.hdr-in { display: flex; align-items: center; gap: var(--space-lg2); min-block-size: 82px; }
+.M .hdr-in { gap: var(--space-sm2); min-block-size: 64px; }
+.logo { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--color-logo-ink); min-block-size: var(--target-min); }
+.logo svg { inline-size: 38px; block-size: 38px; flex: none; }
+.M .logo svg { inline-size: 28px; block-size: 28px; }
+.wordmark { font-family: var(--font-logo); font-weight: 500; font-size: 25px; letter-spacing: var(--tracking-wordmark); white-space: nowrap; }
+.M .wordmark { font-size: 19px; }
+.nav { margin-inline-start: auto; }
+.nav ul { display: flex; gap: 26px; }
+.nav a { text-decoration: none; font-weight: var(--font-weight-medium); color: var(--color-ink-2); padding-block: 10px; font-size: 17px; }
+.nav a[aria-current] { color: var(--color-ink); text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 8px; }
+.M .hdr .btn { margin-inline-start: auto; }
+.catrow { display: flex; gap: var(--space-sm); overflow: hidden; padding-block: 0 var(--space-sm2); white-space: nowrap; }
+.catrow a { flex: none; display: inline-flex; align-items: center; min-block-size: var(--target-min); padding-inline: 16px; border-radius: var(--radius-full); background: var(--color-card); box-shadow: inset 0 0 0 1px var(--color-rule); font-weight: var(--font-weight-medium); font-size: var(--text-sm); text-decoration: none; color: var(--color-ink-2); }
+.catrow a[aria-current] { background: var(--color-selected); color: var(--color-on-selected); box-shadow: none; }
+
+/* ---------- breadcrumbs ---------- */
+.crumbs { font-size: var(--text-sm); color: var(--color-ink-3); padding-block: 20px 0; }
+.crumbs ol { display: flex; flex-wrap: wrap; gap: 6px; }
+.crumbs li + li::before { content: "/"; margin-inline-end: 6px; color: var(--color-rule); }
+.crumbs a { color: var(--color-ink-2); text-underline-offset: 4px; }
+.crumbs [aria-current] { color: var(--color-ink); }
+
+/* ---------- photographs ---------- */
+.img { background-color: var(--color-paper-2); background-size: cover; background-position: center; }
+.ph { background: var(--color-photo); display: flex; align-items: flex-end; padding: var(--space-md); color: var(--color-photo-ink); font-size: var(--text-xs); line-height: 1.4; letter-spacing: 0.02em; }
+.ph span { max-inline-size: 30ch; }
+
+/* ---------- product card ---------- */
+.card { display: grid; align-content: start; }
+.card > a { display: block; text-decoration: none; color: inherit; }
+.card .cph { aspect-ratio: 4 / 5; border-radius: var(--radius-photo); overflow: hidden; }
+.M .card .cph { border-radius: var(--radius-photo-s); }
+.card h3 { font-size: var(--text-h3); line-height: var(--line-height-title); margin-block-start: 14px; }
+.M .card h3 { font-size: var(--text-h3-s); margin-block-start: 10px; }
+.card.hover h3 { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 5px; }
+.card.hover .cph .img { transform: scale(1.035); }
+.card .cph .img { inline-size: 100%; block-size: 100%; }
+.price { margin-block-start: 6px; font-weight: var(--font-weight-bold); font-variant-numeric: lining-nums tabular-nums; }
+.price small { font-weight: var(--font-weight-body); font-size: var(--text-fine); color: var(--color-ink-3); margin-inline-start: 6px; }
+.M .price small { font-size: var(--text-xs); }
+.eqv { margin-block-start: 3px; font-size: var(--text-xs); line-height: 1.35; color: var(--color-ink-3); font-variant-numeric: lining-nums tabular-nums; }
+.phbar { display: inline-block; inline-size: 2.6em; block-size: 0.75em; border-radius: var(--radius-sm); background: var(--color-paper-3); box-shadow: inset 0 0 0 1px var(--color-rule); vertical-align: -0.05em; }
+.noprice { margin-block-start: 6px; font-size: var(--text-sm); color: var(--color-ink-2); line-height: var(--line-height-tight); }
+.prov { margin-block-start: 6px; font-size: var(--text-xs); line-height: 1.35; color: var(--color-ink-3); }
+.grid4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 52px 28px; }
+.grid5 { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 40px 24px; }
+.grid6 { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 40px 24px; }
+.grid6 .card h3 { font-size: 19px; }
+.M .grid4, .M .grid6, .M .grid5 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 14px; }
+.rail { display: grid; grid-auto-flow: column; grid-auto-columns: 72%; gap: 16px; overflow: hidden; margin-inline: calc(var(--gutter-s) * -1); padding-inline: var(--gutter-s); }
+
+/* ---------- chips (links) ---------- */
+.chips { display: flex; flex-wrap: wrap; gap: var(--space-sm); }
+.M .chips.scroll { flex-wrap: nowrap; overflow: hidden; margin-inline: calc(var(--gutter-s) * -1); padding-inline: var(--gutter-s); }
+.chip { flex: none; display: inline-flex; align-items: center; gap: 8px; min-block-size: var(--target-min); padding-inline: 18px; border-radius: var(--radius-full); background: var(--color-card); box-shadow: inset 0 0 0 1px var(--color-rule); font-weight: var(--font-weight-medium); text-decoration: none; white-space: nowrap; color: var(--color-ink); }
+.chip.hover { box-shadow: inset 0 0 0 1.5px var(--color-ink-3); }
+.chip[aria-current] { background: var(--color-selected); color: var(--color-on-selected); box-shadow: none; }
+.chip small { font-size: var(--text-fine); color: var(--color-ink-3); font-weight: var(--font-weight-body); }
+.chip.poppy { background: var(--color-accent); color: var(--color-accent-ink); box-shadow: none; }
+.chip.poppy small { color: var(--color-blush); }
+
+/* ---------- fields ---------- */
+.field { display: grid; gap: 4px; }
+.field label, .flabel { font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-ink-3); }
+.select { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-block-size: var(--field-height); min-inline-size: 240px; padding-inline: 14px; border-radius: var(--radius-field); border: var(--rule-field); background: var(--color-card); font-size: var(--text-ui); }
+.select::after { content: ""; inline-size: 8px; block-size: 8px; border-inline-end: 2px solid var(--color-ink-2); border-block-end: 2px solid var(--color-ink-2); transform: translateY(-3px) rotate(45deg); }
+.select select { appearance: none; -webkit-appearance: none; border: 0; background: none; flex: 1; min-block-size: calc(var(--field-height) - 3px); font-size: var(--text-ui); padding: 0; }
+.input { display: flex; align-items: center; min-block-size: var(--field-height); padding-inline: 14px; border-radius: var(--radius-field); border: var(--rule-field); background: var(--color-card); font-size: var(--text-ui); color: var(--color-ink-3); }
+.sortform { display: flex; align-items: end; gap: var(--space-sm2); }
+.M .sortform .select { min-inline-size: 0; flex: 1; }
+
+/* ---------- listing furniture ---------- */
+.results { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: var(--space-md) var(--space-lg); padding-block: var(--space-lg); border-block: var(--rule); }
+.count { font-family: var(--font-display); font-size: var(--text-md); }
+.count .for { color: var(--color-ink-3); font-style: italic; }
+.disclosure { font-size: var(--text-sm); color: var(--color-ink-3); max-inline-size: 70ch; }
+.fx { margin-block-start: var(--space-lg2); font-size: var(--text-sm); color: var(--color-ink-2); }
+.pager ol { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.pager a, .pager span { display: inline-grid; place-items: center; min-inline-size: var(--target-min); min-block-size: var(--target-min); padding-inline: 12px; border-radius: var(--radius-full); text-decoration: none; font-weight: var(--font-weight-medium); }
+.pager a { box-shadow: inset 0 0 0 1px var(--color-rule); background: var(--color-card); }
+.pager [aria-current] { background: var(--color-ink); color: var(--color-paper); }
+.pager .next { color: var(--color-link); box-shadow: none; background: none; text-decoration: underline; text-underline-offset: 4px; font-weight: var(--font-weight-bold); }
+
+/* ---------- the P.S. (the demo sentence) ---------- */
+.ps { position: relative; background: var(--color-card); border-radius: var(--radius-letter); padding: 22px 24px 24px; box-shadow: var(--shadow-letter); transform: rotate(var(--tilt-ps)); }
+.ps::before { content: ""; position: absolute; inset-block-start: -10px; inset-inline-start: 50%; inline-size: 84px; block-size: 22px; margin-inline-start: -42px; background: color-mix(in oklab, var(--color-sun) 75%, transparent); transform: rotate(-3deg); }
+.ps .hand { font-size: var(--text-lg); }
+.ps p + p { margin-block-start: 6px; color: var(--color-ink-2); font-size: var(--text-ui); }
+
+/* ---------- tiles: by what it is ---------- */
+.tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-sm2); }
+.M .tiles { grid-template-columns: minmax(0, 1fr); gap: 0; }
+.tile { display: grid; gap: 2px; padding: 18px 20px; border-radius: var(--radius-field); background: var(--color-card); box-shadow: inset 0 0 0 1px var(--color-rule); text-decoration: none; }
+.M .tile { border-radius: 0; box-shadow: none; border-block-end: var(--rule); padding-inline: 0; background: none; }
+.tile b { font-family: var(--font-display); font-weight: var(--font-weight-display); font-size: var(--text-h3); }
+.tile span { font-size: var(--text-sm); color: var(--color-ink-2); }
+.tile .from { color: var(--color-accent); font-weight: var(--font-weight-bold); }
+
+/* ---------- tables (dates) ---------- */
+.cal { inline-size: 100%; border-collapse: collapse; font-size: var(--text-ui); }
+.cal caption { caption-side: top; text-align: start; font-size: var(--text-sm); color: var(--color-ink-3); padding-block-end: var(--space-sm2); }
+.cal th, .cal td { text-align: start; padding-block: 14px; padding-inline: 0 12px; border-block-end: var(--rule); vertical-align: baseline; }
+.cal thead th { font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-ink-3); }
+.cal tbody th { font-family: var(--font-display); font-weight: var(--font-weight-display); font-size: 19px; }
+.cal td.d { font-variant-numeric: lining-nums tabular-nums; color: var(--color-ink-2); }
+.cal td.r { color: var(--color-ink-3); font-size: var(--text-sm); }
+.M .cal tbody th { font-size: var(--text-body-s); }
+
+/* ---------- stamps ---------- */
+.stamps { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 20px; }
+.M .stamps { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 232px; overflow: hidden; margin-inline: calc(var(--gutter-s) * -1); padding-inline: var(--gutter-s); }
+.stamps li { filter: drop-shadow(var(--shadow-stamp)); }
+.stamp { display: flex; flex-direction: column; block-size: 100%; text-decoration: none; color: var(--color-ink); padding: 12px; background: var(--color-card);
+  -webkit-mask: linear-gradient(black 0 0) content-box, radial-gradient(circle, transparent 5px, black 5.5px) -9px -9px / 18px 18px round;
+  mask: linear-gradient(black 0 0) content-box, radial-gradient(circle, transparent 5px, black 5.5px) -9px -9px / 18px 18px round; }
+.stamp-in { flex: 1; display: flex; flex-direction: column; gap: 4px; padding: 18px 18px 16px; border: var(--rule); background: var(--tint, var(--color-blush)); }
+.stamp-day { font-family: var(--font-display); font-size: var(--text-stamp); line-height: 0.9; font-weight: var(--font-weight-display); font-variation-settings: var(--font-variation-display-hero); letter-spacing: var(--tracking-hero); }
+.stamp-mon { font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink-2); }
+.stamp h3 { font-size: var(--text-md); margin-block-start: 18px; }
+.stamp-pl { font-family: var(--font-display); font-style: italic; color: var(--color-ink-2); font-size: 17px; }
+.stamp-note { font-size: var(--text-sm); color: var(--color-ink-2); margin-block-start: 8px; line-height: var(--line-height-tight); }
+.stamp-go { margin-block-start: auto; padding-block-start: 16px; font-weight: var(--font-weight-bold); color: var(--color-link); }
+.t-blush { --tint: var(--color-blush); } .t-butter { --tint: var(--color-butter); } .t-sky { --tint: var(--color-sage-wash); } .t-leaf { --tint: var(--color-leaf-wash); }
+
+/* ---------- arches (occasions) ---------- */
+.arches { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 24px; }
+.M .arches { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 16px; }
+.arches a { display: block; text-decoration: none; }
+.arch { aspect-ratio: 4 / 5; overflow: hidden; border-radius: var(--radius-arch); }
+.arch .img { inline-size: 100%; block-size: 100%; }
+.arches h3 { font-size: var(--text-h3); margin-block-start: 12px; text-align: center; }
+.arches p { text-align: center; font-size: var(--text-sm); color: var(--color-ink-3); }
+
+/* ---------- route (how it works) ---------- */
+.route { display: grid; counter-reset: step; }
+.route li { position: relative; padding-inline-start: 76px; padding-block-end: 36px; counter-increment: step; }
+.route li::before { content: counter(step); position: absolute; inset-inline-start: 0; inset-block-start: -4px; inline-size: 52px; block-size: 52px; border-radius: 50%; display: grid; place-items: center; font-family: var(--font-display); font-size: var(--text-md); color: var(--color-mark); background: var(--color-card); box-shadow: inset 0 0 0 1.5px var(--color-mark), 0 0 0 5px var(--color-paper-2), inset 0 0 0 5px var(--color-card), inset 0 0 0 6px var(--color-mark); }
+.route li:not(:last-child)::after { content: ""; position: absolute; inset-inline-start: 25px; inset-block: 56px 4px; border-inline-start: 2px dashed var(--color-rule); }
+.route h3 { font-size: 25px; line-height: var(--line-height-title); }
+.M .route h3 { font-size: var(--text-h3); }
+.route p { margin-block-start: 8px; color: var(--color-ink-2); max-inline-size: 48ch; }
+.margin-note { display: flex; align-items: center; gap: 10px; font-size: var(--text-md); transform: rotate(-2deg); margin-block-start: 8px; margin-inline-start: 60px; }
+.M .margin-note { margin-inline-start: 0; font-size: var(--text-h3); }
+
+/* ---------- promise band ---------- */
+.promise { background: var(--color-surface-inverse); color: var(--color-on-inverse); }
+.promise .eyebrow, .promise h2 em { color: var(--color-on-inverse-accent); }
+.promises { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; background: color-mix(in oklab, var(--color-paper) 18%, transparent); border-radius: var(--radius-photo); overflow: hidden; }
+.M .promises { grid-template-columns: minmax(0, 1fr); }
+.promises li { background: var(--color-ink); padding: 28px 26px 32px; }
+.promises svg { inline-size: 34px; block-size: 34px; color: var(--color-on-inverse-accent); }
+.promises h3 { font-size: var(--text-md); margin-block-start: 18px; }
+.promises p { margin-block-start: 8px; color: color-mix(in oklab, var(--color-paper) 82%, var(--color-ink)); }
+
+/* ---------- sections ---------- */
+.section { padding-block: var(--space-3xl); }
+.M .section { padding-block: var(--space-section-s); }
+.band { background: var(--color-paper-2); }
+.sh { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 16px 40px; margin-block-end: 48px; }
+.M .sh { margin-block-end: 28px; }
+.sh .lede { margin-block-start: 14px; }
+
+/* ---------- the letter (sentence picker) ---------- */
+.letter { position: relative; background-color: var(--color-card); background-image: var(--letter-lines); background-position: 0 20px; border-radius: var(--radius-letter); padding: 22px 32px 30px; box-shadow: var(--shadow-letter); transform: rotate(var(--tilt-letter)); }
+.M .letter { padding: 20px 22px 26px; transform: rotate(var(--tilt-letter-s)); }
+.letter::before, .airmail::before { content: ""; position: absolute; inset-inline: 0; inset-block-start: 0; block-size: var(--airmail-edge-size); background: var(--airmail-edge); border-start-start-radius: var(--radius-letter); border-start-end-radius: var(--radius-letter); }
+.letter-to { font-family: var(--font-body) !important; font-size: var(--text-sm); font-weight: var(--font-weight-bold) !important; letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink-3); line-height: 48px; }
+.sentence { font-family: var(--font-display); font-size: var(--text-lg); line-height: 48px; font-variation-settings: var(--font-variation-display); }
+.M .sentence { font-size: var(--text-lg-s); }
+.pick { position: relative; display: inline-block; }
+.pick .sel { display: inline-block; font-family: var(--font-display); font-style: italic; font-weight: var(--font-weight-display-em); font-variation-settings: var(--font-variation-display); font-size: var(--text-lg); line-height: 40px; color: var(--color-accent); padding-inline: 2px 24px; border-block-end: 2px dashed var(--color-accent); }
+.pick .sel.hover { background: var(--color-blush); }
+.pick .sel.focus { outline: var(--focus-ring); outline-offset: 2px; border-radius: var(--radius-md); }
+.pick::after { content: ""; position: absolute; inset-inline-end: 6px; inset-block-start: 18px; inline-size: 8px; block-size: 8px; border-inline-end: 2px solid var(--color-accent); border-block-end: 2px solid var(--color-accent); transform: rotate(45deg); }
+.letter-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-block-start: 22px; }
+.M .letter-foot .btn { flex: 1 1 auto; }
+.letter-note { font-size: var(--text-sm); color: var(--color-ink-2); line-height: var(--line-height-tight); }
+.optlist { background: var(--color-card); border-radius: var(--radius-field); box-shadow: var(--shadow-md); padding: 6px; display: grid; font-size: var(--text-ui); min-inline-size: 240px; }
+.optlist span { padding: 8px 12px; border-radius: var(--radius-md); }
+.optlist .on { background: var(--color-sage-wash); font-weight: var(--font-weight-bold); }
+.optlist .off { color: var(--color-ink-3); }
+
+/* ---------- postmark ---------- */
+.postmark { position: absolute; inline-size: 168px; block-size: 168px; inset-block-start: -36px; inset-inline-start: -56px; transform: rotate(var(--tilt-postmark)); filter: drop-shadow(0 6px 14px var(--color-shade)); }
+.M .postmark { inline-size: 108px; block-size: 108px; inset-block-start: 14px; inset-inline-start: auto; inset-inline-end: 14px; }
+
+/* ---------- footer ---------- */
+.ftr { position: relative; background: var(--color-paper-2); padding-block: 64px 32px; }
+.ftr::before { content: ""; position: absolute; inset-inline: 0; inset-block-start: 0; block-size: var(--airmail-edge-size-footer); background: var(--airmail-edge); }
+.signoff { font-size: var(--text-2xl); margin-block-end: 56px; transform: rotate(var(--tilt-signoff)); }
+.M .signoff { font-size: var(--text-2xl-s); }
+.fgrid { display: grid; grid-template-columns: 1.3fr 0.8fr 1fr 1.2fr; gap: 48px; }
+.M .fgrid { grid-template-columns: minmax(0, 1fr); gap: 36px; }
+.ftr h2 { font-family: var(--font-body); font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink-2); margin-block-end: 14px; font-variation-settings: normal; }
+.ftr ul { display: grid; gap: 4px; }
+.ftr ul a { display: inline-flex; align-items: center; min-block-size: var(--target-min); text-decoration: none; }
+.ftr .about p { color: var(--color-ink-2); margin-block-start: 14px; max-inline-size: 36ch; }
+.fsmall { font-size: var(--text-sm); color: var(--color-ink-2); }
+.ffine { margin-block-start: 48px; padding-block-start: 20px; border-block-start: var(--rule); font-size: var(--text-fine); color: var(--color-ink-2); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 24px; }
+.ffine .langs { display: flex; flex-wrap: wrap; gap: 4px 18px; }
+.ffine a { text-underline-offset: 4px; display: inline-flex; align-items: center; min-block-size: var(--target-min); }
+.ffine a[aria-current] { text-decoration: none; font-weight: var(--font-weight-bold); color: var(--color-ink); }
+.ffine button { border: 0; background: none; padding: 0; min-block-size: var(--target-min); color: var(--color-link); font-weight: var(--font-weight-bold); text-decoration: underline; text-underline-offset: 4px; font-size: var(--text-fine); }
+
+/* ---------- facts list ---------- */
+.facts { display: grid; border-block-start: var(--rule); }
+.facts > div { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 4px 24px; padding-block: 14px; border-block-end: var(--rule); }
+.M .facts > div { grid-template-columns: minmax(0, 1fr); }
+.D .narrow .facts > div { grid-template-columns: 130px minmax(0, 1fr); gap: 4px 16px; }
+.facts dt { font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-ink-3); padding-block-start: 3px; }
+.facts dd { color: var(--color-ink); }
+.facts dd.none { color: var(--color-ink-2); }
+
+/* ---------- product page ---------- */
+.pdp { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 64px; align-items: start; padding-block-start: 28px; }
+.M .pdp { grid-template-columns: minmax(0, 1fr); gap: 24px; padding-block-start: 16px; }
+.g-main { border-radius: 24px; overflow: hidden; aspect-ratio: 4 / 5; position: relative; }
+.M .g-main { border-radius: var(--radius-photo); }
+.g-main .img { inline-size: 100%; block-size: 100%; }
+.g-prov { position: absolute; inset-block-end: 12px; inset-inline-start: 12px; background: var(--color-card); color: var(--color-ink-2); font-size: var(--text-xs); font-weight: var(--font-weight-medium); padding: 4px 12px; border-radius: var(--radius-full); }
+.thumbs { display: flex; gap: 12px; margin-block-start: 14px; }
+.thumbs span { inline-size: 76px; block-size: 92px; border-radius: 12px; overflow: hidden; box-shadow: inset 0 0 0 1.5px var(--color-rule); display: block; }
+.thumbs span.on { box-shadow: 0 0 0 2px var(--color-paper), 0 0 0 4px var(--color-ink); }
+.thumbs .img { inline-size: 100%; block-size: 100%; }
+.mgal { display: grid; grid-template-columns: 86% 86%; gap: 12px; overflow: hidden; margin-inline: calc(var(--gutter-s) * -1); padding-inline: var(--gutter-s); }
+.dots { display: flex; justify-content: center; gap: 4px; margin-block-start: 10px; }
+.dots span { inline-size: 44px; block-size: 24px; display: grid; place-items: center; }
+.dots span::before { content: ""; inline-size: 8px; block-size: 8px; border-radius: 50%; background: var(--color-rule); }
+.dots span.on::before { inline-size: 22px; border-radius: 4px; background: var(--color-accent); }
+.dest-line { font-size: var(--text-ui); color: var(--color-ink-2); margin-block-end: 18px; }
+.dest-line a { color: var(--color-link); font-weight: var(--font-weight-bold); text-underline-offset: 4px; }
+.p-price { margin-block-start: 18px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+.p-price strong { font-family: var(--font-display); font-weight: var(--font-weight-display); font-size: var(--text-xl); font-variant-numeric: lining-nums; }
+.incl { font-size: var(--text-sm); color: var(--color-included); font-weight: var(--font-weight-bold); }
+.p-desc { margin-block-start: 16px; color: var(--color-ink-2); }
+.step { border: 0; margin: 0; padding: 0; margin-block-start: 34px; min-inline-size: 0; }
+.step legend { display: flex; align-items: center; gap: 12px; padding: 0; margin-block-end: 14px; font-family: var(--font-display); font-size: var(--text-md); font-variation-settings: var(--font-variation-display); }
+.n { display: inline-grid; place-items: center; inline-size: 30px; block-size: 30px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--color-mark); color: var(--color-mark); font-family: var(--font-body); font-size: var(--text-sm); font-weight: var(--font-weight-bold); }
+.tiers { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.tier { position: relative; display: grid; gap: 2px; padding: 14px 14px 12px; border-radius: var(--radius-field); background: var(--color-card); box-shadow: inset 0 0 0 1.5px var(--color-rule); }
+.tier.on { box-shadow: inset 0 0 0 2px var(--color-selected); background: var(--color-paper); }
+.tier.on::after { content: ""; position: absolute; inset-block-start: 12px; inset-inline-end: 12px; inline-size: 10px; block-size: 10px; border-radius: 50%; background: var(--color-accent); }
+.tier.hover { box-shadow: inset 0 0 0 1.5px var(--color-ink-3); }
+.tier.focus { outline: var(--focus-ring); outline-offset: 2px; }
+.tier b { font-weight: var(--font-weight-bold); }
+.tier span { font-size: var(--text-sm); color: var(--color-ink-2); font-variant-numeric: tabular-nums; }
+.days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; padding-block-start: 10px; }
+.M .days { grid-template-columns: repeat(14, 66px); overflow: hidden; margin-inline: calc(var(--gutter-s) * -1); padding-inline: var(--gutter-s); }
+.day { position: relative; display: grid; justify-items: center; align-content: start; padding: 10px 4px; border-radius: var(--radius-chip); background: var(--color-card); box-shadow: inset 0 0 0 1.5px var(--color-rule); min-block-size: 92px; }
+.day .dw { font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-3); }
+.day .dn { font-family: var(--font-display); font-size: 28px; line-height: 1.15; }
+.day .dm { font-size: var(--text-xs); color: var(--color-ink-3); }
+.day .fee { font-size: 12px; font-weight: var(--font-weight-bold); color: var(--color-accent-strong); font-variant-numeric: tabular-nums; }
+.day .why { font-size: 11px; line-height: 1.15; color: var(--color-ink-2); text-align: center; }
+.day .tag { position: absolute; z-index: 1; inset-block-start: -10px; inset-inline: -12px; text-align: center; font-family: var(--font-display); font-style: italic; font-weight: var(--font-weight-display-em); font-variation-settings: var(--font-variation-display); font-size: 13px; color: var(--color-accent); background: var(--color-paper); line-height: 1; padding-block: 1px; border-radius: 4px; white-space: nowrap; }
+.day.named { box-shadow: inset 0 0 0 1.5px var(--color-accent); }
+.day.on { background: var(--color-selected); box-shadow: none; }
+.day.on .dw, .day.on .dn, .day.on .dm { color: var(--color-on-selected); }
+.day.closed { background: var(--color-paper-2); box-shadow: inset 0 0 0 1.5px var(--color-rule); }
+.day.closed .dn { color: var(--color-ink-3); text-decoration: line-through; text-decoration-thickness: 1.5px; }
+.day.pv { background: var(--color-paper-2); box-shadow: inset 0 0 0 1.5px var(--color-rule); }
+.day.pv .dn { color: var(--color-ink-2); }
+.day.focus { outline: var(--focus-ring); outline-offset: 2px; }
+.picker-note { align-self: start; margin-block-start: 10px; padding: 12px 16px; border-radius: var(--radius-field); background: var(--color-sage-wash); color: var(--color-ink); font-size: var(--text-ui); line-height: var(--line-height-tight); }
+.picker-live { margin-block-end: 6px; font-size: var(--text-ui); color: var(--color-ink); }
+.picker-live b { color: var(--color-accent-strong); }
+.unav { padding: 20px 22px; border-radius: var(--radius-field); background: var(--color-paper-2); box-shadow: inset 0 0 0 1px var(--color-rule); display: grid; gap: 10px; }
+.addons { display: grid; gap: 8px; }
+.addon { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 14px; align-items: start; padding: 14px 16px; border-radius: var(--radius-field); background: var(--color-card); box-shadow: inset 0 0 0 1px var(--color-rule); }
+.addon.choose { grid-template-columns: auto minmax(0, 1fr) auto; box-shadow: inset 0 0 0 1.5px var(--color-rule); }
+.addon.choose.on { box-shadow: inset 0 0 0 2px var(--color-selected); }
+.addon .box { inline-size: 22px; block-size: 22px; border-radius: 6px; box-shadow: inset 0 0 0 1.5px var(--color-field-edge); margin-block-start: 2px; display: grid; place-items: center; }
+.addon.on .box, .addon.inc .box { background: var(--color-accent); box-shadow: none; }
+.addon.inc .box { background: var(--color-stem); }
+.addon.on .box::after, .addon.inc .box::after { content: ""; inline-size: 6px; block-size: 11px; border-inline-end: 2px solid var(--color-card); border-block-end: 2px solid var(--color-card); transform: translateY(-1px) rotate(45deg); }
+.addon .at { display: grid; }
+.addon .an { font-weight: var(--font-weight-bold); }
+.addon .ad { font-size: var(--text-sm); color: var(--color-ink-2); line-height: var(--line-height-tight); }
+.addon .ap { text-align: end; font-weight: var(--font-weight-medium); white-space: nowrap; font-variant-numeric: tabular-nums; display: grid; }
+.addon .ap small { font-size: var(--text-xs); color: var(--color-ink-3); font-weight: var(--font-weight-body); }
+.addon.inc .ap { color: var(--color-included); font-weight: var(--font-weight-bold); }
+.allergen { font-size: var(--text-sm); color: var(--color-accent-strong); margin-block-start: 6px; }
+.summary { margin-block-start: 34px; padding: 22px 22px 18px; border-radius: var(--radius-photo); background: var(--color-butter); }
+.summary dl { display: grid; gap: 8px; }
+.summary dl div { display: flex; justify-content: space-between; gap: 16px; font-size: var(--text-ui); }
+.summary dt { color: var(--color-ink-2); }
+.summary dd { font-variant-numeric: tabular-nums; text-align: end; }
+.summary .inc dd { color: var(--color-included); font-weight: var(--font-weight-bold); }
+.summary .fee dd { color: var(--color-accent-strong); font-weight: var(--font-weight-bold); }
+.total { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin-block-start: 14px; padding-block-start: 14px; border-block-start: 1px solid color-mix(in oklab, var(--color-ink) 18%, transparent); }
+.total span { font-weight: var(--font-weight-bold); }
+.total strong { font-family: var(--font-display); font-weight: var(--font-weight-display); font-size: 32px; font-variant-numeric: lining-nums tabular-nums; }
+.demo { margin-block-start: 16px; font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.45; padding-inline-start: 14px; border-inline-start: 3px solid var(--color-sun); }
+.demo strong { color: var(--color-ink); display: block; font-size: var(--text-ui); }
+.lower { display: grid; grid-template-columns: 7fr 5fr; gap: 64px; padding-block: 96px; border-block-start: var(--rule); margin-block-start: 32px; }
+.M .lower { grid-template-columns: minmax(0, 1fr); gap: 40px; padding-block: 48px; }
+.excl { margin-block-start: 18px; padding: 14px 18px; border-radius: var(--radius-field); background: var(--color-paper-2); font-size: var(--text-ui); color: var(--color-ink-2); }
+.plist { display: grid; gap: 18px; margin-block-start: 18px; }
+.plist li { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; }
+.plist svg { inline-size: 26px; block-size: 26px; color: var(--color-mark); grid-row: span 2; margin-block-start: 2px; }
+.plist h3 { font-family: var(--font-body); font-size: 17px; font-weight: var(--font-weight-bold); font-variation-settings: normal; }
+.plist p { color: var(--color-ink-2); font-size: var(--text-ui); }
+.sticky { display: flex; align-items: center; gap: 14px; padding: 12px var(--gutter-s); background: var(--color-card); border-block-start: var(--rule); box-shadow: var(--shadow-sticky); }
+.sticky p { display: grid; line-height: 1.15; }
+.sticky small { font-size: var(--text-xs); color: var(--color-ink-3); }
+.sticky strong { font-family: var(--font-display); font-weight: var(--font-weight-display); font-size: var(--text-md); font-variant-numeric: lining-nums tabular-nums; }
+.sticky .btn { margin-inline-start: auto; flex: 1; max-inline-size: 220px; }
+.sticky .demo { margin: 0; margin-inline-start: auto; max-inline-size: 190px; font-size: var(--text-xs); }
+
+/* ---------- the printed card ---------- */
+.cardstage { display: grid; place-items: center; background: var(--color-sage-wash); border-radius: var(--radius-photo); padding: 28px; aspect-ratio: 4 / 5; position: relative; }
+.card-paper { inline-size: 78%; aspect-ratio: 5 / 6; background: var(--color-card); border-radius: var(--radius-md); padding: 26px 24px; display: flex; flex-direction: column; box-shadow: var(--shadow-paper); transform: rotate(var(--tilt-card)); }
+.card-paper svg { inline-size: 26px; block-size: 26px; margin-block-end: 14px; }
+.card-msg { font-family: var(--font-hand); font-weight: var(--font-weight-hand); font-size: var(--text-lg); line-height: 1.25; color: var(--color-ink); flex: 1; overflow: hidden; }
+.card-msg.blank { color: var(--color-ink-3); }
+.card-from { font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink-3); margin-block-start: 10px; }
+.card-write { display: block; border: 0; resize: vertical; inline-size: 100%; min-block-size: 190px; border-radius: var(--radius-letter); padding: 18px 22px; font-family: var(--font-body); font-size: var(--text-body); line-height: 38px; color: var(--color-ink-3); background-color: var(--color-card); background-image: var(--card-lines); background-position: 0 17px; box-shadow: inset 0 0 0 1.5px var(--color-field-edge), 0 14px 30px -18px var(--color-shade); }
+.counter { font-size: var(--text-xs); color: var(--color-ink-3); text-align: end; margin-block-start: 6px; }
+
+/* ---------- recap ---------- */
+.recap { position: relative; padding: 34px 26px 26px; background-color: var(--color-card); background-image: repeating-linear-gradient(to bottom, transparent 0 39px, var(--color-paper-2) 39px 40px); border-radius: var(--radius-field); box-shadow: var(--shadow-md); }
+.recap h2 { font-size: var(--text-xl); }
+.recap dl { margin-block-start: 20px; display: grid; gap: 10px; }
+.recap dl div { display: grid; grid-template-columns: 70px 1fr; gap: 12px; }
+.recap dt { font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-ink-3); padding-block-start: 4px; }
+.recap blockquote { margin-block-start: 16px; padding: 14px 18px; background: var(--color-paper); border-radius: var(--radius-letter); font-family: var(--font-display); font-style: italic; font-weight: var(--font-weight-display-em); font-variation-settings: var(--font-variation-display); font-size: var(--text-md); transform: rotate(-0.8deg); }
+
+/* ---------- errors ---------- */
+.err { align-self: start; padding: 10px 14px; border-radius: var(--radius-field); background: var(--color-blush); color: var(--color-accent-strong); font-weight: var(--font-weight-bold); font-size: var(--text-ui); }
+.empty { padding: 40px 28px; background: var(--color-card); border-radius: var(--radius-photo); text-align: center; display: grid; justify-items: center; gap: 12px; box-shadow: inset 0 0 0 1px var(--color-rule); }
+.empty h2 { font-size: var(--text-2xl-s); }
+.empty p { color: var(--color-ink-2); max-inline-size: 46ch; }
+
+/* ---------- destination rows ---------- */
+.dests { display: grid; gap: 0; border-block-start: var(--rule); }
+.dest { display: grid; grid-template-columns: 220px minmax(0, 1fr) auto; gap: 8px 32px; align-items: baseline; padding-block: 24px; border-block-end: var(--rule); text-decoration: none; }
+.M .dest { grid-template-columns: minmax(0, 1fr); gap: 6px; padding-block: 20px; }
+.dest b { font-family: var(--font-display); font-weight: var(--font-weight-display); font-size: 30px; line-height: 1.1; }
+.M .dest b { font-size: var(--text-md); }
+.dest p { color: var(--color-ink-2); }
+.status { display: inline-flex; align-items: center; gap: 6px; font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-2); background: var(--color-paper-2); box-shadow: inset 0 0 0 1px var(--color-rule); border-radius: var(--radius-full); padding: 4px 10px; justify-self: start; }
+.status::before { content: ""; inline-size: 7px; block-size: 7px; border-radius: 50%; background: var(--color-ink-3); }
+.status.live::before { background: var(--color-stem); }
+.faq details { border-block-end: var(--rule); padding-block: 18px; }
+.faq summary { font-family: var(--font-display); font-size: var(--text-h3); list-style: none; display: flex; justify-content: space-between; gap: 16px; }
+.faq summary::after { content: "+"; font-family: var(--font-body); color: var(--color-link); font-weight: var(--font-weight-bold); }
+.faq details[open] summary::after { content: "−"; }
+.faq details p { margin-block-start: 10px; color: var(--color-ink-2); max-inline-size: 64ch; }
+
+/* ---------- home hero ---------- */
+.hero { padding-block: 32px 24px; }
+.M .hero { padding-block: 28px 0; }
+.hero-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); grid-template-rows: auto 1fr; grid-template-areas: "copy photo" "letter photo"; column-gap: 64px; align-items: start; }
+.M .hero-grid { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; grid-template-areas: "copy" "photo" "letter"; }
+.hero-copy { grid-area: copy; padding-block: 24px 36px; }
+.M .hero-copy { padding-block: 0 28px; }
+.hero h1 { font-size: var(--text-hero); font-weight: var(--font-weight-display-hero); line-height: var(--line-height-hero); letter-spacing: var(--tracking-hero); font-variation-settings: var(--font-variation-display-hero); }
+.M .hero h1 { font-size: var(--text-hero-s); }
+.hero h1 em { display: inline-block; text-decoration: underline; text-decoration-color: var(--color-sun); text-decoration-thickness: 0.09em; text-underline-offset: 0.1em; text-decoration-skip-ink: none; }
+.hero .lede { margin-block-start: 20px; }
+.hero-photo { grid-area: photo; position: relative; margin-block-start: 28px; }
+.hero-photo .img { aspect-ratio: 4 / 5; border-radius: var(--radius-hero); }
+.M .hero-photo { margin-block-start: 0; margin-inline: calc(var(--gutter-s) * -1); }
+.M .hero-photo .img { aspect-ratio: 4 / 3; border-radius: 0; }
+.hero .letter { grid-area: letter; z-index: 2; }
+.M .hero .letter { margin-block-start: -64px; margin-inline: 4px; }
+.sentence select { appearance: none; -webkit-appearance: none; field-sizing: content; border: 0; border-radius: 0; background: transparent; font-family: var(--font-display); font-style: italic; font-weight: var(--font-weight-display-em); font-variation-settings: var(--font-variation-display); font-size: var(--text-lg); line-height: 40px; color: var(--color-accent); padding-block: 0; padding-inline: 2px 24px; border-block-end: 2px dashed var(--color-accent); vertical-align: baseline; }
+.dest-chips { display: flex; flex-wrap: wrap; gap: 10px; }
+.dest-grid { display: grid; grid-template-columns: 5fr 6fr; gap: 72px; align-items: center; }
+.M .dest-grid { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+.how-grid { display: grid; grid-template-columns: 4fr 7fr; gap: 72px; align-items: start; }
+.M .how-grid { grid-template-columns: minmax(0, 1fr); gap: 40px; }
+.how-intro p:not(.eyebrow) { margin-block-start: 18px; color: var(--color-ink-2); max-inline-size: 44ch; }
+
+/* ---------- listing intro ---------- */
+.shop-intro { display: grid; grid-template-columns: 7fr 4fr; gap: 72px; align-items: end; padding-block: 40px 56px; }
+.M .shop-intro { grid-template-columns: minmax(0, 1fr); gap: 28px; padding-block: 24px 36px; }
+.shop-intro .lede { margin-block-start: 18px; max-inline-size: var(--measure-lede); }
+.toolbar { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px 24px; align-items: end; padding-block: 18px; border-block: var(--rule); }
+.M .toolbar { grid-template-columns: minmax(0, 1fr); }
+.note-card { grid-column: 1 / -1; display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 12px 40px; padding: 40px 48px; background: var(--color-blush); border-radius: var(--radius-photo); }
+.M .note-card { flex-direction: column; align-items: start; padding: 28px 22px; }
+.note-card .note-head { font-family: var(--font-display); font-style: italic; font-weight: var(--font-weight-display-em); font-variation-settings: var(--font-variation-display); font-size: var(--text-xl); line-height: 1.15; color: var(--color-accent-strong); }
+.M .note-card .note-head { font-size: 26px; }
+.note-card p:last-child { color: var(--color-ink-2); max-inline-size: 40ch; }
+.dated { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 28px; align-items: center; margin-block-start: 28px; }
+.M .dated { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+.dated .stamp { inline-size: 210px; filter: drop-shadow(var(--shadow-stamp)); }
+.dated p { max-inline-size: 44ch; }
+.dated .when { font-family: var(--font-display); font-size: var(--text-md); line-height: 1.25; }
+.subsec { padding-block: 72px 0; }
+.M .subsec { padding-block: 48px 0; }
+.two { display: grid; grid-template-columns: 4fr 7fr; gap: 72px; align-items: start; }
+.M .two { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+.cardbox { padding: 26px 28px; border-radius: var(--radius-photo); background: var(--color-card); box-shadow: inset 0 0 0 1px var(--color-rule); }
+.cardbox h3 { font-size: var(--text-md); margin-block-end: 10px; }
+.cardbox p { color: var(--color-ink-2); }
+.kv2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.M .kv2 { grid-template-columns: minmax(0, 1fr); }
+
+.sheet { padding: var(--space-xl) var(--gutter) var(--space-2xl); display: grid; gap: 72px; }
+.grp { display: grid; gap: 24px; }
+.grp > header { display: grid; gap: 6px; max-inline-size: 80ch; }
+.grp > header .lbl { font-size: var(--text-xs); font-weight: 700; letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-eyebrow); }
+.grp > header p { color: var(--color-ink-2); font-size: var(--text-ui); }
+.row { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
+.cell { display: grid; gap: 8px; align-content: start; }
+.cell > em { font-style: normal; font-size: var(--text-xs); color: var(--color-ink-3); line-height: 1.4; }
+.cell > em code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; color: var(--color-ink); }
+.sw { inline-size: 200px; block-size: 120px; border-radius: var(--radius-field); box-shadow: inset 0 0 0 1px var(--color-rule); display: flex; align-items: flex-end; padding: 12px; font-family: var(--font-display); font-size: var(--text-md); }
+.panel { background: var(--color-paper); border-radius: var(--radius-field); box-shadow: inset 0 0 0 1px var(--color-rule); padding: 24px; }
+.c2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.c3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+.c4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; }
+.mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; }
+.ramp td, .ramp th { padding-block: 14px; padding-inline: 0 24px; border-block-end: var(--rule); text-align: start; vertical-align: baseline; }
+.ramp th { font-size: var(--text-xs); letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-ink-3); font-weight: 700; }
+.gcol { display: grid; gap: 6px; block-size: 56px; }
+.gcol span { background: var(--color-sage-wash); border-radius: var(--radius-md); box-shadow: inset 0 0 0 1px var(--color-rule); }
+
   </style>
 </helmet>
-<div style="width: 1440px; min-height: 3400px; background: var(--color-paper); display: flex; flex-direction: column;">
-  <div style="display: flex; flex-direction: column; border-bottom: 1px solid var(--color-ink);">
-    <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm) var(--space-lg); align-items: center; justify-content: space-between; padding: 12px 56px; font-size: var(--text-xs); color: var(--color-ink-2); border-bottom: var(--rule);">
-      <span>We send flowers across Europe — one price with VAT and delivery in</span><span>Talk to us: +1 (213) 592-5150 · WhatsApp · Mon–Sat 8–20 CET</span>
-    </div>
-    <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm) var(--space-lg); align-items: center; justify-content: space-between; padding: var(--space-md) 56px;">
-      <span class="display" style="font-size: 26px; letter-spacing: 0.04em;">Flowers Overseas</span>
-      <span style="font-size: var(--text-sm); color: var(--color-ink-3);">Search flowers, occasions, a city or a country · Sign in · My orders · Basket (0)</span>
-    </div>
-    <div style="padding: 10px 56px; border-top: var(--rule); font-size: var(--text-sm); color: var(--color-ink-2);">
-      <span class="label" style="margin-inline-end: var(--space-sm);">Categories</span>Best sellers · Birthday · Sympathy · Teachers&#39; Day 14 Oct · All Saints&#39; Day 1 Nov · Christmas 25 Dec · Women&#39;s Day 8 Mar · Bouquets · Roses · Plants · Poland
-    </div>
-    <div style="padding: 6px 56px 10px; font-size: var(--text-xs); color: var(--color-ink-3);">Chrome as approved in <b>homepage-v1</b>. Every category row entry and every utility link is <b>unpublished in Phase 0</b> and renders as text, not a link (site-links.ts, categories.ts; spec 004 AC-14). The row prints real occasion dates for the destination, computed from <code>occasion_country</code> — the same source as the calendar below, so a row entry can never name a date the calendar does not know. <b>Changed for 007:</b> the round-2 draft printed “Andrzejki 29 Nov” and “Wigilia 24 Dec”; the seeded occasion rules carry neither, so both are removed rather than hard-coded here.</div>
-  </div>
-  <section class="note" style="margin: var(--space-lg) 56px 0;">
-    <span class="label">All destinations hub · [internal]</span>
-    <dl>
-      <dt>Purpose</dt><dd>The parent of every country page and the reason crawl depth from any locale home to any destination is two. It answers one question — where can we send flowers, and what is true about each of them today — and it is the only page that lists a destination we have no page for.</dd>
-      <dt>URL</dt><dd><code>/{locale}/{destinations}</code>: <code>/en/send-flowers-to</code> · <code>/en-gb/send-flowers-to</code> · <code>/de/blumen-verschicken</code> · <code>/pl/wyslij-kwiaty</code>. The same localised segment the country page uses, from <code>locales.data.ts</code>.</dd>
-      <dt>Index</dt><dd><code>index,follow</code> in a locale where at least one country page is indexable; otherwise <code>noindex,follow</code> and out of the sitemap — the same <code>indexability()</code> call, so the hub cannot be indexed into a page with nothing to link to. In Phase 0 that is <code>en</code> and <code>en-gb</code>; <code>/de/blumen-verschicken</code> and <code>/pl/wyslij-kwiaty</code> render, list every destination as text, and stay <code>noindex</code> until a human has written a guide in that language. Self-canonical; member of <code>static.xml</code>.</dd>
-      <dt>Reads</dt><dd><code>countries.ts</code> — <code>status</code>, <code>guidePublished</code>, <code>corridorPagePublished</code>, the per-locale slug, <code>citiesKey</code> — plus <code>destinations.*</code> names and the same existence predicate the country page uses. Ordered with <code>collator(locale)</code> inside each group so Polish <code>ł</code> sorts where a Polish reader expects it.</dd>
-      <dt>States shown</dt><dd>region grouping · destination <b>with</b> a page (a link) · destination <b>without</b> a page (plain text plus one state line, never a link) · an empty region group · the whole-page empty state.</dd>
-      <dt>Not on this page</dt><dd>No price, no “tell us where to open next” email field (§13 Q4), no count of countries, no map, no flag image, no product.</dd>
-      <dt>Owning spec</dt><dd>007</dd>
-    </dl>
-  </section>
-
-  <main style="display: flex; flex-direction: column; gap: var(--space-xl); padding: var(--space-xl) 56px;">
-
-<div class="sec">
-      <nav aria-label="Breadcrumb" style="font-size: var(--text-sm); color: var(--color-ink-3);">
-        <a href="#">Home</a> <span aria-hidden="true" style="color: var(--color-rule);">/</span> <b aria-current="page">Send flowers to</b>
-      </nav>
-      <h1 class="display" style="margin: 0; font-size: var(--text-display-s); line-height: 1.08;">Where we can send flowers</h1>
-      <p class="prose" style="margin: 0;">Seven countries in Europe, and we have written a guide to every one of them: what is given, what is never given, how an address is written, and which dates matter in a year there. We open a country only once we have chosen the florists ourselves, so the guide comes first and the delivery comes after it. Where we are not delivering yet, this page says so in the same words on every row.</p>
-      <span style="font-size: var(--text-xs); color: var(--color-ink-3);">No count of countries we do not serve, no map, no flags, no “over 140 destinations”. Seven, named.</span></div>
-
-<div class="sec"><div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">Region · Central Europe</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">Central Europe</h2></div>
-      <div class="grid" style="grid-template-columns: repeat(3, minmax(0, 1fr));"><a href="#" class="tile"><span class="display" style="font-size: var(--text-xl);">Germany</span><span class="chip muted" style="align-self: flex-start;">Guide · not delivering yet</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Konfirmation, Muttertag on the second Sunday in May, and why a florist there will refuse to sell you an even number.</span><span style="font-size: var(--text-xs); color: var(--color-accent);">Read the guide →</span><span style="font-size: var(--text-xs); color: var(--color-ink-3);"><code>/en-gb/send-flowers-to/germany</code></span></a><a href="#" class="tile"><span class="display" style="font-size: var(--text-xl);">Netherlands</span><span class="chip muted" style="align-self: flex-start;">Guide · not delivering yet</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">The country that grows most of Europe&#39;s flowers, and the one place where sending them is unremarkable.</span><span style="font-size: var(--text-xs); color: var(--color-accent);">Read the guide →</span><span style="font-size: var(--text-xs); color: var(--color-ink-3);"><code>/en-gb/send-flowers-to/netherlands</code></span></a><a href="#" class="tile"><span class="display" style="font-size: var(--text-xl);">Poland</span><span class="chip muted" style="align-self: flex-start;">Guide · not delivering yet</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Name days, Women&#39;s Day on 8 March, and the chrysanthemums that belong only to graves.</span><span style="font-size: var(--text-xs); color: var(--color-accent);">Read the guide →</span><span style="font-size: var(--text-xs); color: var(--color-ink-3);"><code>/en-gb/send-flowers-to/poland</code></span></a></div></div>
-
-<div class="sec"><div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">Region · Western and Southern Europe</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">Western and Southern Europe</h2></div>
-      <div class="grid" style="grid-template-columns: repeat(3, minmax(0, 1fr));"><a href="#" class="tile"><span class="display" style="font-size: var(--text-xl);">France</span><span class="chip muted" style="align-self: flex-start;">Guide · not delivering yet</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">La Fête des Grands-Mères, muguet on 1 May, and the chrysanthemum rule that is even stricter than Poland&#39;s.</span><span style="font-size: var(--text-xs); color: var(--color-accent);">Read the guide →</span><span style="font-size: var(--text-xs); color: var(--color-ink-3);"><code>/en-gb/send-flowers-to/france</code></span></a><a href="#" class="tile"><span class="display" style="font-size: var(--text-xl);">Spain</span><span class="chip muted" style="align-self: flex-start;">Guide · not delivering yet</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Sant Jordi on 23 April: a rose and a book, and the single largest flower day in Catalonia.</span><span style="font-size: var(--text-xs); color: var(--color-accent);">Read the guide →</span><span style="font-size: var(--text-xs); color: var(--color-ink-3);"><code>/en-gb/send-flowers-to/spain</code></span></a><a href="#" class="tile"><span class="display" style="font-size: var(--text-xl);">Italy</span><span class="chip muted" style="align-self: flex-start;">Guide · not delivering yet</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Festa della Donna and the mimosa, and why the number of stems is read carefully.</span><span style="font-size: var(--text-xs); color: var(--color-accent);">Read the guide →</span><span style="font-size: var(--text-xs); color: var(--color-ink-3);"><code>/en-gb/send-flowers-to/italy</code></span></a></div></div>
-
-<div class="sec"><div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">Region · South-eastern Europe</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">South-eastern Europe</h2></div>
-      <div class="grid" style="grid-template-columns: repeat(3, minmax(0, 1fr));"><a href="#" class="tile"><span class="display" style="font-size: var(--text-xl);">Romania</span><span class="chip muted" style="align-self: flex-start;">Guide · not delivering yet</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Mărțișor on 1 March, and an Orthodox Easter that falls on its own date.</span><span style="font-size: var(--text-xs); color: var(--color-accent);">Read the guide →</span><span style="font-size: var(--text-xs); color: var(--color-ink-3);"><code>/en-gb/send-flowers-to/romania</code></span></a></div>
-      <span style="font-size: var(--text-xs); color: var(--color-ink-3);">A group of one is still a group. The heading is rendered because the group has a member; what is never rendered is a heading with nothing under it.</span></div>
-
-<div class="sec" style="border-block-start: 2px solid var(--color-ink); padding-block-start: var(--space-lg);"><span class="label" style="color: var(--color-accent);">The two destination states, side by side</span>
-      <div class="grid" style="grid-template-columns: repeat(2, minmax(0, 1fr));">
-        <div class="sec" style="gap: var(--space-sm);"><span class="label">With a page → a link</span>
-          <div class="grid" style="grid-template-columns: repeat(1, minmax(0, 1fr));"><a href="#" class="tile"><span class="display" style="font-size: var(--text-xl);">Poland</span><span class="chip muted" style="align-self: flex-start;">Guide · not delivering yet</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Name days, Women&#39;s Day on 8 March, and the chrysanthemums that belong only to graves.</span><span style="font-size: var(--text-xs); color: var(--color-accent);">Read the guide →</span><span style="font-size: var(--text-xs); color: var(--color-ink-3);"><code>/en-gb/send-flowers-to/poland</code></span></a></div>
-          <span style="font-size: var(--text-xs); color: var(--color-ink-3);">A destination is a link iff <code>status === &#39;live&#39; || guidePublished</code> <b>and</b> an authored content file exists for this locale — the same predicate the country page&#39;s <code>generateStaticParams</code> uses, so the hub cannot link to a page that does not exist and cannot omit one that does.</span></div>
-        <div class="sec" style="gap: var(--space-sm);"><span class="label">Without a page → text plus a state line</span>
-          <div class="grid" style="grid-template-columns: repeat(1, minmax(0, 1fr));"><span class="tile" style="border-style: dashed;"><span class="display" style="font-size: var(--text-xl); color: var(--color-ink-2);">Portugal</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">We have not written a guide to Portugal yet, so there is nothing here worth reading. When we do, this line becomes a link.</span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">Plain text, no <code>&lt;a&gt;</code>, no <code>href</code>, no disabled link. It becomes a link the moment its guide is published.</span></span><span class="tile" style="border-style: dashed;"><span class="display" style="font-size: var(--text-xl); color: var(--color-ink-2);">Germany</span><span style="font-size: var(--text-sm); color: var(--color-ink-2);">Our German guide is being written by a person in German. Until it is finished this row stays text on <code>/de/blumen-verschicken</code>, and the English guide is a link on <code>/en-gb/send-flowers-to</code>.</span><span style="font-size: var(--text-xs); color: var(--color-ink-3);">Plain text, no <code>&lt;a&gt;</code>, no <code>href</code>, no disabled link. It becomes a link the moment its guide is published.</span></span></div>
-          <span style="font-size: var(--text-xs); color: var(--color-ink-3);">The state line is one sentence and it is never “coming soon”. The second row is the case that only exists because copy is per locale: the same destination is a link in one language and text in another, and the hreflang cluster for it holds exactly the locales whose file is written and reviewed.</span></div>
-      </div></div>
-
-<div class="sec"><span class="label">Empty states</span>
-      <div class="grid" style="grid-template-columns: repeat(2, minmax(0, 1fr));">
-        <div class="stub"><b>An empty region group</b><span>A region whose destinations all lack a page for this locale renders <b>nothing</b> — not the heading, not an empty grid, not a sentence explaining the absence. On <code>/de/blumen-verschicken</code> in Phase 0 that is every group, which is why the German hub shows the whole-page empty state below rather than three empty headings.</span></div>
-        <div class="stub"><b>No destination has a page in this locale</b><span>The page still exists and still renders: the <code>&lt;h1&gt;</code>, the intro, and one paragraph naming the seven destinations as plain text with the state line. It is <code>noindex,follow</code> and absent from the sitemap, because a hub with no page to link to is not a page worth indexing. It is not a 404: the URL is in the locale&#39;s navigation and a 404 there would be a broken site rather than an honest one.</span></div>
-        <div class="stub"><b>A destination that is neither live nor guide-published</b><span>It appears here as text — this is the one page in the site that lists a destination we have no page for — and nowhere else. The finder and the footer omit it entirely, because those are navigation and this is the index.</span></div>
-        <div class="stub"><b>Schema</b><span>One <code>BreadcrumbList</code>, mirroring the two visible items. No <code>ItemList</code> of countries, no <code>Offer</code>, no <code>AggregateOffer</code>, no <code>LocalBusiness</code>: this page carries no price and describes no business at a location.</span></div>
-      </div></div>
-
-  </main>
-
-  <div style="margin-block-start: auto; border-top: 1px solid var(--color-ink); padding: var(--space-lg) 56px; display: flex; flex-direction: column; gap: var(--space-sm); font-size: var(--text-sm); color: var(--color-ink-2);">
-    <span class="label">Footer</span>
-    <span>Sending: Destinations · Occasions · Delivery times and cutoffs · The guarantee — Company: How it works · For florists · Help and contact · Imprint — Legal: Terms · Privacy · Cookies · Withdrawal and refunds · Cookie settings</span>
-    <span>We send flowers across Europe. You order from us; our florist in the recipient's town makes the bouquet and hands it over in person. Operated by <span class="slot">[legal name]</span>, <span class="slot">[registered address]</span>, <span class="slot">[registration no]</span> — printed only once <code>company.registered</code> is true (company.ts; spec 004 AC-9).</span>
-    <span>BLIK · Klarna · PayPal · Visa · Mastercard · Apple Pay — card payments processed by Stripe. We never store card numbers.</span>
-    <span>Talk to a person: +1 (213) 592-5150 · WhatsApp · Mon–Sat 8–20 CET. Weekend hours are a founder decision, not a design one (benchmarks/README.md, open question 1).</span>
-  </div>
+<div class="fo D" style="inline-size: 1440px;">
+<section class="note"><span class="nl">Destinations hub · desktop 1440 · [internal]</span><dl><dt>Purpose</dt><dd>Where we can send flowers, and what is true about each country today. The parent of every country guide.</dd><dt>URL</dt><dd><code>/en/send-flowers-to</code> · <code>/de/blumen-verschicken</code> · <code>/pl/wyslij-kwiaty</code>.</dd><dt>Index</dt><dd><code>index,follow</code> in a locale with at least one indexable country page; otherwise <code>noindex,follow</code>. Phase 0: noindex everywhere.</dd><dt>Reads</dt><dd><code>countries.ts</code> (status, <code>guidePublished</code>, the per-locale slug, the region) · <code>destinationsHub.*</code> · the country-page existence predicate. <code>collator(locale)</code> inside each region.</dd><dt>Blocks</dt><dd>Breadcrumb → H1 and intro → three region groups, each a heading and its rows; a row is one link: name, the status chip, the guide's one-line blurb, “Read the guide →”.</dd><dt>States</dt><dd>Drawn: a destination with no guide in this language · a delivering destination (Phase 1, drawn for the implementer) · the whole page empty (<code>de</code>, <code>pl</code>).</dd><dt>Tokens</dt><dd>Name <code>--font-display</code> 30/23. Status chip <code>--color-paper-2</code> with <code>--rule</code>, dot <code>--color-ink-3</code> (guide) or <code>--color-stem</code> (delivering). Link <code>--color-link</code>.</dd><dt>Spacing</dt><dd>Rows 220 px name column, gap 32, block 24 (mobile: one column, block 20). Regions 72 apart.</dd><dt>Semantics</dt><dd>Each row is a single <code>&lt;a&gt;</code> whose text begins with the country name, so the link list reads “Germany, Guide · not delivering yet, …”. The status is text, never colour alone. No map, no flag, no count of countries.</dd><dt>Copy</dt><dd>Verbatim <code>destinationsHub.*</code> and the seven authored guide summaries. “Read the guide →” keeps its arrow as text in the key; the artboard draws it as the link arrow.</dd><dt>Owning spec</dt><dd>007</dd></dl></section>
+<div class="notice wrap" role="note"><p><strong>A note from us:</strong> Delivery dates open when we confirm our first florist. <span class="sep">·</span> Prices include delivery and VAT <span class="sep">·</span> Freshness guarantee</p><div class="util"><a href="tel:+12135925150">Help &amp; WhatsApp +1 (213) 592-5150</a><span class="sep">|</span><nav aria-label="Change language" style="display:flex;gap:14px;align-items:center"><a href="/en" lang="en" aria-current="true">English</a> <a href="/en-gb" lang="en">English (UK)</a> <a href="/de" lang="de">Deutsch</a> <span class="beta">Beta</span> <a href="/pl" lang="pl">Polski</a> <span class="beta">Beta</span></nav><span aria-label="Prices shown in EUR">EUR</span></div></div><header class="hdr"><div class="wrap hdr-in"><a class="logo" href="/en" aria-label="Flowers Overseas, home"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink)" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink)" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><span class="wordmark" aria-hidden="true">Flowers Overseas</span></a><nav class="nav" aria-label="Main"><ul><li><a href="/en/poland/flowers">Our selection</a></li><li><a href="/en/occasions/birthday">Birthday</a></li><li><a href="/en/occasions/sympathy">Sympathy</a></li><li><a href="/en/occasions">Occasions</a></li><li><a href="/en/flowers/hand-tied-bouquets">Bouquets</a></li><li><a href="/en/flowers/roses">Roses</a></li><li><a href="/en/flowers/plants">Plants</a></li><li><a href="/en/send-flowers-to" aria-current="page">Destinations</a></li></ul></nav><a class="btn sm" href="/en#send">Send flowers</a></div></header>
+<main id="main"><div class="wrap">
+<nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/en">Home</a></li><li><span aria-current="page">Send flowers to</span></li></ol></nav>
+<div class="shop-intro" style="grid-template-columns:7fr 4fr;padding-block-end:0"><div><p class="eyebrow">Destinations</p><h1 class="h1d">Where we can <em>send flowers</em></h1>
+<p class="lede">Seven countries in Europe, and we have written a guide to every one of them: what is given, what is never given, how an address is written, and which dates matter in a year there. We open a country only once we have chosen the florists ourselves, so the guide comes first and the delivery comes after it. Where we are not delivering yet, this page says so in the same words on every row.</p></div></div>
+<section class="subsec" aria-labelledby="r0"><p class="eyebrow">Region · Central Europe</p><h2 class="h2s" id="r0" style="margin-block-end:24px">Central Europe</h2><div class="dests"><a class="dest" href="/en/send-flowers-to/germany"><b>Germany</b><span style="display:grid;gap:8px"><span class="status">Guide · not delivering yet</span><p>How flowers are given in Germany, which ones read as funeral flowers, the dates that empty the shops, and exactly what we can and cannot do there yet.</p></span><span class="link arrow" style="white-space:nowrap">Read the guide</span></a><a class="dest" href="/en/send-flowers-to/netherlands"><b>Netherlands</b><span style="display:grid;gap:8px"><span class="status">Guide · not delivering yet</span><p>Where the tulip really sits in Dutch life, the dates that matter, what a bloemist expects of you, and an honest account of what we can do there today.</p></span><span class="link arrow" style="white-space:nowrap">Read the guide</span></a><a class="dest" href="/en/send-flowers-to/poland"><b>Poland</b><span style="display:grid;gap:8px"><span class="status">Guide · not delivering yet</span><p>What flowers mean in Poland, which ones to avoid, the days people send them, and exactly what we can and cannot do there yet. Written by us, not scraped.</p></span><span class="link arrow" style="white-space:nowrap">Read the guide</span></a></div></section><section class="subsec" aria-labelledby="r1"><p class="eyebrow">Region · Western and Southern Europe</p><h2 class="h2s" id="r1" style="margin-block-end:24px">Western and Southern Europe</h2><div class="dests"><a class="dest" href="/en/send-flowers-to/france"><b>France</b><span style="display:grid;gap:8px"><span class="status">Guide · not delivering yet</span><p>What a bouquet means in France, the flowers that belong on a grave, the muguet of the first of May, and what we can honestly offer there today.</p></span><span class="link arrow" style="white-space:nowrap">Read the guide</span></a><a class="dest" href="/en/send-flowers-to/italy"><b>Italy</b><span style="display:grid;gap:8px"><span class="status">Guide · not delivering yet</span><p>The meanings a bouquet carries in Italy, the mimosa of 8 March, name days, the two days of the dead, and an honest account of what we can do there.</p></span><span class="link arrow" style="white-space:nowrap">Read the guide</span></a><a class="dest" href="/en/send-flowers-to/spain"><b>Spain</b><span style="display:grid;gap:8px"><span class="status">Guide · not delivering yet</span><p>How flowers are given across Spain, why 23 April belongs to roses, what a santo is, and an honest account of what we can and cannot do there today.</p></span><span class="link arrow" style="white-space:nowrap">Read the guide</span></a></div></section><section class="subsec" aria-labelledby="r2"><p class="eyebrow">Region · South-eastern Europe</p><h2 class="h2s" id="r2" style="margin-block-end:24px">South-eastern Europe</h2><div class="dests"><a class="dest" href="/en/send-flowers-to/romania"><b>Romania</b><span style="display:grid;gap:8px"><span class="status">Guide · not delivering yet</span><p>Snowdrops on 1 March, name days that fill the shops, an Easter on its own calendar, and an honest account of what we can offer in Romania today.</p></span><span class="link arrow" style="white-space:nowrap">Read the guide</span></a></div></section>
+</div></main>
+<div style="block-size:96px"></div>
+<footer class="ftr"><div class="wrap"><p class="signoff hand" aria-hidden="true">With love, from wherever you are.</p><div class="fgrid"><div class="about"><a class="logo" href="/en" aria-label="Flowers Overseas, home"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink)" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink)" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><span class="wordmark" aria-hidden="true">Flowers Overseas</span></a><p>We send flowers across Europe. You order from us; a local florist in the recipient's town will make the bouquet and hand it over in person.</p></div><nav aria-labelledby="f-send"><h2 id="f-send">Sending</h2><ul><li><a href="/en/send-flowers-to">Destinations</a></li><li><a href="/en/occasions">Occasions</a></li></ul></nav><div><h2>Help &amp; WhatsApp</h2><ul><li><a href="tel:+12135925150">+1 (213) 592-5150</a></li></ul><p class="fsmall">Mon–Sat 8–20 CET</p></div><div><h2>Payment</h2><p class="fsmall">We show the payment methods you can use at checkout.</p></div></div><div class="ffine"><nav class="langs" aria-label="Change language"><a href="/en" aria-current="true">English</a><a href="/en-gb">English (UK)</a><a href="/de">Deutsch · Beta</a><a href="/pl">Polski · Beta</a></nav><button type="button">Cookie settings</button></div></div></footer><section class="state-band" aria-label="States · destinations hub"><span class="nl">States · destinations hub</span><div class="states c3"><div class="state"><span class="state-tag">A destination with no guide in this language</span><div class="dests"><div class="dest"><b>Romania</b><p>We have not written a guide to Romania in this language yet. When we have, this line becomes a link.</p></div></div><p class="stub"><code>destinationsHub.noGuide</code>. A <code>&lt;div&gt;</code>, not a link, no arrow, no status chip.</p></div><div class="state"><span class="state-tag">A delivering destination (Phase 1)</span><div class="dests"><a class="dest" href="/en/send-flowers-to/poland"><b>Poland</b><span style="display:grid;gap:8px"><span class="status live">Delivering</span><p>What flowers mean in Poland, which ones to avoid, the days people send them.</p></span><span class="link arrow">Read the guide</span></a></div><p class="stub">The leaf dot and <span class="slot">[slot · spec 007: the live status label]</span> appear only when <code>corridorState(iso2) === 'live'</code>. Never drawn in Phase 0.</p></div><div class="state"><span class="state-tag">The whole page, empty</span><p class="small">We have not written a guide in this language yet, so every destination on this page is text. These are the countries we write about: France, Germany, Italy, the Netherlands, Poland, Romania and Spain. Each guide is written by a person in the language you are reading, which is why this page waits rather than showing you a translation nobody checked.</p><p class="stub"><code>destinationsHub.emptyBody</code>: the page in <code>de</code> and <code>pl</code> until a guide is written in that language.</p></div></div></section>
 </div>
 </x-dc>
 </body>
