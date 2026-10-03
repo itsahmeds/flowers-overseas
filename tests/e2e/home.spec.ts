@@ -190,20 +190,23 @@ test.describe("the locale home, above the fold", () => {
       await page.goto(path);
 
       // Five named picks, each with a reserved photo box and **no price element of any kind**:
-      // spec 004 §3 ships nothing that knows what a product is (TASK-054).
+      // spec 004 §3 ships nothing that knows what a product is (TASK-054). The box is the row's
+      // own `trending` slot, whose `sizes` states the card's rendered width (TASK-168).
       await expect(page.locator(`${TRENDING} li`)).toHaveCount(5);
       await expect(
-        page.locator(`${TRENDING} [data-fo-media-slot="grid"]`),
+        page.locator(`${TRENDING} [data-fo-media-slot="trending"]`),
       ).toHaveCount(5);
-      // The mixed state spec 006 §2.4 specifies, rendered: the picks the demo set has imagery for
-      // show it, and the rest keep the captioned box and no `<img>`. Every card is one or the
-      // other — never a broken image, never a photograph of a different bouquet.
-      const images = await page.locator(`${TRENDING} img`).count();
-      const boxes = await page
-        .locator(`${TRENDING} [data-fo-media-placeholder]`)
-        .count();
-      expect(images).toBeGreaterThan(0);
-      expect(images + boxes).toBe(5);
+      // Since batch 2 (TASK-168) every pick has approved, alt-texted imagery, so all five boxes
+      // are photographs and none is the captioned placeholder: one `<img>` per card, no broken
+      // image, no photograph of a different bouquet. The placeholder arm is `MediaAsset`'s own,
+      // covered by `tests/unit/ui-media.test.tsx`.
+      await expect(page.locator(`${TRENDING} img`)).toHaveCount(5);
+      await expect(
+        page.locator(`${TRENDING} [data-fo-media-slot="trending"] img`),
+      ).toHaveCount(5);
+      await expect(
+        page.locator(`${TRENDING} [data-fo-media-placeholder]`),
+      ).toHaveCount(0);
       await expect(page.locator(`${TRENDING} a[href]`)).toHaveCount(0);
       await expect(page.locator(TRENDING)).toHaveAttribute(
         "data-fo-trending-basis",
