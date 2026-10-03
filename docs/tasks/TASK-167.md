@@ -95,6 +95,7 @@ the commit: what is done, what is next, anything a replacement agent must know. 
 here.
 
 - 2026-10-03: C2PA manifests of all 148 zip files read (86 PNG `ChatGPT`/`gpt-image`, 62 JPEG `Grok Imagine`, split exactly on the Grok record's 31 SKUs); 142 originals staged in the main checkout's `.local/imagery/originals/` (173 files), worktree reads them through `.local/imagery` → main's `.local/imagery`; T-31/T-32 generalised and each failing case watched red; `` `gpt-image` `` filed in answer 1. Next: prompt records.
+- 2026-10-03: prompt records (80 ChatGPT → `gpt-image`, 62 Grok → `xAI Grok Imagine` / `Grok Imagine`, FO-BQ-004 untouched); 142 `media.json` rows `pending` with `promptHash` from `promptHash()` and `originalSha256` of the staged original; sign-off case split, each split case watched red by mutating `media.json`. Next: `pnpm media:variants`.
 
 ## Result
 
