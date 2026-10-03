@@ -37,11 +37,19 @@ _None._
 
 ## Escalations
 
-_None recorded._
+Raised by the implementer, 2026-10-03, before any code was written. Nothing under `src/` or `tests/` has been edited.
+
+1. **The edit guard refuses every write.** `.claude/hooks/guarded_paths.py` reads the task's status from the **main checkout's** `TASKS.md`, and `origin/main` (`bcb7cf61`) has no TASK-173 row: the row and this brief live only on this branch (`70f3928f`). Both the Edit tool and shell writes under `src/`/`tests/` answer "TASK-173 has no row in TASKS.md, so it counts as none". Unblock: land the row on `main` (merge `70f3928f`'s `TASKS.md` + brief, or add the row in the main checkout). The implementer did not work around the guard.
+2. **The fence omits the two composition seams the deliverable needs.** `src/modules/ui` may not import `src/modules/catalog` at runtime (`plan/01` §5; `footerView.ts` `hrefFor()` and the layout comment record the same rule). Whether a category hub, an occasion hub or the Poland shop root exists **in a given locale** is `listingExists()`/`listingPages()`'s answer, and a trending card's product URL is `productPageExists()` + `slugFor("product")`'s. The established seam is the route file, as the footer's `unavailable` prop and `corridorShopEntry()` already do:
+   - `src/app/[locale]/layout.tsx` — pass the header the locale's existence set (one prop, e.g. `pages={await listingPages(code)}` guarded by `isLocaleCode`), and widen the footer's `unavailable` the same way;
+   - `src/app/[locale]/page.tsx` — pass `TrendingRow` a `sku → href` map for the Poland product pages that exist.
+   Request: allow those two files, one prop each, with no other change. Alternative: one catalog export (`chromeLinkHrefs(locale)`) under `src/modules/catalog`, which is also outside the fence.
+3. **Birthday and Sympathy are both a category key and an occasion key** (`categories.data.ts`, `occasions.data.ts`), so "the hub that matches the label" names two pages each. Proposed default, applied unless the orchestrator rules otherwise: the **occasion hub** (`/{locale}/{occasions}/birthday`), because the row's own "Occasions" entry is their parent and the occasion hub carries the dates. Bouquets → category hub `bouquet`, Roses → `roses`, Plants → `plant`; Add-ons has no hub page → not rendered.
+4. **Layout consequences of "not rendered", for the record (no question):** removing the search band and the account cluster drops the mobile search row (52 px), and publishing the category row grows it to the 44 px target, so `HEADER_HEIGHTS.mobile` 245 → ~209 and `HEADER_STICKY_HEIGHTS.mobile` 132 → ~96 (desktop unchanged at 183/138); the decorative mobile menu glyph looks like a button and does nothing, so it goes too. Header/home visual baselines and `tests/e2e/header.spec.ts`'s height pins change with it. An empty footer column (Company, the legal row) renders no heading.
 
 ## Progress
 
-_Not started._
+- 2026-10-03: read the brief, `site-links.ts`, `categories.ts`, `SiteHeader`/`header-model`, `footerView`, `TrendingRow`, the catalog route resolver and the layout. Blocked by Escalations 1 and 2 before the first test; plan recorded above.
 
 ## Result
 
