@@ -19,6 +19,7 @@ import {
   mkdtempSync,
   readFileSync,
   rmSync,
+  writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
@@ -1040,6 +1041,261 @@ describe("only approved assets reach the bucket, and `--verify` checks only thos
     ).resolves.toEqual({ verified: 1, unapproved: 1 });
     expect(heads).toEqual([`${MEDIA_ORIGIN}/${published.objectKey}`]);
     expect(written[0]).toContain("1 row(s) of unapproved assets not checked");
+  }, 60_000);
+});
+
+/**
+ * `/break 142` round 2 (holes 5–9): the approval filter's edges. A `rejected` asset is skipped
+ * like a `pending` one; `--force` re-sends bytes but never widens the set; `runVerify()` fails on
+ * a disagreement, honours `--only`, and counts the skipped rows over the selection it was given.
+ */
+describe("the approval filter's edges: rejected, `--force`, and `runVerify()`", () => {
+  const APPROVED = "home-occasion-birthday";
+  const APPROVED_2 = "home-occasion-name-day";
+  const OTHER = "fo-bq-005-detail";
+  const ENV = { ...CONFIG };
+
+  async function frame(assetId: string): Promise<Buffer> {
+    const box = variantBox(assetId, 384);
+    return await sharp({
+      create: {
+        width: box.width,
+        height: box.height,
+        channels: 3,
+        background: { r: 214, g: 209, b: 201 },
+      },
+    })
+      .avif(AVIF_OPTIONS)
+      .toBuffer();
+  }
+
+  /** Two approved assets and one more whose state the case chooses (`pending` as shipped). */
+  async function tree(
+    otherState: "pending" | "rejected" = "pending",
+  ): Promise<string> {
+    const root = writeDerivedTree(
+      await Promise.all(
+        [APPROVED, APPROVED_2, OTHER].map(async (assetId) => ({
+          assetId,
+          width: 384,
+          format: "avif" as const,
+          data: await frame(assetId),
+        })),
+      ),
+    );
+    if (otherState === "rejected") {
+      const path = join(root, "seed/data/media.json");
+      const media = JSON.parse(readFileSync(path, "utf8")) as {
+        rows: Record<string, unknown>[];
+      };
+      for (const row of media.rows) {
+        if (row.id !== OTHER) continue;
+        row.reviewState = "rejected";
+        row.reviewedBy = "founder";
+        row.reviewedAt = "2026-10-03T10:00:00.000Z";
+      }
+      writeFileSync(path, `${JSON.stringify(media, null, 2)}\n`);
+    }
+    return root;
+  }
+
+  function rowsOf(root: string): MediaVariantManifest[] {
+    return (
+      JSON.parse(
+        readFileSync(join(root, "seed/data/media-variants.json"), "utf8"),
+      ) as { rows: MediaVariantManifest[] }
+    ).rows;
+  }
+
+  /**
+   * A public bucket that publishes the given assets' objects with the headers their rows record,
+   * except where `wrongBytes` says otherwise, and 404s everything else. Records every HEAD.
+   */
+  function bucket(
+    root: string,
+    published: readonly string[],
+    wrongBytes: readonly string[] = [],
+  ): { fetcher: Fetcher; heads: string[] } {
+    const byUrl = new Map<string, MediaVariantManifest>(
+      rowsOf(root)
+        .filter((row) => published.includes(row.assetId))
+        .map((row) => [`${MEDIA_ORIGIN}/${row.objectKey}`, row] as const),
+    );
+    const heads: string[] = [];
+    const fetcher: Fetcher = async (url) => {
+      heads.push(url);
+      const row = byUrl.get(url);
+      const headers: Record<string, string> =
+        row === undefined
+          ? {}
+          : {
+              "content-length": String(
+                wrongBytes.includes(row.assetId) ? row.bytes + 1 : row.bytes,
+              ),
+              "content-type": contentTypeFor(row.format),
+            };
+      return await Promise.resolve({
+        status: row === undefined ? 404 : 200,
+        headers: {
+          get: (name: string): string | null =>
+            headers[name.toLowerCase()] ?? null,
+        },
+        text: async (): Promise<string> => await Promise.resolve(""),
+      });
+    };
+    return { fetcher, heads };
+  }
+
+  const objectUrl = (assetId: string): string =>
+    `${MEDIA_ORIGIN}/media/${assetId}/384.avif`;
+
+  async function upload(
+    root: string,
+    argv: readonly string[],
+  ): Promise<{ summary: unknown; calls: Call[]; written: string[] }> {
+    // A HEAD (404, absent) then a PUT (200) per object; `--force` sends PUTs alone.
+    const { fetcher, calls } = fakeFetcher(
+      Array.from({ length: 6 }, (_, index) => ({
+        status: !argv.includes("--force") && index % 2 === 0 ? 404 : 200,
+      })),
+    );
+    const written: string[] = [];
+    const summary = await runUpload({
+      root,
+      env: ENV,
+      args: parseArgs(argv),
+      fetcher,
+      write: (text) => {
+        written.push(text);
+      },
+      now: () => NOW,
+    });
+    return { summary, calls, written };
+  }
+
+  const putAssets = (calls: readonly Call[]): string[] =>
+    calls
+      .filter((call) => call.method === "PUT")
+      .map((call) => new URL(call.url).pathname.split("/")[3] ?? "")
+      .sort();
+
+  async function verify(
+    root: string,
+    fetcher: Fetcher,
+    only?: readonly string[],
+  ): Promise<{ result: Promise<unknown>; written: string[] }> {
+    const written: string[] = [];
+    const result = runVerify({
+      root,
+      ...(only === undefined ? {} : { only }),
+      fetcher,
+      write: (text) => {
+        written.push(text);
+      },
+    });
+    return await Promise.resolve({ result, written });
+  }
+
+  it("never PUTs a `rejected` asset's variants (HOLE 5)", async () => {
+    const { summary, calls } = await upload(await tree("rejected"), []);
+
+    expect(summary).toMatchObject({ variants: 2, uploaded: 2, unapproved: 1 });
+    expect(putAssets(calls)).toEqual([APPROVED, APPROVED_2].sort());
+    expect(calls.some((call) => call.url.includes(OTHER))).toBe(false);
+  }, 60_000);
+
+  it("never verifies a `rejected` asset's variants (HOLE 5)", async () => {
+    const root = await tree("rejected");
+    const { fetcher, heads } = bucket(root, [APPROVED, APPROVED_2]);
+    const { result } = await verify(root, fetcher);
+
+    await expect(result).resolves.toEqual({ verified: 2, unapproved: 1 });
+    expect(heads.sort()).toEqual(
+      [objectUrl(APPROVED), objectUrl(APPROVED_2)].sort(),
+    );
+  }, 60_000);
+
+  it("`--force` re-sends every approved object and still never a pending one (HOLE 6)", async () => {
+    const { summary, calls } = await upload(await tree(), ["--force"]);
+
+    expect(summary).toMatchObject({ variants: 2, uploaded: 2, unapproved: 1 });
+    // `--force` skips the HEAD, so the calls are PUTs alone.
+    expect(calls.map((call) => call.method)).toEqual(["PUT", "PUT"]);
+    expect(putAssets(calls)).toEqual([APPROVED, APPROVED_2].sort());
+  }, 60_000);
+
+  it("rejects when an approved object is missing from the bucket (HOLE 7)", async () => {
+    const root = await tree();
+    const { fetcher } = bucket(root, [APPROVED]);
+    const { result, written } = await verify(root, fetcher);
+
+    await expect(result).rejects.toThrow(
+      /^1 published object\(s\) disagree with seed\/data\/media-variants\.json:\nmedia\/home-occasion-name-day\/384\.avif: the manifest lists it but the bucket does not publish it \(404/u,
+    );
+    expect(written).toEqual([]);
+  }, 60_000);
+
+  it("rejects when an approved object's byte count disagrees with its row (HOLE 7)", async () => {
+    const root = await tree();
+    const { fetcher } = bucket(root, [APPROVED, APPROVED_2], [APPROVED_2]);
+    const { result, written } = await verify(root, fetcher);
+
+    await expect(result).rejects.toThrow(
+      /^1 published object\(s\) disagree with seed\/data\/media-variants\.json:\nmedia\/home-occasion-name-day\/384\.avif: \d+ B published but \d+ B/u,
+    );
+    expect(written).toEqual([]);
+  }, 60_000);
+
+  it("`--verify --only <approved id>` HEADs that asset's objects and no other (HOLE 8)", async () => {
+    const root = await tree();
+    const { fetcher, heads } = bucket(root, [APPROVED, APPROVED_2]);
+    const { result } = await verify(root, fetcher, [APPROVED_2]);
+
+    await expect(result).resolves.toEqual({ verified: 1, unapproved: 0 });
+    expect(heads).toEqual([objectUrl(APPROVED_2)]);
+  }, 60_000);
+
+  it("`--verify --only <pending id>` HEADs nothing (HOLE 8)", async () => {
+    const root = await tree();
+    const { fetcher, heads } = bucket(root, [APPROVED, APPROVED_2]);
+    const { result } = await verify(root, fetcher, [OTHER]);
+
+    await expect(result).resolves.toEqual({ verified: 0, unapproved: 1 });
+    expect(heads).toEqual([]);
+  }, 60_000);
+
+  it("prints the whole success line, counting skipped rows over the `--only` selection (HOLE 9)", async () => {
+    const root = await tree();
+    const { fetcher } = bucket(root, [APPROVED, APPROVED_2]);
+    const { result, written } = await verify(root, fetcher, [APPROVED]);
+
+    await expect(result).resolves.toEqual({ verified: 1, unapproved: 0 });
+    expect(written).toEqual([
+      `1 row(s) verified against ${MEDIA_ORIGIN}/: every object is published with the byte count and content type its row records. 0 row(s) of unapproved assets not checked: they are never published.\n`,
+    ]);
+  }, 60_000);
+
+  it("prints the whole success line for a bare `--verify`, with the pending row counted (HOLE 9)", async () => {
+    const root = await tree();
+    const { fetcher } = bucket(root, [APPROVED, APPROVED_2]);
+    const { result, written } = await verify(root, fetcher);
+
+    await expect(result).resolves.toEqual({ verified: 2, unapproved: 1 });
+    expect(written).toEqual([
+      `2 row(s) verified against ${MEDIA_ORIGIN}/: every object is published with the byte count and content type its row records. 1 row(s) of unapproved assets not checked: they are never published.\n`,
+    ]);
+  }, 60_000);
+
+  it("counts the upload's skipped rows over the `--only` selection too (HOLE 9)", async () => {
+    const { summary, written } = await upload(await tree(), [
+      "--only",
+      APPROVED,
+    ]);
+
+    expect(summary).toMatchObject({ variants: 1, uploaded: 1, unapproved: 0 });
+    expect(written.at(-1)).toContain(
+      "0 variant(s) of unapproved assets skipped",
+    );
   }, 60_000);
 });
 

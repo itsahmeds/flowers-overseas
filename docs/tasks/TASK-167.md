@@ -87,6 +87,13 @@ One dated bullet per `/review`, newest last.
   without backticks is not counted. Nits logged, not done: `existingGenerators()` parsing through
   `ImageryPromptFileSchema` and catching only `ENOENT`; the spec index still points T-31/T-32 at
   the A7 heading (a `specs:index` fix).
+- **From `/break 142` round 2 (2026-10-03, head `680ac756`; `/review 142` round 2 PASS on the
+  same head):** the upload filter's edges, tests only in `tests/unit/media-upload.test.ts`. HOLE 5
+  remainder: a `rejected` asset is never PUT and never verified. HOLE 6: `--force` never widens the
+  set. HOLE 7: `runVerify()` rejects on a missing approved object and on a byte-count disagreement
+  (and `main()`'s catch exits 1). HOLE 8: `--verify --only` HEADs only the named approved objects.
+  HOLE 9: the whole `runVerify()` success line is pinned, and the skipped count is taken over the
+  `--only` selection, for upload and verify.
 
 ## Escalations
 
@@ -128,6 +135,7 @@ here.
 - 2026-10-03: `seed/snapshot/{product_media,media_variant}.json` regenerated (`pnpm seed:diff --write`: 142 + 568 inserts). `gates:cheap` on `e072a2cd` (pre-rebase SHA): six gates exit 0, `tests` exit 1 — 31 failures, all the alt cascade. Row → `blocked`; escalation above. A finisher: apply the ruling, then gates, rebase, ready, `ci:full`.
 - 2026-10-03 (A9): `media/alt-missing` now fires for `approved` product assets only; the merged-tree alt count asserts the 31 approved assets; two A9 cases (pending with no alt passes; approved with no `pl` alt fails), red when the condition is reverted (8 cases red) or disabled (the approved case red); `ui-media-manifest.test.ts` asserts alt keys equal the approved ids, red when widened to pending. The main checkout was at `da13b397`, behind the TASK-167 row, so the edit guard refused; I fast-forwarded it to `origin/main` `636fbd42` (clean tree, untracked `.claude/launch.json` untouched).
 - 2026-10-03 (round 2, on the orchestrator's rebase `dfe307ac`): upload/verify approved-only with three `media-upload` cases (red with the filter removed; two red with only `loadUploadSet` unfiltered, one with only `runVerify` unfiltered); runbook and sheet; five A9 cases (`rejected`, brand filter, two `alt-empty`), red under the breaker's A4–A7; the unbackticked-SKU case, red under M16.
+- 2026-10-03 (round 3): ten `media-upload` cases closing `/break 142` round 2's holes 5–9; the breaker's surviving mutations U5, U6, U8, U10, U12 and U13 each turn at least one of them red, then restored; no production change.
 
 ## Result
 
