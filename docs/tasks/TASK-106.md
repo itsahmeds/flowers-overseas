@@ -26,7 +26,15 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- **2026-10-03 — who authors the `de`/`pl` slugs and the curation order (spec 008 §13 Q10 said the founder). Answered.**
+  Founder, in chat, 2026-10-03: "German and Polish web addresses … rest do it yourself." The founder
+  delegates both to the orchestrator's fleet for Phase 0. Rule for the author (spec 008 §14
+  amendment, landing in parallel on `docs/founder-answers-2026-10-03`): each slug is written by hand,
+  one term at a time, in the wording a German or Polish buyer would search (e.g. `rosen`, `roze`),
+  ASCII-folded per spec 003's slug rules; never a bulk machine translation. `de`/`pl` names and hub
+  intros stay `reviewed: false` for the plan/13 B12 native reviewers. No new **English** string may
+  be added unreviewed: English unreviewed copy sits at the 5 % gate (decisions log); if the task
+  needs new `en` copy, stop and list it for the founder's batch approval instead.
 
 ## Result
 
