@@ -66,6 +66,33 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   orchestrator chose **B** (the `(1)` files), the version that matches the product's brief, as
   the morning report proposed; the founder may swap to A later, which is a data edit. Stage B
   only; A gets no rows.
+- **2026-10-03 — 20 unit cases in six files outside the fence pin the photo coverage of the
+  committed data (orchestrator, `open`).** With all 175 assets approved there is no `pending`
+  asset and no product without a photograph left in `seed/data/media.json`, and these cases took
+  their subjects from it. No production code is involved; each is a test edit:
+  - `tests/unit/media-upload.test.ts` (10 cases, the `/break 142` HOLE 5–9 suite): `PENDING =
+    "fo-bq-005-detail"` and `OTHER` are read as `pending` from the committed manifest. Fix: make
+    the subject `pending` in the temp tree's `media.json`, as `tree("rejected")` already does for
+    `rejected`.
+  - `tests/unit/seed-check.test.ts` (1): the merged-tree approved count, `31` → `175`.
+  - `tests/unit/catalog-category-page.test.tsx` (2), `catalog-hub-pages.test.tsx` (3),
+    `catalog-occasion-page.test.tsx` (2), `catalog-shop-page.test.tsx` (1): AC-24's LCP nomination
+    pins "three of twelve cards are photographs" (now 12 of 12), and the cases that need a
+    placeholder first card found one in the shipped data. Fix: pin the shipped counts, and build
+    the placeholder subject in-test (an injected manifest or a pending override).
+  - `tests/unit/product-page.test.tsx` (2, AC-21 vase sentence, AC-25): "a product with no
+    photograph" no longer exists. Fix: the same in-test subject.
+  The e2e and visual suites may hold the same assumption (`tests/e2e/home.spec.ts`,
+  `product-page.spec.ts`, `honesty.spec.ts`, `tests/visual/listing.spec.ts`); CI will say.
+  **Recommendation:** widen this task's fence to those six test files (tests only), keeping every
+  placeholder case's subject alive by construction rather than deleting the case. Everything else
+  in Binding is done or running; the PR stays draft.
+- **2026-10-03 — every `.env.local` on this machine holds the old `*.r2.dev` value of
+  `R2_PUBLIC_BASE_URL` (founder action, not blocking).** `pnpm media:upload` refuses to run unless
+  it equals `MEDIA_ORIGIN` (spec 006 §14 A8 clause 7). The bucket is the same one behind
+  `media.flowersoverseas.com`, so I passed `R2_PUBLIC_BASE_URL=https://media.flowersoverseas.com`
+  inline for the upload and verify runs and edited no env file. The founder should change that one
+  line in `.env.local` (`docs/runbooks/imagery.md` §6, second note).
 
 ## Progress
 
@@ -73,7 +100,19 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-03: pair B's C2PA manifests read (`ChatGPT` / `gpt-image`), staged as
+  `fo-bq-004-{hero,detail}.png` in the main checkout's `.local/imagery/originals/` (175 files);
+  FO-BQ-004's records → `gpt-image`, re-hashed; two rows; all 144 batch-2 rows `approved` /
+  `founder` / `2026-10-03T09:21:10Z`; `media:variants --only` the pair (8 rows, 694 total);
+  `--check` exit 0. The worktree reads originals through `.local/imagery` → main's, and the derived
+  tree is a copy of `fo-wt-167/.local/media` plus the pair.
+- 2026-10-03: alt text for the 144 in en, en-gb (= en, as batch 1), de, pl, each written from the
+  photograph itself (12 labelled contact sheets of the 384 variants, every photo viewed), never the
+  product name; `seed:check` exit 0.
+- 2026-10-03: sign-off case (144 at the founder's instant, 175 approved in all, pair B digests),
+  each mutation watched red; `seed/snapshot` regenerated. The sheet CSV is **not** regenerated (the
+  batch split reads it; see the test's header). Full unit run: 20 red in six files outside the
+  fence → escalated. Upload of the 144 ids running.
 
 ## Result
 
