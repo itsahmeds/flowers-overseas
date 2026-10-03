@@ -89,27 +89,38 @@ test.describe("A19: no same-day, cutoff or ranking promise renders while no dest
     }) => {
       const response = await page.goto(path);
       expect(response?.status()).toBe(200);
-      if (type === "gallery") {
+      // `body`, not `main`: the header's utility strip, the category row and the footer are the
+      // three places this task's promises lived.
+      const { lifted, text } = await page.evaluate((lift: boolean) => {
         // Spec 009's `live` picker and summary fixtures (TASK-126) print the cutoff line the
         // product page may print and the chrome may not; each is marked `data-fo-cutoff`, as on
         // the page, and lifted here by that mark alone, the unit honesty scan's rule. Every other
         // word of the gallery is still swept.
-        const lifted = await page.evaluate(() => {
-          const marked = document.querySelectorAll(
-            "[data-fo-product-state] [data-fo-cutoff]",
-          );
-          for (const node of marked) node.remove();
-          return marked.length;
+        //
+        // **Hidden, read and restored in one synchronous turn**, never removed. Removing a
+        // server-rendered node before React has hydrated it is a hydration mismatch (React #418):
+        // React then re-renders the tree on the client and puts the lifted lines back before the
+        // text is read. That is the race that went red on the slower `e2e-mobile` project only
+        // (`/review 135` round 1, required change 4). Nothing can interleave with this function,
+        // and the DOM it leaves behind is the one the server sent.
+        const marked = lift
+          ? [
+              ...document.querySelectorAll<HTMLElement>(
+                "[data-fo-product-state] [data-fo-cutoff]",
+              ),
+            ]
+          : [];
+        const display = marked.map((node) => node.style.display);
+        for (const node of marked) node.style.display = "none";
+        const body = document.body.innerText;
+        marked.forEach((node, index) => {
+          node.style.display = display[index] ?? "";
         });
-        expect(lifted).toBeGreaterThan(0);
-      }
+        return { lifted: marked.length, text: body };
+      }, type === "gallery");
+      if (type === "gallery") expect(lifted).toBeGreaterThan(0);
 
-      // `body`, not `main`: the header's utility strip, the category row and the footer are the
-      // three places this task's promises lived.
-      const rendered = (await page.locator("body").innerText()).replaceAll(
-        /\s+/g,
-        " ",
-      );
+      const rendered = text.replaceAll(/\s+/g, " ");
 
       expect(offences(rendered), rendered.slice(0, 600)).toEqual([]);
     });
