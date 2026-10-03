@@ -219,6 +219,148 @@ test.describe("unknown locales answer 404 (AC-8)", () => {
   });
 });
 
+/**
+ * AC-8 at every depth (TASK-170). AC-8 names one path below a locale (`/en/does-not-exist`), but
+ * its intent is WCAG 3.1.1: **every** 404 under `/{locale}/` is a document that declares its
+ * language. Production on 2026-10-03 answered the depth-3 shapes and an unknown locale with a
+ * deeper path inside the framework's `<html id="__next_error__">` with no `lang` at all, while the
+ * depth-2 shape and a bare unknown locale were correct — so each depth is pinned here, by shape.
+ *
+ * Every 404 is the x-default document of `src/app/not-found.tsx` (spec 003 §5.3's recorded
+ * deviation, §14 A3), a German URL's included: the language it declares is the language its copy
+ * is written in, which is what 3.1.1 asks.
+ */
+const NOT_FOUND_SHAPES = [
+  // depth 2: an unknown page segment under a real locale (correct before TASK-170; kept pinned)
+  { shape: "depth 2, unknown segment", path: "/en/nope-segment" },
+  { shape: "depth 2, unknown segment, de", path: "/de/nope-segment" },
+  // depth 3: the corridor shape, the country-shop-root shape, the hub shapes
+  { shape: "depth 3, unknown corridor", path: "/en/send-flowers-to/nowhere" },
+  {
+    shape: "depth 3, unknown corridor, de",
+    path: "/de/blumen-verschicken/nirgendwo",
+  },
+  {
+    shape: "depth 3, shop root, unknown country",
+    path: "/en/atlantis/flowers",
+  },
+  { shape: "depth 3, unknown page under a country", path: "/en/poland/nope" },
+  { shape: "depth 3, unknown category hub", path: "/en/flowers/no-such-kind" },
+  // depth 4: the product shape (every product is prebuilt, spec 009 §14 A6) and the listing shape
+  {
+    shape: "depth 4, unknown product",
+    path: "/en/poland/product/no-such-bouquet",
+  },
+  {
+    shape: "depth 4, unknown product, de",
+    path: "/de/polen/produkt/no-such-bouquet",
+  },
+  {
+    shape: "depth 4, unknown category under a country",
+    path: "/en/poland/flowers/no-such-kind",
+  },
+  // an unknown locale with a deeper path
+  { shape: "unknown locale, depth 2", path: "/xx/nope-segment" },
+  { shape: "unknown locale, depth 3", path: "/xx/send-flowers-to/poland" },
+  { shape: "unknown locale, depth 3, shop root", path: "/fr/poland/flowers" },
+  {
+    shape: "unknown locale, depth 4",
+    path: "/xx/poland/product/amber-hour",
+  },
+  // with a query string (TASK-170): only a shop-root address carrying a listing key is rewritten
+  // to the parameter route (`src/lib/listing-rewrites.ts`); every other address with a query is
+  // the prebuilt route's, so its unknown paths keep the router's localised 404
+  {
+    shape: "depth 3, unknown corridor, with ?page=",
+    path: "/en/send-flowers-to/nowhere?page=2",
+  },
+  {
+    shape: "depth 3, shop root, unknown country, with ?utm_source=",
+    path: "/en/atlantis/flowers?utm_source=newsletter",
+  },
+  {
+    shape: "unknown locale, depth 3, shop root, with ?page=",
+    path: "/fr/poland/flowers?page=2",
+  },
+  {
+    shape: "depth 4, unknown category under a country, with ?sort=",
+    path: "/en/poland/flowers/no-such-kind?sort=price-asc",
+  },
+] as const;
+
+test.describe("every 404 shape is the localised not-found document (AC-8, TASK-170)", () => {
+  for (const { shape, path } of NOT_FOUND_SHAPES) {
+    test(`${shape}: ${path} answers 404 with lang="${X_DEFAULT_LANG}" and the localised copy`, async ({
+      request,
+    }) => {
+      // `maxRedirects: 0`: "not 3xx, not 200" — a redirect to a page that 404s is not this 404.
+      const response = await request.get(path, { maxRedirects: 0 });
+      const html = await response.text();
+      const tag = /<html\b[^>]*>/iu.exec(html)?.[0] ?? "";
+
+      expect(response.status(), path).toBe(404);
+      expect(headerNames(response), path).not.toContain("location");
+      // The `<html>` element of the document itself, not any `lang` attribute somewhere inside it.
+      expect(/\blang="([^"]*)"/u.exec(tag)?.[1], path).toBe(X_DEFAULT_LANG);
+      // The framework's error shell is the failure this block exists for: no language, no copy
+      // until a client render fills it in.
+      expect(html, path).not.toContain('id="__next_error__"');
+      // The localised copy, server-rendered from `messages/en.json` (`errors.notFound.heading`),
+      // and not Next's built-in "404: This page could not be found".
+      // Asserted as the rendered `<h1>`, because the bare string also travels in the `<title>` and
+      // in the RSC payload, both of which the error shell carries without rendering any copy.
+      expect(html, path).toMatch(/<h1\b[^>]*>Page not found<\/h1>/u);
+      expect(html, path).not.toContain("This page could not be found");
+    });
+  }
+});
+
+/**
+ * **The accepted residual** (advisor memo `docs/advice/2026-10-03-route-rendering-404-and-pdp-form.md`,
+ * `/review 149`; TASK-170 E-1). A shop-root address with an **unknown country and a known listing
+ * key** is rewritten to the parameter route, which reads the query and so renders per request;
+ * there the router's `dynamicParams = false` gate does not run, `resolveLocalePath()` finds nothing,
+ * and a request-time `notFound()` is Next's error shell: the status is right, the document has no
+ * `lang`. Nothing links to such an address; a page past the last one is the same render and the
+ * same answer. Pinned **as it is today**, so that a fix — or a
+ * regression that widens it — shows up here as a deliberate change rather than silently. The
+ * internal path itself, requested directly without a listing key, is a 404 of the same kind.
+ */
+const RESIDUAL_404S = [
+  "/en/atlantis/flowers?page=2",
+  "/de/atlantis/blumen?sort=price-asc",
+  "/en/_query/poland/flowers",
+  // A page past the last (spec 008 AC-10's "404, never an empty grid"): the country exists, but
+  // `listingView()` answers `undefined` inside the per-request render. Accepted by `/review 143`.
+  "/en/poland/flowers?page=99",
+  // An uppercase locale or shop segment **with** a listing key (`/break 143` hole 1). Next matches
+  // the rewrite case-insensitively, so these reach the parameter route — with the visitor's own
+  // spelling, which its strict resolver refuses: 404, never the page 2 they once rendered (spec
+  // 008 AC-1). Same render, same error shell as the rows above; the bare uppercase addresses are
+  // the router's localised 404 (spec 003 AC-8's `/EN`).
+  "/EN/poland/flowers?page=2",
+  "/en/poland/FLOWERS?page=2",
+  "/DE/polen/BLUMEN?page=2",
+] as const;
+
+test.describe("the accepted residual: 404 inside the error shell (TASK-170 E-1)", () => {
+  for (const path of RESIDUAL_404S) {
+    test(`${path} answers 404, no redirect, without lang (accepted, pinned)`, async ({
+      request,
+    }) => {
+      const response = await request.get(path, { maxRedirects: 0 });
+      const html = await response.text();
+      const tag = /<html\b[^>]*>/iu.exec(html)?.[0] ?? "";
+
+      expect(response.status(), path).toBe(404);
+      expect(headerNames(response), path).not.toContain("location");
+      // Today's shape, asserted so that a change to it is seen: the framework's error shell.
+      expect(tag, path).toContain('id="__next_error__"');
+      expect(/\blang="/u.test(tag), path).toBe(false);
+    });
+  }
+});
+
 test.describe("no response varies by request header (AC-9)", () => {
   for (const path of ["/en", "/de"] as const) {
     test(`${path} is byte-identical for every client`, async ({ request }) => {
