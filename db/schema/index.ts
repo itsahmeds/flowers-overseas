@@ -21,3 +21,4 @@
 export * from "./catalog.ts";
 export * from "./geo.ts";
 export * from "./i18n.ts";
+export * from "./media.ts";

@@ -22,6 +22,13 @@
       "when": 1789747981943,
       "tag": "0002_catalog_pricing",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791028167148,
+      "tag": "0003_media",
+      "breakpoints": true
     }
   ]
 }
