@@ -202,3 +202,40 @@ gap closes, mark it ✅ with the PR, and don't delete the row.
   changed in the Railway dashboard shows up the next morning; `scripts/railway-check.ts` exists,
   but no CI step runs it, and TASK-100 did not build that step. It needs a task row (and a
   repository secret for the Railway token) before the nightly run covers AC-34.
+
+**Found on 2026-10-03, day (PRs 126, 148, 152, 153, 162, 166):**
+- **A push during a rebase closed PR 152.** Pushing the branch mid-rebase (HEAD equal to `origin/main`) left the PR with
+  zero commits; GitHub closed it (15:55Z) and the later push did not reopen it; reopened by hand at 16:12Z. Rule to add:
+  never push during a rebase, and after any force-push check `gh pr view --json state`.
+- **A rebase-carry comparison must use the last *reviewed* head.** PR 152's carry ran `git range-diff` against the
+  previous head (`baf4983d`) instead of the last reviewed head (`eb38f369`) and missed a stale duplicate paragraph left by
+  an earlier conflict resolution. `CLAUDE.md` "Merging" should name the reviewed head as the comparison's old side.
+- **`design-docs.test.ts` misses physical CSS in artboards** (`/review 166` round 1 nit): `margin-left` and `left:` in a
+  `.dc.html` passed 183 of 183, so the logical-properties rule is not checked in `docs/design/`.
+- **`media:upload --verify` has no retry** (TASK-168): `verifyPublished()` aborts the whole run on one `fetch failed`; it
+  crashed at 144 ids and was re-run in groups of 16. Give it a bounded retry in the next media task.
+- **`railway-check` hides GraphQL errors.** When Railway answers `data: null` with an `errors` array,
+  `scripts/railway-check.ts` crashes with a `ZodError` instead of printing the error messages (the founder hit it on
+  2026-10-03). Needs a task row under spec 040: print each error message (no data), exit 3.
+- **The `container` job's scope step has TASK-100's depth-1 merge-base bug** (found by the TASK-100 finisher,
+  `/review 126` round 2 nit 2): it runs `git merge-base FETCH_HEAD HEAD` on `actions/checkout@v4`'s depth-1 merge commit,
+  finds no base and builds the image anyway, so it likely builds on every unlabelled PR. Needs a task row: the same
+  `HEAD^1..HEAD` fix as `cloudflare-check`, with the reviewer's pin that the checkout step has no `with.ref`.
+- **The decisions log holds a duplicate row.** "Runbook F1–F5 done; TASK-157 closes on T-44's paste" is on `main` twice
+  (PR 153, the second a reworded copy that also records the founder's "railway configured"). The log is append-only, so
+  the duplicate stays; read the second row as the one of record. A check that refuses duplicate decision titles would catch
+  the next one.
+- **The orchestrator's merge-guard script misread `SKIPPED=1` as pending.** Its `grep '=1 '` for checks with an empty
+  status also matched a `SKIPPED=1` count, so a green PR looked unfinished. Match empty-status entries with
+  `'(^| )=[0-9]'`; better, read `statusCheckRollup` as JSON with `jq`.
+- **The shipped footer prints "Card payments are processed by Stripe" in Phase 0,** against spec 004 §14 A10 (it renders
+  only once a payment integration ships). The v2 `chrome-*` artboards mark it hidden; carried in TASK-176's brief.
+- **Open questions from `/review 166` round 2 (design v2), for TASK-178 and TASK-179.** In the reviewer's words: (1) "The
+  equivalents are joined with ' · ', while clause 6(b) says to use the `format.ts` list formatter. The spec's own example
+  uses ' · ' too. TASK-178 should say which separator the formatter emits." (2) "In the fresh-rate PDP, the add-on rows
+  stay in złoty and carry the currency sentence, while the bouquet and total are in euro. This matches the shipped
+  `AddonPriceList`, but TASK-178/179 should decide whether add-ons follow the display currency." Orchestrator ruling
+  2026-10-04: TASK-178 joins equivalents with the `format.ts` list formatter (spec 004 A21 clause 6(b) says so). Add-on
+  prices stay in the destination's currency, as the shipped `AddonPriceList` and TASK-179 (E-1) keep them; showing them
+  in the display currency needs add-on FX pricing and belongs to the checkout spec (010), not Phase 0. The briefs are on
+  open branches (PRs 169, 170), so their work orders carry the ruling.

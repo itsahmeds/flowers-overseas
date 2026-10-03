@@ -53,6 +53,29 @@ One dated bullet per `/review`, newest last.
   approving a row and regenerating the sheet moves it into batch 1 and turns the 2026-09-18
   sign-off case red — handle that split; (4) the derived variants for batch 2 are in
   `/Users/ahmed/dev/fo-wt-167/.local/media/` (or re-derive with `pnpm media:variants`).
+- **From `/review 148` round 1 (2026-10-03, head `32159a4d`), copied by the orchestrator.** FAIL on
+  docs only (runbook ladder row, this brief's Binding splice and stale escalations and Result, the
+  PR description); all fixed in round 2. Nits, in the reviewer's words: "`seed/schema/variants.ts`:
+  the new comment says 'spec 006 §2.5 amendment to follow'. It should cite §14 A11. The
+  `variantPipeline` doc comment … is now false for 480" (fixed in round 2); "`/de` LCP is 1952 ms
+  on the head, a 48 ms margin (A8 cl.4). Anything new above the fold on a locale home must be
+  measured first"; "`slots.ts`: 'The four places this design puts a photograph' now lists six
+  slots. The `docs/architecture.md` `media/slots.ts` slot list lacks `trending` (and `band`)" (fixed
+  in round 2); "`main`'s committed `footer-de-*` baselines are stale today: orchestrator, please
+  check main's `visual`" (checked: main's `visual` green on `8f65d744`, after TASK-106, so they are
+  not stale); "`verifyPublished()` has no retry, and one `fetch failed` aborts the whole run"
+  (logged in `docs/framework/gaps.md`); "`reviewedAt` is written `…09:21:10Z` while batch 1 is
+  written `….000Z`. Both are valid. Harmless." Breaker holes H1 and H2 were closed in round 2.
+- **From `/review 148` round 2 (2026-10-03, head `38265587`, PASS), copied by the orchestrator.**
+  Nits, in the reviewer's words: (1) "The brief's `## Result` and the PR description quote LCP from
+  run 37133900235 on `32159a4d`. The head run 37137399567 gives /en 1766, /en-gb 1767, /de 1776, /pl
+  1791 ms. The `/de` margin is now 224 ms, not 48 ms, so the '48 ms margin' carry-forward is out of
+  date." Done here at merge: `## Result` quotes the head run. (2) "Round 1's carry-forwards that are
+  still open: `verifyPublished()` has no retry; main's `footer-de-*` baselines are stale from
+  TASK-106 (orchestrator, please check main's `visual`); the founder still has the `.env.local`
+  `R2_PUBLIC_BASE_URL` line to change." Status at merge: the retry is a `gaps.md` line; the
+  baselines are not stale; the founder changed the `.env.local` line on 2026-10-03 ~17:45Z
+  (checked by count, value not printed). No hole is open: `/break 148` round 2 held.
 
 ## Escalations
 
@@ -374,7 +397,7 @@ here.
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-**Done (2026-10-03).** PR [#148](https://github.com/itsahmeds/flowers-overseas/pull/148), spec 006
+**Done; merged 2026-10-03 as `05aa566a`.** PR [#148](https://github.com/itsahmeds/flowers-overseas/pull/148), head `38265587`, spec 006
 §14 A7 clause 5, A8 clause 4, A9 clause 4 and A11. **Data:** 175 assets approved (the 144 of batch
 2 at the founder's `2026-10-03T09:21:10Z`); FO-BQ-004 pair B; 576 alt strings (144 × en, en-gb, de,
 pl); 862 variant rows (+168 at the new 480 w `productHero` rung, no existing row changed);
@@ -382,14 +405,17 @@ pl); 862 variant rows (+168 at the new 480 w `productHero` rung, no existing row
 every one verified (`--verify` in groups of 16). **UI:** the home's trending row renders in its own
 `trending` slot, whose `sizes` states the card's width; with the 480 rung the browser makes an
 honest pick. **Measured:** mobile (Pixel 7) image bytes on `/en`, `/en-gb`, `/de`, `/pl` 178 813 B
-each (was 215 876; budget 204 800); CI run 37133900235 on `32159a4d`, 24 of 24 green, Lighthouse
-LCP `/en` 1 870 ms, `/en-gb` 1 814, `/de` 1 952, `/pl` 1 799 (budget 2 000). **Tests:** unit — the
+each (was 215 876; budget 204 800); on the merged head `38265587`, CI run 37137399567, 22 of 22
+green, Lighthouse LCP `/en` 1 766 ms, `/en-gb` 1 767, `/de` 1 776, `/pl` 1 791 (budget 2 000; round
+1's head `32159a4d`, run 37133900235, gave 1 870, 1 814, 1 952 and 1 799). **Tests:** unit — the
 sign-off case, the ladder case, the `trending` sizes and slot cases, the no-photo trending caption,
 and six widened files whose placeholder subjects are built in-test (`media-upload`, `seed-check`,
 `catalog-{category,hub,occasion,shop}-page`, `product-page`); e2e — `home.spec.ts` trending pins,
 three listing pins, `product-page.spec.ts`'s no-photo case on `/dev/components`; visual —
 baselines from runs 37118133249 (23), 37123143990 (2) and 37130468759 (10), each inspected.
-**Build slot** taken for the two Pixel 7 measurements (a byte budget). **Carry-forwards:** `/de`
-LCP has a 48 ms margin, so anything new above the fold on a locale home is measured first;
-`verifyPublished()` has no retry (one `fetch failed` aborts a run); main's `footer-de-*` baselines
-are stale from TASK-106; every `.env.local` still holds the old `R2_PUBLIC_BASE_URL` (founder).
+**Build slot** taken for the two Pixel 7 measurements (a byte budget). **Carry-forwards:** the
+tightest home LCP margin is now 209 ms (`/pl`), so anything new above the fold on a locale home is
+still measured first; `verifyPublished()` has no retry (one `fetch failed` aborts a run; logged in
+`docs/framework/gaps.md`). Settled after merge: main's `footer-de-*` baselines are not stale (main's
+`visual` was green on `8f65d744`, after TASK-106), and the founder set `.env.local`'s
+`R2_PUBLIC_BASE_URL` to the media origin on 2026-10-03 ~17:45Z.

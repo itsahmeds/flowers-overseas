@@ -33,7 +33,19 @@ Row: `TASKS.md` → TASK-173. This brief is the task's long form (spec 001 §14 
 
 ## Carry-forwards
 
-_None._
+- **From `/review 162` round 1 (2026-10-03, head `284aa50c`, PASS), copied by the orchestrator.** Nits, in the reviewer's
+  words: (1) "The PR body and the brief's `## Result` describe the 55 baselines of `61be2308` but not the 36 refreshed in
+  `284aa50c` after the TASK-168 merge" (fixed in round 2); (2) "`site-footer.test.tsx`'s absence check is a literal English
+  list that omits `Cookies` and renders `en` only. Derive it from the registry's unpublished footer ids, across four
+  locales" (fixed in round 2); (3) "The layout's `headerListingHrefs` is restated in `ui-site-header.test.tsx` rather than
+  shared. If it moves to an exported helper, a unit test could catch a wiring regression without a build." (open);
+  (4) "Footer legal and imprint links are absent until TASK-174. That task has to land before the robots/noindex gates are
+  lifted or checkout opens (Impressum, withdrawal notice)." (open); (5) "`categories.ts` `published`/`isCategoryPublished()`
+  are now dead, and the home occasion tiles are not links yet (TASK-177)." (open; the tiles are carried in TASK-177's brief).
+- **From `/review 162` round 2 (2026-10-03, head `c30332e5`, PASS; `/break 162` round 2 HOLDS, holes 1 and 2 closed),
+  copied by the orchestrator.** Nit, in the reviewer's words: "In `messages/de.json` and `pl.json`, the `footer.link.*`
+  labels for unpublished entries are English ('The guarantee', 'Cookies'). … Once those strings are translated, the check
+  covers them automatically." Carried to TASK-176 (the v2 chrome), which should translate them. Round-1 nits 3–5 stand.
 
 ## Escalations
 
@@ -74,3 +86,5 @@ PR #162. Every header, footer and home control is a link to a page answering 200
 - **Visual:** the committed set is 36 Linux baselines from run 37141887382 (`284aa50c`), re-rendered after TASK-168's photos merged in, because both PRs had changed the same screenshots; `--verify` 104/104. The first refresh (run 37135761767, 55 images, `61be2308`) is superseded where they overlap. Opened: 14 from the first run, 3 from the second (home trending, listing grid, product sticky); every change traced by pixel diff.
 - **`/break 162` round 1 holes closed:** trending with `product` unpublished renders no `<a>` (`ui-home-gated`); the category band's own element carries `min-h-[44px]` (`ui-site-header`); both red under mutation. The footer absence check is now built from the registry in four locales (it had missed Cookies).
 - **Follow-ups for the orchestrator:** `src/config/categories.ts`'s `published` flags and `isCategoryPublished()` are now dead (outside the fence); the home's occasion tiles are still not links (outside the fence).
+
+**Merged 2026-10-03 as `018f8b9a`** (PR [#162](https://github.com/itsahmeds/flowers-overseas/pull/162), head `c30332e5`): `/review 162` round 2 PASS, `/break 162` round 2 HOLDS, CI run 37145500060 green on the head (23 of 23).
