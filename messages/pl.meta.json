@@ -2584,11 +2584,6 @@
     "reviewed": false,
     "sourceHash": "8969e9cea4d0555cdda3cbf293b30366263cee7e307be434748cac28b8c154cf"
   },
-  "shop.root.listingEyebrow": {
-    "source": "machine",
-    "reviewed": false,
-    "sourceHash": "7d89b60a4f1025bb57f54c372e0e6c5d8ffe84d5c02337847fcb95cf1a82d7ff"
-  },
   "shop.root.listingHeading": {
     "source": "machine",
     "reviewed": false,

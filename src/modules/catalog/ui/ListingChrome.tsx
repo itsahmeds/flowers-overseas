@@ -32,6 +32,7 @@ import {
   Eyebrow,
   FromPriceChip,
   Text,
+  TextLink,
   type CategoryTileView,
 } from "@/modules/ui";
 
@@ -116,7 +117,7 @@ export function ListingNote({
 }): ReactElement {
   return (
     <div
-      className="bg-card rounded-letter px-lg pb-lg before:bg-sun/75 relative rotate-(--tilt-ps) pt-[22px] shadow-(--shadow-letter) before:absolute before:start-1/2 before:-top-[10px] before:-ms-[42px] before:h-[22px] before:w-[84px] before:-rotate-3 before:content-['']"
+      className="bg-card rounded-letter px-lg pb-lg before:bg-sun relative rotate-(--tilt-ps) pt-[22px] shadow-(--shadow-letter) before:absolute before:start-1/2 before:-top-[10px] before:-ms-[42px] before:h-[22px] before:w-[84px] before:-rotate-3 before:opacity-75 before:content-['']"
       data-fo-listing-note
     >
       <Text as="p" size="md" tone="muted" className="text-ui">
@@ -211,6 +212,95 @@ export function ListingCount({
   );
 }
 
+/** One destination row of a hub: a link with its count, or the pending sentence and no link. */
+export type HubDestinationRow =
+  | {
+      readonly iso2: string;
+      readonly name: string;
+      readonly href: string;
+      readonly count: string;
+      readonly link: string;
+    }
+  | { readonly iso2: string; readonly name: string; readonly pending: string };
+
+export interface HubDestinationsProps {
+  readonly id: string;
+  readonly eyebrow: string;
+  readonly heading: string;
+  /** Spec 008 AC-7's one sentence: why a hub shows no money. */
+  readonly noMoney: string;
+  readonly rows: readonly HubDestinationRow[];
+}
+
+/**
+ * The destination-less hubs' "First, the destination" block (`category-hub-*` and
+ * `occasion-hub-*` artboards): the heading and the no-money sentence on a sage-wash note on the
+ * start side, the destinations as a ruled list on the end side — name in the display face, the
+ * count, and a cornflower arrow link. A destination with no page has no link and says so
+ * (spec 004 AC-14).
+ */
+export function HubDestinations({
+  id,
+  eyebrow,
+  heading,
+  noMoney,
+  rows,
+}: HubDestinationsProps): ReactElement {
+  return (
+    <section
+      aria-labelledby={id}
+      className="gap-lg md:gap-2xl grid grid-cols-1 items-start md:grid-cols-[4fr_7fr]"
+      data-fo-hub-destinations
+    >
+      <div>
+        <Eyebrow className="mb-[14px]">{eyebrow}</Eyebrow>
+        <Display as="h2" size="2xl" id={id}>
+          {heading}
+        </Display>
+        <Text
+          as="p"
+          size="md"
+          className="bg-sage-wash rounded-field text-ui px-md mt-[20px] py-[12px]"
+        >
+          {noMoney}
+        </Text>
+      </div>
+      <ul className="border-rule list-none border-t">
+        {rows.map((row) => (
+          <li
+            className="border-rule md:py-lg grid grid-cols-1 items-baseline gap-[6px] border-b py-[20px] md:grid-cols-[220px_minmax(0,1fr)_auto] md:gap-x-[32px]"
+            data-fo-hub-destination={row.iso2}
+            data-fo-hub-destination-kind={"href" in row ? "link" : "text"}
+            key={row.iso2}
+          >
+            <Display
+              as="h3"
+              size="xl"
+              className="md:text-[30px] md:leading-[1.1]"
+            >
+              {row.name}
+            </Display>
+            {"href" in row ? (
+              <>
+                <Text as="p" size="md" tone="muted">
+                  {row.count}
+                </Text>
+                <TextLink arrow href={row.href}>
+                  {row.link}
+                </TextLink>
+              </>
+            ) : (
+              <Text as="p" size="md" tone="muted">
+                {row.pending}
+              </Text>
+            )}
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 export interface ListingTilesProps {
   readonly tiles: readonly CategoryTileView[];
   readonly locale: LocaleCode;
@@ -263,14 +353,25 @@ export interface OccasionDateRow {
   readonly date: string | null;
   readonly href?: string | undefined;
   readonly nameKey: string;
+  /** The page's own row hook (`data-fo-hub-date`), kept stable for its tests. */
+  readonly hook?: Readonly<Record<`data-${string}`, string>>;
+  /** The row header as a link (the occasions index: each occasion's own hub). */
+  readonly nameHref?: string;
+  /** The row header link's hook (`data-fo-occasion`). */
+  readonly nameHook?: Readonly<Record<`data-${string}`, string>>;
 }
 
 export interface OccasionDatesTableProps {
   readonly caption: string;
-  readonly columns: readonly [string, string, string];
+  /** Two columns (occasion/country, date) or three (… and the page link, spec 008 §14 A10). */
+  readonly columns:
+    readonly [string, string] | readonly [string, string, string];
   readonly rows: readonly OccasionDateRow[];
   readonly locale: LocaleCode;
-  readonly linkLabel: string;
+  /** The third column's link text. */
+  readonly linkLabel?: string;
+  /** What a row with no computable date says (the occasion hub's `dateUnknown`). */
+  readonly unknownDate?: string;
 }
 
 /**
@@ -283,11 +384,13 @@ export function OccasionDatesTable({
   columns,
   rows,
   locale,
-  linkLabel,
+  linkLabel = "",
+  unknownDate,
 }: OccasionDatesTableProps): ReactElement {
   const head =
     "label text-ink-subtle border-rule border-b py-[14px] pe-[12px] text-start";
   const cell = "border-rule border-b py-[14px] pe-[12px] align-baseline";
+  const withPage = columns.length === 3;
   return (
     <table className="text-ui w-full border-collapse">
       <caption className="text-ink-subtle pb-[12px] text-start text-sm">
@@ -295,29 +398,35 @@ export function OccasionDatesTable({
       </caption>
       <thead>
         <tr>
-          <th className={head} scope="col">
-            {columns[0]}
-          </th>
-          <th className={head} scope="col">
-            {columns[1]}
-          </th>
-          <th className={head} scope="col">
-            {columns[2]}
-          </th>
+          {columns.map((column) => (
+            <th className={head} key={column} scope="col">
+              {column}
+            </th>
+          ))}
         </tr>
       </thead>
       <tbody>
         {rows.map((row) => (
-          <tr key={row.key}>
+          <tr key={row.key} {...(row.hook ?? {})}>
             <th
               className={`${cell} display text-body-s text-start md:text-[19px]`}
               scope="row"
             >
-              {row.name}
+              {row.nameHref === undefined ? (
+                row.name
+              ) : (
+                <a
+                  className="link-inline"
+                  href={row.nameHref}
+                  {...(row.nameHook ?? {})}
+                >
+                  {row.name}
+                </a>
+              )}
             </th>
             <td className={`${cell} num text-ink-muted`}>
               {row.date === null
-                ? null
+                ? (unknownDate ?? null)
                 : formatDate(
                     instantOf(row.date),
                     locale,
@@ -325,17 +434,19 @@ export function OccasionDatesTable({
                     "UTC",
                   )}
             </td>
-            <td className={`${cell} text-ink-subtle text-sm`}>
-              {row.href === undefined ? null : (
-                <a
-                  className="link-inline"
-                  data-fo-occasion-page={row.nameKey}
-                  href={row.href}
-                >
-                  {linkLabel}
-                </a>
-              )}
-            </td>
+            {withPage ? (
+              <td className={`${cell} text-ink-subtle text-sm`}>
+                {row.href === undefined ? null : (
+                  <a
+                    className="link-inline"
+                    data-fo-occasion-page={row.nameKey}
+                    href={row.href}
+                  >
+                    {linkLabel}
+                  </a>
+                )}
+              </td>
+            ) : null}
           </tr>
         ))}
       </tbody>

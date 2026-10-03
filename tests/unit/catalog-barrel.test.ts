@@ -368,6 +368,7 @@ describe("src/modules/catalog barrel (AC-1)", () => {
       `${moduleDir}/ui/CountryOccasionPage.tsx`,
       `${moduleDir}/ui/CountryShopRootPage.tsx`,
       `${moduleDir}/ui/ListingBreadcrumb.tsx`,
+      `${moduleDir}/ui/ListingChrome.tsx`,
       `${moduleDir}/ui/OccasionHubPage.tsx`,
       `${moduleDir}/ui/OccasionsIndexPage.tsx`,
       `${moduleDir}/ui/labels.ts`,
