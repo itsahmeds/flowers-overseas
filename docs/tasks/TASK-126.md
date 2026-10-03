@@ -55,6 +55,22 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From `/review 135` round 1 and `/break 135` round 1 (2026-10-03), required (one PR for
+  TASK-126 + TASK-127):** (1) replace the PR description with TASK-126/127's own, referencing every
+  AC the two briefs own; (2) AC-1 trailing slash → 308 to the bare URL, recorded in spec 009 §14 A7
+  (orchestrator ruling) with one e2e case; (3) TASK-126 `## Result` declares that the cutoff time is
+  printed raw and the city comes from `zoneCity()`, not `formatTimeInZone`; (4) fix the mobile
+  `chrome-honesty.spec.ts:87` red on `/dev/components` ("order-by cutoff promise": a cutoff line
+  shown only on phones is not lifted by the sweep); (5) close breaker HOLE 1 (PDP robots tag:
+  `INDEX_FOLLOW` at `[grandchild]/page.tsx:252` passes every test), HOLE 3 (`TierSelector.tsx`
+  42/92/99: each tier's own price, the preselected size and the stem count), HOLE 4 (a chip's
+  printed date tied to its value: `labels.ts:33`, `DateChip.tsx:112`, and the summary's
+  surcharge-line date `PriceSummary.tsx:128`), HOLE 5 (a closed date can print "included",
+  `DateChip.tsx:115`) — each with a test that goes red under the breaker's mutation; (6) rebase on
+  main (PR 136 changed `messages/*` and the visual baselines) and CI green on the new head.
+- **Accepted (`/review 135` round 1):** HOLE 2 ACCEPTABLE (PDP canonical; owned by TASK-132,
+  AC-17); HOLE 6 ACCEPTABLE (page layout order; owned by TASK-133, AC-28); HOLE 7 ACCEPTABLE
+  (country shop-root card links; TASK-131's crawl must cover the shop roots).
 
 ## Escalations
 
