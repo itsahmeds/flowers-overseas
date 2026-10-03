@@ -23,7 +23,13 @@ Row: `TASKS.md` → TASK-176. This brief is the task's long form (spec 001 §14 
 
 ## Carry-forwards
 
-_None._
+- **From `/review 162` round 2 (2026-10-03, TASK-173), carried by the orchestrator:** the `de`/`pl` `footer.link.*`
+  labels for unpublished entries are still English ("The guarantee", "Cookies"); translate them with the v2 footer.
+- **From `/review 162` round 1 (2026-10-03, TASK-173), carried by the orchestrator:** the footer has no legal or imprint
+  links until TASK-174, which must land before the robots/noindex gates lift or checkout opens.
+- **From the PR 166 design round (2026-10-03), carried by the orchestrator:** the shipped footer draws "Card payments are
+  processed by Stripe. We never store card numbers." in Phase 0, against spec 004 §14 A10 (it renders only once a payment
+  integration ships). The `chrome-*` artboards mark it hidden in Phase 0; the v2 footer drops it.
 
 ## Escalations
 

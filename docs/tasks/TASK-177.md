@@ -23,7 +23,11 @@ Row: `TASKS.md` → TASK-177. This brief is the task's long form (spec 001 §14 
 
 ## Carry-forwards
 
-_None._
+- **From `/review 162` (2026-10-03, TASK-173), carried by the orchestrator:** the home's occasion tiles are still not
+  links; the v2 home links each to its occasion page or does not draw it (spec 004 §14 A20).
+- **From `/review 148` round 2 (2026-10-03, TASK-168), carried by the orchestrator:** home LCP on `main` is `/en` 1 766 ms,
+  `/en-gb` 1 767, `/de` 1 776, `/pl` 1 791 (CI run 37137399567; budget 2 000), so the tightest margin is 209 ms; measure
+  anything new above the fold.
 
 ## Escalations
 

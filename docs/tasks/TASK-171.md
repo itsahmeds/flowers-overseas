@@ -34,7 +34,14 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
 
 ## Carry-forwards
 
-_None._
+- **From `/review 151` rounds 1 and 2 (2026-10-03; round 2 PASS on `695b0d2f`, `/break 151` round 2 HOLDS), copied by
+  the orchestrator.** Nits, in the reviewer's words: (1) "`DateChip`'s `pickerState` defaults to `"live"`, which is the
+  unsafe side. If a future caller forgets the prop, a preview chip prints the time. … making the prop required, or
+  defaulting it to `"preview"`, would make that omission fail typecheck instead." (2) "Neither artboard draws the
+  `preview` past-cutoff chip (the E-1 outcome). … a one-line caption in the desktop 'Past the cutoff' stub would keep the
+  design and the render in step." (3) "The spec's §2 states-table `preview` row (L64) still lacks the 'no cutoff time'
+  words that A8 says it gains. This belongs to the spec owner, not this PR." Round 2: "the test-only `as Element` and
+  `as Locale` casts are acceptable in a test. Round 1's three nits still stand."
 
 ## Escalations
 
@@ -113,3 +120,5 @@ and their meta files (`en-gb` never carried it), and from both product artboards
   Mutations, all red: the reason printed again in `preview` (fails the preview case); the picker
   passing no state (same); `live` sharing too (fails the live case). `visual:baselines` run
   37118943287 on `c9facd26` gives bytes identical to the committed set, so no baseline moves.
+
+**Merged 2026-10-03 as `061f3629`** (PR [#151](https://github.com/itsahmeds/flowers-overseas/pull/151), head `695b0d2f`): `/review 151` round 2 PASS, `/break 151` round 2 HOLDS, CI run 37121792231 green on the head.
