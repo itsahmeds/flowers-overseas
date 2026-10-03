@@ -67,6 +67,8 @@ task actually touches.
 | `(dev)/dev/components/product.ts` | The gallery's fixtures for spec 009's six product-page primitives (TASK-126),… | spec 009 |
 | `(dev)/layout.tsx` | Document layout for the `(dev)` route group — today only `/dev/components`… | spec 004 |
 | `[locale]/%5Fquery/[segment]/[child]/page.tsx` | `/{locale}/_query/{segment}/{child}` — the **parameter route**: the one route… | spec 008 |
+| `[locale]/@notice/default.tsx` | The notice bar's price claim on every localised page except the home (spec 004… | spec 004 |
+| `[locale]/@notice/page.tsx` | The locale home's `@notice` slot: **no** price claim (founder, 2026-10-04:… | — |
 | `[locale]/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/{segment}/{child}/{grandchild}` — **one route file for one URL… | spec 008 |
 | `[locale]/[segment]/[child]/page.tsx` | `/{locale}/{segment}/{child}` — **one route file for one URL depth** (spec 008… | spec 008 |
 | `[locale]/[segment]/page.tsx` | `/{locale}/{segment}` — **one route file for one URL depth** (spec 008 §14… | spec 008 |

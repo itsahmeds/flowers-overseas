@@ -514,19 +514,49 @@ describe("the rendered header (AC-7, AC-14)", () => {
     expect(html).not.toContain(`>${COMPANY.tradingName}<`);
   });
 
-  it('prints the honest notice: the dates line, the price claim and "Fresh-on-arrival guarantee"', () => {
+  it('prints the honest notice: "A note from us:", the dates line, the price claim and "Fresh-flower promise"', () => {
     const html = render("en");
     const strip = html.slice(0, html.indexOf("data-fo-header="));
+    expect(strip).toContain("<strong>A note from us:</strong>");
     expect(strip).toContain(
       "Delivery dates open when we confirm our first florist",
     );
     expect(strip).toContain("Delivery dates are not open yet");
     expect(strip).toContain("Prices include delivery and VAT");
-    expect(strip).toContain("Fresh-on-arrival guarantee");
+    expect(strip).toContain("Fresh-flower promise");
     // Founder, 2026-10-04: "cant promise staying fresh" — no N-day freshness promise at all.
     expect(html).not.toMatch(/\d+-day/u);
-    expect(html).not.toMatch(/7-day/u);
     expect(html).not.toContain("Order by 14:00");
+  });
+
+  it("drops the price claim when the route passes none, and keeps everything else (the home)", () => {
+    for (const locale of LOCALES) {
+      const messages = loadMessages(locale, ["nav"]) as {
+        nav: { utility: Record<string, string> };
+      };
+      const claim = messages.nav.utility.pricesInclude ?? "";
+      expect(claim, locale).not.toBe("");
+      const page = render(locale);
+      const home = renderToStaticMarkup(
+        <NextIntlClientProvider
+          locale={locale}
+          messages={loadMessages(locale, ["nav", "company", "a11y", "common"])}
+          timeZone="UTC"
+        >
+          <SiteHeader
+            locale={locale}
+            listingHrefs={HREFS[locale] ?? {}}
+            priceClaim={null}
+          />
+        </NextIntlClientProvider>,
+      );
+      expect(page, locale).toContain(claim);
+      expect(page, locale).toContain("data-fo-price-claim");
+      expect(home, locale).not.toContain(claim);
+      expect(home, locale).not.toContain("data-fo-price-claim");
+      // The guarantee and the dates line stay; only the one claim goes.
+      expect(home, locale).toContain(messages.nav.utility.guarantee ?? "");
+    }
   });
 
   it("reserves the v2 artboards' band heights as fixed grid rows (AC-7)", () => {

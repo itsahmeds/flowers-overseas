@@ -37,8 +37,7 @@ Row: `TASKS.md` → TASK-176. This brief is the task's long form (spec 001 §14 
   the currency must be reachable at 390 px (an i18n gate and a conversion issue; A21 does not supersede A4). Done: below
   `lg` the notice bar has a second centred 44 px row with the four languages and the currency; the help line stays in the
   footer there. Mobile notice bar re-pinned 36 → 80 px; recorded in `docs/design/README.md` with A4 cited.
-- **E2 — copy held back for the 5 % gate.** "A note from us:" (notice lead-in) and "With love, from wherever you are."
-  (footer sign-off) are drawn on the artboards and not rendered until the founder approves them (see Result).
+- **E2 — copy held back for the 5 % gate. RESOLVED:** the founder approved the batch on 2026-10-04; both strings ship.
 
 ## Progress
 
@@ -68,12 +67,16 @@ Row: `TASKS.md` → TASK-176. This brief is the task's long form (spec 001 §14 
 - The local build was taken inside the build slot to measure those heights (the e2e pins needed real numbers; load
   average 33–78 at the time, so no timing number is claimed). `pnpm budget:client-js`: every URL within budget.
 
-**Copy for the founder's batch (en, `reviewed: false`):**
-- `nav.send` — "Send flowers" (new)
-- `nav.utility.guarantee` — "Fresh-on-arrival guarantee" (founder, 2026-10-04; was "7-day freshness guarantee")
-- `company.description` — "We send flowers across Europe. You order from us; a local florist in the recipient's town will
-  make the bouquet and hand it over in person." (future tense)
-- Not rendered yet, awaiting approval: "A note from us:" (notice lead-in), "With love, from wherever you are." (sign-off).
-- de/pl drafts (`reviewed: false`): every `footer.*` label, `company.support.*`, the three keys above.
+**Copy** (founder's batch, 2026-10-04, "ok from my end", transcribed as `reviewed: true` in `en.meta.json` with the
+founder as reviewer): `nav.send` "Send flowers"; `nav.utility.guarantee` "Fresh-flower promise"; `company.support.hours`
+"Message us any time, 24/7 — we reply within a few hours."; `company.description` (future tense); `nav.notice.lead`
+"A note from us:"; `footer.signoff` "With love, from wherever you are." de/pl drafts stay `reviewed: false` (all
+`footer.*` labels, `company.support.*`, the six keys above; de "Strauß senden", because the AC-15 partner-name check reads
+"Blumen" as a florist brand).
 
-`en` unreviewed share after this task: 26 / 541 = 4.8 %.
+**Price claim** (founder, 2026-10-04, "dont write this on home"): the `@notice` parallel-route slot of
+`src/app/[locale]/layout.tsx` — `@notice/page.tsx` renders nothing on `/{locale}`, `@notice/default.tsx` renders
+`NoticePriceClaim` everywhere else. No path read, documents stay static; the bar's height is set by its 44 px links, so
+62 px desktop with or without the claim (measured, CLS 0).
+
+`en` unreviewed share after this task: 23 / 543 = 4.2 % (every chrome key it added is attested).

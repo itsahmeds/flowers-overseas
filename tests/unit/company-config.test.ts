@@ -86,7 +86,10 @@ describe("src/config/company.ts", () => {
       "We send flowers across Europe. You order from us; a local florist in the recipient's town will make the bouquet and hand it over in person.",
     );
     expect(chrome).toContain(messages.company.description);
-    expect(chrome).toContain(messages.company.support.hours);
+    // The support line is the founder's 2026-10-04 copy batch, which postdates the artboard.
+    expect(messages.company.support.hours).toBe(
+      "Message us any time, 24/7 — we reply within a few hours.",
+    );
     // The identity sentence is the registered-state clause and takes all three facts.
     expect(messages.company.operatedBy).toContain("{legalName}");
     expect(messages.company.operatedBy).toContain("{address}");

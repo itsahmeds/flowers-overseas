@@ -208,7 +208,7 @@
     "description": "Wir verschicken Blumengrüße in ganz Europa. Sie bestellen bei uns; ein Florist am Wohnort der empfangenden Person wird den Strauß binden und persönlich übergeben.",
     "operatedBy": "Operated by {legalName}, {address}, {registrationNumber}.",
     "support": {
-      "hours": "Mo–Sa 8–20 Uhr MEZ",
+      "hours": "Schreiben Sie uns jederzeit, rund um die Uhr – wir antworten innerhalb weniger Stunden.",
       "label": "Hilfe & WhatsApp",
       "whatsapp": "WhatsApp"
     }
@@ -539,7 +539,8 @@
       "emailLabel": "Email address",
       "heading": "Occasion reminders",
       "submit": "Remind me"
-    }
+    },
+    "signoff": "Mit Liebe, von wo auch immer Sie sind."
   },
   "home": {
     "dates": {
@@ -683,18 +684,21 @@
     "menu": {
       "label": "Menu"
     },
+    "notice": {
+      "lead": "Eine Notiz von uns:"
+    },
     "search": {
       "help": "Search opens when the shop does.",
       "label": "Search flowers, occasions, a city or a country",
       "submit": "Search"
     },
-    "send": "Blumengruß senden",
+    "send": "Strauß senden",
     "utility": {
       "cutoff": "Order by 14:00 in Warsaw for delivery today",
       "cutoffShort": "Order by 14:00 in Warsaw · today",
       "datesPending": "Delivery dates open when we confirm our first florist",
       "datesPendingShort": "Delivery dates are not open yet",
-      "guarantee": "Garantie: frisch bei Ankunft",
+      "guarantee": "Frische-Versprechen",
       "pricesInclude": "Prices include delivery and VAT"
     }
   },

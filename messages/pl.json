@@ -208,7 +208,7 @@
     "description": "Wysyłamy kwiaty w całej Europie. Zamawiasz u nas; lokalny florysta w miejscowości odbiorcy przygotuje bukiet i wręczy go osobiście.",
     "operatedBy": "Operated by {legalName}, {address}, {registrationNumber}.",
     "support": {
-      "hours": "pon.–sob. 8–20 CET",
+      "hours": "Napisz do nas o każdej porze, 24/7 – odpowiadamy w ciągu kilku godzin.",
       "label": "Pomoc i WhatsApp",
       "whatsapp": "WhatsApp"
     }
@@ -539,7 +539,8 @@
       "emailLabel": "Email address",
       "heading": "Occasion reminders",
       "submit": "Remind me"
-    }
+    },
+    "signoff": "Z miłością, skądkolwiek jesteś."
   },
   "home": {
     "dates": {
@@ -683,6 +684,9 @@
     "menu": {
       "label": "Menu"
     },
+    "notice": {
+      "lead": "Krótka notka od nas:"
+    },
     "search": {
       "help": "Search opens when the shop does.",
       "label": "Search flowers, occasions, a city or a country",
@@ -694,7 +698,7 @@
       "cutoffShort": "Order by 14:00 in Warsaw · today",
       "datesPending": "Delivery dates open when we confirm our first florist",
       "datesPendingShort": "Delivery dates are not open yet",
-      "guarantee": "Gwarancja świeżości przy doręczeniu",
+      "guarantee": "Obietnica świeżych kwiatów",
       "pricesInclude": "Prices include delivery and VAT"
     }
   },

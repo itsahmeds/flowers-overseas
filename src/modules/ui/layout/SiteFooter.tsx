@@ -4,11 +4,10 @@
  *
  * It reproduces the footer of `docs/design/wireframes/chrome-desktop.dc.html` and
  * `chrome-mobile.dc.html`: paper-2, the third and last airmail edge on its top (A21 clause 2,
- * `airmail-edge-footer`), four columns — about (the logo and
+ * `airmail-edge-footer`), the sign-off, four columns — about (the logo and
  * `company.description`), the link columns the registry publishes (`Sending` today), Help &
  * WhatsApp (the `tel:` number and the hours) and Payment — and the fine row with the language list
- * and the "Cookie settings" control. One column on mobile. The artboards' sign-off ("With love,
- * from wherever you are.") is new copy awaiting the founder's batch, so it is not drawn yet.
+ * and the "Cookie settings" control. One column on mobile.
  *
  * **Zero client JavaScript.** A synchronous Server Component: every link is an `<a>`, and the
  * language list is spec 003's `LocaleSwitcher` (four plain links), laid out from a wrapper.
@@ -174,6 +173,16 @@ export function SiteFooter({
     // `mt-auto` keeps the footer at the foot of a short document.
     <footer className="airmail-edge-footer bg-surface-raised mt-auto pt-[64px] pb-[32px]">
       <div className={CHROME_WRAP}>
+        {/* The sign-off in Fraunces 300 italic: decoration, so hidden from assistive tech (no
+            Caveat outside the product page's card preview, A21 clause 3). */}
+        <p
+          aria-hidden="true"
+          className="display-em text-2xl-s m-0 mb-[56px] rotate-(--tilt-signoff) md:text-2xl"
+          data-fo-footer-signoff
+        >
+          {translate("footer.signoff")}
+        </p>
+
         <div
           className="grid grid-cols-1 gap-[36px] md:grid-cols-2 lg:grid-cols-[1.3fr_0.8fr_1fr_1.2fr] lg:gap-[48px]"
           data-fo-footer-grid

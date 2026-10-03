@@ -5,7 +5,8 @@
  * It reproduces `docs/design/wireframes/chrome-desktop.dc.html` and `chrome-mobile.dc.html`:
  *
  *  1. **the notice bar** — `NoticeBar` (TASK-175's primitive): "A note from us:" in sunflower, then
- *     the honest dates line, "Prices include delivery and VAT" and "Fresh-on-arrival guarantee" on the
+ *     the honest dates line, "Prices include delivery and VAT" (not on the home; the route decides) and
+ *     "Fresh-flower promise" on the
  *     desktop artboard, one short sentence centred on the mobile one. At its inline end, desktop
  *     only: the help line as a `tel:` link, spec 003's language switcher and the currency as text;
  *  2. **the header** — sticky, on paper (opaque: Tailwind inlines a literal colour into the 94 % mix, which AC-1 forbids), a rule below: the logo (the `Mark` and
@@ -31,7 +32,7 @@
  * **Logical CSS only**, so `/ar-XB` mirrors with no override; every colour is a token utility.
  */
 import { useTranslations } from "next-intl";
-import type { ReactElement } from "react";
+import type { ReactElement, ReactNode } from "react";
 
 import { CATEGORY_NAV_LABEL_KEY } from "../../../config/categories.ts";
 import { COMPANY } from "../../../config/company.ts";
@@ -134,11 +135,36 @@ export interface SiteHeaderProps {
    * and `src/modules/ui` may not import it. Absent → those entries are not drawn.
    */
   readonly listingHrefs?: HeaderListingHrefs;
+  /**
+   * The notice bar's "Prices include delivery and VAT" claim, decided **by the route** (founder,
+   * 2026-10-04: "Every price includes VAT and delivery. dont write this on home"). The document
+   * layout passes its `@notice` parallel-route slot: `<NoticePriceClaim />` on every page
+   * (`@notice/default.tsx`), nothing on the locale home (`@notice/page.tsx`). Price-indication
+   * law (e.g. Germany's PAngV) wants the statement beside prices, so it stays on the shop,
+   * listing and product pages. Defaults to the claim, so a header with no route behind it (the
+   * gallery, a unit render) shows the full notice.
+   */
+  readonly priceClaim?: ReactNode;
+}
+
+/**
+ * The price claim as the notice bar prints it: `·` and "Prices include delivery and VAT". The
+ * `@notice` slot renders it; the home renders nothing in its place.
+ */
+export function NoticePriceClaim(): ReactElement {
+  const t = useTranslations("nav");
+  return (
+    <span data-fo-price-claim>
+      {" "}
+      <Separator glyph="·" /> {t("utility.pricesInclude")}
+    </span>
+  );
 }
 
 export function SiteHeader({
   locale,
   listingHrefs = {},
+  priceClaim = <NoticePriceClaim />,
 }: SiteHeaderProps): ReactElement {
   const t = useTranslations();
   // Namespace-bound for the one key with an ICU argument (`{currency}`).
@@ -203,10 +229,13 @@ export function SiteHeader({
             </>
           }
         >
-          {/* The mobile artboard prints one short sentence; the desktop one the three claims. The
-              dates claim is gated (spec 004 §14 A19): the honest form until a destination takes
-              delivery dates, the cutoff once one does. The artboards' lead-in "A note from us:" is
-              new copy awaiting the founder's batch (TASK-176 brief, Result), so it is not drawn. */}
+          {/* "A note from us:" in sunflower, then one short sentence on the mobile artboard and
+              the claims on the desktop one. The dates claim is gated (spec 004 §14 A19): the
+              honest form until a destination takes delivery dates, the cutoff once one does (the
+              mobile artboard drops the lead-in before the cutoff). */}
+          <span className={datesOpen ? "hidden md:inline" : undefined}>
+            <strong>{t("nav.notice.lead")}</strong>{" "}
+          </span>
           <span className="md:hidden">
             {datesOpen
               ? t("nav.utility.cutoffShort")
@@ -215,9 +244,8 @@ export function SiteHeader({
           <span className="hidden md:inline">
             {datesOpen
               ? t("nav.utility.cutoff")
-              : t("nav.utility.datesPending")}{" "}
-            <Separator glyph="·" /> {t("nav.utility.pricesInclude")}{" "}
-            <Separator glyph="·" /> {t("nav.utility.guarantee")}
+              : t("nav.utility.datesPending")}
+            {priceClaim} <Separator glyph="·" /> {t("nav.utility.guarantee")}
           </span>
         </NoticeBar>
       </div>
@@ -235,12 +263,17 @@ export function SiteHeader({
           {/* The logo: the mark and the outlined wordmark; the wordmark's name (the trading name)
               names the link. */}
           <a
-            className="text-logo-ink inline-flex min-h-(--target-min) items-center gap-[10px] justify-self-start"
+            className="text-logo-ink inline-flex min-h-(--target-min) max-w-full min-w-0 items-center gap-[10px] justify-self-start"
             data-fo-header-logo
             href={home}
           >
-            <Mark className="h-[28px] w-[28px] xl:h-[38px] xl:w-[38px]" />
-            <Wordmark className="h-[19px] xl:h-[25px]" label={tradingName} />
+            <Mark className="h-[28px] w-[28px] flex-none xl:h-[38px] xl:w-[38px]" />
+            {/* `min-w-0`: on a phone narrower than the artboard the wordmark scales down inside
+                its column rather than running under the Send pill (it keeps its aspect ratio). */}
+            <Wordmark
+              className="h-[19px] min-w-0 shrink xl:h-[25px]"
+              label={tradingName}
+            />
           </a>
 
           {/* The eight links: a scrolling chip row under the logo on mobile, one row of text links

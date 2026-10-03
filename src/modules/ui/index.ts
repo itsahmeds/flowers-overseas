@@ -63,7 +63,7 @@ export type { WordmarkProps } from "./icons/Wordmark";
 // Chrome (spec 004 §5.3; TASK-048). `SiteHeader` is a synchronous Server Component: it takes the
 // locale as a prop and reads its copy through `useTranslations`, so it renders wherever a request
 // locale is set and adds no client JavaScript (§14 A1).
-export { SiteHeader } from "./layout/SiteHeader.tsx";
+export { NoticePriceClaim, SiteHeader } from "./layout/SiteHeader.tsx";
 export type { SiteHeaderProps } from "./layout/SiteHeader.tsx";
 // The listing pages the header's category row may link to (spec 008 §14 A14; TASK-173): the
 // document layout asks the catalogue which of them exist in its locale and hands the URLs back as

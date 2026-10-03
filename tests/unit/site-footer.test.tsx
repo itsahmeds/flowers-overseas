@@ -261,7 +261,22 @@ describe("AC-9: the company block tells the truth about a company that does not 
     expect(phase0).toContain("Help &amp; WhatsApp");
     expect(phase0).toContain('href="tel:+12135925150"');
     expect(phase0).toContain("+1 (213) 592-5150");
-    expect(phase0).toContain("Mon–Sat 8–20 CET");
+    // Founder copy batch, 2026-10-04: the support line replaces "Mon–Sat 8–20 CET".
+    expect(phase0).toContain(
+      "Message us any time, 24/7 — we reply within a few hours.",
+    );
+    expect(phase0).not.toContain("Mon–Sat");
+  });
+
+  it("prints the sign-off as decoration, in Fraunces italic and never Caveat (A21 clause 3)", () => {
+    const signoff = phase0.slice(
+      phase0.lastIndexOf("<p", phase0.indexOf("data-fo-footer-signoff")),
+    );
+    const tag = signoff.slice(0, signoff.indexOf(">") + 1);
+    expect(tag).toContain('aria-hidden="true"');
+    expect(tag).toContain("display-em");
+    expect(tag).not.toContain("font-hand");
+    expect(signoff).toContain(">With love, from wherever you are.</p>");
   });
 
   it("prints no registry code, VAT id or registered address while unregistered", () => {

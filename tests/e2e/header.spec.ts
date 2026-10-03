@@ -506,3 +506,40 @@ test.describe("the currency chip (AC-8)", () => {
     }
   });
 });
+
+/**
+ * Founder, 2026-10-04: "Every price includes VAT and delivery. dont write this on home". The
+ * notice bar's price claim is decided by the route (`src/app/[locale]/@notice`): absent on the
+ * locale home, present beside prices — here, a product page reached from the home's own trending
+ * row, so the URL is the one the site links to. Desktop width, where the claims are printed.
+ */
+test.describe("the notice bar's price claim follows the route", () => {
+  for (const { path } of LOCALES) {
+    test(`${path}: absent on the home, present on a product page, with no layout shift`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await page.goto(path);
+      const notice = page.locator(UTILITY);
+      await expect(notice.locator("[data-fo-price-claim]")).toHaveCount(0);
+      await expect(notice).toBeVisible();
+      expect(await cumulativeLayoutShift(page)).toBe(0);
+
+      const product = await page
+        .locator("[data-fo-trending] li a[href]")
+        .first()
+        .getAttribute("href");
+      expect(product, "the home links a product page").toBeTruthy();
+      const response = await page.goto(product ?? "");
+      expect(response?.status()).toBe(200);
+      await expect(notice.locator("[data-fo-price-claim]")).toHaveCount(1);
+      await expect(notice.locator("[data-fo-price-claim]")).toBeVisible();
+      // The bar is the same reserved box with or without the claim: its height is the 44 px
+      // utility links, so the claim never moves the page.
+      expect(Math.round((await notice.boundingBox())?.height ?? 0)).toBe(
+        UTILITY_HEIGHTS.desktop,
+      );
+      expect(await cumulativeLayoutShift(page)).toBe(0);
+    });
+  }
+});
