@@ -131,7 +131,10 @@ export function CountryOccasionPage({
           emphasis={country}
           heading={shop("h1.countryOccasion", { occasion, country })}
           lede={shop("occasion.lede", { country })}
+          eyebrow={shop("listing.eyebrow", { country })}
           note={shop("root.demoNotice", { country })}
+          noteLabel={shop("note.label")}
+          noteMark={shop("note.mark")}
         >
           <div
             className="mt-[28px] grid gap-[6px]"
@@ -170,6 +173,7 @@ export function CountryOccasionPage({
           <ListingCount
             count={shop("toolbar.count", { count: view.resultCount })}
             disclosure={shop("toolbar.disclosure")}
+            inclusive={catalog("price.inclusive")}
           />
           <div className="mt-[32px]">
             <ListingGrid cards={view.items} locale={code} priority />

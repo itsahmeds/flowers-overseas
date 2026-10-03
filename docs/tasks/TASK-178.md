@@ -84,7 +84,42 @@ _None recorded._
 the rate of {date}" (de "etwa {amounts} zum Kurs vom {date}", pl "ok. {amounts} po kursie z {date}", both
 `reviewed: false`). It is in the `AWAITING_FOUNDER_REVIEW` queue of `tests/unit/i18n-messages-schema.test.ts`.
 
-**Artboard copy NOT shipped (5 % gate), for one founder batch:**
+**Copy batch 2026-10-04 (coordinator, after the founder approved items 9, 12 and 14): wired, every record
+`reviewed: false`; the orchestrator records the attestation.** New keys (en / de / pl):
+- `shop.listing.eyebrow` "Sending to {country}" (machine echo in de/pl) — eyebrow on the shop root, country category
+  and country occasion intros;
+- `shop.note.mark` "P.S." and `shop.note.label` "A note before you choose" — the note card's mark and its
+  `role="note"` name;
+- `shop.cardNote.heading` "Every one of these comes with a card, at no cost." — full-width band after the 8th card on
+  the shop root (the artboard's second sentence, "You write the words…", is not in the batch and is not shipped);
+- `shop.root.tilesSubheading` "Narrow it down" — the tiles' heading, under the eyebrow "By what it is";
+- `catalog.price.allIn` "all in" beside each card price; de "inkl. MwSt. und Versand", pl "w tym VAT i dostawa" (the
+  legal price formula, `source: human`, unreviewed). The country occasion page, whose lede does not state it, prints
+  `catalog.price.inclusive` once beside its count.
+
+Future-tense rewrites (not in the approved batch; `reviewed: false`, for the founder's OK):
+- `shop.root.lede`: "Our florist in the recipient's town will make the bouquet the morning it is delivered and hand it
+  over in person. Every price below is one number with VAT and delivery already inside it."
+- `shop.root.introBody`: "You order from us in your own language and currency. Our florist in the recipient's town
+  will make the bouquet the morning it is delivered and hand it over in person. Nothing crosses a border, so there is
+  no customs form, no paperwork and nothing to pay on arrival."
+- `shop.category.lede`: "{count, plural, one {One of ours, which our florist in the recipient's town will make on the
+  morning it is delivered.} other {# of ours, which our florist in the recipient's town will make on the morning they
+  are delivered.}} One price each, with VAT and delivery already in it."
+- `shop.root.seoDescription`: "Every bouquet a local florist will make in {country}, with one all-in price that
+  includes VAT and delivery. Nothing can be ordered yet."
+- `shop.category.seoDescription`: "The {entity} a local florist will make in {country}, each with one price that
+  includes VAT and delivery. Nothing can be ordered yet."
+- `shop.occasion.seoDescription`: "Every bouquet our florist in {country} will make for {occasion}, with one all-in
+  price that includes VAT and delivery. Nothing can be ordered yet."
+  (de: machine echoes re-drafted; pl `shop.category.lede` is human Polish already in the future tense, "ułoży" —
+  hash moved, text unchanged.)
+
+All 11 keys are in `AWAITING_FOUNDER_REVIEW`. `en` is now 35/546 = 6.4 % unreviewed, so until the attestation is
+recorded these go red locally (expected): `i18n-review` (3), `i18n-check` (§11 table), `i18n-fifth-locale` (2),
+`catalog-indexability`, `seo-indexability`, `seed-check` (§11 readiness).
+
+**Artboard copy NOT shipped (before the 2026-10-04 batch; superseded above except where noted):**
 - the eyebrow "Sending to {country}" over each country-scoped `<h1>`;
 - the note card's "P.S." mark and its label "A note before you choose" (the card ships with the existing demo sentence);
 - the printed-card band in the grid: "Every one of these comes with a card, at no cost." / "You write the words. We

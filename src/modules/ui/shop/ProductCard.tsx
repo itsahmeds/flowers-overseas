@@ -5,7 +5,8 @@
  *
  * **What it renders, and it is the whole list** (AC-6): the photograph or spec 006's captioned
  * placeholder in a fixed 4∶5 box, the product name as the card's heading, **one** all-in price
- * through `formatMoney` with the `catalog.price.inclusive` wording beside it, and the honesty
+ * through `formatMoney` with "all in" (`catalog.price.allIn`; the legal VAT-and-delivery formula
+ * in `de` and `pl`) beside it — the page lede carries the full words — and the honesty
  * label wherever the asset it displayed is `ai`.
  *
  * **What it cannot render**, and the mechanism rather than the promise: `ProductCardViewSchema`
@@ -132,7 +133,7 @@ export function ProductCard({
         <Price
           className="mt-[6px]"
           amount={formatMoney(card.price, locale)}
-          qualifier={catalog("price.inclusive")}
+          qualifier={catalog("price.allIn")}
           equivalents={
             card.equivalents === undefined
               ? undefined

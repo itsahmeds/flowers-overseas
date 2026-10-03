@@ -66,6 +66,9 @@ export interface ListingIntroProps {
   readonly lede?: ReactNode;
   /** The note card on the end side: the demo sentence on a country-scoped page. */
   readonly note?: ReactNode;
+  /** The note card's mark ("P.S.") and its accessible name ("A note before you choose"). */
+  readonly noteMark?: string;
+  readonly noteLabel?: string;
 }
 
 export function ListingIntro({
@@ -75,6 +78,8 @@ export function ListingIntro({
   children,
   lede,
   note,
+  noteMark,
+  noteLabel,
 }: ListingIntroProps): ReactElement {
   return (
     <div
@@ -99,7 +104,14 @@ export function ListingIntro({
           </Text>
         )}
       </div>
-      {note === undefined ? null : <ListingNote>{note}</ListingNote>}
+      {note === undefined ? null : (
+        <ListingNote
+          {...(noteMark === undefined ? {} : { mark: noteMark })}
+          {...(noteLabel === undefined ? {} : { label: noteLabel })}
+        >
+          {note}
+        </ListingNote>
+      )}
     </div>
   );
 }
@@ -112,15 +124,30 @@ export function ListingIntro({
  */
 export function ListingNote({
   children,
+  mark,
+  label,
 }: {
   readonly children: ReactNode;
+  /** "P.S.", in the poppy italic of the display face (not Caveat: A21 clause 3). */
+  readonly mark?: string;
+  /** The note's accessible name, exposed through `role="note"`. */
+  readonly label?: string;
 }): ReactElement {
   return (
     <div
+      {...(label === undefined ? {} : { role: "note", "aria-label": label })}
       className="bg-card rounded-letter px-lg pb-lg before:bg-sun relative rotate-(--tilt-ps) pt-[22px] shadow-(--shadow-letter) before:absolute before:start-1/2 before:-top-[10px] before:-ms-[42px] before:h-[22px] before:w-[84px] before:-rotate-3 before:opacity-75 before:content-['']"
       data-fo-listing-note
     >
-      <Text as="p" size="md" tone="muted" className="text-ui">
+      {mark === undefined ? null : (
+        <p className="display-em text-accent text-lg leading-[1.15]">{mark}</p>
+      )}
+      <Text
+        as="p"
+        size="md"
+        tone="muted"
+        className={mark === undefined ? "text-ui" : "text-ui mt-[6px]"}
+      >
         {children}
       </Text>
     </div>
@@ -196,14 +223,26 @@ export function ListingProse({
 export function ListingCount({
   count,
   disclosure,
+  inclusive,
 }: {
   readonly count: string;
   readonly disclosure: string;
+  /**
+   * The full VAT-and-delivery wording, once for the page, where the page's lede does not already
+   * carry it: the cards say only "all in" (the founder's copy batch).
+   */
+  readonly inclusive?: string;
 }): ReactElement {
   return (
     <div className="border-rule flex flex-col border-y py-[18px]">
       <Text as="span" size="md" className="display text-md">
         {count}
+        {inclusive === undefined ? null : (
+          <span className="text-ink-subtle font-body text-sm">
+            {" · "}
+            {inclusive}
+          </span>
+        )}
       </Text>
       <Text as="span" size="sm" tone="subtle" className="mt-[6px] max-w-[70ch]">
         {disclosure}

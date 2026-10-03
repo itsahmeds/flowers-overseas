@@ -155,13 +155,30 @@ describe("the populated shop root (§5.3 row 1)", () => {
         /(?:[€£]\s?[\d\u00a0,.]+|[\d\u00a0,.]+\s?(?:PLN|z\u0142))/gu,
       ) ?? [];
     expect(prices.length).toBeGreaterThanOrEqual(cards.length);
-    expect(text).toContain("Includes VAT and delivery");
+    // The card's qualifier is "all in" (founder copy batch, 2026-10-04); the lede keeps the full words.
+    expect(text).toContain("all in");
+    expect(text).toMatch(/VAT and delivery/u);
     // The committed FX snapshot is older than spec 005's ceiling, so every projection falls back
     // to the destination's own currency — and the page says so, once (spec 005 §14 A3, §5.3's
     // "stale FX" state). A price in złoty on an English page with no sentence beside it is the
     // one thing that state exists to prevent.
     expect(en.fxFallback).toBe(true);
     expect(text).toContain("currency of the delivery country");
+  });
+
+  it("renders the v2 intro: eyebrow, P.S. note and the printed-card band after the eighth card", () => {
+    expect(text).toContain("Sending to Poland");
+    expect(html).toMatch(/role="note" aria-label="A note before you choose"/u);
+    expect(text).toContain("P.S.");
+    // The band is a full-width `<li>` of the grid, after exactly eight cards.
+    const grid = html.slice(html.indexOf("data-fo-listing-grid"));
+    const band = grid.indexOf("data-fo-listing-interlude");
+    expect(band).toBeGreaterThan(-1);
+    expect(grid.slice(0, band).match(/data-fo-product-card="/gu)).toHaveLength(
+      8,
+    );
+    expect(text).toContain("Every one of these comes with a card, at no cost.");
+    expect(text).toContain("Narrow it down");
   });
 
   it("renders the category tiles with their `from` prices and plural counts", () => {

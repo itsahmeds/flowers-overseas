@@ -152,7 +152,9 @@ describe("the country occasion page (§5.3 row 2)", () => {
     const cards = html.match(/data-fo-product-card="/gu) ?? [];
     expect(cards.length).toBe(en.items.length);
     expect(cards.length).toBeGreaterThanOrEqual(6);
-    expect(text).toContain("Includes VAT and delivery");
+    // The card's qualifier is "all in" (founder copy batch, 2026-10-04); the lede keeps the full words.
+    expect(text).toContain("all in");
+    expect(text).toMatch(/VAT and delivery/u);
     expect(en.fxFallback).toBe(true);
     expect(text).toContain("currency of the delivery country");
   });

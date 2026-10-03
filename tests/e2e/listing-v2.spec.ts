@@ -37,6 +37,10 @@ for (const [locale, url, native] of SHOP_ROOTS) {
       1,
     );
     await expect(page.locator("main [data-fo-listing-note]")).toHaveCount(1);
+    await expect(page.locator('main [role="note"][aria-label]')).toHaveCount(1);
+    await expect(page.locator("main [data-fo-listing-interlude]")).toHaveCount(
+      1,
+    );
 
     const cards = await page
       .locator("[data-fo-product-card-money='priced']")

@@ -324,7 +324,9 @@ test.describe("/dev/components", () => {
     // `tests/unit/listing-honesty-scan.test.ts`, which proves the patterns fire on markup that
     // does make a forbidden claim.
     expect(html.length).toBeGreaterThan(1000);
-    expect(text).toContain("Includes VAT and delivery");
+    // The card's qualifier is "all in" (founder copy batch, 2026-10-04); the lede keeps the full words.
+    expect(text).toContain("all in");
+    expect(text).toMatch(/VAT and delivery/u);
     expect(listingHonestyViolations({ html, text })).toEqual([]);
   });
 

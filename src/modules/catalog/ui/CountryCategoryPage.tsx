@@ -102,7 +102,10 @@ export function CountryCategoryPage({
           emphasis={country}
           heading={shop("h1.countryCategory", { country, entity })}
           lede={shop("category.lede", { count: view.resultCount, country })}
+          eyebrow={shop("listing.eyebrow", { country })}
           note={shop("root.demoNotice", { country })}
+          noteLabel={shop("note.label")}
+          noteMark={shop("note.mark")}
         />
 
         <section aria-labelledby="category-grid-heading" data-fo-shop-listing>

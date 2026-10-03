@@ -614,6 +614,11 @@
     "reviewed": false,
     "sourceHash": "51e5aa3405f3475b39a814927b7dcd159a33408ebabad373134dd54b4d654508"
   },
+  "catalog.price.allIn": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "059a68d7eeccef41b446c3dfece06b34baced9e8d2fa37a6cc2a47b859acd852"
+  },
   "catalog.price.equivalents": {
     "source": "human",
     "reviewed": false,
@@ -2424,15 +2429,20 @@
     "reviewed": false,
     "sourceHash": "293d08f61bba4dfa72c29578c5013b9fecbed58e92f96c0600902c98a1f069cf"
   },
+  "shop.cardNote.heading": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "47d732fd584be06e8364c1c4d25c93acc355478d5fdaf276f17a5c60ad40cb2a"
+  },
   "shop.category.lede": {
     "source": "machine",
     "reviewed": false,
-    "sourceHash": "406d11d82c87b98cf96334b9c47b1d8593628c450f58c0b8802bb527933ab5d9"
+    "sourceHash": "28e8721d7ae11085b6cadee45e7fbab74f86da7a89495b42b7b3eb78e56c8e5d"
   },
   "shop.category.seoDescription": {
     "source": "machine",
     "reviewed": false,
-    "sourceHash": "f57eac20bf34fd1bce15329639bd47a20dd63c4ca927c32031f9c011b187054d"
+    "sourceHash": "030aedc5acc2057d20796a8a7b4e84135b45fab03cc2161912c5e07dd4b4e3d2"
   },
   "shop.category.seoTitle": {
     "source": "machine",
@@ -2494,6 +2504,21 @@
     "reviewed": false,
     "sourceHash": "d6c78659f21708394b63d5fd407783f26e51433cb3559df3339d7f98f7905a68"
   },
+  "shop.listing.eyebrow": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "844dfdbfa5062ebcb259c3dec9d053f55ab027a296724468cd7310a13659d89f"
+  },
+  "shop.note.label": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "c4eea6824149d50fa3efe20da911e3396308effc1996bba539b3f46f63250315"
+  },
+  "shop.note.mark": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "073f4407e1c072ce2f793b3994691ddef81b1f31090225bf71aa144a76df99ba"
+  },
   "shop.occasion.dateNote": {
     "source": "machine",
     "reviewed": false,
@@ -2512,7 +2537,7 @@
   "shop.occasion.seoDescription": {
     "source": "machine",
     "reviewed": false,
-    "sourceHash": "8abe14c83c44c1abe8be8032b4c8cc8b1a15fac5c4db452bb9ded8342d66cef3"
+    "sourceHash": "dff421f8b3dcf758d2538bd6f8e4558ab897146d8c40ba9a1f987863f5e5e1d6"
   },
   "shop.occasion.seoTitle": {
     "source": "machine",
@@ -2572,7 +2597,7 @@
   "shop.root.introBody": {
     "source": "machine",
     "reviewed": false,
-    "sourceHash": "2983a69ec520aab0efa59c7870b20acd8c4ee2ade3544d9caadbfd95c7d5fac7"
+    "sourceHash": "c60d47f93d99070338862fc4e814ba761a9c014dbf3361fbfb10e97dfb00fb50"
   },
   "shop.root.introHeading": {
     "source": "machine",
@@ -2582,7 +2607,7 @@
   "shop.root.lede": {
     "source": "machine",
     "reviewed": false,
-    "sourceHash": "8969e9cea4d0555cdda3cbf293b30366263cee7e307be434748cac28b8c154cf"
+    "sourceHash": "b60745de07d79122270e8cb03118ac544d58c5a85f3182a5bbfd1c8657140028"
   },
   "shop.root.listingHeading": {
     "source": "machine",
@@ -2622,7 +2647,7 @@
   "shop.root.seoDescription": {
     "source": "machine",
     "reviewed": false,
-    "sourceHash": "b96037055332670e868c2347019359052201e11aca886caef50cfed4da018cbb"
+    "sourceHash": "9b193d25e52ca63c43d343881fcc892b21444abbd0f942e15e9f8880e160edb2"
   },
   "shop.root.seoTitle": {
     "source": "machine",
@@ -2638,6 +2663,11 @@
     "source": "machine",
     "reviewed": false,
     "sourceHash": "58acf2f993d516d97d824bff3c22d768f6bc216b323b701c5c24976710365e12"
+  },
+  "shop.root.tilesSubheading": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "28c6eb010087608ec5c11c85135cbd1fe0c988442effa0f96650c65e5a34fd6f"
   },
   "shop.sort.default": {
     "source": "machine",

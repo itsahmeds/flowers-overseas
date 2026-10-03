@@ -18,7 +18,7 @@
  * Server Component. No client bytes, no `useState`, no fetch (§5.4).
  */
 import { useTranslations } from "next-intl";
-import type { ReactElement } from "react";
+import type { ReactElement, ReactNode } from "react";
 
 import { type LocaleCode } from "@/config/locales";
 
@@ -44,7 +44,16 @@ export interface ListingGridProps {
   readonly priority?: boolean;
   readonly headingLevel?: "h2" | "h3";
   readonly manifest?: MediaManifest;
+  /**
+   * A full-width band inside the grid (the shop root's printed-card note, spec 004 §14 A21):
+   * after the eighth card, or after the last one on a shorter page. It is an `<li>` of the list,
+   * so the list holds what it says it holds; the grid's accessible name still counts cards.
+   */
+  readonly interlude?: ReactNode;
 }
+
+/** The card after which the interlude band sits (the artboard: after the eighth). */
+const INTERLUDE_AFTER = 8;
 
 export function ListingGrid({
   cards,
@@ -52,6 +61,7 @@ export function ListingGrid({
   priority = false,
   headingLevel = "h2",
   manifest,
+  interlude,
 }: ListingGridProps): ReactElement | null {
   const t = useTranslations("shop");
 
@@ -71,7 +81,7 @@ export function ListingGrid({
       className="list-none gap-x-[14px] gap-y-[32px] md:gap-x-[28px] md:gap-y-[52px]"
       data-fo-listing-grid={cards.length}
     >
-      {cards.map((card, index) => (
+      {cards.map((card, index) => [
         <li key={card.productId}>
           <ProductCard
             card={card}
@@ -80,8 +90,18 @@ export function ListingGrid({
             priority={priority && index === 0}
             {...(manifest === undefined ? {} : { manifest })}
           />
-        </li>
-      ))}
+        </li>,
+        interlude !== undefined &&
+        index === Math.min(INTERLUDE_AFTER, cards.length) - 1 ? (
+          <li
+            className="bg-blush rounded-photo-s md:rounded-photo gap-x-xl md:py-xl col-span-full flex flex-col items-start gap-y-[12px] px-[22px] py-[28px] md:flex-row md:items-center md:justify-between md:px-[48px]"
+            data-fo-listing-interlude
+            key="interlude"
+          >
+            {interlude}
+          </li>
+        ) : null,
+      ])}
     </Grid>
   );
 }

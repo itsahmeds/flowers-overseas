@@ -168,6 +168,7 @@
     },
     "floristSentence": "Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
     "price": {
+      "allIn": "inkl. MwSt. und Versand",
       "equivalents": "etwa {amounts} zum Kurs vom {date}",
       "from": "from {price}",
       "inclusive": "inkl. MwSt. und Versand"
@@ -811,9 +812,12 @@
     "card": {
       "noPrice": "No price here — the price depends on the destination"
     },
+    "cardNote": {
+      "heading": "Every one of these comes with a card, at no cost."
+    },
     "category": {
-      "lede": "{count, plural, one {One of ours, made by our florist in the recipient's town on the morning it is delivered.} other {# of ours, made by our florist in the recipient's town on the morning they are delivered.}} One price each, with VAT and delivery already in it.",
-      "seoDescription": "The {entity} our florists can make in {country}, each with one price that includes VAT and delivery. Nothing can be ordered yet.",
+      "lede": "{count, plural, one {One of ours, which our florist in the recipient's town will make on the morning it is delivered.} other {# of ours, which our florist in the recipient's town will make on the morning they are delivered.}} One price each, with VAT and delivery already in it.",
+      "seoDescription": "The {entity} a local florist will make in {country}, each with one price that includes VAT and delivery. Nothing can be ordered yet.",
       "seoTitle": "{entity} for {country} — one all-in price",
       "siblingsHeading": "Also for {country}"
     },
@@ -835,11 +839,18 @@
     "hub": {
       "noMoney": "We show no price on this page, because the price depends on where the flowers are going. Choose a destination and every price you see there includes VAT and delivery."
     },
+    "listing": {
+      "eyebrow": "Sending to {country}"
+    },
+    "note": {
+      "label": "A note before you choose",
+      "mark": "P.S."
+    },
     "occasion": {
       "dateNote": "That is the date {country} keeps for it, worked out from that country's own rule. It can fall on a different day from the one you keep at home.",
       "datedLine": "{occasion} in {country} is {date}.",
       "lede": "These are the ones we make for it, and our florist in {country} hands them over in person.",
-      "seoDescription": "Every bouquet our florist in {country} can make for {occasion}, with one all-in price that includes VAT and delivery. Nothing can be ordered yet.",
+      "seoDescription": "Every bouquet our florist in {country} will make for {occasion}, with one all-in price that includes VAT and delivery. Nothing can be ordered yet.",
       "seoTitle": "{occasion} flowers for {country} — and {country}'s own date for it",
       "shopRootLink": "Flowers for {country}",
       "siblingsHeading": "Also in {country}",
@@ -855,9 +866,9 @@
     "root": {
       "dateColumn": "Date",
       "demoNotice": "You cannot order yet. We are still choosing our florists in {country}, so every price on this page is the price we would charge and nothing on it can be bought today.",
-      "introBody": "You order from us in your own language and currency. Our florist in the recipient's town makes the bouquet the morning it is delivered and hands it over in person. Nothing crosses a border, so there is no customs form, no paperwork and nothing to pay on arrival.",
+      "introBody": "You order from us in your own language and currency. Our florist in the recipient's town will make the bouquet the morning it is delivered and hand it over in person. Nothing crosses a border, so there is no customs form, no paperwork and nothing to pay on arrival.",
       "introHeading": "How it reaches {country}",
-      "lede": "Our florist in the recipient's town makes the bouquet the morning it is delivered and hands it over in person. Every price below is one number with VAT and delivery already inside it.",
+      "lede": "Our florist in the recipient's town will make the bouquet the morning it is delivered and hand it over in person. Every price below is one number with VAT and delivery already inside it.",
       "listingHeading": "Everything we can make for {country}",
       "occasionColumn": "Occasion",
       "occasionPageLink": "What we make for it",
@@ -865,10 +876,11 @@
       "occasionsEyebrow": "Coming up in {country}",
       "occasionsHeading": "{country}'s own dates",
       "pageColumn": "Page",
-      "seoDescription": "Every bouquet our florists can make in {country}, with one all-in price that includes VAT and delivery. Nothing can be ordered yet.",
+      "seoDescription": "Every bouquet a local florist will make in {country}, with one all-in price that includes VAT and delivery. Nothing can be ordered yet.",
       "seoTitle": "Send flowers to {country} — what we can make there",
       "tileCount": "{count, plural, one {# bouquet we can make for {country}} other {# bouquets we can make for {country}}}",
-      "tilesHeading": "By what it is"
+      "tilesHeading": "By what it is",
+      "tilesSubheading": "Narrow it down"
     },
     "sort": {
       "default": "Our order",

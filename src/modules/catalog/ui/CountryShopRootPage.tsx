@@ -121,7 +121,10 @@ export function CountryShopRootPage({
               emphasis={country}
               heading={shop("h1.countryShopRoot", { country })}
               lede={shop("root.lede", { country })}
+              eyebrow={shop("listing.eyebrow", { country })}
               note={shop("root.demoNotice", { country })}
+              noteLabel={shop("note.label")}
+              noteMark={shop("note.mark")}
             />
 
             {/* Products before prose (§5.3 row 1, `docs/design/README.md` §Density). The grid's
@@ -142,7 +145,16 @@ export function CountryShopRootPage({
                 sort={view.sort}
               />
               <div className="mt-[32px]">
-                <ListingGrid cards={view.items} locale={code} priority />
+                <ListingGrid
+                  cards={view.items}
+                  interlude={
+                    <p className="display-em text-accent-strong text-[26px] leading-[1.15] md:text-xl">
+                      {shop("cardNote.heading")}
+                    </p>
+                  }
+                  locale={code}
+                  priority
+                />
               </div>
               {/* Stale FX (spec 005 §14 A3, §5.3's state): the projection fell back to the
                   destination's own authored price, so the page says which currency it is
@@ -172,7 +184,9 @@ export function CountryShopRootPage({
             {view.tiles.length === 0 ? null : (
               <ListingSubsection
                 dataHook={{ "data-fo-shop-tiles": true }}
-                heading={shop("root.tilesHeading")}
+                emphasis={shop("root.tilesSubheading").split(" ").at(-1) ?? ""}
+                eyebrow={shop("root.tilesHeading")}
+                heading={shop("root.tilesSubheading")}
                 id="shop-tiles-heading"
               >
                 <ListingTiles
