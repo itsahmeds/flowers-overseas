@@ -1,46 +1,168 @@
 {
   "generatedBy": "pnpm fonts:build (scripts/fonts/build-fonts.ts)",
-  "licence": "SIL Open Font License 1.1 (both families)",
-  "repertoire": " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~–—‘’“”„…·•€£°×→ ‑ÄÖÜäöüßĄąĆćĘęŁłŃńÓóŚśŹźŻżĂăÂâÎîȘșȚțÇçĞğİıŞşÀÁÃÅÆÈÉÊËÌÍÏÑÒÔÕØÙÚÛÝàáãåæèéêëìíïñòôõøùúûýÿ",
-  "glyphCount": 198,
-  "budgetBytes": 46080,
-  "subsetBytes": 40844,
+  "licence": "SIL Open Font License 1.1 (all three families)",
+  "repertoire": " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~–—‘’“”„…·•€£°×→‑ÄÖÜäöüßĄąĆćĘęŁłŃńÓóŚśŹźŻżĂăÂâÎîȘșȚțÇçĞğİıŞşÀÁÃÅÆÈÉÊËÌÍÏÑÒÔÕØÙÚÛÝàáãåæèéêëìíïñòôõøùúûýÿ",
+  "glyphCount": 197,
+  "budgets": {
+    "preloadBytes": 51200,
+    "latinPageBytes": 92160,
+    "latinExtPageBytes": 122880,
+    "handBytes": 30720
+  },
   "faces": [
     {
-      "file": "newsreader-500-latin-ext.woff2",
-      "family": "Newsreader",
-      "weight": 500,
-      "role": "display (headings, wordmark)",
+      "file": "fraunces-400-latin.woff2",
+      "family": "Fraunces",
+      "weight": 400,
+      "style": "normal",
+      "subset": "latin",
+      "unicodeRange": "U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+2122, U+2190-2193, U+2212",
+      "role": "display",
+      "use": "every heading, the sentence, the product page's price and total",
       "axes": {
-        "opsz": 32,
+        "opsz": 144,
+        "wght": 400,
+        "SOFT": 100,
+        "WONK": 0
+      },
+      "bytes": 13352,
+      "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/fraunces/Fraunces%5BSOFT,WONK,opsz,wght%5D.ttf"
+    },
+    {
+      "file": "fraunces-400-latin-ext.woff2",
+      "family": "Fraunces",
+      "weight": 400,
+      "style": "normal",
+      "subset": "latin-ext",
+      "unicodeRange": "U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF, U+2C60-2C7F, U+A720-A7FF",
+      "role": "display",
+      "use": "every heading, the sentence, the product page's price and total",
+      "axes": {
+        "opsz": 144,
+        "wght": 400,
+        "SOFT": 100,
+        "WONK": 0
+      },
+      "bytes": 4180,
+      "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/fraunces/Fraunces%5BSOFT,WONK,opsz,wght%5D.ttf"
+    },
+    {
+      "file": "fraunces-300-italic-latin.woff2",
+      "family": "Fraunces",
+      "weight": 300,
+      "style": "italic",
+      "subset": "latin",
+      "unicodeRange": "U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+2122, U+2190-2193, U+2212",
+      "role": "display-em",
+      "use": "the one poppy phrase per heading, the sentence's choices, the P.S., every note warm-c drew in Caveat",
+      "axes": {
+        "opsz": 144,
+        "wght": 300,
+        "SOFT": 100,
+        "WONK": 0
+      },
+      "bytes": 16848,
+      "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/fraunces/Fraunces-Italic%5BSOFT,WONK,opsz,wght%5D.ttf"
+    },
+    {
+      "file": "fraunces-300-italic-latin-ext.woff2",
+      "family": "Fraunces",
+      "weight": 300,
+      "style": "italic",
+      "subset": "latin-ext",
+      "unicodeRange": "U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF, U+2C60-2C7F, U+A720-A7FF",
+      "role": "display-em",
+      "use": "the one poppy phrase per heading, the sentence's choices, the P.S., every note warm-c drew in Caveat",
+      "axes": {
+        "opsz": 144,
+        "wght": 300,
+        "SOFT": 100,
+        "WONK": 0
+      },
+      "bytes": 4804,
+      "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/fraunces/Fraunces-Italic%5BSOFT,WONK,opsz,wght%5D.ttf"
+    },
+    {
+      "file": "alegreya-sans-400-latin.woff2",
+      "family": "Alegreya Sans",
+      "weight": 400,
+      "style": "normal",
+      "subset": "latin",
+      "unicodeRange": "U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+2122, U+2190-2193, U+2212",
+      "role": "body",
+      "use": "running text and controls (warm-c's 500 renders here, --font-weight-medium)",
+      "axes": {},
+      "bytes": 9592,
+      "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/alegreyasans/AlegreyaSans-Regular.ttf"
+    },
+    {
+      "file": "alegreya-sans-400-latin-ext.woff2",
+      "family": "Alegreya Sans",
+      "weight": 400,
+      "style": "normal",
+      "subset": "latin-ext",
+      "unicodeRange": "U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF, U+2C60-2C7F, U+A720-A7FF",
+      "role": "body",
+      "use": "running text and controls (warm-c's 500 renders here, --font-weight-medium)",
+      "axes": {},
+      "bytes": 2744,
+      "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/alegreyasans/AlegreyaSans-Regular.ttf"
+    },
+    {
+      "file": "alegreya-sans-700-latin.woff2",
+      "family": "Alegreya Sans",
+      "weight": 700,
+      "style": "normal",
+      "subset": "latin",
+      "unicodeRange": "U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+2122, U+2190-2193, U+2212",
+      "role": "body-bold",
+      "use": "labels, eyebrows, buttons, standalone links",
+      "axes": {},
+      "bytes": 9728,
+      "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/alegreyasans/AlegreyaSans-Bold.ttf"
+    },
+    {
+      "file": "alegreya-sans-700-latin-ext.woff2",
+      "family": "Alegreya Sans",
+      "weight": 700,
+      "style": "normal",
+      "subset": "latin-ext",
+      "unicodeRange": "U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF, U+2C60-2C7F, U+A720-A7FF",
+      "role": "body-bold",
+      "use": "labels, eyebrows, buttons, standalone links",
+      "axes": {},
+      "bytes": 2756,
+      "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/alegreyasans/AlegreyaSans-Bold.ttf"
+    },
+    {
+      "file": "caveat-500-latin.woff2",
+      "family": "Caveat",
+      "weight": 500,
+      "style": "normal",
+      "subset": "latin",
+      "unicodeRange": "U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+2122, U+2190-2193, U+2212",
+      "role": "hand",
+      "use": "the buyer's own words in the product page's printed-card preview, nowhere else",
+      "axes": {
         "wght": 500
       },
-      "bytes": 17468,
-      "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/newsreader/Newsreader%5Bopsz,wght%5D.ttf"
+      "bytes": 20048,
+      "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/caveat/Caveat%5Bwght%5D.ttf"
     },
     {
-      "file": "plex-sans-400-latin-ext.woff2",
-      "family": "IBM Plex Sans",
-      "weight": 400,
-      "role": "body",
+      "file": "caveat-500-latin-ext.woff2",
+      "family": "Caveat",
+      "weight": 500,
+      "style": "normal",
+      "subset": "latin-ext",
+      "unicodeRange": "U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF, U+2C60-2C7F, U+A720-A7FF",
+      "role": "hand",
+      "use": "the buyer's own words in the product page's printed-card preview, nowhere else",
       "axes": {
-        "wdth": 100,
-        "wght": 400
+        "wght": 500
       },
-      "bytes": 11272,
-      "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/ibmplexsans/IBMPlexSans%5Bwdth,wght%5D.ttf"
-    },
-    {
-      "file": "plex-sans-600-latin-ext.woff2",
-      "family": "IBM Plex Sans",
-      "weight": 600,
-      "role": "labels, buttons, navigation (the canvas's 500 and 600 both resolve here)",
-      "axes": {
-        "wdth": 100,
-        "wght": 600
-      },
-      "bytes": 12104,
-      "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/ibmplexsans/IBMPlexSans%5Bwdth,wght%5D.ttf"
+      "bytes": 4712,
+      "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/caveat/Caveat%5Bwght%5D.ttf"
     }
   ]
 }

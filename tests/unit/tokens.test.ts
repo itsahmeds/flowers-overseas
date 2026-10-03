@@ -1,11 +1,12 @@
 /**
- * T-01 / AC-1 (TASK-045): the built CSS declares every documented token with a non-empty value,
- * every utility the design system promises exists, and removing a token fails **by name**.
+ * T-01 / AC-1 (TASK-045, TASK-175): the built CSS declares every documented token with a non-empty
+ * value, every utility the design system promises exists, and removing a token fails **by name**.
  *
- * The list below is the contract of spec 004 §2 "Tokens" turned into data: colour (the canvas ramp
- * plus the semantic aliases), type, space, radii, shadows, motion, layers and `--measure`. A spec
- * that adds a token adds it here, which is what stops the `@theme` block and the documentation
- * from drifting.
+ * Since spec 004 §14 A21 the documented token set is `docs/design/system/tokens.css` (v2, "the
+ * letter home"): every token it declares must be in the `@theme` block **with the same value**,
+ * except the three family stacks, whose heads are the self-hosted `next/font/local` variables.
+ * The list below adds the code-side tokens the design file has no use for (Tailwind's container
+ * and line-height pairs) and keeps §2's original contract by name.
  */
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -26,91 +27,77 @@ const repoRoot = resolve(__dirname, "../..");
 const source = readFileSync(resolve(repoRoot, GLOBALS_CSS), "utf8");
 const built = await compileGlobalsCss(repoRoot);
 
-/** §2's token contract. Grouped exactly as the `@theme` block is. */
+/** The design-side token set (A21 clause 1: the v2 system files are the source of truth). */
+const DESIGN_TOKENS_FILE = "docs/design/system/tokens.css";
+const designTokens = parseDesignTokens(
+  readFileSync(resolve(repoRoot, DESIGN_TOKENS_FILE), "utf8"),
+);
+
+/** `:root { … }` declarations of the design file, one per line, comments stripped. */
+function parseDesignTokens(css: string): Map<string, string> {
+  const block = css
+    .slice(css.indexOf(":root {") + 7, css.lastIndexOf("}"))
+    .replaceAll(/\/\*[\s\S]*?\*\//g, "");
+  const tokens = new Map<string, string>();
+  for (const declaration of block.split(";")) {
+    const colon = declaration.indexOf(":");
+    if (colon === -1) continue;
+    const name = declaration.slice(0, colon).trim();
+    if (!name.startsWith("--")) continue;
+    tokens.set(
+      name,
+      declaration
+        .slice(colon + 1)
+        .replaceAll(/\s+/g, " ")
+        .trim(),
+    );
+  }
+  return tokens;
+}
+
+/** The family stacks, whose heads differ by design (self-hosted variables, not family names). */
+const FONT_STACKS = ["--font-display", "--font-body", "--font-hand"] as const;
+
+/** §2's token contract plus A21's additions. Grouped exactly as the `@theme` block is. */
 const REQUIRED_TOKENS = {
-  colourRamp: [
-    "--color-paper",
-    "--color-paper-2",
-    "--color-paper-3",
-    "--color-ink",
-    "--color-ink-2",
-    "--color-ink-3",
-    "--color-rule",
-    "--color-accent",
-    "--color-accent-strong",
-    "--color-accent-ink",
-    "--color-photo",
-    "--color-photo-stop-1",
-    "--color-photo-stop-2",
-    "--color-photo-stop-3",
-    "--color-photo-ink",
+  design: [...designTokens.keys()],
+  codeSide: [
+    "--container-prose",
+    "--container-lede",
+    "--container-page",
+    "--text-hero-fluid--line-height",
+    "--text-display-fluid--line-height",
+    "--text-title-fluid--line-height",
+    "--text-3xl-fluid--line-height",
+    "--text-2xl-fluid--line-height",
   ],
-  semanticColour: [
+  // §2's original names, kept so a v3 cannot drop one silently.
+  section2: [
     "--color-surface",
     "--color-surface-raised",
     "--color-surface-muted",
-    "--color-surface-inverse",
     "--color-ink-muted",
-    "--color-ink-subtle",
-    "--color-on-inverse",
     "--color-brand",
     "--color-on-brand",
     "--color-accent",
     "--color-on-accent",
     "--color-border",
     "--color-border-strong",
-    "--color-border-emphasis",
     "--color-focus",
     "--color-success",
     "--color-on-success",
     "--color-warning",
     "--color-on-warning",
     "--color-danger",
-    "--color-danger-strong",
     "--color-on-danger",
-  ],
-  type: [
-    "--font-display",
-    "--font-body",
-    "--font-weight-medium",
-    "--text-display",
-    "--text-display-s",
-    "--text-2xl",
-    "--text-xl",
-    "--text-lg",
-    "--text-md",
-    "--text-sm",
-    "--text-xs",
     "--measure",
-    "--container-prose",
-  ],
-  space: [
-    "--spacing-xs",
-    "--spacing-sm",
-    "--spacing-md",
-    "--spacing-lg",
-    "--spacing-xl",
-    "--spacing-2xl",
-    "--spacing-3xl",
-  ],
-  shape: [
-    "--radius-none",
-    "--radius-sm",
-    "--radius-md",
     "--radius-full",
-    "--rule",
-    "--shadow-xs",
-    "--shadow-sm",
-    "--shadow-md",
-  ],
-  motion: [
     "--duration-fast",
-    "--duration-base",
-    "--duration-slow",
     "--ease-standard",
-    "--ease-emphasised",
+    "--layer-header",
+    "--layer-banner",
+    "--layer-overlay",
   ],
-  layers: ["--layer-header", "--layer-banner", "--layer-overlay"],
 } as const;
 
 const ALL_TOKENS = [
@@ -131,26 +118,34 @@ describe("the @theme token set (T-01 / AC-1)", () => {
     expect(missing).toEqual([]);
   });
 
-  it("keeps the type steps fluid between the two artboards", () => {
+  it("keeps the shipped type steps fluid between the two artboards", () => {
     for (const token of [
-      "--text-display",
-      "--text-display-s",
-      "--text-2xl",
-      "--text-xl",
+      "--text-hero-fluid",
+      "--text-display-fluid",
+      "--text-title-fluid",
+      "--text-3xl-fluid",
+      "--text-2xl-fluid",
+      "--text-lede-fluid",
     ]) {
       expect(tokens.get(token), token).toContain("clamp(");
     }
   });
 
-  it("pairs the display steps with a line height and a tracking", () => {
-    for (const token of ["--text-display", "--text-display-s"]) {
-      expect(tokens.get(`${token}--line-height`), token).toBeDefined();
-      expect(tokens.get(`${token}--letter-spacing`), token).toBeDefined();
+  it("pairs the heading steps with the typography sheet's line height and tracking", () => {
+    for (const [token, lineHeight, tracking] of [
+      ["--text-hero-fluid", "0.96", "-0.03em"],
+      ["--text-display-fluid", "0.98", "-0.03em"],
+      ["--text-title-fluid", "0.98", "-0.025em"],
+      ["--text-3xl-fluid", "1.04", "-0.015em"],
+      ["--text-2xl-fluid", "1.08", "-0.015em"],
+    ] as const) {
+      expect(tokens.get(`${token}--line-height`), token).toBe(lineHeight);
+      expect(tokens.get(`${token}--letter-spacing`), token).toBe(tracking);
     }
   });
 
   it("names a missing token in the failure, not just 'undefined' (AC-1)", async () => {
-    const broken = source.replace("--color-ink-3: oklch(52% 0.008 250);", "");
+    const broken = source.replace("--color-ink-3: oklch(50% 0.04 285);", "");
     const brokenTokens = parseThemeTokens(broken);
     expect(brokenTokens.get("--color-ink-3")).toBeUndefined();
     // And the built CSS loses it too, which is what a component would notice.
@@ -164,11 +159,31 @@ describe("the @theme token set (T-01 / AC-1)", () => {
 });
 
 describe("the utilities the design system promises (AC-1, AC-5, AC-6)", () => {
-  it("emits the canvas's three utility classes", () => {
-    for (const utility of [".display", ".label", ".photo"]) {
+  it("emits the design system's voices and marks", () => {
+    for (const utility of [
+      ".display",
+      ".display-em",
+      ".label",
+      ".eyebrow",
+      ".num",
+      ".link",
+      ".link-inline",
+      ".photo",
+      ".airmail-edge",
+      ".airmail-edge-footer",
+      ".surface-inverse",
+    ]) {
       expect(built, utility).toContain(utility);
     }
-    // `.label` is the canvas's printed-label voice, verbatim.
+    // The airmail edge paints the token stripe at the block start, logically (A21 clause 2).
+    expect(built).toMatch(
+      /\.airmail-edge\s*\{[\s\S]*?inset-block-start: 0[\s\S]*?background: var\(--airmail-edge\)/,
+    );
+    // A heading's one italic phrase is Fraunces 300 italic poppy.
+    expect(built).toMatch(
+      /\.display em\s*\{[^}]*font-style: italic[^}]*font-weight: var\(--font-weight-display-em\)[^}]*color: var\(--color-accent\)/,
+    );
+    // `.label` is the printed-label voice: 0.14em, uppercase.
     expect(built).toMatch(/\.label\s*\{[^}]*letter-spacing:\s*0\.14em/);
     expect(built).toMatch(/\.label\s*\{[^}]*text-transform:\s*uppercase/);
     // `.photo` paints the gradient token and no `<img>` (`plan/10` §3).
@@ -224,11 +239,16 @@ describe("the utilities the design system promises (AC-1, AC-5, AC-6)", () => {
     expect(text).toContain("scroll-behavior: auto !important");
   });
 
-  it("gives every document one focus ring from the focus token", () => {
+  const tokens2 = parseThemeTokens(source);
+
+  it("gives every document one focus ring from the focus tokens", () => {
     expect(built).toMatch(
-      /:focus-visible\s*\{[^}]*outline:\s*2px solid var\(--color-focus\)/,
+      /:focus-visible\s*\{[^}]*outline:\s*var\(--focus-ring\)/,
     );
-    expect(built).toMatch(/:focus-visible\s*\{[^}]*outline-offset:\s*2px/);
+    expect(built).toMatch(
+      /:focus-visible\s*\{[^}]*outline-offset:\s*var\(--focus-offset\)/,
+    );
+    expect(tokens2.get("--focus-ring")).toBe("2.5px solid var(--color-focus)");
   });
 
   it("has no physical CSS property in the stylesheet (AC-5)", () => {
@@ -371,135 +391,57 @@ describe("the stylesheet that ships (AC-1, AC-5)", () => {
  * must match value for value. A founder-approved palette change therefore edits the canvas and the
  * `@theme` block in one diff, and this test names the token that fell behind.
  */
-describe("token values against the approved canvas (AC-1)", () => {
-  const canvas = parseCanvasTokens(
-    readFileSync(
-      resolve(repoRoot, "docs/design/homepage-v1/tokens.css"),
-      "utf8",
-    ),
-  );
+describe("token values against design system v2 (A21 clauses 2–3, T-01)", () => {
   const theme = parseThemeTokens(source);
 
-  /** `:root { … }` declarations, several to a line in the canvas file. */
-  function parseCanvasTokens(css: string): Map<string, string> {
-    const block = css.slice(css.indexOf("{") + 1, css.lastIndexOf("}"));
-    const tokens = new Map<string, string>();
-    for (const declaration of block.split(";")) {
-      const colon = declaration.indexOf(":");
-      if (colon === -1) continue;
-      const name = declaration.slice(0, colon).trim();
-      if (!name.startsWith("--")) continue;
-      tokens.set(
-        name,
-        declaration
-          .slice(colon + 1)
-          .replaceAll(/\s+/g, " ")
-          .trim(),
-      );
-    }
-    return tokens;
-  }
-
-  /** `oklch(42% 0.10 155)` and `oklch(42% 0.1 155)` are the same colour. */
-  const normalise = (value: string) =>
-    value.replaceAll(/(\d+\.\d*?)0+\b/g, "$1").replaceAll(/\.(?=\D)/g, "");
-
-  const COLOURS = [
-    "--color-paper",
-    "--color-paper-2",
-    "--color-paper-3",
-    "--color-ink",
-    "--color-ink-2",
-    "--color-ink-3",
-    "--color-rule",
-    "--color-accent",
-    "--color-accent-ink",
-  ] as const;
-
-  it.each(COLOURS)("keeps %s at the canvas value", (token) => {
-    expect(theme.get(token), token).toBeDefined();
-    expect(normalise(theme.get(token) ?? ""), token).toBe(
-      normalise(canvas.get(token) ?? "canvas token missing"),
+  it.each(
+    [...designTokens.keys()].filter((t) => !FONT_STACKS.includes(t as never)),
+  )("declares %s with docs/design/system/tokens.css's value", (token) => {
+    expect(theme.get(token), `${token} is missing from the @theme block`).toBe(
+      designTokens.get(token),
     );
   });
 
-  it("keeps the photo placeholder's gradient stops and geometry", () => {
-    const gradient = canvas.get("--color-photo") ?? "";
-    // The canvas inlines the three stops; the theme names them, so `--color-photo` can stay a
-    // gradient token while the contrast manifest reasons about the darkest stop.
-    const stops = [...gradient.matchAll(/oklch\([^)]*\)/g)].map((m) => m[0]);
-    expect(stops).toHaveLength(3);
-    for (const [index, stop] of stops.entries()) {
-      expect(
-        normalise(theme.get(`--color-photo-stop-${String(index + 1)}`) ?? ""),
-        `stop ${String(index + 1)}`,
-      ).toBe(normalise(stop));
-    }
-    const themeGradient = theme.get("--color-photo") ?? "";
-    expect(themeGradient).toContain("160deg");
-    for (const position of ["0%", "45%", "100%"]) {
-      expect(themeGradient, position).toContain(position);
-    }
-  });
-
-  it("keeps the two font stacks' fallbacks (the first family is self-hosted)", () => {
-    // `next/font/local` hands the family name over as a CSS variable, so the head of the stack is
-    // `var(--font-newsreader)` where the canvas writes `"Newsreader"`. The fallbacks — which are
-    // what a reader with the font blocked actually sees — must match exactly.
-    for (const [token, family] of [
-      ["--font-display", "Newsreader"],
-      ["--font-body", "IBM Plex Sans"],
+  it("carries A21's named palette values exactly", () => {
+    // The table in docs/design/README.md "A21 clause 2 names → tokens.css".
+    for (const [token, value] of [
+      ["--color-paper", "oklch(99.8% 0.002 85)"],
+      ["--color-paper-2", "oklch(98.9% 0.006 85)"],
+      ["--color-card", "oklch(100% 0 0)"],
+      ["--color-ink", "oklch(25% 0.06 285)"],
+      ["--color-ink-2", "oklch(42% 0.05 285)"],
+      ["--color-ink-3", "oklch(50% 0.04 285)"],
+      ["--color-accent", "oklch(54% 0.2 30)"],
+      ["--color-accent-strong", "oklch(47% 0.19 30)"],
+      ["--color-sky", "oklch(48% 0.16 262)"],
+      ["--color-sky-strong", "oklch(40% 0.15 262)"],
+      ["--color-sun", "oklch(87% 0.15 92)"],
+      ["--color-stem", "oklch(44% 0.1 155)"],
+      ["--color-blush", "oklch(93.5% 0.04 30)"],
+      ["--color-butter", "oklch(96.5% 0.055 95)"],
+      ["--color-sage-wash", "oklch(94% 0.03 250)"],
+      ["--color-leaf-wash", "oklch(94.5% 0.04 155)"],
+      ["--color-logo-ink", "oklch(19% 0.01 250)"],
+      ["--color-logo-accent", "oklch(42% 0.1 155)"],
     ] as const) {
-      const canvasStack = (canvas.get(token) ?? "")
-        .split(",")
-        .map((f) => f.trim());
-      const themeStack = (theme.get(token) ?? "")
-        .split(",")
-        .map((f) => f.trim());
-      expect(canvasStack[0], token).toBe(`"${family}"`);
-      expect(themeStack[0], token).toMatch(/^var\(--font-[a-z-]+\)$/);
-      expect(themeStack.slice(1), token).toEqual(canvasStack.slice(1));
+      expect(theme.get(token), token).toBe(value);
     }
   });
 
-  /** The canvas's fixed px, and the rem the theme must reach at the largest artboard. */
-  const TYPE_STEPS = [
-    ["--text-display", 68],
-    ["--text-display-s", 42],
-    ["--text-2xl", 34],
-    ["--text-xl", 24],
-    ["--text-lg", 18],
-    ["--text-md", 15],
-    ["--text-sm", 13],
-    ["--text-xs", 11],
-  ] as const;
-
-  it.each(TYPE_STEPS)(
-    "reaches the canvas's %s at the desktop artboard",
-    (token, px) => {
-      expect(canvas.get(token), token).toBe(`${String(px)}px`);
-      const value = theme.get(token) ?? "";
-      // Fluid steps (`clamp(min, preferred, max)`) must top out at the canvas value; fixed steps
-      // are the canvas value. Both are expressed in rem so a reader's font size still scales them.
-      const rem = value.startsWith("clamp(")
-        ? (/,\s*([\d.]+)rem\s*\)$/.exec(value)?.[1] ?? "")
-        : (/^([\d.]+)rem$/.exec(value)?.[1] ?? "");
-      expect(Number(rem) * 16, `${token} = ${value}`).toBeCloseTo(px, 5);
-    },
-  );
-
-  it("keeps the space scale, the radii and the hairline", () => {
-    for (const step of ["xs", "sm", "md", "lg", "xl", "2xl", "3xl"]) {
-      // Tailwind's namespace is `--spacing-*`; the canvas calls it `--space-*`.
-      expect(theme.get(`--spacing-${step}`), step).toBe(
-        canvas.get(`--space-${step}`),
-      );
+  it("heads the three family stacks with the self-hosted variables, Latin-Ext first", () => {
+    expect(theme.get("--font-display")).toBe(
+      "var(--font-fraunces-ext), var(--font-fraunces)",
+    );
+    expect(theme.get("--font-body")).toBe(
+      "var(--font-alegreya-ext), var(--font-alegreya)",
+    );
+    expect(theme.get("--font-hand")).toMatch(
+      /^var\(--font-caveat-ext, "Caveat"\), var\(--font-caveat, "Bradley Hand"\)/,
+    );
+    // The design file names the families as strings; nothing in the theme names Newsreader
+    // except the logo token, which no rule uses to load a face.
+    for (const token of FONT_STACKS) {
+      expect(theme.get(token), token).not.toContain("Newsreader");
     }
-    for (const radius of ["sm", "md"]) {
-      expect(theme.get(`--radius-${radius}`), radius).toBe(
-        canvas.get(`--radius-${radius}`),
-      );
-    }
-    expect(theme.get("--rule")).toBe(canvas.get("--rule"));
   });
 });

@@ -99,7 +99,14 @@ import { brotliCompressSync, constants, gzipSync } from "node:zlib";
 import { launchLocales } from "../src/config/locales.ts";
 import { loadMessages, namespacesFor } from "../src/modules/i18n/messages.ts";
 
-import { FONT_BUDGET_BYTES, readManifest } from "./fonts/build-fonts.ts";
+import {
+  FONT_BUDGETS,
+  handFontBytes,
+  MAX_PRELOADS,
+  pageFontBytes,
+  PRELOADED_FILES,
+  readManifest,
+} from "./fonts/build-fonts.ts";
 
 /**
  * `plan/01` §7 as restated by spec 004 §13 Q13 and **corrected by spec 004 §14 A1**: 128 KB —
@@ -809,36 +816,97 @@ export function applicationCodeHits(
   return hits;
 }
 
-export interface FontTransfer {
-  /** Named `transferBytes` and not `total…` because `fo/no-float-money` reads the latter as money. */
-  readonly transferBytes: number;
+/** One of A21 clause 3's font budgets, measured. */
+export interface FontBudgetLine {
+  readonly label: string;
+  readonly bytes: number;
   readonly budgetBytes: number;
+}
+
+export interface FontTransfer {
+  /** en/en-gb/de page, pl page, Caveat on the product page, preloaded bytes — in that order. */
+  readonly lines: readonly FontBudgetLine[];
+  /** Number of files preloaded on every page. */
+  readonly preloadCount: number;
   readonly withinBudget: boolean;
   readonly faces: readonly { readonly file: string; readonly bytes: number }[];
 }
 
 /**
- * Font transfer per page (spec 004 AC-4's ≤45 KB, restated as an AC-25 clause; TASK-056).
+ * Font transfer per page (spec 004 §14 A21 clause 3, which supersedes AC-4's and AC-25's 45 KB;
+ * TASK-056, TASK-175).
  *
  * Read from `src/modules/ui/fonts/subset.json`, the manifest `pnpm fonts:build` writes and
- * `tests/unit/fonts.test.ts` pins byte-for-byte against the committed `.woff2` files. Every
- * document preloads all three faces (`src/modules/ui/fonts/index.ts`), so the per-page transfer
- * *is* the manifest total; this reports it in the same table as the script budget because §11's
- * bundle table has a Fonts column and a budget printed nowhere is a budget nobody reads.
+ * `tests/unit/fonts.test.ts` pins byte-for-byte against the committed `.woff2` files. Each face is
+ * a Latin and a Latin-Ext `unicode-range` file, so what a page transfers depends on its text: an
+ * `en`, `en-gb` or `de` page loads the Latin files of the four page faces (≤90 KB), a `pl` page
+ * adds their Latin-Ext files (≤120 KB), the product page adds Caveat (≤30 KB), and the preloaded
+ * files are ≤50 KB in at most two files. WOFF2 is Brotli inside, so file bytes are transfer bytes.
  */
 export function fontTransfer(root: string): FontTransfer {
   const manifest = readManifest(root);
-  const faces = manifest.faces.map((face) => ({
-    file: face.file,
-    bytes: face.bytes,
-  }));
-  const transferBytes = faces.reduce((sum, face) => sum + face.bytes, 0);
+  const preloaded = manifest.faces.filter((face) =>
+    (PRELOADED_FILES as readonly string[]).includes(face.file),
+  );
+  const lines: FontBudgetLine[] = [
+    {
+      label: "en/en-gb/de page",
+      bytes: pageFontBytes(manifest, ["latin"]),
+      budgetBytes: FONT_BUDGETS.latinPageBytes,
+    },
+    {
+      label: "pl page",
+      bytes: pageFontBytes(manifest, ["latin", "latin-ext"]),
+      budgetBytes: FONT_BUDGETS.latinExtPageBytes,
+    },
+    {
+      label: "Caveat (product page only)",
+      bytes: handFontBytes(manifest, ["latin", "latin-ext"]),
+      budgetBytes: FONT_BUDGETS.handBytes,
+    },
+    {
+      label: "preloaded",
+      bytes: preloaded.reduce((sum, face) => sum + face.bytes, 0),
+      budgetBytes: FONT_BUDGETS.preloadBytes,
+    },
+  ];
   return {
-    transferBytes,
-    budgetBytes: FONT_BUDGET_BYTES,
-    withinBudget: transferBytes <= FONT_BUDGET_BYTES,
-    faces,
+    lines,
+    preloadCount: preloaded.length,
+    withinBudget:
+      lines.every((line) => line.bytes <= line.budgetBytes) &&
+      preloaded.length === PRELOADED_FILES.length &&
+      preloaded.length <= MAX_PRELOADS,
+    faces: manifest.faces.map((face) => ({
+      file: face.file,
+      bytes: face.bytes,
+    })),
   };
+}
+
+/** The page-face transfer of one measured URL: the `pl` figure under `/pl`, the Latin one elsewhere. */
+export function fontBytesFor(url: string, fonts: FontTransfer): number {
+  const [latin, latinExt] = fonts.lines;
+  return (
+    (url === "/pl" || url.startsWith("/pl/") ? latinExt : latin)?.bytes ?? 0
+  );
+}
+
+/** The breaches the font clause adds to the gate's list, one per line over budget. */
+export function fontBreaches(fonts: FontTransfer): string[] {
+  return [
+    ...fonts.lines
+      .filter((line) => line.bytes > line.budgetBytes)
+      .map(
+        (line) =>
+          `font transfer for the ${line.label} is ${kb(line.bytes)}, over the ${kb(line.budgetBytes)} budget of spec 004 §14 A21 clause 3`,
+      ),
+    ...(fonts.preloadCount > MAX_PRELOADS
+      ? [
+          `${String(fonts.preloadCount)} font files are preloaded, over the ${String(MAX_PRELOADS)} spec 004 §14 A21 clause 3 allows`,
+        ]
+      : []),
+  ];
 }
 
 export interface BundleBaseline {
@@ -995,16 +1063,21 @@ export function formatMarkdownTable(
     lines.push(
       `| \`${page.url}\`${measured} | ${kb(page.documentBrotliBytes)} | ${kb(page.lazyBrotliBytes)} | ${kb(
         page.fetchedBrotliBytes,
-      )} | ${kb(page.fetchedGzipBytes)} | ${delta} | ${kb(fonts.transferBytes)} | ${
+      )} | ${kb(page.fetchedGzipBytes)} | ${delta} | ${kb(fontBytesFor(page.url, fonts))} | ${
         page.withinBudget ? "within 128 KB br" : "**over 128 KB br**"
       } |`,
     );
   }
   lines.push("");
   lines.push(
-    `Fonts: ${kb(fonts.transferBytes)} for ${String(fonts.faces.length)} faces, budget ${kb(
-      fonts.budgetBytes,
-    )} — ${fonts.withinBudget ? "within" : "**over**"}. Regression allowance ${kb(
+    `Fonts: ${fonts.lines
+      .map(
+        (line) =>
+          `${line.label} ${kb(line.bytes)}, budget ${kb(line.budgetBytes)}`,
+      )
+      .join(" · ")} (${String(fonts.preloadCount)} files preloaded) — ${
+      fonts.withinBudget ? "within" : "**over**"
+    }. Regression allowance ${kb(
       baseline?.regressionAllowanceBytes ?? REGRESSION_ALLOWANCE_BYTES,
     )} br against \`${BASELINE_FILE}\`.`,
   );
@@ -1122,11 +1195,7 @@ export function main(
         (leak) =>
           `${leak.url} ships the \`${leak.namespace}.*\` catalogue in a fetched chunk (${leak.asset}, e.g. \`${leak.key}\`) — no client may read a message catalogue since spec 004 §14 A1's addendum`,
       ),
-      ...(fonts.withinBudget
-        ? []
-        : [
-            `font transfer is ${kb(fonts.transferBytes)} across ${String(fonts.faces.length)} faces, over the ${kb(fonts.budgetBytes)} budget of spec 004 AC-4`,
-          ]),
+      ...fontBreaches(fonts),
       ...applicationCode.map(
         (hit) =>
           `${hit.url} fetches ${hit.asset}, which is application JavaScript — the chooser ships none (spec 003 AC-7, spec 004 AC-12, AC-25)`,

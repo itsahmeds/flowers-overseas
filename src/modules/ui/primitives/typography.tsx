@@ -1,20 +1,35 @@
 /**
- * Type primitives (spec 004 §2 "Tokens" type scale, TASK-045).
+ * Type primitives (spec 004 §2 "Tokens" type scale, §14 A21 clause 3; typography sheet v2;
+ * TASK-045, TASK-175).
  *
- * Four components cover every piece of text in the design: `Display` (Newsreader, the canvas's
- * `.display` utility, for headings), `Text` (IBM Plex Sans body copy at four sizes) and `Label`
- * (the canvas's `.label` voice — 11 px, 600, tracked, uppercase, subtle ink — which is the visual
- * signature of the whole design and appears above every section — and, with `as="label"`, is also the `<label>` of a field, because
- * that is what the canvas draws).
+ * `Display` (Fraunces roman 400, the `display` utility, for headings — an `<em>` inside one is the
+ * single Fraunces 300 italic poppy phrase a heading may carry), `Text` (Alegreya Sans), `Label`
+ * (the printed-label voice: 13 px, 700, tracked, uppercase, subtle ink) and `Eyebrow` (the same
+ * voice in cornflower, over a section).
+ *
+ * **The v2 ramp.** Every display size names a step of the typography sheet and renders its
+ * `-fluid` `clamp()` between the 390 and the 1440 artboards, with the step's line height and
+ * tracking carried by the token (`--text-*-fluid--line-height`). The sizes v1 call sites already
+ * use keep their names and move to the nearest v2 step, so every existing page picks up the ramp
+ * without a call-site edit: `display` → the listing H1 (84/42), `display-s` → the home section H2
+ * (54/32), `2xl` → the page section H2 (44/30), `xl` → legends and promise titles (23), `lg` →
+ * card names (21/18). `hero` (90/50) and `title` (68/44) are the home and product H1s.
+ *
+ * **Optical size.** One roman file ships, pinned at `opsz` 144 (A21 clause 3; the sheet's rule for
+ * a single instance: "it pins 144 for the H1 steps and the H2 and smaller steps take the nearest
+ * value it can ship"). So no step sets `font-variation-settings`: there is no axis left to set.
  *
  * `level` and `size` are separate on purpose: a document's heading *level* is a structure decision
- * (one `<h1>`, no skipped levels — §5.3) and its *size* is a design decision, and conflating them
- * is how a page ends up with three `<h1>`s because the designer wanted three big lines.
+ * (one `<h1>`, no skipped levels — §5.3) and its *size* is a design decision.
  */
 import type { ReactElement, ReactNode } from "react";
 
+import { Icon } from "../icons/Icon.tsx";
+
 export const DISPLAY_SIZES = [
+  "hero",
   "display",
+  "title",
   "display-s",
   "2xl",
   "xl",
@@ -23,11 +38,13 @@ export const DISPLAY_SIZES = [
 export type DisplaySize = (typeof DISPLAY_SIZES)[number];
 
 const DISPLAY_SIZE_CLASS: Readonly<Record<DisplaySize, string>> = {
-  display: "text-display",
-  "display-s": "text-display-s",
-  "2xl": "text-2xl",
-  xl: "text-xl",
-  lg: "text-lg",
+  hero: "text-hero-fluid",
+  display: "text-display-fluid",
+  title: "text-title-fluid",
+  "display-s": "text-3xl-fluid",
+  "2xl": "text-2xl-fluid",
+  xl: "text-md",
+  lg: "text-h3-s md:text-h3",
 };
 
 export interface DisplayProps {
@@ -39,7 +56,7 @@ export interface DisplayProps {
   readonly id?: string;
 }
 
-/** The canvas's `.display` voice: Newsreader 500, tight tracking. */
+/** The `display` voice: Fraunces roman 400 at a step of the v2 ramp. */
 export function Display({
   children,
   size = "display-s",
@@ -73,9 +90,13 @@ export const TEXT_TONES = [
 ] as const;
 export type TextTone = (typeof TEXT_TONES)[number];
 
+/**
+ * `lg` is the lede (18 → 21 px), `md` running text (17 px at 390, 18 px from `md` up), `sm` notes
+ * and breadcrumbs (15), `xs` the smallest text the sheet sets (13).
+ */
 const TEXT_SIZE_CLASS: Readonly<Record<TextSize, string>> = {
-  lg: "text-lg",
-  md: "text-md",
+  lg: "text-lede-fluid",
+  md: "text-body-s md:text-body",
   sm: "text-sm",
   xs: "text-xs",
 };
@@ -137,7 +158,7 @@ export interface LabelTextProps {
 }
 
 /**
- * The canvas's `.label`: the printed-label voice above a section, on a chip and over a photo.
+ * The `label` voice: a field's label, a facts list's term, a day name.
  * Uppercased by CSS rather than in the catalogue, so the German and Polish strings stay
  * capitalised correctly in the source and no translator has to type in caps (`plan/03` §5).
  */
@@ -157,5 +178,77 @@ export function Label({
     >
       {children}
     </Element>
+  );
+}
+
+export interface EyebrowProps {
+  readonly children: ReactNode;
+  readonly as?: "p" | "span" | "div";
+  readonly className?: string;
+  readonly id?: string;
+}
+
+/**
+ * The eyebrow over a section heading: the label voice in cornflower (`--color-eyebrow`). Not a
+ * heading — the section's `Display` is — so it is a paragraph by default.
+ */
+export function Eyebrow({
+  children,
+  as = "p",
+  className,
+  id,
+}: EyebrowProps): ReactElement {
+  const Element = as;
+  return (
+    <Element
+      id={id}
+      className={["eyebrow m-0", className].filter(Boolean).join(" ")}
+    >
+      {children}
+    </Element>
+  );
+}
+
+export const TEXT_LINK_VARIANTS = ["standalone", "inline"] as const;
+export type TextLinkVariant = (typeof TEXT_LINK_VARIANTS)[number];
+
+export interface TextLinkProps {
+  readonly children: ReactNode;
+  readonly href: string;
+  /**
+   * `standalone`: cornflower 700, a 1.5 px underline 5 px down ("See every bouquet for Poland").
+   * `inline`: cornflower 400 underlined at 4 px, inside running text.
+   */
+  readonly variant?: TextLinkVariant;
+  /** Adds the trailing arrow, which flips under `dir="rtl"`. */
+  readonly arrow?: boolean;
+  readonly className?: string;
+  readonly "aria-current"?: "page" | undefined;
+}
+
+/** "Cornflower means you can go there" (components sheet v2 "Links"). */
+export function TextLink({
+  children,
+  href,
+  variant = "standalone",
+  arrow = false,
+  className,
+  ...aria
+}: TextLinkProps): ReactElement {
+  return (
+    <a
+      href={href}
+      className={[
+        variant === "standalone" ? "link" : "link-inline",
+        arrow ? "gap-xs inline-flex items-center" : "",
+        className,
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      {...aria}
+    >
+      {children}
+      {arrow ? <Icon name="arrow-end" size={16} /> : null}
+    </a>
   );
 }
