@@ -43,69 +43,21 @@ for (const path of AUDITED) {
 
     expect(await audit(page)).toEqual([]);
   });
-
-  test(`${path} finder with the type-ahead open has no serious or critical violations`, async ({
-    page,
-  }) => {
-    await page.goto(path);
-    // The prefix is read from the document rather than written here, because a locale's
-    // destination names are its own: `de`/`pl` are machine drafts of the English names and
-    // `ar-XB` wraps every string in direction marks, so a hard-coded "p" matches in some
-    // locales and nothing in others.
-    const first = await page
-      .locator("datalist#finder-country-options option")
-      .first()
-      .getAttribute("value");
-    await page.locator("#finder-country").fill((first ?? "").slice(0, 3));
-    await expect(page.locator("[data-fo-finder-matches]")).toBeVisible();
-
-    expect(await audit(page)).toEqual([]);
-  });
 }
 
-test("every finder control clears the 44 px tap-target floor (§5.3)", async ({
+test("every sentence-picker control clears the 44 px tap-target floor (§5.3)", async ({
   page,
 }) => {
   await page.goto("/en");
 
   for (const selector of [
-    "#finder-country",
-    "#finder-town",
-    "#finder-date",
-    '[data-fo-finder-form] button[type="submit"]',
+    "#send-country",
+    "#send-occasion",
+    '[data-fo-sentence] button[type="submit"]',
   ]) {
     const box = await page.locator(selector).boundingBox();
     expect(box?.height ?? 0, selector).toBeGreaterThanOrEqual(44);
   }
-
-  await page.locator("#finder-country").fill("pol");
-  const option = await page
-    .locator("[data-fo-finder-matches] button")
-    .first()
-    .boundingBox();
-  expect(option?.height ?? 0).toBeGreaterThanOrEqual(44);
-});
-
-test("the country field is described by one sentence, not by the whole section", async ({
-  page,
-}) => {
-  await page.goto("/en");
-
-  // `/review 40`, inherited by TASK-053: the description used to be the destination section, so
-  // every focus of the field read seven names, seven state words and the onboarding line — about
-  // 200 words. It is now a purpose-written `sr-only` summary built from the same registry.
-  const describedBy = await page
-    .locator("#finder-country")
-    .getAttribute("aria-describedby");
-  expect(describedBy).toBe("finder-destinations-summary");
-
-  const summary = page.locator("#finder-destinations-summary");
-  await expect(summary).toHaveCount(1);
-  const sentence = await summary.textContent();
-  expect((sentence ?? "").split(" ").length).toBeLessThan(40);
-  expect(sentence).toContain("Poland");
-  // The section itself is still on the page and still the `Continue` target.
-  await expect(page.locator("#destinations")).toBeVisible();
 });
 
 test("every section of the home is a named region with one heading", async ({
@@ -118,7 +70,9 @@ test("every section of the home is a named region with one heading", async ({
     "[data-fo-occasions]",
     "[data-fo-how-it-works]",
     "[data-fo-faq]",
+    // v2: the promise band is AC-10's trust strip (TASK-177).
     "[data-fo-trust-strip]",
+    "[data-fo-hero]",
     // TASK-054's two rendered gated sections. (`ReviewsSection` renders nothing in Phase 0, so
     // there is no region to name — `tests/e2e/home.spec.ts` asserts its absence.)
     "[data-fo-trending]",

@@ -330,17 +330,19 @@ describe("the how-it-works explainer", () => {
 });
 
 describe("the FAQ", () => {
-  it("renders five native disclosures, all closed, and no JSON-LD (AC-16)", () => {
+  it("renders four native disclosures, all closed, and no JSON-LD (AC-16)", () => {
     const html = faq("en");
 
-    expect(FAQ_ENTRIES).toHaveLength(5);
-    expect([...html.matchAll(/<details/g)]).toHaveLength(5);
-    expect([...html.matchAll(/<summary/g)]).toHaveLength(5);
+    // Four since TASK-177: "What if the flowers do not last?" answered "Seven days from
+    // delivery", a day-count freshness promise the founder withdrew on 2026-10-04.
+    expect(FAQ_ENTRIES).toHaveLength(4);
+    expect([...html.matchAll(/<details/g)]).toHaveLength(4);
+    expect([...html.matchAll(/<summary/g)]).toHaveLength(4);
     expect(html).not.toContain(" open");
     expect(html).not.toContain("application/ld+json");
   });
 
-  it("asks the five questions the artboards ask, and answers them", () => {
+  it("asks four questions and answers them, and promises no day count", () => {
     const rendered = text(faq("en"));
 
     for (const fragment of [
@@ -352,11 +354,10 @@ describe("the FAQ", () => {
       "Is the price really final?",
       "Delivery and VAT are inside the price you see.",
       "Who delivers, and when?",
-      "What if the flowers do not last?",
-      "we redeliver or refund, your choice",
     ]) {
       expect(rendered, fragment).toContain(fragment);
     }
+    expect(rendered).not.toMatch(/\b(seven|7)[ -]days?\b/iu);
   });
 
   it("draws the artboards' `+` affordance on every summary, decorative and CSS-only", () => {

@@ -434,7 +434,7 @@
     },
     "proof": {
       "guarantee": {
-        "title": "Freshness guarantee",
+        "title": "Fresh-on-arrival guarantee",
         "body": "We redeliver or refund, your choice"
       },
       "local": {
@@ -583,10 +583,6 @@
       "question": "Who delivers, and when?",
       "answer": "Our own florist in the recipient's town, by hand, on the day you choose.",
       "answerCutoff": "Order by 14:00 in Warsaw, the recipient's own time, for delivery today."
-    },
-    "lasting": {
-      "question": "What if the flowers do not last?",
-      "answer": "Seven days from delivery. Tell us and we redeliver or refund, your choice, no photo required."
     }
   },
   "breadcrumb": {

@@ -53,11 +53,6 @@ export const FAQ_ENTRIES = [
     // the reason the block comment above gives about `i18n:check`'s text scan.
     gatedAnswerKey: "whoDelivers.answerCutoff",
   },
-  {
-    id: "lasting",
-    questionKey: "lasting.question",
-    answerKey: "lasting.answer",
-  },
 ] as const satisfies readonly {
   id: string;
   questionKey: string;

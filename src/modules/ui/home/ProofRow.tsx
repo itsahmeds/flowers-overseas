@@ -10,7 +10,8 @@
  * Four claims, each an icon, a title and one supporting line, 4-up on the desktop artboard and
  * 2-up on the mobile one. The copy is the round-2 artboard's, verbatim, in the first person:
  *
- *  1. 7-day freshness guarantee · **We** redeliver or refund, your choice
+ *  1. Fresh-on-arrival guarantee · **We** redeliver or refund, your choice (founder, 2026-10-04:
+ *     "cant promise staying fresh" — no day count is promised anywhere)
  *  2. **We** make it in their own town · Independent shops **we** chose ourselves
  *  3. The price you see is what **we** charge · Delivery and VAT already in it
  *  4. **We** photograph it at the door · The picture reaches you the same day
@@ -27,7 +28,7 @@
  * committed icon set.
  *
  * No number appears in the row that we cannot source: no florist count, no country count, no
- * rating, no review count (AC-15). "7-day" is a term of the guarantee, not a measurement.
+ * rating, no review count (AC-15). No day count is a term of the guarantee.
  */
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";

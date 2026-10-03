@@ -65,7 +65,9 @@ async function recordConsentRefusal(
 
 const PARTS = [
   { suffix: "hero", selector: "[data-fo-hero]" },
-  { suffix: "finder", selector: "[data-fo-finder]" },
+  // v2 (TASK-177): the sentence picker replaced the finder, and the promise band is both the
+  // proof row and AC-10's trust strip, so it has one baseline, `proof`.
+  { suffix: "sentence", selector: "[data-fo-sentence]" },
   { suffix: "proof", selector: "[data-fo-proof-row]" },
   // TASK-053's five sections, each clipped to its own box for the reason the header gives: a
   // full-page shot at 1280 px shows none of them at the geometry the artboards were drawn at.
@@ -73,7 +75,6 @@ const PARTS = [
   { suffix: "occasions", selector: "[data-fo-occasions]" },
   { suffix: "how-it-works", selector: "[data-fo-how-it-works]" },
   { suffix: "faq", selector: "[data-fo-faq]" },
-  { suffix: "trust", selector: "[data-fo-trust-strip]" },
   // TASK-054's two rendered gated sections. The verified-reviews band has **no** baseline,
   // because in Phase 0 it renders nothing and a screenshot of nothing is not a baseline; its
   // populated branch is covered by `/dev/components` and by the unit tests.

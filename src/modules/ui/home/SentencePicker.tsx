@@ -47,7 +47,7 @@ export interface SentencePickerProps {
 
 /** The select's skin: Fraunces 300 italic poppy, a dashed underline, no native chrome. */
 const SELECT =
-  "display-em text-lg-s md:text-lg appearance-none border-0 border-b-2 border-dashed border-accent bg-transparent ps-[2px] pe-[24px] leading-[40px] [field-sizing:content] cursor-pointer rounded-none hover:bg-blush focus-visible:rounded-md";
+  "display-em text-lg-s md:text-lg appearance-none border-0 border-b-2 border-dashed border-accent bg-transparent ps-[2px] pe-[24px] leading-[40px] min-h-[44px] [field-sizing:content] cursor-pointer rounded-none hover:bg-blush focus-visible:rounded-md";
 
 /** The drawn chevron, inline-end of the choice (the artboard's `.pick::after`). */
 const PICK =

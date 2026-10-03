@@ -413,7 +413,7 @@ describe("the promise band (AC-10's trust strip in v2, AC-15)", () => {
       /<h2 id="promise-heading"[^>]*>Our promise<\/h2>/,
     );
     for (const fragment of [
-      "Freshness guarantee",
+      "Fresh-on-arrival guarantee",
       "We redeliver or refund, your choice",
       "The price you see is what we charge",
       "Delivery and VAT already in it",

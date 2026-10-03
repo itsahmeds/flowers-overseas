@@ -1459,16 +1459,6 @@
     "reviewed": false,
     "sourceHash": "fe04113c65cbba9e7d625f3cde3e7e92c2011bcfd3c56b4a5a8a4e9f0aa86724"
   },
-  "faq.lasting.answer": {
-    "source": "machine",
-    "reviewed": false,
-    "sourceHash": "87f7986af28499a84aaefecf2006eeb051a0b5588bb217557f0e3be828edc0db"
-  },
-  "faq.lasting.question": {
-    "source": "machine",
-    "reviewed": false,
-    "sourceHash": "20d65f248a1ab26dd3ac1013530d6bee288ce0c89eebbe961bd88de11c743f94"
-  },
   "faq.nobodyHome.answer": {
     "source": "machine",
     "reviewed": false,
@@ -1742,7 +1732,7 @@
   "home.proof.guarantee.title": {
     "source": "machine",
     "reviewed": false,
-    "sourceHash": "e4d520106675c99a6b932ac6bba5122df5566783cc047eb7ef4f79bf958915a2"
+    "sourceHash": "48f78da7234a31b2e52376415113415967649841a5bb22bb1570c34def20ce2f"
   },
   "home.proof.local.body": {
     "reviewed": false,

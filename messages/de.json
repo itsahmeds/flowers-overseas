@@ -466,10 +466,6 @@
     "allTopicsPending": "Our help pages are being written. Until they are up, the answers below are the whole of what we promise.",
     "eyebrow": "Before you order",
     "heading": "Questions people ask first",
-    "lasting": {
-      "answer": "Seven days from delivery. Tell us and we redeliver or refund, your choice, no photo required.",
-      "question": "What if the flowers do not last?"
-    },
     "nobodyHome": {
       "answer": "Our florist calls the recipient first. If they cannot be reached, we agree a redelivery with you, at no charge.",
       "question": "What if nobody is home?"
@@ -566,7 +562,7 @@
     "proof": {
       "guarantee": {
         "body": "We redeliver or refund, your choice",
-        "title": "Freshness guarantee"
+        "title": "Fresh-on-arrival guarantee"
       },
       "local": {
         "body": "Independent shops we chose ourselves",
