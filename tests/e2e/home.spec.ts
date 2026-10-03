@@ -186,6 +186,7 @@ test.describe("the locale home, above the fold", () => {
 
     test(`${path} renders the trending row with the founder's label and no price`, async ({
       page,
+      request,
     }) => {
       await page.goto(path);
 
@@ -204,7 +205,24 @@ test.describe("the locale home, above the fold", () => {
         .count();
       expect(images).toBeGreaterThan(0);
       expect(images + boxes).toBe(5);
-      await expect(page.locator(`${TRENDING} a[href]`)).toHaveCount(0);
+      // Each card links to its product page in the demo destination, Poland, and the page answers
+      // 200 (spec 008 §14 A14 (e); TASK-173 — the founder clicked these and went nowhere).
+      const cards = await page
+        .locator(`${TRENDING} li a[href]`)
+        .evaluateAll((nodes) =>
+          nodes.map((node) => node.getAttribute("href") ?? ""),
+        );
+      expect(cards).toHaveLength(5);
+      for (const href of cards) {
+        expect(href, href).toMatch(
+          new RegExp(
+            `^${path}/(?:poland|polen|polska)/(?:product|produkt)/[a-z0-9-]+$`,
+            "u",
+          ),
+        );
+        const response = await request.get(href, { maxRedirects: 0 });
+        expect(response.status(), href).toBe(200);
+      }
       await expect(page.locator(TRENDING)).toHaveAttribute(
         "data-fo-trending-basis",
         "picks",

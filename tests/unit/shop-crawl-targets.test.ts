@@ -21,6 +21,7 @@ import { describe, expect, it } from "vitest";
 import { COUNTRIES } from "../../src/config/countries.ts";
 import {
   type ListingIdentity,
+  listingAlternatePaths,
   listingExists,
   listingLocales,
 } from "../../src/modules/catalog";
@@ -76,8 +77,11 @@ async function derivedCounts(
 ): Promise<Record<string, number>> {
   const counts: Record<string, number> = {};
   for (const identity of candidates(locale)) {
-    if (isExcluded(locale, identity.pageType) !== waived) continue;
     if (!(await listingExists(identity))) continue;
+    // The waiver names exceptions by path (TASK-173's three header hubs), so the identity's own
+    // path is asked of the catalogue — a second route to it, not the fixture's.
+    const path = (await listingAlternatePaths(identity))[locale] ?? "";
+    if (isExcluded(locale, identity.pageType, path) !== waived) continue;
     counts[identity.pageType] = (counts[identity.pageType] ?? 0) + 1;
   }
   return counts;

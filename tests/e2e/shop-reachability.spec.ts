@@ -37,8 +37,8 @@
  *    A link found on a depth-3 page is a fourth click: its target gets a status check, and nothing
  *    more. It is not walked and it does not count as reached, so criterion 1's bound stays ≤3.
  *  - **The pages the walk cannot reach.** Every listing page in the locale's existence set that
- *    the walk did not reach within 3 clicks (today exactly the `EXCLUDED` waivers: the category
- *    hubs, and the `de`/`pl` shop roots) is fetched afterwards, and its links get the same three
+ *    the walk did not reach within 3 clicks (today exactly the `EXCLUDED` waiver: the twenty
+ *    category hubs nothing links yet) is fetched afterwards, and its links get the same three
  *    checks. A waiver excuses a missing inbound link, never a broken outbound one.
  *
  * Every page those links point to gets a status check, with `maxRedirects: 0`. No URL is fetched
@@ -46,16 +46,14 @@
  * links read, which is what makes "all six page types" a checked claim and not a description.
  *
  * **One documented exclusion, and it is an escalation and not a waiver.** The **category hub**
- * (`/{locale}/{shopCategory}/{slug}`, §2 row 10) has no publisher: spec 008 §2's link plan names
- * five reserved ids and none of them is a category hub, and no page type in the spec links to one
- * — the country category's link list is "shop root, sibling categories, corridor, products". The
- * header's category row could carry them, but it is `src/config/categories.ts`, spec 004's
- * registry, and no task in spec 008 owns it. Recorded as an open question in
- * `docs/tasks/TASK-113.md` rather than resolved by inventing a link id. `EXCLUDED` (`tests/support/shop-crawl-targets.ts`) holds it
- * and the second escalation (the draft locales' shop roots), and is asserted to be exactly those
- * three rules, so it cannot quietly grow. The pages it covers are pinned too (`WAIVED`: 23
- * category hubs per English locale, 7 shop roots each in `de` and `pl`), so a rule cannot grow
- * by matching more pages either.
+ * (`/{locale}/{shopCategory}/{slug}`, §2 row 10) had no publisher: spec 008 §2's link plan names
+ * five reserved ids and none of them is a category hub. TASK-173 (spec 008 §14 A14) made the
+ * header's category row the first, for Bouquets, Roses and Plants, and closed the `de`/`pl`
+ * shop-root and country-category escalations through "Our selection". `EXCLUDED`
+ * (`tests/support/shop-crawl-targets.ts`) now holds one rule — the category hub, minus the three
+ * the header links (`HEADER_CATEGORY_HUBS`) — and is asserted to be exactly that, so it cannot
+ * quietly grow. The pages it covers are pinned too (`WAIVED`: 20 category hubs per locale), so the
+ * rule cannot grow by matching more pages either.
  */
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -72,6 +70,7 @@ import {
 import { localePath } from "../../src/modules/i18n/routing.ts";
 import {
   EXCLUDED,
+  HEADER_CATEGORY_HUBS,
   TARGETS,
   WAIVED,
   isExcluded,
@@ -104,7 +103,7 @@ function expectedPages(
   locale: string,
 ): readonly { pageType: string; path: string }[] {
   return (EXISTENCE_SET[locale] ?? []).filter(
-    (page) => !isExcluded(locale, page.pageType),
+    (page) => !isExcluded(locale, page.pageType, page.path),
   );
 }
 
@@ -322,18 +321,18 @@ test.describe("AC-21: the shop is reachable, and links at nothing that is not", 
       ).toBeGreaterThan(0);
       const expected = expectedPages(locale);
       // And the **crawl's own** target set is exactly the one this locale is supposed to have,
-      // type by type. `de` and `pl` are pinned to their occasions index, hubs and country
-      // occasions (TASK-106; the rest is escalated); `en` and `en-gb` carry the whole shop.
+      // type by type. Since TASK-173 every locale carries the whole shop plus the header's three
+      // category hubs (`de`/`pl` were pinned to their occasions index, hubs and country occasions).
       const pinned = TARGETS[locale];
       expect(pinned, `${locale} has a pinned target set`).toBeDefined();
       expect(countByType(expected), `${locale} crawl targets by type`).toEqual(
         pinned,
       );
-      // The waived side is pinned the same way (`/break 98` round 1, hole 1): 23 category hubs
-      // in every locale, plus 7 shop roots and 140 country categories each in `de` and `pl`
-      // (TASK-106), and not one page more.
+      // The waived side is pinned the same way (`/break 98` round 1, hole 1): 20 category hubs
+      // in every locale since TASK-173 (it was 23, plus 147 `de`/`pl` shop pages), and not one
+      // page more.
       const waived = (EXISTENCE_SET[locale] ?? []).filter((page) =>
-        isExcluded(locale, page.pageType),
+        isExcluded(locale, page.pageType, page.path),
       );
       expect(WAIVED[locale], `${locale} has a pinned waived set`).toBeDefined();
       expect(countByType(waived), `${locale} waived pages by type`).toEqual(
@@ -386,7 +385,7 @@ test.describe("AC-21: the shop is reachable, and links at nothing that is not", 
       // pages become reachable, this goes red, and the rule has to be deleted rather than left to
       // excuse whatever breaks next.
       const waivedButReached = (EXISTENCE_SET[locale] ?? [])
-        .filter((page) => isExcluded(locale, page.pageType))
+        .filter((page) => isExcluded(locale, page.pageType, page.path))
         .filter(
           (page) => (result.depthOf.get(page.path) ?? Infinity) <= MAX_DEPTH,
         )
@@ -433,16 +432,26 @@ test.describe("AC-21: the shop is reachable, and links at nothing that is not", 
     }
   });
 
-  test("the escalated exclusions are exactly the three named, and each covers real URLs", () => {
+  test("the escalated exclusion is exactly the one left, and covers real URLs", () => {
     // A test over the *waiver*, so widening it is a diff a reviewer sees, and a waiver that
-    // covered nothing would fail here rather than quietly soften the criterion.
+    // covered nothing would fail here rather than quietly soften the criterion. TASK-173 closed
+    // the `de`/`pl` shop-root and country-category rules and took the header's three category
+    // hubs per locale out of the third (spec 008 §14 A14).
     expect(EXCLUDED).toEqual([
-      { pageType: "categoryHub" },
-      { locale: "de", pageType: "countryShopRoot" },
-      { locale: "pl", pageType: "countryShopRoot" },
-      { locale: "de", pageType: "countryCategory" },
-      { locale: "pl", pageType: "countryCategory" },
+      { pageType: "categoryHub", exceptPaths: HEADER_CATEGORY_HUBS },
     ]);
+    // Every excepted hub is a real page of the existence set: an exception naming a URL that
+    // does not exist would shrink nothing and prove nothing.
+    for (const [locale, paths] of Object.entries(HEADER_CATEGORY_HUBS)) {
+      for (const path of paths) {
+        expect(
+          (EXISTENCE_SET[locale] ?? []).some(
+            (page) => page.pageType === "categoryHub" && page.path === path,
+          ),
+          path,
+        ).toBe(true);
+      }
+    }
     for (const rule of EXCLUDED) {
       const covered = Object.entries(EXISTENCE_SET)
         .filter(
@@ -452,19 +461,20 @@ test.describe("AC-21: the shop is reachable, and links at nothing that is not", 
         .filter((page) => page.pageType === rule.pageType);
       expect(covered.length, JSON.stringify(rule)).toBeGreaterThan(0);
     }
-    // **The indexable locales carry no exclusion but the category hub.** That is the half of
-    // AC-21 that protects organic ranking, and it is asserted in the direction that cannot be
-    // padded: every English listing page bar a category hub is in the crawl's target set.
-    for (const locale of ["en", "en-gb"]) {
+    // **Every locale carries no exclusion but the category hub** (the indexable two since
+    // TASK-113, `de`/`pl` since TASK-173). That is the half of AC-21 that protects organic
+    // ranking, asserted in the direction that cannot be padded: every listing page bar twenty
+    // category hubs is in the crawl's target set.
+    for (const locale of ["en", "en-gb", "de", "pl"]) {
       const pages = EXISTENCE_SET[locale] ?? [];
       const excluded = pages.filter((page) =>
-        isExcluded(locale, page.pageType),
+        isExcluded(locale, page.pageType, page.path),
       );
       expect(
         [...new Set(excluded.map((page) => page.pageType))],
         locale,
       ).toEqual(["categoryHub"]);
-      expect(expectedPages(locale).length, locale).toBe(183);
+      expect(expectedPages(locale).length, locale).toBe(186);
     }
   });
 });
