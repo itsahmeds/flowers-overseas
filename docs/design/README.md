@@ -8,12 +8,104 @@ Everything here is static hand-written HTML with inline styles. Nothing is built
 imported by the application, and nothing under `src/` reads it — the relationship runs the other
 way: `src/modules/ui` is the implementation of `system/`, and `system/` is edited when `src/` is.
 
+## The identity: v2, "the letter home" (locked 2026-10-03)
+
+The founder locked the look on 2026-10-03: **direction A's layout in direction C's colours, on a
+lighter ground** ("A is good", "I like A with C colors better not the researched one… main background
+color could just be a little lighter", "a bit more light", "Good. Now lets lock in the design and start
+building"). The approved pages are `directions/warm-c/` (`home.html`, `shop.html`, `product.html`,
+`README.md`); `directions/research-colour.md` is context only. The other directions (`warm/`, `bold/`,
+`playful/`, `warm-r/`) are kept as the record of what was compared.
+
+**The idea.** Sending flowers home is like writing a letter home: paper, ink, a postmark, a card. The
+buyer starts with a sentence ("I'd like to send flowers to *my mum* in *Poland* for *a birthday*") — a
+server-rendered GET form whose action is spec 004 §14 A21 clause 4's `no-store`, `noindex` route under
+`/api/`, answering 303 to the country occasion page, else the country shop root, else the destinations
+hub; only `country` and `occasion` have a `name`, "who it's for" has none; the
+destination's own dates are drawn as stamps; the card is **printed** and tucked into the bouquet, never
+shown as handwritten.
+
+| | v2 |
+|---|---|
+| Ground | milk `--color-paper`, cream bands `--color-paper-2`, white letters, cards and fields `--color-card` |
+| Ink | plum-navy `--color-ink` / `-2` / `-3` (16.1, 8.5, 6.0 ∶ 1) |
+| Act | poppy `--color-accent`: Send, primary actions, the one italic phrase in a heading |
+| Go | cornflower `--color-sky`: links, eyebrows, the postmark, step numbers, every selected chip, day and tier |
+| Highlight | sunflower `--color-sun`: on ink, as tape, as an underline; never text on paper |
+| Included | leaf `--color-stem` |
+| Tints | `--color-blush`, `--color-butter`, `--color-sage-wash` (warm-c's name for the cornflower wash), `--color-leaf-wash` (stamps, note card, summary, picker note) |
+| Type | Spec 004 §14 A21 clause 3: Fraunces roman 400 and italic 300 (SOFT 100, opsz pinned) · Alegreya Sans 400 and 700 · Caveat 500 **only in the printed-card preview on the product page** · the wordmark as the committed SVG, Newsreader 500 outlined to paths (no Newsreader file). Every note warm-c drew in Caveat — the sentence's choices, the P.S., the margin note, the sign-off, occasion tags — is Fraunces 300 italic. Budget: ≤ 90 KB font transfer (≤ 120 KB on `pl`), + ≤ 30 KB Caveat on the product page, ≤ 2 preloads. The artboards load these faces from Google Fonts only to draw them; nothing ships from there. |
+| Marks | the airmail edge (three places only: the sentence letter, the recap, the footer) · the postmark · perforated date stamps · the P.S. with sunflower tape · the printed-card preview |
+| Logo | unchanged (`--color-logo-ink`, `--color-logo-accent`) |
+
+**What changed from v1.** Forest green on white with Newsreader + IBM Plex Sans became plum-navy,
+poppy and cornflower on milk with Fraunces, Alegreya Sans and Caveat. Pill buttons replace square ones;
+photographs get 18 px radii (28 on the home hero); the home leads with the sentence instead of the
+finder card; listing pages lead with a P.S. instead of a demo banner; the date picker is drawn as chips
+with hand-lettered occasion tags. The **chrome** follows spec 004 §14 A20: every control is a link to a
+page that exists or is absent (no search, account, basket, menu button or Add-ons; footer Company and
+Legal groups wait for TASK-174). Real catalogue photographs replace the grey slots. Spec 004 §14 A21 makes `directions/warm-c/` and these v2 files the design source of truth and the v1 artboards superseded. `system/tokens.css`
+keeps every v1 token *name* (with v2 values) so the artboards not yet redrawn still resolve.
+
+**Where each v2 artboard is.**
+
+| Page type | Artboards |
+|---|---|
+| Home | `wireframes/home-desktop.dc.html` · `wireframes/home-mobile.dc.html` (supersede `homepage-v1/`, kept as the 2026-09-08 record) |
+| Chrome: notice bar, header, footer | `wireframes/chrome-desktop.dc.html` · `wireframes/chrome-mobile.dc.html` |
+| Country shop root · country category · country occasion | `wireframes/country-shop-*`, `wireframes/country-category-*`, `wireframes/country-occasion-*` |
+| Category hub · occasion hub · occasions index | `wireframes/category-hub-*`, `wireframes/occasion-hub-*`, `wireframes/occasions-index-*` |
+| Destinations hub · country guide | `wireframes/all-destinations-*`, `wireframes/corridor-country-*` |
+| Product (unavailable, preview, live) | `wireframes/product-*` |
+| Not found and error | `wireframes/errors-*` |
+| Tokens, colour, type, components | `system/tokens.css`, `system/colour.dc.html`, `system/typography.dc.html`, `system/components.dc.html` |
+
+The v2 artboards **replace the v1 files in place** (same names, so every spec, brief and README row that
+names them still points at the right page; git history keeps v1). Still in v1 and redrawn by the task
+that next builds them: locale chooser, checkout, confirmation, track order, for florists, legal
+template, how it works, guarantee and delivery, about/contact/help, blog, and the three `flows/`.
+
+### What the warm-c direction draws that the specs forbid
+
+`directions/warm-c/` sets the look; it is a clickable preview and draws behaviour the specs do not
+allow. **Never build any of these from the direction files** (spec 004 §14 A21 clause 1); the v2
+artboards already leave them out or redraw them:
+
+| warm-c draws | The rule | v2 draws instead |
+|---|---|---|
+| The shop's client-side filters (type chips as buttons, occasion and flower selects), “Show 12 more” / load more, and the “For your mum” line | spec 008 AC-9, AC-23, §13 Q6: a `GET` sort form, server pagination, no island; no filters | type chips as links to country category pages, the sort form, numbered pagination, no relationship line |
+| The product page's add-on checkboxes that change the total | spec 009 §13 Q6: a priced read-only list in Phase 0 | the read-only list; checkboxes only as a spec 010 state |
+| Selectable dated chips and a working Send | spec 009 §14 A19, AC-8: dates are selectable only when `pickerState` is `live`; Phase 0 shows the demo sentence in place of Send | the `preview` grid (every date disabled) and the demo sentence |
+| “7-day freshness guarantee” | founder copy batch, 2026-10-03 | “Freshness guarantee” |
+| The “Occasion reminders” e-mail form | A21 clause 1, A20: a personal-data flow with no spec | nothing |
+| Caveat on the sentence's choices, the P.S., the margin note, the sign-off, the tags | A21 clause 3: Caveat only in the product page's printed-card preview | Fraunces 300 italic |
+| `fonts.googleapis.com` `<link>`s | A21 clause 3, ADR-0016: self-hosted subsets, never Google Fonts | the artboards keep the links only to draw; nothing ships from there |
+| “card-sub” stem lines on cards (“18 stems · roses”) | spec 008 AC-6: exactly photo, name, one all-in price and the honesty label | no stem line |
+
+### A21 clause 2 names → `tokens.css`
+
+Spec 004 §14 A21 clause 2 names warm-c's tokens; `tokens.css` uses the code's `--color-*` namespace.
+One answer for TASK-175's T-01: the name on the right, with the value on the right.
+
+| A21 / warm-c name | `tokens.css` | Value | Note |
+|---|---|---|---|
+| `--paper` · `--paper-2` | `--color-paper` · `--color-paper-2` | `oklch(99.8% 0.002 85)` · `oklch(98.9% 0.006 85)` | as A21 |
+| `--card` | `--color-card` | **`oklch(100% 0 0)`** | The rendered value. warm-c's README table said `oklch(99.6% 0.004 85)` until 2026-10-03, when it was corrected to the 100 % the pages render: 99.6 % sat below the 99.8 % page and the letter, cards and fields lost their lift. |
+| `--ink` · `--ink-2` · `--ink-3` | `--color-ink` · `-2` · `-3` | `oklch(25% 0.06 285)` · `42% 0.05` · `50% 0.04` | as A21 |
+| `--accent` · `--accent-strong` | `--color-accent` · `--color-accent-strong` | `oklch(54% 0.2 30)` · `oklch(47% 0.19 30)` | as A21 |
+| `--sky` · `--sky-strong` | `--color-sky` · `--color-sky-strong` | `oklch(48% 0.16 262)` · `oklch(40% 0.15 262)` | as A21 |
+| `--sun` | `--color-sun` | `oklch(87% 0.15 92)` | as A21 |
+| `--blush` · `--butter` · `--sage-wash` · `--leaf-wash` | `--color-blush` · `--color-butter` · **`--color-sage-wash`** · `--color-leaf-wash` | `93.5% 0.04 30` · `96.5% 0.055 95` · `94% 0.03 250` · `94.5% 0.04 155` | A21's name adopted; warm-c's “sage-wash” has always been the cornflower wash (hue 250), so the look does not change |
+| `--stem` | `--color-stem` | `oklch(44% 0.1 155)` | as A21 |
+| `--logo-ink` · `--logo-accent` | `--color-logo-ink` · `--color-logo-accent` | `oklch(19% 0.01 250)` · `oklch(42% 0.1 155)` | as A21 |
+
 ## The folders
 
 | Folder | What it is | Who edits it |
 |---|---|---|
-| `homepage-v1/` | The founder-approved homepage, identity and token file from the 2026-09-08 review. **The finished direction**, not a wireframe: every other artboard is drawn in the system it establishes. Extended, never rewritten; its `tokens.css` is kept as the historical record. | the founder's design review |
-| `system/` | `tokens.css` (canonical), `components.dc.html` (every shipped primitive at every state), `typography.dc.html` (ramp, measure, script coverage), `colour.dc.html` (palette, semantic aliases, contrast manifest). | whoever changes `src/modules/ui` |
+| `homepage-v1/` | The founder-approved homepage, identity and token file from the 2026-09-08 review: **the v1 record**. Superseded as the direction by v2 (2026-10-03, `wireframes/home-*`); never edited again. | nobody |
+| `directions/` | The 2026-10-03 brand directions the founder compared, the colour research, and the chosen `warm-c/` pages v2 is drawn from. Under spec 004 §14 A21, **`warm-c/` is binding for the look** (palette, type, shapes); the v2 `system/` and `wireframes/` are binding for the build, and they win wherever they differ from `warm-c/` (see “What the warm-c direction draws that the specs forbid”). The other directions are a record only. | nobody |
+| `system/` | `tokens.css` (canonical, v2), `components.dc.html` (every shipped primitive at every state), `typography.dc.html` (ramp, measure, script coverage), `colour.dc.html` (palette, semantic aliases, contrast manifest). | whoever changes `src/modules/ui` |
 | `flows/` | `buyer-journey.dc.html`, `florist-journey.dc.html`, `consent-and-locale.dc.html` — screen-thumbnail flows annotated with the decision points, the trust moments and the data each step reads. | the spec that changes a journey |
 | `wireframes/` | One desktop (1440) and one mobile (390) artboard per Phase 0 page type. Structural, in the approved system: grey photo slots, real registry copy where it exists, `[slot]` markers where it does not, every state and empty state shown. | the spec that owns the page |
 | `benchmarks/` | The 2026-09-09 competitor study — nine files across eight page types and nine brands — plus a `README.md` mapping every page type's wireframe to its benchmark file with "what we took / what we dropped / why", the ten patterns and where each landed, and the fourteen questions only the founder can answer. Evidence, not instructions: where the study and `CLAUDE.md` disagree, `CLAUDE.md` wins. | the study that replaces it |
@@ -25,8 +117,10 @@ The format is Claude Design's **Design Component** (`.dc.html`), and the convent
 `homepage-v1/`:
 
 1. **One self-contained HTML file per artboard.** `<x-dc>` wraps a `<helmet>` (the font link and one
-   `<style>` block) and a single root `<div>` whose `width` and `min-height` are the artboard's
-   pixel size. No imports, no shared stylesheet, no JavaScript, no images.
+   `<style>` block) and a single root `<div>` whose `inline-size` is the artboard's pixel width. No
+   imports, no shared stylesheet, no JavaScript, no `<img>`: a real photograph is painted as the
+   `background-image` of its fixed-ratio box with `role="img"` and its spec 006 alt as `aria-label`,
+   and the annotation says it ships as the `Photo` component (`<img srcset sizes>`).
 2. **Colour comes only from the token custom properties.** The `:root` block at the top of each file
    declares them; every declaration below references `var(--color-…)`. A hex, `rgb` or `hsl` literal
    anywhere under `docs/design/` except the two `tokens.css` files fails
@@ -35,7 +129,7 @@ The format is Claude Design's **Design Component** (`.dc.html`), and the convent
    — never `left`, `right`, `margin-left`. The same rule the application is linted for, so an
    artboard can be read as a template.
 4. **Two widths, and only two.** Desktop artboards are **1440** wide with 56 px inline padding;
-   mobile artboards are **390** wide with 16 px. Those are the two ends of the shipped `clamp()` type
+   mobile artboards are **390** wide with 20 px (v2; v1 artboards used 16). Those are the two ends of the shipped `clamp()` type
    scale, which is why there is no tablet artboard: the type between the two widths is interpolated,
    not designed.
 5. **`canvas.json` places it**: `{ file, title, x, y, w, h }`, ≥80 px between artboards in a row and
@@ -52,8 +146,11 @@ The format is Claude Design's **Design Component** (`.dc.html`), and the convent
 These are `plan/10` §3, `plan/07` §7 and spec 004 AC-15 applied to design work, and they are the
 reason a reviewer can trust a wireframe:
 
-- **No photograph we do not have.** Every image is the `--color-photo` gradient with a caption
-  saying what the slot will hold. No `<img>`, no stock photo, no placeholder service.
+- **No photograph we do not have.** A photograph is either a real catalogue asset from
+  `https://media.flowersoverseas.com/media/<id>/<w>.webp` (the same files the site serves), with the
+  honesty label "Example arrangement · our florist hand-makes each one" wherever it is an AI asset, or
+  the `--color-photo` placeholder with a caption saying what the slot will hold. No stock photo, no
+  placeholder service, no photograph of a florist, a shop or a delivery we have not made.
 - **No invented number.** No florist count, no delivery count, no rating, no "200+ partners". A
   number we do not have is the `Placeholder` bar (`.ph`), which renders no digits at all.
 - **No fabricated trust.** Zero reviews, zero testimonials, zero partner logos, zero press strip.
@@ -61,8 +158,12 @@ reason a reviewer can trust a wireframe:
 - **No invented copy where real copy exists.** If a string is in `messages/en.json` or a registry in
   `src/config/`, the artboard uses it verbatim. If it does not exist, it is marked `[slot]` and the
   annotation says which spec owns it.
-- **White paper, one accent.** `--color-paper` ground, forest green accent, Newsreader display +
-  IBM Plex Sans body. A wireframe is drawn in the approved system, not in grey boxes.
+- **Drawn in the approved system.** v2: milk paper, plum-navy ink, poppy to act, cornflower to go,
+  Fraunces + Alegreya Sans + Caveat. A wireframe is drawn in the approved system, not in grey boxes.
+- **No claim the data cannot carry.** Florists are spoken of in the future tense until one is live
+  ("our florist … will make it"). No "most sent", no ranking we cannot evidence ("Popular choices" is
+  the founder-approved heading, with an honest basis line). The guarantee is the "Freshness guarantee",
+  never "7-day". Cards are printed, never "handwritten".
 
 ## Voice
 
@@ -114,6 +215,9 @@ white paper, the type pairing and the honesty rules are unchanged; the commercia
 - **The delivery promise repeats wherever a product is shown**: the date, the cutoff in the
   **recipient's** time zone, and the fee on the date chip. It is one tile, and it appears on the
   product page, above every grid, and in checkout step 1.
+- **v2 spacing.** The home and the editorial sections of the guide keep warm-c's generous rhythm
+  (`--space-3xl` 128 between home sections, 64 on mobile); every listing keeps products before prose
+  and no more than 72 between a grid and the next block.
 - **Tighter vertical rhythm.** Section gap on a commercial page is `--space-xl` (40 px) or less;
   `--space-2xl` (72 px) and `--space-3xl` (128 px) belong to editorial and trust pages, and no new
   artboard introduces one between two rows of products.
@@ -171,6 +275,7 @@ Before `/plan-tasks` will break a spec into tasks:
 
 | Difference | Which is right | Note |
 |---|---|---|
+| **2026-10-03 — v2, the letter home.** `system/tokens.css`, `colour`, `typography` and `components` and the 22 redrawn page artboards (plus `chrome-*`) are drawn in v2; `src/app/globals.css`, `src/modules/ui` and every shipped page are still v1 (forest green, Newsreader + IBM Plex Sans, square buttons). | **the sheet**, until the v2 implementation tasks land | The founder locked v2 on 2026-10-03. Like the 007/009 groups below, this is the sheet deliberately leading the code; the implementer who ships v2 tokens and primitives updates this row out of existence. Mapping the implementer needs: v1 token names are kept (values change); new tokens are added (`--color-card`, `--color-sky`, `--color-sun`, `--color-stem`, the four tints, `--color-shade`, `--color-field-edge`, the logo pair, `--airmail-edge`, `--font-hand`, `--font-logo`, the two-value type steps); `BUTTON_VARIANTS` maps `accent` → send (new size, 60 px), `primary` → the poppy pill, `secondary` → the ink outline, `quiet` → cornflower text (`system/components.dc.html`). **Copy the redraw needs** (founder copy batch; each is listed in its artboard's Copy row): “Handwritten card” → “Printed card” (`catalog.addon.card.*`, and the Poland guide's card-language answer); “7-day freshness guarantee” → “Freshness guarantee” (`trust.guarantee.name`, `home.proof.guarantee.title`, `nav.utility.guarantee`); “Most sent this week” → “Popular choices” with a new basis line (`home.trending.*`); florist sentences in the future tense, including `company.description` (the footer: “…a local florist in the recipient's town will make the bouquet and hand it over in person.”) and `media.placeholder.product` (“…this bouquet as our florist will make it”); “Poland today.” → “Poland first.”; “all in” beside card prices; the sentence picker's strings; the equivalents line (“about … at the rate of {date}”). **Resolved by the redraw:** the TASK-120 chrome strings, the TASK-109/110/111 delivery-facts panel and stem line, TASK-112 (a), (c), (d) and TASK-113 (a)–(c) below are all drawn the way the code ships them. **Ruled (spec 004 §14 A21, coordinator 2026-10-03):** the sentence's action is A21 clause 4's route under `/api/` (303); fonts follow clause 3 (Caveat only in the product page's printed-card preview, every other hand note in Fraunces italic, the wordmark outlined); the occasion-reminder form is not rendered (clause 1, A20); the Popular-choices basis line is “Our picks until real orders start.” (founder-approved). The printed-card field and preview are on the Phase 0 product page (clause 5). **Round 1 of PR 166:** the listing, home and product artboards are drawn in the **fresh-rate** state — `/en` charges €55.90 and the clause 6 equivalents line sits under every destination-specific price and under the product page's total (USD as a placeholder bar until TASK-178 commits its rate); a drawn state shows the stale fallback (229.00&nbsp;PLN, the currency sentence, no equivalents), which is production today. Every amount is `formatMoney`'s output, never hand-formatted (`/en` 229.00&nbsp;PLN, `/en-gb` PLN&nbsp;229.00, `/de` 229,00&nbsp;PLN, `/pl` 229,00&nbsp;zł, U+00A0). The footer's Stripe sentence is hidden in Phase 0 (A10). |
 | `homepage-v1/tokens.css` has no status colours, no semantic aliases, no `--color-accent-strong`, no separate photo stops, no radius/shadow/motion/layer scales, and fixed rather than fluid type steps. | the code | Spec 004 added all of them on top of the approved ramp. `system/tokens.css` is the superset and is the file to read; `homepage-v1/tokens.css` stays as the 2026-09-08 record. |
 | Spacing is `--space-*` on the canvas and `--spacing-*` in code. | both | Same seven values. `system/tokens.css` declares both names so a reader of either file recognises the other; Tailwind's theme namespace requires `--spacing-*`. |
 | The canvas's "medium" weight is 500; the shipped `--font-weight-medium` is **600**. | the code | Only two IBM Plex Sans faces ship (400, 600) to stay inside the 45 KB font budget, so 500 would be matched down to 400. The artboards are drawn at 600 where a canvas file says 500. |
@@ -196,7 +301,7 @@ Every row of `plan/05` §1 and §2 whose Phase column is 0. Rows outside §1–�
 | plan/05 # | Page type | Wireframe artboards | Owning spec |
 |---|---|---|---|
 | 1 | Locale chooser | `wireframes/locale-chooser-desktop.dc.html` · `wireframes/locale-chooser-mobile.dc.html` | 003 (shipped) |
-| 2 | Locale home | `homepage-v1/homepage-desktop.dc.html` · `homepage-v1/homepage-mobile.dc.html` | 004 (approved direction) |
+| 2 | Locale home | `wireframes/home-desktop.dc.html` · `wireframes/home-mobile.dc.html` (v2; v1 record: `homepage-v1/homepage-desktop.dc.html` · `homepage-v1/homepage-mobile.dc.html`) · chrome: `wireframes/chrome-desktop.dc.html` · `wireframes/chrome-mobile.dc.html` | 004 |
 | 3 | All destinations | `wireframes/all-destinations-desktop.dc.html` · `wireframes/all-destinations-mobile.dc.html` | 007 |
 | 4 | Corridor: country (guide and live states) | `wireframes/corridor-country-desktop.dc.html` · `wireframes/corridor-country-mobile.dc.html` | 007 |
 | 6 | Country shop root | `wireframes/country-shop-desktop.dc.html` · `wireframes/country-shop-mobile.dc.html` — priced row, category tiles with `from` prices, the dated occasion table, toolbar (default and sorted), pagination, empty, no-photo, stale FX, card as tile and as link | 008 |

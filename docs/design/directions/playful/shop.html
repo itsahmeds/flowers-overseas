@@ -1,0 +1,706 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Send flowers to Poland — what we can make there</title>
+<meta name="description" content="Every bouquet we can make for Poland, each with one price that includes VAT and delivery.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Caveat:wght@500;600&family=Figtree:wght@400..800&family=Newsreader:opsz,wght@6..72,500&display=swap">
+<style>
+/* ==========================================================================
+   Flowers Overseas · Direction C · "Playful and bright" — "Postmarked"
+   Every colour is declared once, here, in OKLCH. Everything below uses var().
+   ========================================================================== */
+:root {
+  /* paper */
+  --c-milk: oklch(98.6% 0.009 85);
+  --c-cream: oklch(96% 0.022 85);
+  --c-white: oklch(100% 0 0);
+  /* ink: a deep plum-navy, softer than black, still 13:1 on milk */
+  --c-ink: oklch(25% 0.06 285);
+  --c-ink-2: oklch(42% 0.05 285);
+  --c-ink-3: oklch(50% 0.04 285);
+  --c-line: oklch(89% 0.02 285);
+  /* the three flower colours of the airmail envelope */
+  --c-poppy: oklch(54% 0.2 30);          /* send, price emphasis — white text 5:1 */
+  --c-poppy-strong: oklch(47% 0.19 30);  /* pointer state */
+  --c-poppy-soft: oklch(93.5% 0.04 30);
+  --c-sky: oklch(48% 0.16 262);          /* route line, links, focus — 6:1 on milk */
+  --c-sky-soft: oklch(94% 0.03 250);
+  --c-sun: oklch(87% 0.15 92);           /* highlight; always with ink text */
+  --c-sun-soft: oklch(96.5% 0.055 95);
+  /* mats: one soft tint per flower colour */
+  --m-red: oklch(93.5% 0.04 25);
+  --m-pink: oklch(94% 0.04 355);
+  --m-white: oklch(95.5% 0.015 250);
+  --m-yellow: oklch(96% 0.06 95);
+  --m-orange: oklch(94% 0.05 65);
+  --m-purple: oklch(93.5% 0.04 305);
+  --m-blue: oklch(94% 0.035 245);
+  --m-green: oklch(94.5% 0.04 155);
+  /* the logo keeps its own two colours, exactly as shipped */
+  --logo-ink: oklch(19% 0.01 250);
+  --logo-accent: oklch(42% 0.1 155);
+  --c-leaf: oklch(44% 0.1 155);
+
+  --f-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --f-body: "Figtree", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --f-logo: "Newsreader", "Iowan Old Style", Georgia, serif;
+  --f-hand: "Caveat", "Bradley Hand", cursive;
+
+  --t-display: clamp(2.75rem, 1.55rem + 4.9vw, 5.5rem);
+  --t-h2: clamp(1.75rem, 1.3rem + 1.9vw, 2.75rem);
+  --t-h3: clamp(1.125rem, 1.05rem + 0.3vw, 1.3125rem);
+
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 24px; --s-6: 32px; --s-7: 48px; --s-8: 72px;
+  --r-s: 10px; --r-m: 18px; --r-l: 28px; --r-pill: 999px;
+  --pad: 16px;
+  --max: 1328px;
+  --lift: 0 14px 34px -16px color-mix(in oklab, var(--c-ink) 40%, transparent);
+  --lift-s: 0 6px 18px -10px color-mix(in oklab, var(--c-ink) 35%, transparent);
+  --airmail: repeating-linear-gradient(135deg,
+      var(--c-poppy) 0 12px, var(--c-white) 12px 18px,
+      var(--c-sky) 18px 30px, var(--c-white) 30px 36px);
+  --ease: cubic-bezier(.2, .8, .2, 1);
+}
+@media (min-width: 720px) { :root { --pad: 32px; } }
+@media (min-width: 1200px) { :root { --pad: 56px; } }
+
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+body {
+  margin: 0; background: var(--c-milk); color: var(--c-ink);
+  font: 400 16px/1.55 var(--f-body); -webkit-font-smoothing: antialiased;
+}
+img { display: block; max-inline-size: 100%; block-size: auto; }
+a { color: inherit; }
+button, input, select, textarea { font: inherit; color: inherit; }
+h1, h2, h3, h4 { font-family: var(--f-display); font-weight: 700; letter-spacing: -0.025em; line-height: 1.04; margin: 0; font-variation-settings: "opsz" 72; }
+p { margin: 0; }
+:focus-visible { outline: 3px solid var(--c-sky); outline-offset: 3px; border-radius: 6px; }
+.sr-only { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.skip { position: absolute; inset-inline-start: var(--s-4); inset-block-start: -60px; z-index: 50; background: var(--c-ink); color: var(--c-milk); padding: var(--s-2) var(--s-4); border-radius: var(--r-pill); text-decoration: none; }
+.skip:focus { inset-block-start: var(--s-3); }
+.wrap { max-inline-size: calc(var(--max) + 2 * var(--pad)); margin-inline: auto; padding-inline: var(--pad); }
+.eyebrow {
+  display: inline-flex; align-items: center; gap: var(--s-2);
+  font: 700 12px/1 var(--f-body); letter-spacing: 0.12em; text-transform: uppercase; color: var(--c-ink-2);
+}
+.eyebrow::before { content: ""; inline-size: 8px; block-size: 8px; border-radius: 50%; background: var(--c-poppy); }
+.lede { color: var(--c-ink-2); font-size: 17px; max-inline-size: 60ch; }
+.muted { color: var(--c-ink-2); }
+.small { font-size: 14px; }
+.tiny { font-size: 12.5px; line-height: 1.45; }
+
+/* ---------- the airmail band and the notice ---------- */
+.airmail { block-size: 6px; background: var(--airmail); }
+.notice {
+  background: var(--c-sun-soft); font-size: 13.5px; text-align: center;
+  padding: var(--s-2) var(--pad); color: var(--c-ink);
+}
+.notice b { font-weight: 700; }
+.notice .dot { display: inline-block; inline-size: 7px; block-size: 7px; border-radius: 50%; background: var(--c-poppy); margin-inline-end: var(--s-2); vertical-align: 1px; animation: blink 2.4s ease-in-out infinite; }
+@keyframes blink { 50% { opacity: .25; } }
+
+/* ---------- header ---------- */
+.hdr { position: sticky; inset-block-start: 0; z-index: 30; background: color-mix(in oklab, var(--c-milk) 92%, transparent); backdrop-filter: blur(10px); border-block-end: 1px solid var(--c-line); }
+.hdr-in { display: flex; align-items: center; gap: var(--s-4); min-block-size: 64px; }
+.logo { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; min-block-size: 44px; color: var(--logo-ink); }
+.logo svg { inline-size: 30px; block-size: 30px; flex: none; }
+.logo span { font: 500 20px/1 var(--f-logo); letter-spacing: 0.04em; white-space: nowrap; }
+.nav { display: none; gap: var(--s-1); margin-inline-start: auto; }
+.nav a { text-decoration: none; font-weight: 600; font-size: 15px; padding: 10px 14px; border-radius: var(--r-pill); }
+.nav a:hover { background: var(--c-cream); }
+.nav a[aria-current="page"] { background: var(--c-sky-soft); color: var(--c-sky); }
+.hdr-cta { margin-inline-start: auto; white-space: nowrap; }
+@media (max-width: 519px) { .hdr .hdr-cta { display: none; } .menu { margin-inline-start: auto; } }
+.menu { position: relative; }
+.menu summary { list-style: none; cursor: pointer; display: grid; place-items: center; inline-size: 44px; block-size: 44px; border-radius: 50%; background: var(--c-cream); }
+.menu summary::-webkit-details-marker { display: none; }
+.menu-panel { position: absolute; inset-inline-end: 0; inset-block-start: 52px; background: var(--c-white); border-radius: var(--r-m); box-shadow: var(--lift); padding: var(--s-2); min-inline-size: 220px; display: grid; }
+.menu-panel a { text-decoration: none; padding: 12px 14px; border-radius: var(--r-s); font-weight: 600; }
+.menu-panel a:hover { background: var(--c-cream); }
+@media (min-width: 900px) {
+  .logo svg { inline-size: 38px; block-size: 38px; }
+  .logo span { font-size: 25px; }
+  .hdr-in { min-block-size: 80px; }
+  .nav { display: flex; }
+  .hdr-cta { margin-inline-start: var(--s-3); }
+  .menu { display: none; }
+}
+
+/* ---------- buttons and pills ---------- */
+.btn {
+  --bg: var(--c-ink); --fg: var(--c-milk);
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  min-block-size: 48px; padding-inline: 22px; border-radius: var(--r-pill); border: 0;
+  background: var(--bg); color: var(--fg); font-weight: 700; font-size: 16px; text-decoration: none; cursor: pointer;
+  transition: background .2s var(--ease), transform .15s var(--ease), box-shadow .2s var(--ease);
+}
+.btn:hover { background: color-mix(in oklab, var(--bg) 86%, var(--c-ink)); }
+.btn:active { transform: translateY(1px) scale(.99); }
+.btn-send { --bg: var(--c-poppy); --fg: var(--c-white); min-block-size: 56px; font-size: 17px; box-shadow: 0 10px 22px -10px color-mix(in oklab, var(--c-poppy) 70%, transparent); }
+.btn-send:hover { background: var(--c-poppy-strong); }
+.btn-ghost { --bg: var(--c-white); --fg: var(--c-ink); box-shadow: inset 0 0 0 1.5px var(--c-line); }
+.btn-ghost:hover { background: var(--c-cream); }
+.btn-small { min-block-size: 40px; padding-inline: 16px; font-size: 14.5px; }
+.btn svg { flex: none; }
+.pill {
+  display: inline-flex; align-items: center; gap: 8px; min-block-size: 40px; padding-inline: 14px;
+  border-radius: var(--r-pill); background: var(--c-white); box-shadow: inset 0 0 0 1.5px var(--c-line);
+  font-weight: 600; font-size: 14.5px; text-decoration: none; cursor: pointer; border: 0; white-space: nowrap;
+}
+.pill[aria-pressed="true"], .pill.on { background: var(--c-ink); color: var(--c-milk); box-shadow: none; }
+.link { color: var(--c-sky); font-weight: 700; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+
+/* ---------- stamps (perforated frame) ---------- */
+.stamp {
+  --hole: 5px; --step: 15px;
+  display: block; background: var(--c-white); padding: 13px;
+  -webkit-mask:
+    radial-gradient(circle var(--hole) at 50% 0, transparent 96%, black) 0 0 / var(--step) 100% round,
+    radial-gradient(circle var(--hole) at 50% 100%, transparent 96%, black) 0 0 / var(--step) 100% round,
+    radial-gradient(circle var(--hole) at 0 50%, transparent 96%, black) 0 0 / 100% var(--step) round,
+    radial-gradient(circle var(--hole) at 100% 50%, transparent 96%, black) 0 0 / 100% var(--step) round;
+  -webkit-mask-composite: source-in, source-in, source-in;
+  mask:
+    radial-gradient(circle var(--hole) at 50% 0, transparent 96%, black) 0 0 / var(--step) 100% round,
+    radial-gradient(circle var(--hole) at 50% 100%, transparent 96%, black) 0 0 / var(--step) 100% round,
+    radial-gradient(circle var(--hole) at 0 50%, transparent 96%, black) 0 0 / 100% var(--step) round,
+    radial-gradient(circle var(--hole) at 100% 50%, transparent 96%, black) 0 0 / 100% var(--step) round;
+  mask-composite: intersect;
+}
+.stamp-shadow { filter: drop-shadow(0 12px 18px color-mix(in oklab, var(--c-ink) 22%, transparent)); }
+.stamp img { border-radius: 2px; inline-size: 100%; }
+
+/* ---------- postmark ---------- */
+.pm { color: var(--c-sky); inline-size: 112px; block-size: 112px; flex: none; }
+.pm text { fill: currentColor; font-family: var(--f-body); font-weight: 800; }
+.pm .pm-day { font-family: var(--f-display); font-weight: 800; }
+
+/* ---------- product card ---------- */
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-5) var(--s-3); }
+@media (min-width: 720px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-6) var(--s-5); } }
+@media (min-width: 1080px) { .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.card { display: flex; flex-direction: column; gap: var(--s-3); text-decoration: none; color: inherit; border-radius: var(--r-l); }
+.card-ph {
+  position: relative; display: block; aspect-ratio: 4 / 5; border-radius: var(--r-l); overflow: hidden;
+  background: var(--mat, var(--c-cream)); padding: 7px;
+  transition: transform .35s var(--ease), box-shadow .35s var(--ease);
+}
+.card-ph img { inline-size: 100%; block-size: 100%; object-fit: cover; border-radius: calc(var(--r-l) - 7px); }
+.card:hover .card-ph { transform: translateY(-4px) rotate(-.6deg); box-shadow: var(--lift); }
+.card-tag {
+  position: absolute; inset-block-start: 16px; inset-inline-start: 16px; z-index: 1;
+  background: var(--c-white); border-radius: var(--r-pill); padding: 5px 10px;
+  font-size: 12px; font-weight: 700; color: var(--c-ink);
+}
+.card-body { display: grid; gap: 3px; padding-inline: 4px; }
+.card-name { font: 700 17px/1.2 var(--f-display); letter-spacing: -0.015em; }
+.card-meta { font-size: 13.5px; color: var(--c-ink-2); }
+.card-price { display: flex; align-items: baseline; gap: 6px; margin-block-start: 4px; }
+.card-price b { font: 800 21px/1 var(--f-display); letter-spacing: -0.02em; }
+.card-price span { font-size: 13px; font-weight: 700; color: var(--c-ink-2); }
+.card-incl { font-size: 12.5px; color: var(--c-ink-2); }
+.ph-empty {
+  display: grid; place-items: center; text-align: center; gap: var(--s-2); block-size: 100%;
+  border-radius: calc(var(--r-l) - 7px); border: 2px dashed color-mix(in oklab, var(--c-ink) 22%, transparent);
+  padding: var(--s-4); font-size: 13px; color: var(--c-ink-2);
+}
+
+/* ---------- sections ---------- */
+.sec { padding-block: var(--s-7); }
+@media (min-width: 900px) { .sec { padding-block: var(--s-8); } }
+.sec-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: var(--s-3) var(--s-5); margin-block-end: var(--s-5); }
+.sec-head h2 { font-size: var(--t-h2); margin-block-start: var(--s-2); }
+.rail { display: flex; gap: var(--s-3); overflow-x: auto; scroll-snap-type: x mandatory; padding-block-end: var(--s-2); scrollbar-width: none; margin-inline: calc(-1 * var(--pad)); padding-inline: var(--pad); scroll-padding-inline: var(--pad); }
+.rail::-webkit-scrollbar { display: none; }
+.rail > * { scroll-snap-align: start; flex: none; }
+
+/* ---------- postmark date cards ---------- */
+.dates { display: flex; gap: var(--s-3); }
+.date-card {
+  display: grid; justify-items: center; text-align: center; gap: var(--s-2);
+  inline-size: 200px; padding: var(--s-5) var(--s-4); border-radius: var(--r-l);
+  background: var(--c-white); box-shadow: inset 0 0 0 1.5px var(--c-line); text-decoration: none; color: inherit;
+  transition: transform .3s var(--ease), box-shadow .3s var(--ease); cursor: pointer; border: 0;
+}
+.date-card:hover { transform: rotate(-1.5deg) translateY(-3px); box-shadow: var(--lift); }
+.date-card .pm { transition: transform .5s var(--ease); }
+.date-card:hover .pm { transform: rotate(-12deg); }
+.date-card strong { font: 700 16px/1.25 var(--f-display); }
+.date-card .note { font-size: 13px; color: var(--c-ink-2); }
+.date-card.hot { background: var(--c-sun-soft); }
+.date-card:nth-child(3n+2) .pm { color: var(--c-poppy); }
+.date-card:nth-child(3n) .pm { color: var(--c-leaf); }
+
+/* ---------- footer ---------- */
+.ftr { background: var(--c-ink); color: var(--c-milk); margin-block-start: var(--s-8); }
+.ftr .airmail { block-size: 8px; }
+.ftr-in { display: grid; gap: var(--s-6); padding-block: var(--s-7); }
+.ftr .logo { color: var(--c-milk); --logo-ink: var(--c-milk); --logo-accent: var(--c-sun); }
+.ftr p, .ftr li { color: color-mix(in oklab, var(--c-milk) 82%, var(--c-ink)); font-size: 14.5px; }
+.ftr h2 { font-size: 15px; font-family: var(--f-body); letter-spacing: 0.08em; text-transform: uppercase; margin-block-end: var(--s-3); color: var(--c-sun); }
+.ftr ul { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--s-2); }
+.ftr a { color: var(--c-milk); }
+.ftr-base { border-block-start: 1px solid color-mix(in oklab, var(--c-milk) 18%, var(--c-ink)); padding-block: var(--s-4); display: flex; flex-wrap: wrap; gap: var(--s-2) var(--s-5); font-size: 13px; color: color-mix(in oklab, var(--c-milk) 72%, var(--c-ink)); }
+@media (min-width: 900px) { .ftr-in { grid-template-columns: 1.4fr 1fr 1fr 1.2fr; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+
+/* ---------- this page ---------- */
+:root {
+  /* swatches: the flower colour itself, used only as a filter dot */
+  --sw-red: oklch(54% 0.2 27);
+  --sw-pink: oklch(76% 0.12 355);
+  --sw-white: oklch(99% 0.004 90);
+  --sw-yellow: oklch(87% 0.16 95);
+  --sw-orange: oklch(72% 0.16 55);
+  --sw-purple: oklch(52% 0.15 305);
+  --sw-blue: oklch(62% 0.12 250);
+}
+.shop-top { padding-block: var(--s-4) var(--s-5); background: radial-gradient(70% 80% at 100% 0%, var(--m-yellow), transparent 70%); }
+.crumbs ol { list-style: none; padding: 0; margin: 0 0 var(--s-4); display: flex; flex-wrap: wrap; gap: 6px; font-size: 13.5px; color: var(--c-ink-2); }
+.crumbs li + li::before { content: "/"; margin-inline-end: 6px; color: var(--c-ink-3); }
+.crumbs a { color: var(--c-ink-2); text-underline-offset: 3px; }
+.crumbs [aria-current] { color: var(--c-ink); font-weight: 700; }
+.shop-head { display: grid; gap: var(--s-5); }
+.shop-title { display: grid; gap: var(--s-3); align-content: start; }
+.shop-title h1 { font-size: clamp(2.25rem, 1.5rem + 3vw, 4rem); font-weight: 800; letter-spacing: -0.035em; }
+.route-pill { justify-self: start; display: inline-flex; align-items: center; gap: 8px; background: var(--c-white); border-radius: var(--r-pill); padding: 8px 14px 8px 12px; box-shadow: var(--lift-s); text-decoration: none; font-size: 14.5px; min-block-size: 44px; }
+.rp-dot { inline-size: 10px; block-size: 10px; border-radius: 50%; background: var(--logo-accent); }
+.rp-you { font-weight: 700; }
+.rp-line { inline-size: 40px; block-size: 14px; color: var(--c-sky); }
+.route-pill b { color: var(--c-poppy); font-family: var(--f-display); font-size: 16px; }
+.rp-date { font-weight: 700; }
+.rp-date::before { content: "·"; margin-inline-end: 8px; color: var(--c-ink-3); }
+.rp-change { color: var(--c-sky); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; margin-inline-start: 4px; }
+.not-yet { display: flex; gap: var(--s-4); align-items: center; background: var(--c-white); border-radius: var(--r-l); padding: var(--s-4); box-shadow: inset 0 0 0 2px var(--c-sun); font-size: 14.5px; }
+.not-yet .pm { color: var(--c-poppy); inline-size: 92px; block-size: 92px; }
+.promise { list-style: none; padding: 0; margin: var(--s-5) 0 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); background: var(--c-ink); color: var(--c-milk); border-radius: var(--r-m); overflow: hidden; }
+.promise li { display: grid; gap: 2px; padding: var(--s-3); font-size: 12.5px; line-height: 1.3; }
+.promise li + li { border-inline-start: 1px solid color-mix(in oklab, var(--c-milk) 18%, var(--c-ink)); }
+.promise b { color: var(--c-sun); font-size: 13px; }
+@media (min-width: 900px) {
+  .shop-top { padding-block: var(--s-5) var(--s-6); }
+  .shop-head { grid-template-columns: 1.6fr 1fr; align-items: end; gap: var(--s-7); }
+  .promise li { padding: var(--s-4) var(--s-5); font-size: 14.5px; }
+  .promise b { font-size: 15px; }
+}
+
+/* category bubbles */
+.bubbles { padding-block: var(--s-5) var(--s-3); gap: var(--s-4); }
+.bubble { display: grid; justify-items: center; gap: 6px; inline-size: 82px; background: none; border: 0; padding: 0; cursor: pointer; font-size: 13px; font-weight: 700; text-align: center; line-height: 1.2; }
+.bubble span:first-child { inline-size: 76px; block-size: 76px; border-radius: 50%; padding: 4px; background: var(--c-white); box-shadow: inset 0 0 0 2px var(--c-line); transition: transform .3s var(--ease); }
+.bubble img { inline-size: 100%; block-size: 100%; border-radius: 50%; object-fit: cover; }
+.bubble:hover span:first-child { transform: rotate(-8deg); }
+.bubble[aria-pressed="true"] span:first-child { background: var(--airmail); box-shadow: none; }
+.bubble[aria-pressed="true"] { color: var(--c-poppy); }
+@media (min-width: 900px) { .bubble { inline-size: 100px; } .bubble span:first-child { inline-size: 92px; block-size: 92px; } }
+
+/* toolbar */
+.toolbar { display: flex; align-items: center; gap: var(--s-3); padding-block: var(--s-3); border-block-start: 1px solid var(--c-line); }
+.count { font-weight: 700; font-size: 14px; margin-inline-end: auto; white-space: nowrap; }
+.fcount { background: var(--c-poppy); color: var(--c-white); border-radius: var(--r-pill); min-inline-size: 22px; block-size: 22px; display: inline-grid; place-items: center; font-size: 12px; padding-inline: 6px; }
+.sort { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; }
+.sort span { display: none; color: var(--c-ink-2); }
+.sort select { min-block-size: 40px; border-radius: var(--r-pill); border: 0; box-shadow: inset 0 0 0 1.5px var(--c-line); background: var(--c-white); padding-inline: 14px; font-weight: 700; font-size: 14.5px; }
+@media (min-width: 720px) { .sort span { display: inline; } }
+.disclosure { font-size: 13px; color: var(--c-ink-2); margin-block-end: var(--s-3); }
+.disclosure summary { cursor: pointer; font-weight: 700; color: var(--c-sky); inline-size: fit-content; min-block-size: 32px; display: flex; align-items: center; }
+.disclosure p { max-inline-size: 70ch; padding-block-end: var(--s-2); }
+.chips { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-block-end: var(--s-4); }
+.chips:empty { display: none; }
+.chip { display: inline-flex; align-items: center; gap: 6px; min-block-size: 36px; padding-inline: 12px 8px; border-radius: var(--r-pill); background: var(--c-sky-soft); color: var(--c-sky); border: 0; font-weight: 700; font-size: 13.5px; cursor: pointer; }
+.chip svg { inline-size: 16px; block-size: 16px; }
+.chip.clear { background: none; text-decoration: underline; text-underline-offset: 3px; }
+
+/* filters: a bottom sheet on the phone, a sidebar at 1080 */
+.layout { display: grid; gap: var(--s-6); }
+.filters {
+  position: fixed; inset-inline: 0; inset-block-end: 0; z-index: 60; max-block-size: 86vh; overflow: auto;
+  background: var(--c-milk); border-start-start-radius: var(--r-l); border-start-end-radius: var(--r-l);
+  padding: var(--s-4) var(--s-4) 0; transform: translateY(105%); transition: transform .35s var(--ease); visibility: hidden;
+}
+.filters.open { transform: none; visibility: visible; box-shadow: 0 -20px 50px -20px color-mix(in oklab, var(--c-ink) 50%, transparent); }
+.scrim { position: fixed; inset: 0; z-index: 55; background: color-mix(in oklab, var(--c-ink) 45%, transparent); }
+.f-head { display: flex; justify-content: space-between; align-items: center; margin-block-end: var(--s-2); }
+.f-head h3 { font-size: 22px; }
+.icon-btn { inline-size: 44px; block-size: 44px; border-radius: 50%; border: 0; background: var(--c-cream); display: grid; place-items: center; cursor: pointer; }
+.filters fieldset { border: 0; padding: 0; margin: 0 0 var(--s-5); }
+.filters legend { font: 800 13px/1 var(--f-body); letter-spacing: 0.1em; text-transform: uppercase; color: var(--c-ink-2); margin-block-end: var(--s-3); }
+.opts { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+.opts .pill { min-block-size: 38px; font-size: 14px; }
+.opts .pill[hidden] { display: none; }
+.more-occ { background: none; border: 0; padding: 0; margin-block-start: var(--s-3); cursor: pointer; font-size: 14px; }
+.swatches { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--s-3) var(--s-2); }
+.sw { display: grid; justify-items: center; gap: 4px; background: none; border: 0; cursor: pointer; font-size: 12px; font-weight: 600; padding: 0; }
+.sw i { inline-size: 36px; block-size: 36px; border-radius: 50%; background: var(--sw); box-shadow: inset 0 0 0 1.5px color-mix(in oklab, var(--c-ink) 14%, transparent); transition: transform .2s var(--ease); }
+.sw[aria-pressed="true"] i { box-shadow: 0 0 0 3px var(--c-milk), 0 0 0 5.5px var(--c-ink); transform: scale(.92); }
+.sw[aria-pressed="true"] { font-weight: 800; }
+.f-foot { position: sticky; inset-block-end: 0; display: grid; grid-template-columns: 1fr 1.6fr; gap: var(--s-2); padding-block: var(--s-3) var(--s-4); background: var(--c-milk); border-block-start: 1px solid var(--c-line); }
+@media (min-width: 1080px) {
+  .filt-btn { display: none; }
+  .layout { grid-template-columns: 250px minmax(0, 1fr); gap: var(--s-6); align-items: start; }
+  .filters { position: sticky; inset-block-start: 100px; transform: none; visibility: visible; max-block-size: calc(100vh - 120px); z-index: 1; border-radius: var(--r-l); background: var(--c-white); box-shadow: inset 0 0 0 1.5px var(--c-line); padding: var(--s-5) var(--s-4) 0; }
+  .filters .icon-btn, .f-foot #apply { display: none; }
+  .f-foot { grid-template-columns: 1fr; background: var(--c-white); }
+  .scrim { display: none; }
+  .listing .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (min-width: 1320px) { .listing .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.card { animation: rise .45s var(--ease) both; }
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } }
+
+.empty { display: grid; justify-items: center; text-align: center; gap: var(--s-3); padding: var(--s-7) var(--s-4); background: var(--c-white); border-radius: var(--r-l); border: 2px dashed var(--c-line); }
+.empty .pm { color: var(--c-poppy); }
+.empty h3 { font-size: var(--t-h3); }
+.more { display: grid; justify-items: center; gap: var(--s-2); margin-block-start: var(--s-6); }
+
+/* how it reaches Poland: the customs form we never fill in */
+.reach { display: grid; gap: var(--s-5); align-items: center; background: var(--c-sky-soft); border-radius: var(--r-l); padding: var(--s-6) var(--s-5); }
+.reach h2 { font-size: var(--t-h2); margin-block-end: var(--s-3); }
+.reach p { max-inline-size: 60ch; color: var(--c-ink-2); font-size: 17px; }
+.reach-art { display: grid; place-items: center; }
+.form-x { position: relative; inline-size: 180px; padding: var(--s-4); background: var(--c-white); border-radius: 6px; transform: rotate(-5deg); display: grid; gap: 10px; box-shadow: var(--lift-s); }
+.form-x span { block-size: 8px; border-radius: 4px; background: var(--c-line); }
+.form-x span:nth-child(2) { inline-size: 70%; }
+.form-x span:nth-child(4) { inline-size: 50%; }
+.form-x b { font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--c-ink-3); order: -1; }
+.form-x::after { content: ""; position: absolute; inset: 40% -14px auto; block-size: 6px; border-radius: 3px; background: var(--c-poppy); transform: rotate(-24deg); }
+.form-x::before { content: ""; position: absolute; inset: 40% -14px auto; block-size: 6px; border-radius: 3px; background: var(--c-poppy); transform: rotate(24deg); }
+@media (min-width: 900px) { .reach { grid-template-columns: 260px 1fr; padding: var(--s-7); } }
+@media (min-width: 1080px) { .dates { overflow-x: auto; } }
+
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="airmail" aria-hidden="true"></div>
+<p class="notice"><span class="dot" aria-hidden="true"></span><b>Delivery dates are not open yet.</b> Delivery dates open when we confirm our first florist.</p>
+<header class="hdr">
+  <div class="wrap hdr-in">
+    <a class="logo" href="home.html" aria-label="Flowers Overseas, home"><svg viewBox="0 0 48 48" fill="none" aria-hidden="true" focusable="false"><circle cx="8" cy="40" r="3" fill="var(--logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" stroke="var(--logo-ink)" stroke-width="2.4" stroke-linecap="round" fill="none"/><g transform="translate(31 16)" stroke="var(--logo-ink)" stroke-width="2.2" fill="none"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" fill="var(--logo-accent)" stroke="none"/></g></svg><span>Flowers Overseas</span></a>
+    <nav class="nav" aria-label="Main"><a href="shop.html" aria-current="page">Shop Poland</a><a href="home.html#occasions">Occasions</a><a href="home.html#how">How it works</a><a href="home.html#faq">Questions</a></nav>
+    <a class="btn btn-small hdr-cta" href="shop.html">Send to Poland</a>
+    <details class="menu">
+      <summary aria-label="Menu"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg></summary>
+      <nav class="menu-panel" aria-label="Menu"><a href="shop.html" aria-current="page">Shop Poland</a><a href="home.html#occasions">Occasions</a><a href="home.html#how">How it works</a><a href="home.html#faq">Questions</a></nav>
+    </details>
+  </div>
+</header>
+<main id="main">
+
+<section class="shop-top">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="home.html">Home</a></li><li><a href="home.html#destinations">Send flowers to</a></li><li><a href="shop.html">Poland</a></li><li aria-current="page">Flowers</li></ol></nav>
+    <div class="shop-head">
+      <div class="shop-title">
+        <a class="route-pill" href="home.html#send" id="route-pill">
+          <span class="rp-dot" aria-hidden="true"></span><span class="rp-you">You</span>
+          <svg class="rp-line" viewBox="0 0 60 16" aria-hidden="true"><path d="M2 13 C 20 13, 40 12, 58 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-dasharray="1 5"/></svg>
+          <b id="rp-to">Poland</b><span id="rp-date" class="rp-date" hidden></span><span class="rp-change">change</span>
+        </a>
+        <h1>Flowers we make for Poland</h1>
+        <p class="lede">Our florist in the recipient's town will make the bouquet the morning it is delivered and hand it over in person. Every price below is one number with VAT and delivery already inside it.</p>
+      </div>
+      <aside class="not-yet" aria-label="Ordering status">
+        <svg class="pm" viewBox="0 0 120 120" role="img" aria-label="Not open yet" focusable="false"><defs><path id="pmr7" d="M60,60 m-46,0 a46,46 0 1,1 92,0 a46,46 0 1,1 -92,0"/></defs><g transform="rotate(-10 60 60)"><circle cx="60" cy="60" r="56" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="60" cy="60" r="37" fill="none" stroke="currentColor" stroke-width="1.6"/><text font-size="8.2"><textPath href="#pmr7" textLength="286" lengthAdjust="spacing">ORDERING OPENS WITH OUR FIRST FLORIST · POLAND ·</textPath></text><text x="60" y="47" text-anchor="middle" font-size="10" letter-spacing="1.5">NOT</text><text class="pm-day" x="60" y="77" text-anchor="middle" font-size="31">YET</text><text x="60" y="90" text-anchor="middle" font-size="10" letter-spacing="1.5">OPEN</text></g></svg>
+        <p>You cannot order yet. We are still choosing our florists in Poland, so every price on this page is the price we would charge and nothing on it can be bought today.</p>
+      </aside>
+    </div>
+
+    <ul class="promise" aria-label="Delivery, for every bouquet on this page">
+      <li><b>Delivery and VAT</b><span>Included in every price</span></li>
+      <li><b>Order-by times</b><span>On the recipient's clock, not yours</span></li>
+      <li><b>Delivery dates</b><span>Open when we confirm our first florist</span></li>
+    </ul>
+  </div>
+</section>
+
+<section class="wrap" aria-labelledby="cats-h">
+  <h2 id="cats-h" class="sr-only">By what it is</h2>
+  <div class="rail bubbles" id="bubbles" role="group" aria-label="By what it is"></div>
+</section>
+
+<section class="wrap listing" aria-labelledby="list-h">
+  <h2 id="list-h" class="sr-only">Everything we can make for Poland</h2>
+
+  <div class="toolbar">
+    <button class="pill filt-btn" type="button" id="open-filters" aria-controls="filters" aria-expanded="false">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+      Filters <span class="fcount" id="fcount" hidden>0</span>
+    </button>
+    <p class="count" id="count" aria-live="polite">84 bouquets</p>
+    <label class="sort"><span>Sort by</span>
+      <select id="sort">
+        <option value="ours">Our order</option>
+        <option value="asc">Price: low to high</option>
+        <option value="desc">Price: high to low</option>
+      </select>
+    </label>
+  </div>
+  <details class="disclosure"><summary>How we order this list</summary><p>Our order is the order we chose ourselves. It is not a ranking by sales, by popularity or by payment, and it does not change with who you are.</p></details>
+  <div class="chips" id="active" aria-label="Active filters"></div>
+
+  <div class="layout">
+    <div class="scrim" id="scrim" hidden></div>
+    <aside class="filters" id="filters" aria-label="Filters">
+      <div class="f-head"><h3>Filters</h3><button class="icon-btn" type="button" id="close-filters" aria-label="Close filters"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+      <fieldset><legend>Occasion</legend><div class="opts" id="f-occ"></div><button type="button" class="link more-occ" id="more-occ" aria-expanded="false">More occasions</button></fieldset>
+      <fieldset><legend>Colour</legend><div class="swatches" id="f-col"></div></fieldset>
+      <fieldset><legend>Price, all in</legend><div class="opts" id="f-price"></div></fieldset>
+      <fieldset><legend>What it is</legend><div class="opts" id="f-type"></div></fieldset>
+      <div class="f-foot"><button type="button" class="btn btn-ghost" id="clear-all">Clear all</button><button type="button" class="btn" id="apply"><span id="apply-n">Show 84</span></button></div>
+    </aside>
+
+    <div>
+      <div class="grid" id="grid" aria-label="Bouquets"></div>
+      <div class="empty" id="empty" hidden>
+        <svg class="pm" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><defs><path id="pmr8" d="M60,60 m-46,0 a46,46 0 1,1 92,0 a46,46 0 1,1 -92,0"/></defs><g transform="rotate(-10 60 60)"><circle cx="60" cy="60" r="56" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="60" cy="60" r="37" fill="none" stroke="currentColor" stroke-width="1.6"/><text font-size="8.2"><textPath href="#pmr8" textLength="286" lengthAdjust="spacing">FLOWERS OVERSEAS · POLAND · FLOWERS OVERSEAS · POLAND ·</textPath></text><text x="60" y="47" text-anchor="middle" font-size="10" letter-spacing="1.5">NO</text><text class="pm-day" x="60" y="77" text-anchor="middle" font-size="31">0</text><text x="60" y="90" text-anchor="middle" font-size="10" letter-spacing="1.5">MATCH</text></g></svg>
+        <h3>Nothing matches all of those</h3>
+        <p class="muted">Take one filter away and the bouquets come back.</p>
+        <button class="btn" type="button" id="empty-clear">Clear all filters</button>
+      </div>
+      <div class="more"><button class="btn btn-ghost" type="button" id="more" hidden>Show more</button><p class="tiny muted" id="shown"></p></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="pl-dates-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <div><p class="eyebrow">Coming up in Poland</p><h2 id="pl-dates-h">Poland's own dates</h2></div>
+      <p class="small muted" style="max-inline-size: 44ch;">The next twelve months in Poland, computed from the destination's own rules. Tap one to see what we make for it.</p>
+    </div>
+    <div class="rail dates" id="dates">
+      <button class="date-card" type="button" data-occ="allSaints"><svg class="pm" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><defs><path id="pmr9" d="M60,60 m-46,0 a46,46 0 1,1 92,0 a46,46 0 1,1 -92,0"/></defs><g transform="rotate(-10 60 60)"><circle cx="60" cy="60" r="56" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="60" cy="60" r="37" fill="none" stroke="currentColor" stroke-width="1.6"/><text font-size="8.2"><textPath href="#pmr9" textLength="286" lengthAdjust="spacing">FLOWERS OVERSEAS · POLAND · FLOWERS OVERSEAS · POLAND ·</textPath></text><text x="60" y="47" text-anchor="middle" font-size="10" letter-spacing="1.5">SUN</text><text class="pm-day" x="60" y="77" text-anchor="middle" font-size="31">1</text><text x="60" y="90" text-anchor="middle" font-size="10" letter-spacing="1.5">NOV</text></g></svg><strong>All Saints' Day</strong><span class="note">Sunday, 1 November 2026</span></button>
+      <button class="date-card" type="button" data-occ="christmas"><svg class="pm" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><defs><path id="pmr10" d="M60,60 m-46,0 a46,46 0 1,1 92,0 a46,46 0 1,1 -92,0"/></defs><g transform="rotate(-10 60 60)"><circle cx="60" cy="60" r="56" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="60" cy="60" r="37" fill="none" stroke="currentColor" stroke-width="1.6"/><text font-size="8.2"><textPath href="#pmr10" textLength="286" lengthAdjust="spacing">FLOWERS OVERSEAS · POLAND · FLOWERS OVERSEAS · POLAND ·</textPath></text><text x="60" y="47" text-anchor="middle" font-size="10" letter-spacing="1.5">FRI</text><text class="pm-day" x="60" y="77" text-anchor="middle" font-size="31">25</text><text x="60" y="90" text-anchor="middle" font-size="10" letter-spacing="1.5">DEC</text></g></svg><strong>Christmas</strong><span class="note">Friday, 25 December 2026</span></button>
+      <button class="date-card" type="button" data-occ="newYear"><svg class="pm" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><defs><path id="pmr11" d="M60,60 m-46,0 a46,46 0 1,1 92,0 a46,46 0 1,1 -92,0"/></defs><g transform="rotate(-10 60 60)"><circle cx="60" cy="60" r="56" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="60" cy="60" r="37" fill="none" stroke="currentColor" stroke-width="1.6"/><text font-size="8.2"><textPath href="#pmr11" textLength="286" lengthAdjust="spacing">FLOWERS OVERSEAS · POLAND · FLOWERS OVERSEAS · POLAND ·</textPath></text><text x="60" y="47" text-anchor="middle" font-size="10" letter-spacing="1.5">FRI</text><text class="pm-day" x="60" y="77" text-anchor="middle" font-size="31">1</text><text x="60" y="90" text-anchor="middle" font-size="10" letter-spacing="1.5">JAN</text></g></svg><strong>New Year</strong><span class="note">Friday, 1 January 2027</span></button>
+      <button class="date-card" type="button" data-occ="valentines"><svg class="pm" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><defs><path id="pmr12" d="M60,60 m-46,0 a46,46 0 1,1 92,0 a46,46 0 1,1 -92,0"/></defs><g transform="rotate(-10 60 60)"><circle cx="60" cy="60" r="56" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="60" cy="60" r="37" fill="none" stroke="currentColor" stroke-width="1.6"/><text font-size="8.2"><textPath href="#pmr12" textLength="286" lengthAdjust="spacing">FLOWERS OVERSEAS · POLAND · FLOWERS OVERSEAS · POLAND ·</textPath></text><text x="60" y="47" text-anchor="middle" font-size="10" letter-spacing="1.5">SUN</text><text class="pm-day" x="60" y="77" text-anchor="middle" font-size="31">14</text><text x="60" y="90" text-anchor="middle" font-size="10" letter-spacing="1.5">FEB</text></g></svg><strong>Valentine's Day</strong><span class="note">Sunday, 14 February 2027</span></button>
+      <button class="date-card hot" type="button" data-occ="womensDay"><svg class="pm" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><defs><path id="pmr13" d="M60,60 m-46,0 a46,46 0 1,1 92,0 a46,46 0 1,1 -92,0"/></defs><g transform="rotate(-10 60 60)"><circle cx="60" cy="60" r="56" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="60" cy="60" r="37" fill="none" stroke="currentColor" stroke-width="1.6"/><text font-size="8.2"><textPath href="#pmr13" textLength="286" lengthAdjust="spacing">FLOWERS OVERSEAS · POLAND · FLOWERS OVERSEAS · POLAND ·</textPath></text><text x="60" y="47" text-anchor="middle" font-size="10" letter-spacing="1.5">MON</text><text class="pm-day" x="60" y="77" text-anchor="middle" font-size="31">8</text><text x="60" y="90" text-anchor="middle" font-size="10" letter-spacing="1.5">MAR</text></g></svg><strong>Women's Day</strong><span class="note">Monday, 8 March 2027</span></button>
+      <button class="date-card" type="button" data-occ="easter"><svg class="pm" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><defs><path id="pmr14" d="M60,60 m-46,0 a46,46 0 1,1 92,0 a46,46 0 1,1 -92,0"/></defs><g transform="rotate(-10 60 60)"><circle cx="60" cy="60" r="56" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="60" cy="60" r="37" fill="none" stroke="currentColor" stroke-width="1.6"/><text font-size="8.2"><textPath href="#pmr14" textLength="286" lengthAdjust="spacing">FLOWERS OVERSEAS · POLAND · FLOWERS OVERSEAS · POLAND ·</textPath></text><text x="60" y="47" text-anchor="middle" font-size="10" letter-spacing="1.5">SUN</text><text class="pm-day" x="60" y="77" text-anchor="middle" font-size="31">28</text><text x="60" y="90" text-anchor="middle" font-size="10" letter-spacing="1.5">MAR</text></g></svg><strong>Easter</strong><span class="note">Sunday, 28 March 2027</span></button>
+      <button class="date-card" type="button" data-occ="mothersDay"><svg class="pm" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><defs><path id="pmr15" d="M60,60 m-46,0 a46,46 0 1,1 92,0 a46,46 0 1,1 -92,0"/></defs><g transform="rotate(-10 60 60)"><circle cx="60" cy="60" r="56" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="60" cy="60" r="37" fill="none" stroke="currentColor" stroke-width="1.6"/><text font-size="8.2"><textPath href="#pmr15" textLength="286" lengthAdjust="spacing">FLOWERS OVERSEAS · POLAND · FLOWERS OVERSEAS · POLAND ·</textPath></text><text x="60" y="47" text-anchor="middle" font-size="10" letter-spacing="1.5">WED</text><text class="pm-day" x="60" y="77" text-anchor="middle" font-size="31">26</text><text x="60" y="90" text-anchor="middle" font-size="10" letter-spacing="1.5">MAY</text></g></svg><strong>Mother's Day</strong><span class="note">Wednesday, 26 May 2027</span></button>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" aria-labelledby="reach-h">
+  <div class="reach">
+    <div class="reach-art" aria-hidden="true">
+      <div class="form-x"><span></span><span></span><span></span><span></span><b>Customs form</b></div>
+    </div>
+    <div class="reach-copy">
+      <h2 id="reach-h">How it reaches Poland</h2>
+      <p>You order from us in your own language and currency. Our florist in the recipient's town makes the bouquet the morning it is delivered and hands it over in person. Nothing crosses a border, so there is no customs form, no paperwork and nothing to pay on arrival.</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="ftr">
+  <div class="airmail" aria-hidden="true"></div>
+  <div class="wrap ftr-in">
+    <div>
+      <a class="logo" href="home.html" aria-label="Flowers Overseas, home"><svg viewBox="0 0 48 48" fill="none" aria-hidden="true" focusable="false"><circle cx="8" cy="40" r="3" fill="var(--logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" stroke="var(--logo-ink)" stroke-width="2.4" stroke-linecap="round" fill="none"/><g transform="translate(31 16)" stroke="var(--logo-ink)" stroke-width="2.2" fill="none"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" fill="var(--logo-accent)" stroke="none"/></g></svg><span>Flowers Overseas</span></a>
+      <p style="margin-block-start: 16px; max-inline-size: 38ch;">We send flowers across Europe. You order from us; our florist in the recipient's town makes the bouquet and hands it over in person.</p>
+    </div>
+    <div>
+      <h2>Sending</h2>
+      <ul><li><a href="shop.html">Flowers for Poland</a></li><li><a href="home.html#occasions">Occasions</a></li><li><a href="home.html#destinations">Destinations</a></li></ul>
+    </div>
+    <div>
+      <h2>Help &amp; WhatsApp</h2>
+      <ul><li><a href="tel:+12135925150">+1 (213) 592-5150</a></li><li>Mon–Sat 8–20 CET</li><li><a href="home.html#faq">Questions people ask first</a></li></ul>
+    </div>
+    <div>
+      <h2>Payment</h2>
+      <p>We show the payment methods you can use at checkout. Card payments are processed by Stripe. We never store card numbers.</p>
+    </div>
+  </div>
+  <div class="wrap ftr-base"><span>Prices include delivery and VAT</span><span>7-day freshness guarantee</span><span>Terms · Privacy · Cookies · Withdrawal and refunds</span></div>
+</footer>
+<script>
+(() => {
+  const CAT = [{"s":"amber-hour","n":"Amber Hour","t":"bouquet","f":"roses","ff":["roses","mixed"],"c":"orange","o":["birthday","thankYou","justBecause"],"p":[["12 stems",19900],["18 stems",22900],["24 stems",25900]],"d":1,"img":"fo-bq-001-hero","a":"A hand-tied bouquet of orange garden roses with eucalyptus, wrapped in kraft paper, on a warm grey background"},{"s":"krakow-spring","n":"Kraków Spring","t":"bouquet","f":"tulips","ff":["tulips","mixed"],"c":"mixed","o":["birthday","easter","justBecause"],"p":[["15 stems",14900],["25 stems",16900],["35 stems",18900]],"d":1,"img":"fo-bq-009-hero","a":"A loosely gathered bouquet of tulips in pink, yellow, white and purple, wrapped in kraft paper"},{"s":"peony-note","n":"Peony Note","t":"bouquet","f":"peonies","ff":["peonies","mixed"],"c":"pink","o":["romance","anniversary","wedding"],"p":[["9 stems",35900],["15 stems",44900],["21 stems",52900]],"d":1,"img":"fo-bq-019-hero","a":"A hand-tied bouquet of pink peonies, open and closed heads mixed, wrapped in white paper"},{"s":"field-of-gold","n":"Field of Gold","t":"bouquet","f":"sunflowers","ff":["sunflowers","mixed"],"c":"yellow","o":["birthday","congratulations","thankYou"],"p":[["5 stems",19900],["9 stems",22900],["13 stems",25900]],"d":1,"img":"fo-bq-023-hero","a":"A bouquet of yellow sunflowers with wheat ears and green foliage, wrapped in kraft paper"},{"s":"warsaw-morning","n":"Warsaw Morning","t":"bouquet","f":"mixed","ff":["mixed"],"c":"mixed","o":["birthday","thankYou","justBecause"],"p":[["12 stems",19900],["18 stems",22900],["24 stems",25900]],"d":1,"img":"fo-bq-028-hero","a":"A mixed seasonal bouquet of roses, alstroemeria, chrysanthemums and greenery, wrapped in kraft paper"},{"s":"vistula-red","n":"Vistula Red","t":"bouquet","f":"roses","ff":["roses","mixed"],"c":"red","o":["romance","anniversary","valentines"],"p":[["12 stems",26900],["18 stems",30900],["24 stems",34900]],"d":1,"img":"fo-bq-002-hero","a":"A hand-tied bouquet of deep red long-stemmed roses with dark green foliage, wrapped in white paper"},{"s":"small-kindness","n":"Small Kindness","t":"arrangement","f":"mixed","ff":["mixed"],"c":"pastel","o":["getWell","apology","justBecause"],"p":[["Small",14900],["Medium",16900],["Large",18900]],"d":1,"img":"fo-ar-001-hero","a":"A low flower arrangement in soft pastel colours set in a plain kraft gift box"},{"s":"moth-orchid-white","n":"Moth Orchid White","t":"plant","f":"orchids","ff":["orchids"],"c":"white","o":["housewarming","congratulations","thankYou"],"p":[["One plant",26900]],"d":0,"img":"fo-pt-001-hero","a":"A white moth orchid with two arching flowering stems in a plain white ceramic pot"},{"s":"welcome-home","n":"Welcome Home","t":"arrangement","f":"mixed","ff":["mixed"],"c":"mixed","o":["housewarming","congratulations","newBaby"],"p":[["Small",19900],["Medium",22900],["Large",25900]],"d":1,"img":"fo-ar-003-hero","a":"A mixed seasonal flower arrangement in a plain woven basket, seen from the front"},{"s":"white-linen","n":"White Linen","t":"bouquet","f":"lilies","ff":["lilies","mixed"],"c":"white","o":["sympathy","wedding","anniversary"],"p":[["5 stems",26900],["8 stems",30900],["12 stems",34900]],"d":1,"img":"fo-bq-015-hero","a":"A hand-tied bouquet of white oriental lilies with dark green foliage, wrapped in white paper"},{"s":"amber-hour-chocolates","n":"Amber Hour + Chocolates","t":"gift_set","f":"roses","ff":["roses"],"c":"orange","o":["birthday","thankYou"],"p":[["12 stems",26900],["18 stems",30900],["24 stems",34900]],"d":1,"img":"fo-gs-001-hero","a":"A bouquet of orange roses with eucalyptus standing beside a plain closed box of chocolates"},{"s":"farewell-wreath","n":"Farewell Wreath","t":"funeral","f":"chrysanthemums","ff":["chrysanthemums"],"c":"white","o":["sympathy","allSaints"],"p":[["Small",48900],["Medium",56900],["Large",63900]],"d":1,"img":"fo-fn-001-hero","a":"A round white chrysanthemum funeral wreath with dark green foliage, standing on neutral stone"},{"s":"baltic-dawn","n":"Baltic Dawn","t":"bouquet","f":"roses","ff":["roses","mixed"],"c":"pink","o":["birthday","romance","thankYou"],"p":[["12 stems",19900],["18 stems",22900],["24 stems",25900]],"d":1,"img":"fo-bq-003-hero","a":null},{"s":"quiet-blush","n":"Quiet Blush","t":"bouquet","f":"roses","ff":["roses","mixed"],"c":"pastel","o":["apology","getWell","justBecause"],"p":[["12 stems",14900],["18 stems",16900],["24 stems",18900]],"d":1,"img":null,"a":null},{"s":"northern-light","n":"Northern Light","t":"bouquet","f":"roses","ff":["roses","mixed"],"c":"white","o":["wedding","anniversary","congratulations"],"p":[["12 stems",26900],["18 stems",30900],["24 stems",34900]],"d":1,"img":"fo-bq-005-hero","a":null},{"s":"velvet-evening","n":"Velvet Evening","t":"bouquet","f":"roses","ff":["roses","mixed"],"c":"red","o":["romance","valentines","anniversary"],"p":[["12 stems",35900],["18 stems",44900],["24 stems",52900]],"d":1,"img":"fo-bq-006-hero","a":null},{"s":"rose-harbour","n":"Rose Harbour","t":"bouquet","f":"roses","ff":["roses","mixed"],"c":"pink","o":["birthday","mothersDay","thankYou"],"p":[["12 stems",19900],["18 stems",22900],["24 stems",25900]],"d":1,"img":"fo-bq-007-hero","a":null},{"s":"winter-rose","n":"Winter Rose","t":"bouquet","f":"roses","ff":["roses","mixed"],"c":"white","o":["christmas","newYear","congratulations"],"p":[["12 stems",26900],["18 stems",30900],["24 stems",34900]],"d":1,"img":"fo-bq-008-hero","a":null},{"s":"sunday-market","n":"Sunday Market","t":"bouquet","f":"tulips","ff":["tulips","mixed"],"c":"yellow","o":["thankYou","getWell","easter"],"p":[["15 stems",14900],["25 stems",16900],["35 stems",18900]],"d":1,"img":"fo-bq-010-hero","a":null},{"s":"first-thaw","n":"First Thaw","t":"bouquet","f":"tulips","ff":["tulips","mixed"],"c":"white","o":["apology","sympathy","justBecause"],"p":[["15 stems",19900],["25 stems",22900],["35 stems",25900]],"d":1,"img":"fo-bq-011-hero","a":null},{"s":"meadow-post","n":"Meadow Post","t":"bouquet","f":"tulips","ff":["tulips","mixed"],"c":"pink","o":["birthday","mothersDay","womensDay"],"p":[["15 stems",14900],["25 stems",16900],["35 stems",18900]],"d":1,"img":"fo-bq-012-hero","a":null},{"s":"april-window","n":"April Window","t":"bouquet","f":"tulips","ff":["tulips","mixed"],"c":"purple","o":["birthday","congratulations","womensDay"],"p":[["15 stems",19900],["25 stems",22900],["35 stems",25900]],"d":1,"img":"fo-bq-013-hero","a":null},{"s":"tulip-parade","n":"Tulip Parade","t":"bouquet","f":"tulips","ff":["tulips","mixed"],"c":"vibrant","o":["birthday","graduation","congratulations"],"p":[["15 stems",19900],["25 stems",22900],["35 stems",25900]],"d":1,"img":"fo-bq-014-hero","a":null},{"s":"evening-chapel","n":"Evening Chapel","t":"bouquet","f":"lilies","ff":["lilies","mixed"],"c":"white","o":["sympathy","thankYou"],"p":[["5 stems",26900],["8 stems",30900],["12 stems",34900]],"d":1,"img":"fo-bq-016-hero","a":null},{"s":"snow-lantern","n":"Snow Lantern","t":"bouquet","f":"lilies","ff":["lilies","mixed"],"c":"white","o":["getWell","sympathy"],"p":[["5 stems",19900],["8 stems",22900],["12 stems",25900]],"d":1,"img":"fo-bq-017-hero","a":null},{"s":"lily-terrace","n":"Lily Terrace","t":"bouquet","f":"lilies","ff":["lilies","mixed"],"c":"pink","o":["birthday","anniversary","mothersDay"],"p":[["5 stems",26900],["8 stems",30900],["12 stems",34900]],"d":1,"img":"fo-bq-018-hero","a":null},{"s":"soft-june","n":"Soft June","t":"bouquet","f":"peonies","ff":["peonies","mixed"],"c":"pastel","o":["birthday","newBaby","mothersDay"],"p":[["9 stems",26900],["15 stems",30900],["21 stems",34900]],"d":1,"img":"fo-bq-020-hero","a":null},{"s":"blush-terrace","n":"Blush Terrace","t":"bouquet","f":"peonies","ff":["peonies","mixed"],"c":"pink","o":["wedding","romance"],"p":[["9 stems",35900],["15 stems",44900],["21 stems",52900]],"d":1,"img":"fo-bq-021-hero","a":null},{"s":"peony-hour","n":"Peony Hour","t":"bouquet","f":"peonies","ff":["peonies","mixed"],"c":"white","o":["wedding","congratulations","thankYou"],"p":[["9 stems",26900],["15 stems",30900],["21 stems",34900]],"d":1,"img":"fo-bq-022-hero","a":null},{"s":"high-summer","n":"High Summer","t":"bouquet","f":"sunflowers","ff":["sunflowers","mixed"],"c":"yellow","o":["justBecause","getWell","housewarming"],"p":[["5 stems",14900],["9 stems",16900],["13 stems",18900]],"d":1,"img":"fo-bq-024-hero","a":null},{"s":"late-harvest","n":"Late Harvest","t":"bouquet","f":"sunflowers","ff":["sunflowers","mixed"],"c":"orange","o":["thankYou","housewarming","retirement"],"p":[["5 stems",19900],["9 stems",22900],["13 stems",25900]],"d":1,"img":"fo-bq-025-hero","a":null},{"s":"bright-side","n":"Bright Side","t":"bouquet","f":"gerberas","ff":["gerberas","mixed"],"c":"vibrant","o":["getWell","birthday","congratulations"],"p":[["10 stems",14900],["15 stems",16900],["21 stems",18900]],"d":1,"img":"fo-bq-026-hero","a":null},{"s":"carousel","n":"Carousel","t":"bouquet","f":"gerberas","ff":["gerberas","mixed"],"c":"mixed","o":["birthday","graduation","justBecause"],"p":[["10 stems",14900],["15 stems",16900],["21 stems",18900]],"d":1,"img":"fo-bq-027-hero","a":null},{"s":"garden-letter","n":"Garden Letter","t":"bouquet","f":"mixed","ff":["mixed"],"c":"pastel","o":["apology","getWell","thankYou"],"p":[["12 stems",19900],["18 stems",22900],["24 stems",25900]],"d":1,"img":"fo-bq-029-hero","a":null},{"s":"late-summer-table","n":"Late Summer Table","t":"bouquet","f":"mixed","ff":["mixed"],"c":"orange","o":["housewarming","thankYou","retirement"],"p":[["12 stems",19900],["18 stems",22900],["24 stems",25900]],"d":1,"img":"fo-bq-030-hero","a":null},{"s":"pastel-weekend","n":"Pastel Weekend","t":"bouquet","f":"mixed","ff":["mixed"],"c":"pastel","o":["newBaby","getWell","justBecause"],"p":[["12 stems",14900],["18 stems",16900],["24 stems",18900]],"d":1,"img":"fo-bq-031-hero","a":null},{"s":"painters-table","n":"Painter's Table","t":"bouquet","f":"mixed","ff":["mixed"],"c":"vibrant","o":["birthday","congratulations","graduation"],"p":[["12 stems",26900],["18 stems",30900],["24 stems",34900]],"d":1,"img":"fo-bq-032-hero","a":null},{"s":"long-weekend","n":"Long Weekend","t":"bouquet","f":"mixed","ff":["mixed"],"c":"mixed","o":["justBecause","thankYou"],"p":[["12 stems",14900],["18 stems",16900],["24 stems",18900]],"d":1,"img":"fo-bq-033-hero","a":null},{"s":"seasons-hand","n":"Season's Hand","t":"bouquet","f":"seasonal","ff":["seasonal"],"c":"mixed","o":["justBecause","birthday"],"p":[["12 stems",19900],["18 stems",22900],["24 stems",25900]],"d":1,"img":"fo-bq-034-hero","a":null},{"s":"harvest-light","n":"Harvest Light","t":"bouquet","f":"seasonal","ff":["seasonal"],"c":"orange","o":["housewarming","thankYou"],"p":[["12 stems",19900],["18 stems",22900],["24 stems",25900]],"d":1,"img":"fo-bq-035-hero","a":null},{"s":"winter-table","n":"Winter Table","t":"bouquet","f":"seasonal","ff":["seasonal"],"c":"white","o":["christmas","newYear"],"p":[["12 stems",26900],["18 stems",30900],["24 stems",34900]],"d":1,"img":"fo-bq-036-hero","a":null},{"s":"spring-post","n":"Spring Post","t":"bouquet","f":"seasonal","ff":["seasonal"],"c":"yellow","o":["easter","womensDay","mothersDay"],"p":[["12 stems",14900],["18 stems",16900],["24 stems",18900]],"d":1,"img":"fo-bq-037-hero","a":null},{"s":"old-town","n":"Old Town","t":"bouquet","f":"carnations","ff":["carnations","mixed"],"c":"red","o":["birthday","nameDay","justBecause"],"p":[["12 stems",14900],["18 stems",16900],["24 stems",18900]],"d":1,"img":"fo-bq-038-hero","a":null},{"s":"blue-hour","n":"Blue Hour","t":"bouquet","f":"hydrangeas","ff":["hydrangeas","mixed"],"c":"blue","o":["anniversary","congratulations","housewarming"],"p":[["3 stems",26900],["5 stems",30900],["7 stems",34900]],"d":1,"img":"fo-bq-039-hero","a":null},{"s":"morning-scent","n":"Morning Scent","t":"bouquet","f":"freesias","ff":["freesias","mixed"],"c":"white","o":["getWell","thankYou","apology"],"p":[["15 stems",19900],["25 stems",22900],["35 stems",25900]],"d":1,"img":"fo-bq-040-hero","a":null},{"s":"mantelpiece","n":"Mantelpiece","t":"arrangement","f":"roses","ff":["roses"],"c":"red","o":["anniversary","romance"],"p":[["Small",26900],["Medium",30900],["Large",34900]],"d":1,"img":"fo-ar-002-hero","a":null},{"s":"desk-bloom","n":"Desk Bloom","t":"arrangement","f":"gerberas","ff":["gerberas"],"c":"vibrant","o":["congratulations","birthday","thankYou"],"p":[["Small",14900],["Medium",16900],["Large",18900]],"d":1,"img":"fo-ar-004-hero","a":null},{"s":"paper-window","n":"Paper Window","t":"arrangement","f":"tulips","ff":["tulips"],"c":"pink","o":["birthday","womensDay","justBecause"],"p":[["Small",14900],["Medium",16900],["Large",18900]],"d":1,"img":"fo-ar-005-hero","a":null},{"s":"glass-morning","n":"Glass Morning","t":"arrangement","f":"lilies","ff":["lilies"],"c":"white","o":["sympathy","thankYou","wedding"],"p":[["Small",26900],["Medium",30900],["Large",34900]],"d":1,"img":"fo-ar-006-hero","a":null},{"s":"kitchen-table","n":"Kitchen Table","t":"arrangement","f":"seasonal","ff":["seasonal"],"c":"mixed","o":["housewarming","thankYou"],"p":[["Small",19900],["Medium",22900],["Large",25900]],"d":1,"img":"fo-ar-007-hero","a":null},{"s":"hallway-light","n":"Hallway Light","t":"arrangement","f":"mixed","ff":["mixed"],"c":"white","o":["housewarming","congratulations"],"p":[["Small",19900],["Medium",22900],["Large",25900]],"d":1,"img":"fo-ar-008-hero","a":null},{"s":"reading-corner","n":"Reading Corner","t":"arrangement","f":"freesias","ff":["freesias"],"c":"purple","o":["getWell","retirement","thankYou"],"p":[["Small",19900],["Medium",22900],["Large",25900]],"d":1,"img":"fo-ar-009-hero","a":null},{"s":"studio-vase","n":"Studio Vase","t":"arrangement","f":"peonies","ff":["peonies"],"c":"pink","o":["anniversary","wedding","romance"],"p":[["Small",35900],["Medium",44900],["Large",52900]],"d":1,"img":"fo-ar-010-hero","a":null},{"s":"garden-crate","n":"Garden Crate","t":"arrangement","f":"seasonal","ff":["seasonal"],"c":"mixed","o":["housewarming","thankYou","easter"],"p":[["Small",19900],["Medium",22900],["Large",25900]],"d":1,"img":"fo-ar-011-hero","a":null},{"s":"white-cube","n":"White Cube","t":"arrangement","f":"roses","ff":["roses"],"c":"white","o":["wedding","congratulations","sympathy"],"p":[["Small",26900],["Medium",30900],["Large",34900]],"d":1,"img":"fo-ar-012-hero","a":null},{"s":"copper-bowl","n":"Copper Bowl","t":"arrangement","f":"chrysanthemums","ff":["chrysanthemums"],"c":"orange","o":["allSaints","thankYou","housewarming"],"p":[["Small",19900],["Medium",22900],["Large",25900]],"d":1,"img":"fo-ar-013-hero","a":null},{"s":"linen-basket","n":"Linen Basket","t":"arrangement","f":"alstroemeria","ff":["alstroemeria"],"c":"pastel","o":["newBaby","getWell","birthday"],"p":[["Small",14900],["Medium",16900],["Large",18900]],"d":1,"img":"fo-ar-014-hero","a":null},{"s":"moth-orchid-pink","n":"Moth Orchid Pink","t":"plant","f":"orchids","ff":["orchids"],"c":"pink","o":["birthday","mothersDay","thankYou"],"p":[["One plant",26900]],"d":0,"img":"fo-pt-002-hero","a":null},{"s":"twin-orchid","n":"Twin Orchid","t":"plant","f":"orchids","ff":["orchids"],"c":"white","o":["wedding","anniversary","retirement"],"p":[["One plant",35900]],"d":0,"img":"fo-pt-003-hero","a":null},{"s":"peace-lily","n":"Peace Lily","t":"plant","f":"lilies","ff":["lilies"],"c":"white","o":["sympathy","housewarming","getWell"],"p":[["One plant",19900]],"d":0,"img":"fo-pt-004-hero","a":null},{"s":"anthurium","n":"Anthurium","t":"plant","f":"mixed","ff":["mixed"],"c":"red","o":["housewarming","congratulations"],"p":[["One plant",19900]],"d":0,"img":"fo-pt-005-hero","a":null},{"s":"olive-sapling","n":"Olive Sapling","t":"plant","f":"mixed","ff":["mixed"],"c":"mixed","o":["housewarming","wedding","retirement"],"p":[["One plant",26900]],"d":0,"img":"fo-pt-006-hero","a":null},{"s":"jasmine-pot","n":"Jasmine Pot","t":"plant","f":"mixed","ff":["mixed"],"c":"white","o":["getWell","thankYou","justBecause"],"p":[["One plant",14900]],"d":0,"img":"fo-pt-007-hero","a":null},{"s":"azalea-pot","n":"Azalea Pot","t":"plant","f":"mixed","ff":["mixed"],"c":"pink","o":["birthday","mothersDay","getWell"],"p":[["One plant",14900]],"d":0,"img":"fo-pt-008-hero","a":null},{"s":"standing-spray","n":"Standing Spray","t":"funeral","f":"lilies","ff":["lilies"],"c":"white","o":["sympathy"],"p":[["Small",48900],["Medium",56900],["Large",63900]],"d":1,"img":"fo-fn-002-hero","a":null},{"s":"casket-spray","n":"Casket Spray","t":"funeral","f":"lilies","ff":["lilies"],"c":"white","o":["sympathy"],"p":[["Small",64900],["Medium",72900],["Large",79900]],"d":1,"img":"fo-fn-003-hero","a":null},{"s":"white-heart","n":"White Heart","t":"funeral","f":"roses","ff":["roses"],"c":"white","o":["sympathy"],"p":[["Small",64900],["Medium",72900],["Large",79900]],"d":1,"img":"fo-fn-004-hero","a":null},{"s":"sympathy-basket","n":"Sympathy Basket","t":"funeral","f":"mixed","ff":["mixed"],"c":"white","o":["sympathy"],"p":[["Small",35900],["Medium",41900],["Large",47900]],"d":1,"img":"fo-fn-005-hero","a":null},{"s":"grave-bouquet","n":"Grave Bouquet","t":"funeral","f":"chrysanthemums","ff":["chrysanthemums"],"c":"mixed","o":["sympathy","allSaints"],"p":[["Small",25900],["Medium",30900],["Large",34900]],"d":1,"img":"fo-fn-006-hero","a":null},{"s":"memorial-cross","n":"Memorial Cross","t":"funeral","f":"chrysanthemums","ff":["chrysanthemums"],"c":"white","o":["sympathy","allSaints"],"p":[["Small",48900],["Medium",56900],["Large",63900]],"d":1,"img":"fo-fn-007-hero","a":null},{"s":"quiet-wreath","n":"Quiet Wreath","t":"funeral","f":"mixed","ff":["mixed"],"c":"pastel","o":["sympathy"],"p":[["Small",35900],["Medium",41900],["Large",47900]],"d":1,"img":"fo-fn-008-hero","a":null},{"s":"condolence-bouquet","n":"Condolence Bouquet","t":"funeral","f":"roses","ff":["roses"],"c":"white","o":["sympathy"],"p":[["Small",35900],["Medium",41900],["Large",47900]],"d":1,"img":"fo-fn-009-hero","a":null},{"s":"stone-garden","n":"Stone Garden","t":"funeral","f":"mixed","ff":["mixed"],"c":"white","o":["sympathy","allSaints"],"p":[["Small",48900],["Medium",56900],["Large",63900]],"d":1,"img":"fo-fn-010-hero","a":null},{"s":"baltic-dawn-vase","n":"Baltic Dawn + Vase","t":"gift_set","f":"roses","ff":["roses"],"c":"pink","o":["birthday","romance","anniversary"],"p":[["12 stems",26900],["18 stems",30900],["24 stems",34900]],"d":1,"img":"fo-gs-002-hero","a":null},{"s":"welcome-baby-blue-plush","n":"Welcome Baby Blue + Plush","t":"gift_set","f":"mixed","ff":["mixed"],"c":"blue","o":["newBaby","congratulations"],"p":[["12 stems",19900],["18 stems",22900],["24 stems",25900]],"d":1,"img":"fo-gs-003-hero","a":null},{"s":"welcome-baby-pink-plush","n":"Welcome Baby Pink + Plush","t":"gift_set","f":"mixed","ff":["mixed"],"c":"pink","o":["newBaby","congratulations"],"p":[["12 stems",19900],["18 stems",22900],["24 stems",25900]],"d":1,"img":"fo-gs-004-hero","a":null},{"s":"krakow-spring-chocolates","n":"Kraków Spring + Chocolates","t":"gift_set","f":"tulips","ff":["tulips"],"c":"mixed","o":["birthday","easter","womensDay"],"p":[["15 stems",19900],["25 stems",22900],["35 stems",25900]],"d":1,"img":"fo-gs-005-hero","a":null},{"s":"quiet-blush-vase","n":"Quiet Blush + Vase","t":"gift_set","f":"roses","ff":["roses"],"c":"pastel","o":["apology","getWell"],"p":[["12 stems",19900],["18 stems",22900],["24 stems",25900]],"d":1,"img":"fo-gs-006-hero","a":null},{"s":"field-of-gold-chocolates","n":"Field of Gold + Chocolates","t":"gift_set","f":"sunflowers","ff":["sunflowers"],"c":"yellow","o":["birthday","congratulations"],"p":[["5 stems",19900],["9 stems",22900],["13 stems",25900]],"d":1,"img":"fo-gs-007-hero","a":null},{"s":"peony-note-vase","n":"Peony Note + Vase","t":"gift_set","f":"peonies","ff":["peonies"],"c":"pink","o":["anniversary","romance","wedding"],"p":[["9 stems",35900],["15 stems",44900],["21 stems",52900]],"d":1,"img":"fo-gs-008-hero","a":null},{"s":"warsaw-morning-balloon","n":"Warsaw Morning + Balloon","t":"gift_set","f":"mixed","ff":["mixed"],"c":"mixed","o":["birthday","congratulations"],"p":[["12 stems",19900],["18 stems",22900],["24 stems",25900]],"d":1,"img":"fo-gs-009-hero","a":null},{"s":"bright-side-balloon","n":"Bright Side + Balloon","t":"gift_set","f":"gerberas","ff":["gerberas"],"c":"vibrant","o":["getWell","birthday","graduation"],"p":[["10 stems",19900],["15 stems",22900],["21 stems",25900]],"d":1,"img":"fo-gs-010-hero","a":null},{"s":"white-linen-chocolates","n":"White Linen + Chocolates","t":"gift_set","f":"lilies","ff":["lilies"],"c":"white","o":["anniversary","thankYou"],"p":[["5 stems",35900],["8 stems",44900],["12 stems",52900]],"d":1,"img":"fo-gs-011-hero","a":null},{"s":"garden-letter-plush","n":"Garden Letter + Plush","t":"gift_set","f":"mixed","ff":["mixed"],"c":"pastel","o":["newBaby","getWell"],"p":[["12 stems",19900],["18 stems",22900],["24 stems",25900]],"d":1,"img":"fo-gs-012-hero","a":null}];
+  const IMG = (id, w) => `https://media.flowersoverseas.com/media/${id}/${w}.webp`;
+  const num = new Intl.NumberFormat("en", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const plural = new Intl.PluralRules("en");
+  const TYPE = { bouquet: "Hand-tied bouquet", arrangement: "Arrangement", plant: "Plant", funeral: "Funeral and sympathy", gift_set: "Flowers and gift set" };
+  const FLOWER = { roses: "roses", tulips: "tulips", lilies: "lilies", orchids: "orchids", sunflowers: "sunflowers", peonies: "peonies", gerberas: "gerberas", carnations: "carnations", chrysanthemums: "chrysanthemums", hydrangeas: "hydrangeas", freesias: "freesias", alstroemeria: "alstroemeria", mixed: "mixed flowers", seasonal: "seasonal flowers" };
+  const MAT = { red: "red", pink: "pink", white: "white", yellow: "yellow", orange: "orange", purple: "purple", blue: "blue", pastel: "pink", vibrant: "yellow", mixed: "green" };
+  const OCC = [
+    ["birthday", "Birthday"], ["nameDay", "Name day"], ["anniversary", "Anniversary"], ["romance", "Love and romance"],
+    ["thankYou", "Thank you"], ["getWell", "Get well"], ["sympathy", "Sympathy"], ["newBaby", "New baby"],
+    ["justBecause", "Just because"], ["congratulations", "Congratulations"],
+    ["apology", "I am sorry"], ["housewarming", "Housewarming"], ["womensDay", "Women's Day"], ["mothersDay", "Mother's Day"],
+    ["allSaints", "All Saints' Day"], ["christmas", "Christmas"], ["newYear", "New Year"], ["easter", "Easter"],
+    ["valentines", "Valentine's Day"], ["wedding", "Wedding"], ["graduation", "Graduation"], ["retirement", "Retirement"],
+  ];
+  const COL = [
+    ["red", "Red", "var(--sw-red)"], ["pink", "Pink", "var(--sw-pink)"], ["white", "White", "var(--sw-white)"],
+    ["yellow", "Yellow", "var(--sw-yellow)"], ["orange", "Orange", "var(--sw-orange)"], ["purple", "Purple", "var(--sw-purple)"],
+    ["blue", "Blue", "var(--sw-blue)"],
+    ["pastel", "Pastel", "linear-gradient(135deg, var(--m-pink), var(--m-blue), var(--m-yellow))"],
+    ["vibrant", "Vibrant", "conic-gradient(var(--sw-red), var(--sw-yellow), var(--sw-orange), var(--sw-purple), var(--sw-red))"],
+    ["mixed", "Mixed colours", "conic-gradient(var(--sw-pink), var(--sw-white), var(--sw-yellow), var(--m-green), var(--sw-pink))"],
+  ];
+  const PRICE = [["p1", "Up to 150", 0, 15000], ["p2", "150 to 250", 15000, 25000], ["p3", "250 to 400", 25000, 40000], ["p4", "Over 400", 40000, Infinity]];
+  const TYPES = [["bouquet", "Hand-tied bouquet"], ["arrangement", "Arrangement"], ["plant", "Plant"], ["gift_set", "Flowers and gift set"], ["funeral", "Funeral and sympathy"]];
+  const BUBBLES = [
+    ["all", "Everything", "fo-bq-028-hero"], ["f:roses", "Roses", "fo-bq-001-hero"], ["f:tulips", "Tulips", "fo-bq-009-hero"],
+    ["f:peonies", "Peonies", "fo-bq-019-hero"], ["f:lilies", "Lilies", "fo-bq-015-hero"], ["f:sunflowers", "Sunflowers", "fo-bq-023-hero"],
+    ["f:gerberas", "Gerberas", "fo-bq-026-hero"], ["t:arrangement", "Arrangements", "fo-ar-003-hero"], ["t:plant", "Plants", "fo-pt-001-hero"],
+    ["t:gift_set", "Gift sets", "fo-gs-001-hero"], ["t:funeral", "Sympathy", "fo-fn-001-hero"],
+  ];
+  const PAGE = 24;
+
+  const q = new URLSearchParams(location.search);
+  const state = { cat: "all", occ: new Set(), col: new Set(), price: null, type: new Set(), sort: "ours", limit: PAGE };
+  if (q.get("occasion")) state.occ.add(q.get("occasion"));
+
+  // The route pill carries what the buyer typed on the home page.
+  if (q.get("to")) document.getElementById("rp-to").textContent = q.get("to");
+  if (q.get("date")) {
+    const d = new Date(q.get("date") + "T12:00:00");
+    if (!isNaN(d)) {
+      const el = document.getElementById("rp-date");
+      el.textContent = new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "numeric", month: "short" }).format(d);
+      el.hidden = false;
+    }
+  }
+
+  const $ = (id) => document.getElementById(id);
+  const std = (p) => p.p[p.d][1];
+  const alt = (p) => p.a || `${p.n}: ${TYPE[p.t].toLowerCase()} of ${FLOWER[p.f]}, photographed on a plain background`;
+  const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  function card(p, i) {
+    const [tier, minor] = p.p[p.d];
+    const ph = p.img
+      ? `<img src="${IMG(p.img, 640)}" srcset="${IMG(p.img, 384)} 384w, ${IMG(p.img, 640)} 640w" sizes="(min-width: 1080px) 280px, (min-width: 720px) 30vw, 46vw" width="384" height="480" ${i < 4 ? "" : 'loading="lazy"'} decoding="async" alt="${esc(alt(p))}">`
+      : `<span class="ph-empty"><svg width="40" height="40" viewBox="-12 -12 24 24" aria-hidden="true"><g stroke="currentColor" stroke-width="1.6" fill="none"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/></g></svg>Photography to supply · this bouquet as our florist makes it</span>`;
+    return `<a class="card" style="--mat: var(--m-${MAT[p.c]}); animation-delay: ${Math.min(i % PAGE, 12) * 25}ms" href="product.html?p=${p.s}">
+      <span class="card-ph">${ph}</span>
+      <span class="card-body"><span class="card-name">${esc(p.n)}</span><span class="card-meta">${tier} · ${TYPE[p.t]}</span>
+      <span class="card-price"><b>${num.format(minor / 100)}</b><span>PLN</span></span><span class="card-incl">Includes VAT and delivery</span></span></a>`;
+  }
+
+  function matches(p, skip) {
+    if (state.cat !== "all" && skip !== "cat") {
+      const [k, v] = state.cat.split(":");
+      if (k === "f" && !p.ff.includes(v)) return false;
+      if (k === "t" && p.t !== v) return false;
+    }
+    if (state.occ.size && skip !== "occ" && !p.o.some((o) => state.occ.has(o))) return false;
+    if (state.col.size && skip !== "col" && !state.col.has(p.c)) return false;
+    if (state.type.size && skip !== "type" && !state.type.has(p.t)) return false;
+    if (state.price && skip !== "price") {
+      const b = PRICE.find((x) => x[0] === state.price);
+      if (!(std(p) >= b[2] && std(p) < b[3])) return false;
+    }
+    return true;
+  }
+
+  const bouquets = (n) => `${n} ${plural.select(n) === "one" ? "bouquet" : "bouquets"}`;
+
+  function render() {
+    let list = CAT.filter((p) => matches(p));
+    if (state.sort === "asc") list = [...list].sort((a, b) => std(a) - std(b));
+    if (state.sort === "desc") list = [...list].sort((a, b) => std(b) - std(a));
+    const shown = list.slice(0, state.limit);
+    $("grid").innerHTML = shown.map(card).join("");
+    $("grid").hidden = !list.length;
+    $("empty").hidden = !!list.length;
+    $("count").textContent = bouquets(list.length);
+    $("apply-n").textContent = list.length ? `Show ${bouquets(list.length)}` : "Nothing matches yet";
+    $("more").hidden = list.length <= state.limit;
+    $("shown").textContent = list.length ? `Showing ${shown.length} of ${list.length}` : "";
+    const n = state.occ.size + state.col.size + state.type.size + (state.price ? 1 : 0);
+    $("fcount").textContent = n; $("fcount").hidden = !n;
+    renderChips();
+    syncPressed();
+  }
+
+  function renderChips() {
+    const x = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17"/></svg>';
+    const chips = [];
+    const label = (arr, k) => arr.find((a) => a[0] === k)[1];
+    if (state.cat !== "all") chips.push(["cat", state.cat, label(BUBBLES, state.cat)]);
+    state.occ.forEach((k) => chips.push(["occ", k, label(OCC, k)]));
+    state.col.forEach((k) => chips.push(["col", k, label(COL, k)]));
+    if (state.price) chips.push(["price", state.price, label(PRICE, state.price) + " PLN"]);
+    state.type.forEach((k) => chips.push(["type", k, label(TYPES, k)]));
+    $("active").innerHTML = chips.map(([g, k, l]) => `<button class="chip" type="button" data-g="${g}" data-k="${k}" aria-label="Remove ${esc(l)}">${esc(l)}${x}</button>`).join("")
+      + (chips.length > 1 ? '<button class="chip clear" type="button" data-g="all">Clear all</button>' : "");
+  }
+
+  function syncPressed() {
+    document.querySelectorAll("[data-f]").forEach((b) => {
+      const g = b.dataset.f, k = b.dataset.k;
+      const on = g === "cat" ? state.cat === k : g === "price" ? state.price === k : state[g].has(k);
+      b.setAttribute("aria-pressed", on);
+    });
+  }
+
+  function toggle(g, k) {
+    if (g === "cat") state.cat = state.cat === k && k !== "all" ? "all" : k;
+    else if (g === "price") state.price = state.price === k ? null : k;
+    else state[g].has(k) ? state[g].delete(k) : state[g].add(k);
+    state.limit = PAGE;
+    render();
+  }
+
+  function clearAll() { state.cat = "all"; state.occ.clear(); state.col.clear(); state.type.clear(); state.price = null; state.limit = PAGE; render(); }
+
+  // Build the controls once.
+  $("bubbles").innerHTML = BUBBLES.map(([k, l, img]) => `<button class="bubble" type="button" data-f="cat" data-k="${k}" aria-pressed="false"><span><img src="${IMG(img, 384)}" width="384" height="480" alt="" loading="lazy"></span><span>${l}</span></button>`).join("");
+  $("f-occ").innerHTML = OCC.map(([k, l], i) => `<button class="pill" type="button" data-f="occ" data-k="${k}" aria-pressed="false" ${i >= 10 && !state.occ.has(k) ? "hidden" : ""}>${l}</button>`).join("");
+  $("f-col").innerHTML = COL.map(([k, l, c]) => `<button class="sw" type="button" data-f="col" data-k="${k}" aria-pressed="false" style="--sw: ${c}"><i aria-hidden="true"></i>${l}</button>`).join("");
+  $("f-price").innerHTML = PRICE.map(([k, l]) => `<button class="pill" type="button" data-f="price" data-k="${k}" aria-pressed="false">${l} PLN</button>`).join("");
+  $("f-type").innerHTML = TYPES.map(([k, l]) => `<button class="pill" type="button" data-f="type" data-k="${k}" aria-pressed="false">${l}</button>`).join("");
+
+  document.addEventListener("click", (e) => {
+    const f = e.target.closest("[data-f]");
+    if (f) return toggle(f.dataset.f, f.dataset.k);
+    const c = e.target.closest(".chip");
+    if (c) return c.dataset.g === "all" ? clearAll() : toggle(c.dataset.g, c.dataset.k);
+    const d = e.target.closest("[data-occ]");
+    if (d) {
+      state.occ.clear(); state.occ.add(d.dataset.occ); state.limit = PAGE; render();
+      document.querySelector(`[data-f="occ"][data-k="${d.dataset.occ}"]`).hidden = false;
+      $("list-h").scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  });
+  $("more-occ").addEventListener("click", (e) => {
+    const open = e.currentTarget.getAttribute("aria-expanded") === "true";
+    document.querySelectorAll('#f-occ .pill').forEach((b, i) => { if (i >= 10) b.hidden = open && !state.occ.has(b.dataset.k); });
+    e.currentTarget.setAttribute("aria-expanded", !open);
+    e.currentTarget.textContent = open ? "More occasions" : "Fewer occasions";
+  });
+  $("sort").addEventListener("change", (e) => { state.sort = e.target.value; render(); });
+  $("more").addEventListener("click", () => { state.limit += PAGE; render(); });
+  $("clear-all").addEventListener("click", clearAll);
+  $("empty-clear").addEventListener("click", clearAll);
+
+  // The phone's filter sheet.
+  const sheet = $("filters"), scrim = $("scrim"), opener = $("open-filters");
+  const openSheet = () => { sheet.classList.add("open"); scrim.hidden = false; opener.setAttribute("aria-expanded", "true"); $("close-filters").focus(); };
+  const closeSheet = () => { sheet.classList.remove("open"); scrim.hidden = true; opener.setAttribute("aria-expanded", "false"); opener.focus(); };
+  opener.addEventListener("click", openSheet);
+  $("close-filters").addEventListener("click", closeSheet);
+  $("apply").addEventListener("click", closeSheet);
+  scrim.addEventListener("click", closeSheet);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && sheet.classList.contains("open")) closeSheet(); });
+  document.querySelectorAll(".menu-panel a").forEach((a) => a.addEventListener("click", () => a.closest("details").removeAttribute("open")));
+
+  render();
+})();
+
+</script>
+</body>
+</html>

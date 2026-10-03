@@ -1,0 +1,883 @@
+<!doctype html>
+<html lang="en-GB" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Amber Hour · Flowers for Poland · Flowers Overseas</title>
+<meta name="description" content="Orange roses hand-tied with eucalyptus and a few sprigs of seasonal foliage, wrapped in kraft paper. One price with VAT and delivery inside it.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://media.flowersoverseas.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..600,0..100;1,9..144,300..600,0..100&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Caveat:wght@500..600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500&text=Flowers%20Overseas&display=swap">
+<style>
+:root {
+  /* Direction A, "Warm and personal": letter paper, ink, a rosehip postmark, the logo's own stem green. */
+  --paper: #FBF6EF;
+  --paper-2: #F4EBDF;
+  --card: #FFFDF9;
+  --blush: #F3DED3;
+  --sage-wash: #E4EADF;
+  --butter: #F6E9CC;
+  --rule: #E4D6C6;
+  --ink: #2B201B;
+  --ink-2: #5B4A41;
+  --ink-3: #76645A;
+  --accent: #9C3B2B;
+  --accent-strong: #7E2C20;
+  --stem: #2F6B47;
+  --shade: rgb(43 32 27 / 0.10);
+
+  --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --font-body: "Alegreya Sans", "Gill Sans", "Segoe UI", system-ui, sans-serif;
+  --font-hand: "Caveat", "Bradley Hand", "Segoe Print", cursive;
+  --font-logo: "Newsreader", Georgia, serif;
+
+  --gutter: clamp(20px, 4vw, 56px);
+  --max: 1328px;
+  --radius: 18px;
+  --radius-s: 10px;
+  --pill: 999px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-padding-block-start: 96px; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+@media (min-width: 900px) { body { font-size: 18px; } }
+[hidden] { display: none !important; }
+img { display: block; max-inline-size: 100%; block-size: auto; }
+a { color: inherit; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2.5px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+.visually-hidden {
+  position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap;
+}
+.wrap { max-inline-size: var(--max); margin-inline: auto; padding-inline: var(--gutter); }
+.skip { position: absolute; inset-inline-start: 12px; inset-block-start: -60px; z-index: 100; background: var(--ink); color: var(--paper); padding: 10px 16px; border-radius: var(--pill); }
+.skip:focus { inset-block-start: 12px; }
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-variation-settings: "SOFT" 100;
+  margin: 0;
+  text-wrap: balance;
+}
+h2 { font-size: clamp(32px, 4.2vw, 54px); line-height: 1.04; letter-spacing: -0.015em; }
+h2 em, h1 em { font-style: italic; color: var(--accent); font-weight: 300; }
+h3 { font-size: 22px; line-height: 1.2; }
+p { margin: 0; }
+.eyebrow {
+  font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--eyebrow, var(--accent)); margin-block-end: 14px;
+}
+.lede { font-size: clamp(18px, 1.5vw, 21px); color: var(--ink-2); max-inline-size: 40ch; line-height: 1.5; }
+.hand { font-family: var(--font-hand); font-weight: 500; color: var(--accent); line-height: 1.1; }
+.section { padding-block: clamp(64px, 9vw, 128px); }
+.section-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 16px 40px; margin-block-end: clamp(28px, 4vw, 48px); }
+.section-head .lede { margin-block-start: 14px; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  min-block-size: 54px; padding-inline: 28px; border-radius: var(--pill);
+  background: var(--accent); color: var(--card);
+  font-weight: 700; font-size: 17px; line-height: 1.1; text-decoration: none;
+  border: 0; cursor: pointer; transition: background-color 0.2s ease;
+}
+.btn:hover { background: var(--accent-strong); }
+.btn-ghost { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--ink); }
+.btn-ghost:hover { background: var(--paper-2); }
+.btn-small { min-block-size: 44px; padding-inline: 20px; font-size: 16px; }
+.link { color: var(--link, var(--accent)); font-weight: 700; text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 5px; }
+.link:hover { color: var(--link-strong, var(--accent-strong)); }
+.arrow::after { content: " \2192"; }
+[dir="rtl"] .arrow::after { content: " \2190"; }
+
+/* ---------- the top note and header ---------- */
+.note-bar { background: var(--ink); color: var(--paper); font-size: 14.5px; text-align: center; padding: 9px var(--gutter); line-height: 1.4; }
+.note-bar strong { font-weight: 700; color: var(--on-dark, var(--blush)); }
+@media (max-width: 719px) { .note-bar .wide-only { display: none; } }
+.site-header {
+  position: sticky; inset-block-start: 0; z-index: 30;
+  background: color-mix(in srgb, var(--paper) 94%, transparent);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border-block-end: 1px solid var(--rule);
+}
+.header-in { position: relative; display: flex; align-items: center; gap: 12px; min-block-size: 64px; }
+.logo { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); min-block-size: 44px; }
+.logo svg { inline-size: 28px; block-size: 28px; flex: none; }
+.wordmark { font-family: var(--font-logo); font-weight: 500; font-size: 19px; letter-spacing: 0.04em; white-space: nowrap; }
+.main-nav { display: none; margin-inline-start: auto; }
+.main-nav ul { display: flex; gap: 30px; list-style: none; margin: 0; padding: 0; }
+.main-nav a { text-decoration: none; font-weight: 500; color: var(--ink-2); padding-block: 10px; }
+.main-nav a:hover, .main-nav a[aria-current="page"] { color: var(--ink); text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 8px; }
+.header-cta { display: none; }
+.menu { margin-inline-start: auto; }
+.menu summary { list-style: none; display: grid; place-items: center; inline-size: 44px; block-size: 44px; border-radius: var(--pill); cursor: pointer; }
+.menu summary::-webkit-details-marker { display: none; }
+.menu summary:hover { background: var(--paper-2); }
+.menu[open] summary { background: var(--paper-2); }
+.menu-panel {
+  position: absolute; inset-inline: calc(var(--gutter) * -1); inset-block-start: 100%;
+  background: var(--paper); border-block-end: 1px solid var(--rule);
+  padding: 8px var(--gutter) 24px; box-shadow: 0 18px 30px var(--shade);
+}
+.menu-panel ul { list-style: none; margin: 0; padding: 0; }
+.menu-panel a { display: block; padding-block: 14px; border-block-end: 1px solid var(--rule); font-family: var(--font-display); font-size: 24px; text-decoration: none; }
+.menu-panel .btn { margin-block-start: 20px; inline-size: 100%; }
+@media (min-width: 480px) { .header-cta { display: inline-flex; margin-inline-start: auto; } .menu { margin-inline-start: 0; } }
+@media (min-width: 1040px) {
+  .header-in { min-block-size: 82px; gap: 32px; }
+  .logo svg { inline-size: 38px; block-size: 38px; }
+  .wordmark { font-size: 25px; }
+  .main-nav { display: block; }
+  .header-cta { margin-inline-start: 0; }
+  .menu { display: none; }
+}
+
+/* ---------- breadcrumbs ---------- */
+.crumbs { font-size: 15px; color: var(--ink-3); padding-block: 20px 0; }
+.crumbs ol { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 0; padding: 0; }
+.crumbs li + li::before { content: "/"; margin-inline-end: 6px; color: var(--rule); }
+.crumbs a { color: var(--ink-2); text-underline-offset: 4px; }
+
+/* ---------- product cards (home and shop) ---------- */
+.card a { display: block; text-decoration: none; color: inherit; border-radius: var(--radius); }
+.card-photo { border-radius: var(--radius); overflow: hidden; background: var(--paper-2); aspect-ratio: 4 / 5; }
+.card-photo img { inline-size: 100%; block-size: 100%; object-fit: cover; }
+@media (prefers-reduced-motion: no-preference) {
+  .card-photo img { transition: transform 0.7s cubic-bezier(.2,.7,.2,1); }
+  .card a:hover .card-photo img { transform: scale(1.035); }
+}
+.card h3 { font-size: 21px; margin-block-start: 14px; }
+.card a:hover h3 { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 5px; }
+.card-sub { margin-block-start: 3px; color: var(--ink-3); font-size: 15.5px; }
+.card-price { margin-block-start: 6px; font-weight: 700; font-variant-numeric: lining-nums tabular-nums; }
+.card-price small { font-weight: 400; font-size: 14px; color: var(--ink-3); margin-inline-start: 4px; }
+@media (max-width: 599px) {
+  .card h3 { font-size: 18px; margin-block-start: 10px; }
+  .card-sub { font-size: 14.5px; }
+  .card-photo { border-radius: 14px; }
+}
+
+/* ---------- footer ---------- */
+.site-footer { background: var(--paper-2); border-block-start: 1px solid var(--rule); padding-block: 64px 32px; margin-block-start: 0; }
+.signoff { font-size: clamp(34px, 4.6vw, 56px); margin-block-end: 40px; transform: rotate(-1.5deg); transform-origin: 0 50%; }
+.footer-grid { display: grid; gap: 40px; }
+@media (min-width: 900px) { .footer-grid { grid-template-columns: 1.2fr 0.8fr 1.3fr 1fr; gap: 48px; } }
+.site-footer h2 { font-family: var(--font-body); font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-2); margin-block-end: 14px; }
+.site-footer ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.site-footer ul a { display: inline-block; padding-block: 6px; text-decoration: none; }
+.site-footer ul a:hover { text-decoration: underline; text-underline-offset: 4px; }
+.footer-about p { color: var(--ink-2); margin-block-start: 14px; max-inline-size: 34ch; }
+.footer-small { font-size: 15px; color: var(--ink-2); }
+.remind { display: grid; gap: 10px; margin-block-start: 14px; }
+.remind label { font-weight: 500; font-size: 15px; }
+.remind-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.remind input { flex: 1 1 200px; min-block-size: 48px; border: 1.5px solid var(--ink-3); border-radius: var(--pill); padding-inline: 18px; background: var(--card); }
+.remind .btn { min-block-size: 48px; }
+.status { font-size: 15px; color: var(--stem); font-weight: 500; min-block-size: 1.4em; }
+.fine { margin-block-start: 48px; padding-block-start: 20px; border-block-start: 1px solid var(--rule); font-size: 14px; color: var(--ink-3); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; }
+
+
+body { padding-block-end: 88px; }
+@media (min-width: 960px) { body { padding-block-end: 0; } }
+.pdp { display: grid; gap: 28px; padding-block: 18px 24px; }
+.pdp > * { min-inline-size: 0; }
+@media (min-width: 960px) { .pdp { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 64px; padding-block: 28px 48px; align-items: start; } }
+
+/* ---------- gallery: two photographs and your card ---------- */
+.gallery {
+  display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory;
+  margin-inline: calc(var(--gutter) * -1); padding-inline: var(--gutter); scroll-padding-inline: var(--gutter);
+  scrollbar-width: none;
+}
+.gallery::-webkit-scrollbar { display: none; }
+.g { flex: 0 0 86%; margin: 0; scroll-snap-align: start; aspect-ratio: 4 / 5; border-radius: var(--radius); overflow: hidden; background: var(--paper-2); position: relative; }
+.g img { inline-size: 100%; block-size: 100%; object-fit: cover; }
+.g-card { display: grid; place-items: center; background: var(--sage-wash); padding: 24px; }
+.card-paper {
+  inline-size: 86%; aspect-ratio: 5 / 6; background: var(--card); border-radius: 4px; padding: 26px 24px;
+  display: flex; flex-direction: column; box-shadow: 0 2px 2px var(--shade), 0 22px 40px -16px var(--shade);
+  transform: rotate(-2.5deg);
+}
+.card-paper .mark { inline-size: 26px; block-size: 26px; margin-block-end: 14px; }
+.card-msg { font-size: 27px; line-height: 1.25; color: var(--ink); white-space: pre-wrap; overflow-wrap: anywhere; flex: 1; overflow: hidden; }
+.card-msg.is-empty { color: var(--ink-3); }
+.card-from { font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); margin-block-start: 10px; }
+.g-label { position: absolute; inset-block-end: 12px; inset-inline-start: 12px; background: var(--card); color: var(--ink-2); font-size: 14px; font-weight: 500; padding: 4px 12px; border-radius: var(--pill); }
+.dots { display: flex; justify-content: center; gap: 4px; margin-block-start: 10px; }
+.dots button { inline-size: 44px; block-size: 32px; border: 0; background: none; cursor: pointer; display: grid; place-items: center; }
+.dots button::before { content: ""; inline-size: 8px; block-size: 8px; border-radius: 50%; background: var(--rule); transition: inline-size 0.2s; }
+.dots button[aria-current="true"]::before { background: var(--accent); inline-size: 22px; border-radius: 4px; }
+.thumbs { display: none; }
+@media (min-width: 960px) {
+  /* On a desktop the pictures stay in view while the buyer works down the form: one large frame,
+     three thumbnails, and the frame turns into the card while the card is being written. */
+  .gallery-col { position: sticky; inset-block-start: 104px; }
+  .gallery { display: block; overflow: visible; margin-inline: 0; padding-inline: 0; }
+  .g { display: none; inline-size: 100%; aspect-ratio: auto; block-size: min(calc(100vh - 250px), 820px); min-block-size: 460px; border-radius: 24px; }
+  .g.is-active { display: grid; }
+  .g-main.is-active { display: block; }
+  .g-detail { place-items: center; background: var(--paper-2); }
+  .g-detail img { inline-size: auto; block-size: 84%; aspect-ratio: 4 / 5; max-inline-size: 80%; border: 12px solid var(--card); border-block-end-width: 40px; border-radius: 3px; box-shadow: 0 24px 44px -18px var(--shade); transform: rotate(2deg); }
+  .card-paper { inline-size: min(64%, 400px); }
+  .card-msg { font-size: 30px; }
+  .dots { display: none; }
+  .thumbs { display: flex; gap: 12px; margin-block-start: 14px; }
+  .thumbs button { inline-size: 76px; block-size: 92px; padding: 0; border: 0; border-radius: 12px; overflow: hidden; cursor: pointer; background: var(--paper-2); box-shadow: inset 0 0 0 1.5px var(--rule); display: grid; place-items: center; }
+  .thumbs button img { inline-size: 100%; block-size: 100%; object-fit: cover; }
+  .thumbs button[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--paper), 0 0 0 4px var(--ink); }
+  .thumbs .thumb-card { background: var(--sage-wash); }
+  .thumbs .thumb-card span { inline-size: 46px; block-size: 56px; background: var(--card); border-radius: 2px; transform: rotate(-4deg); box-shadow: 0 6px 10px -4px var(--shade); font-family: var(--font-hand); font-size: 15px; color: var(--accent); display: grid; place-items: center; }
+}
+
+/* ---------- the buy column: a short letter in four lines ---------- */
+.buy h1 { font-size: clamp(44px, 5vw, 68px); font-weight: 330; line-height: 0.98; letter-spacing: -0.025em; font-variation-settings: "SOFT" 100, "opsz" 144; }
+.p-short { margin-block-start: 12px; color: var(--ink-2); font-size: 18px; }
+.p-price { margin-block-start: 18px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+.p-price strong { font-family: var(--font-display); font-weight: 400; font-size: 34px; font-variant-numeric: lining-nums; }
+.incl { font-size: 15px; color: var(--stem); font-weight: 700; }
+.step { border: 0; margin: 0; padding: 0; margin-block-start: 34px; min-inline-size: 0; }
+.step legend { display: flex; align-items: center; gap: 12px; padding: 0; margin-block-end: 14px; font-family: var(--font-display); font-size: 23px; font-variation-settings: "SOFT" 100; }
+.n { display: inline-grid; place-items: center; inline-size: 30px; block-size: 30px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--mark, var(--accent)); color: var(--mark, var(--accent)); font-family: var(--font-body); font-size: 15px; font-weight: 700; }
+.small { font-size: 15px; color: var(--ink-2); line-height: 1.45; }
+
+.tiers { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 10px; }
+.tier { position: relative; display: grid; gap: 2px; padding: 14px 14px 12px; border-radius: var(--radius-s); background: var(--card); box-shadow: inset 0 0 0 1.5px var(--rule); cursor: pointer; }
+.tier:hover { box-shadow: inset 0 0 0 1.5px var(--ink-3); }
+.tier input, .day input { position: absolute; opacity: 0; inline-size: 1px; block-size: 1px; }
+.tier:has(input:checked) { box-shadow: inset 0 0 0 2px var(--ink); background: var(--paper); }
+.tier:has(input:checked)::after { content: ""; position: absolute; inset-block-start: 12px; inset-inline-end: 12px; inline-size: 10px; block-size: 10px; border-radius: 50%; background: var(--accent); }
+.tier:has(input:focus-visible), .day:has(input:focus-visible), .addon:has(input:focus-visible) { outline: 2.5px solid var(--accent); outline-offset: 2px; }
+.tier-label { font-weight: 700; }
+.tier-price { font-size: 15px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+
+.dest-line { margin-block-end: 12px; font-size: 16px; color: var(--ink-2); }
+.dest-line a { color: var(--link, var(--accent)); font-weight: 700; text-underline-offset: 4px; }
+.days { display: grid; grid-auto-flow: column; grid-auto-columns: 66px; gap: 8px; overflow-x: auto; scroll-snap-type: x proximity; padding-block: 4px 10px; margin-inline: calc(var(--gutter) * -1); padding-inline: var(--gutter); scroll-padding-inline: var(--gutter); }
+@media (min-width: 960px) { .days { margin-inline: 0; padding-inline: 2px; } }
+.day { position: relative; scroll-snap-align: start; display: grid; justify-items: center; align-content: start; gap: 0; padding: 10px 4px 10px; border-radius: 12px; background: var(--card); box-shadow: inset 0 0 0 1.5px var(--rule); cursor: pointer; min-block-size: 92px; }
+.day:hover { box-shadow: inset 0 0 0 1.5px var(--ink-3); }
+.day-dow { font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
+.day-num { font-family: var(--font-display); font-size: 28px; line-height: 1.15; }
+.day-mon { font-size: 13px; color: var(--ink-3); }
+.day-tag { position: absolute; inset-block-start: -9px; inset-inline: 2px; text-align: center; font-family: var(--font-hand); font-size: 15px; font-weight: 600; color: var(--accent); background: var(--paper); line-height: 1; padding-block: 1px; border-radius: 4px; }
+.day-named { box-shadow: inset 0 0 0 1.5px var(--accent); }
+.day:has(input:checked) { background: var(--ink); box-shadow: none; }
+.day:has(input:checked) .day-dow, .day:has(input:checked) .day-mon, .day:has(input:checked) .day-num { color: var(--paper); }
+.date-more { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-block-start: 8px; }
+.link-btn { border: 0; background: none; padding: 10px 0; color: var(--link, var(--accent)); font-weight: 700; text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
+.date-more input { min-block-size: 46px; border-radius: var(--radius-s); border: 1.5px solid var(--rule); background: var(--card); padding-inline: 12px; }
+.err { margin-block-start: 10px; padding: 10px 14px; border-radius: var(--radius-s); background: var(--blush); color: var(--accent-strong); font-weight: 700; font-size: 16px; }
+.step .small { margin-block-start: 10px; }
+
+.card-write { position: relative; margin-block-start: 12px; }
+.card-write textarea {
+  display: block; inline-size: 100%; min-block-size: 190px; resize: vertical; border: 0; border-radius: 6px;
+  padding: 18px 22px; font-family: var(--font-hand); font-size: 27px; line-height: 38px; color: var(--ink);
+  background-color: var(--card);
+  background-image: repeating-linear-gradient(to bottom, transparent 0 37px, var(--rule) 37px 38px);
+  background-position: 0 17px; background-attachment: local;
+  box-shadow: inset 0 0 0 1.5px var(--rule), 0 14px 30px -18px var(--shade);
+}
+.card-write textarea::placeholder { color: var(--ink-3); }
+.card-write textarea:focus { outline: 2.5px solid var(--accent); outline-offset: 2px; }
+
+.addons { display: grid; gap: 8px; }
+.addon { position: relative; display: grid; grid-template-columns: auto 1fr auto; gap: 4px 14px; align-items: start; padding: 14px 16px; border-radius: var(--radius-s); background: var(--card); box-shadow: inset 0 0 0 1.5px var(--rule); cursor: pointer; }
+.addon:hover { box-shadow: inset 0 0 0 1.5px var(--ink-3); }
+.addon input { position: absolute; opacity: 0; inline-size: 1px; block-size: 1px; }
+.addon-box { inline-size: 22px; block-size: 22px; border-radius: 6px; box-shadow: inset 0 0 0 1.5px var(--ink-3); margin-block-start: 2px; display: grid; place-items: center; }
+.addon:has(input:checked) { box-shadow: inset 0 0 0 2px var(--ink); }
+.addon:has(input:checked) .addon-box { background: var(--accent); box-shadow: none; }
+.addon:has(input:checked) .addon-box::after { content: ""; inline-size: 6px; block-size: 11px; border-inline-end: 2px solid var(--card); border-block-end: 2px solid var(--card); transform: translateY(-1px) rotate(45deg); }
+.addon-text { display: grid; }
+.addon-name { font-weight: 700; }
+.addon-desc { font-size: 15px; color: var(--ink-2); line-height: 1.4; }
+.addon-price { font-weight: 500; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.addon-included { cursor: default; }
+.addon-included .addon-box { background: var(--stem); box-shadow: none; }
+.addon-included .addon-box::after { content: ""; inline-size: 6px; block-size: 11px; border-inline-end: 2px solid var(--card); border-block-end: 2px solid var(--card); transform: translateY(-1px) rotate(45deg); }
+.addon-included .addon-price { color: var(--stem); font-weight: 700; }
+.allergen { font-size: 15px; color: var(--accent-strong); margin-block-start: 6px; }
+
+.summary { margin-block-start: 34px; padding: 22px 22px 18px; border-radius: var(--radius); background: var(--paper-2); }
+.summary dl { margin: 0; display: grid; gap: 8px; }
+.summary dl div { display: flex; justify-content: space-between; gap: 16px; font-size: 16px; }
+.summary dt { color: var(--ink-2); }
+.summary dd { margin: 0; font-variant-numeric: tabular-nums; text-align: end; }
+.summary .incl-row dd { color: var(--stem); font-weight: 700; }
+.total { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin-block-start: 14px; padding-block-start: 14px; border-block-start: 1px solid var(--rule); }
+.total span { font-weight: 700; }
+.total strong { font-family: var(--font-display); font-weight: 400; font-size: 32px; font-variant-numeric: lining-nums tabular-nums; }
+.btn-send { inline-size: 100%; min-block-size: 60px; font-size: 19px; margin-block-start: 16px; }
+.demo { margin-block-start: 14px; font-size: 15px; color: var(--ink-2); line-height: 1.45; padding-inline-start: 14px; border-inline-start: 3px solid var(--butter); }
+.demo strong { color: var(--ink); }
+
+/* ---------- about, promise, more ---------- */
+.about { display: grid; gap: 40px; padding-block: clamp(48px, 7vw, 96px); border-block-start: 1px solid var(--rule); margin-block-start: 32px; }
+@media (min-width: 960px) { .about { grid-template-columns: 7fr 5fr; gap: 64px; } }
+.about h2 { font-size: clamp(30px, 3.4vw, 44px); }
+.about-text { margin-block-start: 18px; font-size: 19px; color: var(--ink-2); max-inline-size: 58ch; }
+.excl { margin-block-start: 18px; padding: 14px 18px; border-radius: var(--radius-s); background: var(--paper-2); font-size: 16px; color: var(--ink-2); }
+.promise-list { list-style: none; margin: 18px 0 0; padding: 0; display: grid; gap: 18px; }
+.promise-list li { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; }
+.promise-list svg { inline-size: 26px; block-size: 26px; color: var(--mark, var(--accent)); grid-row: span 2; margin-block-start: 2px; }
+.promise-list h3 { font-family: var(--font-body); font-size: 17px; font-weight: 700; }
+.promise-list p { color: var(--ink-2); font-size: 16px; }
+.related { padding-block-end: clamp(64px, 8vw, 112px); }
+.related .section-head { margin-block-end: 28px; }
+.related-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 14px; }
+@media (min-width: 700px) { .related-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px 24px; } }
+@media (min-width: 1100px) { .related-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); } .related-grid .card h3 { font-size: 19px; } }
+
+/* ---------- the phone's send bar ---------- */
+.sticky-buy { position: fixed; inset-inline: 0; inset-block-end: 0; z-index: 40; display: flex; align-items: center; gap: 14px; padding: 12px var(--gutter) calc(12px + env(safe-area-inset-bottom)); background: var(--card); border-block-start: 1px solid var(--rule); box-shadow: 0 -10px 24px -14px var(--shade); }
+.sticky-buy p { display: grid; line-height: 1.15; }
+.sticky-buy small { font-size: 13px; color: var(--ink-3); }
+.sticky-buy strong { font-family: var(--font-display); font-weight: 400; font-size: 23px; font-variant-numeric: lining-nums tabular-nums; }
+.sticky-buy .btn { margin-inline-start: auto; flex: 1; max-inline-size: 220px; }
+@media (min-width: 960px) { .sticky-buy { display: none; } }
+
+/* ---------- the recap ---------- */
+dialog { inline-size: min(560px, calc(100% - 24px)); max-block-size: calc(100% - 24px); border: 0; padding: 0; border-radius: 10px; background: var(--card); color: var(--ink); box-shadow: 0 30px 80px -20px rgb(43 32 27 / 0.45); }
+dialog::backdrop { background: rgb(43 32 27 / 0.45); }
+.recap { padding: 28px 26px 26px; background-image: repeating-linear-gradient(to bottom, transparent 0 39px, var(--paper-2) 39px 40px); }
+.recap h2 { font-size: 34px; }
+.recap dl { margin: 20px 0 0; display: grid; gap: 10px; }
+.recap dl div { display: grid; grid-template-columns: 70px 1fr; gap: 12px; }
+.recap dt { font-size: 13px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3); padding-block-start: 4px; }
+.recap dd { margin: 0; }
+.recap blockquote { margin: 16px 0 0; padding: 14px 18px; background: var(--paper); border-radius: 6px; font-size: 27px; color: var(--ink); white-space: pre-wrap; transform: rotate(-0.8deg); }
+.recap .total { margin-block-start: 18px; }
+.recap-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-block-start: 22px; }
+.recap-actions .btn { flex: 1 1 auto; }
+.x { position: absolute; inset-block-start: 10px; inset-inline-end: 10px; inline-size: 44px; block-size: 44px; border: 0; background: none; border-radius: 50%; cursor: pointer; font-size: 26px; line-height: 1; color: var(--ink-2); }
+.x:hover { background: var(--paper-2); }
+/* ---------- Variant: A's letter home, in direction C's colours ---------- */
+:root {
+  --paper: oklch(99.8% 0.002 85);      /* C milk */
+  --paper-2: oklch(98.9% 0.006 85);      /* C cream */
+  --card: oklch(100% 0 0);
+  --blush: oklch(93.5% 0.04 30);       /* poppy, soft */
+  --butter: oklch(96.5% 0.055 95);     /* sunflower, soft */
+  --sage-wash: oklch(94% 0.03 250);    /* cornflower, soft */
+  --leaf-wash: oklch(94.5% 0.04 155);
+  --rule: oklch(89% 0.02 285);
+  --ink: oklch(25% 0.06 285);          /* plum-navy, 15.6:1 on milk */
+  --ink-2: oklch(42% 0.05 285);        /* 8.2:1 */
+  --ink-3: oklch(50% 0.04 285);        /* 5.8:1 on milk, 4.9:1 on poppy-soft */
+  --accent: oklch(54% 0.2 30);         /* poppy: Send, prices, the italic phrase. 5.4:1; card on it 5.5:1 */
+  --accent-strong: oklch(47% 0.19 30);
+  --stem: oklch(44% 0.1 155);          /* leaf: "included" */
+  --sky: oklch(48% 0.16 262);          /* cornflower: links, eyebrows, postmark. 6.5:1 */
+  --sky-strong: oklch(40% 0.15 262);
+  --sun: oklch(87% 0.15 92);           /* sunflower: only on ink, or as a tape and highlight */
+  --shade: oklch(25% 0.06 285 / 0.12);
+  --logo-ink: oklch(19% 0.01 250);     /* the logo, exactly as it ships */
+  --logo-accent: oklch(42% 0.1 155);
+
+  --eyebrow: var(--sky);
+  --link: var(--sky);
+  --link-strong: var(--sky-strong);
+  --mark: var(--sky);
+  --on-dark: var(--sun);
+  --airmail: repeating-linear-gradient(135deg,
+      var(--accent) 0 12px, var(--card) 12px 18px,
+      var(--sky) 18px 30px, var(--card) 30px 36px);
+}
+
+/* The airmail edge, used three times: the letter, the recap and the foot of the page. */
+.letter::before, .recap::before, .site-footer::before {
+  content: ""; position: absolute; inset-inline: 0; inset-block-start: 0; block-size: 7px; background: var(--airmail);
+}
+.letter::before { border-start-start-radius: 6px; border-start-end-radius: 6px; }
+.recap { position: relative; padding-block-start: 34px; }
+.site-footer { position: relative; border-block-start: 0; }
+.site-footer::before { block-size: 9px; }
+
+/* Stamps in the three flower colours, and the P.S. taped on with sunflower tape. */
+.t-paper { --tint: var(--leaf-wash); }
+.ps::before { background: color-mix(in oklab, var(--sun) 75%, transparent); }
+.chip[aria-pressed="true"] { background: var(--sky); color: var(--card); }
+.hero h1 em { text-decoration: underline; text-decoration-color: var(--sun); text-decoration-thickness: 0.09em; text-underline-offset: 0.1em; text-decoration-skip-ink: none; }
+.day:has(input:checked) { background: var(--sky); }
+.tier:has(input:checked) { box-shadow: inset 0 0 0 2px var(--sky); }
+.addon:has(input:checked) { box-shadow: inset 0 0 0 2px var(--sky); }
+.summary { background: var(--butter); }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="note-bar" role="note"><p><strong>A note from us:</strong> ordering opens once we have chosen our florists in Poland.<span class="wide-only"> Every price here is the one we will charge, with VAT and delivery inside it.</span></p></div>
+<header class="site-header">
+  <div class="wrap header-in">
+    <a class="logo" href="home.html" aria-label="Flowers Overseas, home"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--logo-accent, var(--stem))"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--logo-ink, var(--ink))" stroke-width="2.4" stroke-linecap="round" fill="none"/><g transform="translate(31 16)" style="stroke:var(--logo-ink, var(--ink))" stroke-width="2.2" fill="none"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--logo-accent, var(--stem))" stroke="none"/></g></svg><span class="wordmark" aria-hidden="true">Flowers Overseas</span></a>
+    <nav class="main-nav" aria-label="Main"><ul><li><a href="shop.html">Flowers for Poland</a></li><li><a href="home.html#occasions">Occasions</a></li><li><a href="home.html#dates">Dates in Poland</a></li><li><a href="home.html#how">How it works</a></li></ul></nav>
+    <a class="btn btn-small header-cta" href="shop.html">Send flowers</a>
+    <details class="menu">
+      <summary aria-label="Menu"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M4 8h16M4 16h16"/></svg></summary>
+      <nav class="menu-panel" aria-label="Main, small screens"><ul><li><a href="shop.html">Flowers for Poland</a></li><li><a href="home.html#occasions">Occasions</a></li><li><a href="home.html#dates">Dates in Poland</a></li><li><a href="home.html#how">How it works</a></li></ul><a class="btn" href="shop.html">Send flowers to Poland</a></nav>
+    </details>
+  </div>
+</header>
+<main id="main">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb"><ol>
+      <li><a href="home.html">Home</a></li>
+      <li><a href="shop.html">Poland</a></li>
+      <li><a id="crumb-type" href="shop.html?type=bouquet">Hand-tied bouquets</a></li>
+      <li><span aria-current="page" id="crumb-name">Amber Hour</span></li>
+    </ol></nav>
+
+    <div class="pdp">
+      <section class="gallery-col" aria-label="Photographs and your card">
+        <div class="gallery" id="gallery">
+          <figure class="g g-main is-active" id="g-main"><img src="https://media.flowersoverseas.com/media/fo-bq-001-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-001-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-001-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-001-hero/828.webp 828w" sizes="(min-width: 900px) 56vw, 86vw" alt="A hand-tied bouquet of orange garden roses with eucalyptus, wrapped in kraft paper, on a warm grey background" width="800" height="1000" fetchpriority="high"></figure>
+          <figure class="g g-detail" id="g-detail"><img src="https://media.flowersoverseas.com/media/fo-bq-001-detail/384.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-001-detail/384.webp 384w" sizes="(min-width: 900px) 27vw, 86vw" alt="Close view of three open orange rose heads with eucalyptus leaves beside them" width="800" height="1000" loading="lazy" decoding="async"><figcaption class="g-label">Close up</figcaption></figure>
+          <figure class="g g-card" aria-labelledby="card-cap">
+            <div class="card-paper">
+              <svg class="mark" viewBox="0 0 48 48" fill="none" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--logo-accent, var(--stem))"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--logo-ink, var(--ink))" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--logo-ink, var(--ink))" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--logo-accent, var(--stem))" stroke="none"/></g></svg>
+              <p class="card-msg hand is-empty" id="card-preview">Your words will appear here, as they will be printed.</p>
+              <p class="card-from">Printed on our card &middot; included</p>
+            </div>
+            <figcaption class="g-label" id="card-cap">Your card, printed</figcaption>
+          </figure>
+        </div>
+        <div class="thumbs" role="group" aria-label="Choose a picture">
+          <button type="button" aria-pressed="true" aria-label="The bouquet"><img id="t-main" src="https://media.flowersoverseas.com/media/fo-bq-001-hero/384.webp" alt="" width="76" height="92"></button>
+          <button type="button" aria-pressed="false" aria-label="Close up"><img id="t-detail" src="https://media.flowersoverseas.com/media/fo-bq-001-detail/384.webp" alt="" width="76" height="92"></button>
+          <button type="button" aria-pressed="false" aria-label="Your card" class="thumb-card"><span aria-hidden="true">Dear…</span></button>
+        </div>
+        <div class="dots" role="group" aria-label="Choose a picture">
+          <button type="button" aria-current="true" aria-label="The bouquet"></button>
+          <button type="button" aria-current="false" aria-label="Close up"></button>
+          <button type="button" aria-current="false" aria-label="Your card"></button>
+        </div>
+      </section>
+
+      <form class="buy" id="buy" novalidate aria-labelledby="p-name">
+        <p class="eyebrow" id="p-type">Hand-tied bouquet &middot; for Poland</p>
+        <h1 id="p-name">Amber Hour</h1>
+        <p class="p-short" id="p-short">Orange roses hand-tied with eucalyptus and a few sprigs of seasonal foliage, wrapped in kraft paper.</p>
+        <p class="p-price"><strong id="p-price">229.00 PLN</strong><span class="incl">Delivery and VAT included</span></p>
+
+        <fieldset class="step">
+          <legend><span class="n" aria-hidden="true">1</span>Which size?</legend>
+          <div class="tiers" id="tiers"><label class="tier"><input type="radio" name="tier" value="stems_12" data-price="19900" data-label="12 stems"><span class="tier-label">12 stems</span><span class="tier-price">199.00 PLN</span></label><label class="tier"><input type="radio" name="tier" value="stems_18" data-price="22900" data-label="18 stems" checked><span class="tier-label">18 stems</span><span class="tier-price">229.00 PLN</span></label><label class="tier"><input type="radio" name="tier" value="stems_24" data-price="25900" data-label="24 stems"><span class="tier-label">24 stems</span><span class="tier-price">259.00 PLN</span></label></div>
+        </fieldset>
+
+        <fieldset class="step" id="date-step">
+          <legend><span class="n" aria-hidden="true">2</span>When should it arrive?</legend>
+          <p class="dest-line">Where is it going? <strong>Poland</strong> &middot; <a href="home.html#send">change destination</a></p>
+          <div class="days" id="days">
+<label class="day">
+  <input type="radio" name="date" value="2026-10-04" data-long="Sunday 4 October">
+  <span class="day-dow">Sun</span><span class="day-num">4</span><span class="day-mon">Oct</span>
+</label>
+<label class="day">
+  <input type="radio" name="date" value="2026-10-05" data-long="Monday 5 October">
+  <span class="day-dow">Mon</span><span class="day-num">5</span><span class="day-mon">Oct</span>
+</label>
+<label class="day">
+  <input type="radio" name="date" value="2026-10-06" data-long="Tuesday 6 October">
+  <span class="day-dow">Tue</span><span class="day-num">6</span><span class="day-mon">Oct</span>
+</label>
+<label class="day">
+  <input type="radio" name="date" value="2026-10-07" data-long="Wednesday 7 October">
+  <span class="day-dow">Wed</span><span class="day-num">7</span><span class="day-mon">Oct</span>
+</label>
+<label class="day">
+  <input type="radio" name="date" value="2026-10-08" data-long="Thursday 8 October">
+  <span class="day-dow">Thu</span><span class="day-num">8</span><span class="day-mon">Oct</span>
+</label>
+<label class="day">
+  <input type="radio" name="date" value="2026-10-09" data-long="Friday 9 October">
+  <span class="day-dow">Fri</span><span class="day-num">9</span><span class="day-mon">Oct</span>
+</label>
+<label class="day">
+  <input type="radio" name="date" value="2026-10-10" data-long="Saturday 10 October">
+  <span class="day-dow">Sat</span><span class="day-num">10</span><span class="day-mon">Oct</span>
+</label>
+<label class="day">
+  <input type="radio" name="date" value="2026-10-11" data-long="Sunday 11 October">
+  <span class="day-dow">Sun</span><span class="day-num">11</span><span class="day-mon">Oct</span>
+</label>
+<label class="day">
+  <input type="radio" name="date" value="2026-10-12" data-long="Monday 12 October">
+  <span class="day-dow">Mon</span><span class="day-num">12</span><span class="day-mon">Oct</span>
+</label>
+<label class="day">
+  <input type="radio" name="date" value="2026-10-13" data-long="Tuesday 13 October">
+  <span class="day-dow">Tue</span><span class="day-num">13</span><span class="day-mon">Oct</span>
+</label>
+<label class="day day-named">
+  <input type="radio" name="date" value="2026-10-14" data-long="Wednesday 14 October">
+  <span class="day-dow">Wed</span><span class="day-num">14</span><span class="day-mon">Oct</span><span class="day-tag">Teachers' Day</span>
+</label>
+<label class="day">
+  <input type="radio" name="date" value="2026-10-15" data-long="Thursday 15 October">
+  <span class="day-dow">Thu</span><span class="day-num">15</span><span class="day-mon">Oct</span>
+</label>
+<label class="day">
+  <input type="radio" name="date" value="2026-10-16" data-long="Friday 16 October">
+  <span class="day-dow">Fri</span><span class="day-num">16</span><span class="day-mon">Oct</span>
+</label>
+<label class="day">
+  <input type="radio" name="date" value="2026-10-17" data-long="Saturday 17 October">
+  <span class="day-dow">Sat</span><span class="day-num">17</span><span class="day-mon">Oct</span>
+</label>
+          </div>
+          <div class="date-more">
+            <button type="button" class="link-btn" id="other-btn" aria-expanded="false" aria-controls="other-wrap">A later date</button>
+            <span id="other-wrap" hidden><label class="visually-hidden" for="other">Any date</label><input type="date" id="other" min="2026-10-04" max="2027-10-03"></span>
+          </div>
+          <p class="err" id="date-err" role="alert" hidden>Choose the day it should arrive, and we will hold it to that day.</p>
+          <p class="small">This is how delivery dates will work in Poland. We are not taking orders yet.</p>
+        </fieldset>
+
+        <fieldset class="step">
+          <legend><span class="n" aria-hidden="true">3</span>What should the card say?</legend>
+          <p class="small">Printed on our card and tucked into the bouquet. Write it in Polish if that is how you talk to them; ą, ł and every other letter print exactly as you type them.</p>
+          <div class="card-write"><label class="visually-hidden" for="msg">Card message</label><textarea id="msg" rows="5" maxlength="400" placeholder="Dear Mum, …"></textarea></div>
+        </fieldset>
+
+        <fieldset class="step">
+          <legend><span class="n" aria-hidden="true">4</span>Add something</legend>
+          <div class="addons">
+            <div class="addon addon-included"><span class="addon-box" aria-hidden="true"></span><span class="addon-text"><span class="addon-name">Printed card</span><span class="addon-desc">Your message, printed on our card and tucked into the bouquet.</span></span><span class="addon-price">included</span></div>
+<label class="addon">
+  <input type="checkbox" name="addon" value="chocolates" data-price="2500" data-name="Box of chocolates">
+  <span class="addon-box" aria-hidden="true"></span>
+  <span class="addon-text"><span class="addon-name">Box of chocolates</span><span class="addon-desc">A box of chocolates, sourced by the florist who makes the bouquet.</span></span>
+  <span class="addon-price">+ 25.00 PLN</span>
+</label><label class="addon">
+  <input type="checkbox" name="addon" value="vase" data-price="3500" data-name="Glass vase">
+  <span class="addon-box" aria-hidden="true"></span>
+  <span class="addon-text"><span class="addon-name">Glass vase</span><span class="addon-desc">A plain glass vase, so the flowers can go straight into water.</span></span>
+  <span class="addon-price">+ 35.00 PLN</span>
+</label><label class="addon">
+  <input type="checkbox" name="addon" value="balloon" data-price="1800" data-name="Balloon">
+  <span class="addon-box" aria-hidden="true"></span>
+  <span class="addon-text"><span class="addon-name">Balloon</span><span class="addon-desc">One helium balloon, tied to the bouquet on delivery.</span></span>
+  <span class="addon-price">+ 18.00 PLN</span>
+</label><label class="addon">
+  <input type="checkbox" name="addon" value="plush" data-price="3900" data-name="Soft toy">
+  <span class="addon-box" aria-hidden="true"></span>
+  <span class="addon-text"><span class="addon-name">Soft toy</span><span class="addon-desc">A small soft toy, chosen by the florist from what they have in stock.</span></span>
+  <span class="addon-price">+ 39.00 PLN</span>
+</label>
+          </div>
+          <p class="allergen" id="allergen" hidden>Contains food. Please check for allergies before you order.</p>
+        </fieldset>
+
+        <div class="summary" aria-labelledby="sum-h">
+          <h2 class="visually-hidden" id="sum-h">What you pay</h2>
+          <dl id="sum-list">
+            <div><dt id="s-item">Amber Hour, 18 stems</dt><dd id="s-item-price">229.00 PLN</dd></div>
+            <div class="incl-row"><dt>Printed card</dt><dd>included</dd></div>
+            <div class="incl-row"><dt>Delivery</dt><dd>included</dd></div>
+            <div class="incl-row"><dt>VAT</dt><dd>included</dd></div>
+          </dl>
+          <p class="total"><span>You pay</span><strong id="s-total">229.00 PLN</strong></p>
+        </div>
+        <button class="btn btn-send" type="submit">Send these flowers</button>
+        <p class="demo"><strong>Ordering is not open yet.</strong> We are still choosing florists in Poland. When we have one, this is the price you will pay — nothing is added at a later step.</p>
+      </form>
+    </div>
+
+    <div class="about">
+      <section aria-labelledby="about-h">
+        <h2 id="about-h">About <span id="about-name">Amber Hour</span></h2>
+        <p class="about-text" id="p-desc">Orange roses hand-tied with eucalyptus and a few sprigs of seasonal foliage, wrapped in kraft paper. Eighteen stems as standard, with twelve and twenty-four stem sizes on the same page. Warm rather than loud, so it reads as well for a birthday as for a thank you. The roses are always in it; the greenery and filler stems follow the morning market. Every order will be made by hand and delivered in person by our florist in the recipient&#x27;s city.</p>
+        <p class="excl" id="p-excl">What the price does not include: a vase. The bouquet arrives wrapped, ready to go into water.</p>
+      </section>
+      <section aria-labelledby="promise-h">
+        <h2 id="promise-h">What we promise</h2>
+        <ul class="promise-list">
+          <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 24V12"/><path d="M13 12c0-5 3-8 9-9-1 6-4 9-9 9Z"/><path d="M13 16c0-4-2-6-7-7 1 4 3 7 7 7Z"/></svg><h3>7-day freshness guarantee</h3><p>We redeliver or refund, your choice.</p></li>
+          <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h18M4 17h18"/><path d="M8 5 4 9l4 4M18 13l4 4-4 4"/></svg><h3>If something is unavailable</h3><p>We substitute to the same value, style and colour, and we tell you what changed.</p></li>
+          <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="20" height="15" rx="3"/><path d="M9 7l2-3h4l2 3"/><circle cx="13" cy="14.5" r="4"/></svg><h3>A photo from the door</h3><p>We will email you the picture of what was handed over.</p></li>
+        </ul>
+      </section>
+    </div>
+
+    <section class="related" aria-labelledby="rel-h">
+      <div class="section-head">
+        <div><p class="eyebrow">More we make for Poland</p><h2 id="rel-h">Six more, in our order</h2></div>
+        <a class="link arrow" href="shop.html">Everything for Poland</a>
+      </div>
+      <div class="related-grid" id="related">
+<article class="card">
+  <a href="product.html?p=vistula-red">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-002-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-002-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-002-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-002-hero/828.webp 828w" sizes="(min-width: 1100px) 200px, (min-width: 700px) 30vw, 46vw" alt="A hand-tied bouquet of deep red long-stemmed roses with dark green foliage, wrapped in white paper" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Vistula Red</h3>
+    <p class="card-sub">18 stems · roses</p>
+    <p class="card-price">309.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card">
+  <a href="product.html?p=krakow-spring">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-009-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-009-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-009-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-009-hero/828.webp 828w" sizes="(min-width: 1100px) 200px, (min-width: 700px) 30vw, 46vw" alt="A loosely gathered bouquet of tulips in pink, yellow, white and purple, wrapped in kraft paper" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Kraków Spring</h3>
+    <p class="card-sub">25 stems · tulips</p>
+    <p class="card-price">169.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card">
+  <a href="product.html?p=white-linen">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-015-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-015-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-015-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-015-hero/828.webp 828w" sizes="(min-width: 1100px) 200px, (min-width: 700px) 30vw, 46vw" alt="A hand-tied bouquet of white oriental lilies with dark green foliage, wrapped in white paper" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>White Linen</h3>
+    <p class="card-sub">8 stems · lilies</p>
+    <p class="card-price">309.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card">
+  <a href="product.html?p=peony-note">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-019-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-019-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-019-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-019-hero/828.webp 828w" sizes="(min-width: 1100px) 200px, (min-width: 700px) 30vw, 46vw" alt="A hand-tied bouquet of pink peonies, open and closed heads mixed, wrapped in white paper" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Peony Note</h3>
+    <p class="card-sub">15 stems · peonies</p>
+    <p class="card-price">449.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card">
+  <a href="product.html?p=field-of-gold">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-023-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-023-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-023-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-023-hero/828.webp 828w" sizes="(min-width: 1100px) 200px, (min-width: 700px) 30vw, 46vw" alt="A bouquet of yellow sunflowers with wheat ears and green foliage, wrapped in kraft paper" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Field of Gold</h3>
+    <p class="card-sub">9 stems · sunflowers</p>
+    <p class="card-price">229.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card">
+  <a href="product.html?p=warsaw-morning">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-028-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-028-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-028-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-028-hero/828.webp 828w" sizes="(min-width: 1100px) 200px, (min-width: 700px) 30vw, 46vw" alt="A mixed seasonal bouquet of roses, alstroemeria, chrysanthemums and greenery, wrapped in kraft paper" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Warsaw Morning</h3>
+    <p class="card-sub">18 stems · mixed flowers</p>
+    <p class="card-price">229.00 PLN<small>all in</small></p>
+  </a>
+</article>
+      </div>
+    </section>
+  </div>
+
+  <div class="sticky-buy">
+    <p><small>You pay</small><strong id="sticky-total">229.00 PLN</strong></p>
+    <button class="btn" type="button" id="sticky-send">Send these flowers</button>
+  </div>
+
+  <dialog id="recap" aria-labelledby="recap-h">
+    <form method="dialog" class="recap">
+      <button class="x" value="close" aria-label="Close">&times;</button>
+      <p class="eyebrow">Before it goes</p>
+      <h2 id="recap-h">Here is what will arrive</h2>
+      <dl>
+        <div><dt>What</dt><dd id="r-what"></dd></div>
+        <div><dt>Where</dt><dd>Poland. You would add the address at the next step.</dd></div>
+        <div><dt>When</dt><dd id="r-when"></dd></div>
+        <div><dt>With</dt><dd id="r-with"></dd></div>
+      </dl>
+      <blockquote class="hand" id="r-msg"></blockquote>
+      <p class="total"><span>You pay</span><strong id="r-total"></strong></p>
+      <p class="demo"><strong>Ordering is not open yet.</strong> We are still choosing florists in Poland. When we have one, this is the price you will pay — nothing is added at a later step.</p>
+      <div class="recap-actions">
+        <button class="btn" value="close">Back to the bouquet</button>
+        <a class="btn btn-ghost" href="shop.html">Keep looking</a>
+      </div>
+    </form>
+  </dialog>
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    <p class="signoff hand" aria-hidden="true">With love, from wherever you are.</p>
+    <div class="footer-grid">
+      <div class="footer-about">
+        <a class="logo" href="home.html" aria-label="Flowers Overseas, home"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--logo-accent, var(--stem))"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--logo-ink, var(--ink))" stroke-width="2.4" stroke-linecap="round" fill="none"/><g transform="translate(31 16)" style="stroke:var(--logo-ink, var(--ink))" stroke-width="2.2" fill="none"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--logo-accent, var(--stem))" stroke="none"/></g></svg><span class="wordmark" aria-hidden="true">Flowers Overseas</span></a>
+        <p>Flowers for someone far away, made by a florist in their own town and handed over in person. Poland first; more of Europe as we choose florists there.</p>
+      </div>
+      <nav aria-label="Footer">
+        <h2>Sending</h2>
+        <ul>
+          <li><a href="shop.html">Flowers for Poland</a></li>
+          <li><a href="home.html#occasions">Occasions</a></li>
+          <li><a href="home.html#dates">Dates in Poland</a></li>
+          <li><a href="home.html#how">How it works</a></li>
+          <li><a href="home.html#promise">What we promise</a></li>
+        </ul>
+      </nav>
+      <div>
+        <h2 id="remind-h">Occasion reminders</h2>
+        <p class="footer-small">Name days, All Saints, Women's Day: one email a few days before each, in your language. Unsubscribe in one click.</p>
+        <form class="remind" aria-labelledby="remind-h" data-remind>
+          <label for="remind-email">Email address</label>
+          <div class="remind-row">
+            <input id="remind-email" type="email" autocomplete="email" required>
+            <button class="btn btn-small" type="submit">Remind me</button>
+          </div>
+          <p class="footer-small">Consent is asked in the email we send first; nothing is stored until you confirm.</p>
+          <p class="status" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+      <div>
+        <h2>Payment</h2>
+        <p class="footer-small">Card payments are processed by Stripe. We never store card numbers.</p>
+        <p class="footer-small" style="margin-block-start:10px">We show the payment methods you can use at checkout.</p>
+      </div>
+    </div>
+    <div class="fine"><p>&copy; 2026 Flowers Overseas</p><p>Design direction A, &ldquo;Warm and personal&rdquo;, in direction C&rsquo;s colours: a clickable preview, not the live shop.</p></div>
+  </div>
+</footer>
+<script>
+(function () {
+  var CATALOG = [{"slug":"amber-hour","name":"Amber Hour","type":"bouquet","vase":false,"tiers":[{"key":"stems_12","label":"12 stems","price":19900,"default":false},{"key":"stems_18","label":"18 stems","price":22900,"default":true},{"key":"stems_24","label":"24 stems","price":25900,"default":false}],"hero":"fo-bq-001-hero","heroAlt":"A hand-tied bouquet of orange garden roses with eucalyptus, wrapped in kraft paper, on a warm grey background","detail":"fo-bq-001-detail","detailAlt":"Close view of three open orange rose heads with eucalyptus leaves beside them","desc":"Orange roses hand-tied with eucalyptus and a few sprigs of seasonal foliage, wrapped in kraft paper. Eighteen stems as standard, with twelve and twenty-four stem sizes on the same page. Warm rather than loud, so it reads as well for a birthday as for a thank you. The roses are always in it; the greenery and filler stems follow the morning market. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Orange roses hand-tied with eucalyptus and a few sprigs of seasonal foliage, wrapped in kraft paper.","price":22900,"defaultLabel":"18 stems","flower":"roses"},{"slug":"small-kindness","name":"Small Kindness","type":"arrangement","vase":false,"tiers":[{"key":"size_s","label":"Small","price":14900,"default":false},{"key":"size_m","label":"Medium","price":16900,"default":true},{"key":"size_l","label":"Large","price":18900,"default":false}],"hero":"fo-ar-001-hero","heroAlt":"A low flower arrangement in soft pastel colours set in a plain kraft gift box","detail":"fo-ar-001-detail","detailAlt":"Close view of three pastel flower heads and the edge of the plain kraft box","desc":"A small pastel arrangement in a lined box, made to stand on its own with no vase and no water to add. Three sizes: small, medium as standard, and large. Sent for a get-well, an apology or a quiet hello, and it travels well to a hospital or an office desk. We hold the pastel scheme; the flowers inside it are our florist's choice. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"A small pastel arrangement in a lined box, made to stand on its own with no vase and no water to add.","price":16900,"defaultLabel":"Medium","flower":"mixed"},{"slug":"amber-hour-chocolates","name":"Amber Hour + Chocolates","type":"gift_set","vase":false,"tiers":[{"key":"stems_12","label":"12 stems","price":26900,"default":false},{"key":"stems_18","label":"18 stems","price":30900,"default":true},{"key":"stems_24","label":"24 stems","price":34900,"default":false}],"hero":"fo-gs-001-hero","heroAlt":"A bouquet of orange roses with eucalyptus standing beside a plain closed box of chocolates","detail":"fo-gs-001-detail","detailAlt":"Close view of two open orange rose heads and the corner of the plain chocolate box","desc":"Our orange rose bouquet with a box of chocolates from a maker near the recipient. Eighteen stems as standard, with twelve and twenty-four sizes. Sent for birthdays and thank yous when flowers alone feel light. Contains chocolate: allergen information for the box supplied is listed at checkout. We hold the orange scheme and swap greenery for what the market has. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Our orange rose bouquet with a box of chocolates from a maker near the recipient.","price":30900,"defaultLabel":"18 stems","flower":"roses"},{"slug":"moth-orchid-white","name":"Moth Orchid White","type":"plant","vase":false,"tiers":[{"key":"single","label":"One plant","price":26900,"default":true}],"hero":"fo-pt-001-hero","heroAlt":"A white moth orchid with two arching flowering stems in a plain white ceramic pot","detail":"fo-pt-001-detail","detailAlt":"Close view of two open white orchid flowers on their arching stem above the pot rim","desc":"One white moth orchid in a plain ceramic pot, staked and in bud and flower when it leaves the shop. A single size. Sent for housewarmings, congratulations and thank yous, and it flowers for weeks rather than days with a little water each week. The plant is always a white moth orchid; pot shape and finish depend on our florist's stock. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"One white moth orchid in a plain ceramic pot, staked and in bud and flower when it leaves the shop.","price":26900,"defaultLabel":"One plant","flower":"orchids"},{"slug":"vistula-red","name":"Vistula Red","type":"bouquet","vase":false,"tiers":[{"key":"stems_12","label":"12 stems","price":26900,"default":false},{"key":"stems_18","label":"18 stems","price":30900,"default":true},{"key":"stems_24","label":"24 stems","price":34900,"default":false}],"hero":"fo-bq-002-hero","heroAlt":"A hand-tied bouquet of deep red long-stemmed roses with dark green foliage, wrapped in white paper","detail":"fo-bq-002-detail","detailAlt":"Close view of two half-open deep red rose heads and one closed bud against white paper","desc":"Deep red roses with eucalyptus and a dark green collar of foliage, tied by hand and wrapped in plain paper. Eighteen stems as standard; twelve or twenty-four if you want it smaller or fuller. Made for an anniversary, a Valentine's delivery or a quiet romantic gesture. Red roses are always the flower; the foliage around them changes with the season. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Deep red roses with eucalyptus and a dark green collar of foliage, tied by hand and wrapped in plain paper.","price":30900,"defaultLabel":"18 stems","flower":"roses"},{"slug":"welcome-home","name":"Welcome Home","type":"arrangement","vase":false,"tiers":[{"key":"size_s","label":"Small","price":19900,"default":false},{"key":"size_m","label":"Medium","price":22900,"default":true},{"key":"size_l","label":"Large","price":25900,"default":false}],"hero":"fo-ar-003-hero","heroAlt":"A mixed seasonal flower arrangement in a plain woven basket, seen from the front","detail":"fo-ar-003-detail","detailAlt":"Close view of two flower heads above the woven rim of the basket","desc":"A mixed basket arrangement in seasonal colour, planted in florist's foam so it needs no vase and only a little water. Small, medium as standard, or large. Sent for housewarmings, new babies and congratulations, and it is easy to carry from a doorstep to a table. The mix is our florist's choice on the day. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"A mixed basket arrangement in seasonal colour, planted in florist's foam so it needs no vase and only a little water.","price":22900,"defaultLabel":"Medium","flower":"mixed"},{"slug":"krakow-spring","name":"Kraków Spring","type":"bouquet","vase":false,"tiers":[{"key":"stems_15","label":"15 stems","price":14900,"default":false},{"key":"stems_25","label":"25 stems","price":16900,"default":true},{"key":"stems_35","label":"35 stems","price":18900,"default":false}],"hero":"fo-bq-009-hero","heroAlt":"A loosely gathered bouquet of tulips in pink, yellow, white and purple, wrapped in kraft paper","detail":"fo-bq-009-detail","detailAlt":"Close view of five tulip heads in mixed colours with their broad green leaves","desc":"Mixed tulips in warm and cool shades, bunched loose with their own leaves and tied with raffia. Twenty-five stems as standard, with fifteen and thirty-five stem sizes. A spring bouquet for a birthday, Easter or no occasion at all. We keep the mixed colour scheme rather than named varieties: tulip colours change weekly, and our florist buys what is open. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Mixed tulips in warm and cool shades, bunched loose with their own leaves and tied with raffia.","price":16900,"defaultLabel":"25 stems","flower":"tulips"},{"slug":"white-linen","name":"White Linen","type":"bouquet","vase":false,"tiers":[{"key":"stems_5","label":"5 stems","price":26900,"default":false},{"key":"stems_8","label":"8 stems","price":30900,"default":true},{"key":"stems_12","label":"12 stems","price":34900,"default":false}],"hero":"fo-bq-015-hero","heroAlt":"A hand-tied bouquet of white oriental lilies with dark green foliage, wrapped in white paper","detail":"fo-bq-015-detail","detailAlt":"Close view of two open white lily trumpets and one closed bud, stamens visible","desc":"White oriental lilies with long-leaf foliage, tied in a tall sheaf and wrapped in white paper. Eight stems as standard, with five and twelve stem sizes. Sent for sympathy, weddings and anniversaries; the scent fills a room within a day of opening. Lilies are always the flower; the foliage changes with the season, and buds open over several days. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"White oriental lilies with long-leaf foliage, tied in a tall sheaf and wrapped in white paper.","price":30900,"defaultLabel":"8 stems","flower":"lilies"},{"slug":"peony-note","name":"Peony Note","type":"bouquet","vase":false,"tiers":[{"key":"stems_9","label":"9 stems","price":35900,"default":false},{"key":"stems_15","label":"15 stems","price":44900,"default":true},{"key":"stems_21","label":"21 stems","price":52900,"default":false}],"hero":"fo-bq-019-hero","heroAlt":"A hand-tied bouquet of pink peonies, open and closed heads mixed, wrapped in white paper","detail":"fo-bq-019-detail","detailAlt":"Close view of one fully open pink peony and one tight bud with green sepals","desc":"Pink peonies with a little soft foliage, tied close so the heads sit together, wrapped twice. Fifteen stems as standard, with nine and twenty-one stem sizes. Sent for romance, anniversaries and weddings in the short peony season. Peonies are always the flower; outside the season our florist tells us before we take the order rather than after. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Pink peonies with a little soft foliage, tied close so the heads sit together, wrapped twice.","price":44900,"defaultLabel":"15 stems","flower":"peonies"},{"slug":"field-of-gold","name":"Field of Gold","type":"bouquet","vase":false,"tiers":[{"key":"stems_5","label":"5 stems","price":19900,"default":false},{"key":"stems_9","label":"9 stems","price":22900,"default":true},{"key":"stems_13","label":"13 stems","price":25900,"default":false}],"hero":"fo-bq-023-hero","heroAlt":"A bouquet of yellow sunflowers with wheat ears and green foliage, wrapped in kraft paper","detail":"fo-bq-023-detail","detailAlt":"Close view of one yellow sunflower head with its dark seed centre and wheat ears beside it","desc":"Sunflowers with ruscus and a few stems of seasonal green, tied in a rustic hand-held bunch. Nine stems as standard, with five and thirteen stem sizes. Sent for birthdays, congratulations and thank yous, and it holds up well in a warm room. Sunflowers are always the flower; head size varies by grower and the greenery follows the week. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Sunflowers with ruscus and a few stems of seasonal green, tied in a rustic hand-held bunch.","price":22900,"defaultLabel":"9 stems","flower":"sunflowers"},{"slug":"warsaw-morning","name":"Warsaw Morning","type":"bouquet","vase":false,"tiers":[{"key":"stems_12","label":"12 stems","price":19900,"default":false},{"key":"stems_18","label":"18 stems","price":22900,"default":true},{"key":"stems_24","label":"24 stems","price":25900,"default":false}],"hero":"fo-bq-028-hero","heroAlt":"A mixed seasonal bouquet of roses, alstroemeria, chrysanthemums and greenery, wrapped in kraft paper","detail":"fo-bq-028-detail","detailAlt":"Close view of three different flower heads in mixed colours with greenery between them","desc":"A mixed bouquet built around roses and whatever else the market has that morning — spray flowers, a focal bloom and two kinds of foliage. Eighteen stems as standard, with twelve and twenty-four sizes. Sent for birthdays, thank yous and no occasion at all. The mix is our florist's choice on the day, kept to this size and to mixed colour. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"A mixed bouquet built around roses and whatever else the market has that morning — spray flowers, a focal bloom and two kinds of foliage.","price":22900,"defaultLabel":"18 stems","flower":"mixed"},{"slug":"mantelpiece","name":"Mantelpiece","type":"arrangement","vase":true,"tiers":[{"key":"size_s","label":"Small","price":26900,"default":false},{"key":"size_m","label":"Medium","price":30900,"default":true},{"key":"size_l","label":"Large","price":34900,"default":false}],"hero":"fo-ar-002-hero","heroAlt":"Mantelpiece: red roses arranged in a plain glass vase with foliage, cut to sit low and wide on a mantel or a table","detail":"fo-ar-002-detail","detailAlt":"A closer view of Mantelpiece","desc":"Red roses arranged in a plain glass vase with foliage, cut to sit low and wide on a mantel or a table. The vase is included. Small, medium as standard, or large. Sent for anniversaries and for romance, where a bouquet would mean finding a vase first. Roses are always the flower; the foliage changes with the season. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Red roses arranged in a plain glass vase with foliage, cut to sit low and wide on a mantel or a table.","price":30900,"defaultLabel":"Medium","flower":"roses"},{"slug":"baltic-dawn-vase","name":"Baltic Dawn + Vase","type":"gift_set","vase":true,"tiers":[{"key":"stems_12","label":"12 stems","price":26900,"default":false},{"key":"stems_18","label":"18 stems","price":30900,"default":true},{"key":"stems_24","label":"24 stems","price":34900,"default":false}],"hero":"fo-gs-002-hero","heroAlt":"Baltic Dawn + Vase: our pink rose bouquet with a plain glass vase, so nothing has to be found in a cupboard on arrival","detail":"fo-gs-002-detail","detailAlt":"A closer view of Baltic Dawn + Vase","desc":"Our pink rose bouquet with a plain glass vase, so nothing has to be found in a cupboard on arrival. Eighteen stems as standard, twelve or twenty-four available. Sent for birthdays, anniversaries and early romance. The pink scheme is held and the vase is always included; vase height and shape depend on what our florist stocks that week. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Our pink rose bouquet with a plain glass vase, so nothing has to be found in a cupboard on arrival.","price":30900,"defaultLabel":"18 stems","flower":"roses"},{"slug":"moth-orchid-pink","name":"Moth Orchid Pink","type":"plant","vase":false,"tiers":[{"key":"single","label":"One plant","price":26900,"default":true}],"hero":"fo-pt-002-hero","heroAlt":"Moth Orchid Pink: one pink moth orchid, staked and potted in a plain container, in bud and flower on the day it is delivered","detail":"fo-pt-002-detail","detailAlt":"A closer view of Moth Orchid Pink","desc":"One pink moth orchid, staked and potted in a plain container, in bud and flower on the day it is delivered. A single size. Sent for birthdays, Mother's Day and thank yous, and it asks for very little care. The plant is always a pink moth orchid; shade ranges from pale to deep, and the pot depends on the shop. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"One pink moth orchid, staked and potted in a plain container, in bud and flower on the day it is delivered.","price":26900,"defaultLabel":"One plant","flower":"orchids"},{"slug":"baltic-dawn","name":"Baltic Dawn","type":"bouquet","vase":false,"tiers":[{"key":"stems_12","label":"12 stems","price":19900,"default":false},{"key":"stems_18","label":"18 stems","price":22900,"default":true},{"key":"stems_24","label":"24 stems","price":25900,"default":false}],"hero":"fo-bq-003-hero","heroAlt":"Baltic Dawn: pink roses in two shades, cut short and tied into a rounded modern shape with soft grasses and eucalyptus","detail":"fo-bq-003-detail","detailAlt":"A closer view of Baltic Dawn","desc":"Pink roses in two shades, cut short and tied into a rounded modern shape with soft grasses and eucalyptus. Eighteen stems as standard, twelve or twenty-four on request. It suits a birthday, an early romance or a thank you where red would say too much. Pink roses are fixed; the grasses and greenery depend on what arrives that day. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Pink roses in two shades, cut short and tied into a rounded modern shape with soft grasses and eucalyptus.","price":22900,"defaultLabel":"18 stems","flower":"roses"},{"slug":"welcome-baby-blue-plush","name":"Welcome Baby Blue + Plush","type":"gift_set","vase":false,"tiers":[{"key":"stems_12","label":"12 stems","price":19900,"default":false},{"key":"stems_18","label":"18 stems","price":22900,"default":true},{"key":"stems_24","label":"24 stems","price":25900,"default":false}],"hero":"fo-gs-003-hero","heroAlt":"Welcome Baby Blue + Plush: a blue and white bouquet with a small soft toy for a new arrival, tied light so it can be carried with a baby in the other arm","detail":"fo-gs-003-detail","detailAlt":"A closer view of Welcome Baby Blue + Plush","desc":"A blue and white bouquet with a small soft toy for a new arrival, tied light so it can be carried with a baby in the other arm. Eighteen stems as standard, twelve or twenty-four available. We hold the blue scheme; the flowers and the toy are chosen by our florist from what is in the shop, and the toy is new and tagged. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"A blue and white bouquet with a small soft toy for a new arrival, tied light so it can be carried with a baby in the other arm.","price":22900,"defaultLabel":"18 stems","flower":"mixed"},{"slug":"twin-orchid","name":"Twin Orchid","type":"plant","vase":false,"tiers":[{"key":"single","label":"One plant","price":35900,"default":true}],"hero":"fo-pt-003-hero","heroAlt":"Twin Orchid: a two-stem white moth orchid in a heavier pot — the same plant as our single-stem orchid with twice the flower and a fuller shape","detail":"fo-pt-003-detail","detailAlt":"A closer view of Twin Orchid","desc":"A two-stem white moth orchid in a heavier pot — the same plant as our single-stem orchid with twice the flower and a fuller shape. One size. Sent for weddings, anniversaries and retirements, where a plant that lasts says more than cut flowers. Always a white two-stem moth orchid; the pot is chosen by our florist to match the plant's height. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"A two-stem white moth orchid in a heavier pot — the same plant as our single-stem orchid with twice the flower and a fuller shape.","price":35900,"defaultLabel":"One plant","flower":"orchids"},{"slug":"desk-bloom","name":"Desk Bloom","type":"arrangement","vase":false,"tiers":[{"key":"size_s","label":"Small","price":14900,"default":false},{"key":"size_m","label":"Medium","price":16900,"default":true},{"key":"size_l","label":"Large","price":18900,"default":false}],"hero":"fo-ar-004-hero","heroAlt":"Desk Bloom: gerberas in strong pink and orange, arranged short in a low ceramic pot that fits on a desk or a windowsill","detail":"fo-ar-004-detail","detailAlt":"A closer view of Desk Bloom","desc":"Gerberas in strong pink and orange, arranged short in a low ceramic pot that fits on a desk or a windowsill. Small, medium as standard, and large. Sent for congratulations, birthdays and thank yous to an office, where a tall bouquet is a nuisance. We hold the vibrant colour scheme; the exact colours follow the day's delivery. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Gerberas in strong pink and orange, arranged short in a low ceramic pot that fits on a desk or a windowsill.","price":16900,"defaultLabel":"Medium","flower":"gerberas"},{"slug":"welcome-baby-pink-plush","name":"Welcome Baby Pink + Plush","type":"gift_set","vase":false,"tiers":[{"key":"stems_12","label":"12 stems","price":19900,"default":false},{"key":"stems_18","label":"18 stems","price":22900,"default":true},{"key":"stems_24","label":"24 stems","price":25900,"default":false}],"hero":"fo-gs-004-hero","heroAlt":"Welcome Baby Pink + Plush: a pink and white bouquet with a small soft toy for a new baby, tied to be light in the hand","detail":"fo-gs-004-detail","detailAlt":"A closer view of Welcome Baby Pink + Plush","desc":"A pink and white bouquet with a small soft toy for a new baby, tied to be light in the hand. Eighteen stems as standard, with twelve and twenty-four sizes. Sent for new babies and congratulations. We hold the pink scheme; the flowers and the toy come from our florist's own shop, and the toy is new, tagged and suitable from birth. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"A pink and white bouquet with a small soft toy for a new baby, tied to be light in the hand.","price":22900,"defaultLabel":"18 stems","flower":"mixed"},{"slug":"peace-lily","name":"Peace Lily","type":"plant","vase":false,"tiers":[{"key":"single","label":"One plant","price":19900,"default":true}],"hero":"fo-pt-004-hero","heroAlt":"Peace Lily: a Peace Lily in a plain pot: dark green leaves and white spathes, upright, and forgiving of a room without much light","detail":"fo-pt-004-detail","detailAlt":"A closer view of Peace Lily","desc":"A peace lily in a plain pot: dark green leaves and white spathes, upright, and forgiving of a room without much light. One size. Sent for sympathy, housewarmings and get-well messages, and it is the plant most often asked for after a funeral. Always a peace lily; height and the number of open spathes vary by grower. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"A peace lily in a plain pot: dark green leaves and white spathes, upright, and forgiving of a room without much light.","price":19900,"defaultLabel":"One plant","flower":"lilies"},{"slug":"northern-light","name":"Northern Light","type":"bouquet","vase":false,"tiers":[{"key":"stems_12","label":"12 stems","price":26900,"default":false},{"key":"stems_18","label":"18 stems","price":30900,"default":true},{"key":"stems_24","label":"24 stems","price":34900,"default":false}],"hero":"fo-bq-005-hero","heroAlt":"Northern Light: white roses with a single line of eucalyptus, trimmed to one height and tied tight in the minimal style","detail":"fo-bq-005-detail","detailAlt":"A closer view of Northern Light","desc":"White roses with a single line of eucalyptus, trimmed to one height and tied tight in the minimal style. Eighteen stems as standard, twelve or twenty-four if you prefer. Chosen most often for weddings, anniversaries and congratulations, where anything busier would compete. White roses are always the flower; the foliage is whatever holds its shape longest that morning. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"White roses with a single line of eucalyptus, trimmed to one height and tied tight in the minimal style.","price":30900,"defaultLabel":"18 stems","flower":"roses"},{"slug":"paper-window","name":"Paper Window","type":"arrangement","vase":false,"tiers":[{"key":"size_s","label":"Small","price":14900,"default":false},{"key":"size_m","label":"Medium","price":16900,"default":true},{"key":"size_l","label":"Large","price":18900,"default":false}],"hero":"fo-ar-005-hero","heroAlt":"Paper Window: pink tulips arranged upright in a paper-wrapped container with their own leaves and nothing else","detail":"fo-ar-005-detail","detailAlt":"A closer view of Paper Window","desc":"Pink tulips arranged upright in a paper-wrapped container with their own leaves and nothing else. Small, medium as standard, or large. Sent for birthdays, Women's Day and quiet hellos in the spring months, and it needs no vase on arrival. The pink colour scheme is what we hold; tulip variety and shade depend on the week. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Pink tulips arranged upright in a paper-wrapped container with their own leaves and nothing else.","price":16900,"defaultLabel":"Medium","flower":"tulips"},{"slug":"krakow-spring-chocolates","name":"Kraków Spring + Chocolates","type":"gift_set","vase":false,"tiers":[{"key":"stems_15","label":"15 stems","price":19900,"default":false},{"key":"stems_25","label":"25 stems","price":22900,"default":true},{"key":"stems_35","label":"35 stems","price":25900,"default":false}],"hero":"fo-gs-005-hero","heroAlt":"Kraków Spring + Chocolates: our mixed tulip bunch with a box of chocolates bought near the recipient","detail":"fo-gs-005-detail","detailAlt":"A closer view of Kraków Spring + Chocolates","desc":"Our mixed tulip bunch with a box of chocolates bought near the recipient. Twenty-five stems as standard, with fifteen and thirty-five sizes. Sent for birthdays, Easter and Women's Day. Contains chocolate: allergen information for the box supplied is listed at checkout. We hold the mixed tulip scheme, because tulip colours change from week to week. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Our mixed tulip bunch with a box of chocolates bought near the recipient.","price":22900,"defaultLabel":"25 stems","flower":"tulips"},{"slug":"anthurium","name":"Anthurium","type":"plant","vase":false,"tiers":[{"key":"single","label":"One plant","price":19900,"default":true}],"hero":"fo-pt-005-hero","heroAlt":"Anthurium: an Anthurium with red spathes and glossy leaves in a plain pot — modern, upright and hard to kill in a warm room","detail":"fo-pt-005-detail","detailAlt":"A closer view of Anthurium","desc":"An anthurium with red spathes and glossy leaves in a plain pot — modern, upright and hard to kill in a warm room. One size. Sent for housewarmings and congratulations, and it flowers on and off through the year. Always a red anthurium; the number of open spathes and the pot finish depend on our florist's stock that week. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"An anthurium with red spathes and glossy leaves in a plain pot — modern, upright and hard to kill in a warm room.","price":19900,"defaultLabel":"One plant","flower":"mixed"},{"slug":"velvet-evening","name":"Velvet Evening","type":"bouquet","vase":false,"tiers":[{"key":"stems_12","label":"12 stems","price":35900,"default":false},{"key":"stems_18","label":"18 stems","price":44900,"default":true},{"key":"stems_24","label":"24 stems","price":52900,"default":false}],"hero":"fo-bq-006-hero","heroAlt":"Velvet Evening: large-headed red roses, ruscus and dark eucalyptus, tied deep and wrapped twice so it arrives heavy in the hand","detail":"fo-bq-006-detail","detailAlt":"A closer view of Velvet Evening","desc":"Large-headed red roses, ruscus and dark eucalyptus, tied deep and wrapped twice so it arrives heavy in the hand. Eighteen stems as standard, with twelve and twenty-four sizes. For an anniversary or Valentine's Day when the point is to be unmistakable. The red roses are fixed; variety and foliage move with the season and the grower. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Large-headed red roses, ruscus and dark eucalyptus, tied deep and wrapped twice so it arrives heavy in the hand.","price":44900,"defaultLabel":"18 stems","flower":"roses"},{"slug":"glass-morning","name":"Glass Morning","type":"arrangement","vase":true,"tiers":[{"key":"size_s","label":"Small","price":26900,"default":false},{"key":"size_m","label":"Medium","price":30900,"default":true},{"key":"size_l","label":"Large","price":34900,"default":false}],"hero":"fo-ar-006-hero","heroAlt":"Glass Morning: white lilies arranged in a clear glass vase with long-leaf foliage, cut tall so the stems show through the glass","detail":"fo-ar-006-detail","detailAlt":"A closer view of Glass Morning","desc":"White lilies arranged in a clear glass vase with long-leaf foliage, cut tall so the stems show through the glass. The vase is included. Small, medium as standard, or large. Sent for sympathy, thank yous and weddings. Lilies are always the flower; our florist sends buds part-closed, so it opens over the first two or three days. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"White lilies arranged in a clear glass vase with long-leaf foliage, cut tall so the stems show through the glass.","price":30900,"defaultLabel":"Medium","flower":"lilies"},{"slug":"quiet-blush-vase","name":"Quiet Blush + Vase","type":"gift_set","vase":true,"tiers":[{"key":"stems_12","label":"12 stems","price":19900,"default":false},{"key":"stems_18","label":"18 stems","price":22900,"default":true},{"key":"stems_24","label":"24 stems","price":25900,"default":false}],"hero":"fo-gs-006-hero","heroAlt":"Quiet Blush + Vase: our pastel rose bouquet with a plain glass vase, sent when you are apologizing or when someone is unwell and cannot go looking for one","detail":"fo-gs-006-detail","detailAlt":"A closer view of Quiet Blush + Vase","desc":"Our pastel rose bouquet with a plain glass vase, sent when you are apologizing or when someone is unwell and cannot go looking for one. Eighteen stems as standard, twelve or twenty-four available. The pastel scheme is held and the vase is always included; the flowers inside the scheme and the vase's shape are our florist's choice. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Our pastel rose bouquet with a plain glass vase, sent when you are apologizing or when someone is unwell and cannot go looking for one.","price":22900,"defaultLabel":"18 stems","flower":"roses"},{"slug":"olive-sapling","name":"Olive Sapling","type":"plant","vase":false,"tiers":[{"key":"single","label":"One plant","price":26900,"default":true}],"hero":"fo-pt-006-hero","heroAlt":"Olive Sapling: a small Olive Sapling in a terracotta pot, clipped to a rounded head, for a balcony, a doorway or a bright kitchen","detail":"fo-pt-006-detail","detailAlt":"A closer view of Olive Sapling","desc":"A small olive sapling in a terracotta pot, clipped to a rounded head, for a balcony, a doorway or a bright kitchen. One size. Sent for housewarmings, weddings and retirements, and it lives for years if it gets sun. Always an olive; trunk shape and head size vary from plant to plant, and the pot is terracotta or plain white. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"A small olive sapling in a terracotta pot, clipped to a rounded head, for a balcony, a doorway or a bright kitchen.","price":26900,"defaultLabel":"One plant","flower":"mixed"},{"slug":"rose-harbour","name":"Rose Harbour","type":"bouquet","vase":false,"tiers":[{"key":"stems_12","label":"12 stems","price":19900,"default":false},{"key":"stems_18","label":"18 stems","price":22900,"default":true},{"key":"stems_24","label":"24 stems","price":25900,"default":false}],"hero":"fo-bq-007-hero","heroAlt":"Rose Harbour: mid-pink roses with gypsophila and eucalyptus, tied in the round and wrapped in kraft paper with a paper band","detail":"fo-bq-007-detail","detailAlt":"A closer view of Rose Harbour","desc":"Mid-pink roses with gypsophila and eucalyptus, tied in the round and wrapped in kraft paper with a paper band. Eighteen stems as standard, twelve or twenty-four on the same page. An everyday bouquet for a birthday, Mother's Day or a thank you. Roses are always included; gypsophila is replaced with another small filler when it is not available. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Mid-pink roses with gypsophila and eucalyptus, tied in the round and wrapped in kraft paper with a paper band.","price":22900,"defaultLabel":"18 stems","flower":"roses"},{"slug":"kitchen-table","name":"Kitchen Table","type":"arrangement","vase":false,"tiers":[{"key":"size_s","label":"Small","price":19900,"default":false},{"key":"size_m","label":"Medium","price":22900,"default":true},{"key":"size_l","label":"Large","price":25900,"default":false}],"hero":"fo-ar-007-hero","heroAlt":"Kitchen Table: a seasonal arrangement in a small crate or tin, made low and dense so it works as a kitchen centerpiece","detail":"fo-ar-007-detail","detailAlt":"A closer view of Kitchen Table","desc":"A seasonal arrangement in a small crate or tin, made low and dense so it works as a kitchen centerpiece. Small, medium as standard, and large. Sent for housewarmings and thank yous, and it holds up in a warm room better than a tied bouquet. Our florist chooses the seasonal mix and the container on the day. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"A seasonal arrangement in a small crate or tin, made low and dense so it works as a kitchen centerpiece.","price":22900,"defaultLabel":"Medium","flower":"seasonal"},{"slug":"field-of-gold-chocolates","name":"Field of Gold + Chocolates","type":"gift_set","vase":false,"tiers":[{"key":"stems_5","label":"5 stems","price":19900,"default":false},{"key":"stems_9","label":"9 stems","price":22900,"default":true},{"key":"stems_13","label":"13 stems","price":25900,"default":false}],"hero":"fo-gs-007-hero","heroAlt":"Field of Gold + Chocolates: our sunflower bunch with a box of chocolates from a shop near the recipient","detail":"fo-gs-007-detail","detailAlt":"A closer view of Field of Gold + Chocolates","desc":"Our sunflower bunch with a box of chocolates from a shop near the recipient. Nine stems as standard, with five and thirteen sizes. Sent for birthdays and congratulations, and it is the cheerful end of our range. Contains chocolate: allergen information for the box supplied is listed at checkout. The yellow scheme is held; supporting stems follow the week. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Our sunflower bunch with a box of chocolates from a shop near the recipient.","price":22900,"defaultLabel":"9 stems","flower":"sunflowers"},{"slug":"jasmine-pot","name":"Jasmine Pot","type":"plant","vase":false,"tiers":[{"key":"single","label":"One plant","price":14900,"default":true}],"hero":"fo-pt-007-hero","heroAlt":"Jasmine Pot: a potted jasmine in flower, trained on a small hoop, scented enough to fill a kitchen or a hallway","detail":"fo-pt-007-detail","detailAlt":"A closer view of Jasmine Pot","desc":"A potted jasmine in flower, trained on a small hoop, scented enough to fill a kitchen or a hallway. One size. Sent as a get-well, a thank you or a spring hello, and it can go outside once the frosts are over. Always a scented jasmine; the training frame and the pot depend on what our florist is growing on. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"A potted jasmine in flower, trained on a small hoop, scented enough to fill a kitchen or a hallway.","price":14900,"defaultLabel":"One plant","flower":"mixed"},{"slug":"winter-rose","name":"Winter Rose","type":"bouquet","vase":false,"tiers":[{"key":"stems_12","label":"12 stems","price":26900,"default":false},{"key":"stems_18","label":"18 stems","price":30900,"default":true},{"key":"stems_24","label":"24 stems","price":34900,"default":false}],"hero":"fo-bq-008-hero","heroAlt":"Winter Rose: white roses with pine, ruscus and a few white berries, tied for the winter months and wrapped in white paper","detail":"fo-bq-008-detail","detailAlt":"A closer view of Winter Rose","desc":"White roses with pine, ruscus and a few white berries, tied for the winter months and wrapped in white paper. Eighteen stems as standard, with twelve and twenty-four sizes. Sent for Christmas, New Year and winter congratulations. White roses are always in it; the winter greenery and berries change with what our florist can cut locally that week. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"White roses with pine, ruscus and a few white berries, tied for the winter months and wrapped in white paper.","price":30900,"defaultLabel":"18 stems","flower":"roses"},{"slug":"hallway-light","name":"Hallway Light","type":"arrangement","vase":true,"tiers":[{"key":"size_s","label":"Small","price":19900,"default":false},{"key":"size_m","label":"Medium","price":22900,"default":true},{"key":"size_l","label":"Large","price":25900,"default":false}],"hero":"fo-ar-008-hero","heroAlt":"Hallway Light: white flowers with structural foliage in a tall glass vase, arranged for a hallway or a reception desk rather than a dining table","detail":"fo-ar-008-detail","detailAlt":"A closer view of Hallway Light","desc":"White flowers with structural foliage in a tall glass vase, arranged for a hallway or a reception desk rather than a dining table. The vase is included. Small, medium as standard, or large. Sent for housewarmings and congratulations. Our florist chooses the white flowers on the day, so the height and the shape stay the fixed part. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"White flowers with structural foliage in a tall glass vase, arranged for a hallway or a reception desk rather than a dining table.","price":22900,"defaultLabel":"Medium","flower":"mixed"},{"slug":"peony-note-vase","name":"Peony Note + Vase","type":"gift_set","vase":true,"tiers":[{"key":"stems_9","label":"9 stems","price":35900,"default":false},{"key":"stems_15","label":"15 stems","price":44900,"default":true},{"key":"stems_21","label":"21 stems","price":52900,"default":false}],"hero":"fo-gs-008-hero","heroAlt":"Peony Note + Vase: our pink peony bouquet with a heavier glass vase, priced at the top of the range because peonies are","detail":"fo-gs-008-detail","detailAlt":"A closer view of Peony Note + Vase","desc":"Our pink peony bouquet with a heavier glass vase, priced at the top of the range because peonies are. Fifteen stems as standard, nine or twenty-one available. Sent for anniversaries, weddings and romance in the peony months. The pink scheme is held and the vase is included; outside the season our florist tells us before we take the order. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Our pink peony bouquet with a heavier glass vase, priced at the top of the range because peonies are.","price":44900,"defaultLabel":"15 stems","flower":"peonies"},{"slug":"azalea-pot","name":"Azalea Pot","type":"plant","vase":false,"tiers":[{"key":"single","label":"One plant","price":14900,"default":true}],"hero":"fo-pt-008-hero","heroAlt":"Azalea Pot: a pink azalea in a plain pot, dense with buds so it flowers for two or three weeks indoors in a cool spot","detail":"fo-pt-008-detail","detailAlt":"A closer view of Azalea Pot","desc":"A pink azalea in a plain pot, dense with buds so it flowers for two or three weeks indoors in a cool spot. One size. Sent for birthdays, Mother's Day and get-well messages, and it is the least demanding flowering plant we list. Always a pink azalea; shade varies from pale to strong pink depending on the grower. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"A pink azalea in a plain pot, dense with buds so it flowers for two or three weeks indoors in a cool spot.","price":14900,"defaultLabel":"One plant","flower":"mixed"},{"slug":"reading-corner","name":"Reading Corner","type":"arrangement","vase":false,"tiers":[{"key":"size_s","label":"Small","price":19900,"default":false},{"key":"size_m","label":"Medium","price":22900,"default":true},{"key":"size_l","label":"Large","price":25900,"default":false}],"hero":"fo-ar-009-hero","heroAlt":"Reading Corner: purple freesias arranged short and close in a small vessel, scented enough for a bedside table or a Reading Corner","detail":"fo-ar-009-detail","detailAlt":"A closer view of Reading Corner","desc":"Purple freesias arranged short and close in a small vessel, scented enough for a bedside table or a reading corner. Small, medium as standard, or large. Sent for a get-well, a retirement or a thank you. Freesias are always the flower; shade varies between purple and lilac depending on what our florist can buy. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Purple freesias arranged short and close in a small vessel, scented enough for a bedside table or a reading corner.","price":22900,"defaultLabel":"Medium","flower":"freesias"},{"slug":"warsaw-morning-balloon","name":"Warsaw Morning + Balloon","type":"gift_set","vase":false,"tiers":[{"key":"stems_12","label":"12 stems","price":19900,"default":false},{"key":"stems_18","label":"18 stems","price":22900,"default":true},{"key":"stems_24","label":"24 stems","price":25900,"default":false}],"hero":"fo-gs-009-hero","heroAlt":"Warsaw Morning + Balloon: our mixed bouquet with one helium balloon, tied on at the door so it arrives inflated","detail":"fo-gs-009-detail","detailAlt":"A closer view of Warsaw Morning + Balloon","desc":"Our mixed bouquet with one helium balloon, tied on at the door so it arrives inflated. Eighteen stems as standard, with twelve and twenty-four sizes. Sent for birthdays and congratulations, and it works for a child's party as well as an office. We hold the mixed scheme; the flowers and the balloon design are our florist's choice on the day. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Our mixed bouquet with one helium balloon, tied on at the door so it arrives inflated.","price":22900,"defaultLabel":"18 stems","flower":"mixed"},{"slug":"sunday-market","name":"Sunday Market","type":"bouquet","vase":false,"tiers":[{"key":"stems_15","label":"15 stems","price":14900,"default":false},{"key":"stems_25","label":"25 stems","price":16900,"default":true},{"key":"stems_35","label":"35 stems","price":18900,"default":false}],"hero":"fo-bq-010-hero","heroAlt":"Sunday Market: yellow tulips, tied simply in a rustic bunch with their leaves left long and the stems showing","detail":"fo-bq-010-detail","detailAlt":"A closer view of Sunday Market","desc":"Yellow tulips, tied simply in a rustic bunch with their leaves left long and the stems showing. Twenty-five stems as standard; fifteen or thirty-five if you want less or more. Sent as a thank you, a get-well or an Easter table bunch. The yellow colour scheme is what we hold — variety and shade depend on the week's growers. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Yellow tulips, tied simply in a rustic bunch with their leaves left long and the stems showing.","price":16900,"defaultLabel":"25 stems","flower":"tulips"},{"slug":"studio-vase","name":"Studio Vase","type":"arrangement","vase":true,"tiers":[{"key":"size_s","label":"Small","price":35900,"default":false},{"key":"size_m","label":"Medium","price":44900,"default":true},{"key":"size_l","label":"Large","price":52900,"default":false}],"hero":"fo-ar-010-hero","heroAlt":"Studio Vase: pink peonies arranged in a heavy Studio Vase with almost no foliage, so the flowers are the whole object","detail":"fo-ar-010-detail","detailAlt":"A closer view of Studio Vase","desc":"Pink peonies arranged in a heavy studio vase with almost no foliage, so the flowers are the whole object. The vase is included. Small, medium as standard, or large. Sent for anniversaries, weddings and romance in the peony months. Peonies are always the flower; where the season has ended our florist tells us before we take the order. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Pink peonies arranged in a heavy studio vase with almost no foliage, so the flowers are the whole object.","price":44900,"defaultLabel":"Medium","flower":"peonies"},{"slug":"bright-side-balloon","name":"Bright Side + Balloon","type":"gift_set","vase":false,"tiers":[{"key":"stems_10","label":"10 stems","price":19900,"default":false},{"key":"stems_15","label":"15 stems","price":22900,"default":true},{"key":"stems_21","label":"21 stems","price":25900,"default":false}],"hero":"fo-gs-010-hero","heroAlt":"Bright Side + Balloon: our gerbera bouquet with one helium balloon, bright at both ends","detail":"fo-gs-010-detail","detailAlt":"A closer view of Bright Side + Balloon","desc":"Our gerbera bouquet with one helium balloon, bright at both ends. Fifteen stems as standard, with ten and twenty-one sizes. Sent for a get-well, a birthday or a graduation, and the balloon is inflated by our florist rather than shipped flat. We hold the vibrant scheme; gerbera colours and the balloon design depend on the day's stock. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Our gerbera bouquet with one helium balloon, bright at both ends.","price":22900,"defaultLabel":"15 stems","flower":"gerberas"},{"slug":"first-thaw","name":"First Thaw","type":"bouquet","vase":false,"tiers":[{"key":"stems_15","label":"15 stems","price":19900,"default":false},{"key":"stems_25","label":"25 stems","price":22900,"default":true},{"key":"stems_35","label":"35 stems","price":25900,"default":false}],"hero":"fo-bq-011-hero","heroAlt":"First Thaw: white tulips only, cut to one length and tied close in the minimal style with no filler and no wrap beyond plain paper","detail":"fo-bq-011-detail","detailAlt":"A closer view of First Thaw","desc":"White tulips only, cut to one length and tied close in the minimal style with no filler and no wrap beyond plain paper. Twenty-five stems as standard, with fifteen and thirty-five sizes. Quiet enough for an apology, a sympathy message or an early spring hello. White tulips are always the flower; the paper and tie change with what is in the shop. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"White tulips only, cut to one length and tied close in the minimal style with no filler and no wrap beyond plain paper.","price":22900,"defaultLabel":"25 stems","flower":"tulips"},{"slug":"garden-crate","name":"Garden Crate","type":"arrangement","vase":false,"tiers":[{"key":"size_s","label":"Small","price":19900,"default":false},{"key":"size_m","label":"Medium","price":22900,"default":true},{"key":"size_l","label":"Large","price":25900,"default":false}],"hero":"fo-ar-011-hero","heroAlt":"Garden Crate: a seasonal Garden Crate: flowers, herbs and foliage planted in foam to look as though they were cut that morning","detail":"fo-ar-011-detail","detailAlt":"A closer view of Garden Crate","desc":"A seasonal garden crate: flowers, herbs and foliage planted in foam to look as though they were cut that morning. Small, medium as standard, or large. Sent for housewarmings, thank yous and Easter, and it needs no vase and little water. Our florist chooses the mix on the day, which is the whole idea of it. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"A seasonal garden crate: flowers, herbs and foliage planted in foam to look as though they were cut that morning.","price":22900,"defaultLabel":"Medium","flower":"seasonal"},{"slug":"white-linen-chocolates","name":"White Linen + Chocolates","type":"gift_set","vase":false,"tiers":[{"key":"stems_5","label":"5 stems","price":35900,"default":false},{"key":"stems_8","label":"8 stems","price":44900,"default":true},{"key":"stems_12","label":"12 stems","price":52900,"default":false}],"hero":"fo-gs-011-hero","heroAlt":"White Linen + Chocolates: our white lily sheaf with a box of chocolates bought locally","detail":"fo-gs-011-detail","detailAlt":"A closer view of White Linen + Chocolates","desc":"Our white lily sheaf with a box of chocolates bought locally. Eight stems as standard, five or twelve available. Sent for anniversaries and for thank yous where scent and something sweet are wanted together. Contains chocolate: allergen information for the box supplied is listed at checkout. The white scheme is held; lilies arrive part-closed and open over days. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Our white lily sheaf with a box of chocolates bought locally.","price":44900,"defaultLabel":"8 stems","flower":"lilies"},{"slug":"meadow-post","name":"Meadow Post","type":"bouquet","vase":false,"tiers":[{"key":"stems_15","label":"15 stems","price":14900,"default":false},{"key":"stems_25","label":"25 stems","price":16900,"default":true},{"key":"stems_35","label":"35 stems","price":18900,"default":false}],"hero":"fo-bq-012-hero","heroAlt":"Meadow Post: pink tulips with a little seasonal foliage, gathered in a loose garden bunch and tied with twine","detail":"fo-bq-012-detail","detailAlt":"A closer view of Meadow Post","desc":"Pink tulips with a little seasonal foliage, gathered in a loose garden bunch and tied with twine. Twenty-five stems as standard, fifteen or thirty-five on request. Sent most for birthdays, Mother's Day and Women's Day in early spring. The pink colour scheme is fixed; our florist chooses the shade and the greenery from that morning's delivery. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Pink tulips with a little seasonal foliage, gathered in a loose garden bunch and tied with twine.","price":16900,"defaultLabel":"25 stems","flower":"tulips"},{"slug":"white-cube","name":"White Cube","type":"arrangement","vase":false,"tiers":[{"key":"size_s","label":"Small","price":26900,"default":false},{"key":"size_m","label":"Medium","price":30900,"default":true},{"key":"size_l","label":"Large","price":34900,"default":false}],"hero":"fo-ar-012-hero","heroAlt":"White Cube: white roses arranged square and tight in a low White Cube, cut to one height with no visible foliage","detail":"fo-ar-012-detail","detailAlt":"A closer view of White Cube","desc":"White roses arranged square and tight in a low white cube, cut to one height with no visible foliage. Small, medium as standard, and large. Sent for weddings, congratulations and sympathy, and it suits a reception desk or a side table. Roses are always the flower; the container is white in every size but its material varies by city. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"White roses arranged square and tight in a low white cube, cut to one height with no visible foliage.","price":30900,"defaultLabel":"Medium","flower":"roses"},{"slug":"garden-letter-plush","name":"Garden Letter + Plush","type":"gift_set","vase":false,"tiers":[{"key":"stems_12","label":"12 stems","price":19900,"default":false},{"key":"stems_18","label":"18 stems","price":22900,"default":true},{"key":"stems_24","label":"24 stems","price":25900,"default":false}],"hero":"fo-gs-012-hero","heroAlt":"Garden Letter + Plush: our pastel garden bouquet with a small soft toy, for a new baby or someone recovering at home","detail":"fo-gs-012-detail","detailAlt":"A closer view of Garden Letter + Plush","desc":"Our pastel garden bouquet with a small soft toy, for a new baby or someone recovering at home. Eighteen stems as standard, with twelve and twenty-four sizes. We hold the pastel scheme and our florist chooses the flowers and the toy from the shop; the toy is new, tagged and suitable from birth, and the bouquet is tied light enough to carry. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Our pastel garden bouquet with a small soft toy, for a new baby or someone recovering at home.","price":22900,"defaultLabel":"18 stems","flower":"mixed"},{"slug":"april-window","name":"April Window","type":"bouquet","vase":false,"tiers":[{"key":"stems_15","label":"15 stems","price":19900,"default":false},{"key":"stems_25","label":"25 stems","price":22900,"default":true},{"key":"stems_35","label":"35 stems","price":25900,"default":false}],"hero":"fo-bq-013-hero","heroAlt":"April Window: purple and lilac tulips arranged in a tall, deliberately modern bunch with a collar of their own leaves","detail":"fo-bq-013-detail","detailAlt":"A closer view of April Window","desc":"Purple and lilac tulips arranged in a tall, deliberately modern bunch with a collar of their own leaves. Twenty-five stems as standard, with fifteen and thirty-five stem sizes. It suits a birthday, a congratulations or Women's Day. Purple tulips are always in it; where a shade is sold out our florist moves within purple rather than out of it. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Purple and lilac tulips arranged in a tall, deliberately modern bunch with a collar of their own leaves.","price":22900,"defaultLabel":"25 stems","flower":"tulips"},{"slug":"copper-bowl","name":"Copper Bowl","type":"arrangement","vase":true,"tiers":[{"key":"size_s","label":"Small","price":19900,"default":false},{"key":"size_m","label":"Medium","price":22900,"default":true},{"key":"size_l","label":"Large","price":25900,"default":false}],"hero":"fo-ar-013-hero","heroAlt":"Copper Bowl: orange chrysanthemums arranged in a copper or brass bowl with autumn foliage; the vessel is included","detail":"fo-ar-013-detail","detailAlt":"A closer view of Copper Bowl","desc":"Orange chrysanthemums arranged in a copper or brass bowl with autumn foliage; the vessel is included. Small, medium as standard, or large. Sent for All Saints' visits, thank yous and housewarmings, and chrysanthemums hold longer than most cut flowers. We keep the orange scheme; the bowl's exact finish depends on what our florist stocks. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Orange chrysanthemums arranged in a copper or brass bowl with autumn foliage; the vessel is included.","price":22900,"defaultLabel":"Medium","flower":"chrysanthemums"},{"slug":"tulip-parade","name":"Tulip Parade","type":"bouquet","vase":false,"tiers":[{"key":"stems_15","label":"15 stems","price":19900,"default":false},{"key":"stems_25","label":"25 stems","price":22900,"default":true},{"key":"stems_35","label":"35 stems","price":25900,"default":false}],"hero":"fo-bq-014-hero","heroAlt":"Tulip Parade: tulips in strong mixed colour — orange, pink and red together — tied high with the heads at one level","detail":"fo-bq-014-detail","detailAlt":"A closer view of Tulip Parade","desc":"Tulips in strong mixed colour — orange, pink and red together — tied high with the heads at one level. Twenty-five stems as standard; fifteen and thirty-five sizes available. Sent for birthdays, graduations and congratulations where a bright bunch beats a subtle one. We hold the vibrant colour scheme; the exact colours follow the week's crop. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Tulips in strong mixed colour — orange, pink and red together — tied high with the heads at one level.","price":22900,"defaultLabel":"25 stems","flower":"tulips"},{"slug":"linen-basket","name":"Linen Basket","type":"arrangement","vase":false,"tiers":[{"key":"size_s","label":"Small","price":14900,"default":false},{"key":"size_m","label":"Medium","price":16900,"default":true},{"key":"size_l","label":"Large","price":18900,"default":false}],"hero":"fo-ar-014-hero","heroAlt":"Linen Basket: pastel alstroemeria arranged in a lined linen-look basket, long-lasting and easy to keep topped up with water","detail":"fo-ar-014-detail","detailAlt":"A closer view of Linen Basket","desc":"Pastel alstroemeria arranged in a lined linen-look basket, long-lasting and easy to keep topped up with water. Small, medium as standard, or large. Sent for a new baby, a get-well or a birthday; alstroemeria often holds two weeks. We hold the pastel scheme, and our florist chooses shades and any filler from the day's delivery. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Pastel alstroemeria arranged in a lined linen-look basket, long-lasting and easy to keep topped up with water.","price":16900,"defaultLabel":"Medium","flower":"alstroemeria"},{"slug":"evening-chapel","name":"Evening Chapel","type":"bouquet","vase":false,"tiers":[{"key":"stems_5","label":"5 stems","price":26900,"default":false},{"key":"stems_8","label":"8 stems","price":30900,"default":true},{"key":"stems_12","label":"12 stems","price":34900,"default":false}],"hero":"fo-bq-016-hero","heroAlt":"Evening Chapel: white lilies with dark green foliage, cut long and tied in a narrow classical sheaf for carrying","detail":"fo-bq-016-detail","detailAlt":"A closer view of Evening Chapel","desc":"White lilies with dark green foliage, cut long and tied in a narrow classical sheaf for carrying. Eight stems as standard, five or twelve if you want it lighter or fuller. Written for sympathy and for the thank you that follows a difficult week. The lilies are fixed; our florist sends stems with buds still closed so they last. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"White lilies with dark green foliage, cut long and tied in a narrow classical sheaf for carrying.","price":30900,"defaultLabel":"8 stems","flower":"lilies"},{"slug":"snow-lantern","name":"Snow Lantern","type":"bouquet","vase":false,"tiers":[{"key":"stems_5","label":"5 stems","price":19900,"default":false},{"key":"stems_8","label":"8 stems","price":22900,"default":true},{"key":"stems_12","label":"12 stems","price":25900,"default":false}],"hero":"fo-bq-017-hero","heroAlt":"Snow Lantern: white lilies alone, three or four heads to a stem, tied with no filler and finished in plain grey paper","detail":"fo-bq-017-detail","detailAlt":"A closer view of Snow Lantern","desc":"White lilies alone, three or four heads to a stem, tied with no filler and finished in plain grey paper. Eight stems as standard, with five and twelve sizes. Light and quiet, so it works as a get-well bouquet or a sympathy delivery to a home. Lilies are always in it; the wrap and tie depend on what our florist has in the shop. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"White lilies alone, three or four heads to a stem, tied with no filler and finished in plain grey paper.","price":22900,"defaultLabel":"8 stems","flower":"lilies"},{"slug":"lily-terrace","name":"Lily Terrace","type":"bouquet","vase":false,"tiers":[{"key":"stems_5","label":"5 stems","price":26900,"default":false},{"key":"stems_8","label":"8 stems","price":30900,"default":true},{"key":"stems_12","label":"12 stems","price":34900,"default":false}],"hero":"fo-bq-018-hero","heroAlt":"Lily Terrace: pink lilies with eucalyptus and a soft green collar, tied in a rounded modern shape rather than a sheaf","detail":"fo-bq-018-detail","detailAlt":"A closer view of Lily Terrace","desc":"Pink lilies with eucalyptus and a soft green collar, tied in a rounded modern shape rather than a sheaf. Eight stems as standard; five or twelve on the same page. A birthday, anniversary or Mother's Day bouquet for someone who likes scent. The lilies are always pink; the greenery moves with the season and the shade varies by grower. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Pink lilies with eucalyptus and a soft green collar, tied in a rounded modern shape rather than a sheaf.","price":30900,"defaultLabel":"8 stems","flower":"lilies"},{"slug":"soft-june","name":"Soft June","type":"bouquet","vase":false,"tiers":[{"key":"stems_9","label":"9 stems","price":26900,"default":false},{"key":"stems_15","label":"15 stems","price":30900,"default":true},{"key":"stems_21","label":"21 stems","price":34900,"default":false}],"hero":"fo-bq-020-hero","heroAlt":"Soft June: peonies in pale pink and cream with white filler flowers and grey-green leaves, tied in a loose classical dome","detail":"fo-bq-020-detail","detailAlt":"A closer view of Soft June","desc":"Peonies in pale pink and cream with white filler flowers and grey-green leaves, tied in a loose classical dome. Fifteen stems as standard, nine or twenty-one available. It suits a birthday, a new baby or Mother's Day. We hold the pastel colour scheme rather than the exact flowers, so the mix follows the market inside those shades. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Peonies in pale pink and cream with white filler flowers and grey-green leaves, tied in a loose classical dome.","price":30900,"defaultLabel":"15 stems","flower":"peonies"},{"slug":"blush-terrace","name":"Blush Terrace","type":"bouquet","vase":false,"tiers":[{"key":"stems_9","label":"9 stems","price":35900,"default":false},{"key":"stems_15","label":"15 stems","price":44900,"default":true},{"key":"stems_21","label":"21 stems","price":52900,"default":false}],"hero":"fo-bq-021-hero","heroAlt":"Blush Terrace: deep pink peonies packed tight with almost no foliage, so the bouquet is one dense head of flower","detail":"fo-bq-021-detail","detailAlt":"A closer view of Blush Terrace","desc":"Deep pink peonies packed tight with almost no foliage, so the bouquet is one dense head of flower. Fifteen stems as standard, with nine and twenty-one sizes. Written for weddings and for romance, and priced at the top of our range because the flower is. Peonies are always in it; variety and openness depend on the day's cut. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Deep pink peonies packed tight with almost no foliage, so the bouquet is one dense head of flower.","price":44900,"defaultLabel":"15 stems","flower":"peonies"},{"slug":"peony-hour","name":"Peony Hour","type":"bouquet","vase":false,"tiers":[{"key":"stems_9","label":"9 stems","price":26900,"default":false},{"key":"stems_15","label":"15 stems","price":30900,"default":true},{"key":"stems_21","label":"21 stems","price":34900,"default":false}],"hero":"fo-bq-022-hero","heroAlt":"Peony Hour: white peonies cut to one height and tied without filler, finished with a single paper wrap","detail":"fo-bq-022-detail","detailAlt":"A closer view of Peony Hour","desc":"White peonies cut to one height and tied without filler, finished with a single paper wrap. Fifteen stems as standard; nine or twenty-one if you want it smaller or fuller. Sent for weddings, congratulations and thank yous where restraint is the point. White peonies are fixed; our florist chooses stems with the buds just breaking so they open at the recipient's table. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"White peonies cut to one height and tied without filler, finished with a single paper wrap.","price":30900,"defaultLabel":"15 stems","flower":"peonies"},{"slug":"high-summer","name":"High Summer","type":"bouquet","vase":false,"tiers":[{"key":"stems_5","label":"5 stems","price":14900,"default":false},{"key":"stems_9","label":"9 stems","price":16900,"default":true},{"key":"stems_13","label":"13 stems","price":18900,"default":false}],"hero":"fo-bq-024-hero","heroAlt":"High Summer: sunflowers with wheat, grasses and yellow filler flowers, gathered loose and tied with twine","detail":"fo-bq-024-detail","detailAlt":"A closer view of High Summer","desc":"Sunflowers with wheat, grasses and yellow filler flowers, gathered loose and tied with twine. Nine stems as standard, five or thirteen on request. An easy summer bouquet for a get-well, a housewarming or no reason at all. We hold the yellow colour scheme rather than a fixed recipe, so our florist can use whatever summer stems are open that day. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Sunflowers with wheat, grasses and yellow filler flowers, gathered loose and tied with twine.","price":16900,"defaultLabel":"9 stems","flower":"sunflowers"},{"slug":"late-harvest","name":"Late Harvest","type":"bouquet","vase":false,"tiers":[{"key":"stems_5","label":"5 stems","price":19900,"default":false},{"key":"stems_9","label":"9 stems","price":22900,"default":true},{"key":"stems_13","label":"13 stems","price":25900,"default":false}],"hero":"fo-bq-025-hero","heroAlt":"Late Harvest: sunflowers with orange spray roses, rust foliage and dried grasses, tied for late summer and autumn","detail":"fo-bq-025-detail","detailAlt":"A closer view of Late Harvest","desc":"Sunflowers with orange spray roses, rust foliage and dried grasses, tied for late summer and autumn. Nine stems as standard, with five and thirteen sizes. Sent as a thank you, a housewarming gift or a retirement bouquet. The orange colour scheme is what we hold; the supporting stems change every week as the season turns. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Sunflowers with orange spray roses, rust foliage and dried grasses, tied for late summer and autumn.","price":22900,"defaultLabel":"9 stems","flower":"sunflowers"},{"slug":"bright-side","name":"Bright Side","type":"bouquet","vase":false,"tiers":[{"key":"stems_10","label":"10 stems","price":14900,"default":false},{"key":"stems_15","label":"15 stems","price":16900,"default":true},{"key":"stems_21","label":"21 stems","price":18900,"default":false}],"hero":"fo-bq-026-hero","heroAlt":"Bright Side: gerberas in orange, pink and red with green filler, tied in a clean modern bunch with the heads level","detail":"fo-bq-026-detail","detailAlt":"A closer view of Bright Side","desc":"Gerberas in orange, pink and red with green filler, tied in a clean modern bunch with the heads level. Fifteen stems as standard, with ten and twenty-one sizes. Sent for a get-well, a birthday or a congratulations, and it lasts well on a desk. We hold the vibrant colour scheme rather than named colours; gerbera availability moves daily. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Gerberas in orange, pink and red with green filler, tied in a clean modern bunch with the heads level.","price":16900,"defaultLabel":"15 stems","flower":"gerberas"},{"slug":"carousel","name":"Carousel","type":"bouquet","vase":false,"tiers":[{"key":"stems_10","label":"10 stems","price":14900,"default":false},{"key":"stems_15","label":"15 stems","price":16900,"default":true},{"key":"stems_21","label":"21 stems","price":18900,"default":false}],"hero":"fo-bq-027-hero","heroAlt":"Carousel: gerberas across the full colour range, one head to a stem, tied in the round so no two neighbouring heads share a colour","detail":"fo-bq-027-detail","detailAlt":"A closer view of Carousel","desc":"Gerberas across the full colour range, one head to a stem, tied in the round so no two neighbouring heads share a colour. Fifteen stems as standard, ten or twenty-one available. A cheerful bouquet for a birthday, a graduation or just because. The mixed colour scheme is fixed; which colours arrive depends on the week's crop. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Gerberas across the full colour range, one head to a stem, tied in the round so no two neighbouring heads share a colour.","price":16900,"defaultLabel":"15 stems","flower":"gerberas"},{"slug":"garden-letter","name":"Garden Letter","type":"bouquet","vase":false,"tiers":[{"key":"stems_12","label":"12 stems","price":19900,"default":false},{"key":"stems_18","label":"18 stems","price":22900,"default":true},{"key":"stems_24","label":"24 stems","price":25900,"default":false}],"hero":"fo-bq-029-hero","heroAlt":"Garden Letter: a garden-style bouquet in pale pink, cream and white: spray roses, small filler flowers, grasses and grey-green leaves, tied loose","detail":"fo-bq-029-detail","detailAlt":"A closer view of Garden Letter","desc":"A garden-style bouquet in pale pink, cream and white: spray roses, small filler flowers, grasses and grey-green leaves, tied loose. Eighteen stems as standard, twelve or twenty-four on the same page. Written for an apology, a get-well or a thank you. Our florist chooses the stems on the day and keeps them inside this pastel scheme. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"A garden-style bouquet in pale pink, cream and white: spray roses, small filler flowers, grasses and grey-green leaves, tied loose.","price":22900,"defaultLabel":"18 stems","flower":"mixed"},{"slug":"late-summer-table","name":"Late Summer Table","type":"bouquet","vase":false,"tiers":[{"key":"stems_12","label":"12 stems","price":19900,"default":false},{"key":"stems_18","label":"18 stems","price":22900,"default":true},{"key":"stems_24","label":"24 stems","price":25900,"default":false}],"hero":"fo-bq-030-hero","heroAlt":"Late Summer Table: orange and rust flowers with wheat, seed heads and dried grasses, tied wide and low for a table rather than a hand","detail":"fo-bq-030-detail","detailAlt":"A closer view of Late Summer Table","desc":"Orange and rust flowers with wheat, seed heads and dried grasses, tied wide and low for a table rather than a hand. Eighteen stems as standard, with twelve and twenty-four sizes. Sent for housewarmings, thank yous and retirements from late summer on. The mix is our florist's choice within the orange scheme, because seed heads and grasses change weekly. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Orange and rust flowers with wheat, seed heads and dried grasses, tied wide and low for a table rather than a hand.","price":22900,"defaultLabel":"18 stems","flower":"mixed"},{"slug":"pastel-weekend","name":"Pastel Weekend","type":"bouquet","vase":false,"tiers":[{"key":"stems_12","label":"12 stems","price":14900,"default":false},{"key":"stems_18","label":"18 stems","price":16900,"default":true},{"key":"stems_24","label":"24 stems","price":18900,"default":false}],"hero":"fo-bq-031-hero","heroAlt":"Pastel Weekend: soft pastels only — pale pink, cream, white — cut short and tied in a small tight posy with minimal foliage","detail":"fo-bq-031-detail","detailAlt":"A closer view of Pastel Weekend","desc":"Soft pastels only — pale pink, cream, white — cut short and tied in a small tight posy with minimal foliage. Eighteen stems as standard, twelve or twenty-four available. Sent for a new baby, a get-well or a quiet hello. We hold the pastel colour scheme and let our florist choose the flowers inside it, so nothing arrives half-open. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Soft pastels only — pale pink, cream, white — cut short and tied in a small tight posy with minimal foliage.","price":16900,"defaultLabel":"18 stems","flower":"mixed"},{"slug":"painters-table","name":"Painter's Table","type":"bouquet","vase":false,"tiers":[{"key":"stems_12","label":"12 stems","price":26900,"default":false},{"key":"stems_18","label":"18 stems","price":30900,"default":true},{"key":"stems_24","label":"24 stems","price":34900,"default":false}],"hero":"fo-bq-032-hero","heroAlt":"Painter's Table: strong colour in a deliberately modern shape: focal blooms in pink and orange, sharp foliage, and one unexpected stem","detail":"fo-bq-032-detail","detailAlt":"A closer view of Painter's Table","desc":"Strong colour in a deliberately modern shape: focal blooms in pink and orange, sharp foliage, and one unexpected stem. Eighteen stems as standard, with twelve and twenty-four sizes. Sent for birthdays, congratulations and graduations. The mix is our florist's choice on the day inside the vibrant scheme, which is what keeps it looking made rather than assembled. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Strong colour in a deliberately modern shape: focal blooms in pink and orange, sharp foliage, and one unexpected stem.","price":30900,"defaultLabel":"18 stems","flower":"mixed"},{"slug":"long-weekend","name":"Long Weekend","type":"bouquet","vase":false,"tiers":[{"key":"stems_12","label":"12 stems","price":14900,"default":false},{"key":"stems_18","label":"18 stems","price":16900,"default":true},{"key":"stems_24","label":"24 stems","price":18900,"default":false}],"hero":"fo-bq-033-hero","heroAlt":"Long Weekend: a loose mixed bunch with no fixed recipe: three or four kinds of flower, two foliages, tied rustic and wrapped in kraft paper","detail":"fo-bq-033-detail","detailAlt":"A closer view of Long Weekend","desc":"A loose mixed bunch with no fixed recipe: three or four kinds of flower, two foliages, tied rustic and wrapped in kraft paper. Eighteen stems as standard, twelve or twenty-four on request. Sent as a thank you or for no reason, which is what most flowers are for. Our florist chooses everything in it on the day. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"A loose mixed bunch with no fixed recipe: three or four kinds of flower, two foliages, tied rustic and wrapped in kraft paper.","price":16900,"defaultLabel":"18 stems","flower":"mixed"},{"slug":"seasons-hand","name":"Season's Hand","type":"bouquet","vase":false,"tiers":[{"key":"stems_12","label":"12 stems","price":19900,"default":false},{"key":"stems_18","label":"18 stems","price":22900,"default":true},{"key":"stems_24","label":"24 stems","price":25900,"default":false}],"hero":"fo-bq-034-hero","heroAlt":"Season's Hand: whatever is at its peak that week, tied by hand in mixed colour: usually a focal flower, two supporting stems and seasonal foliage","detail":"fo-bq-034-detail","detailAlt":"A closer view of Season's Hand","desc":"Whatever is at its peak that week, tied by hand in mixed colour: usually a focal flower, two supporting stems and seasonal foliage. Eighteen stems as standard, with twelve and twenty-four sizes. A birthday bouquet or a just-because delivery when you would rather trust the shop than the catalogue. The whole mix is our florist's choice on the day. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Whatever is at its peak that week, tied by hand in mixed colour: usually a focal flower, two supporting stems and seasonal foliage.","price":22900,"defaultLabel":"18 stems","flower":"seasonal"},{"slug":"harvest-light","name":"Harvest Light","type":"bouquet","vase":false,"tiers":[{"key":"stems_12","label":"12 stems","price":19900,"default":false},{"key":"stems_18","label":"18 stems","price":22900,"default":true},{"key":"stems_24","label":"24 stems","price":25900,"default":false}],"hero":"fo-bq-035-hero","heroAlt":"Harvest Light: seasonal stems in orange and amber — flowers, seed heads and turning foliage — tied wide for an autumn table","detail":"fo-bq-035-detail","detailAlt":"A closer view of Harvest Light","desc":"Seasonal stems in orange and amber — flowers, seed heads and turning foliage — tied wide for an autumn table. Eighteen stems as standard, twelve or twenty-four available. Sent for housewarmings and thank yous from September onwards. Our florist chooses the stems on the day and keeps them within the orange scheme, so the bouquet reads as autumn rather than as a list. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Seasonal stems in orange and amber — flowers, seed heads and turning foliage — tied wide for an autumn table.","price":22900,"defaultLabel":"18 stems","flower":"seasonal"},{"slug":"winter-table","name":"Winter Table","type":"bouquet","vase":false,"tiers":[{"key":"stems_12","label":"12 stems","price":26900,"default":false},{"key":"stems_18","label":"18 stems","price":30900,"default":true},{"key":"stems_24","label":"24 stems","price":34900,"default":false}],"hero":"fo-bq-036-hero","heroAlt":"Winter Table: white seasonal flowers with pine, eucalyptus and silver foliage, tied for december and wrapped in white","detail":"fo-bq-036-detail","detailAlt":"A closer view of Winter Table","desc":"White seasonal flowers with pine, eucalyptus and silver foliage, tied for December and wrapped in white. Eighteen stems as standard, with twelve and twenty-four sizes. Sent for Christmas and New Year, at home or to an office. Our florist chooses the flowers on the day inside the white scheme; the winter greenery is whatever can be cut locally. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"White seasonal flowers with pine, eucalyptus and silver foliage, tied for December and wrapped in white.","price":30900,"defaultLabel":"18 stems","flower":"seasonal"},{"slug":"spring-post","name":"Spring Post","type":"bouquet","vase":false,"tiers":[{"key":"stems_12","label":"12 stems","price":14900,"default":false},{"key":"stems_18","label":"18 stems","price":16900,"default":true},{"key":"stems_24","label":"24 stems","price":18900,"default":false}],"hero":"fo-bq-037-hero","heroAlt":"Spring Post: yellow spring stems — narcissi, tulips, mimosa or ranunculus depending on the week — tied loose with their own leaves","detail":"fo-bq-037-detail","detailAlt":"A closer view of Spring Post","desc":"Yellow spring stems — narcissi, tulips, mimosa or ranunculus depending on the week — tied loose with their own leaves. Eighteen stems as standard, twelve or twenty-four on request. Sent for Easter, Women's Day and Mother's Day. Our florist chooses within the yellow scheme, because the spring window for each of these flowers is only a few weeks long. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Yellow spring stems — narcissi, tulips, mimosa or ranunculus depending on the week — tied loose with their own leaves.","price":16900,"defaultLabel":"18 stems","flower":"seasonal"},{"slug":"old-town","name":"Old Town","type":"bouquet","vase":false,"tiers":[{"key":"stems_12","label":"12 stems","price":14900,"default":false},{"key":"stems_18","label":"18 stems","price":16900,"default":true},{"key":"stems_24","label":"24 stems","price":18900,"default":false}],"hero":"fo-bq-038-hero","heroAlt":"Old Town: red carnations with ruscus, tied in the round in the old style and wrapped in plain paper","detail":"fo-bq-038-detail","detailAlt":"A closer view of Old Town","desc":"Red carnations with ruscus, tied in the round in the old style and wrapped in plain paper. Eighteen stems as standard, with twelve and twenty-four sizes. A long-lasting, unfussy bouquet for a birthday, a name day or a Sunday visit; carnations often hold two weeks in water. Carnations are always the flower; the foliage follows the season. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Red carnations with ruscus, tied in the round in the old style and wrapped in plain paper.","price":16900,"defaultLabel":"18 stems","flower":"carnations"},{"slug":"blue-hour","name":"Blue Hour","type":"bouquet","vase":false,"tiers":[{"key":"stems_3","label":"3 stems","price":26900,"default":false},{"key":"stems_5","label":"5 stems","price":30900,"default":true},{"key":"stems_7","label":"7 stems","price":34900,"default":false}],"hero":"fo-bq-039-hero","heroAlt":"Blue Hour: blue hydrangea heads with a little eucalyptus, tied short and low so the weight sits in the hand","detail":"fo-bq-039-detail","detailAlt":"A closer view of Blue Hour","desc":"Blue hydrangea heads with a little eucalyptus, tied short and low so the weight sits in the hand. Five heads as standard, with three and seven head sizes. Sent for anniversaries, congratulations and housewarmings, and it dries well afterwards. Hydrangea is always the flower; the blue depends on the grower's soil, so shade varies between deliveries. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"Blue hydrangea heads with a little eucalyptus, tied short and low so the weight sits in the hand.","price":30900,"defaultLabel":"5 stems","flower":"hydrangeas"},{"slug":"morning-scent","name":"Morning Scent","type":"bouquet","vase":false,"tiers":[{"key":"stems_15","label":"15 stems","price":19900,"default":false},{"key":"stems_25","label":"25 stems","price":22900,"default":true},{"key":"stems_35","label":"35 stems","price":25900,"default":false}],"hero":"fo-bq-040-hero","heroAlt":"Morning Scent: white freesias, tied in a light narrow bunch with no filler, in plain paper","detail":"fo-bq-040-detail","detailAlt":"A closer view of Morning Scent","desc":"White freesias, tied in a light narrow bunch with no filler, in plain paper. Twenty-five stems as standard, fifteen or thirty-five available. Strongly scented for their size, which is why we send them as a get-well or a thank you, and after an apology. Freesias are always the flower; buds open over several days, so it arrives part-closed. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"White freesias, tied in a light narrow bunch with no filler, in plain paper.","price":22900,"defaultLabel":"25 stems","flower":"freesias"},{"slug":"farewell-wreath","name":"Farewell Wreath","type":"funeral","vase":false,"tiers":[{"key":"size_s","label":"Small","price":48900,"default":false},{"key":"size_m","label":"Medium","price":56900,"default":true},{"key":"size_l","label":"Large","price":63900,"default":false}],"hero":"fo-fn-001-hero","heroAlt":"A round white chrysanthemum funeral wreath with dark green foliage, standing on neutral stone","detail":"fo-fn-001-detail","detailAlt":"Close view of a quarter of the wreath ring, white chrysanthemum heads against dark foliage","desc":"A round funeral wreath of white chrysanthemums and greenery on a frame, made to stand at a graveside or lean against a headstone. Small, medium as standard, or large. Sent for funerals and for All Saints' visits. We hold the white scheme and the form; the flowers inside it are chosen by our florist from that morning's market. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"A round funeral wreath of white chrysanthemums and greenery on a frame, made to stand at a graveside or lean against a headstone.","price":56900,"defaultLabel":"Medium","flower":"chrysanthemums"},{"slug":"standing-spray","name":"Standing Spray","type":"funeral","vase":false,"tiers":[{"key":"size_s","label":"Small","price":48900,"default":false},{"key":"size_m","label":"Medium","price":56900,"default":true},{"key":"size_l","label":"Large","price":63900,"default":false}],"hero":"fo-fn-002-hero","heroAlt":"Standing Spray: a standing funeral spray of white lilies and foliage on a frame, made to be seen from the front at a service","detail":"fo-fn-002-detail","detailAlt":"A closer view of Standing Spray","desc":"A standing funeral spray of white lilies and foliage on a frame, made to be seen from the front at a service. Small, medium as standard, or large. Ordered by families and by colleagues who cannot attend. The white scheme and the standing form are fixed; which white flowers our florist uses depends on the day, and lily buds may still be closed. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"A standing funeral spray of white lilies and foliage on a frame, made to be seen from the front at a service.","price":56900,"defaultLabel":"Medium","flower":"lilies"},{"slug":"casket-spray","name":"Casket Spray","type":"funeral","vase":false,"tiers":[{"key":"size_s","label":"Small","price":64900,"default":false},{"key":"size_m","label":"Medium","price":72900,"default":true},{"key":"size_l","label":"Large","price":79900,"default":false}],"hero":"fo-fn-003-hero","heroAlt":"Casket Spray: a Casket Spray of white lilies and greenery, made long and low to lie along the lid","detail":"fo-fn-003-detail","detailAlt":"A closer view of Casket Spray","desc":"A casket spray of white lilies and greenery, made long and low to lie along the lid. Small, medium as standard, or large; the medium suits most caskets. Ordered by immediate family, and our florist will call the funeral home to check dimensions. The white scheme is held; flowers are chosen on the day from what will hold its shape for the service. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"A casket spray of white lilies and greenery, made long and low to lie along the lid.","price":72900,"defaultLabel":"Medium","flower":"lilies"},{"slug":"white-heart","name":"White Heart","type":"funeral","vase":false,"tiers":[{"key":"size_s","label":"Small","price":64900,"default":false},{"key":"size_m","label":"Medium","price":72900,"default":true},{"key":"size_l","label":"Large","price":79900,"default":false}],"hero":"fo-fn-004-hero","heroAlt":"White Heart: a heart-shaped tribute of white roses on a frame, filled edge to edge and finished with a green border","detail":"fo-fn-004-detail","detailAlt":"A closer view of White Heart","desc":"A heart-shaped tribute of white roses on a frame, filled edge to edge and finished with a green border. Small, medium as standard, or large. Ordered most often by a spouse or a child. The white scheme and the heart form are what we hold; rose variety and any filler are chosen by our florist on the morning of the service. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"A heart-shaped tribute of white roses on a frame, filled edge to edge and finished with a green border.","price":72900,"defaultLabel":"Medium","flower":"roses"},{"slug":"sympathy-basket","name":"Sympathy Basket","type":"funeral","vase":false,"tiers":[{"key":"size_s","label":"Small","price":35900,"default":false},{"key":"size_m","label":"Medium","price":41900,"default":true},{"key":"size_l","label":"Large","price":47900,"default":false}],"hero":"fo-fn-005-hero","heroAlt":"Sympathy Basket: a Sympathy Basket of white and cream flowers with foliage, planted in foam so it can go straight to a home, a chapel or an office","detail":"fo-fn-005-detail","detailAlt":"A closer view of Sympathy Basket","desc":"A sympathy basket of white and cream flowers with foliage, planted in foam so it can go straight to a home, a chapel or an office. Small, medium as standard, or large. Sent when a wreath would be too formal. We hold the white scheme; the mix is our florist's choice from that day's market. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"A sympathy basket of white and cream flowers with foliage, planted in foam so it can go straight to a home, a chapel or an office.","price":41900,"defaultLabel":"Medium","flower":"mixed"},{"slug":"grave-bouquet","name":"Grave Bouquet","type":"funeral","vase":false,"tiers":[{"key":"size_s","label":"Small","price":25900,"default":false},{"key":"size_m","label":"Medium","price":30900,"default":true},{"key":"size_l","label":"Large","price":34900,"default":false}],"hero":"fo-fn-006-hero","heroAlt":"Grave Bouquet: a Grave Bouquet of mixed chrysanthemums, tied flat so it can be laid on a stone or set in a grave vase","detail":"fo-fn-006-detail","detailAlt":"A closer view of Grave Bouquet","desc":"A grave bouquet of mixed chrysanthemums, tied flat so it can be laid on a stone or set in a grave vase. Small, medium as standard, or large. Sent for All Saints' visits and for anniversaries of a death, especially in Poland. We hold the mixed scheme and the flat form; colours follow what our florist can buy that week. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"A grave bouquet of mixed chrysanthemums, tied flat so it can be laid on a stone or set in a grave vase.","price":30900,"defaultLabel":"Medium","flower":"chrysanthemums"},{"slug":"memorial-cross","name":"Memorial Cross","type":"funeral","vase":false,"tiers":[{"key":"size_s","label":"Small","price":48900,"default":false},{"key":"size_m","label":"Medium","price":56900,"default":true},{"key":"size_l","label":"Large","price":63900,"default":false}],"hero":"fo-fn-007-hero","heroAlt":"Memorial Cross: a cross-shaped tribute of white chrysanthemums on a frame, with a green edge and a plain finish","detail":"fo-fn-007-detail","detailAlt":"A closer view of Memorial Cross","desc":"A cross-shaped tribute of white chrysanthemums on a frame, with a green edge and a plain finish. Small, medium as standard, or large. Ordered for funerals and for All Saints' in Catholic countries, where the form is expected. The white scheme and the cross form are fixed; the flowers within them are chosen by our florist on the morning of the service. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"A cross-shaped tribute of white chrysanthemums on a frame, with a green edge and a plain finish.","price":56900,"defaultLabel":"Medium","flower":"chrysanthemums"},{"slug":"quiet-wreath","name":"Quiet Wreath","type":"funeral","vase":false,"tiers":[{"key":"size_s","label":"Small","price":35900,"default":false},{"key":"size_m","label":"Medium","price":41900,"default":true},{"key":"size_l","label":"Large","price":47900,"default":false}],"hero":"fo-fn-008-hero","heroAlt":"Quiet Wreath: a wreath in pastel rather than pure white — pale pink, cream and soft green on a round frame — for a family that wants something gentler","detail":"fo-fn-008-detail","detailAlt":"A closer view of Quiet Wreath","desc":"A wreath in pastel rather than pure white — pale pink, cream and soft green on a round frame — for a family that wants something gentler. Small, medium as standard, or large. Sent for funerals and memorials. We hold the pastel scheme and the round form, and our florist chooses the flowers from what is open that morning. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"A wreath in pastel rather than pure white — pale pink, cream and soft green on a round frame — for a family that wants something gentler.","price":41900,"defaultLabel":"Medium","flower":"mixed"},{"slug":"condolence-bouquet","name":"Condolence Bouquet","type":"funeral","vase":false,"tiers":[{"key":"size_s","label":"Small","price":35900,"default":false},{"key":"size_m","label":"Medium","price":41900,"default":true},{"key":"size_l","label":"Large","price":47900,"default":false}],"hero":"fo-fn-009-hero","heroAlt":"Condolence Bouquet: a tied sheaf of white roses and foliage, made to be carried and then laid down or put into water","detail":"fo-fn-009-detail","detailAlt":"A closer view of Condolence Bouquet","desc":"A tied sheaf of white roses and foliage, made to be carried and then laid down or put into water. Small, medium as standard, or large. Sent by friends and colleagues to a home rather than to a service, where a framed tribute would be too much. The white scheme is held; the foliage follows the season. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"A tied sheaf of white roses and foliage, made to be carried and then laid down or put into water.","price":41900,"defaultLabel":"Medium","flower":"roses"},{"slug":"stone-garden","name":"Stone Garden","type":"funeral","vase":false,"tiers":[{"key":"size_s","label":"Small","price":48900,"default":false},{"key":"size_m","label":"Medium","price":56900,"default":true},{"key":"size_l","label":"Large","price":63900,"default":false}],"hero":"fo-fn-010-hero","heroAlt":"Stone Garden: a low white arrangement in a stone-look container, made to sit on a grave, a niche shelf or a windowsill without a vase","detail":"fo-fn-010-detail","detailAlt":"A closer view of Stone Garden","desc":"A low white arrangement in a stone-look container, made to sit on a grave, a niche shelf or a windowsill without a vase. Small, medium as standard, or large. Sent for funerals, All Saints' and memorials. We hold the white scheme and the low form; the flowers and the container's finish are our florist's choice. Every order will be made by hand and delivered in person by our florist in the recipient's city.","short":"A low white arrangement in a stone-look container, made to sit on a grave, a niche shelf or a windowsill without a vase.","price":56900,"defaultLabel":"Medium","flower":"mixed"}];
+  var TYPES = {"bouquet": ["Hand-tied bouquets", "Hand-tied bouquet"], "arrangement": ["Arrangements", "Arrangement"], "plant": ["Plants", "Plant"], "gift_set": ["Flowers and gift sets", "Flowers and a gift"], "funeral": ["Funeral and sympathy flowers", "Funeral flowers"]};
+  var FLOWERS = {"roses": "Roses", "tulips": "Tulips", "lilies": "Lilies", "peonies": "Peonies", "sunflowers": "Sunflowers", "orchids": "Orchids", "gerberas": "Gerberas", "chrysanthemums": "Chrysanthemums", "freesias": "Freesias", "hydrangeas": "Hydrangeas", "carnations": "Carnations", "alstroemeria": "Alstroemeria", "mixed": "Mixed flowers", "seasonal": "Seasonal stems"};
+  var MEDIA = 'https://media.flowersoverseas.com/media/';
+  var $ = function (id) { return document.getElementById(id); };
+  function fmt(minor) { return (minor / 100).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' PLN'; }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function srcset(asset, widths) { return widths.map(function (w) { return MEDIA + asset + '/' + w + '.webp ' + w + 'w'; }).join(', '); }
+  function sub(p) { return p.defaultLabel + ' · ' + (FLOWERS[p.flower] || p.flower).toLowerCase(); }
+
+  var slug = new URLSearchParams(location.search).get('p') || 'amber-hour';
+  var product = CATALOG.filter(function (x) { return x.slug === slug; })[0] || CATALOG.filter(function (x) { return x.slug === 'amber-hour'; })[0];
+
+  function relatedFor(p) {
+    var same = CATALOG.filter(function (x) { return x.type === p.type; });
+    var i = same.indexOf(p);
+    return same.slice(i + 1).concat(same.slice(0, i)).slice(0, 6);
+  }
+
+  function render(p) {
+    document.title = p.name + ' · Flowers for Poland · Flowers Overseas';
+    $('p-name').textContent = p.name; $('crumb-name').textContent = p.name; $('about-name').textContent = p.name;
+    $('crumb-type').textContent = TYPES[p.type][0]; $('crumb-type').href = 'shop.html?type=' + p.type;
+    $('p-type').textContent = TYPES[p.type][1] + ' · for Poland';
+    $('p-short').textContent = p.short; $('p-desc').textContent = p.desc;
+    var excl = (p.type === 'bouquet' || p.type === 'gift_set') && !p.vase;
+    $('p-excl').hidden = !excl;
+    var main = $('g-main').querySelector('img');
+    main.src = MEDIA + p.hero + '/640.webp'; main.srcset = srcset(p.hero, [384, 640, 828]); main.alt = p.heroAlt;
+    var det = $('g-detail').querySelector('img');
+    det.src = MEDIA + p.detail + '/384.webp'; det.srcset = srcset(p.detail, [384]); det.alt = p.detailAlt;
+    $('t-main').src = MEDIA + p.hero + '/384.webp'; $('t-detail').src = MEDIA + p.detail + '/384.webp';
+    $('tiers').innerHTML = p.tiers.map(function (t) {
+      return '<label class="tier"><input type="radio" name="tier" value="' + t.key + '" data-price="' + t.price + '" data-label="' + esc(t.label) + '"' + (t.default ? ' checked' : '') + '><span class="tier-label">' + esc(t.label) + '</span><span class="tier-price">' + fmt(t.price) + '</span></label>';
+    }).join('');
+    $('related').innerHTML = relatedFor(p).map(function (x) {
+      return '<article class="card"><a href="product.html?p=' + x.slug + '"><div class="card-photo"><img src="' + MEDIA + x.hero + '/640.webp" srcset="' + srcset(x.hero, [384, 640, 828]) + '" sizes="(min-width: 1100px) 200px, (min-width: 700px) 30vw, 46vw" alt="' + esc(x.heroAlt) + '" width="800" height="1000" loading="lazy" decoding="async"></div><h3>' + esc(x.name) + '</h3><p class="card-sub">' + esc(sub(x)) + '</p><p class="card-price">' + fmt(x.price) + '<small>all in</small></p></a></article>';
+    }).join('');
+  }
+  if (product.slug !== 'amber-hour') render(product);
+  if (!$('p-excl').textContent.trim()) $('p-excl').hidden = true;
+
+  // Who it is for (from the home page's letter), kept on this device only.
+  var DEAR = { mum: 'Dear Mum,', dad: 'Dear Dad,', grandma: 'Dear Grandma,', grandad: 'Dear Grandad,', sister: 'Dear sis,', brother: 'Dear brother,', friend: 'Dear friend,', love: 'My love,' };
+  try { var who = sessionStorage.getItem('fo-who'); if (who && DEAR[who]) $('msg').placeholder = DEAR[who] + ' …'; } catch (e) {}
+
+  var form = $('buy'), msg = $('msg'), preview = $('card-preview');
+  var EMPTY = preview.textContent;
+
+  function chosen() {
+    var tier = form.querySelector('input[name="tier"]:checked');
+    var addons = Array.prototype.slice.call(form.querySelectorAll('input[name="addon"]:checked'));
+    var day = form.querySelector('input[name="date"]:checked');
+    var other = $('other').value;
+    var when = day ? day.dataset.long : other ? new Date(other + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : '';
+    var total = +tier.dataset.price + addons.reduce(function (s, a) { return s + +a.dataset.price; }, 0);
+    return { tier: tier, addons: addons, when: when, total: total };
+  }
+
+  function update() {
+    var c = chosen();
+    $('p-price').textContent = fmt(+c.tier.dataset.price);
+    $('s-item').textContent = product.name + ', ' + c.tier.dataset.label;
+    $('s-item-price').textContent = fmt(+c.tier.dataset.price);
+    var list = $('sum-list');
+    list.querySelectorAll('[data-addon-row]').forEach(function (r) { r.remove(); });
+    var after = list.firstElementChild;
+    c.addons.forEach(function (a) {
+      var row = document.createElement('div'); row.setAttribute('data-addon-row', '');
+      row.innerHTML = '<dt>' + esc(a.dataset.name) + '</dt><dd>' + fmt(+a.dataset.price) + '</dd>';
+      after.after(row); after = row;
+    });
+    $('s-total').textContent = fmt(c.total); $('sticky-total').textContent = fmt(c.total);
+    $('allergen').hidden = !form.querySelector('input[value="chocolates"]:checked');
+    var text = msg.value.trim();
+    preview.textContent = text ? msg.value : EMPTY;
+    preview.classList.toggle('is-empty', !text);
+  }
+  form.addEventListener('change', update);
+  msg.addEventListener('input', update);
+
+  $('other-btn').addEventListener('click', function () {
+    var wrap = $('other-wrap'); wrap.hidden = !wrap.hidden;
+    this.setAttribute('aria-expanded', String(!wrap.hidden));
+    if (!wrap.hidden) $('other').focus();
+  });
+  $('other').addEventListener('change', function () {
+    if (this.value) form.querySelectorAll('input[name="date"]').forEach(function (r) { r.checked = false; });
+    $('date-err').hidden = true; update();
+  });
+  $('days').addEventListener('change', function () { $('other').value = ''; $('date-err').hidden = true; });
+
+  function send(e) {
+    if (e) e.preventDefault();
+    var c = chosen();
+    if (!c.when) {
+      $('date-err').hidden = false;
+      $('date-step').scrollIntoView({ block: 'center' });
+      form.querySelector('input[name="date"]').focus({ preventScroll: true });
+      return;
+    }
+    $('r-what').textContent = product.name + ', ' + c.tier.dataset.label;
+    $('r-when').textContent = c.when;
+    $('r-with').textContent = ['A printed card'].concat(c.addons.map(function (a) { return a.dataset.name.toLowerCase(); })).join(', ');
+    $('r-msg').hidden = !msg.value.trim();
+    $('r-msg').textContent = msg.value;
+    $('r-total').textContent = fmt(c.total);
+    $('recap').showModal();
+  }
+  form.addEventListener('submit', send);
+  $('sticky-send').addEventListener('click', function () { send(); });
+
+  // The desktop frame: thumbnails switch it, and writing the card turns it into the card.
+  var thumbs = document.querySelectorAll('.thumbs button');
+  function show(i) {
+    Array.prototype.forEach.call($('gallery').children, function (f, j) { f.classList.toggle('is-active', i === j); });
+    thumbs.forEach(function (t, j) { t.setAttribute('aria-pressed', String(i === j)); });
+  }
+  thumbs.forEach(function (t, i) { t.addEventListener('click', function () { show(i); }); });
+  msg.addEventListener('focus', function () { show(2); });
+
+  // The phone gallery: the dots move between the photographs and the card.
+  var gallery = $('gallery'), slides = gallery.children, dots = document.querySelectorAll('.dots button');
+  dots.forEach(function (d, i) {
+    d.addEventListener('click', function () { gallery.scrollTo({ left: slides[i].offsetLeft - slides[0].offsetLeft, behavior: 'smooth' }); });
+  });
+  gallery.addEventListener('scroll', function () {
+    var i = Math.round(Math.abs(gallery.scrollLeft) / (slides[1].offsetLeft - slides[0].offsetLeft));
+    dots.forEach(function (d, j) { d.setAttribute('aria-current', String(i === j)); });
+  }, { passive: true });
+
+  update();
+})();
+document.querySelectorAll('[data-remind]').forEach(function (f) {
+  f.addEventListener('submit', function (e) {
+    e.preventDefault();
+    f.querySelector('.status').textContent = 'This is a design preview, so nothing was sent or stored.';
+  });
+});
+</script>
+</body>
+</html>

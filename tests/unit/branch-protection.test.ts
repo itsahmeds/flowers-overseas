@@ -103,6 +103,10 @@ describe("the required-check contract on the committed workflows (AC-21)", () =>
       "audit",
       "build",
       "catalogue-check",
+      // Spec 040 AC-29 (TASK-100): derived from `ci.yml` like the rest. It checks the live zone,
+      // so it is red until the founder adds the two repository secrets and runs the first
+      // `cloudflare:apply` (TASK-100 escalation E-3).
+      "cloudflare-check",
       "commitlint",
       // Spec 040 AC-8 / T-08 (TASK-135): the `container` job builds the image with no credential
       // in the environment and probes the running artefact. Derived from `ci.yml` like every
