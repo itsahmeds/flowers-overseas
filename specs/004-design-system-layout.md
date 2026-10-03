@@ -719,3 +719,206 @@ Watched red by re-rendering one unpublished id as text. → AC-14.
 Open for the founder: none.
 Raised by: the founder in chat, 2026-10-03; ruled by the orchestrator; implemented by TASK-173.
 
+**A21 — Visual identity v2 (§2 L51, L53, L57–L60, L77–L81; §3 L122; §5.3 L199–L212; §11 L339–L342;
+§13 L376, L379; §14 A6 L454, A7 L467, A9 L492, A11 L518; AC-1, AC-3, AC-4, AC-10, AC-11, AC-15,
+AC-25, AC-27; T-01, T-04, T-05, T-06, T-12, T-13, T-17, T-27, T-29; spec 005 §2 L65–L67; spec 008
+AC-6, AC-23; spec 009 AC-14, AC-21; `plan/01` §7 L222; founder ruling 2026-10-03).**
+Original: §13's resolution note (L376) and A6 bind the v1 identity — white paper, cool-grey inks, one
+forest-green accent, Newsreader display with IBM Plex Sans body, ≤45 KB of fonts — and the v1 home
+(full-bleed photograph with the type-ahead finder card, A11).
+Ruling: the founder rejected v1 on 2026-10-03 ("i see shit ui ux that a junior designer would
+make"), reviewed three directions and their variants, and chose direction A in direction C's
+colours: "A is good", "I like A with C colors better not the researched one... main background
+color could just be a little lighter", "a bit more light", "Good. Now lets lock in the design and
+start building".
+Corrected (founder ruling, written as binding by the spec-writer, 2026-10-03):
+
+1. **Design source of truth.** `docs/design/directions/warm-c/` (`home.html`, `shop.html`,
+   `product.html`, `README.md`) plus design system v2 in `docs/design/system/` (tokens, colour,
+   typography, components) and `docs/design/wireframes/` (every page type, desktop 1440 and mobile
+   390). Implementers match those artboards. The v1 artboards stop binding; the designer marks them
+   superseded. **The artboards set the look; behaviour, data and states stay the owning spec's.**
+   Where an artboard draws behaviour a spec forbids, the spec wins and the designer records the
+   difference in `docs/design/README.md` under "Where the sheet and the code currently differ".
+   Known cases: the home's "Occasion reminders" e-mail form (a new personal-data flow with no spec,
+   so not rendered, A20); the shop's client-side filters, "load more" and "For your mum" line (spec
+   008 AC-9 and AC-23: a GET form, server pagination, no island); the product page's add-on
+   checkboxes that change a total and its dated chips (spec 009 §13 Q6 and §14 A19: a priced
+   read-only list, dates only when `pickerState` is `live`); and the artboards' Google Fonts
+   `<link>`s, which never ship (clause 3).
+2. **Palette.** Supersedes §2 L51's palette intent and L376's colours. The token values are the
+   table in `docs/design/directions/warm-c/README.md` §"Palette": `--paper` `oklch(99.8% 0.002
+   85)`, `--paper-2` `oklch(98.9% 0.006 85)`, `--card`, the plum-navy `--ink`/`-2`/`-3`, poppy
+   `--accent` (Send, prices and the one emotional phrase per page), cornflower `--sky` (links,
+   labels, eyebrows, the postmark, the selected chip and day), sunflower `--sun` (highlight), the
+   stamp tints `--blush`/`--butter`/`--sage-wash`/`--leaf-wash`, stem green `--stem` ("included"),
+   and `--logo-ink`/`--logo-accent` for the logo exactly as it ships. Tokens stay semantic, in one
+   `@theme` block (AC-1). Every text and UI pair a component uses is in `tokens/contrast.ts` and meets
+   WCAG 2.2 AA (AC-3's thresholds, unchanged). **The airmail edge** (poppy, white and cornflower
+   stripes) is one `@utility`, used in three places only: the top of the home's sentence letter,
+   the top of the product page's "Here is what will arrive" recap, and the top of the footer.
+3. **Type.** Supersedes §2 L53's "one variable font", L57–L60, §3 L122's "no second/display
+   typeface", §13 Q2 (L379) and A6. The families are **Fraunces** (display), **Alegreya Sans**
+   (body) and **Caveat** (the buyer's own words in the printed-card preview only; never a price, a
+   button, a label or a heading, and never on another page). The **wordmark** stays exactly as the
+   logo ships, as Newsreader 500 outlined to paths in the committed SVG, so no Newsreader file is
+   loaded at all. The smallest compliant set, binding:
+   - **Files.** Fraunces roman at weight 400 with `SOFT` 100 and `opsz` pinned to the artboards'
+     values; Fraunces italic at 300 (the emotional phrase); Alegreya Sans 400 and 700 (the
+     artboards' 500 renders from 400 or 700 as design system v2 maps it, as A6 did with Plex's
+     medium); Caveat at 500. Each is either a static instance or a variable file with only the
+     `wght` axis left, whichever is smaller, as TASK-175 measures. No other axis, weight or style.
+   - **Subsets.** Latin and Latin-Ext for every family (AC-4's `ą ć ę ł ń ó ś ź ż` rule holds), as
+     separate `unicode-range` files, self-hosted through `next/font/local` from committed files.
+     No request to `fonts.googleapis.com` or `fonts.gstatic.com`, ever (ADR-0016's `font-src
+     'self'`).
+   - **Loading.** `font-display: swap` and matched fallback metrics on every face. Preload at most
+     two files per page: the Alegreya Sans 400 Latin file always, and the Fraunces roman Latin file
+     only on a page whose LCP element is display-face text. Never preload the italic, the
+     Latin-Ext files or Caveat. Caveat loads only on the product page.
+   - **Budget.** This supersedes AC-4's and AC-25's ≤45 KB. Preloaded font bytes are ≤50 KB per
+     page. Font transfer is ≤90 KB on an `en`, `en-gb` or `de` page and ≤120 KB on a `pl` page,
+     plus ≤30 KB for Caveat on a product page. All values are Brotli bytes, asserted from
+     `src/modules/ui/fonts/subset.json` by `pnpm budget:client-js`. The budget is not raised a
+     second time. If TASK-175 cannot fit it, it escalates, and the first thing cut is the Fraunces
+     italic: the emotional phrase then renders in the roman at the lightest weight shipped.
+   - **Unchanged.** LCP <2,000 ms on every URL of the Lighthouse set (AC-24, A18), CLS <0.05 and
+     the 131,072 B client-JS budget (A1). `plan/01` §7 L222's "1 variable font" reads as this
+     clause, the same stated deviation A6 made, and no ADR is proposed.
+4. **The home's sentence picker** ("I'd like to send flowers to … in … for …") replaces the v1
+   finder card and its island (`FinderTypeahead`), superseding A11 and AC-10's "destination
+   picker" by name. It is a server-rendered `<form method="get">` that works with JavaScript
+   disabled.
+   - **Fields.** Only the country (ISO code) and the occasion (occasion key) have `name`s.
+   - **Action.** One `no-store`, `X-Robots-Tag: noindex` route under `/api/` (robots-disallowed
+     since spec 001). It parses its parameters with zod and answers **303**:
+     - to the country occasion page when the destination is published and that page exists;
+     - otherwise to the country shop root;
+     - to the destinations hub for an unpublished or unknown country.
+
+     This redirect is driven by the user's own input, never by IP or headers (ADR-0006). The
+     target URL carries nothing the shop does not already accept.
+   - **AC-11 moves here.** The country select lists the seven destinations in `collator(locale)`
+     order. An unpublished destination is a disabled option labelled "not yet" (a state message,
+     A20 clause 3). Flipping `corridorPagePublished` enables it, with no change under `src/app/`.
+   - **Personalisation.** The "who it's for" select is a closed list of message-keyed
+     relationships (mum, dad, … someone I love), never free text, and has **no `name`**. It is
+     never submitted, so it never reaches a URL, a log, analytics or the server.
+     - On submit, one home island of ≤1,024 B Brotli may write the chosen key to `sessionStorage`
+       (`fo-who`). That island replaces the finder's, so the home's script bytes go down.
+     - The product page's preview island may read `fo-who` to personalise its placeholder.
+     - No listing page reads it (spec 008 AC-23).
+     - `fo-who` is a row in `src/config/cookies.ts`, which gains a `storage` field (`cookie |
+       sessionStorage`). It is classed essential: it is written only on the user's explicit
+       choice, for the function they asked for.
+5. **The printed-card preview** is the product page's one client island. It is ≤2,048 B Brotli,
+   makes no network access and adds no inline script (spec 009 AC-14's limits, unchanged).
+   - It takes spec 009 AC-14's "only client island the PDP adds" slot. `DateAndTierEnhancer` is
+     not built (spec 009 §12 task 9). If it is ever built, it shares this island and its 2,048 B,
+     or it comes back as a spec 009 amendment.
+   - The card-message `<textarea>` has no `name` and is never stored or submitted in Phase 0.
+     Without JavaScript the preview shows its labelled sample text.
+   - **Cards are printed, never claimed as handwritten** (founder, 2026-10-03). The add-on is
+     "Printed card", the preview is labelled "Printed on our card · included", and the recap reads
+     "A printed card". These replace the catalogue's "Handwritten card" strings. AC-15's forbidden
+     claim shapes gain "handwritten" and "hand-written" in every locale's messages and catalogue
+     copy.
+6. **Approximate equivalents under a destination-specific price** (founder, 2026-10-03, in chat,
+   with a competitor's card: "also do this too.. like showing prices this way too in usd eur and
+   gpt at the bottom too"). Kept here rather than in spec 005 §14, because it is a display rule
+   carried by the v2 price primitive and implemented by TASK-178 and TASK-179. It amends spec 008
+   AC-6's "one all-in price" and spec 009 AC-21's "no second total", and it uses spec 005's FX
+   surface without changing its maths.
+   - **(a) The prominent price is unchanged.** One all-in price, VAT and delivery included, equal
+     to the quote and to schema `price`. It is shown in the display currency spec 005 §2 L67 and
+     spec 008 §13 Q9 fix: the locale default in cached HTML today, and the buyer's `fo_currency`
+     choice once spec 008's repaint island ships. That island then repaints the equivalents from
+     the same embedded table.
+   - **(b) The equivalents line.** Under the price, in smaller text that still meets 4.5:1, the
+     page shows the *other* currencies of {EUR, GBP, PLN, USD}: up to three, never the charged one.
+     - Each is the charged amount converted at the **same FX snapshot and `fxAsOf`** as the
+       charged price (`fxRateFor`), at the mid rate. No `FX_BUFFER_BP` and no psychological
+       rounding apply, because this describes what the buyer pays, not what we would charge in
+       that currency.
+     - Integer minor units are rounded to the nearest unit and formatted by `formatMoney` (Intl).
+       The list is joined by the `format.ts` list formatter.
+     - The line is labelled as approximate and names the rate's date, not "today", because the
+       Phase 0 snapshot is dated: e.g. "about €91.99 · $103.57 · £78.23 at the rate of 3 October".
+       This is a new message key, approved with the batch.
+     - USD becomes an **equivalent-only** currency. TASK-178 adds a `currencies.ts` row and the
+       ECB USD rate in the `fx.data.ts` snapshot at the same `as_of`. `PHASE_0_DISPLAY_CURRENCIES`
+       is unchanged, so USD is never charged, never prominent and never in `priceTable`.
+     - Equivalents never appear in JSON-LD, a sitemap, `<meta>`/Open Graph, `priceTable`, a sort
+       key or a "from" price (the category tiles' `fromPrice` gets none).
+   - **(c) Where it appears.** Only where a destination-specific price already renders: product
+     cards on country-scoped listing pages (and any other placement of the same card), the
+     product page's price and its summary. Destination-less hubs still render no money (spec 008
+     AC-7).
+   - **(d) Stale rates.** When `fxRateFor` returns `null` for any leg, or the charged price is the
+     stale-FX destination-currency fallback (spec 005 AC-15, §14 A3), the whole line is omitted.
+     A stale number is never shown.
+   - **(e) Review class.** A money-display change: TASK-178 and TASK-179 keep the breaker (DoD 4).
+7. **Unchanged.** Server rendering of every indexable page, logical CSS only, no literal strings,
+   `Intl` for all formatting, the honesty rules (AC-15, A5 and A10, the future tense for florists),
+   WCAG 2.2 AA, the logo, A20 (no dead controls), A19, the trending heading "Popular choices"
+   (founder-approved, TASK-140), the consent sheet and every SEO gate (AC-14, AC-16, the spec 007
+   AC-21 crawl). A7's reserved header height takes v2's values; the property it gates (identical
+   before and after hydration, CLS 0) holds. A9's sections remain data-gated, each rendered in v2's
+   look or not at all.
+8. **Rollout: five feature-sized tasks, in this order.**
+   - **TASK-175.** Tokens, the contrast manifest, the fonts (clause 3), the wordmark SVG, the
+     airmail utility and the shared UI primitives (button, link, price with the equivalents slot
+     empty, product card, chip, facts list, breadcrumbs, notice bar). It goes first; the others
+     depend on it.
+   - **TASK-176.** Header, footer and notice bar, after TASK-173 merges.
+   - **TASK-177.** The home: sentence picker, hero, Popular choices, Poland's dates as stamps and
+     the how-it-works band.
+   - **TASK-178.** Every listing page type: country shop root, country category, country occasion,
+     the destination-less category and occasion hubs, occasions index and destinations hub. It
+     also builds clause 6 on the cards.
+   - **TASK-179.** Product page (clauses 5 and 6), corridor/country guide and not-found.
+
+   Each task re-takes only the visual baselines it changes, through the `ci:full` label flow
+   (AC-27). TASK-177, TASK-178 and TASK-179 are not review-only: they add a route, a data flow or
+   a money display.
+
+Tests (each watched red by mutating its subject):
+- **T-01, T-04 — tokens and contrast.** T-01 asserts the v2 token names and values. T-04 covers
+  every v2 pair; red if `--ink-3` is set to 60% L. A unit case finds the airmail utility referenced
+  by exactly three components; red with a fourth. → AC-1, AC-3.
+- **T-05, T-06, T-27 — fonts and budget.**
+  - T-05 asserts no Google Fonts request on any page and no Newsreader file in the build. It also
+    asserts at most two `<link rel="preload" as="font">` per page, and on non-PDP pages no Caveat
+    request and no preloaded italic, Latin-Ext or Caveat file.
+  - T-27 asserts the clause 3 byte ceilings; red with a third weight.
+  - T-06 keeps the `pl` diacritics baseline. → AC-4, AC-25.
+- **T-12, T-13 — the sentence picker.**
+  - JS off: submitting PL + birthday ends on the PL occasion page with no query string.
+  - The submitted URL contains no relationship value; red if `who` gains a `name`.
+  - Unpublished and unknown countries go to the destinations hub.
+  - The route answers `no-store` and `noindex`.
+  - Collation order holds. Flipping a fixture flag enables an option with no diff under
+    `src/app/`. → AC-10, AC-11.
+- **T-17 — honesty.** "handwritten"/"hand-written" are absent from every locale's messages and
+  catalogue copy; red with the old add-on name restored. → AC-15.
+- **Spec 008 T-06 and spec 009 T-21 — equivalents.**
+  - A fixture card and a PDP render exactly the three non-charged currencies of the set, each
+    equal to the mid-rate conversion at the charged price's `fxAsOf`. Red if the buffer is
+    applied, or the charged currency appears in the line.
+  - JSON-LD carries one price, equal to the prominent one.
+  - The stale-FX fixture renders no equivalents line.
+  - Hubs keep spec 008 T-07's no-money assertion. → spec 008 AC-6, AC-7; spec 009 AC-21.
+- **Spec 009 T-14.** The preview island is ≤2,048 B, makes no network access and is the PDP's
+  only island. The card message never appears in a URL or a request. → spec 009 AC-14.
+- **T-29.** Baselines are re-taken per task. → AC-27.
+
+Open for the founder (defaults bind until answered):
+- **(i) Caveat's reach.** The artboards also use Caveat for the home's margin note and sign-off
+  and the shop's "P.S.". Clause 3 limits Caveat to the card preview, so those render in the
+  Fraunces italic. Allowing Caveat site-wide costs about 25–30 KB on every page.
+- **(ii) The equivalents label.** Names the rate's date rather than "today's rate"; the copy
+  wording is approved with the batch.
+
+Raised by: the founder in chat, 2026-10-03; written by the spec-writer; implemented by TASK-175 to
+TASK-179.
+
