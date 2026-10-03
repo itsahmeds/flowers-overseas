@@ -57,7 +57,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-03 — e2e first: `tests/e2e/locale-routing.spec.ts` gains "every 404 shape is the localised not-found document" (15 shapes, depths 2–4, known and unknown locale); each asserts 404, no `Location`, `<html lang="en">`, no `__next_error__`, the rendered `<h1>`. Next: build, watch it red, diagnose.
 
 ## Result
 

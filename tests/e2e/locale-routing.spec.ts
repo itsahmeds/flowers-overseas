@@ -219,6 +219,83 @@ test.describe("unknown locales answer 404 (AC-8)", () => {
   });
 });
 
+/**
+ * AC-8 at every depth (TASK-170). AC-8 names one path below a locale (`/en/does-not-exist`), but
+ * its intent is WCAG 3.1.1: **every** 404 under `/{locale}/` is a document that declares its
+ * language. Production on 2026-10-03 answered the depth-3 shapes and an unknown locale with a
+ * deeper path inside the framework's `<html id="__next_error__">` with no `lang` at all, while the
+ * depth-2 shape and a bare unknown locale were correct — so each depth is pinned here, by shape.
+ *
+ * Every 404 is the x-default document of `src/app/not-found.tsx` (spec 003 §5.3's recorded
+ * deviation, §14 A3), a German URL's included: the language it declares is the language its copy
+ * is written in, which is what 3.1.1 asks.
+ */
+const NOT_FOUND_SHAPES = [
+  // depth 2: an unknown page segment under a real locale (correct before TASK-170; kept pinned)
+  { shape: "depth 2, unknown segment", path: "/en/nope-segment" },
+  { shape: "depth 2, unknown segment, de", path: "/de/nope-segment" },
+  // depth 3: the corridor shape, the country-shop-root shape, the hub shapes
+  { shape: "depth 3, unknown corridor", path: "/en/send-flowers-to/nowhere" },
+  {
+    shape: "depth 3, unknown corridor, de",
+    path: "/de/blumen-verschicken/nirgendwo",
+  },
+  {
+    shape: "depth 3, shop root, unknown country",
+    path: "/en/atlantis/flowers",
+  },
+  { shape: "depth 3, unknown page under a country", path: "/en/poland/nope" },
+  { shape: "depth 3, unknown category hub", path: "/en/flowers/no-such-kind" },
+  // depth 4: the product shape (every product is prebuilt, spec 009 §14 A6) and the listing shape
+  {
+    shape: "depth 4, unknown product",
+    path: "/en/poland/product/no-such-bouquet",
+  },
+  {
+    shape: "depth 4, unknown product, de",
+    path: "/de/polen/produkt/no-such-bouquet",
+  },
+  {
+    shape: "depth 4, unknown category under a country",
+    path: "/en/poland/flowers/no-such-kind",
+  },
+  // an unknown locale with a deeper path
+  { shape: "unknown locale, depth 2", path: "/xx/nope-segment" },
+  { shape: "unknown locale, depth 3", path: "/xx/send-flowers-to/poland" },
+  { shape: "unknown locale, depth 3, shop root", path: "/fr/poland/flowers" },
+  {
+    shape: "unknown locale, depth 4",
+    path: "/xx/poland/product/amber-hour",
+  },
+] as const;
+
+test.describe("every 404 shape is the localised not-found document (AC-8, TASK-170)", () => {
+  for (const { shape, path } of NOT_FOUND_SHAPES) {
+    test(`${shape}: ${path} answers 404 with lang="${X_DEFAULT_LANG}" and the localised copy`, async ({
+      request,
+    }) => {
+      // `maxRedirects: 0`: "not 3xx, not 200" — a redirect to a page that 404s is not this 404.
+      const response = await request.get(path, { maxRedirects: 0 });
+      const html = await response.text();
+      const tag = /<html\b[^>]*>/iu.exec(html)?.[0] ?? "";
+
+      expect(response.status(), path).toBe(404);
+      expect(headerNames(response), path).not.toContain("location");
+      // The `<html>` element of the document itself, not any `lang` attribute somewhere inside it.
+      expect(/\blang="([^"]*)"/u.exec(tag)?.[1], path).toBe(X_DEFAULT_LANG);
+      // The framework's error shell is the failure this block exists for: no language, no copy
+      // until a client render fills it in.
+      expect(html, path).not.toContain('id="__next_error__"');
+      // The localised copy, server-rendered from `messages/en.json` (`errors.notFound.heading`),
+      // and not Next's built-in "404: This page could not be found".
+      // Asserted as the rendered `<h1>`, because the bare string also travels in the `<title>` and
+      // in the RSC payload, both of which the error shell carries without rendering any copy.
+      expect(html, path).toMatch(/<h1\b[^>]*>Page not found<\/h1>/u);
+      expect(html, path).not.toContain("This page could not be found");
+    });
+  }
+});
+
 test.describe("no response varies by request header (AC-9)", () => {
   for (const path of ["/en", "/de"] as const) {
     test(`${path} is byte-identical for every client`, async ({ request }) => {
