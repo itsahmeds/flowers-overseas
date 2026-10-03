@@ -29,6 +29,8 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 One dated bullet per `/review`, newest last.
 
 - **From TASK-122 / orchestrator ruling (2026-09-18, spec 009 §14 A4):** ship the **Andrzejki (30 Nov) and Wigilia (24 Dec)** PL occasion rows here — two catalogue occasion keys, `seasonalOccasions` / `occasions.data.ts` entries, `catalog.facet.occasion.*` copy in four locales (`pl` authored), the projected `occasions.json` / `taxonomy.json`, the `fixed` rows in `seed/data/occasion-country.json`, and the dataset pins (32 → 34 occasions) — so `seed:check` accepts them. Polish name days stay undated.
+- **From `/review 150` round 1 (2026-10-03), required change 1:** German umlauts fold to `ae`/`oe`/`ue`, as spec 008 §14 A12 says. Done: `TRANSLITERATIONS` in `seed/copy.ts` now carries `ä`/`ö`/`ü` (and `Ä`/`Ö`/`Ü`), with a unit case in `tests/unit/seed-copy.test.ts`. `bouquet` → `blumenstraeusse` and `muguet` → `maigloeckchen-zum-1-mai`. No other copy name carries an umlaut.
+- **From `/review 150` round 1, nits for the B12 native reviewers:** `gratulation` (people search "Glückwunsch") and `einzug` ("Einweihung") may be weaker search terms, and changing them costs nothing until the rows are reviewed. The native timing and superlative lists are minimal: "in 24 Stunden" and "Lieferung morgen" pass today.
 
 ## Escalations
 
@@ -51,11 +53,13 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
 - **2026-10-03 — reading recorded for the reviewer: "token-distinct" is measured as 5-gram shingle distinctness.** AC-2 does not define the metric. The literal token-set reading refuses the committed, reviewed `en` corpus: `category:sympathy` against `occasion:sympathy` scores 0.34, and spec 008 AC-2 says the gate "passes on the committed corpus". So the rule composes `scripts/corridor-check.ts`'s `shingleDistinctness()`, the metric spec 007 §14 A4 adopted for the same words in AC-2 of spec 007, with the 0.60 floor. The weakest committed pair is 0.71 in `en`. The reviewer may overrule this by amendment.
 - **2026-10-03 — AC-21 crawl waiver grown by `de`/`pl` country categories. Open, to the reviewer (accept or refuse) and the orchestrator.**
   CI run 37115230193 on `053d5e48`: the e2e crawl from `/de` and from `/pl` reached 38 documents each, and none of the 140 country categories per locale. Their inbound links are the shop root and the sibling chips on other country categories. The shop root is already waived for `de`/`pl` (TASK-113 escalation 2), because its only inbound link is the corridor page and neither locale has one. So this is the same hole, one level down. `tests/support/shop-crawl-targets.ts` now carries it as rule 3 (`{de,pl} countryCategory`), and the waived count is pinned at 140 each. Both rules expire together the day a `de`/`pl` shop root gains an inbound edge (`waivedButReached` goes red). All 280 pages are `noindex,follow` and in no sitemap. Closing it means a link plan (a `de`/`pl` corridor page, or shop-root links from the occasion hubs), which belongs to spec 007/008's link owners, not this task.
+- **2026-10-03 — `/review 150` round 1 rulings (reviewer):** **HOLE E1 ACCEPTABLE**: the AC-21 waiver gains `{de,pl} countryCategory` (140 pages each). Condition: the orchestrator files a task that links the `de`/`pl` shop roots, and it lands before either locale is flipped indexable. **Curation index hand-back: accepted.** The orchestrator files the `curation.data.ts` + `catalogue:check` task after TASK-168. **Andrzejki/Wigilia hand-back: accepted.** It goes to the founder's next copy batch, then a follow-up task (32 → 34 pins). **"Token-distinct" as 5-gram shingle distinctness with a 0.60 floor: accepted.** The orchestrator writes the spec 008 §14 amendment. **Umlaut folding: overruled** (see Carry-forwards). **Out-of-fence files accepted:** the `PRICE_LITERAL_PATTERN` export, the `de`/`pl` `catalog.floristSentence`, the `--sync-copy` reflow, and the e2e and crawl-target pins.
 
 ## Progress
 
 - 2026-10-03 — brief filled, draft PR #150 opened.
 - 2026-10-03 — `seed:check` gains the AC-2 rules; 110 `de`/`pl` rows authored by hand; `catalog.floristSentence` authored in `de`/`pl`; product drafts re-flowed.
+- 2026-10-03 — `/review 150` round 1 required change done: umlaut fold to `ae`/`oe`/`ue`, two slugs renamed, fixtures regenerated.
 - 2026-10-03 — CI on `053d5e48`: everything green except e2e. Six e2e pins asserted `de`/`pl` URLs 404, and the AC-21 crawl could not reach `de`/`pl` country categories. Re-pinned both, and grew the waiver (see Escalations). `consent-banner` AC-19 was flaky, passed on retry, and is unrelated.
 - 2026-10-03 — eight T-02 fixtures, native-language timing/superlative/price scan, unit cases; 36 pins re-pinned; fixtures, snapshot, map regenerated; `gates:cheap` PASS.
 
@@ -66,7 +70,7 @@ PR #150. **AC-2 / T-02 covered.** `seed:check` (`seed/check.ts`) gains spec 008 
 
 **Tests:** 8 new fixtures in `tests/fixtures/seed/_cases/` (34 total, each mutated to red by its own rule); 7 new unit cases in `tests/unit/seed-check.test.ts` (corpus-wide parity with `hasSlug()` over 220 key×locale pairs, inheritance both ways, word band at 39/40/120/121, the weakest committed pair per locale, native-language matchers including "Bestellung" not matching "beste"). 36 existing pins re-pinned from "`de`/`pl` have no slugs" to "`de`/`pl` have `en`'s page set under their own slugs, never an English one". Unit suite 6,323 passed; `gates:cheap` PASS.
 
-**Copy:** 23 categories + 32 occasions = 55 entities × `de`, `pl` = **110 rows**, each written by hand: name, slug (= `asciiFoldSlug(name)`, so `ä`→`a`, `ß`→`ss`, `ż`→`z`: spec 003 is silent on umlauts and spec 006 AC-7's fold, which `seed:check` enforces, drops the diacritic. That gives `maiglockchen`, `grossmuttertag` and `blumenstrausse`, not the `ae`/`oe`/`ue` forms. Changing that is a spec 006 fold decision for the founder, not a slug edit), intro (51–83 words), `seoTitle`, `seoDescription`; `translationStatus: human`, `reviewed: false`, `sourceHash` of the `en` row. No new English string. The spec's "~31" is the count the spec guessed; the dataset has 55, and AC-2's `slug-missing` requires all of them. Six occasion slugs match the home tiles in `src/config/occasions.ts` exactly (`trauer`, `narodziny` among them). `catalog.floristSentence` is authored in `de` and `pl` (human, unreviewed) so intros close in their own language; `pnpm i18n:draft --sync-copy` reflowed the 168 machine product rows and nothing else. Weakest intro pair: `en` 0.71, `de` 0.69, `pl` 0.74 (all `apology` category vs occasion).
+**Copy:** 23 categories + 32 occasions = 55 entities × `de`, `pl` = **110 rows**, each written by hand: name, slug (= `asciiFoldSlug(name)`, so `ä`/`ö`/`ü`→`ae`/`oe`/`ue`, `ß`→`ss`, `ż`→`z`, per spec 008 §14 A12 and the shipped `anlaesse`/`rumaenien`. The fold in `seed/copy.ts` gained the umlaut mappings in `/review 150` round 1, and two slugs moved: `blumenstraeusse` and `maigloeckchen-zum-1-mai`), intro (51–83 words), `seoTitle`, `seoDescription`; `translationStatus: human`, `reviewed: false`, `sourceHash` of the `en` row. No new English string. The spec's "~31" is the count the spec guessed; the dataset has 55, and AC-2's `slug-missing` requires all of them. Six occasion slugs match the home tiles in `src/config/occasions.ts` exactly (`trauer`, `narodziny` among them). `catalog.floristSentence` is authored in `de` and `pl` (human, unreviewed) so intros close in their own language; `pnpm i18n:draft --sync-copy` reflowed the 168 machine product rows and nothing else. Weakest intro pair: `en` 0.71, `de` 0.69, `pl` 0.74 (all `apology` category vs occasion).
 
 **Pins this diff moved:** `tests/fixtures/shop/listing-urls.json` (de/pl 7 → 206 pages each), `seed/snapshot/product_translation.json`, AC-21 `TARGETS` de/pl `{}` → `{countryOccasion 7, occasionHub 28, occasionsIndex 1}`, `WAIVED` de/pl `{countryShopRoot 7}` → `{categoryHub 23, countryCategory 140, countryShopRoot 7}`. The new `EXCLUDED` rule 3 (`de`/`pl` country categories) is an escalation for the reviewer; see Escalations. The e2e pins in `country-category`, `country-occasion`, `hubs` and `occasions-index` now assert that the `de`/`pl` pages exist and that the English slug under a German or Polish segment is a 404.
 
@@ -74,7 +78,7 @@ PR #150. **AC-2 / T-02 covered.** `seed:check` (`seed/check.ts`) gains spec 008 
 
 | entity · key | `de` slug | `pl` slug |
 |---|---|---|
-| category · `bouquet` | `blumenstrausse` | `bukiety` |
+| category · `bouquet` | `blumenstraeusse` | `bukiety` |
 | category · `arrangement` | `blumengestecke` | `kompozycje-kwiatowe` |
 | category · `plant` | `pflanzen` | `rosliny` |
 | category · `funeral` | `trauerfloristik` | `kwiaty-pogrzebowe` |
@@ -124,7 +128,7 @@ PR #150. **AC-2 / T-02 covered.** `seed:check` (`seed/check.ts`) gains spec 008 
 | occasion · `teachers_day` | `lehrertag` | `dzien-nauczyciela` |
 | occasion · `sant_jordi` | `sant-jordi` | `sant-jordi` |
 | occasion · `fete_des_grands_meres` | `grossmuttertag-in-frankreich` | `dzien-babci-we-francji` |
-| occasion · `muguet` | `maiglockchen-zum-1-mai` | `konwalie-na-1-maja` |
+| occasion · `muguet` | `maigloeckchen-zum-1-mai` | `konwalie-na-1-maja` |
 | occasion · `konfirmation` | `konfirmation` | `konfirmacja` |
 | occasion · `student` | `schulabschluss` | `zakonczenie-szkoly` |
 | occasion · `omatag` | `grossmuttertag-in-estland` | `dzien-babci-w-estonii` |

@@ -232,6 +232,13 @@ describe("T-05: the copy rules fail on the cases spec 006 §2.3 rule 6 names", (
   it("folds names to slugs the way `plan/02` §4 requires", () => {
     expect(asciiFoldSlug("Kraków Spring")).toBe("krakow-spring");
     expect(asciiFoldSlug("Wrocław Light")).toBe("wroclaw-light");
+    // German umlauts fold to ae/oe/ue (spec 008 §14 A12), ß to ss — the shipped `anlaesse`.
+    expect(asciiFoldSlug("Blumensträuße")).toBe("blumenstraeusse");
+    expect(asciiFoldSlug("Maiglöckchen zum 1. Mai")).toBe(
+      "maigloeckchen-zum-1-mai",
+    );
+    expect(asciiFoldSlug("Grüße")).toBe("gruesse");
+    expect(asciiFoldSlug("ÄÖÜ")).toBe("aeoeue");
     expect(asciiFoldSlug("Valentine's Day")).toBe("valentines-day");
     expect(asciiFoldSlug("All Saints' Day")).toBe("all-saints-day");
     expect(asciiFoldSlug("Amber Hour + Chocolates")).toBe(

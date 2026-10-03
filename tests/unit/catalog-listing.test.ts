@@ -700,7 +700,7 @@ describe("the category tile's money is one projection's (§2, §8, `/review 76`)
     expect(category).not.toBeNull();
     if (category === null) return;
     const expected = {
-      de: "/de/polen/blumen/blumenstrausse",
+      de: "/de/polen/blumen/blumenstraeusse",
       pl: "/pl/polska/kwiaty/bukiety",
     };
     for (const locale of ["de", "pl"] as const) {
