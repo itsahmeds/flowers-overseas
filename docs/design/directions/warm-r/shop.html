@@ -1,0 +1,1147 @@
+<!doctype html>
+<html lang="en-GB" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Send flowers to Poland · Flowers Overseas</title>
+<meta name="description" content="Every bouquet our florists can make in Poland, with one all-in price that includes VAT and delivery.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://media.flowersoverseas.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..600,0..100;1,9..144,300..600,0..100&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Caveat:wght@500..600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500&text=Flowers%20Overseas&display=swap">
+<style>
+:root {
+  /* Direction A, researched palette: letter paper, blue-black ink, a peony for the one thing you act on,
+     airmail blue for where you go and for the buyer's own words, the logo's own stem green, an apricot wash.
+     Reasoning and sources: ../research-colour.md */
+  --paper: #FBF6EE;        /* letter paper */
+  --paper-2: #F4EBDE;      /* bands, summary, footer */
+  --card: #FFFDF9;         /* the letter, the card, form fields */
+  --blush: #F6E1E7;        /* peony wash: stamp tint, note card, error ground */
+  --butter: #F6DFC4;       /* apricot: stamp tint, hints, the P.S. tape, text on the dark band */
+  --sage-wash: #E2E9F3;    /* airmail wash: stamp tint, the card's backdrop */
+  --rule: #E2D8CB;
+  --ink: #1E2A44;          /* blue-black ink: 13.3:1 on paper */
+  --ink-2: #46516B;        /* 7.4:1 */
+  --ink-3: #566077;        /* 5.9:1 on paper, at least 4.9:1 on every wash */
+  --accent: #A3285A;       /* peony: Send, selections, the one emotional phrase. 6.5:1; card on it 6.9:1 */
+  --accent-strong: #83204A;
+  --pen: #2B5596;          /* airmail blue: links, eyebrows, postmark, the buyer's words. 6.9:1 */
+  --pen-strong: #1F4278;
+  --stem: #2F6B47;         /* the logo's own green: "included". 5.9:1 */
+  --shade: rgb(30 42 68 / 0.10);
+  --logo-ink: oklch(19% 0.01 250);   /* the logo, exactly as it ships */
+  --logo-accent: oklch(42% 0.1 155);
+
+  --eyebrow: var(--pen);
+  --link: var(--pen);
+  --link-strong: var(--pen-strong);
+  --mark: var(--pen);
+  --on-dark: var(--butter);
+
+  --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --font-body: "Alegreya Sans", "Gill Sans", "Segoe UI", system-ui, sans-serif;
+  --font-hand: "Caveat", "Bradley Hand", "Segoe Print", cursive;
+  --font-logo: "Newsreader", Georgia, serif;
+
+  --gutter: clamp(20px, 4vw, 56px);
+  --max: 1328px;
+  --radius: 18px;
+  --radius-s: 10px;
+  --pill: 999px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-padding-block-start: 96px; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+@media (min-width: 900px) { body { font-size: 18px; } }
+[hidden] { display: none !important; }
+img { display: block; max-inline-size: 100%; block-size: auto; }
+a { color: inherit; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2.5px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+.visually-hidden {
+  position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap;
+}
+.wrap { max-inline-size: var(--max); margin-inline: auto; padding-inline: var(--gutter); }
+.skip { position: absolute; inset-inline-start: 12px; inset-block-start: -60px; z-index: 100; background: var(--ink); color: var(--paper); padding: 10px 16px; border-radius: var(--pill); }
+.skip:focus { inset-block-start: 12px; }
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-variation-settings: "SOFT" 100;
+  margin: 0;
+  text-wrap: balance;
+}
+h2 { font-size: clamp(32px, 4.2vw, 54px); line-height: 1.04; letter-spacing: -0.015em; }
+h2 em, h1 em { font-style: italic; color: var(--accent); font-weight: 300; }
+h3 { font-size: 22px; line-height: 1.2; }
+p { margin: 0; }
+.eyebrow {
+  font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--eyebrow, var(--accent)); margin-block-end: 14px;
+}
+.lede { font-size: clamp(18px, 1.5vw, 21px); color: var(--ink-2); max-inline-size: 40ch; line-height: 1.5; }
+.hand { font-family: var(--font-hand); font-weight: 500; color: var(--pen); line-height: 1.1; }
+.section { padding-block: clamp(64px, 9vw, 128px); }
+.section-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 16px 40px; margin-block-end: clamp(28px, 4vw, 48px); }
+.section-head .lede { margin-block-start: 14px; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  min-block-size: 54px; padding-inline: 28px; border-radius: var(--pill);
+  background: var(--accent); color: var(--card);
+  font-weight: 700; font-size: 17px; line-height: 1.1; text-decoration: none;
+  border: 0; cursor: pointer; transition: background-color 0.2s ease;
+}
+.btn:hover { background: var(--accent-strong); }
+.btn-ghost { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--ink); }
+.btn-ghost:hover { background: var(--paper-2); }
+.btn-small { min-block-size: 44px; padding-inline: 20px; font-size: 16px; }
+.link { color: var(--link, var(--accent)); font-weight: 700; text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 5px; }
+.link:hover { color: var(--link-strong, var(--accent-strong)); }
+.arrow::after { content: " \2192"; }
+[dir="rtl"] .arrow::after { content: " \2190"; }
+
+/* ---------- the top note and header ---------- */
+.note-bar { background: var(--ink); color: var(--paper); font-size: 14.5px; text-align: center; padding: 9px var(--gutter); line-height: 1.4; }
+.note-bar strong { font-weight: 700; color: var(--on-dark, var(--blush)); }
+@media (max-width: 719px) { .note-bar .wide-only { display: none; } }
+.site-header {
+  position: sticky; inset-block-start: 0; z-index: 30;
+  background: color-mix(in srgb, var(--paper) 94%, transparent);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border-block-end: 1px solid var(--rule);
+}
+.header-in { position: relative; display: flex; align-items: center; gap: 12px; min-block-size: 64px; }
+.logo { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); min-block-size: 44px; }
+.logo svg { inline-size: 28px; block-size: 28px; flex: none; }
+.wordmark { font-family: var(--font-logo); font-weight: 500; font-size: 19px; letter-spacing: 0.04em; white-space: nowrap; }
+.main-nav { display: none; margin-inline-start: auto; }
+.main-nav ul { display: flex; gap: 30px; list-style: none; margin: 0; padding: 0; }
+.main-nav a { text-decoration: none; font-weight: 500; color: var(--ink-2); padding-block: 10px; }
+.main-nav a:hover, .main-nav a[aria-current="page"] { color: var(--ink); text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 8px; }
+.header-cta { display: none; }
+.menu { margin-inline-start: auto; }
+.menu summary { list-style: none; display: grid; place-items: center; inline-size: 44px; block-size: 44px; border-radius: var(--pill); cursor: pointer; }
+.menu summary::-webkit-details-marker { display: none; }
+.menu summary:hover { background: var(--paper-2); }
+.menu[open] summary { background: var(--paper-2); }
+.menu-panel {
+  position: absolute; inset-inline: calc(var(--gutter) * -1); inset-block-start: 100%;
+  background: var(--paper); border-block-end: 1px solid var(--rule);
+  padding: 8px var(--gutter) 24px; box-shadow: 0 18px 30px var(--shade);
+}
+.menu-panel ul { list-style: none; margin: 0; padding: 0; }
+.menu-panel a { display: block; padding-block: 14px; border-block-end: 1px solid var(--rule); font-family: var(--font-display); font-size: 24px; text-decoration: none; }
+.menu-panel .btn { margin-block-start: 20px; inline-size: 100%; }
+@media (min-width: 480px) { .header-cta { display: inline-flex; margin-inline-start: auto; } .menu { margin-inline-start: 0; } }
+@media (min-width: 1040px) {
+  .header-in { min-block-size: 82px; gap: 32px; }
+  .logo svg { inline-size: 38px; block-size: 38px; }
+  .wordmark { font-size: 25px; }
+  .main-nav { display: block; }
+  .header-cta { margin-inline-start: 0; }
+  .menu { display: none; }
+}
+
+/* ---------- breadcrumbs ---------- */
+.crumbs { font-size: 15px; color: var(--ink-3); padding-block: 20px 0; }
+.crumbs ol { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 0; padding: 0; }
+.crumbs li + li::before { content: "/"; margin-inline-end: 6px; color: var(--rule); }
+.crumbs a { color: var(--ink-2); text-underline-offset: 4px; }
+
+/* ---------- product cards (home and shop) ---------- */
+.card a { display: block; text-decoration: none; color: inherit; border-radius: var(--radius); }
+.card-photo { border-radius: var(--radius); overflow: hidden; background: var(--paper-2); aspect-ratio: 4 / 5; }
+.card-photo img { inline-size: 100%; block-size: 100%; object-fit: cover; }
+@media (prefers-reduced-motion: no-preference) {
+  .card-photo img { transition: transform 0.7s cubic-bezier(.2,.7,.2,1); }
+  .card a:hover .card-photo img { transform: scale(1.035); }
+}
+.card h3 { font-size: 21px; margin-block-start: 14px; }
+.card a:hover h3 { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 5px; }
+.card-sub { margin-block-start: 3px; color: var(--ink-3); font-size: 15.5px; }
+.card-price { margin-block-start: 6px; font-weight: 700; font-variant-numeric: lining-nums tabular-nums; }
+.card-price small { font-weight: 400; font-size: 14px; color: var(--ink-3); margin-inline-start: 4px; }
+@media (max-width: 599px) {
+  .card h3 { font-size: 18px; margin-block-start: 10px; }
+  .card-sub { font-size: 14.5px; }
+  .card-photo { border-radius: 14px; }
+}
+
+/* ---------- footer ---------- */
+.site-footer { background: var(--paper-2); border-block-start: 1px solid var(--rule); padding-block: 64px 32px; margin-block-start: 0; }
+.signoff { font-size: clamp(34px, 4.6vw, 56px); margin-block-end: 40px; transform: rotate(-1.5deg); transform-origin: 0 50%; }
+.footer-grid { display: grid; gap: 40px; }
+@media (min-width: 900px) { .footer-grid { grid-template-columns: 1.2fr 0.8fr 1.3fr 1fr; gap: 48px; } }
+.site-footer h2 { font-family: var(--font-body); font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-2); margin-block-end: 14px; }
+.site-footer ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.site-footer ul a { display: inline-block; padding-block: 6px; text-decoration: none; }
+.site-footer ul a:hover { text-decoration: underline; text-underline-offset: 4px; }
+.footer-about p { color: var(--ink-2); margin-block-start: 14px; max-inline-size: 34ch; }
+.footer-small { font-size: 15px; color: var(--ink-2); }
+.remind { display: grid; gap: 10px; margin-block-start: 14px; }
+.remind label { font-weight: 500; font-size: 15px; }
+.remind-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.remind input { flex: 1 1 200px; min-block-size: 48px; border: 1.5px solid var(--ink-3); border-radius: var(--pill); padding-inline: 18px; background: var(--card); }
+.remind .btn { min-block-size: 48px; }
+.status { font-size: 15px; color: var(--stem); font-weight: 500; min-block-size: 1.4em; }
+.fine { margin-block-start: 48px; padding-block-start: 20px; border-block-start: 1px solid var(--rule); font-size: 14px; color: var(--ink-3); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; }
+
+
+.shop-intro { display: grid; gap: 28px; padding-block: 24px 36px; }
+@media (min-width: 960px) { .shop-intro { grid-template-columns: 7fr 4fr; gap: 72px; align-items: end; padding-block: 40px 56px; } }
+.shop-intro h1 { font-size: clamp(42px, 6vw, 84px); line-height: 0.98; letter-spacing: -0.03em; font-weight: 330; font-variation-settings: "SOFT" 100, "opsz" 144; }
+.shop-intro .lede { margin-block-start: 18px; max-inline-size: 46ch; }
+.ps { position: relative; background: var(--card); border-radius: 6px; padding: 22px 24px 24px; box-shadow: 0 1px 1px var(--shade), 0 18px 36px -14px var(--shade); transform: rotate(0.8deg); }
+.ps::before { content: ""; position: absolute; inset-block-start: -10px; inset-inline-start: 50%; inline-size: 84px; block-size: 22px; margin-inline-start: -42px; background: color-mix(in srgb, var(--butter) 80%, transparent); transform: rotate(-3deg); }
+.ps .hand { font-size: 30px; }
+.ps p + p { margin-block-start: 6px; color: var(--ink-2); font-size: 16px; }
+
+/* ---------- filters ---------- */
+.filters { border-block: 1px solid var(--rule); padding-block: 18px; display: grid; gap: 16px; }
+.chips { display: flex; gap: 8px; overflow-x: auto; margin-inline: calc(var(--gutter) * -1); padding-inline: var(--gutter); padding-block: 2px; scrollbar-width: none; }
+.chips::-webkit-scrollbar { display: none; }
+.chip { flex: none; min-block-size: 44px; padding-inline: 18px; border-radius: var(--pill); border: 0; background: var(--card); box-shadow: inset 0 0 0 1px var(--rule); cursor: pointer; font-weight: 500; white-space: nowrap; }
+.chip:hover { box-shadow: inset 0 0 0 1.5px var(--ink-3); }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); box-shadow: none; }
+.refine { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.field { display: grid; gap: 4px; }
+.field label { font-size: 13px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3); }
+.field select {
+  appearance: none; -webkit-appearance: none; min-block-size: 46px; border-radius: var(--radius-s);
+  border: 1.5px solid var(--rule); background-color: var(--card); padding-inline: 14px 34px; cursor: pointer;
+  background-image: linear-gradient(45deg, transparent 50%, var(--ink-2) 50%), linear-gradient(135deg, var(--ink-2) 50%, transparent 50%);
+  background-position: calc(100% - 18px) 20px, calc(100% - 13px) 20px; background-size: 5px 5px; background-repeat: no-repeat;
+}
+[dir="rtl"] .field select { background-position: 18px 20px, 13px 20px; }
+.field select:hover { border-color: var(--ink-3); }
+.field-sort { grid-column: 1 / -1; }
+@media (min-width: 760px) {
+  .filters { grid-template-columns: minmax(0, 1fr) auto; align-items: end; }
+  .chips { grid-column: 1 / -1; margin-inline: 0; padding-inline: 0; flex-wrap: wrap; overflow: visible; }
+  .refine { grid-template-columns: repeat(2, minmax(200px, 260px)); }
+  .field-sort { grid-column: auto; min-inline-size: 240px; }
+}
+.results { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 24px; align-items: baseline; padding-block: 22px; }
+.count { font-family: var(--font-display); font-size: 24px; }
+.count .for { color: var(--ink-3); font-style: italic; }
+.clear { border: 0; background: none; padding: 8px 0; color: var(--link, var(--accent)); font-weight: 700; text-decoration: underline; text-underline-offset: 4px; cursor: pointer; min-block-size: 44px; }
+
+/* ---------- the grid ---------- */
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 14px; }
+@media (min-width: 700px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 44px 24px; } }
+@media (min-width: 1100px) { .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 52px 28px; } }
+.card[hidden], .note-card[hidden] { display: none; }
+.note-card { grid-column: span 2; display: flex; flex-direction: column; justify-content: center; gap: 12px; padding: 28px 26px; background: var(--blush); border-radius: var(--radius); }
+.note-card .note-head { font-family: var(--font-display); font-style: italic; font-weight: 350; font-variation-settings: "SOFT" 100; font-size: clamp(26px, 2.6vw, 34px); line-height: 1.15; color: var(--accent-strong); }
+.note-card p:last-child { color: var(--ink-2); max-inline-size: 40ch; }
+@media (min-width: 1100px) { .note-card { grid-column: span 2; padding: 40px; } }
+.more { display: grid; justify-items: center; gap: 10px; padding-block: 48px 8px; }
+.more p { color: var(--ink-3); font-size: 15px; }
+.empty { padding: 40px 28px; background: var(--card); border-radius: var(--radius); text-align: center; display: grid; justify-items: center; gap: 12px; box-shadow: inset 0 0 0 1px var(--rule); }
+.empty h2 { font-size: 30px; }
+.empty p { color: var(--ink-2); max-inline-size: 46ch; }
+.hint { margin-block-end: 24px; padding: 18px 22px; border-radius: var(--radius-s); background: var(--butter); display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; }
+.hint .clear { min-block-size: 0; padding: 0; }
+.disclosure { margin-block-start: 40px; font-size: 15px; color: var(--ink-3); max-inline-size: 70ch; }
+
+.closing { margin-block-start: clamp(64px, 8vw, 112px); background: var(--paper-2); }
+.closing-in { display: grid; gap: 24px; padding-block: 56px; }
+@media (min-width: 900px) { .closing-in { grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; } }
+.closing h2 { font-size: clamp(30px, 3.4vw, 44px); }
+.closing p { color: var(--ink-2); margin-block-start: 12px; }
+.closing-links { display: flex; flex-wrap: wrap; gap: 12px; }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="note-bar" role="note"><p><strong>A note from us:</strong> ordering opens once we have chosen our florists in Poland.<span class="wide-only"> Every price here is the one we will charge, with VAT and delivery inside it.</span></p></div>
+<header class="site-header">
+  <div class="wrap header-in">
+    <a class="logo" href="home.html" aria-label="Flowers Overseas, home"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--logo-accent, var(--stem))"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--logo-ink, var(--ink))" stroke-width="2.4" stroke-linecap="round" fill="none"/><g transform="translate(31 16)" style="stroke:var(--logo-ink, var(--ink))" stroke-width="2.2" fill="none"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--logo-accent, var(--stem))" stroke="none"/></g></svg><span class="wordmark" aria-hidden="true">Flowers Overseas</span></a>
+    <nav class="main-nav" aria-label="Main"><ul><li><a href="shop.html" aria-current="page">Flowers for Poland</a></li><li><a href="home.html#occasions">Occasions</a></li><li><a href="home.html#dates">Dates in Poland</a></li><li><a href="home.html#how">How it works</a></li></ul></nav>
+    <a class="btn btn-small header-cta" href="shop.html">Send flowers</a>
+    <details class="menu">
+      <summary aria-label="Menu"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M4 8h16M4 16h16"/></svg></summary>
+      <nav class="menu-panel" aria-label="Main, small screens"><ul><li><a href="shop.html" aria-current="page">Flowers for Poland</a></li><li><a href="home.html#occasions">Occasions</a></li><li><a href="home.html#dates">Dates in Poland</a></li><li><a href="home.html#how">How it works</a></li></ul><a class="btn" href="shop.html">Send flowers to Poland</a></nav>
+    </details>
+  </div>
+</header>
+<main id="main">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="home.html">Home</a></li><li><span aria-current="page">Poland</span></li></ol></nav>
+
+    <div class="shop-intro">
+      <div>
+        <p class="eyebrow" id="for-line">Sending to Poland</p>
+        <h1>Flowers we make for <em>Poland</em></h1>
+        <p class="lede">Our florist in the recipient's town will make the bouquet the morning it is delivered and hand it over in person. Every price below is one number with VAT and delivery already inside it.</p>
+      </div>
+      <aside class="ps" aria-label="A note before you choose">
+        <p class="hand">P.S.</p>
+        <p>You cannot order yet. We are still choosing our florists in Poland, so every price on this page is the price we would charge and nothing on it can be bought today.</p>
+      </aside>
+    </div>
+
+    <section class="filters" aria-label="Narrow the flowers down">
+      <div class="chips" role="group" aria-label="What it is">
+        <button class="chip" type="button" data-type="all" aria-pressed="true">Everything</button>
+        <button class="chip" type="button" data-type="bouquet" aria-pressed="false">Hand-tied bouquets</button>
+        <button class="chip" type="button" data-type="arrangement" aria-pressed="false">Arrangements</button>
+        <button class="chip" type="button" data-type="gift_set" aria-pressed="false">Flowers and gift sets</button>
+        <button class="chip" type="button" data-type="plant" aria-pressed="false">Plants</button>
+        <button class="chip" type="button" data-type="funeral" aria-pressed="false">Funeral and sympathy flowers</button>
+      </div>
+      <div class="refine">
+        <div class="field"><label for="f-occ">Occasion</label><select id="f-occ"><option value="">Any occasion</option><option value="birthday">Birthday</option><option value="name_day">Name day</option><option value="anniversary">Anniversary</option><option value="romance">Love and romance</option><option value="thank_you">Thank you</option><option value="get_well">Get well</option><option value="new_baby">New baby</option><option value="congratulations">Congratulations</option><option value="apology">I am sorry</option><option value="just_because">Just because</option><option value="housewarming">Housewarming</option><option value="wedding">Wedding</option><option value="mothers_day">Mother&#x27;s Day</option><option value="womens_day">Women&#x27;s Day</option><option value="sympathy">Sympathy</option><option value="all_saints">All Saints&#x27; Day</option><option value="christmas">Christmas</option><option value="easter">Easter</option></select></div>
+        <div class="field"><label for="f-flower">Flower</label><select id="f-flower"><option value="">Any flower</option><option value="roses">Roses</option><option value="tulips">Tulips</option><option value="lilies">Lilies</option><option value="peonies">Peonies</option><option value="sunflowers">Sunflowers</option><option value="orchids">Orchids</option><option value="gerberas">Gerberas</option><option value="chrysanthemums">Chrysanthemums</option><option value="freesias">Freesias</option><option value="hydrangeas">Hydrangeas</option><option value="carnations">Carnations</option><option value="alstroemeria">Alstroemeria</option><option value="mixed">Mixed flowers</option><option value="seasonal">Seasonal stems</option></select></div>
+      </div>
+      <div class="field field-sort"><label for="f-sort">Sort by</label><select id="f-sort"><option value="ours">Our order</option><option value="asc">Price: low to high</option><option value="desc">Price: high to low</option></select></div>
+    </section>
+
+    <div class="results">
+      <p class="count" id="count" aria-live="polite">83 bouquets</p>
+      <button class="clear" type="button" id="clear" hidden>Clear the filters</button>
+    </div>
+
+    <div class="hint" id="nameday-hint" hidden>
+      <p>That is the one we made with name days in mind. Any birthday bouquet says the same thing.</p>
+      <button class="clear" type="button" data-switch="birthday">Show birthday flowers</button>
+    </div>
+
+    <section aria-labelledby="grid-h">
+      <h2 class="visually-hidden" id="grid-h">Everything we can make for Poland</h2>
+      <div class="grid" id="grid">
+<article class="card" data-type="bouquet" data-flower="roses" data-occ="birthday thank_you just_because" data-price="22900" data-order="0">
+  <a href="product.html?p=amber-hour">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-001-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-001-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-001-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-001-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="A hand-tied bouquet of orange garden roses with eucalyptus, wrapped in kraft paper, on a warm grey background" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Amber Hour</h3>
+    <p class="card-sub">18 stems · roses</p>
+    <p class="card-price">229.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="arrangement" data-flower="mixed" data-occ="get_well apology just_because" data-price="16900" data-order="1">
+  <a href="product.html?p=small-kindness">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-ar-001-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-ar-001-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-ar-001-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-ar-001-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="A low flower arrangement in soft pastel colours set in a plain kraft gift box" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Small Kindness</h3>
+    <p class="card-sub">Medium · mixed flowers</p>
+    <p class="card-price">169.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="gift_set" data-flower="roses" data-occ="birthday thank_you" data-price="30900" data-order="2">
+  <a href="product.html?p=amber-hour-chocolates">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-gs-001-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-gs-001-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-gs-001-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-gs-001-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="A bouquet of orange roses with eucalyptus standing beside a plain closed box of chocolates" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Amber Hour + Chocolates</h3>
+    <p class="card-sub">18 stems · roses</p>
+    <p class="card-price">309.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="plant" data-flower="orchids" data-occ="housewarming congratulations thank_you" data-price="26900" data-order="3">
+  <a href="product.html?p=moth-orchid-white">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-pt-001-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-pt-001-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-pt-001-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-pt-001-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="A white moth orchid with two arching flowering stems in a plain white ceramic pot" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Moth Orchid White</h3>
+    <p class="card-sub">One plant · orchids</p>
+    <p class="card-price">269.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<aside class="note-card" data-note aria-label="About the card">
+  <p class="note-head">Every one of these comes with a card, at no cost.</p>
+  <p>You write the words. We print them on our card, and it is tucked into the bouquet.</p>
+</aside>
+<article class="card" data-type="bouquet" data-flower="roses" data-occ="romance anniversary valentines" data-price="30900" data-order="4">
+  <a href="product.html?p=vistula-red">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-002-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-002-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-002-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-002-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="A hand-tied bouquet of deep red long-stemmed roses with dark green foliage, wrapped in white paper" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Vistula Red</h3>
+    <p class="card-sub">18 stems · roses</p>
+    <p class="card-price">309.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="arrangement" data-flower="mixed" data-occ="housewarming congratulations new_baby" data-price="22900" data-order="5">
+  <a href="product.html?p=welcome-home">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-ar-003-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-ar-003-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-ar-003-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-ar-003-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="A mixed seasonal flower arrangement in a plain woven basket, seen from the front" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Welcome Home</h3>
+    <p class="card-sub">Medium · mixed flowers</p>
+    <p class="card-price">229.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="bouquet" data-flower="tulips" data-occ="birthday easter just_because" data-price="16900" data-order="6">
+  <a href="product.html?p=krakow-spring">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-009-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-009-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-009-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-009-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="A loosely gathered bouquet of tulips in pink, yellow, white and purple, wrapped in kraft paper" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Kraków Spring</h3>
+    <p class="card-sub">25 stems · tulips</p>
+    <p class="card-price">169.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="bouquet" data-flower="lilies" data-occ="sympathy wedding anniversary" data-price="30900" data-order="7">
+  <a href="product.html?p=white-linen">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-015-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-015-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-015-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-015-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="A hand-tied bouquet of white oriental lilies with dark green foliage, wrapped in white paper" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>White Linen</h3>
+    <p class="card-sub">8 stems · lilies</p>
+    <p class="card-price">309.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="bouquet" data-flower="peonies" data-occ="romance anniversary wedding" data-price="44900" data-order="8">
+  <a href="product.html?p=peony-note">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-019-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-019-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-019-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-019-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="A hand-tied bouquet of pink peonies, open and closed heads mixed, wrapped in white paper" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Peony Note</h3>
+    <p class="card-sub">15 stems · peonies</p>
+    <p class="card-price">449.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="bouquet" data-flower="sunflowers" data-occ="birthday congratulations thank_you" data-price="22900" data-order="9">
+  <a href="product.html?p=field-of-gold">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-023-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-023-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-023-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-023-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="A bouquet of yellow sunflowers with wheat ears and green foliage, wrapped in kraft paper" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Field of Gold</h3>
+    <p class="card-sub">9 stems · sunflowers</p>
+    <p class="card-price">229.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="bouquet" data-flower="mixed" data-occ="birthday thank_you just_because" data-price="22900" data-order="10">
+  <a href="product.html?p=warsaw-morning">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-028-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-028-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-028-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-028-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="A mixed seasonal bouquet of roses, alstroemeria, chrysanthemums and greenery, wrapped in kraft paper" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Warsaw Morning</h3>
+    <p class="card-sub">18 stems · mixed flowers</p>
+    <p class="card-price">229.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="arrangement" data-flower="roses" data-occ="anniversary romance" data-price="30900" data-order="11">
+  <a href="product.html?p=mantelpiece">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-ar-002-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-ar-002-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-ar-002-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-ar-002-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Mantelpiece: red roses arranged in a plain glass vase with foliage, cut to sit low and wide on a mantel or a table" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Mantelpiece</h3>
+    <p class="card-sub">Medium · roses</p>
+    <p class="card-price">309.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="gift_set" data-flower="roses" data-occ="birthday romance anniversary" data-price="30900" data-order="12">
+  <a href="product.html?p=baltic-dawn-vase">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-gs-002-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-gs-002-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-gs-002-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-gs-002-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Baltic Dawn + Vase: our pink rose bouquet with a plain glass vase, so nothing has to be found in a cupboard on arrival" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Baltic Dawn + Vase</h3>
+    <p class="card-sub">18 stems · roses</p>
+    <p class="card-price">309.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="plant" data-flower="orchids" data-occ="birthday mothers_day thank_you" data-price="26900" data-order="13">
+  <a href="product.html?p=moth-orchid-pink">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-pt-002-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-pt-002-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-pt-002-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-pt-002-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Moth Orchid Pink: one pink moth orchid, staked and potted in a plain container, in bud and flower on the day it is delivered" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Moth Orchid Pink</h3>
+    <p class="card-sub">One plant · orchids</p>
+    <p class="card-price">269.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="bouquet" data-flower="roses" data-occ="birthday romance thank_you" data-price="22900" data-order="14">
+  <a href="product.html?p=baltic-dawn">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-003-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-003-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-003-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-003-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Baltic Dawn: pink roses in two shades, cut short and tied into a rounded modern shape with soft grasses and eucalyptus" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Baltic Dawn</h3>
+    <p class="card-sub">18 stems · roses</p>
+    <p class="card-price">229.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="gift_set" data-flower="mixed" data-occ="new_baby congratulations" data-price="22900" data-order="15">
+  <a href="product.html?p=welcome-baby-blue-plush">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-gs-003-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-gs-003-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-gs-003-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-gs-003-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Welcome Baby Blue + Plush: a blue and white bouquet with a small soft toy for a new arrival, tied light so it can be carried with a baby in the other arm" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Welcome Baby Blue + Plush</h3>
+    <p class="card-sub">18 stems · mixed flowers</p>
+    <p class="card-price">229.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="plant" data-flower="orchids" data-occ="wedding anniversary retirement" data-price="35900" data-order="16">
+  <a href="product.html?p=twin-orchid">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-pt-003-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-pt-003-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-pt-003-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-pt-003-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Twin Orchid: a two-stem white moth orchid in a heavier pot — the same plant as our single-stem orchid with twice the flower and a fuller shape" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Twin Orchid</h3>
+    <p class="card-sub">One plant · orchids</p>
+    <p class="card-price">359.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="arrangement" data-flower="gerberas" data-occ="congratulations birthday thank_you" data-price="16900" data-order="17">
+  <a href="product.html?p=desk-bloom">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-ar-004-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-ar-004-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-ar-004-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-ar-004-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Desk Bloom: gerberas in strong pink and orange, arranged short in a low ceramic pot that fits on a desk or a windowsill" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Desk Bloom</h3>
+    <p class="card-sub">Medium · gerberas</p>
+    <p class="card-price">169.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="gift_set" data-flower="mixed" data-occ="new_baby congratulations" data-price="22900" data-order="18">
+  <a href="product.html?p=welcome-baby-pink-plush">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-gs-004-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-gs-004-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-gs-004-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-gs-004-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Welcome Baby Pink + Plush: a pink and white bouquet with a small soft toy for a new baby, tied to be light in the hand" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Welcome Baby Pink + Plush</h3>
+    <p class="card-sub">18 stems · mixed flowers</p>
+    <p class="card-price">229.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="plant" data-flower="lilies" data-occ="sympathy housewarming get_well" data-price="19900" data-order="19">
+  <a href="product.html?p=peace-lily">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-pt-004-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-pt-004-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-pt-004-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-pt-004-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Peace Lily: a Peace Lily in a plain pot: dark green leaves and white spathes, upright, and forgiving of a room without much light" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Peace Lily</h3>
+    <p class="card-sub">One plant · lilies</p>
+    <p class="card-price">199.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="bouquet" data-flower="roses" data-occ="wedding anniversary congratulations" data-price="30900" data-order="20">
+  <a href="product.html?p=northern-light">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-005-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-005-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-005-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-005-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Northern Light: white roses with a single line of eucalyptus, trimmed to one height and tied tight in the minimal style" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Northern Light</h3>
+    <p class="card-sub">18 stems · roses</p>
+    <p class="card-price">309.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="arrangement" data-flower="tulips" data-occ="birthday womens_day just_because" data-price="16900" data-order="21">
+  <a href="product.html?p=paper-window">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-ar-005-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-ar-005-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-ar-005-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-ar-005-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Paper Window: pink tulips arranged upright in a paper-wrapped container with their own leaves and nothing else" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Paper Window</h3>
+    <p class="card-sub">Medium · tulips</p>
+    <p class="card-price">169.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="gift_set" data-flower="tulips" data-occ="birthday easter womens_day" data-price="22900" data-order="22">
+  <a href="product.html?p=krakow-spring-chocolates">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-gs-005-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-gs-005-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-gs-005-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-gs-005-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Kraków Spring + Chocolates: our mixed tulip bunch with a box of chocolates bought near the recipient" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Kraków Spring + Chocolates</h3>
+    <p class="card-sub">25 stems · tulips</p>
+    <p class="card-price">229.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="plant" data-flower="mixed" data-occ="housewarming congratulations" data-price="19900" data-order="23">
+  <a href="product.html?p=anthurium">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-pt-005-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-pt-005-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-pt-005-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-pt-005-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Anthurium: an Anthurium with red spathes and glossy leaves in a plain pot — modern, upright and hard to kill in a warm room" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Anthurium</h3>
+    <p class="card-sub">One plant · mixed flowers</p>
+    <p class="card-price">199.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="bouquet" data-flower="roses" data-occ="romance valentines anniversary" data-price="44900" data-order="24">
+  <a href="product.html?p=velvet-evening">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-006-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-006-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-006-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-006-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Velvet Evening: large-headed red roses, ruscus and dark eucalyptus, tied deep and wrapped twice so it arrives heavy in the hand" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Velvet Evening</h3>
+    <p class="card-sub">18 stems · roses</p>
+    <p class="card-price">449.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="arrangement" data-flower="lilies" data-occ="sympathy thank_you wedding" data-price="30900" data-order="25">
+  <a href="product.html?p=glass-morning">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-ar-006-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-ar-006-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-ar-006-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-ar-006-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Glass Morning: white lilies arranged in a clear glass vase with long-leaf foliage, cut tall so the stems show through the glass" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Glass Morning</h3>
+    <p class="card-sub">Medium · lilies</p>
+    <p class="card-price">309.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="gift_set" data-flower="roses" data-occ="apology get_well" data-price="22900" data-order="26">
+  <a href="product.html?p=quiet-blush-vase">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-gs-006-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-gs-006-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-gs-006-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-gs-006-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Quiet Blush + Vase: our pastel rose bouquet with a plain glass vase, sent when you are apologizing or when someone is unwell and cannot go looking for one" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Quiet Blush + Vase</h3>
+    <p class="card-sub">18 stems · roses</p>
+    <p class="card-price">229.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="plant" data-flower="mixed" data-occ="housewarming wedding retirement" data-price="26900" data-order="27">
+  <a href="product.html?p=olive-sapling">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-pt-006-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-pt-006-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-pt-006-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-pt-006-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Olive Sapling: a small Olive Sapling in a terracotta pot, clipped to a rounded head, for a balcony, a doorway or a bright kitchen" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Olive Sapling</h3>
+    <p class="card-sub">One plant · mixed flowers</p>
+    <p class="card-price">269.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="bouquet" data-flower="roses" data-occ="birthday mothers_day thank_you" data-price="22900" data-order="28">
+  <a href="product.html?p=rose-harbour">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-007-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-007-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-007-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-007-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Rose Harbour: mid-pink roses with gypsophila and eucalyptus, tied in the round and wrapped in kraft paper with a paper band" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Rose Harbour</h3>
+    <p class="card-sub">18 stems · roses</p>
+    <p class="card-price">229.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="arrangement" data-flower="seasonal" data-occ="housewarming thank_you" data-price="22900" data-order="29">
+  <a href="product.html?p=kitchen-table">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-ar-007-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-ar-007-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-ar-007-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-ar-007-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Kitchen Table: a seasonal arrangement in a small crate or tin, made low and dense so it works as a kitchen centerpiece" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Kitchen Table</h3>
+    <p class="card-sub">Medium · seasonal stems</p>
+    <p class="card-price">229.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="gift_set" data-flower="sunflowers" data-occ="birthday congratulations" data-price="22900" data-order="30">
+  <a href="product.html?p=field-of-gold-chocolates">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-gs-007-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-gs-007-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-gs-007-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-gs-007-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Field of Gold + Chocolates: our sunflower bunch with a box of chocolates from a shop near the recipient" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Field of Gold + Chocolates</h3>
+    <p class="card-sub">9 stems · sunflowers</p>
+    <p class="card-price">229.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="plant" data-flower="mixed" data-occ="get_well thank_you just_because" data-price="14900" data-order="31">
+  <a href="product.html?p=jasmine-pot">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-pt-007-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-pt-007-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-pt-007-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-pt-007-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Jasmine Pot: a potted jasmine in flower, trained on a small hoop, scented enough to fill a kitchen or a hallway" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Jasmine Pot</h3>
+    <p class="card-sub">One plant · mixed flowers</p>
+    <p class="card-price">149.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="bouquet" data-flower="roses" data-occ="christmas new_year congratulations" data-price="30900" data-order="32">
+  <a href="product.html?p=winter-rose">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-008-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-008-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-008-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-008-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Winter Rose: white roses with pine, ruscus and a few white berries, tied for the winter months and wrapped in white paper" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Winter Rose</h3>
+    <p class="card-sub">18 stems · roses</p>
+    <p class="card-price">309.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="arrangement" data-flower="mixed" data-occ="housewarming congratulations" data-price="22900" data-order="33">
+  <a href="product.html?p=hallway-light">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-ar-008-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-ar-008-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-ar-008-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-ar-008-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Hallway Light: white flowers with structural foliage in a tall glass vase, arranged for a hallway or a reception desk rather than a dining table" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Hallway Light</h3>
+    <p class="card-sub">Medium · mixed flowers</p>
+    <p class="card-price">229.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="gift_set" data-flower="peonies" data-occ="anniversary romance wedding" data-price="44900" data-order="34">
+  <a href="product.html?p=peony-note-vase">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-gs-008-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-gs-008-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-gs-008-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-gs-008-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Peony Note + Vase: our pink peony bouquet with a heavier glass vase, priced at the top of the range because peonies are" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Peony Note + Vase</h3>
+    <p class="card-sub">15 stems · peonies</p>
+    <p class="card-price">449.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="plant" data-flower="mixed" data-occ="birthday mothers_day get_well" data-price="14900" data-order="35">
+  <a href="product.html?p=azalea-pot">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-pt-008-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-pt-008-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-pt-008-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-pt-008-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Azalea Pot: a pink azalea in a plain pot, dense with buds so it flowers for two or three weeks indoors in a cool spot" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Azalea Pot</h3>
+    <p class="card-sub">One plant · mixed flowers</p>
+    <p class="card-price">149.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="arrangement" data-flower="freesias" data-occ="get_well retirement thank_you" data-price="22900" data-order="36">
+  <a href="product.html?p=reading-corner">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-ar-009-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-ar-009-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-ar-009-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-ar-009-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Reading Corner: purple freesias arranged short and close in a small vessel, scented enough for a bedside table or a Reading Corner" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Reading Corner</h3>
+    <p class="card-sub">Medium · freesias</p>
+    <p class="card-price">229.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="gift_set" data-flower="mixed" data-occ="birthday congratulations" data-price="22900" data-order="37">
+  <a href="product.html?p=warsaw-morning-balloon">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-gs-009-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-gs-009-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-gs-009-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-gs-009-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Warsaw Morning + Balloon: our mixed bouquet with one helium balloon, tied on at the door so it arrives inflated" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Warsaw Morning + Balloon</h3>
+    <p class="card-sub">18 stems · mixed flowers</p>
+    <p class="card-price">229.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="bouquet" data-flower="tulips" data-occ="thank_you get_well easter" data-price="16900" data-order="38">
+  <a href="product.html?p=sunday-market">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-010-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-010-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-010-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-010-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Sunday Market: yellow tulips, tied simply in a rustic bunch with their leaves left long and the stems showing" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Sunday Market</h3>
+    <p class="card-sub">25 stems · tulips</p>
+    <p class="card-price">169.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="arrangement" data-flower="peonies" data-occ="anniversary wedding romance" data-price="44900" data-order="39">
+  <a href="product.html?p=studio-vase">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-ar-010-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-ar-010-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-ar-010-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-ar-010-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Studio Vase: pink peonies arranged in a heavy Studio Vase with almost no foliage, so the flowers are the whole object" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Studio Vase</h3>
+    <p class="card-sub">Medium · peonies</p>
+    <p class="card-price">449.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="gift_set" data-flower="gerberas" data-occ="get_well birthday graduation" data-price="22900" data-order="40">
+  <a href="product.html?p=bright-side-balloon">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-gs-010-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-gs-010-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-gs-010-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-gs-010-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Bright Side + Balloon: our gerbera bouquet with one helium balloon, bright at both ends" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Bright Side + Balloon</h3>
+    <p class="card-sub">15 stems · gerberas</p>
+    <p class="card-price">229.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="bouquet" data-flower="tulips" data-occ="apology sympathy just_because" data-price="22900" data-order="41">
+  <a href="product.html?p=first-thaw">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-011-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-011-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-011-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-011-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="First Thaw: white tulips only, cut to one length and tied close in the minimal style with no filler and no wrap beyond plain paper" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>First Thaw</h3>
+    <p class="card-sub">25 stems · tulips</p>
+    <p class="card-price">229.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="arrangement" data-flower="seasonal" data-occ="housewarming thank_you easter" data-price="22900" data-order="42">
+  <a href="product.html?p=garden-crate">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-ar-011-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-ar-011-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-ar-011-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-ar-011-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Garden Crate: a seasonal Garden Crate: flowers, herbs and foliage planted in foam to look as though they were cut that morning" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Garden Crate</h3>
+    <p class="card-sub">Medium · seasonal stems</p>
+    <p class="card-price">229.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="gift_set" data-flower="lilies" data-occ="anniversary thank_you" data-price="44900" data-order="43">
+  <a href="product.html?p=white-linen-chocolates">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-gs-011-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-gs-011-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-gs-011-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-gs-011-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="White Linen + Chocolates: our white lily sheaf with a box of chocolates bought locally" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>White Linen + Chocolates</h3>
+    <p class="card-sub">8 stems · lilies</p>
+    <p class="card-price">449.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="bouquet" data-flower="tulips" data-occ="birthday mothers_day womens_day" data-price="16900" data-order="44">
+  <a href="product.html?p=meadow-post">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-012-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-012-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-012-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-012-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Meadow Post: pink tulips with a little seasonal foliage, gathered in a loose garden bunch and tied with twine" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Meadow Post</h3>
+    <p class="card-sub">25 stems · tulips</p>
+    <p class="card-price">169.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="arrangement" data-flower="roses" data-occ="wedding congratulations sympathy" data-price="30900" data-order="45">
+  <a href="product.html?p=white-cube">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-ar-012-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-ar-012-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-ar-012-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-ar-012-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="White Cube: white roses arranged square and tight in a low White Cube, cut to one height with no visible foliage" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>White Cube</h3>
+    <p class="card-sub">Medium · roses</p>
+    <p class="card-price">309.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="gift_set" data-flower="mixed" data-occ="new_baby get_well" data-price="22900" data-order="46">
+  <a href="product.html?p=garden-letter-plush">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-gs-012-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-gs-012-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-gs-012-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-gs-012-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Garden Letter + Plush: our pastel garden bouquet with a small soft toy, for a new baby or someone recovering at home" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Garden Letter + Plush</h3>
+    <p class="card-sub">18 stems · mixed flowers</p>
+    <p class="card-price">229.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="bouquet" data-flower="tulips" data-occ="birthday congratulations womens_day" data-price="22900" data-order="47">
+  <a href="product.html?p=april-window">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-013-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-013-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-013-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-013-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="April Window: purple and lilac tulips arranged in a tall, deliberately modern bunch with a collar of their own leaves" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>April Window</h3>
+    <p class="card-sub">25 stems · tulips</p>
+    <p class="card-price">229.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="arrangement" data-flower="chrysanthemums" data-occ="all_saints thank_you housewarming" data-price="22900" data-order="48">
+  <a href="product.html?p=copper-bowl">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-ar-013-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-ar-013-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-ar-013-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-ar-013-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Copper Bowl: orange chrysanthemums arranged in a copper or brass bowl with autumn foliage; the vessel is included" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Copper Bowl</h3>
+    <p class="card-sub">Medium · chrysanthemums</p>
+    <p class="card-price">229.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="bouquet" data-flower="tulips" data-occ="birthday graduation congratulations" data-price="22900" data-order="49">
+  <a href="product.html?p=tulip-parade">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-014-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-014-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-014-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-014-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Tulip Parade: tulips in strong mixed colour — orange, pink and red together — tied high with the heads at one level" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Tulip Parade</h3>
+    <p class="card-sub">25 stems · tulips</p>
+    <p class="card-price">229.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="arrangement" data-flower="alstroemeria" data-occ="new_baby get_well birthday" data-price="16900" data-order="50">
+  <a href="product.html?p=linen-basket">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-ar-014-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-ar-014-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-ar-014-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-ar-014-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Linen Basket: pastel alstroemeria arranged in a lined linen-look basket, long-lasting and easy to keep topped up with water" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Linen Basket</h3>
+    <p class="card-sub">Medium · alstroemeria</p>
+    <p class="card-price">169.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="bouquet" data-flower="lilies" data-occ="sympathy thank_you" data-price="30900" data-order="51">
+  <a href="product.html?p=evening-chapel">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-016-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-016-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-016-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-016-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Evening Chapel: white lilies with dark green foliage, cut long and tied in a narrow classical sheaf for carrying" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Evening Chapel</h3>
+    <p class="card-sub">8 stems · lilies</p>
+    <p class="card-price">309.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="bouquet" data-flower="lilies" data-occ="get_well sympathy" data-price="22900" data-order="52">
+  <a href="product.html?p=snow-lantern">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-017-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-017-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-017-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-017-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Snow Lantern: white lilies alone, three or four heads to a stem, tied with no filler and finished in plain grey paper" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Snow Lantern</h3>
+    <p class="card-sub">8 stems · lilies</p>
+    <p class="card-price">229.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="bouquet" data-flower="lilies" data-occ="birthday anniversary mothers_day" data-price="30900" data-order="53">
+  <a href="product.html?p=lily-terrace">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-018-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-018-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-018-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-018-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Lily Terrace: pink lilies with eucalyptus and a soft green collar, tied in a rounded modern shape rather than a sheaf" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Lily Terrace</h3>
+    <p class="card-sub">8 stems · lilies</p>
+    <p class="card-price">309.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="bouquet" data-flower="peonies" data-occ="birthday new_baby mothers_day" data-price="30900" data-order="54">
+  <a href="product.html?p=soft-june">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-020-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-020-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-020-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-020-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Soft June: peonies in pale pink and cream with white filler flowers and grey-green leaves, tied in a loose classical dome" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Soft June</h3>
+    <p class="card-sub">15 stems · peonies</p>
+    <p class="card-price">309.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="bouquet" data-flower="peonies" data-occ="wedding romance" data-price="44900" data-order="55">
+  <a href="product.html?p=blush-terrace">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-021-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-021-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-021-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-021-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Blush Terrace: deep pink peonies packed tight with almost no foliage, so the bouquet is one dense head of flower" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Blush Terrace</h3>
+    <p class="card-sub">15 stems · peonies</p>
+    <p class="card-price">449.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="bouquet" data-flower="peonies" data-occ="wedding congratulations thank_you" data-price="30900" data-order="56">
+  <a href="product.html?p=peony-hour">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-022-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-022-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-022-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-022-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Peony Hour: white peonies cut to one height and tied without filler, finished with a single paper wrap" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Peony Hour</h3>
+    <p class="card-sub">15 stems · peonies</p>
+    <p class="card-price">309.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="bouquet" data-flower="sunflowers" data-occ="just_because get_well housewarming" data-price="16900" data-order="57">
+  <a href="product.html?p=high-summer">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-024-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-024-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-024-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-024-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="High Summer: sunflowers with wheat, grasses and yellow filler flowers, gathered loose and tied with twine" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>High Summer</h3>
+    <p class="card-sub">9 stems · sunflowers</p>
+    <p class="card-price">169.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="bouquet" data-flower="sunflowers" data-occ="thank_you housewarming retirement" data-price="22900" data-order="58">
+  <a href="product.html?p=late-harvest">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-025-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-025-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-025-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-025-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Late Harvest: sunflowers with orange spray roses, rust foliage and dried grasses, tied for late summer and autumn" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Late Harvest</h3>
+    <p class="card-sub">9 stems · sunflowers</p>
+    <p class="card-price">229.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="bouquet" data-flower="gerberas" data-occ="get_well birthday congratulations" data-price="16900" data-order="59">
+  <a href="product.html?p=bright-side">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-026-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-026-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-026-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-026-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Bright Side: gerberas in orange, pink and red with green filler, tied in a clean modern bunch with the heads level" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Bright Side</h3>
+    <p class="card-sub">15 stems · gerberas</p>
+    <p class="card-price">169.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="bouquet" data-flower="gerberas" data-occ="birthday graduation just_because" data-price="16900" data-order="60">
+  <a href="product.html?p=carousel">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-027-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-027-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-027-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-027-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Carousel: gerberas across the full colour range, one head to a stem, tied in the round so no two neighbouring heads share a colour" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Carousel</h3>
+    <p class="card-sub">15 stems · gerberas</p>
+    <p class="card-price">169.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="bouquet" data-flower="mixed" data-occ="apology get_well thank_you" data-price="22900" data-order="61">
+  <a href="product.html?p=garden-letter">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-029-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-029-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-029-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-029-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Garden Letter: a garden-style bouquet in pale pink, cream and white: spray roses, small filler flowers, grasses and grey-green leaves, tied loose" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Garden Letter</h3>
+    <p class="card-sub">18 stems · mixed flowers</p>
+    <p class="card-price">229.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="bouquet" data-flower="mixed" data-occ="housewarming thank_you retirement" data-price="22900" data-order="62">
+  <a href="product.html?p=late-summer-table">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-030-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-030-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-030-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-030-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Late Summer Table: orange and rust flowers with wheat, seed heads and dried grasses, tied wide and low for a table rather than a hand" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Late Summer Table</h3>
+    <p class="card-sub">18 stems · mixed flowers</p>
+    <p class="card-price">229.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="bouquet" data-flower="mixed" data-occ="new_baby get_well just_because" data-price="16900" data-order="63">
+  <a href="product.html?p=pastel-weekend">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-031-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-031-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-031-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-031-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Pastel Weekend: soft pastels only — pale pink, cream, white — cut short and tied in a small tight posy with minimal foliage" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Pastel Weekend</h3>
+    <p class="card-sub">18 stems · mixed flowers</p>
+    <p class="card-price">169.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="bouquet" data-flower="mixed" data-occ="birthday congratulations graduation" data-price="30900" data-order="64">
+  <a href="product.html?p=painters-table">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-032-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-032-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-032-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-032-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Painter&#x27;s Table: strong colour in a deliberately modern shape: focal blooms in pink and orange, sharp foliage, and one unexpected stem" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Painter&#x27;s Table</h3>
+    <p class="card-sub">18 stems · mixed flowers</p>
+    <p class="card-price">309.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="bouquet" data-flower="mixed" data-occ="just_because thank_you" data-price="16900" data-order="65">
+  <a href="product.html?p=long-weekend">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-033-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-033-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-033-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-033-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Long Weekend: a loose mixed bunch with no fixed recipe: three or four kinds of flower, two foliages, tied rustic and wrapped in kraft paper" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Long Weekend</h3>
+    <p class="card-sub">18 stems · mixed flowers</p>
+    <p class="card-price">169.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="bouquet" data-flower="seasonal" data-occ="just_because birthday" data-price="22900" data-order="66">
+  <a href="product.html?p=seasons-hand">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-034-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-034-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-034-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-034-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Season&#x27;s Hand: whatever is at its peak that week, tied by hand in mixed colour: usually a focal flower, two supporting stems and seasonal foliage" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Season&#x27;s Hand</h3>
+    <p class="card-sub">18 stems · seasonal stems</p>
+    <p class="card-price">229.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="bouquet" data-flower="seasonal" data-occ="housewarming thank_you" data-price="22900" data-order="67">
+  <a href="product.html?p=harvest-light">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-035-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-035-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-035-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-035-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Harvest Light: seasonal stems in orange and amber — flowers, seed heads and turning foliage — tied wide for an autumn table" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Harvest Light</h3>
+    <p class="card-sub">18 stems · seasonal stems</p>
+    <p class="card-price">229.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="bouquet" data-flower="seasonal" data-occ="christmas new_year" data-price="30900" data-order="68">
+  <a href="product.html?p=winter-table">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-036-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-036-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-036-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-036-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Winter Table: white seasonal flowers with pine, eucalyptus and silver foliage, tied for december and wrapped in white" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Winter Table</h3>
+    <p class="card-sub">18 stems · seasonal stems</p>
+    <p class="card-price">309.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="bouquet" data-flower="seasonal" data-occ="easter womens_day mothers_day" data-price="16900" data-order="69">
+  <a href="product.html?p=spring-post">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-037-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-037-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-037-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-037-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Spring Post: yellow spring stems — narcissi, tulips, mimosa or ranunculus depending on the week — tied loose with their own leaves" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Spring Post</h3>
+    <p class="card-sub">18 stems · seasonal stems</p>
+    <p class="card-price">169.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="bouquet" data-flower="carnations" data-occ="birthday name_day just_because" data-price="16900" data-order="70">
+  <a href="product.html?p=old-town">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-038-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-038-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-038-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-038-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Old Town: red carnations with ruscus, tied in the round in the old style and wrapped in plain paper" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Old Town</h3>
+    <p class="card-sub">18 stems · carnations</p>
+    <p class="card-price">169.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="bouquet" data-flower="hydrangeas" data-occ="anniversary congratulations housewarming" data-price="30900" data-order="71">
+  <a href="product.html?p=blue-hour">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-039-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-039-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-039-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-039-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Blue Hour: blue hydrangea heads with a little eucalyptus, tied short and low so the weight sits in the hand" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Blue Hour</h3>
+    <p class="card-sub">5 stems · hydrangeas</p>
+    <p class="card-price">309.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="bouquet" data-flower="freesias" data-occ="get_well thank_you apology" data-price="22900" data-order="72">
+  <a href="product.html?p=morning-scent">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-bq-040-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-bq-040-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-bq-040-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-bq-040-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Morning Scent: white freesias, tied in a light narrow bunch with no filler, in plain paper" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Morning Scent</h3>
+    <p class="card-sub">25 stems · freesias</p>
+    <p class="card-price">229.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="funeral" data-flower="chrysanthemums" data-occ="sympathy all_saints" data-price="56900" data-order="73">
+  <a href="product.html?p=farewell-wreath">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-fn-001-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-fn-001-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-fn-001-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-fn-001-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="A round white chrysanthemum funeral wreath with dark green foliage, standing on neutral stone" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Farewell Wreath</h3>
+    <p class="card-sub">Medium · chrysanthemums</p>
+    <p class="card-price">569.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="funeral" data-flower="lilies" data-occ="sympathy" data-price="56900" data-order="74">
+  <a href="product.html?p=standing-spray">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-fn-002-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-fn-002-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-fn-002-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-fn-002-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Standing Spray: a standing funeral spray of white lilies and foliage on a frame, made to be seen from the front at a service" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Standing Spray</h3>
+    <p class="card-sub">Medium · lilies</p>
+    <p class="card-price">569.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="funeral" data-flower="lilies" data-occ="sympathy" data-price="72900" data-order="75">
+  <a href="product.html?p=casket-spray">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-fn-003-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-fn-003-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-fn-003-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-fn-003-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Casket Spray: a Casket Spray of white lilies and greenery, made long and low to lie along the lid" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Casket Spray</h3>
+    <p class="card-sub">Medium · lilies</p>
+    <p class="card-price">729.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="funeral" data-flower="roses" data-occ="sympathy" data-price="72900" data-order="76">
+  <a href="product.html?p=white-heart">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-fn-004-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-fn-004-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-fn-004-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-fn-004-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="White Heart: a heart-shaped tribute of white roses on a frame, filled edge to edge and finished with a green border" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>White Heart</h3>
+    <p class="card-sub">Medium · roses</p>
+    <p class="card-price">729.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="funeral" data-flower="mixed" data-occ="sympathy" data-price="41900" data-order="77">
+  <a href="product.html?p=sympathy-basket">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-fn-005-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-fn-005-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-fn-005-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-fn-005-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Sympathy Basket: a Sympathy Basket of white and cream flowers with foliage, planted in foam so it can go straight to a home, a chapel or an office" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Sympathy Basket</h3>
+    <p class="card-sub">Medium · mixed flowers</p>
+    <p class="card-price">419.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="funeral" data-flower="chrysanthemums" data-occ="sympathy all_saints" data-price="30900" data-order="78">
+  <a href="product.html?p=grave-bouquet">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-fn-006-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-fn-006-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-fn-006-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-fn-006-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Grave Bouquet: a Grave Bouquet of mixed chrysanthemums, tied flat so it can be laid on a stone or set in a grave vase" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Grave Bouquet</h3>
+    <p class="card-sub">Medium · chrysanthemums</p>
+    <p class="card-price">309.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="funeral" data-flower="chrysanthemums" data-occ="sympathy all_saints" data-price="56900" data-order="79">
+  <a href="product.html?p=memorial-cross">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-fn-007-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-fn-007-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-fn-007-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-fn-007-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Memorial Cross: a cross-shaped tribute of white chrysanthemums on a frame, with a green edge and a plain finish" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Memorial Cross</h3>
+    <p class="card-sub">Medium · chrysanthemums</p>
+    <p class="card-price">569.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="funeral" data-flower="mixed" data-occ="sympathy" data-price="41900" data-order="80">
+  <a href="product.html?p=quiet-wreath">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-fn-008-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-fn-008-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-fn-008-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-fn-008-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Quiet Wreath: a wreath in pastel rather than pure white — pale pink, cream and soft green on a round frame — for a family that wants something gentler" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Quiet Wreath</h3>
+    <p class="card-sub">Medium · mixed flowers</p>
+    <p class="card-price">419.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="funeral" data-flower="roses" data-occ="sympathy" data-price="41900" data-order="81">
+  <a href="product.html?p=condolence-bouquet">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-fn-009-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-fn-009-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-fn-009-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-fn-009-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Condolence Bouquet: a tied sheaf of white roses and foliage, made to be carried and then laid down or put into water" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Condolence Bouquet</h3>
+    <p class="card-sub">Medium · roses</p>
+    <p class="card-price">419.00 PLN<small>all in</small></p>
+  </a>
+</article>
+<article class="card" data-type="funeral" data-flower="mixed" data-occ="sympathy all_saints" data-price="56900" data-order="82">
+  <a href="product.html?p=stone-garden">
+    <div class="card-photo"><img src="https://media.flowersoverseas.com/media/fo-fn-010-hero/640.webp" srcset="https://media.flowersoverseas.com/media/fo-fn-010-hero/384.webp 384w, https://media.flowersoverseas.com/media/fo-fn-010-hero/640.webp 640w, https://media.flowersoverseas.com/media/fo-fn-010-hero/828.webp 828w" sizes="(min-width: 1100px) 300px, (min-width: 700px) 30vw, 46vw" alt="Stone Garden: a low white arrangement in a stone-look container, made to sit on a grave, a niche shelf or a windowsill without a vase" width="800" height="1000" loading="lazy" decoding="async"></div>
+    <h3>Stone Garden</h3>
+    <p class="card-sub">Medium · mixed flowers</p>
+    <p class="card-price">569.00 PLN<small>all in</small></p>
+  </a>
+</article>
+      </div>
+      <div class="empty" id="empty" hidden>
+        <h2>Nothing of ours fits all of that yet</h2>
+        <p>Try one filter fewer. Every one of these can still carry a card in your own words.</p>
+        <button class="btn btn-small" type="button" data-reset>Clear the filters</button>
+      </div>
+      <div class="more" id="more">
+        <button class="btn btn-ghost" type="button" id="more-btn">Show 12 more</button>
+        <p id="shown"></p>
+      </div>
+    </section>
+
+    <p class="disclosure">Our order is the order we chose ourselves. It is not a ranking by sales, by popularity or by payment, and it does not change with who you are.</p>
+  </div>
+
+  <section class="closing" aria-labelledby="closing-h">
+    <div class="wrap closing-in">
+      <div>
+        <h2 id="closing-h">Not sure yet? <em>Start from the day.</em></h2>
+        <p>Teachers' Day is on 14 October and All Saints' Day on 1 November. Poland keeps its own calendar, and we keep it with them.</p>
+      </div>
+      <div class="closing-links">
+        <a class="btn" href="home.html#dates">Dates in Poland</a>
+        <a class="btn btn-ghost" href="home.html#occasions">Browse by occasion</a>
+      </div>
+    </div>
+  </section>
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    <p class="signoff hand" aria-hidden="true">With love, from wherever you are.</p>
+    <div class="footer-grid">
+      <div class="footer-about">
+        <a class="logo" href="home.html" aria-label="Flowers Overseas, home"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--logo-accent, var(--stem))"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--logo-ink, var(--ink))" stroke-width="2.4" stroke-linecap="round" fill="none"/><g transform="translate(31 16)" style="stroke:var(--logo-ink, var(--ink))" stroke-width="2.2" fill="none"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--logo-accent, var(--stem))" stroke="none"/></g></svg><span class="wordmark" aria-hidden="true">Flowers Overseas</span></a>
+        <p>Flowers for someone far away, made by a florist in their own town and handed over in person. Poland first; more of Europe as we choose florists there.</p>
+      </div>
+      <nav aria-label="Footer">
+        <h2>Sending</h2>
+        <ul>
+          <li><a href="shop.html">Flowers for Poland</a></li>
+          <li><a href="home.html#occasions">Occasions</a></li>
+          <li><a href="home.html#dates">Dates in Poland</a></li>
+          <li><a href="home.html#how">How it works</a></li>
+          <li><a href="home.html#promise">What we promise</a></li>
+        </ul>
+      </nav>
+      <div>
+        <h2 id="remind-h">Occasion reminders</h2>
+        <p class="footer-small">Name days, All Saints, Women's Day: one email a few days before each, in your language. Unsubscribe in one click.</p>
+        <form class="remind" aria-labelledby="remind-h" data-remind>
+          <label for="remind-email">Email address</label>
+          <div class="remind-row">
+            <input id="remind-email" type="email" autocomplete="email" required>
+            <button class="btn btn-small" type="submit">Remind me</button>
+          </div>
+          <p class="footer-small">Consent is asked in the email we send first; nothing is stored until you confirm.</p>
+          <p class="status" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+      <div>
+        <h2>Payment</h2>
+        <p class="footer-small">Card payments are processed by Stripe. We never store card numbers.</p>
+        <p class="footer-small" style="margin-block-start:10px">We show the payment methods you can use at checkout.</p>
+      </div>
+    </div>
+    <div class="fine"><p>&copy; 2026 Flowers Overseas</p><p>Design direction A, &ldquo;Warm and personal&rdquo;, in the researched palette: a clickable preview, not the live shop.</p></div>
+  </div>
+</footer>
+<script>
+(function () {
+  var grid = document.getElementById('grid');
+  var cards = Array.prototype.slice.call(grid.querySelectorAll('.card'));
+  var note = grid.querySelector('[data-note]');
+  var chips = document.querySelectorAll('.chip');
+  var occ = document.getElementById('f-occ'), flower = document.getElementById('f-flower'), sort = document.getElementById('f-sort');
+  var count = document.getElementById('count'), clear = document.getElementById('clear');
+  var empty = document.getElementById('empty'), more = document.getElementById('more'), moreBtn = document.getElementById('more-btn'), shown = document.getElementById('shown');
+  var hint = document.getElementById('nameday-hint');
+  var PAGE = 12, state = { type: 'all', occ: '', flower: '', sort: 'ours', limit: PAGE };
+  var WHO = { mum: 'your mum', dad: 'your dad', grandma: 'your grandma', grandad: 'your grandad', sister: 'your sister', brother: 'your brother', friend: 'a friend', love: 'someone you love' };
+
+  try {
+    var who = sessionStorage.getItem('fo-who');
+    if (who && WHO[who]) document.getElementById('for-line').textContent = 'For ' + WHO[who] + ', in Poland';
+  } catch (e) {}
+
+  var q = new URLSearchParams(location.search);
+  if (q.get('type')) state.type = q.get('type');
+  if (q.get('occasion') && occ.querySelector('option[value="' + q.get('occasion') + '"]')) state.occ = q.get('occasion');
+  if (q.get('flower') && flower.querySelector('option[value="' + q.get('flower') + '"]')) state.flower = q.get('flower');
+
+  function plural(n) { return n === 1 ? '1 bouquet' : n + ' bouquets'; }
+
+  function apply(keepLimit) {
+    if (!keepLimit) state.limit = PAGE;
+    chips.forEach(function (c) { c.setAttribute('aria-pressed', String(c.dataset.type === state.type)); });
+    occ.value = state.occ; flower.value = state.flower; sort.value = state.sort;
+    var list = cards.filter(function (c) {
+      return (state.type === 'all' || c.dataset.type === state.type) &&
+        (!state.occ || c.dataset.occ.split(' ').indexOf(state.occ) > -1) &&
+        (!state.flower || c.dataset.flower === state.flower);
+    });
+    list.sort(function (a, b) {
+      if (state.sort === 'asc') return a.dataset.price - b.dataset.price || a.dataset.order - b.dataset.order;
+      if (state.sort === 'desc') return b.dataset.price - a.dataset.price || a.dataset.order - b.dataset.order;
+      return a.dataset.order - b.dataset.order;
+    });
+    cards.forEach(function (c) { c.hidden = true; });
+    list.forEach(function (c, i) { grid.appendChild(c); c.hidden = i >= state.limit; });
+    var filtered = state.type !== 'all' || state.occ || state.flower;
+    note.hidden = filtered || state.sort !== 'ours' || list.length < 5;
+    if (!note.hidden) grid.insertBefore(note, list[4]);
+    count.textContent = plural(list.length);
+    clear.hidden = !filtered;
+    empty.hidden = list.length > 0;
+    hint.hidden = state.occ !== 'name_day';
+    var visible = Math.min(state.limit, list.length);
+    more.hidden = list.length === 0;
+    moreBtn.hidden = visible >= list.length;
+    shown.textContent = 'Showing ' + visible + ' of ' + list.length;
+    var p = new URLSearchParams();
+    if (state.type !== 'all') p.set('type', state.type);
+    if (state.occ) p.set('occasion', state.occ);
+    if (state.flower) p.set('flower', state.flower);
+    history.replaceState(null, '', location.pathname + (p.toString() ? '?' + p : ''));
+  }
+
+  chips.forEach(function (c) { c.addEventListener('click', function () { state.type = c.dataset.type; apply(); }); });
+  occ.addEventListener('change', function () { state.occ = occ.value; apply(); });
+  flower.addEventListener('change', function () { state.flower = flower.value; apply(); });
+  sort.addEventListener('change', function () { state.sort = sort.value; apply(); });
+  function reset() { state.type = 'all'; state.occ = ''; state.flower = ''; apply(); }
+  clear.addEventListener('click', reset);
+  document.querySelector('[data-reset]').addEventListener('click', reset);
+  document.querySelector('[data-switch]').addEventListener('click', function (e) { state.occ = e.currentTarget.dataset.switch; apply(); });
+  moreBtn.addEventListener('click', function () {
+    state.limit += PAGE; apply(true);
+    var next = grid.querySelectorAll('.card:not([hidden]) a')[state.limit - PAGE];
+    if (next) next.focus({ preventScroll: true });
+  });
+  apply();
+})();
+document.querySelectorAll('[data-remind]').forEach(function (f) {
+  f.addEventListener('submit', function (e) {
+    e.preventDefault();
+    f.querySelector('.status').textContent = 'This is a design preview, so nothing was sent or stored.';
+  });
+});
+</script>
+</body>
+</html>
