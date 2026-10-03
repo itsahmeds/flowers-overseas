@@ -25,6 +25,13 @@ import { COUNTRIES } from "../../src/config/countries.ts";
  *     `corridorPageExists()` is false for every destination there. Seven URLs each, all
  *     `noindex,follow` and in no sitemap (the locale is not indexable), so the cost today is
  *     reachability and not ranking — but it is a hole, and it is named rather than hidden.
+ *  3. **`countryCategory` in `de` and `pl`** (TASK-106, the same hole one level down). Once
+ *     TASK-106 authored their category slugs, 140 country categories per locale exist, and their
+ *     inbound links are the shop root (escalation 2) and sibling-category chips on other country
+ *     categories. The crawl of PR #150 (run 37115230193) reached 38 documents from `/de` and none
+ *     of these. They close with escalation 2: the day a `de`/`pl` shop root gains an inbound
+ *     edge, both rules expire together (`waivedButReached` goes red). Recorded in
+ *     `docs/tasks/TASK-106.md` §Escalations.
  *
  * Everything else — non-200, a link into an unpublished id, a malformed `href` — applies to every
  * page in every locale with no exception at all.
@@ -36,6 +43,8 @@ export const EXCLUDED: readonly {
   { pageType: "categoryHub" },
   { locale: "de", pageType: "countryShopRoot" },
   { locale: "pl", pageType: "countryShopRoot" },
+  { locale: "de", pageType: "countryCategory" },
+  { locale: "pl", pageType: "countryCategory" },
 ];
 
 export function isExcluded(locale: string, pageType: string): boolean {
@@ -72,9 +81,8 @@ export const PUBLISHED_DESTINATIONS = COUNTRIES.filter(
  * re-pinned in the same commit, which is the diff a reviewer should see.
  *
  * `de` and `pl` carry `en`'s set since TASK-106 authored their category and occasion slugs
- * (spec 008 §13 Q10): every entity page exists there under its own slug. Their shop roots stay
- * escalated (`EXCLUDED`), so the crawl must reach their country categories by another path — the
- * occasion hubs' destination links and the occasions index — or go red, which is the point.
+ * (spec 008 §13 Q10). What the crawl must reach there is the occasions index, the occasion hubs
+ * and the country occasions; their shop roots and country categories are escalations 2 and 3.
  */
 export const TARGETS: Readonly<
   Record<string, Readonly<Record<string, number>>>
@@ -93,18 +101,8 @@ export const TARGETS: Readonly<
     occasionHub: 28,
     occasionsIndex: 1,
   },
-  de: {
-    countryCategory: 140,
-    countryOccasion: 7,
-    occasionHub: 28,
-    occasionsIndex: 1,
-  },
-  pl: {
-    countryCategory: 140,
-    countryOccasion: 7,
-    occasionHub: 28,
-    occasionsIndex: 1,
-  },
+  de: { countryOccasion: 7, occasionHub: 28, occasionsIndex: 1 },
+  pl: { countryOccasion: 7, occasionHub: 28, occasionsIndex: 1 },
 };
 
 /**
@@ -127,8 +125,8 @@ export const WAIVED: Readonly<
 > = {
   en: { categoryHub: 23 },
   "en-gb": { categoryHub: 23 },
-  // `de`/`pl` gained their 23 category hubs with TASK-106's slugs; the `categoryHub` rule covers
-  // every locale, so the waiver grew by exactly those and this literal says so.
-  de: { categoryHub: 23, countryShopRoot: 7 },
-  pl: { categoryHub: 23, countryShopRoot: 7 },
+  // `de`/`pl` gained 23 category hubs (the all-locale rule 1) and 140 country categories (rule 3)
+  // with TASK-106's slugs; the waiver grew by exactly those, and this literal says so.
+  de: { categoryHub: 23, countryCategory: 140, countryShopRoot: 7 },
+  pl: { categoryHub: 23, countryCategory: 140, countryShopRoot: 7 },
 };
