@@ -339,6 +339,16 @@ here.
   cases) and with one 480 row dropped from the manifest. Upload `--only` the 84 hero ids
   (`--dry-run` first): 168 uploaded, 504 already current, 3 253 119 B; `--verify` in six groups
   of 16 ids: 672 rows, every exit 0.
+- 2026-10-03: **Pixel 7 re-measured on `7010ef2a`** (build slot, load 2.9; same method): `/en`,
+  `/en-gb`, `/de`, `/pl` each **178 813 B** (was 215 876; budget 204 800). The trending five now
+  take 480 w: `fo-bq-003` 17 640, `-002` 14 481, `-001` 13 881, `-004` 13 747, `-005` 11 287 B;
+  hero `1200.avif` 41 135 and the six tiles unchanged. Baselines run 37130468759 (`7010ef2a`): 10
+  of 104 differ, each inspected and taken with the run's manifest (`--verify` 104 of 104):
+  `product-mobile-{gallery-photos,sticky}` (the same photograph, now downsampled from 480 w);
+  `de`, `home-{de,pl}-{desktop,mobile}`, `footer-de-{desktop,mobile}` (the footer's "Occasions"
+  is now a link: main's TASK-106 de/pl slugs plus this branch's photographs; 63 × 10 px each);
+  `dev-components-desktop` (this branch's +111 px `trending` sample and TASK-171's dropped cutoff
+  sentence).
 
 ## Result
 
