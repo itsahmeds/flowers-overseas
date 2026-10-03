@@ -165,24 +165,23 @@ test.describe("what the page renders (AC-6, AC-11, AC-23)", () => {
     await context.close();
   });
 
-  test("nominates nothing, because no card has a photograph to nominate (AC-24)", async ({
+  test("nominates exactly one, the first card's photograph, out of seven (AC-24)", async ({
     page,
   }) => {
-    // **The stated number, and why it is 0.** No Mother's Day SKU has an approved photograph, so
-    // all seven cards are spec 006's captioned placeholder and the page renders no `<img>` at
-    // all. AC-24's "exactly one image per page carries `priority`" has nothing to range over
-    // here; what it still requires, and what this asserts, is that the nomination follows **the
-    // first card's photograph and nothing else** — so no preload of a placeholder, of a
-    // photograph further down the grid, or of an asset the page never rendered.
+    // **The stated number, and why it is 1.** Until TASK-168 no Mother's Day SKU had an approved
+    // photograph and this case pinned 0; since TASK-168 all seven cards carry one, so AC-24's
+    // "exactly one image per page carries `priority`" has seven candidates and must pick the
+    // first — the nomination follows **the first card's photograph and nothing else**, so no
+    // preload of a photograph further down the grid or of an asset the page never rendered. The
+    // no-photograph state is the unit twin's (`withPhotographAt` over `placeholders`).
     //
     // Nothing below is counted from the page's own nominations (`preloads === priority` would
     // read 0 === 0 and pass with the page's `<head>` emptied). The expectation is derived from
-    // the **first card**, and `EXPECTED_NOMINATIONS` is pinned to today's corpus: the day a
-    // photograph lands on the first card, the third assertion goes red and the real number — 1 —
-    // has to be written here. The unit twin
-    // (`tests/unit/catalog-occasion-page.test.tsx`, "the one LCP nomination") already proves what
-    // this page does in that state, on fabricated views.
-    const EXPECTED_NOMINATIONS = 0;
+    // the **first card**, and `EXPECTED_NOMINATIONS` is pinned to today's corpus: if the first
+    // card's photograph is withdrawn the third assertion goes red and the real number has to be
+    // written here. The unit twin (`tests/unit/catalog-occasion-page.test.tsx`, "the one LCP
+    // nomination") proves what this page does with no photograph, on views built in the test.
+    const EXPECTED_NOMINATIONS = 1;
     await page.goto("/en/poland/occasions/mothers-day");
 
     const firstCard = page.locator("[data-fo-product-card]").first();
@@ -209,6 +208,9 @@ test.describe("what the page renders (AC-6, AC-11, AC-23)", () => {
     await expect(page.locator('img[loading="eager"]')).toHaveCount(
       EXPECTED_NOMINATIONS,
     );
+    // The other six photographs are lazy, which is the "and nothing else" half.
+    await expect(page.locator("[data-fo-product-card] img")).toHaveCount(7);
+    await expect(page.locator('img[loading="lazy"]')).toHaveCount(6);
   });
 });
 

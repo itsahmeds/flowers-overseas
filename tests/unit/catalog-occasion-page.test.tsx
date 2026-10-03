@@ -201,9 +201,11 @@ describe("the country occasion page (§5.3 row 2)", () => {
 /**
  * **AC-24 on a page whose products have no photograph** (§5.4, **AC-24**, T-24).
  *
- * No Mother's Day SKU in the committed corpus has an approved photograph, so all seven cards of
- * `/en/poland/occasions/mothers-day` are spec 006's captioned placeholder and the page renders no
- * `<img>` at all. A case that counted this page's nominations against this page's own output
+ * Until TASK-168 no Mother's Day SKU in the committed corpus had an approved photograph, so all
+ * seven cards of `/en/poland/occasions/mothers-day` were spec 006's captioned placeholder and the
+ * page rendered no `<img>` at all. Since TASK-168 all seven carry one, which the shipped pin below
+ * states; the no-photograph state is now built from the real view with every photograph withdrawn
+ * (`placeholders`). A case that counted this page's nominations against this page's own output
  * would compare 0 to 0 and pass with its subject deleted — what the round-2 review of PR #89
  * found here. So every expectation below is derived from the **first card's photograph**, present
  * or absent, never from what the page emitted; and the two fabricated views make the "exactly
@@ -215,26 +217,51 @@ describe("the country occasion page (§5.3 row 2)", () => {
 describe("the one LCP nomination (§5.4, AC-24, T-24)", () => {
   const shipped = render(<CountryOccasionPage view={en} />, "en");
 
-  /** The shipped occasion view with the named cards' placeholders replaced by a photograph. */
+  /** The shipped view with every card's photograph withdrawn: the page before TASK-168. */
+  const placeholders: ListingView = {
+    ...en,
+    items: en.items.map((card) => ({
+      ...card,
+      photo: { kind: "placeholder", slot: "grid" } as const,
+    })),
+  };
+
+  /** The no-photograph view with the named cards' placeholders replaced by a photograph. */
   function withPhotographAt(...indices: readonly number[]): ListingView {
     return {
-      ...en,
-      items: en.items.map((card, index) =>
+      ...placeholders,
+      items: placeholders.items.map((card, index) =>
         indices.includes(index) ? { ...card, photo: PHOTOGRAPH } : card,
       ),
     };
   }
 
-  it("nominates nothing on the page as it ships — no card has a photograph to nominate", () => {
-    // The pin: zero photographs on this page today, stated as a number read from the view model
-    // rather than from the markup. The day a Mother's Day SKU gets one this goes red and the real
-    // number has to be written here — the two cases below already say what the page must do then.
+  it("nominates exactly the first card on the page as it ships: seven of seven cards are photographs", () => {
+    // The pin: seven photographs on this page since TASK-168, stated as numbers read from the
+    // view model rather than from the markup. A media flip that changes them makes this red, and
+    // the new numbers are written here deliberately.
+    expect(en.items).toHaveLength(7);
     expect(en.items.filter((card) => card.photo.kind === "asset")).toHaveLength(
-      0,
+      7,
     );
     const nominated = lcpNominations(shipped);
+    expect(nominated.images).toBe(7);
+    expect(nominated.eager).toBe(1);
+    expect(nominated.high).toBe(1);
+    expect(nominated.preloaded).toEqual(
+      expectedPreloads(firstCardPhotograph(shipped)),
+    );
+    expect(nominatedImageCard(shipped)).toBe(0);
+  });
+
+  it("nominates nothing on the page with every photograph withdrawn — no card has one to nominate", () => {
+    const markup = render(<CountryOccasionPage view={placeholders} />, "en");
+    expect(
+      placeholders.items.filter((card) => card.photo.kind === "asset"),
+    ).toHaveLength(0);
+    const nominated = lcpNominations(markup);
     expect(nominated.images).toBe(0);
-    expect(firstCardPhotograph(shipped)).toBeUndefined();
+    expect(firstCardPhotograph(markup)).toBeUndefined();
     // Falsifiable at zero: a page that preloaded a placeholder, an asset it did not render, or a
     // photograph further down the grid would fail these three.
     expect(nominated.preloaded).toEqual(expectedPreloads(undefined));

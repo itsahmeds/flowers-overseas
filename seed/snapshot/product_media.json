@@ -645,6 +645,26 @@
     },
     {
       "key": {
+        "sku": "FO-BQ-004",
+        "asset": "fo-bq-004-hero"
+      },
+      "values": {
+        "sort": 0,
+        "is_primary": true
+      }
+    },
+    {
+      "key": {
+        "sku": "FO-BQ-004",
+        "asset": "fo-bq-004-detail"
+      },
+      "values": {
+        "sort": 1,
+        "is_primary": false
+      }
+    },
+    {
+      "key": {
         "sku": "FO-BQ-005",
         "asset": "fo-bq-005-hero"
       },

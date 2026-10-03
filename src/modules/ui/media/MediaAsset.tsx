@@ -62,6 +62,7 @@ const PLACEHOLDER_KEY: Readonly<
   tile: "placeholder.occasion",
   grid: "placeholder.product",
   thumb: "placeholder.product",
+  trending: "placeholder.product",
 };
 
 export interface MediaAssetProps {
