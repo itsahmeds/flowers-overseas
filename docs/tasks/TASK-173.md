@@ -60,7 +60,16 @@ Raised by the implementer, 2026-10-03, before any code was written. Nothing unde
 - 2026-10-03: rulings received and recorded; waiting for PR 163 to merge before the first code change.
 - 2026-10-03: PR 163 merged; `origin/main` merged in. `7fc7ff89`: `site-links.ts` gains the `listingPage` target kind, `DEMO_DESTINATION_ISO2` and ten `category-row-*` rows; the header draws only entries that resolve (layout passes `listingHrefs` from `listingAlternatePaths()`), no search band, account cluster or menu glyph; the footer drops unlinked entries and empty columns; trending cards link via `listProductPages()` from the home page. Unit tests rewritten; mutations (account as text, footer as text, unpublish roses, demo country DE) each went red.
 - 2026-10-03: `f0a00646`: e2e — exact header heights 209/96 (measured), the chrome crawl in `links.spec.ts`, trending links in `home.spec.ts`, footer/a11y nav counts; AC-21 crawl re-pinned: TARGETS grew in every locale (+3 category hubs; `de`/`pl` +7 shop roots, +140 country categories), WAIVED shrank to 20 category hubs per locale, escalations 2 and 3 closed. Local build + full e2e/a11y green except the port-bound `seo-canonical` cases (site URL 3000 vs the local 3173). Next: visual baselines via the label flow.
+- 2026-10-03: `61be2308`: 55 Linux baselines from run 37135761767 (`--verify` 104/104, `--check` clean). PR marked ready with `ci:full`.
 
 ## Result
 
-_Pending._
+PR #162. Every header, footer and home control is a link to a page answering 200, or is not drawn.
+
+- **Header category row** (all four launch locales): Our selection → Poland shop root; Birthday, Sympathy → occasion hubs; Occasions → occasions index; Bouquets, Roses, Plants → category hubs (`bouquet`, `roses`, `plant`); Destinations → destinations hub. Add-ons and Same-day: not drawn.
+- **Not drawn:** search band, Sign in, My orders, Basket, For florists, mobile menu glyph; footer The guarantee, Delivery times, the Company column, the legal row's four links.
+- **Footer:** Sending → Destinations, Occasions. **Home:** five trending cards → their Poland product pages.
+- **AC-21 crawl:** TARGETS grew (+3 category hubs everywhere; `de`/`pl` +7 shop roots, +140 country categories); WAIVED shrank to 20 category hubs per locale; TASK-113 escalations 2 and 3 closed.
+- **Expensive gate run locally, once, in the build slot** (load ~6–8, 17 at release): `next build` + `next start` + e2e/a11y, to measure the exact new header heights (mobile 209/96, desktop 183/138) and the crawl's new reach for the pins. Only the port-bound `seo-canonical` cases failed (site URL 3000, server on 3173).
+- **Visual:** 55 baselines refreshed via the label (run 37135761767); every one traced by pixel diff to the header/footer change, 14 opened and looked at (both header banners, RTL banner, both footers, home trending, error page, product sticky, listing grid/card, category hub top).
+- **Follow-ups for the orchestrator:** `src/config/categories.ts`'s `published` flags and `isCategoryPublished()` are now dead (outside the fence); the home's occasion tiles are still not links (outside the fence).
