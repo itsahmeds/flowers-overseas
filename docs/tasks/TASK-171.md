@@ -54,7 +54,37 @@ _None._
 
 - 2026-10-03 — picker, catalogues, meta, artboards and tests done; mutations red; pushed
   `9ece7dd2`, draft PR #151; `visual:baselines` label added for `dev-components-desktop`.
+- 2026-10-03 — Linux baseline taken from run 37115814804 (`fa9145ca`); Result written; ready, `ci:full`.
 
 ## Result
 
-_Pending._
+PR #151. AC-8 as amended by §14 A8: the `preview` picker renders no cutoff line and no cutoff
+time in en, en-gb, de and pl, and the facts row keeps `orderBy.none`. `live` still renders
+exactly `delivery.picker.live`. `delivery.cutoffPreview` is gone from `messages/{en,de,pl}.json`
+and their meta files (`en-gb` never carried it), and from both product artboards
+(`components.dc.html` never drew it).
+
+- **Strings signed off:** `occasionsIndex.datedCaption` and `.undatedNote` are `reviewed: true`,
+  `reviewedBy: "founder (chat, 2026-10-03: PR 98 occasions-index strings, approved as written;
+  TASK-171)"`. No wording changed. `tests/unit/i18n-messages-schema.test.ts` drops them from the
+  founder-review queue; `undatedHeading` stays in it.
+- **English unreviewed share** (`node scripts/i18n-check.ts --summary`): before 25/541 = 4.6 %;
+  after the key removal alone 25/540 = 4.6 %; after both **23/540 = 4.3 %**. The brief's 25/511
+  was out of date: the catalogue had grown to 541 keys.
+- **Tests:** `tests/unit/product-page.test.tsx` has 3 new A8 cases (preview has no cutoff, in four
+  locales, with the facts row's `none`; live renders `delivery.picker.live`, in four locales; no
+  message or meta file holds `cutoffPreview`), plus 2 rewritten (the AC-10 cutoff case is now
+  `live` only; the AC-22 cutoff count for preview is 0). `tests/unit/chrome-honesty.test.tsx` takes
+  the key out of the gated set. `tests/e2e/product-page.spec.ts` asserts `[data-fo-cutoff]` count 0
+  on the four Poland preview PDPs.
+- **Mutations, all red:** the marked line put back, the unmarked line put back, the `live` gate
+  dropped (each fails the preview case and AC-22); the `live` line removed (fails the live case);
+  a `cutoffPreview` key planted in `pl.json` (fails the grep case).
+- **Visual:** the `visual:baselines` run 37115814804 moved five Linux PNGs. One comes from this diff:
+  `dev-components-desktop.png`, 36 px shorter. I compared the crop against the old one and the
+  only change is the missing preview line. The other four (`product-{desktop,mobile}-{addons,summary}`)
+  have the same content with sub-pixel text shifts, so they are not taken. The manifest takes the
+  runner's hash for the one file, and `--verify` matches all 104. The `darwin` copy of
+  `dev-components-desktop.png` was not refreshed (no local build).
+- `pnpm gates:cheap`: PASS, all 7 exit 0.
+- Open: escalation E-1 (a past-cutoff `preview` chip still names 14:00).
