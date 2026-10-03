@@ -209,26 +209,37 @@ describe("the sheet's control skin matches the design system's `Button`", () => 
     ),
   )[0];
 
+  // v2's secondary pill (TASK-175).
   const SKIN = [
-    "bg-surface",
+    "bg-transparent",
     "text-ink",
-    "border-border-strong",
-    "rounded-sm",
-    "font-medium",
-    "tracking-[0.02em]",
-    "hover:border-border-emphasis",
+    "shadow-[inset_0_0_0_1.5px_var(--color-ink)]",
+    "rounded-full",
+    "font-bold",
+    "leading-[1.1]",
+    "hover:bg-surface-raised",
     "active:bg-surface-muted",
   ];
 
   it("shares every skin utility with `Button` at the default size", () => {
-    for (const utility of [...SKIN, "min-h-[50px]", "px-[26px]", "text-md"]) {
+    for (const utility of [
+      ...SKIN,
+      "min-h-(--control-md)",
+      "px-[28px]",
+      "text-body-s",
+    ]) {
       expect(secondary, utility).toContain(utility);
       expect(control, utility).toContain(utility);
     }
   });
 
   it("shares them at the small size too, which the `saved` state uses", () => {
-    for (const utility of [...SKIN, "min-h-[44px]", "px-md", "text-sm"]) {
+    for (const utility of [
+      ...SKIN,
+      "min-h-(--control-sm)",
+      "px-[20px]",
+      "text-ui",
+    ]) {
       expect(secondarySmall, utility).toContain(utility);
       expect(small, utility).toContain(utility);
     }

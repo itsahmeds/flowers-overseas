@@ -23,7 +23,15 @@ export const GLOBALS_CSS = "src/app/globals.css";
 /** Utilities the design system's own components use; the compiler only emits what is requested. */
 export const KNOWN_CANDIDATES = [
   "display",
+  "display-em",
   "label",
+  "eyebrow",
+  "num",
+  "link",
+  "link-inline",
+  "airmail-edge",
+  "airmail-edge-footer",
+  "surface-inverse",
   "photo",
   "mirror-in-rtl",
   "layer-header",

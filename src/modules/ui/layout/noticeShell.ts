@@ -45,11 +45,12 @@ export const NOTICE_WORDMARK =
 /** The `.label` voice — 11 px, 600, tracked, uppercase, subtle ink — as the document's metadata. */
 export const NOTICE_META = "label";
 
-/** The `.display` voice at the `--text-display-s` step: the one `<h1>` of the document. */
-export const NOTICE_HEADING = "display text-display-s";
+/** The `display` voice at the v2 error/product H1 step (`--text-title-fluid`): the one `<h1>`. */
+export const NOTICE_HEADING = "display text-title-fluid";
 
 /** Body copy at the measure, in the muted ink the canvas gives prose. */
-export const NOTICE_BODY = "text-ink-muted max-w-prose text-md";
+export const NOTICE_BODY =
+  "text-ink-muted max-w-prose text-body-s md:text-body";
 
 /** The block that holds the metadata, the heading and the body. */
 export const NOTICE_BLOCK = "gap-sm flex flex-col";
@@ -58,15 +59,15 @@ export const NOTICE_BLOCK = "gap-sm flex flex-col";
 export const NOTICE_ACTIONS = "gap-md flex flex-wrap items-center";
 
 /**
- * The two actions, as the canvas's `.btn` and `.btn.secondary` — the same skin `Button`'s
- * `primary` and `secondary` variants render, written out here for the two documents that may not
- * import `Button` (see the header). `tests/unit/ui-notice-shell.test.ts` pins them against
- * `Button`'s own class list, so a change to the design system reaches the failure pages too.
+ * The two actions, as v2's poppy pill and ink-outline pill — the skin `Button`'s `primary` and
+ * `secondary` variants render, written out here for the two documents that may not import
+ * `Button` (see the header). `tests/unit/ui-notice-shell.test.ts` pins them against `Button`'s own
+ * class list, so a change to the design system reaches the failure pages too.
  */
 export const NOTICE_ACTION_BASE =
-  "inline-flex min-h-[50px] cursor-pointer items-center justify-center gap-sm rounded-sm border px-[26px] text-md font-medium tracking-[0.02em] transition-colors motion-fast ease-standard select-none";
-export const NOTICE_ACTION_PRIMARY = `${NOTICE_ACTION_BASE} bg-surface-inverse text-on-inverse border-transparent hover:bg-ink-muted active:bg-ink`;
-export const NOTICE_ACTION_SECONDARY = `${NOTICE_ACTION_BASE} bg-surface text-ink border-border-strong hover:border-border-emphasis hover:text-ink active:bg-surface-muted`;
+  "inline-flex min-h-(--control-md) cursor-pointer items-center justify-center gap-[10px] rounded-full px-[28px] text-body-s font-bold leading-[1.1] whitespace-nowrap transition-colors motion-fast ease-standard select-none";
+export const NOTICE_ACTION_PRIMARY = `${NOTICE_ACTION_BASE} bg-accent text-on-accent hover:bg-accent-strong active:bg-accent-strong active:translate-y-px`;
+export const NOTICE_ACTION_SECONDARY = `${NOTICE_ACTION_BASE} bg-transparent text-ink shadow-[inset_0_0_0_1.5px_var(--color-ink)] hover:bg-surface-raised active:bg-surface-muted active:translate-y-px`;
 
 /**
  * The chooser's locale list — `docs/design/wireframes/locale-chooser-desktop.dc.html`'s two-column
@@ -86,7 +87,7 @@ export const NOTICE_LOCALE_ITEM = "flex";
 export const NOTICE_LOCALE_LINK =
   "border-rule bg-surface-raised gap-md p-lg hover:bg-surface-muted flex w-full min-h-[44px] items-baseline justify-between border-b border-e transition-colors motion-fast ease-standard";
 /** The language, in its own language, in the `.display` voice at the `--text-xl` step. */
-export const NOTICE_LOCALE_NAME = "display text-xl";
+export const NOTICE_LOCALE_NAME = "display text-md";
 /**
  * The path, in the `.label` voice **minus its uppercase**: `.label` would print `/EN-GB`, and a
  * URL is not a word — the locale segments of `src/config/locales.ts` are lowercase and the page

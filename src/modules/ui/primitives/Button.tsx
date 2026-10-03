@@ -178,7 +178,9 @@ export function Button({
           skin.pointer,
           forced,
           "cursor-pointer",
-        ].join(" "),
+        ]
+          .filter(Boolean)
+          .join(" "),
     fullWidth ? "w-full" : "",
     className,
   ]

@@ -179,12 +179,16 @@ describe("the utilities the design system promises (AC-1, AC-5, AC-6)", () => {
     expect(built).toMatch(
       /\.airmail-edge\s*\{[\s\S]*?inset-block-start: 0[\s\S]*?background: var\(--airmail-edge\)/,
     );
-    // A heading's one italic phrase is Fraunces 300 italic poppy.
+    // A heading's one italic phrase is Fraunces 300 italic poppy (nested `& em` until the build
+    // flattens it).
     expect(built).toMatch(
-      /\.display em\s*\{[^}]*font-style: italic[^}]*font-weight: var\(--font-weight-display-em\)[^}]*color: var\(--color-accent\)/,
+      /\.display(?: em\s*\{|\s*\{[^}]*?& em\s*\{)[^}]*font-style: italic[^}]*font-weight: var\(--font-weight-display-em\)[^}]*color: var\(--color-accent\)/,
     );
     // `.label` is the printed-label voice: 0.14em, uppercase.
-    expect(built).toMatch(/\.label\s*\{[^}]*letter-spacing:\s*0\.14em/);
+    expect(built).toMatch(
+      /\.label\s*\{[^}]*letter-spacing:\s*var\(--tracking-label\)/,
+    );
+    expect(parseThemeTokens(source).get("--tracking-label")).toBe("0.14em");
     expect(built).toMatch(/\.label\s*\{[^}]*text-transform:\s*uppercase/);
     // `.photo` paints the gradient token and no `<img>` (`plan/10` §3).
     expect(built).toMatch(
@@ -397,9 +401,13 @@ describe("token values against design system v2 (A21 clauses 2–3, T-01)", () =
   it.each(
     [...designTokens.keys()].filter((t) => !FONT_STACKS.includes(t as never)),
   )("declares %s with docs/design/system/tokens.css's value", (token) => {
-    expect(theme.get(token), `${token} is missing from the @theme block`).toBe(
-      designTokens.get(token),
-    );
+    // Prettier wraps a long gradient over lines; whitespace inside parentheses is not a value.
+    const flat = (value: string | undefined) =>
+      value?.replaceAll(/\(\s+/g, "(").replaceAll(/\s+\)/g, ")");
+    expect(
+      flat(theme.get(token)),
+      `${token} is missing from the @theme block, or differs`,
+    ).toBe(flat(designTokens.get(token)));
   });
 
   it("carries A21's named palette values exactly", () => {

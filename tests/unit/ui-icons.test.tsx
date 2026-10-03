@@ -109,11 +109,14 @@ describe("the brand mark (§13 Q1)", () => {
     expect(html).toContain('viewBox="0 0 48 48"');
   });
 
-  it("takes its two colours from tokens, while the file keeps hex for use outside the app", () => {
-    // The component: tokens only, so a palette swap moves the mark too and `fo/no-raw-color` has
-    // nothing to object to.
-    expect(html).toContain("var(--color-accent)");
-    expect(html).toContain("var(--color-ink)");
+  it("takes its two colours from the logo tokens, while the file keeps hex for use outside the app", () => {
+    // The component: the logo's own tokens (§14 A21 clause 2: `--color-logo-ink` and
+    // `--color-logo-accent`, the logo exactly as it ships), so the v2 palette does not re-colour
+    // it and `fo/no-raw-color` has nothing to object to.
+    expect(html).toContain("var(--color-logo-accent)");
+    expect(html).toContain("var(--color-logo-ink)");
+    expect(html).not.toContain("var(--color-accent)");
+    expect(html).not.toContain("var(--color-ink)");
     expect(html).not.toMatch(/#[0-9a-fA-F]{3,8}/);
     // The file: hex equivalents, because a favicon, an email and a partner pack have no tokens.
     expect(svg).toMatch(/#[0-9a-fA-F]{6}/);
