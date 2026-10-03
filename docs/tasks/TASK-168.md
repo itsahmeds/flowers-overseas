@@ -204,6 +204,27 @@ here.
   card's `sizes` is the shared `grid` slot's (`src/modules/ui/media/slots.ts`), also the listing
   cards' (`CARD_MEDIA_SLOT`), and `MediaAsset` takes no per-call `sizes`, so an honest trending
   string needs a mechanism outside the fence. Visual baselines and `ci:full` wait on it.
+- 2026-10-03 (ruling (a)): `trending` UI slot in `src/modules/ui/media/slots.ts`, `sizes`
+  `(min-width: 768px) calc(20vw - 41.6px), calc(50vw - 28px)` derived from the row's layout
+  (`HOME_BLEED` 16/56 px, `gap-lg` 24 px, 2-up/5-up, Tailwind `md` 768 px, no max-width above
+  `<main>`); ratio and variant ladder as `grid`; no seed↔UI row needed (the row passes the slot);
+  `MediaAsset.tsx` gains the slot's caption key (its table is total over `MediaSlot`, so the type
+  required it). `TrendingRow` uses it. Pins: `ui-media.test.tsx` (exact string, `grid` unchanged)
+  and `ui-home-gated.test.tsx` (every `sizes` the row emits is the string; five `trending` boxes,
+  five `<img>`, no placeholder). Mutations: string set to `grid`'s → 2 red; row back on `grid` →
+  2 red. `gates:cheap` PASS (`9ee86f75`). `visual:baselines` label added, run 37118133249.
+- 2026-10-03: baselines from run 37118133249 (`9ee86f75`, ubuntu). 31 PNGs differed; **23
+  taken**, each inspected against the committed one: 10 home baselines (`home-{en,en-gb,de,pl}-
+  {desktop,mobile}`, `en`, `de`) differ only in the trending band (desktop cols 597–1383, mobile
+  rows 1785–2282: Baltic Dawn, Quiet Blush, Northern Light now photographs, same boxes); the two
+  trending crops (26 % changed: the same three cards); 10 listing/hub pages (`country-{category,
+  occasion,shop}`, `{category,occasion}-hub`, × desktop/mobile) grew because every card now
+  carries its photograph and the "Example arrangement" line; `dev-components-desktop` +111 px from
+  the new `trending` slot's sample box beside `thumb` (the gallery renders every slot), the rest
+  of the page the same content shifted. **8 left out:** `listing-*` (`/dev/components` fixture
+  cards, ±1 px heights, toolbar 4.7 %), which passed CI's `visual` on `97b7a934` after the photo
+  flip and are not this diff's; their PNGs and manifest entries stay as committed, so
+  `pnpm visual:baselines --verify` on the committed manifest reports 104 of 104 matched.
 
 ## Result
 
