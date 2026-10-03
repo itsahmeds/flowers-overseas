@@ -234,10 +234,10 @@ describe("spec 006 AC-10: the merged tree passes every rule family", () => {
     expect(SEED_CHECK_FAMILIES).toHaveLength(10);
   });
 
-  it("declares its cases from a table of 34 fixtures, and spec 009 AC-2's and spec 008 AC-2's rules have theirs (T-02)", () => {
+  it("declares its cases from a table of 36 fixtures, and spec 009 AC-2's and spec 008 AC-2's rules have theirs (T-02)", () => {
     // The `describe.each` below declares its cases from this directory; an emptied or thinned
     // directory would otherwise just declare fewer cases and stay green.
-    expect(cases).toHaveLength(34);
+    expect(cases).toHaveLength(36);
     // Spec 008 AC-2's eight cases are the `copy/bad-intro-*` and the three listing-slug files;
     // `copy/delivery-timing` also has spec 006's English product case, so it is counted by file.
     const spec008 = cases.filter(
@@ -934,6 +934,157 @@ describe("spec 008 AC-2: listing slugs and hub intros (TASK-106)", () => {
     }
   });
 
+  it(
+    "compares a category intro with an occasion intro, not only within one namespace (`/break 150` hole 1)",
+    () => {
+      const category = (
+        tree.raw.get("copy/de/categories.json") as {
+          rows: { key: string; descriptionMd: string }[];
+        }
+      ).rows.find((row) => row.key === "birthday");
+      expect(category).toBeDefined();
+      const copied = `Bunte${(category?.descriptionMd ?? "").slice("Sträuße".length)}`;
+      const mutated = editRow("copy/de/occasions.json", "birthday", {
+        descriptionMd: copied,
+      });
+      expect(keysFor(mutated, "intro-distinct")).toEqual([
+        "category:birthday, occasion:birthday (de)",
+      ]);
+    },
+    TREE_TIMEOUT,
+  );
+
+  it(
+    "passes a pair at exactly 0.60 and fails one just under it (`/break 150` hole 2)",
+    () => {
+      // Eleven tokens give seven 5-gram shingles. Sharing the first eight tokens shares four
+      // shingles and leaves three of each side's own: 4 / (7 + 7 − 4) = 0.4 shared, 0.60 distinct.
+      // Sharing nine shares five: 5 / 9 shared, 0.44 distinct. `en-gb` authors exactly one
+      // category and one occasion intro, so the pair is the whole locale.
+      const words = (prefix: string, count: number): string[] =>
+        Array.from(
+          { length: count },
+          (_, index) => `${prefix}${String(index)}`,
+        );
+      const base = words("w", 11);
+      const pair = (shared: number): readonly [string, string] => [
+        base.join(" "),
+        [...base.slice(0, shared), ...words("x", 11 - shared)].join(" "),
+      ];
+      const verdict = ([left, right]: readonly [
+        string,
+        string,
+      ]): readonly string[] => {
+        const categories = copyFile("copy/en-gb/categories.json");
+        const occasions = copyFile("copy/en-gb/occasions.json");
+        expect(categories.rows).toHaveLength(1);
+        expect(occasions.rows).toHaveLength(1);
+        Object.assign(categories.rows[0] ?? {}, { descriptionMd: left });
+        Object.assign(occasions.rows[0] ?? {}, { descriptionMd: right });
+        return keysFor(
+          {
+            ...tree,
+            raw: new Map([
+              ...tree.raw,
+              ["copy/en-gb/categories.json", categories],
+              ["copy/en-gb/occasions.json", occasions],
+            ]),
+          },
+          "intro-distinct",
+        );
+      };
+      expect(shingleDistinctness(...pair(8))).toBe(HUB_INTRO_DISTINCTNESS_MIN);
+      expect(verdict(pair(8))).toEqual([]);
+      expect(shingleDistinctness(...pair(9))).toBeLessThan(
+        HUB_INTRO_DISTINCTNESS_MIN,
+      );
+      expect(verdict(pair(9))).toEqual([
+        "category:apology, occasion:apology (en-gb)",
+      ]);
+    },
+    TREE_TIMEOUT,
+  );
+
+  it(
+    "reports the slug rules in every listing namespace and locale (`/break 150` hole 3)",
+    () => {
+      // `slug-missing` in `pl`, `path-segment` on an occasion, `country-slug` on a category —
+      // the three combinations the fixtures do not reach.
+      expect(
+        keysFor(
+          editRow("copy/pl/categories.json", "tulips", {
+            translationStatus: "machine",
+          }),
+          "slug-missing",
+        ),
+      ).toEqual(["category:tulips (pl)"]);
+      expect(
+        keysFor(
+          editRow("copy/de/occasions.json", "name_day", {
+            name: "Anlässe",
+            slug: "anlaesse",
+          }),
+          "path-segment",
+        ),
+      ).toEqual(["occasion:name_day (de)"]);
+      expect(
+        keysFor(
+          editRow("copy/de/categories.json", "mixed", {
+            name: "Polen",
+            slug: "polen",
+          }),
+          "country-slug",
+        ),
+      ).toEqual(["category:mixed (de)"]);
+    },
+    TREE_TIMEOUT,
+  );
+
+  it.each([
+    [
+      "seoDescription",
+      "Walentynki z dostawą tego samego dnia w całej Europie.",
+    ],
+    ["name", "Walentynki następnego dnia"],
+  ] as const)(
+    "reads native delivery timing in a hub row's `%s` (`/break 150` hole 4)",
+    (field, value) => {
+      const found = checkSeedDataset(
+        editRow("copy/pl/occasions.json", "valentines", { [field]: value }),
+      ).filter(
+        (problem) =>
+          problem.rule === "delivery-timing" &&
+          problem.message.startsWith(`\`${field}\``),
+      );
+      expect(found.map((problem) => problem.key)).toEqual([
+        "occasion:valentines (pl)",
+      ]);
+    },
+    TREE_TIMEOUT,
+  );
+
+  it.each([
+    ["de", "copy/de/categories.json", "roses", "ab 49,– €"],
+    ["de", "copy/de/categories.json", "roses", "ab EUR 49"],
+    ["pl", "copy/pl/categories.json", "roses", "od PLN 149"],
+    ["pl", "copy/pl/categories.json", "roses", "od RON 99"],
+  ] as const)(
+    "refuses a price literal in a hub intro (%s, %s, %s: `%s`; `/break 150` hole 5)",
+    (_locale, path, key, price) => {
+      const row = copyFile(path).rows.find(
+        (candidate) => candidate["key"] === key,
+      );
+      const intro = String(row?.["descriptionMd"] ?? "");
+      const mutated = editRow(path, key, {
+        descriptionMd: `${price}. ${intro}`,
+      });
+      expect(keysFor(mutated, "intro-price-literal")).toEqual([
+        `category:${key} (${_locale})`,
+      ]);
+    },
+    TREE_TIMEOUT,
+  );
+
   it("reads German and Polish timing claims, superlatives and prices, and passes the permitted pointer", () => {
     expect(nativeDeliveryTimingPhrasesIn("Lieferung am nächsten Tag")).toEqual([
       "am nächsten tag",
@@ -963,6 +1114,12 @@ describe("spec 008 AC-2: listing slugs and hub intros (TASK-106)", () => {
     expect(priceLiteralsIn("od 149 zł")).toEqual(["149 zł"]);
     expect(priceLiteralsIn("from €49")).toEqual(["€4"]);
     expect(priceLiteralsIn("am 14. Februar, 17. Mai, 1 maja")).toEqual([]);
+    expect(priceLiteralsIn("ab 49,– €")).toEqual(["49,– €"]);
+    expect(priceLiteralsIn("ab EUR 49")).toEqual(["EUR 49"]);
+    expect(priceLiteralsIn("od PLN 149")).toEqual(["PLN 149"]);
+    expect(priceLiteralsIn("RON 99")).toEqual(["RON 99"]);
+    expect(priceLiteralsIn("99 lei")).toEqual(["99 lei"]);
+    expect(priceLiteralsIn("Europa, Rumänien, 23 kwietnia")).toEqual([]);
   });
 });
 

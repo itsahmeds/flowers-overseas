@@ -1636,14 +1636,36 @@ export function nativeDeliveryTimingPhrasesIn(text: string): readonly string[] {
   return [...text.matchAll(pattern)].map((match) => match[0].toLowerCase());
 }
 
-/** A delivery-currency price written as `49 €` or `49,90 £` — the order German and Polish use. */
-const TRAILING_SYMBOL_PRICE_PATTERN = /\d[\d,.]*\s?[£€$]/u;
+/**
+ * A price written number-first, the way German and Polish write it: `49 €`, `49,90 €`, `49,– €`,
+ * `149 zł`, `99 lei`. The number may end in a dash for "no cents" (`49,–`), and the currency may
+ * be a symbol, an ISO code or the local word (`/break 150` hole 5).
+ */
+const TRAILING_CURRENCY_PRICE_PATTERN =
+  /\d[\d.,]*(?:[.,]?[-–—]+)?\s?(?:[£€$]|(?:zł|zl|złotych|pln|eur|euro|euros|gbp|ron|lei)(?![\p{L}\p{N}]))/iu;
 
-/** The price literals a piece of copy contains: the corridor gate's pattern plus the trailing form. */
+/**
+ * A price written currency-first with an ISO code or a currency word: `EUR 49`, `PLN 149`,
+ * `RON 99`, `zł 149` (`/break 150` hole 5). The symbol-first form (`€49`) is the corridor gate's.
+ */
+const LEADING_CODE_PRICE_PATTERN =
+  /(?<![\p{L}\p{N}])(?:eur|euro|gbp|pln|ron|lei|zł|zl)\s?\d[\d.,]*/iu;
+
+/**
+ * The price literals a piece of copy contains: the corridor gate's pattern, plus the number-first
+ * and code-first forms German and Polish copy use.
+ */
 export function priceLiteralsIn(text: string): readonly string[] {
-  return [PRICE_LITERAL_PATTERN, TRAILING_SYMBOL_PRICE_PATTERN]
+  return [
+    PRICE_LITERAL_PATTERN,
+    TRAILING_CURRENCY_PRICE_PATTERN,
+    LEADING_CODE_PRICE_PATTERN,
+  ]
     .map((pattern) => pattern.exec(text)?.[0].trim())
-    .filter((match): match is string => match !== undefined);
+    .filter(
+      (match, index, all): match is string =>
+        match !== undefined && all.indexOf(match) === index,
+    );
 }
 
 /** The intros of one locale's hub pages: `human` category and occasion rows with a description. */

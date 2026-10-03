@@ -1,0 +1,18 @@
+{
+  "family": "copy",
+  "rule": "delivery-timing",
+  "replaces": "copy/pl/occasions.json",
+  "expect": "`seoTitle` states delivery timing (`tego samego dnia`)",
+  "why": "spec 008 AC-2 with spec 006 §14 A4 (`/break 150` hole 4): the native timing scan reads a hub row's `seoTitle`, `seoDescription` and `name` as well as its intro, because the title is what a search result shows. The Polish Valentine's title promising same-day delivery is refused.",
+  "ops": [
+    {
+      "op": "setRow",
+      "match": {
+        "key": "valentines"
+      },
+      "set": {
+        "seoTitle": "Walentynki – dostawa tego samego dnia w Europie"
+      }
+    }
+  ]
+}

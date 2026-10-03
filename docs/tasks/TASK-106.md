@@ -31,6 +31,14 @@ One dated bullet per `/review`, newest last.
 - **From TASK-122 / orchestrator ruling (2026-09-18, spec 009 §14 A4):** ship the **Andrzejki (30 Nov) and Wigilia (24 Dec)** PL occasion rows here — two catalogue occasion keys, `seasonalOccasions` / `occasions.data.ts` entries, `catalog.facet.occasion.*` copy in four locales (`pl` authored), the projected `occasions.json` / `taxonomy.json`, the `fixed` rows in `seed/data/occasion-country.json`, and the dataset pins (32 → 34 occasions) — so `seed:check` accepts them. Polish name days stay undated.
 - **From `/review 150` round 1 (2026-10-03), required change 1:** German umlauts fold to `ae`/`oe`/`ue`, as spec 008 §14 A12 says. Done: `TRANSLITERATIONS` in `seed/copy.ts` now carries `ä`/`ö`/`ü` (and `Ä`/`Ö`/`Ü`), with a unit case in `tests/unit/seed-copy.test.ts`. `bouquet` → `blumenstraeusse` and `muguet` → `maigloeckchen-zum-1-mai`. No other copy name carries an umlaut.
 - **From `/review 150` round 1, nits for the B12 native reviewers:** `gratulation` (people search "Glückwunsch") and `einzug` ("Einweihung") may be weaker search terms, and changing them costs nothing until the rows are reviewed. The native timing and superlative lists are minimal: "in 24 Stunden" and "Lieferung morgen" pass today.
+- **From `/break 150` round 1 (2026-10-03), holes 1–5:** closed with tests on the head after `15365638`. Each subject was mutated, and its case went red.
+  - **Hole 1:** a category-vs-occasion `intro-distinct` case.
+  - **Hole 2:** an exact-0.60 pair passes and a 0.44 pair fails, which pins `>=`.
+  - **Hole 3:** `slug-missing` in `pl`, `path-segment` on an occasion, `country-slug` on a category.
+  - **Hole 4:** fixtures `bad-hub-english-superlative` and `bad-hub-seo-native-timing`, plus `seoDescription` and `name` cases.
+  - **Hole 5:** the intro price scan now also refuses `49,– €`, `EUR 49`, `PLN 149`, `RON 99` and `99 lei`.
+
+  Hole 6 (the native word lists are minimal) is left to the reviewer. Hole 7 (umlauts) was closed on `15365638`.
 
 ## Escalations
 
