@@ -44,7 +44,7 @@ Row: `TASKS.md` → TASK-177. This brief is the task's long form (spec 001 §14 
 **Copy approved by the founder and marked `reviewed: true` in `en.meta.json`** (cited "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179)"):
 - item 2: `home.proof.guarantee.title` "Fresh-flower promise"
 - item 3: `home.proof.guarantee.body` "If your flowers don't arrive fresh and in good condition, send us a photo within 72 hours of delivery and we'll replace them or refund you in full."
-- item 6: `home.hero.proposition`
+- item 6: **not applied.** The founder's later ruling (2026-10-04: "dont say will just keep makes bro.. put the old wording that doesnt use future tenses") overrides it. `home.hero.proposition` is restored byte for byte to the reviewed "Our florist in your recipient's town makes it and hands it over in person. We never ship a box.", and its en/de/pl meta records are identical to the base, so the 2026-09-09 attestation still matches.
 - item 7: `home.destinations.body`
 - item 8: `home.sentence.notYet` (plus `finder.submit` "Continue", already reviewed)
 - item 13: `home.sentence.frame`, `home.sentence.heading`, `home.sentence.who` (six of the seven options; see escalation 6)

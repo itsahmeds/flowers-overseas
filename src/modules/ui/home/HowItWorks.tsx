@@ -17,7 +17,7 @@
  *
  * **The section's internal name in `TASKS.md` is "the relay explainer"; the word never reaches a
  * reader** (§14 A5). Nothing here says relay, corridor, partner, third party, vendor or network:
- * we order, a local florist in the recipient's town will make it, *we* photograph it at the door. The
+ * we order, *our* florist in the recipient's town makes it, *we* photograph it at the door. The
  * one sentence that could read as a disclaimer — "nothing crosses a border, so there is no
  * customs form and nothing to pay on arrival" — is the strongest fact we have and is stated as
  * ours, not as a limitation of somebody else's service.

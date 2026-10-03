@@ -2423,11 +2423,11 @@
     "sourceHash": "73a20c92dbe3d09ab0cedb63cdcbfd4df9cc14912da0c9498fc0df7094a20e63"
   },
   "home.hero.proposition": {
-    "source": "human",
     "reviewed": true,
-    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179)",
-    "reviewedAt": "2026-10-04T00:00:00Z",
-    "sourceHash": "a813ced8689cd324891d7c6e130921462f5d78e31033ac357ccbfce520088419"
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "reviewedBy": "founder",
+    "source": "human",
+    "sourceHash": "0b5e39078b129e8273e80bf5a87eaafa42c6f0671fa5e28b278496b73fcc8881"
   },
   "home.howItWorks.choose.body": {
     "source": "human",

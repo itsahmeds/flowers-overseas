@@ -125,14 +125,16 @@ describe("the hero band (AC-10)", () => {
     expect(html).toMatch(/<h1[^>]*>Flowers for someone far away\.<\/h1>/);
   });
 
-  it("renders the eyebrow and the proposition, florists in the future tense (A21 clause 7)", () => {
+  it("renders the eyebrow and the founder-reviewed proposition, byte for byte", () => {
     const rendered = text(hero("en"));
 
     expect(rendered).toContain("International flower delivery");
+    // The founder, 2026-10-04: "dont say will just keep makes". The reviewed present-tense
+    // sentence stays exactly as attested on 2026-09-09.
     expect(rendered).toContain(
-      "A local florist in your recipient's town will make it and hand it over in person. We never ship a box.",
+      "Our florist in your recipient's town makes it and hands it over in person. We never ship a box.",
     );
-    expect(rendered).not.toMatch(/florist[^.]* (makes|hands) it/u);
+    expect(rendered).not.toMatch(/\bwill make\b/u);
   });
 
   it('carries the `#send` target the header\'s "Send flowers" link points at (TASK-176)', () => {
