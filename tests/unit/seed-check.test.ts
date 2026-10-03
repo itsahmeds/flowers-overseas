@@ -186,12 +186,14 @@ describe("spec 006 AC-10: the merged tree passes every rule family", () => {
     ).rows;
     expect(variantRows.length).toBeGreaterThan(0);
     expect([...tree.altLocales].sort()).toEqual(["de", "en", "en-gb", "pl"]);
-    // Since spec 006 §14 A9 only an `approved` asset needs alt text: a `pending` one (TASK-167's
-    // batch 2) renders the placeholder and carries none until the change that approves it.
+    // Since spec 006 §14 A9 only an `approved` asset needs alt text: a `pending` one renders the
+    // placeholder and carries none until the change that approves it. TASK-168 approved batch 2
+    // (144) beside batch 1 (31), with alt text in the same change, so the count is the whole
+    // manifest; the pending half of A9 is carried by its own fixture cases below.
     const assetCount = (
       tree.raw.get("media.json") as { rows: { reviewState: string }[] }
     ).rows.filter((row) => row.reviewState === "approved").length;
-    expect(assetCount).toBe(31);
+    expect(assetCount).toBe(175);
     for (const locale of tree.altLocales) {
       // The alt gate is all-or-nothing across locales by design (`seed/check.ts` family 7): one
       // alt row anywhere obliges every launch locale to carry one per approved product asset,

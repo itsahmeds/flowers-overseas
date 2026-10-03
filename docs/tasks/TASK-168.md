@@ -87,6 +87,15 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   **Recommendation:** widen this task's fence to those six test files (tests only), keeping every
   placeholder case's subject alive by construction rather than deleting the case. Everything else
   in Binding is done or running; the PR stays draft.
+  **Answered 2026-10-03 (orchestrator ruling, relayed by the coordinator): fence widened** to
+  `tests/unit/media-upload.test.ts`, `seed-check.test.ts`,
+  `catalog-{category,hub,occasion,shop}-page.test.tsx` and `product-page.test.tsx`, test-only.
+  Each case builds its own subject in the test (a fixture `pending` asset, or a product with its
+  media removed); no case is deleted; a case keeps its assertion on the real manifest only where it
+  tracks the real count, and then asserts the exact new value (175, 12 of 12); each fixed case's
+  subject is mutated and watched red. The e2e and visual spec files that fail in CI on the same
+  assumption are inside the fence under the same rule; baselines change only through the
+  `visual:baselines` label flow, each inspected.
 - **2026-10-03 — every `.env.local` on this machine holds the old `*.r2.dev` value of
   `R2_PUBLIC_BASE_URL` (founder action, not blocking).** `pnpm media:upload` refuses to run unless
   it equals `MEDIA_ORIGIN` (spec 006 §14 A8 clause 7). The bucket is the same one behind
