@@ -1890,9 +1890,9 @@
     "sourceHash": "0b18b4e5da28f63c02361fcb1fee3f1a80478a190445cfe27e09abf1c1dd8641"
   },
   "home.trending.basis": {
-    "source": "machine",
+    "source": "human",
     "reviewed": false,
-    "sourceHash": "04534b3ee1f81b100cd6017fdb8f80a428270c4a965a954e15a45d960a59d1ac"
+    "sourceHash": "cfb95d40d9acf66ba69e41d5744494603d57428a2e3bb6af0ea55fa26c66b498"
   },
   "home.trending.eyebrow": {
     "source": "machine",
@@ -1900,9 +1900,9 @@
     "sourceHash": "ce8f9204d29668274289df2ffd515eba3b9c044c9de3feb461c1d106d6e8f77f"
   },
   "home.trending.heading": {
-    "source": "machine",
+    "source": "human",
     "reviewed": false,
-    "sourceHash": "88ca26762b9a75ffc557300f5b1ec1a5d9ad16d21e1fa969a6d3a37213411549"
+    "sourceHash": "0837d67f3cb538dd2683c0f99806f474500885b255c4eba20d6e6f3cb888c3ac"
   },
   "media.placeholder.delivery": {
     "source": "machine",
