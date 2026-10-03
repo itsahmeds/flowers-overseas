@@ -346,46 +346,56 @@ describe("`listingView()` really wires `parameterised` into the descriptor (AC-1
 });
 
 /**
- * Link 2 of the four `parameterised` travels: `listingQuery()` computes it → **the route hands it
- * to `listingView()`** → `listingView()` maps it to the `unparameterised` term → `indexability()`
- * turns the term into `noindex,follow`. Links 1, 3 and 4 are asserted above by running them; link
- * 2 is a wiring fact with no runtime seam, and `/review 93` round 2 measured what that costs:
- * deleting `parameterised: request.parameterised` from **both** call sites in
- * `src/app/[locale]/[segment]/[child]/page.tsx` leaves `typecheck`, `lint` and the whole
- * unit/integration/contract suite byte-identically green. `ListingViewOptions.parameterised` is
- * optional, so the omission is a legal call, and an absent term *leaves* the conjunction (spec 007
- * §14 A7) — so the failure is silent and **fail-open**: `?sort=price-asc` would announce
- * `index,follow` and duplicate its own base URL. The browser layer cannot see it either, because
- * in Phase 0 the bare URL is `noindex,follow` too.
+ * Link 2 of the four `parameterised` travels: `listingRequest()` computes it → **the route hands
+ * it to `listingView()`** → `listingView()` maps it to the `unparameterised` term →
+ * `indexability()` turns the term into `noindex,follow`. Links 1, 3 and 4 are asserted above by
+ * running them; link 2 is a wiring fact with no runtime seam, and `/review 93` round 2 measured
+ * what that costs: deleting `parameterised: request.parameterised` from both call sites leaves
+ * `typecheck`, `lint` and the whole unit/integration/contract suite byte-identically green.
+ * `ListingViewOptions.parameterised` is optional, so the omission is a legal call, and an absent
+ * term *leaves* the conjunction (spec 007 §14 A7) — so the failure is silent and **fail-open**:
+ * `?sort=price-asc` would announce `index,follow` and duplicate its own base URL. The browser
+ * layer cannot see it either, because in Phase 0 the bare URL is `noindex,follow` too.
  *
- * So the route is read **as source**, the way `tests/unit/listing-cache-headers.test.ts` reads
+ * Since TASK-170 the link spans **three files** (spec 003 AC-8, spec 008 §5.4; TASK-170 E-1):
+ *
+ * - `src/app/[locale]/country-shop-root.tsx` — the shop root's head and body, each taking a
+ *   `ListingRequest` and handing its `page`, `sort` and `parameterised` to `listingView()`;
+ * - `src/app/[locale]/%5Fquery/[segment]/[child]/page.tsx` — the parameter route, the one file
+ *   that reads `searchParams`, which `next.config.ts` rewrites a parameterised request to;
+ * - `src/app/[locale]/[segment]/[child]/page.tsx` — the prebuilt depth-3 route, which must read
+ *   **no** query string: a route that awaits `searchParams` is rendered per request, loses its
+ *   `dynamicRoutes` entry and with it the router's `dynamicParams = false` gate, and every unknown
+ *   depth-3 path then 404s inside Next's error shell with no `lang`.
+ *
+ * So the three are read **as source**, the way `tests/unit/listing-cache-headers.test.ts` reads
  * `next.config.ts` to prove the config actually mounts the headers: no server, no build, no
- * network, and deleting either pass-through goes red.
+ * network. `tests/e2e/locale-routing.spec.ts` and `tests/e2e/listing-params.spec.ts` are the
+ * behaviour behind each half.
  */
-describe("the route really hands `parameterised` to `listingView()` (AC-15)", () => {
+describe("the routes really hand `parameterised` to `listingView()` (AC-15, TASK-170)", () => {
   /**
-   * Comments are removed first: this file's own prose says "`listingView()`" more than once, and a
-   * sentence about the wiring must not be able to pass for the wiring. Only whole-line `//`
-   * comments go, which is enough — no trailing comment in the route carries a call.
+   * Comments are removed first: these files' own prose names `listingView()` and `searchParams`
+   * more than once, and a sentence about the wiring must not be able to pass for the wiring.
    *
    * **The line comments go first, and that order is load-bearing** (found while merging TASK-112,
    * 2026-09-22). Stripping block comments first let a `//` line that *contains* a block-comment
-   * opener — the route's `modules` cast note, whose backticked path is a glob — pair with the
-   * next block-comment terminator far below and silently swallow everything between them,
-   * including, once the hubs joined this file, a whole `listingView(` call. The subject shrank
-   * and the suite stayed green. Removing whole-line `//` comments first makes the block regex
-   * pair correctly, and the brace-balance case below is the tripwire that says so out loud if
-   * this ever stops being true.
+   * opener — a backticked glob path in a cast note — pair with the next block-comment terminator
+   * far below and silently swallow everything between them, including a whole `listingView(`
+   * call. The subject shrank and the suite stayed green. Removing whole-line `//` comments first
+   * makes the block regex pair correctly, and the brace-balance case below is the tripwire that
+   * says so out loud if this ever stops being true.
    */
-  const routeSource = readFileSync(
-    resolve(
-      import.meta.dirname,
-      "../../src/app/[locale]/[segment]/[child]/page.tsx",
-    ),
-    "utf8",
-  )
-    .replace(/^[ \t]*\/\/.*$/gmu, "")
-    .replace(/\/\*[\s\S]*?\*\//gu, "");
+  const sourceOf = (path: string): string =>
+    readFileSync(resolve(import.meta.dirname, "../../src/app", path), "utf8")
+      .replace(/^[ \t]*\/\/.*$/gmu, "")
+      .replace(/\/\*[\s\S]*?\*\//gu, "");
+
+  const shared = sourceOf("[locale]/country-shop-root.tsx");
+  const parameterRoute = sourceOf(
+    "[locale]/%5Fquery/[segment]/[child]/page.tsx",
+  );
+  const depth3 = sourceOf("[locale]/[segment]/[child]/page.tsx");
 
   /** The argument text of every `name(…)` call in `source`, by balancing parentheses. */
   const argumentsOfCallsTo = (source: string, name: string): string[] => {
@@ -396,6 +406,9 @@ describe("the route really hands `parameterised` to `listingView()` (AC-15)", ()
       at !== -1;
       at = source.indexOf(opener, at + 1)
     ) {
+      // A longer identifier ending in `name` (`countryShopRootMetadata(` for `Metadata(`) is not
+      // a call to it.
+      if (/[\w$]/u.test(source[at - 1] ?? "")) continue;
       let depth = 0;
       let cursor = at + name.length;
       do {
@@ -409,19 +422,13 @@ describe("the route really hands `parameterised` to `listingView()` (AC-15)", ()
   };
 
   /**
-   * The route sliced at its own top-level `export … function` declarations, keeping the slices
-   * that resolve a listing view. Each render is then asserted **alone**, because a file-global
-   * `toContain` cannot tell the two apart: both renders bind the name `request`, so one render's
-   * correct `const request = await listingQuery(searchParams)` satisfied the other's provenance
-   * check. `/review 93` round 3 measured it — editing **`generateMetadata`**'s call to
-   * `listingQuery(undefined)` left 17 passed and `typecheck` 0, while the render that decides
-   * `<meta name="robots">` read an empty query and `?sort=price-asc` announced `index,follow`.
-   * (Only `tests/e2e/listing-params.spec.ts:97,100` caught that, via the `titlePage` and
-   * `canonicalPage` that ride the same binding — true today, and not a property of this link.)
+   * A file sliced at its own top-level `export … function` declarations. Each render is asserted
+   * **alone**, because a file-global `toContain` cannot tell two renders apart: both bind the name
+   * `request`, so one render's correct line satisfied the other's provenance check (`/review 93`
+   * round 3 measured it: 17 passed while `generateMetadata` read an empty query).
    */
-  const renders = routeSource
-    .split(/^(?=export (?:default )?async function )/gmu)
-    .filter((slice) => slice.includes("listingView("));
+  const rendersOf = (source: string): string[] =>
+    source.split(/^(?=export (?:default )?async function )/gmu).slice(1);
 
   /** The declared name of a render slice, which is also the label on every failure below. */
   const nameOf = (render: string): string =>
@@ -429,101 +436,125 @@ describe("the route really hands `parameterised` to `listingView()` (AC-15)", ()
       render,
     )?.[1] ?? "(unnamed)";
 
-  /**
-   * The `pageType:` a `listingView(…)` call resolves, exactly as its own arguments write it. Every
-   * call inside a render is classified by it below and the classification is **total**, so a call
-   * that is neither the country-scoped listing nor the hub branch fails the count rather than
-   * passing unexamined.
-   */
+  /** The `pageType:` a `listingView(…)` call resolves, exactly as its own arguments write it. */
   const pageTypeOf = (call: string): string =>
     /pageType:\s*([^,\n]+)/u.exec(call)?.[1]?.trim() ?? "(none)";
 
   it("keeps each render whole through the comment strip", () => {
     // The tripwire for the stripper documented above: a strip that eats source almost always eats
-    // a brace with it. Before the order was fixed, `generateMetadata` came out of the strip with
-    // 17 `{` against 15 `}` — and one of its two `listingView(` calls gone — while every
-    // assertion below still passed, on what was left.
-    for (const render of renders) {
-      const where = nameOf(render);
-      const opens = (render.match(/\{/gu) ?? []).length;
-      const closes = (render.match(/\}/gu) ?? []).length;
-      expect(closes, `${where}: braces surviving the comment strip`).toBe(
-        opens,
-      );
-    }
-  });
-
-  it("gives each render its own query, and goes red if either pass-through is cut", () => {
-    // `generateMetadata` and the page component are two renders of the same request (the route
-    // says so), and each resolves **two** listing views: the country-scoped listing, and the
-    // branch the two hubs share (TASK-112, merged 2026-09-22). Four calls in the file, all four
-    // classified and asserted below — which is what puts every call inside an assertion. A third
-    // listing branch — TASK-110/111's depth-4 URLs — fails here until it carries the flag too,
-    // whether it arrives as a third render or as a third branch inside one of these two: that is
-    // the point.
-    const names = renders.map(nameOf);
-    expect(
-      names,
-      `renders resolving a listing view: ${names.join(", ")}`,
-    ).toHaveLength(2);
-    expect(argumentsOfCallsTo(routeSource, "listingView")).toHaveLength(4);
-
-    for (const render of renders) {
-      const where = nameOf(render);
-      const calls = argumentsOfCallsTo(render, "listingView");
-      const listings = calls.filter(
-        (call) => pageTypeOf(call) === '"countryShopRoot"',
-      );
-      const hubs = calls.filter((call) => pageTypeOf(call) === "match.kind");
-      expect(
-        listings.length + hubs.length,
-        `${where}: every listingView call classified — ${calls
-          .map(pageTypeOf)
-          .join(", ")}`,
-      ).toBe(calls.length);
-      expect(listings, `${where}: the country-scoped listing`).toHaveLength(1);
-      expect(hubs, `${where}: the hub branch`).toHaveLength(1);
-
-      const passThrough =
-        /parameterised:\s*([A-Za-z_$][\w$]*)\.parameterised/u.exec(
-          listings[0] ?? "",
-        )?.[1];
-      expect(passThrough, where).toBeDefined();
-      // …and the object it reads is a query **this** render parsed from **its own** query string:
-      // the binding is looked up inside this render's own source, not the file's, so the other
-      // render's line cannot stand in for one that is missing or rewired here.
-      expect(render, where).toContain(
-        `const ${passThrough ?? ""} = await listingQuery(searchParams)`,
-      );
-      expect(
-        argumentsOfCallsTo(render, where)[0] ?? "",
-        `${where} parameters`,
-      ).toContain("searchParams");
-
-      // **The hub half of the policy, asserted rather than exempted.** A destination-less hub
-      // honours no parameter at all: `listingView()` forces `sort: "default"` on it because a hub
-      // shows no money to sort by (§2, §8; `src/modules/catalog/listing.ts`), no hub renders a
-      // toolbar or a page nav, and §5.4's "the bare URL of every page type is prebuilt" stands
-      // for it — §13 Q2 bought dynamic rendering for the routes that *honour* `?page=`/`?sort=`,
-      // which a hub does not, and a render that awaited `searchParams` here would take both hub
-      // page types out of the prerender for a term they cannot use. So the hub call passes no
-      // `page`, no `sort` and no `parameterised`, and that is a decision this case pins: adding
-      // any of the three goes red and makes whoever adds it say why (TASK-114 E-7).
-      for (const term of ["page:", "sort:", "parameterised:"]) {
-        expect(
-          hubs[0] ?? "",
-          `${where}: the hub branch honours no ${term}`,
-        ).not.toContain(term);
+    // a brace with it.
+    for (const source of [shared, parameterRoute, depth3]) {
+      for (const render of rendersOf(source)) {
+        const where = nameOf(render);
+        const opens = (render.match(/\{/gu) ?? []).length;
+        const closes = (render.match(/\}/gu) ?? []).length;
+        expect(closes, `${where}: braces surviving the comment strip`).toBe(
+          opens,
+        );
       }
     }
   });
 
-  it("parses that request from the request's own query string", () => {
-    // The link before link 2: `listingQuery()` is a three-line local wrapper, and a version that
-    // ignored `searchParams` would make every URL unparameterised — fail-open in the same
-    // direction. `listingRequest()`'s own decision table is asserted above.
-    const [query] = argumentsOfCallsTo(routeSource, "listingRequest");
-    expect(query).toBeDefined();
-    expect(query).toContain("searchParams");
+  it("renders the shop root once, from the request it is handed, and goes red if a pass-through is cut", () => {
+    // The head and the body: two renders, one listing call each, every call classified.
+    const renders = rendersOf(shared).filter((render) =>
+      render.includes("listingView("),
+    );
+    expect(renders.map(nameOf)).toEqual([
+      "countryShopRootMetadata",
+      "CountryShopRoot",
+    ]);
+    expect(argumentsOfCallsTo(shared, "listingView")).toHaveLength(2);
+
+    for (const render of renders) {
+      const where = nameOf(render);
+      const [call, ...more] = argumentsOfCallsTo(render, "listingView");
+      expect(more, where).toEqual([]);
+      expect(pageTypeOf(call ?? ""), where).toBe('"countryShopRoot"');
+      // The three terms the query decides, each from the request this render was handed …
+      for (const term of ["page", "sort", "parameterised"]) {
+        expect(call, `${where}: ${term}`).toMatch(
+          new RegExp(`\\b${term}:\\s*request\\.${term}\\b`, "u"),
+        );
+      }
+      // … and that request is this render's own parameter, not a module-level stand-in.
+      expect(
+        render.slice(0, render.indexOf("{", render.indexOf(")"))),
+        where,
+      ).toMatch(/\brequest\b/u);
+      expect(render, where).not.toMatch(/\bconst request\b/u);
+    }
+  });
+
+  it("parses the parameter route's request from the request's own query string, in both renders", () => {
+    // `listingQuery()` is the parameter route's local wrapper: a version that ignored
+    // `searchParams` would make every URL unparameterised — fail-open in the same direction.
+    const [query, ...others] = argumentsOfCallsTo(
+      parameterRoute,
+      "listingRequest",
+    );
+    expect(others).toEqual([]);
+    expect(query).toBe("await searchParams");
+
+    const renders = rendersOf(parameterRoute);
+    expect(renders.map(nameOf)).toEqual(["generateMetadata", "ParameterRoute"]);
+    for (const render of renders) {
+      const where = nameOf(render);
+      expect(argumentsOfCallsTo(render, where)[0] ?? "", where).toContain(
+        "searchParams",
+      );
+      expect(render, where).toContain(
+        "const request = await listingQuery(searchParams)",
+      );
+    }
+    const [metadata, page] = renders;
+    expect(
+      argumentsOfCallsTo(metadata ?? "", "countryShopRootMetadata"),
+    ).toEqual(["match, request"]);
+    expect(page).toMatch(
+      /<CountryShopRoot match=\{match\} request=\{request\} \/>/u,
+    );
+  });
+
+  it("keeps the depth-3 route free of the query string, so the router's 404 gate holds there (TASK-170)", () => {
+    // The whole fix: one `searchParams` in this file makes the route per-request again, and the
+    // seven depth-3 404 shapes in `tests/e2e/locale-routing.spec.ts` go back to the error shell.
+    expect(depth3).not.toMatch(/\bsearchParams\b/u);
+    // The shop root here is the bare URL: an empty request, handed to the shared head and body.
+    expect(argumentsOfCallsTo(depth3, "countryShopRootMetadata")).toEqual([
+      "match, listingRequest()",
+    ]);
+    expect(depth3).toMatch(
+      /<CountryShopRoot match=\{match\} request=\{listingRequest\(\)\} \/>/u,
+    );
+  });
+
+  it("gives the hubs no parameter at all (TASK-114 E-7)", () => {
+    // **The hub half of the policy, asserted rather than exempted.** A destination-less hub
+    // honours no parameter: `listingView()` forces `sort: "default"` on it because a hub shows no
+    // money to sort by (§2, §8), no hub renders a toolbar or a page nav, and §5.4's "the bare URL
+    // of every page type is prebuilt" stands for it. So each render's hub call passes no `page`,
+    // no `sort` and no `parameterised`; adding any of the three goes red and makes whoever adds
+    // it say why. They are the only listing calls left in the depth-3 route.
+    const renders = rendersOf(depth3).filter((render) =>
+      render.includes("listingView("),
+    );
+    expect(renders.map(nameOf)).toEqual([
+      "generateMetadata",
+      "LocaleChildRoute",
+    ]);
+    expect(argumentsOfCallsTo(depth3, "listingView")).toHaveLength(2);
+    for (const render of renders) {
+      const where = nameOf(render);
+      const [hub, ...more] = argumentsOfCallsTo(render, "listingView");
+      expect(more, where).toEqual([]);
+      expect(pageTypeOf(hub ?? ""), where).toBe("match.kind");
+      for (const term of ["page:", "sort:", "parameterised:"]) {
+        expect(
+          hub,
+          `${where}: the hub branch honours no ${term}`,
+        ).not.toContain(term);
+      }
+    }
   });
 });

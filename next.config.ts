@@ -80,8 +80,9 @@ const headerRules = [
   // rather than a `<link>` because nothing rendered into `<head>` can be emitted ahead of an image
   // preload (`src/lib/media-headers.ts` has the measurements).
   ...mediaHeaderRules(),
-  // The country shop root is rendered per request (it reads `?page=`/`?sort=`) and cached at the
-  // edge by full URL for an hour, stale-while-revalidate for a day — spec 008 §5.4 and §13 Q2 as
+  // The country shop root's parameterised requests are rendered per request (the rewrite below
+  // sends `?page=`/`?sort=`/a facet to the parameter route; its bare URL is prebuilt) and every
+  // response at that address is cached at the edge by full URL for an hour, stale-while-revalidate for a day — spec 008 §5.4 and §13 Q2 as
   // the founder resolved them, under ADR-0018's single replica behind Cloudflare. The sources
   // name each locale's own shop segment, so no other page type's caching changes
   // (`src/lib/listing-cache-headers.ts` carries the reasoning; TASK-114).
@@ -117,10 +118,7 @@ const nextConfig: NextConfig = {
   // address in the browser does not change (`src/lib/listing-rewrites.ts`).
   rewrites: () =>
     Promise.resolve({
-      beforeFiles: listingRewriteRules().map((rule) => ({
-        ...rule,
-        has: [...rule.has],
-      })),
+      beforeFiles: listingRewriteRules(),
       afterFiles: [],
       fallback: [],
     }),

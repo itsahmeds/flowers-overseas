@@ -267,6 +267,25 @@ const NOT_FOUND_SHAPES = [
     shape: "unknown locale, depth 4",
     path: "/xx/poland/product/amber-hour",
   },
+  // with a query string (TASK-170): only a shop-root address carrying a listing key is rewritten
+  // to the parameter route (`src/lib/listing-rewrites.ts`); every other address with a query is
+  // the prebuilt route's, so its unknown paths keep the router's localised 404
+  {
+    shape: "depth 3, unknown corridor, with ?page=",
+    path: "/en/send-flowers-to/nowhere?page=2",
+  },
+  {
+    shape: "depth 3, shop root, unknown country, with ?utm_source=",
+    path: "/en/atlantis/flowers?utm_source=newsletter",
+  },
+  {
+    shape: "unknown locale, depth 3, shop root, with ?page=",
+    path: "/fr/poland/flowers?page=2",
+  },
+  {
+    shape: "depth 4, unknown category under a country, with ?sort=",
+    path: "/en/poland/flowers/no-such-kind?sort=price-asc",
+  },
 ] as const;
 
 test.describe("every 404 shape is the localised not-found document (AC-8, TASK-170)", () => {
@@ -292,6 +311,40 @@ test.describe("every 404 shape is the localised not-found document (AC-8, TASK-1
       // in the RSC payload, both of which the error shell carries without rendering any copy.
       expect(html, path).toMatch(/<h1\b[^>]*>Page not found<\/h1>/u);
       expect(html, path).not.toContain("This page could not be found");
+    });
+  }
+});
+
+/**
+ * **The accepted residual** (advisor memo `docs/advice/2026-10-03-route-rendering-404-and-pdp-form.md`,
+ * `/review 149`; TASK-170 E-1). A shop-root address with an **unknown country and a known listing
+ * key** is rewritten to the parameter route, which reads the query and so renders per request;
+ * there the router's `dynamicParams = false` gate does not run, `resolveLocalePath()` finds nothing,
+ * and a request-time `notFound()` is Next's error shell: the status is right, the document has no
+ * `lang`. Nothing links to such an address. Pinned **as it is today**, so that a fix — or a
+ * regression that widens it — shows up here as a deliberate change rather than silently. The
+ * internal path itself, requested directly without a listing key, is a 404 of the same kind.
+ */
+const RESIDUAL_404S = [
+  "/en/atlantis/flowers?page=2",
+  "/de/atlantis/blumen?sort=price-asc",
+  "/en/_query/poland/flowers",
+] as const;
+
+test.describe("the accepted residual: 404 inside the error shell (TASK-170 E-1)", () => {
+  for (const path of RESIDUAL_404S) {
+    test(`${path} answers 404, no redirect, without lang (accepted, pinned)`, async ({
+      request,
+    }) => {
+      const response = await request.get(path, { maxRedirects: 0 });
+      const html = await response.text();
+      const tag = /<html\b[^>]*>/iu.exec(html)?.[0] ?? "";
+
+      expect(response.status(), path).toBe(404);
+      expect(headerNames(response), path).not.toContain("location");
+      // Today's shape, asserted so that a change to it is seen: the framework's error shell.
+      expect(tag, path).toContain('id="__next_error__"');
+      expect(/\blang="/u.test(tag), path).toBe(false);
     });
   }
 });

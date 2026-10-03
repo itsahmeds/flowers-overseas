@@ -84,6 +84,13 @@ export interface ListingRequest {
    * with a **permanent redirect** to it (AC-10). The only redirect a listing URL produces.
    */
   readonly redirectToBare: boolean;
+  /**
+   * Every parameter name the request carried, honoured or neutralised, sorted (TASK-170). The
+   * parameter route reads it to answer 404 to a request that carries none of the keys the
+   * listing rewrite is keyed on — one that did not come through the rewrite — so the internal
+   * path never serves a second copy of the bare page. Parsed names, never the raw query.
+   */
+  readonly keys: readonly string[];
 }
 
 /**
@@ -111,6 +118,7 @@ export function listingRequest(
     canonicalPage: !parameterised && search.page >= 2 ? search.page : undefined,
     titlePage: search.page >= 2 ? search.page : undefined,
     redirectToBare,
+    keys: [...search.honoured, ...search.ignored].sort(),
   };
 }
 

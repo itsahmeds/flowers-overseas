@@ -44,9 +44,9 @@ import { QUERY_KEYS } from "../config/url-keys.ts";
 
 /** One `beforeFiles` rewrite, in the shape `next.config`'s `rewrites()` takes. */
 export interface RewriteRule {
-  readonly source: string;
-  readonly destination: string;
-  readonly has: readonly [{ readonly type: "query"; readonly key: string }];
+  source: string;
+  destination: string;
+  has: [{ type: "query"; key: string }];
 }
 
 /**
@@ -64,12 +64,12 @@ export const LISTING_REWRITE_KEYS: readonly string[] = [
 
 /** Fresh objects on every call, matching `listingCacheHeaderRules()`. */
 export function listingRewriteRules(): RewriteRule[] {
-  return launchLocales.flatMap((locale) => {
+  return launchLocales.flatMap((locale): RewriteRule[] => {
     const shopCategory = localeConfig(locale).pathSegments.shopCategory;
     return LISTING_REWRITE_KEYS.map((key) => ({
       source: `/${locale}/:country/${shopCategory}`,
       destination: `/${locale}/${PARAMETER_ROUTE_SEGMENT}/:country/${shopCategory}`,
-      has: [{ type: "query", key }] as const,
+      has: [{ type: "query", key }],
     }));
   });
 }

@@ -53,9 +53,10 @@ interface ParameterRouteProps {
 async function listingQuery(
   searchParams: ParameterRouteProps["searchParams"],
 ): Promise<ListingRequest> {
-  const query = await searchParams;
-  if (!LISTING_REWRITE_KEYS.some((key) => key in query)) notFound();
-  return listingRequest(query);
+  const request = listingRequest(await searchParams);
+  if (!request.keys.some((key) => LISTING_REWRITE_KEYS.includes(key)))
+    notFound();
+  return request;
 }
 
 export async function generateMetadata({
