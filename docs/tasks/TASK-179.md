@@ -54,6 +54,16 @@ _None._
   Those feed listing pages and their meta descriptions (TASK-178's pages, an SEO surface), so this
   task did not touch them. Needs an owner.
 
+**Orchestrator rulings (2026-10-04, PR 170 round 1):**
+- **E-1 closed as spec.** Add-ons stay in złoty, as spec 009 says. Converting them needs a spec 009
+  amendment and is not this task.
+- **E-2 closed.** `en` is at 4.51 % unreviewed (25 of 554) on the head, under the 5 % budget.
+- **E-3 closed.** No "handwritten" remains anywhere in `seed/data/copy`.
+- **Item 11.** The approved unit is the one sentence "We will print it on our card in whatever
+  language you write it, exactly as you type it." It is now byte-identical in all five guides (the
+  `en/de` answer was changed to carry it verbatim), and the rest of each answer keeps its 2026-09-16
+  attestation. `tests/unit/copy-batch-2026-10-04.test.ts` pins it in each guide.
+
 ## Progress
 
 - 2026-10-04 00:45 — PDP v2 layout, `PrintedCardPreview`, the `CardMessageField` island, unit tests; draft PR #170.
@@ -64,6 +74,7 @@ _None._
 - 2026-10-04 07:47 — price equivalents not wired then: TASK-178 (PR 169) was still open (wired at 15:20).
 - 2026-10-04 15:20 — rebased onto `b1ea7f03` (TASK-176 chrome, TASK-178 listings and equivalents); the old baselines commit was dropped and the baselines are re-taken. **Price equivalents wired:** `productView()` computes `equivalents.price` (the H1's tier price) and `equivalents.total` (the summary total) with `priceEquivalents()` at its one `now`, the same instant as the price, the fallback and the date window; the schema refuses a line on a fallback page and a line naming the page's own currency; `ProductPage`/`PriceSummary` print them with `equivalentsMessageValues()`; add-ons stay in złoty. `tests/unit/product-equivalents.test.tsx` (13 cases). **Present tense** (founder, 2026-10-04: "yes use present tense"; A22 open item (iii)): `catalog.floristSentence`, re-flowed by `i18n:draft --sync-copy`, and FO-BQ-001/FO-BQ-003 `seoDescription`; the key and the two en rows unreviewed and unattributed, the key in `AWAITING_FOUNDER_REVIEW`.
 - 2026-10-04 15:45 — baselines: run 37194979116 (37 PNGs, all inspected) showed the TASK-176 sticky header over `corridor-country-mobile-facts`; product and corridor shots now load main's `static-header.css`. Run 37195699449 at `5f681728`: 36 files byte-identical to the first run, the one that moved inspected; the whole change list (37 PNGs) and the manifest committed in `33a3b7b8`; `--verify` (104 match) and `--check` pass. Date-driven rule: corridor hero/facts sit above the calendar, product blocks keep `[data-fo-date-grid]` out, the letters carry no date. `gates:cheap` PASS (3978 tests).
+- 2026-10-04 17:40 — round 1 fixes (review 5405837755, breaker HOLES at `d71bc8b6`): per-line schema refusals (fallback, own currency, and the new snapshot-date rule), the `/pl` native line pinned, Polish present tense (`shop.category.lede` "układa", bouquet intro "jest wykonywany") with a rendered-Polish test, the en/de guide carrying item 11 verbatim, the batch pinned by exact text (`copy-batch-2026-10-04.test.ts`) plus a `gaps.md` entry for the general hash gap, the printed label as a literal, a visual-hook test, and the equivalents line and stale-rate sentence out of the product block shots.
 - **Left:** (1) rebase onto `main` once PR #168 merges (`git rebase --onto origin/main d8fffadb`), then `gh pr ready` + `ci:full`; the PR conflicts with `main` until then, so no CI has run. (2) The visual baselines this task moves (product, product blocks, corridor, 404/500, `/dev/components` product cells) through the `visual:baselines` label flow — commit every file in the run's change list. (3) Once TASK-178 merges, wire `priceEquivalents()` (`@/modules/catalog`) and `equivalentsMessageValues()` (`@/modules/ui`) into the PDP route and pass the finished line as `ProductPage`'s `equivalents` (`Price` and `PriceSummary` already render it). (4) Render the fresh-on-arrival guarantee once its remedy wording is approved.
 
 ## Result
