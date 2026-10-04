@@ -2,12 +2,12 @@
 
 | Field | Value |
 |---|---|
-| Status | draft |
+| Status | approved |
 | Phase | 0 (v0, §2–§13); §15 is spec 012b, Phase 1, re-advised before the first go-live |
 | Plan refs | plan/01 §1 §3 §4.1 §4.2 §5 §9 §10 · plan/02 §4.1 §7 §8 §10 §12 · plan/03 §5 §6 · plan/05 #57 · plan/06 §2.2 §2.3 §5.1 §5.4 §6 · plan/07 §1.1–§1.5 §2.1 §3 §4 §5 §8 · plan/08 §3.5 · plan/09 Phase 0 (6–12 Oct row; AC 4), Phase 1 (`020`, `021`), Phase 2 (`026`, `027`) · plan/10 §2.3 §2.4 §4 · plan/11 §1 §2 §6 §7 · plan/12 §2 §4 |
 | ADRs | ADR-0009 (event-sourced orders; the engine is spec 010's) · ADR-0007 (index only true pages) · ADR-0006 (no IP redirects) · ADR-0015 (Neon, R2, Auth.js) · ADR-0013 (Resend) · ADR-0016 (CSP) · ADR-0017 (catalogue dataset ownership, unchanged by v0) · ADR-0018 (Railway behind Cloudflare). **Proposes no ADR.** The proposed ADR-0019 (database as system of record) and ADR-0020 (review attestation ledger) belong to spec 012b (§15) and are neither proposed nor accepted with this spec |
 | Author / date | spec-writer via /spec · 2026-10-04; split into v0 and 012b after `docs/advice/2026-10-04-specs-010-011-012.md` |
-| Approved by / date | — |
+| Approved by / date | Founder, 2026-10-04: "all defaults, accept all three, do it in Chrome" (answering the 37 open questions with the advisor memo §6 defaults) · 2026-10-04 |
 
 ## 0. Index
 
