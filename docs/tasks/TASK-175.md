@@ -23,7 +23,14 @@ Row: `TASKS.md` → TASK-175. This brief is the task's long form (spec 001 §14 
 
 ## Carry-forwards
 
-_None._
+Accepted holes (DoD §4, accepted by the reviewer on PR 168, copied here by the orchestrator):
+- **Round 1, holes 5 and 6:** accepted in round 1; later caught by `tests/unit/client-js-budget.test.ts` as well (breaker round 2).
+- **Round 2 rulings, verbatim from the reviewer (PR 168 comment 5974924179):**
+  - HOLE 1 ACCEPTABLE: the wrap below 390 px works on this head; nothing pins it (WCAG 1.4.10 reflow at 320 px). TASK-176 (PR 172) rewrites this strip for A4. **TASK-176 must add the case:** at 320 × 568, in all four locales, `[data-fo-utility]` and `[data-fo-header]` have `scrollWidth === clientWidth`, and the chip and switcher lie inside the viewport. It must also extend `header.spec`'s 390 px chip case from `/en` alone to `LOCALES` (my round-2 nit 1). Deleting the strip's wrap utilities must turn the case red before TASK-176 passes review.
+  - HOLE 2 ACCEPTABLE: the Liberation/Arimo and Liberation/Tinos overrides are correct today: they equal Next's own `adjustFontFallback` output, recomputed by the breaker and by me in the build output. They add no request (`local()` only). Today only the Linux e2e CLS cases (`header.spec:122`, `banner.spec:202`) catch a drift. **Carried to TASK-176** (the next PR on `src/modules/ui`), which must do two things. First, add a unit test that recomputes the overrides from the committed 400 Latin files and compares them to the `globals.css` block, asserting that each Latin call's first named fallback is its Liberation face (FB1–FB6 must go red). Second, correct the two false comments at `globals.css:375` and `fonts/index.ts:26-28` (same as my round-2 nit 2). Whichever comes first: if anyone edits either comment or a font file before then, it is fixed in that PR.
+  - HOLE 3 ACCEPTABLE: no file under `src/modules/ui/product/` imports `fonts/hand` today, so Caveat reaches no page. The risk is real, though. The `ui` barrel exports `ProductPage`, `Gallery` and `TierSelector` statically (`src/modules/ui/index.ts:498-503`), so one `import "../fonts/hand"` in any of them would put Caveat's `@font-face` on every layout (A21 clause 3). TASK-179 is the task that adds the card preview, the first Caveat import. **TASK-179 must narrow the exemption at `fonts.test.ts:352`.** Narrow it from the whole `product/` directory to the one file that is the card-preview leaf, a file the barrel must not reach statically. Then add an assertion that no file reachable from `src/modules/ui/index.ts` imports `fonts/hand`. Breaker mutation: `import "../fonts/hand"` in `ProductPage.tsx` goes red. Until TASK-179 merges, no PR may add a `fonts/hand` import under `product/`.
+- **Round 3:** HOLDS (no holes) on c2ad5cfd.
+- **Reviewer nits (round 2 and the scoped re-check):** the A21 note on the accepted Alegreya 700 preload, and a real-device check of small Alegreya text on Linux and Windows; the `BLOCK_STYLE` doc comment does not mention the date grid; the darwin baselines for the 4 re-taken product shots are stale for local macOS runs.
 
 ## Escalations
 
