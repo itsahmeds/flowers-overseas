@@ -143,6 +143,9 @@ Expected fail-closed windows with the weekday rebuild job (§4.1) running:
   secrets `RAILWAY_TOKEN_STAGING` and `RAILWAY_TOKEN_PRODUCTION` (Railway project tokens, one per
   environment) and the variables `FX_REFRESH_STAGING_URL` and `FX_REFRESH_PRODUCTION_URL` (each
   environment's base URL, no trailing `/api/health`). A missing one fails the run and names it.
+- **`FX_REFRESH_AT` on `web`**: the job sets it on staging and production before each rebuild.
+  `pnpm railway:check` accepts it there as an optional key (it is not part of the env contract);
+  leave it alone (`docs/runbooks/railway-cloudflare-setup.md`).
 - **Manual trigger:** Actions → **fx-refresh** → *Run workflow* (tick `verify` to get the 19:30
   behaviour). This is not the CI workflow, so CLAUDE.md's ban on dispatching it does not apply.
 - **CI's builds do not fetch**: `ci.yml` and `visual-baselines.yml` set `FX_SNAPSHOT_FETCH=off`, so

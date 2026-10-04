@@ -42,14 +42,14 @@
 import { execFileSync } from "node:child_process";
 import { appendFileSync } from "node:fs";
 
-import { WEB_SERVICE_NAME } from "../src/lib/railway.ts";
+import { FX_REFRESH_AT_KEY, WEB_SERVICE_NAME } from "../src/lib/railway.ts";
 import { fetchEcbDaily, parseEcbDaily } from "./fx-snapshot.ts";
 
 /** Railway's public GraphQL endpoint (docs.railway.com, "Public API"). */
 export const RAILWAY_API_URL = "https://backboard.railway.com/graphql/v2";
 
 /** The `Dockerfile`'s cache-breaker `ARG`, set before every rebuild (AC-31). */
-export const FX_REFRESH_AT_VARIABLE = "FX_REFRESH_AT";
+export const FX_REFRESH_AT_VARIABLE = FX_REFRESH_AT_KEY;
 
 /** At most 10 s for a health read or a Railway call. */
 const REQUEST_TIMEOUT_MS = 10_000;

@@ -111,6 +111,13 @@ ever appears there.
 Give the credential to the florists you demo to; do not put it in the repository, in an issue or
 in a PR description.
 
+**`FX_REFRESH_AT` appears on its own.** The weekday FX rebuild (`.github/workflows/fx-refresh.yml`,
+spec 005 §14 A7; `docs/runbooks/pricing.md` §4.1) sets this variable on `web` in `staging` and
+`production` to the run's timestamp before each rebuild. It is the `Dockerfile`'s cache-breaker
+build argument, not part of the env contract and not a secret: do not paste it, delete it or add it
+to `.env.example`. `railway:check` accepts it on those two environments and still reports it as
+unexpected on a PR environment, which the job never rebuilds.
+
 ## 4. Deploy, and watch the first build
 
 Deployments → **Deploy**. The build runs the committed `Dockerfile`: `pnpm install

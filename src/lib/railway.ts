@@ -186,16 +186,26 @@ export const REQUIRED_VARIABLE_KEYS: readonly string[] =
   );
 
 /**
+ * The `Dockerfile`'s FX cache-breaker build argument (spec 005 §14 A7 Corrected 2 (i), AC-31;
+ * TASK-181). The weekday FX rebuild (`scripts/fx-refresh.ts`) sets it on `web` in `staging` and
+ * `production` before every rebuild, so a same-commit build misses the layer cache and fetches the
+ * day's ECB rate. It is **not** part of the env contract — nothing reads it, `.env.example` does not
+ * carry it — so it is listed here as optional rather than in `ENV_KEYS`.
+ */
+export const FX_REFRESH_AT_KEY = "FX_REFRESH_AT";
+
+/**
  * Keys an environment **may** carry beyond the contract. `STAGING_BASIC_AUTH` is spec 040 §12's
  * absent-means-off access switch: it is deliberately not one of the 28 (it is not read by the env
  * schemas and `pnpm env:check` therefore never asks for it), and it is expected on `staging` and
- * on every PR environment, where AC-25 requires the 401 wall.
+ * on every PR environment, where AC-25 requires the 401 wall. `FX_REFRESH_AT` (above) appears on
+ * `staging` and `production` after the first weekday FX rebuild; no PR environment is rebuilt.
  */
 export const OPTIONAL_VARIABLE_KEYS: Readonly<
   Record<"production" | "staging" | "preview", readonly string[]>
 > = Object.freeze({
-  production: [],
-  staging: [STAGING_BASIC_AUTH_KEY],
+  production: [FX_REFRESH_AT_KEY],
+  staging: [STAGING_BASIC_AUTH_KEY, FX_REFRESH_AT_KEY],
   preview: [STAGING_BASIC_AUTH_KEY],
 });
 
