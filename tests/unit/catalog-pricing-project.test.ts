@@ -37,7 +37,6 @@ import { countryConfig } from "../../src/config/countries.ts";
 import { currencyConfig } from "../../src/config/currencies.ts";
 import type { LocaleCode } from "../../src/config/locales.ts";
 import { localeConfig } from "../../src/config/locales.ts";
-import { rateValidUntil } from "../../src/modules/catalog/pricing/fx.ts";
 import {
   fromPriceProjection,
   offerProjection,
@@ -58,13 +57,6 @@ import { formatMoney } from "../../src/modules/i18n/format.ts";
 
 /** A day inside the committed snapshot's 48-hour window: every conversion is available. */
 const FRESH = new Date(`${FX_SNAPSHOT_AS_OF}T10:00:00Z`);
-/**
- * The last calendar day the committed snapshot is usable — `as_of + 1` (`rateValidUntil()`,
- * spec 005 §6, §14 A3). A converted offer's `priceValidUntil` is this rather than the price row's
- * open-ended `null` (TASK-068).
- */
-const FX_RATE_VALID_UNTIL = rateValidUntil(FX_SNAPSHOT_AS_OF);
-
 /** Well past `MAX_FX_AGE_HOURS`: no rate is usable and the projection must fail closed. */
 const STALE = new Date("2026-10-01T10:00:00Z");
 
@@ -238,14 +230,9 @@ describe("the price identity across the fixture matrix (AC-10, AC-11, T-08)", ()
             localeConfig(locale).currencyDefault,
           );
           expect(offer.eligibleRegion).toBe(countryIso);
-          // §14 A3 (TASK-068): the offer's validity is the **earlier** of the price row's
-          // `active_to` and the FX snapshot's own last usable day where a conversion is
-          // involved — a converted price stops being the price when its rate does.
-          expect(offer.priceValidUntil).toBe(
-            projection.ratePpm === undefined
-              ? resolved.activeTo
-              : FX_RATE_VALID_UNTIL,
-          );
+          // §14 A7 Corrected 7 (amending A3; T-36): the offer's validity is the price row's
+          // `active_to`, converted or not — the exchange rate is never its source.
+          expect(offer.priceValidUntil).toBe(resolved.activeTo);
           expect(offer.priceVersion).toBe(resolved.priceVersion);
         }
       }

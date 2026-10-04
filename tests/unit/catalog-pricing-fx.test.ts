@@ -172,13 +172,13 @@ describe("the hand-computed FX table, exact to the minor unit (AC-12, T-10)", ()
       asOf: FX_SNAPSHOT_AS_OF,
       source: "ecb-reference",
     };
-    // €35.90 at the raw ECB rate is 153,2212 zł; buffered it is 157,0517 zł, and the ceiling of
-    // that is the 15 706 the fixture states. The buffer is 2.5% and nothing else.
+    // €35.90 at the raw ECB rate is 155,00902 zł; buffered it is 158,88424… zł, and the ceiling
+    // of that is the 15 889 the fixture states. The buffer is 2.5% and nothing else.
     expect(
       convert({ amountMinor: toMinor(3590), currency: "EUR" }, "PLN", rate)
         .amountMinor,
-    ).toBe(15_706);
-    expect(15_706 - 15_323).toBe(383);
+    ).toBe(15_889);
+    expect(15_889 - 15_501).toBe(388);
   });
 
   it("is exact at a magnitude that overflows a `Number` numerator", () => {
@@ -314,7 +314,7 @@ describe("fail-closed staleness (AC-15, T-13)", () => {
     const serialised = JSON.stringify(stale);
     for (const forbidden of [
       "3090",
-      "3030",
+      "3033",
       String(FX_RATE_PPM_PLN_GBP),
       FX_SNAPSHOT_AS_OF,
       "GBP",

@@ -20,9 +20,11 @@
  * *and* a Sentry message rather than a metric nobody has a dashboard for (`plan/08` §7 — there is
  * no dashboard in Phase 0):
  *
- *  - `catalog.fx_stale` — the newest rate is older than `MAX_FX_AGE_HOURS`, so every non-native
- *    display currency has stopped converting and every page is quoting in the destination's own
- *    currency (spec 005 §13 Q2, AC-15);
+ *  - `catalog.fx_stale` — the newest rate is past the age bound, so every non-native display
+ *    currency has stopped converting and every page is quoting in the destination's own currency
+ *    (spec 005 §13 Q2, AC-15). Sent **once per process per stale `fx_as_of`** (§14 A7 Corrected 4,
+ *    AC-32): it used to fire on every refused conversion — three times per product card, once per
+ *    prebuilt page — and filled Vercel's 4 MB build log on 2026-10-02;
  *  - `catalog.price_missing` — a page asked for a (product, country, tier) with no active row: a
  *    price hole on a live destination;
  *  - `catalog.price_ambiguous` — more than one active row, which spec 002's partial unique index
@@ -117,16 +119,49 @@ export function startCatalogRead(): (fields?: CatalogLogFields) => void {
 }
 
 /**
+ * The `fx_as_of` dates this process has already reported stale (spec 005 §14 A7 Corrected 4).
+ *
+ * Process-local on purpose: a new deployment, a new serverless instance or a new build worker
+ * reports again, which is the "one line per instance per stale date" the amendment budgets for,
+ * and nothing has to be stored or expired. It holds dates, never anything personal, and at most
+ * one entry per committed or fetched snapshot a process ever reads.
+ */
+const reportedStaleFxAsOf = new Set<string>();
+
+/**
+ * Has `catalog.fx_stale` already been sent for this `fx_as_of` in this process? Records it if not.
+ *
+ * The dedupe lives here rather than in `pricing/fx.ts` so that file stays clock-free and stateless
+ * (AC-12's source scan) and `CATALOG_LOG_FIELDS` is unchanged (A5, AC-24). Only `fx_stale` is
+ * deduplicated: a missing or ambiguous price is a different defect per product and each one is
+ * worth a line.
+ */
+function alreadyReported(
+  signal: CatalogSignal,
+  fields: CatalogLogFields,
+): boolean {
+  if (signal !== CATALOG_SIGNALS.fxStale) return false;
+  const asOf = String(fields.fx_as_of ?? "");
+  if (reportedStaleFxAsOf.has(asOf)) return true;
+  reportedStaleFxAsOf.add(asOf);
+  return false;
+}
+
+/**
  * One of the three §11 signals: a `warn` line and a Sentry message, same fields, same limits.
  *
  * There is no `error` variant on purpose. Two of the three are already accompanied by a thrown
  * error at the call site (a missing or ambiguous price refuses to produce a price at all), and the
  * third is a *correct* degradation — the page still renders, in the destination's own currency.
+ * `catalog.fx_stale` is sent once per process per stale `fx_as_of` (§14 A7 Corrected 4, AC-32):
+ * the first refusal reports it, later refusals for the same date emit nothing, a different date
+ * reports again.
  */
 export function catalogSignal(
   signal: CatalogSignal,
   fields: CatalogLogFields = {},
 ): void {
+  if (alreadyReported(signal, fields)) return;
   const line = pick(fields);
   logger.warn(line, signal);
   captureWarning(signal, line);

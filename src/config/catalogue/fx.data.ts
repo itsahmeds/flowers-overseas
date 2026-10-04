@@ -2,12 +2,20 @@
  * The committed FX snapshot: one dated set of ECB euro reference rates (spec 005 §2 "FX and
  * rounding", §5.1, §13 Q2, AC-6; `plan/06` §2.2; TASK-062).
  *
- * Phase 0 has no database and no scheduled job, so the rates are **committed data** rather than a
- * fetch: every demo price is reproducible from the repository, every test is deterministic, and
- * nothing on a page depends on a network call. TASK-071's `fx.refresh` writes real `fx_rate` rows
- * from the same source on the same shape (daily 06:00 CET, `plan/01` §8) and this file stops being
- * read; `toFxRateRow()` already projects onto spec 002 §5.1's `fx_rate(base_code, quote_code,
- * rate_ppm, as_of, source)`, so the switch changes no consumer.
+ * Phase 0 has no database, so a deployment's rates are the ECB daily file **fetched once at build**
+ * (spec 005 §14 A7 Corrected 2; `src/config/catalogue/fx.bundle.ts`), and the rows below are the
+ * **fallback** the build serves whole whenever that fetch fails. Either way nothing on a page
+ * depends on a network call, and every test reads these rows, so every test is deterministic.
+ * TASK-071's `fx.refresh` writes real `fx_rate` rows from the same source on the same shape and
+ * deletes the build-time fetch (A7 Corrected 6); `toFxRateRow()` already projects onto spec 002
+ * §5.1's `fx_rate(base_code, quote_code, rate_ppm, as_of, source)`, so the switch changes no
+ * consumer.
+ *
+ * **Every committed row is the ECB's published rate for `FX_SNAPSHOT_AS_OF`** (A7 Corrected 1,
+ * AC-29): the rows were read from `tests/fixtures/fx/ecb-eurofxref-2026-09-08.xml` (the 2026-09-08
+ * `Cube` copied verbatim from the ECB's `eurofxref-hist-90d.xml`) and are pinned to it row by row
+ * in `tests/unit/catalogue-fx.test.ts`. A row that matches no captured ECB file cannot be
+ * committed: the hand-typed rows this replaced were about 1.2% off the ECB for PLN.
  *
  * Three properties are the reason the shape looks like this:
  *
@@ -20,12 +28,15 @@
  *    `pricing/fx.ts` (TASK-066). Storing a buffered rate would make the snapshot disagree with
  *    the ECB and would hide, from the one place that must see it, how much of an intraday move
  *    the buffer is absorbing (`plan/06` §2.2).
- *  - **Staleness fails closed, and 48 hours is the bound.** Past `MAX_FX_AGE_HOURS` the caller
- *    stops converting and shows the destination country's own currency instead of a guessed
- *    number (spec 005 §13 Q2, AC-15). The ECB publishes on working days only, so a
- *    Monday-morning rate is Friday's — which is what the buffer is for, and why the bound is two
- *    days rather than one. `fxSnapshotAgeHours()` / `isFxSnapshotStale()` below are the
- *    predicate over *this* snapshot; `fxRateFor()`'s fail-closed path is TASK-066's.
+ *  - **Staleness fails closed, and two working days is the bound.** A rate dated D is stale at
+ *    every instant after 00:00Z on the second Monday-to-Friday day after D (spec 005 §14 A7
+ *    Corrected 5, AC-35; `MAX_FX_AGE_HOURS` = 48 stays the bound, with Saturday and Sunday not
+ *    counted). Past it the caller stops converting and shows the destination country's own
+ *    currency instead of a guessed number (§13 Q2, AC-15). The ECB publishes on working days
+ *    only, so a Monday-morning rate is Friday's — which is what the buffer is for. **This file is
+ *    the rule's one home** (`fxRateStaleAfter()` below): `pricing/fx.ts`'s `isRateStale()` and
+ *    `rateValidUntil()` read it through `static/`, and `isFxSnapshotStale()` is the same rule over
+ *    *this* snapshot, so the report and the gate cannot disagree.
  *
  * Only the euro-base rows are committed, which is what the ECB publishes. A cross rate
  * (PLN→GBP for the London buyer of a Warsaw bouquet, ADR-0002's first corridor) is derived from
@@ -58,10 +69,11 @@ export const FX_BASE_CURRENCY = "EUR";
 export const FX_BUFFER_BP = 250;
 
 /**
- * How old the newest rate may be before conversion stops entirely: 48 hours (spec 005 §13 Q2).
- * Past it, `fxRateFor()` returns `null`, the projection falls back to the destination currency and
- * the page states the currency it is quoting in — a stale rate never becomes a displayed price
- * (AC-15).
+ * How old the newest rate may be before conversion stops entirely: 48 hours (spec 005 §13 Q2),
+ * counted on Monday-to-Friday days only since spec 005 §14 A7 Corrected 5 — that is, two working
+ * days, the count `fxRateStaleAfter()` walks. Past it, `fxRateFor()` returns `null`, the projection
+ * falls back to the destination currency and the page states the currency it is quoting in — a
+ * stale rate never becomes a displayed price (AC-15).
  */
 export const MAX_FX_AGE_HOURS = 48;
 
@@ -75,19 +87,18 @@ export const MAX_FX_AGE_HOURS = 48;
  * change (spec 005 §12 "Feature flags").
  */
 const fxRates = [
-  { quote: "GBP", ratePpm: 846_500 },
-  { quote: "PLN", ratePpm: 4_268_000 },
-  { quote: "RON", ratePpm: 5_085_000 },
-  { quote: "CZK", ratePpm: 24_375_000 },
-  { quote: "HUF", ratePpm: 393_200_000 },
-  { quote: "SEK", ratePpm: 11_072_000 },
-  { quote: "NOK", ratePpm: 11_625_000 },
-  { quote: "DKK", ratePpm: 7_459_500 },
-  { quote: "CHF", ratePpm: 938_500 },
-  // USD, equivalent-only (spec 004 §14 A21 clause 6 (b); TASK-178): the ECB euro reference rate
-  // for 2026-09-08, USD 1.1614 per EUR, read on 2026-10-04 from
-  // https://data-api.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A?startPeriod=2026-09-08&endPeriod=2026-09-08
-  // (series EXR.D.USD.EUR.SP00.A, OBS_STATUS A). Same `as_of` as every row above.
+  // The ECB euro reference rates for 2026-09-08, read from
+  // `tests/fixtures/fx/ecb-eurofxref-2026-09-08.xml` and pinned to it (AC-29, T-28).
+  { quote: "GBP", ratePpm: 857_400 },
+  { quote: "PLN", ratePpm: 4_317_800 },
+  { quote: "RON", ratePpm: 5_250_000 },
+  { quote: "CZK", ratePpm: 24_186_000 },
+  { quote: "HUF", ratePpm: 363_950_000 },
+  { quote: "SEK", ratePpm: 11_152_000 },
+  { quote: "NOK", ratePpm: 10_745_000 },
+  { quote: "DKK", ratePpm: 7_474_800 },
+  { quote: "CHF", ratePpm: 942_500 },
+  // USD is equivalent-only (spec 004 §14 A21 clause 6 (b); TASK-178).
   { quote: "USD", ratePpm: 1_161_400 },
 ] as const;
 
@@ -102,18 +113,112 @@ export const FX_SNAPSHOT: readonly FxRateData[] = fxRates.map((rate) =>
   }),
 );
 
+/* -------------------------------------------------------------------------- */
+/* Rate age: the one home of spec 005 §14 A7 Corrected 5 (AC-35).             */
+/* -------------------------------------------------------------------------- */
+
+/** Milliseconds in a day and in an hour: the two steps the age rule walks in. */
+const MS_PER_DAY = 86_400_000;
+const MS_PER_HOUR = 3_600_000;
+
+/** `MAX_FX_AGE_HOURS` as the count of Monday-to-Friday days the rule walks: 48 h is two days. */
+const MAX_FX_AGE_WEEKDAYS = MAX_FX_AGE_HOURS / 24;
+
 /**
- * The age of the committed snapshot in whole hours at `now`, from the start of its `as_of` day
- * (the ECB publishes once, at 16:00 CET; taking the start of the day is the conservative reading
- * and can only make a rate look older than it is).
+ * Day 0 of the epoch, 1970-01-01, was a Thursday: the offset that turns a whole-day count since the
+ * epoch into a `0 = Sunday … 6 = Saturday` weekday, with no `Date` object and therefore no clock
+ * (this directory reads none, `tests/unit/catalogue-dataset.test.ts`).
  */
-export function fxSnapshotAgeHours(now: Date): number {
-  const asOf = Date.parse(`${FX_SNAPSHOT_AS_OF}T00:00:00Z`);
-  return Math.floor((now.getTime() - asOf) / 3_600_000);
+const EPOCH_WEEKDAY = 4;
+const DAYS_PER_WEEK = 7;
+const SUNDAY = 0;
+const SATURDAY = 6;
+
+function isWeekday(dayStart: number): boolean {
+  const weekday =
+    (Math.floor(dayStart / MS_PER_DAY) + EPOCH_WEEKDAY) % DAYS_PER_WEEK;
+  return weekday !== SUNDAY && weekday !== SATURDAY;
+}
+
+/** The start of `asOf`'s day in UTC, or a throw: an `as_of` is a calendar day, never a timestamp. */
+function publicationDayStart(asOf: string): number {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/u.exec(asOf);
+  const [year, month, day] = (match?.slice(1) ?? []).map(Number);
+  if (year === undefined || month === undefined || day === undefined) {
+    throw notACalendarDay(asOf);
+  }
+  const start = Date.UTC(year, month - 1, day);
+  const daysInMonth =
+    (Date.UTC(year, month, 1) - Date.UTC(year, month - 1, 1)) / MS_PER_DAY;
+  if (month < 1 || month > 12 || day < 1 || day > daysInMonth) {
+    throw notACalendarDay(asOf);
+  }
+  return start;
+}
+
+function notACalendarDay(asOf: string): Error {
+  return new Error(
+    `\`${asOf}\` is not a calendar day: an \`fx_rate.as_of\` is a \`YYYY-MM-DD\` date, never a timestamp (spec 002 §5.1)`,
+  );
 }
 
 /**
- * Is the committed snapshot older than `MAX_FX_AGE_HOURS` at `now`?
+ * The instant after which a rate dated `asOf` is stale (spec 005 §14 A7 Corrected 5, AC-35): 00:00Z
+ * on the **second Monday-to-Friday day after** `asOf`. Mon → Wed, Tue → Thu, Wed → Fri, Thu → Mon,
+ * Fri → Tue, Sat → Tue, Sun → Tue.
+ *
+ * This is the date rule itself, not "48 hours of weekday time": the two agree for a weekday `asOf`
+ * and differ for a weekend one (a Saturday rate would otherwise last until Wednesday), and the spec
+ * says the date rule governs. Weekday TARGET holidays (Good Friday, Easter Monday, 1 May, 25–26 Dec,
+ * 1 Jan) **count**: a weekday with no publication is a missed publication and fails closed
+ * visibly; not counting them would need a holiday calendar and a founder decision.
+ *
+ * Exactly at this instant the rate is still usable — "stale" is strictly *after* it — which keeps
+ * the original strict "older than 48 h" comparison of §13 Q2. Returned in epoch milliseconds so
+ * the comparison stays an exact integer one. `pricing/fx.ts`'s `rateValidUntil()` is the calendar
+ * day before this instant; it formats that day there, because this directory holds no `Date`.
+ */
+export function fxRateStaleAfter(asOf: string): number {
+  let dayStart = publicationDayStart(asOf);
+  let weekdays = 0;
+  while (weekdays < MAX_FX_AGE_WEEKDAYS) {
+    dayStart += MS_PER_DAY;
+    if (isWeekday(dayStart)) weekdays += 1;
+  }
+  return dayStart;
+}
+
+/** Is a rate dated `asOf` stale at `now`? Strictly after `fxRateStaleAfter(asOf)` (AC-35). */
+export function isFxRateStaleAt(asOf: string, now: Date): boolean {
+  return now.getTime() > fxRateStaleAfter(asOf);
+}
+
+/**
+ * The age of the committed snapshot at `now` in whole **Monday-to-Friday** hours, from the start
+ * of its `as_of` day in UTC (the ECB publishes once, at about 16:00 CET; taking the start of the
+ * day is the conservative reading). Saturday and Sunday add nothing, as in the rule above
+ * (A7 Corrected 5). This is the number `pnpm catalogue:check` prints; whether the snapshot is
+ * stale is `isFxSnapshotStale()`'s verdict, which is the date rule and governs where the two
+ * readings could differ (a weekend-dated rate).
+ */
+export function fxSnapshotAgeHours(now: Date): number {
+  const end = now.getTime();
+  let ageMs = 0;
+  for (
+    let dayStart = publicationDayStart(FX_SNAPSHOT_AS_OF);
+    dayStart < end;
+    dayStart += MS_PER_DAY
+  ) {
+    if (isWeekday(dayStart))
+      ageMs += Math.min(end, dayStart + MS_PER_DAY) - dayStart;
+  }
+  return Math.floor(ageMs / MS_PER_HOUR);
+}
+
+/**
+ * Is the committed snapshot stale at `now`? The same rule as every rate (`isFxRateStaleAt`), over
+ * this snapshot's `as_of` (AC-35: "`fx.data.ts`'s reporting predicate gives the same verdict at
+ * every instant").
  *
  * `pnpm catalogue:check` **reports** this rather than failing on it: a committed snapshot ages by
  * the day, so a hard failure would turn every branch red two days after this one merged, for a
@@ -122,7 +227,7 @@ export function fxSnapshotAgeHours(now: Date): number {
  * `null` — AC-15), not in a gate.
  */
 export function isFxSnapshotStale(now: Date): boolean {
-  return fxSnapshotAgeHours(now) > MAX_FX_AGE_HOURS;
+  return isFxRateStaleAt(FX_SNAPSHOT_AS_OF, now);
 }
 
 /** The committed rate for one quote currency against the euro, or `undefined`. */

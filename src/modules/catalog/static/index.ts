@@ -31,6 +31,8 @@ import {
   FX_BUFFER_BP,
   FX_SNAPSHOT,
   MAX_FX_AGE_HOURS,
+  fxRateStaleAfter,
+  isFxRateStaleAt,
 } from "@/config/catalogue/fx.data";
 import { OCCASIONS } from "@/config/catalogue/occasions.data";
 import {
@@ -169,6 +171,14 @@ export const staticFxRateProvider: FxRateProvider = {
  * policy and its data together in one file.
  */
 export { FX_BUFFER_BP, MAX_FX_AGE_HOURS };
+
+/**
+ * The rate-age rule of spec 005 §14 A7 Corrected 5 (AC-35), forwarded from its one home in
+ * `fx.data.ts` for the same reason as the two constants above: `pricing/fx.ts`'s `isRateStale()`
+ * and `rateValidUntil()` are this rule, and `pnpm catalogue:check`'s report reads it directly, so
+ * restating it in `pricing/` would let the gate and the report disagree.
+ */
+export { fxRateStaleAfter, isFxRateStaleAt };
 
 /* -------------------------------------------------------------------------- */
 /* Feature flags (spec 005 §12; TASK-064).                                    */

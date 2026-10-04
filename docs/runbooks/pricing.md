@@ -80,17 +80,44 @@ projection, which is why the JSON-LD and the HTML cannot disagree.
 ## 4. What happens when FX is stale
 
 - The committed snapshot in `src/config/catalogue/fx.data.ts` is dated, euro-base and integer
-  (`ratePpm`). Conversion applies the 2.5% buffer (`FX_BUFFER_BP = 250`) and rounds **up** onto the
-  target currency's ending.
-- Past `MAX_FX_AGE_HOURS` (48) the module **fails closed**: `fxRateFor()` returns `null`, the
-  projection falls back to the **destination's own currency**, carries
-  `catalog.availability.fxUnavailable`, and no converted amount appears anywhere in the output. The
+  (`ratePpm`), and is the ECB's own publication for `FX_SNAPSHOT_AS_OF` (2026-09-08), pinned row by
+  row to `tests/fixtures/fx/ecb-eurofxref-2026-09-08.xml` (spec 005 §14 A7 Corrected 1, AC-29).
+  Conversion applies the 2.5% buffer (`FX_BUFFER_BP = 250`) and rounds **up** onto the target
+  currency's ending.
+- **Age counts Monday-to-Friday only** (A7 Corrected 5, AC-35): `MAX_FX_AGE_HOURS` (48) is still
+  the bound, with Saturday and Sunday not counted. A rate dated D is stale at every
+  instant after 00:00Z on the **second Monday-to-Friday day after D**: Mon → Wed, Tue → Thu,
+  Wed → Fri, Thu → Mon, Fri → Tue, Sat/Sun → Tue. Friday's rate holds through the weekend. Weekday
+  TARGET holidays (Good Friday, Easter Monday, 1 May, 25–26 Dec, 1 Jan) **count**, so a weekday
+  with no publication fails closed visibly. The rule has one home, `fxRateStaleAfter()` in
+  `fx.data.ts`; `isRateStale()` / `rateValidUntil()` in `pricing/fx.ts` and the
+  `pnpm catalogue:check` report read it.
+- Past that instant the module **fails closed**: `fxRateFor()` returns `null`, the projection
+  falls back to the **destination's own currency**, carries `catalog.availability.fxUnavailable`,
+  the equivalents line is hidden, and no converted amount appears anywhere in the output. The
   single `Offer` carries the same currency and the same figure (spec 005 §14 A3): the price
   identity is the invariant, the locale-default currency is only the preference.
-- It is logged once as a `warn` with a Sentry message (`catalog.fx_stale`), because every
-  non-native display currency has stopped converting and nothing else on the page says so.
-- **Recovery:** commit a fresher snapshot (Phase 0) or let `fx.refresh` write one (TASK-071), then
-  purge `catalog:{iso}` for every live destination (§6).
+- `Offer.priceValidUntil` is the price row's `active_to` or absent; it never comes from the rate
+  (A7 Corrected 7, T-36).
+- It is logged **once per process per stale `fx_as_of`** as a `warn` with a Sentry message
+  (`catalog.fx_stale`; A7 Corrected 4, AC-32): one line per instance or build worker per stale
+  date, none while the rate is fresh.
+- **Recovery:** see §4.1 below, then purge `catalog:{iso}` for every live destination (§6).
+
+Expected fail-closed windows with the weekday rebuild job (§4.1) running:
+
+| Situation | Rate served | Fails closed (destination currency, equivalents hidden) |
+|---|---|---|
+| Weekday D, 15:30Z run succeeds | D | never |
+| Every weekend | Friday | never (fresh until Tue 00:00Z) |
+| Both runs fail on weekday D (Mon–Thu) | the weekday before D | next weekday 00:00Z to ~15:45Z (~16 h) |
+| Both Friday runs fail | Thursday | Mon 00:00Z to Mon ~15:45Z (~16 h) |
+| Monday's runs fail | Friday | Tue 00:00Z to Tue ~15:45Z (~16 h) |
+| One weekday TARGET holiday (1 May, 1 Jan, a lone 25 or 26 Dec) | the weekday before | the weekday after the holiday, 00:00Z to ~15:45Z (~16 h) |
+| Easter (Good Friday and Easter Monday) | Thursday | Mon 00:00Z to Tue ~15:45Z (~40 h) |
+| 25–26 Dec on Thursday–Friday | Wednesday | Fri 00:00Z to Mon ~15:45Z (~88 h) |
+| A merge, promotion or scheduled rebuild whose fetch fails | committed (2026-09-08) | until the next scheduled run that sees it: that weekday's 15:30Z or 19:30Z, otherwise the next weekday's 15:30Z |
+| Production during a rollback (spec 040 A3 change 4) | whatever the restored image carries | the job skips production until `release:rollback` has run; the restored image fails closed once its rate passes the bound |
 
 Two sibling signals, same shape and same reason — each silently produces a wrong price if nobody
 looks: `catalog.price_missing` (a live page asked for a (product, country, tier) with no active

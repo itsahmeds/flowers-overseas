@@ -518,10 +518,10 @@ export interface PriceProjection {
   readonly fxReasonKey?: "catalog.availability.fxUnavailable" | undefined;
   readonly priceVersion: string;
   /**
-   * The **earlier** of the active row's `active_to` and the FX snapshot's own validity where a
-   * conversion is involved — `Offer.priceValidUntil` (spec 005 §6; §14 A3). `null` only when the
-   * row is current *and* nothing was converted: a converted amount stops being the price the day
-   * its rate stops being usable, whatever the price row says.
+   * The active row's `active_to` — `Offer.priceValidUntil` (spec 005 §6; §14 A3 as amended by
+   * §14 A7 Corrected 7, T-36). Never derived from the exchange rate: a converted amount carries
+   * its own `fxAsOf` and `ratePpm` instead, and `null` (a current row) means the `Offer` has no
+   * `priceValidUntil` at all.
    */
   readonly priceValidUntil: IsoDate | null;
   /**

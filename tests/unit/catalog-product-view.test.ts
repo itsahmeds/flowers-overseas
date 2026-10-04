@@ -101,11 +101,11 @@ describe("one price, VAT and delivery included (§8, AC-21 model half)", () => {
     const view = await amber("en", "PL");
     expect(view.tiers.map((tier) => [tier.tierKey, tier.price])).toEqual([
       ["stems_12", { amountMinor: 4790, currency: "EUR" }],
-      ["stems_18", { amountMinor: 5590, currency: "EUR" }],
-      ["stems_24", { amountMinor: 6290, currency: "EUR" }],
+      ["stems_18", { amountMinor: 5490, currency: "EUR" }],
+      ["stems_24", { amountMinor: 6190, currency: "EUR" }],
     ]);
     expect(view.price.displayPrice).toEqual({
-      amountMinor: 5590,
+      amountMinor: 5490,
       currency: "EUR",
     });
     expect(view.fx).toEqual({ state: "converted" });

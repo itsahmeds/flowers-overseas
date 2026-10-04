@@ -54,15 +54,25 @@ const STALE = new Date("2026-10-01T07:00:00Z");
 
 const SUNDAYS = ["2026-09-13", "2026-09-20"] as const;
 const AMBER = "FO-BQ-001";
+/**
+ * A second PL bouquet whose tiers straddle a rounding step in EUR at the true 2026-09-08 rates
+ * (TASK-180): 149 / 169 / 189 zł, Sunday +18 zł, so the chip is €4.00, €4.00 and €5.00. Amber's
+ * chips are €4.00 on every tier at those rates, which no longer shows the per-tier difference.
+ */
+const STEPPED = "FO-BQ-004";
 
 const partnered = { hasActivePartners: (iso2: string) => iso2 === "PL" };
 
 type ViewOptions = Partial<Parameters<typeof productView>[1]>;
 
-async function live(locale: string, options: ViewOptions = {}) {
+async function live(
+  locale: string,
+  options: ViewOptions = {},
+  sku: string = AMBER,
+) {
   const view = await withActivePartnersProvider(partnered, () =>
     productView(
-      { locale, countryIso: "PL", sku: AMBER },
+      { locale, countryIso: "PL", sku },
       { parameterised: false, now: MORNING, ...options },
     ),
   );
@@ -125,9 +135,9 @@ describe("`dateTotals`: the all-in total of every tier on every selectable date 
     const view = await live("en");
     expect(view.fx.state).toBe("converted");
     expect(view.totals).toEqual({
-      stems_12: row(4790, 5290),
-      stems_18: row(5590, 5990),
-      stems_24: row(6290, 6690),
+      stems_12: row(4790, 5190),
+      stems_18: row(5490, 5890),
+      stems_24: row(6190, 6590),
     });
   });
 
@@ -193,18 +203,23 @@ describe("the chip fee is the difference of two projected totals (design round Q
   });
 
   it("differs by tier in a converted currency, because each total is rounded on its own (en, EUR)", async () => {
-    const eighteen = await live("en");
-    const twelve = await live("en", { selection: { tierKey: "stems_12" } });
+    const eighteen = await live("en", {}, STEPPED);
+    const twentyFour = await live(
+      "en",
+      { selection: { tierKey: "stems_24" } },
+      STEPPED,
+    );
+    // 169 zł → €40.90 and 187 zł → €44.90: €4.00. 189 zł → €44.90 and 207 zł → €49.90: €5.00.
     expect(chips(eighteen)).toEqual([
       ["2026-09-13", 400, "EUR"],
       ["2026-09-20", 400, "EUR"],
     ]);
-    expect(chips(twelve)).toEqual([
+    expect(chips(twentyFour)).toEqual([
       ["2026-09-13", 500, "EUR"],
       ["2026-09-20", 500, "EUR"],
     ]);
     // The identity the rule exists for: chip + tier price = the Sunday total, for the chosen tier.
-    for (const view of [eighteen, twelve]) {
+    for (const view of [eighteen, twentyFour]) {
       const tier = view.tiers.find(
         (option) => option.tierKey === view.selectedTierKey,
       );
