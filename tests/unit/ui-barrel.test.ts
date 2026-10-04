@@ -34,7 +34,9 @@ describe("src/modules/ui barrel", () => {
         "MIRRORED_IN_RTL",
         "Mark",
         "Wordmark",
-        // chrome (TASK-048), and the header's listing targets the layout resolves (TASK-173)
+        // chrome (TASK-048), and the header's listing targets the layout resolves (TASK-173);
+        // the notice bar's price claim, which the layout's `@notice` slot renders (TASK-176)
+        "NoticePriceClaim",
         "SiteHeader",
         "headerListingTargets",
         // layout primitives

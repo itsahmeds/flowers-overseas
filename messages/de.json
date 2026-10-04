@@ -205,11 +205,11 @@
     "homeLink": "Home"
   },
   "company": {
-    "description": "We send flowers across Europe. You order from us; our florist in the recipient's town makes the bouquet and hands it over in person.",
+    "description": "Wir verschicken Blumengrüße in ganz Europa. Sie bestellen bei uns; unser Florist am Wohnort der empfangenden Person bindet den Strauß und übergibt ihn persönlich.",
     "operatedBy": "Operated by {legalName}, {address}, {registrationNumber}.",
     "support": {
-      "hours": "Mon–Sat 8–20 CET",
-      "label": "Help & WhatsApp",
+      "hours": "Schreiben Sie uns jederzeit, rund um die Uhr – wir antworten innerhalb weniger Stunden.",
+      "label": "Hilfe & WhatsApp",
       "whatsapp": "WhatsApp"
     }
   },
@@ -487,29 +487,29 @@
     "submit": "Continue"
   },
   "footer": {
-    "cookieSettings": "Cookie settings",
+    "cookieSettings": "Cookie-Einstellungen",
     "group": {
-      "company": "Company",
-      "legal": "Legal",
-      "sending": "Sending"
+      "company": "Unternehmen",
+      "legal": "Rechtliches",
+      "sending": "Versand"
     },
     "link": {
       "cookies": "Cookies",
-      "deliveryTimes": "Delivery times and cutoffs",
-      "destinations": "Destinations",
-      "guarantee": "The guarantee",
-      "helpAndContact": "Help and contact",
-      "howItWorks": "How it works",
-      "imprint": "Imprint",
-      "occasions": "Occasions",
-      "privacy": "Privacy",
-      "terms": "Terms",
-      "withdrawal": "Withdrawal and refunds"
+      "deliveryTimes": "Lieferzeiten und Bestellschluss",
+      "destinations": "Zielländer",
+      "guarantee": "Die Garantie",
+      "helpAndContact": "Hilfe und Kontakt",
+      "howItWorks": "So funktioniert es",
+      "imprint": "Impressum",
+      "occasions": "Anlässe",
+      "privacy": "Datenschutz",
+      "terms": "AGB",
+      "withdrawal": "Widerruf und Erstattung"
     },
     "payment": {
-      "heading": "Payment",
-      "methods": "We show the payment methods you can use at checkout.",
-      "processor": "Card payments are processed by Stripe. We never store card numbers."
+      "heading": "Zahlung",
+      "methods": "Die Zahlungsarten, die Sie nutzen können, zeigen wir an der Kasse.",
+      "processor": "Kartenzahlungen werden von Stripe abgewickelt. Wir speichern keine Kartennummern."
     },
     "reminders": {
       "body": "Name days, All Saints, Women's Day: one email a few days before each, in your language. Unsubscribe in one click.",
@@ -517,7 +517,8 @@
       "emailLabel": "Email address",
       "heading": "Occasion reminders",
       "submit": "Remind me"
-    }
+    },
+    "signoff": "Mit Liebe, von wo auch immer Sie sind."
   },
   "home": {
     "dates": {
@@ -654,18 +655,22 @@
     "menu": {
       "label": "Menu"
     },
+    "notice": {
+      "lead": "Eine Notiz von uns:"
+    },
     "search": {
       "help": "Search opens when the shop does.",
       "label": "Search flowers, occasions, a city or a country",
       "submit": "Search"
     },
+    "send": "Strauß senden",
     "utility": {
       "cutoff": "Order by 14:00 in Warsaw for delivery today",
       "cutoffShort": "Order by 14:00 in Warsaw · today",
       "datesPending": "Delivery dates open when we confirm our first florist",
       "datesPendingShort": "Delivery dates are not open yet",
-      "guarantee": "7-day freshness guarantee",
-      "pricesInclude": "Prices include delivery and VAT"
+      "guarantee": "Frische-Versprechen",
+      "pricesInclude": "Preise inkl. MwSt. und Versand"
     }
   },
   "occasionHub": {

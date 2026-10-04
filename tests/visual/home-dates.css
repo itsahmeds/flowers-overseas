@@ -1,7 +1,7 @@
 /*
  * Applied to every home shot that sits below the occasion-dates band, or contains it, other than
- * the band's own shot (`home.spec.ts`, and the home full-page shots of `shell.spec.ts` and
- * `pseudo-rtl.spec.ts`). The band leaves the layout, so no photographed block's position depends
+ * the band's own shot (`home.spec.ts`, the home full-page shots of `shell.spec.ts` and
+ * `pseudo-rtl.spec.ts`, and the footer shots of `footer.spec.ts`). The band leaves the layout, so no photographed block's position depends
  * on which dates it prints.
  *
  * The band is a destination's calendar (`src/config/occasions.ts`), and rolling it forward when a

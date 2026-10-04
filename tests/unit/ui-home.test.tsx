@@ -17,7 +17,7 @@ import { bannedVoiceWordsIn } from "../../src/config/voice.ts";
 import { loadMessages } from "../../src/modules/i18n";
 import { DestinationsGrid } from "../../src/modules/ui/home/DestinationsGrid.tsx";
 import { HomeFaq } from "../../src/modules/ui/home/HomeFaq.tsx";
-import { HomeHero } from "../../src/modules/ui/home/HomeHero.tsx";
+import { HOME_BLEED, HomeHero } from "../../src/modules/ui/home/HomeHero.tsx";
 import { HowItWorks } from "../../src/modules/ui/home/HowItWorks.tsx";
 import { OccasionDates } from "../../src/modules/ui/home/OccasionDates.tsx";
 import { OccasionTiles } from "../../src/modules/ui/home/OccasionTiles.tsx";
@@ -183,6 +183,15 @@ describe("the hero band (AC-10)", () => {
 
     expect(html).toMatch(/<svg[^>]*aria-hidden="true"[^>]*data-fo-postmark/);
     expect(postmark).not.toContain("<text");
+  });
+
+  it("uses the header's desktop gutter, so the card lines up with the logo", async () => {
+    const header = await import("../../src/modules/ui/layout/SiteHeader.tsx");
+    // The v2 chrome (TASK-176) sets its gutter from `--gutter` (56 px) through `CHROME_WRAP`; the
+    // hero's desktop bleed is the same 56 px. The home's mobile bleed is v2's 20 px too (TASK-177).
+    expect(header.CHROME_WRAP).toContain("md:px-(--gutter)");
+    expect(HOME_BLEED).toContain("md:px-[56px]");
+    expect(header.SiteHeader).toBeTypeOf("function");
   });
 
   it("holds the sentence picker, in every launch locale", () => {

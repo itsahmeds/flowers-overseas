@@ -21,12 +21,11 @@ const LOCALES = ["en", "en-gb", "de", "pl"] as const;
 
 /** Copy that must appear in the footer of every locale, from `messages/<locale>.json`. */
 const REQUIRED_TEXT: Record<(typeof LOCALES)[number], readonly string[]> = {
-  en: ["Sending", "Destinations", "Cookie settings", "Stripe"],
-  "en-gb": ["Sending", "Destinations", "Cookie settings", "Stripe"],
-  // `de`/`pl` are `pnpm i18n:draft` echoes of the English source today (§7), so the brand name is
-  // the locale-independent anchor; the per-locale copy is asserted by the visual baselines.
-  de: ["Stripe"],
-  pl: ["Stripe"],
+  en: ["Sending", "Destinations", "Cookie settings", "Payment"],
+  "en-gb": ["Sending", "Destinations", "Cookie settings", "Payment"],
+  // TASK-176 drafted the footer labels in German and Polish (`reviewed: false`).
+  de: ["Versand", "Zielländer", "Cookie-Einstellungen", "Zahlung"],
+  pl: ["Wysyłka", "Kierunki", "Ustawienia plików cookie", "Płatność"],
 };
 
 for (const locale of LOCALES) {
@@ -101,6 +100,8 @@ for (const locale of LOCALES) {
         "Mastercard",
         "Apple Pay",
         "Trustpilot",
+        // §14 A10: the processor sentence waits for a payment integration.
+        "Stripe",
       ]) {
         expect(text, forbidden).not.toContain(forbidden);
       }
@@ -128,25 +129,14 @@ for (const locale of LOCALES) {
   });
 }
 
-test.describe("the occasion-reminder signup (design round 6)", () => {
-  test("submits without JavaScript, stores nothing and returns to the footer", async ({
-    browser,
+test.describe("the occasion-reminder endpoint (design round 6)", () => {
+  test("the footer renders no reminder form: the endpoint stores and sends nothing (§14 A20)", async ({
+    page,
   }) => {
-    // The whole point of a plain form: it works with scripting off (§14 A1's zero-JS footer).
-    const context = await browser.newContext({ javaScriptEnabled: false });
-    const page = await context.newPage();
     await page.goto("/en");
-
-    await page.locator("#footer-reminder-email").fill("someone@example.test");
-    await Promise.all([
-      page.waitForURL(/\/en(?:#footer-reminders)?$/),
-      page.getByRole("button", { name: "Remind me" }).click(),
-    ]);
-
-    // Back on the locale home, and not one cookie was set by the round trip.
-    expect(new URL(page.url()).pathname).toBe("/en");
-    expect(await context.cookies()).toEqual([]);
-    await context.close();
+    const footer = page.getByRole("contentinfo");
+    await expect(footer.locator("form, input")).toHaveCount(0);
+    await expect(footer).not.toContainText("Occasion reminders");
   });
 
   test("refuses a body that is not a form post and never 5xxs on a bad one", async ({
@@ -200,58 +190,51 @@ test.describe("the footer adds no client JavaScript (§14 A1)", () => {
   });
 });
 
-test.describe("the colophon's canvas metrics (`/review 30` item 4)", () => {
+test.describe("the colophon's v2 metrics (chrome artboards, TASK-176)", () => {
   /**
-   * The four numbers `/review 30` measured as drift, asserted from the browser's own computed
-   * values so they cannot drift back. Both e2e projects run this file, and the two artboards
-   * disagree on every one of them, so each expectation is read from the viewport: `e2e-desktop`
-   * (1280 px) is past the `md` breakpoint and gets the desktop artboard's numbers, `e2e-mobile`
-   * (Pixel 7, 412 px) the mobile one's.
-   *
-   * Why computed styles rather than a screenshot: the visual baselines catch *any* change but
-   * name none, and the wordmark in particular is an arbitrary-value utility (`text-[26px]`)
-   * overriding a token class (`text-xl`) on the same element — a cascade order that a Tailwind
-   * upgrade could reverse silently. This test names the canvas value that has to win.
+   * The numbers `chrome-desktop.dc.html` and `chrome-mobile.dc.html` draw, read from the browser's
+   * computed values: `e2e-desktop` (1 280 px) gets the desktop artboard's, `e2e-mobile` (412 px)
+   * the mobile one's. The visual baselines catch any change but name none; this names the value.
    */
-  test("sets the canvas's footer padding, wordmark, legal row and grid gaps", async ({
+  test("sets the artboard's padding, airmail edge, column grid and fine row", async ({
     page,
   }) => {
     await page.goto("/en");
-    const wide = (page.viewportSize()?.width ?? 0) >= 768;
+    const wide = (page.viewportSize()?.width ?? 0) >= 1024;
 
     const metrics = await page.evaluate(() => {
       const footer = document.querySelector("footer");
       if (!footer) throw new Error("no footer");
-      const block = footer.firstElementChild as HTMLElement;
-      const stack = block.firstElementChild as HTMLElement;
-      const grid = stack.firstElementChild as HTMLElement;
-      const legal = stack.lastElementChild as HTMLElement;
-      const wordmark = footer.querySelector(".display") as HTMLElement;
+      const wrap = footer.firstElementChild as HTMLElement;
+      const grid = footer.querySelector("[data-fo-footer-grid]") as HTMLElement;
+      const fine = footer.querySelector("[data-fo-footer-fine]") as HTMLElement;
+      const heading = footer.querySelector("h2") as HTMLElement;
+      const edge = window.getComputedStyle(footer, "::before");
       const style = window.getComputedStyle;
       return {
-        padBlockStart: style(block).paddingBlockStart,
-        padInline: style(block).paddingInlineStart,
-        padBlockEnd: style(block).paddingBlockEnd,
-        wordmark: style(wordmark).fontSize,
-        legal: style(legal).fontSize,
-        gridColumnGap: style(grid).columnGap,
-        gridRowGap: style(grid).rowGap,
+        padBlockStart: style(footer).paddingBlockStart,
+        padBlockEnd: style(footer).paddingBlockEnd,
+        padInline: style(wrap).paddingInlineStart,
+        edge: edge.blockSize,
+        columns: style(grid).gridTemplateColumns.split(" ").length,
+        gap: style(grid).columnGap,
+        heading: style(heading).fontSize,
+        fine: style(fine).fontSize,
+        fineBorder: style(fine).borderBlockStartWidth,
       };
     });
 
-    // `40px 56px 24px` (desktop artboard) / `32px 20px 20px` (mobile artboard), verbatim.
-    expect(metrics.padBlockStart).toBe(wide ? "40px" : "32px");
+    expect(metrics.padBlockStart).toBe("64px");
+    expect(metrics.padBlockEnd).toBe("32px");
     expect(metrics.padInline).toBe(wide ? "56px" : "20px");
-    expect(metrics.padBlockEnd).toBe(wide ? "24px" : "20px");
-    // The colophon wordmark is the one place the canvas fixes both ends of the type scale.
-    expect(metrics.wordmark).toBe(wide ? "26px" : "22px");
-    // `--text-xs`: one size for the whole legal row, links and language list alike. v2 sets the
-    // token to 13 px (`docs/design/system/tokens.css` `--text-xs: 13px`, spec 004 §14 A21; was
-    // 11 px in v1). TASK-176 moves the row to the chrome artboard's `--text-fine`.
-    expect(metrics.legal).toBe("13px");
-    // 40 px between the desktop columns; 16 px between the two mobile link columns, with the
-    // stacked blocks a scale step (24 px) apart — the artboard's 22 px rounded to the token.
-    expect(metrics.gridColumnGap).toBe(wide ? "40px" : "16px");
-    expect(metrics.gridRowGap).toBe(wide ? "40px" : "24px");
+    // The third and last airmail edge (A21 clause 2), 9 px.
+    expect(metrics.edge).toBe("9px");
+    // Four columns at 1 280 px (about, Sending, Help & WhatsApp, Payment), one on a phone.
+    expect(metrics.columns).toBe(wide ? 4 : 1);
+    expect(metrics.gap).toBe(wide ? "48px" : "36px");
+    // The column headings in the label voice (13 px) and the fine row at 14 px.
+    expect(metrics.heading).toBe("13px");
+    expect(metrics.fine).toBe("14px");
+    expect(metrics.fineBorder).toBe("1px");
   });
 });
