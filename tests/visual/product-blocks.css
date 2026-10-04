@@ -32,3 +32,14 @@
 [data-fo-occasion-dates] {
   display: none !important;
 }
+
+/*
+ * The sticky site header leaves the picture, not the layout. The v2 gallery at 1440 px (a 4∶5
+ * hero plus its thumbnail row, 949 px) is taller than the 900 px viewport, so Playwright scrolls
+ * it and the header's sticky category row lands over the gallery's top edge (visual-baselines run
+ * 37172243586, `product-desktop-gallery-photos.png`). That would pin the chrome into a product
+ * baseline, and the next header change would fail it. `visibility` keeps every offset unchanged.
+ */
+[data-fo-header] {
+  visibility: hidden !important;
+}

@@ -90,7 +90,7 @@ const BLOCKS = [
   },
 ] as const;
 
-/** Hides the docked total row in the block shots (see the file's own comment). */
+/** Hides the docked total row and the sticky header, and takes the date grid out (see the file). */
 const BLOCK_STYLE = fileURLToPath(
   new URL("./product-blocks.css", import.meta.url),
 );
