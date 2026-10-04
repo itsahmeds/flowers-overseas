@@ -15,7 +15,11 @@ Branch `task/TASK-022-schema-auth-roundtrip`. §13 Q1 resolved: Auth.js v5 + Dri
 
 ## Carry-forwards
 
-_None recorded._
+- **From TASK-017 (PR 184).** T-11 (`tests/integration/schema-media.test.ts`) runs nowhere in CI:
+  every integration suite skips on a `localhost` URL, and CI's service container has no migrations
+  applied. This task's round trip, which migrates the container, is what turns it on; add it to the
+  suites that must run. It needs a Postgres built with ICU (the `und-x-icu` collation), as the
+  official `postgres:16` image and Neon are. TASK-017's local evidence: PostgreSQL 16.14, 8/8.
 
 ## Escalations
 

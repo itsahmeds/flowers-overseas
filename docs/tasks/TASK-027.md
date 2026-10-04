@@ -15,7 +15,12 @@ Branch `task/TASK-027-db-check-ci-gates`. Every `db:check` failure mode gets a t
 
 ## Carry-forwards
 
-_None recorded._
+- **From TASK-017 (PR 184), hole 5, accepted by the reviewer:** "**HOLE 5 ACCEPTABLE:** this is column-level mirror drift, which is AC-26. The `scripts/db-check.ts` header (L22-28) assigns that to TASK-027's live introspection, and the SQL itself is pinned (M1-M15 red). Carry-forward to the TASK-027 brief: its drift check must cover `product_media_alt.alt` NOT NULL and its check, `product_media_primary_idx` uniqueness and predicate, `product_media.is_primary` NOT NULL, and the FK actions of `0004`."
+- **From TASK-017 (PR 184), hole 8.** The drift check must also cover `media_asset_object_key_check`,
+  `media_variant_object_key_check` and `product_media_alt_alt_check` (the ICU `[[:alnum:]]` check),
+  and the Drizzle snapshot `db/migrations/meta/0003_snapshot.json` against the mirror: no CI job
+  runs `drizzle-kit check` today, so a snapshot that drifts would make the next `db:generate` emit a
+  migration that loosens a check.
 
 ## Escalations
 

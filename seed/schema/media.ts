@@ -141,8 +141,8 @@ export const Sha256Schema = z
 export const ObjectKeySchema = z
   .string()
   .regex(
-    /^[a-z0-9][a-z0-9/_.-]*$/,
-    "must be an object key: lowercase, slash-separated, no leading slash (spec 002 §5.2)",
+    /^[a-z0-9][a-z0-9_-]*([.][a-z0-9_-]+)*(\/[a-z0-9][a-z0-9_-]*([.][a-z0-9_-]+)*)*$/,
+    "must be an object key: lowercase, slash-separated words, no empty or dot segment (spec 002 §5.2)",
   );
 
 /** A reviewer: an initial-plus-surname or a role, never an email address (spec 006 §8, AC-9). */
@@ -305,17 +305,32 @@ export type MediaVariantManifest = z.infer<typeof MediaVariantManifestSchema>;
 /* -------------------------------------------------------------------------- */
 
 /**
+ * A letter or a digit (Unicode L or Nd) that is not one of the four Hangul fillers, which are
+ * letters that render as nothing. An allowlist, because the characters a screen reader announces
+ * as nothing (spaces, zero-width and bidi controls, soft hyphens, braille blanks, variation
+ * selectors, lone combining marks) have no end. The same rule as `product_media_alt_alt_check`
+ * (migration `0004`, `ALT_CHECK_SQL` in `db/schema/media.ts`): ICU's `[[:alnum:]]` is L or Nd.
+ */
+export const ALT_LETTER_OR_DIGIT =
+  /(?![\u115f\u1160\u3164\uffa0])[\p{L}\p{Nd}]/u;
+
+/**
  * One alt-text entry, keyed by asset id (spec 006 §2.1 "Alt text").
  *
  * `alt` has a minimum length because an **empty** alt on a product image is the failure spec 006
  * AC-8 and AC-18 name explicitly: an informative image with `alt=""` is announced as nothing at
  * all (WCAG 1.1.1), and the honest fallback is to render the placeholder instead of the image.
- * The upper bound is the screen-reader courtesy limit; a description belongs in the copy file.
+ * Eight invisible characters are just as empty, so it must also hold a letter or a digit. The upper
+ * bound is the screen-reader courtesy limit; a description belongs in the copy file.
  */
 export const AltEntrySchema = z
   .object({
     assetId: AssetIdSchema,
-    alt: z.string().min(8).max(220),
+    alt: z
+      .string()
+      .min(8)
+      .max(220)
+      .regex(ALT_LETTER_OR_DIGIT, "alt text must hold a letter or a digit"),
   })
   .strict();
 
