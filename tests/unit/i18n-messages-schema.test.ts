@@ -282,6 +282,9 @@ describe("the shipped catalogues and manifests", () => {
     // out-links block "Out of this page", which is architecture, not copy. Recorded in
     // `docs/design/README.md`'s TASK-112 row, clauses (c), (d) and (e).
     "categoryHub.destinationLink",
+    // TASK-176's chrome strings (`company.description`, `company.support.hours`, `nav.send`,
+    // `nav.utility.guarantee`, `nav.notice.lead`, `footer.signoff`) were attested by the founder
+    // in the 2026-10-04 copy batch ("ok from my end") and are not in this queue.
     // TASK-126/127, the product page: the founder attested the 28 drawn strings in chat on
     // 2026-10-03, and the three the page needed beyond them (the calendar reasons
     // `beforeEarliest` and `notDeliveryDay`, and the trust block's substitution sentence) the

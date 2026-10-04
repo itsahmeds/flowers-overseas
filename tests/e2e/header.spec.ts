@@ -46,36 +46,28 @@ const inChrome = (selector: string): string =>
   `${UTILITY} ${selector}, ${HEADER} ${selector}`;
 
 /**
- * The reserved header height per breakpoint, **restated** rather than imported from
- * `src/modules/ui/layout/header-model.ts` (which the Playwright loader cannot resolve through the
- * `ui` barrel's `next/dynamic` chain in any case): a test that imports the number the component
- * renders agrees with the component by construction.
+ * The v2 chrome's heights per breakpoint (TASK-176, spec 004 §14 A21 clause 7: "A7's reserved
+ * header height takes v2's values"), **restated** rather than imported from
+ * `src/modules/ui/layout/header-model.ts`: a test that imports the number the component renders
+ * agrees with the component by construction. Measured on a production build at 390, 412, 768,
+ * 1 023, 1 024, 1 280 and 1 440 px in `en`, `de` and `pl`, identical in all three:
  *
- * mobile  = 113 utility (three lines at 390 px: the cutoff line, the help channel, and the
- *           switcher with the chip) + 1 rule + 50 masthead + 1 rule + 44 category row + 1 rule
- *           (rounded: 209). TASK-173 (spec 004 §14 A20) removed the 52 px search band, which has
- *           no page, and grew the row from 28 px to the 44 px its links owe; it was 245.
- * desktop = 44 utility (the strip carries links now, and a link owes 44 px) + 1 rule
- *           + 84 masthead + 1 rule + 52 category row (one line again, the artboard's) + 1 rule
+ * notice bar mobile  = 80 (8 + one 14 px line at 1.4 + the 44 px row of the language switcher and
+ *                      the currency + 8; 79.6 rounded). Spec 004 §14 A4 binds over the mobile
+ *                      artboard (coordinator ruling, 2026-10-04): both are reachable at 390 px
+ * notice bar desktop = 62 (9 + the 44 px utility links + 9) from `lg` (1 024 px)
+ * sticky mobile      = 64 masthead + 56 chip row (44 px chips + 12) + 1 rule = 121, below `xl`
+ * sticky desktop     = 82 masthead (logo, the eight links, the pill) + 1 rule = 83, from `xl`
  *
- * Both numbers are identical in all four locales and at both artboard widths, which is the AC-7
- * property: one deterministic box, nothing measured after paint. `header-model.ts` records why
- * each differs from the artboards' band sum (167 / 173).
+ * v1 was 113 + 96 = 209 on mobile and 45 + 138 = 183 on desktop (TASK-173). Both boxes are
+ * server-rendered with no island, so they are the same before and after hydration (AC-7).
  */
-const HEADER_HEIGHTS = { mobile: 209, desktop: 183 } as const;
-
-/**
- * The two boxes that sum to it: the strip that scrolls, and the banner that sticks (§14 A4's
- * addendum, mechanism iii — `header-model.ts` records why an inner sticky wrapper and a negative
- * sticky offset were both measured and rejected).
- *
- * utility mobile  = 113 (three lines at 390 px) + 1 rule
- * utility desktop = 44 (the strip carries links, and a link owes 44 px) + 1 rule
- * sticky  mobile  = 50 masthead + 44 category row + 2 rules (TASK-173; 132 with the search band)
- * sticky  desktop = 84 masthead + 52 category row + 2 rules
- */
-const UTILITY_HEIGHTS = { mobile: 113, desktop: 45 } as const;
-const STICKY_HEIGHTS = { mobile: 96, desktop: 138 } as const;
+const UTILITY_HEIGHTS = { mobile: 80, desktop: 62 } as const;
+const STICKY_HEIGHTS = { mobile: 121, desktop: 83 } as const;
+const HEADER_HEIGHTS = {
+  mobile: UTILITY_HEIGHTS.mobile + STICKY_HEIGHTS.mobile,
+  desktop: UTILITY_HEIGHTS.desktop + STICKY_HEIGHTS.desktop,
+} as const;
 
 /** The two artboard widths, for the assertions that must hold at both (§14 A4). */
 const ARTBOARDS = [
@@ -94,8 +86,12 @@ const LOCALES = [
   { path: "/pl", currency: "PLN", home: "/pl" },
 ] as const;
 
-/** Tailwind's `md` breakpoint is 48rem; below it the mobile artboard's bands apply. */
-const MD_BREAKPOINT = 768;
+/**
+ * Tailwind's `xl` breakpoint (80rem): from it the desktop artboard's one-row header applies, and
+ * the notice bar carries its links (they start at `lg`). The two e2e projects sit either side of
+ * it: `e2e-mobile` (412 px) and `e2e-desktop` (1 280 px).
+ */
+const XL_BREAKPOINT = 1280;
 
 /** Sum of every layout-shift entry the page reported (the banner suite's measurement, locally). */
 async function cumulativeLayoutShift(page: import("@playwright/test").Page) {
@@ -141,7 +137,7 @@ test.describe("the site header (AC-7)", () => {
       await expect(utility).toBeVisible();
 
       const viewport = page.viewportSize();
-      const wide = (viewport?.width ?? 0) >= MD_BREAKPOINT;
+      const wide = (viewport?.width ?? 0) >= XL_BREAKPOINT;
       const height = async (locator: import("@playwright/test").Locator) =>
         Math.round((await locator.boundingBox())?.height ?? 0);
 
@@ -197,8 +193,8 @@ test.describe("the site header (AC-7)", () => {
     await expect(banner).toHaveCount(1);
     await expect(banner).toHaveAttribute("data-fo-header", "true");
 
-    // The strip is a sibling before it, not a descendant: it is neither a landmark nor sticky, so
-    // its claims and help channel cost a first screen rather than 113 px of every screen.
+    // The notice bar is a sibling before it, not a descendant: it is `role="note"` (not a
+    // landmark) and not sticky, so its claims cost a first screen rather than every screen.
     expect(
       await page.evaluate(() => {
         const utility = document.querySelector("[data-fo-utility]");
@@ -214,7 +210,7 @@ test.describe("the site header (AC-7)", () => {
           role: utility?.getAttribute("role"),
         };
       }),
-    ).toEqual({ nested: false, precedes: true, role: null });
+    ).toEqual({ nested: false, precedes: true, role: "note" });
   });
 
   /**
@@ -346,16 +342,14 @@ test.describe("the site header (AC-7)", () => {
     );
   });
 
-  test("every rendered link clears 44 px at both artboard widths (§5.3, §8, §14 A4)", async ({
+  test("every rendered link clears 44 px at both artboard widths (§5.3, §8)", async ({
     page,
   }) => {
     for (const viewport of ARTBOARDS) {
       await page.setViewportSize(viewport);
       await page.goto("/en");
 
-      // Both elements: the strip holds the help channel and the switcher, the banner the lockup
-      // and the category row. Only **rendered** links are measured: below `md` the row draws its
-      // mobile subset, and the desktop-only entries have no box at all.
+      // Only **rendered** links: below `lg` the help line has no box (it is the footer's there).
       const measured = (
         await page.locator(inChrome("a")).evaluateAll((nodes) =>
           nodes.map((node) => {
@@ -369,70 +363,169 @@ test.describe("the site header (AC-7)", () => {
         )
       ).filter((link) => link.width > 0);
 
-      // The help channel's two links, the masthead lockup, the switcher's three siblings and the
-      // category row: all eight entries on the desktop artboard, the mobile artboard's five
-      // (Our selection, Bouquets, Roses, Plants, Occasions — Same-day has no page) below it.
-      const row = viewport.width >= MD_BREAKPOINT ? 8 : 5;
-      expect(measured.length, String(viewport.width)).toBe(6 + row);
+      // The logo, the eight category links, the Send pill and the switcher's three siblings at
+      // both widths (§14 A4); at 1 440 px also the help line.
+      const notice = viewport.width >= XL_BREAKPOINT ? 4 : 3;
+      expect(measured.length, String(viewport.width)).toBe(10 + notice);
       for (const link of measured) {
         expect(
           link.height,
           `${String(viewport.width)}px ${link.href}`,
         ).toBeGreaterThanOrEqual(MIN_TARGET);
-        // A link with no text of its own owes the target in both dimensions.
-        if (link.href.startsWith("https://wa.me/")) {
-          expect(link.width, link.href).toBeGreaterThanOrEqual(MIN_TARGET);
-        }
       }
     }
   });
 
-  test("the currency chip and the switcher are visible at 390 px without scrolling (AC-8, §14 A4)", async ({
+  test("nothing in the chrome overflows the viewport at 390 px; only the chip row scrolls", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/en");
 
     const boxes = await page.evaluate(() => {
-      // Measured inside the **utility strip's** box: §14 A4's addendum moved the strip out of the
-      // banner, and both controls live in the strip.
-      const header = document.querySelector("[data-fo-utility]");
-      const chip = document.querySelector("[data-fo-header-currency]");
-      const switcher = document.querySelector("[data-fo-header-switcher]");
-      const round = (box: DOMRect) => ({
-        x: Math.round(box.x),
-        y: Math.round(box.y),
-        right: Math.round(box.right),
-        bottom: Math.round(box.bottom),
-      });
+      const fits = (selector: string) => {
+        const node = document.querySelector(selector);
+        return node !== null && node.scrollWidth <= node.clientWidth;
+      };
+      const row = document.querySelector(
+        '[data-fo-header-band="categories"] ul',
+      );
+      const send = document
+        .querySelector('[data-fo-header] a[href$="#send"]')
+        ?.getBoundingClientRect();
       return {
-        header: round(header?.getBoundingClientRect() as DOMRect),
-        chip: round(chip?.getBoundingClientRect() as DOMRect),
-        switcher: round(switcher?.getBoundingClientRect() as DOMRect),
-        viewport: window.innerWidth,
+        document: document.documentElement.scrollWidth <= window.innerWidth,
+        utility: fits("[data-fo-utility]"),
+        header: fits("[data-fo-header]"),
+        footer: fits("footer"),
+        // The eight chips are one horizontally scrolling row (the artboard's), inside the banner.
+        rowScrolls:
+          row !== null &&
+          row.scrollWidth > row.clientWidth &&
+          getComputedStyle(row).overflowX === "auto",
+        sendInside: send !== undefined && send.right <= window.innerWidth,
       };
     });
-
-    // Inside the strip's own box — the failure of round 1 was a chip 120–570 px outside it,
-    // inside the category row's horizontal scroll.
-    for (const box of [boxes.chip, boxes.switcher]) {
-      expect(box.x).toBeGreaterThanOrEqual(boxes.header.x);
-      expect(box.right).toBeLessThanOrEqual(boxes.header.right);
-      expect(box.y).toBeGreaterThanOrEqual(boxes.header.y);
-      expect(box.bottom).toBeLessThanOrEqual(boxes.header.bottom);
-      // And inside the viewport, with no horizontal scroll to reach it.
-      expect(box.right).toBeLessThanOrEqual(boxes.viewport);
-    }
-    // Neither box scrolls horizontally, so there is nothing to scroll *to* in order to see them.
-    expect(
-      await page.evaluate(() =>
-        ["[data-fo-utility]", "[data-fo-header]"].map((selector) => {
-          const node = document.querySelector(selector);
-          return node?.scrollWidth === node?.clientWidth;
-        }),
-      ),
-    ).toEqual([true, true]);
+    expect(boxes).toEqual({
+      document: true,
+      utility: true,
+      header: true,
+      footer: true,
+      rowScrolls: true,
+      sendInside: true,
+    });
   });
+
+  for (const { path } of LOCALES) {
+    test(`${path}: the currency and the switcher are visible at 390 px without scrolling (AC-8, §14 A4)`, async ({
+      page,
+    }) => {
+      for (const viewport of ARTBOARDS) {
+        await page.setViewportSize(viewport);
+        await page.goto(path);
+        await expect(page.locator("[data-fo-header-switcher]")).toBeVisible();
+        await expect(page.locator("[data-fo-header-currency]")).toBeVisible();
+
+        const boxes = await page.evaluate(() => {
+          const round = (selector: string) => {
+            const box = document
+              .querySelector(selector)
+              ?.getBoundingClientRect();
+            return {
+              x: Math.round(box?.x ?? Number.NaN),
+              y: Math.round(box?.y ?? Number.NaN),
+              right: Math.round(box?.right ?? Number.NaN),
+              bottom: Math.round(box?.bottom ?? Number.NaN),
+            };
+          };
+          return {
+            strip: round("[data-fo-utility]"),
+            switcher: round("[data-fo-header-switcher]"),
+            currency: round("[data-fo-header-currency]"),
+            viewport: window.innerWidth,
+          };
+        });
+        // Inside the notice bar's own box and inside the viewport: nothing to scroll to.
+        for (const box of [boxes.switcher, boxes.currency]) {
+          expect(box.x, String(viewport.width)).toBeGreaterThanOrEqual(0);
+          expect(box.right, String(viewport.width)).toBeLessThanOrEqual(
+            boxes.viewport,
+          );
+          expect(box.y).toBeGreaterThanOrEqual(boxes.strip.y);
+          expect(box.bottom).toBeLessThanOrEqual(boxes.strip.bottom);
+        }
+      }
+    });
+  }
+
+  /**
+   * WCAG 1.4.10 reflow at 320 × 568, in every locale (PR 168 breaker round 2, HOLE 1, carried to
+   * TASK-176). Below the 390 px artboard the notice bar's second row (the languages and the
+   * currency) wraps instead of widening the page: `max-lg:[&>div>div]:flex-wrap` on the
+   * `NoticeBar` wrapper in `SiteHeader`. Without the wrap the row runs over the bar's gutters
+   * (measured on macOS: 310 px of row in a 280 px box) and, with Linux's wider rendering, past
+   * 320 px so that the bar scrolls sideways.
+   */
+  for (const { path } of LOCALES) {
+    test(`${path}: at 320 px nothing in the header scrolls sideways and the switcher and the currency lie inside the notice bar's gutters`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 320, height: 568 });
+      await page.goto(path);
+      await expect(page.locator("[data-fo-header-switcher]")).toBeVisible();
+      await expect(page.locator("[data-fo-header-currency]")).toBeVisible();
+
+      const measured = await page.evaluate(() => {
+        const widths = (selector: string) => {
+          const node = document.querySelector(selector);
+          return {
+            scroll: node?.scrollWidth ?? Number.NaN,
+            client: node?.clientWidth ?? Number.NaN,
+          };
+        };
+        // The notice bar's content box: its frame minus the gutters. A row that does not wrap
+        // still fits the 320 px viewport on a narrow rasteriser, centred over the gutters, so
+        // "inside the viewport" alone cannot tell a wrapped row from one that overflows its box.
+        const frame = document.querySelector("[data-fo-notice-bar] > div");
+        const frameBox = frame?.getBoundingClientRect();
+        const frameStyle = frame === null ? null : getComputedStyle(frame);
+        const start =
+          (frameBox?.left ?? Number.NaN) +
+          Number.parseFloat(frameStyle?.paddingInlineStart ?? "");
+        const end =
+          (frameBox?.right ?? Number.NaN) -
+          Number.parseFloat(frameStyle?.paddingInlineEnd ?? "");
+        const outside = (selector: string) =>
+          [...document.querySelectorAll(selector)]
+            .map((node) => node.getBoundingClientRect())
+            .filter(
+              (box) =>
+                box.width === 0 ||
+                !(Math.round(box.left) >= Math.floor(start)) ||
+                !(Math.round(box.right) <= Math.ceil(end)) ||
+                Math.round(box.right) > window.innerWidth,
+            ).length;
+        return {
+          utility: widths("[data-fo-utility]"),
+          header: widths("[data-fo-header]"),
+          document: document.documentElement.scrollWidth - window.innerWidth,
+          // The switcher, each of its links, and the currency, inside the bar's gutters and so
+          // inside the 320 px viewport.
+          outside:
+            outside("[data-fo-header-switcher]") +
+            outside("[data-fo-header-switcher] a") +
+            outside("[data-fo-header-currency]"),
+          links: document.querySelectorAll("[data-fo-header-switcher] a")
+            .length,
+        };
+      });
+      expect(measured.utility.scroll).toBe(measured.utility.client);
+      expect(measured.header.scroll).toBe(measured.header.client);
+      expect(measured.document).toBeLessThanOrEqual(0);
+      expect(measured.links).toBeGreaterThan(0);
+      expect(measured.outside).toBe(0);
+    });
+  }
 
   test("draws no menu glyph, because it opened nothing (§14 A20)", async ({
     page,
@@ -453,7 +546,7 @@ test.describe("the currency chip (AC-8)", () => {
     }) => {
       await page.goto(path);
 
-      const chip = page.locator("[data-fo-header-currency] > *");
+      const chip = page.locator("[data-fo-header-currency]");
       await expect(chip).toHaveText(currency);
       await expect(chip).toHaveAttribute(
         "aria-label",
@@ -485,4 +578,78 @@ test.describe("the currency chip (AC-8)", () => {
       ).not.toContain("set-cookie");
     }
   });
+});
+
+/**
+ * Founder, 2026-10-04: "Every price includes VAT and delivery. dont write this on home". The
+ * notice bar's price claim is decided by the route (`src/app/[locale]/@notice`): absent on the
+ * locale home, present beside prices — here, a product page reached from the home's own trending
+ * row, so the URL is the one the site links to. Desktop width, where the claims are printed.
+ */
+test.describe("the notice bar's price claim follows the route", () => {
+  for (const { path } of LOCALES) {
+    test(`${path}: absent on the home, present on a product page, with no layout shift`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await page.goto(path);
+      const notice = page.locator(UTILITY);
+      await expect(notice.locator("[data-fo-price-claim]")).toHaveCount(0);
+      await expect(notice).toBeVisible();
+      expect(await cumulativeLayoutShift(page)).toBe(0);
+
+      const product = await page
+        .locator("[data-fo-trending] li a[href]")
+        .first()
+        .getAttribute("href");
+      expect(product, "the home links a product page").toBeTruthy();
+      const response = await page.goto(product ?? "");
+      expect(response?.status()).toBe(200);
+      await expect(notice.locator("[data-fo-price-claim]")).toHaveCount(1);
+      await expect(notice.locator("[data-fo-price-claim]")).toBeVisible();
+      // The bar is the same reserved box with or without the claim: its height is the 44 px
+      // utility links, so the claim never moves the page.
+      expect(Math.round((await notice.boundingBox())?.height ?? 0)).toBe(
+        UTILITY_HEIGHTS.desktop,
+      );
+      expect(await cumulativeLayoutShift(page)).toBe(0);
+    });
+  }
+});
+
+/**
+ * The claim on every page below the home (PR 172 breaker hole H2). The `@notice` slot renders it
+ * from `default.tsx` at every depth the slot has no page for, so a page added under `@notice` for
+ * one depth (say a `[segment]/page.tsx` that returns nothing) would silently drop it from every
+ * document of that depth. So each depth is visited: one segment (the occasions index and the
+ * destinations hub), two (a country shop root and a corridor guide), three (a country category
+ * and a country occasion listing), plus the de and pl shop roots in their own words.
+ */
+const CLAIM_PAGES = [
+  { path: "/en/occasions", kind: "occasions index", token: "VAT" },
+  { path: "/en/send-flowers-to", kind: "destinations hub", token: "VAT" },
+  { path: "/en/poland/flowers", kind: "shop root", token: "VAT" },
+  { path: "/en/send-flowers-to/poland", kind: "corridor guide", token: "VAT" },
+  { path: "/en/poland/flowers/roses", kind: "category listing", token: "VAT" },
+  {
+    path: "/en/poland/occasions/mothers-day",
+    kind: "occasion listing",
+    token: "VAT",
+  },
+  { path: "/de/polen/blumen", kind: "shop root", token: "MwSt." },
+  { path: "/pl/polska/kwiaty", kind: "shop root", token: "VAT" },
+] as const;
+
+test.describe("the notice bar's price claim on listing and guide pages", () => {
+  for (const { path, kind, token } of CLAIM_PAGES) {
+    test(`${path} (${kind}) carries the price claim`, async ({ page }) => {
+      await page.setViewportSize({ width: 1440, height: 900 });
+      const response = await page.goto(path);
+      expect(response?.status(), path).toBe(200);
+      const claim = page.locator(`${UTILITY} [data-fo-price-claim]`);
+      await expect(claim).toHaveCount(1);
+      await expect(claim).toBeVisible();
+      await expect(claim).toContainText(token);
+    });
+  }
 });

@@ -126,8 +126,9 @@ async function headerListingHrefs(locale: string): Promise<HeaderListingHrefs> {
 
 export default async function LocaleLayout({
   children,
+  notice,
   params,
-}: LocaleParams & { children: ReactNode }) {
+}: LocaleParams & { children: ReactNode; notice?: ReactNode }) {
   const { locale: requested } = await params;
   const locale = routableLocale(requested) ?? documentFallbackLocale();
   setRequestLocale(locale.code);
@@ -175,9 +176,13 @@ export default async function LocaleLayout({
             all for a target with no page (AC-7, AC-8, AC-14; spec 004 §14 A20). Which category
             hubs, occasion hubs and shop root exist here is the catalogue's answer, resolved
             above and handed in (TASK-173). */}
+        {/* `notice` is the `@notice` parallel-route slot: the notice bar's "Prices include
+            delivery and VAT" on every page, nothing on the locale home (founder, 2026-10-04;
+            TASK-176). The route decides, so the document stays static and no path is read. */}
         <SiteHeader
           locale={locale.code}
           listingHrefs={await headerListingHrefs(locale.code)}
+          priceClaim={notice}
         />
         {children}
         {/* The colophon of spec 004 §5.3, on every localised document (AC-9): a Server

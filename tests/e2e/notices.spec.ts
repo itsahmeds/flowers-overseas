@@ -13,7 +13,8 @@
  *    the chooser is the one document that must work with scripting off — `./shell.spec.ts` proves
  *    that half);
  *  - the 404 — status **404**, the x-default document, and a way back that is a real link;
- *  - all of them — the same lockup, the same `.display` heading and the same `--measure` column,
+ *  - all of them — the same lockup (the masthead's outlined wordmark since TASK-176), the same
+ *    `.display` heading and the same `--measure` column,
  *    so the three read as one site (the "styled" half of T-14, asserted through the shared class
  *    contract of `src/modules/ui/layout/noticeShell.ts` rather than through a screenshot, which
  *    `tests/visual/notices.spec.ts` does separately).
@@ -37,37 +38,34 @@ const NOTICES = [
 ] as const;
 
 /** The masthead's own lockup metrics, so the notice documents read as the same site as `/en`. */
-async function wordmarkFontFamily(page: Page): Promise<string> {
-  return page.evaluate(() => {
-    const wordmark = document.querySelector<HTMLElement>("main .display");
-    return wordmark === null
-      ? ""
-      : window.getComputedStyle(wordmark).fontFamily;
-  });
+/**
+ * The outlined wordmark's drawing (spec 004 §14 A21 clause 3; TASK-176): the SVG's markup, which
+ * is the same paths wherever the lockup is drawn. v2 draws the wordmark as outlines rather than
+ * live type, so "the same lockup" is compared as the same drawing instead of the same computed
+ * font stack.
+ */
+async function wordmarkDrawing(page: Page, scope: string): Promise<string> {
+  return page.evaluate((selector) => {
+    const wordmark = document.querySelector(`${selector} [data-fo-wordmark]`);
+    return wordmark === null ? "" : wordmark.innerHTML;
+  }, scope);
 }
 
 /**
- * The masthead's own computed font stack, read once from `/en`, so every notice document can be
- * compared against the real chrome instead of against a literal family name.
+ * The masthead's own wordmark, read once from `/en`, so every notice document is compared against
+ * the real chrome instead of against a literal.
  */
-let mastheadFontFamily = "";
+let mastheadWordmark = "";
 
 test.beforeAll(async ({ browser }) => {
   const page = await browser.newPage();
   try {
     await page.goto("/en");
-    mastheadFontFamily = await page.evaluate(() => {
-      const wordmark = document.querySelector<HTMLElement>(
-        "[data-fo-header] .display",
-      );
-      return wordmark === null
-        ? ""
-        : window.getComputedStyle(wordmark).fontFamily;
-    });
+    mastheadWordmark = await wordmarkDrawing(page, "[data-fo-header]");
   } finally {
     await page.close();
   }
-  expect(mastheadFontFamily.length).toBeGreaterThan(0);
+  expect(mastheadWordmark.length).toBeGreaterThan(0);
 });
 
 for (const { name, path, status } of NOTICES) {
@@ -95,12 +93,14 @@ for (const { name, path, status } of NOTICES) {
         Math.abs(box!.x - (viewport!.width - box!.x - box!.width)),
       ).toBeLessThanOrEqual(1);
 
-      // The lockup: the wordmark in the display family — the same computed stack the masthead
-      // renders on `/en`, which is what "the three documents read as one site" means. The family
-      // name is `next/font`'s generated one, so the two are compared rather than matched against
-      // "Newsreader", which never appears in a computed style.
-      await expect(page.locator("main .display").first()).toBeVisible();
-      expect(await wordmarkFontFamily(page)).toBe(mastheadFontFamily);
+      // The lockup: the outlined wordmark the masthead draws on `/en`, named by the trading name,
+      // which is what "the three documents read as one site" means.
+      const wordmark = page.locator("main [data-fo-wordmark]");
+      await expect(wordmark).toHaveCount(1);
+      await expect(wordmark).toBeVisible();
+      await expect(wordmark).toHaveAttribute("role", "img");
+      await expect(wordmark).toHaveAccessibleName(/.+/);
+      expect(await wordmarkDrawing(page, "main")).toBe(mastheadWordmark);
     });
 
     test("carries the design tokens rather than a browser default", async ({

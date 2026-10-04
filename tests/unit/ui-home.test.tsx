@@ -152,13 +152,13 @@ describe("the hero band", () => {
     expect(html).toContain("md:h-[820px]");
   });
 
-  it("uses the header's inline gutter, so the card lines up with the wordmark", async () => {
+  it("uses the header's desktop gutter, so the card lines up with the logo", async () => {
     const header = await import("../../src/modules/ui/layout/SiteHeader.tsx");
-    const source = await import("node:fs/promises").then((fs) =>
-      fs.readFile("src/modules/ui/layout/SiteHeader.tsx", "utf8"),
-    );
-    // `BLEED` is private to the header, so the pin is on its source line rather than an import.
-    expect(source).toContain(`const BLEED = "${HOME_BLEED}"`);
+    // The v2 chrome (TASK-176) sets its gutter from `--gutter` (56 px) through `CHROME_WRAP`; the
+    // hero's desktop bleed is the same 56 px. The mobile gutter moves to v2's 20 px with the home
+    // redraw (TASK-177).
+    expect(header.CHROME_WRAP).toContain("md:px-(--gutter)");
+    expect(HOME_BLEED).toContain("md:px-[56px]");
     expect(header.SiteHeader).toBeTypeOf("function");
   });
 

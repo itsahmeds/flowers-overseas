@@ -9,6 +9,7 @@
  * real `en` and `pl` page transfer, and zero requests to Google Fonts.
  */
 import { readdirSync, readFileSync, statSync } from "node:fs";
+import { createRequire } from "node:module";
 import { dirname, relative, resolve } from "node:path";
 
 import { describe, expect, it } from "vitest";
@@ -387,4 +388,159 @@ describe("the next/font/local declarations", () => {
       expect(target, shape).toBe("src/modules/ui/fonts/hand");
     }
   });
+});
+
+/**
+ * The metric-matched Linux fallback faces (A21 clause 3 "matched fallback metrics on every face";
+ * AC-7, AC-28's CLS 0; TASK-175, carried to TASK-176 as PR 168's breaker hole 2).
+ *
+ * `adjustFontFallback` matches its generated face to `local("Arial")` / `local("Times New Roman")`,
+ * which Linux lacks; `src/app/globals.css` declares a second face per Latin call over the
+ * metric-compatible clones, and the call names it first in `fallback`. These cases recompute the
+ * overrides with Next's own `getFallbackMetricsFromFontFile`, over the file Next's own
+ * `pickFontFileForFallbackGeneration` picks from the call's `src`, so a re-subset, a hand edit or a
+ * renamed face fails here rather than as a timing-dependent CLS in CI.
+ */
+interface FontMetrics {
+  readonly ascent: number;
+  readonly descent: number;
+  readonly lineGap: number;
+  readonly unitsPerEm: number;
+}
+interface FallbackMetrics {
+  readonly ascentOverride: string;
+  readonly descentOverride: string;
+  readonly lineGapOverride: string;
+  readonly sizeAdjust: string;
+  readonly fallbackFont: string;
+}
+interface SrcEntry {
+  readonly path: string;
+  readonly weight: string;
+  readonly style: string;
+}
+
+const nextRequire = createRequire(resolve(repoRoot, "package.json"));
+const NEXT_FONT = "next/dist/compiled/@next/font/dist";
+const fontkitModule = nextRequire(`${NEXT_FONT}/fontkit`) as {
+  default: ((buffer: Buffer) => FontMetrics) & {
+    default?: (buffer: Buffer) => FontMetrics;
+  };
+};
+const fontFromBuffer = fontkitModule.default.default ?? fontkitModule.default;
+const { getFallbackMetricsFromFontFile } = nextRequire(
+  `${NEXT_FONT}/local/get-fallback-metrics-from-font-file`,
+) as {
+  getFallbackMetricsFromFontFile: (
+    font: FontMetrics,
+    category: "serif" | "sans-serif",
+  ) => FallbackMetrics;
+};
+const { pickFontFileForFallbackGeneration } = nextRequire(
+  `${NEXT_FONT}/local/pick-font-file-for-fallback-generation`,
+) as {
+  pickFontFileForFallbackGeneration: (files: SrcEntry[]) => SrcEntry;
+};
+
+/** Every `@font-face` block of `globals.css` as a property map, keyed by its `font-family`. */
+function fontFaceBlocks(): Map<string, Map<string, string>> {
+  const css = readFileSync(
+    resolve(repoRoot, "src/app/globals.css"),
+    "utf8",
+  ).replaceAll(/\/\*[\s\S]*?\*\//g, "");
+  const blocks = new Map<string, Map<string, string>>();
+  for (const match of css.matchAll(/@font-face\s*\{([^}]*)\}/g)) {
+    const props = new Map<string, string>();
+    for (const declaration of (match[1] ?? "").split(";")) {
+      const colon = declaration.indexOf(":");
+      if (colon === -1) continue;
+      props.set(
+        declaration.slice(0, colon).trim(),
+        declaration.slice(colon + 1).trim(),
+      );
+    }
+    const family = props.get("font-family")?.replaceAll('"', "");
+    if (family) blocks.set(family, props);
+  }
+  return blocks;
+}
+
+/** A call's `src` entries, its `fallback` list and its `adjustFontFallback` value. */
+function callShape(call: string) {
+  const src = [
+    ...call.matchAll(
+      /path:\s*"\.\/([^"]+)",\s*weight:\s*"([^"]+)",\s*style:\s*"([^"]+)"/g,
+    ),
+  ].map(([, path = "", weight = "", style = ""]) => ({ path, weight, style }));
+  const fallback = [
+    ...(/fallback:\s*\[([^\]]*)\]/.exec(call)?.[1] ?? "").matchAll(
+      /"([^"]+)"/g,
+    ),
+  ].map((match) => match[1]);
+  const adjust = /adjustFontFallback:\s*"([^"]+)"/.exec(call)?.[1];
+  return { src, fallback, adjust };
+}
+
+/** `103.05%` → 103.05; Next writes `0.00%` where the stylesheet writes `0%`. */
+const percent = (value: string | undefined) =>
+  Number.parseFloat((value ?? "").replace("%", ""));
+
+describe("the metric-matched Linux fallback faces (A21 clause 3)", () => {
+  const pageCalls = localFontCalls("src/modules/ui/fonts/index.ts");
+  const blocks = fontFaceBlocks();
+  const FACES_BY_CALL = [
+    {
+      file: "fraunces-400-latin.woff2",
+      family: "Fraunces Fallback Liberation",
+      adjust: "Times New Roman",
+      category: "serif",
+      src: 'local("Liberation Serif"), local("Tinos")',
+    },
+    {
+      file: "alegreya-sans-400-latin.woff2",
+      family: "Alegreya Sans Fallback Liberation",
+      adjust: "Arial",
+      category: "sans-serif",
+      src: 'local("Liberation Sans"), local("Arimo")',
+    },
+  ] as const;
+
+  for (const face of FACES_BY_CALL) {
+    describe(face.family, () => {
+      const call = pageCalls.find((c) => c.includes(`"./${face.file}"`)) ?? "";
+      const shape = callShape(call);
+
+      it("is the first named fallback of its Latin call, which matches the same metric family", () => {
+        expect(shape.fallback[0]).toBe(face.family);
+        expect(shape.adjust).toBe(face.adjust);
+      });
+
+      it("is declared in globals.css over the Liberation and Croscore clones only", () => {
+        const block = blocks.get(face.family);
+        expect(block, `@font-face "${face.family}"`).toBeDefined();
+        expect(block?.get("src")).toBe(face.src);
+      });
+
+      it("carries the overrides Next computes for the call's own fallback file", () => {
+        const picked = pickFontFileForFallbackGeneration(shape.src);
+        expect(picked.path).toBe(face.file);
+        const font = fontFromBuffer(
+          readFileSync(resolve(repoRoot, FONT_DIR, picked.path)),
+        );
+        const expected = getFallbackMetricsFromFontFile(font, face.category);
+        expect(expected.fallbackFont).toBe(face.adjust);
+        const block = blocks.get(face.family);
+        for (const [prop, key] of [
+          ["ascent-override", "ascentOverride"],
+          ["descent-override", "descentOverride"],
+          ["line-gap-override", "lineGapOverride"],
+          ["size-adjust", "sizeAdjust"],
+        ] as const) {
+          expect(percent(block?.get(prop)), `${face.family} ${prop}`).toBe(
+            percent(expected[key]),
+          );
+        }
+      });
+    });
+  }
 });

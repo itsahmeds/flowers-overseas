@@ -261,7 +261,22 @@ describe("AC-9: the company block tells the truth about a company that does not 
     expect(phase0).toContain("Help &amp; WhatsApp");
     expect(phase0).toContain('href="tel:+12135925150"');
     expect(phase0).toContain("+1 (213) 592-5150");
-    expect(phase0).toContain("Mon–Sat 8–20 CET");
+    // Founder copy batch, 2026-10-04: the support line replaces "Mon–Sat 8–20 CET".
+    expect(phase0).toContain(
+      "Message us any time, 24/7 — we reply within a few hours.",
+    );
+    expect(phase0).not.toContain("Mon–Sat");
+  });
+
+  it("prints the sign-off as decoration, in Fraunces italic and never Caveat (A21 clause 3)", () => {
+    const signoff = phase0.slice(
+      phase0.lastIndexOf("<p", phase0.indexOf("data-fo-footer-signoff")),
+    );
+    const tag = signoff.slice(0, signoff.indexOf(">") + 1);
+    expect(tag).toContain('aria-hidden="true"');
+    expect(tag).toContain("display-em");
+    expect(tag).not.toContain("font-hand");
+    expect(signoff).toContain(">With love, from wherever you are.</p>");
   });
 
   it("prints no registry code, VAT id or registered address while unregistered", () => {
@@ -334,17 +349,20 @@ describe("§8: the payment colophon claims nothing", () => {
     }
   });
 
-  it("prints the two sentences that are true today", () => {
-    expect(phase0).toContain("Card payments are processed by Stripe");
+  it("prints the one sentence that is true today, and no processor sentence (§14 A10)", () => {
     // First person, as §14 A5 asks of every sentence a buyer reads (TASK-084): *we* show them.
     expect(phase0).toContain(
       "We show the payment methods you can use at checkout.",
     );
+    // A10: "processed by Stripe" renders only once a payment integration ships. Phase 0
+    // processes no payment, so the sentence would claim a capability that does not exist.
+    expect(phase0).not.toContain("Stripe");
   });
 
-  it("ships no image at all — no logo, no badge, no mark but our own inline wordmark", () => {
+  it("ships no image at all — no logo, no badge; only our own mark and outlined wordmark", () => {
     expect(phase0).not.toContain("<img");
-    expect(phase0.match(/<svg/g)).toHaveLength(1);
+    expect(phase0.match(/<svg/g)).toHaveLength(2);
+    expect(phase0).toContain("data-fo-wordmark");
   });
 
   it("names the methods the moment one becomes available, with no template edit", () => {
@@ -363,6 +381,8 @@ describe("§8: the payment colophon claims nothing", () => {
     });
     const flipped = render(<SiteFooter locale="en" view={view} />);
     expect(flipped).toContain("Visa");
+    // With a method available the integration has shipped, so the processor sentence appears.
+    expect(flipped).toContain("Card payments are processed by Stripe");
     // The names *or* the placeholder, never both: with a method flipped, "shown at checkout"
     // would hedge a list that is right there (`/review 30` nit 1, the canvas's payment column).
     expect(flipped).not.toContain("shown at checkout");
@@ -401,19 +421,68 @@ describe("Phase 0 AC 6: nothing fabricated", () => {
   });
 });
 
-describe("the occasion-reminder signup is a plain form (§14 A1)", () => {
-  it("posts to the stub with a labelled email field and no client JavaScript", () => {
-    expect(phase0).toContain(`action="${REMINDERS_ENDPOINT}"`);
-    expect(phase0).toContain('method="post"');
-    expect(phase0).toContain(`id="${REMINDERS_ANCHOR}"`);
-    expect(phase0).toContain('type="email"');
-    expect(phase0).toContain('for="footer-reminder-email"');
-    expect(phase0).toContain('name="locale" value="en"');
-    expect(phase0).not.toContain("onSubmit");
+describe("no control that does nothing (spec 004 §14 A20, A21 clause 1)", () => {
+  it("renders no occasion-reminder form: its endpoint stores and sends nothing", () => {
+    for (const control of [
+      "<form",
+      "<input",
+      REMINDERS_ENDPOINT,
+      REMINDERS_ANCHOR,
+    ]) {
+      expect(phase0, control).not.toContain(control);
+    }
+    expect(phase0).not.toContain("Occasion reminders");
+    expect(phase0).not.toContain("Remind me");
+    // The one control left is the consent re-open button, which does something.
+    expect([...phase0.matchAll(/<button/g)]).toHaveLength(1);
+  });
+});
+
+describe("the v2 colophon's look (chrome artboards, A21)", () => {
+  it("carries the footer's airmail edge on paper-2", () => {
+    const footer = phase0.slice(0, phase0.indexOf(">") + 1);
+    expect(footer).toContain("airmail-edge-footer");
+    expect(footer).toContain("bg-surface-raised");
   });
 
-  it("states the double opt-in before anything is submitted", () => {
-    expect(phase0).toContain("nothing is stored until you confirm");
+  it("draws the logo named by the outlined wordmark, and links no document to its own home (A21 clause 3, spec 003 AC-6)", () => {
+    for (const locale of ["en", "de"] as const) {
+      const html = render(<SiteFooter locale={locale} />, locale);
+      const logo = html.slice(html.indexOf("data-fo-footer-logo"));
+      expect(logo.slice(0, logo.indexOf("</div>"))).toContain(
+        `role="img" aria-label="${COMPANY.tradingName}"`,
+      );
+      // The masthead lockup is the one home link a document may carry; the footer adds none.
+      expect(html).not.toContain(`href="${localePath(locale, "home")}"`);
+    }
+    expect(phase0).not.toContain(`>${COMPANY.tradingName}<`);
+  });
+
+  it("gives every footer link the 44 px target", () => {
+    const own = [...phase0.matchAll(/<a\s[^>]*>/g)]
+      .map((match) => match[0])
+      .filter((tag) => !tag.includes('class="underline"'));
+    expect(own.length).toBeGreaterThan(0);
+    for (const tag of own) {
+      expect(tag, tag).toContain("min-h-(--target-min)");
+    }
+    // The language list's links get it from their wrapper.
+    expect(phase0).toContain("[&amp;_a]:min-h-(--target-min)");
+  });
+
+  it("prints the German footer in German (reviewed: false drafts)", () => {
+    const de = render(<SiteFooter locale="de" />, "de");
+    for (const word of [
+      "Versand",
+      "Zielländer",
+      "Cookie-Einstellungen",
+      "Zahlung",
+    ]) {
+      expect(de, word).toContain(word);
+    }
+    for (const word of ["Sending", "Cookie settings", "Payment"]) {
+      expect(de, word).not.toContain(`>${word}<`);
+    }
   });
 });
 
@@ -444,5 +513,20 @@ describe("logical CSS and tokens only (AC-1, AC-5)", () => {
   it("emits no colour literal", () => {
     expect(markup).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
     expect(markup).not.toMatch(/(?<![a-z])(?:rgba?|hsla?)\s*\(/);
+  });
+});
+
+describe("spec 004 §14 A22 clause 1: our florist in the present tense (en)", () => {
+  it("prints the about sentence with the florist in the present tense, and no future form", () => {
+    const messages = loadMessages("en", ["company"]) as {
+      company: { description: string };
+    };
+    const sentence = messages.company.description;
+    expect(phase0).toContain(sentence.replaceAll("'", "&#x27;"));
+    // "makes … hands", never "will make" or "will hand" (PR 172 review R2, breaker hole H3). The
+    // de/pl drafts' tense is a translation-review matter, so only en is pinned here.
+    expect(sentence).toMatch(/\bmakes\b/u);
+    expect(sentence).toMatch(/\bhands\b/u);
+    expect(sentence).not.toMatch(/\bwill\b|\bgoing to\b|'ll\b/iu);
   });
 });

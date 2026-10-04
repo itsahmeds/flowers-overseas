@@ -24,8 +24,10 @@
  * Fraunces moved the masthead and the hero card (CLS 0.000156 in CI, where AC-7 and AC-28 require
  * 0). The first named fallback of each Latin call is therefore a second metric-matched face,
  * declared in `src/app/globals.css` over the metric-compatible clones Liberation Sans / Arimo and
- * Liberation Serif / Tinos, with the overrides Next computes for the first; `tests/unit/fonts.test.ts`
- * recomputes them from the committed files, so the two cannot drift.
+ * Liberation Serif / Tinos, with the overrides Next computes for the first. The unit case "the
+ * metric-matched Linux fallback faces" (`tests/unit/fonts.test.ts`) recomputes those overrides
+ * from the committed 400 Latin files with Next's own function and checks that each Latin call
+ * below names its face first, so the stylesheet and this file cannot drift apart.
  *
  * **Preloads (A21 clause 3: at most two, never the italic, the Latin-Ext files or Caveat).**
  * `next/font` preloads every file of a call or none of them, and a weight cannot move to a second

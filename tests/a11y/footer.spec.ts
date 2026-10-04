@@ -66,9 +66,10 @@ for (const path of AUDITED) {
       expect(named, `nav ${String(index)} is unnamed`).toBeTruthy();
     }
 
-    // Every field in the footer has a programmatic label (WCAG 1.3.1, 4.1.2).
-    const field = page.locator("#footer-reminder-email");
-    await expect(field).toHaveCount(1);
-    await expect(field).toHaveAccessibleName(/.+/);
+    // No field in the footer at all: the reminder form stored nothing and is not drawn (spec 004
+    // §14 A20, A21 clause 1; TASK-176), so there is no unlabelled control to find either.
+    const footer = page.getByRole("contentinfo");
+    await expect(footer.locator("form")).toHaveCount(0);
+    await expect(footer.locator("input, select, textarea")).toHaveCount(0);
   });
 }

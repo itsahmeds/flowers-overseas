@@ -1143,9 +1143,9 @@
   "company.support.hours": {
     "source": "human",
     "reviewed": true,
-    "reviewedBy": "founder",
-    "reviewedAt": "2026-09-09T00:00:00Z",
-    "sourceHash": "e6e784d29f6af42787197eb5ad81fe938d6d64673d9e832f0138f08d2bbacd52"
+    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179)",
+    "reviewedAt": "2026-10-04T00:00:00Z",
+    "sourceHash": "95eebff5d4b6812feb340b5f0d0e089a1adf563212ece039c0ef151b1b230b9e"
   },
   "company.support.label": {
     "source": "human",
@@ -1159,7 +1159,8 @@
     "reviewed": true,
     "reviewedBy": "founder",
     "reviewedAt": "2026-09-09T00:00:00Z",
-    "sourceHash": "6a40edf1fc87a29f243a7eefdbed57d19bfe16ab2e039d7ae1a44c097297e2f3"
+    "sourceHash": "6a40edf1fc87a29f243a7eefdbed57d19bfe16ab2e039d7ae1a44c097297e2f3",
+    "retained": true
   },
   "consent.accept": {
     "source": "human",
@@ -2423,35 +2424,47 @@
     "reviewed": true,
     "reviewedBy": "founder",
     "reviewedAt": "2026-09-09T00:00:00Z",
-    "sourceHash": "a684235e967c10532b074300402777fc5c9bce84a4ceb0e08fe9ccd81fc52334"
+    "sourceHash": "a684235e967c10532b074300402777fc5c9bce84a4ceb0e08fe9ccd81fc52334",
+    "retained": true
   },
   "footer.reminders.consent": {
     "source": "human",
     "reviewed": true,
     "reviewedBy": "founder",
     "reviewedAt": "2026-09-09T00:00:00Z",
-    "sourceHash": "33c1900513edcb62db2b211154695906b8bdbfbe504d77d74df8007ee44a174d"
+    "sourceHash": "33c1900513edcb62db2b211154695906b8bdbfbe504d77d74df8007ee44a174d",
+    "retained": true
   },
   "footer.reminders.emailLabel": {
     "source": "human",
     "reviewed": true,
     "reviewedBy": "founder",
     "reviewedAt": "2026-09-09T00:00:00Z",
-    "sourceHash": "f2488fd4ef4adbc6ac61300083f2c33980e48bb4bbf3c540ad760d61fc36f420"
+    "sourceHash": "f2488fd4ef4adbc6ac61300083f2c33980e48bb4bbf3c540ad760d61fc36f420",
+    "retained": true
   },
   "footer.reminders.heading": {
     "source": "human",
     "reviewed": true,
     "reviewedBy": "founder",
     "reviewedAt": "2026-09-09T00:00:00Z",
-    "sourceHash": "5201ef0514325883e8c515631a78371e6bbaf35e80b4d8735e895eeac92e2a56"
+    "sourceHash": "5201ef0514325883e8c515631a78371e6bbaf35e80b4d8735e895eeac92e2a56",
+    "retained": true
   },
   "footer.reminders.submit": {
     "source": "human",
     "reviewed": true,
     "reviewedBy": "founder",
     "reviewedAt": "2026-09-09T00:00:00Z",
-    "sourceHash": "4e679adbfcc8b3fc5d92f8b8b1fa3c43fb840a626f2d64b599df8d096163a631"
+    "sourceHash": "4e679adbfcc8b3fc5d92f8b8b1fa3c43fb840a626f2d64b599df8d096163a631",
+    "retained": true
+  },
+  "footer.signoff": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179)",
+    "reviewedAt": "2026-10-04T00:00:00Z",
+    "sourceHash": "e35a0c19dda80d64b3e68e418dc86821740e92c4dc8eae616a99acede6f17f3f"
   },
   "home.dates.eyebrow": {
     "source": "human",
@@ -2989,6 +3002,13 @@
     "sourceHash": "99af6606ff9d6cd5154d4d4e9c21e325086d3e904677cdb41d363c8a3480f862",
     "retained": true
   },
+  "nav.notice.lead": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179)",
+    "reviewedAt": "2026-10-04T00:00:00Z",
+    "sourceHash": "426db035784b9d5623b70c9a4fa21e1c7bb0bf98e16c0bf6474a5329d0f37fc7"
+  },
   "nav.search.help": {
     "source": "human",
     "reviewed": true,
@@ -3008,7 +3028,15 @@
     "reviewed": true,
     "reviewedBy": "founder",
     "reviewedAt": "2026-09-09T00:00:00Z",
-    "sourceHash": "49c266baaaa70981ea188fa714d5c40cf13830d786a861c9943ae0d26a7f3fe9"
+    "sourceHash": "49c266baaaa70981ea188fa714d5c40cf13830d786a861c9943ae0d26a7f3fe9",
+    "retained": true
+  },
+  "nav.send": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179)",
+    "reviewedAt": "2026-10-04T00:00:00Z",
+    "sourceHash": "e3be5078f2ccbc19c3787792fca859fba0ab68e95b0030b11ff3f21e28222e52"
   },
   "nav.utility.cutoff": {
     "source": "human",
@@ -3037,9 +3065,9 @@
   "nav.utility.guarantee": {
     "source": "human",
     "reviewed": true,
-    "reviewedBy": "founder",
-    "reviewedAt": "2026-09-09T00:00:00Z",
-    "sourceHash": "3ea34d78889432f220b6f0fdd3df749ff3e0add9b46a8b0faffc509362e77f27"
+    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179)",
+    "reviewedAt": "2026-10-04T00:00:00Z",
+    "sourceHash": "829f4dad5b0879d5ea569ec0bc92579518c8ac53fbe8fffadac2a4d20b982b2a"
   },
   "nav.utility.pricesInclude": {
     "source": "human",

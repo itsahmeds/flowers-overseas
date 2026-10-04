@@ -6,9 +6,9 @@
  * category row). Each case exists because a full-page baseline of `/en` cannot show it:
  *
  *  - `header-desktop.png` / `header-mobile.png` — the header **clipped to its own box** at the two
- *    artboard widths (1440 px and 390 px, the widths `docs/design/homepage-v1/*.dc.html` were
- *    drawn at), so the reserved bands, the search field's two treatments and the account cluster's
- *    icon-only-to-labelled switch are pinned per breakpoint;
+ *    artboard widths (1440 px and 390 px, the widths `docs/design/wireframes/chrome-*.dc.html`
+ *    are drawn at; v2 since TASK-176), so the notice bar, the one-row desktop header and the
+ *    mobile chip row are pinned per breakpoint;
  *  - `header-de.png` — the same desktop box in German, which is where a compound label wraps the
  *    category row first;
  *  - `header-rtl.png` — `/ar-XB`, where the whole header mirrors and the mirroring intent of the

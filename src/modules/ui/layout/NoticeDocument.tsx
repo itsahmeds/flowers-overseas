@@ -26,6 +26,7 @@
 import type { ReactElement, ReactNode } from "react";
 
 import { Mark } from "../icons/Mark.tsx";
+import { Wordmark } from "../icons/Wordmark.tsx";
 
 import {
   NOTICE_BLOCK,
@@ -35,7 +36,7 @@ import {
   NOTICE_MAIN,
   NOTICE_MARK,
   NOTICE_META,
-  NOTICE_WORDMARK,
+  NOTICE_WORDMARK_OUTLINED,
 } from "./noticeShell.ts";
 
 export interface NoticeDocumentProps {
@@ -71,7 +72,8 @@ export function NoticeDocument({
   const lockup = (
     <>
       <Mark className={NOTICE_MARK} />
-      <span className={NOTICE_WORDMARK}>{wordmark}</span>
+      {/* The outlined wordmark (spec 004 §14 A21 clause 3), named by the trading name. */}
+      <Wordmark className={NOTICE_WORDMARK_OUTLINED} label={wordmark} />
     </>
   );
 
