@@ -256,12 +256,16 @@ before `/plan-tasks` turns the drawings into tasks.
   `guide | live`. Today the view has no state, and spec 008 A9 forbids a second view model.
 - **R8 — The country category's toolbar moves under the grid.** The count and disclosure stay
   above it, visually hidden or compact.
-- **R9 — Spec 003 amendment (founder ruling 2026-10-04).** It supersedes A14's two-action,
-  IP-aware dialog and §13 Q3's chooser at `/`:
+- **R9 — Spec 003 amendment (founder ruling 2026-10-04; now spec 003 §14 A16, PR 186).** It
+  supersedes A14's two-action dialog and §13 Q3's chooser at `/`:
   - `/` answers one fixed permanent redirect to `/en` for everyone. ADR-0006 bans IP redirects,
     and this is not one.
-  - The popup offers four languages, with English current and a browser-language hint.
-  - There is no `/api/geo`, no IP read and no RoPA row.
+  - The popup offers four languages, with English marked as the default (A16 clause 2) and the
+    page's own language marked current.
+  - The highlight is drawn as "matches your browser language" only. **IP hint: founder decision
+    pending (recommended: drop).** The founder's wording does not address the IP signal; A16 keeps
+    A14's `/api/geo` and its RoPA row until the founder decides. (Corrected 2026-10-05: an earlier
+    version of this line attributed dropping the IP hint to the founder.)
 - **R10 — The mobile popup is a top sheet, not a bottom sheet.** At 390 × 844 the home's sentence
   letter starts at about y 720, so any bottom sheet taller than about 120 px covers it. The brief
   asked for both a bottom sheet of at most 35 % and a sheet that never covers the letter, and no

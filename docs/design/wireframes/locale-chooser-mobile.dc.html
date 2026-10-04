@@ -85,7 +85,7 @@
 
   <section class="note" style="margin: var(--space-lg) var(--space-md) 0;">
     <span class="label">Locale chooser · [internal]</span>
-    <dl><dt>Superseded</dt><dd><b>2026-10-04, founder:</b> “no one should see this page… even direct traffic.. they should be shown the site in english.. but a popup appears”. <code>/</code> becomes one fixed permanent redirect to <code>/en</code> for everyone (no IP, no header), and the first-visit language choice is the popup in <code>locale-popup-{desktop,mobile}.dc.html</code>. This artboard stays as the record of the shipped spec 003 chooser until spec 003 is amended (audit ruling R9).</dd>
+    <dl><dt>Retired</dt><dd><b>2026-10-04, founder:</b> “no one should see this page… even direct traffic.. they should be shown the site in english.. but a popup appears”. <code>/</code> becomes one fixed permanent redirect to <code>/en</code> for everyone (no IP, no header), and the first-visit language choice is the popup in <code>locale-popup-{desktop,mobile}.dc.html</code>. Retired by spec 003 §14 A16 clause 1 (the chooser is deleted). This artboard stays as the record of the shipped spec 003 chooser until spec 003 is amended (audit ruling R9).</dd>
       <dt>Purpose</dt><dd>List the locales and let the visitor choose. It is the root document and it <b>never redirects</b> — not on IP, not on <code>Accept-Language</code>, not ever (ADR-0006).</dd>
       <dt>URL</dt><dd><code>/</code> — the only page in the product with no locale prefix.</dd>
       <dt>Index</dt><dd><b>noindex, follow</b>. A signpost has no query of its own, and the four locale homes are the pages that should rank. <code>follow</code> so the link equity reaches them.</dd>
