@@ -291,11 +291,31 @@ describe("one clock for the price, the fallback, the line and the date window", 
 
   it("refuses a fallback view that carries a line", async () => {
     const fallback = await viewOf("en", { now: STALE });
-    const fresh = await viewOf("en", { now: FRESH });
     expect(fallback.fx.state).toBe("fallback");
+    expect(fallback.price.displayPrice.currency).toBe("PLN");
     expect(ProductViewSchema.safeParse(fallback).success).toBe(true);
-    const mixed = { ...fallback, equivalents: fresh.equivalents };
-    expect(ProductViewSchema.safeParse(mixed).success).toBe(false);
+    // A current line that names no złoty (`/pl`'s: euro, pound, dollar), so only the one-clock
+    // rule can refuse it.
+    const line = (await viewOf("pl", { now: FRESH })).equivalents;
+    expect(line.price?.amounts.map((amount) => amount.currency)).not.toContain(
+      "PLN",
+    );
+    expect(
+      ProductViewSchema.safeParse({ ...fallback, equivalents: line }).success,
+    ).toBe(false);
+  });
+
+  it("refuses a line that repeats the page's own currency", async () => {
+    const fresh = await viewOf("en", { now: FRESH });
+    const pln = (await viewOf("pl", { now: FRESH })).equivalents;
+    // `/pl`'s line names euros; on a euro page that is the charged currency again.
+    expect(pln.price?.amounts.map((amount) => amount.currency)).toContain(
+      "EUR",
+    );
+    expect(ProductViewSchema.safeParse(fresh).success).toBe(true);
+    expect(
+      ProductViewSchema.safeParse({ ...fresh, equivalents: pln }).success,
+    ).toBe(false);
   });
 });
 
