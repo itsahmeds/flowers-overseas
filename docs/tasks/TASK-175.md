@@ -96,6 +96,12 @@ _None._
   overflow's zoom-out). Locally the chip ended at 384 px (webfont) / 389 px (fallback) of 390, so
   Linux's wider rendering crossed 390. Below `md` the switcher and controls gaps are now 10 px:
   chip at 360–365 px in every locale with the webfont blocked, strip still 113 px.
+- 2026-10-04 — `visual` red twice after 00:00Z (run 37164055169) on byte-identical code:
+  `product-mobile-summary.png`, one text line, 321 px. Cause: the 390 px date grid's rows are
+  fractional (82 / 99.09375 / 111.1875 / 132.1875 px, by how far a chip's Sunday or occasion reason
+  wraps), so blocks below the picker moved by a sub-pixel amount with the build date.
+  `tests/visual/product-blocks.css` now sets `[data-fo-date-grid]` to `display: none` for the
+  block shots (913415b3); Linux baselines re-taken from the `visual-baselines` run on that head.
 
 ## Result
 
