@@ -12,8 +12,10 @@
  *     the consent sheet — which exists only after hydration (`consent-banner.spec.ts`). So the
  *     sheet appearing *and answering a click* is the hydration proof, and zero
  *     `securitypolicyviolation` events under the enforcing policy is the completeness proof.
- *  2. **The policy actually blocks.** The same document with one injected inline script — no
- *     hash, no nonce — must not run it, and the browser must say why.
+ *  2. **The policy actually blocks**, in both places a script can be added: to the stored HTML
+ *     **before** it is hashed (stored XSS — only Next's flight pushes are ever hashed, so it stays
+ *     unauthorised) and to the response **after** it was hashed (an edge or MITM rewrite). Neither
+ *     may run, and the browser must say why.
  *
  * ## Its own server
  *
@@ -26,7 +28,8 @@
  * none (a run pointed at a remote deployment) it skips and says so rather than passing.
  */
 import { type ChildProcess, spawn } from "node:child_process";
-import { existsSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { type Page, expect, test } from "@playwright/test";
@@ -47,6 +50,15 @@ const PAGES = [
   "/en/poland/product/amber-hour",
 ] as const;
 
+/**
+ * Prerendered product pages the stored-injection case edits, one per project. Not in `PAGES` and
+ * not named by any other spec, so nothing else reads them through this worker's server first.
+ */
+const STORED_INJECTION_PAGES: Readonly<Record<string, string>> = {
+  "e2e-desktop": "/en/poland/product/baltic-dawn",
+  "e2e-mobile": "/en/poland/product/northern-light",
+};
+
 const SHOWN = '[data-fo-consent="shown"]';
 const REJECT = '[data-fo-consent-action="reject"]';
 const SAVED = '[data-fo-consent="saved"]';
@@ -61,6 +73,7 @@ declare global {
   interface Window {
     __foCspViolations?: Violation[];
     __foInjected?: number;
+    __foStoredInjected?: number;
   }
 }
 
@@ -203,13 +216,14 @@ test.describe("enforced CSP over the real build (TASK-058)", () => {
     });
   }
 
-  test("blocks an injected inline script that carries no hash", async ({
+  test("blocks an inline script added to the response after it was hashed", async ({
     page,
   }) => {
     await recordViolations(page);
     const target = `${origin}/en`;
-    // The served document, headers untouched, with one script added before `</body>`: the shape
-    // of a stored or reflected XSS that made it into cached HTML.
+    // The served document, headers untouched, with one script added before `</body>` on its way to
+    // the browser: the shape of an edge or man-in-the-middle rewrite **after** the server hashed.
+    // A script that is already in the HTML when it is cached is the next case.
     await page.route(target, async (route) => {
       const original = await route.fetch();
       const headers = { ...original.headers() };
@@ -232,5 +246,57 @@ test.describe("enforced CSP over the real build (TASK-058)", () => {
       blocked: "inline",
       disposition: "enforce",
     });
+  });
+
+  // `/review 196` item 1 and 2, `/break 196` hole 1: a stored XSS — a script that reaches the
+  // server-rendered HTML through content (a florist field, a CMS body, a JSON-LD escape bug) — is
+  // in the document **before** the cache handler hashes it. Only Next's own flight pushes may be
+  // hashed, so this one must stay unauthorised and be blocked. The payload is written into the
+  // prerendered entry on disk before this worker's enforcing server first reads that page, and the
+  // original bytes are put back afterwards. One page per project, so the two projects running in
+  // parallel never edit the same file; the payload is inert on any other server that reads it.
+  test("blocks a script that was in the stored HTML before it was hashed (stored XSS)", async ({
+    page,
+  }, testInfo) => {
+    const path = STORED_INJECTION_PAGES[testInfo.project.name];
+    test.skip(path === undefined, "no stored-injection page for this project");
+    const file = resolve(ROOT, `.next/server/app${path ?? ""}.html`);
+    const original = readFileSync(file, "utf8");
+    const payload = "<script>window.__foStoredInjected=1</script>";
+    expect(original).toContain("</body>");
+    writeFileSync(file, original.replace("</body>", `${payload}</body>`));
+    try {
+      await recordViolations(page);
+      const response = await page.goto(`${origin}${path ?? ""}`);
+      expect(response?.status()).toBe(200);
+      // The server really served the stored payload, under an enforcing header that does not
+      // name it — and the rest of the document still hydrates.
+      expect(await response?.text()).toContain(payload);
+      const policy = response?.headers()["content-security-policy"] ?? "";
+      expect(policy).not.toBe("");
+      expect(scriptSources(policy)).not.toContain(
+        `'sha256-${createHash("sha256").update("window.__foStoredInjected=1", "utf8").digest("base64")}'`,
+      );
+      await expect(page.locator(SHOWN)).toBeVisible();
+
+      expect(
+        await page.evaluate(() => window.__foStoredInjected),
+      ).toBeUndefined();
+      expect(await violations(page)).toContainEqual({
+        directive: "script-src-elem",
+        blocked: "inline",
+        disposition: "enforce",
+      });
+    } finally {
+      writeFileSync(file, original);
+    }
+  });
+
+  // `/review 196` item 4: the enforcing server says so on `/api/health`.
+  test("reports `cspEnforce: ok` on /api/health", async ({ request }) => {
+    const body = (await (await request.get(`${origin}/api/health`)).json()) as {
+      cspEnforce?: string;
+    };
+    expect(body.cspEnforce).toBe("ok");
   });
 });

@@ -282,7 +282,7 @@ export const serverEnvSchema = z.object({
    * Since TASK-058 it is a **run-time** key: the static `Content-Security-Policy-Report-Only`
    * header is always sent and does not read it; `src/lib/csp-cache-handler.ts` reads it at server
    * start and, on `"false"`, adds an enforcing `Content-Security-Policy` to every cached HTML
-   * document — the static policy plus that document's inline-script hashes. So it is not a build
+   * document — the static policy plus the hashes of that document's flight blocks. So it is not a build
    * argument, the flip needs a restart and no rebuild, and `docs/runbooks/csp-enforce.md` is the
    * procedure. `cspEnforced()` in `src/lib/csp-response.ts` is its run-time mirror, pinned
    * against `cspReportOnly()` below by `tests/unit/csp-response.test.ts`.

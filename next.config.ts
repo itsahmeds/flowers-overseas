@@ -63,8 +63,8 @@ const platform = hostPlatform(process.env);
 // choice, `tests/unit/csp.test.ts` asserts both header strings).
 //
 // This static CSP is always `Content-Security-Policy-Report-Only` (TASK-058). The **enforced**
-// policy is per cached document — this same string plus the hashes of that document's inline
-// scripts, Next's flight blocks included — written by the `cacheHandler` below when the server
+// policy is per cached document — this same string plus the hashes of that document's flight
+// blocks, and of no other inline script — written by the `cacheHandler` below when the server
 // runs with `CSP_REPORT_ONLY=false` (`src/lib/csp-response.ts`, spec 004 §14 A2).
 //
 // `inlineHashes` carries exactly one value (TASK-050): the sha256 of the ≤1 KB Consent-Mode
@@ -128,7 +128,7 @@ const nextConfig: NextConfig = {
   headers: () => Promise.resolve(headerRules),
   // The enforced Content-Security-Policy of every cached HTML document (spec 004 §14 A2,
   // ADR-0016; TASK-058). Next's own file-system cache, extended to stamp each `APP_PAGE` entry
-  // with the static policy above plus the `'sha256-…'` of that document's inline scripts — the
+  // with the static policy above plus the `'sha256-…'` of that document's flight blocks — the
   // one place the HTML and its headers meet before either is sent. A hash describes bytes, so it
   // is cached with them; no nonce is ever put in cached HTML. Switched on at run time by
   // `CSP_REPORT_ONLY=false`. Next `import()`s it unbundled, on Node's type stripping; traced into the

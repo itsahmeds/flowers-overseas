@@ -40,6 +40,14 @@
  * enforce" is a judgement over a period of real traffic and not the absence of 60 lines in a
  * minute.
  *
+ * **Two log budgets, one per disposition** (`/break 196` hole 2, TASK-058). Once the per-document
+ * policy enforces, the static Report-Only policy still reports Next's flight blocks on every
+ * cached page view — two or more `disposition: report` lines each. With one shared budget that
+ * noise spent the minute's allowance and a real `enforce` block arriving after it was dropped
+ * unseen. So `enforce` reports draw on their own `CSP_REPORT_RATE_LIMIT` a minute and everything
+ * else on another; the request gate in front of both (`CSP_REPORT_REQUEST_LIMIT`) only bounds the
+ * parsing work, and is ten times wider.
+ *
  * A body that declares more than `CSP_REPORT_MAX_BYTES` is answered `204` without being read
  * (`/review 26`): `request.json()` would otherwise parse a megabyte before the schema rejected
  * it. A request that declares no length is still parsed, and is bounded by the counter above.
@@ -56,7 +64,10 @@ export const CSP_REPORT_CONTENT_TYPES = [
   "application/reports+json",
 ] as const;
 
-/** Reports dropped after this many in one window, per running instance. */
+/**
+ * Violations **logged** per window, per running instance, **per disposition bucket**: `enforce`
+ * has its own allowance and `report`/`unknown` share the other (TASK-058).
+ */
 /**
  * The largest body this endpoint will read, in bytes (`/review 26`, non-blocking note 1).
  *
@@ -69,6 +80,13 @@ export const CSP_REPORT_CONTENT_TYPES = [
 export const CSP_REPORT_MAX_BYTES = 16 * 1024;
 
 export const CSP_REPORT_RATE_LIMIT = 60;
+
+/**
+ * Requests **parsed** per window, per running instance: the bound on work for a body that
+ * declares no length. Wider than the log budgets so the report-only noise cannot close the gate
+ * on an `enforce` report before its body is read (TASK-058).
+ */
+export const CSP_REPORT_REQUEST_LIMIT = 600;
 export const CSP_REPORT_WINDOW_MS = 60_000;
 
 export const CSP_REPORT_HEADERS: Readonly<Record<string, string>> =
@@ -265,12 +283,26 @@ export function declaredTooLarge(contentLength: string | null): boolean {
   return declared > CSP_REPORT_MAX_BYTES;
 }
 
-/** The process-wide limiter the route uses. */
-const limiter = createRateLimiter();
+/** The process-wide request gate the route uses. */
+const limiter = createRateLimiter(CSP_REPORT_REQUEST_LIMIT);
+
+/** Separate log budgets, so report-only noise can never starve an `enforce` report. */
+export interface CspReportBudgets {
+  readonly enforce: RateLimiter;
+  readonly report: RateLimiter;
+}
+
+const budgets: CspReportBudgets = {
+  enforce: createRateLimiter(CSP_REPORT_RATE_LIMIT),
+  report: createRateLimiter(CSP_REPORT_RATE_LIMIT),
+};
 
 export interface CspReportOptions {
   readonly logger?: Logger;
+  /** The request gate (parse work). */
   readonly limiter?: RateLimiter;
+  /** The per-disposition log budgets. */
+  readonly budgets?: CspReportBudgets;
 }
 
 /**
@@ -283,6 +315,7 @@ export async function cspReportResponse(
 ): Promise<Response> {
   const log = options.logger ?? defaultLogger;
   const gate = options.limiter ?? limiter;
+  const buckets = options.budgets ?? budgets;
   const headers = { ...CSP_REPORT_HEADERS };
 
   if (!acceptsContentType(request.headers.get("content-type"))) {
@@ -306,6 +339,9 @@ export async function cspReportResponse(
   }
 
   for (const violation of redactCspReport(parsed)) {
+    const bucket =
+      violation.disposition === "enforce" ? buckets.enforce : buckets.report;
+    if (!bucket.allow()) continue;
     // Spread into a fresh record: `LogFields` is an index signature, and passing the interface
     // straight through would need a cast, which is the kind of thing that later hides a field.
     log.warn(

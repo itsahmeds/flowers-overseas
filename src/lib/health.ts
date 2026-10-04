@@ -10,7 +10,9 @@
  */
 import { z } from "zod";
 
+import { CSP_ENFORCE_STATES, type CspEnforceState } from "./csp-state.ts";
 import { deploymentEnvironments } from "./env.schema";
+import { logger as defaultLogger, type Logger } from "./logger";
 import { REQUEST_ID_HEADER, resolveRequestId } from "./request-id";
 
 import type { DeploymentEnvironment } from "./env.schema";
@@ -40,6 +42,12 @@ export const HealthResponse = z.object({
   // The weekday rebuild job (`scripts/fx-refresh.ts`) compares `fxAsOf` with the ECB's latest.
   fxAsOf: z.string().regex(/^\d{4}-\d{2}-\d{2}$/u),
   fxSource: z.enum(["ecb-build", "committed"]),
+  // TASK-058 (`/review 196` item 4): whether the enforced CSP is actually applied —
+  // `report-only`, `ok`, or `degraded` when the cache handler has failed open
+  // (`src/lib/csp-state.ts`). A closed set; no policy text, no path, no PII. Optional so a body
+  // from a deployment before TASK-058 still parses; the route always sends it, and a scheduled
+  // check that finds it absent while enforcing must treat that as `degraded`.
+  cspEnforce: z.enum(CSP_ENFORCE_STATES).optional(),
 });
 export type HealthResponse = z.infer<typeof HealthResponse>;
 
@@ -73,6 +81,8 @@ export interface HealthInput {
     readonly fxAsOf: string;
     readonly fxSource: "ecb-build" | "committed";
   };
+  /** `cspEnforceState(process.env)` from `./csp-state.ts` (TASK-058). */
+  readonly cspEnforce?: CspEnforceState | undefined;
 }
 
 /**
@@ -98,6 +108,7 @@ export function buildHealthResponse(input: HealthInput): HealthResponse {
     region: input.region ?? HEALTH_REGION_FALLBACK,
     fxAsOf: input.fx.fxAsOf,
     fxSource: input.fx.fxSource,
+    ...(input.cspEnforce === undefined ? {} : { cspEnforce: input.cspEnforce }),
   });
 }
 
@@ -113,4 +124,21 @@ export function healthResponse(request: Request, input: HealthInput): Response {
     status: 200,
     headers: { ...HEALTH_HEADERS, [REQUEST_ID_HEADER]: requestId },
   });
+}
+
+/**
+ * Pass the CSP enforcement state through, logging one `warn` line when it is `degraded`
+ * (TASK-058, `/review 196` item 4). The cache handler that fails open cannot log — it runs outside
+ * the bundle — so this is the line a log alert or the scheduled check of
+ * `docs/runbooks/csp-enforce.md` keys on: `csp_enforce` is a closed-set value, nothing else is
+ * written.
+ */
+export function reportCspEnforce(
+  state: CspEnforceState,
+  log: Logger = defaultLogger,
+): CspEnforceState {
+  if (state === "degraded") {
+    log.warn({ csp_enforce: state }, "csp enforcement degraded");
+  }
+  return state;
 }

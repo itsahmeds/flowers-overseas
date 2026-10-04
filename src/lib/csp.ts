@@ -31,15 +31,16 @@
  * response: it is the evidence policy, and the only policy on responses that are not cached HTML
  * documents (`/api/*`, the per-request listing variants of `_query`, an error render).
  *
- * It cannot be the enforced one, because Next 16 emits ten-odd inline `self.__next_f.push(…)`
+ * It cannot be the enforced one, because Next 16 emits inline `self.__next_f.push(…)`
  * flight blocks per document whose bytes differ per route, build and ISR regeneration (spec 004
  * §14 A2). The enforced policy is therefore written **per cached document**, by
  * `src/lib/csp-cache-handler.ts`: this exact static string, read back from the build's
- * `routes-manifest.json`, plus the `'sha256-…'` of every inline script in that document
- * (`src/lib/csp-response.ts`). `CSP_REPORT_ONLY=false` switches that header on at **run time**
+ * `routes-manifest.json`, plus the `'sha256-…'` of every flight block in that document — and of
+ * no other inline script, so a stored injection stays blocked (`src/lib/csp-response.ts`,
+ * ADR-0020). `CSP_REPORT_ONLY=false` switches that header on at **run time**
  * — it is read by the server, not baked by the build — and absent or any other value leaves it
  * off. The reasoning against ADR-0016's cached-HTML rule (a hash describes bytes and is safe to
- * cache; a nonce is not) is in `src/lib/csp-response.ts` and in the TASK-058 PR.
+ * cache; a nonce is not) is in `src/lib/csp-response.ts` and ADR-0020.
  *
  * `Reporting-Endpoints` plus `report-to` is the current reporting shape; the deprecated
  * `report-uri` is emitted alongside because Safari and older Chromium still only implement that

@@ -21,6 +21,7 @@ import {
   CSP_REPORT_HEADERS,
   CSP_REPORT_MAX_BYTES,
   CSP_REPORT_RATE_LIMIT,
+  CSP_REPORT_REQUEST_LIMIT,
   CSP_REPORT_WINDOW_MS,
   UNKNOWN_ORIGIN,
   acceptsContentType,
@@ -390,6 +391,44 @@ describe("it never fails, and it never floods (AC-23)", () => {
       limiter,
     });
     expect(capture.lines).toHaveLength(4);
+  });
+
+  // `/break 196` hole 2: after the enforce flip the static Report-Only policy's flight-block noise
+  // must not spend the allowance an `enforce` report needs.
+  it("logs an enforce report that arrives after a full minute of report-only noise", async () => {
+    const now = () => 0;
+    const options = {
+      limiter: createRateLimiter(CSP_REPORT_REQUEST_LIMIT, 60_000, now),
+      budgets: {
+        enforce: createRateLimiter(CSP_REPORT_RATE_LIMIT, 60_000, now),
+        report: createRateLimiter(CSP_REPORT_RATE_LIMIT, 60_000, now),
+      },
+    };
+    const capture = capturingLogger();
+    const report = (disposition: string) =>
+      cspReportResponse(
+        reportRequest({
+          "csp-report": {
+            "effective-directive": "script-src-elem",
+            "blocked-uri": "inline",
+            disposition,
+          },
+        }),
+        { logger: capture.logger, ...options },
+      );
+    for (let index = 0; index < CSP_REPORT_RATE_LIMIT + 40; index += 1) {
+      await report("report");
+    }
+    await report("enforce");
+    const dispositions = capture.lines.map(
+      (line) => (JSON.parse(line) as Record<string, unknown>)["disposition"],
+    );
+    // The noise is capped at its own budget, and the enforce report is still logged.
+    expect(dispositions.filter((value) => value === "report")).toHaveLength(
+      CSP_REPORT_RATE_LIMIT,
+    );
+    expect(dispositions.filter((value) => value === "enforce")).toHaveLength(1);
+    expect(dispositions.at(-1)).toBe("enforce");
   });
 
   it("states its allowance in minutes and reports, not in magic numbers", () => {
