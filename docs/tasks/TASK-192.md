@@ -52,10 +52,13 @@ changes.
   with the Edit tool (identical to the first run's patch) and committed (5b3f7246); the five files
   pass, 373 tests. Both mutations go red (see Result). `pnpm gates:cheap` is red on
   `tests/unit/seed-diff.test.ts` only: see Escalation 3.
+- 2026-10-05: `pnpm seed:diff --write` regenerated `seed/snapshot/product_translation.json`
+  (FO-BQ-001/en and FO-BQ-003/en only), committed alone as eb057834; `pnpm gates:cheap` passes.
 
 ## Result
 
-Partial: the test changes are in, the gates are not yet green (Escalation 3).
+Done, pending review. The test changes, the decisions-log row and the regenerated snapshot are in;
+the founder's commit 040518a3 is unchanged.
 
 - Mutations, each run with the Edit tool and reverted with `git checkout`:
   - `"catalog.floristSentence"` back in `AWAITING_FOUNDER_REVIEW` →
@@ -66,18 +69,22 @@ Partial: the test changes are in, the gates are not yet green (Escalation 3).
     "records a reviewer and a date on every authored row" fails (`FO-BQ-001: expected false to be
     true`), 1 failed | 82 passed.
 - `unreviewedShare("en")` = 0.0410 (≤ 5 %).
-- `pnpm gates:cheap` (head 5b3f7246, tree dirty only in `TASKS.md`):
+- `pnpm gates:cheap` (exit 0; 129 files, 3675 tests passed):
 
 ```
-typecheck             exit 0 · 2.3 s
-lint                  exit 0 · 17.2 s
-format:check          exit 0 · 11.2 s
-i18n:check            exit 0 · 0.4 s
+gates:cheap · eb057834c527bec14b42eb7c1df6c10a5ec5e91c · tree clean · base origin/main · 2026-10-04T20:52:09.558Z
+typecheck             exit 0 · 2.4 s
+lint                  exit 0 · 16.5 s
+format:check          exit 0 · 10.8 s
+i18n:check            exit 0 · 0.5 s
 check:no-db           exit 0 · 0.2 s
-codebase:map --check  exit 0 · 0.3 s
-tests                 exit 1 · 85.4 s · changed 127 + map 0 + always 2 · always run: zod-boundaries, lint-coverage, url-pii
-RESULT: FAIL (1 of 7 red: tests)
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 76.2 s · changed 127 + map 0 + always 2 · always run: zod-boundaries, lint-coverage, url-pii
+format:check covers: every path except node_modules/ .next/ out/ coverage/ playwright-report/ test-results/ pnpm-lock.yaml next-env.d.ts .claude/ plan/ specs/ docs/ README.md TASKS.md CLAUDE.md /tests/fixtures/lint/ /tests/fixtures/seo/_cases/ /tests/fixtures/i18n/_cases/ /src/modules/geo/content/corpus.generated.ts
+RESULT: PASS
 ```
+
+- No expensive gate was run locally; no build slot taken.
 
   The failures: 8 in `tests/unit/seed-diff.test.ts`, out of 3675 tests (3667 pass).
 
@@ -114,3 +121,5 @@ RESULT: FAIL (1 of 7 red: tests)
    founder's commit as it is. The work order forbids `seed/**`, so it was not run. Needed: a
    decision to allow that one generated file (as a separate commit, `chore(seed): re-snapshot`),
    or the founder runs it himself.
+   **Resolved:** orchestrator widened the fence to seed/snapshot/ for the generated snapshot
+   (eb057834; the diff touches only FO-BQ-001/en and FO-BQ-003/en).
