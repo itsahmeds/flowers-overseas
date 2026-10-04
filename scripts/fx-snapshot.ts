@@ -36,6 +36,7 @@ import {
   type FxBundleSource,
   type FxRejection,
   checkAgainstCommitted,
+  isCalendarDay,
 } from "../src/modules/catalog/static/fx-bundle.ts";
 
 /** The ECB's daily euro reference rates: public, keyless, about 16:00 CET on TARGET days. */
@@ -80,11 +81,9 @@ export type EcbParseResult =
   | { readonly ok: true; readonly snapshot: FxBuildSnapshot }
   | { readonly ok: false; readonly reason: FxRejection };
 
-/** Is `day` a real `YYYY-MM-DD` calendar day? Returns its UTC start, or `null`. */
+/** A real `YYYY-MM-DD` calendar day's UTC start, or `null` (`isCalendarDay`, shared). */
 function calendarDay(day: string): number | null {
-  const start = Date.parse(`${day}T00:00:00Z`);
-  if (Number.isNaN(start)) return null;
-  return new Date(start).toISOString().slice(0, 10) === day ? start : null;
+  return isCalendarDay(day) ? Date.parse(`${day}T00:00:00Z`) : null;
 }
 
 /**
@@ -169,7 +168,7 @@ async function fetchOnce(
   }
 }
 
-/** One attempt and one retry; the retry only for a transport failure. */
+/** One attempt and one retry, after any failed attempt: a transport error, a timeout or an HTTP status. */
 export async function fetchEcbDaily(
   fetchImpl: typeof fetch = fetch,
   timeoutMs: number = ECB_TIMEOUT_MS,

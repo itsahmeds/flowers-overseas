@@ -62,10 +62,29 @@ export const FX_REJECTIONS = [
 ] as const;
 export type FxRejection = (typeof FX_REJECTIONS)[number];
 
+/**
+ * Is `day` a real `YYYY-MM-DD` calendar day? The shape alone is not enough: V8's `Date.parse`
+ * rolls `2026-02-30` over to 2 March, so the parsed day is printed back and compared (`/break 177`
+ * hole 6). Used by the build step, this boundary and the rebuild job, so all three refuse the same
+ * strings.
+ */
+export function isCalendarDay(day: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/u.test(day)) return false;
+  const start = Date.parse(`${day}T00:00:00Z`);
+  return (
+    !Number.isNaN(start) && new Date(start).toISOString().slice(0, 10) === day
+  );
+}
+
+/** A `YYYY-MM-DD` that is a real calendar day, as a zod boundary. */
+export const IsoCalendarDaySchema = z
+  .string()
+  .refine(isCalendarDay, "must be a real YYYY-MM-DD calendar day");
+
 /** The one shape the build step hands to `next build`: a date and integer ppm per currency. */
 export const FxBuildSnapshotSchema = z
   .object({
-    asOf: z.string().regex(/^\d{4}-\d{2}-\d{2}$/u),
+    asOf: IsoCalendarDaySchema,
     rates: z.record(
       z.string().regex(/^[A-Z]{3}$/u),
       z.number().int().positive(),

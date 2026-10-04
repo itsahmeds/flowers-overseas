@@ -41,8 +41,12 @@
  */
 import { execFileSync } from "node:child_process";
 import { appendFileSync } from "node:fs";
+import { pathToFileURL } from "node:url";
+
+import { z } from "zod";
 
 import { FX_REFRESH_AT_KEY, WEB_SERVICE_NAME } from "../src/lib/railway.ts";
+import { IsoCalendarDaySchema } from "../src/modules/catalog/static/fx-bundle.ts";
 import { fetchEcbDaily, parseEcbDaily } from "./fx-snapshot.ts";
 
 /** Railway's public GraphQL endpoint (docs.railway.com, "Public API"). */
@@ -114,19 +118,31 @@ export interface FxRefreshOutcome {
   readonly results: readonly EnvironmentResult[];
 }
 
+/** A full, lowercase git commit SHA: the only thing ever sent to Railway as `commitSha`. */
 const SHA = /^[0-9a-f]{40}$/u;
-const DAY = /^\d{4}-\d{2}-\d{2}$/u;
+
+/**
+ * The fields of `/api/health` (spec 001 §5.2, spec 040 §5.6, spec 005 AC-33) this job reads, as a
+ * zod boundary (`/review 177` change 2). A hostile or garbled body must never choose what Railway
+ * builds: `commit` must be a full lowercase SHA (no branch name, no shell metacharacters), and
+ * `fxAsOf`, when present, a real calendar day. `fxAsOf` is optional only so that a deployment from
+ * before the bridge is recognised and skipped; anything malformed fails the whole parse.
+ * `HealthResponse` (`src/lib/health.ts`) is not imported because this script runs on plain Node and
+ * that module's imports carry no `.ts` extension; the shape here is the subset it guarantees.
+ */
+export const HealthBodySchema = z.object({
+  status: z.literal("ok"),
+  commit: z.string().regex(SHA),
+  appEnv: z.string().min(1),
+  fxAsOf: IsoCalendarDaySchema.optional(),
+});
 
 /** One environment's health, or why it is not usable. */
 async function readHealth(
   fetchImpl: typeof fetch,
   baseUrl: string,
 ): Promise<
-  | {
-      readonly ok: true;
-      readonly commit: string;
-      readonly fxAsOf: string | undefined;
-    }
+  | { readonly ok: true; readonly body: z.infer<typeof HealthBodySchema> }
   | { readonly ok: false; readonly reason: string }
 > {
   let body: unknown;
@@ -145,30 +161,36 @@ async function readHealth(
   } catch {
     return { ok: false, reason: "health did not answer" };
   }
-  const record = (body ?? {}) as Record<string, unknown>;
-  if (record.status !== "ok")
-    return { ok: false, reason: "health body is not a health body" };
-  const commit = typeof record.commit === "string" ? record.commit : "";
-  if (!SHA.test(commit)) {
+  const parsed = HealthBodySchema.safeParse(body);
+  if (!parsed.success) {
     return {
       ok: false,
-      reason: "health reports no commit SHA, so there is no commit to rebuild",
+      reason: `health body refused (${parsed.error.issues
+        .map((issue) => issue.path.join(".") || "body")
+        .join(", ")}), so there is no commit to rebuild`,
     };
   }
-  const fxAsOf =
-    typeof record.fxAsOf === "string" && DAY.test(record.fxAsOf)
-      ? record.fxAsOf
-      : undefined;
-  return { ok: true, commit, fxAsOf };
+  return { ok: true, body: parsed.data };
 }
 
-/** One Railway GraphQL call with a project token. Throws on a transport or GraphQL error. */
-async function railway(
+/** Railway's GraphQL envelope: `data`, or `errors` with messages. */
+const RailwayEnvelopeSchema = z.object({
+  data: z.unknown().optional(),
+  errors: z.array(z.object({ message: z.string().optional() })).optional(),
+});
+
+/**
+ * One Railway GraphQL call with a project token, its `data` parsed by `schema`. Throws on a
+ * transport error, a GraphQL error or an unexpected shape. The thrown message carries Railway's
+ * own message or an HTTP status, never the token.
+ */
+async function railway<T>(
   fetchImpl: typeof fetch,
   token: string,
   query: string,
   variables: Record<string, unknown>,
-): Promise<Record<string, unknown>> {
+  schema: z.ZodType<T>,
+): Promise<T> {
   const response = await fetchImpl(RAILWAY_API_URL, {
     method: "POST",
     headers: {
@@ -178,82 +200,119 @@ async function railway(
     body: JSON.stringify({ query, variables }),
     signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   });
-  const payload = (await response.json().catch(() => ({}))) as {
-    data?: Record<string, unknown>;
-    errors?: readonly { message?: string }[];
-  };
-  if (
-    !response.ok ||
-    payload.errors !== undefined ||
-    payload.data === undefined
-  ) {
-    const message =
-      payload.errors?.[0]?.message ?? `HTTP ${String(response.status)}`;
-    throw new Error(`Railway API: ${message}`);
+  const envelope = RailwayEnvelopeSchema.safeParse(
+    await response.json().catch(() => ({})),
+  );
+  const message = envelope.success
+    ? envelope.data.errors?.[0]?.message
+    : undefined;
+  if (!response.ok || !envelope.success || envelope.data.errors !== undefined) {
+    throw new Error(
+      `Railway API: ${message ?? `HTTP ${String(response.status)}`}`,
+    );
   }
-  return payload.data;
+  const data = schema.safeParse(envelope.data.data);
+  if (!data.success) throw new Error("Railway API: unexpected response shape");
+  return data.data;
 }
 
 const PROJECT_TOKEN_QUERY =
   "query { projectToken { projectId environmentId } }";
-const SERVICES_QUERY =
-  "query ($id: String!) { project(id: $id) { services { edges { node { id name } } } } }";
+const ENVIRONMENT_QUERY =
+  "query ($id: String!) { environment(id: $id) { name serviceInstances { edges { node { serviceId serviceName } } } } }";
 const VARIABLE_UPSERT =
   "mutation ($input: VariableUpsertInput!) { variableUpsert(input: $input) }";
 const DEPLOY_AT_COMMIT =
   "mutation ($serviceId: String!, $environmentId: String!, $commitSha: String!) { serviceInstanceDeployV2(serviceId: $serviceId, environmentId: $environmentId, commitSha: $commitSha) }";
 
+const ProjectTokenSchema = z.object({
+  projectToken: z.object({
+    projectId: z.string().min(1),
+    environmentId: z.string().min(1),
+  }),
+});
+/** The same `environment(id)` shape `pnpm railway:check` reads (`scripts/railway-check.ts`). */
+const EnvironmentSchema = z.object({
+  environment: z.object({
+    name: z.string(),
+    serviceInstances: z.object({
+      edges: z.array(
+        z.object({
+          node: z.object({ serviceId: z.string(), serviceName: z.string() }),
+        }),
+      ),
+    }),
+  }),
+});
+const VariableUpsertSchema = z.object({ variableUpsert: z.unknown() });
+const DeploySchema = z.object({ serviceInstanceDeployV2: z.string() });
+
 /**
- * Request a new build of `web` at exactly `commit` in the token's environment, with the
+ * Request a new build of `web` at exactly `commit`, in the environment the token reaches, with the
  * cache-breaker set to `refreshAt` first. Returns the deployment id Railway answers.
+ *
+ * **The token must reach `expectedEnvironment`** (`/break 177` hole 2). The production release-tip
+ * guard is attached to the name `production`; a production-scoped token stored in the staging slot
+ * would otherwise build staging's commit into production with no guard at all. The environment's
+ * name is read back from Railway and compared before anything is written.
  */
 export async function requestRebuild(
   fetchImpl: typeof fetch,
   token: string,
+  expectedEnvironment: FxEnvironmentName,
   commit: string,
   refreshAt: string,
 ): Promise<string> {
-  const scope = (await railway(fetchImpl, token, PROJECT_TOKEN_QUERY, {})) as {
-    projectToken?: { projectId?: string; environmentId?: string };
-  };
-  const projectId = scope.projectToken?.projectId;
-  const environmentId = scope.projectToken?.environmentId;
-  if (projectId === undefined || environmentId === undefined) {
-    throw new Error("Railway API: the token names no project environment");
+  if (!SHA.test(commit)) {
+    throw new Error("refusing to build: the commit is not a full SHA");
   }
-  const project = (await railway(fetchImpl, token, SERVICES_QUERY, {
-    id: projectId,
-  })) as {
-    project?: {
-      services?: {
-        edges?: readonly { node?: { id?: string; name?: string } }[];
-      };
-    };
-  };
-  const serviceId = project.project?.services?.edges?.find(
-    (edge) => edge.node?.name === WEB_SERVICE_NAME,
-  )?.node?.id;
-  if (serviceId === undefined) {
+  const { projectId, environmentId } = (
+    await railway(fetchImpl, token, PROJECT_TOKEN_QUERY, {}, ProjectTokenSchema)
+  ).projectToken;
+  const { environment } = await railway(
+    fetchImpl,
+    token,
+    ENVIRONMENT_QUERY,
+    { id: environmentId },
+    EnvironmentSchema,
+  );
+  if (environment.name !== expectedEnvironment) {
     throw new Error(
-      `Railway API: no service named \`${WEB_SERVICE_NAME}\` in the project`,
+      `the token reaches the Railway environment \`${environment.name}\`, not \`${expectedEnvironment}\`; nothing was changed`,
     );
   }
-  await railway(fetchImpl, token, VARIABLE_UPSERT, {
-    input: {
-      projectId,
-      environmentId,
-      serviceId,
-      name: FX_REFRESH_AT_VARIABLE,
-      value: refreshAt,
-      skipDeploys: true,
+  const serviceId = environment.serviceInstances.edges.find(
+    (edge) => edge.node.serviceName === WEB_SERVICE_NAME,
+  )?.node.serviceId;
+  if (serviceId === undefined) {
+    throw new Error(
+      `Railway API: no service named \`${WEB_SERVICE_NAME}\` in \`${environment.name}\``,
+    );
+  }
+  await railway(
+    fetchImpl,
+    token,
+    VARIABLE_UPSERT,
+    {
+      input: {
+        projectId,
+        environmentId,
+        serviceId,
+        name: FX_REFRESH_AT_VARIABLE,
+        value: refreshAt,
+        skipDeploys: true,
+      },
     },
-  });
-  const deployed = await railway(fetchImpl, token, DEPLOY_AT_COMMIT, {
-    serviceId,
-    environmentId,
-    commitSha: commit,
-  });
-  return String(deployed.serviceInstanceDeployV2 ?? "");
+    VariableUpsertSchema,
+  );
+  const deployed = await railway(
+    fetchImpl,
+    token,
+    DEPLOY_AT_COMMIT,
+    { serviceId, environmentId, commitSha: commit },
+    DeploySchema,
+  );
+  return deployed.serviceInstanceDeployV2;
 }
 
 /** The whole run. Never throws: every failure is a result and a non-zero exit code. */
@@ -325,6 +384,13 @@ async function refreshOne(
       reason: `repository variable ${environment.urlVariable} is not set`,
     };
   }
+  if (!isHttpsUrl(baseUrl)) {
+    return {
+      env,
+      state: "failed",
+      reason: `repository variable ${environment.urlVariable} must be an https:// URL`,
+    };
+  }
   const token = deps.env[environment.tokenSecret] ?? "";
   if (token === "") {
     return {
@@ -334,9 +400,19 @@ async function refreshOne(
     };
   }
 
-  const health = await readHealth(deps.fetchImpl, baseUrl);
-  if (!health.ok)
-    return { env, state: "skipped", reason: health.reason, behind: false };
+  const read = await readHealth(deps.fetchImpl, baseUrl);
+  if (!read.ok)
+    return { env, state: "skipped", reason: read.reason, behind: false };
+  const health = read.body;
+  // A swapped URL variable would compare one environment's rate and build its commit into the
+  // other (`/break 177` hole 2): the body must say which environment it is.
+  if (health.appEnv !== env) {
+    return {
+      env,
+      state: "failed",
+      reason: `${environment.urlVariable} answers as \`${health.appEnv}\`, not \`${env}\``,
+    };
+  }
   if (health.fxAsOf === undefined) {
     return {
       env,
@@ -367,6 +443,7 @@ async function refreshOne(
     await requestRebuild(
       deps.fetchImpl,
       token,
+      env,
       health.commit,
       deps.now.toISOString(),
     );
@@ -398,6 +475,15 @@ function describe(result: EnvironmentResult, ecbDate: string): string {
   }
 }
 
+/** Is `value` an absolute `https:` URL? A plain-http health read could be answered by anyone. */
+function isHttpsUrl(value: string): boolean {
+  try {
+    return new URL(value).protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 /** The remote `release` tip, read without moving anything. */
 function lsRemoteRelease(): string | null {
   try {
@@ -416,7 +502,10 @@ function lsRemoteRelease(): string | null {
 }
 
 /* c8 ignore start — the process entry point; every decision above is unit-tested. */
-if (import.meta.url === `file://${process.argv[1] ?? ""}`) {
+if (
+  process.argv[1] !== undefined &&
+  import.meta.url === pathToFileURL(process.argv[1]).href
+) {
   const summaryPath = process.env.GITHUB_STEP_SUMMARY;
   const outcome = await runFxRefresh({
     fetchImpl: fetch,

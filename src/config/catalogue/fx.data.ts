@@ -3,7 +3,7 @@
  * rounding", §5.1, §13 Q2, AC-6; `plan/06` §2.2; TASK-062).
  *
  * Phase 0 has no database, so a deployment's rates are the ECB daily file **fetched once at build**
- * (spec 005 §14 A7 Corrected 2; `src/config/catalogue/fx.bundle.ts`), and the rows below are the
+ * (spec 005 §14 A7 Corrected 2; `scripts/fx-snapshot.ts`, `src/modules/catalog/static/fx-bundle.ts`), and the rows below are the
  * **fallback** the build serves whole whenever that fetch fails. Either way nothing on a page
  * depends on a network call, and every test reads these rows, so every test is deterministic.
  * TASK-071's `fx.refresh` writes real `fx_rate` rows from the same source on the same shape and
