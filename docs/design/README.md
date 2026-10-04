@@ -167,8 +167,8 @@ reason a reviewer can trust a wireframe:
   (founder, 2026-10-04) superseded the future-tense rule this line used to state. The present tense
   describes how the service works; it never claims that an order was taken, a delivery made, a count
   of florists, or a destination live that is not — the "not taking orders yet" lines carry that. No "most sent", no ranking we cannot evidence ("Popular choices" is
-  the founder-approved heading, with an honest basis line). The guarantee is the "Freshness guarantee",
-  never "7-day". Cards are printed, never "handwritten".
+  the founder-approved heading, with an honest basis line). The guarantee is the "Fresh-flower promise",
+  never "7-day" and never any number of days. Cards are printed, never "handwritten".
 
 ## Voice
 

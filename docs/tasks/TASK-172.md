@@ -17,10 +17,23 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
     "Fresh-flower promise" in every locale, and `home.proof.guarantee.title` in any locale TASK-177
     leaves unchanged;
   - A11's tests: the message-and-content scan over the three keys, the PDP guarantee key and every
-    `infoPages.*` / `content/pages/*/guarantee.md` value in four locales (no "7-day", no match of
-    `\d+\s*-?\s*(day|days|Tag|Tage|Tagen|dzień|dni)`, case-insensitive); the PDP unit case (the same
-    text for `freshnessDays` 5, 7 and none); the e2e case (no number token in the guarantee node
-    equals the product's `freshnessDays`; "72" passes); each must go red with its subject restored;
+    `infoPages.*` / `content/pages/*/guarantee.md` value in four locales (no "7-day", and no match
+    of the **freshness-claim scan**: case-insensitive, Unicode word boundaries, one sentence at a
+    time: a *day count* — a digit run or a spelled-out number (`one`…`thirty`, `ein`…`dreißig`,
+    `jeden`…`trzydzieści`) directly followed, hyphenated or not, by a day word (`day`, `days`,
+    `Tag`, `Tage`, `Tagen`, `tägig*`, `dzień`, `dni`, `dniow*`) or a week word (`week`, `weeks`,
+    `Woche`, `Wochen`, `tydzień`, `tygodnie`, `tygodni`); a week word on its own; or an ICU
+    argument whose name contains `day` (`{days}`, `{freshnessDays}`) — with at most three words
+    between it and a *freshness word* (`fresh*`, `last`, `lasts`, `lasting`, `frisch*`, `hält`,
+    `halten`, `haltbar*`, `Haltbarkeit`, `śwież*`, `trwał*`, `wytrzym*`), in either order; the
+    statutory cancellation-right copy has no freshness word within that window and never
+    matches); the scan's own fixture case ("14-day right to cancel", "14 days to change your
+    mind", "14 Tage", "14 dni", spec 041 A.3's "fresh flowers are one of them" and "we do not
+    promise a number of days", and spec 041 help Q9's "Fresh flowers are an exception to the usual
+    14-day right to cancel" pass; "fresh for 7 days", "7-day freshness", "7 Tage frisch", "świeże
+    przez 7 dni", "lasts a week" and "fresh for {days} days" fail); the PDP unit case (the same text for `freshnessDays` 5, 7 and none);
+    the e2e case (no number token in the guarantee node equals the product's `freshnessDays`; "72"
+    passes); each must go red with its subject restored;
   - A11's AC and T rows written into spec 009 in place of A9's three cases (`pnpm specs:index`);
   - the stale "7-day freshness guarantee" comment on `freshnessGuarantee` in
     `src/modules/catalog/product.ts` (TASK-179's brief, Result).

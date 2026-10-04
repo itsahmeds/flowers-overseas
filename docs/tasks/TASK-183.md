@@ -62,6 +62,13 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
   so that test can mount them.
 - **From `/plan-tasks` (2026-10-04):** before the rename, check that nothing links to
   `/pl/regulamin/…` (no URL under it was ever published, §2).
+- **From the PR 164 review (2026-10-04):** the interim notice's transfers sentence is the one in
+  spec 041 §2 Cookies and Appendix B: row 2's logs may go to the US under the DPF and/or SCCs, the
+  Phase 0 consent records (row 3) are kept in those logs and follow their transfer, and error
+  events (row 1) stay in Sentry's EU region. Nothing says "rows 1 and 3 leave the EU for no one".
+  It is ⚖️ for the lawyer and goes to the founder in batch 2; never mark it reviewed yourself.
+  With the RoPA row 2 edit, also correct **RoPA row 3's Transfers cell**: it says "None" while its
+  Recipients cell names row 2's platform log, so it follows row 2's transfer in Phase 0.
 
 ## Escalations
 

@@ -583,7 +583,6 @@ Three clauses now read:
   the product route. Putting `searchParams` back makes the build list the product route as
   per-request, and the case goes red.
 
-
 **A11 — The PDP states the fresh-flower promise, never a number of days (supersedes A9's
 freshness line; design-round Q5; binds TASK-172).**
 Original: A9 ruled that the PDP's guarantee states "the product's own `freshnessDays`" as an ICU
@@ -612,21 +611,39 @@ Corrected (founder ruling, worded by the orchestrator):
   line must allow it explicitly and keep it out of every guarantee text.
 - The three "7-day freshness guarantee" strings are **retired** and become "Fresh-flower promise"
   in every locale. Spec 041 AC-16 asserts this; it does not make the change.
-- **TASK-172 is re-scoped** to the fresh-flower promise. It first draws the PDP line in
-  `docs/design/` and then renders it. It retires the three strings in `en`, `en-gb`, `de` and
-  `pl`. It adds its AC and T rows here in place of A9's three cases. Its English copy goes to the
-  founder for batch approval.
+- **TASK-172 is re-scoped** to what is left of the fresh-flower promise. The PDP line itself
+  (`product.trust.freshness.*`, the 72-hour photo terms, no number of days) ships in TASK-179
+  (PR 170), and `nav.utility.guarantee` already reads "Fresh-flower promise" (TASK-176).
+  TASK-172 retires `trust.guarantee.name` as "Fresh-flower promise" in every locale, and
+  `home.proof.guarantee.title` in any locale TASK-177 leaves unchanged. It writes the tests below
+  and adds its AC and T rows here in place of A9's three cases. The PDP's link to the guarantee
+  page needs `infoPageExists()`, so TASK-182 (spec 041) wires it. The wording is approved:
+  "Fresh-flower promise" and the A.3 sentence are in the founder's batch (decisions log
+  2026-10-04, item 2); the `de`/`pl` values stay `reviewed: false`.
+- This bullet was brought into line with the TASK-172 row and brief on 2026-10-04 (PR 164
+  review); where they differed, the row and brief were current.
 Tests (TASK-172 writes them; each must go red with its subject restored):
 - unit: the PDP guarantee node renders the same text for a product with `freshnessDays` 5, one
   with 7 and one with none.
 - unit (message and content scan, all four locales): no guarantee-related value, meaning the three
   keys above, the PDP guarantee key and every `infoPages.*` / `content/pages/*/guarantee.md` value,
-  contains "7-day" or matches a number-of-days pattern
-  (`\d+\s*-?\s*(day|days|Tag|Tage|Tagen|dzień|dni)`, case-insensitive).
+  contains "7-day" or matches the **freshness-claim scan** (case-insensitive, Unicode word
+  boundaries, one sentence at a time: a *day count* — a digit run or a spelled-out number
+  (`one`…`thirty`, `ein`…`dreißig`, `jeden`…`trzydzieści`) directly followed, hyphenated or not,
+  by a day word (`day`, `days`, `Tag`, `Tage`, `Tagen`, `tägig*`, `dzień`, `dni`, `dniow*`) or a
+  week word (`week`, `weeks`, `Woche`, `Wochen`, `tydzień`, `tygodnie`, `tygodni`); a week word on
+  its own; or an ICU argument whose name contains `day` (`{days}`, `{freshnessDays}`) — with at
+  most three words between it and a *freshness word* (`fresh*`, `last`, `lasts`, `lasting`,
+  `frisch*`, `hält`, `halten`, `haltbar*`, `Haltbarkeit`, `śwież*`, `trwał*`, `wytrzym*`), in
+  either order; the statutory cancellation-right copy has no freshness word within that window
+  and never matches).
+- unit (the scan's own fixture case): "14-day right to cancel", "14 days to change your mind",
+  "14 Tage", "14 dni", spec 041 A.3's "fresh flowers are one of them" and "we do not promise a
+  number of days", and spec 041 help Q9's "Fresh flowers are an exception to the usual 14-day
+  right to cancel" pass; "fresh for 7 days", "7-day freshness", "7 Tage frisch", "świeże przez 7
+  dni", "lasts a week" and "fresh for {days} days" fail.
 - e2e (built HTML, four locales, a 5-day and a 7-day product): no number token in the guarantee
   node equals the product's `freshnessDays`. "72" passes; "5" or "7" fails.
 - Mutation: restoring "7-day", `{days}` or a `freshnessDays` interpolation in any locale turns the
   matching case red.
-Open: the founder confirms the promise's exact wording in the copy batch. Until then, TASK-172
-ships it as that batch's pending copy.
 Raised by: the founder, 2026-10-04 in chat (spec 041 §13 Q4), relayed by the orchestrator.
