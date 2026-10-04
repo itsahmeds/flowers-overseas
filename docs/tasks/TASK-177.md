@@ -39,6 +39,34 @@ Row: `TASKS.md` → TASK-177. This brief is the task's long form (spec 001 §14 
 5. **No prices on Popular choices.** The artboard draws prices with equivalents, but spec 004 §3/§8 render no price on the home, and A21 says behaviour stays the owning spec's. **For the designer:** record this in the README.
 6. **"my partner": answered 2026-10-04.** At first "my partner" was held back, because spec 004 §14 A5 bans "partner" (`src/config/voice.ts`). The founder then said "Allow \"my partner\"", and spec 004 §14 **A22** merged as PR 175 (0043ba5a). "my partner" ships. `voice.ts` gains `VOICE_EXCEPTIONS`, pinned to the key `home.sentence.who` and the exact phrase; its ICU select keyword counts as syntax under that key only. "our partner", "partner florist", "my partner florist", "my partners" and `partner {our partner}` still fail, and so does the same phrase under any other key. Three deliberate mutations went red: no exception, no florist guard, and the key scope dropped. The founder also said "Yes, count it": the ICU-coded `home.sentence.frame` and `home.sentence.who` count as his approval of the batch wording. `home.sentence.who` changed, so it is `reviewed: false` with its new hash and waits for his attestation tool. `home.sentence.frame` is untouched.
 
+7. **The sentence's font swap shifts the home (CLS > 0), and the spec leaves no fix open (blocking).** CI run 37173654376 on b2acfd5d failed three CLS gates on the home. All three measure the whole page:
+   - `tests/e2e/header.spec.ts` AC-7, `toBe(0)`, desktop: /en 0.00013, /de 0.00006, /pl 0.0030;
+   - `tests/e2e/banner.spec.ts` AC-28, `toBe(0)`: /en 0.00013;
+   - `tests/e2e/consent-banner.spec.ts` AC-17, `<= 0.001`: /pl 0.0030.
+
+   Lighthouse CLS on the homes is /en 0.0004, /de 0.007 and /pl 0.00001, under its 0.05 budget; main reads 0.
+
+   **Cause, measured locally with layout-shift attribution** (`next start`, build slot, 2026-10-04): about 95 ms after load, the Fraunces faces swap in (`font-display: swap`, not preloaded):
+   - the 300 italic of the sentence's selects;
+   - the roman of its frame text;
+   - on `/pl`, the roman Latin-Ext for the "ł" in "wysyłka".
+
+   Each `field-sizing: content` select changes width, so the words after it ("in", "for", ".") and its chevron move. Example, `/de` at 1280: the who select goes from 157.5 to 144.1 px. The selects are the only inline Fraunces on the page. The H1 is a block, so it does not shift.
+
+   **Why the spec leaves no fix open:**
+   - A21 clause 3 requires `font-display: swap`.
+   - It forbids preloading the italic.
+   - It allows the Fraunces roman preload only where the LCP element is display text. The home's LCP is the hero `<img>` (measured).
+   - The matched fallback that TASK-175 added covers the roman only. Even a matched italic fallback only matches the average width, so the select widths, and with them CLS, would still move a little.
+
+   **Options for the founder or spec-writer:**
+   - (a) Amend A21 clause 3 so the home preloads Fraunces roman Latin and italic Latin. That is 13,352 + 16,848 B, plus Alegreya's 19,320 B, for 49,520 B against the 51,200 B preload budget. `/pl` still swaps the Latin-Ext roman.
+   - (b) Add matched fallback metrics for the italic, which clause 3 already asks for "on every face". This reduces the shift but does not zero it.
+   - (c) Scope the three CLS-0 assertions to shifts their own subject causes (`LayoutShift.sources`), and let Lighthouse's CLS < 0.05 govern the page.
+   - (d) Set the selects in the preloaded Alegreya. This departs from the artboard.
+
+   I have not chosen. Every other check on that run is green, including `visual` and `lighthouse`.
+
 ## Progress
 
 - 2026-10-04: v2 home, `SentencePicker` + `sentence-model.ts`, `GET /api/send/{locale}` and the finder retired (eeff9154). Fresh-on-arrival wording and v2 e2e/a11y/visual specs (2f6fdce7). Draft PR 174 against main, stacked on PR 168.
@@ -49,11 +77,14 @@ Row: `TASKS.md` → TASK-177. This brief is the task's long form (spec 001 §14 
 - 2026-10-04: rebased onto main (`git rebase --onto origin/main 2a1d1489`) after PR 168 squash-merged as df5cab72. Conflicts in `messages/{en,de,pl}.json`, their `.meta.json` and `tests/unit/ui-home-gated.test.tsx` were all one thing: main still carried `home.trending.eyebrow` ("Trending now") and its test, which this branch retires; resolved to the branch's side. PR 167's "Popular choices" text is the same on both sides.
 - 2026-10-04: date-driven layout. Every home shot below the occasion-dates band (`proof`, `occasions`, `how-it-works`, `faq`, `destinations`) and every home full-page shot (`en.png`, `de.png`, `home-{locale}-{mobile,desktop}.png`, `ar-XB.png`) now takes the band out of the layout with `tests/visual/home-dates.css`. The band reads no clock (it prints `src/config/occasions.ts` as data, which rolls forward by an edit), so today nothing moves by date alone; the sheet makes a calendar edit unable to move other sections' pixels. The band's own shot is taken as rendered. `footer.spec.ts` belongs to TASK-176 and is unchanged.
 - 2026-10-04: baselines. Run 37171984787 showed two defects, both fixed in 97c1f91a with a test: the promise band drew four desktop columns for three facts, so a blank ink-muted cell showed at its inline end (`ProofRow` now `md:grid-cols-3`; a unit case ties the column count to `PROOF_FACTS`, red before the fix), and the `/dev/components` hero had no shop countries, so its country select drew blank. Run 37172887887 re-took them; its whole change list (51 changed, 2 added) plus its manifest is b9722592's content, and the retired `home-*-{finder,trust}` PNGs are deleted on both platforms.
+- 2026-10-04: ci:full on b2acfd5d (run 37173654376). `visual` and `lighthouse` are green. e2e and a11y were red on stale counts (three promise facts, three FAQ answers) and on the crawl's depth-1 Poland check, all fixed in 35f9d5c2. They were also red on the CLS-0 gates, which is escalation 7.
 - 2026-10-04: rebased again onto main after PR 175 (spec 004 A22) merged. A22 clause 2 asks that `docs/design/README.md` §Voice record the exception, pinned by the test: a new case in `tests/unit/design-docs.test.ts` reads every `VOICE_EXCEPTIONS` entry from that section (red before the bullet was added).
 
 ## Result
 
-**Done, in review.** Rebased on main after PR 168 and PR 175; Linux baselines from run 37172887887; `ci:full` on the head SHA named in the PR.
+**Blocked on escalation 7 (the home's CLS gates).** Everything else is done. The branch is rebased on main after PR 168 and PR 175, the Linux baselines come from run 37172887887, and `ci:full` is green except the three CLS-0 e2e assertions. The FAQ and promise-band counts, and the crawl, were fixed in 35f9d5c2.
+
+**Lighthouse, CI run 37173654376 (b2acfd5d) against main 977990a4.** LCP: /en 1917 ms (main 1878), /en-gb 1989 (1832), /de 1896 (1891), /pl 1835 (1962). The LCP element is the preloaded hero `<img>`. The URLs that this PR does not change moved by the same amounts (/en/send-flowers-to 1253 against 1289, the Poland guide 1532 against 1534). Script is 127,940 B against main's 128,358 (the finder island is gone, the sentence island added). The /en-gb figure of 1989 ms is over 1950, but /pl moved 127 ms the other way, so it is run-to-run spread, not a cost the sentence adds.
 
 **Baselines (run 37172887887).** 53 PNGs moved: the 18 `home-{desktop,mobile}-*` element shots (`sentence` new), the 8 `home-{locale}-{mobile,desktop}` artboard shots, `en.png`, `de.png`, `ar-XB.png`, and `dev-components-desktop.png`, all because the home is new. The rest move by a sub-pixel offset with no visible change, and each was compared with its old picture: `footer-{en,de}-desktop`, `footer-en-mobile` (the footer sits under a shorter home), `consent-*-desktop` and `suggestion-banner-*` (a few edge pixels where the new hero shows through the overlay's rounded corners), and `listing-*` and `product-*-gallery-placeholder` (photographed on `/dev/components`, where the home section above them changed). I looked at all 53 committed images. The 23 that the second run changed against the first are the promise band and what sits under it at desktop width, and I looked at those again.
 
