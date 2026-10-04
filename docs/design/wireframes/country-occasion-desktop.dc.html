@@ -711,27 +711,238 @@ body { margin: 0; background: var(--color-paper-3); }
 .gcol { display: grid; gap: 6px; block-size: 56px; }
 .gcol span { background: var(--color-sage-wash); border-radius: var(--radius-md); box-shadow: inset 0 0 0 1px var(--color-rule); }
 
+
+/* ================= sweep 2026-10-04 — the first screen of every listing ================= */
+/* Every rule below is a composition of existing tokens: no new token, no colour literal,
+   logical properties only. Drawn first on system/components.dc.html, group "First screens". */
+
+/* the hero band: full-bleed ground, the breadcrumb inside it, then copy beside one photograph */
+.hx { position: relative; background: var(--hx-ground, var(--color-paper)); padding-block-end: 64px; overflow: hidden; }
+.M .hx { padding-block-end: 36px; }
+.hx .crumbs { padding-block-start: 20px; }
+.hx-grid { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 56px; align-items: center; padding-block-start: 32px; }
+.hx-grid.flip { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
+.M .hx-grid, .M .hx-grid.flip { grid-template-columns: minmax(0, 1fr); gap: 22px; padding-block-start: 14px; }
+.hx-copy { display: grid; gap: 20px; align-content: center; justify-items: start; }
+.M .hx-copy { gap: 14px; }
+.hx-copy .eyebrow { margin: 0; }
+.hx h1 { font-size: var(--text-display); line-height: var(--line-height-display); letter-spacing: var(--tracking-hero); font-weight: var(--font-weight-display-hero); font-variation-settings: var(--font-variation-display-hero); }
+.M .hx h1 { font-size: var(--text-display-s); }
+.hx h1.t { font-size: var(--text-title); }
+.M .hx h1.t { font-size: 38px; }
+.hx h1 em.sun { text-decoration: underline; text-decoration-color: var(--color-sun); text-decoration-thickness: 0.09em; text-underline-offset: 0.1em; text-decoration-skip-ink: none; }
+.deck { font-size: 22px; line-height: 1.42; color: var(--color-ink-2); max-inline-size: 34ch; }
+.M .deck { font-size: var(--text-body); max-inline-size: none; }
+.hx-row { display: flex; flex-wrap: wrap; align-items: center; gap: 18px 28px; }
+.M .hx-row { gap: 12px 16px; }
+.hx-note { font-size: var(--text-sm); color: var(--color-ink-2); line-height: var(--line-height-tight); max-inline-size: 46ch; }
+
+/* registers: the one variable a hub sets (spec ruling asked for in the audit) */
+.reg-warm { --hx-ground: var(--color-butter); }
+.reg-quiet { --hx-ground: var(--color-paper-2); }
+.reg-quiet .eyebrow, .fo .reg-quiet h1 em { color: var(--color-ink-2); }
+.reg-dated { --hx-ground: var(--color-blush); }
+.reg-cream { --hx-ground: var(--color-paper-2); }
+.reg-leaf { --hx-ground: var(--color-leaf-wash); }
+.reg-sky { --hx-ground: var(--color-sage-wash); }
+.reg-ink { --hx-ground: var(--color-surface-inverse); color: var(--color-on-inverse); }
+.reg-ink .eyebrow, .fo .reg-ink h1 em { color: var(--color-on-inverse-accent); }
+.reg-ink .crumbs, .reg-ink .crumbs a, .reg-ink .crumbs [aria-current], .reg-ink .deck, .reg-ink .hx-note { color: color-mix(in oklab, var(--color-paper) 84%, var(--color-ink)); }
+.reg-ink .crumbs li + li::before { color: color-mix(in oklab, var(--color-paper) 40%, var(--color-ink)); }
+
+/* the lead photograph: the listing's first product, the page's one priority image */
+.lead { position: relative; justify-self: end; inline-size: 100%; max-inline-size: 452px; margin: 0; }
+.M .lead { justify-self: stretch; max-inline-size: none; }
+.lead .frame { position: relative; aspect-ratio: 4 / 5; border-radius: var(--radius-hero); overflow: hidden; box-shadow: var(--shadow-paper); background: var(--color-paper-2); }
+.M .lead .frame { aspect-ratio: 4 / 3; border-radius: var(--radius-photo); }
+.lead .frame .img { inline-size: 100%; block-size: 100%; }
+.lead.tilt .frame { transform: rotate(1.4deg); }
+.M .lead.tilt .frame { transform: none; }
+.lead.arch .frame { border-radius: var(--radius-arch); }
+.M .lead.arch .frame { aspect-ratio: 1 / 1; }
+.lead.small { max-inline-size: 380px; }
+.lead .pill { position: absolute; z-index: 2; inset-block-end: 14px; inset-inline-start: 14px; background: var(--color-card); color: var(--color-ink-2); font-size: var(--text-xs); line-height: 1.3; padding: 5px 12px; border-radius: var(--radius-full); max-inline-size: calc(100% - 28px); }
+.lead .cap { margin-block-start: 14px; font-size: var(--text-sm); color: var(--color-ink-2); }
+.lead .cap b { font-family: var(--font-display); font-weight: var(--font-weight-display); font-size: var(--text-h3); color: var(--color-ink); margin-inline-end: 8px; }
+.reg-ink .lead .cap { color: color-mix(in oklab, var(--color-paper) 84%, var(--color-ink)); }
+.reg-ink .lead .cap b { color: var(--color-on-inverse); }
+.tape { position: absolute; z-index: 3; inset-block-start: -12px; inset-inline-start: 40px; inline-size: 112px; block-size: 26px; background: color-mix(in oklab, var(--color-sun) 78%, transparent); transform: rotate(-5deg); }
+.M .tape { inline-size: 84px; block-size: 20px; inset-block-start: -9px; }
+
+/* the price tag on a country lead: name, the one all-in price, the honesty label */
+.tag { position: absolute; z-index: 3; inset-block-end: -26px; inset-inline-start: -36px; display: grid; gap: 2px; min-inline-size: 236px; padding: 14px 20px 14px; background: var(--color-card); border-radius: var(--radius-letter); box-shadow: var(--shadow-letter); transform: rotate(-1.6deg); }
+.M .tag { position: relative; inset: auto; margin-block-start: -34px; margin-inline-start: 12px; justify-self: start; inline-size: max-content; max-inline-size: calc(100% - 24px); min-inline-size: 0; transform: rotate(-1deg); }
+.tag b { font-family: var(--font-display); font-weight: var(--font-weight-display); font-size: var(--text-md); line-height: 1.15; }
+.M .tag b { font-size: var(--text-h3); }
+.tag .price { margin: 0; font-size: 20px; }
+.M .tag .price { font-size: var(--text-body); }
+.tag .prov { margin: 2px 0 0; }
+.M .lead.has-tag { display: grid; }
+
+/* the destination postmark: ring = country + its state, so the honest state is the mark itself */
+.pm { flex: none; inline-size: 136px; block-size: 136px; transform: rotate(var(--tilt-postmark)); filter: drop-shadow(0 6px 14px var(--color-shade)); }
+.M .pm { inline-size: 92px; block-size: 92px; }
+.pm.big { inline-size: 188px; block-size: 188px; }
+.M .pm.big { inline-size: 116px; block-size: 116px; }
+.pm-c { position: absolute; z-index: 4; }
+
+/* the P.S. inside a hero */
+.hx .ps { max-inline-size: 430px; }
+.M .hx .ps { max-inline-size: none; transform: rotate(0.4deg); }
+.ps.compact { padding: 16px 20px 18px; }
+.ps.compact .hand { font-size: var(--text-h3); }
+.ps.compact p + p { font-size: var(--text-sm); }
+.ps.flat { transform: none; box-shadow: none; background: transparent; padding: 0; border-inline-start: 2px solid var(--color-rule); padding-inline-start: 18px; }
+.ps.flat::before { content: none; }
+.ps.flat .hand { color: var(--color-ink-2); }
+
+/* the printed card tucked in front of a photograph (Fraunces italic: A21 clause 3 keeps Caveat on the product page) */
+.pcard { position: absolute; z-index: 3; inset-block-end: -30px; inset-inline-start: -64px; inline-size: 228px; padding: 20px 20px 18px; background: var(--color-card); border-radius: var(--radius-md); box-shadow: var(--shadow-paper); transform: rotate(var(--tilt-card)); display: grid; gap: 10px; }
+.M .pcard { position: relative; inset: auto; inline-size: auto; margin-block-start: -28px; margin-inline: 24px 40px; transform: rotate(-1.5deg); }
+.pcard svg { inline-size: 24px; block-size: 24px; }
+.pcard p { font-family: var(--font-display); font-style: italic; font-weight: var(--font-weight-display-em); font-variation-settings: var(--font-variation-display); font-size: 21px; line-height: 1.22; color: var(--color-ink); }
+.M .pcard p { font-size: var(--text-body); }
+.pcard small { font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink-3); }
+
+/* stamps, sized for a first screen */
+.stamp.xl .stamp-in { padding: 20px 22px 18px; }
+.stamp.xl .stamp-day { font-size: 112px; }
+.M .stamp.xl .stamp-day { font-size: 76px; }
+.stamp.sm { padding: 9px; }
+.stamp.sm .stamp-in { padding: 12px 12px 10px; gap: 2px; }
+.stamp.sm .stamp-day { font-size: 44px; }
+.stamp.sm h3 { font-size: 17px; margin-block-start: 8px; }
+.stamp.sm .stamp-mon { font-size: 11px; letter-spacing: 0.1em; }
+.stamp.word .stamp-day { font-size: 46px; line-height: 0.95; letter-spacing: var(--tracking-display); }
+.M .stamp.word .stamp-day { font-size: 34px; }
+.tilt-l { transform: rotate(-3deg); }
+.tilt-r { transform: rotate(2.5deg); }
+.stamp-wrap { filter: drop-shadow(var(--shadow-stamp)); display: inline-block; }
+
+/* a row of seven stamps: "country by country", made literal */
+.strip { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 16px; margin-block-start: 36px; }
+.M .strip { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 132px; gap: 12px; overflow: hidden; margin-inline: calc(var(--gutter-s) * -1); padding-inline: var(--gutter-s); margin-block-start: 22px; }
+.strip li { filter: drop-shadow(var(--shadow-stamp)); }
+.strip li:nth-child(even) { transform: translateY(8px); }
+.strip .stamp { block-size: 100%; }
+.strip .stamp-go { padding-block-start: 10px; font-size: var(--text-sm); }
+
+/* destination stamps: the category hub's picker, drawn as stamps you can press */
+.dstamps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.dstamps.c7 { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+.M .dstamps, .M .dstamps.c7 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.dstamps li { filter: drop-shadow(var(--shadow-stamp)); }
+.dstamp { display: flex; flex-direction: column; block-size: 100%; text-decoration: none; color: var(--color-ink); padding: 9px; background: var(--color-card);
+  -webkit-mask: linear-gradient(black 0 0) content-box, radial-gradient(circle, transparent 4px, black 4.5px) -7px -7px / 14px 14px round;
+  mask: linear-gradient(black 0 0) content-box, radial-gradient(circle, transparent 4px, black 4.5px) -7px -7px / 14px 14px round; }
+.dstamp-in { flex: 1; display: grid; align-content: start; gap: 4px; padding: 12px 12px 10px; border: var(--rule); background: var(--tint, var(--color-sage-wash)); }
+.dstamp b { font-family: var(--font-display); font-weight: var(--font-weight-display); font-size: 22px; line-height: 1.1; }
+.M .dstamp b { font-size: 19px; }
+.dstamp span { font-size: var(--text-xs); line-height: 1.3; color: var(--color-ink-2); }
+.dstamp i { margin-block-start: 6px; font-style: normal; font-size: var(--text-sm); font-weight: var(--font-weight-bold); color: var(--color-link); }
+
+/* the envelope: the destinations hub's first screen */
+.envelope { position: relative; display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 48px; align-items: start; padding: 48px 52px 52px; background: var(--color-card); border-radius: var(--radius-letter); box-shadow: var(--shadow-letter); margin-block-start: 28px; }
+.M .envelope { grid-template-columns: minmax(0, 1fr); gap: 24px; padding: 24px 20px 28px; margin-block-start: 14px; }
+.envelope .addr { display: grid; gap: 18px; }
+.envelope .lines { block-size: 96px; background-image: var(--letter-lines); background-size: 100% 48px; max-inline-size: 420px; }
+.estamps { position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; justify-self: end; inline-size: 100%; max-inline-size: 500px; }
+.M .estamps { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; max-inline-size: none; }
+.estamps li { filter: drop-shadow(var(--shadow-stamp)); }
+.estamps li:nth-child(3n) { transform: rotate(-2deg); }
+.estamps li:nth-child(4n+1) { transform: rotate(1.5deg); }
+.estamps .dstamp b { font-size: 19px; }
+.M .estamps .dstamp b { font-size: 14px; }
+.M .estamps .dstamp { padding: 6px; }
+.M .estamps .dstamp-in { padding: 8px 6px 6px; }
+.estamps .pm-c { inset-block-end: -42px; inset-inline-start: -46px; }
+.M .estamps .pm-c { inset-block-end: -30px; inset-inline-start: auto; inset-inline-end: -8px; }
+
+/* the stamp sheet: the occasions index's first screen */
+.sheet-x { position: relative; padding: 22px; background: var(--color-card); border-radius: var(--radius-letter); box-shadow: var(--shadow-paper); transform: rotate(0.8deg); }
+.M .sheet-x { padding: 14px; transform: none; }
+.sheet-x ul { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.M .sheet-x ul { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.sheet-x .stamp { padding: 9px; }
+.sheet-x .stamp-in { padding: 14px 14px 12px; gap: 2px; }
+.sheet-x .stamp-day { font-size: 58px; }
+.M .sheet-x .stamp-day { font-size: 44px; }
+.sheet-x .stamp h3 { font-size: 18px; margin-block-start: 10px; }
+.M .sheet-x .stamp h3 { font-size: var(--text-ui); }
+.sheet-x .pm-c { inset-block-start: -36px; inset-inline-start: -40px; }
+.M .sheet-x .pm-c { inset-block-start: -26px; inset-inline-start: auto; inset-inline-end: -10px; }
+.sheet-x figcaption { margin-block-start: 14px; font-size: var(--text-sm); color: var(--color-ink-3); }
+
+/* the magazine grid: the country category's first screen is its goods */
+.mag { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 40px 24px; }
+.M .mag { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 14px; }
+.mag > li:first-child { grid-column: span 2; grid-row: span 2; }
+.M .mag > li:first-child { grid-row: auto; }
+.mag > li:first-child .card h3 { font-size: var(--text-xl); }
+.M .mag > li:first-child .card h3 { font-size: var(--text-md); }
+.mag > li:first-child .card .price { font-size: 22px; }
+.mag > li:first-child .card .cph { border-radius: var(--radius-hero); }
+.M .mag > li:first-child .card .cph { aspect-ratio: 4 / 3; border-radius: var(--radius-photo); }
+
+/* a compact header for country-scoped listings */
+.lhead { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 40px; align-items: end; padding-block: 20px 28px; }
+.M .lhead { grid-template-columns: minmax(0, 1fr); gap: 16px; padding-block: 10px 20px; }
+.lhead .lede { max-inline-size: 52ch; font-size: var(--text-body); margin-block-start: 14px; }
+.lhead-side { display: flex; align-items: center; gap: 20px; }
+.M .lhead-side { gap: 12px; align-items: start; }
+
+/* quiet pull-quote (sympathy) */
+.pull { font-family: var(--font-display); font-style: italic; font-weight: var(--font-weight-display-em); font-variation-settings: var(--font-variation-display); font-size: var(--text-md); line-height: 1.3; color: var(--color-ink); max-inline-size: 30ch; padding-inline-start: 18px; border-inline-start: 2px solid var(--color-field-edge); }
+.M .pull { font-size: var(--text-h3); }
+
+/* the plant label (plants hub) */
+.plabel { position: absolute; z-index: 3; inset-block-end: 56px; inset-inline-end: -40px; inline-size: 210px; padding: 16px 18px 14px; background: var(--color-card); border-radius: var(--radius-letter) var(--radius-letter) var(--radius-letter) 40px; box-shadow: var(--shadow-paper); transform: rotate(4deg); }
+.M .plabel { position: relative; inset: auto; inline-size: auto; margin-block-start: -26px; margin-inline: 40px 16px; transform: rotate(2deg); }
+.plabel p { font-family: var(--font-display); font-style: italic; font-weight: var(--font-weight-display-em); font-variation-settings: var(--font-variation-display); font-size: 19px; line-height: 1.25; }
+
+/* links in a hero, chip-sized */
+.hx .chips { gap: 10px; }
+.chip.on-ink { background: transparent; color: var(--color-on-inverse); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-paper) 40%, var(--color-ink)); }
+
+/* annotation helpers for the founder's canvas */
+.fold { position: relative; block-size: 0; border-block-start: 2px dashed var(--color-accent); }
+.fold span { position: absolute; inset-inline-end: 8px; inset-block-start: 4px; font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-accent-strong); background: var(--color-card); padding: 2px 8px; border-radius: var(--radius-full); }
+.screen { position: relative; overflow: hidden; background: var(--color-paper); border-radius: var(--radius-field); box-shadow: inset 0 0 0 1px var(--color-rule); }
+.about-x { display: grid; grid-template-columns: 4fr 7fr; gap: 72px; align-items: start; }
+.M .about-x { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+.lead .pill.end { inset-inline-start: auto; inset-inline-end: 14px; }
+.M .lead .pill.end { inset-inline-end: 10px; inset-block-end: 10px; }
+.M .dstamps.dsrail { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 140px; overflow: hidden; margin-inline: calc(var(--gutter-s) * -1); padding-inline: var(--gutter-s); padding-block: 4px 10px; }
+.M .hx .ps.under { margin-block-start: -30px; margin-inline: 10px 6px; position: relative; z-index: 3; }
+.D .envelope { grid-template-columns: minmax(0, 6fr) minmax(0, 6fr); }
+.estamps { max-inline-size: 600px; }
+.M .estamps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.estamps .dstamp b { font-size: 18px; }
+.M .estamps .dstamp b { font-size: 14px; }
+.sheet-x .pm-c { inset-inline-start: auto; inset-inline-end: -40px; }
+.lhead { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
+.lhead-side .ps { max-inline-size: 380px; }
+.M .lhead-side .ps { max-inline-size: none; }
+.ps .pm-in { position: absolute; inset-block-start: -18px; inset-inline-end: -8px; inline-size: 78px; block-size: 78px; }
+a.tag { text-decoration: none; color: inherit; }
+a.tag:hover b { text-decoration: underline; text-underline-offset: 4px; }
+.M .lead.wide .frame { aspect-ratio: 3 / 2; }
+.M .mag > li:first-child .card .cph { aspect-ratio: 3 / 2; }
+.M .lhead { gap: 10px; padding-block: 4px 14px; }
+.pm-corner { position: absolute; z-index: 4; inset-block-start: -16px; inset-inline-start: -8px; inline-size: 84px; block-size: 84px; }
+.pm-h1 { position: absolute; inset-block-end: -6px; inset-inline-end: 0; inline-size: 84px; block-size: 84px; }
+
   </style>
 </helmet>
 <div class="fo D" style="inline-size: 1440px;">
-<section class="note"><span class="nl">Country occasion · desktop 1440 · [internal]</span><dl><dt>Purpose</dt><dd>What we can make for one occasion in one destination, with that country's own date for it. The date is the reason the page exists, so it is drawn as a stamp beside the sentence that states it.</dd><dt>URL</dt><dd><code>/en/poland/occasions/mothers-day</code> · <code>/de/polen/anlaesse/muttertag</code> · <code>/pl/polska/okazje/dzien-matki</code>. Exists iff observed, ≥ 6 products, authored slug: Mother's Day alone in Poland today.</dd><dt>Index</dt><dd><code>noindex,follow</code> in Phase 0.</dd><dt>Reads</dt><dd><code>listingView()</code> narrowed by the occasion, plus <code>occasionDate(rule, year)</code> for the dated line.</dd><dt>Blocks</dt><dd>Breadcrumb (six crumbs, keeping Flowers; Occasions links to the index) → H1, the date stamp and the dated line, the date note, the lede, the P.S. → toolbar → 7 cards (one page: no pagination) → <b>Also in Poland</b> → How it reaches Poland.</dd><dt>States</dt><dd><b>Drawn below:</b> the undated line · pagination when there are more than 12 · the stamp alone.</dd><dt>Tokens</dt><dd>H1 <code>--text-display</code>/<code>-s</code>, weight <code>--font-weight-display-hero</code>, the country in <code>--color-accent</code> italic. P.S. <code>--color-card</code>, <code>--shadow-letter</code>, <code>--tilt-ps</code>, sunflower tape; its “P.S.” is Fraunces 300 italic, not Caveat (A21 clause 3). Toolbar rules <code>--rule</code>; count in <code>--font-display</code> <code>--text-md</code>. Card photo <code>--radius-photo</code> 18 (mobile <code>--radius-photo-s</code> 14), name <code>--text-h3</code>/<code>-s</code>, price <code>--font-weight-bold</code> tabular with “all in” in <code>--color-ink-3</code> <code>--text-fine</code>, honesty label <code>--text-xs</code> <code>--color-ink-3</code>. Note card <code>--color-blush</code>, heading <code>--color-accent-strong</code> italic. Chips <code>--color-card</code> with <code>--rule</code>; current <code>--color-selected</code>.</dd><dt>Spacing</dt><dd>Intro 7fr∶4fr, gap 72, block 40/56 (mobile one column, 24/36). Grid 4 × gap 52/28 (mobile 2 × 32/14). Toolbar block 18. Pagination 40 below the grid. Sub-sections 72 apart (mobile 48) — within the density rule, no 128 between two rows of products.</dd><dt>Semantics</dt><dd>One <code>&lt;h1&gt;</code>. The grid is a <code>&lt;ul&gt;</code> with an accessible name; each card an <code>&lt;article&gt;</code> whose heading is the product name and whose price is adjacent text. The whole card is one link; the honesty label sits outside the link. The toolbar is a <code>&lt;form method="get"&gt;</code> with a visible label and a <b>Sort</b> submit — identical with JavaScript off (spec 008 §5.3). The category chips are links to pages that exist, inside a labelled <code>&lt;nav&gt;</code>; the current one has <code>aria-current="page"</code> and is the only selected (cornflower) chip. Pagination is a labelled <code>&lt;nav&gt;</code> with real links and <code>aria-current="page"</code>. The P.S. is an <code>&lt;aside&gt;</code>. The card note in the grid is an <code>&lt;li&gt;</code> holding an <code>&lt;aside&gt;</code>, so the list's count stays honest about what it holds. 200 % reflow at 390.</dd><dt>Money</dt><dd>Every amount is <code>formatMoney</code>'s output (Intl), never hand-formatted. Drawn for <code>/en</code> (<code>en-150</code>) with a fresh rate: <b>€55.90</b> charged; the equivalents line under it is spec 004 §14 A21 clause 6 — the charged amount at the same snapshot's mid rate, in the other currencies of EUR, GBP, PLN and USD (<code>/en</code> renders “47.32&nbsp;£” and “238.58&nbsp;PLN”; USD is a placeholder bar until TASK-178 commits its rate), with its date. The line is <b>omitted</b> whenever the rate is stale and the price falls back to the destination currency, which is what production shows today (see the stale state). Same amount per locale: <code>/en</code> 229.00&nbsp;PLN · <code>/en-gb</code> PLN&nbsp;229.00 · <code>/de</code> 229,00&nbsp;PLN · <code>/pl</code> 229,00&nbsp;zł — the space is U+00A0. The line's wording is a new key for the founder's copy batch.</dd><dt>Copy</dt><dd>Verbatim <code>shop.occasion.*</code>, except <code>shop.occasion.lede</code> in the future tense (“will hand them over”). The stamp's Polish name comes from the occasion registry's local name, not a message literal.</dd><dt>Owning spec</dt><dd>008 · dates 007</dd></dl></section>
-<div class="notice wrap" role="note"><p><strong>A note from us:</strong> Delivery dates open when we confirm our first florist. <span class="sep">·</span> Prices include delivery and VAT <span class="sep">·</span> Freshness guarantee</p><div class="util"><a href="tel:+12135925150">Help &amp; WhatsApp +1 (213) 592-5150</a><span class="sep">|</span><nav aria-label="Change language" style="display:flex;gap:14px;align-items:center"><a href="/en" lang="en" aria-current="true">English</a> <a href="/en-gb" lang="en">English (UK)</a> <a href="/de" lang="de">Deutsch</a> <span class="beta">Beta</span> <a href="/pl" lang="pl">Polski</a> <span class="beta">Beta</span></nav><span aria-label="Prices shown in EUR">EUR</span></div></div><header class="hdr"><div class="wrap hdr-in"><a class="logo" href="/en" aria-label="Flowers Overseas, home"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink)" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink)" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><span class="wordmark" aria-hidden="true">Flowers Overseas</span></a><nav class="nav" aria-label="Main"><ul><li><a href="/en/poland/flowers">Our selection</a></li><li><a href="/en/occasions/birthday">Birthday</a></li><li><a href="/en/occasions/sympathy">Sympathy</a></li><li><a href="/en/occasions">Occasions</a></li><li><a href="/en/flowers/hand-tied-bouquets">Bouquets</a></li><li><a href="/en/flowers/roses">Roses</a></li><li><a href="/en/flowers/plants">Plants</a></li><li><a href="/en/send-flowers-to">Destinations</a></li></ul></nav><a class="btn sm" href="/en#send">Send flowers</a></div></header>
-<main id="main"><div class="wrap">
-<nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/en">Home</a></li><li><a href="/en/send-flowers-to">Send flowers to</a></li><li><a href="/en/send-flowers-to/poland">Poland</a></li><li><a href="/en/poland/flowers">Flowers</a></li><li><a href="/en/occasions">Occasions</a></li><li><span aria-current="page">Mother's Day</span></li></ol></nav>
-<div class="shop-intro"><div><p class="eyebrow">Sending to Poland</p><h1 class="h1d">Mother's Day flowers for <em>Poland</em></h1>
-  <div class="dated"><div class="stamp" aria-hidden="true"><div class="stamp-in t-blush"><span class="stamp-day">26</span><span class="stamp-mon">May · Wednesday</span><h3 style="font-size:var(--text-h3)">Mother's Day</h3><span class="stamp-pl" lang="pl">Dzień Matki</span></div></div><div><p class="when">Mother's Day in Poland is Wednesday, 26 May 2027.</p>
-  <p class="small" style="margin-block-start:8px">That is the date Poland keeps for it, worked out from that country's own rule. It can fall on a different day from the one you keep at home.</p></div></div>
-  <p class="lede" style="margin-block-start:24px">These are the ones we make for it, and our florist in Poland will hand them over in person.</p></div>
-  <aside class="ps" aria-label="A note before you choose"><p class="hand">P.S.</p><p>You cannot order yet. We are still choosing our florists in Poland, so every price on this page is the price we would charge and nothing on it can be bought today.</p></aside></div>
-<section aria-labelledby="grid-h"><h2 class="vh" id="grid-h">Mother's Day flowers for Poland</h2>
-<div class="toolbar"><div><p class="count num">7 bouquets</p><p class="disclosure" style="margin-block-start:6px">Our order is the order we chose ourselves. It is not a ranking by sales, by popularity or by payment, and it does not change with who you are.</p></div><form class="sortform" method="get" action=""><div class="field"><label for="sort">Sort by</label><span class="select"><select id="sort" name="sort"><option selected>Our order</option><option>Price: low to high</option><option>Price: high to low</option></select></span></div><button class="btn sm ghost" type="submit">Sort</button></form></div>
-<ul class="grid4" aria-label="7 bouquets" style="margin-block-start:32px"><li><article class="card"><a href="/en/poland/product/azalea-pot"><div class="cph"><div class="img" role="img" aria-label="Azalea Pot: a pink azalea in a plain pot, dense with buds so it flowers for two or three weeks indoors in a cool spot" style="background-image:url(https://media.flowersoverseas.com/media/fo-pt-008-hero/640.webp);"></div></div><h3>Azalea Pot</h3><p class="price">€35.90<small>all in</small></p><p class="eqv">about 30.39&nbsp;£ · 153.22&nbsp;PLN · <span class="phbar" role="img" aria-label="US dollar amount: no rate committed yet"></span>&nbsp;US$ at the rate of 8 September</p></a><p class="prov">Example arrangement · our florist hand-makes each one</p></article></li><li><article class="card"><a href="/en/poland/product/rose-harbour"><div class="cph"><div class="img" role="img" aria-label="Rose Harbour: mid-pink roses with gypsophila and eucalyptus, tied in the round and wrapped in kraft paper with a paper band" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-007-hero/640.webp);"></div></div><h3>Rose Harbour</h3><p class="price">€55.90<small>all in</small></p><p class="eqv">about 47.32&nbsp;£ · 238.58&nbsp;PLN · <span class="phbar" role="img" aria-label="US dollar amount: no rate committed yet"></span>&nbsp;US$ at the rate of 8 September</p></a><p class="prov">Example arrangement · our florist hand-makes each one</p></article></li><li><article class="card"><a href="/en/poland/product/meadow-post"><div class="cph"><div class="img" role="img" aria-label="Meadow Post: pink tulips with a little seasonal foliage, gathered in a loose garden bunch and tied with twine" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-012-hero/640.webp);"></div></div><h3>Meadow Post</h3><p class="price">€40.90<small>all in</small></p><p class="eqv">about 34.62&nbsp;£ · 174.56&nbsp;PLN · <span class="phbar" role="img" aria-label="US dollar amount: no rate committed yet"></span>&nbsp;US$ at the rate of 8 September</p></a><p class="prov">Example arrangement · our florist hand-makes each one</p></article></li><li><article class="card"><a href="/en/poland/product/lily-terrace"><div class="cph"><div class="img" role="img" aria-label="Lily Terrace: pink lilies with eucalyptus and a soft green collar, tied in a rounded modern shape rather than a sheaf" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-018-hero/640.webp);"></div></div><h3>Lily Terrace</h3><p class="price">€74.90<small>all in</small></p><p class="eqv">about 63.40&nbsp;£ · 319.67&nbsp;PLN · <span class="phbar" role="img" aria-label="US dollar amount: no rate committed yet"></span>&nbsp;US$ at the rate of 8 September</p></a><p class="prov">Example arrangement · our florist hand-makes each one</p></article></li><li><article class="card"><a href="/en/poland/product/soft-june"><div class="cph"><div class="img" role="img" aria-label="Soft June: peonies in pale pink and cream with white filler flowers and grey-green leaves, tied in a loose classical dome" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-020-hero/640.webp);"></div></div><h3>Soft June</h3><p class="price">€74.90<small>all in</small></p><p class="eqv">about 63.40&nbsp;£ · 319.67&nbsp;PLN · <span class="phbar" role="img" aria-label="US dollar amount: no rate committed yet"></span>&nbsp;US$ at the rate of 8 September</p></a><p class="prov">Example arrangement · our florist hand-makes each one</p></article></li><li><article class="card"><a href="/en/poland/product/spring-post"><div class="cph"><div class="img" role="img" aria-label="Spring Post: yellow spring stems — narcissi, tulips, mimosa or ranunculus depending on the week — tied loose with their own leaves" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-037-hero/640.webp);"></div></div><h3>Spring Post</h3><p class="price">€40.90<small>all in</small></p><p class="eqv">about 34.62&nbsp;£ · 174.56&nbsp;PLN · <span class="phbar" role="img" aria-label="US dollar amount: no rate committed yet"></span>&nbsp;US$ at the rate of 8 September</p></a><p class="prov">Example arrangement · our florist hand-makes each one</p></article></li><li><article class="card"><a href="/en/poland/product/moth-orchid-pink"><div class="cph"><div class="img" role="img" aria-label="Moth Orchid Pink: one pink moth orchid, staked and potted in a plain container, in bud and flower on the day it is delivered" style="background-image:url(https://media.flowersoverseas.com/media/fo-pt-002-hero/640.webp);"></div></div><h3>Moth Orchid Pink</h3><p class="price">€64.90<small>all in</small></p><p class="eqv">about 54.94&nbsp;£ · 276.99&nbsp;PLN · <span class="phbar" role="img" aria-label="US dollar amount: no rate committed yet"></span>&nbsp;US$ at the rate of 8 September</p></a><p class="prov">Example arrangement · our florist hand-makes each one</p></article></li></ul>
-</section>
-<section class="subsec" aria-labelledby="sib-h"><p class="eyebrow" id="sib-h">Also in Poland</p><nav aria-labelledby="sib-h"><ul class="chips"><li><a class="chip" href="/en/poland/flowers"><span class="arrow">Flowers for Poland</span></a></li></ul></nav></section>
-<section class="subsec" aria-labelledby="how-h"><div class="two"><h2 class="h2s" id="how-h">How it reaches <em>Poland</em></h2><p class="prose">You order from us in your own language and currency. Our florist in the recipient's town will make the bouquet the morning it is delivered and hand it over in person. Nothing crosses a border, so there is no customs form, no paperwork and nothing to pay on arrival.</p></div></section>
-</div></main>
+<section class="note"><span class="nl">Country occasion · desktop 1440 · sweep 2026-10-04 · [internal]</span><dl><dt>Purpose</dt><dd>One occasion in one destination, on that destination's own date. Redrawn 2026-10-04: the date was a line of text; now the date is the hero — a large perforated stamp (26 · May · Wednesday · 2027) beside the dated line, with the first bouquet and its price, and the P.S., in the first screen.</dd><dt>URL</dt><dd><code>/en-gb/poland/occasions/mothers-day</code>.</dd><dt>Index</dt><dd>Unchanged.</dd><dt>Reads</dt><dd><code>listingView()</code>: <code>occasionDate(rule, year)</code> for (occasion, country) through <code>formatDate</code> — the stamp's day, month, weekday and year are parts of that one date (<code>Intl.DateTimeFormat#formatToParts</code>), never literals · <code>items[0]</code> the lead · <code>shop.occasion.*</code>.</dd><dt>First screen</dt><dd>Blush ground (the dated register). The stamp, the dated line (<code>shop.occasion.datedLine</code>) and <code>dateNote</code>; the lead with its price tag; the P.S.</dd><dt>States</dt><dd><b>Drawn:</b> dated. <b>Undated</b> (no rule): the stamp is not drawn and <code>shop.occasion.undatedLine</code> takes its place. <b>Below the floor:</b> no page (existence rule). Older states kept below.</dd><dt>Owning spec</dt><dd>008 §2 row 8, §5.3 · AC-11 (no date literal) · rulings R2, R3 (register).</dd><dt>Copy</dt><dd>Real throughout.</dd></dl></section>
+<div style="position:relative"><div class="fold" style="position:absolute;z-index:50;inset-inline:0;inset-block-start:900px" aria-hidden="true"><span>First screen ends here · 1440 × 900</span></div>
+<div class="notice wrap" role="note"><p><strong>A note from us:</strong> Delivery dates open when we confirm our first florist <span class="sep">·</span> Prices include delivery and VAT <span class="sep">·</span> Fresh-flower promise</p><div class="util"><a href="tel:+12135925150">Help &amp; WhatsApp +1 (213) 592-5150</a><span class="sep">|</span><nav aria-label="Change language" style="display:flex;gap:14px;align-items:center"><a href="/en" lang="en">English</a> <a href="/en-gb" lang="en" aria-current="true">English (UK)</a> <a href="/de" lang="de">Deutsch</a> <span class="beta">Beta</span> <a href="/pl" lang="pl">Polski</a> <span class="beta">Beta</span></nav><span aria-label="Prices shown in GBP">GBP</span></div></div><header class="hdr"><div class="wrap hdr-in"><a class="logo" href="/en-gb" aria-label="Flowers Overseas, home"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink)" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink)" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><span class="wordmark" aria-hidden="true">Flowers Overseas</span></a><nav class="nav" aria-label="Main"><ul><li><a href="/en-gb/poland/flowers">Our selection</a></li><li><a href="/en-gb/occasions/birthday">Birthday</a></li><li><a href="/en-gb/occasions/sympathy">Sympathy</a></li><li><a href="/en-gb/occasions">Occasions</a></li><li><a href="/en-gb/flowers/hand-tied-bouquets">Bouquets</a></li><li><a href="/en-gb/flowers/roses">Roses</a></li><li><a href="/en-gb/flowers/plants">Plants</a></li><li><a href="/en-gb/send-flowers-to">Destinations</a></li></ul></nav><a class="btn sm" href="/en-gb#send">Send flowers</a></div></header>
+<main id="main"><section class="hx reg-dated" aria-labelledby="co-h"><div class="wrap"><nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/en-gb">Home</a></li><li><a href="/en-gb/send-flowers-to">Send flowers to</a></li><li><a href="/en-gb/send-flowers-to/poland">Poland</a></li><li><a href="/en-gb/poland/flowers">Flowers</a></li><li><a href="/en-gb/occasions">Occasions</a></li><li><span aria-current="page">Mother's Day</span></li></ol></nav><div class="hx-grid"><div class="hx-copy"><p class="eyebrow">Sending to Poland</p><h1 id="co-h">Mother's Day flowers for <em>Poland</em></h1><p style="font-family:var(--font-display);font-size:var(--text-md);line-height:1.25;max-inline-size:30ch">Mother's Day in Poland is Wednesday, 26 May 2027.</p><p class="small" style="max-inline-size:44ch">That is the date Poland keeps for it, worked out from that country's own rule. It can fall on a different day from the one you keep at home.</p><div class="hx-row" style="flex-wrap:nowrap;align-items:center"><div class="stamp-wrap tilt-l" style="flex:none"><div class="stamp xl"><div class="stamp-in t-blush"><span class="stamp-day">26</span><span class="stamp-mon">May · Wednesday · 2027</span><p>Mother's Day</p></div></div></div><aside class="ps compact" aria-label="A note before you choose"><p class="hand">P.S.</p><p>You cannot order yet. We are still choosing our florists in Poland, so every price on this page is the price we would charge and nothing on it can be bought today.</p></aside></div></div><figure class="lead has-tag"><div class="frame"><div class="img" role="img" aria-label="A bushy azalea covered in pink flowers, in a plain white ceramic pot" style="background-image:url(https://media.flowersoverseas.com/media/fo-pt-008-hero/828.webp);"></div></div><a class="tag" href="/en-gb/poland/product/azalea-pot"><b>Azalea Pot</b><p class="price">PLN&nbsp;149.00<small>all in</small></p><p class="prov">Example arrangement · our florist hand-makes each one</p></a></figure></div></div></section><div class="wrap"><section aria-labelledby="co-g" style="padding-block-start:40px"><p class="small" style="margin-block-end:12px">These are the ones we make for it, and our florist in Poland hands them over in person.</p><h2 class="vh" id="co-g">Mother's Day flowers for Poland</h2><div class="toolbar"><div><p class="count">7 bouquets</p><p class="disclosure">Our order is the order we chose ourselves. It is not a ranking by sales, by popularity or by payment, and it does not change with who you are.</p></div><form class="sortform" method="get"><div class="field"><label for="s">Sort by</label><span class="select"><select id="s" name="sort"><option>Our order</option><option>Price: low to high</option><option>Price: high to low</option></select></span></div><button class="btn ghost sm" type="submit">Sort</button></form></div><ul class="grid4" style="margin-block-start:32px"><li><article class="card"><a href="/en-gb/poland/product/rose-harbour"><div class="cph"><div class="img" role="img" aria-label="A hand-tied bouquet of soft pink roses with eucalyptus, wrapped in kraft paper and tied with twine" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-007-hero/640.webp);"></div></div><h3>Rose Harbour</h3><p class="price">PLN&nbsp;229.00<small>all in</small></p></a><p class="prov">Example arrangement · our florist hand-makes each one</p></article></li><li><article class="card"><a href="/en-gb/poland/product/meadow-post"><div class="cph"><div class="img" role="img" aria-label="A hand-tied bouquet of soft pink tulips, wrapped in kraft paper and tied with twine" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-012-hero/640.webp);"></div></div><h3>Meadow Post</h3><p class="price">PLN&nbsp;169.00<small>all in</small></p></a><p class="prov">Example arrangement · our florist hand-makes each one</p></article></li><li><article class="card"><a href="/en-gb/poland/product/lily-terrace"><div class="cph"><div class="img" role="img" aria-label="A hand-tied bouquet of pink lilies and buds with green foliage, wrapped in white paper and tied with twine" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-018-hero/640.webp);"></div></div><h3>Lily Terrace</h3><p class="price">PLN&nbsp;309.00<small>all in</small></p></a><p class="prov">Example arrangement · our florist hand-makes each one</p></article></li><li><article class="card"><a href="/en-gb/poland/product/soft-june"><div class="cph"><div class="img" role="img" aria-label="A hand-tied bouquet of round pale pink and cream peonies, wrapped in white paper and tied with twine" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-020-hero/640.webp);"></div></div><h3>Soft June</h3><p class="price">PLN&nbsp;309.00<small>all in</small></p></a><p class="prov">Example arrangement · our florist hand-makes each one</p></article></li><li><article class="card"><a href="/en-gb/poland/product/spring-post"><div class="cph"><div class="img" role="img" aria-label="A hand-tied bouquet of yellow sunflowers, roses and gerberas among small yellow flowers, wrapped in kraft paper" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-037-hero/640.webp);"></div></div><h3>Spring Post</h3><p class="price">PLN&nbsp;169.00<small>all in</small></p></a><p class="prov">Example arrangement · our florist hand-makes each one</p></article></li><li><article class="card"><a href="/en-gb/poland/product/moth-orchid-pink"><div class="cph"><div class="img" role="img" aria-label="A pink moth orchid with arching flowering stems in a plain white ceramic pot" style="background-image:url(https://media.flowersoverseas.com/media/fo-pt-002-hero/640.webp);"></div></div><h3>Moth Orchid Pink</h3><p class="price">PLN&nbsp;269.00<small>all in</small></p></a><p class="prov">Example arrangement · our florist hand-makes each one</p></article></li></ul><p class="fx">We are showing this price in the currency of the delivery country.</p></section><section class="subsec" aria-label="Also in Poland"><p class="eyebrow">Also in Poland</p><ul class="chips"><li><a class="chip" href="/en-gb/poland/flowers"><span class="arrow">Flowers for Poland</span></a></li></ul></section><section class="subsec" aria-labelledby="how-h"><div class="two"><h2 class="h2s" id="how-h">How it reaches <em>Poland</em></h2><p class="prose">You order from us in your own language and currency. Our florist in the recipient's town makes the bouquet the morning it is delivered and hands it over in person. Nothing crosses a border, so there is no customs form, no paperwork and nothing to pay on arrival.</p></div></section></div></main>
+</div>
 <div style="block-size:96px"></div>
-<footer class="ftr"><div class="wrap"><p class="signoff hand" aria-hidden="true">With love, from wherever you are.</p><div class="fgrid"><div class="about"><a class="logo" href="/en" aria-label="Flowers Overseas, home"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink)" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink)" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><span class="wordmark" aria-hidden="true">Flowers Overseas</span></a><p>We send flowers across Europe. You order from us; a local florist in the recipient's town will make the bouquet and hand it over in person.</p></div><nav aria-labelledby="f-send"><h2 id="f-send">Sending</h2><ul><li><a href="/en/send-flowers-to">Destinations</a></li><li><a href="/en/occasions">Occasions</a></li></ul></nav><div><h2>Help &amp; WhatsApp</h2><ul><li><a href="tel:+12135925150">+1 (213) 592-5150</a></li></ul><p class="fsmall">Mon–Sat 8–20 CET</p></div><div><h2>Payment</h2><p class="fsmall">We show the payment methods you can use at checkout.</p></div></div><div class="ffine"><nav class="langs" aria-label="Change language"><a href="/en" aria-current="true">English</a><a href="/en-gb">English (UK)</a><a href="/de">Deutsch · Beta</a><a href="/pl">Polski · Beta</a></nav><button type="button">Cookie settings</button></div></div></footer><section class="state-band" aria-label="States · country occasion"><span class="nl">States · country occasion</span><div class="states c3"><div class="state"><span class="state-tag">The undated line</span><p class="when" style="font-family:var(--font-display);font-size:var(--text-md);max-inline-size:44ch">We are not printing a date for Name day in Poland. We do not have a rule we can work it out from, and a date we cannot stand behind is worse than none.</p><p class="stub"><code>shop.occasion.undatedLine</code>. No stamp is drawn: a stamp is a date, and there is none.</p></div><div class="state"><span class="state-tag">Pagination · multi-page form</span><nav class="pager" aria-label="Pages of products" style="margin-block-start:40px"><ol><li><span aria-current="page">1</span></li><li><a href="/en/poland/occasions/mothers-day?page=2" aria-label="Page 2">2</a></li><li><a class="next" href="/en/poland/occasions/mothers-day?page=2">Next</a></li></ol></nav><p class="stub">Mother's Day has 7, one page, so pagination does not render. Drawn for the occasion with more than 12.</p></div><div class="state"><span class="state-tag">The date stamp</span><div class="stamp" aria-hidden="true"><div class="stamp-in t-blush"><span class="stamp-day">26</span><span class="stamp-mon">May · Wednesday</span><h3 style="font-size:var(--text-h3)">Mother's Day</h3><span class="stamp-pl" lang="pl">Dzień Matki</span></div></div><p class="stub">The stamp repeats the dated line as decoration and is <code>aria-hidden</code>; the sentence beside it is the accessible date. Day and month from <code>occasionDate(rule, year)</code> through <code>formatDate</code> — never a literal.</p></div></div></section>
+<footer class="ftr"><div class="wrap"><p class="signoff hand" aria-hidden="true">With love, from wherever you are.</p><div class="fgrid"><div class="about"><a class="logo" href="/en-gb" aria-label="Flowers Overseas, home"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink)" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink)" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><span class="wordmark" aria-hidden="true">Flowers Overseas</span></a><p>We send flowers across Europe. You order from us; our florist in the recipient's town makes the bouquet and hands it over in person.</p></div><nav aria-labelledby="f-send"><h2 id="f-send">Sending</h2><ul><li><a href="/en-gb/send-flowers-to">Destinations</a></li><li><a href="/en-gb/occasions">Occasions</a></li></ul></nav><div><h2>Help &amp; WhatsApp</h2><ul><li><a href="tel:+12135925150">+1 (213) 592-5150</a></li></ul><p class="fsmall">Message us any time, 24/7 — we reply within a few hours.</p></div><div><h2>Payment</h2><p class="fsmall">We show the payment methods you can use at checkout.</p></div></div><div class="ffine"><nav class="langs" aria-label="Change language"><a href="/en">English</a><a href="/en-gb" aria-current="true">English (UK)</a><a href="/de">Deutsch · Beta</a><a href="/pl">Polski · Beta</a></nav><button type="button">Cookie settings</button></div></div></footer><section class="state-band" aria-label="States · country occasion"><span class="nl">States · country occasion</span><div class="states c3"><div class="state"><span class="state-tag">The undated line</span><p class="when" style="font-family:var(--font-display);font-size:var(--text-md);max-inline-size:44ch">We are not printing a date for Name day in Poland. We do not have a rule we can work it out from, and a date we cannot stand behind is worse than none.</p><p class="stub"><code>shop.occasion.undatedLine</code>. No stamp is drawn: a stamp is a date, and there is none.</p></div><div class="state"><span class="state-tag">Pagination · multi-page form</span><nav class="pager" aria-label="Pages of products" style="margin-block-start:40px"><ol><li><span aria-current="page">1</span></li><li><a href="/en/poland/occasions/mothers-day?page=2" aria-label="Page 2">2</a></li><li><a class="next" href="/en/poland/occasions/mothers-day?page=2">Next</a></li></ol></nav><p class="stub">Mother's Day has 7, one page, so pagination does not render. Drawn for the occasion with more than 12.</p></div><div class="state"><span class="state-tag">The date stamp</span><div class="stamp" aria-hidden="true"><div class="stamp-in t-blush"><span class="stamp-day">26</span><span class="stamp-mon">May · Wednesday</span><h3 style="font-size:var(--text-h3)">Mother's Day</h3><span class="stamp-pl" lang="pl">Dzień Matki</span></div></div><p class="stub">The stamp repeats the dated line as decoration and is <code>aria-hidden</code>; the sentence beside it is the accessible date. Day and month from <code>occasionDate(rule, year)</code> through <code>formatDate</code> — never a literal.</p></div></div></section>
+
 </div>
 </x-dc>
 </body>
