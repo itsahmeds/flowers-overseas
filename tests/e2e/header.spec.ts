@@ -616,3 +616,38 @@ test.describe("the notice bar's price claim follows the route", () => {
     });
   }
 });
+
+/**
+ * The claim on every page below the home (PR 172 breaker hole H2). The `@notice` slot renders it
+ * from `default.tsx` at every depth the slot has no page for, so a page added under `@notice` for
+ * one depth (say a `[segment]/page.tsx` that returns nothing) would silently drop it from the
+ * shop roots, the one-segment documents. Each depth and template is visited: a country shop
+ * root (one segment), a country category and a country occasion listing (three), and a corridor
+ * guide (two), plus the de and pl shop roots in their own words.
+ */
+const CLAIM_PAGES = [
+  { path: "/en/poland", kind: "shop root", token: "VAT" },
+  { path: "/en/poland/flowers/roses", kind: "category listing", token: "VAT" },
+  {
+    path: "/en/poland/occasions/mothers-day",
+    kind: "occasion listing",
+    token: "VAT",
+  },
+  { path: "/en/send-flowers-to/poland", kind: "corridor guide", token: "VAT" },
+  { path: "/de/polen", kind: "shop root", token: "MwSt." },
+  { path: "/pl/polska", kind: "shop root", token: "VAT" },
+] as const;
+
+test.describe("the notice bar's price claim on listing and guide pages", () => {
+  for (const { path, kind, token } of CLAIM_PAGES) {
+    test(`${path} (${kind}) carries the price claim`, async ({ page }) => {
+      await page.setViewportSize({ width: 1440, height: 900 });
+      const response = await page.goto(path);
+      expect(response?.status(), path).toBe(200);
+      const claim = page.locator(`${UTILITY} [data-fo-price-claim]`);
+      await expect(claim).toHaveCount(1);
+      await expect(claim).toBeVisible();
+      await expect(claim).toContainText(token);
+    });
+  }
+});

@@ -529,6 +529,69 @@ describe("the rendered header (AC-7, AC-14)", () => {
     expect(html).not.toContain("Order by 14:00");
   });
 
+  /**
+   * The price claim says, in each locale's own words, that the price **includes** VAT and
+   * delivery (spec 004 §14 A21; PR 172 breaker hole H1). The de/pl strings are drafts
+   * (`reviewed: false`), so the case pins their meaning, not their wording: the VAT and delivery
+   * tokens, an inclusion word, and none of the words that would turn it into "plus" or "excludes".
+   * The German formula is spec 005's `catalog.price.inclusive` ("inkl. MwSt. und Versand").
+   */
+  const CLAIM_MEANING: Record<
+    (typeof LOCALES)[number],
+    { must: readonly RegExp[]; mustNot: RegExp }
+  > = {
+    en: {
+      must: [/\bVAT\b/u, /\bdelivery\b/iu, /\binclude/iu],
+      mustNot: /\b(?:exclud|not include|plus|excl)/iu,
+    },
+    "en-gb": {
+      must: [/\bVAT\b/u, /\bdelivery\b/iu, /\binclude/iu],
+      mustNot: /\b(?:exclud|not include|plus|excl)/iu,
+    },
+    de: {
+      must: [/MwSt\./u, /Versand/u, /\b(?:inkl\.|einschließlich|enthalten)/iu],
+      mustNot: /\b(?:zzgl\.|zuzüglich|exkl\.|ohne)/iu,
+    },
+    pl: {
+      must: [/\bVAT\b/u, /dostaw/iu, /(?:zawierają|w tym|wliczon)/iu],
+      mustNot: /(?:nie zawierają|nie obejmują|bez |plus)/iu,
+    },
+  };
+
+  for (const locale of LOCALES) {
+    it(`${locale}: the price claim says the price includes VAT and delivery, in ${locale}`, () => {
+      const messages = loadMessages(locale, ["nav"]) as {
+        nav: { utility: Record<string, string> };
+      };
+      const claim = messages.nav.utility.pricesInclude ?? "";
+      const { must, mustNot } = CLAIM_MEANING[locale];
+      for (const pattern of must)
+        expect(claim, String(pattern)).toMatch(pattern);
+      expect(claim).not.toMatch(mustNot);
+      // The de/pl catalogues carry their own sentence, not the English one.
+      if (locale === "de" || locale === "pl") {
+        expect(claim).not.toBe("Prices include delivery and VAT");
+      }
+      expect(render(locale)).toContain(claim);
+    });
+
+    it(`${locale}: no N-day freshness promise anywhere in the chrome, and none in the guarantee's name`, () => {
+      // Founder, 2026-10-04: "cant promise staying fresh" (PR 172 breaker hole H3): a number of
+      // days beside the guarantee, in any of the four languages.
+      const messages = loadMessages(locale, ["nav"]) as {
+        nav: { utility: Record<string, string> };
+      };
+      const guarantee = messages.nav.utility.guarantee ?? "";
+      expect(guarantee).not.toBe("");
+      expect(guarantee).not.toMatch(/\d/u);
+      const html = render(locale);
+      expect(html).toContain(guarantee);
+      expect(html).not.toMatch(
+        /\d+\s*[-‑–]?\s*(?:day|days|Tag|Tage|Tagen|dni|dnia|dzień)(?!\p{L})/iu,
+      );
+    });
+  }
+
   it("drops the price claim when the route passes none, and keeps everything else (the home)", () => {
     for (const locale of LOCALES) {
       const messages = loadMessages(locale, ["nav"]) as {

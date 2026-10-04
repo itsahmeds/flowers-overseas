@@ -515,3 +515,18 @@ describe("logical CSS and tokens only (AC-1, AC-5)", () => {
     expect(markup).not.toMatch(/(?<![a-z])(?:rgba?|hsla?)\s*\(/);
   });
 });
+
+describe("spec 004 §14 A22 clause 1: our florist in the present tense (en)", () => {
+  it("prints the about sentence with the florist in the present tense, and no future form", () => {
+    const messages = loadMessages("en", ["company"]) as {
+      company: { description: string };
+    };
+    const sentence = messages.company.description;
+    expect(phase0).toContain(sentence.replaceAll("'", "&#x27;"));
+    // "makes … hands", never "will make" or "will hand" (PR 172 review R2, breaker hole H3). The
+    // de/pl drafts' tense is a translation-review matter, so only en is pinned here.
+    expect(sentence).toMatch(/\bmakes\b/u);
+    expect(sentence).toMatch(/\bhands\b/u);
+    expect(sentence).not.toMatch(/\bwill\b|\bgoing to\b|'ll\b/iu);
+  });
+});
