@@ -20,14 +20,14 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 - `specs/012-admin-v0.md`: `## 0. Index`; §2.2; §5.1 (`NNNN_admin_identity`); §5.2 (the ownership table, the permission matrix); §5.3; §5.4; §6; §7; §8 (logs, security, accessibility); §9 AC-1–AC-9; §10; §12 task 1 and "Founder actions".
 - `specs/011-for-florists-vendor-inbox.md` §2 "Florist sign-in" and §5.2 (the link design the core adopts); ADR-0019 (one email sign-in for florists and admin); ADR-0013; ADR-0015; `docs/tasks/TASK-022.md`.
-- Artboards: `docs/design/wireframes/admin-sign-in-{desktop,mobile}.dc.html`, `admin-home-{desktop,mobile}.dc.html`, `admin-users-{desktop,mobile}.dc.html`, and the Admin group of `system/components.dc.html` (not drawn yet; `/design` draws it before this task is dispatched).
+- Artboards (merged in PR 197; `docs/design/audits/2026-10-05-specs-011-012.md`): `docs/design/wireframes/admin-sign-in-desktop.dc.html`, `docs/design/wireframes/admin-sign-in-mobile.dc.html`, `docs/design/wireframes/admin-home-desktop.dc.html`, `docs/design/wireframes/admin-home-mobile.dc.html`, `docs/design/wireframes/admin-users-desktop.dc.html`, `docs/design/wireframes/admin-users-mobile.dc.html`, and the Admin group of `docs/design/system/components.dc.html`. The audit's decision 2 binds: the boards say "Florists", not "Partners", until this task lands the banned-word exemption for `admin-*`; routes, tables and permissions keep their names. Every admin string is proposed wording, founder copy pending.
 - `docs/codebase-map.md`; `src/lib/db.ts`, `src/lib/env.schema.ts`, `src/proxy.ts`, `src/lib/logger.ts`, `tests/unit/design-docs.test.ts`.
 
 ## Carry-forwards
 
 One dated bullet per `/review`, newest last.
 
-- **From `/plan-tasks` (2026-10-05):** ready when TASK-022 and TASK-023 have merged, `/design 012` has drawn and merged the admin artboards, and the founder has done §12 founder actions 2–3: a Resend account in the EU region, the sending subdomain's SPF and DKIM records on Cloudflare, the DPA accepted and filed in `docs/compliance/`, and `AUTH_SECRET`, `RESEND_API_KEY` and `EMAIL_FROM` on Railway staging and production. After merge the founder runs `pnpm admin:grant` for themselves.
+- **From `/plan-tasks` (2026-10-05):** ready when TASK-022 and TASK-023 have merged (the admin artboards merged in PR 197), and the founder has done §12 founder actions 2–3: a Resend account in the EU region, the sending subdomain's SPF and DKIM records on Cloudflare, the DPA accepted and filed in `docs/compliance/`, and `AUTH_SECRET`, `RESEND_API_KEY` and `EMAIL_FROM` on Railway staging and production. After merge the founder runs `pnpm admin:grant` for themselves.
 
 ## Escalations
 

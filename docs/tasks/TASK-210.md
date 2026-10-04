@@ -20,14 +20,14 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 - `specs/011-for-florists-vendor-inbox.md`: `## 0. Index`; §2 ("Four public pages", the application form's fields); §5.2 (`florists.ts`, the example fixture); §5.3; §5.4; §6; §7; §8 (accessibility, price display); §9 AC-1–AC-10, AC-35; §10; §12 task 1; §13 Q7, Q10, Q11; Appendix A; Appendix B.
 - `specs/041-trust-help-legal-pages.md` §2 (the content model, the trust family's rules) and `docs/tasks/TASK-182.md`.
-- Artboards: `docs/design/wireframes/for-florists-desktop.dc.html` and `for-florists-mobile.dc.html` (round 2, on branch `docs/design-round2-2026-10-05` until it merges); `wireframes/for-florists-walkthrough-{desktop,mobile}.dc.html`, `wireframes/for-florists-apply-{desktop,mobile}.dc.html` and `wireframes/florist-inbox-{mobile,desktop}.dc.html` (not drawn yet; `/design` draws it before this task is dispatched); `system/components.dc.html` (the form primitives); `flows/florist-journey.dc.html`.
+- Artboards (merged; `docs/design/audits/2026-10-05-specs-011-012.md`): `docs/design/wireframes/for-florists-desktop.dc.html` and `docs/design/wireframes/for-florists-mobile.dc.html` (round 2, PR 189; see the escalation below), `docs/design/wireframes/for-florists-walkthrough-desktop.dc.html`, `docs/design/wireframes/for-florists-walkthrough-mobile.dc.html`, `docs/design/wireframes/for-florists-apply-desktop.dc.html`, `docs/design/wireframes/for-florists-apply-mobile.dc.html`, and `docs/design/wireframes/florist-inbox-desktop.dc.html`, `docs/design/wireframes/florist-inbox-mobile.dc.html` for the presentational components (PR 197); the Forms and Florist inbox groups of `docs/design/system/components.dc.html`; `docs/design/flows/florist-journey.dc.html`.
 - `docs/codebase-map.md`; `src/config/site-links.ts`, `src/config/locales.data.ts`, `src/config/voice.ts`, `src/config/company.ts`, `src/modules/seo/indexability.ts`, `src/modules/seo/robots.ts`.
 
 ## Carry-forwards
 
 One dated bullet per `/review`, newest last.
 
-- **From `/plan-tasks` (2026-10-05):** dispatch after TASK-182 (the content module and `info-pages.ts`) merges and after `/design 011` has drawn and merged Appendix B items 2–7 (walkthrough, apply, sign-in, inbox, the flow update, the form primitives); none of those is on any branch today.
+- **From `/plan-tasks` (2026-10-05):** dispatch after TASK-182 (the content module and `info-pages.ts`) merges. Appendix B items 2–7 merged in PR 197 (`docs/design/audits/2026-10-05-specs-011-012.md`). Two of that audit's escalations bind here: (1) the landing was not redrawn for spec 011, and the round-2 `for-florists-*` (PR 189) draws a docket, "Apply to join" and draft copy where Appendix A says "Apply to work with us", so the landing needs one redraw pass, or the founder approves the round-2 version and Appendix A follows it, before this task is dispatched; (2) the walkthrough is drawn with two short sections (declining folded into step 2, as Appendix A writes it), not §2's three. The phone frame's `zoom` is an implementation note on the artboard.
 
 ## Escalations
 

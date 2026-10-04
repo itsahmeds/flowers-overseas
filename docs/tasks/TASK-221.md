@@ -18,7 +18,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 - `specs/012-admin-v0.md`: `## 0. Index`; §2.5; §5.1 (`NNNN_partner_terms_and_retention`); §5.2 (the partners row, the matrix); §5.3; §8 item 3; §9 AC-15–AC-17; §12 task 11.
 - `specs/011-for-florists-vendor-inbox.md` §5.2 (the admin queries); `docs/tasks/TASK-018.md`, `TASK-213.md`.
-- Artboards: `docs/design/wireframes/admin-partners-{desktop,mobile}.dc.html`, `admin-partner-detail-{desktop,mobile}.dc.html`, `admin-applications-{desktop,mobile}.dc.html` (not drawn yet; `/design` draws it before this task is dispatched).
+- Artboards (merged in PR 197; `docs/design/audits/2026-10-05-specs-011-012.md`): `docs/design/wireframes/admin-partners-desktop.dc.html`, `docs/design/wireframes/admin-partners-mobile.dc.html`, `docs/design/wireframes/admin-partner-detail-desktop.dc.html`, `docs/design/wireframes/admin-partner-detail-mobile.dc.html`, `docs/design/wireframes/admin-applications-desktop.dc.html`, `docs/design/wireframes/admin-applications-mobile.dc.html`. "Make active" is absent, not disabled, until the four conditions hold, and the card lists what is missing (decision 6); the drawn payouts are examples (decision 7).
 
 ## Carry-forwards
 

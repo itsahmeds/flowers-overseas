@@ -26,7 +26,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per `/review`, newest last.
 
-- **From `/plan-tasks` (2026-10-05):** dispatchable now. No artboard binds this task (no UI), but its keys must read as the round-2 `wireframes/checkout-*.dc.html` Copy rows once `docs/design-round2-2026-10-05` merges; where they differ, the difference goes to the founder, not into the code.
+- **From `/plan-tasks` (2026-10-05):** dispatchable now. No artboard binds this task (no UI), but the merged round-2 `docs/design/wireframes/checkout-*.dc.html` (PR 189, `docs/design/audits/2026-10-05-round-2.md`) carry none of Appendix A's demo strings, and their guard band reads differently from Appendix A's banner. The keys follow Appendix A; the spec 010 design pass (`/design 010`) reconciles the boards, and any difference goes to the founder, not into the code.
 - **From `/plan-tasks` (2026-10-05):** TASK-203, TASK-205 and TASK-207 go to the same backend agent, in that order, because they share `src/modules/checkout`.
 
 ## Escalations

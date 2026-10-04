@@ -19,7 +19,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 ## Read
 
 - `specs/011-for-florists-vendor-inbox.md`: `## 0. Index`; §2 "The application form"; §5.2 "Application"; §8; §9 AC-11–AC-13, AC-15, AC-16; §12 task 5.
-- Artboard: `docs/design/wireframes/for-florists-apply-{desktop,mobile}.dc.html` (not drawn yet; `/design` draws it before this task is dispatched).
+- Artboards (merged in PR 197; `docs/design/audits/2026-10-05-specs-011-012.md`): `docs/design/wireframes/for-florists-apply-desktop.dc.html`, `docs/design/wireframes/for-florists-apply-mobile.dc.html` (the honeypot state included; the "optional" tag and the sent page's link are founder copy slots).
 - `docs/codebase-map.md`; `src/lib/reminders.ts` (the `ReminderSink` precedent), `src/lib/csp-report.ts`; `docs/tasks/TASK-217.md`.
 
 ## Carry-forwards

@@ -18,7 +18,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 - `specs/012-admin-v0.md`: `## 0. Index`; §2.3; §5.1 (`NNNN_audit_trail`); §5.2 (the `src/lib/db.ts` row); §11; §9 AC-10–AC-13; §12 task 2.
 - `docs/tasks/TASK-018.md`, `TASK-021.md` (`audit_log`); `src/lib/db.ts`.
-- Artboard: `docs/design/wireframes/admin-audit-{desktop,mobile}.dc.html` (not drawn yet; `/design` draws it before this task is dispatched).
+- Artboards (merged in PR 197; `docs/design/audits/2026-10-05-specs-011-012.md`): `docs/design/wireframes/admin-audit-desktop.dc.html`, `docs/design/wireframes/admin-audit-mobile.dc.html`.
 
 ## Carry-forwards
 

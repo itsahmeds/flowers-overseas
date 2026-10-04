@@ -19,7 +19,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 - `specs/011-for-florists-vendor-inbox.md`: `## 0. Index`; §2 ("The florist inbox v0", "The demo"); §5.2 "Orders"; §5.3 (inbox and order states); §8 (minimisation); §9 AC-23–AC-26, AC-33; §12 task 6.
 - `specs/010-checkout.md` §5.2 (`demoRoute`, `OrderListItemSchema`); `docs/tasks/TASK-202.md`.
-- Artboards: `docs/design/wireframes/florist-inbox-mobile.dc.html`, `florist-inbox-desktop.dc.html` (not drawn yet; `/design` draws it before this task is dispatched); `docs/design/flows/florist-journey.dc.html`.
+- Artboards (merged in PR 197; `docs/design/audits/2026-10-05-specs-011-012.md`): `docs/design/wireframes/florist-inbox-mobile.dc.html`, `docs/design/wireframes/florist-inbox-desktop.dc.html`; `docs/design/flows/florist-journey.dc.html`. The audit's slots (the pre-acceptance town and postcode label, the paused-refresh line, the not-found and error lines) and its drawn values "Being made" and the example payouts (decision 7) are founder copy pending; ship them `reviewed: false`.
 
 ## Carry-forwards
 

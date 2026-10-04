@@ -13,7 +13,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 ## Read
 
 - `specs/010-checkout.md` AC-26 and §12 "Exit signal"; `specs/011-for-florists-vendor-inbox.md` AC-26 and §12 "Environments"; `specs/012-admin-v0.md` AC-18; `plan/09` Phase 0 AC 4.
-- Artboards: `docs/design/flows/buyer-journey.dc.html` (the mock-order step ending on the admin queue, spec 012 §5.3.1 item 10; round 2, on branch `docs/design-round2-2026-10-05` until it merges) and `docs/design/flows/florist-journey.dc.html`.
+- Artboards: `docs/design/flows/buyer-journey.dc.html` (step 10, the mock order in the admin queue, spec 012 §5.3.1 item 10) and `docs/design/flows/florist-journey.dc.html` (merged in PR 197; `docs/design/audits/2026-10-05-specs-011-012.md`).
 
 ## Carry-forwards
 

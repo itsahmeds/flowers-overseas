@@ -17,14 +17,14 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 ## Read
 
 - `specs/010-checkout.md`: `## 0. Index`; §5.4; §8; §10; §11 (CI); §9 AC-31, AC-34, AC-37, AC-38, AC-39; §12 task 8.
-- `specs/040-hosting-railway-cloudflare.md` §5.4 (the cache rules); the round-2 checkout and confirmation artboards for the baselines.
+- `specs/040-hosting-railway-cloudflare.md` §5.4 (the cache rules); the baselines follow `docs/design/wireframes/checkout-{desktop,mobile}.dc.html` and `docs/design/wireframes/confirmation-{desktop,mobile}.dc.html` (PR 189; `docs/design/audits/2026-10-05-round-2.md`), as completed by the spec 010 design pass.
 - `docs/codebase-map.md` (the e2e, visual and a11y layers under `tests/`).
 
 ## Carry-forwards
 
 One dated bullet per `/review`, newest last.
 
-_None recorded._
+- **From `/plan-tasks` (2026-10-05, after PR 189 merged):** the merged round-2 `checkout-*`, `confirmation-*` and `product-*` boards (`docs/design/audits/2026-10-05-round-2.md`) draw the round-2 layout (segmented steps, the form as a white letter, the recap) and a demo guard band reading "This is a demonstration. No order is placed and no card is charged.", but carry none of spec 010 Appendix A's state strings: no "Use sample details", inline privacy notice, demo calendar heading, price-changed, date-gone, daily-cap, closed or expired state, "Place demo order", demo confirmation or "no longer available"; the product board's preview state draws the "Ordering is not open yet" status pill, not "Try a demo order" (checked by a text search of the merged files). Those states need a spec 010 design pass (`/design 010`, spec 010 §12's artboard list) merged before this task is dispatched (`CLAUDE.md`: no page is built from a description alone). The guard band's wording differs from Appendix A's banner and goes to the founder with that pass.
 
 ## Escalations
 

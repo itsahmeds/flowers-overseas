@@ -16,7 +16,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 - `specs/012-admin-v0.md`: `## 0. Index`; §2.4; §5.3 (the flags row); §5.4 "Invalidation"; §11; §9 AC-14; §12 task 10.
 - `specs/010-checkout.md` §5.4 (the PDP button and the tag); `docs/tasks/TASK-219.md`; `src/lib/cache.ts`.
-- Artboard: `docs/design/wireframes/admin-flags-{desktop,mobile}.dc.html` (not drawn yet; `/design` draws it before this task is dispatched).
+- Artboards (merged in PR 197; `docs/design/audits/2026-10-05-specs-011-012.md`): `docs/design/wireframes/admin-flags-desktop.dc.html`, `docs/design/wireframes/admin-flags-mobile.dc.html`. The typed-key confirmation keeps its button enabled and refuses a mismatch with a message (the audit's decision 5; spec 004 §14 A20).
 
 ## Carry-forwards
 

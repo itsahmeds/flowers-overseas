@@ -18,14 +18,14 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 - `specs/011-for-florists-vendor-inbox.md`: `## 0. Index`; §2 "Florist sign-in"; §5.2 (sign-in, mail); §5.4; §6; §8 (cookies, logs, security); §9 AC-18–AC-22, AC-32; §12 task 4; §13 Q2, Q4.
 - `specs/012-admin-v0.md` §2.2 and AC-9; `docs/adr/ADR-0019-one-florist-email-sign-in.md`; `docs/tasks/TASK-217.md`.
-- Artboard: `docs/design/wireframes/florist-sign-in-mobile.dc.html` (not drawn yet; `/design` draws it before this task is dispatched).
+- Artboards (merged in PR 197; `docs/design/audits/2026-10-05-specs-011-012.md`): `docs/design/wireframes/florist-sign-in-desktop.dc.html` and `docs/design/wireframes/florist-sign-in-mobile.dc.html` (drawn at 1440 too, the audit's decision 4; on the phone the language links sit under the card).
 - `docs/codebase-map.md`; `src/lib/basic-auth.ts`, `src/config/cookies.ts`, `src/config/url-keys.ts`.
 
 ## Carry-forwards
 
 One dated bullet per `/review`, newest last.
 
-- **From `/plan-tasks` (2026-10-05):** ready when TASK-217 has merged and the sign-in artboard has merged. The one-sign-in decision of spec 011 §13 Q2 is recorded in `docs/adr/ADR-0019-one-florist-email-sign-in.md`; its spec 017 condition (order emails sign the florist in with one tap) is a requirement this task's link design must keep possible.
+- **From `/plan-tasks` (2026-10-05):** ready when TASK-217 has merged (the sign-in artboards merged in PR 197). The one-sign-in decision of spec 011 §13 Q2 is recorded in `docs/adr/ADR-0019-one-florist-email-sign-in.md`; its spec 017 condition (order emails sign the florist in with one tap) is a requirement this task's link design must keep possible.
 
 ## Escalations
 

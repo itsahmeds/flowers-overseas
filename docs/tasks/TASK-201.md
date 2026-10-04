@@ -17,15 +17,16 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 ## Read
 
 - `specs/010-checkout.md`: `## 0. Index`; §5.3 (all); §5.4 (client JavaScript); §8 (accessibility, price display); §9 AC-14, AC-38, AC-39; §12 task 2 and the artboard list (item 5).
-- Artboards (round 2, on branch `docs/design-round2-2026-10-05` until it merges): `docs/design/system/components.dc.html`, `docs/design/wireframes/checkout-desktop.dc.html`, `docs/design/wireframes/checkout-mobile.dc.html`.
+- Artboards (merged in PR 189; `docs/design/audits/2026-10-05-round-2.md`): `docs/design/system/components.dc.html`, `docs/design/wireframes/checkout-desktop.dc.html`, `docs/design/wireframes/checkout-mobile.dc.html`.
 - `docs/codebase-map.md`; `src/modules/ui` (existing `Button`, `Price`, the spec 009 date picker); `pnpm budget:client-js`.
 
 ## Carry-forwards
 
 One dated bullet per `/review`, newest last.
 
-- **From `/plan-tasks` (2026-10-05):** dispatch once the round-2 `components` and `checkout-*` artboards have merged to `main`. The v1 checkout files are superseded: they draw the express-wallet row, the marketing checkbox, "7-day freshness guarantee", "Handwritten card" and payment tiles, which spec 010 §12 removes.
+- **From `/plan-tasks` (2026-10-05):** the round-2 `components` and `checkout-*` artboards merged in PR 189. The v1 checkout files are superseded: they draw the express-wallet row, the marketing checkbox, "7-day freshness guarantee", "Handwritten card" and payment tiles, which spec 010 §12 removes.
 - **From `/plan-tasks` (2026-10-05):** one frontend agent takes TASK-201, TASK-204 and TASK-206 in sequence: they share `src/modules/ui/checkout/` and the checkout view model.
+- **From `/plan-tasks` (2026-10-05, after PR 189 merged):** the merged round-2 `checkout-*`, `confirmation-*` and `product-*` boards (`docs/design/audits/2026-10-05-round-2.md`) draw the round-2 layout (segmented steps, the form as a white letter, the recap) and a demo guard band reading "This is a demonstration. No order is placed and no card is charged.", but carry none of spec 010 Appendix A's state strings: no "Use sample details", inline privacy notice, demo calendar heading, price-changed, date-gone, daily-cap, closed or expired state, "Place demo order", demo confirmation or "no longer available"; the product board's preview state draws the "Ordering is not open yet" status pill, not "Try a demo order" (checked by a text search of the merged files). Those states need a spec 010 design pass (`/design 010`, spec 010 §12's artboard list) merged before this task is dispatched (`CLAUDE.md`: no page is built from a description alone). The guard band's wording differs from Appendix A's banner and goes to the founder with that pass.
 
 ## Escalations
 

@@ -18,7 +18,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 - `specs/011-for-florists-vendor-inbox.md`: `## 0. Index`; §2 (actions, the delivery photo, "The order engine"); §5.2 (commands, photo, events); §8 (security); §9 AC-27–AC-31; §12 task 7.
 - `specs/010-checkout.md` §5.2 (the engine); `docs/tasks/TASK-017.md`, `TASK-020.md`, `TASK-082.md`, `TASK-214.md`.
-- Artboard: `docs/design/wireframes/florist-inbox-{mobile,desktop}.dc.html` (the order stages and the photo step; not drawn yet; `/design` draws it before this task is dispatched).
+- Artboards (merged in PR 197; `docs/design/audits/2026-10-05-specs-011-012.md`): `docs/design/wireframes/florist-inbox-mobile.dc.html`, `docs/design/wireframes/florist-inbox-desktop.dc.html` (the order stages and the photo step). The board draws "Delivered, add the photo" without the em dash (the audit's decision 3; ruling R9).
 
 ## Carry-forwards
 

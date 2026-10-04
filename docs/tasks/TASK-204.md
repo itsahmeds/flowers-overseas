@@ -18,14 +18,15 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 ## Read
 
 - `specs/010-checkout.md`: `## 0. Index`; §2 (the three steps, the date); §5.3; §5.4; §6; §7; §9 AC-3, AC-7, AC-8, AC-10, AC-12, AC-14, AC-19, AC-30, AC-32; §12 task 5 and the artboard list.
-- Artboards (round 2, on branch `docs/design-round2-2026-10-05` until it merges): `docs/design/wireframes/checkout-desktop.dc.html`, `docs/design/wireframes/checkout-mobile.dc.html`, `docs/design/flows/buyer-journey.dc.html` (steps 05 and 06).
+- Artboards (merged in PR 189; `docs/design/audits/2026-10-05-round-2.md`): `docs/design/wireframes/checkout-desktop.dc.html`, `docs/design/wireframes/checkout-mobile.dc.html`, `docs/design/flows/buyer-journey.dc.html` (steps 05 and 06).
 - `docs/codebase-map.md`; `src/modules/seo/indexability.ts`, `src/modules/seo/robots.ts`; spec 009's `deliveryWindow()`; `docs/tasks/TASK-201.md`, `TASK-203.md`.
 
 ## Carry-forwards
 
 One dated bullet per `/review`, newest last.
 
-- **From `/plan-tasks` (2026-10-05):** dispatch once the round-2 checkout artboards have merged. Same frontend agent as TASK-201 and TASK-206.
+- **From `/plan-tasks` (2026-10-05):** the round-2 checkout artboards merged in PR 189. Same frontend agent as TASK-201 and TASK-206.
+- **From `/plan-tasks` (2026-10-05, after PR 189 merged):** the merged round-2 `checkout-*`, `confirmation-*` and `product-*` boards (`docs/design/audits/2026-10-05-round-2.md`) draw the round-2 layout (segmented steps, the form as a white letter, the recap) and a demo guard band reading "This is a demonstration. No order is placed and no card is charged.", but carry none of spec 010 Appendix A's state strings: no "Use sample details", inline privacy notice, demo calendar heading, price-changed, date-gone, daily-cap, closed or expired state, "Place demo order", demo confirmation or "no longer available"; the product board's preview state draws the "Ordering is not open yet" status pill, not "Try a demo order" (checked by a text search of the merged files). Those states need a spec 010 design pass (`/design 010`, spec 010 §12's artboard list) merged before this task is dispatched (`CLAUDE.md`: no page is built from a description alone). The guard band's wording differs from Appendix A's banner and goes to the founder with that pass.
 
 ## Escalations
 

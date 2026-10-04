@@ -15,6 +15,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 - `specs/011-for-florists-vendor-inbox.md`: `## 0. Index`; §8; §11; §12 (environments, keys, founder prerequisites); §9 AC-34, AC-36, AC-37; Appendix B.
 - `specs/012-admin-v0.md` §8 item 2 (the Resend row).
+- Baselines follow the merged spec 011 boards (`docs/design/audits/2026-10-05-specs-011-012.md`): `docs/design/wireframes/for-florists-*`, `docs/design/wireframes/for-florists-walkthrough-*`, `docs/design/wireframes/for-florists-apply-*`, `docs/design/wireframes/florist-sign-in-*`, `docs/design/wireframes/florist-inbox-*`.
 
 ## Carry-forwards
 

@@ -17,7 +17,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 - `specs/012-admin-v0.md`: `## 0. Index`; §2.6; §5.2 (the orders row); §5.3; §8; §9 AC-18, AC-19; §12 task 12.
 - `specs/010-checkout.md` §5.2 (`OrderListItemSchema`); `docs/tasks/TASK-202.md`.
-- Artboards: `docs/design/wireframes/admin-orders-{desktop,mobile}.dc.html`, `admin-order-detail-{desktop,mobile}.dc.html` (not drawn yet; `/design` draws it before this task is dispatched); `docs/design/flows/buyer-journey.dc.html`.
+- Artboards (merged in PR 197; `docs/design/audits/2026-10-05-specs-011-012.md`): `docs/design/wireframes/admin-orders-desktop.dc.html`, `docs/design/wireframes/admin-orders-mobile.dc.html`, `docs/design/wireframes/admin-order-detail-desktop.dc.html`, `docs/design/wireframes/admin-order-detail-mobile.dc.html`; `docs/design/flows/buyer-journey.dc.html` (step 10). No action panel (decision 1); times in the viewer's `admin_profile.time_zone`, always named (decision 8); "we're finding a florist" is a drawn value, founder copy pending (decision 9).
 
 ## Carry-forwards
 
