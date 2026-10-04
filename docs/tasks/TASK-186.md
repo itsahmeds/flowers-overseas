@@ -13,9 +13,17 @@ file, not the row.
 - **Founder.** 2026-10-04: "go, approve copy and also i asked to redesign all the pages not just a
   few. right?"; and "also when u redesign or plan for redesign... make sure the sizing of page is
   good for both computer and phone.. cuz current pages on demo site feel big on my macbook".
-- **Dependencies.** PR 185 (the design sweep) must have merged: the artboards are the source (A23
-  clause 1 "Order"). This task **lands first**, because TASK-187 to TASK-191 build on its frame and
-  tokens.
+- **Dependencies.** **No build starts before the round-2 design PR merges** (A23 clause 10; founder,
+  2026-10-05). The page's round-2 artboard in `docs/design/wireframes` is the source; PR 185's
+  round-1 devices do not bind. If the round-2 artboards are not on `main`, stop and escalate. This
+  task **lands first** among TASK-186 to TASK-191, because TASK-187 to TASK-191 build on its frame
+  and tokens. (TASK-193, copy only, may land earlier.)
+- **Measurable rules that hold whatever round 2 draws** (A23 clause 10): the laptop band (clause 9),
+  the first-screen content order (H1 first, then the primary action, with a product or flowers
+  visible), pagination, honesty, and tokens only. Any token round 2 adds lands in `globals.css` and
+  `system/tokens.css` together.
+- **Founder's bar** (2026-10-05): "uncluttered, state of the art, grid-aligned, mobile designed on
+  its own".
 - **The frame (clause 2).** `Container` (`src/modules/ui/primitives/layout.tsx` L96–L127) takes the
   header's frame (`SiteHeader.tsx` L76): content 1,328 px (`--container-page`) inside `--gutter`
   56 px from `md` up, and `--gutter-s` 20 px below `md`. The inline-start edge of `<main>`'s first
@@ -45,9 +53,9 @@ file, not the row.
     instead of a fixed `--space-3xl` or `--space-2xl`. The hero or lead photograph is capped at
     `--hero-photo-max`, keeping its aspect ratio by narrowing its inline size.
   - **The container stays 1,328 px.**
-- **Artboards.** Add a dated row to `docs/design/README.md` "Where the sheet and the code currently
-  differ": the 1440 artboards draw the old maxima, and clause 9 is right until the second design
-  round redraws them.
+- **Artboards.** The round-2 artboards are drawn at clause 9's values. For any artboard still drawn
+  at the old maxima, add a dated row to `docs/design/README.md` "Where the sheet and the code
+  currently differ" citing clause 9.
 - **Overlap with PR 170 (TASK-179, open).** It edits the product page and the guide, which this task
   touches only for the breadcrumb offset. Keep those edits to removing the per-page margin. Whichever
   PR merges second rebases. Re-take only the visual baselines this task causes, through the
@@ -68,8 +76,8 @@ file, not the row.
 
 ## Read
 
-- `specs/004-design-system-layout.md` — `## 0. Index`, then §14 A23 clauses 1, 2, 3 and 9 and AC-31,
-  AC-32, AC-41 to AC-43
+- `specs/004-design-system-layout.md` — `## 0. Index`, then §14 A23 clauses 1, 2, 3, 9 and 10 and
+  AC-31, AC-32, AC-41 to AC-43
 - `docs/design/audits/2026-10-04-site-sweep.md` §1 findings 4 and 8, §3 rows 4 and 8
 - `docs/codebase-map.md`
 - `src/modules/ui/primitives/layout.tsx`, `src/modules/ui/layout/SiteHeader.tsx`,

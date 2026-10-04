@@ -450,7 +450,7 @@ Each carries the default this spec is written against; the spec stays `draft` un
   **(b) The tile count names the right noun (audit finding 10; Appendix A A9).** `shop.root.tileCount` becomes "{count} {noun} we can make for {country}", with the noun chosen per category: "8 plants we can make for Poland" on Plants, never "8 bouquets". The noun is the category's `countNoun` in `src/config/catalogue/listing-presentation.ts` (spec 004 §14 A23 R1), a closed set of the three nouns the founder approved: `bouquet`, `plant`, `arrangement`. `CategoryTileViewSchema` gains `countNoun`. The message is an ICU `plural` per noun, with Polish one/few/many/other cases (T-30's rule). A category that fits none of the three is escalated; a fourth noun is never added silently.
 
   **(c) R2 on country pages, the lead is `items[0]` (audit R2).**
-  - On page 1 of the shop root, a country category and a country occasion, the lead is `items[0]` at size, and the grid continues from `items[1]`. There is one source and one LCP candidate.
+  - On page 1 of the shop root, a country category and a country occasion, the lead is `items[0]` at size, and the grid continues from `items[1]`. **Page 1 is the lead card plus 11 grid cards** (`items[1]`–`items[11]`): 12 products, the page size of AC-10, so the lead counts as one of the twelve and page 2 starts at `items[12]`. A listing of N ≤ 12 renders the lead plus N − 1 grid cards. There is one source and one LCP candidate.
   - The lead's price tag is that card's own `priceProjection()` price through `formatMoney`, with `catalog.price.allIn`, and its equivalents line where spec 004 §14 A21 clause 6 (c) shows one. Price shown = price charged.
   - `ItemList` (AC-17) lists the lead at position 1 and the grid after it, in rendered order, one entry per product.
   - No product renders twice on a page.
@@ -464,7 +464,7 @@ Each carries the default this spec is written against; the spec stays `draft` un
   **Supersedes:** A8 (c) (L408) and the README row "2026-09-18 (TASK-110)" item (2) for depth 4: the toolbar and pagination render on the depth-4 pages through the parameter route. TASK-178's `## Result` line "Country category and country occasion pages show … no sort form or pagination" is closed by this amendment.
 
   **AC-29 — pagination at depth 4.** For every country category and country occasion whose total exceeds 12, in four locales:
-  - page 1 shows 12 products and a labelled pager `<nav>` of real `<a>`s;
+  - page 1 shows 12 products, the lead card plus 11 grid cards ((c)), and a labelled pager `<nav>` of real `<a>`s;
   - `?page=k` shows products (k−1)·12+1 to min(k·12, N) in the default order;
   - the union over all pages equals the N the count line prints, each product exactly once;
   - `?page=k` is self-canonical, carries the `· Page k` title suffix and the bare page's robots directive;
@@ -475,7 +475,7 @@ Each carries the default this spec is written against; the spec stays `draft` un
   **AC-30 — the tile noun.** On every shop root in four locales, each tile's count line uses its category's `countNoun`. The Plants tile reads "{n} plants we can make for {country}" in `en`. `pl` renders one/few/many/other per noun.
 
   **AC-31 — the country lead.** On page 1 of each country-scoped type:
-  - the lead is `items[0]`, and the first grid card is `items[1]`;
+  - the lead is `items[0]`, the first grid card is `items[1]`, and the grid holds exactly 11 cards when N ≥ 12 (N − 1 when N < 12);
   - the lead tag's price string equals `formatMoney` of `items[0]`'s projection;
   - `ItemList` position 1 is `items[0]`, and its count equals the products rendered;
   - no product URL appears twice in `<main>`.
@@ -492,7 +492,7 @@ Each carries the default this spec is written against; the spec stays `draft` un
   |---|---|---|---|
   | T-33 | e2e + unit | `/en-gb/poland/flowers/roses` (15 products) and a country occasion over 12: page 2's first card ≠ page 1's; union = count, no repeats; canonical, title, robots, 308, 404; JS off. `listing-rewrites.test.ts` covers the depth-4 sources, product URL unmatched. Token check on the depth-4 route. Red with the depth-4 rewrite removed (page 2 = page 1). | AC-29 |
   | T-34 | unit | Tiles for fixture categories of each noun, in `en` and `pl` (2, 5, 22 items). Red with the noun forced to `bouquet`. | AC-30 |
-  | T-35 | unit + e2e | `listingView()` fixture: lead = `items[0]`, grid from `items[1]`, `ItemList` positions, no duplicate URL. Red with the grid starting at `items[0]`. | AC-31 |
+  | T-35 | unit + e2e | `listingView()` fixture: lead = `items[0]`, grid = `items[1]`–`items[11]` (11 cards) on a 15-item fixture and N − 1 cards on a 5-item fixture, page 2 starting at `items[12]`, `ItemList` positions, no duplicate URL. Red with the grid starting at `items[0]`, and red with a 12-card grid under the lead (13 products on page 1). | AC-31, AC-29 |
   | T-36 | e2e + a11y | Order and boxes on `/en-gb/poland/flowers/roses`; label text; disclosure visible; axe clean. Red with the toolbar moved back above the grid. | AC-32 |
 
   Open for the founder: none. The tile nouns are the three approved words; a category that fits none of them is escalated, not invented.

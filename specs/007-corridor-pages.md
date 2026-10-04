@@ -396,7 +396,7 @@ this section as its condition.
 - **A9 (2026-09-23, orchestrator ruling on `/review 98` round 1, TASK-113).** The guide state's shop entry is **the reviewed shop-root link alone** ("See flowers for {country}"), not the "Nothing renders here" §2 and artboard state A drew. Reason: spec 008 AC-20 publishes `country-shop-root`, so the guide page has a real, answerable shop to link to, and a link that makes no florist, delivery or availability claim is honest in a state where nothing is delivered. The state-B heading and body ("Bouquets our florists in … can make") **never** render in state A; that sentence in state A was the defect `/review 98` found. The corridor artboards' state A is amended to match. Any claim that a florist makes, delivers or prices something is a state-B claim and is refused on every guide page.
 - **A10 (2026-09-23, orchestrator ruling on the TASK-113 AC-20 escalation).** §2 "Internal links" and the artboards' state B draw the live shop entry as the shop root **plus** up to six country categories and the indexable country occasions. **Spec 008 AC-20 does not require the chips**: it requires the five link ids published and rendered "with **no markup change**", and the chip row is a markup change in `CorridorPage` plus a second catalogue read in `corridorShopEntry()`. TASK-113 therefore meets spec 008 AC-20 by rendering the shop-root link in both states. The chip row is **TASK-147's**, and it must land **before any destination's corridor enters state B** (and so before TASK-096's indexing flip on a live corridor): a live corridor that links only its shop root under-links the page type the shop is built around. State B renders on no page in Phase 0 (`ActivePartnersProvider` is false everywhere, §13 Q3), so nothing ships wrong today.
 
-- **A11 (2026-10-04, the redesign sweep; founder in chat: "go, approve copy and also i asked to redesign all the pages not just a few. right?"; spec 004 §14 A23; audit `docs/design/audits/2026-10-04-site-sweep.md` findings 6, 7 and 9, §3 rows 6, 7 and 9, Appendix A id A11; artboards `wireframes/corridor-country-{desktop,mobile}.dc.html` of PR 185; implemented by TASK-189).** The guide's first screen, its calendar's Rule column and its last v1 shapes. The Appendix A copy id "A11" and this amendment's number are a coincidence.
+- **A11 (2026-10-04, the redesign sweep; founder in chat: "go, approve copy and also i asked to redesign all the pages not just a few. right?"; spec 004 §14 A23; audit `docs/design/audits/2026-10-04-site-sweep.md` findings 6, 7 and 9, §3 rows 6, 7 and 9, Appendix A id A11; artboards `wireframes/corridor-country-{desktop,mobile}.dc.html` of PR 185, whose first-screen devices are replaced by the round-2 design PR (spec 004 §14 A23 clause 10, founder 2026-10-05); implemented by TASK-189, which starts no build before that PR merges).** The guide's first screen, its calendar's Rule column and its last v1 shapes. The Appendix A copy id "A11" and this amendment's number are a coincidence.
 
   **(a) The calendar's Rule column prints words, not identifiers (finding 7; AC-22's calendar).**
   - The guide prints `fixed`, `easter_offset` and `nth_weekday` in monospace today, the only monospace text on the site. The column now prints the founder-approved English (Appendix A A11, approved 2026-10-04 "approve copy"):
@@ -411,11 +411,11 @@ this section as its condition.
   - A `none` row's Rule cell is empty, because its date cell already says the date is not computed. No identifier, no code font, no new string.
   - The mapping is one exhaustive `switch` over the rule kind in the view, so a new rule kind fails `typecheck` until it is mapped.
 
-  **(b) The first screen (findings 6 and 1).** The empty "Photo slot · Poland" box (572 × 380, a gradient) is not rendered. In its place, the artboards draw:
-  - the destination's postmark, whose ring prints the guide state (`destinations.state.guideNotDelivering` while `corridorState(iso2)` is `guide`);
-  - the **next three dated rows** of the page's own calendar: the same `corridorView()` rows the table prints, in date order, through `formatDate`.
+  **(b) The first screen (findings 6 and 1).** The empty "Photo slot · Poland" box (572 × 380, a gradient) is not rendered. **The look is the guide's artboard in `docs/design/wireframes` (round 2, PR to come; spec 004 §14 A23 clause 10).** The round-1 postmark of PR 185 no longer binds. Whatever the round-2 artboard draws, these hold:
+  - the guide state's text (`destinations.state.guideNotDelivering` while `corridorState(iso2)` is `guide`) sits in the first screen as real text;
+  - the **next three dated rows** of the page's own calendar sit beside it: the same `corridorView()` rows the table prints, in date order, through `formatDate`.
 
-  It is the same source as AC-22, so the first screen and the table cannot disagree. No `<img>`, no placeholder box and no preload sit in the first screen, and the LCP element is the H1. Fewer than three dated rows shows what there is. None renders the postmark alone.
+  It is the same source as AC-22, so the first screen and the table cannot disagree. No `<img>`, no placeholder box and no preload sit in the first screen, and the LCP element is the H1. Fewer than three dated rows shows what there is. None renders the state text alone. Spec 004 §14 A23 clause 10's measurable rules apply: the laptop band, the H1 first in reading order, honesty, tokens only.
 
   **(c) The v1 shapes are redrawn to the artboard (finding 9; §3 row 9).**
   - The three "How we will work here" steps render as design system v2's numbered route (the artboard's `.route`), not as square hairline cards with "01/02/03" labels.
@@ -428,7 +428,7 @@ this section as its condition.
   **AC-30 — the Rule column.** On every guide in every locale that has one, no Rule cell contains `fixed`, `easter_offset`, `nth_weekday`, `last_weekday`, `lent_sunday`, `orthodox_easter_offset` or `none`, and no calendar cell renders in a monospace family. In `en` and `en-gb`, each cell's text is the (a) mapping of its row's rule kind.
 
   **AC-31 — the guide's first screen.** At 1440 × 900 and 390 × 844 on `/en-gb/send-flowers-to/poland` and `/en/send-flowers-to/germany`:
-  - the first viewport holds the H1, the postmark with `destinations.state.guideNotDelivering`'s text, and up to three dated rows equal to the first three rows of the page's calendar table;
+  - the first viewport holds the H1, `destinations.state.guideNotDelivering`'s text, and up to three dated rows equal to the first three rows of the page's calendar table, the H1 first in DOM order;
   - no photo-slot box and no `<img>` is in the first viewport;
   - no image preload is emitted.
 

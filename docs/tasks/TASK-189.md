@@ -7,17 +7,23 @@ file, not the row.
 ## Binding
 
 - **Specs.** `specs/007-corridor-pages.md` §14 **A11** (a)–(c); `specs/004-design-system-layout.md`
-  §14 A23 clauses 1, 6, 7 and 9.
+  §14 A23 clauses 1, 6, 7, 9 and 10.
 - **Owned.** Spec 007 **AC-30, AC-31, AC-32** (T-31, T-32, T-33), and spec 004 **AC-38** for id A11
   (T-40).
 - **Audit.** `docs/design/audits/2026-10-04-site-sweep.md`: findings 6, 7 and 9; §3 rows 6, 7 and 9.
-- **Artboards.** `wireframes/corridor-country-{desktop,mobile}.dc.html` of PR 185 (the annotation's
-  "Sweep 2026-10-04" row).
+- **Artboards.** The guide's **artboard in `docs/design/wireframes` (round 2, PR to come)**. The
+  round-1 postmark of PR 185's `corridor-country-*` does not bind (A23 clause 10). Founder's bar:
+  "uncluttered, state of the art, grid-aligned, mobile designed on its own".
+- **Measurable rules that hold whatever round 2 draws** (A23 clause 10): the laptop band
+  (clause 9); the H1 first in reading order, with the guide state's text and the next three dated
+  rows in the first viewport (spec 007 AC-31); honesty (spec 007 A9, §8); tokens only.
 - **Founder.** 2026-10-04: "go, approve copy and also i asked to redesign all the pages not just a
   few. right?"
 - **Dependencies.**
-  - PR 185.
+  - **No build starts before the round-2 design PR merges** (A23 clause 10; founder, 2026-10-05).
   - TASK-186 (the frame, the breadcrumb offset and the tokens).
+  - TASK-193 changes `corridor.facts.delivering.none` (N4) and `corridor.coverage.bodyNone` (N5) on
+    the guide. Whichever merges second rebases; never restore the old text.
   - **TASK-179**: PR 170 is open and edits `src/modules/geo/ui/CorridorPage.tsx`,
     `CorridorGuideBody.tsx`, `CorridorFaq.tsx` and `content/corridors/**`. Dispatch after it merges.
     Start by checking which of findings 6, 7 and 9 PR 170 already closed, and record that under
@@ -31,9 +37,10 @@ file, not the row.
     - A `none` row's Rule cell is empty.
     - The mapping is one exhaustive `switch` over the rule kind, so a new kind fails `typecheck`. The
       column uses no monospace.
-  - **(b) The first screen.** No photo slot. The postmark ring prints the guide state, next to the
-    next three dated rows of the page's own calendar: the same `corridorView()` rows, through
-    `formatDate`. There is no `<img>` and no preload, and the LCP element is the H1.
+  - **(b) The first screen.** No photo slot. The guide state's text (real text, drawn as the
+    round-2 artboard draws it) sits beside the next three dated rows of the page's own calendar: the
+    same `corridorView()` rows, through `formatDate`. There is no `<img>` and no preload, and the LCP
+    element is the H1.
   - **(c) The shapes.**
     - The "How we will work here" steps are v2's numbered route, not square hairline cards with
       "01/02/03".

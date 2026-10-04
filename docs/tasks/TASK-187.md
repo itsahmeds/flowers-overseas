@@ -8,7 +8,7 @@ file, not the row.
 
 - **Specs.** `specs/008-country-shop-category-occasion-pages.md` §14 **A15** (a)–(d) and
   `specs/004-design-system-layout.md` §14 **A23** clauses 1, 4 (R1, R2 on country pages, R7, R8), 5,
-  6 and 7.
+  6, 7 and 10.
 - **Owned.** Spec 008 **AC-29, AC-30, AC-31, AC-32** (T-33 to T-36). Spec 004 **AC-33, AC-34**, and
   **AC-38** for ids A9 and A10 (T-35, T-36, T-40).
 - **Audit.** `docs/design/audits/2026-10-04-site-sweep.md`: findings 1, 3, 10 (the tile noun, the
@@ -16,7 +16,8 @@ file, not the row.
 - **Founder.** 2026-10-04: "go, approve copy and also i asked to redesign all the pages not just a
   few. right?"
 - **Dependencies.**
-  - PR 185 (the artboards are the source).
+  - **No build starts before the round-2 design PR merges** (A23 clause 10; founder, 2026-10-05).
+    PR 185 carries the audit; its round-1 devices do not bind.
   - TASK-186 (the frame and the laptop-band tokens).
   - **TASK-146 is built in the same feature PR.** Its depth-4 parameter policy (AC-15) uses the same
     rewrite rules, the same new parameter-route file and the same `tests/unit/listing-rewrites.test.ts`
@@ -25,10 +26,20 @@ file, not the row.
     PR link.
   - TASK-188 runs **after** this task, because both edit `src/modules/catalog/listing.ts` and
     `ListingViewSchema`.
-- **The artboards.** `wireframes/country-shop-*`, `country-category-*` and `country-occasion-*` of
-  PR 185, with each annotation's "First screen" and "States" rows, and the "First screens" group of
-  `system/components.dc.html` (postmark, price tag, `xl` stamp, magazine grid). Match them pixel for
-  pixel at 1440 × 900 and 390 × 844, and meet A23 clause 9 at 1280 × 800 and 1512 × 945.
+- **The artboards.** Each page's **artboard in `docs/design/wireframes` (round 2, PR to come)**:
+  the country shop, country category and country occasion, with their annotation rows and the
+  system group round 2 adds to `system/components.dc.html`. The round-1 postmark, `xl` stamp and
+  P.S. note of PR 185 do not bind. Match the round-2 artboards pixel for pixel at 1440 × 900 and
+  390 × 844, and meet A23 clause 9 at 1280 × 800 and 1512 × 945. Founder's bar: "uncluttered,
+  state of the art, grid-aligned, mobile designed on its own".
+- **Measurable rules that hold whatever round 2 draws** (A23 clause 10):
+  - the laptop band (clause 9);
+  - first-screen content order: the H1 first, then the lead's price tag (the primary action), with
+    the lead photograph and the destination's state text in the first viewport (clause 5, AC-34);
+  - the shop notice (`shop.root.demoNotice`) is **not** a first-screen item, and no first-viewport
+    text contains "still choosing", "first florist", "no florist" or "choosing florists";
+  - pagination: page 1 is the lead card plus 11 grid cards; page 2 and later have no hero;
+  - honesty (A23 clause 7) and tokens only.
 - **What to build.**
   - **The registry.** `src/config/catalogue/listing-presentation.ts`: zod-parsed at load, covered by
     `pnpm check:no-db`, one row per occasion and per category that has a hub. Each row holds
@@ -42,11 +53,16 @@ file, not the row.
     §14 A9).
   - **R2.** The lead is `items[0]` at size with its price tag, which is the card's own
     `formatMoney` price plus `catalog.price.allIn` plus the equivalents line where spec 004 A21
-    clause 6 (c) shows one. The grid runs from `items[1]`. `ItemList` puts the lead at position 1.
-    Page ≥ 2 has no hero, and its `priority` image is the first card's (spec 008 §14 A11).
-  - **The country occasion's date stamp.** Day, month, weekday and year are the parts of one
-    `formatDate` value. Add a parts formatter to `src/modules/i18n/format.ts`, additively, with a
-    case in `tests/unit/i18n-format.test.ts`. No `Intl` in a component.
+    clause 6 (c) shows one. **Page 1 is the lead card plus 11 grid cards** (`items[1]`–`items[11]`,
+    12 products; spec 008 §14 A15 (c)), and page 2 starts at `items[12]`. `ItemList` puts the lead
+    at position 1. Page ≥ 2 has no hero, and its `priority` image is the first card's (spec 008
+    §14 A11).
+  - **The state text.** The destination's state (R7) renders as real text in the first viewport, as
+    the round-2 artboard places it.
+  - **The country occasion's date.** One `formatDate` value. Where the round-2 artboard sets its day,
+    month, weekday and year apart, they are the parts of that one value: add a parts formatter to
+    `src/modules/i18n/format.ts`, additively, with a case in `tests/unit/i18n-format.test.ts`. No
+    `Intl` in a component.
   - **R8.** On the country category, the sort form goes under the grid with the label "Change the
     order" (A10). The count and the ranking disclosure stay above the grid, **visible** and compact.
     The grid heading is visually hidden.
@@ -71,17 +87,20 @@ file, not the row.
 - **Tests** (watch each go red by mutating its subject):
   - **Spec 008 T-33** (e2e + unit). Red with the depth-4 rewrite removed (page 2 = page 1).
   - **Spec 008 T-34** (unit). Red with the noun forced to `bouquet`.
-  - **Spec 008 T-35** (unit + e2e). Red with the grid starting at `items[0]`.
+  - **Spec 008 T-35** (unit + e2e). Red with the grid starting at `items[0]`, and red with a
+    12-card grid under the lead.
   - **Spec 008 T-36** (e2e + a11y). Red with the toolbar back above the grid.
   - **Spec 004 T-35** (unit). Red with a component-chosen register.
-  - **Spec 004 T-36** (e2e + unit + visual). Red with the postmark text hard-coded.
+  - **Spec 004 T-36** (e2e + unit + visual). Red with the state text hard-coded, and red with the
+    old "still choosing" notice placed above the fold.
   - **Spec 004 T-40** for A9 and A10 (unit). Red with one character changed.
 
 ## Read
 
 - `specs/008-country-shop-category-occasion-pages.md` — `## 0. Index`, §14 A9, A11, A13, A15, §5.2,
   AC-9, AC-10, AC-15, AC-17, AC-24
-- `specs/004-design-system-layout.md` — §14 A21 clause 6, A23 (all clauses; ACs 33, 34, 38)
+- `specs/004-design-system-layout.md` — §14 A21 clause 6, A23 (all clauses, clause 10 first; ACs
+  33, 34, 38)
 - `docs/tasks/TASK-146.md` (its carry-forwards are yours too) and `docs/tasks/TASK-178.md` `## Result`
 - `docs/codebase-map.md`
 - `src/lib/listing-rewrites.ts`, `src/lib/listing-cache-headers.ts`,
